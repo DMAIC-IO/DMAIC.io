@@ -295,9 +295,11 @@ export default class ChartBase {
       this.render();
       this._buildEditor();
     };
+    const onEdit = (key, value) => this._onLabelEdit?.(key, value);
+    const auto = this._autoLabels || {};
 
     // Title section
-    inner.appendChild(edTitleSection(cfg, () => this.render(), t));
+    inner.appendChild(edTitleSection(cfg, () => this.render(), t, onEdit, auto));
 
     // Legend toggle
     if (this._getLegendItems().length > 0 || (cfg.refLines && cfg.refLines.length) || (cfg.refAreas && cfg.refAreas.length)) {
@@ -308,7 +310,7 @@ export default class ChartBase {
     inner.appendChild(edFontSizeSection(cfg, () => this.render(), t));
 
     // Axis labels
-    inner.appendChild(edAxisLabelSection(cfg, () => this.render(), t));
+    inner.appendChild(edAxisLabelSection(cfg, () => this.render(), t, onEdit, auto));
 
     // Axis ticks (suppressed when both axes are categorical)
     const tickSec = edAxisTickSection(cfg, () => this.render(), t);

@@ -91,6 +91,31 @@ suite('InstanceChartManager', () => {
     assertEqual(b.config.title, 'B');
   });
 
+  test('a newer create in the same container takes over the pending key', async () => {
+    const store = fakeStore({ i1: { scatter: { title: 'A' } } });
+    const f = createInstanceChartManager(fakeManager(), store, 'i1');
+    const el = {};
+    // A module re-renders before its previous create resolved; the stale
+    // chart is discarded, the newer one must still carry the stored edits.
+    const [stale, fresh] = await Promise.all([f.create(el, 'scatter', {}), f.create(el, 'scatter', {})]);
+    stale.destroy();
+    assertEqual(fresh.config.title, 'A');
+  });
+
+  test('a pending create whose container left the document frees its key', async () => {
+    const store = fakeStore({ i1: { scatter: { title: 'A' } } });
+    const f = createInstanceChartManager(fakeManager(), store, 'i1');
+    const oldEl = { isConnected: true };
+    const newEl = { isConnected: true };
+    // The module's template replaced its plot element while a create into
+    // the old one was still pending; the chart in the new element is the real one.
+    const stalePromise = f.create(oldEl, 'scatter', {});
+    oldEl.isConnected = false;
+    const fresh = await f.create(newEl, 'scatter', {});
+    (await stalePromise).destroy();
+    assertEqual(fresh.config.title, 'A');
+  });
+
   test('failed create frees its reserved key', async () => {
     const store = fakeStore({ i1: { broken: { title: 'X' } } });
     const f = createInstanceChartManager(fakeManager(), store, 'i1');

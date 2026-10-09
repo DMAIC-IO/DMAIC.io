@@ -17,10 +17,15 @@ function pickLabels(config) {
   return out;
 }
 
+/** Is a node still in the document? Nodes without isConnected count as attached. */
+function isAttached(node) {
+  return !!node && (!('isConnected' in node) || node.isConnected);
+}
+
 /** A chart is live until destroyed or until its root left the DOM. */
 function isLive(chart) {
   const root = chart._card || chart._wrap;
-  return !!(chart._svg && root && root.parentNode);
+  return !!(chart._svg && root && root.parentNode && isAttached(root));
 }
 
 /**
@@ -32,13 +37,19 @@ function isLive(chart) {
 export function createInstanceChartManager(manager, stateManager, instanceId) {
   /** @type {Map<object, string>} live chart → chart key */
   const keyOf = new Map();
-  /** keys reserved by creates still awaiting their chart */
+  /** creates still awaiting their chart: { key, container } */
   const reserved = new Set();
   const facade = Object.create(manager);
 
-  function allocateKey(base) {
+  function allocateKey(base, container) {
     for (const [chart] of keyOf) if (!isLive(chart)) keyOf.delete(chart);
-    const used = new Set([...keyOf.values(), ...reserved]);
+    // A pending create is superseded by this one when it targets the same
+    // container or one that has left the document (the module re-rendered
+    // before it resolved), so its key is free to take.
+    const pending = [...reserved]
+      .filter(r => r.container !== container && isAttached(r.container))
+      .map(r => r.key);
+    const used = new Set([...keyOf.values(), ...pending]);
     let key = base;
     for (let n = 2; used.has(key); n++) key = `${base}#${n}`;
     return key;
@@ -50,8 +61,9 @@ export function createInstanceChartManager(manager, stateManager, instanceId) {
    * another live chart of this instance holds it.
    */
   facade.create = async function create(container, type, config = {}) {
-    const key = allocateKey(config.editKey || type);
-    reserved.add(key);
+    const key = allocateKey(config.editKey || type, container);
+    const slot = { key, container };
+    reserved.add(slot);
     try {
       const edits = stateManager.getChartEdits(instanceId, key) || {};
       const chart = await manager.create(container, type, { ...config, ...edits });
@@ -66,7 +78,7 @@ export function createInstanceChartManager(manager, stateManager, instanceId) {
       };
       return chart;
     } finally {
-      reserved.delete(key);
+      reserved.delete(slot);
     }
   };
 

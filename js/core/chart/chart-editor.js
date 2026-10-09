@@ -274,11 +274,15 @@ export function edBtnAdd(label, onClick) {
  * @param {{ showTitle: boolean, title: string }} config - Mutated in-place
  * @param {function} onUpdate - Called after config is mutated
  * @param {function} t - Translation function (key → string)
+ * @param {function} [onEdit] - (key, value) after a user edit, before onUpdate
+ * @param {Object} [auto] - automatic values; `auto.title` becomes the placeholder
  * @returns {HTMLElement}
  */
-export function edTitleSection(config, onUpdate, t) {
+export function edTitleSection(config, onUpdate, t, onEdit, auto = {}) {
   const sec = edSection(t('title'));
-  sec.appendChild(edCheckboxRow(t('showTitle'), config.showTitle !== false, (v) => { config.showTitle = v; onUpdate(); }));
+  sec.appendChild(edCheckboxRow(t('showTitle'), config.showTitle !== false, (v) => {
+    config.showTitle = v; onEdit?.('showTitle', v); onUpdate();
+  }));
   const row = document.createElement('div');
   row.className = 'dmike-chart-ed-inline-row';
   const lbl = document.createElement('label');
@@ -286,8 +290,8 @@ export function edTitleSection(config, onUpdate, t) {
   const inp = document.createElement('input');
   inp.type = 'text';
   inp.value = config.title || '';
-  inp.placeholder = t('titlePlaceholder');
-  inp.addEventListener('change', () => { config.title = inp.value; onUpdate(); });
+  inp.placeholder = auto.title || t('titlePlaceholder');
+  inp.addEventListener('change', () => { config.title = inp.value; onEdit?.('title', inp.value); onUpdate(); });
   row.appendChild(lbl);
   row.appendChild(inp);
   sec.appendChild(row);
@@ -316,9 +320,11 @@ export function edFontSizeSection(config, onUpdate, t) {
  * @param {object} config - Mutated in-place
  * @param {'xLabel'|'yLabel'} key
  * @param {function} onUpdate
+ * @param {function} [onEdit] - (key, value) after a user edit, before onUpdate
+ * @param {string} [placeholder] - automatic label shown while the field is empty
  * @returns {HTMLElement}
  */
-function edAxisLabelTextRow(label, config, key, onUpdate) {
+function edAxisLabelTextRow(label, config, key, onUpdate, onEdit, placeholder) {
   const row = document.createElement('div');
   row.className = 'dmike-chart-ed-inline-row';
   const lbl = document.createElement('label');
@@ -327,7 +333,8 @@ function edAxisLabelTextRow(label, config, key, onUpdate) {
   inp.type = 'text';
   inp.value = config[key] || '';
   inp.dataset.key = key;
-  inp.addEventListener('change', () => { config[key] = inp.value; onUpdate(); });
+  inp.placeholder = placeholder || '';
+  inp.addEventListener('change', () => { config[key] = inp.value; onEdit?.(key, inp.value); onUpdate(); });
   row.appendChild(lbl);
   row.appendChild(inp);
   return row;
@@ -339,14 +346,20 @@ function edAxisLabelTextRow(label, config, key, onUpdate) {
  * @param {{ showXLabel: boolean, showYLabel: boolean, xLabel: string, yLabel: string }} config - Mutated in-place
  * @param {function} onUpdate - Called after config is mutated
  * @param {function} t
+ * @param {function} [onEdit] - (key, value) after a user edit, before onUpdate
+ * @param {Object} [auto] - automatic values; `auto.xLabel` / `auto.yLabel` become placeholders
  * @returns {HTMLElement}
  */
-export function edAxisLabelSection(config, onUpdate, t) {
+export function edAxisLabelSection(config, onUpdate, t, onEdit, auto = {}) {
   const sec = edSection(t('axisLabels'));
-  sec.appendChild(edCheckboxRow(t('showXLabel'), config.showXLabel !== false, (v) => { config.showXLabel = v; onUpdate(); }));
-  sec.appendChild(edAxisLabelTextRow(t('xLabelText'), config, 'xLabel', onUpdate));
-  sec.appendChild(edCheckboxRow(t('showYLabel'), config.showYLabel !== false, (v) => { config.showYLabel = v; onUpdate(); }));
-  sec.appendChild(edAxisLabelTextRow(t('yLabelText'), config, 'yLabel', onUpdate));
+  sec.appendChild(edCheckboxRow(t('showXLabel'), config.showXLabel !== false, (v) => {
+    config.showXLabel = v; onEdit?.('showXLabel', v); onUpdate();
+  }));
+  sec.appendChild(edAxisLabelTextRow(t('xLabelText'), config, 'xLabel', onUpdate, onEdit, auto.xLabel));
+  sec.appendChild(edCheckboxRow(t('showYLabel'), config.showYLabel !== false, (v) => {
+    config.showYLabel = v; onEdit?.('showYLabel', v); onUpdate();
+  }));
+  sec.appendChild(edAxisLabelTextRow(t('yLabelText'), config, 'yLabel', onUpdate, onEdit, auto.yLabel));
   return sec;
 }
 

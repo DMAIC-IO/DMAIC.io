@@ -550,7 +550,7 @@ export class Workspace {
       showModal: this._modal,
       confirmPopout: (message, options = {}) => confirmPopout(message, { ...options, i18n: this._i18n }),
       notify: this._context.notify,
-      chartManager: this._context.chartManager,
+      chartManager: this._context.chartManager.forInstance(instanceId),
       examples: this._context.examples,
       theme: document.documentElement.dataset.theme || 'light',
       language: this._i18n.getLanguage(),

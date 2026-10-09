@@ -31,11 +31,11 @@
 # waren schon vor dieser Härtung sauber). Das ist der Arbeitsvorrat für die
 # Migrationsfolge-Aufgabe — diese Aufgabe migriert nichts.
 
-js/core/chart/chart-editor.js:485:●
-js/core/chart/chart-editor.js:487:◆
-js/core/chart/chart-editor.js:488:▲
-js/core/chart/chart-editor.js:489:▼
-js/core/chart/chart-editor.js:491:★
+js/core/chart/chart-editor.js:498:●
+js/core/chart/chart-editor.js:500:◆
+js/core/chart/chart-editor.js:501:▲
+js/core/chart/chart-editor.js:502:▼
+js/core/chart/chart-editor.js:504:★
 js/core/cycles/cycles.js:79:⊞
 js/core/migrations.js:55:→
 js/modules/contour-plot/contour-plot-editor.js:81:●
