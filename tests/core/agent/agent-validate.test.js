@@ -308,3 +308,42 @@ suite('agent validate — Stufe 5: die Singleton-Regel', () => {
     assertTrue(r.ok, JSON.stringify(r));
   });
 });
+
+suite('agent validate — Stufe 6: abgeschlossenes Projekt', () => {
+  test('a write op is rejected before anything runs', () => {
+    const r = validateBatch(
+      [{ op: 'module.add', module: 'five-why', phase: 'define' }],
+      makeWorld({ completed: true }),
+    );
+    assertEqual(r.ok, false);
+    assertEqual(r.cause.error, 'project_completed');
+    assertEqual(r.index, 0);
+  });
+
+  test('instance.call counts as a write op', () => {
+    const r = validateBatch(
+      [{ op: 'instance.call', instance: 'fw-1', method: 'read' }],
+      makeWorld({ completed: true }),
+    );
+    assertEqual(r.ok, false);
+    assertEqual(r.cause.error, 'project_completed');
+  });
+
+  test('reading ops stay allowed in a completed project', () => {
+    const r = validateBatch(
+      [{ op: 'project.read' }, { op: 'catalog.read' },
+       { op: 'module.describe', module: 'five-why' }],
+      makeWorld({ completed: true }),
+    );
+    assertTrue(r.ok, JSON.stringify(r));
+  });
+
+  test('the write op of a LATER entry blocks the whole batch', () => {
+    const r = validateBatch(
+      [{ op: 'project.read' }, { op: 'module.remove', instance: 'fw-1' }],
+      makeWorld({ completed: true }),
+    );
+    assertEqual(r.ok, false);
+    assertEqual(r.index, 1);
+  });
+});

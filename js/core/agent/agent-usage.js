@@ -28,6 +28,7 @@ export function buildUsage(i18n) {
     errorForm:    i18n.t('agent.usage.errorForm'),
     availability: i18n.t('agent.usage.availability'),
     limits:       i18n.t('agent.usage.limits'),
+    viewSwitch:   i18n.t('agent.usage.viewSwitch'),
     ops,
     errors: Object.values(ERRORS),
   };

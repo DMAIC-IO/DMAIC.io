@@ -122,10 +122,10 @@ export function buildInstanceList({ stateManager, i18n }) {
  * dieser `phase` würde fälschlich mit `unknown_phase` abgelehnt.
  *
  * @param {{ moduleRegistry: object, stateManager: object, i18n: object,
- *           registry: Record<string, object> }} deps
- * @returns {{ t: Function, phases: string[], modules: Map, instances: Map }}
+ *           registry: Record<string, object>, completed?: boolean }} deps
+ * @returns {{ t: Function, phases: string[], modules: Map, instances: Map, completed: boolean }}
  */
-export function buildWorld({ moduleRegistry, stateManager, i18n, registry }) {
+export function buildWorld({ moduleRegistry, stateManager, i18n, registry, completed }) {
   const cycle = moduleRegistry.getActiveCycle();
   const modules = new Map();
   for (const def of moduleRegistry.getAll()) {
@@ -151,6 +151,11 @@ export function buildWorld({ moduleRegistry, stateManager, i18n, registry }) {
     phases: getAllPhaseIds(cycle),
     modules,
     instances,
+    // Der schreibgeschützte Projektzustand gehört in die Momentaufnahme, gegen
+    // die geprüft wird — nicht erst in die Laufzeit. Sonst meldet ein Stapel
+    // den Fehler an der dritten Aktion, nachdem die ersten zwei schon
+    // gelaufen sind; Spec §5 verlangt aber „nichts ausgeführt".
+    completed: completed === true,
   };
 }
 

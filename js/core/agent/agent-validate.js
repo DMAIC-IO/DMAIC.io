@@ -6,13 +6,15 @@
  * die neun davor nicht ausgeführt werden — deshalb ist das hier eine reine
  * Funktion über den ganzen Stapel und keine Prüfung je Eintrag im Vollzug.
  *
- * Fünf Stufen, in dieser Reihenfolge:
+ * Sechs Stufen, in dieser Reihenfolge:
  *   1. Form            — Array oder Einzelobjekt, jeder Eintrag hat `op`, `id` eindeutig
  *   2. op existiert    — gegen OPS
  *   3. Parameter       — Pflichtfelder, Typen, UNBEKANNTE FELDER SIND FEHLER
  *   4. Referenzgraph   — nur rückwärts, id existiert, UND der `path` existiert
  *                        in der deklarierten Ergebnisform der referenzierten Aktion
  *   5. Bezeichner      — module / phase / instance / method gegen die Welt
+ *   6. Projektzustand  — im abgeschlossenen Projekt wird jede schreibende op
+ *                        abgelehnt, bevor irgendetwas läuft
  *
  * Stufe 5 prüft eine angegebene Phase zweifach: zuerst, ob der aktive Zyklus
  * (`world.phases`) sie überhaupt kennt, dann — nur wenn ja — ob das
@@ -36,6 +38,14 @@ const OP_NAMES = Object.freeze(Object.keys(OPS));
 
 /** Felder, die jedes Aktionsobjekt tragen darf, zusätzlich zu den op-Parametern. */
 const UNIVERSAL_FIELDS = new Set(['id', 'op']);
+
+/**
+ * Die schreibenden Aktionen. `instance.call` zählt dazu, weil der Prüfer
+ * nicht wissen kann, ob die gerufene Methode liest oder schreibt — und ein
+ * reines Lesen ist im abgeschlossenen Projekt über `project.read` und
+ * `module.describe` ohnehin erreichbar.
+ */
+const WRITE_OPS = new Set(['module.add', 'module.remove', 'instance.call']);
 
 /**
  * @param {object|object[]} input  ein Aktionsobjekt oder ein Stapel
@@ -211,6 +221,18 @@ export function validateBatch(input, world) {
             { available: entry.methods }));
         }
       }
+    }
+  }
+
+  // ── Stufe 6: abgeschlossenes Projekt ────────────────────────
+  // Im abgeschlossenen Projekt verwirft `stateManager.set` jeden
+  // Nicht-`settings.`-Schreibzugriff STILL. Die Laufzeitprüfungen in
+  // agent-ops.js bleiben als Verteidigung, aber als PRÜFSTUFE verhindert das
+  // hier, dass ein Stapel halb läuft und dann am Schreibschutz scheitert.
+  if (world.completed) {
+    for (let i = 0; i < actions.length; i++) {
+      if (!WRITE_OPS.has(actions[i].op)) continue;
+      return fail(i, axiError(ERRORS.PROJECT_COMPLETED, world.t('agent.errors.projectCompleted')));
     }
   }
 

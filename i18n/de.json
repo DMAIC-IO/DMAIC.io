@@ -6121,7 +6121,8 @@
       "batchForm": "Der ganze Stapel wird geprüft, bevor irgendetwas ausgeführt wird. Beim ersten Laufzeitfehler bricht die Ausführung ab; bereits erzielte Teilergebnisse werden zurückgegeben.",
       "errorForm": "Jeder Eintrag liefert { ok: true, result } oder { ok: false, error, message, available? }. available nennt die gültigen Möglichkeiten.",
       "availability": "Module ohne Freigabe erscheinen im Katalog mit available: false. Sie sind beschrieben, aber nicht steuerbar — sage dem Nutzer, welches Werkzeug jetzt richtig wäre, und lass ihn es bedienen.",
-      "limits": "Du bekommst Zahlen, keine Bilder: ein Diagramm siehst du nicht. Rückgängig machen gibt es nicht — der Nutzer wurde beim Verbinden zum Export aufgefordert."
+      "limits": "Du bekommst Zahlen, keine Bilder: ein Diagramm siehst du nicht. Rückgängig machen gibt es nicht — der Nutzer wurde beim Verbinden zum Export aufgefordert.",
+      "viewSwitch": "instance.call zeigt die Zielinstanz an, bevor es ihre Methode aufruft — das Viewmodel lebt nur in der aktiven Ansicht. Ein Stapel mit Aufrufen auf mehrere Instanzen wechselt die Ansicht entsprechend oft; das ist beabsichtigt und für den Nutzer die Rückmeldung, woran gearbeitet wird."
     },
     "consent": {
       "title": "Zugriff für KI-Agenten erlauben?",

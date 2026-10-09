@@ -38,6 +38,7 @@ const I18N_TABLE = {
   'agent.usage.errorForm': 'Jeder Eintrag liefert { ok, result } oder { ok: false, error, message }.',
   'agent.usage.availability': 'Module ohne Freigabe erscheinen mit available: false.',
   'agent.usage.limits': 'Du bekommst Zahlen, keine Bilder.',
+  'agent.usage.viewSwitch': 'instance.call wechselt die Ansicht.',
   'modules.worksheet.agent.actions.importCsv.help': 'Ersetzt den Inhalt des aktiven Blatts durch die übergebenen CSV-Daten.',
   'modules.worksheet.agent.actions.importCsv.params.csv': 'Der vollständige CSV-Text, inklusive Kopfzeile, falls vorhanden.',
   'modules.worksheet.agent.fields.rows': 'Die Datenzeilen des aktiven Blatts, in Spaltenreihenfolge.',
@@ -188,6 +189,21 @@ suite('agent catalog — validator world', () => {
     assertDeepEqual(world.phases, getAllPhaseIds('dmaic'));
     assertTrue(world.phases.length > 0);
   });
+
+  test('buildWorld carries the completed flag of the project', () => {
+    const world = buildWorld({
+      moduleRegistry: makeRegistry(), stateManager: makeStateManager(PHASES), i18n: I18N,
+      registry: REGISTRY, completed: true,
+    });
+    assertEqual(world.completed, true);
+  });
+
+  test('buildWorld defaults the completed flag to false when omitted', () => {
+    const world = buildWorld({
+      moduleRegistry: makeRegistry(), stateManager: makeStateManager(PHASES), i18n: I18N, registry: REGISTRY,
+    });
+    assertEqual(world.completed, false);
+  });
 });
 
 suite('agent catalog — module.describe', () => {
@@ -309,7 +325,7 @@ suite('agent usage contract', () => {
 
   test('carries the prose fields the agent needs, all non-empty', () => {
     const usage = buildUsage(I18N);
-    for (const key of ['intro', 'call', 'actionForm', 'refForm', 'batchForm', 'errorForm', 'availability', 'limits']) {
+    for (const key of ['intro', 'call', 'actionForm', 'refForm', 'batchForm', 'errorForm', 'availability', 'limits', 'viewSwitch']) {
       assertTrue(typeof usage[key] === 'string' && usage[key].length > 0, `usage.${key} missing`);
     }
   });

@@ -504,12 +504,18 @@ suite('agent runtime — the singleton rule applies to the agent path (I1)', () 
 // `ok: true` mit einer Phantom-Id, und `module.remove` antwortete mit
 // `unknown_instance` MIT dieser Instanz-Id in `available`.
 suite('agent runtime — the completed project is an honest error (I2 / I3c)', () => {
+  // Stufe 6 des Prüfers (agent-validate.js) fängt das abgeschlossene Projekt
+  // jetzt VOR jedem Seiteneffekt ab — die Antwort ist deshalb die
+  // Stapel-Validierungsform (`cause.error`), nicht mehr ein Pro-Aktion-Fehler
+  // in `results[0]`. Die Laufzeitprüfungen in agent-ops.js bleiben als
+  // Verteidigung, laufen aber über den normalen `interact()`-Pfad nie mehr an,
+  // weil die Prüfung immer zuerst läuft.
   test('module.add reports project_completed instead of a phantom instance', async () => {
     const { runtime, log } = makeRuntime({ completed: true });
     const out = await runtime.interact({ op: 'module.add', module: 'worksheet', phase: 'data' });
     assertEqual(out.ok, false);
-    assertEqual(out.results[0].error, 'project_completed');
-    assertEqual(out.results[0].result, undefined, 'no invented instanceId');
+    assertEqual(out.cause.error, 'project_completed');
+    assertEqual(out.results, undefined, 'no invented instanceId — nothing ran at all');
     assertDeepEqual(log, ['consent'], 'the host was never asked to write');
   });
 
@@ -517,8 +523,8 @@ suite('agent runtime — the completed project is an honest error (I2 / I3c)', (
     const { runtime } = makeRuntime({ completed: true });
     const out = await runtime.interact({ op: 'module.remove', instance: 'fw-1' });
     assertEqual(out.ok, false);
-    assertEqual(out.results[0].error, 'project_completed');
-    assertEqual(out.results[0].available, undefined,
+    assertEqual(out.cause.error, 'project_completed');
+    assertEqual(out.cause.available, undefined,
       'the old answer listed the very instance it called unknown');
   });
 

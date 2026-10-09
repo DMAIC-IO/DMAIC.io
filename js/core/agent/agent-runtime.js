@@ -68,7 +68,7 @@ export function createAgentRuntime(deps) {
 
     // Eine Momentaufnahme für den ganzen Prüflauf: der Prüfer darf nicht
     // gegen einen Zustand prüfen, der sich zwischen den Stufen verschiebt.
-    const world = buildWorld({ stateManager, moduleRegistry, i18n, registry });
+    const world = buildWorld({ stateManager, moduleRegistry, i18n, registry, completed: host.isCompleted() });
     const checked = validateBatch(input, world);
     if (!checked.ok) return { ...checked, contract: CONTRACT_VERSION };
 

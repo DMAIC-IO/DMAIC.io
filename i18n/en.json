@@ -6117,7 +6117,8 @@
       "batchForm": "The whole batch is validated before anything runs. On the first runtime error execution stops; partial results already obtained are returned.",
       "errorForm": "Each entry returns { ok: true, result } or { ok: false, error, message, available? }. available names the valid alternatives.",
       "availability": "Modules without a release appear in the catalog with available: false. They are described but not operable — tell the user which tool would be right now and let them drive it.",
-      "limits": "You get numbers, not pictures: you cannot see a chart. There is no undo — the user was prompted to export when granting access."
+      "limits": "You get numbers, not pictures: you cannot see a chart. There is no undo — the user was prompted to export when granting access.",
+      "viewSwitch": "instance.call shows the target instance before calling its method — the viewmodel only lives in the active view. A batch that calls several instances switches the view accordingly; that is intended, and it is how the user sees what is being worked on."
     },
     "consent": {
       "title": "Allow AI agent access?",
