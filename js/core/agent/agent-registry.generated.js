@@ -305,16 +305,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "VERSION": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "ID": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "mode": {
         "type": "'sci'|'stats'|'sixsigma'",
         "help": "",
@@ -1113,16 +1103,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "VERSION": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "ID": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "tab": {
         "type": "'overview'|'wizard'|'ccd'",
         "help": "",
@@ -2321,16 +2301,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "VERSION": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "ID": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "factors": {
         "type": "any",
         "help": "",
@@ -3663,16 +3633,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "VERSION": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "ID": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "endpoints": {
         "type": "Endpoint[]",
         "help": "",
@@ -3842,16 +3802,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "VERSION": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "ID": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "columns": {
         "type": "Record<string, string[]>",
         "help": "",
@@ -3896,16 +3846,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "VERSION": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "ID": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "stakeholders": {
         "type": "Stakeholder[]",
         "help": "",
@@ -4017,16 +3957,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "VERSION": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "ID": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "items": {
         "type": "any",
         "help": "",
@@ -4112,16 +4042,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "VERSION": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "ID": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "systemTitle": {
         "type": "any",
         "help": "",
@@ -4230,16 +4150,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "VERSION": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "ID": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "system": {
         "type": "any",
         "help": "",
@@ -4296,16 +4206,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "VERSION": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "ID": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "parameter": {
         "type": "any",
         "help": "",
@@ -4357,16 +4257,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "VERSION": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "ID": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "system": {
         "type": "any",
         "help": "",
@@ -4424,16 +4314,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "VERSION": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "ID": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "s1": {
         "type": "any",
         "help": "",
@@ -4514,16 +4394,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "VERSION": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "ID": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "activeCat": {
         "type": "any",
         "help": "",

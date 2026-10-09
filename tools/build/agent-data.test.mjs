@@ -872,3 +872,22 @@ export class State extends C12 {
   assert.equal('deepest' in modules.foo.fields, false);
   assert.equal(modules.foo.fields.count.type, 'number');
 });
+
+test('readModelFields: a static class member is not a read field', () => {
+  // `static VERSION` ist Schema-Metadatum der Klasse, kein Instanzzustand: es
+  // steht in keinem `toJSON()` und würde der Registry ein Feld andichten, das
+  // das Model nicht hält — genau der Widerspruch zu Spec §8, den die
+  // Model-Wurzel-Korrektur sonst behoben hat.
+  const model = `export class State {
+  /** @type {string} the schema version */
+  static VERSION = '3';
+  /** @type {string} the stored title */
+  title = '';
+}`;
+  const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
+  const { modules } = collectAgentData(root);
+  assert.equal('VERSION' in modules.foo.fields, false,
+    `static member leaked: ${JSON.stringify(Object.keys(modules.foo.fields))}`);
+  assert.deepEqual(modules.foo.fields.title,
+    { type: 'string', help: 'the stored title', bulk: false });
+});

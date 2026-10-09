@@ -34,9 +34,12 @@
  * Registry standen — eine leere Lesefläche, die wie „kein Zustand" aussah.
  *
  * Was trotzdem unauflösbar bleibt, meldet der Generator als Verstoß statt zu
- * schweigen: `unresolved_spread:<ausdruck>`, `unresolvable_data_literal` und
- * `unresolved_base_class:<name>`. Alle drei bleiben BERICHTEND — wie die
- * DOM-Umweg-Prüfung zählen sie erst, wenn das Modul das Modul-Tag trägt (Spec §8: „Lücken blockieren nicht"). So kann
+ * schweigen — auf der Aktionsseite `unresolved_spread:<ausdruck>` und
+ * `unresolvable_data_literal`, auf der Modellseite `unresolvable_model_class`,
+ * `unresolved_model_class:<name>` und `unresolved_base_class:<name>`. Die
+ * Liste wächst mit jeder neuen Blindstelle; verbindlich ist nicht ihre Länge,
+ * sondern die Regel: JEDER Blindstellen-Code bleibt BERICHTEND — wie die
+ * DOM-Umweg-Prüfung zählt er erst, wenn das Modul das Modul-Tag trägt (Spec §8: „Lücken blockieren nicht"). So kann
  * aber kein Modul freigegeben werden, bevor jemand hingesehen hat.
  *
  * Extraktion über die TypeScript-Compiler-API: sie liest JSDoc aus reinem
@@ -359,6 +362,11 @@ function classFields(resolver, node, sf, violations, path, depth) {
 function ownFields(node) {
   const out = [];
   for (const member of node.members) {
+    // Ein `static`-Mitglied gehört der Klasse, nicht der Instanz: `static
+    // VERSION = '3'` ist Schema-Metadatum, steht in keinem `toJSON()` und
+    // wäre in der Lesefläche ein Feld, das das Model nicht hält (Spec §8:
+    // „die Lesefläche IST die persistierte Form").
+    if (ts.getCombinedModifierFlags(member) & ts.ModifierFlags.Static) continue;
     if (ts.isPropertyDeclaration(member)) {
       const name = member.name.getText();
       if (name.startsWith('_')) continue;
