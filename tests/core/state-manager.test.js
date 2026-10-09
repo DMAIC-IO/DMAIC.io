@@ -494,6 +494,21 @@ suite('StateManager chartEdits', () => {
     assertDeepEqual(sm.getChartEdits('i1', 'scatter'), { showXLabel: false });
   });
 
+  test('a chart edit saves quietly; any other change in the same window saves loudly', () => {
+    const sm = new StateManager(new EventBus());
+    const calls = [];
+    sm.save = (opts) => calls.push(!!opts?.quiet);
+    sm.setChartEdit('i1', 'scatter', 'title', 'A');
+    clearTimeout(sm._saveTimer);
+    sm._runScheduledSave();
+    sm.setChartEdit('i1', 'scatter', 'title', 'B');
+    sm.set('projectMeta.name', 'X');
+    clearTimeout(sm._saveTimer);
+    sm._runScheduledSave();
+    assertDeepEqual(calls, [true, false]);
+    assertEqual(sm.getChartEdits('i1', 'scatter').title, 'B');
+  });
+
   test('setChartEdit does not mutate a previously read object', () => {
     const sm = new StateManager(new EventBus());
     sm.setChartEdit('i1', 'scatter', 'title', 'A');

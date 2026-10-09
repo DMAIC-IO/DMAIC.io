@@ -207,7 +207,13 @@ export class StateManager {
     else entry[key] = value;
     if (Object.keys(entry).length) inst[chartKey] = entry; else delete inst[chartKey];
     if (Object.keys(inst).length) all[instanceId] = inst; else delete all[instanceId];
-    this.set('chartEdits', all);
+    if (this.isCompleted()) return;
+    this._state.chartEdits = all;
+    this._state.projectMeta.modified = new Date().toISOString();
+    // Quiet save: 'state:saved' makes analysis modules re-plot, which would
+    // close the chart editor the user is typing in.
+    this._scheduleSave({ quiet: true });
+    this._eventBus.emit('data:changed', 'chartEdits');
   }
 
   /**
@@ -300,8 +306,9 @@ export class StateManager {
    * Persist top-level state (settings, phases, metadata) to localStorage
    * immediately. Module states are handled separately by the IDB flush
    * loop; this call does not block on them.
+   * @param {{ quiet?: boolean }} [options] - quiet: do not emit 'state:saved'
    */
-  save() {
+  save({ quiet = false } = {}) {
     if (this._applyingRemote) return;   // do not echo a remote apply back to the adapter
     try {
       // Global (shared across projects)
@@ -310,7 +317,7 @@ export class StateManager {
       // Skip per-project save if the active project no longer exists
       // (e.g. right after deleting it and before switching away).
       if (this._projectId && !this.getProjects().some(pr => pr.id === this._projectId)) {
-        this._eventBus.emit('state:saved');
+        if (!quiet) this._eventBus.emit('state:saved');
         return;
       }
 
@@ -331,7 +338,7 @@ export class StateManager {
       // Update project name in project list
       this._updateProjectList();
 
-      this._eventBus.emit('state:saved');
+      if (!quiet) this._eventBus.emit('state:saved');
     } catch (err) {
       console.error('[StateManager] Failed to save state:', err);
     }
@@ -945,9 +952,22 @@ export class StateManager {
 
   // ─── Internal ───────────────────────────────────────────────
 
-  _scheduleSave() {
+  /**
+   * Debounced save. The save is quiet only when every change since the last
+   * one asked for quiet.
+   * @param {{ quiet?: boolean }} [options]
+   */
+  _scheduleSave({ quiet = false } = {}) {
+    if (!quiet) this._loudSavePending = true;
     if (this._saveTimer) clearTimeout(this._saveTimer);
-    this._saveTimer = setTimeout(() => this.save(), AUTOSAVE_DELAY);
+    this._saveTimer = setTimeout(() => this._runScheduledSave(), AUTOSAVE_DELAY);
+  }
+
+  _runScheduledSave() {
+    this._saveTimer = null;
+    const quiet = !this._loudSavePending;
+    this._loudSavePending = false;
+    this.save({ quiet });
   }
 
   /**
