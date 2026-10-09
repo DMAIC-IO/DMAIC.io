@@ -425,3 +425,18 @@
   gap: var(--spacing-xs);
   font-weight: var(--font-weight-normal);
 }
+
+/* ── Kontexthilfe-Anker im Eingabepanel ───────────────────────────── */
+/* Ein `<label>` in einer `.field-group` ist blockbreit. Das Fragezeichen
+   hängt an `left: 100%` des ANKERS — also an der rechten Kante des ganzen
+   Feldes, nicht neben dem Text. In der Hypothesenzeile stehen drei schmale
+   Felder nebeneinander (Testrichtung, α, Power-Ziel); dort landete der Kreis
+   auf dem Label des NACHBARN und fragte sichtbar das Falsche. Der Anker
+   schrumpft deshalb auf seinen Text; am Layout ändert das nichts, weil das
+   Label ohnehin nur Text trägt.
+   Nicht für `.hyptest__check`: dort IST das ganze Kästchen samt Beschriftung
+   der Anker, und der Kreis gehört an dessen rechten Rand. */
+.hyptest .field-group > label.context-help-anchor:not(.hyptest__check) {
+  width: fit-content;
+  max-width: 100%;
+}

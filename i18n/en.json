@@ -4044,6 +4044,74 @@
     "hypothesis-test": {
       "name": "Hypothesis Test",
       "description": "Variance and mean tests with automatic normality assessment and power analysis",
+      "whenToUse": "When you need to decide whether an observed difference in location or spread goes beyond the noise — one mean against a target value, two samples against each other, or k groups together. Requires metric data in a data collection.",
+      "agent": {
+        "actions": {
+          "read": {
+            "help": "Returns the configuration and the computed result. result is null while the inputs are incomplete.",
+            "params": { "options": "Optional; this module carries no bulk data." }
+          },
+          "runAnalysis": { "help": "Computes with the current configuration. Calling it repeatedly is harmless; incomplete inputs leave result at null." },
+          "setCategory": {
+            "help": "Chooses what is being tested: spread (variance) or location (mean).",
+            "params": { "cat": "'variance' or 'mean'." }
+          },
+          "setTestType": {
+            "help": "Chooses the sample layout: one sample against a target value, two samples against each other, or k groups.",
+            "params": { "type": "'one', 'two' or 'k'." }
+          },
+          "setDirection": {
+            "help": "Chooses the direction of the alternative hypothesis. One-sided only if the question was one-sided beforehand — not afterwards because it fits better that way.",
+            "params": { "direction": "'two-sided', 'greater' or 'less'." }
+          },
+          "setAlpha": {
+            "help": "Sets the significance level.",
+            "params": { "alpha": "For example 0.05. Seeded from the settings." }
+          },
+          "setPowerGoal": {
+            "help": "Sets the desired power goal for the sample-size assessment.",
+            "params": { "powerGoal": "For example 0.8." }
+          },
+          "setTargetValue": {
+            "help": "Sets the target value of the one-sample test (σ²₀, σ₀ or μ₀).",
+            "params": { "value": "The target value; for spread it must be positive." }
+          },
+          "setTargetType": {
+            "help": "Defines whether the target value of the one-sample spread test is entered as a variance or as a standard deviation.",
+            "params": { "targetType": "'variance' or 'stddev'." }
+          },
+          "setEqualVariances": {
+            "help": "Two samples, location: assume equal variances and run the pooled t-test. Off is the default — Welch does not need that assumption.",
+            "params": { "flag": "true for the pooled t-test." }
+          },
+          "setColumn1": {
+            "help": "Points sample 1 at a column of a data collection.",
+            "params": { "ref": "Column reference { instanceId, sheetId, columnId } — the values are in the data collection's read()." }
+          },
+          "setColumn2": {
+            "help": "Points sample 2 at a column of a data collection.",
+            "params": { "ref": "Column reference { instanceId, sheetId, columnId }, or null to clear it." }
+          },
+          "setColumnsK": {
+            "help": "Points the k-sample test at several columns.",
+            "params": { "refs": "List of column references; every group needs at least three values." }
+          }
+        },
+        "fields": {
+          "category": "What is being tested: 'variance' (spread) or 'mean' (location).",
+          "testType": "Sample layout: 'one', 'two' or 'k'.",
+          "direction": "Direction of the alternative hypothesis: 'two-sided', 'greater' or 'less'.",
+          "alpha": "Significance level, for example 0.05.",
+          "powerGoal": "Desired power, for example 0.8.",
+          "targetValue": "The entered target value of the one-sample test.",
+          "targetType": "Whether the spread target value counts as a variance or as a standard deviation.",
+          "colRef1": "Column reference of the first sample.",
+          "colRef2": "Column reference of the second sample.",
+          "colRefsK": "The column references of the k-sample test.",
+          "equalVariances": "Whether two samples are compared with the pooled t-test instead of Welch.",
+          "result": "The computed result: route names the chosen procedure, main the test statistic with p-value and confidence interval, normCards the normality assessment per sample, power the sample-size assessment, pairwise the pairwise comparisons of the k-sample test. null while the inputs are incomplete."
+        }
+      },
       "sectionCategory": "Test Category",
       "catMean": "Means",
       "catVariance": "Variances",

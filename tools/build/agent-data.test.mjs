@@ -1092,12 +1092,21 @@ test('collectAgentData: the released pilot modules are available in the real tre
   // Freigabe festhält. Er wächst mit jedem freigegebenen Pilotmodul.
   const appDir = join(import.meta.dirname, '..', '..');
   const { modules, coverage } = collectAgentData(appDir);
-  for (const id of ['five-why', 'worksheet']) {
+  for (const id of ['five-why', 'worksheet', 'hypothesis-test']) {
     assert.deepEqual(modules[id].violations, [], `${id} hat Verstöße`);
     assert.equal(modules[id].available, true, `${id} ist nicht freigegeben`);
     assert.ok('read' in modules[id].actions, `${id} hat kein read()`);
   }
-  assert.ok(coverage.available >= 2);
+  assert.ok(coverage.available >= 3);
+});
+
+test('collectAgentData: hypothesis-test exposes the computed result as a read field', () => {
+  const appDir = join(import.meta.dirname, '..', '..');
+  const { modules } = collectAgentData(appDir);
+  assert.ok('result' in modules['hypothesis-test'].fields);
+  assert.equal(modules['hypothesis-test'].fields.result.derived, true);
+  // Die interne Beispiel-Buchführung gehört NICHT zur Lesefläche.
+  assert.equal('exampleWorksheetId' in modules['hypothesis-test'].fields, false);
 });
 
 test('collectAgentData: worksheet declares its read surface, rows are bulk', () => {

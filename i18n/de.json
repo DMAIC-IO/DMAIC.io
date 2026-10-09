@@ -4048,6 +4048,74 @@
     "hypothesis-test": {
       "name": "Hypothesentest",
       "description": "Varianz- und Mittelwerttests mit automatischer Normalverteilungsprüfung und Power-Analyse",
+      "whenToUse": "Wenn zu entscheiden ist, ob ein beobachteter Unterschied in Lage oder Streuung über das Rauschen hinausgeht — ein Mittelwert gegen einen Zielwert, zwei Stichproben gegeneinander, oder k Gruppen gemeinsam. Setzt metrische Daten in einer Datensammlung voraus.",
+      "agent": {
+        "actions": {
+          "read": {
+            "help": "Liefert die Konfiguration und das gerechnete Ergebnis. result ist null, solange die Eingaben unvollständig sind.",
+            "params": { "options": "Optional; dieses Modul führt keine Massendaten." }
+          },
+          "runAnalysis": { "help": "Rechnet mit der aktuellen Konfiguration. Mehrfachaufruf ist unschädlich; unvollständige Eingaben lassen result auf null." },
+          "setCategory": {
+            "help": "Wählt, was geprüft wird: Streuung (variance) oder Lage (mean).",
+            "params": { "cat": "'variance' oder 'mean'." }
+          },
+          "setTestType": {
+            "help": "Wählt die Stichprobenlage: eine Stichprobe gegen einen Zielwert, zwei Stichproben gegeneinander, oder k Gruppen.",
+            "params": { "type": "'one', 'two' oder 'k'." }
+          },
+          "setDirection": {
+            "help": "Wählt die Richtung der Alternativhypothese. Einseitig nur, wenn die Fragestellung vorab einseitig war — nicht nachträglich, weil es so besser passt.",
+            "params": { "direction": "'two-sided', 'greater' oder 'less'." }
+          },
+          "setAlpha": {
+            "help": "Setzt das Signifikanzniveau.",
+            "params": { "alpha": "Zum Beispiel 0.05. Vorbelegt aus den Einstellungen." }
+          },
+          "setPowerGoal": {
+            "help": "Setzt das angestrebte Power-Ziel für die Stichprobenumfangsbetrachtung.",
+            "params": { "powerGoal": "Zum Beispiel 0.8." }
+          },
+          "setTargetValue": {
+            "help": "Setzt den Zielwert der Einstichproben-Prüfung (σ²₀, σ₀ oder μ₀).",
+            "params": { "value": "Der Zielwert; bei Streuung muss er positiv sein." }
+          },
+          "setTargetType": {
+            "help": "Legt fest, ob der Zielwert der Einstichproben-Streuungsprüfung als Varianz oder als Standardabweichung eingegeben ist.",
+            "params": { "targetType": "'variance' oder 'stddev'." }
+          },
+          "setEqualVariances": {
+            "help": "Zwei Stichproben, Lage: gleiche Varianzen annehmen und den gepoolten t-Test rechnen. Aus ist die Vorgabe — Welch braucht diese Annahme nicht.",
+            "params": { "flag": "true für den gepoolten t-Test." }
+          },
+          "setColumn1": {
+            "help": "Verweist Stichprobe 1 auf eine Spalte einer Datensammlung.",
+            "params": { "ref": "Spaltenbezug { instanceId, sheetId, columnId } — die Werte stehen in read() der Datensammlung." }
+          },
+          "setColumn2": {
+            "help": "Verweist Stichprobe 2 auf eine Spalte einer Datensammlung.",
+            "params": { "ref": "Spaltenbezug { instanceId, sheetId, columnId }, oder null zum Leeren." }
+          },
+          "setColumnsK": {
+            "help": "Verweist die k-Stichproben-Prüfung auf mehrere Spalten.",
+            "params": { "refs": "Liste von Spaltenbezügen; jede Gruppe braucht mindestens drei Werte." }
+          }
+        },
+        "fields": {
+          "category": "Was geprüft wird: 'variance' (Streuung) oder 'mean' (Lage).",
+          "testType": "Stichprobenlage: 'one', 'two' oder 'k'.",
+          "direction": "Richtung der Alternativhypothese: 'two-sided', 'greater' oder 'less'.",
+          "alpha": "Signifikanzniveau, zum Beispiel 0.05.",
+          "powerGoal": "Angestrebte Power, zum Beispiel 0.8.",
+          "targetValue": "Der eingegebene Zielwert der Einstichproben-Prüfung.",
+          "targetType": "Ob der Streuungs-Zielwert als Varianz oder als Standardabweichung gilt.",
+          "colRef1": "Spaltenbezug der ersten Stichprobe.",
+          "colRef2": "Spaltenbezug der zweiten Stichprobe.",
+          "colRefsK": "Die Spaltenbezüge der k-Stichproben-Prüfung.",
+          "equalVariances": "Ob bei zwei Stichproben der gepoolte t-Test statt Welch gerechnet wird.",
+          "result": "Das gerechnete Ergebnis: route nennt das gewählte Verfahren, main die Prüfgröße samt p-Wert und Konfidenzintervall, normCards die Normalitätsprüfung je Stichprobe, power die Stichprobenumfangsbetrachtung, pairwise die Paarvergleiche der k-Prüfung. null, solange die Eingaben unvollständig sind."
+        }
+      },
       "sectionCategory": "Testkategorie",
       "catMean": "Mittelwerte",
       "catVariance": "Varianzen",

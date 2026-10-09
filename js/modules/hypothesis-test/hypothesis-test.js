@@ -15,9 +15,16 @@
  *
  * Workflow: configuration → normality → (variance check) → routed main test →
  * power analysis (non-k) / pairwise post-hoc (k ≥ 3).
+ *
+ * @agent  Vollständig über das Viewmodel steuerbar: Testfamilie, Stichprobenlage,
+ *   Richtung, α, Power-Ziel, Zielwert, Varianzannahme, Spaltenwahl und das
+ *   Rechnen selbst. Gelesen wird über read() mit erklärter Lesefläche
+ *   (AgentRead) — Konfiguration plus gerechnetes Ergebnis. Der Agent bekommt
+ *   Zahlen, keine Diagramme (Spec §11).
  */
 
 import { createModule } from '../../core/template-module.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { State } from './hypothesis-test-model.js';
 import {
   chiSquareVarianceTest, fTest, leveneTest,
@@ -55,6 +62,48 @@ const ALGO_LAB_IDS = {
 /** @param {number} v @param {number} [d] @returns {string} */
 function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–'; }
 
+/**
+ * Eine proxyfreie, klonbare Kopie eines Werts vom reaktiven Viewmodel.
+ *
+ * `this.result` hängt am Alpine-Proxy, und `projectReadState` kopiert den
+ * Lesezustand über `structuredClone` — das scheitert an einem Proxy
+ * (DataCloneError) und fällt dort STILL auf `null` zurück. Ohne diese Runde
+ * über JSON läge in jeder Antwort `result: null`, obwohl die Oberfläche das
+ * Ergebnis anzeigt. Das Ergebnis trägt nur Zahlen, Zeichenketten und Listen,
+ * die Runde verliert also nichts.
+ *
+ * @param {any} value
+ * @returns {any} eine proxyfreie Kopie, oder null
+ */
+function plain(value) {
+  if (value == null) return null;
+  try { return JSON.parse(JSON.stringify(value)); } catch { return null; }
+}
+
+/**
+ * Die Agenten-Lesefläche des Hypothesentests.
+ *
+ * Nicht die persistierte Form: das Model hält NUR die Konfiguration, das
+ * Ergebnis entsteht transient am Viewmodel (`result`). Spec §7 verlangt
+ * aber ausdrücklich, dass der Lesezustand die gerechneten Größen mitliefert —
+ * „erklär mir diese Ausreißer" braucht keine eigene Aktion. Darum erklärt
+ * dieses Modul seine Lesefläche (Plan-Entscheidung E1): Konfiguration plus
+ * Ergebnis, ohne die interne Beispiel-Buchführung (`exampleWorksheetId`).
+ *
+ * @typedef {object} AgentRead
+ * @property {'variance'|'mean'} category  what is being tested: variance or mean
+ * @property {'one'|'two'|'k'} testType  one sample, two samples, or k samples
+ * @property {'two-sided'|'greater'|'less'} direction  the alternative hypothesis direction
+ * @property {number|null} alpha  significance level, e.g. 0.05
+ * @property {number|null} powerGoal  desired power, e.g. 0.8
+ * @property {string} targetValue  the hypothesised target as entered (σ²₀, σ₀ or μ₀)
+ * @property {'variance'|'stddev'} targetType  how the one-sample variance target is entered
+ * @property {object|null} colRef1  column reference of sample 1, `{ instanceId, sheetId, columnId }`
+ * @property {object|null} colRef2  column reference of sample 2, same shape
+ * @property {object[]} colRefsK  the column references of the k-sample test
+ * @property {boolean} equalVariances  two-sample means: assume equal variances (pooled t) instead of Welch
+ * @property {object|null} result  the computed result, or null while the inputs are incomplete
+ */
 const mod = createModule({
   config: {
     id: 'hypothesis-test',
@@ -88,6 +137,7 @@ const mod = createModule({
         return d === 'two-sided' ? '≠' : d === 'greater' ? '>' : '<';
       },
 
+      /** @noagent view transform (hypothesis preview) */
       previewH0() {
         const isMean = this.model.category === 'mean';
         const isTwo = this.model.testType === 'two';
@@ -108,6 +158,7 @@ const mod = createModule({
           : `H₀: μ ${s0} μ₀`;
       },
 
+      /** @noagent view transform (hypothesis preview) */
       previewH1() {
         const isMean = this.model.category === 'mean';
         const isTwo = this.model.testType === 'two';
@@ -128,27 +179,145 @@ const mod = createModule({
 
       // ── Input handlers ─────────────────────────────────────────
 
+      /**
+       * Choose what is being tested.
+       * @agent
+       * @param {'variance'|'mean'} cat the test family
+       * @returns {void}
+       */
       setCategory(cat) {
         this.model.category = cat;
         this.$nextTick(() => { this._remountPickers(); this.runAnalysis(); });
       },
+      /**
+       * Choose the sample layout.
+       * @agent
+       * @param {'one'|'two'|'k'} type one sample, two samples, or k samples
+       * @returns {void}
+       */
       setTestType(type) {
         this.model.testType = type;
         this.$nextTick(() => { this._remountPickers(); this.runAnalysis(); });
       },
-      onAlphaInput(event) {
-        const v = parseFloat(event.target.value);
+      /**
+       * Set the alternative hypothesis direction.
+       * @agent
+       * @param {'two-sided'|'greater'|'less'} direction the alternative direction
+       * @returns {void}
+       */
+      setDirection(direction) {
+        this.model.direction = direction;
+        this.runAnalysis();
+      },
+      /**
+       * Set the significance level.
+       *
+       * Non-numeric input keeps the previous α and still recomputes — byte for
+       * byte what the template's `@input` did before this method existed
+       * (`parseFloat`, conditional assignment, unconditional recompute).
+       *
+       * @agent
+       * @param {number|string} alpha significance level, e.g. 0.05
+       * @returns {void}
+       */
+      setAlpha(alpha) {
+        const v = parseFloat(alpha);
         if (!isNaN(v)) this.model.alpha = v;
         this.runAnalysis();
       },
-      onPowerGoalInput(event) {
-        this.model.setPowerGoal(event.target.value);
+      /**
+       * Set the desired power. The Model clamps it to [0.5, 0.99] and ignores
+       * non-numeric input.
+       * @agent
+       * @param {number|string} powerGoal desired power, e.g. 0.8
+       * @returns {void}
+       */
+      setPowerGoal(powerGoal) {
+        this.model.setPowerGoal(powerGoal);
         this.runAnalysis();
+      },
+      /**
+       * Set the hypothesised target (σ²₀, σ₀ or μ₀).
+       * @agent
+       * @param {string|number} value the target as entered
+       * @returns {void}
+       */
+      setTargetValue(value) {
+        this.model.targetValue = String(value ?? '');
+        this.runAnalysis();
+      },
+      /**
+       * Choose whether the one-sample variance target is a variance or a
+       * standard deviation.
+       * @agent
+       * @param {'variance'|'stddev'} targetType how the target is entered
+       * @returns {void}
+       */
+      setTargetType(targetType) {
+        this.model.targetType = targetType;
+        this.runAnalysis();
+      },
+      /**
+       * Two-sample means: assume equal variances (pooled t) instead of Welch.
+       * @agent
+       * @param {boolean} flag true to assume equal variances
+       * @returns {void}
+       */
+      setEqualVariances(flag) {
+        this.model.equalVariances = flag === true;
+        this.runAnalysis();
+      },
+      /**
+       * Point sample 1 at a worksheet column.
+       * @agent
+       * @param {object|null} ref column reference `{ instanceId, sheetId, columnId }`, or null to clear
+       * @returns {void}
+       */
+      setColumn1(ref) {
+        this.model.colRef1 = ref;
+        // Den Picker nachziehen, damit die UI zeigt, was der Agent gewählt
+        // hat — und weil die Auswertung die Werte am Picker abholt. Der
+        // `value`-Setter löst `onChange` NICHT aus (geprüft) — keine
+        // Rückkopplung.
+        if (this._picker1) this._picker1.value = ref;
+        this.runAnalysis();
+      },
+      /**
+       * Point sample 2 at a worksheet column.
+       * @agent
+       * @param {object|null} ref column reference `{ instanceId, sheetId, columnId }`, or null to clear
+       * @returns {void}
+       */
+      setColumn2(ref) {
+        this.model.colRef2 = ref;
+        if (this._picker2) this._picker2.value = ref;
+        this.runAnalysis();
+      },
+      /**
+       * Point the k-sample test at a set of worksheet columns.
+       * @agent
+       * @param {object[]} refs column references, each `{ instanceId, sheetId, columnId }`
+       * @returns {void}
+       */
+      setColumnsK(refs) {
+        this.model.colRefsK = Array.isArray(refs) ? refs : [];
+        if (this._pickerK) this._pickerK.value = this.model.colRefsK;
+        this.runAnalysis();
+      },
+      /** @noagent DOM event handler; the agent uses setAlpha() */
+      onAlphaInput(event) {
+        this.setAlpha(event.target.value);
+      },
+      /** @noagent DOM event handler; the agent uses setPowerGoal() */
+      onPowerGoalInput(event) {
+        this.setPowerGoal(event.target.value);
       },
 
       // ── Algorithm Lab link ─────────────────────────────────────
 
+      /** @noagent view transform (Algorithm-Lab id of the chosen route) */
       algoId: (name) => ALGO_LAB_IDS[name] || '',
+      /** @noagent navigates to the Algorithm Lab page */
       algoNavigate(algoId, event) {
         event?.preventDefault();
         event?.stopPropagation();
@@ -432,6 +601,13 @@ const mod = createModule({
 
       // ── Analysis controller ────────────────────────────────────
 
+      /**
+       * Run the analysis with the current configuration. Idempotent: it reads
+       * the configuration and recomputes; incomplete inputs leave `result`
+       * at null instead of failing.
+       * @agent
+       * @returns {void}
+       */
       runAnalysis() {
         if (this.model.testType === 'k') return this._runAnalysisK();
         return this._runAnalysisOneTwo();
@@ -755,7 +931,7 @@ const mod = createModule({
         if (wrap1) {
           this._picker1 = new ColumnPicker(wrap1, ctx, {
             mode: 'single', types: ['numeric'], minCount: 3,
-            onChange: (ref) => { this.model.colRef1 = ref; this.runAnalysis(); },
+            onChange: (ref) => this.setColumn1(ref),
           });
           if (this.model.colRef1) this._picker1.value = this.model.colRef1;
         }
@@ -764,7 +940,7 @@ const mod = createModule({
         if (wrap2) {
           this._picker2 = new ColumnPicker(wrap2, ctx, {
             mode: 'single', types: ['numeric'], minCount: 3,
-            onChange: (ref) => { this.model.colRef2 = ref; this.runAnalysis(); },
+            onChange: (ref) => this.setColumn2(ref),
           });
           if (this.model.colRef2) this._picker2.value = this.model.colRef2;
         }
@@ -773,7 +949,7 @@ const mod = createModule({
         if (wrapK) {
           this._pickerK = new ColumnPicker(wrapK, ctx, {
             mode: 'multi', types: ['numeric'], minCount: 3,
-            onChange: (refs) => { this.model.colRefsK = refs; this.runAnalysis(); },
+            onChange: (refs) => this.setColumnsK(refs),
           });
           if (this.model.colRefsK?.length) this._pickerK.value = this.model.colRefsK;
         }
@@ -787,6 +963,7 @@ const mod = createModule({
 
       // ── Lifecycle ──────────────────────────────────────────────
 
+      /** @noagent per-instance lifecycle */
       init() {
         this._unsubs = [];
 
@@ -813,10 +990,32 @@ const mod = createModule({
         this.runAnalysis();
       },
 
+      /** @noagent per-instance lifecycle */
       destroy() {
         for (const unsub of this._unsubs) unsub();
         this._unsubs = [];
         this._disposePickers();
+      },
+
+      // ── Agentenfläche ──────────────────────────────────────────
+
+      /**
+       * Konfiguration und gerechnetes Ergebnis als Lesezustand.
+       *
+       * `result` ist `null`, solange die Eingaben unvollständig sind (zu
+       * wenige Werte, kein gültiger Zielwert) — genau dann zeigt die UI auch
+       * nichts an.
+       *
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} configuration plus the computed result
+       */
+      read(options) {
+        return readAgentState(
+          'hypothesis-test',
+          { ...this.model.toJSON(), result: plain(this.result) },
+          options,
+        );
       },
     };
   },

@@ -30,7 +30,8 @@
 
     <template x-if="model.testType === 'k'">
       <div class="field-group">
-        <label x-text="t('kSampleColumns')"></label>
+        <label data-help-key="modules.hypothesis-test.agent.actions.setColumnsK.help"
+               x-text="t('kSampleColumns')"></label>
         <div data-ref="picker-k-wrap"></div>
       </div>
     </template>
@@ -38,12 +39,14 @@
     <template x-if="model.testType !== 'k'">
       <div class="hyptest__contents">
         <div class="field-group">
-          <label x-text="t('sample1Column')"></label>
+          <label data-help-key="modules.hypothesis-test.agent.actions.setColumn1.help"
+                 x-text="t('sample1Column')"></label>
           <div data-ref="picker1-wrap"></div>
         </div>
         <template x-if="model.testType === 'two'">
           <div class="field-group">
-            <label x-text="t('sample2Column')"></label>
+            <label data-help-key="modules.hypothesis-test.agent.actions.setColumn2.help"
+                   x-text="t('sample2Column')"></label>
             <div data-ref="picker2-wrap"></div>
           </div>
         </template>
@@ -59,14 +62,15 @@
         <template x-if="model.category === 'variance'">
           <div class="field-row">
             <div class="hyptest__field field-group field-group--major">
-              <label x-text="t('inputAs')"></label>
+              <label data-help-key="modules.hypothesis-test.agent.fields.targetType"
+                     x-text="t('inputAs')"></label>
               <select data-ref="target-type" class="field" x-model="model.targetType" @change="runAnalysis()">
                 <option value="variance" x-text="t('asVariance')"></option>
                 <option value="stddev" x-text="t('asStddev')"></option>
               </select>
             </div>
             <div class="hyptest__field field-group field-group--minor">
-              <label>σ²₀</label>
+              <label data-help-key="modules.hypothesis-test.agent.fields.targetValue">σ²₀</label>
               <input type="number" data-ref="target" class="field field--num"
                 x-model="model.targetValue" :placeholder="t('targetVarPh')" @input="runAnalysis()">
             </div>
@@ -75,7 +79,7 @@
 
         <template x-if="model.category === 'mean'">
           <div class="field-group">
-            <label>μ₀</label>
+            <label data-help-key="modules.hypothesis-test.agent.fields.targetValue">μ₀</label>
             <input type="number" data-ref="target" class="field field--num"
               x-model="model.targetValue" :placeholder="t('targetMeanPh')" @input="runAnalysis()">
           </div>
@@ -87,7 +91,8 @@
     <div class="field-row">
       <template x-if="model.testType !== 'k'">
         <div class="hyptest__field field-group field-group--major">
-          <label x-text="t('direction')"></label>
+          <label data-help-key="modules.hypothesis-test.agent.fields.direction"
+                 x-text="t('direction')"></label>
           <select data-ref="direction" class="field" x-model="model.direction" @change="runAnalysis()">
             <option value="two-sided">≠ <span x-text="t('twoSided')"></span></option>
             <option value="greater">&gt; <span x-text="t('greater')"></span></option>
@@ -96,20 +101,21 @@
         </div>
       </template>
       <div class="hyptest__field field-group field-group--minor">
-        <label>α</label>
+        <label data-help-key="modules.hypothesis-test.agent.fields.alpha">α</label>
         <input type="number" data-ref="alpha" class="field field--num" min="0.001" max="0.5"
           x-model="model.alpha" @input="onAlphaInput($event)">
       </div>
       <template x-if="model.testType !== 'k'">
         <div class="hyptest__field field-group field-group--minor">
-          <label x-text="t('powerGoal')"></label>
+          <label data-help-key="modules.hypothesis-test.agent.fields.powerGoal"
+                 x-text="t('powerGoal')"></label>
           <input type="number" data-ref="power-goal" class="field field--num" min="0.5" max="0.99"
             x-model="model.powerGoal" @input="onPowerGoalInput($event)">
         </div>
       </template>
     </div>
     <template x-if="model.category === 'mean' && model.testType === 'two'">
-      <label class="hyptest__check">
+      <label class="hyptest__check" data-help-key="modules.hypothesis-test.agent.fields.equalVariances">
         <input type="checkbox" data-ref="equal-variances"
           x-model="model.equalVariances" @change="runAnalysis()">
         <span x-text="t('assumeEqualVariances')"></span>

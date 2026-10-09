@@ -1850,83 +1850,233 @@ export const AGENT_REGISTRY = {
     }
   },
   "hypothesis-test": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:previewH0",
-      "unmarked_method:previewH1",
-      "unmarked_method:setCategory",
-      "unmarked_method:setTestType",
-      "unmarked_method:onAlphaInput",
-      "unmarked_method:onPowerGoalInput",
-      "unmarked_method:algoId",
-      "unmarked_method:algoNavigate",
-      "unmarked_method:runAnalysis",
-      "unmarked_method:init",
-      "unmarked_method:destroy"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "setCategory": {
+        "params": [
+          {
+            "name": "cat",
+            "type": "'variance'|'mean'",
+            "optional": false,
+            "help": "the test family"
+          }
+        ],
+        "returns": "void",
+        "help": "Choose what is being tested."
+      },
+      "setTestType": {
+        "params": [
+          {
+            "name": "type",
+            "type": "'one'|'two'|'k'",
+            "optional": false,
+            "help": "one sample, two samples, or k samples"
+          }
+        ],
+        "returns": "void",
+        "help": "Choose the sample layout."
+      },
+      "setDirection": {
+        "params": [
+          {
+            "name": "direction",
+            "type": "'two-sided'|'greater'|'less'",
+            "optional": false,
+            "help": "the alternative direction"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the alternative hypothesis direction."
+      },
+      "setAlpha": {
+        "params": [
+          {
+            "name": "alpha",
+            "type": "number|string",
+            "optional": false,
+            "help": "significance level, e.g. 0.05"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the significance level. Non-numeric input keeps the previous α and still recomputes — byte for byte what the template's `@input` did before this method existed (`parseFloat`, conditional assignment, unconditional recompute)."
+      },
+      "setPowerGoal": {
+        "params": [
+          {
+            "name": "powerGoal",
+            "type": "number|string",
+            "optional": false,
+            "help": "desired power, e.g. 0.8"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the desired power. The Model clamps it to [0.5, 0.99] and ignores non-numeric input."
+      },
+      "setTargetValue": {
+        "params": [
+          {
+            "name": "value",
+            "type": "string|number",
+            "optional": false,
+            "help": "the target as entered"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the hypothesised target (σ²₀, σ₀ or μ₀)."
+      },
+      "setTargetType": {
+        "params": [
+          {
+            "name": "targetType",
+            "type": "'variance'|'stddev'",
+            "optional": false,
+            "help": "how the target is entered"
+          }
+        ],
+        "returns": "void",
+        "help": "Choose whether the one-sample variance target is a variance or a standard deviation."
+      },
+      "setEqualVariances": {
+        "params": [
+          {
+            "name": "flag",
+            "type": "boolean",
+            "optional": false,
+            "help": "true to assume equal variances"
+          }
+        ],
+        "returns": "void",
+        "help": "Two-sample means: assume equal variances (pooled t) instead of Welch."
+      },
+      "setColumn1": {
+        "params": [
+          {
+            "name": "ref",
+            "type": "object|null",
+            "optional": false,
+            "help": "column reference `{ instanceId, sheetId, columnId }`, or null to clear"
+          }
+        ],
+        "returns": "void",
+        "help": "Point sample 1 at a worksheet column."
+      },
+      "setColumn2": {
+        "params": [
+          {
+            "name": "ref",
+            "type": "object|null",
+            "optional": false,
+            "help": "column reference `{ instanceId, sheetId, columnId }`, or null to clear"
+          }
+        ],
+        "returns": "void",
+        "help": "Point sample 2 at a worksheet column."
+      },
+      "setColumnsK": {
+        "params": [
+          {
+            "name": "refs",
+            "type": "object[]",
+            "optional": false,
+            "help": "column references, each `{ instanceId, sheetId, columnId }`"
+          }
+        ],
+        "returns": "void",
+        "help": "Point the k-sample test at a set of worksheet columns."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Run the analysis with the current configuration. Idempotent: it reads the configuration and recomputes; incomplete inputs leave `result` at null instead of failing."
+      },
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Konfiguration und gerechnetes Ergebnis als Lesezustand. `result` ist `null`, solange die Eingaben unvollständig sind (zu wenige Werte, kein gültiger Zielwert) — genau dann zeigt die UI auch nichts an."
+      }
+    },
     "fields": {
       "category": {
         "type": "'variance'|'mean'",
-        "help": "",
-        "bulk": false
+        "help": "what is being tested: variance or mean",
+        "bulk": false,
+        "derived": true
       },
       "testType": {
         "type": "'one'|'two'|'k'",
-        "help": "",
-        "bulk": false
+        "help": "one sample, two samples, or k samples",
+        "bulk": false,
+        "derived": true
       },
       "direction": {
         "type": "'two-sided'|'greater'|'less'",
-        "help": "",
-        "bulk": false
+        "help": "the alternative hypothesis direction",
+        "bulk": false,
+        "derived": true
       },
       "alpha": {
         "type": "number|null",
-        "help": "significance level; null until seeded from settings.",
-        "bulk": false
+        "help": "significance level, e.g. 0.05",
+        "bulk": false,
+        "derived": true
       },
       "powerGoal": {
         "type": "number|null",
-        "help": "desired power; null until seeded from settings.",
-        "bulk": false
+        "help": "desired power, e.g. 0.8",
+        "bulk": false,
+        "derived": true
       },
       "targetValue": {
         "type": "string",
-        "help": "raw target input (σ²/σ or μ), kept as string like the legacy.",
-        "bulk": false
+        "help": "the hypothesised target as entered (σ²₀, σ₀ or μ₀)",
+        "bulk": false,
+        "derived": true
       },
       "targetType": {
         "type": "'variance'|'stddev'",
-        "help": "how the one-sample variance target is entered.",
-        "bulk": false
+        "help": "how the one-sample variance target is entered",
+        "bulk": false,
+        "derived": true
       },
       "colRef1": {
-        "type": "ColumnRef|null",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "column reference of sample 1, `{ instanceId, sheetId, columnId }`",
+        "bulk": false,
+        "derived": true
       },
       "colRef2": {
-        "type": "ColumnRef|null",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "column reference of sample 2, same shape",
+        "bulk": false,
+        "derived": true
       },
       "colRefsK": {
-        "type": "ColumnRef[]",
-        "help": "",
-        "bulk": false
-      },
-      "exampleWorksheetId": {
-        "type": "string|null",
-        "help": "worksheet provisioned by loadExample (tracked to clean up).",
-        "bulk": false
+        "type": "object[]",
+        "help": "the column references of the k-sample test",
+        "bulk": false,
+        "derived": true
       },
       "equalVariances": {
         "type": "boolean",
-        "help": "",
-        "bulk": false
+        "help": "two-sample means: assume equal variances (pooled t) instead of Welch",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "the computed result, or null while the inputs are incomplete",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -4793,4 +4943,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":72,"available":2};
+export const AGENT_COVERAGE = {"total":72,"available":3};
