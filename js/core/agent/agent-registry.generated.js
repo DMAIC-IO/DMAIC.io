@@ -1464,96 +1464,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "id": {
-        "type": "string",
-        "help": "stable id — persisted (used by POM + keyed x-for)",
-        "bulk": false
-      },
-      "text": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "resp": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "date": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "done": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "deltaS": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "deltaO": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "deltaD": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "step": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "failureMode": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "effect": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "cause": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "control": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "sev": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "occ": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "det": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "actions": {
-        "type": "Action[]",
-        "help": "",
-        "bulk": false
-      },
-      "collapsed": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "risks": {
         "type": "Risk[]",
         "help": "",
@@ -2300,76 +2210,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "text": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "done": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "id": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "title": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "category": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "phase": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "impact": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "owner": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "description": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "rootCause": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "recommendation": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "actions": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "createdAt": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "updatedAt": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "lessons": {
         "type": "any",
         "help": "",
@@ -2472,31 +2312,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "name": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "min": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "max": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "indices": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "beta": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "VERSION": {
         "type": "any",
         "help": "",
@@ -3832,36 +3647,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "selected": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "kind": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "lower": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "upper": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "target": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "weight": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "specs": {
         "type": "Object.<string, SpecEntry>",
         "help": "modelId → SpecEntry",
@@ -3903,16 +3688,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "headers": {
-        "type": "Array<{key:string,value:string}>",
-        "help": "",
-        "bulk": false
-      },
-      "mappings": {
-        "type": "Array<{jsonPath:string, columnRef:object|null}>",
-        "help": "",
-        "bulk": false
-      },
       "VERSION": {
         "type": "any",
         "help": "",
@@ -4160,46 +3935,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "id": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "name": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "role": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "power": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "interest": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "support": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "category": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "notes": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "VERSION": {
         "type": "any",
         "help": "",
@@ -4324,36 +4059,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "id": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "text": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "owner": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "due": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "status": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "cal": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "VERSION": {
         "type": "any",
         "help": "",
@@ -4452,21 +4157,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "val": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "text": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "image": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "VERSION": {
         "type": "any",
         "help": "",
@@ -4564,16 +4254,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "stage": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "notes": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "system": {
         "type": "any",
         "help": "",
@@ -4722,16 +4402,6 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
-      "notes": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "status": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
       "VERSION": {
         "type": "any",
         "help": "",

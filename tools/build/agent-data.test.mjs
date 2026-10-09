@@ -32,6 +32,7 @@ const TAGGED_VM = `/**
  * @agent
  */
 import { createModule } from '../../core/template-module.js';
+import { State } from './foo-model.js';
 export default createModule({
   config: { id: 'foo' },
   Model: State,
@@ -261,8 +262,8 @@ test('collectAgentData: a multi-line spread expression is reported on one line',
 });
 
 test('collectAgentData: a spread on an UNTAGGED module is reported but not a violation', () => {
-  const vm = 'export default createModule({ config: { id: "bar" }, data(module) { return { ...renderMethods }; } });';
-  const root = fixture({ bar: { 'bar.js': vm } });
+  const vm = 'import { State } from "./bar-model.js"; export default createModule({ config: { id: "bar" }, Model: State, data(module) { return { ...renderMethods }; } });';
+  const root = fixture({ bar: { 'bar.js': vm, 'bar-model.js': 'export class State {}' } });
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.bar.violations, []);
   assert.deepEqual(modules.bar.reported, ['unresolved_spread:renderMethods']);
@@ -273,13 +274,15 @@ test('collectAgentData: a data() without a return literal is a violation, not si
  * Foo module.
  * @agent
  */
+import { State } from './foo-model.js';
 export default createModule({
   config: { id: 'foo' },
+  Model: State,
   data(module, _t) {
     return buildViewmodel(module);
   },
 });`;
-  const root = fixture({ foo: { 'foo.js': vm } });
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.violations, ['unresolvable_data_literal']);
   assert.equal(modules.foo.available, false);
@@ -287,8 +290,8 @@ export default createModule({
 });
 
 test('collectAgentData: a missing data() literal on an UNTAGGED module does not block the build', () => {
-  const vm = 'export default createModule({ config: { id: "bar" }, data(module) { return build(module); } });';
-  const root = fixture({ bar: { 'bar.js': vm } });
+  const vm = 'import { State } from "./bar-model.js"; export default createModule({ config: { id: "bar" }, Model: State, data(module) { return build(module); } });';
+  const root = fixture({ bar: { 'bar.js': vm, 'bar-model.js': 'export class State {}' } });
   const { modules, coverage } = collectAgentData(root);
   assert.deepEqual(modules.bar.violations, []);
   assert.deepEqual(modules.bar.reported, ['unresolvable_data_literal']);
@@ -428,8 +431,10 @@ test('collectAgentData: a data() that names a local function resolves its return
  * Foo module.
  * @agent
  */
+import { State } from './foo-model.js';
 export default createModule({
   config: { id: 'foo' },
+  Model: State,
   data: fooData,
 });
 
@@ -506,8 +511,10 @@ const CLEAN_VM = `/**
  * Foo module.
  * @agent
  */
+import { State } from './foo-model.js';
 export default createModule({
   config: { id: 'foo' },
+  Model: State,
   data(module, _t) {
     return {
       /**
@@ -576,7 +583,7 @@ export class B extends A {
   b = '';
 }`;
   const model = `import { B } from '../../core/b/b.js';
-export class C extends B {
+export class State extends B {
   /** @type {string} from C */
   c = '';
 }`;
@@ -732,4 +739,136 @@ test('readModelFields: an unresolvable base class is reported, and hard only wit
   const hardResult = collectAgentData(hard).modules.foo;
   assert.ok(hardResult.violations.includes('unresolved_base_class:Nowhere'));
   assert.equal(hardResult.available, false);
+});
+
+// ── Fix-Runde 1: die Model-Wurzel kommt aus `Model:` ─────────────────────
+// Vorher mischte readModelFields ALLE Klassen der Model-Datei. Mit den
+// Konstruktor-Zuweisungen wurde daraus ein echter Fehler: `rest-api` behauptete
+// die Felder der Hilfsklasse `Endpoint` (`headers`, `mappings`), die auf dem
+// Model-Objekt nicht existieren. Eine Registry, die Felder behauptet, die es
+// nicht gibt, widerspricht Spec §8 direkt.
+
+test('readModelFields: a helper class in the model file contributes NOTHING', () => {
+  const model = `export class Endpoint {
+  constructor() {
+    /** @type {Array<object>} request headers */
+    this.headers = [];
+  }
+}
+export class State {
+  constructor() {
+    /** @type {Endpoint[]} the configured endpoints */
+    this.endpoints = [];
+  }
+}`;
+  const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(Object.keys(modules.foo.fields), ['endpoints']);
+});
+
+test('readModelFields: a SUBCLASS of the model in the same file does not leak into the read surface', () => {
+  // Das latente Risiko der alten `roots`-Heuristik: `State` wäre als „Basis
+  // einer Klasse derselben Datei" herausgefallen und `Spezial` an ihre Stelle
+  // getreten — mit Vorrang bei Namensgleichheit.
+  const model = `export class State {
+  /** @type {string} the real title */
+  title = '';
+}
+export class Spezial extends State {
+  /** @type {number} the special title */
+  title = 0;
+  /** @type {boolean} only on the subclass */
+  extra = false;
+}`;
+  const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.fields, {
+    title: { type: 'string', help: 'the real title', bulk: false },
+  });
+});
+
+test('readModelFields: a missing Model member is reported, not silently empty', () => {
+  const vm = CLEAN_VM.replace('  Model: State,\n', '');
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.fields, {});
+  assert.ok(modules.foo.violations.includes('unresolvable_model_class'),
+    `got ${JSON.stringify(modules.foo.violations)}`);
+});
+
+test('readModelFields: a computed Model value is reported as unresolvable', () => {
+  const vm = CLEAN_VM.replace('  Model: State,', '  Model: makeModel(),');
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.violations, ['unresolvable_model_class']);
+});
+
+test('readModelFields: a Model name that resolves to something other than a class is reported', () => {
+  const vm = CLEAN_VM
+    .replace(`import { State } from './foo-model.js';`, 'const State = { steps: [] };')
+    .replace(' * @agent\n', '');
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.fields, {});
+  assert.deepEqual(modules.foo.reported, ['unresolved_model_class:State']);
+  assert.deepEqual(modules.foo.violations, []);     // ohne Modul-Tag berichtend
+});
+
+test('readModelFields: the shorthand `{ Model }` names the class too', () => {
+  const vm = CLEAN_VM.replace('  Model: State,', '  Model,').replace('{ State }', '{ State as Model }');
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.equal(modules.foo.fields.problem.type, 'string');
+  assert.deepEqual(modules.foo.violations, []);
+});
+
+test('readModelFields: a non-identifier extends clause is reported, not resolved', () => {
+  const model = `export class State extends ns.Base {
+  /** @type {number} the own counter */
+  count = 0;
+}`;
+  const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.violations, ['unresolved_base_class:ns.Base']);
+  assert.equal(modules.foo.fields.count.type, 'number');
+});
+
+test('readModelFields: a mixin factory as base class is reported, not resolved', () => {
+  const model = `export class State extends withSteps(Base) {
+  /** @type {number} the own counter */
+  count = 0;
+}`;
+  const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.violations, ['unresolved_base_class:withSteps(Base)']);
+});
+
+test('readModelFields: a class that extends ITSELF terminates', () => {
+  const model = `export class State extends State {
+  /** @type {number} the own counter */
+  count = 0;
+}`;
+  const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.fields, {
+    count: { type: 'number', help: 'the own counter', bulk: false },
+  });
+  assert.deepEqual(modules.foo.violations, []);
+});
+
+test('readModelFields: an extends chain beyond the depth limit is reported as a blind spot', () => {
+  // 14 Klassen: `State` erbt C12 … C0. Der Abstieg endet vor C0, und das endet
+  // nicht still — eine abgeschnittene Kette ist eine Blindstelle.
+  const chain = ['export class C0 {\n  /** @type {string} deepest field */\n  deepest = \'\';\n}'];
+  for (let i = 1; i <= 12; i++) chain.push(`export class C${i} extends C${i - 1} {}`);
+  const model = `${chain.join('\n')}
+export class State extends C12 {
+  /** @type {number} the own counter */
+  count = 0;
+}`;
+  const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.violations, ['unresolved_base_class:C0']);
+  assert.equal('deepest' in modules.foo.fields, false);
+  assert.equal(modules.foo.fields.count.type, 'number');
 });

@@ -48,7 +48,7 @@
 import ts from 'typescript';
 import { readdirSync, existsSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
-import { createResolver, functionFromMember, isFunctionLike } from './agent-resolve.mjs';
+import { createResolver, functionFromMember, isFunctionLike, findCreateModuleMember, memberName } from './agent-resolve.mjs';
 
 const MODULES_DIR = 'js/modules';
 
@@ -74,8 +74,9 @@ export function collectAgentData(appDir) {
     if (!statSync(dir).isDirectory()) continue;
     const viewmodelFile = join(dir, `${id}.js`);
     if (!existsSync(viewmodelFile)) continue;
-    const modelFile = join(dir, `${id}-model.js`);
-    modules[id] = buildEntry(resolver, appDir, viewmodelFile, existsSync(modelFile) ? modelFile : null);
+    // Die Model-DATEI wird hier nicht mehr gesucht: welche Klasse den Zustand
+    // hält, sagt `Model:` im `createModule({…})`-Literal — und nur die zählt.
+    modules[id] = buildEntry(resolver, appDir, viewmodelFile);
   }
   const total = Object.keys(modules).length;
   const available = Object.values(modules).filter(m => m.available).length;
@@ -83,13 +84,11 @@ export function collectAgentData(appDir) {
 }
 
 /** Ein Registry-Eintrag für genau ein Modul. */
-function buildEntry(resolver, appDir, viewmodelFile, modelFile) {
+function buildEntry(resolver, appDir, viewmodelFile) {
   const sf = resolver.parse(viewmodelFile);
   const tagged = hasModuleTag(sf);
   const { actions, violations } = readViewmodel(sf, resolver, appDir);
-  const model = modelFile
-    ? readModelFields(resolver, resolver.parse(modelFile))
-    : { fields: {}, violations: [] };
+  const model = readModelFields(resolver, sf);
   const fields = model.fields;
   const reported = [...violations, ...model.violations, ...collectDomDetours(sf)];
   // Verstöße zählen nur, wenn das Modul etwas behauptet (Spec §9).
@@ -250,6 +249,14 @@ const MAX_EXTENDS_DEPTH = 12;
  * Persistenz": die Lesefläche IST die persistierte Form (Spec §8).
  * `_`-präfigierte Felder sind privat und erscheinen nicht.
  *
+ * Die Wurzel ist GENAU die Klasse, die `createModule({ … Model: State … })`
+ * nennt — nicht „alle Klassen der Model-Datei". Der Unterschied ist keine
+ * Feinheit: `rest-api-model.js` enthält neben dem Model die Hilfsklasse
+ * `Endpoint`, deren Konstruktorfelder (`headers`, `mappings`) auf dem
+ * Model-Objekt nicht existieren und in `State.toJSON()` nicht auftauchen.
+ * Eine Registry, die Felder behauptet, die es nicht gibt, ist schlimmer als
+ * eine, die zu wenige kennt.
+ *
  * Zwei Quellen eines Feldes, beide nötig: eine Property-Deklaration
  * (`problem = ''`) UND eine annotierte Konstruktor-Zuweisung
  * (`this.steps = []`). Die vier Flowchart-Module hatten null Felder, weil ihr
@@ -257,43 +264,44 @@ const MAX_EXTENDS_DEPTH = 12;
  * Konstruktor, und die Modelle erben es.
  *
  * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
- * @param {ts.SourceFile} sf  die Model-Datei
+ * @param {ts.SourceFile} sf  die MODUL-Datei (`js/modules/<id>/<id>.js`)
  * @returns {{ fields: Record<string, { type: string, help: string, bulk: boolean }>, violations: string[] }}
  */
 function readModelFields(resolver, sf) {
+  const name = modelClassName(sf);
+  // Fehlt `Model:` oder ist der Wert kein Name (`Model: makeModel()`), ist die
+  // Lesefläche nicht bestimmbar — melden statt schweigen, wie bei jeder
+  // anderen Blindstelle. Ein stiller Rückfall auf „alle Klassen der Datei"
+  // wäre genau der Fehler, den dieser Weg behebt.
+  if (!name) return { fields: {}, violations: ['unresolvable_model_class'] };
+  const decl = resolver.findDeclaration(name, sf);
+  if (!decl || !ts.isClassDeclaration(decl.node)) {
+    return { fields: {}, violations: [`unresolved_model_class:${name}`] };
+  }
   const violations = [];
-  const classes = [];
-  const walk = (node) => {
-    if (ts.isClassDeclaration(node)) classes.push(node);
-    ts.forEachChild(node, walk);
-  };
-  walk(sf);
-
-  // Eine Klasse, die eine ANDERE Klasse derselben Datei erbt, trägt ihre
-  // Felder über jene Unterklasse bei und nicht noch einmal selbst. Sonst
-  // entschiede die Quellreihenfolge der Klassen über den Vorrang — und eine
-  // nach der Unterklasse notierte Basis würde deren Überschreibung kippen.
-  const inherited = new Set();
-  for (const node of classes) {
-    const base = baseIdentifier(node);
-    if (base && classes.some(c => c !== node && c.name?.text === base.text)) inherited.add(base.text);
-  }
-  const roots = classes.filter(c => !(c.name && inherited.has(c.name.text)));
-
-  const fields = {};
-  // Ein Zyklus innerhalb EINER Datei leerte `roots` — dann zählen wieder alle
-  // Klassen; der Pfadschutz unten hält den Abstieg trotzdem an.
-  for (const node of (roots.length > 0 ? roots : classes)) {
-    Object.assign(fields, classFields(resolver, node, sf, violations, new Set(), 0));
-  }
+  const fields = classFields(resolver, decl.node, decl.sf, violations, new Set(), 0);
   return { fields, violations };
 }
 
+/**
+ * Der Name der Model-Klasse, wie das Modul sie nennt. Alle 72 Module haben ein
+ * `Model:`-Mitglied mit einem Identifier als Wert (69-mal `State`, dazu die
+ * drei Flowchart-Modelle); die Kurzform `{ Model }` ist mitgedacht, weil der
+ * Name dann im Mitglied selbst steht.
+ * @param {ts.SourceFile} sf  die Moduldatei
+ * @returns {string|null}
+ */
+function modelClassName(sf) {
+  const member = findCreateModuleMember(sf, 'Model');
+  if (!member) return null;
+  if (!ts.isPropertyAssignment(member)) return memberName(member);
+  return ts.isIdentifier(member.initializer) ? member.initializer.text : null;
+}
+
 /** @returns {ts.Expression|null} der `extends`-Ausdruck einer Klasse. */
-function baseIdentifier(node) {
+function baseExpression(node) {
   const clause = node.heritageClauses?.find(h => h.token === ts.SyntaxKind.ExtendsKeyword);
-  const expr = clause?.types?.[0]?.expression;
-  return expr && ts.isIdentifier(expr) ? expr : (expr ?? null);
+  return clause?.types?.[0]?.expression ?? null;
 }
 
 /**
@@ -310,7 +318,7 @@ function classFields(resolver, node, sf, violations, path, depth) {
   const self = `${sf.fileName}:${node.pos}`;
   path.add(self);
   const fields = {};
-  const base = baseIdentifier(node);
+  const base = baseExpression(node);
   if (base) {
     // `extends mixin(Base)` oder `extends ns.Base`: nicht auflösbar, aber
     // auch nicht verschweigen — sonst sieht eine leere Lesefläche aus wie
