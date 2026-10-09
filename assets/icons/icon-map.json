@@ -57,6 +57,7 @@
   "status.empty": "lucide:layout-dashboard",
   "status.time": "lucide:clock",
   "status.no-data": "lucide:clipboard-list",
+  "status.help": "lucide:circle-question-mark",
   "severity.critical": "lucide:octagon-alert",
   "severity.high": "lucide:triangle-alert",
   "severity.medium": "lucide:circle-alert",

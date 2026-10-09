@@ -273,6 +273,11 @@
     "referenceEdition": "Aufl.",
     "referenceEtAl": "u. a."
   },
+  "contextHelp": {
+    "ariaLabel": "Kontexthilfe zu „{label}“ anzeigen",
+    "hint": "Alt halten, um Kontexthilfen anzuzeigen",
+    "close": "Kontexthilfe schließen"
+  },
   "videos": {
     "openInNewTab": "In neuem Tab öffnen",
     "toChapter": "zum Kapitel",

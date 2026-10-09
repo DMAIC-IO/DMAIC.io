@@ -1,0 +1,206 @@
+/**
+ * D.Mike — Kontexthilfe am Label (context-help.js)
+ *
+ * Die UI-Seite der Agenten-Kontexthilfen. Spec §8 verlangt, dass derselbe
+ * i18n-Schlüssel die Agentenbeschreibung UND die Kontexthilfe in der UI
+ * speist — „die Kontexthilfe flächendeckend zu haben ist ohnehin eine
+ * Verbesserung für Menschen; der Agent ist der Anlass, nicht der einzige
+ * Nutznießer."
+ *
+ * Bedienung (Nutzerentscheid 2026-10-09):
+ *   • Alt halten  → am rechten oberen Rand jedes beschriebenen Labels
+ *     erscheint ein kleines Fragezeichen im Kreis.
+ *   • Klick       → ein kleines Kontextfenster mit dem Hilfetext.
+ *   • Klick auf den Hintergrund (oder Escape) → geschlossen.
+ *
+ * Das Fragezeichen liegt DAUERHAFT im DOM und wird nur über `visibility`
+ * ein- und ausgeblendet: so verschiebt das Halten der Alt-Taste das Layout
+ * nicht um einen Pixel.
+ *
+ * Emittenten markieren nur:
+ *
+ *   <label data-help-key="modules.five-why.agent.fields.problem">Problem</label>
+ *
+ * Alles Visuelle — Icon, Knopf, Fenster, Hintergrund, aria — liegt in dieser
+ * einen Datei plus dem CSS in components.css. Fehlt der i18n-Schlüssel,
+ * entsteht KEIN Knopf: eine Lücke bleibt sichtbar und blockiert nichts
+ * (Spec §8, Regel 1).
+ *
+ * Muster und Idempotenz-Vertrag sind von `core/glossary-inline.js` übernommen;
+ * wer dort etwas ändert, sollte hier hinsehen.
+ */
+import { icon } from './icon.js';
+
+const ARMED_CLASS = 'dmike-context-help-armed';
+
+/* Der eingespritzte Knopf spiegelt `data-help-key` (DOM-Vertrag der E2E-Tests)
+   und wäre damit selbst ein Anker — die Negation hält ihn aus dem Durchlauf. */
+const ANCHOR_SELECTOR = '[data-help-key]:not(.context-help__btn)';
+
+const STATE = {
+  /** @type {object|null} i18n-Instanz, gesetzt über setContextHelpConfig */
+  i18n: null,
+  /** @type {MutationObserver|null} */
+  observer: null,
+  /** @type {{ panel: HTMLElement, backdrop: HTMLElement }|null} */
+  open: null,
+  /** ob die Tasten- und Klickbehandlung schon hängt */
+  wired: false,
+};
+
+/**
+ * i18n-Instanz binden. Beim Rahmenaufbau einmal, bei Sprachwechsel erneut —
+ * die Texte werden beim Öffnen gelesen, ein erneuter Aufruf genügt also.
+ * @param {{ i18n?: object }} cfg
+ */
+export function setContextHelpConfig(cfg = {}) {
+  if (cfg.i18n) STATE.i18n = cfg.i18n;
+}
+
+/**
+ * Jedes `[data-help-key]` unter `root` mit dem Fragezeichen-Knopf versehen.
+ * Billig genug, um beliebig oft aufgerufen zu werden.
+ * @param {ParentNode} root
+ */
+export function augmentContextHelp(root = document) {
+  if (!STATE.i18n || !root || typeof root.querySelectorAll !== 'function') return;
+  for (const anchor of root.querySelectorAll(ANCHOR_SELECTOR)) augmentOne(anchor);
+  if (root.matches?.(ANCHOR_SELECTOR)) augmentOne(root);
+}
+
+/**
+ * Erster Durchlauf plus genau ein MutationObserver auf `document.body`, plus
+ * die Alt-Tasten- und Klickbehandlung. Mehrfachaufruf ist unschädlich.
+ */
+export function startContextHelp() {
+  if (typeof document === 'undefined') return;
+  if (!STATE.wired) {
+    wireGlobalHandlers();
+    STATE.wired = true;
+  }
+  augmentContextHelp(document);
+  if (STATE.observer || typeof MutationObserver === 'undefined') return;
+  STATE.observer = new MutationObserver(handleMutations);
+  STATE.observer.observe(document.body, { childList: true, subtree: true });
+}
+
+/**
+ * Das Kontextfenster zu einem Knopf öffnen. Es ist immer höchstens eines
+ * offen — zwei übereinander wären unlesbar.
+ * @param {HTMLElement} button  der `.context-help__btn`
+ */
+export function openContextHelp(button) {
+  closeContextHelp();
+  if (!button || !STATE.i18n) return;
+  const key = button.getAttribute('data-help-key');
+  if (!key || !STATE.i18n.exists?.(key)) return;
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'context-help__backdrop';
+
+  const panel = document.createElement('div');
+  panel.className = 'context-help__panel';
+  panel.setAttribute('role', 'dialog');
+  panel.setAttribute('aria-modal', 'false');
+
+  const anchor = button.parentElement?.closest(ANCHOR_SELECTOR);
+  const label = (anchor?.textContent || '').trim();
+  if (label) {
+    const title = document.createElement('div');
+    title.className = 'context-help__panel-title';
+    title.textContent = label;
+    panel.appendChild(title);
+  }
+  const body = document.createElement('div');
+  body.className = 'context-help__panel-body';
+  body.textContent = STATE.i18n.t(key);
+  panel.appendChild(body);
+
+  document.body.appendChild(backdrop);
+  document.body.appendChild(panel);
+  position(panel, button);
+  STATE.open = { panel, backdrop };
+}
+
+/** Das offene Kontextfenster schließen. Ohne offenes Fenster ein No-op. */
+export function closeContextHelp() {
+  if (!STATE.open) return;
+  STATE.open.panel.remove();
+  STATE.open.backdrop.remove();
+  STATE.open = null;
+}
+
+// ─── Intern ────────────────────────────────────────────────────────
+
+function augmentOne(anchor) {
+  if (!anchor || anchor.dataset.contextHelpAugmented === '1') return;
+  if (anchor.classList.contains('context-help__btn')) return;
+  const key = anchor.getAttribute('data-help-key');
+  // Kein Schlüssel hinterlegt → kein Knopf. Die Lücke ist dann sichtbar und
+  // wird über `npm run agent:report` gezählt, statt eine leere Blase zu
+  // öffnen.
+  if (!key || !STATE.i18n?.exists?.(key)) return;
+
+  const label = (anchor.textContent || '').trim();
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'context-help__btn';
+  button.setAttribute('data-help-key', key);
+  // Nicht im Tabulator-Lauf: die Fläche ist ein Zusatz, kein Pflichtweg; über
+  // die Tastatur bleibt der Hilfetext über das Handbuch erreichbar.
+  button.tabIndex = -1;
+  button.setAttribute('aria-label', STATE.i18n.t('contextHelp.ariaLabel', { label }));
+  button.appendChild(icon('status.help', { size: 'sm' }));
+
+  anchor.classList.add('context-help-anchor');
+  anchor.appendChild(button);
+  anchor.dataset.contextHelpAugmented = '1';
+}
+
+function handleMutations(records) {
+  for (const record of records) {
+    if (record.type !== 'childList') continue;
+    for (const node of record.addedNodes) {
+      if (node.nodeType !== 1) continue;
+      // Eigene Einspritzungen nicht erneut anfassen.
+      if (node.classList?.contains('context-help__btn')) continue;
+      augmentContextHelp(node);
+    }
+  }
+}
+
+function wireGlobalHandlers() {
+  // Alt halten „schärft" die Fläche. Der Zustand hängt an einer Körperklasse,
+  // damit das Sichtbarmachen reines CSS ist und keine Reflow-Welle auslöst.
+  window.addEventListener('keydown', (event) => {
+    if (event.key === 'Alt') document.body.classList.add(ARMED_CLASS);
+    if (event.key === 'Escape') closeContextHelp();
+  });
+  const disarm = () => document.body.classList.remove(ARMED_CLASS);
+  window.addEventListener('keyup', (event) => { if (event.key === 'Alt') disarm(); });
+  // Ohne diese zwei verliert der Browser das keyup (Fensterwechsel per
+  // Alt+Tab ist genau der Fall) und die Fragezeichen blieben stehen.
+  window.addEventListener('blur', disarm);
+  document.addEventListener('visibilitychange', disarm);
+
+  document.addEventListener('click', (event) => {
+    if (event.target.closest?.('.context-help__backdrop')) { closeContextHelp(); return; }
+    const button = event.target.closest?.('.context-help__btn');
+    if (!button) return;
+    event.preventDefault();
+    event.stopPropagation();
+    openContextHelp(button);
+  });
+}
+
+/**
+ * Das Fenster unter dem Knopf platzieren und am Viewport-Rand zurückholen.
+ * Feste Positionierung, damit Scrollcontainer es nicht abschneiden.
+ */
+function position(panel, button) {
+  const rect = button.getBoundingClientRect();
+  const width = panel.offsetWidth || 280;
+  const left = Math.min(Math.max(8, rect.left), window.innerWidth - width - 8);
+  panel.style.left = `${left}px`;
+  panel.style.top = `${rect.bottom + 6}px`;
+}

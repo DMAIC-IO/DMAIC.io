@@ -273,6 +273,11 @@
     "referenceEdition": "ed.",
     "referenceEtAl": "et al."
   },
+  "contextHelp": {
+    "ariaLabel": "Show context help for \"{label}\"",
+    "hint": "Hold Alt to reveal context help",
+    "close": "Close context help"
+  },
   "videos": {
     "openInNewTab": "Open in a new tab",
     "toChapter": "to the chapter",

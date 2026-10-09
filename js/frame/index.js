@@ -13,6 +13,7 @@ import { initFooter }          from './footer/footer.js';
 import { initDevTools }        from './dev-tools.js';
 import { updateReadOnlyBanner, initCollapsibleSections } from './helpers.js';
 import { startGlossaryAugmenter } from '../core/glossary-inline.js';
+import { setContextHelpConfig, startContextHelp } from '../core/context-help.js';
 
 /**
  * Build the application chrome.
@@ -48,6 +49,11 @@ export function buildFrame(kernel, ui) {
   // button + SVG icon. Idempotent + MutationObserver-backed, so later renders
   // (module switches, stats-table updates) are auto-handled.
   startGlossaryAugmenter();
+  // Kontexthilfe am Label: Alt halten zeigt an jedem [data-help-key] mit
+  // vorhandenem i18n-Schlüssel ein Fragezeichen — dieselben Schlüssel, die
+  // module.describe an den Agenten gibt (Spec §8).
+  setContextHelpConfig({ i18n: kernel.i18n });
+  startContextHelp();
 
   initProjectSwitcher(kernel);
   initGlossaryInline(kernel, ui);

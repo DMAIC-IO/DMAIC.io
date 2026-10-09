@@ -1753,6 +1753,69 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
   background: transparent;
 }
 
+/* ── Kontexthilfe am Label (Alt halten) ───────────────────────────── */
+/* Der Knopf liegt dauerhaft im DOM und wird nur ein-/ausgeblendet: das
+   Halten der Alt-Taste darf das Layout nicht verschieben. */
+.context-help-anchor {
+  position: relative;
+}
+
+.context-help__btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  line-height: 0;
+  background: none;
+  color: var(--context-help-btn-color);
+  cursor: help;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+body.dmike-context-help-armed .context-help__btn {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.context-help__btn:hover {
+  color: var(--context-help-btn-color-hover);
+}
+
+/* Durchsichtig, aber klickfangend: ein Klick daneben schließt das Fenster,
+   ohne die Oberfläche abzudunkeln. Über dem Modal (1000), damit auch
+   Dialog-Labels ein lesbares Fenster bekommen. */
+.context-help__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: transparent;
+}
+
+.context-help__panel {
+  position: fixed;
+  z-index: 1201;
+  width: var(--context-help-panel-width);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--context-help-panel-bg);
+  border: 1px solid var(--context-help-panel-border);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--font-size-sm);
+  line-height: 1.45;
+  color: var(--color-text-primary);
+}
+
+.context-help__panel-title {
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+}
+
 /* ─── Masken-Icons ────────────────────────────────────────────────────────
    Glyphe: assets/icons/icons.css (generiert aus assets/icons/icon-map.json).
    Farbe: currentColor, damit Hover/Aktiv/Disabled vom Elternelement kommen.
