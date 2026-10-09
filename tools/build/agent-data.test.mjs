@@ -494,3 +494,242 @@ test('collectAgentData: a spread whose source stays unresolvable is still report
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.violations, ['unresolved_spread:fromNowhere(module)']);
 });
+
+// ── Task 3: `extends` und annotierte Konstruktor-Zuweisungen ──────────────
+// Vier Flowchart-Module hatten NULL Model-Felder: ihre Modelle erben von
+// `FlowchartState`, und dessen einziges Zustandsfeld (`this.steps`) steht im
+// Konstruktor. Beide Lücken mussten zugleich fallen — `extends` allein hätte
+// nur eine Klasse ohne Property-Deklarationen gefunden.
+
+/** Ein Modul-Viewmodel ohne Verstöße, damit nur die Model-Seite geprüft wird. */
+const CLEAN_VM = `/**
+ * Foo module.
+ * @agent
+ */
+export default createModule({
+  config: { id: 'foo' },
+  data(module, _t) {
+    return {
+      /**
+       * Read the full state.
+       * @agent
+       * @returns {object} the state
+       */
+      read() { return {}; },
+    };
+  },
+});`;
+
+/** Dasselbe Viewmodel ohne Modul-Tag — Befunde bleiben berichtend. */
+const UNTAGGED_VM = CLEAN_VM.replace(' * @agent\n', '');
+
+test('readModelFields: a subclass inherits the fields of its imported base class', () => {
+  const base = `export class Base {
+  /** @type {string} the base title */
+  title = '';
+}`;
+  const model = `import { Base } from '../../core/b/base.js';
+export class State extends Base {
+  /** @type {number} the own counter */
+  count = 0;
+}`;
+  const root = fixture(
+    { foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } },
+    { 'js/core/b/base.js': base },
+  );
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.fields.title, { type: 'string', help: 'the base title', bulk: false });
+  assert.deepEqual(modules.foo.fields.count, { type: 'number', help: 'the own counter', bulk: false });
+});
+
+test('readModelFields: an own field overrides the same-named base field', () => {
+  const base = `export class Base {
+  /** @type {string} the base title */
+  title = '';
+  /** @type {boolean} only on the base */
+  flag = false;
+}`;
+  const model = `import { Base } from '../../core/b/base.js';
+export class State extends Base {
+  /** @type {number} the own title */
+  title = 0;
+}`;
+  const root = fixture(
+    { foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } },
+    { 'js/core/b/base.js': base },
+  );
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.fields.title, { type: 'number', help: 'the own title', bulk: false });
+  // Ohne diese zweite Zusicherung wäre der Test auch dann grün, wenn die
+  // Basisklasse überhaupt nicht gelesen würde.
+  assert.equal(modules.foo.fields.flag.type, 'boolean');
+});
+
+test('readModelFields: two-step inheritance collects all three levels', () => {
+  const a = `export class A {
+  /** @type {string} from A */
+  a = '';
+}`;
+  const b = `import { A } from './a.js';
+export class B extends A {
+  /** @type {string} from B */
+  b = '';
+}`;
+  const model = `import { B } from '../../core/b/b.js';
+export class C extends B {
+  /** @type {string} from C */
+  c = '';
+}`;
+  const root = fixture(
+    { foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } },
+    { 'js/core/b/a.js': a, 'js/core/b/b.js': b },
+  );
+  const { modules } = collectAgentData(root);
+  assert.equal(modules.foo.fields.a.help, 'from A');
+  assert.equal(modules.foo.fields.b.help, 'from B');
+  assert.equal(modules.foo.fields.c.help, 'from C');
+});
+
+test('readModelFields: a base class in the SAME file is resolved, and the subclass still wins', () => {
+  // Die Basisklasse steht ABSICHTLICH nach der Unterklasse: eine Zusammen-
+  // führung „alle Klassen der Datei in Quellreihenfolge" hätte hier die
+  // Basis gewinnen lassen.
+  const model = `export class State extends Base {
+  /** @type {number} the own title */
+  title = 0;
+}
+export class Base {
+  /** @type {string} the base title */
+  title = '';
+  /** @type {boolean} only on the base */
+  flag = false;
+}`;
+  const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.fields.title, { type: 'number', help: 'the own title', bulk: false });
+  assert.equal(modules.foo.fields.flag.type, 'boolean');
+});
+
+test('readModelFields: an annotated constructor assignment becomes a field', () => {
+  const model = `export class State {
+  constructor() {
+    /** @type {Array<object>} ordered chain of steps */
+    this.steps = [];
+  }
+}`;
+  const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.fields.steps, {
+    type: 'Array<object>', help: 'ordered chain of steps', bulk: false,
+  });
+});
+
+test('readModelFields: a constructor assignment WITHOUT @type is not a field', () => {
+  const model = `export class State {
+  constructor() {
+    /** just a cache */
+    this.cache = null;
+    this.other = 1;
+  }
+}`;
+  const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.fields, {});
+});
+
+test('readModelFields: an annotated _-prefixed constructor assignment is not a field', () => {
+  const model = `export class State {
+  constructor() {
+    /** @type {number} private counter */
+    this._idCounter = 0;
+  }
+}`;
+  const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.fields, {});
+});
+
+test('readModelFields: an annotated this-assignment in another METHOD is not a field', () => {
+  const model = `export class State {
+  reset() {
+    /** @type {string} view buffer */
+    this.buffer = '';
+  }
+}`;
+  const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.fields, {});
+});
+
+test('readModelFields: an annotated this-assignment in a CALLBACK inside the constructor is not a field', () => {
+  const model = `export class State {
+  constructor() {
+    /** @type {Array<object>} real field */
+    this.steps = [];
+    [1].forEach(() => {
+      /** @type {number} not a field */
+      this.late = 1;
+    });
+  }
+}`;
+  const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(Object.keys(modules.foo.fields), ['steps']);
+});
+
+test('readModelFields: @agentBulk on a constructor assignment is carried over', () => {
+  const model = `export class State {
+  constructor() {
+    /**
+     * @type {any[][]} the measured rows
+     * @agentBulk
+     */
+    this.rows = [];
+  }
+}`;
+  const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.fields.rows, {
+    type: 'any[][]', help: 'the measured rows', bulk: true,
+  });
+});
+
+test('readModelFields: a cycle in the extends chain terminates', () => {
+  const base = `import { State } from '../../modules/foo/foo-model.js';
+export class Base extends State {
+  /** @type {string} from base */
+  s = '';
+}`;
+  const model = `import { Base } from '../../core/b/base.js';
+export class State extends Base {
+  /** @type {number} from state */
+  n = 0;
+}`;
+  const root = fixture(
+    { foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } },
+    { 'js/core/b/base.js': base },
+  );
+  const { modules } = collectAgentData(root);
+  assert.equal(modules.foo.fields.n.help, 'from state');
+  assert.equal(modules.foo.fields.s.help, 'from base');
+});
+
+test('readModelFields: an unresolvable base class is reported, and hard only with the module tag', () => {
+  const model = `export class State extends Nowhere {
+  /** @type {number} the own counter */
+  count = 0;
+}`;
+  const soft = fixture({ foo: { 'foo.js': UNTAGGED_VM, 'foo-model.js': model } });
+  const softResult = collectAgentData(soft).modules.foo;
+  assert.deepEqual(softResult.violations, []);
+  assert.ok(softResult.reported.includes('unresolved_base_class:Nowhere'),
+    `expected unresolved_base_class, got ${JSON.stringify(softResult.reported)}`);
+  // Die eigenen Felder bleiben trotzdem erhalten — ein unauflösbarer Vorfahr
+  // macht die Klasse nicht unlesbar.
+  assert.equal(softResult.fields.count.type, 'number');
+
+  const hard = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
+  const hardResult = collectAgentData(hard).modules.foo;
+  assert.ok(hardResult.violations.includes('unresolved_base_class:Nowhere'));
+  assert.equal(hardResult.available, false);
+});

@@ -80,7 +80,13 @@ export const AGENT_REGISTRY = {
       "unmarked_method:onExport"
     ],
     "actions": {},
-    "fields": {}
+    "fields": {
+      "steps": {
+        "type": "Array<object>",
+        "help": "ordered chain of steps",
+        "bulk": false
+      }
+    }
   },
   "attribute-control-chart": {
     "tagged": false,
@@ -296,6 +302,31 @@ export const AGENT_REGISTRY = {
       "ID": {
         "type": "any",
         "help": "",
+        "bulk": false
+      },
+      "mode": {
+        "type": "'sci'|'stats'|'sixsigma'",
+        "help": "",
+        "bulk": false
+      },
+      "lastResult": {
+        "type": "number|null",
+        "help": "last evaluated numeric result",
+        "bulk": false
+      },
+      "angleMode": {
+        "type": "'DEG'|'RAD'",
+        "help": "",
+        "bulk": false
+      },
+      "dataset": {
+        "type": "number[]",
+        "help": "statistics dataset",
+        "bulk": false
+      },
+      "ssDataset": {
+        "type": "number[]",
+        "help": "Six Sigma process dataset",
         "bulk": false
       }
     }
@@ -866,7 +897,18 @@ export const AGENT_REGISTRY = {
       "unmarked_method:onExport"
     ],
     "actions": {},
-    "fields": {}
+    "fields": {
+      "steps": {
+        "type": "Array<object>",
+        "help": "ordered chain of steps",
+        "bulk": false
+      },
+      "lanes": {
+        "type": "Array<{id:string, name:string, order:number}>",
+        "help": "",
+        "bulk": false
+      }
+    }
   },
   "distribution-fit": {
     "tagged": false,
@@ -2947,7 +2989,13 @@ export const AGENT_REGISTRY = {
       "unmarked_method:onExport"
     ],
     "actions": {},
-    "fields": {}
+    "fields": {
+      "steps": {
+        "type": "Array<object>",
+        "help": "ordered chain of steps",
+        "bulk": false
+      }
+    }
   },
   "outlier-test": {
     "tagged": false,
@@ -3360,7 +3408,13 @@ export const AGENT_REGISTRY = {
       "unmarked_method:destroy"
     ],
     "actions": {},
-    "fields": {}
+    "fields": {
+      "steps": {
+        "type": "Array<object>",
+        "help": "ordered chain of steps",
+        "bulk": false
+      }
+    }
   },
   "project-charter": {
     "tagged": false,
@@ -3849,6 +3903,16 @@ export const AGENT_REGISTRY = {
     ],
     "actions": {},
     "fields": {
+      "headers": {
+        "type": "Array<{key:string,value:string}>",
+        "help": "",
+        "bulk": false
+      },
+      "mappings": {
+        "type": "Array<{jsonPath:string, columnRef:object|null}>",
+        "help": "",
+        "bulk": false
+      },
       "VERSION": {
         "type": "any",
         "help": "",
@@ -3856,6 +3920,16 @@ export const AGENT_REGISTRY = {
       },
       "ID": {
         "type": "any",
+        "help": "",
+        "bulk": false
+      },
+      "endpoints": {
+        "type": "Endpoint[]",
+        "help": "",
+        "bulk": false
+      },
+      "activeId": {
+        "type": "string|null",
         "help": "",
         "bulk": false
       }

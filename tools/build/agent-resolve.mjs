@@ -31,6 +31,13 @@
  * Datei), wird weiter als `unresolved_spread:<ausdruck>` nach oben gegeben —
  * Stillschweigen ist hier die einzige verbotene Antwort.
  *
+ * Die **Deklarations- und Pfadauflösung** (`findDeclaration`,
+ * `findLocalDeclaration`, `findImportSource`, `resolveSpecifier`) ist davon
+ * unabhängig und wird von der Model-Seite mitbenutzt: `readModelFields` in
+ * `agent-data.mjs` verfolgt damit die `extends`-Kette eines Models. Der
+ * Parse-Zwischenspeicher wirkt dadurch über beide Seiten — `flowchart-model.js`
+ * hängt an vier Modulen und wird trotzdem einmal geparst.
+ *
  * Kein Schreibzugriff, keine Netzwerkzugriffe; alles rein lesend über die
  * TypeScript-Compiler-API wie in `agent-data.mjs`.
  */
@@ -61,6 +68,7 @@ const MAX_SPREAD_DEPTH = 12;
  * @param {string} appDir  Wurzel von app/dev — Bezugspunkt der Herkunftsangaben
  * @returns {{
  *   parse: (file: string) => ts.SourceFile,
+ *   findDeclaration: (name: string, sf: ts.SourceFile) => { node: ts.Node, sf: ts.SourceFile }|null,
  *   findDataReturnLiteral: (sf: ts.SourceFile) => ts.ObjectLiteralExpression|null,
  *   collectMembers: (literal: ts.ObjectLiteralExpression, sf: ts.SourceFile) =>
  *     { members: Map<string, { member: ts.ObjectLiteralElementLike, sf: ts.SourceFile }>, unresolved: string[] },
@@ -219,7 +227,7 @@ export function createResolver(appDir) {
     return { members, unresolved };
   }
 
-  return { parse, findDataReturnLiteral, collectMembers };
+  return { parse, findDeclaration, findDataReturnLiteral, collectMembers };
 }
 
 /**
@@ -279,8 +287,13 @@ export function returnObjectLiteral(fn) {
   return found;
 }
 
-/** @returns {boolean} ob der Knoten einen eigenen Funktionskörper aufspannt. */
-function isFunctionLike(node) {
+/**
+ * @returns {boolean} ob der Knoten einen eigenen Funktionskörper aufspannt.
+ *
+ * Exportiert, weil die Model-Seite denselben Abstiegsstopp braucht: eine
+ * `this.x = …`-Zuweisung in einem Rückruf im Konstruktor ist kein Feld.
+ */
+export function isFunctionLike(node) {
   return ts.isFunctionDeclaration(node)
     || ts.isFunctionExpression(node)
     || ts.isArrowFunction(node)
@@ -294,13 +307,20 @@ function isFunctionLike(node) {
  * Die Deklaration eines Namens innerhalb einer Datei — auch verschachtelt.
  * Das `_core`-Muster von `process-map` liegt INNERHALB von `data()`, eine
  * Suche nur über `sf.statements` würde es übersehen.
- * @returns {ts.FunctionDeclaration|ts.VariableDeclaration|null}
+ *
+ * Klassendeklarationen zählen mit, seit die Model-Seite die `extends`-Kette
+ * verfolgt (`export class State extends FlowchartState`). Für die
+ * Spread-Auflösung ändert das nichts: eine Klasse ist weder ein Objektliteral
+ * noch eine Funktion, beide Pfade dort verwerfen sie ohnehin.
+ *
+ * @returns {ts.FunctionDeclaration|ts.VariableDeclaration|ts.ClassDeclaration|null}
  */
 export function findLocalDeclaration(name, sf) {
   let found = null;
   const walk = (node) => {
     if (found) return;
     if (ts.isFunctionDeclaration(node) && node.name?.text === name) { found = node; return; }
+    if (ts.isClassDeclaration(node) && node.name?.text === name) { found = node; return; }
     if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.name.text === name) { found = node; return; }
     ts.forEachChild(node, walk);
   };

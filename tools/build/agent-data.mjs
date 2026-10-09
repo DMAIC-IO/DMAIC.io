@@ -26,10 +26,17 @@
  * ANDEREN Datei, trägt sein Verstoßcode die Herkunft (`@<pfad>:<zeile>`) — die
  * Registry-Form bleibt davon unberührt.
  *
+ * Auf der MODEL-Seite gilt dasselbe für die Vererbung: ein Model, das von
+ * einer Basisklasse erbt (`export class State extends FlowchartState`), erbt
+ * auch deren Felder, und ein im Konstruktor annotiertes Feld
+ * (`/** @type {…} *\/ this.steps = []`) ist ein Feld. Beides zusammen war die
+ * Lücke, durch die die vier Flowchart-Module mit NULL Lesefelder in der
+ * Registry standen — eine leere Lesefläche, die wie „kein Zustand" aussah.
+ *
  * Was trotzdem unauflösbar bleibt, meldet der Generator als Verstoß statt zu
- * schweigen: `unresolved_spread:<ausdruck>` und `unresolvable_data_literal`.
- * Beide bleiben BERICHTEND — wie die DOM-Umweg-Prüfung zählen sie erst, wenn
- * das Modul das Modul-Tag trägt (Spec §8: „Lücken blockieren nicht"). So kann
+ * schweigen: `unresolved_spread:<ausdruck>`, `unresolvable_data_literal` und
+ * `unresolved_base_class:<name>`. Alle drei bleiben BERICHTEND — wie die
+ * DOM-Umweg-Prüfung zählen sie erst, wenn das Modul das Modul-Tag trägt (Spec §8: „Lücken blockieren nicht"). So kann
  * aber kein Modul freigegeben werden, bevor jemand hingesehen hat.
  *
  * Extraktion über die TypeScript-Compiler-API: sie liest JSDoc aus reinem
@@ -41,7 +48,7 @@
 import ts from 'typescript';
 import { readdirSync, existsSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
-import { createResolver, functionFromMember } from './agent-resolve.mjs';
+import { createResolver, functionFromMember, isFunctionLike } from './agent-resolve.mjs';
 
 const MODULES_DIR = 'js/modules';
 
@@ -80,8 +87,11 @@ function buildEntry(resolver, appDir, viewmodelFile, modelFile) {
   const sf = resolver.parse(viewmodelFile);
   const tagged = hasModuleTag(sf);
   const { actions, violations } = readViewmodel(sf, resolver, appDir);
-  const fields = modelFile ? readModelFields(resolver.parse(modelFile)) : {};
-  const reported = [...violations, ...collectDomDetours(sf)];
+  const model = modelFile
+    ? readModelFields(resolver, resolver.parse(modelFile))
+    : { fields: {}, violations: [] };
+  const fields = model.fields;
+  const reported = [...violations, ...model.violations, ...collectDomDetours(sf)];
   // Verstöße zählen nur, wenn das Modul etwas behauptet (Spec §9).
   const effective = tagged ? reported : [];
   return {
@@ -227,32 +237,187 @@ function originSuffix(entry, moduleSf, appDir) {
 }
 
 /**
+ * Obergrenze der `extends`-Kette. Der Bestand hat zwei Stufen
+ * (`State extends FlowchartState`); zwölf halten einen pathologischen Fall an,
+ * ohne je einen echten zu treffen. Wie bei den Spreads fängt der Pfadschutz
+ * die Zyklen und die Tiefe die Ketten, die wachsen ohne zu kreisen — und ein
+ * Treffer der Grenze ist ein BEFUND, kein stilles Verwerfen.
+ */
+const MAX_EXTENDS_DEPTH = 12;
+
+/**
  * Model-Felder → Lesestruktur. Deckt sich mit „Models sind für die
  * Persistenz": die Lesefläche IST die persistierte Form (Spec §8).
  * `_`-präfigierte Felder sind privat und erscheinen nicht.
- * @returns {Record<string, { type: string, help: string, bulk: boolean }>}
+ *
+ * Zwei Quellen eines Feldes, beide nötig: eine Property-Deklaration
+ * (`problem = ''`) UND eine annotierte Konstruktor-Zuweisung
+ * (`this.steps = []`). Die vier Flowchart-Module hatten null Felder, weil ihr
+ * Zustand über BEIDE Lücken fiel — `FlowchartState` deklariert `steps` im
+ * Konstruktor, und die Modelle erben es.
+ *
+ * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
+ * @param {ts.SourceFile} sf  die Model-Datei
+ * @returns {{ fields: Record<string, { type: string, help: string, bulk: boolean }>, violations: string[] }}
  */
-function readModelFields(sf) {
-  const fields = {};
+function readModelFields(resolver, sf) {
+  const violations = [];
+  const classes = [];
   const walk = (node) => {
-    if (ts.isClassDeclaration(node)) {
-      for (const member of node.members) {
-        if (!ts.isPropertyDeclaration(member)) continue;
-        const name = member.name.getText();
-        if (name.startsWith('_')) continue;
-        const tags = ts.getJSDocTags(member);
-        const typeTag = tags.find(t => t.tagName.text === 'type');
-        fields[name] = {
-          type: typeTag?.typeExpression?.type?.getText() ?? 'any',
-          help: cleanComment(typeTag?.comment),
-          bulk: tags.some(t => t.tagName.text === MARK_BULK),
-        };
-      }
-    }
+    if (ts.isClassDeclaration(node)) classes.push(node);
     ts.forEachChild(node, walk);
   };
   walk(sf);
+
+  // Eine Klasse, die eine ANDERE Klasse derselben Datei erbt, trägt ihre
+  // Felder über jene Unterklasse bei und nicht noch einmal selbst. Sonst
+  // entschiede die Quellreihenfolge der Klassen über den Vorrang — und eine
+  // nach der Unterklasse notierte Basis würde deren Überschreibung kippen.
+  const inherited = new Set();
+  for (const node of classes) {
+    const base = baseIdentifier(node);
+    if (base && classes.some(c => c !== node && c.name?.text === base.text)) inherited.add(base.text);
+  }
+  const roots = classes.filter(c => !(c.name && inherited.has(c.name.text)));
+
+  const fields = {};
+  // Ein Zyklus innerhalb EINER Datei leerte `roots` — dann zählen wieder alle
+  // Klassen; der Pfadschutz unten hält den Abstieg trotzdem an.
+  for (const node of (roots.length > 0 ? roots : classes)) {
+    Object.assign(fields, classFields(resolver, node, sf, violations, new Set(), 0));
+  }
+  return { fields, violations };
+}
+
+/** @returns {ts.Expression|null} der `extends`-Ausdruck einer Klasse. */
+function baseIdentifier(node) {
+  const clause = node.heritageClauses?.find(h => h.token === ts.SyntaxKind.ExtendsKeyword);
+  const expr = clause?.types?.[0]?.expression;
+  return expr && ts.isIdentifier(expr) ? expr : (expr ?? null);
+}
+
+/**
+ * Die Felder einer Klasse samt geerbter — Basis ZUERST, eigene darüber: bei
+ * Namensgleichheit gewinnt die Unterklasse, das ist die Semantik von
+ * Vererbung.
+ *
+ * Der Zyklusschutz ist derselbe wie bei den Spreads: ein PFAD-Set, betreten
+ * beim Abstieg, freigegeben beim Zurückkehren.
+ *
+ * @returns {Record<string, { type: string, help: string, bulk: boolean }>}
+ */
+function classFields(resolver, node, sf, violations, path, depth) {
+  const self = `${sf.fileName}:${node.pos}`;
+  path.add(self);
+  const fields = {};
+  const base = baseIdentifier(node);
+  if (base) {
+    // `extends mixin(Base)` oder `extends ns.Base`: nicht auflösbar, aber
+    // auch nicht verschweigen — sonst sieht eine leere Lesefläche aus wie
+    // eine Klasse ohne Zustand.
+    const label = compact(base.getText());
+    if (!ts.isIdentifier(base)) {
+      violations.push(`unresolved_base_class:${label}`);
+    } else {
+      const decl = resolver.findDeclaration(base.text, sf);
+      if (!decl || !ts.isClassDeclaration(decl.node)) {
+        violations.push(`unresolved_base_class:${label}`);
+      } else if (!path.has(`${decl.sf.fileName}:${decl.node.pos}`)) {
+        if (depth + 1 > MAX_EXTENDS_DEPTH) violations.push(`unresolved_base_class:${label}`);
+        else Object.assign(fields, classFields(resolver, decl.node, decl.sf, violations, path, depth + 1));
+      }
+      // Eine Klasse auf dem eigenen Pfad ist aufgelöst, nicht unauflösbar —
+      // der Abstieg endet hier STILL, wie beim selbstspreizenden Mixin.
+    }
+  }
+  for (const [name, field] of ownFields(node)) fields[name] = field;
+  path.delete(self);
   return fields;
+}
+
+/**
+ * Die eigenen Felder einer Klasse, in QUELLREIHENFOLGE — Property-
+ * Deklarationen und Konstruktor-Zuweisungen im selben Strom.
+ *
+ * Die Reihenfolge entscheidet bei Namensgleichheit, und zwar absichtlich
+ * nicht die Art der Deklaration: wer `problem = ''` deklariert und im
+ * Konstruktor `this.problem` mit einer genaueren Annotation überschreibt,
+ * meint die zweite Fassung — zur Laufzeit gewinnt sie auch. Class-Member
+ * stehen in Quellreihenfolge, der Konstruktor steuert seine Zuweisungen an
+ * seiner eigenen Position bei; damit ergibt die Iteration genau diese Folge.
+ *
+ * @returns {Array<[string, { type: string, help: string, bulk: boolean }]>}
+ */
+function ownFields(node) {
+  const out = [];
+  for (const member of node.members) {
+    if (ts.isPropertyDeclaration(member)) {
+      const name = member.name.getText();
+      if (name.startsWith('_')) continue;
+      // Ohne `@type` bleibt eine Property-Deklaration ein Feld (`any`): sie
+      // IST die Zustandszusage. Nur die Konstruktor-Zuweisung braucht die
+      // Annotation als Signal — siehe `constructorFields`.
+      out.push([name, fieldFrom(ts.getJSDocTags(member), null)]);
+      continue;
+    }
+    if (ts.isConstructorDeclaration(member)) out.push(...constructorFields(member));
+  }
+  return out;
+}
+
+/**
+ * Annotierte `this.<name> = …`-Zuweisungen im Konstruktorkörper.
+ *
+ * Die `@type`-Annotation ist das Signal „dies ist persistierter Zustand",
+ * nicht die Zuweisung selbst: ohne sie entsteht kein Feld. Und nur der
+ * Konstruktor — ein `this.x = …` in einer anderen Methode ist in diesem
+ * Bestand fast immer ein Ansichtspuffer und wäre ein falscher Positiver.
+ *
+ * @param {ts.ConstructorDeclaration} ctor
+ * @returns {Array<[string, { type: string, help: string, bulk: boolean }]>}
+ */
+function constructorFields(ctor) {
+  const out = [];
+  if (!ctor.body) return out;
+  const walk = (node) => {
+    // Abstiegsstopp an jedem eigenen Funktionskörper: eine Zuweisung in einem
+    // Rückruf (`rows.forEach(() => { this.late = 1; })`) ist kein Feld.
+    if (isFunctionLike(node) || ts.isClassDeclaration(node) || ts.isClassExpression(node)) return;
+    if (ts.isExpressionStatement(node)) {
+      const name = assignedThisProperty(node.expression);
+      const tags = ts.getJSDocTags(node);
+      const typeTag = tags.find(t => t.tagName.text === 'type');
+      if (name !== null && !name.startsWith('_') && typeTag) out.push([name, fieldFrom(tags, typeTag)]);
+      return;
+    }
+    ts.forEachChild(node, walk);
+  };
+  ts.forEachChild(ctor.body, walk);
+  return out;
+}
+
+/** @returns {string|null} der Name in `this.<name> = …`, sonst `null`. */
+function assignedThisProperty(expression) {
+  if (!ts.isBinaryExpression(expression)) return null;
+  if (expression.operatorToken.kind !== ts.SyntaxKind.EqualsToken) return null;
+  const left = expression.left;
+  if (!ts.isPropertyAccessExpression(left) || left.expression.kind !== ts.SyntaxKind.ThisKeyword) return null;
+  return left.name.text;
+}
+
+/**
+ * Die Registry-Form eines Feldes. Unverändert `{ type, help, bulk }` — an
+ * einem Feld steht KEINE Herkunft, anders als an einem Verstoßcode: die Form
+ * ist Teil des Vertrags von `read()`.
+ * @returns {{ type: string, help: string, bulk: boolean }}
+ */
+function fieldFrom(tags, knownTypeTag) {
+  const typeTag = knownTypeTag ?? tags.find(t => t.tagName.text === 'type');
+  return {
+    type: typeTag?.typeExpression?.type?.getText() ?? 'any',
+    help: cleanComment(typeTag?.comment),
+    bulk: tags.some(t => t.tagName.text === MARK_BULK),
+  };
 }
 
 /**
