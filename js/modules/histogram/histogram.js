@@ -706,10 +706,10 @@ const mod = createModule({
           });
         }
         if (cc.showXLabel) {
-          svgText(t('xLabel'), { x: pa.x + pa.w / 2, y: pa.y + pa.h + 46, 'text-anchor': 'middle', 'font-size': `${cc.labelSize  }px`, 'font-weight': '600', fill: textColor }, svg);
+          svgText(cc.xLabel || t('xLabel'), { x: pa.x + pa.w / 2, y: pa.y + pa.h + 46, 'text-anchor': 'middle', 'font-size': `${cc.labelSize  }px`, 'font-weight': '600', fill: textColor }, svg);
         }
         if (cc.showYLabel) {
-          svgText(t('yLabel'), { x: 18, y: pa.y + pa.h / 2, 'text-anchor': 'middle', 'font-size': `${cc.labelSize  }px`, 'font-weight': '600', fill: textColor, transform: `rotate(-90, 18, ${pa.y + pa.h / 2})` }, svg);
+          svgText(cc.yLabel || t('yLabel'), { x: 18, y: pa.y + pa.h / 2, 'text-anchor': 'middle', 'font-size': `${cc.labelSize  }px`, 'font-weight': '600', fill: textColor, transform: `rotate(-90, 18, ${pa.y + pa.h / 2})` }, svg);
         }
         if (cc.showTitle) {
           svgText(chartTitle, { x: pa.x + pa.w / 2, y: 26, 'text-anchor': 'middle', 'font-size': `${cc.titleSize  }px`, 'font-weight': '700', fill: textColor }, svg);
@@ -928,7 +928,7 @@ const mod = createModule({
 
         inner.appendChild(edTitleSection(cc, rerender, te));
         inner.appendChild(edFontSizeSection(cc, rerender, te));
-        inner.appendChild(edAxisLabelSection(cc, rerender, te));
+        inner.appendChild(edAxisLabelSection(cc, rerender, te, undefined, { xLabel: t('xLabel'), yLabel: t('yLabel') }));
         inner.appendChild(edAxisTickSection(cc, rerender, te));
 
         const s1 = edSection(t('edSeries'));

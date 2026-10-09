@@ -245,4 +245,17 @@ suite('Histogram — Model State', () => {
     assertEqual(s.datasets.length, 1);
     assertEqual(s.datasets[0].valueRef, null);
   });
+
+  test('axis titles round-trip as chartXLabelText/chartYLabelText', () => {
+    const s = new State();
+    s.chartConfig.xLabel = 'Diameter [mm]';
+    s.chartConfig.yLabel = 'Count';
+    const j = s.toJSON();
+    assertEqual(j.chartXLabelText, 'Diameter [mm]');
+    assertEqual(j.chartYLabelText, 'Count');
+    const back = State.fromJSON(j);
+    assertEqual(back.chartConfig.xLabel, 'Diameter [mm]');
+    assertEqual(back.chartConfig.yLabel, 'Count');
+    assertEqual(State.fromJSON({}).chartConfig.xLabel, '');
+  });
 });
