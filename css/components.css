@@ -1763,8 +1763,14 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
 .context-help__btn {
   position: absolute;
   top: 0;
-  right: 0;
-  transform: translate(50%, -50%);
+  /* Neben dem Label, nicht darauf: der Anker ist schrumpfbreit, ein nach
+     innen gerechneter Versatz (right: 0 / -0.75em) legt den Kreis auf den
+     letzten Buchstaben. Die linke Kante des Knopfs an die rechte Kante des
+     Ankers zu hängen hält die Glyphe in jeder Schriftgröße frei. Absolut
+     positioniert, also ohne Einfluss auf das Layout. */
+  left: 100%;
+  margin-left: 2px;
+  transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
   justify-content: center;

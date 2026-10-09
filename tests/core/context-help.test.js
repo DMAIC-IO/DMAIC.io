@@ -67,6 +67,41 @@ suite('context help', () => {
     assertEqual(label.querySelectorAll('.context-help__btn').length, 1);
   });
 
+  test('a textContent rewrite wipes the button — the next sweep brings it back', () => {
+    const label = document.createElement('label');
+    label.setAttribute('data-help-key', 'modules.five-why.agent.fields.problem');
+    host.appendChild(label);
+    augmentContextHelp(host);
+    assertEqual(label.querySelectorAll('.context-help__btn').length, 1);
+
+    // Genau das tut Alpines x-text: textContent setzen — alle Kinder weg,
+    // das Idempotenz-Merkmal am Anker bleibt stehen.
+    label.textContent = 'Problemstellung';
+    assertEqual(label.querySelectorAll('.context-help__btn').length, 0);
+
+    augmentContextHelp(host);
+    assertEqual(label.querySelectorAll('.context-help__btn').length, 1);
+  });
+
+  test('the aria-label follows a label text that only arrives after the first sweep', () => {
+    const label = document.createElement('label');
+    label.setAttribute('data-help-key', 'modules.five-why.agent.fields.problem');
+    host.appendChild(label);
+
+    augmentContextHelp(host);
+    assertEqual(
+      label.querySelector('.context-help__btn').getAttribute('aria-label'),
+      'contextHelp.ariaLabel:{"label":""}',
+    );
+
+    label.textContent = 'Problemstellung';
+    augmentContextHelp(host);
+    assertEqual(
+      label.querySelector('.context-help__btn').getAttribute('aria-label'),
+      'contextHelp.ariaLabel:{"label":"Problemstellung"}',
+    );
+  });
+
   test('opening shows the help text and a backdrop; closing removes both', () => {
     const label = document.createElement('label');
     label.setAttribute('data-help-key', 'modules.five-why.agent.fields.problem');

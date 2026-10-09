@@ -104,7 +104,7 @@ export function openContextHelp(button) {
   panel.setAttribute('aria-modal', 'false');
 
   const anchor = button.parentElement?.closest(ANCHOR_SELECTOR);
-  const label = (anchor?.textContent || '').trim();
+  const label = anchor ? anchorLabel(anchor) : '';
   if (label) {
     const title = document.createElement('div');
     title.className = 'context-help__panel-title';
@@ -133,35 +133,72 @@ export function closeContextHelp() {
 // ─── Intern ────────────────────────────────────────────────────────
 
 function augmentOne(anchor) {
-  if (!anchor || anchor.dataset.contextHelpAugmented === '1') return;
-  if (anchor.classList.contains('context-help__btn')) return;
+  if (!anchor || anchor.classList.contains('context-help__btn')) return;
   const key = anchor.getAttribute('data-help-key');
   // Kein Schlüssel hinterlegt → kein Knopf. Die Lücke ist dann sichtbar und
   // wird über `npm run agent:report` gezählt, statt eine leere Blase zu
   // öffnen.
   if (!key || !STATE.i18n?.exists?.(key)) return;
 
-  const label = (anchor.textContent || '').trim();
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'context-help__btn';
-  button.setAttribute('data-help-key', key);
-  // Nicht im Tabulator-Lauf: die Fläche ist ein Zusatz, kein Pflichtweg; über
-  // die Tastatur bleibt der Hilfetext über das Handbuch erreichbar.
-  button.tabIndex = -1;
-  button.setAttribute('aria-label', STATE.i18n.t('contextHelp.ariaLabel', { label }));
-  button.appendChild(icon('status.help', { size: 'sm' }));
+  // Idempotenz am tatsächlich vorhandenen Kind, nicht nur am Merkmal: Alpines
+  // `x-text` setzt `textContent` und wischt den eingespritzten Knopf dabei
+  // weg, ohne das Merkmal anzufassen. Ein Merkmal allein hieße: einmal
+  // überschrieben, für immer ohne Knopf.
+  let button = anchor.querySelector(':scope > .context-help__btn');
+  if (!button) {
+    button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'context-help__btn';
+    button.setAttribute('data-help-key', key);
+    // Nicht im Tabulator-Lauf: die Fläche ist ein Zusatz, kein Pflichtweg; über
+    // die Tastatur bleibt der Hilfetext über das Handbuch erreichbar.
+    button.tabIndex = -1;
+    button.appendChild(icon('status.help', { size: 'sm' }));
+    anchor.appendChild(button);
+  }
+
+  // Der Labeltext wird bei jedem Durchlauf neu gelesen statt beim ersten
+  // eingefroren: beim Einhängen einer Vorlage steht der Text noch nicht da
+  // (Alpines `x-text` füllt erst in `initTree`), die Beschriftung wäre sonst
+  // dauerhaft „Kontexthilfe zu „“ anzeigen".
+  button.setAttribute(
+    'aria-label',
+    STATE.i18n.t('contextHelp.ariaLabel', { label: anchorLabel(anchor) }),
+  );
 
   anchor.classList.add('context-help-anchor');
-  anchor.appendChild(button);
+  // Nur noch Markierung für Diagnose und E2E — die Idempotenz hängt oben am
+  // Knopf selbst, weil dieses Merkmal einen `textContent`-Überschreiber
+  // überlebt, der Knopf aber nicht.
   anchor.dataset.contextHelpAugmented = '1';
+}
+
+/**
+ * Der sichtbare Text des Ankers ohne den eingespritzten Knopf.
+ * @param {HTMLElement} anchor
+ * @returns {string}
+ */
+function anchorLabel(anchor) {
+  let text = '';
+  for (const node of anchor.childNodes) {
+    if (node.nodeType === 1 && node.classList?.contains('context-help__btn')) continue;
+    text += node.textContent ?? '';
+  }
+  return text.trim();
 }
 
 function handleMutations(records) {
   for (const record of records) {
     if (record.type !== 'childList') continue;
     for (const node of record.addedNodes) {
-      if (node.nodeType !== 1) continue;
+      if (node.nodeType !== 1) {
+        // Ein Textknoten statt eines Elements — das ist der Abdruck von
+        // `el.textContent = …` (Alpines `x-text`). Dabei verschwindet der
+        // Knopf aus dem Anker; ohne diesen Zweig käme er nie zurück, weil
+        // Merkmalsänderungen hier nicht beobachtet werden.
+        if (record.target?.nodeType === 1) augmentContextHelp(record.target);
+        continue;
+      }
       // Eigene Einspritzungen nicht erneut anfassen.
       if (node.classList?.contains('context-help__btn')) continue;
       augmentContextHelp(node);
