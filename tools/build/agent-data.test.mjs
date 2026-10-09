@@ -1262,3 +1262,42 @@ test('i18n-Tor: das deutsche read-Hilfetext von five-why bleibt der modulspezifi
   assert.ok(lookup(de, 'agent.shared.actions.read.help'));
   assert.ok(lookup(de, 'agent.shared.actions.read.params.options'));
 });
+
+/* ── Domänen-Tor ────────────────────────────────────────────────────────
+   Die vier Aufzähl-Setter des Hypothesentests prüfen ihr Argument gegen die
+   aus dem Model exportierten Wertemengen (`CATEGORIES`, `TEST_TYPES`,
+   `DIRECTIONS`, `TARGET_TYPES`) — ein Wert daneben rechnete still den
+   FALSCHEN Test (die Engines lesen jede unbekannte Richtung als `less`).
+   Diese Prüfung kann nur so viel wert sein, wie sie zu dem passt, was die
+   OBERFLÄCHE anbietet: driftete die `<option>`-Liste von der Wertemenge ab,
+   wäre entweder ein Knopf unbedienbar oder der Agent gegen eine veraltete
+   Liste geprüft. Deshalb wird hier die Vorlage selbst gelesen. */
+test('Domänen-Tor: die erklärten Wertemengen des Hypothesentests sind GENAU die der Vorlage', async () => {
+  const appDir = join(import.meta.dirname, '..', '..');
+  const { CATEGORIES, TEST_TYPES, DIRECTIONS, TARGET_TYPES } =
+    await import(join(appDir, 'js', 'modules', 'hypothesis-test', 'hypothesis-test-model.js'));
+  const html = readFileSync(
+    join(appDir, 'js', 'modules', 'hypothesis-test', 'hypothesis-test.html'), 'utf8');
+
+  /** Alle Werte eines Attributs in der Vorlage, in Vorkommensreihenfolge. */
+  const attrValues = (attr) =>
+    [...html.matchAll(new RegExp(`${attr}="([^"]+)"`, 'g'))].map(m => m[1]);
+  /** Die `<option value>` des `<select data-ref="…">`-Blocks. */
+  const optionValues = (ref) => {
+    const open = html.indexOf(`data-ref="${ref}"`);
+    assert.ok(open > 0, `kein <select data-ref="${ref}"> in der Vorlage`);
+    const end = html.indexOf('</select>', open);
+    return [...html.slice(open, end).matchAll(/<option value="([^"]+)"/g)].map(m => m[1]);
+  };
+
+  assert.deepEqual(attrValues('data-cat'), [...CATEGORIES]);
+  assert.deepEqual(attrValues('data-type'), [...TEST_TYPES]);
+  assert.deepEqual(optionValues('direction'), [...DIRECTIONS]);
+  assert.deepEqual(optionValues('target-type'), [...TARGET_TYPES]);
+
+  // Und die Listen sind eingefroren: eine zur Laufzeit erweiterte Wertemenge
+  // wäre ein Loch in genau der Prüfung, die sie tragen.
+  for (const list of [CATEGORIES, TEST_TYPES, DIRECTIONS, TARGET_TYPES]) {
+    assert.ok(Object.isFrozen(list));
+  }
+});

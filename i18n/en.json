@@ -959,7 +959,7 @@
             "help": "Renames a sheet.",
             "params": {
               "id": "The id of the sheet.",
-              "name": "The new name; empty or whitespace only keeps the old one."
+              "name": "The new name; empty or whitespace only is an invalid argument and therefore an error."
             }
           }
         },
@@ -1450,23 +1450,23 @@
           },
           "addRoot": { "help": "Adds a new level-1 Why question and returns its id." },
           "addChild": {
-            "help": "Adds the next Why level below a question and returns its id. Returns null when the question is already at level 5 (root cause) or when parentId matches no question.",
+            "help": "Adds the next Why level below a question and returns its id. Returns null when the question is already at level 5 (root cause) — that is a domain refusal, not an error. A parentId that matches no question is an error.",
             "params": { "parentId": "Id of the question the new level is added to." }
           },
           "setAnswer": {
             "help": "Writes the answer to a Why question.",
             "params": {
-              "nodeId": "Id of the question whose answer is set.",
+              "nodeId": "Id of the question whose answer is set. An unknown id is an error.",
               "text": "The answer — a cause, not a culprit."
             }
           },
           "removeNode": {
             "help": "Removes a question together with every question below it.",
-            "params": { "nodeId": "Id of the question to remove." }
+            "params": { "nodeId": "Id of the question to remove. An unknown id is an error." }
           },
           "toggleCollapse": {
             "help": "Collapses or expands a question's subtree; purely visual, the content stays.",
-            "params": { "id": "Id of the question whose subtree is toggled." }
+            "params": { "id": "Id of the question whose subtree is toggled. An unknown id is an error." }
           },
           "collapseAll": { "help": "Collapses every question that has sub-questions." },
           "expandAll": { "help": "Expands every question." }
@@ -4054,15 +4054,15 @@
           "runAnalysis": { "help": "Computes with the current configuration. Calling it repeatedly is harmless; incomplete inputs leave result at null." },
           "setCategory": {
             "help": "Chooses what is being tested: spread (variance) or location (mean). The recomputation only follows on the next tick, because the column pickers are remounted — a read in the same batch still sees the old result, or null.",
-            "params": { "cat": "'variance' or 'mean'." }
+            "params": { "cat": "'variance' or 'mean'. Any other value is an error." }
           },
           "setTestType": {
             "help": "Chooses the sample layout: one sample against a target value, two samples against each other, or k groups. The recomputation only follows on the next tick, because the column pickers are remounted — a read in the same batch still sees the old result, or null.",
-            "params": { "type": "'one', 'two' or 'k'." }
+            "params": { "type": "'one', 'two' or 'k'. Any other value is an error." }
           },
           "setDirection": {
             "help": "Chooses the direction of the alternative hypothesis. One-sided only if the question was one-sided beforehand — not afterwards because it fits better that way.",
-            "params": { "direction": "'two-sided', 'greater' or 'less'." }
+            "params": { "direction": "'two-sided', 'greater' or 'less'. Any other value is an error — it would be computed as 'less'." }
           },
           "setAlpha": {
             "help": "Sets the significance level.",
@@ -4078,7 +4078,7 @@
           },
           "setTargetType": {
             "help": "Defines whether the target value of the one-sample spread test is entered as a variance or as a standard deviation.",
-            "params": { "targetType": "'variance' or 'stddev'." }
+            "params": { "targetType": "'variance' or 'stddev'. Any other value is an error." }
           },
           "setEqualVariances": {
             "help": "Two samples, location: assume equal variances and run the pooled t-test. Off is the default — Welch does not need that assumption.",

@@ -959,7 +959,7 @@
             "help": "Benennt ein Blatt um.",
             "params": {
               "id": "Die id des Blatts.",
-              "name": "Der neue Name; leer oder nur Leerzeichen behält den alten."
+              "name": "Der neue Name; leer oder nur aus Leerzeichen ist ein ungültiges Argument und damit ein Fehler."
             }
           }
         },
@@ -1454,23 +1454,23 @@
             "help": "Legt eine neue Why-Frage der ersten Ebene an und gibt deren id zurück."
           },
           "addChild": {
-            "help": "Legt unter einer Frage die nächste Why-Ebene an und gibt deren id zurück. Liefert null, wenn die Frage schon auf Ebene 5 (Grundursache) liegt oder parentId zu keiner Frage gehört.",
+            "help": "Legt unter einer Frage die nächste Why-Ebene an und gibt deren id zurück. Liefert null, wenn die Frage schon auf Ebene 5 (Grundursache) liegt — das ist eine fachliche Absage, kein Fehler. Eine parentId, zu der es keine Frage gibt, ist dagegen ein Fehler.",
             "params": { "parentId": "Die id der Frage, unter der die neue Ebene entsteht." }
           },
           "setAnswer": {
             "help": "Schreibt die Antwort auf eine Why-Frage.",
             "params": {
-              "nodeId": "Die id der Frage, deren Antwort gesetzt wird.",
+              "nodeId": "Die id der Frage, deren Antwort gesetzt wird. Eine unbekannte id ist ein Fehler.",
               "text": "Die Antwort — eine Ursache, keine Schuldzuweisung."
             }
           },
           "removeNode": {
             "help": "Entfernt eine Frage samt allen darunter liegenden Fragen.",
-            "params": { "nodeId": "Die id der zu entfernenden Frage." }
+            "params": { "nodeId": "Die id der zu entfernenden Frage. Eine unbekannte id ist ein Fehler." }
           },
           "toggleCollapse": {
             "help": "Klappt den Teilbaum einer Frage zusammen oder auf; rein darstellend, der Inhalt bleibt.",
-            "params": { "id": "Die id der Frage, deren Teilbaum umgeschaltet wird." }
+            "params": { "id": "Die id der Frage, deren Teilbaum umgeschaltet wird. Eine unbekannte id ist ein Fehler." }
           },
           "collapseAll": { "help": "Klappt alle Fragen mit Unterfragen zusammen." },
           "expandAll": { "help": "Klappt alle Fragen auf." }
@@ -4058,15 +4058,15 @@
           "runAnalysis": { "help": "Rechnet mit der aktuellen Konfiguration. Mehrfachaufruf ist unschädlich; unvollständige Eingaben lassen result auf null." },
           "setCategory": {
             "help": "Wählt, was geprüft wird: Streuung (variance) oder Lage (mean). Die Neuberechnung folgt erst im nächsten Tick, weil die Spaltenauswahl neu eingehängt wird — ein read im selben Stapel sieht noch das alte Ergebnis beziehungsweise null.",
-            "params": { "cat": "'variance' oder 'mean'." }
+            "params": { "cat": "'variance' oder 'mean'. Jeder andere Wert ist ein Fehler." }
           },
           "setTestType": {
             "help": "Wählt die Stichprobenlage: eine Stichprobe gegen einen Zielwert, zwei Stichproben gegeneinander, oder k Gruppen. Die Neuberechnung folgt erst im nächsten Tick, weil die Spaltenauswahl neu eingehängt wird — ein read im selben Stapel sieht noch das alte Ergebnis beziehungsweise null.",
-            "params": { "type": "'one', 'two' oder 'k'." }
+            "params": { "type": "'one', 'two' oder 'k'. Jeder andere Wert ist ein Fehler." }
           },
           "setDirection": {
             "help": "Wählt die Richtung der Alternativhypothese. Einseitig nur, wenn die Fragestellung vorab einseitig war — nicht nachträglich, weil es so besser passt.",
-            "params": { "direction": "'two-sided', 'greater' oder 'less'." }
+            "params": { "direction": "'two-sided', 'greater' oder 'less'. Jeder andere Wert ist ein Fehler — er würde als 'less' gerechnet." }
           },
           "setAlpha": {
             "help": "Setzt das Signifikanzniveau.",
@@ -4082,7 +4082,7 @@
           },
           "setTargetType": {
             "help": "Legt fest, ob der Zielwert der Einstichproben-Streuungsprüfung als Varianz oder als Standardabweichung eingegeben ist.",
-            "params": { "targetType": "'variance' oder 'stddev'." }
+            "params": { "targetType": "'variance' oder 'stddev'. Jeder andere Wert ist ein Fehler." }
           },
           "setEqualVariances": {
             "help": "Zwei Stichproben, Lage: gleiche Varianzen annehmen und den gepoolten t-Test rechnen. Aus ist die Vorgabe — Welch braucht diese Annahme nicht.",

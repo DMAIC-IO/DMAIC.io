@@ -1420,7 +1420,7 @@ export const AGENT_REGISTRY = {
             "help": "the answer text"
           }
         ],
-        "returns": "boolean",
+        "returns": "void",
         "help": "Set the answer of a Why node. Same sink as the template's `x-model=\"nN.answer\"`."
       },
       "addRoot": {
@@ -1461,7 +1461,7 @@ export const AGENT_REGISTRY = {
             "help": "id of the node to remove"
           }
         ],
-        "returns": "boolean",
+        "returns": "void",
         "help": "Remove a node and its subtree. The UI handler `deleteNode()` asks the user first and then calls this — one sink, two callers."
       },
       "collapseAll": {
@@ -4796,7 +4796,7 @@ export const AGENT_REGISTRY = {
             "name": "name",
             "type": "string",
             "optional": false,
-            "help": "the new name; empty or whitespace keeps the old one"
+            "help": "the new name; must not be empty or whitespace only"
           }
         ],
         "returns": "void",

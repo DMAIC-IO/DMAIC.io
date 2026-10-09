@@ -731,9 +731,10 @@ const mod = createModule({
        *
        * @agent
        * @param {string} id id of the sheet to rename
-       * @param {string} name the new name; empty or whitespace keeps the old one
+       * @param {string} name the new name; must not be empty or whitespace only
        * @returns {void}
-       * @throws {Error} if no sheet has this id
+       * @throws {Error} if no sheet has this id, or if `name` is empty or
+       *   whitespace only
        */
       renameSheet(id, name) {
         // `State.renameSheet` kehrt bei unbekannter id still zurück; ohne
@@ -742,6 +743,14 @@ const mod = createModule({
         if (!this.model.sheets.some(s => s.id === id)) {
           throw new Error(`unknown sheet id "${id}"; available: `
             + `${this.model.sheets.map(s => s.id).join(', ')}`);
+        }
+        // `State.renameSheet` verwirft einen leeren Namen STILL und behielt
+        // den alten — der Aufruf kam als `void` zurück, und ein Agent konnte
+        // nicht unterscheiden, ob umbenannt wurde oder nicht. Ein leerer
+        // Name ist ein ungültiges ARGUMENT und wirft, wie die unbekannte id
+        // eine Zeile höher.
+        if (String(name ?? '').trim() === '') {
+          throw new Error(`empty sheet name for id "${id}"; a sheet name must contain a non-space character`);
         }
         this.model.renameSheet(id, name);
         this._flushAndNotify();
@@ -759,6 +768,9 @@ const mod = createModule({
         // sein (Kontextmenü „Blatt löschen"). Für die UI ist das kein
         // Fehler, nur nichts zu tun — `renameSheet()` würde werfen.
         if (!this.model.sheets.some(s => s.id === id)) return;
+        // Ein geleertes Eingabefeld ist für die UI ein Abbruch, kein Fehler:
+        // der alte Name bleibt. `renameSheet()` würde hier werfen.
+        if (String(name ?? '').trim() === '') return;
         this.renameSheet(id, name);
       },
       /** @noagent DOM event handler (rename keyboard) */

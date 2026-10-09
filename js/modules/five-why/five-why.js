@@ -21,6 +21,23 @@ import { downloadFile } from '../../core/export-utils.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
 import { State, MAX_LEVEL } from './five-why-model.js';
 
+/**
+ * Die Fehlermeldung für eine nodeId, zu der es keine Frage gibt — samt der
+ * Liste der vorhandenen ids, damit ein Agent seinen Tippfehler sieht statt
+ * zu raten.
+ * @param {{ nodes: object[] }} model
+ * @param {any} nodeId
+ * @returns {string}
+ */
+function unknownNode(model, nodeId) {
+  const ids = [];
+  const walk = (list) => {
+    for (const n of list ?? []) { ids.push(n.id); walk(n.children); }
+  };
+  walk(model.nodes);
+  return `unknown nodeId ${JSON.stringify(nodeId)}; available: ${ids.join(', ')}`;
+}
+
 export default createModule({
   config: {
     id: 'five-why',
@@ -118,14 +135,20 @@ export default createModule({
        * @agent
        * @param {number} nodeId id of the node
        * @param {string} text the answer text
-       * @returns {boolean} false when the node does not exist
+       * @returns {void}
+       * @throws {Error} if no node has this id
        */
       setAnswer(nodeId, text) {
+        // Eine nodeId, zu der es keine Frage gibt, ist ein UNGÜLTIGES
+        // ARGUMENT und wirft — nicht `false`. Die Regel gilt für alle
+        // freigegebenen Module gleich (ungültiges Argument: Fehler;
+        // fachliche Absage: dokumentierter Rückgabewert), sonst müsste ein
+        // Agent drei Protokolle lernen, von denen `module.describe` keines
+        // nennt.
         const node = this.model.findNode(nodeId);
-        if (!node) return false;
+        if (!node) throw new Error(unknownNode(this.model, nodeId));
         node.answer = String(text ?? '');
         this.$nextTick(() => this._growAll());
-        return true;
       },
       /**
        * Append a new level-1 Why node.
@@ -141,11 +164,16 @@ export default createModule({
        * Append a child Why below a node.
        * @agent
        * @param {number} parentId id of the node to append to
-       * @returns {number|null} id of the created child, or null — either because
-       *   the node is already at the root-cause level, or because parentId
-       *   matches no node
+       * @returns {number|null} id of the created child, or null when the node
+       *   is already at the root-cause level (level 5)
+       * @throws {Error} if no node has this id
        */
       addChild(parentId) {
+        // Die beiden Fälle, in denen `State.addChild` null liefert, sind
+        // NICHT dasselbe: eine parentId ohne Frage ist ein ungültiges
+        // Argument und wirft; „schon auf der Grundursachen-Ebene" ist eine
+        // fachliche Absage und behält ihren Rückgabewert `null`.
+        if (!this.model.findNode(parentId)) throw new Error(unknownNode(this.model, parentId));
         const child = this.model.addChild(parentId);
         this.$nextTick(() => this._growAll());
         return child ? child.id : null;
@@ -155,8 +183,12 @@ export default createModule({
        * @agent
        * @param {number} id id of the node to toggle
        * @returns {void}
+       * @throws {Error} if no node has this id
        */
       toggleCollapse(id) {
+        // `State.toggleCollapse` kehrt bei unbekannter id STILL zurück; der
+        // Aufruf meldete Erfolg, ohne etwas umgeschaltet zu haben.
+        if (!this.model.findNode(id)) throw new Error(unknownNode(this.model, id));
         this.model.toggleCollapse(id);
         this.$nextTick(() => this._growAll());
       },
@@ -165,12 +197,13 @@ export default createModule({
        * user first and then calls this — one sink, two callers.
        * @agent
        * @param {number} nodeId id of the node to remove
-       * @returns {boolean} false when the node does not exist
+       * @returns {void}
+       * @throws {Error} if no node has this id
        */
       removeNode(nodeId) {
-        const removed = this.model.deleteNode(nodeId);
-        if (removed) this.$nextTick(() => this._growAll());
-        return removed;
+        if (!this.model.findNode(nodeId)) throw new Error(unknownNode(this.model, nodeId));
+        this.model.deleteNode(nodeId);
+        this.$nextTick(() => this._growAll());
       },
       /**
        * @noagent  UI handler: asks the user before deleting a subtree and then

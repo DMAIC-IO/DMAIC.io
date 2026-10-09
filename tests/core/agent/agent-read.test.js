@@ -44,6 +44,50 @@ suite('agent read projection', () => {
     assertEqual(Object.prototype.hasOwnProperty.call(out, '_cursor'), false);
   });
 
+  /* ── Driftfreiheit: erklärt, aber nicht geliefert ─────────────────────
+     Der Vergleich „Schlüssel von read() == erklärte Felder" ist die eine
+     mechanische Zusicherung, dass eine erklärte Lesefläche nicht von der
+     Momentaufnahme abdriftet. Legte die Projektion den Schlüssel unbedingt
+     an, wäre dieser Vergleich per Konstruktion immer wahr — und ein aus der
+     Momentaufnahme gefallenes Feld käme still als `undefined` beim Agenten
+     an. */
+
+  test('ein erklärtes Feld, das die Momentaufnahme nicht führt, FEHLT in der Projektion', () => {
+    const out = projectReadState({ title: 'Messreihe' }, {
+      title: { type: 'string', help: '', bulk: false },
+      activeSheetId: { type: 'string', help: '', bulk: false },
+    });
+    assertDeepEqual(Object.keys(out), ['title']);
+    assertEqual(Object.prototype.hasOwnProperty.call(out, 'activeSheetId'), false);
+    assertEqual('activeSheetId' in out, false);
+  });
+
+  test('ein erklärtes Massenfeld, das die Momentaufnahme nicht führt, bekommt KEINEN Deskriptor', () => {
+    const out = projectReadState({ title: 'x' }, SCHEMA);
+    assertEqual(Object.prototype.hasOwnProperty.call(out, 'rows'), false);
+  });
+
+  test('ein vorhandenes null bleibt legal und kommt als null durch', () => {
+    // `result`, `colRef1`, `alpha`: ein null ist der dokumentierte
+    // Leerzustand und muss von „fehlt" unterscheidbar bleiben.
+    const out = projectReadState({ result: null, colRef1: null }, {
+      result: { type: 'object', help: '', bulk: false },
+      colRef1: { type: 'object', help: '', bulk: false },
+      colRef2: { type: 'object', help: '', bulk: false },
+    });
+    assertDeepEqual(Object.keys(out), ['result', 'colRef1']);
+    assertEqual(out.result, null);
+    assertEqual(out.colRef1, null);
+  });
+
+  test('ein vorhandenes undefined bleibt vorhanden — „fehlt" ist etwas anderes', () => {
+    const out = projectReadState({ result: undefined }, {
+      result: { type: 'object', help: '', bulk: false },
+    });
+    assertDeepEqual(Object.keys(out), ['result']);
+    assertEqual(out.result, undefined);
+  });
+
   test('a field absent from the schema never appears', () => {
     const out = projectReadState({ ...makeState(), secret: 1 }, SCHEMA);
     assertEqual(Object.prototype.hasOwnProperty.call(out, 'secret'), false);

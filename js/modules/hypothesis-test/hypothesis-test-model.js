@@ -13,10 +13,20 @@
 
 /** @typedef {{ instanceId: string, sheetId?: string, columnId: string }} ColumnRef */
 
-const CATEGORIES = ['variance', 'mean'];
-const TEST_TYPES = ['one', 'two', 'k'];
-const DIRECTIONS = ['two-sided', 'greater', 'less'];
-const TARGET_TYPES = ['variance', 'stddev'];
+/* Die erklärten Wertemengen der vier Aufzähl-Felder. Exportiert, damit die
+   Setter des Viewmodels gegen DIESELBE Liste prüfen, die `fromJSON` schon
+   benutzt — eine zweite Liste im Viewmodel wäre eine Parallelquelle, die
+   driften kann, und ein Wert daneben rechnet im Modul stillschweigend den
+   FALSCHEN Test (die Engines lesen `direction !== 'two-sided' && !==
+   'greater'` als „less"). */
+/** @type {readonly ('variance'|'mean')[]} */
+export const CATEGORIES = Object.freeze(['variance', 'mean']);
+/** @type {readonly ('one'|'two'|'k')[]} */
+export const TEST_TYPES = Object.freeze(['one', 'two', 'k']);
+/** @type {readonly ('two-sided'|'greater'|'less')[]} */
+export const DIRECTIONS = Object.freeze(['two-sided', 'greater', 'less']);
+/** @type {readonly ('variance'|'stddev')[]} */
+export const TARGET_TYPES = Object.freeze(['variance', 'stddev']);
 
 /** Sanitize a stored column reference (or null). */
 function refOrNull(r) {

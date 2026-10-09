@@ -76,8 +76,11 @@ suite('agent read mixin', () => {
     const mixin = agentReadMixin({ id: 'five-why' });
     const component = { ...mixin, model: null };
     // five-why's Schema hat zwei Felder (problem, nodes), beide nicht bulk;
-    // über einem leeren Snapshot projiziert liefert jedes `undefined` statt
-    // zu fehlen — `typeof === 'object'` allein hätte das nicht gezeigt.
-    assertDeepEqual(component.read(), { problem: undefined, nodes: undefined });
+    // über einem LEEREN Snapshot projiziert FEHLT jedes von beiden. Vorher
+    // kamen sie als `undefined` durch — und genau das machte den
+    // Driftvergleich der Pilotmodule (Schlüssel von read() == erklärte
+    // Felder) unfällbar.
+    assertDeepEqual(component.read(), {});
+    assertEqual(Object.keys(component.read()).length, 0);
   });
 });

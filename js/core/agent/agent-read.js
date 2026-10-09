@@ -18,7 +18,9 @@
  * @param {Record<string, { type: string, help: string, bulk: boolean }>} fieldSchema
  *   der `fields`-Teil des Registry-Eintrags (siehe AgentModuleEntry)
  * @param {{ fields?: string[], rows?: { from: number, to: number } }} [options]
- * @returns {object} die Projektion; Massenfelder entweder als Deskriptor
+ * @returns {object} die Projektion; ein erklärtes Feld, das `modelJson` nicht
+ *   führt, FEHLT darin (nicht `undefined`) — nur so fällt der
+ *   Driftvergleich „Schlüssel von read() == erklärte Felder"; Massenfelder entweder als Deskriptor
  *   `{ $bulk: true, kind, rowCount, columns }` oder (wenn in `options.fields`
  *   genannt) als Daten, bei gesetztem `options.rows` zusätzlich mit einem
  *   Schwesterschlüssel `<feld>$range`.
@@ -31,6 +33,19 @@ export function projectReadState(modelJson, fieldSchema, options = {}) {
 
   for (const [name, spec] of Object.entries(fieldSchema)) {
     if (name.startsWith('_')) continue;            // privat, erscheint nie
+    // Ein erklärtes Feld, das die Momentaufnahme NICHT führt, erscheint auch
+    // nicht in der Projektion. Zuvor legte die Schleife den Schlüssel
+    // unbedingt an (`clone(undefined)` ist `undefined`) — damit war die
+    // Schlüsselmenge von `read()` PER KONSTRUKTION identisch zur erklärten
+    // Feldliste, und der Driftvergleich der Pilotmodule konnte nie fallen:
+    // ein aus der Momentaufnahme verschwundenes Feld kam als `undefined`
+    // zurück und der Vergleich blieb grün. Jetzt fehlt der Schlüssel, und
+    // der Vergleich wird rot.
+    //
+    // `null` ist davon unberührt: ein Feld, das die Momentaufnahme mit
+    // `null` führt (`result`, `colRef1`, `alpha`), ist VORHANDEN und ein
+    // dokumentierter Leerzustand — es kommt weiter durch.
+    if (!Object.prototype.hasOwnProperty.call(source, name)) continue;
     const value = source[name];
 
     if (!spec.bulk) {
