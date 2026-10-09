@@ -10,6 +10,17 @@ import { icon } from '../core/icon.js';
 import { resolveActions } from './resolve-actions.js';
 import { findInstancePhase } from '../core/router/instance-ops.js';
 
+/**
+ * Obergrenze für `whenInstanceReady`. Großzügig: ein Einhängen lädt einen
+ * Chunk nach, und ein kaltes, langsames Netz darf nicht in den Rückfall
+ * laufen. Die Grenze ist KEINE Ablaufsteuerung, sondern ein Riegel gegen den
+ * Dauerhänger: `core/agent/agent-runtime.js` reiht Stapel über eine
+ * Warteschlange auf, ein nie auflösendes `instance.call` blockierte also
+ * nicht EINEN Aufruf, sondern die gesamte Agentenfläche. Lieber die saubere
+ * Absage `unknown_instance` als ein Versprechen, das nie einlöst.
+ */
+const MOUNT_TIMEOUT_MS = 20000;
+
 export class Workspace {
   /**
    * @param {HTMLElement} container
@@ -520,14 +531,30 @@ export class Workspace {
    * und ihre Hülle schon im DOM stand.
    *
    * @param {string} instanceId
-   * @returns {Promise<object|null>} das lebende Modul, oder null
+   * @param {{ timeoutMs?: number }} [opts] Frist für das Warten INSGESAMT
+   * @returns {Promise<object|null>} das lebende Modul, oder null — auch dann,
+   *   wenn das Einhängen scheiterte oder die Frist riss
    */
-  async whenInstanceReady(instanceId) {
+  async whenInstanceReady(instanceId, { timeoutMs = MOUNT_TIMEOUT_MS } = {}) {
+    const deadline = Date.now() + timeoutMs;
     // In einer Schleife: während des Wartens kann `_showPhase` die Hülle neu
-    // einhängen, dann steht eine ZWEITE Einhängung im Flug.
+    // einhängen, dann steht eine ZWEITE Einhängung im Flug. Die Frist gilt
+    // für das Warten insgesamt, nicht je Durchlauf.
     let pending;
     while ((pending = this._pending.get(instanceId))) {
-      await pending;
+      const left = deadline - Date.now();
+      if (left <= 0) return null;
+      let timer;
+      // Ein gescheitertes Einhängen ist hier kein Fehler, sondern ein Ende:
+      // `_instantiateModule` fängt den Fehler des Moduls selbst ab und stellt
+      // die Fehlerkarte; bricht es darüber hinaus, soll der Aufrufer die
+      // saubere Absage sehen und keine durchgereichte Ausnahme.
+      const timedOut = await Promise.race([
+        pending.then(() => false, () => false),
+        new Promise((resolve) => { timer = setTimeout(() => resolve(true), left); }),
+      ]);
+      clearTimeout(timer);
+      if (timedOut) return null;
     }
     return this._instances.get(instanceId) ?? null;
   }
@@ -605,8 +632,15 @@ export class Workspace {
 
   /**
    * Die lebende Modulinstanz zu einer instanceId, oder null wenn sie nicht
-   * gemountet ist. Öffentlich, weil die Agentenfläche über denselben Weg an
-   * das Viewmodel kommt wie die Aktionsleiste (`getActionData()`).
+   * gemountet ist.
+   *
+   * ACHTUNG — SYNCHRONER GRIFF, OHNE WARTEN. Seit 2026-10-09 hat diese
+   * Methode keinen Produktionsaufrufer mehr; sie bleibt für Diagnose und
+   * Tests („lebte das Viewmodel zu diesem Zeitpunkt schon?"). Die
+   * Agentenfläche benutzte sie und meldete deshalb `unknown_instance` für
+   * eine Instanz, deren Einhängen noch lief. Wer an ein Viewmodel will,
+   * nimmt `whenInstanceReady()` — nicht diese Methode zurück in den
+   * Agentenpfad.
    * @param {string} instanceId
    * @returns {object|null}
    */
