@@ -511,6 +511,7 @@ const mod = createModule({
         const x = result._x, y = result._y;
         const { slope, intercept, xMin, xMax } = this._regression(x, y);
         await this._mkScatter(plotEl, gen, {
+          editKey: 'single',
           xLabel: result._nameX || 'X', yLabel: result._nameY || 'Y', showLegend: true,
           dataName: _t('dataPoints'), lineName: _t('regressionLine'),
           x, y, slope, intercept, xMin, xMax,
@@ -529,6 +530,7 @@ const mod = createModule({
           if (!plotEl) continue;
           const { slope, intercept, xMin, xMax } = this._regression(raw.x, raw.y);
           await this._mkScatter(plotEl, gen, {
+            editKey: `pair:${pair.key}`,
             xLabel: names[pair.i], yLabel: names[pair.j], showLegend: false,
             dataName: _t('dataPoints'), lineName: '',
             x: raw.x, y: raw.y, slope, intercept, xMin, xMax,
@@ -551,6 +553,7 @@ const mod = createModule({
 
       async _mkScatter(plotEl, gen, o) {
         const chart = await module._context.chartManager.create(plotEl, 'scatter', {
+          editKey: o.editKey,
           xLabel: o.xLabel, yLabel: o.yLabel, showLegend: o.showLegend,
           series: [
             { name: o.dataName, color: 'var(--color-chart-1)', markerSize: 4, strokeWidth: 0.75, x: o.x, y: o.y, symbol: 'circle' },

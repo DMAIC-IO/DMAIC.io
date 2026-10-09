@@ -166,6 +166,7 @@ const mod = createModule({
           if (!host) return;
 
           const chart = await module._context.chartManager.create(host, 'control-chart', {
+            editKey: sc.id,
             title: '',
             xLabel: _t('xLabelSample'),
             yLabel: sc.yLabel,
