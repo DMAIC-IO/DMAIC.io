@@ -924,6 +924,52 @@
     "worksheet": {
       "name": "Data Collection",
       "description": "Spreadsheet for data entry and management",
+      "whenToUse": "The shared data substrate: measurements land here before an analysing tool reads them through a column reference. Almost every analysis starts with a data collection.",
+      "agent": {
+        "actions": {
+          "read": {
+            "help": "Returns the sheet list, the active sheet and the column headers; the rows come only on request via options.fields = ['rows'].",
+            "params": { "options": "Optional: fields: ['rows'] returns the rows, rows: { from, to } trims them." }
+          },
+          "importCsv": {
+            "help": "Replaces the active sheet's content with the given CSV data. Delimiter and header row are detected; the step can be reverted with undo.",
+            "params": { "csvText": "The full CSV or TSV text, header row included if present." }
+          },
+          "setCells": {
+            "help": "Writes a block of values into one column, downwards from a row. Type detection, locks and undo as with cell entry.",
+            "params": {
+              "columnId": "The id of the target column, as read().columns[].id names it.",
+              "startRow": "Zero-based index of the first row.",
+              "values": "The values, one per row."
+            }
+          },
+          "addColumn": { "help": "Appends an empty column to the active sheet." },
+          "addRows": {
+            "help": "Appends empty rows to the active sheet.",
+            "params": { "count": "Number of rows; ten without an argument, like the toolbar button." }
+          },
+          "undo": { "help": "Reverts the last change to the sheet." },
+          "redo": { "help": "Restores a reverted change." },
+          "addSheet": { "help": "Creates a new sheet, makes it active and returns its id." },
+          "switchSheet": {
+            "help": "Switches to another sheet. The following read calls then refer to it.",
+            "params": { "id": "The id of the sheet, as read().sheets[].id names it." }
+          },
+          "renameSheet": {
+            "help": "Renames a sheet.",
+            "params": {
+              "id": "The id of the sheet.",
+              "name": "The new name; empty or whitespace only keeps the old one."
+            }
+          }
+        },
+        "fields": {
+          "sheets": "All sheets of the workbook in tab order, each with id and name.",
+          "activeSheetId": "The id of the sheet that columns and rows refer to.",
+          "columns": "The column headers of the active sheet. id is the columnId of a column reference, shortName the short form used in formulas (C1, C2 …), role the detected role of the column.",
+          "rows": "The data rows of the active sheet, each row in column order. Bulk data: without options.fields = ['rows'] only the extent is returned."
+        }
+      },
       "undo": "Undo (Ctrl+Z)",
       "redo": "Redo (Ctrl+Y)",
       "addColumn": "Add column",

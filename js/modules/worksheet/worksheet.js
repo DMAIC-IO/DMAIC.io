@@ -15,10 +15,17 @@
  * 🔴 EVENT CONTRACT IS FROZEN. Emits `worksheet:dataChanged` (debounced ~150ms),
  *    `chart-suggestion:load`, `module:added`, `module:activated`. Listens to
  *    `worksheet:appendColumn`. Same payload shapes as the legacy module.
+ *
+ * @agent  Vollständig über das Viewmodel steuerbar: CSV-Import, Zellblöcke
+ *   schreiben, Spalten und Zeilen anlegen, Rückgängig, Blätter anlegen,
+ *   wechseln und umbenennen. Dateidialoge, Popout-Widgets und die
+ *   Auswahl-abhängigen Knöpfe bleiben der UI vorbehalten; gelesen wird über
+ *   read() mit erklärter Lesefläche (AgentRead).
  */
 
 import { createModule } from '../../core/template-module.js';
 import Alpine from '@alpinejs/csp';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { State } from './worksheet-model.js';
 import { DataGrid, isFormula, evaluateFormula } from '../../core/datagrid/datagrid.js';
 import { parseCellInput } from '../../core/datagrid/datagrid-utils.js';
@@ -495,6 +502,22 @@ class FormulaEditor {
 //  MODULE
 // ═══════════════════════════════════════════════════════════
 
+/**
+ * Die Agenten-Lesefläche der Datensammlung.
+ *
+ * Nicht die persistierte Form: die ist `sheets: [{ id, name, state }]` mit
+ * dem OPAKEN DataGrid-Blob in `state` — für einen Agenten entweder nutzlos
+ * (ein Blob) oder riesig (5000 Zeilen in jeder Antwort). Darum erklärt dieses
+ * Modul seine Lesefläche (Plan-Entscheidung E1): Blattverzeichnis, aktives
+ * Blatt, Spaltenköpfe des aktiven Blatts — und die Zeilen als Massendaten,
+ * die nur auf ausdrückliche Nachfrage mitkommen.
+ *
+ * @typedef {object} AgentRead
+ * @property {Array<{ id: string, name: string }>} sheets  all sheets of the workbook, in tab order
+ * @property {string|null} activeSheetId  id of the sheet the following columns and rows belong to
+ * @property {Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null }>} columns  the column headers of the active sheet; `id` is the columnId of a column reference
+ * @property {any[][]} rows  [bulk] the data rows of the active sheet, each row in column order
+ */
 const mod = createModule({
   config: {
     id: 'worksheet',
@@ -536,18 +559,24 @@ const mod = createModule({
       statusTick: 0,
 
       // ── i18n / view helpers ──────────────────────────────────
+      /** @noagent view transform (tooltip) */
       formulaBtnTitle: () => `${_t('formulaEditor')} (F4)`,
+      /** @noagent view transform (tooltip) */
       suggestBtnTitle() {
         return this.canSuggest ? _t('suggestChartTitle') : _t('suggestChartNoSelection');
       },
+      /** @noagent view transform (help text) */
       refExampleCode: () => `'${_t('feRefExampleName')}'`,
+      /** @noagent view transform (help text) */
       refIfExample: () => `IF(C1 > 10; "${_t('feRefYes')}"; "${_t('feRefNo')}")`,
 
+      /** @noagent view transform (status bar) */
       statusDims() {
         void this.statusTick; // reactive dependency
         if (!this._grid) return '';
         return _t('statusDims', { cols: this._grid.columns.length, rows: this._grid.rowCount });
       },
+      /** @noagent view transform (status bar) */
       statusSelection() {
         void this.statusTick; // reactive dependency
         const g = this._grid;
@@ -561,13 +590,47 @@ const mod = createModule({
       },
 
       // ── Toolbar handlers ─────────────────────────────────────
+      /**
+       * Undo the last grid edit.
+       * @agent
+       * @returns {void}
+       */
       undo() { this._grid?.undo(); },
+      /**
+       * Redo the last undone grid edit.
+       * @agent
+       * @returns {void}
+       */
       redo() { this._grid?.redo(); },
+      /**
+       * Append an empty column to the active sheet.
+       * @agent
+       * @returns {void}
+       */
       addColumn() { this._grid?.addColumn(); },
-      addRows() { this._grid?.addRows(10); },
+      /**
+       * Append empty rows to the active sheet.
+       *
+       * The toolbar button calls `addRows()` without an argument (Alpine CSP
+       * allows no argument expressions in `@click`) and lands on the 10 it
+       * always added.
+       *
+       * @agent
+       * @param {number} [count] how many rows; the toolbar button adds 10.
+       *   Negatives are clamped to 0 — `DataGrid.addRows` would throw on a
+       *   negative array length, and the UI can never produce one.
+       * @returns {void}
+       */
+      addRows(count) {
+        const n = Math.trunc(Number(count));
+        this._grid?.addRows(Number.isFinite(n) ? Math.max(0, n) : 10);
+      },
+      /** @noagent selection-bound: clears the current UI selection */
       deleteSelection() { this._grid?._clearSelection(); },
 
+      /** @noagent DOM event handler (dropdown toggle) */
       toggleExport(event) { event?.stopPropagation(); this.exportOpen = !this.exportOpen; },
+      /** @noagent downloads a file; an agent reads the data via read() */
       exportAs(fmt) {
         this.exportOpen = false;
         if (fmt === 'xlsx') this._grid?.downloadXLSX();
@@ -575,27 +638,39 @@ const mod = createModule({
         else if (fmt === 'json') this._grid?.downloadJSON();
       },
 
+      /** @noagent opens the OS file dialog */
       triggerImport() {
         module._container.querySelector('[data-ref="file-input"]')?.click();
       },
+      /** @noagent DOM event handler (file input) */
       onFileChange(event) {
         const file = event.target.files[0];
         if (file) this._grid?._handleFileImport(file);
         event.target.value = '';
       },
 
+      /** @noagent opens an imperative popout widget */
       openFormulaEditor() {
         const sel = this._grid?.selection;
         if (!sel) { this._toast(_t('selectCellFirst'), 'error'); return; }
         this._formulaEditor.open(sel.activeCol, sel.activeRow);
       },
+      /** @noagent closes the popout */
       closeFormulaEditor() { this._formulaEditor?.close(); },
+      /** @noagent closes the popout */
       cancelFormula() { this._formulaEditor?.close(); },
+      /** @noagent applies the popout's current input */
       applyFormula() { this._formulaEditor?._apply(); },
 
+      /** @noagent opens the chart-suggestion popout */
       suggestChart() { this._openChartSuggestion(); },
 
       // ── Sheet tab handlers ───────────────────────────────────
+      /**
+       * Add a new sheet and make it active.
+       * @agent
+       * @returns {string} id of the created sheet
+       */
       addSheet() {
         this._syncActiveSheet();
         // Numbered default name, e.g. "Sheet 2" — counter is bumped inside addSheet,
@@ -603,7 +678,14 @@ const mod = createModule({
         this.model.addSheet(`${_t('defaultSheetName')} ${this.model.sheetCounter + 1}`);
         this._applyActiveSheetToGrid();
         this._flushAndNotify();
+        return this.model.activeSheetId;
       },
+      /**
+       * Switch to another sheet. The following read() calls refer to it.
+       * @agent
+       * @param {string} id id of the sheet to show
+       * @returns {void}
+       */
       switchSheet(id) {
         if (id === this.model.activeSheetId) return;
         this._syncActiveSheet();
@@ -616,6 +698,7 @@ const mod = createModule({
         this._persistStructural();
       },
 
+      /** @noagent DOM event handler (tab double click) */
       onTabDblClick(event) {
         const tab = event.target.closest('.sheet-tab');
         if (!tab) return;
@@ -631,12 +714,32 @@ const mod = createModule({
           if (input) { input.focus(); input.select(); }
         });
       },
-      commitRename() {
-        if (this.renamingId == null) return;
-        this.model.renameSheet(this.renamingId, this.renameValue);
-        this.renamingId = null;
+      /**
+       * Rename a sheet. The ONE sink for a sheet name — the inline rename in
+       * the tab bar lands here too, so the agent cannot reach a state the UI
+       * cannot (and vice versa).
+       *
+       * @agent
+       * @param {string} id id of the sheet to rename
+       * @param {string} name the new name; empty or whitespace keeps the old one
+       * @returns {void}
+       */
+      renameSheet(id, name) {
+        this.model.renameSheet(id, name);
         this._flushAndNotify();
       },
+      /**
+       * @noagent commits the inline rename buffer; a thin wrapper around
+       *   renameSheet(), which is what the agent calls.
+       */
+      commitRename() {
+        if (this.renamingId == null) return;
+        const id = this.renamingId;
+        const name = this.renameValue;
+        this.renamingId = null;
+        this.renameSheet(id, name);
+      },
+      /** @noagent DOM event handler (rename keyboard) */
       onRenameKeydown(event) {
         if (event.key === 'Enter') { event.preventDefault(); event.target.blur(); }
         else if (event.key === 'Escape') {
@@ -646,6 +749,7 @@ const mod = createModule({
         event.stopPropagation();
       },
 
+      /** @noagent opens a context menu with confirmations */
       onTabContextMenu(event) {
         const tab = event.target.closest('.sheet-tab');
         if (!tab) return;
@@ -692,6 +796,88 @@ const mod = createModule({
         const active = this.model.getActiveSheet();
         if (active?.state) this._grid.setState(active.state);
         else this._grid.clearAll();
+      },
+
+      // ── Agentenfläche ────────────────────────────────────────
+
+      /**
+       * Den Lesezustand der Datensammlung liefern.
+       *
+       * Ohne Parameter kommen die Zeilen als Umfangs-Deskriptor
+       * (`{ $bulk: true, rowCount, columns }`); mit
+       * `{ fields: ['rows'] }` vollständig und mit
+       * `{ fields: ['rows'], rows: { from: 0, to: 50 } }` als Ausschnitt.
+       *
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} the read state of the active sheet
+       */
+      read(options) {
+        return readAgentState('worksheet', this._agentSnapshot(), options);
+      },
+
+      /** Die Momentaufnahme, die `read()` projiziert. Kein Agentenaufruf. */
+      _agentSnapshot() {
+        // Erst das lebende Grid in das aktive Blatt spiegeln: die Zellen, die
+        // der Nutzer gerade getippt hat, sind sonst noch nicht im Model, und
+        // der Agent läse einen veralteten Stand. Genau derselbe Aufruf, den
+        // jede strukturelle Operation des Moduls voranstellt.
+        this._syncActiveSheet();
+        const state = this._grid?.getState() ?? { columns: [], rowCount: 0 };
+        const columns = (state.columns ?? []).map(c => ({
+          id: c.id,
+          name: c.name ?? '',
+          shortName: c.shortName ?? '',
+          type: c.type ?? 'numeric',
+          unit: c.unit ?? null,
+          role: c.role ?? null,
+        }));
+        const rows = [];
+        for (let r = 0; r < (state.rowCount ?? 0); r++) {
+          rows.push((state.columns ?? []).map(c => c.values?.[r] ?? null));
+        }
+        return {
+          sheets: (this.model.sheets ?? []).map(s => ({ id: s.id, name: s.name })),
+          activeSheetId: this.model.activeSheetId ?? null,
+          columns,
+          rows,
+        };
+      },
+
+      /**
+       * Replace the active sheet's content with the given CSV data.
+       * Same parse, undo and toast path as the file import.
+       *
+       * @agent
+       * @param {string} csvText the full CSV/TSV text, header row included if present
+       * @returns {{ columns: number, rows: number }} what was imported
+       */
+      importCsv(csvText) {
+        const out = this._grid.importCSVText(String(csvText ?? ''), 'CSV');
+        this._flushAndNotify();
+        return out;
+      },
+
+      /**
+       * Write a block of values into one column, starting at a row index.
+       * Goes through the same `setCellValue` path as the cell editor and the
+       * paste handler — type detection, locks and undo included.
+       *
+       * @agent
+       * @param {string} columnId id of the target column (see read().columns[].id)
+       * @param {number} startRow zero-based row index of the first value
+       * @param {any[]} values the values to write, one per row
+       * @returns {number} how many cells were written
+       */
+      setCells(columnId, startRow, values) {
+        const list = Array.isArray(values) ? values : [];
+        const from = Number.isFinite(Number(startRow)) ? Math.max(0, Math.trunc(Number(startRow))) : 0;
+        for (let i = 0; i < list.length; i++) {
+          this._grid.setCellValue(columnId, from + i, list[i]);
+        }
+        this._grid.render();
+        this._flushAndNotify();
+        return list.length;
       },
 
       // ── Toast ────────────────────────────────────────────────
@@ -936,6 +1122,7 @@ const mod = createModule({
 
       // ── Lifecycle ────────────────────────────────────────────
 
+      /** @noagent per-instance lifecycle */
       init() {
         const container = module._container;
         const context = module._context;
@@ -1070,6 +1257,7 @@ const mod = createModule({
         });
       },
 
+      /** @noagent per-instance lifecycle */
       destroy() {
         // Zuerst die Entpreller stilllegen. Beide schreiben über
         // setModuleState in den Projektzustand; ein noch laufender Timer

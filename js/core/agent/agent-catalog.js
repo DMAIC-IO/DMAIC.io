@@ -221,6 +221,12 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
       name,
       type: field.type,
       bulk: field.bulk === true,
+      // `derived` sagt dem Agenten, woher die Lesefläche kommt: false heißt
+      // „das ist die persistierte Model-Form" (Spec §8), true heißt „das Modul
+      // hat sie erklärt, weil seine persistierte Form als Lesefläche nutzlos
+      // oder zu groß wäre" (AgentRead-Typedef, z. B. worksheet). Ohne dieses
+      // Durchreichen erzeugt der Extraktor die Marke und niemand sieht sie.
+      derived: field.derived === true,
       help: contextHelp(i18n, moduleId, `fields.${name}`, field.help),
     })),
     sections: sectionList,

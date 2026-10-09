@@ -68,7 +68,7 @@ const I18N = {
 };
 
 const REGISTRY = {
-  'worksheet':  { tagged: true, available: true, violations: [], actions: { read: { params: [{ name: 'options', type: 'object', optional: true, help: 'JSDoc-Prosa zu options' }], returns: 'object', help: 'Liest alles' }, importCsv: { params: [{ name: 'csv', type: 'string', optional: false, help: 'CSV-Text' }], returns: 'boolean', help: '' } }, fields: { rows: { type: 'any[][]', help: 'Zeilen', bulk: true } } },
+  'worksheet':  { tagged: true, available: true, violations: [], actions: { read: { params: [{ name: 'options', type: 'object', optional: true, help: 'JSDoc-Prosa zu options' }], returns: 'object', help: 'Liest alles' }, importCsv: { params: [{ name: 'csv', type: 'string', optional: false, help: 'CSV-Text' }], returns: 'boolean', help: '' } }, fields: { rows: { type: 'any[][]', help: 'Zeilen', bulk: true, derived: true } } },
   'five-why':   { tagged: false, available: false, violations: [], actions: {}, fields: { problem: { type: 'string', help: 'Problemstellung', bulk: false } } },
   'regression': { tagged: false, available: false, violations: [], actions: {}, fields: {} },
   'kano':       { tagged: false, available: false, violations: [], actions: {}, fields: {} },
@@ -232,6 +232,17 @@ suite('agent catalog — module.describe', () => {
     const action = out.actions.find(a => a.name === 'importCsv');
     assertEqual(action.help, 'Ersetzt den Inhalt des aktiven Blatts durch die übergebenen CSV-Daten.');
     assertEqual(action.params[0].help, 'Der vollständige CSV-Text, inklusive Kopfzeile, falls vorhanden.');
+  });
+
+  test('a declared read surface is marked derived, a Model-derived one is not', async () => {
+    // Der Extraktor erzeugt `derived: true` an jedem Feld, das aus einem
+    // `@typedef {object} AgentRead` stammt. Ohne dieses Durchreichen kann ein
+    // Agent eine erklärte Lesefläche nicht von der persistierten Model-Form
+    // unterscheiden — und die Marke wäre erzeugt, aber von niemandem gelesen.
+    const declared = await describeModule(deps, 'worksheet');
+    assertEqual(declared.fields.find(f => f.name === 'rows').derived, true);
+    const modelDerived = await describeModule(deps, 'five-why');
+    assertEqual(modelDerived.fields.find(f => f.name === 'problem').derived, false);
   });
 
   test('i18n context help wins over the JSDoc prose for fields', async () => {

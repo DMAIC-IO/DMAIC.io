@@ -1092,12 +1092,21 @@ test('collectAgentData: the released pilot modules are available in the real tre
   // Freigabe festhält. Er wächst mit jedem freigegebenen Pilotmodul.
   const appDir = join(import.meta.dirname, '..', '..');
   const { modules, coverage } = collectAgentData(appDir);
-  for (const id of ['five-why']) {
+  for (const id of ['five-why', 'worksheet']) {
     assert.deepEqual(modules[id].violations, [], `${id} hat Verstöße`);
     assert.equal(modules[id].available, true, `${id} ist nicht freigegeben`);
     assert.ok('read' in modules[id].actions, `${id} hat kein read()`);
   }
-  assert.ok(coverage.available >= 1);
+  assert.ok(coverage.available >= 2);
+});
+
+test('collectAgentData: worksheet declares its read surface, rows are bulk', () => {
+  const appDir = join(import.meta.dirname, '..', '..');
+  const { modules } = collectAgentData(appDir);
+  assert.deepEqual(Object.keys(modules.worksheet.fields),
+    ['sheets', 'activeSheetId', 'columns', 'rows']);
+  assert.equal(modules.worksheet.fields.rows.bulk, true);
+  assert.equal(modules.worksheet.fields.rows.derived, true);
 });
 
 /* ─── Das i18n-Tor der freigegebenen Module ───────────────────────────────
@@ -1200,6 +1209,38 @@ test('i18n-Tor: jeder data-help-key einer freigegebenen Vorlage löst in BEIDEN 
   }
   assert.ok(checked >= 2, `zu wenige Anker geprüft (${checked})`);
   assert.deepEqual(broken, [], `nicht auflösbare data-help-key:\n${broken.join('\n')}`);
+});
+
+/* Das Tor oben erlaubt für `actions.read.help` und `actions.read.params.options`
+   den geteilten Rückfall (`agent.shared.<suffix>`) — genau dort maskiert es
+   also einen fehlenden Modulschlüssel. Für `read.help` ist das keine
+   Lappalie: der geteilte Satz beschreibt den Mechanismus, nicht WAS dieses
+   Modul liefert. Darum verlangt dieser Fall den modulspezifischen Schlüssel
+   von JEDEM freigegebenen Modul — damit das nächste Pilotmodul ohne
+   Handarbeit mit abgedeckt ist. `params.options` bleibt beim Rückfall: dort
+   ist der geteilte Text wortgleich richtig (Spec §8). */
+test('i18n-Tor: jedes freigegebene Modul hat einen EIGENEN read-Hilfetext in beiden Sprachen', () => {
+  const appDir = join(import.meta.dirname, '..', '..');
+  const { modules } = collectAgentData(appDir);
+  const trees = {
+    de: JSON.parse(readFileSync(join(appDir, 'i18n', 'de.json'), 'utf8')),
+    en: JSON.parse(readFileSync(join(appDir, 'i18n', 'en.json'), 'utf8')),
+  };
+  const released = Object.entries(modules).filter(([, m]) => m.available === true);
+  assert.ok(released.length >= 2, 'weniger als zwei freigegebene Module');
+
+  const missing = [];
+  for (const [id] of released) {
+    for (const [lang, tree] of Object.entries(trees)) {
+      const key = `modules.${id}.agent.actions.read.help`;
+      const text = lookup(tree, key);
+      if (text === undefined || text.trim() === '') missing.push(`${lang}: ${key}`);
+      else if (text === lookup(tree, 'agent.shared.actions.read.help')) {
+        missing.push(`${lang}: ${key} ist wortgleich der geteilte Rückfall`);
+      }
+    }
+  }
+  assert.deepEqual(missing, [], `maskierte read-Hilfetexte:\n${missing.join('\n')}`);
 });
 
 test('i18n-Tor: das deutsche read-Hilfetext von five-why bleibt der modulspezifische', () => {

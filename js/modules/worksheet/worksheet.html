@@ -2,23 +2,33 @@
 
   <!-- ═══ Toolbar ═══ -->
   <div class="worksheet-toolbar">
-    <button class="toolbar__btn" data-action="undo" :title="t('undo')" :disabled="!canUndo" @click="undo()">
+    <button class="toolbar__btn" data-action="undo"
+            data-help-key="modules.worksheet.agent.actions.undo.help"
+            :title="t('undo')" :disabled="!canUndo" @click="undo()">
       <span class="icon icon--sm" data-icon="action.undo" aria-hidden="true"></span>
     </button>
-    <button class="toolbar__btn" data-action="redo" :title="t('redo')" :disabled="!canRedo" @click="redo()">
+    <button class="toolbar__btn" data-action="redo"
+            data-help-key="modules.worksheet.agent.actions.redo.help"
+            :title="t('redo')" :disabled="!canRedo" @click="redo()">
       <span class="icon icon--sm" data-icon="action.redo" aria-hidden="true"></span>
     </button>
     <div class="toolbar__sep"></div>
-    <button class="toolbar__btn" data-action="add-col" :title="t('addColumn')" @click="addColumn()">
+    <button class="toolbar__btn" data-action="add-col"
+            data-help-key="modules.worksheet.agent.actions.addColumn.help"
+            :title="t('addColumn')" @click="addColumn()">
       <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
       <span x-text="t('column')"></span>
     </button>
-    <button class="toolbar__btn" data-action="add-rows" :title="t('addRows')" @click="addRows()">
+    <button class="toolbar__btn" data-action="add-rows"
+            data-help-key="modules.worksheet.agent.actions.addRows.help"
+            :title="t('addRows')" @click="addRows()">
       <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
       <span x-text="t('rows')"></span>
     </button>
     <div class="toolbar__sep"></div>
-    <button class="toolbar__btn toolbar__btn--accent" data-action="import" :title="t('importFile')" @click="triggerImport()">
+    <button class="toolbar__btn toolbar__btn--accent" data-action="import"
+            data-help-key="modules.worksheet.agent.actions.importCsv.help"
+            :title="t('importFile')" @click="triggerImport()">
       <span class="icon icon--sm" data-icon="action.upload" aria-hidden="true"></span>
       Import
     </button>
@@ -76,7 +86,9 @@
         </template>
       </button>
     </template>
-    <button class="sheet-tab-add" :title="t('addSheet')" @click="addSheet()">+</button>
+    <button class="sheet-tab-add"
+            data-help-key="modules.worksheet.agent.actions.addSheet.help"
+            :title="t('addSheet')" @click="addSheet()">+</button>
     <span class="sheet-tabs__spacer"></span>
     <span class="sheet-tabs__status" data-ref="status-selection" x-text="statusSelection()"></span>
     <span class="sheet-tabs__status" data-ref="status-dims" x-text="statusDims()"></span>

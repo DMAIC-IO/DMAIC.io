@@ -924,6 +924,52 @@
     "worksheet": {
       "name": "Datensammlung",
       "description": "Tabellenblatt zur Dateneingabe und -verwaltung",
+      "whenToUse": "Das gemeinsame Datensubstrat: hierhin kommen Messwerte, bevor ein auswertendes Werkzeug sie über einen Spaltenbezug liest. Fast jede Analyse beginnt mit einer Datensammlung.",
+      "agent": {
+        "actions": {
+          "read": {
+            "help": "Liefert Blattverzeichnis, aktives Blatt und Spaltenköpfe; die Zeilen kommen nur auf Nachfrage über options.fields = ['rows'].",
+            "params": { "options": "Optional: fields: ['rows'] liefert die Zeilen, rows: { from, to } schneidet sie zu." }
+          },
+          "importCsv": {
+            "help": "Ersetzt den Inhalt des aktiven Blatts durch die übergebenen CSV-Daten. Trennzeichen und Kopfzeile werden erkannt; der Schritt ist über Rückgängig umkehrbar.",
+            "params": { "csvText": "Der vollständige CSV- oder TSV-Text, Kopfzeile eingeschlossen, falls vorhanden." }
+          },
+          "setCells": {
+            "help": "Schreibt einen Block von Werten in eine Spalte, von einer Zeile an abwärts. Typerkennung, Sperren und Rückgängig wie bei der Zelleingabe.",
+            "params": {
+              "columnId": "Die id der Zielspalte, wie read().columns[].id sie nennt.",
+              "startRow": "Nullbasierter Index der ersten Zeile.",
+              "values": "Die Werte, einer je Zeile."
+            }
+          },
+          "addColumn": { "help": "Hängt dem aktiven Blatt eine leere Spalte an." },
+          "addRows": {
+            "help": "Hängt dem aktiven Blatt leere Zeilen an.",
+            "params": { "count": "Zahl der Zeilen; ohne Angabe zehn, wie der Knopf in der Werkzeugleiste." }
+          },
+          "undo": { "help": "Nimmt die letzte Änderung am Blatt zurück." },
+          "redo": { "help": "Stellt eine zurückgenommene Änderung wieder her." },
+          "addSheet": { "help": "Legt ein neues Blatt an, macht es aktiv und gibt dessen id zurück." },
+          "switchSheet": {
+            "help": "Wechselt zu einem anderen Blatt. Die folgenden Lesezugriffe beziehen sich dann darauf.",
+            "params": { "id": "Die id des Blatts, wie read().sheets[].id sie nennt." }
+          },
+          "renameSheet": {
+            "help": "Benennt ein Blatt um.",
+            "params": {
+              "id": "Die id des Blatts.",
+              "name": "Der neue Name; leer oder nur Leerzeichen behält den alten."
+            }
+          }
+        },
+        "fields": {
+          "sheets": "Alle Blätter der Arbeitsmappe in Reiterfolge, je mit id und Name.",
+          "activeSheetId": "Die id des Blatts, auf das sich columns und rows beziehen.",
+          "columns": "Die Spaltenköpfe des aktiven Blatts. id ist die columnId eines Spaltenbezugs, shortName die Kurzform in Formeln (C1, C2 …), role die erkannte Rolle der Spalte.",
+          "rows": "Die Datenzeilen des aktiven Blatts, jede Zeile in Spaltenreihenfolge. Massendaten: ohne options.fields = ['rows'] kommt nur der Umfang."
+        }
+      },
       "undo": "Rückgängig (Ctrl+Z)",
       "redo": "Wiederholen (Ctrl+Y)",
       "addColumn": "Spalte hinzufügen",

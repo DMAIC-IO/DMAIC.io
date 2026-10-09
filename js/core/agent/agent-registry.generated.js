@@ -4585,55 +4585,146 @@ export const AGENT_REGISTRY = {
     }
   },
   "worksheet": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:formulaBtnTitle",
-      "unmarked_method:suggestBtnTitle",
-      "unmarked_method:refExampleCode",
-      "unmarked_method:refIfExample",
-      "unmarked_method:statusDims",
-      "unmarked_method:statusSelection",
-      "unmarked_method:undo",
-      "unmarked_method:redo",
-      "unmarked_method:addColumn",
-      "unmarked_method:addRows",
-      "unmarked_method:deleteSelection",
-      "unmarked_method:toggleExport",
-      "unmarked_method:exportAs",
-      "unmarked_method:triggerImport",
-      "unmarked_method:onFileChange",
-      "unmarked_method:openFormulaEditor",
-      "unmarked_method:closeFormulaEditor",
-      "unmarked_method:cancelFormula",
-      "unmarked_method:applyFormula",
-      "unmarked_method:suggestChart",
-      "unmarked_method:addSheet",
-      "unmarked_method:switchSheet",
-      "unmarked_method:onTabDblClick",
-      "unmarked_method:commitRename",
-      "unmarked_method:onRenameKeydown",
-      "unmarked_method:onTabContextMenu",
-      "unmarked_method:init",
-      "unmarked_method:destroy"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "undo": {
+        "params": [],
+        "returns": "void",
+        "help": "Undo the last grid edit."
+      },
+      "redo": {
+        "params": [],
+        "returns": "void",
+        "help": "Redo the last undone grid edit."
+      },
+      "addColumn": {
+        "params": [],
+        "returns": "void",
+        "help": "Append an empty column to the active sheet."
+      },
+      "addRows": {
+        "params": [
+          {
+            "name": "count",
+            "type": "number",
+            "optional": true,
+            "help": "how many rows; the toolbar button adds 10. Negatives are clamped to 0 — `DataGrid.addRows` would throw on a negative array length, and the UI can never produce one."
+          }
+        ],
+        "returns": "void",
+        "help": "Append empty rows to the active sheet. The toolbar button calls `addRows()` without an argument (Alpine CSP allows no argument expressions in `@click`) and lands on the 10 it always added."
+      },
+      "addSheet": {
+        "params": [],
+        "returns": "string",
+        "help": "Add a new sheet and make it active."
+      },
+      "switchSheet": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "id of the sheet to show"
+          }
+        ],
+        "returns": "void",
+        "help": "Switch to another sheet. The following read() calls refer to it."
+      },
+      "renameSheet": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "id of the sheet to rename"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "the new name; empty or whitespace keeps the old one"
+          }
+        ],
+        "returns": "void",
+        "help": "Rename a sheet. The ONE sink for a sheet name — the inline rename in the tab bar lands here too, so the agent cannot reach a state the UI cannot (and vice versa)."
+      },
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den Lesezustand der Datensammlung liefern. Ohne Parameter kommen die Zeilen als Umfangs-Deskriptor (`{ $bulk: true, rowCount, columns }`); mit `{ fields: ['rows'] }` vollständig und mit `{ fields: ['rows'], rows: { from: 0, to: 50 } }` als Ausschnitt."
+      },
+      "importCsv": {
+        "params": [
+          {
+            "name": "csvText",
+            "type": "string",
+            "optional": false,
+            "help": "the full CSV/TSV text, header row included if present"
+          }
+        ],
+        "returns": "{ columns: number, rows: number }",
+        "help": "Replace the active sheet's content with the given CSV data. Same parse, undo and toast path as the file import."
+      },
+      "setCells": {
+        "params": [
+          {
+            "name": "columnId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the target column (see read().columns[].id)"
+          },
+          {
+            "name": "startRow",
+            "type": "number",
+            "optional": false,
+            "help": "zero-based row index of the first value"
+          },
+          {
+            "name": "values",
+            "type": "any[]",
+            "optional": false,
+            "help": "the values to write, one per row"
+          }
+        ],
+        "returns": "number",
+        "help": "Write a block of values into one column, starting at a row index. Goes through the same `setCellValue` path as the cell editor and the paste handler — type detection, locks and undo included."
+      }
+    },
     "fields": {
       "sheets": {
-        "type": "Sheet[]",
-        "help": "",
-        "bulk": false
+        "type": "Array<{ id: string, name: string }>",
+        "help": "all sheets of the workbook, in tab order",
+        "bulk": false,
+        "derived": true
       },
       "activeSheetId": {
         "type": "string|null",
-        "help": "",
-        "bulk": false
+        "help": "id of the sheet the following columns and rows belong to",
+        "bulk": false,
+        "derived": true
       },
-      "sheetCounter": {
-        "type": "number",
-        "help": "",
-        "bulk": false
+      "columns": {
+        "type": "Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null }>",
+        "help": "the column headers of the active sheet; `id` is the columnId of a column reference",
+        "bulk": false,
+        "derived": true
+      },
+      "rows": {
+        "type": "any[][]",
+        "help": "the data rows of the active sheet, each row in column order",
+        "bulk": true,
+        "derived": true
       }
     }
   },
@@ -4702,4 +4793,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":72,"available":1};
+export const AGENT_COVERAGE = {"total":72,"available":2};
