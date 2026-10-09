@@ -56,6 +56,37 @@ suite('context help', () => {
     assertEqual(label.querySelector('.context-help__btn'), null);
   });
 
+  test('a click on the badge opens the help and does NOT reach the anchor’s own handler', () => {
+    // Der Anker darf selbst ein Knopf mit eigener Aktion sein (five-why:
+    // „Why hinzufügen"). Hinge der Klickgriff nur am Dokument, liefe der
+    // Griff des Ankers in der Bubble-Phase VORHER — ein Klick aufs
+    // Fragezeichen hätte dessen Aktion ausgelöst.
+    const anchor = document.createElement('button');
+    anchor.setAttribute('data-help-key', 'modules.five-why.agent.fields.problem');
+    anchor.textContent = 'Why hinzufügen';
+    let anchorClicks = 0;
+    anchor.addEventListener('click', () => { anchorClicks += 1; });
+    host.appendChild(anchor);
+
+    augmentContextHelp(host);
+    anchor.querySelector('.context-help__btn').click();
+
+    assertEqual(anchorClicks, 0);
+    assertTrue(Boolean(document.querySelector('.context-help__panel')));
+  });
+
+  test('the badge is not a nested <button> — the anchor itself may be one', () => {
+    const anchor = document.createElement('button');
+    anchor.setAttribute('data-help-key', 'modules.five-why.agent.fields.problem');
+    host.appendChild(anchor);
+
+    augmentContextHelp(host);
+
+    const btn = anchor.querySelector('.context-help__btn');
+    assertEqual(btn.tagName, 'SPAN');
+    assertEqual(btn.getAttribute('role'), 'button');
+  });
+
   test('augmenting twice leaves exactly one button', () => {
     const label = document.createElement('label');
     label.setAttribute('data-help-key', 'modules.five-why.agent.fields.problem');

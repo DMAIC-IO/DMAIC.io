@@ -138,10 +138,12 @@ export default createModule({
         return node.id;
       },
       /**
-       * Append a child Why below a node. Blocked at the root-cause level.
+       * Append a child Why below a node.
        * @agent
        * @param {number} parentId id of the node to append to
-       * @returns {number|null} id of the created child, or null when blocked
+       * @returns {number|null} id of the created child, or null — either because
+       *   the node is already at the root-cause level, or because parentId
+       *   matches no node
        */
       addChild(parentId) {
         const child = this.model.addChild(parentId);

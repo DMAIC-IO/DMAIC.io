@@ -1438,7 +1438,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "number|null",
-        "help": "Append a child Why below a node. Blocked at the root-cause level."
+        "help": "Append a child Why below a node."
       },
       "toggleCollapse": {
         "params": [

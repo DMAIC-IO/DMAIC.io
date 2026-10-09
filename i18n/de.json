@@ -1398,7 +1398,7 @@
       "agent": {
         "actions": {
           "read": {
-            "help": "Liefert Problemtext, Fragebaum und Kennzahlen des Baums als Lesezustand."
+            "help": "Liefert Problemtext und Fragebaum als Lesezustand."
           },
           "setProblem": {
             "help": "Setzt den beobachteten Problemtext, von dem die Fragekette ausgeht.",
@@ -1408,7 +1408,7 @@
             "help": "Legt eine neue Why-Frage der ersten Ebene an und gibt deren id zurück."
           },
           "addChild": {
-            "help": "Legt unter einer Frage die nächste Why-Ebene an; ab Ebene 5 (Grundursache) nicht mehr möglich.",
+            "help": "Legt unter einer Frage die nächste Why-Ebene an und gibt deren id zurück. Liefert null, wenn die Frage schon auf Ebene 5 (Grundursache) liegt oder parentId zu keiner Frage gehört.",
             "params": { "parentId": "Die id der Frage, unter der die neue Ebene entsteht." }
           },
           "setAnswer": {

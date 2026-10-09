@@ -146,14 +146,26 @@ function augmentOne(anchor) {
   // überschrieben, für immer ohne Knopf.
   let button = anchor.querySelector(':scope > .context-help__btn');
   if (!button) {
-    button = document.createElement('button');
-    button.type = 'button';
+    // Ein `<span role="button">`, KEIN `<button>`: der Anker darf selbst ein
+    // Knopf sein (five-why: „Why hinzufügen"), und ein `<button>` in einem
+    // `<button>` ist ungültiges Markup.
+    button = document.createElement('span');
+    button.setAttribute('role', 'button');
     button.className = 'context-help__btn';
     button.setAttribute('data-help-key', key);
     // Nicht im Tabulator-Lauf: die Fläche ist ein Zusatz, kein Pflichtweg; über
     // die Tastatur bleibt der Hilfetext über das Handbuch erreichbar.
     button.tabIndex = -1;
     button.appendChild(icon('status.help', { size: 'sm' }));
+    // Der Griff MUSS am Knopf selbst hängen, nicht nur am Dokument: ist der
+    // Anker ein Knopf mit eigenem `@click` (Alpine hängt direkt am Element),
+    // liefe dessen Griff in der Bubble-Phase VOR dem Dokumentgriff — ein
+    // Klick auf das Fragezeichen hätte die Aktion des Ankers ausgelöst.
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      openContextHelp(button);
+    });
     anchor.appendChild(button);
   }
 
