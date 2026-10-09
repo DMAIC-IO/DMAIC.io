@@ -1000,3 +1000,45 @@ test('collectAgentData: a trailing, unattached AgentRead typedef falls back to t
   assert.deepEqual(Object.keys(modules.bar.fields), ['sheets']);
   assert.equal('derived' in modules.bar.fields.sheets, false);
 });
+
+const TAGGED_NO_ACTIONS = `/**
+ * Empty module.
+ * @agent
+ */
+import { createModule } from '../../core/template-module.js';
+import { State } from './empty-model.js';
+export default createModule({
+  config: { id: 'empty' },
+  Model: State,
+  data(module, _t) {
+    return {
+      /** @noagent */
+      cardClass(node) { return ''; },
+    };
+  },
+});`;
+
+test('collectAgentData: a module tag with zero @agent actions is a violation', () => {
+  const root = fixture({ empty: { 'empty.js': TAGGED_NO_ACTIONS, 'empty-model.js': BAR_MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.ok(modules.empty.violations.includes('module_tag_without_actions'));
+  assert.equal(modules.empty.available, false);
+});
+
+test('collectAgentData: a released module without a read() action is a violation', () => {
+  const noRead = TAGGED_VM.replace(/\/\*\*\n\s+\* Read the full state\.\n\s+\* @agent\n\s+\* @returns \{object\} the state\n\s+\*\/\n\s+read\(\) \{ return \{\}; \},\n/, '');
+  const root = fixture({ foo: { 'foo.js': noRead, 'foo-model.js': MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.ok(modules.foo.violations.includes('no_read_action'));
+  assert.equal(modules.foo.available, false);
+});
+
+test('collectAgentData: both new hurdles are only REPORTED on an untagged module', () => {
+  const root = fixture({
+    empty: { 'empty.js': TAGGED_NO_ACTIONS.replace(' * @agent\n', ''), 'empty-model.js': BAR_MODEL },
+  });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.empty.violations, []);
+  assert.ok(modules.empty.reported.includes('module_tag_without_actions'));
+  assert.ok(modules.empty.reported.includes('no_read_action'));
+});

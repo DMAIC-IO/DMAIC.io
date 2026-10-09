@@ -99,7 +99,25 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   const declared = readAgentReadTypedef(sf);
   const model = declared ? { fields: declared, violations: [] } : readModelFields(resolver, sf);
 
-  const reported = [...violations, ...model.violations, ...collectDomDetours(sf)];
+  // Zwei Hürden, ohne die das Modul-Tag eine unbelegte Behauptung bliebe:
+  //   • Null Aktionen: „vollständig über das Viewmodel steuerbar" ist dann
+  //     wahr-aber-leer. Befundfrei heißt nicht freigabereif (mosaic,
+  //     pie-chart).
+  //   • Kein `read()`: Spec §9 Migrationsschritt 3. Ohne Lesefläche ist ein
+  //     Modul für einen Agenten blind bedienbar — er sieht nicht, was er
+  //     angerichtet hat.
+  // Nur wenn `violations` (Extraktion) bereits leer ist: eine nicht auflösbare
+  // Datenfunktion oder ein nicht auflösbarer Spread liefert ebenfalls
+  // `actions: {}`, meldet das aber schon selbst (`unresolvable_data_literal`,
+  // `unresolved_spread:…`). Beide Codes nochmal draufzusetzen wäre doppelte
+  // Meldung desselben Befunds unter neuem Namen, nicht ein zweiter Befund.
+  const surface = [];
+  if (violations.length === 0) {
+    if (Object.keys(actions).length === 0) surface.push('module_tag_without_actions');
+    if (!Object.prototype.hasOwnProperty.call(actions, 'read')) surface.push('no_read_action');
+  }
+
+  const reported = [...violations, ...surface, ...model.violations, ...collectDomDetours(sf)];
   // Verstöße zählen nur, wenn das Modul etwas behauptet (Spec §9).
   const effective = tagged ? reported : [];
   return {

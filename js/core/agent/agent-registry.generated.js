@@ -2352,7 +2352,10 @@ export const AGENT_REGISTRY = {
     "tagged": false,
     "available": false,
     "violations": [],
-    "reported": [],
+    "reported": [
+      "module_tag_without_actions",
+      "no_read_action"
+    ],
     "actions": {},
     "fields": {
       "xRef": {
@@ -2980,7 +2983,10 @@ export const AGENT_REGISTRY = {
     "tagged": false,
     "available": false,
     "violations": [],
-    "reported": [],
+    "reported": [
+      "module_tag_without_actions",
+      "no_read_action"
+    ],
     "actions": {},
     "fields": {
       "valueRef": {
