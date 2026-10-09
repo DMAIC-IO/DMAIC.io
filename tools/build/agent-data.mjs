@@ -91,8 +91,14 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   const sf = resolver.parse(viewmodelFile);
   const tagged = hasModuleTag(sf);
   const { actions, violations } = readViewmodel(sf, resolver, appDir);
-  const model = readModelFields(resolver, sf);
-  const fields = model.fields;
+
+  // Deklarierte Lesefläche hat Vorrang und ERSETZT die Model-Ableitung —
+  // nicht ergänzt sie: zwei Quellen für dieselbe Fläche wäre genau die
+  // Parallelquelle, die Spec §8 vermeidet. Ohne Deklaration bleibt alles
+  // wie bisher (Model-Felder, driftfrei per Konstruktion).
+  const declared = readAgentReadTypedef(sf);
+  const model = declared ? { fields: declared, violations: [] } : readModelFields(resolver, sf);
+
   const reported = [...violations, ...model.violations, ...collectDomDetours(sf)];
   // Verstöße zählen nur, wenn das Modul etwas behauptet (Spec §9).
   const effective = tagged ? reported : [];
@@ -102,7 +108,7 @@ function buildEntry(resolver, appDir, viewmodelFile) {
     violations: effective,
     reported,
     actions,
-    fields,
+    fields: model.fields,
   };
 }
 
@@ -146,6 +152,61 @@ export function collectDomDetours(sf) {
   };
   walk(sf);
   return hits;
+}
+
+/**
+ * Name des Typedef, mit dem ein Modul seine Agenten-Lesefläche DEKLARIERT,
+ * statt sie aus dem Model ableiten zu lassen (Entscheidung E1 des Plans).
+ *
+ * Gebraucht wird das, wo die persistierte Form nicht die Lesefläche ist:
+ * `worksheet` persistiert opake DataGrid-Blobs, und `hypothesis-test` hält
+ * sein Ergebnis transient am Viewmodel. Beide Fälle wären über Model-Felder
+ * entweder nutzlos oder riesig.
+ *
+ * Die Massendaten-Marke kann in einem Typedef-Property nicht als eigener Tag
+ * stehen (`@agentBulk` gilt pro Tag, nicht pro Property) — deshalb das
+ * Sentinel `[bulk]` am Anfang des Property-Kommentars, und NUR dort.
+ */
+const AGENT_READ_TYPEDEF = 'AgentRead';
+const BULK_SENTINEL = '[bulk]';
+
+/**
+ * Die deklarierte Lesefläche eines Moduls, oder null.
+ *
+ * Der Block MUSS an einer Anweisung hängen (praktisch: unmittelbar über der
+ * `createModule(`-Anweisung). Die TypeScript-Compiler-API hängt JSDoc an die
+ * FOLGENDE Anweisung; ein frei stehender Kommentar am Dateiende ist über
+ * `getJSDocTags` nicht erreichbar.
+ *
+ * @param {ts.SourceFile} sf  die Moduldatei
+ * @returns {Record<string, { type: string, help: string, bulk: boolean, derived: true }>|null}
+ */
+export function readAgentReadTypedef(sf) {
+  let found = null;
+  const walk = (node) => {
+    for (const tag of ts.getJSDocTags(node)) {
+      if (!ts.isJSDocTypedefTag(tag)) continue;
+      if (tag.name?.text !== AGENT_READ_TYPEDEF) continue;
+      const literal = tag.typeExpression;
+      if (!literal || !ts.isJSDocTypeLiteral(literal)) continue;
+      found = {};
+      for (const property of literal.jsDocPropertyTags ?? []) {
+        const name = property.name?.getText(sf);
+        if (!name || name.startsWith('_')) continue;
+        const raw = cleanComment(property.comment);
+        const bulk = raw.startsWith(BULK_SENTINEL);
+        found[name] = {
+          type: property.typeExpression?.type?.getText(sf) ?? 'any',
+          help: bulk ? raw.slice(BULK_SENTINEL.length).trim() : raw,
+          bulk,
+          derived: true,
+        };
+      }
+    }
+    ts.forEachChild(node, walk);
+  };
+  walk(sf);
+  return found;
 }
 
 /**

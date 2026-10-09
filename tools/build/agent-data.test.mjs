@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { collectAgentData, renderAgentRegistryModule, collectDomDetours } from './agent-data.mjs';
+import { collectAgentData, renderAgentRegistryModule, collectDomDetours,
+         readAgentReadTypedef } from './agent-data.mjs';
 import ts from 'typescript';
 
 /**
@@ -890,4 +891,70 @@ test('readModelFields: a static class member is not a read field', () => {
     `static member leaked: ${JSON.stringify(Object.keys(modules.foo.fields))}`);
   assert.deepEqual(modules.foo.fields.title,
     { type: 'string', help: 'the stored title', bulk: false });
+});
+
+const AGENT_READ_VM = `/**
+ * Bar module.
+ * @agent
+ */
+import { createModule } from '../../core/template-module.js';
+import { State } from './bar-model.js';
+
+/**
+ * Die Agenten-Lesefläche dieses Moduls.
+ * @typedef {object} AgentRead
+ * @property {string} activeSheetId  id of the active sheet
+ * @property {any[][]} rows  [bulk] every data row of the active sheet
+ */
+export default createModule({
+  config: { id: 'bar' },
+  Model: State,
+  data(module, _t) {
+    return {
+      /**
+       * @agent
+       * @param {object} [options] field/row selection
+       * @returns {AgentRead} the agent-facing read surface
+       */
+      read(options) { return {}; },
+    };
+  },
+});`;
+
+const BAR_MODEL = `export class State {
+  /** @type {object[]} opaque per-sheet blobs */
+  sheets = [];
+  toJSON() { return { sheets: this.sheets }; }
+}`;
+
+test('collectAgentData: an AgentRead typedef REPLACES the model fields', () => {
+  const root = fixture({ bar: { 'bar.js': AGENT_READ_VM, 'bar-model.js': BAR_MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(Object.keys(modules.bar.fields), ['activeSheetId', 'rows']);
+  assert.equal(modules.bar.fields.activeSheetId.type, 'string');
+  assert.equal(modules.bar.fields.activeSheetId.help, 'id of the active sheet');
+  assert.equal(modules.bar.fields.activeSheetId.derived, true);
+});
+
+test('collectAgentData: the [bulk] sentinel marks a bulk field and leaves the help clean', () => {
+  const root = fixture({ bar: { 'bar.js': AGENT_READ_VM, 'bar-model.js': BAR_MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.equal(modules.bar.fields.rows.bulk, true);
+  assert.equal(modules.bar.fields.rows.help, 'every data row of the active sheet');
+  assert.equal(modules.bar.fields.activeSheetId.bulk, false);
+});
+
+test('collectAgentData: a module with an AgentRead typedef is available without a model class', () => {
+  // Kein `Model:`-Mitglied → readModelFields würde `unresolvable_model_class`
+  // melden. Mit deklarierter Lesefläche ist das Model irrelevant.
+  const noModel = AGENT_READ_VM.replace('  Model: State,\n', '');
+  const root = fixture({ bar: { 'bar.js': noModel, 'bar-model.js': BAR_MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.bar.violations, []);
+  assert.equal(modules.bar.available, true);
+});
+
+test('readAgentReadTypedef: returns null when the module declares none', () => {
+  const sf = ts.createSourceFile('x.js', TAGGED_VM, ts.ScriptTarget.ESNext, true);
+  assert.equal(readAgentReadTypedef(sf), null);
 });

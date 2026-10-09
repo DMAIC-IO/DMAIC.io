@@ -143,5 +143,10 @@ export const OPS = deepFreeze({
  * @property {string[]} reported      alle Befunde, auch die ohne Modul-Tag
  * @property {Record<string, { params: Array<{name:string,type:string,optional:boolean,help:string}>,
  *                             returns: string, help: string }>} actions
- * @property {Record<string, { type: string, help: string, bulk: boolean }>} fields
+ * @property {Record<string, { type: string, help: string, bulk: boolean,
+ *                             derived?: boolean }>} fields
+ *   Die Lesefläche. Ohne `derived` aus den Model-Feldern abgeleitet (die
+ *   persistierte Form IST die Lesefläche, Spec §8); mit `derived: true` vom
+ *   Modul über einen `@typedef {object} AgentRead` deklariert, weil seine
+ *   Lesefläche nicht die persistierte Form ist.
  */
