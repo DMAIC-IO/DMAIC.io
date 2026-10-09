@@ -40,16 +40,44 @@ const OP_NAMES = Object.freeze(Object.keys(OPS));
 const UNIVERSAL_FIELDS = new Set(['id', 'op']);
 
 /**
- * Die schreibenden Aktionen. `instance.call` zählt dazu, weil der Prüfer
- * nicht wissen kann, ob die gerufene Methode liest oder schreibt — und ein
- * reines Lesen ist im abgeschlossenen Projekt über `project.read` und
- * `module.describe` ohnehin erreichbar.
+ * Die Aktionen, die OHNE Rücksicht auf ihre Parameter immer schreiben.
+ *
+ * `instance.call` gehört ABSICHTLICH NICHT dazu: `project.read`
+ * (`agent-contract.js` `OPS['project.read'].result`) liefert nur
+ * `{contract, appVersion, language, view, instances}` — Ids, Modul, Phase,
+ * aber keine Feldwerte — und `module.describe` liefert das Feld-SCHEMA, nicht
+ * die Daten. Das geteilte `read()` über `instance.call` ist der EINZIGE Weg
+ * zu Feldwerten; ein pauschaler Block hätte jedes Auslesen aus genau den
+ * Projekten entzogen, die ein Agent am ehesten zusammenfassen soll. Siehe
+ * `CONDITIONAL_WRITE_OPS` unten für die feinere Regel.
  */
-const WRITE_OPS = new Set(['module.add', 'module.remove', 'instance.call']);
+export const WRITE_OPS = new Set(['module.add', 'module.remove']);
+
+/**
+ * `instance.call` schreibt NUR, wenn die aufgerufene Methode nicht `read`
+ * heißt. `'read'` ist dafür schon an zwei anderen Stellen ausgezeichnet
+ * (`tools/build/agent-data.mjs:122-123`, `module_tag_without_actions` und
+ * `no_read_action`) — diese Sonderbehandlung ist also bestehende Konvention,
+ * keine neue Erfindung.
+ *
+ * Ein `read()`, der trotz seines Namens dennoch schriebe, wäre hier harmlos:
+ * `stateManager.set` verwirft im abgeschlossenen Projekt jeden
+ * Nicht-`settings.`-Schreibzugriff STILL (`state-manager.js:170`) — genau
+ * dieselbe Verteidigung, auf die sich Stufe 6 unten als Letztes verlässt.
+ */
+export const CONDITIONAL_WRITE_OPS = new Set(['instance.call']);
+
+/**
+ * Die restlichen Aktionen — reine Leseoperationen, nie betroffen von Stufe 6.
+ * Von Hand aufgezählt (nicht als Komplement von `OPS` berechnet): ein neuer,
+ * unklassifizierter `op` muss den Vollständigkeits-Test unten ROT machen,
+ * nicht lautlos als „lesend" durchrutschen.
+ */
+export const READ_OPS = new Set(['project.read', 'catalog.read', 'module.describe', 'instance.open']);
 
 /**
  * @param {object|object[]} input  ein Aktionsobjekt oder ein Stapel
- * @param {object} world  { t, phases: string[], modules: Map, instances: Map }
+ * @param {object} world  { t, phases: string[], modules: Map, instances: Map, completed: boolean }
  * @returns {{ ok: true, actions: object[] }
  *          |{ ok: false, error: 'validation_failed', message: string,
  *             index: number|null, id: string|null, cause: object }}
@@ -231,7 +259,10 @@ export function validateBatch(input, world) {
   // hier, dass ein Stapel halb läuft und dann am Schreibschutz scheitert.
   if (world.completed) {
     for (let i = 0; i < actions.length; i++) {
-      if (!WRITE_OPS.has(actions[i].op)) continue;
+      const a = actions[i];
+      const isWrite = WRITE_OPS.has(a.op)
+        || (CONDITIONAL_WRITE_OPS.has(a.op) && a.method !== 'read');
+      if (!isWrite) continue;
       return fail(i, axiError(ERRORS.PROJECT_COMPLETED, world.t('agent.errors.projectCompleted')));
     }
   }

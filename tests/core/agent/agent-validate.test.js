@@ -11,7 +11,8 @@
  * tests tagged "Ruling K6" below.
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
-import { validateBatch } from '../../../js/core/agent/agent-validate.js';
+import { validateBatch, WRITE_OPS, CONDITIONAL_WRITE_OPS, READ_OPS } from '../../../js/core/agent/agent-validate.js';
+import { OPS } from '../../../js/core/agent/agent-contract.js';
 
 /** `t` stand-in: returns "key|param=value,…" so assertions stay language-free. */
 function t(key, params) {
@@ -320,13 +321,26 @@ suite('agent validate — Stufe 6: abgeschlossenes Projekt', () => {
     assertEqual(r.index, 0);
   });
 
-  test('instance.call counts as a write op', () => {
+  // Controller ruling (review item 1): `instance.call` is a write only when
+  // the called method is not `read` — `read` is the only path to field
+  // VALUES (project.read/module.describe return ids/metadata/schema, never
+  // field values), so blocking it wholesale would remove all field-level
+  // reading from exactly the projects an agent most plausibly summarises.
+  test('instance.call with a genuinely writing method counts as a write op', () => {
     const r = validateBatch(
-      [{ op: 'instance.call', instance: 'fw-1', method: 'read' }],
+      [{ op: 'instance.call', instance: 'fw-1', method: 'setProblem', args: ['x'] }],
       makeWorld({ completed: true }),
     );
     assertEqual(r.ok, false);
     assertEqual(r.cause.error, 'project_completed');
+  });
+
+  test('instance.call with method "read" stays allowed in a completed project', () => {
+    const r = validateBatch(
+      [{ op: 'instance.call', instance: 'fw-1', method: 'read' }],
+      makeWorld({ completed: true }),
+    );
+    assertTrue(r.ok, JSON.stringify(r));
   });
 
   test('reading ops stay allowed in a completed project', () => {
@@ -338,6 +352,19 @@ suite('agent validate — Stufe 6: abgeschlossenes Projekt', () => {
     assertTrue(r.ok, JSON.stringify(r));
   });
 
+  // Pairs the test above: the SAME write batch must stay ok when the
+  // project is NOT completed — otherwise the "reading ops stay allowed"
+  // test above would pass against an implementation that rejects nothing.
+  test('the same write batch stays ok in a project that is not completed', () => {
+    const r = validateBatch(
+      [{ op: 'module.add', module: 'five-why', phase: 'define' },
+       { op: 'module.remove', instance: 'fw-1' },
+       { op: 'instance.call', instance: 'fw-1', method: 'setProblem', args: ['x'] }],
+      makeWorld({ completed: false }),
+    );
+    assertTrue(r.ok, JSON.stringify(r));
+  });
+
   test('the write op of a LATER entry blocks the whole batch', () => {
     const r = validateBatch(
       [{ op: 'project.read' }, { op: 'module.remove', instance: 'fw-1' }],
@@ -345,5 +372,16 @@ suite('agent validate — Stufe 6: abgeschlossenes Projekt', () => {
     );
     assertEqual(r.ok, false);
     assertEqual(r.index, 1);
+    assertEqual(r.cause.error, 'project_completed');
+  });
+
+  // Review item 3: WRITE_OPS/CONDITIONAL_WRITE_OPS/READ_OPS are three
+  // hand-written lists with no structural link to OPS. An eighth op added to
+  // the contract without updating one of these three sets must make this
+  // test fail — not slip through unclassified and silently keep working in
+  // a completed project.
+  test('every op in the contract is classified as write, conditional-write, or read', () => {
+    const classified = new Set([...WRITE_OPS, ...CONDITIONAL_WRITE_OPS, ...READ_OPS]);
+    assertDeepEqual([...classified].sort(), Object.keys(OPS).sort());
   });
 });
