@@ -1,21 +1,19 @@
 /**
  * D.Mike — Dashboard page (dashboard.js)
  * Thin host: owns the DashboardGrid, the add-tile menu, layout/title
- * persistence, PNG/SVG export, and the BUILT-IN tiles (goals, ZEG timeline,
- * org chart). Module-owned tiles (incl. VoC/CTx, RACI, SPC) come from each
- * module's tile file (manifest `loadTile`), loaded and enumerated via
- * enumerate-tiles.js. Contract: docs/DASHBOARD.md.
+ * persistence, PNG/SVG export and refresh wiring. Every tile comes from a tile
+ * file: a module's (manifest `loadTile`) or a host tile (tiles/index.js),
+ * loaded and enumerated via enumerate-tiles.js. Contract: docs/DASHBOARD.md.
  */
 
 import { createPage } from '../../core/create-page.js';
 import { h } from '../../core/dom.js';
 import { DashboardGrid } from '../../ui/dashboard-grid.js';
-import { DEFAULT_DASHBOARD_LAYOUT } from '../../ui/dashboard-tiles.js';
+import { DEFAULT_DASHBOARD_LAYOUT } from './default-layout.js';
 import { enumerateTiles, loadTileModules, refreshEventsOf } from './enumerate-tiles.js';
 import { renderTileSafely } from './tile-render.js';
 import { schemaOf, resolveSettings, toStored, withTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave } from './tile-settings.js';
 import { buildSettingsForm } from './tile-settings-form.js';
-import { getPhaseIds } from '../../core/cycles/cycles.js';
 
 const page = createPage({
   id: 'dashboard',
@@ -38,110 +36,28 @@ const page = createPage({
     const { eventBus, stateManager, i18n, chartManager, themeManager, moduleRegistry, modal } = ctx;
     const gridAnchor = containerEl.querySelector('[data-ref="grid"]');
 
-    const handle = { grid: null, chart: null, addMenuEl: null, _onDocClick: null, _unsubs: [], render: null, _renderGen: 0, _toolbarWired: false, _allTilesLoaded: false, _refreshUnsubs: [], _lastLayout: [] };
+    const handle = { grid: null, addMenuEl: null, _onDocClick: null, _unsubs: [], render: null, _renderGen: 0, _toolbarWired: false, _allTilesLoaded: false, _refreshUnsubs: [], _lastLayout: [] };
 
-    const methodPhaseKeys = () => getPhaseIds(stateManager.getProjectCycle());
     const theme = () => themeManager?.getTheme?.() ?? 'light';
 
     let descriptors = [];
     const descriptorFor = (tileId) => descriptors.find(d => d.id === tileId);
-
-    // ── ZEG timeline chart ───────────────────────────────────────────────
-    const _resolvePhaseColor = (phase) => {
-      const css = getComputedStyle(document.documentElement)
-        .getPropertyValue(`--color-phase-${phase}`).trim();
-      return css || '#888';
-    };
-
-    const _buildSeries = () => {
-      const histories = {};
-      let hasAny = false;
-      const methodPhases = methodPhaseKeys();
-      for (const phase of methodPhases) {
-        const hist = stateManager.get(`phaseAchievementHistory.${phase}`) || [];
-        histories[phase] = hist;
-        if (hist.length) hasAny = true;
-      }
-      if (!hasAny) return { series: [], empty: true };
-
-      const series = methodPhases.map(phase => {
-        const hist = histories[phase];
-        const color = _resolvePhaseColor(phase);
-        return {
-          name: i18n.t(`phases.${phase}`),
-          x: hist.map(e => e.t),
-          y: hist.map(e => e.v),
-          color,
-          markerSize: hist.length === 1 ? 5 : 3,
-          connectLine: { show: true, foreground: true, width: 2, color, dash: 'solid' },
-          visible: hist.length > 0,
-        };
-      });
-      return { series, empty: series.every(ser => ser.x.length === 0) };
-    };
-
-    const renderChart = async () => {
-      const body = handle.grid?.getTileBody('zeg-timeline');
-      if (!body) return;
-      if (handle.chart) { chartManager.destroy(handle.chart); handle.chart = null; }
-
-      const { series, empty } = _buildSeries();
-      if (empty) {
-        body.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.noHistory')));
-        return;
-      }
-      const plotEl = h('div', { class: 'dashboard-area__plot', 'data-ref': 'plot' });
-      body.replaceChildren(plotEl);
-
-      const dateFmt = (ts) => {
-        const d = new Date(ts);
-        return d.toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', {
-          day: '2-digit', month: '2-digit', year: '2-digit',
-        });
-      };
-
-      // Capture the render generation + the grid this chart belongs to. If a
-      // newer render() supersedes us (or rebuilds the grid) while create()
-      // awaits, drop the result so a stale chart never inserts into a fresh grid.
-      const gen = handle._renderGen;
-      const gridAtStart = handle.grid;
-      const chart = await chartManager.create(plotEl, 'scatter', {
-        title: '',
-        xLabel: i18n.t('dashboard.xLabel'),
-        yLabel: i18n.t('dashboard.yLabel'),
-        showLegend: true,
-        series,
-        yMin: 0,
-        yMax: 100,
-        xTickFormat: dateFmt,
-      });
-      if (handle._renderGen !== gen || handle.grid !== gridAtStart) {
-        chartManager.destroy(chart);
-        return;
-      }
-      handle.chart = chart;
-    };
 
     // ── Module-owned tile dispatch ───────────────────────────────────────
     /** Resolved settings of a tile: stored overrides over schema defaults. */
     const settingsFor = (tileId, tile) =>
       resolveSettings(schemaOf(tile), (stateManager.get('dashboard.tileSettings') || {})[tileId]);
 
-    const renderModuleTile = async (descriptor) => {
-      const body = handle.grid?.getTileBody(descriptor.id);
-      if (!body || !descriptor.tile) return;
+    const renderTile = async (tileId) => {
+      const descriptor = descriptorFor(tileId);
+      const body = handle.grid?.getTileBody(tileId);
+      if (!descriptor?.tile || !body) return;
       const state = descriptor.instanceId ? stateManager.getModuleState(descriptor.instanceId) : null;
       await renderTileSafely(descriptor.tile, body, {
         tileId: descriptor.id, instanceId: descriptor.instanceId, state,
         settings: settingsFor(descriptor.id, descriptor.tile),
         i18n, theme: theme(), chartManager, stateManager,
       }, i18n);
-    };
-
-    const renderTile = async (tileId) => {
-      const d = descriptorFor(tileId);
-      if (d && !d.builtin) { await renderModuleTile(d); return; }
-      if (tileId === 'zeg-timeline') await renderChart();
     };
 
     // ── Tile settings dialog ─────────────────────────────────────────────
@@ -276,13 +192,11 @@ const page = createPage({
     // ── Full render ──────────────────────────────────────────────────────
     const render = async () => {
       // Render-generation guard: render() is invoked un-awaited from several
-      // event handlers and awaits between tearing down and rebuilding shared
-      // handle.grid/handle.chart refs. Bump the generation and bail at every
-      // await point if a newer render has superseded this one (prevents a stale
-      // async chart from leaking into a freshly-built grid).
+      // event handlers and awaits between tearing down and rebuilding the
+      // shared handle.grid ref. Bump the generation and bail at every await
+      // point if a newer render has superseded this one.
       const gen = ++handle._renderGen;
 
-      if (handle.chart) { chartManager.destroy(handle.chart); handle.chart = null; }
       if (handle.grid) { handle.grid.destroy(); handle.grid = null; }
       closeAddMenu();
 
@@ -290,9 +204,7 @@ const page = createPage({
       const { tileModules, allLoaded } = await loadTileModules(moduleRegistry, stateManager.get('phases'));
       if (handle._renderGen !== gen) return;
       handle._allTilesLoaded = allLoaded;
-      descriptors = [
-        ...enumerateTiles(tileModules, ctx),
-      ];
+      descriptors = enumerateTiles(tileModules, ctx);
 
       // Refresh subscriptions (contract field `refreshOn`), rebuilt on every
       // full render so language/theme re-renders never stack handlers.
@@ -332,16 +244,11 @@ const page = createPage({
         }
       };
       handle.grid.onTileRemoved = (tileId) => {
-        if (tileId === 'zeg-timeline' && handle.chart) {
-          chartManager.destroy(handle.chart); handle.chart = null;
-        }
         const d = descriptorFor(tileId);
-        if (d && !d.builtin) {
-          try {
-            d.tile?.dispose?.(handle.grid?.getTileBody(tileId) ?? gridAnchor, { tileId });
-          } catch (err) {
-            console.error(`[dashboard] tile "${tileId}" failed to dispose`, err);
-          }
+        try {
+          d?.tile?.dispose?.(handle.grid?.getTileBody(tileId) ?? gridAnchor, { tileId });
+        } catch (err) {
+          console.error(`[dashboard] tile "${tileId}" failed to dispose`, err);
         }
         const allSettings = stateManager.get('dashboard.tileSettings') || {};
         if (Object.hasOwn(allSettings, tileId)) {
@@ -373,14 +280,10 @@ const page = createPage({
     // ── Live-update subscriptions ────────────────────────────────────────
     const sub = (ev, cb) => { eventBus.on(ev, cb); handle._unsubs.push(() => eventBus.off(ev, cb)); };
 
-    sub('phase:achievement-changed', () => { if (page.isOpen()) renderChart(); });
     sub('state:saved', () => {
       if (!page.isOpen() || !handle.grid) return;
-      // Mirror the legacy state:saved handler: re-render data tiles but leave
-      // the ZEG timeline to phase:achievement-changed (avoids chart churn).
-      // Module/host tiles re-render only if they opt into state:saved.
+      // Tiles re-render only if they opt into state:saved (the default).
       for (const item of handle.grid.getLayout()) {
-        if (item.tileId === 'zeg-timeline') continue;
         const d = descriptorFor(item.tileId);
         if (d?.tile && !refreshEventsOf(d.tile).includes('state:saved')) continue;
         renderTile(item.tileId);
@@ -425,7 +328,6 @@ const page = createPage({
     // Invalidate a render still awaiting loadTileModules so it cannot
     // subscribe refresh handlers or rebuild the grid after unmount.
     handle._renderGen++;
-    if (handle.chart) { ctx.chartManager.destroy(handle.chart); handle.chart = null; }
     if (handle.grid) { handle.grid.destroy(); handle.grid = null; }
     if (handle.addMenuEl) { handle.addMenuEl.remove(); handle.addMenuEl = null; }
     if (handle._onDocClick) { document.removeEventListener('click', handle._onDocClick, true); handle._onDocClick = null; }

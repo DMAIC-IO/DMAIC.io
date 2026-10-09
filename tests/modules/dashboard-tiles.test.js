@@ -8,6 +8,7 @@ import raciTile from '../../js/modules/raci-matrix/raci-matrix.tile.js';
 import spcTile from '../../js/modules/control-chart/control-chart.tile.js';
 import { validateSchema, resolveSettings } from '../../js/pages/dashboard/tile-settings.js';
 import { HOST_TILES } from '../../js/pages/dashboard/tiles/index.js';
+import zegTile from '../../js/pages/dashboard/tiles/zeg-timeline.tile.js';
 
 const i18n = { t: (k) => k };
 
@@ -295,5 +296,78 @@ suite('dashboard tiles: spc', () => {
   test('empty state without column, no-data state with one point', () => {
     assertTrue(renderSpcTile({ ...SPC_STATE, columnRef: null }, []).querySelector('.dashboard-area__empty') !== null);
     assertTrue(renderSpcTile(SPC_STATE, [10]).querySelector('.dashboard-area__empty') !== null);
+  });
+});
+
+function zegStateManager(history) {
+  return {
+    get: (k) => (k.startsWith('phaseAchievementHistory.') ? (history[k.split('.')[1]] || []) : null),
+    getProjectCycle: () => 'dmaic',
+  };
+}
+
+function fakeChartManager() {
+  const made = []; const destroyed = [];
+  return {
+    made, destroyed,
+    create: async (el, type, cfg) => { const c = { el, cfg }; made.push(c); return c; },
+    destroy: (c) => { destroyed.push(c); },
+  };
+}
+
+suite('dashboard tiles: zeg-timeline', () => {
+  const args = (cm, sm, settings = { showLegend: true }) =>
+    ({ tileId: 'zeg-timeline', instanceId: null, state: null, settings, i18n: { t: (k) => k, language: 'de' },
+      theme: 'light', chartManager: cm, stateManager: sm });
+
+  test('always enumerates one tile and refreshes on achievement changes', () => {
+    assertDeepEqual(zegTile.enumerate({ i18n, findInstances: () => [] }),
+      [{ tileId: 'zeg-timeline', instanceId: null, title: 'dashboard.zegTimeline' }]);
+    assertDeepEqual(zegTile.refreshOn, ['phase:achievement-changed']);
+  });
+
+  test('empty history shows the empty state and creates no chart', async () => {
+    const host = document.createElement('div'); const cm = fakeChartManager();
+    await zegTile.render(host, args(cm, zegStateManager({})));
+    assertTrue(host.querySelector('.dashboard-area__empty') !== null);
+    assertEqual(cm.made.length, 0);
+  });
+
+  test('showLegend is passed to the chart', async () => {
+    const host = document.createElement('div'); const cm = fakeChartManager();
+    const sm = zegStateManager({ define: [{ t: 1, v: 10 }, { t: 2, v: 20 }] });
+    await zegTile.render(host, args(cm, sm, { showLegend: false }));
+    assertEqual(cm.made[0].cfg.showLegend, false);
+  });
+
+  test('a second render destroys the first chart', async () => {
+    const host = document.createElement('div'); const cm = fakeChartManager();
+    const sm = zegStateManager({ define: [{ t: 1, v: 10 }] });
+    await zegTile.render(host, args(cm, sm));
+    await zegTile.render(host, args(cm, sm));
+    assertDeepEqual(cm.destroyed, [cm.made[0]]);
+  });
+
+  test('a chart that resolves after a newer render is destroyed (stale token)', async () => {
+    const host = document.createElement('div');
+    const sm = zegStateManager({ define: [{ t: 1, v: 10 }] });
+    const made = []; const destroyed = []; const pending = [];
+    const cm = {
+      create: (el, type, cfg) => new Promise(r => { const c = { cfg }; made.push(c); pending.push(() => r(c)); }),
+      destroy: (c) => destroyed.push(c),
+    };
+    const first = zegTile.render(host, args(cm, sm));
+    const second = zegTile.render(host, args(cm, sm));
+    pending[1](); await second;
+    pending[0](); await first;
+    assertTrue(destroyed.includes(made[0]), 'stale chart destroyed');
+    assertTrue(!destroyed.includes(made[1]), 'current chart kept');
+  });
+
+  test('dispose destroys the chart', async () => {
+    const host = document.createElement('div'); const cm = fakeChartManager();
+    await zegTile.render(host, args(cm, zegStateManager({ define: [{ t: 1, v: 10 }] })));
+    zegTile.dispose(host, { tileId: 'zeg-timeline' });
+    assertDeepEqual(cm.destroyed, [cm.made[0]]);
   });
 });

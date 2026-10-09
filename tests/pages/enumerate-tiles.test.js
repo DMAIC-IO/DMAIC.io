@@ -26,14 +26,9 @@ const PHASES = {
 };
 
 suite('enumerateTiles', () => {
-  test('keeps the built-in static tiles', () => {
-    const ids = enumerateTiles([], makeCtx({})).map(t => t.id);
-    assertDeepEqual(ids, ['zeg-timeline']);
-  });
-
   test('default enumeration: one tile per instance with prefixed title and size', () => {
     const tile = { size: SIZE, titlePrefix: 'FMEA', render() {} };
-    const tiles = enumerateTiles([{ moduleId: 'fmea', tile }], makeCtx(PHASES)).filter(t => !t.builtin);
+    const tiles = enumerateTiles([{ moduleId: 'fmea', tile }], makeCtx(PHASES));
     assertDeepEqual(tiles.map(t => t.id), ['fmea:i1', 'fmea:i2']);
     assertEqual(tiles[0].title, 'FMEA — Line A');
     assertEqual(tiles[1].title, 'FMEA — I:modules.fmea.name');
@@ -45,14 +40,13 @@ suite('enumerateTiles', () => {
   });
 
   test('without titlePrefix the label is the title', () => {
-    const tiles = enumerateTiles([{ moduleId: 'fmea', tile: { size: SIZE, render() {} } }], makeCtx(PHASES))
-      .filter(t => !t.builtin);
+    const tiles = enumerateTiles([{ moduleId: 'fmea', tile: { size: SIZE, render() {} } }], makeCtx(PHASES));
     assertEqual(tiles[0].title, 'Line A');
   });
 
   test('a custom enumerate replaces the default', () => {
     const tile = { size: SIZE, render() {}, enumerate: () => [{ tileId: 'x', instanceId: 'i1', title: 'X' }] };
-    const tiles = enumerateTiles([{ moduleId: 'fmea', tile }], makeCtx(PHASES)).filter(t => !t.builtin);
+    const tiles = enumerateTiles([{ moduleId: 'fmea', tile }], makeCtx(PHASES));
     assertDeepEqual(tiles.map(t => [t.id, t.title]), [['x', 'X']]);
   });
 
@@ -62,10 +56,12 @@ suite('enumerateTiles', () => {
     assertEqual(tiles.find(t => t.id === 'fmea:i2').title, 'Mine');
   });
 
-  test('built-ins carry null moduleId and tile', () => {
-    const builtin = enumerateTiles([], makeCtx({})).find(t => t.id === 'zeg-timeline');
-    assertEqual(builtin.moduleId, null);
-    assertEqual(builtin.tile, null);
+  test('host tiles enumerate with a null moduleId', () => {
+    const tile = { size: SIZE, render() {}, enumerate: () => [{ tileId: 'zeg-timeline', instanceId: null, title: 'Z' }] };
+    const [d] = enumerateTiles([{ moduleId: null, tile }], makeCtx({}));
+    assertEqual(d.id, 'zeg-timeline');
+    assertEqual(d.moduleId, null);
+    assertEqual(d.instanceId, null);
   });
 });
 
@@ -97,7 +93,7 @@ suite('loadTileModules', () => {
         hasTile: () => true,
         loadTile: async (id) => { if (id === 'fmea') throw new Error('net'); return tile; },
       };
-      const { tileModules, allLoaded } = await loadTileModules(registry, PHASES);
+      const { tileModules, allLoaded } = await loadTileModules(registry, PHASES, []);
       assertDeepEqual(tileModules.map(m => m.moduleId), ['sipoc']);
       assertEqual(allLoaded, false);
     } finally {

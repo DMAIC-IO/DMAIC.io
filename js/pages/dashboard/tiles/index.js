@@ -5,4 +5,6 @@
  * contract as module tile files; always loaded. Contract: docs/DASHBOARD.md.
  * @type {Array<{id: string, load: function(): Promise<{default: object|object[]}>}>}
  */
-export const HOST_TILES = [];
+export const HOST_TILES = [
+  { id: 'zeg-timeline', load: () => import('./zeg-timeline.tile.js') },
+];

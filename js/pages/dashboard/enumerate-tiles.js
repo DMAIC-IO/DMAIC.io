@@ -2,14 +2,13 @@
  * D.Mike — Dashboard tile enumeration (enumerate-tiles.js)
  *
  * Loads the tile files of the modules used in the project and turns them,
- * together with the built-in static tiles (DASHBOARD_TILES), into a flat list
- * of tile descriptors the host maps to DashboardGrid tile defs:
+ * and the host tile files, into a flat list of tile descriptors the host maps
+ * to DashboardGrid tile defs:
  *   { id, instanceId|null, title, i18nTitle, defaultW, defaultH, minW, minH,
- *     builtin, moduleId|null, tile|null }
+ *     moduleId|null, tile }
  * Contract: docs/DASHBOARD.md.
  */
 
-import { DASHBOARD_TILES } from '../../ui/dashboard-tiles.js';
 import { HOST_TILES } from './tiles/index.js';
 
 /**
@@ -126,17 +125,6 @@ function defaultEntries(moduleId, tile, ctx) {
 export function enumerateTiles(tileModules, ctx) {
   const titles = ctx.stateManager.get('dashboard.titles') || {};
 
-  const builtins = DASHBOARD_TILES.map(def => ({
-    id: def.id,
-    instanceId: null,
-    title: titles[def.id] || (def.i18nTitle ? ctx.i18n.t(def.i18nTitle) : def.id),
-    i18nTitle: def.i18nTitle || '',
-    defaultW: def.defaultW, defaultH: def.defaultH, minW: def.minW, minH: def.minH,
-    builtin: true,
-    moduleId: null,
-    tile: null,
-  }));
-
   const enumCtx = { ...ctx, findInstances: (id) => findInstances(ctx.stateManager.get('phases'), id) };
   const moduleTiles = [];
   for (const { moduleId, tile } of tileModules) {
@@ -151,12 +139,11 @@ export function enumerateTiles(tileModules, ctx) {
         i18nTitle: '',
         defaultW: tile.size.defaultW, defaultH: tile.size.defaultH,
         minW: tile.size.minW, minH: tile.size.minH,
-        builtin: false,
         moduleId,
         tile,
       });
     }
   }
 
-  return [...builtins, ...moduleTiles];
+  return moduleTiles;
 }

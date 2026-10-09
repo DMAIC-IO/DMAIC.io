@@ -144,7 +144,7 @@ export class StateManager {
         modified: now,
       },
       dashboard: {
-        layout: null, // null = use default layout from dashboard-tiles.js
+        layout: null, // null = use default layout from pages/dashboard/default-layout.js
       },
     };
   }
