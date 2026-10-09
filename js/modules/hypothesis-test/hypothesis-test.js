@@ -25,6 +25,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum } from '../../core/agent/agent-argcheck.js';
 import {
   State, CATEGORIES, TEST_TYPES, DIRECTIONS, TARGET_TYPES,
 } from './hypothesis-test-model.js';
@@ -63,28 +64,6 @@ const ALGO_LAB_IDS = {
 
 /** @param {number} v @param {number} [d] @returns {string} */
 function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–'; }
-
-/**
- * Ein Aufzähl-Argument gegen seine ERKLÄRTE Wertemenge prüfen.
- *
- * Die Oberfläche kann einen Wert daneben nicht erzeugen (drei `<option>`,
- * zwei Segmentknöpfe), ein Agent schon. Ohne diese Prüfung landete er
- * ungeprüft im Model, und die Engines lesen jede unbekannte Richtung als
- * `less` (`if two-sided … else if greater … else`) — der Aufruf meldete
- * Erfolg, der p-Wert wäre der eines EINSEITIGEN Tests, und der falsche Wert
- * wanderte in das Projekt des Nutzers. Ein geworfener Fehler wird von
- * `agent-ops.js` zu `call_failed` samt Meldung.
- *
- * @param {string} name     Name des Arguments (erscheint in der Meldung)
- * @param {any} value       der übergebene Wert
- * @param {readonly string[]} allowed  die erklärte Wertemenge
- * @throws {Error} wenn `value` nicht in `allowed` steht
- */
-function requireEnum(name, value, allowed) {
-  if (!allowed.includes(value)) {
-    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: ${allowed.join(', ')}`);
-  }
-}
 
 /**
  * Die Agenten-Lesefläche des Hypothesentests.

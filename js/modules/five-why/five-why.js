@@ -19,23 +19,23 @@
 import { createModule } from '../../core/template-module.js';
 import { downloadFile } from '../../core/export-utils.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { requireKnownId } from '../../core/agent/agent-argcheck.js';
 import { State, MAX_LEVEL } from './five-why-model.js';
 
 /**
- * Die Fehlermeldung für eine nodeId, zu der es keine Frage gibt — samt der
- * Liste der vorhandenen ids, damit ein Agent seinen Tippfehler sieht statt
- * zu raten.
+ * Die vorhandenen nodeIds in Anzeigereihenfolge (Tiefe zuerst) — die Liste,
+ * die `requireKnownId` in die Fehlermeldung schreibt, damit ein Agent seinen
+ * Tippfehler sieht statt zu raten.
  * @param {{ nodes: object[] }} model
- * @param {any} nodeId
- * @returns {string}
+ * @returns {number[]}
  */
-function unknownNode(model, nodeId) {
+function nodeIds(model) {
   const ids = [];
   const walk = (list) => {
     for (const n of list ?? []) { ids.push(n.id); walk(n.children); }
   };
   walk(model.nodes);
-  return `unknown nodeId ${JSON.stringify(nodeId)}; available: ${ids.join(', ')}`;
+  return ids;
 }
 
 export default createModule({
@@ -145,8 +145,8 @@ export default createModule({
         // fachliche Absage: dokumentierter Rückgabewert), sonst müsste ein
         // Agent drei Protokolle lernen, von denen `module.describe` keines
         // nennt.
+        requireKnownId('nodeId', nodeId, nodeIds(this.model));
         const node = this.model.findNode(nodeId);
-        if (!node) throw new Error(unknownNode(this.model, nodeId));
         node.answer = String(text ?? '');
         this.$nextTick(() => this._growAll());
       },
@@ -173,7 +173,7 @@ export default createModule({
         // NICHT dasselbe: eine parentId ohne Frage ist ein ungültiges
         // Argument und wirft; „schon auf der Grundursachen-Ebene" ist eine
         // fachliche Absage und behält ihren Rückgabewert `null`.
-        if (!this.model.findNode(parentId)) throw new Error(unknownNode(this.model, parentId));
+        requireKnownId('nodeId', parentId, nodeIds(this.model));
         const child = this.model.addChild(parentId);
         this.$nextTick(() => this._growAll());
         return child ? child.id : null;
@@ -188,7 +188,7 @@ export default createModule({
       toggleCollapse(id) {
         // `State.toggleCollapse` kehrt bei unbekannter id STILL zurück; der
         // Aufruf meldete Erfolg, ohne etwas umgeschaltet zu haben.
-        if (!this.model.findNode(id)) throw new Error(unknownNode(this.model, id));
+        requireKnownId('nodeId', id, nodeIds(this.model));
         this.model.toggleCollapse(id);
         this.$nextTick(() => this._growAll());
       },
@@ -201,7 +201,7 @@ export default createModule({
        * @throws {Error} if no node has this id
        */
       removeNode(nodeId) {
-        if (!this.model.findNode(nodeId)) throw new Error(unknownNode(this.model, nodeId));
+        requireKnownId('nodeId', nodeId, nodeIds(this.model));
         this.model.deleteNode(nodeId);
         this.$nextTick(() => this._growAll());
       },

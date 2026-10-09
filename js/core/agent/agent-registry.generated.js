@@ -4742,13 +4742,13 @@ export const AGENT_REGISTRY = {
     "actions": {
       "undo": {
         "params": [],
-        "returns": "void",
-        "help": "Undo the last grid edit."
+        "returns": "boolean",
+        "help": "Undo the last grid edit. `DataGrid.undo()` kehrt bei leerer Historie STILL zurück. Die Oberfläche kann diesen Zustand nicht erreichen — ihr Knopf trägt `:disabled=\"!canUndo\"` —, ein Agent schon, und er bekam Erfolg für nichts gemeldet. Geprüft wird genau die Marke des Knopfs; eine leere Historie ist eine fachliche Absage, kein ungültiges Argument, und wird deshalb zurückgegeben statt geworfen."
       },
       "redo": {
         "params": [],
-        "returns": "void",
-        "help": "Redo the last undone grid edit."
+        "returns": "boolean",
+        "help": "Redo the last undone grid edit. Dieselbe Absage wie bei `undo()`: ohne zurückgenommenen Schritt gibt es nichts wiederherzustellen, und der Knopf der Oberfläche ist `disabled`."
       },
       "addColumn": {
         "params": [],

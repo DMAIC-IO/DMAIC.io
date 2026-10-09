@@ -1762,13 +1762,13 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
 }
 
 /* Die Platzierung unten rechnet mit einem SCHRUMPFBREITEN Anker (`left: 100%`
-   heisst „rechts neben dem Text"). Ein `<label>` ist aber ein Blockelement
+   heißt „rechts neben dem Text"). Ein `<label>` ist aber ein Blockelement
    und in der Spalten-`.field-group` dieser App ein gestreckter Flex-Posten —
    `left: 100%` landete damit an der rechten Kante des ganzen FELDES und bei
    schmalen Feldern nebeneinander auf dem Label des NACHBARN. Die Annahme
    wird deshalb hier durchgesetzt statt nur beschrieben.
    Ausnahme `[data-help-anchor="box"]`: dort IST der ganze Kasten der Anker
-   (etwa ein `<label>`, das sein Kontrollkästchen umschliesst), und der Kreis
+   (etwa ein `<label>`, das sein Kontrollkästchen umschließt), und der Kreis
    gehört an dessen rechten Rand, nicht neben den Text. */
 label.context-help-anchor:not([data-help-anchor="box"]) {
   width: fit-content;

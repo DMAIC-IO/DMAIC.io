@@ -26,6 +26,7 @@
 import { createModule } from '../../core/template-module.js';
 import Alpine from '@alpinejs/csp';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireKnownId } from '../../core/agent/agent-argcheck.js';
 import { State } from './worksheet-model.js';
 import { DataGrid, isFormula, evaluateFormula } from '../../core/datagrid/datagrid.js';
 import { parseCellInput } from '../../core/datagrid/datagrid-utils.js';
@@ -592,16 +593,39 @@ const mod = createModule({
       // ── Toolbar handlers ─────────────────────────────────────
       /**
        * Undo the last grid edit.
+       *
+       * `DataGrid.undo()` kehrt bei leerer Historie STILL zurück. Die
+       * Oberfläche kann diesen Zustand nicht erreichen — ihr Knopf trägt
+       * `:disabled="!canUndo"` —, ein Agent schon, und er bekam Erfolg für
+       * nichts gemeldet. Geprüft wird genau die Marke des Knopfs; eine leere
+       * Historie ist eine fachliche Absage, kein ungültiges Argument, und
+       * wird deshalb zurückgegeben statt geworfen.
+       *
        * @agent
-       * @returns {void}
+       * @returns {boolean} `true`, wenn ein Schritt zurückgenommen wurde;
+       *   `false` bei leerer Historie — dann ist nichts passiert.
        */
-      undo() { this._grid?.undo(); },
+      undo() {
+        if (!this.canUndo) return false;
+        this._grid.undo();
+        return true;
+      },
       /**
        * Redo the last undone grid edit.
+       *
+       * Dieselbe Absage wie bei `undo()`: ohne zurückgenommenen Schritt gibt
+       * es nichts wiederherzustellen, und der Knopf der Oberfläche ist
+       * `disabled`.
+       *
        * @agent
-       * @returns {void}
+       * @returns {boolean} `true`, wenn ein Schritt wiederhergestellt wurde;
+       *   `false` bei leerer Redo-Historie — dann ist nichts passiert.
        */
-      redo() { this._grid?.redo(); },
+      redo() {
+        if (!this.canRedo) return false;
+        this._grid.redo();
+        return true;
+      },
       /**
        * Append an empty column to the active sheet.
        * @agent
@@ -693,10 +717,7 @@ const mod = createModule({
         // `_applyActiveSheetToGrid()` — und das lädt den unveränderten
         // Zustand neu und LÖSCHT dabei die Rückgängig-Historie des Grids,
         // während der Aufruf Erfolg meldet.
-        if (!this.model.sheets.some(s => s.id === id)) {
-          throw new Error(`unknown sheet id "${id}"; available: `
-            + `${this.model.sheets.map(s => s.id).join(', ')}`);
-        }
+        requireKnownId('sheet id', id, this.model.sheets.map(s => s.id));
         if (id === this.model.activeSheetId) return;
         this._syncActiveSheet();
         this.model.setActive(id);
@@ -740,10 +761,7 @@ const mod = createModule({
         // `State.renameSheet` kehrt bei unbekannter id still zurück; ohne
         // diese Prüfung meldete der Aufruf Erfolg und feuerte dataChanged,
         // ohne irgendetwas umbenannt zu haben.
-        if (!this.model.sheets.some(s => s.id === id)) {
-          throw new Error(`unknown sheet id "${id}"; available: `
-            + `${this.model.sheets.map(s => s.id).join(', ')}`);
-        }
+        requireKnownId('sheet id', id, this.model.sheets.map(s => s.id));
         // `State.renameSheet` verwirft einen leeren Namen STILL und behielt
         // den alten — der Aufruf kam als `void` zurück, und ein Agent konnte
         // nicht unterscheiden, ob umbenannt wurde oder nicht. Ein leerer
@@ -916,11 +934,8 @@ const mod = createModule({
         // in der columnId vertippt, die Zahl seiner Eingabewerte als Erfolg
         // gemeldet — und baute seinen nächsten Schritt auf Daten, die es
         // nicht gibt.
-        const col = this._grid?.getColumn(columnId);
-        if (!col) {
-          throw new Error(`unknown columnId "${columnId}"; available: `
-            + `${(this._grid?.columns ?? []).map(c => c.id).join(', ')}`);
-        }
+        requireKnownId('columnId', columnId, (this._grid?.columns ?? []).map(c => c.id));
+        const col = this._grid.getColumn(columnId);
         if (col.meta?.lock) {
           throw new Error(`column "${columnId}" is locked (${col.meta.lock})`);
         }
@@ -934,7 +949,17 @@ const mod = createModule({
         this._grid.on('cell:changed', count);
         try {
           for (let i = 0; i < list.length; i++) {
-            this._grid.setCellValue(columnId, from + i, list[i]);
+            const row = from + i;
+            // Genau der Schritt, den der Zell-Editor vor dem Schreiben tut
+            // (`datagrid.js` `_commitEdit`): ein einfacher Wert in eine
+            // Formelzelle LÖSCHT die Formel. Ohne ihn schrieb `setCellValue`
+            // den Wert, `cell:changed` zählte ihn — und das `render()`
+            // unten rechnete ihn über `recalcAllFormulas` sofort wieder
+            // weg. Der Agent bekam eine Zahl geschriebener Zellen für eine
+            // Wirkung, die es nicht gab. Eine Absage wäre hier falsch: die
+            // Oberfläche lässt den Nutzer eine Formel genauso überschreiben.
+            if (col.formulas?.[row]) col.formulas[row] = null;
+            this._grid.setCellValue(columnId, row, list[i]);
           }
         } finally {
           this._grid.off('cell:changed', count);
