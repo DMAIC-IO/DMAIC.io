@@ -1128,14 +1128,23 @@ test('collectAgentData: worksheet declares its read surface, rows are bulk', () 
    würde das Fragezeichen einfach nicht erscheinen lassen — ohne einen
    einzigen roten Test. */
 
-/** Dotted-Path-Auflösung auf einem i18n-Baum. @returns {string|undefined} */
+/**
+ * Dotted-Path-Auflösung auf einem i18n-Baum.
+ *
+ * Ein vorhandener, aber LEERER Schlüssel gilt als nicht vorhanden. Sonst
+ * ließe sich jedes Tor hier mit `""` erfüllen: `i18n.exists()` wäre true, die
+ * Kontexthilfe öffnete ein leeres Panel, und der Agent bekäme einen leeren
+ * Hilfetext statt der JSDoc-Prosa, die der Rückfall sonst liefert.
+ *
+ * @returns {string|undefined}
+ */
 function lookup(tree, key) {
   let node = tree;
   for (const segment of key.split('.')) {
     if (node === null || typeof node !== 'object') return undefined;
     node = node[segment];
   }
-  return typeof node === 'string' ? node : undefined;
+  return typeof node === 'string' && node.trim() !== '' ? node : undefined;
 }
 
 /**
@@ -1261,6 +1270,34 @@ test('i18n-Tor: das deutsche read-Hilfetext von five-why bleibt der modulspezifi
     'Liefert Problemtext und Fragebaum als Lesezustand.');
   assert.ok(lookup(de, 'agent.shared.actions.read.help'));
   assert.ok(lookup(de, 'agent.shared.actions.read.params.options'));
+});
+
+/* Lücke, die bis hierher offen war: der Nutzungsvertrag (`agent-usage.js`)
+   liest seine Sätze mit festen Schlüsseln aus dem i18n-Baum, und KEIN Tor
+   hat je nachgesehen, ob es sie dort gibt. Der Unit-Test prüft gegen eine
+   Fixture-Tabelle, dieses Modul hatte keine `usage`-Zusicherung, und
+   `agent-surface.spec.js` prüft nur `typeof result.usage.intro === 'string'`
+   — ein fehlender Schlüssel käme als Schlüsselname selbst durch (`i18n.t`
+   gibt den Schlüssel zurück), in GENAU EINER Sprache, unbemerkt. Die
+   Schlüsselliste wird aus dem Quelltext gelesen, nicht abgeschrieben: eine
+   neu ergänzte Zeile in `agent-usage.js` ist damit automatisch mitgeprüft. */
+test('i18n-Tor: jeder Schlüssel, den agent-usage.js liest, steht in BEIDEN Sprachdateien', () => {
+  const appDir = join(import.meta.dirname, '..', '..');
+  const source = readFileSync(join(appDir, 'js', 'core', 'agent', 'agent-usage.js'), 'utf8');
+  const keys = [...source.matchAll(/i18n\.t\('(agent\.usage\.[A-Za-z0-9_.]+)'\)/g)].map(m => m[1]);
+  assert.ok(keys.length >= 5, `zu wenige usage-Schlüssel im Quelltext gefunden (${keys.length})`);
+
+  const trees = {
+    de: JSON.parse(readFileSync(join(appDir, 'i18n', 'de.json'), 'utf8')),
+    en: JSON.parse(readFileSync(join(appDir, 'i18n', 'en.json'), 'utf8')),
+  };
+  const missing = [];
+  for (const key of keys) {
+    for (const [lang, tree] of Object.entries(trees)) {
+      if (lookup(tree, key) === undefined) missing.push(`${lang}: ${key}`);
+    }
+  }
+  assert.deepEqual(missing, [], `fehlende Nutzungsvertrags-Schlüssel:\n${missing.join('\n')}`);
 });
 
 /* ── Domänen-Tor ────────────────────────────────────────────────────────

@@ -65,7 +65,11 @@ const MAX_SPREAD_DEPTH = 12;
  * Auflöser je Modul hätte denselben Effekt nicht. `collectAgentData` legt
  * deshalb genau einen an.
  *
- * @param {string} appDir  Wurzel von app/dev — Bezugspunkt der Herkunftsangaben
+ * @param {string} _appDir  Wurzel von app/dev. Heute unbenutzt: die
+ *   Herkunftsangaben in den Verstoßcodes werden in `agent-data.mjs` relativ
+ *   gemacht, nicht hier. Der Parameter bleibt in der Signatur, weil jeder
+ *   Aufrufer ihn übergibt und die Wurzel hier gebraucht würde, sobald der
+ *   Resolver selbst Pfade ausgibt.
  * @returns {{
  *   parse: (file: string) => ts.SourceFile,
  *   findDeclaration: (name: string, sf: ts.SourceFile) => { node: ts.Node, sf: ts.SourceFile }|null,
@@ -74,7 +78,7 @@ const MAX_SPREAD_DEPTH = 12;
  *     { members: Map<string, { member: ts.ObjectLiteralElementLike, sf: ts.SourceFile }>, unresolved: string[] },
  * }}
  */
-export function createResolver(appDir) {
+export function createResolver(_appDir) {
   const cache = new Map();
 
   /** @returns {ts.SourceFile} geparste Datei, pro absolutem Pfad genau einmal. */

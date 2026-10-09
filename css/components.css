@@ -1754,6 +1754,7 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
 }
 
 /* ── Kontexthilfe am Label (Alt halten) ───────────────────────────── */
+
 /* Der Knopf liegt dauerhaft im DOM und wird nur ein-/ausgeblendet: das
    Halten der Alt-Taste darf das Layout nicht verschieben. */
 .context-help-anchor {
@@ -1777,6 +1778,7 @@ label.context-help-anchor:not([data-help-anchor="box"]) {
 .context-help__btn {
   position: absolute;
   top: 0;
+
   /* Neben dem Label, nicht darauf: der Anker ist schrumpfbreit, ein nach
      innen gerechneter Versatz (right: 0 / -0.75em) legt den Kreis auf den
      letzten Buchstaben. Die linke Kante des Knopfs an die rechte Kante des
@@ -1793,9 +1795,11 @@ label.context-help-anchor:not([data-help-anchor="box"]) {
   line-height: 0;
   background: none;
   color: var(--context-help-btn-color);
+
   /* `pointer`, nicht `help`: der Knopf trägt role="button" und reagiert auf
      Klick — `help` kündigt einen Tooltip an, den es nicht gibt. */
   cursor: pointer;
+
   /* Der Kreis liegt an der rechten Ankerkante und ragt über sie hinaus.
      Stehen zwei Anker dicht nebeneinander, überlappt er den Kasten des
      nächsten — und ohne z-index gewinnt der, weil `.context-help-anchor`
