@@ -19,13 +19,18 @@
  * Nicht-Funktions-Properties (`maxLevel: 5`) und `_`-präfigierte Mitglieder
  * sind keine Methoden und brauchen keine Marke.
  *
- * Was der Generator NICHT auflösen kann, meldet er als Verstoß statt zu
- * schweigen: ein Spread im `data()`-Literal (`unresolved_spread:<ausdruck>`,
- * Mixin-Methoden) und ein fehlendes Return-Literal
- * (`unresolvable_data_literal`). Beide bleiben BERICHTEND — wie die
- * DOM-Umweg-Prüfung zählen sie erst, wenn das Modul das Modul-Tag trägt
- * (Spec §8: „Lücken blockieren nicht"). So kann aber kein Modul freigegeben
- * werden, bevor jemand hingesehen hat.
+ * Mixins werden AUFGELÖST, nicht bloß gemeldet: ein Spread im `data()`-Literal
+ * (`...chartModuleLifecycle(module, {…})`, `..._core`, `...renderMethods`) und
+ * eine durchgereichte Datenfunktion (`data: activityFlowchartData`) führen über
+ * `agent-resolve.mjs` zu den echten Mitgliedern. Stammt ein Mitglied aus einer
+ * ANDEREN Datei, trägt sein Verstoßcode die Herkunft (`@<pfad>:<zeile>`) — die
+ * Registry-Form bleibt davon unberührt.
+ *
+ * Was trotzdem unauflösbar bleibt, meldet der Generator als Verstoß statt zu
+ * schweigen: `unresolved_spread:<ausdruck>` und `unresolvable_data_literal`.
+ * Beide bleiben BERICHTEND — wie die DOM-Umweg-Prüfung zählen sie erst, wenn
+ * das Modul das Modul-Tag trägt (Spec §8: „Lücken blockieren nicht"). So kann
+ * aber kein Modul freigegeben werden, bevor jemand hingesehen hat.
  *
  * Extraktion über die TypeScript-Compiler-API: sie liest JSDoc aus reinem
  * JavaScript. Eine Dev-Abhängigkeit, kein TypeScript-Umstieg — und besser
@@ -34,8 +39,9 @@
  * Mirrors help-data.mjs: collect + render, kein Schreibzugriff hier.
  */
 import ts from 'typescript';
-import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { readdirSync, existsSync, statSync } from 'node:fs';
+import { join, relative, sep } from 'node:path';
+import { createResolver, functionFromMember } from './agent-resolve.mjs';
 
 const MODULES_DIR = 'js/modules';
 
@@ -59,7 +65,7 @@ export function collectAgentData(appDir) {
     const viewmodelFile = join(dir, `${id}.js`);
     if (!existsSync(viewmodelFile)) continue;
     const modelFile = join(dir, `${id}-model.js`);
-    modules[id] = buildEntry(viewmodelFile, existsSync(modelFile) ? modelFile : null);
+    modules[id] = buildEntry(appDir, viewmodelFile, existsSync(modelFile) ? modelFile : null);
   }
   const total = Object.keys(modules).length;
   const available = Object.values(modules).filter(m => m.available).length;
@@ -67,11 +73,14 @@ export function collectAgentData(appDir) {
 }
 
 /** Ein Registry-Eintrag für genau ein Modul. */
-function buildEntry(viewmodelFile, modelFile) {
-  const sf = parse(viewmodelFile);
+function buildEntry(appDir, viewmodelFile, modelFile) {
+  // Ein Auflöser PRO MODUL: sein Parse-Zwischenspeicher deckt die Mixin-Kette
+  // dieses Moduls ab, ohne über Module hinweg Zustand zu halten.
+  const resolver = createResolver(appDir);
+  const sf = resolver.parse(viewmodelFile);
   const tagged = hasModuleTag(sf);
-  const { actions, violations } = readViewmodel(sf);
-  const fields = modelFile ? readModelFields(parse(modelFile)) : {};
+  const { actions, violations } = readViewmodel(sf, resolver, appDir);
+  const fields = modelFile ? readModelFields(resolver.parse(modelFile)) : {};
   const reported = [...violations, ...collectDomDetours(sf)];
   // Verstöße zählen nur, wenn das Modul etwas behauptet (Spec §9).
   const effective = tagged ? reported : [];
@@ -127,11 +136,6 @@ export function collectDomDetours(sf) {
   return hits;
 }
 
-/** @returns {ts.SourceFile} */
-function parse(file) {
-  return ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
-}
-
 /**
  * Trägt der Dateikopf-Kommentar `@agent`? Das ist die Behauptung „dieses
  * Modul ist vollständig über das Viewmodel steuerbar", die der Build
@@ -144,13 +148,17 @@ function hasModuleTag(sf) {
 }
 
 /**
- * Die Mitglieder des Objektliterals, das die `data()`-Funktion zurückgibt.
+ * Die Mitglieder des Objektliterals, das die `data()`-Funktion zurückgibt —
+ * Mixin-Mitglieder eingerechnet.
+ * @param {ts.SourceFile} sf  die Moduldatei
+ * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
+ * @param {string} appDir  Wurzel von app/dev, Bezugspunkt der Herkunftsangaben
  * @returns {{ actions: Record<string, object>, violations: string[] }}
  */
-function readViewmodel(sf) {
+function readViewmodel(sf, resolver, appDir) {
   const actions = {};
   const violations = [];
-  const literal = findDataReturnLiteral(sf);
+  const literal = resolver.findDataReturnLiteral(sf);
   // Was der Generator NICHT sehen kann, muss er melden — sonst ginge ein
   // solches Modul mit gesetztem Modul-Tag und NULL Verstößen durch den Build
   // und würde `available: true`, obwohl keine einzige seiner Methoden
@@ -158,31 +166,33 @@ function readViewmodel(sf) {
   // Modul-Tag ist maschinell nachgeprüft") wäre sonst eine leere Operation.
   if (!literal) return { actions, violations: ['unresolvable_data_literal'] };
 
-  for (const member of literal.properties) {
-    // Ein Spread (`...chartModuleLifecycle(module)`, `...renderMethods`) holt
-    // Methoden aus einem Mixin, dessen Quelle hier nicht aufgelöst wird. Der
-    // Eintrag fiel bisher LAUTLOS durch `memberName() === null`.
-    if (ts.isSpreadAssignment(member)) {
-      violations.push(`unresolved_spread:${compact(member.expression.getText())}`);
-      continue;
-    }
-    const name = memberName(member);
-    if (name === null || name.startsWith('_')) continue;
+  const { members, unresolved } = resolver.collectMembers(literal, sf);
+  // Die unauflösbaren Spreads stehen VORAN: sie sind der Befund über die
+  // Vollständigkeit der folgenden Liste, nicht ein Befund in ihr.
+  for (const expression of unresolved) violations.push(`unresolved_spread:${compact(expression)}`);
+
+  for (const [name, entry] of members) {
+    if (name.startsWith('_')) continue;
+    const member = entry.member;
     if (!isFunctionMember(member)) continue;         // Daten, keine Methode
+    // Herkunft nur bei einem Mitglied aus einer ANDEREN Datei: bei einem
+    // Mitglied der Moduldatei ist sie Rauschen, und die Codes der Tests 6–8
+    // hängen an der kurzen Form.
+    const from = originSuffix(entry, sf, appDir);
 
     const tags = ts.getJSDocTags(member).map(t => t.tagName.text);
     const isAgent = tags.includes(MARK_AGENT);
     const isNoAgent = tags.includes(MARK_NOAGENT);
 
-    if (!isAgent && !isNoAgent) { violations.push(`unmarked_method:${name}`); continue; }
+    if (!isAgent && !isNoAgent) { violations.push(`unmarked_method:${name}${from}`); continue; }
     if (isNoAgent) continue;
 
-    const fn = functionOf(member);
+    const fn = functionFromMember(member);
     const params = [];
     for (const parameter of fn.parameters) {
       const paramName = parameter.name.getText();
       const tag = ts.getJSDocParameterTags(parameter)[0];
-      if (!tag || !tag.typeExpression) { violations.push(`missing_param:${name}.${paramName}`); continue; }
+      if (!tag || !tag.typeExpression) { violations.push(`missing_param:${name}.${paramName}${from}`); continue; }
       params.push({
         name: paramName,
         type: tag.typeExpression.type.getText(),
@@ -192,7 +202,7 @@ function readViewmodel(sf) {
     }
 
     const returnTag = ts.getJSDocReturnTag(fn);
-    if (!returnTag || !returnTag.typeExpression) { violations.push(`missing_returns:${name}`); }
+    if (!returnTag || !returnTag.typeExpression) { violations.push(`missing_returns:${name}${from}`); }
 
     actions[name] = {
       params,
@@ -204,42 +214,16 @@ function readViewmodel(sf) {
 }
 
 /**
- * Finde das Objektliteral, das die `data`-Methode des `createModule({…})`-
- * Arguments zurückgibt. Das ist der Schreibpfad der UI und damit die
- * Garantie aus Spec §2: der Agent kann nichts, was die UI nicht kann.
- * @returns {ts.ObjectLiteralExpression|null}
+ * Die Herkunftsangabe `@<pfad relativ zu app/dev>:<zeile>` für ein Mitglied
+ * aus einer anderen Datei — und der leere String für ein Mitglied der
+ * Moduldatei selbst.
+ * @returns {string}
  */
-function findDataReturnLiteral(sf) {
-  let dataMember = null;
-  const walk = (node) => {
-    if (dataMember) return;
-    if (ts.isCallExpression(node)
-        && ts.isIdentifier(node.expression)
-        && node.expression.text === 'createModule'
-        && node.arguments[0]
-        && ts.isObjectLiteralExpression(node.arguments[0])) {
-      for (const property of node.arguments[0].properties) {
-        if (memberName(property) === 'data') { dataMember = property; break; }
-      }
-    }
-    ts.forEachChild(node, walk);
-  };
-  walk(sf);
-  if (!dataMember) return null;
-
-  const fn = functionOf(dataMember);
-  if (!fn) return null;
-  let literal = null;
-  const findReturn = (node) => {
-    if (literal) return;
-    if (ts.isReturnStatement(node) && node.expression && ts.isObjectLiteralExpression(node.expression)) {
-      literal = node.expression;
-      return;
-    }
-    ts.forEachChild(node, findReturn);
-  };
-  findReturn(fn);
-  return literal;
+function originSuffix(entry, moduleSf, appDir) {
+  if (entry.sf === moduleSf) return '';
+  const file = relative(appDir, entry.sf.fileName).split(sep).join('/');
+  const line = entry.sf.getLineAndCharacterOfPosition(entry.member.getStart(entry.sf)).line + 1;
+  return `@${file}:${line}`;
 }
 
 /**
@@ -280,14 +264,6 @@ function compact(text) {
   return text.replace(/\s*\n\s*/g, ' ').trim();
 }
 
-/** @returns {string|null} der Name eines Objektliteral-Mitglieds. */
-function memberName(member) {
-  const name = member.name;
-  if (!name) return null;
-  if (ts.isIdentifier(name) || ts.isStringLiteral(name)) return name.text;
-  return null;
-}
-
 /** @returns {boolean} ob das Mitglied eine Funktion ist (Methode oder Funktionswert). */
 function isFunctionMember(member) {
   if (ts.isMethodDeclaration(member)) return true;
@@ -295,16 +271,6 @@ function isFunctionMember(member) {
     return ts.isFunctionExpression(member.initializer) || ts.isArrowFunction(member.initializer);
   }
   return false;
-}
-
-/** @returns {ts.SignatureDeclaration|null} die Funktion hinter einem Mitglied. */
-function functionOf(member) {
-  if (ts.isMethodDeclaration(member)) return member;
-  if (ts.isPropertyAssignment(member)
-      && (ts.isFunctionExpression(member.initializer) || ts.isArrowFunction(member.initializer))) {
-    return member.initializer;
-  }
-  return null;
 }
 
 /** @returns {string|undefined} die Beschreibungszeile(n) eines JSDoc-Blocks. */

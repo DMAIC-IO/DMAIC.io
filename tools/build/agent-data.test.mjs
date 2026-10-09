@@ -2,17 +2,27 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { collectAgentData, renderAgentRegistryModule, collectDomDetours } from './agent-data.mjs';
 import ts from 'typescript';
 
-/** Build a throwaway app dir: { '<id>': { '<file>': '<body>' } }. */
-function fixture(modules) {
+/**
+ * Build a throwaway app dir.
+ * @param {Record<string, Record<string, string>>} modules  { '<id>': { '<file>': '<body>' } }
+ * @param {Record<string, string>} [extra]  weitere Dateien, Pfad relativ zur Wurzel
+ *   (`'js/ui/mix.js'`) — damit ein Modul aus einem echten Mixin importieren kann.
+ */
+function fixture(modules, extra = {}) {
   const root = mkdtempSync(join(tmpdir(), 'agent-'));
   for (const [id, files] of Object.entries(modules)) {
     const dir = join(root, 'js', 'modules', id);
     mkdirSync(dir, { recursive: true });
     for (const [name, body] of Object.entries(files)) writeFileSync(join(dir, name), body);
+  }
+  for (const [path, body] of Object.entries(extra)) {
+    const full = join(root, path);
+    mkdirSync(dirname(full), { recursive: true });
+    writeFileSync(full, body);
   }
   return root;
 }
@@ -283,4 +293,189 @@ test('collectAgentData: a missing data() literal on an UNTAGGED module does not 
   assert.deepEqual(modules.bar.violations, []);
   assert.deepEqual(modules.bar.reported, ['unresolvable_data_literal']);
   assert.deepEqual(coverage, { total: 1, available: 0 });
+});
+
+// ── Mixin-Auflösung ────────────────────────────────────────────────────────
+// 21 von 72 Modulen holen Viewmodel-Methoden aus einem Mixin oder haben kein
+// Return-Literal an der Stelle. Nur zu melden, was man nicht sieht, genügt
+// nicht: vor der ersten Freigabe muss der Generator diese Methoden AUFLÖSEN,
+// sonst wird ein Modul als verfügbar gemeldet und hat null Aktionen.
+
+/** Ein Mixin wie `chartModuleLifecycle`: Fabrik mit Konfigurationsobjekt. */
+const MIXIN = `/** Shared chart lifecycle. */
+export function mixFactory(module, cfg) {
+  const { mountPicker } = cfg;
+  return {
+    /**
+     * Append a step.
+     * @agent
+     * @param {string} title - the step title
+     * @returns {void} nothing
+     */
+    addStep(title) {},
+    /** @noagent */
+    init() { mountPicker.call(this); },
+    _hidden() {},
+    themeMode: 'render',
+  };
+}
+
+export const mixConst = {
+  /** @noagent */
+  paint() {},
+};
+`;
+
+/** Ein Viewmodel, das `extra` zwischen die eigenen Mitglieder spreizt. */
+function vmWith(spread, imports = `import { mixFactory, mixConst } from '../../ui/mix.js';`) {
+  return TAGGED_VM
+    .replace(`import { createModule } from '../../core/template-module.js';`,
+      `import { createModule } from '../../core/template-module.js';\n${imports}`)
+    .replace('      maxLevel: 5,', `      ${spread}\n      maxLevel: 5,`);
+}
+
+test('collectAgentData: a spread of an imported factory call resolves its methods', () => {
+  const root = fixture(
+    { foo: { 'foo.js': vmWith('...mixFactory(module, { mountPicker() {} }),'), 'foo-model.js': MODEL } },
+    { 'js/ui/mix.js': MIXIN },
+  );
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.violations, []);
+  assert.deepEqual(Object.keys(modules.foo.actions).sort(), ['addStep', 'read', 'setProblem']);
+  assert.deepEqual(modules.foo.actions.addStep.params, [
+    { name: 'title', type: 'string', optional: false, help: 'the step title' },
+  ]);
+  assert.equal(modules.foo.available, true);
+});
+
+test('collectAgentData: the config object handed to a factory contributes no members', () => {
+  // `mountPicker` ist ein Argument, das die Fabrik VERBRAUCHT — es landet nicht
+  // auf dem Viewmodel und darf daher weder Aktion noch Verstoß werden.
+  const root = fixture(
+    { foo: { 'foo.js': vmWith('...mixFactory(module, { mountPicker() {} }),'), 'foo-model.js': MODEL } },
+    { 'js/ui/mix.js': MIXIN },
+  );
+  const { modules } = collectAgentData(root);
+  assert.equal('mountPicker' in modules.foo.actions, false);
+  assert.deepEqual(modules.foo.reported.filter(v => v.includes('mountPicker')), []);
+});
+
+test('collectAgentData: an unmarked mixin method is a violation that names its origin', () => {
+  const mixin = MIXIN.replace('    /** @noagent */\n    init()', '    init()');
+  const root = fixture(
+    { foo: { 'foo.js': vmWith('...mixFactory(module, { mountPicker() {} }),'), 'foo-model.js': MODEL } },
+    { 'js/ui/mix.js': mixin },
+  );
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.violations, ['unmarked_method:init@js/ui/mix.js:12']);
+});
+
+test('collectAgentData: a spread of an imported object constant resolves its methods', () => {
+  const root = fixture(
+    { foo: { 'foo.js': vmWith('...mixConst,'), 'foo-model.js': MODEL } },
+    { 'js/ui/mix.js': MIXIN },
+  );
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.violations, []);
+  assert.equal('paint' in modules.foo.actions, false);
+});
+
+test('collectAgentData: a spread of a local constant holding a factory call resolves', () => {
+  // Das Muster von process-map: `const _core = chainViewMixin(…)` im `data()`,
+  // danach `..._core` plus Aufrufe von `_core.x.call(this)`.
+  const vm = vmWith('..._core,').replace('  data(module, _t) {\n    return {',
+    '  data(module, _t) {\n    const _core = mixFactory(module, { mountPicker() {} });\n    return {');
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } }, { 'js/ui/mix.js': MIXIN });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.violations, []);
+  assert.ok('addStep' in modules.foo.actions);
+});
+
+test('collectAgentData: a member of the module overrides the mixin member of the same name', () => {
+  const vm = vmWith(`...mixFactory(module, { mountPicker() {} }),
+      /**
+       * @agent
+       * @param {string} title - the local title
+       * @returns {string} the id
+       */
+      addStep(title) { return 'x'; },`);
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } }, { 'js/ui/mix.js': MIXIN });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.violations, []);
+  assert.equal(modules.foo.actions.addStep.returns, 'string');
+  assert.equal(modules.foo.actions.addStep.params[0].help, 'the local title');
+});
+
+test('collectAgentData: a data() that names a local function resolves its return literal', () => {
+  // Das Muster von activity-flowchart: `data: activityFlowchartData` mit einer
+  // exportierten Funktion, damit die Ansichtstransformationen testbar sind.
+  const vm = `/**
+ * Foo module.
+ * @agent
+ */
+export default createModule({
+  config: { id: 'foo' },
+  data: fooData,
+});
+
+export function fooData(module, _t) {
+  return {
+    /**
+     * Read the full state.
+     * @agent
+     * @returns {object} the state
+     */
+    read() { return {}; },
+  };
+}`;
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.violations, []);
+  assert.deepEqual(Object.keys(modules.foo.actions), ['read']);
+});
+
+test('collectAgentData: a nested spread inside a mixin resolves too', () => {
+  const inner = `export const innerMix = {
+  /**
+   * Drop a step.
+   * @agent
+   * @returns {void} nothing
+   */
+  dropStep() {},
+};
+`;
+  const outer = `import { innerMix } from './inner.js';
+export function mixFactory(module, cfg) {
+  return { ...innerMix };
+}
+`;
+  const root = fixture(
+    { foo: { 'foo.js': vmWith('...mixFactory(module, {}),', `import { mixFactory } from '../../ui/mix.js';`), 'foo-model.js': MODEL } },
+    { 'js/ui/mix.js': outer, 'js/ui/inner.js': inner },
+  );
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.violations, []);
+  assert.ok('dropStep' in modules.foo.actions);
+});
+
+test('collectAgentData: a self-referential mixin terminates instead of looping', () => {
+  const mixin = `export const loopMix = {
+  ...loopMix,
+  /** @noagent */
+  paint() {},
+};
+`;
+  const root = fixture(
+    { foo: { 'foo.js': vmWith('...loopMix,', `import { loopMix } from '../../ui/mix.js';`), 'foo-model.js': MODEL } },
+    { 'js/ui/mix.js': mixin },
+  );
+  const { modules } = collectAgentData(root);
+  assert.equal('paint' in modules.foo.actions, false);
+  assert.deepEqual(modules.foo.violations, []);
+});
+
+test('collectAgentData: a spread whose source stays unresolvable is still reported', () => {
+  const root = fixture({ foo: { 'foo.js': vmWith('...fromNowhere(module),', ''), 'foo-model.js': MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.violations, ['unresolved_spread:fromNowhere(module)']);
 });
