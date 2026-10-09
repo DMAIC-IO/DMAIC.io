@@ -3413,9 +3413,7 @@ export class DataGrid {
    */
   importCSVText(text, label = 'CSV') {
     const delim = this._detectDelimiter(text);
-    const lines = String(text ?? '')
-      .replace(/\r\n/g, '\n').replace(/\r/g, '\n')
-      .split('\n').filter(l => l.trim());
+    const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(l => l.trim());
     const rows = lines.map(l => this._parseCSVLine(l, delim));
     if (rows.length === 0) return { columns: 0, rows: 0 };
 
