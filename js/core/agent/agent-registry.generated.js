@@ -1901,7 +1901,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Set the significance level. Non-numeric input keeps the previous α and still recomputes — byte for byte what the template's `@input` did before this method existed (`parseFloat`, conditional assignment, unconditional recompute)."
+        "help": "Set the significance level. Non-numeric input keeps the previous α and still recomputes."
       },
       "setPowerGoal": {
         "params": [

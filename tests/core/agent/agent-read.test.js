@@ -2,7 +2,7 @@
  * Tests for core/agent/agent-read.js — the read() projection from Spec §7
  * ("der Agent bekommt Umfang statt Masse, bis er gezielt nachfragt").
  */
-import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { projectReadState } from '../../../js/core/agent/agent-read.js';
 
 const SCHEMA = {
@@ -97,5 +97,40 @@ suite('agent read projection', () => {
     const out = projectReadState(state, SCHEMA, { fields: ['rows'] });
     out.rows.push([9, 9, 9]);
     assertEqual(state.rows.length, 2);
+  });
+
+  /* ── Die drei Stufen von clone() ──────────────────────────────────────
+     Ein stilles `null` wäre für den Agenten von „noch nicht gerechnet"
+     nicht zu unterscheiden — und genau das ist bei einem rechnenden Modul
+     der dokumentierte Leerzustand. */
+
+  const ONE = { value: { type: 'object', help: '', bulk: false } };
+
+  test('clone Stufe 1: ein gewöhnliches Objekt kommt verlustfrei durch', () => {
+    const out = projectReadState({ value: { a: 1, b: ['x'] } }, ONE);
+    assertDeepEqual(out.value, { a: 1, b: ['x'] });
+  });
+
+  test('clone Stufe 2: ein Proxy scheitert an structuredClone und kommt über JSON durch', () => {
+    // Genau die Form, die ein reaktives Viewmodel liefert (Alpine): reine
+    // Daten hinter einem Proxy. structuredClone wirft DataCloneError.
+    const proxy = new Proxy({ route: { name: 'Welch t-Test' }, p: 0.0003 }, {});
+    let threw = false;
+    try { structuredClone(proxy); } catch { threw = true; }
+    assertTrue(threw, 'Voraussetzung: structuredClone scheitert am Proxy');
+    const out = projectReadState({ value: proxy }, ONE);
+    assertEqual(out.value.route.name, 'Welch t-Test');
+    assertEqual(out.value.p, 0.0003);
+  });
+
+  test('clone Stufe 3: ein zyklischer Wert wird SICHTBAR unübertragbar, nicht null', () => {
+    const cyclic = { name: 'x' };
+    cyclic.self = cyclic;
+    // structuredClone kann Zyklen; eine Funktion darin kann es nicht, und
+    // JSON kann den Zyklus nicht — damit greift Stufe 3.
+    const out = projectReadState({ value: { fn() {}, cyclic } }, ONE);
+    assertEqual(out.value.$unserializable, true);
+    assertTrue(typeof out.value.reason === 'string' && out.value.reason.length > 0);
+    assertTrue(out.value !== null);
   });
 });

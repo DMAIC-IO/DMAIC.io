@@ -86,11 +86,29 @@ function clampIndex(raw, length) {
 }
 
 /**
- * Tiefe Kopie über structuredClone, damit der Agent nie eine Referenz auf
- * den lebenden Modellzustand in der Hand hält. Nicht klonbare Werte (z. B.
- * eine Funktion im Zustand) fallen auf null zurück statt zu werfen.
+ * Tiefe Kopie, damit der Agent nie eine Referenz auf den lebenden
+ * Modellzustand in der Hand hält.
+ *
+ * Drei Stufen, und KEIN stilles `null`: ein `null` wäre für den Agenten von
+ * „noch nicht gerechnet" nicht zu unterscheiden, und genau das ist bei einem
+ * rechnenden Modul der dokumentierte Leerzustand.
+ *
+ *   1. `structuredClone` — der Normalfall, verlustfrei.
+ *   2. JSON-Runde — fängt die Werte, an denen `structuredClone` scheitert,
+ *      obwohl sie reine Daten sind: ein reaktiver Proxy (Alpine) ist der
+ *      häufigste Fall, denn jedes Viewmodel-Feld in einer erklärten
+ *      Lesefläche ist einer. Verlustbehaftet nur dort, wo JSON verlustbehaftet
+ *      ist (NaN/Infinity → null, undefined/Funktionen fallen weg).
+ *   3. Sichtbarer Marker statt `null` — ein `Map`, ein `Set`, ein Zyklus:
+ *      der Agent sieht, DASS hier etwas nicht übertragbar war.
+ *
+ * @param {any} value
+ * @returns {any}
  */
 function clone(value) {
   if (value === null || typeof value !== 'object') return value;
-  try { return structuredClone(value); } catch { return null; }
+  try { return structuredClone(value); } catch { /* Stufe 2 */ }
+  try { return JSON.parse(JSON.stringify(value)); } catch (err) {
+    return { $unserializable: true, reason: err?.message ?? String(err) };
+  }
 }

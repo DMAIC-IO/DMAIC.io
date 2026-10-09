@@ -295,6 +295,39 @@ export class ColumnPicker {
 
   /** Programmatically set selection. */
   set value(refs) {
+    this._applySelection(refs);
+    this._render();
+  }
+
+  /**
+   * Die Auswahl nachziehen, OHNE neu zu zeichnen, wenn sich nichts ändert.
+   *
+   * Der `value`-Setter endet in `_render()`, und `_render()` ersetzt den
+   * Inhalt des Containers (`replaceChildren`) — also auch das `<select>`
+   * beziehungsweise das Kästchen, dessen `change`-Behandlung gerade auf dem
+   * Stapel liegt. Wer aus dem eigenen `onChange` heraus zurückschreibt
+   * („eine Senke, zwei Aufrufer"), reißt sich damit den Fokus weg: nach der
+   * Auswahl steht der Fokus auf `<body>`, und in der Mehrfachauswahl kann
+   * per Tastatur genau ein Kästchen gesetzt werden.
+   *
+   * Darum: identische Auswahl → gar nichts tun; fremde Auswahl bei
+   * fokussiertem Picker → Zustand übernehmen, aber nicht neu zeichnen
+   * (dieselbe Zurückhaltung wie `refresh()`, `:308`).
+   *
+   * @param {object|object[]|null} refs  Spaltenbezug, Liste davon, oder null
+   * @returns {boolean} ob neu gezeichnet wurde
+   */
+  syncValue(refs) {
+    const before = this._selectionKey();
+    this._applySelection(refs);
+    if (this._selectionKey() === before) return false;
+    if (isPickerFocused(this._container)) return false;
+    this._render();
+    return true;
+  }
+
+  /** Die Auswahl übernehmen, ohne zu zeichnen. */
+  _applySelection(refs) {
     if (this._isSingle()) {
       const ref = (refs && !refs.instanceId && Array.isArray(refs)) ? (refs[0] || null) : refs;
       this._selectedKey = ref ? refToKey(ref) : null;
@@ -303,7 +336,17 @@ export class ColumnPicker {
         (Array.isArray(refs) ? refs : (refs ? [refs] : [])).map(r => refToKey(r))
       );
     }
-    this._render();
+  }
+
+  /**
+   * Die aktuelle Auswahl als vergleichbare Zeichenkette. Sortiert, damit die
+   * Reihenfolge der Mehrfachauswahl keinen Unterschied vortäuscht.
+   * @returns {string}
+   */
+  _selectionKey() {
+    return this._isSingle()
+      ? (this._selectedKey ?? '')
+      : [...this._selectedKeys].sort().join('|');
   }
 
   /** Re-scan columns and re-render, preserving valid selections. */

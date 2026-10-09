@@ -4057,11 +4057,11 @@
           },
           "runAnalysis": { "help": "Rechnet mit der aktuellen Konfiguration. Mehrfachaufruf ist unschädlich; unvollständige Eingaben lassen result auf null." },
           "setCategory": {
-            "help": "Wählt, was geprüft wird: Streuung (variance) oder Lage (mean).",
+            "help": "Wählt, was geprüft wird: Streuung (variance) oder Lage (mean). Die Neuberechnung folgt erst im nächsten Tick, weil die Spaltenauswahl neu eingehängt wird — ein read im selben Stapel sieht noch das alte Ergebnis beziehungsweise null.",
             "params": { "cat": "'variance' oder 'mean'." }
           },
           "setTestType": {
-            "help": "Wählt die Stichprobenlage: eine Stichprobe gegen einen Zielwert, zwei Stichproben gegeneinander, oder k Gruppen.",
+            "help": "Wählt die Stichprobenlage: eine Stichprobe gegen einen Zielwert, zwei Stichproben gegeneinander, oder k Gruppen. Die Neuberechnung folgt erst im nächsten Tick, weil die Spaltenauswahl neu eingehängt wird — ein read im selben Stapel sieht noch das alte Ergebnis beziehungsweise null.",
             "params": { "type": "'one', 'two' oder 'k'." }
           },
           "setDirection": {

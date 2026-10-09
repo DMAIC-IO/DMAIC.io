@@ -4053,11 +4053,11 @@
           },
           "runAnalysis": { "help": "Computes with the current configuration. Calling it repeatedly is harmless; incomplete inputs leave result at null." },
           "setCategory": {
-            "help": "Chooses what is being tested: spread (variance) or location (mean).",
+            "help": "Chooses what is being tested: spread (variance) or location (mean). The recomputation only follows on the next tick, because the column pickers are remounted — a read in the same batch still sees the old result, or null.",
             "params": { "cat": "'variance' or 'mean'." }
           },
           "setTestType": {
-            "help": "Chooses the sample layout: one sample against a target value, two samples against each other, or k groups.",
+            "help": "Chooses the sample layout: one sample against a target value, two samples against each other, or k groups. The recomputation only follows on the next tick, because the column pickers are remounted — a read in the same batch still sees the old result, or null.",
             "params": { "type": "'one', 'two' or 'k'." }
           },
           "setDirection": {

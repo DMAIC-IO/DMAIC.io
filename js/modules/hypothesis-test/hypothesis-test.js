@@ -63,24 +63,6 @@ const ALGO_LAB_IDS = {
 function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–'; }
 
 /**
- * Eine proxyfreie, klonbare Kopie eines Werts vom reaktiven Viewmodel.
- *
- * `this.result` hängt am Alpine-Proxy, und `projectReadState` kopiert den
- * Lesezustand über `structuredClone` — das scheitert an einem Proxy
- * (DataCloneError) und fällt dort STILL auf `null` zurück. Ohne diese Runde
- * über JSON läge in jeder Antwort `result: null`, obwohl die Oberfläche das
- * Ergebnis anzeigt. Das Ergebnis trägt nur Zahlen, Zeichenketten und Listen,
- * die Runde verliert also nichts.
- *
- * @param {any} value
- * @returns {any} eine proxyfreie Kopie, oder null
- */
-function plain(value) {
-  if (value == null) return null;
-  try { return JSON.parse(JSON.stringify(value)); } catch { return null; }
-}
-
-/**
  * Die Agenten-Lesefläche des Hypothesentests.
  *
  * Nicht die persistierte Form: das Model hält NUR die Konfiguration, das
@@ -210,17 +192,17 @@ const mod = createModule({
         this.runAnalysis();
       },
       /**
-       * Set the significance level.
-       *
-       * Non-numeric input keeps the previous α and still recomputes — byte for
-       * byte what the template's `@input` did before this method existed
-       * (`parseFloat`, conditional assignment, unconditional recompute).
-       *
+       * Set the significance level. Non-numeric input keeps the previous α
+       * and still recomputes.
        * @agent
        * @param {number|string} alpha significance level, e.g. 0.05
        * @returns {void}
        */
       setAlpha(alpha) {
+        // `parseFloat` und das unbedingte Rechnen sind Byte für Byte das,
+        // was das `@input` der Vorlage vor dieser Methode tat: `Number('')`
+        // wäre 0 (ein geleertes Feld setzte α = 0), und ohne den Aufruf am
+        // Ende bliebe beim Leeren das alte Ergebnis stehen.
         const v = parseFloat(alpha);
         if (!isNaN(v)) this.model.alpha = v;
         this.runAnalysis();
@@ -276,10 +258,12 @@ const mod = createModule({
       setColumn1(ref) {
         this.model.colRef1 = ref;
         // Den Picker nachziehen, damit die UI zeigt, was der Agent gewählt
-        // hat — und weil die Auswertung die Werte am Picker abholt. Der
-        // `value`-Setter löst `onChange` NICHT aus (geprüft) — keine
-        // Rückkopplung.
-        if (this._picker1) this._picker1.value = ref;
+        // hat — und weil die Auswertung die Werte am Picker abholt.
+        // `syncValue` statt `value`: der Setter endet in `_render()` und
+        // ersetzt damit genau das `<select>`, dessen `change` uns gerade
+        // hierher gebracht hat (Fokusverlust). `syncValue` tut bei
+        // unveränderter Auswahl nichts und löst `onChange` nicht aus.
+        this._picker1?.syncValue(ref);
         this.runAnalysis();
       },
       /**
@@ -290,7 +274,7 @@ const mod = createModule({
        */
       setColumn2(ref) {
         this.model.colRef2 = ref;
-        if (this._picker2) this._picker2.value = ref;
+        this._picker2?.syncValue(ref);
         this.runAnalysis();
       },
       /**
@@ -301,7 +285,7 @@ const mod = createModule({
        */
       setColumnsK(refs) {
         this.model.colRefsK = Array.isArray(refs) ? refs : [];
-        if (this._pickerK) this._pickerK.value = this.model.colRefsK;
+        this._pickerK?.syncValue(this.model.colRefsK);
         this.runAnalysis();
       },
       /** @noagent DOM event handler; the agent uses setAlpha() */
@@ -1011,9 +995,13 @@ const mod = createModule({
        * @returns {AgentRead} configuration plus the computed result
        */
       read(options) {
+        // `this.result` ist ein reaktiver Proxy. Die Kopie dafür macht
+        // `clone()` in agent-read.js (structuredClone scheitert am Proxy,
+        // die JSON-Runde fängt ihn) — eine zweite Kopie hier wäre ein
+        // zweiter Weg für dieselbe Sache.
         return readAgentState(
           'hypothesis-test',
-          { ...this.model.toJSON(), result: plain(this.result) },
+          { ...this.model.toJSON(), result: this.result },
           options,
         );
       },
