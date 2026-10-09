@@ -841,6 +841,7 @@ const mod = createModule({
         }
 
         const chart = await module._context.chartManager.create(host, 'scatter', {
+          editKey: 'kappa',
           xLabel: _t('table.pair'),
           yLabel: 'Cohen κ',
           showLegend: false,
@@ -878,6 +879,7 @@ const mod = createModule({
         const yMinus = entries.map(([, v]) => Math.max(0, v.vsReference.effectiveness.rate - (v.vsReference.effectiveness.ci95?.[0] ?? y[0])));
 
         const chart = await module._context.chartManager.create(host, 'scatter', {
+          editKey: 'effectiveness',
           xLabel: _t('table.appraiser'),
           yLabel: _t('kpi.effectiveness'),
           showLegend: false,
@@ -926,6 +928,7 @@ const mod = createModule({
         }));
 
         const chart = await module._context.chartManager.create(host, 'scatter', {
+          editKey: 'sdt',
           xLabel: 'Kriterium c',
           yLabel: "d'",
           showLegend: true,

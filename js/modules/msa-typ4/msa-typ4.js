@@ -277,6 +277,7 @@ const mod = createModule({
         }
 
         const chart = await module._context.chartManager.create(host, 'scatter', {
+          editKey: 'linearity',
           showLegend: true,
           xLabel: _t('labels.referenceColumn'),
           yLabel: _t('table.bias'),
@@ -323,6 +324,7 @@ const mod = createModule({
         const ys = res.perReference.map(p => (Number.isFinite(p.percentBias) ? p.percentBias * Math.sign(p.bias) : 0));
 
         const chart = await module._context.chartManager.create(host, 'scatter', {
+          editKey: 'pct-bias',
           showLegend: true,
           xLabel: _t('labels.referenceColumn'),
           yLabel: _t('table.percentBias'),
@@ -358,6 +360,7 @@ const mod = createModule({
         const meanY = res.perReference.map(p => p.mean);
 
         const chart = await module._context.chartManager.create(host, 'scatter', {
+          editKey: 'per-ref',
           showLegend: true,
           xLabel: _t('labels.referenceColumn'),
           yLabel: _t('labels.measuredColumn'),
@@ -400,6 +403,7 @@ const mod = createModule({
         }
 
         const chart = await module._context.chartManager.create(host, 'scatter', {
+          editKey: 'residual',
           showLegend: true,
           xLabel: 'ŷ',
           yLabel: _t('charts.residuals'),

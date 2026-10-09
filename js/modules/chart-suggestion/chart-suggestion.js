@@ -142,8 +142,9 @@ const mod = createModule({
        * error placeholder into `cell`. Mirrors correlation's `_mkScatter`.
        */
       async _mkChart(cell, gen, type, config) {
+        const keyed = config.editKey ? config : { editKey: `${this.model.selectedChartType}:${type}`, ...config };
         // A failed chart resolves null; chartManager already left its placeholder in `cell`.
-        const chart = await module._context.chartManager.create(cell, type, config);
+        const chart = await module._context.chartManager.create(cell, type, keyed);
         if (!chart) return null;
         if (gen !== this._renderGen) {
           try { module._context.chartManager.destroy(chart); } catch { /* ignore */ }

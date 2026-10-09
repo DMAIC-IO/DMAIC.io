@@ -248,6 +248,7 @@ const mod = createModule({
         if (!host) return;
 
         const chart = await module._context.chartManager.create(host, 'control-chart', {
+          editKey: 'ewma',
           title: '',
           xLabel: _t('xLabelSample'),
           yLabel: _t('yLabel_ewma'),
@@ -307,6 +308,7 @@ const mod = createModule({
           if (!host) return;
 
           const chart = await module._context.chartManager.create(host, 'control-chart', {
+            editKey: 'cusum',
             title: '',
             xLabel: _t('xLabelSample'),
             yLabel: sc.yLabel,
