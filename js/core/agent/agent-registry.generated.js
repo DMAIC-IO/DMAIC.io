@@ -1376,32 +1376,105 @@ export const AGENT_REGISTRY = {
     }
   },
   "five-why": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:isRootCause",
-      "unmarked_method:cardClass",
-      "unmarked_method:clampLevel",
-      "unmarked_method:nodeTag",
-      "unmarked_method:answerPlaceholder",
-      "unmarked_method:toggleTitle",
-      "unmarked_method:toggleIcon",
-      "unmarked_method:deleteTitle",
-      "unmarked_method:addChildLabel",
-      "unmarked_method:addRootLabel",
-      "unmarked_method:statText",
-      "unmarked_method:addRoot",
-      "unmarked_method:addChild",
-      "unmarked_method:toggleCollapse",
-      "unmarked_method:deleteNode",
-      "unmarked_method:collapseAll",
-      "unmarked_method:expandAll",
-      "unmarked_method:autoGrow",
-      "unmarked_method:exportJSON",
-      "unmarked_method:init"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor (`{ $bulk: true, rowCount, columns }`), damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "setProblem": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "the problem statement"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the observed problem statement. Same sink as the template's `x-model=\"model.problem\"`."
+      },
+      "setAnswer": {
+        "params": [
+          {
+            "name": "nodeId",
+            "type": "number",
+            "optional": false,
+            "help": "id of the node"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "the answer text"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Set the answer of a Why node. Same sink as the template's `x-model=\"nN.answer\"`."
+      },
+      "addRoot": {
+        "params": [],
+        "returns": "number",
+        "help": "Append a new level-1 Why node."
+      },
+      "addChild": {
+        "params": [
+          {
+            "name": "parentId",
+            "type": "number",
+            "optional": false,
+            "help": "id of the node to append to"
+          }
+        ],
+        "returns": "number|null",
+        "help": "Append a child Why below a node. Blocked at the root-cause level."
+      },
+      "toggleCollapse": {
+        "params": [
+          {
+            "name": "id",
+            "type": "number",
+            "optional": false,
+            "help": "id of the node to toggle"
+          }
+        ],
+        "returns": "void",
+        "help": "Collapse or expand a node."
+      },
+      "removeNode": {
+        "params": [
+          {
+            "name": "nodeId",
+            "type": "number",
+            "optional": false,
+            "help": "id of the node to remove"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Remove a node and its subtree. The UI handler `deleteNode()` asks the user first and then calls this — one sink, two callers."
+      },
+      "collapseAll": {
+        "params": [],
+        "returns": "void",
+        "help": "Collapse every node that has children."
+      },
+      "expandAll": {
+        "params": [],
+        "returns": "void",
+        "help": "Expand every node."
+      }
+    },
     "fields": {
       "problem": {
         "type": "string",
@@ -4629,4 +4702,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":72,"available":0};
+export const AGENT_COVERAGE = {"total":72,"available":1};

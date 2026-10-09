@@ -38,12 +38,20 @@ const I18N_TABLE = {
   'agent.usage.errorForm': 'Jeder Eintrag liefert { ok, result } oder { ok: false, error, message }.',
   'agent.usage.availability': 'Module ohne Freigabe erscheinen mit available: false.',
   'agent.usage.limits': 'Du bekommst Zahlen, keine Bilder.',
+  'modules.worksheet.agent.actions.importCsv.help': 'Ersetzt den Inhalt des aktiven Blatts durch die übergebenen CSV-Daten.',
+  'modules.worksheet.agent.actions.importCsv.params.csv': 'Der vollständige CSV-Text, inklusive Kopfzeile, falls vorhanden.',
+  'modules.worksheet.agent.fields.rows': 'Die Datenzeilen des aktiven Blatts, in Spaltenreihenfolge.',
 };
 
 const I18N = {
   getLanguage: () => 'de',
+  // `exists` muss dieselbe Tabelle spiegeln wie `t` — eine Aufzählung der
+  // Schlüsselformen würde die neuen `…agent.…`-Schlüssel nie erfassen und die
+  // Fälle unten lautlos nichts prüfen lassen.
   exists: (key) => key === 'modules.five-why.whenToUse'
-    || /^modules\.(worksheet|five-why|regression|kano)\.(name|description)$/.test(key),
+    || /^modules\.(worksheet|five-why|regression|kano)\.(name|description)$/.test(key)
+    || (/^modules\.[a-z0-9-]+\.agent\./.test(key)
+      && Object.prototype.hasOwnProperty.call(I18N_TABLE, key)),
   t: (key, params) => {
     if (!Object.prototype.hasOwnProperty.call(I18N_TABLE, key)) return undefined;
     let out = I18N_TABLE[key];
@@ -210,6 +218,19 @@ suite('agent catalog — module.describe', () => {
     assertDeepEqual(out.actions.map(a => a.name).sort(), ['importCsv', 'read']);
     assertEqual(out.actions.find(a => a.name === 'importCsv').params[0].type, 'string');
     assertEqual(out.fields.find(f => f.name === 'rows').bulk, true);
+  });
+
+  test('i18n context help wins over the JSDoc prose, for actions and their params', async () => {
+    const out = await describeModule(deps, 'worksheet');
+    const action = out.actions.find(a => a.name === 'importCsv');
+    assertEqual(action.help, 'Ersetzt den Inhalt des aktiven Blatts durch die übergebenen CSV-Daten.');
+    assertEqual(action.params[0].help, 'Der vollständige CSV-Text, inklusive Kopfzeile, falls vorhanden.');
+  });
+
+  test('i18n context help wins over the JSDoc prose for fields', async () => {
+    const out = await describeModule(deps, 'worksheet');
+    assertEqual(out.fields.find(f => f.name === 'rows').help,
+      'Die Datenzeilen des aktiven Blatts, in Spaltenreihenfolge.');
   });
 
   test('a module without a handbook describes with an empty section list', async () => {

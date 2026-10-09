@@ -2,7 +2,9 @@
   <div class="module-container__body">
     <!-- Problem statement -->
     <div class="five-why__problem">
-      <label class="five-why__problem-label" x-text="t('problem')"></label>
+      <label class="five-why__problem-label"
+             data-help-key="modules.five-why.agent.fields.problem"
+             x-text="t('problem')"></label>
       <input type="text" class="field five-why__problem-input"
              data-ref="problemInput"
              :placeholder="t('problemPlaceholder')"
@@ -197,7 +199,9 @@
     </div>
 
     <!-- Add root button -->
-    <button class="five-why__add-root-btn" type="button" data-ref="addRoot" @click="addRoot()">
+    <button class="five-why__add-root-btn" type="button"
+            data-help-key="modules.five-why.agent.actions.addRoot.help"
+            data-ref="addRoot" @click="addRoot()">
       <span x-text="addRootLabel()"></span>
     </button>
 

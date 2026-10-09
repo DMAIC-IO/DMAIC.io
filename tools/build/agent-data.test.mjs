@@ -1042,3 +1042,16 @@ test('collectAgentData: both new hurdles are only REPORTED on an untagged module
   assert.ok(modules.empty.reported.includes('module_tag_without_actions'));
   assert.ok(modules.empty.reported.includes('no_read_action'));
 });
+
+test('collectAgentData: the released pilot modules are available in the real tree', () => {
+  // Der echte Baum, nicht ein Fixture: dieser Fall ist das Tor, das eine
+  // Freigabe festhält. Er wächst mit jedem freigegebenen Pilotmodul.
+  const appDir = join(import.meta.dirname, '..', '..');
+  const { modules, coverage } = collectAgentData(appDir);
+  for (const id of ['five-why']) {
+    assert.deepEqual(modules[id].violations, [], `${id} hat Verstöße`);
+    assert.equal(modules[id].available, true, `${id} ist nicht freigegeben`);
+    assert.ok('read' in modules[id].actions, `${id} hat kein read()`);
+  }
+  assert.ok(coverage.available >= 1);
+});

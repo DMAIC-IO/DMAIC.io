@@ -204,13 +204,17 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
     actions: Object.entries(entry.actions).map(([name, action]) => ({
       name,
       // i18n hat Vorrang; die JSDoc-Prosa ist nur der Rückfall (Spec §8).
-      help: contextHelp(i18n, moduleId, `actions.${name}`, action.help),
+      // Die Schlüssel sind `…actions.<name>.help` und
+      // `…actions.<name>.params.<param>` — NICHT `…actions.<name>` plus
+      // `…actions.<name>.<param>`: in verschachteltem JSON kann ein String
+      // keine Kinder haben, und `i18n._resolve` läuft Segment für Segment.
+      help: contextHelp(i18n, moduleId, `actions.${name}.help`, action.help),
       returns: action.returns,
       params: action.params.map(p => ({
         name: p.name,
         type: p.type,
         optional: p.optional,
-        help: contextHelp(i18n, moduleId, `actions.${name}.${p.name}`, p.help),
+        help: contextHelp(i18n, moduleId, `actions.${name}.params.${p.name}`, p.help),
       })),
     })),
     fields: Object.entries(entry.fields).map(([name, field]) => ({

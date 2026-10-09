@@ -1394,6 +1394,42 @@
     "five-why": {
       "name": "5-Why Analysis",
       "description": "Root cause analysis with branching question paths",
+      "whenToUse": "When a single concrete incident is to be traced to its root and the domain knowledge is in the room — not for statistical relationships across many cases.",
+      "agent": {
+        "actions": {
+          "read": { "help": "Returns the problem statement, the question tree and the tree statistics as read state." },
+          "setProblem": {
+            "help": "Sets the observed problem statement the question chain starts from.",
+            "params": { "text": "The problem in one sentence, descriptive rather than judgemental." }
+          },
+          "addRoot": { "help": "Adds a new level-1 Why question and returns its id." },
+          "addChild": {
+            "help": "Adds the next Why level below a question; blocked from level 5 (root cause) on.",
+            "params": { "parentId": "Id of the question the new level is added to." }
+          },
+          "setAnswer": {
+            "help": "Writes the answer to a Why question.",
+            "params": {
+              "nodeId": "Id of the question whose answer is set.",
+              "text": "The answer — a cause, not a culprit."
+            }
+          },
+          "removeNode": {
+            "help": "Removes a question together with every question below it.",
+            "params": { "nodeId": "Id of the question to remove." }
+          },
+          "toggleCollapse": {
+            "help": "Collapses or expands a question's subtree; purely visual, the content stays.",
+            "params": { "id": "Id of the question whose subtree is toggled." }
+          },
+          "collapseAll": { "help": "Collapses every question that has sub-questions." },
+          "expandAll": { "help": "Expands every question." }
+        },
+        "fields": {
+          "problem": "The observed problem statement the question chain starts from.",
+          "nodes": "The branching question tree. Each node carries id, level (1 to 5), parentId, question, answer, children and collapsed; level 5 is the root cause."
+        }
+      },
       "problem": "Problem Statement",
       "problemPlaceholder": "What is the observed problem?",
       "addWhy": "Add Why",

@@ -1394,6 +1394,46 @@
     "five-why": {
       "name": "5-Why Analyse",
       "description": "Ursachenanalyse mit verzweigten Fragepfaden",
+      "whenToUse": "Wenn ein konkreter Einzelvorfall bis zur Wurzel verfolgt werden soll und das Fachwissen im Raum ist — nicht für statistische Zusammenhänge über viele Fälle.",
+      "agent": {
+        "actions": {
+          "read": {
+            "help": "Liefert Problemtext, Fragebaum und Kennzahlen des Baums als Lesezustand."
+          },
+          "setProblem": {
+            "help": "Setzt den beobachteten Problemtext, von dem die Fragekette ausgeht.",
+            "params": { "text": "Der Problemtext in einem Satz, beschreibend statt bewertend." }
+          },
+          "addRoot": {
+            "help": "Legt eine neue Why-Frage der ersten Ebene an und gibt deren id zurück."
+          },
+          "addChild": {
+            "help": "Legt unter einer Frage die nächste Why-Ebene an; ab Ebene 5 (Grundursache) nicht mehr möglich.",
+            "params": { "parentId": "Die id der Frage, unter der die neue Ebene entsteht." }
+          },
+          "setAnswer": {
+            "help": "Schreibt die Antwort auf eine Why-Frage.",
+            "params": {
+              "nodeId": "Die id der Frage, deren Antwort gesetzt wird.",
+              "text": "Die Antwort — eine Ursache, keine Schuldzuweisung."
+            }
+          },
+          "removeNode": {
+            "help": "Entfernt eine Frage samt allen darunter liegenden Fragen.",
+            "params": { "nodeId": "Die id der zu entfernenden Frage." }
+          },
+          "toggleCollapse": {
+            "help": "Klappt den Teilbaum einer Frage zusammen oder auf; rein darstellend, der Inhalt bleibt.",
+            "params": { "id": "Die id der Frage, deren Teilbaum umgeschaltet wird." }
+          },
+          "collapseAll": { "help": "Klappt alle Fragen mit Unterfragen zusammen." },
+          "expandAll": { "help": "Klappt alle Fragen auf." }
+        },
+        "fields": {
+          "problem": "Der beobachtete Problemtext, von dem die Fragekette ausgeht.",
+          "nodes": "Der verzweigte Fragebaum. Jeder Knoten trägt id, level (1 bis 5), parentId, question, answer, children und collapsed; level 5 ist die Grundursache."
+        }
+      },
       "problem": "Problemstellung",
       "problemPlaceholder": "Was ist das beobachtete Problem?",
       "addWhy": "Why hinzufügen",
