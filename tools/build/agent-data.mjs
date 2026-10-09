@@ -184,6 +184,12 @@ const BULK_SENTINEL = '[bulk]';
 export function readAgentReadTypedef(sf) {
   let found = null;
   const walk = (node) => {
+    // Der Compiler hängt einen freistehenden Kommentar am Dateiende an das
+    // `EndOfFileToken` — ohne diesen Ausschluss wäre JEDER Block im Datei-
+    // körper erreichbar, unabhängig davon, ob eine Anweisung folgt. Das
+    // `EndOfFileToken` hat ohnehin keine Kinder, der Ausschluss kostet also
+    // nichts am eigentlichen Baum.
+    if (node.kind === ts.SyntaxKind.EndOfFileToken) return;
     for (const tag of ts.getJSDocTags(node)) {
       if (!ts.isJSDocTypedefTag(tag)) continue;
       if (tag.name?.text !== AGENT_READ_TYPEDEF) continue;

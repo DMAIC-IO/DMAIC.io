@@ -958,3 +958,45 @@ test('readAgentReadTypedef: returns null when the module declares none', () => {
   const sf = ts.createSourceFile('x.js', TAGGED_VM, ts.ScriptTarget.ESNext, true);
   assert.equal(readAgentReadTypedef(sf), null);
 });
+
+const TRAILING_AGENT_READ_VM = `/**
+ * Bar module.
+ * @agent
+ */
+import { createModule } from '../../core/template-module.js';
+import { State } from './bar-model.js';
+
+export default createModule({
+  config: { id: 'bar' },
+  Model: State,
+  data(module, _t) {
+    return {
+      /**
+       * @agent
+       * @param {object} [options] field/row selection
+       * @returns {AgentRead} the agent-facing read surface
+       */
+      read(options) { return {}; },
+    };
+  },
+});
+
+/**
+ * Die Agenten-Lesefläche dieses Moduls.
+ * @typedef {object} AgentRead
+ * @property {string} activeSheetId  id of the active sheet
+ * @property {any[][]} rows  [bulk] every data row of the active sheet
+ */
+`;
+
+test('readAgentReadTypedef: a typedef block NOT attached to a statement (trailing at end of file) is not found', () => {
+  const sf = ts.createSourceFile('x.js', TRAILING_AGENT_READ_VM, ts.ScriptTarget.ESNext, true);
+  assert.equal(readAgentReadTypedef(sf), null);
+});
+
+test('collectAgentData: a trailing, unattached AgentRead typedef falls back to the Model-derived fields', () => {
+  const root = fixture({ bar: { 'bar.js': TRAILING_AGENT_READ_VM, 'bar-model.js': BAR_MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(Object.keys(modules.bar.fields), ['sheets']);
+  assert.equal('derived' in modules.bar.fields.sheets, false);
+});
