@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { countHelpCoverage } from './agent-report.mjs';
+import { countHelpCoverage, lookup, helpExists, helpKeys } from './agent-report.mjs';
 
 /** Ein Minimal-App-Verzeichnis mit nur den i18n-Dateien. */
 function i18nFixture(de, en = de) {
@@ -159,4 +159,76 @@ test('countHelpCoverage resolves the real tree through the documented chain', as
     out.missing.filter(m => m.includes('five-why.agent.actions.read.params.options')),
     [],
   );
+});
+
+/* ── Die geteilte Auflösung ────────────────────────────────────────────────
+   `lookup` und `helpExists` sind exportiert, weil das i18n-Tor in
+   `agent-data.test.mjs` dieselbe Kette braucht. Sie werden deshalb HIER
+   direkt festgenagelt — und nur hier, statt den Fall in beiden Dateien zu
+   wiederholen. Der leere String ist der Fall, den der echte Baum nicht
+   hergibt (dort ist kein Schlüssel leer), der aber beide Verbraucher
+   betrifft. */
+
+test('lookup: leerer und nur aus Leerzeichen bestehender Wert gilt als nicht vorhanden', () => {
+  const tree = { a: { voll: 'text', leer: '', blank: '   \n ' } };
+  assert.equal(lookup(tree, 'a.voll'), 'text');
+  assert.equal(lookup(tree, 'a.leer'), undefined);
+  assert.equal(lookup(tree, 'a.blank'), undefined);
+});
+
+test('lookup: bricht an einem Nicht-Objekt ab, statt String-Eigenschaften zu finden', () => {
+  const tree = { a: 'kein Objekt' };
+  assert.equal(lookup(tree, 'a.length'), undefined);
+  assert.equal(lookup(tree, 'a.b.c'), undefined);
+  assert.equal(lookup(tree, 'fehlt.ganz'), undefined);
+  assert.equal(lookup({ a: { b: 5 } }, 'a.b'), undefined, 'eine Zahl ist kein Hilfetext');
+});
+
+test('helpKeys / helpExists: Modulschlüssel zuerst, geteilter Schlüssel als Rückfall', () => {
+  assert.deepEqual(helpKeys('foo', 'actions.read.help'),
+    ['modules.foo.agent.actions.read.help', 'agent.shared.actions.read.help']);
+
+  const own = { modules: { foo: { agent: { actions: { read: { help: 'eigen' } } } } } };
+  const shared = { agent: { shared: { actions: { read: { help: 'geteilt' } } } } };
+  assert.equal(helpExists(own, 'foo', 'actions.read.help'), true);
+  assert.equal(helpExists(shared, 'foo', 'actions.read.help'), true);
+  assert.equal(helpExists({}, 'foo', 'actions.read.help'), false);
+  // Und der leere Modulschlüssel verdeckt den geteilten NICHT.
+  const emptyOwn = {
+    modules: { foo: { agent: { actions: { read: { help: '' } } } } },
+    agent: { shared: { actions: { read: { help: 'geteilt' } } } },
+  };
+  assert.equal(helpExists(emptyOwn, 'foo', 'actions.read.help'), true);
+  assert.equal(helpExists({ modules: { foo: { agent: { actions: { read: { help: '' } } } } } },
+    'foo', 'actions.read.help'), false);
+});
+
+test('countHelpCoverage: eine Lücke nennt BEIDE Kandidatenorte', () => {
+  const modules = {
+    foo: { available: true, actions: { read: { params: [{ name: 'options' }] } }, fields: {} },
+  };
+  const out = countHelpCoverage(i18nFixture({ modules: { foo: { whenToUse: 'wann' } } }), modules);
+  // Ein Autor, der nur den Modulschlüssel sähe, legte den Satz 72-mal an,
+  // statt den geteilten zu füllen.
+  assert.ok(out.missing.every(m => m.includes('agent.shared.')),
+    `Lückenzeilen nennen den geteilten Ort nicht: ${out.missing.join(' | ')}`);
+  assert.ok(out.missing.some(m => m.includes('modules.foo.agent.actions.read.help')
+    && m.includes('agent.shared.actions.read.help')));
+  // `whenToUse` hat keinen zweiten Kandidaten und bleibt einteilig.
+  const plain = countHelpCoverage(i18nFixture({ modules: { foo: {} } }), {
+    foo: { available: true, actions: {}, fields: {} },
+  });
+  assert.deepEqual(plain.missing, ['de: modules.foo.whenToUse', 'en: modules.foo.whenToUse']);
+});
+
+test('countHelpCoverage: missingKeys zählt Schlüssel, missing zählt Sprachfälle', () => {
+  const modules = { foo: { available: true, actions: { read: { params: [] } }, fields: {} } };
+  // Ein Schlüssel fehlt in beiden Sprachen, einer nur im Englischen.
+  const out = countHelpCoverage(i18nFixture(
+    { modules: { foo: { whenToUse: 'wann' } } },
+    { modules: { foo: {} } },
+  ), modules);
+  assert.equal(out.missing.length, 3, 'zwei Sprachfälle für read.help, einer für whenToUse');
+  assert.deepEqual(out.missingKeys.sort(),
+    ['modules.foo.agent.actions.read.help', 'modules.foo.whenToUse']);
 });

@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { collectAgentData, renderAgentRegistryModule, collectDomDetours,
          readAgentReadTypedef } from './agent-data.mjs';
+import { lookup, helpExists } from './agent-report.mjs';
 import ts from 'typescript';
 
 /**
@@ -1128,35 +1129,16 @@ test('collectAgentData: worksheet declares its read surface, rows are bulk', () 
    würde das Fragezeichen einfach nicht erscheinen lassen — ohne einen
    einzigen roten Test. */
 
-/**
- * Dotted-Path-Auflösung auf einem i18n-Baum.
- *
- * Ein vorhandener, aber LEERER Schlüssel gilt als nicht vorhanden. Sonst
- * ließe sich jedes Tor hier mit `""` erfüllen: `i18n.exists()` wäre true, die
- * Kontexthilfe öffnete ein leeres Panel, und der Agent bekäme einen leeren
- * Hilfetext statt der JSDoc-Prosa, die der Rückfall sonst liefert.
- *
- * @returns {string|undefined}
- */
-function lookup(tree, key) {
-  let node = tree;
-  for (const segment of key.split('.')) {
-    if (node === null || typeof node !== 'object') return undefined;
-    node = node[segment];
-  }
-  return typeof node === 'string' && node.trim() !== '' ? node : undefined;
-}
-
-/**
- * Wie die beiden Verbraucher auflösen:
- *   • `agent-catalog.js:contextHelp` — Modulschlüssel, dann geteilter
- *     Schlüssel (`agent.shared.<suffix>`).
- *   • `context-help.js` — nur das Literal aus `data-help-key`.
- */
-function helpExists(tree, moduleId, suffix) {
-  return lookup(tree, `modules.${moduleId}.agent.${suffix}`) !== undefined
-    || lookup(tree, `agent.shared.${suffix}`) !== undefined;
-}
+/* `lookup` und `helpExists` kommen aus `agent-report.mjs` (oben importiert)
+   und werden hier NICHT zweitgeschrieben. Beide Seiten — das Tor hier und
+   die Abdeckungszahl dort — müssen denselben Schlüssel auf dieselbe Weise
+   auflösen; zwei Kopien könnten auseinanderlaufen, und der Fehlerfall wäre
+   der unangenehmste: der Report meldet 100 %, während dieses Tor rot ist,
+   oder umgekehrt. Die Kette ist die von `agent-catalog.js:contextHelp`
+   (Modulschlüssel → `agent.shared.<suffix>`); `context-help.js` kennt
+   dagegen nur das Literal aus `data-help-key` und wird unten direkt mit
+   `lookup` geprüft. Dass ein LEERER Schlüssel als nicht vorhanden gilt, ist
+   in `agent-report.test.mjs` festgenagelt. */
 
 /** Alle `data-help-key`-Werte aus den Vorlagen eines Moduls. */
 function helpKeysInTemplates(appDir, moduleId) {
@@ -1281,11 +1263,22 @@ test('i18n-Tor: das deutsche read-Hilfetext von five-why bleibt der modulspezifi
    gibt den Schlüssel zurück), in GENAU EINER Sprache, unbemerkt. Die
    Schlüsselliste wird aus dem Quelltext gelesen, nicht abgeschrieben: eine
    neu ergänzte Zeile in `agent-usage.js` ist damit automatisch mitgeprüft. */
-test('i18n-Tor: jeder Schlüssel, den agent-usage.js liest, steht in BEIDEN Sprachdateien', () => {
+test('i18n-Tor: jeder Schlüssel, den agent-usage.js liest, steht in BEIDEN Sprachdateien', async () => {
   const appDir = join(import.meta.dirname, '..', '..');
-  const source = readFileSync(join(appDir, 'js', 'core', 'agent', 'agent-usage.js'), 'utf8');
-  const keys = [...source.matchAll(/i18n\.t\('(agent\.usage\.[A-Za-z0-9_.]+)'\)/g)].map(m => m[1]);
-  assert.ok(keys.length >= 5, `zu wenige usage-Schlüssel im Quelltext gefunden (${keys.length})`);
+  // Die Schlüsselliste kommt aus dem AUSGEFÜHRTEN `buildUsage`, nicht aus
+  // einer Abschrift und nicht aus einem Regex über den Quelltext: eine
+  // Sonde-i18n markiert jeden Wert, den der Vertrag wirklich nachschlägt.
+  // Ein Regex hinge an der Zitierweise — vier Zeilen auf Backticks
+  // umgeschrieben, und das Tor deckte still die Hälfte des Vertrags ab.
+  const { buildUsage } = await import('../../js/core/agent/agent-usage.js');
+  const usage = buildUsage({ t: (key) => `@@${key}` });
+  const keys = Object.values(usage)
+    .filter(v => typeof v === 'string' && v.startsWith('@@'))
+    .map(v => v.slice(2));
+  assert.equal(keys.length, 9,
+    `agent-usage.js liest ${keys.length} i18n-Schlüssel, erwartet 9 — kam einer `
+    + 'dazu oder weg, gehört die Zahl hier angepasst (und der Schlüssel in beide Sprachbäume)');
+  assert.deepEqual([...new Set(keys)].sort(), [...keys].sort(), 'doppelter usage-Schlüssel');
 
   const trees = {
     de: JSON.parse(readFileSync(join(appDir, 'i18n', 'de.json'), 'utf8')),

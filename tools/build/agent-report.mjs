@@ -17,17 +17,56 @@ import { APP_DIR } from './build.mjs';
 
 const LANGS = ['de', 'en'];
 
-/** Dotted-Path-Auflösung, die an einem Nicht-Objekt abbricht statt zu raten. */
-function lookup(tree, key) {
+/**
+ * Dotted-Path-Auflösung, die an einem Nicht-Objekt abbricht statt zu raten.
+ *
+ * Ein vorhandener, aber LEERER Schlüssel gilt als nicht vorhanden: die Fläche
+ * erzeugte sonst einen Knopf, der ein leeres Panel öffnet, und der Agent
+ * bekäme statt der JSDoc-Prosa einen leeren Satz. Das ist bewusst strenger
+ * als die Laufzeit (`i18n.exists()` sagt dort `true`) — in die sichere
+ * Richtung: ein leerer Schlüssel ist fällige Arbeit, keine Abdeckung.
+ *
+ * Exportiert, weil das i18n-Tor in `agent-data.test.mjs` dieselbe Auflösung
+ * braucht. Zwei Kopien hiervon könnten auseinanderlaufen, und der
+ * Fehlerfall wäre der unangenehmste: der Report meldete 100 %, während das
+ * Tor rot ist — oder umgekehrt.
+ *
+ * @param {object} tree  ein geparster i18n-Baum
+ * @param {string} key  Punktpfad
+ * @returns {string|undefined}
+ */
+export function lookup(tree, key) {
   let node = tree;
   for (const segment of key.split('.')) {
     if (node === null || typeof node !== 'object') return undefined;
     node = node[segment];
   }
-  // Ein leerer Schlüssel ist keine Hilfe: die Fläche erzeugt einen Knopf, der
-  // ein leeres Panel öffnet, und der Agent bekommt statt der JSDoc-Prosa
-  // einen leeren Satz. Er zählt deshalb als Lücke, nicht als Abdeckung.
   return typeof node === 'string' && node.trim() !== '' ? node : undefined;
+}
+
+/**
+ * Die Kandidatenschlüssel einer Kontexthilfe, in der Reihenfolge, in der
+ * `agent-catalog.js:contextHelp` sie probiert: Modulschlüssel, dann der
+ * geteilte Schlüssel.
+ *
+ * @param {string} moduleId
+ * @param {string} suffix  z. B. `actions.read.help`
+ * @returns {[string, string]}
+ */
+export function helpKeys(moduleId, suffix) {
+  return [`modules.${moduleId}.agent.${suffix}`, `agent.shared.${suffix}`];
+}
+
+/**
+ * Löst eine Kontexthilfe über die dokumentierte Kette auf.
+ *
+ * @param {object} tree  ein geparster i18n-Baum
+ * @param {string} moduleId
+ * @param {string} suffix
+ * @returns {boolean}
+ */
+export function helpExists(tree, moduleId, suffix) {
+  return helpKeys(moduleId, suffix).some(key => lookup(tree, key) !== undefined);
 }
 
 /**
@@ -46,14 +85,25 @@ function lookup(tree, key) {
  * geteilte Rückfall gehört zum geteilten `read()` aus `agent-read-mixin.js`;
  * zählte die Abdeckung ihn nicht mit, wiese sie eine Lücke aus, die es für
  * den Agenten nicht gibt — und verlangte genau die Doppelpflege in 72
- * Modulen, die der Rückfall vermeidet. `whenToUse` hat keinen geteilten
- * Rückfall: es ist modulspezifische Prosa.
+ * Modulen, die der Rückfall vermeidet.
+ *
+ * `whenToUse` ist die eine Ausnahme, und zwar ABSICHTLICH STRENGER als die
+ * Laufzeit: `agent-catalog.js:whenToUse` fällt auf
+ * `modules.<id>.description` zurück, und die hat jedes der 72 Module — die
+ * Zeile stünde damit für immer auf 100 % und meldete nichts. Eine generische
+ * Modulbeschreibung ist keine Wann-nehme-ich-das-Anleitung. Gezählt wird
+ * deshalb nur modulspezifische `whenToUse`-Prosa; eine Lücke dort ist
+ * fällige Arbeit, keine kaputte Fläche.
  *
  * @param {string} appDir  Wurzel von app/dev
  * @param {Record<string, object>} modules  die Registry-Einträge
  * @returns {{ actions: {total:number,covered:number}, params: {total:number,covered:number},
  *             fields: {total:number,covered:number}, whenToUse: {total:number,covered:number},
- *             missing: string[] }}
+ *             missing: string[], missingKeys: string[] }}
+ *   `missing` nennt jede Lücke JE SPRACHE (ein überall fehlender Schlüssel
+ *   erscheint zweimal), `missingKeys` jeden betroffenen Schlüssel genau
+ *   einmal — die Zahl, die ein Mensch meint, wenn er „wie viele Lücken"
+ *   fragt.
  */
 export function countHelpCoverage(appDir, modules) {
   const tables = {};
@@ -67,38 +117,39 @@ export function countHelpCoverage(appDir, modules) {
     fields: { total: 0, covered: 0 },
     whenToUse: { total: 0, covered: 0 },
     missing: [],
+    missingKeys: [],
   };
 
   /**
    * @param {string} bucket  Zähler in `out`
-   * @param {string} key  der Schlüssel, der in der Lücke genannt wird
-   * @param {(tree: object) => string|undefined} exists  die Auflösungskette
+   * @param {string[]} keys  Kandidatenschlüssel in Auflösungsreihenfolge;
+   *   der erste ist der kanonische, alle werden in der Lückenzeile genannt,
+   *   damit der Autor nicht in die falsche Datei geschickt wird
    */
-  const check = (bucket, key, exists) => {
+  const check = (bucket, keys) => {
     out[bucket].total++;
-    const gaps = LANGS.filter(lang => exists(tables[lang]) === undefined);
+    const gaps = LANGS.filter(
+      lang => !keys.some(key => lookup(tables[lang], key) !== undefined),
+    );
     if (gaps.length === 0) { out[bucket].covered++; return; }
-    for (const lang of gaps) out.missing.push(`${lang}: ${key}`);
+    const where = keys.length > 1 ? `${keys[0]} (oder ${keys.slice(1).join(', ')})` : keys[0];
+    for (const lang of gaps) out.missing.push(`${lang}: ${where}`);
+    out.missingKeys.push(keys[0]);
   };
-
-  /** Modulschlüssel, sonst geteilter Schlüssel — wie `contextHelp`. */
-  const agentKey = (bucket, id, suffix) => check(
-    bucket,
-    `modules.${id}.agent.${suffix}`,
-    tree => lookup(tree, `modules.${id}.agent.${suffix}`) ?? lookup(tree, `agent.shared.${suffix}`),
-  );
 
   for (const [id, entry] of Object.entries(modules)) {
     if (entry.available !== true) continue;
-    check('whenToUse', `modules.${id}.whenToUse`, tree => lookup(tree, `modules.${id}.whenToUse`));
+    // Kein `agent.shared`-Kandidat und kein `description`-Rückfall — siehe
+    // der Absatz oben: diese Zeile ist absichtlich strenger als die Laufzeit.
+    check('whenToUse', [`modules.${id}.whenToUse`]);
     for (const [name, action] of Object.entries(entry.actions ?? {})) {
-      agentKey('actions', id, `actions.${name}.help`);
+      check('actions', helpKeys(id, `actions.${name}.help`));
       for (const param of action.params ?? []) {
-        agentKey('params', id, `actions.${name}.params.${param.name}`);
+        check('params', helpKeys(id, `actions.${name}.params.${param.name}`));
       }
     }
     for (const name of Object.keys(entry.fields ?? {})) {
-      agentKey('fields', id, `fields.${name}`);
+      check('fields', helpKeys(id, `fields.${name}`));
     }
   }
   return out;
@@ -139,8 +190,9 @@ function main() {
   console.log(`  Aktionen:  ${help.actions.covered}/${help.actions.total} (${pct(help.actions)})`);
   console.log(`  Parameter: ${help.params.covered}/${help.params.total} (${pct(help.params)})`);
   console.log(`  Felder:    ${help.fields.covered}/${help.fields.total} (${pct(help.fields)})`);
-  if (help.missing.length > 0 && !verbose) {
-    console.log(`  ${help.missing.length} Lücke(n) — mit --verbose einzeln benannt.`);
+  if (help.missingKeys.length > 0 && !verbose) {
+    console.log(`  ${help.missingKeys.length} Schlüssel mit Lücke `
+      + `(${help.missing.length} Sprachfälle) — mit --verbose einzeln benannt.`);
   }
   if (verbose) for (const row of [...help.missing].sort()) console.log(`    fehlt — ${row}`);
 }
