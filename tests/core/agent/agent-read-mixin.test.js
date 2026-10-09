@@ -4,8 +4,9 @@
  * 72-mal: der Generator löst den Spread auf und sieht Marke und Schema des
  * Mixin-Mitglieds.
  */
-import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
+import { suite, test, beforeAll, afterAll, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { agentReadMixin, readAgentState } from '../../../js/core/agent/agent-read-mixin.js';
+import { AGENT_REGISTRY } from '../../../js/core/agent/agent-registry.generated.js';
 
 /** Eine Alpine-Komponente, soweit das Mixin sie braucht. */
 function componentFor(moduleId, modelJson) {
@@ -13,7 +14,22 @@ function componentFor(moduleId, modelJson) {
   return { ...mixin, model: { toJSON: () => modelJson } };
 }
 
+// Keine der heute freigegebenen Registry-Einträge deklariert ein Massenfeld
+// (bulk: true) — um readAgentState()s Optionen (fields, rows) real zu prüfen,
+// statt sie nur zu behaupten, registrieren wir hier einen synthetischen
+// Eintrag mit Worksheet-Form (title/columns/rows), spiegelt die Form, die
+// agent-read.test.js für projectReadState selbst benutzt.
+const BULK_MODULE_ID = '__agent-read-mixin-test-bulk__';
+const BULK_SCHEMA = {
+  title: { type: 'string', help: '', bulk: false },
+  columns: { type: 'object[]', help: '', bulk: false },
+  rows: { type: 'any[][]', help: '', bulk: true },
+};
+
 suite('agent read mixin', () => {
+  beforeAll(() => { AGENT_REGISTRY[BULK_MODULE_ID] = { fields: BULK_SCHEMA }; });
+  afterAll(() => { delete AGENT_REGISTRY[BULK_MODULE_ID]; });
+
   test('read() projects the model JSON through the registry schema', () => {
     // five-why ist nach Task 5 freigegeben; bis dahin liefert die Registry
     // für das Modul bereits `fields`, auch ohne Freigabe.
@@ -29,9 +45,24 @@ suite('agent read mixin', () => {
     assertDeepEqual(component.read(), {});
   });
 
-  test('read() passes options through to the projection', () => {
-    const schemaState = readAgentState('five-why', { problem: 'P', nodes: [1, 2] }, undefined);
-    assertEqual(schemaState.problem, 'P');
+  test('readAgentState without options replaces a bulk field with a descriptor', () => {
+    const snapshot = { title: 'T', columns: [{ name: 'a' }, { name: 'b' }], rows: [[1, 2], [3, 4], [5, 6]] };
+    const state = readAgentState(BULK_MODULE_ID, snapshot, undefined);
+    assertEqual(state.title, 'T');
+    assertDeepEqual(state.rows, { $bulk: true, kind: 'table', rowCount: 3, columns: ['a', 'b'] });
+  });
+
+  test('readAgentState with options.fields delivers the named bulk field in full', () => {
+    const snapshot = { title: 'T', columns: [{ name: 'a' }, { name: 'b' }], rows: [[1, 2], [3, 4], [5, 6]] };
+    const state = readAgentState(BULK_MODULE_ID, snapshot, { fields: ['rows'] });
+    assertDeepEqual(state.rows, [[1, 2], [3, 4], [5, 6]]);
+  });
+
+  test('readAgentState with options.rows truncates the bulk field and sets the $range sibling', () => {
+    const snapshot = { title: 'T', columns: [{ name: 'a' }, { name: 'b' }], rows: [[1, 2], [3, 4], [5, 6]] };
+    const state = readAgentState(BULK_MODULE_ID, snapshot, { fields: ['rows'], rows: { from: 1, to: 2 } });
+    assertDeepEqual(state.rows, [[3, 4]]);
+    assertDeepEqual(state['rows$range'], { from: 1, to: 2, rowCount: 3 });
   });
 
   test('readAgentState never hands out a reference into the live state', () => {
@@ -41,9 +72,12 @@ suite('agent read mixin', () => {
     assertEqual(live.nodes[0].id, 1);
   });
 
-  test('read() returns a plain object even when the model has no toJSON', () => {
+  test('read() returns the empty-snapshot projection when the model has no toJSON', () => {
     const mixin = agentReadMixin({ id: 'five-why' });
     const component = { ...mixin, model: null };
-    assertTrue(typeof component.read() === 'object');
+    // five-why's Schema hat zwei Felder (problem, nodes), beide nicht bulk;
+    // über einem leeren Snapshot projiziert liefert jedes `undefined` statt
+    // zu fehlen — `typeof === 'object'` allein hätte das nicht gezeigt.
+    assertDeepEqual(component.read(), { problem: undefined, nodes: undefined });
   });
 });
