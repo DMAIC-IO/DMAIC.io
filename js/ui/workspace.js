@@ -36,6 +36,16 @@ export class Workspace {
     this._instances = new Map();
     /** @type {Map<string, HTMLElement>} instanceId → container element */
     this._containers = new Map();
+    /**
+     * instanceId → laufende Einhängung. Wird SYNCHRON am Anfang von
+     * `_instantiateModule` gesetzt, also noch bevor der erste `await` dort
+     * die Kontrolle abgibt. Nur dadurch kann ein Aufrufer, der das Einhängen
+     * über ein Event ausgelöst hat (`module:added` / `module:activated` →
+     * `_activateTab`, beides fire-and-forget), überhaupt auf dessen Ende
+     * warten — siehe `whenInstanceReady`.
+     * @type {Map<string, Promise<void>>}
+     */
+    this._pending = new Map();
     /** @type {object|null} router instance (set via setRouter) */
     this._router = null;
   }
@@ -94,6 +104,7 @@ export class Workspace {
     }
     this._instances.clear();
     this._containers.clear();
+    this._pending.clear();
     for (const dispose of this._actionEffectDisposers ?? []) {
       try { dispose(); } catch { /* ignore */ }
     }
@@ -434,15 +445,15 @@ export class Workspace {
     this._activeInstanceId = instanceId;
     this._lastActiveByPhase.set(this._activePhase, instanceId);
 
-    // Instantiate module if not yet done. Guard on _containers (set
-    // synchronously in _instantiateModule) rather than _instances (set only
-    // after the async instantiate resolves) — otherwise two concurrent
-    // _activateTab calls for the same new instance both pass the guard and
-    // mount duplicate containers (e.g. add-via-router fires module:added →
-    // phase:selected → activate, then the redirect activates again).
-    if (!this._containers.has(instanceId)) {
-      await this._instantiateModule(instanceId);
-    }
+    // Instantiate module if not yet done. Zwei konkurrierende
+    // `_activateTab`-Läufe für dieselbe neue Instanz dürfen KEINE zweite
+    // Hülle anlegen (add-via-router feuert module:added → phase:selected →
+    // activate, danach aktiviert der Redirect erneut). Früher schützte
+    // dagegen ein Blick auf `_containers` — mit der Nebenwirkung, dass der
+    // zweite Lauf sofort zurückkam, obwohl das Einhängen noch lief, und
+    // `getInstance()` danach `null` lieferte. Jetzt wartet er auf dieselbe
+    // laufende Einhängung, statt sie zu überspringen.
+    await this._ensureInstantiated(instanceId);
 
     this._eventBus.emit('module:activated', { instanceId });
 
@@ -469,6 +480,56 @@ export class Workspace {
         this._stateManager.setModuleState(id, state);
       } catch { /* ignore */ }
     });
+  }
+
+  /**
+   * Hängt das Modul von `instanceId` genau EINMAL ein und löst erst auf,
+   * wenn das Einhängen abgeschlossen ist — auch dann, wenn es ein anderer
+   * Aufruf angestoßen hat.
+   * @param {string} instanceId
+   * @returns {Promise<void>}
+   */
+  _ensureInstantiated(instanceId) {
+    if (this._instances.has(instanceId)) return Promise.resolve();
+    const inFlight = this._pending.get(instanceId);
+    if (inFlight) return inFlight;
+    // Hülle da, nichts im Flug, keine Instanz: das Einhängen ist gelaufen und
+    // gescheitert (die Fehlerkarte steht). Ein neuer Versuch gehört nicht
+    // hierher — er würde eine zweite Hülle anlegen.
+    if (this._containers.has(instanceId)) return Promise.resolve();
+    // `_ensureInstantiated` ist bewusst NICHT async: so läuft alles bis zum
+    // `_pending.set` synchron durch, und `_pending` trägt den Eintrag schon,
+    // wenn der auslösende Aufrufstapel (z. B. `createInstance`) zurückkommt.
+    const promise = this._instantiateModule(instanceId).finally(() => {
+      if (this._pending.get(instanceId) === promise) this._pending.delete(instanceId);
+    });
+    this._pending.set(instanceId, promise);
+    return promise;
+  }
+
+  /**
+   * Wartet, bis das Viewmodel von `instanceId` lebt, und liefert es.
+   *
+   * Jeder Weg in die Einhängung läuft über fire-and-forget-Handler
+   * (`module:added` / `module:activated` → `_activateTab`). Ein Aufrufer, der
+   * die Navigation ausgelöst hat, kann das Ende des Einhängens daher NICHT
+   * über seinen eigenen Aufrufstapel abwarten — `await router.navigate(…)`
+   * kommt zurück, während `_moduleRegistry.instantiate()` noch läuft. Genau
+   * das hat die Agentenfläche getroffen: ein `instance.call` direkt nach
+   * `module.add` meldete `unknown_instance`, obwohl die Instanz existierte
+   * und ihre Hülle schon im DOM stand.
+   *
+   * @param {string} instanceId
+   * @returns {Promise<object|null>} das lebende Modul, oder null
+   */
+  async whenInstanceReady(instanceId) {
+    // In einer Schleife: während des Wartens kann `_showPhase` die Hülle neu
+    // einhängen, dann steht eine ZWEITE Einhängung im Flug.
+    let pending;
+    while ((pending = this._pending.get(instanceId))) {
+      await pending;
+    }
+    return this._instances.get(instanceId) ?? null;
   }
 
   async _instantiateModule(instanceId) {
@@ -577,6 +638,7 @@ export class Workspace {
     try { await instance?.destroy?.(); } catch { /* ignore destroy errors */ }
 
     this._instances.delete(instanceId);
+    this._pending.delete(instanceId);
     this._containers.get(instanceId)?.remove();
     this._containers.delete(instanceId);
 

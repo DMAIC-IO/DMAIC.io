@@ -15,6 +15,7 @@ function makeWorkspace(phases = { define: [{ instanceId: 'fw-1', moduleId: 'five
   const state = structuredClone(phases);
   ws._instances = new Map();
   ws._containers = new Map();
+  ws._pending = new Map();
   ws._activePhase = 'define';
   ws._eventBus = { emit: (name, payload) => events.push([name, payload]) };
   ws._stateManager = {

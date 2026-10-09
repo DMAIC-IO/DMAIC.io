@@ -76,7 +76,13 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
       // nicht eine Vorbedingung, die der Agent selbst erfüllen müsste.
       const opened = await this.openInstance(instanceId);
       if (!opened) return null;
-      const instance = workspace.getInstance(instanceId);
+      // Und auf das Ende des Einhängens warten. `router.navigate()` kommt
+      // zurück, sobald der Router seine Schicht abgearbeitet hat — das
+      // Einhängen selbst hängt an fire-and-forget-Events, läuft also
+      // möglicherweise noch. Ohne dieses Warten meldete ein `instance.call`
+      // direkt nach `module.add` reproduzierbar `unknown_instance`
+      // („Ansicht nicht geöffnet"), obwohl die Ansicht längst im DOM stand.
+      const instance = await workspace.whenInstanceReady(instanceId);
       return instance?.getActionData?.() ?? null;
     },
 

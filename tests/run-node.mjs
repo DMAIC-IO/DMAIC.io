@@ -127,6 +127,7 @@ const SKIP = new Set([
   'ui/layout-primitives.test.js',
   'ui/modal-dialog-api.test.js',
   'ui/split-layout.test.js',
+  'ui/workspace-instance-ready.test.js',
   'ui/workspace-phase-memory.test.js',
   'ui/workspace-reset.test.js',
 ]);

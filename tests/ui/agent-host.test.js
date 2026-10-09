@@ -33,6 +33,9 @@ function makeHost({ phases, activeInstance = null, completed = false } = {}) {
   const workspace = {
     getActiveModuleInfo: () => activeInstance,
     getInstance: (id) => mounted.get(id) ?? null,
+    // Wie der echte Workspace: der Griff auf das Viewmodel wartet das
+    // Einhängen ab (ui/workspace.js:whenInstanceReady).
+    whenInstanceReady: async (id) => mounted.get(id) ?? null,
     removeInstance: async (id) => { calls.push(['removeInstance', id]); return !completed; },
   };
   const router = {
