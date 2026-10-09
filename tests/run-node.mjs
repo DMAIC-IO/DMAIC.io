@@ -78,6 +78,7 @@ const SKIP = new Set([
   'core/create-dialog.test.js',
   'core/create-page.test.js',
   'core/datagrid-header-xss.test.js',
+  'core/datagrid-import-text.test.js',
   'core/datagrid-locked-columns.test.js',
   'core/datagrid-roles-grid.test.js',
   'core/dom.test.js',

@@ -3398,11 +3398,26 @@ export class DataGrid {
   }
 
   async _importCSV(file) {
-    const text = await file.text();
+    this.importCSVText(await file.text(), file.name);
+  }
+
+  /**
+   * CSV-Text importieren — derselbe Parse-, Undo- und Toast-Pfad wie der
+   * Dateiimport. Öffentlich, weil die Agentenaktion `worksheet.importCsv`
+   * ihn braucht: ein zweiter Parser wäre die Parallelimplementierung, die
+   * Spec §2 der Agenten-Spec verbietet.
+   *
+   * @param {string} text  vollständiger CSV-/TSV-Text
+   * @param {string} [label]  Name für die Rückmeldung (Dateiname o. Ä.)
+   * @returns {{ columns: number, rows: number }} was importiert wurde
+   */
+  importCSVText(text, label = 'CSV') {
     const delim = this._detectDelimiter(text);
-    const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(l => l.trim());
+    const lines = String(text ?? '')
+      .replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+      .split('\n').filter(l => l.trim());
     const rows = lines.map(l => this._parseCSVLine(l, delim));
-    if (rows.length === 0) return;
+    if (rows.length === 0) return { columns: 0, rows: 0 };
 
     const first = rows[0];
     const rest = rows.slice(1);
@@ -3440,10 +3455,16 @@ export class DataGrid {
       columns.push(col);
     }
 
-    this.history.push({ type: 'import', oldColumns, oldRowCount });
     this.setData(columns);
+    // setData() clears the history stack unconditionally (it is also used to
+    // load a whole new worksheet, where nothing should be undoable) — push
+    // the import's undo entry AFTER it, not before, or it would be wiped the
+    // instant it is created. oldColumns/oldRowCount were snapshotted above,
+    // before setData() touched this.columns.
+    this.history.push({ type: 'import', oldColumns, oldRowCount });
     this.metadata.source = 'csv-import';
-    this._toast(`${file.name}: ${columns.length} cols \u00D7 ${data.length} rows`, 'success');
+    this._toast(`${label}: ${columns.length} cols \u00D7 ${data.length} rows`, 'success');
+    return { columns: columns.length, rows: data.length };
   }
 
   _detectDelimiter(text) {
