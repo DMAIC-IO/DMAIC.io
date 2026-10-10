@@ -2,7 +2,7 @@
 import { suite, test, assertEqual, assertTrue } from '../../test-utils.js';
 import { findExistingInstance, findInstancePhase, createInstance } from '../../../js/core/router/instance-ops.js';
 
-function fakeState(phases) {
+function fakeState(phases = {}) {
   return {
     _p: phases,
     get(key) {
@@ -48,7 +48,9 @@ suite('router/instance-ops', () => {
     const emitted = [];
     const eventBus = { emit: (ev, p) => emitted.push({ ev, p }) };
     const moduleRegistry = { getActiveCycle: () => 'dmaic' };
-    const def = { phase: 'measure', cycles: {} };
+    // Realistische Definition: die Vorgabephase kommt aus der Zyklus-
+    // Zuordnung, nicht aus `def.phase` — so steht sie auch im Manifest.
+    const def = { phase: 'measure', cycles: { dmaic: { phase: 'measure' } } };
 
     const id = createInstance(sm, moduleRegistry, eventBus, 'cpk', def);
 
@@ -60,5 +62,34 @@ suite('router/instance-ops', () => {
     assertEqual(emitted.length, 1);
     assertEqual(emitted[0].ev, 'module:added');
     assertEqual(emitted[0].p.instanceId, id);
+  });
+
+  test('createInstance legt ein Modul ohne Zyklus-Zuordnung nach extras, nicht in seine Heimatphase', () => {
+    // `triz-ifr` trägt `phase: 'improve'`, hat aber keine `cycles.dmaic`-
+    // Zuordnung. Das Anlegemenü bietet es nur unter `extras` an; die alte
+    // Ableitung legte es nach `improve` — ein Eimer, den kein Menü kennt.
+    const state = fakeState();
+    const registry = { getActiveCycle: () => 'dmaic' };
+    const events = [];
+    const bus = { emit: (name, payload) => events.push([name, payload]) };
+    const def = { id: 'triz-ifr', phase: 'improve', cycles: undefined };
+
+    createInstance(state, registry, bus, 'triz-ifr', def);
+
+    assertEqual((state.get('phases.improve') ?? []).length, 0);
+    assertEqual((state.get('phases.extras') ?? []).length, 1);
+    assertEqual(events[0][1].phase, 'extras');
+  });
+
+  test('createInstance nimmt eine ausdrückliche Phase als Überschreiber', () => {
+    const state = fakeState();
+    const registry = { getActiveCycle: () => 'dmaic' };
+    const bus = { emit: () => {} };
+    const def = { id: 'ishikawa', phase: 'analyze',
+                  cycles: { dmaic: { phase: 'analyze', allowedPhases: ['analyze', 'measure'] } } };
+
+    createInstance(state, registry, bus, 'ishikawa', def, { phase: 'measure' });
+
+    assertEqual((state.get('phases.measure') ?? []).length, 1);
   });
 });

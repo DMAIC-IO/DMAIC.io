@@ -34,7 +34,9 @@ function makeCtx(overrides = {}) {
     stateManager: makeStateManager(),
     eventBus: { emit: (ev, p) => emitted.push({ ev, p }), on() {}, off() {} },
     moduleRegistry: {
-      get: (id) => ({ id, phase: 'measure', cycles: {} }),
+      // Zuordnung wie im Manifest: die Vorgabephase kommt aus `cycles`,
+      // nicht aus `def.phase` (ein Modul ohne Zuordnung landet in `extras`).
+      get: (id) => ({ id, phase: 'measure', cycles: { dmaic: { phase: 'measure' } } }),
       getActiveCycle: () => 'dmaic',
     },
     examplesRegistry: {

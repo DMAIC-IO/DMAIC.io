@@ -298,7 +298,9 @@ suite('loadScenario', () => {
       },
     };
     const moduleRegistry = {
-      get: (id) => ({ id, phase: 'define', cycles: {} }),
+      // Zuordnung wie im Manifest: die Vorgabephase kommt aus `cycles`,
+      // nicht aus `def.phase` (ein Modul ohne Zuordnung landet in `extras`).
+      get: (id) => ({ id, phase: 'define', cycles: { dmaic: { phase: 'define' } } }),
       getActiveCycle: () => 'dmaic',
     };
     const events = [];

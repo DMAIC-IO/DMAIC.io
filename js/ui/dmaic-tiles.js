@@ -21,6 +21,7 @@ import {
   getAllPhaseIds,
   getPhaseDef,
 } from '../core/cycles/cycles.js';
+import { canAddInstance } from '../core/router/instance-ops.js';
 import { h } from '../core/dom.js';
 import { icon } from '../core/icon.js';
 import { resolveCollapsed, resolveTight } from './dmaic-tiles-layout.js';
@@ -282,6 +283,13 @@ export class DmaicTiles {
       item.className = 'dmaic-tile__dropdown-item';
       item.dataset.moduleId = def.id;
 
+      // Hier treffen sich Angebot und Erlaubnis, und sie sind nicht dasselbe:
+      // `getByCycleAndPhase` (oben) ist das engere Angebot — es führt ein
+      // Modul nur unter der Phase seiner Zyklus-Zuordnung bzw. unter `extras`.
+      // `canAddInstance` ist die weitere Erlaubnis — es lässt zusätzlich die
+      // `allowedPhases` der Zuordnung zu (26 Modul/Zyklus-Paare). Darum kann
+      // die Agentenfläche ein Modul in eine Phase legen, die dieses Menü nie
+      // anbietet; genau dafür gibt es `allowedPhases`.
       const check = this._canAdd(def, phase);
 
       item.textContent = this._i18n.t(`modules.${def.id}.name`);
@@ -405,32 +413,42 @@ export class DmaicTiles {
   }
 
   /**
-   * Decide whether a module can be added to a given phase tile in the active
-   * cycle. Returns `{ ok: false, reason, allowedPhases? }` on failure so the
-   * dropdown can show the right tooltip.
+   * Darf dieses Modul in diese Phase? Nur noch ein Durchreicher: die Regel
+   * steht in `core/router/instance-ops.js`, damit Kachel, Router und
+   * Agentenfläche nicht drei verschiedene Antworten geben. Die Rückgabeform
+   * ist unverändert — `_showMenu` liest `reason` und `allowedPhases`.
+   *
    * @param {object} def - module definition from the registry
    * @param {string} phase - target phase id (incl. virtual `data` / `extras`)
    * @returns {{ ok: boolean, reason?: string, allowedPhases?: string[] }}
    */
   _canAdd(def, phase) {
+    return canAddInstance(def, phase, this._world());
+  }
+
+  /**
+   * Das Lese-Abbild für `canAddInstance`, aus demselben `stateManager`, aus
+   * dem die Kacheln ihren Inhalt nehmen — dieselbe Quelle wie bei der
+   * Agentenfläche, nur ein anderer Weg hinein.
+   * @returns {{ activeCycle: string, phases: string[],
+   *             instances: Map<string, { module: string, phase: string }>,
+   *             completed: boolean }}
+   */
+  _world() {
     const cycleId = this._getCycleId();
-    // Virtual tiles (`data`, `extras`) are catch-all — no allowedPhases check.
-    if (phase !== 'data' && phase !== 'extras') {
-      const mapping = def.cycles?.[cycleId];
-      const allowed = mapping?.allowedPhases;
-      if (allowed && !allowed.includes(phase)) {
-        return { ok: false, reason: 'wrongPhase', allowedPhases: allowed };
+    const phases = getAllPhaseIds(cycleId);
+    const instances = new Map();
+    for (const p of phases) {
+      for (const item of this._stateManager.get(`phases.${p}`) ?? []) {
+        instances.set(item.instanceId, { module: item.moduleId, phase: p });
       }
     }
-    if (def.singleton) {
-      for (const p of getAllPhaseIds(cycleId)) {
-        const items = this._stateManager.get(`phases.${p}`) ?? [];
-        if (items.some(i => i.moduleId === def.id)) {
-          return { ok: false, reason: 'singleton' };
-        }
-      }
-    }
-    return { ok: true };
+    return {
+      activeCycle: cycleId,
+      phases,
+      instances,
+      completed: this._stateManager.isCompleted(),
+    };
   }
 
   _addModule(moduleId, phase) {

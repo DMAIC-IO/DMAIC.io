@@ -37,8 +37,9 @@ export function findExistingInstance(stateManager, moduleId) {
 }
 
 /**
- * Create a new instance of moduleId in the derived phase for the active
- * cycle, persist it, and emit `module:added`. Returns the new instanceId.
+ * Create a new instance of moduleId in its default phase for the active cycle
+ * (`defaultPhaseFor` — dieselbe Regel, die das Anlegemenü füllt), persist it,
+ * and emit `module:added`. Returns the new instanceId.
  * @param {object} stateManager
  * @param {object} moduleRegistry
  * @param {object} eventBus
@@ -55,11 +56,10 @@ export function findExistingInstance(stateManager, moduleId) {
  * @returns {string}
  */
 export function createInstance(stateManager, moduleRegistry, eventBus, moduleId, def, { silent = false, phase } = {}) {
-  const activeCycle = moduleRegistry.getActiveCycle();
-  const derived = def.phase === 'data'
-    ? 'data'
-    : (def.cycles?.[activeCycle]?.phase || def.phase || 'extras');
-  const targetPhase = phase || derived;
+  // Keine eigene Ableitung mehr: die Vorgabephase ist die, die auch das
+  // Anlegemenü anbietet. Der ausdrückliche `phase`-Überschreiber bleibt —
+  // ihn braucht die Agentenfläche für die 26 mehrdeutigen Paare.
+  const targetPhase = phase || defaultPhaseFor(def, moduleRegistry.getActiveCycle());
 
   const instanceId = uid();
   const phases = stateManager.get(`phases.${targetPhase}`) ?? [];
