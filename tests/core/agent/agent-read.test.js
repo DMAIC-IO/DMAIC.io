@@ -177,4 +177,135 @@ suite('agent read projection', () => {
     assertTrue(typeof out.value.reason === 'string' && out.value.reason.length > 0);
     assertTrue(out.value !== null);
   });
+
+  /* ── Deskriptoren gehören zum FELD, nicht zum Modul (Task 6) ──────────
+     Spalten aus einem Schwesterfeld statt aus dem globalen `columns`, ein
+     Massenfeld kann ein Baum sein, und `from > to` ist ein kaputter Aufruf
+     statt eines leeren Ausschnitts. */
+
+  test('zwei Massenfelder bekommen NICHT beide die globalen Spalten', () => {
+    // `columnNames` las das globale `source.columns` und hängte es an jedes
+    // Massenfeld. Ein Modul mit zwei Tabellen bekam zweimal dieselben
+    // Spalten — eine Information, die für das zweite Feld schlicht falsch
+    // ist. Die Konvention ist jetzt ein Schwesterfeld JE Feld.
+    const schema = {
+      rows:      { type: 'any[][]', help: '', bulk: true, bulkKind: 'table' },
+      extraRows: { type: 'any[][]', help: '', bulk: true, bulkKind: 'table' },
+    };
+    const source = {
+      rows: [[1], [2]],
+      rowsColumns: [{ name: 'A' }],
+      extraRows: [[3]],
+      extraRowsColumns: [{ name: 'B' }, { name: 'C' }],
+    };
+
+    const out = projectReadState(source, schema, {});
+
+    assertEqual(out.rows.columns.join(','), 'A');
+    assertEqual(out.extraRows.columns.join(','), 'B,C');
+  });
+
+  test('ein einziges Massenfeld nimmt weiter das globale columns — der Worksheet-Fall', () => {
+    const schema = { rows: { type: 'any[][]', help: '', bulk: true, bulkKind: 'table' } };
+    const source = { rows: [[1], [2], [3]], columns: [{ name: 'Durchmesser' }, { name: 'Charge' }] };
+
+    const out = projectReadState(source, schema, {});
+
+    assertEqual(out.rows.$bulk, true);
+    assertEqual(out.rows.kind, 'table');
+    assertEqual(out.rows.rowCount, 3);
+    assertEqual(out.rows.columns.join(','), 'Durchmesser,Charge');
+  });
+
+  test('zwei Massenfelder ohne Schwesterfeld bekommen eine leere Spaltenliste, nicht die falsche', () => {
+    const schema = {
+      rows:      { type: 'any[][]', help: '', bulk: true, bulkKind: 'table' },
+      extraRows: { type: 'any[][]', help: '', bulk: true, bulkKind: 'table' },
+    };
+    const source = { rows: [[1]], extraRows: [[2]], columns: [{ name: 'A' }] };
+
+    const out = projectReadState(source, schema, {});
+
+    assertEqual(out.rows.columns.length, 0);
+    assertEqual(out.extraRows.columns.length, 0);
+  });
+
+  test('ein Massenfeld der Art tree beschreibt Knotenzahl und Tiefe, nicht Zeilen', () => {
+    const schema = { nodes: { type: 'object[]', help: '', bulk: true, bulkKind: 'tree' } };
+    const source = { nodes: [
+      { id: 1, children: [{ id: 2, children: [{ id: 3, children: [] }] }] },
+      { id: 4, children: [] },
+    ] };
+
+    const out = projectReadState(source, schema, {});
+
+    assertEqual(out.nodes.$bulk, true);
+    assertEqual(out.nodes.kind, 'tree');
+    assertEqual(out.nodes.nodeCount, 4);
+    assertEqual(out.nodes.depth, 3);
+    assertEqual(out.nodes.rowCount, undefined, 'ein Baum hat keine Zeilen');
+    assertEqual(out.nodes.columns, undefined, 'ein Baum hat keine Spalten');
+  });
+
+  test('ein angefordertes tree-Massenfeld kommt vollständig, wie ein table-Feld', () => {
+    const schema = { nodes: { type: 'object[]', help: '', bulk: true, bulkKind: 'tree' } };
+    const source = { nodes: [{ id: 1, children: [] }] };
+
+    const out = projectReadState(source, schema, { fields: ['nodes'] });
+
+    assertEqual(Array.isArray(out.nodes), true);
+    assertEqual(out.nodes.length, 1);
+  });
+
+  test('ein tree-Massenfeld zählt auch eine Form ohne children — gröber, aber wahr', () => {
+    const schema = { nodes: { type: 'object[]', help: '', bulk: true, bulkKind: 'tree' } };
+    const out = projectReadState({ nodes: [{ id: 1 }, { id: 2 }] }, schema, {});
+    assertEqual(out.nodes.nodeCount, 2);
+    assertEqual(out.nodes.depth, 1);
+  });
+
+  test('from größer als to ist ein Fehler, kein leeres Array', () => {
+    // Bisher: `rows.slice(5, 2)` ist `[]`, und `$range` meldete
+    // `{ from: 5, to: 2, rowCount: 3 }` — ein Umfang, den es nicht gibt.
+    // Ein Agent sah „keine Zeilen" und hielt das für eine Aussage über die
+    // Daten statt über seinen Aufruf.
+    const schema = { rows: { type: 'any[][]', help: '', bulk: true, bulkKind: 'table' } };
+    const source = { rows: [[1], [2], [3]] };
+
+    const out = projectReadState(source, schema, { fields: ['rows'], rows: { from: 5, to: 2 } });
+
+    assertEqual(out.$error, 'wrong_type');
+    assertTrue(/from/.test(out.$message) && /to/.test(out.$message), out.$message);
+  });
+
+  test('from gleich to ist kein Fehler, sondern ein leerer Ausschnitt', () => {
+    const schema = { rows: { type: 'any[][]', help: '', bulk: true, bulkKind: 'table' } };
+    const out = projectReadState({ rows: [[1], [2]] }, schema, { fields: ['rows'], rows: { from: 1, to: 1 } });
+    assertEqual(out.rows.length, 0);
+    assertEqual(out.rows$range.from, 1);
+    assertEqual(out.rows$range.to, 1);
+  });
+
+  test('ein nicht übertragbarer Wert bekommt einen sichtbaren Marker, kein stilles null', () => {
+    // Ergänzt `clone Stufe 3` oben um die Gegenprobe im SELBEN Lauf: ein
+    // Zyklus allein übersteht Stufe 1, erst die Funktion daneben schiebt den
+    // Wert auf Stufe 3 durch. Ohne das Paar wäre nicht gezeigt, dass der
+    // Marker den schuldigen Wert trifft und nicht jeden Zyklus.
+    const cyclic = { name: 'a' };
+    cyclic.self = cyclic;                 // structuredClone kann das, JSON nicht
+    const withFn = { f() {} };            // structuredClone kann das NICHT
+    withFn.self = withFn;                 // ... und JSON auch nicht
+
+    const schema = {
+      a: { type: 'object', help: '', bulk: false },
+      b: { type: 'object', help: '', bulk: false },
+    };
+    const out = projectReadState({ a: cyclic, b: withFn }, schema, {});
+
+    // `a` übersteht Stufe 1 (structuredClone kann Zyklen).
+    assertEqual(out.a.name, 'a');
+    // `b` scheitert an Stufe 1 (Funktion) UND an Stufe 2 (Zyklus) → Marker.
+    assertEqual(out.b.$unserializable, true);
+    assertEqual(typeof out.b.reason, 'string');
+  });
 });

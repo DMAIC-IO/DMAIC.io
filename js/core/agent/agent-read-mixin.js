@@ -36,10 +36,20 @@ import { AGENT_REGISTRY } from './agent-registry.generated.js';
  * @param {{ fields?: string[], rows?: { from: number, to: number } }} [options]
  * @returns {object} die Projektion (Massenfelder als Umfangs-Deskriptor,
  *   solange sie nicht in `options.fields` genannt sind)
+ * @throws {Error} wenn `options` kaputt ist (`rows: { from: 5, to: 2 }`) —
+ *   siehe unten
  */
 export function readAgentState(moduleId, snapshot, options) {
   const schema = AGENT_REGISTRY[moduleId]?.fields ?? {};
-  return projectReadState(snapshot, schema, options ?? {});
+  const out = projectReadState(snapshot, schema, options ?? {});
+  // Ein kaputter Bereich ist ein kaputter AUFRUF, kein Lesezustand.
+  // `projectReadState` ist rein und kennt `i18n` nicht, es gibt den Fehler
+  // deshalb als `{ $error, $message }` zurück. Hier wird daraus ein Wurf:
+  // der Fang-Punkt von `instance.call` (`agent-ops.js`) macht einen
+  // benannten AXI-Fehler (`call_failed`) samt Meldung daraus — statt dass
+  // `{ $error: … }` beim Agenten als Daten ankommt.
+  if (out && out.$error) throw new Error(out.$message);
+  return out;
 }
 
 /**

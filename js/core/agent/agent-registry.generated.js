@@ -4874,6 +4874,7 @@ export const AGENT_REGISTRY = {
         "type": "any[][]",
         "help": "the data rows of the active sheet, each row in column order",
         "bulk": true,
+        "bulkKind": "table",
         "derived": true
       }
     }

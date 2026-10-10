@@ -713,7 +713,7 @@ test('readModelFields: @agentBulk on a constructor assignment is carried over', 
   const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.fields.rows, {
-    type: 'any[][]', help: 'the measured rows', bulk: true,
+    type: 'any[][]', help: 'the measured rows', bulk: true, bulkKind: 'table',
   });
 });
 
@@ -965,6 +965,51 @@ test('collectAgentData: the [bulk] sentinel marks a bulk field and leaves the he
   assert.equal(modules.bar.fields.rows.bulk, true);
   assert.equal(modules.bar.fields.rows.help, 'every data row of the active sheet');
   assert.equal(modules.bar.fields.activeSheetId.bulk, false);
+});
+
+test('collectAgentData: [bulk] heisst table, [bulk:tree] heisst tree, ohne Marke steht nichts da', () => {
+  // Das Sentinel trug bisher nur „ja/nein". Welchen Umfangs-Deskriptor ein
+  // Massenfeld bekommt (Zeilen+Spalten oder Knoten+Tiefe), stand nirgends —
+  // ein Baum wurde als Tabelle beschrieben.
+  const vm = AGENT_READ_VM.replace(
+    ' * @property {any[][]} rows  [bulk] every data row of the active sheet\n',
+    ' * @property {any[][]} rows  [bulk] every data row of the active sheet\n'
+    + ' * @property {object[]} nodes  [bulk:tree] the question tree\n',
+  );
+  const root = fixture({ bar: { 'bar.js': vm, 'bar-model.js': BAR_MODEL } });
+  const { modules } = collectAgentData(root);
+  const fields = modules.bar.fields;
+
+  assert.equal(fields.rows.bulk, true);
+  assert.equal(fields.rows.bulkKind, 'table');
+  assert.equal(fields.rows.help, 'every data row of the active sheet');
+  assert.equal(fields.nodes.bulk, true);
+  assert.equal(fields.nodes.bulkKind, 'tree');
+  assert.equal(fields.nodes.help, 'the question tree');
+  assert.equal(fields.activeSheetId.bulk, false);
+  assert.equal(fields.activeSheetId.bulkKind, undefined);
+  // An einem Nicht-Massenfeld steht der Schlüssel GAR NICHT — sonst stünde
+  // in der erzeugten Registry an jedem Feld etwas, wo nichts zu sagen ist.
+  assert.equal('bulkKind' in fields.activeSheetId, false);
+});
+
+test('collectAgentData: bulkKind am Model-Feld — @agentBulk tree gegen @agentBulk', () => {
+  const model = MODEL.replace(
+    `  /** @type {object[]} branching tree of Why nodes */
+  nodes = [];`,
+    `  /**
+   * @type {object[]} branching tree of Why nodes
+   * @agentBulk tree
+   */
+  nodes = [];`,
+  );
+  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': model } });
+  const { modules } = collectAgentData(root);
+
+  assert.equal(modules.foo.fields.nodes.bulk, true);
+  assert.equal(modules.foo.fields.nodes.bulkKind, 'tree');
+  assert.equal(modules.foo.fields.rows.bulkKind, 'table');
+  assert.equal('bulkKind' in modules.foo.fields.problem, false);
 });
 
 test('collectAgentData: a module with an AgentRead typedef is available without a model class', () => {

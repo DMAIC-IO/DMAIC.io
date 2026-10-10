@@ -145,9 +145,14 @@ export const OPS = deepFreeze({
  * @property {Record<string, { params: Array<{name:string,type:string,optional:boolean,help:string}>,
  *                             returns: string, help: string }>} actions
  * @property {Record<string, { type: string, help: string, bulk: boolean,
- *                             derived?: boolean }>} fields
+ *                             bulkKind?: 'table'|'tree', derived?: boolean }>} fields
  *   Die Lesefläche. Ohne `derived` aus den Model-Feldern abgeleitet (die
  *   persistierte Form IST die Lesefläche, Spec §8); mit `derived: true` vom
  *   Modul über einen `@typedef {object} AgentRead` deklariert, weil seine
  *   Lesefläche nicht die persistierte Form ist.
+ *   `bulkKind` steht NUR an einem Massenfeld und sagt, welchen
+ *   Umfangs-Deskriptor es bekommt: `'table'` → `rowCount` + `columns`,
+ *   `'tree'` → `nodeCount` + `depth`. Fehlt es an einem Massenfeld, gilt
+ *   `'table'`. `describe()` gibt es nicht heraus — die Deskriptorform steht
+ *   in der Antwort von `read()`, und `describe()` ist Vertragsfläche.
  */

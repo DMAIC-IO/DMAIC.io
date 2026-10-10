@@ -15,21 +15,47 @@
 
 /**
  * @param {object} modelJson   `model.toJSON()` des Moduls
- * @param {Record<string, { type: string, help: string, bulk: boolean }>} fieldSchema
- *   der `fields`-Teil des Registry-Eintrags (siehe AgentModuleEntry)
+ * @param {Record<string, { type: string, help: string, bulk: boolean,
+ *   bulkKind?: 'table'|'tree' }>} fieldSchema
+ *   der `fields`-Teil des Registry-Eintrags (siehe AgentModuleEntry).
+ *   `bulkKind` sagt, welchen Umfangs-Deskriptor ein Massenfeld bekommt;
+ *   fehlt es, gilt `'table'`.
  * @param {{ fields?: string[], rows?: { from: number, to: number } }} [options]
  * @returns {object} die Projektion; ein erklärtes Feld, das `modelJson` nicht
  *   führt, FEHLT darin (nicht `undefined`) — nur so fällt der
  *   Driftvergleich „Schlüssel von read() == erklärte Felder"; Massenfelder entweder als Deskriptor
- *   `{ $bulk: true, kind, rowCount, columns }` oder (wenn in `options.fields`
- *   genannt) als Daten, bei gesetztem `options.rows` zusätzlich mit einem
- *   Schwesterschlüssel `<feld>$range`.
+ *   (`{ $bulk: true, kind: 'table', rowCount, columns }` bzw.
+ *   `{ $bulk: true, kind: 'tree', nodeCount, depth }`) oder (wenn in
+ *   `options.fields` genannt) als Daten, bei gesetztem `options.rows`
+ *   zusätzlich mit einem Schwesterschlüssel `<feld>$range`.
+ *   Ein kaputter Bereich (`from > to`) ist ein kaputter AUFRUF: dann kommt
+ *   statt der Projektion `{ $error: 'wrong_type', $message }` zurück. Diese
+ *   Funktion ist rein und kennt `i18n` nicht — sie wirft nicht, der Aufrufer
+ *   (`readAgentState`) macht daraus einen benannten Fehler.
  */
 export function projectReadState(modelJson, fieldSchema, options = {}) {
   const requested = new Set(Array.isArray(options.fields) ? options.fields : []);
   const range = options.rows && typeof options.rows === 'object' ? options.rows : null;
   const source = modelJson && typeof modelJson === 'object' ? modelJson : {};
   const out = {};
+
+  // Der Worksheet-Fall: genau ein tabellarisches Massenfeld, und das globale
+  // `columns` gehört eindeutig dazu. Ab zwei ist die Zuordnung offen und die
+  // Konvention ist das Schwesterfeld.
+  const tableFields = Object.entries(fieldSchema)
+    .filter(([n, s]) => s.bulk && (s.bulkKind ?? 'table') === 'table' && !n.startsWith('_'));
+  const soleTable = tableFields.length === 1;
+
+  // `from > to` ist kein leerer Bereich, sondern ein kaputter Aufruf. Bisher
+  // kam stillschweigend ein leeres Array mit unplausiblem `$range` zurück,
+  // und ein Agent hielt das für eine Aussage über die Daten.
+  if (range && Number.isFinite(Number(range.from)) && Number.isFinite(Number(range.to))
+      && Number(range.from) > Number(range.to)) {
+    return {
+      $error: 'wrong_type',
+      $message: `rows.from (${range.from}) is greater than rows.to (${range.to})`,
+    };
+  }
 
   for (const [name, spec] of Object.entries(fieldSchema)) {
     if (name.startsWith('_')) continue;            // privat, erscheint nie
@@ -56,12 +82,14 @@ export function projectReadState(modelJson, fieldSchema, options = {}) {
     const rows = Array.isArray(value) ? value : [];
 
     if (!requested.has(name)) {
-      out[name] = {
-        $bulk: true,
-        kind: 'table',
-        rowCount: rows.length,
-        columns: columnNames(source),
-      };
+      out[name] = (spec.bulkKind ?? 'table') === 'tree'
+        ? { $bulk: true, kind: 'tree', ...treeExtent(rows) }
+        : {
+          $bulk: true,
+          kind: 'table',
+          rowCount: rows.length,
+          columns: columnNames(source, name, soleTable),
+        };
       continue;
     }
 
@@ -80,17 +108,60 @@ export function projectReadState(modelJson, fieldSchema, options = {}) {
 }
 
 /**
- * Spaltennamen für den Umfangs-Deskriptor. Konvention: ein Schwesterfeld
- * `columns` mit `{ name }`-Einträgen (so sieht der Worksheet-Zustand aus).
- * Fehlt es, bleibt die Liste leer — eine Zeile zu erraten wäre geraten, und
- * `rowCount` trägt die eigentliche Information.
+ * Spaltennamen für den Umfangs-Deskriptor EINES Massenfeldes.
+ *
+ * Auflösung in dieser Reihenfolge:
+ *   1. ein Schwesterfeld `<feld>Columns` — die Form, die ein Modul mit mehr
+ *      als einer Tabelle braucht,
+ *   2. das globale `columns`, aber NUR wenn das Schema genau ein
+ *      tabellarisches Massenfeld führt (der Worksheet-Fall),
+ *   3. leer.
+ *
+ * Zuvor nahm jedes Massenfeld das globale `columns` — ein Modul mit zwei
+ * Tabellen bekam zweimal dieselben Spalten, und für das zweite Feld war die
+ * Angabe schlicht falsch. Eine falsche Spaltenliste ist schlechter als
+ * keine: `rowCount` trägt die eigentliche Information, und eine Liste zu
+ * erraten wäre geraten.
+ *
  * @param {object} source
+ * @param {string} name  Feldname
+ * @param {boolean} soleTable  ob dieses Feld das einzige tabellarische Massenfeld ist
  * @returns {string[]}
  */
-function columnNames(source) {
-  const columns = source.columns;
-  if (!Array.isArray(columns)) return [];
+function columnNames(source, name, soleTable) {
+  const sibling = source[`${name}Columns`];
+  const columns = Array.isArray(sibling)
+    ? sibling
+    : (soleTable && Array.isArray(source.columns) ? source.columns : null);
+  if (!columns) return [];
   return columns.map(c => (c && typeof c === 'object' ? String(c.name ?? '') : String(c ?? '')));
+}
+
+/**
+ * Der Umfang eines Baumes: Knotenzahl und Tiefe.
+ *
+ * Konvention: ein Knoten führt seine Kinder in `children`. Das ist die Form
+ * aller verzweigten Modulzustände im Baum (`five-why`: `{ id, level,
+ * parentId, question, answer, children, collapsed }`). Ein Feld anderer Form
+ * bekommt `nodeCount` der obersten Ebene und `depth: 1` — immer noch eine
+ * wahre Aussage, nur eine gröbere.
+ *
+ * @param {any[]} nodes
+ * @returns {{ nodeCount: number, depth: number }}
+ */
+function treeExtent(nodes) {
+  let nodeCount = 0;
+  let depth = 0;
+  const walk = (list, level) => {
+    if (!Array.isArray(list) || list.length === 0) return;
+    depth = Math.max(depth, level);
+    for (const node of list) {
+      nodeCount += 1;
+      if (node && typeof node === 'object') walk(node.children, level + 1);
+    }
+  };
+  walk(nodes, 1);
+  return { nodeCount, depth };
 }
 
 /** Index auf [0, length] begrenzen; kaputte Eingaben werden 0 bzw. length. */

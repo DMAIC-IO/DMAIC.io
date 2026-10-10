@@ -4,7 +4,7 @@
  * 72-mal: der Generator löst den Spread auf und sieht Marke und Schema des
  * Mixin-Mitglieds.
  */
-import { suite, test, beforeAll, afterAll, assertEqual, assertDeepEqual } from '../../test-utils.js';
+import { suite, test, beforeAll, afterAll, assertEqual, assertDeepEqual, assertThrows } from '../../test-utils.js';
 import { agentReadMixin, readAgentState } from '../../../js/core/agent/agent-read-mixin.js';
 import { AGENT_REGISTRY } from '../../../js/core/agent/agent-registry.generated.js';
 
@@ -63,6 +63,18 @@ suite('agent read mixin', () => {
     const state = readAgentState(BULK_MODULE_ID, snapshot, { fields: ['rows'], rows: { from: 1, to: 2 } });
     assertDeepEqual(state.rows, [[3, 4]]);
     assertDeepEqual(state['rows$range'], { from: 1, to: 2, rowCount: 3 });
+  });
+
+  test('readAgentState wirft bei einem kaputten Bereich, statt den Fehler als Lesezustand zu liefern', () => {
+    // `projectReadState` ist rein und kennt `i18n` nicht — es GIBT den Fehler
+    // als `{ $error, $message }` ZURÜCK. Käme der so beim Agenten an, sähe er
+    // wie Daten aus. `readAgentState` wirft ihn deshalb: der Fang-Punkt von
+    // `instance.call` (agent-ops.js) macht daraus `call_failed` samt Meldung.
+    const snapshot = { title: 'T', columns: [{ name: 'a' }], rows: [[1], [2], [3]] };
+    assertThrows(
+      () => readAgentState(BULK_MODULE_ID, snapshot, { fields: ['rows'], rows: { from: 5, to: 2 } }),
+      /rows\.from \(5\) is greater than rows\.to \(2\)/,
+    );
   });
 
   test('readAgentState never hands out a reference into the live state', () => {

@@ -189,10 +189,17 @@ export function collectDomDetours(sf) {
  *
  * Die Massendaten-Marke kann in einem Typedef-Property nicht als eigener Tag
  * stehen (`@agentBulk` gilt pro Tag, nicht pro Property) — deshalb das
- * Sentinel `[bulk]` am Anfang des Property-Kommentars, und NUR dort.
+ * Sentinel `[bulk]` bzw. `[bulk:tree]` am Anfang des Property-Kommentars,
+ * und NUR dort.
  */
 const AGENT_READ_TYPEDEF = 'AgentRead';
-const BULK_SENTINEL = '[bulk]';
+/**
+ * Das Massendaten-Sentinel samt optionaler Art: `[bulk:tree]` nennt den
+ * Umfangs-Deskriptor, `[bulk]` ohne Zusatz heisst `table`. Ohne die Art
+ * beschrieb die Lesefläche jeden Baum als Tabelle — Zeilen und Spalten statt
+ * Knoten und Tiefe.
+ */
+const BULK_RE = /^\[bulk(?::([a-z]+))?\]/;
 
 /**
  * Die deklarierte Lesefläche eines Moduls, oder null.
@@ -224,11 +231,15 @@ export function readAgentReadTypedef(sf) {
         const name = property.name?.getText(sf);
         if (!name || name.startsWith('_')) continue;
         const raw = cleanComment(property.comment);
-        const bulk = raw.startsWith(BULK_SENTINEL);
+        const bulkMatch = BULK_RE.exec(raw);
         found[name] = {
           type: property.typeExpression?.type?.getText(sf) ?? 'any',
-          help: bulk ? raw.slice(BULK_SENTINEL.length).trim() : raw,
-          bulk,
+          help: bulkMatch ? raw.slice(bulkMatch[0].length).trim() : raw,
+          bulk: bulkMatch !== null,
+          // Nur AN einem Massenfeld, nicht als `undefined` an jedem Feld: so
+          // bleibt die erzeugte Registry dort unverändert, wo nichts zu sagen
+          // ist — und die `deepEqual`-Fälle über die Feldform bleiben wahr.
+          ...(bulkMatch ? { bulkKind: bulkMatch[1] ?? 'table' } : {}),
           derived: true,
         };
       }
@@ -513,17 +524,22 @@ function assignedThisProperty(expression) {
 }
 
 /**
- * Die Registry-Form eines Feldes. Unverändert `{ type, help, bulk }` — an
- * einem Feld steht KEINE Herkunft, anders als an einem Verstoßcode: die Form
- * ist Teil des Vertrags von `read()`.
- * @returns {{ type: string, help: string, bulk: boolean }}
+ * Die Registry-Form eines Feldes: `{ type, help, bulk }`, an einem
+ * Massenfeld zusätzlich `bulkKind` — an einem Feld steht KEINE Herkunft,
+ * anders als an einem Verstoßcode: die Form ist Teil des Vertrags von
+ * `read()`.
+ * @returns {{ type: string, help: string, bulk: boolean, bulkKind?: string }}
  */
 function fieldFrom(tags, knownTypeTag) {
   const typeTag = knownTypeTag ?? tags.find(t => t.tagName.text === 'type');
+  const bulkTag = tags.find(t => t.tagName.text === MARK_BULK);
   return {
     type: typeTag?.typeExpression?.type?.getText() ?? 'any',
     help: cleanComment(typeTag?.comment),
-    bulk: tags.some(t => t.tagName.text === MARK_BULK),
+    bulk: bulkTag !== undefined,
+    // `@agentBulk tree` nennt die Art; `@agentBulk` ohne Zusatz heisst
+    // `table`. An einem Nicht-Massenfeld steht der Schlüssel gar nicht.
+    ...(bulkTag ? { bulkKind: cleanComment(bulkTag.comment) || 'table' } : {}),
   };
 }
 
