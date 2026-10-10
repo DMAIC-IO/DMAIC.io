@@ -213,6 +213,23 @@ export function settingsToStoreOnLayoutSave(all, liveIds, allLoaded) {
 }
 
 /**
+ * Decide what the layout-save path does with user-edited titles
+ * (dashboard.titles): drop titles of tiles that no longer enumerate (removed
+ * copies, deleted instances), with the same all-loaded guard as settings.
+ * @param {object|undefined} titles  stored dashboard.titles
+ * @param {Iterable<string>} liveIds  ids of all current tile descriptors
+ * @param {boolean} allLoaded  whether every tile file loaded in this render
+ * @returns {object|null} the pruned object to store, or null when nothing changes
+ */
+export function titlesToStoreOnLayoutSave(titles, liveIds, allLoaded) {
+  if (!allLoaded) return null;
+  const live = new Set(liveIds);
+  const current = titles || {};
+  const pruned = Object.fromEntries(Object.entries(current).filter(([id]) => live.has(id)));
+  return Object.keys(pruned).length !== Object.keys(current).length ? pruned : null;
+}
+
+/**
  * Decide which layout the layout-save path persists. Normally that is the
  * grid's current layout. While a tile file failed to load, the grid does not
  * know that module's tiles, so their previously stored entries are kept

@@ -30,14 +30,30 @@ export function kindOf(moduleId, tile, fromArray) {
   if (!moduleId) return null;
   const kind = fromArray ? tile?.kind : moduleId;
   if (typeof kind !== 'string' || kind === '') {
-    console.warn(`[dashboard] a tile of "${moduleId}" declares no kind and cannot be re-bound or duplicated`);
+    warnOnce(tile, `[dashboard] a tile of "${moduleId}" declares no kind and cannot be re-bound or duplicated`);
     return null;
   }
   if (kind.includes(COPY_SEP)) {
-    console.warn(`[dashboard] tile kind "${kind}" must not contain "${COPY_SEP}"`);
+    warnOnce(tile, `[dashboard] tile kind "${kind}" must not contain "${COPY_SEP}"`);
     return null;
   }
   return kind;
+}
+
+/** Tile objects already warned about; tile files are cached modules, so one warning per session. */
+const warnedTiles = new WeakSet();
+
+/**
+ * Warn about a tile object at most once (every render re-loads the tile files).
+ * @param {object} tile
+ * @param {string} message
+ */
+function warnOnce(tile, message) {
+  if (tile && typeof tile === 'object') {
+    if (warnedTiles.has(tile)) return;
+    warnedTiles.add(tile);
+  }
+  console.warn(message);
 }
 
 /**
@@ -187,6 +203,38 @@ export function tileObjects(exported) {
 export function refreshEventsOf(tile) {
   const r = tile?.refreshOn;
   return Array.isArray(r) && r.length && r.every(e => typeof e === 'string') ? r : ['state:saved'];
+}
+
+/** Refresh events the host handles with its own shared handlers. */
+const SHARED_REFRESH_EVENTS = new Set(['state:saved', 'resize']);
+
+/**
+ * Distinct custom refresh events (not state:saved/resize) of the loaded tile
+ * objects. Copies share their tile object, so these cover them too.
+ * @param {Array<{tile: object}>} tileModules  from loadTileModules
+ * @returns {string[]}
+ */
+export function customRefreshEvents(tileModules) {
+  const events = new Set();
+  for (const { tile } of tileModules) {
+    for (const ev of refreshEventsOf(tile)) if (!SHARED_REFRESH_EVENTS.has(ev)) events.add(ev);
+  }
+  return [...events];
+}
+
+/**
+ * Ids of the placed tiles that re-render on `ev`. Resolved when the event
+ * fires, so tiles added after the last full render (copies) are included.
+ * @param {Array<{id: string, tile: object|null}>} descriptors
+ * @param {Iterable<string>} placedIds
+ * @param {string} ev
+ * @returns {string[]}
+ */
+export function refreshTargets(descriptors, placedIds, ev) {
+  const placed = new Set(placedIds);
+  return descriptors
+    .filter(d => d.tile && placed.has(d.id) && refreshEventsOf(d.tile).includes(ev))
+    .map(d => d.id);
 }
 
 /**

@@ -75,6 +75,19 @@ suite('dashboard tiles: manifest', () => {
     }
   });
 
+  test('tile kinds are unique across all modules (one byKind map for copies)', async () => {
+    const seen = new Map();
+    for (const e of withTile) {
+      const exported = (await e.loadTile()).default;
+      const tiles = Array.isArray(exported) ? exported : [exported];
+      for (const tile of tiles) {
+        const kind = Array.isArray(exported) ? tile.kind : e.id;
+        assertTrue(!seen.has(kind), `kind "${kind}" of ${e.id} is also declared by ${seen.get(kind)}`);
+        seen.set(kind, e.id);
+      }
+    }
+  });
+
   test('tile files do not import the module shell directly', async () => {
     const shell = /from\s+['"][^'"]*(template-module|alpine)[^'"]*['"]/i;
     const files = [

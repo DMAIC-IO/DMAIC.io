@@ -10,9 +10,9 @@ import { createPage } from '../../core/create-page.js';
 import { h } from '../../core/dom.js';
 import { DashboardGrid } from '../../ui/dashboard-grid.js';
 import { DEFAULT_DASHBOARD_LAYOUT } from './default-layout.js';
-import { enumerateTiles, loadTileModules, refreshEventsOf, copyId, copyDescriptor, sourceChoices } from './enumerate-tiles.js';
+import { enumerateTiles, loadTileModules, refreshEventsOf, copyId, copyDescriptor, sourceChoices, customRefreshEvents, refreshTargets } from './enumerate-tiles.js';
 import { renderTileSafely } from './tile-render.js';
-import { schemaOf, resolveSettings, toStored, withTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave, SOURCE_KEY, sourceField, coerceValue } from './tile-settings.js';
+import { schemaOf, resolveSettings, toStored, withTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave, titlesToStoreOnLayoutSave, SOURCE_KEY, sourceField, coerceValue } from './tile-settings.js';
 import { buildSettingsForm } from './tile-settings-form.js';
 
 const page = createPage({
@@ -104,10 +104,12 @@ const page = createPage({
       const source = capable ? coerceValue(schema[SOURCE_KEY], values[SOURCE_KEY]) : null;
       if (d.isCopy) next[SOURCE_KEY] = source;
       stateManager.set('dashboard.tileSettings', withTileSettings(latest, tileId, next));
-      // A new source changes instance and title: rebuild all descriptors.
+      // A new source changes instance and title: re-enumerate, then retitle
+      // and re-render only this tile (the rest of the grid stays untouched).
       if (capable && source !== d.instanceId) {
-        await render();
-        return;
+        descriptors = enumerateTiles(handle.tileModules, ctx);
+        const rebound = descriptorFor(tileId);
+        if (rebound) handle.grid?.setTileTitle(tileId, rebound.title);
       }
       const body = handle.grid?.getTileBody(tileId);
       if (body) {
@@ -177,6 +179,9 @@ const page = createPage({
       const pruned = settingsToStoreOnLayoutSave(
         stateManager.get('dashboard.tileSettings'), ids, handle._allTilesLoaded);
       if (pruned) stateManager.set('dashboard.tileSettings', pruned);
+      const titles = titlesToStoreOnLayoutSave(
+        stateManager.get('dashboard.titles'), ids, handle._allTilesLoaded);
+      if (titles) stateManager.set('dashboard.titles', titles);
     };
 
     // ── Add-menu popover ─────────────────────────────────────────────────
@@ -273,22 +278,14 @@ const page = createPage({
       // Refresh subscriptions (contract field `refreshOn`), rebuilt on every
       // full render so language/theme re-renders never stack handlers.
       // state:saved and resize are handled by the shared handlers below.
+      // Targets are resolved when the event fires, so copies duplicated after
+      // this render refresh too.
       handle._refreshUnsubs.forEach(off => off());
       handle._refreshUnsubs = [];
-      const byEvent = new Map();
-      for (const d of descriptors) {
-        if (!d.tile) continue;
-        for (const ev of refreshEventsOf(d.tile)) {
-          if (ev === 'state:saved' || ev === 'resize') continue;
-          if (!byEvent.has(ev)) byEvent.set(ev, []);
-          byEvent.get(ev).push(d.id);
-        }
-      }
-      for (const [ev, ids] of byEvent) {
+      for (const ev of customRefreshEvents(tileModules)) {
         const cb = () => {
           if (!page.isOpen() || !handle.grid) return;
-          const placed = new Set(handle.grid.getPlacedTileIds());
-          ids.filter(id => placed.has(id)).forEach(id => renderTile(id));
+          refreshTargets(descriptors, handle.grid.getPlacedTileIds(), ev).forEach(id => renderTile(id));
         };
         eventBus.on(ev, cb);
         handle._refreshUnsubs.push(() => eventBus.off(ev, cb));
@@ -317,6 +314,14 @@ const page = createPage({
         const allSettings = stateManager.get('dashboard.tileSettings') || {};
         if (Object.hasOwn(allSettings, tileId)) {
           stateManager.set('dashboard.tileSettings', withTileSettings(allSettings, tileId, {}));
+        }
+        // A removed copy is gone for good, so is its user title. A base tile
+        // keeps its title for when it is added back.
+        const titles = stateManager.get('dashboard.titles') || {};
+        if (d?.isCopy && Object.hasOwn(titles, tileId)) {
+          const rest = { ...titles };
+          delete rest[tileId];
+          stateManager.set('dashboard.titles', rest);
         }
         // Removing a re-bound base tile dropped its `_source`; re-enumerate so
         // the add menu offers it on its own instance with its own title.

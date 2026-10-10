@@ -1,7 +1,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import {
   validateSchema, schemaOf, coerceValue, resolveSettings, toStored,
-  withTileSettings, pruneTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave,
+  withTileSettings, pruneTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave, titlesToStoreOnLayoutSave,
   SOURCE_KEY, sourceField,
 } from '../../js/pages/dashboard/tile-settings.js';
 
@@ -159,6 +159,23 @@ suite('tile-settings: settingsToStoreOnLayoutSave', () => {
   test('returns null when nothing would change', () => {
     assertEqual(settingsToStoreOnLayoutSave({ 'fmea:live': { topN: 2 } }, ['fmea:live'], true), null);
     assertEqual(settingsToStoreOnLayoutSave(undefined, ['fmea:live'], true), null);
+  });
+});
+
+suite('tile-settings: titlesToStoreOnLayoutSave', () => {
+  const STORED = { 'fmea:live': 'Mine', 'fmea~gone': 'Old copy' };
+
+  test('prunes titles of tiles that no longer enumerate once all tile files loaded', () => {
+    assertDeepEqual(titlesToStoreOnLayoutSave(STORED, ['fmea:live'], true), { 'fmea:live': 'Mine' });
+  });
+
+  test('does not prune while a tile file failed to load', () => {
+    assertEqual(titlesToStoreOnLayoutSave(STORED, ['fmea:live'], false), null);
+  });
+
+  test('returns null when nothing would change', () => {
+    assertEqual(titlesToStoreOnLayoutSave({ 'fmea:live': 'Mine' }, ['fmea:live'], true), null);
+    assertEqual(titlesToStoreOnLayoutSave(undefined, ['fmea:live'], true), null);
   });
 });
 

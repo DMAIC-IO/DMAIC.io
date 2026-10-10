@@ -206,10 +206,11 @@ export class DashboardGrid {
   }
 
   /**
-   * Add a tile. Finds the first free grid spot that fits the tile's default size.
+   * Add a tile. Finds the first free grid spot that fits the tile's default
+   * size, or places it below the lowest tile.
    * @param {object} def
    * @returns {boolean} true if the tile was added, false if it already exists
-   *                   or no free spot was found.
+   *                   or is wider than the grid.
    */
   addTile(def) {
     if (this._tiles.has(def.id)) return false;
@@ -221,6 +222,19 @@ export class DashboardGrid {
     this._updateContainerHeight();
     this._notifyChange();
     return true;
+  }
+
+  /**
+   * Replace the frame title of one placed tile, keeping its element.
+   * @param {string} tileId
+   * @param {string} title
+   */
+  setTileTitle(tileId, title) {
+    const entry = this._tiles.get(tileId);
+    if (!entry) return;
+    entry.def = { ...entry.def, title };
+    const titleEl = entry.el.querySelector('.dashboard-grid__tile-title');
+    if (titleEl) titleEl.textContent = title;
   }
 
   /**
@@ -363,7 +377,10 @@ export class DashboardGrid {
         if (!this._hasCollision({ x, y, w, h: gh })) return { x, y };
       }
     }
-    return { x: 0, y: 0 };
+    // The grid grows downwards: below the lowest tile there is always room.
+    let bottom = 0;
+    for (const { layout } of this._tiles.values()) bottom = Math.max(bottom, layout.y + layout.h);
+    return { x: 0, y: bottom };
   }
 
   // ─── Internal: tile DOM ────────────────────────────────────────

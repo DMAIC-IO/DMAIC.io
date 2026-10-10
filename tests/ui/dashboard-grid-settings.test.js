@@ -66,3 +66,33 @@ suite('DashboardGrid: duplicate button', () => {
     });
   });
 });
+
+suite('DashboardGrid: setTileTitle', () => {
+  test('replaces the frame title of one tile in place', () => {
+    withGrid((grid, container) => {
+      const el = container.querySelector('[data-tile-id="a"]');
+      grid.setTileTitle('a', 'A2');
+      assertEqual(container.querySelector('[data-tile-id="a"] .dashboard-grid__tile-title').textContent, 'A2');
+      assertEqual(container.querySelector('[data-tile-id="a"]'), el);
+      assertEqual(container.querySelector('[data-tile-id="b"] .dashboard-grid__tile-title').textContent, 'B');
+    });
+  });
+});
+
+suite('DashboardGrid: addTile placement', () => {
+  test('with no free spot in the scanned rows the tile goes below the lowest tile, never on top of another', () => {
+    const container = document.createElement('div');
+    container.style.width = '1200px';
+    document.body.appendChild(container);
+    const grid = new DashboardGrid(container, { cols: 12, rowHeight: 40, gap: 12 });
+    try {
+      grid.setTiles([{ id: 'big', title: 'Big' }], [{ tileId: 'big', x: 0, y: 0, w: 12, h: 70 }]);
+      assertEqual(grid.addTile({ id: 'new', title: 'New', defaultW: 3, defaultH: 3 }), true);
+      const placed = grid.getLayout().find(l => l.tileId === 'new');
+      assertEqual(`${placed.x},${placed.y}`, '0,70');
+    } finally {
+      grid.destroy();
+      container.remove();
+    }
+  });
+});

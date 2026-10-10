@@ -3,6 +3,7 @@ import {
   enumerateTiles, projectModuleIds, loadTileModules,
   findInstances, tileObjects, refreshEventsOf,
   kindOf, copyId, copyDescriptor, sourceChoices, COPY_SEP,
+  customRefreshEvents, refreshTargets,
 } from '../../js/pages/dashboard/enumerate-tiles.js';
 
 const i18nEcho = { t: (k) => `I:${k}` };
@@ -141,9 +142,28 @@ suite('refreshEventsOf', () => {
   });
 });
 
+suite('refresh wiring', () => {
+  const zeg = { size: SIZE, render() {}, refreshOn: ['phase:achievement-changed'] };
+  const spc = { size: SIZE, render() {}, refreshOn: ['state:saved', 'resize', 'custom:spc'] };
+  const plain = { size: SIZE, render() {} };
+
+  test('customRefreshEvents lists the distinct custom events of the loaded tiles', () => {
+    const tms = [{ moduleId: null, tile: zeg }, { moduleId: 'control-chart', tile: spc }, { moduleId: 'fmea', tile: plain }, { moduleId: null, tile: zeg }];
+    assertDeepEqual(customRefreshEvents(tms), ['phase:achievement-changed', 'custom:spc']);
+  });
+
+  test('refreshTargets picks placed tiles listening to the event, copies included', () => {
+    const descriptors = [
+      { id: 'spc:i1', tile: spc }, { id: 'spc~x', tile: spc },
+      { id: 'spc:i2', tile: spc }, { id: 'fmea:i1', tile: plain },
+    ];
+    assertDeepEqual(refreshTargets(descriptors, ['spc:i1', 'spc~x', 'fmea:i1'], 'custom:spc'), ['spc:i1', 'spc~x']);
+  });
+});
+
 suite('loadTileModules with arrays and host tiles', () => {
-  const t1 = { size: SIZE, render() {}, enumerate: () => [] };
-  const t2 = { size: SIZE, render() {}, enumerate: () => [] };
+  const t1 = { kind: 't1', size: SIZE, render() {}, enumerate: () => [] };
+  const t2 = { kind: 't2', size: SIZE, render() {}, enumerate: () => [] };
   const zeg = { size: SIZE, render() {}, enumerate: () => [] };
   const registry = {
     hasTile: (id) => id === 'fmea',
@@ -204,6 +224,15 @@ suite('enumerate-tiles: kinds', () => {
     assertEqual(a, null);
     assertEqual(b, null);
     assertEqual(msgs.length, 2);
+  });
+
+  test('the warning for a tile object is printed once, not on every render', () => {
+    const tile = {};
+    const msgs = silenceWarn(() => {
+      kindOf('project-charter', tile, true);
+      kindOf('project-charter', tile, true);
+    });
+    assertEqual(msgs.length, 1);
   });
 
   test('loadTileModules attaches the kind to each tile object', async () => {
