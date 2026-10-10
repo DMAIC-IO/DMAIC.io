@@ -17,6 +17,7 @@
  *   onTileRemoved(id)            – called after a tile is removed
  *   onTitleChanged(id, title)    – called after an inline title edit
  *   onSettingsRequested(id)      – called when a tile's gear is clicked
+ *   onDuplicateRequested(id)     – called when a tile's duplicate button is clicked
  */
 
 // ── DOM → Image export helpers ──────────────────────────────────
@@ -168,6 +169,7 @@ export class DashboardGrid {
     this.onTileRemoved = null;
     this.onTitleChanged = null;
     this.onSettingsRequested = null;
+    this.onDuplicateRequested = null;
 
     /** @type {Map<string, {def: object, layout: {x:number,y:number,w:number,h:number}, el: HTMLElement, bodyEl: HTMLElement}>} */
     this._tiles = new Map();
@@ -188,7 +190,7 @@ export class DashboardGrid {
 
   /**
    * Replace the current tile set.
-   * @param {Array<object>} tileDefs         - Tile definitions ({id, i18nTitle, minW, minH, defaultW, defaultH, title, removeLabel, moveTitle, resizeTitle, hasSettings, settingsLabel})
+   * @param {Array<object>} tileDefs         - Tile definitions ({id, i18nTitle, minW, minH, defaultW, defaultH, title, removeLabel, moveTitle, resizeTitle, hasSettings, settingsLabel, canDuplicate, duplicateLabel})
    * @param {Array<{tileId:string,x:number,y:number,w:number,h:number}>} layout
    */
   setTiles(tileDefs, layout) {
@@ -384,6 +386,12 @@ export class DashboardGrid {
           title: def.settingsLabel || '',
           'aria-label': def.settingsLabel || '',
         }, icon('action.settings', { size: 'sm' })) : null,
+        def.canDuplicate ? h('button', {
+          type: 'button',
+          class: 'dashboard-grid__tile-export-btn dashboard-grid__tile-duplicate-btn',
+          title: def.duplicateLabel || '',
+          'aria-label': def.duplicateLabel || '',
+        }, icon('action.copy', { size: 'sm' })) : null,
         h('button', {
           type: 'button',
           class: 'dashboard-grid__tile-export-btn',
@@ -415,6 +423,8 @@ export class DashboardGrid {
       .addEventListener('click', (e) => { e.stopPropagation(); this.removeTile(def.id); });
     el.querySelector('.dashboard-grid__tile-settings-btn')
       ?.addEventListener('click', (e) => { e.stopPropagation(); this.onSettingsRequested?.(def.id); });
+    el.querySelector('.dashboard-grid__tile-duplicate-btn')
+      ?.addEventListener('click', (e) => { e.stopPropagation(); this.onDuplicateRequested?.(def.id); });
     el.querySelector('.dashboard-grid__tile-move')
       .addEventListener('pointerdown', (e) => this._startInteraction(e, def.id, 'move'));
     el.querySelector('.dashboard-grid__tile-resize')

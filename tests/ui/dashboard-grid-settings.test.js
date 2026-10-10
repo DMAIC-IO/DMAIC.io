@@ -8,7 +8,7 @@ function withGrid(fn) {
   const grid = new DashboardGrid(container, { cols: 12, rowHeight: 40, gap: 12 });
   try {
     grid.setTiles([
-      { id: 'a', title: 'A', hasSettings: true, settingsLabel: 'Settings' },
+      { id: 'a', title: 'A', hasSettings: true, settingsLabel: 'Settings', canDuplicate: true, duplicateLabel: 'Duplicate' },
       { id: 'b', title: 'B' },
     ], [
       { tileId: 'a', x: 0, y: 0, w: 3, h: 3 },
@@ -39,6 +39,29 @@ suite('DashboardGrid: tile settings button', () => {
       const calls = [];
       grid.onSettingsRequested = (id) => calls.push(id);
       gear(container, 'a').click();
+      assertEqual(calls.join(','), 'a');
+    });
+  });
+});
+
+const dup = (container, id) =>
+  container.querySelector(`[data-tile-id="${id}"] .dashboard-grid__tile-duplicate-btn`);
+
+suite('DashboardGrid: duplicate button', () => {
+  test('rendered only for duplicable tiles, labelled from the def', () => {
+    withGrid((grid, container) => {
+      const btn = dup(container, 'a');
+      assertEqual(btn.getAttribute('title'), 'Duplicate');
+      assertEqual(btn.getAttribute('aria-label'), 'Duplicate');
+      assertEqual(dup(container, 'b'), null);
+    });
+  });
+
+  test('click calls onDuplicateRequested with the tile id', () => {
+    withGrid((grid, container) => {
+      const calls = [];
+      grid.onDuplicateRequested = (id) => calls.push(id);
+      dup(container, 'a').click();
       assertEqual(calls.join(','), 'a');
     });
   });
