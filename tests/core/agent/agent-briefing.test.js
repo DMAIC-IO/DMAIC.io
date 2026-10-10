@@ -90,13 +90,28 @@ suite('agent-briefing — eine Quelle, Klartext für den Agenten', () => {
   });
 
   test('ein Block mit nicht-textlichem content erzeugt keine Leerzeile', () => {
-    // Der `default`-Zweig prüfte die Wahrheit von `content` VOR `plain()`:
-    // eine Zahl ist wahr, wird aber zu '' — eine Leerzeile mitten im Text.
+    // Eine Zahl ist wahr, wird aber zu '' — ohne die zentrale Siebung in
+    // `flattenBriefing` stünde dafür eine Leerzeile mitten im Text.
     const odd = { sections: { a: { de: { title: 'T', blocks: [
       { type: 'eigenart', content: 42 },
       { type: 'paragraph', content: 'Danach.' },
     ] } } } };
     assertEqual(flattenBriefing(odd, 'de'), 'T\nDanach.');
+  });
+
+  test('nicht-textliches content erzeugt in KEINEM Zweig eine Zeile', () => {
+    // Die Härtung war zweigweise und endete am `default`-Zweig: `heading`
+    // ergab [''], `list` ['- '], `definition` [': '] — Zeilen, in denen außer
+    // der Auszeichnung nichts steht. Gesiebt wird darum ZENTRAL am Ergebnis
+    // von `blockLines`, nicht in jedem Zweig einzeln.
+    const odd = { sections: { a: { de: { title: 'T', blocks: [
+      { type: 'heading', content: 42 },
+      { type: 'list', items: [{}, 'Echt'] },
+      { type: 'definition', term: null, content: undefined },
+      { type: 'table', headers: [], rows: [[null]] },
+      { type: 'paragraph', content: 'Danach.' },
+    ] } } } };
+    assertEqual(flattenBriefing(odd, 'de'), 'T\n- Echt\nDanach.');
   });
 });
 
@@ -154,12 +169,19 @@ suite('agent-briefing — das echte Kapitel „KI-Assistent"', () => {
     assertEqual(en.includes('without losing anything'), false, en);
     assertEqual(en.includes('flushes the state'), false, en);
     assertEqual(en.includes('it is on disk'), false, en);
+    // Und keine Obergrenze in Sekunden: `_scheduleSave()` ist eine
+    // ZURÜCKSETZENDE Debounce (`js/core/state-manager.js:907-909`) — jede
+    // weitere Änderung verschiebt die Frist erneut, der oberste Zustand
+    // bleibt beliebig lange unpersistiert. Eine Zahl im Briefing wäre
+    // dieselbe Klasse Fehler wie die ursprüngliche Zusicherung.
+    assertEqual(de.includes('zwei Sekunden'), false, de);
+    assertEqual(en.includes('two seconds'), false, en);
     // Und positiv: das Zusicherbare steht da — angewandt und sichtbar,
-    // geschrieben verzögert.
+    // geschrieben nach der letzten Änderung.
     assertEqual(de.includes('angewandt, nicht gesichert'), true, de);
-    assertEqual(de.includes('verzögert'), true, de);
+    assertEqual(de.includes('kurz nach der letzten Änderung'), true, de);
     assertEqual(en.includes('applied, not saved'), true, en);
-    assertEqual(en.includes('delay'), true, en);
+    assertEqual(en.includes('once the changes have settled'), true, en);
   });
 });
 

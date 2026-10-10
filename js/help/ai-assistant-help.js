@@ -158,7 +158,7 @@ export default {
           { type: 'definition', term: 'Zahlen, keine Bilder', content: 'Ein Diagramm siehst du nicht. Du bekommst die Werte, aus denen es gezeichnet ist.' },
           { type: 'definition', term: 'Kein Rückgängig', content: 'Die Fläche hat keine Rücknahme über mehrere Aktionen. Der Nutzer wurde beim Verbinden zum Export aufgefordert — das ist sein Sicherungsnetz, nicht deines.' },
           { type: 'definition', term: 'Aufrufe werden serialisiert', content: 'Zwei nebenläufige interact()-Aufrufe können ihre Effekte nicht verschränken; die Prüfung gilt gegen den Zustand zum Beginn der Ausführung.' },
-          { type: 'definition', term: 'ok: true heißt angewandt, nicht gesichert', content: 'Ein bestätigter Schreibzugriff ist im Projektzustand angewandt und für jeden folgenden Lesezugriff sichtbar. Auf den Datenträger geschrieben wird er verzögert, in Sekundenbruchteilen bis zu zwei Sekunden danach. Wer unmittelbar nach der Antwort neu lädt, kann die letzten Sekunden also verlieren. Kommt es auf die Sicherung an, lass dem Zustand einen Moment, bevor du zum Neuladen oder zum Export rätst.' },
+          { type: 'definition', term: 'ok: true heißt angewandt, nicht gesichert', content: 'Ein bestätigter Schreibzugriff ist im Projektzustand angewandt und für jeden folgenden Lesezugriff sichtbar. Wann er auf dem Datenträger landet, ist davon unabhängig: ein Teil geht sofort hinaus, der Rest kurz nach der letzten Änderung — und jede weitere Änderung verschiebt diesen Zeitpunkt erneut. Eine Frist, auf die du dich berufen könntest, gibt es also nicht; wer Stapel an Stapel reiht, hält den obersten Zustand ungesichert. Kommt es auf die Sicherung an, lass den Zustand einen Moment ruhen, bevor du zum Neuladen oder zum Export rätst.' },
         ],
       },
       en: {
@@ -167,7 +167,7 @@ export default {
           { type: 'definition', term: 'Numbers, not pictures', content: 'You cannot see a chart. You get the values it is drawn from.' },
           { type: 'definition', term: 'No undo', content: 'The surface has no multi-action undo. The user was prompted to export when granting access — that is their safety net, not yours.' },
           { type: 'definition', term: 'Calls are serialized', content: 'Two concurrent interact() calls cannot interleave their effects; validation holds against the state at the start of execution.' },
-          { type: 'definition', term: 'ok: true means applied, not saved', content: 'A confirmed write has been applied to the project state and every read after it will see it. Persisting it to storage happens on a delay of up to two seconds, so a reload straight after the answer can still drop the most recent changes. Where durability matters, leave the state a moment before you suggest reloading or exporting.' },
+          { type: 'definition', term: 'ok: true means applied, not saved', content: 'A confirmed write has been applied to the project state and every read after it will see it. Reaching storage is a separate question: some of it goes out immediately, the remainder once the changes have settled — and anything you change after that pushes the moment back again. So there is no deadline to rely on, and a caller that chains batch after batch keeps the newest state unsaved. Where durability matters, let the state go quiet for a moment before you recommend a reload or an export.' },
         ],
       },
     },

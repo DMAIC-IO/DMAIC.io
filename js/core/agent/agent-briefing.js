@@ -34,6 +34,19 @@ function plain(value) {
 }
 
 /**
+ * Steht in der Zeile außer der Auszeichnung (`- `, `: `, ` | `) etwas?
+ *
+ * `Boolean` allein genügt nicht: ein nicht-textliches `content` ergibt in
+ * `list` die Zeile `'- '` und in `definition` `': '` — beide sind wahr und
+ * beide sagen nichts.
+ * @param {string} line
+ * @returns {boolean}
+ */
+function hasText(line) {
+  return !/^[-:|\s]*$/.test(line);
+}
+
+/**
  * Ein Block als eine oder mehrere Klartextzeilen.
  * @param {object} block  ein Handbuchblock (`paragraph`, `heading`, `list`,
  *   `definition`, `table` — jedes andere `type` wie im Renderer über
@@ -56,13 +69,11 @@ function blockLines(block) {
       const body = rows.map(row => (row || []).map(plain).join(' | '));
       return head ? [head, ...body] : body;
     }
-    default: {
-      // `plain()` ZUERST, dann die Wahrheitsprüfung: ein nicht-textliches
-      // `content` (eine Zahl, ein Objekt) ist wahr, wird aber zu '' — die
-      // umgekehrte Reihenfolge erzeugte dafür eine Leerzeile im Briefing.
-      const text = plain(block.content);
-      return text ? [text] : [];
-    }
+    // Jedes andere `type` wie im Renderer über `content`. Keine
+    // Wahrheitsprüfung hier: leere Zeilen siebt `flattenBriefing` zentral
+    // aus, für alle Zweige gleich.
+    default:
+      return [plain(block.content)];
   }
 }
 
@@ -93,7 +104,10 @@ export function flattenBriefing(helpDef, lang) {
     // Objekt, eine Zeichenkette) ist nicht iterierbar und warf hier. Die
     // Funktion gibt sich sonst konsequent total — `null`/`{}` → `''`.
     const blocks = Array.isArray(localized.blocks) ? localized.blocks : [];
-    for (const block of blocks) lines.push(...blockLines(block));
+    // ZENTRAL gesiebt und nicht je Zweig: ein nicht-textliches `content`
+    // ergibt sonst `''` (heading), `'- '` (list) oder `': '` (definition) —
+    // dieselbe Leerzeile, nur verschieden verkleidet.
+    for (const block of blocks) lines.push(...blockLines(block).filter(hasText));
     if (lines.length > 0) parts.push(lines.join('\n'));
   }
   return parts.join('\n\n');
