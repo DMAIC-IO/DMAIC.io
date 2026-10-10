@@ -186,6 +186,278 @@ function* bootstrapSummary(samples, combine, v, rng, p) {
   return summarizeBootstrap(estimate, replicates, influence, v.confidence);
 }
 
+// ── Permutation ─────────────────────────────────────────────────────────────
+
+/**
+ * a ≥ b up to floating-point noise (same rule as the R reference scripts), so
+ * permutations that reproduce the observed T count as "at least as extreme".
+ * @param {number} a
+ * @param {number} b
+ */
+export function ge(a, b) {
+  return a >= b - 1e-10 * Math.max(1, Math.abs(b));
+}
+
+/** Hit predicate for a permutation statistic t given observed T0. */
+function hitFor(direction, T0) {
+  if (direction === 'greater') return (t) => ge(t, T0);
+  if (direction === 'less') return (t) => ge(-t, -T0);
+  const a = Math.abs(T0);
+  return (t) => ge(Math.abs(t), a);
+}
+
+/** C(n, k), or Infinity as soon as an intermediate value exceeds limit. */
+function binomialUpTo(n, k, limit) {
+  const kk = Math.min(k, n - k);
+  let c = 1;
+  for (let i = 0; i < kk; i++) {
+    c = (c * (n - i)) / (i + 1); // exact: every intermediate is C(n, i + 1)
+    if (c > limit) return Infinity;
+  }
+  return c;
+}
+
+/**
+ * Number of distinct assignments of the pooled values to groups of the given
+ * sizes (N! / Π nᵢ!), or Infinity when it exceeds `limit`.
+ * @param {number[]} sizes
+ * @param {number} limit
+ * @returns {number}
+ */
+export function countAssignments(sizes, limit) {
+  let remaining = sizes.reduce((s, n) => s + n, 0);
+  let total = 1;
+  for (let g = 0; g < sizes.length - 1; g++) {
+    const c = binomialUpTo(remaining, sizes[g], limit);
+    if (c === Infinity) return Infinity;
+    total *= c;
+    if (total > limit) return Infinity;
+    remaining -= sizes[g];
+  }
+  return total;
+}
+
+/** 2ⁿ sign flips, or Infinity above limit or beyond a safe 31-bit bitmask. */
+function signFlipCount(n, limit) {
+  if (n > 30) return Infinity;
+  const c = 2 ** n;
+  return c > limit ? Infinity : c;
+}
+
+/** k-subsets of 0…n−1 in lexicographic order; yields one reused array. */
+function* combinations(n, k) {
+  if (k > n) return;
+  const idx = Array.from({ length: k }, (_, i) => i);
+  for (;;) {
+    yield idx;
+    let i = k - 1;
+    while (i >= 0 && idx[i] === n - k + i) i--;
+    if (i < 0) return;
+    idx[i]++;
+    for (let j = i + 1; j < k; j++) idx[j] = idx[j - 1] + 1;
+  }
+}
+
+/** Every assignment of positions 0…N−1 to groups; yields a reused label array. */
+function* assignments(N, sizes) {
+  const labels = new Int32Array(N);
+  function* place(g, free) {
+    if (g === sizes.length - 1) {
+      for (const pos of free) labels[pos] = g;
+      yield labels;
+      return;
+    }
+    const mark = new Uint8Array(free.length);
+    for (const c of combinations(free.length, sizes[g])) {
+      mark.fill(0);
+      for (const i of c) mark[i] = 1;
+      const rest = [];
+      for (let i = 0; i < free.length; i++) {
+        if (mark[i]) labels[free[i]] = g; else rest.push(free[i]);
+      }
+      yield* place(g + 1, rest);
+    }
+  }
+  yield* place(0, Array.from({ length: N }, (_, i) => i));
+}
+
+/**
+ * Permutation distribution of Tfun over regroupings of the pooled samples.
+ * Finite `count` → full enumeration (exact p = hits / count, no RNG draws);
+ * otherwise B Fisher–Yates shuffles of one persistent working copy,
+ * p = (1 + hits) / (B + 1).
+ */
+function* permuteGroups(samples, Tfun, hit, count, B, rng, p) {
+  const sizes = samples.map((s) => s.length);
+  const N = sizes.reduce((s, n) => s + n, 0);
+  const pooled = new Float64Array(N);
+  let off = 0;
+  for (const s of samples) { pooled.set(s, off); off += s.length; }
+  const bufs = sizes.map((n) => new Float64Array(n));
+  let hits = 0;
+
+  if (Number.isFinite(count)) {
+    const fill = new Int32Array(sizes.length);
+    const distribution = new Float64Array(count);
+    let r = 0;
+    for (const labels of assignments(N, sizes)) {
+      fill.fill(0);
+      for (let i = 0; i < N; i++) { const g = labels[i]; bufs[g][fill[g]++] = pooled[i]; }
+      const t = Tfun(bufs);
+      distribution[r++] = t;
+      if (hit(t)) hits++;
+      if (++p.done % p.chunkSize === 0) yield { done: p.done, total: p.total };
+    }
+    return { pValue: hits / count, exact: true, permutations: count, distribution };
+  }
+
+  const work = Float64Array.from(pooled);
+  const distribution = new Float64Array(B);
+  for (let b = 0; b < B; b++) {
+    for (let i = N - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      const tmp = work[i]; work[i] = work[j]; work[j] = tmp;
+    }
+    let o = 0;
+    for (let g = 0; g < bufs.length; g++) { bufs[g].set(work.subarray(o, o + sizes[g])); o += sizes[g]; }
+    const t = Tfun(bufs);
+    distribution[b] = t;
+    if (hit(t)) hits++;
+    if (++p.done % p.chunkSize === 0) yield { done: p.done, total: p.total };
+  }
+  return { pValue: (1 + hits) / (B + 1), exact: false, permutations: B, distribution };
+}
+
+/** Sign-flip distribution of fn(±d): exact via bitmask, else B random flips. */
+function* signFlips(d, fn, hit, count, B, rng, p) {
+  const n = d.length;
+  const buf = new Float64Array(n);
+  let hits = 0;
+  if (Number.isFinite(count)) {
+    const distribution = new Float64Array(count);
+    for (let m = 0; m < count; m++) {
+      for (let i = 0; i < n; i++) buf[i] = (m >> i) & 1 ? -d[i] : d[i];
+      const t = fn(buf);
+      distribution[m] = t;
+      if (hit(t)) hits++;
+      if (++p.done % p.chunkSize === 0) yield { done: p.done, total: p.total };
+    }
+    return { pValue: hits / count, exact: true, permutations: count, distribution };
+  }
+  const distribution = new Float64Array(B);
+  for (let b = 0; b < B; b++) {
+    for (let i = 0; i < n; i++) buf[i] = rng() < 0.5 ? -d[i] : d[i];
+    const t = fn(buf);
+    distribution[b] = t;
+    if (hit(t)) hits++;
+    if (++p.done % p.chunkSize === 0) yield { done: p.done, total: p.total };
+  }
+  return { pValue: (1 + hits) / (B + 1), exact: false, permutations: B, distribution };
+}
+
+/**
+ * Holm step-down adjustment, identical to R p.adjust(p, "holm").
+ * @param {number[]} p raw p-values
+ * @returns {number[]} adjusted p-values in input order
+ */
+export function holm(p) {
+  const m = p.length;
+  const order = p.map((_, i) => i).sort((a, b) => p[a] - p[b] || a - b);
+  const out = new Array(m);
+  let run = 0;
+  order.forEach((idx, j) => {
+    run = Math.max(run, Math.min(1, (m - j) * p[idx]));
+    out[idx] = run;
+  });
+  return out;
+}
+
+function permutationResult(estimate, test) {
+  return {
+    estimate, se: null, bias: null,
+    ci: { percentile: null, bca: null, bcaFallback: false },
+    test,
+  };
+}
+
+/** T for permutationTwo: θ(x) − θ(y), or log θ(x) − log θ(y) for ratio. */
+function twoSampleT(v) {
+  return v.contrast === 'ratio'
+    ? (gs) => Math.log(v.fn(gs[0])) - Math.log(v.fn(gs[1]))
+    : (gs) => v.fn(gs[0]) - v.fn(gs[1]);
+}
+
+const sizesOf = (samples) => samples.map((s) => s.length);
+const orB = (count, B) => (Number.isFinite(count) ? count : B);
+
+function kPairs(k) {
+  const pairs = [];
+  for (let i = 0; i < k; i++) for (let j = i + 1; j < k; j++) pairs.push([i, j]);
+  return pairs;
+}
+
+function* permutationTwoRun(v, rng, p) {
+  const Tfun = twoSampleT(v);
+  const T0 = Tfun(v.samples);
+  const count = countAssignments(sizesOf(v.samples), v.exactThreshold);
+  const t = yield* permuteGroups(v.samples, Tfun, hitFor(v.direction, T0), count, v.B, rng, p);
+  return permutationResult(contrastFn(v)(v.samples), { observed: T0, ...t });
+}
+
+function* permutationPairedRun(v, rng, p) {
+  const d = v.samples[0];
+  const T0 = v.fn(d);
+  const count = signFlipCount(d.length, v.exactThreshold);
+  const t = yield* signFlips(d, v.fn, hitFor(v.direction, T0), count, v.B, rng, p);
+  return permutationResult(T0, { observed: T0, ...t });
+}
+
+function permutationKTotal(v) {
+  const sizes = sizesOf(v.samples);
+  let total = orB(countAssignments(sizes, v.exactThreshold), v.B) + sizes.length * v.B;
+  for (const [i, j] of kPairs(sizes.length)) {
+    total += orB(countAssignments([sizes[i], sizes[j]], v.exactThreshold), v.B) + v.B;
+  }
+  return total;
+}
+
+function* permutationKRun(v, rng, p) {
+  const gs = v.samples;
+  const pooled = new Float64Array(gs.reduce((s, g) => s + g.length, 0));
+  let off = 0;
+  for (const g of gs) { pooled.set(g, off); off += g.length; }
+  const theta = v.fn(pooled);
+  const Tfun = (bufs) => {
+    let s = 0;
+    for (const b of bufs) { const d = v.fn(b) - theta; s += b.length * d * d; }
+    return s;
+  };
+  const T0 = Tfun(gs);
+  const count = countAssignments(sizesOf(gs), v.exactThreshold);
+  const global = yield* permuteGroups(gs, Tfun, (t) => ge(t, T0), count, v.B, rng, p);
+
+  const groups = [];
+  for (const g of gs) {
+    const s = yield* bootstrapSummary([g], (b) => v.fn(b[0]), v, rng, p);
+    groups.push({ estimate: s.estimate, ci: s.ci });
+  }
+
+  const diff = (b) => v.fn(b[0]) - v.fn(b[1]);
+  const posthoc = [];
+  for (const [i, j] of kPairs(gs.length)) {
+    const pair = [gs[i], gs[j]];
+    const D0 = diff(pair);
+    const pairCount = countAssignments([gs[i].length, gs[j].length], v.exactThreshold);
+    const t = yield* permuteGroups(pair, diff, hitFor('two-sided', D0), pairCount, v.B, rng, p);
+    const s = yield* bootstrapSummary(pair, diff, v, rng, p);
+    posthoc.push({ i, j, contrast: s.estimate, ci: s.ci, pRaw: t.pValue, pHolm: null, exact: t.exact });
+  }
+  const adjusted = holm(posthoc.map((h) => h.pRaw));
+  posthoc.forEach((h, idx) => { h.pHolm = adjusted[idx]; });
+
+  return { ...permutationResult(theta, { observed: T0, ...global }), groups, posthoc };
+}
+
 // ── Job runners ─────────────────────────────────────────────────────────────
 
 const JOB_RUNNERS = {
@@ -200,6 +472,18 @@ const JOB_RUNNERS = {
   bootstrapTwo: {
     total: (v) => v.B,
     run: (v, rng, p) => bootstrapSummary(v.samples, contrastFn(v), v, rng, p),
+  },
+  permutationTwo: {
+    total: (v) => orB(countAssignments(sizesOf(v.samples), v.exactThreshold), v.B),
+    run: permutationTwoRun,
+  },
+  permutationPaired: {
+    total: (v) => orB(signFlipCount(v.samples[0].length, v.exactThreshold), v.B),
+    run: permutationPairedRun,
+  },
+  permutationK: {
+    total: permutationKTotal,
+    run: permutationKRun,
   },
 };
 
