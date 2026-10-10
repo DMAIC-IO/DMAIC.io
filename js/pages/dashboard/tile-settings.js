@@ -11,6 +11,21 @@ const TYPES = new Set(['number', 'select', 'boolean']);
 /** Validated schema per tile object, so a broken schema warns only once. */
 const schemaCache = new WeakMap();
 
+/** Reserved, host-owned settings key: the tile's source instance id. */
+export const SOURCE_KEY = '_source';
+
+/**
+ * Why a module schema field is reserved for the host.
+ * @param {string} key
+ * @param {object} field
+ * @returns {string|null} problem, or null when the module may use it
+ */
+function reservedProblem(key, field) {
+  if (key.startsWith('_')) return 'keys starting with "_" are reserved for the host';
+  if (field && typeof field === 'object' && Object.hasOwn(field, 'optionTexts')) return 'optionTexts is host-only';
+  return null;
+}
+
 /**
  * Describe why a schema field is invalid.
  * @param {object} field
@@ -50,7 +65,7 @@ export function validateSchema(schema, warn = console.warn) {
   const out = {};
   if (!schema || typeof schema !== 'object') return out;
   for (const [key, field] of Object.entries(schema)) {
-    const problem = fieldProblem(field);
+    const problem = reservedProblem(key, field) || fieldProblem(field);
     if (problem) {
       warn(`[tile-settings] field "${key}" ignored: ${problem}`);
       continue;
@@ -73,6 +88,23 @@ export function schemaOf(tile) {
     schemaCache.set(tile, schema);
   }
   return schema;
+}
+
+/**
+ * Host-owned select field for a tile's source instance. Option values are
+ * instance ids; `optionTexts` are literal labels (not i18n keys).
+ * @param {Array<{id: string, text: string}>} choices  instances of the module
+ * @param {string} defaultId  one of the choice ids
+ * @returns {object} valid select field
+ */
+export function sourceField(choices, defaultId) {
+  return {
+    type: 'select',
+    label: 'dashboard.tileSettings.source',
+    options: choices.map(c => c.id),
+    optionTexts: choices.map(c => c.text),
+    default: defaultId,
+  };
 }
 
 /**
