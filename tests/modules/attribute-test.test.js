@@ -1,4 +1,4 @@
-import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import {
   parseCount, parseProportion, distinctValues, defaultEventValue,
   normalizeSummary, normalizeColumns,
@@ -148,5 +148,161 @@ suite('attribute-test input — columns', () => {
       rows: ['Früh', 'Nacht', 'Spät'], cols: ['nok', 'ok'],
       counts: [[1, 1], [0, 1], [1, 0]], missing: 1,
     });
+  });
+});
+
+// ---- Task 4: model and report ----
+
+suite('attribute-test input — stale event value', () => {
+  test('eventValue not among the levels falls back to the default level', () => {
+    const s = base({ testKind: 'one', eventValue: 'gone' });
+    const r = normalizeColumns(s, { response: ['a', 'b', 'b', 'a', 'b'], group: null, rowVar: null, colVar: null });
+    assertEqual(r.x, 3);
+    assertEqual(r.n, 5);
+  });
+});
+
+import { State } from '../../js/modules/attribute-test/attribute-test-model.js';
+import { buildReport, fmtP } from '../../js/modules/attribute-test/attribute-test-report.js';
+
+suite('attribute-test model', () => {
+  test('defaults', () => {
+    const s = new State();
+    assertEqual(s.testKind, 'two');
+    assertEqual(s.inputMode, 'summary');
+    assertEqual(s.alpha, null);
+    assertEqual(s.hasContent(), false);
+    assertDeepEqual(s.summary.table.counts, [['', ''], ['', '']]);
+  });
+  test('switching test kind keeps earlier inputs', () => {
+    const s = new State();
+    s.testKind = 'one'; s.summary.x = '3'; s.summary.n = '10';
+    s.testKind = 'assoc'; s.summary.table.counts[0][0] = '7';
+    s.testKind = 'two'; s.summary.x1 = '5';
+    s.inputMode = 'columns'; s.inputMode = 'summary';
+    const back = State.fromJSON(JSON.parse(JSON.stringify(s.toJSON())));
+    assertEqual(back.summary.x, '3');
+    assertEqual(back.summary.n, '10');
+    assertEqual(back.summary.table.counts[0][0], '7');
+    assertEqual(back.summary.x1, '5');
+  });
+  test('association direction persists', () => {
+    const s = new State();
+    s.direction = 'greater';
+    assertEqual(State.fromJSON(JSON.parse(JSON.stringify(s.toJSON()))).direction, 'greater');
+  });
+  test('round trip keeps both input modes', () => {
+    const s = new State();
+    s.summary.x1 = '46';
+    s.inputMode = 'columns';
+    s.colRefs.response = { instanceId: 'w', sheetId: 's', columnId: 'c1' };
+    s.eventValue = 'n.i.O.';
+    const back = State.fromJSON(JSON.parse(JSON.stringify(s.toJSON())));
+    assertEqual(back.summary.x1, '46');
+    assertEqual(back.inputMode, 'columns');
+    assertDeepEqual(back.colRefs.response, { instanceId: 'w', sheetId: 's', columnId: 'c1' });
+    assertEqual(back.eventValue, 'n.i.O.');
+    assertEqual(back.hasContent(), true);
+  });
+  test('fromJSON sanitizes garbage', () => {
+    const s = State.fromJSON({ testKind: 'x', direction: 'up', summary: { table: { counts: 'no' } } });
+    assertEqual(s.testKind, 'two');
+    assertEqual(s.direction, 'two-sided');
+    assertDeepEqual(s.summary.table.counts, [['', ''], ['', '']]);
+  });
+  test('table never shrinks below 2×2', () => {
+    const s = new State();
+    s.addRow(); s.addCol();
+    assertEqual(s.summary.table.rows.length, 3);
+    assertEqual(s.summary.table.counts[2].length, 3);
+    s.removeRow(0); s.removeRow(0);
+    assertEqual(s.summary.table.rows.length, 2);
+    s.removeCol(2); s.removeCol(0);
+    assertEqual(s.summary.table.cols.length, 2);
+  });
+});
+
+suite('attribute-test report', () => {
+  const st = (over = {}) => ({ direction: 'two-sided', alpha: 0.05, pooled: false, ...over });
+
+  test('passes normalizer errors through', () => {
+    assertDeepEqual(buildReport(st(), { ok: false, error: 'errNZero' }), { error: 'errNZero' });
+    assertDeepEqual(buildReport(st(), { ok: false, error: 'hintEnterCounts', hint: true }),
+      { error: 'hintEnterCounts', hint: true });
+  });
+  test('one proportion with x = n flags the normal approximation', () => {
+    const r = buildReport(st({ direction: 'greater' }), { ok: true, kind: 'one', x: 25, n: 25, p0: 0.9, missing: 0 });
+    assertEqual(r.kind, 'one');
+    assertTrue(r.notes.some(n => n.key === 'noteNormalApprox'));
+    const ci = r.stats.find(s => s.key === 'ci');
+    assertTrue(!ci.value.includes('NaN'), ci.value);
+    assertEqual(r.basisKey, 'basisExact');
+  });
+  test('two proportions: KW35/38 pooled keeps H0', () => {
+    const r = buildReport(st({ pooled: true }),
+      { ok: true, kind: 'two', x1: 184, n1: 3902, x2: 179, n2: 4023, groups: null, missing: 0 });
+    assertEqual(r.decision, 'keep');
+    assertEqual(r.stats.find(s => s.key === 'pValue').value, '0.5710');
+    assertEqual(r.stats.find(s => s.key === 'pFisher').value, '0.5912');
+    assertTrue(r.notes.some(n => n.key === 'notePooled'));
+  });
+  test('association: dropped zero row is named, 2×2 extras present', () => {
+    const r = buildReport(st(), {
+      ok: true, kind: 'assoc', rows: ['A', 'B', 'C'], cols: ['X', 'Y'],
+      counts: [[10, 20], [0, 0], [15, 5]], missing: 0,
+    });
+    const dropped = r.notes.find(n => n.key === 'noteDropped');
+    assertEqual(dropped.params.names, 'B');
+    assertDeepEqual(r.table.rows.map(x => x.name), ['A', 'C']);
+    assertTrue(r.stats.some(s => s.key === 'yates'));
+    assertTrue(r.stats.some(s => s.key === 'pFisher'));
+  });
+  test('association 2x2 Fisher follows the direction', () => {
+    const norm = { ok: true, kind: 'assoc', rows: ['A', 'B'], cols: ['X', 'Y'], counts: [[8, 2], [3, 7]], missing: 0 };
+    const two = buildReport(st(), norm).stats.find(s => s.key === 'pFisher');
+    const gr = buildReport(st({ direction: 'greater' }), norm).stats.find(s => s.key === 'pFisher');
+    const le = buildReport(st({ direction: 'less' }), norm).stats.find(s => s.key === 'pFisher');
+    assertEqual(two.labelKey, 'statPFisher');
+    assertEqual(gr.labelKey, 'statPFisherGreater');
+    assertEqual(le.labelKey, 'statPFisherLess');
+    assertTrue(Number(gr.value) < Number(two.value), gr.value + ' vs ' + two.value);
+    assertTrue(Number(le.value) > Number(gr.value));
+  });
+  test('association: larger table has no Fisher row', () => {
+    const r = buildReport(st({ direction: 'greater' }), {
+      ok: true, kind: 'assoc', rows: ['A', 'B'], cols: ['X', 'Y', 'Z'], counts: [[5, 6, 8], [7, 4, 9]], missing: 0,
+    });
+    assertTrue(!r.stats.some(s => s.key === 'pFisher'));
+  });
+  test('association: fewer than 2×2 after dropping is an error', () => {
+    const r = buildReport(st(), {
+      ok: true, kind: 'assoc', rows: ['A', 'B'], cols: ['X', 'Y'], counts: [[5, 0], [7, 0]], missing: 0,
+    });
+    assertEqual(r.error, 'errTableTooSmall');
+  });
+  test('association: low expected counts warn', () => {
+    const r = buildReport(st(), {
+      ok: true, kind: 'assoc', rows: ['A', 'B'], cols: ['X', 'Y', 'Z'], counts: [[1, 2, 8], [3, 1, 9]], missing: 0,
+    });
+    assertTrue(r.notes.some(n => n.key === 'warnShareBelow5'));
+  });
+  test('x = 0 with a one-sided alternative gives exact bounds', () => {
+    const r = buildReport(st({ direction: 'less' }), { ok: true, kind: 'one', x: 0, n: 30, p0: 0.1, missing: 0 });
+    const c = r.stats.find(s => s.key === 'ci').value;
+    assertTrue(c.startsWith('[0.0000,'), c);
+    assertTrue(!c.includes('NaN'), c);
+    assertTrue(r.notes.some(n => n.key === 'noteNormalApprox'));
+  });
+  test('x = n with a one-sided alternative ends at exactly 1', () => {
+    const r = buildReport(st({ direction: 'greater' }), { ok: true, kind: 'one', x: 12, n: 12, p0: 0.5, missing: 0 });
+    assertTrue(r.stats.find(s => s.key === 'ci').value.endsWith(', 1.0000]'));
+  });
+  test('missing values are reported', () => {
+    const r = buildReport(st(), { ok: true, kind: 'one', x: 3, n: 4, p0: 0.5, missing: 2 });
+    assertDeepEqual(r.notes.find(n => n.key === 'noteMissing').params, { count: 2 });
+  });
+  test('fmtP', () => {
+    assertEqual(fmtP(0.00001), '< 0.0001');
+    assertEqual(fmtP(0.5), '0.5000');
   });
 });

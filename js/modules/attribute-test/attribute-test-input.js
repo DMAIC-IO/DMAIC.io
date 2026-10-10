@@ -60,6 +60,11 @@ export function defaultEventValue(values) {
   return d.length ? d[d.length - 1] : null;
 }
 
+/** Chosen event level, or the default (last level) when unset or stale. */
+function pickEvent(chosen, levels) {
+  return chosen != null && levels.includes(chosen) ? chosen : levels[levels.length - 1];
+}
+
 const fail = (error) => ({ ok: false, error });
 const hint = (error) => ({ ok: false, error, hint: true });
 
@@ -122,7 +127,7 @@ export function normalizeColumns(state, cols) {
     if (!cols.response) return hint('hintPickColumns');
     const levels = distinctValues(cols.response);
     if (levels.length !== 2) return fail('errResponseLevels');
-    const event = state.eventValue ?? levels[1];
+    const event = pickEvent(state.eventValue, levels);
     let x = 0;
     let n = 0;
     let missing = 0;
@@ -154,7 +159,7 @@ export function normalizeColumns(state, cols) {
     if (groups.length !== 2) return fail('errGroupLevels');
     const levels = distinctValues(pairs.map(p => p[0]));
     if (levels.length !== 2) return fail('errResponseLevels');
-    const event = state.eventValue ?? levels[1];
+    const event = pickEvent(state.eventValue, levels);
     const count = (g) => pairs.filter(p => p[1] === g);
     const s1 = count(groups[0]);
     const s2 = count(groups[1]);
