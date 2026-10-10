@@ -33,3 +33,6 @@ node_modules/
 
 
 /.claude/
+# CodeGraph-Index (SQLite-Wissensgraph, ~43 MB, lokal und jederzeit
+# neu baubar über "codegraph index"). Gehört nie in die Historie.
+/.codegraph/
