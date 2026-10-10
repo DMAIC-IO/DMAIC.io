@@ -441,6 +441,10 @@ export class Workspace {
     // phase:selected → activate, then the redirect activates again).
     if (!this._containers.has(instanceId)) {
       await this._instantiateModule(instanceId);
+      // The user may have picked another tab while this module mounted (first
+      // chunk load). Announcing it now would make the module:activated
+      // listener switch back to it.
+      if (this._activeInstanceId !== instanceId) return;
     }
 
     this._eventBus.emit('module:activated', { instanceId });
@@ -520,6 +524,16 @@ export class Workspace {
    */
   getInstancesByModuleId(moduleId) {
     return [...this._instances.values()].filter(inst => inst?.id === moduleId);
+  }
+
+  /**
+   * The instance the workspace has selected, set synchronously by a tab or
+   * phase switch — also while that module is still mounting, when
+   * getActiveModuleInfo() answers null.
+   * @returns {string|null}
+   */
+  getActiveInstanceId() {
+    return this._activeInstanceId;
   }
 
   /**

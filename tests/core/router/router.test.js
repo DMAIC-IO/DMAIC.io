@@ -221,6 +221,21 @@ suite('router/Router', () => {
     assertEqual(h.fakeWin._last, 'replace');
   });
 
+  test('navigate(phase): forwards to the module the workspace selected, even while it still mounts', async () => {
+    const h = harness();
+    h.deps.stateManager._phases.measure = [
+      { instanceId: 'm1', moduleId: 'sipoc' }, { instanceId: 'm2', moduleId: 'sipoc' },
+    ];
+    // selectPhase makes the workspace reopen m2 (remembered); its instance is
+    // not mounted yet, so getActiveModuleInfo() still answers null.
+    let selected = null;
+    h.deps.dmaicTiles.selectPhase = (p) => { if (p === 'measure') selected = 'm2'; };
+    h.deps.workspace.getActiveInstanceId = () => selected;
+    const r = new Router(h.deps);
+    await r.navigate({ kind: 'phase', projectId: 'ab12', phaseId: 'measure' });
+    assertEqual(h.fakeWin.location.hash, '#/project/ab12/module/m2');
+  });
+
   test('navigate(phase): empty phase stays on the phase URL (no forward)', async () => {
     const h = harness();
     h.deps.stateManager._phases.measure = [];
