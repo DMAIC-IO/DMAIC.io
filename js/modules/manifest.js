@@ -482,6 +482,17 @@ export default [
     },
   },
   {
+    id: 'resampling',
+    phase: 'analyze',
+    group: 'statistics',
+    load: () => import('./resampling/resampling.js'),
+    cycles: {
+      dmaic:  { phase: 'analyze',   allowedPhases: ['analyze', 'improve'] },
+      dmadv:  { phase: 'analyze',   allowedPhases: ['analyze', 'verify'] },
+      eightd: { phase: 'rootcause', allowedPhases: ['rootcause', 'implementation'] },
+    },
+  },
+  {
     id: 'multi-vari',
     phase: 'analyze',
     group: 'statistics',
