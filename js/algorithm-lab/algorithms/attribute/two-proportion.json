@@ -63,10 +63,10 @@
   "try_it": {
     "input_schema": {
       "fields": [
-        { "name": "x1", "label": { "de": "x₁", "en": "x₁" }, "type": "number", "placeholder": { "de": "z.B. 16", "en": "e.g. 16" }, "parse_as": "number", "required": true },
-        { "name": "n1", "label": { "de": "n₁", "en": "n₁" }, "type": "number", "placeholder": { "de": "z.B. 500", "en": "e.g. 500" }, "parse_as": "number", "required": true },
-        { "name": "x2", "label": { "de": "x₂", "en": "x₂" }, "type": "number", "placeholder": { "de": "z.B. 10", "en": "e.g. 10" }, "parse_as": "number", "required": true },
-        { "name": "n2", "label": { "de": "n₂", "en": "n₂" }, "type": "number", "placeholder": { "de": "z.B. 500", "en": "e.g. 500" }, "parse_as": "number", "required": true },
+        { "name": "x1", "label": { "de": "x₁", "en": "x₁" }, "type": "number", "placeholder": { "de": "z.B. 12", "en": "e.g. 12" }, "parse_as": "number", "required": true },
+        { "name": "n1", "label": { "de": "n₁", "en": "n₁" }, "type": "number", "placeholder": { "de": "z.B. 400", "en": "e.g. 400" }, "parse_as": "number", "required": true },
+        { "name": "x2", "label": { "de": "x₂", "en": "x₂" }, "type": "number", "placeholder": { "de": "z.B. 7", "en": "e.g. 7" }, "parse_as": "number", "required": true },
+        { "name": "n2", "label": { "de": "n₂", "en": "n₂" }, "type": "number", "placeholder": { "de": "z.B. 400", "en": "e.g. 400" }, "parse_as": "number", "required": true },
         { "name": "direction", "label": { "de": "Testrichtung", "en": "Test direction" }, "type": "select", "options": [
           { "value": "two-sided", "label": { "de": "≠ Zweiseitig", "en": "≠ Two-sided" } },
           { "value": "greater", "label": { "de": "> Größer", "en": "> Greater" } },

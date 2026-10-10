@@ -58,7 +58,7 @@
   "try_it": {
     "input_schema": {
       "fields": [
-        { "name": "table", "label": { "de": "Tabelle (JSON)", "en": "Table (JSON)" }, "type": "textarea", "placeholder": { "de": "[[20, 15, 30], [25, 25, 25]]", "en": "[[20, 15, 30], [25, 25, 25]]" }, "parse_as": "json", "required": true },
+        { "name": "table", "label": { "de": "Tabelle (JSON)", "en": "Table (JSON)" }, "type": "textarea", "placeholder": { "de": "[[18, 22, 12], [14, 16, 28]]", "en": "[[18, 22, 12], [14, 16, 28]]" }, "parse_as": "json", "required": true },
         { "name": "alpha", "label": { "de": "Signifikanzniveau α", "en": "Significance level α" }, "type": "number", "placeholder": { "de": "0.05", "en": "0.05" }, "parse_as": "number", "required": false }
       ]
     },

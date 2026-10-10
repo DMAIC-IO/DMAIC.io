@@ -59,8 +59,8 @@
   "try_it": {
     "input_schema": {
       "fields": [
-        { "name": "x", "label": { "de": "Ereignisse x", "en": "Events x" }, "type": "number", "placeholder": { "de": "z.B. 12", "en": "e.g. 12" }, "parse_as": "number", "required": true },
-        { "name": "n", "label": { "de": "Versuche n", "en": "Trials n" }, "type": "number", "placeholder": { "de": "z.B. 50", "en": "e.g. 50" }, "parse_as": "number", "required": true },
+        { "name": "x", "label": { "de": "Ereignisse x", "en": "Events x" }, "type": "number", "placeholder": { "de": "z.B. 9", "en": "e.g. 9" }, "parse_as": "number", "required": true },
+        { "name": "n", "label": { "de": "Versuche n", "en": "Trials n" }, "type": "number", "placeholder": { "de": "z.B. 40", "en": "e.g. 40" }, "parse_as": "number", "required": true },
         { "name": "p0", "label": { "de": "p₀", "en": "p₀" }, "type": "number", "placeholder": { "de": "0.5", "en": "0.5" }, "parse_as": "number", "required": false },
         { "name": "direction", "label": { "de": "Testrichtung", "en": "Test direction" }, "type": "select", "options": [
           { "value": "two-sided", "label": { "de": "≠ Zweiseitig", "en": "≠ Two-sided" } },

@@ -11,14 +11,14 @@ export default {
         title: 'Überblick',
         blocks: [
           { type: 'paragraph', content: 'Attributtests prüfen Häufigkeiten statt Messwerte: Ausschussanteile, Fehlerquoten, Zuordnungen zu Kategorien. Das Modul rechnet drei Tests – einen Anteil gegen einen Sollwert, zwei Anteile gegeneinander und den {{term:chi-quadrat-test|Chi-Quadrat-Test}} auf Zusammenhang in einer {{term:kontingenztafel|Kreuztabelle}}.' },
-          { type: 'definition', term: 'Eingabe', content: 'Zusammengefasst („184 von 3902“) oder aus Spalten eines Arbeitsblatts. Bei Spalten wird die Tabelle gezählt; der Wert, der als Ereignis gilt, ist wählbar (Standard: der alphabetisch letzte). Leere Zellen werden übersprungen und gezählt.' },
+          { type: 'definition', term: 'Eingabe', content: 'Zusammengefasst („37 von 1200“) oder aus Spalten eines Arbeitsblatts. Bei Spalten wird die Tabelle gezählt; der Wert, der als Ereignis gilt, ist wählbar (Standard: der alphabetisch letzte). Leere Zellen werden übersprungen und gezählt.' },
         ],
       },
       en: {
         title: 'Overview',
         blocks: [
           { type: 'paragraph', content: 'Attribute tests work on counts instead of measurements: scrap rates, defect rates, assignments to categories. The module runs three tests – one proportion against a target, two proportions against each other, and the {{term:chi-quadrat-test|chi-square test}} of association in a {{term:kontingenztafel|cross table}}.' },
-          { type: 'definition', term: 'Input', content: 'Summarized ("184 of 3902") or from worksheet columns. With columns the table is counted; the value that counts as event can be chosen (default: the alphabetically last). Empty cells are skipped and counted.' },
+          { type: 'definition', term: 'Input', content: 'Summarized ("37 of 1200") or from worksheet columns. With columns the table is counted; the value that counts as event can be chosen (default: the alphabetically last). Empty cells are skipped and counted.' },
         ],
       },
     },

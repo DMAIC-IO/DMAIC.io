@@ -55,7 +55,7 @@
   "try_it": {
     "input_schema": {
       "fields": [
-        { "name": "table", "label": { "de": "2×2-Tafel (JSON)", "en": "2×2 table (JSON)" }, "type": "textarea", "placeholder": { "de": "[[10, 4], [2, 8]]", "en": "[[10, 4], [2, 8]]" }, "parse_as": "json", "required": true },
+        { "name": "table", "label": { "de": "2×2-Tafel (JSON)", "en": "2×2 table (JSON)" }, "type": "textarea", "placeholder": { "de": "[[7, 3], [2, 6]]", "en": "[[7, 3], [2, 6]]" }, "parse_as": "json", "required": true },
         { "name": "direction", "label": { "de": "Testrichtung", "en": "Test direction" }, "type": "select", "options": [
           { "value": "two-sided", "label": { "de": "≠ Zweiseitig", "en": "≠ Two-sided" } },
           { "value": "greater", "label": { "de": "> Größer", "en": "> Greater" } },

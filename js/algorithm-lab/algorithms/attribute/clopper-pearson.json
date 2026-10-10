@@ -56,8 +56,8 @@
   "try_it": {
     "input_schema": {
       "fields": [
-        { "name": "x", "label": { "de": "Ereignisse x", "en": "Events x" }, "type": "number", "placeholder": { "de": "z.B. 1", "en": "e.g. 1" }, "parse_as": "number", "required": true },
-        { "name": "n", "label": { "de": "Versuche n", "en": "Trials n" }, "type": "number", "placeholder": { "de": "z.B. 10", "en": "e.g. 10" }, "parse_as": "number", "required": true },
+        { "name": "x", "label": { "de": "Ereignisse x", "en": "Events x" }, "type": "number", "placeholder": { "de": "z.B. 3", "en": "e.g. 3" }, "parse_as": "number", "required": true },
+        { "name": "n", "label": { "de": "Versuche n", "en": "Trials n" }, "type": "number", "placeholder": { "de": "z.B. 25", "en": "e.g. 25" }, "parse_as": "number", "required": true },
         { "name": "confidence", "label": { "de": "Konfidenzniveau", "en": "Confidence level" }, "type": "number", "placeholder": { "de": "0.95", "en": "0.95" }, "parse_as": "number", "required": false },
         { "name": "direction", "label": { "de": "Richtung", "en": "Direction" }, "type": "select", "options": [
           { "value": "two-sided", "label": { "de": "Zweiseitig", "en": "Two-sided" } },
