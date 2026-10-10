@@ -8,6 +8,7 @@ import raciTile from '../../js/modules/raci-matrix/raci-matrix.tile.js';
 import spcTile from '../../js/modules/control-chart/control-chart.tile.js';
 import todoTile from '../../js/modules/todo/todo.tile.js';
 import calendarTile from '../../js/modules/dmaic-calendar/dmaic-calendar.tile.js';
+import stakeholderTile from '../../js/modules/stakeholder-analysis/stakeholder-analysis.tile.js';
 import { todayISO, addDaysISO } from '../../js/core/local-date.js';
 import { validateSchema, resolveSettings } from '../../js/pages/dashboard/tile-settings.js';
 import { HOST_TILES } from '../../js/pages/dashboard/tiles/index.js';
@@ -50,7 +51,7 @@ suite('dashboard tiles: manifest', () => {
   test('modules with a tile declare loadTile', () => {
     const ids = withTile.map(e => e.id);
     for (const id of ['fmea', 'ishikawa', 'project-charter', 'voc-ctx-tree', 'raci-matrix', 'control-chart',
-      'todo', 'dmaic-calendar']) assertTrue(ids.includes(id), id);
+      'todo', 'dmaic-calendar', 'stakeholder-analysis']) assertTrue(ids.includes(id), id);
   });
 
   test('every tile object loads, renders and has a valid size and schema', async () => {
@@ -490,5 +491,35 @@ suite('dashboard tiles: dmaic-calendar', () => {
   test('no upcoming events shows a hint; no events at all the empty state', () => {
     assertTrue(render(calendarTile, { events: [CAL_STATE.events[3]] }).querySelector('.dashboard-calendar__none') !== null);
     assertEqual(render(calendarTile, undefined).querySelector('.dashboard-area__empty').textContent, 'dashboard.calendarEmpty');
+  });
+});
+
+const SH_STATE = { stakeholders: [
+  { id: 'a', name: 'CFO', role: 'Finance', power: 5, interest: 5, support: 'critic' },
+  { id: 'b', name: 'Ops', power: 5, interest: 5, support: 'supporter' },
+  { id: 'c', name: 'IT', power: 1, interest: 5, support: 'resistor' },
+] };
+
+suite('dashboard tiles: stakeholder-analysis', () => {
+  test('matrix shows a count per quadrant, manage-closely first', () => {
+    const cells = [...render(stakeholderTile, SH_STATE).querySelectorAll('.dashboard-stakeholder__cell')];
+    assertEqual(cells.length, 4);
+    assertEqual(cells[0].dataset.quadrant, 'manage-closely');
+    assertEqual(cells[0].querySelector('strong').textContent, '2');
+  });
+
+  test('support row includes other only when present', () => {
+    assertTrue(render(stakeholderTile, SH_STATE).querySelector('[data-support="other"]') !== null);
+    const noOther = { stakeholders: SH_STATE.stakeholders.slice(0, 2) };
+    assertEqual(render(stakeholderTile, noOther).querySelector('[data-support="other"]'), null);
+  });
+
+  test('showCritics toggles the critic list', () => {
+    assertEqual(render(stakeholderTile, SH_STATE).querySelectorAll('.dashboard-stakeholder__critics li').length, 1);
+    assertEqual(render(stakeholderTile, SH_STATE, { showCritics: false }).querySelector('.dashboard-stakeholder__critics'), null);
+  });
+
+  test('empty state', () => {
+    assertEqual(render(stakeholderTile, undefined).querySelector('.dashboard-area__empty').textContent, 'dashboard.stakeholderEmpty');
   });
 });

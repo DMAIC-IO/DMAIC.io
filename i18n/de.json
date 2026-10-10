@@ -598,6 +598,9 @@
     "calendarEmpty": "Keine Termine erfasst.",
     "calendarSummary": "{count} Termine in den nächsten {days} Tagen",
     "calendarNone": "Keine anstehenden Termine.",
+    "stakeholderEmpty": "Keine Stakeholder erfasst.",
+    "stakeholderOther": "Sonstige",
+    "stakeholderCritics": "Kritiker, eng zu managen",
     "tileSettings": {
       "title": "Einstellungen: {title}",
       "open": "Kachel-Einstellungen",
@@ -612,7 +615,8 @@
       "horizon": "Zeitraum",
       "horizon7": "7 Tage",
       "horizon14": "14 Tage",
-      "horizon30": "30 Tage"
+      "horizon30": "30 Tage",
+      "showCritics": "Kritiker anzeigen"
     }
   },
   "lab": {

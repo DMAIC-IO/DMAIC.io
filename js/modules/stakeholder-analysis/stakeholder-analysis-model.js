@@ -102,3 +102,34 @@ export class State {
     return s;
   }
 }
+
+/**
+ * Stakeholder count per power/interest quadrant.
+ * @param {Stakeholder[]} list
+ * @returns {Record<string, number>} keyed by QUAD_ORDER
+ */
+export function quadrantCounts(list) {
+  const counts = Object.fromEntries(QUAD_ORDER.map(q => [q, 0]));
+  for (const s of list) counts[s.quadrant]++;
+  return counts;
+}
+
+/**
+ * Support distribution; values outside SUPPORT_VALUES count as `other`.
+ * @param {Stakeholder[]} list
+ * @returns {{supporter: number, neutral: number, critic: number, other: number}}
+ */
+export function supportCounts(list) {
+  const counts = { supporter: 0, neutral: 0, critic: 0, other: 0 };
+  for (const s of list) counts[SUPPORT_VALUES.includes(s.support) ? s.support : 'other']++;
+  return counts;
+}
+
+/**
+ * Critics in the manage-closely quadrant.
+ * @param {Stakeholder[]} list
+ * @returns {Stakeholder[]}
+ */
+export function criticalCritics(list) {
+  return list.filter(s => s.quadrant === 'manage-closely' && s.support === 'critic');
+}

@@ -598,6 +598,9 @@
     "calendarEmpty": "No events recorded.",
     "calendarSummary": "{count} events in the next {days} days",
     "calendarNone": "No upcoming events.",
+    "stakeholderEmpty": "No stakeholders recorded.",
+    "stakeholderOther": "Other",
+    "stakeholderCritics": "Critics to manage closely",
     "tileSettings": {
       "title": "Settings: {title}",
       "open": "Tile settings",
@@ -612,7 +615,8 @@
       "horizon": "Period",
       "horizon7": "7 days",
       "horizon14": "14 days",
-      "horizon30": "30 days"
+      "horizon30": "30 days",
+      "showCritics": "Show critics"
     }
   },
   "lab": {
