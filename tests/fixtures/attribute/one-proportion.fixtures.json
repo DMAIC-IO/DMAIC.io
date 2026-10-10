@@ -1,0 +1,234 @@
+{
+  "algorithm_id": "one-proportion",
+  "generated_with": {
+    "python": "3.14.4",
+    "scipy": "1.18.0",
+    "numpy": "2.5.1"
+  },
+  "generated_at": "2026-10-10T06:34:09.263647+00:00",
+  "generator_script": "tools/fixture-generator/generate_fixtures.py",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-09,
+      "absolute": 1e-12
+    },
+    "overrides": {
+      "stress_large_counts": {
+        "relative": 1e-06,
+        "absolute": 1e-10,
+        "reason": "lnGamma and incomplete-beta round-off grow with ~1e5 units"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "op_book_1_of_10",
+      "tier": "standard",
+      "description": "1 of 10 against p0 = 5 %",
+      "reference": "Melzer 2019, §8.7 (data); SciPy scipy.stats.binom",
+      "inputs": {
+        "x": 1,
+        "n": 10,
+        "p0": 0.05,
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected": {
+        "pHat": 0.1,
+        "ciLower": 0.0025285785444617865,
+        "ciUpper": 0.4450161170281954,
+        "pExact": 0.8025261215232422,
+        "z": 0.7254762501100117,
+        "pNormal": 0.468159909854428,
+        "normalApproxOk": false,
+        "reject": false
+      }
+    },
+    {
+      "id": "op_standard_two_sided",
+      "tier": "standard",
+      "description": "12 of 50 against 30 %",
+      "reference": "SciPy scipy.stats.binom",
+      "inputs": {
+        "x": 12,
+        "n": 50,
+        "p0": 0.3,
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected": {
+        "pHat": 0.24,
+        "ciLower": 0.13060991619745732,
+        "ciUpper": 0.3816907481040382,
+        "pExact": 0.44573156977436157,
+        "z": -0.9258200997725515,
+        "pNormal": 0.3545394797735013,
+        "normalApproxOk": true,
+        "reject": false
+      }
+    },
+    {
+      "id": "op_standard_greater",
+      "tier": "standard",
+      "description": "18 of 40 greater than 30 %",
+      "reference": "SciPy scipy.stats.binom",
+      "inputs": {
+        "x": 18,
+        "n": 40,
+        "p0": 0.3,
+        "direction": "greater",
+        "alpha": 0.05
+      },
+      "expected": {
+        "pHat": 0.45,
+        "ciLower": 0.3146131509899906,
+        "ciUpper": 1.0,
+        "pExact": 0.031951263651390706,
+        "z": 2.070196678027063,
+        "pNormal": 0.019216965118390827,
+        "normalApproxOk": true,
+        "reject": true
+      }
+    },
+    {
+      "id": "op_standard_less",
+      "tier": "standard",
+      "description": "2 of 60 less than 10 %",
+      "reference": "SciPy scipy.stats.binom",
+      "inputs": {
+        "x": 2,
+        "n": 60,
+        "p0": 0.1,
+        "direction": "less",
+        "alpha": 0.05
+      },
+      "expected": {
+        "pHat": 0.03333333333333333,
+        "ciLower": 0.0,
+        "ciUpper": 0.10123589492416163,
+        "pExact": 0.053045081815992726,
+        "z": -1.7213259316477412,
+        "pNormal": 0.042595848217939714,
+        "normalApproxOk": true,
+        "reject": false
+      }
+    },
+    {
+      "id": "op_edge_x0",
+      "tier": "edge",
+      "description": "No events",
+      "reference": "SciPy scipy.stats.binom",
+      "inputs": {
+        "x": 0,
+        "n": 25,
+        "p0": 0.1,
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected": {
+        "pHat": 0.0,
+        "ciLower": 0.0,
+        "ciUpper": 0.1371851715307125,
+        "pExact": 0.14357959753837052,
+        "z": -1.6666666666666665,
+        "pNormal": 0.0955807045456294,
+        "normalApproxOk": false,
+        "reject": false
+      }
+    },
+    {
+      "id": "op_edge_xn_greater",
+      "tier": "edge",
+      "description": "All events, one-sided",
+      "reference": "SciPy scipy.stats.binom",
+      "inputs": {
+        "x": 25,
+        "n": 25,
+        "p0": 0.9,
+        "direction": "greater",
+        "alpha": 0.05
+      },
+      "expected": {
+        "pHat": 1.0,
+        "ciLower": 0.8870718549931568,
+        "ciUpper": 1.0,
+        "pExact": 0.07178979876918529,
+        "z": 1.6666666666666663,
+        "pNormal": 0.04779035227281475,
+        "normalApproxOk": false,
+        "reject": false
+      }
+    },
+    {
+      "id": "op_edge_n1",
+      "tier": "edge",
+      "description": "Single trial",
+      "reference": "SciPy scipy.stats.binom",
+      "inputs": {
+        "x": 1,
+        "n": 1,
+        "p0": 0.5,
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected": {
+        "pHat": 1.0,
+        "ciLower": 0.025000000000000022,
+        "ciUpper": 1.0,
+        "pExact": 1.0,
+        "z": 1.0,
+        "pNormal": 0.31731050786291415,
+        "normalApproxOk": false,
+        "reject": false
+      }
+    },
+    {
+      "id": "op_edge_extreme_p0",
+      "tier": "edge",
+      "description": "p0 = 0.1 %",
+      "reference": "SciPy scipy.stats.binom",
+      "inputs": {
+        "x": 3,
+        "n": 1000,
+        "p0": 0.001,
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected": {
+        "pHat": 0.003,
+        "ciLower": 0.0006190999316495715,
+        "ciUpper": 0.008742023238478303,
+        "pExact": 0.160418685680402,
+        "z": 2.0010007506255474,
+        "pNormal": 0.04539230899933268,
+        "normalApproxOk": false,
+        "reject": false
+      }
+    },
+    {
+      "id": "op_stress_large",
+      "tier": "stress",
+      "tolerance_override": "stress_large_counts",
+      "description": "77 762 units",
+      "reference": "SciPy scipy.stats.binom",
+      "inputs": {
+        "x": 5780,
+        "n": 77762,
+        "p0": 0.075,
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected": {
+        "pHat": 0.07432936395668836,
+        "ciLower": 0.07249521284927911,
+        "ciUpper": 0.07619534784127638,
+        "pExact": 0.4825324107178683,
+        "z": -0.7100175829184454,
+        "pNormal": 0.4776932327186302,
+        "normalApproxOk": true,
+        "reject": false
+      }
+    }
+  ]
+}

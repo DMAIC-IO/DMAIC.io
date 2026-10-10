@@ -1,0 +1,227 @@
+{
+  "algorithm_id": "fisher-exact",
+  "generated_with": {
+    "python": "3.14.4",
+    "scipy": "1.18.0",
+    "numpy": "2.5.1"
+  },
+  "generated_at": "2026-10-10T06:34:13.719721+00:00",
+  "generator_script": "tools/fixture-generator/generate_fixtures.py",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-09,
+      "absolute": 1e-12
+    },
+    "overrides": {
+      "stress_large_counts": {
+        "relative": 1e-06,
+        "absolute": 1e-10,
+        "reason": "lnGamma and incomplete-beta round-off grow with ~1e5 units"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "fe_book_greater",
+      "tier": "standard",
+      "description": "Book table, one-sided",
+      "reference": "Melzer 2019, §9.10 (p 0.018037)",
+      "inputs": {
+        "table": [
+          [
+            10,
+            4
+          ],
+          [
+            2,
+            8
+          ]
+        ],
+        "direction": "greater"
+      },
+      "expected": {
+        "pValue": 0.018037420918023957,
+        "pLess": 0.9986202719073899,
+        "pGreater": 0.018037420918023957,
+        "oddsRatio": 10.0
+      }
+    },
+    {
+      "id": "fe_book_two_sided",
+      "tier": "standard",
+      "description": "Book table, two-sided",
+      "reference": "Melzer 2019, §9.10 (p 0.036)",
+      "inputs": {
+        "table": [
+          [
+            10,
+            4
+          ],
+          [
+            2,
+            8
+          ]
+        ],
+        "direction": "two-sided"
+      },
+      "expected": {
+        "pValue": 0.036074841836047915,
+        "pLess": 0.9986202719073899,
+        "pGreater": 0.018037420918023957,
+        "oddsRatio": 10.0
+      }
+    },
+    {
+      "id": "fe_standard_less",
+      "tier": "standard",
+      "description": "One-sided less",
+      "reference": "SciPy scipy.stats.hypergeom",
+      "inputs": {
+        "table": [
+          [
+            2,
+            12
+          ],
+          [
+            9,
+            6
+          ]
+        ],
+        "direction": "less"
+      },
+      "expected": {
+        "pValue": 0.014419106236355509,
+        "pLess": 0.014419106236355509,
+        "pGreater": 0.9987453641600252,
+        "oddsRatio": 0.1111111111111111
+      }
+    },
+    {
+      "id": "fe_standard_ties",
+      "tier": "standard",
+      "description": "Symmetric table with tied probabilities",
+      "reference": "SciPy scipy.stats.hypergeom",
+      "inputs": {
+        "table": [
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "direction": "two-sided"
+      },
+      "expected": {
+        "pValue": 0.9999999999999999,
+        "pLess": 0.8968253968253967,
+        "pGreater": 0.49999999999999994,
+        "oddsRatio": 2.25
+      }
+    },
+    {
+      "id": "fe_edge_zero_cell",
+      "tier": "edge",
+      "description": "Zero cell: odds ratio 0",
+      "reference": "SciPy scipy.stats.hypergeom",
+      "inputs": {
+        "table": [
+          [
+            0,
+            5
+          ],
+          [
+            5,
+            0
+          ]
+        ],
+        "direction": "two-sided"
+      },
+      "expected": {
+        "pValue": 0.007936507936507936,
+        "pLess": 0.003968253968253968,
+        "pGreater": 0.9999999999999999,
+        "oddsRatio": 0.0
+      }
+    },
+    {
+      "id": "fe_edge_infinite_or",
+      "tier": "edge",
+      "description": "b·c = 0: odds ratio undefined (null)",
+      "reference": "SciPy scipy.stats.hypergeom",
+      "inputs": {
+        "table": [
+          [
+            5,
+            0
+          ],
+          [
+            0,
+            5
+          ]
+        ],
+        "direction": "two-sided"
+      },
+      "expected": {
+        "pValue": 0.007936507936507936,
+        "pLess": 0.9999999999999999,
+        "pGreater": 0.003968253968253968,
+        "oddsRatio": null
+      }
+    },
+    {
+      "id": "fe_edge_empty_row",
+      "tier": "edge",
+      "description": "Empty first row: every p = 1",
+      "reference": "SciPy scipy.stats.hypergeom",
+      "inputs": {
+        "table": [
+          [
+            0,
+            0
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        "direction": "two-sided"
+      },
+      "expected": {
+        "pValue": 1.0,
+        "pLess": 1.0,
+        "pGreater": 1.0,
+        "oddsRatio": null
+      }
+    },
+    {
+      "id": "fe_stress_large",
+      "tier": "stress",
+      "tolerance_override": "stress_large_counts",
+      "description": "77 762 + 23 480 units",
+      "reference": "SciPy scipy.stats.hypergeom",
+      "inputs": {
+        "table": [
+          [
+            5780,
+            71982
+          ],
+          [
+            1650,
+            21830
+          ]
+        ],
+        "direction": "two-sided"
+      },
+      "expected": {
+        "pValue": 0.03710491132857914,
+        "pLess": 0.9826172438708929,
+        "pGreater": 0.01865955310389049,
+        "oddsRatio": 1.0623649178287837
+      }
+    }
+  ]
+}

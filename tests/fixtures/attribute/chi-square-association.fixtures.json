@@ -1,0 +1,517 @@
+{
+  "algorithm_id": "chi-square-association",
+  "generated_with": {
+    "python": "3.14.4",
+    "scipy": "1.18.0",
+    "numpy": "2.5.1"
+  },
+  "generated_at": "2026-10-10T06:34:16.027839+00:00",
+  "generator_script": "tools/fixture-generator/generate_fixtures.py",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-09,
+      "absolute": 1e-12
+    },
+    "overrides": {
+      "stress_large_counts": {
+        "relative": 1e-06,
+        "absolute": 1e-10,
+        "reason": "lnGamma and incomplete-beta round-off grow with ~1e5 units"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "chi_book_2x2",
+      "tier": "standard",
+      "description": "Book 2×2 (table reconstructed from the published expected counts and χ²)",
+      "reference": "Melzer 2019, §9.11 (χ² 29.98, Yates 29.59, E 51682/848/15545/255)",
+      "inputs": {
+        "table": [
+          [
+            51606,
+            924
+          ],
+          [
+            15621,
+            179
+          ]
+        ],
+        "alpha": 0.05
+      },
+      "expected": {
+        "testable": true,
+        "observed": [
+          [
+            51606,
+            924
+          ],
+          [
+            15621,
+            179
+          ]
+        ],
+        "droppedRows": [],
+        "droppedCols": [],
+        "expected": [
+          [
+            51682.04756329577,
+            847.9524367042295
+          ],
+          [
+            15544.952436704229,
+            255.04756329577052
+          ]
+        ],
+        "contributions": [
+          [
+            0.11190020821332579,
+            6.820231457441335
+          ],
+          [
+            0.3720327808510485,
+            22.67511129489833
+          ]
+        ],
+        "df": 1,
+        "pearson": 29.979275741404038,
+        "pPearson": 4.366886615121913e-08,
+        "lr": 32.44853157918902,
+        "pLR": 1.2239140194994922e-08,
+        "minExpected": 255.04756329577052,
+        "shareBelow5": 0.0,
+        "warnExpectedBelow1": false,
+        "warnShareBelow5": false,
+        "yates": 29.586354257975024,
+        "pYates": 5.348011536046781e-08,
+        "fisherTwoSided": 1.4538024685379883e-08,
+        "fisherLess": 8.010641796890608e-09,
+        "fisherGreater": 0.9999999949365714,
+        "reject": true
+      }
+    },
+    {
+      "id": "chi_standard_3x4",
+      "tier": "standard",
+      "description": "3×4 table, no warnings",
+      "reference": "SciPy scipy.stats.chi2_contingency",
+      "inputs": {
+        "table": [
+          [
+            20,
+            15,
+            30,
+            35
+          ],
+          [
+            25,
+            25,
+            25,
+            25
+          ],
+          [
+            40,
+            30,
+            20,
+            10
+          ]
+        ],
+        "alpha": 0.05
+      },
+      "expected": {
+        "testable": true,
+        "observed": [
+          [
+            20,
+            15,
+            30,
+            35
+          ],
+          [
+            25,
+            25,
+            25,
+            25
+          ],
+          [
+            40,
+            30,
+            20,
+            10
+          ]
+        ],
+        "droppedRows": [],
+        "droppedCols": [],
+        "expected": [
+          [
+            28.333333333333332,
+            23.333333333333332,
+            25.0,
+            23.333333333333332
+          ],
+          [
+            28.333333333333332,
+            23.333333333333332,
+            25.0,
+            23.333333333333332
+          ],
+          [
+            28.333333333333332,
+            23.333333333333332,
+            25.0,
+            23.333333333333332
+          ]
+        ],
+        "contributions": [
+          [
+            2.4509803921568625,
+            2.976190476190476,
+            1.0,
+            5.833333333333335
+          ],
+          [
+            0.3921568627450978,
+            0.11904761904761922,
+            0.0,
+            0.11904761904761922
+          ],
+          [
+            4.803921568627453,
+            1.9047619047619053,
+            1.0,
+            7.619047619047618
+          ]
+        ],
+        "df": 6,
+        "pearson": 28.218487394957982,
+        "pPearson": 8.546474618130497e-05,
+        "lr": 29.570135976984105,
+        "pLR": 4.743828322493584e-05,
+        "minExpected": 23.333333333333332,
+        "shareBelow5": 0.0,
+        "warnExpectedBelow1": false,
+        "warnShareBelow5": false,
+        "yates": null,
+        "pYates": null,
+        "fisherTwoSided": null,
+        "fisherLess": null,
+        "fisherGreater": null,
+        "reject": true
+      }
+    },
+    {
+      "id": "chi_standard_low_expected",
+      "tier": "standard",
+      "description": "2×3 with expected counts < 5",
+      "reference": "SciPy scipy.stats.chi2_contingency",
+      "inputs": {
+        "table": [
+          [
+            1,
+            2,
+            8
+          ],
+          [
+            3,
+            1,
+            9
+          ]
+        ],
+        "alpha": 0.05
+      },
+      "expected": {
+        "testable": true,
+        "observed": [
+          [
+            1,
+            2,
+            8
+          ],
+          [
+            3,
+            1,
+            9
+          ]
+        ],
+        "droppedRows": [],
+        "droppedCols": [],
+        "expected": [
+          [
+            1.8333333333333333,
+            1.375,
+            7.791666666666667
+          ],
+          [
+            2.1666666666666665,
+            1.625,
+            9.208333333333334
+          ]
+        ],
+        "contributions": [
+          [
+            0.37878787878787873,
+            0.2840909090909091,
+            0.005570409982174672
+          ],
+          [
+            0.32051282051282065,
+            0.2403846153846154,
+            0.0047134238310709165
+          ]
+        ],
+        "df": 2,
+        "pearson": 1.2340600575894694,
+        "pPearson": 0.539544491965931,
+        "lr": 1.2782917554359148,
+        "pLR": 0.5277429886428167,
+        "minExpected": 1.375,
+        "shareBelow5": 0.6666666666666666,
+        "warnExpectedBelow1": false,
+        "warnShareBelow5": true,
+        "yates": null,
+        "pYates": null,
+        "fisherTwoSided": null,
+        "fisherLess": null,
+        "fisherGreater": null,
+        "reject": false
+      }
+    },
+    {
+      "id": "chi_edge_zero_row",
+      "tier": "edge",
+      "description": "Zero row is dropped",
+      "reference": "SciPy scipy.stats.chi2_contingency",
+      "inputs": {
+        "table": [
+          [
+            10,
+            20
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            15,
+            5
+          ]
+        ],
+        "alpha": 0.05
+      },
+      "expected": {
+        "testable": true,
+        "observed": [
+          [
+            10,
+            20
+          ],
+          [
+            15,
+            5
+          ]
+        ],
+        "droppedRows": [
+          1
+        ],
+        "droppedCols": [],
+        "expected": [
+          [
+            15.0,
+            15.0
+          ],
+          [
+            10.0,
+            10.0
+          ]
+        ],
+        "df": 1,
+        "pearson": 8.333333333333334,
+        "pPearson": 0.003892417122778637,
+        "yates": 6.75,
+        "fisherTwoSided": 0.008578508150469122,
+        "fisherLess": 0.004289254075234563,
+        "fisherGreater": 0.9993957050091871,
+        "reject": true
+      }
+    },
+    {
+      "id": "chi_edge_zero_col",
+      "tier": "edge",
+      "description": "Zero column is dropped",
+      "reference": "SciPy scipy.stats.chi2_contingency",
+      "inputs": {
+        "table": [
+          [
+            4,
+            0,
+            9,
+            6
+          ],
+          [
+            8,
+            0,
+            3,
+            7
+          ]
+        ],
+        "alpha": 0.05
+      },
+      "expected": {
+        "testable": true,
+        "observed": [
+          [
+            4,
+            9,
+            6
+          ],
+          [
+            8,
+            3,
+            7
+          ]
+        ],
+        "droppedRows": [],
+        "droppedCols": [
+          1
+        ],
+        "df": 2,
+        "pearson": 4.386433498275604,
+        "pPearson": 0.11155731892022508,
+        "reject": false
+      }
+    },
+    {
+      "id": "chi_edge_untestable",
+      "tier": "edge",
+      "description": "Only one column left after dropping",
+      "reference": "SciPy",
+      "inputs": {
+        "table": [
+          [
+            5,
+            0
+          ],
+          [
+            7,
+            0
+          ]
+        ],
+        "alpha": 0.05
+      },
+      "expected": {
+        "testable": false,
+        "observed": [
+          [
+            5
+          ],
+          [
+            7
+          ]
+        ],
+        "droppedRows": [],
+        "droppedCols": [
+          1
+        ]
+      }
+    },
+    {
+      "id": "chi_edge_single_row",
+      "tier": "edge",
+      "description": "1×3 table",
+      "reference": "SciPy",
+      "inputs": {
+        "table": [
+          [
+            1,
+            2,
+            3
+          ]
+        ],
+        "alpha": 0.05
+      },
+      "expected": {
+        "testable": false,
+        "observed": [
+          [
+            1,
+            2,
+            3
+          ]
+        ],
+        "droppedRows": [],
+        "droppedCols": []
+      }
+    },
+    {
+      "id": "chi_stress_large",
+      "tier": "stress",
+      "tolerance_override": "stress_large_counts",
+      "description": "3×3 with ~1e5 units",
+      "reference": "SciPy scipy.stats.chi2_contingency",
+      "inputs": {
+        "table": [
+          [
+            31200,
+            2210,
+            950
+          ],
+          [
+            28750,
+            2480,
+            1120
+          ],
+          [
+            30110,
+            1990,
+            1310
+          ]
+        ],
+        "alpha": 0.05
+      },
+      "expected": {
+        "testable": true,
+        "observed": [
+          [
+            31200,
+            2210,
+            950
+          ],
+          [
+            28750,
+            2480,
+            1120
+          ],
+          [
+            30110,
+            1990,
+            1310
+          ]
+        ],
+        "expected": [
+          [
+            30907.526967638834,
+            2292.4970035956853,
+            1159.9760287654815
+          ],
+          [
+            29099.49061126648,
+            2158.389932081502,
+            1092.1194566520176
+          ],
+          [
+            30052.982421094686,
+            2229.1130643228125,
+            1127.904514582501
+          ]
+        ],
+        "df": 4,
+        "pearson": 151.73225111651757,
+        "pPearson": 8.659549471294403e-32,
+        "lr": 151.58427670208368,
+        "pLR": 9.315567211411889e-32,
+        "reject": true
+      }
+    }
+  ]
+}

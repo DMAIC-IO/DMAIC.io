@@ -1,0 +1,278 @@
+{
+  "algorithm_id": "two-proportion",
+  "generated_with": {
+    "python": "3.14.4",
+    "scipy": "1.18.0",
+    "numpy": "2.5.1"
+  },
+  "generated_at": "2026-10-10T06:34:10.049916+00:00",
+  "generator_script": "tools/fixture-generator/generate_fixtures.py",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-09,
+      "absolute": 1e-12
+    },
+    "overrides": {
+      "stress_large_counts": {
+        "relative": 1e-06,
+        "absolute": 1e-10,
+        "reason": "lnGamma and incomplete-beta round-off grow with ~1e5 units"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "tp_book_kw35_38_pooled",
+      "tier": "standard",
+      "description": "KW35 vs KW38, pooled z as in the book",
+      "reference": "Melzer 2019, §13.4 (z 0.5665, p 0.5710, Fisher 0.5912)",
+      "inputs": {
+        "x1": 184,
+        "n1": 3902,
+        "x2": 179,
+        "n2": 4023,
+        "direction": "two-sided",
+        "alpha": 0.05,
+        "pooled": true
+      },
+      "expected": {
+        "p1": 0.04715530497180933,
+        "p2": 0.04449415858811832,
+        "diff": 0.0026611463836910126,
+        "ciLower": -0.00654919986826053,
+        "ciUpper": 0.011871492635642555,
+        "z": 0.5665202002646622,
+        "pValue": 0.5710402049426482,
+        "pFisher": 0.5911690616152767,
+        "reject": false
+      }
+    },
+    {
+      "id": "tp_standard_kw35_38_separate",
+      "tier": "standard",
+      "description": "Same data, separate estimates (Minitab default)",
+      "reference": "statsmodels / SciPy",
+      "inputs": {
+        "x1": 184,
+        "n1": 3902,
+        "x2": 179,
+        "n2": 4023,
+        "direction": "two-sided",
+        "alpha": 0.05,
+        "pooled": false
+      },
+      "expected": {
+        "p1": 0.04715530497180933,
+        "p2": 0.04449415858811832,
+        "diff": 0.0026611463836910126,
+        "ciLower": -0.00654919986826053,
+        "ciUpper": 0.011871492635642555,
+        "z": 0.5662926156026163,
+        "pValue": 0.5711948794329983,
+        "pFisher": 0.5911690616152767,
+        "reject": false
+      }
+    },
+    {
+      "id": "tp_book_dirt_pooled",
+      "tier": "standard",
+      "description": "16/500 vs 10/500",
+      "reference": "Melzer 2019, §3.5.1 (p 0.2331, Fisher 0.3205)",
+      "inputs": {
+        "x1": 16,
+        "n1": 500,
+        "x2": 10,
+        "n2": 500,
+        "direction": "two-sided",
+        "alpha": 0.05,
+        "pooled": true
+      },
+      "expected": {
+        "p1": 0.032,
+        "p2": 0.02,
+        "diff": 0.012,
+        "ciLower": -0.007712210495803156,
+        "ciUpper": 0.03171221049580315,
+        "z": 1.1922987755766874,
+        "pValue": 0.23314411446740524,
+        "pFisher": 0.3205240624920476,
+        "reject": false
+      }
+    },
+    {
+      "id": "tp_book_e010_ci",
+      "tier": "standard",
+      "description": "Before/after, CI of the difference",
+      "reference": "Melzer 2019, §6.2 / §17.2 (diff 0.04865, CI ≈ [0.0459, 0.0514])",
+      "inputs": {
+        "x1": 5780,
+        "n1": 77762,
+        "x2": 603,
+        "n2": 23480,
+        "direction": "two-sided",
+        "alpha": 0.05,
+        "pooled": false
+      },
+      "expected": {
+        "p1": 0.07432936395668836,
+        "p2": 0.025681431005110732,
+        "diff": 0.04864793295157763,
+        "ciLower": 0.04591065722543261,
+        "ciUpper": 0.051385208677722644,
+        "z": 34.8332451848733,
+        "pValue": 7.63668498843921e-266,
+        "reject": true
+      }
+    },
+    {
+      "id": "tp_standard_greater",
+      "tier": "standard",
+      "description": "One-sided greater",
+      "reference": "SciPy",
+      "inputs": {
+        "x1": 30,
+        "n1": 200,
+        "x2": 18,
+        "n2": 210,
+        "direction": "greater",
+        "alpha": 0.05,
+        "pooled": false
+      },
+      "expected": {
+        "p1": 0.15,
+        "p2": 0.08571428571428572,
+        "diff": 0.06428571428571428,
+        "ciLower": 0.01199390975429055,
+        "ciUpper": 1.0,
+        "z": 2.0221254793469687,
+        "pValue": 0.02158169519612289,
+        "pFisher": 0.030462339251712663,
+        "reject": true
+      }
+    },
+    {
+      "id": "tp_standard_less",
+      "tier": "standard",
+      "description": "One-sided less",
+      "reference": "SciPy",
+      "inputs": {
+        "x1": 9,
+        "n1": 150,
+        "x2": 21,
+        "n2": 160,
+        "direction": "less",
+        "alpha": 0.1,
+        "pooled": false
+      },
+      "expected": {
+        "p1": 0.06,
+        "p2": 0.13125,
+        "diff": -0.07125000000000001,
+        "ciLower": -1.0,
+        "ciUpper": -0.02896566326545616,
+        "z": -2.1594414408883793,
+        "pValue": 0.015407967897402597,
+        "pFisher": 0.025866782050704074,
+        "reject": true
+      }
+    },
+    {
+      "id": "tp_edge_x1_zero",
+      "tier": "edge",
+      "description": "No events in sample 1",
+      "reference": "SciPy",
+      "inputs": {
+        "x1": 0,
+        "n1": 50,
+        "x2": 5,
+        "n2": 50,
+        "direction": "two-sided",
+        "alpha": 0.05,
+        "pooled": false
+      },
+      "expected": {
+        "p1": 0.0,
+        "p2": 0.1,
+        "diff": -0.1,
+        "ciLower": -0.1831542294609807,
+        "ciUpper": -0.016845770539019325,
+        "z": -2.3570226039551585,
+        "pValue": 0.018422125454099002,
+        "pFisher": 0.05628449442882433,
+        "reject": true
+      }
+    },
+    {
+      "id": "tp_edge_both_zero",
+      "tier": "edge",
+      "description": "No events at all: z undefined, p = 1",
+      "reference": "SciPy",
+      "inputs": {
+        "x1": 0,
+        "n1": 30,
+        "x2": 0,
+        "n2": 30,
+        "direction": "two-sided",
+        "alpha": 0.05,
+        "pooled": true
+      },
+      "expected": {
+        "diff": 0.0,
+        "z": null,
+        "pValue": 1.0,
+        "pFisher": 1.0,
+        "reject": false
+      }
+    },
+    {
+      "id": "tp_edge_degenerate_se",
+      "tier": "edge",
+      "description": "1/1 vs 0/1: SE 0, difference 1",
+      "reference": "SciPy",
+      "inputs": {
+        "x1": 1,
+        "n1": 1,
+        "x2": 0,
+        "n2": 1,
+        "direction": "two-sided",
+        "alpha": 0.05,
+        "pooled": false
+      },
+      "expected": {
+        "diff": 1.0,
+        "z": null,
+        "pValue": 0.0,
+        "pFisher": 1.0,
+        "reject": true
+      }
+    },
+    {
+      "id": "tp_stress_large",
+      "tier": "stress",
+      "tolerance_override": "stress_large_counts",
+      "description": "Large counts incl. Fisher in log space",
+      "reference": "SciPy",
+      "inputs": {
+        "x1": 5780,
+        "n1": 77762,
+        "x2": 1650,
+        "n2": 23480,
+        "direction": "two-sided",
+        "alpha": 0.05,
+        "pooled": false
+      },
+      "expected": {
+        "p1": 0.07432936395668836,
+        "p2": 0.07027257240204429,
+        "diff": 0.004056791554644071,
+        "ciLower": 0.0003033906091829317,
+        "ciUpper": 0.0078101925001052095,
+        "z": 2.1183895500169543,
+        "pValue": 0.03414209015589283,
+        "pFisher": 0.03710491132857914,
+        "reject": true
+      }
+    }
+  ]
+}
