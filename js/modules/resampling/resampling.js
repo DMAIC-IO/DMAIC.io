@@ -64,6 +64,8 @@ const mod = createModule({
       currentHash: null,
       stale: false,
       view: null,
+      /** Completed runs in this view instance (not persisted; lets E2E detect a finished recompute). */
+      runCount: 0,
 
       statisticKey,
 
@@ -127,6 +129,7 @@ const mod = createModule({
             outcomes.push({ role: jobs[i].role, result });
           }
           this.model.result = summarize(this.model, inputs, outcomes, hash, this._labels());
+          this.runCount++;
         } catch (err) {
           if (!(err && err.name === 'AbortError')) {
             this.errorKey = err && err.code ? errorKeyForCode(err.code) : 'errUnexpected';
