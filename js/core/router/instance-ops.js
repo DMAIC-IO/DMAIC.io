@@ -5,7 +5,7 @@
  */
 
 import { uid } from '../uid.js';
-import { CYCLES, VIRTUAL_PHASES, getAllPhaseIds } from '../cycles/cycles.js';
+import { CYCLES, VIRTUAL_PHASES } from '../cycles/cycles.js';
 
 /**
  * Find the phase id whose instance array contains the given instanceId.
@@ -115,17 +115,30 @@ export function defaultPhaseFor(def, activeCycle) {
  *
  * @param {{ id: string, phase?: string, cycles?: object, singleton?: boolean }} def
  * @param {string} phase  die Zielphase
- * @param {{ instances: Map<string, { module: string, phase: string }>, completed: boolean }} world
- *   das Lese-Abbild aus `buildWorld` — kein neuer Zustandsbegriff
+ * @param {{ activeCycle: string,
+ *           instances: Map<string, { module: string, phase: string }>,
+ *           completed: boolean }} world
+ *   das Lese-Abbild aus `buildWorld` — kein neuer Zustandsbegriff.
+ *   `activeCycle` ist die Kennung des aktiven Zyklus und ist Pflicht.
  * @returns {{ ok: true } | { ok: false, reason: 'wrongPhase'|'singleton'|'completed', allowedPhases?: string[] }}
+ * @throws {Error} wenn `world.activeCycle` fehlt oder keinen bekannten Zyklus nennt
  */
 export function canAddInstance(def, phase, world) {
   // Zuerst das abgeschlossene Projekt: dort ist der Modulsatz eingefroren,
   // und `wrongPhase` wäre die unwichtigere von zwei wahren Antworten.
   if (world?.completed === true) return { ok: false, reason: 'completed' };
 
-  const activeCycle = world?.activeCycle ?? null;
-  const allowed = allowedPhasesFor(def, activeCycle ?? inferCycle(world));
+  // Ohne gültige Zyklus-Kennung gibt es keine Antwort, nur ein Raten:
+  // `allowedPhasesFor` fände für einen unbekannten Zyklus keine Zuordnung
+  // und meldete `extras` — plausibel und falsch, ohne jedes Signal. Lieber
+  // lautstark scheitern als eine erfundene Phasenliste ausliefern.
+  const activeCycle = world?.activeCycle;
+  if (typeof activeCycle !== 'string' || !CYCLES[activeCycle]) {
+    throw new Error(
+      `canAddInstance: world.activeCycle nennt keinen bekannten Zyklus (${String(activeCycle)})`,
+    );
+  }
+  const allowed = allowedPhasesFor(def, activeCycle);
   if (!allowed.includes(phase)) {
     return { ok: false, reason: 'wrongPhase', allowedPhases: allowed };
   }
@@ -137,19 +150,4 @@ export function canAddInstance(def, phase, world) {
   }
 
   return { ok: true };
-}
-
-/**
- * Der Zyklus aus dem Lese-Abbild. `buildWorld` führt die Phasenliste des
- * aktiven Zyklus, nicht seine Kennung — und die Liste identifiziert ihn
- * eindeutig. Lieber hier eine Zeile als ein zweiter Zustandsbegriff.
- * @param {{ phases: string[] }} world
- * @returns {string|null}
- */
-function inferCycle(world) {
-  const phases = Array.isArray(world?.phases) ? world.phases.join(',') : '';
-  for (const cycleId of Object.keys(CYCLES)) {
-    if (getAllPhaseIds(cycleId).join(',') === phases) return cycleId;
-  }
-  return null;
 }

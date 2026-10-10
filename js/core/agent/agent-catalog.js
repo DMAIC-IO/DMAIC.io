@@ -120,7 +120,8 @@ export function buildInstanceList({ stateManager, i18n }) {
  *
  * @param {{ moduleRegistry: object, stateManager: object, i18n: object,
  *           registry: Record<string, object>, completed?: boolean }} deps
- * @returns {{ t: Function, phases: string[], modules: Map, instances: Map, completed: boolean }}
+ * @returns {{ t: Function, activeCycle: string, phases: string[], modules: Map,
+ *            instances: Map, completed: boolean }}
  */
 export function buildWorld({ moduleRegistry, stateManager, i18n, registry, completed }) {
   const cycle = moduleRegistry.getActiveCycle();
@@ -145,6 +146,10 @@ export function buildWorld({ moduleRegistry, stateManager, i18n, registry, compl
 
   return {
     t: (key, params) => i18n.t(key, params),
+    // Die Kennung des Zyklus, nicht nur seine Phasenliste: `canAddInstance`
+    // braucht sie, um die Zuordnung eines Moduls nachzusehen, und soll sie
+    // nicht aus der Liste zurückraten müssen.
+    activeCycle: cycle,
     phases: getAllPhaseIds(cycle),
     modules,
     instances,
