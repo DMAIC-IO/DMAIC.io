@@ -136,6 +136,9 @@ export function toMarkdown(rows, opts) {
     'standard deviation; BCa usually recovers part of the gap. This is expected behaviour of',
     'the methods (Efron & Tibshirani 1993, ch. 14), not an engine defect.',
     '',
+    'Coverage values within about 2 Monte Carlo standard errors of the nominal level are',
+    'sampling noise; for the normal mean at n = 20 theory gives about 0.929.',
+    '',
   ].join('\n');
 }
 

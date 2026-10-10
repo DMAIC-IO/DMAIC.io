@@ -161,7 +161,7 @@ export default {
           {
             type: 'definition',
             term: 'Zu wenige Daten',
-            content: 'Der Bootstrap kann nur zeigen, was in den Daten steckt. Bei sehr kleinen Stichproben (unter etwa 10 Werten) sind Intervalle zu schmal, besonders für Median, Quantile und Ppk — das Konfidenzniveau wird dann nicht eingehalten. Bei Standardabweichung, Varianz und Variationskoeffizient unterschreiten die Intervalle bei schiefen Daten die Überdeckung selbst bei n = 20 deutlich: BCa erreicht bei lognormalen Daten nur 0,58, bei exponentialverteilten 0,77 (Überdeckungsstudie, docs/resampling-coverage.md).',
+            content: 'Der Bootstrap kann nur zeigen, was in den Daten steckt. Bei sehr kleinen Stichproben (unter etwa 10 Werten) sind Intervalle zu schmal, besonders für Median, Quantile und Ppk — das Konfidenzniveau wird dann nicht eingehalten. Bei der Standardabweichung unterschreiten die Intervalle bei schiefen Daten die Überdeckung selbst bei n = 20 deutlich: BCa erreicht bei lognormalen Daten nur 0,58, bei exponentialverteilten 0,77 (Simulationsstudie, n = 20, Konfidenzniveau 95 %). Für Varianz und Variationskoeffizient ist ähnliches Verhalten zu erwarten.',
           },
           {
             type: 'definition',
@@ -186,7 +186,7 @@ export default {
           {
             type: 'definition',
             term: 'Too little data',
-            content: 'The bootstrap can only show what is in the data. With very small samples (below about 10 values) intervals are too narrow, especially for the median, quantiles and Ppk — the confidence level is then not kept. For standard deviation, variance and CV on skewed data the intervals undercover even at n = 20: BCa reaches only 0.58 for lognormal and 0.77 for exponential data (coverage study, docs/resampling-coverage.md).',
+            content: 'The bootstrap can only show what is in the data. With very small samples (below about 10 values) intervals are too narrow, especially for the median, quantiles and Ppk — the confidence level is then not kept. For the standard deviation on skewed data the intervals undercover even at n = 20: BCa reaches only 0.58 for lognormal and 0.77 for exponential data (simulation study, n = 20, 95 % level). Similar behaviour is expected for variance and CV.',
           },
           {
             type: 'definition',
