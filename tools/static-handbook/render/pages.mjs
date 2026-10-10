@@ -29,7 +29,7 @@ function escAndLinkHeading(text, opts) {
     },
   );
 }
-import { getModuleName, getExamplesForModule } from '../loaders/load-sources.mjs';
+import { getModuleName, getExamplesForModule, GUIDE_PHASE } from '../loaders/load-sources.mjs';
 import { renderLatex } from './katex.mjs';
 import { renderInline } from './inline.mjs';
 import { CYCLES, getPhaseIds } from '../../../js/core/cycles/cycles.js';
@@ -495,7 +495,7 @@ export function renderLangIndex({ modules, guides = [], lang, i18n, examples }) 
       const href = `./guide/${guide.id}.html`;
       return `<a class="handbook-card" href="${escapeAttr(href)}"><div class="handbook-card__title">${escapeHtml(stripRefTokens(stripTermTokens(name)))}</div>${desc ? `<div class="handbook-card__desc">${escapeHtml(stripRefTokens(stripTermTokens(desc)))}</div>` : ''}</a>`;
     }).join('');
-    guidesSectionHtml = `<section class="handbook-phase-group" id="guide">
+    guidesSectionHtml = `<section class="handbook-phase-group" id="${escapeAttr(GUIDE_PHASE)}">
         <h2>${escapeHtml(s.phase.guide)}</h2>
         <p>${escapeHtml(s.phaseIntro.guide)}</p>
         <div class="handbook-grid">${guideCards}</div>

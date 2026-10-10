@@ -79,6 +79,17 @@ export async function loadModules(repoRoot, manifestOverride) {
 const GUIDES_DIR = 'js/help';
 
 /**
+ * Die Phasenkennung der modulfreien Kapitel — die eine Quelle für drei
+ * Stellen, die sonst dasselbe Wort dreimal behaupteten: der Pfad
+ * `/<lang>/guide/<id>.html` (aus `phase` gebaut), der Brotkrumen-Anker
+ * `/<lang>/#guide` der Kapitelseite und die `id` des Leitfaden-Abschnitts im
+ * Sprachindex. Der Link-Check prüft keine Fragmente — ein einseitig
+ * umbenannter Abschnitt ergäbe einen toten Anker, den nichts sieht.
+ * @type {string}
+ */
+export const GUIDE_PHASE = 'guide';
+
+/**
  * Load every module-free handbook from `js/help/<id>-help.js`.
  *
  * These chapters belong to no module: the AI-assistant briefing today, a
@@ -100,15 +111,26 @@ export async function loadGuides(repoRoot) {
   for (const file of (await readdir(dir)).sort()) {
     if (!file.endsWith('-help.js')) continue;
     const id = file.slice(0, -'-help.js'.length);
-    let help = null;
+    // Kein Schlucken: ein Leitfaden ist namentlich bekannt — die Datei liegt
+    // als `js/help/<id>-help.js` vor, also IST sie ein Kapitel. Ein
+    // Importfehler ist damit ein Defekt, nicht ein normaler Zustand, und ein
+    // still übersprungenes Kapitel fehlte lautlos im Handbuch und im
+    // Sprachindex. Anders als in `loadModules`, wo ein fehlendes
+    // `<id>-help.js` der Normalfall ist und `ERR_MODULE_NOT_FOUND` zu Recht
+    // still übersprungen wird: dort ist die Datei nur optional.
+    let help;
     try {
       const mod = await import(pathToFileURL(path.join(dir, file)).href);
       help = mod.default || mod;
     } catch (err) {
-      console.warn(`[handbook] Failed to load ${file}: ${err.message}`);
+      throw new Error(`[handbook] Leitfaden-Kapitel ${file} ist defekt: ${err.message}`, { cause: err });
     }
-    if (!help) continue;
-    results.push({ id, phase: 'guide', cycles: null, help: normalizeHelp(help), references: [] });
+    if (!help) {
+      throw new Error(`[handbook] Leitfaden-Kapitel ${file} exportiert keinen Inhalt`);
+    }
+    results.push({
+      id, phase: GUIDE_PHASE, cycles: null, help: normalizeHelp(help), references: [],
+    });
   }
   return results;
 }

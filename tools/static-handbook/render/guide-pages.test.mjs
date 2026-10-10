@@ -16,6 +16,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { renderModulePage, renderLangIndex } from './pages.mjs';
 import { AI_ASSISTANT_CHAPTER_ID, AI_ASSISTANT_CHAPTER_KEY } from '../../../js/help/help-keys.js';
+import { GUIDE_PHASE } from '../loaders/load-sources.mjs';
 
 test('renderModulePage nimmt einen Namen-Überschreiber für modulfreie Kapitel', async () => {
   const page = await renderModulePage({
@@ -38,8 +39,37 @@ test('renderLangIndex verlinkt die Leitfaden-Kapitel', () => {
     i18n: { de: { modules: {}, moduleHelp: { [AI_ASSISTANT_CHAPTER_KEY]: 'KI-Assistent' } } },
     examples: [],
   });
-  assert.match(index.html, /\/de\/guide\/ai-assistant\.html|\.\/guide\/ai-assistant\.html/);
+  // Erzeugt wird genau eine Form — der relative Verweis von `/de/index.html`
+  // aus. Eine Alternation über beide Schreibweisen prüfte weniger als nötig.
+  assert.match(index.html, /href="\.\/guide\/ai-assistant\.html"/);
   assert.match(index.html, /KI-Assistent/);
+});
+
+test('der Brotkrumen-Anker der Kapitelseite trifft den Abschnitt im Sprachindex', async () => {
+  // Der Link-Check prüft keine Fragmente. Ein einseitig umbenannter Abschnitt
+  // ergäbe einen toten Anker, den nichts sieht — darum bindet dieser Fall die
+  // drei Stellen aneinander: die Phasenkennung des Laders, den Brotkrumen der
+  // Kapitelseite und die `id` des Indexabschnitts.
+  const guide = {
+    id: AI_ASSISTANT_CHAPTER_ID, phase: GUIDE_PHASE, help: { sections: {} }, references: [],
+  };
+  const page = await renderModulePage({
+    module: guide, lang: 'de', i18n: { de: { modules: {} } }, name: 'KI-Assistent',
+  });
+  // `renderPage` macht die Brotkrumen-Verweise relativ (`../#guide`), darum
+  // wird das Fragment aus dem Brotkrumen-Block selbst gelesen.
+  const anchor = page.html.match(/aria-label="Breadcrumb"[\s\S]*?href="[^"]*#([a-z0-9-]+)"/);
+  assert.ok(anchor, 'die Kapitelseite trägt keinen Brotkrumen auf den Sprachindex');
+
+  const index = renderLangIndex({
+    modules: [],
+    guides: [guide],
+    lang: 'de',
+    i18n: { de: { modules: {}, moduleHelp: { [AI_ASSISTANT_CHAPTER_KEY]: 'KI-Assistent' } } },
+    examples: [],
+  });
+  assert.match(index.html, new RegExp(`id="${anchor[1]}"`),
+    `der Brotkrumen zeigt auf #${anchor[1]}, der Sprachindex kennt diesen Abschnitt nicht`);
 });
 
 test('renderLangIndex ohne Leitfäden baut keinen leeren Abschnitt', () => {

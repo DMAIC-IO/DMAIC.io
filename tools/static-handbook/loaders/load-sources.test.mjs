@@ -13,7 +13,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
-import { loadGuides, loadAllSources } from './load-sources.mjs';
+import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { loadGuides, loadAllSources, GUIDE_PHASE } from './load-sources.mjs';
 import { AI_ASSISTANT_CHAPTER_ID } from '../../../js/help/help-keys.js';
 
 /** Wurzel von `app/dev` — gleiche Herleitung wie `build.mjs:50`. */
@@ -42,6 +44,37 @@ test('loadGuides übergeht help-keys.js — nur `<id>-help.js` ist ein Kapitel',
   const guides = await loadGuides(REPO);
   assert.ok(!guides.some(g => g.id === 'help-keys'),
     'help-keys.js ist eine Kennungsdatei, kein Kapitel');
+});
+
+test('loadGuides trägt die Phasenkennung aus einer Quelle', async () => {
+  const guides = await loadGuides(REPO);
+  const briefing = guides.find(g => g.id === AI_ASSISTANT_CHAPTER_ID);
+  assert.equal(briefing.phase, GUIDE_PHASE);
+});
+
+test('ein defektes Leitfaden-Kapitel bricht den Lauf ab, statt zu verschwinden', async () => {
+  // Leitfäden sind namentlich bekannt: jede `<id>-help.js` in `js/help` IST
+  // ein Kapitel. Ein Importfehler ist darum kein „Kapitel gibt es nicht",
+  // sondern ein Defekt — still übersprungen fehlte das Kapitel im Handbuch
+  // und im Sprachindex, und die einzige Spur wäre eine Warnzeile im Buildlog.
+  const root = await mkdtemp(path.join(tmpdir(), 'handbook-guides-'));
+  try {
+    await mkdir(path.join(root, 'js/help'), { recursive: true });
+    await writeFile(
+      path.join(root, 'js/help/kaputt-help.js'),
+      'export default { sections: {} };\nthis is no javascript\n',
+      'utf8',
+    );
+    await assert.rejects(
+      () => loadGuides(root),
+      (err) => {
+        assert.match(err.message, /kaputt-help\.js/);
+        return true;
+      },
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test('loadAllSources gibt guides mit zurück', async () => {
