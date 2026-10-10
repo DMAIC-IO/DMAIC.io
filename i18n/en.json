@@ -4237,6 +4237,7 @@
       "pair": "Pair",
       "pRaw": "p raw",
       "pHolm": "p Holm",
+      "pMethod": "p-value method",
       "chartBootX": "Bootstrap replicate θ̂*",
       "chartPermX": "Test statistic T*",
       "ciLabel": "Confidence interval",

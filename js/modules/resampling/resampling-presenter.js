@@ -59,7 +59,6 @@ export function resultView(summary, { ciMethod, target }) {
   const interval = boot ? pickCI(boot.ci, ciMethod) : null;
   const tgt = parseOptionalNumber(target);
   const verdict = summary.mode === 'one' && Number.isFinite(tgt) ? decision(interval, tgt) : null;
-  const alpha = 1 - summary.confidence;
   let estimate = null;
   if (boot) estimate = boot.estimate;
   else if (summary.k) estimate = summary.k.estimate;
@@ -80,7 +79,6 @@ export function resultView(summary, { ciMethod, target }) {
       pValue: fmtP(test.pValue),
       methodKey: test.exact ? 'exact' : 'monteCarlo',
       permutations: String(test.permutations),
-      decisionKey: test.pValue <= alpha ? 'decisionReject' : 'decisionRetain',
     } : null,
     groups: summary.k ? summary.k.groups.map((g, i) => ({
       label: label(i), n: String(summary.n[i]), estimate: fmt(g.estimate),

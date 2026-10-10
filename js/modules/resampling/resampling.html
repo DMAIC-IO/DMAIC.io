@@ -103,7 +103,7 @@
     <div class="field-row">
       <div class="field-group">
         <label x-text="t('seed')"></label>
-        <input type="number" class="field field--num" data-ref="seed" min="1" step="1" x-model.number="model.seed">
+        <input type="number" class="field field--num" data-ref="seed" min="0" step="1" x-model.number="model.seed">
       </div>
       <button type="button" class="btn resampling__seed-roll" data-ref="seed-roll" :title="t('rollSeed')" :aria-label="t('rollSeed')" @click="rollSeed()">
         <span class="icon" data-icon="action.roll-seed" aria-hidden="true"></span>
@@ -177,10 +177,10 @@
         </table>
         <div class="dmike-split__output-section" x-text="t('sectionPosthoc')"></div>
         <table class="resampling__table" data-ref="posthoc-table">
-          <thead><tr><th x-text="t('pair')"></th><th x-text="t('estimate')"></th><th x-text="t('interval')"></th><th x-text="t('pRaw')"></th><th x-text="t('pHolm')"></th></tr></thead>
+          <thead><tr><th x-text="t('pair')"></th><th x-text="t('estimate')"></th><th x-text="t('interval')"></th><th x-text="t('pRaw')"></th><th x-text="t('pHolm')"></th><th x-text="t('pMethod')"></th></tr></thead>
           <tbody>
             <template x-for="(h, idx) in view.posthoc" :key="idx">
-              <tr><td x-text="h.pair"></td><td x-text="h.contrast"></td><td x-text="h.interval"></td><td x-text="h.pRaw"></td><td x-text="h.pHolm"></td></tr>
+              <tr><td x-text="h.pair"></td><td x-text="h.contrast"></td><td x-text="h.interval"></td><td x-text="h.pRaw"></td><td x-text="h.pHolm"></td><td x-text="t(h.methodKey)"></td></tr>
             </template>
           </tbody>
         </table>

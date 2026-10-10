@@ -24,7 +24,7 @@ const RESAMPLING_I18N_KEYS = [
   'sectionResult', 'estimate', 'se', 'bias', 'interval', 'bcaFallback', 'decision',
   'decisionReject', 'decisionRetain', 'pValue', 'exact', 'monteCarlo', 'permutations', 'observedT',
   'sectionBootChart', 'sectionPermChart', 'sectionGroups', 'group', 'sectionPosthoc', 'pair',
-  'pRaw', 'pHolm', 'chartBootX', 'chartPermX', 'ciLabel',
+  'pRaw', 'pHolm', 'pMethod', 'chartBootX', 'chartPermX', 'ciLabel',
   'errStatisticMode', 'errTrim', 'errQuantileP', 'errLimitsMissing', 'errLimitsOrder', 'errConfidence',
   'errB', 'errSeed', 'errTarget', 'errMinGroups', 'errMinValues', 'errMinPpk', 'errRatioPositive', 'errRatioStatistic',
   'errOptions', 'errDegenerateStatistic', 'errUnexpected',

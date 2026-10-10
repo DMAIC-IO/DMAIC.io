@@ -91,9 +91,7 @@ suite('resampling-presenter — resultView', () => {
     assertEqual(v.test.pValue, '0.0312');
     assertEqual(v.test.methodKey, 'monteCarlo');
     assertEqual(v.test.permutations, '1000');
-    assertEqual(v.test.decisionKey, 'decisionReject');
-    const retain = resultView(two({ confidence: 0.99 }), { ciMethod: 'bca', target: '' });
-    assertEqual(retain.test.decisionKey, 'decisionRetain');
+    assertEqual('decisionKey' in v.test, false, 'the test block carries no decision (unused)');
     const exact = resultView(two({ perm: { observed: 1, pValue: 0.5, exact: true, permutations: 252, bins: BINS } }), { ciMethod: 'bca', target: '' });
     assertEqual(exact.test.methodKey, 'exact');
   });
