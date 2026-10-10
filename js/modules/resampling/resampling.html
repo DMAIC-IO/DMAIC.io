@@ -142,7 +142,7 @@
 
     <template x-if="view">
       <div class="resampling__contents">
-        <div class="dmike-split__output-section" x-text="t('sectionResult')"></div>
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionResult')"></span></div>
         <p class="resampling__statement" data-ref="result-statement" x-show="statement.length" x-text="statementText()"></p>
         <table class="dmike-table dmike-table--head-mono resampling__result-table" data-ref="result-table">
           <thead>
@@ -174,14 +174,14 @@
       </div>
     </template>
 
-    <div class="dmike-split__output-section" x-show="view && view.hasBoot" x-text="t('sectionBootChart')"></div>
+    <div class="dmike-split__output-section" x-show="view && view.hasBoot"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionBootChart')"></span></div>
     <div class="resampling__chart" data-ref="chart-boot" x-show="view && view.hasBoot"></div>
-    <div class="dmike-split__output-section" x-show="view && view.hasTest" x-text="t('sectionPermChart')"></div>
+    <div class="dmike-split__output-section" x-show="view && view.hasTest"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionPermChart')"></span></div>
     <div class="resampling__chart" data-ref="chart-perm" x-show="view && view.hasTest"></div>
 
     <template x-if="view && view.isK">
       <div class="resampling__contents">
-        <div class="dmike-split__output-section" x-text="t('sectionGroups')"></div>
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionGroups')"></span></div>
         <table class="resampling__table" data-ref="groups-table">
           <thead><tr><th x-text="t('group')"></th><th>n</th><th x-text="t('estimate')"></th><th x-text="t('interval')"></th></tr></thead>
           <tbody>
@@ -190,7 +190,7 @@
             </template>
           </tbody>
         </table>
-        <div class="dmike-split__output-section" x-text="t('sectionPosthoc')"></div>
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionPosthoc')"></span></div>
         <table class="resampling__table" data-ref="posthoc-table">
           <thead><tr><th x-text="t('pair')"></th><th x-text="t('estimate')"></th><th x-text="t('interval')"></th><th x-text="t('pRaw')"></th><th x-text="t('pHolm')"></th><th x-text="t('pMethod')"></th></tr></thead>
           <tbody>
