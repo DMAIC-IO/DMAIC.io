@@ -132,13 +132,76 @@ export function closeContextHelp() {
 
 const DESCRIPTIONS_ID = 'dmike-context-help-descriptions';
 
+/* Alpines Bindung bleibt als Merkmal im DOM stehen, auch nachdem sie
+   ausgewertet wurde — daran ist ein fremder Titel auch dann erkennbar, wenn
+   wir VOR Alpine laufen und `title` noch gar nicht gesetzt ist. */
+const TITLE_BINDINGS = [':title', 'x-bind:title'];
+
+/**
+ * Ob das Element seinen `title` selbst mitbringt — als Merkmal oder als
+ * Alpine-Bindung. Beides heißt: Finger weg.
+ * @param {HTMLElement} el
+ * @returns {boolean}
+ */
+function hasOwnTitle(el) {
+  return el.hasAttribute('title') || TITLE_BINDINGS.some((a) => el.hasAttribute(a));
+}
+
+/**
+ * Einem Element den Hilfesatz zu `key` als `title` und `aria-describedby`
+ * anlegen — die EINE Anwendung dieser beiden Merkmale im Projekt. Wer
+ * irgendwo eine Kontexthilfe an ein Element hängt (als Nächstes die
+ * Werkzeugleisten-Knöpfe aus `ui/resolve-actions.js` und `ui/workspace.js`),
+ * ruft das hier und löst den Text nicht selbst auf: zwei Anwendungen gegen
+ * eine Quelle driften genauso auseinander wie zwei Quellen.
+ *
+ * Wie weit die beiden Wege wirklich tragen:
+ *
+ *   `title` — trägt überall. Der Satz als Maus-Tooltip, ohne Vorwissen über
+ *   die Alt-Taste. Das ist die eigentliche Lücke, nicht die Redundanz zum
+ *   Kontextfenster. ABER: nur, wenn das Element nicht schon einen eigenen
+ *   `title` hat. Bei den Symbolknöpfen `undo`/`redo` der Datensammlung ist
+ *   dieser kurze Titel die EINZIGE Quelle des zugänglichen Namens (der Inhalt
+ *   ist ein `aria-hidden`-Icon, das Fragezeichen ist `visibility: hidden` und
+ *   zählt nicht mit). Ihn zu überschreiben nähme dem Knopf seinen Namen samt
+ *   Tastenkürzel. Solche Anker behalten ihren Titel und bekommen den langen
+ *   Satz über `aria-describedby`.
+ *
+ *   `aria-describedby` — wirkt nur an Elementen, die auch FOKUSSIERT werden:
+ *   Knöpfe und Eingabefelder. An einem `<label>` ohne `for` (five-why
+ *   „Problemstellung", die sechs Labels des Hypothesentests) liest es
+ *   niemand vor — das Label bekommt keinen Fokus, und das Eingabefeld daneben
+ *   erbt die Beschreibung nicht. Diese Anker tragen den Satz faktisch nur über
+ *   `title`. Die Label-Verknüpfung nachzuziehen ist ein eigenes Stück Arbeit
+ *   (ROADMAP-Eintrag über Task 19), kein Teil dieser Stufe.
+ *
+ * Beide werden bei JEDEM Aufruf neu gesetzt, nicht beim ersten eingefroren —
+ * aus demselben Grund wie das `aria-label` am Fragezeichen.
+ *
+ * @param {HTMLElement} el  das zu beschreibende Element
+ * @param {string} key  der i18n-Hilfeschlüssel
+ * @returns {string} der angewandte Satz, oder `''` wenn der Schlüssel nicht auflöst
+ */
+export function describeElement(el, key) {
+  if (!el || !key || !STATE.i18n?.exists?.(key)) return '';
+  const text = STATE.i18n.t(key);
+  // Den eigenen Titel wiedererkennen: ohne diese Marke wäre der Satz nach dem
+  // ersten Durchlauf eingefroren (ab dann trägt das Element ja einen `title`)
+  // und ein Sprachwechsel zöge ihn nicht mehr nach.
+  if (!hasOwnTitle(el) || el.dataset.contextHelpTitle === '1') {
+    el.setAttribute('title', text);
+    el.dataset.contextHelpTitle = '1';
+  }
+  el.setAttribute('aria-describedby', describeTarget(key, text).id);
+  return text;
+}
+
 /**
  * Das verborgene Beschreibungsziel zu einem Hilfeschlüssel — die EINZIGE
- * Stelle, an der solche Ziele entstehen. Wer irgendwo ein `aria-describedby`
- * auf einen Hilfetext setzen will — als Nächstes die Werkzeugleisten-Knöpfe
- * aus `ui/resolve-actions.js` und `ui/workspace.js` —, holt die Kennung hier
- * und baut kein zweites Ziel daneben: zwei Mechanismen für denselben Satz
- * driften auseinander.
+ * Stelle, an der solche Ziele entstehen. Normalerweise nicht direkt rufen,
+ * sondern `describeElement(el, key)`: das ist die vollständige Anwendung
+ * einschließlich der Titelregel. Direkt gebraucht wird `describeTarget` nur,
+ * wo die Kennung ohne ein Element gebraucht wird.
  *
  * Ein Ziel JE SCHLÜSSEL, nicht je Anker: `hypothesis-test.html` trägt
  * `fields.targetValue.help` zweimal (σ²₀ und μ₀), und zwei Elemente mit
@@ -229,23 +292,7 @@ function augmentOne(anchor) {
     STATE.i18n.t('contextHelp.ariaLabel', { label: anchorLabel(anchor) }),
   );
 
-  // Drei Wege zu EINEM Satz. Das Kontextfenster am Fragezeichen ist der
-  // dritte; die beiden hier sind die, die ohne Vorwissen funktionieren:
-  //
-  //   `title` — der Satz als Maus-Tooltip. Ohne ihn ist der Hilfetext für
-  //   einen sehenden Maus-Nutzer nur erreichbar, wenn er von der Alt-Taste
-  //   weiß. Das ist die eigentliche Lücke, nicht die Redundanz zum
-  //   Kontextfenster.
-  //
-  //   `aria-describedby` — ein Screenreader liest den Satz beim Fokus vor.
-  //   Behebt „die Kontexthilfe ist mausgebunden und für einen Screenreader
-  //   unsichtbar".
-  //
-  // Beide werden bei JEDEM Durchlauf neu gesetzt, nicht beim ersten
-  // eingefroren — aus demselben Grund wie das `aria-label` darüber.
-  const text = STATE.i18n.t(key);
-  anchor.setAttribute('title', text);
-  anchor.setAttribute('aria-describedby', describeTarget(key, text).id);
+  describeElement(anchor, key);
 
   anchor.classList.add('context-help-anchor');
   // Nur noch Markierung für Diagnose und E2E — die Idempotenz hängt oben am

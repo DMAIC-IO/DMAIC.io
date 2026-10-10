@@ -1,5 +1,5 @@
 import { suite, test, assertEqual, beforeEach, afterEach } from '../test-utils.js';
-import { setContextHelpConfig, augmentContextHelp } from '../../js/core/context-help.js';
+import { setContextHelpConfig, augmentContextHelp, describeElement } from '../../js/core/context-help.js';
 
 /** Eine i18n-Attrappe mit wählbarer Tabelle. */
 function fakeI18n(table) {
@@ -133,6 +133,95 @@ suite('Kontexthilfe — title und aria-describedby', () => {
 
     const anchor = host.querySelector('button');
     assertEqual(anchor.getAttribute('title'), 'Legt eine Why-Frage an.');
+  });
+
+  test('ein Anker mit eigenem title behält ihn und bekommt trotzdem die Beschreibung', () => {
+    // Der Symbolknopf `undo` der Datensammlung: sein Inhalt ist ein
+    // `aria-hidden`-Icon, das Fragezeichen ist `visibility: hidden` und zählt
+    // nicht mit — der kurze `title` ist die EINZIGE Quelle des zugänglichen
+    // Namens. Ihn zu überschreiben nähme dem Knopf seinen Namen samt
+    // Tastenkürzel.
+    setContextHelpConfig({ i18n: fakeI18n({
+      'modules.worksheet.actions.undo.help': 'Nimmt die letzte Änderung am Blatt zurück.',
+      'contextHelp.ariaLabel': 'Kontexthilfe zu „{label}" anzeigen',
+    }) });
+    host.innerHTML = '<button title="Rückgängig (Ctrl+Z)" '
+      + 'data-help-key="modules.worksheet.actions.undo.help"></button>';
+
+    augmentContextHelp(host);
+
+    const anchor = host.querySelector('button');
+    assertEqual(anchor.getAttribute('title'), 'Rückgängig (Ctrl+Z)');
+    assertEqual(
+      document.getElementById(anchor.getAttribute('aria-describedby')).textContent,
+      'Nimmt die letzte Änderung am Blatt zurück.',
+    );
+  });
+
+  test('eine Alpine-Titelbindung zählt als eigener Titel', () => {
+    // `:title="t('undo')"` steht im Markup und bleibt als Merkmal stehen.
+    // Ohne diese Prüfung hinge das Ergebnis an der Reihenfolge: laufen wir vor
+    // Alpine, ist `title` noch leer und wir überschrieben den Namen — bis
+    // Alpine zurückschreibt und beide um dasselbe Merkmal streiten.
+    setContextHelpConfig({ i18n: fakeI18n({
+      'modules.worksheet.actions.undo.help': 'Nimmt die letzte Änderung am Blatt zurück.',
+      'contextHelp.ariaLabel': 'Kontexthilfe zu „{label}" anzeigen',
+    }) });
+    host.innerHTML = '<button :title="t(\'undo\')" '
+      + 'data-help-key="modules.worksheet.actions.undo.help"></button>';
+
+    augmentContextHelp(host);
+
+    const anchor = host.querySelector('button');
+    assertEqual(anchor.hasAttribute('title'), false, 'fremde Titelbindung überschrieben');
+    assertEqual(anchor.hasAttribute('aria-describedby'), true);
+  });
+
+  test('describeElement legt beide Merkmale auch ohne Fragezeichen an', () => {
+    // Der Weg, den die Werkzeugleisten-Knöpfe aus `config.actions` nehmen:
+    // ein Element, das kein `data-help-key`-Anker ist, aber denselben Satz
+    // tragen soll. EINE Anwendung, nicht zwei.
+    setContextHelpConfig({ i18n: fakeI18n({
+      'modules.worksheet.actions.addColumn.help': 'Hängt eine Spalte an.',
+    }) });
+    host.innerHTML = '<button>Spalte</button>';
+    const btn = host.querySelector('button');
+
+    const applied = describeElement(btn, 'modules.worksheet.actions.addColumn.help');
+
+    assertEqual(applied, 'Hängt eine Spalte an.');
+    assertEqual(btn.getAttribute('title'), 'Hängt eine Spalte an.');
+    assertEqual(
+      document.getElementById(btn.getAttribute('aria-describedby')).textContent,
+      'Hängt eine Spalte an.',
+    );
+    assertEqual(btn.querySelector('.context-help__btn'), null, 'kein Fragezeichen erwartet');
+  });
+
+  test('describeElement lässt ein Element mit unauflösbarem Schlüssel unberührt', () => {
+    setContextHelpConfig({ i18n: fakeI18n({}) });
+    host.innerHTML = '<button>Spalte</button>';
+    const btn = host.querySelector('button');
+
+    assertEqual(describeElement(btn, 'modules.foo.actions.bar.help'), '');
+    assertEqual(btn.hasAttribute('title'), false);
+    assertEqual(btn.hasAttribute('aria-describedby'), false);
+  });
+
+  test('ein zweiter Durchlauf überschreibt einen fremden Titel auch dann nicht', () => {
+    const de = { 'modules.worksheet.actions.undo.help': 'Der Satz.', 'contextHelp.ariaLabel': 'x „{label}"' };
+    const en = { 'modules.worksheet.actions.undo.help': 'The sentence.', 'contextHelp.ariaLabel': 'x „{label}"' };
+    setContextHelpConfig({ i18n: fakeI18n(de) });
+    host.innerHTML = '<button title="Rückgängig (Ctrl+Z)" '
+      + 'data-help-key="modules.worksheet.actions.undo.help"></button>';
+    augmentContextHelp(host);
+
+    setContextHelpConfig({ i18n: fakeI18n(en) });
+    augmentContextHelp(host);
+
+    const anchor = host.querySelector('button');
+    assertEqual(anchor.getAttribute('title'), 'Rückgängig (Ctrl+Z)');
+    assertEqual(document.getElementById(anchor.getAttribute('aria-describedby')).textContent, 'The sentence.');
   });
 
   test('ein zweiter Durchlauf zieht einen geänderten Text nach, statt ihn einzufrieren', () => {
