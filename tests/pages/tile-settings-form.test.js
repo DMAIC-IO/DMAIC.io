@@ -40,6 +40,16 @@ suite('tile-settings-form', () => {
     assertEqual(cb.checked, false);
   });
 
+  test('number and select use the shared .field style, the checkbox does not', () => {
+    const form = buildSettingsForm(SCHEMA, VALUES, i18n);
+    for (const key of ['topN', 'view']) {
+      const el = input(form, key);
+      assertEqual(el.classList.contains('field'), true, `${key} has .field`);
+      assertEqual(el.classList.contains('field--inline'), true, `${key} has .field--inline`);
+    }
+    assertEqual(input(form, 'showLegend').classList.contains('field'), false);
+  });
+
   test('read() returns the current values', () => {
     const form = buildSettingsForm(SCHEMA, VALUES, i18n);
     assertDeepEqual(form.read(), VALUES);

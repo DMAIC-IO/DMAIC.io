@@ -34,10 +34,10 @@ function optionText(field, option, index, i18n) {
  */
 function createControl(field, i18n) {
   if (field.type === 'number') {
-    return h('input', { type: 'number', min: field.min, max: field.max, step: field.step ?? 1 });
+    return h('input', { type: 'number', class: 'field field--inline', min: field.min, max: field.max, step: field.step ?? 1 });
   }
   if (field.type === 'select') {
-    return h('select', {},
+    return h('select', { class: 'field field--inline' },
       ...field.options.map((option, i) => h('option', { value: option }, optionText(field, option, i, i18n))));
   }
   return h('input', { type: 'checkbox' });
