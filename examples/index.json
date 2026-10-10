@@ -1290,8 +1290,8 @@
       "type": "project",
       "title": { "de": "Bolzendurchmesser: Ppk mit Bootstrap-Intervall", "en": "Bolt diameter: Ppk with a bootstrap interval" },
       "description": {
-        "de": "30 Bolzendurchmesser mit einzelnen Ausreißern, Toleranz 9,7–10,3 mm. Der Bootstrap liefert ein BCa-Intervall für Ppk; der Sollwert 1,33 zeigt, ob die Fähigkeit statistisch abgesichert ist.",
-        "en": "30 bolt diameters with a few outliers, tolerance 9.7–10.3 mm. The bootstrap gives a BCa interval for Ppk; the target 1.33 shows whether capability is statistically assured."
+        "de": "30 Bolzendurchmesser aus dem Grubbs-Arbeitsblatt (mit den dort eingebauten Ausreißern), Toleranz 9,7–10,3 mm. Der Bootstrap liefert ein BCa-Intervall für Ppk; liegt dessen untere Grenze über dem Sollwert 1,33, spricht das für eine fähige Fertigung.",
+        "en": "30 bolt diameters from the Grubbs sheet (including its seeded outliers), tolerance 9.7–10.3 mm. The bootstrap gives a BCa interval for Ppk; a lower bound above the target 1.33 indicates capability."
       },
       "source": "Qprovement synthetisch",
       "license": "public-domain",

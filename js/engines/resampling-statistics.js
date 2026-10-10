@@ -12,7 +12,7 @@
 /** Error with a machine-readable code; the module maps codes to i18n keys. */
 export class ResamplingError extends Error {
   /**
-   * @param {'insufficient-data'|'invalid-limits'|'non-positive-ratio'|'invalid-statistic-for-mode'|'invalid-options'} code
+   * @param {'insufficient-data'|'invalid-limits'|'non-positive-ratio'|'invalid-statistic-for-mode'|'degenerate-statistic'|'invalid-options'} code
    * @param {string} [message]
    */
   constructor(code, message) {
