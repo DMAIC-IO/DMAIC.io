@@ -1,0 +1,88 @@
+{
+  "id": "chi-square-association",
+  "name": { "de": "Chi-Quadrat-Test auf Unabhängigkeit", "en": "Chi-Square Test of Association" },
+  "category": "attribute",
+  "subcategory": "contingency",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Prüft eine r×c-Kreuztabelle auf Zusammenhang: erwartete Häufigkeiten, Beiträge, Pearson-χ² und Likelihood-Quotient G².",
+      "en": "Tests an r×c cross table for association: expected counts, contributions, Pearson χ² and likelihood ratio G²."
+    },
+    "long": {
+      "de": "Erwartete Häufigkeiten E = Zeilensumme · Spaltensumme / n. Pearson χ² = Σ (O − E)²/E, G² = 2 Σ O·ln(O/E), beide mit (r − 1)(c − 1) Freiheitsgraden. Zeilen und Spalten ohne Beobachtungen werden entfernt. Warnung, wenn eine erwartete Häufigkeit unter 1 liegt oder mehr als 20 % unter 5. Bei 2×2 zusätzlich Yates-Korrektur und Fisher-exakt.",
+      "en": "Expected counts E = row total · column total / n. Pearson χ² = Σ (O − E)²/E, G² = 2 Σ O·ln(O/E), both with (r − 1)(c − 1) degrees of freedom. Rows and columns without observations are dropped. Warning when an expected count is below 1 or more than 20 % are below 5. For 2×2 also Yates' correction and Fisher's exact test."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      { "label": "E", "latex": "E_{ij} = \\frac{R_i\\,C_j}{n}", "description": { "de": "Erwartete Häufigkeit", "en": "Expected count" } },
+      { "label": "χ²", "latex": "\\chi^2 = \\sum_{i,j} \\frac{(O_{ij}-E_{ij})^2}{E_{ij}}", "description": { "de": "Pearson", "en": "Pearson" } },
+      { "label": "G²", "latex": "G^2 = 2\\sum_{i,j} O_{ij}\\ln\\frac{O_{ij}}{E_{ij}}", "description": { "de": "Likelihood-Quotient", "en": "Likelihood ratio" } }
+    ],
+    "assumptions": [
+      { "de": "Unabhängige Beobachtungen, jede in genau einer Zelle", "en": "Independent observations, each in exactly one cell" },
+      { "de": "Erwartete Häufigkeiten ≥ 1 und höchstens 20 % unter 5", "en": "Expected counts ≥ 1 and at most 20 % below 5" }
+    ],
+    "limitations": [
+      { "de": "Asymptotischer Test; bei kleinen erwarteten Häufigkeiten unzuverlässig", "en": "Asymptotic test; unreliable for small expected counts" }
+    ],
+    "references": [
+      { "source": "Minitab Methods and Formulas: Chi-Square Test for Association" },
+      { "source": "Melzer, A. (2019), Six Sigma – Kompakt und praxisnah, §9.11" }
+    ],
+    "minitab_equivalent": "Stat > Tables > Chi-Square Test for Association"
+  },
+  "source": {
+    "function_name": "chiSquareAssociation",
+    "file_path": "js/engines/attribute-test-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "table", "type": "number[][]", "required": true, "description": { "de": "r×c-Häufigkeitstabelle", "en": "r×c table of counts" } },
+        { "name": "alpha", "type": "number", "required": false, "description": { "de": "Signifikanzniveau (Standard 0.05)", "en": "Significance level (default 0.05)" } }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "pearson": { "type": "number", "description": { "de": "Pearson χ²", "en": "Pearson χ²" } },
+          "pPearson": { "type": "number", "description": { "de": "p-Wert (Pearson)", "en": "p-value (Pearson)" } },
+          "lr": { "type": "number", "description": { "de": "G²", "en": "G²" } },
+          "df": { "type": "number", "description": { "de": "Freiheitsgrade", "en": "Degrees of freedom" } },
+          "reject": { "type": "boolean", "description": { "de": "H₀ abgelehnt?", "en": "Reject H₀?" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        { "name": "table", "label": { "de": "Tabelle (JSON)", "en": "Table (JSON)" }, "type": "textarea", "placeholder": { "de": "[[20, 15, 30], [25, 25, 25]]", "en": "[[20, 15, 30], [25, 25, 25]]" }, "parse_as": "json", "required": true },
+        { "name": "alpha", "label": { "de": "Signifikanzniveau α", "en": "Significance level α" }, "type": "number", "placeholder": { "de": "0.05", "en": "0.05" }, "parse_as": "number", "required": false }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["df", "pearson", "pPearson", "lr", "pLR", "minExpected", "shareBelow5", "yates", "pYates", "fisherTwoSided", "fisherLess", "fisherGreater", "reject"],
+      "primary_field": "pearson",
+      "format": {
+        "df": { "decimals": 0, "label": "df" },
+        "pearson": { "decimals": 4, "label": "χ²" },
+        "pPearson": { "decimals": 6, "label": "p (χ²)" },
+        "lr": { "decimals": 4, "label": "G²" },
+        "pLR": { "decimals": 6, "label": "p (G²)" },
+        "minExpected": { "decimals": 3, "label": "min E" },
+        "shareBelow5": { "decimals": 3, "label": { "de": "Anteil E < 5", "en": "Share E < 5" } },
+        "yates": { "decimals": 4, "label": "Yates" },
+        "pYates": { "decimals": 6, "label": "p (Yates)" },
+        "fisherTwoSided": { "decimals": 6, "label": "p (Fisher)" },
+        "fisherLess": { "decimals": 6, "label": "p (Fisher, less)" },
+        "fisherGreater": { "decimals": 6, "label": "p (Fisher, greater)" },
+        "reject": { "decimals": 0, "label": { "de": "H₀ abgelehnt", "en": "Reject H₀" } }
+      }
+    }
+  },
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-10-10", "type": "initial", "description": { "de": "Erstimplementierung", "en": "Initial implementation" }, "breaking": false }
+  ]
+}

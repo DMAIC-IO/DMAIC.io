@@ -1,0 +1,101 @@
+{
+  "id": "two-proportion",
+  "name": { "de": "Test auf zwei Anteile", "en": "2-Proportion Test" },
+  "category": "attribute",
+  "subcategory": "proportion",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Vergleicht zwei Anteile x₁/n₁ und x₂/n₂ per z-Test, mit Konfidenzintervall der Differenz und Fisher-exaktem Test.",
+      "en": "Compares two proportions x₁/n₁ and x₂/n₂ with a z-test, a CI for the difference and Fisher's exact test."
+    },
+    "long": {
+      "de": "Standard ist der z-Test mit getrennter Schätzung der Anteile (wie Minitab); optional mit gepoolter Schätzung von p (nur für die Prüfdifferenz 0). Das Konfidenzintervall der Differenz ist immer ungepoolt. Fisher-exakt wird zusätzlich als zweiter p-Wert berechnet und ist bei kleinen Zahlen maßgeblich.",
+      "en": "The default is the z-test with separate estimates of the proportions (as in Minitab), optionally with the pooled estimate of p (test difference 0 only). The CI for the difference is always unpooled. Fisher's exact test is reported as a second p-value and is the one to use for small counts."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      { "label": "z (getrennt / separate)", "latex": "z = \\frac{\\hat p_1 - \\hat p_2}{\\sqrt{\\hat p_1(1-\\hat p_1)/n_1 + \\hat p_2(1-\\hat p_2)/n_2}}", "description": { "de": "Getrennte Schätzung", "en": "Separate estimates" } },
+      { "label": "z (gepoolt / pooled)", "latex": "z = \\frac{\\hat p_1 - \\hat p_2}{\\sqrt{\\hat p(1-\\hat p)(1/n_1 + 1/n_2)}},\\; \\hat p = \\frac{x_1+x_2}{n_1+n_2}", "description": { "de": "Gepoolte Schätzung", "en": "Pooled estimate" } },
+      { "label": "KI / CI", "latex": "(\\hat p_1 - \\hat p_2) \\pm z_{1-\\alpha/2}\\sqrt{\\hat p_1(1-\\hat p_1)/n_1 + \\hat p_2(1-\\hat p_2)/n_2}", "description": { "de": "Ungepooltes Intervall", "en": "Unpooled interval" } }
+    ],
+    "assumptions": [
+      { "de": "Zwei unabhängige Stichproben", "en": "Two independent samples" },
+      { "de": "Für den z-Test genügend Ereignisse und Nicht-Ereignisse je Gruppe", "en": "Enough events and non-events per group for the z-test" }
+    ],
+    "limitations": [
+      { "de": "Prüfdifferenz fest 0", "en": "Test difference fixed at 0" }
+    ],
+    "references": [
+      { "source": "Minitab Methods and Formulas: 2 Proportions" },
+      { "source": "Melzer, A. (2019), Six Sigma – Kompakt und praxisnah, §3.5.1, §13.4" }
+    ],
+    "minitab_equivalent": "Stat > Basic Statistics > 2 Proportions"
+  },
+  "source": {
+    "function_name": "twoProportionTest",
+    "file_path": "js/engines/attribute-test-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "x1", "type": "number", "required": true, "description": { "de": "Ereignisse Stichprobe 1", "en": "Events sample 1" } },
+        { "name": "n1", "type": "number", "required": true, "description": { "de": "Versuche Stichprobe 1", "en": "Trials sample 1" } },
+        { "name": "x2", "type": "number", "required": true, "description": { "de": "Ereignisse Stichprobe 2", "en": "Events sample 2" } },
+        { "name": "n2", "type": "number", "required": true, "description": { "de": "Versuche Stichprobe 2", "en": "Trials sample 2" } },
+        { "name": "direction", "type": "string", "required": false, "description": { "de": "'two-sided', 'greater', 'less'", "en": "'two-sided', 'greater', 'less'" } },
+        { "name": "alpha", "type": "number", "required": false, "description": { "de": "Signifikanzniveau (Standard 0.05)", "en": "Significance level (default 0.05)" } },
+        { "name": "pooled", "type": "boolean", "required": false, "description": { "de": "Gepoolte Schätzung für z", "en": "Pooled estimate for z" } }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "diff": { "type": "number", "description": { "de": "p̂₁ − p̂₂", "en": "p̂₁ − p̂₂" } },
+          "z": { "type": "number", "description": { "de": "z-Statistik (null bei SE 0)", "en": "z statistic (null for SE 0)" } },
+          "pValue": { "type": "number", "description": { "de": "p-Wert (z-Test)", "en": "p-value (z-test)" } },
+          "pFisher": { "type": "number", "description": { "de": "p-Wert Fisher-exakt", "en": "Fisher's exact p-value" } },
+          "reject": { "type": "boolean", "description": { "de": "H₀ abgelehnt?", "en": "Reject H₀?" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        { "name": "x1", "label": { "de": "x₁", "en": "x₁" }, "type": "number", "placeholder": { "de": "z.B. 16", "en": "e.g. 16" }, "parse_as": "number", "required": true },
+        { "name": "n1", "label": { "de": "n₁", "en": "n₁" }, "type": "number", "placeholder": { "de": "z.B. 500", "en": "e.g. 500" }, "parse_as": "number", "required": true },
+        { "name": "x2", "label": { "de": "x₂", "en": "x₂" }, "type": "number", "placeholder": { "de": "z.B. 10", "en": "e.g. 10" }, "parse_as": "number", "required": true },
+        { "name": "n2", "label": { "de": "n₂", "en": "n₂" }, "type": "number", "placeholder": { "de": "z.B. 500", "en": "e.g. 500" }, "parse_as": "number", "required": true },
+        { "name": "direction", "label": { "de": "Testrichtung", "en": "Test direction" }, "type": "select", "options": [
+          { "value": "two-sided", "label": { "de": "≠ Zweiseitig", "en": "≠ Two-sided" } },
+          { "value": "greater", "label": { "de": "> Größer", "en": "> Greater" } },
+          { "value": "less", "label": { "de": "< Kleiner", "en": "< Less" } }
+        ], "parse_as": "string", "required": false },
+        { "name": "alpha", "label": { "de": "Signifikanzniveau α", "en": "Significance level α" }, "type": "number", "placeholder": { "de": "0.05", "en": "0.05" }, "parse_as": "number", "required": false },
+        { "name": "pooled", "label": { "de": "Gepoolt", "en": "Pooled" }, "type": "select", "options": [
+          { "value": "false", "label": { "de": "Nein", "en": "No" } },
+          { "value": "true", "label": { "de": "Ja", "en": "Yes" } }
+        ], "parse_as": "json", "required": false }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["p1", "p2", "diff", "ciLower", "ciUpper", "z", "pValue", "pFisher", "reject"],
+      "primary_field": "pValue",
+      "format": {
+        "p1": { "decimals": 6, "label": "p̂₁" },
+        "p2": { "decimals": 6, "label": "p̂₂" },
+        "diff": { "decimals": 6, "label": { "de": "Differenz", "en": "Difference" } },
+        "ciLower": { "decimals": 6, "label": { "de": "KI unten", "en": "CI lower" } },
+        "ciUpper": { "decimals": 6, "label": { "de": "KI oben", "en": "CI upper" } },
+        "z": { "decimals": 6, "label": "z" },
+        "pValue": { "decimals": 6, "label": "p-Value" },
+        "pFisher": { "decimals": 6, "label": { "de": "p (Fisher)", "en": "p (Fisher)" } },
+        "reject": { "decimals": 0, "label": { "de": "H₀ abgelehnt", "en": "Reject H₀" } }
+      }
+    }
+  },
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-10-10", "type": "initial", "description": { "de": "Erstimplementierung", "en": "Initial implementation" }, "breaking": false }
+  ]
+}

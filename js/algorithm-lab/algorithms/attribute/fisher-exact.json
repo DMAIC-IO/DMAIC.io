@@ -1,0 +1,80 @@
+{
+  "id": "fisher-exact",
+  "name": { "de": "Exakter Test nach Fisher", "en": "Fisher's Exact Test" },
+  "category": "attribute",
+  "subcategory": "contingency",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Exakter Test auf Zusammenhang in einer 2×2-Tafel über die hypergeometrische Verteilung.",
+      "en": "Exact test for association in a 2×2 table via the hypergeometric distribution."
+    },
+    "long": {
+      "de": "Bei festen Rändern folgt die linke obere Zelle einer hypergeometrischen Verteilung. Einseitig wird die Wahrscheinlichkeit der beobachteten und aller extremeren Tafeln summiert; zweiseitig alle Tafeln, die höchstens so wahrscheinlich sind wie die beobachtete (relative Toleranz 1e-7, wie R und Minitab). Die Wahrscheinlichkeiten werden im Logarithmus berechnet, damit auch Tafeln mit 10⁵ Einheiten stabil bleiben.",
+      "en": "With fixed margins the top-left cell follows a hypergeometric distribution. One-sided p sums the observed and all more extreme tables; two-sided p sums all tables at most as likely as the observed one (relative tolerance 1e-7, as in R and Minitab). Probabilities are computed in log space, so tables with 10⁵ units stay stable."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      { "label": "P(a)", "latex": "P(a) = \\frac{\\binom{a+b}{a}\\binom{c+d}{c}}{\\binom{n}{a+c}}", "description": { "de": "Hypergeometrische Wahrscheinlichkeit der Tafel", "en": "Hypergeometric probability of the table" } },
+      { "label": "OR", "latex": "\\mathrm{OR} = \\frac{a\\,d}{b\\,c}", "description": { "de": "Stichproben-Odds-Ratio (leer bei b·c = 0)", "en": "Sample odds ratio (empty for b·c = 0)" } }
+    ],
+    "assumptions": [
+      { "de": "Unabhängige Beobachtungen", "en": "Independent observations" }
+    ],
+    "limitations": [
+      { "de": "Nur 2×2-Tafeln", "en": "2×2 tables only" }
+    ],
+    "references": [
+      { "source": "Agresti, A. (2013), Categorical Data Analysis, 3rd ed., §3.5" },
+      { "source": "Melzer, A. (2019), Six Sigma – Kompakt und praxisnah, §9.10" }
+    ],
+    "minitab_equivalent": "Stat > Tables > Cross Tabulation and Chi-Square (Fisher's exact test)"
+  },
+  "source": {
+    "function_name": "fisherExact2x2",
+    "file_path": "js/engines/attribute-test-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "table", "type": "number[][]", "required": true, "description": { "de": "2×2-Tafel [[a, b], [c, d]]", "en": "2×2 table [[a, b], [c, d]]" } },
+        { "name": "direction", "type": "string", "required": false, "description": { "de": "'two-sided', 'greater' (OR > 1), 'less' (OR < 1)", "en": "'two-sided', 'greater' (OR > 1), 'less' (OR < 1)" } }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "pValue": { "type": "number", "description": { "de": "p-Wert der gewählten Richtung", "en": "p-value for the chosen direction" } },
+          "pLess": { "type": "number", "description": { "de": "Einseitig, kleiner", "en": "One-sided, less" } },
+          "pGreater": { "type": "number", "description": { "de": "Einseitig, größer", "en": "One-sided, greater" } },
+          "oddsRatio": { "type": "number", "description": { "de": "Odds-Ratio", "en": "Odds ratio" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        { "name": "table", "label": { "de": "2×2-Tafel (JSON)", "en": "2×2 table (JSON)" }, "type": "textarea", "placeholder": { "de": "[[10, 4], [2, 8]]", "en": "[[10, 4], [2, 8]]" }, "parse_as": "json", "required": true },
+        { "name": "direction", "label": { "de": "Testrichtung", "en": "Test direction" }, "type": "select", "options": [
+          { "value": "two-sided", "label": { "de": "≠ Zweiseitig", "en": "≠ Two-sided" } },
+          { "value": "greater", "label": { "de": "> Größer", "en": "> Greater" } },
+          { "value": "less", "label": { "de": "< Kleiner", "en": "< Less" } }
+        ], "parse_as": "string", "required": false }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["pValue", "pLess", "pGreater", "oddsRatio"],
+      "primary_field": "pValue",
+      "format": {
+        "pValue": { "decimals": 6, "label": "p-Value" },
+        "pLess": { "decimals": 6, "label": "p (less)" },
+        "pGreater": { "decimals": 6, "label": "p (greater)" },
+        "oddsRatio": { "decimals": 4, "label": "OR" }
+      }
+    }
+  },
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-10-10", "type": "initial", "description": { "de": "Erstimplementierung", "en": "Initial implementation" }, "breaking": false }
+  ]
+}

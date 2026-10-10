@@ -1,0 +1,91 @@
+{
+  "id": "one-proportion",
+  "name": { "de": "Test auf einen Anteil", "en": "1-Proportion Test" },
+  "category": "attribute",
+  "subcategory": "proportion",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Prüft, ob ein Anteil x/n einem hypothetischen Wert p₀ entspricht – exakt und mit Normalapproximation.",
+      "en": "Tests whether a proportion x/n equals a hypothesized p₀ – exact and by normal approximation."
+    },
+    "long": {
+      "de": "Der exakte Test nutzt die Binomialverteilung und passt zum Clopper-Pearson-Intervall: zweiseitig p = min(1, 2·min(P(X ≤ x), P(X ≥ x))). Die Normalapproximation z = (p̂ − p₀)/√(p₀(1 − p₀)/n) wird zusätzlich gezeigt; sie ist nur verlässlich, wenn n·p₀ und n·(1 − p₀) mindestens 5 sind.",
+      "en": "The exact test uses the binomial distribution and matches the Clopper-Pearson interval: two-sided p = min(1, 2·min(P(X ≤ x), P(X ≥ x))). The normal approximation z = (p̂ − p₀)/√(p₀(1 − p₀)/n) is shown as well; it is reliable only when n·p₀ and n·(1 − p₀) are at least 5."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      { "label": "p (exakt / exact)", "latex": "p = \\min\\left(1,\\; 2\\min\\{P(X\\le x),\\, P(X\\ge x)\\}\\right),\\; X\\sim\\mathrm{Bin}(n, p_0)", "description": { "de": "Zweiseitiger exakter p-Wert", "en": "Two-sided exact p-value" } },
+      { "label": "z", "latex": "z = \\frac{\\hat p - p_0}{\\sqrt{p_0(1-p_0)/n}}", "description": { "de": "Normalapproximation", "en": "Normal approximation" } }
+    ],
+    "assumptions": [
+      { "de": "Unabhängige Versuche mit gleicher Ereigniswahrscheinlichkeit", "en": "Independent trials with equal event probability" }
+    ],
+    "limitations": [
+      { "de": "Normalapproximation unzuverlässig bei n·p₀ < 5 oder n·(1 − p₀) < 5", "en": "Normal approximation unreliable for n·p₀ < 5 or n·(1 − p₀) < 5" }
+    ],
+    "references": [
+      { "source": "Minitab Methods and Formulas: 1 Proportion" },
+      { "source": "Melzer, A. (2019), Six Sigma – Kompakt und praxisnah, §9.10" }
+    ],
+    "minitab_equivalent": "Stat > Basic Statistics > 1 Proportion"
+  },
+  "source": {
+    "function_name": "oneProportionTest",
+    "file_path": "js/engines/attribute-test-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "x", "type": "number", "required": true, "description": { "de": "Anzahl Ereignisse", "en": "Number of events" } },
+        { "name": "n", "type": "number", "required": true, "description": { "de": "Anzahl Versuche", "en": "Number of trials" } },
+        { "name": "p0", "type": "number", "required": false, "description": { "de": "Hypothetischer Anteil (Standard 0.5)", "en": "Hypothesized proportion (default 0.5)" } },
+        { "name": "direction", "type": "string", "required": false, "description": { "de": "'two-sided', 'greater', 'less'", "en": "'two-sided', 'greater', 'less'" } },
+        { "name": "alpha", "type": "number", "required": false, "description": { "de": "Signifikanzniveau (Standard 0.05)", "en": "Significance level (default 0.05)" } }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "pHat": { "type": "number", "description": { "de": "Anteil x/n", "en": "Proportion x/n" } },
+          "pExact": { "type": "number", "description": { "de": "Exakter p-Wert", "en": "Exact p-value" } },
+          "z": { "type": "number", "description": { "de": "z-Statistik", "en": "z statistic" } },
+          "pNormal": { "type": "number", "description": { "de": "p-Wert der Normalapproximation", "en": "Normal-approximation p-value" } },
+          "reject": { "type": "boolean", "description": { "de": "H₀ verworfen (exakter Test)?", "en": "Reject H₀ (exact test)?" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        { "name": "x", "label": { "de": "Ereignisse x", "en": "Events x" }, "type": "number", "placeholder": { "de": "z.B. 12", "en": "e.g. 12" }, "parse_as": "number", "required": true },
+        { "name": "n", "label": { "de": "Versuche n", "en": "Trials n" }, "type": "number", "placeholder": { "de": "z.B. 50", "en": "e.g. 50" }, "parse_as": "number", "required": true },
+        { "name": "p0", "label": { "de": "p₀", "en": "p₀" }, "type": "number", "placeholder": { "de": "0.5", "en": "0.5" }, "parse_as": "number", "required": false },
+        { "name": "direction", "label": { "de": "Testrichtung", "en": "Test direction" }, "type": "select", "options": [
+          { "value": "two-sided", "label": { "de": "≠ Zweiseitig", "en": "≠ Two-sided" } },
+          { "value": "greater", "label": { "de": "> Größer", "en": "> Greater" } },
+          { "value": "less", "label": { "de": "< Kleiner", "en": "< Less" } }
+        ], "parse_as": "string", "required": false },
+        { "name": "alpha", "label": { "de": "Signifikanzniveau α", "en": "Significance level α" }, "type": "number", "placeholder": { "de": "0.05", "en": "0.05" }, "parse_as": "number", "required": false }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["pHat", "ciLower", "ciUpper", "pExact", "z", "pNormal", "normalApproxOk", "reject"],
+      "primary_field": "pExact",
+      "format": {
+        "pHat": { "decimals": 6, "label": "p̂" },
+        "ciLower": { "decimals": 6, "label": { "de": "KI unten", "en": "CI lower" } },
+        "ciUpper": { "decimals": 6, "label": { "de": "KI oben", "en": "CI upper" } },
+        "pExact": { "decimals": 6, "label": { "de": "p (exakt)", "en": "p (exact)" } },
+        "z": { "decimals": 6, "label": "z" },
+        "pNormal": { "decimals": 6, "label": { "de": "p (Normal)", "en": "p (normal)" } },
+        "normalApproxOk": { "decimals": 0, "label": { "de": "Normalapprox. geeignet", "en": "Normal approx. OK" } },
+        "reject": { "decimals": 0, "label": { "de": "H₀ abgelehnt", "en": "Reject H₀" } }
+      }
+    }
+  },
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-10-10", "type": "initial", "description": { "de": "Erstimplementierung", "en": "Initial implementation" }, "breaking": false }
+  ]
+}

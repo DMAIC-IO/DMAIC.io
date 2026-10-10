@@ -1,0 +1,20 @@
+{
+  "testKind": "assoc",
+  "inputMode": "columns",
+  "direction": "two-sided",
+  "alpha": 0.05,
+  "p0": "0.5",
+  "pooled": false,
+  "summary": {
+    "x": "", "n": "", "x1": "", "n1": "", "x2": "", "n2": "",
+    "table": { "rows": ["A", "B"], "cols": ["X", "Y"], "counts": [["", ""], ["", ""]] }
+  },
+  "colRefs": {
+    "response": { "instanceId": "__source__", "sheetId": "sheet-shift-pass-fail", "columnId": "c-result" },
+    "group": { "instanceId": "__source__", "sheetId": "sheet-shift-pass-fail", "columnId": "c-shift" },
+    "rowVar": { "instanceId": "__source__", "sheetId": "sheet-shift-pass-fail", "columnId": "c-shift" },
+    "colVar": { "instanceId": "__source__", "sheetId": "sheet-shift-pass-fail", "columnId": "c-result" }
+  },
+  "eventValue": "n.i.O.",
+  "sourceWorksheetFile": "worksheets/attribute-shift-pass-fail.json"
+}

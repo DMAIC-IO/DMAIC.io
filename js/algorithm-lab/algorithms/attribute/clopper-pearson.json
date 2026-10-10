@@ -1,0 +1,81 @@
+{
+  "id": "clopper-pearson",
+  "name": { "de": "Clopper-Pearson-Konfidenzintervall", "en": "Clopper-Pearson Confidence Interval" },
+  "category": "attribute",
+  "subcategory": "proportion",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Exaktes Konfidenzintervall für einen Anteil x/n aus Quantilen der Beta-Verteilung.",
+      "en": "Exact confidence interval for a proportion x/n from beta-distribution quantiles."
+    },
+    "long": {
+      "de": "Das Clopper-Pearson-Intervall invertiert den exakten Binomialtest: Die Grenzen sind Quantile der Beta-Verteilung. Es hält die Überdeckungswahrscheinlichkeit immer ein und ist dafür etwas breiter als Näherungsintervalle. Bei x = 0 ist die untere Grenze 0, bei x = n die obere 1. Für einseitige Alternativen wird nur die jeweilige Schranke berechnet.",
+      "en": "The Clopper-Pearson interval inverts the exact binomial test: its bounds are beta-distribution quantiles. It always keeps the nominal coverage and is therefore somewhat wider than approximate intervals. For x = 0 the lower bound is 0, for x = n the upper bound is 1. One-sided alternatives give only the corresponding bound."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      { "label": "Untergrenze / Lower", "latex": "p_L = B\\left(\\tfrac{\\alpha}{2};\\; x,\\; n-x+1\\right)", "description": { "de": "Beta-Quantil, 0 bei x = 0", "en": "Beta quantile, 0 for x = 0" } },
+      { "label": "Obergrenze / Upper", "latex": "p_U = B\\left(1-\\tfrac{\\alpha}{2};\\; x+1,\\; n-x\\right)", "description": { "de": "Beta-Quantil, 1 bei x = n", "en": "Beta quantile, 1 for x = n" } }
+    ],
+    "assumptions": [
+      { "de": "Unabhängige Versuche mit gleicher Ereigniswahrscheinlichkeit", "en": "Independent trials with equal event probability" }
+    ],
+    "limitations": [
+      { "de": "Konservativ: tatsächliche Überdeckung meist über dem Nennwert", "en": "Conservative: actual coverage usually above nominal" },
+      { "de": "Minitabs Standard (angepasstes Blaker-Intervall) ist nicht implementiert", "en": "Minitab's default (adjusted Blaker interval) is not implemented" }
+    ],
+    "references": [
+      { "source": "Clopper, C. J.; Pearson, E. S. (1934), Biometrika 26(4), 404–413" },
+      { "source": "Melzer, A. (2019), Six Sigma – Kompakt und praxisnah, §8.7" }
+    ],
+    "minitab_equivalent": "Stat > Basic Statistics > 1 Proportion (Method: Exact)"
+  },
+  "source": {
+    "function_name": "clopperPearsonCI",
+    "file_path": "js/engines/attribute-test-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "x", "type": "number", "required": true, "description": { "de": "Anzahl Ereignisse", "en": "Number of events" } },
+        { "name": "n", "type": "number", "required": true, "description": { "de": "Anzahl Versuche", "en": "Number of trials" } },
+        { "name": "confidence", "type": "number", "required": false, "description": { "de": "Konfidenzniveau (Standard 0.95)", "en": "Confidence level (default 0.95)" } },
+        { "name": "direction", "type": "string", "required": false, "description": { "de": "'two-sided', 'greater' (Untergrenze), 'less' (Obergrenze)", "en": "'two-sided', 'greater' (lower bound), 'less' (upper bound)" } }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "lower": { "type": "number", "description": { "de": "Untergrenze", "en": "Lower bound" } },
+          "upper": { "type": "number", "description": { "de": "Obergrenze", "en": "Upper bound" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        { "name": "x", "label": { "de": "Ereignisse x", "en": "Events x" }, "type": "number", "placeholder": { "de": "z.B. 1", "en": "e.g. 1" }, "parse_as": "number", "required": true },
+        { "name": "n", "label": { "de": "Versuche n", "en": "Trials n" }, "type": "number", "placeholder": { "de": "z.B. 10", "en": "e.g. 10" }, "parse_as": "number", "required": true },
+        { "name": "confidence", "label": { "de": "Konfidenzniveau", "en": "Confidence level" }, "type": "number", "placeholder": { "de": "0.95", "en": "0.95" }, "parse_as": "number", "required": false },
+        { "name": "direction", "label": { "de": "Richtung", "en": "Direction" }, "type": "select", "options": [
+          { "value": "two-sided", "label": { "de": "Zweiseitig", "en": "Two-sided" } },
+          { "value": "greater", "label": { "de": "Untergrenze", "en": "Lower bound" } },
+          { "value": "less", "label": { "de": "Obergrenze", "en": "Upper bound" } }
+        ], "parse_as": "string", "required": false }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["lower", "upper"],
+      "primary_field": "lower",
+      "format": {
+        "lower": { "decimals": 6, "label": { "de": "Untergrenze", "en": "Lower" } },
+        "upper": { "decimals": 6, "label": { "de": "Obergrenze", "en": "Upper" } }
+      }
+    }
+  },
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-10-10", "type": "initial", "description": { "de": "Erstimplementierung", "en": "Initial implementation" }, "breaking": false }
+  ]
+}

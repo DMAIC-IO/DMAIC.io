@@ -1359,6 +1359,42 @@
       ]
     },
     {
+      "id": "attribute-scrap-before-after",
+      "type": "project",
+      "title": {
+        "de": "Ausschuss vor und nach der Verbesserung (2 Anteile)",
+        "en": "Scrap before and after the improvement (2 proportions)"
+      },
+      "description": {
+        "de": "46 von 1200 Teilen Ausschuss vor, 21 von 1150 nach einer Prozessänderung. Erfundenes Szenario.",
+        "en": "46 of 1200 parts scrapped before, 21 of 1150 after a process change. Invented scenario."
+      },
+      "source": "Qprovement synthetisch",
+      "license": "public-domain",
+      "file": "projects/attribute-scrap-before-after.json",
+      "format": "json",
+      "modules": ["attribute-test"],
+      "tags": ["attribute", "proportion", "fisher"]
+    },
+    {
+      "id": "attribute-shift-pass-fail",
+      "type": "project",
+      "title": {
+        "de": "Prüfergebnis je Schicht (Chi-Quadrat)",
+        "en": "Inspection result by shift (chi-square)"
+      },
+      "description": {
+        "de": "240 Prüfergebnisse (i.O./n.i.O.) aus drei Schichten; die Nachtschicht hat mehr Fehler. Erfundenes Szenario.",
+        "en": "240 inspection results (pass/fail) from three shifts; the night shift has more failures. Invented scenario."
+      },
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=1010",
+      "license": "public-domain",
+      "file": "projects/attribute-shift-pass-fail.json",
+      "format": "json",
+      "modules": ["attribute-test"],
+      "tags": ["attribute", "chi-square", "contingency"]
+    },
+    {
       "id": "outlier-bolzen-grubbs",
       "type": "project",
       "title": {
