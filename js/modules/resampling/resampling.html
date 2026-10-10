@@ -143,6 +143,7 @@
     <template x-if="view">
       <div class="resampling__contents">
         <div class="dmike-split__output-section" x-text="t('sectionResult')"></div>
+        <p class="resampling__statement" data-ref="result-statement" x-show="statement.length" x-text="statementText()"></p>
         <table class="dmike-table dmike-table--head-mono resampling__result-table" data-ref="result-table">
           <thead>
             <tr>

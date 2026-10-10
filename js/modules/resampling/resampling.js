@@ -20,6 +20,7 @@ import {
   readInputs, validateInputs, errorKeyForCode, buildJobs, computeInputsHash, summarize,
 } from './resampling-analysis.js';
 import { resultView, bootChartConfig, permChartConfig, statisticKey } from './resampling-presenter.js';
+import { statementParts, renderStatement } from './resampling-statement.js';
 import { createInlineRunner } from '../../engines/resampling-runner.js';
 import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
@@ -64,6 +65,8 @@ const mod = createModule({
       currentHash: null,
       stale: false,
       view: null,
+      /** Sentence parts of the plain-language key statement (resampling-statement.js). */
+      statement: [],
       /** Completed runs in this view instance (not persisted; lets E2E detect a finished recompute). */
       runCount: 0,
 
@@ -94,8 +97,13 @@ const mod = createModule({
         this.validationKey = validateInputs(this.model, inputs);
         this.currentHash = computeInputsHash(this.model, inputs);
         this.stale = this.model.isStale(this.currentHash);
-        this.view = resultView(this.model.result, { ciMethod: this.model.ciMethod, target: this.model.target });
+        const opts = { ciMethod: this.model.ciMethod, target: this.model.target };
+        this.view = resultView(this.model.result, opts);
+        this.statement = statementParts(this.model.result, opts);
       },
+
+      /** Key statement as one translated paragraph. */
+      statementText() { return renderStatement(this.statement, _t); },
 
       _labels() {
         const sm = module._context.stateManager;

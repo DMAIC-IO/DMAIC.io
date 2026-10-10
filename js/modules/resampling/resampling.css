@@ -41,6 +41,15 @@
   margin: 0 0 var(--spacing-sm);
 }
 
+.resampling__statement {
+  border-left: 3px solid var(--color-accent);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  padding: var(--spacing-sm);
+  margin: 0 0 var(--spacing-sm);
+  line-height: 1.5;
+}
+
 .resampling__note {
   color: var(--color-text-secondary);
   margin: var(--spacing-sm) 0;

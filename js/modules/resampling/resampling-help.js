@@ -29,6 +29,11 @@ export default {
             ],
           },
           {
+            type: 'definition',
+            term: 'Kernaussage lesen',
+            content: 'Über der Ergebnistabelle fasst ein Absatz das Ergebnis in Worten zusammen: zuerst das Urteil — signifikant oder nicht —, dann die Größe des Effekts samt Konfidenzintervall. Als {{term:signifikanzniveau|Signifikanzniveau}} gilt α = 1 − Konfidenzniveau (bei 95 % also 0,05); signifikant heißt {{term:p-wert|p-Wert}} < α. Nicht signifikant bedeutet nicht „gleich“: Ein breites Intervall um 0 heißt, dass die Daten einen Unterschied weder belegen noch ausschließen.',
+          },
+          {
             type: 'paragraph',
             content: 'Gerechnet wird nur auf Knopfdruck. Ändern sich Daten oder Einstellungen, markiert das Modul das Ergebnis als veraltet, statt sofort neu zu rechnen. Mit demselben Startwert (Seed) liefert jede Berechnung exakt dasselbe Ergebnis.',
           },
@@ -54,6 +59,11 @@ export default {
               'Paired: interval and sign-flip permutation test of the differences (before/after).',
               'k samples: global permutation test, an interval per group and pairwise comparisons with Holm correction.',
             ],
+          },
+          {
+            type: 'definition',
+            term: 'Reading the key statement',
+            content: 'Above the result table a paragraph sums up the result in words: first the verdict — significant or not —, then the size of the effect with its confidence interval. The {{term:signifikanzniveau|significance level}} is α = 1 − confidence level (0.05 at 95 %); significant means {{term:p-wert|p-value}} < α. Not significant does not mean "equal": a wide interval around 0 means the data neither prove nor rule out a difference.',
           },
           {
             type: 'paragraph',

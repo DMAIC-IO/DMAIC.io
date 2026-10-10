@@ -28,6 +28,12 @@ const RESAMPLING_I18N_KEYS = [
   'errStatisticMode', 'errTrim', 'errQuantileP', 'errLimitsMissing', 'errLimitsOrder', 'errConfidence',
   'errB', 'errSeed', 'errTarget', 'errMinGroups', 'errMinValues', 'errMinPpk', 'errRatioPositive', 'errRatioStatistic',
   'errOptions', 'errDegenerateStatistic', 'errUnexpected',
+  'stmtTwoSig', 'stmtTwoSigGreater', 'stmtTwoSigLess', 'stmtTwoNot', 'stmtTwoNotGreater', 'stmtTwoNotLess',
+  'stmtDiffAbove', 'stmtDiffBelow', 'stmtDiffEqual', 'stmtRatio', 'stmtIntervalDiff', 'stmtIntervalRatio',
+  'stmtPairedSig', 'stmtPairedSigGreater', 'stmtPairedSigLess',
+  'stmtPairedNot', 'stmtPairedNotGreater', 'stmtPairedNotLess', 'stmtPairedEstimate',
+  'stmtOneEstimate', 'stmtOneReject', 'stmtOneRetain',
+  'stmtKSig', 'stmtKNot', 'stmtKPairs', 'stmtKNoPair',
 ];
 
 suite('resampling — registration', () => {
