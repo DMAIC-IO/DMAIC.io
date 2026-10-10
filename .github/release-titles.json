@@ -1,0 +1,58 @@
+{
+  "0.2.0": {
+    "de": "Versionsisolation, Migrations-Pipeline, versionsübergreifender Import",
+    "en": "Version isolation, migration pipeline, cross-version import"
+  },
+  "0.3.0": {
+    "de": "Mehrere Zyklen (DMAIC und DMADV), Zykluswechsel, Handbuch je Zyklus",
+    "en": "Multiple cycles (DMAIC and DMADV), cycle switching, handbook per cycle"
+  },
+  "0.4.1": {
+    "de": "Release-Pipeline: jede Version unter eigener Adresse",
+    "en": "Release pipeline: every version at its own address"
+  },
+  "0.4.2": {
+    "de": "Nightly-Build mit Hinweisbanner",
+    "en": "Nightly build with a notice banner"
+  },
+  "0.4.3": {
+    "de": "Überarbeitetes Nightly-Banner",
+    "en": "Reworked nightly banner"
+  },
+  "0.4.4": {
+    "de": "Statisches Handbuch in jeder Version",
+    "en": "Static handbook shipped with every version"
+  },
+  "0.5.0": {
+    "de": "Weitere Regelkarten (p/np, c/u, Hotelling T²), binäre Spalten, Ausfüllen im Datenblatt",
+    "en": "More control charts (p/np, c/u, Hotelling T²), binary columns, fill handle in the data grid"
+  },
+  "0.6.0": {
+    "de": "8D-Zyklus, TRIZ-Entwicklungstrends, Diagrammvorschlag, Heatmap und Mosaikdiagramm, Beispielprojekte",
+    "en": "8D cycle, TRIZ evolution trends, chart suggestions, heatmap and mosaic charts, example projects"
+  },
+  "0.7.0": {
+    "de": "Makigami mit Swimlanes und Kennzahlenleiste",
+    "en": "Makigami with swimlanes and a KPI strip"
+  },
+  "0.8.0": {
+    "de": "Balkendiagramm als eigenes Modul, weitere Beispieldaten",
+    "en": "Bar chart as a module of its own, more example data"
+  },
+  "0.9.0": {
+    "de": "Neue Beispiele für Wahrscheinlichkeitsnetz und Stichprobenumfang",
+    "en": "New examples for probability plots and sample size"
+  },
+  "1.0.0": {
+    "de": "Flussdiagramme (Aktivität, Opportunity, Deployment), MSA Typ 4–6, Kano, Szenario-Auswahl",
+    "en": "Flowcharts (activity, opportunity, deployment), MSA types 4–6, Kano, scenario picker"
+  },
+  "1.1.0": {
+    "de": "Multi-Vari-Diagramm mit Varianzkomponenten, Qprovement-Marke, Icon-System",
+    "en": "Multi-vari chart with variance components, Qprovement brand, icon system"
+  },
+  "1.2.0": {
+    "de": "FMEA mit Aufgabenpriorität (AP), überarbeitete MSA Typ 1, 2 und 5, Literaturverweise in der Hilfe",
+    "en": "FMEA with action priority (AP), revised MSA types 1, 2 and 5, references in the help"
+  }
+}

@@ -6,9 +6,8 @@
 import { suite, test, assertEqual } from '../test-utils.js';
 import { Workspace } from '../../js/ui/workspace.js';
 
-function makeWorkspace(phases) {
+function makeWorkspace(phases, eventBus = { on: () => {}, emit: () => {} }) {
   const container = document.createElement('div');
-  const eventBus = { on: () => {}, emit: () => {} };
   const get = (path) => {
     if (path === 'phases') return phases;
     if (path.startsWith('phases.')) return phases[path.slice('phases.'.length)];
@@ -73,6 +72,28 @@ suite('Workspace — last active module per phase', () => {
     phases.define = phases.define.filter(i => i.instanceId !== 'd2');
     ws._showPhase('define');
     assertEqual(ws._activeInstanceId, 'd1');
+  });
+
+  test('a module that finishes mounting late does not take the tab back', async () => {
+    // Real bus: the workspace's own module:activated listener must run.
+    const listeners = {};
+    const bus = {
+      on: (n, fn) => { (listeners[n] ||= []).push(fn); },
+      off: () => {},
+      emit: (n, p) => { (listeners[n] || []).forEach(fn => fn(p)); },
+    };
+    const ws = makeWorkspace(PHASES, bus);
+    let finishD1;
+    ws._containers.clear();                 // render() already mounted d1
+    ws._instantiateModule = (id) => {
+      ws._containers.set(id, document.createElement('div'));
+      return id === 'd1' ? new Promise((r) => { finishD1 = r; }) : Promise.resolve();
+    };
+    const slow = ws._activateTab('d1');     // first chunk load still pending …
+    await ws._activateTab('d2');            // … while the user picks another tab
+    finishD1();
+    await slow;
+    assertEqual(ws._activeInstanceId, 'd2');
   });
 
   test('reset() forgets the remembered modules', async () => {

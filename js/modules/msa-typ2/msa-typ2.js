@@ -343,6 +343,7 @@ const mod = createModule({
         }
 
         const chart = await module._context.chartManager.create(el, 'bar', {
+          editKey: 'components',
           categories, groups, yLabel: '%', yMin: 0, showLegend: true,
         });
         if (gen !== this._renderGen) { module._context.chartManager.destroy(chart); return; }
@@ -390,6 +391,7 @@ const mod = createModule({
         });
 
         const chart = await module._context.chartManager.create(el, 'scatter', {
+          editKey: 'by-part',
           showLegend: true,
           xLabel: _t('partLabel'),
           xMin: -0.5,
@@ -415,6 +417,7 @@ const mod = createModule({
         });
 
         const chart = await module._context.chartManager.create(el, 'boxplot', {
+          editKey: 'by-operator',
           groups,
           boxColors: opColors,
           showMean: true,
@@ -444,6 +447,7 @@ const mod = createModule({
         }));
 
         const chart = await module._context.chartManager.create(el, 'scatter', {
+          editKey: 'interaction',
           showLegend: true,
           xLabel: _t('partLabel'),
           xMin: -0.5,
@@ -476,6 +480,7 @@ const mod = createModule({
         }
 
         const chart = await module._context.chartManager.create(el, 'scatter', {
+          editKey: 'xbar',
           showLegend: false,
           xLabel: '',
           yLabel: 'x̄',
@@ -518,6 +523,7 @@ const mod = createModule({
         }
 
         const chart = await module._context.chartManager.create(el, 'scatter', {
+          editKey: 'r',
           showLegend: false,
           xLabel: '',
           yLabel: 'R',

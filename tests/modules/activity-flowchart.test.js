@@ -504,4 +504,31 @@ suite('activityFlowchartData — bands', () => {
     m.addDecision(1, { title: 'D?' });
     assertEqual(c.bandGridStyle(), '--fc-lane-count: 2');
   });
+
+  test('bands and layout are computed once per chain state, not once per caller', () => {
+    // Every card, lane, tail and marker asks for its row and column — without
+    // a cache the whole layout was rebuilt for each of them.
+    const m = new ActivityModel();
+    m.addStep(0, { title: 'A' });
+    const d = m.addDecision(1, { title: 'D?' });
+    const b = m.addStep(2, { title: 'B' });
+    const c = ctx(m);
+    assertEqual(c.bands() === c.bands(), true);
+    assertEqual(c._layout() === c._layout(), true);
+
+    const before = c._layout();
+    m.setDecisionTarget(d.id, b.id);
+    assertEqual(c._layout() === before, false);
+
+    const bandsBefore = c.bands();
+    m.addDecision(3, { title: 'E?' });
+    assertEqual(c.bands() === bandsBefore, false);
+    assertEqual(c.bands().length, 3);
+
+    // A step changing band moves it in the layout, though the bands stay.
+    const u = m.addStep(4, { title: 'u' });
+    const layoutBefore = c._layout();
+    m.setStepBranch(u.id, 'no:' + d.id);
+    assertEqual(c._layout() === layoutBefore, false);
+  });
 });

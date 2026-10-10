@@ -1,0 +1,17 @@
+{
+  "mode": "two",
+  "statisticId": "median",
+  "statParams": { "trim": 0.1, "p": 0.95, "lsl": "", "usl": "" },
+  "contrast": "difference",
+  "direction": "two-sided",
+  "target": "",
+  "colRef1": { "instanceId": "__source__", "sheetId": "sheet-pizza-fahrer", "columnId": "c-fahrer-a" },
+  "colRef2": { "instanceId": "__source__", "sheetId": "sheet-pizza-fahrer", "columnId": "c-fahrer-b" },
+  "colRefsK": [],
+  "B": 10000,
+  "seed": 42,
+  "confidence": 0.95,
+  "ciMethod": "bca",
+  "result": null,
+  "sourceWorksheetFile": "worksheets/hypothesis-pizza-fahrer.json"
+}

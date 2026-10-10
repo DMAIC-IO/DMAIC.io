@@ -2,8 +2,19 @@ import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-u
 import manifest from '../../js/modules/manifest.js';
 import fmeaTile from '../../js/modules/fmea/fmea.tile.js';
 import ishikawaTile from '../../js/modules/ishikawa/ishikawa.tile.js';
-import charterTile from '../../js/modules/project-charter/project-charter.tile.js';
+import charterTiles, { charterTile, goalsTile, orgTile } from '../../js/modules/project-charter/project-charter.tile.js';
+import vocTile from '../../js/modules/voc-ctx-tree/voc-ctx-tree.tile.js';
+import raciTile from '../../js/modules/raci-matrix/raci-matrix.tile.js';
+import spcTile from '../../js/modules/control-chart/control-chart.tile.js';
+import todoTile from '../../js/modules/todo/todo.tile.js';
+import calendarTile from '../../js/modules/dmaic-calendar/dmaic-calendar.tile.js';
+import stakeholderTile from '../../js/modules/stakeholder-analysis/stakeholder-analysis.tile.js';
+import lessonsTile from '../../js/modules/lessons-learned/lessons-learned.tile.js';
+import { todayISO, addDaysISO } from '../../js/core/local-date.js';
 import { validateSchema, resolveSettings } from '../../js/pages/dashboard/tile-settings.js';
+import { HOST_TILES } from '../../js/pages/dashboard/tiles/index.js';
+import { I18n } from '../../js/core/i18n.js';
+import zegTile from '../../js/pages/dashboard/tiles/zeg-timeline.tile.js';
 
 const i18n = { t: (k) => k };
 
@@ -32,38 +43,79 @@ const ISHIKAWA_STATE = {
 function render(tile, state, overrides = {}) {
   const host = document.createElement('div');
   const settings = resolveSettings(validateSchema(tile.settings), overrides);
-  tile.render(host, { tileId: 't', instanceId: 'i', state, settings, i18n, theme: 'light', chartManager: null });
+  tile.render(host, { tileId: 't', instanceId: 'i', state, settings, i18n, theme: 'light', chartManager: null, stateManager: null });
   return host;
 }
 
 suite('dashboard tiles: manifest', () => {
   const withTile = manifest.filter(e => typeof e.loadTile === 'function');
 
-  test('fmea, ishikawa and project-charter declare a tile', () => {
+  test('modules with a tile declare loadTile', () => {
     const ids = withTile.map(e => e.id);
-    for (const id of ['fmea', 'ishikawa', 'project-charter']) assertTrue(ids.includes(id), id);
+    for (const id of ['fmea', 'ishikawa', 'project-charter', 'voc-ctx-tree', 'raci-matrix', 'control-chart',
+      'todo', 'dmaic-calendar', 'stakeholder-analysis', 'lessons-learned']) assertTrue(ids.includes(id), id);
   });
 
-  test('every tile file loads, renders and has a valid size and schema', async () => {
-    for (const entry of withTile) {
-      const tile = (await entry.loadTile()).default;
-      assertEqual(typeof tile.render, 'function', `${entry.id}: render`);
-      for (const k of ['defaultW', 'defaultH', 'minW', 'minH']) {
-        assertTrue(Number.isInteger(tile.size?.[k]), `${entry.id}: size.${k}`);
+  test('every tile object loads, renders and has a valid size and schema', async () => {
+    const sources = [
+      ...withTile.map(e => ({ name: e.id, load: async () => (await e.loadTile()).default })),
+      ...HOST_TILES.map(h => ({ name: h.id, load: async () => (await h.load()).default })),
+    ];
+    for (const src of sources) {
+      const exported = await src.load();
+      const tiles = Array.isArray(exported) ? exported : [exported];
+      tiles.forEach((tile, i) => {
+        const name = `${src.name}#${i}`;
+        assertEqual(typeof tile.render, 'function', `${name}: render`);
+        if (Array.isArray(exported)) assertEqual(typeof tile.enumerate, 'function', `${name}: enumerate`);
+        if (Array.isArray(exported)) {
+          assertEqual(typeof tile.kind, 'string', `${name}: kind`);
+          assertTrue(!tile.kind.includes('~'), `${name}: kind without "~"`);
+        }
+        for (const k of ['defaultW', 'defaultH', 'minW', 'minH']) {
+          assertTrue(Number.isInteger(tile.size?.[k]), `${name}: size.${k}`);
+        }
+        const warnings = [];
+        validateSchema(tile.settings, (m) => warnings.push(m));
+        assertDeepEqual(warnings, [], `${name}: schema`);
+      });
+    }
+  });
+
+  test('tile kinds are unique across all modules (one byKind map for copies)', async () => {
+    const seen = new Map();
+    for (const e of withTile) {
+      const exported = (await e.loadTile()).default;
+      const tiles = Array.isArray(exported) ? exported : [exported];
+      for (const tile of tiles) {
+        const kind = Array.isArray(exported) ? tile.kind : e.id;
+        assertTrue(!seen.has(kind), `kind "${kind}" of ${e.id} is also declared by ${seen.get(kind)}`);
+        seen.set(kind, e.id);
       }
-      const warnings = [];
-      validateSchema(tile.settings, (m) => warnings.push(m));
-      assertDeepEqual(warnings, [], `${entry.id}: schema`);
     }
   });
 
   test('tile files do not import the module shell directly', async () => {
     const shell = /from\s+['"][^'"]*(template-module|alpine)[^'"]*['"]/i;
-    for (const entry of withTile) {
-      const url = new URL(`../../js/modules/${entry.id}/${entry.id}.tile.js`, import.meta.url);
-      const src = await (await fetch(url)).text();
-      assertTrue(!shell.test(src), `${entry.id}.tile.js imports the module shell`);
+    const files = [
+      ...withTile.map(e => ({ name: e.id, url: new URL(`../../js/modules/${e.id}/${e.id}.tile.js`, import.meta.url) })),
+      ...HOST_TILES.map(h => ({ name: h.id, url: new URL(`../../js/pages/dashboard/tiles/${h.id}.tile.js`, import.meta.url) })),
+    ];
+    for (const file of files) {
+      const src = await (await fetch(file.url)).text();
+      assertTrue(!shell.test(src), `${file.name}.tile.js imports the module shell`);
     }
+  });
+
+  test('re-bindable tiles declare how to title another instance', () => {
+    assertEqual(spcTile.titlePrefix, 'SPC');
+    assertEqual(raciTile.titlePrefix, 'RACI');
+    assertEqual(vocTile.titleKey, 'dashboard.vocTitle');
+    assertDeepEqual(charterTiles.map(t => [t.kind, t.titleKey]), [
+      ['project-charter', 'dashboard.charterTitle'],
+      ['project-goals', 'dashboard.goalsTitle'],
+      ['org-chart', 'dashboard.orgChartTitle'],
+    ]);
   });
 });
 
@@ -91,6 +143,30 @@ suite('dashboard tiles: fmea', () => {
 
   test('title prefix keeps the legacy title', () => {
     assertEqual(fmeaTile.titlePrefix, 'FMEA');
+  });
+
+  test('RPN mode summary shows the S ≥ 9 count', () => {
+    const host = render(fmeaTile, FMEA_STATE);   // no method → RPN; one risk with S 10
+    const flag = host.querySelector('.dashboard-fmea__flag-count');
+    assertEqual(flag.textContent, 'dashboard.fmeaSevere: 1');
+  });
+
+  test('AP mode summary shows the H-without-action count', () => {
+    const host = render(fmeaTile, { method: 'ap', risks: [
+      { failureMode: 'No action', sev: '9', occ: '10', det: '10' },
+      { failureMode: 'Justified', sev: '9', occ: '10', det: '10', justification: 'ok' },
+    ] });
+    assertEqual(host.querySelector('.dashboard-fmea__flag-count').textContent, 'dashboard.fmeaUnjustified: 1');
+  });
+
+  test('top list shows the CC/SC badge', () => {
+    const host = render(fmeaTile, { risks: [
+      { failureMode: 'Flagged', sev: '10', occ: '8', det: '7', specialChar: 'CC' },
+      { failureMode: 'Plain', sev: '7', occ: '5', det: '4' },
+    ] });
+    const flags = host.querySelectorAll('.dashboard-fmea__top-flag');
+    assertEqual(flags.length, 1);
+    assertEqual(flags[0].textContent, 'CC');
   });
 });
 
@@ -121,19 +197,376 @@ suite('dashboard tiles: ishikawa', () => {
   });
 });
 
-suite('dashboard tiles: project-charter', () => {
-  const ctx = (phases) => ({ i18n, stateManager: { get: (k) => (k === 'phases' ? phases : null) } });
+suite('dashboard tiles: project-charter array', () => {
+  const ctxWith = (ids) => ({ i18n, findInstances: () => ids.map(instanceId => ({ instanceId, customName: '' })) });
+
+  test('exports charter, goals and org chart in that order', () => {
+    assertDeepEqual(charterTiles, [charterTile, goalsTile, orgTile]);
+  });
 
   test('has no settings', () => {
     assertEqual(charterTile.settings, undefined);
   });
 
-  test('enumerate returns the fixed id when an instance exists', () => {
-    assertDeepEqual(charterTile.enumerate(ctx({ define: [{ moduleId: 'project-charter', instanceId: 'c1' }] })),
-      [{ tileId: 'project-charter', instanceId: 'c1', title: 'dashboard.charterTitle' }]);
+  test('each tile enumerates its fixed id for the first charter instance', () => {
+    assertDeepEqual(charterTile.enumerate(ctxWith(['c'])), [{ tileId: 'project-charter', instanceId: 'c', title: 'dashboard.charterTitle' }]);
+    assertDeepEqual(goalsTile.enumerate(ctxWith(['c'])), [{ tileId: 'project-goals', instanceId: 'c', title: 'dashboard.goalsTitle' }]);
+    assertDeepEqual(orgTile.enumerate(ctxWith(['c'])), [{ tileId: 'org-chart', instanceId: 'c', title: 'dashboard.orgChartTitle' }]);
   });
 
-  test('enumerate returns nothing without an instance', () => {
-    assertDeepEqual(charterTile.enumerate(ctx({ define: [] })), []);
+  test('no charter instance gives no tiles', () => {
+    for (const t of charterTiles) assertDeepEqual(t.enumerate(ctxWith([])), []);
+  });
+
+  test('org chart is wide by default', () => {
+    assertDeepEqual(orgTile.size, { defaultW: 6, defaultH: 10, minW: 3, minH: 6 });
+  });
+
+  test('goals render one row per goal with clamped ZEG', () => {
+    const host = render(goalsTile, { goals: [{ description: 'A', achievementLevel: 150 }, { achievementLevel: 30 }] });
+    const rows = host.querySelectorAll('.dashboard-charter__goal');
+    assertEqual(rows.length, 2);
+    assertTrue(rows[0].textContent.includes('100%'));
+  });
+
+  test('goals and org chart show empty states', () => {
+    assertTrue(render(goalsTile, { goals: [] }).querySelector('.dashboard-area__empty') !== null);
+    assertTrue(render(orgTile, { orgChart: [] }).querySelector('.dashboard-area__empty') !== null);
+  });
+
+  test('org chart draws one node per entry', () => {
+    const host = render(orgTile, { orgChart: [{ id: 'a', pid: null, title: 'A' }, { id: 'b', pid: 'a', title: 'B' }] });
+    assertEqual(host.querySelectorAll('.dashboard-org__node').length, 2);
+  });
+});
+
+const VOC_STATE = {
+  vocs: Array.from({ length: 8 }, (_, i) => ({
+    id: `v${i}`, text: `S${i}`, source: '',
+    needs: [{ id: `n${i}`, drivers: [{ id: `d${i}`, type: 'ctq', requirements: [] }] }],
+  })),
+};
+
+suite('dashboard tiles: voc', () => {
+  test('enumerates one tile for the first instance only', () => {
+    const ctx = { i18n, findInstances: () => [{ instanceId: 'a' }, { instanceId: 'b' }] };
+    assertDeepEqual(vocTile.enumerate(ctx), [{ tileId: 'voc-ctx-tree', instanceId: 'a', title: 'dashboard.vocTitle' }]);
+    assertDeepEqual(vocTile.enumerate({ i18n, findInstances: () => [] }), []);
+  });
+
+  test('defaults: 6 statements + overflow line, legend shown', () => {
+    const host = render(vocTile, VOC_STATE);
+    assertEqual(host.querySelectorAll('.dashboard-voc__item').length, 7);
+    assertTrue(host.querySelector('.dashboard-voc__driver-legend') !== null);
+  });
+
+  test('topN limits the list and the overflow counts the rest', () => {
+    const host = render(vocTile, VOC_STATE, { topN: 2 });
+    const items = host.querySelectorAll('.dashboard-voc__item');
+    assertEqual(items.length, 3);
+    assertTrue(items[2].textContent.includes('+6'));
+  });
+
+  test('showLegend=false hides the legend, keeps the bar', () => {
+    const host = render(vocTile, VOC_STATE, { showLegend: false });
+    assertEqual(host.querySelector('.dashboard-voc__driver-legend'), null);
+    assertTrue(host.querySelector('.dashboard-voc__driver-bar') !== null);
+  });
+
+  test('empty state without statements', () => {
+    const host = render(vocTile, { vocs: [] });
+    assertTrue(host.querySelector('.dashboard-area__empty') !== null);
+  });
+});
+
+const RACI_STATE = {
+  activities: ['A1', 'A2', 'A3', 'A4'],
+  stakeholders: ['S1'],
+  assignments: { '0:0': 'C', '1:0': 'I' }, // every activity misses R and A -> 8 warnings
+};
+
+suite('dashboard tiles: raci', () => {
+  test('enumerates one tile per instance with the RACI prefix', () => {
+    const ctx = { i18n, findInstances: () => [{ instanceId: 'a', customName: 'Team' }, { instanceId: 'b', customName: '' }] };
+    assertDeepEqual(raciTile.enumerate(ctx), [
+      { tileId: 'raci:a', instanceId: 'a', title: 'RACI — Team' },
+      { tileId: 'raci:b', instanceId: 'b', title: 'RACI — modules.raci-matrix.name' },
+    ]);
+  });
+
+  test('defaults: 5 warnings + overflow line, legend shown', () => {
+    const host = render(raciTile, RACI_STATE);
+    assertEqual(host.querySelectorAll('.dashboard-raci__warn-item').length, 5);
+    assertTrue(host.querySelector('.dashboard-raci__warn-list').textContent.includes('+3'));
+    assertTrue(host.querySelector('.dashboard-raci__legend') !== null);
+  });
+
+  test('topN limits the warnings', () => {
+    const host = render(raciTile, RACI_STATE, { topN: 2 });
+    assertEqual(host.querySelectorAll('.dashboard-raci__warn-item').length, 2);
+    assertTrue(host.querySelector('.dashboard-raci__warn-list').textContent.includes('+6'));
+  });
+
+  test('showLegend=false hides the legend', () => {
+    assertEqual(render(raciTile, RACI_STATE, { showLegend: false }).querySelector('.dashboard-raci__legend'), null);
+  });
+
+  test('empty state without activities and stakeholders', () => {
+    assertTrue(render(raciTile, { activities: [], stakeholders: [], assignments: {} })
+      .querySelector('.dashboard-area__empty') !== null);
+  });
+});
+
+function fakeStateManager(values) {
+  const ws = { sheets: [{ id: 's', name: 'S', state: { columns: [{ id: 'c', name: 'Measure', values }] } }] };
+  return { get: () => null, getModuleState: (id) => (id === 'ws' ? ws : null) };
+}
+const SPC_STATE = { chartTypeId: 'i-mr', subgroupSize: 1, baselineCount: null,
+  columnRef: { instanceId: 'ws', sheetId: 's', columnId: 'c' }, usl: null, lsl: null };
+
+function renderSpcTile(state, values) {
+  const host = document.createElement('div');
+  host.style.width = '300px';
+  document.body.append(host);
+  spcTile.render(host, { tileId: 'spc:x', instanceId: 'x', state, settings: {}, i18n, theme: 'light',
+    chartManager: null, stateManager: fakeStateManager(values) });
+  host.remove();
+  return host;
+}
+
+suite('dashboard tiles: spc', () => {
+  test('enumerates per instance with the SPC prefix and refreshes on resize', () => {
+    const ctx = { i18n, findInstances: () => [{ instanceId: 'a', customName: 'Line' }] };
+    assertDeepEqual(spcTile.enumerate(ctx), [{ tileId: 'spc:a', instanceId: 'a', title: 'SPC — Line' }]);
+    assertDeepEqual(spcTile.refreshOn, ['state:saved', 'resize']);
+  });
+
+  test('renders sparkline and four stats with data', () => {
+    const host = renderSpcTile(SPC_STATE, [10, 10.2, 9.8, 10.1, 9.9, 10.3]);
+    assertTrue(host.querySelector('.dashboard-spc__sparkline') !== null);
+    assertEqual(host.querySelectorAll('.dashboard-spc__stat').length, 4);
+  });
+
+  test('sparkline width follows the host width', () => {
+    const host = renderSpcTile(SPC_STATE, [10, 10.2, 9.8, 10.1, 9.9, 10.3]);
+    assertEqual(host.querySelector('.dashboard-spc__sparkline').getAttribute('width'), '284');
+  });
+
+  test('empty state without column, no-data state with one point', () => {
+    assertTrue(renderSpcTile({ ...SPC_STATE, columnRef: null }, []).querySelector('.dashboard-area__empty') !== null);
+    assertTrue(renderSpcTile(SPC_STATE, [10]).querySelector('.dashboard-area__empty') !== null);
+  });
+});
+
+function zegStateManager(history) {
+  return {
+    get: (k) => (k.startsWith('phaseAchievementHistory.') ? (history[k.split('.')[1]] || []) : null),
+    getProjectCycle: () => 'dmaic',
+  };
+}
+
+function fakeChartManager() {
+  const made = []; const destroyed = [];
+  return {
+    made, destroyed,
+    create: async (el, type, cfg) => { const c = { el, cfg }; made.push(c); return c; },
+    destroy: (c) => { destroyed.push(c); },
+  };
+}
+
+suite('dashboard tiles: zeg-timeline', () => {
+  const args = (cm, sm, settings = { showLegend: true }) =>
+    ({ tileId: 'zeg-timeline', instanceId: null, state: null, settings, i18n: { t: (k) => k, language: 'de' },
+      theme: 'light', chartManager: cm, stateManager: sm });
+
+  test('always enumerates one tile and refreshes on achievement changes', () => {
+    assertDeepEqual(zegTile.enumerate({ i18n, findInstances: () => [] }),
+      [{ tileId: 'zeg-timeline', instanceId: null, title: 'dashboard.zegTimeline' }]);
+    assertDeepEqual(zegTile.refreshOn, ['phase:achievement-changed']);
+  });
+
+  test('empty history shows the empty state and creates no chart', async () => {
+    const host = document.createElement('div'); const cm = fakeChartManager();
+    await zegTile.render(host, args(cm, zegStateManager({})));
+    assertTrue(host.querySelector('.dashboard-area__empty') !== null);
+    assertEqual(cm.made.length, 0);
+  });
+
+  test('showLegend is passed to the chart', async () => {
+    const host = document.createElement('div'); const cm = fakeChartManager();
+    const sm = zegStateManager({ define: [{ t: 1, v: 10 }, { t: 2, v: 20 }] });
+    await zegTile.render(host, args(cm, sm, { showLegend: false }));
+    assertEqual(cm.made[0].cfg.showLegend, false);
+  });
+
+  test('a second render destroys the first chart', async () => {
+    const host = document.createElement('div'); const cm = fakeChartManager();
+    const sm = zegStateManager({ define: [{ t: 1, v: 10 }] });
+    await zegTile.render(host, args(cm, sm));
+    await zegTile.render(host, args(cm, sm));
+    assertDeepEqual(cm.destroyed, [cm.made[0]]);
+  });
+
+  test('a chart that resolves after a newer render is destroyed (stale token)', async () => {
+    const host = document.createElement('div');
+    const sm = zegStateManager({ define: [{ t: 1, v: 10 }] });
+    const made = []; const destroyed = []; const pending = [];
+    const cm = {
+      create: (el, type, cfg) => new Promise(r => { const c = { cfg }; made.push(c); pending.push(() => r(c)); }),
+      destroy: (c) => destroyed.push(c),
+    };
+    const first = zegTile.render(host, args(cm, sm));
+    const second = zegTile.render(host, args(cm, sm));
+    pending[1](); await second;
+    pending[0](); await first;
+    assertTrue(destroyed.includes(made[0]), 'stale chart destroyed');
+    assertTrue(!destroyed.includes(made[1]), 'current chart kept');
+  });
+
+  test('dispose destroys the chart', async () => {
+    const host = document.createElement('div'); const cm = fakeChartManager();
+    await zegTile.render(host, args(cm, zegStateManager({ define: [{ t: 1, v: 10 }] })));
+    zegTile.dispose(host, { tileId: 'zeg-timeline' });
+    assertDeepEqual(cm.destroyed, [cm.made[0]]);
+  });
+});
+
+const TODO_STATE = {
+  items: [
+    { id: 'a', text: 'Past', owner: 'Ann', due: '2000-01-01', status: 'open' },
+    { id: 'b', text: 'Future', owner: 'Bob', due: '2999-01-01', status: 'blocked' },
+    { id: 'c', text: 'Undated', status: 'in-progress' },
+    { id: 'd', text: 'Finished', due: '2000-01-01', status: 'done' },
+  ],
+};
+
+suite('dashboard tiles: todo', () => {
+  test('lists open items by due date and marks overdue ones', () => {
+    const host = render(todoTile, TODO_STATE);
+    const items = [...host.querySelectorAll('.dashboard-fmea__top-item')];
+    assertDeepEqual(items.map(li => li.querySelector('.dashboard-fmea__top-desc').textContent), ['Past', 'Future', 'Undated']);
+    assertEqual(host.querySelectorAll('.dashboard-todo__overdue').length, 1);
+  });
+
+  test('topN caps the list', () => {
+    assertEqual(render(todoTile, TODO_STATE, { topN: 1 }).querySelectorAll('.dashboard-fmea__top-item').length, 1);
+  });
+
+  test('showDone controls the done segment and count', () => {
+    const off = render(todoTile, TODO_STATE);
+    assertEqual(off.querySelector('[data-status="done"]'), null);
+    const on = render(todoTile, TODO_STATE, { showDone: true });
+    assertTrue(on.querySelector('.dashboard-fmea__bar-seg[data-status="done"]') !== null);
+  });
+
+  test('empty and missing state show the empty hint', () => {
+    for (const s of [{ items: [] }, undefined, null]) {
+      assertEqual(render(todoTile, s).querySelector('.dashboard-area__empty').textContent, 'dashboard.todoEmpty');
+    }
+  });
+});
+
+suite('dashboard tiles: dmaic-calendar', () => {
+  const t0 = todayISO();
+  const CAL_STATE = { events: [
+    { id: '1', title: 'Kickoff', date: t0, time: '10:00', duration: 60, phase: 'define' },
+    { id: '2', title: 'Review', date: addDaysISO(t0, 10), time: '09:00', duration: 60, phase: 'measure' },
+    { id: '3', title: 'Gate', date: addDaysISO(t0, 20), time: '09:00', duration: 60, phase: 'analyze' },
+    { id: '4', title: 'Past', date: addDaysISO(t0, -1), time: '09:00', duration: 60, phase: 'define' },
+  ] };
+
+  test('default horizon (14 days) lists today and +10', () => {
+    const host = render(calendarTile, CAL_STATE);
+    assertDeepEqual([...host.querySelectorAll('.dashboard-fmea__top-desc')].map(e => e.textContent), ['Kickoff', 'Review']);
+  });
+
+  test('horizon 30 adds +20; topN caps', () => {
+    assertEqual(render(calendarTile, CAL_STATE, { horizon: '30' }).querySelectorAll('.dashboard-fmea__top-item').length, 3);
+    assertEqual(render(calendarTile, CAL_STATE, { horizon: '30', topN: 1 }).querySelectorAll('.dashboard-fmea__top-item').length, 1);
+  });
+
+  test('summary names count and horizon', () => {
+    assertEqual(render(calendarTile, CAL_STATE, { horizon: '7' }).querySelector('.dashboard-fmea__summary').textContent,
+      'dashboard.calendarSummary');
+  });
+
+  test('summary uses the singular for exactly one upcoming event (real de/en strings)', async () => {
+    const real = new I18n('de');
+    for (const lang of ['de', 'en']) {
+      real._cache.set(lang, await (await fetch(new URL(`../../i18n/${lang}.json`, import.meta.url))).json());
+    }
+    const host = document.createElement('div');
+    const one = { events: [CAL_STATE.events[0]] };
+    const settings = resolveSettings(validateSchema(calendarTile.settings), {});
+    calendarTile.render(host, { state: one, settings, i18n: real });
+    assertEqual(host.querySelector('.dashboard-fmea__summary').textContent, '1 Termin in den nächsten 14 Tagen');
+    real._lang = 'en';
+    calendarTile.render(host, { state: one, settings, i18n: real });
+    assertEqual(host.querySelector('.dashboard-fmea__summary').textContent, '1 event in the next 14 days');
+  });
+
+  test('no upcoming events shows a hint; no events at all the empty state', () => {
+    assertTrue(render(calendarTile, { events: [CAL_STATE.events[3]] }).querySelector('.dashboard-calendar__none') !== null);
+    assertEqual(render(calendarTile, undefined).querySelector('.dashboard-area__empty').textContent, 'dashboard.calendarEmpty');
+  });
+});
+
+const SH_STATE = { stakeholders: [
+  { id: 'a', name: 'CFO', role: 'Finance', power: 5, interest: 5, support: 'critic' },
+  { id: 'b', name: 'Ops', power: 5, interest: 5, support: 'supporter' },
+  { id: 'c', name: 'IT', power: 1, interest: 5, support: 'resistor' },
+] };
+
+suite('dashboard tiles: stakeholder-analysis', () => {
+  test('matrix shows a count per quadrant, manage-closely first', () => {
+    const cells = [...render(stakeholderTile, SH_STATE).querySelectorAll('.dashboard-stakeholder__cell')];
+    assertEqual(cells.length, 4);
+    assertEqual(cells[0].dataset.quadrant, 'manage-closely');
+    assertEqual(cells[0].querySelector('strong').textContent, '2');
+  });
+
+  test('support row includes other only when present', () => {
+    assertTrue(render(stakeholderTile, SH_STATE).querySelector('[data-support="other"]') !== null);
+    const noOther = { stakeholders: SH_STATE.stakeholders.slice(0, 2) };
+    assertEqual(render(stakeholderTile, noOther).querySelector('[data-support="other"]'), null);
+  });
+
+  test('showCritics toggles the critic list', () => {
+    assertEqual(render(stakeholderTile, SH_STATE).querySelectorAll('.dashboard-stakeholder__critics li').length, 1);
+    assertEqual(render(stakeholderTile, SH_STATE, { showCritics: false }).querySelector('.dashboard-stakeholder__critics'), null);
+  });
+
+  test('empty state', () => {
+    assertEqual(render(stakeholderTile, undefined).querySelector('.dashboard-area__empty').textContent, 'dashboard.stakeholderEmpty');
+  });
+});
+
+const LL_STATE = { lessons: [
+  { id: 'a', title: 'Scope creep', category: 'problem', impact: 'high', actions: [{ text: 'x', done: false }, { text: 'y', done: false }] },
+  { id: 'b', title: 'Daily standup', category: 'success', impact: 'medium', actions: [] },
+  { id: 'c', title: 'Data access', category: 'improve', impact: 'high', actions: [{ text: 'x', done: false }] },
+] };
+
+suite('dashboard tiles: lessons-learned', () => {
+  test('summary shows category counts and open actions (alerted when > 0)', () => {
+    const host = render(lessonsTile, LL_STATE);
+    assertEqual(host.querySelector('[data-stat="openActions"] strong').textContent, '3');
+    assertTrue(host.querySelector('.dashboard-lessons__open--alert') !== null);
+  });
+
+  test('lists high-impact lessons with open action counts; topN caps', () => {
+    const host = render(lessonsTile, LL_STATE);
+    assertDeepEqual([...host.querySelectorAll('.dashboard-fmea__top-desc')].map(e => e.textContent), ['Scope creep', 'Data access']);
+    assertEqual(host.querySelector('.dashboard-fmea__top-rpn').textContent, '2');
+    assertEqual(render(lessonsTile, LL_STATE, { topN: 1 }).querySelectorAll('.dashboard-fmea__top-item').length, 1);
+  });
+
+  test('no open actions: no alert', () => {
+    const done = { lessons: [{ id: 'z', title: 'z', impact: 'high', actions: [{ text: 'x', done: true }] }] };
+    assertEqual(render(lessonsTile, done).querySelector('.dashboard-lessons__open--alert'), null);
+  });
+
+  test('empty state', () => {
+    assertEqual(render(lessonsTile, null).querySelector('.dashboard-area__empty').textContent, 'dashboard.lessonsEmpty');
   });
 });

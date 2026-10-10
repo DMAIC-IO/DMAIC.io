@@ -4,6 +4,7 @@
          open insert menu closes what is open; those stop the event. Escape
          does the same. -->
     <div class="af__canvas fc-swimlanes" data-ref="flow"
+         :class="canvasClass()"
          :style="bandGridStyle()"
          @click="closeOverlays()"
          @keydown.escape.window="closeOverlays()">
@@ -38,8 +39,10 @@
            band, which is exactly what tore the main path open wherever a
            detour ran beside it. -->
       <template x-for="band in bands()" :key="'lane-' + band.id">
-        <div class="af__lane" :data-band-id="band.id" :style="laneStyle(band)"
-             @dragover.prevent
+        <div class="af__lane" :class="bandClass(band.id)"
+             :data-band-id="band.id" :style="laneStyle(band)"
+             @dragover="bandDragOver(band.id, $event)"
+             @dragleave="bandDragLeave(band.id, $event)"
              @drop.stop="dropOnBand(band.id, $event)"></div>
       </template>
 
@@ -184,7 +187,7 @@
                   <!-- Gap n — the rail behind the last card, same drag-only
                        rule. -->
                   <template x-if="showEndRail(idx)">
-                    <div class="af__connector af__connector--end fc-connector fc-connector--rail fc-connector--header-aligned"
+                    <div class="af__connector af__connector--end fc-connector fc-connector--rail fc-connector--end fc-connector--header-aligned"
                          :class="gapClassAfter(idx)" :data-gap="idx + 1"
                          @dragover="gapDragOverAfter(idx, $event)"
                          @dragleave="gapDragLeaveAfter(idx, $event)"
@@ -231,7 +234,8 @@
         <template x-if="!isMainBand(band)">
           <div class="af__tail" :class="tailClass(band)"
                :data-band-id="band.id" :style="tailStyle(band)"
-               @dragover.prevent
+               @dragover="bandDragOver(band.id, $event)"
+               @dragleave="bandDragLeave(band.id, $event)"
                @drop.stop="dropOnBand(band.id, $event)">
                 <div class="af__band-add">
                   <button data-add="activity" @click="addActivityToBand(band.id)"

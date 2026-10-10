@@ -9,6 +9,7 @@
       "failureMode": "Falsche Adresse erfasst",
       "effect": "Fahrer findet Kunde nicht, +15 min Verspätung",
       "cause": "Kein Plausibilitäts-Check der Eingabe",
+      "prevention": "Pflichtfelder mit PLZ-Abgleich im Bestellformular",
       "control": "Mündliche Bestätigung am Telefon",
       "sev": "7",
       "occ": "4",
@@ -41,6 +42,7 @@
       "failureMode": "Ofen-Überlastung in Stoßzeiten",
       "effect": "Pizza unter-/überbacken, Wartezeit +10 min",
       "cause": "Bestellungen nicht zeitlich gepuffert",
+      "prevention": "Feste Backslots pro Viertelstunde",
       "control": "Visuelle Sichtkontrolle Pizzabäcker",
       "sev": "6",
       "occ": "6",
@@ -73,7 +75,9 @@
       "failureMode": "Thermo-Box nicht ausreichend isoliert",
       "effect": "Pizza-Temperatur < 40 °C beim Kunden",
       "cause": "Boxen veraltet, Dichtung defekt",
+      "prevention": "Thermo-Boxen nach Herstellerangabe vorheizen",
       "control": "—",
+      "specialChar": "SC",
       "sev": "8",
       "occ": "5",
       "det": "8",
@@ -105,6 +109,7 @@
       "failureMode": "Verkehrsstau, Umleitung",
       "effect": "Lieferzeit > 45 min",
       "cause": "Keine Echtzeit-Routenoptimierung",
+      "prevention": "Routenplanung mit Live-Verkehrsdaten",
       "control": "Erfahrungswerte des Fahrers",
       "sev": "5",
       "occ": "7",
@@ -129,6 +134,22 @@
           "deltaD": "2"
         }
       ],
+      "collapsed": false
+    },
+    {
+      "id": "r5",
+      "step": "Pizza belegen",
+      "failureMode": "Allergen nicht deklariert",
+      "effect": "Allergische Reaktion beim Kunden",
+      "cause": "Rezepturänderung nicht in der Speisekarte nachgezogen",
+      "prevention": "Rezepturfreigabe nur mit aktualisierter Allergenliste",
+      "control": "Stichprobe Speisekarte gegen Rezeptur (monatlich)",
+      "specialChar": "CC",
+      "justification": "Rezepturwechsel ist für Q3 eingefroren; Prüfung im nächsten Review.",
+      "sev": "9",
+      "occ": "4",
+      "det": "6",
+      "actions": [],
       "collapsed": false
     }
   ],

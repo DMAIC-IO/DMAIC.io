@@ -2,8 +2,9 @@
 /**
  * check-no-sinks — fail if any app source (js/, excluding vendor/) contains a
  * DOM-XSS sink or a Trusted-Types policy. This locks the zero-sink invariant:
- * with CSP `trusted-types 'none'` there is no policy to wrap a sink, so any
- * match would break the app at runtime. Assignment to innerHTML/outerHTML is a
+ * the CSP (`trusted-types dmaic-sw`) allows one policy only, the sw.js-only
+ * one in js/core/service-worker.js, so any other match would break the app at
+ * runtime. Assignment to innerHTML/outerHTML is a
  * sink; *reading* it is allowed.
  *
  * Every `new DOMParser` is flagged as a sink, EXCEPT when the very next line
@@ -20,8 +21,13 @@ const SINKS = [
   /\.outerHTML\s*=(?!=)/,
   /insertAdjacentHTML\s*\(/,
   /document\.write\s*\(/,
-  /trustedTypes\.createPolicy\s*\(/,
+  /\bcreatePolicy\s*\(/,
 ];
+
+// The one Trusted Types policy the CSP names (`trusted-types dmaic-sw`): it
+// wraps navigator.serviceWorker.register() and lets only sw.js through.
+const SW_POLICY_FILE = /(^|[\\/])js[\\/]core[\\/]service-worker\.js$/;
+const SW_POLICY = /\.createPolicy\s*\(\s*['"]dmaic-sw['"]/;
 
 const DOMPARSER = /\bnew\s+DOMParser\b/;
 const XML_ALLOW = /parseFromString\s*\(.*['"]application\/xml['"]/;
@@ -31,6 +37,7 @@ export function findSinks(file, content) {
   const hits = [];
   const lines = content.split('\n');
   lines.forEach((line, i) => {
+    if (SW_POLICY_FILE.test(file) && SW_POLICY.test(line)) return;
     if (SINKS.some(re => re.test(line))) { hits.push({ line: i + 1, text: line.trim() }); return; }
     if (DOMPARSER.test(line)) {
       const next = lines[i + 1] || '';

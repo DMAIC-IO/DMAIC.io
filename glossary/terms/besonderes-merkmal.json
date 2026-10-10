@@ -1,0 +1,45 @@
+{
+  "id": "besonderes-merkmal",
+  "category": "risk",
+  "title": {
+    "de": "Besonderes Merkmal (CC/SC)",
+    "en": "Special characteristic (CC/SC)"
+  },
+  "short": {
+    "de": "Produkt- oder Prozessmerkmal, dessen Abweichung Sicherheit, Gesetzeskonformität oder Funktion erheblich beeinträchtigt — gesondert gekennzeichnet und überwacht.",
+    "en": "Product or process characteristic whose deviation significantly affects safety, regulatory compliance or function — flagged and controlled separately."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "**Besondere Merkmale** werden in der {{term:fmea|FMEA}} gekennzeichnet und im Produktionslenkungsplan mit eigenen Prüf- und Lenkungsmaßnahmen hinterlegt. Üblich sind zwei Klassen: **CC** (critical characteristic) für Sicherheits- oder Gesetzesbezug und **SC** (significant characteristic) für erheblichen Einfluss auf Passform, Funktion oder Weiterverarbeitung."
+      },
+      {
+        "type": "note",
+        "text": "Eine {{term:bedeutung|Bedeutung}} von 9 oder 10 ist ein starkes Indiz für ein besonderes Merkmal. Bezeichnungen und Symbole sind kundenspezifisch (z. B. eigene Kürzel einzelner OEMs); CC/SC ist die verbreitete Grundform."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "**Special characteristics** are flagged in the {{term:fmea|FMEA}} and carried into the control plan with their own inspection and control measures. Two classes are common: **CC** (critical characteristic) for safety or regulatory impact and **SC** (significant characteristic) for a significant impact on fit, function or further processing."
+      },
+      {
+        "type": "note",
+        "text": "A {{term:bedeutung|severity}} of 9 or 10 is a strong indicator of a special characteristic. Names and symbols are customer-specific (e.g. individual OEM codes); CC/SC is the common basic form."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Besonderes Merkmal", "Sicherheitsmerkmal", "CC", "SC", "kritisches Merkmal"],
+    "en": ["Special characteristic", "Critical characteristic", "Significant characteristic", "CC", "SC"]
+  },
+  "seeAlso": ["fmea", "bedeutung", "rpz"],
+  "modules": ["fmea"],
+  "algoLab": [],
+  "sources": [
+    { "label": "AIAG-VDA FMEA Handbook, 1st Edition, 2019 — Design and Process FMEA", "url": null },
+    { "label": "IATF 16949:2016, Abschnitt 8.3.3.3 — Besondere Merkmale", "url": null }
+  ]
+}

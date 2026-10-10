@@ -103,3 +103,13 @@ export class State {
     return s;
   }
 }
+
+/**
+ * High-impact lessons with at least one open action, in stored order.
+ * @param {Lesson[]} lessons
+ * @param {number} n
+ * @returns {Lesson[]}
+ */
+export function openHighImpact(lessons, n) {
+  return lessons.filter(l => l.impact === 'high' && l.actions.some(a => !a.done)).slice(0, n);
+}

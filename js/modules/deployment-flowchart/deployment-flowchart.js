@@ -156,7 +156,8 @@ export default createModule({
         event?.preventDefault();
         const from = this._draggedStepId;
         this._draggedStepId = null;
-        event?.currentTarget?.classList?.remove('is-drop-target');
+        this._activeGap = null;
+        this._activeBand = null;
         if (!from) return;
         this.model.setLaneForStep(from, laneId);
       },

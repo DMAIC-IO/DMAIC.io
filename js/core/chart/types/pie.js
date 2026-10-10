@@ -396,7 +396,8 @@ export default class PieChart extends ChartBase {
     const onSlide = () => { this.render(); };
 
     // Title
-    inner.appendChild(edTitleSection(cfg, () => this.render(), tBase));
+    inner.appendChild(edTitleSection(cfg, () => this.render(), tBase,
+      (key, value) => this._onLabelEdit?.(key, value), this._autoLabels || {}));
 
     // Legend
     inner.appendChild(edCheckboxRow(tBase('showLegend'), cfg.showLegend !== false, (v) => { cfg.showLegend = v; onUpdate(); }));

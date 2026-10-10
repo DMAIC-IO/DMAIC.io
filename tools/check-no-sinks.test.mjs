@@ -11,6 +11,10 @@ assert.deepEqual(findSinks('a.js', "const p = new DOMParser();\nconst d = p.pars
 assert.ok(findSinks('a.js', "new DOMParser().parseFromString(s, 'text/html')").length === 1);
 assert.ok(findSinks('a.js', "const p = new DOMParser();\np.parseFromString(s, 'text/html');").length === 1);
 assert.ok(findSinks('a.js', "trustedTypes.createPolicy('p', {})").length === 1);
+// The one allowed policy: dmaic-sw in core/service-worker.js (CSP names it).
+assert.deepEqual(findSinks('js/core/service-worker.js', "tt.createPolicy('dmaic-sw', {"), []);
+assert.ok(findSinks('js/core/service-worker.js', "tt.createPolicy('other', {").length === 1);
+assert.ok(findSinks('js/ui/x.js', "tt.createPolicy('dmaic-sw', {").length === 1);
 assert.ok(findSinks('a.js', 'el.insertAdjacentHTML("beforeend", s)').length === 1);
 // reading innerHTML is allowed (assignment only)
 assert.deepEqual(findSinks('a.js', 'const h = el.innerHTML;'), []);

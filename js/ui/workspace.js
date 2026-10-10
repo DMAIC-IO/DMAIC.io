@@ -528,6 +528,11 @@ export class Workspace {
     // laufende Einhängung, statt sie zu überspringen.
     await this._ensureInstantiated(instanceId);
 
+    // Der Nutzer kann während des Einhängens (erster Chunk-Load) einen
+    // anderen Tab gewählt haben. Jetzt noch `module:activated` zu melden
+    // würde den Listener zurückschalten.
+    if (this._activeInstanceId !== instanceId) return;
+
     this._eventBus.emit('module:activated', { instanceId });
 
     this._renderActions();
@@ -637,7 +642,7 @@ export class Workspace {
     this._moduleArea.append(moduleContainer);
     this._containers.set(instanceId, moduleContainer);
 
-    const context = this._buildContext(instanceId);
+    const context = this._buildContext(instanceId, moduleContainer);
 
     try {
       const instance = await this._moduleRegistry.instantiate(record.moduleId, moduleContainer, context);
@@ -671,6 +676,16 @@ export class Workspace {
    */
   getInstancesByModuleId(moduleId) {
     return [...this._instances.values()].filter(inst => inst?.id === moduleId);
+  }
+
+  /**
+   * The instance the workspace has selected, set synchronously by a tab or
+   * phase switch — also while that module is still mounting, when
+   * getActiveModuleInfo() answers null.
+   * @returns {string|null}
+   */
+  getActiveInstanceId() {
+    return this._activeInstanceId;
   }
 
   /**
@@ -746,7 +761,7 @@ export class Workspace {
     return true;
   }
 
-  _buildContext(instanceId) {
+  _buildContext(instanceId, container) {
     return {
       instanceId,
       eventBus: this._eventBus,
@@ -755,7 +770,7 @@ export class Workspace {
       showModal: this._modal,
       confirmPopout: (message, options = {}) => confirmPopout(message, { ...options, i18n: this._i18n }),
       notify: this._context.notify,
-      chartManager: this._context.chartManager,
+      chartManager: this._context.chartManager?.forInstance?.(instanceId, container) ?? this._context.chartManager,
       examples: this._context.examples,
       theme: document.documentElement.dataset.theme || 'light',
       language: this._i18n.getLanguage(),
@@ -789,7 +804,7 @@ export class Workspace {
     //    two hooks above: its modal would survive the seed and block the page.
     //    Such modules check this flag and stay silent.
     const context = {
-      ...this._buildContext(instanceId),
+      ...this._buildContext(instanceId, container),
       notify: () => {},
       confirmPopout: async () => true,
       detached: true,

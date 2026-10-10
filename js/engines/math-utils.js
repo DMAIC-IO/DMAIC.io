@@ -476,7 +476,7 @@ export function noncentralFCDF(x, df1, df2, lambda) {
  * @param {number} z
  * @returns {number}
  */
-function normalUpperTail(z) {
+export function normalUpperTail(z) {
   const p = gammainc(0.5, z * z / 2);
   return z >= 0 ? 0.5 * (1 - p) : 0.5 * (1 + p);
 }

@@ -1,0 +1,15 @@
+{
+  "testKind": "two",
+  "inputMode": "summary",
+  "direction": "two-sided",
+  "alpha": 0.05,
+  "p0": "0.5",
+  "pooled": false,
+  "summary": {
+    "x": "", "n": "",
+    "x1": "46", "n1": "1200", "x2": "21", "n2": "1150",
+    "table": { "rows": ["A", "B"], "cols": ["X", "Y"], "counts": [["", ""], ["", ""]] }
+  },
+  "colRefs": { "response": null, "group": null, "rowVar": null, "colVar": null },
+  "eventValue": null
+}

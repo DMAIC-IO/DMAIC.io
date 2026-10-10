@@ -1,5 +1,5 @@
 import { suite, test, assertEqual } from '../test-utils.js';
-import { Stakeholder, State, QUAD_ORDER } from '../../js/modules/stakeholder-analysis/stakeholder-analysis-model.js';
+import { Stakeholder, State, QUAD_ORDER, quadrantCounts, supportCounts, criticalCritics } from '../../js/modules/stakeholder-analysis/stakeholder-analysis-model.js';
 
 suite('Stakeholder Analysis Model — Stakeholder', () => {
   test('constructor sets default values', () => {
@@ -163,5 +163,24 @@ suite('Stakeholder Analysis Model — State', () => {
     assertEqual(QUAD_ORDER.length, 4);
     assertEqual(QUAD_ORDER.includes('manage-closely'), true);
     assertEqual(QUAD_ORDER.includes('monitor'), true);
+  });
+});
+
+suite('Stakeholder Model — dashboard helpers', () => {
+  const sh = (power, interest, support) => Stakeholder.fromJSON({ id: `${power}${interest}${support}`, name: support, power, interest, support });
+  const list = [sh(5, 5, 'critic'), sh(5, 5, 'supporter'), sh(5, 1, 'neutral'), sh(1, 5, 'resistor'), sh(1, 1, 'critic')];
+
+  test('quadrantCounts covers all four quadrants', () => {
+    assertEqual(JSON.stringify(quadrantCounts(list)),
+      JSON.stringify({ 'manage-closely': 2, 'keep-satisfied': 1, 'keep-informed': 1, monitor: 1 }));
+  });
+
+  test('supportCounts puts unknown values into other', () => {
+    assertEqual(JSON.stringify(supportCounts(list)), JSON.stringify({ supporter: 1, neutral: 1, critic: 2, other: 1 }));
+  });
+
+  test('criticalCritics: critics in manage-closely only', () => {
+    assertEqual(criticalCritics(list).length, 1);
+    assertEqual(criticalCritics(list)[0].power, 5);
   });
 });

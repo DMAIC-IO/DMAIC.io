@@ -1,7 +1,8 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import {
   validateSchema, schemaOf, coerceValue, resolveSettings, toStored,
-  withTileSettings, pruneTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave,
+  withTileSettings, pruneTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave, titlesToStoreOnLayoutSave,
+  SOURCE_KEY, sourceField,
 } from '../../js/pages/dashboard/tile-settings.js';
 
 const TOP_N = { type: 'number', min: 1, max: 10, step: 1, default: 5, label: 'l.topN' };
@@ -161,6 +162,23 @@ suite('tile-settings: settingsToStoreOnLayoutSave', () => {
   });
 });
 
+suite('tile-settings: titlesToStoreOnLayoutSave', () => {
+  const STORED = { 'fmea:live': 'Mine', 'fmea~gone': 'Old copy' };
+
+  test('prunes titles of tiles that no longer enumerate once all tile files loaded', () => {
+    assertDeepEqual(titlesToStoreOnLayoutSave(STORED, ['fmea:live'], true), { 'fmea:live': 'Mine' });
+  });
+
+  test('does not prune while a tile file failed to load', () => {
+    assertEqual(titlesToStoreOnLayoutSave(STORED, ['fmea:live'], false), null);
+  });
+
+  test('returns null when nothing would change', () => {
+    assertEqual(titlesToStoreOnLayoutSave({ 'fmea:live': 'Mine' }, ['fmea:live'], true), null);
+    assertEqual(titlesToStoreOnLayoutSave(undefined, ['fmea:live'], true), null);
+  });
+});
+
 suite('tile-settings: layoutToStoreOnSave', () => {
   const CURRENT = [{ tileId: 'a:1', x: 0, y: 0 }];
   const STORED = [{ tileId: 'a:1', x: 5, y: 5 }, { tileId: 'fmea:1', x: 3, y: 0 }];
@@ -180,5 +198,58 @@ suite('tile-settings: layoutToStoreOnSave', () => {
 
   test('tolerates a missing stored layout', () => {
     assertDeepEqual(layoutToStoreOnSave(CURRENT, undefined, ['a:1'], false), CURRENT);
+  });
+});
+
+suite('tile-settings: reserved source field', () => {
+  const CHOICES = [{ id: 'i1', text: 'Line A (Analyze)' }, { id: 'i2', text: 'FMEA (Improve)' }];
+
+  test('validateSchema drops "_" keys and optionTexts fields of module schemas', () => {
+    const warnings = [];
+    const out = validateSchema({
+      _source: VIEW,
+      literal: { ...VIEW, optionTexts: ['A', 'B'] },
+      view: VIEW,
+    }, (m) => warnings.push(m));
+    assertDeepEqual(Object.keys(out), ['view']);
+    assertEqual(warnings.length, 2);
+    assertTrue(warnings[0].includes('"_source"'));
+    assertTrue(warnings[1].includes('"literal"'));
+  });
+
+  test('sourceField builds a select over instance ids with literal texts', () => {
+    const f = sourceField(CHOICES, 'i2');
+    assertEqual(f.type, 'select');
+    assertEqual(f.label, 'dashboard.tileSettings.source');
+    assertDeepEqual(f.options, ['i1', 'i2']);
+    assertDeepEqual(f.optionTexts, ['Line A (Analyze)', 'FMEA (Improve)']);
+    assertEqual(f.default, 'i2');
+    assertEqual(SOURCE_KEY, '_source');
+  });
+
+  test('_source is stored sparsely: absent when it equals the default', () => {
+    const schema = { [SOURCE_KEY]: sourceField(CHOICES, 'i1'), ...SCHEMA };
+    const values = { topN: 5, view: 'bar', showLegend: true };
+    assertDeepEqual(toStored(schema, { ...values, _source: 'i1' }), {});
+    assertDeepEqual(toStored(schema, { ...values, _source: 'i2' }), { _source: 'i2' });
+  });
+
+  test('a stored _source of a deleted instance resolves to the default', () => {
+    const schema = { [SOURCE_KEY]: sourceField(CHOICES, 'i1') };
+    assertDeepEqual(resolveSettings(schema, { _source: 'gone' }), { _source: 'i1' });
+  });
+});
+
+suite('tile-settings: copies on layout save', () => {
+  const LAYOUT = [{ tileId: 'fmea~c1', x: 0, y: 0, w: 3, h: 10 }];
+
+  test('a copy that no longer enumerates is pruned when every tile file loaded', () => {
+    assertDeepEqual(settingsToStoreOnLayoutSave({ 'fmea~c1': { _source: 'i1' } }, [], true), {});
+    assertDeepEqual(layoutToStoreOnSave([], LAYOUT, [], true), []);
+  });
+
+  test('a copy whose tile file failed to load keeps layout entry and settings', () => {
+    assertEqual(settingsToStoreOnLayoutSave({ 'fmea~c1': { _source: 'i1' } }, [], false), null);
+    assertDeepEqual(layoutToStoreOnSave([], LAYOUT, [], false), LAYOUT);
   });
 });

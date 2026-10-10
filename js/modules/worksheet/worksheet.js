@@ -1052,9 +1052,7 @@ const mod = createModule({
         const instances = stateManager.get(`phases.${phase}`) || [];
         const existing = instances.find(i => i.moduleId === 'chart-suggestion');
         if (existing) return { instanceId: existing.instanceId, created: false };
-        const instanceId = (typeof crypto !== 'undefined' && crypto.randomUUID)
-          ? crypto.randomUUID()
-          : `cs-${  Date.now().toString(36)  }-${  Math.random().toString(36).slice(2, 8)}`;
+        const instanceId = uid();
         const updated = instances.slice();
         updated.push({ instanceId, moduleId: 'chart-suggestion', order: updated.length, state: {} });
         stateManager.set(`phases.${phase}`, updated);
@@ -1504,6 +1502,14 @@ mod.setState = function setState(data) {
   } else if (this._tmpl) {
     this._tmpl._state = model;
   }
+};
+
+// A mounted worksheet keeps its data in the live DataGrid, so the generic
+// applyRemoteState (which only patches the Alpine model) never reaches the grid,
+// and the next autosave writes the stale grid back over the external change.
+// Route remote/external state through setState, which drives the grid.
+mod.applyRemoteState = function applyRemoteState(state) {
+  if (state) this.setState(state);
 };
 
 mod.loadExample = async function loadExample(payload) {

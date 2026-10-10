@@ -46,7 +46,7 @@ export class State {
   chartConfig = {
     showTitle: true, title: '',
     titleSize: 15, labelSize: 12, tickSize: 11,
-    showXLabel: true, showYLabel: true,
+    showXLabel: true, showYLabel: true, xLabel: '', yLabel: '',
     showXTicks: true, showYTicks: true,
     bgColor: null,
   };
@@ -67,6 +67,8 @@ export class State {
       binWidth: this.binWidth,
       showTitle: cc.showTitle,
       chartTitleText: cc.title,
+      chartXLabelText: cc.xLabel ?? '',
+      chartYLabelText: cc.yLabel ?? '',
       showPareto: this.showPareto,
       showStats: this.showStats,
       showBoxplot: this.showBoxplot,
@@ -101,6 +103,8 @@ export class State {
     s.chartConfig = {
       showTitle: d.showTitle ?? true,
       title: typeof d.chartTitleText === 'string' ? d.chartTitleText : '',
+      xLabel: typeof d.chartXLabelText === 'string' ? d.chartXLabelText : '',
+      yLabel: typeof d.chartYLabelText === 'string' ? d.chartYLabelText : '',
       titleSize: d.titleSize ?? 15,
       labelSize: d.labelSize ?? 12,
       tickSize: d.tickSize ?? 11,

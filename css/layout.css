@@ -1380,7 +1380,6 @@ body.dev-area-open .dmaic-tiles {
   gap: var(--spacing-m);
 }
 .tile-settings__input[type="number"] { width: 6em; }
-.tile-settings__reset { align-self: flex-start; }
 
 .dashboard-grid__tile-body {
   flex: 1;
@@ -1556,6 +1555,16 @@ body.dev-area-open .dmaic-tiles {
   flex-shrink: 0;
 }
 
+.dashboard-fmea__top-flag {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  padding: 0 var(--spacing-2xs);
+  border: 1px solid currentcolor;
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-secondary);
+  margin-inline: var(--spacing-xs);
+}
+
 /* VoC tile on dashboard */
 .dashboard-voc__summary {
   display: flex;
@@ -1690,6 +1699,67 @@ body.dev-area-open .dmaic-tiles {
 .dashboard-raci__warn-role {
   font-weight: 700;
   font-family: var(--font-family-mono, monospace);
+}
+
+/* Todo tile on dashboard */
+.dashboard-todo__owner,
+.dashboard-todo__due {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.dashboard-todo__overdue .dashboard-todo__due {
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+/* DMAIC calendar tile on dashboard */
+.dashboard-calendar__when,
+.dashboard-calendar__phase {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.dashboard-calendar__none {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Stakeholder tile on dashboard */
+.dashboard-stakeholder__matrix {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas: "ks mc" "mo ki";
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+}
+
+.dashboard-stakeholder__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-xs);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.dashboard-stakeholder__cell strong {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-primary);
+}
+
+.dashboard-stakeholder__cell--manage-closely { grid-area: mc; border-color: var(--color-error); }
+.dashboard-stakeholder__cell--keep-satisfied { grid-area: ks; }
+.dashboard-stakeholder__cell--keep-informed { grid-area: ki; }
+.dashboard-stakeholder__cell--monitor { grid-area: mo; }
+
+/* Lessons learned tile on dashboard */
+.dashboard-lessons__open--alert strong {
+  color: var(--color-error);
 }
 
 /* SPC / Control Chart on dashboard */

@@ -15,7 +15,7 @@
 import { createModule } from '../../core/template-module.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
 import { draggablePopout } from '../../ui/draggable-popout.js';
-import { State, METHODS, FMEA_TYPES } from './fmea-model.js';
+import { State, METHODS, FMEA_TYPES, fmeaCreateDefault } from './fmea-model.js';
 import { S_BANDS, O_BANDS, D_BANDS, AP_TABLE, AP_CATEGORY, bandLabel } from './fmea-ap.js';
 
 /** Map a 1–10 rating to its scale-row index (0–4). */
@@ -45,7 +45,7 @@ const mod = createModule({
     engine: 'alpine',
     phase: 'analyze',
     icon: 'module.fmea',
-    version: '1.2.0',
+    version: '1.3.0',
     meta: import.meta,
     actions: [
       { icon: 'action.glossary', title: 'scales', onClick: (d) => d.toggleScale() },
@@ -58,6 +58,8 @@ const mod = createModule({
     ],
   },
   Model: State,
+  /** New FMEAs start with the app-wide default method/type (settings page). */
+  createDefault: fmeaCreateDefault,
 
   beforeLoadExample(data) {
     const result = JSON.parse(JSON.stringify(data));
@@ -106,13 +108,28 @@ const mod = createModule({
       /** Projected-bar badge: 'AP M' / 'RPN 120'. */
       projValueText(risk) { return this.isAp() ? `AP ${risk.projAp() || '—'}` : this.rpnText(risk.projRpn()); },
 
-      /** Combined card class: glow tier + collapsed marker. */
+      /** Combined card class: glow tier + collapsed marker + S ≥ 9 marker (RPN mode). */
       cardClass(risk) {
         const cat = this.model.rating().category(risk);
         const glow = cat === 'none' ? '' : `fmea__risk-card--${cat}`;
         const collapsed = risk.collapsed ? 'fmea__risk-card--collapsed' : '';
-        return (`${glow} ${collapsed}`).trim();
+        const severe = this.showSevere(risk) ? 'fmea__risk-card--severe' : '';
+        return (`${glow} ${collapsed} ${severe}`).replace(/\s+/g, ' ').trim();
       },
+
+      /** @returns {boolean} AP mode and the risk is AP H without a non-blank action/justification */
+      showUnjustified(risk) { return this.isAp() && risk.needsJustification(); },
+      /**
+       * @returns {boolean} justification field: required at AP H, kept visible once filled —
+       * in RPN mode too, since the CSV exports it
+       */
+      showJustification(risk) {
+        return (this.isAp() && risk.needsJustification()) || risk.justification.trim() !== '';
+      },
+      /** @returns {boolean} RPN mode and S ≥ 9 */
+      showSevere(risk) { return !this.isAp() && risk.isHighSeverity(); },
+      /** @returns {string} badge modifier for CC/SC */
+      specialCharClass(risk) { return risk.specialChar ? `fmea__badge--${risk.specialChar.toLowerCase()}` : ''; },
 
       projSDisp: (risk) => risk.sev ? String(risk.projS()) : '—',
       projODisp: (risk) => risk.occ ? String(risk.projO()) : '—',
@@ -226,7 +243,8 @@ const mod = createModule({
         const yes = lang === 'de' ? 'Ja' : 'Yes';
         const no = lang === 'de' ? 'Nein' : 'No';
         const headers = ['#', _t('step'), _t('failureMode'), _t('effect'), _t('cause'),
-          _t('currentControls'), 'S', 'O', 'D', 'RPN', 'AP',
+          _t('preventionControl'), _t('currentControls'), _t('specialChar'), _t('justification'),
+          'S', 'O', 'D', 'RPN', 'AP',
           _t('action'), _t('responsible'), _t('dueDate'), _t('done'), 'ΔS', 'ΔO', 'ΔD',
           'Proj.S', 'Proj.O', 'Proj.D', 'Proj.RPN', 'Proj.AP'];
         const cell = (v) => `"${  String(v == null ? '' : v).replace(/"/g, '""')  }"`;

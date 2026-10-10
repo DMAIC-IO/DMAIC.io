@@ -213,6 +213,16 @@ textarea.fc-card__description {
    shares (header ≈ 40px, connector 32px → 4px offset). */
 .fc-connector--header-aligned { margin-top: var(--spacing-xs); }
 
+/* Gap n hangs off the RIGHT of the last card, mirroring the connector that
+   normally sits in the gap to a card's left. The swimlane canvases scroll
+   horizontally, so the rail may extend past the padding — that is fine.
+   Two classes on purpose: each module positions its connectors with its own
+   `left`, and this has to win regardless of stylesheet order. */
+.fc-connector.fc-connector--end {
+  left: auto;
+  right: calc(-1 * var(--fc-chain-gap));
+}
+
 .fc-connector--clickable {
   cursor: pointer;
   border-radius: var(--border-radius);

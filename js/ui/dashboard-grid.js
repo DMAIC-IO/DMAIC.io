@@ -17,6 +17,7 @@
  *   onTileRemoved(id)            – called after a tile is removed
  *   onTitleChanged(id, title)    – called after an inline title edit
  *   onSettingsRequested(id)      – called when a tile's gear is clicked
+ *   onDuplicateRequested(id)     – called when a tile's duplicate button is clicked
  */
 
 // ── DOM → Image export helpers ──────────────────────────────────
@@ -168,6 +169,7 @@ export class DashboardGrid {
     this.onTileRemoved = null;
     this.onTitleChanged = null;
     this.onSettingsRequested = null;
+    this.onDuplicateRequested = null;
 
     /** @type {Map<string, {def: object, layout: {x:number,y:number,w:number,h:number}, el: HTMLElement, bodyEl: HTMLElement}>} */
     this._tiles = new Map();
@@ -188,7 +190,7 @@ export class DashboardGrid {
 
   /**
    * Replace the current tile set.
-   * @param {Array<object>} tileDefs         - Tile definitions ({id, i18nTitle, minW, minH, defaultW, defaultH, title, removeLabel, moveTitle, resizeTitle, hasSettings, settingsLabel})
+   * @param {Array<object>} tileDefs         - Tile definitions ({id, i18nTitle, minW, minH, defaultW, defaultH, title, removeLabel, moveTitle, resizeTitle, hasSettings, settingsLabel, canDuplicate, duplicateLabel})
    * @param {Array<{tileId:string,x:number,y:number,w:number,h:number}>} layout
    */
   setTiles(tileDefs, layout) {
@@ -204,10 +206,11 @@ export class DashboardGrid {
   }
 
   /**
-   * Add a tile. Finds the first free grid spot that fits the tile's default size.
+   * Add a tile. Finds the first free grid spot that fits the tile's default
+   * size, or places it below the lowest tile.
    * @param {object} def
    * @returns {boolean} true if the tile was added, false if it already exists
-   *                   or no free spot was found.
+   *                   or is wider than the grid.
    */
   addTile(def) {
     if (this._tiles.has(def.id)) return false;
@@ -219,6 +222,19 @@ export class DashboardGrid {
     this._updateContainerHeight();
     this._notifyChange();
     return true;
+  }
+
+  /**
+   * Replace the frame title of one placed tile, keeping its element.
+   * @param {string} tileId
+   * @param {string} title
+   */
+  setTileTitle(tileId, title) {
+    const entry = this._tiles.get(tileId);
+    if (!entry) return;
+    entry.def = { ...entry.def, title };
+    const titleEl = entry.el.querySelector('.dashboard-grid__tile-title');
+    if (titleEl) titleEl.textContent = title;
   }
 
   /**
@@ -361,7 +377,10 @@ export class DashboardGrid {
         if (!this._hasCollision({ x, y, w, h: gh })) return { x, y };
       }
     }
-    return { x: 0, y: 0 };
+    // The grid grows downwards: below the lowest tile there is always room.
+    let bottom = 0;
+    for (const { layout } of this._tiles.values()) bottom = Math.max(bottom, layout.y + layout.h);
+    return { x: 0, y: bottom };
   }
 
   // ─── Internal: tile DOM ────────────────────────────────────────
@@ -384,6 +403,12 @@ export class DashboardGrid {
           title: def.settingsLabel || '',
           'aria-label': def.settingsLabel || '',
         }, icon('action.settings', { size: 'sm' })) : null,
+        def.canDuplicate ? h('button', {
+          type: 'button',
+          class: 'dashboard-grid__tile-export-btn dashboard-grid__tile-duplicate-btn',
+          title: def.duplicateLabel || '',
+          'aria-label': def.duplicateLabel || '',
+        }, icon('action.copy', { size: 'sm' })) : null,
         h('button', {
           type: 'button',
           class: 'dashboard-grid__tile-export-btn',
@@ -415,6 +440,8 @@ export class DashboardGrid {
       .addEventListener('click', (e) => { e.stopPropagation(); this.removeTile(def.id); });
     el.querySelector('.dashboard-grid__tile-settings-btn')
       ?.addEventListener('click', (e) => { e.stopPropagation(); this.onSettingsRequested?.(def.id); });
+    el.querySelector('.dashboard-grid__tile-duplicate-btn')
+      ?.addEventListener('click', (e) => { e.stopPropagation(); this.onDuplicateRequested?.(def.id); });
     el.querySelector('.dashboard-grid__tile-move')
       .addEventListener('pointerdown', (e) => this._startInteraction(e, def.id, 'move'));
     el.querySelector('.dashboard-grid__tile-resize')

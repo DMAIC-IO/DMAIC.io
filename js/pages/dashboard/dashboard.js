@@ -1,23 +1,19 @@
 /**
  * D.Mike — Dashboard page (dashboard.js)
  * Thin host: owns the DashboardGrid, the add-tile menu, layout/title
- * persistence, PNG/SVG export, and the BUILT-IN tiles (goals, ZEG timeline,
- * org chart, VoC/CTx, RACI, SPC). Module-owned tiles come from each
- * module's tile file (manifest `loadTile`), loaded and enumerated via
- * enumerate-tiles.js. Contract: docs/DASHBOARD.md.
+ * persistence, PNG/SVG export and refresh wiring. Every tile comes from a tile
+ * file: a module's (manifest `loadTile`) or a host tile (tiles/index.js),
+ * loaded and enumerated via enumerate-tiles.js. Contract: docs/DASHBOARD.md.
  */
 
 import { createPage } from '../../core/create-page.js';
-import { h, svg, s } from '../../core/dom.js';
+import { h } from '../../core/dom.js';
 import { DashboardGrid } from '../../ui/dashboard-grid.js';
-import { DEFAULT_DASHBOARD_LAYOUT } from '../../ui/dashboard-tiles.js';
-import { enumerateTiles, loadTileModules } from './enumerate-tiles.js';
+import { DEFAULT_DASHBOARD_LAYOUT } from './default-layout.js';
+import { enumerateTiles, loadTileModules, refreshEventsOf, copyId, copyDescriptor, sourceChoices, customRefreshEvents, refreshTargets } from './enumerate-tiles.js';
 import { renderTileSafely } from './tile-render.js';
-import { schemaOf, resolveSettings, toStored, withTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave } from './tile-settings.js';
+import { schemaOf, resolveSettings, toStored, withTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave, titlesToStoreOnLayoutSave, SOURCE_KEY, sourceField, coerceValue } from './tile-settings.js';
 import { buildSettingsForm } from './tile-settings-form.js';
-import { getChartType, evaluateNelsonRules, computeCapability, capabilitySigma, DEFAULT_ENABLED_RULES } from '../../engines/control-chart-engine.js';
-import { getColumnValues, getColumnName } from '../../ui/column-picker.js';
-import { getPhaseIds } from '../../core/cycles/cycles.js';
 
 const page = createPage({
   id: 'dashboard',
@@ -40,702 +36,82 @@ const page = createPage({
     const { eventBus, stateManager, i18n, chartManager, themeManager, moduleRegistry, modal } = ctx;
     const gridAnchor = containerEl.querySelector('[data-ref="grid"]');
 
-    const handle = { grid: null, chart: null, addMenuEl: null, _onDocClick: null, _unsubs: [], render: null, _renderGen: 0, _toolbarWired: false, _charterTile: null, _allTilesLoaded: false };
+    const handle = { grid: null, addMenuEl: null, _onDocClick: null, _unsubs: [], render: null, _renderGen: 0, _toolbarWired: false, _allTilesLoaded: false, _refreshUnsubs: [], _lastLayout: [], tileModules: [] };
 
-    const allPhaseKeys = () => Object.keys(stateManager.get('phases') || {});
-    const methodPhaseKeys = () => getPhaseIds(stateManager.getProjectCycle());
     const theme = () => themeManager?.getTheme?.() ?? 'light';
 
     let descriptors = [];
     const descriptorFor = (tileId) => descriptors.find(d => d.id === tileId);
+    /** Tiles whose source can be chosen and that can be duplicated. */
+    const isSourceCapable = (d) => !!(d?.kind && d.moduleId && d.instanceId);
 
-    // ── Scanners for host-owned dynamic built-in tiles (RACI, SPC) ──────────
-    // (fmea/ishikawa/charter are module-owned and enumerated by enumerateTiles.)
-    const _findVocState = () => {
-      const phases = stateManager.get('phases') || {};
-      for (const phase of allPhaseKeys()) {
-        for (const inst of (phases[phase] || [])) {
-          if (inst.moduleId === 'voc-ctx-tree') return stateManager.getModuleState(inst.instanceId);
+    // A full render or unmount builds/drops the whole grid without firing
+    // onTileRemoved, so release every placed tile (charts, listeners) first.
+    const disposePlacedTiles = () => {
+      if (!handle.grid) return;
+      for (const id of handle.grid.getPlacedTileIds()) {
+        try {
+          descriptorFor(id)?.tile?.dispose?.(handle.grid.getTileBody(id), { tileId: id });
+        } catch (err) {
+          console.error(`[dashboard] tile "${id}" failed to dispose`, err);
         }
       }
-      return null;
     };
-
-    const _findCharterState = () => {
-      const phases = stateManager.get('phases') || {};
-      for (const phase of allPhaseKeys()) {
-        for (const inst of (phases[phase] || [])) {
-          if (inst.moduleId === 'project-charter') return stateManager.getModuleState(inst.instanceId);
-        }
-      }
-      return null;
-    };
-
-    const _findAllRaciInstances = () => {
-      const phases = stateManager.get('phases') || {};
-      const result = [];
-      for (const phase of allPhaseKeys()) {
-        for (const inst of (phases[phase] || [])) {
-          if (inst.moduleId === 'raci-matrix') {
-            result.push({ instanceId: inst.instanceId, phase, label: inst.customName || i18n.t('modules.raci-matrix.name') });
-          }
-        }
-      }
-      return result;
-    };
-
-    const _findAllSpcInstances = () => {
-      const phases = stateManager.get('phases') || {};
-      const result = [];
-      for (const phase of allPhaseKeys()) {
-        for (const inst of (phases[phase] || [])) {
-          if (inst.moduleId === 'control-chart') {
-            result.push({ instanceId: inst.instanceId, phase, label: inst.customName || i18n.t('modules.control-chart.name') });
-          }
-        }
-      }
-      return result;
-    };
-
-    const _buildRaciTileDefs = () => {
-      const customTitles = stateManager.get('dashboard.titles') || {};
-      return _findAllRaciInstances().map(inst => {
-        const id = `raci:${inst.instanceId}`;
-        return {
-          id, instanceId: inst.instanceId, i18nTitle: '',
-          title: customTitles[id] || `RACI — ${inst.label}`,
-          defaultW: 3, defaultH: 10, minW: 2, minH: 6,
-          builtin: true, moduleId: null, tile: null,
-        };
-      });
-    };
-
-    const _buildSpcTileDefs = () => {
-      const customTitles = stateManager.get('dashboard.titles') || {};
-      return _findAllSpcInstances().map(inst => {
-        const id = `spc:${inst.instanceId}`;
-        return {
-          id, instanceId: inst.instanceId, i18nTitle: '',
-          title: customTitles[id] || `SPC — ${inst.label}`,
-          defaultW: 3, defaultH: 10, minW: 2, minH: 6,
-          builtin: true, moduleId: null, tile: null,
-        };
-      });
-    };
-
-    // ── BUILT-IN tile renderers (ported 1:1, innerHTML → h()/svg()) ────
-
-    const _zegColor = (zeg) => {
-      if (zeg >= 100) return 'var(--color-success)';
-      if (zeg >= 75)  return 'var(--color-info)';
-      if (zeg >= 25)  return 'var(--color-warning)';
-      return 'var(--color-error)';
-    };
-
-    const renderGoals = () => {
-      const body = handle.grid?.getTileBody('project-goals');
-      if (!body) return;
-      const state = _findCharterState();
-      const goals = (state && state.goals) || [];
-      if (goals.length === 0) {
-        body.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.charterNoGoals')));
-        return;
-      }
-      const ol = h('ol', { class: 'dashboard-charter__goals' });
-      goals.forEach((g, i) => {
-        const zeg = Math.max(0, Math.min(100, g.achievementLevel ?? 0));
-        const color = _zegColor(zeg);
-        const desc = g.description || i18n.t('dashboard.charterGoalUnnamed', { n: i + 1 });
-        ol.append(
-          h('li', { class: 'dashboard-charter__goal' },
-            h('div', { class: 'dashboard-charter__goal-head' },
-              h('span', { class: 'dashboard-charter__goal-desc' }, desc),
-              h('span', { class: 'dashboard-charter__goal-zeg', style: `color:${color}` }, `${zeg}%`),
-            ),
-            h('div', { class: 'dashboard-charter__goal-bar' },
-              h('div', { class: 'dashboard-charter__goal-bar-fill', style: `width:${zeg}%; background:${color}` }),
-            ),
-          ),
-        );
-      });
-      body.replaceChildren(ol);
-    };
-
-    // ── ZEG timeline chart ───────────────────────────────────────────────
-    const _resolvePhaseColor = (phase) => {
-      const css = getComputedStyle(document.documentElement)
-        .getPropertyValue(`--color-phase-${phase}`).trim();
-      return css || '#888';
-    };
-
-    const _buildSeries = () => {
-      const histories = {};
-      let hasAny = false;
-      const methodPhases = methodPhaseKeys();
-      for (const phase of methodPhases) {
-        const hist = stateManager.get(`phaseAchievementHistory.${phase}`) || [];
-        histories[phase] = hist;
-        if (hist.length) hasAny = true;
-      }
-      if (!hasAny) return { series: [], empty: true };
-
-      const series = methodPhases.map(phase => {
-        const hist = histories[phase];
-        const color = _resolvePhaseColor(phase);
-        return {
-          name: i18n.t(`phases.${phase}`),
-          x: hist.map(e => e.t),
-          y: hist.map(e => e.v),
-          color,
-          markerSize: hist.length === 1 ? 5 : 3,
-          connectLine: { show: true, foreground: true, width: 2, color, dash: 'solid' },
-          visible: hist.length > 0,
-        };
-      });
-      return { series, empty: series.every(ser => ser.x.length === 0) };
-    };
-
-    const renderChart = async () => {
-      const body = handle.grid?.getTileBody('zeg-timeline');
-      if (!body) return;
-      if (handle.chart) { chartManager.destroy(handle.chart); handle.chart = null; }
-
-      const { series, empty } = _buildSeries();
-      if (empty) {
-        body.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.noHistory')));
-        return;
-      }
-      const plotEl = h('div', { class: 'dashboard-area__plot', 'data-ref': 'plot' });
-      body.replaceChildren(plotEl);
-
-      const dateFmt = (ts) => {
-        const d = new Date(ts);
-        return d.toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', {
-          day: '2-digit', month: '2-digit', year: '2-digit',
-        });
-      };
-
-      // Capture the render generation + the grid this chart belongs to. If a
-      // newer render() supersedes us (or rebuilds the grid) while create()
-      // awaits, drop the result so a stale chart never inserts into a fresh grid.
-      const gen = handle._renderGen;
-      const gridAtStart = handle.grid;
-      const chart = await chartManager.create(plotEl, 'scatter', {
-        title: '',
-        xLabel: i18n.t('dashboard.xLabel'),
-        yLabel: i18n.t('dashboard.yLabel'),
-        showLegend: true,
-        series,
-        yMin: 0,
-        yMax: 100,
-        xTickFormat: dateFmt,
-      });
-      if (handle._renderGen !== gen || handle.grid !== gridAtStart) {
-        chartManager.destroy(chart);
-        return;
-      }
-      handle.chart = chart;
-    };
-
-    // ── Org chart (SVG) ──────────────────────────────────────────────────
-    const ORG_NW = 220, ORG_NH = 64, ORG_HG = 44, ORG_VG = 28;
-
-    const _orgSubtreeWidth = (nodes, id) => {
-      const children = nodes.filter(n => n.pid === id);
-      if (!children.length) return ORG_NW;
-      let w = 0;
-      children.forEach((c, i) => {
-        w += _orgSubtreeWidth(nodes, c.id);
-        if (i < children.length - 1) w += ORG_HG;
-      });
-      return Math.max(ORG_NW, w);
-    };
-
-    const _orgLayout = (nodes, id, x, y, out) => {
-      out[id] = { x, y };
-      const children = nodes.filter(n => n.pid === id);
-      if (!children.length) return;
-      const cy = y + ORG_NH + ORG_VG;
-      const ws = children.map(c => _orgSubtreeWidth(nodes, c.id));
-      let total = 0;
-      ws.forEach((w, i) => { total += w; if (i < ws.length - 1) total += ORG_HG; });
-      let cx = x + ORG_NW / 2 - total / 2;
-      children.forEach((c, i) => {
-        _orgLayout(nodes, c.id, cx + ws[i] / 2 - ORG_NW / 2, cy, out);
-        cx += ws[i] + ORG_HG;
-      });
-    };
-
-    const renderOrgChart = () => {
-      const body = handle.grid?.getTileBody('org-chart');
-      if (!body) return;
-      const state = _findCharterState();
-      const nodes = (state && Array.isArray(state.orgChart)) ? state.orgChart : [];
-      if (!nodes.length) {
-        body.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.orgChartEmpty')));
-        return;
-      }
-
-      const positions = {};
-      const roots = nodes.filter(n => n.pid == null);
-      let ox = 0;
-      roots.forEach(r => {
-        const w = _orgSubtreeWidth(nodes, r.id);
-        _orgLayout(nodes, r.id, ox + w / 2 - ORG_NW / 2, 0, positions);
-        ox += w + ORG_HG * 2;
-      });
-
-      let xMin = Infinity, yMin = Infinity, xMax = -Infinity, yMax = -Infinity;
-      Object.values(positions).forEach(p => {
-        xMin = Math.min(xMin, p.x);
-        yMin = Math.min(yMin, p.y);
-        xMax = Math.max(xMax, p.x + ORG_NW);
-        yMax = Math.max(yMax, p.y + ORG_NH);
-      });
-      const PAD = 8;
-      const vbW = (xMax - xMin) + PAD * 2;
-      const vbH = (yMax - yMin) + PAD * 2;
-      const ox0 = PAD - xMin;
-      const oy0 = PAD - yMin;
-
-      const edges = nodes
-        .filter(n => n.pid != null && positions[n.id] && positions[n.pid])
-        .map(n => {
-          const p = positions[n.pid];
-          const c = positions[n.id];
-          const x1 = p.x + ORG_NW / 2 + ox0;
-          const y1 = p.y + ORG_NH + oy0;
-          const x2 = c.x + ORG_NW / 2 + ox0;
-          const y2 = c.y + oy0;
-          const mid = y1 + (y2 - y1) / 2;
-          return svg('path', { d: `M${x1} ${y1}C${x1} ${mid},${x2} ${mid},${x2} ${y2}` });
-        });
-
-      const rects = nodes.map(n => {
-        const p = positions[n.id];
-        if (!p) return null;
-        const x = p.x + ox0;
-        const y = p.y + oy0;
-        const rectStyle = n.bg ? s({ fill: n.bg }) : null;
-        const dash = n.borderStyle === 'dashed' ? '6 4'
-                   : n.borderStyle === 'dotted' ? '2 3' : null;
-        const desc = n.desc || '';
-        const descShort = desc.length > 38 ? `${desc.slice(0, 36)  }…` : desc;
-        return svg('g', { class: 'dashboard-org__node', transform: `translate(${x},${y})` },
-          svg('rect', {
-            class: 'dashboard-org__node-rect', width: ORG_NW, height: ORG_NH,
-            rx: 6, ry: 6, style: rectStyle,
-            stroke: n.borderColor || null,
-            'stroke-width': n.borderWidth ? (Number(n.borderWidth) || 1) : null,
-            'stroke-dasharray': dash,
-          }),
-          svg('text', { class: 'dashboard-org__node-title', x: ORG_NW / 2, y: 22, 'text-anchor': 'middle' }, n.title || ''),
-          desc ? svg('text', { class: 'dashboard-org__node-desc', x: ORG_NW / 2, y: 42, 'text-anchor': 'middle' }, descShort) : null,
-        );
-      });
-
-      const orgSvg = svg('svg', {
-        class: 'dashboard-org__svg', viewBox: `0 0 ${vbW} ${vbH}`,
-        preserveAspectRatio: 'xMidYMid meet',
-      },
-        svg('g', { class: 'dashboard-org__edges' }, edges),
-        svg('g', { class: 'dashboard-org__nodes' }, rects),
-      );
-      body.replaceChildren(h('div', { class: 'dashboard-area__org' }, orgSvg));
-    };
-
-    // ── VoC → CTx tree ───────────────────────────────────────────────────
-    const renderVoc = () => {
-      const body = handle.grid?.getTileBody('voc-ctx-tree');
-      if (!body) return;
-      const state = _findVocState();
-      const vocs = (state && Array.isArray(state.vocs)) ? state.vocs : [];
-
-      if (vocs.length === 0) {
-        body.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.vocEmpty')));
-        return;
-      }
-
-      let needs = 0, ctq = 0, ctd = 0, ctc = 0, reqs = 0;
-      for (const voc of vocs) {
-        for (const need of (voc.needs || [])) {
-          needs++;
-          for (const drv of (need.drivers || [])) {
-            if (drv.type === 'ctq') ctq++;
-            else if (drv.type === 'ctd') ctd++;
-            else if (drv.type === 'ctc') ctc++;
-            reqs += (drv.requirements || []).length;
-          }
-        }
-      }
-      const drivers = ctq + ctd + ctc;
-
-      const summary = h('div', { class: 'dashboard-voc__summary' },
-        h('span', { class: 'dashboard-voc__stat' }, h('strong', null, String(vocs.length)), ' VoC'),
-        h('span', { class: 'dashboard-voc__stat' }, h('strong', null, String(needs)), ` ${  i18n.t('dashboard.vocNeeds')}`),
-        h('span', { class: 'dashboard-voc__stat' }, h('strong', null, String(drivers)), ` ${  i18n.t('dashboard.vocDrivers')}`),
-        h('span', { class: 'dashboard-voc__stat' }, h('strong', null, String(reqs)), ` ${  i18n.t('dashboard.vocReqs')}`),
-      );
-
-      const children = [summary];
-
-      if (drivers > 0) {
-        const bar = h('div', { class: 'dashboard-voc__driver-bar' });
-        if (ctq > 0) bar.append(h('div', { class: 'dashboard-voc__bar-seg', style: `flex:${ctq};background:var(--color-voc-ctq, rgba(39,174,96,1))`, title: `CTQ: ${ctq}` }));
-        if (ctd > 0) bar.append(h('div', { class: 'dashboard-voc__bar-seg', style: `flex:${ctd};background:var(--color-voc-ctd, rgba(41,128,185,1))`, title: `CTD: ${ctd}` }));
-        if (ctc > 0) bar.append(h('div', { class: 'dashboard-voc__bar-seg', style: `flex:${ctc};background:var(--color-voc-ctc, rgba(231,76,139,1))`, title: `CTC: ${ctc}` }));
-        children.push(bar);
-
-        const legend = h('div', { class: 'dashboard-voc__driver-legend' });
-        if (ctq > 0) legend.append(h('span', { class: 'dashboard-voc__legend-item' }, h('span', { class: 'dashboard-fmea__legend-dot', style: 'background:var(--color-voc-ctq, rgba(39,174,96,1))' }), `CTQ: ${ctq}`));
-        if (ctd > 0) legend.append(h('span', { class: 'dashboard-voc__legend-item' }, h('span', { class: 'dashboard-fmea__legend-dot', style: 'background:var(--color-voc-ctd, rgba(41,128,185,1))' }), `CTD: ${ctd}`));
-        if (ctc > 0) legend.append(h('span', { class: 'dashboard-voc__legend-item' }, h('span', { class: 'dashboard-fmea__legend-dot', style: 'background:var(--color-voc-ctc, rgba(231,76,139,1))' }), `CTC: ${ctc}`));
-        children.push(legend);
-      }
-
-      children.push(h('div', { class: 'dashboard-voc__list-label' }, i18n.t('dashboard.vocStatements')));
-
-      const list = h('ul', { class: 'dashboard-voc__list' });
-      vocs.slice(0, 6).forEach(v => {
-        const li = h('li', { class: 'dashboard-voc__item' }, `„${v.text || '—'}“`);
-        if (v.source) {
-          li.append(' ', h('span', { class: 'dashboard-area__muted' }, `(${v.source})`));
-        }
-        list.append(li);
-      });
-      if (vocs.length > 6) {
-        list.append(h('li', { class: 'dashboard-voc__item dashboard-area__muted' }, `… +${vocs.length - 6}`));
-      }
-      children.push(list);
-
-      body.replaceChildren(...children);
-    };
-
-    // ── RACI tile ────────────────────────────────────────────────────────
-    const renderRaci = (tileId) => {
-      const body = handle.grid?.getTileBody(tileId);
-      if (!body) return;
-      const instanceId = tileId.replace('raci:', '');
-      const state = stateManager.getModuleState(instanceId);
-      const activities = (state && Array.isArray(state.activities)) ? state.activities : [];
-      const stakeholders = (state && Array.isArray(state.stakeholders)) ? state.stakeholders : [];
-      const assignments = (state && state.assignments) || {};
-
-      if (activities.length === 0 && stakeholders.length === 0) {
-        body.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.raciEmpty')));
-        return;
-      }
-
-      const counts = { R: 0, A: 0, C: 0, I: 0 };
-      const totalCells = activities.length * stakeholders.length;
-      let filled = 0;
-      for (const val of Object.values(assignments)) {
-        if (val && Object.hasOwn(counts, val)) { counts[val]++; filled++; }
-      }
-      const coverage = totalCells > 0 ? Math.round(filled / totalCells * 100) : 0;
-
-      const roleColors = {
-        R: 'var(--color-error)',
-        A: 'var(--color-warning)',
-        C: 'var(--color-accent)',
-        I: 'var(--color-success)',
-      };
-
-      const children = [];
-      children.push(
-        h('div', { class: 'dashboard-raci__summary' },
-          h('span', null, `${i18n.t('dashboard.raciActivities')  }: `, h('strong', null, String(activities.length))),
-          h('span', null, `${i18n.t('dashboard.raciStakeholders')  }: `, h('strong', null, String(stakeholders.length))),
-          h('span', null, `${i18n.t('dashboard.raciCoverage')  }: `, h('strong', null, `${coverage}%`)),
-        ),
-      );
-
-      if (filled > 0) {
-        const bar = h('div', { class: 'dashboard-raci__bar' });
-        ['R', 'A', 'C', 'I'].forEach(role => {
-          const pct = counts[role] / filled * 100;
-          if (pct === 0) return;
-          bar.append(h('div', { class: 'dashboard-raci__bar-seg', style: `width:${pct}%;background:${roleColors[role]}`, title: `${role}: ${counts[role]}` }));
-        });
-        children.push(bar);
-      }
-
-      const legend = h('div', { class: 'dashboard-raci__legend' });
-      ['R', 'A', 'C', 'I'].filter(r => counts[r] > 0).forEach(role => {
-        legend.append(h('span', { class: 'dashboard-raci__legend-item' },
-          h('span', { class: 'dashboard-fmea__legend-dot', style: `background:${roleColors[role]}` }),
-          `${role}: ${counts[role]}`,
-        ));
-      });
-      children.push(legend);
-
-      const warnings = [];
-      activities.forEach((act, aIdx) => {
-        let hasR = false, hasA = false;
-        stakeholders.forEach((_, sIdx) => {
-          const v = assignments[`${aIdx}:${sIdx}`];
-          if (v === 'R') hasR = true;
-          if (v === 'A') hasA = true;
-        });
-        if (!hasR) warnings.push({ act, missing: 'R' });
-        if (!hasA) warnings.push({ act, missing: 'A' });
-      });
-
-      if (warnings.length > 0) {
-        children.push(h('div', { class: 'dashboard-raci__warn-label' }, i18n.t('dashboard.raciWarnings')));
-        const ul = h('ul', { class: 'dashboard-raci__warn-list' });
-        warnings.slice(0, 5).forEach(w => {
-          ul.append(h('li', { class: 'dashboard-raci__warn-item' },
-            h('span', { class: 'dashboard-raci__warn-role', style: `color:${roleColors[w.missing]}` }, w.missing),
-            ` ${  i18n.t('dashboard.raciMissing')  }: ${  w.act}`,
-          ));
-        });
-        if (warnings.length > 5) {
-          ul.append(h('li', { class: 'dashboard-area__muted' }, `… +${warnings.length - 5}`));
-        }
-        children.push(ul);
-      }
-
-      body.replaceChildren(...children);
-    };
-
-    // ── SPC tile ─────────────────────────────────────────────────────────
-    const buildSpcSparkline = (scData, violationSet, usl, lsl, width) => {
-      const W = width || 320, H = 160, PAD_X = 2, PAD_Y = 6;
-      const pts = scData.values.filter(v => v !== null);
-      if (pts.length < 2) return null;
-
-      const extents = [scData.lcl, scData.ucl, ...pts];
-      if (usl != null) extents.push(usl);
-      if (lsl != null) extents.push(lsl);
-      const yMin = Math.min(...extents) - scData.sigma * 0.3;
-      const yMax = Math.max(...extents) + scData.sigma * 0.3;
-      const yRange = yMax - yMin || 1;
-
-      const sx = (i) => PAD_X + (i / (scData.values.length - 1)) * (W - 2 * PAD_X);
-      const sy = (v) => PAD_Y + (1 - (v - yMin) / yRange) * (H - 2 * PAD_Y);
-
-      const uclY = sy(scData.ucl), lclY = sy(scData.lcl), clY = sy(scData.cl);
-      const kids = [
-        svg('rect', { x: PAD_X, y: uclY, width: W - 2 * PAD_X, height: lclY - uclY,
-          fill: 'var(--color-success)', opacity: 0.06, rx: 2 }),
-        svg('line', { x1: PAD_X, y1: uclY, x2: W - PAD_X, y2: uclY,
-          stroke: 'var(--color-error)', 'stroke-width': 0.8, 'stroke-dasharray': '4,3', opacity: 0.6 }),
-        svg('line', { x1: PAD_X, y1: lclY, x2: W - PAD_X, y2: lclY,
-          stroke: 'var(--color-error)', 'stroke-width': 0.8, 'stroke-dasharray': '4,3', opacity: 0.6 }),
-        svg('line', { x1: PAD_X, y1: clY, x2: W - PAD_X, y2: clY,
-          stroke: 'var(--color-accent)', 'stroke-width': 0.8, opacity: 0.5 }),
-      ];
-
-      if (usl != null) {
-        const uslY = sy(usl);
-        kids.push(svg('line', { x1: PAD_X, y1: uslY, x2: W - PAD_X, y2: uslY,
-          stroke: 'var(--color-warning)', 'stroke-width': 1, opacity: 0.7 }));
-      }
-      if (lsl != null) {
-        const lslY = sy(lsl);
-        kids.push(svg('line', { x1: PAD_X, y1: lslY, x2: W - PAD_X, y2: lslY,
-          stroke: 'var(--color-warning)', 'stroke-width': 1, opacity: 0.7 }));
-      }
-
-      const polyPts = [];
-      for (let i = 0; i < scData.values.length; i++) {
-        if (scData.values[i] === null) continue;
-        polyPts.push(`${sx(i).toFixed(1)},${sy(scData.values[i]).toFixed(1)}`);
-      }
-      kids.push(svg('polyline', { points: polyPts.join(' '), fill: 'none',
-        stroke: 'var(--color-text-secondary)', 'stroke-width': 1.2, 'stroke-linejoin': 'round' }));
-
-      for (let i = 0; i < scData.values.length; i++) {
-        if (scData.values[i] === null) continue;
-        const v = scData.values[i];
-        const isNelson = violationSet.has(i);
-        const isOos = (usl != null && v > usl) || (lsl != null && v < lsl);
-        if (!isNelson && !isOos) continue;
-        const color = isNelson ? 'var(--color-error)' : 'var(--color-warning)';
-        kids.push(svg('circle', { cx: sx(i).toFixed(1), cy: sy(v).toFixed(1), r: 2.5, fill: color }));
-      }
-
-      return svg('svg', { class: 'dashboard-spc__sparkline', viewBox: `0 0 ${W} ${H}`, width: W, height: H }, kids);
-    };
-
-    const renderSpc = (tileId) => {
-      const body = handle.grid?.getTileBody(tileId);
-      if (!body) return;
-      const instanceId = tileId.replace('spc:', '');
-      const state = stateManager.getModuleState(instanceId);
-
-      if (!state || !state.columnRef) {
-        body.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.spcEmpty')));
-        return;
-      }
-
-      const ct = getChartType(state.chartTypeId || 'i-mr');
-      if (!ct) return;
-
-      const rawValues = getColumnValues(stateManager, state.columnRef);
-      const values = rawValues.filter(v => v != null && typeof v === 'number' && !isNaN(v));
-
-      if (values.length < 2) {
-        body.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.spcNoData')));
-        return;
-      }
-
-      const n = state.subgroupSize || 1;
-      const baselineEnd = state.baselineCount || values.length;
-      const result = ct.compute(values, n, baselineEnd);
-
-      const primaryId = ct.subcharts[0].id;
-      const primaryData = result.subcharts[primaryId];
-      const enabledRules = state.enabledRules || [...DEFAULT_ENABLED_RULES];
-      const violations = evaluateNelsonRules(
-        primaryData.values, primaryData.cl, primaryData.sigma, enabledRules,
-      );
-      const capability = computeCapability(
-        primaryData.values.filter(v => v !== null),
-        primaryData.cl, capabilitySigma(state.chartTypeId || 'i-mr', primaryData.sigma, n),
-        state.usl ?? null, state.lsl ?? null,
-      );
-
-      const vCount = new Set(violations.map(v => v.index)).size;
-      const totalPts = primaryData.values.filter(v => v !== null).length;
-      const isStable = vCount === 0;
-      const colName = getColumnName(stateManager, state.columnRef) || '?';
-      const fmt = (v) => v != null ? v.toFixed(4) : '—';
-
-      const usl = state.usl ?? null;
-      const lsl = state.lsl ?? null;
-      const hasSpec = usl != null || lsl != null;
-
-      let oosCount = 0;
-      if (hasSpec) {
-        for (const v of primaryData.values) {
-          if (v === null) continue;
-          if ((usl != null && v > usl) || (lsl != null && v < lsl)) oosCount++;
-        }
-      }
-
-      const chartTypeLabel = {
-        'i-mr': 'I-MR', 'xbar-r': 'X̄-R', 'xbar-s': 'X̄-S',
-      }[ct.id] || ct.id;
-
-      const sparkWidth = body.clientWidth - 16;
-      const violationSet = new Set(violations.map(v => v.index));
-      const sparkSvg = buildSpcSparkline(primaryData, violationSet, usl, lsl, sparkWidth);
-
-      const stat = (label, value) => h('div', { class: 'dashboard-spc__stat' },
-        h('span', { class: 'dashboard-spc__stat-label' }, label),
-        h('span', { class: 'dashboard-spc__stat-value' }, value),
-      );
-
-      const metrics = h('div', { class: 'dashboard-spc__metrics' });
-      metrics.append(
-        h('div', { class: `dashboard-spc__metric ${isStable ? 'dashboard-spc__metric--ok' : 'dashboard-spc__metric--bad'}` },
-          h('span', { class: 'dashboard-spc__metric-value' }, String(vCount)),
-          h('span', { class: 'dashboard-spc__metric-label' }, i18n.t('dashboard.spcViolations')),
-          h('span', { class: 'dashboard-spc__metric-sub' }, i18n.t('dashboard.spcOf', { total: totalPts })),
-        ),
-      );
-
-      if (hasSpec) {
-        const oosCls = oosCount === 0 ? '--ok' : '--warn';
-        metrics.append(
-          h('div', { class: `dashboard-spc__metric dashboard-spc__metric${oosCls}` },
-            h('span', { class: 'dashboard-spc__metric-value' }, String(oosCount)),
-            h('span', { class: 'dashboard-spc__metric-label' }, i18n.t('dashboard.spcOutOfSpec')),
-            h('span', { class: 'dashboard-spc__metric-sub' }, i18n.t('dashboard.spcOf', { total: totalPts })),
-          ),
-        );
-      }
-
-      if (capability) {
-        const cpkCls = capability.cpk >= 1.33 ? '--ok' : capability.cpk >= 1.0 ? '--warn' : '--bad';
-        metrics.append(
-          h('div', { class: `dashboard-spc__metric dashboard-spc__metric${cpkCls}` },
-            h('span', { class: 'dashboard-spc__metric-value' }, capability.cpk.toFixed(3)),
-            h('span', { class: 'dashboard-spc__metric-label' }, 'Cpk'),
-            capability.cp ? h('span', { class: 'dashboard-spc__metric-sub' }, `Cp = ${capability.cp.toFixed(3)}`) : null,
-          ),
-        );
-      }
-
-      const spark = h('div', { class: 'dashboard-spc__spark' });
-      if (sparkSvg) spark.append(sparkSvg);
-
-      body.replaceChildren(
-        h('div', { class: 'dashboard-spc' },
-          h('div', { class: 'dashboard-spc__header' },
-            h('span', { class: 'dashboard-spc__type' }, chartTypeLabel),
-            h('span', { class: 'dashboard-spc__col' }, colName),
-          ),
-          spark,
-          h('div', { class: 'dashboard-spc__stats' },
-            stat('CL', fmt(primaryData.cl)),
-            stat('UCL', fmt(primaryData.ucl)),
-            stat('LCL', fmt(primaryData.lcl)),
-            stat('σ̂', fmt(primaryData.sigma)),
-          ),
-          metrics,
-        ),
-      );
-    };
+    handle.disposePlacedTiles = disposePlacedTiles;
 
     // ── Module-owned tile dispatch ───────────────────────────────────────
     /** Resolved settings of a tile: stored overrides over schema defaults. */
     const settingsFor = (tileId, tile) =>
       resolveSettings(schemaOf(tile), (stateManager.get('dashboard.tileSettings') || {})[tileId]);
 
-    const renderModuleTile = async (descriptor) => {
-      const body = handle.grid?.getTileBody(descriptor.id);
-      if (!body || !descriptor.tile) return;
+    const renderTile = async (tileId) => {
+      const descriptor = descriptorFor(tileId);
+      const body = handle.grid?.getTileBody(tileId);
+      if (!descriptor?.tile || !body) return;
       const state = descriptor.instanceId ? stateManager.getModuleState(descriptor.instanceId) : null;
       await renderTileSafely(descriptor.tile, body, {
         tileId: descriptor.id, instanceId: descriptor.instanceId, state,
         settings: settingsFor(descriptor.id, descriptor.tile),
-        i18n, theme: theme(), chartManager,
+        i18n, theme: theme(), chartManager, stateManager,
       }, i18n);
-    };
-
-    // The charter tile file is always loaded (ALWAYS_LOADED_TILES), but the
-    // tile also exists as a static built-in in DASHBOARD_TILES — without a
-    // charter instance its descriptor is the built-in twin. Always render
-    // through the charter tile file so the empty state (charterEmpty) shows.
-    const renderCharter = async () => {
-      const body = handle.grid?.getTileBody('project-charter');
-      const tile = handle._charterTile;
-      if (!body || !tile) return;
-      await renderTileSafely(tile, body, {
-        tileId: 'project-charter', instanceId: null, state: _findCharterState(),
-        settings: settingsFor('project-charter', tile), i18n, theme: theme(), chartManager,
-      }, i18n);
-    };
-
-    const renderTile = async (tileId) => {
-      if (tileId === 'project-charter') { await renderCharter(); return; }
-      const d = descriptorFor(tileId);
-      if (d && !d.builtin) { await renderModuleTile(d); return; }
-      if (tileId === 'zeg-timeline') await renderChart();
-      else if (tileId === 'project-goals') renderGoals();
-      else if (tileId === 'org-chart') renderOrgChart();
-      else if (tileId === 'voc-ctx-tree') renderVoc();
-      else if (tileId.startsWith('raci:')) renderRaci(tileId);
-      else if (tileId.startsWith('spc:')) renderSpc(tileId);
     };
 
     // ── Tile settings dialog ─────────────────────────────────────────────
+    // Source-capable tiles get the host-owned `_source` select first. For a
+    // base tile it defaults to the enumerated instance (stored sparsely); a
+    // copy has no enumerated instance, so its `_source` is always stored.
     const openTileSettings = async (tileId) => {
       const d = descriptorFor(tileId);
       if (!d?.tile || !modal) return;
-      const schema = schemaOf(d.tile);
+      const ownSchema = schemaOf(d.tile);
+      const capable = isSourceCapable(d);
+      const schema = capable
+        ? {
+          [SOURCE_KEY]: sourceField(sourceChoices(stateManager.get('phases'), d.moduleId, i18n),
+            d.isCopy ? d.instanceId : d.baseInstanceId),
+          ...ownSchema,
+        }
+        : ownSchema;
       if (Object.keys(schema).length === 0) return;
       const stored = (stateManager.get('dashboard.tileSettings') || {})[tileId];
       const form = buildSettingsForm(schema, resolveSettings(schema, stored), i18n);
       const tileTitle = (stateManager.get('dashboard.titles') || {})[tileId] || d.title;
-      const confirmed = await modal.form(i18n.t('dashboard.tileSettings.title', { title: tileTitle }), form.el);
+      const confirmed = await modal.form(i18n.t('dashboard.tileSettings.title', { title: tileTitle }), form.el,
+        { footerStart: form.reset });
       if (confirmed !== true) return;
+      const values = form.read();
       const latest = stateManager.get('dashboard.tileSettings') || {};
-      stateManager.set('dashboard.tileSettings',
-        withTileSettings(latest, tileId, toStored(schema, form.read(), latest[tileId])));
+      const next = toStored(schema, values, latest[tileId]);
+      const source = capable ? coerceValue(schema[SOURCE_KEY], values[SOURCE_KEY]) : null;
+      if (d.isCopy) next[SOURCE_KEY] = source;
+      stateManager.set('dashboard.tileSettings', withTileSettings(latest, tileId, next));
+      // A new source changes instance and title: re-enumerate, then retitle
+      // and re-render only this tile (the rest of the grid stays untouched).
+      if (capable && source !== d.instanceId) {
+        descriptors = enumerateTiles(handle.tileModules, ctx);
+        const rebound = descriptorFor(tileId);
+        if (rebound) handle.grid?.setTileTitle(tileId, rebound.title);
+      }
       const body = handle.grid?.getTileBody(tileId);
       if (body) {
         try {
@@ -747,17 +123,32 @@ const page = createPage({
       await renderTile(tileId);
     };
 
-    // ── Tile-def assembly + de-dup ───────────────────────────────────────
-    const buildTileDefs = () => {
-      // De-dup: a module may own a tile id that also appears as a static
-      // built-in (project-charter). Module-owned wins; drop the built-in twin.
-      const seen = new Map();
-      for (const d of descriptors) {
-        const prev = seen.get(d.id);
-        if (!prev) { seen.set(d.id, d); continue; }
-        seen.set(d.id, prev.builtin ? d : prev);
+    // ── Duplicate ────────────────────────────────────────────────────────
+    // A copy is "<kind>~<uid>" with the original's stored settings and its
+    // effective source; a user-edited title is not copied. Settings and
+    // descriptor exist before addTile, whose layout save prunes unknown ids.
+    const duplicateTile = async (tileId) => {
+      const d = descriptorFor(tileId);
+      if (!isSourceCapable(d) || !handle.grid) return;
+      const id = copyId(d.kind);
+      const copy = copyDescriptor({ moduleId: d.moduleId, tile: d.tile, kind: d.kind }, id, d.instanceId, ctx);
+      if (!copy) return;
+      const all = stateManager.get('dashboard.tileSettings') || {};
+      stateManager.set('dashboard.tileSettings',
+        withTileSettings(all, id, { ...(all[tileId] || {}), [SOURCE_KEY]: d.instanceId }));
+      descriptors.push(copy);
+      const def = buildTileDefs().find(x => x.id === id);
+      if (handle.grid.addTile(def)) {
+        await renderTile(id);
+        return;
       }
-      descriptors = [...seen.values()];
+      descriptors = descriptors.filter(x => x.id !== id);
+      stateManager.set('dashboard.tileSettings',
+        withTileSettings(stateManager.get('dashboard.tileSettings'), id, {}));
+    };
+
+    // ── Tile-def assembly ───────────────────────────────────────
+    const buildTileDefs = () => {
       return descriptors.map(d => ({
         id: d.id, i18nTitle: d.i18nTitle,
         title: d.title || (d.i18nTitle ? i18n.t(d.i18nTitle) : d.id),
@@ -765,8 +156,10 @@ const page = createPage({
         removeLabel: i18n.t('dashboard.removeTile'),
         moveTitle: i18n.t('dashboard.moveTile'),
         resizeTitle: i18n.t('dashboard.resizeTile'),
-        hasSettings: !!d.tile && Object.keys(schemaOf(d.tile)).length > 0,
+        hasSettings: !!d.tile && (isSourceCapable(d) || Object.keys(schemaOf(d.tile)).length > 0),
         settingsLabel: i18n.t('dashboard.tileSettings.open'),
+        canDuplicate: isSourceCapable(d),
+        duplicateLabel: i18n.t('dashboard.duplicateTile'),
       }));
     };
 
@@ -787,6 +180,9 @@ const page = createPage({
       const pruned = settingsToStoreOnLayoutSave(
         stateManager.get('dashboard.tileSettings'), ids, handle._allTilesLoaded);
       if (pruned) stateManager.set('dashboard.tileSettings', pruned);
+      const titles = titlesToStoreOnLayoutSave(
+        stateManager.get('dashboard.titles'), ids, handle._allTilesLoaded);
+      if (titles) stateManager.set('dashboard.titles', titles);
     };
 
     // ── Add-menu popover ─────────────────────────────────────────────────
@@ -804,7 +200,8 @@ const page = createPage({
       closeAddMenu();
       const placed = new Set(handle.grid.getPlacedTileIds());
       const allDefs = buildTileDefs();
-      const available = allDefs.filter(t => !placed.has(t.id));
+      // Copies are never offered: a removed copy is gone for good.
+      const available = allDefs.filter(t => !placed.has(t.id) && !descriptorFor(t.id)?.isCopy);
 
       const menu = h('div', { class: 'dashboard-area__add-menu' });
       if (available.length === 0) {
@@ -863,13 +260,12 @@ const page = createPage({
     // ── Full render ──────────────────────────────────────────────────────
     const render = async () => {
       // Render-generation guard: render() is invoked un-awaited from several
-      // event handlers and awaits between tearing down and rebuilding shared
-      // handle.grid/handle.chart refs. Bump the generation and bail at every
-      // await point if a newer render has superseded this one (prevents a stale
-      // async chart from leaking into a freshly-built grid).
+      // event handlers and awaits between tearing down and rebuilding the
+      // shared handle.grid ref. Bump the generation and bail at every await
+      // point if a newer render has superseded this one.
       const gen = ++handle._renderGen;
 
-      if (handle.chart) { chartManager.destroy(handle.chart); handle.chart = null; }
+      disposePlacedTiles();
       if (handle.grid) { handle.grid.destroy(); handle.grid = null; }
       closeAddMenu();
 
@@ -877,38 +273,65 @@ const page = createPage({
       const { tileModules, allLoaded } = await loadTileModules(moduleRegistry, stateManager.get('phases'));
       if (handle._renderGen !== gen) return;
       handle._allTilesLoaded = allLoaded;
-      handle._charterTile = tileModules.find(m => m.moduleId === 'project-charter')?.tile ?? null;
-      descriptors = [
-        ...enumerateTiles(tileModules, ctx),
-        ..._buildRaciTileDefs(),
-        ..._buildSpcTileDefs(),
-      ];
+      handle.tileModules = tileModules;
+      descriptors = enumerateTiles(tileModules, ctx);
+
+      // Refresh subscriptions (contract field `refreshOn`), rebuilt on every
+      // full render so language/theme re-renders never stack handlers.
+      // state:saved and resize are handled by the shared handlers below.
+      // Targets are resolved when the event fires, so copies duplicated after
+      // this render refresh too.
+      handle._refreshUnsubs.forEach(off => off());
+      handle._refreshUnsubs = [];
+      for (const ev of customRefreshEvents(tileModules)) {
+        const cb = () => {
+          if (!page.isOpen() || !handle.grid) return;
+          refreshTargets(descriptors, handle.grid.getPlacedTileIds(), ev).forEach(id => renderTile(id));
+        };
+        eventBus.on(ev, cb);
+        handle._refreshUnsubs.push(() => eventBus.off(ev, cb));
+      }
 
       handle.grid = new DashboardGrid(gridAnchor, { cols: 12, rowHeight: 40, gap: 12 });
-      handle.grid.onLayoutChange = () => {
+      handle.grid.onLayoutChange = (layout) => {
         saveLayout();
-        for (const item of handle.grid.getLayout()) {
-          if (item.tileId.startsWith('spc:')) renderSpc(item.tileId);
+        const prev = new Map((handle._lastLayout || []).map(l => [l.tileId, l]));
+        handle._lastLayout = layout.map(x => ({ ...x }));
+        for (const item of layout) {
+          const before = prev.get(item.tileId);
+          // A tile without a previous entry was just added (addTile renders it): not a resize.
+          const resized = !!before && (before.w !== item.w || before.h !== item.h);
+          const d = descriptorFor(item.tileId);
+          if (d?.tile && resized && refreshEventsOf(d.tile).includes('resize')) renderTile(item.tileId);
         }
       };
       handle.grid.onTileRemoved = (tileId) => {
-        if (tileId === 'zeg-timeline' && handle.chart) {
-          chartManager.destroy(handle.chart); handle.chart = null;
-        }
         const d = descriptorFor(tileId);
-        if (d && !d.builtin) {
-          try {
-            d.tile?.dispose?.(handle.grid?.getTileBody(tileId) ?? gridAnchor, { tileId });
-          } catch (err) {
-            console.error(`[dashboard] tile "${tileId}" failed to dispose`, err);
-          }
+        try {
+          d?.tile?.dispose?.(handle.grid?.getTileBody(tileId) ?? gridAnchor, { tileId });
+        } catch (err) {
+          console.error(`[dashboard] tile "${tileId}" failed to dispose`, err);
         }
         const allSettings = stateManager.get('dashboard.tileSettings') || {};
         if (Object.hasOwn(allSettings, tileId)) {
           stateManager.set('dashboard.tileSettings', withTileSettings(allSettings, tileId, {}));
         }
+        // A removed copy is gone for good, so is its user title. A base tile
+        // keeps its title for when it is added back.
+        const titles = stateManager.get('dashboard.titles') || {};
+        if (d?.isCopy && Object.hasOwn(titles, tileId)) {
+          const rest = { ...titles };
+          delete rest[tileId];
+          stateManager.set('dashboard.titles', rest);
+        }
+        // Removing a re-bound base tile dropped its `_source`; re-enumerate so
+        // the add menu offers it on its own instance with its own title.
+        if (d && !d.isCopy && d.instanceId !== d.baseInstanceId) {
+          descriptors = enumerateTiles(handle.tileModules, ctx);
+        }
       };
       handle.grid.onSettingsRequested = (tileId) => { openTileSettings(tileId); };
+      handle.grid.onDuplicateRequested = (tileId) => { duplicateTile(tileId); };
       handle.grid.onTitleChanged = (tileId, newTitle) => {
         const titles = stateManager.get('dashboard.titles') || {};
         titles[tileId] = newTitle;
@@ -918,6 +341,7 @@ const page = createPage({
       const tileDefs = buildTileDefs();
       const layout = loadLayout().filter(l => tileDefs.some(d => d.id === l.tileId));
       handle.grid.setTiles(tileDefs, layout);
+      handle._lastLayout = handle.grid.getLayout().map(x => ({ ...x }));
 
       for (const item of handle.grid.getLayout()) {
         await renderTile(item.tileId);
@@ -925,6 +349,9 @@ const page = createPage({
       }
 
       wireToolbar();
+      // Completion marker: the static grid anchor is visible before the
+      // awaited tile files are placed, so observers wait for this instead.
+      gridAnchor.dataset.renderedGen = String(gen);
     };
 
     handle.render = render;
@@ -932,13 +359,12 @@ const page = createPage({
     // ── Live-update subscriptions ────────────────────────────────────────
     const sub = (ev, cb) => { eventBus.on(ev, cb); handle._unsubs.push(() => eventBus.off(ev, cb)); };
 
-    sub('phase:achievement-changed', () => { if (page.isOpen()) renderChart(); });
     sub('state:saved', () => {
       if (!page.isOpen() || !handle.grid) return;
-      // Mirror the legacy state:saved handler: re-render data tiles but leave
-      // the ZEG timeline to phase:achievement-changed (avoids chart churn).
+      // Tiles re-render only if they opt into state:saved (the default).
       for (const item of handle.grid.getLayout()) {
-        if (item.tileId === 'zeg-timeline') continue;
+        const d = descriptorFor(item.tileId);
+        if (d?.tile && !refreshEventsOf(d.tile).includes('state:saved')) continue;
         renderTile(item.tileId);
       }
     });
@@ -978,12 +404,17 @@ const page = createPage({
 
   unmount(containerEl, ctx, handle) {
     if (!handle) return;
-    if (handle.chart) { ctx.chartManager.destroy(handle.chart); handle.chart = null; }
+    // Invalidate a render still awaiting loadTileModules so it cannot
+    // subscribe refresh handlers or rebuild the grid after unmount.
+    handle._renderGen++;
+    handle.disposePlacedTiles?.();
     if (handle.grid) { handle.grid.destroy(); handle.grid = null; }
     if (handle.addMenuEl) { handle.addMenuEl.remove(); handle.addMenuEl = null; }
     if (handle._onDocClick) { document.removeEventListener('click', handle._onDocClick, true); handle._onDocClick = null; }
     handle._unsubs.forEach(off => off());
     handle._unsubs = [];
+    handle._refreshUnsubs.forEach(off => off());
+    handle._refreshUnsubs = [];
   },
 });
 

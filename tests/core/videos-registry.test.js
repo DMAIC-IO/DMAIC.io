@@ -41,6 +41,19 @@ suite('core/videos-registry', () => {
     assertDeepEqual(registry.getForModule('run-chart'), []);
   });
 
+  test('a hanging mirror request is aborted instead of stalling the boot', async () => {
+    const registry = new VideosRegistry();
+    const hanging = (_url, { signal } = {}) => new Promise((_, reject) => {
+      signal?.addEventListener('abort', () => reject(signal.reason));
+    });
+    const outcome = await Promise.race([
+      registry.init({ __fetch: hanging, timeoutMs: 10 }).then(() => 'settled'),
+      new Promise((resolve) => setTimeout(() => resolve('stalled'), 500)),
+    ]);
+    assertEqual(outcome, 'settled');
+    assertDeepEqual(registry.getAll(), []);
+  });
+
   test('parseMirror reads the videos array out of the wrapper', () => {
     assertDeepEqual(parseMirror({ _comment: 'generated file - do not edit', videos: [entry] }), [entry]);
     assertDeepEqual(parseMirror({ _comment: 'x', videos: [] }), []);

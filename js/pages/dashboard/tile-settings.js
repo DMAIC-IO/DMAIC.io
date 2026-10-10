@@ -11,6 +11,21 @@ const TYPES = new Set(['number', 'select', 'boolean']);
 /** Validated schema per tile object, so a broken schema warns only once. */
 const schemaCache = new WeakMap();
 
+/** Reserved, host-owned settings key: the tile's source instance id. */
+export const SOURCE_KEY = '_source';
+
+/**
+ * Why a module schema field is reserved for the host.
+ * @param {string} key
+ * @param {object} field
+ * @returns {string|null} problem, or null when the module may use it
+ */
+function reservedProblem(key, field) {
+  if (key.startsWith('_')) return 'keys starting with "_" are reserved for the host';
+  if (field && typeof field === 'object' && Object.hasOwn(field, 'optionTexts')) return 'optionTexts is host-only';
+  return null;
+}
+
 /**
  * Describe why a schema field is invalid.
  * @param {object} field
@@ -50,7 +65,7 @@ export function validateSchema(schema, warn = console.warn) {
   const out = {};
   if (!schema || typeof schema !== 'object') return out;
   for (const [key, field] of Object.entries(schema)) {
-    const problem = fieldProblem(field);
+    const problem = reservedProblem(key, field) || fieldProblem(field);
     if (problem) {
       warn(`[tile-settings] field "${key}" ignored: ${problem}`);
       continue;
@@ -73,6 +88,23 @@ export function schemaOf(tile) {
     schemaCache.set(tile, schema);
   }
   return schema;
+}
+
+/**
+ * Host-owned select field for a tile's source instance. Option values are
+ * instance ids; `optionTexts` are literal labels (not i18n keys).
+ * @param {Array<{id: string, text: string}>} choices  instances of the module
+ * @param {string} defaultId  one of the choice ids
+ * @returns {object} valid select field
+ */
+export function sourceField(choices, defaultId) {
+  return {
+    type: 'select',
+    label: 'dashboard.tileSettings.source',
+    options: choices.map(c => c.id),
+    optionTexts: choices.map(c => c.text),
+    default: defaultId,
+  };
 }
 
 /**
@@ -177,6 +209,23 @@ export function settingsToStoreOnLayoutSave(all, liveIds, allLoaded) {
   if (!allLoaded) return null;
   const current = all || {};
   const pruned = pruneTileSettings(current, liveIds);
+  return Object.keys(pruned).length !== Object.keys(current).length ? pruned : null;
+}
+
+/**
+ * Decide what the layout-save path does with user-edited titles
+ * (dashboard.titles): drop titles of tiles that no longer enumerate (removed
+ * copies, deleted instances), with the same all-loaded guard as settings.
+ * @param {object|undefined} titles  stored dashboard.titles
+ * @param {Iterable<string>} liveIds  ids of all current tile descriptors
+ * @param {boolean} allLoaded  whether every tile file loaded in this render
+ * @returns {object|null} the pruned object to store, or null when nothing changes
+ */
+export function titlesToStoreOnLayoutSave(titles, liveIds, allLoaded) {
+  if (!allLoaded) return null;
+  const live = new Set(liveIds);
+  const current = titles || {};
+  const pruned = Object.fromEntries(Object.entries(current).filter(([id]) => live.has(id)));
   return Object.keys(pruned).length !== Object.keys(current).length ? pruned : null;
 }
 

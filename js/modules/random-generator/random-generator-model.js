@@ -25,6 +25,7 @@ import {
   resolveParams,
   clampCount,
 } from '../../engines/random-variates-engine.js';
+import { uid } from '../../core/uid.js';
 
 // Re-export the engine's pure RNG/sampling API so existing importers
 // (random-generator.js view + tests/modules/random-generator.test.js) keep
@@ -120,10 +121,7 @@ export function csvEscape(v) {
  * @returns {string}
  */
 export function genId() {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
-  return `rg-${  Math.abs(Date.now() ^ (Math.random() * 1e9 | 0)).toString(36)}`;
+  return uid();
 }
 
 function defaultAttributes() {

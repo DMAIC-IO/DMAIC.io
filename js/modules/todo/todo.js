@@ -1,11 +1,7 @@
 import { createModule } from '../../core/template-module.js';
 import { State, Item, STATUSES } from './todo-model.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
-
-function todayISO() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
+import { todayISO } from '../../core/local-date.js';
 
 export default createModule({
   config: {

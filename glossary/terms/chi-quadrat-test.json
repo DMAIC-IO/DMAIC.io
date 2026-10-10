@@ -88,7 +88,8 @@
   ],
   "modules": [
     "mosaic",
-    "hypothesis-test"
+    "hypothesis-test",
+    "attribute-test"
   ],
   "algoLab": [],
   "sources": [

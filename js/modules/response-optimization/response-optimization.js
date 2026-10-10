@@ -16,6 +16,7 @@ import {
   optimizeResponses, buildResponseSurface,
 } from '../../engines/response-optimization-engine.js';
 import { State } from './response-optimization-model.js';
+import { uid } from '../../core/uid.js';
 
 /** Tick formatter for SVG axis labels. */
 function tickFmt(v) {
@@ -608,9 +609,7 @@ export default createModule({
         }
 
         // Persist result as a project-central optimisation record.
-        const id = this.model.optId ?? (typeof crypto !== 'undefined'
-          ? crypto.randomUUID()
-          : `opt_${  Date.now()}`);
+        const id = this.model.optId ?? uid();
         const all = sm.get('optimizations') ?? {};
         sm.set('optimizations', {
           ...all,

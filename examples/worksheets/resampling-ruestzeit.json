@@ -1,0 +1,19 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-resampling-ruestzeit",
+      "name": "Rüstzeit vorher/nachher",
+      "state": {
+        "columns": [
+          { "id": "c-vorher", "name": "Vorher", "shortName": "Vorher", "type": "numeric",
+            "values": [42.1, 38.5, 45.0, 51.2, 39.8, 47.3, 44.6, 40.2, 49.9, 43.7, 46.1, 41.5] },
+          { "id": "c-nachher", "name": "Nachher", "shortName": "Nachher", "type": "numeric",
+            "values": [36.4, 35.9, 39.2, 44.8, 37.1, 40.5, 41.0, 36.7, 42.3, 40.9, 39.8, 38.2] }
+        ],
+        "rowCount": 12
+      }
+    }
+  ],
+  "activeSheetId": "sheet-resampling-ruestzeit",
+  "sheetCounter": 1
+}

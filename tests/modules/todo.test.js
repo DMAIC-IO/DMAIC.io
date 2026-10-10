@@ -1,5 +1,5 @@
 import { suite, test, assertEqual, assertArrayAlmostEqual } from '../test-utils.js';
-import { Item, State, STATUSES } from '../../js/modules/todo/todo-model.js';
+import { Item, State, STATUSES, statusCounts, isOverdue, nextDueItems } from '../../js/modules/todo/todo-model.js';
 
 suite('Todo Model — Item', () => {
   test('constructor sets default values', () => {
@@ -230,5 +230,29 @@ suite('Todo Model — STATUSES', () => {
     assertEqual(STATUSES.includes('in-progress'), true);
     assertEqual(STATUSES.includes('done'), true);
     assertEqual(STATUSES.includes('blocked'), true);
+  });
+});
+
+suite('Todo Model — dashboard helpers', () => {
+  const mk = (status, due = '') => Item.fromJSON({ id: `${status}-${due}`, text: status, status, due });
+
+  test('statusCounts counts every status, zero when absent', () => {
+    assertEqual(JSON.stringify(statusCounts([mk('open'), mk('open'), mk('blocked')])),
+      JSON.stringify({ open: 2, 'in-progress': 0, done: 0, blocked: 1 }));
+  });
+
+  test('isOverdue: past due and not done; malformed or missing due never overdue', () => {
+    assertEqual(isOverdue(mk('open', '2026-10-09'), '2026-10-10'), true);
+    assertEqual(isOverdue(mk('open', '2026-10-10'), '2026-10-10'), false);
+    assertEqual(isOverdue(mk('done', '2026-01-01'), '2026-10-10'), false);
+    assertEqual(isOverdue(mk('open', '09.10.2026'), '2026-10-10'), false);
+    assertEqual(isOverdue(mk('open', ''), '2026-10-10'), false);
+  });
+
+  test('nextDueItems: not done, by due date, undated and malformed last in stored order, capped', () => {
+    const items = [mk('open', ''), mk('open', '2026-12-01'), mk('done', '2026-01-01'),
+      mk('blocked', '2026-11-01'), mk('in-progress', 'x'), mk('open', '2026-11-15')];
+    assertEqual(nextDueItems(items, 10).map(i => i.due).join('|'), '2026-11-01|2026-11-15|2026-12-01||x');
+    assertEqual(nextDueItems(items, 2).length, 2);
   });
 });

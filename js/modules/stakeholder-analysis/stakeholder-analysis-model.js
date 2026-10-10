@@ -4,6 +4,8 @@
  * View logic (i18n, CSS, styles) lives in the data-fn, not here.
  */
 
+import { uid } from '../../core/uid.js';
+
 export const SUPPORT_VALUES = ['supporter', 'neutral', 'critic'];
 export const CATEGORY_VALUES = ['intern', 'extern', 'kunde', 'lieferant', 'behoerde'];
 
@@ -15,13 +17,6 @@ function clampLevel(v) {
   const n = parseInt(v, 10);
   if (!Number.isFinite(n)) return 3;
   return Math.min(5, Math.max(1, n));
-}
-
-function genId() {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
-  return `sh-${  Math.abs(Date.now() ^ (Math.random() * 1e9 | 0)).toString(36)}`;
 }
 
 export class Stakeholder {
@@ -63,7 +58,7 @@ export class Stakeholder {
   static fromJSON(d) {
     const s = new Stakeholder();
     if (!d || typeof d !== 'object') return s;
-    s.id = typeof d.id === 'string' && d.id ? d.id : genId();
+    s.id = typeof d.id === 'string' && d.id ? d.id : uid();
     s.name = typeof d.name === 'string' ? d.name : '';
     s.role = typeof d.role === 'string' ? d.role : '';
     s.power = clampLevel(d.power);
@@ -106,4 +101,35 @@ export class State {
     }
     return s;
   }
+}
+
+/**
+ * Stakeholder count per power/interest quadrant.
+ * @param {Stakeholder[]} list
+ * @returns {Record<string, number>} keyed by QUAD_ORDER
+ */
+export function quadrantCounts(list) {
+  const counts = Object.fromEntries(QUAD_ORDER.map(q => [q, 0]));
+  for (const s of list) counts[s.quadrant]++;
+  return counts;
+}
+
+/**
+ * Support distribution; values outside SUPPORT_VALUES count as `other`.
+ * @param {Stakeholder[]} list
+ * @returns {{supporter: number, neutral: number, critic: number, other: number}}
+ */
+export function supportCounts(list) {
+  const counts = { supporter: 0, neutral: 0, critic: 0, other: 0 };
+  for (const s of list) counts[SUPPORT_VALUES.includes(s.support) ? s.support : 'other']++;
+  return counts;
+}
+
+/**
+ * Critics in the manage-closely quadrant.
+ * @param {Stakeholder[]} list
+ * @returns {Stakeholder[]}
+ */
+export function criticalCritics(list) {
+  return list.filter(s => s.quadrant === 'manage-closely' && s.support === 'critic');
 }

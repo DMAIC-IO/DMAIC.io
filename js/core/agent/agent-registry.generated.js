@@ -8,6 +8,9 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unmarked_method:bandDragOver@js/core/flowchart/flowchart-view.js:231",
+      "unmarked_method:bandDragLeave@js/core/flowchart/flowchart-view.js:245",
+      "unmarked_method:bandClass@js/core/flowchart/flowchart-view.js:254",
       "unmarked_method:init",
       "unmarked_method:isDecision",
       "unmarked_method:branchWord",
@@ -25,6 +28,7 @@ export const AGENT_REGISTRY = {
       "unmarked_method:isMainBand",
       "unmarked_method:stepInBand",
       "unmarked_method:bandGridStyle",
+      "unmarked_method:canvasClass",
       "unmarked_method:dropOnBand",
       "unmarked_method:insertInBand",
       "unmarked_method:toggleInsertMenu",
@@ -169,6 +173,105 @@ export const AGENT_REGISTRY = {
       "exampleWorksheetId": {
         "type": "any",
         "help": "",
+        "bulk": false
+      }
+    }
+  },
+  "attribute-test": {
+    "tagged": false,
+    "available": false,
+    "violations": [],
+    "reported": [
+      "unmarked_method:isKind",
+      "unmarked_method:isMode",
+      "unmarked_method:hasResult",
+      "unmarked_method:message",
+      "unmarked_method:isHint",
+      "unmarked_method:stats",
+      "unmarked_method:notes",
+      "unmarked_method:statLabel",
+      "unmarked_method:noteText",
+      "unmarked_method:hasTable",
+      "unmarked_method:tableCols",
+      "unmarked_method:tableRows",
+      "unmarked_method:decisionText",
+      "unmarked_method:decisionClass",
+      "unmarked_method:basisText",
+      "unmarked_method:hypotheses",
+      "unmarked_method:is2x2",
+      "unmarked_method:showDirection",
+      "unmarked_method:cellValue",
+      "unmarked_method:tableRowIdx",
+      "unmarked_method:tableColIdx",
+      "unmarked_method:rowName",
+      "unmarked_method:colName",
+      "unmarked_method:showEvent",
+      "unmarked_method:isEvent",
+      "unmarked_method:setKind",
+      "unmarked_method:setMode",
+      "unmarked_method:onAlphaInput",
+      "unmarked_method:setCell",
+      "unmarked_method:setRowName",
+      "unmarked_method:setColName",
+      "unmarked_method:addRow",
+      "unmarked_method:addCol",
+      "unmarked_method:removeRow",
+      "unmarked_method:removeCol",
+      "unmarked_method:onEventChange",
+      "unmarked_method:runAnalysis",
+      "unmarked_method:init",
+      "unmarked_method:destroy"
+    ],
+    "actions": {},
+    "fields": {
+      "testKind": {
+        "type": "'one'|'two'|'assoc'",
+        "help": "",
+        "bulk": false
+      },
+      "inputMode": {
+        "type": "'summary'|'columns'",
+        "help": "",
+        "bulk": false
+      },
+      "direction": {
+        "type": "'two-sided'|'greater'|'less'",
+        "help": "",
+        "bulk": false
+      },
+      "alpha": {
+        "type": "number|null",
+        "help": "significance level; null until seeded from settings",
+        "bulk": false
+      },
+      "p0": {
+        "type": "string",
+        "help": "hypothesized proportion (raw input)",
+        "bulk": false
+      },
+      "pooled": {
+        "type": "boolean",
+        "help": "pooled SE for the 2-proportion z statistic",
+        "bulk": false
+      },
+      "summary": {
+        "type": "any",
+        "help": "",
+        "bulk": false
+      },
+      "colRefs": {
+        "type": "{ response: ColumnRef|null, group: ColumnRef|null, rowVar: ColumnRef|null, colVar: ColumnRef|null }",
+        "help": "",
+        "bulk": false
+      },
+      "eventValue": {
+        "type": "string|null",
+        "help": "value of the response column that counts as event",
+        "bulk": false
+      },
+      "exampleWorksheetId": {
+        "type": "string|null",
+        "help": "worksheet provisioned by loadExample",
         "bulk": false
       }
     }
@@ -401,10 +504,10 @@ export const AGENT_REGISTRY = {
       "unmarked_method:openInModule",
       "unmarked_method:init",
       "unmarked_method:destroy",
-      "dom_detour:dataset.matrixSize@236",
-      "dom_detour:dataset.matrixSize@306",
-      "dom_detour:dataset.matrixSize@422",
-      "dom_detour:dataset.matrixSize@531"
+      "dom_detour:dataset.matrixSize@237",
+      "dom_detour:dataset.matrixSize@307",
+      "dom_detour:dataset.matrixSize@423",
+      "dom_detour:dataset.matrixSize@532"
     ],
     "actions": {},
     "fields": {
@@ -855,6 +958,9 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unmarked_method:bandDragOver@js/core/flowchart/flowchart-view.js:231",
+      "unmarked_method:bandDragLeave@js/core/flowchart/flowchart-view.js:245",
+      "unmarked_method:bandClass@js/core/flowchart/flowchart-view.js:254",
       "unmarked_method:init",
       "unmarked_method:stepsForLane",
       "unmarked_method:laneLabel",
@@ -1506,6 +1612,10 @@ export const AGENT_REGISTRY = {
       "unmarked_method:projBadgeText",
       "unmarked_method:projValueText",
       "unmarked_method:cardClass",
+      "unmarked_method:showUnjustified",
+      "unmarked_method:showJustification",
+      "unmarked_method:showSevere",
+      "unmarked_method:specialCharClass",
       "unmarked_method:projSDisp",
       "unmarked_method:projODisp",
       "unmarked_method:projDDisp",
@@ -2951,6 +3061,9 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unmarked_method:bandDragOver@js/core/flowchart/flowchart-view.js:231",
+      "unmarked_method:bandDragLeave@js/core/flowchart/flowchart-view.js:245",
+      "unmarked_method:bandClass@js/core/flowchart/flowchart-view.js:254",
       "unmarked_method:appendStep",
       "unmarked_method:init",
       "unmarked_method:sides",
@@ -3355,6 +3468,9 @@ export const AGENT_REGISTRY = {
     "violations": [],
     "reported": [
       "unmarked_method:stepDragEnd",
+      "unmarked_method:bandDragOver@js/core/flowchart/flowchart-view.js:231",
+      "unmarked_method:bandDragLeave@js/core/flowchart/flowchart-view.js:245",
+      "unmarked_method:bandClass@js/core/flowchart/flowchart-view.js:254",
       "unmarked_method:toggleSubsteps",
       "unmarked_method:addSubstep",
       "unmarked_method:removeSubstep",
@@ -3791,6 +3907,107 @@ export const AGENT_REGISTRY = {
       "exampleWorksheetId": {
         "type": "any",
         "help": "",
+        "bulk": false
+      }
+    }
+  },
+  "resampling": {
+    "tagged": false,
+    "available": false,
+    "violations": [],
+    "reported": [
+      "unmarked_method:isMode",
+      "unmarked_method:isAllowed",
+      "unmarked_method:showTarget",
+      "unmarked_method:showDirection",
+      "unmarked_method:showValidation",
+      "unmarked_method:canCompute",
+      "unmarked_method:sampleLabelKey",
+      "unmarked_method:setMode",
+      "unmarked_method:rollSeed",
+      "unmarked_method:refresh",
+      "unmarked_method:statementText",
+      "unmarked_method:compute",
+      "unmarked_method:cancel",
+      "unmarked_method:renderCharts",
+      "unmarked_method:init",
+      "unmarked_method:destroy"
+    ],
+    "actions": {},
+    "fields": {
+      "mode": {
+        "type": "'one'|'two'|'paired'|'k'",
+        "help": "",
+        "bulk": false
+      },
+      "statisticId": {
+        "type": "string",
+        "help": "one of STATS_BY_MODE[mode]",
+        "bulk": false
+      },
+      "statParams": {
+        "type": "{ trim: number, p: number, lsl: string, usl: string }",
+        "help": "",
+        "bulk": false
+      },
+      "contrast": {
+        "type": "'difference'|'ratio'",
+        "help": "mode 'two' only",
+        "bulk": false
+      },
+      "direction": {
+        "type": "'two-sided'|'greater'|'less'",
+        "help": "modes 'two' and 'paired'",
+        "bulk": false
+      },
+      "target": {
+        "type": "string",
+        "help": "mode 'one': hypothesised value, kept as text",
+        "bulk": false
+      },
+      "colRef1": {
+        "type": "ColumnRef|null",
+        "help": "",
+        "bulk": false
+      },
+      "colRef2": {
+        "type": "ColumnRef|null",
+        "help": "",
+        "bulk": false
+      },
+      "colRefsK": {
+        "type": "ColumnRef[]",
+        "help": "",
+        "bulk": false
+      },
+      "B": {
+        "type": "number",
+        "help": "resamples / Monte Carlo permutations",
+        "bulk": false
+      },
+      "seed": {
+        "type": "number",
+        "help": "",
+        "bulk": false
+      },
+      "confidence": {
+        "type": "number",
+        "help": "",
+        "bulk": false
+      },
+      "ciMethod": {
+        "type": "'bca'|'percentile'",
+        "help": "",
+        "bulk": false
+      },
+      "exampleWorksheetId": {
+        "type": "string|null",
+        "help": "worksheet provisioned by loadExample",
+        "bulk": false
+      },
+      "result": {
+        "type": "object|null",
+        "help": "summary from resampling-analysis summarize()",
         "bulk": false
       }
     }
@@ -4944,4 +5161,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":72,"available":3};
+export const AGENT_COVERAGE = {"total":74,"available":3};

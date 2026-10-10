@@ -175,6 +175,7 @@ export default [
     singleton: true,
     allowedPhases: ['define'],
     load: () => import('./dmaic-calendar/dmaic-calendar.js'),
+    loadTile: () => import('./dmaic-calendar/dmaic-calendar.tile.js'),
     cycles: {
       dmaic:  { phase: 'define', allowedPhases: ['define'] },
       dmadv:  { phase: 'define', allowedPhases: ['define'] },
@@ -187,6 +188,7 @@ export default [
     group: 'team',
     allowedPhases: ['define'],
     load: () => import('./todo/todo.js'),
+    loadTile: () => import('./todo/todo.tile.js'),
     cycles: {
       dmaic:  { phase: 'define', allowedPhases: ['define'] },
       dmadv:  { phase: 'define', allowedPhases: ['define'] },
@@ -199,6 +201,7 @@ export default [
     group: 'team',
     allowedPhases: ['define'],
     load: () => import('./stakeholder-analysis/stakeholder-analysis.js'),
+    loadTile: () => import('./stakeholder-analysis/stakeholder-analysis.tile.js'),
     cycles: {
       dmaic:  { phase: 'define', allowedPhases: ['define'] },
       dmadv:  { phase: 'define', allowedPhases: ['define'] },
@@ -212,6 +215,7 @@ export default [
     singleton: true,
     allowedPhases: ['define'],
     load: () => import('./voc-ctx-tree/voc-ctx-tree.js'),
+    loadTile: () => import('./voc-ctx-tree/voc-ctx-tree.tile.js'),
     cycles: {
       dmaic:  { phase: 'define',  allowedPhases: ['define']  },
       dmadv:  { phase: 'define',  allowedPhases: ['define']  },
@@ -235,6 +239,7 @@ export default [
     group: 'team',
     allowedPhases: ['define'],
     load: () => import('./raci-matrix/raci-matrix.js'),
+    loadTile: () => import('./raci-matrix/raci-matrix.tile.js'),
     cycles: {
       dmaic:  { phase: 'define', allowedPhases: ['define'] },
       dmadv:  { phase: 'define', allowedPhases: ['define'] },
@@ -469,6 +474,28 @@ export default [
     },
   },
   {
+    id: 'attribute-test',
+    phase: 'analyze',
+    group: 'statistics',
+    load: () => import('./attribute-test/attribute-test.js'),
+    cycles: {
+      dmaic:  { phase: 'analyze' },
+      dmadv:  { phase: 'analyze',   allowedPhases: ['analyze', 'verify'] },
+      eightd: { phase: 'rootcause', allowedPhases: ['rootcause', 'implementation'] },
+    },
+  },
+  {
+    id: 'resampling',
+    phase: 'analyze',
+    group: 'statistics',
+    load: () => import('./resampling/resampling.js'),
+    cycles: {
+      dmaic:  { phase: 'analyze',   allowedPhases: ['analyze', 'improve'] },
+      dmadv:  { phase: 'analyze',   allowedPhases: ['analyze', 'verify'] },
+      eightd: { phase: 'rootcause', allowedPhases: ['rootcause', 'implementation'] },
+    },
+  },
+  {
     id: 'multi-vari',
     phase: 'analyze',
     group: 'statistics',
@@ -578,6 +605,7 @@ export default [
     group: 'charts',
     allowedPhases: ['control'],
     load: () => import('./control-chart/control-chart.js'),
+    loadTile: () => import('./control-chart/control-chart.tile.js'),
     cycles: {
       dmaic:  { phase: 'control',        allowedPhases: ['control'] },
       dmadv:  { phase: 'verify',         allowedPhases: ['verify']  },
@@ -661,6 +689,7 @@ export default [
     phase: 'control',
     allowedPhases: ['control'],
     load: () => import('./lessons-learned/lessons-learned.js'),
+    loadTile: () => import('./lessons-learned/lessons-learned.tile.js'),
     cycles: {
       dmaic:  { phase: 'control',   allowedPhases: ['control']   },
       dmadv:  { phase: 'verify',    allowedPhases: ['verify']    },

@@ -749,7 +749,8 @@ const mod = createModule({
       },
 
       async _create(el, type, config, gen) {
-        const chart = await module._context.chartManager.create(el, type, config);
+        const keyed = config.editKey ? config : { editKey: `${this.model.activeTab}:${type}`, ...config };
+        const chart = await module._context.chartManager.create(el, type, keyed);
         if (!chart) return null;
         if (gen !== this._renderGen) { try { chart.destroy(); } catch { /* ignore */ } return null; }
         this._charts.push(chart);

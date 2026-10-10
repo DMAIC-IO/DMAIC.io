@@ -13,6 +13,7 @@
  */
 
 import { normalizeProblemStatement } from './project-charter-richtext.js';
+import { uid } from '../../core/uid.js';
 
 /** Default org chart style values */
 export const ORG_STYLE_DEFAULTS = {
@@ -92,9 +93,7 @@ export class State {
   /** Append a new empty goal and return it. */
   addGoal() {
     const goal = {
-      id: (typeof crypto !== 'undefined' && crypto.randomUUID)
-        ? crypto.randomUUID()
-        : `g-${  Math.random().toString(36).slice(2)}`,
+      id: uid(),
       description: '',
       targetDate: '',
       metric: '',

@@ -40,6 +40,16 @@ suite('tile-settings-form', () => {
     assertEqual(cb.checked, false);
   });
 
+  test('number and select use the shared .field style, the checkbox does not', () => {
+    const form = buildSettingsForm(SCHEMA, VALUES, i18n);
+    for (const key of ['topN', 'view']) {
+      const el = input(form, key);
+      assertEqual(el.classList.contains('field'), true, `${key} has .field`);
+      assertEqual(el.classList.contains('field--inline'), true, `${key} has .field--inline`);
+    }
+    assertEqual(input(form, 'showLegend').classList.contains('field'), false);
+  });
+
   test('read() returns the current values', () => {
     const form = buildSettingsForm(SCHEMA, VALUES, i18n);
     assertDeepEqual(form.read(), VALUES);
@@ -59,10 +69,26 @@ suite('tile-settings-form', () => {
 
   test('restore defaults resets every control', () => {
     const form = buildSettingsForm(SCHEMA, VALUES, i18n);
-    const reset = form.el.querySelector('.tile-settings__reset');
+    const reset = form.reset;
+    assertEqual(form.el.contains(reset), false, 'reset lives outside the body (dialog footer)');
+    assertEqual(reset.classList.contains('tile-settings__reset'), true);
     assertEqual(reset.textContent, 'T:dashboard.tileSettings.restoreDefaults');
     assertEqual(reset.type, 'button');
     reset.click();
     assertDeepEqual(form.read(), { topN: 5, view: 'bar', showLegend: true });
+  });
+});
+
+suite('tile settings form: literal option texts', () => {
+  test('optionTexts label the options literally; values stay ids', () => {
+    const schema = {
+      _source: { type: 'select', label: 'l.src', options: ['i1', 'i2'],
+        optionTexts: ['Line A (Analyze)', 'FMEA (Improve)'], default: 'i1' },
+    };
+    const form = buildSettingsForm(schema, { _source: 'i2' }, i18n);
+    const options = [...form.el.querySelectorAll('[data-setting="_source"] option')];
+    assertDeepEqual(options.map(o => o.textContent), ['Line A (Analyze)', 'FMEA (Improve)']);
+    assertDeepEqual(options.map(o => o.value), ['i1', 'i2']);
+    assertDeepEqual(form.read(), { _source: 'i2' });
   });
 });

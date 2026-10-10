@@ -65,7 +65,23 @@ suite('ModelsStore — computeDataHash', () => {
   });
 });
 
+/**
+ * Run `fn` with `crypto.randomUUID` hidden, as in an insecure context (plain
+ * http on a non-localhost host). Same shadowing trick as tests/core/uid.test.js.
+ */
+function withoutRandomUUID(fn) {
+  Object.defineProperty(crypto, 'randomUUID', { value: undefined, configurable: true, writable: true });
+  try { return fn(); } finally { delete crypto.randomUUID; }
+}
+
 suite('ModelsStore — saveModel / getModel', () => {
+  test('saveModel without id mints an id in an insecure context too', () => {
+    const sm = makeStateManager();
+    const id = withoutRandomUUID(() => saveModel(sm, { name: 'M1' }));
+    assertEqual(typeof id, 'string');
+    assertEqual(getModel(sm, id).name, 'M1');
+  });
+
   test('saveModel without id mints a new id', () => {
     const sm = makeStateManager();
     const id = saveModel(sm, fixtureRecord());

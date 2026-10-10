@@ -25,7 +25,7 @@ import Alpine from '@alpinejs/csp';
 import { State } from './xy-plot-model.js';
 import {
   edCheckboxRow, edSelectRow,
-  edColorPair, edExpandBtn,
+  edColorPair,
   openColorPicker,
 } from '../../core/chart/chart-editor.js';
 import {
@@ -404,7 +404,7 @@ const mod = createModule({
           const ser = chartSeries[idx];
 
           const detail = document.createElement('div');
-          detail.className = 'dmike-chart-ed-series-detail';
+          detail.className = 'dmike-chart-ed-series-detail open';
 
           // Marker styling (symbol, size, fill, border) is provided by scatter._buildTypeEditor.
 
@@ -443,7 +443,6 @@ const mod = createModule({
           }));
 
           item.appendChild(detail);
-          item.appendChild(edExpandBtn(t('edDetails'), detail));
         }
       },
 

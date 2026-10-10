@@ -16,6 +16,8 @@ import {
 } from '../../core/shortcut-registry.js';
 import { CYCLES } from '../../core/cycles/cycles.js';
 import { agentSettingsData } from './settings-agent.js';
+// The first entry of each list is the model's fallback for a missing or unknown value.
+import { METHODS as FMEA_METHODS, FMEA_TYPES } from '../../modules/fmea/fmea-model.js';
 
 /** Default 10-color chart series palette (identical to legacy DEFAULT_COLORS). */
 export const DEFAULT_CHART_COLORS = [
@@ -25,6 +27,9 @@ export const DEFAULT_CHART_COLORS = [
 
 /** Statistics defaults (identical to legacy STAT_DEFAULTS). */
 export const STAT_DEFAULTS = { confidenceLevel: 95, power: 80 };
+
+/** @param {*} v @param {string[]} allowed @returns {string} v when allowed, else allowed[0] */
+const pick = (v, allowed) => (allowed.includes(v) ? v : allowed[0]);
 
 /** Shortcut group display order (identical to legacy groupOrder). */
 export const SHORTCUT_GROUP_ORDER = ['general', 'datagrid', 'worksheet', 'vocCtxTree'];
@@ -248,6 +253,18 @@ export default createPage({
           key: 'glossary.inlineLinksEnabled', value: this.glossaryInline,
         });
       },
+
+      // ── FMEA defaults for new FMEAs ───────────────────────
+      fmeaDefaultMethod: pick(stateManager.get('settings.fmea.defaultMethod'), FMEA_METHODS),
+      fmeaDefaultType: pick(stateManager.get('settings.fmea.defaultType'), FMEA_TYPES),
+      // Write the whole object: a nested set throws when settings.fmea is corrupt (string/null).
+      saveFmeaDefaults() {
+        stateManager.set('settings.fmea', {
+          defaultMethod: this.fmeaDefaultMethod, defaultType: this.fmeaDefaultType,
+        });
+      },
+      onFmeaDefaultMethod() { this.saveFmeaDefaults(); },
+      onFmeaDefaultType() { this.saveFmeaDefaults(); },
 
       // ── show algo-lab links ───────────────────────────────
       showAlgoLinks: stateManager.get('settings.showAlgoLabLinks') !== false,

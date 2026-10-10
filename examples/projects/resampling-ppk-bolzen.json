@@ -1,0 +1,17 @@
+{
+  "mode": "one",
+  "statisticId": "ppk",
+  "statParams": { "trim": 0.1, "p": 0.95, "lsl": "9.7", "usl": "10.3" },
+  "contrast": "difference",
+  "direction": "two-sided",
+  "target": "1.33",
+  "colRef1": { "instanceId": "__source__", "sheetId": "sheet-outlier-bolzen", "columnId": "c-durchmesser" },
+  "colRef2": null,
+  "colRefsK": [],
+  "B": 10000,
+  "seed": 42,
+  "confidence": 0.95,
+  "ciMethod": "bca",
+  "result": null,
+  "sourceWorksheetFile": "worksheets/outlier-bolzen-grubbs.json"
+}

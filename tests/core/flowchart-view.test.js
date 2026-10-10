@@ -139,6 +139,82 @@ suite('chainViewMixin — gap drops', () => {
   });
 });
 
+suite('chainViewMixin — band drops', () => {
+  function ctx() {
+    return Object.assign(Object.create(null), chainViewMixin(null, (k) => k), { model: { steps: [] } });
+  }
+  const dragEvt = () => ({ dataTransfer: { setData() {}, effectAllowed: '' }, target: null });
+  // `target` is what the cursor is over; `inside` stands for the band element
+  // itself, so a relatedTarget it contains is a move WITHIN the band.
+  const overEvt = ({ overConnector = false } = {}) => {
+    let prevented = false;
+    return {
+      dataTransfer: { dropEffect: '' },
+      target: { closest: (sel) => (overConnector && sel === '.fc-connector' ? {} : null) },
+      preventDefault() { prevented = true; },
+      get prevented() { return prevented; },
+    };
+  };
+  const leaveEvt = (stillInside) => ({
+    relatedTarget: {},
+    currentTarget: { contains: () => stillInside },
+  });
+
+  test('bandDragOver marks the band and accepts the drop, but only during a drag', () => {
+    const c = ctx();
+    const idle = overEvt();
+    c.bandDragOver('lane-a', idle);
+    assertEqual(c._activeBand, null);
+    assertEqual(idle.prevented, false);
+
+    c.stepDragStart('s1', dragEvt());
+    const live = overEvt();
+    c.bandDragOver('lane-a', live);
+    assertEqual(c._activeBand, 'lane-a');
+    assertEqual(live.prevented, true);
+    assertEqual(live.dataTransfer.dropEffect, 'move');
+  });
+
+  test('an arrow inside the band is its own drop target — the band steps back', () => {
+    // The arrow reorders, the band re-assigns: lighting up both would promise
+    // two different drops at once.
+    const c = ctx();
+    c.stepDragStart('s1', dragEvt());
+    c.bandDragOver('lane-a', overEvt());
+    c.bandDragOver('lane-a', overEvt({ overConnector: true }));
+    assertEqual(c._activeBand, null);
+  });
+
+  test('bandClass marks every element of the hovered band, and nothing else', () => {
+    const c = ctx();
+    assertEqual(c.bandClass('lane-a'), '');
+    c.stepDragStart('s1', dragEvt());
+    c.bandDragOver('lane-a', overEvt());
+    assertEqual(c.bandClass('lane-a'), 'is-drop-target');
+    assertEqual(c.bandClass('lane-b'), '');
+  });
+
+  test('bandDragLeave keeps the band lit for a move within it and clears it on the way out', () => {
+    const c = ctx();
+    c.stepDragStart('s1', dragEvt());
+    c.bandDragOver('lane-a', overEvt());
+    c.bandDragLeave('lane-a', leaveEvt(true));
+    assertEqual(c._activeBand, 'lane-a');
+    c.bandDragLeave('lane-b', leaveEvt(false));
+    assertEqual(c._activeBand, 'lane-a');
+    c.bandDragLeave('lane-a', leaveEvt(false));
+    assertEqual(c._activeBand, null);
+  });
+
+  test('the end of a drag clears the band, wherever the card was let go', () => {
+    const c = ctx();
+    c.stepDragStart('s1', dragEvt());
+    c.bandDragOver('lane-a', overEvt());
+    c.stepDragEnd({ target: null });
+    assertEqual(c._activeBand, null);
+  });
+});
+
 suite('chainViewMixin — stepNum', () => {
   test('zero-pads the 1-based chain position', () => {
     const m = chainViewMixin(null, (k) => k);

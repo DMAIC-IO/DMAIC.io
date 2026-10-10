@@ -36,6 +36,30 @@ const LEGEND_WIDTH = 90;
 const Y_LABEL_PAD = 14;
 const PROXIMITY_PX = 12;
 
+/**
+ * Indices of the x tick labels to draw so that neighbouring labels do not
+ * overlap. Draws every k-th label from index 0 with the smallest sufficient k.
+ * Width is estimated for the monospace tick font (0.6 em per character).
+ * @param {string[]} labels
+ * @param {number[]} positions  x pixel position per label
+ * @param {{fontSize: number, minGap?: number}} opts
+ * @returns {number[]}
+ */
+export function thinTickLabels(labels, positions, { fontSize, minGap = 4 }) {
+  const n = labels.length;
+  if (n === 0) return [];
+  const width = (i) => String(labels[i]).length * fontSize * 0.6;
+  for (let k = 1; k < n; k++) {
+    let fits = true;
+    for (let i = k; i < n; i += k) {
+      const need = (width(i - k) + width(i)) / 2 + minGap;
+      if (Math.abs(positions[i] - positions[i - k]) < need) { fits = false; break; }
+    }
+    if (fits) return Array.from({ length: Math.ceil(n / k) }, (_, j) => j * k);
+  }
+  return [0];
+}
+
 export default class ChartBase {
   /**
    * @param {HTMLElement} container - DOM element to render into
@@ -271,9 +295,11 @@ export default class ChartBase {
       this.render();
       this._buildEditor();
     };
+    const onEdit = (key, value) => this._onLabelEdit?.(key, value);
+    const auto = this._autoLabels || {};
 
     // Title section
-    inner.appendChild(edTitleSection(cfg, () => this.render(), t));
+    inner.appendChild(edTitleSection(cfg, () => this.render(), t, onEdit, auto));
 
     // Legend toggle
     if (this._getLegendItems().length > 0 || (cfg.refLines && cfg.refLines.length) || (cfg.refAreas && cfg.refAreas.length)) {
@@ -284,7 +310,7 @@ export default class ChartBase {
     inner.appendChild(edFontSizeSection(cfg, () => this.render(), t));
 
     // Axis labels
-    inner.appendChild(edAxisLabelSection(cfg, () => this.render(), t));
+    inner.appendChild(edAxisLabelSection(cfg, () => this.render(), t, onEdit, auto));
 
     // Axis ticks (suppressed when both axes are categorical)
     const tickSec = edAxisTickSection(cfg, () => this.render(), t);
@@ -929,12 +955,14 @@ export default class ChartBase {
 
     // X-Axis ticks & labels
     if (this.config.showXTicks !== false) {
-      xTick.ticks.forEach((v) => {
+      const labels = xTick.ticks.map(v => (typeof this.config.xTickFormat === 'function'
+        ? this.config.xTickFormat(v) : formatNum(v, this.config.xDec, this.locale)));
+      const keep = new Set(thinTickLabels(labels, xTick.ticks.map(v => xScale(v)), { fontSize: this.config.tickSize || 11 }));
+      xTick.ticks.forEach((v, i) => {
         const x = xScale(v);
         svgEl('line', { x1: x, y1: pa.y + pa.h, x2: x, y2: pa.y + pa.h + 5, stroke: tickColor, 'stroke-width': 1 }, svg);
-        const label = typeof this.config.xTickFormat === 'function'
-          ? this.config.xTickFormat(v) : formatNum(v, this.config.xDec, this.locale);
-        svgText(label, {
+        if (!keep.has(i)) return;
+        svgText(labels[i], {
           x, y: pa.y + pa.h + 18,
           'text-anchor': 'middle', 'font-size': `${this.config.tickSize  }px`, fill: tickColor,
           'font-family': FONT_MONO, class: 'tick-label'

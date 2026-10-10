@@ -183,12 +183,14 @@ export class Router {
           // Forward to active/first module instance if the phase is non-empty.
           const phaseInstances = this._sm.get(`phases.${route.phaseId}`) ?? [];
           if (phaseInstances.length > 0) {
-            // Prefer the workspace's active module if it belongs to this phase.
-            const active = this._ws?.getActiveModuleInfo?.();
-            const activeInPhase = active &&
-              phaseInstances.some(inst => inst.instanceId === active.instanceId);
+            // Prefer the module the workspace selected for this phase (it
+            // reopens the one last used there). Ask for the id, not the
+            // module info: that is null while the module still mounts.
+            const activeId = this._ws?.getActiveInstanceId?.()
+              ?? this._ws?.getActiveModuleInfo?.()?.instanceId;
+            const activeInPhase = phaseInstances.some(inst => inst.instanceId === activeId);
             const targetId = activeInPhase
-              ? active.instanceId
+              ? activeId
               : phaseInstances[0].instanceId;
             this._applying = false;                  // allow the nested navigate to run
             await this.navigate(

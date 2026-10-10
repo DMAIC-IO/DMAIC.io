@@ -2,6 +2,7 @@ import Alpine from '@alpinejs/csp';
 import { cloneTemplate, templateKey } from './dom.js';
 import { getModuleHelp, hasModuleHelp } from './help-registry.js';
 import { getModuleReferences, hasModuleReferences } from './references-registry.js';
+import { initialModel } from './initial-model.js';
 
 /**
  * Pure gate: returns true iff the given route store state belongs to the
@@ -16,8 +17,9 @@ export function shouldApplyRoute(store, instanceId) {
   return Boolean(store && store.instanceId === instanceId);
 }
 
+// base.createDefault(context) — optional factory for the model of an empty instance.
 export function createModule(base) {
-  const { config, Model, data, afterMount, beforeLoadExample } = base;
+  const { config, Model, data, afterMount, beforeLoadExample, createDefault } = base;
   const i18nKey = `modules.${  config.id}`;
   // Derive the template URL from document.baseURI so the key is stable whether
   // the app runs unbundled or from app.min.js (where import.meta.url → bundle path).
@@ -80,7 +82,7 @@ export function createModule(base) {
       this._alpineName = uniqueName;
 
       const saved = context.stateManager.getModuleState(context.instanceId);
-      const state = saved ? Model.fromJSON(saved) : new Model();
+      const state = initialModel(Model, saved, createDefault, context);
 
       if (!container.id) container.id = `${config.id  }-${  context.instanceId}`;
 
@@ -107,9 +109,8 @@ export function createModule(base) {
         const dataDestroy = dataResult.destroy;
 
         Alpine.data(uniqueName, () => {
-          const freshState = context.stateManager.getModuleState(context.instanceId)
-            ? Model.fromJSON(context.stateManager.getModuleState(context.instanceId))
-            : new Model();
+          const freshState = initialModel(Model,
+            context.stateManager.getModuleState(context.instanceId), createDefault, context);
 
           return {
             model: freshState,

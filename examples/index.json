@@ -1286,6 +1286,66 @@
       ]
     },
     {
+      "id": "resampling-ppk-bolzen",
+      "type": "project",
+      "title": { "de": "Bolzendurchmesser: Ppk mit Bootstrap-Intervall", "en": "Bolt diameter: Ppk with a bootstrap interval" },
+      "description": {
+        "de": "30 Bolzendurchmesser aus dem Grubbs-Arbeitsblatt (mit den dort eingebauten Ausreißern), Toleranz 9,7–10,3 mm. Der Bootstrap liefert ein BCa-Intervall für Ppk; liegt dessen untere Grenze über dem Sollwert 1,33, spricht das für eine fähige Fertigung.",
+        "en": "30 bolt diameters from the Grubbs sheet (including its seeded outliers), tolerance 9.7–10.3 mm. The bootstrap gives a BCa interval for Ppk; a lower bound above the target 1.33 indicates capability."
+      },
+      "source": "Qprovement synthetisch",
+      "license": "public-domain",
+      "file": "projects/resampling-ppk-bolzen.json",
+      "format": "json",
+      "modules": ["resampling"],
+      "tags": ["resampling", "bootstrap", "ppk", "capability", "bolzen"]
+    },
+    {
+      "id": "resampling-pizza-two",
+      "type": "project",
+      "title": { "de": "Lieferzeit Fahrer A vs. B (Median, Permutationstest)", "en": "Delivery time driver A vs. B (median, permutation test)" },
+      "description": {
+        "de": "Je 15 Lieferzeiten zweier Fahrer. Bootstrap-Intervall für die Differenz der Mediane und zweiseitiger Permutationstest — ohne Normalverteilungsannahme.",
+        "en": "15 delivery times each for two drivers. Bootstrap interval for the difference of medians and a two-sided permutation test — no normality assumption."
+      },
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=801",
+      "license": "public-domain",
+      "file": "projects/resampling-pizza-two.json",
+      "format": "json",
+      "modules": ["resampling"],
+      "tags": ["resampling", "permutation", "median", "two-sample", "pizza"]
+    },
+    {
+      "id": "resampling-ruestzeit-paired",
+      "type": "project",
+      "title": { "de": "Rüstzeit vorher/nachher (gepaart)", "en": "Setup time before/after (paired)" },
+      "description": {
+        "de": "Rüstzeiten (min) an 12 Maschinen vor und nach einem SMED-Workshop. Gepaarter Bootstrap der mittleren Einsparung und einseitiger Vorzeichen-Permutationstest (exakt, 2¹² Zuordnungen).",
+        "en": "Setup times (min) on 12 machines before and after a SMED workshop. Paired bootstrap of the mean saving and a one-sided sign-flip permutation test (exact, 2¹² assignments)."
+      },
+      "source": "Qprovement Lehrcase",
+      "license": "public-domain",
+      "file": "projects/resampling-ruestzeit-paired.json",
+      "format": "json",
+      "modules": ["resampling"],
+      "tags": ["resampling", "permutation", "paired", "smed", "ruestzeit"]
+    },
+    {
+      "id": "resampling-pizza-k",
+      "type": "project",
+      "title": { "de": "Lieferzeit pro Fahrer (k Stichproben, Permutation)", "en": "Delivery time by driver (k samples, permutation)" },
+      "description": {
+        "de": "Drei Fahrer mit je 15 Lieferzeiten. Globaler Permutationstest der Mittelwerte, Bootstrap-Intervall je Fahrer und Paarvergleiche mit Holm-Korrektur — das verteilungsfreie Gegenstück zum ANOVA-Beispiel.",
+        "en": "Three drivers with 15 delivery times each. Global permutation test of the means, a bootstrap interval per driver and pairwise comparisons with Holm correction — the distribution-free counterpart of the ANOVA example."
+      },
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=801",
+      "license": "public-domain",
+      "file": "projects/resampling-pizza-k.json",
+      "format": "json",
+      "modules": ["resampling"],
+      "tags": ["resampling", "permutation", "k-sample", "holm", "pizza"]
+    },
+    {
       "id": "boxplot-pizza-fahrer",
       "type": "project",
       "title": {
@@ -1357,6 +1417,42 @@
         "k-sample",
         "unbalanced"
       ]
+    },
+    {
+      "id": "attribute-scrap-before-after",
+      "type": "project",
+      "title": {
+        "de": "Ausschuss vor und nach der Verbesserung (2 Anteile)",
+        "en": "Scrap before and after the improvement (2 proportions)"
+      },
+      "description": {
+        "de": "46 von 1200 Teilen Ausschuss vor, 21 von 1150 nach einer Prozessänderung. Erfundenes Szenario.",
+        "en": "46 of 1200 parts scrapped before, 21 of 1150 after a process change. Invented scenario."
+      },
+      "source": "Qprovement synthetisch",
+      "license": "public-domain",
+      "file": "projects/attribute-scrap-before-after.json",
+      "format": "json",
+      "modules": ["attribute-test"],
+      "tags": ["attribute", "proportion", "fisher"]
+    },
+    {
+      "id": "attribute-shift-pass-fail",
+      "type": "project",
+      "title": {
+        "de": "Prüfergebnis je Schicht (Chi-Quadrat)",
+        "en": "Inspection result by shift (chi-square)"
+      },
+      "description": {
+        "de": "240 Prüfergebnisse (i.O./n.i.O.) aus drei Schichten; die Nachtschicht hat mehr Fehler. Erfundenes Szenario.",
+        "en": "240 inspection results (pass/fail) from three shifts; the night shift has more failures. Invented scenario."
+      },
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=1010",
+      "license": "public-domain",
+      "file": "projects/attribute-shift-pass-fail.json",
+      "format": "json",
+      "modules": ["attribute-test"],
+      "tags": ["attribute", "chi-square", "contingency"]
     },
     {
       "id": "outlier-bolzen-grubbs",
@@ -1811,8 +1907,8 @@
         "en": "FMEA Pizza Delivery"
       },
       "description": {
-        "de": "4 Risiken entlang des Lieferprozesses (Adress-Erfassung, Ofen-Überlastung, Thermo-Verpackung, Verkehrsstau) mit S/O/D-Bewertung und je 2 datierten Maßnahmen (Sofort-Maßnahme bereits umgesetzt, Folge-Maßnahme geplant) — Burndown zeigt Plan- und Ist-Verlauf.",
-        "en": "4 risks along the delivery process (address entry, oven overload, thermal packaging, traffic) with S/O/D ratings and 2 dated actions each (one already completed, one planned) — burndown shows plan and actual lines."
+        "de": "5 Risiken entlang des Lieferprozesses (Adress-Erfassung, Ofen-Überlastung, Thermo-Verpackung, Verkehrsstau, Allergen-Deklaration) mit S/O/D-Bewertung, Vermeidungs- und Entdeckungsmaßnahmen und besonderen Merkmalen (CC/SC); die ersten vier mit je 2 datierten Maßnahmen (Sofort-Maßnahme bereits umgesetzt, Folge-Maßnahme geplant), das Allergen-Risiko als AP H ohne Maßnahme mit Begründung — Burndown zeigt Plan- und Ist-Verlauf.",
+        "en": "5 risks along the delivery process (address entry, oven overload, thermal packaging, traffic, allergen labelling) with S/O/D ratings, prevention and detection controls and special characteristics (CC/SC); the first four with 2 dated actions each (one already completed, one planned), the allergen risk as AP H without action, with a justification — burndown shows plan and actual lines."
       },
       "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
@@ -3246,6 +3342,21 @@
       "format": "json",
       "modules": ["worksheet"],
       "tags": ["worksheet", "pizza", "rohdaten"]
+    },
+    {
+      "id": "worksheet-resampling-ruestzeit",
+      "type": "project",
+      "title": { "de": "Rüstzeit vorher/nachher (Datensammlung)", "en": "Setup time before/after (data collection)" },
+      "description": {
+        "de": "Rüstzeiten an 12 Maschinen vor und nach einem SMED-Workshop.",
+        "en": "Setup times on 12 machines before and after a SMED workshop."
+      },
+      "source": "Qprovement Lehrcase",
+      "license": "public-domain",
+      "file": "worksheets/resampling-ruestzeit.json",
+      "format": "json",
+      "modules": ["worksheet"],
+      "tags": ["worksheet", "ruestzeit", "rohdaten"]
     },
     {
       "id": "worksheet-bolzendurchmesser",
