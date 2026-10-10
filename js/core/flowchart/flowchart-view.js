@@ -105,6 +105,7 @@ export function chainViewMixin(module, _t, opts = {}) {
       this._draggedStepId = null;
       // An aborted drag must not leave an insert bar behind.
       this._activeGap = null;
+      this._activeBand = null;
       event?.target?.classList?.remove('is-dragging');
       // Disarm: the row is only draggable while a drag started from the number
       // badge is in flight, so text in the title/description stays selectable.
@@ -195,6 +196,47 @@ export function chainViewMixin(module, _t, opts = {}) {
     gapDragLeaveAfter(idx, event) { this.gapDragLeave(idx + 1, event); },
     gapDropAfter(idx, event) { this.gapDrop(idx + 1, event); },
     gapClassAfter(idx) { return this.gapClass(idx + 1); },
+
+    // ── Band drops ────────────────────────────────────────────────────
+    // A band is a whole row or lane — Activity's branch bands, Deployment's
+    // lanes, Opportunity's VA/NVA sides. Dropping a card there re-assigns
+    // it; the highlight says so while the card is still in the air.
+
+    /** @type {string|null} band under the cursor while a card is in flight */
+    _activeBand: null,
+
+    /**
+     * Marks band `bandId` as the drop target and accepts the drop. Over an
+     * arrow inside the band the arrow is the target, so the band steps back.
+     * @param {string} bandId band, lane or side id
+     * @param {DragEvent} event
+     */
+    bandDragOver(bandId, event) {
+      // Same gate as gapDragOver: without a card in flight nothing is a target.
+      if (this._draggedStepId === null) return;
+      event?.preventDefault();
+      if (event?.dataTransfer) event.dataTransfer.dropEffect = 'move';
+      this._activeBand = event?.target?.closest?.('.fc-connector') ? null : bandId;
+    },
+
+    /**
+     * Clears the highlight when the cursor leaves band `bandId` — but not for
+     * a move between two children of the same band, which also fires dragleave.
+     * @param {string} bandId band, lane or side id
+     * @param {DragEvent} event
+     */
+    bandDragLeave(bandId, event) {
+      if (event?.relatedTarget && event?.currentTarget?.contains?.(event.relatedTarget)) return;
+      if (this._activeBand === bandId) this._activeBand = null;
+    },
+
+    /**
+     * @param {string} bandId band, lane or side id
+     * @returns {string} 'is-drop-target' for the band under the cursor, else ''
+     */
+    bandClass(bandId) {
+      return this._activeBand === bandId ? 'is-drop-target' : '';
+    },
 
     /**
      * Sequence label for a step, zero-padded to two digits ("01", "02", …) so

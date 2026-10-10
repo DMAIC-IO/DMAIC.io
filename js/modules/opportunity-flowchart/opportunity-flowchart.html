@@ -23,9 +23,10 @@
                @dragend="stepDragEnd($event)">
 
             <template x-for="side in sides()" :key="side">
-              <div class="of__slot fc-swimlane-slot"
+              <div class="of__slot fc-swimlane-slot" :class="bandClass(side)"
                    :data-side="side"
-                   @dragover.prevent
+                   @dragover="bandDragOver(side, $event)"
+                   @dragleave="bandDragLeave(side, $event)"
                    @drop.stop="dropOnSide(side, $event)">
                 <!-- Gap 0 — rail in front of the first card, only while a
                      card is in flight. -->
@@ -93,7 +94,7 @@
                 </template>
                 <!-- Gap n — rail behind the last card, only while dragging. -->
                 <template x-if="railEnd(idx, side)">
-                  <div class="of__connector of__connector--end fc-connector fc-connector--rail"
+                  <div class="of__connector of__connector--end fc-connector fc-connector--rail fc-connector--end"
                        :class="gapClassAfter(idx)" :data-gap="idx + 1"
                        @dragover="gapDragOverAfter(idx, $event)"
                        @dragleave="gapDragLeaveAfter(idx, $event)"

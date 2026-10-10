@@ -64,6 +64,12 @@ export default createModule({
  * @param {(key: string) => string} _t - i18n helper.
  */
 export function activityFlowchartData(module, _t) {
+  // Cache for bands() and _layout(). Every card, lane, tail and marker asks
+  // for its row and column; rebuilding both for each of them is wasted work.
+  // Plain closure state on purpose — written into the reactive data, the
+  // cache would itself trigger the re-renders it is meant to save.
+  const memo = { key: null, bands: null, layout: null };
+
   return {
     ...chainViewMixin(module, _t, {
       autoSizeSelector: 'textarea.af__step-title, textarea.af__decision-label, textarea.af__step-description',
@@ -130,6 +136,37 @@ export function activityFlowchartData(module, _t) {
      * @returns {Array<{id: string, ownerId: string|null, label: string, depth: number}>}
      */
     bands() {
+      this._syncMemo();
+      if (!memo.bands) memo.bands = this._computeBands();
+      return memo.bands;
+    },
+
+    /**
+     * Everything bands() and _layout() read, as one string. Reading it is
+     * also what keeps Alpine's dependency tracking intact: a binding served
+     * from the cache still touches every field that could change its answer.
+     * The two translations stand in for a language switch.
+     * @returns {string}
+     */
+    _chainKey() {
+      const parts = this.model.steps.map((s) => [
+        s.id, s.kind, s.branchId, s.decision?.label ?? '', s.decision?.noTarget ?? '',
+      ].join('\u0001'));
+      parts.push(_t('mainPath'), _t('unnamedDecision'));
+      return parts.join('\u0002');
+    },
+
+    /** Drops the cached bands and layout once the chain has changed. */
+    _syncMemo() {
+      const key = this._chainKey();
+      if (key === memo.key) return;
+      memo.key = key;
+      memo.bands = null;
+      memo.layout = null;
+    },
+
+    /** Uncached bands() — see there. */
+    _computeBands() {
       const rows = [];
       const walk = (branchId, owner, depth) => {
         rows.push({
@@ -181,6 +218,13 @@ export function activityFlowchartData(module, _t) {
      * @returns {{colOf: Map<string, number>, count: number}} 1-based columns.
      */
     _layout() {
+      this._syncMemo();
+      if (!memo.layout) memo.layout = this._computeLayout();
+      return memo.layout;
+    },
+
+    /** Uncached _layout() — see there. */
+    _computeLayout() {
       const steps = this.model.steps;
       const colOf = new Map();
       const next = new Map([[MAIN_BRANCH, 1]]);
@@ -388,6 +432,14 @@ export function activityFlowchartData(module, _t) {
     bandGridStyle() { return `--fc-lane-count: ${this.bands().length}`; },
 
     /**
+     * Without bands there is no label column in front of the chain, so the
+     * gap-0 rail — which hangs one chain gap left of the first card — would
+     * stick out of the canvas. The modifier makes room for it.
+     * @returns {string}
+     */
+    canvasClass() { return this.hasBands() ? '' : 'af__canvas--plain'; },
+
+    /**
      * Drop on a band row: the dragged step changes band and keeps its chain
      * position. The other gesture — a drop on an arrow — does the opposite and
      * leaves the band alone.
@@ -400,7 +452,7 @@ export function activityFlowchartData(module, _t) {
       const from = this._draggedStepId;
       this._draggedStepId = null;
       this._activeGap = null;
-      event?.currentTarget?.classList?.remove('is-drop-target');
+      this._activeBand = null;
       if (!from) return;
       this.model.setStepBranch(from, bandId);
     },

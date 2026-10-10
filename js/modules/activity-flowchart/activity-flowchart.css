@@ -20,6 +20,11 @@
   min-height: 200px;
 }
 
+/* No label column: leave room for the gap-0 rail left of the first card. */
+.af__canvas.af__canvas--plain {
+  padding-left: calc(var(--spacing-md) + var(--fc-chain-gap));
+}
+
 /* The label column is the only leftover that would be auto-placed; pin it so
    it cannot land anywhere but first. */
 .af__canvas > .fc-swimlane-labels { grid-column: 1; }
@@ -208,12 +213,6 @@
    card and stayed on the header line — so the row of arrows read as broken
    rather than as aimed. One line for all of them. */
 
-/* Gap n hangs off the RIGHT of the last card, mirroring the connector that
-   normally sits in the gap to a card's left. */
-.af__connector--end {
-  left: auto;
-  right: calc(-1 * var(--fc-chain-gap));
-}
 
 /* The insert menu at an arrow. It hangs BELOW the arrow rather than over it,
    so the two cards it would go between stay visible while choosing. */
