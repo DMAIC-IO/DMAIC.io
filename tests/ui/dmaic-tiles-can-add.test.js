@@ -6,6 +6,7 @@
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { DmaicTiles } from '../../js/ui/dmaic-tiles.js';
+import { DEFAULT_CYCLE, getAllPhaseIds } from '../../js/core/cycles/cycles.js';
 
 /**
  * Eine Kachelleiste mit einem Zustands-Double, das echte Phaseninhalte führt.
@@ -13,9 +14,10 @@ import { DmaicTiles } from '../../js/ui/dmaic-tiles.js';
  * @param {string} [options.cycleId]
  * @param {Record<string, object[]>} [options.phases]
  * @param {boolean} [options.completed]
- * @returns {DmaicTiles}
+ * @param {object[]} [options.modules]  Definitionen, die das Anlegemenü anbietet
+ * @returns {{ tiles: DmaicTiles, container: HTMLElement }}
  */
-function makeTiles({ cycleId = 'dmaic', phases = {}, completed = false } = {}) {
+function makeTiles({ cycleId = 'dmaic', phases = {}, completed = false, modules = [] } = {}) {
   const stateManager = {
     get: (key) => {
       if (key === 'projectMeta.cycle') return cycleId;
@@ -26,12 +28,19 @@ function makeTiles({ cycleId = 'dmaic', phases = {}, completed = false } = {}) {
     getProjectCycle: () => cycleId,
     isCompleted: () => completed,
   };
-  return new DmaicTiles(document.createElement('div'), {
+  const container = document.createElement('div');
+  const tiles = new DmaicTiles(container, {
     eventBus: { on: () => {}, emit: () => {} },
     stateManager,
     i18n: { t: (k) => k, getLanguage: () => 'de' },
-    moduleRegistry: { getAll: () => [], setActiveCycle: () => {}, get: () => null },
+    moduleRegistry: {
+      getAll: () => modules,
+      setActiveCycle: () => {},
+      get: (id) => modules.find(m => m.id === id) ?? null,
+      getByCycleAndPhase: (_cycle, phaseId) => modules.filter(m => m.menuPhase === phaseId),
+    },
   });
+  return { tiles, container };
 }
 
 suite('DmaicTiles._canAdd', () => {
@@ -39,7 +48,7 @@ suite('DmaicTiles._canAdd', () => {
     // `triz-ifr` trägt `phase: 'improve'`, hat aber keine `cycles.dmaic`-
     // Zuordnung: das Anlegemenü führt es nur unter `extras`. Die alte Fassung
     // ließ ohne `allowedPhases` jede Phase durch und sagte hier `ok`.
-    const tiles = makeTiles();
+    const { tiles } = makeTiles();
     const def = { id: 'triz-ifr', phase: 'improve', cycles: { eightd: { phase: 'corrective' } } };
 
     const check = tiles._canAdd(def, 'improve');
@@ -50,14 +59,14 @@ suite('DmaicTiles._canAdd', () => {
   });
 
   test('dasselbe Modul darf in die Extras-Kachel', () => {
-    const tiles = makeTiles();
+    const { tiles } = makeTiles();
     const def = { id: 'triz-ifr', phase: 'improve', cycles: { eightd: { phase: 'corrective' } } };
 
     assertEqual(tiles._canAdd(def, 'extras').ok, true);
   });
 
   test('die Zusatzphasen der Zuordnung bleiben erlaubt', () => {
-    const tiles = makeTiles();
+    const { tiles } = makeTiles();
     const def = { id: 'ishikawa', phase: 'analyze',
                   cycles: { dmaic: { phase: 'analyze', allowedPhases: ['measure'] } } };
 
@@ -67,7 +76,7 @@ suite('DmaicTiles._canAdd', () => {
   });
 
   test('ein Singleton wird abgewiesen, sobald es irgendwo im Projekt liegt', () => {
-    const tiles = makeTiles({ phases: { define: [{ instanceId: 'a1', moduleId: 'project-charter' }] } });
+    const { tiles } = makeTiles({ phases: { define: [{ instanceId: 'a1', moduleId: 'project-charter' }] } });
     const def = { id: 'project-charter', phase: 'define', singleton: true,
                   cycles: { dmaic: { phase: 'define' } } };
 
@@ -75,12 +84,35 @@ suite('DmaicTiles._canAdd', () => {
   });
 
   test('im abgeschlossenen Projekt wird gar nichts mehr angelegt', () => {
-    const tiles = makeTiles({ completed: true });
+    const { tiles } = makeTiles({ completed: true });
     const def = { id: 'sipoc', phase: 'define', cycles: { dmaic: { phase: 'define' } } };
 
     const check = tiles._canAdd(def, 'define');
 
     assertEqual(check.ok, false);
     assertEqual(check.reason, 'completed');
+  });
+
+  test('eine unbekannte Zyklus-Kennung nimmt den Vorgabezyklus, statt das Menü zu sprengen', () => {
+    // `projectMeta.cycle` kommt aus gespeicherten oder eingelesenen Projekt-
+    // daten und kann einen Zyklus nennen, den es nicht gibt. `canAddInstance`
+    // wirft bei einer unbekannten Kennung — gerufen wird es aber in der
+    // Schleife, die das Anlegemenü baut. Also degradiert diese Oberfläche wie
+    // `getCycle()`: Vorgabezyklus, Menü steht.
+    const def = { id: 'sipoc', phase: 'define', menuPhase: 'define',
+                  cycles: { dmaic: { phase: 'define' } } };
+    const { tiles, container } = makeTiles({ cycleId: 'nicht-existent', modules: [def] });
+
+    tiles.render();
+
+    const rendered = [...container.querySelectorAll('.dmaic-tile')].map(t => t.dataset.phase);
+    assertDeepEqual(rendered, getAllPhaseIds(DEFAULT_CYCLE), 'Kacheln des Vorgabezyklus');
+
+    const tile = container.querySelector('.dmaic-tile[data-phase="define"]');
+    tiles._showMenu('define', tile);
+    const items = [...tile.querySelectorAll('.dmaic-tile__dropdown-item')];
+    assertEqual(items.length, 1, 'das Menü ist gebaut worden');
+    assertEqual(items[0].disabled, false, 'der Eintrag ist anklickbar');
+    tiles._closeMenu();
   });
 });

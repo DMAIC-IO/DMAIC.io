@@ -152,9 +152,22 @@ export class DmaicTiles {
 
   // ─── Internal ───────────────────────────────────────────────
 
-  /** @returns {string} active project's cycle id */
+  /**
+   * Die Kennung des Zyklus des aktiven Projekts — immer eine bekannte.
+   *
+   * `projectMeta.cycle` kommt aus gespeicherten oder eingelesenen Projektdaten
+   * und kann einen Zyklus nennen, den es nicht (mehr) gibt. Diese Oberfläche
+   * degradiert dann wie `getCycle()`: sie nimmt den Vorgabezyklus. Hier darf
+   * nichts werfen — `canAddInstance` wird in der Schleife gerufen, die das
+   * Anlegemenü baut, und eine einzige schlechte Kennung nähme sonst das ganze
+   * Menü mit. Der Wurf in `canAddInstance` bleibt, wo er hingehört: an der
+   * Agentenfläche, wo eine falsche Zyklus-Kennung ein Aufruferfehler ist.
+   *
+   * @returns {string} active project's cycle id, guaranteed to be in `CYCLES`
+   */
   _getCycleId() {
-    return this._stateManager.get('projectMeta.cycle') || DEFAULT_CYCLE;
+    const cycleId = this._stateManager.get('projectMeta.cycle');
+    return (typeof cycleId === 'string' && CYCLES[cycleId]) ? cycleId : DEFAULT_CYCLE;
   }
 
   /**
