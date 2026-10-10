@@ -15,7 +15,7 @@
 import { createModule } from '../../core/template-module.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
 import { draggablePopout } from '../../ui/draggable-popout.js';
-import { State, METHODS, FMEA_TYPES } from './fmea-model.js';
+import { State, METHODS, FMEA_TYPES, stateFromSettings } from './fmea-model.js';
 import { S_BANDS, O_BANDS, D_BANDS, AP_TABLE, AP_CATEGORY, bandLabel } from './fmea-ap.js';
 
 /** Map a 1–10 rating to its scale-row index (0–4). */
@@ -58,6 +58,8 @@ const mod = createModule({
     ],
   },
   Model: State,
+  /** New FMEAs start with the app-wide default method/type (settings page). */
+  createDefault: (ctx) => stateFromSettings(ctx.stateManager.get('settings.fmea')),
 
   beforeLoadExample(data) {
     const result = JSON.parse(JSON.stringify(data));

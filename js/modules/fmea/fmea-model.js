@@ -576,3 +576,13 @@ export class State {
     return s;
   }
 }
+
+/**
+ * Empty FMEA from the app settings object `settings.fmea`.
+ * @param {{defaultMethod?:string, defaultType?:string}|*} settings
+ * @returns {State}
+ */
+export function stateFromSettings(settings) {
+  const s = (settings && typeof settings === 'object') ? settings : {};
+  return State.create({ method: s.defaultMethod, fmeaType: s.defaultType });
+}
