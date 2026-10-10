@@ -130,6 +130,57 @@ export function closeContextHelp() {
   STATE.open = null;
 }
 
+const DESCRIPTIONS_ID = 'dmike-context-help-descriptions';
+
+/**
+ * Das verborgene Beschreibungsziel zu einem Hilfeschlüssel — die EINZIGE
+ * Stelle, an der solche Ziele entstehen. Wer irgendwo ein `aria-describedby`
+ * auf einen Hilfetext setzen will — als Nächstes die Werkzeugleisten-Knöpfe
+ * aus `ui/resolve-actions.js` und `ui/workspace.js` —, holt die Kennung hier
+ * und baut kein zweites Ziel daneben: zwei Mechanismen für denselben Satz
+ * driften auseinander.
+ *
+ * Ein Ziel JE SCHLÜSSEL, nicht je Anker: `hypothesis-test.html` trägt
+ * `fields.targetValue.help` zweimal (σ²₀ und μ₀), und zwei Elemente mit
+ * derselben id wären ungültiges HTML. Mehrere Anker dürfen auf dasselbe
+ * `aria-describedby`-Ziel zeigen — das ist der vorgesehene Weg.
+ *
+ * Die Ziele liegen gesammelt in einem Behälter an `document.body`, nicht am
+ * Anker: ein Kind IM Anker würde unter „name from content" in dessen
+ * zugänglichen Namen einfließen („Why hinzufügen Legt eine Why-Frage an."),
+ * von Alpines `x-text` weggewischt (derselbe Grund, aus dem die Idempotenz in
+ * `augmentOne` am Knopf hängt und nicht am Merkmal) und in `anchorLabel`
+ * mitzählen.
+ *
+ * @param {string} key  der i18n-Hilfeschlüssel, z. B. `modules.five-why.fields.problem.help`
+ * @param {string} text  der aufgelöste Satz; wird bei jedem Aufruf neu gesetzt,
+ *   damit ein Sprachwechsel nachgezogen wird
+ * @returns {HTMLElement} das `<span>` mit der `id` für `aria-describedby`
+ */
+export function describeTarget(key, text) {
+  let box = document.getElementById(DESCRIPTIONS_ID);
+  if (!box) {
+    box = document.createElement('div');
+    box.id = DESCRIPTIONS_ID;
+    box.className = 'dmike-sr-only';
+    document.body.appendChild(box);
+  }
+  const id = `ch-desc-${key.replace(/[^A-Za-z0-9_-]/g, '-')}`;
+  let target = document.getElementById(id);
+  if (!target) {
+    target = document.createElement('span');
+    target.id = id;
+    // Die Klasse auch am `<span>`, nicht nur am Behälter: so bleibt das Ziel
+    // verborgen, falls es je woanders hängt.
+    target.className = 'dmike-sr-only';
+    box.appendChild(target);
+  }
+  // Wie beim `aria-label`: bei jedem Durchlauf neu, damit ein Sprachwechsel
+  // nachgezogen wird.
+  target.textContent = text;
+  return target;
+}
+
 // ─── Intern ────────────────────────────────────────────────────────
 
 function augmentOne(anchor) {
@@ -177,6 +228,24 @@ function augmentOne(anchor) {
     'aria-label',
     STATE.i18n.t('contextHelp.ariaLabel', { label: anchorLabel(anchor) }),
   );
+
+  // Drei Wege zu EINEM Satz. Das Kontextfenster am Fragezeichen ist der
+  // dritte; die beiden hier sind die, die ohne Vorwissen funktionieren:
+  //
+  //   `title` — der Satz als Maus-Tooltip. Ohne ihn ist der Hilfetext für
+  //   einen sehenden Maus-Nutzer nur erreichbar, wenn er von der Alt-Taste
+  //   weiß. Das ist die eigentliche Lücke, nicht die Redundanz zum
+  //   Kontextfenster.
+  //
+  //   `aria-describedby` — ein Screenreader liest den Satz beim Fokus vor.
+  //   Behebt „die Kontexthilfe ist mausgebunden und für einen Screenreader
+  //   unsichtbar".
+  //
+  // Beide werden bei JEDEM Durchlauf neu gesetzt, nicht beim ersten
+  // eingefroren — aus demselben Grund wie das `aria-label` darüber.
+  const text = STATE.i18n.t(key);
+  anchor.setAttribute('title', text);
+  anchor.setAttribute('aria-describedby', describeTarget(key, text).id);
 
   anchor.classList.add('context-help-anchor');
   // Nur noch Markierung für Diagnose und E2E — die Idempotenz hängt oben am
