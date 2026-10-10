@@ -137,6 +137,30 @@ suite('dashboard tiles: fmea', () => {
   test('title prefix keeps the legacy title', () => {
     assertEqual(fmeaTile.titlePrefix, 'FMEA');
   });
+
+  test('RPN mode summary shows the S ≥ 9 count', () => {
+    const host = render(fmeaTile, FMEA_STATE);   // no method → RPN; one risk with S 10
+    const flag = host.querySelector('.dashboard-fmea__flag-count');
+    assertEqual(flag.textContent, 'dashboard.fmeaSevere: 1');
+  });
+
+  test('AP mode summary shows the H-without-action count', () => {
+    const host = render(fmeaTile, { method: 'ap', risks: [
+      { failureMode: 'No action', sev: '9', occ: '10', det: '10' },
+      { failureMode: 'Justified', sev: '9', occ: '10', det: '10', justification: 'ok' },
+    ] });
+    assertEqual(host.querySelector('.dashboard-fmea__flag-count').textContent, 'dashboard.fmeaUnjustified: 1');
+  });
+
+  test('top list shows the CC/SC badge', () => {
+    const host = render(fmeaTile, { risks: [
+      { failureMode: 'Flagged', sev: '10', occ: '8', det: '7', specialChar: 'CC' },
+      { failureMode: 'Plain', sev: '7', occ: '5', det: '4' },
+    ] });
+    const flags = host.querySelectorAll('.dashboard-fmea__top-flag');
+    assertEqual(flags.length, 1);
+    assertEqual(flags[0].textContent, 'CC');
+  });
 });
 
 suite('dashboard tiles: ishikawa', () => {

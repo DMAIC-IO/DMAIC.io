@@ -552,6 +552,8 @@
     "fmeaEmpty": "No risks recorded.",
     "fmeaRisks": "Risks",
     "fmeaMaxRPN": "Max RPN",
+    "fmeaUnjustified": "H without action",
+    "fmeaSevere": "S ≥ 9",
     "fmeaTopRisks": "Top Risks",
     "fmeaCritical": "Critical (>200)",
     "fmeaHigh": "High (125–200)",

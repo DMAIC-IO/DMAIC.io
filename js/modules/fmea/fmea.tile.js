@@ -57,6 +57,11 @@ export default {
       summaryParts.push(h('span', {}, `${i18n.t('dashboard.fmeaMaxRPN')}: `,
         h('strong', { style: `color:${catTextColor(rpnCategory(maxRPN))}` }, maxRPN ? String(maxRPN) : '—')));
     }
+    const st = model.stats();
+    const flagCount = isAp ? st.unjustified : st.highSeverity;
+    const flagLabel = i18n.t(isAp ? 'dashboard.fmeaUnjustified' : 'dashboard.fmeaSevere');
+    summaryParts.push(h('span', { class: 'dashboard-fmea__flag-count' }, `${flagLabel}: `,
+      h('strong', { style: flagCount ? `color:${catTextColor(isAp ? 'high' : 'critical')}` : null }, String(flagCount))));
     const summary = h('div', { class: 'dashboard-fmea__summary' }, ...summaryParts);
     const bar = h('div', { class: 'dashboard-fmea__bar' },
       ...barCats.map(cat => {
@@ -80,6 +85,7 @@ export default {
       children.push(h('ol', { class: 'dashboard-fmea__top-list' },
         ...top.map(r => h('li', { class: 'dashboard-fmea__top-item' },
           h('span', { class: 'dashboard-fmea__top-desc' }, r.failureMode || r.step || '—'),
+          r.specialChar ? h('span', { class: 'dashboard-fmea__top-flag' }, r.specialChar) : null,
           h('span', { class: 'dashboard-fmea__top-rpn', style: `color:${catTextColor(rating.category(r))}` }, badge(r))))));
     }
     host.replaceChildren(...children);

@@ -1540,6 +1540,16 @@ body.dev-area-open .dmaic-tiles {
   flex-shrink: 0;
 }
 
+.dashboard-fmea__top-flag {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  padding: 0 var(--spacing-2xs);
+  border: 1px solid currentColor;
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-secondary);
+  margin-inline: var(--spacing-xs);
+}
+
 /* VoC tile on dashboard */
 .dashboard-voc__summary {
   display: flex;
