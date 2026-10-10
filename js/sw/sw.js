@@ -1,20 +1,20 @@
 /**
  * D.Mike service worker — install, activate and fetch handlers only; the
- * logic lives in strategy.js, caches.js and retry.js. The build bundles this
+ * logic lives in strategy.js, caches.js, retry.js and handlers.js. The build bundles this
  * file into app/dev/sw.js and defines VERSION and PRECACHE.
  * Spec: docs/superpowers/specs/2026-10-10-service-worker-offline-design.md
  */
 /* global VERSION, PRECACHE */
 import { strategyFor } from './strategy.js';
 import { cacheName, cachesToDelete } from './caches.js';
-import { fetchWithRetry, withTimeout, runLimited } from './retry.js';
+import { fetchWithRetry, runLimited } from './retry.js';
+import { createHandlers } from './handlers.js';
 
 const SCOPE = self.registration.scope;
 const CACHE = cacheName(SCOPE, VERSION);
 const LISTED = new Set(PRECACHE);
-const PAGE_TIMEOUT_MS = 3000;
+const NETWORK_TIMEOUT_MS = 3000;
 const PRECACHE_CONCURRENCY = 8;
-const MATCH = { ignoreVary: true };
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
@@ -48,31 +48,9 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(HANDLERS[strategy](event.request));
 });
 
-const HANDLERS = {
-  /** Network first with a timeout; offline the cached shell. */
-  async page(request) {
-    try {
-      return await withTimeout(fetch(request), PAGE_TIMEOUT_MS);
-    } catch (err) {
-      const cached = await (await caches.open(CACHE)).match('index.html', MATCH);
-      if (cached) return cached;
-      throw err;
-    }
-  },
-
-  /** Hashed files: any cache of the origin, else the network with retries. */
-  async 'cache-first'(request) {
-    return (await caches.match(request, MATCH)) ?? fetchWithRetry(request);
-  },
-
-  /** Data files: fresh from the network, the cache when offline. */
-  async 'network-first'(request) {
-    try {
-      return await fetch(request);
-    } catch (err) {
-      const cached = await caches.match(request, MATCH);
-      if (cached) return cached;
-      throw err;
-    }
-  },
-};
+const HANDLERS = createHandlers({
+  caches,
+  cacheName: CACHE,
+  fetch: (request) => fetch(request),
+  timeoutMs: NETWORK_TIMEOUT_MS,
+});

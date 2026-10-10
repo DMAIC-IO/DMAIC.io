@@ -92,12 +92,13 @@ export class VideosRegistry {
   }
 
   /**
-   * @param {{ __fetch?: typeof fetch }} [opts] `__fetch` ist die Naht für Tests
+   * @param {{ __fetch?: typeof fetch, timeoutMs?: number }} [opts] `__fetch` ist die Naht für Tests;
+   *   timeoutMs bricht eine hängende Anfrage ab, damit der Boot nicht wartet
    * @returns {Promise<void>}
    */
-  async init({ __fetch = fetch } = {}) {
+  async init({ __fetch = fetch, timeoutMs = 3000 } = {}) {
     try {
-      const res = await __fetch(CATALOG_URL, { cache: 'no-cache' });
+      const res = await __fetch(CATALOG_URL, { cache: 'no-cache', signal: AbortSignal.timeout(timeoutMs) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       this._entries = parseMirror(await res.json());
     } catch (err) {
