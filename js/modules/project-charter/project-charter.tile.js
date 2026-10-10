@@ -152,37 +152,37 @@ function renderOrgChart(host, { state, i18n }) {
 }
 
 /**
- * Enumerator for a singleton tile bound to the first charter instance.
- * @param {string} tileId
+ * Singleton tile bound to the first charter instance. Its tile id equals its
+ * kind; `titleKey` is also the title of copies and re-bound tiles.
+ * @param {string} kind  tile id and kind
  * @param {string} titleKey  i18n key of the tile title
- * @returns {function(object): Array<{tileId: string, instanceId: string, title: string}>}
+ * @param {object} size
+ * @param {function} render
+ * @returns {object} tile object
  */
-function singleton(tileId, titleKey) {
-  return (ctx) => {
-    const inst = ctx.findInstances('project-charter')[0] || null;
-    return inst ? [{ tileId, instanceId: inst.instanceId, title: ctx.i18n.t(titleKey) }] : [];
+function singletonTile(kind, titleKey, size, render) {
+  return {
+    kind,
+    titleKey,
+    size,
+    enumerate(ctx) {
+      const inst = ctx.findInstances('project-charter')[0] || null;
+      return inst ? [{ tileId: kind, instanceId: inst.instanceId, title: ctx.i18n.t(titleKey) }] : [];
+    },
+    render,
   };
 }
 
 /** Problem-statement tile. */
-export const charterTile = {
-  size: { defaultW: 3, defaultH: 10, minW: 2, minH: 6 },
-  enumerate: singleton('project-charter', 'dashboard.charterTitle'),
-  render: renderDashboardTile,
-};
+export const charterTile = singletonTile('project-charter', 'dashboard.charterTitle',
+  { defaultW: 3, defaultH: 10, minW: 2, minH: 6 }, renderDashboardTile);
 
 /** Goals tile (achievement per goal). */
-export const goalsTile = {
-  size: { defaultW: 3, defaultH: 10, minW: 2, minH: 6 },
-  enumerate: singleton('project-goals', 'dashboard.goalsTitle'),
-  render: renderGoals,
-};
+export const goalsTile = singletonTile('project-goals', 'dashboard.goalsTitle',
+  { defaultW: 3, defaultH: 10, minW: 2, minH: 6 }, renderGoals);
 
 /** Org chart tile. */
-export const orgTile = {
-  size: { defaultW: 6, defaultH: 10, minW: 3, minH: 6 },
-  enumerate: singleton('org-chart', 'dashboard.orgChartTitle'),
-  render: renderOrgChart,
-};
+export const orgTile = singletonTile('org-chart', 'dashboard.orgChartTitle',
+  { defaultW: 6, defaultH: 10, minW: 3, minH: 6 }, renderOrgChart);
 
 export default [charterTile, goalsTile, orgTile];

@@ -80,6 +80,7 @@ function buildSparkline(scData, violationSet, usl, lsl, width) {
 
 export default {
   size: { defaultW: 3, defaultH: 10, minW: 2, minH: 6 },
+  titlePrefix: 'SPC',
   refreshOn: ['state:saved', 'resize'],
 
   /**

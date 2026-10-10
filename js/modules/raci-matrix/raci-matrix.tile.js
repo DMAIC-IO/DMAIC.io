@@ -9,6 +9,7 @@ import { h } from '../../core/dom.js';
 
 export default {
   size: { defaultW: 3, defaultH: 10, minW: 2, minH: 6 },
+  titlePrefix: 'RACI',
   settings: {
     topN: { type: 'number', min: 1, max: 20, step: 1, default: 5, label: 'dashboard.tileSettings.topWarnings' },
     showLegend: { type: 'boolean', default: true, label: 'dashboard.tileSettings.showLegend' },

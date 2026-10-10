@@ -61,6 +61,10 @@ suite('dashboard tiles: manifest', () => {
         const name = `${src.name}#${i}`;
         assertEqual(typeof tile.render, 'function', `${name}: render`);
         if (Array.isArray(exported)) assertEqual(typeof tile.enumerate, 'function', `${name}: enumerate`);
+        if (Array.isArray(exported)) {
+          assertEqual(typeof tile.kind, 'string', `${name}: kind`);
+          assertTrue(!tile.kind.includes('~'), `${name}: kind without "~"`);
+        }
         for (const k of ['defaultW', 'defaultH', 'minW', 'minH']) {
           assertTrue(Number.isInteger(tile.size?.[k]), `${name}: size.${k}`);
         }
@@ -81,6 +85,17 @@ suite('dashboard tiles: manifest', () => {
       const src = await (await fetch(file.url)).text();
       assertTrue(!shell.test(src), `${file.name}.tile.js imports the module shell`);
     }
+  });
+
+  test('re-bindable tiles declare how to title another instance', () => {
+    assertEqual(spcTile.titlePrefix, 'SPC');
+    assertEqual(raciTile.titlePrefix, 'RACI');
+    assertEqual(vocTile.titleKey, 'dashboard.vocTitle');
+    assertDeepEqual(charterTiles.map(t => [t.kind, t.titleKey]), [
+      ['project-charter', 'dashboard.charterTitle'],
+      ['project-goals', 'dashboard.goalsTitle'],
+      ['org-chart', 'dashboard.orgChartTitle'],
+    ]);
   });
 });
 
