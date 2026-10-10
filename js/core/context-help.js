@@ -19,7 +19,7 @@
  *
  * Emittenten markieren nur:
  *
- *   <label data-help-key="modules.five-why.agent.fields.problem">Problem</label>
+ *   <label data-help-key="modules.five-why.fields.problem.help">Problem</label>
  *
  * Alles Visuelle — Icon, Knopf, Fenster, Hintergrund, aria — liegt in dieser
  * einen Datei plus dem CSS in components.css. Fehlt der i18n-Schlüssel,

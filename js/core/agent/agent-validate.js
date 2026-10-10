@@ -263,7 +263,10 @@ export function validateBatch(input, world) {
       const isWrite = WRITE_OPS.has(a.op)
         || (CONDITIONAL_WRITE_OPS.has(a.op) && a.method !== 'read');
       if (!isWrite) continue;
-      return fail(i, axiError(ERRORS.PROJECT_COMPLETED, world.t('agent.errors.projectCompleted')));
+      // Derselbe Satz wie die Lesebalken-Meldung der Oberfläche
+      // (`frame/helpers.js:28`). Zweimal zu pflegen heißt: zweimal
+      // auseinanderzulaufen.
+      return fail(i, axiError(ERRORS.PROJECT_COMPLETED, world.t('app.projectReadOnly')));
     }
   }
 

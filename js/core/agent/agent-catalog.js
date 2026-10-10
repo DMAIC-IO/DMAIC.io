@@ -234,7 +234,7 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
       // oder zu groß wäre" (AgentRead-Typedef, z. B. worksheet). Ohne dieses
       // Durchreichen erzeugt der Extraktor die Marke und niemand sieht sie.
       derived: field.derived === true,
-      help: contextHelp(i18n, moduleId, `fields.${name}`, field.help),
+      help: contextHelp(i18n, moduleId, `fields.${name}.help`, field.help),
     })),
     sections: sectionList,
     prose,
@@ -248,19 +248,29 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
  *
  * Reihenfolge: Modulschlüssel → geteilter Schlüssel → JSDoc-Prosa.
  *
- * Der geteilte Schlüssel (`agent.shared.<suffix>`) gehört zum geteilten
+ * EINE Schlüsselschablone, mit `shared` als Ersatz-Modulkennung — dieselbe
+ * Kette, die `tools/build/agent-report.mjs:helpKeys` zählt. Zwei
+ * verschiedene Schablonen wären zwei Gelegenheiten, sie unterschiedlich
+ * falsch zu schreiben.
+ *
+ * Der geteilte Schlüssel (`modules.shared.<suffix>`) gehört zum geteilten
  * `read()` aus `agent-read-mixin.js`: das Mixin zentralisiert den Code, nicht
  * den Text — ohne diesen Rückfall müsste jedes der 72 Module denselben
  * `actions.read.help` und `actions.read.params.options` in beide
  * Sprachdateien kopieren. Modulspezifische Schlüssel gewinnen weiterhin, wo
  * es sie gibt; fehlt beides, greift die JSDoc-Prosa — fehlende Kontexthilfe
  * ist erlaubt und blockiert nicht (Spec §8 Regel 1).
+ *
+ * @param {object} i18n
+ * @param {string} moduleId
+ * @param {string} suffix  z. B. `fields.problem.help`
+ * @param {string} [fallback]  der Satz aus dem JSDoc, wenn kein Schlüssel greift
  * @returns {string}
  */
 function contextHelp(i18n, moduleId, suffix, fallback) {
-  const key = `modules.${moduleId}.agent.${suffix}`;
+  const key = `modules.${moduleId}.${suffix}`;
   if (i18n.exists?.(key)) return i18n.t(key);
-  const shared = `agent.shared.${suffix}`;
+  const shared = `modules.shared.${suffix}`;
   if (i18n.exists?.(shared)) return i18n.t(shared);
   return fallback ?? '';
 }

@@ -39,26 +39,26 @@ const I18N_TABLE = {
   'agent.usage.availability': 'Module ohne Freigabe erscheinen mit available: false.',
   'agent.usage.limits': 'Du bekommst Zahlen, keine Bilder.',
   'agent.usage.viewSwitch': 'instance.call wechselt die Ansicht.',
-  'modules.worksheet.agent.actions.importCsv.help': 'Ersetzt den Inhalt des aktiven Blatts durch die übergebenen CSV-Daten.',
-  'modules.worksheet.agent.actions.importCsv.params.csv': 'Der vollständige CSV-Text, inklusive Kopfzeile, falls vorhanden.',
-  'modules.worksheet.agent.fields.rows': 'Die Datenzeilen des aktiven Blatts, in Spaltenreihenfolge.',
+  'modules.worksheet.actions.importCsv.help': 'Ersetzt den Inhalt des aktiven Blatts durch die übergebenen CSV-Daten.',
+  'modules.worksheet.actions.importCsv.params.csv': 'Der vollständige CSV-Text, inklusive Kopfzeile, falls vorhanden.',
+  'modules.worksheet.fields.rows.help': 'Die Datenzeilen des aktiven Blatts, in Spaltenreihenfolge.',
   // Die geteilten Schlüssel des `read()`-Mixins: der Code ist zentral, der
   // Text war es nicht — ohne diesen Rückfall müsste jedes Modul dieselben
   // zwei Strings in beide Sprachdateien kopieren.
-  'agent.shared.actions.read.help': 'Liefert den vollständigen Lesezustand dieser Instanz.',
-  'agent.shared.actions.read.params.options': 'Optionale Auswahl der Massenfelder und Zeilenbereiche.',
+  'modules.shared.actions.read.help': 'Liefert den vollständigen Lesezustand dieser Instanz.',
+  'modules.shared.actions.read.params.options': 'Optionale Auswahl der Massenfelder und Zeilenbereiche.',
 };
 
 const I18N = {
   getLanguage: () => 'de',
   // `exists` muss dieselbe Tabelle spiegeln wie `t` — eine Aufzählung der
-  // Schlüsselformen würde die neuen `…agent.…`-Schlüssel nie erfassen und die
+  // Schlüsselformen würde die neuen Hilfeschlüssel nie erfassen und die
   // Fälle unten lautlos nichts prüfen lassen.
   exists: (key) => key === 'modules.five-why.whenToUse'
-    || (key.startsWith('agent.shared.')
+    || (key.startsWith('modules.shared.')
       && Object.prototype.hasOwnProperty.call(I18N_TABLE, key))
     || /^modules\.(worksheet|five-why|regression|kano)\.(name|description)$/.test(key)
-    || (/^modules\.[a-z0-9-]+\.agent\./.test(key)
+    || (/^modules\.[a-z0-9-]+\./.test(key)
       && Object.prototype.hasOwnProperty.call(I18N_TABLE, key)),
   t: (key, params) => {
     if (!Object.prototype.hasOwnProperty.call(I18N_TABLE, key)) return undefined;
@@ -278,7 +278,7 @@ suite('agent catalog — module.describe', () => {
   });
 
   test('a module-specific read key still wins over the shared one', async () => {
-    const own = 'modules.worksheet.agent.actions.read.help';
+    const own = 'modules.worksheet.actions.read.help';
     const i18n = {
       ...I18N,
       exists: (key) => key === own || I18N.exists(key),
@@ -292,7 +292,7 @@ suite('agent catalog — module.describe', () => {
   test('without any key the JSDoc prose is still the last resort', async () => {
     const i18n = {
       ...I18N,
-      exists: (key) => (key.startsWith('agent.shared.') ? false : I18N.exists(key)),
+      exists: (key) => (key.startsWith('modules.shared.') ? false : I18N.exists(key)),
     };
     const out = await describeModule({ ...deps, i18n }, 'worksheet');
     assertEqual(out.actions.find(a => a.name === 'read').help, 'Liest alles');

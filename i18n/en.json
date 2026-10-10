@@ -921,54 +921,62 @@
     }
   },
   "modules": {
+    "shared": {
+      "actions": {
+        "read": {
+          "help": "Returns the full read state of this instance. Without parameters bulk data stays out and appears as a scope descriptor, so it can be requested deliberately instead of transferring thousands of rows.",
+          "params": {
+            "options": "Optional selection: \"fields\" names the bulk fields to be delivered in full; \"rows\" trims each of them to the range from \"from\" to \"to\"."
+          }
+        }
+      }
+    },
     "worksheet": {
       "name": "Data Collection",
       "description": "Spreadsheet for data entry and management",
       "whenToUse": "The shared data substrate: measurements land here before an analysing tool reads them through a column reference. Almost every analysis starts with a data collection.",
-      "agent": {
-        "actions": {
-          "read": {
-            "help": "Returns the sheet list, the active sheet and the column headers; the rows come only on request via options.fields = ['rows'].",
-            "params": { "options": "Optional: fields: ['rows'] returns the rows, rows: { from, to } trims them." }
-          },
-          "importCsv": {
-            "help": "Replaces the active sheet's content with CSV data. Delimiter and header row are detected; the step can be reverted with undo.",
-            "params": { "csvText": "The full CSV or TSV text, header row included if present." }
-          },
-          "setCells": {
-            "help": "Writes a block of values into one column, downwards from a row. Type detection, locks and undo as with cell entry. Values only: a formula such as =C1*2 is written as text, not evaluated — formulas stay with the formula editor in the UI.",
-            "params": {
-              "columnId": "The id of the target column, as read().columns[].id names it.",
-              "startRow": "Zero-based index of the first row.",
-              "values": "The values, one per row; formula text is not evaluated."
-            }
-          },
-          "addColumn": { "help": "Appends an empty column to the active sheet." },
-          "addRows": {
-            "help": "Appends empty rows to the active sheet.",
-            "params": { "count": "Number of rows; ten without an argument, like the toolbar button." }
-          },
-          "undo": { "help": "Reverts the last change to the sheet." },
-          "redo": { "help": "Restores a reverted change." },
-          "addSheet": { "help": "Creates a new sheet, makes it active and returns its id." },
-          "switchSheet": {
-            "help": "Switches to another sheet. The following read calls then refer to it.",
-            "params": { "id": "The id of the sheet, as read().sheets[].id names it." }
-          },
-          "renameSheet": {
-            "help": "Renames a sheet.",
-            "params": {
-              "id": "The id of the sheet.",
-              "name": "The new name; empty or whitespace only is an invalid argument and therefore an error."
-            }
+      "actions": {
+        "read": {
+          "help": "Returns the sheet list, the active sheet and the column headers; the rows come only on request via options.fields = ['rows'].",
+          "params": { "options": "Optional: fields: ['rows'] returns the rows, rows: { from, to } trims them." }
+        },
+        "importCsv": {
+          "help": "Replaces the active sheet's content with CSV data. Delimiter and header row are detected; the step can be reverted with undo.",
+          "params": { "csvText": "The full CSV or TSV text, header row included if present." }
+        },
+        "setCells": {
+          "help": "Writes a block of values into one column, downwards from a row. Type detection, locks and undo as with cell entry. Values only: a formula such as =C1*2 is written as text, not evaluated — formulas stay with the formula editor in the UI.",
+          "params": {
+            "columnId": "The id of the target column, as read().columns[].id names it.",
+            "startRow": "Zero-based index of the first row.",
+            "values": "The values, one per row; formula text is not evaluated."
           }
         },
-        "fields": {
-          "sheets": "All sheets of the workbook in tab order, each with id and name.",
-          "activeSheetId": "The id of the sheet that columns and rows refer to.",
-          "columns": "The column headers of the active sheet. id is the columnId of a column reference, shortName the short form used in formulas (C1, C2 …), role the detected role of the column.",
-          "rows": "The data rows of the active sheet, each row in column order. Bulk data: without options.fields = ['rows'] only the extent is returned."
+        "addColumn": { "help": "Appends an empty column to the active sheet." },
+        "addRows": {
+          "help": "Appends empty rows to the active sheet.",
+          "params": { "count": "Number of rows; ten without an argument, like the toolbar button." }
+        },
+        "undo": { "help": "Reverts the last change to the sheet." },
+        "redo": { "help": "Restores a reverted change." },
+        "addSheet": { "help": "Creates a new sheet, makes it active and returns its id." },
+        "switchSheet": {
+          "help": "Switches to another sheet. The following read calls then refer to it.",
+          "params": { "id": "The id of the sheet, as read().sheets[].id names it." }
+        },
+        "renameSheet": {
+          "help": "Renames a sheet.",
+          "params": {
+            "id": "The id of the sheet.",
+            "name": "The new name; empty or whitespace only is an invalid argument and therefore an error."
+          }
         }
+      },
+      "fields": {
+        "sheets": { "help": "All sheets of the workbook in tab order, each with id and name." },
+        "activeSheetId": { "help": "The id of the sheet that columns and rows refer to." },
+        "columns": { "help": "The column headers of the active sheet. id is the columnId of a column reference, shortName the short form used in formulas (C1, C2 …), role the detected role of the column." },
+        "rows": { "help": "The data rows of the active sheet, each row in column order. Bulk data: without options.fields = ['rows'] only the extent is returned." }
       },
       "undo": "Undo (Ctrl+Z)",
       "redo": "Redo (Ctrl+Y)",
@@ -1441,40 +1449,38 @@
       "name": "5-Why Analysis",
       "description": "Root cause analysis with branching question paths",
       "whenToUse": "When a single concrete incident is to be traced to its root and the domain knowledge is in the room — not for statistical relationships across many cases.",
-      "agent": {
-        "actions": {
-          "read": { "help": "Returns the problem statement and the question tree as read state." },
-          "setProblem": {
-            "help": "Sets the observed problem statement the question chain starts from.",
-            "params": { "text": "The problem in one sentence, descriptive rather than judgemental." }
-          },
-          "addRoot": { "help": "Adds a new level-1 Why question and returns its id." },
-          "addChild": {
-            "help": "Adds the next Why level below a question and returns its id. Returns null when the question is already at level 5 (root cause) — that is a domain refusal, not an error. A parentId that matches no question is an error.",
-            "params": { "parentId": "Id of the question the new level is added to." }
-          },
-          "setAnswer": {
-            "help": "Writes the answer to a Why question.",
-            "params": {
-              "nodeId": "Id of the question whose answer is set. An unknown id is an error.",
-              "text": "The answer — a cause, not a culprit."
-            }
-          },
-          "removeNode": {
-            "help": "Removes a question together with every question below it.",
-            "params": { "nodeId": "Id of the question to remove. An unknown id is an error." }
-          },
-          "toggleCollapse": {
-            "help": "Collapses or expands a question's subtree; purely visual, the content stays.",
-            "params": { "id": "Id of the question whose subtree is toggled. An unknown id is an error." }
-          },
-          "collapseAll": { "help": "Collapses every question that has sub-questions." },
-          "expandAll": { "help": "Expands every question." }
+      "actions": {
+        "read": { "help": "Returns the problem statement and the question tree as read state." },
+        "setProblem": {
+          "help": "Sets the observed problem statement the question chain starts from.",
+          "params": { "text": "The problem in one sentence, descriptive rather than judgemental." }
         },
-        "fields": {
-          "problem": "The observed problem statement the question chain starts from.",
-          "nodes": "The branching question tree. Each node carries id, level (1 to 5), parentId, question, answer, children and collapsed; level 5 is the root cause."
-        }
+        "addRoot": { "help": "Adds a new level-1 Why question and returns its id." },
+        "addChild": {
+          "help": "Adds the next Why level below a question and returns its id. Returns null when the question is already at level 5 (root cause) — that is a domain refusal, not an error. A parentId that matches no question is an error.",
+          "params": { "parentId": "Id of the question the new level is added to." }
+        },
+        "setAnswer": {
+          "help": "Writes the answer to a Why question.",
+          "params": {
+            "nodeId": "Id of the question whose answer is set. An unknown id is an error.",
+            "text": "The answer — a cause, not a culprit."
+          }
+        },
+        "removeNode": {
+          "help": "Removes a question together with every question below it.",
+          "params": { "nodeId": "Id of the question to remove. An unknown id is an error." }
+        },
+        "toggleCollapse": {
+          "help": "Collapses or expands a question's subtree; purely visual, the content stays.",
+          "params": { "id": "Id of the question whose subtree is toggled. An unknown id is an error." }
+        },
+        "collapseAll": { "help": "Collapses every question that has sub-questions." },
+        "expandAll": { "help": "Expands every question." }
+      },
+      "fields": {
+        "problem": { "help": "The observed problem statement the question chain starts from." },
+        "nodes": { "help": "The branching question tree. Each node carries id, level (1 to 5), parentId, question, answer, children and collapsed; level 5 is the root cause." }
       },
       "problem": "Problem Statement",
       "problemPlaceholder": "What is the observed problem?",
@@ -4045,72 +4051,70 @@
       "name": "Hypothesis Test",
       "description": "Variance and mean tests with automatic normality assessment and power analysis",
       "whenToUse": "When you need to decide whether an observed difference in location or spread goes beyond the noise — one mean against a target value, two samples against each other, or k groups together. Requires metric data in a data collection.",
-      "agent": {
-        "actions": {
-          "read": {
-            "help": "Returns the configuration and the computed result. result is null while the inputs are incomplete.",
-            "params": { "options": "Optional; this module carries no bulk data." }
-          },
-          "runAnalysis": { "help": "Computes with the current configuration. Calling it repeatedly is harmless; incomplete inputs leave result at null." },
-          "setCategory": {
-            "help": "Chooses what is being tested: spread (variance) or location (mean). The recomputation only follows on the next tick, because the column pickers are remounted — a read in the same batch still sees the old result, or null.",
-            "params": { "cat": "'variance' or 'mean'. Any other value is an error." }
-          },
-          "setTestType": {
-            "help": "Chooses the sample layout: one sample against a target value, two samples against each other, or k groups. The recomputation only follows on the next tick, because the column pickers are remounted — a read in the same batch still sees the old result, or null.",
-            "params": { "type": "'one', 'two' or 'k'. Any other value is an error." }
-          },
-          "setDirection": {
-            "help": "Chooses the direction of the alternative hypothesis. One-sided only if the question was one-sided beforehand — not afterwards because it fits better that way.",
-            "params": { "direction": "'two-sided', 'greater' or 'less'. Any other value is an error — it would be computed as 'less'." }
-          },
-          "setAlpha": {
-            "help": "Sets the significance level.",
-            "params": { "alpha": "For example 0.05. Seeded from the settings." }
-          },
-          "setPowerGoal": {
-            "help": "Sets the desired power goal for the sample-size assessment.",
-            "params": { "powerGoal": "For example 0.8." }
-          },
-          "setTargetValue": {
-            "help": "Sets the target value of the one-sample test (σ²₀, σ₀ or μ₀).",
-            "params": { "value": "The target value; for spread it must be positive." }
-          },
-          "setTargetType": {
-            "help": "Defines whether the target value of the one-sample spread test is entered as a variance or as a standard deviation.",
-            "params": { "targetType": "'variance' or 'stddev'. Any other value is an error." }
-          },
-          "setEqualVariances": {
-            "help": "Two samples, location: assume equal variances and run the pooled t-test. Off is the default — Welch does not need that assumption.",
-            "params": { "flag": "true for the pooled t-test." }
-          },
-          "setColumn1": {
-            "help": "Points sample 1 at a column of a data collection.",
-            "params": { "ref": "Column reference { instanceId, sheetId, columnId } — the values are in the data collection's read()." }
-          },
-          "setColumn2": {
-            "help": "Points sample 2 at a column of a data collection.",
-            "params": { "ref": "Column reference { instanceId, sheetId, columnId }, or null to clear it." }
-          },
-          "setColumnsK": {
-            "help": "Points the k-sample test at several columns.",
-            "params": { "refs": "List of column references; every group needs at least three values." }
-          }
+      "actions": {
+        "read": {
+          "help": "Returns the configuration and the computed result. result is null while the inputs are incomplete.",
+          "params": { "options": "Optional; this module carries no bulk data." }
         },
-        "fields": {
-          "category": "What is being tested: 'variance' (spread) or 'mean' (location).",
-          "testType": "Sample layout: 'one', 'two' or 'k'.",
-          "direction": "Direction of the alternative hypothesis: 'two-sided', 'greater' or 'less'.",
-          "alpha": "Significance level, for example 0.05.",
-          "powerGoal": "Desired power, for example 0.8.",
-          "targetValue": "The entered target value of the one-sample test.",
-          "targetType": "Whether the spread target value counts as a variance or as a standard deviation.",
-          "colRef1": "Column reference of the first sample.",
-          "colRef2": "Column reference of the second sample.",
-          "colRefsK": "The column references of the k-sample test.",
-          "equalVariances": "Whether two samples are compared with the pooled t-test instead of Welch.",
-          "result": "The computed result: route names the chosen procedure, main the test statistic with p-value and confidence interval, normCards the normality assessment per sample, power the sample-size assessment, pairwise the pairwise comparisons of the k-sample test. null while the inputs are incomplete."
+        "runAnalysis": { "help": "Computes with the current configuration. Calling it repeatedly is harmless; incomplete inputs leave result at null." },
+        "setCategory": {
+          "help": "Chooses what is being tested: spread (variance) or location (mean). The recomputation only follows on the next tick, because the column pickers are remounted — a read in the same batch still sees the old result, or null.",
+          "params": { "cat": "'variance' or 'mean'. Any other value is an error." }
+        },
+        "setTestType": {
+          "help": "Chooses the sample layout: one sample against a target value, two samples against each other, or k groups. The recomputation only follows on the next tick, because the column pickers are remounted — a read in the same batch still sees the old result, or null.",
+          "params": { "type": "'one', 'two' or 'k'. Any other value is an error." }
+        },
+        "setDirection": {
+          "help": "Chooses the direction of the alternative hypothesis. One-sided only if the question was one-sided beforehand — not afterwards because it fits better that way.",
+          "params": { "direction": "'two-sided', 'greater' or 'less'. Any other value is an error — it would be computed as 'less'." }
+        },
+        "setAlpha": {
+          "help": "Sets the significance level.",
+          "params": { "alpha": "For example 0.05. Seeded from the settings." }
+        },
+        "setPowerGoal": {
+          "help": "Sets the desired power goal for the sample-size assessment.",
+          "params": { "powerGoal": "For example 0.8." }
+        },
+        "setTargetValue": {
+          "help": "Sets the target value of the one-sample test (σ²₀, σ₀ or μ₀).",
+          "params": { "value": "The target value; for spread it must be positive." }
+        },
+        "setTargetType": {
+          "help": "Defines whether the target value of the one-sample spread test is entered as a variance or as a standard deviation.",
+          "params": { "targetType": "'variance' or 'stddev'. Any other value is an error." }
+        },
+        "setEqualVariances": {
+          "help": "Two samples, location: assume equal variances and run the pooled t-test. Off is the default — Welch does not need that assumption.",
+          "params": { "flag": "true for the pooled t-test." }
+        },
+        "setColumn1": {
+          "help": "Points sample 1 at a column of a data collection.",
+          "params": { "ref": "Column reference { instanceId, sheetId, columnId } — the values are in the data collection's read()." }
+        },
+        "setColumn2": {
+          "help": "Points sample 2 at a column of a data collection.",
+          "params": { "ref": "Column reference { instanceId, sheetId, columnId }, or null to clear it." }
+        },
+        "setColumnsK": {
+          "help": "Points the k-sample test at several columns.",
+          "params": { "refs": "List of column references; every group needs at least three values." }
         }
+      },
+      "fields": {
+        "category": { "help": "What is being tested: 'variance' (spread) or 'mean' (location)." },
+        "testType": { "help": "Sample layout: 'one', 'two' or 'k'." },
+        "direction": { "help": "Direction of the alternative hypothesis: 'two-sided', 'greater' or 'less'." },
+        "alpha": { "help": "Significance level, for example 0.05." },
+        "powerGoal": { "help": "Desired power, for example 0.8." },
+        "targetValue": { "help": "The entered target value of the one-sample test." },
+        "targetType": { "help": "Whether the spread target value counts as a variance or as a standard deviation." },
+        "colRef1": { "help": "Column reference of the first sample." },
+        "colRef2": { "help": "Column reference of the second sample." },
+        "colRefsK": { "help": "The column references of the k-sample test." },
+        "equalVariances": { "help": "Whether two samples are compared with the pooled t-test instead of Welch." },
+        "result": { "help": "The computed result: route names the chosen procedure, main the test statistic with p-value and confidence interval, normCards the normality assessment per sample, power the sample-size assessment, pairwise the pairwise comparisons of the k-sample test. null while the inputs are incomplete." }
       },
       "sectionCategory": "Test Category",
       "catMean": "Means",
@@ -6066,16 +6070,6 @@
     }
   },
   "agent": {
-    "shared": {
-      "actions": {
-        "read": {
-          "help": "Returns the full read state of this instance. Without parameters bulk data stays out and appears as a scope descriptor, so it can be requested deliberately instead of transferring thousands of rows.",
-          "params": {
-            "options": "Optional selection: \"fields\" names the bulk fields to be delivered in full; \"rows\" trims each of them to the range from \"from\" to \"to\"."
-          }
-        }
-      }
-    },
     "errors": {
       "notAnAction": "Entry {index} is not an action object.",
       "missingOp": "Entry {index} has no \"op\" field.",
@@ -6099,7 +6093,6 @@
       "unknownSection": "Module \"{module}\" has no handbook section \"{section}\".",
       "moduleNotAgentReady": "Module \"{module}\" is not released for agents.",
       "moduleSingleton": "Module \"{module}\" may exist only once per project; the instance \"{instance}\" already exists.",
-      "projectCompleted": "The project is completed and read-only. Activate it to make changes.",
       "addNotPersisted": "Module \"{module}\" was not added: the project state did not accept the write.",
       "surfaceFailed": "The agent surface failed unexpectedly: {detail}",
       "consentDenied": "The user denied access.",

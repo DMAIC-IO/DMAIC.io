@@ -1135,7 +1135,7 @@ test('collectAgentData: worksheet declares its read surface, rows are bulk', () 
    auflösen; zwei Kopien könnten auseinanderlaufen, und der Fehlerfall wäre
    der unangenehmste: der Report meldet 100 %, während dieses Tor rot ist,
    oder umgekehrt. Die Kette ist die von `agent-catalog.js:contextHelp`
-   (Modulschlüssel → `agent.shared.<suffix>`); `context-help.js` kennt
+   (Modulschlüssel → `modules.shared.<suffix>`); `context-help.js` kennt
    dagegen nur das Literal aus `data-help-key` und wird unten direkt mit
    `lookup` geprüft. Dass ein LEERER Schlüssel als nicht vorhanden gilt, ist
    in `agent-report.test.mjs` festgenagelt. */
@@ -1167,19 +1167,19 @@ test('i18n-Tor: jede Aktion, jeder Parameter und jedes Feld eines freigegebenen 
     for (const [action, def] of Object.entries(entry.actions)) {
       for (const [lang, tree] of Object.entries(trees)) {
         if (!helpExists(tree, id, `actions.${action}.help`)) {
-          missing.push(`${lang}: modules.${id}.agent.actions.${action}.help`);
+          missing.push(`${lang}: modules.${id}.actions.${action}.help`);
         }
         for (const param of def.params ?? []) {
           if (!helpExists(tree, id, `actions.${action}.params.${param.name}`)) {
-            missing.push(`${lang}: modules.${id}.agent.actions.${action}.params.${param.name}`);
+            missing.push(`${lang}: modules.${id}.actions.${action}.params.${param.name}`);
           }
         }
       }
     }
     for (const field of Object.keys(entry.fields)) {
       for (const [lang, tree] of Object.entries(trees)) {
-        if (!helpExists(tree, id, `fields.${field}`)) {
-          missing.push(`${lang}: modules.${id}.agent.fields.${field}`);
+        if (!helpExists(tree, id, `fields.${field}.help`)) {
+          missing.push(`${lang}: modules.${id}.fields.${field}.help`);
         }
       }
     }
@@ -1213,7 +1213,7 @@ test('i18n-Tor: jeder data-help-key einer freigegebenen Vorlage löst in BEIDEN 
 
 /* Controller-Entscheid zu Review-Befund 2: das Tor darf NICHT den
    modulspezifischen `actions.read.help` verlangen. Der geteilte Rückfall
-   (`agent.shared.<suffix>`) ist genau dafür da, dass nicht 72 Module
+   (`modules.shared.<suffix>`) ist genau dafür da, dass nicht 72 Module
    denselben Satz in beide Sprachbäume kopieren, und Spec §8 Regel 1
    (docs/AGENT-INTERFACE.md) sagt ausdrücklich, dass fehlende Kontexthilfe
    nicht blockiert. Geprüft wird deshalb die dokumentierte KETTE:
@@ -1235,7 +1235,7 @@ test('i18n-Tor: der read-Hilfetext jedes freigegebenen Moduls löst über die do
   for (const [id] of released) {
     for (const [lang, tree] of Object.entries(trees)) {
       if (!helpExists(tree, id, 'actions.read.help')) {
-        missing.push(`${lang}: modules.${id}.agent.actions.read.help (auch kein geteilter Rückfall)`);
+        missing.push(`${lang}: modules.${id}.actions.read.help (auch kein geteilter Rückfall)`);
       }
     }
   }
@@ -1243,15 +1243,15 @@ test('i18n-Tor: der read-Hilfetext jedes freigegebenen Moduls löst über die do
 });
 
 test('i18n-Tor: das deutsche read-Hilfetext von five-why bleibt der modulspezifische', () => {
-  // Der geteilte Rückfall (`agent.shared.actions.read.help`) ist additiv: der
+  // Der geteilte Rückfall (`modules.shared.actions.read.help`) ist additiv: der
   // Modulschlüssel gewinnt weiterhin. Dieser Fall hält fest, dass die
   // Freigabe von five-why ihren eigenen Text behält.
   const appDir = join(import.meta.dirname, '..', '..');
   const de = JSON.parse(readFileSync(join(appDir, 'i18n', 'de.json'), 'utf8'));
-  assert.equal(lookup(de, 'modules.five-why.agent.actions.read.help'),
+  assert.equal(lookup(de, 'modules.five-why.actions.read.help'),
     'Liefert Problemtext und Fragebaum als Lesezustand.');
-  assert.ok(lookup(de, 'agent.shared.actions.read.help'));
-  assert.ok(lookup(de, 'agent.shared.actions.read.params.options'));
+  assert.ok(lookup(de, 'modules.shared.actions.read.help'));
+  assert.ok(lookup(de, 'modules.shared.actions.read.params.options'));
 });
 
 /* Lücke, die bis hierher offen war: der Nutzungsvertrag (`agent-usage.js`)

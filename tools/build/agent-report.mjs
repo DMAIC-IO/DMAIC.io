@@ -45,16 +45,23 @@ export function lookup(tree, key) {
 }
 
 /**
- * Die Kandidatenschlüssel einer Kontexthilfe, in der Reihenfolge, in der
- * `agent-catalog.js:contextHelp` sie probiert: Modulschlüssel, dann der
- * geteilte Schlüssel.
+ * Die Kandidatenschlüssel eines Hilfetextes, in Auflösungsreihenfolge.
+ *
+ * EINE Schablone, mit `shared` als Ersatz-Modulkennung: der geteilte
+ * Rückfall gehört zum geteilten `read()` aus `agent-read-mixin.js`, und
+ * zwei verschiedene Schablonen wären zwei Gelegenheiten, sie
+ * unterschiedlich falsch zu schreiben.
+ *
+ * Kein `agent` im Namen: der Nutzen gilt dem Menschen, der denselben Satz
+ * als Tooltip, als Vorlesetext und im Kontextfenster bekommt. Dass ein
+ * Agent ihn ebenfalls liest, ist eine Folge, kein Zweck.
  *
  * @param {string} moduleId
- * @param {string} suffix  z. B. `actions.read.help`
+ * @param {string} suffix  z. B. `actions.read.help` oder `fields.problem.help`
  * @returns {[string, string]}
  */
 export function helpKeys(moduleId, suffix) {
-  return [`modules.${moduleId}.agent.${suffix}`, `agent.shared.${suffix}`];
+  return [`modules.${moduleId}.${suffix}`, `modules.shared.${suffix}`];
 }
 
 /**
@@ -81,7 +88,7 @@ export function helpExists(tree, moduleId, suffix) {
  * Übersetzung ist in einer zweisprachigen App keine Abdeckung.
  *
  * Aufgelöst wird über dieselbe Kette wie `agent-catalog.js:contextHelp`:
- * Modulschlüssel → geteilter Schlüssel (`agent.shared.<suffix>`). Der
+ * Modulschlüssel → geteilter Schlüssel (`modules.shared.<suffix>`). Der
  * geteilte Rückfall gehört zum geteilten `read()` aus `agent-read-mixin.js`;
  * zählte die Abdeckung ihn nicht mit, wiese sie eine Lücke aus, die es für
  * den Agenten nicht gibt — und verlangte genau die Doppelpflege in 72
@@ -139,7 +146,7 @@ export function countHelpCoverage(appDir, modules) {
 
   for (const [id, entry] of Object.entries(modules)) {
     if (entry.available !== true) continue;
-    // Kein `agent.shared`-Kandidat und kein `description`-Rückfall — siehe
+    // Kein `modules.shared`-Kandidat und kein `description`-Rückfall — siehe
     // der Absatz oben: diese Zeile ist absichtlich strenger als die Laufzeit.
     check('whenToUse', [`modules.${id}.whenToUse`]);
     for (const [name, action] of Object.entries(entry.actions ?? {})) {
@@ -149,7 +156,7 @@ export function countHelpCoverage(appDir, modules) {
       }
     }
     for (const name of Object.keys(entry.fields ?? {})) {
-      check('fields', helpKeys(id, `fields.${name}`));
+      check('fields', helpKeys(id, `fields.${name}.help`));
     }
   }
   return out;

@@ -921,54 +921,62 @@
     }
   },
   "modules": {
+    "shared": {
+      "actions": {
+        "read": {
+          "help": "Liefert den vollständigen Lesezustand dieser Instanz. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor, damit gezielt nachgefragt werden kann statt tausende Zeilen zu übertragen.",
+          "params": {
+            "options": "Optionale Auswahl: \"fields\" nennt die Massenfelder, die vollständig geliefert werden sollen; \"rows\" schneidet jedes davon auf den Bereich von \"from\" bis \"to\" zu."
+          }
+        }
+      }
+    },
     "worksheet": {
       "name": "Datensammlung",
       "description": "Tabellenblatt zur Dateneingabe und -verwaltung",
       "whenToUse": "Das gemeinsame Datensubstrat: hierhin kommen Messwerte, bevor ein auswertendes Werkzeug sie über einen Spaltenbezug liest. Fast jede Analyse beginnt mit einer Datensammlung.",
-      "agent": {
-        "actions": {
-          "read": {
-            "help": "Liefert Blattverzeichnis, aktives Blatt und Spaltenköpfe; die Zeilen kommen nur auf Nachfrage über options.fields = ['rows'].",
-            "params": { "options": "Optional: fields: ['rows'] liefert die Zeilen, rows: { from, to } schneidet sie zu." }
-          },
-          "importCsv": {
-            "help": "Ersetzt den Inhalt des aktiven Blatts durch CSV-Daten. Trennzeichen und Kopfzeile werden erkannt; der Schritt ist über Rückgängig umkehrbar.",
-            "params": { "csvText": "Der vollständige CSV- oder TSV-Text, Kopfzeile eingeschlossen, falls vorhanden." }
-          },
-          "setCells": {
-            "help": "Schreibt einen Block von Werten in eine Spalte, von einer Zeile an abwärts. Typerkennung, Sperren und Rückgängig wie bei der Zelleingabe. Nur Werte: eine Formel wie =C1*2 wird als Text geschrieben, nicht berechnet — Formeln bleiben dem Formeleditor der Oberfläche vorbehalten.",
-            "params": {
-              "columnId": "Die id der Zielspalte, wie read().columns[].id sie nennt.",
-              "startRow": "Nullbasierter Index der ersten Zeile.",
-              "values": "Die Werte, einer je Zeile; Formeltext wird nicht ausgewertet."
-            }
-          },
-          "addColumn": { "help": "Hängt dem aktiven Blatt eine leere Spalte an." },
-          "addRows": {
-            "help": "Hängt dem aktiven Blatt leere Zeilen an.",
-            "params": { "count": "Zahl der Zeilen; ohne Angabe zehn, wie der Knopf in der Werkzeugleiste." }
-          },
-          "undo": { "help": "Nimmt die letzte Änderung am Blatt zurück." },
-          "redo": { "help": "Stellt eine zurückgenommene Änderung wieder her." },
-          "addSheet": { "help": "Legt ein neues Blatt an, macht es aktiv und gibt dessen id zurück." },
-          "switchSheet": {
-            "help": "Wechselt zu einem anderen Blatt. Die folgenden Lesezugriffe beziehen sich dann darauf.",
-            "params": { "id": "Die id des Blatts, wie read().sheets[].id sie nennt." }
-          },
-          "renameSheet": {
-            "help": "Benennt ein Blatt um.",
-            "params": {
-              "id": "Die id des Blatts.",
-              "name": "Der neue Name; leer oder nur aus Leerzeichen ist ein ungültiges Argument und damit ein Fehler."
-            }
+      "actions": {
+        "read": {
+          "help": "Liefert Blattverzeichnis, aktives Blatt und Spaltenköpfe; die Zeilen kommen nur auf Nachfrage über options.fields = ['rows'].",
+          "params": { "options": "Optional: fields: ['rows'] liefert die Zeilen, rows: { from, to } schneidet sie zu." }
+        },
+        "importCsv": {
+          "help": "Ersetzt den Inhalt des aktiven Blatts durch CSV-Daten. Trennzeichen und Kopfzeile werden erkannt; der Schritt ist über Rückgängig umkehrbar.",
+          "params": { "csvText": "Der vollständige CSV- oder TSV-Text, Kopfzeile eingeschlossen, falls vorhanden." }
+        },
+        "setCells": {
+          "help": "Schreibt einen Block von Werten in eine Spalte, von einer Zeile an abwärts. Typerkennung, Sperren und Rückgängig wie bei der Zelleingabe. Nur Werte: eine Formel wie =C1*2 wird als Text geschrieben, nicht berechnet — Formeln bleiben dem Formeleditor der Oberfläche vorbehalten.",
+          "params": {
+            "columnId": "Die id der Zielspalte, wie read().columns[].id sie nennt.",
+            "startRow": "Nullbasierter Index der ersten Zeile.",
+            "values": "Die Werte, einer je Zeile; Formeltext wird nicht ausgewertet."
           }
         },
-        "fields": {
-          "sheets": "Alle Blätter der Arbeitsmappe in Reiterfolge, je mit id und Name.",
-          "activeSheetId": "Die id des Blatts, auf das sich columns und rows beziehen.",
-          "columns": "Die Spaltenköpfe des aktiven Blatts. id ist die columnId eines Spaltenbezugs, shortName die Kurzform in Formeln (C1, C2 …), role die erkannte Rolle der Spalte.",
-          "rows": "Die Datenzeilen des aktiven Blatts, jede Zeile in Spaltenreihenfolge. Massendaten: ohne options.fields = ['rows'] kommt nur der Umfang."
+        "addColumn": { "help": "Hängt dem aktiven Blatt eine leere Spalte an." },
+        "addRows": {
+          "help": "Hängt dem aktiven Blatt leere Zeilen an.",
+          "params": { "count": "Zahl der Zeilen; ohne Angabe zehn, wie der Knopf in der Werkzeugleiste." }
+        },
+        "undo": { "help": "Nimmt die letzte Änderung am Blatt zurück." },
+        "redo": { "help": "Stellt eine zurückgenommene Änderung wieder her." },
+        "addSheet": { "help": "Legt ein neues Blatt an, macht es aktiv und gibt dessen id zurück." },
+        "switchSheet": {
+          "help": "Wechselt zu einem anderen Blatt. Die folgenden Lesezugriffe beziehen sich dann darauf.",
+          "params": { "id": "Die id des Blatts, wie read().sheets[].id sie nennt." }
+        },
+        "renameSheet": {
+          "help": "Benennt ein Blatt um.",
+          "params": {
+            "id": "Die id des Blatts.",
+            "name": "Der neue Name; leer oder nur aus Leerzeichen ist ein ungültiges Argument und damit ein Fehler."
+          }
         }
+      },
+      "fields": {
+        "sheets": { "help": "Alle Blätter der Arbeitsmappe in Reiterfolge, je mit id und Name." },
+        "activeSheetId": { "help": "Die id des Blatts, auf das sich columns und rows beziehen." },
+        "columns": { "help": "Die Spaltenköpfe des aktiven Blatts. id ist die columnId eines Spaltenbezugs, shortName die Kurzform in Formeln (C1, C2 …), role die erkannte Rolle der Spalte." },
+        "rows": { "help": "Die Datenzeilen des aktiven Blatts, jede Zeile in Spaltenreihenfolge. Massendaten: ohne options.fields = ['rows'] kommt nur der Umfang." }
       },
       "undo": "Rückgängig (Ctrl+Z)",
       "redo": "Wiederholen (Ctrl+Y)",
@@ -1441,44 +1449,42 @@
       "name": "5-Why Analyse",
       "description": "Ursachenanalyse mit verzweigten Fragepfaden",
       "whenToUse": "Wenn ein konkreter Einzelvorfall bis zur Wurzel verfolgt werden soll und das Fachwissen im Raum ist — nicht für statistische Zusammenhänge über viele Fälle.",
-      "agent": {
-        "actions": {
-          "read": {
-            "help": "Liefert Problemtext und Fragebaum als Lesezustand."
-          },
-          "setProblem": {
-            "help": "Setzt den beobachteten Problemtext, von dem die Fragekette ausgeht.",
-            "params": { "text": "Der Problemtext in einem Satz, beschreibend statt bewertend." }
-          },
-          "addRoot": {
-            "help": "Legt eine neue Why-Frage der ersten Ebene an und gibt deren id zurück."
-          },
-          "addChild": {
-            "help": "Legt unter einer Frage die nächste Why-Ebene an und gibt deren id zurück. Liefert null, wenn die Frage schon auf Ebene 5 (Grundursache) liegt — das ist eine fachliche Absage, kein Fehler. Eine parentId, zu der es keine Frage gibt, ist dagegen ein Fehler.",
-            "params": { "parentId": "Die id der Frage, unter der die neue Ebene entsteht." }
-          },
-          "setAnswer": {
-            "help": "Schreibt die Antwort auf eine Why-Frage.",
-            "params": {
-              "nodeId": "Die id der Frage, deren Antwort gesetzt wird. Eine unbekannte id ist ein Fehler.",
-              "text": "Die Antwort — eine Ursache, keine Schuldzuweisung."
-            }
-          },
-          "removeNode": {
-            "help": "Entfernt eine Frage samt allen darunter liegenden Fragen.",
-            "params": { "nodeId": "Die id der zu entfernenden Frage. Eine unbekannte id ist ein Fehler." }
-          },
-          "toggleCollapse": {
-            "help": "Klappt den Teilbaum einer Frage zusammen oder auf; rein darstellend, der Inhalt bleibt.",
-            "params": { "id": "Die id der Frage, deren Teilbaum umgeschaltet wird. Eine unbekannte id ist ein Fehler." }
-          },
-          "collapseAll": { "help": "Klappt alle Fragen mit Unterfragen zusammen." },
-          "expandAll": { "help": "Klappt alle Fragen auf." }
+      "actions": {
+        "read": {
+          "help": "Liefert Problemtext und Fragebaum als Lesezustand."
         },
-        "fields": {
-          "problem": "Der beobachtete Problemtext, von dem die Fragekette ausgeht.",
-          "nodes": "Der verzweigte Fragebaum. Jeder Knoten trägt id, level (1 bis 5), parentId, question, answer, children und collapsed; level 5 ist die Grundursache."
-        }
+        "setProblem": {
+          "help": "Setzt den beobachteten Problemtext, von dem die Fragekette ausgeht.",
+          "params": { "text": "Der Problemtext in einem Satz, beschreibend statt bewertend." }
+        },
+        "addRoot": {
+          "help": "Legt eine neue Why-Frage der ersten Ebene an und gibt deren id zurück."
+        },
+        "addChild": {
+          "help": "Legt unter einer Frage die nächste Why-Ebene an und gibt deren id zurück. Liefert null, wenn die Frage schon auf Ebene 5 (Grundursache) liegt — das ist eine fachliche Absage, kein Fehler. Eine parentId, zu der es keine Frage gibt, ist dagegen ein Fehler.",
+          "params": { "parentId": "Die id der Frage, unter der die neue Ebene entsteht." }
+        },
+        "setAnswer": {
+          "help": "Schreibt die Antwort auf eine Why-Frage.",
+          "params": {
+            "nodeId": "Die id der Frage, deren Antwort gesetzt wird. Eine unbekannte id ist ein Fehler.",
+            "text": "Die Antwort — eine Ursache, keine Schuldzuweisung."
+          }
+        },
+        "removeNode": {
+          "help": "Entfernt eine Frage samt allen darunter liegenden Fragen.",
+          "params": { "nodeId": "Die id der zu entfernenden Frage. Eine unbekannte id ist ein Fehler." }
+        },
+        "toggleCollapse": {
+          "help": "Klappt den Teilbaum einer Frage zusammen oder auf; rein darstellend, der Inhalt bleibt.",
+          "params": { "id": "Die id der Frage, deren Teilbaum umgeschaltet wird. Eine unbekannte id ist ein Fehler." }
+        },
+        "collapseAll": { "help": "Klappt alle Fragen mit Unterfragen zusammen." },
+        "expandAll": { "help": "Klappt alle Fragen auf." }
+      },
+      "fields": {
+        "problem": { "help": "Der beobachtete Problemtext, von dem die Fragekette ausgeht." },
+        "nodes": { "help": "Der verzweigte Fragebaum. Jeder Knoten trägt id, level (1 bis 5), parentId, question, answer, children und collapsed; level 5 ist die Grundursache." }
       },
       "problem": "Problemstellung",
       "problemPlaceholder": "Was ist das beobachtete Problem?",
@@ -4049,72 +4055,70 @@
       "name": "Hypothesentest",
       "description": "Varianz- und Mittelwerttests mit automatischer Normalverteilungsprüfung und Power-Analyse",
       "whenToUse": "Wenn zu entscheiden ist, ob ein beobachteter Unterschied in Lage oder Streuung über das Rauschen hinausgeht — ein Mittelwert gegen einen Zielwert, zwei Stichproben gegeneinander, oder k Gruppen gemeinsam. Setzt metrische Daten in einer Datensammlung voraus.",
-      "agent": {
-        "actions": {
-          "read": {
-            "help": "Liefert die Konfiguration und das gerechnete Ergebnis. result ist null, solange die Eingaben unvollständig sind.",
-            "params": { "options": "Optional; dieses Modul führt keine Massendaten." }
-          },
-          "runAnalysis": { "help": "Rechnet mit der aktuellen Konfiguration. Mehrfachaufruf ist unschädlich; unvollständige Eingaben lassen result auf null." },
-          "setCategory": {
-            "help": "Wählt, was geprüft wird: Streuung (variance) oder Lage (mean). Die Neuberechnung folgt erst im nächsten Tick, weil die Spaltenauswahl neu eingehängt wird — ein read im selben Stapel sieht noch das alte Ergebnis beziehungsweise null.",
-            "params": { "cat": "'variance' oder 'mean'. Jeder andere Wert ist ein Fehler." }
-          },
-          "setTestType": {
-            "help": "Wählt die Stichprobenlage: eine Stichprobe gegen einen Zielwert, zwei Stichproben gegeneinander, oder k Gruppen. Die Neuberechnung folgt erst im nächsten Tick, weil die Spaltenauswahl neu eingehängt wird — ein read im selben Stapel sieht noch das alte Ergebnis beziehungsweise null.",
-            "params": { "type": "'one', 'two' oder 'k'. Jeder andere Wert ist ein Fehler." }
-          },
-          "setDirection": {
-            "help": "Wählt die Richtung der Alternativhypothese. Einseitig nur, wenn die Fragestellung vorab einseitig war — nicht nachträglich, weil es so besser passt.",
-            "params": { "direction": "'two-sided', 'greater' oder 'less'. Jeder andere Wert ist ein Fehler — er würde als 'less' gerechnet." }
-          },
-          "setAlpha": {
-            "help": "Setzt das Signifikanzniveau.",
-            "params": { "alpha": "Zum Beispiel 0.05. Vorbelegt aus den Einstellungen." }
-          },
-          "setPowerGoal": {
-            "help": "Setzt das angestrebte Power-Ziel für die Stichprobenumfangsbetrachtung.",
-            "params": { "powerGoal": "Zum Beispiel 0.8." }
-          },
-          "setTargetValue": {
-            "help": "Setzt den Zielwert der Einstichproben-Prüfung (σ²₀, σ₀ oder μ₀).",
-            "params": { "value": "Der Zielwert; bei Streuung muss er positiv sein." }
-          },
-          "setTargetType": {
-            "help": "Legt fest, ob der Zielwert der Einstichproben-Streuungsprüfung als Varianz oder als Standardabweichung eingegeben ist.",
-            "params": { "targetType": "'variance' oder 'stddev'. Jeder andere Wert ist ein Fehler." }
-          },
-          "setEqualVariances": {
-            "help": "Zwei Stichproben, Lage: gleiche Varianzen annehmen und den gepoolten t-Test rechnen. Aus ist die Vorgabe — Welch braucht diese Annahme nicht.",
-            "params": { "flag": "true für den gepoolten t-Test." }
-          },
-          "setColumn1": {
-            "help": "Verweist Stichprobe 1 auf eine Spalte einer Datensammlung.",
-            "params": { "ref": "Spaltenbezug { instanceId, sheetId, columnId } — die Werte stehen in read() der Datensammlung." }
-          },
-          "setColumn2": {
-            "help": "Verweist Stichprobe 2 auf eine Spalte einer Datensammlung.",
-            "params": { "ref": "Spaltenbezug { instanceId, sheetId, columnId }, oder null zum Leeren." }
-          },
-          "setColumnsK": {
-            "help": "Verweist die k-Stichproben-Prüfung auf mehrere Spalten.",
-            "params": { "refs": "Liste von Spaltenbezügen; jede Gruppe braucht mindestens drei Werte." }
-          }
+      "actions": {
+        "read": {
+          "help": "Liefert die Konfiguration und das gerechnete Ergebnis. result ist null, solange die Eingaben unvollständig sind.",
+          "params": { "options": "Optional; dieses Modul führt keine Massendaten." }
         },
-        "fields": {
-          "category": "Was geprüft wird: 'variance' (Streuung) oder 'mean' (Lage).",
-          "testType": "Stichprobenlage: 'one', 'two' oder 'k'.",
-          "direction": "Richtung der Alternativhypothese: 'two-sided', 'greater' oder 'less'.",
-          "alpha": "Signifikanzniveau, zum Beispiel 0.05.",
-          "powerGoal": "Angestrebte Power, zum Beispiel 0.8.",
-          "targetValue": "Der eingegebene Zielwert der Einstichproben-Prüfung.",
-          "targetType": "Ob der Streuungs-Zielwert als Varianz oder als Standardabweichung gilt.",
-          "colRef1": "Spaltenbezug der ersten Stichprobe.",
-          "colRef2": "Spaltenbezug der zweiten Stichprobe.",
-          "colRefsK": "Die Spaltenbezüge der k-Stichproben-Prüfung.",
-          "equalVariances": "Ob bei zwei Stichproben der gepoolte t-Test statt Welch gerechnet wird.",
-          "result": "Das gerechnete Ergebnis: route nennt das gewählte Verfahren, main die Prüfgröße samt p-Wert und Konfidenzintervall, normCards die Normalitätsprüfung je Stichprobe, power die Stichprobenumfangsbetrachtung, pairwise die Paarvergleiche der k-Prüfung. null, solange die Eingaben unvollständig sind."
+        "runAnalysis": { "help": "Rechnet mit der aktuellen Konfiguration. Mehrfachaufruf ist unschädlich; unvollständige Eingaben lassen result auf null." },
+        "setCategory": {
+          "help": "Wählt, was geprüft wird: Streuung (variance) oder Lage (mean). Die Neuberechnung folgt erst im nächsten Tick, weil die Spaltenauswahl neu eingehängt wird — ein read im selben Stapel sieht noch das alte Ergebnis beziehungsweise null.",
+          "params": { "cat": "'variance' oder 'mean'. Jeder andere Wert ist ein Fehler." }
+        },
+        "setTestType": {
+          "help": "Wählt die Stichprobenlage: eine Stichprobe gegen einen Zielwert, zwei Stichproben gegeneinander, oder k Gruppen. Die Neuberechnung folgt erst im nächsten Tick, weil die Spaltenauswahl neu eingehängt wird — ein read im selben Stapel sieht noch das alte Ergebnis beziehungsweise null.",
+          "params": { "type": "'one', 'two' oder 'k'. Jeder andere Wert ist ein Fehler." }
+        },
+        "setDirection": {
+          "help": "Wählt die Richtung der Alternativhypothese. Einseitig nur, wenn die Fragestellung vorab einseitig war — nicht nachträglich, weil es so besser passt.",
+          "params": { "direction": "'two-sided', 'greater' oder 'less'. Jeder andere Wert ist ein Fehler — er würde als 'less' gerechnet." }
+        },
+        "setAlpha": {
+          "help": "Setzt das Signifikanzniveau.",
+          "params": { "alpha": "Zum Beispiel 0.05. Vorbelegt aus den Einstellungen." }
+        },
+        "setPowerGoal": {
+          "help": "Setzt das angestrebte Power-Ziel für die Stichprobenumfangsbetrachtung.",
+          "params": { "powerGoal": "Zum Beispiel 0.8." }
+        },
+        "setTargetValue": {
+          "help": "Setzt den Zielwert der Einstichproben-Prüfung (σ²₀, σ₀ oder μ₀).",
+          "params": { "value": "Der Zielwert; bei Streuung muss er positiv sein." }
+        },
+        "setTargetType": {
+          "help": "Legt fest, ob der Zielwert der Einstichproben-Streuungsprüfung als Varianz oder als Standardabweichung eingegeben ist.",
+          "params": { "targetType": "'variance' oder 'stddev'. Jeder andere Wert ist ein Fehler." }
+        },
+        "setEqualVariances": {
+          "help": "Zwei Stichproben, Lage: gleiche Varianzen annehmen und den gepoolten t-Test rechnen. Aus ist die Vorgabe — Welch braucht diese Annahme nicht.",
+          "params": { "flag": "true für den gepoolten t-Test." }
+        },
+        "setColumn1": {
+          "help": "Verweist Stichprobe 1 auf eine Spalte einer Datensammlung.",
+          "params": { "ref": "Spaltenbezug { instanceId, sheetId, columnId } — die Werte stehen in read() der Datensammlung." }
+        },
+        "setColumn2": {
+          "help": "Verweist Stichprobe 2 auf eine Spalte einer Datensammlung.",
+          "params": { "ref": "Spaltenbezug { instanceId, sheetId, columnId }, oder null zum Leeren." }
+        },
+        "setColumnsK": {
+          "help": "Verweist die k-Stichproben-Prüfung auf mehrere Spalten.",
+          "params": { "refs": "Liste von Spaltenbezügen; jede Gruppe braucht mindestens drei Werte." }
         }
+      },
+      "fields": {
+        "category": { "help": "Was geprüft wird: 'variance' (Streuung) oder 'mean' (Lage)." },
+        "testType": { "help": "Stichprobenlage: 'one', 'two' oder 'k'." },
+        "direction": { "help": "Richtung der Alternativhypothese: 'two-sided', 'greater' oder 'less'." },
+        "alpha": { "help": "Signifikanzniveau, zum Beispiel 0.05." },
+        "powerGoal": { "help": "Angestrebte Power, zum Beispiel 0.8." },
+        "targetValue": { "help": "Der eingegebene Zielwert der Einstichproben-Prüfung." },
+        "targetType": { "help": "Ob der Streuungs-Zielwert als Varianz oder als Standardabweichung gilt." },
+        "colRef1": { "help": "Spaltenbezug der ersten Stichprobe." },
+        "colRef2": { "help": "Spaltenbezug der zweiten Stichprobe." },
+        "colRefsK": { "help": "Die Spaltenbezüge der k-Stichproben-Prüfung." },
+        "equalVariances": { "help": "Ob bei zwei Stichproben der gepoolte t-Test statt Welch gerechnet wird." },
+        "result": { "help": "Das gerechnete Ergebnis: route nennt das gewählte Verfahren, main die Prüfgröße samt p-Wert und Konfidenzintervall, normCards die Normalitätsprüfung je Stichprobe, power die Stichprobenumfangsbetrachtung, pairwise die Paarvergleiche der k-Prüfung. null, solange die Eingaben unvollständig sind." }
       },
       "sectionCategory": "Testkategorie",
       "catMean": "Mittelwerte",
@@ -6070,16 +6074,6 @@
     }
   },
   "agent": {
-    "shared": {
-      "actions": {
-        "read": {
-          "help": "Liefert den vollständigen Lesezustand dieser Instanz. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor, damit gezielt nachgefragt werden kann statt tausende Zeilen zu übertragen.",
-          "params": {
-            "options": "Optionale Auswahl: \"fields\" nennt die Massenfelder, die vollständig geliefert werden sollen; \"rows\" schneidet jedes davon auf den Bereich von \"from\" bis \"to\" zu."
-          }
-        }
-      }
-    },
     "errors": {
       "notAnAction": "Eintrag {index} ist kein Aktionsobjekt.",
       "missingOp": "Eintrag {index} hat kein Feld \"op\".",
@@ -6103,7 +6097,6 @@
       "unknownSection": "Modul \"{module}\" hat keinen Handbuchabschnitt \"{section}\".",
       "moduleNotAgentReady": "Modul \"{module}\" ist nicht für Agenten freigegeben.",
       "moduleSingleton": "Modul \"{module}\" darf nur einmal im Projekt vorkommen; die Instanz \"{instance}\" existiert bereits.",
-      "projectCompleted": "Das Projekt ist abgeschlossen und schreibgeschützt. Aktivieren Sie es, um es zu ändern.",
       "addNotPersisted": "Modul \"{module}\" wurde nicht angelegt: der Projektzustand hat den Schreibzugriff nicht übernommen.",
       "surfaceFailed": "Die Agentenfläche ist unerwartet fehlgeschlagen: {detail}",
       "consentDenied": "Der Nutzer hat den Zugriff abgelehnt.",

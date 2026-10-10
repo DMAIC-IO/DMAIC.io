@@ -91,7 +91,10 @@ export function createOps(deps) {
       // `module.add` Erfolg und lieferte eine Phantom-Instanz-Id
       // (Review-Befund I2).
       if (host.isCompleted()) {
-        return axiError(ERRORS.PROJECT_COMPLETED, t('agent.errors.projectCompleted'));
+        // Derselbe Satz wie die Lesebalken-Meldung der Oberfläche
+        // (`frame/helpers.js:28`). Zweimal zu pflegen heißt: zweimal
+        // auseinanderzulaufen.
+        return axiError(ERRORS.PROJECT_COMPLETED, t('app.projectReadOnly'));
       }
 
       const added = await host.addInstance(action.module, action.phase);
@@ -111,7 +114,10 @@ export function createOps(deps) {
       // Id in `available` zu melden war in sich widersprüchlich
       // (Review-Befunde I2 / I3c).
       if (host.isCompleted()) {
-        return axiError(ERRORS.PROJECT_COMPLETED, t('agent.errors.projectCompleted'));
+        // Derselbe Satz wie die Lesebalken-Meldung der Oberfläche
+        // (`frame/helpers.js:28`). Zweimal zu pflegen heißt: zweimal
+        // auseinanderzulaufen.
+        return axiError(ERRORS.PROJECT_COMPLETED, t('app.projectReadOnly'));
       }
       const removed = await host.removeInstance(action.instance);
       if (!removed) {

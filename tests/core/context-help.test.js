@@ -11,7 +11,7 @@ import {
 } from '../../js/core/context-help.js';
 
 const HELP = {
-  'modules.five-why.agent.fields.problem': 'Die beobachtete Abweichung, von der die Fragekette ausgeht.',
+  'modules.five-why.fields.problem.help': 'Die beobachtete Abweichung, von der die Fragekette ausgeht.',
 };
 
 const i18nStub = {
@@ -34,7 +34,7 @@ suite('context help', () => {
 
   test('augments an anchor whose help key exists', () => {
     const label = document.createElement('label');
-    label.setAttribute('data-help-key', 'modules.five-why.agent.fields.problem');
+    label.setAttribute('data-help-key', 'modules.five-why.fields.problem.help');
     label.textContent = 'Problem';
     host.appendChild(label);
 
@@ -42,13 +42,13 @@ suite('context help', () => {
 
     const btn = label.querySelector('.context-help__btn');
     assertTrue(Boolean(btn));
-    assertEqual(btn.getAttribute('data-help-key'), 'modules.five-why.agent.fields.problem');
+    assertEqual(btn.getAttribute('data-help-key'), 'modules.five-why.fields.problem.help');
     assertTrue(label.classList.contains('context-help-anchor'));
   });
 
   test('does NOT augment an anchor whose help key is missing — a gap stays visible', () => {
     const label = document.createElement('label');
-    label.setAttribute('data-help-key', 'modules.five-why.agent.fields.nope');
+    label.setAttribute('data-help-key', 'modules.five-why.fields.nope.help');
     host.appendChild(label);
 
     augmentContextHelp(host);
@@ -62,7 +62,7 @@ suite('context help', () => {
     // Griff des Ankers in der Bubble-Phase VORHER — ein Klick aufs
     // Fragezeichen hätte dessen Aktion ausgelöst.
     const anchor = document.createElement('button');
-    anchor.setAttribute('data-help-key', 'modules.five-why.agent.fields.problem');
+    anchor.setAttribute('data-help-key', 'modules.five-why.fields.problem.help');
     anchor.textContent = 'Why hinzufügen';
     let anchorClicks = 0;
     anchor.addEventListener('click', () => { anchorClicks += 1; });
@@ -77,7 +77,7 @@ suite('context help', () => {
 
   test('the badge is not a nested <button> — the anchor itself may be one', () => {
     const anchor = document.createElement('button');
-    anchor.setAttribute('data-help-key', 'modules.five-why.agent.fields.problem');
+    anchor.setAttribute('data-help-key', 'modules.five-why.fields.problem.help');
     host.appendChild(anchor);
 
     augmentContextHelp(host);
@@ -89,7 +89,7 @@ suite('context help', () => {
 
   test('augmenting twice leaves exactly one button', () => {
     const label = document.createElement('label');
-    label.setAttribute('data-help-key', 'modules.five-why.agent.fields.problem');
+    label.setAttribute('data-help-key', 'modules.five-why.fields.problem.help');
     host.appendChild(label);
 
     augmentContextHelp(host);
@@ -100,7 +100,7 @@ suite('context help', () => {
 
   test('a textContent rewrite wipes the button — the next sweep brings it back', () => {
     const label = document.createElement('label');
-    label.setAttribute('data-help-key', 'modules.five-why.agent.fields.problem');
+    label.setAttribute('data-help-key', 'modules.five-why.fields.problem.help');
     host.appendChild(label);
     augmentContextHelp(host);
     assertEqual(label.querySelectorAll('.context-help__btn').length, 1);
@@ -116,7 +116,7 @@ suite('context help', () => {
 
   test('the aria-label follows a label text that only arrives after the first sweep', () => {
     const label = document.createElement('label');
-    label.setAttribute('data-help-key', 'modules.five-why.agent.fields.problem');
+    label.setAttribute('data-help-key', 'modules.five-why.fields.problem.help');
     host.appendChild(label);
 
     augmentContextHelp(host);
@@ -135,7 +135,7 @@ suite('context help', () => {
 
   test('opening shows the help text and a backdrop; closing removes both', () => {
     const label = document.createElement('label');
-    label.setAttribute('data-help-key', 'modules.five-why.agent.fields.problem');
+    label.setAttribute('data-help-key', 'modules.five-why.fields.problem.help');
     label.textContent = 'Problem';
     host.appendChild(label);
     augmentContextHelp(host);
@@ -155,7 +155,7 @@ suite('context help', () => {
   test('only one panel is open at a time', () => {
     for (const name of ['a', 'b']) {
       const label = document.createElement('label');
-      label.setAttribute('data-help-key', 'modules.five-why.agent.fields.problem');
+      label.setAttribute('data-help-key', 'modules.five-why.fields.problem.help');
       label.textContent = name;
       host.appendChild(label);
     }

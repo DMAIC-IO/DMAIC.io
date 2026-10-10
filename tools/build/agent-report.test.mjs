@@ -28,10 +28,8 @@ test('countHelpCoverage counts only released modules', () => {
     modules: {
       foo: {
         whenToUse: 'wann',
-        agent: {
-          actions: { read: { help: 'r' }, setProblem: { help: 's', params: { text: 't' } } },
-          fields: { problem: 'p' },
-        },
+        actions: { read: { help: 'r' }, setProblem: { help: 's', params: { text: 't' } } },
+        fields: { problem: { help: 'p' } },
       },
       // `bar` ist nicht freigegeben und hat KEINEN einzigen Schlüssel — es
       // darf die Zahl weder heben noch senken.
@@ -47,12 +45,12 @@ test('countHelpCoverage counts only released modules', () => {
 
 test('countHelpCoverage names every gap, per language', () => {
   const root = i18nFixture(
-    { modules: { foo: { agent: { actions: { read: { help: 'r' } } } } } },   // de
-    { modules: { foo: { agent: { actions: { read: { help: 'r' } } } } } },   // en
+    { modules: { foo: { actions: { read: { help: 'r' } } } } },   // de
+    { modules: { foo: { actions: { read: { help: 'r' } } } } },   // en
   );
   const out = countHelpCoverage(root, MODULES);
   assert.equal(out.actions.covered, 1);
-  assert.ok(out.missing.some(m => m.includes('foo.agent.actions.setProblem.help')));
+  assert.ok(out.missing.some(m => m.includes('modules.foo.actions.setProblem.help')));
   assert.ok(out.missing.some(m => m.includes('foo.whenToUse')));
   // Eine Lücke in BEIDEN Sprachen wird zweimal genannt, je Sprache einmal.
   assert.deepEqual(
@@ -63,8 +61,8 @@ test('countHelpCoverage names every gap, per language', () => {
 
 test('countHelpCoverage treats a key present in only ONE language as missing', () => {
   const root = i18nFixture(
-    { modules: { foo: { whenToUse: 'wann', agent: { actions: { read: { help: 'r' } } } } } },
-    { modules: { foo: { agent: { actions: { read: { help: 'r' } } } } } },
+    { modules: { foo: { whenToUse: 'wann', actions: { read: { help: 'r' } } } } },
+    { modules: { foo: { actions: { read: { help: 'r' } } } } },
   );
   const out = countHelpCoverage(root, MODULES);
   assert.equal(out.whenToUse.covered, 0);
@@ -77,19 +75,21 @@ test('countHelpCoverage treats a key present in only ONE language as missing', (
 
 /* ── Der geteilte Rückfall ─────────────────────────────────────────────────
    `agent-catalog.js:contextHelp` löst in genau dieser Reihenfolge auf:
-   Modulschlüssel → `agent.shared.<suffix>` → JSDoc-Prosa. Der geteilte
+   Modulschlüssel → `modules.shared.<suffix>` → JSDoc-Prosa. Der geteilte
    Schlüssel gehört zum geteilten `read()` aus `agent-read-mixin.js` — ohne
    ihn müsste jedes der 72 Module denselben Satz in beide Sprachbäume
    kopieren. Zählte die Abdeckung ihn nicht mit, wiese sie eine Lücke aus,
    die es für den Agenten gar nicht gibt, und träte damit genau zu der
    Doppelpflege an, die der Rückfall vermeidet. */
-test('countHelpCoverage honours the shared fallback agent.shared.<suffix>', () => {
+test('countHelpCoverage honours the shared fallback modules.shared.<suffix>', () => {
   const modules = {
     foo: { available: true, actions: { read: { params: [{ name: 'options' }] } }, fields: {} },
   };
   const tree = {
-    modules: { foo: { whenToUse: 'wann' } },
-    agent: { shared: { actions: { read: { help: 'r', params: { options: 'o' } } } } },
+    modules: {
+      foo: { whenToUse: 'wann' },
+      shared: { actions: { read: { help: 'r', params: { options: 'o' } } } },
+    },
   };
   const out = countHelpCoverage(i18nFixture(tree), modules);
   assert.deepEqual(out.actions, { total: 1, covered: 1 });
@@ -99,10 +99,10 @@ test('countHelpCoverage honours the shared fallback agent.shared.<suffix>', () =
 
 test('countHelpCoverage does NOT apply a shared fallback to whenToUse', () => {
   // `whenToUse` ist modulspezifische Prosa („wann nehme ich dieses Werkzeug")
-  // und hat per Form keinen `agent.`-Pfad — ein geteilter Satz wäre dort
+  // und hat per Form keinen geteilten Pfad — ein geteilter Satz wäre dort
   // sinnlos und würde eine echte Lücke verdecken.
   const modules = { foo: { available: true, actions: {}, fields: {} } };
-  const tree = { agent: { shared: { whenToUse: 'egal' } } };
+  const tree = { modules: { shared: { whenToUse: 'egal' } } };
   const out = countHelpCoverage(i18nFixture(tree), modules);
   assert.deepEqual(out.whenToUse, { total: 1, covered: 0 });
 });
@@ -113,7 +113,7 @@ test('countHelpCoverage does NOT apply a shared fallback to whenToUse', () => {
    leeren Hilfetext statt der JSDoc-Prosa. Er zählt deshalb als Lücke. */
 test('countHelpCoverage counts an empty string as a gap, not as coverage', () => {
   const modules = { foo: { available: true, actions: { read: { params: [] } }, fields: {} } };
-  const tree = { modules: { foo: { whenToUse: '   ', agent: { actions: { read: { help: '' } } } } } };
+  const tree = { modules: { foo: { whenToUse: '   ', actions: { read: { help: '' } } } } };
   const out = countHelpCoverage(i18nFixture(tree), modules);
   assert.deepEqual(out.actions, { total: 1, covered: 0 });
   assert.deepEqual(out.whenToUse, { total: 1, covered: 0 });
@@ -123,7 +123,7 @@ test('countHelpCoverage counts an empty string as a gap, not as coverage', () =>
 /* ── Robustheit der Auflösung ───────────────────────────────────────────────
    Beides kommt im echten Baum vor, solange 69 Module nicht freigegeben sind:
    ein `modules.<id>`-Teilbaum, der gar nicht existiert, und ein Zwischenglied,
-   das ein String ist (ein Modul, dessen `agent` versehentlich ein Satz wäre).
+   das ein String ist (ein Modul, dessen Eintrag versehentlich ein Satz wäre).
    Ein naives `o[k]` auf einem String liefert `undefined` statt zu werfen —
    aber `o['length']` wäre eine Zahl, und ein Schlüsselsegment ist nicht
    garantiert kein Eigenschaftsname von String.prototype. */
@@ -131,7 +131,7 @@ test('countHelpCoverage survives an absent subtree and a string intermediate seg
   const modules = {
     foo: { available: true, actions: { read: { params: [] } }, fields: { length: {} } },
   };
-  const tree = { modules: { foo: { agent: 'kein Objekt' } } };
+  const tree = { modules: { foo: 'kein Objekt' } };
   let out;
   assert.doesNotThrow(() => { out = countHelpCoverage(i18nFixture(tree), modules); });
   assert.deepEqual(out.actions, { total: 1, covered: 0 });
@@ -156,7 +156,7 @@ test('countHelpCoverage resolves the real tree through the documented chain', as
   assert.ok(modules['five-why']?.actions?.read?.params?.some(p => p.name === 'options'),
     'five-why.read hat den Parameter options nicht mehr — dieser Fall prüft nichts');
   assert.deepEqual(
-    out.missing.filter(m => m.includes('five-why.agent.actions.read.params.options')),
+    out.missing.filter(m => m.includes('five-why.actions.read.params.options')),
     [],
   );
 });
@@ -184,23 +184,37 @@ test('lookup: bricht an einem Nicht-Objekt ab, statt String-Eigenschaften zu fin
   assert.equal(lookup({ a: { b: 5 } }, 'a.b'), undefined, 'eine Zahl ist kein Hilfetext');
 });
 
-test('helpKeys / helpExists: Modulschlüssel zuerst, geteilter Schlüssel als Rückfall', () => {
+test('helpKeys / helpExists: Modulschlüssel zuerst, modules.shared als Rückfall', () => {
+  // EINE Schablone mit `shared` als Ersatz-Modulkennung, nicht zwei
+  // verschiedene. Kein Hilfetext trägt `agent` im Schlüsselnamen: der
+  // Nutzen gilt dem Menschen, dass ein Agent denselben Satz liest, ist eine
+  // Folge.
   assert.deepEqual(helpKeys('foo', 'actions.read.help'),
-    ['modules.foo.agent.actions.read.help', 'agent.shared.actions.read.help']);
+    ['modules.foo.actions.read.help', 'modules.shared.actions.read.help']);
 
-  const own = { modules: { foo: { agent: { actions: { read: { help: 'eigen' } } } } } };
-  const shared = { agent: { shared: { actions: { read: { help: 'geteilt' } } } } };
+  const own = { modules: { foo: { actions: { read: { help: 'eigen' } } } } };
+  const shared = { modules: { shared: { actions: { read: { help: 'geteilt' } } } } };
   assert.equal(helpExists(own, 'foo', 'actions.read.help'), true);
   assert.equal(helpExists(shared, 'foo', 'actions.read.help'), true);
   assert.equal(helpExists({}, 'foo', 'actions.read.help'), false);
   // Und der leere Modulschlüssel verdeckt den geteilten NICHT.
   const emptyOwn = {
-    modules: { foo: { agent: { actions: { read: { help: '' } } } } },
-    agent: { shared: { actions: { read: { help: 'geteilt' } } } },
+    modules: {
+      foo: { actions: { read: { help: '' } } },
+      shared: { actions: { read: { help: 'geteilt' } } },
+    },
   };
   assert.equal(helpExists(emptyOwn, 'foo', 'actions.read.help'), true);
-  assert.equal(helpExists({ modules: { foo: { agent: { actions: { read: { help: '' } } } } } },
+  assert.equal(helpExists({ modules: { foo: { actions: { read: { help: '' } } } } },
     'foo', 'actions.read.help'), false);
+});
+
+test('ein Feldschlüssel ist ein Objekt mit help, nicht eine Zeichenkette', () => {
+  // `lookup` gilt ein Nicht-String als nicht vorhanden. Ohne das `.help`-
+  // Suffix fiele die Feldabdeckung von 18/18 auf 0/18 — und zwar lautlos.
+  const tree = { modules: { foo: { fields: { problem: { help: 'der Satz' } } } } };
+  assert.equal(lookup(tree, 'modules.foo.fields.problem.help'), 'der Satz');
+  assert.equal(lookup(tree, 'modules.foo.fields.problem'), undefined);
 });
 
 test('countHelpCoverage: eine Lücke nennt BEIDE Kandidatenorte', () => {
@@ -210,10 +224,10 @@ test('countHelpCoverage: eine Lücke nennt BEIDE Kandidatenorte', () => {
   const out = countHelpCoverage(i18nFixture({ modules: { foo: { whenToUse: 'wann' } } }), modules);
   // Ein Autor, der nur den Modulschlüssel sähe, legte den Satz 72-mal an,
   // statt den geteilten zu füllen.
-  assert.ok(out.missing.every(m => m.includes('agent.shared.')),
+  assert.ok(out.missing.every(m => m.includes('modules.shared.')),
     `Lückenzeilen nennen den geteilten Ort nicht: ${out.missing.join(' | ')}`);
-  assert.ok(out.missing.some(m => m.includes('modules.foo.agent.actions.read.help')
-    && m.includes('agent.shared.actions.read.help')));
+  assert.ok(out.missing.some(m => m.includes('modules.foo.actions.read.help')
+    && m.includes('modules.shared.actions.read.help')));
   // `whenToUse` hat keinen zweiten Kandidaten und bleibt einteilig.
   const plain = countHelpCoverage(i18nFixture({ modules: { foo: {} } }), {
     foo: { available: true, actions: {}, fields: {} },
@@ -230,5 +244,5 @@ test('countHelpCoverage: missingKeys zählt Schlüssel, missing zählt Sprachfä
   ), modules);
   assert.equal(out.missing.length, 3, 'zwei Sprachfälle für read.help, einer für whenToUse');
   assert.deepEqual(out.missingKeys.sort(),
-    ['modules.foo.agent.actions.read.help', 'modules.foo.whenToUse']);
+    ['modules.foo.actions.read.help', 'modules.foo.whenToUse']);
 });
