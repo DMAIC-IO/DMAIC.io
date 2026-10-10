@@ -4,7 +4,7 @@
 
 import { suite, test, assertAlmostEqual, assertEqual, assertTrue } from '../test-utils.js';
 import {
-  validateJob, executeJob, runJobSync, ResamplingError, STATISTICS,
+  validateJob, executeJob, runJobSync, ResamplingError, STATISTICS, summarizeBins,
 } from '../../js/engines/resampling-engine.js';
 import { mulberry32 } from '../../js/engines/random-variates-engine.js';
 
@@ -165,5 +165,37 @@ suite('resampling-engine — bootstrap jobs', () => {
     assertEqual(r.ci.bcaFallback, true);
     assertTrue(r.ci.percentile !== null);
     assertEqual(r.ci.bca.join(','), r.ci.percentile.join(','));
+  });
+});
+
+suite('resampling-engine — summarizeBins', () => {
+  test('equal-width bins, counts add up, last bin closed at the max', () => {
+    const v = Float64Array.from([0, 1, 2, 3, 4, 5, 6, 7, 8, 10]);
+    const bins = summarizeBins(v, 5);
+    assertEqual(bins.length, 5);
+    assertEqual(bins[0].x0, 0);
+    assertEqual(bins[4].x1, 10);
+    assertEqual(bins.map((b) => b.count).join(','), '2,2,2,2,2');
+    assertAlmostEqual(bins[1].x0, 2, 1e-12);
+  });
+  test('non-finite values are skipped', () => {
+    const bins = summarizeBins([1, NaN, 2, Infinity, -Infinity, 3], 2);
+    assertEqual(bins.reduce((s, b) => s + b.count, 0), 3);
+  });
+  test('default 30 bins', () => {
+    assertEqual(summarizeBins(Array.from({ length: 100 }, (_, i) => i)).length, 30);
+  });
+  test('empty and constant input', () => {
+    assertEqual(summarizeBins([]).length, 0);
+    assertEqual(summarizeBins([NaN, Infinity]).length, 0);
+    const c = summarizeBins([4, 4, 4]);
+    assertEqual(c.length, 1);
+    assertEqual(c[0].x0, 3.5);
+    assertEqual(c[0].x1, 4.5);
+    assertEqual(c[0].count, 3);
+  });
+  test('invalid binCount → invalid-options', () => {
+    assertCode(() => summarizeBins([1, 2], 0), 'invalid-options');
+    assertCode(() => summarizeBins([1, 2], 2.5), 'invalid-options');
   });
 });

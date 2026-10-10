@@ -179,6 +179,41 @@ export function summarizeBootstrap(estimate, replicates, influence, confidence) 
   };
 }
 
+/**
+ * Equal-width histogram bins of the finite values — the persisted, compact
+ * form of a replicate or permutation distribution.
+ * @param {ArrayLike<number>} values
+ * @param {number} [binCount=30]
+ * @returns {Array<{x0: number, x1: number, count: number}>}
+ */
+export function summarizeBins(values, binCount = 30) {
+  if (!Number.isInteger(binCount) || binCount < 1) fail('invalid-options', 'binCount must be a positive integer');
+  let lo = Infinity;
+  let hi = -Infinity;
+  let n = 0;
+  for (let i = 0; i < values.length; i++) {
+    const x = values[i];
+    if (!Number.isFinite(x)) continue;
+    n++;
+    if (x < lo) lo = x;
+    if (x > hi) hi = x;
+  }
+  if (n === 0) return [];
+  if (lo === hi) return [{ x0: lo - 0.5, x1: hi + 0.5, count: n }];
+  const w = (hi - lo) / binCount;
+  const bins = Array.from({ length: binCount }, (_, i) => ({
+    x0: lo + i * w,
+    x1: i === binCount - 1 ? hi : lo + (i + 1) * w,
+    count: 0,
+  }));
+  for (let i = 0; i < values.length; i++) {
+    const x = values[i];
+    if (!Number.isFinite(x)) continue;
+    bins[Math.min(binCount - 1, Math.floor((x - lo) / w))].count++;
+  }
+  return bins;
+}
+
 function* bootstrapSummary(samples, combine, v, rng, p) {
   const estimate = combine(samples);
   const replicates = yield* bootstrapReplicates(samples, combine, v.B, rng, p);
