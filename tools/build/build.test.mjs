@@ -187,7 +187,7 @@ function mirrorDir(srcDir, dstDir, rel) {
 function makeShadowAppDir() {
   const dir = mkdtempSync(join(tmpdir(), 'dmike-build-'));
   for (const name of readdirSync(APP_DIR)) {
-    if (name === 'index.html' || name === 'THIRD-PARTY-LICENSES.txt') continue;
+    if (name === 'index.html' || name === 'sw.js' || name === 'THIRD-PARTY-LICENSES.txt') continue;
     if (name === 'js' || name === 'css') {
       mirrorDir(join(APP_DIR, name), join(dir, name), name);
       continue;
@@ -562,4 +562,23 @@ test('entry static closure: modules split off, no heavy dependency', async () =>
   assert.ok(has('js/app.js'), 'closure contains the entry source');
   assert.equal(has('js/modules/sipoc/sipoc.js'), false, 'modules are split off');
   for (const frag of HEAVY_INPUTS) assert.equal(has(frag), false, `${frag} in entry closure`);
+});
+
+test('runBuild writes sw.js, also in check mode, and never reports it', async () => {
+  await withShadowAppDir(async (dir) => {
+    const { changed } = await runBuild(dir, { check: true });
+    assert.ok(existsSync(join(dir, 'sw.js')), 'check mode writes sw.js');
+    assert.ok(!changed.some((p) => p.endsWith('sw.js')), 'sw.js not reported stale');
+    const code = readFileSync(join(dir, 'sw.js'), 'utf8');
+    const html = readFileSync(join(dir, 'index.html'), 'utf8');
+    const entry = html.match(/js\/app\.min\.js\?v=[0-9a-f]{8}/)[0];
+    assert.ok(code.includes(entry), 'precache lists the entry index.html references');
+    const i18n = html.match(/name="i18n-version" content="([0-9a-f]{8})"/)[1];
+    assert.ok(code.includes(`i18n/de.json?v=${i18n}`), 'precache lists i18n with the version i18n.js appends');
+  });
+});
+
+test('isWatchedSource rebuilds on worker sources, never on sw.js itself', () => {
+  assert.equal(isWatchedSource(join('js', 'sw', 'strategy.js')), true);
+  assert.equal(isWatchedSource('sw.js'), false);
 });

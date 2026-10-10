@@ -21,6 +21,7 @@ import { collectHelpIds, renderHelpRegistryModule } from './help-data.mjs';
 import { collectReferenceIds, renderReferencesRegistryModule } from './references-data.mjs';
 import { collectGlossaryData, renderGlossaryDataModule } from './glossary-data.mjs';
 import { collectLicenseData, renderLicenseDataModule, renderLicenseText } from '../license-report/license-report.mjs';
+import { collectPrecache, precacheVersion, bundleServiceWorker } from './service-worker.mjs';
 
 export const APP_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -243,6 +244,24 @@ function emit(path, text, check, changed) {
 }
 
 /**
+ * Write `text` through a process-unique temp file in the same directory plus
+ * rename, so a concurrent reader (a test run, the watcher's twin) sees the
+ * old or the new file, never half of one. A failed write leaves no temp file.
+ * @param {string} path
+ * @param {string} text
+ */
+export function writeFileAtomicSync(path, text) {
+  const tmpPath = `${path}.${process.pid}.tmp`;
+  try {
+    writeFileSync(tmpPath, text);
+    renameSync(tmpPath, path);
+  } catch (err) {
+    try { unlinkSync(tmpPath); } catch { /* never written or already gone */ }
+    throw err;
+  }
+}
+
+/**
  * Full build orchestrator.
  *
  * Steps:
@@ -252,6 +271,7 @@ function emit(path, text, check, changed) {
  *   2. JS bundle (esbuild, split: entry + js/chunks/)
  *   3. CSS bundle (esbuild)
  *   4. index.html rewrite with content-hashed <script>/<link> and the chunk manifest
+ *   5. sw.js (service worker with the precache list)
  *
  * In check mode (check:true): regenerates the git-ignored index.html, and compares
  * the build artifacts (app.min.js, js/chunks/*.min.js, app.min.css, generated modules)
@@ -340,21 +360,23 @@ export async function runBuild(appDir = APP_DIR, { check = false } = {}) {
   // oder die neue Shell, nie eine halb geschriebene. Der Temp-Name ist
   // prozess-eindeutig (Watcher und manueller Build laufen sonst auf dieselbe
   // Datei) und liegt im selben Verzeichnis — nur dann ist renameSync atomar.
-  const tmpPath = `${indexPath}.${process.pid}.tmp`;
-  try {
-    writeFileSync(tmpPath, html);
-    renameSync(tmpPath, indexPath);
-  } catch (err) {
-    // Scheitert das Schreiben oder das Umbenennen, darf kein Torso liegen bleiben.
-    try { unlinkSync(tmpPath); } catch { /* nie geschrieben oder schon weg */ }
-    throw err;
-  }
+  writeFileAtomicSync(indexPath, html);
+
+  // 5. Service worker — git-ignored like index.html: written on every run,
+  //    also in check mode, never added to changed[].
+  const precache = collectPrecache(appDir, { jsHref, cssHref, cssCode, chunks, i18nHash });
+  const swCode = await bundleServiceWorker(appDir, {
+    version: precacheVersion(appDir, precache, { html }),
+    precache,
+  });
+  assertEvalFree(swCode);
+  writeFileAtomicSync(join(appDir, 'sw.js'), swCode);
 
   return { changed };
 }
 
 /** Outputs of runBuild — changes to them must never retrigger the watcher. */
-const WATCH_OUTPUTS = new Set(['index.html', 'package.json', 'package-lock.json', 'THIRD-PARTY-LICENSES.txt', join('css', 'app.min.css'), join('css', '_bundle_entry.css')]);
+const WATCH_OUTPUTS = new Set(['index.html', 'sw.js','package.json', 'package-lock.json', 'THIRD-PARTY-LICENSES.txt', join('css', 'app.min.css'), join('css', '_bundle_entry.css')]);
 const WATCH_SKIP_DIRS = ['node_modules', '.git', 'tests', 'tools', 'docs', 'vendor'];
 /** Subtree of a skipped directory that runBuild still reads: the lab fixtures. */
 const WATCH_FIXTURE_DIR = join('tests', 'fixtures');
@@ -393,6 +415,8 @@ export function isWatchedSource(relPath) {
   const parts = relPath.split(/[\\/]/);
   if (parts.some((p) => WATCH_SKIP_DIRS.includes(p) || p.startsWith('.'))) return false;
   if (/\.(generated|min)\./.test(relPath) || relPath.endsWith('.tmp')) return false;
+  // The worker sources are a separate bundle the watch context does not follow.
+  if (parts[0] === 'js' && parts[1] === 'sw' && relPath.endsWith('.js')) return true;
   return /\.(html|css|json)$/.test(relPath);
 }
 
