@@ -91,6 +91,21 @@ export default {
             term: 'Ppk mit Konfidenzintervall',
             content: 'Für {{term:ppk|Ppk}} ist das Bootstrap-Intervall der übliche Weg zu einer Unsicherheitsangabe ohne Normalverteilungsformel. Es braucht mindestens 10 Werte je Stichprobe und mindestens eine Toleranzgrenze.',
           },
+          {
+            type: 'definition',
+            term: 'Warum kein Cpk?',
+            content: 'Für Cpk braucht es σ_within, und das setzt die zeitliche Reihenfolge oder rationale Untergruppen voraus. Das Resampling mit Zurücklegen (i.i.d.) zerstört diese Reihenfolge; ein „Cpk-Intervall“ wäre nur ein schlechteres Ppk-Intervall. Das Modul bietet deshalb ausschließlich Ppk an.',
+          },
+          {
+            type: 'definition',
+            term: 'Wahl von B',
+            content: 'Standard sind etwa 10 000. Perzentil- und BCa-Ränder brauchen mindestens 2 000. Der Monte-Carlo-Standardfehler eines p-Werts beträgt ≈ √(p(1−p)/B). Ändern sich die Ergebnisse zwischen Seeds, B erhöhen.',
+          },
+          {
+            type: 'definition',
+            term: 'Zweiseitiger Permutationstest',
+            content: 'Der zweiseitige Test vergleicht |T|. Bei Kenngrößen, die unter H₀ nicht um null zentriert sind (etwa Differenzen von Median oder Varianz bei ungleichem n), ist der zweiseitige p-Wert nur näherungsweise gültig.',
+          },
         ],
       },
       en: {
@@ -121,6 +136,21 @@ export default {
             term: 'Ppk with a confidence interval',
             content: 'For {{term:ppk|Ppk}} the bootstrap interval is the usual way to state uncertainty without a normal-theory formula. It needs at least 10 values per sample and at least one spec limit.',
           },
+          {
+            type: 'definition',
+            term: 'Why no Cpk?',
+            content: 'Cpk needs σ_within, which requires the time order or rational subgroups. i.i.d. resampling destroys that order, so a "Cpk interval" would only be a worse Ppk interval. The module therefore offers Ppk only.',
+          },
+          {
+            type: 'definition',
+            term: 'Choosing B',
+            content: 'The default is about 10,000. Percentile and BCa tails need at least 2,000. The Monte Carlo standard error of a p-value is ≈ √(p(1−p)/B). If results move between seeds, increase B.',
+          },
+          {
+            type: 'definition',
+            term: 'Two-sided permutation test',
+            content: 'The two-sided test compares |T|. For statistics that are not centred at zero under H₀ (e.g. median or variance differences with unequal n), the two-sided p-value is only approximate.',
+          },
         ],
       },
     },
@@ -131,7 +161,7 @@ export default {
           {
             type: 'definition',
             term: 'Zu wenige Daten',
-            content: 'Der Bootstrap kann nur zeigen, was in den Daten steckt. Bei sehr kleinen Stichproben (unter etwa 10 Werten) sind Intervalle zu schmal, besonders für Median, Quantile und Ppk — das Konfidenzniveau wird dann nicht eingehalten.',
+            content: 'Der Bootstrap kann nur zeigen, was in den Daten steckt. Bei sehr kleinen Stichproben (unter etwa 10 Werten) sind Intervalle zu schmal, besonders für Median, Quantile und Ppk — das Konfidenzniveau wird dann nicht eingehalten. Bei Standardabweichung, Varianz und Variationskoeffizient unterschreiten die Intervalle bei schiefen Daten die Überdeckung selbst bei n = 20 deutlich: BCa erreicht bei lognormalen Daten nur 0,58, bei exponentialverteilten 0,77 (Überdeckungsstudie, docs/resampling-coverage.md).',
           },
           {
             type: 'definition',
@@ -156,7 +186,7 @@ export default {
           {
             type: 'definition',
             term: 'Too little data',
-            content: 'The bootstrap can only show what is in the data. With very small samples (below about 10 values) intervals are too narrow, especially for the median, quantiles and Ppk — the confidence level is then not kept.',
+            content: 'The bootstrap can only show what is in the data. With very small samples (below about 10 values) intervals are too narrow, especially for the median, quantiles and Ppk — the confidence level is then not kept. For standard deviation, variance and CV on skewed data the intervals undercover even at n = 20: BCa reaches only 0.58 for lognormal and 0.77 for exponential data (coverage study, docs/resampling-coverage.md).',
           },
           {
             type: 'definition',
