@@ -57,35 +57,31 @@ jobs:
           MAJOR_MINOR=$(echo "$TAG" | sed 's/\.[0-9]\+$//')   # v0.4
           PREV_TAG=$(git tag --sort=-v:refname | grep -v "^${TAG}$" | head -n1 || true)
           DATE=$(git log -1 --format=%cs "$TAG")
-          # Annotated tag subject; fall back to commit subject for lightweight tags.
-          TITLE=$(git tag -l --format='%(contents:subject)' "$TAG")
-          [ -z "$TITLE" ] && TITLE=$(git log -1 --format=%s "$TAG")
           {
             echo "tag=$TAG"
             echo "version=$VERSION"
             echo "major_minor=$MAJOR_MINOR"
             echo "prev_tag=$PREV_TAG"
             echo "date=$DATE"
-            echo "title<<HEREDOC"
-            echo "$TITLE"
-            echo "HEREDOC"
           } >> "$GITHUB_OUTPUT"
-          echo "Resolved: tag=$TAG version=$VERSION major_minor=$MAJOR_MINOR prev=$PREV_TAG date=$DATE title=$TITLE"
+          echo "Resolved: tag=$TAG version=$VERSION major_minor=$MAJOR_MINOR prev=$PREV_TAG date=$DATE"
 
       - name: Write per-version release.json
         env:
           VERSION: ${{ steps.meta.outputs.version }}
           DATE: ${{ steps.meta.outputs.date }}
-          TITLE: ${{ steps.meta.outputs.title }}
         run: |
           set -euo pipefail
-          # jq -Rs encodes the title as a properly escaped JSON string.
+          # The bilingual title comes from .github/release-titles.json, not
+          # from the tag; without an entry for this version the release stops.
           jq -n \
             --arg version "$VERSION" \
             --arg date    "$DATE" \
-            --arg title   "$TITLE" \
-            '{version: $version, date: $date, title: $title}' \
+            --slurpfile titles .github/release-titles.json \
+            '{version: $version, date: $date, title: $titles[0][$version]}' \
             > release.json
+          jq -e '.title.de and .title.en' release.json >/dev/null \
+            || { echo "::error::No title for $VERSION in .github/release-titles.json."; exit 1; }
           cat release.json
 
       - name: Set up Node.js
@@ -170,8 +166,10 @@ jobs:
       - name: Regenerate versions.json
         run: |
           set -euo pipefail
+          # TITLES_B64 overlays the titles of every release, the old ones too.
+          TITLES_B64=$(base64 -w0 .github/release-titles.json)
           ssh -i ~/.ssh/id_deploy -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
-            "DEPLOY_ROOT='$DEPLOY_ROOT' bash -s" \
+            "DEPLOY_ROOT='$DEPLOY_ROOT' TITLES_B64='$TITLES_B64' bash -s" \
             < .github/scripts/gen-versions-json.sh
 
       - name: Create GitHub Release with auto-generated notes
@@ -179,7 +177,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.meta.outputs.tag }}
           PREV_TAG: ${{ steps.meta.outputs.prev_tag }}
-          TITLE: ${{ steps.meta.outputs.title }}
         run: |
           set -euo pipefail
           if [ -n "$PREV_TAG" ]; then
@@ -187,12 +184,9 @@ jobs:
           else
             NOTES=$(git log --pretty=format:'- %s (%h)' "$TAG")
           fi
-          # Title: "v0.4.0" alone, or "v0.4.0 — Multi-Cycle Support" if tag has annotation.
-          if [ -n "$TITLE" ] && [ "$TITLE" != "$TAG" ]; then
-            DISPLAY_TITLE="$TAG — $TITLE"
-          else
-            DISPLAY_TITLE="$TAG"
-          fi
+          # Title: "v1.2.0 — <English release title>" from release-titles.json.
+          TITLE=$(jq -r '.title.en' release.json)
+          DISPLAY_TITLE="$TAG — $TITLE"
           gh release create "$TAG" \
             --title "$DISPLAY_TITLE" \
             --notes "$NOTES"
