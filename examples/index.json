@@ -1907,8 +1907,8 @@
         "en": "FMEA Pizza Delivery"
       },
       "description": {
-        "de": "4 Risiken entlang des Lieferprozesses (Adress-Erfassung, Ofen-Überlastung, Thermo-Verpackung, Verkehrsstau) mit S/O/D-Bewertung und je 2 datierten Maßnahmen (Sofort-Maßnahme bereits umgesetzt, Folge-Maßnahme geplant) — Burndown zeigt Plan- und Ist-Verlauf.",
-        "en": "4 risks along the delivery process (address entry, oven overload, thermal packaging, traffic) with S/O/D ratings and 2 dated actions each (one already completed, one planned) — burndown shows plan and actual lines."
+        "de": "5 Risiken entlang des Lieferprozesses (Adress-Erfassung, Ofen-Überlastung, Thermo-Verpackung, Verkehrsstau, Allergen-Deklaration) mit S/O/D-Bewertung, Vermeidungs- und Entdeckungsmaßnahmen und besonderen Merkmalen (CC/SC); die ersten vier mit je 2 datierten Maßnahmen (Sofort-Maßnahme bereits umgesetzt, Folge-Maßnahme geplant), das Allergen-Risiko als AP H ohne Maßnahme mit Begründung — Burndown zeigt Plan- und Ist-Verlauf.",
+        "en": "5 risks along the delivery process (address entry, oven overload, thermal packaging, traffic, allergen labelling) with S/O/D ratings, prevention and detection controls and special characteristics (CC/SC); the first four with 2 dated actions each (one already completed, one planned), the allergen risk as AP H without action, with a justification — burndown shows plan and actual lines."
       },
       "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",

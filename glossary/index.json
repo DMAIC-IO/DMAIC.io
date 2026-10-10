@@ -216,6 +216,11 @@
       "file": "terms/rpz.json"
     },
     {
+      "id": "besonderes-merkmal",
+      "category": "risk",
+      "file": "terms/besonderes-merkmal.json"
+    },
+    {
       "id": "doe",
       "category": "doe",
       "file": "terms/doe.json"

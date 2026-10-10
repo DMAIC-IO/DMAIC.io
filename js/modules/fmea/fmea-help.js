@@ -60,8 +60,28 @@ export default {
             content: 'Nach dem AIAG-VDA-FMEA-Handbuch (2019) ersetzt die AP die RPZ als Priorisierung. Statt B × A × E zu multiplizieren, liest sie die Kombination aus einer Tabelle ab und liefert H (hoch), M (mittel) oder L (niedrig). Die Bedeutung B wiegt dabei am stärksten: B 9–10 ist ab A 6 immer H, auch wenn die RPZ niedrig wäre. H verlangt eine Maßnahme oder eine begründete Entscheidung dagegen, M sollte bearbeitet werden, L kann bearbeitet werden.',
           },
           {
+            type: 'definition',
+            term: 'Vermeidungs- und Entdeckungsmaßnahme',
+            content: 'Die Vermeidungsmaßnahme verhindert, dass die Ursache auftritt — sie fließt in die Bewertung A ein. Die Entdeckungsmaßnahme findet den Fehler oder die Ursache, bevor er den Kunden erreicht — sie fließt in E ein. Beide werden getrennt erfasst; in älteren FMEAs steht der bisherige Eintrag „Aktuelle Kontrollmaßnahmen" im Feld Entdeckungsmaßnahme. Der CSV-Export führt ab Version 1.3.0 beide Spalten sowie besonderes Merkmal und Begründung direkt nach der Ursache.',
+          },
+          {
+            type: 'definition',
+            term: 'Besonderes Merkmal (CC/SC)',
+            content: 'Ein {{term:besonderes-merkmal|besonderes Merkmal}} kennzeichnet Produkt- oder Prozessmerkmale mit Sicherheits- oder Gesetzesbezug (CC, critical characteristic) bzw. mit erheblichem Einfluss auf Passform, Funktion oder Weiterverarbeitung (SC, significant characteristic). Ab S ≥ 9 schlägt das Modul vor, das Merkmal zu prüfen; die Kennzeichnung erscheint als Badge auf der Karte und in der Dashboard-Kachel.',
+          },
+          {
+            type: 'definition',
+            term: 'Begründung bei AP H',
+            content: 'Hat ein Risiko die Aufgabenpriorität H, aber keine Maßnahme, verlangt AIAG-VDA eine dokumentierte Begründung. Das Modul zeigt dann den Hinweis „H ohne Maßnahme" und das Feld Begründung; die Statistik zählt solche Risiken. Gesperrt wird nichts.',
+          },
+          {
+            type: 'definition',
+            term: 'S ≥ 9 im RPZ-Modus',
+            content: 'Eine niedrige RPZ kann ein sicherheitsrelevantes Risiko verdecken. Im RPZ-Modus erhält deshalb jedes Risiko mit S 9 oder 10 eine eigene Markierung und wird in einer eigenen Statistik-Kachel gezählt; Kategorie und Sortierung bleiben RPZ-basiert.',
+          },
+          {
             type: 'paragraph',
-            content: 'Oben im Modul wählst du die Bewertung: AP (Vorgabe für neue FMEAs) oder RPN (klassisch). Beim Umschalten bleiben alle Eingaben erhalten, nur die Auswertung ändert sich. Im AP-Modus bestimmt der FMEA-Typ (Prozess oder Design), welche Bewertungsskalen die Skalenreferenz zeigt.',
+            content: 'Oben im Modul wählst du die Bewertung: AP (Vorgabe für neue FMEAs) oder RPN (klassisch). Beim Umschalten bleiben alle Eingaben erhalten, nur die Auswertung ändert sich. Im AP-Modus bestimmt der FMEA-Typ (Prozess oder Design), welche Bewertungsskalen die Skalenreferenz zeigt. Welche Methode und welche FMEA-Art eine neue FMEA anfangs hat, legst du in den Einstellungen unter „Statistik" → „FMEA" fest.',
           },
           {
             type: 'paragraph',
@@ -122,8 +142,28 @@ export default {
             content: 'In the AIAG-VDA FMEA handbook (2019) the AP replaces the RPN for prioritization. Instead of multiplying S × O × D it looks the combination up in a table and yields H (high), M (medium) or L (low). Severity weighs most: S 9–10 with O ≥ 6 is always H, even when the RPN would be low. H requires an action or a justified decision against one, M should be worked on, L may be worked on.',
           },
           {
+            type: 'definition',
+            term: 'Prevention and detection control',
+            content: 'A prevention control keeps the cause from occurring — it feeds the O rating. A detection control finds the failure or cause before it reaches the customer — it feeds the D rating. Both are recorded separately; in older FMEAs the former "current controls" entry appears as the detection control. From version 1.3.0 the CSV export lists both columns plus special characteristic and justification right after the cause.',
+          },
+          {
+            type: 'definition',
+            term: 'Special characteristic (CC/SC)',
+            content: 'A {{term:besonderes-merkmal|special characteristic}} marks product or process characteristics with a safety or regulatory impact (CC, critical characteristic) or a significant impact on fit, function or further processing (SC, significant characteristic). From S ≥ 9 the module suggests checking it; the flag shows as a badge on the card and in the dashboard tile.',
+          },
+          {
+            type: 'definition',
+            term: 'Justification at AP H',
+            content: 'When a risk has action priority H but no action, AIAG-VDA requires a documented justification. The module then shows the hint "H without action" and the justification field; the stats count such risks. Nothing is blocked.',
+          },
+          {
+            type: 'definition',
+            term: 'S ≥ 9 in RPN mode',
+            content: 'A low RPN can hide a safety-relevant risk. In RPN mode every risk with S 9 or 10 therefore gets its own marking and is counted in its own stats card; category and sort order stay RPN-based.',
+          },
+          {
             type: 'paragraph',
-            content: 'At the top of the module you choose the rating: AP (default for new FMEAs) or RPN (classic). Switching keeps all inputs; only the evaluation changes. In AP mode the FMEA type (process or design) selects which rating scales the scale reference shows.',
+            content: 'At the top of the module you choose the rating: AP (default for new FMEAs) or RPN (classic). Switching keeps all inputs; only the evaluation changes. In AP mode the FMEA type (process or design) selects which rating scales the scale reference shows. Which method and FMEA type a new FMEA starts with is set in the settings under "Statistics" → "FMEA".',
           },
           {
             type: 'paragraph',

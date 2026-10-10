@@ -45,7 +45,7 @@ const mod = createModule({
     engine: 'alpine',
     phase: 'analyze',
     icon: 'module.fmea',
-    version: '1.2.0',
+    version: '1.3.0',
     meta: import.meta,
     actions: [
       { icon: 'action.glossary', title: 'scales', onClick: (d) => d.toggleScale() },
