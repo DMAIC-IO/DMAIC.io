@@ -1367,8 +1367,8 @@ test('i18n-Tor: jeder Schlüssel, den agent-usage.js liest, steht in BEIDEN Spra
   const keys = Object.values(usage)
     .filter(v => typeof v === 'string' && v.startsWith('@@'))
     .map(v => v.slice(2));
-  assert.equal(keys.length, 9,
-    `agent-usage.js liest ${keys.length} i18n-Schlüssel, erwartet 9 — kam einer `
+  assert.equal(keys.length, 10,
+    `agent-usage.js liest ${keys.length} i18n-Schlüssel, erwartet 10 — kam einer `
     + 'dazu oder weg, gehört die Zahl hier angepasst (und der Schlüssel in beide Sprachbäume)');
   assert.deepEqual([...new Set(keys)].sort(), [...keys].sort(), 'doppelter usage-Schlüssel');
 

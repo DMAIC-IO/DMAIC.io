@@ -79,6 +79,19 @@ suite('agent shape grammar', () => {
     assertEqual(pathExistsInShape(NULLABLE, 'view').ok, true);
   });
 
+  test('die Hülle selbst ist kein Pfadsegment', () => {
+    // Genau das Loch, gegen das der Wächter VOR dem Objektzweig stehen muss:
+    // `$nullable` ist eine eigene Eigenschaft der Hülle. Steht der Wächter
+    // später hinter dem Objektzweig, bleiben alle anderen Fälle grün und
+    // `view.$nullable` wird wieder durchgelassen — ein stiller Rückschritt.
+    const hull = pathExistsInShape(NULLABLE, 'view.$nullable');
+    assertEqual(hull.ok, false);
+    assertEqual(hull.segment, '$nullable');
+    assertEqual(hull.nullable, true);
+    assertDeepEqual(hull.available, ['instanceId', 'module']);
+    assertEqual(pathExistsInShape(NULLABLE, 'view.$nullable.module').ok, false);
+  });
+
   test('eine Nullable-Form um ein Array verhält sich gleich', () => {
     const shape = { rows: { $nullable: ['any'] } };
     assertEqual(pathExistsInShape(shape, 'rows').ok, true);

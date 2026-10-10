@@ -6111,6 +6111,7 @@
       "call": "window.qprovement.interact() liefert diese Beschreibung. window.qprovement.interact(aktion) oder interact([aktion, …]) führt aus und liefert ein Promise.",
       "actionForm": "Eine Aktion ist { op, … } mit den Feldern aus dem Aktionskatalog. Unbekannte Felder sind ein Fehler. Eine eigene id pro Aktion macht sie referenzierbar.",
       "refForm": "Eine Referenz auf ein vorheriges Ergebnis ist das Objekt { $from: '<id>', path: '<punktpfad>' }. Der Pfad kennt nur Schlüssel und Zahlenindizes — keine Arithmetik, keine Filter. Wer rechnen muss, liest und schickt einen zweiten Stapel.",
+      "nullableForm": "In einer Ergebnisform heißt { $nullable: … } „zur Laufzeit diese Form oder null“. $nullable ist ein Wort der Grammatik und kein Schlüssel — referenziere das Feld selbst und verzweige im nächsten Stapel, statt in die Form abzusteigen.",
       "batchForm": "Der ganze Stapel wird geprüft, bevor irgendetwas ausgeführt wird. Beim ersten Laufzeitfehler bricht die Ausführung ab; bereits erzielte Teilergebnisse werden zurückgegeben.",
       "errorForm": "Jeder Eintrag liefert { ok: true, result } oder { ok: false, error, message, available? }. available nennt die gültigen Möglichkeiten.",
       "availability": "Module ohne Freigabe erscheinen im Katalog mit available: false. Sie sind beschrieben, aber nicht steuerbar — sage dem Nutzer, welches Werkzeug jetzt richtig wäre, und lass ihn es bedienen.",

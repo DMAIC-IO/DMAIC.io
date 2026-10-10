@@ -182,10 +182,15 @@ export function validateBatch(input, world) {
         // Eine Nullable-Form braucht eine andere Meldung als ein unbekanntes
         // Segment: das Segment ist hier richtig, nur der Abstieg ist es nicht
         // (Spec §6 — sage, was das Problem ist und welcher Weg gilt).
-        const key = check.nullable ? 'agent.errors.nullableRef' : 'agent.errors.badShape';
-        return fail(i, axiError(ERRORS.BAD_SHAPE,
-          world.t(key, { path: ref.path, id: ref.from, segment: check.segment }),
-          { available: check.available }));
+        // Jede Meldung bekommt NUR die Platzhalter, die ihr Text nennt.
+        // `{segment}` ist bei einer Nullable-Form der Schlüssel INNERHALB der
+        // Hülle (`instanceId`), nicht das Feld, das null sein kann (`view`) —
+        // er würde den Agenten auf das falsche Feld zeigen, und `available`
+        // nennt die inneren Schlüssel ohnehin.
+        const message = check.nullable
+          ? world.t('agent.errors.nullableRef', { path: ref.path, id: ref.from })
+          : world.t('agent.errors.badShape', { path: ref.path, id: ref.from, segment: check.segment });
+        return fail(i, axiError(ERRORS.BAD_SHAPE, message, { available: check.available }));
       }
     }
   }

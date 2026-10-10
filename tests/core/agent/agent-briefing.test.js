@@ -157,6 +157,18 @@ suite('agent-briefing — das echte Kapitel „KI-Assistent"', () => {
     assertEqual(en.indexOf('Six Sigma Black Belt') < en.indexOf('applied, not saved'), true);
   });
 
+  test('die Nullable-Form wird im Vertragsabschnitt erklärt, in beiden Sprachen', () => {
+    // Das Kapitel spiegelt den Vertragsteil von `agent.usage.*` — driften die
+    // zwei Quellen, sagt eine dem Agenten etwas, das die andere nicht hält.
+    // Der Satz zur Nullable-Hülle gehört deshalb in BEIDE.
+    const de = flattenBriefing(aiAssistantHelp, 'de');
+    const en = flattenBriefing(aiAssistantHelp, 'en');
+    assertEqual(de.includes('{ $nullable: … }'), true, de);
+    assertEqual(de.includes('kein Schlüssel'), true, de);
+    assertEqual(en.includes('{ $nullable: … }'), true, en);
+    assertEqual(en.includes('not a key'), true, en);
+  });
+
   test('die Haltbarkeit wird nicht stärker zugesichert, als sie ist', () => {
     const de = flattenBriefing(aiAssistantHelp, 'de');
     const en = flattenBriefing(aiAssistantHelp, 'en');

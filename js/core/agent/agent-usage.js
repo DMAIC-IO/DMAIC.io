@@ -24,6 +24,12 @@ export function buildUsage(i18n) {
     call:         i18n.t('agent.usage.call'),
     actionForm:   i18n.t('agent.usage.actionForm'),
     refForm:      i18n.t('agent.usage.refForm'),
+    // `ops` unten liefert die Ergebnisformen WÖRTLICH aus — der Agent liest
+    // dort `view: { $nullable: … }`. Ohne diesen Satz sagt die Prosa derselben
+    // Antwort nur, der Pfad kenne Schlüssel, und `$nullable` sieht wie einer
+    // aus. Der erste Leser der Shape-Grammatik ist die Maschine; ein
+    // Quellkommentar in `agent-contract.js` erreicht sie nicht.
+    nullableForm: i18n.t('agent.usage.nullableForm'),
     batchForm:    i18n.t('agent.usage.batchForm'),
     errorForm:    i18n.t('agent.usage.errorForm'),
     availability: i18n.t('agent.usage.availability'),

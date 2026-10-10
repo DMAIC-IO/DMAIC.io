@@ -191,8 +191,13 @@ suite('agent validate — Stufe 4: Referenzgraph', () => {
     // Die Meldung MUSS eine andere sein als bei einem unbekannten Segment:
     // das Segment ist hier richtig, nur der Abstieg ist es nicht (Spec §6 —
     // sage das Problem und den gültigen Weg).
+    // Nur die Platzhalter, die der Text auch nennt: `{segment}` wäre hier
+    // `instanceId` — der Schlüssel INNERHALB der Nullable-Hülle, nicht das
+    // Feld, das null sein kann. Ihn mitzugeben fror einen ungenutzten
+    // Parameter ein und hätte den Agenten auf das falsche Feld gezeigt;
+    // `available` nennt die inneren Schlüssel ohnehin.
     assertEqual(r.cause.message,
-      'agent.errors.nullableRef|path=view.instanceId,id=r1,segment=instanceId');
+      'agent.errors.nullableRef|path=view.instanceId,id=r1');
     assertDeepEqual(r.cause.available, ['instanceId', 'module', 'phase']);
   });
 });

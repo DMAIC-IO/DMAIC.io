@@ -6107,6 +6107,7 @@
       "call": "window.qprovement.interact() returns this description. window.qprovement.interact(action) or interact([action, …]) executes and returns a Promise.",
       "actionForm": "An action is { op, … } with the fields from the action catalog. Unknown fields are an error. Giving an action its own id makes it referenceable.",
       "refForm": "A reference to an earlier result is the object { $from: '<id>', path: '<dot-path>' }. The path knows keys and numeric indices only — no arithmetic, no filters. If you need to compute, read and send a second batch.",
+      "nullableForm": "In a result shape, { $nullable: … } means “this shape or null at runtime”. $nullable is a word of the grammar, not a key — reference the field itself and branch in a second batch instead of descending into the shape.",
       "batchForm": "The whole batch is validated before anything runs. On the first runtime error execution stops; partial results already obtained are returned.",
       "errorForm": "Each entry returns { ok: true, result } or { ok: false, error, message, available? }. available names the valid alternatives.",
       "availability": "Modules without a release appear in the catalog with available: false. They are described but not operable — tell the user which tool would be right now and let them drive it.",

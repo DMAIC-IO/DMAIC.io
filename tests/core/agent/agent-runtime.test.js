@@ -419,11 +419,22 @@ suite('agent runtime — a resolved reference is type-checked (C1)', () => {
     const { view } = read.results[0].result;
     assertDeepEqual(view, { instanceId: 'fw-1', module: 'five-why', phase: 'define' });
 
+    // Der zweite Stapel geht über eine REFERENZ, nicht über ein Literal:
+    // sonst hätte diese Suite nur noch negative Referenzfälle und die
+    // positive Seite ihrer eigenen Behauptung — ein aufgelöster
+    // Referenzwert übersteht den Wiederholungslauf von Stufe 3 — wäre für
+    // `phase` nicht mehr gedeckt. `instances.0.phase` ist der nicht-nullbare
+    // Zwilling derselben Auskunft: `INSTANCE_ENTRY` führt `phase`, und die
+    // Liste ist nie eine Nullable-Hülle. Die Referenz muss im ZWEITEN Stapel
+    // ihr eigenes `project.read` haben — `$from` löst nur innerhalb eines
+    // Stapels auf, `r1` oben ist hier nicht erreichbar.
     const out = await runtime.interact([
-      { id: 'a1', op: 'module.add', module: 'five-why', phase: view.phase },
+      { id: 'r2', op: 'project.read' },
+      { id: 'a1', op: 'module.add', module: 'five-why',
+        phase: { $from: 'r2', path: 'instances.0.phase' } },
     ]);
     assertEqual(out.ok, true, JSON.stringify(out));
-    assertEqual(out.results[0].result.phase, 'define');
+    assertEqual(out.results[1].result.phase, 'define');
   });
 });
 

@@ -35,6 +35,7 @@ const I18N_TABLE = {
   'agent.usage.call': 'window.qprovement.interact() liefert diese Beschreibung.',
   'agent.usage.actionForm': 'Eine Aktion ist { op, … } mit den Feldern aus dem Aktionskatalog.',
   'agent.usage.refForm': 'Eine Referenz ist { $from, path }.',
+  'agent.usage.nullableForm': '{ $nullable: … } heißt: diese Form oder null.',
   'agent.usage.batchForm': 'Der ganze Stapel wird geprüft, bevor irgendetwas ausgeführt wird.',
   'agent.usage.errorForm': 'Jeder Eintrag liefert { ok, result } oder { ok: false, error, message }.',
   'agent.usage.availability': 'Module ohne Freigabe erscheinen mit available: false.',
@@ -347,9 +348,21 @@ suite('agent usage contract', () => {
 
   test('carries the prose fields the agent needs, all non-empty', () => {
     const usage = buildUsage(I18N);
-    for (const key of ['intro', 'call', 'actionForm', 'refForm', 'batchForm', 'errorForm', 'availability', 'limits', 'viewSwitch']) {
+    for (const key of ['intro', 'call', 'actionForm', 'refForm', 'nullableForm', 'batchForm', 'errorForm', 'availability', 'limits', 'viewSwitch']) {
       assertTrue(typeof usage[key] === 'string' && usage[key].length > 0, `usage.${key} missing`);
     }
+  });
+
+  test('die Nullable-Hülle, die der Vertrag wörtlich ausliefert, ist auch erklärt', () => {
+    const usage = buildUsage(I18N);
+    // `ops` gibt die Ergebnisform unverändert an den Agenten weiter — er
+    // liest dort `view: { $nullable: … }`. Die Zusage muss deshalb BEIM
+    // AGENTEN ankommen; ein Fall, der nur die Sprachdatei prüft, hätte den
+    // Widerspruch zwischen `ops` und der Prosa nicht gefunden.
+    assertTrue(Object.prototype.hasOwnProperty.call(usage.ops['project.read'].result.view, '$nullable'),
+      'die Fläche liefert die Nullable-Hülle wörtlich aus');
+    assertTrue(usage.nullableForm.includes('$nullable'),
+      `nullableForm nennt die Hülle nicht: ${usage.nullableForm}`);
   });
 });
 
