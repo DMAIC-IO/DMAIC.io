@@ -1364,7 +1364,6 @@ body.dev-area-open .dmaic-tiles {
   gap: var(--spacing-m);
 }
 .tile-settings__input[type="number"] { width: 6em; }
-.tile-settings__reset { align-self: flex-start; }
 
 .dashboard-grid__tile-body {
   flex: 1;

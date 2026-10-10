@@ -441,9 +441,10 @@ select.input {
   border-top: var(--border-width) solid var(--color-border-secondary);
 }
 
-/* Optional destructive action (Modal.form({ onDelete })): pushed to the far
-   left while confirm/cancel stay right-aligned. */
-.modal__footer-delete {
+/* Optional left-aligned footer items (Modal.form({ onDelete, footerStart })):
+   pushed to the far left while confirm/cancel stay right-aligned. */
+.modal__footer-delete,
+.modal__footer-start {
   margin-right: auto;
 }
 

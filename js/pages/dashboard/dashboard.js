@@ -96,7 +96,8 @@ const page = createPage({
       const stored = (stateManager.get('dashboard.tileSettings') || {})[tileId];
       const form = buildSettingsForm(schema, resolveSettings(schema, stored), i18n);
       const tileTitle = (stateManager.get('dashboard.titles') || {})[tileId] || d.title;
-      const confirmed = await modal.form(i18n.t('dashboard.tileSettings.title', { title: tileTitle }), form.el);
+      const confirmed = await modal.form(i18n.t('dashboard.tileSettings.title', { title: tileTitle }), form.el,
+        { footerStart: form.reset });
       if (confirmed !== true) return;
       const values = form.read();
       const latest = stateManager.get('dashboard.tileSettings') || {};

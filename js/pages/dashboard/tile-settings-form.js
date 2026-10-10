@@ -67,7 +67,9 @@ function readControl(control, field) {
  * @param {object} schema  validated schema (see tile-settings.js)
  * @param {object} values  resolved current values (resolveSettings)
  * @param {{t: function}} i18n
- * @returns {{el: HTMLElement, read: () => object}}
+ * @returns {{el: HTMLElement, reset: HTMLElement, read: () => object}}
+ *   `reset` restores the defaults; it is not part of `el` so the caller can
+ *   place it in the dialog footer.
  */
 export function buildSettingsForm(schema, values, i18n) {
   const prefix = `tile-setting-${++formSeq}`;
@@ -92,7 +94,8 @@ export function buildSettingsForm(schema, values, i18n) {
   });
 
   return {
-    el: h('div', { class: 'tile-settings' }, ...rows, reset),
+    el: h('div', { class: 'tile-settings' }, ...rows),
+    reset,
     read() {
       const out = {};
       for (const [key, field] of Object.entries(schema)) {

@@ -60,6 +60,8 @@ export class Modal {
    * @param {function} [options.onDelete] - when provided, renders a destructive
    *   delete button (left-aligned). Called with body element; return false to
    *   prevent close, otherwise the dialog closes and resolves with 'deleted'.
+   * @param {HTMLElement} [options.footerStart] - extra element placed left-aligned
+   *   in the footer (e.g. a "restore defaults" button); gets .modal__footer-start
    * @returns {Promise<boolean|'deleted'>} true if confirmed, 'deleted' if deleted, false otherwise
    */
   form(title, content, options = {}) {
@@ -99,6 +101,11 @@ export class Modal {
         if (options.onConfirm && options.onConfirm(body) === false) return; // Veto
         close(true);
       };
+
+      if (options.footerStart) {
+        options.footerStart.classList.add('modal__footer-start');
+        footer.append(options.footerStart);
+      }
 
       // Optional destructive action, left-aligned (see .modal__footer-delete).
       if (options.onDelete) {

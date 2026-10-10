@@ -85,4 +85,15 @@ suite('Modal options', () => {
     api.cancel();
     assertEqual(calls, 1, 'a late confirm()/cancel() does not re-run onConfirm or re-resolve');
   });
+  test('footerStart places an extra element left of cancel/confirm', async () => {
+    const m = new Modal(i18n);
+    const extra = document.createElement('button');
+    const p = m.form('T', document.createElement('div'), { footerStart: extra });
+    const footer = document.querySelector('.modal-overlay .modal__footer');
+    assertEqual(footer.firstElementChild, extra, 'extra is the first footer child');
+    assertTrue(extra.classList.contains('modal__footer-start'));
+    assertTrue(!!footer.querySelector('.modal__confirm'), 'confirm still present');
+    document.querySelector('.modal__footer .modal__confirm').click();
+    assertEqual(await p, true);
+  });
 });

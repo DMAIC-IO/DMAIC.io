@@ -69,7 +69,9 @@ suite('tile-settings-form', () => {
 
   test('restore defaults resets every control', () => {
     const form = buildSettingsForm(SCHEMA, VALUES, i18n);
-    const reset = form.el.querySelector('.tile-settings__reset');
+    const reset = form.reset;
+    assertEqual(form.el.contains(reset), false, 'reset lives outside the body (dialog footer)');
+    assertEqual(reset.classList.contains('tile-settings__reset'), true);
     assertEqual(reset.textContent, 'T:dashboard.tileSettings.restoreDefaults');
     assertEqual(reset.type, 'button');
     reset.click();
