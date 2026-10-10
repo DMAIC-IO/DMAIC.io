@@ -689,6 +689,7 @@ export default [
     phase: 'control',
     allowedPhases: ['control'],
     load: () => import('./lessons-learned/lessons-learned.js'),
+    loadTile: () => import('./lessons-learned/lessons-learned.tile.js'),
     cycles: {
       dmaic:  { phase: 'control',   allowedPhases: ['control']   },
       dmadv:  { phase: 'verify',    allowedPhases: ['verify']    },

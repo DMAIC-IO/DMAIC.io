@@ -9,6 +9,7 @@ import spcTile from '../../js/modules/control-chart/control-chart.tile.js';
 import todoTile from '../../js/modules/todo/todo.tile.js';
 import calendarTile from '../../js/modules/dmaic-calendar/dmaic-calendar.tile.js';
 import stakeholderTile from '../../js/modules/stakeholder-analysis/stakeholder-analysis.tile.js';
+import lessonsTile from '../../js/modules/lessons-learned/lessons-learned.tile.js';
 import { todayISO, addDaysISO } from '../../js/core/local-date.js';
 import { validateSchema, resolveSettings } from '../../js/pages/dashboard/tile-settings.js';
 import { HOST_TILES } from '../../js/pages/dashboard/tiles/index.js';
@@ -51,7 +52,7 @@ suite('dashboard tiles: manifest', () => {
   test('modules with a tile declare loadTile', () => {
     const ids = withTile.map(e => e.id);
     for (const id of ['fmea', 'ishikawa', 'project-charter', 'voc-ctx-tree', 'raci-matrix', 'control-chart',
-      'todo', 'dmaic-calendar', 'stakeholder-analysis']) assertTrue(ids.includes(id), id);
+      'todo', 'dmaic-calendar', 'stakeholder-analysis', 'lessons-learned']) assertTrue(ids.includes(id), id);
   });
 
   test('every tile object loads, renders and has a valid size and schema', async () => {
@@ -521,5 +522,35 @@ suite('dashboard tiles: stakeholder-analysis', () => {
 
   test('empty state', () => {
     assertEqual(render(stakeholderTile, undefined).querySelector('.dashboard-area__empty').textContent, 'dashboard.stakeholderEmpty');
+  });
+});
+
+const LL_STATE = { lessons: [
+  { id: 'a', title: 'Scope creep', category: 'problem', impact: 'high', actions: [{ text: 'x', done: false }, { text: 'y', done: false }] },
+  { id: 'b', title: 'Daily standup', category: 'success', impact: 'medium', actions: [] },
+  { id: 'c', title: 'Data access', category: 'improve', impact: 'high', actions: [{ text: 'x', done: false }] },
+] };
+
+suite('dashboard tiles: lessons-learned', () => {
+  test('summary shows category counts and open actions (alerted when > 0)', () => {
+    const host = render(lessonsTile, LL_STATE);
+    assertEqual(host.querySelector('[data-stat="openActions"] strong').textContent, '3');
+    assertTrue(host.querySelector('.dashboard-lessons__open--alert') !== null);
+  });
+
+  test('lists high-impact lessons with open action counts; topN caps', () => {
+    const host = render(lessonsTile, LL_STATE);
+    assertDeepEqual([...host.querySelectorAll('.dashboard-fmea__top-desc')].map(e => e.textContent), ['Scope creep', 'Data access']);
+    assertEqual(host.querySelector('.dashboard-fmea__top-rpn').textContent, '2');
+    assertEqual(render(lessonsTile, LL_STATE, { topN: 1 }).querySelectorAll('.dashboard-fmea__top-item').length, 1);
+  });
+
+  test('no open actions: no alert', () => {
+    const done = { lessons: [{ id: 'z', title: 'z', impact: 'high', actions: [{ text: 'x', done: true }] }] };
+    assertEqual(render(lessonsTile, done).querySelector('.dashboard-lessons__open--alert'), null);
+  });
+
+  test('empty state', () => {
+    assertEqual(render(lessonsTile, null).querySelector('.dashboard-area__empty').textContent, 'dashboard.lessonsEmpty');
   });
 });

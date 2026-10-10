@@ -601,6 +601,9 @@
     "stakeholderEmpty": "Keine Stakeholder erfasst.",
     "stakeholderOther": "Sonstige",
     "stakeholderCritics": "Kritiker, eng zu managen",
+    "lessonsEmpty": "Keine Lessons erfasst.",
+    "lessonsOpenActions": "Offene Maßnahmen",
+    "lessonsHighOpen": "Hoher Impact, Maßnahmen offen",
     "tileSettings": {
       "title": "Einstellungen: {title}",
       "open": "Kachel-Einstellungen",

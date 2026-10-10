@@ -1742,6 +1742,11 @@ body.dev-area-open .dmaic-tiles {
 .dashboard-stakeholder__cell--keep-informed { grid-area: ki; }
 .dashboard-stakeholder__cell--monitor { grid-area: mo; }
 
+/* Lessons learned tile on dashboard */
+.dashboard-lessons__open--alert strong {
+  color: var(--color-error);
+}
+
 /* SPC / Control Chart on dashboard */
 .dashboard-spc {
   display: flex;

@@ -1,5 +1,5 @@
 import { suite, test, assertEqual } from '../test-utils.js';
-import { Lesson, Action, State } from '../../js/modules/lessons-learned/lessons-learned-model.js';
+import { Lesson, Action, State, openHighImpact } from '../../js/modules/lessons-learned/lessons-learned-model.js';
 
 suite('Lessons Learned Model — Action', () => {
   test('constructor sets default values', () => {
@@ -290,5 +290,21 @@ suite('Lessons Learned Model — State', () => {
     assertEqual(restored.lessons[0].actions.length, 1);
     assertEqual(restored.lessons[0].actions[0].text, 'A1');
     assertEqual(restored.lessons[0].actions[0].done, true);
+  });
+});
+
+suite('Lessons Learned Model — openHighImpact', () => {
+  const l = (id, impact, actions) => Lesson.fromJSON({ id, title: id, impact, actions });
+  const lessons = [
+    l('a', 'high', [{ text: 'x', done: false }]),
+    l('b', 'high', [{ text: 'x', done: true }]),
+    l('c', 'medium', [{ text: 'x', done: false }]),
+    l('d', 'high', [{ text: 'x', done: true }, { text: 'y', done: false }]),
+    l('e', 'high', []),
+  ];
+
+  test('high impact with at least one open action, stored order, capped', () => {
+    assertEqual(openHighImpact(lessons, 10).map(x => x.id).join(','), 'a,d');
+    assertEqual(openHighImpact(lessons, 1).map(x => x.id).join(','), 'a');
   });
 });

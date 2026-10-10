@@ -601,6 +601,9 @@
     "stakeholderEmpty": "No stakeholders recorded.",
     "stakeholderOther": "Other",
     "stakeholderCritics": "Critics to manage closely",
+    "lessonsEmpty": "No lessons recorded.",
+    "lessonsOpenActions": "Open actions",
+    "lessonsHighOpen": "High impact, actions open",
     "tileSettings": {
       "title": "Settings: {title}",
       "open": "Tile settings",
