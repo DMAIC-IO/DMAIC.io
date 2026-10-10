@@ -72,7 +72,7 @@ export default {
           {
             type: 'definition',
             term: 'Begründung bei AP H',
-            content: 'Hat ein Risiko die Aufgabenpriorität H, aber keine Maßnahme, verlangt AIAG-VDA eine dokumentierte Begründung. Das Modul zeigt dann den Hinweis „H ohne Maßnahme" und das Feld Begründung; die Statistik zählt solche Risiken. Gesperrt wird nichts.',
+            content: 'Hat ein Risiko die Aufgabenpriorität H, aber keine Maßnahme mit Text, verlangt AIAG-VDA eine dokumentierte Begründung. Das Modul zeigt dann den Hinweis „H ohne Maßnahme" und das Feld Begründung; die Statistik zählt solche Risiken. Gesperrt wird nichts.',
           },
           {
             type: 'definition',
@@ -154,7 +154,7 @@ export default {
           {
             type: 'definition',
             term: 'Justification at AP H',
-            content: 'When a risk has action priority H but no action, AIAG-VDA requires a documented justification. The module then shows the hint "H without action" and the justification field; the stats count such risks. Nothing is blocked.',
+            content: 'When a risk has action priority H but no action with text, AIAG-VDA requires a documented justification. The module then shows the hint "H without action" and the justification field; the stats count such risks. Nothing is blocked.',
           },
           {
             type: 'definition',

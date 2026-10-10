@@ -758,6 +758,13 @@ suite('FMEA Model — compliance fields', () => {
     assertEqual(new Risk().needsJustification(), false, 'unrated');
   });
 
+  test('needsJustification: an action without text does not count', () => {
+    const r = Risk.fromJSON({ sev: '9', occ: '10', det: '10', actions: [{ text: '' }, { text: '   ' }] });
+    assertEqual(r.needsJustification(), true, 'blank actions only');
+    r.actions[1].text = 'Add poka-yoke';
+    assertEqual(r.needsJustification(), false, 'one action with text');
+  });
+
   test('justification survives when the risk drops below AP H', () => {
     const r = Risk.fromJSON({ sev: '9', occ: '10', det: '10', justification: 'Kept' });
     r.occ = '2';

@@ -117,7 +117,7 @@ const mod = createModule({
         return (`${glow} ${collapsed} ${severe}`).replace(/\s+/g, ' ').trim();
       },
 
-      /** @returns {boolean} AP mode and the risk is AP H without action/justification */
+      /** @returns {boolean} AP mode and the risk is AP H without a non-blank action/justification */
       showUnjustified(risk) { return this.isAp() && risk.needsJustification(); },
       /** @returns {boolean} justification field: required at AP H, kept visible once filled */
       showJustification(risk) {

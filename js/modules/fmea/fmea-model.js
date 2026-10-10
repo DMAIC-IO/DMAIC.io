@@ -179,9 +179,11 @@ export class Risk {
 
   // ── Compliance rules ──────────────────────────────────────
 
-  /** @returns {boolean} AP H, no action and no (non-blank) justification */
+  /** @returns {boolean} AP H, no action with (non-blank) text and no (non-blank) justification */
   needsJustification() {
-    return this.ap() === 'H' && this.actions.length === 0 && this.justification.trim() === '';
+    return this.ap() === 'H'
+      && !this.actions.some((a) => a.text.trim() !== '')
+      && this.justification.trim() === '';
   }
 
   /** @returns {boolean} severity 9 or 10 (safety/regulatory) */
