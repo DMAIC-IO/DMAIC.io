@@ -483,6 +483,18 @@ select.input {
 .toast--warning { background: var(--color-warning); color: #fff; }
 .toast--error   { background: var(--color-error); color: #fff; }
 
+.toast__action {
+  margin-left: auto;
+  flex-shrink: 0;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: var(--border-width) solid currentColor;
+  border-radius: var(--border-radius);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
 /* ===== Language Toggle ===== */
 .lang-toggle {
   display: flex;

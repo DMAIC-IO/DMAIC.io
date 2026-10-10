@@ -33,7 +33,9 @@ async function init() {
     chartManager, examplesRegistry, glossaryRegistry,
   } = kernel;
   // Chunk imports (lazy libraries, the Lab) report failures as one toast.
-  setChunkErrorHandler(() => notify(i18n.t('app.chunkLoadFailed'), 'error'));
+  setChunkErrorHandler(() => notify(i18n.t('app.chunkLoadFailed'), 'error', null, {
+    action: { label: i18n.t('app.reload'), onClick: () => location.reload() },
+  }));
   guardChunkRejections(window);
 
   // ─── Alpine.js Bootstrap ─────────────────────────────────

@@ -25,6 +25,7 @@
   "app": {
     "defaultProjectName": "Neues Projekt",
     "chunkLoadFailed": "Dieser Teil konnte nicht geladen werden – bitte mit Netzverbindung neu laden.",
+    "reload": "Neu laden",
     "dashboard": "Dashboard",
     "fullscreen": "Vollbild",
     "projectSwitcher": "Projekt wechseln",

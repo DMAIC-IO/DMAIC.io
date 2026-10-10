@@ -88,6 +88,7 @@ const SKIP = new Set([
   'core/html-utils.test.js',
   'core/icon.test.js',
   'core/markdown-parser.test.js',
+  'core/notify.test.js',
   'core/references-renderer-dom.test.js',
   'core/spacing-tokens.test.js',
   'core/stats-panel.test.js',
