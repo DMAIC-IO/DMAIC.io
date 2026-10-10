@@ -136,7 +136,7 @@ const mod = createModule({
           this.runCount++;
         } catch (err) {
           if (!(err && err.name === 'AbortError')) {
-            this.errorKey = err && err.code ? errorKeyForCode(err.code) : 'errUnexpected';
+            this.errorKey = err && err.code ? errorKeyForCode(err.code, snap.statisticId) : 'errUnexpected';
           }
         } finally {
           this.running = false;

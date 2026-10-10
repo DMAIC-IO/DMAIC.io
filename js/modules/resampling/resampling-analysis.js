@@ -127,11 +127,18 @@ const CODE_KEYS = {
   'invalid-options': 'errOptions',
 };
 
+/** Statistics that are positive whenever all values are positive. */
+const POSITIVE_FOR_POSITIVE_DATA = ['mean', 'median', 'trimmedMean', 'quantile', 'stddev', 'variance'];
+
 /**
  * i18n key for an engine ResamplingError code.
  * @param {string} code
+ * @param {string} [statisticId] selected statistic; refines `non-positive-ratio`
  */
-export function errorKeyForCode(code) {
+export function errorKeyForCode(code, statisticId) {
+  if (code === 'non-positive-ratio' && statisticId && !POSITIVE_FOR_POSITIVE_DATA.includes(statisticId)) {
+    return 'errRatioStatistic';
+  }
   return CODE_KEYS[code] || 'errUnexpected';
 }
 

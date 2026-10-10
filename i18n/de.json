@@ -4253,6 +4253,7 @@
       "errMinValues": "Jede Stichprobe braucht mindestens 2 Zahlenwerte.",
       "errMinPpk": "Für Ppk braucht jede Stichprobe mindestens 10 Zahlenwerte.",
       "errRatioPositive": "Für das Verhältnis müssen alle Werte positiv sein.",
+      "errRatioStatistic": "Für einen Quotienten muss die Statistik in beiden Gruppen positiv sein.",
       "errOptions": "Ungültige Einstellungen.",
       "errDegenerateStatistic": "Die Teststatistik ist für diese Daten nicht definiert (z. B. Ppk oder CV bei einer konstanten Gruppe).",
       "errUnexpected": "Unerwarteter Fehler bei der Berechnung."

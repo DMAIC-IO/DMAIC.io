@@ -4253,6 +4253,7 @@
       "errMinValues": "Every sample needs at least 2 numeric values.",
       "errMinPpk": "Ppk needs at least 10 numeric values per sample.",
       "errRatioPositive": "The ratio needs all values to be positive.",
+      "errRatioStatistic": "For a ratio the statistic must be positive in both groups.",
       "errOptions": "Invalid settings.",
       "errDegenerateStatistic": "The test statistic is not defined for these data (e.g. Ppk or CV of a constant group).",
       "errUnexpected": "Unexpected error during the computation."

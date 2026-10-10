@@ -120,6 +120,9 @@ suite('resampling-analysis — validateInputs', () => {
     assertEqual(errorKeyForCode('insufficient-data'), 'errMinValues');
     assertEqual(errorKeyForCode('invalid-limits'), 'errLimitsOrder');
     assertEqual(errorKeyForCode('non-positive-ratio'), 'errRatioPositive');
+    assertEqual(errorKeyForCode('non-positive-ratio', 'median'), 'errRatioPositive');
+    assertEqual(errorKeyForCode('non-positive-ratio', 'ppk'), 'errRatioStatistic');
+    assertEqual(errorKeyForCode('non-positive-ratio', 'cv'), 'errRatioStatistic');
     assertEqual(errorKeyForCode('invalid-statistic-for-mode'), 'errStatisticMode');
     assertEqual(errorKeyForCode('invalid-options'), 'errOptions');
     assertEqual(errorKeyForCode('degenerate-statistic'), 'errDegenerateStatistic');
