@@ -2,18 +2,15 @@ import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-u
 import {
   enumerateTiles, projectModuleIds, loadTileModules,
   findInstances, tileObjects, refreshEventsOf,
+  kindOf, copyId, copyDescriptor, sourceChoices, COPY_SEP,
 } from '../../js/pages/dashboard/enumerate-tiles.js';
 
 const i18nEcho = { t: (k) => `I:${k}` };
 const SIZE = { defaultW: 3, defaultH: 10, minW: 2, minH: 6 };
 
-function makeCtx(phases, titles = {}) {
-  return {
-    i18n: i18nEcho,
-    stateManager: {
-      get: (k) => (k === 'phases' ? phases : (k === 'dashboard.titles' ? titles : null)),
-    },
-  };
+function makeCtx(phases, titles = {}, { tileSettings = {}, layout = null } = {}) {
+  const values = { phases, 'dashboard.titles': titles, 'dashboard.tileSettings': tileSettings, 'dashboard.layout': layout };
+  return { i18n: i18nEcho, stateManager: { get: (k) => values[k] ?? null } };
 }
 
 const PHASES = {
@@ -177,5 +174,146 @@ suite('enumerate context', () => {
     const tile = { size: SIZE, render() {}, enumerate: (ctx) => { got = ctx.findInstances('fmea'); return []; } };
     enumerateTiles([{ moduleId: 'fmea', tile }], makeCtx(PHASES));
     assertDeepEqual(got.map(i => i.instanceId), ['i1', 'i2']);
+  });
+});
+
+const FMEA_TILE = { size: SIZE, titlePrefix: 'FMEA', render() {} };
+const FMEA_TM = { moduleId: 'fmea', tile: FMEA_TILE, kind: 'fmea' };
+
+function silenceWarn(fn) {
+  const warn = console.warn;
+  const msgs = [];
+  console.warn = (m) => msgs.push(m);
+  try { fn(); } finally { console.warn = warn; }
+  return msgs;
+}
+
+suite('enumerate-tiles: kinds', () => {
+  test('single export uses the module id, array elements their own kind', () => {
+    assertEqual(kindOf('fmea', {}, false), 'fmea');
+    assertEqual(kindOf('project-charter', { kind: 'project-goals' }, true), 'project-goals');
+    assertEqual(kindOf(null, {}, false), null);
+  });
+
+  test('array element without kind or with "~" is not duplicable (warns)', () => {
+    let a; let b;
+    const msgs = silenceWarn(() => {
+      a = kindOf('project-charter', {}, true);
+      b = kindOf('project-charter', { kind: `a${COPY_SEP}b` }, true);
+    });
+    assertEqual(a, null);
+    assertEqual(b, null);
+    assertEqual(msgs.length, 2);
+  });
+
+  test('loadTileModules attaches the kind to each tile object', async () => {
+    const goals = { kind: 'project-goals', size: SIZE, render() {}, enumerate: () => [] };
+    const registry = {
+      hasTile: () => true,
+      loadTile: async (id) => (id === 'fmea' ? FMEA_TILE : [goals]),
+    };
+    const phases = { define: [{ moduleId: 'fmea', instanceId: 'i1' }, { moduleId: 'project-charter', instanceId: 'c1' }] };
+    const { tileModules } = await loadTileModules(registry, phases, []);
+    assertDeepEqual(tileModules.map(m => [m.moduleId, m.kind]), [['fmea', 'fmea'], ['project-charter', 'project-goals']]);
+  });
+
+  test('copyId is "<kind>~<uid>" and unique', () => {
+    const a = copyId('fmea');
+    const b = copyId('fmea');
+    assertTrue(a.startsWith(`fmea${COPY_SEP}`) && a.length > 5);
+    assertTrue(a !== b);
+  });
+});
+
+suite('enumerate-tiles: source', () => {
+  test('a stored _source re-binds a base tile and retitles it', () => {
+    const tiles = enumerateTiles([FMEA_TM], makeCtx(PHASES, {}, { tileSettings: { 'fmea:i1': { _source: 'i2' } } }));
+    const t = tiles.find(x => x.id === 'fmea:i1');
+    assertEqual(t.instanceId, 'i2');
+    assertEqual(t.baseInstanceId, 'i1');
+    assertEqual(t.title, 'FMEA — I:modules.fmea.name');
+    assertEqual(t.kind, 'fmea');
+    assertEqual(t.isCopy, false);
+  });
+
+  test('a _source of a deleted instance falls back to the enumerated one', () => {
+    const tiles = enumerateTiles([FMEA_TM], makeCtx(PHASES, {}, { tileSettings: { 'fmea:i1': { _source: 'gone' } } }));
+    const t = tiles.find(x => x.id === 'fmea:i1');
+    assertEqual(t.instanceId, 'i1');
+    assertEqual(t.title, 'FMEA — Line A');
+  });
+
+  test('without a kind a stored _source is ignored', () => {
+    const tiles = enumerateTiles([{ ...FMEA_TM, kind: null }],
+      makeCtx(PHASES, {}, { tileSettings: { 'fmea:i1': { _source: 'i2' } } }));
+    assertEqual(tiles.find(x => x.id === 'fmea:i1').instanceId, 'i1');
+  });
+
+  test('a re-bound singleton with titleKey keeps its fixed title', () => {
+    const goals = {
+      kind: 'project-goals', titleKey: 'dashboard.goalsTitle', size: SIZE, render() {},
+      enumerate: () => [{ tileId: 'project-goals', instanceId: 'c1', title: 'I:dashboard.goalsTitle' }],
+    };
+    const phases = { define: [{ moduleId: 'project-charter', instanceId: 'c1' }, { moduleId: 'project-charter', instanceId: 'c2', customName: 'Other' }] };
+    const [t] = enumerateTiles([{ moduleId: 'project-charter', tile: goals, kind: 'project-goals' }],
+      makeCtx(phases, {}, { tileSettings: { 'project-goals': { _source: 'c2' } } }));
+    assertEqual(t.instanceId, 'c2');
+    assertEqual(t.title, 'I:dashboard.goalsTitle');
+  });
+
+  test('a user title wins over the re-bound title', () => {
+    const tiles = enumerateTiles([FMEA_TM],
+      makeCtx(PHASES, { 'fmea:i1': 'Mine' }, { tileSettings: { 'fmea:i1': { _source: 'i2' } } }));
+    assertEqual(tiles.find(x => x.id === 'fmea:i1').title, 'Mine');
+  });
+
+  test('sourceChoices lists every instance with its phase', () => {
+    const phases = { define: [{ moduleId: 'fmea', instanceId: 'a', customName: 'Line' }], improve: [{ moduleId: 'fmea', instanceId: 'b', customName: 'Line' }] };
+    assertDeepEqual(sourceChoices(phases, 'fmea', i18nEcho), [
+      { id: 'a', text: 'Line (I:phases.define)' },
+      { id: 'b', text: 'Line (I:phases.improve)' },
+    ]);
+    assertDeepEqual(sourceChoices(PHASES, 'fmea', i18nEcho)[1], { id: 'i2', text: 'I:modules.fmea.name (I:phases.analyze)' });
+  });
+});
+
+suite('enumerate-tiles: copies', () => {
+  test('copies are enumerated from "~" layout ids, bound to their _source', () => {
+    const ctx = makeCtx(PHASES, {}, {
+      layout: [{ tileId: 'fmea:i1' }, { tileId: 'fmea~c1' }],
+      tileSettings: { 'fmea~c1': { _source: 'i1', topN: 2 } },
+    });
+    const c = enumerateTiles([FMEA_TM], ctx).find(x => x.id === 'fmea~c1');
+    assertEqual(c.instanceId, 'i1');
+    assertEqual(c.baseInstanceId, null);
+    assertEqual(c.isCopy, true);
+    assertEqual(c.kind, 'fmea');
+    assertEqual(c.title, 'FMEA — Line A');
+    assertTrue(c.tile === FMEA_TILE);
+    assertEqual(c.defaultW, 3);
+  });
+
+  test('a copy with a deleted, missing source or an unloaded kind is skipped', () => {
+    const ctx = makeCtx(PHASES, {}, {
+      layout: [{ tileId: 'fmea~c1' }, { tileId: 'fmea~c2' }, { tileId: 'ishikawa~c3' }],
+      tileSettings: { 'fmea~c1': { _source: 'gone' }, 'fmea~c2': {}, 'ishikawa~c3': { _source: 'i1' } },
+    });
+    assertDeepEqual(enumerateTiles([FMEA_TM], ctx).filter(x => x.isCopy), []);
+  });
+
+  test('a user title wins for a copy', () => {
+    const ctx = makeCtx(PHASES, { 'fmea~c1': 'Mine' }, {
+      layout: [{ tileId: 'fmea~c1' }], tileSettings: { 'fmea~c1': { _source: 'i2' } },
+    });
+    assertEqual(enumerateTiles([FMEA_TM], ctx).find(x => x.id === 'fmea~c1').title, 'Mine');
+  });
+
+  test('copyDescriptor binds a new copy, or returns null for a gone instance', () => {
+    const ctx = makeCtx(PHASES);
+    const d = copyDescriptor(FMEA_TM, 'fmea~new', 'i2', ctx);
+    assertEqual(d.id, 'fmea~new');
+    assertEqual(d.instanceId, 'i2');
+    assertEqual(d.title, 'FMEA — I:modules.fmea.name');
+    assertEqual(copyDescriptor(FMEA_TM, 'fmea~new', 'gone', ctx), null);
   });
 });
