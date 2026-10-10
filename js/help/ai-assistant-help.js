@@ -21,22 +21,10 @@
  * Grenzen zuletzt. Wer nur den Anfang liest, hat das Wichtigste gelesen.
  */
 
-/**
- * Der Schlüssel dieses Kapitels in der `HELP`-Map
- * (`js/core/help-registry.generated.js`) und damit das Argument für
- * `getModuleHelp()`. Zugleich der Dateiname-Rumpf: `<id>-help.js`.
- * @type {string}
- */
-export const AI_ASSISTANT_CHAPTER_ID = 'ai-assistant';
-
-/**
- * Dieselbe Kennung in camelCase — die Form, in der das Kapitel in i18n und
- * in den Generatoren auftaucht (`moduleHelp.aiAssistant`). Exportiert, damit
- * sie an keiner Stelle aus `AI_ASSISTANT_CHAPTER_ID` umgerechnet wird: eine
- * Umrechnung an drei Orten ist dreimal dieselbe Annahme.
- * @type {string}
- */
-export const AI_ASSISTANT_CHAPTER_KEY = 'aiAssistant';
+// Die Kennungen liegen in `help-keys.js` und werden hier NICHT
+// re-exportiert: wer nur den Schlüssel braucht — die Kernschicht etwa —
+// soll nicht das ganze Inhaltskapitel importieren müssen.
+import { AI_ASSISTANT_CHAPTER_ID } from './help-keys.js';
 
 export default {
   moduleId: AI_ASSISTANT_CHAPTER_ID,
@@ -170,7 +158,7 @@ export default {
           { type: 'definition', term: 'Zahlen, keine Bilder', content: 'Ein Diagramm siehst du nicht. Du bekommst die Werte, aus denen es gezeichnet ist.' },
           { type: 'definition', term: 'Kein Rückgängig', content: 'Die Fläche hat keine Rücknahme über mehrere Aktionen. Der Nutzer wurde beim Verbinden zum Export aufgefordert — das ist sein Sicherungsnetz, nicht deines.' },
           { type: 'definition', term: 'Aufrufe werden serialisiert', content: 'Zwei nebenläufige interact()-Aufrufe können ihre Effekte nicht verschränken; die Prüfung gilt gegen den Zustand zum Beginn der Ausführung.' },
-          { type: 'definition', term: 'ok: true heißt „liegt auf Platte"', content: 'Ein Stapel, der geschrieben hat, spült den Zustand, bevor er antwortet. Du darfst nach einem bestätigten Schreibzugriff neu laden oder exportieren, ohne etwas zu verlieren.' },
+          { type: 'definition', term: 'ok: true heißt angewandt, nicht gesichert', content: 'Ein bestätigter Schreibzugriff ist im Projektzustand angewandt und für jeden folgenden Lesezugriff sichtbar. Auf den Datenträger geschrieben wird er verzögert, in Sekundenbruchteilen bis zu zwei Sekunden danach. Wer unmittelbar nach der Antwort neu lädt, kann die letzten Sekunden also verlieren. Kommt es auf die Sicherung an, lass dem Zustand einen Moment, bevor du zum Neuladen oder zum Export rätst.' },
         ],
       },
       en: {
@@ -179,7 +167,7 @@ export default {
           { type: 'definition', term: 'Numbers, not pictures', content: 'You cannot see a chart. You get the values it is drawn from.' },
           { type: 'definition', term: 'No undo', content: 'The surface has no multi-action undo. The user was prompted to export when granting access — that is their safety net, not yours.' },
           { type: 'definition', term: 'Calls are serialized', content: 'Two concurrent interact() calls cannot interleave their effects; validation holds against the state at the start of execution.' },
-          { type: 'definition', term: 'ok: true means "it is on disk"', content: 'A batch that wrote flushes the state before it answers. After a confirmed write you may reload or export without losing anything.' },
+          { type: 'definition', term: 'ok: true means applied, not saved', content: 'A confirmed write has been applied to the project state and every read after it will see it. Persisting it to storage happens on a delay of up to two seconds, so a reload straight after the answer can still drop the most recent changes. Where durability matters, leave the state a moment before you suggest reloading or exporting.' },
         ],
       },
     },

@@ -56,8 +56,13 @@ function blockLines(block) {
       const body = rows.map(row => (row || []).map(plain).join(' | '));
       return head ? [head, ...body] : body;
     }
-    default:
-      return block.content ? [plain(block.content)] : [];
+    default: {
+      // `plain()` ZUERST, dann die Wahrheitsprüfung: ein nicht-textliches
+      // `content` (eine Zahl, ein Objekt) ist wahr, wird aber zu '' — die
+      // umgekehrte Reihenfolge erzeugte dafür eine Leerzeile im Briefing.
+      const text = plain(block.content);
+      return text ? [text] : [];
+    }
   }
 }
 
@@ -84,7 +89,11 @@ export function flattenBriefing(helpDef, lang) {
     if (!localized) continue;
     const lines = [];
     if (localized.title) lines.push(plain(localized.title));
-    for (const block of localized.blocks || []) lines.push(...blockLines(block));
+    // `Array.isArray` und nicht `|| []`: ein fehlgeformtes `blocks` (ein
+    // Objekt, eine Zeichenkette) ist nicht iterierbar und warf hier. Die
+    // Funktion gibt sich sonst konsequent total — `null`/`{}` → `''`.
+    const blocks = Array.isArray(localized.blocks) ? localized.blocks : [];
+    for (const block of blocks) lines.push(...blockLines(block));
     if (lines.length > 0) parts.push(lines.join('\n'));
   }
   return parts.join('\n\n');

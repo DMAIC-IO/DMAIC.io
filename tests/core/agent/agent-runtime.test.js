@@ -6,7 +6,8 @@
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
 import { createAgentRuntime } from '../../../js/core/agent/agent-runtime.js';
 import { OPS } from '../../../js/core/agent/agent-contract.js';
-import aiAssistantHelp, { AI_ASSISTANT_CHAPTER_ID } from '../../../js/help/ai-assistant-help.js';
+import aiAssistantHelp from '../../../js/help/ai-assistant-help.js';
+import { AI_ASSISTANT_CHAPTER_ID } from '../../../js/help/help-keys.js';
 
 const DEFS = [
   { id: 'worksheet', phase: 'data' },
@@ -696,7 +697,7 @@ suite('agent runtime — interact() liefert das Briefing aus dem Handbuchkapitel
     assertEqual(typeof out.briefing, 'string');
     // I18N.getLanguage() ist 'de' — also der deutsche Abschnittstext.
     assertTrue(out.briefing.includes('Six-Sigma-Black-Belt'), out.briefing.slice(0, 200));
-    assertTrue(out.briefing.includes('liegt auf Platte'), 'der letzte Abschnitt fehlt');
+    assertTrue(out.briefing.includes('angewandt, nicht gesichert'), 'der letzte Abschnitt fehlt');
     assertEqual(out.briefing.includes('{{term:'), false);
     assertEqual(out.briefing.includes('**'), false);
   });

@@ -28,7 +28,7 @@ import { resolveRefs } from './agent-refs.js';
 import { buildWorld, buildCatalog, buildInstanceList } from './agent-catalog.js';
 import { buildUsage } from './agent-usage.js';
 import { flattenBriefing } from './agent-briefing.js';
-import { AI_ASSISTANT_CHAPTER_ID } from '../../help/ai-assistant-help.js';
+import { AI_ASSISTANT_CHAPTER_ID } from '../../help/help-keys.js';
 import { createOps } from './agent-ops.js';
 
 /**
