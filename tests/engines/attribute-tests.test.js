@@ -44,6 +44,19 @@ const FIXTURES = await Promise.all(
   CASES.map(([id]) => loadFixture(`../fixtures/attribute/${id}.fixtures.json`)),
 );
 
+suite('attribute-test-engine: large support guard', () => {
+  test('fisherExact2x2 handles a support above 150000 entries without throwing', () => {
+    const r = fisherExact2x2([[100000, 100000], [100000, 100000]]);
+    for (const v of [r.pValue, r.pLess, r.pGreater]) {
+      assertTrue(Number.isFinite(v) && v >= 0 && v <= 1, `p-value out of range: ${v}`);
+    }
+  });
+  test('twoProportionTest handles very large samples', () => {
+    const r = twoProportionTest(100000, 200000, 100000, 200000);
+    assertTrue(Number.isFinite(r.pFisher) && r.pFisher >= 0 && r.pFisher <= 1, `pFisher: ${r.pFisher}`);
+  });
+});
+
 CASES.forEach(([id, run], k) => {
   const fx = FIXTURES[k];
   suite(`attribute-test-engine: ${id}`, () => {

@@ -35,7 +35,7 @@ function betaQuantile(p, a, b) {
   return (lo + hi) / 2;
 }
 
-/** Standard normal quantile, Acklam refined by one Halley step. */
+/** Standard normal quantile (zQuantile), Acklam refined by one Halley step. */
 function zQuantile(p) {
   const x = normalQuantile(p);
   const e = (1 - normalUpperTail(x)) - p;
@@ -64,6 +64,7 @@ function binomGE(k, n, p) {
   return betaIncomplete(p, k, n - k + 1);
 }
 
+/** Natural log of the binomial coefficient C(n, k). */
 function lnChoose(n, k) {
   return lnGamma(n + 1) - lnGamma(k + 1) - lnGamma(n - k + 1);
 }
@@ -132,7 +133,8 @@ export function fisherExact2x2(table, direction = 'two-sided') {
   const hi = Math.min(r1, c1);
   const logP = [];
   for (let k = lo; k <= hi; k++) logP.push(lnChoose(r1, k) + lnChoose(r2, c1 - k));
-  const maxLog = Math.max(...logP);
+  let maxLog = -Infinity;
+  for (const l of logP) if (l > maxLog) maxLog = l;
   const w = logP.map(l => Math.exp(l - maxLog));
   const total = w.reduce((s, v) => s + v, 0);
   const obs = w[a - lo];
