@@ -69,3 +69,12 @@
   text-align: center;
   color: var(--color-text-secondary);
 }
+
+.resampling__result-table {
+  width: auto;
+}
+
+.resampling__result-table td {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

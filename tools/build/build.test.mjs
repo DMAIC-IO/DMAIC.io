@@ -582,3 +582,13 @@ test('isWatchedSource rebuilds on worker sources, never on sw.js itself', () => 
   assert.equal(isWatchedSource(join('js', 'sw', 'strategy.js')), true);
   assert.equal(isWatchedSource('sw.js'), false);
 });
+
+test('index.dist.html links every stylesheet under js/', () => {
+  // A module stylesheet missing from the STYLES list never reaches app.min.css.
+  const linked = new Set(readCssLinks(readFileSync(join(APP_DIR, 'index.dist.html'), 'utf8')));
+  const walk = (rel) => readdirSync(join(APP_DIR, rel), { withFileTypes: true }).flatMap((e) =>
+    e.isDirectory() ? (e.name === 'chunks' ? [] : walk(`${rel}/${e.name}`))
+      : e.name.endsWith('.css') ? [`${rel}/${e.name}`] : []);
+  const missing = walk('js').filter((href) => !linked.has(href));
+  assert.deepEqual(missing, []);
+});

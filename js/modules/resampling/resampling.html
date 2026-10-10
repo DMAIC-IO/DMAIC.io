@@ -143,16 +143,30 @@
     <template x-if="view">
       <div class="resampling__contents">
         <div class="dmike-split__output-section" x-text="t('sectionResult')"></div>
-        <table class="resampling__table">
+        <table class="dmike-table dmike-table--head-mono resampling__result-table" data-ref="result-table">
+          <thead>
+            <tr>
+              <th x-text="t('estimate')"></th>
+              <th x-show="view.hasBoot" x-text="t('se')"></th>
+              <th x-show="view.hasBoot" x-text="t('bias')"></th>
+              <th x-show="view.hasBoot" x-text="t('interval') + ' (' + t(model.ciMethod === 'bca' ? 'ciBca' : 'ciPercentile') + ')'"></th>
+              <th x-show="view.decisionKey" x-text="t('decision')"></th>
+              <th x-show="view.hasTest" x-text="t('observedT')"></th>
+              <th x-show="view.hasTest" x-text="t('pValue')"></th>
+              <th x-show="view.hasTest" x-text="t('permutations')"></th>
+            </tr>
+          </thead>
           <tbody>
-            <tr><th x-text="t('estimate')"></th><td data-ref="result-estimate" x-text="view.estimate"></td></tr>
-            <tr x-show="view.hasBoot"><th x-text="t('se')"></th><td data-ref="result-se" x-text="view.se"></td></tr>
-            <tr x-show="view.hasBoot"><th x-text="t('bias')"></th><td data-ref="result-bias" x-text="view.bias"></td></tr>
-            <tr x-show="view.hasBoot"><th x-text="t('interval') + ' (' + t(model.ciMethod === 'bca' ? 'ciBca' : 'ciPercentile') + ')'"></th><td data-ref="result-interval" x-text="view.interval"></td></tr>
-            <tr x-show="view.decisionKey"><th x-text="t('decision')"></th><td data-ref="result-decision" x-text="view.decisionKey ? t(view.decisionKey) : ''"></td></tr>
-            <tr x-show="view.hasTest"><th x-text="t('observedT')"></th><td data-ref="result-observed" x-text="view.test ? view.test.observed : ''"></td></tr>
-            <tr x-show="view.hasTest"><th x-text="t('pValue')"></th><td data-ref="result-pvalue" x-text="view.test ? view.test.pValue : ''"></td></tr>
-            <tr x-show="view.hasTest"><th x-text="t('permutations')"></th><td data-ref="result-method" x-text="view.test ? t(view.test.methodKey) + ' · ' + view.test.permutations : ''"></td></tr>
+            <tr>
+              <td data-ref="result-estimate" x-text="view.estimate"></td>
+              <td x-show="view.hasBoot" data-ref="result-se" x-text="view.se"></td>
+              <td x-show="view.hasBoot" data-ref="result-bias" x-text="view.bias"></td>
+              <td x-show="view.hasBoot" data-ref="result-interval" x-text="view.interval"></td>
+              <td x-show="view.decisionKey" data-ref="result-decision" x-text="view.decisionKey ? t(view.decisionKey) : ''"></td>
+              <td x-show="view.hasTest" data-ref="result-observed" x-text="view.test ? view.test.observed : ''"></td>
+              <td x-show="view.hasTest" data-ref="result-pvalue" x-text="view.test ? view.test.pValue : ''"></td>
+              <td x-show="view.hasTest" data-ref="result-method" x-text="view.test ? t(view.test.methodKey) + ' · ' + view.test.permutations : ''"></td>
+            </tr>
           </tbody>
         </table>
         <p class="resampling__note" data-ref="result-bca-fallback" x-show="view.bcaFallback" x-text="t('bcaFallback')"></p>
