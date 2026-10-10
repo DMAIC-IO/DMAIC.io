@@ -77,7 +77,8 @@
   "modules": [
     "hypothesis-test",
     "sample-size",
-    "msa-typ4"
+    "msa-typ4",
+    "resampling"
   ],
   "algoLab": [
     "hypothesis/one-sample-t-test",

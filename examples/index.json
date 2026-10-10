@@ -1286,6 +1286,66 @@
       ]
     },
     {
+      "id": "resampling-ppk-bolzen",
+      "type": "project",
+      "title": { "de": "Bolzendurchmesser: Ppk mit Bootstrap-Intervall", "en": "Bolt diameter: Ppk with a bootstrap interval" },
+      "description": {
+        "de": "30 Bolzendurchmesser mit einzelnen Ausreißern, Toleranz 9,7–10,3 mm. Der Bootstrap liefert ein BCa-Intervall für Ppk; der Sollwert 1,33 zeigt, ob die Fähigkeit statistisch abgesichert ist.",
+        "en": "30 bolt diameters with a few outliers, tolerance 9.7–10.3 mm. The bootstrap gives a BCa interval for Ppk; the target 1.33 shows whether capability is statistically assured."
+      },
+      "source": "Qprovement synthetisch",
+      "license": "public-domain",
+      "file": "projects/resampling-ppk-bolzen.json",
+      "format": "json",
+      "modules": ["resampling"],
+      "tags": ["resampling", "bootstrap", "ppk", "capability", "bolzen"]
+    },
+    {
+      "id": "resampling-pizza-two",
+      "type": "project",
+      "title": { "de": "Lieferzeit Fahrer A vs. B (Median, Permutationstest)", "en": "Delivery time driver A vs. B (median, permutation test)" },
+      "description": {
+        "de": "Je 15 Lieferzeiten zweier Fahrer. Bootstrap-Intervall für die Differenz der Mediane und zweiseitiger Permutationstest — ohne Normalverteilungsannahme.",
+        "en": "15 delivery times each for two drivers. Bootstrap interval for the difference of medians and a two-sided permutation test — no normality assumption."
+      },
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=801",
+      "license": "public-domain",
+      "file": "projects/resampling-pizza-two.json",
+      "format": "json",
+      "modules": ["resampling"],
+      "tags": ["resampling", "permutation", "median", "two-sample", "pizza"]
+    },
+    {
+      "id": "resampling-ruestzeit-paired",
+      "type": "project",
+      "title": { "de": "Rüstzeit vorher/nachher (gepaart)", "en": "Setup time before/after (paired)" },
+      "description": {
+        "de": "Rüstzeiten (min) an 12 Maschinen vor und nach einem SMED-Workshop. Gepaarter Bootstrap der mittleren Einsparung und einseitiger Vorzeichen-Permutationstest (exakt, 2¹² Zuordnungen).",
+        "en": "Setup times (min) on 12 machines before and after a SMED workshop. Paired bootstrap of the mean saving and a one-sided sign-flip permutation test (exact, 2¹² assignments)."
+      },
+      "source": "Qprovement Lehrcase",
+      "license": "public-domain",
+      "file": "projects/resampling-ruestzeit-paired.json",
+      "format": "json",
+      "modules": ["resampling"],
+      "tags": ["resampling", "permutation", "paired", "smed", "ruestzeit"]
+    },
+    {
+      "id": "resampling-pizza-k",
+      "type": "project",
+      "title": { "de": "Lieferzeit pro Fahrer (k Stichproben, Permutation)", "en": "Delivery time by driver (k samples, permutation)" },
+      "description": {
+        "de": "Drei Fahrer mit je 15 Lieferzeiten. Globaler Permutationstest der Mittelwerte, Bootstrap-Intervall je Fahrer und Paarvergleiche mit Holm-Korrektur — das verteilungsfreie Gegenstück zum ANOVA-Beispiel.",
+        "en": "Three drivers with 15 delivery times each. Global permutation test of the means, a bootstrap interval per driver and pairwise comparisons with Holm correction — the distribution-free counterpart of the ANOVA example."
+      },
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=801",
+      "license": "public-domain",
+      "file": "projects/resampling-pizza-k.json",
+      "format": "json",
+      "modules": ["resampling"],
+      "tags": ["resampling", "permutation", "k-sample", "holm", "pizza"]
+    },
+    {
       "id": "boxplot-pizza-fahrer",
       "type": "project",
       "title": {
@@ -3282,6 +3342,21 @@
       "format": "json",
       "modules": ["worksheet"],
       "tags": ["worksheet", "pizza", "rohdaten"]
+    },
+    {
+      "id": "worksheet-resampling-ruestzeit",
+      "type": "project",
+      "title": { "de": "Rüstzeit vorher/nachher (Datensammlung)", "en": "Setup time before/after (data collection)" },
+      "description": {
+        "de": "Rüstzeiten an 12 Maschinen vor und nach einem SMED-Workshop.",
+        "en": "Setup times on 12 machines before and after a SMED workshop."
+      },
+      "source": "Qprovement Lehrcase",
+      "license": "public-domain",
+      "file": "worksheets/resampling-ruestzeit.json",
+      "format": "json",
+      "modules": ["worksheet"],
+      "tags": ["worksheet", "ruestzeit", "rohdaten"]
     },
     {
       "id": "worksheet-bolzendurchmesser",

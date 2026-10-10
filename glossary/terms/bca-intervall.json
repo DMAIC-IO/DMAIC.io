@@ -1,0 +1,42 @@
+{
+  "id": "bca-intervall",
+  "category": "hypothesis",
+  "title": { "de": "BCa-Intervall", "en": "BCa interval" },
+  "short": {
+    "de": "Bias-korrigiertes und beschleunigtes Bootstrap-Konfidenzintervall: Perzentile der Replikate, verschoben um Verzerrung z₀ und Schiefe-Korrektur a.",
+    "en": "Bias-corrected and accelerated bootstrap confidence interval: percentiles of the replicates, shifted by the bias z₀ and the skewness correction a."
+  },
+  "definition": {
+    "de": [
+      { "type": "paragraph", "text": "Das **BCa-Intervall** verbessert das Perzentil-Intervall des {{term:bootstrap|Bootstraps}}. z₀ misst, welcher Anteil der Replikate unter θ̂ liegt (Median-Verzerrung); a, die Beschleunigung, kommt aus dem Jackknife und erfasst, wie sich der Standardfehler mit θ ändert." },
+      { "type": "formula", "latex": "\\alpha_{1,2} = \\Phi\\!\\left(z_0 + \\frac{z_0 + z_{\\alpha/2,\\,1-\\alpha/2}}{1 - a\\,(z_0 + z_{\\alpha/2,\\,1-\\alpha/2})}\\right)" },
+      { "type": "list", "items": [
+        "**z₀** = Φ⁻¹(Anteil θ̂* < θ̂)",
+        "**a** = Σ Lᵢ³ / (6 · (Σ Lᵢ²)^{3/2}) mit den Jackknife-Einflusswerten Lᵢ",
+        "Intervall = α₁- und α₂-Quantil der Replikate"
+      ] },
+      { "type": "note", "text": "Sind alle Replikate gleich oder alle Einflusswerte null, ist BCa nicht bestimmbar; das Modul zeigt dann das Perzentil-Intervall." }
+    ],
+    "en": [
+      { "type": "paragraph", "text": "The **BCa interval** improves the percentile interval of the {{term:bootstrap|bootstrap}}. z₀ measures which share of the replicates lies below θ̂ (median bias); a, the acceleration, comes from the jackknife and captures how the standard error changes with θ." },
+      { "type": "formula", "latex": "\\alpha_{1,2} = \\Phi\\!\\left(z_0 + \\frac{z_0 + z_{\\alpha/2,\\,1-\\alpha/2}}{1 - a\\,(z_0 + z_{\\alpha/2,\\,1-\\alpha/2})}\\right)" },
+      { "type": "list", "items": [
+        "**z₀** = Φ⁻¹(share of θ̂* < θ̂)",
+        "**a** = Σ Lᵢ³ / (6 · (Σ Lᵢ²)^{3/2}) with the jackknife influence values Lᵢ",
+        "Interval = α₁ and α₂ quantiles of the replicates"
+      ] },
+      { "type": "note", "text": "When all replicates are equal or all influence values are zero, BCa is undefined; the module then shows the percentile interval." }
+    ]
+  },
+  "aliases": {
+    "de": ["BCa", "bias-korrigiertes beschleunigtes Intervall"],
+    "en": ["BCa", "bias-corrected and accelerated interval"]
+  },
+  "seeAlso": ["bootstrap", "bias", "schiefe"],
+  "modules": ["resampling"],
+  "algoLab": [],
+  "sources": [
+    { "label": "Efron, B. — Better Bootstrap Confidence Intervals, Journal of the American Statistical Association, 82(397), 1987", "url": null },
+    { "label": "Efron, B. & Tibshirani, R. J. — An Introduction to the Bootstrap, Chapman & Hall, 1993, ch. 14", "url": null }
+  ]
+}

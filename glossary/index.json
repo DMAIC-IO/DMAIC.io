@@ -481,6 +481,21 @@
       "file": "terms/p-wert.json"
     },
     {
+      "id": "bootstrap",
+      "category": "hypothesis",
+      "file": "terms/bootstrap.json"
+    },
+    {
+      "id": "permutationstest",
+      "category": "hypothesis",
+      "file": "terms/permutationstest.json"
+    },
+    {
+      "id": "bca-intervall",
+      "category": "hypothesis",
+      "file": "terms/bca-intervall.json"
+    },
+    {
       "id": "signifikanzniveau",
       "category": "hypothesis",
       "file": "terms/signifikanzniveau.json"

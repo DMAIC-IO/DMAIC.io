@@ -1,0 +1,17 @@
+{
+  "mode": "paired",
+  "statisticId": "mean",
+  "statParams": { "trim": 0.1, "p": 0.95, "lsl": "", "usl": "" },
+  "contrast": "difference",
+  "direction": "greater",
+  "target": "",
+  "colRef1": { "instanceId": "__source__", "sheetId": "sheet-resampling-ruestzeit", "columnId": "c-vorher" },
+  "colRef2": { "instanceId": "__source__", "sheetId": "sheet-resampling-ruestzeit", "columnId": "c-nachher" },
+  "colRefsK": [],
+  "B": 10000,
+  "seed": 42,
+  "confidence": 0.95,
+  "ciMethod": "bca",
+  "result": null,
+  "sourceWorksheetFile": "worksheets/resampling-ruestzeit.json"
+}

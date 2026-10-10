@@ -72,7 +72,8 @@
     "prozessfaehigkeit"
   ],
   "modules": [
-    "process-capability"
+    "process-capability",
+    "resampling"
   ],
   "algoLab": [
     "capability/ppk"

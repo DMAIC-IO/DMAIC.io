@@ -10,7 +10,8 @@ import r7 from '../modules/msa-typ2/msa-typ2-references.js';
 import r8 from '../modules/msa-typ5/msa-typ5-references.js';
 import r9 from '../modules/msa-typ6/msa-typ6-references.js';
 import r10 from '../modules/process-capability/process-capability-references.js';
-import r11 from '../modules/sample-size/sample-size-references.js';
+import r11 from '../modules/resampling/resampling-references.js';
+import r12 from '../modules/sample-size/sample-size-references.js';
 
 export const REFS = {
   "attribute-control-chart": r0,
@@ -24,5 +25,6 @@ export const REFS = {
   "msa-typ5": r8,
   "msa-typ6": r9,
   "process-capability": r10,
-  "sample-size": r11,
+  "resampling": r11,
+  "sample-size": r12,
 };
