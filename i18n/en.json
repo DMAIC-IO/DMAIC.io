@@ -6127,6 +6127,7 @@
       "statusGranted": "Access granted",
       "statusDenied": "No access granted",
       "revoke": "Revoke access",
+      "briefing": "Read the agent briefing",
       "revoked": "Access revoked",
       "coverage": "{available} of {total} modules agent-capable"
     }

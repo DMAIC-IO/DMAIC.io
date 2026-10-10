@@ -87,6 +87,9 @@
             <button type="button" class="btn btn--sm btn--ghost" id="settings-agent-revoke"
                     x-show="agentGranted" @click="revokeAgentConsent()"
                     x-text="agentRevokeLabel"></button>
+            <button type="button" class="btn btn--sm btn--ghost" id="settings-agent-briefing"
+                    data-testid="settings-agent-briefing"
+                    @click="openAgentBriefing()" x-text="agentBriefingLabel"></button>
             <p class="settings-hint" x-text="agentHint"></p>
           </div>
         </div>

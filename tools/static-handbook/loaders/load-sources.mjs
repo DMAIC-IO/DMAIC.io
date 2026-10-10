@@ -8,7 +8,7 @@
  * the build reads fresh every run so it is always in sync with the sources.
  */
 
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import path from 'node:path';
@@ -20,15 +20,16 @@ import { loadVideos } from './load-videos.mjs';
  * @param {string} repoRoot
  */
 export async function loadAllSources(repoRoot) {
-  const [modules, algorithms, i18n, examples, glossary, videos] = await Promise.all([
+  const [modules, guides, algorithms, i18n, examples, glossary, videos] = await Promise.all([
     loadModules(repoRoot),
+    loadGuides(repoRoot),
     loadAlgorithms(repoRoot),
     loadI18n(repoRoot),
     loadExamples(repoRoot),
     loadGlossary(repoRoot),
     loadVideos(repoRoot),
   ]);
-  return { modules, algorithms, i18n, examples, glossary, videos };
+  return { modules, guides, algorithms, i18n, examples, glossary, videos };
 }
 
 // ─── Modules ────────────────────────────────────────────────────────
@@ -68,6 +69,46 @@ export async function loadModules(repoRoot, manifestOverride) {
       help: normalizeHelp(help),
       references: await loadReferences(path.join(dir, `${entry.id}-references.js`)),
     });
+  }
+  return results;
+}
+
+// ─── Guides (module-free chapters) ───────────────────
+
+/** Where the module-free handbook chapters live. */
+const GUIDES_DIR = 'js/help';
+
+/**
+ * Load every module-free handbook from `js/help/<id>-help.js`.
+ *
+ * These chapters belong to no module: the AI-assistant briefing today, a
+ * "Working with Qprovement" chapter tomorrow. They carry `phase: 'guide'`,
+ * which is what puts their page at `/<lang>/guide/<id>.html` — the path is
+ * built from `phase` in `renderModulePage`, so no new renderer is needed.
+ *
+ * Only `<id>-help.js` counts as a chapter. `js/help/help-keys.js` sits in the
+ * same directory and carries nothing but identifiers; the suffix check is what
+ * keeps it out (same rule `tools/build/help-data.mjs` applies).
+ *
+ * @param {string} repoRoot
+ * @returns {Promise<Array<{id: string, phase: 'guide', cycles: null, help: object, references: []}>>}
+ */
+export async function loadGuides(repoRoot) {
+  const dir = path.join(repoRoot, GUIDES_DIR);
+  if (!existsSync(dir)) return [];
+  const results = [];
+  for (const file of (await readdir(dir)).sort()) {
+    if (!file.endsWith('-help.js')) continue;
+    const id = file.slice(0, -'-help.js'.length);
+    let help = null;
+    try {
+      const mod = await import(pathToFileURL(path.join(dir, file)).href);
+      help = mod.default || mod;
+    } catch (err) {
+      console.warn(`[handbook] Failed to load ${file}: ${err.message}`);
+    }
+    if (!help) continue;
+    results.push({ id, phase: 'guide', cycles: null, help: normalizeHelp(help), references: [] });
   }
   return results;
 }

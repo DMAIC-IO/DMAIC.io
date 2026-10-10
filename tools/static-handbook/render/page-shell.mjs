@@ -105,6 +105,7 @@ const UI_STRINGS = {
       recognize: 'D8 — Team würdigen',
       data: 'Daten & Werkzeuge',
       extras: 'Weitere',
+      guide: 'Leitfäden',
     },
     phaseIntro: {
       define: 'Phase 1 des DMAIC-Zyklus — Problem, Ziele, Scope und Stakeholder definieren.',
@@ -125,6 +126,7 @@ const UI_STRINGS = {
       recognize: 'D8 des 8D-Zyklus — Erfolg sichtbar machen, Team entlasten, Lessons Learned dokumentieren und kommunizieren.',
       data: 'Werkzeuge zur Datenaufbereitung, Visualisierung und -erzeugung — phasen­übergreifend nutzbar.',
       extras: 'Werkzeuge ohne feste Phasenzuordnung im aktiven Zyklus — per Drag & Drop in eine Phase verschiebbar.',
+      guide: 'Kapitel, die zu keinem einzelnen Werkzeug gehören — übergreifende Handbücher.',
     },
     labIntro: 'Verifizierte statistische Algorithmen mit Formeln, Annahmen und Referenzen. Jeder Algorithmus ist gegen Minitab, R oder NIST-Referenzdaten validiert.',
     algoFormulas: 'Formeln',
@@ -257,6 +259,7 @@ const UI_STRINGS = {
       recognize: 'D8 — Recognize the Team',
       data: 'Data & Tools',
       extras: 'More',
+      guide: 'Guides',
     },
     phaseIntro: {
       define: 'Phase 1 of the DMAIC cycle — define problem, goals, scope and stakeholders.',
@@ -277,6 +280,7 @@ const UI_STRINGS = {
       recognize: 'D8 of the 8D cycle — make the success visible, discharge the team, document and communicate the lessons learned.',
       data: 'Data preparation, visualisation and generation tools — usable across every phase.',
       extras: 'Tools without a fixed phase assignment in the active cycle — drag & drop them into a phase.',
+      guide: 'Chapters that belong to no single tool — cross-cutting handbooks.',
     },
     labIntro: 'Verified statistical algorithms with formulas, assumptions and references. Every algorithm is validated against Minitab, R, or NIST reference data.',
     algoFormulas: 'Formulas',

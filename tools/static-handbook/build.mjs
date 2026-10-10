@@ -41,6 +41,7 @@ import {
   renderCycleIndex,
   renderExamplePage,
   renderExamplesIndex,
+  guideName,
 } from './render/pages.mjs';
 import { renderGlossaryIndex, renderGlossaryTermPage } from './render/glossary-page.mjs';
 import { renderSitemap, renderRobots } from './render/sitemap.mjs';
@@ -79,7 +80,7 @@ async function main() {
 
   // ─── Load sources ──────────────────────────────────────────────
   const sources = await loadAllSources(REPO);
-  log(`${COLORS.green}✓${COLORS.reset} Loaded ${sources.modules.length} modules, ${sources.algorithms.algorithms.length} algorithms`);
+  log(`${COLORS.green}✓${COLORS.reset} Loaded ${sources.modules.length} modules, ${sources.guides.length} guides, ${sources.algorithms.algorithms.length} algorithms`);
 
   // ─── Prepare output dirs ───────────────────────────────────────
   await mkdir(OUT, { recursive: true });
@@ -109,6 +110,7 @@ async function main() {
     // Lang index
     const langIndex = renderLangIndex({
       modules: sources.modules,
+      guides: sources.guides,
       lang,
       i18n: sources.i18n,
       examples: sources.examples,
@@ -126,6 +128,24 @@ async function main() {
         examples: sources.examples,
         glossary: sources.glossary,
         videos: sources.videos,
+      });
+      const dest = path.join(OUT, rel(page.pathFromRoot));
+      await writeOut(dest, page.html);
+      sitemapEntries.push({ path: page.pathFromRoot, priority: '0.8', changefreq: 'monthly' });
+      pageCount++;
+    }
+
+    // Guide pages — module-free chapters. Same renderer, same path shape;
+    // only the name comes from an i18n key instead of `modules.<id>.name`.
+    for (const guide of sources.guides) {
+      const page = await renderModulePage({
+        module: guide,
+        lang,
+        i18n: sources.i18n,
+        examples: { entries: [] },
+        glossary: sources.glossary,
+        videos: sources.videos,
+        name: guideName(guide.id, sources.i18n, lang),
       });
       const dest = path.join(OUT, rel(page.pathFromRoot));
       await writeOut(dest, page.html);

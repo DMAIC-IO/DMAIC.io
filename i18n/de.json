@@ -6131,6 +6131,7 @@
       "statusGranted": "Zugriff erlaubt",
       "statusDenied": "Kein Zugriff erteilt",
       "revoke": "Zugriff widerrufen",
+      "briefing": "Briefing für Agenten lesen",
       "revoked": "Zugriff widerrufen",
       "coverage": "{available} von {total} Modulen agentenfähig"
     }

@@ -23,9 +23,20 @@
  * eigene kleine generierte Datei — steht in der Roadmap.
  */
 import { readConsent, revokeConsent, AGENT_COVERAGE } from '../../core/agent/index.js';
+import { AI_ASSISTANT_CHAPTER_ID } from '../../help/help-keys.js';
 
 /** Das Ereignis, über das sich der Einwilligungsstand ändert. */
 export const CONSENT_CHANGED = 'agent:consent-changed';
+
+/**
+ * Das Ereignis, mit dem ein modulfreies Handbuchkapitel im Hilfe-Panel
+ * geöffnet wird. Der Abschnitt kennt das Panel nicht — er nennt nur die
+ * Kennung; `js/frame/header/module-help.js` hört darauf.
+ *
+ * Nur die Kennung wird importiert, nicht das Kapitel: eine Einstellungsseite
+ * soll keine Handbuchprosa in ihren Abhängigkeitsgraphen ziehen.
+ */
+export const SHOW_GUIDE = 'help:show-guide';
 
 /**
  * Baut die Alpine-Daten des Abschnitts. Das Ergebnis wird in die data()-Fabrik
@@ -45,6 +56,7 @@ export function agentSettingsData({ stateManager, i18n, eventBus, notify }) {
     agentTitle: i18n.t('agent.settings.title'),
     agentHint: i18n.t('agent.settings.hint'),
     agentRevokeLabel: i18n.t('agent.settings.revoke'),
+    agentBriefingLabel: i18n.t('agent.settings.briefing'),
     agentCoverage: i18n.t('agent.settings.coverage', AGENT_COVERAGE),
     agentGranted: readConsent(stateManager).granted,
 
@@ -53,6 +65,17 @@ export function agentSettingsData({ stateManager, i18n, eventBus, notify }) {
       return this.agentGranted
         ? i18n.t('agent.settings.statusGranted')
         : i18n.t('agent.settings.statusDenied');
+    },
+
+    /**
+     * Öffnet das Hilfe-Panel mit dem Rollen-Briefing.
+     *
+     * Dasselbe Kapitel, das `interact()` als `briefing` liefert und das der
+     * statische Generator nach /app/<tag>/docs/ mitnimmt — eine Quelle, drei
+     * Verwendungen. Hier die zweite.
+     */
+    openAgentBriefing() {
+      eventBus.emit(SHOW_GUIDE, { id: AI_ASSISTANT_CHAPTER_ID });
     },
 
     /** Widerruft die Einwilligung für dieses Browser-Profil. */

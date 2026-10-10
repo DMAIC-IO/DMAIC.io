@@ -28,3 +28,19 @@ export const AI_ASSISTANT_CHAPTER_ID = 'ai-assistant';
  * @type {string}
  */
 export const AI_ASSISTANT_CHAPTER_KEY = 'aiAssistant';
+
+/**
+ * Welcher i18n-Schlüssel unter `moduleHelp.*` die Überschrift eines
+ * modulfreien Kapitels trägt — die eine Zuordnung von Kennung zu Schlüssel,
+ * die jeder Leser importiert statt sie nachzurechnen.
+ *
+ * Drei Leser: das Hilfe-Panel (`js/frame/header/module-help.js`), der
+ * Sprachindex und die Seitenüberschrift des statischen Generators
+ * (`tools/static-handbook/render/pages.mjs`). Ein zweites Kapitel braucht
+ * hier eine Zeile und sonst nirgends eine Änderung.
+ *
+ * @type {Record<string, string>}
+ */
+export const GUIDE_I18N_KEYS = {
+  [AI_ASSISTANT_CHAPTER_ID]: AI_ASSISTANT_CHAPTER_KEY,
+};

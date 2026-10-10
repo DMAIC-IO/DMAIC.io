@@ -9,6 +9,8 @@ import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { agentSettingsData } from '../../js/pages/settings/settings-agent.js';
 import { CONSENT_PATH, grantConsent, readConsent } from '../../js/core/agent/agent-consent.js';
 import { AGENT_COVERAGE } from '../../js/core/agent/agent-registry.generated.js';
+import { SHOW_GUIDE } from '../../js/pages/settings/settings-agent.js';
+import { AI_ASSISTANT_CHAPTER_ID } from '../../js/help/help-keys.js';
 
 /** Minimaler stateManager: nur get/set auf flachen Pfaden. */
 function fakeState(initial = {}) {
@@ -107,6 +109,18 @@ suite('settings agent section', () => {
     stateManager.set(CONSENT_PATH, { granted: true, at: 'x', contract: 1 });
     data.agentInit();
     assertEqual(data.agentGranted, true);
+  });
+
+  test('der Briefing-Knopf bittet das Hilfe-Panel um das Kapitel', () => {
+    // Der Einstieg in das Rollen-Briefing: der Abschnitt kennt das Hilfe-Panel
+    // nicht, er nennt nur die Kennung des Kapitels. Wer sie öffnet, hört auf
+    // `help:show-guide` (js/frame/header/module-help.js).
+    const { data, eventBus } = build();
+    const seen = [];
+    eventBus.on(SHOW_GUIDE, (payload) => seen.push(payload));
+    data.openAgentBriefing();
+    assertDeepEqual(seen, [{ id: AI_ASSISTANT_CHAPTER_ID }]);
+    assertEqual(data.agentBriefingLabel, 'agent.settings.briefing');
   });
 
   test('agentDestroy meldet das Abonnement ab — kein doppelter Listener nach Re-Mount', () => {
