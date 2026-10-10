@@ -10,9 +10,9 @@ import { createPage } from '../../core/create-page.js';
 import { h } from '../../core/dom.js';
 import { DashboardGrid } from '../../ui/dashboard-grid.js';
 import { DEFAULT_DASHBOARD_LAYOUT } from './default-layout.js';
-import { enumerateTiles, loadTileModules, refreshEventsOf } from './enumerate-tiles.js';
+import { enumerateTiles, loadTileModules, refreshEventsOf, copyId, copyDescriptor, sourceChoices } from './enumerate-tiles.js';
 import { renderTileSafely } from './tile-render.js';
-import { schemaOf, resolveSettings, toStored, withTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave } from './tile-settings.js';
+import { schemaOf, resolveSettings, toStored, withTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave, SOURCE_KEY, sourceField, coerceValue } from './tile-settings.js';
 import { buildSettingsForm } from './tile-settings-form.js';
 
 const page = createPage({
@@ -42,6 +42,8 @@ const page = createPage({
 
     let descriptors = [];
     const descriptorFor = (tileId) => descriptors.find(d => d.id === tileId);
+    /** Tiles whose source can be chosen and that can be duplicated. */
+    const isSourceCapable = (d) => !!(d?.kind && d.moduleId && d.instanceId);
 
     // A full render or unmount builds/drops the whole grid without firing
     // onTileRemoved, so release every placed tile (charts, listeners) first.
@@ -75,19 +77,38 @@ const page = createPage({
     };
 
     // ── Tile settings dialog ─────────────────────────────────────────────
+    // Source-capable tiles get the host-owned `_source` select first. For a
+    // base tile it defaults to the enumerated instance (stored sparsely); a
+    // copy has no enumerated instance, so its `_source` is always stored.
     const openTileSettings = async (tileId) => {
       const d = descriptorFor(tileId);
       if (!d?.tile || !modal) return;
-      const schema = schemaOf(d.tile);
+      const ownSchema = schemaOf(d.tile);
+      const capable = isSourceCapable(d);
+      const schema = capable
+        ? {
+          [SOURCE_KEY]: sourceField(sourceChoices(stateManager.get('phases'), d.moduleId, i18n),
+            d.isCopy ? d.instanceId : d.baseInstanceId),
+          ...ownSchema,
+        }
+        : ownSchema;
       if (Object.keys(schema).length === 0) return;
       const stored = (stateManager.get('dashboard.tileSettings') || {})[tileId];
       const form = buildSettingsForm(schema, resolveSettings(schema, stored), i18n);
       const tileTitle = (stateManager.get('dashboard.titles') || {})[tileId] || d.title;
       const confirmed = await modal.form(i18n.t('dashboard.tileSettings.title', { title: tileTitle }), form.el);
       if (confirmed !== true) return;
+      const values = form.read();
       const latest = stateManager.get('dashboard.tileSettings') || {};
-      stateManager.set('dashboard.tileSettings',
-        withTileSettings(latest, tileId, toStored(schema, form.read(), latest[tileId])));
+      const next = toStored(schema, values, latest[tileId]);
+      const source = capable ? coerceValue(schema[SOURCE_KEY], values[SOURCE_KEY]) : null;
+      if (d.isCopy) next[SOURCE_KEY] = source;
+      stateManager.set('dashboard.tileSettings', withTileSettings(latest, tileId, next));
+      // A new source changes instance and title: rebuild all descriptors.
+      if (capable && source !== d.instanceId) {
+        await render();
+        return;
+      }
       const body = handle.grid?.getTileBody(tileId);
       if (body) {
         try {
@@ -99,6 +120,30 @@ const page = createPage({
       await renderTile(tileId);
     };
 
+    // ── Duplicate ────────────────────────────────────────────────────────
+    // A copy is "<kind>~<uid>" with the original's stored settings and its
+    // effective source; a user-edited title is not copied. Settings and
+    // descriptor exist before addTile, whose layout save prunes unknown ids.
+    const duplicateTile = async (tileId) => {
+      const d = descriptorFor(tileId);
+      if (!isSourceCapable(d) || !handle.grid) return;
+      const id = copyId(d.kind);
+      const copy = copyDescriptor({ moduleId: d.moduleId, tile: d.tile, kind: d.kind }, id, d.instanceId, ctx);
+      if (!copy) return;
+      const all = stateManager.get('dashboard.tileSettings') || {};
+      stateManager.set('dashboard.tileSettings',
+        withTileSettings(all, id, { ...(all[tileId] || {}), [SOURCE_KEY]: d.instanceId }));
+      descriptors.push(copy);
+      const def = buildTileDefs().find(x => x.id === id);
+      if (handle.grid.addTile(def)) {
+        await renderTile(id);
+        return;
+      }
+      descriptors = descriptors.filter(x => x.id !== id);
+      stateManager.set('dashboard.tileSettings',
+        withTileSettings(stateManager.get('dashboard.tileSettings'), id, {}));
+    };
+
     // ── Tile-def assembly ───────────────────────────────────────
     const buildTileDefs = () => {
       return descriptors.map(d => ({
@@ -108,8 +153,10 @@ const page = createPage({
         removeLabel: i18n.t('dashboard.removeTile'),
         moveTitle: i18n.t('dashboard.moveTile'),
         resizeTitle: i18n.t('dashboard.resizeTile'),
-        hasSettings: !!d.tile && Object.keys(schemaOf(d.tile)).length > 0,
+        hasSettings: !!d.tile && (isSourceCapable(d) || Object.keys(schemaOf(d.tile)).length > 0),
         settingsLabel: i18n.t('dashboard.tileSettings.open'),
+        canDuplicate: isSourceCapable(d),
+        duplicateLabel: i18n.t('dashboard.duplicateTile'),
       }));
     };
 
@@ -147,7 +194,8 @@ const page = createPage({
       closeAddMenu();
       const placed = new Set(handle.grid.getPlacedTileIds());
       const allDefs = buildTileDefs();
-      const available = allDefs.filter(t => !placed.has(t.id));
+      // Copies are never offered: a removed copy is gone for good.
+      const available = allDefs.filter(t => !placed.has(t.id) && !descriptorFor(t.id)?.isCopy);
 
       const menu = h('div', { class: 'dashboard-area__add-menu' });
       if (available.length === 0) {
@@ -271,6 +319,7 @@ const page = createPage({
         }
       };
       handle.grid.onSettingsRequested = (tileId) => { openTileSettings(tileId); };
+      handle.grid.onDuplicateRequested = (tileId) => { duplicateTile(tileId); };
       handle.grid.onTitleChanged = (tileId, newTitle) => {
         const titles = stateManager.get('dashboard.titles') || {};
         titles[tileId] = newTitle;
