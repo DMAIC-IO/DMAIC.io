@@ -139,4 +139,14 @@ suite('resampling-presenter — chart configs', () => {
     assertEqual(permChartConfig(kSummary(), t).refLines.map((l) => l.value).join(','), '12.5');
     assertEqual(permChartConfig(one(), t), null);
   });
+  test('non-finite estimate / observed drops the reference line, empty bins drop the chart', () => {
+    const withBoot = (b) => one({ boot: { ...one().boot, ...b } });
+    assertDeepEqual(bootChartConfig(withBoot({ estimate: Infinity }), 'bca', t).refLines, []);
+    assertDeepEqual(bootChartConfig(withBoot({ estimate: null }), 'bca', t).refLines, []);
+    assertEqual(bootChartConfig(withBoot({ bins: [] }), 'bca', t), null);
+    const withPerm = (p) => two({ perm: { ...two().perm, ...p } });
+    assertDeepEqual(permChartConfig(withPerm({ observed: NaN }), t).refLines, []);
+    assertDeepEqual(permChartConfig(withPerm({ observed: null }), t).refLines, []);
+    assertEqual(permChartConfig(withPerm({ bins: [] }), t), null);
+  });
 });

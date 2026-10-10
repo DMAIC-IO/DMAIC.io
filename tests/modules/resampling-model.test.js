@@ -74,7 +74,7 @@ suite('resampling-model — defaults and rules', () => {
     s.confidence = 0.9;
     s.ciMethod = 'percentile';
     s.exampleWorksheetId = 'ws-1';
-    s.result = { inputsHash: '0badc0de', mode: 'two', boot: null };
+    s.result = { inputsHash: '0badc0de', mode: 'two', labels: ['A', 'B'], n: [3, 3], boot: null, perm: null, k: null };
     const r = State.fromJSON(JSON.parse(JSON.stringify(s.toJSON())));
     assertDeepEqual(r.toJSON(), s.toJSON());
   });
@@ -108,7 +108,30 @@ suite('resampling-model — fromJSON sanitizes garbage', () => {
     assertEqual(State.fromJSON({ result: { mode: 'one' } }).result, null);
     assertEqual(State.fromJSON({ result: { inputsHash: 5, mode: 'one' } }).result, null);
     assertEqual(State.fromJSON({ result: { inputsHash: 'ab', mode: 'x' } }).result, null);
-    assertEqual(State.fromJSON({ result: { inputsHash: 'ab', mode: 'k' } }).result.inputsHash, 'ab');
+    assertEqual(State.fromJSON({ result: { inputsHash: 'ab', mode: 'k', labels: [], n: [] } }).result.inputsHash, 'ab');
+  });
+  test('malformed result shapes are dropped, a valid summary survives', () => {
+    const base = { inputsHash: 'x', labels: ['A'], n: [3] };
+    const ci = { percentile: [1, 2], bca: [1, 2], bcaFallback: false };
+    const bins = [{ x0: 0, x1: 1, count: 1 }];
+    const bad = [
+      { inputsHash: 'x', mode: 'one', boot: {} },
+      { inputsHash: 'x', mode: 'k', k: {} },
+      { ...base, mode: 'one', labels: 'A' },
+      { ...base, mode: 'one', n: null },
+      { ...base, mode: 'one', boot: { ci: {}, bins: 'x' } },
+      { ...base, mode: 'one', boot: { ci: null, bins } },
+      { ...base, mode: 'two', perm: { bins: null } },
+      { ...base, mode: 'k', k: { bins, groups: [{}], posthoc: [] } },
+      { ...base, mode: 'k', k: { bins, groups: [], posthoc: [null] } },
+      { ...base, mode: 'k', k: 5 },
+    ];
+    for (const result of bad) assertEqual(State.fromJSON({ result }).result, null);
+    const good = {
+      ...base, mode: 'k', boot: null, perm: null,
+      k: { bins, groups: [{ ci }], posthoc: [{ i: 0, j: 0, ci }] },
+    };
+    assertDeepEqual(State.fromJSON({ result: good }).result, good);
   });
   test('colRefsK keeps only valid references', () => {
     const s = State.fromJSON({ colRefsK: [{ instanceId: 'w', columnId: 'a' }, null, 'b', { instanceId: 'w' }] });

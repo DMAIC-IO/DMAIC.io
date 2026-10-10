@@ -51,6 +51,29 @@ function sanitizeStatParams(d) {
   return out;
 }
 
+const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+const isAbsent = (v) => v === null || v === undefined;
+const hasCi = (v) => isObj(v) && isObj(v.ci);
+
+/**
+ * Shape check of a persisted result summary: exactly what the presenter and
+ * the charts read. Anything else is dropped, never repaired.
+ * @param {*} r
+ * @returns {boolean}
+ */
+function isValidResult(r) {
+  if (!isObj(r) || typeof r.inputsHash !== 'string' || !MODES.includes(r.mode)) return false;
+  if (!Array.isArray(r.labels) || !Array.isArray(r.n)) return false;
+  const { boot, perm, k } = r;
+  if (!isAbsent(boot) && !(isObj(boot) && isObj(boot.ci) && Array.isArray(boot.bins))) return false;
+  if (!isAbsent(perm) && !(isObj(perm) && Array.isArray(perm.bins))) return false;
+  if (!isAbsent(k)) {
+    if (!isObj(k) || !Array.isArray(k.bins) || !Array.isArray(k.groups) || !Array.isArray(k.posthoc)) return false;
+    if (!k.groups.every(hasCi) || !k.posthoc.every(hasCi)) return false;
+  }
+  return true;
+}
+
 export class State {
   /** @type {'one'|'two'|'paired'|'k'} */
   mode = 'one';
@@ -164,9 +187,7 @@ export class State {
     if (CI_METHODS.includes(d.ciMethod)) s.ciMethod = d.ciMethod;
     if (typeof d.exampleWorksheetId === 'string') s.exampleWorksheetId = d.exampleWorksheetId;
     const r = d.result;
-    if (r && typeof r === 'object' && !Array.isArray(r) && typeof r.inputsHash === 'string' && MODES.includes(r.mode)) {
-      s.result = r;
-    }
+    if (isValidResult(r)) s.result = r;
     return s;
   }
 }

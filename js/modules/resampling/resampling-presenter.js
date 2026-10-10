@@ -103,7 +103,7 @@ const copyBins = (bins) => bins.map((b) => ({ x0: b.x0, x1: b.x1, count: b.count
  * @param {(key: string) => string} t
  */
 export function bootChartConfig(summary, ciMethod, t) {
-  if (!summary || !summary.boot) return null;
+  if (!summary || !summary.boot || !summary.boot.bins.length) return null;
   const boot = summary.boot;
   const iv = pickCI(boot.ci, ciMethod);
   return {
@@ -112,7 +112,9 @@ export function bootChartConfig(summary, ciMethod, t) {
     xLabel: t('chartBootX'),
     showLegend: false,
     refAreas: iv ? [{ dir: 'x', min: iv[0], max: iv[1], color: 'var(--color-accent-light)', label: t('ciLabel') }] : [],
-    refLines: [{ value: boot.estimate, color: 'var(--color-chart-2)', label: 'θ̂', showLabel: true }],
+    refLines: Number.isFinite(boot.estimate)
+      ? [{ value: boot.estimate, color: 'var(--color-chart-2)', label: 'θ̂', showLabel: true }]
+      : [],
   };
 }
 
@@ -124,11 +126,14 @@ export function bootChartConfig(summary, ciMethod, t) {
  */
 export function permChartConfig(summary, t) {
   const part = summary ? (summary.perm || summary.k) : null;
-  if (!part) return null;
+  if (!part || !part.bins.length) return null;
   const line = (value) => ({ value, color: 'var(--color-error)', label: t('observedT'), showLabel: true });
-  const refLines = [line(part.observed)];
-  const twoSided = summary.mode !== 'k' && summary.direction === 'two-sided';
-  if (twoSided && part.observed !== 0) refLines.push(line(-part.observed));
+  const refLines = [];
+  if (Number.isFinite(part.observed)) {
+    refLines.push(line(part.observed));
+    const twoSided = summary.mode !== 'k' && summary.direction === 'two-sided';
+    if (twoSided && part.observed !== 0) refLines.push(line(-part.observed));
+  }
   return {
     data: [],
     bins: copyBins(part.bins),
