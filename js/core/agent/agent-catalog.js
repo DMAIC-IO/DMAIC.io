@@ -18,25 +18,22 @@
 import { ERRORS } from './agent-contract.js';
 import { axiError } from './agent-errors.js';
 import { VIRTUAL_PHASES, getAllPhaseIds } from '../cycles/cycles.js';
+import { allowedPhasesFor as phasesFor } from '../router/instance-ops.js';
 
 /**
- * Die Phasen, in denen eine Instanz dieses Moduls liegen darf. Erste
- * Position ist die Vorgabe-Zielphase.
+ * Die erlaubten Phasen eines Moduls im aktiven Zyklus.
  *
- * Spiegelt die Logik aus `module-registry.js:getByCycleAndPhase`:
- * Datenmodule sind zyklus-unabhängig, Module ohne Zuordnung für den aktiven
- * Zyklus landen im `extras`-Sammelbecken.
+ * Nur noch ein Durchreicher: die Regel steht in
+ * `core/router/instance-ops.js` und wird von Kacheln, Router und
+ * Agentenfläche gemeinsam benutzt. Der Name bleibt, weil `agent-ops.js` und
+ * `buildWorld` ihn aufrufen.
  *
- * @param {object} def  normalisierte Moduldefinition
+ * @param {object} def
  * @param {string} activeCycle
  * @returns {string[]}
  */
 export function allowedPhasesFor(def, activeCycle) {
-  if (def.phase === VIRTUAL_PHASES.data.id) return [VIRTUAL_PHASES.data.id];
-  const mapping = def.cycles?.[activeCycle];
-  if (!mapping) return [VIRTUAL_PHASES.extras.id];
-  const extra = Array.isArray(mapping.allowedPhases) ? mapping.allowedPhases : [];
-  return [mapping.phase, ...extra.filter(p => p !== mapping.phase)];
+  return phasesFor(def, activeCycle);
 }
 
 /**

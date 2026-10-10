@@ -5,6 +5,7 @@
  */
 
 import { uid } from '../uid.js';
+import { CYCLES, VIRTUAL_PHASES, getAllPhaseIds } from '../cycles/cycles.js';
 
 /**
  * Find the phase id whose instance array contains the given instanceId.
@@ -66,4 +67,89 @@ export function createInstance(stateManager, moduleRegistry, eventBus, moduleId,
   stateManager.set(`phases.${targetPhase}`, phases);
   eventBus.emit('module:added', { moduleId, phase: targetPhase, instanceId, silent });
   return instanceId;
+}
+
+/**
+ * Die Phasen, in denen dieses Modul in diesem Zyklus angelegt werden darf.
+ *
+ * Die EINZIGE Quelle dieser Regel. Sie gewinnt nicht aus Geschmack, sondern
+ * weil `module-registry.js:getByCycleAndPhase` so filtert: ein Modul ohne
+ * Zyklus-Zuordnung erscheint im Anlegemenü unter `extras` und nirgends
+ * sonst. Jede Ableitung, die daneben auf `def.phase` zurückfällt, erzeugt
+ * Instanzen in Phasen, deren Menü sie nie angeboten hat.
+ *
+ * @param {{ phase?: string, cycles?: object }} def  die Moduldefinition
+ * @param {string} activeCycle
+ * @returns {string[]} erste Position ist die Vorgabe, der Rest ist Wahl
+ */
+export function allowedPhasesFor(def, activeCycle) {
+  if (def.phase === VIRTUAL_PHASES.data.id) return [VIRTUAL_PHASES.data.id];
+  const mapping = def.cycles?.[activeCycle];
+  if (!mapping) return [VIRTUAL_PHASES.extras.id];
+  const extra = Array.isArray(mapping.allowedPhases) ? mapping.allowedPhases : [];
+  return [mapping.phase, ...extra.filter(p => p !== mapping.phase)];
+}
+
+/**
+ * Die Vorgabephase: erste Position aus `allowedPhasesFor`.
+ *
+ * In 112 der 138 Modul/Zyklus-Paare ist sie die einzige Möglichkeit und
+ * niemand muss eine Phase nennen; in 26 Paaren ist die Phase eine fachliche
+ * Entscheidung, die ein Aufrufer treffen darf.
+ *
+ * @param {{ phase?: string, cycles?: object }} def
+ * @param {string} activeCycle
+ * @returns {string}
+ */
+export function defaultPhaseFor(def, activeCycle) {
+  return allowedPhasesFor(def, activeCycle)[0];
+}
+
+/**
+ * Darf dieses Modul in diese Phase angelegt werden?
+ *
+ * Die drei Vorbedingungen an einem Ort: Phasenzugehörigkeit, Singleton,
+ * abgeschlossenes Projekt. `reason` bleibt bei den drei Zeichenketten, die
+ * `dmaic-tiles.js` heute an die Kachel-Beschriftung weitergibt
+ * (`phases.wrongPhase`, `phases.singletonExists`).
+ *
+ * @param {{ id: string, phase?: string, cycles?: object, singleton?: boolean }} def
+ * @param {string} phase  die Zielphase
+ * @param {{ instances: Map<string, { module: string, phase: string }>, completed: boolean }} world
+ *   das Lese-Abbild aus `buildWorld` — kein neuer Zustandsbegriff
+ * @returns {{ ok: true } | { ok: false, reason: 'wrongPhase'|'singleton'|'completed', allowedPhases?: string[] }}
+ */
+export function canAddInstance(def, phase, world) {
+  // Zuerst das abgeschlossene Projekt: dort ist der Modulsatz eingefroren,
+  // und `wrongPhase` wäre die unwichtigere von zwei wahren Antworten.
+  if (world?.completed === true) return { ok: false, reason: 'completed' };
+
+  const activeCycle = world?.activeCycle ?? null;
+  const allowed = allowedPhasesFor(def, activeCycle ?? inferCycle(world));
+  if (!allowed.includes(phase)) {
+    return { ok: false, reason: 'wrongPhase', allowedPhases: allowed };
+  }
+
+  if (def.singleton) {
+    for (const inst of world.instances.values()) {
+      if (inst.module === def.id) return { ok: false, reason: 'singleton' };
+    }
+  }
+
+  return { ok: true };
+}
+
+/**
+ * Der Zyklus aus dem Lese-Abbild. `buildWorld` führt die Phasenliste des
+ * aktiven Zyklus, nicht seine Kennung — und die Liste identifiziert ihn
+ * eindeutig. Lieber hier eine Zeile als ein zweiter Zustandsbegriff.
+ * @param {{ phases: string[] }} world
+ * @returns {string|null}
+ */
+function inferCycle(world) {
+  const phases = Array.isArray(world?.phases) ? world.phases.join(',') : '';
+  for (const cycleId of Object.keys(CYCLES)) {
+    if (getAllPhaseIds(cycleId).join(',') === phases) return cycleId;
+  }
+  return null;
 }
