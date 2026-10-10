@@ -139,3 +139,32 @@ suite('resampling-model — fromJSON sanitizes garbage', () => {
     assertEqual(s.colRefsK[0].columnId, 'a');
   });
 });
+
+/** Recursive Proxy wrapper, like Alpine's reactive(). */
+function deepProxy(obj) {
+  return new Proxy(obj, {
+    get(target, key, receiver) {
+      const v = Reflect.get(target, key, receiver);
+      return v !== null && typeof v === 'object' ? deepProxy(v) : v;
+    },
+  });
+}
+
+suite('resampling-model — toJSON under a reactive proxy', () => {
+  test('toJSON returns plain data that structuredClone accepts and fromJSON round-trips', () => {
+    const s = new State();
+    s.mode = 'one';
+    s.colRef1 = { instanceId: 'w', columnId: 'a' };
+    s.colRefsK = [{ instanceId: 'w', columnId: 'b' }];
+    s.statParams = { ...s.statParams, trim: 0.2 };
+    s.result = {
+      inputsHash: 'h', mode: 'one', labels: ['A'], n: [3],
+      boot: { estimate: 1, se: 0.1, bias: 0, ci: { percentile: [1, 2], bca: [1, 2], bcaFallback: false }, bins: [{ x0: 0, x1: 1, count: 2 }] },
+      perm: null, k: null,
+    };
+    const json = deepProxy(s).toJSON();
+    const cloned = structuredClone(json);
+    assertDeepEqual(State.fromJSON(cloned).toJSON(), s.toJSON());
+  });
+});
+

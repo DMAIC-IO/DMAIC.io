@@ -61,7 +61,8 @@
 }
 
 .resampling__chart {
-  min-height: 260px;
+  /* Fixed height: the chart card sizes itself with height:100%, which a min-height parent does not resolve. */
+  height: 320px;
 }
 
 .resampling__placeholder {

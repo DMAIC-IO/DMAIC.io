@@ -160,7 +160,9 @@ export class State {
       confidence: this.confidence,
       ciMethod: this.ciMethod,
       exampleWorksheetId: this.exampleWorksheetId,
-      result: this.result,
+      // Plain copy: through Alpine's reactive proxy a live reference would make
+      // the state manager's structuredClone throw (result is plain JSON by contract).
+      result: this.result ? JSON.parse(JSON.stringify(this.result)) : null,
     };
   }
 
