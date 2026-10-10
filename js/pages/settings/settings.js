@@ -251,8 +251,14 @@ export default createPage({
       // ── FMEA defaults for new FMEAs ───────────────────────
       fmeaDefaultMethod: pick(stateManager.get('settings.fmea.defaultMethod'), FMEA_DEFAULT_METHODS),
       fmeaDefaultType: pick(stateManager.get('settings.fmea.defaultType'), FMEA_DEFAULT_TYPES),
-      onFmeaDefaultMethod() { stateManager.set('settings.fmea.defaultMethod', this.fmeaDefaultMethod); },
-      onFmeaDefaultType() { stateManager.set('settings.fmea.defaultType', this.fmeaDefaultType); },
+      // Write the whole object: a nested set throws when settings.fmea is corrupt (string/null).
+      saveFmeaDefaults() {
+        stateManager.set('settings.fmea', {
+          defaultMethod: this.fmeaDefaultMethod, defaultType: this.fmeaDefaultType,
+        });
+      },
+      onFmeaDefaultMethod() { this.saveFmeaDefaults(); },
+      onFmeaDefaultType() { this.saveFmeaDefaults(); },
 
       // ── show algo-lab links ───────────────────────────────
       showAlgoLinks: stateManager.get('settings.showAlgoLabLinks') !== false,
