@@ -84,7 +84,12 @@ suite('Workspace — last active module per phase', () => {
     };
     const ws = makeWorkspace(PHASES, bus);
     let finishD1;
-    ws._containers.clear();                 // render() already mounted d1
+    // render() already mounted d1 — and left that mounting in `_pending`.
+    // Both have to go: `_ensureInstantiated` hands back an in-flight mounting
+    // before it ever looks at `_containers`, so a stale entry would
+    // short-circuit the stub below and never hand out `finishD1`.
+    ws._containers.clear();
+    ws._pending.clear();
     ws._instantiateModule = (id) => {
       ws._containers.set(id, document.createElement('div'));
       return id === 'd1' ? new Promise((r) => { finishD1 = r; }) : Promise.resolve();
