@@ -31,6 +31,7 @@ export function normalCdfPrecise(x) {
     b *= q / i;
     s = t + b;
   }
+  // eslint-disable-next-line no-loss-of-precision -- ln(sqrt(2*pi)) as in Marsaglia (2004)
   const p = 0.5 + s * Math.exp(-0.5 * q - 0.91893853320467274178);
   return Math.min(1, Math.max(0, p));
 }
@@ -47,6 +48,10 @@ export function normalQuantilePrecise(p) {
   const q = p - 0.5;
   let r;
   let val;
+  /* AS 241 coefficients quoted at the precision of R's qnorm.c. Digits beyond
+     double precision are intentional: they parse to the same IEEE-754 values and
+     keep the constants comparable with the published source. */
+  /* eslint-disable no-loss-of-precision */
   if (Math.abs(q) <= 0.425) {
     r = 0.180625 - q * q;
     return q * (((((((r * 2509.0809287301226727 +
@@ -84,5 +89,6 @@ export function normalQuantilePrecise(p) {
         7.868691311456132591e-4) * r + 0.0148753612908506148525) * r +
         0.13692988092273580531) * r + 0.59983220655588793769) * r + 1);
   }
+  /* eslint-enable no-loss-of-precision */
   return q < 0 ? -val : val;
 }
