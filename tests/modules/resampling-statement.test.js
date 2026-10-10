@@ -32,7 +32,7 @@ suite('resampling-statement — two samples', () => {
   test('not significant, two-sided: verdict, size of the difference and interval', () => {
     const parts = statementParts(two(), OPTS);
     assertDeepEqual(parts, [
-      { key: 'stmtTwoNot', params: { a: 'Fahrer_A', b: 'Fahrer_B', stat: 'statMedian', p: 'p = 0.7767', alpha: '0.05' } },
+      { key: 'stmtTwoNot', params: { a: 'Fahrer_A', b: 'Fahrer_B', stat: 'stmtStatMedian', p: 'p = 0.7767', alpha: '0.05' } },
       { key: 'stmtDiffBelow', params: { a: 'Fahrer_A', b: 'Fahrer_B', diff: '0.1130' } },
       { key: 'stmtIntervalDiff', params: { lo: '-3.6900', hi: '2.1500', conf: '95' } },
     ]);
@@ -93,7 +93,7 @@ suite('resampling-statement — paired', () => {
   test('verdict on the paired differences, then estimate and interval', () => {
     const s = two({ mode: 'paired', labels: ['Vorher', 'Nachher'] }, { pValue: 0.02 });
     assertDeepEqual(statementParts(s, OPTS), [
-      { key: 'stmtPairedSig', params: { a: 'Vorher', b: 'Nachher', stat: 'statMedian', p: 'p = 0.0200', alpha: '0.05' } },
+      { key: 'stmtPairedSig', params: { a: 'Vorher', b: 'Nachher', stat: 'stmtStatMedian', p: 'p = 0.0200', alpha: '0.05' } },
       { key: 'stmtPairedEstimate', params: { a: 'Vorher', b: 'Nachher', est: '-0.1130' } },
       { key: 'stmtIntervalDiff', params: { lo: '-3.6900', hi: '2.1500', conf: '95' } },
     ]);
@@ -108,7 +108,7 @@ suite('resampling-statement — paired', () => {
 suite('resampling-statement — one sample', () => {
   test('without target: estimate and interval only', () => {
     assertDeepEqual(statementParts(base(), OPTS), [
-      { key: 'stmtOneEstimate', params: { a: 'X', stat: 'statMedian', est: '22.5000', lo: '21.0000', hi: '24.0000', conf: '95' } },
+      { key: 'stmtOneEstimate', params: { a: 'X', stat: 'stmtStatMedian', est: '22.5000', lo: '21.0000', hi: '24.0000', conf: '95' } },
     ]);
   });
 
@@ -141,7 +141,7 @@ function kSummary(pValue, pHolms) {
 suite('resampling-statement — k samples', () => {
   test('significant overall with Holm-significant pairs and their differences', () => {
     assertDeepEqual(statementParts(kSummary(0.001, [0.4, 0.003, 0.04]), OPTS), [
-      { key: 'stmtKSig', params: { groups: 'A, B, C', stat: 'statMedian', p: 'p = 0.0010', alpha: '0.05' } },
+      { key: 'stmtKSig', params: { groups: 'A, B, C', stat: 'stmtStatMedian', p: 'p = 0.0010', alpha: '0.05' } },
       { key: 'stmtKPairs', params: { pairs: 'A – C (-2.5000), B – C (-1.5000)' } },
     ]);
   });
@@ -161,9 +161,9 @@ suite('resampling-statement — rendering', () => {
   });
 
   test('renderStatement translates each part and the statistic name', () => {
-    const dict = { stmtA: '{a}: {stat}.', stmtB: 'Wert {x}.', statMedian: 'Median' };
+    const dict = { stmtA: '{a}: {stat}.', stmtB: 'Wert {x}.', stmtStatMedian: 'median' };
     const t = (k, params) => dict[k].replace(/\{(\w+)\}/g, (_, n) => params[n]);
-    const parts = [{ key: 'stmtA', params: { a: 'X', stat: 'statMedian' } }, { key: 'stmtB', params: { x: '1' } }];
-    assertEqual(renderStatement(parts, t), 'X: Median. Wert 1.');
+    const parts = [{ key: 'stmtA', params: { a: 'X', stat: 'stmtStatMedian' } }, { key: 'stmtB', params: { x: '1' } }];
+    assertEqual(renderStatement(parts, t), 'X: median. Wert 1.');
   });
 });

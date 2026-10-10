@@ -4324,7 +4324,15 @@
       "stmtKSig": "At least one of the groups {groups} differs significantly in the {stat} ({p} < α = {alpha}).",
       "stmtKNot": "No significant difference between the groups {groups} in the {stat} ({p} ≥ α = {alpha}).",
       "stmtKPairs": "Significant after Holm correction (difference of estimates): {pairs}.",
-      "stmtKNoPair": "After Holm correction, however, no single pair of groups is significant."
+      "stmtKNoPair": "After Holm correction, however, no single pair of groups is significant.",
+      "stmtStatMean": "mean",
+      "stmtStatMedian": "median",
+      "stmtStatStddev": "standard deviation",
+      "stmtStatVariance": "variance",
+      "stmtStatTrimmedMean": "trimmed mean",
+      "stmtStatQuantile": "quantile",
+      "stmtStatCv": "coefficient of variation",
+      "stmtStatPpk": "Ppk"
     },
     "sample-size": {
       "name": "Sample Size",

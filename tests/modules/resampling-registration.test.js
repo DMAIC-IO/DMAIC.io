@@ -34,6 +34,8 @@ const RESAMPLING_I18N_KEYS = [
   'stmtPairedNot', 'stmtPairedNotGreater', 'stmtPairedNotLess', 'stmtPairedEstimate',
   'stmtOneEstimate', 'stmtOneReject', 'stmtOneRetain',
   'stmtKSig', 'stmtKNot', 'stmtKPairs', 'stmtKNoPair',
+  'stmtStatMean', 'stmtStatMedian', 'stmtStatStddev', 'stmtStatVariance',
+  'stmtStatTrimmedMean', 'stmtStatQuantile', 'stmtStatCv', 'stmtStatPpk',
 ];
 
 suite('resampling — registration', () => {

@@ -4324,7 +4324,15 @@
       "stmtKSig": "Mindestens eine der Gruppen {groups} unterscheidet sich in der Kenngröße {stat} signifikant ({p} < α = {alpha}).",
       "stmtKNot": "Kein signifikanter Unterschied zwischen den Gruppen {groups} in der Kenngröße {stat} ({p} ≥ α = {alpha}).",
       "stmtKPairs": "Signifikant nach Holm-Korrektur (Differenz der Schätzwerte): {pairs}.",
-      "stmtKNoPair": "Nach Holm-Korrektur ist jedoch kein einzelnes Gruppenpaar signifikant."
+      "stmtKNoPair": "Nach Holm-Korrektur ist jedoch kein einzelnes Gruppenpaar signifikant.",
+      "stmtStatMean": "Mittelwert",
+      "stmtStatMedian": "Median",
+      "stmtStatStddev": "Standardabweichung",
+      "stmtStatVariance": "Varianz",
+      "stmtStatTrimmedMean": "getrimmter Mittelwert",
+      "stmtStatQuantile": "Quantil",
+      "stmtStatCv": "Variationskoeffizient",
+      "stmtStatPpk": "Ppk"
     },
     "sample-size": {
       "name": "Stichprobenumfang",

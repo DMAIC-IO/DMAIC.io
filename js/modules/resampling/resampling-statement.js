@@ -11,7 +11,8 @@ import { fmt, statisticKey } from './resampling-presenter.js';
 
 /**
  * @typedef {{key: string, params: object}} StatementPart
- * `params.stat`, when present, is itself an i18n key (the statistic name).
+ * `params.stat`, when present, is itself an i18n key: the statistic's in-sentence
+ * name (`stmtStat…`, lower case in English).
  */
 
 const DIRECTION_SUFFIX = { 'two-sided': '', greater: 'Greater', less: 'Less' };
@@ -96,7 +97,7 @@ export function statementParts(summary, { ciMethod, target }) {
   if (!summary) return [];
   const alpha = 1 - summary.confidence;
   const conf = plain(summary.confidence * 100);
-  const stat = statisticKey(summary.statisticId);
+  const stat = `stmt${statisticKey(summary.statisticId).replace(/^stat/, 'Stat')}`;
   const interval = summary.boot ? pickCI(summary.boot.ci, ciMethod) : null;
   let parts;
   if (summary.mode === 'two') parts = twoParts(summary, interval, alpha, conf, stat);
