@@ -588,3 +588,13 @@ export function stateFromSettings(settings) {
   const s = (settings && typeof settings === 'object') ? settings : {};
   return State.create({ method: s.defaultMethod, fmeaType: s.defaultType });
 }
+
+/**
+ * Module `createDefault` hook: a new FMEA starts with the app-wide default
+ * method/type from the settings page.
+ * @param {{stateManager:{get:(key:string)=>*}}} ctx module context
+ * @returns {State}
+ */
+export function fmeaCreateDefault(ctx) {
+  return stateFromSettings(ctx.stateManager.get('settings.fmea'));
+}

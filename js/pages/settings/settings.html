@@ -168,6 +168,10 @@
               </div>
             </div>
           </div>
+          <!-- Resets confidence/power only (STAT_DEFAULTS), so it sits above the FMEA defaults. -->
+          <div class="settings-section">
+            <button class="btn btn--sm btn--ghost" id="settings-stat-reset" @click="resetStats()" x-text="t('statReset')"></button>
+          </div>
           <div class="settings-section">
             <label class="settings-section__label" x-text="t('fmeaSection')"></label>
             <div class="settings-stat-row">
@@ -187,9 +191,6 @@
               </div>
             </div>
             <p class="settings-hint" x-text="t('fmeaDefaultNote')"></p>
-          </div>
-          <div class="settings-section">
-            <button class="btn btn--sm btn--ghost" id="settings-stat-reset" @click="resetStats()" x-text="t('statReset')"></button>
           </div>
         </div>
 

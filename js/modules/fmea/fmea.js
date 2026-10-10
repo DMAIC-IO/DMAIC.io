@@ -15,7 +15,7 @@
 import { createModule } from '../../core/template-module.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
 import { draggablePopout } from '../../ui/draggable-popout.js';
-import { State, METHODS, FMEA_TYPES, stateFromSettings } from './fmea-model.js';
+import { State, METHODS, FMEA_TYPES, fmeaCreateDefault } from './fmea-model.js';
 import { S_BANDS, O_BANDS, D_BANDS, AP_TABLE, AP_CATEGORY, bandLabel } from './fmea-ap.js';
 
 /** Map a 1–10 rating to its scale-row index (0–4). */
@@ -59,7 +59,7 @@ const mod = createModule({
   },
   Model: State,
   /** New FMEAs start with the app-wide default method/type (settings page). */
-  createDefault: (ctx) => stateFromSettings(ctx.stateManager.get('settings.fmea')),
+  createDefault: fmeaCreateDefault,
 
   beforeLoadExample(data) {
     const result = JSON.parse(JSON.stringify(data));
@@ -119,9 +119,12 @@ const mod = createModule({
 
       /** @returns {boolean} AP mode and the risk is AP H without a non-blank action/justification */
       showUnjustified(risk) { return this.isAp() && risk.needsJustification(); },
-      /** @returns {boolean} justification field: required at AP H, kept visible once filled */
+      /**
+       * @returns {boolean} justification field: required at AP H, kept visible once filled —
+       * in RPN mode too, since the CSV exports it
+       */
       showJustification(risk) {
-        return this.isAp() && (risk.needsJustification() || risk.justification.trim() !== '');
+        return (this.isAp() && risk.needsJustification()) || risk.justification.trim() !== '';
       },
       /** @returns {boolean} RPN mode and S ≥ 9 */
       showSevere(risk) { return !this.isAp() && risk.isHighSeverity(); },

@@ -1,6 +1,6 @@
 import { suite, test, assertEqual } from '../test-utils.js';
 import { initialModel } from '../../js/core/initial-model.js';
-import { State, stateFromSettings } from '../../js/modules/fmea/fmea-model.js';
+import { State, fmeaCreateDefault } from '../../js/modules/fmea/fmea-model.js';
 
 class Plain {
   constructor() { this.origin = 'new'; }
@@ -30,18 +30,17 @@ suite('initialModel', () => {
 });
 
 suite('FMEA createDefault from settings', () => {
-  const fmeaDefault = () => (ctx) => stateFromSettings(ctx.stateManager.get('settings.fmea'));
   const ctxWith = (value) => ({ stateManager: { get: (k) => (k === 'settings.fmea' ? value : undefined) } });
 
   test('rpn/design settings are applied', () => {
-    const s = initialModel(State, null, fmeaDefault(), ctxWith({ defaultMethod: 'rpn', defaultType: 'design' }));
+    const s = initialModel(State, null, fmeaCreateDefault, ctxWith({ defaultMethod: 'rpn', defaultType: 'design' }));
     assertEqual(s.method, 'rpn');
     assertEqual(s.fmeaType, 'design');
   });
 
   test('missing or corrupt settings fall back to ap/process', () => {
     for (const v of [undefined, null, 'rpn', { defaultMethod: 'xyz', defaultType: 7 }]) {
-      const s = initialModel(State, null, fmeaDefault(), ctxWith(v));
+      const s = initialModel(State, null, fmeaCreateDefault, ctxWith(v));
       assertEqual(s.method, 'ap', JSON.stringify(v));
       assertEqual(s.fmeaType, 'process', JSON.stringify(v));
     }
