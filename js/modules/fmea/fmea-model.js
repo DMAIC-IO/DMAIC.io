@@ -11,7 +11,11 @@
  * scale i18n text, '—' formatting) live in the module's data-fn.
  *
  * Persistence shape matches the legacy module exactly:
- *   { risks: [ { id, step, failureMode, effect, cause, control,
+ *   { risks: [ { id, step, failureMode, effect, cause,
+ *                prevention,               // prevention control
+ *                control,                  // detection control (legacy key)
+ *                specialChar,              // '' | 'CC' | 'SC'
+ *                justification,            // why AP H has no action
  *                sev, occ, det,            // strings: '' | '1'..'10'
  *                actions: [ { text, resp, date, done,
  *                             deltaS, deltaO, deltaD } ],  // strings '0'..'9'
@@ -33,6 +37,8 @@ export const RPN_MEDIUM = 50;      // 50–124
 export const METHODS = ['ap', 'rpn'];
 /** FMEA types; the first is the default. */
 export const FMEA_TYPES = ['process', 'design'];
+/** Special-characteristic flags; '' = none. CC = critical, SC = significant. */
+export const SPECIAL_CHARS = ['', 'CC', 'SC'];
 
 /**
  * RPN → category key.
@@ -120,7 +126,14 @@ export class Risk {
   failureMode = '';
   effect = '';
   cause = '';
+  /** prevention control — keeps the cause from occurring (rated via O) */
+  prevention = '';
+  /** detection control — legacy key `control`, rated via D */
   control = '';
+  /** @type {''|'CC'|'SC'} special characteristic */
+  specialChar = '';
+  /** why an AP H risk has no action (AIAG-VDA documentation duty) */
+  justification = '';
   sev = '';
   occ = '';
   det = '';
@@ -164,6 +177,19 @@ export class Risk {
     return this.ap() ? actionPriority(this.projS(), this.projO(), this.projD()) : null;
   }
 
+  // ── Compliance rules ──────────────────────────────────────
+
+  /** @returns {boolean} AP H, no action and no (non-blank) justification */
+  needsJustification() {
+    return this.ap() === 'H' && this.actions.length === 0 && this.justification.trim() === '';
+  }
+
+  /** @returns {boolean} severity 9 or 10 (safety/regulatory) */
+  isHighSeverity() { return asInt(this.sev) >= 9; }
+
+  /** @returns {boolean} S ≥ 9 but no special characteristic set */
+  suggestsSpecialChar() { return this.isHighSeverity() && this.specialChar === ''; }
+
   // ── Serialization ─────────────────────────────────────────
 
   toJSON() {
@@ -173,7 +199,10 @@ export class Risk {
       failureMode: this.failureMode,
       effect: this.effect,
       cause: this.cause,
+      prevention: this.prevention,
       control: this.control,
+      specialChar: this.specialChar,
+      justification: this.justification,
       sev: this.sev,
       occ: this.occ,
       det: this.det,
@@ -191,7 +220,10 @@ export class Risk {
       r.failureMode = asStr(d.failureMode);
       r.effect = asStr(d.effect);
       r.cause = asStr(d.cause);
+      r.prevention = asStr(d.prevention);
       r.control = asStr(d.control);
+      r.specialChar = SPECIAL_CHARS.includes(d.specialChar) ? d.specialChar : '';
+      r.justification = asStr(d.justification);
       r.sev = asStr(d.sev);
       r.occ = asStr(d.occ);
       r.det = asStr(d.det);
@@ -292,13 +324,14 @@ export const rpnRating = {
   /**
    * @param {Risk[]} risks
    * @returns {{kind:'rpn', total:number, critical:number, high:number, medium:number,
-   *            low:number, avg:(number|null), max:number}}
+   *            low:number, highSeverity:number, avg:(number|null), max:number}}
    *          avg is null when no risk is rated; max is 0 when none rated.
    */
   stats(risks) {
-    let total = 0, critical = 0, high = 0, medium = 0, low = 0, sum = 0, count = 0, max = 0;
+    let total = 0, critical = 0, high = 0, medium = 0, low = 0, highSeverity = 0, sum = 0, count = 0, max = 0;
     for (const r of risks) {
       total++;
+      if (r.isHighSeverity()) highSeverity++;
       const v = r.rpn();
       if (v > 0) {
         count++; sum += v;
@@ -310,7 +343,7 @@ export const rpnRating = {
         else low++;
       }
     }
-    return { kind: 'rpn', total, critical, high, medium, low, avg: count ? Math.round(sum / count) : null, max };
+    return { kind: 'rpn', total, critical, high, medium, low, highSeverity, avg: count ? Math.round(sum / count) : null, max };
   },
   /**
    * Risk burndown on the RPN sum. Each dated action's RPN reduction is one event.
@@ -350,12 +383,14 @@ export const apRating = {
   },
   /**
    * @param {Risk[]} risks
-   * @returns {{kind:'ap', total:number, rated:number, high:number, medium:number, low:number}}
+   * @returns {{kind:'ap', total:number, rated:number, high:number, medium:number, low:number,
+   *            unjustified:number}}
    */
   stats(risks) {
-    const st = { kind: 'ap', total: 0, rated: 0, high: 0, medium: 0, low: 0 };
+    const st = { kind: 'ap', total: 0, rated: 0, high: 0, medium: 0, low: 0, unjustified: 0 };
     for (const r of risks) {
       st.total++;
+      if (r.needsJustification()) st.unjustified++;
       const cat = apCategory(r.ap());
       if (cat === 'none') continue;
       st.rated++;
@@ -513,6 +548,19 @@ export class State {
       risks: this.risks.map(r => r.toJSON()),
       scales: this.scales ? { ...this.scales } : null,
     };
+  }
+
+  /**
+   * Empty FMEA with a validated default method/type (from app settings).
+   * @param {{method?:string, fmeaType?:string}|*} [defaults]
+   * @returns {State}
+   */
+  static create(defaults = {}) {
+    const d = (defaults && typeof defaults === 'object') ? defaults : {};
+    const s = new State();
+    s.method = METHODS.includes(d.method) ? d.method : METHODS[0];
+    s.fmeaType = FMEA_TYPES.includes(d.fmeaType) ? d.fmeaType : FMEA_TYPES[0];
+    return s;
   }
 
   /** @param {*} d @returns {State} always a valid State, even for malformed input */

@@ -1,5 +1,5 @@
 import { suite, test, assertEqual } from '../test-utils.js';
-import { Action, Risk, State, rpnRating, apRating, rpnCategory } from '../../js/modules/fmea/fmea-model.js';
+import { Action, Risk, State, rpnRating, apRating, rpnCategory, SPECIAL_CHARS } from '../../js/modules/fmea/fmea-model.js';
 
 suite('FMEA Model — Action', () => {
   test('constructor sets defaults', () => {
@@ -692,5 +692,124 @@ suite('FMEA Model — AP burndown series', () => {
     const r = rated(s, 8, 6, 6);
     r.actions = [act('', true, { dO: '3' })];
     assertEqual(s.burndownSeries(), null);
+  });
+});
+
+suite('FMEA Model — compliance fields', () => {
+  test('new Risk has empty prevention, specialChar and justification', () => {
+    const r = new Risk();
+    assertEqual(r.prevention, '');
+    assertEqual(r.specialChar, '');
+    assertEqual(r.justification, '');
+  });
+
+  test('toJSON/fromJSON round-trip keeps the new fields', () => {
+    const r = new Risk();
+    r.prevention = 'Poka-Yoke'; r.specialChar = 'CC'; r.justification = 'Accepted by customer';
+    const back = Risk.fromJSON(JSON.parse(JSON.stringify(r.toJSON())));
+    assertEqual(back.prevention, 'Poka-Yoke');
+    assertEqual(back.specialChar, 'CC');
+    assertEqual(back.justification, 'Accepted by customer');
+  });
+
+  test('invalid specialChar falls back to empty', () => {
+    for (const v of ['cc', 'XX', 1, null, {}]) {
+      assertEqual(Risk.fromJSON({ specialChar: v }).specialChar, '', String(v));
+    }
+    assertEqual(SPECIAL_CHARS.join(','), ',CC,SC');
+  });
+
+  test('legacy risk without the new fields keeps control as detection', () => {
+    const r = Risk.fromJSON({ control: 'Visual check', sev: '7', occ: '4', det: '5' });
+    assertEqual(r.control, 'Visual check');
+    assertEqual(r.prevention, '');
+    assertEqual(r.specialChar, '');
+    assertEqual(r.justification, '');
+  });
+
+  test('needsJustification: AP H without action and without text', () => {
+    const r = Risk.fromJSON({ sev: '9', occ: '10', det: '10' });   // AP H
+    assertEqual(r.needsJustification(), true);
+    r.justification = '   ';
+    assertEqual(r.needsJustification(), true, 'whitespace-only counts as missing');
+    r.justification = 'Design frozen';
+    assertEqual(r.needsJustification(), false);
+  });
+
+  test('needsJustification: false with an action or below AP H', () => {
+    const r = Risk.fromJSON({ sev: '9', occ: '10', det: '10', actions: [{ text: 'fix' }] });
+    assertEqual(r.needsJustification(), false, 'has action');
+    assertEqual(Risk.fromJSON({ sev: '2', occ: '2', det: '2' }).needsJustification(), false, 'AP L');
+    assertEqual(Risk.fromJSON({ sev: '9', occ: '2', det: '6' }).needsJustification(), false, 'AP M');
+    assertEqual(new Risk().needsJustification(), false, 'unrated');
+  });
+
+  test('justification survives when the risk drops below AP H', () => {
+    const r = Risk.fromJSON({ sev: '9', occ: '10', det: '10', justification: 'Kept' });
+    r.occ = '2';
+    assertEqual(r.toJSON().justification, 'Kept');
+  });
+
+  test('isHighSeverity at S 8 / 9 / 10 / unset', () => {
+    assertEqual(Risk.fromJSON({ sev: '8' }).isHighSeverity(), false);
+    assertEqual(Risk.fromJSON({ sev: '9' }).isHighSeverity(), true);
+    assertEqual(Risk.fromJSON({ sev: '10' }).isHighSeverity(), true);
+    assertEqual(new Risk().isHighSeverity(), false);
+  });
+
+  test('suggestsSpecialChar only for S ≥ 9 without a flag', () => {
+    const r = Risk.fromJSON({ sev: '9' });
+    assertEqual(r.suggestsSpecialChar(), true);
+    r.specialChar = 'SC';
+    assertEqual(r.suggestsSpecialChar(), false);
+    assertEqual(Risk.fromJSON({ sev: '8' }).suggestsSpecialChar(), false);
+  });
+
+  test('apRating.stats counts unjustified AP H risks', () => {
+    const risks = [
+      Risk.fromJSON({ sev: '9', occ: '10', det: '10' }),                          // counts
+      Risk.fromJSON({ sev: '9', occ: '10', det: '10', justification: 'ok' }),     // justified
+      Risk.fromJSON({ sev: '9', occ: '10', det: '10', actions: [{ text: 'a' }] }), // has action
+      Risk.fromJSON({ sev: '2', occ: '2', det: '2' }),                            // AP L
+    ];
+    assertEqual(apRating.stats(risks).unjustified, 1);
+    assertEqual(apRating.stats([]).unjustified, 0);
+  });
+
+  test('rpnRating.stats counts S ≥ 9 independent of the RPN', () => {
+    const risks = [
+      Risk.fromJSON({ sev: '9', occ: '1', det: '1' }),   // RPN 9 → low, still counts
+      Risk.fromJSON({ sev: '10' }),                      // unrated RPN, still counts
+      Risk.fromJSON({ sev: '8', occ: '10', det: '10' }), // RPN 800, S 8 → no
+    ];
+    const st = rpnRating.stats(risks);
+    assertEqual(st.highSeverity, 2);
+    assertEqual(st.low, 1, 'RPN category unchanged');
+  });
+});
+
+suite('FMEA Model — State.create', () => {
+  test('defaults to ap/process', () => {
+    const s = State.create();
+    assertEqual(s.method, 'ap');
+    assertEqual(s.fmeaType, 'process');
+    assertEqual(s.risks.length, 0);
+  });
+
+  test('applies valid rpn/design', () => {
+    const s = State.create({ method: 'rpn', fmeaType: 'design' });
+    assertEqual(s.method, 'rpn');
+    assertEqual(s.fmeaType, 'design');
+  });
+
+  test('invalid values fall back per field', () => {
+    const s = State.create({ method: 'xyz', fmeaType: 'design' });
+    assertEqual(s.method, 'ap');
+    assertEqual(s.fmeaType, 'design');
+    for (const bad of [null, 'rpn', 42, []]) {
+      const t = State.create(bad);
+      assertEqual(t.method, 'ap', String(bad));
+      assertEqual(t.fmeaType, 'process', String(bad));
+    }
   });
 });
