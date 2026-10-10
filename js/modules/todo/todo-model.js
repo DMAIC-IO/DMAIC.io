@@ -1,3 +1,5 @@
+import { isIsoDate } from '../../core/local-date.js';
+
 export const STATUSES = ['open', 'in-progress', 'done', 'blocked'];
 
 function uid() {
@@ -89,4 +91,37 @@ export class State {
     }
     return s;
   }
+}
+
+/**
+ * Number of items per status.
+ * @param {Item[]} items
+ * @returns {{open: number, 'in-progress': number, done: number, blocked: number}}
+ */
+export function statusCounts(items) {
+  const counts = Object.fromEntries(STATUSES.map(s => [s, 0]));
+  for (const item of items) if (item.status in counts) counts[item.status]++;
+  return counts;
+}
+
+/**
+ * Overdue = not done and a valid due date before `today`.
+ * @param {Item} item
+ * @param {string} today `YYYY-MM-DD`
+ * @returns {boolean}
+ */
+export function isOverdue(item, today) {
+  return item.status !== 'done' && isIsoDate(item.due) && item.due < today;
+}
+
+/**
+ * The next `n` open items by due date; undated or malformed dates last, in stored order.
+ * @param {Item[]} items
+ * @param {number} n
+ * @returns {Item[]}
+ */
+export function nextDueItems(items, n) {
+  const open = items.filter(i => i.status !== 'done');
+  const dated = open.filter(i => isIsoDate(i.due)).sort((a, b) => (a.due < b.due ? -1 : a.due > b.due ? 1 : 0));
+  return [...dated, ...open.filter(i => !isIsoDate(i.due))].slice(0, n);
 }

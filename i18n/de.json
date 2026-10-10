@@ -592,6 +592,9 @@
     "spcViolations": "Verletzungen",
     "spcOutOfSpec": "Außerh. Spez.",
     "spcOf": "von {total} Punkten",
+    "todoEmpty": "Keine Aufgaben erfasst.",
+    "todoNextDue": "Als Nächstes fällig",
+    "todoOverdue": "Überfällig",
     "tileSettings": {
       "title": "Einstellungen: {title}",
       "open": "Kachel-Einstellungen",
@@ -601,7 +604,8 @@
       "topN": "Anzahl der Top-Einträge",
       "showLegend": "Legende anzeigen",
       "topStatements": "Anzahl der Aussagen",
-      "topWarnings": "Anzahl der Warnungen"
+      "topWarnings": "Anzahl der Warnungen",
+      "showDone": "Erledigte einbeziehen"
     }
   },
   "lab": {

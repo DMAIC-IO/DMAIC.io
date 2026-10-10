@@ -187,6 +187,7 @@ export default [
     group: 'team',
     allowedPhases: ['define'],
     load: () => import('./todo/todo.js'),
+    loadTile: () => import('./todo/todo.tile.js'),
     cycles: {
       dmaic:  { phase: 'define', allowedPhases: ['define'] },
       dmadv:  { phase: 'define', allowedPhases: ['define'] },

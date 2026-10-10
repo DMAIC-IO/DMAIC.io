@@ -592,6 +592,9 @@
     "spcViolations": "Violations",
     "spcOutOfSpec": "Out of Spec",
     "spcOf": "of {total} points",
+    "todoEmpty": "No tasks recorded.",
+    "todoNextDue": "Next due",
+    "todoOverdue": "Overdue",
     "tileSettings": {
       "title": "Settings: {title}",
       "open": "Tile settings",
@@ -601,7 +604,8 @@
       "topN": "Number of top entries",
       "showLegend": "Show legend",
       "topStatements": "Number of statements",
-      "topWarnings": "Number of warnings"
+      "topWarnings": "Number of warnings",
+      "showDone": "Include done tasks"
     }
   },
   "lab": {

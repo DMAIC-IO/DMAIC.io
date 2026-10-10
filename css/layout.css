@@ -1686,6 +1686,19 @@ body.dev-area-open .dmaic-tiles {
   font-family: var(--font-family-mono, monospace);
 }
 
+/* Todo tile on dashboard */
+.dashboard-todo__owner,
+.dashboard-todo__due {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.dashboard-todo__overdue .dashboard-todo__due {
+  color: var(--color-error);
+  font-weight: 600;
+}
+
 /* SPC / Control Chart on dashboard */
 .dashboard-spc {
   display: flex;

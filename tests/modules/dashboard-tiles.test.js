@@ -6,6 +6,7 @@ import charterTiles, { charterTile, goalsTile, orgTile } from '../../js/modules/
 import vocTile from '../../js/modules/voc-ctx-tree/voc-ctx-tree.tile.js';
 import raciTile from '../../js/modules/raci-matrix/raci-matrix.tile.js';
 import spcTile from '../../js/modules/control-chart/control-chart.tile.js';
+import todoTile from '../../js/modules/todo/todo.tile.js';
 import { validateSchema, resolveSettings } from '../../js/pages/dashboard/tile-settings.js';
 import { HOST_TILES } from '../../js/pages/dashboard/tiles/index.js';
 import zegTile from '../../js/pages/dashboard/tiles/zeg-timeline.tile.js';
@@ -44,9 +45,10 @@ function render(tile, state, overrides = {}) {
 suite('dashboard tiles: manifest', () => {
   const withTile = manifest.filter(e => typeof e.loadTile === 'function');
 
-  test('fmea, ishikawa, project-charter, voc-ctx-tree, raci-matrix and control-chart declare a tile', () => {
+  test('modules with a tile declare loadTile', () => {
     const ids = withTile.map(e => e.id);
-    for (const id of ['fmea', 'ishikawa', 'project-charter', 'voc-ctx-tree', 'raci-matrix', 'control-chart']) assertTrue(ids.includes(id), id);
+    for (const id of ['fmea', 'ishikawa', 'project-charter', 'voc-ctx-tree', 'raci-matrix', 'control-chart',
+      'todo']) assertTrue(ids.includes(id), id);
   });
 
   test('every tile object loads, renders and has a valid size and schema', async () => {
@@ -421,5 +423,40 @@ suite('dashboard tiles: zeg-timeline', () => {
     await zegTile.render(host, args(cm, zegStateManager({ define: [{ t: 1, v: 10 }] })));
     zegTile.dispose(host, { tileId: 'zeg-timeline' });
     assertDeepEqual(cm.destroyed, [cm.made[0]]);
+  });
+});
+
+const TODO_STATE = {
+  items: [
+    { id: 'a', text: 'Past', owner: 'Ann', due: '2000-01-01', status: 'open' },
+    { id: 'b', text: 'Future', owner: 'Bob', due: '2999-01-01', status: 'blocked' },
+    { id: 'c', text: 'Undated', status: 'in-progress' },
+    { id: 'd', text: 'Finished', due: '2000-01-01', status: 'done' },
+  ],
+};
+
+suite('dashboard tiles: todo', () => {
+  test('lists open items by due date and marks overdue ones', () => {
+    const host = render(todoTile, TODO_STATE);
+    const items = [...host.querySelectorAll('.dashboard-fmea__top-item')];
+    assertDeepEqual(items.map(li => li.querySelector('.dashboard-fmea__top-desc').textContent), ['Past', 'Future', 'Undated']);
+    assertEqual(host.querySelectorAll('.dashboard-todo__overdue').length, 1);
+  });
+
+  test('topN caps the list', () => {
+    assertEqual(render(todoTile, TODO_STATE, { topN: 1 }).querySelectorAll('.dashboard-fmea__top-item').length, 1);
+  });
+
+  test('showDone controls the done segment and count', () => {
+    const off = render(todoTile, TODO_STATE);
+    assertEqual(off.querySelector('[data-status="done"]'), null);
+    const on = render(todoTile, TODO_STATE, { showDone: true });
+    assertTrue(on.querySelector('.dashboard-fmea__bar-seg[data-status="done"]') !== null);
+  });
+
+  test('empty and missing state show the empty hint', () => {
+    for (const s of [{ items: [] }, undefined, null]) {
+      assertEqual(render(todoTile, s).querySelector('.dashboard-area__empty').textContent, 'dashboard.todoEmpty');
+    }
   });
 });
