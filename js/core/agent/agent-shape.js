@@ -15,6 +15,16 @@ function isIndex(segment) {
   return segment.length > 0 && /^\d+$/.test(segment);
 }
 
+/**
+ * Ist diese Shape-Ebene die Nullable-Hülle `{ $nullable: <shape> }`?
+ * @param {any} shape
+ * @returns {boolean}
+ */
+function isNullableShape(shape) {
+  return !!shape && typeof shape === 'object' && !Array.isArray(shape)
+    && Object.prototype.hasOwnProperty.call(shape, '$nullable');
+}
+
 /** @returns {string[]} Segmente eines Punktpfads; [] für einen leeren Pfad. */
 function split(path) {
   return String(path ?? '').split('.').filter(s => s.length > 0);
@@ -24,7 +34,10 @@ function split(path) {
  * Prüfe, ob ein Punktpfad in einer deklarierten Ergebnisform existiert.
  * @param {any} shape  Shape-Grammatik aus agent-contract.js
  * @param {string} path  Punktpfad mit Zahlenindizes
- * @returns {{ ok: true } | { ok: false, segment: string, available: string[] }}
+ * @returns {{ ok: true }
+ *   | { ok: false, segment: string, available: string[], nullable?: boolean }}
+ *   `nullable: true` heißt: das Segment ist richtig, nur der Abstieg nicht —
+ *   die Ebene darüber kann zur Laufzeit null sein.
  */
 export function pathExistsInShape(shape, path) {
   const segments = split(path);
@@ -32,6 +45,16 @@ export function pathExistsInShape(shape, path) {
   let cur = shape;
   for (const segment of segments) {
     if (cur === 'any') return { ok: true };
+    // Eine Nullable-Form ist als ZIEL erlaubt, als DURCHGANG nicht: der Prüfer
+    // weiß nicht, ob zur Laufzeit ein Modul offen ist, und ein durchgelassener
+    // Pfad scheiterte dann als `unresolved_ref`. Der gültige Weg ist, die Form
+    // selbst zu referenzieren und im nächsten Stapel zu verzweigen — deshalb
+    // nennt `available` die INNEREN Schlüssel: das ist die Auskunft, die der
+    // Agent für diesen Weg braucht, und `[]` wäre nicht von „Skalar hat keine
+    // Tiefe" zu unterscheiden.
+    if (isNullableShape(cur)) {
+      return { ok: false, segment, available: keysOfShape(cur), nullable: true };
+    }
     if (Array.isArray(cur)) {
       if (!isIndex(segment)) return { ok: false, segment, available: [] };
       cur = cur[0];
@@ -50,9 +73,19 @@ export function pathExistsInShape(shape, path) {
   return { ok: true };
 }
 
-/** @returns {string[]} die Schlüssel einer Shape-Ebene, [] für Skalare und Arrays. */
+/**
+ * Die Schlüssel einer Shape-Ebene, [] für Skalare und Arrays.
+ *
+ * Die Nullable-Hülle wird übersprungen: `$nullable` ist ein Grammatikwort und
+ * kein Feld, das ein Agent referenzieren könnte — es als „verfügbar" zu
+ * melden würde ihn in einen Pfad schicken, den der Prüfer wieder ablehnt.
+ *
+ * @param {any} shape
+ * @returns {string[]}
+ */
 function keysOfShape(shape) {
-  if (shape && typeof shape === 'object' && !Array.isArray(shape)) return Object.keys(shape);
+  const inner = isNullableShape(shape) ? shape.$nullable : shape;
+  if (inner && typeof inner === 'object' && !Array.isArray(inner)) return Object.keys(inner);
   return [];
 }
 

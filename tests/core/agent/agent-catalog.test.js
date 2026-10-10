@@ -30,6 +30,7 @@ const I18N_TABLE = {
   'modules.kano.name': 'Kano',
   'modules.kano.description': 'Kundenanforderungen klassifizieren',
   'agent.errors.unknownSection': 'Modul "{module}" hat keinen Handbuchabschnitt "{section}".',
+  'agent.errors.unknownModule': 'Modul "{module}" gibt es nicht.',
   'agent.usage.intro': 'Qprovement ist ein Six-Sigma-Werkzeugkasten im Browser.',
   'agent.usage.call': 'window.qprovement.interact() liefert diese Beschreibung.',
   'agent.usage.actionForm': 'Eine Aktion ist { op, … } mit den Feldern aus dem Aktionskatalog.',
@@ -227,6 +228,27 @@ suite('agent catalog — module.describe', () => {
     const out = await describeModule(deps, 'five-why', ['overview']);
     assertDeepEqual(Object.keys(out.prose), ['overview']);
     assertEqual(out.prose.overview.blocks[0].content, 'Die 5-Why-Methode …');
+  });
+
+  test('module.describe mit unbekanntem Modul meldet unknown_module statt einer Leerbeschreibung', async () => {
+    // Ein Name, den die Modulregistry nicht kennt, bekam eine leere
+    // Pseudo-Beschreibung mit `phase: 'extras'` — eine Antwort ohne Fehler für
+    // ein Modul, das es nicht gibt. Erreichbar nur über eine Referenz, weil
+    // Prüfstufe 5 einen wörtlichen Modulnamen abfängt.
+    const out = await describeModule(deps, 'gibt-es-nicht');
+    assertEqual(out.ok, false);
+    assertEqual(out.error, 'unknown_module');
+    assertDeepEqual(out.available, ['worksheet', 'five-why', 'regression', 'kano']);
+  });
+
+  test('ein bekanntes, aber nicht freigegebenes Modul bleibt eine Beschreibung', async () => {
+    // `available: false` heißt beschrieben, nicht steuerbar — das ist KEIN
+    // Fehler und muss weiter durchkommen.
+    const out = await describeModule(deps, 'regression');
+    assertEqual(out.ok, undefined, 'eine Beschreibung trägt kein ok-Feld');
+    assertEqual(out.available, false);
+    assertEqual(out.module, 'regression');
+    assertEqual(out.phase, 'analyze');
   });
 
   test('an unknown section id is reported with the valid ids', async () => {

@@ -179,6 +179,22 @@ suite('agent validate — Stufe 4: Referenzgraph', () => {
     ], makeWorld());
     assertTrue(r.ok, JSON.stringify(r));
   });
+
+  test('eine Referenz IN view hinein wird vom Prüfer abgelehnt, nicht erst zur Laufzeit', () => {
+    const r = validateBatch([
+      { id: 'r1', op: 'project.read' },
+      { op: 'instance.open', instance: { $from: 'r1', path: 'view.instanceId' } },
+    ], makeWorld());
+
+    assertEqual(r.ok, false);
+    assertEqual(r.cause.error, 'bad_shape');
+    // Die Meldung MUSS eine andere sein als bei einem unbekannten Segment:
+    // das Segment ist hier richtig, nur der Abstieg ist es nicht (Spec §6 —
+    // sage das Problem und den gültigen Weg).
+    assertEqual(r.cause.message,
+      'agent.errors.nullableRef|path=view.instanceId,id=r1,segment=instanceId');
+    assertDeepEqual(r.cause.available, ['instanceId', 'module', 'phase']);
+  });
 });
 
 suite('agent validate — Stufe 5: literale Bezeichner', () => {

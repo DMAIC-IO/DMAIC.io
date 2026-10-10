@@ -8,8 +8,15 @@
  * Shape-Grammatik der Ergebnisformen (geschlossen, absichtlich armselig —
  * sie existiert nur, damit Prüfstufe 4 aus Spec §5 statisch sein kann):
  *   'string' | 'number' | 'boolean' | 'any'
- *   { key: <shape>, … }   Objekt mit genau diesen Schlüsseln
- *   [ <shape> ]           Array; Pfadsegmente müssen Ziffernfolgen sein
+ *   { key: <shape>, … }      Objekt mit genau diesen Schlüsseln
+ *   [ <shape> ]              Array; Pfadsegmente müssen Ziffernfolgen sein
+ *   { $nullable: <shape> }   zur Laufzeit diese Form ODER null
+ *
+ * Die Nullable-Form ist keine Bequemlichkeit: ohne sie ließ Stufe 4
+ * `path: 'view.module'` passieren, und der Aufruf scheiterte zur Laufzeit als
+ * `unresolved_ref` — ein Fehler, den der statische Prüfer hätte fangen können.
+ * Ein Abstieg DURCH die Form ist deshalb abgelehnt, die Form selbst ist ein
+ * gültiges Referenzziel (`agent-shape.js`).
  */
 
 /** Version der Fläche. Bump nur bei Bruch der Hülle. Siehe Plan §Constraints. */
@@ -25,13 +32,11 @@ export const CONTRACT_VERSION = 1;
  */
 export const ERRORS = Object.freeze({
   CONSENT_DENIED:         'consent_denied',
-  NOT_CONNECTED:          'not_connected',
   UNKNOWN_OP:             'unknown_op',
   UNKNOWN_MODULE:         'unknown_module',
   UNKNOWN_PHASE:          'unknown_phase',
   UNKNOWN_INSTANCE:       'unknown_instance',
   UNKNOWN_METHOD:         'unknown_method',
-  UNKNOWN_FIELD:          'unknown_field',
   UNKNOWN_SECTION:        'unknown_section',
   MISSING_PARAM:          'missing_param',
   UNKNOWN_PARAM:          'unknown_param',
@@ -56,8 +61,13 @@ const MODULE_ENTRY = { id: 'string', name: 'string', whenToUse: 'string', availa
 /** Ein Instanzeintrag der flachen Instanzliste. */
 const INSTANCE_ENTRY = { id: 'string', module: 'string', name: 'string', phase: 'string' };
 
-/** Die angezeigte Ansicht. Zur Laufzeit null, wenn kein Modul offen ist. */
-const VIEW = { instanceId: 'string', module: 'string', phase: 'string' };
+/**
+ * Die angezeigte Ansicht. Zur Laufzeit null, wenn kein Modul offen ist — und
+ * das steht jetzt in der Grammatik, nicht nur in diesem Satz, damit Stufe 4
+ * einen Abstieg nach `view.module` ablehnen kann statt ihn zur Laufzeit
+ * scheitern zu lassen.
+ */
+const VIEW = { $nullable: { instanceId: 'string', module: 'string', phase: 'string' } };
 
 /**
  * Deep-freeze eines Objekts rekursiv.

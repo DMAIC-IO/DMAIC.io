@@ -179,8 +179,12 @@ export function validateBatch(input, world) {
       const shape = OPS[actions[target].op].result;
       const check = pathExistsInShape(shape, ref.path);
       if (!check.ok) {
+        // Eine Nullable-Form braucht eine andere Meldung als ein unbekanntes
+        // Segment: das Segment ist hier richtig, nur der Abstieg ist es nicht
+        // (Spec §6 — sage, was das Problem ist und welcher Weg gilt).
+        const key = check.nullable ? 'agent.errors.nullableRef' : 'agent.errors.badShape';
         return fail(i, axiError(ERRORS.BAD_SHAPE,
-          world.t('agent.errors.badShape', { path: ref.path, id: ref.from, segment: check.segment }),
+          world.t(key, { path: ref.path, id: ref.from, segment: check.segment }),
           { available: check.available }));
       }
     }
@@ -219,7 +223,7 @@ export function validateBatch(input, world) {
     // dieselbe Prüfung nochmals als Verteidigung (zwei `module.add` im
     // SELBEN Stapel sieht diese Momentaufnahme nicht).
     if (a.op === 'module.add' && typeof a.module === 'string' && world.modules.get(a.module)?.singleton) {
-      const existing = [...world.instances.entries()].find(([, i]) => i.module === a.module);
+      const existing = [...world.instances.entries()].find(([, inst]) => inst.module === a.module);
       if (existing) {
         return fail(i, axiError(ERRORS.MODULE_SINGLETON,
           world.t('agent.errors.moduleSingleton', { module: a.module, instance: existing[0] })));

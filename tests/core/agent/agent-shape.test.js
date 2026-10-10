@@ -53,6 +53,37 @@ suite('agent shape grammar', () => {
   test('empty path is not a path', () => {
     assertEqual(pathExistsInShape(SHAPE, '').ok, false);
   });
+
+  // Die Nullable-Form. `view` ist zur Laufzeit null, wenn kein Modul offen
+  // ist; ohne diese Form ließ Stufe 4 `path: 'view.module'` passieren, und der
+  // Aufruf scheiterte erst zur Laufzeit als `unresolved_ref` — ein Fehler, den
+  // der statische Prüfer hätte fangen können.
+  const NULLABLE = { view: { $nullable: { instanceId: 'string', module: 'string' } } };
+
+  test('ein Abstieg durch eine Nullable-Form wird statisch abgelehnt', () => {
+    const deep = pathExistsInShape(NULLABLE, 'view.module');
+    assertEqual(deep.ok, false);
+    assertEqual(deep.segment, 'module');
+    assertEqual(deep.nullable, true);
+  });
+
+  test('die Ablehnung nennt die inneren Schlüssel, damit der Agent weiß, was in view steckt', () => {
+    // `available: []` wäre nicht von „Skalar hat keine Tiefe" zu
+    // unterscheiden. Der gültige Weg ist, `view` selbst zu referenzieren —
+    // dann ist die nützliche Auskunft, was darin zu finden ist.
+    assertDeepEqual(pathExistsInShape(NULLABLE, 'view.module').available,
+      ['instanceId', 'module']);
+  });
+
+  test('die Nullable-Form selbst ist ein gültiger Pfad — lies sie und verzweige', () => {
+    assertEqual(pathExistsInShape(NULLABLE, 'view').ok, true);
+  });
+
+  test('eine Nullable-Form um ein Array verhält sich gleich', () => {
+    const shape = { rows: { $nullable: ['any'] } };
+    assertEqual(pathExistsInShape(shape, 'rows').ok, true);
+    assertEqual(pathExistsInShape(shape, 'rows.0').ok, false);
+  });
 });
 
 suite('agent runtime path access', () => {
@@ -98,6 +129,19 @@ suite('agent contract', () => {
 
   test('module.add declares instanceId in its result shape', () => {
     assertTrue(pathExistsInShape(OPS['module.add'].result, 'instanceId').ok);
+  });
+
+  test('die Fläche kündigt keinen Code an, den sie nicht produziert', () => {
+    // `not_connected` und `unknown_field` wurden von keiner Codezeile erzeugt,
+    // standen aber über `buildUsage().errors` als mögliche Codes in der
+    // Zusage. Jetzt kostenlos weg, später die Rücknahme einer Zusage.
+    assertEqual('NOT_CONNECTED' in ERRORS, false);
+    assertEqual('UNKNOWN_FIELD' in ERRORS, false);
+  });
+
+  test('project.read deklariert view als Nullable-Form, nicht als sicheres Objekt', () => {
+    assertEqual(pathExistsInShape(OPS['project.read'].result, 'view').ok, true);
+    assertEqual(pathExistsInShape(OPS['project.read'].result, 'view.phase').nullable, true);
   });
 
   test('error codes are unique and equal to their keys lowercased', () => {

@@ -396,14 +396,34 @@ suite('agent runtime — a resolved reference is type-checked (C1)', () => {
     assertTrue(!log.some(e => e.startsWith('add-start:')), 'no instance was created');
   });
 
-  test('a reference that resolves to a VALID phase of the module still works', async () => {
-    const { runtime } = makeRuntime();
+  test('ein Abstieg nach view.phase wird jetzt STATISCH abgelehnt, nicht erst zur Laufzeit', async () => {
+    // Dieser Fall ging früher durch, weil `view` als sicheres Objekt
+    // deklariert war. `view` ist zur Laufzeit aber null, wenn kein Modul offen
+    // ist — und dann scheiterte derselbe Stapel als `unresolved_ref`. Stufe 4
+    // lehnt den Abstieg jetzt ab (Nullable-Form), bevor etwas läuft.
+    const { runtime, log } = makeRuntime();
     const out = await runtime.interact([
       { id: 'r1', op: 'project.read' },
       { id: 'a1', op: 'module.add', module: 'five-why', phase: { $from: 'r1', path: 'view.phase' } },
     ]);
+    assertEqual(out.ok, false);
+    assertEqual(out.cause.error, 'bad_shape');
+    assertDeepEqual(out.cause.available, ['instanceId', 'module', 'phase']);
+    assertTrue(!log.some(e => e.startsWith('add-start:')), 'no instance was created');
+  });
+
+  test('der gültige Weg: view lesen, selbst verzweigen, zweiter Stapel', async () => {
+    const { runtime } = makeRuntime();
+    const read = await runtime.interact([{ id: 'r1', op: 'project.read' }]);
+    assertEqual(read.ok, true, JSON.stringify(read));
+    const { view } = read.results[0].result;
+    assertDeepEqual(view, { instanceId: 'fw-1', module: 'five-why', phase: 'define' });
+
+    const out = await runtime.interact([
+      { id: 'a1', op: 'module.add', module: 'five-why', phase: view.phase },
+    ]);
     assertEqual(out.ok, true, JSON.stringify(out));
-    assertEqual(out.results[1].result.phase, 'define');
+    assertEqual(out.results[0].result.phase, 'define');
   });
 });
 

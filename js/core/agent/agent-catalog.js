@@ -13,11 +13,11 @@
  *
  * Kein DOM, kein `window`. Phasen sind zyklus-abhängig (Global Constraint) —
  * die Nicht-Methodik-Phasen `data`/`extras` kommen daher nie als Literal vor,
- * sondern aus `js/core/cycles/cycles.js` (`VIRTUAL_PHASES`, `getAllPhaseIds`).
+ * sondern aus `js/core/cycles/cycles.js` (`getAllPhaseIds`).
  */
 import { ERRORS } from './agent-contract.js';
 import { axiError } from './agent-errors.js';
-import { VIRTUAL_PHASES, getAllPhaseIds } from '../cycles/cycles.js';
+import { getAllPhaseIds } from '../cycles/cycles.js';
 import { allowedPhasesFor as phasesFor } from '../router/instance-ops.js';
 
 /**
@@ -178,6 +178,19 @@ export function buildWorld({ moduleRegistry, stateManager, i18n, registry, compl
  */
 export async function describeModule({ moduleRegistry, i18n, registry, getHelp }, moduleId, sections) {
   const def = moduleRegistry.get(moduleId);
+  // Ein Name, den die Modulregistry nicht kennt, bekam eine leere
+  // Pseudo-Beschreibung mit `phase: 'extras'` — eine fehlerfreie Antwort für
+  // ein Modul, das es nicht gibt. Erreichbar nur über eine Referenz, weil
+  // Prüfstufe 5 einen wörtlichen Modulnamen abfängt (`agent-validate.js`);
+  // über eine Referenz aber sehr wohl.
+  if (!def) {
+    return axiError(ERRORS.UNKNOWN_MODULE,
+      i18n.t('agent.errors.unknownModule', { module: moduleId }),
+      { available: moduleRegistry.getAll().map(d => d.id) });
+  }
+  // Der Rückfall hier BLEIBT: ein Modul, das die Modulregistry kennt, die
+  // Agentenregistry aber nicht führt, ist beschrieben und nicht steuerbar —
+  // das ist kein Fehler (Spec §9).
   const entry = registry[moduleId] ?? { available: false, actions: {}, fields: {} };
   const help = await getHelp(moduleId);
   const lang = i18n.getLanguage();
@@ -207,7 +220,7 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
     name: i18n.t(`modules.${moduleId}.name`),
     whenToUse: whenToUse(i18n, moduleId),
     available: entry.available === true,
-    phase: def ? allowedPhasesFor(def, moduleRegistry.getActiveCycle())[0] : VIRTUAL_PHASES.extras.id,
+    phase: allowedPhasesFor(def, moduleRegistry.getActiveCycle())[0],
     actions: Object.entries(entry.actions).map(([name, action]) => ({
       name,
       // i18n hat Vorrang; die JSDoc-Prosa ist nur der Rückfall (Spec §8).
