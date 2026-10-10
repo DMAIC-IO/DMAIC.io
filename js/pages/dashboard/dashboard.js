@@ -36,7 +36,7 @@ const page = createPage({
     const { eventBus, stateManager, i18n, chartManager, themeManager, moduleRegistry, modal } = ctx;
     const gridAnchor = containerEl.querySelector('[data-ref="grid"]');
 
-    const handle = { grid: null, addMenuEl: null, _onDocClick: null, _unsubs: [], render: null, _renderGen: 0, _toolbarWired: false, _allTilesLoaded: false, _refreshUnsubs: [], _lastLayout: [] };
+    const handle = { grid: null, addMenuEl: null, _onDocClick: null, _unsubs: [], render: null, _renderGen: 0, _toolbarWired: false, _allTilesLoaded: false, _refreshUnsubs: [], _lastLayout: [], tileModules: [] };
 
     const theme = () => themeManager?.getTheme?.() ?? 'light';
 
@@ -267,6 +267,7 @@ const page = createPage({
       const { tileModules, allLoaded } = await loadTileModules(moduleRegistry, stateManager.get('phases'));
       if (handle._renderGen !== gen) return;
       handle._allTilesLoaded = allLoaded;
+      handle.tileModules = tileModules;
       descriptors = enumerateTiles(tileModules, ctx);
 
       // Refresh subscriptions (contract field `refreshOn`), rebuilt on every
@@ -316,6 +317,11 @@ const page = createPage({
         const allSettings = stateManager.get('dashboard.tileSettings') || {};
         if (Object.hasOwn(allSettings, tileId)) {
           stateManager.set('dashboard.tileSettings', withTileSettings(allSettings, tileId, {}));
+        }
+        // Removing a re-bound base tile dropped its `_source`; re-enumerate so
+        // the add menu offers it on its own instance with its own title.
+        if (d && !d.isCopy && d.instanceId !== d.baseInstanceId) {
+          descriptors = enumerateTiles(handle.tileModules, ctx);
         }
       };
       handle.grid.onSettingsRequested = (tileId) => { openTileSettings(tileId); };
