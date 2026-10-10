@@ -25,6 +25,12 @@ export const DEFAULT_CHART_COLORS = [
 /** Statistics defaults (identical to legacy STAT_DEFAULTS). */
 export const STAT_DEFAULTS = { confidenceLevel: 95, power: 80 };
 
+/** Allowed FMEA defaults; the first entry is the fallback (mirrors fmea-model METHODS/FMEA_TYPES). */
+const FMEA_DEFAULT_METHODS = ['ap', 'rpn'];
+const FMEA_DEFAULT_TYPES = ['process', 'design'];
+/** @param {*} v @param {string[]} allowed @returns {string} v when allowed, else allowed[0] */
+const pick = (v, allowed) => (allowed.includes(v) ? v : allowed[0]);
+
 /** Shortcut group display order (identical to legacy groupOrder). */
 export const SHORTCUT_GROUP_ORDER = ['general', 'datagrid', 'worksheet', 'vocCtxTree'];
 
@@ -241,6 +247,12 @@ export default createPage({
           key: 'glossary.inlineLinksEnabled', value: this.glossaryInline,
         });
       },
+
+      // ── FMEA defaults for new FMEAs ───────────────────────
+      fmeaDefaultMethod: pick(stateManager.get('settings.fmea.defaultMethod'), FMEA_DEFAULT_METHODS),
+      fmeaDefaultType: pick(stateManager.get('settings.fmea.defaultType'), FMEA_DEFAULT_TYPES),
+      onFmeaDefaultMethod() { stateManager.set('settings.fmea.defaultMethod', this.fmeaDefaultMethod); },
+      onFmeaDefaultType() { stateManager.set('settings.fmea.defaultType', this.fmeaDefaultType); },
 
       // ── show algo-lab links ───────────────────────────────
       showAlgoLinks: stateManager.get('settings.showAlgoLabLinks') !== false,

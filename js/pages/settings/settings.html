@@ -169,6 +169,26 @@
             </div>
           </div>
           <div class="settings-section">
+            <label class="settings-section__label" x-text="t('fmeaSection')"></label>
+            <div class="settings-stat-row">
+              <div class="settings-stat-field">
+                <label class="settings-stat-field__label" for="settings-fmea-method" x-text="t('fmeaDefaultMethod')"></label>
+                <select id="settings-fmea-method" class="field" x-model="fmeaDefaultMethod" @change="onFmeaDefaultMethod()">
+                  <option value="ap" x-text="t('fmeaMethodAp')"></option>
+                  <option value="rpn" x-text="t('fmeaMethodRpn')"></option>
+                </select>
+              </div>
+              <div class="settings-stat-field">
+                <label class="settings-stat-field__label" for="settings-fmea-type" x-text="t('fmeaDefaultType')"></label>
+                <select id="settings-fmea-type" class="field" x-model="fmeaDefaultType" @change="onFmeaDefaultType()">
+                  <option value="process" x-text="t('fmeaTypeProcess')"></option>
+                  <option value="design" x-text="t('fmeaTypeDesign')"></option>
+                </select>
+              </div>
+            </div>
+            <p class="settings-hint" x-text="t('fmeaDefaultNote')"></p>
+          </div>
+          <div class="settings-section">
             <button class="btn btn--sm btn--ghost" id="settings-stat-reset" @click="resetStats()" x-text="t('statReset')"></button>
           </div>
         </div>
