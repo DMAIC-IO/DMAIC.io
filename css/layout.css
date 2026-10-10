@@ -1737,7 +1737,7 @@ body.dev-area-open .dmaic-tiles {
   color: var(--color-text-primary);
 }
 
-.dashboard-stakeholder__cell--manage-closely { grid-area: mc; border-color: var(--color-accent); background: var(--color-accent-light); }
+.dashboard-stakeholder__cell--manage-closely { grid-area: mc; border-color: var(--color-error); }
 .dashboard-stakeholder__cell--keep-satisfied { grid-area: ks; }
 .dashboard-stakeholder__cell--keep-informed { grid-area: ki; }
 .dashboard-stakeholder__cell--monitor { grid-area: mo; }

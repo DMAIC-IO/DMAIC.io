@@ -597,6 +597,7 @@
     "todoOverdue": "Überfällig",
     "calendarEmpty": "Keine Termine erfasst.",
     "calendarSummary": "{count} Termine in den nächsten {days} Tagen",
+    "calendarSummary_one": "1 Termin in den nächsten {days} Tagen",
     "calendarNone": "Keine anstehenden Termine.",
     "stakeholderEmpty": "Keine Stakeholder erfasst.",
     "stakeholderOther": "Sonstige",

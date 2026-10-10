@@ -597,6 +597,7 @@
     "todoOverdue": "Overdue",
     "calendarEmpty": "No events recorded.",
     "calendarSummary": "{count} events in the next {days} days",
+    "calendarSummary_one": "1 event in the next {days} days",
     "calendarNone": "No upcoming events.",
     "stakeholderEmpty": "No stakeholders recorded.",
     "stakeholderOther": "Other",

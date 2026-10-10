@@ -13,6 +13,7 @@ import lessonsTile from '../../js/modules/lessons-learned/lessons-learned.tile.j
 import { todayISO, addDaysISO } from '../../js/core/local-date.js';
 import { validateSchema, resolveSettings } from '../../js/pages/dashboard/tile-settings.js';
 import { HOST_TILES } from '../../js/pages/dashboard/tiles/index.js';
+import { I18n } from '../../js/core/i18n.js';
 import zegTile from '../../js/pages/dashboard/tiles/zeg-timeline.tile.js';
 
 const i18n = { t: (k) => k };
@@ -487,6 +488,21 @@ suite('dashboard tiles: dmaic-calendar', () => {
   test('summary names count and horizon', () => {
     assertEqual(render(calendarTile, CAL_STATE, { horizon: '7' }).querySelector('.dashboard-fmea__summary').textContent,
       'dashboard.calendarSummary');
+  });
+
+  test('summary uses the singular for exactly one upcoming event (real de/en strings)', async () => {
+    const real = new I18n('de');
+    for (const lang of ['de', 'en']) {
+      real._cache.set(lang, await (await fetch(new URL(`../../i18n/${lang}.json`, import.meta.url))).json());
+    }
+    const host = document.createElement('div');
+    const one = { events: [CAL_STATE.events[0]] };
+    const settings = resolveSettings(validateSchema(calendarTile.settings), {});
+    calendarTile.render(host, { state: one, settings, i18n: real });
+    assertEqual(host.querySelector('.dashboard-fmea__summary').textContent, '1 Termin in den nächsten 14 Tagen');
+    real._lang = 'en';
+    calendarTile.render(host, { state: one, settings, i18n: real });
+    assertEqual(host.querySelector('.dashboard-fmea__summary').textContent, '1 event in the next 14 days');
   });
 
   test('no upcoming events shows a hint; no events at all the empty state', () => {
