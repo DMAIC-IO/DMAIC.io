@@ -1544,7 +1544,7 @@ body.dev-area-open .dmaic-tiles {
   font-size: var(--font-size-xs);
   font-weight: 600;
   padding: 0 var(--spacing-2xs);
-  border: 1px solid currentColor;
+  border: 1px solid currentcolor;
   border-radius: var(--border-radius-sm);
   color: var(--color-text-secondary);
   margin-inline: var(--spacing-xs);
