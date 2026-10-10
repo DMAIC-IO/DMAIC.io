@@ -39,16 +39,35 @@ const MOUNT_TIMEOUT_MS = 20000;
  * Zuordnung wäre schlechter als keine. Ohne auflösenden Hilfeschlüssel bleibt
  * die Lücke sichtbar und blockiert nichts.
  *
- * @param {HTMLElement} el  der gerenderte Knopf
- * @param {{agentAction: string|null, help: string|null}} vm  Viewmodel aus `resolveActions`
+ * Der RÜCKGABEWERT ist der Punkt: `vm.help` sagt nur, dass der Workspace den
+ * Schlüssel kennt, nicht dass er auch angewandt wurde. Beides sind
+ * verschiedene i18n-Griffe (`this._i18n` hier, `STATE.i18n` dort). Wer den
+ * gewöhnlichen Tooltip unterdrücken will, muss auf das Angewandte reagieren
+ * und nicht auf die Absicht — sonst verliert der Knopf bei einer Divergenz
+ * BEIDES, lautlos.
+ *
+ * @param {HTMLElement} el  der gerenderte Knopf, samt Inhalt
+ * @param {{agentAction: string|null, help: string|null, text: string}} vm
+ *   Viewmodel aus `resolveActions`
  * @param {string} i18nKey  Modulpräfix, z. B. `modules.five-why`
+ * @returns {string} der wirklich angewandte Satz, `''` wenn nichts ankam
  */
 function describeAction(el, vm, i18nKey) {
-  if (!vm.agentAction) return;
+  if (!vm.agentAction) return '';
   // Benennt den Knopf für Tests und Diagnose, parallel zu
   // `data-instance-id`/`data-module-id` am Behälter.
   el.dataset.agentAction = vm.agentAction;
-  if (vm.help) describeElement(el, `${i18nKey}.actions.${vm.agentAction}.help`);
+  if (!vm.help) return '';
+  // Ein Knopf OHNE Inhalt hat keinen Namen aus dem Inhalt — dann wird sein
+  // `title` zum Namen, und der Hilfesatz nähme die Stelle der Beschriftung
+  // ein (der Fehler, den Task 8 an den Symbolknöpfen undo/redo behob). Das
+  // kann `dynamicText` jederzeit herbeiführen, indem es '' liefert. Solche
+  // Knöpfe bekommen vorab ihre eigene kurze Beschriftung als Titel;
+  // `describeElement` lässt einen fremden Titel stehen und hängt den Satz
+  // dann nur noch an `aria-describedby`. Kein zweiter Mechanismus: es ist
+  // dieselbe Titelregel, die undo/redo schützt.
+  if (!el.textContent.trim() && vm.text) el.title = vm.text;
+  return describeElement(el, `${i18nKey}.actions.${vm.agentAction}.help`);
 }
 
 export class Workspace {
@@ -313,12 +332,13 @@ export class Workspace {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = `workspace__action workspace__action--${vm.variant}`;
-    // Der Hilfesatz der Agentenaktion gewinnt über `description`: er
-    // beschreibt die Aktion, statt die Beschriftung zu wiederholen.
-    if (vm.tooltip && !vm.help) btn.title = vm.tooltip;
     const textEl = h('span', { class: 'workspace__action-text' }, vm.dynamicText ? '' : vm.text);
     btn.append(icon(vm.iconId, { size: 'sm' }), textEl);
-    describeAction(btn, vm, inst.i18nKey);
+    // Erst beschreiben, dann der Rückfall: der Hilfesatz der Agentenaktion
+    // gewinnt über `description` (er beschreibt die Aktion, statt die
+    // Beschriftung zu wiederholen) — aber nur, wenn er auch wirklich ankam.
+    const applied = describeAction(btn, vm, inst.i18nKey);
+    if (vm.tooltip && !applied) btn.title = vm.tooltip;
     if (vm.onClick) {
       btn.addEventListener('click', () => vm.onClick(inst.getActionData?.()));
     }
@@ -336,9 +356,9 @@ export class Workspace {
     const trigger = document.createElement('button');
     trigger.type = 'button';
     trigger.className = `workspace__action workspace__action--${vm.variant}`;
-    if (vm.tooltip && !vm.help) trigger.title = vm.tooltip;
     trigger.append(icon(vm.iconId, { size: 'sm' }), h('span', { class: 'workspace__action-text' }, vm.text));
-    describeAction(trigger, vm, inst.i18nKey);
+    const applied = describeAction(trigger, vm, inst.i18nKey);
+    if (vm.tooltip && !applied) trigger.title = vm.tooltip;
 
     const menu = h('div', { class: 'workspace__action-menu' });
     vm.children.forEach((child) => {
