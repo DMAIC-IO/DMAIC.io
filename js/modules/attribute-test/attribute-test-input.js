@@ -6,6 +6,20 @@
  * i18n — errors are i18n keys under `modules.attribute-test`.
  */
 
+import { resolveColumnRef } from '../../core/worksheet-columns.js';
+
+/**
+ * Read a column's raw values; null when no ref is set or it no longer
+ * resolves (deleted worksheet/column), so the UI shows the "pick columns" hint.
+ * @param {object} stateManager
+ * @param {{instanceId:string,sheetId:string,columnId:string}|null} ref
+ * @returns {any[]|null}
+ */
+export function columnValuesOrNull(stateManager, ref) {
+  const col = resolveColumnRef(stateManager, ref);
+  return col ? (col.values || []) : null;
+}
+
 /** @param {unknown} v @returns {boolean} */
 function isMissing(v) {
   return v == null || (typeof v === 'number' && Number.isNaN(v)) || String(v).trim() === '';

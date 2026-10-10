@@ -8,11 +8,11 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { ColumnPicker, getColumnValues } from '../../ui/column-picker.js';
+import { ColumnPicker } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 import { State } from './attribute-test-model.js';
 import {
-  normalizeSummary, normalizeColumns, distinctValues, defaultEventValue,
+  normalizeSummary, normalizeColumns, distinctValues, defaultEventValue, columnValuesOrNull,
 } from './attribute-test-input.js';
 import { buildReport } from './attribute-test-report.js';
 
@@ -96,6 +96,7 @@ const mod = createModule({
       onAlphaInput(event) {
         const v = parseFloat(String(event.target.value).replace(',', '.'));
         if (Number.isFinite(v) && v > 0 && v < 1) this.model.alpha = v;
+        else event.target.value = this.model.alpha; // invalid: re-sync the field to the active α
       },
       setCell(i, j, event) { this.model.summary.table.counts[i][j] = event.target.value; },
       setRowName(i, event) { this.model.summary.table.rows[i] = event.target.value; },
@@ -108,7 +109,7 @@ const mod = createModule({
 
       // ── Analysis ───────────────────────────────────────────────
       _values(ref) {
-        return ref ? getColumnValues(module._context.stateManager, ref) : null;
+        return columnValuesOrNull(module._context.stateManager, ref);
       },
       runAnalysis() {
         const m = this.model;

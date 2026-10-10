@@ -4018,7 +4018,7 @@
       "decisionKeep": "Do not reject H₀ (p ≥ α = {alpha})",
       "basisExact": "Decision based on the exact binomial test",
       "basisZ": "Decision based on the z-test",
-      "basisPearson": "Decision based on Pearson χ²",
+      "basisPearson": "Decision based on Pearson χ² (two-sided); the direction applies to Fisher's exact test only",
       "h0One": "H₀: p = p₀",
       "h1One": "H₁: p {op} p₀",
       "h0Two": "H₀: p₁ = p₂",

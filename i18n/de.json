@@ -4018,7 +4018,7 @@
       "decisionKeep": "H₀ nicht verwerfen (p ≥ α = {alpha})",
       "basisExact": "Entscheidung auf Basis des exakten Binomialtests",
       "basisZ": "Entscheidung auf Basis des z-Tests",
-      "basisPearson": "Entscheidung auf Basis von Pearson χ²",
+      "basisPearson": "Entscheidung auf Basis von Pearson χ² (zweiseitig); die Testrichtung gilt nur für Fisher-exakt",
       "h0One": "H₀: p = p₀",
       "h1One": "H₁: p {op} p₀",
       "h0Two": "H₀: p₁ = p₂",

@@ -56,7 +56,7 @@ export default {
       de: {
         title: 'Chi-Quadrat-Assoziation',
         blocks: [
-          { type: 'paragraph', content: 'Prüft, ob zwei kategoriale Merkmale zusammenhängen ({{term:nullhypothese|H₀}}: unabhängig). Jede Zelle zeigt beobachtete und erwartete Häufigkeit und ihren Beitrag zu χ² – große Beiträge zeigen, wo der Zusammenhang sitzt. Neben Pearson-χ² steht der Likelihood-Quotient G². Bei 2×2 kommen Yates-Korrektur und Fisher-exakt dazu; nur dort lässt sich die Testrichtung wählen (zweiseitig oder einseitig für Fisher).' },
+          { type: 'paragraph', content: 'Prüft, ob zwei kategoriale Merkmale zusammenhängen ({{term:nullhypothese|H₀}}: unabhängig). Jede Zelle zeigt beobachtete und erwartete Häufigkeit und ihren Beitrag zu χ² – große Beiträge zeigen, wo der Zusammenhang sitzt. Neben Pearson-χ² steht der Likelihood-Quotient G². Bei 2×2 kommen Yates-Korrektur und Fisher-exakt dazu; nur dort lässt sich die Testrichtung wählen, und sie gilt ausschließlich für Fisher-exakt – die Entscheidung beruht immer auf dem zweiseitigen Pearson-χ².' },
           { type: 'definition', term: 'Warnungen', content: 'Liegt eine erwartete Häufigkeit unter 1 oder mehr als 20 % unter 5, ist der χ²-Test unzuverlässig – Kategorien zusammenfassen oder bei 2×2 Fisher-exakt verwenden. Zeilen und Spalten ohne Beobachtungen werden entfernt.' },
           { type: 'paragraph', content: 'Visuell zeigt das Mosaikdiagramm denselben Zusammenhang.' },
         ],
@@ -64,7 +64,7 @@ export default {
       en: {
         title: 'Chi-square association',
         blocks: [
-          { type: 'paragraph', content: 'Tests whether two categorical variables are related ({{term:nullhypothese|H₀}}: independent). Each cell shows observed and expected count and its contribution to χ² – large contributions show where the association sits. Pearson χ² is accompanied by the likelihood ratio G². For 2×2 tables Yates\' correction and Fisher\'s exact test are added; only there the test direction can be chosen (two-sided or one-sided for Fisher).' },
+          { type: 'paragraph', content: 'Tests whether two categorical variables are related ({{term:nullhypothese|H₀}}: independent). Each cell shows observed and expected count and its contribution to χ² – large contributions show where the association sits. Pearson χ² is accompanied by the likelihood ratio G². For 2×2 tables Yates\' correction and Fisher\'s exact test are added; only there the test direction can be chosen, and it applies to Fisher\'s exact test only – the decision always rests on the two-sided Pearson χ².' },
           { type: 'definition', term: 'Warnings', content: 'If an expected count is below 1 or more than 20 % are below 5, the χ² test is unreliable – merge categories or, for 2×2, use Fisher\'s exact test. Rows and columns without observations are dropped.' },
           { type: 'paragraph', content: 'The mosaic plot shows the same association visually.' },
         ],

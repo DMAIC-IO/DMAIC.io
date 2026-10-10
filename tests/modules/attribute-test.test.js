@@ -1,7 +1,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import {
   parseCount, parseProportion, distinctValues, defaultEventValue,
-  normalizeSummary, normalizeColumns,
+  normalizeSummary, normalizeColumns, columnValuesOrNull,
 } from '../../js/modules/attribute-test/attribute-test-input.js';
 
 const base = (over = {}) => ({
@@ -165,6 +165,18 @@ suite('attribute-test input — stale event value', () => {
 import { State } from '../../js/modules/attribute-test/attribute-test-model.js';
 import { buildReport, fmtP } from '../../js/modules/attribute-test/attribute-test-report.js';
 
+suite('attribute-test column ref resolution', () => {
+  const sm = { getModuleState: (id) => id === 'w' ? { sheets: [{ id: 's', state: { columns: [{ id: 'c1', values: ['a', 'b'] }] } }] } : null };
+  test('resolved ref returns the values', () => {
+    assertDeepEqual(columnValuesOrNull(sm, { instanceId: 'w', sheetId: 's', columnId: 'c1' }), ['a', 'b']);
+  });
+  test('missing or dangling ref returns null (pick-columns hint)', () => {
+    assertEqual(columnValuesOrNull(sm, null), null);
+    assertEqual(columnValuesOrNull(sm, { instanceId: 'gone', sheetId: 's', columnId: 'c1' }), null);
+    assertEqual(columnValuesOrNull(sm, { instanceId: 'w', sheetId: 's', columnId: 'zz' }), null);
+  });
+});
+
 suite('attribute-test model', () => {
   test('defaults', () => {
     const s = new State();
@@ -238,12 +250,13 @@ suite('attribute-test report', () => {
     assertTrue(!ci.value.includes('NaN'), ci.value);
     assertEqual(r.basisKey, 'basisExact');
   });
-  test('two proportions: KW35/38 pooled keeps H0', () => {
+  test('two proportions: pooled z keeps H0 for similar rates', () => {
+    // invented counts; reference values from scipy (pooled z two-sided, Fisher exact)
     const r = buildReport(st({ pooled: true }),
-      { ok: true, kind: 'two', x1: 184, n1: 3902, x2: 179, n2: 4023, groups: null, missing: 0 });
+      { ok: true, kind: 'two', x1: 30, n1: 400, x2: 18, n2: 380, groups: null, missing: 0 });
     assertEqual(r.decision, 'keep');
-    assertEqual(r.stats.find(s => s.key === 'pValue').value, '0.5710');
-    assertEqual(r.stats.find(s => s.key === 'pFisher').value, '0.5912');
+    assertEqual(r.stats.find(s => s.key === 'pValue').value, '0.1085');
+    assertEqual(r.stats.find(s => s.key === 'pFisher').value, '0.1356');
     assertTrue(r.notes.some(n => n.key === 'notePooled'));
   });
   test('association: dropped zero row is named, 2×2 extras present', () => {
