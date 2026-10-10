@@ -96,6 +96,7 @@
   "coltype.time": "lucide:clock",
   "module.activity-flowchart": "lucide:git-fork",
   "module.attribute-control-chart": "lucide:activity",
+  "module.attribute-test": "lucide:percent",
   "module.bar": "lucide:chart-column",
   "module.boxplot": "lucide:chart-bar",
   "module.calculator": "lucide:calculator",

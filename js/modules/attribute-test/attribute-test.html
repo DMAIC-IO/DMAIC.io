@@ -1,0 +1,216 @@
+<div class="attrtest dmike-split" x-data="attributeTest">
+
+  <!-- ─── Input (left) ─────────────────────────────────────────── -->
+  <div class="attrtest__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionTest')"></div>
+    <div class="btn-group attrtest__toggle-row">
+      <button class="btn--segment" data-kind="one" :class="isKind('one') ? 'btn--active' : ''"
+        @click="setKind('one')" x-text="t('kindOne')"></button>
+      <button class="btn--segment" data-kind="two" :class="isKind('two') ? 'btn--active' : ''"
+        @click="setKind('two')" x-text="t('kindTwo')"></button>
+      <button class="btn--segment" data-kind="assoc" :class="isKind('assoc') ? 'btn--active' : ''"
+        @click="setKind('assoc')" x-text="t('kindAssoc')"></button>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionInput')"></div>
+    <div class="btn-group attrtest__toggle-row">
+      <button class="btn--segment" data-mode="summary" :class="isMode('summary') ? 'btn--active' : ''"
+        @click="setMode('summary')" x-text="t('modeSummary')"></button>
+      <button class="btn--segment" data-mode="columns" :class="isMode('columns') ? 'btn--active' : ''"
+        @click="setMode('columns')" x-text="t('modeColumns')"></button>
+    </div>
+
+    <!-- Summarized input -->
+    <template x-if="isMode('summary') && isKind('one')">
+      <div class="attrtest__grid">
+        <label class="field-group"><span x-text="t('events')"></span>
+          <input type="text" inputmode="numeric" data-ref="x" x-model="model.summary.x"></label>
+        <label class="field-group"><span x-text="t('trials')"></span>
+          <input type="text" inputmode="numeric" data-ref="n" x-model="model.summary.n"></label>
+      </div>
+    </template>
+
+    <template x-if="isMode('summary') && isKind('two')">
+      <div class="attrtest__grid attrtest__grid--two">
+        <span class="attrtest__grid-head"></span>
+        <span class="attrtest__grid-head" x-text="t('events')"></span>
+        <span class="attrtest__grid-head" x-text="t('trials')"></span>
+        <span x-text="t('sample1')"></span>
+        <input type="text" inputmode="numeric" data-ref="x1" x-model="model.summary.x1">
+        <input type="text" inputmode="numeric" data-ref="n1" x-model="model.summary.n1">
+        <span x-text="t('sample2')"></span>
+        <input type="text" inputmode="numeric" data-ref="x2" x-model="model.summary.x2">
+        <input type="text" inputmode="numeric" data-ref="n2" x-model="model.summary.n2">
+      </div>
+    </template>
+
+    <template x-if="isMode('summary') && isKind('assoc')">
+      <div class="attrtest__table-editor" data-ref="table-editor">
+        <table class="attrtest__edit-table">
+          <thead>
+            <tr>
+              <th></th>
+              <template x-for="j in tableColIdx()" :key="'h' + j">
+                <th>
+                  <input type="text" class="attrtest__name" :data-col-name="j" :value="colName(j)"
+                    @input="setColName(j, $event)">
+                  <button class="btn--icon attrtest__remove" :title="t('removeCol')" @click="removeCol(j)">
+                    <span class="icon icon--sm" data-icon="action.delete"></span>
+                  </button>
+                </th>
+              </template>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="i in tableRowIdx()" :key="'r' + i">
+              <tr>
+                <th>
+                  <input type="text" class="attrtest__name" :data-row-name="i" :value="rowName(i)"
+                    @input="setRowName(i, $event)">
+                  <button class="btn--icon attrtest__remove" :title="t('removeRow')" @click="removeRow(i)">
+                    <span class="icon icon--sm" data-icon="action.delete"></span>
+                  </button>
+                </th>
+                <template x-for="j in tableColIdx()" :key="'c' + i + '-' + j">
+                  <td><input type="text" inputmode="numeric" class="attrtest__count"
+                    :data-cell="i + '-' + j" :value="cellValue(i, j)" @input="setCell(i, j, $event)"></td>
+                </template>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+        <div class="attrtest__table-actions">
+          <button class="btn btn--secondary btn--sm" data-ref="add-row" @click="addRow()" x-text="t('addRow')"></button>
+          <button class="btn btn--secondary btn--sm" data-ref="add-col" @click="addCol()" x-text="t('addCol')"></button>
+        </div>
+      </div>
+    </template>
+
+    <!-- Column input -->
+    <template x-if="isMode('columns') && !isKind('assoc')">
+      <div class="field-group">
+        <label x-text="t('colResponse')"></label>
+        <div data-ref="picker-response-wrap"></div>
+      </div>
+    </template>
+    <template x-if="isMode('columns') && isKind('two')">
+      <div class="field-group">
+        <label x-text="t('colGroup')"></label>
+        <div data-ref="picker-group-wrap"></div>
+      </div>
+    </template>
+    <template x-if="isMode('columns') && isKind('assoc')">
+      <div class="attrtest__contents">
+        <div class="field-group">
+          <label x-text="t('colRowVar')"></label>
+          <div data-ref="picker-row-wrap"></div>
+        </div>
+        <div class="field-group">
+          <label x-text="t('colColVar')"></label>
+          <div data-ref="picker-col-wrap"></div>
+        </div>
+      </div>
+    </template>
+    <template x-if="showEvent()">
+      <div class="field-group">
+        <label x-text="t('eventValue')"></label>
+        <!-- data-driven options: not bound via x-model (see .claude/alpine.md §3) -->
+        <select data-ref="event" @change="onEventChange($event)">
+          <template x-for="v in eventOptions" :key="v">
+            <option :value="v" :selected="isEvent(v)" x-text="v"></option>
+          </template>
+        </select>
+      </div>
+    </template>
+
+    <div class="dmike-split__section-title" x-text="t('sectionOptions')"></div>
+    <template x-if="isKind('one')">
+      <label class="field-group"><span x-text="t('p0')"></span>
+        <input type="text" inputmode="decimal" data-ref="p0" x-model="model.p0"></label>
+    </template>
+    <template x-if="showDirection()">
+      <label class="field-group"><span x-text="t('direction')"></span>
+        <select data-ref="direction" x-model="model.direction">
+          <option value="two-sided" x-text="t('dirTwoSided')"></option>
+          <option value="greater" x-text="t('dirGreater')"></option>
+          <option value="less" x-text="t('dirLess')"></option>
+        </select>
+      </label>
+    </template>
+    <label class="field-group"><span x-text="t('alpha')"></span>
+      <input type="text" inputmode="decimal" data-ref="alpha" :value="model.alpha" @change="onAlphaInput($event)"></label>
+    <template x-if="isKind('two')">
+      <label class="attrtest__check">
+        <input type="checkbox" data-ref="pooled" x-model="model.pooled">
+        <span x-text="t('pooled')"></span>
+      </label>
+    </template>
+
+    <div class="attrtest__hypotheses">
+      <template x-for="h in hypotheses()" :key="h">
+        <div class="attrtest__hypothesis" x-text="h"></div>
+      </template>
+    </div>
+  </div>
+
+  <!-- ─── Results (right) ──────────────────────────────────────── -->
+  <div class="attrtest__results dmike-split__output">
+    <div class="dmike-split__section-title" x-text="t('sectionResults')"></div>
+
+    <div class="attrtest__message" data-ref="message" x-show="!hasResult()"
+      :class="isHint() ? 'attrtest__message--hint' : 'attrtest__message--error'" x-text="message()"></div>
+
+    <template x-if="hasResult()">
+      <div class="attrtest__contents">
+        <table class="attrtest__stats">
+          <tbody>
+            <template x-for="s in stats()" :key="s.key">
+              <tr :data-stat="s.key">
+                <th x-text="statLabel(s)"></th>
+                <td class="attrtest__stat-value" x-text="s.value"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+
+        <div class="attrtest__decision" data-ref="decision" :class="decisionClass()">
+          <span x-text="decisionText()"></span>
+          <span class="attrtest__basis" x-text="basisText()"></span>
+        </div>
+
+        <template x-for="n in notes()" :key="n.key">
+          <div class="attrtest__note" :data-note="n.key" x-text="noteText(n)"></div>
+        </template>
+
+        <template x-if="hasTable()">
+          <div>
+            <div class="attrtest__legend" x-text="t('cellLegend')"></div>
+            <table class="attrtest__result-table" data-ref="result-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <template x-for="(c, ci) in tableCols()" :key="ci"><th x-text="c"></th></template>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="(row, ri) in tableRows()" :key="ri">
+                  <tr>
+                    <th x-text="row.name"></th>
+                    <template x-for="(cell, j) in row.cells" :key="j">
+                      <td>
+                        <div class="attrtest__obs" x-text="cell.obs"></div>
+                        <div class="attrtest__exp" x-text="cell.exp"></div>
+                        <div class="attrtest__contrib" x-text="cell.contrib"></div>
+                      </td>
+                    </template>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </template>
+      </div>
+    </template>
+  </div>
+</div>
