@@ -1,0 +1,190 @@
+<div class="resampling dmike-split" x-data="resampling">
+
+  <!-- ─── Input (left) ─────────────────────────────────────────── -->
+  <div class="resampling__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionMode')"></div>
+    <div class="btn-group">
+      <button type="button" class="btn--segment" data-ref="mode-one" data-mode="one"
+        :class="isMode('one') ? 'btn--active' : ''" @click="setMode('one')" x-text="t('modeOne')"></button>
+      <button type="button" class="btn--segment" data-ref="mode-two" data-mode="two"
+        :class="isMode('two') ? 'btn--active' : ''" @click="setMode('two')" x-text="t('modeTwo')"></button>
+      <button type="button" class="btn--segment" data-ref="mode-paired" data-mode="paired"
+        :class="isMode('paired') ? 'btn--active' : ''" @click="setMode('paired')" x-text="t('modePaired')"></button>
+      <button type="button" class="btn--segment" data-ref="mode-k" data-mode="k"
+        :class="isMode('k') ? 'btn--active' : ''" @click="setMode('k')" x-text="t('modeK')"></button>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <template x-if="isMode('k')">
+      <div class="field-group">
+        <label x-text="t('kColumns')"></label>
+        <div data-ref="picker-k-wrap"></div>
+      </div>
+    </template>
+    <template x-if="!isMode('k')">
+      <div class="resampling__contents">
+        <div class="field-group">
+          <label x-text="t(sampleLabelKey(1))"></label>
+          <div data-ref="picker1-wrap"></div>
+        </div>
+        <template x-if="!isMode('one')">
+          <div class="field-group">
+            <label x-text="t(sampleLabelKey(2))"></label>
+            <div data-ref="picker2-wrap"></div>
+          </div>
+        </template>
+      </div>
+    </template>
+
+    <div class="dmike-split__section-title" x-text="t('sectionStatistic')"></div>
+    <div class="field-group">
+      <label x-text="t('statistic')"></label>
+      <select class="field" data-ref="statistic" x-model="model.statisticId">
+        <option value="mean" :hidden="!isAllowed('mean')" :disabled="!isAllowed('mean')" x-text="t('statMean')"></option>
+        <option value="median" :hidden="!isAllowed('median')" :disabled="!isAllowed('median')" x-text="t('statMedian')"></option>
+        <option value="stddev" :hidden="!isAllowed('stddev')" :disabled="!isAllowed('stddev')" x-text="t('statStddev')"></option>
+        <option value="variance" :hidden="!isAllowed('variance')" :disabled="!isAllowed('variance')" x-text="t('statVariance')"></option>
+        <option value="trimmedMean" :hidden="!isAllowed('trimmedMean')" :disabled="!isAllowed('trimmedMean')" x-text="t('statTrimmedMean')"></option>
+        <option value="quantile" :hidden="!isAllowed('quantile')" :disabled="!isAllowed('quantile')" x-text="t('statQuantile')"></option>
+        <option value="cv" :hidden="!isAllowed('cv')" :disabled="!isAllowed('cv')" x-text="t('statCv')"></option>
+        <option value="ppk" :hidden="!isAllowed('ppk')" :disabled="!isAllowed('ppk')" x-text="t('statPpk')"></option>
+      </select>
+    </div>
+    <div class="field-group" x-show="model.statisticId === 'trimmedMean'">
+      <label x-text="t('trim')"></label>
+      <input type="number" class="field field--num" data-ref="trim" min="0" max="0.49" step="0.01" x-model.number="model.statParams.trim">
+    </div>
+    <div class="field-group" x-show="model.statisticId === 'quantile'">
+      <label x-text="t('quantileP')"></label>
+      <input type="number" class="field field--num" data-ref="quantile-p" min="0" max="1" step="0.01" x-model.number="model.statParams.p">
+    </div>
+    <div class="field-row" x-show="model.statisticId === 'ppk'">
+      <div class="field-group">
+        <label x-text="t('lsl')"></label>
+        <input type="text" class="field field--num" data-ref="lsl" x-model="model.statParams.lsl">
+      </div>
+      <div class="field-group">
+        <label x-text="t('usl')"></label>
+        <input type="text" class="field field--num" data-ref="usl" x-model="model.statParams.usl">
+      </div>
+    </div>
+    <div class="field-group" x-show="isMode('two')">
+      <label x-text="t('contrast')"></label>
+      <select class="field" data-ref="contrast" x-model="model.contrast">
+        <option value="difference" x-text="t('contrastDifference')"></option>
+        <option value="ratio" x-text="t('contrastRatio')"></option>
+      </select>
+    </div>
+    <div class="field-group" x-show="showDirection()">
+      <label x-text="t('direction')"></label>
+      <select class="field" data-ref="direction" x-model="model.direction">
+        <option value="two-sided" x-text="t('twoSided')"></option>
+        <option value="greater" x-text="t('greater')"></option>
+        <option value="less" x-text="t('less')"></option>
+      </select>
+    </div>
+    <div class="field-group" x-show="showTarget()">
+      <label x-text="t('target')"></label>
+      <input type="text" class="field field--num" data-ref="target" :placeholder="t('targetPh')" x-model="model.target">
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionSettings')"></div>
+    <div class="field-row">
+      <div class="field-group">
+        <label x-text="t('B')"></label>
+        <input type="number" class="field field--num" data-ref="b" min="1000" max="100000" step="1000" x-model.number="model.B">
+      </div>
+      <div class="field-group">
+        <label x-text="t('confidence')"></label>
+        <input type="number" class="field field--num" data-ref="confidence" min="0.5" max="0.999" step="0.01" x-model.number="model.confidence">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <label x-text="t('seed')"></label>
+        <input type="number" class="field field--num" data-ref="seed" min="1" step="1" x-model.number="model.seed">
+      </div>
+      <button type="button" class="btn resampling__seed-roll" data-ref="seed-roll" :title="t('rollSeed')" :aria-label="t('rollSeed')" @click="rollSeed()">
+        <span class="icon" data-icon="action.roll-seed" aria-hidden="true"></span>
+      </button>
+    </div>
+    <div class="field-group">
+      <label x-text="t('ciMethod')"></label>
+      <select class="field" data-ref="ci-method" x-model="model.ciMethod">
+        <option value="bca" x-text="t('ciBca')"></option>
+        <option value="percentile" x-text="t('ciPercentile')"></option>
+      </select>
+    </div>
+
+    <p class="resampling__validation" data-ref="validation" x-show="showValidation()" x-text="validationKey ? t(validationKey) : ''"></p>
+
+    <button type="button" class="dmike-btn-run" data-ref="compute" :disabled="!canCompute()" @click="compute()">
+      <span class="icon icon--sm" data-icon="action.run" aria-hidden="true"></span>
+      <span x-text="t('compute')"></span>
+    </button>
+    <div class="resampling__running" x-show="running">
+      <progress class="resampling__progress" data-ref="progress" max="1" :value="progress"></progress>
+      <button type="button" class="btn" data-ref="cancel" @click="cancel()" x-text="t('cancel')"></button>
+    </div>
+    <p class="resampling__error" data-ref="error" x-show="errorKey" x-text="errorKey ? t(errorKey) : ''"></p>
+  </div>
+
+  <!-- ─── Output (right) ───────────────────────────────────────── -->
+  <div class="resampling__output dmike-split__output">
+
+    <div class="resampling__placeholder" data-ref="placeholder" x-show="!view">
+      <span class="icon icon--lg icon--empty-state" data-icon="status.no-data" aria-hidden="true"></span>
+      <p x-text="t('placeholderText')"></p>
+    </div>
+
+    <p class="resampling__stale" data-ref="stale" x-show="view && stale" x-text="t('stale')"></p>
+
+    <template x-if="view">
+      <div class="resampling__contents">
+        <div class="dmike-split__output-section" x-text="t('sectionResult')"></div>
+        <table class="resampling__table">
+          <tbody>
+            <tr><th x-text="t('estimate')"></th><td data-ref="result-estimate" x-text="view.estimate"></td></tr>
+            <tr x-show="view.hasBoot"><th x-text="t('se')"></th><td data-ref="result-se" x-text="view.se"></td></tr>
+            <tr x-show="view.hasBoot"><th x-text="t('bias')"></th><td data-ref="result-bias" x-text="view.bias"></td></tr>
+            <tr x-show="view.hasBoot"><th x-text="t('interval') + ' (' + t(model.ciMethod === 'bca' ? 'ciBca' : 'ciPercentile') + ')'"></th><td data-ref="result-interval" x-text="view.interval"></td></tr>
+            <tr x-show="view.decisionKey"><th x-text="t('decision')"></th><td data-ref="result-decision" x-text="view.decisionKey ? t(view.decisionKey) : ''"></td></tr>
+            <tr x-show="view.hasTest"><th x-text="t('observedT')"></th><td data-ref="result-observed" x-text="view.test ? view.test.observed : ''"></td></tr>
+            <tr x-show="view.hasTest"><th x-text="t('pValue')"></th><td data-ref="result-pvalue" x-text="view.test ? view.test.pValue : ''"></td></tr>
+            <tr x-show="view.hasTest"><th x-text="t('permutations')"></th><td data-ref="result-method" x-text="view.test ? t(view.test.methodKey) + ' · ' + view.test.permutations : ''"></td></tr>
+          </tbody>
+        </table>
+        <p class="resampling__note" data-ref="result-bca-fallback" x-show="view.bcaFallback" x-text="t('bcaFallback')"></p>
+      </div>
+    </template>
+
+    <div class="dmike-split__output-section" x-show="view && view.hasBoot" x-text="t('sectionBootChart')"></div>
+    <div class="resampling__chart" data-ref="chart-boot" x-show="view && view.hasBoot"></div>
+    <div class="dmike-split__output-section" x-show="view && view.hasTest" x-text="t('sectionPermChart')"></div>
+    <div class="resampling__chart" data-ref="chart-perm" x-show="view && view.hasTest"></div>
+
+    <template x-if="view && view.isK">
+      <div class="resampling__contents">
+        <div class="dmike-split__output-section" x-text="t('sectionGroups')"></div>
+        <table class="resampling__table" data-ref="groups-table">
+          <thead><tr><th x-text="t('group')"></th><th>n</th><th x-text="t('estimate')"></th><th x-text="t('interval')"></th></tr></thead>
+          <tbody>
+            <template x-for="(g, idx) in view.groups" :key="idx">
+              <tr><td x-text="g.label"></td><td x-text="g.n"></td><td x-text="g.estimate"></td><td x-text="g.interval"></td></tr>
+            </template>
+          </tbody>
+        </table>
+        <div class="dmike-split__output-section" x-text="t('sectionPosthoc')"></div>
+        <table class="resampling__table" data-ref="posthoc-table">
+          <thead><tr><th x-text="t('pair')"></th><th x-text="t('estimate')"></th><th x-text="t('interval')"></th><th x-text="t('pRaw')"></th><th x-text="t('pHolm')"></th></tr></thead>
+          <tbody>
+            <template x-for="(h, idx) in view.posthoc" :key="idx">
+              <tr><td x-text="h.pair"></td><td x-text="h.contrast"></td><td x-text="h.interval"></td><td x-text="h.pRaw"></td><td x-text="h.pHolm"></td></tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </template>
+  </div>
+</div>

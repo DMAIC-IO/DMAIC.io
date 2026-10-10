@@ -1,0 +1,70 @@
+/**
+ * D.Mike — Resampling Module Styles
+ * BEM-light naming: .resampling__*
+ *
+ * Layout: global .dmike-split; run button: global .dmike-btn-run.
+ */
+
+/* Transparent wrapper for Alpine x-if blocks (one required child). */
+.resampling__contents { display: contents; }
+
+.resampling__contents > .dmike-split__output-section {
+  margin-top: var(--spacing-lg);
+}
+
+.resampling__seed-roll {
+  align-self: flex-end;
+}
+
+.resampling__running {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.resampling__progress {
+  flex: 1;
+}
+
+.resampling__validation,
+.resampling__error {
+  color: var(--color-error);
+  margin: var(--spacing-sm) 0;
+}
+
+.resampling__stale {
+  border-left: 3px solid var(--color-warning);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  padding: var(--spacing-sm);
+  margin: 0 0 var(--spacing-sm);
+}
+
+.resampling__note {
+  color: var(--color-text-secondary);
+  margin: var(--spacing-sm) 0;
+}
+
+.resampling__table {
+  border-collapse: collapse;
+}
+
+.resampling__table th,
+.resampling__table td {
+  text-align: left;
+  padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+.resampling__table td {
+  font-variant-numeric: tabular-nums;
+}
+
+.resampling__chart {
+  min-height: 260px;
+}
+
+.resampling__placeholder {
+  text-align: center;
+  color: var(--color-text-secondary);
+}
