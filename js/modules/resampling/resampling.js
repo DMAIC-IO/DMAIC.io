@@ -110,9 +110,13 @@ const mod = createModule({
         if (this.running) return;
         this.refresh();
         if (this.validationKey) return;
-        const inputs = readInputs(this.model, valuesOf);
-        const hash = computeInputsHash(this.model, inputs);
-        const jobs = buildJobs(this.model, inputs);
+        // Snapshot: the inputs stay editable during the run, so everything the run
+        // computes and summarizes must come from the settings at its start.
+        const snap = State.fromJSON(this.model.toJSON());
+        const labels = this._labels();
+        const inputs = readInputs(snap, valuesOf);
+        const hash = computeInputsHash(snap, inputs);
+        const jobs = buildJobs(snap, inputs);
         const runner = mod.runnerFactory();
         abortCtl = new AbortController();
         const { signal } = abortCtl;
@@ -128,7 +132,7 @@ const mod = createModule({
             });
             outcomes.push({ role: jobs[i].role, result });
           }
-          this.model.result = summarize(this.model, inputs, outcomes, hash, this._labels());
+          this.model.result = summarize(snap, inputs, outcomes, hash, labels);
           this.runCount++;
         } catch (err) {
           if (!(err && err.name === 'AbortError')) {
