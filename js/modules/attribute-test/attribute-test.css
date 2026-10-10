@@ -13,6 +13,7 @@
 .attrtest__grid-head { font-size: var(--font-size-xs); color: var(--color-text-secondary); }
 
 .attrtest__edit-table { border-collapse: collapse; margin-bottom: var(--spacing-xs); }
+
 .attrtest__edit-table th,
 .attrtest__edit-table td { padding: var(--spacing-2xs); }
 .attrtest__name { width: 7em; }
@@ -21,6 +22,7 @@
 .attrtest__table-actions { display: flex; gap: var(--spacing-xs); margin-bottom: var(--spacing-sm); }
 
 .attrtest__check { display: flex; align-items: center; gap: var(--spacing-xs); }
+
 .attrtest__hypotheses {
   margin-top: var(--spacing-sm);
   font-family: var(--font-family-mono);
@@ -30,12 +32,14 @@
 
 .attrtest__message { padding: var(--spacing-sm); border-radius: var(--border-radius); }
 .attrtest__message--hint { color: var(--color-text-secondary); }
+
 .attrtest__message--error {
   color: var(--color-error);
   border: var(--border-width) solid var(--color-error);
 }
 
 .attrtest__stats { border-collapse: collapse; margin-bottom: var(--spacing-sm); }
+
 .attrtest__stats th {
   text-align: left;
   font-weight: var(--font-weight-normal);
@@ -53,6 +57,7 @@
 }
 .attrtest__decision--reject { border-color: var(--color-error); color: var(--color-error); }
 .attrtest__decision--keep { border-color: var(--color-success); color: var(--color-success); }
+
 .attrtest__basis {
   display: block;
   font-weight: var(--font-weight-normal);
@@ -64,6 +69,7 @@
 
 .attrtest__legend { font-size: var(--font-size-xs); color: var(--color-text-tertiary); margin: var(--spacing-sm) 0 var(--spacing-xs); }
 .attrtest__result-table { border-collapse: collapse; }
+
 .attrtest__result-table th,
 .attrtest__result-table td {
   border: var(--border-width) solid var(--color-border-primary);
