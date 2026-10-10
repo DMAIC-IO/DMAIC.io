@@ -264,6 +264,63 @@ suite('agent read projection', () => {
     assertEqual(out.nodes.depth, 1);
   });
 
+  /* ── Eine unbekannte Art darf die Spalten nicht wieder verfälschen ────
+     Zwei Prädikate partitionierten unterschiedlich: `soleTable` zählte nur
+     `(bulkKind ?? 'table') === 'table'`, der Deskriptorblock behandelte
+     alles, was nicht `'tree'` ist, als Tabelle. Ein Feld unbekannter Art war
+     damit eine Tabelle, die nicht mitzählt — und beide Massenfelder bekamen
+     wieder das globale `columns`. */
+
+  test('ein Massenfeld unbekannter Art zählt als Tabelle und verdirbt die Spalten nicht', () => {
+    const schema = {
+      rows:  { type: 'any[][]', help: '', bulk: true, bulkKind: 'table' },
+      weird: { type: 'any[]',   help: '', bulk: true, bulkKind: 'graph' },
+    };
+    const source = { rows: [[1], [2]], weird: [[3]], columns: [{ name: 'A' }] };
+
+    const out = projectReadState(source, schema, {});
+
+    // Rückfall auf `table` — aber mit korrekter Zählung: zwei tabellarische
+    // Massenfelder, also kein globales `columns` für eines von beiden.
+    assertEqual(out.weird.kind, 'table');
+    assertEqual(out.rows.columns.length, 0);
+    assertEqual(out.weird.columns.length, 0);
+  });
+
+  test('ein einzelnes Massenfeld unbekannter Art ist der einzige Tabellenfall und nimmt columns', () => {
+    const schema = { weird: { type: 'any[]', help: '', bulk: true, bulkKind: 'graph' } };
+    const out = projectReadState({ weird: [[1]], columns: [{ name: 'A' }] }, schema, {});
+
+    assertEqual(out.weird.kind, 'table');
+    assertEqual(out.weird.columns.join(','), 'A');
+  });
+
+  test('ein Zyklus im Baum wird gezählt, nicht endlos verfolgt', () => {
+    // Zuvor: `RangeError: Maximum call stack size exceeded` — ein Wurf aus
+    // einer Funktion, deren JSDoc zusagt, dass sie nicht wirft. Ein
+    // reaktiver Modulzustand mit Zyklus ist nicht abwegig; genau dafür hat
+    // `clone` seine dritte Stufe.
+    const schema = { nodes: { type: 'object[]', help: '', bulk: true, bulkKind: 'tree' } };
+    const self = { id: 1 };
+    self.children = [self];
+
+    const out = projectReadState({ nodes: [self] }, schema, {});
+
+    assertEqual(out.nodes.nodeCount, 1);
+    assertEqual(out.nodes.depth, 1);
+  });
+
+  test('ein geteilter Knoten wird einmal gezählt, nicht einmal je Elternteil', () => {
+    const schema = { nodes: { type: 'object[]', help: '', bulk: true, bulkKind: 'tree' } };
+    const shared = { id: 'shared', children: [] };
+    const source = { nodes: [{ id: 'a', children: [shared] }, { id: 'b', children: [shared] }] };
+
+    const out = projectReadState(source, schema, {});
+
+    assertEqual(out.nodes.nodeCount, 3, 'drei verschiedene Knoten, nicht vier Besuche');
+    assertEqual(out.nodes.depth, 2);
+  });
+
   test('from größer als to ist ein Fehler, kein leeres Array', () => {
     // Bisher: `rows.slice(5, 2)` ist `[]`, und `$range` meldete
     // `{ from: 5, to: 2, rowCount: 3 }` — ein Umfang, den es nicht gibt.
@@ -274,8 +331,14 @@ suite('agent read projection', () => {
 
     const out = projectReadState(source, schema, { fields: ['rows'], rows: { from: 5, to: 2 } });
 
-    assertEqual(out.$error, 'wrong_type');
-    assertTrue(/from/.test(out.$message) && /to/.test(out.$message), out.$message);
+    // Der Marker trägt nur die Meldung und KEINEN Fehlercode: der einzige
+    // Konsument (`readAgentState`) prüft die Wahrheitswertigkeit und wirft
+    // `$message`; beim Agenten kommt der Code der Fläche an (`call_failed`),
+    // nie dieser hier. Ein Code an dieser Stelle war toter Inhalt — und
+    // `wrong_type` für eine verdrehte Bereichsgrenze zudem schief.
+    assertTrue(typeof out.$invalidCall === 'string', JSON.stringify(out));
+    assertEqual(out.$invalidCall, 'rows.from (5) is greater than rows.to (2)');
+    assertEqual('rows' in out, false, 'ein kaputter Aufruf liefert KEINE Daten daneben');
   });
 
   test('from gleich to ist kein Fehler, sondern ein leerer Ausschnitt', () => {
@@ -284,6 +347,52 @@ suite('agent read projection', () => {
     assertEqual(out.rows.length, 0);
     assertEqual(out.rows$range.from, 1);
     assertEqual(out.rows$range.to, 1);
+  });
+
+  /* ── Ein halber Bereich ist auch ein kaputter Aufruf (Fix-Runde 1) ─────
+     Die erste Fassung verlangte für die Abweisung, dass BEIDE Grenzen finit
+     sind — `Number(undefined)` ist `NaN`, also fiel `{ from: 100 }` durch die
+     Prüfung, `clampIndex` machte aus dem fehlenden `to` eine `0`, und heraus
+     kam genau das, was dieser Weg abschaffen soll: ein leeres Array mit
+     `$range: { from: 3, to: 0 }` — ein Umfang, den es nicht gibt. */
+
+  test('ein Bereich ohne to wird abgewiesen, statt still nichts zu liefern', () => {
+    const schema = { rows: { type: 'any[][]', help: '', bulk: true, bulkKind: 'table' } };
+    const out = projectReadState({ rows: [[1], [2], [3]] }, schema, { fields: ['rows'], rows: { from: 100 } });
+
+    assertTrue(typeof out.$invalidCall === 'string', JSON.stringify(out));
+    assertTrue(/rows\.to/.test(out.$invalidCall), out.$invalidCall);
+    assertEqual('rows$range' in out, false);
+  });
+
+  test('auch ein kleines from ohne to wird abgewiesen — der Rand hängt nicht an der Größe', () => {
+    const schema = { rows: { type: 'any[][]', help: '', bulk: true, bulkKind: 'table' } };
+    const out = projectReadState({ rows: [[1], [2], [3]] }, schema, { fields: ['rows'], rows: { from: 1 } });
+    assertTrue(typeof out.$invalidCall === 'string', JSON.stringify(out));
+  });
+
+  test('ein Bereich aus zwei NaN wird abgewiesen', () => {
+    const schema = { rows: { type: 'any[][]', help: '', bulk: true, bulkKind: 'table' } };
+    const out = projectReadState({ rows: [[1], [2], [3]] }, schema, { fields: ['rows'], rows: { from: NaN, to: NaN } });
+    assertTrue(typeof out.$invalidCall === 'string', JSON.stringify(out));
+  });
+
+  test('from null bleibt gültig — Number(null) ist 0 und der Ausschnitt ist richtig', () => {
+    // Die Abweisung darf nicht zu viel treffen: `{ from: null, to: 2 }` ist
+    // ein wohlbestimmter Bereich [0, 2).
+    const schema = { rows: { type: 'any[][]', help: '', bulk: true, bulkKind: 'table' } };
+    const out = projectReadState({ rows: [[1], [2], [3]] }, schema, { fields: ['rows'], rows: { from: null, to: 2 } });
+
+    assertEqual(out.$invalidCall, undefined);
+    assertEqual(out.rows.length, 2);
+    assertDeepEqual(out.rows$range, { from: 0, to: 2, rowCount: 3 });
+  });
+
+  test('to null bleibt abgewiesen, und die Meldung nennt die gelesene 0', () => {
+    const schema = { rows: { type: 'any[][]', help: '', bulk: true, bulkKind: 'table' } };
+    const out = projectReadState({ rows: [[1], [2], [3]] }, schema, { fields: ['rows'], rows: { from: 5, to: null } });
+
+    assertEqual(out.$invalidCall, 'rows.from (5) is greater than rows.to (null, read as 0)');
   });
 
   test('ein nicht übertragbarer Wert bekommt einen sichtbaren Marker, kein stilles null', () => {

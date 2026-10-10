@@ -77,6 +77,17 @@ suite('agent read mixin', () => {
     );
   });
 
+  test('readAgentState wirft auch bei einem halben Bereich (from ohne to)', () => {
+    // `{ from: 100 }` heißt „gib mir ab Zeile 100" und ist eine plausible
+    // Anfrage. Sie kam als leere Zeilenliste zurück, und der Agent hielt das
+    // für eine Aussage über die DATEN statt über seinen AUFRUF.
+    const snapshot = { title: 'T', columns: [{ name: 'a' }], rows: [[1], [2], [3]] };
+    assertThrows(
+      () => readAgentState(BULK_MODULE_ID, snapshot, { fields: ['rows'], rows: { from: 100 } }),
+      /rows\.to/,
+    );
+  });
+
   test('readAgentState never hands out a reference into the live state', () => {
     const live = { problem: 'P', nodes: [{ id: 1 }] };
     const state = readAgentState('five-why', live, {});

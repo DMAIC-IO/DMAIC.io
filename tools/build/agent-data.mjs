@@ -60,6 +60,16 @@ export const MARK_AGENT = 'agent';
 export const MARK_NOAGENT = 'noagent';
 /** Marke an einem Model-Feld: Massendaten, aus `read()` ohne Parameter herausgehalten. */
 const MARK_BULK = 'agentBulk';
+/**
+ * Die erlaubten Massendaten-Arten. Dieselbe Menge steht in
+ * `js/core/agent/agent-read.js` (`BULK_KINDS`) und als Zusage im Typedef
+ * `AgentModuleEntry` (`js/core/agent/agent-contract.js`). Zwei Deklarationen,
+ * weil der Build nicht aus `js/` importiert (und `agent-read.js`
+ * abhängigkeitsfrei bleibt) — dieser Generator ist die Stelle, die den
+ * Verstoß MELDET, damit der Modulautor ihn beim Bauen sieht und nicht ein
+ * Agent zur Laufzeit an stillen Spalten.
+ */
+const BULK_KINDS = ['table', 'tree'];
 
 /**
  * Sammle die Agenten-Registry über alle Module.
@@ -123,7 +133,8 @@ function buildEntry(resolver, appDir, viewmodelFile) {
     if (!Object.prototype.hasOwnProperty.call(actions, 'read')) surface.push('no_read_action');
   }
 
-  const reported = [...violations, ...surface, ...model.violations, ...collectDomDetours(sf)];
+  const reported = [...violations, ...surface, ...model.violations,
+    ...invalidBulkKinds(model.fields), ...collectDomDetours(sf)];
   // Verstöße zählen nur, wenn das Modul etwas behauptet (Spec §9).
   const effective = tagged ? reported : [];
   return {
@@ -134,6 +145,34 @@ function buildEntry(resolver, appDir, viewmodelFile) {
     actions,
     fields: model.fields,
   };
+}
+
+/**
+ * Massenfelder, deren Art nicht in `BULK_KINDS` steht.
+ *
+ * Beide Wege zum `bulkKind` nehmen den Text, den das Modul hinschreibt:
+ * `[bulk:graph]` im Typedef und `@agentBulk die Zeilen` am Model-Feld. Ohne
+ * diese Prüfung kam eine erfundene Art stillschweigend durch, obwohl der
+ * Vertrag `'table'|'tree'` zusichert — und die Lesefläche beschrieb das Feld
+ * dann als Tabelle, ohne es als Tabelle zu ZÄHLEN; dadurch bekamen zwei
+ * Massenfelder wieder dieselben (für eines falschen) Spalten. Der Befund
+ * gehört hierher und nicht in die Laufzeit: sichtbar ist er nur dem Autor,
+ * und nur beim Bauen ist er behebbar.
+ *
+ * Die Codes sind zeilenfrei, weil `cleanComment` jeden Umbruch im
+ * Kommentartext einzieht und `BULK_RE` nur `[a-z]+` als Art durchlässt.
+ *
+ * @param {Record<string, { bulk: boolean, bulkKind?: string }>} fields
+ * @returns {string[]} Codes der Form `invalid_bulk_kind:<feld>:<wert>`
+ */
+function invalidBulkKinds(fields) {
+  const out = [];
+  for (const [name, spec] of Object.entries(fields)) {
+    if (!spec.bulk) continue;
+    const kind = spec.bulkKind ?? 'table';
+    if (!BULK_KINDS.includes(kind)) out.push(`invalid_bulk_kind:${name}:${kind}`);
+  }
+  return out;
 }
 
 /**

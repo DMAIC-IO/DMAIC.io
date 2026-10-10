@@ -43,12 +43,14 @@ export function readAgentState(moduleId, snapshot, options) {
   const schema = AGENT_REGISTRY[moduleId]?.fields ?? {};
   const out = projectReadState(snapshot, schema, options ?? {});
   // Ein kaputter Bereich ist ein kaputter AUFRUF, kein Lesezustand.
-  // `projectReadState` ist rein und kennt `i18n` nicht, es gibt den Fehler
-  // deshalb als `{ $error, $message }` zurück. Hier wird daraus ein Wurf:
-  // der Fang-Punkt von `instance.call` (`agent-ops.js`) macht einen
-  // benannten AXI-Fehler (`call_failed`) samt Meldung daraus — statt dass
-  // `{ $error: … }` beim Agenten als Daten ankommt.
-  if (out && out.$error) throw new Error(out.$message);
+  // `projectReadState` ist rein und kennt `i18n` nicht, es gibt die Meldung
+  // deshalb als `{ $invalidCall }` zurück. Hier wird daraus ein Wurf: der
+  // Fang-Punkt von `instance.call` (`agent-ops.js`) macht einen benannten
+  // AXI-Fehler (`call_failed`) samt Meldung daraus — statt dass der Marker
+  // beim Agenten als Daten ankommt. Einen EIGENEN Code trägt der Marker
+  // nicht: der Code der Fläche entsteht genau hier am Fang-Punkt, ein
+  // zweiter daneben wäre toter Inhalt (kein Konsument liest ihn).
+  if (out && typeof out.$invalidCall === 'string') throw new Error(out.$invalidCall);
   return out;
 }
 

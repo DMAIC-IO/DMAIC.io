@@ -1012,6 +1012,53 @@ test('collectAgentData: bulkKind am Model-Feld — @agentBulk tree gegen @agentB
   assert.equal('bulkKind' in modules.foo.fields.problem, false);
 });
 
+test('collectAgentData: eine unbekannte Massendaten-Art im Typedef ist ein Verstoß', () => {
+  // `agent-contract.js` sichert `'table'|'tree'` zu, der Generator prüfte es
+  // nicht: `[bulk:graph]` kam durch, und zur Laufzeit partitionierten die
+  // beiden Prädikate in `projectReadState` dann unterschiedlich — das Feld
+  // wurde als Tabelle BESCHRIEBEN, zählte aber nicht als Tabelle, und beide
+  // Massenfelder bekamen die globalen Spalten.
+  const vm = AGENT_READ_VM.replace('[bulk] every data row', '[bulk:graph] every data row');
+  const root = fixture({ bar: { 'bar.js': vm, 'bar-model.js': BAR_MODEL } });
+  const { modules } = collectAgentData(root);
+
+  assert.ok(modules.bar.violations.includes('invalid_bulk_kind:rows:graph'),
+    `erwartet invalid_bulk_kind:rows:graph, bekam ${JSON.stringify(modules.bar.violations)}`);
+  assert.equal(modules.bar.available, false);
+});
+
+test('collectAgentData: eine unbekannte Massendaten-Art am Model-Feld ist ein Verstoß, einzeilig', () => {
+  // `cleanComment(bulkTag.comment) || 'table'` machte JEDEN Kommentartext am
+  // Tag zur Art — auch einen mehrzeiligen. Verstoßcodes sind zeilenfrei.
+  const model = MODEL.replace(
+    `   * @agentBulk
+  `,
+    `   * @agentBulk die
+   *   Zeilen
+  `,
+  );
+  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': model } });
+  const { modules } = collectAgentData(root);
+
+  assert.ok(modules.foo.violations.includes('invalid_bulk_kind:rows:die Zeilen'),
+    `erwartet invalid_bulk_kind:rows:die Zeilen, bekam ${JSON.stringify(modules.foo.violations)}`);
+  assert.ok(modules.foo.violations.every(v => !v.includes('\n')),
+    `Verstoßcodes sind zeilenfrei: ${JSON.stringify(modules.foo.violations)}`);
+});
+
+test('collectAgentData: table und tree sind erlaubt und melden nichts — die Prüfung weist nicht zu viel ab', () => {
+  const vm = AGENT_READ_VM.replace(
+    ' * @property {any[][]} rows  [bulk] every data row of the active sheet\n',
+    ' * @property {any[][]} rows  [bulk] every data row of the active sheet\n'
+    + ' * @property {object[]} nodes  [bulk:tree] the question tree\n',
+  );
+  const root = fixture({ bar: { 'bar.js': vm, 'bar-model.js': BAR_MODEL } });
+  const { modules } = collectAgentData(root);
+
+  assert.deepEqual(modules.bar.reported.filter(v => v.startsWith('invalid_bulk_kind')), []);
+  assert.equal(modules.bar.available, true);
+});
+
 test('collectAgentData: a module with an AgentRead typedef is available without a model class', () => {
   // Kein `Model:`-Mitglied → readModelFields würde `unresolvable_model_class`
   // melden. Mit deklarierter Lesefläche ist das Model irrelevant.

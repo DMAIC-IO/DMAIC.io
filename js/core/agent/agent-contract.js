@@ -153,6 +153,8 @@ export const OPS = deepFreeze({
  *   `bulkKind` steht NUR an einem Massenfeld und sagt, welchen
  *   Umfangs-Deskriptor es bekommt: `'table'` → `rowCount` + `columns`,
  *   `'tree'` → `nodeCount` + `depth`. Fehlt es an einem Massenfeld, gilt
- *   `'table'`. `describe()` gibt es nicht heraus — die Deskriptorform steht
+ *   `'table'`. Die Menge ist durchgesetzt, nicht nur zugesichert: eine andere
+ *   Art ist ein Verstoß des Moduls (`invalid_bulk_kind:<feld>:<wert>`,
+ *   `tools/build/agent-data.mjs`) und das Modul damit nicht freigegeben. `describe()` gibt es nicht heraus — die Deskriptorform steht
  *   in der Antwort von `read()`, und `describe()` ist Vertragsfläche.
  */

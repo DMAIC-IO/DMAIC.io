@@ -28,10 +28,20 @@
  *   `{ $bulk: true, kind: 'tree', nodeCount, depth }`) oder (wenn in
  *   `options.fields` genannt) als Daten, bei gesetztem `options.rows`
  *   zusätzlich mit einem Schwesterschlüssel `<feld>$range`.
- *   Ein kaputter Bereich (`from > to`) ist ein kaputter AUFRUF: dann kommt
- *   statt der Projektion `{ $error: 'wrong_type', $message }` zurück. Diese
- *   Funktion ist rein und kennt `i18n` nicht — sie wirft nicht, der Aufrufer
- *   (`readAgentState`) macht daraus einen benannten Fehler.
+ *   Ein kaputter Bereich ist ein kaputter AUFRUF: dann kommt statt der
+ *   Projektion `{ $invalidCall: '<Meldung>' }` zurück — die Meldung allein,
+ *   ohne Fehlercode. Der Code der Fläche entsteht erst am Fang-Punkt
+ *   (`call_failed`, siehe `agent-read-mixin.js`); ein zweiter Code hier wäre
+ *   toter Inhalt. Diese Funktion ist rein und kennt `i18n` nicht — sie wirft
+ *   nicht (auch nicht bei einem Zyklus im Baum, siehe `treeExtent`), der
+ *   Aufrufer (`readAgentState`) macht aus dem Marker einen benannten Fehler.
+ *
+ *   Die Spalten eines tabellarischen Massenfeldes hängen am SCHEMA, nicht an
+ *   der Momentaufnahme: führt ein Modul zwei tabellarische Massenfelder,
+ *   bekommt auch das eine, das die Momentaufnahme gerade führt, kein
+ *   globales `columns` (nur sein Schwesterfeld oder gar keine). Das ist
+ *   gewollt — die Zuordnung des globalen `columns` ist dann offen, und eine
+ *   falsche Spaltenliste ist schlechter als keine.
  */
 export function projectReadState(modelJson, fieldSchema, options = {}) {
   const requested = new Set(Array.isArray(options.fields) ? options.fields : []);
@@ -43,19 +53,14 @@ export function projectReadState(modelJson, fieldSchema, options = {}) {
   // `columns` gehört eindeutig dazu. Ab zwei ist die Zuordnung offen und die
   // Konvention ist das Schwesterfeld.
   const tableFields = Object.entries(fieldSchema)
-    .filter(([n, s]) => s.bulk && (s.bulkKind ?? 'table') === 'table' && !n.startsWith('_'));
+    .filter(([n, s]) => s.bulk && bulkKindOf(s) === 'table' && !n.startsWith('_'));
   const soleTable = tableFields.length === 1;
 
-  // `from > to` ist kein leerer Bereich, sondern ein kaputter Aufruf. Bisher
-  // kam stillschweigend ein leeres Array mit unplausiblem `$range` zurück,
-  // und ein Agent hielt das für eine Aussage über die Daten.
-  if (range && Number.isFinite(Number(range.from)) && Number.isFinite(Number(range.to))
-      && Number(range.from) > Number(range.to)) {
-    return {
-      $error: 'wrong_type',
-      $message: `rows.from (${range.from}) is greater than rows.to (${range.to})`,
-    };
-  }
+  // Ein kaputter Bereich ist kein leerer Bereich, sondern ein kaputter
+  // Aufruf. Bisher kam stillschweigend ein leeres Array mit unplausiblem
+  // `$range` zurück, und ein Agent hielt das für eine Aussage über die Daten.
+  const fault = range ? rangeFault(range) : null;
+  if (fault) return { $invalidCall: fault };
 
   for (const [name, spec] of Object.entries(fieldSchema)) {
     if (name.startsWith('_')) continue;            // privat, erscheint nie
@@ -82,7 +87,7 @@ export function projectReadState(modelJson, fieldSchema, options = {}) {
     const rows = Array.isArray(value) ? value : [];
 
     if (!requested.has(name)) {
-      out[name] = (spec.bulkKind ?? 'table') === 'tree'
+      out[name] = bulkKindOf(spec) === 'tree'
         ? { $bulk: true, kind: 'tree', ...treeExtent(rows) }
         : {
           $bulk: true,
@@ -105,6 +110,83 @@ export function projectReadState(modelJson, fieldSchema, options = {}) {
   }
 
   return out;
+}
+
+/**
+ * Die Massendaten-Arten, die der Vertrag zusichert (`AgentModuleEntry` in
+ * `agent-contract.js`). Dieselbe Menge prüft der Generator und MELDET einen
+ * Verstoß (`invalid_bulk_kind:<feld>:<wert>`, `tools/build/agent-data.mjs`) —
+ * dort ist der Befund dem Modulautor sichtbar und behebbar.
+ */
+const BULK_KINDS = ['table', 'tree'];
+
+/**
+ * Die Art eines Massenfeldes, auf die erlaubte Menge normalisiert.
+ *
+ * Genau EINE Stelle, weil es zuvor zwei gab: die `soleTable`-Zählung
+ * verlangte `=== 'table'`, der Deskriptorblock behandelte alles außer
+ * `'tree'` als Tabelle. Ein Feld mit erfundener Art (`[bulk:graph]`) war
+ * damit eine Tabelle, die nicht mitzählt — und beide Massenfelder bekamen
+ * wieder das globale `columns`, also für eines die falsche Spaltenliste.
+ *
+ * Unbekannte Art heißt Rückfall auf `'table'`, nicht Wurf: der Fehler liegt
+ * im Modulquelltext, nicht im Aufruf des Agenten. Ein Wurf nähme ihm den
+ * Lesezugriff für etwas, das er nicht beheben kann, und widerspräche der
+ * Zusage „diese Funktion wirft nicht". Gemeldet wird der Verstoß beim Bauen.
+ *
+ * @param {{ bulk?: boolean, bulkKind?: string }} spec
+ * @returns {'table'|'tree'}
+ */
+function bulkKindOf(spec) {
+  const kind = spec.bulkKind ?? 'table';
+  return BULK_KINDS.includes(kind) ? kind : 'table';
+}
+
+/**
+ * Prüft `options.rows` als GANZES und liefert die Meldung, falls der Bereich
+ * kaputt ist — sonst `null`.
+ *
+ * Zwei Fehlerklassen, und die zweite fehlte: eine Grenze, die keine Zahl ist
+ * (`{ from: 100 }` ohne `to` → `Number(undefined)` ist `NaN`). Die erste
+ * Fassung verlangte für die Abweisung, dass BEIDE Grenzen finit sind, und
+ * fiel damit genau an diesem Rand durch: `clampIndex` machte aus dem
+ * fehlenden `to` eine `0`, und heraus kam ein leeres Array mit
+ * `$range: { from: 3, to: 0 }` — ein Umfang, den es nicht gibt. „Gib mir ab
+ * Zeile 100" ist eine plausible Anfrage und muss als kaputter AUFRUF
+ * beantwortet werden, nicht als Aussage über die Daten.
+ *
+ * `null` ist davon unberührt: `Number(null)` ist `0`, also ist
+ * `{ from: null, to: 2 }` der wohlbestimmte Bereich [0, 2) und bleibt
+ * gültig. In der Meldung steht dann beides — der geschriebene Wert und die
+ * gelesene Zahl —, sonst stünde dort „greater than rows.to (null)".
+ *
+ * @param {{ from?: unknown, to?: unknown }} range
+ * @returns {string|null}
+ */
+function rangeFault(range) {
+  const from = Number(range.from);
+  const to = Number(range.to);
+  const bad = [
+    ...(Number.isFinite(from) ? [] : ['rows.from']),
+    ...(Number.isFinite(to) ? [] : ['rows.to']),
+  ];
+  if (bad.length > 0) {
+    return `${bad.join(' and ')} must be a finite number`
+      + ` (rows.from = ${String(range.from)}, rows.to = ${String(range.to)})`;
+  }
+  if (from > to) return `rows.from (${bound(range.from, from)}) is greater than rows.to (${bound(range.to, to)})`;
+  return null;
+}
+
+/**
+ * Eine Bereichsgrenze für die Meldung: die Zahl, und wo der geschriebene Wert
+ * anders lautet, beides.
+ * @param {unknown} raw
+ * @param {number} n
+ * @returns {string}
+ */
+function bound(raw, n) {
+  return String(raw) === String(n) ? String(n) : `${String(raw)}, read as ${n}`;
 }
 
 /**
@@ -146,18 +228,37 @@ function columnNames(source, name, soleTable) {
  * bekommt `nodeCount` der obersten Ebene und `depth: 1` — immer noch eine
  * wahre Aussage, nur eine gröbere.
  *
+ * Ein `WeakSet` der besuchten Knoten, nicht eine Tiefenschranke: ein Zyklus
+ * (`children`, das auf den eigenen Knoten zurückzeigt) ergab
+ * `RangeError: Maximum call stack size exceeded` — ein Wurf aus einer
+ * Funktion, deren Aufrufer zusagt, dass sie nicht wirft. Ein reaktiver
+ * Modulzustand mit Zyklus ist nicht abwegig; für genau diesen Fall hat
+ * `clone` seine dritte Stufe. Das `WeakSet` erledigt zugleich die
+ * Doppelzählung eines geteilten Knotens (DAG), die eine Schranke
+ * stehengelassen hätte: gezählt werden KNOTEN, nicht Besuche.
+ *
  * @param {any[]} nodes
  * @returns {{ nodeCount: number, depth: number }}
  */
 function treeExtent(nodes) {
   let nodeCount = 0;
   let depth = 0;
+  const seen = new WeakSet();
   const walk = (list, level) => {
-    if (!Array.isArray(list) || list.length === 0) return;
-    depth = Math.max(depth, level);
+    if (!Array.isArray(list)) return;
     for (const node of list) {
+      if (node && typeof node === 'object') {
+        if (seen.has(node)) continue;      // schon gezählt: Zyklus oder geteilter Knoten
+        seen.add(node);
+        nodeCount += 1;
+        depth = Math.max(depth, level);
+        walk(node.children, level + 1);
+        continue;
+      }
+      // Ein Nicht-Objekt in der Liste ist kein Knoten mit Kindern, zählt aber
+      // als Eintrag — sonst wäre `nodeCount` kleiner als die Liste lang ist.
       nodeCount += 1;
-      if (node && typeof node === 'object') walk(node.children, level + 1);
+      depth = Math.max(depth, level);
     }
   };
   walk(nodes, 1);
