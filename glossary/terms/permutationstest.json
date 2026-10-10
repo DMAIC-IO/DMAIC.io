@@ -10,9 +10,10 @@
     "de": [
       { "type": "paragraph", "text": "Gilt die {{term:nullhypothese|Nullhypothese}}, sind die Gruppenzugehörigkeiten austauschbar. Der **Permutationstest** erzeugt die Verteilung der {{term:teststatistik|Teststatistik}} unter H₀, indem er die Werte neu auf die Gruppen verteilt — bei gepaarten Daten, indem er die Vorzeichen der Differenzen zufällig umkehrt." },
       { "type": "formula", "latex": "p = \\frac{1 + \\#\\{\\,T^*_b \\geq T_{\\text{obs}}\\,\\}}{B + 1}" },
+      { "type": "formula", "latex": "p = \\frac{\\#\\{\\,T^*_b \\geq T_{\\text{obs}}\\,\\}}{N}" },
       { "type": "list", "items": [
-        "**Exakt:** bei wenigen möglichen Zuordnungen (≤ 20 000) werden alle durchgezählt.",
-        "**Monte Carlo:** sonst B zufällige Zuordnungen; das +1 hält den p-Wert gültig.",
+        "**Exakt:** bei höchstens 20 000 möglichen Zuordnungen werden alle N durchgezählt; die beobachtete Zuordnung zählt mit, der p-Wert ist exakt (zweite Formel).",
+        "**Monte Carlo:** sonst B zufällige Zuordnungen; das +1 in der ersten Formel hält den p-Wert gültig.",
         "**Zweiseitig:** |T| statt T."
       ] },
       { "type": "note", "text": "Ein kleiner p-Wert zeigt fehlende Austauschbarkeit — das kann auch an unterschiedlicher Streuung liegen, nicht nur an unterschiedlicher Lage." }
@@ -20,9 +21,10 @@
     "en": [
       { "type": "paragraph", "text": "If the {{term:nullhypothese|null hypothesis}} holds, group labels are exchangeable. The **permutation test** builds the distribution of the {{term:teststatistik|test statistic}} under H₀ by reassigning the values to the groups — for paired data by flipping the signs of the differences at random." },
       { "type": "formula", "latex": "p = \\frac{1 + \\#\\{\\,T^*_b \\geq T_{\\text{obs}}\\,\\}}{B + 1}" },
+      { "type": "formula", "latex": "p = \\frac{\\#\\{\\,T^*_b \\geq T_{\\text{obs}}\\,\\}}{N}" },
       { "type": "list", "items": [
-        "**Exact:** with few possible assignments (≤ 20,000) all of them are enumerated.",
-        "**Monte Carlo:** otherwise B random assignments; the +1 keeps the p-value valid.",
+        "**Exact:** with at most 20,000 possible assignments all N are enumerated; the observed assignment is counted too, and the p-value is exact (second formula).",
+        "**Monte Carlo:** otherwise B random assignments; the +1 in the first formula keeps the p-value valid.",
         "**Two-sided:** |T| instead of T."
       ] },
       { "type": "note", "text": "A small p-value shows a lack of exchangeability — which can come from different spread, not only from different location." }

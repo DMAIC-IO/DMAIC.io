@@ -79,7 +79,7 @@ export default {
           {
             type: 'definition',
             term: 'Permutationstest',
-            content: 'Unter der {{term:nullhypothese|Nullhypothese}} sind die Gruppenzugehörigkeiten austauschbar. Der Test ordnet die Werte B-mal zufällig neu den Gruppen zu (gepaart: zufällige Vorzeichen der Differenzen) und zählt, wie oft die {{term:teststatistik|Teststatistik}} mindestens so extrem ist wie beobachtet. {{term:p-wert|p-Wert}} = (1 + Anzahl) / (B + 1). Gibt es höchstens 20 000 verschiedene Zuordnungen, werden alle durchgezählt und der p-Wert ist exakt {{ref:good-2005}}.',
+            content: 'Unter der {{term:nullhypothese|Nullhypothese}} sind die Gruppenzugehörigkeiten austauschbar. Der Test ordnet die Werte B-mal zufällig neu den Gruppen zu (gepaart: zufällige Vorzeichen der Differenzen) und zählt, wie oft die {{term:teststatistik|Teststatistik}} mindestens so extrem ist wie beobachtet. {{term:p-wert|p-Wert}} = (1 + Anzahl) / (B + 1) (Monte Carlo). Gibt es höchstens 20 000 verschiedene Zuordnungen, werden alle N durchgezählt, und der p-Wert ist exakt: p = Anzahl / N, wobei die beobachtete Zuordnung mitzählt {{ref:good-2005}}.',
           },
           {
             type: 'definition',
@@ -109,7 +109,7 @@ export default {
           {
             type: 'definition',
             term: 'Permutation test',
-            content: 'Under the {{term:nullhypothese|null hypothesis}} group labels are exchangeable. The test reassigns the values to the groups B times at random (paired: random signs of the differences) and counts how often the {{term:teststatistik|test statistic}} is at least as extreme as observed. {{term:p-wert|p-value}} = (1 + count) / (B + 1). With at most 20,000 distinct assignments all of them are enumerated and the p-value is exact {{ref:good-2005}}.',
+            content: 'Under the {{term:nullhypothese|null hypothesis}} group labels are exchangeable. The test reassigns the values to the groups B times at random (paired: random signs of the differences) and counts how often the {{term:teststatistik|test statistic}} is at least as extreme as observed. {{term:p-wert|p-value}} = (1 + count) / (B + 1) (Monte Carlo). With at most 20,000 distinct assignments all N of them are enumerated, and the p-value is exact: p = count / N, the observed assignment included {{ref:good-2005}}.',
           },
           {
             type: 'definition',
