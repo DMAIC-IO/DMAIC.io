@@ -27,6 +27,8 @@ import { validateBatch, checkResolvedParamTypes } from './agent-validate.js';
 import { resolveRefs } from './agent-refs.js';
 import { buildWorld, buildCatalog, buildInstanceList } from './agent-catalog.js';
 import { buildUsage } from './agent-usage.js';
+import { flattenBriefing } from './agent-briefing.js';
+import { AI_ASSISTANT_CHAPTER_ID } from '../../help/ai-assistant-help.js';
 import { createOps } from './agent-ops.js';
 
 /**
@@ -42,16 +44,31 @@ import { createOps } from './agent-ops.js';
  * @returns {{ interact: (input?: object|object[]) => Promise<object> }}
  */
 export function createAgentRuntime(deps) {
-  const { stateManager, moduleRegistry, i18n, registry, consent, host, appVersion } = deps;
+  const { stateManager, moduleRegistry, i18n, registry, consent, host, appVersion, getHelp } = deps;
   const ops = createOps(deps);
 
+  /**
+   * Das Rollen-Briefing als Klartext. Quelle ist das Handbuchkapitel
+   * `js/help/ai-assistant-help.js` — dasselbe, das das Hilfesystem als
+   * Kapitel zeigt und das der statische Generator nach `/app/<tag>/docs/`
+   * mitnimmt. Über `getHelp` und damit über den stabilen Mantel
+   * `help-registry.js`, nicht über die erzeugte Datei.
+   * @returns {Promise<string>} das Briefing in der aktiven Sprache, sonst leer
+   */
+  async function briefingText() {
+    return flattenBriefing(await getHelp(AI_ASSISTANT_CHAPTER_ID), i18n.getLanguage());
+  }
+
   /** Die Antwort auf `interact()` ohne Parameter (Spec §3.1). */
-  function describeSurface() {
+  async function describeSurface() {
     return {
       ok: true,
       contract: CONTRACT_VERSION,
       appVersion,
       language: i18n.getLanguage(),
+      // Eine Quelle, drei Verwendungen: hier der Kontextfenster-Text, im
+      // Hilfefenster das Kapitel, im statischen Handbuch eine zitierbare URL.
+      briefing: await briefingText(),
       usage: buildUsage(i18n),
       catalog: buildCatalog({ moduleRegistry, i18n, registry }),
       instances: buildInstanceList({ stateManager, i18n }),
@@ -64,7 +81,7 @@ export function createAgentRuntime(deps) {
     const gate = await consent.ensure();
     if (!gate.ok) return { ...gate, contract: CONTRACT_VERSION };
 
-    if (input === undefined || input === null) return describeSurface();
+    if (input === undefined || input === null) return await describeSurface();
 
     // Eine Momentaufnahme für den ganzen Prüflauf: der Prüfer darf nicht
     // gegen einen Zustand prüfen, der sich zwischen den Stufen verschiebt.

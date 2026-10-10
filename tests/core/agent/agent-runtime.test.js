@@ -6,6 +6,7 @@
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
 import { createAgentRuntime } from '../../../js/core/agent/agent-runtime.js';
 import { OPS } from '../../../js/core/agent/agent-contract.js';
+import aiAssistantHelp, { AI_ASSISTANT_CHAPTER_ID } from '../../../js/help/ai-assistant-help.js';
 
 const DEFS = [
   { id: 'worksheet', phase: 'data' },
@@ -35,7 +36,8 @@ async function tick(times = 3) {
 }
 
 /** A runtime with every port faked; `log` records the side effects in order. */
-function makeRuntime({ denied = false, viewmodel = null, completed = false, slowAdd = false } = {}) {
+function makeRuntime({ denied = false, viewmodel = null, completed = false, slowAdd = false,
+                      getHelp = async () => null } = {}) {
   const log = [];
   const phases = { data: [], define: [{ instanceId: 'fw-1', moduleId: 'five-why', order: 0 }], extras: [] };
   const stateManager = {
@@ -48,7 +50,7 @@ function makeRuntime({ denied = false, viewmodel = null, completed = false, slow
     moduleRegistry: { getAll: () => DEFS, get: (id) => DEFS.find(d => d.id === id), getActiveCycle: () => 'dmaic' },
     i18n: I18N,
     registry: REGISTRY,
-    getHelp: async () => null,
+    getHelp,
     appVersion: '1.2.3',
     consent: {
       ensure: async () => {
@@ -676,5 +678,41 @@ suite('agent runtime — reference diagnostics name path and segment (M2)', () =
     ]);
     assertEqual(out.results[1].error, 'unresolved_ref');
     assertTrue(out.results[1].message.startsWith('agent.errors.unresolvedRefPath|'), out.results[1].message);
+  });
+});
+
+// ── Task 10 ────────────────────────────────────────────────────────
+// Das Rollen-Briefing ist ein Handbuchkapitel und keine JSON-Zeichenkette:
+// `interact()` holt es über `getHelp` und flacht es zu Klartext ab.
+suite('agent runtime — interact() liefert das Briefing aus dem Handbuchkapitel', () => {
+  test('das Briefing kommt in der aktiven Sprache und ohne Renderer-Markup', async () => {
+    const asked = [];
+    const { runtime } = makeRuntime({
+      getHelp: async (id) => { asked.push(id); return id === AI_ASSISTANT_CHAPTER_ID ? aiAssistantHelp : null; },
+    });
+    const out = await runtime.interact();
+
+    assertDeepEqual(asked, [AI_ASSISTANT_CHAPTER_ID]);
+    assertEqual(typeof out.briefing, 'string');
+    // I18N.getLanguage() ist 'de' — also der deutsche Abschnittstext.
+    assertTrue(out.briefing.includes('Six-Sigma-Black-Belt'), out.briefing.slice(0, 200));
+    assertTrue(out.briefing.includes('liegt auf Platte'), 'der letzte Abschnitt fehlt');
+    assertEqual(out.briefing.includes('{{term:'), false);
+    assertEqual(out.briefing.includes('**'), false);
+  });
+
+  test('ohne Kapitel in der Registry bleibt das Briefing leer, statt zu werfen', async () => {
+    const { runtime } = makeRuntime();          // getHelp liefert null
+    const out = await runtime.interact();
+    assertEqual(out.ok, true, JSON.stringify(out));
+    assertEqual(out.briefing, '');
+  });
+
+  test('ein werfendes getHelp wird zu surface_failed, nicht zu einer rohen Ausnahme', async () => {
+    const { runtime } = makeRuntime({ getHelp: async () => { throw new Error('boom in help'); } });
+    const out = await runtime.interact();
+    assertEqual(out.ok, false);
+    assertEqual(out.error, 'surface_failed');
+    assertEqual(out.contract, 1);
   });
 });

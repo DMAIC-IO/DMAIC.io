@@ -238,6 +238,7 @@
   },
   "moduleHelp": {
     "title": "Module Help",
+    "aiAssistant": "AI assistant",
     "noActiveModule": "No module is active. Open a module to see module-specific information.",
     "notAvailable": "No help available for this module yet.",
     "loading": "Loading help …",
