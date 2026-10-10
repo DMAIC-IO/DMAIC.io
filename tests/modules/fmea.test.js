@@ -405,11 +405,11 @@ suite('FMEA Model — CSV rows', () => {
     r.step = 'St'; r.sev = '3'; r.occ = '2'; r.det = '1';
     const rows = s.csvRows();
     assertEqual(rows.length, 1);
-    // [#, step, fm, eff, cause, ctrl, S, O, D, RPN, action.., projS, projO, projD, projRPN]
+    // [#, step, fm, eff, cause, prev, det, special, justif, S, O, D, RPN, AP, action.., projRPN, projAP]
     assertEqual(rows[0][0], 1);
     assertEqual(rows[0][1], 'St');
-    assertEqual(rows[0][6], 3);
-    assertEqual(rows[0][9], 6);   // RPN
+    assertEqual(rows[0][9], 3);    // S
+    assertEqual(rows[0][12], 6);   // RPN
   });
 
   test('risk with actions yields one row per action', () => {
@@ -437,15 +437,15 @@ suite('FMEA Model — CSV rows', () => {
       const a2 = new Action(); a2.text = 'A2';
       r.actions = [a1, a2];
       const rows = s.csvRows();
-      assertEqual(rows[0].length, 23, method);
-      assertEqual(rows[0][9], 288, method);
-      assertEqual(rows[0][10], 'H', method);
-      assertEqual(rows[0][11], 'A1', method);
-      assertEqual(rows[0][21], 8 * 3 * 6, method);
-      assertEqual(rows[0][22], 'M', method);
-      assertEqual(rows[1].length, 23, method);
-      assertEqual(rows[1][10], '', method);
-      assertEqual(rows[1][22], '', method);
+      assertEqual(rows[0].length, 26, method);
+      assertEqual(rows[0][12], 288, method);
+      assertEqual(rows[0][13], 'H', method);
+      assertEqual(rows[0][14], 'A1', method);
+      assertEqual(rows[0][24], 8 * 3 * 6, method);
+      assertEqual(rows[0][25], 'M', method);
+      assertEqual(rows[1].length, 26, method);
+      assertEqual(rows[1][13], '', method);
+      assertEqual(rows[1][25], '', method);
     }
   });
 
@@ -453,9 +453,23 @@ suite('FMEA Model — CSV rows', () => {
     const s = new State();
     s.addRisk();
     const row = s.csvRows()[0];
-    assertEqual(row.length, 23);
-    assertEqual(row[10], '');
-    assertEqual(row[22], '');
+    assertEqual(row.length, 26);
+    assertEqual(row[13], '');
+    assertEqual(row[25], '');
+  });
+
+  test('prevention, detection, special characteristic and justification follow cause', () => {
+    const s = new State();
+    const r = s.addRisk();
+    r.cause = 'C'; r.prevention = 'P'; r.control = 'D'; r.specialChar = 'SC'; r.justification = 'J';
+    const a1 = new Action(); a1.text = 'A1';
+    const a2 = new Action(); a2.text = 'A2';
+    r.actions = [a1, a2];
+    const [first, second] = s.csvRows();
+    assertEqual(first.slice(4, 9).join('|'), 'C|P|D|SC|J');
+    assertEqual(second.length, 26);
+    assertEqual(second.slice(0, 14).every(v => v === ''), true, 'follow-up row blanks all risk columns');
+    assertEqual(second[14], 'A2');
   });
 });
 

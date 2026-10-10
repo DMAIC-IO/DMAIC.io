@@ -501,7 +501,8 @@ export class State {
   /**
    * Raw CSV data matrix (no escaping, no headers). One row per action, or a
    * single row when a risk has no actions. Column order:
-   *   #, step, failureMode, effect, cause, control, S, O, D, RPN, AP,
+   *   #, step, failureMode, effect, cause, prevention, control (detection), specialChar,
+   *   justification, S, O, D, RPN, AP,
    *   action, responsible, dueDate, done, ΔS, ΔO, ΔD, ProjS, ProjO, ProjD, ProjRPN, ProjAP
    * `done` is emitted as the language-specific yes/no strings supplied by the caller.
    *
@@ -520,9 +521,10 @@ export class State {
       const ps = risk.projS(), po = risk.projO(), pd = risk.projD();
       const prpn = (s && o && d) ? ps * po * pd : '';
       const pap = risk.projAp() || '';
-      const head = [idx + 1, risk.step, risk.failureMode, risk.effect, risk.cause, risk.control,
+      const head = [idx + 1, risk.step, risk.failureMode, risk.effect, risk.cause,
+        risk.prevention, risk.control, risk.specialChar, risk.justification,
         s || '', o || '', d || '', rpn || '', ap];
-      const blankHead = ['', '', '', '', '', '', '', '', '', '', ''];
+      const blankHead = head.map(() => '');
 
       if (!risk.actions.length) {
         rows.push([...head, '', '', '', '', '', '', '', ps, po, pd, prpn, pap]);
