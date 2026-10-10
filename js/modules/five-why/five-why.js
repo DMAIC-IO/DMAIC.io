@@ -46,10 +46,14 @@ export default createModule({
     icon: 'module.five-why',
     version: '1.0.0',
     meta: import.meta,
+    // `agentAction` nennt die Agentenmethode hinter der Aktion AUSDRÜCKLICH.
+    // `title` ist ein Beschriftungsschlüssel und hier nur zufällig gleich dem
+    // Methodennamen. `exportJSON` trägt keines: die Methode steht nicht in
+    // `core/agent/agent-registry.generated.js` und hat damit keinen Hilfesatz.
     actions: [
-      { icon: 'nav.collapse-up',   title: 'collapseAll', onClick: (d) => d.collapseAll() },
-      { icon: 'nav.expand-down', title: 'expandAll',   onClick: (d) => d.expandAll() },
-      { icon: 'action.download',     title: 'exportJSON',  onClick: (d) => d.exportJSON() },
+      { icon: 'nav.collapse-up', title: 'collapseAll', agentAction: 'collapseAll', onClick: (d) => d.collapseAll() },
+      { icon: 'nav.expand-down', title: 'expandAll',   agentAction: 'expandAll',   onClick: (d) => d.expandAll() },
+      { icon: 'action.download', title: 'exportJSON',  onClick: (d) => d.exportJSON() },
     ],
   },
   Model: State,

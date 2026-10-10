@@ -132,19 +132,26 @@ export function closeContextHelp() {
 
 const DESCRIPTIONS_ID = 'dmike-context-help-descriptions';
 
-/* Alpines Bindung bleibt als Merkmal im DOM stehen, auch nachdem sie
-   ausgewertet wurde — daran ist ein fremder Titel auch dann erkennbar, wenn
-   wir VOR Alpine laufen und `title` noch gar nicht gesetzt ist. */
-const TITLE_BINDINGS = [':title', 'x-bind:title'];
+/* Die drei Merkmale, mit denen ein Element ANKÜNDIGT, seinen Titel selbst zu
+   setzen — `:title`/`x-bind:title` über Alpine, `data-i18n-title` über
+   `i18n.js:_updateDOM` (`el.title = this.t(…)`). Alle drei bleiben im DOM
+   stehen, auch nachdem sie ausgewertet wurden. Daran ist ein fremder Titel
+   auch dann erkennbar, wenn wir VOR Alpine bzw. vor dem ersten `_updateDOM`
+   laufen und `title` noch gar nicht gesetzt ist.
+
+   `data-i18n-title` ist der Weg der Hüllenknöpfe (`app.fullscreen`,
+   `app.export`, `app.import`). Die sind reine Symbolknöpfe: dort ist dieser
+   kurze Titel die EINZIGE Quelle des zugänglichen Namens. */
+const TITLE_SOURCES = [':title', 'x-bind:title', 'data-i18n-title'];
 
 /**
- * Ob das Element seinen `title` selbst mitbringt — als Merkmal oder als
- * Alpine-Bindung. Beides heißt: Finger weg.
+ * Ob das Element seinen `title` selbst mitbringt — als gesetztes Merkmal oder
+ * als Ankündigung eines der drei Titelmechanismen. Beides heißt: Finger weg.
  * @param {HTMLElement} el
  * @returns {boolean}
  */
 function hasOwnTitle(el) {
-  return el.hasAttribute('title') || TITLE_BINDINGS.some((a) => el.hasAttribute(a));
+  return el.hasAttribute('title') || TITLE_SOURCES.some((a) => el.hasAttribute(a));
 }
 
 /**

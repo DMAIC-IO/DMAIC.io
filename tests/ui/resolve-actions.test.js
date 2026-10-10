@@ -71,4 +71,54 @@ suite('resolveActions', () => {
     assertDeepEqual(resolveActions(undefined, tf), [], 'undefined → []');
     assertDeepEqual(resolveActions(null, tf), [], 'null → []');
   });
+
+  test('eine Aktion mit agentAction trägt ihren Hilfetext im Viewmodel', () => {
+    const tfLocal = (key) => ({ collapseAll: 'Alles zuklappen' }[key] ?? key);
+    const helpFor = (name) => ({ collapseAll: 'Klappt alle Fragen mit Unterfragen zusammen.' }[name] ?? null);
+
+    const [vm] = resolveActions(
+      [{ icon: 'nav.collapse-up', title: 'collapseAll', agentAction: 'collapseAll', onClick: () => {} }],
+      tfLocal, helpFor);
+
+    assertEqual(vm.help, 'Klappt alle Fragen mit Unterfragen zusammen.');
+    assertEqual(vm.agentAction, 'collapseAll', 'der Methodenname bleibt am Viewmodel');
+  });
+
+  test('eine Aktion ohne agentAction trägt kein help — und nicht den Schlüsseltext', () => {
+    // `tf` fällt bei fehlendem Schlüssel auf den Schlüssel selbst zurück
+    // (`i18n.js:105`). Ein `help` aus `tf` wäre deshalb im Fehlerfall ein
+    // Tooltip mit dem Wortlaut „actions.foo.help" — schlechter als keiner.
+    const tfLocal = (key) => key;
+    const helpFor = () => null;
+
+    const [vm] = resolveActions([{ icon: 'x', title: 'foo' }], tfLocal, helpFor);
+
+    assertEqual(vm.help, null);
+    assertEqual(vm.agentAction, null);
+  });
+
+  test('ein agentAction ohne Hilfetext trägt kein help', () => {
+    const [vm] = resolveActions(
+      [{ icon: 'x', title: 'foo', agentAction: 'nichtVorhanden' }], (k) => k, () => null);
+    assertEqual(vm.help, null);
+  });
+
+  test('Untermenü-Einträge bekommen ihren eigenen Hilfetext', () => {
+    const helpFor = (name) => ({ exportJSON: 'Schreibt den Baum als JSON.' }[name] ?? null);
+    const [vm] = resolveActions([{
+      icon: 'action.download', title: 'export',
+      children: [{ icon: 'action.download', title: 'exportJSON', agentAction: 'exportJSON' }],
+    }], (k) => k, helpFor);
+
+    assertEqual(vm.isDropdown, true);
+    assertEqual(vm.children[0].help, 'Schreibt den Baum als JSON.');
+  });
+
+  test('resolveActions bleibt ohne helpFor benutzbar', () => {
+    // Die Signatur wächst um einen OPTIONALEN Parameter; jeder bestehende
+    // Aufrufer muss unverändert weiterlaufen.
+    const [vm] = resolveActions([{ icon: 'x', title: 'foo' }], (k) => k);
+    assertEqual(vm.help, null);
+    assertEqual(vm.text, 'foo');
+  });
 });

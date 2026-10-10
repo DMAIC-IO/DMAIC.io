@@ -8,6 +8,7 @@ import { confirmPopout } from './popout.js';
 import { h } from '../core/dom.js';
 import { icon } from '../core/icon.js';
 import { resolveActions } from './resolve-actions.js';
+import { describeElement } from '../core/context-help.js';
 import { findInstancePhase } from '../core/router/instance-ops.js';
 
 /**
@@ -20,6 +21,35 @@ import { findInstancePhase } from '../core/router/instance-ops.js';
  * Absage `unknown_instance` als ein Versprechen, das nie einlöst.
  */
 const MOUNT_TIMEOUT_MS = 20000;
+
+/**
+ * Einen vom Rahmen gerenderten Aktionsknopf seiner Agentenaktion zuordnen und
+ * ihm deren Hilfesatz anlegen. Die drei Aufrufstellen (Knopf, Dropdown-Auslöser,
+ * Dropdown-Eintrag) teilen DIESE Hilfe — die Merkmale selbst setzt
+ * `describeElement` (`core/context-help.js`), die eine Anwendung von `title`
+ * und `aria-describedby` im Projekt. Hier wird nichts davon wiederholt.
+ *
+ * Kein `data-help-key`: das Fragezeichen des Kontextfensters hängte ein Kind
+ * IN den Knopf, und `_buildActionButton` schreibt dessen Inhalt bei jedem
+ * `dynamicText`-Effekt neu. `title` und `aria-describedby` sind dagegen
+ * voraussetzungsfrei.
+ *
+ * Ohne `agentAction` passiert nichts: `title` ist ein Beschriftungsschlüssel
+ * und nur zufällig manchmal gleich dem Methodennamen — eine geratene
+ * Zuordnung wäre schlechter als keine. Ohne auflösenden Hilfeschlüssel bleibt
+ * die Lücke sichtbar und blockiert nichts.
+ *
+ * @param {HTMLElement} el  der gerenderte Knopf
+ * @param {{agentAction: string|null, help: string|null}} vm  Viewmodel aus `resolveActions`
+ * @param {string} i18nKey  Modulpräfix, z. B. `modules.five-why`
+ */
+function describeAction(el, vm, i18nKey) {
+  if (!vm.agentAction) return;
+  // Benennt den Knopf für Tests und Diagnose, parallel zu
+  // `data-instance-id`/`data-module-id` am Behälter.
+  el.dataset.agentAction = vm.agentAction;
+  if (vm.help) describeElement(el, `${i18nKey}.actions.${vm.agentAction}.help`);
+}
 
 export class Workspace {
   /**
@@ -207,7 +237,14 @@ export class Workspace {
 
     if (actions.length > 0) {
       const tf = this._i18n.tf(inst.i18nKey);
-      const vms = resolveActions(actions, tf);
+      // Derselbe Schlüssel, den der Agent über `module.describe` liest. NICHT
+      // `tf`: das fällt bei fehlendem Schlüssel auf den Schlüssel selbst
+      // zurück, ein Tooltip hieße dann wörtlich „actions.foo.help".
+      const helpFor = (name) => {
+        const key = `${inst.i18nKey}.actions.${name}.help`;
+        return this._i18n.exists?.(key) ? this._i18n.t(key) : null;
+      };
+      const vms = resolveActions(actions, tf, helpFor);
       vms.forEach((vm) => {
         const el = vm.isDropdown
           ? this._buildActionDropdown(vm, inst)
@@ -276,9 +313,12 @@ export class Workspace {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = `workspace__action workspace__action--${vm.variant}`;
-    if (vm.tooltip) btn.title = vm.tooltip;
+    // Der Hilfesatz der Agentenaktion gewinnt über `description`: er
+    // beschreibt die Aktion, statt die Beschriftung zu wiederholen.
+    if (vm.tooltip && !vm.help) btn.title = vm.tooltip;
     const textEl = h('span', { class: 'workspace__action-text' }, vm.dynamicText ? '' : vm.text);
     btn.append(icon(vm.iconId, { size: 'sm' }), textEl);
+    describeAction(btn, vm, inst.i18nKey);
     if (vm.onClick) {
       btn.addEventListener('click', () => vm.onClick(inst.getActionData?.()));
     }
@@ -296,8 +336,9 @@ export class Workspace {
     const trigger = document.createElement('button');
     trigger.type = 'button';
     trigger.className = `workspace__action workspace__action--${vm.variant}`;
-    if (vm.tooltip) trigger.title = vm.tooltip;
+    if (vm.tooltip && !vm.help) trigger.title = vm.tooltip;
     trigger.append(icon(vm.iconId, { size: 'sm' }), h('span', { class: 'workspace__action-text' }, vm.text));
+    describeAction(trigger, vm, inst.i18nKey);
 
     const menu = h('div', { class: 'workspace__action-menu' });
     vm.children.forEach((child) => {
@@ -305,6 +346,7 @@ export class Workspace {
       item.type = 'button';
       item.className = 'workspace__action-item';
       item.append(icon(child.iconId, { size: 'sm' }), h('span', { class: 'workspace__action-item-text' }, child.text));
+      describeAction(item, child, inst.i18nKey);
       if (child.onClick) {
         item.addEventListener('click', () => {
           menu.classList.remove('open');

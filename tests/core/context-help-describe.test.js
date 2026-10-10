@@ -177,6 +177,28 @@ suite('Kontexthilfe — title und aria-describedby', () => {
     assertEqual(anchor.hasAttribute('aria-describedby'), true);
   });
 
+  test('data-i18n-title zählt als eigener Titel', () => {
+    // Der dritte Titelweg des Projekts: `i18n.js:_updateDOM` setzt aus
+    // `data-i18n-title` den `title`. Bei den Symbolknöpfen der Hülle
+    // (`app.fullscreen`, `app.export`, `app.import`) ist dieser kurze Titel
+    // die EINZIGE Quelle des zugänglichen Namens. Wir laufen möglicherweise
+    // VOR dem ersten `_updateDOM` — dann ist `title` noch leer, und nur das
+    // Merkmal verrät den fremden Titel.
+    setContextHelpConfig({ i18n: fakeI18n({
+      'app.fullscreen.help': 'Zeigt die Anwendung im Vollbild.',
+    }) });
+    host.innerHTML = '<button data-i18n-title="app.fullscreen"></button>';
+    const btn = host.querySelector('button');
+
+    describeElement(btn, 'app.fullscreen.help');
+
+    assertEqual(btn.hasAttribute('title'), false, 'fremder data-i18n-title überschrieben');
+    assertEqual(
+      document.getElementById(btn.getAttribute('aria-describedby')).textContent,
+      'Zeigt die Anwendung im Vollbild.',
+    );
+  });
+
   test('describeElement legt beide Merkmale auch ohne Fragezeichen an', () => {
     // Der Weg, den die Werkzeugleisten-Knöpfe aus `config.actions` nehmen:
     // ein Element, das kein `data-help-key`-Anker ist, aber denselben Satz
