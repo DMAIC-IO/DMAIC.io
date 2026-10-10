@@ -230,7 +230,14 @@ function* bootstrapSummary(samples, combine, v, rng, p) {
  * @param {number} b
  */
 export function ge(a, b) {
+  if (a === b) return true; // equal infinities
   return a >= b - 1e-10 * Math.max(1, Math.abs(b));
+}
+
+/** Throw when the observed permutation statistic is not finite (p would be meaningless). */
+function requireFiniteObserved(T0, what = 'observed statistic') {
+  if (!Number.isFinite(T0)) fail('degenerate-statistic', `${what} is not finite`);
+  return T0;
 }
 
 /** Hit predicate for a permutation statistic t given observed T0. */
@@ -433,7 +440,7 @@ function kPairs(k) {
 
 function* permutationTwoRun(v, rng, p) {
   const Tfun = twoSampleT(v);
-  const T0 = Tfun(v.samples);
+  const T0 = requireFiniteObserved(Tfun(v.samples));
   const count = countAssignments(sizesOf(v.samples), v.exactThreshold);
   const t = yield* permuteGroups(v.samples, Tfun, hitFor(v.direction, T0), count, v.B, rng, p);
   return permutationResult(contrastFn(v)(v.samples), { observed: T0, ...t });
@@ -441,7 +448,7 @@ function* permutationTwoRun(v, rng, p) {
 
 function* permutationPairedRun(v, rng, p) {
   const d = v.samples[0];
-  const T0 = v.fn(d);
+  const T0 = requireFiniteObserved(v.fn(d));
   const count = signFlipCount(d.length, v.exactThreshold);
   const t = yield* signFlips(d, v.fn, hitFor(v.direction, T0), count, v.B, rng, p);
   return permutationResult(T0, { observed: T0, ...t });
@@ -467,7 +474,7 @@ function* permutationKRun(v, rng, p) {
     for (const b of bufs) { const d = v.fn(b) - theta; s += b.length * d * d; }
     return s;
   };
-  const T0 = Tfun(gs);
+  const T0 = requireFiniteObserved(Tfun(gs));
   const count = countAssignments(sizesOf(gs), v.exactThreshold);
   const global = yield* permuteGroups(gs, Tfun, (t) => ge(t, T0), count, v.B, rng, p);
 
@@ -481,7 +488,7 @@ function* permutationKRun(v, rng, p) {
   const posthoc = [];
   for (const [i, j] of kPairs(gs.length)) {
     const pair = [gs[i], gs[j]];
-    const D0 = diff(pair);
+    const D0 = requireFiniteObserved(diff(pair), `post-hoc contrast ${i}-${j}`);
     const pairCount = countAssignments([gs[i].length, gs[j].length], v.exactThreshold);
     const t = yield* permuteGroups(pair, diff, hitFor('two-sided', D0), pairCount, v.B, rng, p);
     const s = yield* bootstrapSummary(pair, diff, v, rng, p);

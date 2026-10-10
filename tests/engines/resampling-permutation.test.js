@@ -35,6 +35,9 @@ suite('resampling-permutation — helpers', () => {
     assertTrue(ge(1 - 1e-12, 1));
     assertTrue(!ge(1 - 1e-6, 1));
     assertTrue(ge(1e6 - 1e-6, 1e6));
+    assertTrue(ge(Infinity, Infinity));
+    assertTrue(ge(-Infinity, -Infinity));
+    assertTrue(!ge(1, Infinity));
   });
   test('countAssignments: exact counts and early abort', () => {
     assertEqual(countAssignments([5, 6], 20000), 462);
@@ -180,5 +183,32 @@ suite('resampling-permutation — Monte Carlo', () => {
     const r = runJobSync(permJob('permutationTwo', { x, y }, 'median', { B: 200 }));
     assertEqual(r.test.exact, false);
     assertEqual(r.test.permutations, 200);
+  });
+});
+
+suite('resampling-permutation — degenerate observed statistic', () => {
+  function degenerateCode(job) {
+    try { runJobSync(job); } catch (err) { return err.code; }
+    return null;
+  }
+  const ppkJob = (extra) => ({
+    kind: 'permutationTwo',
+    data: { x: [5, 5, 5, 5, 5, 5], y: [4.1, 5.2, 4.8, 5.5, 4.9, 5.3] },
+    statistic: { id: 'ppk', params: { lsl: 4, usl: 6 } },
+    options: { B: 99, seed: 1, confidence: 0.95, ...extra },
+  });
+  test('two-sample Ppk with a constant group: exact mode throws', () => {
+    assertEqual(degenerateCode(ppkJob({})), 'degenerate-statistic');
+  });
+  test('two-sample Ppk with a constant group: Monte Carlo mode throws', () => {
+    assertEqual(degenerateCode(ppkJob({ exactThreshold: 0 })), 'degenerate-statistic');
+  });
+  test('k groups with cv and pooled mean 0 throws', () => {
+    assertEqual(degenerateCode({
+      kind: 'permutationK',
+      data: { groups: [[-1, 1], [-2, 2], [-3, 3]] },
+      statistic: { id: 'cv' },
+      options: { B: 99, seed: 1, confidence: 0.95 },
+    }), 'degenerate-statistic');
   });
 });
