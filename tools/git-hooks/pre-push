@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# pre-push — checks this repo requires before a push.
+#
+# Versioned instead of written to .git/hooks/, so the hook that runs is the one
+# in the working tree. Enable it once per clone via tools/git-hooks/install.sh.
+#
+# Bypass in an emergency: git push --no-verify
+
+set -euo pipefail
+
+root="$(git rev-parse --show-toplevel)"
+cd "$root"
+
+fail() { echo "" >&2; echo "❌ pre-push: $*" >&2; exit 1; }
+
+# ── DOM-free unit tests (~1 s) ───────────────────────────────────
+# The same run that gates nightly and release deploys. It also fails when the
+# SKIP list in tests/run-node.mjs drifts away from tests/runner.html.
+echo "▶ pre-push: npm run test:unit"
+if ! out="$(npm run -s test:unit 2>&1)"; then
+  printf '%s\n' "$out" >&2
+  fail "unit tests red — details above."
+fi
+
+echo "✓ pre-push: all checks passed"

@@ -20,6 +20,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join, relative } from 'node:path';
+import { checkSkipList, parseRunnerFiles } from './skip-list-check.mjs';
 
 const TESTS_DIR = dirname(fileURLToPath(import.meta.url));
 
@@ -60,6 +61,8 @@ globalThis.sessionStorage ??= new MemoryStorage();
 
 // DOM-dependent suites — run in the browser bridge, not here. Paths relative to
 // this directory. Keep sorted; add a file here if it starts needing the DOM.
+// Every entry must also be imported by tests/runner.html — checked below
+// (skip-list-check.mjs), since a file in SKIP alone would run nowhere.
 const SKIP = new Set([
   'algorithm-lab/lab-renderer.test.js',
   'core/chart/boxplot.test.js',
@@ -144,6 +147,18 @@ async function collectTestFiles(dir) {
 
 const filter = process.argv[2] ?? '';
 const all = (await collectTestFiles(TESTS_DIR)).sort();
+
+// A file in SKIP must run in the browser bridge instead, or it runs nowhere.
+const skipProblems = checkSkipList({
+  skip: SKIP,
+  browserFiles: parseRunnerFiles(await readFile(join(TESTS_DIR, 'runner.html'), 'utf8')),
+  testFiles: all.map((f) => relative(TESTS_DIR, f)),
+});
+if (skipProblems.length) {
+  console.error('\x1b[31m✗ SKIP list out of step with tests/runner.html:\x1b[0m');
+  for (const p of skipProblems) console.error(`  ${p}`);
+  process.exit(1);
+}
 
 let skipped = 0;
 const files = all.filter((f) => {
