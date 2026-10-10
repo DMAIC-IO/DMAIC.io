@@ -12,6 +12,21 @@ import { coerceValue } from './tile-settings.js';
 let formSeq = 0;
 
 /**
+ * Visible text of a select option: a literal host text, an i18n label, or
+ * the raw value.
+ * @param {object} field
+ * @param {string} option
+ * @param {number} index
+ * @param {{t: function}} i18n
+ * @returns {string}
+ */
+function optionText(field, option, index, i18n) {
+  const literal = Array.isArray(field.optionTexts) ? field.optionTexts[index] : undefined;
+  if (typeof literal === 'string') return literal;
+  return field.optionLabels?.[option] ? i18n.t(field.optionLabels[option]) : option;
+}
+
+/**
  * Create the control for one field.
  * @param {object} field
  * @param {object} i18n
@@ -23,8 +38,7 @@ function createControl(field, i18n) {
   }
   if (field.type === 'select') {
     return h('select', {},
-      ...field.options.map(option => h('option', { value: option },
-        field.optionLabels?.[option] ? i18n.t(field.optionLabels[option]) : option)));
+      ...field.options.map((option, i) => h('option', { value: option }, optionText(field, option, i, i18n))));
   }
   return h('input', { type: 'checkbox' });
 }

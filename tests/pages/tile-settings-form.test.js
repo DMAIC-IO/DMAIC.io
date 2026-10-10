@@ -66,3 +66,17 @@ suite('tile-settings-form', () => {
     assertDeepEqual(form.read(), { topN: 5, view: 'bar', showLegend: true });
   });
 });
+
+suite('tile settings form: literal option texts', () => {
+  test('optionTexts label the options literally; values stay ids', () => {
+    const schema = {
+      _source: { type: 'select', label: 'l.src', options: ['i1', 'i2'],
+        optionTexts: ['Line A (Analyze)', 'FMEA (Improve)'], default: 'i1' },
+    };
+    const form = buildSettingsForm(schema, { _source: 'i2' }, i18n);
+    const options = [...form.el.querySelectorAll('[data-setting="_source"] option')];
+    assertDeepEqual(options.map(o => o.textContent), ['Line A (Analyze)', 'FMEA (Improve)']);
+    assertDeepEqual(options.map(o => o.value), ['i1', 'i2']);
+    assertDeepEqual(form.read(), { _source: 'i2' });
+  });
+});
