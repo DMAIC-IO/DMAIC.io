@@ -7,6 +7,8 @@ import vocTile from '../../js/modules/voc-ctx-tree/voc-ctx-tree.tile.js';
 import raciTile from '../../js/modules/raci-matrix/raci-matrix.tile.js';
 import spcTile from '../../js/modules/control-chart/control-chart.tile.js';
 import todoTile from '../../js/modules/todo/todo.tile.js';
+import calendarTile from '../../js/modules/dmaic-calendar/dmaic-calendar.tile.js';
+import { todayISO, addDaysISO } from '../../js/core/local-date.js';
 import { validateSchema, resolveSettings } from '../../js/pages/dashboard/tile-settings.js';
 import { HOST_TILES } from '../../js/pages/dashboard/tiles/index.js';
 import zegTile from '../../js/pages/dashboard/tiles/zeg-timeline.tile.js';
@@ -48,7 +50,7 @@ suite('dashboard tiles: manifest', () => {
   test('modules with a tile declare loadTile', () => {
     const ids = withTile.map(e => e.id);
     for (const id of ['fmea', 'ishikawa', 'project-charter', 'voc-ctx-tree', 'raci-matrix', 'control-chart',
-      'todo']) assertTrue(ids.includes(id), id);
+      'todo', 'dmaic-calendar']) assertTrue(ids.includes(id), id);
   });
 
   test('every tile object loads, renders and has a valid size and schema', async () => {
@@ -458,5 +460,35 @@ suite('dashboard tiles: todo', () => {
     for (const s of [{ items: [] }, undefined, null]) {
       assertEqual(render(todoTile, s).querySelector('.dashboard-area__empty').textContent, 'dashboard.todoEmpty');
     }
+  });
+});
+
+suite('dashboard tiles: dmaic-calendar', () => {
+  const t0 = todayISO();
+  const CAL_STATE = { events: [
+    { id: '1', title: 'Kickoff', date: t0, time: '10:00', duration: 60, phase: 'define' },
+    { id: '2', title: 'Review', date: addDaysISO(t0, 10), time: '09:00', duration: 60, phase: 'measure' },
+    { id: '3', title: 'Gate', date: addDaysISO(t0, 20), time: '09:00', duration: 60, phase: 'analyze' },
+    { id: '4', title: 'Past', date: addDaysISO(t0, -1), time: '09:00', duration: 60, phase: 'define' },
+  ] };
+
+  test('default horizon (14 days) lists today and +10', () => {
+    const host = render(calendarTile, CAL_STATE);
+    assertDeepEqual([...host.querySelectorAll('.dashboard-fmea__top-desc')].map(e => e.textContent), ['Kickoff', 'Review']);
+  });
+
+  test('horizon 30 adds +20; topN caps', () => {
+    assertEqual(render(calendarTile, CAL_STATE, { horizon: '30' }).querySelectorAll('.dashboard-fmea__top-item').length, 3);
+    assertEqual(render(calendarTile, CAL_STATE, { horizon: '30', topN: 1 }).querySelectorAll('.dashboard-fmea__top-item').length, 1);
+  });
+
+  test('summary names count and horizon', () => {
+    assertEqual(render(calendarTile, CAL_STATE, { horizon: '7' }).querySelector('.dashboard-fmea__summary').textContent,
+      'dashboard.calendarSummary');
+  });
+
+  test('no upcoming events shows a hint; no events at all the empty state', () => {
+    assertTrue(render(calendarTile, { events: [CAL_STATE.events[3]] }).querySelector('.dashboard-calendar__none') !== null);
+    assertEqual(render(calendarTile, undefined).querySelector('.dashboard-area__empty').textContent, 'dashboard.calendarEmpty');
   });
 });

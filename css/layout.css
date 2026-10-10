@@ -1699,6 +1699,19 @@ body.dev-area-open .dmaic-tiles {
   font-weight: 600;
 }
 
+/* DMAIC calendar tile on dashboard */
+.dashboard-calendar__when,
+.dashboard-calendar__phase {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.dashboard-calendar__none {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
 /* SPC / Control Chart on dashboard */
 .dashboard-spc {
   display: flex;

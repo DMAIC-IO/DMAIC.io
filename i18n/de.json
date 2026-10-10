@@ -595,6 +595,9 @@
     "todoEmpty": "Keine Aufgaben erfasst.",
     "todoNextDue": "Als Nächstes fällig",
     "todoOverdue": "Überfällig",
+    "calendarEmpty": "Keine Termine erfasst.",
+    "calendarSummary": "{count} Termine in den nächsten {days} Tagen",
+    "calendarNone": "Keine anstehenden Termine.",
     "tileSettings": {
       "title": "Einstellungen: {title}",
       "open": "Kachel-Einstellungen",
@@ -605,7 +608,11 @@
       "showLegend": "Legende anzeigen",
       "topStatements": "Anzahl der Aussagen",
       "topWarnings": "Anzahl der Warnungen",
-      "showDone": "Erledigte einbeziehen"
+      "showDone": "Erledigte einbeziehen",
+      "horizon": "Zeitraum",
+      "horizon7": "7 Tage",
+      "horizon14": "14 Tage",
+      "horizon30": "30 Tage"
     }
   },
   "lab": {

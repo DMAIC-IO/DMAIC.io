@@ -4,6 +4,8 @@
  * configuration, month/week layout math. No DOM, no i18n, no CSS.
  */
 
+import { addDaysISO, isIsoDate } from '../../core/local-date.js';
+
 export const SNAP = 5;
 export const MIN_DUR = 5;
 export const HOUR_H = 60;
@@ -264,4 +266,18 @@ export class State {
   minToPx(m) { return m - this.gStart(); }
   pxToMin(px) { return this.gStart() + px; }
   totalH() { return this.hoursArr().length * HOUR_H; }
+}
+
+/**
+ * Events from `today` (inclusive) up to `today + horizonDays` (exclusive), by date then time.
+ * @param {object[]} events
+ * @param {string} today `YYYY-MM-DD`
+ * @param {number} horizonDays
+ * @returns {object[]}
+ */
+export function upcomingEvents(events, today, horizonDays) {
+  const end = addDaysISO(today, horizonDays);
+  return events
+    .filter(e => isIsoDate(e.date) && e.date >= today && e.date < end)
+    .sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
 }

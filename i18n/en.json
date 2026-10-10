@@ -595,6 +595,9 @@
     "todoEmpty": "No tasks recorded.",
     "todoNextDue": "Next due",
     "todoOverdue": "Overdue",
+    "calendarEmpty": "No events recorded.",
+    "calendarSummary": "{count} events in the next {days} days",
+    "calendarNone": "No upcoming events.",
     "tileSettings": {
       "title": "Settings: {title}",
       "open": "Tile settings",
@@ -605,7 +608,11 @@
       "showLegend": "Show legend",
       "topStatements": "Number of statements",
       "topWarnings": "Number of warnings",
-      "showDone": "Include done tasks"
+      "showDone": "Include done tasks",
+      "horizon": "Period",
+      "horizon7": "7 days",
+      "horizon14": "14 days",
+      "horizon30": "30 days"
     }
   },
   "lab": {

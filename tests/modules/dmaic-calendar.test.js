@@ -2,7 +2,7 @@ import { suite, test, assertEqual } from '../test-utils.js';
 import {
   State,
   fmt2, dateKey, isoDow, getMonday, snp, mtt, ttm, fmtEnd, fmtDur,
-  SNAP, MIN_DUR, HOUR_H,
+  SNAP, MIN_DUR, HOUR_H, upcomingEvents,
 } from '../../js/modules/dmaic-calendar/dmaic-calendar-model.js';
 
 suite('DMAIC Calendar Model — pure date helpers', () => {
@@ -306,5 +306,19 @@ suite('DMAIC Calendar Model — business logic', () => {
     assertEqual(s.minToPx(600), 120); // 10:00 -> 600 - 480
     assertEqual(s.pxToMin(120), 600);
     assertEqual(s.totalH(), 10 * HOUR_H); // 10 visible hours -> 600
+  });
+});
+
+suite('DMAIC Calendar Model — upcomingEvents', () => {
+  const ev = (date, time = '09:00', title = date + time) => ({ id: title, title, date, time, duration: 60, desc: '', phase: 'define' });
+
+  test('from today inclusive to today + horizon exclusive, by date then time', () => {
+    const events = [ev('2026-10-24'), ev('2026-10-10', '14:00'), ev('2026-10-09'), ev('2026-10-10', '08:00'), ev('2026-10-23')];
+    assertEqual(upcomingEvents(events, '2026-10-10', 14).map(e => e.title).join('|'),
+      '2026-10-1008:00|2026-10-1014:00|2026-10-2309:00');
+  });
+
+  test('malformed dates are never upcoming', () => {
+    assertEqual(upcomingEvents([ev(''), ev('10.10.2026')], '2026-10-10', 30).length, 0);
   });
 });
