@@ -14,6 +14,7 @@ import { initNightlyMode }   from './core/nightly-mode.js';
 import { ExportReminder }    from './core/export-reminder.js';
 import { notify }            from './core/notify.js';
 import { setChunkErrorHandler, guardChunkRejections, prefetchChunks } from './core/chunks.js';
+import { registerServiceWorker } from './core/service-worker.js';
 import Alpine from '@alpinejs/csp';
 import { buildFrame } from './frame/index.js';
 import { setProjectSwitcherRouter, setProjectSwitcherUi } from './frame/header/project-switcher.js';
@@ -115,6 +116,9 @@ async function init() {
   // Warm every chunk on idle. Once every link loaded, the app works offline;
   // data-chunks-prefetched="1" only says all settled (failures included).
   prefetchChunks();
+  // Offline after a reload: the worker precaches every runtime file. Until its
+  // install finishes, the prefetch above covers the open page.
+  registerServiceWorker();
 
   console.log(`Qprovement v${VERSION} ready.`);
 }
