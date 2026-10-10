@@ -20,6 +20,9 @@
   --fmea-cat-high-text: color-mix(in srgb, var(--fmea-cat-high) 40%, var(--color-text-primary));
   --fmea-cat-medium-text: color-mix(in srgb, var(--fmea-cat-medium) 40%, var(--color-text-primary));
   --fmea-cat-low-text: color-mix(in srgb, var(--fmea-cat-low) 40%, var(--color-text-primary));
+
+  /* S ≥ 9 marker in RPN mode */
+  --fmea-severe: var(--fmea-cat-critical);
 }
 
 .fmea__settings {
@@ -125,6 +128,53 @@
 .fmea__risk-card--high     { border-left: 3px solid var(--fmea-cat-high); }
 .fmea__risk-card--medium   { border-left: 3px solid var(--fmea-cat-medium); }
 .fmea__risk-card--low      { border-left: 3px solid var(--fmea-cat-low); }
+
+/* S ≥ 9 in RPN mode: outline so it does not collide with the category border-left */
+.fmea__risk-card--severe {
+  box-shadow: inset 0 0 0 2px var(--fmea-severe);
+}
+
+/* ── Compliance flags (special characteristic, AP H justification, S ≥ 9) ── */
+.fmea__flags {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-shrink: 0;
+}
+
+.fmea__special-char {
+  width: auto;
+}
+
+.fmea__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2xs);
+  padding: 0 var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  border: 1px solid currentColor;
+}
+
+.fmea__badge--cc { color: var(--fmea-cat-critical-text); }
+.fmea__badge--sc { color: var(--fmea-cat-high-text); }
+.fmea__badge--warning { color: var(--fmea-cat-high-text); }
+.fmea__badge--severe { color: var(--fmea-cat-critical-text); }
+
+.fmea__hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.fmea__justification {
+  margin-top: var(--spacing-sm);
+}
+
+.fmea__justification-input--required {
+  border-color: var(--fmea-cat-high);
+}
 
 /* ── Risk Header ── */
 .fmea__risk-header {
@@ -248,10 +298,6 @@
   display: grid;
   gap: var(--spacing-sm);
   grid-template-columns: 1fr 1fr 1fr;
-}
-
-.fmea__fields-row--2 {
-  grid-template-columns: 1fr 1fr;
 }
 
 /* Fields use global .field / .field-group (components.css) */

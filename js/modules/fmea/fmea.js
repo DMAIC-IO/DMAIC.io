@@ -108,13 +108,25 @@ const mod = createModule({
       /** Projected-bar badge: 'AP M' / 'RPN 120'. */
       projValueText(risk) { return this.isAp() ? `AP ${risk.projAp() || '—'}` : this.rpnText(risk.projRpn()); },
 
-      /** Combined card class: glow tier + collapsed marker. */
+      /** Combined card class: glow tier + collapsed marker + S ≥ 9 marker (RPN mode). */
       cardClass(risk) {
         const cat = this.model.rating().category(risk);
         const glow = cat === 'none' ? '' : `fmea__risk-card--${cat}`;
         const collapsed = risk.collapsed ? 'fmea__risk-card--collapsed' : '';
-        return (`${glow} ${collapsed}`).trim();
+        const severe = this.showSevere(risk) ? 'fmea__risk-card--severe' : '';
+        return (`${glow} ${collapsed} ${severe}`).replace(/\s+/g, ' ').trim();
       },
+
+      /** @returns {boolean} AP mode and the risk is AP H without action/justification */
+      showUnjustified(risk) { return this.isAp() && risk.needsJustification(); },
+      /** @returns {boolean} justification field: required at AP H, kept visible once filled */
+      showJustification(risk) {
+        return this.isAp() && (risk.needsJustification() || risk.justification.trim() !== '');
+      },
+      /** @returns {boolean} RPN mode and S ≥ 9 */
+      showSevere(risk) { return !this.isAp() && risk.isHighSeverity(); },
+      /** @returns {string} badge modifier for CC/SC */
+      specialCharClass(risk) { return risk.specialChar ? `fmea__badge--${risk.specialChar.toLowerCase()}` : ''; },
 
       projSDisp: (risk) => risk.sev ? String(risk.projS()) : '—',
       projODisp: (risk) => risk.occ ? String(risk.projO()) : '—',

@@ -154,6 +154,10 @@
         <div class="fmea__stat-icon fmea__stat-icon--neutral"><span class="icon icon--sm" data-icon="action.confirm" aria-hidden="true"></span></div>
         <div><div class="fmea__stat-value" data-stat="rated" x-text="statRated()"></div><div class="fmea__stat-label" x-text="t('statRated')"></div></div>
       </div>
+      <div class="fmea__stat-card" x-show="isAp()">
+        <div class="fmea__stat-icon fmea__stat-icon--high"><span class="icon icon--sm" data-icon="status.warning" aria-hidden="true"></span></div>
+        <div><div class="fmea__stat-value" data-stat="unjustified" x-text="stats().unjustified"></div><div class="fmea__stat-label" x-text="t('statUnjustified')"></div></div>
+      </div>
       <div class="fmea__stat-card" x-show="!isAp()">
         <div class="fmea__stat-icon fmea__stat-icon--neutral">Ø</div>
         <div><div class="fmea__stat-value" data-stat="avg" x-text="statAvg()"></div><div class="fmea__stat-label" x-text="t('statAvg')"></div></div>
@@ -161,6 +165,10 @@
       <div class="fmea__stat-card" x-show="!isAp()">
         <div class="fmea__stat-icon fmea__stat-icon--critical"><span class="icon icon--sm" data-icon="nav.arrow-up" aria-hidden="true"></span></div>
         <div><div class="fmea__stat-value" data-stat="max" x-text="statMax()"></div><div class="fmea__stat-label" x-text="t('statMax')"></div></div>
+      </div>
+      <div class="fmea__stat-card" x-show="!isAp()">
+        <div class="fmea__stat-icon fmea__stat-icon--critical"><span class="icon icon--sm" data-icon="severity.critical" aria-hidden="true"></span></div>
+        <div><div class="fmea__stat-value" data-stat="highSeverity" x-text="stats().highSeverity"></div><div class="fmea__stat-label" x-text="t('statHighSeverity')"></div></div>
       </div>
     </div>
 
@@ -173,6 +181,17 @@
               <span class="fmea__collapse-arrow icon icon--sm" :data-icon="risk.collapsed ? 'nav.expand-right' : 'nav.expand-down'" aria-hidden="true"></span> <span x-text="riskNum(ri)"></span>
             </span>
             <input class="fmea__risk-title" name="step" :placeholder="t('stepPlaceholder')" x-model="risk.step">
+            <div class="fmea__flags">
+              <select class="field fmea__special-char" name="specialChar" x-model="risk.specialChar" :title="t('specialChar')" :aria-label="t('specialChar')">
+                <option value="">—</option>
+                <option value="CC">CC</option>
+                <option value="SC">SC</option>
+              </select>
+              <span class="fmea__badge" :class="specialCharClass(risk)" data-special-char-badge x-show="risk.specialChar" x-text="risk.specialChar"></span>
+              <span class="fmea__hint" data-special-char-hint x-show="risk.suggestsSpecialChar()" x-text="t('specialCharHint')"></span>
+              <span class="fmea__badge fmea__badge--warning" data-unjustified-badge x-show="showUnjustified(risk)"><span class="icon icon--sm" data-icon="status.warning" aria-hidden="true"></span> <span x-text="t('unjustifiedBadge')"></span></span>
+              <span class="fmea__badge fmea__badge--severe" data-severe-badge x-show="showSevere(risk)" x-text="t('severeBadge')"></span>
+            </div>
             <div class="fmea__rpn-header-group">
               <span class="fmea__rpn-badge" :class="badgeClass(risk)" data-rpn-badge x-text="badgeText(risk)"></span>
               <span class="fmea__secondary-rpn" data-secondary-rpn x-show="isAp()" x-text="rpnText(risk.rpn())"></span>
@@ -196,7 +215,11 @@
                 <textarea class="field" name="cause" :placeholder="t('causePlaceholder')" x-model="risk.cause"></textarea>
               </div>
             </div>
-            <div class="fmea__fields-row fmea__fields-row--2">
+            <div class="fmea__fields-row">
+              <div class="field-group">
+                <label x-text="t('preventionControl')"></label>
+                <textarea class="field" name="prevention" :placeholder="t('preventionPlaceholder')" x-model="risk.prevention"></textarea>
+              </div>
               <div class="field-group">
                 <label x-text="t('currentControls')"></label>
                 <textarea class="field" name="control" :placeholder="t('controlPlaceholder')" x-model="risk.control"></textarea>
@@ -251,6 +274,10 @@
                   </div>
                 </div>
               </div>
+            </div>
+            <div class="field-group fmea__justification" x-show="showJustification(risk)">
+              <label x-text="t('justification')"></label>
+              <textarea class="field" name="justification" :placeholder="t('justificationPlaceholder')" x-model="risk.justification" :aria-required="showUnjustified(risk) ? 'true' : 'false'" :class="showUnjustified(risk) ? 'fmea__justification-input--required' : ''"></textarea>
             </div>
 
             <hr class="fmea__section-sep">
