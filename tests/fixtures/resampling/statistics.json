@@ -1,0 +1,550 @@
+{
+  "datasets": {
+    "odd15": [9.9800000000000004, 10.02, 10.050000000000001, 9.9499999999999993, 10.01, 9.9900000000000002, 10.029999999999999, 10.07, 9.9600000000000009, 10, 10.039999999999999, 9.9700000000000006, 10.02, 10.06, 9.9399999999999995],
+    "even12": [42.100000000000001, 38.5, 45, 51.200000000000003, 39.799999999999997, 47.299999999999997, 44.600000000000001, 40.200000000000003, 49.899999999999999, 43.700000000000003, 46.100000000000001, 41.5],
+    "ties10": [3, 1, 4, 1, 5, 9, 2, 6, 5, 3],
+    "skew20": [0.050636, 0.15592300000000001, 0.26706299999999999, 0.38474399999999997, 0.50978400000000001, 0.64316700000000004, 0.78608500000000003, 0.94000700000000004, 1.10677, 1.2887139999999999, 1.4888809999999999, 1.7113320000000001, 1.961659, 2.2478600000000002, 2.5819679999999998, 2.9833099999999999, 3.4859390000000001, 4.1588830000000003, 5.1805339999999998, 7.3777590000000002]
+  },
+  "cases": [
+    {
+      "dataset": "odd15",
+      "id": "mean",
+      "params": {},
+      "value": 10.006
+    },
+    {
+      "dataset": "odd15",
+      "id": "median",
+      "params": {},
+      "value": 10.01
+    },
+    {
+      "dataset": "odd15",
+      "id": "stddev",
+      "params": {},
+      "value": 0.040496913462633198
+    },
+    {
+      "dataset": "odd15",
+      "id": "variance",
+      "params": {},
+      "value": 0.0016400000000000021
+    },
+    {
+      "dataset": "odd15",
+      "id": "cv",
+      "params": {},
+      "value": 0.0040472629884702373
+    },
+    {
+      "dataset": "odd15",
+      "id": "trimmedMean",
+      "params": {
+        "trim": 0
+      },
+      "value": 10.006
+    },
+    {
+      "dataset": "odd15",
+      "id": "trimmedMean",
+      "params": {
+        "trim": 0.10000000000000001
+      },
+      "value": 10.006153846153847
+    },
+    {
+      "dataset": "odd15",
+      "id": "trimmedMean",
+      "params": {
+        "trim": 0.20000000000000001
+      },
+      "value": 10.006666666666666
+    },
+    {
+      "dataset": "odd15",
+      "id": "trimmedMean",
+      "params": {
+        "trim": 0.25
+      },
+      "value": 10.006666666666666
+    },
+    {
+      "dataset": "odd15",
+      "id": "trimmedMean",
+      "params": {
+        "trim": 0.5
+      },
+      "value": 10.01
+    },
+    {
+      "dataset": "odd15",
+      "id": "quantile",
+      "params": {
+        "p": 0.050000000000000003
+      },
+      "value": 9.9469999999999992
+    },
+    {
+      "dataset": "odd15",
+      "id": "quantile",
+      "params": {
+        "p": 0.25
+      },
+      "value": 9.9750000000000014
+    },
+    {
+      "dataset": "odd15",
+      "id": "quantile",
+      "params": {
+        "p": 0.5
+      },
+      "value": 10.01
+    },
+    {
+      "dataset": "odd15",
+      "id": "quantile",
+      "params": {
+        "p": 0.90000000000000002
+      },
+      "value": 10.056000000000001
+    },
+    {
+      "dataset": "odd15",
+      "id": "quantile",
+      "params": {
+        "p": 0.94999999999999996
+      },
+      "value": 10.063000000000001
+    },
+    {
+      "dataset": "odd15",
+      "id": "ppk",
+      "params": {
+        "lsl": 9.8995030865373668,
+        "usl": 10.110496913462633
+      },
+      "value": 0.86012245154644418
+    },
+    {
+      "dataset": "odd15",
+      "id": "ppk",
+      "params": {
+        "lsl": 9.8995030865373668
+      },
+      "value": 0.87658461149060951
+    },
+    {
+      "dataset": "odd15",
+      "id": "ppk",
+      "params": {
+        "usl": 10.110496913462633
+      },
+      "value": 0.86012245154644418
+    },
+    {
+      "dataset": "even12",
+      "id": "mean",
+      "params": {},
+      "value": 44.158333333333331
+    },
+    {
+      "dataset": "even12",
+      "id": "median",
+      "params": {},
+      "value": 44.150000000000006
+    },
+    {
+      "dataset": "even12",
+      "id": "stddev",
+      "params": {},
+      "value": 3.9919141759159587
+    },
+    {
+      "dataset": "even12",
+      "id": "variance",
+      "params": {},
+      "value": 15.935378787878788
+    },
+    {
+      "dataset": "even12",
+      "id": "cv",
+      "params": {},
+      "value": 0.09040001908094264
+    },
+    {
+      "dataset": "even12",
+      "id": "trimmedMean",
+      "params": {
+        "trim": 0
+      },
+      "value": 44.158333333333331
+    },
+    {
+      "dataset": "even12",
+      "id": "trimmedMean",
+      "params": {
+        "trim": 0.10000000000000001
+      },
+      "value": 44.020000000000003
+    },
+    {
+      "dataset": "even12",
+      "id": "trimmedMean",
+      "params": {
+        "trim": 0.20000000000000001
+      },
+      "value": 43.8125
+    },
+    {
+      "dataset": "even12",
+      "id": "trimmedMean",
+      "params": {
+        "trim": 0.25
+      },
+      "value": 43.833333333333336
+    },
+    {
+      "dataset": "even12",
+      "id": "trimmedMean",
+      "params": {
+        "trim": 0.5
+      },
+      "value": 44.150000000000006
+    },
+    {
+      "dataset": "even12",
+      "id": "quantile",
+      "params": {
+        "p": 0.050000000000000003
+      },
+      "value": 39.215000000000003
+    },
+    {
+      "dataset": "even12",
+      "id": "quantile",
+      "params": {
+        "p": 0.25
+      },
+      "value": 41.174999999999997
+    },
+    {
+      "dataset": "even12",
+      "id": "quantile",
+      "params": {
+        "p": 0.5
+      },
+      "value": 44.150000000000006
+    },
+    {
+      "dataset": "even12",
+      "id": "quantile",
+      "params": {
+        "p": 0.90000000000000002
+      },
+      "value": 49.640000000000001
+    },
+    {
+      "dataset": "even12",
+      "id": "quantile",
+      "params": {
+        "p": 0.94999999999999996
+      },
+      "value": 50.484999999999999
+    },
+    {
+      "dataset": "even12",
+      "id": "ppk",
+      "params": {
+        "lsl": 34.508085824084041,
+        "usl": 55.191914175915961
+      },
+      "value": 0.80581621447602114
+    },
+    {
+      "dataset": "even12",
+      "id": "ppk",
+      "params": {
+        "lsl": 34.508085824084041
+      },
+      "value": 0.80581621447602114
+    },
+    {
+      "dataset": "even12",
+      "id": "ppk",
+      "params": {
+        "usl": 55.191914175915961
+      },
+      "value": 0.92132749322371865
+    },
+    {
+      "dataset": "ties10",
+      "id": "mean",
+      "params": {},
+      "value": 3.8999999999999999
+    },
+    {
+      "dataset": "ties10",
+      "id": "median",
+      "params": {},
+      "value": 3.5
+    },
+    {
+      "dataset": "ties10",
+      "id": "stddev",
+      "params": {},
+      "value": 2.4698178070456938
+    },
+    {
+      "dataset": "ties10",
+      "id": "variance",
+      "params": {},
+      "value": 6.0999999999999996
+    },
+    {
+      "dataset": "ties10",
+      "id": "cv",
+      "params": {},
+      "value": 0.63328661719120349
+    },
+    {
+      "dataset": "ties10",
+      "id": "trimmedMean",
+      "params": {
+        "trim": 0
+      },
+      "value": 3.8999999999999999
+    },
+    {
+      "dataset": "ties10",
+      "id": "trimmedMean",
+      "params": {
+        "trim": 0.10000000000000001
+      },
+      "value": 3.625
+    },
+    {
+      "dataset": "ties10",
+      "id": "trimmedMean",
+      "params": {
+        "trim": 0.20000000000000001
+      },
+      "value": 3.6666666666666665
+    },
+    {
+      "dataset": "ties10",
+      "id": "trimmedMean",
+      "params": {
+        "trim": 0.25
+      },
+      "value": 3.6666666666666665
+    },
+    {
+      "dataset": "ties10",
+      "id": "trimmedMean",
+      "params": {
+        "trim": 0.5
+      },
+      "value": 3.5
+    },
+    {
+      "dataset": "ties10",
+      "id": "quantile",
+      "params": {
+        "p": 0.050000000000000003
+      },
+      "value": 1
+    },
+    {
+      "dataset": "ties10",
+      "id": "quantile",
+      "params": {
+        "p": 0.25
+      },
+      "value": 2.25
+    },
+    {
+      "dataset": "ties10",
+      "id": "quantile",
+      "params": {
+        "p": 0.5
+      },
+      "value": 3.5
+    },
+    {
+      "dataset": "ties10",
+      "id": "quantile",
+      "params": {
+        "p": 0.90000000000000002
+      },
+      "value": 6.2999999999999989
+    },
+    {
+      "dataset": "ties10",
+      "id": "quantile",
+      "params": {
+        "p": 0.94999999999999996
+      },
+      "value": 7.6499999999999968
+    },
+    {
+      "dataset": "ties10",
+      "id": "ppk",
+      "params": {
+        "lsl": -1.4698178070456938,
+        "usl": 11.469817807045693
+      },
+      "value": 0.72472522625314273
+    },
+    {
+      "dataset": "ties10",
+      "id": "ppk",
+      "params": {
+        "lsl": -1.4698178070456938
+      },
+      "value": 0.72472522625314273
+    },
+    {
+      "dataset": "ties10",
+      "id": "ppk",
+      "params": {
+        "usl": 11.469817807045693
+      },
+      "value": 1.0216432139854117
+    },
+    {
+      "dataset": "skew20",
+      "id": "mean",
+      "params": {},
+      "value": 1.9655509
+    },
+    {
+      "dataset": "skew20",
+      "id": "median",
+      "params": {},
+      "value": 1.3887974999999999
+    },
+    {
+      "dataset": "skew20",
+      "id": "stddev",
+      "params": {},
+      "value": 1.896945888203426
+    },
+    {
+      "dataset": "skew20",
+      "id": "variance",
+      "params": {},
+      "value": 3.5984037027718845
+    },
+    {
+      "dataset": "skew20",
+      "id": "cv",
+      "params": {},
+      "value": 0.96509629346328607
+    },
+    {
+      "dataset": "skew20",
+      "id": "trimmedMean",
+      "params": {
+        "trim": 0
+      },
+      "value": 1.9655509
+    },
+    {
+      "dataset": "skew20",
+      "id": "trimmedMean",
+      "params": {
+        "trim": 0.10000000000000001
+      },
+      "value": 1.659135375
+    },
+    {
+      "dataset": "skew20",
+      "id": "trimmedMean",
+      "params": {
+        "trim": 0.20000000000000001
+      },
+      "value": 1.5207947500000001
+    },
+    {
+      "dataset": "skew20",
+      "id": "trimmedMean",
+      "params": {
+        "trim": 0.25
+      },
+      "value": 1.4756442999999999
+    },
+    {
+      "dataset": "skew20",
+      "id": "trimmedMean",
+      "params": {
+        "trim": 0.5
+      },
+      "value": 1.3887974999999999
+    },
+    {
+      "dataset": "skew20",
+      "id": "quantile",
+      "params": {
+        "p": 0.050000000000000003
+      },
+      "value": 0.15065865000000003
+    },
+    {
+      "dataset": "skew20",
+      "id": "quantile",
+      "params": {
+        "p": 0.25
+      },
+      "value": 0.60982124999999998
+    },
+    {
+      "dataset": "skew20",
+      "id": "quantile",
+      "params": {
+        "p": 0.5
+      },
+      "value": 1.3887974999999999
+    },
+    {
+      "dataset": "skew20",
+      "id": "quantile",
+      "params": {
+        "p": 0.90000000000000002
+      },
+      "value": 4.2610481000000018
+    },
+    {
+      "dataset": "skew20",
+      "id": "quantile",
+      "params": {
+        "p": 0.94999999999999996
+      },
+      "value": 5.2903952500000013
+    },
+    {
+      "dataset": "skew20",
+      "id": "ppk",
+      "params": {
+        "lsl": -1.8463098882034261,
+        "usl": 9.2747048882034271
+      },
+      "value": 0.66982420038236523
+    },
+    {
+      "dataset": "skew20",
+      "id": "ppk",
+      "params": {
+        "lsl": -1.8463098882034261
+      },
+      "value": 0.66982420038236523
+    },
+    {
+      "dataset": "skew20",
+      "id": "ppk",
+      "params": {
+        "usl": 9.2747048882034271
+      },
+      "value": 1.2843722522005863
+    }
+  ]
+}
