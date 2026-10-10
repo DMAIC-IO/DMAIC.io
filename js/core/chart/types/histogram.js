@@ -1,6 +1,6 @@
 /**
  * histogram.js — Histogram chart type for the D.Mike chart framework.
- * Supports: auto-binning (Sturges/Scott/Freedman-Diaconis/manual),
+ * Supports: auto-binning (Sturges/Scott/Freedman-Diaconis/manual) or precomputed bins,
  * normal curve overlay, spec limit lines, tooltips.
  */
 
@@ -124,6 +124,8 @@ export default class HistogramChart extends ChartBase {
       data: [],
       binMethod: 'sturges',
       binCount: null,
+      // Precomputed bins [{ x0, x1, count }] — when set, data/binMethod/binCount are ignored.
+      bins: null,
       barColor: null,
       barBorderColor: null,
       showNormalCurve: false,
@@ -176,15 +178,37 @@ export default class HistogramChart extends ChartBase {
     return out;
   }
 
+  /**
+   * Bins to draw: the precomputed `config.bins` (densities derived from the
+   * counts) or bins computed from `config.data`. Null when there is nothing.
+   * @private
+   * @returns {{ bins: {x0: number, x1: number, count: number, density: number}[], binWidth: number } | null}
+   */
+  _resolveBins() {
+    const pre = this.config.bins;
+    if (Array.isArray(pre) && pre.length) {
+      const total = pre.reduce((s, b) => s + (b.count || 0), 0);
+      const bins = pre.map((b) => {
+        const w = b.x1 - b.x0;
+        return {
+          x0: b.x0, x1: b.x1, count: b.count,
+          density: total > 0 && w > 0 ? b.count / (total * w) : 0,
+        };
+      });
+      return { bins, binWidth: bins[0].x1 - bins[0].x0 };
+    }
+    const data = this.config.data || [];
+    if (!data.length) return null;
+    return buildBins(data, computeBinCount(data, this.config.binMethod, this.config.binCount));
+  }
+
   // ── Abstract Implementation: Data Extent ─────────────────────────
 
   /** @override */
   _getDataExtent() {
-    const data = this.config.data || [];
-    if (!data.length) return { xMin: 0, xMax: 1, yMin: 0, yMax: 1 };
-
-    const binCount = computeBinCount(data, this.config.binMethod, this.config.binCount);
-    const { bins } = buildBins(data, binCount);
+    const resolved = this._resolveBins();
+    if (!resolved) return { xMin: 0, xMax: 1, yMin: 0, yMax: 1 };
+    const { bins } = resolved;
 
     let valMin = bins[0].x0;
     let valMax = bins[bins.length - 1].x1;
@@ -208,11 +232,9 @@ export default class HistogramChart extends ChartBase {
 
   /** @override */
   _renderData(svg, plotGroup, xScale, yScale, _xTick, _yTick, _plotArea, _defs) {
-    const data = this.config.data || [];
-    if (!data.length) return;
-
-    const binCount = computeBinCount(data, this.config.binMethod, this.config.binCount);
-    const { bins, binWidth } = buildBins(data, binCount);
+    const resolved = this._resolveBins();
+    if (!resolved) return;
+    const { bins, binWidth } = resolved;
 
     const chartColors = getChartColors();
     const barFill = resolveColor(this.config.barColor || chartColors[0] || 'var(--color-chart-1)');

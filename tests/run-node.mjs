@@ -72,6 +72,7 @@ const SKIP = new Set([
   'core/chart/cumulative-cost.test.js',
   'core/chart/gage-run-chart.test.js',
   'core/chart/gantt.test.js',
+  'core/chart/histogram-bins.test.js',
   'core/chart/multi-vari.test.js',
   'core/chart/pareto.test.js',
   'core/chart/run-chart.test.js',
