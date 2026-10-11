@@ -20,6 +20,30 @@ import { uid } from '../../core/uid.js';
 /** Leeres Antwortobjekt — bewusst als Funktion, damit nie eine Referenz geteilt wird. */
 const emptyAnswer = () => ({ f: null, d: null, w: null });
 
+/**
+ * Origin of an item or respondent written by the survey-builder hand-over
+ * (`{surveyInstanceId, questionId}`); null when absent or malformed. The
+ * kano module itself ignores it — survey-builder uses it to replace only its
+ * own entries on a repeat hand-over.
+ * @param {*} o
+ * @returns {{surveyInstanceId: string, questionId: string}|null}
+ */
+function cleanOrigin(o) {
+  return o && typeof o === 'object' && typeof o.surveyInstanceId === 'string' && typeof o.questionId === 'string'
+    ? { surveyInstanceId: o.surveyInstanceId, questionId: o.questionId }
+    : null;
+}
+
+/**
+ * Spreads `{origin}` into an entry only when it is valid.
+ * @param {*} o
+ * @returns {{origin?: {surveyInstanceId: string, questionId: string}}}
+ */
+const withOrigin = (o) => {
+  const origin = cleanOrigin(o);
+  return origin ? { origin } : {};
+};
+
 export class State {
   /** @type {{ instanceId: string|null, level: 'need'|'driver'|'req' }} */
   source = { instanceId: null, level: 'need' };
@@ -141,12 +165,13 @@ export class State {
         label: typeof i.label === 'string' ? i.label : '',
         path: typeof i.path === 'string' ? i.path : '',
         missing: Boolean(i.missing),
+        ...withOrigin(i.origin),
       }))
       : [];
 
     s.respondents = Array.isArray(d.respondents)
       ? d.respondents.filter((r) => r && typeof r.id === 'string')
-        .map((r) => ({ id: r.id, name: typeof r.name === 'string' ? r.name : '' }))
+        .map((r) => ({ id: r.id, name: typeof r.name === 'string' ? r.name : '', ...withOrigin(r.origin) }))
       : [];
 
     const itemIds = new Set(s.items.map((i) => i.id));

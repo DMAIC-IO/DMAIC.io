@@ -173,3 +173,30 @@ suite('kano-model — Serialisierung', () => {
     assertEqual(snapshot.items[0].label, 'A');
   });
 });
+
+suite('kano-model — origin (survey hand-over)', () => {
+  const origin = { surveyInstanceId: 'sb1', questionId: 'q1' };
+
+  test('origin on items and respondents survives fromJSON', () => {
+    const s = State.fromJSON({
+      items: [{ id: 'i1', nodeId: null, label: 'A', path: '', missing: false, origin }],
+      respondents: [{ id: 'r1', name: 'A', origin }],
+    });
+    assertDeepEqual(s.items[0].origin, origin);
+    assertDeepEqual(s.respondents[0].origin, origin);
+    assertDeepEqual(State.fromJSON(s.toJSON()).items[0].origin, origin);
+  });
+
+  test('malformed origin is dropped, entries without origin have none', () => {
+    const s = State.fromJSON({
+      items: [
+        { id: 'i1', label: 'A', origin: { surveyInstanceId: 5, questionId: 'q' } },
+        { id: 'i2', label: 'B' },
+      ],
+      respondents: [{ id: 'r1', name: 'A', origin: 'x' }],
+    });
+    assertEqual('origin' in s.items[0], false);
+    assertEqual('origin' in s.items[1], false);
+    assertEqual('origin' in s.respondents[0], false);
+  });
+});

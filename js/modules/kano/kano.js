@@ -21,34 +21,9 @@ import { evaluate } from '../../engines/kano-engine.js';
 import { ensureXLSX, downloadBlob } from '../../core/export-utils.js';
 import { exportSvgAsPNG, exportSvgAsFile } from '../../core/chart/modebar.js';
 import { provisionInstance } from '../../core/examples-registry.js';
-import manifest from '../manifest.js';
+import { treePhaseForCycle } from '../voc-ctx-tree/voc-ctx-tree-phase.js';
 import { DEFAULT_CYCLE } from '../../core/cycles/cycles.js';
 import { uid } from '../../core/uid.js';
-
-/**
- * Ermittelt die Phase, in der eine frisch provisionierte `voc-ctx-tree`-
- * Instanz im aktiven Zyklus landen muss.
- *
- * `voc-ctx-tree` ist zyklusabhängig verortet (`js/modules/manifest.js`):
- * unter DMAIC/DMADV in `define`, unter 8D aber in `problem` — der 8D-Zyklus
- * kennt gar keine `define`-Phase. Ein fest verdrahtetes `'define'` hätte die
- * neue Instanz unter 8D in eine nicht existierende Phase geschrieben
- * (unsichtbar, und bei einem Zyklenwechsel potenziell als zweiter Baum, was
- * die Singleton-Annahme der Lage-3-Schutzlogik in `beforeLoadExample`
- * untergräbt).
- *
- * Der Modul-Kontext (`js/ui/workspace.js` `_buildContext`) reicht keine
- * `moduleRegistry` durch, daher direkt aus dem statischen Manifest gelesen
- * (reine Daten, keine Bootstrap-Seiteneffekte) statt über die zur Laufzeit
- * gepflegte Registry.
- *
- * @param {string} cycleId
- * @returns {string}
- */
-function treePhaseForCycle(cycleId) {
-  const def = manifest.find((m) => m.id === 'voc-ctx-tree');
-  return def?.cycles?.[cycleId]?.phase || def?.phase || 'define';
-}
 
 export default createModule({
   config: {
