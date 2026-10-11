@@ -12,7 +12,7 @@ import { DashboardGrid } from '../../ui/dashboard-grid.js';
 import { DEFAULT_DASHBOARD_LAYOUT } from './default-layout.js';
 import { enumerateTiles, loadTileModules, refreshEventsOf, copyId, copyDescriptor, sourceChoices, customRefreshEvents, refreshTargets } from './enumerate-tiles.js';
 import { renderTileSafely } from './tile-render.js';
-import { schemaOf, resolveSettings, toStored, withTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave, titlesToStoreOnLayoutSave, SOURCE_KEY, sourceField, coerceValue } from './tile-settings.js';
+import { schemaOf, resolveSettings, toStored, withTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave, titlesToStoreOnLayoutSave, chartEditsToStoreOnLayoutSave, withCopiedChartEdits, SOURCE_KEY, sourceField, coerceValue } from './tile-settings.js';
 import { buildSettingsForm } from './tile-settings-form.js';
 
 const page = createPage({
@@ -72,7 +72,7 @@ const page = createPage({
       await renderTileSafely(descriptor.tile, body, {
         tileId: descriptor.id, instanceId: descriptor.instanceId, state,
         settings: settingsFor(descriptor.id, descriptor.tile),
-        i18n, theme: theme(), chartManager, stateManager,
+        i18n, theme: theme(), chartManager: chartManager?.forTile?.(descriptor.id) ?? chartManager, stateManager,
       }, i18n);
     };
 
@@ -124,8 +124,8 @@ const page = createPage({
     };
 
     // ── Duplicate ────────────────────────────────────────────────────────
-    // A copy is "<kind>~<uid>" with the original's stored settings and its
-    // effective source; a user-edited title is not copied. Settings and
+    // A copy is "<kind>~<uid>" with the original's stored settings, chart
+    // edits and effective source; a user-edited title is not copied. Settings and
     // descriptor exist before addTile, whose layout save prunes unknown ids.
     const duplicateTile = async (tileId) => {
       const d = descriptorFor(tileId);
@@ -136,6 +136,8 @@ const page = createPage({
       const all = stateManager.get('dashboard.tileSettings') || {};
       stateManager.set('dashboard.tileSettings',
         withTileSettings(all, id, { ...(all[tileId] || {}), [SOURCE_KEY]: d.instanceId }));
+      const copiedEdits = withCopiedChartEdits(stateManager.get('dashboard.chartEdits'), tileId, id);
+      if (copiedEdits) stateManager.set('dashboard.chartEdits', copiedEdits);
       descriptors.push(copy);
       const def = buildTileDefs().find(x => x.id === id);
       if (handle.grid.addTile(def)) {
@@ -145,6 +147,11 @@ const page = createPage({
       descriptors = descriptors.filter(x => x.id !== id);
       stateManager.set('dashboard.tileSettings',
         withTileSettings(stateManager.get('dashboard.tileSettings'), id, {}));
+      if (copiedEdits) {
+        const rest = { ...(stateManager.get('dashboard.chartEdits') || {}) };
+        delete rest[id];
+        stateManager.set('dashboard.chartEdits', rest);
+      }
     };
 
     // ── Tile-def assembly ───────────────────────────────────────
@@ -183,6 +190,9 @@ const page = createPage({
       const titles = titlesToStoreOnLayoutSave(
         stateManager.get('dashboard.titles'), ids, handle._allTilesLoaded);
       if (titles) stateManager.set('dashboard.titles', titles);
+      const edits = chartEditsToStoreOnLayoutSave(
+        stateManager.get('dashboard.chartEdits'), ids, handle._allTilesLoaded);
+      if (edits) stateManager.set('dashboard.chartEdits', edits);
     };
 
     // ── Add-menu popover ─────────────────────────────────────────────────
@@ -316,13 +326,19 @@ const page = createPage({
         if (Object.hasOwn(allSettings, tileId)) {
           stateManager.set('dashboard.tileSettings', withTileSettings(allSettings, tileId, {}));
         }
-        // A removed copy is gone for good, so is its user title. A base tile
-        // keeps its title for when it is added back.
+        // A removed copy is gone for good, so are its user title and chart edits.
+        // A base tile keeps both for when it is added back.
         const titles = stateManager.get('dashboard.titles') || {};
         if (d?.isCopy && Object.hasOwn(titles, tileId)) {
           const rest = { ...titles };
           delete rest[tileId];
           stateManager.set('dashboard.titles', rest);
+        }
+        const chartEdits = stateManager.get('dashboard.chartEdits') || {};
+        if (d?.isCopy && Object.hasOwn(chartEdits, tileId)) {
+          const rest = { ...chartEdits };
+          delete rest[tileId];
+          stateManager.set('dashboard.chartEdits', rest);
         }
         // Removing a re-bound base tile dropped its `_source`; re-enumerate so
         // the add menu offers it on its own instance with its own title.

@@ -606,6 +606,13 @@ suite('StateManager tile chart edits', () => {
     assertDeepEqual(sm.getTileChartEdits('t', 'histogram'), { showLegend: true });
   });
 
+  test('writing dashboard.layout keeps the sibling dashboard.chartEdits', () => {
+    const sm = new StateManager(new EventBus());
+    sm.setTileChartEdit('t', 'histogram', 'title', 'A');
+    sm.set('dashboard.layout', [{ id: 't', x: 0, y: 0, w: 2, h: 2 }]);
+    assertDeepEqual(sm.getTileChartEdits('t', 'histogram'), { title: 'A' });
+  });
+
   test('completed project ignores tile chart edits', () => {
     const sm = new StateManager(new EventBus());
     sm.isCompleted = () => true;

@@ -429,6 +429,20 @@ suite('dashboard tiles: zeg-timeline', () => {
     zegTile.dispose(host, { tileId: 'zeg-timeline' });
     assertDeepEqual(cm.destroyed, [cm.made[0]]);
   });
+
+  test('a stored legend edit beats the showLegend setting (tile-bound manager)', async () => {
+    const { createEditBoundChartManager, LABEL_EDIT_KEYS, TILE_EDIT_KEYS } =
+      await import('../../js/core/chart/instance-chart-manager.js');
+    const host = document.createElement('div'); document.body.appendChild(host);
+    const base = fakeChartManager();
+    const cm = createEditBoundChartManager(base, {
+      read: () => ({ showLegend: false }), write: () => {}, keys: [...LABEL_EDIT_KEYS, ...TILE_EDIT_KEYS],
+    });
+    const sm = zegStateManager({ define: [{ t: 1, v: 10 }, { t: 2, v: 20 }] });
+    await zegTile.render(host, args(cm, sm, { showLegend: true }));
+    assertEqual(base.made[0].cfg.showLegend, false);
+    host.remove();
+  });
 });
 
 const TODO_STATE = {
