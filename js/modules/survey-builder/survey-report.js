@@ -142,7 +142,7 @@ export function buildReportHtml(data, strings, options) {
   const cmp = options.groupBy ? groupComparison(survey, responses, options.groupBy) : null;
   if (cmp) {
     const gq = findQuestion(survey, cmp.questionId);
-    const head = cmp.groups.map((g) => `<th>${e(g.text)} <span class="few">(n = ${g.n}${g.few ? `, ${e(strings.fewResponses)}` : ''})</span></th>`).join('');
+    const head = cmp.groups.map((g) => `<th>${e(g.text)} <span class="few">(${e(fill(strings.nResponses, { n: g.n }))}${g.few ? `, ${e(strings.fewResponses)}` : ''})</span></th>`).join('');
     out.push('<section data-section="groups">', `<h2>${e(fill(strings.groupsTitle, { question: gq.text }))}</h2>`);
     for (const part of cmp.questions) {
       out.push(`<h3>${e(findQuestion(survey, part.questionId).text)}</h3><table><thead><tr><th></th>${head}</tr></thead><tbody>`);
@@ -150,7 +150,7 @@ export function buildReportHtml(data, strings, options) {
         for (const o of part.options) out.push(`<tr><td>${e(o.text)}</td>${o.shares.map((s) => `<td class="num">${pct(s)}</td>`).join('')}</tr>`);
       } else if (part.type === 'rating') {
         for (const row of part.rows) {
-          out.push(`<tr><td>${e(row.text)} <span class="few">(Ø ${num(row.overall, 2)})</span></td>${row.cells.map((c) => `<td class="num${c.deviates ? ' deviates' : ''}"${c.deviates ? ' data-deviates="1"' : ''}>${num(c.mean, 2)}</td>`).join('')}</tr>`);
+          out.push(`<tr><td>${e(row.text)} <span class="few">(${e(fill(strings.meanShort, { value: num(row.overall, 2) }))})</span></td>${row.cells.map((c) => `<td class="num${c.deviates ? ' deviates' : ''}"${c.deviates ? ' data-deviates="1"' : ''}>${num(c.mean, 2)}</td>`).join('')}</tr>`);
         }
       } else {
         for (const row of part.rows) {

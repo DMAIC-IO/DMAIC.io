@@ -1414,6 +1414,7 @@
       "chartShare": "Anteil",
       "chartMean": "Mittelwert",
       "takeToVoc": "In VoC-Baum übernehmen",
+      "previewFailed": "Die Vorschau konnte nicht erstellt werden.",
       "vocTakenMark": "bereits in den VoC-Baum übernommen",
       "vocTaken": "In den VoC-Baum übernommen: {count}",
       "vocSource": "Fragebogen „{title}“",
@@ -1505,7 +1506,7 @@
         "other": "Sonstige",
         "filter": "Gefiltert: {question} = {option}",
         "noResponses": "Noch keine Antworten.",
-        "anonymous": "anonym"
+        "meanShort": "Ø {value}"
       }
     },
     "process-map": {

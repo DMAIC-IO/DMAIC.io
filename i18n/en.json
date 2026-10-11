@@ -1414,6 +1414,7 @@
       "chartShare": "Share",
       "chartMean": "Mean",
       "takeToVoc": "Add to VoC tree",
+      "previewFailed": "The preview could not be built.",
       "vocTakenMark": "already added to the VoC tree",
       "vocTaken": "Added to the VoC tree: {count}",
       "vocSource": "Questionnaire “{title}”",
@@ -1505,7 +1506,7 @@
         "other": "Other",
         "filter": "Filtered: {question} = {option}",
         "noResponses": "No responses yet.",
-        "anonymous": "anonymous"
+        "meanShort": "avg {value}"
       }
     },
     "process-map": {

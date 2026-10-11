@@ -184,7 +184,7 @@ suite('survey-stats — summary', () => {
   });
 
   test('free text: text answers plus other texts, taken ones counted', () => {
-    assertDeepEqual(freeTextSummary(SURVEY, RESPONSES, ['x2:m', 'gone:t']), { total: 3, taken: 1 });
+    assertDeepEqual(freeTextSummary(SURVEY, RESPONSES, ['x2:m:other', 'gone:t']), { total: 3, taken: 1 });
   });
 });
 

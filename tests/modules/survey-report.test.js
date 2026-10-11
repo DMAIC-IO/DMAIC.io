@@ -17,7 +17,7 @@ const STRINGS = {
   colMean: 'Mittelwert', colMedian: 'Median', colTop: 'Anteil 4–5', colNa: 'k. A.',
   kanoTitle: 'Kano-Überblick', colCategory: 'Kategorie', colBetter: 'Better', colWorse: 'Worse',
   colImportance: 'Wichtigkeit', freeText: '{total} offene Antworten, {taken} in den VoC-Baum übernommen',
-  groupsTitle: 'Gruppenvergleich nach „{question}“', fewResponses: 'wenig Antworten', differs: 'unterschiedlich',
+  groupsTitle: 'Gruppenvergleich nach „{question}“', fewResponses: 'wenig Antworten', meanShort: 'Ø {value}', differs: 'unterschiedlich',
   questionsTitle: 'Alle Fragen', nResponses: 'n = {n}', other: 'Sonstige', filter: 'Gefiltert: {question} = {option}',
   noResponses: 'Noch keine Antworten.', anonymous: 'anonym',
   cat: { M: 'Basis', O: 'Leistung', A: 'Begeisterung', I: 'Indifferent', R: 'Umgekehrt', Q: 'Widersprüchlich' },
@@ -48,7 +48,7 @@ suite('survey-report — structure', () => {
   });
 
   test('summary shows rate line, free-text line and Kano categories', () => {
-    const h = html({ vocKeys: ['x2:m'] });
+    const h = html({ vocKeys: ['x2:m:other'] });
     assertTrue(h.includes('1 verschickt · 1 beantwortet (100 %)'));
     assertTrue(h.includes('3 offene Antworten, 1 in den VoC-Baum übernommen'));
     assertTrue(h.includes('Leistung'));

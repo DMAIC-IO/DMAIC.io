@@ -19,7 +19,7 @@ import { buildSurveyHtml, surveyFileName, runnerStrings, sanitizeFileNamePart } 
 import { parseResponse } from './survey-import.js';
 import {
   filterResponses, questionStats, formatAnswer, worksheetColumns,
-  responseRate, ratingRanking, kanoOverview, freeTextSummary, groupComparison,
+  responseRate, ratingRanking, kanoOverview, freeTextSummary, groupComparison, otherKey,
 } from './survey-stats.js';
 import { reportStrings, buildReportHtml } from './survey-report.js';
 import {
@@ -643,22 +643,27 @@ export default createModule({
        */
       async renderPreview() {
         if (this._destroyed) return;
-        const survey = JSON.parse(JSON.stringify(this.model.survey));
-        if (!this.runnerStr || this.runnerLang !== survey.lang) {
-          this.runnerStr = await runnerStrings(module._context.i18n, survey.lang);
-          this.runnerLang = survey.lang;
+        try {
+          const survey = JSON.parse(JSON.stringify(this.model.survey));
+          if (!this.runnerStr || this.runnerLang !== survey.lang) {
+            this.runnerStr = await runnerStrings(module._context.i18n, survey.lang);
+            this.runnerLang = survey.lang;
+          }
+          if (this._destroyed) return;
+          const host = module._container.querySelector('[data-ref="preview"]');
+          if (!host) return;
+          const shadow = host.shadowRoot || host.attachShadow({ mode: 'open' });
+          const style = document.createElement('style');
+          style.textContent = PREVIEW_HOST_CSS + RUNNER_CSS;
+          const root = document.createElement('div');
+          shadow.replaceChildren(style, root);
+          runSurvey(survey, this.runnerStr, {
+            root, recipientId: null, storage: null, download: () => {}, confirm: () => true,
+          });
+        } catch (err) {
+          console.error('survey-builder: preview failed', err);
+          if (!this._destroyed) module._context.notify(_t('previewFailed'), 'error');
         }
-        if (this._destroyed) return;
-        const host = module._container.querySelector('[data-ref="preview"]');
-        if (!host) return;
-        const shadow = host.shadowRoot || host.attachShadow({ mode: 'open' });
-        const style = document.createElement('style');
-        style.textContent = PREVIEW_HOST_CSS + RUNNER_CSS;
-        const root = document.createElement('div');
-        shadow.replaceChildren(style, root);
-        runSurvey(survey, this.runnerStr, {
-          root, recipientId: null, storage: null, download: () => {}, confirm: () => true,
-        });
       },
 
       // ── Export ────────────────────────────────────────────────
@@ -675,10 +680,13 @@ export default createModule({
        * @returns {Promise<void>}
        */
       async exportGeneral() {
-        this.model.markExported();
         const survey = JSON.parse(JSON.stringify(this.model.survey));
         const strings = await runnerStrings(module._context.i18n, survey.lang);
+        // The file carries the version the export settles on, but the model is
+        // only marked once the file was built: a failure must not bump it.
+        survey.version = this.model.nextExportVersion();
         const html = buildSurveyHtml(survey, strings, { recipientId: null });
+        this.model.markExported();
         downloadBlob(new Blob([html], { type: 'text/html;charset=utf-8' }), surveyFileName(survey, strings, null));
       },
 
@@ -816,11 +824,14 @@ export default createModule({
       async exportForRecipient(id) {
         const r = this.model.recipients.find((x) => x.id === id);
         if (!r) return;
-        this.model.markExported();
-        this.model.markSent(id, new Date().toISOString());
         const survey = JSON.parse(JSON.stringify(this.model.survey));
         const strings = await runnerStrings(module._context.i18n, survey.lang);
+        // The file carries the version the export settles on, but the model is
+        // only marked once the file was built: a failure must change nothing.
+        survey.version = this.model.nextExportVersion();
         const html = buildSurveyHtml(survey, strings, { recipientId: id });
+        this.model.markExported();
+        this.model.markSent(id, new Date().toISOString());
         downloadBlob(new Blob([html], { type: 'text/html;charset=utf-8' }), surveyFileName(survey, strings, r));
       },
 
@@ -1126,7 +1137,17 @@ export default createModule({
       textAnswers(b) {
         return b.stats.answers
           .filter((a) => a.text.trim())
-          .map((a) => ({ key: `${a.responseId}:${b.question.id}`, text: a.text.trim(), name: this.recipientName(a.recipientId) || '' }));
+          .map((a) => ({ key: otherKey(a.responseId, b.question.id), text: a.text.trim(), name: this.recipientName(a.recipientId) || '' }));
+      },
+
+      /**
+       * @param {object} b choice block
+       * @returns {Array<{key: string, text: string, name: string}>} "Sonstige" texts, transferable like free texts
+       */
+      otherAnswers(b) {
+        return b.stats.otherTexts
+          .filter((o) => o.text.trim())
+          .map((o) => ({ key: otherKey(o.responseId, b.question.id, true), text: o.text.trim(), name: this.recipientName(o.recipientId) || '' }));
       },
 
       /**
@@ -1163,18 +1184,25 @@ export default createModule({
       },
 
       /**
-       * @returns {boolean} whether any not yet taken answer is ticked
+       * @returns {boolean} whether any answer is ticked
        */
-      hasVocSelection() { return this.vocSelected.some((k) => !this.isVocTaken(k)); },
+      hasVocSelection() { return this.vocSelected.length > 0; },
 
-      /** Every non-empty free-text answer of all responses (ignores the filter). */
+      /** Every non-empty free-text and "Sonstige" answer of all responses (ignores the filter). */
       _openTexts() {
         const map = new Map();
         for (const resp of this.model.responses) {
           for (const { question: q } of documentOrder(this.model.survey)) {
-            if (q.type !== 'text' || !isVisible(q, resp.answers, this.model.survey)) continue;
-            const text = typeof resp.answers[q.id] === 'string' ? resp.answers[q.id].trim() : '';
-            if (text) map.set(`${resp.id}:${q.id}`, { text, name: this.recipientName(resp.recipientId) || '' });
+            if (!isVisible(q, resp.answers, this.model.survey)) continue;
+            const a = resp.answers[q.id];
+            const name = this.recipientName(resp.recipientId) || '';
+            if (q.type === 'text') {
+              const text = typeof a === 'string' ? a.trim() : '';
+              if (text) map.set(otherKey(resp.id, q.id), { text, name });
+            } else if ((q.type === 'single' || q.type === 'multi') && a && typeof a === 'object') {
+              const text = typeof a.other === 'string' ? a.other.trim() : '';
+              if (text) map.set(otherKey(resp.id, q.id, true), { text, name });
+            }
           }
         }
         return map;
@@ -1183,13 +1211,13 @@ export default createModule({
       /**
        * Adds the ticked answers as VoCs to the project's VoC tree, creating
        * one in the cycle's tree phase when there is none. Answers already
-       * taken over are skipped, so nothing lands twice.
+       * taken over stay selectable (spec 8.2), so re-selecting one adds it again.
        */
       takeToVocTree() {
         const ctx = module._context;
         const sm = ctx.stateManager;
         const texts = this._openTexts();
-        const keys = this.vocSelected.filter((k) => texts.has(k) && !this.isVocTaken(k));
+        const keys = this.vocSelected.filter((k) => texts.has(k));
         if (keys.length === 0) return;
         const title = this.model.survey.title.trim() || _t('report.untitled');
         const vocs = vocsFromAnswers(keys.map((k) => texts.get(k)), _t('vocSource', { title }), this.model.survey.anonymous);

@@ -492,9 +492,16 @@
                   </table>
                   <div x-show="hasOtherTexts(b)">
                     <div class="survey-builder__subtitle" x-text="t('otherTitle')"></div>
-                    <ul class="survey-builder__texts">
-                      <template x-for="o in b.stats.otherTexts" :key="o.responseId">
-                        <li x-text="o.text"></li>
+                    <ul class="survey-builder__texts" data-ref="otherAnswers">
+                      <template x-for="a in otherAnswers(b)" :key="a.key">
+                        <li class="survey-builder__answer">
+                          <input type="checkbox" data-ref="vocCheck"
+                                 :checked="isVocSelected(a.key)" @change="toggleVoc(a.key)">
+                          <span class="icon icon--sm survey-builder__taken" data-icon="status.ok" data-ref="vocTaken"
+                                x-show="isVocTaken(a.key)" :title="t('vocTakenMark')"></span>
+                          <span data-ref="answerText" x-text="a.text"></span>
+                          <span class="survey-builder__hint" x-show="hasName(a)" x-text="a.name"></span>
+                        </li>
                       </template>
                     </ul>
                   </div>
@@ -575,7 +582,7 @@
                   <ul class="survey-builder__texts" data-ref="answers">
                     <template x-for="a in textAnswers(b)" :key="a.key">
                       <li class="survey-builder__answer">
-                        <input type="checkbox" data-ref="vocCheck" x-show="!isVocTaken(a.key)"
+                        <input type="checkbox" data-ref="vocCheck"
                                :checked="isVocSelected(a.key)" @change="toggleVoc(a.key)">
                         <span class="icon icon--sm survey-builder__taken" data-icon="status.ok" data-ref="vocTaken"
                               x-show="isVocTaken(a.key)" :title="t('vocTakenMark')"></span>

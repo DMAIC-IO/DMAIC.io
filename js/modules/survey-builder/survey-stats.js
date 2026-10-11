@@ -42,6 +42,18 @@ export function median(values) {
 }
 
 /**
+ * Stable key of a transferable free text: `<responseId>:<questionId>` for a
+ * `text` answer, with the suffix `:other` for a "Sonstige" text.
+ * @param {string} responseId
+ * @param {string} questionId
+ * @param {boolean} [other] whether the text is a "Sonstige" text
+ * @returns {string}
+ */
+export function otherKey(responseId, questionId, other = false) {
+  return other ? `${responseId}:${questionId}:other` : `${responseId}:${questionId}`;
+}
+
+/**
  * "Auswerten für: <question> = <option>" — keeps responses in which the
  * question was visible and whose answer contains the option.
  * @param {object} survey
@@ -219,10 +231,11 @@ export function freeTextSummary(survey, responses, responseKeys) {
   let takenCount = 0;
   for (const { question: q } of documentOrder(survey)) {
     const s = questionStats(survey, q, responses);
-    const entries = s?.type === 'text' ? s.answers : (s?.otherTexts || []);
+    const isText = s?.type === 'text';
+    const entries = isText ? s.answers : (s?.otherTexts || []);
     for (const e of entries) {
       total += 1;
-      if (taken.has(`${e.responseId}:${q.id}`)) takenCount += 1;
+      if (taken.has(otherKey(e.responseId, q.id, !isText))) takenCount += 1;
     }
   }
   return { total, taken: takenCount };
