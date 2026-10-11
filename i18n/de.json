@@ -615,6 +615,11 @@
     "sipocEmpty": "Das SIPOC ist noch leer.",
     "sipocMore": "+ {n} weitere",
     "sipocFilled": "{filled} von {total} Spalten gefüllt",
+    "kanoEmpty": "Keine Anforderungen im Kano-Modell.",
+    "kanoNoData": "Noch keine auswertbaren Antworten.",
+    "kanoCompleteness": "Vollständigkeit",
+    "kanoItems": "Anforderungen",
+    "kanoRespondents": "Befragte",
     "tileSettings": {
       "title": "Einstellungen: {title}",
       "open": "Kachel-Einstellungen",

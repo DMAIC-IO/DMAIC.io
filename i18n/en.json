@@ -615,6 +615,11 @@
     "sipocEmpty": "The SIPOC is still empty.",
     "sipocMore": "+ {n} more",
     "sipocFilled": "{filled} of {total} columns filled",
+    "kanoEmpty": "No requirements in the Kano model.",
+    "kanoNoData": "No classifiable answers yet.",
+    "kanoCompleteness": "Completeness",
+    "kanoItems": "Requirements",
+    "kanoRespondents": "Respondents",
     "tileSettings": {
       "title": "Settings: {title}",
       "open": "Tile settings",

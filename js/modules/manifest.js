@@ -228,6 +228,7 @@ export default [
     group: 'customer',
     allowedPhases: ['define'],
     load: () => import('./kano/kano.js'),
+    loadTile: () => import('./kano/kano.tile.js'),
     cycles: {
       dmaic: { phase: 'define', allowedPhases: ['define'] },
       dmadv: { phase: 'define', allowedPhases: ['define'] },
