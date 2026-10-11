@@ -19,7 +19,10 @@ export const MAX_LEVEL = 5;
 export class State {
   /** @type {string} the observed problem statement */
   problem = '';
-  /** @type {object[]} branching tree of Why nodes */
+  /**
+   * @type {object[]} branching tree of Why nodes
+   * @agentBulk tree
+   */
   nodes = [];
   /** @type {number} instance-scoped auto-increment node id counter */
   _idCounter = 0;

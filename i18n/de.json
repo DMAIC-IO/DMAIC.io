@@ -1521,7 +1521,7 @@
       },
       "fields": {
         "problem": { "help": "Der beobachtete Problemtext, von dem die Fragekette ausgeht." },
-        "nodes": { "help": "Der verzweigte Fragebaum. Jeder Knoten trägt id, level (1 bis 5), parentId, question, answer, children und collapsed; level 5 ist die Grundursache." }
+        "nodes": { "help": "Der verzweigte Fragebaum. Jeder Knoten trägt id, level (1 bis 5), parentId, question, answer, children und collapsed; level 5 ist die Grundursache. Massendaten: ohne options.fields = ['nodes'] kommt nur der Umfang (Knotenzahl und Tiefe)." }
       },
       "problem": "Problemstellung",
       "problemPlaceholder": "Was ist das beobachtete Problem?",

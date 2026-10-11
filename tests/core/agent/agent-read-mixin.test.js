@@ -14,11 +14,12 @@ function componentFor(moduleId, modelJson) {
   return { ...mixin, model: { toJSON: () => modelJson } };
 }
 
-// Keine der heute freigegebenen Registry-Einträge deklariert ein Massenfeld
-// (bulk: true) — um readAgentState()s Optionen (fields, rows) real zu prüfen,
-// statt sie nur zu behaupten, registrieren wir hier einen synthetischen
-// Eintrag mit Worksheet-Form (title/columns/rows), spiegelt die Form, die
-// agent-read.test.js für projectReadState selbst benutzt.
+// Seit Task 5 deklariert `five-why.nodes` ein Massenfeld (bulk: true, kind
+// 'tree') — aber um readAgentState()s TABELLEN-Optionen (fields, rows) real
+// zu prüfen, statt sie nur zu behaupten, registrieren wir hier zusätzlich
+// einen synthetischen Eintrag mit Worksheet-Form (title/columns/rows),
+// spiegelt die Form, die agent-read.test.js für projectReadState selbst
+// benutzt.
 const BULK_MODULE_ID = '__agent-read-mixin-test-bulk__';
 const BULK_SCHEMA = {
   title: { type: 'string', help: '', bulk: false },
@@ -32,11 +33,13 @@ suite('agent read mixin', () => {
 
   test('read() projects the model JSON through the registry schema', () => {
     // five-why ist nach Task 5 freigegeben; bis dahin liefert die Registry
-    // für das Modul bereits `fields`, auch ohne Freigabe.
+    // für das Modul bereits `fields`, auch ohne Freigabe. `nodes` ist seit
+    // Task 5 selbst ein Massenfeld (@agentBulk tree) — ohne
+    // options.fields kommt nur der Umfang, kein leeres Array mehr.
     const component = componentFor('five-why', { problem: 'P', nodes: [], _idCounter: 7 });
     const state = component.read();
     assertEqual(state.problem, 'P');
-    assertDeepEqual(state.nodes, []);
+    assertDeepEqual(state.nodes, { $bulk: true, kind: 'tree', nodeCount: 0, depth: 0 });
     assertEqual('_idCounter' in state, false);
   });
 
@@ -89,8 +92,10 @@ suite('agent read mixin', () => {
   });
 
   test('readAgentState never hands out a reference into the live state', () => {
+    // `nodes` ist seit Task 5 ein Massenfeld: ohne `fields` kommt nur der
+    // Umfang, kein Array. Die Vollform holt genau dieser Aufruf ab.
     const live = { problem: 'P', nodes: [{ id: 1 }] };
-    const state = readAgentState('five-why', live, {});
+    const state = readAgentState('five-why', live, { fields: ['nodes'] });
     state.nodes[0].id = 99;
     assertEqual(live.nodes[0].id, 1);
   });

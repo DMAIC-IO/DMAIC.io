@@ -1517,7 +1517,7 @@
       },
       "fields": {
         "problem": { "help": "The observed problem statement the question chain starts from." },
-        "nodes": { "help": "The branching question tree. Each node carries id, level (1 to 5), parentId, question, answer, children and collapsed; level 5 is the root cause." }
+        "nodes": { "help": "The branching question tree. Each node carries id, level (1 to 5), parentId, question, answer, children and collapsed; level 5 is the root cause. Bulk data: without options.fields = ['nodes'] only the extent (node count and depth) is returned." }
       },
       "problem": "Problem Statement",
       "problemPlaceholder": "What is the observed problem?",

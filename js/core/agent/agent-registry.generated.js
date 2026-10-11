@@ -1610,7 +1610,8 @@ export const AGENT_REGISTRY = {
       "nodes": {
         "type": "object[]",
         "help": "branching tree of Why nodes",
-        "bulk": false
+        "bulk": true,
+        "bulkKind": "tree"
       }
     }
   },
