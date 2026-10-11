@@ -24,7 +24,7 @@
  * Not to be confused with the `run-chart` type (median line + runs tests).
  */
 
-import ChartBase from '../chart-base.js';
+import ChartBase, { DEFAULT_MARGIN } from '../chart-base.js';
 import { h } from '../../dom.js';
 import { svgEl, svgText, resolveColor, formatNum, drawMarker, getChartColors } from '../chart-core.js';
 
@@ -329,5 +329,13 @@ export default class GageRunChartType extends ChartBase {
   /** @override — the panel band is drawn BAND_H above the plot. */
   _getTopGutter() {
     return BAND_H;
+  }
+
+  /**
+   * @override — strips stack with only the last one carrying an x title, so
+   * every strip keeps the full default bottom to stay aligned.
+   */
+  _getBottomTickGutter() {
+    return DEFAULT_MARGIN.bottom;
   }
 }

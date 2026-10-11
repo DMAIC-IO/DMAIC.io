@@ -5,6 +5,7 @@
 import { suite, test, assertEqual, assertTrue } from '../../test-utils.js';
 import ScatterChart from '../../../js/core/chart/types/scatter.js';
 import BarChart from '../../../js/core/chart/types/bar.js';
+import IndividualValuePlotChart from '../../../js/core/chart/types/individual-value-plot.js';
 import MultiVariChart from '../../../js/core/chart/types/multi-vari.js';
 import {
   DEFAULT_MARGIN, COMPACT_MARGIN, X_TICKS_BOTTOM, X_LABEL_ONLY_BOTTOM, Y_LABEL_GUTTER,
@@ -89,6 +90,19 @@ suite('ChartBase margins', () => {
       categories: cats, series: [{ name: 'S', values: [1, 2, 3] }], showXLabel: false,
     });
     assertEqual(margins(chart).bottom, DEFAULT_MARGIN.bottom);
+    chart.destroy(); host.remove();
+  });
+
+  test('individual-value plot keeps its hanging category labels inside the chart', () => {
+    const { host, chart } = mount(IndividualValuePlotChart, {
+      groups: [{ name: 'A', values: [1, 2, 3] }, { name: 'B', values: [2, 3, 4] }],
+      showTitle: false, showXLabel: false, showYLabel: false,
+    });
+    const tickSize = chart.config.tickSize;
+    const label = [...host.querySelectorAll('svg text')].find(t => t.textContent === 'A');
+    const pa = chart._getPlotArea();
+    // hanging baseline: the glyphs extend about one font height below `y`
+    assertTrue(Number(label.getAttribute('y')) + tickSize <= pa.totalH, 'label inside the svg');
     chart.destroy(); host.remove();
   });
 

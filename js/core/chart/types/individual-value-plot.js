@@ -22,7 +22,7 @@
  *   pointStrokeWidth: 1.2
  */
 
-import ChartBase, { X_TICKS_BOTTOM } from '../chart-base.js';
+import ChartBase, { DEFAULT_MARGIN } from '../chart-base.js';
 import { h } from '../../dom.js';
 import {
   svgEl, svgText, resolveColor, formatNum, getChartColors, drawMarker,
@@ -400,8 +400,11 @@ export default class IndividualValuePlotChart extends ChartBase {
     inner.appendChild(sec);
   }
 
-  /** @override — category labels are drawn below the plot regardless of showXTicks. */
+  /**
+   * @override — category labels hang at `pa.y + pa.h + tickSize + 14`, so the
+   * gutter must cover that offset plus the glyph height (capped at the default).
+   */
   _getBottomTickGutter() {
-    return X_TICKS_BOTTOM;
+    return Math.min(DEFAULT_MARGIN.bottom, 2 * (this.config.tickSize || 11) + 16);
   }
 }
