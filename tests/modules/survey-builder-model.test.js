@@ -220,3 +220,30 @@ suite('survey-model — serialisation', () => {
     assertEqual(s.question('b').when, null);
   });
 });
+
+suite('survey-model — nextExportVersion', () => {
+  test('stays at the current version until something was sent or answered', () => {
+    const { s, q1 } = built();
+    s.addItem(q1, 'options');
+    assertEqual(s.nextExportVersion(), 1);
+    assertEqual(s.markExported(), 1);
+    s.markSent(s.addRecipient(), 't');
+    assertEqual(s.nextExportVersion(), 1);
+  });
+
+  test('announces the bump after a structural edit once something was sent', () => {
+    const { s, q1 } = built();
+    s.markSent(s.addRecipient(), 't');
+    s.addItem(q1, 'options');
+    assertEqual(s.nextExportVersion(), 2);
+    assertEqual(s.markExported(), 2);
+    assertEqual(s.nextExportVersion(), 2);
+  });
+
+  test('an imported response counts like a send', () => {
+    const { s, q1 } = built();
+    s.addResponse({ id: 'r', surveyVersion: 1, recipientId: null, submittedAt: 'x', answers: {} });
+    s.addItem(q1, 'options');
+    assertEqual(s.nextExportVersion(), 2);
+  });
+});

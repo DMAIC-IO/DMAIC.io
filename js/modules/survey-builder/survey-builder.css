@@ -1,0 +1,167 @@
+/**
+ * D.Mike — Survey builder styles (survey-builder.css)
+ * Only additions to the shared classes (.dmike-split, .dmike-tabs, .dmike-table, …).
+ * The preview's look comes from RUNNER_CSS inside its shadow root.
+ */
+
+.survey-builder__body {
+  display: flex;
+  flex-direction: column;
+}
+
+.survey-builder__tab {
+  flex: 1;
+  min-height: 0;
+}
+
+.survey-builder__page {
+  padding: var(--spacing-m);
+  overflow: auto;
+}
+
+.survey-builder__label {
+  display: block;
+  margin: var(--spacing-sm) 0 var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.survey-builder__textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.survey-builder__check {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+}
+
+.survey-builder__hint {
+  margin: var(--spacing-xs) 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+/* ── Outline ──────────────────────────────────────────────────── */
+
+.survey-builder__section {
+  margin-bottom: var(--spacing-sm);
+  padding: var(--spacing-xs);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+}
+
+.survey-builder__section--selected {
+  border-color: var(--color-accent);
+}
+
+.survey-builder__section-head,
+.survey-builder__question,
+.survey-builder__item,
+.survey-builder__condition {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.survey-builder__section-title,
+.survey-builder__item-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.survey-builder__questions {
+  margin: var(--spacing-xs) 0;
+  padding: 0;
+  list-style: none;
+}
+
+.survey-builder__question {
+  padding: var(--spacing-2xs) var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+}
+
+.survey-builder__question:hover {
+  background: var(--color-bg-tertiary);
+}
+
+.survey-builder__question--selected {
+  background: var(--color-accent-light);
+}
+
+.survey-builder__question-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.survey-builder__badge {
+  flex: none;
+  padding: 0 var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-secondary);
+}
+
+.survey-builder__badge--condition {
+  color: var(--color-accent);
+}
+
+.survey-builder__required {
+  color: var(--color-error);
+}
+
+.survey-builder__add-question {
+  width: 100%;
+}
+
+/* ── Properties and conditions ────────────────────────────────── */
+
+.survey-builder__item {
+  margin-bottom: var(--spacing-xs);
+}
+
+.survey-builder__item-group {
+  width: 30%;
+}
+
+.survey-builder__condition {
+  align-items: flex-start;
+  margin-bottom: var(--spacing-sm);
+}
+
+.survey-builder__cond-options {
+  flex: 1;
+}
+
+/* ── Output column ────────────────────────────────────────────── */
+
+.survey-builder__warnings {
+  margin: var(--spacing-xs) 0 0;
+  padding-left: var(--spacing-l);
+}
+
+.survey-builder__export {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin: var(--spacing-sm) 0;
+}
+
+.survey-builder__version {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+.survey-builder__preview {
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  overflow: auto;
+}

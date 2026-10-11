@@ -341,11 +341,21 @@ export class State {
 
   // ─── Versioning ─────────────────────────────────────────────
 
+  /**
+   * The version the next export will carry: one higher only if the
+   * structure changed after the questionnaire left the house (something was
+   * sent or answered). Shown in the editor before exporting.
+   * @returns {number}
+   */
+  nextExportVersion() {
+    const leftTheHouse = this.responses.length > 0 || this.recipients.some((r) => r.sentAt);
+    return this.dirtyStructure && leftTheHouse ? this.survey.version + 1 : this.survey.version;
+  }
+
   /** Called on every export. @returns {number} the version written into the export */
   markExported() {
     if (this.dirtyStructure) {
-      if (this.responses.length || this.recipients.some((r) => r.sentAt)) this.survey.version += 1;
-      else if (this.survey.version < 1) this.survey.version = 1;
+      this.survey.version = this.nextExportVersion();
       this.dirtyStructure = false;
     }
     return this.survey.version;

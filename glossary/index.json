@@ -1011,6 +1011,11 @@
       "file": "terms/kano-fragebogen.json"
     },
     {
+      "id": "customer-survey",
+      "category": "methodology",
+      "file": "terms/customer-survey.json"
+    },
+    {
       "id": "multi-vari-diagramm",
       "category": "visualization",
       "file": "terms/multi-vari-diagramm.json"
