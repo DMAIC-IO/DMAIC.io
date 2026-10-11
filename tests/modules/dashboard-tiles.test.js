@@ -676,6 +676,26 @@ suite('dashboard tiles: process-capability', () => {
     host.remove();
   });
 
+  test('non-finite capability indices show an em dash, not "Infinity"', async () => {
+    const flat = { embeddedValues: [5, 5, 5, 5, 5, 5], params: { lsl: '4', usl: '6' } };
+    const { host } = await renderChartTile(capabilityTile, flat);
+    const values = [...host.querySelectorAll('.dashboard-spc__metric-value')].map(e => e.textContent);
+    for (const v of values) assertTrue(!/Infinity|NaN|–/.test(v), `no raw non-finite or en dash: ${v}`);
+    assertTrue(values.includes('—'), 'em dash for the infinite index');
+    assertTrue(!/Infinity/.test(host.textContent), 'no Infinity anywhere');
+    host.remove();
+  });
+
+  test('histogram passes the histogram module axis titles (hidden by default)', async () => {
+    const { host, cm } = await renderChartTile(capabilityTile, CAP_STATE);
+    const { cfg } = cm.made[0];
+    assertEqual(cfg.xLabel, 'modules.histogram.xLabel');
+    assertEqual(cfg.yLabel, 'modules.histogram.yLabel');
+    assertEqual(cfg.showXLabel, false);
+    assertEqual(cfg.showYLabel, false);
+    host.remove();
+  });
+
   test('showChart off: figures only, no chart', async () => {
     const { host, cm } = await renderChartTile(capabilityTile, CAP_STATE, { showChart: false });
     assertEqual(cm.made.length, 0);
@@ -755,6 +775,16 @@ const C_STABLE = { d: [3, 4, 2, 5, 3, 4, 3, 2, 4, 3] };
 const C_UNSTABLE = { d: [2, 2, 2, 2, 2, 2, 2, 2, 2, 30] };
 
 suite('dashboard tiles: attribute-control-chart', () => {
+  test('chart carries the module axis titles while the flags keep them hidden', async () => {
+    const { host, cm } = await renderAttr(C_STATE, C_STABLE);
+    const { cfg } = cm.made[0];
+    assertEqual(cfg.xLabel, 'modules.attribute-control-chart.xLabelSample');
+    assertEqual(cfg.yLabel, 'modules.attribute-control-chart.yLabel_c');
+    assertEqual(cfg.showXLabel, false);
+    assertEqual(cfg.showYLabel, false);
+    host.remove();
+  });
+
   test('refreshes on resize', () => {
     assertDeepEqual(attrSpcTile.refreshOn, ['state:saved', 'resize']);
   });

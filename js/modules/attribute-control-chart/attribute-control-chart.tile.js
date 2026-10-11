@@ -128,6 +128,8 @@ export default {
       ...win,
       usl: null, lsl: null,
       showZones: !variable,
+      xLabel: i18n.t('modules.attribute-control-chart.xLabelSample'),
+      yLabel: i18n.t(`modules.attribute-control-chart.yLabel_${model.chartTypeId}`),
       showTitle: false, showXLabel: false, showYLabel: false,
       showXTicks: false, showYTicks: false, showLegend: false,
     });

@@ -11,7 +11,7 @@ import { h } from '../../core/dom.js';
 import { getColumnValues } from '../../ui/column-picker.js';
 import { State } from './process-capability-model.js';
 import { analyzeState, formatHint, specRefLines } from './process-capability-analysis.js';
-import { fmt } from './process-capability-format.js';
+import { fmt as formatNumber } from './process-capability-format.js';
 
 /** host -> { chart, chartManager, token } of the latest render. */
 const charts = new WeakMap();
@@ -47,6 +47,11 @@ function stat(label, value) {
     h('span', { class: 'dashboard-spc__stat-label' }, label),
     h('span', { class: 'dashboard-spc__stat-value' }, value),
   );
+}
+
+/** Fixed decimals, '—' when missing or not finite (e.g. Cp with a within-sigma of 0). */
+function fmt(v, d) {
+  return Number.isFinite(v) ? formatNumber(v, d) : '—';
 }
 
 /** PPM as a whole number, '—' when not finite. */
@@ -85,7 +90,8 @@ export default {
     charts.set(host, { chart: null, chartManager, token });
 
     const t = (key, params) => i18n.t(`modules.process-capability.${key}`, params);
-    const a = analyzeState(State.fromJSON(state), (ref) => getColumnValues(stateManager, ref));
+    const a = analyzeState(State.fromJSON(state), (ref) => getColumnValues(stateManager, ref),
+      { defaultConfidence: stateManager?.get?.('settings.confidenceLevel') ?? 95 });
     const empty = (key) => h('p', { class: 'dashboard-area__empty' }, i18n.t(key));
     const hintText = formatHint(a.hint, t);
     const hint = hintText ? h('p', { class: 'dashboard-capability__hint' }, hintText) : null;
@@ -117,6 +123,8 @@ export default {
       barColor: 'var(--color-accent)',
       normalCurveColor: 'var(--color-info)',
       refLines: specRefLines(r),
+      xLabel: i18n.t('modules.histogram.xLabel'),
+      yLabel: i18n.t('modules.histogram.yLabel'),
       showTitle: false, showXLabel: false, showYLabel: false,
       showXTicks: false, showYTicks: false, showLegend: false,
     });
