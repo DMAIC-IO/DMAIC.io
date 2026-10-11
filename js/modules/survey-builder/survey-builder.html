@@ -203,7 +203,63 @@
       </div>
     </section>
 
-    <section class="survey-builder__tab survey-builder__page" data-ref="recipientsTab" x-show="isTab('recipients')"></section>
+    <section class="survey-builder__tab survey-builder__page" data-ref="recipientsTab" x-show="isTab('recipients')">
+      <div class="dmike-split__section-title" x-text="t('recipientsTitle')"></div>
+      <div class="survey-builder__toolbar">
+        <button class="btn btn--sm" type="button" data-ref="addRecipient" @click="addRecipient()">
+          <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span><span x-text="t('addRecipient')"></span>
+        </button>
+        <span class="survey-builder__counts" data-ref="recipientCounts" x-text="countsLine()"></span>
+      </div>
+      <div class="dmike-infobox dmike-infobox--info" data-ref="anonymousInfo"
+           x-show="model.survey.anonymous" x-text="t('anonymousInfo')"></div>
+      <p class="survey-builder__hint" x-show="!hasRecipients()" x-text="t('recipientsEmpty')"></p>
+      <div class="dmike-table-wrap" x-show="hasRecipients()">
+        <table class="dmike-table survey-builder__recipients" data-ref="recipients">
+          <thead>
+            <tr>
+              <th x-text="t('colName')"></th>
+              <th x-text="t('colOrganisation')"></th>
+              <th x-text="t('colGroup')"></th>
+              <th x-text="t('colEmail')"></th>
+              <th x-text="t('colNote')"></th>
+              <th x-text="t('colStatus')"></th>
+              <th x-text="t('colSent')"></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="r in model.recipients" :key="r.id">
+              <tr :data-recipient-id="r.id">
+                <td><input class="field" type="text" data-field="name" :value="r.name"
+                           @input="updateRecipientFromEvent(r.id, 'name', $event)"></td>
+                <td><input class="field" type="text" data-field="organisation" :value="r.organisation"
+                           @input="updateRecipientFromEvent(r.id, 'organisation', $event)"></td>
+                <td><input class="field" type="text" data-field="group" :value="r.group"
+                           @input="updateRecipientFromEvent(r.id, 'group', $event)"></td>
+                <td><input class="field" type="email" data-field="email" :value="r.email"
+                           @input="updateRecipientFromEvent(r.id, 'email', $event)"></td>
+                <td><input class="field" type="text" data-field="note" :value="r.note"
+                           @input="updateRecipientFromEvent(r.id, 'note', $event)"></td>
+                <td>
+                  <span data-ref="status" x-text="recipientStatusLabel(r.id)"></span>
+                  <span class="survey-builder__outdated" data-ref="outdated"
+                        x-show="isOutdated(r.id)" x-text="outdatedHint(r)"></span>
+                </td>
+                <td class="survey-builder__nowrap" data-ref="sent" x-text="sentLabel(r)"></td>
+                <td class="survey-builder__nowrap">
+                  <button class="btn btn--sm" type="button" data-action="exportRecipient" @click="exportForRecipient(r.id)">
+                    <span class="icon icon--sm" data-icon="action.download" aria-hidden="true"></span><span x-text="t('exportRecipient')"></span>
+                  </button>
+                  <button class="btn btn--icon-sm btn--danger" type="button" data-action="deleteRecipient" :title="t('delete')"
+                          @click="deleteRecipient(r.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
     <section class="survey-builder__tab survey-builder__page" data-ref="resultsTab" x-show="isTab('results')"></section>
   </div>

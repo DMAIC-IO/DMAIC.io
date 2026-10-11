@@ -165,3 +165,33 @@
   border-radius: var(--border-radius-sm);
   overflow: auto;
 }
+
+/* ── Recipients tab ───────────────────────────────────────────── */
+
+.survey-builder__toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.survey-builder__counts {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.survey-builder__recipients .field {
+  width: 100%;
+  min-width: 6rem;
+}
+
+.survey-builder__outdated {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--color-error);
+}
+
+.survey-builder__nowrap {
+  white-space: nowrap;
+}
