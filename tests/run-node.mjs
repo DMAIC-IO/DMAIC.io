@@ -81,6 +81,7 @@ const SKIP = new Set([
   'core/context-help.test.js',
   'core/create-dialog.test.js',
   'core/create-page.test.js',
+  'core/datagrid-formula-capability.test.js',
   'core/datagrid-header-xss.test.js',
   'core/datagrid-import-text.test.js',
   'core/datagrid-locked-columns.test.js',
