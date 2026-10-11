@@ -23,7 +23,7 @@
  * (`...chartModuleLifecycle(module, {…})`, `..._core`, `...renderMethods`) und
  * eine durchgereichte Datenfunktion (`data: activityFlowchartData`) führen über
  * `agent-resolve.mjs` zu den echten Mitgliedern. Stammt ein Mitglied aus einer
- * ANDEREN Datei, trägt sein Verstoßcode die Herkunft (`@<pfad>:<zeile>`) — die
+ * ANDEREN Datei, trägt sein Verstoßcode die Herkunft (`@<pfad>`, zeilenfrei) — die
  * Registry-Form bleibt davon unberührt.
  *
  * Auf der MODEL-Seite gilt dasselbe für die Vererbung: ein Model, das von
@@ -36,7 +36,8 @@
  * Was trotzdem unauflösbar bleibt, meldet der Generator als Verstoß statt zu
  * schweigen — auf der Aktionsseite `unresolved_spread:<ausdruck>` und
  * `unresolvable_data_literal`, auf der Modellseite `unresolvable_model_class`,
- * `unresolved_model_class:<name>` und `unresolved_base_class:<name>`. Die
+ * `unresolved_model_class:<name>`, `ambiguous_model_class:<name>`,
+ * `self_inheriting_class:<name>` und `unresolved_base_class:<name>`. Die
  * Liste wächst mit jeder neuen Blindstelle; verbindlich ist nicht ihre Länge,
  * sondern die Regel: JEDER Blindstellen-Code bleibt BERICHTEND — wie die
  * DOM-Umweg-Prüfung zählt er erst, wenn das Modul das Modul-Tag trägt (Spec §8: „Lücken blockieren nicht"). So kann
@@ -51,7 +52,7 @@
 import ts from 'typescript';
 import { readdirSync, existsSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
-import { createResolver, functionFromMember, isFunctionLike, findCreateModuleMember, memberName } from './agent-resolve.mjs';
+import { createResolver, functionFromMember, isFunctionMember, isFunctionLike, findCreateModuleMember, memberName } from './agent-resolve.mjs';
 
 const MODULES_DIR = 'js/modules';
 
@@ -190,6 +191,13 @@ function invalidBulkKinds(fields) {
  */
 const DOM_STATE_PROPS = new Set(['innerHTML', 'outerHTML']);
 
+/** Zuweisungsoperatoren, die einen DOM-Umweg bedeuten. `+=` zählt mit: es
+ *  schreibt genauso in den Zustand, nur additiv. */
+const ASSIGN_KINDS = new Set([
+  ts.SyntaxKind.EqualsToken,
+  ts.SyntaxKind.PlusEqualsToken,
+]);
+
 /**
  * Finde zustandsändernde DOM-Zugriffe. Berichtend, nicht beweisend — der
  * eigentliche Beweis ist die dynamische Paritätsprüfung (Spec §10.4).
@@ -199,22 +207,59 @@ const DOM_STATE_PROPS = new Set(['innerHTML', 'outerHTML']);
 export function collectDomDetours(sf) {
   const hits = [];
   const walk = (node) => {
-    if (ts.isBinaryExpression(node)
-        && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
-        && ts.isPropertyAccessExpression(node.left)) {
-      const prop = node.left.name.text;
-      const base = node.left.expression;
-      const line = sf.getLineAndCharacterOfPosition(node.left.getStart(sf)).line + 1;
-      if (DOM_STATE_PROPS.has(prop)) {
-        hits.push(`dom_detour:${prop}@${line}`);
-      } else if (ts.isPropertyAccessExpression(base) && base.name.text === 'dataset') {
-        hits.push(`dom_detour:dataset.${prop}@${line}`);
-      }
+    if (ts.isBinaryExpression(node) && ASSIGN_KINDS.has(node.operatorToken.kind)) {
+      const target = describeTarget(node.left, sf);
+      if (target) hits.push(target);
     }
     ts.forEachChild(node, walk);
   };
   walk(sf);
   return hits;
+}
+
+/**
+ * Das Ziel einer Zuweisung, wenn es ein DOM-Umweg ist.
+ *
+ * Zwei Zugriffsformen, nicht eine: `el.dataset.key = …` ist ein
+ * `PropertyAccessExpression`, `el.dataset['key'] = …` ein
+ * `ElementAccessExpression`. Nur die erste zu prüfen heißt, die zweite als
+ * Schlupfloch zu lassen — und ein Schlupfloch in einem Wächter ist
+ * schlimmer als kein Wächter, weil niemand ihn mehr prüft.
+ *
+ * @param {ts.Node} left  die linke Seite der Zuweisung
+ * @param {ts.SourceFile} sf
+ * @returns {string|null} der Verstoßcode, oder null
+ */
+function describeTarget(left, sf) {
+  const line = () => sf.getLineAndCharacterOfPosition(left.getStart(sf)).line + 1;
+
+  if (ts.isPropertyAccessExpression(left)) {
+    const prop = left.name.text;
+    if (DOM_STATE_PROPS.has(prop)) return `dom_detour:${prop}@${line()}`;
+    if (isDatasetAccess(left.expression)) return `dom_detour:dataset.${prop}@${line()}`;
+    return null;
+  }
+
+  if (ts.isElementAccessExpression(left)) {
+    const literal = left.argumentExpression;
+    if (!literal || !ts.isStringLiteralLike(literal)) return null;
+    const prop = literal.text;
+    if (DOM_STATE_PROPS.has(prop)) return `dom_detour:${prop}@${line()}`;
+    if (isDatasetAccess(left.expression)) return `dom_detour:dataset.${prop}@${line()}`;
+    return null;
+  }
+
+  return null;
+}
+
+/** @returns {boolean} ob der Ausdruck auf `…dataset` endet, egal in welcher Zugriffsform. */
+function isDatasetAccess(node) {
+  if (ts.isPropertyAccessExpression(node)) return node.name.text === 'dataset';
+  if (ts.isElementAccessExpression(node)) {
+    const literal = node.argumentExpression;
+    return Boolean(literal && ts.isStringLiteralLike(literal) && literal.text === 'dataset');
+  }
+  return false;
 }
 
 /**
@@ -367,16 +412,24 @@ function readViewmodel(sf, resolver, appDir) {
 }
 
 /**
- * Die Herkunftsangabe `@<pfad relativ zu app/dev>:<zeile>` für ein Mitglied
- * aus einer anderen Datei — und der leere String für ein Mitglied der
- * Moduldatei selbst.
- * @returns {string}
+ * Die Herkunft eines Mitglieds aus einer anderen Datei.
+ *
+ * ZEILENFREI, absichtlich: mit Zeilennummer benannte ein Verstoßcode die
+ * Zeile in der Mixin-Datei, und das Umsortieren eines Mixins änderte
+ * hunderte Codes, ohne dass sich inhaltlich etwas änderte. Der Pfad führt
+ * zur Datei, der Name im Code führt zum Mitglied — das genügt, und es ist
+ * die Voraussetzung für eine eingefrorene Befund-Baseline (analog
+ * `glyph-baseline.txt`).
+ *
+ * @param {{ sf: ts.SourceFile, member: ts.Node }} entry
+ * @param {ts.SourceFile} moduleSf
+ * @param {string} appDir
+ * @returns {string} `@<pfad>` oder leer
  */
 function originSuffix(entry, moduleSf, appDir) {
   if (entry.sf === moduleSf) return '';
   const file = relative(appDir, entry.sf.fileName).split(sep).join('/');
-  const line = entry.sf.getLineAndCharacterOfPosition(entry.member.getStart(entry.sf)).line + 1;
-  return `@${file}:${line}`;
+  return `@${file}`;
 }
 
 /**
@@ -423,6 +476,11 @@ function readModelFields(resolver, sf) {
     return { fields: {}, violations: [`unresolved_model_class:${name}`] };
   }
   const violations = [];
+  // Scope-blinde Namensauflösung, jetzt nachprüfbar: zwei Deklarationen
+  // desselben Namens in einer Datei sind kein Fehler des Generators, aber
+  // eine Unsicherheit über die Lesefläche — melden statt die Pre-Order-
+  // Reihenfolge zur Semantik zu erklären.
+  if (decl.node.ambiguous === true) violations.push(`ambiguous_model_class:${name}`);
   const fields = classFields(resolver, decl.node, decl.sf, violations, new Set(), 0);
   return { fields, violations };
 }
@@ -477,9 +535,18 @@ function classFields(resolver, node, sf, violations, path, depth) {
       } else if (!path.has(`${decl.sf.fileName}:${decl.node.pos}`)) {
         if (depth + 1 > MAX_EXTENDS_DEPTH) violations.push(`unresolved_base_class:${label}`);
         else Object.assign(fields, classFields(resolver, decl.node, decl.sf, violations, path, depth + 1));
+      } else {
+        // `class State extends State`: syntaktisch gültig, semantisch
+        // unmöglich, zur Laufzeit ein Wurf. Darüber zu schweigen war die
+        // einzige Blindstelle der Feldauflösung, die schweigt, während
+        // alle anderen melden — und ein Autorenfehler, der sich als
+        // fehlende Lesefläche tarnt.
+        //
+        // Anders als beim selbstspreizenden Mixin
+        // (`export const loopMix = { ...loopMix }`), das ein
+        // nachvollziehbares Versehen in einer Objektliteral-Kette ist.
+        violations.push(`self_inheriting_class:${label}`);
       }
-      // Eine Klasse auf dem eigenen Pfad ist aufgelöst, nicht unauflösbar —
-      // der Abstieg endet hier STILL, wie beim selbstspreizenden Mixin.
     }
   }
   for (const [name, field] of ownFields(node)) fields[name] = field;
@@ -589,15 +656,6 @@ function fieldFrom(tags, knownTypeTag) {
  */
 function compact(text) {
   return text.replace(/\s*\n\s*/g, ' ').trim();
-}
-
-/** @returns {boolean} ob das Mitglied eine Funktion ist (Methode oder Funktionswert). */
-function isFunctionMember(member) {
-  if (ts.isMethodDeclaration(member)) return true;
-  if (ts.isPropertyAssignment(member)) {
-    return ts.isFunctionExpression(member.initializer) || ts.isArrowFunction(member.initializer);
-  }
-  return false;
 }
 
 /** @returns {string|undefined} die Beschreibungszeile(n) eines JSDoc-Blocks. */

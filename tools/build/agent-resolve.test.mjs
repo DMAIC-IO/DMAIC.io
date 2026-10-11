@@ -189,3 +189,10 @@ test('createResolver: a chain just within the depth limit still resolves', () =>
   assert.deepEqual([...members.keys()], ['deep']);
   assert.deepEqual(unresolved, []);
 });
+
+test('findLocalDeclaration warnt bei zwei Deklarationen desselben Namens', () => {
+  const sf = sourceOf(`function outer() { class State {} }\nexport class State {}`);
+  const res = findLocalDeclaration('State', sf);
+  assert.ok(res, 'nichts gefunden');
+  assert.equal(res.ambiguous, true, 'keine Kollisionswarnung');
+});

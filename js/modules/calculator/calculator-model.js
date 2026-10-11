@@ -113,11 +113,11 @@ export class State {
   constructor() {
     /** @type {'sci'|'stats'|'sixsigma'} */
     this.mode = 'sci';
-    /** Raw display expression */
+    /** @type {string} raw display expression */
     this.expression = '';
     /** @type {number|null} last evaluated numeric result */
     this.lastResult = null;
-    /** Memory register */
+    /** @type {number} memory register */
     this.memory = 0;
     /** @type {'DEG'|'RAD'} */
     this.angleMode = 'DEG';
@@ -125,9 +125,9 @@ export class State {
     this.dataset = [];
     /** @type {number[]} Six Sigma process dataset */
     this.ssDataset = [];
-    /** Lower spec limit (raw input string) */
+    /** @type {string} lower spec limit (raw input string) */
     this.lsl = '';
-    /** Upper spec limit (raw input string) */
+    /** @type {string} upper spec limit (raw input string) */
     this.usl = '';
   }
 

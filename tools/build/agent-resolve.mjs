@@ -317,19 +317,34 @@ export function isFunctionLike(node) {
  * Spread-Auflösung ändert das nichts: eine Klasse ist weder ein Objektliteral
  * noch eine Funktion, beide Pfade dort verwerfen sie ohnehin.
  *
- * @returns {ts.FunctionDeclaration|ts.VariableDeclaration|ts.ClassDeclaration|null}
+ * Scope-blind: die Suche läuft in Pre-Order und nimmt den ersten Treffer.
+ * Das ist für die Modulauflösung richtig genug (eine Moduldatei deklariert
+ * ihre Model-Klasse auf oberster Ebene), aber es war nicht nachprüfbar — eine
+ * zweite Deklaration desselben Namens in einer Funktion hätte lautlos
+ * gewonnen, wenn sie zuerst im Baum steht. Darum die Zählung: der Aufrufer
+ * kann `ambiguous` melden, statt sich auf eine Reihenfolge zu verlassen.
+ *
+ * Bewusst KEINE Scope-Analyse: die braucht einen Symbol-Table und damit den
+ * TypeScript-Checker. Eine Warnung reicht, solange kein Fall auftritt.
+ *
+ * @returns {((ts.FunctionDeclaration|ts.VariableDeclaration|ts.ClassDeclaration) & { ambiguous?: boolean })|null}
  */
 export function findLocalDeclaration(name, sf) {
-  let found = null;
+  const matches = [];
   const walk = (node) => {
-    if (found) return;
-    if (ts.isFunctionDeclaration(node) && node.name?.text === name) { found = node; return; }
-    if (ts.isClassDeclaration(node) && node.name?.text === name) { found = node; return; }
-    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.name.text === name) { found = node; return; }
+    if (matches.length > 1) return;          // zwei genügen für die Warnung
+    if (ts.isFunctionDeclaration(node) && node.name?.text === name) { matches.push(node); return; }
+    if (ts.isClassDeclaration(node) && node.name?.text === name) { matches.push(node); return; }
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.name.text === name) { matches.push(node); return; }
     ts.forEachChild(node, walk);
   };
   walk(sf);
-  return found;
+  if (matches.length === 0) return null;
+  const first = matches[0];
+  if (matches.length > 1) {
+    try { first.ambiguous = true; } catch { /* gefrorener Knoten — dann ohne Warnung */ }
+  }
+  return first;
 }
 
 /**
@@ -385,6 +400,21 @@ export function functionFromMember(member) {
     if (ts.isFunctionExpression(init) || ts.isArrowFunction(init)) return init;
   }
   return null;
+}
+
+/**
+ * @param {ts.Node} member
+ * @returns {boolean} ob das Mitglied eine Funktion ist (Methode oder
+ *   Funktionswert).
+ *
+ * Dieselbe Klammergrenze wie `functionFromMember` — beide schälen über
+ * `unwrap` ab. Zuvor zog `isFunctionMember` sie enger: `doIt: (() => {})`
+ * war für den Filter Daten und für die Entnahme eine Funktion, und das
+ * Mitglied wurde stumm übersprungen. Zwei Prädikate über denselben
+ * Gegenstand gehören in dieselbe Datei.
+ */
+export function isFunctionMember(member) {
+  return functionFromMember(member) !== null;
 }
 
 /** Klammern abstreifen: `(…)` ist für die Auflösung kein eigener Schritt. */

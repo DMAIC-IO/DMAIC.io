@@ -379,7 +379,7 @@ test('collectAgentData: an unmarked mixin method is a violation that names its o
     { 'js/ui/mix.js': mixin },
   );
   const { modules } = collectAgentData(root);
-  assert.deepEqual(modules.foo.violations, ['unmarked_method:init@js/ui/mix.js:12']);
+  assert.deepEqual(modules.foo.violations, ['unmarked_method:init@js/ui/mix.js']);
 });
 
 test('collectAgentData: a spread of an imported object constant resolves its methods', () => {
@@ -859,7 +859,10 @@ test('readModelFields: a mixin factory as base class is reported, not resolved',
   assert.deepEqual(modules.foo.violations, ['unresolved_base_class:withSteps(Base)']);
 });
 
-test('readModelFields: a class that extends ITSELF terminates', () => {
+test('readModelFields: a class that extends ITSELF terminates AND is reported', () => {
+  // Der Abstieg endet weiterhin am Pfadschutz (keine Rekursion, die eigenen
+  // Felder bleiben) — aber nicht mehr still: `class State extends State` ist
+  // zur Laufzeit ein Wurf und damit ein Autorenfehler, kein Randfall.
   const model = `export class State extends State {
   /** @type {number} the own counter */
   count = 0;
@@ -869,7 +872,7 @@ test('readModelFields: a class that extends ITSELF terminates', () => {
   assert.deepEqual(modules.foo.fields, {
     count: { type: 'number', help: 'the own counter', bulk: false },
   });
-  assert.deepEqual(modules.foo.violations, []);
+  assert.deepEqual(modules.foo.violations, ['self_inheriting_class:State']);
 });
 
 test('readModelFields: an extends chain beyond the depth limit is reported as a blind spot', () => {
@@ -1422,4 +1425,71 @@ test('Domänen-Tor: die erklärten Wertemengen des Hypothesentests sind GENAU di
   for (const list of [CATEGORIES, TEST_TYPES, DIRECTIONS, TARGET_TYPES]) {
     assert.ok(Object.isFrozen(list));
   }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// Generator-Härtung: was der Generator bisher verschluckte
+// ═══════════════════════════════════════════════════════════════
+
+test('collectDomDetours erkennt += auf innerHTML', () => {
+  const hits = collectDomDetours(sourceOf(`function render(el) { el.innerHTML += '<b>x</b>'; }`));
+  assert.equal(hits.length, 1);
+  assert.match(hits[0], /^dom_detour:innerHTML@/);
+});
+
+test('collectDomDetours erkennt dataset mit Klammerzugriff', () => {
+  const hits = collectDomDetours(sourceOf(`function mark(el) { el.dataset['state'] = 'on'; }`));
+  assert.equal(hits.length, 1);
+  assert.match(hits[0], /^dom_detour:dataset\.state@/);
+});
+
+test('eine Hilfsklasse in der Model-Datei mischt ihre Felder nicht unter', () => {
+  // Punkt (b) der Härtung: sieht behoben aus. Der Test hält die Korrektur.
+  const root = fixture({
+    foo: {
+      'foo.js': `/**\n * Foo.\n * @agent\n */\nimport { State } from './foo-model.js';\ncreateModule({ id: 'foo', Model: State });`,
+      'foo-model.js': `export class Helper {\n  /** @type {string} nicht die Lesefläche */\n  secret = '';\n}\nexport class State {\n  /** @type {string} der Titel */\n  title = '';\n}`,
+    },
+  });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(Object.keys(modules.foo.fields), ['title']);
+});
+
+test('ein geklammerter Funktionswert gilt als Methode, nicht als Daten', () => {
+  const root = fixture({
+    foo: {
+      'foo.js': `/**\n * Foo.\n * @agent\n */\ncreateModule({ id: 'foo', data() { return {\n  /**\n   * Tut etwas.\n   * @agent\n   * @returns {void} nichts\n   */\n  doIt: (() => {}),\n}; } });`,
+    },
+  });
+  const { modules } = collectAgentData(root);
+  assert.ok(Object.prototype.hasOwnProperty.call(modules.foo.actions, 'doIt'),
+    'der geklammerte Funktionswert wurde stumm übersprungen');
+});
+
+test('ein Verstoßcode eines vererbten Mitglieds trägt keine Zeilennummer', () => {
+  const root = fixture({
+    foo: { 'foo.js': `/**\n * Foo.\n * @agent\n */\nimport { mix } from '../../ui/mix.js';\ncreateModule({ id: 'foo', data() { return { ...mix() }; } });` },
+  }, { 'js/ui/mix.js': `export function mix() { return { unmarkiert() {} }; }` });
+  const { modules } = collectAgentData(root);
+  const code = modules.foo.reported.find(c => c.startsWith('unmarked_method:unmarkiert'));
+  assert.equal(code, 'unmarked_method:unmarkiert@js/ui/mix.js');
+});
+
+test('class State extends State wird gemeldet, nicht still terminiert', () => {
+  const root = fixture({
+    foo: {
+      'foo.js': `/**\n * Foo.\n * @agent\n */\nimport { State } from './foo-model.js';\ncreateModule({ id: 'foo', Model: State });`,
+      'foo-model.js': `export class State extends State {\n  /** @type {string} der Titel */\n  title = '';\n}`,
+    },
+  });
+  const { modules } = collectAgentData(root);
+  assert.ok(modules.foo.violations.some(v => v.startsWith('self_inheriting_class:')),
+    `kein Befund: ${JSON.stringify(modules.foo.violations)}`);
+});
+
+test('calculator führt alle neun Modellfelder', () => {
+  const appDir = join(import.meta.dirname, '..', '..');
+  const { modules } = collectAgentData(appDir);
+  assert.deepEqual(Object.keys(modules.calculator.fields).sort(),
+    ['angleMode', 'dataset', 'expression', 'lastResult', 'lsl', 'memory', 'mode', 'ssDataset', 'usl']);
 });

@@ -8,9 +8,9 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:bandDragOver@js/core/flowchart/flowchart-view.js:255",
-      "unmarked_method:bandDragLeave@js/core/flowchart/flowchart-view.js:269",
-      "unmarked_method:bandClass@js/core/flowchart/flowchart-view.js:278",
+      "unmarked_method:bandDragOver@js/core/flowchart/flowchart-view.js",
+      "unmarked_method:bandDragLeave@js/core/flowchart/flowchart-view.js",
+      "unmarked_method:bandClass@js/core/flowchart/flowchart-view.js",
       "unmarked_method:init",
       "unmarked_method:isDecision",
       "unmarked_method:branchWord",
@@ -413,9 +413,19 @@ export const AGENT_REGISTRY = {
         "help": "",
         "bulk": false
       },
+      "expression": {
+        "type": "string",
+        "help": "raw display expression",
+        "bulk": false
+      },
       "lastResult": {
         "type": "number|null",
         "help": "last evaluated numeric result",
+        "bulk": false
+      },
+      "memory": {
+        "type": "number",
+        "help": "memory register",
         "bulk": false
       },
       "angleMode": {
@@ -431,6 +441,16 @@ export const AGENT_REGISTRY = {
       "ssDataset": {
         "type": "number[]",
         "help": "Six Sigma process dataset",
+        "bulk": false
+      },
+      "lsl": {
+        "type": "string",
+        "help": "lower spec limit (raw input string)",
+        "bulk": false
+      },
+      "usl": {
+        "type": "string",
+        "help": "upper spec limit (raw input string)",
         "bulk": false
       }
     }
@@ -958,9 +978,9 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:bandDragOver@js/core/flowchart/flowchart-view.js:255",
-      "unmarked_method:bandDragLeave@js/core/flowchart/flowchart-view.js:269",
-      "unmarked_method:bandClass@js/core/flowchart/flowchart-view.js:278",
+      "unmarked_method:bandDragOver@js/core/flowchart/flowchart-view.js",
+      "unmarked_method:bandDragLeave@js/core/flowchart/flowchart-view.js",
+      "unmarked_method:bandClass@js/core/flowchart/flowchart-view.js",
       "unmarked_method:init",
       "unmarked_method:stepsForLane",
       "unmarked_method:laneLabel",
@@ -3061,9 +3081,9 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:bandDragOver@js/core/flowchart/flowchart-view.js:255",
-      "unmarked_method:bandDragLeave@js/core/flowchart/flowchart-view.js:269",
-      "unmarked_method:bandClass@js/core/flowchart/flowchart-view.js:278",
+      "unmarked_method:bandDragOver@js/core/flowchart/flowchart-view.js",
+      "unmarked_method:bandDragLeave@js/core/flowchart/flowchart-view.js",
+      "unmarked_method:bandClass@js/core/flowchart/flowchart-view.js",
       "unmarked_method:appendStep",
       "unmarked_method:init",
       "unmarked_method:sides",
@@ -3468,9 +3488,9 @@ export const AGENT_REGISTRY = {
     "violations": [],
     "reported": [
       "unmarked_method:stepDragEnd",
-      "unmarked_method:bandDragOver@js/core/flowchart/flowchart-view.js:255",
-      "unmarked_method:bandDragLeave@js/core/flowchart/flowchart-view.js:269",
-      "unmarked_method:bandClass@js/core/flowchart/flowchart-view.js:278",
+      "unmarked_method:bandDragOver@js/core/flowchart/flowchart-view.js",
+      "unmarked_method:bandDragLeave@js/core/flowchart/flowchart-view.js",
+      "unmarked_method:bandClass@js/core/flowchart/flowchart-view.js",
       "unmarked_method:toggleSubsteps",
       "unmarked_method:addSubstep",
       "unmarked_method:removeSubstep",
