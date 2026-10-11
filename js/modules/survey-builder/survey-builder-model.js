@@ -41,6 +41,18 @@ function itemsKey(q) {
 }
 
 /**
+ * Whether a recipient counts as "sent". Answering proves receipt, so an
+ * answerer counts as sent even without `sentAt`. Shared with the summary's
+ * response rate.
+ * @param {{sentAt: string|null}} recipient
+ * @param {boolean} answered whether the recipient has answered
+ * @returns {boolean}
+ */
+export function isRecipientSent(recipient, answered) {
+  return Boolean(recipient.sentAt) || Boolean(answered);
+}
+
+/**
  * Complete persisted state of one survey-builder instance.
  * Mutating methods keep conditions valid and flag structural changes.
  */
@@ -55,6 +67,8 @@ export class State {
   transfers = { kano: {}, vocTree: { responseKeys: [] } };
   ui = { tab: 'draft', selectedQuestionId: null, filter: null, groupBy: null, reportWithNames: false };
   dirtyStructure = false;
+  /** True once any export was written, so later structure edits bump the version. */
+  exportedOnce = false;
 
   // ─── Lookup ─────────────────────────────────────────────────
 
@@ -348,7 +362,7 @@ export class State {
    * @returns {number}
    */
   nextExportVersion() {
-    const leftTheHouse = this.responses.length > 0 || this.recipients.some((r) => r.sentAt);
+    const leftTheHouse = this.exportedOnce || this.responses.length > 0 || this.recipients.some((r) => r.sentAt);
     return this.dirtyStructure && leftTheHouse ? this.survey.version + 1 : this.survey.version;
   }
 
@@ -358,6 +372,7 @@ export class State {
       this.survey.version = this.nextExportVersion();
       this.dirtyStructure = false;
     }
+    this.exportedOnce = true;
     return this.survey.version;
   }
 
@@ -439,7 +454,7 @@ export class State {
 
   /** @returns {{sent: number, answered: number, rate: number|null}} */
   recipientCounts() {
-    const sent = this.recipients.filter((r) => r.sentAt).length;
+    const sent = this.recipients.filter((r) => isRecipientSent(r, this.answeredRecipientIds.includes(r.id))).length;
     const answered = this.recipients.filter((r) => this.answeredRecipientIds.includes(r.id)).length;
     return { sent, answered, rate: sent ? answered / sent : null };
   }
@@ -518,6 +533,7 @@ export class State {
       transfers: this.transfers,
       ui: this.ui,
       dirtyStructure: this.dirtyStructure,
+      exportedOnce: this.exportedOnce,
     }));
   }
 
@@ -584,6 +600,7 @@ export class State {
       reportWithNames: Boolean(ui.reportWithNames),
     };
     s.dirtyStructure = Boolean(d.dirtyStructure);
+    s.exportedOnce = Boolean(d.exportedOnce);
     return s;
   }
 

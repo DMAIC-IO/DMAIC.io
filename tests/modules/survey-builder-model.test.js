@@ -191,6 +191,15 @@ suite('survey-model — recipients and responses', () => {
     s.addResponse({ id: 'x', surveyVersion: 1, recipientId: a, submittedAt: 'y', answers: {} });
     assertDeepEqual(s.recipientCounts(), { sent: 2, answered: 1, rate: 0.5 });
   });
+
+  test('recipientCounts counts an answering recipient without sentAt as sent', () => {
+    const s = new State();
+    const a = s.addRecipient();
+    const b = s.addRecipient();
+    s.markSent(b, 't');
+    s.addResponse({ id: 'x', surveyVersion: 1, recipientId: a, submittedAt: 'y', answers: {} });
+    assertDeepEqual(s.recipientCounts(), { sent: 2, answered: 1, rate: 0.5 });
+  });
 });
 
 suite('survey-model — serialisation', () => {
@@ -222,6 +231,22 @@ suite('survey-model — serialisation', () => {
 });
 
 suite('survey-model — nextExportVersion', () => {
+  test('a general export counts as having left the house', () => {
+    const { s, q1 } = built();
+    assertEqual(s.markExported(), 1);
+    s.addItem(q1, 'options');
+    assertEqual(s.nextExportVersion(), 2);
+    assertEqual(s.markExported(), 2);
+    assertEqual(s.markExported(), 2);
+  });
+
+  test('the exported flag survives serialisation; old state defaults to false', () => {
+    const { s } = built();
+    s.markExported();
+    assertEqual(State.fromJSON(s.toJSON()).exportedOnce, true);
+    assertEqual(State.fromJSON({}).exportedOnce, false);
+  });
+
   test('stays at the current version until something was sent or answered', () => {
     const { s, q1 } = built();
     s.addItem(q1, 'options');

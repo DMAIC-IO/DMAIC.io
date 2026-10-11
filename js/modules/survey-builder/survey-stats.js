@@ -11,6 +11,7 @@
  */
 
 import { documentOrder, findQuestion, isVisible, answerHasOption } from './survey-conditions.js';
+import { isRecipientSent } from './survey-builder-model.js';
 import { evaluate, classify } from '../../engines/kano-engine.js';
 import { ROLE } from '../../core/datagrid/datagrid-roles.js';
 
@@ -144,8 +145,7 @@ export function responseRate({ recipients, responses, answeredRecipientIds }) {
   let answered = 0;
   for (const r of recipients) {
     const isAnswered = answeredSet.has(r.id);
-    // Answering proves receipt, so an answerer counts as sent even without sentAt.
-    const isSent = Boolean(r.sentAt) || isAnswered;
+    const isSent = isRecipientSent(r, isAnswered);
     if (!isSent) continue;
     const key = (r.group || '').trim();
     const g = groups.get(key) || { group: key, sent: 0, answered: 0, rate: null };
