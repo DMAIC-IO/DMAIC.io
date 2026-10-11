@@ -1887,6 +1887,30 @@ body.dev-area-open .dmaic-tiles {
   color: var(--color-text-tertiary);
 }
 
+/* Attribute control chart tile */
+.dashboard-attr-spc {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  height: 100%;
+  min-height: 0;
+}
+
+.dashboard-attr-spc__badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 0 var(--spacing-xs);
+  border-radius: 4px;
+  border: 1px solid currentColor;
+}
+
+.dashboard-attr-spc__badge--ok { color: var(--color-success); }
+.dashboard-attr-spc__badge--bad { color: var(--color-error); }
+
+.dashboard-attr-spc__stats {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 
 /* Org chart on dashboard */
 .dashboard-area__org {

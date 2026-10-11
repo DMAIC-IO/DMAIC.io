@@ -630,6 +630,7 @@ export default [
     group: 'charts',
     allowedPhases: ['control'],
     load: () => import('./attribute-control-chart/attribute-control-chart.js'),
+    loadTile: () => import('./attribute-control-chart/attribute-control-chart.tile.js'),
     cycles: {
       dmaic:  { phase: 'control',        allowedPhases: ['control'] },
       dmadv:  { phase: 'verify',         allowedPhases: ['verify']  },

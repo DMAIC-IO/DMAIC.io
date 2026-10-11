@@ -15,6 +15,7 @@ import { validateSchema, resolveSettings } from '../../js/pages/dashboard/tile-s
 import { HOST_TILES } from '../../js/pages/dashboard/tiles/index.js';
 import { I18n } from '../../js/core/i18n.js';
 import capabilityTile from '../../js/modules/process-capability/process-capability.tile.js';
+import attrSpcTile from '../../js/modules/attribute-control-chart/attribute-control-chart.tile.js';
 import zegTile from '../../js/pages/dashboard/tiles/zeg-timeline.tile.js';
 
 const i18n = { t: (k) => k };
@@ -54,7 +55,7 @@ suite('dashboard tiles: manifest', () => {
   test('modules with a tile declare loadTile', () => {
     const ids = withTile.map(e => e.id);
     for (const id of ['fmea', 'ishikawa', 'project-charter', 'voc-ctx-tree', 'raci-matrix', 'control-chart',
-      'todo', 'dmaic-calendar', 'stakeholder-analysis', 'lessons-learned', 'process-capability']) assertTrue(ids.includes(id), id);
+      'todo', 'dmaic-calendar', 'stakeholder-analysis', 'lessons-learned', 'process-capability', 'attribute-control-chart']) assertTrue(ids.includes(id), id);
   });
 
   test('every tile object loads, renders and has a valid size and schema', async () => {
@@ -110,6 +111,7 @@ suite('dashboard tiles: manifest', () => {
 
   test('re-bindable tiles declare how to title another instance', () => {
     assertEqual(spcTile.titlePrefix, 'SPC');
+    assertEqual(attrSpcTile.titlePrefix, 'SPC');
     assertEqual(raciTile.titlePrefix, 'RACI');
     assertEqual(vocTile.titleKey, 'dashboard.vocTitle');
     assertDeepEqual(charterTiles.map(t => [t.kind, t.titleKey]), [
@@ -723,5 +725,144 @@ suite('dashboard tiles: process-capability', () => {
     const { host } = await renderChartTile(capabilityTile, CAP_STATE, {}, cm);
     assertTrue(host.querySelector('.dashboard-spc__metric') !== null);
     host.remove();
+  });
+});
+
+const ATTR_D = { instanceId: 'w', sheetId: 's', columnId: 'd' };
+const ATTR_N = { instanceId: 'w', sheetId: 's', columnId: 'n' };
+
+/** stateManager stand-in that serves worksheet columns to getColumnValues. */
+function columnStateManager(cols) {
+  return {
+    getModuleState: (id) => (id === 'w' ? {
+      sheets: [{ id: 's', name: 'S', state: { columns: Object.entries(cols).map(([cid, values]) => ({ id: cid, name: cid, values })) } }],
+    } : null),
+    get: () => null,
+  };
+}
+
+async function renderAttr(state, cols, overrides = {}, cm = recordingChartManager()) {
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  const settings = resolveSettings(validateSchema(attrSpcTile.settings), overrides);
+  await attrSpcTile.render(host, { tileId: 't', instanceId: 'i', state, settings, i18n, theme: 'light',
+    chartManager: cm, stateManager: columnStateManager(cols) });
+  return { host, cm };
+}
+
+const C_STATE = { chartTypeId: 'c', defectsRef: ATTR_D };
+const C_STABLE = { d: [3, 4, 2, 5, 3, 4, 3, 2, 4, 3] };
+const C_UNSTABLE = { d: [2, 2, 2, 2, 2, 2, 2, 2, 2, 30] };
+
+suite('dashboard tiles: attribute-control-chart', () => {
+  test('refreshes on resize', () => {
+    assertDeepEqual(attrSpcTile.refreshOn, ['state:saved', 'resize']);
+  });
+
+  test('empty without defects column, no-data with too few points or no size column', async () => {
+    let { host } = await renderAttr({ chartTypeId: 'c' }, {});
+    assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.attrSpcEmpty');
+    host.remove();
+    ({ host } = await renderAttr(C_STATE, { d: [3] }));
+    assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.attrSpcNoData');
+    host.remove();
+    ({ host } = await renderAttr({ chartTypeId: 'p', defectsRef: ATTR_D }, { d: [1, 2, 3] }));
+    assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.attrSpcNoData');
+    host.remove();
+  });
+
+  test('state undefined renders the empty state', async () => {
+    const { host } = await renderAttr(undefined, {});
+    assertTrue(host.querySelector('.dashboard-area__empty') !== null);
+    host.remove();
+  });
+
+  test('stable: ok badge, type badge, 0 violations of 10, CL/UCL/LCL', async () => {
+    const { host } = await renderAttr(C_STATE, C_STABLE);
+    assertEqual(host.querySelector('.dashboard-attr-spc__type').textContent, 'c');
+    const badge = host.querySelector('.dashboard-attr-spc__badge');
+    assertTrue(badge.classList.contains('dashboard-attr-spc__badge--ok'));
+    assertEqual(badge.textContent, 'dashboard.attrSpcStable');
+    assertEqual(host.querySelector('.dashboard-spc__metric-value').textContent, '0');
+    const labels = [...host.querySelectorAll('.dashboard-spc__stat-label')].map(e => e.textContent);
+    assertDeepEqual(labels, ['CL', 'UCL', 'LCL']);
+    host.remove();
+  });
+
+  test('unstable: bad badge, violation count, chart marks the point', async () => {
+    const { host, cm } = await renderAttr(C_STATE, C_UNSTABLE);
+    assertTrue(host.querySelector('.dashboard-attr-spc__badge').classList.contains('dashboard-attr-spc__badge--bad'));
+    assertEqual(host.querySelector('.dashboard-spc__metric-value').textContent, '1');
+    const cfg = cm.made[0].cfg;
+    assertEqual(cm.made[0].type, 'control-chart');
+    assertTrue(cfg.violationIndices.has(9));
+    assertEqual(cfg.showZones, true);
+    for (const k of ['showTitle', 'showXLabel', 'showYLabel', 'showXTicks', 'showYTicks', 'showLegend']) {
+      assertEqual(cfg[k], false, k);
+    }
+    host.remove();
+  });
+
+  test('variable limits: mean labelled UCL̄ / LCL̄, no zones', async () => {
+    const { host, cm } = await renderAttr({ chartTypeId: 'p', defectsRef: ATTR_D, sizeRef: ATTR_N },
+      { d: [2, 3, 1, 4, 3, 2], n: [50, 60, 40, 50, 70, 45] });
+    const labels = [...host.querySelectorAll('.dashboard-spc__stat-label')].map(e => e.textContent);
+    assertDeepEqual(labels, ['CL', 'UCL̄', 'LCL̄']);
+    assertEqual(cm.made[0].cfg.showZones, false);
+    host.remove();
+  });
+
+  test('lastN shows the last points with shifted indices; figures stay on all points', async () => {
+    const { host, cm } = await renderAttr(C_STATE, C_UNSTABLE, { lastN: 4 });
+    const cfg = cm.made[0].cfg;
+    assertEqual(cfg.values.length, 4);
+    assertTrue(cfg.violationIndices.has(3));
+    assertEqual(host.querySelector('.dashboard-spc__metric-sub').textContent, 'dashboard.spcOf');
+    host.remove();
+  });
+
+  test('lastN drops violations and a baseline outside the window', async () => {
+    const { cm } = await renderAttr({ ...C_STATE, baselineCount: 3 }, { d: [30, 2, 2, 2, 2, 2, 2, 2, 2, 2] }, { lastN: 5 });
+    const cfg = cm.made[0].cfg;
+    assertEqual(cfg.violationIndices.size, 0);
+    assertEqual(cfg.baselineEnd, null);
+  });
+
+  test('showChart off: figures only', async () => {
+    const { host, cm } = await renderAttr(C_STATE, C_STABLE, { showChart: false });
+    assertEqual(cm.made.length, 0);
+    assertTrue(host.querySelector('.dashboard-attr-spc__badge') !== null);
+    host.remove();
+  });
+
+  test('a second render and dispose destroy the previous chart', async () => {
+    const cm = recordingChartManager();
+    const { host } = await renderAttr(C_STATE, C_STABLE, {}, cm);
+    await attrSpcTile.render(host, { tileId: 't', instanceId: 'i', state: C_STATE,
+      settings: resolveSettings(validateSchema(attrSpcTile.settings), {}), i18n, theme: 'light',
+      chartManager: cm, stateManager: columnStateManager(C_STABLE) });
+    assertDeepEqual(cm.destroyed, [cm.made[0]]);
+    attrSpcTile.dispose(host, { tileId: 't' });
+    assertDeepEqual(cm.destroyed, [cm.made[0], cm.made[1]]);
+    host.remove();
+  });
+
+  test('a chart that resolves after a newer render is destroyed (stale token)', async () => {
+    const made = []; const destroyed = []; const pending = [];
+    const cm = {
+      create: (el, type, cfg) => new Promise(r => { const c = { cfg }; made.push(c); pending.push(() => r(c)); }),
+      destroy: (c) => destroyed.push(c),
+    };
+    const host = document.createElement('div');
+    const args = { tileId: 't', instanceId: 'i', state: C_STATE,
+      settings: resolveSettings(validateSchema(attrSpcTile.settings), {}), i18n, theme: 'light',
+      chartManager: cm, stateManager: columnStateManager(C_STABLE) };
+    const first = attrSpcTile.render(host, args);
+    const second = attrSpcTile.render(host, args);
+    await Promise.resolve(); await Promise.resolve();
+    pending[1](); await second;
+    pending[0](); await first;
+    assertTrue(destroyed.includes(made[0]), 'stale chart destroyed');
+    assertTrue(!destroyed.includes(made[1]), 'current chart kept');
   });
 });
