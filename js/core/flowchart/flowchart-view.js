@@ -42,6 +42,30 @@ function fitToContent(el) {
 }
 
 /**
+ * Eine Model-Methode rufen, die es geben MUSS.
+ *
+ * Die optionale Verkettung war hier keine Absicherung, sondern eine Lüge:
+ * fehlt dem Model die Methode, tat die Aktion nichts und meldete nichts —
+ * und ein Agent bekam `ok: true` für einen Nicht-Vorgang (Spec §6 verlangt
+ * eine Begründung bei Misserfolg). Ein fehlendes Model-Mitglied ist ein
+ * Programmierfehler in einem Flowchart-Modul, und der muss laut werden. Für
+ * die Oberfläche ändert sich nichts: alle vier Flowchart-Module haben die
+ * drei Methoden.
+ *
+ * @param {object|null|undefined} model
+ * @param {string} name
+ * @param {any[]} args
+ * @returns {any} was die Model-Methode zurückgibt
+ * @throws {Error} wenn das Model die Methode nicht führt
+ */
+function callModel(model, name, args) {
+  if (typeof model?.[name] !== 'function') {
+    throw new Error(`flowchart model has no method "${name}"`);
+  }
+  return model[name](...args);
+}
+
+/**
  * Fields every flowchart card has. They are ALWAYS auto-sized, on top of
  * whatever a module adds via `opts.autoSizeSelector`: a card body must show
  * its whole text, otherwise a long description is silently clipped and the
@@ -313,23 +337,26 @@ export function chainViewMixin(module, _t, opts = {}) {
      * @agent
      * @param {string} stepId  id of the step whose substeps are toggled
      * @returns {void}
+     * @throws {Error} wenn das Model die Methode `toggleSubsteps` nicht führt
      */
-    toggleSubsteps(stepId) { this.model?.toggleSubsteps?.(stepId); },
+    toggleSubsteps(stepId) { callModel(this.model, 'toggleSubsteps', [stepId]); },
     /**
      * Append an empty substep to a step, ready to be filled in.
      * @agent
      * @param {string} stepId  id of the step that gets the new substep
      * @returns {void}
+     * @throws {Error} wenn das Model die Methode `addSubstep` nicht führt
      */
-    addSubstep(stepId) { this.model?.addSubstep?.(stepId); },
+    addSubstep(stepId) { callModel(this.model, 'addSubstep', [stepId]); },
     /**
      * Remove one substep from its parent step.
      * @agent
      * @param {string} parentId   id of the step holding the substep
      * @param {string} substepId  id of the substep to remove
      * @returns {void}
+     * @throws {Error} wenn das Model die Methode `removeSubstep` nicht führt
      */
-    removeSubstep(parentId, substepId) { this.model?.removeSubstep?.(parentId, substepId); },
+    removeSubstep(parentId, substepId) { callModel(this.model, 'removeSubstep', [parentId, substepId]); },
 
     /** @noagent */
     armSubDrag(event) {

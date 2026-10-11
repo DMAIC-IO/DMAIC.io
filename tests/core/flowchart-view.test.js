@@ -1,4 +1,4 @@
-import { suite, test, assertEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertThrows } from '../test-utils.js';
 import { chainViewMixin } from '../../js/core/flowchart/flowchart-view.js';
 
 suite('chainViewMixin — shape', () => {
@@ -280,5 +280,25 @@ suite('chainViewMixin — substeps', () => {
     });
     c.toggleSubsteps('a'); c.addSubstep('a'); c.removeSubstep('a', 'b');
     assertEqual(calls.map((x) => x[0]).join(','), 'toggle,add,remove');
+  });
+
+  test('ein Model OHNE addSubstep wirft und nennt die Methode', () => {
+    const c = ctx({});
+    assertThrows(() => c.addSubstep('s1'), /addSubstep/);
+  });
+
+  test('ein Model OHNE removeSubstep wirft und nennt die Methode', () => {
+    const c = ctx({});
+    assertThrows(() => c.removeSubstep('s1', 'sub1'), /removeSubstep/);
+  });
+
+  test('ein Model OHNE toggleSubsteps wirft und nennt die Methode', () => {
+    const c = ctx({});
+    assertThrows(() => c.toggleSubsteps('s1'), /toggleSubsteps/);
+  });
+
+  test('ein fehlendes Model wirft ebenfalls, statt still nichts zu tun', () => {
+    const c = ctx(null);
+    assertThrows(() => c.addSubstep('s1'), /addSubstep/);
   });
 });

@@ -330,6 +330,24 @@ suite('agent runtime — the seven ops', () => {
     assertEqual(out.results[1].error, 'call_failed');
   });
 
+  test('eine werfende Modulmethode wird zu einem benannten Fehler, nicht zu ok: true', async () => {
+    // Welcher Code greift — `op_failed` aus `runInteract` oder `call_failed`
+    // aus `agent-ops.js` — hängt davon ab, wo gefangen wird. Dieser Fall
+    // prüft BEIDE und die Meldung, nicht nur den Code.
+    const { runtime } = makeRuntime({
+      viewmodel: { importCsv: () => { throw new Error('flowchart model has no method "addSubstep"'); } },
+    });
+    const out = await runtime.interact([
+      { id: 'a1', op: 'module.add', module: 'worksheet', phase: 'data' },
+      { id: 'a2', op: 'instance.call', instance: { $from: 'a1', path: 'instanceId' },
+                  method: 'importCsv', args: [] },
+    ]);
+    assertEqual(out.ok, false);
+    const entry = out.results[out.results.length - 1];
+    assertEqual(['op_failed', 'call_failed'].includes(entry.error), true, `unerwarteter Code: ${entry.error}`);
+    assertEqual(/addSubstep/.test(entry.message), true, `die Meldung nennt die Methode nicht: ${entry.message}`);
+  });
+
   test('a method missing from the LIVE viewmodel reports unknown_method with what is there', async () => {
     const { runtime } = makeRuntime({ viewmodel: { somethingElse: () => 1 } });
     const out = await runtime.interact([
