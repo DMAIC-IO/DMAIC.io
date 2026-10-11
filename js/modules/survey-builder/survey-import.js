@@ -10,7 +10,9 @@
 
 import { documentOrder } from './survey-conditions.js';
 
+/** Format marker written by the exported runner into every answer file. */
 export const RESPONSE_FORMAT = 'dmike-survey-response';
+/** Answer file format version understood by this importer. */
 export const RESPONSE_FORMAT_VERSION = 1;
 
 const isObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -31,7 +33,7 @@ function sanitizeAnswer(q, a, orphan) {
       orphan(a);
       return undefined;
     }
-    const other = isObject(a) ? cleanText(a.other) : null;
+    const other = isObject(a) && q.other ? cleanText(a.other) : null;
     return other ? { other } : undefined;
   }
   if (q.type === 'multi') {
@@ -43,7 +45,7 @@ function sanitizeAnswer(q, a, orphan) {
       if (!known.has(id)) orphan(id);
       else if (!ids.includes(id)) ids.push(id);
     }
-    const other = cleanText(a.other);
+    const other = q.other ? cleanText(a.other) : null;
     return ids.length || other ? { ids, other } : undefined;
   }
   if (q.type === 'rating' || q.type === 'kano') {

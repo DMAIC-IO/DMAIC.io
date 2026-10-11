@@ -106,4 +106,18 @@ suite('survey-import — older versions and sanitising', () => {
     const r = parseResponse(file({ answers: { q3: { r1: 'na', r2: 3 } } }), survey, []);
     assertDeepEqual(r.response.answers, { q3: { r2: 3 } });
   });
+
+  test('"other" text is dropped when the question has no other option', () => {
+    const survey = JSON.parse(JSON.stringify(SURVEY));
+    survey.sections[0].questions[0].other = false;
+    const r = parseResponse(file({
+      answers: { q1: { other: 'Partner' }, q2: { ids: ['m1'], other: 'Foo' } },
+    }), survey, []);
+    assertDeepEqual(r.response.answers, { q2: { ids: ['m1'], other: null } });
+  });
+
+  test('multi with only "other" text on a question without other is not stored', () => {
+    const r = parseResponse(file({ answers: { q2: { ids: [], other: 'Foo' } } }), SURVEY, []);
+    assertDeepEqual(r.response.answers, {});
+  });
 });
