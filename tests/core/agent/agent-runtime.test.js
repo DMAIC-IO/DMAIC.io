@@ -839,4 +839,30 @@ suite('agent runtime — ok heißt „liegt auf Platte" (Task 1)', () => {
     assertEqual(res.ok, false, JSON.stringify(res));
     assertEqual(flushesRef(), 1);
   });
+
+  // ── Fixrunde 1, Important-Befund ────────────────────────────────────
+  // `await stateManager.flushNow()` lag ungeschützt in `runInteract`, das
+  // unter `.catch(surfaceFailure)` hängt (Serialisierungskette). Lehnte
+  // `flushNow()` ab, gingen die bereits gebauten `results` eines
+  // erfolgreichen Schreibvorgangs verloren, und der Agent sah nur einen
+  // generischen `surface_failed` — und konnte einen bereits gelandeten
+  // Schreibvorgang für nicht passiert halten und wiederholen.
+  test('ein ablehnendes flushNow meldet flush_failed MIT den bereits gebauten results', async () => {
+    const { runtime } = makeFlushRuntime({
+      stateManager: { flushNow: async () => { throw new Error('IndexedDB-Quota überschritten'); } },
+    });
+
+    const res = await runtime.interact([{ op: 'module.add', module: 'worksheet' }]);
+
+    assertEqual(res.ok, false, JSON.stringify(res));
+    assertEqual(res.error, 'flush_failed');
+    assertEqual(res.contract, 1);
+    assertTrue(res.message.includes('IndexedDB-Quota überschritten'), res.message);
+    // Der Schreibvorgang IST gelandet (sonst gäbe es gar kein flushNow) —
+    // die results dürfen nicht verloren gehen, sonst hält der Agent ihn für
+    // nicht passiert und wiederholt ihn.
+    assertEqual(res.results?.length, 1);
+    assertEqual(res.results[0].ok, true);
+    assertEqual(res.results[0].result.module, 'worksheet');
+  });
 });

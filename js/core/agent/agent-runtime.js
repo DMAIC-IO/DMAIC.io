@@ -157,7 +157,31 @@ export function createAgentRuntime(deps) {
     // verliert ein Agent, der schreibt und danach neu lädt oder exportiert,
     // seinen bestätigten Schreibzugriff. Auch im Fehlerfall: Spec §4.3 gibt
     // Teilergebnisse zurück, und was passiert ist, muss auch auf Platte sein.
-    if (wrote) await stateManager.flushNow();
+    //
+    // Review-Befund (Important, Fixrunde 1): ein ungeschütztes `await
+    // flushNow()` hier liegt in der Serialisierungskette unter
+    // `.catch(surfaceFailure)` (siehe unten). Lehnt `flushNow()` ab (z. B.
+    // IndexedDB-Quota), gingen die bereits gebauten `results` verloren und
+    // der Agent sähe einen generischen `surface_failed` — und könnte
+    // bereits gelandete Schreibvorgänge für nicht passiert halten und
+    // wiederholen. Deshalb: eigener Fang-Punkt, eigener Fehlercode
+    // (`FLUSH_FAILED`), `results` bleiben erhalten. `ok` bleibt `false` —
+    // das Ruling aus Task 1 gilt weiter: ein fehlgeschlagener Flush IST ein
+    // Misserfolg des Stapels, nur kein unspezifischer.
+    if (wrote) {
+      try {
+        await stateManager.flushNow();
+      } catch (err) {
+        const detail = err?.message ?? String(err);
+        return {
+          ok: false,
+          contract: CONTRACT_VERSION,
+          error: ERRORS.FLUSH_FAILED,
+          message: i18n.t('agent.errors.flushFailed', { detail }),
+          results,
+        };
+      }
+    }
     return { ok: allOk, contract: CONTRACT_VERSION, results };
   }
 

@@ -53,6 +53,7 @@ export const ERRORS = Object.freeze({
   CALL_FAILED:            'call_failed',
   OP_FAILED:              'op_failed',
   SURFACE_FAILED:         'surface_failed',
+  FLUSH_FAILED:           'flush_failed',
 });
 
 /** Ein Katalogeintrag des Modulkatalogs (catalog.read, project.read). */
