@@ -170,6 +170,37 @@ suite('survey-stats — summary', () => {
     assertClose(rank[0].topShare, 0.4, 1e-9);
   });
 
+  test('response rate: an answerer never marked sent counts as sent, rate stays <= 1', () => {
+    const list = [
+      { id: 'p1', name: 'Anna', group: 'Kunde', sentAt: '2026-10-01', sentVersion: 1 },
+      { id: 'p2', name: 'Ben', group: 'Kunde', sentAt: null, sentVersion: null },
+      { id: 'p3', name: 'Cem', group: '', sentAt: null, sentVersion: null },
+    ];
+    const rate = responseRate({ recipients: list, responses: [], answeredRecipientIds: ['p1', 'p2'] });
+    assertEqual(rate.sent, 2);
+    assertEqual(rate.answered, 2);
+    assertEqual(rate.rate, 1);
+    assertDeepEqual(rate.groups, [{ group: 'Kunde', sent: 2, answered: 2, rate: 1 }]);
+    const lone = responseRate({ recipients: [list[1]], responses: [], answeredRecipientIds: ['p2'] });
+    assertEqual(lone.sent, 1);
+    assertTrue(lone.rate <= 1);
+  });
+
+  test('rating ranking: nulls last, document order on ties', () => {
+    const survey = {
+      ...SURVEY,
+      sections: [{
+        id: 'sec', title: '', hint: '', when: null, questions: [
+          q('qa', 'rating', { rows: [{ id: 'a1', text: 'A1' }, { id: 'a2', text: 'A2' }], noAnswer: true }),
+          q('r', 'rating', { rows: [{ id: 'r1', text: 'R1' }, { id: 'r2', text: 'R2' }], noAnswer: true }),
+          q('qb', 'rating', { rows: [{ id: 'b1', text: 'B1' }], noAnswer: true }),
+        ],
+      }],
+    };
+    const responses = [resp('x1', { r: { r1: 3, r2: 3 } })];
+    assertDeepEqual(ratingRanking(survey, responses).map((r) => r.rowId), ['r1', 'r2', 'a1', 'a2', 'b1']);
+  });
+
   test('kano overview lists every kano row', () => {
     const rows = kanoOverview(SURVEY, RESPONSES);
     assertEqual(rows.length, 1);

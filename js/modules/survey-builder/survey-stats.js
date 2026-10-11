@@ -142,9 +142,10 @@ export function responseRate({ recipients, responses, answeredRecipientIds }) {
   let sent = 0;
   let answered = 0;
   for (const r of recipients) {
-    const isSent = Boolean(r.sentAt);
     const isAnswered = answeredSet.has(r.id);
-    if (!isSent && !isAnswered) continue;
+    // Answering proves receipt, so an answerer counts as sent even without sentAt.
+    const isSent = Boolean(r.sentAt) || isAnswered;
+    if (!isSent) continue;
     const key = (r.group || '').trim();
     const g = groups.get(key) || { group: key, sent: 0, answered: 0, rate: null };
     if (isSent) { g.sent += 1; sent += 1; }
@@ -175,7 +176,12 @@ export function ratingRanking(survey, responses) {
       out.push({ questionId: q.id, questionText: q.text, rowId: row.id, text: row.text, n: row.n, mean: row.mean, topShare: row.topShare });
     }
   }
-  return out.sort((a, b) => (b.mean ?? -Infinity) - (a.mean ?? -Infinity));
+  return out.sort((a, b) => {
+    if (a.mean === null && b.mean === null) return 0;
+    if (a.mean === null) return 1;
+    if (b.mean === null) return -1;
+    return b.mean - a.mean;
+  });
 }
 
 /**
