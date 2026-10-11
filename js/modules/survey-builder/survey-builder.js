@@ -114,6 +114,8 @@ export default createModule({
       openResponseId: null,
       /** Free-text answers ticked for the VoC tree, keys `<responseId>:<questionId>`. */
       vocSelected: [],
+      /** Bumped whenever kano instances may have changed — the state manager is not reactive. */
+      kanoRev: 0,
 
       /** Alpine lifecycle hook. */
       init() {
@@ -126,6 +128,11 @@ export default createModule({
         const onTheme = () => this.scheduleCharts();
         eb.on('theme:changed', onTheme);
         this._unsubs.push(() => eb.off('theme:changed', onTheme));
+        const onInstances = () => { this.kanoRev++; };
+        for (const evt of ['module:added', 'module:removed']) {
+          eb.on(evt, onInstances);
+          this._unsubs.push(() => eb.off(evt, onInstances));
+        }
         if (this.isTab('results')) this.scheduleCharts();
       },
 
@@ -818,7 +825,11 @@ export default createModule({
         if (input) input.click();
       },
 
-      /** `@change` of the hidden file input; resets it so the same file can be picked again. */
+      /**
+       * `@change` of the hidden file input; resets it so the same file can be picked again.
+       * @param {Event} ev
+       * @returns {Promise<void>}
+       */
       async importFromEvent(ev) {
         const files = Array.from(ev.target.files || []);
         ev.target.value = '';
@@ -899,7 +910,11 @@ export default createModule({
         }));
       },
 
-      /** "anonym", the recipient's name, or "ohne Empfänger". */
+      /**
+       * "anonym", the recipient's name, or "ohne Empfänger".
+       * @param {object} r response
+       * @returns {string}
+       */
       _respondent(r) {
         if (this.model.survey.anonymous) return _t('respAnonymous');
         if (!r.recipientId) return _t('respWithoutRecipient');
@@ -920,6 +935,7 @@ export default createModule({
 
       /**
        * Answers of one response to the questions it saw, in document order.
+       * @param {string} id response id
        * @returns {Array<{key: string, question: string, answer: string}>}
        */
       responseDetails(id) {
@@ -1049,7 +1065,11 @@ export default createModule({
        */
       isChoice(b) { return b.stats.type === 'single' || b.stats.type === 'multi'; },
 
-      /** @returns {string} value of a chart host's `data-chart` */
+      /**
+       * @param {string} prefix
+       * @param {string} id
+       * @returns {string} value of a chart host's `data-chart`
+       */
       chartKey(prefix, id) { return `${prefix}:${id}`; },
 
       /**
@@ -1058,7 +1078,10 @@ export default createModule({
        */
       blockN(b) { return _t('report.nResponses', { n: b.stats.n }); },
 
-      /** @returns {boolean} whether the Kano question asks for importance */
+      /**
+       * @param {object} b block
+       * @returns {boolean} whether the Kano question asks for importance
+       */
       hasImportance(b) { return Boolean(b.question.importance); },
 
       /**
@@ -1079,12 +1102,18 @@ export default createModule({
        */
       hasOtherTexts(b) { return b.stats.otherTexts.length > 0; },
 
-      /** @returns {string} "0 · 1 · 2 · 0 · 0" (answers per scale point 1–5) */
+      /**
+       * @param {{dist: number[]}} row
+       * @returns {string} "0 · 1 · 2 · 0 · 0" (answers per scale point 1–5)
+       */
       distLabel(row) { return row.dist.join(' · '); },
 
       // Free texts → VoC tree (spec §8.2)
 
-      /** @returns {Array<{key: string, text: string, name: string}>} non-empty answers of a text block */
+      /**
+       * @param {object} b block
+       * @returns {Array<{key: string, text: string, name: string}>} non-empty answers of a text block
+       */
       textAnswers(b) {
         return b.stats.answers
           .filter((a) => a.text.trim())
@@ -1172,11 +1201,16 @@ export default createModule({
 
       /** @returns {Array<{value: string, label: string}>} kano instances of the project */
       kanoTargetOptions() {
+        void this.kanoRev; // reactive dependency, see kanoRev
         return listInstances(module._context.stateManager, 'kano')
           .map((inst, i) => ({ value: inst.instanceId, label: _t('kanoExisting', { n: i + 1 }) }));
       },
 
-      /** Linked kano instance of a question, '' (= new) when none or deleted since. */
+      /**
+       * Linked kano instance of a question, '' (= new) when none or deleted since.
+       * @param {string} questionId
+       * @returns {string} instance id or ''
+       */
       kanoTargetValue(questionId) {
         const id = this.model.transfers.kano[questionId];
         return id && this.kanoTargetOptions().some((o) => o.value === id) ? id : '';
@@ -1202,6 +1236,8 @@ export default createModule({
        * Hands a Kano question (all responses, ignoring the filter) to the
        * chosen kano instance, or to a new one next to this module. A repeat
        * hand-over replaces only what came from this question.
+       * @param {string} questionId
+       * @returns {void}
        */
       handOverToKano(questionId) {
         const ctx = module._context;
@@ -1226,6 +1262,7 @@ export default createModule({
           instanceId = provisionInstance(ctx, { moduleId: 'kano', phase: this._ownPhase(), state });
           if (!instanceId) return;
         }
+        this.kanoRev++;
         this.model.setKanoTarget(questionId, instanceId);
         ctx.notify(_t('kanoHandedOver'), 'success');
       },
@@ -1250,7 +1287,10 @@ export default createModule({
 
       // Charts
 
-      /** Everything the charts depend on — a change re-mounts them. */
+      /**
+       * Everything the charts depend on — a change re-mounts them.
+       * @returns {string}
+       */
       _resultsSignature() {
         return JSON.stringify([this.model.survey, this.model.responseIds(), this.model.ui.filter, this.model.ui.groupBy]);
       },
