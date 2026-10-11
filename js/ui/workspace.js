@@ -653,6 +653,16 @@ export class Workspace {
       if (saved) {
         try { instance.setState?.(saved); } catch { /* ignore restore errors */ }
       }
+
+      // Sichtbar ist nicht lebendig. `data-module-id` steht oben, VOR
+      // `instantiate()` — es wird für CSS und Diagnose gebraucht, bevor das
+      // Viewmodel existiert. Wer darauf wartet und sofort eine
+      // Viewmodel-Methode ruft, trifft ins Leere. Dieses Merkmal erscheint
+      // erst hier: Viewmodel gebaut, gespeicherter Zustand eingespielt.
+      //
+      // Im catch-Zweig bleibt es ABSICHTLICH aus: eine Fehlerkarte ist
+      // sichtbar, aber nicht lebendig.
+      moduleContainer.dataset.moduleReady = '1';
     } catch {
       // Error card already rendered by module registry
     }
