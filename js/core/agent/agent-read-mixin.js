@@ -66,9 +66,10 @@ export function agentReadMixin(module) {
      * Den vollständigen Lesezustand dieser Instanz liefern.
      *
      * Ohne Parameter bleiben Massendaten draußen und erscheinen als
-     * Umfangs-Deskriptor (`{ $bulk: true, rowCount, columns }`), damit ein
-     * Agent gezielt nachfragen kann statt 5000 Zeilen durch sein
-     * Kontextfenster zu schieben.
+     * Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table',
+     * rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree',
+     * nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt
+     * 5000 Zeilen durch sein Kontextfenster zu schieben.
      *
      * @agent
      * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`

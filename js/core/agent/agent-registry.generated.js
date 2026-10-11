@@ -1517,7 +1517,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor (`{ $bulk: true, rowCount, columns }`), damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
       },
       "setProblem": {
         "params": [
@@ -5050,7 +5050,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "AgentRead",
-        "help": "Den Lesezustand der Datensammlung liefern. Ohne Parameter kommen die Zeilen als Umfangs-Deskriptor (`{ $bulk: true, rowCount, columns }`); mit `{ fields: ['rows'] }` vollständig und mit `{ fields: ['rows'], rows: { from: 0, to: 50 } }` als Ausschnitt."
+        "help": "Den Lesezustand der Datensammlung liefern. Ohne Parameter kommen die Zeilen UND die Formeln je als Umfangs-Deskriptor (`{ $bulk: true, rowCount, columns }`); mit `{ fields: ['rows'] }` bzw. `{ fields: ['formulas'] }` vollständig und mit `{ fields: ['rows'], rows: { from: 0, to: 50 } }` als Ausschnitt."
       },
       "importCsv": {
         "params": [

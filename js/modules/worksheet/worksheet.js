@@ -856,10 +856,11 @@ const mod = createModule({
       /**
        * Den Lesezustand der Datensammlung liefern.
        *
-       * Ohne Parameter kommen die Zeilen als Umfangs-Deskriptor
-       * (`{ $bulk: true, rowCount, columns }`); mit
-       * `{ fields: ['rows'] }` vollständig und mit
-       * `{ fields: ['rows'], rows: { from: 0, to: 50 } }` als Ausschnitt.
+       * Ohne Parameter kommen die Zeilen UND die Formeln je als
+       * Umfangs-Deskriptor (`{ $bulk: true, rowCount, columns }`); mit
+       * `{ fields: ['rows'] }` bzw. `{ fields: ['formulas'] }` vollständig
+       * und mit `{ fields: ['rows'], rows: { from: 0, to: 50 } }` als
+       * Ausschnitt.
        *
        * @agent
        * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
