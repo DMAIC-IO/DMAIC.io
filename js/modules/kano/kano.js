@@ -17,7 +17,8 @@
 import { createModule } from '../../core/template-module.js';
 import { State } from './kano-model.js';
 import { listTrees, flatten, diff, applyDiff } from './kano-link.js';
-import { evaluate } from '../../engines/kano-engine.js';
+import { evaluate, Q_WARN } from '../../engines/kano-engine.js';
+import { kanoScatterConfig } from './kano-chart.js';
 import { ensureXLSX, downloadBlob } from '../../core/export-utils.js';
 import { exportSvgAsPNG, exportSvgAsFile } from '../../core/chart/modebar.js';
 import { provisionInstance } from '../../core/examples-registry.js';
@@ -407,9 +408,6 @@ export default createModule({
 
       // ── Auswertung ────────────────────────────────────────────
 
-      /** Schwelle, ab der ein Q-Anteil als Datenqualitätsproblem gilt. */
-      Q_WARN: 0.10,
-
       /**
        * Live-Auswertung. Bewusst ohne Cache: die Rechenlast ist trivial und ein
        * Cache müsste an Items, Befragten, Antworten und Optionen hängen.
@@ -439,7 +437,7 @@ export default createModule({
       },
 
       /** @returns {boolean} true, wenn der Q-Anteil insgesamt zu hoch ist */
-      qWarn() { return this.result().totals.qShare > this.Q_WARN; },
+      qWarn() { return this.result().totals.qShare > Q_WARN; },
 
       /** Warntext mit eingesetztem Anteil. */
       qWarnText() {
@@ -447,7 +445,7 @@ export default createModule({
       },
 
       /** @returns {boolean} true, wenn ein einzelnes Item zu viele Q-Antworten hat */
-      rowQWarn(row) { return row.n > 0 && row.counts.Q / row.n > this.Q_WARN; },
+      rowQWarn(row) { return row.n > 0 && row.counts.Q / row.n > Q_WARN; },
 
       /** Zeilenklasse der Ergebnistabelle. */
       resultRowClass(row) { return this.rowQWarn(row) ? 'kano__row--warn' : ''; },
@@ -536,20 +534,6 @@ export default createModule({
 
       // ── Chart ─────────────────────────────────────────────────
 
-      /**
-       * Blasendurchmesser aus der mittleren Wichtigkeit: 10 px (w̄ = 1) bis
-       * 26 px (w̄ = 9). Items ohne Wichtigkeitsangabe bekommen 10 px — nie 0,
-       * denn sizes[i] <= 0 rendert der Scatter-Typ unsichtbar.
-       * @param {object[]} rows
-       * @returns {number[]}
-       */
-      bubbleSizes(rows) {
-        return rows.map((r) => {
-          if (r.importanceMean === null) return 10;
-          return 10 + ((r.importanceMean - 1) / 8) * 16;
-        });
-      },
-
       /** Räumt alle gemounteten Chart-Instanzen ab. */
       destroyCharts() {
         for (const c of this._charts) {
@@ -568,44 +552,20 @@ export default createModule({
         const host = module._container.querySelector('[data-ref="chart"]');
         if (!host) return;
 
-        const rows = this.result().rows.filter((r) => r.cs !== null && r.ds !== null);
-        if (rows.length === 0) return;
-
-        // Eine Serie je Item (statt einer Serie mit vielen Punkten): der
-        // Scatter-Typ nimmt den Serien-Namen als Tooltip-Kopf (scatter.js:301),
-        // ein gemeinsames `labels`-Feld an der Serie wird dort nirgends
-        // gelesen. showLegend bleibt aus, sonst würde aus der Legende eine
-        // Itemliste — Achsenbereich (dataExtent) und Tooltip-Trefferauswahl
-        // (_findNearby) arbeiten unverändert über alle Serien hinweg.
-        const useImportance = this.model.options.importance;
-        const sizes = useImportance ? this.bubbleSizes(rows) : null;
-        const series = rows.map((r, i) => {
-          const s = {
-            name: r.label,
-            color: 'var(--color-chart-1)',
-            symbol: 'circle',
-            markerSize: 8,
-            strokeWidth: 1,
-            x: [Math.abs(r.ds)],
-            y: [r.cs],
-          };
-          if (useImportance) {
-            s.sizes = [sizes[i]];
-            s.sizeValues = [r.importanceMean];
-            s.sizeLabel = _t('colImportanceMean');
-          }
-          return s;
+        // Eine Serie je Item, Legende aus: siehe kano-chart.js. Achsenbereich
+        // und Tooltip-Trefferauswahl arbeiten unverändert über alle Serien.
+        const { series, refLines } = kanoScatterConfig(this.result().rows, {
+          importance: this.model.options.importance,
+          sizeLabel: _t('colImportanceMean'),
         });
+        if (series.length === 0) return;
 
         const chart = await module._context.chartManager.create(host, 'scatter', {
           xLabel: _t('chartX'),
           yLabel: _t('chartY'),
           showLegend: false,
           series,
-          refLines: [
-            { dir: 'h', value: 0.5, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)' },
-            { dir: 'v', value: 0.5, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)' },
-          ],
+          refLines,
         });
         // `_destroyed` mitprüfen, nicht nur die Generation: läuft destroy()
         // während `create()` noch im await hängt, ist `_charts` beim
