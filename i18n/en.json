@@ -605,6 +605,13 @@
     "lessonsEmpty": "No lessons recorded.",
     "lessonsOpenActions": "Open actions",
     "lessonsHighOpen": "High impact, actions open",
+    "capabilityEmpty": "No capability analysis configured (no column selected).",
+    "capabilityNoData": "No analysable data (at least two values and one specification limit needed).",
+    "capabilityPpm": "PPM total",
+    "attrSpcEmpty": "No attribute control chart configured (no defects column selected).",
+    "attrSpcNoData": "Too few valid points for a control chart.",
+    "attrSpcStable": "Stable",
+    "attrSpcUnstable": "Unstable",
     "tileSettings": {
       "title": "Settings: {title}",
       "open": "Tile settings",
@@ -620,7 +627,13 @@
       "horizon7": "7 days",
       "horizon14": "14 days",
       "horizon30": "30 days",
-      "showCritics": "Show critics"
+      "showCritics": "Show critics",
+      "ppmBasis": "PPM basis",
+      "ppmOverall": "Overall (long-term)",
+      "ppmWithin": "Within (short-term)",
+      "ppmObserved": "Observed",
+      "showChart": "Show chart",
+      "lastN": "Last N points (0 = all)"
     }
   },
   "lab": {

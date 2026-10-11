@@ -605,6 +605,13 @@
     "lessonsEmpty": "Keine Lessons erfasst.",
     "lessonsOpenActions": "Offene Maßnahmen",
     "lessonsHighOpen": "Hoher Impact, Maßnahmen offen",
+    "capabilityEmpty": "Keine Prozessfähigkeit konfiguriert (keine Spalte gewählt).",
+    "capabilityNoData": "Keine auswertbaren Daten (mindestens zwei Werte und eine Spezifikationsgrenze nötig).",
+    "capabilityPpm": "PPM gesamt",
+    "attrSpcEmpty": "Keine attributive Regelkarte konfiguriert (keine Fehlerspalte gewählt).",
+    "attrSpcNoData": "Zu wenige gültige Punkte für eine Regelkarte.",
+    "attrSpcStable": "Stabil",
+    "attrSpcUnstable": "Instabil",
     "tileSettings": {
       "title": "Einstellungen: {title}",
       "open": "Kachel-Einstellungen",
@@ -620,7 +627,13 @@
       "horizon7": "7 Tage",
       "horizon14": "14 Tage",
       "horizon30": "30 Tage",
-      "showCritics": "Kritiker anzeigen"
+      "showCritics": "Kritiker anzeigen",
+      "ppmBasis": "PPM-Basis",
+      "ppmOverall": "Gesamt (Langzeit)",
+      "ppmWithin": "Innerhalb (Kurzzeit)",
+      "ppmObserved": "Beobachtet",
+      "showChart": "Diagramm anzeigen",
+      "lastN": "Letzte N Punkte (0 = alle)"
     }
   },
   "lab": {

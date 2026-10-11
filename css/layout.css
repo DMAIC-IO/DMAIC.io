@@ -1860,6 +1860,33 @@ body.dev-area-open .dmaic-tiles {
   color: var(--color-text-tertiary);
 }
 
+.dashboard-spc__metric--warn {
+  border-color: var(--color-warning);
+}
+
+.dashboard-spc__metric--warn .dashboard-spc__metric-value { color: var(--color-warning); }
+
+/* Process capability tile */
+.dashboard-capability {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  height: 100%;
+  min-height: 0;
+}
+
+.dashboard-capability__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-xs);
+}
+
+.dashboard-capability__hint {
+  margin: 0;
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+}
+
 
 /* Org chart on dashboard */
 .dashboard-area__org {

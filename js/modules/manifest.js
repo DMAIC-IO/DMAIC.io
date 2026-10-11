@@ -363,6 +363,7 @@ export default [
     phase: 'measure',
     group: 'capability',
     load: () => import('./process-capability/process-capability.js'),
+    loadTile: () => import('./process-capability/process-capability.tile.js'),
     cycles: {
       dmaic:  { phase: 'measure' },
       dmadv:  { phase: 'measure', allowedPhases: ['measure', 'verify']   },

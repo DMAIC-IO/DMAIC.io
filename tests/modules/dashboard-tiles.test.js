@@ -14,6 +14,7 @@ import { todayISO, addDaysISO } from '../../js/core/local-date.js';
 import { validateSchema, resolveSettings } from '../../js/pages/dashboard/tile-settings.js';
 import { HOST_TILES } from '../../js/pages/dashboard/tiles/index.js';
 import { I18n } from '../../js/core/i18n.js';
+import capabilityTile from '../../js/modules/process-capability/process-capability.tile.js';
 import zegTile from '../../js/pages/dashboard/tiles/zeg-timeline.tile.js';
 
 const i18n = { t: (k) => k };
@@ -53,7 +54,7 @@ suite('dashboard tiles: manifest', () => {
   test('modules with a tile declare loadTile', () => {
     const ids = withTile.map(e => e.id);
     for (const id of ['fmea', 'ishikawa', 'project-charter', 'voc-ctx-tree', 'raci-matrix', 'control-chart',
-      'todo', 'dmaic-calendar', 'stakeholder-analysis', 'lessons-learned']) assertTrue(ids.includes(id), id);
+      'todo', 'dmaic-calendar', 'stakeholder-analysis', 'lessons-learned', 'process-capability']) assertTrue(ids.includes(id), id);
   });
 
   test('every tile object loads, renders and has a valid size and schema', async () => {
@@ -582,5 +583,145 @@ suite('dashboard tiles: lessons-learned', () => {
 
   test('empty state', () => {
     assertEqual(render(lessonsTile, null).querySelector('.dashboard-area__empty').textContent, 'dashboard.lessonsEmpty');
+  });
+});
+
+/** Fake tile-bound chart manager: records creates and destroys. */
+function recordingChartManager() {
+  const made = []; const destroyed = [];
+  return {
+    made, destroyed,
+    create: async (el, type, cfg) => { const c = { el, type, cfg }; made.push(c); return c; },
+    destroy: (c) => { destroyed.push(c); },
+  };
+}
+
+/** Render an async chart tile like the host, with optional setting overrides. */
+async function renderChartTile(tile, state, overrides = {}, cm = recordingChartManager()) {
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  const settings = resolveSettings(validateSchema(tile.settings), overrides);
+  await tile.render(host, { tileId: 't', instanceId: 'i', state, settings, i18n, theme: 'light', chartManager: cm, stateManager: null });
+  return { host, cm };
+}
+
+const CAP_VALUES = [9.8, 10.1, 10.0, 9.9, 10.2, 10.05, 9.95, 10.1, 9.85, 10.0];
+const CAP_STATE = { embeddedValues: CAP_VALUES, params: { lsl: '9.5', usl: '10.5', target: '10' } };
+
+suite('dashboard tiles: process-capability', () => {
+  test('declares the Cpk prefix and refreshes on resize', () => {
+    assertEqual(capabilityTile.titlePrefix, 'Cpk');
+    assertDeepEqual(capabilityTile.refreshOn, ['state:saved', 'resize']);
+  });
+
+  test('empty without data source, no-data without a spec limit', async () => {
+    let { host, cm } = await renderChartTile(capabilityTile, {});
+    assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.capabilityEmpty');
+    assertEqual(cm.made.length, 0);
+    host.remove();
+    ({ host, cm } = await renderChartTile(capabilityTile, { embeddedValues: CAP_VALUES }));
+    assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.capabilityNoData');
+    host.remove();
+  });
+
+  test('state undefined renders the empty state', async () => {
+    const { host } = await renderChartTile(capabilityTile, undefined);
+    assertTrue(host.querySelector('.dashboard-area__empty') !== null);
+    host.remove();
+  });
+
+  test('figures: Cpk traffic light, Ppk, Cp for two-sided limits, PPM and n', async () => {
+    const { host } = await renderChartTile(capabilityTile, CAP_STATE);
+    const labels = [...host.querySelectorAll('.dashboard-spc__metric-label')].map(e => e.textContent);
+    assertDeepEqual(labels, ['Cpk', 'Ppk']);
+    const cpk = host.querySelector('.dashboard-spc__metric');
+    assertTrue(/dashboard-spc__metric--(ok|warn|bad)/.test(cpk.className));
+    assertTrue(cpk.querySelector('.dashboard-spc__metric-sub').textContent.startsWith('Cp = '));
+    const stats = [...host.querySelectorAll('.dashboard-spc__stat-label')].map(e => e.textContent);
+    assertDeepEqual(stats, ['dashboard.capabilityPpm', 'n']);
+    assertEqual(host.querySelectorAll('.dashboard-spc__stat-value')[1].textContent, '10');
+    host.remove();
+  });
+
+  test('one-sided limit: no Cp line', async () => {
+    const { host } = await renderChartTile(capabilityTile, { embeddedValues: CAP_VALUES, params: { usl: '10.5' } });
+    assertEqual(host.querySelector('.dashboard-spc__metric .dashboard-spc__metric-sub'), null);
+    host.remove();
+  });
+
+  test('ppmBasis picks the PPM field', async () => {
+    const values = async (basis) => {
+      const { host } = await renderChartTile(capabilityTile, CAP_STATE, { ppmBasis: basis });
+      const v = host.querySelectorAll('.dashboard-spc__stat-value')[0].textContent;
+      host.remove();
+      return v;
+    };
+    assertEqual(await values('observed'), '0');
+    assertTrue((await values('overall')) !== '0', 'overall PPM is model-based, not 0');
+  });
+
+  test('histogram: compact flags, normal curve, spec ref lines', async () => {
+    const { host, cm } = await renderChartTile(capabilityTile, CAP_STATE);
+    assertEqual(cm.made.length, 1);
+    const { type, cfg } = cm.made[0];
+    assertEqual(type, 'histogram');
+    for (const k of ['showTitle', 'showXLabel', 'showYLabel', 'showXTicks', 'showYTicks', 'showLegend']) {
+      assertEqual(cfg[k], false, k);
+    }
+    assertEqual(cfg.showNormalCurve, true);
+    assertDeepEqual(cfg.refLines.map(l => l.label), ['LSL', 'USL', 'Target']);
+    assertEqual(cfg.data.length, CAP_VALUES.length);
+    host.remove();
+  });
+
+  test('showChart off: figures only, no chart', async () => {
+    const { host, cm } = await renderChartTile(capabilityTile, CAP_STATE, { showChart: false });
+    assertEqual(cm.made.length, 0);
+    assertEqual(host.querySelector('.dashboard-capability__plot'), null);
+    assertTrue(host.querySelector('.dashboard-spc__metric') !== null);
+    host.remove();
+  });
+
+  test('an analysis hint is shown under the figures', async () => {
+    const { host } = await renderChartTile(capabilityTile, { ...CAP_STATE, params: { ...CAP_STATE.params, withinMethod: 'pooled' } });
+    assertEqual(host.querySelector('.dashboard-capability__hint').textContent,
+      'modules.process-capability.methodFallbackHint');
+    host.remove();
+  });
+
+  test('a second render and dispose destroy the previous chart', async () => {
+    const cm = recordingChartManager();
+    const { host } = await renderChartTile(capabilityTile, CAP_STATE, {}, cm);
+    await capabilityTile.render(host, { tileId: 't', instanceId: 'i', state: CAP_STATE,
+      settings: resolveSettings(validateSchema(capabilityTile.settings), {}), i18n, theme: 'light', chartManager: cm, stateManager: null });
+    assertDeepEqual(cm.destroyed, [cm.made[0]]);
+    capabilityTile.dispose(host, { tileId: 't' });
+    assertDeepEqual(cm.destroyed, [cm.made[0], cm.made[1]]);
+    host.remove();
+  });
+
+  test('a chart that resolves after a newer render is destroyed (stale token)', async () => {
+    const made = []; const destroyed = []; const pending = [];
+    const cm = {
+      create: (el, type, cfg) => new Promise(r => { const c = { cfg }; made.push(c); pending.push(() => r(c)); }),
+      destroy: (c) => destroyed.push(c),
+    };
+    const host = document.createElement('div');
+    const args = { tileId: 't', instanceId: 'i', state: CAP_STATE,
+      settings: resolveSettings(validateSchema(capabilityTile.settings), {}), i18n, theme: 'light', chartManager: cm, stateManager: null };
+    const first = capabilityTile.render(host, args);
+    const second = capabilityTile.render(host, args);
+    await Promise.resolve(); await Promise.resolve();
+    pending[1](); await second;
+    pending[0](); await first;
+    assertTrue(destroyed.includes(made[0]), 'stale chart destroyed');
+    assertTrue(!destroyed.includes(made[1]), 'current chart kept');
+  });
+
+  test('a failed chart create (null) keeps the figures', async () => {
+    const cm = { create: async () => null, destroy: () => {} };
+    const { host } = await renderChartTile(capabilityTile, CAP_STATE, {}, cm);
+    assertTrue(host.querySelector('.dashboard-spc__metric') !== null);
+    host.remove();
   });
 });
