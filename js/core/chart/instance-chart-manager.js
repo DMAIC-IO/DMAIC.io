@@ -1,19 +1,25 @@
 /**
- * D.Mike — Instance-bound chart manager.
+ * D.Mike — Edit-bound chart manager.
  *
- * Wraps the shared ChartManager for one module instance. Title and axis-title
- * edits made in the chart editor are stored per instance and chart key
- * (stateManager.chartEdits) and laid over the module's config whenever the
- * module creates or updates the chart, so they survive re-plots and reloads.
+ * Wraps the shared ChartManager so chart-editor edits of a configured set of
+ * config keys are stored through a binding and laid over the caller's config
+ * whenever it creates or updates the chart, so they survive re-plots and
+ * reloads. Two bindings exist: per module instance (labels only, see
+ * createInstanceChartManager; stateManager.chartEdits) and per dashboard tile
+ * (labels, ticks, legend; see ChartManager#forTile).
  * Every other method and property is inherited from the shared manager.
  */
 
-/** Config keys whose chart-editor edits are persisted. */
+/** Config keys whose chart-editor edits are persisted for module charts. */
 export const LABEL_EDIT_KEYS = ['title', 'showTitle', 'xLabel', 'yLabel', 'showXLabel', 'showYLabel'];
 
-function pickLabels(config) {
+/** Extra keys persisted for dashboard tile charts (see ChartManager.forTile). */
+export const TILE_EDIT_KEYS = ['showXTicks', 'showYTicks', 'showLegend'];
+
+/** The entries of `obj` whose key is listed. */
+function pick(obj, keys) {
   const out = {};
-  for (const k of LABEL_EDIT_KEYS) if (config && k in config) out[k] = config[k];
+  for (const k of keys) if (obj && k in obj) out[k] = obj[k];
   return out;
 }
 
@@ -23,28 +29,27 @@ function isAttached(node) {
 }
 
 /**
+ * Wrap the shared manager so chart-editor edits of the listed config keys are
+ * stored through `write` and laid over the caller's config on create/update.
  * @param {import('./chart-manager.js').default} manager - shared manager
- * @param {{ getChartEdits: Function, setChartEdit: Function }} stateManager
- * @param {string} instanceId
- * @param {Node} [moduleRoot] - the instance's container. Charts count as live
- *   while inside it, so a module whose container the workspace detached (a
- *   hidden phase) keeps distinct keys. Without it, "inside the document" is used.
+ * @param {{ read: (chartKey: string) => object|null,
+ *           write: (chartKey: string, key: string, value: any) => void,
+ *           keys: string[],
+ *           isInside?: (node: Node) => boolean }} binding
+ *   `isInside` decides whether a chart root still belongs to the owner's view
+ *   (default: attached to the document).
  * @returns {import('./chart-manager.js').default} facade with the manager's API
  */
-export function createInstanceChartManager(manager, stateManager, instanceId, moduleRoot) {
-  /** @type {Map<object, string>} live chart → chart key */
+export function createEditBoundChartManager(manager, { read, write, keys, isInside = isAttached }) {
+  const allowed = new Set(keys);
+  /** @type {Map<object, string>} live chart -> chart key */
   const keyOf = new Map();
   /** creates still awaiting their chart: { key, container } */
   const reserved = new Set();
   const facade = Object.create(manager);
+  const storedEdits = (key) => pick(read(key) || {}, keys);
 
-  /** Is a node still part of this instance's view? */
-  function isInside(node) {
-    if (!node) return false;
-    return moduleRoot && typeof moduleRoot.contains === 'function' ? moduleRoot.contains(node) : isAttached(node);
-  }
-
-  /** A chart is live until destroyed or until its root left the instance's view. */
+  /** A chart is live until destroyed or until its root left the owner's view. */
   function isLive(chart) {
     const root = chart._card || chart._wrap;
     return !!(chart._svg && root && root.parentNode && isInside(root));
@@ -53,8 +58,8 @@ export function createInstanceChartManager(manager, stateManager, instanceId, mo
   function allocateKey(base, container) {
     for (const [chart] of keyOf) if (!isLive(chart)) keyOf.delete(chart);
     // A pending create is superseded by this one when it targets the same
-    // container or one that has left the instance's view (the module
-    // re-rendered before it resolved), so its key is free to take.
+    // container or one that has left the owner's view (re-render before it
+    // resolved), so its key is free to take.
     const pending = [...reserved]
       .filter(r => r.container !== container && isInside(r.container))
       .map(r => r.key);
@@ -65,22 +70,22 @@ export function createInstanceChartManager(manager, stateManager, instanceId, mo
   }
 
   /**
-   * Create a chart; stored edits win over the module config.
-   * The chart key is `config.editKey || type`, suffixed `#2`, `#3`, … while
-   * another live chart of this instance holds it.
+   * Create a chart; stored edits win over the caller's config.
+   * The chart key is `config.editKey || type`, suffixed `#2`, `#3`, ... while
+   * another live chart of this owner holds it.
    */
   facade.create = async function create(container, type, config = {}) {
     const key = allocateKey(config.editKey || type, container);
     const slot = { key, container };
     reserved.add(slot);
     try {
-      const edits = stateManager.getChartEdits(instanceId, key) || {};
-      const chart = await manager.create(container, type, { ...config, ...edits });
+      const chart = await manager.create(container, type, { ...config, ...storedEdits(key) });
       if (!chart) return chart;
       keyOf.set(chart, key);
-      chart._autoLabels = pickLabels(config);
+      chart._autoLabels = pick(config, keys);
       chart._onLabelEdit = (k, value) => {
-        stateManager.setChartEdit(instanceId, key, k, value);
+        if (!allowed.has(k)) return;
+        write(key, k, value);
         if ((value === '' || value == null) && k in chart._autoLabels) {
           chart.config[k] = chart._autoLabels[k];
         }
@@ -95,10 +100,30 @@ export function createInstanceChartManager(manager, stateManager, instanceId, mo
   facade.update = function update(chart, configPatch) {
     const key = chart ? keyOf.get(chart) : undefined;
     if (key === undefined) { manager.update(chart, configPatch); return; }
-    Object.assign(chart._autoLabels, pickLabels(configPatch));
-    const edits = stateManager.getChartEdits(instanceId, key) || {};
-    manager.update(chart, { ...configPatch, ...edits });
+    Object.assign(chart._autoLabels, pick(configPatch, keys));
+    manager.update(chart, { ...configPatch, ...storedEdits(key) });
   };
 
   return facade;
+}
+
+/**
+ * Chart manager bound to one module instance: label edits are stored in
+ * stateManager.chartEdits[instanceId][chartKey].
+ * @param {import('./chart-manager.js').default} manager - shared manager
+ * @param {{ getChartEdits: Function, setChartEdit: Function }} stateManager
+ * @param {string} instanceId
+ * @param {Node} [moduleRoot] - the instance's container. Charts count as live
+ *   while inside it, so a module whose container the workspace detached (a
+ *   hidden phase) keeps distinct keys. Without it, "inside the document" is used.
+ * @returns {import('./chart-manager.js').default}
+ */
+export function createInstanceChartManager(manager, stateManager, instanceId, moduleRoot) {
+  const inRoot = moduleRoot && typeof moduleRoot.contains === 'function';
+  return createEditBoundChartManager(manager, {
+    read: (chartKey) => stateManager.getChartEdits(instanceId, chartKey),
+    write: (chartKey, key, value) => stateManager.setChartEdit(instanceId, chartKey, key, value),
+    keys: LABEL_EDIT_KEYS,
+    isInside: (node) => !!node && (inRoot ? moduleRoot.contains(node) : isAttached(node)),
+  });
 }

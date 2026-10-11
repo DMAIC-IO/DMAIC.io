@@ -311,7 +311,11 @@ export default class ChartBase {
 
     // Legend toggle
     if (this._getLegendItems().length > 0 || (cfg.refLines && cfg.refLines.length) || (cfg.refAreas && cfg.refAreas.length)) {
-      inner.appendChild(edCheckboxRow(t('showLegend'), cfg.showLegend !== false, (v) => { cfg.showLegend = v; onUpdate(); }));
+      inner.appendChild(edCheckboxRow(t('showLegend'), cfg.showLegend !== false, (v) => {
+        cfg.showLegend = v;
+        onEdit('showLegend', v);
+        onUpdate();
+      }, 'showLegend'));
     }
 
     // Font sizes
@@ -321,7 +325,7 @@ export default class ChartBase {
     inner.appendChild(edAxisLabelSection(cfg, () => this.render(), t, onEdit, auto));
 
     // Axis ticks (suppressed when both axes are categorical)
-    const tickSec = edAxisTickSection(cfg, () => this.render(), t);
+    const tickSec = edAxisTickSection(cfg, () => this.render(), t, onEdit);
     if (tickSec) inner.appendChild(tickSec);
 
     // Background color

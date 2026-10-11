@@ -41,14 +41,16 @@ export function edSection(title) {
  * @param {string} label
  * @param {boolean} checked
  * @param {function} onChange - Called with (boolean)
+ * @param {string} [key] - config key, set as data-key on the input
  * @returns {HTMLElement}
  */
-export function edCheckboxRow(label, checked, onChange) {
+export function edCheckboxRow(label, checked, onChange, key) {
   const lbl = document.createElement('label');
   lbl.className = 'dmike-chart-ed-check';
   const inp = document.createElement('input');
   inp.type = 'checkbox';
   inp.checked = checked;
+  if (key) inp.dataset.key = key;
   inp.addEventListener('change', () => onChange(inp.checked));
   lbl.appendChild(inp);
   lbl.appendChild(document.createTextNode(label));
@@ -385,19 +387,19 @@ export function edAxisLabelSection(config, onUpdate, t, onEdit, auto = {}) {
  * }} config - Mutated in-place
  * @param {function} onUpdate - Called after config is mutated
  * @param {function} t
+ * @param {function} [onEdit] - (key, value) after a switch changed
  * @returns {HTMLElement|null}
  */
-export function edAxisTickSection(config, onUpdate, t) {
+export function edAxisTickSection(config, onUpdate, t, onEdit) {
   if (config.categoricalX === true && config.categoricalY === true) return null;
   const sec = edSection(t('axisTicks'));
-  if (config.categoricalX !== true) {
-    sec.appendChild(edCheckboxRow(t('showXTicks'), config.showXTicks !== false, (v) => { config.showXTicks = v; onUpdate(); }));
-    sec.appendChild(edCheckboxRow(t('showXGrid'),  config.showXGrid  !== false, (v) => { config.showXGrid  = v; onUpdate(); }));
-  }
-  if (config.categoricalY !== true) {
-    sec.appendChild(edCheckboxRow(t('showYTicks'), config.showYTicks !== false, (v) => { config.showYTicks = v; onUpdate(); }));
-    sec.appendChild(edCheckboxRow(t('showYGrid'),  config.showYGrid  !== false, (v) => { config.showYGrid  = v; onUpdate(); }));
-  }
+  const row = (key) => edCheckboxRow(t(key), config[key] !== false, (v) => {
+    config[key] = v;
+    onEdit?.(key, v);
+    onUpdate();
+  }, key);
+  if (config.categoricalX !== true) sec.append(row('showXTicks'), row('showXGrid'));
+  if (config.categoricalY !== true) sec.append(row('showYTicks'), row('showYGrid'));
   return sec;
 }
 

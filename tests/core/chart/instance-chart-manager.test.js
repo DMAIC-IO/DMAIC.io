@@ -4,7 +4,7 @@
  * DOM-free: the base manager and charts are fakes.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
-import { createInstanceChartManager } from '../../../js/core/chart/instance-chart-manager.js';
+import { createInstanceChartManager, createEditBoundChartManager, LABEL_EDIT_KEYS, TILE_EDIT_KEYS } from '../../../js/core/chart/instance-chart-manager.js';
 
 function fakeChart(config) {
   const root = { parentNode: {} };
@@ -195,5 +195,74 @@ suite('InstanceChartManager', () => {
     f.update(c, { title: 'y' });
     assertEqual(c.config.title, 'y');
     assertTrue(c._autoLabels === undefined);
+  });
+});
+
+function boundStore(initial = {}) {
+  const data = JSON.parse(JSON.stringify(initial));
+  const writes = [];
+  return {
+    data, writes,
+    read: (k) => data[k] ?? null,
+    write: (k, key, v) => {
+      writes.push([k, key, v]);
+      data[k] ??= {};
+      if (v === '' || v == null) delete data[k][key]; else data[k][key] = v;
+    },
+  };
+}
+
+suite('EditBoundChartManager', () => {
+  const TILE_KEYS = [...LABEL_EDIT_KEYS, ...TILE_EDIT_KEYS];
+
+  test('stored tick/legend edits override the config when listed', async () => {
+    const s = boundStore({ histogram: { showYTicks: true, showLegend: true } });
+    const f = createEditBoundChartManager(fakeManager(), { read: s.read, write: s.write, keys: TILE_KEYS });
+    const c = await f.create({}, 'histogram', { showYTicks: false, showLegend: false, showXTicks: false });
+    assertEqual(c.config.showYTicks, true);
+    assertEqual(c.config.showLegend, true);
+    assertEqual(c.config.showXTicks, false);
+  });
+
+  test('only listed keys are written', async () => {
+    const s = boundStore();
+    const f = createEditBoundChartManager(fakeManager(), { read: s.read, write: s.write, keys: TILE_KEYS });
+    const c = await f.create({}, 'histogram', {});
+    c._onLabelEdit('showYTicks', true);
+    c._onLabelEdit('showXGrid', false);
+    c._onLabelEdit('bgColor', 'red');
+    assertDeepEqual(s.writes, [['histogram', 'showYTicks', true]]);
+  });
+
+  test('stored edits with unknown keys are ignored on create and update', async () => {
+    const s = boundStore({ histogram: { bgColor: 'red', title: 'Mine' } });
+    const f = createEditBoundChartManager(fakeManager(), { read: s.read, write: s.write, keys: TILE_KEYS });
+    const c = await f.create({}, 'histogram', { bgColor: 'white' });
+    assertEqual(c.config.bgColor, 'white');
+    assertEqual(c.config.title, 'Mine');
+    f.update(c, { bgColor: 'blue' });
+    assertEqual(c.config.bgColor, 'blue');
+  });
+
+  test('isInside defaults to "attached": a detached chart frees its key', async () => {
+    const s = boundStore();
+    const f = createEditBoundChartManager(fakeManager(), { read: s.read, write: s.write, keys: TILE_KEYS });
+    const a = await f.create({}, 'histogram', {});
+    a.detach();
+    const b = await f.create({}, 'histogram', {});
+    b._onLabelEdit('title', 'B');
+    assertDeepEqual(s.writes, [['histogram', 'title', 'B']]);
+  });
+});
+
+suite('InstanceChartManager — key filter', () => {
+  test('module charts never store tick or legend edits', async () => {
+    const store = fakeStore();
+    const f = createInstanceChartManager(fakeManager(), store, 'i1');
+    const c = await f.create({}, 'scatter', {});
+    c._onLabelEdit('showLegend', false);
+    c._onLabelEdit('showYTicks', false);
+    c._onLabelEdit('xLabel', 'Mine');
+    assertDeepEqual(store.data, { i1: { scatter: { xLabel: 'Mine' } } });
   });
 });

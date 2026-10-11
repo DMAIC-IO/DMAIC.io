@@ -4,7 +4,7 @@
  * Lazy-loads chart type modules on first use.
  */
 
-import { createInstanceChartManager } from './instance-chart-manager.js';
+import { createInstanceChartManager, createEditBoundChartManager, LABEL_EDIT_KEYS, TILE_EDIT_KEYS } from './instance-chart-manager.js';
 
 /** @type {Object<string, function(): Promise>} */
 const TYPE_MAP = {
@@ -106,6 +106,23 @@ export default class ChartManager {
   forInstance(instanceId, moduleRoot) {
     if (!this._stateManager || !instanceId) return this;
     return createInstanceChartManager(this, this._stateManager, instanceId, moduleRoot);
+  }
+
+  /**
+   * Chart manager bound to one dashboard tile: label, tick and legend edits
+   * are stored per tile (stateManager dashboard.chartEdits[tileId][chartKey]).
+   * Without a stateManager the shared manager itself is returned.
+   * @param {string} tileId
+   * @returns {ChartManager}
+   */
+  forTile(tileId) {
+    const sm = this._stateManager;
+    if (!sm || !tileId) return this;
+    return createEditBoundChartManager(this, {
+      read: (chartKey) => sm.getTileChartEdits(tileId, chartKey),
+      write: (chartKey, key, value) => sm.setTileChartEdit(tileId, chartKey, key, value),
+      keys: [...LABEL_EDIT_KEYS, ...TILE_EDIT_KEYS],
+    });
   }
 
   /**

@@ -73,6 +73,28 @@ function _assertNotFutureMajor(fileVersion) {
   }
 }
 
+/**
+ * Copy of a two-level edits map (`owner -> chartKey -> {key: value}`) with one
+ * edit applied. An empty value ('' / null / undefined) removes the key; empty
+ * chart and owner entries are pruned. `false` is a value.
+ * @param {object|undefined} all
+ * @param {string} ownerId - instance id or tile id
+ * @param {string} chartKey
+ * @param {string} key
+ * @param {any} value
+ * @returns {object}
+ */
+export function withChartEdit(all, ownerId, chartKey, key, value) {
+  const next = { ...(all || {}) };
+  const owner = { ...(next[ownerId] || {}) };
+  const entry = { ...(owner[chartKey] || {}) };
+  if (value === '' || value == null) delete entry[key];
+  else entry[key] = value;
+  if (Object.keys(entry).length) owner[chartKey] = entry; else delete owner[chartKey];
+  if (Object.keys(owner).length) next[ownerId] = owner; else delete next[ownerId];
+  return next;
+}
+
 export class StateManager {
   /**
    * @param {EventBus} eventBus
@@ -200,20 +222,44 @@ export class StateManager {
    * @param {any} value
    */
   setChartEdit(instanceId, chartKey, key, value) {
-    const all = { ...(this._state.chartEdits || {}) };
-    const inst = { ...(all[instanceId] || {}) };
-    const entry = { ...(inst[chartKey] || {}) };
-    if (value === '' || value == null) delete entry[key];
-    else entry[key] = value;
-    if (Object.keys(entry).length) inst[chartKey] = entry; else delete inst[chartKey];
-    if (Object.keys(inst).length) all[instanceId] = inst; else delete all[instanceId];
     if (this.isCompleted()) return;
-    this._state.chartEdits = all;
+    this._state.chartEdits = withChartEdit(this._state.chartEdits, instanceId, chartKey, key, value);
     this._state.projectMeta.modified = new Date().toISOString();
     // Quiet save: 'state:saved' makes analysis modules re-plot, which would
     // close the chart editor the user is typing in.
     this._scheduleSave({ quiet: true });
     this._eventBus.emit('data:changed', 'chartEdits');
+  }
+
+  /**
+   * Stored chart-editor edits for one chart of a dashboard tile.
+   * @param {string} tileId
+   * @param {string} chartKey - see ChartManager.forTile
+   * @returns {object|null}
+   */
+  getTileChartEdits(tileId, chartKey) {
+    return this._state.dashboard?.chartEdits?.[tileId]?.[chartKey] ?? null;
+  }
+
+  /**
+   * Store one chart-editor edit of a dashboard tile (see withChartEdit).
+   * Saves quietly: 'state:saved' re-renders the tile, which would close the
+   * chart editor the user is working in.
+   * @param {string} tileId
+   * @param {string} chartKey
+   * @param {string} key - LABEL_EDIT_KEYS or TILE_EDIT_KEYS
+   * @param {any} value
+   */
+  setTileChartEdit(tileId, chartKey, key, value) {
+    if (this.isCompleted()) return;
+    const dashboard = this._state.dashboard || { layout: null };
+    this._state.dashboard = {
+      ...dashboard,
+      chartEdits: withChartEdit(dashboard.chartEdits, tileId, chartKey, key, value),
+    };
+    this._state.projectMeta.modified = new Date().toISOString();
+    this._scheduleSave({ quiet: true });
+    this._eventBus.emit('data:changed', 'dashboard.chartEdits');
   }
 
   /**
