@@ -83,7 +83,7 @@
           <div class="settings-section" id="settings-agent">
             <label class="settings-section__label" x-text="agentTitle"></label>
             <p class="settings-hint" x-text="agentStatusText()"></p>
-            <p class="settings-hint" x-text="agentCoverage"></p>
+            <p class="settings-hint" data-testid="agent-coverage" x-text="agentCoverage"></p>
             <button type="button" class="btn btn--sm btn--ghost" id="settings-agent-revoke"
                     x-show="agentGranted" @click="revokeAgentConsent()"
                     x-text="agentRevokeLabel"></button>
