@@ -17,6 +17,7 @@ import { I18n } from '../../js/core/i18n.js';
 import capabilityTile from '../../js/modules/process-capability/process-capability.tile.js';
 import attrSpcTile from '../../js/modules/attribute-control-chart/attribute-control-chart.tile.js';
 import zegTile from '../../js/pages/dashboard/tiles/zeg-timeline.tile.js';
+import sipocTile from '../../js/modules/sipoc/sipoc.tile.js';
 
 const i18n = { t: (k) => k };
 
@@ -55,7 +56,8 @@ suite('dashboard tiles: manifest', () => {
   test('modules with a tile declare loadTile', () => {
     const ids = withTile.map(e => e.id);
     for (const id of ['fmea', 'ishikawa', 'project-charter', 'voc-ctx-tree', 'raci-matrix', 'control-chart',
-      'todo', 'dmaic-calendar', 'stakeholder-analysis', 'lessons-learned', 'process-capability', 'attribute-control-chart']) assertTrue(ids.includes(id), id);
+      'todo', 'dmaic-calendar', 'stakeholder-analysis', 'lessons-learned', 'process-capability', 'attribute-control-chart',
+      'sipoc']) assertTrue(ids.includes(id), id);
   });
 
   test('every tile object loads, renders and has a valid size and schema', async () => {
@@ -113,6 +115,7 @@ suite('dashboard tiles: manifest', () => {
     assertEqual(spcTile.titlePrefix, 'SPC');
     assertEqual(attrSpcTile.titlePrefix, 'SPC');
     assertEqual(raciTile.titlePrefix, 'RACI');
+    assertEqual(sipocTile.titlePrefix, 'SIPOC');
     assertEqual(vocTile.titleKey, 'dashboard.vocTitle');
     assertDeepEqual(charterTiles.map(t => [t.kind, t.titleKey]), [
       ['project-charter', 'dashboard.charterTitle'],
@@ -895,5 +898,74 @@ suite('dashboard tiles: attribute-control-chart', () => {
     pending[0](); await first;
     assertTrue(destroyed.includes(made[0]), 'stale chart destroyed');
     assertTrue(!destroyed.includes(made[1]), 'current chart kept');
+  });
+});
+
+const SIPOC_STATE = {
+  columns: {
+    suppliers: ['Bakery', 'Mill'],
+    inputs: ['Flour', 'Water', 'Yeast', 'Salt'],
+    process: ['Knead', 'Bake'],
+    outputs: ['A very long output description that must not widen the tile'],
+    customers: [],
+  },
+};
+
+suite('dashboard tiles: sipoc', () => {
+  test('declares the SIPOC prefix and a wide default size', () => {
+    assertEqual(sipocTile.titlePrefix, 'SIPOC');
+    assertDeepEqual(sipocTile.size, { defaultW: 6, defaultH: 10, minW: 4, minH: 6 });
+  });
+
+  test('empty state for an empty or undefined state', () => {
+    for (const state of [{}, undefined, { columns: { inputs: [] } }]) {
+      const host = render(sipocTile, state);
+      assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.sipocEmpty');
+    }
+  });
+
+  test('five columns in order with letter, name and count', () => {
+    const host = render(sipocTile, SIPOC_STATE);
+    const cols = [...host.querySelectorAll('.dashboard-sipoc__col')];
+    assertDeepEqual(cols.map(c => c.dataset.col), ['suppliers', 'inputs', 'process', 'outputs', 'customers']);
+    assertDeepEqual(cols.map(c => c.querySelector('.dashboard-sipoc__letter').textContent), ['S', 'I', 'P', 'O', 'C']);
+    assertEqual(cols[0].querySelector('.dashboard-sipoc__name').textContent, 'modules.sipoc.col.suppliers');
+    assertDeepEqual(cols.map(c => c.querySelector('.dashboard-sipoc__count').textContent), ['2', '4', '2', '1', '0']);
+  });
+
+  test('default topN 3: first three entries and a "more" line', () => {
+    const host = render(sipocTile, SIPOC_STATE);
+    const inputs = host.querySelector('[data-col="inputs"]');
+    assertDeepEqual([...inputs.querySelectorAll('.dashboard-sipoc__item')].map(e => e.textContent), ['Flour', 'Water', 'Yeast']);
+    assertEqual(inputs.querySelector('.dashboard-sipoc__more').textContent, 'dashboard.sipocMore');
+    assertEqual(host.querySelector('[data-col="process"] .dashboard-sipoc__more'), null);
+  });
+
+  test('topN 4 shows all inputs, no "more" line', () => {
+    const host = render(sipocTile, SIPOC_STATE, { topN: 4 });
+    const inputs = host.querySelector('[data-col="inputs"]');
+    assertEqual(inputs.querySelectorAll('.dashboard-sipoc__item').length, 4);
+    assertEqual(inputs.querySelector('.dashboard-sipoc__more'), null);
+  });
+
+  test('every entry carries its full text as title', () => {
+    const host = render(sipocTile, SIPOC_STATE);
+    const item = host.querySelector('[data-col="outputs"] .dashboard-sipoc__item');
+    assertEqual(item.getAttribute('title'), SIPOC_STATE.columns.outputs[0]);
+  });
+
+  test('an empty column is marked as gap; the filled line appears', () => {
+    const host = render(sipocTile, SIPOC_STATE);
+    const gaps = [...host.querySelectorAll('.dashboard-sipoc__col--gap')].map(c => c.dataset.col);
+    assertDeepEqual(gaps, ['customers']);
+    assertEqual(host.querySelector('[data-col="customers"] .dashboard-sipoc__gap').textContent, '—');
+    assertEqual(host.querySelector('.dashboard-sipoc__filled').textContent, 'dashboard.sipocFilled');
+  });
+
+  test('all five filled: no gap, no filled line', () => {
+    const full = { columns: { ...SIPOC_STATE.columns, customers: ['Shop'] } };
+    const host = render(sipocTile, full);
+    assertEqual(host.querySelectorAll('.dashboard-sipoc__col--gap').length, 0);
+    assertEqual(host.querySelector('.dashboard-sipoc__filled'), null);
   });
 });

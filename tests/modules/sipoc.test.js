@@ -1,5 +1,5 @@
 import { suite, test, assertEqual } from '../test-utils.js';
-import { State, COLUMNS } from '../../js/modules/sipoc/sipoc-model.js';
+import { State, COLUMNS, columnSummary } from '../../js/modules/sipoc/sipoc-model.js';
 
 const COL_KEYS = ['suppliers', 'inputs', 'process', 'outputs', 'customers'];
 
@@ -194,5 +194,43 @@ suite('SIPOC Model — serialization', () => {
     assertEqual(restored.columns.suppliers.join(','), 'Lieferant Alpha');
     assertEqual(restored.columns.process.join(','), 'Schritt 1,Schritt 2');
     assertEqual(restored.columns.customers.join(','), 'Endkunde');
+  });
+});
+
+suite('SIPOC Model — columnSummary', () => {
+  test('empty state: five columns with count 0', () => {
+    const sum = columnSummary(new State(), 3);
+    assertEqual(sum.map(c => c.key).join(','), COL_KEYS.join(','));
+    assertEqual(sum.map(c => c.letter).join(''), 'SIPOC');
+    for (const c of sum) {
+      assertEqual(c.count, 0);
+      assertEqual(c.top.length, 0);
+      assertEqual(c.more, 0);
+    }
+  });
+
+  test('top holds the first n entries, more the rest', () => {
+    const s = State.fromJSON({ columns: { inputs: ['a', 'b', 'c', 'd'], process: ['x'] } });
+    const byKey = Object.fromEntries(columnSummary(s, 3).map(c => [c.key, c]));
+    assertEqual(byKey.inputs.count, 4);
+    assertEqual(byKey.inputs.top.join(','), 'a,b,c');
+    assertEqual(byKey.inputs.more, 1);
+    assertEqual(byKey.process.top.join(','), 'x');
+    assertEqual(byKey.process.more, 0);
+  });
+
+  test('n below 1 or not a number is treated as 1', () => {
+    const s = State.fromJSON({ columns: { inputs: ['a', 'b'] } });
+    for (const n of [0, -2, undefined, 'x']) {
+      const inputs = columnSummary(s, n).find(c => c.key === 'inputs');
+      assertEqual(inputs.top.join(','), 'a', String(n));
+      assertEqual(inputs.more, 1, String(n));
+    }
+  });
+
+  test('top is a copy, not the live column', () => {
+    const s = State.fromJSON({ columns: { inputs: ['a'] } });
+    columnSummary(s, 3).find(c => c.key === 'inputs').top.push('z');
+    assertEqual(s.columns.inputs.length, 1);
   });
 });

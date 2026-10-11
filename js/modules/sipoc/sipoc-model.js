@@ -19,6 +19,22 @@ export const COLUMNS = [
 /** Ordered list of column keys. */
 export const COL_KEYS = COLUMNS.map(c => c.key);
 
+/**
+ * Per-column overview for the dashboard tile: count plus the first `n`
+ * entries. `n` below 1 or not a number counts as 1.
+ * @param {State} state
+ * @param {number} n
+ * @returns {{key: string, letter: string, count: number, top: string[], more: number}[]} in COLUMNS order
+ */
+export function columnSummary(state, n) {
+  const k = Math.max(1, Math.floor(Number(n)) || 1);
+  return COLUMNS.map(({ key, letter }) => {
+    const items = state.columns[key];
+    const top = items.slice(0, k);
+    return { key, letter, count: items.length, top, more: items.length - top.length };
+  });
+}
+
 /** @returns {Record<string, string[]>} fresh empty column map */
 function emptyColumns() {
   const cols = {};

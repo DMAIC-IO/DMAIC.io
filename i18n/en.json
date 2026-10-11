@@ -612,6 +612,9 @@
     "attrSpcNoData": "Too few valid points for a control chart.",
     "attrSpcStable": "Stable",
     "attrSpcUnstable": "Unstable",
+    "sipocEmpty": "The SIPOC is still empty.",
+    "sipocMore": "+ {n} more",
+    "sipocFilled": "{filled} of {total} columns filled",
     "tileSettings": {
       "title": "Settings: {title}",
       "open": "Tile settings",

@@ -612,6 +612,9 @@
     "attrSpcNoData": "Zu wenige gültige Punkte für eine Regelkarte.",
     "attrSpcStable": "Stabil",
     "attrSpcUnstable": "Instabil",
+    "sipocEmpty": "Das SIPOC ist noch leer.",
+    "sipocMore": "+ {n} weitere",
+    "sipocFilled": "{filled} von {total} Spalten gefüllt",
     "tileSettings": {
       "title": "Einstellungen: {title}",
       "open": "Kachel-Einstellungen",
