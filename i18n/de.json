@@ -1297,6 +1297,31 @@
       "exportPng": "PNG",
       "exportSvg": "SVG"
     },
+    "survey-builder": {
+      "runner": {
+        "untitled": "Fragebogen",
+        "noscript": "Dieser Fragebogen braucht JavaScript. Bitte öffnen Sie die Datei in einem aktuellen Browser.",
+        "contact": "Rückfragen an: {contact}",
+        "anonymousNote": "Ihre Antworten werden anonym ausgewertet.",
+        "progress": "{answered} von {total} Pflichtfragen beantwortet",
+        "required": "Pflichtfrage",
+        "other": "Sonstiges:",
+        "noAnswer": "k. A.",
+        "ratingLegend": "1 = sehr gering … 5 = sehr hoch",
+        "kanoItem": "Merkmal",
+        "kanoFunctional": "Wenn das Merkmal vorhanden ist …",
+        "kanoDysfunctional": "Wenn das Merkmal fehlt …",
+        "kanoImportance": "Wie wichtig ist es Ihnen?",
+        "save": "Antworten speichern",
+        "reset": "Neu beginnen",
+        "resetConfirm": "Alle Antworten löschen und neu beginnen?",
+        "missingOne": "Bitte beantworten Sie noch 1 Pflichtfrage.",
+        "missingOther": "Bitte beantworten Sie noch {count} Pflichtfragen.",
+        "saved": "Die Datei „{file}“ wurde gespeichert. Bitte senden Sie sie an die Kontaktperson zurück.",
+        "fileSurvey": "Fragebogen",
+        "fileAnswers": "Antworten"
+      }
+    },
     "process-map": {
       "name": "Process Map",
       "description": "Visueller Prozessfluss mit Inputs und Outputs je Schritt",

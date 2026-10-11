@@ -1297,6 +1297,31 @@
       "exportPng": "PNG",
       "exportSvg": "SVG"
     },
+    "survey-builder": {
+      "runner": {
+        "untitled": "Questionnaire",
+        "noscript": "This questionnaire needs JavaScript. Please open the file in a current browser.",
+        "contact": "Questions to: {contact}",
+        "anonymousNote": "Your answers are evaluated anonymously.",
+        "progress": "{answered} of {total} required questions answered",
+        "required": "Required",
+        "other": "Other:",
+        "noAnswer": "n/a",
+        "ratingLegend": "1 = very low … 5 = very high",
+        "kanoItem": "Feature",
+        "kanoFunctional": "If the feature is present …",
+        "kanoDysfunctional": "If the feature is missing …",
+        "kanoImportance": "How important is it to you?",
+        "save": "Save answers",
+        "reset": "Start over",
+        "resetConfirm": "Delete all answers and start over?",
+        "missingOne": "Please answer 1 more required question.",
+        "missingOther": "Please answer {count} more required questions.",
+        "saved": "The file “{file}” has been saved. Please send it back to the contact person.",
+        "fileSurvey": "Questionnaire",
+        "fileAnswers": "Answers"
+      }
+    },
     "process-map": {
       "name": "Process Map",
       "description": "Visual process flow with inputs and outputs per step",
