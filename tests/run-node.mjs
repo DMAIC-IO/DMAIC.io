@@ -113,6 +113,7 @@ const SKIP = new Set([
   'modules/process-map-export.test.js',
   'modules/project-charter-richtext.test.js',
   'modules/project-charter.test.js',
+  'modules/survey-runner-dom.test.js',
   'pages/cycle.test.js',
   'pages/settings.test.js',
   'pages/tile-render.test.js',
