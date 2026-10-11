@@ -33,6 +33,7 @@ Aktueller Stand:
 | v1.0.0_single_project.json      | 1        | 11              |
 | v1.1.0_single_project.json      | 1        | 11              |
 | v1.2.0_single_project.json      | 1        | 11              |
+| v1.3.0_single_project.json      | 1        | 11              |
 
 Die v0.3-Fixtures decken zusammen **alle produktiven Module** aus
 `js/modules/manifest.js` mindestens einmal ab. Wenn ein neues Modul hinzukommt,
@@ -61,6 +62,16 @@ fehlende Felder in älteren Dateien bekommen beim Laden ihren Standardwert
 (FMEA ohne `method` → RPZ). Deshalb gibt es keinen Migrationsschritt
 `1.1→1.2`. Die Fixture setzt `equalVariances: true` im Hypothesentest, damit
 das neue Feld in künftigen Migrationen mitläuft.
+
+Die v1.3-Fixture zieht die 1.3-Linie nach. 1.3 bringt neue Module
+(Umfrage-Baukasten, Resampling, Attributtests) und ergänzt den Modulzustand
+additiv (u. a. Schätzer, `unbiased`, `mrSpan` und Untergruppen-ID-Spalte in
+der Prozessfähigkeit, Vermeidungsmaßnahme/besonderes Merkmal/Begründung in
+der FMEA, Achsentitel-Bearbeitungen je Modulinstanz). Fehlende Felder in
+älteren Dateien bekommen beim Laden ihren Standardwert, deshalb gibt es keinen
+Migrationsschritt `1.2→1.3`. Die Fixture setzt `unbiased: false` und
+`mrSpan: '3'` in der Prozessfähigkeit, damit die neuen Felder in künftigen
+Migrationen mitlaufen.
 
 ## Pflicht beim Release
 
