@@ -26,10 +26,10 @@ function release(host) {
   charts.delete(host);
 }
 
-/** Small label/value stat (SPC tile classes). */
+/** Small label/value stat (SPC tile classes); the label may be cut, so its full text is the title. */
 function stat(label, value) {
   return h('div', { class: 'dashboard-spc__stat' },
-    h('span', { class: 'dashboard-spc__stat-label' }, label),
+    h('span', { class: 'dashboard-spc__stat-label', title: label }, label),
     h('span', { class: 'dashboard-spc__stat-value' }, value),
   );
 }

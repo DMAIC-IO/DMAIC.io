@@ -1995,8 +1995,20 @@ body.dev-area-open .dmaic-tiles {
 
 .dashboard-kano__totals {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--spacing-xs);
+}
+
+/* Long German labels ("Vollständigkeit") must not widen a narrow tile. */
+.dashboard-kano__totals .dashboard-spc__stat {
+  min-width: 0;
+}
+
+.dashboard-kano__totals .dashboard-spc__stat-label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dashboard-kano__warn {
