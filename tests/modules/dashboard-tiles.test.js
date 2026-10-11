@@ -623,6 +623,7 @@ suite('dashboard tiles: process-capability', () => {
     host.remove();
     ({ host, cm } = await renderChartTile(capabilityTile, { embeddedValues: CAP_VALUES }));
     assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.capabilityNoData');
+    assertEqual(cm.made.length, 0);
     host.remove();
   });
 
