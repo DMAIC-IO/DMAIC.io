@@ -1988,13 +1988,10 @@ body.dev-area-open .dmaic-tiles {
   margin: 0;
 }
 
+/* The header tiles stay clickable: a click navigates to that phase and the
+   router hides the dashboard. */
 body.dashboard-area-open #app-workspace {
   visibility: hidden;
-}
-
-body.dashboard-area-open .dmaic-tiles {
-  pointer-events: none;
-  opacity: 0.4;
 }
 
 /* ===== Training Area ===== */
