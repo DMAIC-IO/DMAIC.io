@@ -1438,6 +1438,16 @@
         "category": "category",
         "question": "Question"
       },
+      "rankingAll": "Show all {count}",
+      "rankingTop": "Show only the first {count}",
+      "groupByLabel": "Group by",
+      "groupByNone": "none",
+      "groupHead": "{group} (n = {n})",
+      "groupHeadFew": "{group} (n = {n}, few responses)",
+      "overallMean": "Ø {mean}",
+      "exportReport": "Export report",
+      "reportWithNames": "Free texts with names",
+      "fileReport": "Report",
       "runner": {
         "untitled": "Questionnaire",
         "noscript": "This questionnaire needs JavaScript. Please open the file in a current browser.",

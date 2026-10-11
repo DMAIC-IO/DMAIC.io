@@ -344,7 +344,127 @@
           </button>
         </div>
 
-        <!-- Task 13: summary -->
+        <section class="survey-builder__summary" data-ref="summary">
+          <div class="survey-builder__subtitle" x-text="t('report.rateTitle')"></div>
+          <p class="survey-builder__counts" data-ref="rateLine" x-text="rateLine()"></p>
+          <p class="survey-builder__hint" data-ref="withoutRecipient" x-show="hasWithoutRecipient()" x-text="withoutRecipientLine()"></p>
+          <div class="dmike-table-wrap" x-show="hasRateGroups()">
+            <table class="dmike-table survey-builder__stats" data-ref="rateGroups">
+              <thead>
+                <tr>
+                  <th x-text="t('report.colGroup')"></th><th x-text="t('report.colSent')"></th>
+                  <th x-text="t('report.colAnswered')"></th><th x-text="t('report.colRate')"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="g in rateGroups()" :key="g.key">
+                  <tr><td x-text="g.group"></td><td x-text="g.sent"></td><td x-text="g.answered"></td><td x-text="g.rate"></td></tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+
+          <div x-show="hasRanking()">
+            <div class="survey-builder__subtitle" x-text="t('report.topTitle')"></div>
+            <table class="dmike-table survey-builder__stats" data-ref="ranking">
+              <thead>
+                <tr>
+                  <th x-text="t('report.colItem')"></th><th x-text="t('report.colN')"></th>
+                  <th x-text="t('report.colMean')"></th><th x-text="t('report.colTop')"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="r in rankingRows()" :key="r.key">
+                  <tr>
+                    <td data-ref="item" x-text="r.text"></td><td x-text="r.n"></td>
+                    <td data-ref="mean" x-text="r.mean"></td><td x-text="r.top"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+            <button class="btn btn--sm" type="button" data-ref="rankingToggle" x-show="hasMoreRanking()"
+                    @click="toggleRanking()" x-text="rankingToggleLabel()"></button>
+          </div>
+
+          <div x-show="hasKanoOverview()">
+            <div class="survey-builder__subtitle" x-text="t('report.kanoTitle')"></div>
+            <table class="dmike-table survey-builder__stats" data-ref="kanoOverview">
+              <thead>
+                <tr>
+                  <th x-text="t('report.colItem')"></th><th x-text="t('report.colCategory')"></th>
+                  <th x-text="t('report.colBetter')"></th><th x-text="t('report.colWorse')"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="k in kanoOverviewRows()" :key="k.key">
+                  <tr>
+                    <td data-ref="item" x-text="k.text"></td><td data-ref="category" x-text="k.category"></td>
+                    <td x-text="k.cs"></td><td x-text="k.ds"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+            <div class="survey-builder__chart" data-chart="kano-overview"></div>
+          </div>
+
+          <p class="survey-builder__counts" data-ref="freeText" x-text="freeTextLine()"></p>
+        </section>
+
+        <div class="survey-builder__toolbar">
+          <label class="survey-builder__counts" x-text="t('groupByLabel')"></label>
+          <select class="field" data-ref="groupBy" @change="setGroupByFromEvent($event)">
+            <option value="" :selected="isGroupBy('')" x-text="t('groupByNone')"></option>
+            <template x-for="o in groupByOptions()" :key="o.value">
+              <option :value="o.value" :selected="isGroupBy(o.value)" x-text="o.label"></option>
+            </template>
+          </select>
+          <label class="survey-builder__switch" data-ref="reportWithNamesLabel" x-show="canShowNames()">
+            <input type="checkbox" data-ref="reportWithNames" :checked="isReportWithNames()"
+                   @change="setReportWithNamesFromEvent($event)">
+            <span x-text="t('reportWithNames')"></span>
+          </label>
+          <button class="btn btn--sm" type="button" data-ref="exportReport" @click="exportReport()">
+            <span class="icon icon--sm" data-icon="action.download" aria-hidden="true"></span><span x-text="t('exportReport')"></span>
+          </button>
+        </div>
+
+        <section class="survey-builder__groups" data-ref="groups" x-show="hasComparison()">
+          <div class="survey-builder__subtitle" x-text="groupsTitle()"></div>
+          <ul class="survey-builder__group-heads" data-ref="groupHeads">
+            <template x-for="g in groupHeads()" :key="g.id">
+              <li x-text="g.label"></li>
+            </template>
+          </ul>
+          <template x-for="part in comparisonParts()" :key="part.key">
+            <div class="survey-builder__group-part" :data-group-question-id="part.questionId">
+              <h4 class="survey-builder__part-title" x-text="part.title"></h4>
+              <table class="dmike-table survey-builder__stats">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <template x-for="g in groupHeads()" :key="g.id">
+                      <th x-text="g.label"></th>
+                    </template>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="row in part.rows" :key="row.key">
+                    <tr :data-row-id="row.key" :class="rowClass(row)">
+                      <td>
+                        <span data-ref="label" x-text="row.label"></span>
+                        <span class="survey-builder__hint" data-ref="note" x-text="row.note"></span>
+                      </td>
+                      <template x-for="c in row.cells" :key="c.key">
+                        <td data-ref="cell" :class="cellClass(c)" x-text="c.text"></td>
+                      </template>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+              <div class="survey-builder__chart" x-show="part.chart" :data-chart="chartKey('g', part.questionId)"></div>
+            </div>
+          </template>
+        </section>
         <div data-ref="blocks">
           <template x-for="b in blocks()" :key="b.key">
             <article class="survey-builder__block" :data-question-id="b.question.id">

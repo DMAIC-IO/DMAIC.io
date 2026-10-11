@@ -1438,6 +1438,16 @@
         "category": "Kategorie",
         "question": "Frage"
       },
+      "rankingAll": "Alle {count} anzeigen",
+      "rankingTop": "Nur die ersten {count} anzeigen",
+      "groupByLabel": "Gruppieren nach",
+      "groupByNone": "keine",
+      "groupHead": "{group} (n = {n})",
+      "groupHeadFew": "{group} (n = {n}, wenig Antworten)",
+      "overallMean": "Ø {mean}",
+      "exportReport": "Bericht exportieren",
+      "reportWithNames": "Freitexte mit Namen",
+      "fileReport": "Bericht",
       "runner": {
         "untitled": "Fragebogen",
         "noscript": "Dieser Fragebogen braucht JavaScript. Bitte öffnen Sie die Datei in einem aktuellen Browser.",

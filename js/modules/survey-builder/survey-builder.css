@@ -286,3 +286,46 @@
 .survey-builder__taken {
   color: var(--color-success);
 }
+
+/* ── Summary, group comparison, report ────────────────────────── */
+
+.survey-builder__summary {
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.survey-builder__switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+}
+
+.survey-builder__group-heads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-m);
+  margin: 0 0 var(--spacing-sm);
+  padding: 0;
+  list-style: none;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.survey-builder__group-part {
+  margin-top: var(--spacing-m);
+}
+
+.survey-builder__part-title {
+  margin: 0 0 var(--spacing-xs);
+  font-size: var(--font-size-md);
+}
+
+.survey-builder__cell--deviates {
+  background: color-mix(in srgb, var(--color-warning) 22%, transparent);
+  font-weight: 600;
+}
+
+.survey-builder__row--differs td {
+  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+}
