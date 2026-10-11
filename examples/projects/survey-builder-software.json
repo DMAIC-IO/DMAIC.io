@@ -1,0 +1,133 @@
+{
+  "survey": {
+    "id": "survey-software-support",
+    "version": 1,
+    "lang": "de",
+    "title": "Kundenbefragung Software-Support",
+    "intro": "Wir möchten unseren Support verbessern. Die Befragung dauert etwa fünf Minuten.",
+    "contact": "Qualitätsmanagement, qm@example.com",
+    "anonymous": false,
+    "sections": [
+      {
+        "id": "s1", "title": "Ihr Unternehmen", "hint": "", "when": null,
+        "questions": [
+          {
+            "id": "q-group", "type": "single", "text": "Zu welcher Kundengruppe gehört Ihr Unternehmen?",
+            "hint": "", "required": true, "when": null, "other": false,
+            "options": [
+              { "id": "o-handel", "text": "Handel" },
+              { "id": "o-industrie", "text": "Industrie" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "s2", "title": "Industrie: Schnittstellen", "hint": "Nur für Industriekunden.",
+        "when": [{ "questionId": "q-group", "optionIds": ["o-industrie"] }],
+        "questions": [
+          {
+            "id": "q-erp", "type": "single", "text": "Welches ERP-System setzen Sie ein?",
+            "hint": "", "required": false, "when": null, "other": true,
+            "options": [
+              { "id": "o-sap", "text": "SAP" },
+              { "id": "o-dynamics", "text": "Microsoft Dynamics" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "s3", "title": "Unser Support", "hint": "", "when": null,
+        "questions": [
+          {
+            "id": "q-rating", "type": "rating", "text": "Wie zufrieden sind Sie mit unserem Support?",
+            "hint": "1 = sehr unzufrieden, 5 = sehr zufrieden", "required": false, "when": null, "noAnswer": true,
+            "rows": [
+              { "id": "r-reaktion", "text": "Reaktionszeit des Supports" },
+              { "id": "r-kompetenz", "text": "Fachliche Kompetenz" },
+              { "id": "r-doku", "text": "Dokumentation" }
+            ]
+          },
+          {
+            "id": "q-kano", "type": "kano", "text": "Wie fänden Sie diese Funktionen?",
+            "hint": "", "required": false, "when": null, "importance": false,
+            "rows": [
+              { "id": "k-chat", "text": "Live-Chat im Support" },
+              { "id": "k-status", "text": "Statusanzeige für Tickets" },
+              { "id": "k-hotline", "text": "Hotline rund um die Uhr" }
+            ]
+          },
+          {
+            "id": "q-wish", "type": "text", "text": "Was sollten wir als Erstes verbessern?",
+            "hint": "", "required": false, "when": null, "multiline": true
+          }
+        ]
+      }
+    ]
+  },
+  "recipients": [
+    { "id": "rec-1", "name": "Anna Berger", "organisation": "Berger Handels GmbH", "group": "Handel", "email": "", "note": "", "sentAt": "2026-10-01T09:00:00.000Z", "sentVersion": 1 },
+    { "id": "rec-2", "name": "Jonas Keller", "organisation": "Keller Maschinenbau AG", "group": "Industrie", "email": "", "note": "", "sentAt": "2026-10-01T09:05:00.000Z", "sentVersion": 1 },
+    { "id": "rec-3", "name": "Petra Lang", "organisation": "Lang Textil KG", "group": "Handel", "email": "", "note": "", "sentAt": "2026-10-01T09:10:00.000Z", "sentVersion": 1 }
+  ],
+  "responses": [
+    {
+      "id": "resp-1", "surveyVersion": 1, "recipientId": "rec-1", "viaRecipient": true, "submittedAt": "2026-10-02T08:14:00.000Z",
+      "answers": {
+        "q-group": "o-handel",
+        "q-rating": { "r-reaktion": 2, "r-kompetenz": 4, "r-doku": 3 },
+        "q-kano": { "k-chat": { "f": 1, "d": 3, "w": null }, "k-status": { "f": 1, "d": 5, "w": null }, "k-hotline": { "f": 2, "d": 5, "w": null } },
+        "q-wish": "Schnellere Rückmeldung auf Tickets"
+      }
+    },
+    {
+      "id": "resp-2", "surveyVersion": 1, "recipientId": "rec-2", "viaRecipient": true, "submittedAt": "2026-10-02T10:41:00.000Z",
+      "answers": {
+        "q-group": "o-industrie",
+        "q-erp": "o-sap",
+        "q-rating": { "r-reaktion": 4, "r-kompetenz": 4, "r-doku": 2 },
+        "q-kano": { "k-chat": { "f": 3, "d": 3, "w": null }, "k-status": { "f": 1, "d": 5, "w": null }, "k-hotline": { "f": 2, "d": 5, "w": null } },
+        "q-wish": "Bessere Doku zur REST-Schnittstelle"
+      }
+    },
+    {
+      "id": "resp-3", "surveyVersion": 1, "recipientId": "rec-3", "viaRecipient": true, "submittedAt": "2026-10-03T07:52:00.000Z",
+      "answers": {
+        "q-group": "o-handel",
+        "q-rating": { "r-reaktion": 3, "r-kompetenz": 4, "r-doku": "na" },
+        "q-kano": { "k-chat": { "f": 1, "d": 3, "w": null }, "k-status": { "f": 1, "d": 5, "w": null }, "k-hotline": { "f": 2, "d": 5, "w": null } },
+        "q-wish": "Statusmeldungen per E-Mail"
+      }
+    },
+    {
+      "id": "resp-4", "surveyVersion": 1, "recipientId": null, "viaRecipient": false, "submittedAt": "2026-10-03T13:20:00.000Z",
+      "answers": {
+        "q-group": "o-industrie",
+        "q-erp": { "other": "Sage" },
+        "q-rating": { "r-reaktion": 5, "r-kompetenz": 5, "r-doku": 3 },
+        "q-kano": { "k-chat": { "f": 3, "d": 3, "w": null }, "k-status": { "f": 1, "d": 5, "w": null }, "k-hotline": { "f": 3, "d": 3, "w": null } },
+        "q-wish": "Ansprechpartner, der unsere Anlagen kennt"
+      }
+    },
+    {
+      "id": "resp-5", "surveyVersion": 1, "recipientId": null, "viaRecipient": false, "submittedAt": "2026-10-04T09:03:00.000Z",
+      "answers": {
+        "q-group": "o-handel",
+        "q-rating": { "r-reaktion": 2, "r-kompetenz": 5, "r-doku": 3 },
+        "q-kano": { "k-chat": { "f": 1, "d": 3, "w": null }, "k-status": { "f": 1, "d": 5, "w": null }, "k-hotline": { "f": 2, "d": 5, "w": null } }
+      }
+    },
+    {
+      "id": "resp-6", "surveyVersion": 1, "recipientId": null, "viaRecipient": false, "submittedAt": "2026-10-04T15:37:00.000Z",
+      "answers": {
+        "q-group": "o-industrie",
+        "q-erp": "o-dynamics",
+        "q-rating": { "r-reaktion": 4, "r-kompetenz": 4, "r-doku": 2 },
+        "q-kano": { "k-chat": { "f": 1, "d": 4, "w": null }, "k-status": { "f": 1, "d": 5, "w": null }, "k-hotline": { "f": 2, "d": 5, "w": null } }
+      }
+    }
+  ],
+  "answeredRecipientIds": ["rec-1", "rec-2", "rec-3"],
+  "transfers": { "kano": {}, "vocTree": { "responseKeys": [] } },
+  "ui": { "tab": "draft", "selectedQuestionId": null, "filter": null, "groupBy": null, "reportWithNames": false },
+  "dirtyStructure": false
+}
