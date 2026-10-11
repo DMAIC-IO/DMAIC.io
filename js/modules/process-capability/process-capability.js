@@ -20,11 +20,8 @@
 
 import { createModule } from '../../core/template-module.js';
 import { State } from './process-capability-model.js';
-import { validate, analyze } from '../../engines/process-capability-engine.js';
-import {
-  splitSubgroups, alignValuesAndIds, validMethods, defaultMethod, SigmaWithinError,
-  SUBGROUP_METHODS,
-} from '../../engines/sigma-within-engine.js';
+import { SUBGROUP_METHODS } from '../../engines/sigma-within-engine.js';
+import { analyzeState, formatHint, specRefLines } from './process-capability-analysis.js';
 import { ColumnPicker, getColumnValues, discoverColumns } from '../../ui/column-picker.js';
 import { fmt, fmtZ, fmtFraction } from './process-capability-format.js';
 
@@ -265,121 +262,23 @@ const mod = createModule({
 
       // ── Analysis (controller — needs context + live worksheet data) ──
 
-      parseNum(s) {
-        if (s == null || s === '') return NaN;
-        return parseFloat(String(s).replace(',', '.').trim());
-      },
-
-      /** Resolved confidence as a fraction (0 < c < 1), from the percent input. */
-      confidenceFraction() {
-        const raw = this.parseNum(this.model.params.confidence);
-        if (!isNaN(raw) && raw > 0) {
-          return Math.max(50, Math.min(99.99, raw)) / 100;
-        }
-        return (module._context.stateManager.get('settings.confidenceLevel') ?? 95) / 100;
-      },
-
-      /** Live measurement values — embedded example data takes precedence. */
-      columnValues() {
-        if (this.model.embeddedValues) {
-          return this.model.embeddedValues.filter(v => typeof v === 'number' && !isNaN(v));
-        }
-        if (!this.model.columnRef) return [];
-        return getColumnValues(module._context.stateManager, this.model.columnRef)
-          .filter(v => v != null && typeof v === 'number' && !isNaN(v));
-      },
-
       /**
-       * Values and, in ID-column mode, their aligned subgroup IDs.
-       * @returns {{ values: number[], ids: string[]|null, missingIds: boolean }}
-       */
-      analysisInput() {
-        if (this.model.effectiveSubgroupMode() !== 'column') {
-          return { values: this.columnValues(), ids: null, missingIds: false };
-        }
-        if (!this.model.columnRef) return { values: [], ids: null, missingIds: false };
-        if (!this.model.subgroupColumnMatches()) return { values: [], ids: null, missingIds: true };
-        const sm = module._context.stateManager;
-        const { values, ids } = alignValuesAndIds(
-          getColumnValues(sm, this.model.columnRef),
-          getColumnValues(sm, this.model.subgroupColumnRef));
-        return { values, ids, missingIds: false };
-      },
-
-      /**
-       * Run analysis if all inputs are valid; otherwise silently clear results
-       * (no error shown — matches the legacy auto-analysis behaviour). Estimator
-       * problems (wrong method for the data, table limits) show a hint instead.
+       * Run the analysis if all inputs are valid; otherwise silently clear
+       * results. Estimator problems (wrong method for the data, table limits)
+       * show a hint instead. The computation lives in process-capability-analysis.js.
        */
       runAnalysis() {
-        this.withinHint = '';
-        // Without data the method list follows the settings alone (ID column →
-        // subgroups, fixed size n → subgroups for n ≥ 2), so a fresh or emptied
-        // module never shows an empty or stale estimator select.
-        this._applyMethods([new Array(
-          this.model.effectiveSubgroupMode() === 'column' ? 2 : this.model.subgroupSizeValue()).fill(0)]);
-        if (!this.model.columnRef && !this.model.embeddedValues) return this.clearResults();
-        const { values, ids, missingIds } = this.analysisInput();
-        if (missingIds) this.withinHint = _t('subgroupColumnMissing');
-        if (values.length === 0) return this.clearResults();
-
-        const groups = ids
-          ? splitSubgroups(values, { ids })
-          : splitSubgroups(values, { size: this.model.subgroupSizeValue() });
-        const { stored, method } = this._applyMethods(groups);
-        if (stored && stored !== method) {
-          this.withinHint = _t('methodFallbackHint', {
-            method: this.methodName(stored),
-            kind: _t(SUBGROUP_METHODS.includes(stored) ? 'kindSubgroups' : 'kindIndividuals'),
-            fallback: this.methodName(method),
-          });
-        }
-
-        const p = this.model.params;
-        const lsl = this.parseNum(p.lsl);
-        const usl = this.parseNum(p.usl);
-        const target = this.parseNum(p.target);
-        const params = {
-          lsl: isNaN(lsl) ? null : lsl,
-          usl: isNaN(usl) ? null : usl,
-          target: isNaN(target) ? null : target,
-          confidence: this.confidenceFraction(),
-          withinMethod: method,
-          unbiased: p.unbiased !== false,
-          mrSpan: this.model.mrSpanValue(),
-        };
-        if (ids) params.subgroupIds = ids;
-        else params.subgroupSize = this.model.subgroupSizeValue();
-
-        const validation = validate(params, values);
-        if (!validation.valid) return this.clearResults();
-
-        try {
-          this.result = analyze(params, values);
-        } catch (e) {
-          if (!(e instanceof SigmaWithinError)) throw e;
-          const key = { subgroupTooLarge: 'errWithinSubgroupTooLarge', spanTooLarge: 'errWithinSpanTooLarge' }[e.code]
-            || 'errWithinMethodInvalid';
-          this.withinHint = _t(key);
-          return this.clearResults();
-        }
-        this._values = values;
+        const sm = module._context.stateManager;
+        const a = analyzeState(this.model, (ref) => getColumnValues(sm, ref),
+          { defaultConfidence: sm.get('settings.confidenceLevel') ?? 95 });
+        this.methodKeys = a.methods;
+        this.activeMethod = a.method;
+        this.withinHint = formatHint(a.hint, _t);
+        if (!a.result) return this.clearResults();
+        this.result = a.result;
+        this._values = a.values;
         const gen = ++this._renderGen;
         this.$nextTick(() => this._renderHistogram(this.result, gen));
-      },
-
-      /**
-       * Derive the offered estimators and the active one for these groups.
-       * @param {number[][]} groups
-       * @returns {{ stored: string, method: string }}
-       */
-      _applyMethods(groups) {
-        const valid = validMethods(groups);
-        const stored = this.model.params.withinMethod;
-        const method = valid.includes(stored) ? stored : defaultMethod(groups);
-        this.methodKeys = valid;
-        this.activeMethod = method;
-        return { stored, method };
       },
 
       scheduleAnalysis() {
@@ -406,10 +305,7 @@ const mod = createModule({
         const values = this._values || [];
         if (values.length === 0) return;
 
-        const refLines = [];
-        if (r.hasLsl) refLines.push({ dir: 'v', value: r.lsl, label: 'LSL', color: 'var(--color-error)', dash: 'dash', width: 1.5, showLabel: true });
-        if (r.hasUsl) refLines.push({ dir: 'v', value: r.usl, label: 'USL', color: 'var(--color-error)', dash: 'dash', width: 1.5, showLabel: true });
-        if (r.targetVal != null) refLines.push({ dir: 'v', value: r.targetVal, label: 'Target', color: 'var(--color-success)', dash: 'dash', width: 1.5, showLabel: true });
+        const refLines = specRefLines(r);
 
         const chart = await module._context.chartManager.create(el, 'histogram', {
           data: values,

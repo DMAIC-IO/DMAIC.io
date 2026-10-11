@@ -1,6 +1,7 @@
-import { suite, test, assertEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import { State } from '../../js/modules/process-capability/process-capability-model.js';
 import { fmtZ, fmtFraction } from '../../js/modules/process-capability/process-capability-format.js';
+import { analyzeState, formatHint, specRefLines, parseNum, confidenceFraction } from '../../js/modules/process-capability/process-capability-analysis.js';
 
 suite('Process Capability Model — State defaults', () => {
   test('constructor sets default params (strings, mm, 95)', () => {
@@ -326,5 +327,108 @@ suite('Process Capability Model — σ within estimator and subgroup column', ()
     s.columnRef = { instanceId: 'i1', sheetId: 's1', columnId: 'c1' };
     s.subgroupColumnRef = { instanceId: 'i1', sheetId: 's1', columnId: 'c1' };
     assertEqual(s.subgroupColumnMatches(), false);
+  });
+});
+
+const VALS = [9.8, 10.1, 10.0, 9.9, 10.2, 10.05, 9.95, 10.1, 9.85, 10.0];
+const REF = { instanceId: 'w', sheetId: 's', columnId: 'c' };
+const IDS_REF = { instanceId: 'w', sheetId: 's', columnId: 'g' };
+const stateOf = (json) => State.fromJSON(json);
+const noColumn = () => { throw new Error('readColumn must not be called'); };
+
+suite('Process Capability analysis — helpers', () => {
+  test('parseNum accepts a decimal comma and rejects empty input', () => {
+    assertEqual(parseNum('9,5'), 9.5);
+    assertTrue(Number.isNaN(parseNum('')));
+    assertTrue(Number.isNaN(parseNum(null)));
+  });
+
+  test('confidenceFraction clamps the percent input', () => {
+    // 99.99 / 100 is not exactly 0.9999 in floating point
+    assertTrue(Math.abs(confidenceFraction(stateOf({ params: { confidence: '99.999' } })) - 0.9999) < 1e-12);
+    assertEqual(confidenceFraction(stateOf({ params: { confidence: '90' } })), 0.9);
+  });
+});
+
+suite('Process Capability analysis — analyzeState', () => {
+  test('no column and no embedded values → empty, methods still listed', () => {
+    const a = analyzeState(stateOf({}), noColumn);
+    assertEqual(a.empty, true);
+    assertEqual(a.result, null);
+    assertTrue(a.methods.includes('averageMR'));
+    assertEqual(a.method, 'averageMR');
+  });
+
+  test('embedded values win over the column', () => {
+    const a = analyzeState(stateOf({ columnRef: REF, embeddedValues: VALS, params: { lsl: '9.5', usl: '10.5' } }), noColumn);
+    assertEqual(a.result.n, VALS.length);
+    assertDeepEqual(a.values, VALS);
+  });
+
+  test('column values are filtered to numbers', () => {
+    const a = analyzeState(stateOf({ columnRef: REF, params: { lsl: '9.5', usl: '10.5' } }),
+      () => [...VALS, null, 'x', NaN]);
+    assertEqual(a.result.n, VALS.length);
+  });
+
+  test('one-sided limit: Cp is null, Cpk is computed', () => {
+    const a = analyzeState(stateOf({ embeddedValues: VALS, params: { usl: '10,5' } }), noColumn);
+    assertEqual(a.result.Cp, null);
+    assertTrue(Number.isFinite(a.result.Cpk));
+  });
+
+  test('no spec limit → no result, not empty', () => {
+    const a = analyzeState(stateOf({ embeddedValues: VALS }), noColumn);
+    assertEqual(a.result, null);
+    assertEqual(a.empty, false);
+  });
+
+  test('ID-column mode with a mismatching ID column → missing-IDs hint', () => {
+    const a = analyzeState(stateOf({
+      columnRef: REF, subgroupColumnRef: { instanceId: 'other', sheetId: 'x', columnId: 'g' },
+      params: { lsl: '9.5', usl: '10.5', subgroupMode: 'column' },
+    }), () => VALS);
+    assertEqual(a.result, null);
+    assertDeepEqual(a.hint, { key: 'subgroupColumnMissing', params: {} });
+  });
+
+  test('ID-column mode aligns values and IDs into subgroups', () => {
+    const ids = ['a', 'a', 'b', 'b', 'c', 'c', 'd', 'd', 'e', 'e'];
+    const a = analyzeState(stateOf({
+      columnRef: REF, subgroupColumnRef: IDS_REF, params: { lsl: '9.5', usl: '10.5', subgroupMode: 'column' },
+    }), (ref) => (ref.columnId === 'g' ? ids : VALS));
+    assertEqual(a.method, 'pooled');
+    assertEqual(a.result.n, VALS.length);
+  });
+
+  test('a stored estimator that does not fit → fallback hint with keys, not text', () => {
+    const a = analyzeState(stateOf({ embeddedValues: VALS, params: { lsl: '9.5', usl: '10.5', withinMethod: 'pooled' } }), noColumn);
+    assertEqual(a.method, 'averageMR');
+    assertDeepEqual(a.hint, { key: 'methodFallbackHint', params: { method: 'pooled', kind: 'kindSubgroups', fallback: 'averageMR' } });
+    assertTrue(a.result !== null);
+  });
+
+  test('a span larger than the data → errWithinSpanTooLarge hint, no result', () => {
+    const a = analyzeState(stateOf({ embeddedValues: VALS.slice(0, 5), params: { lsl: '9.5', usl: '10.5', mrSpan: '10' } }), noColumn);
+    assertEqual(a.result, null);
+    assertDeepEqual(a.hint, { key: 'errWithinSpanTooLarge', params: {} });
+  });
+});
+
+suite('Process Capability analysis — formatHint and refLines', () => {
+  const t = (k, p) => (p ? `${k}(${Object.values(p).join('|')})` : k);
+
+  test('formatHint translates method names and the kind', () => {
+    assertEqual(formatHint(null, t), '');
+    assertEqual(formatHint({ key: 'subgroupColumnMissing', params: {} }, t), 'subgroupColumnMissing()');
+    assertEqual(formatHint({ key: 'methodFallbackHint', params: { method: 'pooled', kind: 'kindSubgroups', fallback: 'averageMR' } }, t),
+      'methodFallbackHint(withinMethodNames.pooled|kindSubgroups|withinMethodNames.averageMR)');
+  });
+
+  test('specRefLines: LSL/USL in error colour, target in success colour, only when set', () => {
+    const lines = specRefLines({ hasLsl: true, lsl: 9.5, hasUsl: false, usl: null, targetVal: 10 });
+    assertDeepEqual(lines.map(l => [l.label, l.value, l.color]), [
+      ['LSL', 9.5, 'var(--color-error)'], ['Target', 10, 'var(--color-success)'],
+    ]);
   });
 });
