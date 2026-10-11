@@ -8,7 +8,7 @@
 import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertClose } from '../test-utils.js';
 import {
   mean, median, filterResponses, questionStats, responseRate, ratingRanking,
-  kanoOverview, freeTextSummary, groupComparison, worksheetColumns,
+  kanoOverview, freeTextSummary, groupComparison, worksheetColumns, formatAnswer,
 } from '../../js/modules/survey-builder/survey-stats.js';
 import { SURVEY, RESPONSES, q, resp } from './fixtures/survey-fixture.js';
 
@@ -293,5 +293,36 @@ suite('survey-stats — worksheetColumns', () => {
     const s = JSON.parse(JSON.stringify(SURVEY));
     s.sections[0].questions[0].text = '  ';
     assertEqual(worksheetColumns(s, two, [], STRINGS)[3].name, 'Frage 1');
+  });
+});
+
+suite('survey-stats — formatAnswer', () => {
+  const S = {
+    other: 'Sonstiges', noAnswer: 'k. A.',
+    cat: { M: 'Basis', O: 'Leistung', A: 'Begeisterung', I: 'Indifferent', R: 'Rückweisung', Q: 'Fraglich' },
+  };
+  const fmt = (id, answer) => formatAnswer(question(id), answer, S);
+
+  test('single: option text, or the other text', () => {
+    assertEqual(fmt('g', 'gb'), 'B');
+    assertEqual(fmt('g', { other: 'Post' }), 'Sonstiges: Post');
+  });
+  test('multi: options in question order, then other', () => {
+    assertEqual(fmt('m', { ids: ['m2', 'm1'], other: 'Fax' }), 'M1, M2, Sonstiges: Fax');
+    assertEqual(fmt('m', { ids: [], other: null }), '');
+  });
+  test('rating: row and value, n/a as noAnswer, unanswered rows left out', () => {
+    assertEqual(fmt('r', { r1: 4, r2: 'na' }), 'R1: 4; R2: k. A.');
+    assertEqual(fmt('r', { r2: 2 }), 'R2: 2');
+  });
+  test('kano: row and the category of the answer pair', () => {
+    assertEqual(fmt('k', { k1: { f: 1, d: 5, w: 9 } }), 'K1: Leistung');
+    assertEqual(fmt('k', { k1: { f: 1, d: 3, w: null } }), 'K1: Begeisterung');
+    assertEqual(fmt('k', { k1: { f: 1, d: null, w: null } }), 'K1: –');
+  });
+  test('text is trimmed; info and missing answers are empty', () => {
+    assertEqual(fmt('t', '  Faster  '), 'Faster');
+    assertEqual(fmt('i', 'x'), '');
+    assertEqual(fmt('g', undefined), '');
   });
 });

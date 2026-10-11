@@ -329,3 +329,44 @@ export function worksheetColumns(survey, responses, recipients, strings) {
   });
   return cols;
 }
+
+/**
+ * One stored answer as display text (response details, spec §6.1).
+ * @param {object} question
+ * @param {*} answer stored answer, shape per type (see parseResponse)
+ * @param {{other: string, noAnswer: string, cat: Object<string, string>}} strings
+ * @returns {string} '' when there is nothing to show
+ */
+export function formatAnswer(question, answer, strings) {
+  if (!question || answer === undefined || answer === null) return '';
+  const otherPart = (text) => `${strings.other}: ${text}`;
+  switch (question.type) {
+    case 'single': {
+      if (typeof answer === 'string') {
+        const opt = question.options.find((o) => o.id === answer);
+        return opt ? opt.text : '';
+      }
+      return typeof answer.other === 'string' && answer.other.trim() ? otherPart(answer.other.trim()) : '';
+    }
+    case 'multi': {
+      const ids = Array.isArray(answer.ids) ? answer.ids : [];
+      const parts = question.options.filter((o) => ids.includes(o.id)).map((o) => o.text);
+      if (typeof answer.other === 'string' && answer.other.trim()) parts.push(otherPart(answer.other.trim()));
+      return parts.join(', ');
+    }
+    case 'rating':
+      return question.rows
+        .filter((r) => answer[r.id] !== undefined && answer[r.id] !== null)
+        .map((r) => `${r.text}: ${answer[r.id] === 'na' ? strings.noAnswer : answer[r.id]}`)
+        .join('; ');
+    case 'kano':
+      return question.rows
+        .filter((r) => answer[r.id] && typeof answer[r.id] === 'object')
+        .map((r) => `${r.text}: ${strings.cat[classify(answer[r.id].f, answer[r.id].d)] || '–'}`)
+        .join('; ');
+    case 'text':
+      return typeof answer === 'string' ? answer.trim() : '';
+    default:
+      return '';
+  }
+}
