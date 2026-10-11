@@ -158,7 +158,7 @@ export function runSurvey(def, strings, opts) {
   const now = o.now || (() => new Date());
   const ask = o.confirm || ((message) => window.confirm(message));
   const storage = 'storage' in o ? o.storage : (() => {
-    try { return window.localStorage; } catch (e) { return null; }
+    try { return window.localStorage; } catch (_e) { return null; }
   })();
   const download = o.download || ((name, text) => {
     const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
@@ -182,7 +182,7 @@ export function runSurvey(def, strings, opts) {
   }
 
   function store(fn) {
-    try { return storage ? fn(storage) : null; } catch (e) { return null; }
+    try { return storage ? fn(storage) : null; } catch (_e) { return null; }
   }
 
   // Each builder returns { node, read, write }; read() is null when nothing is entered.
@@ -476,7 +476,7 @@ export function runSurvey(def, strings, opts) {
   function responseId() {
     try {
       if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
-    } catch (e) { /* insecure context: fall through */ }
+    } catch (_e) { /* insecure context: fall through */ }
     let hex = '';
     for (let i = 0; i < 16; i += 1) hex += Math.floor(Math.random() * 16).toString(16);
     return Date.now().toString(36) + '-' + hex;
@@ -532,7 +532,7 @@ export function runSurvey(def, strings, opts) {
       if (saved && saved.answers && typeof saved.answers === 'object') {
         Object.keys(fields).forEach((id) => fields[id].write(saved.answers[id]));
       }
-    } catch (e) { /* broken draft: start empty */ }
+    } catch (_e) { /* broken draft: start empty */ }
   }
   refresh();
   return logic;

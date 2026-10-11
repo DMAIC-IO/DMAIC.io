@@ -287,7 +287,7 @@ export function groupComparison(survey, responses, groupByQuestionId) {
       });
     }
   }
-  return { questionId: gq.id, groups: groups.map(({ members, ...g }) => g), questions };
+  return { questionId: gq.id, groups: groups.map(({ members: _members, ...g }) => g), questions };
 }
 
 /**
