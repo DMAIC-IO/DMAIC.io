@@ -518,6 +518,7 @@ class FormulaEditor {
  * @property {string|null} activeSheetId  id of the sheet the following columns and rows belong to
  * @property {Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null }>} columns  the column headers of the active sheet; `id` is the columnId of a column reference
  * @property {any[][]} rows  [bulk] the data rows of the active sheet, each row in column order
+ * @property {Array<{ columnId: string, row: number, formula: string }>} formulas  [bulk] which cells of the active sheet are COMPUTED, not typed; a plain value written over one of them deletes the formula
  */
 const mod = createModule({
   config: {
@@ -888,11 +889,28 @@ const mod = createModule({
         for (let r = 0; r < (state.rowCount ?? 0); r++) {
           rows.push((state.columns ?? []).map(c => c.values?.[r] ?? null));
         }
+        // Welche Zellen GERECHNET sind. Ohne dieses Feld konnte ein Agent
+        // eine Formel zerstören, die er nicht sehen kann — `setCells`
+        // löscht sie, wie der Zell-Editor.
+        const formulas = [];
+        for (const c of state.columns ?? []) {
+          (c.formulas ?? []).forEach((formula, row) => {
+            if (formula) formulas.push({ columnId: c.id, row, formula });
+          });
+        }
         return {
           sheets: (this.model.sheets ?? []).map(s => ({ id: s.id, name: s.name })),
           activeSheetId: this.model.activeSheetId ?? null,
           columns,
           rows,
+          formulas,
+          // Schwesterfelder der Umfangs-Deskriptoren. Sie stehen NICHT im
+          // Feldschema und erscheinen deshalb nicht in `read()` —
+          // `projectReadState` gibt nur erklärte Schlüssel aus. Nötig, weil
+          // das globale `columns` ab dem zweiten tabellarischen Massenfeld
+          // keinem Feld mehr eindeutig zugeordnet ist.
+          rowsColumns: columns,
+          formulasColumns: [{ name: 'columnId' }, { name: 'row' }, { name: 'formula' }],
         };
       },
 
@@ -919,6 +937,10 @@ const mod = createModule({
        * `isFormula()` BEFORE it reaches `setCellValue`; this path does not,
        * so `"=C1*2"` lands here as plain text. Formulas stay with the
        * formula editor in the UI.
+       *
+       * A plain value written into a formula cell OVERWRITES the formula —
+       * `read().formulas` says which cells are computed; undo restores value
+       * and formula.
        *
        * @agent
        * @param {string} columnId id of the target column (see read().columns[].id)
@@ -958,8 +980,11 @@ const mod = createModule({
             // weg. Der Agent bekam eine Zahl geschriebener Zellen für eine
             // Wirkung, die es nicht gab. Eine Absage wäre hier falsch: die
             // Oberfläche lässt den Nutzer eine Formel genauso überschreiben.
-            if (col.formulas?.[row]) col.formulas[row] = null;
-            this._grid.setCellValue(columnId, row, list[i]);
+            // Genau der Schritt, den der Zell-Editor vor dem Schreiben tut —
+            // jetzt über denselben öffentlichen Weg, der auch den
+            // Historieneintrag um die gelöschte Formel ergänzt, sodass
+            // `undo` beides zurückholt.
+            this._grid.setCellValue(columnId, row, list[i], { clearFormula: true });
           }
         } finally {
           this._grid.off('cell:changed', count);

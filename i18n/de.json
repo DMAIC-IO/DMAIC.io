@@ -982,7 +982,7 @@
           "params": { "csvText": "Der vollständige CSV- oder TSV-Text, Kopfzeile eingeschlossen, falls vorhanden." }
         },
         "setCells": {
-          "help": "Schreibt einen Block von Werten in eine Spalte, von einer Zeile an abwärts. Typerkennung, Sperren und Rückgängig wie bei der Zelleingabe. Nur Werte: eine Formel wie =C1*2 wird als Text geschrieben, nicht berechnet — Formeln bleiben dem Formeleditor der Oberfläche vorbehalten.",
+          "help": "Schreibt einen Block von Werten in eine Spalte, von einer Zeile an abwärts. Typerkennung, Sperren und Rückgängig wie bei der Zelleingabe. Nur Werte: eine Formel wie =C1*2 wird als Text geschrieben, nicht berechnet — Formeln bleiben dem Formeleditor der Oberfläche vorbehalten. Ein einfacher Wert in eine Formelzelle ÜBERSCHREIBT die Formel — read().formulas sagt, welche Zellen gerechnet sind; Rückgängig stellt Wert und Formel wieder her.",
           "params": {
             "columnId": "Die id der Zielspalte, wie read().columns[].id sie nennt.",
             "startRow": "Nullbasierter Index der ersten Zeile.",
@@ -1013,7 +1013,8 @@
         "sheets": { "help": "Alle Blätter der Arbeitsmappe in Reiterfolge, je mit id und Name." },
         "activeSheetId": { "help": "Die id des Blatts, auf das sich columns und rows beziehen." },
         "columns": { "help": "Die Spaltenköpfe des aktiven Blatts. id ist die columnId eines Spaltenbezugs, shortName die Kurzform in Formeln (C1, C2 …), role die erkannte Rolle der Spalte." },
-        "rows": { "help": "Die Datenzeilen des aktiven Blatts, jede Zeile in Spaltenreihenfolge. Massendaten: ohne options.fields = ['rows'] kommt nur der Umfang." }
+        "rows": { "help": "Die Datenzeilen des aktiven Blatts, jede Zeile in Spaltenreihenfolge. Massendaten: ohne options.fields = ['rows'] kommt nur der Umfang." },
+        "formulas": { "help": "Welche Zellen des aktiven Blatts gerechnet sind, je mit columnId, nullbasierter Zeile und Formeltext. Massendaten: ohne options.fields = ['formulas'] kommt nur der Umfang." }
       },
       "undo": "Rückgängig (Ctrl+Z)",
       "redo": "Wiederholen (Ctrl+Y)",

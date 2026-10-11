@@ -1209,9 +1209,14 @@ test('collectAgentData: worksheet declares its read surface, rows are bulk', () 
   const appDir = join(import.meta.dirname, '..', '..');
   const { modules } = collectAgentData(appDir);
   assert.deepEqual(Object.keys(modules.worksheet.fields),
-    ['sheets', 'activeSheetId', 'columns', 'rows']);
+    ['sheets', 'activeSheetId', 'columns', 'rows', 'formulas']);
   assert.equal(modules.worksheet.fields.rows.bulk, true);
   assert.equal(modules.worksheet.fields.rows.derived, true);
+  // Zweites tabellarisches Massenfeld: ab hier nimmt `columnNames` NICHT
+  // mehr das globale `columns`, sondern das Schwesterfeld (`agent-read.js`).
+  assert.equal(modules.worksheet.fields.formulas.bulk, true);
+  assert.equal(modules.worksheet.fields.formulas.bulkKind, 'table');
+  assert.equal(modules.worksheet.fields.formulas.derived, true);
 });
 
 /* ─── Das i18n-Tor der freigegebenen Module ───────────────────────────────

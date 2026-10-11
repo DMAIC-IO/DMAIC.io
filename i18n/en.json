@@ -982,7 +982,7 @@
           "params": { "csvText": "The full CSV or TSV text, header row included if present." }
         },
         "setCells": {
-          "help": "Writes a block of values into one column, downwards from a row. Type detection, locks and undo as with cell entry. Values only: a formula such as =C1*2 is written as text, not evaluated — formulas stay with the formula editor in the UI.",
+          "help": "Writes a block of values into one column, downwards from a row. Type detection, locks and undo as with cell entry. Values only: a formula such as =C1*2 is written as text, not evaluated — formulas stay with the formula editor in the UI. A plain value written into a formula cell OVERWRITES the formula — read().formulas says which cells are computed; undo restores value and formula.",
           "params": {
             "columnId": "The id of the target column, as read().columns[].id names it.",
             "startRow": "Zero-based index of the first row.",
@@ -1013,7 +1013,8 @@
         "sheets": { "help": "All sheets of the workbook in tab order, each with id and name." },
         "activeSheetId": { "help": "The id of the sheet that columns and rows refer to." },
         "columns": { "help": "The column headers of the active sheet. id is the columnId of a column reference, shortName the short form used in formulas (C1, C2 …), role the detected role of the column." },
-        "rows": { "help": "The data rows of the active sheet, each row in column order. Bulk data: without options.fields = ['rows'] only the extent is returned." }
+        "rows": { "help": "The data rows of the active sheet, each row in column order. Bulk data: without options.fields = ['rows'] only the extent is returned." },
+        "formulas": { "help": "Which cells of the active sheet are computed, each with columnId, zero-based row and formula text. Bulk data: without options.fields = ['formulas'] only the extent is returned." }
       },
       "undo": "Undo (Ctrl+Z)",
       "redo": "Redo (Ctrl+Y)",

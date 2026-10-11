@@ -5086,7 +5086,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "number",
-        "help": "Write a block of values into one column, starting at a row index. Goes through the same `setCellValue` path as the cell editor and the paste handler — type detection, locks and undo included. Values only, no formulas: the cell editor's commit path branches on `isFormula()` BEFORE it reaches `setCellValue`; this path does not, so `\"=C1*2\"` lands here as plain text. Formulas stay with the formula editor in the UI."
+        "help": "Write a block of values into one column, starting at a row index. Goes through the same `setCellValue` path as the cell editor and the paste handler — type detection, locks and undo included. Values only, no formulas: the cell editor's commit path branches on `isFormula()` BEFORE it reaches `setCellValue`; this path does not, so `\"=C1*2\"` lands here as plain text. Formulas stay with the formula editor in the UI. A plain value written into a formula cell OVERWRITES the formula — `read().formulas` says which cells are computed; undo restores value and formula."
       }
     },
     "fields": {
@@ -5111,6 +5111,13 @@ export const AGENT_REGISTRY = {
       "rows": {
         "type": "any[][]",
         "help": "the data rows of the active sheet, each row in column order",
+        "bulk": true,
+        "bulkKind": "table",
+        "derived": true
+      },
+      "formulas": {
+        "type": "Array<{ columnId: string, row: number, formula: string }>",
+        "help": "which cells of the active sheet are COMPUTED, not typed; a plain value written over one of them deletes the formula",
         "bulk": true,
         "bulkKind": "table",
         "derived": true

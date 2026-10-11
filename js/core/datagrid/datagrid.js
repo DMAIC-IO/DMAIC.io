@@ -439,6 +439,21 @@ export class DataGrid {
     this.emit('column:moved', { fromIdx, toIdx });
   }
 
+  /**
+   * Write one cell, with type detection, lock check and undo.
+   *
+   * @param {string} columnId
+   * @param {number} rowIndex
+   * @param {any} value
+   * @param {object} [options]
+   * @param {boolean} [options.bypassLock]  write into a locked column
+   * @param {boolean} [options.clearFormula]  a plain value REPLACES a formula
+   *   in this cell — and the history entry records the formula, so `undo`
+   *   restores both. The cell editor does exactly this, and used to patch
+   *   `history._stack` afterwards to get the formula back; from a module that
+   *   would be a reach into DataGrid internals. This is the public way, and
+   *   both paths take it.
+   */
   setCellValue(columnId, rowIndex, value, options = {}) {
     const col = this.getColumn(columnId);
     if (!col || rowIndex < 0) return;
@@ -450,6 +465,14 @@ export class DataGrid {
     }
     while (rowIndex >= this.rowCount) this.addRows(1);
     const oldValue = col.values[rowIndex];
+
+    // Die Formel VOR dem Schreiben abräumen: `recalcAllFormulas` würde den
+    // neuen Wert sonst beim nächsten `render()` sofort wieder wegrechnen.
+    let oldFormula = null;
+    if (options.clearFormula && col.formulas?.[rowIndex]) {
+      oldFormula = col.formulas[rowIndex];
+      col.formulas[rowIndex] = null;
+    }
 
     if (value === '' || value == null) {
       col.values[rowIndex] = null;
@@ -494,7 +517,9 @@ export class DataGrid {
     }
 
     const newValue = col.values[rowIndex];
-    this.history.push({ type: 'cell-edit', columnId, rowIndex, oldValue, newValue });
+    this.history.push(oldFormula
+      ? { type: 'cell-edit', columnId, rowIndex, oldValue, newValue, oldFormula, newFormula: null }
+      : { type: 'cell-edit', columnId, rowIndex, oldValue, newValue });
     this.metadata.modified = new Date().toISOString();
     this.emit('cell:changed', { columnId, rowIndex, oldValue, newValue });
   }
@@ -2381,16 +2406,11 @@ export class DataGrid {
         oldFormula, newFormula: col.formulas[rowIdx],
       });
     } else {
-      const oldFormula = col.formulas?.[rowIdx] || null;
-      if (col.formulas && col.formulas[rowIdx]) col.formulas[rowIdx] = null;
-      this.setCellValue(col.id, rowIdx, rawVal);
-      if (oldFormula && this.history._stack.length > 0) {
-        const lastEntry = this.history._stack[this.history._index];
-        if (lastEntry) {
-          lastEntry.oldFormula = oldFormula;
-          lastEntry.newFormula = null;
-        }
-      }
+      // Derselbe öffentliche Weg, den `worksheet.setCells` nimmt. Zuvor
+      // stand hier ein Griff in `history._stack`/`_index`, um den
+      // Historieneintrag nachträglich um die gelöschte Formel zu ergänzen —
+      // und der Agentenpfad hatte diesen Griff nicht und verlor die Formel.
+      this.setCellValue(col.id, rowIdx, rawVal, { clearFormula: true });
     }
 
     this.editingCell = null;
