@@ -412,4 +412,9 @@ export default class ProbabilityPlot extends ChartBase {
       px, py,
     }];
   }
+
+  /** @override — draws its own y ticks at pa.x - 10 although showYTicks is false. */
+  _hasLeftTickLabels() {
+    return true;
+  }
 }

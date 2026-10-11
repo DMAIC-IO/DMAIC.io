@@ -27,8 +27,16 @@ import { debounce } from '../debounce.js';
 const FONT_MAIN = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
 const FONT_MONO = "'SF Mono', 'Cascadia Code', Consolas, 'Liberation Mono', monospace";
 
-/** Default margins */
-const DEFAULT_MARGIN = { top: 48, right: 24, bottom: 58, left: 72 };
+/** Default margins (every element drawn). */
+export const DEFAULT_MARGIN = { top: 48, right: 24, bottom: 58, left: 72 };
+/** Margins of a side whose title / ticks are not drawn (top still fits ref-line labels at pa.y - 4). */
+export const COMPACT_MARGIN = { top: 16, bottom: 8, left: 8 };
+/** Bottom margin for tick or category labels without an x axis title (labels sit at pa.y + pa.h + 14…18). */
+export const X_TICKS_BOTTOM = 28;
+/** Bottom margin for an x axis title without tick labels (the title moves up to pa.y + pa.h + 20). */
+export const X_LABEL_ONLY_BOTTOM = 32;
+/** Left gutter for the rotated y axis title (drawn centred at x = 18) without tick labels. */
+export const Y_LABEL_GUTTER = 28;
 const LEGEND_WIDTH = 90;
 // Gutter between the widest y-axis label and the plot area. Covers the largest
 // offset any chart type draws its left labels at (base ticks sit at `pa.x - 10`)
@@ -781,6 +789,54 @@ export default class ChartBase {
   }
 
   /**
+   * Pixels reserved under the plot for tick or category labels; 0 = none.
+   * Types that draw labels below the plot regardless of `showXTicks` override it.
+   * @protected
+   * @returns {number}
+   */
+  _getBottomTickGutter() {
+    return this.config.showXTicks !== false ? X_TICKS_BOTTOM : 0;
+  }
+
+  /**
+   * Whether labels are drawn left of the plot although `_getYAxisLabels()`
+   * reports none (types that draw their own y ticks override it).
+   * @protected
+   * @returns {boolean}
+   */
+  _hasLeftTickLabels() {
+    return this.config.showYTicks !== false;
+  }
+
+  /**
+   * Extra pixels a type draws directly above the plot (e.g. a panel band);
+   * only reserved when no title is drawn (the title margin already covers it).
+   * @protected
+   * @returns {number}
+   */
+  _getTopGutter() {
+    return 0;
+  }
+
+  /**
+   * Top and bottom margins from the drawn elements. With everything drawn
+   * they equal DEFAULT_MARGIN.
+   * @protected
+   * @returns {{top: number, bottom: number}}
+   */
+  _getMargins() {
+    const c = this.config;
+    const hasTitle = c.showTitle !== false && !!c.title;
+    const hasXLabel = c.showXLabel !== false && !!c.xLabel;
+    const gutter = this._getBottomTickGutter();
+    const top = hasTitle ? DEFAULT_MARGIN.top : COMPACT_MARGIN.top + this._getTopGutter();
+    const bottom = hasXLabel
+      ? (gutter > 0 ? Math.max(DEFAULT_MARGIN.bottom, gutter) : X_LABEL_ONLY_BOTTOM)
+      : Math.max(gutter, COMPACT_MARGIN.bottom);
+    return { top, bottom };
+  }
+
+  /**
    * Measure the left margin needed for the y-axis labels, using an offscreen
    * Canvas (works before the SVG is laid out) — the mirror image of
    * `_measureLegendWidth` for the right side.
@@ -790,11 +846,15 @@ export default class ChartBase {
    * `overflow: hidden` on `.dmike-chart-svg-wrap`.
    *
    * @private
-   * @returns {number} Required left margin in px (never below the default)
+   * @returns {number} Required left margin in px (the default floor applies only while labels are drawn)
    */
   _measureLeftMargin() {
     const { labels, mono } = this._getYAxisLabels();
-    if (!labels || labels.length === 0) return DEFAULT_MARGIN.left;
+    if (!labels || labels.length === 0) {
+      if (this._hasLeftTickLabels()) return DEFAULT_MARGIN.left;
+      const hasYLabel = this.config.showYLabel !== false && !!this.config.yLabel;
+      return COMPACT_MARGIN.left + (hasYLabel ? Y_LABEL_GUTTER : 0);
+    }
 
     const ctx = document.createElement('canvas').getContext('2d');
     ctx.font = `${this.config.tickSize || 11}px ${mono ? FONT_MONO : FONT_MAIN}`;
@@ -813,12 +873,13 @@ export default class ChartBase {
     const size = this._getSize();
     const lw = this._legendWidth || LEGEND_WIDTH;
     const rMargin = this.config.showLegend ? lw + 16 : DEFAULT_MARGIN.right;
-    const lMargin = this._leftMargin || DEFAULT_MARGIN.left;
+    const lMargin = this._leftMargin ?? DEFAULT_MARGIN.left;
+    const { top, bottom } = this._getMargins();
     return {
       x: lMargin,
-      y: DEFAULT_MARGIN.top,
+      y: top,
       w: size.w - lMargin - rMargin,
-      h: size.h - DEFAULT_MARGIN.top - DEFAULT_MARGIN.bottom,
+      h: size.h - top - bottom,
       totalW: size.w,
       totalH: size.h,
       rMargin,
@@ -995,7 +1056,7 @@ export default class ChartBase {
     // X Label
     if (this.config.showXLabel !== false && this.config.xLabel) {
       svgText(this.config.xLabel, {
-        x: pa.x + pa.w / 2, y: pa.y + pa.h + 46,
+        x: pa.x + pa.w / 2, y: pa.y + pa.h + (this._getBottomTickGutter() > 0 ? 46 : 20),
         'text-anchor': 'middle', 'font-size': `${this.config.labelSize  }px`, 'font-weight': '600', fill: textPrimary,
         'font-family': FONT_MAIN
       }, svg);

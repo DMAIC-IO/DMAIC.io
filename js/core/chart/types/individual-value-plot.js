@@ -22,7 +22,7 @@
  *   pointStrokeWidth: 1.2
  */
 
-import ChartBase from '../chart-base.js';
+import ChartBase, { X_TICKS_BOTTOM } from '../chart-base.js';
 import { h } from '../../dom.js';
 import {
   svgEl, svgText, resolveColor, formatNum, getChartColors, drawMarker,
@@ -398,5 +398,10 @@ export default class IndividualValuePlotChart extends ChartBase {
     }, 0, 100, 5));
 
     inner.appendChild(sec);
+  }
+
+  /** @override — category labels are drawn below the plot regardless of showXTicks. */
+  _getBottomTickGutter() {
+    return X_TICKS_BOTTOM;
   }
 }

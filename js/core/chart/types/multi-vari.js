@@ -368,4 +368,9 @@ export default class MultiVariChartType extends ChartBase {
       setStrokeWidth: (v) => { cfg.pointStrokeWidth = v; },
     }));
   }
+
+  /** @override — the panel band is drawn BAND_H above the plot. */
+  _getTopGutter() {
+    return BAND_H;
+  }
 }
