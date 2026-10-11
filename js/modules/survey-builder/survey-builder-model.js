@@ -40,6 +40,10 @@ function itemsKey(q) {
   return Array.isArray(q.options) ? 'options' : Array.isArray(q.rows) ? 'rows' : null;
 }
 
+/**
+ * Complete persisted state of one survey-builder instance.
+ * Mutating methods keep conditions valid and flag structural changes.
+ */
 export class State {
   survey = emptySurvey();
   /** @type {Array<{id, name, organisation, group, email, note, sentAt: string|null, sentVersion: number|null}>} */
@@ -54,13 +58,22 @@ export class State {
 
   // ─── Lookup ─────────────────────────────────────────────────
 
-  /** @returns {object|null} */
+  /**
+   * @param {string} id section id
+   * @returns {object|null}
+   */
   section(id) { return this.survey.sections.find((s) => s.id === id) || null; }
 
-  /** @returns {object|null} */
+  /**
+   * @param {string} id question id
+   * @returns {object|null}
+   */
   question(id) { return documentOrder(this.survey).find((e) => e.question.id === id)?.question || null; }
 
-  /** @returns {object|null} the section that holds the question */
+  /**
+   * @param {string} questionId
+   * @returns {object|null} the section that holds the question
+   */
   sectionOf(questionId) {
     return this.survey.sections.find((s) => s.questions.some((q) => q.id === questionId)) || null;
   }
@@ -87,13 +100,21 @@ export class State {
     return s.id;
   }
 
-  /** @param {'title'|'hint'} field */
+  /**
+   * Text edit; never structural.
+   * @param {string} id section id
+   * @param {'title'|'hint'} field
+   * @param {string} value
+   */
   updateSection(id, field, value) {
     const s = this.section(id);
     if (s && (field === 'title' || field === 'hint')) s[field] = str(value);
   }
 
-  /** @returns {{removedConditions: number}} */
+  /**
+   * @param {string} id section id
+   * @returns {{removedConditions: number}}
+   */
   deleteSection(id) {
     const s = this.section(id);
     if (!s) return { removedConditions: 0 };
@@ -103,7 +124,11 @@ export class State {
     return { removedConditions: this.cleanConditions() };
   }
 
-  /** @param {-1|1} dir @returns {{removedConditions: number}} */
+  /**
+   * @param {string} id section id
+   * @param {-1|1} dir
+   * @returns {{removedConditions: number}}
+   */
   moveSection(id, dir) {
     const list = this.survey.sections;
     const i = list.findIndex((s) => s.id === id);
@@ -116,7 +141,11 @@ export class State {
 
   // ─── Questions ──────────────────────────────────────────────
 
-  /** @returns {string|null} new question id */
+  /**
+   * @param {string} sectionId
+   * @param {string} type one of QUESTION_TYPES
+   * @returns {string|null} new question id, null for an unknown section or type
+   */
   addQuestion(sectionId, type) {
     const s = this.section(sectionId);
     if (!s || !QUESTION_TYPES.includes(type)) return null;
@@ -131,6 +160,7 @@ export class State {
    * Text fields and flags; never structural.
    * @param {string} id
    * @param {'text'|'hint'|'required'|'other'|'noAnswer'|'importance'|'multiline'} field
+   * @param {*} value
    */
   updateQuestion(id, field, value) {
     const q = this.question(id);
@@ -139,7 +169,12 @@ export class State {
     else if (QUESTION_FLAGS.includes(field) && field in q) q[field] = Boolean(value);
   }
 
-  /** @returns {{removedConditions: number}} */
+  /**
+   * Switch the type, keeping id, text, hint, required and conditions.
+   * @param {string} id question id
+   * @param {string} type one of QUESTION_TYPES
+   * @returns {{removedConditions: number}}
+   */
   changeType(id, type) {
     const q = this.question(id);
     if (!q || q.type === type || !QUESTION_TYPES.includes(type)) return { removedConditions: 0 };
@@ -151,7 +186,10 @@ export class State {
     return { removedConditions: this.cleanConditions() };
   }
 
-  /** @returns {{removedConditions: number}} */
+  /**
+   * @param {string} id question id
+   * @returns {{removedConditions: number}}
+   */
   deleteQuestion(id) {
     const sec = this.sectionOf(id);
     if (!sec) return { removedConditions: 0 };
@@ -166,6 +204,7 @@ export class State {
   /**
    * Move up/down; at a section boundary the question moves to the end of
    * the previous / start of the next section.
+   * @param {string} id question id
    * @param {-1|1} dir
    * @returns {{removedConditions: number}}
    */
@@ -190,7 +229,11 @@ export class State {
 
   // ─── Options / rows ─────────────────────────────────────────
 
-  /** @param {'options'|'rows'} kind @returns {string|null} */
+  /**
+   * @param {string} questionId
+   * @param {'options'|'rows'} kind
+   * @returns {string|null} new item id, null if the question has no such list
+   */
   addItem(questionId, kind) {
     const q = this.question(questionId);
     if (!q || itemsKey(q) !== kind) return null;
@@ -200,7 +243,14 @@ export class State {
     return item.id;
   }
 
-  /** @param {'text'|'group'} field */
+  /**
+   * Text edit; never structural.
+   * @param {string} questionId
+   * @param {'options'|'rows'} kind
+   * @param {string} itemId
+   * @param {'text'|'group'} field
+   * @param {string} value
+   */
   updateItem(questionId, kind, itemId, field, value) {
     const item = this.question(questionId)?.[kind]?.find((x) => x.id === itemId);
     if (!item) return;
@@ -208,7 +258,12 @@ export class State {
     if (field === 'group' && kind === 'options') item.group = str(value) || undefined;
   }
 
-  /** @returns {{removedConditions: number}} */
+  /**
+   * @param {string} questionId
+   * @param {'options'|'rows'} kind
+   * @param {string} itemId
+   * @returns {{removedConditions: number}}
+   */
   deleteItem(questionId, kind, itemId) {
     const q = this.question(questionId);
     if (!q?.[kind]) return { removedConditions: 0 };
@@ -218,7 +273,12 @@ export class State {
     return { removedConditions: this.cleanConditions() };
   }
 
-  /** @param {-1|1} dir */
+  /**
+   * @param {string} questionId
+   * @param {'options'|'rows'} kind
+   * @param {string} itemId
+   * @param {-1|1} dir
+   */
   moveItem(questionId, kind, itemId, dir) {
     const list = this.question(questionId)?.[kind];
     if (!list) return;
@@ -244,6 +304,12 @@ export class State {
     this.dirtyStructure = true;
   }
 
+  /**
+   * @param {string} nodeId
+   * @param {*} when
+   * @returns {Array<{questionId: string, optionIds: string[]}>|null} only valid conditions, or null
+   * @private
+   */
   _validConditions(nodeId, when) {
     if (!Array.isArray(when)) return null;
     const sources = new Map(availableSources(this.survey, nodeId).map((q) => [q.id, q]));
@@ -311,18 +377,30 @@ export class State {
     return r.id;
   }
 
+  /**
+   * @param {string} id recipient id
+   * @param {'name'|'organisation'|'group'|'email'|'note'} field
+   * @param {string} value
+   */
   updateRecipient(id, field, value) {
     const r = this.recipients.find((x) => x.id === id);
     if (r && RECIPIENT_FIELDS.includes(field)) r[field] = str(value);
   }
 
+  /**
+   * Removes the recipient; their responses are kept with the id cleared.
+   * @param {string} id recipient id
+   */
   deleteRecipient(id) {
     this.recipients = this.recipients.filter((r) => r.id !== id);
     this.answeredRecipientIds = this.answeredRecipientIds.filter((x) => x !== id);
     for (const resp of this.responses) if (resp.recipientId === id) resp.recipientId = null;
   }
 
-  /** @param {string} now ISO timestamp */
+  /**
+   * @param {string} id recipient id
+   * @param {string} now ISO timestamp
+   */
   markSent(id, now) {
     const r = this.recipients.find((x) => x.id === id);
     if (!r) return;
@@ -330,14 +408,20 @@ export class State {
     r.sentVersion = this.survey.version;
   }
 
-  /** @returns {'not-sent'|'sent'|'answered'} */
+  /**
+   * @param {string} id recipient id
+   * @returns {'not-sent'|'sent'|'answered'}
+   */
   recipientStatus(id) {
     if (this.answeredRecipientIds.includes(id)) return 'answered';
     const r = this.recipients.find((x) => x.id === id);
     return r?.sentAt ? 'sent' : 'not-sent';
   }
 
-  /** @returns {boolean} sent with an older version than the current one */
+  /**
+   * @param {string} id recipient id
+   * @returns {boolean} sent with an older version than the current one
+   */
   isOutdated(id) {
     const r = this.recipients.find((x) => x.id === id);
     return Boolean(r?.sentAt) && (r.sentVersion ?? 0) < this.survey.version;
@@ -374,16 +458,26 @@ export class State {
     return { unknownRecipient };
   }
 
+  /**
+   * Removes a response and its VoC-tree transfer marks.
+   * @param {string} id response id
+   */
   deleteResponse(id) {
     this.responses = this.responses.filter((r) => r.id !== id);
     this.transfers.vocTree.responseKeys = this.transfers.vocTree.responseKeys.filter((k) => !k.startsWith(`${id}:`));
   }
 
-  /** @returns {string[]} */
+  /**
+   * @returns {string[]} ids of all stored responses
+   */
   responseIds() { return this.responses.map((r) => r.id); }
 
   // ─── Transfers ──────────────────────────────────────────────
 
+  /**
+   * @param {string} questionId
+   * @param {string} instanceId target Kano instance
+   */
   setKanoTarget(questionId, instanceId) { this.transfers.kano[questionId] = instanceId; }
 
   /** @param {string[]} keys `<responseId>:<questionId>` */
@@ -395,10 +489,16 @@ export class State {
 
   // ─── Persistence ────────────────────────────────────────────
 
+  /**
+   * @returns {boolean} true if any question, recipient or response exists
+   */
   hasContent() {
     return documentOrder(this.survey).length > 0 || this.recipients.length > 0 || this.responses.length > 0;
   }
 
+  /**
+   * @returns {object} plain, deep-copied snapshot for persistence
+   */
   toJSON() {
     return JSON.parse(JSON.stringify({
       survey: this.survey,
@@ -477,6 +577,11 @@ export class State {
     return s;
   }
 
+  /**
+   * @param {object} q raw question with a valid id and type
+   * @returns {object} normalised question
+   * @private
+   */
   static _question(q) {
     const base = emptyQuestion(q.type);
     const out = { ...base, id: q.id, text: str(q.text), hint: str(q.hint), required: Boolean(q.required),

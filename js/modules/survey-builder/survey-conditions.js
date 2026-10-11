@@ -12,7 +12,9 @@
  * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md §3.2
  */
 
+/** All question types a survey may contain. @type {string[]} */
 export const QUESTION_TYPES = ['single', 'multi', 'rating', 'kano', 'text', 'info'];
+/** Question types that may serve as a condition source. @type {string[]} */
 export const SOURCE_TYPES = ['single', 'multi'];
 
 /**
@@ -40,12 +42,20 @@ export function documentOrder(survey) {
   return out;
 }
 
-/** @returns {object|null} */
+/**
+ * @param {object} survey
+ * @param {string} questionId
+ * @returns {object|null} the question, or null if unknown
+ */
 export function findQuestion(survey, questionId) {
   return documentOrder(survey).find((e) => e.question.id === questionId)?.question || null;
 }
 
-/** @returns {object|null} */
+/**
+ * @param {object} survey
+ * @param {string} questionId
+ * @returns {object|null} the section holding the question, or null if unknown
+ */
 export function sectionOfQuestion(survey, questionId) {
   return documentOrder(survey).find((e) => e.question.id === questionId)?.section || null;
 }
