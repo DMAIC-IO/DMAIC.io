@@ -11,7 +11,8 @@
  */
 
 import { documentOrder, findQuestion, isVisible, answerHasOption } from './survey-conditions.js';
-import { evaluate } from '../../engines/kano-engine.js';
+import { evaluate, classify } from '../../engines/kano-engine.js';
+import { ROLE } from '../../core/datagrid/datagrid-roles.js';
 
 /** Groups below this many responses carry the "few responses" hint. */
 export const FEW_RESPONSES = 5;
@@ -274,4 +275,57 @@ export function groupComparison(survey, responses, groupByQuestionId) {
     }
   }
   return { questionId: gq.id, groups: groups.map(({ members, ...g }) => g), questions };
+}
+
+/**
+ * Columns for "Als Worksheet" (spec §6.2): one row per response.
+ * @param {object} survey
+ * @param {object[]} responses
+ * @param {Array<{id: string, name: string}>} recipients
+ * @param {{responseId, submittedAt, recipient, other, functional, dysfunctional, importance, category, question}} strings
+ * @returns {Array<{name: string, type: 'numeric'|'text', role: string, values: Array<number|string|null>}>}
+ */
+export function worksheetColumns(survey, responses, recipients, strings) {
+  const cols = [];
+  const add = (name, type, role, valueOf) => cols.push({ name, type, role, values: responses.map(valueOf) });
+  const names = new Map(recipients.map((r) => [r.id, r.name]));
+
+  add(strings.responseId, 'text', ROLE.IDENTIFIER, (r) => r.id);
+  add(strings.submittedAt, 'text', ROLE.IDENTIFIER, (r) => r.submittedAt || null);
+  if (!survey.anonymous) add(strings.recipient, 'text', ROLE.CATEGORICAL, (r) => names.get(r.recipientId) || null);
+
+  documentOrder(survey).forEach(({ question: q }, index) => {
+    const label = q.text.trim() || `${strings.question} ${index + 1}`;
+    // Value of one column for one response; null when the question was hidden.
+    const col = (name, type, role, pick) => add(name, type, role,
+      (r) => (isVisible(q, r.answers, survey) ? pick(r.answers?.[q.id]) : null));
+
+    if (q.type === 'single') {
+      const text = new Map(q.options.map((o) => [o.id, o.text]));
+      col(label, 'text', ROLE.CATEGORICAL, (a) => (typeof a === 'string' ? text.get(a) ?? null : (a?.other || null)));
+    } else if (q.type === 'multi') {
+      for (const o of q.options) {
+        col(`${label}: ${o.text}`, 'numeric', ROLE.CATEGORICAL, (a) => (Array.isArray(a?.ids) && a.ids.includes(o.id) ? 1 : 0));
+      }
+      if (q.other) col(`${label}: ${strings.other}`, 'text', ROLE.FREE_TEXT, (a) => a?.other || null);
+    } else if (q.type === 'rating') {
+      for (const row of q.rows) {
+        col(`${label}: ${row.text}`, 'numeric', ROLE.ORDINAL, (a) => (Number.isInteger(a?.[row.id]) ? a[row.id] : null));
+      }
+    } else if (q.type === 'kano') {
+      for (const row of q.rows) {
+        const cell = (a) => a?.[row.id] || {};
+        col(`${row.text} (${strings.functional})`, 'numeric', ROLE.ORDINAL, (a) => cell(a).f ?? null);
+        col(`${row.text} (${strings.dysfunctional})`, 'numeric', ROLE.ORDINAL, (a) => cell(a).d ?? null);
+        if (q.importance) col(`${row.text} (${strings.importance})`, 'numeric', ROLE.ORDINAL, (a) => cell(a).w ?? null);
+        col(`${row.text} (${strings.category})`, 'text', ROLE.CATEGORICAL, (a) => {
+          const { f, d } = cell(a);
+          return Number.isInteger(f) && Number.isInteger(d) ? classify(f, d) : null;
+        });
+      }
+    } else if (q.type === 'text') {
+      col(label, 'text', ROLE.FREE_TEXT, (a) => (typeof a === 'string' && a.trim() ? a : null));
+    }
+  });
+  return cols;
 }

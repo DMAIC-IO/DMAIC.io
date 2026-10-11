@@ -8,7 +8,7 @@
 import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertClose } from '../test-utils.js';
 import {
   mean, median, filterResponses, questionStats, responseRate, ratingRanking,
-  kanoOverview, freeTextSummary, groupComparison,
+  kanoOverview, freeTextSummary, groupComparison, worksheetColumns,
 } from '../../js/modules/survey-builder/survey-stats.js';
 
 const q = (id, type, extra) => ({ id, type, text: id.toUpperCase(), hint: '', required: false, when: null, ...extra });
@@ -261,5 +261,64 @@ suite('survey-stats — group comparison', () => {
   test('few is false from five responses on', () => {
     const many = [...RESPONSES, resp('x6', { g: 'ga' }), resp('x7', { g: 'ga' })];
     assertTrue(!groupComparison(SURVEY, many, 'g').groups[0].few);
+  });
+});
+
+suite('survey-stats — worksheetColumns', () => {
+  const STRINGS = {
+    responseId: 'Antwort-ID', submittedAt: 'Eingang', recipient: 'Empfänger', other: 'Sonstiges',
+    functional: 'F', dysfunctional: 'D', importance: 'W', category: 'Kategorie', question: 'Frage',
+  };
+  const recipients = [{ id: 'p1', name: 'Anna' }];
+  const two = RESPONSES.slice(0, 2);
+  const cols = (survey = SURVEY) => worksheetColumns(survey, two, recipients, STRINGS);
+
+  test('column names in document order', () => {
+    assertDeepEqual(cols().map((c) => c.name), [
+      'Antwort-ID', 'Eingang', 'Empfänger', 'G', 'M: M1', 'M: M2', 'M: Sonstiges', 'C',
+      'R: R1', 'R: R2', 'K1 (F)', 'K1 (D)', 'K1 (W)', 'K1 (Kategorie)', 'T',
+    ]);
+  });
+
+  test('values per type', () => {
+    const v = Object.fromEntries(cols().map((c) => [c.name, c.values]));
+    assertDeepEqual(v['Antwort-ID'], ['x1', 'x2']);
+    assertDeepEqual(v.Eingang, ['2026-10-01T10:00:00Z', '2026-10-02T10:00:00Z']);
+    assertDeepEqual(v['Empfänger'], ['Anna', null]);
+    assertDeepEqual(v.G, ['A', 'A']);
+    assertDeepEqual(v['M: M1'], [1, 1]);
+    assertDeepEqual(v['M: M2'], [1, 0]);
+    assertDeepEqual(v['M: Sonstiges'], [null, 'Fax']);
+    assertDeepEqual(v.C, ['C1', null]);
+    assertDeepEqual(v['R: R2'], [2, null]);
+    assertDeepEqual(v['K1 (W)'], [9, 7]);
+    assertDeepEqual(v['K1 (Kategorie)'], ['O', 'O']);
+    assertDeepEqual(v.T, ['Faster', null]);
+  });
+
+  test('types: 0/1, ratings and kano answers are numeric', () => {
+    const t = Object.fromEntries(cols().map((c) => [c.name, c.type]));
+    assertEqual(t['M: M1'], 'numeric');
+    assertEqual(t['R: R1'], 'numeric');
+    assertEqual(t['K1 (F)'], 'numeric');
+    assertEqual(t.G, 'text');
+    assertEqual(t['K1 (Kategorie)'], 'text');
+  });
+
+  test('a question hidden for a response gives null, not 0', () => {
+    const hidden = worksheetColumns(SURVEY, [RESPONSES[3]], [], STRINGS);
+    assertDeepEqual(hidden.find((c) => c.name === 'C').values, [null]);
+  });
+
+  test('anonymous survey has no recipient column', () => {
+    const names = cols({ ...SURVEY, anonymous: true }).map((c) => c.name);
+    assertTrue(!names.includes('Empfänger'));
+    assertEqual(names.length, 14);
+  });
+
+  test('empty question text falls back to "Frage <n>"', () => {
+    const s = JSON.parse(JSON.stringify(SURVEY));
+    s.sections[0].questions[0].text = '  ';
+    assertEqual(worksheetColumns(s, two, [], STRINGS)[3].name, 'Frage 1');
   });
 });
