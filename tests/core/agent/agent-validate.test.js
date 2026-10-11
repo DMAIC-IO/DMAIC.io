@@ -11,7 +11,7 @@
  * tests tagged "Ruling K6" below.
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
-import { validateBatch, WRITE_OPS, CONDITIONAL_WRITE_OPS, READ_OPS } from '../../../js/core/agent/agent-validate.js';
+import { validateBatch, isWritingAction, WRITE_OPS, CONDITIONAL_WRITE_OPS, READ_OPS } from '../../../js/core/agent/agent-validate.js';
 import { OPS } from '../../../js/core/agent/agent-contract.js';
 
 /** `t` stand-in: returns "key|param=value,…" so assertions stay language-free. */
@@ -404,5 +404,14 @@ suite('agent validate — Stufe 6: abgeschlossenes Projekt', () => {
   test('every op in the contract is classified as write, conditional-write, or read', () => {
     const classified = new Set([...WRITE_OPS, ...CONDITIONAL_WRITE_OPS, ...READ_OPS]);
     assertDeepEqual([...classified].sort(), Object.keys(OPS).sort());
+  });
+
+  test('isWritingAction kennt die vier Fälle', () => {
+    assertEqual(isWritingAction({ op: 'module.add', module: 'five-why' }), true);
+    assertEqual(isWritingAction({ op: 'module.remove', instance: 'i1' }), true);
+    assertEqual(isWritingAction({ op: 'instance.call', instance: 'i1', method: 'read' }), false);
+    assertEqual(isWritingAction({ op: 'instance.call', instance: 'i1', method: 'setProblem' }), true);
+    assertEqual(isWritingAction({ op: 'project.read' }), false);
+    assertEqual(isWritingAction({ op: 'catalog.read' }), false);
   });
 });

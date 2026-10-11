@@ -68,6 +68,22 @@ export const WRITE_OPS = new Set(['module.add', 'module.remove']);
 export const CONDITIONAL_WRITE_OPS = new Set(['instance.call']);
 
 /**
+ * Schreibt diese Aktion?
+ *
+ * Die eine Stelle, an der diese Regel steht. Zuvor stand sie als Ausdruck
+ * mitten in Prüfstufe 6; die Laufzeit brauchte sie ein zweites Mal für das
+ * Flush nach einem schreibenden Stapel, und zwei Fassungen derselben Regel
+ * laufen auseinander (Spec §1, Leitsatz 2).
+ *
+ * @param {{ op: string, method?: string }} action
+ * @returns {boolean}
+ */
+export function isWritingAction(action) {
+  if (WRITE_OPS.has(action.op)) return true;
+  return CONDITIONAL_WRITE_OPS.has(action.op) && action.method !== 'read';
+}
+
+/**
  * Die restlichen Aktionen — reine Leseoperationen, nie betroffen von Stufe 6.
  * Von Hand aufgezählt (nicht als Komplement von `OPS` berechnet): ein neuer,
  * unklassifizierter `op` muss den Vollständigkeits-Test unten ROT machen,
@@ -269,9 +285,7 @@ export function validateBatch(input, world) {
   if (world.completed) {
     for (let i = 0; i < actions.length; i++) {
       const a = actions[i];
-      const isWrite = WRITE_OPS.has(a.op)
-        || (CONDITIONAL_WRITE_OPS.has(a.op) && a.method !== 'read');
-      if (!isWrite) continue;
+      if (!isWritingAction(a)) continue;
       // Derselbe Satz wie die Lesebalken-Meldung der Oberfläche
       // (`frame/helpers.js:28`). Zweimal zu pflegen heißt: zweimal
       // auseinanderzulaufen.

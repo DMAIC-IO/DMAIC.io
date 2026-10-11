@@ -38,19 +38,25 @@ async function tick(times = 3) {
 
 /** A runtime with every port faked; `log` records the side effects in order. */
 function makeRuntime({ denied = false, viewmodel = null, completed = false, slowAdd = false,
-                      getHelp = async () => null } = {}) {
+                      getHelp = async () => null, stateManager: stateManagerOverrides,
+                      registry: registryOverrides } = {}) {
   const log = [];
   const phases = { data: [], define: [{ instanceId: 'fw-1', moduleId: 'five-why', order: 0 }], extras: [] };
   const stateManager = {
     getActiveProjectId: () => 'p-1',
     get: (path) => (path === 'phases' ? phases : path.startsWith('phases.') ? phases[path.slice(7)] : undefined),
     set: (path, value) => { phases[path.slice(7)] = value; },
+    flushNow: async () => {},
+    // Tests that need to observe the flush (Task 1: `ok: true` heißt
+    // „liegt auf Platte") override just `flushNow` here instead of
+    // rebuilding the whole fake host/registry wiring.
+    ...stateManagerOverrides,
   };
   const runtime = createAgentRuntime({
     stateManager,
     moduleRegistry: { getAll: () => DEFS, get: (id) => DEFS.find(d => d.id === id), getActiveCycle: () => 'dmaic' },
     i18n: I18N,
-    registry: REGISTRY,
+    registry: { ...REGISTRY, ...registryOverrides },
     getHelp,
     appVersion: '1.2.3',
     consent: {
@@ -245,6 +251,7 @@ suite('agent runtime — the seven ops', () => {
       getActiveProjectId: () => 'p-1',
       get: (path) => (path === 'phases' ? phases : path.startsWith('phases.') ? phases[path.slice(7)] : undefined),
       set: () => {},
+      flushNow: async () => {},
     };
     const runtime = createAgentRuntime({
       stateManager,
@@ -460,6 +467,7 @@ suite('agent runtime — the singleton rule applies to the agent path (I1)', () 
       getActiveProjectId: () => 'p-1',
       get: (path) => (path === 'phases' ? phases : path.startsWith('phases.') ? phases[path.slice(7)] : undefined),
       set: (path, value) => { phases[path.slice(7)] = value; },
+      flushNow: async () => {},
     };
     const runtime = createAgentRuntime({
       stateManager,
@@ -574,7 +582,7 @@ suite('agent runtime — the completed project is an honest error (I2 / I3c)', (
     assertEqual(out.ok, true, 'control: the normal path still works');
     // Now the same action against a host whose write silently vanished.
     const broken = createAgentRuntime({
-      stateManager: { getActiveProjectId: () => 'p-1', get: () => ({}), set: () => {} },
+      stateManager: { getActiveProjectId: () => 'p-1', get: () => ({}), set: () => {}, flushNow: async () => {} },
       moduleRegistry: { getAll: () => DEFS, get: (id) => DEFS.find(d => d.id === id), getActiveCycle: () => 'dmaic' },
       i18n: I18N,
       registry: REGISTRY,
@@ -635,7 +643,7 @@ suite('agent runtime — no raw exception ever leaves interact() (I8)', () => {
   function makeThrowing(where) {
     const throwing = () => { throw new Error(`boom in ${where}`); };
     return createAgentRuntime({
-      stateManager: { getActiveProjectId: () => 'p-1', get: () => (where === 'world' ? throwing() : ({})), set: () => {} },
+      stateManager: { getActiveProjectId: () => 'p-1', get: () => (where === 'world' ? throwing() : ({})), set: () => {}, flushNow: async () => {} },
       moduleRegistry: {
         getAll: () => (where === 'world' ? throwing() : DEFS),
         get: (id) => DEFS.find(d => d.id === id),
@@ -746,5 +754,89 @@ suite('agent runtime — interact() liefert das Briefing aus dem Handbuchkapitel
     assertEqual(out.ok, false);
     assertEqual(out.error, 'surface_failed');
     assertEqual(out.contract, 1);
+  });
+});
+
+// ── Task 1 ───────────────────────────────────────────────────────────
+// `ok: true` heißt „liegt auf Platte": ein Stapel, der geschrieben hat, muss
+// `stateManager.flushNow()` EINMAL rufen, bevor die Antwort rausgeht — ein
+// nur lesender Stapel zahlt den Preis nicht (.claude/ROADMAP.md:592-605).
+suite('agent runtime — ok heißt „liegt auf Platte" (Task 1)', () => {
+  // `five-why` muss hier agent-reif sein (anders als in der geteilten
+  // REGISTRY oben), damit `instance.call` gegen `fw-1` die Validierung
+  // passiert und der Unterschied lesend/schreibend überhaupt sichtbar wird.
+  const FLUSH_REGISTRY = {
+    'five-why': { tagged: true, available: true, violations: [],
+                  actions: { read: { params: [], returns: 'object', help: 'liest' },
+                             setProblem: { params: [{ name: 'text', type: 'string', optional: false, help: '' }],
+                                           returns: 'boolean', help: '' } },
+                  fields: {} },
+  };
+
+  /** Wie `makeRuntime`, aber mit einem zählenden `flushNow`. */
+  function makeFlushRuntime(overrides = {}) {
+    let flushes = 0;
+    const { runtime } = makeRuntime({
+      ...overrides,
+      registry: { ...FLUSH_REGISTRY, ...overrides.registry },
+      stateManager: { flushNow: async () => { flushes += 1; }, ...overrides.stateManager },
+    });
+    return { runtime, flushesRef: () => flushes };
+  }
+
+  test('ein schreibender Stapel flusht den Zustand, bevor er antwortet', async () => {
+    const { runtime, flushesRef } = makeFlushRuntime();
+    const res = await runtime.interact([{ op: 'module.add', module: 'five-why' }]);
+    assertEqual(res.ok, true, JSON.stringify(res));
+    assertEqual(flushesRef(), 1, 'genau ein Flush je Stapel, nicht je Aktion');
+  });
+
+  test('zwei Schreibaktionen in einem Stapel flushen EINMAL', async () => {
+    const { runtime, flushesRef } = makeFlushRuntime();
+    await runtime.interact([
+      { op: 'module.add', module: 'worksheet' },
+      { op: 'module.remove', instance: 'fw-1' },
+    ]);
+    assertEqual(flushesRef(), 1);
+  });
+
+  test('ein nur lesender Stapel flusht nicht', async () => {
+    const { runtime, flushesRef } = makeFlushRuntime();
+    await runtime.interact([{ op: 'project.read' }, { op: 'catalog.read' }]);
+    assertEqual(flushesRef(), 0, 'ein Lesestapel zahlt den Preis nicht');
+  });
+
+  test('instance.call mit method "read" gilt als lesend, jede andere Methode als schreibend', async () => {
+    const { runtime, flushesRef } = makeFlushRuntime({ viewmodel: { read: () => 'ok', setProblem: () => true } });
+
+    await runtime.interact([{ op: 'instance.call', instance: 'fw-1', method: 'read', args: [] }]);
+    assertEqual(flushesRef(), 0);
+
+    await runtime.interact([{ op: 'instance.call', instance: 'fw-1', method: 'setProblem', args: ['x'] }]);
+    assertEqual(flushesRef(), 1);
+  });
+
+  test('ein Stapel, der mitten drin scheitert, flusht trotzdem', async () => {
+    // Spec §4.3 gibt Teilergebnisse zurück. Was passiert IST, muss auch auf
+    // Platte sein; sonst verliert der Agent genau die Hälfte, die ihm die
+    // Antwort als erfolgreich meldet.
+    //
+    // `nicht-existent` als literaler Bezeichner würde Stufe 5 der Validierung
+    // VOR jedem Seiteneffekt abweisen (Spec §5) — der ganze Stapel liefe nie
+    // an, und der Fall testete nichts über das Flushen. Deshalb hier ein
+    // Scheitern, das erst im Vollzug passiert: `setProblem` ist der
+    // Registry nach eine gültige Methode, die Viewmodel-Implementierung
+    // wirft aber zur Laufzeit (`op_failed`).
+    const { runtime, flushesRef } = makeFlushRuntime({
+      viewmodel: { setProblem: () => { throw new Error('boom'); } },
+    });
+
+    const res = await runtime.interact([
+      { op: 'module.add', module: 'worksheet' },
+      { op: 'instance.call', instance: 'fw-1', method: 'setProblem', args: ['x'] },
+    ]);
+
+    assertEqual(res.ok, false, JSON.stringify(res));
+    assertEqual(flushesRef(), 1);
   });
 });

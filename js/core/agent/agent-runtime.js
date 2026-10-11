@@ -23,7 +23,7 @@
  */
 import { CONTRACT_VERSION, ERRORS } from './agent-contract.js';
 import { axiError } from './agent-errors.js';
-import { validateBatch, checkResolvedParamTypes } from './agent-validate.js';
+import { validateBatch, checkResolvedParamTypes, isWritingAction } from './agent-validate.js';
 import { resolveRefs } from './agent-refs.js';
 import { buildWorld, buildCatalog, buildInstanceList } from './agent-catalog.js';
 import { buildUsage } from './agent-usage.js';
@@ -92,6 +92,9 @@ export function createAgentRuntime(deps) {
     const results = [];
     const byId = new Map();
     let allOk = true;
+    // Ein Stapel, der geschrieben hat, flusht EINMAL am Ende — nicht je
+    // Aktion: der Preis ist ein Plattenzugriff pro Stapel.
+    let wrote = false;
 
     for (const action of checked.actions) {
       const resolved = resolveRefs(action, byId);
@@ -126,6 +129,8 @@ export function createAgentRuntime(deps) {
         break;
       }
 
+      if (isWritingAction(action)) wrote = true;
+
       // Eine Op wirft im Regelfall nicht (siehe agent-ops.js), aber ein
       // Host-Port (`router.navigate`, IndexedDB, …) kann es trotzdem tun.
       // Dieser Fang-Punkt übersetzt jeden solchen Wurf in einen AXI-Fehler
@@ -147,6 +152,12 @@ export function createAgentRuntime(deps) {
       if (action.id !== undefined) byId.set(action.id, outcome);
     }
 
+    // `ok: true` heißt „liegt auf Platte". Der `stateManager` schreibt hinter
+    // einer Debounce (2 s localStorage, 500 ms IndexedDB); ohne dieses Flush
+    // verliert ein Agent, der schreibt und danach neu lädt oder exportiert,
+    // seinen bestätigten Schreibzugriff. Auch im Fehlerfall: Spec §4.3 gibt
+    // Teilergebnisse zurück, und was passiert ist, muss auch auf Platte sein.
+    if (wrote) await stateManager.flushNow();
     return { ok: allOk, contract: CONTRACT_VERSION, results };
   }
 
