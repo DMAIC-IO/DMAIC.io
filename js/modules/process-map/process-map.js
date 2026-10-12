@@ -584,19 +584,29 @@ export default createModule({
        * @param {string|null} targetStepId id eines vorhandenen Schritts, oder
        *   `null`/leerer String, um das Ziel zu löschen
        * @returns {boolean} true wenn gesetzt, false wenn der Schritt keinen
-       *   Loop trägt — dann ist nichts passiert
-       * @throws {Error} wenn stepId unbekannt ist, oder targetStepId gesetzt
-       *   und unbekannt ist
+       *   Loop trägt, oder targetStepId keine Position VOR stepId in der
+       *   Kette ist — dann ist nichts passiert (dieselbe Einschränkung, die
+       *   `targetOptions` schon aus der Auswahl ausschließt)
+       * @throws {Error} wenn stepId oder targetStepId unbekannt ist
        */
       setLoopTarget(stepId, targetStepId) {
         requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
         const step = this.model.findStep(stepId);
         if (!step.loop) return false;
-        if (targetStepId) {
-          requireKnownId('targetStepId', targetStepId, this.model.steps.map((s) => s.id));
+        if (!targetStepId) {
+          step.loop.targetStepId = null;
+          return true;
         }
-        step.loop.targetStepId = targetStepId || null;
-        this.model.validateLoopTargets();
+        requireKnownId('targetStepId', targetStepId, this.model.steps.map((s) => s.id));
+        // Dieselbe Rechnung wie _loopTargetOptions(stepIdx): nur Schritte VOR
+        // stepId sind ein gültiges Ziel. Direkt hier geprüft statt hinterher
+        // über validateLoopTargets() zu korrigieren — ein Aufruf NACH der
+        // Zuweisung hätte den Schreibvorgang klammlos zurückgenommen, mit
+        // `true` als Rückgabe (Review-Fund Fix-Runde 1).
+        const stepIdx = this.model.stepIndexById(stepId);
+        const allowedIds = this._loopTargetOptions(stepIdx).map((o) => o.id);
+        if (!allowedIds.includes(targetStepId)) return false;
+        step.loop.targetStepId = targetStepId;
         return true;
       },
       /**

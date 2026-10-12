@@ -1440,10 +1440,10 @@
           }
         },
         "setLoopTarget": {
-          "help": "Setzt den Zielschritt eines Loops (zu welchem früheren Schritt er zurückführt). Liefert false, wenn der Schritt keinen Loop trägt — dann ist nichts passiert.",
+          "help": "Setzt den Zielschritt eines Loops (zu welchem früheren Schritt er zurückführt). Liefert false, wenn der Schritt keinen Loop trägt, oder wenn targetStepId keine Position VOR stepId in der Kette ist — dann ist nichts passiert.",
           "params": {
             "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
-            "targetStepId": "Die id eines vorhandenen Schritts, oder null/leerer String, um das Ziel zu löschen. Eine unbekannte, nicht-leere id ist ein Fehler."
+            "targetStepId": "Die id eines vorhandenen Schritts, oder null/leerer String, um das Ziel zu löschen. Eine unbekannte id ist ein Fehler; eine bekannte id, die nicht VOR stepId in der Kette liegt, liefert false."
           }
         },
         "removeLoop": {

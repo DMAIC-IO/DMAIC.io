@@ -1440,10 +1440,10 @@
           }
         },
         "setLoopTarget": {
-          "help": "Sets a loop's target step (which earlier step it loops back to). Returns false if the step carries no loop — nothing happens then.",
+          "help": "Sets a loop's target step (which earlier step it loops back to). Returns false if the step carries no loop, or if targetStepId is not a position BEFORE stepId in the chain — nothing happens then.",
           "params": {
             "stepId": "The step's id. An unknown id is an error.",
-            "targetStepId": "The id of an existing step, or null/an empty string to clear the target. An unknown, non-empty id is an error."
+            "targetStepId": "The id of an existing step, or null/an empty string to clear the target. An unknown id is an error; a known id that does not lie BEFORE stepId in the chain returns false."
           }
         },
         "removeLoop": {
