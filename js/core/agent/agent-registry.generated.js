@@ -95,6 +95,30 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Remove one substep from its parent step."
+      },
+      "setSubstepTitle": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the step holding the substep"
+          },
+          {
+            "name": "substepId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the substep"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "the new title"
+          }
+        ],
+        "returns": "void",
+        "help": "Set a substep's title. Same field the substep title input in `substeps.part.html` writes through. Added once here, not per module (Spec-Review 2026-10-12, Task 2 fix round 1): the shared partial binds `x-model=\"sub.title\"`, and without this sink an agent could create and delete a substep but never name it — and no completeness gate catches that, because `unreachable_write` only inspects ROOT `x-model=\"model.*\"` bindings, not a nested collection field."
       }
     },
     "fields": {
@@ -1051,6 +1075,30 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Remove one substep from its parent step."
+      },
+      "setSubstepTitle": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the step holding the substep"
+          },
+          {
+            "name": "substepId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the substep"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "the new title"
+          }
+        ],
+        "returns": "void",
+        "help": "Set a substep's title. Same field the substep title input in `substeps.part.html` writes through. Added once here, not per module (Spec-Review 2026-10-12, Task 2 fix round 1): the shared partial binds `x-model=\"sub.title\"`, and without this sink an agent could create and delete a substep but never name it — and no completeness gate catches that, because `unreachable_write` only inspects ROOT `x-model=\"model.*\"` bindings, not a nested collection field."
       }
     },
     "fields": {
@@ -3188,6 +3236,30 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Remove one substep from its parent step."
       },
+      "setSubstepTitle": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the step holding the substep"
+          },
+          {
+            "name": "substepId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the substep"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "the new title"
+          }
+        ],
+        "returns": "void",
+        "help": "Set a substep's title. Same field the substep title input in `substeps.part.html` writes through. Added once here, not per module (Spec-Review 2026-10-12, Task 2 fix round 1): the shared partial binds `x-model=\"sub.title\"`, and without this sink an agent could create and delete a substep but never name it — and no completeness gate catches that, because `unreachable_write` only inspects ROOT `x-model=\"model.*\"` bindings, not a nested collection field."
+      },
       "appendStep": {
         "params": [
           {
@@ -3198,7 +3270,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "string",
-        "help": "Append to the chain from the toolbar, and look at what was added — a chain wider than the canvas otherwise grows out of sight."
+        "help": "Hängt einen Schritt an die Kette und liefert seine id. Blendet die neue Karte ins Sichtfeld, falls die Kette breiter ist als der Canvas — sonst wüchse sie aus dem Sichtbereich heraus."
       },
       "setStepTitle": {
         "params": [
@@ -3216,7 +3288,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt den Titel eines Schritts. Derselbe Sink wie `x-model=\"step.title\"` in der Vorlage."
+        "help": "Setzt den Titel eines Schritts. Schreibt dasselbe Feld wie `x-model=\"step.title\"` in der Vorlage."
       },
       "setStepDescription": {
         "params": [
@@ -3234,7 +3306,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt die Beschreibung eines Schritts. Derselbe Sink wie `x-model=\"step.description\"` in der Vorlage."
+        "help": "Setzt die Beschreibung eines Schritts. Schreibt dasselbe Feld wie `x-model=\"step.description\"` in der Vorlage."
       },
       "removeStep": {
         "params": [
@@ -3707,6 +3779,30 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Entfernt einen Teilschritt."
+      },
+      "setSubstepTitle": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the step holding the substep"
+          },
+          {
+            "name": "substepId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the substep"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "the new title"
+          }
+        ],
+        "returns": "void",
+        "help": "Set a substep's title. Same field the substep title input in `substeps.part.html` writes through. Added once here, not per module (Spec-Review 2026-10-12, Task 2 fix round 1): the shared partial binds `x-model=\"sub.title\"`, and without this sink an agent could create and delete a substep but never name it — and no completeness gate catches that, because `unreachable_write` only inspects ROOT `x-model=\"model.*\"` bindings, not a nested collection field."
       }
     },
     "fields": {

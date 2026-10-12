@@ -60,3 +60,28 @@ export function requireKnownId(kind, id, availableIds) {
     throw new Error(`unknown ${kind} ${JSON.stringify(id)}; available: ${availableIds.join(', ')}`);
   }
 }
+
+/**
+ * Eine Einfügeposition gegen die aktuelle Länge der Sammlung prüfen.
+ *
+ * Ein Model, das eine Einfügeposition KLAMMERT (`Math.max(0, Math.min(idx,
+ * length))`), tut bei einem Wert außerhalb des gültigen Bereichs still etwas
+ * ANDERES als behauptet — negativ landet vorn, zu groß landet hinten, und
+ * der Aufruf meldet trotzdem Erfolg. Ein Agent, der sich bei der Lücke
+ * vertippt (`idx: 99` auf einer Kette mit drei Schritten), bekäme eine
+ * Zusage für eine Position, die es nicht gibt, statt eines Fehlers. Ebenso
+ * ein nicht-ganzzahliger Wert (`'x'`), den `Number.isInteger` ausschließt,
+ * bevor er lautlos als `NaN`/`0` interpretiert wird.
+ *
+ * @param {string} name Name des Arguments (erscheint in der Meldung)
+ * @param {any} value der übergebene Wert
+ * @param {number} length aktuelle Länge der Sammlung — `value === length`
+ *   heißt „ans Ende einfügen" und ist gültig
+ * @throws {Error} wenn `value` keine ganze Zahl in `[0, length]` ist
+ * @returns {void}
+ */
+export function requireIndex(name, value, length) {
+  if (!Number.isInteger(value) || value < 0 || value > length) {
+    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: 0..${length}`);
+  }
+}

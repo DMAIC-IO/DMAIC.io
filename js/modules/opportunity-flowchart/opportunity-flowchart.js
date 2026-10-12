@@ -27,7 +27,7 @@ import {
   listSourceInstances, appendFromInstance,
 } from '../../core/flowchart/flowchart-import.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId, requireIndex } from '../../core/agent/agent-argcheck.js';
 import { OpportunityModel } from './opportunity-flowchart-model.js';
 
 const IMPORT_SOURCES = ['process-map', 'sipoc'];
@@ -66,8 +66,9 @@ export default createModule({
       }),
 
       /**
-       * Append to the chain from the toolbar, and look at what was added — a
-       * chain wider than the canvas otherwise grows out of sight.
+       * Hängt einen Schritt an die Kette und liefert seine id. Blendet die
+       * neue Karte ins Sichtfeld, falls die Kette breiter ist als der
+       * Canvas — sonst wüchse sie aus dem Sichtbereich heraus.
        * @agent
        * @param {'va'|'nva'} side Spalte: wertschöpfend oder Nacharbeit
        * @returns {string} id des angelegten Schritts
@@ -80,7 +81,20 @@ export default createModule({
       },
 
       /**
-       * Setzt den Titel eines Schritts. Derselbe Sink wie
+       * Eine Schritt-id gegen die Kette prüfen und den Schritt liefern —
+       * das gemeinsame Vorgehen von vier Settern/Entfernern. Privat
+       * (`_`-Präfix), braucht keine Marke.
+       * @param {string} stepId
+       * @returns {object}
+       * @throws {Error} wenn kein Schritt diese id trägt
+       */
+      _requireStep(stepId) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+        return this.model.steps.find((s) => s.id === stepId);
+      },
+
+      /**
+       * Setzt den Titel eines Schritts. Schreibt dasselbe Feld wie
        * `x-model="step.title"` in der Vorlage.
        * @agent
        * @param {string} stepId id des Schritts
@@ -89,13 +103,12 @@ export default createModule({
        * @throws {Error} wenn kein Schritt diese id trägt
        */
       setStepTitle(stepId, text) {
-        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
-        this.model.steps.find((s) => s.id === stepId).title = String(text ?? '');
+        this._requireStep(stepId).title = String(text ?? '');
         this.$nextTick(() => this._autoSizeAll());
       },
 
       /**
-       * Setzt die Beschreibung eines Schritts. Derselbe Sink wie
+       * Setzt die Beschreibung eines Schritts. Schreibt dasselbe Feld wie
        * `x-model="step.description"` in der Vorlage.
        * @agent
        * @param {string} stepId id des Schritts
@@ -104,8 +117,7 @@ export default createModule({
        * @throws {Error} wenn kein Schritt diese id trägt
        */
       setStepDescription(stepId, text) {
-        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
-        this.model.steps.find((s) => s.id === stepId).description = String(text ?? '');
+        this._requireStep(stepId).description = String(text ?? '');
         this.$nextTick(() => this._autoSizeAll());
       },
 
@@ -117,7 +129,7 @@ export default createModule({
        * @throws {Error} wenn kein Schritt diese id trägt
        */
       removeStep(stepId) {
-        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+        this._requireStep(stepId);
         this.model.removeStep(stepId);
       },
 
@@ -145,8 +157,7 @@ export default createModule({
        * @throws {Error} wenn kein Schritt diese id trägt
        */
       toggleSide(stepId) {
-        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
-        const s = this.model.steps.find((x) => x.id === stepId);
+        const s = this._requireStep(stepId);
         this.model.setSide(s.id, s.side === 'va' ? 'nva' : 'va');
       },
 
@@ -186,6 +197,7 @@ export default createModule({
        */
       insertAt(idx, side) {
         requireEnum('side', side, ['va', 'nva']);
+        requireIndex('idx', idx, this.model.steps.length);
         const step = this.model.insertStep(idx, { side });
         this._insertMenuIdx = null;
         return step.id;

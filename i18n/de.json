@@ -2655,6 +2655,14 @@
             "parentId": "Die id des übergeordneten Schritts. Eine unbekannte id ist ein Fehler.",
             "substepId": "Die id des zu entfernenden Unter-Schritts."
           }
+        },
+        "setSubstepTitle": {
+          "help": "Setzt den Titel eines Unter-Schritts.",
+          "params": {
+            "stepId": "Die id des übergeordneten Schritts. Eine unbekannte id ist ein Fehler.",
+            "substepId": "Die id des Unter-Schritts. Eine unbekannte id ist ein Fehler.",
+            "text": "Der neue Titel."
+          }
         }
       },
       "fields": {

@@ -14,7 +14,7 @@
     step, idx            — the current step and its chain index
     substepsBarLabel()   — "Detail-Schritte (2)"
     substepNum()         — "2.3"
-    toggleSubsteps() / addSubstep() / removeSubstep()
+    toggleSubsteps() / addSubstep() / removeSubstep() / setSubstepTitle()
     armSubDrag() / subDrag*() / subDrop()
     t()                  — module-scoped i18n
 -->
@@ -41,7 +41,8 @@
                 @mousedown="armSubDrag($event)"></span>
           <input class="fc-substep-title" type="text" :placeholder="t('substepPlaceholder')"
                  :data-substep-id="sub.id" :data-parent-id="step.id"
-                 x-model="sub.title">
+                 :value="sub.title"
+                 @input="setSubstepTitle(step.id, sub.id, $event.target.value)">
           <button class="fc-substep-remove" data-action="remove-substep"
                   :data-parent-id="step.id" :data-substep-id="sub.id"
                   :title="t('common.delete')"

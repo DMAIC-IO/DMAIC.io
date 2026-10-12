@@ -2651,6 +2651,14 @@
             "parentId": "The id of the parent step. An unknown id is an error.",
             "substepId": "The id of the sub-step to remove."
           }
+        },
+        "setSubstepTitle": {
+          "help": "Sets a sub-step's title.",
+          "params": {
+            "stepId": "The id of the parent step. An unknown id is an error.",
+            "substepId": "The id of the sub-step. An unknown id is an error.",
+            "text": "The new title."
+          }
         }
       },
       "fields": {

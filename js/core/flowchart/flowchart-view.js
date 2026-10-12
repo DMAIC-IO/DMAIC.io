@@ -9,6 +9,8 @@
  * See spec §1 "Architektur".
  */
 
+import { requireKnownId } from '../agent/agent-argcheck.js';
+
 /**
  * @param {object|null} module   the createModule instance (reserved for future hooks)
  * @param {(key: string) => string} _t   i18n helper
@@ -362,6 +364,27 @@ export function chainViewMixin(module, _t, opts = {}) {
      * @throws {Error} wenn das Model die Methode `removeSubstep` nicht führt
      */
     removeSubstep(parentId, substepId) { callModel(this.model, 'removeSubstep', [parentId, substepId]); },
+    /**
+     * Set a substep's title. Same field the substep title input in
+     * `substeps.part.html` writes through. Added once here, not per module
+     * (Spec-Review 2026-10-12, Task 2 fix round 1): the shared partial binds
+     * `x-model="sub.title"`, and without this sink an agent could create and
+     * delete a substep but never name it — and no completeness gate catches
+     * that, because `unreachable_write` only inspects ROOT `x-model="model.*"`
+     * bindings, not a nested collection field.
+     * @agent
+     * @param {string} stepId    id of the step holding the substep
+     * @param {string} substepId id of the substep
+     * @param {string} text      the new title
+     * @returns {void}
+     * @throws {Error} wenn stepId oder substepId unbekannt ist
+     */
+    setSubstepTitle(stepId, substepId, text) {
+      requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+      const step = this.model.steps.find((s) => s.id === stepId);
+      requireKnownId('substepId', substepId, (step.substeps || []).map((s) => s.id));
+      step.substeps.find((s) => s.id === substepId).title = String(text ?? '');
+    },
 
     /** @noagent */
     armSubDrag(event) {
