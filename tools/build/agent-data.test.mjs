@@ -1694,6 +1694,9 @@ test('template_model_call: ein direkter model.*-Aufruf aus der Vorlage ist ein B
   } });
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['template_model_call:removeTitle']);
+  // tagged⇒hard: genauso blockierend wie `unreachable_write`, nicht nur `reported`.
+  assert.ok(modules.foo.violations.includes('template_model_call:removeTitle'));
+  assert.equal(modules.foo.available, false);
 });
 
 test('unreachable_write: eine Delegation an eine zuweisende Model-Methode deckt ab', () => {
@@ -1767,6 +1770,169 @@ test('unreachable_write: eine Delegation an eine nicht auflösbare Model-Methode
   } });
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
+});
+
+test('unreachable_write: eine parameterlose @agent-Methode deckt NICHT ab, auch wenn eine Model-Methode zuweist (Review-Fund, Fix-Runde 3)', () => {
+  // Der exakte Repro-Fall aus dem Review: `changed()` hat keinen Parameter,
+  // delegiert aber an `apply(t)`, die `this.title` zuweist. Ohne die
+  // Parameterfluss-Schranke hätte das als Abdeckung gezählt — genau die
+  // Form, die ein Alpine-`@change`-Handler erzeugt
+  // (`control-chart.chartTypeChanged`, `histogram.binModeChanged`), und
+  // R2 verlangt eine Marke an jeder öffentlichen Methode. Ein
+  // parameterloses `clear()`/`changed()` ist kein Setter im Sinn von E2.
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @returns {void}
+       */
+      changed() { this.model.apply(this.model.title); },
+      /** @noagent */
+      cardClass(node) { return ''; },`);
+  const root = fixture({ foo: {
+    'foo.js': vm,
+    'foo-model.js': `export class State {
+      /** @type {string} der Titel */
+      title = '';
+      toJSON() { return { title: this.title }; }
+      apply(t) { this.title = t; }
+    }`,
+    'foo.html': '<input x-model="model.title">',
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
+  assert.equal(modules.foo.available, false);
+});
+
+test('unreachable_write: eine direkte Zuweisung einer Konstante deckt NICHT ab (kein Parameterfluss)', () => {
+  // `setTitle` HAT einen Parameter `t` — weist aber eine Konstante zu,
+  // nicht `t`. Ein Agent kann über diesen Setter das Feld nicht auf einen
+  // von ihm gewählten Wert bringen.
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} t
+       * @returns {void}
+       */
+      setTitle(t) { this.model.title = 'fixed'; },
+      /** @noagent */
+      cardClass(node) { return ''; },`);
+  const root = fixture({ foo: {
+    'foo.js': vm,
+    'foo-model.js': `export class State {
+      /** @type {string} der Titel */
+      title = '';
+      toJSON() { return { title: this.title }; }
+    }`,
+    'foo.html': '<input x-model="model.title">',
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
+});
+
+test('unreachable_write: eine Delegation deckt ab, wenn der Wert über eine lokale Zwischenvariable aus dem Parameter fließt', () => {
+  // Spiegelt `hypothesis-test.setPowerGoal`: die Model-Methode weist nicht
+  // direkt ihren Parameter zu, sondern eine lokale `const`, die aus ihm
+  // abgeleitet ist (`const n = parseFloat(v)`).
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} t
+       * @returns {void}
+       */
+      setTitle(t) { this.model.setTitle(t); },
+      /** @noagent */
+      cardClass(node) { return ''; },`);
+  const root = fixture({ foo: {
+    'foo.js': vm,
+    'foo-model.js': `export class State {
+      /** @type {string} der Titel */
+      title = '';
+      toJSON() { return { title: this.title }; }
+      setTitle(v) {
+        const n = String(v ?? '').trim();
+        this.title = n;
+      }
+    }`,
+    'foo.html': '<input x-model="model.title">',
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, []);
+});
+
+test('unreachable_write: eine Model-Methode, die an eine weitere Methode delegiert, deckt NICHT ab (nur eine Delegationsebene)', () => {
+  // Guard (a): `setTitle` (Model) weist `title` nicht selbst zu, sondern
+  // ruft `applyTitle` auf, die es tut. Die Prüfung schaut nur in den
+  // Körper der UNMITTELBAR aufgerufenen Methode — eine zweite Ebene zählt
+  // nicht, auch wenn sie das Feld am Ende zuweist.
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} t
+       * @returns {void}
+       */
+      setTitle(t) { this.model.setTitle(t); },
+      /** @noagent */
+      cardClass(node) { return ''; },`);
+  const root = fixture({ foo: {
+    'foo.js': vm,
+    'foo-model.js': `export class State {
+      /** @type {string} der Titel */
+      title = '';
+      toJSON() { return { title: this.title }; }
+      setTitle(t) { this.applyTitle(t); }
+      applyTitle(t) { this.title = t; }
+    }`,
+    'foo.html': '<input x-model="model.title">',
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
+});
+
+test('unreachable_write: eine direkte `this.<feld>`-Zuweisung am Viewmodel (ohne `.model`) deckt NICHT ab', () => {
+  // Guard (b): `fieldAfterThis` mit `through: 'model'` muss `this.title = t`
+  // (am Viewmodel selbst, kein `this.model...`) verwerfen — sonst würde ein
+  // Tippfehler im Modulquelltext als Abdeckung durchgehen.
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} t
+       * @returns {void}
+       */
+      setTitle(t) { this.title = t; },
+      /** @noagent */
+      cardClass(node) { return ''; },`);
+  const root = fixture({ foo: {
+    'foo.js': vm,
+    'foo-model.js': `export class State {
+      /** @type {string} der Titel */
+      title = '';
+      toJSON() { return { title: this.title }; }
+    }`,
+    'foo.html': '<input x-model="model.title">',
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
+});
+
+test('unreachable_write: eine nicht auflösbare Model-Klasse lässt eine Delegation NICHT als Abdeckung zählen (fail closed)', () => {
+  // Guard (c): `Model: makeModel()` ist kein Name — `resolveModelClass`
+  // liefert `null`, und die Delegation darf dann nicht stillschweigend als
+  // Abdeckung gelten, nur weil sie nicht geprüft werden konnte.
+  const vm = TAGGED_VM
+    .replace('Model: State,', 'Model: makeModel(),')
+    .replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} t
+       * @returns {void}
+       */
+      setTitle(t) { this.model.setTitle(t); },
+      /** @noagent */
+      cardClass(node) { return ''; },`);
+  const root = fixture({ foo: {
+    'foo.js': vm,
+    'foo-model.js': `export function makeModel() { return class State {
+      title = '';
+      setTitle(t) { this.title = t; }
+    }; }`,
+    'foo.html': '<input x-model="model.title">',
+  } });
+  const { modules } = collectAgentData(root);
+  assert.ok(modules.foo.reported.includes('unreachable_write:title'));
 });
 
 test('unresolvable_tojson: eine Pfeilfunktions-toJSON als Klassenfeld wird nicht als MethodDeclaration erkannt und klettert nicht zur Basisklasse', () => {

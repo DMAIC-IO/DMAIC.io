@@ -373,7 +373,7 @@ function hasModuleTag(sf) {
  * @param {ts.SourceFile} sf  die Moduldatei
  * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
  * @param {string} appDir  Wurzel von app/dev, Bezugspunkt der Herkunftsangaben
- * @returns {{ actions: Record<string, object>, violations: string[] }}
+ * @returns {{ actions: Record<string, object>, violations: string[], written: Set<string> }}
  */
 function readViewmodel(sf, resolver, appDir) {
   const actions = {};
@@ -453,20 +453,27 @@ function readViewmodel(sf, resolver, appDir) {
  * eine Ebene über eine Model-Methode delegiert — die Gegenprobe zu
  * `templateBindings().models` (Task 1b).
  *
- * Zwei Formen zählen:
- *   1. `this.model.<feld> = …` / `+= …` direkt im `@agent`-Methodenkörper.
- *      Eine Zuweisung an `this.model.<a>.<b>` (oder `this.model.<a>[0].<b>`)
- *      zählt für `<a>`: wer `this.model.steps[0].title` schreibt, schreibt
- *      `steps`.
- *   2. `this.model.<methode>(…)` — eine Delegation an eine Model-Methode.
- *      Die Felder zählen, die GENAU DIESE Methode (in der Model-Klasse oder
- *      einer Basisklasse, mit demselben Tiefenschutz wie `classFields`)
- *      selbst über `this.<feld> = …` zuweist. GENAU EINE Ebene: ruft diese
- *      Methode ihrerseits eine weitere Methode auf, zählt das NICHT — eine
- *      Model-Methode, die an eine andere delegiert, ist unaufgelöst und
- *      bleibt ein Befund (fail closed, review-geforderte Grenze gegen eine
- *      Namenskonvention als Beweis: `setPowerGoal` deckt `powerGoal` nur,
- *      weil die KETTE das zeigt, nicht weil der Name passt).
+ * Zwei Formen zählen, und BEIDE verlangen Parameterfluss (Review-Fund,
+ * Fix-Runde 3): es reicht nicht, dass IRGENDEINE `@agent`-Methode das Feld
+ * zuweist — der zugewiesene Wert muss aus einem Parameter DIESER Methode
+ * stammen. Ohne diese Schranke hätte `changed() { this.model.apply(this.model.title); }`
+ * (parameterlos, `apply(t) { this.title = t; }`) als Abdeckung gezählt —
+ * genau die Form, die R2 an jedem Alpine-`@change`-Handler erzeugt
+ * (`control-chart.chartTypeChanged`, `histogram.binModeChanged`), und genau
+ * das Gegenteil von E2 („jedes `x-model`-gebundene Feld bekommt einen
+ * `@agent`-SETTER" — ein parameterloses `clear()` ist kein Setter):
+ *   1. `this.model.<feld> = <ausdruck>` / `+= <ausdruck>` direkt im
+ *      `@agent`-Methodenkörper, wenn `<ausdruck>` einen Bezeichner eines
+ *      Parameters DIESER Methode enthält (`derivesFromParams`). Eine
+ *      Zuweisung an `this.model.<a>.<b>` zählt für `<a>`.
+ *   2. `this.model.<methode>(…)` — eine Delegation an eine Model-Methode,
+ *      GENAU EINE Ebene tief (`fieldsCoveredByDelegation`): die Model-Methode
+ *      muss SELBST `this.<feld> = <ausdruck>` zuweisen, `<ausdruck>` muss
+ *      aus einem IHRER Parameter stammen, UND das Argument an genau dieser
+ *      Position im Aufruf `this.model.<methode>(…)` muss wiederum aus einem
+ *      Parameter der `@agent`-Methode stammen. Ruft die Model-Methode
+ *      ihrerseits eine weitere Methode auf, zählt das NICHT — unaufgelöst
+ *      bleibt ein Befund, keine Vermutung.
  *
  * @param {ts.SignatureDeclaration} fn
  * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
@@ -474,20 +481,130 @@ function readViewmodel(sf, resolver, appDir) {
  * @returns {Set<string>}
  */
 function writtenModelFields(fn, resolver, modelDecl) {
+  // `expandDerivedNames` zieht die Kette durch lokale `const`-Zwischenschritte
+  // weiter (`const n = parseFloat(v)` leitet `n` von `v` ab) — ohne das bräche
+  // sie bei der ersten Hilfsvariablen, und genau das tut `hypothesis-test`
+  // (`setPowerGoal(v) { const n = parseFloat(v); … this.powerGoal = …(n); }`).
+  const agentParams = expandDerivedNames(fn.body, new Set(parameterNames(fn).filter(Boolean)));
+  const fields = collectCoveredFields(fn.body, 'model', rhs => derivesFromParams(rhs, agentParams));
+  forEachCall(fn.body, node => {
+    const methodName = modelMethodCallOf(node);
+    if (methodName && modelDecl) {
+      for (const field of fieldsCoveredByDelegation(resolver, modelDecl, methodName, node.arguments, agentParams)) {
+        fields.add(field);
+      }
+    }
+  });
+  return fields;
+}
+
+/**
+ * Erweitert `names` um lokale `const`-Variablen, deren Initialisierer
+ * (bereits bekanntermaßen) aus `names` ableitet — die Kette durch eine
+ * Zwischenvariable weiterziehen, statt an ihr abzureißen. Nur TOP-LEVEL-
+ * Deklarationen im übergebenen Block zählen, keine in einer Verzweigung
+ * oder einer verschachtelten Funktion; alles andere bleibt bei der engen
+ * Prüfung (fail closed: eine Zwischenvariable in einem `if`-Zweig wird
+ * NICHT verfolgt, lieber ein übersehener Treffer als ein erfundener).
+ * Iteriert bis zum Fixpunkt, weil die Deklarationsreihenfolge im
+ * Normalfall, aber nicht zwingend, die Ableitungsreihenfolge ist.
+ * @param {ts.Block|undefined} body
+ * @param {Set<string>} names
+ * @returns {Set<string>}
+ */
+function expandDerivedNames(body, names) {
+  if (!body || !ts.isBlock(body)) return names;
+  const derived = new Set(names);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const statement of body.statements) {
+      if (!ts.isVariableStatement(statement)) continue;
+      for (const decl of statement.declarationList.declarations) {
+        if (!ts.isIdentifier(decl.name) || !decl.initializer || derived.has(decl.name.text)) continue;
+        if (derivesFromParams(decl.initializer, derived)) {
+          derived.add(decl.name.text);
+          changed = true;
+        }
+      }
+    }
+  }
+  return derived;
+}
+
+/**
+ * Die Namen der einfachen (nicht destrukturierten) Parameter einer Funktion,
+ * POSITIONSGETREU — `null` an einer destrukturierten Position, damit der
+ * Aufrufer die Position trotzdem zählen kann, ohne ihr einen Namen
+ * zuzuschreiben.
+ * @param {ts.SignatureDeclaration} fn
+ * @returns {Array<string|null>}
+ */
+function parameterNames(fn) {
+  return fn.parameters.map(p => (ts.isIdentifier(p.name) ? p.name.text : null));
+}
+
+/**
+ * Ob `expr` einen Bezeichner aus `names` enthält — die Prüfung „der Wert
+ * stammt aus einem Parameter". Bewusst NICHT über verschachtelte
+ * Funktionsgrenzen hinweg (eine Closure könnte einen gleichnamigen eigenen
+ * Parameter binden, der NICHT der äußere ist — im Zweifel also nicht
+ * gefunden, fail closed) und bewusst NICHT über den `.name` einer
+ * `PropertyAccessExpression` (`this.model.title` enthält keinen Bezeichner
+ * `title` in diesem Sinn — sonst würde `this.model.title` als eigener
+ * Beweis für einen Parameter namens `title` durchgehen).
+ * @param {ts.Node} expr
+ * @param {Set<string>} names
+ * @returns {boolean}
+ */
+function derivesFromParams(expr, names) {
+  if (names.size === 0) return false;
+  let found = false;
+  const walk = (node) => {
+    if (found || isFunctionLike(node)) return;
+    if (ts.isPropertyAccessExpression(node)) { walk(node.expression); return; }
+    if (ts.isIdentifier(node)) { if (names.has(node.text)) found = true; return; }
+    ts.forEachChild(node, walk);
+  };
+  walk(expr);
+  return found;
+}
+
+/**
+ * Alle Aufrufe (`ts.CallExpression`) in `node`, ohne Unterscheidung nach
+ * Zuweisungen — ergänzt `collectCoveredFields` (Zuweisungen) um den
+ * zweiten Knotentyp, den `writtenModelFields` sehen muss.
+ * @param {ts.Node} node
+ * @param {(call: ts.CallExpression) => void} visit
+ */
+function forEachCall(node, visit) {
+  const walk = (n) => {
+    if (ts.isCallExpression(n)) visit(n);
+    ts.forEachChild(n, walk);
+  };
+  if (node) walk(node);
+}
+
+/**
+ * Die Felder, die `this.<durch>.<feld> = …` zuweist und dabei `covers(…)`
+ * auf die rechte Seite erfüllt — der gemeinsame Walk hinter
+ * `writtenModelFields` (direkte Form, `durch = 'model'`) UND
+ * `fieldsCoveredByDelegation` (Model-Methodenkörper, `durch = null`).
+ * @param {ts.Block|undefined} body
+ * @param {string|null} through
+ * @param {(rhs: ts.Expression) => boolean} covers
+ * @returns {Set<string>}
+ */
+function collectCoveredFields(body, through, covers) {
   const fields = new Set();
   const walk = (node) => {
     if (ts.isBinaryExpression(node) && ASSIGN_KINDS.has(node.operatorToken.kind)) {
-      const field = fieldAfterThis(node.left, 'model');
-      if (field) fields.add(field);
-    } else if (ts.isCallExpression(node)) {
-      const methodName = modelMethodCallOf(node);
-      if (methodName && modelDecl) {
-        for (const field of fieldsAssignedByModelMethod(resolver, modelDecl, methodName)) fields.add(field);
-      }
+      const field = fieldAfterThis(node.left, through);
+      if (field && covers(node.right)) fields.add(field);
     }
     ts.forEachChild(node, walk);
   };
-  if (fn.body) walk(fn.body);
+  if (body) walk(body);
   return fields;
 }
 
@@ -534,6 +651,13 @@ function modelMethodCallOf(node) {
  * `null` bleibt unauffällig: der zugehörige Befund steht schon über
  * `readModelFields` im Ergebnis, eine Delegation zählt dann nur nicht als
  * Abdeckung.
+ *
+ * Anders als `readModelFields` ignoriert diese Funktion `decl.node.ambiguous`
+ * absichtlich, statt `ambiguous_model_class:<name>` ein zweites Mal zu
+ * melden: der Befund steht bereits über `readModelFields` im Ergebnis
+ * (blockierend, sobald das Modul getaggt ist) — eine Delegation hier mit
+ * derselben mehrdeutigen Klasse aufzulösen ist dieselbe Unsicherheit, nicht
+ * eine neue.
  * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
  * @param {ts.SourceFile} sf  die MODUL-Datei
  * @returns {{ node: ts.ClassDeclaration, sf: ts.SourceFile }|null}
@@ -548,27 +672,39 @@ function resolveModelClass(resolver, sf) {
 
 /**
  * Die Felder, die eine bestimmte Model-Methode über `this.<feld> = …`
- * zuweist — leer, wenn die Methode nicht auflösbar ist (fail closed: kein
- * Treffer in der Klasse oder ihrer `extends`-Kette, kein lesbares
- * `MethodDeclaration`, kein Körper).
+ * zuweist, UND NUR DIE, deren zugewiesener Wert über die Parameterkette bis
+ * zur `@agent`-Methode zurückverfolgbar ist — leer, wenn die Methode nicht
+ * auflösbar ist (fail closed: kein Treffer in der Klasse oder ihrer
+ * `extends`-Kette, kein lesbares `MethodDeclaration`, kein Körper) oder
+ * wenn kein Argument des Aufrufs aus einem Parameter der `@agent`-Methode
+ * stammt.
+ *
+ * Zwei Schritte: erst, WELCHE Positionen der Model-Methode der Aufruf mit
+ * einem von-Agent-Parameter-abgeleiteten Argument belegt
+ * (`coveredParamNames`); dann, welche `this.<feld> = …`-Zuweisungen im
+ * Methodenkörper aus GENAU DIESEN Parametern ableiten. Eine dritte,
+ * verworfene Position (ein konstantes oder sonst nicht ableitbares
+ * Argument) deckt nichts ab, selbst wenn die Methode sie zuweist.
+ *
  * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
  * @param {{ node: ts.ClassDeclaration, sf: ts.SourceFile }} modelDecl
  * @param {string} methodName
+ * @param {ts.NodeArray<ts.Expression>} callArgs  die Argumente am Aufruf `this.model.<methodName>(…)`
+ * @param {Set<string>} agentParams  die Parameternamen der `@agent`-Methode
  * @returns {Set<string>}
  */
-function fieldsAssignedByModelMethod(resolver, modelDecl, methodName) {
+function fieldsCoveredByDelegation(resolver, modelDecl, methodName, callArgs, agentParams) {
   const found = findClassMethod(resolver, modelDecl.node, modelDecl.sf, methodName, new Set(), 0);
   if (!found) return new Set();
-  const fields = new Set();
-  const walk = (node) => {
-    if (ts.isBinaryExpression(node) && ASSIGN_KINDS.has(node.operatorToken.kind)) {
-      const field = fieldAfterThis(node.left, null);
-      if (field) fields.add(field);
-    }
-    ts.forEachChild(node, walk);
-  };
-  if (found.method.body) walk(found.method.body);
-  return fields;
+
+  const coveredParamNames = new Set();
+  parameterNames(found.method).forEach((name, i) => {
+    if (name && callArgs[i] && derivesFromParams(callArgs[i], agentParams)) coveredParamNames.add(name);
+  });
+  if (coveredParamNames.size === 0) return new Set();
+
+  const derivedInMethod = expandDerivedNames(found.method.body, coveredParamNames);
+  return collectCoveredFields(found.method.body, null, rhs => derivesFromParams(rhs, derivedInMethod));
 }
 
 /**
@@ -591,7 +727,9 @@ function fieldsAssignedByModelMethod(resolver, modelDecl, methodName) {
 function templateBindings(moduleDir) {
   const models = [];
   const calls = [];
-  if (!existsSync(moduleDir)) return { models, calls };
+  // Kein `existsSync`-Schutz: `moduleDir` ist `dirname(viewmodelFile)`, und
+  // `viewmodelFile` wurde unmittelbar davor erfolgreich geparst — das
+  // Verzeichnis existiert damit zwangsläufig.
   for (const file of readdirSync(moduleDir)) {
     if (!file.endsWith('.html')) continue;
     const html = readFileSync(join(moduleDir, file), 'utf8');
