@@ -10,6 +10,7 @@
 import { h } from '../../../core/dom.js';
 import { getPhaseIds } from '../../../core/cycles/cycles.js';
 import { icon } from '../../../core/icon.js';
+import { findZegSheet } from '../../../core/zeg-sheet/zeg-sheet.js';
 
 /** host -> { chart, chartManager, token } of the latest render. */
 const charts = new WeakMap();
@@ -69,11 +70,14 @@ export function buildSeries(stateManager, i18n) {
 }
 
 /**
- * Link to the ZEG worksheet (router action verb `zeg-sheet`).
+ * Link to the ZEG worksheet (router action verb `zeg-sheet`). Omitted in a
+ * read-only project that has no ZEG sheet yet, since none could be created.
  * @param {{t: function}} i18n
- * @returns {HTMLElement}
+ * @param {object} stateManager
+ * @returns {HTMLElement|string}
  */
-function editLink(i18n) {
+function editLink(i18n, stateManager) {
+  if (stateManager.isCompleted?.() && !findZegSheet(stateManager)) return '';
   return h('div', { class: 'dashboard-zeg__actions' },
     h('a', { class: 'btn btn--ghost btn--sm dashboard-zeg__edit', href: '#/action/zeg-sheet', 'data-action': 'zeg-sheet' },
       icon('module.worksheet', { size: 'sm' }), i18n.t('dashboard.zegSheet.edit')));
@@ -109,11 +113,11 @@ export default {
 
     const { series, empty } = buildSeries(stateManager, i18n);
     if (empty) {
-      host.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.noHistory')), editLink(i18n));
+      host.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.noHistory')), editLink(i18n, stateManager));
       return;
     }
     const plotEl = h('div', { class: 'dashboard-area__plot', 'data-ref': 'plot' });
-    host.replaceChildren(plotEl, editLink(i18n));
+    host.replaceChildren(plotEl, editLink(i18n, stateManager));
 
     const dateFmt = (ts) => new Date(ts).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', {
       day: '2-digit', month: '2-digit', year: '2-digit',

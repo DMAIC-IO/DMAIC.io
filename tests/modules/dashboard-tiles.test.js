@@ -366,10 +366,14 @@ suite('dashboard tiles: spc', () => {
   });
 });
 
-function zegStateManager(history) {
+function zegStateManager(history, { completed = false, withSheet = false } = {}) {
+  const sheet = { id: 'sheet_1', state: { columns: [{ meta: { managedBy: 'zeg', managedRef: 'date' } }] } };
   return {
     get: (k) => (k.startsWith('phaseAchievementHistory.') ? (history[k.split('.')[1]] || []) : null),
     getProjectCycle: () => 'dmaic',
+    isCompleted: () => completed,
+    listInstances: () => (withSheet ? [{ instanceId: 'w1' }] : []),
+    getModuleState: (id) => (withSheet && id === 'w1' ? { sheets: [sheet] } : null),
   };
 }
 
@@ -409,6 +413,17 @@ suite('dashboard tiles: zeg-timeline', () => {
       assertEqual(link.getAttribute('href'), '#/action/zeg-sheet');
       assertTrue(link.textContent.includes('dashboard.zegSheet.edit'));
     }
+  });
+
+  test('read-only project without a ZEG sheet offers no edit-data link', async () => {
+    for (const hist of [{}, { define: [{ t: 1, v: 10 }] }]) {
+      const host = document.createElement('div');
+      await zegTile.render(host, args(fakeChartManager(), zegStateManager(hist, { completed: true })));
+      assertEqual(host.querySelector('a[data-action="zeg-sheet"]'), null);
+    }
+    const host = document.createElement('div');
+    await zegTile.render(host, args(fakeChartManager(), zegStateManager({}, { completed: true, withSheet: true })));
+    assertTrue(host.querySelector('a[data-action="zeg-sheet"]') !== null);
   });
 
   test('showLegend is passed to the chart', async () => {
