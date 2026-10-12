@@ -541,7 +541,12 @@
     "zegTimeline": "Goal achievement per phase (over time)",
     "xLabel": "Date",
     "yLabel": "GAL (%)",
-    "noHistory": "No GAL entries recorded yet. Double-click a phase tile to set a value.",
+    "noHistory": "No GAL entries recorded yet. Set a value with the pencil on a phase tile or enter it under “Edit data”.",
+    "zegSheet": {
+      "name": "Goal achievement",
+      "date": "Date",
+      "edit": "Edit data"
+    },
     "charterTitle": "Project Charter",
     "charterProblem": "Problem Statement",
     "charterEmpty": "No project-charter module created.",

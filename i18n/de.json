@@ -541,7 +541,12 @@
     "zegTimeline": "Zielerreichungsgrad je Phase (zeitlich)",
     "xLabel": "Datum",
     "yLabel": "ZEG (%)",
-    "noHistory": "Noch keine ZEG-Einträge erfasst. Doppelklicke eine Phasen-Kachel, um einen Wert zu setzen.",
+    "noHistory": "Noch keine ZEG-Einträge erfasst. Setze einen Wert mit dem Stift an einer Phasen-Kachel oder trage ihn unter „Daten bearbeiten“ ein.",
+    "zegSheet": {
+      "name": "Zielerreichungsgrad",
+      "date": "Datum",
+      "edit": "Daten bearbeiten"
+    },
     "charterTitle": "Projektauftrag",
     "charterProblem": "Problembeschreibung",
     "charterEmpty": "Kein Projektauftrag-Modul angelegt.",

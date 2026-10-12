@@ -758,6 +758,8 @@ export class DmaicTiles {
     this._eventBus.on('module:removed', () => {});
     this._eventBus.on('badge:update', () => {});
     this._eventBus.on('language:changed', () => this._refreshLabels());
+    // Corrections from the ZEG worksheet arrive as achievement events.
+    this._eventBus.on('phase:achievement-changed', ({ phase, value }) => this.updateProgress(phase, value));
     // Sync highlight when another component (e.g. workspace) drives the phase
     // change. Equality guard prevents the self-emit from `_selectPhase` from
     // looping back through here.
