@@ -49,7 +49,9 @@ export const AGENT_REGISTRY = {
       "unmarked_method:pickClass",
       "unmarked_method:pickStep",
       "unmarked_method:reworkLoops",
-      "unmarked_method:onExport"
+      "unmarked_method:onExport",
+      "template_model_call:removeStep",
+      "template_model_call:removeStep"
     ],
     "actions": {
       "toggleSubsteps": {
@@ -133,7 +135,9 @@ export const AGENT_REGISTRY = {
       "unmarked_method:readNumericColumn",
       "unmarked_method:runAnalysis",
       "unmarked_method:init",
-      "unmarked_method:destroy"
+      "unmarked_method:destroy",
+      "unreachable_write:chartTypeId",
+      "unreachable_write:constantN"
     ],
     "actions": {},
     "fields": {
@@ -217,7 +221,10 @@ export const AGENT_REGISTRY = {
       "unmarked_method:onEventChange",
       "unmarked_method:runAnalysis",
       "unmarked_method:init",
-      "unmarked_method:destroy"
+      "unmarked_method:destroy",
+      "unreachable_write:p0",
+      "unreachable_write:direction",
+      "unreachable_write:pooled"
     ],
     "actions": {},
     "fields": {
@@ -401,7 +408,9 @@ export const AGENT_REGISTRY = {
       "unmarked_method:clearSSData",
       "unmarked_method:onKeydown",
       "unmarked_method:init",
-      "unmarked_method:destroy"
+      "unmarked_method:destroy",
+      "unreachable_write:lsl",
+      "unreachable_write:usl"
     ],
     "actions": {},
     "fields": {
@@ -563,7 +572,16 @@ export const AGENT_REGISTRY = {
       "unmarked_method:autoPlot",
       "unmarked_method:init",
       "unmarked_method:destroy",
-      "unreadable_state_key:model"
+      "unreadable_state_key:model",
+      "unreachable_write:modelType",
+      "unreachable_write:customFormula",
+      "unreachable_write:xLabel",
+      "unreachable_write:yLabel",
+      "unreachable_write:xMin",
+      "unreachable_write:xMax",
+      "unreachable_write:yMin",
+      "unreachable_write:yMax",
+      "unreachable_write:zLabel"
     ],
     "actions": {},
     "fields": {
@@ -724,7 +742,8 @@ export const AGENT_REGISTRY = {
       "unmarked_method:openViolation",
       "unmarked_method:onViolationKey",
       "unmarked_method:init",
-      "unmarked_method:destroy"
+      "unmarked_method:destroy",
+      "unreachable_write:chartTypeId"
     ],
     "actions": {},
     "fields": {
@@ -987,7 +1006,8 @@ export const AGENT_REGISTRY = {
       "unmarked_method:railStart",
       "unmarked_method:railEnd",
       "unmarked_method:dropOnLane",
-      "unmarked_method:onExport"
+      "unmarked_method:onExport",
+      "template_model_call:removeStep"
     ],
     "actions": {
       "toggleSubsteps": {
@@ -1396,7 +1416,10 @@ export const AGENT_REGISTRY = {
       "unmarked_method:capturePreviewEdits",
       "unmarked_method:init",
       "unmarked_method:destroy",
-      "unreadable_state_key:version"
+      "unreadable_state_key:version",
+      "unreachable_write:projectMode",
+      "unreachable_write:projectName",
+      "unreachable_write:doeName"
     ],
     "actions": {},
     "fields": {
@@ -1704,7 +1727,9 @@ export const AGENT_REGISTRY = {
       "unmarked_method:optionToggled",
       "unmarked_method:whenAnchor",
       "unmarked_method:init",
-      "unmarked_method:destroy"
+      "unmarked_method:destroy",
+      "unreachable_write:connectWithin",
+      "unreachable_write:showOperatorMean"
     ],
     "actions": {},
     "fields": {
@@ -1922,7 +1947,8 @@ export const AGENT_REGISTRY = {
       "unreadable_state_key:showYLabel",
       "unreadable_state_key:showXTicks",
       "unreadable_state_key:showYTicks",
-      "unreadable_state_key:bgColor"
+      "unreadable_state_key:bgColor",
+      "unreachable_write:binMode"
     ],
     "actions": {},
     "fields": {
@@ -1990,9 +2016,13 @@ export const AGENT_REGISTRY = {
   },
   "hypothesis-test": {
     "tagged": true,
-    "available": true,
-    "violations": [],
-    "reported": [],
+    "available": false,
+    "violations": [
+      "unreachable_write:powerGoal"
+    ],
+    "reported": [
+      "unreachable_write:powerGoal"
+    ],
     "actions": {
       "setCategory": {
         "params": [
@@ -2402,7 +2432,8 @@ export const AGENT_REGISTRY = {
       "unmarked_method:renderTrend",
       "unmarked_method:renderGantt",
       "unmarked_method:renderCostChart",
-      "unresolvable_tojson"
+      "unresolvable_tojson",
+      "unreachable_write:problem"
     ],
     "actions": {},
     "fields": {
@@ -2614,7 +2645,8 @@ export const AGENT_REGISTRY = {
       "unmarked_method:dragLeaveRole",
       "unmarked_method:dropRole",
       "unmarked_method:init",
-      "unmarked_method:destroy"
+      "unmarked_method:destroy",
+      "unreachable_write:title"
     ],
     "actions": {},
     "fields": {
@@ -2661,7 +2693,13 @@ export const AGENT_REGISTRY = {
       "unmarked_method:removeFactor",
       "unmarked_method:generate",
       "unmarked_method:destroy",
-      "unreadable_state_key:betas"
+      "unreadable_state_key:betas",
+      "unreachable_write:yName",
+      "unreachable_write:samplingMethod",
+      "unreachable_write:sampleSize",
+      "unreachable_write:noiseStd",
+      "unreachable_write:seed",
+      "unreachable_write:intercept"
     ],
     "actions": {},
     "fields": {
@@ -3004,7 +3042,13 @@ export const AGENT_REGISTRY = {
       "unmarked_method:whenAnchor",
       "unmarked_method:init",
       "unmarked_method:destroy",
-      "unreadable_state_key:factorRows"
+      "unreadable_state_key:factorRows",
+      "unreachable_write:modelForm",
+      "unreachable_write:estimator",
+      "unreachable_write:showPoints",
+      "unreachable_write:connectMeans",
+      "unreachable_write:showGroupMean",
+      "unreachable_write:showRefLine"
     ],
     "actions": {},
     "fields": {
@@ -3104,7 +3148,8 @@ export const AGENT_REGISTRY = {
       "unmarked_method:insertAt",
       "unmarked_method:railStart",
       "unmarked_method:railEnd",
-      "unmarked_method:onExport"
+      "unmarked_method:onExport",
+      "template_model_call:removeStep"
     ],
     "actions": {
       "toggleSubsteps": {
@@ -3787,7 +3832,8 @@ export const AGENT_REGISTRY = {
       "unmarked_method:badgeClass",
       "unmarked_method:badgeText",
       "unmarked_method:badgeIcon",
-      "unmarked_method:chartTypeChanged"
+      "unmarked_method:chartTypeChanged",
+      "unreachable_write:chartTypeId"
     ],
     "actions": {},
     "fields": {
@@ -3870,7 +3916,9 @@ export const AGENT_REGISTRY = {
       "unmarked_method:renderInteractionChart",
       "unmarked_method:init",
       "unmarked_method:onRouteChanged",
-      "unmarked_method:destroy"
+      "unmarked_method:destroy",
+      "unreachable_write:regType",
+      "unreachable_write:polyDegree"
     ],
     "actions": {},
     "fields": {
@@ -3996,7 +4044,15 @@ export const AGENT_REGISTRY = {
       "unmarked_method:cancel",
       "unmarked_method:renderCharts",
       "unmarked_method:init",
-      "unmarked_method:destroy"
+      "unmarked_method:destroy",
+      "unreachable_write:statisticId",
+      "unreachable_write:contrast",
+      "unreachable_write:direction",
+      "unreachable_write:target",
+      "unreachable_write:B",
+      "unreachable_write:confidence",
+      "unreachable_write:seed",
+      "unreachable_write:ciMethod"
     ],
     "actions": {},
     "fields": {
@@ -4170,7 +4226,8 @@ export const AGENT_REGISTRY = {
       "unmarked_method:testStatusText",
       "unmarked_method:isTestFlagged",
       "unmarked_method:chartTitle",
-      "unmarked_method:alphaChanged"
+      "unmarked_method:alphaChanged",
+      "unreachable_write:alpha"
     ],
     "actions": {},
     "fields": {
@@ -4217,7 +4274,15 @@ export const AGENT_REGISTRY = {
       "unmarked_method:autoCalc",
       "unmarked_method:openAlgoLab",
       "unmarked_method:init",
-      "unmarked_method:destroy"
+      "unmarked_method:destroy",
+      "unreachable_write:sigma0",
+      "unreachable_write:sigmaAlt",
+      "unreachable_write:ratio",
+      "unreachable_write:delta",
+      "unreachable_write:sigma",
+      "unreachable_write:direction",
+      "unreachable_write:alpha",
+      "unreachable_write:power"
     ],
     "actions": {},
     "fields": {
@@ -4382,7 +4447,13 @@ export const AGENT_REGISTRY = {
       "unmarked_method:onLambdaChange",
       "unmarked_method:onLChange",
       "unmarked_method:onKSigmaChange",
-      "unmarked_method:onHSigmaChange"
+      "unmarked_method:onHSigmaChange",
+      "unreachable_write:chartTypeId",
+      "unreachable_write:sigmaMethod",
+      "unreachable_write:lambda",
+      "unreachable_write:L",
+      "unreachable_write:kSigma",
+      "unreachable_write:hSigma"
     ],
     "actions": {},
     "fields": {
@@ -4464,7 +4535,10 @@ export const AGENT_REGISTRY = {
       "unmarked_method:deleteTodo",
       "unmarked_method:syncCalendar",
       "unmarked_method:checkCalendar",
-      "unmarked_method:init"
+      "unmarked_method:init",
+      "unreachable_write:filterStatus",
+      "unreachable_write:filterOwner",
+      "unreachable_write:search"
     ],
     "actions": {},
     "fields": {
@@ -4506,7 +4580,9 @@ export const AGENT_REGISTRY = {
     "violations": [],
     "reported": [
       "unmarked_method:onLambdaModeChange",
-      "unmarked_method:onLambdaManualChange"
+      "unmarked_method:onLambdaManualChange",
+      "unreachable_write:lambdaMode",
+      "unreachable_write:lambdaManual"
     ],
     "actions": {},
     "fields": {
@@ -4551,7 +4627,8 @@ export const AGENT_REGISTRY = {
       "unmarked_method:enlarge",
       "unmarked_method:closeEnlarged",
       "unreadable_state_key:rowLabels",
-      "unreadable_state_key:cells"
+      "unreadable_state_key:cells",
+      "unreachable_write:systemTitle"
     ],
     "actions": {},
     "fields": {
@@ -4596,7 +4673,8 @@ export const AGENT_REGISTRY = {
       "unmarked_method:mxCellClass",
       "unmarked_method:mxCellTitle",
       "unmarked_method:mxCellContent",
-      "unmarked_method:mxCellClick"
+      "unmarked_method:mxCellClick",
+      "unreachable_write:problemNote"
     ],
     "actions": {},
     "fields": {
@@ -4659,7 +4737,14 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:openResources"
+      "unmarked_method:openResources",
+      "unreachable_write:system",
+      "unreachable_write:usefulFunction",
+      "unreachable_write:harmfulEffect",
+      "unreachable_write:ifr1",
+      "unreachable_write:ifr2",
+      "unreachable_write:ifr3",
+      "unreachable_write:obstacles"
     ],
     "actions": {},
     "fields": {
@@ -4715,7 +4800,12 @@ export const AGENT_REGISTRY = {
       "unmarked_method:isChecked",
       "unmarked_method:swap",
       "unmarked_method:selectPrinciple",
-      "unmarked_method:principleNoteChanged"
+      "unmarked_method:principleNoteChanged",
+      "unreachable_write:parameter",
+      "unreachable_write:requirementA",
+      "unreachable_write:requirementNotA",
+      "unreachable_write:problemNote",
+      "unreachable_write:solutionNote"
     ],
     "actions": {},
     "fields": {
@@ -4766,7 +4856,8 @@ export const AGENT_REGISTRY = {
       "unmarked_method:catPrompt",
       "unmarked_method:fillIcon",
       "unmarked_method:statusSuffix",
-      "unmarked_method:cycleStatus"
+      "unmarked_method:cycleStatus",
+      "unreachable_write:system"
     ],
     "actions": {},
     "fields": {
@@ -4823,7 +4914,8 @@ export const AGENT_REGISTRY = {
       "unmarked_method:standardSelectedClass",
       "unmarked_method:noteChanged",
       "unmarked_method:selectChanged",
-      "unmarked_method:init"
+      "unmarked_method:init",
+      "unreachable_write:problemNote"
     ],
     "actions": {},
     "fields": {
@@ -4903,7 +4995,14 @@ export const AGENT_REGISTRY = {
       "unmarked_method:tzDiffText",
       "unmarked_method:swapTimezones",
       "unmarked_method:tzSetNow",
-      "unmarked_method:worldClock"
+      "unmarked_method:worldClock",
+      "unreachable_write:fromUnit",
+      "unreachable_write:inputVal",
+      "unreachable_write:toUnit",
+      "unreachable_write:tzFrom",
+      "unreachable_write:tzTime",
+      "unreachable_write:tzDate",
+      "unreachable_write:tzTo"
     ],
     "actions": {},
     "fields": {
@@ -5235,4 +5334,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":3};
+export const AGENT_COVERAGE = {"total":74,"available":2};

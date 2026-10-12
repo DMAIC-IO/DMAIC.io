@@ -50,8 +50,8 @@
  * Mirrors help-data.mjs: collect + render, kein Schreibzugriff hier.
  */
 import ts from 'typescript';
-import { readdirSync, existsSync, statSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
+import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
+import { join, relative, sep, dirname } from 'node:path';
 import { createResolver, functionFromMember, isFunctionMember, isFunctionLike, findCreateModuleMember, memberName } from './agent-resolve.mjs';
 
 const MODULES_DIR = 'js/modules';
@@ -101,7 +101,7 @@ export function collectAgentData(appDir) {
 function buildEntry(resolver, appDir, viewmodelFile) {
   const sf = resolver.parse(viewmodelFile);
   const tagged = hasModuleTag(sf);
-  const { actions, violations } = readViewmodel(sf, resolver, appDir);
+  const { actions, violations, written } = readViewmodel(sf, resolver, appDir);
 
   // Deklarierte Lesefläche hat Vorrang und ERSETZT die Model-Ableitung —
   // nicht ergänzt sie: zwei Quellen für dieselbe Fläche wäre genau die
@@ -142,9 +142,22 @@ function buildEntry(resolver, appDir, viewmodelFile) {
     if (!Object.prototype.hasOwnProperty.call(actions, 'read')) surface.push('no_read_action');
   }
 
+  // Schreibvollständigkeit (Task 1b): die Vorlage macht über
+  // `x-model="model.<feld>"` und einen direkten `model.<methode>()`-Aufruf
+  // zwei Schreibwege auf, die am Viewmodel vorbeigehen können. Beide
+  // Befunde prüfen gegen das, was die `@agent`-Methoden wirklich zuweisen
+  // (`written`) — nicht gegen die Modellfelder, denn ein Feld kann lesbar
+  // und trotzdem für die Fläche unerreichbar sein.
+  const bindings = templateBindings(dirname(viewmodelFile));
+  const unreachable = bindings.models
+    .filter(f => !written.has(f))
+    .map(f => `unreachable_write:${f}`);
+  const templateCalls = bindings.calls.map(m => `template_model_call:${m}`);
+
   const reported = [...violations, ...surface, ...model.violations,
     ...persistence.violations, ...unreadable,
-    ...invalidBulkKinds(model.fields), ...collectDomDetours(sf)];
+    ...invalidBulkKinds(model.fields), ...collectDomDetours(sf),
+    ...unreachable, ...templateCalls];
   // Verstöße zählen nur, wenn das Modul etwas behauptet (Spec §9).
   const effective = tagged ? reported : [];
   return {
@@ -365,13 +378,14 @@ function hasModuleTag(sf) {
 function readViewmodel(sf, resolver, appDir) {
   const actions = {};
   const violations = [];
+  const written = new Set();
   const literal = resolver.findDataReturnLiteral(sf);
   // Was der Generator NICHT sehen kann, muss er melden — sonst ginge ein
   // solches Modul mit gesetztem Modul-Tag und NULL Verstößen durch den Build
   // und würde `available: true`, obwohl keine einzige seiner Methoden
   // begutachtet wurde (Review-Befund I6/P1). Die Zusage aus Spec §9 („das
   // Modul-Tag ist maschinell nachgeprüft") wäre sonst eine leere Operation.
-  if (!literal) return { actions, violations: ['unresolvable_data_literal'] };
+  if (!literal) return { actions, violations: ['unresolvable_data_literal'], written };
 
   const { members, unresolved } = resolver.collectMembers(literal, sf);
   // Die unauflösbaren Spreads stehen VORAN: sie sind der Befund über die
@@ -416,8 +430,89 @@ function readViewmodel(sf, resolver, appDir) {
       returns: returnTag?.typeExpression?.type?.getText() ?? 'void',
       help: cleanComment(descriptionOf(member)),
     };
+
+    // Nur der `@agent`-Zweig zählt als Schreibweg der Fläche (Task 1b): eine
+    // `this.model.<feld> = …`-Zuweisung in einer `@noagent`-Methode deckt die
+    // Vorlagenbindung NICHT ab — genau das ist der Unterschied zwischen
+    // „ein Agent kann das Feld schreiben" und „irgendeine Methode tut es".
+    for (const field of writtenModelFields(fn)) written.add(field);
   }
-  return { actions, violations };
+  return { actions, violations, written };
+}
+
+/**
+ * Die Model-Felder, die eine `@agent`-Methode über `this.model.<feld>`
+ * zuweist — die Gegenprobe zu `templateBindings().models` (Task 1b).
+ *
+ * `=` und `+=` zählen beide, dieselbe Begründung wie `ASSIGN_KINDS` bei
+ * `collectDomDetours`: additiv ist auch geschrieben. Eine Zuweisung an
+ * `this.model.<a>.<b>` (oder `this.model.<a>[0].<b>`) zählt für `<a>`: wer
+ * `this.model.steps[0].title` schreibt, schreibt `steps`.
+ *
+ * @param {ts.SignatureDeclaration} fn
+ * @returns {Set<string>}
+ */
+function writtenModelFields(fn) {
+  const fields = new Set();
+  const walk = (node) => {
+    if (ts.isBinaryExpression(node) && ASSIGN_KINDS.has(node.operatorToken.kind)) {
+      const field = modelFieldOf(node.left);
+      if (field) fields.add(field);
+    }
+    ts.forEachChild(node, walk);
+  };
+  if (fn.body) walk(fn.body);
+  return fields;
+}
+
+/**
+ * Das erste Feld hinter `this.model.…` in einer Zuweisungs-Zielkette, oder
+ * `null`, wenn die Kette nicht an `this.model` hängt.
+ * @param {ts.Node} node  die linke Seite einer Zuweisung
+ * @returns {string|null}
+ */
+function modelFieldOf(node) {
+  const path = [];
+  let current = node;
+  while (ts.isPropertyAccessExpression(current) || ts.isElementAccessExpression(current)) {
+    if (ts.isPropertyAccessExpression(current)) path.unshift({ name: current.name.text });
+    else path.unshift({ name: null });
+    current = current.expression;
+  }
+  if (current.kind !== ts.SyntaxKind.ThisKeyword) return null;
+  if (path.length < 2) return null;
+  if (path[0].name !== 'model') return null;
+  return path[1].name;
+}
+
+/**
+ * Die Schreibwege, die die VORLAGE eines Moduls aufmacht.
+ *
+ * Nur die Wurzelform `x-model="model.<feld>"` ist statisch entscheidbar: ob
+ * `step` in `x-model="step.title"` ein Model-Element oder ein
+ * Viewmodel-Puffer ist, steht im `x-for`-Geltungsbereich und nicht im
+ * Attribut. Im Bestand stehen 29 Wurzelbindungen gegen 79 andere — die
+ * anderen prüft der Rauchtest empirisch (kein Lesefeld bleibt stumm).
+ *
+ * Drei Vorlagen rufen zusätzlich direkt eine Model-Methode auf
+ * (`@click="model.removeStep(step.id)"`) — ein Schreibweg der Oberfläche, der
+ * am Viewmodel vorbeigeht und den zweiten Code bekommt
+ * (`template_model_call:<methode>`).
+ *
+ * @param {string} moduleDir
+ * @returns {{ models: string[], calls: string[] }}
+ */
+function templateBindings(moduleDir) {
+  const models = [];
+  const calls = [];
+  if (!existsSync(moduleDir)) return { models, calls };
+  for (const file of readdirSync(moduleDir)) {
+    if (!file.endsWith('.html')) continue;
+    const html = readFileSync(join(moduleDir, file), 'utf8');
+    for (const m of html.matchAll(/x-model(?:\.[a-z]+)*="model\.([A-Za-z_$][\w$]*)"/g)) models.push(m[1]);
+    for (const m of html.matchAll(/(?:@|x-on:)[a-z]+="model\.([A-Za-z_$][\w$]*)\(/g)) calls.push(m[1]);
+  }
+  return { models, calls };
 }
 
 /**
