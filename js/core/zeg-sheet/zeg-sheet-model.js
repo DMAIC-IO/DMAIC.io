@@ -50,10 +50,18 @@ function toPercent(v) {
   return Math.max(0, Math.min(100, Math.round(n)));
 }
 
-/** Entries of one phase grouped by local day, each group in time order. */
+/** True for a history entry with a usable timestamp. */
+function hasTime(e) {
+  return Number.isFinite(e?.t);
+}
+
+/**
+ * Entries of one phase grouped by local day, each group in time order.
+ * Entries without a numeric `t` are left out.
+ */
 function groupByDay(entries) {
   const byDay = new Map();
-  for (const e of [...(entries || [])].sort((a, b) => a.t - b.t)) {
+  for (const e of (entries || []).filter(hasTime).sort((a, b) => a.t - b.t)) {
     const day = dayOf(e.t);
     if (!byDay.has(day)) byDay.set(day, []);
     byDay.get(day).push(e);
@@ -83,6 +91,7 @@ export function historyToRows(history, phaseIds) {
  * all of the day's old entries, changed value keeps the day's last timestamp,
  * a new day gets 12:00 local time, a missing value drops the day. Phases not
  * present (column missing) and phases outside `phaseIds` keep their history.
+ * Entries without a numeric `t` are never shown, so they are passed through.
  * @param {Array<{date: unknown, values: object}>} rows
  * @param {string[]} phaseIds
  * @param {object} [oldHistory]
@@ -108,14 +117,16 @@ export function rowsToHistory(rows, phaseIds, oldHistory = {}, presentPhases = p
       else entries.push({ t: last ? last.t : noonOf(day), v });
     }
     entries.sort((a, b) => a.t - b.t);
+    entries.unshift(...(oldHistory[phase] || []).filter(e => !hasTime(e)));
     if (entries.length || oldHistory[phase]) next[phase] = entries;
   }
   return next;
 }
 
 /**
- * Read the rows from a ZEG sheet state. Without a date column no phase counts
- * as present, so a deleted date column never wipes the history.
+ * Read the rows from a ZEG sheet state. Without a date column — deleted, or
+ * emptied while phase values remain — no phase counts as present, so losing
+ * the dates never wipes the history.
  * @param {object|null} sheetState
  * @returns {{rows: Array<{date: unknown, values: object}>, presentPhases: string[]}}
  */
@@ -132,14 +143,18 @@ export function readRows(sheetState) {
       values: Object.fromEntries(phaseCols.map(c => [c.meta.managedRef, c.values[i] ?? null])),
     });
   }
+  const anyDate = rows.some(r => isIsoDate(r.date));
+  const anyValue = rows.some(r => Object.values(r.values).some(v => v !== null && v !== ''));
+  if (!anyDate && anyValue) return { rows: [], presentPhases: [] };
   return { rows, presentPhases: phaseCols.map(c => c.meta.managedRef) };
 }
 
 /**
  * Build the ZEG sheet state from rows. Reuses id/name/format of existing
  * managed columns, drops managed columns of phases outside `phaseIds`, keeps
- * user columns (after the managed ones, never truncated). No rows → one row
- * dated today so the user can start typing.
+ * user columns (after the managed ones, never truncated). A user cell stays
+ * with the date of its old row; cells of rows whose date is gone move below
+ * the dated rows. No rows → one row dated today so the user can start typing.
  * @param {object|null} prevState
  * @param {Array<{date: string, values: object}>} rows
  * @param {string[]} phaseIds
@@ -151,8 +166,10 @@ export function buildSheetState(prevState, rows, phaseIds, labels) {
   const managed = (ref) => prevCols.find(c => isZegColumn(c) && c.meta.managedRef === ref);
   const userCols = prevCols.filter(c => !isZegColumn(c));
   const body = rows.length ? rows : [{ date: todayISO(), values: {} }];
-  const rowCount = Math.max(body.length, ...userCols.map(c => c.values.length));
+  const order = userRowOrder(prevState, userCols, body);
+  const rowCount = Math.max(body.length, order.length);
   const pad = (arr) => [...arr, ...new Array(Math.max(0, rowCount - arr.length)).fill(null)];
+  const reorder = (arr) => pad(order.map(i => (i === null ? null : arr[i] ?? null)));
 
   const make = (ref, type, name, values, format) => {
     const old = managed(ref);
@@ -172,7 +189,7 @@ export function buildSheetState(prevState, rows, phaseIds, labels) {
   const columns = [
     make(DATE_REF, 'date', labels.date, body.map(r => r.date), {}),
     ...phaseIds.map(p => make(p, 'percent', labels.phases[p] ?? p, body.map(r => r.values[p] ?? null), { decimals: 0 })),
-    ...userCols.map(c => ({ ...c, values: pad(c.values), formulas: c.formulas ? pad(c.formulas) : null })),
+    ...userCols.map(c => ({ ...c, values: reorder(c.values), formulas: c.formulas ? reorder(c.formulas) : null })),
   ].map((c, i) => ({ ...c, shortName: `C${i + 1}` }));
 
   return {
@@ -184,4 +201,38 @@ export function buildSheetState(prevState, rows, phaseIds, labels) {
     sortDir: null,
     selection: null,
   };
+}
+
+/**
+ * For each new row, the old row index whose user cells it takes (null: none).
+ * Old rows are matched by date; unmatched old rows that hold user data follow
+ * the new rows. Without an old date column, rows keep their position.
+ * @param {object|null} prevState
+ * @param {object[]} userCols
+ * @param {Array<{date: string}>} body
+ * @returns {Array<number|null>}
+ */
+function userRowOrder(prevState, userCols, body) {
+  const oldCount = Math.max(0, ...userCols.map(c => c.values.length));
+  const dateCol = (prevState?.columns || []).find(c => isZegColumn(c) && c.meta.managedRef === DATE_REF);
+  if (!dateCol) return Array.from({ length: oldCount }, (_, i) => i);
+  const free = new Map();
+  for (let i = 0; i < oldCount; i++) {
+    const d = dateCol.values[i];
+    if (!isIsoDate(d)) continue;
+    if (!free.has(d)) free.set(d, []);
+    free.get(d).push(i);
+  }
+  const used = new Set();
+  const order = body.map(r => {
+    const i = free.get(r.date)?.shift();
+    if (i === undefined) return null;
+    used.add(i);
+    return i;
+  });
+  const hasUserData = (i) => userCols.some(c => c.values[i] !== null && c.values[i] !== undefined && c.values[i] !== '');
+  for (let i = 0; i < oldCount; i++) {
+    if (!used.has(i) && hasUserData(i)) order.push(i);
+  }
+  return order;
 }

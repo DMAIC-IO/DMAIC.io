@@ -159,4 +159,45 @@ suite('core/zeg-sheet-model sheet state', () => {
     assertDeepEqual(readRows(noDate), { rows: [], presentPhases: [] });
     assertDeepEqual(readRows(null), { rows: [], presentPhases: [] });
   });
+
+  test('readRows: emptied date column with phase values means nothing present', () => {
+    const st = buildSheetState(null, [
+      { date: '2026-07-10', values: { define: 20 } },
+      { date: '2026-07-12', values: { define: 40 } },
+    ], ['define'], LABELS);
+    st.columns[0].values = [null, ''];
+    assertDeepEqual(readRows(st).presentPhases, []);
+    const history = { define: [{ t: at(2026, 7, 10), v: 20 }, { t: at(2026, 7, 12), v: 40 }] };
+    const { rows, presentPhases } = readRows(st);
+    assertDeepEqual(rowsToHistory(rows, ['define'], history, presentPhases), history);
+  });
+
+  test('rebuild keeps user column values with their date, not their row position', () => {
+    const first = buildSheetState(null, [
+      { date: '2026-07-10', values: { define: 20 } },
+      { date: '2026-07-12', values: { define: 40 } },
+    ], ['define'], LABELS);
+    first.columns.push({ id: 'note', name: 'Notiz', shortName: 'C3', type: 'text', values: ['Kickoff', 'Review'], formulas: null, format: {}, meta: null });
+    // 07-10 was removed; a pencil edit added today's row
+    const next = buildSheetState(first, [
+      { date: '2026-07-12', values: { define: 40 } },
+      { date: '2026-10-12', values: { define: 60 } },
+    ], ['define'], LABELS);
+    assertDeepEqual(next.columns[0].values.slice(0, 2), ['2026-07-12', '2026-10-12']);
+    assertEqual(next.columns[2].values[0], 'Review');
+    assertEqual(next.columns[2].values[1], null);
+    // the orphaned note is kept, after the dated rows
+    assertEqual(next.columns[2].values[2], 'Kickoff');
+    assertEqual(next.columns[0].values[2], null);
+  });
+});
+
+suite('core/zeg-sheet-model malformed history entries', () => {
+  test('entries without a numeric t are not shown and survive a sync', () => {
+    const history = { define: [{ ts: 123, value: 50 }, { t: at(2026, 7, 10), v: 20 }] };
+    const rows = historyToRows(history, ['define']);
+    assertDeepEqual(rows, [{ date: '2026-07-10', values: { define: 20 } }]);
+    const back = rowsToHistory(rows, ['define'], history);
+    assertDeepEqual(back.define, [{ ts: 123, value: 50 }, { t: at(2026, 7, 10), v: 20 }]);
+  });
 });
