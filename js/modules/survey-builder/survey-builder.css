@@ -7,6 +7,9 @@
 .survey-builder__body {
   display: flex;
   flex-direction: column;
+
+  /* The body is the scroll container; 100cqh below is its visible height. */
+  container-type: size;
 }
 
 .survey-builder__tab {
@@ -160,7 +163,23 @@
   color: var(--color-text-tertiary);
 }
 
+/* The draft tab grows with the input panel so the body scrolls it as a
+   whole; the output column sticks to the top of the visible area and takes
+   at most its height, so the preview follows the scroll and fills it. */
+.survey-builder__draft {
+  min-height: auto;
+}
+
+.survey-builder__draft > .dmike-split__output {
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  max-height: 100cqh;
+}
+
 .survey-builder__preview {
+  flex: 1;
+  min-height: 0;
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius-sm);
   overflow: auto;
