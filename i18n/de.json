@@ -2562,6 +2562,112 @@
     "activity-flowchart": {
       "name": "Activity Flowchart",
       "description": "Kette aus Aktivitäten und Entscheidungen mit Nacharbeits-Bögen",
+      "whenToUse": "Wenn ein Ablauf aus Aktivitäten und Ja/Nein-Entscheidungen mit Nacharbeits-Schleifen abgebildet werden soll — nicht für eine reine Verkettung ohne Verzweigungen (dafür reicht Process Map).",
+      "actions": {
+        "appendStep": {
+          "help": "Hängt eine Aktivität oder Entscheidung an die Kette und liefert ihre id.",
+          "params": {
+            "kind": "Art des neuen Schritts: 'activity' Aktivität oder 'decision' Entscheidung."
+          }
+        },
+        "setStepTitle": {
+          "help": "Setzt den Titel eines Schritts.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+            "text": "Der neue Titel."
+          }
+        },
+        "setStepDescription": {
+          "help": "Setzt die Beschreibung eines Schritts.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+            "text": "Die neue Beschreibung."
+          }
+        },
+        "setDecisionLabel": {
+          "help": "Setzt die Frage einer Entscheidung.",
+          "params": {
+            "stepId": "Die id der Entscheidung. Eine unbekannte id, oder ein Schritt, der keine Entscheidung ist, ist ein Fehler.",
+            "text": "Der neue Text der Frage."
+          }
+        },
+        "setDecisionTarget": {
+          "help": "Setzt das Ziel des Nein-Zweigs einer Entscheidung. Der Ja-Zweig hat kein Ziel — er ist der Wertstrom, der ohnehin zum nächsten Schritt weiterfließt.",
+          "params": {
+            "stepId": "Die id der Entscheidung. Eine unbekannte id, oder ein Schritt, der keine Entscheidung ist, ist ein Fehler.",
+            "target": "Das neue Ziel: 'end' für Prozessende, oder die id eines früheren Schritts — ein Rücksprung wird als Umarbeitungsschleife angezeigt."
+          }
+        },
+        "removeStep": {
+          "help": "Entfernt einen Schritt aus der Kette. Löst bei einer Entscheidung ihr Band auf: die darin liegenden Schritte erben das Band der entfernten Entscheidung.",
+          "params": {
+            "stepId": "Die id des zu entfernenden Schritts. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "insertInBand": {
+          "help": "Setzt einen neuen Aktivitätsschritt an eine Lücke der Kette und liefert seine id.",
+          "params": {
+            "idx": "Die Lücke, an der eingefügt wird (0 = vor dem ersten Schritt, bis zur Kettenlänge = ans Ende). Ein Wert außerhalb dieses Bereichs oder keine ganze Zahl ist ein Fehler.",
+            "bandId": "Die id eines vorhandenen Bands ('main' oder 'no:<id>'). Eine unbekannte Band-id ist ein Fehler."
+          }
+        },
+        "insertAtMenu": {
+          "help": "Fügt einen Schritt an der Lücke ein, an der zuvor das Einfüge-Menü geöffnet wurde; ohne offenes Menü passiert nichts.",
+          "params": {
+            "kind": "Art des neuen Schritts: 'activity' Aktivität oder 'decision' Entscheidung."
+          }
+        },
+        "addActivityToBand": {
+          "help": "Hängt eine Aktivität ans Ende eines Bands und liefert ihre id.",
+          "params": {
+            "bandId": "Die id eines vorhandenen Bands ('main' oder 'no:<id>'). Eine unbekannte Band-id ist ein Fehler."
+          }
+        },
+        "addDecisionToBand": {
+          "help": "Hängt eine Entscheidung ans Ende eines Bands und liefert ihre id; die Entscheidung öffnet ein eigenes Band darunter.",
+          "params": {
+            "bandId": "Die id eines vorhandenen Bands ('main' oder 'no:<id>'). Eine unbekannte Band-id ist ein Fehler."
+          }
+        },
+        "clearExit": {
+          "help": "Hebt die Wiedereinstiegsstelle eines Bands auf; sein Umweg endet dann dort, wo seine Schritte enden.",
+          "params": {
+            "bandId": "Die id eines Bands außer dem Hauptpfad. Eine unbekannte Band-id, oder das Hauptpfad-Band selbst, ist ein Fehler."
+          }
+        },
+        "toggleSubsteps": {
+          "help": "Klappt die Unter-Schritte eines Schritts auf oder zu; rein darstellend, der Inhalt bleibt.",
+          "params": {
+            "stepId": "Die id des Schritts, dessen Unter-Schritte umgeschaltet werden. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "addSubstep": {
+          "help": "Fügt einem Schritt einen leeren Unter-Schritt hinzu.",
+          "params": {
+            "stepId": "Die id des Schritts, der den neuen Unter-Schritt bekommt. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "removeSubstep": {
+          "help": "Entfernt einen Unter-Schritt aus seinem übergeordneten Schritt.",
+          "params": {
+            "parentId": "Die id des übergeordneten Schritts. Eine unbekannte id ist ein Fehler.",
+            "substepId": "Die id des zu entfernenden Unter-Schritts."
+          }
+        },
+        "setSubstepTitle": {
+          "help": "Setzt den Titel eines Unter-Schritts.",
+          "params": {
+            "stepId": "Die id des übergeordneten Schritts. Eine unbekannte id ist ein Fehler.",
+            "substepId": "Die id des Unter-Schritts. Eine unbekannte id ist ein Fehler.",
+            "text": "Der neue Titel."
+          }
+        }
+      },
+      "fields": {
+        "steps": {
+          "help": "Die Kette in Reihenfolge. Jeder Schritt trägt id, title, description, kind ('activity' oder 'decision'), branchId (das Band, in dem er steht), expanded und substeps (je id und title); eine Entscheidung trägt zusätzlich decision ({label, noTarget})."
+        }
+      },
       "titlePlaceholder": "Aktivität …",
       "descriptionPlaceholder": "Beschreibung …",
       "substepsLabel": "Detail-Schritte",

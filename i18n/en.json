@@ -2558,6 +2558,112 @@
     "activity-flowchart": {
       "name": "Activity Flowchart",
       "description": "Chain of activities and decisions with rework loops",
+      "whenToUse": "When a process is a chain of activities and yes/no decisions with rework loops — not for a plain chain without branches (Process Map covers that).",
+      "actions": {
+        "appendStep": {
+          "help": "Appends an activity or decision to the chain and returns its id.",
+          "params": {
+            "kind": "The new step's kind: 'activity' or 'decision'."
+          }
+        },
+        "setStepTitle": {
+          "help": "Sets a step's title.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error.",
+            "text": "The new title."
+          }
+        },
+        "setStepDescription": {
+          "help": "Sets a step's description.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error.",
+            "text": "The new description."
+          }
+        },
+        "setDecisionLabel": {
+          "help": "Sets a decision's question.",
+          "params": {
+            "stepId": "The decision's id. An unknown id, or a step that is not a decision, is an error.",
+            "text": "The new question text."
+          }
+        },
+        "setDecisionTarget": {
+          "help": "Sets the target of a decision's no branch. The yes branch has no target — it is the value stream, which flows on to the next step anyway.",
+          "params": {
+            "stepId": "The decision's id. An unknown id, or a step that is not a decision, is an error.",
+            "target": "The new target: 'end' for process end, or an earlier step's id — a jump back is shown as a rework loop."
+          }
+        },
+        "removeStep": {
+          "help": "Removes a step from the chain. For a decision, dissolves its band: the steps in it inherit the removed decision's own band.",
+          "params": {
+            "stepId": "The id of the step to remove. An unknown id is an error."
+          }
+        },
+        "insertInBand": {
+          "help": "Inserts a new activity step at a chain gap and returns its id.",
+          "params": {
+            "idx": "The gap to insert at (0 = before the first step, up to the chain length = at the end). A value outside that range or a non-integer is an error.",
+            "bandId": "The id of an existing band ('main' or 'no:<id>'). An unknown band id is an error."
+          }
+        },
+        "insertAtMenu": {
+          "help": "Inserts a step at the gap where the insert menu was previously opened; does nothing without an open menu.",
+          "params": {
+            "kind": "The new step's kind: 'activity' or 'decision'."
+          }
+        },
+        "addActivityToBand": {
+          "help": "Appends an activity to the end of a band and returns its id.",
+          "params": {
+            "bandId": "The id of an existing band ('main' or 'no:<id>'). An unknown band id is an error."
+          }
+        },
+        "addDecisionToBand": {
+          "help": "Appends a decision to the end of a band and returns its id; the decision opens a band of its own below it.",
+          "params": {
+            "bandId": "The id of an existing band ('main' or 'no:<id>'). An unknown band id is an error."
+          }
+        },
+        "clearExit": {
+          "help": "Clears a band's re-entry point; its detour then ends where its own steps end.",
+          "params": {
+            "bandId": "The id of a band other than the main path. An unknown band id, or the main path itself, is an error."
+          }
+        },
+        "toggleSubsteps": {
+          "help": "Shows or hides a step's sub-steps; purely visual, the content stays.",
+          "params": {
+            "stepId": "The id of the step whose sub-steps are toggled. An unknown id is an error."
+          }
+        },
+        "addSubstep": {
+          "help": "Appends an empty sub-step to a step.",
+          "params": {
+            "stepId": "The id of the step that gets the new sub-step. An unknown id is an error."
+          }
+        },
+        "removeSubstep": {
+          "help": "Removes a sub-step from its parent step.",
+          "params": {
+            "parentId": "The id of the parent step. An unknown id is an error.",
+            "substepId": "The id of the sub-step to remove."
+          }
+        },
+        "setSubstepTitle": {
+          "help": "Sets a sub-step's title.",
+          "params": {
+            "stepId": "The id of the parent step. An unknown id is an error.",
+            "substepId": "The id of the sub-step. An unknown id is an error.",
+            "text": "The new title."
+          }
+        }
+      },
+      "fields": {
+        "steps": {
+          "help": "The chain in order. Each step carries id, title, description, kind ('activity' or 'decision'), branchId (the band it sits in), expanded and substeps (each with id and title); a decision additionally carries decision ({label, noTarget})."
+        }
+      },
       "titlePlaceholder": "Activity …",
       "descriptionPlaceholder": "Description …",
       "substepsLabel": "Detail Steps",

@@ -4,56 +4,23 @@
 /** @type {Record<string, import('./agent-contract.js').AgentModuleEntry>} */
 export const AGENT_REGISTRY = {
   "activity-flowchart": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:init",
-      "unmarked_method:isDecision",
-      "unmarked_method:branchWord",
-      "unmarked_method:stepLabel",
-      "unmarked_method:branchTarget",
-      "unmarked_method:bands",
-      "unmarked_method:isBackwardStep",
-      "unmarked_method:stepStyle",
-      "unmarked_method:laneStyle",
-      "unmarked_method:rejoinMarkers",
-      "unmarked_method:tailStyle",
-      "unmarked_method:tailClass",
-      "unmarked_method:arrowClass",
-      "unmarked_method:hasBands",
-      "unmarked_method:isMainBand",
-      "unmarked_method:stepInBand",
-      "unmarked_method:bandGridStyle",
-      "unmarked_method:canvasClass",
-      "unmarked_method:dropOnBand",
-      "unmarked_method:insertInBand",
-      "unmarked_method:toggleInsertMenu",
-      "unmarked_method:isInsertMenuOpen",
-      "unmarked_method:insertAtMenu",
-      "unmarked_method:closeOverlays",
-      "unmarked_method:addActivityToBand",
-      "unmarked_method:addDecisionToBand",
-      "unmarked_method:appendStep",
-      "unmarked_method:bandExitLabel",
-      "unmarked_method:exitKind",
-      "unmarked_method:exitPickLabel",
-      "unmarked_method:exitClass",
-      "unmarked_method:hasRejoin",
-      "unmarked_method:clearExit",
-      "unmarked_method:togglePick",
-      "unmarked_method:cancelPick",
-      "unmarked_method:isPicking",
-      "unmarked_method:isPickTarget",
-      "unmarked_method:stepClass",
-      "unmarked_method:pickClass",
-      "unmarked_method:pickStep",
-      "unmarked_method:reworkLoops",
-      "unmarked_method:onExport",
-      "template_model_call:removeStep",
-      "template_model_call:removeStep"
-    ],
+    "reported": [],
     "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
       "toggleSubsteps": {
         "params": [
           {
@@ -119,6 +86,168 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Set a substep's title."
+      },
+      "appendStep": {
+        "params": [
+          {
+            "name": "kind",
+            "type": "'activity'|'decision'",
+            "optional": false,
+            "help": "Art des neuen Schritts"
+          }
+        ],
+        "returns": "string",
+        "help": "Hängt eine Aktivität oder Entscheidung an die Kette und liefert ihre id. Blendet die neue Karte ins Sichtfeld, falls die Kette breiter ist als der Canvas — sonst wüchse sie aus dem Sichtbereich heraus."
+      },
+      "setStepTitle": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der neue Titel"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Titel eines Schritts. Schreibt dasselbe Feld wie `x-model=\"step.title\"` in der Vorlage."
+      },
+      "setStepDescription": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die neue Beschreibung"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Beschreibung eines Schritts. Schreibt dasselbe Feld wie `x-model=\"step.description\"` in der Vorlage."
+      },
+      "setDecisionLabel": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Entscheidung"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der neue Text"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Frage einer Entscheidung. Schreibt dasselbe Feld wie `x-model=\"step.decision.label\"` in der Vorlage."
+      },
+      "setDecisionTarget": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Entscheidung"
+          },
+          {
+            "name": "target",
+            "type": "string",
+            "optional": false,
+            "help": "neues Ziel: `'end'` oder die id eines früheren Schritts (ein Rücksprung wird als Umarbeitungsschleife angezeigt)"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt das Ziel des Nein-Zweigs einer Entscheidung. Delegiert an die gleichnamige Model-Methode. Der Ja-Zweig hat kein Ziel — er ist der Wertstrom, der ohnehin zum nächsten Schritt weiterfließt."
+      },
+      "removeStep": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt einen Schritt aus der Kette. Löst bei einer Entscheidung ihr Band auf: die darin liegenden Schritte erben das Band der entfernten Entscheidung, statt mit ihr zu verschwinden."
+      },
+      "insertInBand": {
+        "params": [
+          {
+            "name": "idx",
+            "type": "number",
+            "optional": false,
+            "help": "Chain index the new step takes (0…Kettenlänge)"
+          },
+          {
+            "name": "bandId",
+            "type": "string",
+            "optional": false,
+            "help": "id eines vorhandenen Bands (`'main'` oder `no:<id>`)"
+          }
+        ],
+        "returns": "string",
+        "help": "Insert at a chain arrow. The new step inherits the arrow's band — inserting between two detour cards means inserting INTO the detour; the band is a drag away otherwise."
+      },
+      "insertAtMenu": {
+        "params": [
+          {
+            "name": "kind",
+            "type": "'activity'|'decision'",
+            "optional": false,
+            "help": ""
+          }
+        ],
+        "returns": "string|undefined",
+        "help": "Insert a step of `kind` at the open menu's gap, then close the menu. Ohne offenes Menü (`toggleInsertMenu` ist `@noagent`, ein Agent öffnet es also nie) tut der Aufruf nichts — für ein programmatisches Einfügen ist `insertInBand` der direkte Weg."
+      },
+      "addActivityToBand": {
+        "params": [
+          {
+            "name": "bandId",
+            "type": "string",
+            "optional": false,
+            "help": "id eines vorhandenen Bands (`'main'` oder `no:<id>`)"
+          }
+        ],
+        "returns": "string",
+        "help": "Creates an activity at the end of the band."
+      },
+      "addDecisionToBand": {
+        "params": [
+          {
+            "name": "bandId",
+            "type": "string",
+            "optional": false,
+            "help": "id eines vorhandenen Bands (`'main'` oder `no:<id>`)"
+          }
+        ],
+        "returns": "string",
+        "help": "Creates a decision at the end of the band — which opens a band of its own below it."
+      },
+      "clearExit": {
+        "params": [
+          {
+            "name": "bandId",
+            "type": "string",
+            "optional": false,
+            "help": "id eines Bands, dessen Entscheidung eine gewählte Wiedereinstiegsstelle hat"
+          }
+        ],
+        "returns": "void",
+        "help": "Drop the chosen re-entry. The detour then ends where its cards end, which is the state a band starts in. Nimmt die Band-id statt des View-Objekts aus `bands()` — das Objekt selbst ist nur über die `@noagent`-Methode `bands()` erreichbar und wäre für einen Agenten nicht konstruierbar."
       }
     },
     "fields": {
@@ -5514,4 +5643,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":4};
+export const AGENT_COVERAGE = {"total":74,"available":5};

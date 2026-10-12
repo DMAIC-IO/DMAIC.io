@@ -15,6 +15,12 @@
  * `help` is intentionally not imported/wired here — createModule resolves
  * it automatically from `<id>-help.js` via the build-generated help
  * registry (see core/help-registry.js), matching every other module.
+ *
+ * @agent  Vollständig über das Viewmodel steuerbar: Kette anlegen,
+ *   Aktivitäten und Entscheidungen einfügen, Titel/Beschreibung/
+ *   Entscheidungsfrage setzen, ein Verzweigungsziel wählen, entfernen,
+ *   Teilschritte. Der Dateidownload, der Import-Dialog und das Ziehen mit
+ *   der Maus bleiben der UI vorbehalten.
  */
 
 import { createModule } from '../../core/template-module.js';
@@ -23,6 +29,8 @@ import { chainViewMixin } from '../../core/flowchart/flowchart-view.js';
 import {
   listSourceInstances, appendFromInstance,
 } from '../../core/flowchart/flowchart-import.js';
+import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId, requireIndex } from '../../core/agent/agent-argcheck.js';
 import {
   ActivityModel, MAIN_BRANCH, BRANCH_PREFIX, branchOwnerId,
 } from './activity-flowchart-model.js';
@@ -38,9 +46,9 @@ export default createModule({
     version: '1.0.0',
     meta: import.meta,
     actions: [
-      { icon: 'action.add', title: 'addStep',
+      { icon: 'action.add', title: 'addStep', agentAction: 'appendStep',
         variant: 'primary', onClick: (d) => d.appendStep('activity') },
-      { icon: 'action.branch', title: 'addDecision',
+      { icon: 'action.branch', title: 'addDecision', agentAction: 'appendStep',
         onClick: (d) => d.appendStep('decision') },
       { icon: 'action.upload', title: 'importFrom',
         onClick: (d) => d._openImport() },
@@ -71,13 +79,127 @@ export function activityFlowchartData(module, _t) {
   const memo = { key: null, bands: null, layout: null };
 
   return {
+    ...agentReadMixin(module),
     ...chainViewMixin(module, _t, {
       autoSizeSelector: 'textarea.af__step-title, textarea.af__decision-label, textarea.af__step-description',
       dragRowSelector: '.af__step',
       canvasSelector: '.af__canvas',
     }),
 
+    /**
+     * Hängt eine Aktivität oder Entscheidung an die Kette und liefert ihre
+     * id. Blendet die neue Karte ins Sichtfeld, falls die Kette breiter ist
+     * als der Canvas — sonst wüchse sie aus dem Sichtbereich heraus.
+     * @agent
+     * @param {'activity'|'decision'} kind Art des neuen Schritts
+     * @returns {string} id des angelegten Schritts
+     * @throws {Error} wenn kind außerhalb seiner Wertemenge liegt
+     */
+    appendStep(kind) {
+      requireEnum('kind', kind, ['activity', 'decision']);
+      const at = this.model.steps.length;
+      const step = kind === 'decision'
+        ? this.model.addDecision(at) : this.model.addStep(at);
+      this.$nextTick(() => { this._autoSizeAll(); this.revealStep(step); });
+      return step.id;
+    },
+
+    /**
+     * Eine Schritt-id gegen die Kette prüfen und den Schritt liefern — das
+     * gemeinsame Vorgehen mehrerer Setter/Entferner. Privat (`_`-Präfix),
+     * braucht keine Marke.
+     * @param {string} stepId
+     * @returns {object}
+     * @throws {Error} wenn kein Schritt diese id trägt
+     */
+    _requireStep(stepId) {
+      requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+      return this.model.steps.find((s) => s.id === stepId);
+    },
+
+    /**
+     * Setzt den Titel eines Schritts. Schreibt dasselbe Feld wie
+     * `x-model="step.title"` in der Vorlage.
+     * @agent
+     * @param {string} stepId id des Schritts
+     * @param {string} text der neue Titel
+     * @returns {void}
+     * @throws {Error} wenn kein Schritt diese id trägt
+     */
+    setStepTitle(stepId, text) {
+      this._requireStep(stepId).title = String(text ?? '');
+      this.$nextTick(() => this._autoSizeAll());
+    },
+
+    /**
+     * Setzt die Beschreibung eines Schritts. Schreibt dasselbe Feld wie
+     * `x-model="step.description"` in der Vorlage.
+     * @agent
+     * @param {string} stepId id des Schritts
+     * @param {string} text die neue Beschreibung
+     * @returns {void}
+     * @throws {Error} wenn kein Schritt diese id trägt
+     */
+    setStepDescription(stepId, text) {
+      this._requireStep(stepId).description = String(text ?? '');
+      this.$nextTick(() => this._autoSizeAll());
+    },
+
+    /**
+     * Setzt die Frage einer Entscheidung. Schreibt dasselbe Feld wie
+     * `x-model="step.decision.label"` in der Vorlage.
+     * @agent
+     * @param {string} stepId id der Entscheidung
+     * @param {string} text der neue Text
+     * @returns {void}
+     * @throws {Error} wenn kein Schritt diese id trägt, oder der Schritt
+     *   keine Entscheidung ist
+     */
+    setDecisionLabel(stepId, text) {
+      const step = this._requireStep(stepId);
+      if (step.kind !== 'decision') {
+        throw new Error(`step ${JSON.stringify(stepId)} is not a decision; it is ${JSON.stringify(step.kind)}`);
+      }
+      step.decision.label = String(text ?? '');
+      this.$nextTick(() => this._autoSizeAll());
+    },
+
+    /**
+     * Setzt das Ziel des Nein-Zweigs einer Entscheidung. Delegiert an die
+     * gleichnamige Model-Methode. Der Ja-Zweig hat kein Ziel — er ist der
+     * Wertstrom, der ohnehin zum nächsten Schritt weiterfließt.
+     * @agent
+     * @param {string} stepId id der Entscheidung
+     * @param {string} target neues Ziel: `'end'` oder die id eines
+     *   früheren Schritts (ein Rücksprung wird als Umarbeitungsschleife
+     *   angezeigt)
+     * @returns {void}
+     * @throws {Error} wenn kein Schritt diese id trägt, oder der Schritt
+     *   keine Entscheidung ist
+     */
+    setDecisionTarget(stepId, target) {
+      this._requireStep(stepId);
+      if (!this.model.setDecisionTarget(stepId, target)) {
+        throw new Error(`step ${JSON.stringify(stepId)} is not a decision`);
+      }
+    },
+
+    /**
+     * Entfernt einen Schritt aus der Kette. Löst bei einer Entscheidung ihr
+     * Band auf: die darin liegenden Schritte erben das Band der entfernten
+     * Entscheidung, statt mit ihr zu verschwinden.
+     * @agent
+     * @param {string} stepId id des Schritts
+     * @returns {void}
+     * @throws {Error} wenn kein Schritt diese id trägt
+     */
+    removeStep(stepId) {
+      this._requireStep(stepId);
+      this.model.removeStep(stepId);
+    },
+
     // ── Lifecycle (per Alpine instance) ───────────────────────
+    /** @noagent lifecycle, kein Zustandsweg */
     init() {
       this.$nextTick(() => this._autoSizeAll());
     },
@@ -90,11 +212,13 @@ export function activityFlowchartData(module, _t) {
     // arrow whose menu is open, or null.
     _insertMenu: null,
 
+    /** @noagent view transform */
     isDecision(step) { return step?.kind === 'decision'; },
     /**
      * The word that names a branch at its vertex.
      * @param {'yes'|'no'} branch
      * @returns {string} translated "Yes" / "No".
+     * @noagent view transform
      */
     branchWord(branch) { return _t(branch === 'yes' ? 'yes' : 'no'); },
     /**
@@ -104,6 +228,7 @@ export function activityFlowchartData(module, _t) {
      * target — in an exit, in the picker list.
      * @param {object} step
      * @returns {string}
+     * @noagent view transform
      */
     stepLabel(step) {
       if (step?.kind === 'decision') return step.decision?.label || _t('unnamedDecision');
@@ -119,6 +244,7 @@ export function activityFlowchartData(module, _t) {
      *
      * @param {object} step - The decision step.
      * @returns {string} Target text, or `''` when the branch does not rejoin.
+     * @noagent view transform
      */
     branchTarget(step) {
       const target = step?.decision?.noTarget;
@@ -134,6 +260,7 @@ export function activityFlowchartData(module, _t) {
      * depth-first under the band its decision stands in. None of this is
      * persisted — the rows are a view onto the decisions in `steps[]`.
      * @returns {Array<{id: string, ownerId: string|null, label: string, depth: number}>}
+     * @noagent view transform
      */
     bands() {
       this._syncMemo();
@@ -301,6 +428,7 @@ export function activityFlowchartData(module, _t) {
      * about the CHAIN, and the columns are derived from it.
      * @param {object} step
      * @returns {boolean}
+     * @noagent view transform
      */
     isBackwardStep(step) {
       const ownerId = branchOwnerId(step?.branchId);
@@ -315,6 +443,7 @@ export function activityFlowchartData(module, _t) {
      * binding (.claude/alpine.md).
      * @param {object} step
      * @returns {string}
+     * @noagent view transform
      */
     stepStyle(step) {
       const rows = this.bands();
@@ -329,6 +458,7 @@ export function activityFlowchartData(module, _t) {
      * into this band.
      * @param {object} band
      * @returns {string}
+     * @noagent view transform
      */
     laneStyle(band) {
       const row = this.bands().findIndex((b) => b.id === band.id) + 1;
@@ -349,6 +479,7 @@ export function activityFlowchartData(module, _t) {
      * far end of the band. A band that has not picked one yet has no marker;
      * its invitation to pick stays in the tail behind its cards.
      * @returns {Array<{id: string, band: object, style: string}>}
+     * @noagent view transform
      */
     rejoinMarkers() {
       const { colOf } = this._layout();
@@ -371,6 +502,7 @@ export function activityFlowchartData(module, _t) {
      * where the next card will land.
      * @param {object} band
      * @returns {string}
+     * @noagent view transform
      */
     tailStyle(band) {
       const { colOf } = this._layout();
@@ -390,6 +522,7 @@ export function activityFlowchartData(module, _t) {
      * sides with the band's direction.
      * @param {object} band
      * @returns {string}
+     * @noagent view transform
      */
     tailClass(band) {
       const owner = this.model.steps.find((s) => s.id === band.ownerId);
@@ -405,21 +538,25 @@ export function activityFlowchartData(module, _t) {
      * whole main path all follow the chain, left to right.
      * @param {number} idx chain index of the step the arrow belongs to
      * @returns {string}
+     * @noagent view transform
      */
     arrowClass(idx) {
       return this.isBackwardStep(this.model.steps[idx])
         ? 'af__connector-arrow--back' : '';
     },
 
-    /** True as soon as there is at least one band besides the main path. */
+    /** True as soon as there is at least one band besides the main path.
+     * @noagent view transform */
     hasBands() { return this.bands().length > 1; },
 
-    /** @param {object} band @returns {boolean} */
+    /** @param {object} band @returns {boolean}
+     * @noagent view transform */
     isMainBand(band) { return band?.id === MAIN_BRANCH; },
 
     /**
      * Does this step belong in this band's row?
      * @param {object} step @param {string} bandId @returns {boolean}
+     * @noagent view transform
      */
     stepInBand(step, bandId) { return step?.branchId === bandId; },
 
@@ -428,6 +565,7 @@ export function activityFlowchartData(module, _t) {
      * one plain method call per binding, so the string is assembled here rather
      * than in the template (.claude/alpine.md).
      * @returns {string}
+     * @noagent view transform
      */
     bandGridStyle() { return `--fc-lane-count: ${this.bands().length}`; },
 
@@ -436,6 +574,7 @@ export function activityFlowchartData(module, _t) {
      * gap-0 rail — which hangs one chain gap left of the first card — would
      * stick out of the canvas. The modifier makes room for it.
      * @returns {string}
+     * @noagent view transform
      */
     canvasClass() { return this.hasBands() ? '' : 'af__canvas--plain'; },
 
@@ -446,6 +585,10 @@ export function activityFlowchartData(module, _t) {
      * @param {string} bandId
      * @param {Event} event
      * @returns {void}
+     * @noagent DOM event handler — ein Agent kann kein DragEvent erzeugen;
+     *   die Zuordnung eines Schritts zu einer Bahn geht über das Model
+     *   (hier nicht als eigener Sink nötig, da keine Vorlage dafür
+     *   `x-model` nutzt).
      */
     dropOnBand(bandId, event) {
       event?.preventDefault();
@@ -461,13 +604,19 @@ export function activityFlowchartData(module, _t) {
      * Insert at a chain arrow. The new step inherits the arrow's band —
      * inserting between two detour cards means inserting INTO the detour; the
      * band is a drag away otherwise.
-     * @param {number} idx Chain index the new step takes
-     * @param {string} bandId
-     * @returns {void}
+     * @agent
+     * @param {number} idx Chain index the new step takes (0…Kettenlänge)
+     * @param {string} bandId id eines vorhandenen Bands (`'main'` oder `no:<id>`)
+     * @returns {string} id des angelegten Schritts
+     * @throws {Error} wenn idx keine ganze Zahl zwischen 0 und der
+     *   Kettenlänge ist, oder bandId kein vorhandenes Band benennt
      */
     insertInBand(idx, bandId) {
+      requireIndex('idx', idx, this.model.steps.length);
+      requireKnownId('bandId', bandId, this.bands().map((b) => b.id));
       const step = this.model.insertStep(idx, { kind: 'activity', branchId: bandId });
       this.$nextTick(() => { this._autoSizeAll(); this.revealStep(step); });
+      return step.id;
     },
 
     /**
@@ -478,25 +627,36 @@ export function activityFlowchartData(module, _t) {
      * @param {number} idx gap index, the chain position the new step takes
      * @param {string} bandId band the new step belongs to
      * @returns {void}
+     * @noagent UI-Menü, kein Zustand — der Agent fügt direkt über
+     *   `insertInBand`/`insertAtMenu` ein, ohne das Menü zu öffnen
      */
     toggleInsertMenu(idx, bandId) {
       this._insertMenu = this._insertMenu?.idx === idx ? null : { idx, bandId };
     },
 
-    /** @param {number} idx @returns {boolean} is the menu open at this gap? */
+    /** @param {number} idx @returns {boolean} is the menu open at this gap?
+     * @noagent view transform */
     isInsertMenuOpen(idx) { return this._insertMenu?.idx === idx; },
 
     /**
      * Insert a step of `kind` at the open menu's gap, then close the menu.
+     * Ohne offenes Menü (`toggleInsertMenu` ist `@noagent`, ein Agent öffnet
+     * es also nie) tut der Aufruf nichts — für ein programmatisches Einfügen
+     * ist `insertInBand` der direkte Weg.
+     * @agent
      * @param {'activity'|'decision'} kind
-     * @returns {void}
+     * @returns {string|undefined} id des angelegten Schritts, oder
+     *   `undefined` wenn kein Menü offen war
+     * @throws {Error} wenn kind außerhalb seiner Wertemenge liegt
      */
     insertAtMenu(kind) {
+      requireEnum('kind', kind, ['activity', 'decision']);
       const m = this._insertMenu;
-      if (!m) return;
+      if (!m) return undefined;
       this._insertMenu = null;
       const step = this.model.insertStep(m.idx, { kind, branchId: m.bandId });
       this.$nextTick(() => { this._autoSizeAll(); this.revealStep(step); });
+      return step.id;
     },
 
     /**
@@ -504,6 +664,7 @@ export function activityFlowchartData(module, _t) {
      * picker. One method because Alpine CSP allows a single plain call per
      * binding (.claude/alpine.md), and the canvas click has to end both.
      * @returns {void}
+     * @noagent UI-Menü, kein Zustand
      */
     closeOverlays() {
       this._insertMenu = null;
@@ -512,35 +673,31 @@ export function activityFlowchartData(module, _t) {
 
     /**
      * Creates an activity at the end of the band.
-     * @param {string} bandId @returns {void}
+     * @agent
+     * @param {string} bandId id eines vorhandenen Bands (`'main'` oder `no:<id>`)
+     * @returns {string} id des angelegten Schritts
+     * @throws {Error} wenn bandId kein vorhandenes Band benennt
      */
     addActivityToBand(bandId) {
+      requireKnownId('bandId', bandId, this.bands().map((b) => b.id));
       const step = this.model.addStepToBranch(bandId, { kind: 'activity' });
       this.$nextTick(() => { this._autoSizeAll(); this.revealStep(step); });
+      return step.id;
     },
 
     /**
      * Creates a decision at the end of the band — which opens a band of its
      * own below it.
-     * @param {string} bandId @returns {void}
+     * @agent
+     * @param {string} bandId id eines vorhandenen Bands (`'main'` oder `no:<id>`)
+     * @returns {string} id des angelegten Schritts
+     * @throws {Error} wenn bandId kein vorhandenes Band benennt
      */
     addDecisionToBand(bandId) {
+      requireKnownId('bandId', bandId, this.bands().map((b) => b.id));
       const step = this.model.addStepToBranch(bandId, { kind: 'decision' });
       this.$nextTick(() => { this._autoSizeAll(); this.revealStep(step); });
-    },
-
-    /**
-     * Append to the MAIN path, from the toolbar. Same reveal as every other
-     * way of adding a card — the toolbar is the one that most often adds
-     * beyond the right edge, because the main path is the longest band.
-     * @param {'activity'|'decision'} kind
-     * @returns {void}
-     */
-    appendStep(kind) {
-      const at = this.model.steps.length;
-      const step = kind === 'decision'
-        ? this.model.addDecision(at) : this.model.addStep(at);
-      this.$nextTick(() => { this._autoSizeAll(); this.revealStep(step); });
+      return step.id;
     },
 
     /**
@@ -548,6 +705,7 @@ export function activityFlowchartData(module, _t) {
      * ALWAYS spelled out here — a rail that runs off into nothing says nothing.
      * @param {object} band
      * @returns {string}
+     * @noagent view transform
      */
     bandExitLabel(band) {
       return this.exitPickLabel(band);
@@ -557,6 +715,7 @@ export function activityFlowchartData(module, _t) {
      * Does this band rejoin at a card, or does it end where its cards end?
      * @param {object} band
      * @returns {'end'|'step'}
+     * @noagent view transform
      */
     exitKind(band) {
       const owner = this.model.steps.find((s) => s.id === band?.ownerId);
@@ -569,6 +728,7 @@ export function activityFlowchartData(module, _t) {
      * readable without opening anything.
      * @param {object} band
      * @returns {string}
+     * @noagent view transform
      */
     exitPickLabel(band) {
       const owner = this.model.steps.find((s) => s.id === band?.ownerId);
@@ -581,23 +741,33 @@ export function activityFlowchartData(module, _t) {
      * allows one plain method call per binding (.claude/alpine.md).
      * @param {object} band
      * @returns {string}
+     * @noagent view transform
      */
     exitClass(band) {
       return this.exitKind(band) === 'step' ? 'af__band-exit--active' : '';
     },
 
-    /** True once this band rejoins somewhere — the ✕ only makes sense then. */
+    /** True once this band rejoins somewhere — the ✕ only makes sense then.
+     * @noagent view transform */
     hasRejoin(band) { return this.exitKind(band) === 'step'; },
 
     /**
      * Drop the chosen re-entry. The detour then ends where its cards end,
-     * which is the state a band starts in.
-     * @param {object} band
+     * which is the state a band starts in. Nimmt die Band-id statt des
+     * View-Objekts aus `bands()` — das Objekt selbst ist nur über die
+     * `@noagent`-Methode `bands()` erreichbar und wäre für einen Agenten
+     * nicht konstruierbar.
+     * @agent
+     * @param {string} bandId id eines Bands, dessen Entscheidung eine
+     *   gewählte Wiedereinstiegsstelle hat
      * @returns {void}
+     * @throws {Error} wenn bandId kein vorhandenes, nicht-main Band benennt
      */
-    clearExit(band) {
+    clearExit(bandId) {
+      requireKnownId('bandId', bandId,
+        this.bands().filter((b) => b.id !== MAIN_BRANCH).map((b) => b.id));
       this._pickBandId = null;
-      this.model.setDecisionTarget(band?.ownerId, 'end');
+      this.model.setDecisionTarget(branchOwnerId(bandId), 'end');
     },
     /**
      * Arm the entry-point picker for a band — or disarm it if it was already
@@ -610,15 +780,19 @@ export function activityFlowchartData(module, _t) {
      * made.
      * @param {object} band
      * @returns {void}
+     * @noagent UI-Auswahlmodus — der Agent setzt das Ziel über
+     *   `setDecisionTarget`, nicht über zwei Klicks
      */
     togglePick(band) {
       this._pickBandId = this._pickBandId === band?.id ? null : band?.id;
     },
 
-    /** @returns {void} */
+    /** @returns {void}
+     * @noagent UI-Auswahlmodus — der Agent setzt das Ziel über `setDecisionTarget` */
     cancelPick() { this._pickBandId = null; },
 
-    /** @param {object} band @returns {boolean} */
+    /** @param {object} band @returns {boolean}
+     * @noagent view transform */
     isPicking(band) { return this._pickBandId === band?.id; },
 
     /**
@@ -628,6 +802,7 @@ export function activityFlowchartData(module, _t) {
      * foreign branch, and never into itself.
      * @param {object} step
      * @returns {boolean}
+     * @noagent view transform
      */
     isPickTarget(step) {
       if (!this._pickBandId) return false;
@@ -644,6 +819,7 @@ export function activityFlowchartData(module, _t) {
      * two of them and the browser drops the second while parsing, silently.
      * @param {object} step
      * @returns {string}
+     * @noagent view transform
      */
     stepClass(step) {
       const kind = this.isDecision(step) ? 'af__step--decision' : 'af__step--activity';
@@ -656,6 +832,7 @@ export function activityFlowchartData(module, _t) {
      * the click, the rest step back so the choice is obvious.
      * @param {object} step
      * @returns {string}
+     * @noagent view transform
      */
     pickClass(step) {
       if (!this._pickBandId) return '';
@@ -666,6 +843,8 @@ export function activityFlowchartData(module, _t) {
      * Take a card as the armed band's entry point.
      * @param {object} step
      * @returns {void}
+     * @noagent UI-Auswahlmodus — der Agent setzt das Ziel über
+     *   `setDecisionTarget`, nicht über zwei Klicks
      */
     pickStep(step) {
       if (!this.isPickTarget(step)) return;
@@ -679,6 +858,7 @@ export function activityFlowchartData(module, _t) {
      * follows in a later task). Only the no branch can jump back — yes flows
      * on to the right — so every loop here is a `'no'` one.
      * @returns {Array<{fromId: string, toId: string, branch: 'no'}>}
+     * @noagent view transform
      */
     reworkLoops() {
       const loops = [];
@@ -768,6 +948,7 @@ export function activityFlowchartData(module, _t) {
       module._context.notify?.('JSON', 'success', 'status.ok');
     },
 
+    /** @noagent lädt eine Datei herunter; ein Agent liest den Zustand über `read()` */
     onExport(format) {
       if (format === 'json') { this._exportJSON(); return; }
       // PNG/SVG rendering (with rework-arc layout) lands once the arcs are

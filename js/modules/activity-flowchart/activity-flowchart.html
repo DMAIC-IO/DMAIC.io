@@ -124,7 +124,7 @@
                                   :placeholder="t('titlePlaceholder')"
                                   @input="autoSize($event)"></textarea>
                         <div class="af__card-actions fc-card__actions">
-                          <button class="af__delete fc-card__delete" @click="model.removeStep(step.id)"
+                          <button class="af__delete fc-card__delete" @click="removeStep(step.id)"
                                   :title="t('deleteStep')" :aria-label="t('deleteStep')">
                             <span class="icon" data-icon="action.delete" aria-hidden="true"></span>
                           </button>
@@ -159,7 +159,7 @@
                                   :placeholder="t('decisionPlaceholder')"
                                   @input="autoSize($event)"></textarea>
                       </div>
-                      <button class="af__delete" @click="model.removeStep(step.id)"
+                      <button class="af__delete" @click="removeStep(step.id)"
                               :title="t('deleteStep')" :aria-label="t('deleteStep')">
                         <span class="icon" data-icon="action.delete" aria-hidden="true"></span>
                       </button>
@@ -215,7 +215,7 @@
               <span class="af__band-exit-target" x-text="exitPickLabel(marker.band)"></span>
             </button>
             <button class="af__band-exit-clear"
-                    @click.stop="clearExit(marker.band)"
+                    @click.stop="clearExit(marker.band.id)"
                     :title="t('clearRejoin')">&#10005;</button>
           </div>
         </div>
