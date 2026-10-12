@@ -1302,12 +1302,12 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Entfernt einen Schritt aus der Kette. Ersetzt den Vorlagen-Aufruf `model.removeStep(step.id)`."
+        "help": "Entfernt einen Schritt aus der Kette."
       },
       "addLaneInline": {
         "params": [],
         "returns": "string",
-        "help": "Append an unnamed lane and focus its name input so the role can be typed in place — same interaction as adding a step, no prompt dialog in between."
+        "help": "Hängt eine unbenannte Bahn an und liefert ihre id."
       },
       "setLaneName": {
         "params": [
@@ -1324,8 +1324,8 @@ export const AGENT_REGISTRY = {
             "help": "der neue Name"
           }
         ],
-        "returns": "void",
-        "help": "Benennt eine Bahn um. Schreibt dasselbe Feld wie `x-model=\"lane.name\"` in der Vorlage. Die reservierte Bahn „Nicht zugeordnet\" ist nicht umbenennbar — die Vorlage zeigt für sie auch kein Eingabefeld."
+        "returns": "boolean",
+        "help": "Benennt eine Bahn um. Schreibt dasselbe Feld wie `x-model=\"lane.name\"` in der Vorlage."
       },
       "removeLaneById": {
         "params": [
@@ -1336,8 +1336,8 @@ export const AGENT_REGISTRY = {
             "help": "id der Bahn"
           }
         ],
-        "returns": "void",
-        "help": "Entfernt eine Bahn; ihre Schritte wandern nach „Nicht zugeordnet\". Die reservierte Bahn selbst ist nicht entfernbar — die Vorlage zeigt für sie auch keine Löschtaste."
+        "returns": "boolean",
+        "help": "Entfernt eine Bahn; ihre Schritte wandern nach „Nicht zugeordnet\"."
       },
       "insertBefore": {
         "params": [
@@ -1345,17 +1345,17 @@ export const AGENT_REGISTRY = {
             "name": "idx",
             "type": "number",
             "optional": false,
-            "help": "chain index the new step should take"
+            "help": "Lücke, an der eingefügt wird (0 = vor dem ersten Schritt, bis zur Kettenlänge = ans Ende)"
           },
           {
             "name": "laneId",
             "type": "string",
             "optional": false,
-            "help": "id einer vorhandenen Bahn"
+            "help": "id einer vorhandenen Bahn, in der der neue Schritt landet"
           }
         ],
         "returns": "string",
-        "help": "Insert a step at a chain position via the connector. It lands in the lane of the step it precedes — inserting between two steps of one role is the common case, and the lane is a drag away otherwise."
+        "help": "Fügt einen neuen Schritt an einer Lücke der Kette ein und liefert seine id."
       }
     },
     "fields": {

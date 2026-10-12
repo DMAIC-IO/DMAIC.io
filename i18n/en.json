@@ -2836,16 +2836,16 @@
           "help": "Appends an unnamed lane and returns its id."
         },
         "setLaneName": {
-          "help": "Renames a lane.",
+          "help": "Renames a lane. Returns false for the reserved \"Unassigned\" lane — nothing happens then.",
           "params": {
-            "laneId": "The lane's id. An unknown id, or the reserved \"Unassigned\" lane, is an error.",
+            "laneId": "The lane's id. An unknown id is an error.",
             "name": "The new name."
           }
         },
         "removeLaneById": {
-          "help": "Removes a lane; its steps move to \"Unassigned\".",
+          "help": "Removes a lane; its steps move to \"Unassigned\". Returns false for the reserved lane itself — nothing happens then.",
           "params": {
-            "laneId": "The lane's id. An unknown id, or the reserved \"Unassigned\" lane, is an error."
+            "laneId": "The lane's id. An unknown id is an error."
           }
         },
         "insertBefore": {

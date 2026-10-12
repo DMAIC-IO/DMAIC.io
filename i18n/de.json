@@ -2840,16 +2840,16 @@
           "help": "Hängt eine unbenannte Bahn an und liefert ihre id."
         },
         "setLaneName": {
-          "help": "Benennt eine Bahn um.",
+          "help": "Benennt eine Bahn um. Liefert false für die reservierte Bahn „Nicht zugeordnet“ — dann ist nichts passiert.",
           "params": {
-            "laneId": "Die id der Bahn. Eine unbekannte id, oder die reservierte Bahn „Nicht zugeordnet“, ist ein Fehler.",
+            "laneId": "Die id der Bahn. Eine unbekannte id ist ein Fehler.",
             "name": "Der neue Name."
           }
         },
         "removeLaneById": {
-          "help": "Entfernt eine Bahn; ihre Schritte wandern nach „Nicht zugeordnet“.",
+          "help": "Entfernt eine Bahn; ihre Schritte wandern nach „Nicht zugeordnet“. Liefert false für die reservierte Bahn selbst — dann ist nichts passiert.",
           "params": {
-            "laneId": "Die id der Bahn. Eine unbekannte id, oder die reservierte Bahn „Nicht zugeordnet“, ist ein Fehler."
+            "laneId": "Die id der Bahn. Eine unbekannte id ist ein Fehler."
           }
         },
         "insertBefore": {

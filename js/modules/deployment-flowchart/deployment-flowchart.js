@@ -103,6 +103,9 @@ export default createModule({
       /** @noagent view transform */
       isUnassigned(lane) { return lane?.id === UNASSIGNED_ID; },
 
+      // Blendet die neue Karte ins Sichtfeld, falls die Kette breiter ist
+      // als der Canvas — sonst wüchse sie aus dem Sichtbereich heraus (reine
+      // UI-Mechanik, nicht Teil der Agentensemantik).
       /**
        * Hängt einen Schritt an die Kette und liefert seine id. Er landet
        * immer in der Bahn „Nicht zugeordnet": welche Rolle einen Schritt
@@ -165,9 +168,11 @@ export default createModule({
         this.model.setLaneForStep(stepId, laneId);
       },
 
+      // Schreibt dasselbe wie die Löschtaste der Karte in der Vorlage
+      // (vormals ein direkter `model.removeStep(step.id)`-Aufruf, jetzt über
+      // diesen Sink geroutet — E2b).
       /**
-       * Entfernt einen Schritt aus der Kette. Ersetzt den Vorlagen-Aufruf
-       * `model.removeStep(step.id)`.
+       * Entfernt einen Schritt aus der Kette.
        * @agent
        * @param {string} stepId id des Schritts
        * @returns {void}
@@ -189,10 +194,11 @@ export default createModule({
         if (canvas) canvas.scrollLeft = canvas.scrollWidth;
       },
 
+      // Fokussiert das Namensfeld der neuen Bahn, damit die Rolle sofort
+      // eingetippt werden kann — reine UI-Mechanik, nicht Teil der
+      // Agentensemantik; ein Agent benennt die Bahn über `setLaneName`.
       /**
-       * Append an unnamed lane and focus its name input so the role can be
-       * typed in place — same interaction as adding a step, no prompt dialog
-       * in between.
+       * Hängt eine unbenannte Bahn an und liefert ihre id.
        * @agent
        * @returns {string} id der angelegten Bahn
        */
@@ -205,48 +211,55 @@ export default createModule({
         return lane.id;
       },
 
+      // Die reservierte Bahn ist nicht umbenennbar — die Vorlage zeigt für
+      // sie auch kein Eingabefeld. Das Model liefert dafür `false` statt zu
+      // werfen: eine bekannte, aber geschützte id ist eine fachliche Absage,
+      // kein ungültiges Argument (agent-argcheck.js, „ungültiges Argument
+      // wirft, fachliche Absage liefert einen Wert" — Fix-Runde 1, dasselbe
+      // Muster wie `worksheet.undo()` bei leerer Historie). Nur eine
+      // UNBEKANNTE id bleibt ein Fehler.
       /**
        * Benennt eine Bahn um. Schreibt dasselbe Feld wie `x-model="lane.name"`
-       * in der Vorlage. Die reservierte Bahn „Nicht zugeordnet" ist nicht
-       * umbenennbar — die Vorlage zeigt für sie auch kein Eingabefeld.
+       * in der Vorlage.
        * @agent
        * @param {string} laneId id der Bahn
        * @param {string} name der neue Name
-       * @returns {void}
-       * @throws {Error} wenn laneId keine vorhandene Bahn benennt, oder die
-       *   reservierte Bahn gemeint ist
+       * @returns {boolean} `true`, wenn die Bahn umbenannt wurde; `false` für
+       *   die reservierte Bahn „Nicht zugeordnet" — dann ist nichts passiert
+       * @throws {Error} wenn laneId keine vorhandene Bahn benennt
        */
       setLaneName(laneId, name) {
         requireKnownId('laneId', laneId, this.model.lanes.map((l) => l.id));
-        if (!this.model.renameLane(laneId, name)) {
-          throw new Error(`lane ${JSON.stringify(laneId)} cannot be renamed: reserved`);
-        }
+        return this.model.renameLane(laneId, name);
       },
 
+      // Dieselbe Absage wie bei `setLaneName()`: die reservierte Bahn ist
+      // nicht entfernbar, die Vorlage zeigt für sie auch keine Löschtaste.
       /**
        * Entfernt eine Bahn; ihre Schritte wandern nach „Nicht zugeordnet".
-       * Die reservierte Bahn selbst ist nicht entfernbar — die Vorlage zeigt
-       * für sie auch keine Löschtaste.
        * @agent
        * @param {string} laneId id der Bahn
-       * @returns {void}
-       * @throws {Error} wenn laneId keine vorhandene Bahn benennt, oder die
-       *   reservierte Bahn gemeint ist
+       * @returns {boolean} `true`, wenn die Bahn entfernt wurde; `false` für
+       *   die reservierte Bahn „Nicht zugeordnet" — dann ist nichts passiert
+       * @throws {Error} wenn laneId keine vorhandene Bahn benennt
        */
       removeLaneById(laneId) {
         requireKnownId('laneId', laneId, this.model.lanes.map((l) => l.id));
-        if (!this.model.removeLane(laneId)) {
-          throw new Error(`lane ${JSON.stringify(laneId)} cannot be removed: reserved`);
-        }
+        return this.model.removeLane(laneId);
       },
 
+      // Die Vorlage bietet dafür nur einen Verbinder zwischen zwei
+      // vorhandenen Karten an (UI-Mechanik) — der Agent bekommt den vollen
+      // Bereich 0..Kettenlänge, weil derselbe Zustand über Drag & Drop
+      // (addStepUnassigned + dropOnLane) ohnehin erreichbar ist.
       /**
-       * Insert a step at a chain position via the connector. It lands in the
-       * lane of the step it precedes — inserting between two steps of one role
-       * is the common case, and the lane is a drag away otherwise.
+       * Fügt einen neuen Schritt an einer Lücke der Kette ein und liefert
+       * seine id.
        * @agent
-       * @param {number} idx chain index the new step should take
-       * @param {string} laneId id einer vorhandenen Bahn
+       * @param {number} idx Lücke, an der eingefügt wird (0 = vor dem ersten
+       *   Schritt, bis zur Kettenlänge = ans Ende)
+       * @param {string} laneId id einer vorhandenen Bahn, in der der neue
+       *   Schritt landet
        * @returns {string} id des angelegten Schritts
        * @throws {Error} wenn idx keine ganze Zahl zwischen 0 und der
        *   Kettenlänge ist, oder laneId keine vorhandene Bahn benennt
