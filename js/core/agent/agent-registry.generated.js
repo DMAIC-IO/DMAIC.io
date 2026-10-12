@@ -3129,25 +3129,23 @@ export const AGENT_REGISTRY = {
     }
   },
   "opportunity-flowchart": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:appendStep",
-      "unmarked_method:init",
-      "unmarked_method:sides",
-      "unmarked_method:isVA",
-      "unmarked_method:toggleSide",
-      "unmarked_method:dropOnSide",
-      "unmarked_method:isInsertOpen",
-      "unmarked_method:toggleInsertMenu",
-      "unmarked_method:insertAt",
-      "unmarked_method:railStart",
-      "unmarked_method:railEnd",
-      "unmarked_method:onExport",
-      "template_model_call:removeStep"
-    ],
+    "reported": [],
     "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
       "toggleSubsteps": {
         "params": [
           {
@@ -3189,6 +3187,96 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Remove one substep from its parent step."
+      },
+      "appendStep": {
+        "params": [
+          {
+            "name": "side",
+            "type": "'va'|'nva'",
+            "optional": false,
+            "help": "Spalte: wertschöpfend oder Nacharbeit"
+          }
+        ],
+        "returns": "string",
+        "help": "Append to the chain from the toolbar, and look at what was added — a chain wider than the canvas otherwise grows out of sight."
+      },
+      "setStepTitle": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der neue Titel"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Titel eines Schritts. Derselbe Sink wie `x-model=\"step.title\"` in der Vorlage."
+      },
+      "setStepDescription": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die neue Beschreibung"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Beschreibung eines Schritts. Derselbe Sink wie `x-model=\"step.description\"` in der Vorlage."
+      },
+      "removeStep": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt einen Schritt aus der Kette."
+      },
+      "toggleSide": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          }
+        ],
+        "returns": "void",
+        "help": "Schiebt einen Schritt in die andere Spalte; seine Kettenposition bleibt."
+      },
+      "insertAt": {
+        "params": [
+          {
+            "name": "idx",
+            "type": "number",
+            "optional": false,
+            "help": "Lücke, an der eingefügt wird (0 = vor dem ersten)"
+          },
+          {
+            "name": "side",
+            "type": "'va'|'nva'",
+            "optional": false,
+            "help": "Spalte des neuen Schritts"
+          }
+        ],
+        "returns": "string",
+        "help": "Setzt einen Schritt an eine Lücke der Kette."
       }
     },
     "fields": {
@@ -5330,4 +5418,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":3};
+export const AGENT_COVERAGE = {"total":74,"available":4};

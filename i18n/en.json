@@ -2592,6 +2592,72 @@
     "opportunity-flowchart": {
       "name": "Opportunity Flowchart",
       "description": "Two-column flow: value-added steps versus rework",
+      "whenToUse": "When an existing chain needs sorting into value-added work versus rework — not for capturing a new process without that distinction yet.",
+      "actions": {
+        "appendStep": {
+          "help": "Appends a step to the chain and returns its id.",
+          "params": {
+            "side": "Column the new step lands in: 'va' value-added or 'nva' rework."
+          }
+        },
+        "setStepTitle": {
+          "help": "Sets a step's title.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error.",
+            "text": "The new title."
+          }
+        },
+        "setStepDescription": {
+          "help": "Sets a step's description.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error.",
+            "text": "The new description."
+          }
+        },
+        "toggleSide": {
+          "help": "Moves a step into the other column; its position in the chain stays.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error."
+          }
+        },
+        "insertAt": {
+          "help": "Inserts a new step at a gap in the chain and returns its id.",
+          "params": {
+            "idx": "The gap to insert at (0 = before the first step).",
+            "side": "Column of the new step: 'va' value-added or 'nva' rework."
+          }
+        },
+        "removeStep": {
+          "help": "Removes a step from the chain.",
+          "params": {
+            "stepId": "The id of the step to remove. An unknown id is an error."
+          }
+        },
+        "toggleSubsteps": {
+          "help": "Expands or collapses a step's sub-steps; display only, the content stays.",
+          "params": {
+            "stepId": "The id of the step whose sub-steps are toggled. An unknown id is an error."
+          }
+        },
+        "addSubstep": {
+          "help": "Adds an empty sub-step to a step.",
+          "params": {
+            "stepId": "The id of the step that gets the new sub-step. An unknown id is an error."
+          }
+        },
+        "removeSubstep": {
+          "help": "Removes a sub-step from its parent step.",
+          "params": {
+            "parentId": "The id of the parent step. An unknown id is an error.",
+            "substepId": "The id of the sub-step to remove."
+          }
+        }
+      },
+      "fields": {
+        "steps": {
+          "help": "The chain in order. Each step carries id, title, description, side ('va' value-added or 'nva' rework), expanded and substeps (each with id and title)."
+        }
+      },
       "titlePlaceholder": "Step …",
       "descriptionPlaceholder": "Description …",
       "substepsLabel": "Detail Steps",

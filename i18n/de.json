@@ -2596,6 +2596,72 @@
     "opportunity-flowchart": {
       "name": "Opportunity Flowchart",
       "description": "Zwei-Spalten-Ablauf: wertschöpfende Schritte gegen Nacharbeit",
+      "whenToUse": "Wenn eine bestehende Kette danach sortiert werden soll, was wertschöpfend ist und was Nacharbeit — nicht für eine neue Prozessaufnahme ohne diese Unterscheidung.",
+      "actions": {
+        "appendStep": {
+          "help": "Hängt einen Schritt an die Kette und liefert seine id.",
+          "params": {
+            "side": "Spalte, in der der neue Schritt landet: 'va' wertschöpfend oder 'nva' Nacharbeit."
+          }
+        },
+        "setStepTitle": {
+          "help": "Setzt den Titel eines Schritts.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+            "text": "Der neue Titel."
+          }
+        },
+        "setStepDescription": {
+          "help": "Setzt die Beschreibung eines Schritts.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+            "text": "Die neue Beschreibung."
+          }
+        },
+        "toggleSide": {
+          "help": "Schiebt einen Schritt in die andere Spalte; seine Position in der Kette bleibt.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "insertAt": {
+          "help": "Setzt einen neuen Schritt an eine Lücke der Kette und liefert seine id.",
+          "params": {
+            "idx": "Die Lücke, an der eingefügt wird (0 = vor dem ersten Schritt).",
+            "side": "Spalte des neuen Schritts: 'va' wertschöpfend oder 'nva' Nacharbeit."
+          }
+        },
+        "removeStep": {
+          "help": "Entfernt einen Schritt aus der Kette.",
+          "params": {
+            "stepId": "Die id des zu entfernenden Schritts. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "toggleSubsteps": {
+          "help": "Klappt die Unter-Schritte eines Schritts auf oder zu; rein darstellend, der Inhalt bleibt.",
+          "params": {
+            "stepId": "Die id des Schritts, dessen Unter-Schritte umgeschaltet werden. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "addSubstep": {
+          "help": "Fügt einem Schritt einen leeren Unter-Schritt hinzu.",
+          "params": {
+            "stepId": "Die id des Schritts, der den neuen Unter-Schritt bekommt. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "removeSubstep": {
+          "help": "Entfernt einen Unter-Schritt aus seinem übergeordneten Schritt.",
+          "params": {
+            "parentId": "Die id des übergeordneten Schritts. Eine unbekannte id ist ein Fehler.",
+            "substepId": "Die id des zu entfernenden Unter-Schritts."
+          }
+        }
+      },
+      "fields": {
+        "steps": {
+          "help": "Die Kette in Reihenfolge. Jeder Schritt trägt id, title, description, side ('va' wertschöpfend oder 'nva' Nacharbeit), expanded und substeps (je id und title)."
+        }
+      },
       "titlePlaceholder": "Schritt …",
       "descriptionPlaceholder": "Beschreibung …",
       "substepsLabel": "Detail-Schritte",

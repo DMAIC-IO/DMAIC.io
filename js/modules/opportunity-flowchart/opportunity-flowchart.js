@@ -13,6 +13,11 @@
  *
  * `help` is intentionally not imported/wired here — createModule resolves it
  * automatically from `<id>-help.js` via the build-generated help registry.
+ *
+ * @agent  Vollständig über das Viewmodel steuerbar: Kette anlegen, Schritte
+ *   benennen und beschreiben, Spalte wechseln, einfügen, entfernen,
+ *   Teilschritte. Der Dateidownload, der Import-Dialog und das Ziehen mit
+ *   der Maus bleiben der UI vorbehalten.
  */
 
 import { createModule } from '../../core/template-module.js';
@@ -21,6 +26,8 @@ import { chainViewMixin } from '../../core/flowchart/flowchart-view.js';
 import {
   listSourceInstances, appendFromInstance,
 } from '../../core/flowchart/flowchart-import.js';
+import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
 import { OpportunityModel } from './opportunity-flowchart-model.js';
 
 const IMPORT_SOURCES = ['process-map', 'sipoc'];
@@ -34,9 +41,9 @@ export default createModule({
     version: '1.0.0',
     meta: import.meta,
     actions: [
-      { icon: 'action.add', title: 'addStepVA', variant: 'primary',
+      { icon: 'action.add', title: 'addStepVA', variant: 'primary', agentAction: 'appendStep',
         onClick: (d) => d.appendStep('va') },
-      { icon: 'action.add', title: 'addStepNVA',
+      { icon: 'action.add', title: 'addStepNVA', agentAction: 'appendStep',
         onClick: (d) => d.appendStep('nva') },
       { icon: 'action.upload', title: 'importFrom',
         onClick: (d) => d._openImport() },
@@ -51,6 +58,7 @@ export default createModule({
 
   data(module, _t) {
     return {
+      ...agentReadMixin(module),
       ...chainViewMixin(module, _t, {
         autoSizeSelector: 'textarea.of__step-title, textarea.of__step-description',
         dragRowSelector: '.of__col',
@@ -60,30 +68,85 @@ export default createModule({
       /**
        * Append to the chain from the toolbar, and look at what was added — a
        * chain wider than the canvas otherwise grows out of sight.
-       * @param {'va'|'nva'} side which column the new step lands in
-       * @returns {void}
+       * @agent
+       * @param {'va'|'nva'} side Spalte: wertschöpfend oder Nacharbeit
+       * @returns {string} id des angelegten Schritts
        */
       appendStep(side) {
+        requireEnum('side', side, ['va', 'nva']);
         const step = this.model.addStep(this.model.steps.length, { side });
         this.$nextTick(() => this.revealStep(step));
+        return step.id;
+      },
+
+      /**
+       * Setzt den Titel eines Schritts. Derselbe Sink wie
+       * `x-model="step.title"` in der Vorlage.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {string} text der neue Titel
+       * @returns {void}
+       * @throws {Error} wenn kein Schritt diese id trägt
+       */
+      setStepTitle(stepId, text) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+        this.model.steps.find((s) => s.id === stepId).title = String(text ?? '');
+        this.$nextTick(() => this._autoSizeAll());
+      },
+
+      /**
+       * Setzt die Beschreibung eines Schritts. Derselbe Sink wie
+       * `x-model="step.description"` in der Vorlage.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {string} text die neue Beschreibung
+       * @returns {void}
+       * @throws {Error} wenn kein Schritt diese id trägt
+       */
+      setStepDescription(stepId, text) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+        this.model.steps.find((s) => s.id === stepId).description = String(text ?? '');
+        this.$nextTick(() => this._autoSizeAll());
+      },
+
+      /**
+       * Entfernt einen Schritt aus der Kette.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @returns {void}
+       * @throws {Error} wenn kein Schritt diese id trägt
+       */
+      removeStep(stepId) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+        this.model.removeStep(stepId);
       },
 
       // ── Lifecycle (per Alpine instance) ───────────────────────
+      /** @noagent lifecycle, kein Zustandsweg */
       init() {
         this.$nextTick(() => this._autoSizeAll());
       },
 
       // ── Bands (value-added / rework) ──────────────────────────
-      /** The two bands, top to bottom — the template renders one slot each. */
+      /** The two bands, top to bottom — the template renders one slot each.
+       * @noagent view transform */
       sides() { return ['va', 'nva']; },
 
-      /** @param {object} step @returns {boolean} true when the step is value-added */
+      /** @param {object} step @returns {boolean} true when the step is value-added
+       * @noagent view transform */
       isVA(step) { return step?.side === 'va'; },
 
-      /** Move a step to the other band — its position in the chain never changes. */
+      /**
+       * Schiebt einen Schritt in die andere Spalte; seine Kettenposition
+       * bleibt.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @returns {void}
+       * @throws {Error} wenn kein Schritt diese id trägt
+       */
       toggleSide(stepId) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
         const s = this.model.steps.find((x) => x.id === stepId);
-        if (!s) return;
         this.model.setSide(s.id, s.side === 'va' ? 'nva' : 'va');
       },
 
@@ -92,6 +155,7 @@ export default createModule({
        * position. Dropping on one of the gap arrows reorders instead (gapDrop).
        * @param {'va'|'nva'} side
        * @param {DragEvent} event
+       * @noagent DOM event handler — ein Agent kann kein DragEvent erzeugen
        */
       dropOnSide(side, event) {
         event?.preventDefault();
@@ -107,13 +171,24 @@ export default createModule({
       /** @type {number|null} connector slot currently showing the add-left/right menu */
       _insertMenuIdx: null,
 
+      /** @noagent view transform */
       isInsertOpen(idx) { return this._insertMenuIdx === idx; },
+      /** @noagent UI-Menü, kein Zustand */
       toggleInsertMenu(idx) {
         this._insertMenuIdx = this._insertMenuIdx === idx ? null : idx;
       },
+      /**
+       * Setzt einen Schritt an eine Lücke der Kette.
+       * @agent
+       * @param {number} idx Lücke, an der eingefügt wird (0 = vor dem ersten)
+       * @param {'va'|'nva'} side Spalte des neuen Schritts
+       * @returns {string} id des angelegten Schritts
+       */
       insertAt(idx, side) {
-        this.model.insertStep(idx, { side });
+        requireEnum('side', side, ['va', 'nva']);
+        const step = this.model.insertStep(idx, { side });
         this._insertMenuIdx = null;
+        return step.id;
       },
 
       /**
@@ -123,6 +198,7 @@ export default createModule({
        * @param {number} idx chain index of the column being rendered
        * @param {'va'|'nva'} side band of the slot being rendered
        * @returns {boolean}
+       * @noagent view transform
        */
       railStart(idx, side) {
         return this.showStartRail(idx) && this.model.steps[idx].side === side;
@@ -133,6 +209,7 @@ export default createModule({
        * @param {number} idx chain index of the column being rendered
        * @param {'va'|'nva'} side band of the slot being rendered
        * @returns {boolean}
+       * @noagent view transform
        */
       railEnd(idx, side) {
         return this.showEndRail(idx) && this.model.steps[idx].side === side;
@@ -212,6 +289,7 @@ export default createModule({
         module._context.notify?.('JSON', 'success', 'status.ok');
       },
 
+      /** @noagent lädt eine Datei herunter; ein Agent liest den Zustand über `read()` */
       onExport(format) {
         if (format === 'json') { this._exportJSON(); return; }
         // PNG/SVG rendering lands with the shared flowchart renderer — see
