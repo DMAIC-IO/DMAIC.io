@@ -96,7 +96,7 @@
                               :placeholder="t('titlePlaceholder')"
                               @input="autoSize($event)"></textarea>
                     <div class="df__step-actions fc-card__actions">
-                      <button class="df__delete fc-card__delete" @click="model.removeStep(step.id)"
+                      <button class="df__delete fc-card__delete" @click="removeStep(step.id)"
                               :title="t('deleteStep')" :aria-label="t('deleteStep')">
                         <span class="icon" data-icon="action.delete" aria-hidden="true"></span>
                       </button>

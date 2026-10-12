@@ -59,7 +59,12 @@ function normalizeLane(raw, i) {
 export class DeploymentModel extends FlowchartState {
   constructor() {
     super();
-    /** @type {Array<{id:string, name:string, order:number}>} */
+    /**
+     * @type {Array<{id:string, name:string, order:number}>} die Bahnen
+     *   (Rollen/Abteilungen) in Anzeigereihenfolge; die reservierte Bahn
+     *   `'unassigned'` trägt bewusst einen leeren `name` — ihr Label kommt
+     *   aus i18n und folgt damit der Sprache
+     */
     this.lanes = [];
   }
 

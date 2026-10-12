@@ -2800,6 +2800,97 @@
     "deployment-flowchart": {
       "name": "Deployment Flowchart",
       "description": "Process chain across role lanes — makes hand-offs visible",
+      "whenToUse": "When an existing chain needs to show which role owns which step and where the hand-offs are — not for capturing a new process without a role assignment yet.",
+      "actions": {
+        "addStepUnassigned": {
+          "help": "Appends a step to the chain and returns its id. It always lands in the \"Unassigned\" lane."
+        },
+        "setStepTitle": {
+          "help": "Sets a step's title.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error.",
+            "text": "The new title."
+          }
+        },
+        "setStepDescription": {
+          "help": "Sets a step's description.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error.",
+            "text": "The new description."
+          }
+        },
+        "setLaneForStep": {
+          "help": "Assigns an existing step to a lane; its position in the chain stays.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error.",
+            "laneId": "The id of an existing lane. An unknown id is an error."
+          }
+        },
+        "removeStep": {
+          "help": "Removes a step from the chain.",
+          "params": {
+            "stepId": "The id of the step to remove. An unknown id is an error."
+          }
+        },
+        "addLaneInline": {
+          "help": "Appends an unnamed lane and returns its id."
+        },
+        "setLaneName": {
+          "help": "Renames a lane.",
+          "params": {
+            "laneId": "The lane's id. An unknown id, or the reserved \"Unassigned\" lane, is an error.",
+            "name": "The new name."
+          }
+        },
+        "removeLaneById": {
+          "help": "Removes a lane; its steps move to \"Unassigned\".",
+          "params": {
+            "laneId": "The lane's id. An unknown id, or the reserved \"Unassigned\" lane, is an error."
+          }
+        },
+        "insertBefore": {
+          "help": "Inserts a new step at a gap in the chain and returns its id.",
+          "params": {
+            "idx": "The gap to insert at (0 = before the first step, up to the chain length = at the end). A value outside that range or a non-integer is an error.",
+            "laneId": "The id of an existing lane the new step lands in. An unknown id is an error."
+          }
+        },
+        "toggleSubsteps": {
+          "help": "Expands or collapses a step's sub-steps; display only, the content stays.",
+          "params": {
+            "stepId": "The id of the step whose sub-steps are toggled. An unknown id is an error."
+          }
+        },
+        "addSubstep": {
+          "help": "Adds an empty sub-step to a step.",
+          "params": {
+            "stepId": "The id of the step that gets the new sub-step. An unknown id is an error."
+          }
+        },
+        "removeSubstep": {
+          "help": "Removes a sub-step from its parent step.",
+          "params": {
+            "parentId": "The id of the parent step. An unknown id is an error.",
+            "substepId": "The id of the sub-step to remove."
+          }
+        },
+        "setSubstepTitle": {
+          "help": "Sets a sub-step's title.",
+          "params": {
+            "stepId": "The id of the parent step. An unknown id is an error.",
+            "substepId": "The id of the sub-step. An unknown id is an error.",
+            "text": "The new title."
+          }
+        }
+      },
+      "fields": {
+        "steps": {
+          "help": "The chain in order. Each step carries id, title, description, laneId (the lane it is assigned to), expanded and substeps (each with id and title)."
+        },
+        "lanes": {
+          "help": "The lanes (roles/departments) in display order. Each lane carries id, name and order; the reserved \"unassigned\" lane carries an empty name — its label comes from the UI."
+        }
+      },
       "titlePlaceholder": "Step …",
       "descriptionPlaceholder": "Description …",
       "substepsLabel": "Detail Steps",

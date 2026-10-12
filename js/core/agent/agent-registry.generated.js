@@ -1150,25 +1150,23 @@ export const AGENT_REGISTRY = {
     }
   },
   "deployment-flowchart": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:init",
-      "unmarked_method:stepsForLane",
-      "unmarked_method:laneLabel",
-      "unmarked_method:isUnassigned",
-      "unmarked_method:addStepUnassigned",
-      "unmarked_method:addLaneInline",
-      "unmarked_method:removeLaneById",
-      "unmarked_method:insertBefore",
-      "unmarked_method:railStart",
-      "unmarked_method:railEnd",
-      "unmarked_method:dropOnLane",
-      "unmarked_method:onExport",
-      "template_model_call:removeStep"
-    ],
+    "reported": [],
     "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
       "toggleSubsteps": {
         "params": [
           {
@@ -1234,6 +1232,130 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Set a substep's title."
+      },
+      "addStepUnassigned": {
+        "params": [],
+        "returns": "string",
+        "help": "Hängt einen Schritt an die Kette und liefert seine id. Er landet immer in der Bahn „Nicht zugeordnet\": welche Rolle einen Schritt trägt, ist eine bewusste Entscheidung, die erst die Zuweisung an eine Bahn trifft."
+      },
+      "setStepTitle": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der neue Titel"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Titel eines Schritts. Schreibt dasselbe Feld wie `x-model=\"step.title\"` in der Vorlage."
+      },
+      "setStepDescription": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die neue Beschreibung"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Beschreibung eines Schritts. Schreibt dasselbe Feld wie `x-model=\"step.description\"` in der Vorlage."
+      },
+      "setLaneForStep": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "laneId",
+            "type": "string",
+            "optional": false,
+            "help": "id einer vorhandenen Bahn"
+          }
+        ],
+        "returns": "void",
+        "help": "Weist einen vorhandenen Schritt einer Bahn zu; seine Kettenposition bleibt. Schreibt dasselbe Feld wie der Drop auf ein Bahn-Band (`dropOnLane`) in der Vorlage."
+      },
+      "removeStep": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt einen Schritt aus der Kette. Ersetzt den Vorlagen-Aufruf `model.removeStep(step.id)`."
+      },
+      "addLaneInline": {
+        "params": [],
+        "returns": "string",
+        "help": "Append an unnamed lane and focus its name input so the role can be typed in place — same interaction as adding a step, no prompt dialog in between."
+      },
+      "setLaneName": {
+        "params": [
+          {
+            "name": "laneId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Bahn"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "der neue Name"
+          }
+        ],
+        "returns": "void",
+        "help": "Benennt eine Bahn um. Schreibt dasselbe Feld wie `x-model=\"lane.name\"` in der Vorlage. Die reservierte Bahn „Nicht zugeordnet\" ist nicht umbenennbar — die Vorlage zeigt für sie auch kein Eingabefeld."
+      },
+      "removeLaneById": {
+        "params": [
+          {
+            "name": "laneId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Bahn"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt eine Bahn; ihre Schritte wandern nach „Nicht zugeordnet\". Die reservierte Bahn selbst ist nicht entfernbar — die Vorlage zeigt für sie auch keine Löschtaste."
+      },
+      "insertBefore": {
+        "params": [
+          {
+            "name": "idx",
+            "type": "number",
+            "optional": false,
+            "help": "chain index the new step should take"
+          },
+          {
+            "name": "laneId",
+            "type": "string",
+            "optional": false,
+            "help": "id einer vorhandenen Bahn"
+          }
+        ],
+        "returns": "string",
+        "help": "Insert a step at a chain position via the connector. It lands in the lane of the step it precedes — inserting between two steps of one role is the common case, and the lane is a drag away otherwise."
       }
     },
     "fields": {
@@ -1244,7 +1366,7 @@ export const AGENT_REGISTRY = {
       },
       "lanes": {
         "type": "Array<{id:string, name:string, order:number}>",
-        "help": "",
+        "help": "die Bahnen (Rollen/Abteilungen) in Anzeigereihenfolge; die reservierte Bahn `'unassigned'` trägt bewusst einen leeren `name` — ihr Label kommt aus i18n und folgt damit der Sprache",
         "bulk": false
       }
     }
@@ -5649,4 +5771,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":5};
+export const AGENT_COVERAGE = {"total":74,"available":6};

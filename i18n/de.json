@@ -2804,6 +2804,97 @@
     "deployment-flowchart": {
       "name": "Deployment Flowchart",
       "description": "Prozesskette über Rollen-Lanes — macht Übergaben sichtbar",
+      "whenToUse": "Wenn eine bestehende Kette zeigen soll, welche Rolle welchen Schritt verantwortet und wo die Übergaben liegen — nicht für eine neue Prozessaufnahme ohne Rollenzuordnung.",
+      "actions": {
+        "addStepUnassigned": {
+          "help": "Hängt einen Schritt an die Kette und liefert seine id. Er landet immer in der Bahn „Nicht zugeordnet“."
+        },
+        "setStepTitle": {
+          "help": "Setzt den Titel eines Schritts.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+            "text": "Der neue Titel."
+          }
+        },
+        "setStepDescription": {
+          "help": "Setzt die Beschreibung eines Schritts.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+            "text": "Die neue Beschreibung."
+          }
+        },
+        "setLaneForStep": {
+          "help": "Weist einen vorhandenen Schritt einer Bahn zu; seine Position in der Kette bleibt.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+            "laneId": "Die id einer vorhandenen Bahn. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "removeStep": {
+          "help": "Entfernt einen Schritt aus der Kette.",
+          "params": {
+            "stepId": "Die id des zu entfernenden Schritts. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "addLaneInline": {
+          "help": "Hängt eine unbenannte Bahn an und liefert ihre id."
+        },
+        "setLaneName": {
+          "help": "Benennt eine Bahn um.",
+          "params": {
+            "laneId": "Die id der Bahn. Eine unbekannte id, oder die reservierte Bahn „Nicht zugeordnet“, ist ein Fehler.",
+            "name": "Der neue Name."
+          }
+        },
+        "removeLaneById": {
+          "help": "Entfernt eine Bahn; ihre Schritte wandern nach „Nicht zugeordnet“.",
+          "params": {
+            "laneId": "Die id der Bahn. Eine unbekannte id, oder die reservierte Bahn „Nicht zugeordnet“, ist ein Fehler."
+          }
+        },
+        "insertBefore": {
+          "help": "Fügt einen neuen Schritt an einer Lücke der Kette ein und liefert seine id.",
+          "params": {
+            "idx": "Die Lücke, an der eingefügt wird (0 = vor dem ersten Schritt, bis zur Kettenlänge = ans Ende). Ein Wert außerhalb dieses Bereichs oder keine ganze Zahl ist ein Fehler.",
+            "laneId": "Die id einer vorhandenen Bahn, in der der neue Schritt landet. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "toggleSubsteps": {
+          "help": "Klappt die Unter-Schritte eines Schritts auf oder zu; rein darstellend, der Inhalt bleibt.",
+          "params": {
+            "stepId": "Die id des Schritts, dessen Unter-Schritte umgeschaltet werden. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "addSubstep": {
+          "help": "Fügt einem Schritt einen leeren Unter-Schritt hinzu.",
+          "params": {
+            "stepId": "Die id des Schritts, der den neuen Unter-Schritt bekommt. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "removeSubstep": {
+          "help": "Entfernt einen Unter-Schritt aus seinem übergeordneten Schritt.",
+          "params": {
+            "parentId": "Die id des übergeordneten Schritts. Eine unbekannte id ist ein Fehler.",
+            "substepId": "Die id des zu entfernenden Unter-Schritts."
+          }
+        },
+        "setSubstepTitle": {
+          "help": "Setzt den Titel eines Unter-Schritts.",
+          "params": {
+            "stepId": "Die id des übergeordneten Schritts. Eine unbekannte id ist ein Fehler.",
+            "substepId": "Die id des Unter-Schritts. Eine unbekannte id ist ein Fehler.",
+            "text": "Der neue Titel."
+          }
+        }
+      },
+      "fields": {
+        "steps": {
+          "help": "Die Kette in Reihenfolge. Jeder Schritt trägt id, title, description, laneId (die Bahn, der er zugewiesen ist), expanded und substeps (je id und title)."
+        },
+        "lanes": {
+          "help": "Die Bahnen (Rollen/Abteilungen) in Anzeigereihenfolge. Jede Bahn trägt id, name und order; die reservierte Bahn „unassigned“ trägt einen leeren Namen, ihr Label kommt aus der Oberfläche."
+        }
+      },
       "titlePlaceholder": "Schritt …",
       "descriptionPlaceholder": "Beschreibung …",
       "substepsLabel": "Detail-Schritte",

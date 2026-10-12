@@ -14,6 +14,11 @@
  *
  * `help` is intentionally not imported/wired here — createModule resolves it
  * automatically from `<id>-help.js` via the build-generated help registry.
+ *
+ * @agent  Vollständig über das Viewmodel steuerbar: Kette anlegen, Titel und
+ *   Beschreibung setzen, Bahnen anlegen/benennen/entfernen, einen Schritt
+ *   einer Bahn zuweisen, entfernen. Der Dateidownload, der Import-Dialog und
+ *   das Ziehen mit der Maus bleiben der UI vorbehalten.
  */
 
 import { createModule } from '../../core/template-module.js';
@@ -22,6 +27,8 @@ import { chainViewMixin } from '../../core/flowchart/flowchart-view.js';
 import {
   listSourceInstances, appendFromInstance,
 } from '../../core/flowchart/flowchart-import.js';
+import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { requireKnownId, requireIndex } from '../../core/agent/agent-argcheck.js';
 import { DeploymentModel, UNASSIGNED_ID } from './deployment-flowchart-model.js';
 
 const IMPORT_SOURCES = ['process-map', 'sipoc'];
@@ -35,9 +42,9 @@ export default createModule({
     version: '1.0.0',
     meta: import.meta,
     actions: [
-      { icon: 'action.add', title: 'addStep', variant: 'primary',
+      { icon: 'action.add', title: 'addStep', variant: 'primary', agentAction: 'addStepUnassigned',
         onClick: (d) => d.addStepUnassigned() },
-      { icon: 'action.add', title: 'addLane',
+      { icon: 'action.add', title: 'addLane', agentAction: 'addLaneInline',
         onClick: (d) => d.addLaneInline() },
       { icon: 'action.upload', title: 'importFrom',
         onClick: (d) => d._openImport() },
@@ -52,18 +59,34 @@ export default createModule({
 
   data(module, _t) {
     return {
+      ...agentReadMixin(module),
       ...chainViewMixin(module, _t, {
         autoSizeSelector: 'textarea.df__step-title, textarea.df__step-description',
         dragRowSelector: '.df__col',
       }),
 
       // ── Lifecycle (per Alpine instance) ───────────────────────
+      /** @noagent lifecycle, kein Zustandsweg */
       init() {
         this.$nextTick(() => this._autoSizeAll());
       },
 
+      /**
+       * Eine Schritt-id gegen die Kette prüfen und den Schritt liefern — das
+       * gemeinsame Vorgehen mehrerer Setter/Entferner. Privat (`_`-Präfix),
+       * braucht keine Marke.
+       * @param {string} stepId
+       * @returns {object}
+       * @throws {Error} wenn kein Schritt diese id trägt
+       */
+      _requireStep(stepId) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+        return this.model.steps.find((s) => s.id === stepId);
+      },
+
       // ── Lanes ─────────────────────────────────────────────────
-      /** Steps of one lane, in chain order (the filter preserves the array order). */
+      /** Steps of one lane, in chain order (the filter preserves the array order).
+       * @noagent view transform */
       stepsForLane(laneId) {
         return this.model.steps.filter((s) => s.laneId === laneId);
       },
@@ -71,24 +94,88 @@ export default createModule({
       /**
        * The reserved lane's label comes from i18n so it follows the UI
        * language; user lanes fall back to a placeholder while unnamed.
+       * @noagent view transform
        */
       laneLabel(lane) {
         if (lane?.id === UNASSIGNED_ID) return _t('unassigned');
         return lane?.name || _t('unnamedLane');
       },
+      /** @noagent view transform */
       isUnassigned(lane) { return lane?.id === UNASSIGNED_ID; },
 
       /**
-       * Append a step to the chain. It always lands in the reserved Unassigned
-       * lane: which role owns a step is a deliberate decision, so the user
-       * makes it explicitly by dragging the card onto a lane band afterwards.
+       * Hängt einen Schritt an die Kette und liefert seine id. Er landet
+       * immer in der Bahn „Nicht zugeordnet": welche Rolle einen Schritt
+       * trägt, ist eine bewusste Entscheidung, die erst die Zuweisung an
+       * eine Bahn trifft.
+       * @agent
+       * @returns {string} id des angelegten Schritts
        */
       addStepUnassigned() {
-        this.model.addStep(this.model.steps.length, { laneId: UNASSIGNED_ID });
+        const step = this.model.addStep(this.model.steps.length, { laneId: UNASSIGNED_ID });
         this.$nextTick(() => {
           this._autoSizeAll();
           this._scrollToChainEnd();
         });
+        return step.id;
+      },
+
+      /**
+       * Setzt den Titel eines Schritts. Schreibt dasselbe Feld wie
+       * `x-model="step.title"` in der Vorlage.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {string} text der neue Titel
+       * @returns {void}
+       * @throws {Error} wenn kein Schritt diese id trägt
+       */
+      setStepTitle(stepId, text) {
+        this._requireStep(stepId).title = String(text ?? '');
+        this.$nextTick(() => this._autoSizeAll());
+      },
+
+      /**
+       * Setzt die Beschreibung eines Schritts. Schreibt dasselbe Feld wie
+       * `x-model="step.description"` in der Vorlage.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {string} text die neue Beschreibung
+       * @returns {void}
+       * @throws {Error} wenn kein Schritt diese id trägt
+       */
+      setStepDescription(stepId, text) {
+        this._requireStep(stepId).description = String(text ?? '');
+        this.$nextTick(() => this._autoSizeAll());
+      },
+
+      /**
+       * Weist einen vorhandenen Schritt einer Bahn zu; seine Kettenposition
+       * bleibt. Schreibt dasselbe Feld wie der Drop auf ein Bahn-Band
+       * (`dropOnLane`) in der Vorlage.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {string} laneId id einer vorhandenen Bahn
+       * @returns {void}
+       * @throws {Error} wenn kein Schritt diese id trägt, oder laneId keine
+       *   vorhandene Bahn benennt
+       */
+      setLaneForStep(stepId, laneId) {
+        this._requireStep(stepId);
+        requireKnownId('laneId', laneId, this.model.lanes.map((l) => l.id));
+        this.model.setLaneForStep(stepId, laneId);
+      },
+
+      /**
+       * Entfernt einen Schritt aus der Kette. Ersetzt den Vorlagen-Aufruf
+       * `model.removeStep(step.id)`.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @returns {void}
+       * @throws {Error} wenn kein Schritt diese id trägt
+       */
+      removeStep(stepId) {
+        this._requireStep(stepId);
+        this.model.removeStep(stepId);
       },
 
       /**
@@ -106,6 +193,8 @@ export default createModule({
        * Append an unnamed lane and focus its name input so the role can be
        * typed in place — same interaction as adding a step, no prompt dialog
        * in between.
+       * @agent
+       * @returns {string} id der angelegten Bahn
        */
       addLaneInline() {
         const lane = this.model.addLane('');
@@ -113,20 +202,61 @@ export default createModule({
           const input = this.$root?.querySelector(`.df__lane-name[data-lane-id="${lane.id}"]`);
           input?.focus();
         });
+        return lane.id;
       },
 
-      removeLaneById(laneId) { this.model.removeLane(laneId); },
+      /**
+       * Benennt eine Bahn um. Schreibt dasselbe Feld wie `x-model="lane.name"`
+       * in der Vorlage. Die reservierte Bahn „Nicht zugeordnet" ist nicht
+       * umbenennbar — die Vorlage zeigt für sie auch kein Eingabefeld.
+       * @agent
+       * @param {string} laneId id der Bahn
+       * @param {string} name der neue Name
+       * @returns {void}
+       * @throws {Error} wenn laneId keine vorhandene Bahn benennt, oder die
+       *   reservierte Bahn gemeint ist
+       */
+      setLaneName(laneId, name) {
+        requireKnownId('laneId', laneId, this.model.lanes.map((l) => l.id));
+        if (!this.model.renameLane(laneId, name)) {
+          throw new Error(`lane ${JSON.stringify(laneId)} cannot be renamed: reserved`);
+        }
+      },
+
+      /**
+       * Entfernt eine Bahn; ihre Schritte wandern nach „Nicht zugeordnet".
+       * Die reservierte Bahn selbst ist nicht entfernbar — die Vorlage zeigt
+       * für sie auch keine Löschtaste.
+       * @agent
+       * @param {string} laneId id der Bahn
+       * @returns {void}
+       * @throws {Error} wenn laneId keine vorhandene Bahn benennt, oder die
+       *   reservierte Bahn gemeint ist
+       */
+      removeLaneById(laneId) {
+        requireKnownId('laneId', laneId, this.model.lanes.map((l) => l.id));
+        if (!this.model.removeLane(laneId)) {
+          throw new Error(`lane ${JSON.stringify(laneId)} cannot be removed: reserved`);
+        }
+      },
 
       /**
        * Insert a step at a chain position via the connector. It lands in the
        * lane of the step it precedes — inserting between two steps of one role
        * is the common case, and the lane is a drag away otherwise.
+       * @agent
        * @param {number} idx chain index the new step should take
-       * @param {string} laneId
+       * @param {string} laneId id einer vorhandenen Bahn
+       * @returns {string} id des angelegten Schritts
+       * @throws {Error} wenn idx keine ganze Zahl zwischen 0 und der
+       *   Kettenlänge ist, oder laneId keine vorhandene Bahn benennt
        */
       insertBefore(idx, laneId) {
-        this.model.insertStep(idx, { laneId });
+        requireIndex('idx', idx, this.model.steps.length);
+        requireKnownId('laneId', laneId, this.model.lanes.map((l) => l.id));
+        const step = this.model.insertStep(idx, { laneId });
         this.$nextTick(() => this._autoSizeAll());
+        return step.id;
       },
 
       /**
@@ -136,6 +266,7 @@ export default createModule({
        * @param {number} idx chain index of the column being rendered
        * @param {string} laneId lane of the slot being rendered
        * @returns {boolean}
+       * @noagent view transform
        */
       railStart(idx, laneId) {
         return this.showStartRail(idx) && this.model.steps[idx].laneId === laneId;
@@ -146,12 +277,17 @@ export default createModule({
        * @param {number} idx chain index of the column being rendered
        * @param {string} laneId lane of the slot being rendered
        * @returns {boolean}
+       * @noagent view transform
        */
       railEnd(idx, laneId) {
         return this.showEndRail(idx) && this.model.steps[idx].laneId === laneId;
       },
 
-      /** Drop on a lane band: re-assign the dragged step, keep its chain position. */
+      /**
+       * Drop on a lane band: re-assign the dragged step, keep its chain position.
+       * @noagent DOM event handler — ein Agent kann kein DragEvent erzeugen;
+       *   die Zuordnung eines Schritts zu einer Bahn geht über `setLaneForStep`.
+       */
       dropOnLane(laneId, event) {
         event?.preventDefault();
         const from = this._draggedStepId;
@@ -236,6 +372,10 @@ export default createModule({
         module._context.notify?.('JSON', 'success', 'status.ok');
       },
 
+      /**
+       * @noagent lädt eine Datei herunter; ein Agent liest den Zustand über
+       *   `read()`
+       */
       onExport(format) {
         if (format === 'json') { this._exportJSON(); return; }
         // PNG/SVG rendering lands with the shared flowchart renderer.
