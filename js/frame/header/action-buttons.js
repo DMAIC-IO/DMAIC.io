@@ -21,6 +21,18 @@ function downloadJSON(json, filename) {
   URL.revokeObjectURL(url);
 }
 
+/**
+ * Local timestamp for export filenames: YYYY-MM-DD_HH-MM-SS.
+ * Dashes instead of colons — colons are not allowed in Windows filenames.
+ * @param {Date} [now]
+ * @returns {string}
+ */
+export function exportStamp(now = new Date()) {
+  const p = (n) => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`
+    + `_${p(now.getHours())}-${p(now.getMinutes())}-${p(now.getSeconds())}`;
+}
+
 /** @param {object} kernel - { stateManager, eventBus, i18n }  @param {object} ui - { modal, notify } */
 export function initActionButtons({ stateManager, eventBus, i18n }, { modal, notify }) {
   initFullscreen();
@@ -65,7 +77,7 @@ function initExportImport({ stateManager, eventBus, i18n }, { modal, notify }) {
       // Single project — export directly
       const json = stateManager.exportJSON();
       const name = (stateManager.get('projectMeta.name') ?? 'projekt').replace(/[^a-z0-9_-]/gi, '_');
-      downloadJSON(json, `${name}_${new Date().toISOString().split('T')[0]}.json`);
+      downloadJSON(json, `${name}_${exportStamp()}.json`);
       eventBus.emit('project:exported');
       notify(i18n.t('app.export'), 'success', 'status.ok');
       return;
@@ -76,10 +88,10 @@ function initExportImport({ stateManager, eventBus, i18n }, { modal, notify }) {
       confirmLabel: i18n.t('app.export'),
     });
     if (scope === null) return; // cancelled
-    const date = new Date().toISOString().split('T')[0];
+    const date = exportStamp();
     if (scope === 'all') {
       const json = await stateManager.exportAllJSON();
-      downloadJSON(json, `dmike_alle_projekte_${date}.json`);
+      downloadJSON(json, `dmaic-io_alle_projekte_${date}.json`);
     } else {
       const json = stateManager.exportJSON();
       const name = (stateManager.get('projectMeta.name') ?? 'projekt').replace(/[^a-z0-9_-]/gi, '_');
@@ -127,9 +139,9 @@ function initExportImport({ stateManager, eventBus, i18n }, { modal, notify }) {
   document.addEventListener('keydown', async (e) => {
     if (shortcutRegistry.matches(e, 'global.exportProject')) {
       e.preventDefault();
-      const date = new Date().toISOString().split('T')[0];
+      const date = exportStamp();
       const json = await stateManager.exportAllJSON();
-      downloadJSON(json, `dmike_alle_projekte_${date}.json`);
+      downloadJSON(json, `dmaic-io_alle_projekte_${date}.json`);
       eventBus.emit('project:exported');
       notify(i18n.t('app.export'), 'success', 'status.ok');
     }
