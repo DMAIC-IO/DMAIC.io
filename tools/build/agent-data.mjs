@@ -486,7 +486,7 @@ function writtenModelFields(fn, resolver, modelDecl) {
   // sie bei der ersten Hilfsvariablen, und genau das tut `hypothesis-test`
   // (`setPowerGoal(v) { const n = parseFloat(v); … this.powerGoal = …(n); }`).
   const agentParams = expandDerivedNames(fn.body, new Set(parameterNames(fn).filter(Boolean)));
-  const fields = collectCoveredFields(fn.body, 'model', rhs => derivesFromParams(rhs, agentParams));
+  const fields = collectCoveredFields(fn.body, 'model', agentParams);
   forEachCall(fn.body, node => {
     const methodName = modelMethodCallOf(node);
     if (methodName && modelDecl) {
@@ -548,11 +548,18 @@ function parameterNames(fn) {
  * Ob `expr` einen Bezeichner aus `names` enthält — die Prüfung „der Wert
  * stammt aus einem Parameter". Bewusst NICHT über verschachtelte
  * Funktionsgrenzen hinweg (eine Closure könnte einen gleichnamigen eigenen
- * Parameter binden, der NICHT der äußere ist — im Zweifel also nicht
- * gefunden, fail closed) und bewusst NICHT über den `.name` einer
- * `PropertyAccessExpression` (`this.model.title` enthält keinen Bezeichner
- * `title` in diesem Sinn — sonst würde `this.model.title` als eigener
- * Beweis für einen Parameter namens `title` durchgehen).
+ * Parameter binden, der NICHT der äußere ist; der Aufrufer — `collectCoveredFields`
+ * — löst das bereits, indem er `names` beim Abstieg in eine Closure um deren
+ * eigene Parameter bereinigt, bevor er hierher kommt, aber diese Funktion
+ * selbst bleibt zusätzlich konservativ und steigt nicht noch TIEFER in eine
+ * im Ausdruck selbst liegende Closure ab) und bewusst NICHT über den
+ * `.name` einer `PropertyAccessExpression` (`this.model.title` enthält
+ * keinen Bezeichner `title` in diesem Sinn) ODER den Schlüssel einer
+ * `PropertyAssignment` (`{ t: 1 }` — der Schlüssel `t` ist kein Bezeichner-
+ * VERWEIS, nur ein Name; sonst bewiese ein Objektliteral mit einem zufällig
+ * gleichnamigen Schlüssel einen Parameterfluss, der nicht da ist — Review-
+ * Fund, Fix-Runde 4. `{ t }` (Kurzform) bleibt dagegen ein echter Verweis
+ * und wird nicht ausgenommen.
  * @param {ts.Node} expr
  * @param {Set<string>} names
  * @returns {boolean}
@@ -563,6 +570,7 @@ function derivesFromParams(expr, names) {
   const walk = (node) => {
     if (found || isFunctionLike(node)) return;
     if (ts.isPropertyAccessExpression(node)) { walk(node.expression); return; }
+    if (ts.isPropertyAssignment(node)) { walk(node.initializer); return; }
     if (ts.isIdentifier(node)) { if (names.has(node.text)) found = true; return; }
     ts.forEachChild(node, walk);
   };
@@ -586,26 +594,97 @@ function forEachCall(node, visit) {
 }
 
 /**
- * Die Felder, die `this.<durch>.<feld> = …` zuweist und dabei `covers(…)`
- * auf die rechte Seite erfüllt — der gemeinsame Walk hinter
+ * Die Felder, die `this.<durch>.<feld> = …` zuweist, deren rechte Seite aus
+ * `names` ableitet (`derivesFromParams`) — der gemeinsame Walk hinter
  * `writtenModelFields` (direkte Form, `durch = 'model'`) UND
  * `fieldsCoveredByDelegation` (Model-Methodenkörper, `durch = null`).
+ *
+ * Steigt BEWUSST in verschachtelte Closures ab, um dort liegende
+ * Zuweisungen zu finden (`setTimeout(() => { this.model.title = t; })` soll
+ * weiter zählen, wie bei `collectDomDetours`) — aber verfolgt dabei die
+ * aktive Namensmenge mit, statt sie unverändert durchzureichen: tritt die
+ * Funktion in eine Closure oder einen Block ein, der einen Namen aus
+ * `names` NEU bindet (ein Closure-Parameter, eine `let`/`const`-Deklaration
+ * im Block), fällt dieser Name für den gesamten Rest dieses Teilbaums aus
+ * der aktiven Menge — er bezeichnet dort etwas anderes (Review-Fund,
+ * Fix-Runde 4: ein Closure-Parameter oder eine Block-lokale Variable mit
+ * zufällig demselben Namen bewies bisher denselben Parameterfluss wie der
+ * äußere Parameter). Eine `let`-Neuzuweisung (keine Deklaration) entfernt
+ * nichts — `let n = t; n = GLOBAL; … = n` bleibt absichtlich ERFASST, denn
+ * auf dem Pfad vor der Neuzuweisung ist das Feld wirklich parametererreichbar
+ * gewesen; eine pfadsensitive Analyse ist hier ausdrücklich nicht das Ziel.
+ *
  * @param {ts.Block|undefined} body
  * @param {string|null} through
- * @param {(rhs: ts.Expression) => boolean} covers
+ * @param {Set<string>} names
  * @returns {Set<string>}
  */
-function collectCoveredFields(body, through, covers) {
+function collectCoveredFields(body, through, names) {
   const fields = new Set();
-  const walk = (node) => {
+  const walk = (node, active) => {
+    if (isFunctionLike(node)) {
+      const next = withoutNames(active, parameterNames(node));
+      ts.forEachChild(node, child => walk(child, next));
+      return;
+    }
+    if (ts.isBlock(node)) {
+      const next = withoutNames(active, topLevelDeclaredNames(node));
+      for (const statement of node.statements) walk(statement, next);
+      return;
+    }
     if (ts.isBinaryExpression(node) && ASSIGN_KINDS.has(node.operatorToken.kind)) {
       const field = fieldAfterThis(node.left, through);
-      if (field && covers(node.right)) fields.add(field);
+      if (field && derivesFromParams(node.right, active)) fields.add(field);
     }
-    ts.forEachChild(node, walk);
+    ts.forEachChild(node, child => walk(child, active));
   };
-  if (body) walk(body);
+  if (body) {
+    // Die TOP-Ebene von `body` selbst bekommt die Block-Schattierungsprüfung
+    // NICHT — ihre eigenen `const`-Deklarationen sind genau die, die
+    // `expandDerivedNames` bereits geprüft und in `names` aufgenommen hat
+    // (`const n = parseFloat(v)`); sie noch einmal als „neu gebunden" zu
+    // behandeln, entzöge der Aufrufer-Prüfung sofort wieder, was sie gerade
+    // bestätigt hat. Erst ein tiefer verschachtelter Block (eine
+    // Verzweigung, eine Closure) bekommt die Schattierungsprüfung — über
+    // den normalen Abstieg der `walk`-Funktion selbst.
+    for (const statement of body.statements) walk(statement, names);
+  }
   return fields;
+}
+
+/**
+ * `names` ohne die Einträge aus `toRemove` — gibt `names` selbst zurück,
+ * wenn nichts zu entfernen war (keine unnötige Kopie bei jedem Block, der
+ * nicht schattiert).
+ * @param {Set<string>} names
+ * @param {Array<string|null>} toRemove
+ * @returns {Set<string>}
+ */
+function withoutNames(names, toRemove) {
+  const hit = toRemove.some(n => n && names.has(n));
+  if (!hit) return names;
+  const next = new Set(names);
+  for (const n of toRemove) if (n) next.delete(n);
+  return next;
+}
+
+/**
+ * Die Namen der `let`/`const`/`var`-Deklarationen UNMITTELBAR in diesem
+ * Block (nicht in einem verschachtelten Block) — die „neu gebundenen"
+ * Namen, die eine äußere gleichnamige Bindung für den Rest dieses Blocks
+ * verdecken.
+ * @param {ts.Block} block
+ * @returns {string[]}
+ */
+function topLevelDeclaredNames(block) {
+  const names = [];
+  for (const statement of block.statements) {
+    if (!ts.isVariableStatement(statement)) continue;
+    for (const decl of statement.declarationList.declarations) {
+      if (ts.isIdentifier(decl.name)) names.push(decl.name.text);
+    }
+  }
+  return names;
 }
 
 /**
@@ -704,7 +783,7 @@ function fieldsCoveredByDelegation(resolver, modelDecl, methodName, callArgs, ag
   if (coveredParamNames.size === 0) return new Set();
 
   const derivedInMethod = expandDerivedNames(found.method.body, coveredParamNames);
-  return collectCoveredFields(found.method.body, null, rhs => derivesFromParams(rhs, derivedInMethod));
+  return collectCoveredFields(found.method.body, null, derivedInMethod);
 }
 
 /**

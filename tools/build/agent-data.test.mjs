@@ -1932,7 +1932,97 @@ test('unreachable_write: eine nicht auflösbare Model-Klasse lässt eine Delegat
     'foo.html': '<input x-model="model.title">',
   } });
   const { modules } = collectAgentData(root);
-  assert.ok(modules.foo.reported.includes('unreachable_write:title'));
+  // Vollständige Gleichheit statt nur `includes` (Review-Fund, Fix-Runde 4):
+  // sonst hätte eine Regression, die `unreachable_write:title` zusätzlich
+  // zu einem FALSCH angenommenen Treffer meldete, diesen Test nicht rot
+  // gemacht. `unresolvable_model_class` steht ebenfalls drin — das ist der
+  // erwartete, separate Befund über die Lesefläche, den `readModelFields`
+  // für dieselbe nicht auflösbare `Model:`-Angabe sowieso schon meldet.
+  assert.deepEqual(modules.foo.reported, ['unresolvable_model_class', 'unreachable_write:title']);
+});
+
+test('unreachable_write: ein Objektliteral-Schlüssel, der zufällig wie der Parameter heißt, beweist KEINEN Parameterfluss', () => {
+  // Review-Fund, Fix-Runde 4 (1/3): `{ t: 1 }` enthält den Bezeichner `t`
+  // nur als SCHLÜSSEL (ein Name, kein Verweis) — ohne die Ausnahme für
+  // `PropertyAssignment` hätte das als Abdeckung gezählt, nur weil der
+  // Parameter zufällig `t` heißt.
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} t
+       * @returns {void}
+       */
+      setTitle(t) { this.model.title = { t: 1 }; },
+      /** @noagent */
+      cardClass(node) { return ''; },`);
+  const root = fixture({ foo: {
+    'foo.js': vm,
+    'foo-model.js': `export class State {
+      /** @type {object} der Titel */
+      title = '';
+      toJSON() { return { title: this.title }; }
+    }`,
+    'foo.html': '<input x-model="model.title">',
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
+});
+
+test('unreachable_write: ein Closure-Parameter, der den Methodenparameter überschattet, deckt NICHT ab', () => {
+  // Review-Fund, Fix-Runde 4 (2/3): `forEach((t) => { this.model.title = t; })`
+  // — das `t` IN der Closure ist das Element der Iteration, nicht der
+  // äußere Methodenparameter `t`, obwohl beide denselben Namen tragen.
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} t
+       * @returns {void}
+       */
+      setTitle(t) { ['x'].forEach((t) => { this.model.title = t; }); },
+      /** @noagent */
+      cardClass(node) { return ''; },`);
+  const root = fixture({ foo: {
+    'foo.js': vm,
+    'foo-model.js': `export class State {
+      /** @type {string} der Titel */
+      title = '';
+      toJSON() { return { title: this.title }; }
+    }`,
+    'foo.html': '<input x-model="model.title">',
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
+});
+
+test('unreachable_write: eine blockweit neu gebundene lokale Variable überschattet den Methodenparameter', () => {
+  // Review-Fund, Fix-Runde 4 (3/3): innerhalb des `if`-Blocks ist `t` die
+  // lokale Deklaration (`this.model.other` gelesen), nicht der äußere
+  // Parameter — die Zuweisung `this.model.title = t` dort liest also KEINEN
+  // vom Agenten gewählten Wert, auch wenn der Name identisch ist.
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} t
+       * @returns {void}
+       */
+      setTitle(t) {
+        if (t) {
+          const t = this.model.other;
+          this.model.title = t;
+        }
+      },
+      /** @noagent */
+      cardClass(node) { return ''; },`);
+  const root = fixture({ foo: {
+    'foo.js': vm,
+    'foo-model.js': `export class State {
+      /** @type {string} der Titel */
+      title = '';
+      /** @type {string} ein anderes Feld */
+      other = '';
+      toJSON() { return { title: this.title, other: this.other }; }
+    }`,
+    'foo.html': '<input x-model="model.title">',
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
 });
 
 test('unresolvable_tojson: eine Pfeilfunktions-toJSON als Klassenfeld wird nicht als MethodDeclaration erkannt und klettert nicht zur Basisklasse', () => {
