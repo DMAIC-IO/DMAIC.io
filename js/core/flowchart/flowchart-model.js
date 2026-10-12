@@ -45,7 +45,11 @@ function coerceCoreFields(raw) {
 
 export class FlowchartState {
   constructor() {
-    /** @type {Array<object>} ordered chain of steps */
+    /**
+     * @type {Array<object>} die Kette in Reihenfolge; jeder Schritt trägt
+     *   id, title, description, expanded und substeps (je id und title),
+     *   dazu die modulspezifischen Felder (decision, side, laneId, …)
+     */
     this.steps = [];
   }
 

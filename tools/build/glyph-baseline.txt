@@ -49,4 +49,4 @@ js/modules/ishikawa/ishikawa.js:1090:◆
 js/modules/ishikawa/ishikawa.js:1091:▼
 js/modules/ishikawa/ishikawa.js:1092:★
 js/modules/kano/kano-link.js:20:▸
-js/modules/process-map/process-map.js:453:→
+js/modules/process-map/process-map.js:476:→

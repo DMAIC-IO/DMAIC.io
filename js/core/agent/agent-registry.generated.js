@@ -8,9 +8,6 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:bandDragOver@js/core/flowchart/flowchart-view.js",
-      "unmarked_method:bandDragLeave@js/core/flowchart/flowchart-view.js",
-      "unmarked_method:bandClass@js/core/flowchart/flowchart-view.js",
       "unmarked_method:init",
       "unmarked_method:isDecision",
       "unmarked_method:branchWord",
@@ -101,7 +98,7 @@ export const AGENT_REGISTRY = {
     "fields": {
       "steps": {
         "type": "Array<object>",
-        "help": "ordered chain of steps",
+        "help": "die Kette in Reihenfolge; jeder Schritt trägt id, title, description, expanded und substeps (je id und title), dazu die modulspezifischen Felder (decision, side, laneId, …)",
         "bulk": false
       }
     }
@@ -978,9 +975,6 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:bandDragOver@js/core/flowchart/flowchart-view.js",
-      "unmarked_method:bandDragLeave@js/core/flowchart/flowchart-view.js",
-      "unmarked_method:bandClass@js/core/flowchart/flowchart-view.js",
       "unmarked_method:init",
       "unmarked_method:stepsForLane",
       "unmarked_method:laneLabel",
@@ -1041,7 +1035,7 @@ export const AGENT_REGISTRY = {
     "fields": {
       "steps": {
         "type": "Array<object>",
-        "help": "ordered chain of steps",
+        "help": "die Kette in Reihenfolge; jeder Schritt trägt id, title, description, expanded und substeps (je id und title), dazu die modulspezifischen Felder (decision, side, laneId, …)",
         "bulk": false
       },
       "lanes": {
@@ -3082,9 +3076,6 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:bandDragOver@js/core/flowchart/flowchart-view.js",
-      "unmarked_method:bandDragLeave@js/core/flowchart/flowchart-view.js",
-      "unmarked_method:bandClass@js/core/flowchart/flowchart-view.js",
       "unmarked_method:appendStep",
       "unmarked_method:init",
       "unmarked_method:sides",
@@ -3145,7 +3136,7 @@ export const AGENT_REGISTRY = {
     "fields": {
       "steps": {
         "type": "Array<object>",
-        "help": "ordered chain of steps",
+        "help": "die Kette in Reihenfolge; jeder Schritt trägt id, title, description, expanded und substeps (je id und title), dazu die modulspezifischen Felder (decision, side, laneId, …)",
         "bulk": false
       }
     }
@@ -3489,14 +3480,6 @@ export const AGENT_REGISTRY = {
     "violations": [],
     "reported": [
       "unmarked_method:stepDragEnd",
-      "unmarked_method:bandDragOver@js/core/flowchart/flowchart-view.js",
-      "unmarked_method:bandDragLeave@js/core/flowchart/flowchart-view.js",
-      "unmarked_method:bandClass@js/core/flowchart/flowchart-view.js",
-      "unmarked_method:toggleSubsteps",
-      "unmarked_method:addSubstep",
-      "unmarked_method:removeSubstep",
-      "unmarked_method:subDrop",
-      "unmarked_method:subDragEnd",
       "unmarked_method:valueBadgeLabel",
       "unmarked_method:valueBadgeTitle",
       "unmarked_method:valueBadgeClass",
@@ -3536,11 +3519,54 @@ export const AGENT_REGISTRY = {
       "unmarked_method:init",
       "unmarked_method:destroy"
     ],
-    "actions": {},
+    "actions": {
+      "toggleSubsteps": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          }
+        ],
+        "returns": "void",
+        "help": "Klappt die Teilschritte eines Schritts auf oder zu."
+      },
+      "addSubstep": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          }
+        ],
+        "returns": "void",
+        "help": "Legt unter einem Schritt einen Teilschritt an."
+      },
+      "removeSubstep": {
+        "params": [
+          {
+            "name": "parentId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "substepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Teilschritts"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt einen Teilschritt."
+      }
+    },
     "fields": {
       "steps": {
         "type": "Array<object>",
-        "help": "ordered chain of steps",
+        "help": "die Kette in Reihenfolge; jeder Schritt trägt id, title, description, expanded und substeps (je id und title), dazu die modulspezifischen Felder (decision, side, laneId, …)",
         "bulk": false
       }
     }

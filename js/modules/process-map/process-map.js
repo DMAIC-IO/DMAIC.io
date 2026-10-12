@@ -195,20 +195,43 @@ export default createModule({
       // ── Substep handlers ──────────────────────────────────────
       // The mixin already mutates the model; PM only adds the focus jump on add
       // and the drag-marker cleanup on top — hence the explicit _core calls.
+      // Die eigene Fassung erbt die Marke des Mixin-Mitglieds NICHT: sie ist
+      // eigener Code mit eigener Wirkung (Fokussprung, Marker-Abräumen).
+      /**
+       * Klappt die Teilschritte eines Schritts auf oder zu.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @returns {void}
+       */
       toggleSubsteps(stepId) {
         _core.toggleSubsteps.call(this, stepId);
       },
+      /**
+       * Legt unter einem Schritt einen Teilschritt an.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @returns {void}
+       */
       addSubstep(stepId) {
         _core.addSubstep.call(this, stepId);
         this._focusLastSubstep(stepId);
       },
+      /**
+       * Entfernt einen Teilschritt.
+       * @agent
+       * @param {string} parentId id des Schritts
+       * @param {string} substepId id des Teilschritts
+       * @returns {void}
+       */
       removeSubstep(parentId, substepId) {
         _core.removeSubstep.call(this, parentId, substepId);
       },
+      /** @noagent DOM event handler — Ablage eines Teilschritts per Maus. */
       subDrop(parentId, subId, event) {
         _core.subDrop.call(this, parentId, subId, event);
         this._clearDragMarkers();
       },
+      /** @noagent DOM event handler — Ende des Teilschritt-Ziehens. */
       subDragEnd(event) {
         _core.subDragEnd.call(this, event);
         this._clearDragMarkers();

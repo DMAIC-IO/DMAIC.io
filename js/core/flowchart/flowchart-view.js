@@ -251,6 +251,9 @@ export function chainViewMixin(module, _t, opts = {}) {
      * arrow inside the band the arrow is the target, so the band steps back.
      * @param {string} bandId band, lane or side id
      * @param {DragEvent} event
+     * @noagent DOM event handler — ein Agent kann kein DragEvent erzeugen;
+     *   die Zuordnung eines Schritts zu einer Bahn geht über das Model
+     *   (`setLaneForStep`, `setSide`, `setStepBranch`).
      */
     bandDragOver(bandId, event) {
       // Same gate as gapDragOver: without a card in flight nothing is a target.
@@ -265,6 +268,7 @@ export function chainViewMixin(module, _t, opts = {}) {
      * a move between two children of the same band, which also fires dragleave.
      * @param {string} bandId band, lane or side id
      * @param {DragEvent} event
+     * @noagent DOM event handler — Gegenstück zu bandDragOver.
      */
     bandDragLeave(bandId, event) {
       if (event?.relatedTarget && event?.currentTarget?.contains?.(event.relatedTarget)) return;
@@ -274,6 +278,7 @@ export function chainViewMixin(module, _t, opts = {}) {
     /**
      * @param {string} bandId band, lane or side id
      * @returns {string} 'is-drop-target' for the band under the cursor, else ''
+     * @noagent view transform — reine CSS-Klasse des Schwebezustands.
      */
     bandClass(bandId) {
       return this._activeBand === bandId ? 'is-drop-target' : '';
