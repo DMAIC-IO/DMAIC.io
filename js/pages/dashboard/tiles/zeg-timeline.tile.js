@@ -3,11 +3,13 @@
  *
  * Goal achievement per phase over time, from the project-level
  * phaseAchievementHistory. Belongs to no module; always loaded via
- * HOST_TILES. Contract: docs/DASHBOARD.md.
+ * HOST_TILES. Contract: docs/DASHBOARD.md. Offers a link to the ZEG
+ * worksheet (router action verb `zeg-sheet`).
  */
 
 import { h } from '../../../core/dom.js';
 import { getPhaseIds } from '../../../core/cycles/cycles.js';
+import { icon } from '../../../core/icon.js';
 
 /** host -> { chart, chartManager, token } of the latest render. */
 const charts = new WeakMap();
@@ -66,6 +68,17 @@ export function buildSeries(stateManager, i18n) {
   return { series, empty: series.every(ser => ser.x.length === 0) };
 }
 
+/**
+ * Link to the ZEG worksheet (router action verb `zeg-sheet`).
+ * @param {{t: function}} i18n
+ * @returns {HTMLElement}
+ */
+function editLink(i18n) {
+  return h('div', { class: 'dashboard-zeg__actions' },
+    h('a', { class: 'btn btn--ghost btn--sm dashboard-zeg__edit', href: '#/action/zeg-sheet', 'data-action': 'zeg-sheet' },
+      icon('module.worksheet', { size: 'sm' }), i18n.t('dashboard.zegSheet.edit')));
+}
+
 export default {
   size: { defaultW: 3, defaultH: 10, minW: 3, minH: 6 },
   refreshOn: ['phase:achievement-changed'],
@@ -96,11 +109,11 @@ export default {
 
     const { series, empty } = buildSeries(stateManager, i18n);
     if (empty) {
-      host.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.noHistory')));
+      host.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.noHistory')), editLink(i18n));
       return;
     }
     const plotEl = h('div', { class: 'dashboard-area__plot', 'data-ref': 'plot' });
-    host.replaceChildren(plotEl);
+    host.replaceChildren(plotEl, editLink(i18n));
 
     const dateFmt = (ts) => new Date(ts).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', {
       day: '2-digit', month: '2-digit', year: '2-digit',

@@ -223,3 +223,33 @@ suite('action verbs', () => {
     assertTrue(!!error, 'throws for a scenario id');
   });
 });
+
+suite('core/router/action-verbs zeg-sheet', () => {
+  test('zeg-sheet verb ensures the sheet and routes to its module', async () => {
+    const { ctx } = makeCtx();
+    const handlers = {};
+    const state = { phases: { data: [] }, phaseAchievementHistory: {} };
+    const modules = new Map();
+    Object.assign(ctx.stateManager, {
+      get: (p) => structuredClone(p.split('.').reduce((o, k) => o?.[k], state)),
+      set: (p, v) => { const ks = p.split('.'); const l = ks.pop(); let o = state; for (const k of ks) o = (o[k] ??= {}); o[l] = structuredClone(v); },
+      getModuleState: (id) => structuredClone(modules.get(id) ?? null),
+      setModuleState: (id, s) => modules.set(id, structuredClone(s)),
+      listInstances: (m) => state.phases.data.filter(i => i.moduleId === m).map(i => ({ instanceId: i.instanceId, moduleId: m, title: '' })),
+      getProjectCycle: () => 'dmaic',
+      getActiveProjectId: () => 'p-new',
+      isCompleted: () => false,
+    });
+    ctx.eventBus = { emit: () => {}, on: (n, h) => { handlers[n] = h; }, off: () => {} };
+    const verbs = createActionVerbs(ctx);
+    const verb = verbs.get('zeg-sheet');
+    assertEqual(verb.modal, null);
+    assertDeepEqual(verb.list(), []);
+    const { route } = await verb.run([]);
+    assertEqual(route.kind, 'module');
+    assertEqual(route.projectId, 'p-new');
+    assertEqual(route.instanceId, state.phases.data[0].instanceId);
+    const again = await verb.run([]);
+    assertEqual(again.route.instanceId, route.instanceId);
+  });
+});

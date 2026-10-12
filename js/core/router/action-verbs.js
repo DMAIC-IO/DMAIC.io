@@ -39,6 +39,7 @@
 
 import { getPhaseIds, DEFAULT_CYCLE } from '../cycles/cycles.js';
 import { scenarioDoneState } from '../../ui/action-modal.js';
+import { ensureZegSheet } from '../zeg-sheet/zeg-sheet.js';
 
 /**
  * A catalog entry is a scenario iff it declares `type: 'scenario'` — the same
@@ -59,6 +60,7 @@ function isScenario(entry) {
  * @param {object} ctx.i18n
  * @param {object} ctx.examplesRegistry
  * @param {object} ctx.stateManager
+ * @param {object} ctx.eventBus
  * @param {function} ctx.loadScenario        bound scenario loader
  * @param {function} ctx.rehydrateProject    bound rehydrate routine, takes options
  * @param {function} [ctx.notify]
@@ -245,6 +247,26 @@ export function createActionVerbs(ctx) {
       const scenario = { id: `ad-hoc:${exampleId}`, items: [exampleId], startPhase: null };
       const result = await ctx.loadScenario({ scenario });
       return { route: phaseRoute(null), detail: result };
+    },
+    /** @returns {{arg: string, label: string}[]} */
+    list() {
+      return [];
+    },
+  });
+
+  verbs.set('zeg-sheet', {
+    // No modal: finding or creating one worksheet takes milliseconds.
+    modal: null,
+    /**
+     * Open the ZEG worksheet (goal achievement history), creating it in the
+     * data phase on first use.
+     * @returns {Promise<{route: object}>}
+     */
+    async run() {
+      const { instanceId } = ensureZegSheet({ stateManager, eventBus: ctx.eventBus, i18n });
+      return {
+        route: { kind: 'module', projectId: stateManager.getActiveProjectId(), instanceId, sub: [] },
+      };
     },
     /** @returns {{arg: string, label: string}[]} */
     list() {

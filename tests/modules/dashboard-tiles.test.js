@@ -400,6 +400,17 @@ suite('dashboard tiles: zeg-timeline', () => {
     assertEqual(cm.made.length, 0);
   });
 
+  test('empty state and chart both offer the edit-data link', async () => {
+    for (const hist of [{}, { define: [{ t: 1, v: 10 }] }]) {
+      const host = document.createElement('div');
+      await zegTile.render(host, args(fakeChartManager(), zegStateManager(hist)));
+      const link = host.querySelector('a[data-action="zeg-sheet"]');
+      assertTrue(link !== null, `link missing (${Object.keys(hist).length ? 'chart' : 'empty'})`);
+      assertEqual(link.getAttribute('href'), '#/action/zeg-sheet');
+      assertTrue(link.textContent.includes('dashboard.zegSheet.edit'));
+    }
+  });
+
   test('showLegend is passed to the chart', async () => {
     const host = document.createElement('div'); const cm = fakeChartManager();
     const sm = zegStateManager({ define: [{ t: 1, v: 10 }, { t: 2, v: 20 }] });

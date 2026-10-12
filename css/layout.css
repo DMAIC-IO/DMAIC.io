@@ -2094,6 +2094,14 @@ body.dev-area-open .dmaic-tiles {
   margin: 0;
 }
 
+/* "Daten bearbeiten" below the ZEG timeline (link to the ZEG worksheet). */
+.dashboard-zeg__actions {
+  flex: none;
+  display: flex;
+  justify-content: flex-end;
+  padding-top: var(--spacing-xs);
+}
+
 /* The header tiles stay clickable: a click navigates to that phase and the
    router hides the dashboard. */
 body.dashboard-area-open #app-workspace {
