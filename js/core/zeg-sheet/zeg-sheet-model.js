@@ -113,7 +113,7 @@ export function rowsToHistory(rows, phaseIds, oldHistory = {}, presentPhases = p
     for (const [day, v] of perDay) {
       const old = oldByDay.get(day);
       const last = old?.[old.length - 1];
-      if (last && last.v === v) entries.push(...old);
+      if (last && toPercent(last.v) === v) entries.push(...old);
       else entries.push({ t: last ? last.t : noonOf(day), v });
     }
     entries.sort((a, b) => a.t - b.t);
@@ -170,6 +170,11 @@ export function buildSheetState(prevState, rows, phaseIds, labels) {
   const rowCount = Math.max(body.length, order.length);
   const pad = (arr) => [...arr, ...new Array(Math.max(0, rowCount - arr.length)).fill(null)];
   const reorder = (arr) => pad(order.map(i => (i === null ? null : arr[i] ?? null)));
+  // Kept rows after the dated ones: an undated typed row keeps its managed cells too.
+  const tail = order.slice(body.length);
+  const oldDates = managed(DATE_REF)?.values;
+  const keepsManaged = (i) => i !== null && oldDates !== undefined && !isIsoDate(oldDates[i]);
+  const withTail = (ref, values) => [...values, ...tail.map(i => (keepsManaged(i) ? managed(ref)?.values[i] ?? null : null))];
 
   const make = (ref, type, name, values, format) => {
     const old = managed(ref);
@@ -179,7 +184,7 @@ export function buildSheetState(prevState, rows, phaseIds, labels) {
       name: old?.name ?? name,
       type,
       unit: old?.unit ?? '',
-      values: pad(values),
+      values: pad(withTail(ref, values)),
       formulas: new Array(rowCount).fill(null),
       format: old?.format ?? format,
       meta: { managedBy: ZEG_MANAGED_BY, managedRef: ref },
@@ -205,8 +210,9 @@ export function buildSheetState(prevState, rows, phaseIds, labels) {
 
 /**
  * For each new row, the old row index whose user cells it takes (null: none).
- * Old rows are matched by date; unmatched old rows that hold user data follow
- * the new rows. Without an old date column, rows keep their position.
+ * Old rows are matched by date; unmatched old rows that hold user data, and
+ * undated rows with typed managed cells, follow the new rows. Without an old
+ * date column, rows keep their position.
  * @param {object|null} prevState
  * @param {object[]} userCols
  * @param {Array<{date: string}>} body
@@ -217,7 +223,7 @@ function userRowOrder(prevState, userCols, body) {
   const dateCol = (prevState?.columns || []).find(c => isZegColumn(c) && c.meta.managedRef === DATE_REF);
   if (!dateCol) return Array.from({ length: oldCount }, (_, i) => i);
   const free = new Map();
-  for (let i = 0; i < oldCount; i++) {
+  for (let i = 0; i < dateCol.values.length; i++) {
     const d = dateCol.values[i];
     if (!isIsoDate(d)) continue;
     if (!free.has(d)) free.set(d, []);
@@ -230,9 +236,13 @@ function userRowOrder(prevState, userCols, body) {
     used.add(i);
     return i;
   });
-  const hasUserData = (i) => userCols.some(c => c.values[i] !== null && c.values[i] !== undefined && c.values[i] !== '');
-  for (let i = 0; i < oldCount; i++) {
-    if (!used.has(i) && hasUserData(i)) order.push(i);
+  const filled = (v) => v !== null && v !== undefined && v !== '';
+  const managedCols = prevState.columns.filter(isZegColumn);
+  const hasUserData = (i) => userCols.some(c => filled(c.values[i]));
+  const isTypedUndated = (i) => !isIsoDate(dateCol.values[i]) && managedCols.some(c => filled(c.values[i]));
+  const rowTotal = Math.max(oldCount, ...managedCols.map(c => c.values.length));
+  for (let i = 0; i < rowTotal; i++) {
+    if (!used.has(i) && (hasUserData(i) || isTypedUndated(i))) order.push(i);
   }
   return order;
 }

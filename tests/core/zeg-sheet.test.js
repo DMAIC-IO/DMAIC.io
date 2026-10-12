@@ -7,6 +7,8 @@ import {
 } from '../../js/core/zeg-sheet/zeg-sheet.js';
 import { DATE_REF } from '../../js/core/zeg-sheet/zeg-sheet-model.js';
 
+// Mirrors the real StateManager: get/getModuleState hand out live references,
+// set stores the value as is, setModuleState stores a clone.
 function makeCtx({ cycle = 'dmaic', history = {}, completed = false } = {}) {
   const state = { phases: { data: [], define: [] }, phaseAchievement: {}, phaseAchievementHistory: history };
   const modules = new Map();
@@ -14,22 +16,22 @@ function makeCtx({ cycle = 'dmaic', history = {}, completed = false } = {}) {
   const handlers = {};
   const getPath = (path) => path.split('.').reduce((o, k) => (o == null ? undefined : o[k]), state);
   const stateManager = {
-    get: (p) => structuredClone(getPath(p)),
+    get: (p) => getPath(p),
     set: (p, v) => {
-      if (completed) return;
+      if (fx.completed) return;
       const keys = p.split('.');
       const last = keys.pop();
       let o = state;
       for (const k of keys) o = (o[k] ??= {});
-      o[last] = structuredClone(v);
+      o[last] = v;
     },
-    getModuleState: (id) => structuredClone(modules.get(id) ?? null),
-    setModuleState: (id, s) => { if (!completed) modules.set(id, structuredClone(s)); },
+    getModuleState: (id) => modules.get(id) ?? null,
+    setModuleState: (id, s) => { if (!fx.completed) modules.set(id, structuredClone(s)); },
     listInstances: (moduleId) => Object.values(state.phases).flat()
       .filter(i => i.moduleId === moduleId).map(i => ({ instanceId: i.instanceId, moduleId, title: '' })),
     getProjectCycle: () => cycle,
     getActiveProjectId: () => 'p1',
-    isCompleted: () => completed,
+    isCompleted: () => fx.completed,
   };
   const eventBus = {
     emit: (name, payload) => { events.push([name, payload]); (handlers[name] || []).forEach(h => h(payload)); },
@@ -37,7 +39,8 @@ function makeCtx({ cycle = 'dmaic', history = {}, completed = false } = {}) {
     off: (name, h) => { handlers[name] = (handlers[name] || []).filter(x => x !== h); },
   };
   const i18n = { t: (k) => ({ 'dashboard.zegSheet.name': 'Zielerreichungsgrad', 'dashboard.zegSheet.date': 'Datum', 'modules.worksheet.defaultSheetName': 'Tabelle' }[k] ?? k.split('.').pop()) };
-  return { state, modules, events, ctx: { stateManager, eventBus, i18n } };
+  const fx = { state, modules, events, completed, ctx: { stateManager, eventBus, i18n } };
+  return fx;
 }
 
 const zegSheetState = (modules, ref) => modules.get(ref.instanceId).sheets.find(s => s.id === ref.sheetId).state;
@@ -153,6 +156,16 @@ suite('core/zeg-sheet sync', () => {
     fx.ctx.eventBus.emit('cycle:changed', { cycle: 'dmadv' });
     const refs = zegSheetState(fx.modules, ref).columns.map(c => c.meta.managedRef);
     assertDeepEqual(refs, [DATE_REF, 'define', 'measure', 'analyze', 'design', 'verify']);
+  });
+
+  test('read-only project: writeHistoryToSheet leaves the cached sheet untouched', () => {
+    const fx = makeCtx({ history: { define: [{ t: Date.now(), v: 10 }] } });
+    const ref = ensureZegSheet(fx.ctx);
+    const before = JSON.stringify(zegSheetState(fx.modules, ref));
+    fx.completed = true;
+    fx.state.phaseAchievementHistory = { define: [{ t: Date.now(), v: 99 }] };
+    writeHistoryToSheet(fx.ctx);
+    assertEqual(JSON.stringify(zegSheetState(fx.modules, ref)), before);
   });
 
   test('writeHistoryToSheet without a sheet does nothing', () => {

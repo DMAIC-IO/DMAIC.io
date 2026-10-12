@@ -192,6 +192,27 @@ suite('core/zeg-sheet-model sheet state', () => {
   });
 });
 
+suite('core/zeg-sheet-model review minors', () => {
+  test('unchanged day with a non-integer value keeps all its entries', () => {
+    const history = { define: [{ t: at(2026, 7, 10, 9), v: 10 }, { t: at(2026, 7, 10, 11), v: 33.6 }] };
+    const rows = historyToRows(history, ['define']);
+    assertDeepEqual(rowsToHistory(rows, ['define'], history), history);
+  });
+
+  test('rebuild keeps typed rows without a valid date, with their values', () => {
+    const first = buildSheetState(null, [{ date: '2026-07-10', values: { define: 20 } }], ['define'], LABELS);
+    first.columns[0].values.push('gestern');
+    first.columns[1].values.push(50);
+    first.rowCount = 2;
+    const next = buildSheetState(first, [
+      { date: '2026-07-10', values: { define: 20 } },
+      { date: '2026-10-12', values: { define: 60 } },
+    ], ['define'], LABELS);
+    assertDeepEqual(next.columns[0].values, ['2026-07-10', '2026-10-12', 'gestern']);
+    assertDeepEqual(next.columns[1].values, [20, 60, 50]);
+  });
+});
+
 suite('core/zeg-sheet-model malformed history entries', () => {
   test('entries without a numeric t are not shown and survive a sync', () => {
     const history = { define: [{ ts: 123, value: 50 }, { t: at(2026, 7, 10), v: 20 }] };

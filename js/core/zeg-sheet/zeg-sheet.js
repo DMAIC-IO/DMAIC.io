@@ -9,7 +9,7 @@
 
 import { getPhaseIds } from '../cycles/cycles.js';
 import { uid } from '../uid.js';
-import { uniqueSheetName, buildInitialWorksheetState } from '../../ui/column-picker.js';
+import { uniqueSheetName, buildInitialWorksheetState } from '../worksheet-sheets.js';
 import {
   isZegColumn, historyToRows, rowsToHistory, readRows, buildSheetState,
 } from './zeg-sheet-model.js';
@@ -52,7 +52,8 @@ function labelsOf(i18n, phaseIds) {
  */
 export function writeHistoryToSheet({ stateManager, eventBus, i18n }, ref = findZegSheet(stateManager)) {
   if (!ref) return false;
-  const ws = stateManager.getModuleState(ref.instanceId);
+  // getModuleState hands out the live cache; edit a copy so a refused save leaves it intact.
+  const ws = structuredClone(stateManager.getModuleState(ref.instanceId));
   const sheet = ws?.sheets?.find(s => s.id === ref.sheetId);
   if (!sheet) return false;
   const phaseIds = phaseIdsOf(stateManager);
