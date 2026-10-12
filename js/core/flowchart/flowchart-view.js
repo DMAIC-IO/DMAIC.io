@@ -345,9 +345,12 @@ export function chainViewMixin(module, _t, opts = {}) {
     // ("Eine unbekannte id ist ein Fehler") was untrue: the agent got
     // `ok: true` and nothing happened (Spec-Review 2026-10-13, Task 3 fix
     // round 1 — closed once here for all four flowchart modules).
+    // Persisted on the step itself (`expanded`), not transient UI state —
+    // that is why the disclosure survives a reload instead of resetting
+    // every time the project opens (Task 3 fix round 2 carry-along: first
+    // sentence kept to behaviour only, rationale moved here).
     /**
-     * Show or hide the substep list of a step. The disclosure state is part of
-     * the step, so it survives a reload.
+     * Show or hide the substep list of a step.
      * @agent
      * @param {string} stepId  id of the step whose substeps are toggled
      * @returns {void}
@@ -361,7 +364,7 @@ export function chainViewMixin(module, _t, opts = {}) {
       callModel(this.model, 'toggleSubsteps', [stepId]);
     },
     /**
-     * Append an empty substep to a step, ready to be filled in.
+     * Append an empty substep to a step.
      * @agent
      * @param {string} stepId  id of the step that gets the new substep
      * @returns {void}

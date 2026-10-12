@@ -31,7 +31,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Show or hide the substep list of a step. The disclosure state is part of the step, so it survives a reload."
+        "help": "Show or hide the substep list of a step."
       },
       "addSubstep": {
         "params": [
@@ -43,7 +43,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Append an empty substep to a step, ready to be filled in."
+        "help": "Append an empty substep to a step."
       },
       "removeSubstep": {
         "params": [
@@ -165,7 +165,7 @@ export const AGENT_REGISTRY = {
             "name": "target",
             "type": "string",
             "optional": false,
-            "help": "neues Ziel: `'end'` oder die id eines anderen Schritts (ein Rücksprung wird als Umarbeitungsschleife angezeigt). Eine unbekannte id oder die eigene id ist ein Fehler."
+            "help": "neues Ziel: `'end'` oder die id eines anderen Schritts aus demselben Band, in dem die Entscheidung selbst steht (dasselbe Band wie der Picker in der UI anbietet — nicht das Band, das die Entscheidung öffnet). Eine unbekannte id, die eigene id, oder die id eines Schritts aus einem anderen Band ist ein Fehler."
           }
         ],
         "returns": "void",
@@ -1179,7 +1179,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Show or hide the substep list of a step. The disclosure state is part of the step, so it survives a reload."
+        "help": "Show or hide the substep list of a step."
       },
       "addSubstep": {
         "params": [
@@ -1191,7 +1191,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Append an empty substep to a step, ready to be filled in."
+        "help": "Append an empty substep to a step."
       },
       "removeSubstep": {
         "params": [
@@ -3339,7 +3339,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Show or hide the substep list of a step. The disclosure state is part of the step, so it survives a reload."
+        "help": "Show or hide the substep list of a step."
       },
       "addSubstep": {
         "params": [
@@ -3351,7 +3351,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Append an empty substep to a step, ready to be filled in."
+        "help": "Append an empty substep to a step."
       },
       "removeSubstep": {
         "params": [

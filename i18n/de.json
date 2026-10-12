@@ -2595,7 +2595,7 @@
           "help": "Setzt das Ziel des Nein-Zweigs einer Entscheidung. Der Ja-Zweig hat kein Ziel — er ist der Wertstrom, der ohnehin zum nächsten Schritt weiterfließt.",
           "params": {
             "stepId": "Die id der Entscheidung. Eine unbekannte id, oder ein Schritt, der keine Entscheidung ist, ist ein Fehler.",
-            "target": "Das neue Ziel: 'end' für Prozessende, oder die id eines anderen Schritts — ein Rücksprung wird als Umarbeitungsschleife angezeigt. Eine unbekannte id oder die eigene id ist ein Fehler."
+            "target": "Das neue Ziel: 'end' für Prozessende, oder die id eines anderen Schritts aus demselben Band, in dem die Entscheidung selbst steht — ein Rücksprung wird als Umarbeitungsschleife angezeigt. Eine unbekannte id, die eigene id, oder die id eines Schritts aus einem anderen Band ist ein Fehler."
           }
         },
         "setStepBand": {

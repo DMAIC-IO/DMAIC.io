@@ -171,17 +171,28 @@ export function activityFlowchartData(module, _t) {
      * @agent
      * @param {string} stepId id der Entscheidung
      * @param {string} target neues Ziel: `'end'` oder die id eines anderen
-     *   Schritts (ein Rücksprung wird als Umarbeitungsschleife angezeigt).
-     *   Eine unbekannte id oder die eigene id ist ein Fehler.
+     *   Schritts aus demselben Band, in dem die Entscheidung selbst steht
+     *   (dasselbe Band wie der Picker in der UI anbietet — nicht das Band,
+     *   das die Entscheidung öffnet). Eine unbekannte id, die eigene id,
+     *   oder die id eines Schritts aus einem anderen Band ist ein Fehler.
      * @returns {void}
      * @throws {Error} wenn kein Schritt diese id trägt, der Schritt keine
      *   Entscheidung ist, oder target weder `'end'` noch die id eines
-     *   anderen vorhandenen Schritts ist
+     *   anderen Schritts aus demselben Band ist
      */
     setDecisionTarget(stepId, target) {
-      this._requireStep(stepId);
-      requireKnownId('target', target,
-        ['end', ...this.model.steps.filter((s) => s.id !== stepId).map((s) => s.id)]);
+      const step = this._requireStep(stepId);
+      // Dieselbe Regel wie `isPickTarget` — dort berechnet, hier validiert,
+      // damit beide nicht auseinanderlaufen können: ein Ziel ist nur gültig,
+      // wenn es im BAND DER ENTSCHEIDUNG SELBST steht (nicht in dem Band,
+      // das sie öffnet). Review-Fund 2026-10-13, Task 3 fix round 2 — eine
+      // frühere Fassung erlaubte jeden anderen Schritt und ließ sich damit
+      // einen Zustand schreiben, den der Picker in der UI nie anbieten
+      // würde.
+      const sameBandIds = this.model.steps
+        .filter((s) => s.id !== stepId && s.branchId === step.branchId)
+        .map((s) => s.id);
+      requireKnownId('target', target, ['end', ...sameBandIds]);
       if (!this.model.setDecisionTarget(stepId, target)) {
         throw new Error(`step ${JSON.stringify(stepId)} is not a decision`);
       }
