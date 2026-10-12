@@ -110,6 +110,14 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   const declared = readAgentReadTypedef(sf);
   const model = declared ? { fields: declared, violations: [] } : readModelFields(resolver, sf);
 
+  // Die Gegenprobe gilt nur für die ABGELEITETE Lesefläche. Eine erklärte
+  // `@typedef AgentRead` lässt absichtlich etwas draußen (worksheet: opake
+  // Blobs) — das ist ein geschriebener Akt und braucht keinen Wächter.
+  const persistence = declared ? { keys: null, violations: [] } : persistedKeys(resolver, sf);
+  const unreadable = (persistence.keys ?? [])
+    .filter(k => !k.startsWith('_') && !Object.prototype.hasOwnProperty.call(model.fields, k))
+    .map(k => `unreadable_state_key:${k}`);
+
   // Zwei Hürden, ohne die das Modul-Tag eine unbelegte Behauptung bliebe:
   //   • Null Aktionen: „vollständig über das Viewmodel steuerbar" ist dann
   //     wahr-aber-leer. Befundfrei heißt nicht freigabereif (mosaic,
@@ -135,6 +143,7 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   }
 
   const reported = [...violations, ...surface, ...model.violations,
+    ...persistence.violations, ...unreadable,
     ...invalidBulkKinds(model.fields), ...collectDomDetours(sf)];
   // Verstöße zählen nur, wenn das Modul etwas behauptet (Spec §9).
   const effective = tagged ? reported : [];
@@ -483,6 +492,143 @@ function readModelFields(resolver, sf) {
   if (decl.node.ambiguous === true) violations.push(`ambiguous_model_class:${name}`);
   const fields = classFields(resolver, decl.node, decl.sf, violations, new Set(), 0);
   return { fields, violations };
+}
+
+/**
+ * Die Schlüssel, die das Model WIRKLICH persistiert — die Gegenprobe zur
+ * Lesefläche. Ohne sie fällt ein `toJSON()`-Schlüssel ohne Registry-Feld
+ * lautlos aus `read()`: `projectReadState` iteriert über das Schema, nicht
+ * über die Momentaufnahme. Im Bestand trifft das `triz-9-windows`.
+ *
+ * Drei Rückgabeformen kommen vor und werden entpackt: das Objektliteral
+ * selbst, `JSON.parse(JSON.stringify(…))` und eine lokale Variable. Alles
+ * andere — ein Spread, ein Funktionsaufruf, eine Verzweigung — ist eine
+ * BLINDSTELLE und wird als solche gemeldet, nicht geraten: ein falsch
+ * behaupteter Befund kostet mehr Vertrauen als ein zugegebenes Nichtwissen.
+ *
+ * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
+ * @param {ts.SourceFile} sf  die MODUL-Datei
+ * @returns {{ keys: string[]|null, violations: string[] }}
+ */
+function persistedKeys(resolver, sf) {
+  const name = modelClassName(sf);
+  // Nicht auflösbar → `readModelFields` meldet denselben Fall schon
+  // (`unresolvable_model_class` / `unresolved_model_class:<name>`); zwei
+  // Codes für einen Befund wären doppelte Meldung.
+  if (!name) return { keys: null, violations: [] };
+  const decl = resolver.findDeclaration(name, sf);
+  if (!decl || !ts.isClassDeclaration(decl.node)) return { keys: null, violations: [] };
+
+  const toJSON = findToJSON(resolver, decl.node, decl.sf, new Set(), 0);
+  if (!toJSON) return { keys: null, violations: ['unresolvable_tojson'] };
+
+  const ret = findReturnStatement(toJSON.method.body);
+  if (!ret || !ret.expression) return { keys: null, violations: ['unresolvable_tojson'] };
+
+  const literal = unwrapToObjectLiteral(ret.expression, toJSON.method.body);
+  if (!literal) return { keys: null, violations: ['unresolvable_tojson'] };
+
+  const keys = [];
+  for (const property of literal.properties) {
+    if (ts.isSpreadAssignment(property)) return { keys: null, violations: ['unresolvable_tojson'] };
+    if (!property.name || ts.isComputedPropertyName(property.name)) {
+      return { keys: null, violations: ['unresolvable_tojson'] };
+    }
+    keys.push(property.name.getText());
+  }
+  return { keys, violations: [] };
+}
+
+/**
+ * Finde `toJSON` an der Klasse, sonst die `extends`-Kette hoch — derselbe
+ * Pfadschutz und dieselbe Tiefengrenze wie `classFields`, denn dieselben
+ * drei Zeilen (`modelClassName` → `findDeclaration` → Kettenaufstieg) tragen
+ * beide Prüfungen: die vier Flowchart-Module haben kein eigenes `toJSON()`
+ * und erben es von `FlowchartState`.
+ *
+ * @returns {{ method: ts.MethodDeclaration, sf: ts.SourceFile }|null}
+ */
+function findToJSON(resolver, node, sf, path, depth) {
+  const self = `${sf.fileName}:${node.pos}`;
+  if (path.has(self)) return null; // class State extends State — classFields meldet das bereits
+  path.add(self);
+
+  const method = node.members.find(m =>
+    ts.isMethodDeclaration(m) && ts.isIdentifier(m.name) && m.name.text === 'toJSON'
+    && !(ts.getCombinedModifierFlags(m) & ts.ModifierFlags.Static));
+  if (method && method.body) {
+    path.delete(self);
+    return { method, sf };
+  }
+
+  const base = baseExpression(node);
+  let result = null;
+  if (base && ts.isIdentifier(base) && depth + 1 <= MAX_EXTENDS_DEPTH) {
+    const decl = resolver.findDeclaration(base.text, sf);
+    if (decl && ts.isClassDeclaration(decl.node)) {
+      result = findToJSON(resolver, decl.node, decl.sf, path, depth + 1);
+    }
+  }
+  path.delete(self);
+  return result;
+}
+
+/**
+ * Die erste `return`-Anweisung UNMITTELBAR im Funktionskörper — nicht in
+ * einem verschachtelten Funktionsausdruck, wie bei `constructorFields`.
+ * @param {ts.Block} body
+ * @returns {ts.ReturnStatement|null}
+ */
+function findReturnStatement(body) {
+  for (const statement of body.statements) {
+    if (ts.isReturnStatement(statement)) return statement;
+  }
+  return null;
+}
+
+/**
+ * Entpacke das `return`-Argument zu einem Objektliteral — die drei bekannten
+ * Formen (Regel 3 der Spezifikation):
+ *  1. das Objektliteral selbst
+ *  2. `JSON.parse(JSON.stringify(X))` → `X`
+ *  3. ein Identifier → seine `const`-Initialisierung in derselben Funktion
+ * Alles andere bleibt unaufgelöst (`null`).
+ * @param {ts.Expression} expr
+ * @param {ts.Block} body  der Funktionskörper, für die lokale Variable
+ * @returns {ts.ObjectLiteralExpression|null}
+ */
+function unwrapToObjectLiteral(expr, body) {
+  if (ts.isObjectLiteralExpression(expr)) return expr;
+
+  if (ts.isCallExpression(expr) && isPropertyAccessOf(expr.expression, 'JSON', 'parse')
+      && expr.arguments.length === 1) {
+    const inner = expr.arguments[0];
+    if (ts.isCallExpression(inner) && isPropertyAccessOf(inner.expression, 'JSON', 'stringify')
+        && inner.arguments.length === 1) {
+      return unwrapToObjectLiteral(inner.arguments[0], body);
+    }
+    return null;
+  }
+
+  if (ts.isIdentifier(expr)) {
+    for (const statement of body.statements) {
+      if (!ts.isVariableStatement(statement)) continue;
+      for (const declaration of statement.declarationList.declarations) {
+        if (ts.isIdentifier(declaration.name) && declaration.name.text === expr.text && declaration.initializer) {
+          return unwrapToObjectLiteral(declaration.initializer, body);
+        }
+      }
+    }
+    return null;
+  }
+
+  return null;
+}
+
+/** @returns {boolean} ob `expr` eine Eigenschaft `<obj>.<prop>` ist. */
+function isPropertyAccessOf(expr, obj, prop) {
+  return ts.isPropertyAccessExpression(expr) && ts.isIdentifier(expr.expression)
+    && expr.expression.text === obj && expr.name.text === prop;
 }
 
 /**

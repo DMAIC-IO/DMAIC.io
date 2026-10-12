@@ -265,7 +265,7 @@ test('collectAgentData: a multi-line spread expression is reported on one line',
 
 test('collectAgentData: a spread on an UNTAGGED module is reported but not a violation', () => {
   const vm = 'import { State } from "./bar-model.js"; export default createModule({ config: { id: "bar" }, Model: State, data(module) { return { ...renderMethods }; } });';
-  const root = fixture({ bar: { 'bar.js': vm, 'bar-model.js': 'export class State {}' } });
+  const root = fixture({ bar: { 'bar.js': vm, 'bar-model.js': 'export class State { toJSON() { return {}; } }' } });
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.bar.violations, []);
   assert.deepEqual(modules.bar.reported, ['unresolved_spread:renderMethods']);
@@ -293,7 +293,7 @@ export default createModule({
 
 test('collectAgentData: a missing data() literal on an UNTAGGED module does not block the build', () => {
   const vm = 'import { State } from "./bar-model.js"; export default createModule({ config: { id: "bar" }, Model: State, data(module) { return build(module); } });';
-  const root = fixture({ bar: { 'bar.js': vm, 'bar-model.js': 'export class State {}' } });
+  const root = fixture({ bar: { 'bar.js': vm, 'bar-model.js': 'export class State { toJSON() { return {}; } }' } });
   const { modules, coverage } = collectAgentData(root);
   assert.deepEqual(modules.bar.violations, []);
   assert.deepEqual(modules.bar.reported, ['unresolvable_data_literal']);
@@ -842,6 +842,7 @@ test('readModelFields: a non-identifier extends clause is reported, not resolved
   const model = `export class State extends ns.Base {
   /** @type {number} the own counter */
   count = 0;
+  toJSON() { return { count: this.count }; }
 }`;
   const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
   const { modules } = collectAgentData(root);
@@ -853,6 +854,7 @@ test('readModelFields: a mixin factory as base class is reported, not resolved',
   const model = `export class State extends withSteps(Base) {
   /** @type {number} the own counter */
   count = 0;
+  toJSON() { return { count: this.count }; }
 }`;
   const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
   const { modules } = collectAgentData(root);
@@ -866,6 +868,7 @@ test('readModelFields: a class that extends ITSELF terminates AND is reported', 
   const model = `export class State extends State {
   /** @type {number} the own counter */
   count = 0;
+  toJSON() { return { count: this.count }; }
 }`;
   const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
   const { modules } = collectAgentData(root);
@@ -884,6 +887,7 @@ test('readModelFields: an extends chain beyond the depth limit is reported as a 
 export class State extends C12 {
   /** @type {number} the own counter */
   count = 0;
+  toJSON() { return { count: this.count }; }
 }`;
   const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
   const { modules } = collectAgentData(root);
@@ -1497,4 +1501,62 @@ test('calculator führt alle neun Modellfelder', () => {
   const { modules } = collectAgentData(appDir);
   assert.deepEqual(Object.keys(modules.calculator.fields).sort(),
     ['angleMode', 'dataset', 'expression', 'lastResult', 'lsl', 'memory', 'mode', 'ssDataset', 'usl']);
+});
+
+test('unreadable_state_key: ein persistierter Schlüssel ohne Lesefeld ist ein Befund', () => {
+  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': `export class State {
+    /** @type {string} der Titel */
+    title = '';
+    toJSON() { return { title: this.title, hidden: 'weg' }; }
+  }` } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unreadable_state_key:hidden']);
+});
+
+test('unreadable_state_key: JSON.parse(JSON.stringify({…})) wird entpackt', () => {
+  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': `export class State {
+    /** @type {string} der Titel */
+    title = '';
+    toJSON() { return JSON.parse(JSON.stringify({ title: this.title, hidden: 1 })); }
+  }` } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unreadable_state_key:hidden']);
+});
+
+test('unreadable_state_key: eine lokale Variable wird verfolgt', () => {
+  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': `export class State {
+    /** @type {string} der Titel */
+    title = '';
+    toJSON() { const out = { title: this.title, hidden: 1 }; return out; }
+  }` } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unreadable_state_key:hidden']);
+});
+
+test('unresolvable_tojson: ein Spread im Rückgabeobjekt ist eine Blindstelle', () => {
+  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': `export class State {
+    /** @type {string} der Titel */
+    title = '';
+    toJSON() { return { ...this.base(), title: this.title }; }
+  }` } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unresolvable_tojson']);
+});
+
+test('ein erklärtes AgentRead-Typedef setzt das Gate aus', () => {
+  const root = fixture({ bar: { 'bar.js': AGENT_READ_VM, 'bar-model.js': BAR_MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.bar.reported, []);
+});
+
+test('geerbtes toJSON wird gefunden', () => {
+  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': `export class Base {
+    toJSON() { return { title: this.title, hidden: 1 }; }
+  }
+  export class State extends Base {
+    /** @type {string} der Titel */
+    title = '';
+  }` } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unreadable_state_key:hidden']);
 });

@@ -562,7 +562,8 @@ export const AGENT_REGISTRY = {
       "unmarked_method:onModelTypeChange",
       "unmarked_method:autoPlot",
       "unmarked_method:init",
-      "unmarked_method:destroy"
+      "unmarked_method:destroy",
+      "unreadable_state_key:model"
     ],
     "actions": {},
     "fields": {
@@ -1394,7 +1395,8 @@ export const AGENT_REGISTRY = {
       "unmarked_method:destroyPreviewGrid",
       "unmarked_method:capturePreviewEdits",
       "unmarked_method:init",
-      "unmarked_method:destroy"
+      "unmarked_method:destroy",
+      "unreadable_state_key:version"
     ],
     "actions": {},
     "fields": {
@@ -1908,7 +1910,19 @@ export const AGENT_REGISTRY = {
       "unmarked_method:binWidthChanged",
       "unmarked_method:confLevelChanged",
       "unmarked_method:init",
-      "unmarked_method:destroy"
+      "unmarked_method:destroy",
+      "unreadable_state_key:showTitle",
+      "unreadable_state_key:chartTitleText",
+      "unreadable_state_key:chartXLabelText",
+      "unreadable_state_key:chartYLabelText",
+      "unreadable_state_key:titleSize",
+      "unreadable_state_key:labelSize",
+      "unreadable_state_key:tickSize",
+      "unreadable_state_key:showXLabel",
+      "unreadable_state_key:showYLabel",
+      "unreadable_state_key:showXTicks",
+      "unreadable_state_key:showYTicks",
+      "unreadable_state_key:bgColor"
     ],
     "actions": {},
     "fields": {
@@ -2387,7 +2401,8 @@ export const AGENT_REGISTRY = {
       "unmarked_method:renderPareto",
       "unmarked_method:renderTrend",
       "unmarked_method:renderGantt",
-      "unmarked_method:renderCostChart"
+      "unmarked_method:renderCostChart",
+      "unresolvable_tojson"
     ],
     "actions": {},
     "fields": {
@@ -2645,7 +2660,8 @@ export const AGENT_REGISTRY = {
       "unmarked_method:addFactor",
       "unmarked_method:removeFactor",
       "unmarked_method:generate",
-      "unmarked_method:destroy"
+      "unmarked_method:destroy",
+      "unreadable_state_key:betas"
     ],
     "actions": {},
     "fields": {
@@ -2987,7 +3003,8 @@ export const AGENT_REGISTRY = {
       "unmarked_method:optionChanged",
       "unmarked_method:whenAnchor",
       "unmarked_method:init",
-      "unmarked_method:destroy"
+      "unmarked_method:destroy",
+      "unreadable_state_key:factorRows"
     ],
     "actions": {},
     "fields": {
@@ -3603,6 +3620,7 @@ export const AGENT_REGISTRY = {
       "unmarked_method:canUndo",
       "unmarked_method:orgUndo",
       "unmarked_method:nodeStylePickColor",
+      "unreadable_state_key:orgChart",
       "dom_detour:dataset.orgId@356"
     ],
     "actions": {},
@@ -4531,7 +4549,9 @@ export const AGENT_REGISTRY = {
       "unmarked_method:handleImageUpload",
       "unmarked_method:clearImage",
       "unmarked_method:enlarge",
-      "unmarked_method:closeEnlarged"
+      "unmarked_method:closeEnlarged",
+      "unreadable_state_key:rowLabels",
+      "unreadable_state_key:cells"
     ],
     "actions": {},
     "fields": {
