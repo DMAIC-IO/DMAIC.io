@@ -546,6 +546,12 @@ function persistedKeys(resolver, sf) {
  * beide Prüfungen: die vier Flowchart-Module haben kein eigenes `toJSON()`
  * und erben es von `FlowchartState`.
  *
+ * Ein EIGENES Mitglied namens `toJSON`, das keine `MethodDeclaration` ist
+ * (z. B. `toJSON = () => ({…})` als Klassenfeld), beendet den Abstieg HIER,
+ * mit `null` — nicht weiter zur Basisklasse klettern: sonst würde deren
+ * `toJSON` fälschlich die Schlüssel der überschreibenden Unterklasse
+ * beschreiben (Review-Fund I3, 0 Treffer im Bestand, aber latent).
+ *
  * @returns {{ method: ts.MethodDeclaration, sf: ts.SourceFile }|null}
  */
 function findToJSON(resolver, node, sf, path, depth) {
@@ -553,12 +559,12 @@ function findToJSON(resolver, node, sf, path, depth) {
   if (path.has(self)) return null; // class State extends State — classFields meldet das bereits
   path.add(self);
 
-  const method = node.members.find(m =>
-    ts.isMethodDeclaration(m) && ts.isIdentifier(m.name) && m.name.text === 'toJSON'
-    && !(ts.getCombinedModifierFlags(m) & ts.ModifierFlags.Static));
-  if (method && method.body) {
+  const own = node.members.find(m =>
+    !(ts.getCombinedModifierFlags(m) & ts.ModifierFlags.Static)
+    && m.name && ts.isIdentifier(m.name) && m.name.text === 'toJSON');
+  if (own) {
     path.delete(self);
-    return { method, sf };
+    return ts.isMethodDeclaration(own) && own.body ? { method: own, sf } : null;
   }
 
   const base = baseExpression(node);
@@ -574,16 +580,24 @@ function findToJSON(resolver, node, sf, path, depth) {
 }
 
 /**
- * Die erste `return`-Anweisung UNMITTELBAR im Funktionskörper — nicht in
- * einem verschachtelten Funktionsausdruck, wie bei `constructorFields`.
+ * GENAU EINE `return`-Anweisung im ganzen Funktionskörper — Verzweigungen
+ * eingeschlossen, aber nicht in einem verschachtelten Funktionsausdruck
+ * (wie bei `constructorFields`). Mehr als eine ist eine BLINDSTELLE: welcher
+ * Zweig tatsächlich greift, hängt von Laufzeitdaten ab, und die Zweige zu
+ * vereinigen wäre Raten statt Lesen (Review-Fund I2) — null signalisiert
+ * „nicht genau eine", der Aufrufer behandelt das wie „kein `toJSON`".
  * @param {ts.Block} body
  * @returns {ts.ReturnStatement|null}
  */
 function findReturnStatement(body) {
-  for (const statement of body.statements) {
-    if (ts.isReturnStatement(statement)) return statement;
-  }
-  return null;
+  const returns = [];
+  const walk = (node) => {
+    if (isFunctionLike(node) || ts.isClassDeclaration(node) || ts.isClassExpression(node)) return;
+    if (ts.isReturnStatement(node)) returns.push(node);
+    ts.forEachChild(node, walk);
+  };
+  walk(body);
+  return returns.length === 1 ? returns[0] : null;
 }
 
 /**
@@ -615,6 +629,12 @@ function unwrapToObjectLiteral(expr, body) {
       if (!ts.isVariableStatement(statement)) continue;
       for (const declaration of statement.declarationList.declarations) {
         if (ts.isIdentifier(declaration.name) && declaration.name.text === expr.text && declaration.initializer) {
+          // Nur `const` ist eine Momentaufnahme — `let`/`var` kann zwischen
+          // der Deklaration und dem `return` neu zugewiesen worden sein
+          // (Review-Fund I1); das zu ignorieren hieße, einen womöglich
+          // späteren Schlüsselsatz lautlos gegen den ursprünglichen
+          // auszutauschen. Blindstelle statt Annahme.
+          if (!(statement.declarationList.flags & ts.NodeFlags.Const)) return null;
           return unwrapToObjectLiteral(declaration.initializer, body);
         }
       }

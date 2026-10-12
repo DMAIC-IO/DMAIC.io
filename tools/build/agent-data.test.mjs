@@ -1511,6 +1511,19 @@ test('unreadable_state_key: ein persistierter Schlüssel ohne Lesefeld ist ein B
   }` } });
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreadable_state_key:hidden']);
+  // tagged⇒hard: der Befund blockiert tatsächlich die Freigabe, nicht nur `reported`.
+  assert.ok(modules.foo.violations.includes('unreadable_state_key:hidden'));
+  assert.equal(modules.foo.available, false);
+});
+
+test('unreadable_state_key: ein _-präfigierter persistierter Schlüssel wird NICHT gemeldet', () => {
+  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': `export class State {
+    /** @type {string} der Titel */
+    title = '';
+    toJSON() { return { title: this.title, _schema: 3 }; }
+  }` } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, []);
 });
 
 test('unreadable_state_key: JSON.parse(JSON.stringify({…})) wird entpackt', () => {
@@ -1559,4 +1572,59 @@ test('geerbtes toJSON wird gefunden', () => {
   }` } });
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreadable_state_key:hidden']);
+});
+
+test('unresolvable_tojson: eine nicht-const lokale Variable (let, neu zugewiesen) ist eine Blindstelle', () => {
+  // Review-Fund 1: die alte Fassung folgte JEDER lokalen Variable, auch
+  // einer mit `let` neu zugewiesenen. `out` zeigte hier zuerst auf
+  // { title } — die zweite, per `if` zugewiesene Fassung mit `hidden` wäre
+  // lautlos verschwunden, ohne jeden Befund.
+  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': `export class State {
+    /** @type {string} der Titel */
+    title = '';
+    toJSON() {
+      let out = { title: this.title };
+      if (this.title) out = { title: this.title, hidden: 1 };
+      return out;
+    }
+  }` } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unresolvable_tojson']);
+});
+
+test('unresolvable_tojson: mehr als eine return-Anweisung ist eine Blindstelle', () => {
+  // Review-Fund 2: die alte Fassung las nur die erste TOP-LEVEL
+  // `return`-Anweisung. Der `if`-Zweig unten (mit `onlyInIf`) landete nie
+  // im entpackten Literal, aber auch ohne jeden Befund — die zweite
+  // `return`-Anweisung ist für sich genommen vollständig „sauber" (nur
+  // `title`, ein bekanntes Feld), also kam kein `unreadable_state_key`
+  // zustande, obwohl ein Schlüssel verschwiegen wurde.
+  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': `export class State {
+    /** @type {string} der Titel */
+    title = '';
+    toJSON() {
+      if (this.title) return { title: this.title, onlyInIf: 1 };
+      return { title: this.title };
+    }
+  }` } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unresolvable_tojson']);
+});
+
+test('unresolvable_tojson: eine Pfeilfunktions-toJSON als Klassenfeld wird nicht als MethodDeclaration erkannt und klettert nicht zur Basisklasse', () => {
+  // Review-Fund 3 (latent, 0 Treffer im Bestand): die alte Fassung suchte
+  // `toJSON` nur als `MethodDeclaration`. Eine überschreibende Pfeilfunktion
+  // als Klassenfeld fiel durch das Raster, und der Abstieg kletterte zur
+  // Basisklasse — und beschrieb die Unterklasse fälschlich mit DEREN
+  // Schlüsseln (`title: 'base'`, ohne `hidden`, ohne jeden Befund).
+  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': `export class Base {
+    toJSON() { return { title: 'base' }; }
+  }
+  export class State extends Base {
+    /** @type {string} der Titel */
+    title = '';
+    toJSON = () => ({ title: this.title, hidden: 1 });
+  }` } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unresolvable_tojson']);
 });
