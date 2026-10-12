@@ -2595,7 +2595,14 @@
           "help": "Setzt das Ziel des Nein-Zweigs einer Entscheidung. Der Ja-Zweig hat kein Ziel — er ist der Wertstrom, der ohnehin zum nächsten Schritt weiterfließt.",
           "params": {
             "stepId": "Die id der Entscheidung. Eine unbekannte id, oder ein Schritt, der keine Entscheidung ist, ist ein Fehler.",
-            "target": "Das neue Ziel: 'end' für Prozessende, oder die id eines früheren Schritts — ein Rücksprung wird als Umarbeitungsschleife angezeigt."
+            "target": "Das neue Ziel: 'end' für Prozessende, oder die id eines anderen Schritts — ein Rücksprung wird als Umarbeitungsschleife angezeigt. Eine unbekannte id oder die eigene id ist ein Fehler."
+          }
+        },
+        "setStepBand": {
+          "help": "Setzt das Band eines vorhandenen Schritts; seine Kettenposition bleibt.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+            "bandId": "Die id eines vorhandenen Bands ('main' oder 'no:<id>'). Eine unbekannte Band-id, oder ein Band, dessen Entscheidung nicht vor diesem Schritt in der Kette steht, ist ein Fehler."
           }
         },
         "removeStep": {
@@ -2609,12 +2616,6 @@
           "params": {
             "idx": "Die Lücke, an der eingefügt wird (0 = vor dem ersten Schritt, bis zur Kettenlänge = ans Ende). Ein Wert außerhalb dieses Bereichs oder keine ganze Zahl ist ein Fehler.",
             "bandId": "Die id eines vorhandenen Bands ('main' oder 'no:<id>'). Eine unbekannte Band-id ist ein Fehler."
-          }
-        },
-        "insertAtMenu": {
-          "help": "Fügt einen Schritt an der Lücke ein, an der zuvor das Einfüge-Menü geöffnet wurde; ohne offenes Menü passiert nichts.",
-          "params": {
-            "kind": "Art des neuen Schritts: 'activity' Aktivität oder 'decision' Entscheidung."
           }
         },
         "addActivityToBand": {

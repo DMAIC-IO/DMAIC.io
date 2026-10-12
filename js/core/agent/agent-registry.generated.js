@@ -165,7 +165,7 @@ export const AGENT_REGISTRY = {
             "name": "target",
             "type": "string",
             "optional": false,
-            "help": "neues Ziel: `'end'` oder die id eines früheren Schritts (ein Rücksprung wird als Umarbeitungsschleife angezeigt)"
+            "help": "neues Ziel: `'end'` oder die id eines anderen Schritts (ein Rücksprung wird als Umarbeitungsschleife angezeigt). Eine unbekannte id oder die eigene id ist ein Fehler."
           }
         ],
         "returns": "void",
@@ -183,6 +183,24 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Entfernt einen Schritt aus der Kette. Löst bei einer Entscheidung ihr Band auf: die darin liegenden Schritte erben das Band der entfernten Entscheidung, statt mit ihr zu verschwinden."
       },
+      "setStepBand": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "bandId",
+            "type": "string",
+            "optional": false,
+            "help": "id eines vorhandenen Bands (`'main'` oder `no:<id>`)"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt das Band eines vorhandenen Schritts; seine Kettenposition bleibt. Schreibt dasselbe Feld wie der Drop auf eine Bandzeile (`dropOnBand`) in der Vorlage."
+      },
       "insertInBand": {
         "params": [
           {
@@ -199,19 +217,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "string",
-        "help": "Insert at a chain arrow. The new step inherits the arrow's band — inserting between two detour cards means inserting INTO the detour; the band is a drag away otherwise."
-      },
-      "insertAtMenu": {
-        "params": [
-          {
-            "name": "kind",
-            "type": "'activity'|'decision'",
-            "optional": false,
-            "help": ""
-          }
-        ],
-        "returns": "string|undefined",
-        "help": "Insert a step of `kind` at the open menu's gap, then close the menu. Ohne offenes Menü (`toggleInsertMenu` ist `@noagent`, ein Agent öffnet es also nie) tut der Aufruf nichts — für ein programmatisches Einfügen ist `insertInBand` der direkte Weg."
+        "help": "Fügt eine Aktivität an einer Kettenlücke in ein bestimmtes Band ein und liefert ihre id."
       },
       "addActivityToBand": {
         "params": [
@@ -223,7 +229,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "string",
-        "help": "Creates an activity at the end of the band."
+        "help": "Hängt eine Aktivität ans Ende eines Bands und liefert ihre id."
       },
       "addDecisionToBand": {
         "params": [
@@ -235,7 +241,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "string",
-        "help": "Creates a decision at the end of the band — which opens a band of its own below it."
+        "help": "Hängt eine Entscheidung ans Ende eines Bands und liefert ihre id; die Entscheidung öffnet ein eigenes Band darunter."
       },
       "clearExit": {
         "params": [
@@ -247,7 +253,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Drop the chosen re-entry. The detour then ends where its cards end, which is the state a band starts in. Nimmt die Band-id statt des View-Objekts aus `bands()` — das Objekt selbst ist nur über die `@noagent`-Methode `bands()` erreichbar und wäre für einen Agenten nicht konstruierbar."
+        "help": "Hebt die Wiedereinstiegsstelle eines Bands auf. Der Umweg endet dann dort, wo seine Schritte enden — der Zustand, in dem ein Band beginnt."
       }
     },
     "fields": {

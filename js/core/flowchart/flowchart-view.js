@@ -338,32 +338,59 @@ export function chainViewMixin(module, _t, opts = {}) {
       return _t('substepsLabel') + (n > 0 ? ` (${n})` : '');
     },
 
+    // `toggleSubsteps`/`addSubstep`/`removeSubstep` all return `false` from
+    // the Core model on an unknown id (flowchart-model.js) — `callModel`
+    // only throws when the METHOD itself is missing, not when it quietly
+    // declines. Without a check here the id promise in every module's i18n
+    // ("Eine unbekannte id ist ein Fehler") was untrue: the agent got
+    // `ok: true` and nothing happened (Spec-Review 2026-10-13, Task 3 fix
+    // round 1 — closed once here for all four flowchart modules).
     /**
      * Show or hide the substep list of a step. The disclosure state is part of
      * the step, so it survives a reload.
      * @agent
      * @param {string} stepId  id of the step whose substeps are toggled
      * @returns {void}
-     * @throws {Error} wenn das Model die Methode `toggleSubsteps` nicht führt
+     * @throws {Error} wenn stepId unbekannt ist, oder das Model die Methode
+     *   `toggleSubsteps` nicht führt
      */
-    toggleSubsteps(stepId) { callModel(this.model, 'toggleSubsteps', [stepId]); },
+    toggleSubsteps(stepId) {
+      if (Array.isArray(this.model?.steps)) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+      }
+      callModel(this.model, 'toggleSubsteps', [stepId]);
+    },
     /**
      * Append an empty substep to a step, ready to be filled in.
      * @agent
      * @param {string} stepId  id of the step that gets the new substep
      * @returns {void}
-     * @throws {Error} wenn das Model die Methode `addSubstep` nicht führt
+     * @throws {Error} wenn stepId unbekannt ist, oder das Model die Methode
+     *   `addSubstep` nicht führt
      */
-    addSubstep(stepId) { callModel(this.model, 'addSubstep', [stepId]); },
+    addSubstep(stepId) {
+      if (Array.isArray(this.model?.steps)) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+      }
+      callModel(this.model, 'addSubstep', [stepId]);
+    },
     /**
      * Remove one substep from its parent step.
      * @agent
      * @param {string} parentId   id of the step holding the substep
      * @param {string} substepId  id of the substep to remove
      * @returns {void}
-     * @throws {Error} wenn das Model die Methode `removeSubstep` nicht führt
+     * @throws {Error} wenn parentId oder substepId unbekannt ist, oder das
+     *   Model die Methode `removeSubstep` nicht führt
      */
-    removeSubstep(parentId, substepId) { callModel(this.model, 'removeSubstep', [parentId, substepId]); },
+    removeSubstep(parentId, substepId) {
+      if (Array.isArray(this.model?.steps)) {
+        requireKnownId('parentId', parentId, this.model.steps.map((s) => s.id));
+        const parent = this.model.steps.find((s) => s.id === parentId);
+        requireKnownId('substepId', substepId, (parent.substeps || []).map((s) => s.id));
+      }
+      callModel(this.model, 'removeSubstep', [parentId, substepId]);
+    },
     // Lives once here, not once per flowchart module: the shared partial
     // `substeps.part.html` binds the title input through this sink. Without
     // it an agent could create and delete a substep but never name it, and

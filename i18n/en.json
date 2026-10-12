@@ -2591,7 +2591,14 @@
           "help": "Sets the target of a decision's no branch. The yes branch has no target — it is the value stream, which flows on to the next step anyway.",
           "params": {
             "stepId": "The decision's id. An unknown id, or a step that is not a decision, is an error.",
-            "target": "The new target: 'end' for process end, or an earlier step's id — a jump back is shown as a rework loop."
+            "target": "The new target: 'end' for process end, or another step's id — a jump back is shown as a rework loop. An unknown id, or the step's own id, is an error."
+          }
+        },
+        "setStepBand": {
+          "help": "Sets an existing step's band; its chain position stays.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error.",
+            "bandId": "The id of an existing band ('main' or 'no:<id>'). An unknown band id, or a band whose decision does not stand before this step in the chain, is an error."
           }
         },
         "removeStep": {
@@ -2605,12 +2612,6 @@
           "params": {
             "idx": "The gap to insert at (0 = before the first step, up to the chain length = at the end). A value outside that range or a non-integer is an error.",
             "bandId": "The id of an existing band ('main' or 'no:<id>'). An unknown band id is an error."
-          }
-        },
-        "insertAtMenu": {
-          "help": "Inserts a step at the gap where the insert menu was previously opened; does nothing without an open menu.",
-          "params": {
-            "kind": "The new step's kind: 'activity' or 'decision'."
           }
         },
         "addActivityToBand": {

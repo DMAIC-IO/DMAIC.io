@@ -170,15 +170,18 @@ export function activityFlowchartData(module, _t) {
      * Wertstrom, der ohnehin zum nächsten Schritt weiterfließt.
      * @agent
      * @param {string} stepId id der Entscheidung
-     * @param {string} target neues Ziel: `'end'` oder die id eines
-     *   früheren Schritts (ein Rücksprung wird als Umarbeitungsschleife
-     *   angezeigt)
+     * @param {string} target neues Ziel: `'end'` oder die id eines anderen
+     *   Schritts (ein Rücksprung wird als Umarbeitungsschleife angezeigt).
+     *   Eine unbekannte id oder die eigene id ist ein Fehler.
      * @returns {void}
-     * @throws {Error} wenn kein Schritt diese id trägt, oder der Schritt
-     *   keine Entscheidung ist
+     * @throws {Error} wenn kein Schritt diese id trägt, der Schritt keine
+     *   Entscheidung ist, oder target weder `'end'` noch die id eines
+     *   anderen vorhandenen Schritts ist
      */
     setDecisionTarget(stepId, target) {
       this._requireStep(stepId);
+      requireKnownId('target', target,
+        ['end', ...this.model.steps.filter((s) => s.id !== stepId).map((s) => s.id)]);
       if (!this.model.setDecisionTarget(stepId, target)) {
         throw new Error(`step ${JSON.stringify(stepId)} is not a decision`);
       }
@@ -196,6 +199,26 @@ export function activityFlowchartData(module, _t) {
     removeStep(stepId) {
       this._requireStep(stepId);
       this.model.removeStep(stepId);
+    },
+
+    /**
+     * Setzt das Band eines vorhandenen Schritts; seine Kettenposition
+     * bleibt. Schreibt dasselbe Feld wie der Drop auf eine Bandzeile
+     * (`dropOnBand`) in der Vorlage.
+     * @agent
+     * @param {string} stepId id des Schritts
+     * @param {string} bandId id eines vorhandenen Bands (`'main'` oder `no:<id>`)
+     * @returns {void}
+     * @throws {Error} wenn kein Schritt diese id trägt, bandId kein
+     *   vorhandenes Band benennt, oder die Entscheidung des Ziel-Bands nicht
+     *   vor diesem Schritt in der Kette steht
+     */
+    setStepBand(stepId, bandId) {
+      this._requireStep(stepId);
+      requireKnownId('bandId', bandId, this.bands().map((b) => b.id));
+      if (!this.model.setStepBranch(stepId, bandId)) {
+        throw new Error(`step ${JSON.stringify(stepId)} cannot move to band ${JSON.stringify(bandId)}: its decision must stand before it in the chain`);
+      }
     },
 
     // ── Lifecycle (per Alpine instance) ───────────────────────
@@ -585,10 +608,8 @@ export function activityFlowchartData(module, _t) {
      * @param {string} bandId
      * @param {Event} event
      * @returns {void}
-     * @noagent DOM event handler — ein Agent kann kein DragEvent erzeugen;
-     *   die Zuordnung eines Schritts zu einer Bahn geht über das Model
-     *   (hier nicht als eigener Sink nötig, da keine Vorlage dafür
-     *   `x-model` nutzt).
+     * @noagent DOM event handler — ein Agent kann kein DragEvent erzeugen.
+     *   Der Agent-Weg für dasselbe Feld ist `setStepBand(stepId, bandId)`.
      */
     dropOnBand(bandId, event) {
       event?.preventDefault();
@@ -597,13 +618,18 @@ export function activityFlowchartData(module, _t) {
       this._activeGap = null;
       this._activeBand = null;
       if (!from) return;
-      this.model.setStepBranch(from, bandId);
+      // Ein Drop auf ein ungültiges Band (z. B. eine Entscheidung erst
+      // später in der Kette) bleibt stumm, wie vor dieser Umstellung — ein
+      // Agentenaufruf auf `setStepBand` wirft stattdessen, siehe dort.
+      try { this.setStepBand(from, bandId); } catch (_) { /* invalid drop target */ }
     },
 
+    // Inserting between two detour cards means inserting INTO the detour,
+    // which is why bandId is an explicit parameter rather than inferred from
+    // idx — the band is a drag away for the UI otherwise.
     /**
-     * Insert at a chain arrow. The new step inherits the arrow's band —
-     * inserting between two detour cards means inserting INTO the detour; the
-     * band is a drag away otherwise.
+     * Fügt eine Aktivität an einer Kettenlücke in ein bestimmtes Band ein
+     * und liefert ihre id.
      * @agent
      * @param {number} idx Chain index the new step takes (0…Kettenlänge)
      * @param {string} bandId id eines vorhandenen Bands (`'main'` oder `no:<id>`)
@@ -628,7 +654,7 @@ export function activityFlowchartData(module, _t) {
      * @param {string} bandId band the new step belongs to
      * @returns {void}
      * @noagent UI-Menü, kein Zustand — der Agent fügt direkt über
-     *   `insertInBand`/`insertAtMenu` ein, ohne das Menü zu öffnen
+     *   `insertInBand` ein, ohne das Menü zu öffnen
      */
     toggleInsertMenu(idx, bandId) {
       this._insertMenu = this._insertMenu?.idx === idx ? null : { idx, bandId };
@@ -638,16 +664,19 @@ export function activityFlowchartData(module, _t) {
      * @noagent view transform */
     isInsertMenuOpen(idx) { return this._insertMenu?.idx === idx; },
 
+    // Wirkungslos ohne UI-Vorbedingung, die ein Agent nicht herstellen kann:
+    // `_insertMenu` wird nur von der @noagent-Methode `toggleInsertMenu`
+    // gesetzt, ein Agent kann das Menü also nie öffnen — `insertInBand` ist
+    // der Weg (Review-Ruling 2026-10-13, Task 3 fix round 1: eine Aktion,
+    // deren Wirkung von einem Zustand abhängt, den nur eine @noagent-Methode
+    // herstellt, ist ein falscher Katalogeintrag, auch mit ehrlicher Hilfe).
     /**
      * Insert a step of `kind` at the open menu's gap, then close the menu.
-     * Ohne offenes Menü (`toggleInsertMenu` ist `@noagent`, ein Agent öffnet
-     * es also nie) tut der Aufruf nichts — für ein programmatisches Einfügen
-     * ist `insertInBand` der direkte Weg.
-     * @agent
      * @param {'activity'|'decision'} kind
-     * @returns {string|undefined} id des angelegten Schritts, oder
-     *   `undefined` wenn kein Menü offen war
-     * @throws {Error} wenn kind außerhalb seiner Wertemenge liegt
+     * @returns {string|undefined} id of the inserted step, or `undefined`
+     *   when no menu was open
+     * @noagent wirkungslos ohne UI-Vorbedingung, die ein Agent nicht
+     *   herstellen kann — `insertInBand` ist der Weg
      */
     insertAtMenu(kind) {
       requireEnum('kind', kind, ['activity', 'decision']);
@@ -672,7 +701,7 @@ export function activityFlowchartData(module, _t) {
     },
 
     /**
-     * Creates an activity at the end of the band.
+     * Hängt eine Aktivität ans Ende eines Bands und liefert ihre id.
      * @agent
      * @param {string} bandId id eines vorhandenen Bands (`'main'` oder `no:<id>`)
      * @returns {string} id des angelegten Schritts
@@ -686,8 +715,8 @@ export function activityFlowchartData(module, _t) {
     },
 
     /**
-     * Creates a decision at the end of the band — which opens a band of its
-     * own below it.
+     * Hängt eine Entscheidung ans Ende eines Bands und liefert ihre id; die
+     * Entscheidung öffnet ein eigenes Band darunter.
      * @agent
      * @param {string} bandId id eines vorhandenen Bands (`'main'` oder `no:<id>`)
      * @returns {string} id des angelegten Schritts
@@ -751,12 +780,13 @@ export function activityFlowchartData(module, _t) {
      * @noagent view transform */
     hasRejoin(band) { return this.exitKind(band) === 'step'; },
 
+    // Nimmt die Band-id statt des View-Objekts aus `bands()` — das Objekt
+    // selbst ist nur über die @noagent-Methode `bands()` erreichbar und wäre
+    // für einen Agenten nicht konstruierbar (Review-Ruling 2026-10-13, Task
+    // 3 fix round 1).
     /**
-     * Drop the chosen re-entry. The detour then ends where its cards end,
-     * which is the state a band starts in. Nimmt die Band-id statt des
-     * View-Objekts aus `bands()` — das Objekt selbst ist nur über die
-     * `@noagent`-Methode `bands()` erreichbar und wäre für einen Agenten
-     * nicht konstruierbar.
+     * Hebt die Wiedereinstiegsstelle eines Bands auf. Der Umweg endet dann
+     * dort, wo seine Schritte enden — der Zustand, in dem ein Band beginnt.
      * @agent
      * @param {string} bandId id eines Bands, dessen Entscheidung eine
      *   gewählte Wiedereinstiegsstelle hat
