@@ -388,6 +388,9 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
     const val = input.value.trim().slice(0, 100);
     if (val) {
       stateManager.set('projectMeta.name', val);
+      // Save now instead of waiting for the 2 s autosave: save() syncs the
+      // project list (dropdown) and its `state:saved` refreshes the tab title.
+      stateManager.save();
       eventBus.emit('project:renamed', { name: val });
     }
     input.style.display = 'none';
