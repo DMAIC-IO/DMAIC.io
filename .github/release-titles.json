@@ -58,5 +58,9 @@
   "1.3.0": {
     "de": "Umfrage-Baukasten, Resampling (Bootstrap/Permutation), Attributtests, Dashboard-Kacheln mit Einstellungen",
     "en": "Survey builder, resampling (bootstrap/permutation), attribute tests, dashboard tiles with settings"
+  },
+  "1.3.1": {
+    "de": "Korrekturen: Kano-Tabelle im Fragebogen, Vorschau beim Scrollen, Umbenennen wird sofort gespeichert, Uhrzeit im Exportnamen",
+    "en": "Fixes: Kano table in the questionnaire, preview while scrolling, renaming saves at once, time in export file names"
   }
 }

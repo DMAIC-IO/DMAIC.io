@@ -47,6 +47,7 @@ suite('Migrations — behavioural', () => {
     const data = { appVersion: '0.2.0', foo: 'bar' };
     const result = migrateToLatest(data, '0.2.5');
     assertEqual(result.foo, 'bar');
+    assertEqual(result.appVersion, '0.2.5');
   });
 
   test('stamps target version on output', () => {

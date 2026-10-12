@@ -37,7 +37,7 @@ js/core/chart/chart-editor.js:503:▲
 js/core/chart/chart-editor.js:504:▼
 js/core/chart/chart-editor.js:506:★
 js/core/cycles/cycles.js:79:⊞
-js/core/migrations.js:55:→
+js/core/migrations.js:58:→
 js/modules/contour-plot/contour-plot-editor.js:81:●
 js/modules/contour-plot/contour-plot-editor.js:82:◆
 js/modules/contour-plot/contour-plot-editor.js:83:▼
