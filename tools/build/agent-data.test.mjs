@@ -1192,24 +1192,12 @@ test('collectAgentData: the released pilot modules are available in the real tre
   // Freigabe festhält. Er wächst mit jedem freigegebenen Pilotmodul.
   const appDir = join(import.meta.dirname, '..', '..');
   const { modules, coverage } = collectAgentData(appDir);
-  for (const id of ['five-why', 'worksheet']) {
+  for (const id of ['five-why', 'worksheet', 'hypothesis-test']) {
     assert.deepEqual(modules[id].violations, [], `${id} hat Verstöße`);
     assert.equal(modules[id].available, true, `${id} ist nicht freigegeben`);
     assert.ok('read' in modules[id].actions, `${id} hat kein read()`);
   }
-  // hypothesis-test fällt mit dem Schreibvollständigkeits-Gate (Task 1b) aus
-  // der Freigabe: `setPowerGoal` deckt die Wurzelbindung
-  // `x-model="model.powerGoal"` über `this.model.setPowerGoal(powerGoal)` ab
-  // — eine Model-METHODE, keine direkte Zuweisung `this.model.powerGoal = …`.
-  // Genau dieser Fall ist im Plan ausdrücklich NICHT vorgesehen behoben zu
-  // werden ("kein neues @agentWrites-Tag", Task-1b-Brief) — ein Roadmap-
-  // Eintrag statt einer Vorsorge im Code. `hypothesis-test` ist kein Modul
-  // dieser Welle, also bleibt es unverändert; dieser Test hält den jetzt
-  // RICHTIGEN (nicht mehr versehentlich grünen) Befund fest.
-  assert.deepEqual(modules['hypothesis-test'].violations, ['unreachable_write:powerGoal']);
-  assert.equal(modules['hypothesis-test'].available, false);
-  assert.ok('read' in modules['hypothesis-test'].actions, 'hypothesis-test hat kein read()');
-  assert.ok(coverage.available >= 2);
+  assert.ok(coverage.available >= 3);
 });
 
 test('collectAgentData: hypothesis-test exposes the computed result as a read field', () => {
@@ -1706,6 +1694,79 @@ test('template_model_call: ein direkter model.*-Aufruf aus der Vorlage ist ein B
   } });
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['template_model_call:removeTitle']);
+});
+
+test('unreachable_write: eine Delegation an eine zuweisende Model-Methode deckt ab', () => {
+  // `setTitle` ruft nicht `this.model.title = …` direkt auf, sondern
+  // delegiert an `this.model.setTitle(t)` — und GENAU DIE Model-Methode
+  // weist `this.title` zu. Das ist die Form, die Welle-1-Module wie
+  // `hypothesis-test.setPowerGoal` benutzen.
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} t
+       * @returns {void}
+       */
+      setTitle(t) { this.model.setTitle(t); },
+      /** @noagent */
+      cardClass(node) { return ''; },`);
+  const root = fixture({ foo: {
+    'foo.js': vm,
+    'foo-model.js': `export class State {
+      /** @type {string} der Titel */
+      title = '';
+      toJSON() { return { title: this.title }; }
+      setTitle(t) { this.title = String(t ?? ''); }
+    }`,
+    'foo.html': '<input x-model="model.title">',
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, []);
+});
+
+test('unreachable_write: eine Delegation an eine Model-Methode, die das Feld NICHT zuweist, deckt NICHT ab', () => {
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} t
+       * @returns {void}
+       */
+      setTitle(t) { this.model.setTitle(t); },
+      /** @noagent */
+      cardClass(node) { return ''; },`);
+  const root = fixture({ foo: {
+    'foo.js': vm,
+    'foo-model.js': `export class State {
+      /** @type {string} der Titel */
+      title = '';
+      toJSON() { return { title: this.title }; }
+      setTitle(t) { this.touched = true; }
+    }`,
+    'foo.html': '<input x-model="model.title">',
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
+});
+
+test('unreachable_write: eine Delegation an eine nicht auflösbare Model-Methode deckt NICHT ab (fail closed)', () => {
+  // Die Model-Klasse hat KEIN `setTitle` — weder eigen noch geerbt.
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} t
+       * @returns {void}
+       */
+      setTitle(t) { this.model.setTitle(t); },
+      /** @noagent */
+      cardClass(node) { return ''; },`);
+  const root = fixture({ foo: {
+    'foo.js': vm,
+    'foo-model.js': `export class State {
+      /** @type {string} der Titel */
+      title = '';
+      toJSON() { return { title: this.title }; }
+    }`,
+    'foo.html': '<input x-model="model.title">',
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
 });
 
 test('unresolvable_tojson: eine Pfeilfunktions-toJSON als Klassenfeld wird nicht als MethodDeclaration erkannt und klettert nicht zur Basisklasse', () => {

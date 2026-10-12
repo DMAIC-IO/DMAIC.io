@@ -392,6 +392,14 @@ function readViewmodel(sf, resolver, appDir) {
   // Vollständigkeit der folgenden Liste, nicht ein Befund in ihr.
   for (const expression of unresolved) violations.push(`unresolved_spread:${compact(expression)}`);
 
+  // Einmal pro Modul aufgelöst, nicht pro Methode: dieselbe Model-Klasse,
+  // die `readModelFields` für die Lesefläche auflöst, ist die Zielklasse
+  // einer Delegation `this.model.<methode>(…)`. `null`, wenn die Klasse
+  // nicht bestimmbar ist — `readModelFields` meldet das bereits über
+  // `unresolvable_model_class`/`unresolved_model_class:<name>`, eine
+  // Delegation zählt dann einfach nicht als Abdeckung (fail closed).
+  const modelDecl = resolveModelClass(resolver, sf);
+
   for (const [name, entry] of members) {
     if (name.startsWith('_')) continue;
     const member = entry.member;
@@ -435,29 +443,47 @@ function readViewmodel(sf, resolver, appDir) {
     // `this.model.<feld> = …`-Zuweisung in einer `@noagent`-Methode deckt die
     // Vorlagenbindung NICHT ab — genau das ist der Unterschied zwischen
     // „ein Agent kann das Feld schreiben" und „irgendeine Methode tut es".
-    for (const field of writtenModelFields(fn)) written.add(field);
+    for (const field of writtenModelFields(fn, resolver, modelDecl)) written.add(field);
   }
   return { actions, violations, written };
 }
 
 /**
- * Die Model-Felder, die eine `@agent`-Methode über `this.model.<feld>`
- * zuweist — die Gegenprobe zu `templateBindings().models` (Task 1b).
+ * Die Model-Felder, die eine `@agent`-Methode SELBST schreibt, direkt oder
+ * eine Ebene über eine Model-Methode delegiert — die Gegenprobe zu
+ * `templateBindings().models` (Task 1b).
  *
- * `=` und `+=` zählen beide, dieselbe Begründung wie `ASSIGN_KINDS` bei
- * `collectDomDetours`: additiv ist auch geschrieben. Eine Zuweisung an
- * `this.model.<a>.<b>` (oder `this.model.<a>[0].<b>`) zählt für `<a>`: wer
- * `this.model.steps[0].title` schreibt, schreibt `steps`.
+ * Zwei Formen zählen:
+ *   1. `this.model.<feld> = …` / `+= …` direkt im `@agent`-Methodenkörper.
+ *      Eine Zuweisung an `this.model.<a>.<b>` (oder `this.model.<a>[0].<b>`)
+ *      zählt für `<a>`: wer `this.model.steps[0].title` schreibt, schreibt
+ *      `steps`.
+ *   2. `this.model.<methode>(…)` — eine Delegation an eine Model-Methode.
+ *      Die Felder zählen, die GENAU DIESE Methode (in der Model-Klasse oder
+ *      einer Basisklasse, mit demselben Tiefenschutz wie `classFields`)
+ *      selbst über `this.<feld> = …` zuweist. GENAU EINE Ebene: ruft diese
+ *      Methode ihrerseits eine weitere Methode auf, zählt das NICHT — eine
+ *      Model-Methode, die an eine andere delegiert, ist unaufgelöst und
+ *      bleibt ein Befund (fail closed, review-geforderte Grenze gegen eine
+ *      Namenskonvention als Beweis: `setPowerGoal` deckt `powerGoal` nur,
+ *      weil die KETTE das zeigt, nicht weil der Name passt).
  *
  * @param {ts.SignatureDeclaration} fn
+ * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
+ * @param {{ node: ts.ClassDeclaration, sf: ts.SourceFile }|null} modelDecl
  * @returns {Set<string>}
  */
-function writtenModelFields(fn) {
+function writtenModelFields(fn, resolver, modelDecl) {
   const fields = new Set();
   const walk = (node) => {
     if (ts.isBinaryExpression(node) && ASSIGN_KINDS.has(node.operatorToken.kind)) {
-      const field = modelFieldOf(node.left);
+      const field = fieldAfterThis(node.left, 'model');
       if (field) fields.add(field);
+    } else if (ts.isCallExpression(node)) {
+      const methodName = modelMethodCallOf(node);
+      if (methodName && modelDecl) {
+        for (const field of fieldsAssignedByModelMethod(resolver, modelDecl, methodName)) fields.add(field);
+      }
     }
     ts.forEachChild(node, walk);
   };
@@ -466,23 +492,83 @@ function writtenModelFields(fn) {
 }
 
 /**
- * Das erste Feld hinter `this.model.…` in einer Zuweisungs-Zielkette, oder
- * `null`, wenn die Kette nicht an `this.model` hängt.
+ * Das Feld hinter `this.<durch>.…` (oder direkt `this.…`, wenn `durch` null
+ * ist) in einer Zuweisungs-Zielkette, oder `null`, wenn die Kette nicht an
+ * `this` (bzw. `this.<durch>`) hängt.
  * @param {ts.Node} node  die linke Seite einer Zuweisung
+ * @param {string|null} through  das Zwischenglied (`'model'`), oder `null`
+ *   für eine direkte `this.<feld>`-Kette (innerhalb der Model-Klasse selbst)
  * @returns {string|null}
  */
-function modelFieldOf(node) {
+function fieldAfterThis(node, through) {
   const path = [];
   let current = node;
   while (ts.isPropertyAccessExpression(current) || ts.isElementAccessExpression(current)) {
-    if (ts.isPropertyAccessExpression(current)) path.unshift({ name: current.name.text });
-    else path.unshift({ name: null });
+    path.unshift(ts.isPropertyAccessExpression(current) ? current.name.text : null);
     current = current.expression;
   }
   if (current.kind !== ts.SyntaxKind.ThisKeyword) return null;
-  if (path.length < 2) return null;
-  if (path[0].name !== 'model') return null;
-  return path[1].name;
+  if (through) return path[0] === through ? (path[1] ?? null) : null;
+  return path[0] ?? null;
+}
+
+/**
+ * `this.model.<name>(…)` als Aufrufziel, oder `null`.
+ * @param {ts.CallExpression} node
+ * @returns {string|null}
+ */
+function modelMethodCallOf(node) {
+  const callee = node.expression;
+  if (!ts.isPropertyAccessExpression(callee)) return null;
+  const base = callee.expression;
+  if (!ts.isPropertyAccessExpression(base)) return null;
+  if (base.name.text !== 'model') return null;
+  if (base.expression.kind !== ts.SyntaxKind.ThisKeyword) return null;
+  return callee.name.text;
+}
+
+/**
+ * Die Model-Klasse eines Moduls, aufgelöst wie in `readModelFields` — hier
+ * als eigener Einstieg, weil Task 1b sie ein zweites Mal braucht (die
+ * Delegationsauflösung), ohne die Lesefläche selbst zu wiederholen.
+ * `null` bleibt unauffällig: der zugehörige Befund steht schon über
+ * `readModelFields` im Ergebnis, eine Delegation zählt dann nur nicht als
+ * Abdeckung.
+ * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
+ * @param {ts.SourceFile} sf  die MODUL-Datei
+ * @returns {{ node: ts.ClassDeclaration, sf: ts.SourceFile }|null}
+ */
+function resolveModelClass(resolver, sf) {
+  const name = modelClassName(sf);
+  if (!name) return null;
+  const decl = resolver.findDeclaration(name, sf);
+  if (!decl || !ts.isClassDeclaration(decl.node)) return null;
+  return decl;
+}
+
+/**
+ * Die Felder, die eine bestimmte Model-Methode über `this.<feld> = …`
+ * zuweist — leer, wenn die Methode nicht auflösbar ist (fail closed: kein
+ * Treffer in der Klasse oder ihrer `extends`-Kette, kein lesbares
+ * `MethodDeclaration`, kein Körper).
+ * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
+ * @param {{ node: ts.ClassDeclaration, sf: ts.SourceFile }} modelDecl
+ * @param {string} methodName
+ * @returns {Set<string>}
+ */
+function fieldsAssignedByModelMethod(resolver, modelDecl, methodName) {
+  const found = findClassMethod(resolver, modelDecl.node, modelDecl.sf, methodName, new Set(), 0);
+  if (!found) return new Set();
+  const fields = new Set();
+  const walk = (node) => {
+    if (ts.isBinaryExpression(node) && ASSIGN_KINDS.has(node.operatorToken.kind)) {
+      const field = fieldAfterThis(node.left, null);
+      if (field) fields.add(field);
+    }
+    ts.forEachChild(node, walk);
+  };
+  if (found.method.body) walk(found.method.body);
+  return fields;
 }
 
 /**
@@ -650,13 +736,33 @@ function persistedKeys(resolver, sf) {
  * @returns {{ method: ts.MethodDeclaration, sf: ts.SourceFile }|null}
  */
 function findToJSON(resolver, node, sf, path, depth) {
+  return findClassMethod(resolver, node, sf, 'toJSON', path, depth);
+}
+
+/**
+ * Finde eine Methode namens `methodName` an der Klasse, sonst die
+ * `extends`-Kette hoch — derselbe Pfadschutz und dieselbe Tiefengrenze wie
+ * `classFields`. Generische Fassung von `findToJSON` (Task 1a): Task 1b
+ * braucht denselben Abstieg für eine Delegationsmethode
+ * (`this.model.<methodName>(…)`), und zwei Kopien desselben Walks wären
+ * genau die Parallelquelle, die dieser Generator sonst vermeidet.
+ *
+ * Ein EIGENES Mitglied namens `methodName`, das keine `MethodDeclaration`
+ * ist (z. B. ein Klassenfeld mit Pfeilfunktion), beendet den Abstieg HIER,
+ * mit `null` — nicht weiter zur Basisklasse klettern: sonst würde deren
+ * gleichnamige Methode fälschlich als Treffer der überschreibenden
+ * Unterklasse gelten (Review-Fund I3, übertragen aus `findToJSON`).
+ *
+ * @returns {{ method: ts.MethodDeclaration, sf: ts.SourceFile }|null}
+ */
+function findClassMethod(resolver, node, sf, methodName, path, depth) {
   const self = `${sf.fileName}:${node.pos}`;
   if (path.has(self)) return null; // class State extends State — classFields meldet das bereits
   path.add(self);
 
   const own = node.members.find(m =>
     !(ts.getCombinedModifierFlags(m) & ts.ModifierFlags.Static)
-    && m.name && ts.isIdentifier(m.name) && m.name.text === 'toJSON');
+    && m.name && ts.isIdentifier(m.name) && m.name.text === methodName);
   if (own) {
     path.delete(self);
     return ts.isMethodDeclaration(own) && own.body ? { method: own, sf } : null;
@@ -667,7 +773,7 @@ function findToJSON(resolver, node, sf, path, depth) {
   if (base && ts.isIdentifier(base) && depth + 1 <= MAX_EXTENDS_DEPTH) {
     const decl = resolver.findDeclaration(base.text, sf);
     if (decl && ts.isClassDeclaration(decl.node)) {
-      result = findToJSON(resolver, decl.node, decl.sf, path, depth + 1);
+      result = findClassMethod(resolver, decl.node, decl.sf, methodName, path, depth + 1);
     }
   }
   path.delete(self);
