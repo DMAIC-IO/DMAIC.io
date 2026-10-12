@@ -2623,7 +2623,7 @@
         "insertAt": {
           "help": "Inserts a new step at a gap in the chain and returns its id.",
           "params": {
-            "idx": "The gap to insert at (0 = before the first step).",
+            "idx": "The gap to insert at (0 = before the first step, up to the chain length = at the end). A value outside that range or a non-integer is an error.",
             "side": "Column of the new step: 'va' value-added or 'nva' rework."
           }
         },

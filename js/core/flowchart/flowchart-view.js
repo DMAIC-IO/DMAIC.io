@@ -364,14 +364,14 @@ export function chainViewMixin(module, _t, opts = {}) {
      * @throws {Error} wenn das Model die Methode `removeSubstep` nicht führt
      */
     removeSubstep(parentId, substepId) { callModel(this.model, 'removeSubstep', [parentId, substepId]); },
+    // Lives once here, not once per flowchart module: the shared partial
+    // `substeps.part.html` binds the title input through this sink. Without
+    // it an agent could create and delete a substep but never name it, and
+    // no completeness gate would have caught that — `unreachable_write`
+    // only inspects ROOT `x-model="model.*"` bindings, not a field inside a
+    // nested collection (Spec-Review 2026-10-12, Task 2 fix round 1).
     /**
-     * Set a substep's title. Same field the substep title input in
-     * `substeps.part.html` writes through. Added once here, not per module
-     * (Spec-Review 2026-10-12, Task 2 fix round 1): the shared partial binds
-     * `x-model="sub.title"`, and without this sink an agent could create and
-     * delete a substep but never name it — and no completeness gate catches
-     * that, because `unreachable_write` only inspects ROOT `x-model="model.*"`
-     * bindings, not a nested collection field.
+     * Set a substep's title.
      * @agent
      * @param {string} stepId    id of the step holding the substep
      * @param {string} substepId id of the substep

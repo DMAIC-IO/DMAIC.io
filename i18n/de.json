@@ -2627,7 +2627,7 @@
         "insertAt": {
           "help": "Setzt einen neuen Schritt an eine Lücke der Kette und liefert seine id.",
           "params": {
-            "idx": "Die Lücke, an der eingefügt wird (0 = vor dem ersten Schritt).",
+            "idx": "Die Lücke, an der eingefügt wird (0 = vor dem ersten Schritt, bis zur Kettenlänge = ans Ende). Ein Wert außerhalb dieses Bereichs oder keine ganze Zahl ist ein Fehler.",
             "side": "Spalte des neuen Schritts: 'va' wertschöpfend oder 'nva' Nacharbeit."
           }
         },

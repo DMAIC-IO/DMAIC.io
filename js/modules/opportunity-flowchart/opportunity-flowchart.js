@@ -194,6 +194,8 @@ export default createModule({
        * @param {number} idx Lücke, an der eingefügt wird (0 = vor dem ersten)
        * @param {'va'|'nva'} side Spalte des neuen Schritts
        * @returns {string} id des angelegten Schritts
+       * @throws {Error} wenn idx keine ganze Zahl zwischen 0 und der
+       *   Kettenlänge ist, oder side außerhalb seiner Wertemenge liegt
        */
       insertAt(idx, side) {
         requireEnum('side', side, ['va', 'nva']);
