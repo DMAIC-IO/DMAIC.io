@@ -18,7 +18,7 @@
 export const RUNNER_CSS = `
 *,*::before,*::after{box-sizing:border-box}
 body{margin:0;background:#f4f5f7;color:#1f2328;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-.sv{max-width:52rem;margin:0 auto;padding:2rem 1.25rem 4rem}
+.sv{max-width:72rem;margin:0 auto;padding:2rem 1.25rem 4rem}
 .sv-head,.sv-section{background:#fff;border:1px solid #d0d7de;border-radius:8px;padding:1.25rem 1.5rem;margin-bottom:1rem}
 .sv-title{margin:0 0 .5rem;font-size:1.6rem}
 .sv-intro,.sv-contact,.sv-anonymous{margin:.5rem 0;white-space:pre-line}
@@ -43,6 +43,9 @@ body{margin:0;background:#f4f5f7;color:#1f2328;font:16px/1.5 system-ui,-apple-sy
 .sv-table thead th{font-size:.85rem;color:#57606a}
 .sv-table .sv-table__row{text-align:left}
 .sv-table select{max-width:100%}
+.sv-table--kano{table-layout:fixed}
+.sv-table--kano thead .sv-table__row{width:25%}
+.sv-table--kano select{width:100%}
 input[type=text],textarea,select{font:inherit;padding:.35rem .5rem;border:1px solid #afb8c1;border-radius:6px;background:#fff;color:inherit}
 .sv-text{width:100%;margin-top:.5rem}
 .sv-actions{display:flex;gap:.75rem;margin-top:1.5rem}
