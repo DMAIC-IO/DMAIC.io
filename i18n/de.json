@@ -1361,6 +1361,146 @@
     "process-map": {
       "name": "Process Map",
       "description": "Visueller Prozessfluss mit Inputs und Outputs je Schritt",
+      "whenToUse": "Wenn ein bestehender Prozess als horizontale Schrittkette mit Inputs, Outputs, Wertschöpfungs-Klassifizierung und Rework-Loops dokumentiert werden soll — nicht für eine reine Rollen- oder Entscheidungssicht, dafür gibt es Deployment- bzw. Activity Flowchart.",
+      "actions": {
+        "addStep": {
+          "help": "Fügt einen neuen, leeren Schritt an einer Lücke der Kette ein und liefert seine id.",
+          "params": {
+            "atIndex": "Die Lücke, an der eingefügt wird (0 = vor dem ersten Schritt, bis zur Kettenlänge = ans Ende). Ein Wert außerhalb dieses Bereichs oder keine ganze Zahl ist ein Fehler."
+          }
+        },
+        "removeStep": {
+          "help": "Entfernt einen Schritt aus der Kette. Jeder Loop, der ihn als Ziel trägt, wird dabei ebenfalls gelöscht.",
+          "params": {
+            "id": "Die id des zu entfernenden Schritts. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "addIO": {
+          "help": "Hängt einen Input oder Output an einen Schritt an und liefert seine id.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+            "type": "'inputs' oder 'outputs'. Ein anderer Wert ist ein Fehler."
+          }
+        },
+        "removeIO": {
+          "help": "Entfernt einen Input oder Output von einem Schritt.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+            "type": "'inputs' oder 'outputs'. Ein anderer Wert ist ein Fehler.",
+            "ioId": "Die id des Eintrags. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "cycleInputType": {
+          "help": "Schaltet den Input-Typ eines Inputs weiter: kein Typ → Prozessparameter (x) → Störgröße (n) → kein Typ.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+            "ioId": "Die id des Inputs. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "cycleValueType": {
+          "help": "Schaltet den Wertschöpfungstyp eines Schritts weiter: nicht klassifiziert → wertschöpfend (VA) → geschäftlich notwendig (BNVA) → nicht wertschöpfend (NVA) → nicht klassifiziert.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "setStepTitle": {
+          "help": "Setzt den Titel eines Schritts.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+            "text": "Der neue Titel."
+          }
+        },
+        "setStepDescription": {
+          "help": "Setzt die Beschreibung eines Schritts.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+            "text": "Die neue Beschreibung."
+          }
+        },
+        "setIOName": {
+          "help": "Setzt den Namen eines Inputs oder Outputs.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+            "type": "'inputs' oder 'outputs'. Ein anderer Wert ist ein Fehler.",
+            "ioId": "Die id des Eintrags. Eine unbekannte id ist ein Fehler.",
+            "name": "Der neue Name."
+          }
+        },
+        "toggleLoop": {
+          "help": "Schaltet den Loop eines Schritts an oder aus. Beim Anlegen entsteht ein leerer Loop ohne Bedingung, Ziel oder Rework-Schritte.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "setLoopCondition": {
+          "help": "Setzt die Auslösebedingung eines Loops. Liefert false, wenn der Schritt keinen Loop trägt — dann ist nichts passiert.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+            "text": "Die neue Bedingung."
+          }
+        },
+        "setLoopTarget": {
+          "help": "Setzt den Zielschritt eines Loops (zu welchem früheren Schritt er zurückführt). Liefert false, wenn der Schritt keinen Loop trägt — dann ist nichts passiert.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+            "targetStepId": "Die id eines vorhandenen Schritts, oder null/leerer String, um das Ziel zu löschen. Eine unbekannte, nicht-leere id ist ein Fehler."
+          }
+        },
+        "removeLoop": {
+          "help": "Entfernt den Loop eines Schritts.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "addLoopStep": {
+          "help": "Hängt einen Rework-Schritt an den Loop eines Schritts an und liefert seine id. Liefert null, wenn der Schritt keinen Loop trägt — dann ist nichts passiert.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "removeLoopStep": {
+          "help": "Entfernt einen Rework-Schritt aus dem Loop eines Schritts.",
+          "params": {
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+            "loopStepId": "Die id des Rework-Schritts. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "setLoopStepTitle": {
+          "help": "Setzt den Titel eines Rework-Schritts.",
+          "params": {
+            "stepId": "Die id des Schritts, der den Loop trägt. Eine unbekannte id ist ein Fehler.",
+            "loopStepId": "Die id des Rework-Schritts. Eine unbekannte id ist ein Fehler.",
+            "text": "Der neue Titel."
+          }
+        },
+        "toggleSubsteps": {
+          "help": "Klappt die Unter-Schritte eines Schritts auf oder zu; rein darstellend, der Inhalt bleibt.",
+          "params": {
+            "stepId": "Die id des Schritts, dessen Unter-Schritte umgeschaltet werden. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "addSubstep": {
+          "help": "Fügt einem Schritt einen leeren Unter-Schritt hinzu.",
+          "params": {
+            "stepId": "Die id des Schritts, der den neuen Unter-Schritt bekommt. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "removeSubstep": {
+          "help": "Entfernt einen Unter-Schritt aus seinem übergeordneten Schritt.",
+          "params": {
+            "parentId": "Die id des übergeordneten Schritts. Eine unbekannte id ist ein Fehler.",
+            "substepId": "Die id des zu entfernenden Unter-Schritts."
+          }
+        },
+        "setSubstepTitle": {
+          "help": "Setzt den Titel eines Unter-Schritts.",
+          "params": {
+            "stepId": "Die id des übergeordneten Schritts. Eine unbekannte id ist ein Fehler.",
+            "substepId": "Die id des Unter-Schritts. Eine unbekannte id ist ein Fehler.",
+            "text": "Der neue Titel."
+          }
+        }
+      },
       "deleteStep": "Schritt löschen",
       "addStep": "Schritt hinzufügen",
       "addFirstStep": "Ersten Schritt erstellen",
@@ -1417,7 +1557,12 @@
       "importFromSipocEmpty": "leer",
       "importFromSipocSteps": "{n} Prozessschritt(e)",
       "importFromSipocConfirm": "Übernehmen",
-      "importFromSipocDone": "{n} Schritt(e) aus SIPOC übernommen"
+      "importFromSipocDone": "{n} Schritt(e) aus SIPOC übernommen",
+      "fields": {
+        "steps": {
+          "help": "Die Kette in Reihenfolge. Jeder Schritt trägt id, title, description, valueType (null|'va'|'bnva'|'nva'), inputs und outputs (je id, name, bei inputs optional inputType 'param'|'noise'), substeps (je id, title), expanded und loop (null, oder { condition, targetStepId, steps: [{id,title}] })."
+        }
+      }
     },
     "raci-matrix": {
       "name": "RACI-Matrix",

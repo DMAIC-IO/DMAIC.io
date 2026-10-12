@@ -14,6 +14,11 @@
  *   - PNG / SVG image export — pure helpers in process-map-export.js.
  *
  * Self-contained: no event bus (stateManager / i18n / notify only).
+ *
+ * @agent  Vollständig über das Viewmodel steuerbar: Schritte, ihre Inputs/
+ *   Outputs, Wertschöpfungstyp, Loops und Teilschritte. Die UI behält:
+ *   Datei-Export (PNG/SVG/CSV/XLSX/JSON), den SIPOC-Import-Dialog und
+ *   Drag-and-Drop.
  */
 
 import { createModule } from '../../core/template-module.js';
@@ -24,6 +29,8 @@ import { exportPmapPNG, exportPmapSVG } from './process-map-export.js';
 import { State, loopRailCells, loopPassColumns, loopArrowColumns } from './process-map-model.js';
 import { listSipocInstances, appendSipocProcess } from './process-map-sipoc-import.js';
 import { chainViewMixin } from '../../core/flowchart/flowchart-view.js';
+import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { requireKnownId, requireEnum, requireIndex } from '../../core/agent/agent-argcheck.js';
 
 export default createModule({
   config: {
@@ -55,6 +62,7 @@ export default createModule({
     });
     return {
       ..._core,
+      ...agentReadMixin(module),
 
       // PM-local override of the mixin's stepDragEnd (F1/F2 fixes): the mixin
       // only clears _draggedStepId + the is-dragging class, but PM's
@@ -63,6 +71,7 @@ export default createModule({
       // anywhere, not just the arm handle) — and PM's own drag-marker
       // classes (set by stepDragStart) need the same defensive
       // sweep as the IO/substep drag contexts.
+      /** @noagent DOM event handler — ein Agent kann kein DragEvent erzeugen. */
       stepDragEnd(event) {
         _core.stepDragEnd.call(this, event);
         const row = event?.target?.closest?.('.pmap__step-row');
@@ -82,12 +91,15 @@ export default createModule({
       /** @type {string|null} */
       _draggedParentId: null,
       // ── Value-type badge (data-Fn view transforms) ────────────
+      /** @noagent view transform */
       valueBadgeLabel(step) {
         return step.valueType ? _t(step.valueType) : '–';
       },
+      /** @noagent view transform */
       valueBadgeTitle(step) {
         return step.valueType ? _t(`${step.valueType  }Long`) : _t('valueTypeLabel');
       },
+      /** @noagent view transform */
       valueBadgeClass(step) {
         return step.valueType
           ? `pmap__value-badge--${  step.valueType}`
@@ -101,33 +113,40 @@ export default createModule({
        * default.
        * @param {object} step
        * @returns {string}
+       * @noagent view transform
        */
       cardAccentClass(step) {
         return step.valueType ? `fc-card--accent pmap__step-card--${step.valueType}` : '';
       },
 
       // ── Input-type badge ──────────────────────────────────────
+      /** @noagent view transform */
       inputTypeLabel(io) {
         if (!io.inputType) return '?';
         return io.inputType === 'param' ? _t('inputTypeParam') : _t('inputTypeNoise');
       },
+      /** @noagent view transform */
       inputTypeTitle(io) {
         if (!io.inputType) return _t('inputTypeLabel');
         return io.inputType === 'param' ? _t('inputTypeParamLong') : _t('inputTypeNoiseLong');
       },
+      /** @noagent view transform */
       inputTypeClass(io) {
         if (!io.inputType) return 'pmap__input-type--none';
         return io.inputType === 'param' ? 'pmap__input-type--param' : 'pmap__input-type--noise';
       },
 
       // ── Misc view transforms ──────────────────────────────────
+      /** @noagent view transform */
       loopToggleClass(step) {
         return step.loop ? 'pmap__step-loop-toggle--active' : '';
       },
       // IO panel labels as single text runs (mirror legacy "{label} »" / "» {label}").
+      /** @noagent view transform */
       ioLabelIn() {
         return `${_t('inputs')  } »`;
       },
+      /** @noagent view transform */
       ioLabelOut() {
         return `» ${  _t('outputs')}`;
       },
@@ -167,29 +186,146 @@ export default createModule({
       },
 
       // ── Step handlers ─────────────────────────────────────────
+      /**
+       * Fügt einen neuen, leeren Schritt an einer Lücke der Kette ein und
+       * liefert seine id.
+       * @agent
+       * @param {number} atIndex Lücke, an der eingefügt wird (0 = vor dem
+       *   ersten Schritt, bis zur Kettenlänge = ans Ende)
+       * @returns {string} die id des neuen Schritts
+       * @throws {Error} wenn atIndex außerhalb von 0..Kettenlänge liegt oder
+       *   keine ganze Zahl ist
+       */
       addStep(atIndex) {
-        this.model.addStep(atIndex);
+        requireIndex('atIndex', atIndex, this.model.steps.length);
+        const id = this.model.addStep(atIndex);
         this._focusStepTitle(atIndex);
+        return id;
       },
+      /**
+       * Entfernt einen Schritt aus der Kette. Jeder Loop, der ihn als Ziel
+       * trägt, wird dabei ebenfalls gelöscht.
+       * @agent
+       * @param {string} id id des Schritts
+       * @returns {void}
+       * @throws {Error} wenn id unbekannt ist
+       */
       removeStep(id) {
+        requireKnownId('id', id, this.model.steps.map((s) => s.id));
         this.model.removeStep(id);
       },
 
       // ── IO handlers ───────────────────────────────────────────
+      /**
+       * Hängt einen Input oder Output an einen Schritt an und liefert seine
+       * id.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {'inputs'|'outputs'} type die Liste, an die angehängt wird
+       * @returns {string} die id des neuen Eintrags
+       * @throws {Error} wenn stepId unbekannt ist oder type nicht 'inputs'
+       *   oder 'outputs' ist
+       */
       addIO(stepId, type) {
-        this.model.addIO(stepId, type);
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+        requireEnum('type', type, ['inputs', 'outputs']);
+        const ioId = this.model.addIO(stepId, type);
         this._focusLastIO(stepId, type);
+        return ioId;
       },
+      /**
+       * Entfernt einen Input oder Output von einem Schritt.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {'inputs'|'outputs'} type die Liste, aus der entfernt wird
+       * @param {string} ioId id des Eintrags
+       * @returns {void}
+       * @throws {Error} wenn stepId oder ioId unbekannt ist, oder type nicht
+       *   'inputs' oder 'outputs' ist
+       */
       removeIO(stepId, type, ioId) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+        requireEnum('type', type, ['inputs', 'outputs']);
+        const step = this.model.findStep(stepId);
+        requireKnownId('ioId', ioId, (step[type] || []).map((io) => io.id));
         this.model.removeIO(stepId, type, ioId);
       },
+      /**
+       * Schaltet den Input-Typ eines Inputs weiter: kein Typ → Prozessparameter
+       * (x) → Störgröße (n) → kein Typ.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {string} ioId id des Inputs
+       * @returns {void}
+       * @throws {Error} wenn stepId oder ioId unbekannt ist
+       */
       cycleInputType(stepId, ioId) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+        const step = this.model.findStep(stepId);
+        requireKnownId('ioId', ioId, (step.inputs || []).map((io) => io.id));
         this.model.cycleInputType(stepId, ioId);
       },
 
       // ── Value type ────────────────────────────────────────────
+      /**
+       * Schaltet den Wertschöpfungstyp eines Schritts weiter: nicht
+       * klassifiziert → wertschöpfend (VA) → geschäftlich notwendig (BNVA) →
+       * nicht wertschöpfend (NVA) → nicht klassifiziert.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @returns {void}
+       * @throws {Error} wenn stepId unbekannt ist
+       */
       cycleValueType(stepId) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
         this.model.cycleValueType(stepId);
+      },
+
+      // ── New sinks (E2) ─────────────────────────────────────────
+      /**
+       * Setzt den Titel eines Schritts. Schreibt dasselbe Feld wie
+       * `x-model="step.title"` in der Vorlage.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {string} text der neue Titel
+       * @returns {void}
+       * @throws {Error} wenn stepId unbekannt ist
+       */
+      setStepTitle(stepId, text) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+        this.model.findStep(stepId).title = String(text ?? '');
+      },
+      /**
+       * Setzt die Beschreibung eines Schritts. Schreibt dasselbe Feld wie
+       * `x-model="step.description"` in der Vorlage.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {string} text die neue Beschreibung
+       * @returns {void}
+       * @throws {Error} wenn stepId unbekannt ist
+       */
+      setStepDescription(stepId, text) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+        this.model.findStep(stepId).description = String(text ?? '');
+      },
+      /**
+       * Setzt den Namen eines Inputs oder Outputs. Schreibt dasselbe Feld
+       * wie `x-model="io.name"` in der Vorlage.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {'inputs'|'outputs'} type die Liste, in der der Eintrag steht
+       * @param {string} ioId id des Eintrags
+       * @param {string} name der neue Name
+       * @returns {void}
+       * @throws {Error} wenn stepId oder ioId unbekannt ist, oder type nicht
+       *   'inputs' oder 'outputs' ist
+       */
+      setIOName(stepId, type, ioId, name) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+        requireEnum('type', type, ['inputs', 'outputs']);
+        const step = this.model.findStep(stepId);
+        requireKnownId('ioId', ioId, (step[type] || []).map((io) => io.id));
+        this.model.findIO(stepId, type, ioId).name = String(name ?? '');
       },
 
       // ── Substep handlers ──────────────────────────────────────
@@ -238,7 +374,16 @@ export default createModule({
       },
 
       // ── Loop handlers ─────────────────────────────────────────
+      /**
+       * Schaltet den Loop eines Schritts an oder aus. Beim Anlegen entsteht
+       * ein leerer Loop ohne Bedingung, Ziel oder Rework-Schritte.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @returns {void}
+       * @throws {Error} wenn stepId unbekannt ist
+       */
       toggleLoop(stepId) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
         this.model.toggleLoop(stepId);
       },
 
@@ -273,10 +418,12 @@ export default createModule({
       },
 
       // ── IO drag (within a step's input or output list) ────────
+      /** @noagent DOM event handler */
       armIODrag(event) {
         const item = event.target.closest('.pmap__io-item');
         if (item && item.dataset.ioId) item.setAttribute('draggable', 'true');
       },
+      /** @noagent DOM event handler */
       ioDragStart(stepId, type, ioId, event) {
         event.stopPropagation();
         this._draggedIOId = ioId;
@@ -286,6 +433,7 @@ export default createModule({
         const item = event.target.closest('.pmap__io-item');
         setTimeout(() => item?.classList.add('pmap__io-item--dragging'), 0);
       },
+      /** @noagent DOM event handler */
       ioDragEnd(event) {
         const item = event.target.closest('.pmap__io-item');
         item?.removeAttribute('draggable');
@@ -294,6 +442,7 @@ export default createModule({
         this._draggedIOStepId = null;
         this._draggedIOType = null;
       },
+      /** @noagent DOM event handler */
       ioDragOver(stepId, type, ioId, event) {
         event.preventDefault();
         event.stopPropagation();
@@ -304,12 +453,14 @@ export default createModule({
           event.currentTarget.classList.add('pmap__io-item--drag-over');
         }
       },
+      /** @noagent DOM event handler */
       ioDragLeave(ioId, event) {
         const item = event.currentTarget;
         if (!item.contains(event.relatedTarget)) {
           item.classList.remove('pmap__io-item--drag-over');
         }
       },
+      /** @noagent DOM event handler */
       ioDrop(stepId, type, ioId, event) {
         event.preventDefault();
         event.stopPropagation();
@@ -344,6 +495,7 @@ export default createModule({
        *   preCols:Array<{col:number, pass:boolean}>, leadSpan:number,
        *   trailCols:Array<{col:number, pass:boolean}>,
        *   targetOptions:Array<{id:string,label:string}>}>}
+       * @noagent view transform
        */
       loopRows() {
         const steps = this.model.steps;
@@ -382,7 +534,10 @@ export default createModule({
         });
         return rows;
       },
-      /** CSS classes for rail cell ci of a band: its own modifier plus pass/arrow marks. */
+      /**
+       * CSS classes for rail cell ci of a band: its own modifier plus pass/arrow marks.
+       * @noagent view transform
+       */
       railCellClass(row, ci) {
         const cell = row.railCells[ci];
         return [
@@ -393,57 +548,136 @@ export default createModule({
       },
 
       // ── Loop band field handlers (declarative @input/@change/@click) ──
+      /** @noagent view transform */
       loopConditionOf(stepId) {
         const step = this.model.steps.find((s) => s.id === stepId);
         return (step && step.loop && step.loop.condition) ? step.loop.condition : '';
       },
-      loopConditionInput(stepId, event) {
-        const step = this.model.steps.find((s) => s.id === stepId);
-        if (step && step.loop) step.loop.condition = event.target.value;
+      /**
+       * Setzt die Auslösebedingung eines Loops. Schreibt dasselbe Feld wie
+       * `@input` auf `.pmap__loop-condition` in der Vorlage.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {string} text die neue Bedingung
+       * @returns {boolean} true wenn gesetzt, false wenn der Schritt keinen
+       *   Loop trägt — dann ist nichts passiert
+       * @throws {Error} wenn stepId unbekannt ist
+       */
+      setLoopCondition(stepId, text) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+        const step = this.model.findStep(stepId);
+        if (!step.loop) return false;
+        step.loop.condition = String(text ?? '');
+        return true;
       },
-      loopTargetChange(stepId, event) {
-        const step = this.model.steps.find((s) => s.id === stepId);
-        if (step && step.loop) {
-          step.loop.targetStepId = event.target.value || null;
-        }
-      },
+      /** @noagent view transform */
       loopTargetSelected(stepId, optId) {
         const step = this.model.steps.find((s) => s.id === stepId);
         return Boolean(step && step.loop && step.loop.targetStepId === optId);
       },
+      /**
+       * Setzt den Zielschritt eines Loops (zu welchem früheren Schritt er
+       * zurückführt). Schreibt dasselbe Feld wie `@change` auf
+       * `.pmap__loop-target-select` in der Vorlage.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {string|null} targetStepId id eines vorhandenen Schritts, oder
+       *   `null`/leerer String, um das Ziel zu löschen
+       * @returns {boolean} true wenn gesetzt, false wenn der Schritt keinen
+       *   Loop trägt — dann ist nichts passiert
+       * @throws {Error} wenn stepId unbekannt ist, oder targetStepId gesetzt
+       *   und unbekannt ist
+       */
+      setLoopTarget(stepId, targetStepId) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+        const step = this.model.findStep(stepId);
+        if (!step.loop) return false;
+        if (targetStepId) {
+          requireKnownId('targetStepId', targetStepId, this.model.steps.map((s) => s.id));
+        }
+        step.loop.targetStepId = targetStepId || null;
+        this.model.validateLoopTargets();
+        return true;
+      },
+      /**
+       * Entfernt den Loop eines Schritts.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @returns {void}
+       * @throws {Error} wenn stepId unbekannt ist
+       */
       removeLoop(stepId) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
         this.model.removeLoop(stepId);
       },
+      /**
+       * Hängt einen Rework-Schritt an den Loop eines Schritts an und liefert
+       * seine id.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @returns {string|null} die id des neuen Rework-Schritts, oder
+       *   `null`, wenn der Schritt keinen Loop trägt — dann ist nichts
+       *   passiert
+       * @throws {Error} wenn stepId unbekannt ist
+       */
       addLoopStep(stepId) {
-        this.model.addLoopStep(stepId);
-        this._focusLastLoopStep(stepId);
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+        const id = this.model.addLoopStep(stepId);
+        if (id) this._focusLastLoopStep(stepId);
+        return id;
       },
+      /**
+       * Entfernt einen Rework-Schritt aus dem Loop eines Schritts.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {string} loopStepId id des Rework-Schritts
+       * @returns {void}
+       * @throws {Error} wenn stepId oder loopStepId unbekannt ist
+       */
       removeLoopStep(stepId, loopStepId) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+        const step = this.model.findStep(stepId);
+        requireKnownId('loopStepId', loopStepId, (step.loop?.steps || []).map((s) => s.id));
         this.model.removeLoopStep(stepId, loopStepId);
       },
-      loopStepTitleInput(stepId, loopStepId, event) {
-        const step = this.model.steps.find((s) => s.id === stepId);
-        if (!step || !step.loop) return;
-        const ls = step.loop.steps.find((s) => s.id === loopStepId);
-        if (ls) ls.title = event.target.value;
+      /**
+       * Setzt den Titel eines Rework-Schritts. Schreibt dasselbe Feld wie
+       * `@input` auf `.pmap__loop-step-title` in der Vorlage.
+       * @agent
+       * @param {string} stepId id des Schritts, der den Loop trägt
+       * @param {string} loopStepId id des Rework-Schritts
+       * @param {string} text der neue Titel
+       * @returns {void}
+       * @throws {Error} wenn stepId oder loopStepId unbekannt ist
+       */
+      setLoopStepTitle(stepId, loopStepId, text) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+        const step = this.model.findStep(stepId);
+        requireKnownId('loopStepId', loopStepId, (step.loop?.steps || []).map((s) => s.id));
+        step.loop.steps.find((s) => s.id === loopStepId).title = String(text ?? '');
       },
       /**
        * Width of a loop step title input in characters, so the chip grows
        * with its title (capped; the chip itself never exceeds its band).
        * @param {{title:string}} ls
        * @returns {number}
+       * @noagent view transform
        */
       loopStepTitleSize(ls) {
         const len = Math.max((ls.title || '').length, _t('loopStepPlaceholder').length);
         return Math.min(len + 1, 48);
       },
-      /** Loop steps for the band of the given step (for the nested x-for). */
+      /**
+       * Loop steps for the band of the given step (for the nested x-for).
+       * @noagent view transform
+       */
       loopStepsOf(stepId) {
         const step = this.model.steps.find((s) => s.id === stepId);
         return (step && step.loop && step.loop.steps) ? step.loop.steps : [];
       },
 
       // ── Export ────────────────────────────────────────────────
+      /** @noagent lädt eine Datei herunter; ein Agent liest den Zustand über `read()`. */
       onExport(fmt) {
         if (fmt === 'csv')  this._exportCSV();
         if (fmt === 'xlsx') this._exportXLSX();
@@ -642,6 +876,7 @@ export default createModule({
       },
 
       // ── Lifecycle (per Alpine instance) ───────────────────────
+      /** @noagent lifecycle, kein Zustandsweg */
       init() {
         this.$nextTick(() => {
           this._autoSizeAll();
@@ -691,6 +926,7 @@ export default createModule({
         document.addEventListener('mouseup', this._onMouseUp);
       },
 
+      /** @noagent lifecycle, kein Zustandsweg */
       destroy() {
         if (this._onMouseUp) {
           document.removeEventListener('mouseup', this._onMouseUp);

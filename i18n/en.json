@@ -1361,6 +1361,146 @@
     "process-map": {
       "name": "Process Map",
       "description": "Visual process flow with inputs and outputs per step",
+      "whenToUse": "When an existing process needs documenting as a horizontal step chain with inputs, outputs, value-add classification and rework loops — not for a pure role or decision view, that is Deployment resp. Activity Flowchart.",
+      "actions": {
+        "addStep": {
+          "help": "Inserts a new, empty step at a gap in the chain and returns its id.",
+          "params": {
+            "atIndex": "The gap to insert at (0 = before the first step, up to the chain length = at the end). A value outside that range or a non-integer is an error."
+          }
+        },
+        "removeStep": {
+          "help": "Removes a step from the chain. Any loop targeting it is removed too.",
+          "params": {
+            "id": "The id of the step to remove. An unknown id is an error."
+          }
+        },
+        "addIO": {
+          "help": "Appends an input or output to a step and returns its id.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error.",
+            "type": "'inputs' or 'outputs'. Any other value is an error."
+          }
+        },
+        "removeIO": {
+          "help": "Removes an input or output from a step.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error.",
+            "type": "'inputs' or 'outputs'. Any other value is an error.",
+            "ioId": "The entry's id. An unknown id is an error."
+          }
+        },
+        "cycleInputType": {
+          "help": "Cycles an input's type: none → process parameter (x) → noise factor (n) → none.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error.",
+            "ioId": "The input's id. An unknown id is an error."
+          }
+        },
+        "cycleValueType": {
+          "help": "Cycles a step's value type: unclassified → value-adding (VA) → business non-value-adding (BNVA) → non-value-adding (NVA) → unclassified.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error."
+          }
+        },
+        "setStepTitle": {
+          "help": "Sets a step's title.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error.",
+            "text": "The new title."
+          }
+        },
+        "setStepDescription": {
+          "help": "Sets a step's description.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error.",
+            "text": "The new description."
+          }
+        },
+        "setIOName": {
+          "help": "Sets the name of an input or output.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error.",
+            "type": "'inputs' or 'outputs'. Any other value is an error.",
+            "ioId": "The entry's id. An unknown id is an error.",
+            "name": "The new name."
+          }
+        },
+        "toggleLoop": {
+          "help": "Toggles a step's loop on or off. Creating one starts empty — no condition, target or rework steps.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error."
+          }
+        },
+        "setLoopCondition": {
+          "help": "Sets a loop's trigger condition. Returns false if the step carries no loop — nothing happens then.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error.",
+            "text": "The new condition."
+          }
+        },
+        "setLoopTarget": {
+          "help": "Sets a loop's target step (which earlier step it loops back to). Returns false if the step carries no loop — nothing happens then.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error.",
+            "targetStepId": "The id of an existing step, or null/an empty string to clear the target. An unknown, non-empty id is an error."
+          }
+        },
+        "removeLoop": {
+          "help": "Removes a step's loop.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error."
+          }
+        },
+        "addLoopStep": {
+          "help": "Appends a rework step to a step's loop and returns its id. Returns null if the step carries no loop — nothing happens then.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error."
+          }
+        },
+        "removeLoopStep": {
+          "help": "Removes a rework step from a step's loop.",
+          "params": {
+            "stepId": "The step's id. An unknown id is an error.",
+            "loopStepId": "The rework step's id. An unknown id is an error."
+          }
+        },
+        "setLoopStepTitle": {
+          "help": "Sets a rework step's title.",
+          "params": {
+            "stepId": "The id of the step carrying the loop. An unknown id is an error.",
+            "loopStepId": "The rework step's id. An unknown id is an error.",
+            "text": "The new title."
+          }
+        },
+        "toggleSubsteps": {
+          "help": "Expands or collapses a step's sub-steps; display only, the content stays.",
+          "params": {
+            "stepId": "The id of the step whose sub-steps are toggled. An unknown id is an error."
+          }
+        },
+        "addSubstep": {
+          "help": "Adds an empty sub-step to a step.",
+          "params": {
+            "stepId": "The id of the step that gets the new sub-step. An unknown id is an error."
+          }
+        },
+        "removeSubstep": {
+          "help": "Removes a sub-step from its parent step.",
+          "params": {
+            "parentId": "The id of the parent step. An unknown id is an error.",
+            "substepId": "The id of the sub-step to remove."
+          }
+        },
+        "setSubstepTitle": {
+          "help": "Sets a sub-step's title.",
+          "params": {
+            "stepId": "The id of the parent step. An unknown id is an error.",
+            "substepId": "The id of the sub-step. An unknown id is an error.",
+            "text": "The new title."
+          }
+        }
+      },
       "deleteStep": "Delete step",
       "addStep": "Add Step",
       "addFirstStep": "Create first step",
@@ -1417,7 +1557,12 @@
       "importFromSipocEmpty": "empty",
       "importFromSipocSteps": "{n} process step(s)",
       "importFromSipocConfirm": "Import",
-      "importFromSipocDone": "Imported {n} step(s) from SIPOC"
+      "importFromSipocDone": "Imported {n} step(s) from SIPOC",
+      "fields": {
+        "steps": {
+          "help": "The chain in order. Each step carries id, title, description, valueType (null|'va'|'bnva'|'nva'), inputs and outputs (each with id, name, optionally inputType 'param'|'noise' on inputs), substeps (each with id, title), expanded and loop (null, or { condition, targetStepId, steps: [{id,title}] })."
+        }
+      }
     },
     "raci-matrix": {
       "name": "RACI Matrix",

@@ -3950,50 +3950,10 @@ export const AGENT_REGISTRY = {
     }
   },
   "process-map": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:stepDragEnd",
-      "unmarked_method:valueBadgeLabel",
-      "unmarked_method:valueBadgeTitle",
-      "unmarked_method:valueBadgeClass",
-      "unmarked_method:cardAccentClass",
-      "unmarked_method:inputTypeLabel",
-      "unmarked_method:inputTypeTitle",
-      "unmarked_method:inputTypeClass",
-      "unmarked_method:loopToggleClass",
-      "unmarked_method:ioLabelIn",
-      "unmarked_method:ioLabelOut",
-      "unmarked_method:addStep",
-      "unmarked_method:removeStep",
-      "unmarked_method:addIO",
-      "unmarked_method:removeIO",
-      "unmarked_method:cycleInputType",
-      "unmarked_method:cycleValueType",
-      "unmarked_method:toggleLoop",
-      "unmarked_method:armIODrag",
-      "unmarked_method:ioDragStart",
-      "unmarked_method:ioDragEnd",
-      "unmarked_method:ioDragOver",
-      "unmarked_method:ioDragLeave",
-      "unmarked_method:ioDrop",
-      "unmarked_method:loopRows",
-      "unmarked_method:railCellClass",
-      "unmarked_method:loopConditionOf",
-      "unmarked_method:loopConditionInput",
-      "unmarked_method:loopTargetChange",
-      "unmarked_method:loopTargetSelected",
-      "unmarked_method:removeLoop",
-      "unmarked_method:addLoopStep",
-      "unmarked_method:removeLoopStep",
-      "unmarked_method:loopStepTitleInput",
-      "unmarked_method:loopStepTitleSize",
-      "unmarked_method:loopStepsOf",
-      "unmarked_method:onExport",
-      "unmarked_method:init",
-      "unmarked_method:destroy"
-    ],
+    "reported": [],
     "actions": {
       "toggleSubsteps": {
         "params": [
@@ -4060,6 +4020,294 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Set a substep's title."
+      },
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "addStep": {
+        "params": [
+          {
+            "name": "atIndex",
+            "type": "number",
+            "optional": false,
+            "help": "Lücke, an der eingefügt wird (0 = vor dem ersten Schritt, bis zur Kettenlänge = ans Ende)"
+          }
+        ],
+        "returns": "string",
+        "help": "Fügt einen neuen, leeren Schritt an einer Lücke der Kette ein und liefert seine id."
+      },
+      "removeStep": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt einen Schritt aus der Kette. Jeder Loop, der ihn als Ziel trägt, wird dabei ebenfalls gelöscht."
+      },
+      "addIO": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "type",
+            "type": "'inputs'|'outputs'",
+            "optional": false,
+            "help": "die Liste, an die angehängt wird"
+          }
+        ],
+        "returns": "string",
+        "help": "Hängt einen Input oder Output an einen Schritt an und liefert seine id."
+      },
+      "removeIO": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "type",
+            "type": "'inputs'|'outputs'",
+            "optional": false,
+            "help": "die Liste, aus der entfernt wird"
+          },
+          {
+            "name": "ioId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Eintrags"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt einen Input oder Output von einem Schritt."
+      },
+      "cycleInputType": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "ioId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Inputs"
+          }
+        ],
+        "returns": "void",
+        "help": "Schaltet den Input-Typ eines Inputs weiter: kein Typ → Prozessparameter (x) → Störgröße (n) → kein Typ."
+      },
+      "cycleValueType": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          }
+        ],
+        "returns": "void",
+        "help": "Schaltet den Wertschöpfungstyp eines Schritts weiter: nicht klassifiziert → wertschöpfend (VA) → geschäftlich notwendig (BNVA) → nicht wertschöpfend (NVA) → nicht klassifiziert."
+      },
+      "setStepTitle": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der neue Titel"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Titel eines Schritts. Schreibt dasselbe Feld wie `x-model=\"step.title\"` in der Vorlage."
+      },
+      "setStepDescription": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die neue Beschreibung"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Beschreibung eines Schritts. Schreibt dasselbe Feld wie `x-model=\"step.description\"` in der Vorlage."
+      },
+      "setIOName": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "type",
+            "type": "'inputs'|'outputs'",
+            "optional": false,
+            "help": "die Liste, in der der Eintrag steht"
+          },
+          {
+            "name": "ioId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Eintrags"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "der neue Name"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Namen eines Inputs oder Outputs. Schreibt dasselbe Feld wie `x-model=\"io.name\"` in der Vorlage."
+      },
+      "toggleLoop": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          }
+        ],
+        "returns": "void",
+        "help": "Schaltet den Loop eines Schritts an oder aus. Beim Anlegen entsteht ein leerer Loop ohne Bedingung, Ziel oder Rework-Schritte."
+      },
+      "setLoopCondition": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die neue Bedingung"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Setzt die Auslösebedingung eines Loops. Schreibt dasselbe Feld wie `@input` auf `.pmap__loop-condition` in der Vorlage."
+      },
+      "setLoopTarget": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "targetStepId",
+            "type": "string|null",
+            "optional": false,
+            "help": "id eines vorhandenen Schritts, oder `null`/leerer String, um das Ziel zu löschen"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Setzt den Zielschritt eines Loops (zu welchem früheren Schritt er zurückführt). Schreibt dasselbe Feld wie `@change` auf `.pmap__loop-target-select` in der Vorlage."
+      },
+      "removeLoop": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt den Loop eines Schritts."
+      },
+      "addLoopStep": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          }
+        ],
+        "returns": "string|null",
+        "help": "Hängt einen Rework-Schritt an den Loop eines Schritts an und liefert seine id."
+      },
+      "removeLoopStep": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "loopStepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Rework-Schritts"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt einen Rework-Schritt aus dem Loop eines Schritts."
+      },
+      "setLoopStepTitle": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts, der den Loop trägt"
+          },
+          {
+            "name": "loopStepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Rework-Schritts"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der neue Titel"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Titel eines Rework-Schritts. Schreibt dasselbe Feld wie `@input` auf `.pmap__loop-step-title` in der Vorlage."
       }
     },
     "fields": {
@@ -5771,4 +6019,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":6};
+export const AGENT_COVERAGE = {"total":74,"available":7};

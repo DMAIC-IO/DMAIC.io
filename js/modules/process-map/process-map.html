@@ -208,12 +208,12 @@
                           <label class="pmap__loop-field-label"><span class="icon icon--sm" data-icon="flow.decision" aria-hidden="true"></span> <span x-text="t('loopCondition')"></span></label>
                           <input class="field field--sm pmap__loop-condition" type="text" :value="loopConditionOf(row.stepId)"
                             :placeholder="t('loopConditionPlaceholder')"
-                            :data-step-id="row.stepId" @input="loopConditionInput(row.stepId, $event)">
+                            :data-step-id="row.stepId" @input="setLoopCondition(row.stepId, $event.target.value)">
                         </div>
                         <div class="pmap__loop-field">
                           <label class="pmap__loop-field-label" x-text="t('loopTarget')"></label>
                           <select class="field field--sm pmap__loop-target-select" :data-step-id="row.stepId"
-                            @change="loopTargetChange(row.stepId, $event)">
+                            @change="setLoopTarget(row.stepId, $event.target.value)">
                             <option value="" x-text="t('loopSelectTarget')"></option>
                             <template x-for="opt in row.targetOptions" :key="opt.id">
                               <option :value="opt.id" :selected="loopTargetSelected(row.stepId, opt.id)" x-text="opt.label"></option>
@@ -228,7 +228,7 @@
                             :size="loopStepTitleSize(ls)"
                             :placeholder="t('loopStepPlaceholder')"
                             :data-loop-step-id="ls.id" :data-parent-id="row.stepId"
-                            @input="loopStepTitleInput(row.stepId, ls.id, $event)">
+                            @input="setLoopStepTitle(row.stepId, ls.id, $event.target.value)">
                           <button class="pmap__loop-step-remove" data-action="remove-loop-step"
                             :data-parent-id="row.stepId" :data-loop-step-id="ls.id"
                             :title="t('common.delete')" :aria-label="t('common.delete')"
