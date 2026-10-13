@@ -1856,60 +1856,77 @@ export const AGENT_REGISTRY = {
     }
   },
   "doe-advisor": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:designName",
-      "unmarked_method:designTip",
-      "unmarked_method:designFactors",
-      "unmarked_method:designLevels",
-      "unmarked_method:designEffort",
-      "unmarked_method:designNote",
-      "unmarked_method:phasePhase",
-      "unmarked_method:phaseGoal",
-      "unmarked_method:phaseDesigns",
-      "unmarked_method:ccdLabel",
-      "unmarked_method:ccdRotatable",
-      "unmarked_method:ccdFace",
-      "unmarked_method:stepQuestion",
-      "unmarked_method:optionLabel",
-      "unmarked_method:optionHelp",
-      "unmarked_method:trailShort",
-      "unmarked_method:trailAnswer",
-      "unmarked_method:stepLabel",
-      "unmarked_method:resultName",
-      "unmarked_method:resultReasoning",
-      "unmarked_method:resultTip",
-      "unmarked_method:resultNote",
-      "unmarked_method:resultFactors",
-      "unmarked_method:resultLevels",
-      "unmarked_method:resultEffort",
-      "unmarked_method:switchTab",
-      "unmarked_method:answer",
-      "unmarked_method:back",
-      "unmarked_method:restart"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "switchTab": {
+        "params": [
+          {
+            "name": "tab",
+            "type": "'overview'|'wizard'|'ccd'",
+            "optional": false,
+            "help": "overview zeigt den Katalog, wizard den geführten Berater, ccd den Planvergleich. Jeder andere Wert ist ein Fehler."
+          }
+        ],
+        "returns": "void",
+        "help": "Wechselt den angezeigten Bereich."
+      },
+      "answer": {
+        "params": [
+          {
+            "name": "opt",
+            "type": "string",
+            "optional": false,
+            "help": "die gewählte Antwortmöglichkeit der OFFENEN Frage. Eine Möglichkeit, die diese Frage nicht kennt, ist ein Fehler; die Meldung nennt die zulässigen."
+          }
+        ],
+        "returns": "boolean",
+        "help": "Beantwortet die offene Frage und geht zur nächsten weiter — oder zur Empfehlung, wenn der Weg dort endet."
+      },
+      "back": {
+        "params": [],
+        "returns": "boolean",
+        "help": "Geht eine Frage zurück und verwirft die Antwort, die weggeführt hat."
+      },
+      "restart": {
+        "params": [],
+        "returns": "void",
+        "help": "Beginnt den Berater neu: erste Frage, keine Antworten."
+      }
+    },
     "fields": {
       "tab": {
         "type": "'overview'|'wizard'|'ccd'",
-        "help": "",
+        "help": "der angezeigte Bereich: overview der Versuchsplankatalog, wizard der geführte Berater, ccd der Vergleich der zentral zusammengesetzten Pläne",
         "bulk": false
       },
       "currentStep": {
         "type": "string",
-        "help": "Current wizard step id, or `result:<key>` once decided.",
+        "help": "die id der offenen Frage — phase, goal, screening-curvature, factor-count, factor-levels, robustness-type, limits oder corners —, oder `result:<schlüssel>`, sobald eine Empfehlung steht",
         "bulk": false
       },
       "answers": {
         "type": "Record<string,string>",
-        "help": "Answers keyed by ANSWER_KEYS values.",
+        "help": "die gegebenen Antworten, je Frage eine: der Schlüssel ist phase, goal, screeningCurvature, factorCount, factorLevels, robustnessType, limits oder corners, der Wert die gewählte Antwortmöglichkeit",
         "bulk": false
       },
       "history": {
         "type": "string[]",
-        "help": "Visited step ids (back-button history).",
+        "help": "die ids der beantworteten Fragen in der Reihenfolge, in der sie beantwortet wurden; der letzte Eintrag ist der, zu dem zurückgehen führt",
         "bulk": false
       }
     }
@@ -8477,4 +8494,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":28};
+export const AGENT_COVERAGE = {"total":74,"available":29};

@@ -162,13 +162,31 @@ export class State {
 
   _schema = { name: State.ID, version: State.VERSION };
 
-  /** @type {'overview'|'wizard'|'ccd'} */
+  /**
+   * @type {'overview'|'wizard'|'ccd'} der angezeigte Bereich: overview der
+   *   Versuchsplankatalog, wizard der geführte Berater, ccd der Vergleich der
+   *   zentral zusammengesetzten Pläne
+   */
   tab = 'overview';
-  /** @type {string} Current wizard step id, or `result:<key>` once decided. */
+  /**
+   * @type {string} die id der offenen Frage — phase, goal,
+   *   screening-curvature, factor-count, factor-levels, robustness-type,
+   *   limits oder corners —, oder `result:<schlüssel>`, sobald eine
+   *   Empfehlung steht
+   */
   currentStep = 'phase';
-  /** @type {Record<string,string>} Answers keyed by ANSWER_KEYS values. */
+  /**
+   * @type {Record<string,string>} die gegebenen Antworten, je Frage eine:
+   *   der Schlüssel ist phase, goal, screeningCurvature, factorCount,
+   *   factorLevels, robustnessType, limits oder corners, der Wert die
+   *   gewählte Antwortmöglichkeit
+   */
   answers = {};
-  /** @type {string[]} Visited step ids (back-button history). */
+  /**
+   * @type {string[]} die ids der beantworteten Fragen in der Reihenfolge, in
+   *   der sie beantwortet wurden; der letzte Eintrag ist der, zu dem
+   *   zurückgehen führt
+   */
   history = [];
 
   // ─── Derived (raw data) ─────────────────────────────────────

@@ -4599,6 +4599,41 @@
       "dispersionPreferInteraction": "Interaction effect — read level combination from contour plot"
     },
     "doe-advisor": {
+      "whenToUse": "When an improvement project still has to settle WHICH design of experiments fits — screening, interactions, optimisation, robustness or mixture — or when the design catalogue and the comparison of the central composite designs are needed; not for planning or evaluating a concrete experiment, that is what the design planner and its evaluation are for.",
+      "actions": {
+        "switchTab": {
+          "help": "Switches the displayed area.",
+          "params": {
+            "tab": "overview shows the design catalogue, wizard the guided advisor, ccd the comparison of the central composite designs. Any other value is an error."
+          }
+        },
+        "answer": {
+          "help": "Answers the open question and moves on to the next one — or to the recommendation, when the path ends there. If the advisor already stands on its recommendation, no question is open: everything stays as it is and the call returns false.",
+          "params": {
+            "opt": "The chosen option of the open question. Which question is open is in currentStep; which options it has is named by the error message. An option that question does not know is an error."
+          }
+        },
+        "back": {
+          "help": "Goes back one question and discards the answer that led away from it. If the advisor stands on the first question, it stays there and the call returns false."
+        },
+        "restart": {
+          "help": "Starts the advisor over: first question, no answers, no trail."
+        }
+      },
+      "fields": {
+        "tab": {
+          "help": "The displayed area: overview the design catalogue, wizard the guided advisor, ccd the comparison of the central composite designs."
+        },
+        "currentStep": {
+          "help": "The id of the open question — phase, goal, screening-curvature, factor-count, factor-levels, robustness-type, limits or corners — or result:<key> once a recommendation stands; result:none means no design of experiments is due in this phase yet. The question itself and the recommendation are translated texts and live in no field."
+        },
+        "answers": {
+          "help": "The answers given, one per question. The key is phase, goal, screeningCurvature, factorCount, factorLevels, robustnessType, limits or corners, the value the chosen option."
+        },
+        "history": {
+          "help": "The ids of the answered questions in the order they were answered; the last entry is the one back() returns to."
+        }
+      },
       "name": "DoE Advisor",
       "description": "Overview of DoE designs and a guided wizard for design selection",
       "tabOverview": "Overview",

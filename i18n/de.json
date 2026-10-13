@@ -4603,6 +4603,41 @@
       "dispersionPreferInteraction": "Wechselwirkungseffekt — Stufenkombination im Konturplot ablesen"
     },
     "doe-advisor": {
+      "whenToUse": "Wenn für ein Verbesserungsvorhaben erst noch die Frage zu klären ist, WELCHER Versuchsplan passt — Screening, Wechselwirkungen, Optimierung, Robustheit oder Mischung —, oder wenn der Katalog der Pläne und der Vergleich der zentral zusammengesetzten Pläne gebraucht wird; nicht für das Planen oder Auswerten eines konkreten Versuchs, dafür sind der Versuchsplaner und die Auswertung da.",
+      "actions": {
+        "switchTab": {
+          "help": "Wechselt den angezeigten Bereich.",
+          "params": {
+            "tab": "overview zeigt den Versuchsplankatalog, wizard den geführten Berater, ccd den Vergleich der zentral zusammengesetzten Pläne. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "answer": {
+          "help": "Beantwortet die offene Frage und geht zur nächsten weiter — oder zur Empfehlung, wenn der Weg dort endet. Steht der Berater schon auf seiner Empfehlung, ist keine Frage offen: dann bleibt alles stehen und der Aufruf liefert false.",
+          "params": {
+            "opt": "Die gewählte Antwortmöglichkeit der offenen Frage. Welche Frage offen ist, steht in currentStep; welche Möglichkeiten sie hat, nennt die Fehlermeldung. Eine Möglichkeit, die diese Frage nicht kennt, ist ein Fehler."
+          }
+        },
+        "back": {
+          "help": "Geht eine Frage zurück und verwirft die Antwort, die weggeführt hat. Steht der Berater auf der ersten Frage, bleibt er stehen und der Aufruf liefert false."
+        },
+        "restart": {
+          "help": "Beginnt den Berater neu: erste Frage, keine Antworten, keine Spur."
+        }
+      },
+      "fields": {
+        "tab": {
+          "help": "Der angezeigte Bereich: overview der Versuchsplankatalog, wizard der geführte Berater, ccd der Vergleich der zentral zusammengesetzten Pläne."
+        },
+        "currentStep": {
+          "help": "Die id der offenen Frage — phase, goal, screening-curvature, factor-count, factor-levels, robustness-type, limits oder corners —, oder result:<schlüssel>, sobald eine Empfehlung steht; result:none heißt, dass in dieser Phase noch kein Versuchsplan ansteht. Die Frage selbst und die Empfehlung sind übersetzte Texte und stehen in keinem Feld."
+        },
+        "answers": {
+          "help": "Die gegebenen Antworten, je Frage eine. Der Schlüssel ist phase, goal, screeningCurvature, factorCount, factorLevels, robustnessType, limits oder corners, der Wert die gewählte Antwortmöglichkeit."
+        },
+        "history": {
+          "help": "Die ids der beantworteten Fragen in der Reihenfolge, in der sie beantwortet wurden; der letzte Eintrag ist der, zu dem back() zurückführt."
+        }
+      },
       "name": "DoE-Berater",
       "description": "Übersicht der DoE-Designs und geführter Wizard zur Designauswahl",
       "tabOverview": "Übersicht",
