@@ -15,16 +15,33 @@
 /** The four RACI roles, in cycle order. */
 export const ROLES = ['R', 'A', 'C', 'I'];
 
+/**
+ * Die erklärte Wertemenge von `setRole`: die vier Rollen plus der leere
+ * Text, der die Rolle einer Zelle zurücknimmt. Die Oberfläche drückt
+ * dieselbe Rücknahme durch den fünften Schritt des Zellenklicks aus.
+ */
+export const ROLE_VALUES = [...ROLES, ''];
+
 /** Max input length for activity / stakeholder labels (mirrors legacy maxlength). */
 export const ACTIVITY_MAXLEN = 200;
 export const STAKEHOLDER_MAXLEN = 120;
 
 export class State {
-  /** @type {string[]} activity (row) labels */
+  /**
+   * @type {string[]} die Aktivitäten (Zeilen) in Anzeigereihenfolge,
+   *   adressiert über ihre Zeilennummer ab 0
+   */
   activities = [];
-  /** @type {string[]} stakeholder (column) labels */
+  /**
+   * @type {string[]} die Beteiligten (Spalten) in Anzeigereihenfolge,
+   *   adressiert über ihre Spaltennummer ab 0
+   */
   stakeholders = [];
-  /** @type {Record<string, "R"|"A"|"C"|"I">} sparse role map keyed "a:s" */
+  /**
+   * @type {Record<string, "R"|"A"|"C"|"I">} die gesetzten Rollen, adressiert
+   *   als assignments["zeile:spalte"] mit Nummern ab 0; eine Zelle ohne
+   *   Rolle fehlt in der Karte
+   */
   assignments = {};
 
   // ─── Keys & roles ───────────────────────────────────────────

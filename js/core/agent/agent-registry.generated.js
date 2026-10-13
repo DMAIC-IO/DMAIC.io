@@ -4497,52 +4497,182 @@ export const AGENT_REGISTRY = {
     }
   },
   "raci-matrix": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:legendStyle",
-      "unmarked_method:legendLabel",
-      "unmarked_method:cellStyle",
-      "unmarked_method:addLabel",
-      "unmarked_method:cornerLabel",
-      "unmarked_method:renameTitle",
-      "unmarked_method:warningsActive",
-      "unmarked_method:warningsByRow",
-      "unmarked_method:hasWarning",
-      "unmarked_method:warnTitle",
-      "unmarked_method:rowWarnClass",
-      "unmarked_method:addActivityFromInput",
-      "unmarked_method:addStakeholderFromInput",
-      "unmarked_method:cycleRole",
-      "unmarked_method:removeActivity",
-      "unmarked_method:removeStakeholder",
-      "unmarked_method:isRenaming",
-      "unmarked_method:startRename",
-      "unmarked_method:commitRename",
-      "unmarked_method:cancelRename",
-      "unmarked_method:dragStart",
-      "unmarked_method:dragEnd",
-      "unmarked_method:dragOver",
-      "unmarked_method:dragLeave",
-      "unmarked_method:drop",
-      "unmarked_method:exportCSV"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "cycleRole": {
+        "params": [
+          {
+            "name": "aIdx",
+            "type": "number",
+            "optional": false,
+            "help": "die Zeilennummer der Aktivität, von 0 an gezählt"
+          },
+          {
+            "name": "sIdx",
+            "type": "number",
+            "optional": false,
+            "help": "die Spaltennummer des Beteiligten, von 0 an gezählt"
+          }
+        ],
+        "returns": "void",
+        "help": "Geht die Rolle einer Zelle einen Schritt weiter: ohne Rolle zu R, R zu A, A zu C, C zu I, I zurück zu ohne Rolle."
+      },
+      "setRole": {
+        "params": [
+          {
+            "name": "aIdx",
+            "type": "number",
+            "optional": false,
+            "help": "die Zeilennummer der Aktivität, von 0 an gezählt"
+          },
+          {
+            "name": "sIdx",
+            "type": "number",
+            "optional": false,
+            "help": "die Spaltennummer des Beteiligten, von 0 an gezählt"
+          },
+          {
+            "name": "role",
+            "type": "string",
+            "optional": false,
+            "help": "die Rolle, oder der leere Text, um sie zurückzunehmen"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Rolle einer Zelle absolut."
+      },
+      "addActivity": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die Aktivität; Leerzeichen am Rand fallen weg"
+          }
+        ],
+        "returns": "number",
+        "help": "Hängt eine Aktivität (Zeile) an die Matrix an."
+      },
+      "addStakeholder": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der Beteiligte; Leerzeichen am Rand fallen weg"
+          }
+        ],
+        "returns": "number",
+        "help": "Hängt einen Beteiligten (Spalte) an die Matrix an."
+      },
+      "renameActivity": {
+        "params": [
+          {
+            "name": "idx",
+            "type": "number",
+            "optional": false,
+            "help": "die Zeilennummer, von 0 an gezählt"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "der neue Name"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Benennt eine Aktivität um."
+      },
+      "renameStakeholder": {
+        "params": [
+          {
+            "name": "idx",
+            "type": "number",
+            "optional": false,
+            "help": "die Spaltennummer, von 0 an gezählt"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "der neue Name"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Benennt einen Beteiligten um."
+      },
+      "removeActivity": {
+        "params": [
+          {
+            "name": "idx",
+            "type": "number",
+            "optional": false,
+            "help": "die Zeilennummer, von 0 an gezählt"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt eine Aktivität samt ihrer Rollen; die übrigen Zeilen rücken nach."
+      },
+      "removeStakeholder": {
+        "params": [
+          {
+            "name": "idx",
+            "type": "number",
+            "optional": false,
+            "help": "die Spaltennummer, von 0 an gezählt"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt einen Beteiligten samt seiner Rollen; die übrigen Spalten rücken nach."
+      },
+      "moveActivity": {
+        "params": [
+          {
+            "name": "from",
+            "type": "number",
+            "optional": false,
+            "help": "die Zeilennummer der Aktivität, von 0 an gezählt"
+          },
+          {
+            "name": "to",
+            "type": "number",
+            "optional": false,
+            "help": "die Zeilennummer, an die sie soll"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Verschiebt eine Aktivität an eine andere Stelle der Reihenfolge; ihre Rollen wandern mit."
+      }
+    },
     "fields": {
       "activities": {
         "type": "string[]",
-        "help": "activity (row) labels",
+        "help": "die Aktivitäten (Zeilen) in Anzeigereihenfolge, adressiert über ihre Zeilennummer ab 0",
         "bulk": false
       },
       "stakeholders": {
         "type": "string[]",
-        "help": "stakeholder (column) labels",
+        "help": "die Beteiligten (Spalten) in Anzeigereihenfolge, adressiert über ihre Spaltennummer ab 0",
         "bulk": false
       },
       "assignments": {
         "type": "Record<string, \"R\"|\"A\"|\"C\"|\"I\">",
-        "help": "sparse role map keyed \"a:s\"",
+        "help": "die gesetzten Rollen, adressiert als assignments[\"zeile:spalte\"] mit Nummern ab 0; eine Zelle ohne Rolle fehlt in der Karte",
         "bulk": false
       }
     }
@@ -6785,4 +6915,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":16};
+export const AGENT_COVERAGE = {"total":74,"available":17};

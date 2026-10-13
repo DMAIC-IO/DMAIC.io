@@ -1567,6 +1567,80 @@
     "raci-matrix": {
       "name": "RACI-Matrix",
       "description": "Verantwortlichkeitsmatrix: Rollen pro Aktivität und Stakeholder",
+      "whenToUse": "Wenn für jede Aktivität eines Vorhabens festgehalten werden soll, wer sie ausführt (R), wer sie verantwortet (A), wer gefragt wird (C) und wer Bescheid bekommt (I) — die Prüfung meldet jede Zeile ohne R, ohne A oder mit mehr als einem A; nicht zur Beschreibung des Ablaufs selbst, dafür ist ein Flussdiagramm da.",
+      "actions": {
+        "addActivity": {
+          "help": "Hängt eine Aktivität (Zeile) an die Matrix an und liefert ihre Zeilennummer.",
+          "params": {
+            "text": "Der Name der Aktivität; Leerzeichen am Rand fallen weg. Ein leerer Text legt nichts an und liefert -1 zurück — das ist eine Absage, kein Fehler."
+          }
+        },
+        "addStakeholder": {
+          "help": "Hängt einen Beteiligten (Spalte) an die Matrix an und liefert seine Spaltennummer.",
+          "params": {
+            "text": "Der Name des Beteiligten; Leerzeichen am Rand fallen weg. Ein leerer Text legt nichts an und liefert -1 zurück — das ist eine Absage, kein Fehler."
+          }
+        },
+        "setRole": {
+          "help": "Setzt die Rolle einer Zelle absolut.",
+          "params": {
+            "aIdx": "Die Zeilennummer der Aktivität, von 0 an gezählt. Eine Nummer, die keine Aktivität bezeichnet, ist ein Fehler.",
+            "sIdx": "Die Spaltennummer des Beteiligten, von 0 an gezählt. Eine Nummer, die keinen Beteiligten bezeichnet, ist ein Fehler.",
+            "role": "Die Rolle: R (Responsible, führt aus), A (Accountable, verantwortet), C (Consulted, wird gefragt) oder I (Informed, bekommt Bescheid). Der leere Text nimmt die Rolle zurück. Ein Wert daneben ist ein Fehler."
+          }
+        },
+        "cycleRole": {
+          "help": "Geht die Rolle einer Zelle einen Schritt weiter: ohne Rolle zu R, R zu A, A zu C, C zu I, I zurück zu ohne Rolle — derselbe Weg wie der Zellenklick. Für einen gezielten Wert ist setRole der direkte Weg.",
+          "params": {
+            "aIdx": "Die Zeilennummer der Aktivität, von 0 an gezählt. Eine Nummer, die keine Aktivität bezeichnet, ist ein Fehler.",
+            "sIdx": "Die Spaltennummer des Beteiligten, von 0 an gezählt. Eine Nummer, die keinen Beteiligten bezeichnet, ist ein Fehler."
+          }
+        },
+        "renameActivity": {
+          "help": "Benennt eine Aktivität um.",
+          "params": {
+            "idx": "Die Zeilennummer der Aktivität, von 0 an gezählt. Eine Nummer, die keine Aktivität bezeichnet, ist ein Fehler.",
+            "value": "Der neue Name. Ein leerer Text wird abgelehnt und lässt den alten Namen stehen (Rückgabe false) — genau wie im Umbenennen-Feld."
+          }
+        },
+        "renameStakeholder": {
+          "help": "Benennt einen Beteiligten um.",
+          "params": {
+            "idx": "Die Spaltennummer des Beteiligten, von 0 an gezählt. Eine Nummer, die keinen Beteiligten bezeichnet, ist ein Fehler.",
+            "value": "Der neue Name. Ein leerer Text wird abgelehnt und lässt den alten Namen stehen (Rückgabe false) — genau wie im Umbenennen-Feld."
+          }
+        },
+        "removeActivity": {
+          "help": "Entfernt eine Aktivität samt ihrer Rollen; die übrigen Zeilen rücken nach.",
+          "params": {
+            "idx": "Die Zeilennummer der Aktivität, von 0 an gezählt. Eine Nummer, die keine Aktivität bezeichnet, ist ein Fehler."
+          }
+        },
+        "removeStakeholder": {
+          "help": "Entfernt einen Beteiligten samt seiner Rollen; die übrigen Spalten rücken nach.",
+          "params": {
+            "idx": "Die Spaltennummer des Beteiligten, von 0 an gezählt. Eine Nummer, die keinen Beteiligten bezeichnet, ist ein Fehler."
+          }
+        },
+        "moveActivity": {
+          "help": "Verschiebt eine Aktivität an eine andere Stelle der Reihenfolge; ihre Rollen wandern mit.",
+          "params": {
+            "from": "Die Zeilennummer der Aktivität, von 0 an gezählt. Eine Nummer, die keine Aktivität bezeichnet, ist ein Fehler.",
+            "to": "Die Zeilennummer, an die die Aktivität soll, von 0 an gezählt. Eine Nummer ausserhalb der Matrix ist ein Fehler; dieselbe Nummer wie from lässt alles stehen und liefert false."
+          }
+        }
+      },
+      "fields": {
+        "activities": {
+          "help": "Die Aktivitäten (Zeilen) in Anzeigereihenfolge, adressiert über ihre Zeilennummer ab 0."
+        },
+        "stakeholders": {
+          "help": "Die Beteiligten (Spalten) in Anzeigereihenfolge, adressiert über ihre Spaltennummer ab 0."
+        },
+        "assignments": {
+          "help": "Die gesetzten Rollen, adressiert als assignments[\"zeile:spalte\"] mit Nummern ab 0. Der Wert ist R, A, C oder I; eine Zelle ohne Rolle fehlt in der Karte."
+        }
+      },
       "activity": "Aktivität",
       "stakeholder": "Stakeholder",
       "roleR": "Responsible (führt aus)",

@@ -1567,6 +1567,80 @@
     "raci-matrix": {
       "name": "RACI Matrix",
       "description": "Responsibility Assignment Matrix: roles per activity and stakeholder",
+      "whenToUse": "When each activity of an undertaking needs a record of who does the work (R), who is accountable (A), who is consulted (C) and who is informed (I) — the check reports every row without an R, without an A or with more than one A; not for describing the flow itself, which is what a flowchart is for.",
+      "actions": {
+        "addActivity": {
+          "help": "Appends an activity (row) to the matrix and returns its row number.",
+          "params": {
+            "text": "The name of the activity; surrounding whitespace is dropped. An empty text adds nothing and returns -1 — that is a refusal, not an error."
+          }
+        },
+        "addStakeholder": {
+          "help": "Appends a stakeholder (column) to the matrix and returns its column number.",
+          "params": {
+            "text": "The name of the stakeholder; surrounding whitespace is dropped. An empty text adds nothing and returns -1 — that is a refusal, not an error."
+          }
+        },
+        "setRole": {
+          "help": "Sets the role of a cell absolutely.",
+          "params": {
+            "aIdx": "The row number of the activity, counted from 0. A number that names no activity is an error.",
+            "sIdx": "The column number of the stakeholder, counted from 0. A number that names no stakeholder is an error.",
+            "role": "The role: R (responsible, does the work), A (accountable), C (consulted) or I (informed). The empty text takes the role back. Any other value is an error."
+          }
+        },
+        "cycleRole": {
+          "help": "Advances the role of a cell by one step: no role to R, R to A, A to C, C to I, I back to no role — the same path as the cell click. For a specific value setRole is the direct way.",
+          "params": {
+            "aIdx": "The row number of the activity, counted from 0. A number that names no activity is an error.",
+            "sIdx": "The column number of the stakeholder, counted from 0. A number that names no stakeholder is an error."
+          }
+        },
+        "renameActivity": {
+          "help": "Renames an activity.",
+          "params": {
+            "idx": "The row number of the activity, counted from 0. A number that names no activity is an error.",
+            "value": "The new name. An empty text is rejected and leaves the old name in place (returns false) — exactly as in the rename field."
+          }
+        },
+        "renameStakeholder": {
+          "help": "Renames a stakeholder.",
+          "params": {
+            "idx": "The column number of the stakeholder, counted from 0. A number that names no stakeholder is an error.",
+            "value": "The new name. An empty text is rejected and leaves the old name in place (returns false) — exactly as in the rename field."
+          }
+        },
+        "removeActivity": {
+          "help": "Removes an activity together with its roles; the remaining rows move up.",
+          "params": {
+            "idx": "The row number of the activity, counted from 0. A number that names no activity is an error."
+          }
+        },
+        "removeStakeholder": {
+          "help": "Removes a stakeholder together with its roles; the remaining columns move left.",
+          "params": {
+            "idx": "The column number of the stakeholder, counted from 0. A number that names no stakeholder is an error."
+          }
+        },
+        "moveActivity": {
+          "help": "Moves an activity to another place in the order; its roles travel along.",
+          "params": {
+            "from": "The row number of the activity, counted from 0. A number that names no activity is an error.",
+            "to": "The row number the activity goes to, counted from 0. A number outside the matrix is an error; the same number as from leaves everything in place and returns false."
+          }
+        }
+      },
+      "fields": {
+        "activities": {
+          "help": "The activities (rows) in display order, addressed by their row number from 0."
+        },
+        "stakeholders": {
+          "help": "The stakeholders (columns) in display order, addressed by their column number from 0."
+        },
+        "assignments": {
+          "help": "The roles that are set, addressed as assignments[\"row:column\"] with numbers from 0. The value is R, A, C or I; a cell without a role is absent from the map."
+        }
+      },
       "activity": "Activity",
       "stakeholder": "Stakeholder",
       "roleR": "Responsible (does the work)",
