@@ -2,6 +2,7 @@
   <div class="module-container__body triz-9w__body">
     <section class="triz-9w__topbar">
       <label class="triz-9w__title-label" for="triz-9w-title" x-text="t('systemHeading')"></label>
+      <!-- zweiter Codeweg zu `model.systemTitle`; Sink: `setSystemTitle()` -->
       <input id="triz-9w-title" class="field triz-9w__title-input" type="text"
         data-role="system-title"
         :placeholder="t('systemPlaceholder')"
@@ -26,7 +27,8 @@
             data-role="col-label"
             :aria-label="colAxisAria(c)"
             :data-c="c"
-            x-model="label.val"
+            :value="label.val"
+            @input="colLabelChanged(c, $event.target.value)"
             :placeholder="colPlaceholder(c)">
         </div>
       </template>
@@ -38,7 +40,8 @@
               data-role="row-label"
               :aria-label="rowAxisAria(r)"
               :data-r="r"
-              x-model="row.rowLabel.val"
+              :value="row.rowLabel.val"
+              @input="rowLabelChanged(r, $event.target.value)"
               :placeholder="rowPlaceholder(r)">
           </div>
 
@@ -60,7 +63,8 @@
               <textarea class="field triz-9w__cell-text" rows="4" data-role="cell-text"
                 :data-r="r" :data-c="c"
                 :placeholder="t('cellPlaceholder')"
-                x-model="cell.text"></textarea>
+                :value="cell.text"
+                @input="cellTextChanged(r, c, $event.target.value)"></textarea>
 
               <template x-if="cell.image"><div class="triz-9w__image-wrap">
                 <img class="triz-9w__image" :src="cell.image"
@@ -70,7 +74,7 @@
                 <button class="triz-9w__image-clear" type="button" data-action="clear-image"
                   :data-r="r" :data-c="c"
                   :title="t('clearImage')"
-                  @click="clearImage(r, c)">&times;</button>
+                  @click="clearImageClicked(r, c)">&times;</button>
               </div></template>
             </div>
           </template>

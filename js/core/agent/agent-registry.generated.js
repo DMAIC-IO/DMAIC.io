@@ -5294,43 +5294,139 @@ export const AGENT_REGISTRY = {
     }
   },
   "triz-9-windows": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:colPlaceholder",
-      "unmarked_method:rowPlaceholder",
-      "unmarked_method:axisColsText",
-      "unmarked_method:colAxisAria",
-      "unmarked_method:rowAxisAria",
-      "unmarked_method:coordText",
-      "unmarked_method:imageAlt",
-      "unmarked_method:enlargedImageSrc",
-      "unmarked_method:uploadBtnStyle",
-      "unmarked_method:handleImageUpload",
-      "unmarked_method:clearImage",
-      "unmarked_method:enlarge",
-      "unmarked_method:closeEnlarged",
-      "unreadable_state_key:rowLabels",
-      "unreadable_state_key:cells",
-      "unreachable_write:systemTitle"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "clearImage": {
+        "params": [
+          {
+            "name": "row",
+            "type": "number",
+            "optional": false,
+            "help": "Zeile 0 bis 2 (Subsystem, System, Übersystem)"
+          },
+          {
+            "name": "col",
+            "type": "number",
+            "optional": false,
+            "help": "Spalte 0 bis 2 (Vergangenheit, Gegenwart, Zukunft)"
+          }
+        ],
+        "returns": "void",
+        "help": "Löscht das Bild eines Feldes der 3×3-Matrix; der Feldtext bleibt."
+      },
+      "setSystemTitle": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der Systemtitel"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Titel des betrachteten Systems."
+      },
+      "setCellText": {
+        "params": [
+          {
+            "name": "row",
+            "type": "number",
+            "optional": false,
+            "help": "Zeile 0 bis 2 (Subsystem, System, Übersystem)"
+          },
+          {
+            "name": "col",
+            "type": "number",
+            "optional": false,
+            "help": "Spalte 0 bis 2 (Vergangenheit, Gegenwart, Zukunft)"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der Feldtext"
+          }
+        ],
+        "returns": "void",
+        "help": "Schreibt den Text eines Feldes der 3×3-Matrix."
+      },
+      "setColLabel": {
+        "params": [
+          {
+            "name": "col",
+            "type": "number",
+            "optional": false,
+            "help": "Spalte 0 bis 2 (Vergangenheit, Gegenwart, Zukunft)"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die Spaltenbeschriftung"
+          }
+        ],
+        "returns": "void",
+        "help": "Beschriftet eine Spalte der Zeitachse."
+      },
+      "setRowLabel": {
+        "params": [
+          {
+            "name": "row",
+            "type": "number",
+            "optional": false,
+            "help": "Zeile 0 bis 2 (Subsystem, System, Übersystem)"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die Zeilenbeschriftung"
+          }
+        ],
+        "returns": "void",
+        "help": "Beschriftet eine Zeile der Systemebenen."
+      }
+    },
     "fields": {
       "systemTitle": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string",
+        "help": "das betrachtete System",
+        "bulk": false,
+        "derived": true
       },
       "colLabels": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string[]",
+        "help": "die drei Spaltenbeschriftungen (Zeitachse: Vergangenheit, Gegenwart, Zukunft)",
+        "bulk": false,
+        "derived": true
       },
-      "rows": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "rowLabels": {
+        "type": "string[]",
+        "help": "die drei Zeilenbeschriftungen (Systemebene: Subsystem, System, Übersystem)",
+        "bulk": false,
+        "derived": true
+      },
+      "cells": {
+        "type": "Array<Array<{ text: string, image: string|null }>>",
+        "help": "die 3×3-Felder, adressiert als cells[zeile][spalte]; `image` ist eine Daten-URL oder null und kann groß sein",
+        "bulk": true,
+        "bulkKind": "table",
+        "derived": true
       }
     }
   },
@@ -6378,4 +6474,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":12};
+export const AGENT_COVERAGE = {"total":74,"available":13};

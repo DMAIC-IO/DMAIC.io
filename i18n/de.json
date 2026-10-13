@@ -6283,6 +6283,58 @@
     "triz-9-windows": {
       "name": "9-Fenster (TRIZ Systemoperator)",
       "description": "System auf den Achsen Zeit × Hierarchie betrachten",
+      "whenToUse": "Wenn ein Problem in seinem Zusammenhang betrachtet werden soll — drei Systemebenen mal drei Zeitfenster — um Ursachen und Lösungsräume außerhalb des Systems selbst zu finden; nicht, um eine einzelne Ursachenkette zu verfolgen, dafür sind 5-Why oder Ishikawa da.",
+      "actions": {
+        "setSystemTitle": {
+          "help": "Setzt den Titel des betrachteten Systems.",
+          "params": {
+            "text": "Der Systemtitel; ein leerer Text löscht das Feld."
+          }
+        },
+        "setCellText": {
+          "help": "Schreibt den Text eines der neun Felder der Matrix.",
+          "params": {
+            "row": "Die Zeile, 0 bis 2: 0 Subsystem, 1 System, 2 Übersystem. Ein Wert daneben oder keine ganze Zahl ist ein Fehler.",
+            "col": "Die Spalte, 0 bis 2: 0 Vergangenheit, 1 Gegenwart, 2 Zukunft. Ein Wert daneben oder keine ganze Zahl ist ein Fehler.",
+            "text": "Der Feldtext; ein leerer Text löscht ihn."
+          }
+        },
+        "setColLabel": {
+          "help": "Beschriftet eine Spalte der Zeitachse.",
+          "params": {
+            "col": "Die Spalte, 0 bis 2: 0 Vergangenheit, 1 Gegenwart, 2 Zukunft. Ein Wert daneben oder keine ganze Zahl ist ein Fehler.",
+            "text": "Die Spaltenbeschriftung; ein leerer Text setzt die Vorgabebeschriftung wieder frei."
+          }
+        },
+        "setRowLabel": {
+          "help": "Beschriftet eine Zeile der Systemebenen.",
+          "params": {
+            "row": "Die Zeile, 0 bis 2: 0 Subsystem, 1 System, 2 Übersystem. Ein Wert daneben oder keine ganze Zahl ist ein Fehler.",
+            "text": "Die Zeilenbeschriftung; ein leerer Text setzt die Vorgabebeschriftung wieder frei."
+          }
+        },
+        "clearImage": {
+          "help": "Löscht das Bild eines Feldes; der Feldtext bleibt stehen.",
+          "params": {
+            "row": "Die Zeile, 0 bis 2: 0 Subsystem, 1 System, 2 Übersystem. Ein Wert daneben oder keine ganze Zahl ist ein Fehler.",
+            "col": "Die Spalte, 0 bis 2: 0 Vergangenheit, 1 Gegenwart, 2 Zukunft. Ein Wert daneben oder keine ganze Zahl ist ein Fehler."
+          }
+        }
+      },
+      "fields": {
+        "systemTitle": {
+          "help": "Der Titel des betrachteten Systems."
+        },
+        "colLabels": {
+          "help": "Die drei Spaltenbeschriftungen der Zeitachse, in der Reihenfolge Vergangenheit, Gegenwart, Zukunft. Ein leerer Eintrag heißt: die Spalte zeigt ihre Vorgabebeschriftung."
+        },
+        "rowLabels": {
+          "help": "Die drei Zeilenbeschriftungen der Systemebenen, in der Reihenfolge Subsystem, System, Übersystem. Ein leerer Eintrag heißt: die Zeile zeigt ihre Vorgabebeschriftung."
+        },
+        "cells": {
+          "help": "Die neun Felder, adressiert als cells[zeile][spalte] mit je drei Zeilen und Spalten. Jedes Feld trägt text (der Feldtext) und image (eine Bild-Daten-URL oder null). Ein Massenfeld: read() ohne Parameter nennt nur den Umfang, read({ fields: ['cells'] }) liefert die Felder."
+        }
+      },
       "subtitle": "Beschreibe das System aus neun Perspektiven: Vergangenheit / Gegenwart / Zukunft × Subsystem / System / Supersystem.",
       "systemHeading": "System",
       "systemPlaceholder": "z.B. Pkw mit Verbrennungsmotor",

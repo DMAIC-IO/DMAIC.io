@@ -6279,6 +6279,58 @@
     "triz-9-windows": {
       "name": "9 Windows (TRIZ System Operator)",
       "description": "Examine the system on time × hierarchy axes",
+      "whenToUse": "When a problem is to be looked at in its context — three system levels by three time windows — to find causes and solution spaces outside the system itself; not to follow a single chain of causes, which is what 5-why or Ishikawa are for.",
+      "actions": {
+        "setSystemTitle": {
+          "help": "Sets the title of the system under study.",
+          "params": {
+            "text": "The system title; an empty text clears the field."
+          }
+        },
+        "setCellText": {
+          "help": "Writes the text of one of the nine cells of the matrix.",
+          "params": {
+            "row": "The row, 0 to 2: 0 subsystem, 1 system, 2 supersystem. Any other value, or a non-integer, is an error.",
+            "col": "The column, 0 to 2: 0 past, 1 present, 2 future. Any other value, or a non-integer, is an error.",
+            "text": "The cell text; an empty text clears it."
+          }
+        },
+        "setColLabel": {
+          "help": "Labels a column of the time axis.",
+          "params": {
+            "col": "The column, 0 to 2: 0 past, 1 present, 2 future. Any other value, or a non-integer, is an error.",
+            "text": "The column label; an empty text brings back the default label."
+          }
+        },
+        "setRowLabel": {
+          "help": "Labels a row of the system levels.",
+          "params": {
+            "row": "The row, 0 to 2: 0 subsystem, 1 system, 2 supersystem. Any other value, or a non-integer, is an error.",
+            "text": "The row label; an empty text brings back the default label."
+          }
+        },
+        "clearImage": {
+          "help": "Clears the image of a cell; the cell text stays.",
+          "params": {
+            "row": "The row, 0 to 2: 0 subsystem, 1 system, 2 supersystem. Any other value, or a non-integer, is an error.",
+            "col": "The column, 0 to 2: 0 past, 1 present, 2 future. Any other value, or a non-integer, is an error."
+          }
+        }
+      },
+      "fields": {
+        "systemTitle": {
+          "help": "The title of the system under study."
+        },
+        "colLabels": {
+          "help": "The three column labels of the time axis, in the order past, present, future. An empty entry means the column shows its default label."
+        },
+        "rowLabels": {
+          "help": "The three row labels of the system levels, in the order subsystem, system, supersystem. An empty entry means the row shows its default label."
+        },
+        "cells": {
+          "help": "The nine cells, addressed as cells[row][col] with three rows and three columns each. Every cell carries text (the cell text) and image (an image data URL or null). A bulk field: read() without arguments reports only its extent, read({ fields: ['cells'] }) delivers the cells."
+        }
+      },
       "subtitle": "Describe the system from nine perspectives: past / present / future × subsystem / system / supersystem.",
       "systemHeading": "System",
       "systemPlaceholder": "e.g. passenger car with combustion engine",

@@ -30,8 +30,10 @@ export class Cell {
   }
 }
 
-const ROWS = 3
-const COLS = 3
+/** @type {number} die drei Systemebenen: Subsystem, System, Übersystem */
+export const ROWS = 3
+/** @type {number} die drei Zeitfenster: Vergangenheit, Gegenwart, Zukunft */
+export const COLS = 3
 
 function emptyLabels() {
   const labels = {}
@@ -54,8 +56,14 @@ export class State {
   static ID = 'triz-9-windows'
 
   _schema = { name: State.ID, version: State.VERSION }
+
+  /** @type {string} der Titel des betrachteten Systems */
   systemTitle = ''
+
+  /** @type {Record<number, Label>} je Spalte (0 bis 2) eine Beschriftung der Zeitachse; `toJSON()` liefert sie als `colLabels: string[]` */
   colLabels = emptyLabels()
+
+  /** @type {Record<number, { rowLabel: Label, cells: Record<number, Cell> }>} je Zeile (0 bis 2) Beschriftung und drei Zellen; `toJSON()` trennt das in `rowLabels: string[]` und `cells: Cell[][]` */
   rows = emptyRows()
 
   hasContent() {
