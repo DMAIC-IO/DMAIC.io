@@ -10,12 +10,21 @@
  * is unit-tested. This file holds only view transformations (badge classes,
  * scale i18n text, '—' formatting), event handlers, and the imperative
  * burndown chart lifecycle (chartManager is not a pure-template concern).
+ *
+ * @agent  Vollständig über das Viewmodel steuerbar: Bewertungsmethode und
+ *   FMEA-Art, Risiken anlegen, bewerten und entfernen, jedes Feld eines
+ *   Risikos und jeder Maßnahme, die Sortierung nach Vorrang, das Auf- und
+ *   Zuklappen einer Risikokarte und die eigenen Skalentexte. Der Oberfläche
+ *   bleiben der Skalenbereich, das Burndown-Fenster und der Dateidownload.
  */
 
 import { createModule } from '../../core/template-module.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
 import { draggablePopout } from '../../ui/draggable-popout.js';
-import { State, METHODS, FMEA_TYPES, fmeaCreateDefault } from './fmea-model.js';
+import { isIsoDate } from '../../core/local-date.js';
+import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { State, METHODS, FMEA_TYPES, SPECIAL_CHARS, fmeaCreateDefault } from './fmea-model.js';
 import { S_BANDS, O_BANDS, D_BANDS, AP_TABLE, AP_CATEGORY, bandLabel } from './fmea-ap.js';
 
 /** Map a 1–10 rating to its scale-row index (0–4). */
@@ -39,6 +48,70 @@ const RATE_DEFAULTS = {
 /** Keys that have no i18n entry — only the hardcoded rate defaults above. */
 const RATE_KEYS = new Set(Object.keys(RATE_DEFAULTS));
 
+// ── Die Wertemengen der feldbenannten Setzer (E9) ──────────────────────────
+// Ein Risiko trägt 14 Schlüssel in `toJSON()`, davon 12 setzbar; eine
+// Maßnahme 7, alle setzbar. Elf Risikofelder und alle sieben
+// Maßnahmenfelder sind in der Vorlage gebunden. Über der Grenze von zehn
+// steht deshalb EIN feldbenannter Setzer je Satz statt 18 einzelner.
+// `collapsed` hat seinen eigenen Setzer: es ist der einzige Wahrheitswert
+// des Risikos und kein Inhaltsfeld.
+const RISK_FIELDS = ['step', 'failureMode', 'effect', 'cause', 'prevention',
+  'control', 'specialChar', 'justification', 'sev', 'occ', 'det'];
+const ACTION_FIELDS = ['text', 'resp', 'date', 'done', 'deltaS', 'deltaO', 'deltaD'];
+
+// S, O und D laufen als ZEICHENKETTE von '1' bis '10', die leere Zeichenkette
+// heißt unbewertet. `requireIndex` passt darauf nicht — es verlangt eine ganze
+// ZAHL und meldete „allowed: 0..10", ließe also die 0 durch und die
+// Zeichenketten der Oberfläche gar nicht. Dasselbe für die Deltas '0'..'9'.
+const SOD_VALUES = ['', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+const DELTA_VALUES = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
+/** Die Felder, die ein freier Text sind — die leere Zeichenkette löscht sie. */
+const RISK_TEXT_FIELDS = ['step', 'failureMode', 'effect', 'cause', 'prevention',
+  'control', 'justification'];
+
+/**
+ * Ein Textargument prüfen, bevor es zum dokumentierten Leerwert wird
+ * (Ruling 55): ein FEHLENDES Argument kommt als `undefined` an, und ein
+ * `String(v ?? '')` machte daraus stillschweigend den Leerwert.
+ * @param {string} name @param {any} value
+ * @throws {Error} wenn `value` keine Zeichenkette ist
+ * @returns {void}
+ */
+function requireText(name, value) {
+  if (typeof value !== 'string') {
+    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any string, "" clears it`);
+  }
+}
+
+/**
+ * Alle Schlüssel, unter denen ein eigener Skalentext stehen darf: die 30
+ * Schlüssel der RPN-Skalen plus die 120 der beiden AP-Skalen.
+ * @returns {Set<string>}
+ */
+function buildScaleKeys() {
+  const keys = new Set();
+  const rpn = {
+    sev: ['sevNone', 'sevLow', 'sevMod', 'sevHigh', 'sevVHigh'],
+    occ: ['occUnlikely', 'occLow', 'occMod', 'occHigh', 'occVHigh'],
+    det: ['detCertain', 'detHigh', 'detMod', 'detLow', 'detVLow'],
+  };
+  for (const k of rpn.sev) { keys.add(k); keys.add(`${k}Desc`); }
+  for (const k of rpn.occ) { keys.add(k); keys.add(`${k}Rate`); }
+  for (const k of rpn.det) { keys.add(k); keys.add(`${k}Desc`); }
+  for (const type of FMEA_TYPES) {
+    for (const dim of ['sev', 'occ', 'det']) {
+      for (let v = 1; v <= 10; v++) {
+        keys.add(`ap.${type}.${dim}.${v}.meaning`);
+        keys.add(`ap.${type}.${dim}.${v}.criterion`);
+      }
+    }
+  }
+  return keys;
+}
+
+const SCALE_KEYS = buildScaleKeys();
+
 const mod = createModule({
   config: {
     id: 'fmea',
@@ -50,11 +123,14 @@ const mod = createModule({
     actions: [
       { icon: 'action.glossary', title: 'scales', onClick: (d) => d.toggleScale() },
       { icon: 'chart.run-chart', title: 'burndown', onClick: (d) => d.showBurndown() },
-      { icon: 'nav.expand-down', title: 'sortByPriority', onClick: (d) => d.sortByPriority() },
+      // `agentAction` nennt die Agentenmethode hinter der Leistenaktion.
+      { icon: 'nav.expand-down', title: 'sortByPriority', agentAction: 'sortByPriority',
+        onClick: (d) => d.sortByPriority() },
       { icon: 'action.download', title: 'export.label', children: [
         { icon: 'format.csv', title: 'export.csv', onClick: (d) => d.exportCSV() },
       ] },
-      { icon: 'action.add', title: 'addRisk', variant: 'primary', onClick: (d) => d.addRisk() },
+      { icon: 'action.add', title: 'addRisk', variant: 'primary', agentAction: 'addRisk',
+        onClick: (d) => d.addRisk() },
     ],
   },
   Model: State,
@@ -75,6 +151,7 @@ const mod = createModule({
 
   data(module, _t) {
     return {
+      ...agentReadMixin(module),
       // ── Transient UI state (never persisted) ──────────────────
       ...draggablePopout({ size: 'width:680px;height:auto;max-height:85vh;' }),
       scaleVisible: false,
@@ -84,31 +161,59 @@ const mod = createModule({
 
       // ── View transformations (CSS / i18n / formatting) ────────
 
+      /** @noagent view transform: die laufende Risikonummer. */
       riskNum: (i) => `R-${  String(i + 1).padStart(3, '0')}`,
+      /** @noagent view transform: die Risikoprioritätszahl als Text. */
       rpnText: (v) => v ? (`RPN ${  v}`) : 'RPN —',
+      /** @noagent view transform: der Zielwert als Text. */
       targetText: (v) => v ? (`${_t('target')  } ${  v}`) : (`${_t('target')  } —`),
 
-      /** @returns {boolean} true when the FMEA is rated by action priority */
+      /** @noagent view transform. @returns {boolean} true when the FMEA is rated by action priority */
       isAp() { return this.model.method === 'ap'; },
-      /** @returns {boolean} true for a design FMEA */
+      /** @noagent view transform. @returns {boolean} true for a design FMEA */
       isDesign() { return this.model.fmeaType === 'design'; },
-      /** @param {string} m 'ap' | 'rpn' */
-      setMethod(m) { if (METHODS.includes(m)) this.model.method = m; },
-      /** @param {string} type 'process' | 'design' */
-      setFmeaType(type) { if (FMEA_TYPES.includes(type)) this.model.fmeaType = type; },
 
+      /**
+       * Setzt die Bewertungsmethode der FMEA.
+       * @agent
+       * @param {'ap'|'rpn'} m `ap` bewertet nach Aufgabenpriorität (AIAG-VDA),
+       *   `rpn` nach der Risikoprioritätszahl
+       * @returns {void}
+       * @throws {Error} wenn `m` keine der beiden Methoden ist
+       */
+      setMethod(m) {
+        requireEnum('m', m, METHODS);
+        this.model.method = m;
+      },
+
+      /**
+       * Setzt die Art der FMEA; sie wählt die Skalentexte der
+       * Aufgabenpriorität aus.
+       * @agent
+       * @param {'process'|'design'} type `process` für eine Prozess-FMEA,
+       *   `design` für eine Konstruktions-FMEA
+       * @returns {void}
+       * @throws {Error} wenn `type` keine der beiden Arten ist
+       */
+      setFmeaType(type) {
+        requireEnum('type', type, FMEA_TYPES);
+        this.model.fmeaType = type;
+      },
+
+      /** @noagent view transform: die Farbstufe des Bewertungsabzeichens. */
       badgeClass(risk) { return `fmea__rpn-badge--${this.model.rating().category(risk)}`; },
+      /** @noagent view transform: die Farbstufe des Zielabzeichens. */
       projBadgeClass(risk) { return `fmea__rpn-badge--${this.model.rating().projCategory(risk)}`; },
-      /** Main badge: 'AP H' in AP mode, 'RPN 504' in RPN mode. */
+      /** @noagent view transform: 'AP H' in AP mode, 'RPN 504' in RPN mode. */
       badgeText(risk) { return this.isAp() ? `AP ${risk.ap() || '—'}` : this.rpnText(risk.rpn()); },
-      /** Header target badge: 'Target AP M' / 'Target 120'. */
+      /** @noagent view transform: 'Target AP M' / 'Target 120'. */
       projBadgeText(risk) {
         return this.isAp() ? `${_t('target')} AP ${risk.projAp() || '—'}` : this.targetText(risk.projRpn());
       },
-      /** Projected-bar badge: 'AP M' / 'RPN 120'. */
+      /** @noagent view transform: 'AP M' / 'RPN 120'. */
       projValueText(risk) { return this.isAp() ? `AP ${risk.projAp() || '—'}` : this.rpnText(risk.projRpn()); },
 
-      /** Combined card class: glow tier + collapsed marker + S ≥ 9 marker (RPN mode). */
+      /** @noagent view transform: glow tier + collapsed marker + S ≥ 9 marker (RPN mode). */
       cardClass(risk) {
         const cat = this.model.rating().category(risk);
         const glow = cat === 'none' ? '' : `fmea__risk-card--${cat}`;
@@ -117,32 +222,41 @@ const mod = createModule({
         return (`${glow} ${collapsed} ${severe}`).replace(/\s+/g, ' ').trim();
       },
 
-      /** @returns {boolean} AP mode and the risk is AP H without a non-blank action/justification */
+      /** @noagent view transform. @returns {boolean} AP H without action/justification */
       showUnjustified(risk) { return this.isAp() && risk.needsJustification(); },
       /**
+       * @noagent view transform.
        * @returns {boolean} justification field: required at AP H, kept visible once filled —
        * in RPN mode too, since the CSV exports it
        */
       showJustification(risk) {
         return (this.isAp() && risk.needsJustification()) || risk.justification.trim() !== '';
       },
-      /** @returns {boolean} RPN mode and S ≥ 9 */
+      /** @noagent view transform. @returns {boolean} RPN mode and S ≥ 9 */
       showSevere(risk) { return !this.isAp() && risk.isHighSeverity(); },
-      /** @returns {string} badge modifier for CC/SC */
+      /** @noagent view transform. @returns {string} badge modifier for CC/SC */
       specialCharClass(risk) { return risk.specialChar ? `fmea__badge--${risk.specialChar.toLowerCase()}` : ''; },
 
+      /** @noagent view transform: die projizierte Bedeutung. */
       projSDisp: (risk) => risk.sev ? String(risk.projS()) : '—',
+      /** @noagent view transform: das projizierte Auftreten. */
       projODisp: (risk) => risk.occ ? String(risk.projO()) : '—',
+      /** @noagent view transform: die projizierte Entdeckung. */
       projDDisp: (risk) => risk.det ? String(risk.projD()) : '—',
 
+      /** @noagent view transform: der Durchschnitt der Kennzahlenkachel. */
       statAvg() { const a = this.model.stats().avg; return a == null ? '—' : String(a); },
+      /** @noagent view transform: das Maximum der Kennzahlenkachel. */
       statMax() { const m = this.model.stats().max; return m ? String(m) : '—'; },
+      /** @noagent view transform: die Zahl bewerteter Risiken. */
       statRated() { const st = this.model.stats(); return String(st.rated ?? 0); },
 
+      /** @noagent view transform: die Kennzahlen der aktiven Bewertungsmethode. */
       stats() { return this.model.stats(); },
 
       // ── Scale text (custom override or i18n default) ──────────
 
+      /** @noagent view transform: der eigene Skalentext, sonst der mitgelieferte. */
       scaleText(key) {
         const custom = this.model.scales && this.model.scales[key];
         if (custom != null) return custom;
@@ -153,12 +267,12 @@ const mod = createModule({
 
       apDims: ['sev', 'occ', 'det'],
 
-      /** @param {'sev'|'occ'|'det'} dim @returns {string} i18n key of the table heading */
+      /** @noagent view transform. @param {'sev'|'occ'|'det'} dim @returns {string} i18n key of the table heading */
       apDimTitle(dim) {
         return { sev: 'scaleSeverity', occ: 'scaleOccurrence', det: 'scaleDetection' }[dim];
       },
 
-      /** Rows 10 → 1 of one AP scale for the active FMEA type. */
+      /** @noagent view transform: Zeilen 10 → 1 einer AP-Skala. */
       apScaleRows(dim) {
         const rows = [];
         for (let v = 10; v >= 1; v--) {
@@ -168,10 +282,10 @@ const mod = createModule({
         return rows;
       },
 
-      /** @returns {string[]} column labels of the AP matrix (D bands) */
+      /** @noagent view transform. @returns {string[]} column labels of the AP matrix (D bands) */
       apDBandLabels() { return D_BANDS.map(bandLabel); },
 
-      /** AP lookup matrix: one row per S band × O band; S 1 collapsed into one row. */
+      /** @noagent view transform: die AP-Nachschlagematrix. */
       apMatrixRows() {
         const rows = [];
         S_BANDS.forEach((sb, si) => {
@@ -194,19 +308,21 @@ const mod = createModule({
         return `${this.scaleText(`${base}.meaning`)} – ${this.scaleText(`${base}.criterion`)}`;
       },
 
-      /** Tooltip labels for the S/O/D <option>s (combined meaning + detail). */
+      /** @noagent view transform: Tooltip der S-Stufen. */
       sevTitle(v) {
         if (this.isAp()) return this._apTitle('sev', v);
         const row = scaleRow(v);
         const k = ['sevNone', 'sevLow', 'sevMod', 'sevHigh', 'sevVHigh'][row];
         return `${this.scaleText(k)  } – ${  this.scaleText(`${k  }Desc`)}`;
       },
+      /** @noagent view transform: Tooltip der O-Stufen. */
       occTitle(v) {
         if (this.isAp()) return this._apTitle('occ', v);
         const row = scaleRow(v);
         const k = ['occUnlikely', 'occLow', 'occMod', 'occHigh', 'occVHigh'][row];
         return `${this.scaleText(k)  } (${  this.scaleText(`${k  }Rate`)  })`;
       },
+      /** @noagent view transform: Tooltip der D-Stufen. */
       detTitle(v) {
         if (this.isAp()) return this._apTitle('det', v);
         const row = scaleRow(v);
@@ -216,28 +332,208 @@ const mod = createModule({
 
       // ── Event handlers ────────────────────────────────────────
 
-      addRisk() { this.model.addRisk(); },
-      deleteRisk(id) { this.model.removeRisk(id); },
-      addAction(risk) { this.model.addAction(risk.id); },
-      deleteAction(risk, idx) { this.model.removeAction(risk.id, idx); },
-      toggleCollapse(risk) { risk.collapsed = !risk.collapsed; },
+      /**
+       * Legt ein leeres Risiko an.
+       * @agent
+       * @returns {string} die id des neuen Risikos
+       */
+      addRisk() { return this.model.addRisk().id; },
+
+      /**
+       * Entfernt ein Risiko samt seinen Maßnahmen.
+       * @agent
+       * @param {string} id id des Risikos
+       * @returns {void}
+       * @throws {Error} wenn kein Risiko diese id trägt
+       */
+      deleteRisk(id) {
+        requireKnownId('id', id, this.model.risks.map((r) => r.id));
+        this.model.removeRisk(id);
+      },
+
+      /**
+       * @noagent bekommt das Risikoobjekt aus der Vorlage; ein Agent hat nur
+       * ids. Delegiert an `addRiskAction`.
+       */
+      addAction(risk) { this.addRiskAction(risk.id); },
+
+      /**
+       * @noagent bekommt das Risikoobjekt aus der Vorlage; ein Agent hat nur
+       * ids. Delegiert an `removeRiskAction`.
+       */
+      deleteAction(risk, idx) { this.removeRiskAction(risk.id, idx); },
+
+      /**
+       * @noagent bekommt das Risikoobjekt aus der Vorlage, und der Ausgang
+       * hängt allein am Vorzustand. Delegiert an `setRiskCollapsed`, damit
+       * das Feld genau eine Zuweisungsstelle hat.
+       */
+      toggleCollapse(risk) { this.setRiskCollapsed(risk.id, !risk.collapsed); },
+
+      /**
+       * @noagent Anzeigefilter, nicht Zustand — der Skalenbereich erscheint
+       * nicht in `read()`, ein Agent bekäme keine Rückmeldung darüber, was er
+       * getan hat. Die Skalentexte selbst setzt `setScaleValue`.
+       */
       toggleScale() { this.scaleVisible = !this.scaleVisible; },
+
+      /**
+       * Verwirft alle eigenen Skalentexte; es gelten wieder die
+       * mitgelieferten.
+       * @agent
+       * @returns {void}
+       */
       resetScales() { this.model.resetScales(); },
 
+      /**
+       * Sortiert die Risiken nach der aktiven Bewertungsmethode, das
+       * dringendste zuerst.
+       * @agent
+       * @returns {void}
+       */
       sortByPriority() {
         this.model.sortByPriority();
         module._context.notify?.(_t(this.isAp() ? 'sortedByAP' : 'sortedByRPN'));
       },
 
-      /** Persist an edited contenteditable scale cell back to the model. */
+      /**
+       * @noagent DOM event handler: packt den bearbeiteten Zellentext aus.
+       * Geschrieben wird über `setScaleValue`, dieselbe Senke wie die der
+       * Agentenfläche.
+       */
       scaleEdited(key, $event) {
-        const text = ($event.target.textContent || '').trim();
+        this.setScaleValue(key, ($event.target.textContent || '').trim());
+      },
+
+      /**
+       * Setzt einen eigenen Skalentext; er ersetzt den mitgelieferten.
+       * @agent
+       * @param {string} key der Schlüssel des Skalentexts — bei der
+       *   Risikoprioritätszahl etwa `sevHigh` oder `occModRate`, bei der
+       *   Aufgabenpriorität `ap.<art>.<dimension>.<stufe>.meaning` bzw.
+       *   `.criterion`
+       * @param {string} text der neue Text; die leere Zeichenkette lässt die
+       *   Zelle leer
+       * @returns {void}
+       * @throws {Error} wenn `key` kein Schlüssel einer Skalenzelle ist oder
+       *   `text` keine Zeichenkette ist
+       */
+      setScaleValue(key, text) {
+        if (!SCALE_KEYS.has(key)) {
+          throw new Error(`invalid key ${JSON.stringify(key)}; allowed: a scale cell key — `
+            + 'sevNone, sevNoneDesc, sevLow … detVLowDesc, occUnlikelyRate … occVHighRate, '
+            + 'or ap.<process|design>.<sev|occ|det>.<1..10>.<meaning|criterion>');
+        }
+        requireText('text', text);
         if (!this.model.scales) this.model.scales = {};
         this.model.scales[key] = text;
       },
 
+      /**
+       * Setzt ein Feld eines Risikos.
+       * @agent
+       * @param {string} riskId id des Risikos
+       * @param {'step'|'failureMode'|'effect'|'cause'|'prevention'|'control'|'specialChar'|'justification'|'sev'|'occ'|'det'} field
+       *   das zu setzende Feld
+       * @param {string} value der neue Wert
+       * @returns {void}
+       * @throws {Error} wenn kein Risiko diese id trägt, `field` keines der
+       *   elf Felder ist oder `value` nicht in die Wertemenge dieses Feldes
+       *   passt
+       */
+      setRiskValue(riskId, field, value) {
+        requireKnownId('riskId', riskId, this.model.risks.map((r) => r.id));
+        requireEnum('field', field, RISK_FIELDS);
+        if (field === 'specialChar') requireEnum('value', value, SPECIAL_CHARS);
+        else if (field === 'sev' || field === 'occ' || field === 'det') {
+          requireEnum('value', value, SOD_VALUES);
+        } else requireText('value', value);
+        this.model.risks.find((r) => r.id === riskId)[field] = value;
+      },
+
+      /**
+       * Klappt eine Risikokarte auf oder zu.
+       * @agent
+       * @param {string} riskId id des Risikos
+       * @param {boolean} collapsed true klappt die Karte zu, false auf
+       * @returns {void}
+       * @throws {Error} wenn kein Risiko diese id trägt oder `collapsed` kein
+       *   Wahrheitswert ist
+       */
+      setRiskCollapsed(riskId, collapsed) {
+        requireKnownId('riskId', riskId, this.model.risks.map((r) => r.id));
+        requireEnum('collapsed', collapsed, [true, false]);
+        this.model.risks.find((r) => r.id === riskId).collapsed = collapsed;
+      },
+
+      /**
+       * Hängt einem Risiko eine leere Maßnahme an.
+       * @agent
+       * @param {string} riskId id des Risikos
+       * @returns {number} die Position der neuen Maßnahme
+       * @throws {Error} wenn kein Risiko diese id trägt
+       */
+      addRiskAction(riskId) {
+        requireKnownId('riskId', riskId, this.model.risks.map((r) => r.id));
+        this.model.addAction(riskId);
+        return this.model.risks.find((r) => r.id === riskId).actions.length - 1;
+      },
+
+      /**
+       * Entfernt eine Maßnahme eines Risikos.
+       * @agent
+       * @param {string} riskId id des Risikos
+       * @param {number} actionIndex die Position der Maßnahme, bei 0 beginnend
+       * @returns {void}
+       * @throws {Error} wenn kein Risiko diese id trägt oder das Risiko an
+       *   dieser Position keine Maßnahme hat
+       */
+      removeRiskAction(riskId, actionIndex) {
+        requireKnownId('riskId', riskId, this.model.risks.map((r) => r.id));
+        this._requireActionIndex(riskId, actionIndex);
+        this.model.removeAction(riskId, actionIndex);
+      },
+
+      /**
+       * Setzt ein Feld einer Maßnahme.
+       * @agent
+       * @param {string} riskId id des Risikos
+       * @param {number} actionIndex die Position der Maßnahme, bei 0 beginnend
+       * @param {'text'|'resp'|'date'|'done'|'deltaS'|'deltaO'|'deltaD'} field
+       *   das zu setzende Feld
+       * @param {string|boolean} value der neue Wert
+       * @returns {void}
+       * @throws {Error} wenn kein Risiko diese id trägt, das Risiko an dieser
+       *   Position keine Maßnahme hat, `field` keines der sieben Felder ist
+       *   oder `value` nicht in die Wertemenge dieses Feldes passt
+       */
+      setActionValue(riskId, actionIndex, field, value) {
+        requireKnownId('riskId', riskId, this.model.risks.map((r) => r.id));
+        this._requireActionIndex(riskId, actionIndex);
+        requireEnum('field', field, ACTION_FIELDS);
+        if (field === 'done') requireEnum('value', value, [true, false]);
+        else if (field === 'date') {
+          requireText('value', value);
+          if (value !== '' && !isIsoDate(value)) {
+            throw new Error(`invalid value ${JSON.stringify(value)}; allowed: YYYY-MM-DD or ""`);
+          }
+        } else if (field === 'deltaS' || field === 'deltaO' || field === 'deltaD') {
+          requireEnum('value', value, DELTA_VALUES);
+        } else requireText('value', value);
+        this.model.risks.find((r) => r.id === riskId).actions[actionIndex][field] = value;
+      },
+
+      // `requireIndex` passt hier nicht: es erlaubt `0..length` INKLUSIVE,
+      // also auch die Position hinter der letzten Maßnahme — die gibt es
+      // nicht. Die tatsächlichen Positionen sind die ehrliche Wertemenge.
+      _requireActionIndex(riskId, actionIndex) {
+        const actions = this.model.risks.find((r) => r.id === riskId).actions;
+        requireEnum('actionIndex', actionIndex, actions.map((_, i) => i));
+      },
+
       // ── CSV export (file download — not UI markup) ────────────
 
+      /** @noagent lädt eine Datei herunter; ein Agent liest den Zustand über `read()`. */
       exportCSV() {
         const lang = module._context.i18n.getLanguage();
         const yes = lang === 'de' ? 'Ja' : 'Yes';
@@ -264,6 +560,11 @@ const mod = createModule({
 
       // ── Burndown chart (imperative via chartManager) ──────────
 
+      /**
+       * @noagent öffnet das Burndown-Fenster der Oberfläche; ein Agent darf
+       * keinen Dialog öffnen — er blockierte den Stapel (E3). Die Zahlen
+       * dahinter stehen über `read()` zur Verfügung.
+       */
       async showBurndown() {
         const bd = this.model.burndownSeries();
         if (!bd) {
@@ -314,6 +615,7 @@ const mod = createModule({
         });
       },
 
+      /** @noagent schließt das Burndown-Fenster der Oberfläche (E3). */
       closeBurndown() {
         this._destroyChart();
         this.burndownOpen = false;
@@ -329,6 +631,7 @@ const mod = createModule({
 
       // ── Lifecycle (per Alpine component) ──────────────────────
 
+      /** @noagent lifecycle, kein Zustandsweg. */
       destroy() {
         this._destroyChart();
       },

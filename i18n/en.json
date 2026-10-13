@@ -5281,7 +5281,96 @@
       "burndownHActual": "H achieved",
       "burndownHmPlan": "H+M planned",
       "burndownHmActual": "H+M achieved",
-      "burndownRiskCount": "Number of risks"
+      "burndownRiskCount": "Number of risks",
+
+      "whenToUse": "When a process or a design should be surveyed systematically for what can go wrong, what effect it has, how often it occurs and how reliably it is detected — rated by action priority (AIAG-VDA) or risk priority number, with actions and their effect on the rating; not for collecting possible causes without rating them, that is what Ishikawa and the cause-and-effect matrix are for.",
+      "actions": {
+        "setMethod": {
+          "help": "Sets the rating method of the FMEA.",
+          "params": {
+            "m": "The method: ap rates by action priority (AIAG-VDA), rpn by risk priority number (severity × occurrence × detection). Any other value is an error."
+          }
+        },
+        "setFmeaType": {
+          "help": "Sets the type of the FMEA; it selects the action-priority scale texts.",
+          "params": {
+            "type": "The type: process for a process FMEA, design for a design FMEA. Any other value is an error."
+          }
+        },
+        "addRisk": {
+          "help": "Adds an empty risk and returns its id."
+        },
+        "deleteRisk": {
+          "help": "Removes a risk with its actions.",
+          "params": {
+            "id": "The id of the risk as read() lists it under risks. An unknown id is an error."
+          }
+        },
+        "resetScales": {
+          "help": "Discards all custom scale texts; the shipped ones apply again."
+        },
+        "sortByPriority": {
+          "help": "Sorts the risks by the active rating method, the most urgent first."
+        },
+        "setScaleValue": {
+          "help": "Sets a custom scale text; it replaces the shipped one.",
+          "params": {
+            "key": "The key of the scale cell. For the risk priority number these are sevNone, sevNoneDesc, sevLow, sevLowDesc, sevMod, sevModDesc, sevHigh, sevHighDesc, sevVHigh, sevVHighDesc, occUnlikely, occUnlikelyRate, occLow, occLowRate, occMod, occModRate, occHigh, occHighRate, occVHigh, occVHighRate, detCertain, detCertainDesc, detHigh, detHighDesc, detMod, detModDesc, detLow, detLowDesc, detVLow and detVLowDesc; for the action priority ap.<type>.<dimension>.<level>.meaning or .criterion with type process or design, dimension sev, occ or det and level 1 to 10. Any other key is an error.",
+            "text": "The new text. An empty string leaves the cell empty; a missing argument is an error."
+          }
+        },
+        "setRiskValue": {
+          "help": "Sets one field of a risk.",
+          "params": {
+            "riskId": "The id of the risk as read() lists it under risks. An unknown id is an error.",
+            "field": "The field to set — step (the process step under review), failureMode, effect, cause, prevention (the prevention control), control (the detection control), specialChar (the special characteristic: CC, SC or empty), justification (why a risk with high action priority has no action), sev (severity), occ (occurrence) and det (detection). Any other field name is an error.",
+            "value": "The new value. For sev, occ and det a string from 1 to 10, the empty string means unrated; for specialChar CC, SC or the empty string; for all other fields free text whose empty string clears it. A value outside these sets and a missing argument are errors."
+          }
+        },
+        "setRiskCollapsed": {
+          "help": "Collapses or expands a risk card.",
+          "params": {
+            "riskId": "The id of the risk. An unknown id is an error.",
+            "collapsed": "true collapses the card, false expands it. Any other value is an error."
+          }
+        },
+        "addRiskAction": {
+          "help": "Appends an empty action to a risk and returns its position.",
+          "params": {
+            "riskId": "The id of the risk. An unknown id is an error."
+          }
+        },
+        "removeRiskAction": {
+          "help": "Removes one action of a risk.",
+          "params": {
+            "riskId": "The id of the risk. An unknown id is an error.",
+            "actionIndex": "The position of the action in actions, starting at 0. A position where the risk has no action is an error."
+          }
+        },
+        "setActionValue": {
+          "help": "Sets one field of an action.",
+          "params": {
+            "riskId": "The id of the risk. An unknown id is an error.",
+            "actionIndex": "The position of the action in actions, starting at 0. A position where the risk has no action is an error.",
+            "field": "The field to set — text (the action), resp (the person responsible), date (the due date), done (whether it is finished), deltaS, deltaO and deltaD (by how many levels it lowers severity, occurrence and detection). Any other field name is an error.",
+            "value": "The new value. For done true or false; for date a date as YYYY-MM-DD or the empty string; for deltaS, deltaO and deltaD a string from 0 to 9; for text and resp free text whose empty string clears it. A value outside these sets and a missing argument are errors."
+          }
+        }
+      },
+      "fields": {
+        "risks": {
+          "help": "The risks in editing order. Per risk: id (that is how the actions address it), step (the process step under review), failureMode, effect, cause, prevention (the prevention control), control (the detection control), specialChar (the special characteristic: CC, SC or empty), justification (why a risk with high action priority has no action), sev (severity), occ (occurrence) and det (detection), collapsed (whether the card is collapsed) and actions. Per action: text (the action), resp (the person responsible), date (the due date), done (whether it is finished), deltaS, deltaO and deltaD (by how many levels it lowers severity, occurrence and detection). Severity, occurrence and detection are strings from 1 to 10 or empty, the deltas strings from 0 to 9. The risk priority number, the action priority and the projected values are computed and are in no field. Bulk data: without options.fields = ['risks'] only the extent is returned."
+        },
+        "scales": {
+          "help": "The custom scale texts, one text per scale-cell key; null means the shipped ones apply."
+        },
+        "method": {
+          "help": "The rating method: ap by action priority (AIAG-VDA), rpn by risk priority number."
+        },
+        "fmeaType": {
+          "help": "The type of the FMEA: process for a process FMEA, design for a design FMEA. It selects the action-priority scale texts."
+        }
+      }
     },
     "attribute-test": {
       "name": "Attribute Tests",

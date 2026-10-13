@@ -5285,7 +5285,96 @@
       "burndownHActual": "H erreicht",
       "burndownHmPlan": "H+M geplant",
       "burndownHmActual": "H+M erreicht",
-      "burndownRiskCount": "Anzahl Risiken"
+      "burndownRiskCount": "Anzahl Risiken",
+
+      "whenToUse": "Wenn für einen Prozess oder eine Konstruktion systematisch erhoben werden soll, was fehlgehen kann, welche Folge das hat, wie oft es auftritt und wie sicher es entdeckt wird — bewertet nach Aufgabenpriorität (AIAG-VDA) oder Risikoprioritätszahl, mit Maßnahmen und deren Wirkung auf die Bewertung; nicht für das Sammeln möglicher Ursachen ohne Bewertung, dafür sind Ishikawa und die Ursache-Wirkungs-Matrix da.",
+      "actions": {
+        "setMethod": {
+          "help": "Setzt die Bewertungsmethode der FMEA.",
+          "params": {
+            "m": "Die Methode: ap bewertet nach Aufgabenpriorität (AIAG-VDA), rpn nach Risikoprioritätszahl (Bedeutung × Auftreten × Entdeckung). Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "setFmeaType": {
+          "help": "Setzt die Art der FMEA; sie wählt die Skalentexte der Aufgabenpriorität aus.",
+          "params": {
+            "type": "Die Art: process für eine Prozess-FMEA, design für eine Konstruktions-FMEA. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "addRisk": {
+          "help": "Legt ein leeres Risiko an und gibt dessen id zurück."
+        },
+        "deleteRisk": {
+          "help": "Entfernt ein Risiko samt seinen Maßnahmen.",
+          "params": {
+            "id": "Die id des Risikos, wie read() sie unter risks führt. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "resetScales": {
+          "help": "Verwirft alle eigenen Skalentexte; es gelten wieder die mitgelieferten."
+        },
+        "sortByPriority": {
+          "help": "Sortiert die Risiken nach der aktiven Bewertungsmethode, das dringendste zuerst."
+        },
+        "setScaleValue": {
+          "help": "Setzt einen eigenen Skalentext; er ersetzt den mitgelieferten.",
+          "params": {
+            "key": "Der Schlüssel der Skalenzelle. Bei der Risikoprioritätszahl sind es sevNone, sevNoneDesc, sevLow, sevLowDesc, sevMod, sevModDesc, sevHigh, sevHighDesc, sevVHigh, sevVHighDesc, occUnlikely, occUnlikelyRate, occLow, occLowRate, occMod, occModRate, occHigh, occHighRate, occVHigh, occVHighRate, detCertain, detCertainDesc, detHigh, detHighDesc, detMod, detModDesc, detLow, detLowDesc, detVLow und detVLowDesc; bei der Aufgabenpriorität ap.<art>.<dimension>.<stufe>.meaning bzw. .criterion mit art process oder design, dimension sev, occ oder det und stufe 1 bis 10. Jeder andere Schlüssel ist ein Fehler.",
+            "text": "Der neue Text. Eine leere Zeichenkette lässt die Zelle leer; ein fehlendes Argument ist ein Fehler."
+          }
+        },
+        "setRiskValue": {
+          "help": "Setzt ein Feld eines Risikos.",
+          "params": {
+            "riskId": "Die id des Risikos, wie read() sie unter risks führt. Eine unbekannte id ist ein Fehler.",
+            "field": "Das zu setzende Feld — step (der betrachtete Prozessschritt), failureMode (die Fehlerart), effect (die Folge), cause (die Ursache), prevention (die Vermeidungsmaßnahme), control (die Entdeckungsmaßnahme), specialChar (das besondere Merkmal: CC, SC oder leer), justification (warum ein Risiko mit hoher Aufgabenpriorität ohne Maßnahme bleibt), sev (die Bedeutung), occ (das Auftreten) und det (die Entdeckung). Jeder andere Feldname ist ein Fehler.",
+            "value": "Der neue Wert. Für sev, occ und det eine Zeichenkette von 1 bis 10, die leere Zeichenkette heißt unbewertet; für specialChar CC, SC oder die leere Zeichenkette; für alle übrigen Felder ein freier Text, dessen leere Zeichenkette ihn löscht. Ein Wert außerhalb dieser Mengen und ein fehlendes Argument sind Fehler."
+          }
+        },
+        "setRiskCollapsed": {
+          "help": "Klappt eine Risikokarte auf oder zu.",
+          "params": {
+            "riskId": "Die id des Risikos. Eine unbekannte id ist ein Fehler.",
+            "collapsed": "true klappt die Karte zu, false auf. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "addRiskAction": {
+          "help": "Hängt einem Risiko eine leere Maßnahme an und gibt deren Position zurück.",
+          "params": {
+            "riskId": "Die id des Risikos. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "removeRiskAction": {
+          "help": "Entfernt eine Maßnahme eines Risikos.",
+          "params": {
+            "riskId": "Die id des Risikos. Eine unbekannte id ist ein Fehler.",
+            "actionIndex": "Die Position der Maßnahme in actions, bei 0 beginnend. Eine Position, an der das Risiko keine Maßnahme hat, ist ein Fehler."
+          }
+        },
+        "setActionValue": {
+          "help": "Setzt ein Feld einer Maßnahme.",
+          "params": {
+            "riskId": "Die id des Risikos. Eine unbekannte id ist ein Fehler.",
+            "actionIndex": "Die Position der Maßnahme in actions, bei 0 beginnend. Eine Position, an der das Risiko keine Maßnahme hat, ist ein Fehler.",
+            "field": "Das zu setzende Feld — text (die Maßnahme), resp (die Zuständige), date (das Fälligkeitsdatum), done (ob sie erledigt ist), deltaS, deltaO und deltaD (um wie viele Stufen sie Bedeutung, Auftreten und Entdeckung senkt). Jeder andere Feldname ist ein Fehler.",
+            "value": "Der neue Wert. Für done true oder false; für date ein Datum als JJJJ-MM-TT oder die leere Zeichenkette; für deltaS, deltaO und deltaD eine Zeichenkette von 0 bis 9; für text und resp ein freier Text, dessen leere Zeichenkette ihn löscht. Ein Wert außerhalb dieser Mengen und ein fehlendes Argument sind Fehler."
+          }
+        }
+      },
+      "fields": {
+        "risks": {
+          "help": "Die Risiken in Bearbeitungsreihenfolge. Je Risiko: id (damit sprechen die Aktionen es an), step (der betrachtete Prozessschritt), failureMode (die Fehlerart), effect (die Folge), cause (die Ursache), prevention (die Vermeidungsmaßnahme), control (die Entdeckungsmaßnahme), specialChar (das besondere Merkmal: CC, SC oder leer), justification (warum ein Risiko mit hoher Aufgabenpriorität ohne Maßnahme bleibt), sev (die Bedeutung), occ (das Auftreten) und det (die Entdeckung), collapsed (ob die Karte zugeklappt ist) und actions. Je Maßnahme: text (die Maßnahme), resp (die Zuständige), date (das Fälligkeitsdatum), done (ob sie erledigt ist), deltaS, deltaO und deltaD (um wie viele Stufen sie Bedeutung, Auftreten und Entdeckung senkt). Bedeutung, Auftreten und Entdeckung stehen als Zeichenkette 1 bis 10 oder leer, die Deltas als Zeichenkette 0 bis 9. Die Risikoprioritätszahl, die Aufgabenpriorität und die projizierten Werte sind gerechnet und stehen in keinem Feld. Massendaten: ohne options.fields = ['risks'] kommt nur der Umfang."
+        },
+        "scales": {
+          "help": "Die eigenen Skalentexte, je Schlüssel einer Skalenzelle ein Text; null heißt, es gelten die mitgelieferten."
+        },
+        "method": {
+          "help": "Die Bewertungsmethode: ap nach Aufgabenpriorität (AIAG-VDA), rpn nach Risikoprioritätszahl."
+        },
+        "fmeaType": {
+          "help": "Die Art der FMEA: process für eine Prozess-FMEA, design für eine Konstruktions-FMEA. Sie wählt die Skalentexte der Aufgabenpriorität aus."
+        }
+      }
     },
     "attribute-test": {
       "name": "Attributtests",

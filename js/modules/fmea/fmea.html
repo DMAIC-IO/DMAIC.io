@@ -180,9 +180,9 @@
             <span class="fmea__risk-number" data-action="toggle-collapse" :data-risk-id="risk.id" :title="t('collapseToggle')" @click="toggleCollapse(risk)">
               <span class="fmea__collapse-arrow icon icon--sm" :data-icon="risk.collapsed ? 'nav.expand-right' : 'nav.expand-down'" aria-hidden="true"></span> <span x-text="riskNum(ri)"></span>
             </span>
-            <input class="fmea__risk-title" name="step" :placeholder="t('stepPlaceholder')" x-model="risk.step">
+            <input class="fmea__risk-title" name="step" :placeholder="t('stepPlaceholder')" :value="risk.step" @input="setRiskValue(risk.id, 'step', $event.target.value)">
             <div class="fmea__flags">
-              <select class="field fmea__special-char" name="specialChar" x-model="risk.specialChar" :title="t('specialChar')" :aria-label="t('specialChar')">
+              <select class="field fmea__special-char" name="specialChar" :value="risk.specialChar" @change="setRiskValue(risk.id, 'specialChar', $event.target.value)" :title="t('specialChar')" :aria-label="t('specialChar')">
                 <option value="">—</option>
                 <option value="CC">CC</option>
                 <option value="SC">SC</option>
@@ -204,31 +204,31 @@
             <div class="fmea__fields-row">
               <div class="field-group">
                 <label x-text="t('failureMode')"></label>
-                <textarea class="field" name="failureMode" :placeholder="t('failureModePlaceholder')" x-model="risk.failureMode"></textarea>
+                <textarea class="field" name="failureMode" :placeholder="t('failureModePlaceholder')" :value="risk.failureMode" @input="setRiskValue(risk.id, 'failureMode', $event.target.value)"></textarea>
               </div>
               <div class="field-group">
                 <label x-text="t('effect')"></label>
-                <textarea class="field" name="effect" :placeholder="t('effectPlaceholder')" x-model="risk.effect"></textarea>
+                <textarea class="field" name="effect" :placeholder="t('effectPlaceholder')" :value="risk.effect" @input="setRiskValue(risk.id, 'effect', $event.target.value)"></textarea>
               </div>
               <div class="field-group">
                 <label x-text="t('cause')"></label>
-                <textarea class="field" name="cause" :placeholder="t('causePlaceholder')" x-model="risk.cause"></textarea>
+                <textarea class="field" name="cause" :placeholder="t('causePlaceholder')" :value="risk.cause" @input="setRiskValue(risk.id, 'cause', $event.target.value)"></textarea>
               </div>
             </div>
             <div class="fmea__fields-row">
               <div class="field-group">
                 <label x-text="t('preventionControl')"></label>
-                <textarea class="field" name="prevention" :placeholder="t('preventionPlaceholder')" x-model="risk.prevention"></textarea>
+                <textarea class="field" name="prevention" :placeholder="t('preventionPlaceholder')" :value="risk.prevention" @input="setRiskValue(risk.id, 'prevention', $event.target.value)"></textarea>
               </div>
               <div class="field-group">
                 <label x-text="t('currentControls')"></label>
-                <textarea class="field" name="control" :placeholder="t('controlPlaceholder')" x-model="risk.control"></textarea>
+                <textarea class="field" name="control" :placeholder="t('controlPlaceholder')" :value="risk.control" @input="setRiskValue(risk.id, 'control', $event.target.value)"></textarea>
               </div>
               <div class="field-group">
                 <label x-text="t('rating')"></label>
                 <div class="fmea__sod-row">
                   <div class="fmea__sod-group"><label :title="t('tipS')">S</label>
-                    <select class="field" name="sev" x-model="risk.sev">
+                    <select class="field" name="sev" :value="risk.sev" @change="setRiskValue(risk.id, 'sev', $event.target.value)">
                       <option value="">—</option>
                       <option value="1" :title="sevTitle(1)">1</option>
                       <option value="2" :title="sevTitle(2)">2</option>
@@ -243,7 +243,7 @@
                     </select>
                   </div>
                   <div class="fmea__sod-group"><label :title="t('tipO')">O</label>
-                    <select class="field" name="occ" x-model="risk.occ">
+                    <select class="field" name="occ" :value="risk.occ" @change="setRiskValue(risk.id, 'occ', $event.target.value)">
                       <option value="">—</option>
                       <option value="1" :title="occTitle(1)">1</option>
                       <option value="2" :title="occTitle(2)">2</option>
@@ -258,7 +258,7 @@
                     </select>
                   </div>
                   <div class="fmea__sod-group"><label :title="t('tipD')">D</label>
-                    <select class="field" name="det" x-model="risk.det">
+                    <select class="field" name="det" :value="risk.det" @change="setRiskValue(risk.id, 'det', $event.target.value)">
                       <option value="">—</option>
                       <option value="1" :title="detTitle(1)">1</option>
                       <option value="2" :title="detTitle(2)">2</option>
@@ -277,7 +277,7 @@
             </div>
             <div class="field-group fmea__justification" x-show="showJustification(risk)">
               <label x-text="t('justification')"></label>
-              <textarea class="field" name="justification" :placeholder="t('justificationPlaceholder')" x-model="risk.justification" :aria-required="showUnjustified(risk) ? 'true' : 'false'" :class="showUnjustified(risk) ? 'fmea__justification-input--required' : ''"></textarea>
+              <textarea class="field" name="justification" :placeholder="t('justificationPlaceholder')" :value="risk.justification" @input="setRiskValue(risk.id, 'justification', $event.target.value)" :aria-required="showUnjustified(risk) ? 'true' : 'false'" :class="showUnjustified(risk) ? 'fmea__justification-input--required' : ''"></textarea>
             </div>
 
             <hr class="fmea__section-sep">
@@ -297,11 +297,11 @@
                 <tbody data-action-body>
                   <template x-for="(act, ai) in risk.actions">
                     <tr :key="act.id" :data-action-idx="ai">
-                      <td style="text-align:center"><input type="checkbox" class="fmea__done-check" x-model="act.done"></td>
-                      <td><textarea class="field field--sm" name="actionText" :placeholder="t('actionPlaceholder')" x-model="act.text"></textarea></td>
-                      <td><input class="field field--sm" type="text" name="actionResp" :placeholder="t('actionResp')" x-model="act.resp"></td>
-                      <td><input class="field field--sm" type="date" name="actionDate" x-model="act.date"></td>
-                      <td class="fmea__delta-cell"><select class="field field--sm" name="deltaS" title="ΔS" x-model="act.deltaS">
+                      <td style="text-align:center"><input type="checkbox" class="fmea__done-check" :checked="act.done" @change="setActionValue(risk.id, ai, 'done', $event.target.checked)"></td>
+                      <td><textarea class="field field--sm" name="actionText" :placeholder="t('actionPlaceholder')" :value="act.text" @input="setActionValue(risk.id, ai, 'text', $event.target.value)"></textarea></td>
+                      <td><input class="field field--sm" type="text" name="actionResp" :placeholder="t('actionResp')" :value="act.resp" @input="setActionValue(risk.id, ai, 'resp', $event.target.value)"></td>
+                      <td><input class="field field--sm" type="date" name="actionDate" :value="act.date" @change="setActionValue(risk.id, ai, 'date', $event.target.value)"></td>
+                      <td class="fmea__delta-cell"><select class="field field--sm" name="deltaS" title="ΔS" :value="act.deltaS" @change="setActionValue(risk.id, ai, 'deltaS', $event.target.value)">
                         <option value="0">0</option>
                         <option value="1">−1</option>
                         <option value="2">−2</option>
@@ -313,7 +313,7 @@
                         <option value="8">−8</option>
                         <option value="9">−9</option>
                       </select></td>
-                      <td class="fmea__delta-cell"><select class="field field--sm" name="deltaO" title="ΔO" x-model="act.deltaO">
+                      <td class="fmea__delta-cell"><select class="field field--sm" name="deltaO" title="ΔO" :value="act.deltaO" @change="setActionValue(risk.id, ai, 'deltaO', $event.target.value)">
                         <option value="0">0</option>
                         <option value="1">−1</option>
                         <option value="2">−2</option>
@@ -325,7 +325,7 @@
                         <option value="8">−8</option>
                         <option value="9">−9</option>
                       </select></td>
-                      <td class="fmea__delta-cell"><select class="field field--sm" name="deltaD" title="ΔD" x-model="act.deltaD">
+                      <td class="fmea__delta-cell"><select class="field field--sm" name="deltaD" title="ΔD" :value="act.deltaD" @change="setActionValue(risk.id, ai, 'deltaD', $event.target.value)">
                         <option value="0">0</option>
                         <option value="1">−1</option>
                         <option value="2">−2</option>

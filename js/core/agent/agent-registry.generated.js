@@ -2059,76 +2059,215 @@ export const AGENT_REGISTRY = {
     }
   },
   "fmea": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:riskNum",
-      "unmarked_method:rpnText",
-      "unmarked_method:targetText",
-      "unmarked_method:isAp",
-      "unmarked_method:isDesign",
-      "unmarked_method:setMethod",
-      "unmarked_method:setFmeaType",
-      "unmarked_method:badgeClass",
-      "unmarked_method:projBadgeClass",
-      "unmarked_method:badgeText",
-      "unmarked_method:projBadgeText",
-      "unmarked_method:projValueText",
-      "unmarked_method:cardClass",
-      "unmarked_method:showUnjustified",
-      "unmarked_method:showJustification",
-      "unmarked_method:showSevere",
-      "unmarked_method:specialCharClass",
-      "unmarked_method:projSDisp",
-      "unmarked_method:projODisp",
-      "unmarked_method:projDDisp",
-      "unmarked_method:statAvg",
-      "unmarked_method:statMax",
-      "unmarked_method:statRated",
-      "unmarked_method:stats",
-      "unmarked_method:scaleText",
-      "unmarked_method:apDimTitle",
-      "unmarked_method:apScaleRows",
-      "unmarked_method:apDBandLabels",
-      "unmarked_method:apMatrixRows",
-      "unmarked_method:sevTitle",
-      "unmarked_method:occTitle",
-      "unmarked_method:detTitle",
-      "unmarked_method:addRisk",
-      "unmarked_method:deleteRisk",
-      "unmarked_method:addAction",
-      "unmarked_method:deleteAction",
-      "unmarked_method:toggleCollapse",
-      "unmarked_method:toggleScale",
-      "unmarked_method:resetScales",
-      "unmarked_method:sortByPriority",
-      "unmarked_method:scaleEdited",
-      "unmarked_method:exportCSV",
-      "unmarked_method:showBurndown",
-      "unmarked_method:closeBurndown",
-      "unmarked_method:destroy"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "setMethod": {
+        "params": [
+          {
+            "name": "m",
+            "type": "'ap'|'rpn'",
+            "optional": false,
+            "help": "`ap` bewertet nach Aufgabenpriorität (AIAG-VDA), `rpn` nach der Risikoprioritätszahl"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Bewertungsmethode der FMEA."
+      },
+      "setFmeaType": {
+        "params": [
+          {
+            "name": "type",
+            "type": "'process'|'design'",
+            "optional": false,
+            "help": "`process` für eine Prozess-FMEA, `design` für eine Konstruktions-FMEA"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Art der FMEA; sie wählt die Skalentexte der Aufgabenpriorität aus."
+      },
+      "addRisk": {
+        "params": [],
+        "returns": "string",
+        "help": "Legt ein leeres Risiko an."
+      },
+      "deleteRisk": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "id des Risikos"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt ein Risiko samt seinen Maßnahmen."
+      },
+      "resetScales": {
+        "params": [],
+        "returns": "void",
+        "help": "Verwirft alle eigenen Skalentexte; es gelten wieder die mitgelieferten."
+      },
+      "sortByPriority": {
+        "params": [],
+        "returns": "void",
+        "help": "Sortiert die Risiken nach der aktiven Bewertungsmethode, das dringendste zuerst."
+      },
+      "setScaleValue": {
+        "params": [
+          {
+            "name": "key",
+            "type": "string",
+            "optional": false,
+            "help": "der Schlüssel des Skalentexts — bei der Risikoprioritätszahl etwa `sevHigh` oder `occModRate`, bei der Aufgabenpriorität `ap.<art>.<dimension>.<stufe>.meaning` bzw. `.criterion`"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der neue Text; die leere Zeichenkette lässt die Zelle leer"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt einen eigenen Skalentext; er ersetzt den mitgelieferten."
+      },
+      "setRiskValue": {
+        "params": [
+          {
+            "name": "riskId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Risikos"
+          },
+          {
+            "name": "field",
+            "type": "'step'|'failureMode'|'effect'|'cause'|'prevention'|'control'|'specialChar'|'justification'|'sev'|'occ'|'det'",
+            "optional": false,
+            "help": "das zu setzende Feld"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "der neue Wert"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt ein Feld eines Risikos."
+      },
+      "setRiskCollapsed": {
+        "params": [
+          {
+            "name": "riskId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Risikos"
+          },
+          {
+            "name": "collapsed",
+            "type": "boolean",
+            "optional": false,
+            "help": "true klappt die Karte zu, false auf"
+          }
+        ],
+        "returns": "void",
+        "help": "Klappt eine Risikokarte auf oder zu."
+      },
+      "addRiskAction": {
+        "params": [
+          {
+            "name": "riskId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Risikos"
+          }
+        ],
+        "returns": "number",
+        "help": "Hängt einem Risiko eine leere Maßnahme an."
+      },
+      "removeRiskAction": {
+        "params": [
+          {
+            "name": "riskId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Risikos"
+          },
+          {
+            "name": "actionIndex",
+            "type": "number",
+            "optional": false,
+            "help": "die Position der Maßnahme, bei 0 beginnend"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt eine Maßnahme eines Risikos."
+      },
+      "setActionValue": {
+        "params": [
+          {
+            "name": "riskId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Risikos"
+          },
+          {
+            "name": "actionIndex",
+            "type": "number",
+            "optional": false,
+            "help": "die Position der Maßnahme, bei 0 beginnend"
+          },
+          {
+            "name": "field",
+            "type": "'text'|'resp'|'date'|'done'|'deltaS'|'deltaO'|'deltaD'",
+            "optional": false,
+            "help": "das zu setzende Feld"
+          },
+          {
+            "name": "value",
+            "type": "string|boolean",
+            "optional": false,
+            "help": "der neue Wert"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt ein Feld einer Maßnahme."
+      }
+    },
     "fields": {
       "risks": {
         "type": "Risk[]",
-        "help": "",
-        "bulk": false
+        "help": "die Risiken in Bearbeitungsreihenfolge; je Risiko `id` (zum Ansprechen), `step` (der betrachtete Prozessschritt), `failureMode` (die Fehlerart), `effect` (die Folge), `cause` (die Ursache), `prevention` (die Vermeidungsmaßnahme), `control` (die Entdeckungsmaßnahme), `specialChar` (`CC`, `SC` oder leer), `justification` (warum ein Risiko mit hoher Aufgabenpriorität ohne Maßnahme bleibt), `sev`, `occ` und `det` als Zeichenkette `1` bis `10` oder leer, `collapsed` (ob die Karte zugeklappt ist) und `actions` — je Maßnahme `text`, `resp` (die Zuständige), `date` (das Fälligkeitsdatum als `JJJJ-MM-TT`), `done` sowie `deltaS`, `deltaO` und `deltaD` als Zeichenkette `0` bis `9`, um die die Maßnahme die Bewertung senkt",
+        "bulk": true,
+        "bulkKind": "table"
       },
       "scales": {
         "type": "object|null",
-        "help": "custom scale-text overrides, null = use i18n defaults",
+        "help": "die eigenen Skalentexte, je Schlüssel einer Skalenzelle ein Text; `null` heißt, es gelten die mitgelieferten",
         "bulk": false
       },
       "method": {
         "type": "'ap'|'rpn'",
-        "help": "rating method; a new FMEA uses AP",
+        "help": "die Bewertungsmethode: `ap` nach Aufgabenpriorität (AIAG-VDA), `rpn` nach Risikoprioritätszahl. Eine neue FMEA nutzt `ap`",
         "bulk": false
       },
       "fmeaType": {
         "type": "'process'|'design'",
-        "help": "selects the AP scale texts",
+        "help": "die Art der FMEA; sie wählt die Skalentexte der Aufgabenpriorität aus",
         "bulk": false
       }
     }
@@ -8023,4 +8162,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":24};
+export const AGENT_COVERAGE = {"total":74,"available":25};

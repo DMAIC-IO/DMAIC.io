@@ -426,13 +426,35 @@ export const apRating = {
 };
 
 export class State {
-  /** @type {Risk[]} */
+  /**
+   * @type {Risk[]} die Risiken in Bearbeitungsreihenfolge; je Risiko `id`
+   *   (zum Ansprechen), `step` (der betrachtete Prozessschritt),
+   *   `failureMode` (die Fehlerart), `effect` (die Folge), `cause` (die
+   *   Ursache), `prevention` (die Vermeidungsmaßnahme), `control` (die
+   *   Entdeckungsmaßnahme), `specialChar` (`CC`, `SC` oder leer),
+   *   `justification` (warum ein Risiko mit hoher Aufgabenpriorität ohne
+   *   Maßnahme bleibt), `sev`, `occ` und `det` als Zeichenkette `1` bis `10`
+   *   oder leer, `collapsed` (ob die Karte zugeklappt ist) und `actions` —
+   *   je Maßnahme `text`, `resp` (die Zuständige), `date` (das Fälligkeitsdatum
+   *   als `JJJJ-MM-TT`), `done` sowie `deltaS`, `deltaO` und `deltaD` als
+   *   Zeichenkette `0` bis `9`, um die die Maßnahme die Bewertung senkt
+   * @agentBulk
+   */
   risks = [];
-  /** @type {object|null} custom scale-text overrides, null = use i18n defaults */
+  /**
+   * @type {object|null} die eigenen Skalentexte, je Schlüssel einer
+   *   Skalenzelle ein Text; `null` heißt, es gelten die mitgelieferten
+   */
   scales = null;
-  /** @type {'ap'|'rpn'} rating method; a new FMEA uses AP */
+  /**
+   * @type {'ap'|'rpn'} die Bewertungsmethode: `ap` nach Aufgabenpriorität
+   *   (AIAG-VDA), `rpn` nach Risikoprioritätszahl. Eine neue FMEA nutzt `ap`
+   */
   method = 'ap';
-  /** @type {'process'|'design'} selects the AP scale texts */
+  /**
+   * @type {'process'|'design'} die Art der FMEA; sie wählt die Skalentexte
+   *   der Aufgabenpriorität aus
+   */
   fmeaType = 'process';
 
   // ── Content / CRUD ────────────────────────────────────────
