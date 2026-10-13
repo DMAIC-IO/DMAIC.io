@@ -269,8 +269,12 @@ export function validateBatch(input, world) {
             world.t('agent.errors.moduleNotAgentReady', { module: moduleId })));
         }
         if (!entry.methods.includes(a.method)) {
+          // `entry.methods` sind die KATALOG-Aktionen (agent-catalog.js,
+          // `buildWorld`), nicht die Mitglieder des Viewmodels: ein Name, der
+          // hier fehlt, kann im Modul sehr wohl existieren. Daher derselbe
+          // Satz wie im Katalogwächter der Laufzeit (agent-ops.js).
           return fail(i, axiError(ERRORS.UNKNOWN_METHOD,
-            world.t('agent.errors.unknownMethod', { module: moduleId, method: a.method }),
+            world.t('agent.errors.methodNotAgentAction', { module: moduleId, method: a.method }),
             { available: entry.methods }));
         }
       }

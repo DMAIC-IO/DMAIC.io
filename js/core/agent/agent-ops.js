@@ -164,8 +164,12 @@ export function createOps(deps) {
         // KATALOG-Aktionen — was der Agent statt dessen rufen darf. Die
         // Methodenliste des Viewmodels wäre hier eine Einladung zu genau dem
         // Aufruf, der gerade abgewiesen wurde.
+        // Eigener Satz, nicht `unknownMethod`: hier steht nicht fest, dass es
+        // die Methode nicht gibt — sie gehört nur nicht zur Fläche. Der Satz
+        // „hat keine Methode" bleibt dem Zweig unten vorbehalten, wo er
+        // zutrifft (Registry führt sie, die lebende Komponente nicht).
         return axiError(ERRORS.UNKNOWN_METHOD,
-          t('agent.errors.unknownMethod', { module: found.module, method: action.method }),
+          t('agent.errors.methodNotAgentAction', { module: found.module, method: action.method }),
           { available: Object.keys(entry.actions ?? {}).sort() });
       }
       const viewmodel = await host.getViewmodel(action.instance);

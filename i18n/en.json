@@ -8394,6 +8394,7 @@
       "unknownInstance": "Unknown instance \"{instance}\".",
       "viewmodelNotAlive": "Instance \"{instance}\" is not active (view not open).",
       "unknownMethod": "Module \"{module}\" has no method \"{method}\".",
+      "methodNotAgentAction": "Module \"{module}\" does not release \"{method}\" as an action \u2014 whether the method exists internally makes no difference. Only what \"available\" lists is callable; a different spelling of the same name changes nothing.",
       "unknownSection": "Module \"{module}\" has no handbook section \"{section}\".",
       "moduleNotAgentReady": "Module \"{module}\" is not released for agents.",
       "moduleSingleton": "Module \"{module}\" may exist only once per project; the instance \"{instance}\" already exists.",

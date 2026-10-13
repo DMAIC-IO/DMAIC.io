@@ -8398,6 +8398,7 @@
       "unknownInstance": "Unbekannte Instanz \"{instance}\".",
       "viewmodelNotAlive": "Instanz \"{instance}\" ist nicht aktiv (Ansicht nicht geöffnet).",
       "unknownMethod": "Modul \"{module}\" hat keine Methode \"{method}\".",
+      "methodNotAgentAction": "Modul \"{module}\" gibt \"{method}\" nicht als Aktion frei \u2014 ob es die Methode intern gibt, ist dafür unerheblich. Aufrufbar ist nur, was \"available\" nennt; eine andere Schreibweise desselben Namens ändert daran nichts.",
       "unknownSection": "Modul \"{module}\" hat keinen Handbuchabschnitt \"{section}\".",
       "moduleNotAgentReady": "Modul \"{module}\" ist nicht für Agenten freigegeben.",
       "moduleSingleton": "Modul \"{module}\" darf nur einmal im Projekt vorkommen; die Instanz \"{instance}\" existiert bereits.",
