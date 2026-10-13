@@ -400,7 +400,11 @@ export default class PieChart extends ChartBase {
       (key, value) => this._onLabelEdit?.(key, value), this._autoLabels || {}));
 
     // Legend
-    inner.appendChild(edCheckboxRow(tBase('showLegend'), cfg.showLegend !== false, (v) => { cfg.showLegend = v; onUpdate(); }));
+    inner.appendChild(edCheckboxRow(tBase('showLegend'), cfg.showLegend !== false, (v) => {
+      cfg.showLegend = v;
+      this._onLabelEdit?.('showLegend', v);
+      onUpdate();
+    }, 'showLegend'));
 
     // Labels
     const secLabels = edSection(t('labels'));
