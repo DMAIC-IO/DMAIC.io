@@ -39,7 +39,8 @@
               <textarea class="field triz-res__notes" rows="3" data-role="notes"
                 :data-cat="catKey" :data-lvl="lvlKey"
                 :placeholder="catPrompt(catKey)"
-                x-model="cell.notes"></textarea>
+                :value="cell.notes"
+                @input="setCellNotes(catKey, lvlKey, $event.target.value)"></textarea>
             </div>
           </template>
         </div>

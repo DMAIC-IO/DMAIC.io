@@ -6460,6 +6460,46 @@
     "triz-resources": {
       "name": "Ressourcen-Checkliste (TRIZ)",
       "description": "Systematische Inventarisierung von Stoffen, Feldern, Raum, Zeit, Information und Funktionen",
+      "whenToUse": "Wenn vor der Lösungssuche aufgenommen werden soll, was im System und seiner Umgebung schon vorhanden ist und nichts kostet — nicht, um Lösungen zu bewerten oder Widersprüche aufzulösen.",
+      "actions": {
+        "setSystem": {
+          "help": "Setzt das betrachtete System, dessen Ressourcen aufgenommen werden.",
+          "params": {
+            "text": "Name oder kurze Beschreibung des Systems; ein leerer Text löscht das Feld."
+          }
+        },
+        "setCellNotes": {
+          "help": "Schreibt die Notiz eines Ressourcenfeldes — welche Ressource dieser Art auf dieser Ebene vorhanden ist.",
+          "params": {
+            "catKey": "Die Ressourcenkategorie: substance, field, space, time, info oder function. Ein Wert daneben ist ein Fehler.",
+            "lvlKey": "Die Systemebene: sub (Subsystem), sys (System) oder super (Supersystem). Ein Wert daneben ist ein Fehler.",
+            "text": "Die Notiz zum Feld; ein leerer Text löscht sie."
+          }
+        },
+        "setCellStatus": {
+          "help": "Setzt den Füllstand eines Ressourcenfeldes absolut — wie weit diese Ressource heute genutzt wird.",
+          "params": {
+            "catKey": "Die Ressourcenkategorie: substance, field, space, time, info oder function. Ein Wert daneben ist ein Fehler.",
+            "lvlKey": "Die Systemebene: sub (Subsystem), sys (System) oder super (Supersystem). Ein Wert daneben ist ein Fehler.",
+            "status": "Der Füllstand: unknown (nicht geprüft), unused (vorhanden, ungenutzt), partial (teils genutzt) oder full (voll genutzt). Ein Wert daneben ist ein Fehler."
+          }
+        },
+        "cycleStatus": {
+          "help": "Schaltet den Füllstand eines Ressourcenfeldes einen Schritt weiter: unknown, unused, partial, full, wieder unknown. Für einen bestimmten Wert ist setCellStatus der direkte Weg.",
+          "params": {
+            "catKey": "Die Ressourcenkategorie: substance, field, space, time, info oder function. Ein Wert daneben ist ein Fehler.",
+            "lvlKey": "Die Systemebene: sub (Subsystem), sys (System) oder super (Supersystem). Ein Wert daneben ist ein Fehler."
+          }
+        }
+      },
+      "fields": {
+        "system": {
+          "help": "Das betrachtete System, dessen Ressourcen aufgenommen werden."
+        },
+        "cells": {
+          "help": "Die Ressourcenmatrix: sechs Kategorien (substance, field, space, time, info, function) mal drei Ebenen (sub, sys, super), adressiert als cells[kategorie][ebene]. Jedes der 18 Felder trägt notes (die Notiz) und status (unknown, unused, partial oder full)."
+        }
+      },
       "subtitle": "Inventarisiere verfügbare Ressourcen über sechs Kategorien × drei Systemebenen, bevor neue Komponenten erfunden werden.",
       "systemLabel": "System",
       "systemPlaceholder": "z.B. Bandförderer für lose Schüttgut",

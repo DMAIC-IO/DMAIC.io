@@ -1,14 +1,28 @@
+/** @type {readonly string[]} die sechs Ressourcenkategorien, in Zeilenreihenfolge */
 export const CATEGORIES = ['substance', 'field', 'space', 'time', 'info', 'function']
+
+/** @type {readonly string[]} die drei Systemebenen, in Spaltenreihenfolge */
 export const LEVELS = ['sub', 'sys', 'super']
-const CYCLE = ['unknown', 'unused', 'partial', 'full']
+
+/**
+ * Die erklärte Wertemenge von `Cell.status`, in der Reihenfolge, die
+ * `cycleStatus()` durchläuft. Exportiert, weil das Viewmodel sie für
+ * `requireEnum` braucht — ein Agent kann einen Wert daneben erzeugen, die
+ * vier Knopfzustände der Oberfläche können es nicht.
+ * @type {readonly string[]}
+ */
+export const CELL_STATUSES = ['unknown', 'unused', 'partial', 'full']
 
 export class Cell {
+  /** @type {string} die Notiz zu dieser Ressource */
   notes = ''
+
+  /** @type {string} der Füllstand: unknown, unused, partial oder full */
   status = 'unknown'
 
   cycleStatus() {
-    const idx = CYCLE.indexOf(this.status)
-    this.status = CYCLE[(idx + 1) % CYCLE.length]
+    const idx = CELL_STATUSES.indexOf(this.status)
+    this.status = CELL_STATUSES[(idx + 1) % CELL_STATUSES.length]
   }
 
   toJSON() {
@@ -19,7 +33,7 @@ export class Cell {
     const c = new Cell()
     if (d) {
       c.notes = typeof d.notes === 'string' ? d.notes : ''
-      c.status = CYCLE.includes(d.status) ? d.status : 'unknown'
+      c.status = CELL_STATUSES.includes(d.status) ? d.status : 'unknown'
     }
     return c
   }
@@ -39,7 +53,16 @@ export class State {
   static ID = "triz-resources";
 
   _schema = { name: State.ID, version: State.VERSION }
+
+  /** @type {string} das betrachtete System, dessen Ressourcen aufgenommen werden */
   system = ''
+
+  /**
+   * @type {Record<string, Record<string, {notes: string, status: string}>>} die
+   *   6x3-Matrix der Ressourcenfelder: sechs Kategorien (substance, field,
+   *   space, time, info, function) mal drei Ebenen (sub, sys, super). Jedes
+   *   Feld trägt `notes` und `status` (unknown, unused, partial, full).
+   */
   cells = emptyGrid()
 
   hasContent() {

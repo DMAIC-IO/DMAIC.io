@@ -6456,6 +6456,46 @@
     "triz-resources": {
       "name": "Resources Checklist (TRIZ)",
       "description": "Systematic inventory of substances, fields, space, time, information and functions",
+      "whenToUse": "When you want to inventory what the system and its environment already provide at no cost, before searching for solutions — not to judge solutions or resolve contradictions.",
+      "actions": {
+        "setSystem": {
+          "help": "Sets the system under study whose resources are being inventoried.",
+          "params": {
+            "text": "Name or short description of the system; an empty text clears the field."
+          }
+        },
+        "setCellNotes": {
+          "help": "Writes the note of a resource field — which resource of that kind exists on that level.",
+          "params": {
+            "catKey": "The resource category: substance, field, space, time, info or function. Any other value is an error.",
+            "lvlKey": "The system level: sub (subsystem), sys (system) or super (supersystem). Any other value is an error.",
+            "text": "The note for the field; an empty text clears it."
+          }
+        },
+        "setCellStatus": {
+          "help": "Sets the fill level of a resource field absolutely — how far that resource is used today.",
+          "params": {
+            "catKey": "The resource category: substance, field, space, time, info or function. Any other value is an error.",
+            "lvlKey": "The system level: sub (subsystem), sys (system) or super (supersystem). Any other value is an error.",
+            "status": "The fill level: unknown (not checked), unused (present, unused), partial (partly used) or full (fully used). Any other value is an error."
+          }
+        },
+        "cycleStatus": {
+          "help": "Advances the fill level of a resource field by one step: unknown, unused, partial, full, back to unknown. For a specific value, setCellStatus is the direct route.",
+          "params": {
+            "catKey": "The resource category: substance, field, space, time, info or function. Any other value is an error.",
+            "lvlKey": "The system level: sub (subsystem), sys (system) or super (supersystem). Any other value is an error."
+          }
+        }
+      },
+      "fields": {
+        "system": {
+          "help": "The system under study whose resources are being inventoried."
+        },
+        "cells": {
+          "help": "The resource matrix: six categories (substance, field, space, time, info, function) by three levels (sub, sys, super), addressed as cells[category][level]. Each of the 18 fields carries notes (the note) and status (unknown, unused, partial or full)."
+        }
+      },
       "subtitle": "Inventory available resources across six categories × three system levels before inventing new components.",
       "systemLabel": "System",
       "systemPlaceholder": "e.g. belt conveyor for bulk solids",

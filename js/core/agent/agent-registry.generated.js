@@ -5620,28 +5620,111 @@ export const AGENT_REGISTRY = {
     }
   },
   "triz-resources": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:catIcon",
-      "unmarked_method:catName",
-      "unmarked_method:catPrompt",
-      "unmarked_method:fillIcon",
-      "unmarked_method:statusSuffix",
-      "unmarked_method:cycleStatus",
-      "unreachable_write:system"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "setSystem": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "Name oder kurze Beschreibung des Systems"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt das betrachtete System. Schreibt dasselbe Feld wie `x-model=\"model.system\"` in der Vorlage."
+      },
+      "setCellNotes": {
+        "params": [
+          {
+            "name": "catKey",
+            "type": "string",
+            "optional": false,
+            "help": "Ressourcenkategorie"
+          },
+          {
+            "name": "lvlKey",
+            "type": "string",
+            "optional": false,
+            "help": "Systemebene"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die Notiz"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Notiz eines Ressourcenfeldes."
+      },
+      "setCellStatus": {
+        "params": [
+          {
+            "name": "catKey",
+            "type": "string",
+            "optional": false,
+            "help": "Ressourcenkategorie"
+          },
+          {
+            "name": "lvlKey",
+            "type": "string",
+            "optional": false,
+            "help": "Systemebene"
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "optional": false,
+            "help": "der Füllstand"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Füllstand eines Ressourcenfeldes absolut."
+      },
+      "cycleStatus": {
+        "params": [
+          {
+            "name": "catKey",
+            "type": "string",
+            "optional": false,
+            "help": "Ressourcenkategorie"
+          },
+          {
+            "name": "lvlKey",
+            "type": "string",
+            "optional": false,
+            "help": "Systemebene"
+          }
+        ],
+        "returns": "void",
+        "help": "Schaltet den Füllstand eines Ressourcenfeldes einen Schritt weiter: unknown, unused, partial, full, wieder unknown."
+      }
+    },
     "fields": {
       "system": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "das betrachtete System, dessen Ressourcen aufgenommen werden",
         "bulk": false
       },
       "cells": {
-        "type": "any",
-        "help": "",
+        "type": "Record<string, Record<string, {notes: string, status: string}>>",
+        "help": "die 6x3-Matrix der Ressourcenfelder: sechs Kategorien (substance, field, space, time, info, function) mal drei Ebenen (sub, sys, super). Jedes Feld trägt `notes` und `status` (unknown, unused, partial, full).",
         "bulk": false
       }
     }
@@ -6107,4 +6190,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":8};
+export const AGENT_COVERAGE = {"total":74,"available":9};
