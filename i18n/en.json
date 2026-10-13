@@ -6969,6 +6969,95 @@
     "triz-sufield": {
       "name": "Substance-Field Analysis (TRIZ)",
       "description": "Model the interaction as an S1-S2-field triangle and apply Altshuller's 76 standard solutions",
+      "whenToUse": "When an action between two substances is too weak, too strong, harmful or missing altogether and the matching TRIZ standard solutions are to be found; not to resolve a contradiction between two characteristics — that is what the contradiction matrix is for.",
+      "actions": {
+        "setS1": {
+          "help": "Sets substance S1 — the substance that exerts the action.",
+          "params": {
+            "text": "Name or short description of S1; an empty text clears the field."
+          }
+        },
+        "setS2": {
+          "help": "Sets substance S2 — the substance being acted upon.",
+          "params": {
+            "text": "Name or short description of S2; an empty text clears the field."
+          }
+        },
+        "setFieldType": {
+          "help": "Sets the field type acting between the two substances.",
+          "params": {
+            "field": "The field type: M (mechanical), A (acoustic), T (thermal), C (chemical), E (electrical) or Mg (magnetic). An empty text clears the choice, any other value is an error."
+          }
+        },
+        "setLink": {
+          "help": "Sets the kind of link between the two substances; the diagnosis and the preselected standard classes follow from it.",
+          "params": {
+            "link": "The link: useful, insufficient, excessive, harmful or missing. An empty text clears the choice, any other value is an error."
+          }
+        },
+        "setProblemNote": {
+          "help": "Sets the problem note for the substance-field model.",
+          "params": {
+            "text": "The problem note; an empty text clears it."
+          }
+        },
+        "setStandardNote": {
+          "help": "Sets the note for a standard solution.",
+          "params": {
+            "stdId": "The id of one of the 78 standard solutions, in the form class.group.number (for example 2.2.5); the classes are 1 to 5. An id no standard solution carries is an error — the error message lists the valid ids.",
+            "text": "The note for that standard solution; an empty text clears it and removes the id from the read state."
+          }
+        },
+        "setStandardSelected": {
+          "help": "Marks a standard solution as under consideration, or takes that mark back.",
+          "params": {
+            "stdId": "The id of one of the 78 standard solutions, in the form class.group.number (for example 2.2.5); the classes are 1 to 5. An id no standard solution carries is an error — the error message lists the valid ids.",
+            "selected": "true marks it, false takes the mark back and removes the id from the read state."
+          }
+        },
+        "setFilterMode": {
+          "help": "Sets the list filter for the standard solutions.",
+          "params": {
+            "mode": "auto shows only the classes matching the diagnosis, all shows all five. Any other value is an error."
+          }
+        },
+        "setClassExpanded": {
+          "help": "Expands or collapses a class of standard solutions.",
+          "params": {
+            "cls": "The number of the standard class, 1 to 5. Any other number is an error.",
+            "expanded": "true expands, false collapses."
+          }
+        }
+      },
+      "fields": {
+        "s1": {
+          "help": "Substance S1 — the substance that exerts the action."
+        },
+        "s2": {
+          "help": "Substance S2 — the substance being acted upon."
+        },
+        "field": {
+          "help": "The field type between the substances: M, A, T, C, E or Mg; empty while none is chosen."
+        },
+        "link": {
+          "help": "The link between the substances: useful, insufficient, excessive, harmful or missing; empty while none is chosen."
+        },
+        "problemNote": {
+          "help": "The problem note for the substance-field model."
+        },
+        "notes": {
+          "help": "One note per annotated standard solution, addressed as notes[id] with the id in the form class.group.number (for example 2.2.5). Only standard solutions carrying a note appear."
+        },
+        "selected": {
+          "help": "The standard solutions marked as under consideration, addressed as selected[id] with the value true. Only marked ones appear."
+        },
+        "filterMode": {
+          "help": "The list filter: auto shows only the classes matching the diagnosis, all shows all five."
+        },
+        "expandedClasses": {
+          "help": "The numbers of the expanded standard classes, 1 to 5. A persisted display state — it belongs to the saved project, not to the analysis."
+        }
+      },
       "subtitle": "Model the interaction as a substance-substance-field triangle and use the diagnosis to find the matching standard solutions.",
       "s1Label": "Tool (S1)",
       "s1Placeholder": "e.g. drill",

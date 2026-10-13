@@ -6014,94 +6014,194 @@ export const AGENT_REGISTRY = {
     }
   },
   "triz-sufield": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:diagSituation",
-      "unmarked_method:suggestedClassesLabel",
-      "unmarked_method:suggestedClassList",
-      "unmarked_method:diagramEdgeClass",
-      "unmarked_method:diagramEdgeColor",
-      "unmarked_method:diagramDashArray",
-      "unmarked_method:diagramMarkerEnd",
-      "unmarked_method:diagramSideDash",
-      "unmarked_method:diagramFieldLabel",
-      "unmarked_method:diagramS1Text",
-      "unmarked_method:diagramS2Text",
-      "unmarked_method:situationLabel",
-      "unmarked_method:fieldOptionLabel",
-      "unmarked_method:linkOptionLabel",
-      "unmarked_method:className",
-      "unmarked_method:classDesc",
-      "unmarked_method:classCount",
-      "unmarked_method:stdTitle",
-      "unmarked_method:stdDesc",
-      "unmarked_method:stdTrigger",
-      "unmarked_method:stdExample",
-      "unmarked_method:classToggled",
-      "unmarked_method:isFieldSelected",
-      "unmarked_method:isLinkSelected",
-      "unmarked_method:fieldChanged",
-      "unmarked_method:linkChanged",
-      "unmarked_method:s1Changed",
-      "unmarked_method:s2Changed",
-      "unmarked_method:isFilterAuto",
-      "unmarked_method:isFilterAll",
-      "unmarked_method:filterChanged",
-      "unmarked_method:isStandardSelected",
-      "unmarked_method:noteValue",
-      "unmarked_method:standardSelectedClass",
-      "unmarked_method:noteChanged",
-      "unmarked_method:selectChanged",
-      "unmarked_method:init",
-      "unreachable_write:problemNote"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "setClassExpanded": {
+        "params": [
+          {
+            "name": "cls",
+            "type": "number",
+            "optional": false,
+            "help": "Nummer der Standardklasse, 1 bis 5"
+          },
+          {
+            "name": "expanded",
+            "type": "boolean",
+            "optional": false,
+            "help": "`true` klappt auf, `false` klappt zu"
+          }
+        ],
+        "returns": "void",
+        "help": "Klappt eine Klasse der Standardlösungen auf oder zu."
+      },
+      "setS1": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "Name oder kurze Beschreibung von S1"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Stoff S1 — den Stoff, der die Wirkung auslöst."
+      },
+      "setS2": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "Name oder kurze Beschreibung von S2"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Stoff S2 — den Stoff, auf den gewirkt wird."
+      },
+      "setFieldType": {
+        "params": [
+          {
+            "name": "field",
+            "type": "string",
+            "optional": false,
+            "help": "Feldart: M, A, T, C, E oder Mg; ein leerer Text nimmt die Wahl zurück"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Feldart, die zwischen den beiden Stoffen wirkt."
+      },
+      "setLink": {
+        "params": [
+          {
+            "name": "link",
+            "type": "string",
+            "optional": false,
+            "help": "Verknüpfung: useful, insufficient, excessive, harmful oder missing; ein leerer Text nimmt die Wahl zurück"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Art der Verknüpfung zwischen den beiden Stoffen."
+      },
+      "setProblemNote": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die Problemnotiz"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Problemnotiz zum Stoff-Feld-Modell."
+      },
+      "setStandardNote": {
+        "params": [
+          {
+            "name": "stdId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Standardlösung, zum Beispiel 2.2.5"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die Notiz zu dieser Standardlösung"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Notiz zu einer Standardlösung; ein leerer Text löscht sie."
+      },
+      "setStandardSelected": {
+        "params": [
+          {
+            "name": "stdId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Standardlösung, zum Beispiel 2.2.5"
+          },
+          {
+            "name": "selected",
+            "type": "boolean",
+            "optional": false,
+            "help": "`true` merkt vor, `false` nimmt zurück"
+          }
+        ],
+        "returns": "void",
+        "help": "Merkt eine Standardlösung als in Betracht gezogen vor oder nimmt die Vormerkung zurück."
+      },
+      "setFilterMode": {
+        "params": [
+          {
+            "name": "mode",
+            "type": "string",
+            "optional": false,
+            "help": "`auto` zeigt nur die zur Diagnose passenden Klassen, `all` alle fünf"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Listenfilter der Standardlösungen."
+      }
+    },
     "fields": {
       "s1": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "der Stoff S1 — der Stoff, der die Wirkung auslöst",
         "bulk": false
       },
       "s2": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "der Stoff S2 — der Stoff, auf den gewirkt wird",
         "bulk": false
       },
       "field": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "die Feldart zwischen den Stoffen: M, A, T, C, E oder Mg; leer, solange keine gewählt ist",
         "bulk": false
       },
       "link": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "die Verknüpfung: useful, insufficient, excessive, harmful oder missing; leer, solange keine gewählt ist",
         "bulk": false
       },
       "problemNote": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "die Problemnotiz zum Stoff-Feld-Modell",
         "bulk": false
       },
       "notes": {
-        "type": "any",
-        "help": "",
+        "type": "Record<string, string>",
+        "help": "je vermerkter Standardlösung eine Notiz, adressiert über ihre id (zum Beispiel 2.2.5)",
         "bulk": false
       },
       "selected": {
-        "type": "any",
-        "help": "",
+        "type": "Record<string, boolean>",
+        "help": "die vorgemerkten Standardlösungen, adressiert über ihre id; nur vorgemerkte stehen darin",
         "bulk": false
       },
       "filterMode": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "der Listenfilter: auto zeigt nur die zur Diagnose passenden Klassen, all alle fünf",
         "bulk": false
       },
       "expandedClasses": {
-        "type": "any",
-        "help": "",
+        "type": "number[]",
+        "help": "die Nummern der aufgeklappten Standardklassen (1 bis 5)",
         "bulk": false
       }
     }
@@ -6474,4 +6574,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":13};
+export const AGENT_COVERAGE = {"total":74,"available":14};

@@ -1,14 +1,37 @@
+/**
+ * D.Mike — Stoff-Feld-Analyse (TRIZ) (triz-sufield.js)
+ *
+ * @agent  Vollständig über das Viewmodel steuerbar: die beiden Stoffe, die
+ *   Feldart, die Verknüpfung, die Problemnotiz, Auswahl und Notiz je
+ *   Standardlösung, der Listenfilter und die Aufklappung der
+ *   Standardklassen. Die 78 Standardlösungen sind feste Tabellendaten und
+ *   kein Zustand.
+ */
 import { createModule } from '../../core/template-module.js';
-import { State, diagnose } from './triz-sufield-model.js';
+import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { State, diagnose, FIELDS, LINKS, FILTER_MODES } from './triz-sufield-model.js';
 
-//test
 const DATA_PATH = 'js/modules/triz-sufield/data/standards.json';
 let _dataPromise = null;
+
+/**
+ * Die ids und Klassennummern der geladenen Standardtabelle — feste
+ * Tabellendaten, kein Zustand, darum auf Modulebene und nicht je Instanz.
+ * Vor dem Laden leer; die Prüfungen unten nennen dann eine leere Liste.
+ */
+let _standardIds = [];
+let _classNumbers = [];
+
 function loadData() {
   if (_dataPromise) return _dataPromise;
   _dataPromise = fetch(DATA_PATH, { cache: 'no-cache' })
     .then(r => r.json())
-    .then(d => d.standards);
+    .then(d => {
+      _standardIds = d.standards.map(s => String(s.id));
+      _classNumbers = [...new Set(d.standards.map(s => Number(s.class)))];
+      return d.standards;
+    });
   return _dataPromise;
 }
 
@@ -30,29 +53,36 @@ export default createModule({
 
   data(module, _t) {
     return {
-      FIELDS: ['M', 'A', 'T', 'C', 'E', 'Mg'],
-      LINKS: ['useful', 'insufficient', 'excessive', 'harmful', 'missing'],
+      ...agentReadMixin(module),
+
+      FIELDS: [...FIELDS],
+      LINKS: [...LINKS],
       standards: null,
       classList: [],
 
       // ── Diagnosis ──
+      /** @noagent view transform */
       diagSituation() {
         const s = this.model;
         return diagnose(s.s1, s.s2, s.field, s.link).situation;
       },
+      /** @noagent view transform */
       suggestedClassesLabel() {
         return `${_t('suggestedClasses')  }:`;
       },
+      /** @noagent view transform */
       suggestedClassList() {
         const s = this.model;
         return diagnose(s.s1, s.s2, s.field, s.link).suggestedClasses;
       },
 
       // ── SVG diagram ──
+      /** @noagent view transform */
       diagramEdgeClass() {
         const link = this.model.link;
         return link ? `triz-sf__edge--${  link}` : 'triz-sf__edge--empty';
       },
+      /** @noagent view transform */
       diagramEdgeColor() {
         const link = this.model.link;
         if (link === 'useful') return 'var(--color-success, #2ea043)';
@@ -61,6 +91,7 @@ export default createModule({
         if (link === 'harmful') return 'var(--color-error, #c93c3c)';
         return 'var(--color-text-tertiary)';
       },
+      /** @noagent view transform */
       diagramDashArray() {
         const link = this.model.link;
         if (link === 'insufficient') return '6 4';
@@ -68,46 +99,61 @@ export default createModule({
         if (link === 'missing') return '2 6';
         return null;
       },
+      /** @noagent view transform */
       diagramMarkerEnd() {
         return this.model.link === 'missing' ? null : 'url(#triz-sf-arrow)';
       },
+      /** @noagent view transform */
       diagramSideDash() {
         return this.model.field ? '0' : '2 4';
       },
+      /** @noagent view transform */
       diagramFieldLabel() {
         const field = this.model.field;
         return field ? _t(`field.${  field}`) : _t('fieldEmpty');
       },
+      /** @noagent view transform */
       diagramS1Text() {
         return truncate(this.model.s1 || _t('s1Placeholder'), 22);
       },
+      /** @noagent view transform */
       diagramS2Text() {
         return truncate(this.model.s2 || _t('s2Placeholder'), 22);
       },
 
       // ── Pipe filters ──
+      /** @noagent view transform */
       situationLabel: (s) => _t(`situation.${  s}`),
+      /** @noagent view transform */
       fieldOptionLabel: (f) => _t(`field.${  f}`),
+      /** @noagent view transform */
       linkOptionLabel: (l) => _t(`link.${  l}`),
 
       // ── i18n helpers ──
+      /** @noagent view transform */
       className: (c) => _t(`class.${  c  }.name`),
+      /** @noagent view transform */
       classDesc: (c) => _t(`class.${  c  }.description`),
+      /** @noagent view transform */
       classCount: (arr) => `(${  arr ? arr.length : 0  })`,
 
       // ── Language-aware standard display ──
+      /** @noagent view transform */
       stdTitle(s) {
         const loc = s[module._context.language] || s.en;
         return loc ? loc.title : '';
       },
+      /** @noagent view transform */
       stdDesc(s) {
         const loc = s[module._context.language] || s.en;
         return loc ? loc.description : '';
       },
+      /** @noagent view transform */
       stdTrigger(s) {
         const loc = s[module._context.language] || s.en;
         return loc ? loc.trigger : '';
       },
+      /** @noagent view transform */
       stdExample(s) {
         const loc = s[module._context.language] || s.en;
         return loc ? loc.example : '';
@@ -134,67 +180,215 @@ export default createModule({
       },
 
       // ── Class visibility / expansion ──
+      /**
+       * @noagent packt ein `toggle`-Ereignis aus und liest den Aufklappstand
+       *   am DOM-Knoten; der Wert geht durch `setClassExpanded`.
+       */
       classToggled(cls, event) {
+        this.setClassExpanded(Number(cls.key), event.currentTarget.open);
+      },
+
+      /**
+       * Klappt eine Klasse der Standardlösungen auf oder zu.
+       * @agent
+       * @param {number} cls Nummer der Standardklasse, 1 bis 5
+       * @param {boolean} expanded `true` klappt auf, `false` klappt zu
+       * @returns {void}
+       * @throws {Error} wenn keine Standardklasse diese Nummer trägt
+       */
+      setClassExpanded(cls, expanded) {
+        requireKnownId('cls', Number(cls), _classNumbers);
         const arr = this.model.expandedClasses;
-        const numKey = Number(cls.key);
+        const numKey = Number(cls);
         const idx = arr.indexOf(numKey);
-        if (event.currentTarget.open) {
+        if (expanded) {
           if (idx === -1) arr.push(numKey);
         } else if (idx !== -1) arr.splice(idx, 1);
         this._recompute();
       },
 
       // ── Select helpers ──
+      /** @noagent view transform */
       isFieldSelected(f) { return this.model.field === f; },
+      /** @noagent view transform */
       isLinkSelected(l) { return this.model.link === l; },
+      /**
+       * @noagent packt ein Änderungsereignis aus; der Wert geht durch
+       *   `setFieldType`.
+       */
       fieldChanged(event) {
         const val = event.target.value;
-        this.model.field = this.FIELDS.includes(val) ? val : '';
-        this._recompute();
+        this.setFieldType(FIELDS.includes(val) ? val : '');
       },
+      /**
+       * @noagent packt ein Änderungsereignis aus; der Wert geht durch
+       *   `setLink`.
+       */
       linkChanged(event) {
         const val = event.target.value;
-        this.model.link = this.LINKS.includes(val) ? val : '';
-        this._recompute();
+        this.setLink(LINKS.includes(val) ? val : '');
       },
+      /** @noagent packt ein Eingabeereignis aus; der Wert geht durch `setS1`. */
       s1Changed(event) {
-        this.model.s1 = event.target.value;
+        this.setS1(event.target.value);
+      },
+      /** @noagent packt ein Eingabeereignis aus; der Wert geht durch `setS2`. */
+      s2Changed(event) {
+        this.setS2(event.target.value);
+      },
+
+      // ── Zustands-Sinks: ein Setter je Feld (Plan E2, E7) ───────────
+      // `setFieldType` heißt nicht `setField`: das Feld des Models heißt
+      // `field`, und ein generisches `setField(name, wert)` wäre nach E7
+      // genau der Name, der die Bedeutung aus der Werkzeugbeschreibung in
+      // eine Fehlermeldung verschiebt.
+
+      /**
+       * Setzt den Stoff S1 — den Stoff, der die Wirkung auslöst.
+       * @agent
+       * @param {string} text Name oder kurze Beschreibung von S1
+       * @returns {void}
+       */
+      setS1(text) {
+        this.model.s1 = String(text ?? '');
         this._recompute();
       },
-      s2Changed(event) {
-        this.model.s2 = event.target.value;
+
+      /**
+       * Setzt den Stoff S2 — den Stoff, auf den gewirkt wird.
+       * @agent
+       * @param {string} text Name oder kurze Beschreibung von S2
+       * @returns {void}
+       */
+      setS2(text) {
+        this.model.s2 = String(text ?? '');
+        this._recompute();
+      },
+
+      /**
+       * Setzt die Feldart, die zwischen den beiden Stoffen wirkt.
+       * @agent
+       * @param {string} field Feldart: M, A, T, C, E oder Mg; ein leerer
+       *   Text nimmt die Wahl zurück
+       * @returns {void}
+       * @throws {Error} wenn der Wert keine dieser Feldarten ist
+       */
+      setFieldType(field) {
+        if (field !== '') requireEnum('field', field, FIELDS);
+        this.model.field = field;
+        this._recompute();
+      },
+
+      /**
+       * Setzt die Art der Verknüpfung zwischen den beiden Stoffen.
+       * @agent
+       * @param {string} link Verknüpfung: useful, insufficient, excessive,
+       *   harmful oder missing; ein leerer Text nimmt die Wahl zurück
+       * @returns {void}
+       * @throws {Error} wenn der Wert keine dieser Verknüpfungen ist
+       */
+      setLink(link) {
+        if (link !== '') requireEnum('link', link, LINKS);
+        this.model.link = link;
+        this._recompute();
+      },
+
+      /**
+       * Setzt die Problemnotiz zum Stoff-Feld-Modell.
+       * @agent
+       * @param {string} text die Problemnotiz
+       * @returns {void}
+       */
+      setProblemNote(text) { this.model.problemNote = String(text ?? ''); },
+
+      /**
+       * Setzt die Notiz zu einer Standardlösung; ein leerer Text löscht sie.
+       * @agent
+       * @param {string} stdId id der Standardlösung, zum Beispiel 2.2.5
+       * @param {string} text die Notiz zu dieser Standardlösung
+       * @returns {void}
+       * @throws {Error} wenn keine Standardlösung diese id trägt
+       */
+      setStandardNote(stdId, text) {
+        requireKnownId('stdId', String(stdId), _standardIds);
+        const value = String(text ?? '');
+        if (value) this.model.notes[stdId] = value;
+        else delete this.model.notes[stdId];
+      },
+
+      /**
+       * Merkt eine Standardlösung als in Betracht gezogen vor oder nimmt
+       * die Vormerkung zurück.
+       * @agent
+       * @param {string} stdId id der Standardlösung, zum Beispiel 2.2.5
+       * @param {boolean} selected `true` merkt vor, `false` nimmt zurück
+       * @returns {void}
+       * @throws {Error} wenn keine Standardlösung diese id trägt
+       */
+      setStandardSelected(stdId, selected) {
+        requireKnownId('stdId', String(stdId), _standardIds);
+        if (selected) this.model.selected[stdId] = true;
+        else delete this.model.selected[stdId];
+      },
+
+      /**
+       * Setzt den Listenfilter der Standardlösungen.
+       * @agent
+       * @param {string} mode `auto` zeigt nur die zur Diagnose passenden
+       *   Klassen, `all` alle fünf
+       * @returns {void}
+       * @throws {Error} wenn der Wert weder `auto` noch `all` ist
+       */
+      setFilterMode(mode) {
+        requireEnum('mode', mode, FILTER_MODES);
+        this.model.filterMode = mode;
         this._recompute();
       },
 
       // ── Filter ──
+      /** @noagent view transform */
       isFilterAuto() {
         const m = this.model.filterMode;
         return m === 'auto' || m === '';
       },
+      /** @noagent view transform */
       isFilterAll() {
         return this.model.filterMode === 'all';
       },
+      /**
+       * @noagent packt ein Änderungsereignis aus; der Wert geht durch
+       *   `setFilterMode`.
+       */
       filterChanged(event) {
-        this.model.filterMode = event.target.value;
-        this._recompute();
+        this.setFilterMode(event.target.value);
       },
 
       // ── Standard selection / notes ──
+      /** @noagent view transform */
       isStandardSelected(s) { return Boolean(this.model.selected[s.id]); },
+      /** @noagent view transform */
       noteValue(s) { return this.model.notes[s.id] || ''; },
+      /** @noagent view transform */
       standardSelectedClass(s) {
         return this.model.selected[s.id] ? 'is-selected' : '';
       },
+      /**
+       * @noagent packt ein Eingabeereignis aus und liest die id am
+       *   Tabelleneintrag; der Wert geht durch `setStandardNote`.
+       */
       noteChanged(s, event) {
-        if (event.target.value) this.model.notes[s.id] = event.target.value;
-        else delete this.model.notes[s.id];
+        this.setStandardNote(s.id, event.target.value);
       },
+      /**
+       * @noagent packt ein Änderungsereignis aus und liest die id am
+       *   Tabelleneintrag; der Wert geht durch `setStandardSelected`.
+       */
       selectChanged(s, event) {
-        if (event.target.checked) this.model.selected[s.id] = true;
-        else delete this.model.selected[s.id];
+        this.setStandardSelected(s.id, event.target.checked);
       },
 
       // ── Init: load standards, auto-expand classes ──
+      /** @noagent lifecycle, kein Zustandsweg */
       init() {
         loadData().then(data => {
           const mapped = {};

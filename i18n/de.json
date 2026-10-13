@@ -6973,6 +6973,95 @@
     "triz-sufield": {
       "name": "Substanz-Feld-Analyse (TRIZ)",
       "description": "Wechselwirkung als S1-S2-Feld-Dreieck modellieren und Altschullers 76 Standardlösungen anwenden",
+      "whenToUse": "Wenn eine Wirkung zwischen zwei Stoffen zu schwach, zu stark, schädlich oder gar nicht vorhanden ist und die TRIZ-Standardlösungen dazu gefunden werden sollen; nicht, um einen Widerspruch zwischen zwei Merkmalen aufzulösen — dafür ist die Widerspruchsmatrix da.",
+      "actions": {
+        "setS1": {
+          "help": "Setzt den Stoff S1 — den Stoff, der die Wirkung auslöst.",
+          "params": {
+            "text": "Name oder kurze Beschreibung von S1; ein leerer Text löscht das Feld."
+          }
+        },
+        "setS2": {
+          "help": "Setzt den Stoff S2 — den Stoff, auf den gewirkt wird.",
+          "params": {
+            "text": "Name oder kurze Beschreibung von S2; ein leerer Text löscht das Feld."
+          }
+        },
+        "setFieldType": {
+          "help": "Setzt die Feldart, die zwischen den beiden Stoffen wirkt.",
+          "params": {
+            "field": "Die Feldart: M (mechanisch), A (akustisch), T (thermisch), C (chemisch), E (elektrisch) oder Mg (magnetisch). Ein leerer Text nimmt die Wahl zurück, jeder andere Wert ist ein Fehler."
+          }
+        },
+        "setLink": {
+          "help": "Setzt die Art der Verknüpfung zwischen den beiden Stoffen; aus ihr folgt die Diagnose und die Vorauswahl der Standardklassen.",
+          "params": {
+            "link": "Die Verknüpfung: useful (nützlich), insufficient (unzureichend), excessive (zu stark), harmful (schädlich) oder missing (nicht vorhanden). Ein leerer Text nimmt die Wahl zurück, jeder andere Wert ist ein Fehler."
+          }
+        },
+        "setProblemNote": {
+          "help": "Setzt die Problemnotiz zum Stoff-Feld-Modell.",
+          "params": {
+            "text": "Die Problemnotiz; ein leerer Text löscht sie."
+          }
+        },
+        "setStandardNote": {
+          "help": "Setzt die Notiz zu einer Standardlösung.",
+          "params": {
+            "stdId": "Die id einer der 78 Standardlösungen, in der Form klasse.gruppe.nummer (zum Beispiel 2.2.5); die Klassen sind 1 bis 5. Eine id, die keine Standardlösung trägt, ist ein Fehler — die Fehlermeldung zählt die gültigen ids auf.",
+            "text": "Die Notiz zu dieser Standardlösung; ein leerer Text löscht sie und nimmt die id aus dem Lesezustand."
+          }
+        },
+        "setStandardSelected": {
+          "help": "Merkt eine Standardlösung als in Betracht gezogen vor oder nimmt die Vormerkung zurück.",
+          "params": {
+            "stdId": "Die id einer der 78 Standardlösungen, in der Form klasse.gruppe.nummer (zum Beispiel 2.2.5); die Klassen sind 1 bis 5. Eine id, die keine Standardlösung trägt, ist ein Fehler — die Fehlermeldung zählt die gültigen ids auf.",
+            "selected": "true merkt vor, false nimmt die Vormerkung zurück und die id aus dem Lesezustand."
+          }
+        },
+        "setFilterMode": {
+          "help": "Setzt den Listenfilter der Standardlösungen.",
+          "params": {
+            "mode": "auto zeigt nur die zur Diagnose passenden Klassen, all alle fünf. Ein Wert daneben ist ein Fehler."
+          }
+        },
+        "setClassExpanded": {
+          "help": "Klappt eine Klasse der Standardlösungen auf oder zu.",
+          "params": {
+            "cls": "Die Nummer der Standardklasse, 1 bis 5. Eine Nummer daneben ist ein Fehler.",
+            "expanded": "true klappt auf, false klappt zu."
+          }
+        }
+      },
+      "fields": {
+        "s1": {
+          "help": "Der Stoff S1 — der Stoff, der die Wirkung auslöst."
+        },
+        "s2": {
+          "help": "Der Stoff S2 — der Stoff, auf den gewirkt wird."
+        },
+        "field": {
+          "help": "Die Feldart zwischen den Stoffen: M, A, T, C, E oder Mg; leer, solange keine gewählt ist."
+        },
+        "link": {
+          "help": "Die Verknüpfung zwischen den Stoffen: useful, insufficient, excessive, harmful oder missing; leer, solange keine gewählt ist."
+        },
+        "problemNote": {
+          "help": "Die Problemnotiz zum Stoff-Feld-Modell."
+        },
+        "notes": {
+          "help": "Je vermerkter Standardlösung eine Notiz, adressiert als notes[id] mit der id in der Form klasse.gruppe.nummer (zum Beispiel 2.2.5). Nur Standardlösungen mit Notiz stehen darin."
+        },
+        "selected": {
+          "help": "Die vorgemerkten Standardlösungen, adressiert als selected[id] mit dem Wert true. Nur vorgemerkte stehen darin."
+        },
+        "filterMode": {
+          "help": "Der Listenfilter: auto zeigt nur die zur Diagnose passenden Klassen, all alle fünf."
+        },
+        "expandedClasses": {
+          "help": "Die Nummern der aufgeklappten Standardklassen, 1 bis 5. Ein persistierter Anzeigezustand — er gehört zum gespeicherten Projekt, nicht zur Analyse."
+        }
+      },
       "subtitle": "Modelliere die Wechselwirkung als Substanz-Substanz-Feld-Dreieck und nutze die Diagnose, um die passenden Standardlösungen zu finden.",
       "s1Label": "Tool (S1)",
       "s1Placeholder": "z.B. Bohrer",

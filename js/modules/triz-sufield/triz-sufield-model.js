@@ -1,5 +1,15 @@
-const FIELDS = ['M', 'A', 'T', 'C', 'E', 'Mg'];
-const LINKS  = ['useful', 'insufficient', 'excessive', 'harmful', 'missing'];
+/**
+ * @type {readonly string[]} die sechs Feldarten: M mechanisch, A akustisch,
+ *   T thermisch, C chemisch, E elektrisch, Mg magnetisch
+ */
+export const FIELDS = ['M', 'A', 'T', 'C', 'E', 'Mg'];
+/**
+ * @type {readonly string[]} die fünf Arten der Verknüpfung zwischen den
+ *   beiden Stoffen
+ */
+export const LINKS  = ['useful', 'insufficient', 'excessive', 'harmful', 'missing'];
+/** @type {readonly string[]} die beiden Listenfilter der Standardlösungen */
+export const FILTER_MODES = ['auto', 'all'];
 
 export function diagnose(s1, s2, field, link) {
   const hasS1 = Boolean(s1?.trim());
@@ -24,14 +34,32 @@ export class State {
   static ID = 'triz-sufield'
 
   _schema = { name: State.ID, version: State.VERSION }
+
+  /** @type {string} der Stoff S1 — der Stoff, der die Wirkung auslöst */
   s1 = ''
+
+  /** @type {string} der Stoff S2 — der Stoff, auf den gewirkt wird */
   s2 = ''
+
+  /** @type {string} die Feldart zwischen den Stoffen: M, A, T, C, E oder Mg; leer, solange keine gewählt ist */
   field = ''
+
+  /** @type {string} die Verknüpfung: useful, insufficient, excessive, harmful oder missing; leer, solange keine gewählt ist */
   link = ''
+
+  /** @type {string} die Problemnotiz zum Stoff-Feld-Modell */
   problemNote = ''
+
+  /** @type {Record<string, string>} je vermerkter Standardlösung eine Notiz, adressiert über ihre id (zum Beispiel 2.2.5) */
   notes = {}
+
+  /** @type {Record<string, boolean>} die vorgemerkten Standardlösungen, adressiert über ihre id; nur vorgemerkte stehen darin */
   selected = {}
+
+  /** @type {string} der Listenfilter: auto zeigt nur die zur Diagnose passenden Klassen, all alle fünf */
   filterMode = 'auto'
+
+  /** @type {number[]} die Nummern der aufgeklappten Standardklassen (1 bis 5) */
   expandedClasses = []
 
   hasContent() {
