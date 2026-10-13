@@ -24,7 +24,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
 import { State } from './kano-model.js';
 import { listTrees, flatten, diff, applyDiff, LEVELS } from './kano-link.js';
 import { evaluate } from '../../engines/kano-engine.js';
@@ -475,12 +475,18 @@ export default createModule({
       // ── Befragte ──────────────────────────────────────────────
 
       /**
-       * Legt eine Befragte mit einem laufenden Vorgabenamen an. Die erste
+       * Legt eine Befragte an — mit dem angegebenen Namen, oder, wenn er
+       * leer ist oder fehlt, mit einem laufenden Vorgabenamen. Die erste
        * Befragte wird dabei ausgewählt.
        * @agent
+       * @param {string} [name] der Name der neuen Befragten; leer oder
+       *   weggelassen verwendet den Vorgabenamen
        * @returns {string} die id der neuen Befragten
+       * @throws {Error} wenn `name` angegeben und keine Zeichenkette ist
        */
-      addRespondent() {
+      addRespondent(name) {
+        const given = name === undefined ? '' : requireText('name', name).trim();
+        if (given) return this.model.addRespondent(given);
         const n = this.model.respondents.length + 1;
         return this.model.addRespondent(_t('respondentDefault', { n }));
       },

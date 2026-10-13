@@ -1559,7 +1559,10 @@
           }
         },
         "addRespondent": {
-          "help": "Adds a respondent with a running default name and returns their id. The first respondent is selected in the process."
+          "help": "Adds a respondent and returns their id. The first respondent is selected in the process.",
+          "params": {
+            "name": "The name of the new respondent. Omitted or empty assigns a running default name. A value that is not a string is an error."
+          }
         },
         "renameRespondent": {
           "help": "Renames a respondent.",
@@ -3372,9 +3375,9 @@
           "help": "Declares the pending pair a tie — both criteria get 0.5 — and advances one step. While no comparison is running — before startComparison or after all pairs are decided — the call returns false; that is a refusal, not an error."
         },
         "setViewPhase": {
-          "help": "Sets the displayed tab.",
+          "help": "Sets the displayed work phase.",
           "params": {
-            "phase": "The tab: input (record criteria), compare (decide pairs) or results (ranking and matrix). Any other value is an error. compare needs a running comparison, results a finished one — if the tab is not reachable the call returns false — a refusal, not an error."
+            "phase": "The work phase: input (record criteria), compare (decide pairs) or results (ranking and matrix). Any other value is an error. compare needs a running comparison, results a finished one — if the work phase is not reachable the call returns false — a refusal, not an error."
           }
         },
         "cycleCell": {
@@ -3399,7 +3402,7 @@
           "help": "How many pairs are already decided — and therefore the index of the next one in pairs. Equal to the length of pairs means finished."
         },
         "viewPhase": {
-          "help": "The displayed tab: input (record criteria), compare (decide pairs) or results (ranking and matrix). A persisted display state — it belongs to the saved project."
+          "help": "The displayed work phase: input (record criteria), compare (decide pairs) or results (ranking and matrix). A persisted display state — it belongs to the saved project."
         }
       },
       "tabInput": "Criteria",

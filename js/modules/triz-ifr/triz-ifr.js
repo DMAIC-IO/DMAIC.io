@@ -8,6 +8,7 @@
  */
 import { createModule } from '../../core/template-module.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { requireText } from '../../core/agent/agent-argcheck.js';
 import { State } from './triz-ifr-model.js';
 
 export default createModule({
@@ -45,16 +46,18 @@ export default createModule({
        * @agent
        * @param {string} text Name oder kurze Beschreibung des Systems
        * @returns {void}
+       * @throws {Error} wenn `text` keine Zeichenkette ist
        */
-      setSystem(text) { this.model.system = String(text ?? ''); },
+      setSystem(text) { this.model.system = requireText('text', text); },
 
       /**
        * Setzt die nützliche Funktion, die das System erfüllen soll.
        * @agent
        * @param {string} text die nützliche Funktion
        * @returns {void}
+       * @throws {Error} wenn `text` keine Zeichenkette ist
        */
-      setUsefulFunction(text) { this.model.usefulFunction = String(text ?? ''); },
+      setUsefulFunction(text) { this.model.usefulFunction = requireText('text', text); },
 
       /**
        * Setzt die schädliche Wirkung oder den Kompromiss, den das System
@@ -62,8 +65,9 @@ export default createModule({
        * @agent
        * @param {string} text die schädliche Wirkung
        * @returns {void}
+       * @throws {Error} wenn `text` keine Zeichenkette ist
        */
-      setHarmfulEffect(text) { this.model.harmfulEffect = String(text ?? ''); },
+      setHarmfulEffect(text) { this.model.harmfulEffect = requireText('text', text); },
 
       /**
        * Setzt die IFR-1-Formulierung: das System bleibt, die schädliche
@@ -71,8 +75,9 @@ export default createModule({
        * @agent
        * @param {string} text die IFR-1-Formulierung
        * @returns {void}
+       * @throws {Error} wenn `text` keine Zeichenkette ist
        */
-      setIfr1(text) { this.model.ifr1 = String(text ?? ''); },
+      setIfr1(text) { this.model.ifr1 = requireText('text', text); },
 
       /**
        * Setzt die IFR-2-Formulierung: die nützliche Funktion entsteht, ohne
@@ -80,8 +85,9 @@ export default createModule({
        * @agent
        * @param {string} text die IFR-2-Formulierung
        * @returns {void}
+       * @throws {Error} wenn `text` keine Zeichenkette ist
        */
-      setIfr2(text) { this.model.ifr2 = String(text ?? ''); },
+      setIfr2(text) { this.model.ifr2 = requireText('text', text); },
 
       /**
        * Setzt die IFR-3-Formulierung: eine bereits vorhandene Ressource aus
@@ -89,8 +95,9 @@ export default createModule({
        * @agent
        * @param {string} text die IFR-3-Formulierung
        * @returns {void}
+       * @throws {Error} wenn `text` keine Zeichenkette ist
        */
-      setIfr3(text) { this.model.ifr3 = String(text ?? ''); },
+      setIfr3(text) { this.model.ifr3 = requireText('text', text); },
 
       /**
        * Setzt die Liste der Hindernisse, die das System heute vom IFR
@@ -98,8 +105,9 @@ export default createModule({
        * @agent
        * @param {string} text die Hindernisse, eines je Zeile
        * @returns {void}
+       * @throws {Error} wenn `text` keine Zeichenkette ist
        */
-      setObstacles(text) { this.model.obstacles = String(text ?? ''); },
+      setObstacles(text) { this.model.obstacles = requireText('text', text); },
     };
   },
 });

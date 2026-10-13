@@ -8,7 +8,7 @@
  */
 import { createModule } from '../../core/template-module.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireKnownId, requireIndex } from '../../core/agent/agent-argcheck.js';
+import { requireKnownId, requireIndex, requireText } from '../../core/agent/agent-argcheck.js';
 import { State, TRENDS } from './triz-evolution-trends-model.js';
 
 export default createModule({
@@ -66,8 +66,9 @@ export default createModule({
        * @agent
        * @param {string} text Name oder kurze Beschreibung des Systems
        * @returns {void}
+       * @throws {Error} wenn `text` keine Zeichenkette ist
        */
-      setSystem(text) { this.model.system = String(text ?? ''); },
+      setSystem(text) { this.model.system = requireText('text', text); },
 
       // `-1` nimmt die Einordnung zurück und wirft nicht: die Feldhilfe von
       // `trends` liefert `-1` als Leerwert aus („-1 heißt: keine gewählt"),
@@ -105,11 +106,12 @@ export default createModule({
        * @param {string} trendId id des Trends
        * @param {string} text die Notiz
        * @returns {void}
-       * @throws {Error} wenn kein Trend diese id trägt
+       * @throws {Error} wenn kein Trend diese id trägt, oder `text` keine
+       *   Zeichenkette ist
        */
       setTrendNotes(trendId, text) {
         requireKnownId('trendId', trendId, Object.keys(this.model.trends));
-        this.model.trends[trendId].notes = String(text ?? '');
+        this.model.trends[trendId].notes = requireText('text', text);
       },
     }
   },

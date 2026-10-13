@@ -8,7 +8,7 @@
  */
 import { createModule } from '../../core/template-module.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireIndex } from '../../core/agent/agent-argcheck.js';
+import { requireIndex, requireText } from '../../core/agent/agent-argcheck.js';
 import { State, ROWS, COLS } from './triz-9-windows-model.js';
 import { readImageFile, IMAGE_UPLOAD_ERRORS } from '../../core/image-upload.js';
 
@@ -163,8 +163,9 @@ export default createModule({
        * @agent
        * @param {string} text der Systemtitel
        * @returns {void}
+       * @throws {Error} wenn `text` keine Zeichenkette ist
        */
-      setSystemTitle(text) { this.model.systemTitle = String(text ?? ''); },
+      setSystemTitle(text) { this.model.systemTitle = requireText('text', text); },
 
       /**
        * Schreibt den Text eines Feldes der 3×3-Matrix.
@@ -173,12 +174,13 @@ export default createModule({
        * @param {number} col Spalte 0 bis 2 (Vergangenheit, Gegenwart, Zukunft)
        * @param {string} text der Feldtext
        * @returns {void}
-       * @throws {Error} wenn row oder col außerhalb von 0 bis 2 liegt
+       * @throws {Error} wenn row oder col außerhalb von 0 bis 2 liegt, oder
+       *   `text` keine Zeichenkette ist
        */
       setCellText(row, col, text) {
         requireIndex('row', row, MAX_ROW);
         requireIndex('col', col, MAX_COL);
-        this.model.rows[row].cells[col].text = String(text ?? '');
+        this.model.rows[row].cells[col].text = requireText('text', text);
       },
 
       /**
@@ -187,11 +189,12 @@ export default createModule({
        * @param {number} col Spalte 0 bis 2 (Vergangenheit, Gegenwart, Zukunft)
        * @param {string} text die Spaltenbeschriftung
        * @returns {void}
-       * @throws {Error} wenn col außerhalb von 0 bis 2 liegt
+       * @throws {Error} wenn col außerhalb von 0 bis 2 liegt, oder `text`
+       *   keine Zeichenkette ist
        */
       setColLabel(col, text) {
         requireIndex('col', col, MAX_COL);
-        this.model.colLabels[col].val = String(text ?? '');
+        this.model.colLabels[col].val = requireText('text', text);
       },
 
       /**
@@ -200,11 +203,12 @@ export default createModule({
        * @param {number} row Zeile 0 bis 2 (Subsystem, System, Übersystem)
        * @param {string} text die Zeilenbeschriftung
        * @returns {void}
-       * @throws {Error} wenn row außerhalb von 0 bis 2 liegt
+       * @throws {Error} wenn row außerhalb von 0 bis 2 liegt, oder `text`
+       *   keine Zeichenkette ist
        */
       setRowLabel(row, text) {
         requireIndex('row', row, MAX_ROW);
-        this.model.rows[row].rowLabel.val = String(text ?? '');
+        this.model.rows[row].rowLabel.val = requireText('text', text);
       },
 
       /** @noagent öffnet die Großansicht der Oberfläche, kein Zustandsweg */

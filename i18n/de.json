@@ -1559,7 +1559,10 @@
           }
         },
         "addRespondent": {
-          "help": "Legt eine Befragte mit einem laufenden Vorgabenamen an und gibt deren id zurück. Die erste Befragte wird dabei ausgewählt."
+          "help": "Legt eine Befragte an und gibt deren id zurück. Die erste Befragte wird dabei ausgewählt.",
+          "params": {
+            "name": "Der Name der neuen Befragten. Weggelassen oder leer vergibt einen laufenden Vorgabenamen. Ein Wert, der keine Zeichenkette ist, ist ein Fehler."
+          }
         },
         "renameRespondent": {
           "help": "Benennt eine Befragte um.",
@@ -3376,9 +3379,9 @@
           "help": "Erklärt das anstehende Paar für unentschieden — beide Kriterien bekommen 0.5 — und rückt einen Schritt vor. Solange kein Vergleich läuft — vor startComparison oder nachdem alle Paare entschieden sind — liefert der Aufruf false; das ist eine Absage, kein Fehler."
         },
         "setViewPhase": {
-          "help": "Setzt den angezeigten Reiter.",
+          "help": "Setzt die angezeigte Arbeitsphase.",
           "params": {
-            "phase": "Der Reiter: input (Kriterien erfassen), compare (Paare entscheiden) oder results (Rangfolge und Matrix). Ein Wert daneben ist ein Fehler. compare braucht einen laufenden Vergleich, results einen abgeschlossenen — ist der Reiter nicht erreichbar, liefert der Aufruf false — eine Absage, kein Fehler."
+            "phase": "Die Arbeitsphase: input (Kriterien erfassen), compare (Paare entscheiden) oder results (Rangfolge und Matrix). Ein Wert daneben ist ein Fehler. compare braucht einen laufenden Vergleich, results einen abgeschlossenen — ist die Arbeitsphase nicht erreichbar, liefert der Aufruf false — eine Absage, kein Fehler."
           }
         },
         "cycleCell": {
@@ -3403,7 +3406,7 @@
           "help": "Wie viele Paare schon entschieden sind — und damit der Index des nächsten in pairs. Gleich der Länge von pairs heißt fertig."
         },
         "viewPhase": {
-          "help": "Der angezeigte Reiter: input (Kriterien erfassen), compare (Paare entscheiden) oder results (Rangfolge und Matrix). Ein persistierter Anzeigezustand — er gehört zum gespeicherten Projekt."
+          "help": "Die angezeigte Arbeitsphase: input (Kriterien erfassen), compare (Paare entscheiden) oder results (Rangfolge und Matrix). Ein persistierter Anzeigezustand — er gehört zum gespeicherten Projekt."
         }
       },
       "tabInput": "Kriterien",

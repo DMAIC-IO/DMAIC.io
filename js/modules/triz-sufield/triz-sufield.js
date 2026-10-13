@@ -9,7 +9,7 @@
  */
 import { createModule } from '../../core/template-module.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
 import { State, diagnose, FIELDS, LINKS, FILTER_MODES } from './triz-sufield-model.js';
 
 const DATA_PATH = 'js/modules/triz-sufield/data/standards.json';
@@ -262,9 +262,10 @@ const base = createModule({
        * @agent
        * @param {string} text Name oder kurze Beschreibung von S1
        * @returns {void}
+       * @throws {Error} wenn `text` keine Zeichenkette ist
        */
       setS1(text) {
-        this.model.s1 = String(text ?? '');
+        this.model.s1 = requireText('text', text);
         this._recompute();
       },
 
@@ -273,9 +274,10 @@ const base = createModule({
        * @agent
        * @param {string} text Name oder kurze Beschreibung von S2
        * @returns {void}
+       * @throws {Error} wenn `text` keine Zeichenkette ist
        */
       setS2(text) {
-        this.model.s2 = String(text ?? '');
+        this.model.s2 = requireText('text', text);
         this._recompute();
       },
 
@@ -312,8 +314,9 @@ const base = createModule({
        * @agent
        * @param {string} text die Problemnotiz
        * @returns {void}
+       * @throws {Error} wenn `text` keine Zeichenkette ist
        */
-      setProblemNote(text) { this.model.problemNote = String(text ?? ''); },
+      setProblemNote(text) { this.model.problemNote = requireText('text', text); },
 
       /**
        * Setzt die Notiz zu einer Standardlösung; ein leerer Text löscht sie.
@@ -321,11 +324,12 @@ const base = createModule({
        * @param {string} stdId id der Standardlösung, zum Beispiel 2.2.5
        * @param {string} text die Notiz zu dieser Standardlösung
        * @returns {void}
-       * @throws {Error} wenn keine Standardlösung diese id trägt
+       * @throws {Error} wenn keine Standardlösung diese id trägt, oder
+       *   `text` keine Zeichenkette ist
        */
       setStandardNote(stdId, text) {
         requireKnownId('stdId', String(stdId), _standardIds);
-        const value = String(text ?? '');
+        const value = requireText('text', text);
         if (value) this.model.notes[stdId] = value;
         else delete this.model.notes[stdId];
       },

@@ -3363,9 +3363,16 @@ export const AGENT_REGISTRY = {
         "help": "Ersetzt die Liste der zu bewertenden Merkmale."
       },
       "addRespondent": {
-        "params": [],
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "optional": true,
+            "help": "der Name der neuen Befragten; leer oder weggelassen verwendet den Vorgabenamen"
+          }
+        ],
         "returns": "string",
-        "help": "Legt eine Befragte mit einem laufenden Vorgabenamen an. Die erste Befragte wird dabei ausgewählt."
+        "help": "Legt eine Befragte an — mit dem angegebenen Namen, oder, wenn er leer ist oder fehlt, mit einem laufenden Vorgabenamen. Die erste Befragte wird dabei ausgewählt."
       },
       "renameRespondent": {
         "params": [

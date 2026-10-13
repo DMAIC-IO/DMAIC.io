@@ -30,7 +30,7 @@ import { State, loopRailCells, loopPassColumns, loopArrowColumns } from './proce
 import { listSipocInstances, appendSipocProcess } from './process-map-sipoc-import.js';
 import { chainViewMixin } from '../../core/flowchart/flowchart-view.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireKnownId, requireEnum, requireIndex } from '../../core/agent/agent-argcheck.js';
+import { requireKnownId, requireEnum, requireIndex, requireText } from '../../core/agent/agent-argcheck.js';
 
 export default createModule({
   config: {
@@ -288,11 +288,12 @@ export default createModule({
        * @param {string} stepId id des Schritts
        * @param {string} text der neue Titel
        * @returns {void}
-       * @throws {Error} wenn stepId unbekannt ist
+       * @throws {Error} wenn stepId unbekannt ist, oder `text` keine
+       *   Zeichenkette ist
        */
       setStepTitle(stepId, text) {
         requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
-        this.model.findStep(stepId).title = String(text ?? '');
+        this.model.findStep(stepId).title = requireText('text', text);
       },
       /**
        * Setzt die Beschreibung eines Schritts.
@@ -300,11 +301,12 @@ export default createModule({
        * @param {string} stepId id des Schritts
        * @param {string} text die neue Beschreibung
        * @returns {void}
-       * @throws {Error} wenn stepId unbekannt ist
+       * @throws {Error} wenn stepId unbekannt ist, oder `text` keine
+       *   Zeichenkette ist
        */
       setStepDescription(stepId, text) {
         requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
-        this.model.findStep(stepId).description = String(text ?? '');
+        this.model.findStep(stepId).description = requireText('text', text);
       },
       /**
        * Setzt den Namen eines Inputs oder Outputs.
@@ -314,15 +316,15 @@ export default createModule({
        * @param {string} ioId id des Eintrags
        * @param {string} name der neue Name
        * @returns {void}
-       * @throws {Error} wenn stepId oder ioId unbekannt ist, oder type nicht
-       *   'inputs' oder 'outputs' ist
+       * @throws {Error} wenn stepId oder ioId unbekannt ist, type nicht
+       *   'inputs' oder 'outputs' ist, oder `name` keine Zeichenkette ist
        */
       setIOName(stepId, type, ioId, name) {
         requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
         requireEnum('type', type, ['inputs', 'outputs']);
         const step = this.model.findStep(stepId);
         requireKnownId('ioId', ioId, (step[type] || []).map((io) => io.id));
-        this.model.findIO(stepId, type, ioId).name = String(name ?? '');
+        this.model.findIO(stepId, type, ioId).name = requireText('name', name);
       },
 
       // ── Substep handlers ──────────────────────────────────────
@@ -570,13 +572,14 @@ export default createModule({
        * @param {string} text die neue Bedingung
        * @returns {boolean} true wenn gesetzt, false wenn der Schritt keinen
        *   Loop trägt — dann ist nichts passiert
-       * @throws {Error} wenn stepId unbekannt ist
+       * @throws {Error} wenn stepId unbekannt ist, oder `text` keine
+       *   Zeichenkette ist
        */
       setLoopCondition(stepId, text) {
         requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
         const step = this.model.findStep(stepId);
         if (!step.loop) return false;
-        step.loop.condition = String(text ?? '');
+        step.loop.condition = requireText('text', text);
         return true;
       },
       /** @noagent view transform */
@@ -665,13 +668,14 @@ export default createModule({
        * @param {string} loopStepId id des Rework-Schritts
        * @param {string} text der neue Titel
        * @returns {void}
-       * @throws {Error} wenn stepId oder loopStepId unbekannt ist
+       * @throws {Error} wenn stepId oder loopStepId unbekannt ist, oder
+       *   `text` keine Zeichenkette ist
        */
       setLoopStepTitle(stepId, loopStepId, text) {
         requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
         const step = this.model.findStep(stepId);
         requireKnownId('loopStepId', loopStepId, (step.loop?.steps || []).map((s) => s.id));
-        step.loop.steps.find((s) => s.id === loopStepId).title = String(text ?? '');
+        step.loop.steps.find((s) => s.id === loopStepId).title = requireText('text', text);
       },
       /**
        * Width of a loop step title input in characters, so the chip grows

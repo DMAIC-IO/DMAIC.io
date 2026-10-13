@@ -7,7 +7,7 @@
  */
 import {createModule} from '../../core/template-module.js';
 import {agentReadMixin} from '../../core/agent/agent-read-mixin.js';
-import {requireEnum} from '../../core/agent/agent-argcheck.js';
+import {requireEnum, requireText} from '../../core/agent/agent-argcheck.js';
 import {State, CATEGORIES, LEVELS, CELL_STATUSES} from './triz-resources-model.js';
 
 /**
@@ -64,8 +64,9 @@ export default createModule({
              * @agent
              * @param {string} text Name oder kurze Beschreibung des Systems
              * @returns {void}
+             * @throws {Error} wenn `text` keine Zeichenkette ist
              */
-            setSystem(text) { this.model.system = String(text ?? ''); },
+            setSystem(text) { this.model.system = requireText('text', text); },
 
             /**
              * Setzt die Notiz eines Ressourcenfeldes.
@@ -75,12 +76,12 @@ export default createModule({
              * @param {string} text die Notiz
              * @returns {void}
              * @throws {Error} wenn catKey keine Kategorie oder lvlKey keine
-             *   Ebene der Matrix ist
+             *   Ebene der Matrix ist, oder `text` keine Zeichenkette ist
              */
             setCellNotes(catKey, lvlKey, text) {
                 requireEnum('catKey', catKey, CATEGORIES);
                 requireEnum('lvlKey', lvlKey, LEVELS);
-                this.model.cells[catKey][lvlKey].notes = String(text ?? '');
+                this.model.cells[catKey][lvlKey].notes = requireText('text', text);
             },
 
             /**

@@ -27,7 +27,7 @@ import {
   listSourceInstances, appendFromInstance,
 } from '../../core/flowchart/flowchart-import.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireIndex } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId, requireIndex, requireText } from '../../core/agent/agent-argcheck.js';
 import { OpportunityModel } from './opportunity-flowchart-model.js';
 
 const IMPORT_SOURCES = ['process-map', 'sipoc'];
@@ -99,10 +99,11 @@ export default createModule({
        * @param {string} stepId id des Schritts
        * @param {string} text der neue Titel
        * @returns {void}
-       * @throws {Error} wenn kein Schritt diese id trägt
+       * @throws {Error} wenn kein Schritt diese id trägt, oder `text` keine
+       *   Zeichenkette ist
        */
       setStepTitle(stepId, text) {
-        this._requireStep(stepId).title = String(text ?? '');
+        this._requireStep(stepId).title = requireText('text', text);
         this.$nextTick(() => this._autoSizeAll());
       },
 
@@ -112,10 +113,11 @@ export default createModule({
        * @param {string} stepId id des Schritts
        * @param {string} text die neue Beschreibung
        * @returns {void}
-       * @throws {Error} wenn kein Schritt diese id trägt
+       * @throws {Error} wenn kein Schritt diese id trägt, oder `text` keine
+       *   Zeichenkette ist
        */
       setStepDescription(stepId, text) {
-        this._requireStep(stepId).description = String(text ?? '');
+        this._requireStep(stepId).description = requireText('text', text);
         this.$nextTick(() => this._autoSizeAll());
       },
 

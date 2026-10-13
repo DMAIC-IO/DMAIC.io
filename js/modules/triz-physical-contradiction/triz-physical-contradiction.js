@@ -8,7 +8,7 @@
  */
 import { createModule } from '../../core/template-module.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
 import { State, PRINCIPLES } from './triz-physical-contradiction-model.js';
 
 const PRINCIPLE_NUM = { time: 1, space: 2, condition: 3, system: 4 };
@@ -115,16 +115,18 @@ export default createModule({
        * @agent
        * @param {string} text Name des Parameters
        * @returns {void}
+       * @throws {Error} wenn `text` keine Zeichenkette ist
        */
-      setParameter(text) { this.model.parameter = String(text ?? ''); },
+      setParameter(text) { this.model.parameter = requireText('text', text); },
 
       /**
        * Setzt die Anforderung A — die eine Seite des Widerspruchs.
        * @agent
        * @param {string} text die Anforderung A
        * @returns {void}
+       * @throws {Error} wenn `text` keine Zeichenkette ist
        */
-      setRequirementA(text) { this.model.requirementA = String(text ?? ''); },
+      setRequirementA(text) { this.model.requirementA = requireText('text', text); },
 
       /**
        * Setzt die Anforderung Nicht-A — die entgegengesetzte Seite des
@@ -132,24 +134,27 @@ export default createModule({
        * @agent
        * @param {string} text die Anforderung Nicht-A
        * @returns {void}
+       * @throws {Error} wenn `text` keine Zeichenkette ist
        */
-      setRequirementNotA(text) { this.model.requirementNotA = String(text ?? ''); },
+      setRequirementNotA(text) { this.model.requirementNotA = requireText('text', text); },
 
       /**
        * Setzt die Problemnotiz zum Widerspruch.
        * @agent
        * @param {string} text die Problemnotiz
        * @returns {void}
+       * @throws {Error} wenn `text` keine Zeichenkette ist
        */
-      setProblemNote(text) { this.model.problemNote = String(text ?? ''); },
+      setProblemNote(text) { this.model.problemNote = requireText('text', text); },
 
       /**
        * Setzt die Lösungsnotiz zum gewählten Trennungsprinzip.
        * @agent
        * @param {string} text die Lösungsnotiz
        * @returns {void}
+       * @throws {Error} wenn `text` keine Zeichenkette ist
        */
-      setSolutionNote(text) { this.model.solutionNote = String(text ?? ''); },
+      setSolutionNote(text) { this.model.solutionNote = requireText('text', text); },
 
       /**
        * Setzt die Notiz zu einem der vier Trennungsprinzipien.
@@ -158,10 +163,11 @@ export default createModule({
        * @param {string} text die Notiz zu diesem Prinzip
        * @returns {void}
        * @throws {Error} wenn kein Trennungsprinzip diesen Schlüssel trägt
+       *   oder `text` keine Zeichenkette ist
        */
       setPrincipleNote(key, text) {
         requireKnownId('principleKey', key, PRINCIPLES);
-        this.model.principleNotes[key] = String(text ?? '');
+        this.model.principleNotes[key] = requireText('text', text);
       },
     };
   },
