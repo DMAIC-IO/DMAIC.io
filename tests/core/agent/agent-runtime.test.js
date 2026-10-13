@@ -413,6 +413,50 @@ suite('agent runtime — the seven ops', () => {
     assertEqual(out.results[1].error, 'unknown_method');
     assertDeepEqual(out.results[1].available, ['somethingElse']);
   });
+
+  // ── Welcher Satz kommt beim Agenten an? (N1) ───────────────────────
+  // Beide Zweige melden `unknown_method` mit derselben `available`-Gestalt —
+  // sie sagen aber Verschiedenes: der Katalogwächter weist ein Mitglied ab,
+  // das es GIBT und das nur nicht freigegeben ist, der Zweig darunter eine
+  // Aktion, die die Registry führt und die lebende Komponente nicht hat.
+  // Zugesichert wird darum der i18n-SCHLÜSSEL, nicht die Prosa: das gefakte
+  // `I18N.t` gibt `key|params` zurück, also steht der Schlüssel wörtlich am
+  // Anfang der Meldung. Ein Vertauschen der beiden Schlüssel zwischen den
+  // Zweigen bliebe ohne diese zwei Fälle unbemerkt.
+
+  test('ein vorhandenes, aber nicht freigegebenes Mitglied bekommt den Katalogsatz', async () => {
+    // `applyFormula` IST am Viewmodel — der Aufruf scheitert also nicht daran,
+    // dass es die Methode nicht gibt, sondern daran, dass sie nicht zur Fläche
+    // gehört. Der Weg über ein Leseergebnis ist nötig, damit Prüfstufe 5 das
+    // Zielmodul nicht statisch kennt und der Wächter in der Op greift.
+    const { runtime } = makeRuntime({
+      viewmodel: { read: () => ({}), applyFormula: () => 'geschrieben' },
+    });
+    await runtime.interact([{ id: 'a1', op: 'module.add', module: 'worksheet', phase: 'data' }]);
+
+    const out = await runtime.interact([
+      { id: 'b1', op: 'project.read' },
+      { id: 'b2', op: 'instance.call', instance: { $from: 'b1', path: 'instances.0.id' },
+                  method: 'applyFormula' },
+    ]);
+    const last = out.results.at(-1);
+    assertEqual(last.error, 'unknown_method');
+    assertTrue(last.message.startsWith('agent.errors.methodNotAgentAction|'),
+      `der Katalogwächter muss methodNotAgentAction melden, nicht: ${last.message}`);
+    assertDeepEqual(last.available, ['importCsv', 'read']);
+  });
+
+  test('eine Katalogaktion, die der lebenden Komponente fehlt, behält den alten Satz', async () => {
+    const { runtime } = makeRuntime({ viewmodel: { somethingElse: () => 1 } });
+    const out = await runtime.interact([
+      { id: 'a1', op: 'module.add', module: 'worksheet', phase: 'data' },
+      { id: 'a2', op: 'instance.call', instance: { $from: 'a1', path: 'instanceId' }, method: 'read' },
+    ]);
+    const last = out.results.at(-1);
+    assertEqual(last.error, 'unknown_method');
+    assertTrue(last.message.startsWith('agent.errors.unknownMethod|'),
+      `der Stale-Detektor muss unknownMethod melden, nicht: ${last.message}`);
+  });
 });
 
 suite('agent runtime — result shapes match the contract (Ruling K5)', () => {
