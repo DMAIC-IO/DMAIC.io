@@ -1,10 +1,7 @@
+import { uid } from '../../core/uid.js';
 import { isIsoDate } from '../../core/local-date.js';
 
 export const STATUSES = ['open', 'in-progress', 'done', 'blocked'];
-
-function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-}
 
 export class Item {
   id = uid()

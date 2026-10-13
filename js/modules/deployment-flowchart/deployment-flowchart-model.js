@@ -7,6 +7,7 @@
  * See spec §2 "Datenmodell" and §3.3 "Deployment Flowchart".
  */
 
+import { uid } from '../../core/uid.js';
 import { FlowchartState } from '../../core/flowchart/flowchart-model.js';
 import { registerSourceMapper } from '../../core/flowchart/flowchart-import.js';
 
@@ -23,7 +24,7 @@ const UNASSIGNED_ID = 'unassigned';
  * @returns {string}
  */
 function genLaneId() {
-  return 'lane-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  return `lane-${uid()}`;
 }
 
 /**

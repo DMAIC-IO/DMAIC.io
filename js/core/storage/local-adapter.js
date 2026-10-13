@@ -1,10 +1,11 @@
+import { uid } from '../uid.js';
 import { StorageAdapter } from './storage-adapter.js';
 import { VERSION } from '../version.js';
 import { stripPatch } from '../version-utils.js';
 import { DEFAULT_CYCLE, getCycle } from '../cycles/cycles.js';
 import { openDB, idbGetAllForProject, idbBatch, idbBatchSync, idbDeleteAllForProject } from '../idb-store.js';
 
-const genId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const genId = () => uid();
 
 export class LocalAdapter extends StorageAdapter {
   supportsMultiProject = true;

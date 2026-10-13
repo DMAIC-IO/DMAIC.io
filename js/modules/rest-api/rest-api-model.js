@@ -7,15 +7,11 @@
  * plus the currently active endpoint id.
  */
 
+import { uid } from '../../core/uid.js';
 import { refToKey } from '../../ui/column-picker.js';
 
 const SCHEDULE_UNITS = ['minutes', 'hours'];
 const WRITE_MODES = ['replace', 'append', 'prepend'];
-
-/** Generate a short unique id. */
-function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-}
 
 /** Build a default schedule config. */
 function defaultSchedule() {

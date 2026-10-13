@@ -14,6 +14,7 @@
  * getState()/setState() behaviour.
  */
 
+import { uid } from '../../core/uid.js';
 import { createModule } from '../../core/template-module.js';
 import { ColumnPicker, uniqueSheetName, buildInitialWorksheetState } from '../../ui/column-picker.js';
 import { descriptiveStats } from '../../engines/normality-test-engine.js';
@@ -366,7 +367,7 @@ export default createModule({
         const sm = module._context.stateManager;
         const eb = module._context.eventBus;
         const phase = this._findOwnPhase();
-        const wsId = `worksheet_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+        const wsId = `worksheet_${uid()}`;
 
         const existing = sm.get(`phases.${phase}`) ?? [];
         sm.set(`phases.${phase}`, [

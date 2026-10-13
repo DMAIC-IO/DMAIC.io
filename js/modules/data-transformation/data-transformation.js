@@ -16,6 +16,7 @@
  * columns into the Worksheet module — preserved byte-identically below.
  */
 
+import { uid } from '../../core/uid.js';
 import { toNum } from '../../core/chart/chart-data-prep.js';
 import { createModule } from '../../core/template-module.js';
 import {
@@ -344,7 +345,7 @@ const mod = createModule({
         const sm = module._context.stateManager;
         const eb = module._context.eventBus;
         const phase = this._findOwnPhase();
-        const wsId = `worksheet_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+        const wsId = `worksheet_${uid()}`;
 
         const existing = sm.get(`phases.${phase}`) ?? [];
         sm.set(`phases.${phase}`, [

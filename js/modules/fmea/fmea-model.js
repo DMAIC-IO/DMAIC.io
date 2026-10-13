@@ -26,6 +26,7 @@
  *   }
  */
 
+import { uid } from '../../core/uid.js';
 import { actionPriority, AP_RANK, AP_CATEGORY } from './fmea-ap.js';
 
 /** RPN category thresholds (inclusive lower bound). */
@@ -56,10 +57,8 @@ export function rpnCategory(v) {
 /** @param {'H'|'M'|'L'|null} ap @returns {'high'|'medium'|'low'|'none'} */
 const apCategory = (ap) => AP_CATEGORY[ap] || 'none';
 
-let _seq = 0;
 function generateId() {
-  _seq += 1;
-  return `f${  Date.now().toString(36)  }${Math.random().toString(36).slice(2, 6)  }${_seq.toString(36)}`;
+  return `f${uid()}`;
 }
 
 /** @param {*} v @returns {string} only genuine strings pass; others reset to '' */

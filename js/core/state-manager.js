@@ -24,6 +24,7 @@
  * }
  */
 
+import { uid } from './uid.js';
 import { VERSION } from './version.js';
 import { parseVersion, stripPatch } from './version-utils.js';
 import { migrateToLatest } from './migrations.js';
@@ -48,7 +49,7 @@ const IDB_FLUSH_DELAY = 500;      // debounce for IDB write-behind of module sta
  * @returns {string}
  */
 function genId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  return uid();
 }
 
 /**

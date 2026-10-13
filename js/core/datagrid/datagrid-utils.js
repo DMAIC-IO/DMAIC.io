@@ -3,13 +3,14 @@
  * Shared helper functions, column type definitions, cell formatting & parsing.
  */
 
+import { uid as coreUid } from '../uid.js';
 import { icon } from '../icon.js';
 
 // ─── ID & Math ─────────────────────────────────────────────
 
 /** Generate a unique column id. */
 export function uid() {
-  return `col_${  Math.random().toString(36).substring(2, 10)}`;
+  return `col_${coreUid()}`;
 }
 
 /** Clamp a value between min and max. */

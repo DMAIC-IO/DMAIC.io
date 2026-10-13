@@ -1,3 +1,5 @@
+import { uid as coreUid } from '../../core/uid.js';
+
 export const CATEGORIES = ['success', 'problem', 'improve'];
 export const IMPACTS = ['high', 'medium', 'low'];
 
@@ -34,7 +36,7 @@ export class Lesson {
   updatedAt = 0
 
   static uid() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    return coreUid();
   }
 
   toJSON() {
