@@ -29,6 +29,27 @@ import { requireEnum, requireKnownId, requireIndex } from '../../core/agent/agen
 const CATEGORY_KEYS = CATEGORIES;
 const IMPACT_KEYS = IMPACTS;
 
+// Die Felder, die `addLesson` und `updateLesson` entgegennehmen. Die Liste
+// trägt die Prüfung „das Objekt nennt überhaupt ein Feld" — ohne sie meldete
+// `updateLesson(id, {})` Erfolg, ohne etwas zu ändern, und die Fehlermeldung
+// versprach mehr, als sie prüfte.
+const LESSON_FIELDS = [
+  'title', 'category', 'impact', 'phase', 'owner',
+  'description', 'rootCause', 'recommendation', 'actions',
+];
+
+/**
+ * Prüft, dass ein Text wirklich ein Text ist. Ein fehlendes Argument
+ * (`undefined`) ist ein Fehler, die leere Zeichenkette der dokumentierte
+ * Leerwert — `agent-ops.js` spreadet `action.args ?? []` ohne Arity-Prüfung,
+ * ohne diesen Wächter käme beides als derselbe Wert an (Ruling 55).
+ */
+function requireText(name, value) {
+  if (typeof value !== 'string') {
+    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any string, "" clears it`);
+  }
+}
+
 const m = createModule({
   config: {
     id: 'lessons-learned',
@@ -209,11 +230,12 @@ const m = createModule({
        *   `recommendation` und `actions`
        * @returns {string|null} die id der neuen Erfahrung, oder null wenn der
        *   Titel leer war und nichts angelegt wurde
-       * @throws {Error} wenn `data` kein Objekt ist oder `category`, `impact`
-       *   oder `phase` einen Wert ausserhalb ihrer Wertemenge tragen
+       * @throws {Error} wenn `data` kein Objekt ist, keinen `title` nennt oder
+       *   `category`, `impact` oder `phase` einen Wert außerhalb ihrer
+       *   Wertemenge tragen
        */
       addLesson(data) {
-        this._requireLessonData(data);
+        this._requireLessonData(data, 'title');
         const title = String(data.title ?? '').trim();
         // Ein leerer Titel ist eine fachliche Absage, kein ungültiges
         // Argument: das Formular verwirft ihn genauso und legt nichts an.
@@ -248,12 +270,12 @@ const m = createModule({
        * @returns {boolean} true wenn geändert wurde, false wenn ein
        *   mitgegebener Titel leer war und alles stehen blieb
        * @throws {Error} wenn keine Erfahrung diese id trägt, `data` kein
-       *   Objekt ist oder `category`, `impact` oder `phase` einen Wert
-       *   ausserhalb ihrer Wertemenge tragen
+       *   Objekt ist, keines der genannten Felder nennt oder `category`,
+       *   `impact` oder `phase` einen Wert außerhalb ihrer Wertemenge tragen
        */
       updateLesson(lessonId, data) {
         requireKnownId('lessonId', lessonId, this._lessonIds());
-        this._requireLessonData(data);
+        this._requireLessonData(data, 'any');
         const lesson = this._lessonById(lessonId);
         if (data.title !== undefined) {
           const title = String(data.title).trim();
@@ -296,11 +318,16 @@ const m = createModule({
        * @param {string} text der Text der Maßnahme
        * @returns {number} die Position der neuen Maßnahme, von 0 an gezählt,
        *   oder -1 wenn der Text leer war und nichts angelegt wurde
-       * @throws {Error} wenn keine Erfahrung diese id trägt
+       * @throws {Error} wenn keine Erfahrung diese id trägt oder `text` keine
+       *   Zeichenkette ist
        */
       addAction(lessonId, text) {
         requireKnownId('lessonId', lessonId, this._lessonIds());
-        const value = String(text ?? '').trim();
+        // Ein fehlendes Argument ist ein Fehler, nicht der dokumentierte
+        // Leerwert (Ruling 55) — sonst liefe ein vergessenes Argument als
+        // Absage durch und der Agent sähe keinen Unterschied zum Tippfehler.
+        requireText('text', text);
+        const value = text.trim();
         // Eine leere Maßnahme ist eine Absage, kein Fehler — das Formular
         // verwirft sie genauso.
         if (!value) return -1;
@@ -371,9 +398,17 @@ const m = createModule({
        * legte ein Aufruf ohne Argument stillschweigend nichts an und meldete
        * Erfolg (Ruling 55).
        */
-      _requireLessonData(data) {
+      _requireLessonData(data, required) {
         if (!data || typeof data !== 'object' || Array.isArray(data)) {
+          throw new Error(`invalid data ${JSON.stringify(data)}; allowed: an object with ${required === 'title' ? 'at least a title' : `at least one of ${LESSON_FIELDS.join(', ')}`}`);
+        }
+        // Die Meldung muss halten, was sie sagt: ein Objekt ohne jedes
+        // bekannte Feld ändert nichts und meldete sonst Erfolg.
+        if (required === 'title' && data.title === undefined) {
           throw new Error(`invalid data ${JSON.stringify(data)}; allowed: an object with at least a title`);
+        }
+        if (required !== 'title' && !LESSON_FIELDS.some(f => data[f] !== undefined)) {
+          throw new Error(`invalid data ${JSON.stringify(data)}; allowed: an object with at least one of ${LESSON_FIELDS.join(', ')}`);
         }
         if (data.category !== undefined) requireEnum('category', data.category, CATEGORY_KEYS);
         if (data.impact !== undefined) requireEnum('impact', data.impact, IMPACT_KEYS);
@@ -397,9 +432,15 @@ const m = createModule({
       },
 
       // Reset the draft, optionally seeding it from an existing lesson.
+      // Die gespeicherte Phase wird gegen den aktiven Zyklus geprüft: eine
+      // Erfahrung kann aus einem anderen Zyklus stammen (Projektwechsel oder
+      // Import — `Lesson.fromJSON` lässt jede Zeichenkette durch), die
+      // Auswahlliste führt sie dann nicht und `updateLesson` lehnt sie ab.
+      // Ohne den Rückfall warf Bearbeiten → Speichern.
       _resetDraft(lesson) {
         const cyclePhases = this.phaseOptions().map(o => o.value);
-        const defaultPhase = lesson?.phase || cyclePhases[cyclePhases.length - 1] || 'control';
+        const fallback = cyclePhases[cyclePhases.length - 1] || 'control';
+        const defaultPhase = cyclePhases.includes(lesson?.phase) ? lesson.phase : fallback;
         this.lessonDraft.title = lesson?.title || '';
         this.lessonDraft.category = lesson?.category || 'success';
         this.lessonDraft.phase = defaultPhase;

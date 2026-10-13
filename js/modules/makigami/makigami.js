@@ -55,6 +55,13 @@ function requireText(name, value) {
   }
 }
 
+// Die Felder, die die beiden Objektsenken entgegennehmen. Die Listen tragen
+// die Prüfung „das Objekt nennt überhaupt ein Feld" — ohne sie meldete
+// `setMudaCategory(id, {})` Erfolg, ohne etwas zu ändern, und die
+// Fehlermeldung versprach mit „at least one field" mehr, als sie prüfte.
+const MUDA_FIELDS = ['code', 'label', 'color'];
+const TIME_UNIT_FIELDS = ['label', 'factorSeconds'];
+
 export default createModule({
   config: {
     id: 'makigami',
@@ -491,7 +498,7 @@ export default createModule({
        */
       setMudaCategory(mudaId, data) {
         requireKnownId('mudaId', mudaId, this.model.mudaCategories.map(m => m.id));
-        this._requireData(data);
+        this._requireData(data, MUDA_FIELDS);
         const cat = this.model.mudaCategories.find(m => m.id === mudaId);
         if (data.code !== undefined) { requireText('code', data.code); cat.code = data.code; }
         if (data.label !== undefined) { requireText('label', data.label); cat.label = data.label; }
@@ -512,7 +519,7 @@ export default createModule({
        */
       setTimeUnit(unitId, data) {
         requireKnownId('unitId', unitId, this.model.timeUnits.map(u => u.id));
-        this._requireData(data);
+        this._requireData(data, TIME_UNIT_FIELDS);
         const unit = this.model.timeUnits.find(u => u.id === unitId);
         if (data.label !== undefined) { requireText('label', data.label); unit.label = data.label; }
         if (data.factorSeconds !== undefined) {
@@ -538,9 +545,15 @@ export default createModule({
        * änderte ein Aufruf ohne Argument stillschweigend nichts und meldete
        * Erfolg (Ruling 55).
        */
-      _requireData(data) {
+      _requireData(data, fields) {
+        const expected = `at least one of ${fields.join(', ')}`;
         if (!data || typeof data !== 'object' || Array.isArray(data)) {
-          throw new Error(`invalid data ${JSON.stringify(data)}; allowed: an object with at least one field`);
+          throw new Error(`invalid data ${JSON.stringify(data)}; allowed: an object with ${expected}`);
+        }
+        // Die Meldung muss halten, was sie sagt: ein Objekt ohne jedes der
+        // genannten Felder ändert nichts und meldete sonst Erfolg.
+        if (!fields.some(f => data[f] !== undefined)) {
+          throw new Error(`invalid data ${JSON.stringify(data)}; allowed: an object with ${expected}`);
         }
       },
       /**

@@ -26,6 +26,11 @@ import {
 // richtige Prüfer.
 const LEVELS = [1, 2, 3, 4, 5];
 
+// Die Felder, die `addStakeholder` und `updateStakeholder` entgegennehmen.
+// Die Liste trägt die Prüfung „das Objekt nennt überhaupt ein Feld" — ohne
+// sie meldete `updateStakeholder(id, {})` Erfolg, ohne etwas zu ändern.
+const STAKEHOLDER_FIELDS = ['name', 'role', 'power', 'interest', 'support', 'category', 'notes'];
+
 const AVATAR_COLORS = [
   '#3b82f6', '#22c55e', '#ef4444', '#eab308', '#f97316',
   '#a855f7', '#06b6d4', '#ec4899', '#14b8a6', '#6366f1',
@@ -180,6 +185,13 @@ export default createModule({
       /**
        * @noagent öffnet den Formulardialog und füllt seinen Entwurf; ein
        * Agent darf keinen Dialog öffnen — er blockierte den Stapel (E3).
+       *
+       * Haltung und Kategorie werden auf die Formularwerte normalisiert: das
+       * Model bewahrt beide als freien Text, weil importierte Projekte und
+       * Beispiele erweiterte Werte tragen (`resistor`, `Sponsor`), die
+       * Auswahlliste kennt sie aber nicht und `updateStakeholder` lehnt sie
+       * ab. Ohne die Normalisierung zeigte das Formular „Supporter" und
+       * schickte beim Speichern weiter `resistor` an die Senke.
        */
       openModal(existing) {
         this.modalEditId = existing ? existing.id : null;
@@ -187,7 +199,9 @@ export default createModule({
         this.modalData = {
           name: src.name, role: src.role,
           power: src.power, interest: src.interest,
-          support: src.support, category: src.category, notes: src.notes,
+          support: SUPPORT_VALUES.includes(src.support) ? src.support : 'neutral',
+          category: CATEGORY_VALUES.includes(src.category) ? src.category : 'intern',
+          notes: src.notes,
         };
         this.popoutResetPosition();
         this.modalOpen = true;
@@ -247,10 +261,10 @@ export default createModule({
        *   Name leer war und nichts angelegt wurde
        * @throws {Error} wenn `data` kein Objekt ist, `power` oder `interest`
        *   keine ganze Zahl von 1 bis 5 ist oder `support` oder `category`
-       *   einen Wert ausserhalb ihrer Wertemenge tragen
+       *   einen Wert außerhalb ihrer Wertemenge tragen
        */
       addStakeholder(data) {
-        this._requireStakeholderData(data);
+        this._requireStakeholderData(data, 'name');
         const name = String(data.name ?? '').trim();
         // Ein leerer Name ist eine fachliche Absage, kein ungültiges Argument:
         // das Formular verwirft ihn genauso und legt nichts an.
@@ -279,12 +293,12 @@ export default createModule({
        *   mitgegebener Name leer war und alles stehen blieb
        * @throws {Error} wenn kein Beteiligter diese id trägt, `data` kein
        *   Objekt ist, `power` oder `interest` keine ganze Zahl von 1 bis 5 ist
-       *   oder `support` oder `category` einen Wert ausserhalb ihrer
+       *   oder `support` oder `category` einen Wert außerhalb ihrer
        *   Wertemenge tragen
        */
       updateStakeholder(id, data) {
         requireKnownId('id', id, this.model.stakeholders.map((s) => s.id));
-        this._requireStakeholderData(data);
+        this._requireStakeholderData(data, 'any');
         const sh = this.model.stakeholders.find((s) => s.id === id);
         if (data.name !== undefined) {
           const name = String(data.name).trim();
@@ -320,9 +334,20 @@ export default createModule({
        * legte ein Aufruf ohne Argument stillschweigend nichts an und meldete
        * Erfolg (Ruling 55).
        */
-      _requireStakeholderData(data) {
+      _requireStakeholderData(data, required) {
+        const expected = required === 'name'
+          ? 'at least a name'
+          : `at least one of ${STAKEHOLDER_FIELDS.join(', ')}`;
         if (!data || typeof data !== 'object' || Array.isArray(data)) {
-          throw new Error(`invalid data ${JSON.stringify(data)}; allowed: an object with at least a name`);
+          throw new Error(`invalid data ${JSON.stringify(data)}; allowed: an object with ${expected}`);
+        }
+        // Die Meldung muss halten, was sie sagt: ein Objekt ohne jedes
+        // bekannte Feld ändert nichts und meldete sonst Erfolg.
+        if (required === 'name' && data.name === undefined) {
+          throw new Error(`invalid data ${JSON.stringify(data)}; allowed: an object with ${expected}`);
+        }
+        if (required !== 'name' && !STAKEHOLDER_FIELDS.some((f) => data[f] !== undefined)) {
+          throw new Error(`invalid data ${JSON.stringify(data)}; allowed: an object with ${expected}`);
         }
         if (data.power !== undefined) requireEnum('power', data.power, LEVELS);
         if (data.interest !== undefined) requireEnum('interest', data.interest, LEVELS);

@@ -1234,14 +1234,14 @@
         "addStakeholder": {
           "help": "Legt einen Beteiligten an und liefert seine id zurück.",
           "params": {
-            "data": "Ein Objekt mit name (nötig) und wahlweise role, power und interest (je eine ganze Zahl von 1 bis 5; Vorgabe 3), support (supporter, neutral oder critic; Vorgabe neutral), category (intern, extern, kunde, lieferant oder behoerde; Vorgabe intern) und notes. Ein Wert ausserhalb der genannten Wertemengen ist ein Fehler, ebenso ein fehlendes Objekt; ein leerer Name legt nichts an und liefert null zurück — das ist eine Absage, kein Fehler."
+            "data": "Ein Objekt mit name (nötig) und wahlweise role, power und interest (je eine ganze Zahl von 1 bis 5; Vorgabe 3), support (supporter, neutral oder critic; Vorgabe neutral), category (intern, extern, kunde, lieferant oder behoerde; Vorgabe intern) und notes. Ein Wert außerhalb der genannten Wertemengen ist ein Fehler, ebenso ein fehlendes Objekt und ein Objekt, das keinen name nennt; ein leerer Name legt nichts an und liefert null zurück — das ist eine Absage, kein Fehler."
           }
         },
         "updateStakeholder": {
           "help": "Ändert die genannten Felder eines Beteiligten; alle übrigen bleiben stehen.",
           "params": {
             "id": "Die id des Beteiligten, wie read() sie unter stakeholders führt. Eine unbekannte id ist ein Fehler.",
-            "data": "Ein Objekt mit genau den Feldern, die sich ändern sollen — name, role, power, interest, support, category oder notes. Was nicht darin steht, bleibt unverändert. Ein Wert ausserhalb der Wertemengen ist ein Fehler; ein mitgegebener leerer Name ändert nichts und liefert false zurück."
+            "data": "Ein Objekt mit genau den Feldern, die sich ändern sollen — name, role, power, interest, support, category oder notes. Was nicht darin steht, bleibt unverändert. Ein Wert außerhalb der Wertemengen ist ein Fehler, ebenso ein Objekt, das keines dieser Felder nennt; ein mitgegebener leerer Name ändert nichts und liefert false zurück."
           }
         },
         "removeStakeholder": {
@@ -2980,7 +2980,7 @@
           "help": "Ändert die genannten Felder einer Verschwendungsart; alle übrigen bleiben stehen.",
           "params": {
             "mudaId": "Die id der Verschwendungsart, wie read() sie unter mudaCategories führt. Eine unbekannte id ist ein Fehler.",
-            "data": "Ein Objekt mit genau den Feldern, die sich ändern sollen — code (das Kürzel in der Matrix), label (der Name) oder color (ein Hexwert wie #4a90e2). Was nicht darin steht, bleibt unverändert; ein fehlendes Objekt und ein Wert, der keine Zeichenkette ist, sind Fehler."
+            "data": "Ein Objekt mit genau den Feldern, die sich ändern sollen — code (das Kürzel in der Matrix), label (der Name) oder color (ein Hexwert wie #4a90e2). Was nicht darin steht, bleibt unverändert; ein fehlendes Objekt, ein Objekt ohne jedes dieser Felder und ein Wert, der keine Zeichenkette ist, sind Fehler."
           }
         },
         "deleteMudaCategory": {
@@ -2997,7 +2997,7 @@
           "help": "Ändert die genannten Felder einer Zeiteinheit; alle übrigen bleiben stehen.",
           "params": {
             "unitId": "Die id der Zeiteinheit, wie read() sie unter timeUnits führt. Eine unbekannte id ist ein Fehler.",
-            "data": "Ein Objekt mit genau den Feldern, die sich ändern sollen — label (das Kürzel, das in einem Dauertext erkannt wird) oder factorSeconds (die Länge der Einheit in Sekunden, eine Zahl größer als 0). Was nicht darin steht, bleibt unverändert; ein fehlendes Objekt, ein label, das keine Zeichenkette ist, und ein factorSeconds von 0 oder weniger sind Fehler."
+            "data": "Ein Objekt mit genau den Feldern, die sich ändern sollen — label (das Kürzel, das in einem Dauertext erkannt wird) oder factorSeconds (die Länge der Einheit in Sekunden, eine Zahl größer als 0). Was nicht darin steht, bleibt unverändert; ein fehlendes Objekt, ein Objekt ohne jedes dieser Felder, ein label, das keine Zeichenkette ist, und ein factorSeconds von 0 oder weniger sind Fehler."
           }
         },
         "deleteTimeUnit": {
@@ -6445,14 +6445,14 @@
         "addLesson": {
           "help": "Legt eine Erfahrung an und liefert ihre id zurück.",
           "params": {
-            "data": "Ein Objekt mit title (nötig) und wahlweise category (success, problem oder improve; Vorgabe success), impact (high, medium oder low; Vorgabe medium), phase (eine Phase des aktiven Zyklus; Vorgabe ist dessen letzte), owner, description, rootCause, recommendation und actions (eine Liste aus Texten oder aus { text, done }). Ein Wert ausserhalb der genannten Wertemengen ist ein Fehler, ebenso ein fehlendes Objekt; ein leerer Titel legt nichts an und liefert null zurück — das ist eine Absage, kein Fehler."
+            "data": "Ein Objekt mit title (nötig) und wahlweise category (success, problem oder improve; Vorgabe success), impact (high, medium oder low; Vorgabe medium), phase (eine Phase des aktiven Zyklus; Vorgabe ist dessen letzte), owner, description, rootCause, recommendation und actions (eine Liste aus Texten oder aus { text, done }). Ein Wert außerhalb der genannten Wertemengen ist ein Fehler, ebenso ein fehlendes Objekt und ein Objekt, das keinen title nennt; ein leerer Titel legt nichts an und liefert null zurück — das ist eine Absage, kein Fehler."
           }
         },
         "updateLesson": {
           "help": "Ändert die genannten Felder einer Erfahrung; alle übrigen bleiben stehen.",
           "params": {
             "lessonId": "Die id der Erfahrung, wie read() sie unter lessons führt. Eine unbekannte id ist ein Fehler.",
-            "data": "Ein Objekt mit genau den Feldern, die sich ändern sollen — title, category, impact, phase, owner, description, rootCause, recommendation oder actions. Was nicht darin steht, bleibt unverändert. Ein Wert ausserhalb der Wertemengen ist ein Fehler; ein mitgegebener leerer Titel ändert nichts und liefert false zurück."
+            "data": "Ein Objekt mit genau den Feldern, die sich ändern sollen — title, category, impact, phase, owner, description, rootCause, recommendation oder actions. Was nicht darin steht, bleibt unverändert. Ein Wert außerhalb der Wertemengen ist ein Fehler, ebenso ein Objekt, das keines dieser Felder nennt; ein mitgegebener leerer Titel ändert nichts und liefert false zurück."
           }
         },
         "removeLesson": {
@@ -6465,7 +6465,7 @@
           "help": "Hängt eine Maßnahme an eine Erfahrung an.",
           "params": {
             "lessonId": "Die id der Erfahrung, wie read() sie unter lessons führt. Eine unbekannte id ist ein Fehler.",
-            "text": "Der Text der Maßnahme; Leerzeichen am Rand fallen weg. Ein leerer Text legt nichts an und liefert -1 zurück — das ist eine Absage, kein Fehler."
+            "text": "Der Text der Maßnahme; Leerzeichen am Rand fallen weg. Ein leerer Text legt nichts an und liefert -1 zurück — das ist eine Absage, kein Fehler; ein fehlendes Argument ist ein Fehler."
           }
         },
         "removeAction": {

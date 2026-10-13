@@ -1234,14 +1234,14 @@
         "addStakeholder": {
           "help": "Adds a stakeholder and returns their id.",
           "params": {
-            "data": "An object with name (required) and optionally role, power and interest (each a whole number from 1 to 5; default 3), support (supporter, neutral or critic; default neutral), category (intern, extern, kunde, lieferant or behoerde; default intern) and notes. A value outside the named sets is an error, as is a missing object; an empty name adds nothing and returns null — that is a refusal, not an error."
+            "data": "An object with name (required) and optionally role, power and interest (each a whole number from 1 to 5; default 3), support (supporter, neutral or critic; default neutral), category (intern, extern, kunde, lieferant or behoerde; default intern) and notes. A value outside the named sets is an error, as is a missing object and an object that names no name; an empty name adds nothing and returns null — that is a refusal, not an error."
           }
         },
         "updateStakeholder": {
           "help": "Changes the named fields of a stakeholder; all others stay as they are.",
           "params": {
             "id": "The id of the stakeholder as read() lists it under stakeholders. An unknown id is an error.",
-            "data": "An object holding exactly the fields that should change — name, role, power, interest, support, category or notes. Whatever is not in it stays unchanged. A value outside the named sets is an error; an empty name passed in changes nothing and returns false."
+            "data": "An object holding exactly the fields that should change — name, role, power, interest, support, category or notes. Whatever is not in it stays unchanged. A value outside the named sets is an error, as is an object that names none of these fields; an empty name passed in changes nothing and returns false."
           }
         },
         "removeStakeholder": {
@@ -2976,7 +2976,7 @@
           "help": "Changes the named fields of a waste category; all others stay as they are.",
           "params": {
             "mudaId": "The id of the waste category as read() lists it under mudaCategories. An unknown id is an error.",
-            "data": "An object holding exactly the fields that should change — code (the short code in the matrix), label (the name) or color (a hex value such as #4a90e2). Whatever is not in it stays unchanged; a missing object and a value that is not a string are errors."
+            "data": "An object holding exactly the fields that should change — code (the short code in the matrix), label (the name) or color (a hex value such as #4a90e2). Whatever is not in it stays unchanged; a missing object, an object without any of these fields and a value that is not a string are errors."
           }
         },
         "deleteMudaCategory": {
@@ -2993,7 +2993,7 @@
           "help": "Changes the named fields of a time unit; all others stay as they are.",
           "params": {
             "unitId": "The id of the time unit as read() lists it under timeUnits. An unknown id is an error.",
-            "data": "An object holding exactly the fields that should change — label (the code recognised inside a duration text) or factorSeconds (the length of the unit in seconds, a number greater than 0). Whatever is not in it stays unchanged; a missing object, a label that is not a string and a factorSeconds of 0 or less are errors."
+            "data": "An object holding exactly the fields that should change — label (the code recognised inside a duration text) or factorSeconds (the length of the unit in seconds, a number greater than 0). Whatever is not in it stays unchanged; a missing object, an object without any of these fields, a label that is not a string and a factorSeconds of 0 or less are errors."
           }
         },
         "deleteTimeUnit": {
@@ -6441,14 +6441,14 @@
         "addLesson": {
           "help": "Adds a lesson and returns its id.",
           "params": {
-            "data": "An object with title (required) and optionally category (success, problem or improve; default success), impact (high, medium or low; default medium), phase (a phase of the active cycle; default is its last one), owner, description, rootCause, recommendation and actions (a list of texts or of { text, done }). A value outside the named sets is an error, as is a missing object; an empty title adds nothing and returns null — that is a refusal, not an error."
+            "data": "An object with title (required) and optionally category (success, problem or improve; default success), impact (high, medium or low; default medium), phase (a phase of the active cycle; default is its last one), owner, description, rootCause, recommendation and actions (a list of texts or of { text, done }). A value outside the named sets is an error, as is a missing object and an object that names no title; an empty title adds nothing and returns null — that is a refusal, not an error."
           }
         },
         "updateLesson": {
           "help": "Changes the named fields of a lesson; all others stay as they are.",
           "params": {
             "lessonId": "The id of the lesson as read() lists it under lessons. An unknown id is an error.",
-            "data": "An object holding exactly the fields that should change — title, category, impact, phase, owner, description, rootCause, recommendation or actions. Whatever is not in it stays unchanged. A value outside the named sets is an error; an empty title passed in changes nothing and returns false."
+            "data": "An object holding exactly the fields that should change — title, category, impact, phase, owner, description, rootCause, recommendation or actions. Whatever is not in it stays unchanged. A value outside the named sets is an error, as is an object that names none of these fields; an empty title passed in changes nothing and returns false."
           }
         },
         "removeLesson": {
@@ -6461,7 +6461,7 @@
           "help": "Appends an action to a lesson.",
           "params": {
             "lessonId": "The id of the lesson as read() lists it under lessons. An unknown id is an error.",
-            "text": "The text of the action; surrounding whitespace is dropped. An empty text adds nothing and returns -1 — that is a refusal, not an error."
+            "text": "The text of the action; surrounding whitespace is dropped. An empty text adds nothing and returns -1 — that is a refusal, not an error; a missing argument is an error."
           }
         },
         "removeAction": {
