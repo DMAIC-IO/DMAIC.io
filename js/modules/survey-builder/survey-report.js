@@ -73,6 +73,7 @@ export async function reportStrings(i18n) {
 export function buildReportHtml(data, strings, options) {
   const { survey, recipients } = data;
   const locale = options.locale || 'de-DE';
+  const lang = locale.toLowerCase().startsWith('en') ? 'en' : 'de';
   const e = escAttr;
   const num = (v, dec) => (v === null || v === undefined ? '—'
     : Number(v).toLocaleString(locale, { minimumFractionDigits: dec, maximumFractionDigits: dec }));
@@ -118,7 +119,7 @@ export function buildReportHtml(data, strings, options) {
 
   if (!responses.length) {
     out.push(`<p>${e(strings.noResponses)}</p>`);
-    return wrap(survey, title, out);
+    return wrap(lang, title, out);
   }
 
   // ── Summary ──
@@ -198,20 +199,20 @@ export function buildReportHtml(data, strings, options) {
     out.push('</article>');
   });
   out.push('</section>');
-  return wrap(survey, title, out);
+  return wrap(lang, title, out);
 }
 
 /**
  * Wrap body fragments into the complete HTML document.
- * @param {object} survey
+ * @param {string} lang  Report language; follows the report strings, not the survey.
  * @param {string} title
  * @param {string[]} body
  * @returns {string}
  */
-function wrap(survey, title, body) {
+function wrap(lang, title, body) {
   return [
     '<!DOCTYPE html>',
-    `<html lang="${survey.lang === 'en' ? 'en' : 'de'}">`,
+    `<html lang="${lang}">`,
     '<head>',
     '<meta charset="utf-8">',
     `<title>${escAttr(title)}</title>`,

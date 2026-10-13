@@ -35,6 +35,11 @@ suite('survey-report — structure', () => {
     assertTrue(h.includes('<html lang="de">'));
   });
 
+  test('html lang follows the report language, not the survey language', () => {
+    assertTrue(html({ locale: 'en-US' }, { ...SURVEY, lang: 'de' }).includes('<html lang="en">'));
+    assertTrue(html({ locale: 'de-DE' }, { ...SURVEY, lang: 'en' }).includes('<html lang="de">'));
+  });
+
   test('contains rate, summary and question sections', () => {
     const h = html();
     for (const s of ['rate', 'summary', 'questions']) assertTrue(h.includes(`data-section="${s}"`), s);
