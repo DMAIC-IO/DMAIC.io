@@ -2097,6 +2097,7 @@
       "today": "Heute",
       "invalidTimeRange": "Die Endzeit muss nach der Startzeit liegen.",
       "requiredFields": "Titel und Datum sind Pflichtfelder.",
+      "phaseAdjusted": "Dieser Termin trug eine Phase, die der aktive Zyklus nicht kennt. Der Vordruck zeigt die erste Phase des Zyklus — Speichern schreibt sie fest.",
 
       "whenToUse": "Wenn die Termine eines Projekts geführt werden sollen — Besprechungen, Messzeiträume, Stichtage —, je Termin einer Phase zugeordnet und in einer Monats- oder Wochenansicht dargestellt; nicht für Aufgaben ohne festen Zeitpunkt, dafür ist die Aufgabenliste da, und nicht für die Planung von Vorgangsdauern und Abhängigkeiten.",
       "actions": {

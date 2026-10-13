@@ -316,12 +316,6 @@ export default createModule({
       // ── Ebene ─────────────────────────────────────────────────
 
       /**
-       * Übernimmt die Ebenenwahl aus dem Select (`@change`). Fragt bei bereits
-       * erfassten Antworten nach, da die Item-Liste komplett neu aufgebaut wird
-       * und alle Antworten verloren gehen.
-       * @param {Event} ev
-       */
-      /**
        * @noagent DOM event handler: packt die Ebenenwahl aus dem Select aus
        * und fragt vor dem Verwerfen erfasster Antworten zurück; ein Agent
        * darf keine Rückfrage auslösen — er blockierte den Stapel (E3).
@@ -529,10 +523,6 @@ export default createModule({
       },
 
       /**
-       * Fragt nach und löscht danach eine:n Befragte:n samt aller Antworten.
-       * @param {string} id
-       */
-      /**
        * @noagent fragt vor dem Löschen zurück; ein Agent darf keine Rückfrage
        * auslösen — er blockierte den Stapel (E3). Delegiert an
        * `deleteRespondent`.
@@ -677,10 +667,8 @@ export default createModule({
       /** Schwelle, ab der ein Q-Anteil als Datenqualitätsproblem gilt. */
       Q_WARN: 0.10,
 
-      /**
-       * Live-Auswertung. Bewusst ohne Cache: die Rechenlast ist trivial und ein
-       * Cache müsste an Items, Befragten, Antworten und Optionen hängen.
-       */
+      // Bewusst ohne Cache: die Rechenlast ist trivial und ein Cache müsste an
+      // Items, Befragten, Antworten und Optionen hängen.
       /** @noagent view transform: die Live-Auswertung. */
       result() {
         return evaluate(

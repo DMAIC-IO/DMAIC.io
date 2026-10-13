@@ -680,7 +680,17 @@ export default createModule({
         this._didDrag = false;
         const block = e.currentTarget;
         const body = block.closest('.module-calendar__week-body');
-        const cols = Array.from(this.$el.querySelectorAll('.module-calendar__week-day-col'));
+        // NICHT `this.$el`: in einer Methode, die aus einem Element-Ausdruck
+        // gerufen wird (`@mousedown="weekEvMouseDown(ev, $event)"` am
+        // Terminblock), legt der CSP-Build von Alpine das AUSLÖSENDE Element
+        // oben auf den Datenstapel (`vendor/alpinejs/csp.js`,
+        // `generateDataStack` → `injectMagics(…, el)`). `$el` war damit der
+        // Terminblock, die Suche nach den Tagesspalten fand null Treffer, und
+        // `colFromX` fiel immer auf die Ausgangsspalte zurück: ein Termin ließ
+        // sich per Maus nie auf einen anderen TAG ziehen, nur die Uhrzeit
+        // wanderte. Die Modulwurzel wird darum vom Block aus gesucht.
+        const root = block.closest('.module-calendar');
+        const cols = Array.from(root.querySelectorAll('.module-calendar__week-day-col'));
         const col = block.parentElement;
         const colRect = col.getBoundingClientRect();
         const evTopPx = this.model.minToPx(ttm(ev.time));
@@ -837,10 +847,21 @@ export default createModule({
         const ev = this.model.events.find(e => e.id === id);
         if (!ev) return;
         this.editingId = id;
+        const phase = this._draftPhase(ev.phase);
+        // Die Umschreibung wird GESAGT, nicht verschwiegen. Die Phasenchips
+        // des Vordrucks entstehen aus `phaseIds` des aktiven Zyklus; für eine
+        // fremde Phase gibt es keinen Chip. Sie unangetastet zu lassen, wenn
+        // der Nutzer sie nicht anfasst, hieße: der hervorgehobene Chip zeigt
+        // `prepare`, gespeichert wird `analyze` — der Dialog sagte dann etwas
+        // anderes, als er tut. Darum die Normalisierung behalten und einen
+        // Hinweis geben, bevor „Speichern" sie festschreibt.
+        if (ev.phase && ev.phase !== phase) {
+          module._context.notify(_t('phaseAdjusted'), 'warning');
+        }
         this.form = {
           title: ev.title, date: ev.date, time: ev.time,
           end: fmtEnd(ev.time, ev.duration || 60),
-          desc: ev.desc || '', phase: this._draftPhase(ev.phase),
+          desc: ev.desc || '', phase,
         };
         this.openModal();
       },
@@ -853,12 +874,10 @@ export default createModule({
         const phases = phaseIds();
         return phases.includes(phase) ? phase : phases[0];
       },
-      /** Derived duration (minutes) from the current start/end form values. */
       /** @noagent view transform: die Dauer aus Anfang und Ende des Vordrucks. */
       formDuration() {
         return ttm(this.form.end) - ttm(this.form.time);
       },
-      /** Human-readable duration label for the modal ("1h 30min"), '—' if invalid. */
       /** @noagent view transform: die Dauer des Vordrucks als Text. */
       durationLabel() {
         const d = this.formDuration();
@@ -881,6 +900,14 @@ export default createModule({
         // Senke: ein unvollständiges Formular ist eine Rückfrage an den
         // Nutzer, kein Fehlschlag.
         if (!title || !date || !isIsoDate(date)) {
+          module._context.notify(_t('requiredFields'), 'warning');
+          return false;
+        }
+        // Die Startzeit gehört zu den Pflichtangaben. Ein `<input type="time">`
+        // lässt sich leeren, und `ttm('')` fällt auf 09:00 zurück — die
+        // Dauerschranke unten greift dann NICHT, und die geleerte Zeit lief
+        // ungeprüft in die Senke, deren Wurf aus dem Dialog flog.
+        if (!TIME_RE.test(time)) {
           module._context.notify(_t('requiredFields'), 'warning');
           return false;
         }

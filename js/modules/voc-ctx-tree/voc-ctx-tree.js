@@ -61,7 +61,13 @@ const BORDER_WIDTHS = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4];
 // `parseRGBA` (chart-core.js:151) gibt bei einer unlesbaren Farbe STILL ein
 // Grau zurück. Ungeprüft hätte ein Agent damit Erfolg gemeldet und eine
 // andere Farbe bekommen, als er gesetzt hat — deshalb die Form hier vorab.
-const COLOR_RE = /^rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(?:,\s*(?:0|1|0?\.\d+)\s*)?\)$/;
+// Das Alpha steht hier mit BELIEBIG vielen Nachkommastellen: der geteilte
+// Farbwähler (`core/color-picker.js`, `rgbaStr`) schreibt es über
+// `a.toFixed(2)`, liefert also `1.00` für eine deckende Farbe — und alle sechs
+// Vorgabefarben sind deckend. Eine engere Gruppe (`0|1|0?\.\d+`) lehnte genau
+// die Schreibweise ab, die die eigene Oberfläche erzeugt, und das Einfärben
+// der Knoten war damit kaputt. Werte über 1 bleiben ungültig.
+const COLOR_RE = /^rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(?:,\s*(?:0(?:\.\d+)?|1(?:\.0+)?|\.\d+)\s*)?\)$/;
 
 /**
  * Ein Textargument prüfen, bevor es zum dokumentierten Leerwert wird.

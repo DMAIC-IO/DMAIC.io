@@ -2093,6 +2093,7 @@
       "today": "Today",
       "invalidTimeRange": "The end time must be after the start time.",
       "requiredFields": "Title and date are required fields.",
+      "phaseAdjusted": "This appointment carried a phase the active cycle does not know. The form shows the first phase of the cycle — saving will write it.",
 
       "whenToUse": "When the appointments of a project should be kept — meetings, measurement windows, deadlines —, each assigned to a phase and shown in a month or week view; not for tasks without a fixed point in time, that is what the todo list is for, and not for planning activity durations and dependencies.",
       "actions": {
