@@ -21,17 +21,44 @@ import { uid } from '../../core/uid.js';
 const emptyAnswer = () => ({ f: null, d: null, w: null });
 
 export class State {
-  /** @type {{ instanceId: string|null, level: 'need'|'driver'|'req' }} */
+  /**
+   * @type {{ instanceId: string|null, level: 'need'|'driver'|'req' }} woher
+   *   die Merkmale stammen: `instanceId` ist die Instanz des
+   *   VoC-CTx-Baum-Moduls, aus dem sie gelesen werden (`null` heißt
+   *   losgelöst), `level` die Ebene dieses Baums — `need`, `driver` oder
+   *   `req`
+   */
   source = { instanceId: null, level: 'need' };
-  /** @type {{ importance: boolean }} */
+  /**
+   * @type {{ importance: boolean }} die Erfassungsoptionen: `importance`
+   *   schaltet die dritte Frage nach der Wichtigkeit ein oder aus
+   */
   options = { importance: true };
-  /** @type {Array<{id: string, nodeId: string|null, label: string, path: string, missing: boolean}>} */
+  /**
+   * @type {Array<{id: string, nodeId: string|null, label: string, path: string, missing: boolean}>}
+   *   die zu bewertenden Merkmale in Erfassungsreihenfolge; je Merkmal `id`
+   *   (zum Ansprechen), `nodeId` (der Knoten im Baum, `null` bei einem
+   *   losgelösten Merkmal), `label` (sein Name), `path` (seine Herkunft im
+   *   Baum) und `missing` (ob der Knoten im Baum nicht mehr vorkommt)
+   * @agentBulk
+   */
   items = [];
-  /** @type {Array<{id: string, name: string}>} */
+  /**
+   * @type {Array<{id: string, name: string}>} die Befragten in
+   *   Anlegereihenfolge; je Befragter `id` (zum Ansprechen) und `name`
+   */
   respondents = [];
-  /** @type {object} { [respondentId]: { [itemId]: { f, d, w } } } */
+  /**
+   * @type {object} die Antworten, nach Befragter und darin nach Merkmal:
+   *   `{ [respondentId]: { [itemId]: { f, d, w } } }`. `f` ist die
+   *   funktionale, `d` die dysfunktionale Antwort auf der Skala 1 bis 5, `w`
+   *   die Wichtigkeit auf der Skala 1 bis 9; `null` heißt unbeantwortet
+   */
   answers = {};
-  /** @type {string|null} */
+  /**
+   * @type {string|null} die id der Befragten, deren Antworten das
+   *   Erfassungsraster zeigt; `null` heißt, keine ist ausgewählt
+   */
   activeRespondentId = null;
 
   // ─── Items ──────────────────────────────────────────────────

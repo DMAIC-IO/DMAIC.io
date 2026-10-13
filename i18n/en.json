@@ -1527,7 +1527,95 @@
       "exportCsv": "CSV",
       "exportXlsx": "XLSX",
       "exportPng": "PNG",
-      "exportSvg": "SVG"
+      "exportSvg": "SVG",
+
+      "whenToUse": "When features should be classified by how much their presence raises satisfaction and their absence lowers it — must-be, performance and delight features, surveyed with the functional and the dysfunctional question per respondent; not for weighting criteria against each other, that is what the pairwise comparison is for.",
+      "actions": {
+        "setSourceTree": {
+          "help": "Links the features to an instance of the VoC-CTx tree module.",
+          "params": {
+            "instanceId": "The instance of the tree module the features come from, or null for no link. An instance that does not exist in this project is an error."
+          }
+        },
+        "setSourceLevel": {
+          "help": "Sets the tree level the features come from. The feature list and all captured answers are discarded, because they belong to the old level.",
+          "params": {
+            "level": "The tree level: need for needs, driver for drivers, req for requirements. Any other value is an error."
+          }
+        },
+        "setImportance": {
+          "help": "Turns the third question about importance on or off.",
+          "params": {
+            "enabled": "true captures importance as well and lets it drive the bubble size of the evaluation, false drops the question. Any other value is an error."
+          }
+        },
+        "applySync": {
+          "help": "Takes over the features of the configured level from the linked tree: new ones are added, renamed ones are updated, ones no longer in the tree are marked as missing. Nothing is ever deleted. Without a link there is nothing to take over and the return value is false."
+        },
+        "setItems": {
+          "help": "Replaces the list of features to be rated.",
+          "params": {
+            "items": "The features as an array of objects. Per feature id is required and must be unique; label (its name), path (where it comes from), nodeId (the node in the tree, null for a detached feature) and missing (whether the node is gone) are optional. A missing or duplicate id, an unknown field and a wrong type are errors."
+          }
+        },
+        "addRespondent": {
+          "help": "Adds a respondent with a running default name and returns their id. The first respondent is selected in the process."
+        },
+        "renameRespondent": {
+          "help": "Renames a respondent.",
+          "params": {
+            "id": "The id of the respondent as read() lists it under respondents. An unknown id is an error.",
+            "name": "The new name. An empty name leaves the old one in place and returns false; a missing argument is an error."
+          }
+        },
+        "deleteRespondent": {
+          "help": "Removes a respondent with all of their answers. If they were selected, the first remaining one takes over.",
+          "params": {
+            "id": "The id of the respondent. An unknown id is an error."
+          }
+        },
+        "selectRespondent": {
+          "help": "Selects the respondent whose answers the capture grid shows. Answer data stays untouched.",
+          "params": {
+            "id": "The id of the respondent, or null for no selection. Any other value is an error."
+          }
+        },
+        "setAnswer": {
+          "help": "Sets a single answer of one respondent for one feature.",
+          "params": {
+            "respondentId": "The id of the respondent. An unknown id is an error.",
+            "itemId": "The id of the feature as read() lists it under items. An unknown id is an error.",
+            "field": "The answer field: f for the functional question (how would it be if the feature were there), d for the dysfunctional one (how would it be if it were missing), w for importance. Any other value is an error.",
+            "value": "The level: 1 to 5 for f and d (1 I would like it very much to 5 I would dislike it very much), 1 to 9 for w (1 not important at all to 9 extremely important). null means unanswered; any other value is an error."
+          }
+        },
+        "removeItem": {
+          "help": "Removes a feature with all answers for it.",
+          "params": {
+            "id": "The id of the feature. An unknown id is an error."
+          }
+        }
+      },
+      "fields": {
+        "source": {
+          "help": "Where the features come from. instanceId names the instance of the VoC-CTx tree module they are read from — the features therefore come from another module instance of the same project; null means detached, the features then stand on their own. level names the level of that tree: need, driver or req."
+        },
+        "options": {
+          "help": "The capture options. importance turns the third question about importance on or off; it drives the bubble size of the evaluation."
+        },
+        "items": {
+          "help": "The features to be rated, in capture order. Per feature: id (that is how the actions address it), nodeId (the node in the tree, null for a detached feature), label (its name), path (where it comes from in the tree) and missing (whether the node is gone from the tree). Bulk data: without options.fields = ['items'] only the extent is returned."
+        },
+        "respondents": {
+          "help": "The respondents in insertion order. Per respondent: id (that is how the actions address them) and name."
+        },
+        "answers": {
+          "help": "The answers, by respondent and within that by feature: { respondentId: { itemId: { f, d, w } } }. f is the functional, d the dysfunctional answer on the 1 to 5 scale, w the importance on the 1 to 9 scale; null means unanswered."
+        },
+        "activeRespondentId": {
+          "help": "The id of the respondent whose answers the capture grid shows; null means none is selected."
+        }
+      }
     },
     "process-map": {
       "name": "Process Map",

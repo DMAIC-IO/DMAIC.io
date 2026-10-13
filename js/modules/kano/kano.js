@@ -12,11 +12,21 @@
  * Datenrichtung ist eine Einbahnstraße — es wird nie in den Baum geschrieben.
  *
  * Spec: docs/superpowers/specs/2026-07-25-kano-modul-design.md
+ *
+ * @agent  Vollständig über das Viewmodel steuerbar: Quelle und Ebene der
+ *   Merkmale, das Übernehmen der Merkmale aus dem Baum, die Merkmalliste
+ *   selbst, Befragte anlegen, umbenennen, auswählen und entfernen, jede
+ *   einzelne Antwort und die dritte Frage nach der Wichtigkeit. Der
+ *   Oberfläche bleiben die Rückfragen vor dem Ebenenwechsel und vor dem
+ *   Löschen einer Befragten, das Inline-Umbenennen am Reiter und der
+ *   Dateidownload.
  */
 
 import { createModule } from '../../core/template-module.js';
+import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
 import { State } from './kano-model.js';
-import { listTrees, flatten, diff, applyDiff } from './kano-link.js';
+import { listTrees, flatten, diff, applyDiff, LEVELS } from './kano-link.js';
 import { evaluate } from '../../engines/kano-engine.js';
 import { ensureXLSX, downloadBlob } from '../../core/export-utils.js';
 import { exportSvgAsPNG, exportSvgAsFile } from '../../core/chart/modebar.js';
@@ -45,6 +55,22 @@ import { uid } from '../../core/uid.js';
  * @param {string} cycleId
  * @returns {string}
  */
+// Die Antwortfelder und ihre Wertemengen. Beide Skalen sind 1-BASIERT;
+// `requireIndex` passt darauf nicht (es ließe die 0 durch und meldete
+// „allowed: 0..5"), deshalb die tatsächliche Wertemenge — `null` ist der
+// dokumentierte Leerwert „unbeantwortet" (Ruling 52).
+// Der Leerwert wird VOR dem Prüfer abgefangen, nicht in seine Wertemenge
+// aufgenommen: `[null, 1, …].join(', ')` meldete „allowed: , 1, 2, …" mit
+// einem leeren Posten, den kein Agent deuten kann. So bleibt die Meldung
+// sauber, und ein FEHLENDES Argument (`undefined`) läuft weiter in den
+// Prüfer und wirft (Ruling 55).
+const ANSWER_FIELDS = ['f', 'd', 'w'];
+const SCALE_5 = [1, 2, 3, 4, 5];
+const SCALE_9 = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+/** Die Felder, die ein Merkmal trägt — die Prüfliste von `setItems`. */
+const ITEM_FIELDS = ['id', 'nodeId', 'label', 'path', 'missing'];
+
 function treePhaseForCycle(cycleId) {
   const def = manifest.find((m) => m.id === 'voc-ctx-tree');
   return def?.cycles?.[cycleId]?.phase || def?.phase || 'define';
@@ -132,6 +158,7 @@ export default createModule({
 
   data(module, _t) {
     return {
+      ...agentReadMixin(module),
       /** @type {Array<{instanceId: string, state: object|null}>} */
       treeList: [],
       /** @type {{added: number, renamed: number, missing: number}} */
@@ -147,7 +174,7 @@ export default createModule({
       /** true, sobald destroy() lief — sperrt Mounts, die danach zurückkommen. */
       _destroyed: false,
 
-      /** Alpine-Lifecycle-Hook: lädt die Baumliste und abonniert Änderungen am Projekt-State. */
+      /** @noagent lifecycle, kein Zustandsweg: lädt die Baumliste und abonniert Änderungen am Projekt-State. */
       init() {
         this.refreshTrees();
         const eb = module._context.eventBus;
@@ -187,7 +214,7 @@ export default createModule({
         this._unsubs.push(() => eb.off('theme:changed', onTheme));
       },
 
-      /** Alpine-Lifecycle-Hook: meldet alle Event-Bus-Subscriptions wieder ab. */
+      /** @noagent lifecycle, kein Zustandsweg: meldet alle Event-Bus-Subscriptions wieder ab. */
       destroy() {
         this._destroyed = true;
         (this._unsubs || []).forEach((off) => off());
@@ -197,7 +224,7 @@ export default createModule({
 
       // ── Quelle ────────────────────────────────────────────────
 
-      /** Liest die Baumliste neu und aktualisiert den Sync-Status. */
+      /** @noagent view transform: liest die Baumliste neu und aktualisiert den Sync-Status. */
       refreshTrees() {
         this.treeList = listTrees(module._context.stateManager);
         // Auto-Verknüpfung nur für ein frisches, leeres Kano (Komfort: einziger
@@ -227,7 +254,11 @@ export default createModule({
         // dieselbe Objektreferenz, das Flag ist also zuverlässig sichtbar.
         if (!module._loadingExample && !this.model.source.instanceId
             && this.treeList.length === 1 && this.model.items.length === 0) {
-          this.model.source.instanceId = this.treeList[0].instanceId;
+          // Geschrieben wird über `setSourceTree` — dieselbe Senke wie die der
+          // Agentenfläche, damit `source.instanceId` genau eine
+          // Zuweisungsstelle hat (Ruling 56).
+          this.setSourceTree(this.treeList[0].instanceId);
+          return;
         }
         this.refreshPending();
       },
@@ -237,28 +268,48 @@ export default createModule({
        * VoC, sonst die instanceId als Rückfall (Muster msa-typ6.js:507).
        * @param {{instanceId: string, state: object|null}} tr
        * @returns {string}
+       * @noagent view transform
        */
       treeLabel(tr) {
         return tr?.state?.vocs?.[0]?.text || tr?.instanceId || '';
       },
 
-      /** @returns {object|null} State des verknüpften Baums */
+      /** @noagent view transform. @returns {object|null} State des verknüpften Baums */
       activeTreeState() {
         const id = this.model.source.instanceId;
         return id ? (this.treeList.find((t) => t.instanceId === id)?.state || null) : null;
       },
 
-      /** @returns {boolean} true, wenn kein Baum im Projekt existiert */
+      /** @noagent view transform. @returns {boolean} true, wenn kein Baum im Projekt existiert */
       hasNoTree() { return this.treeList.length === 0; },
 
-      /** @returns {boolean} true, wenn Items ohne Baumbezug vorliegen */
+      /** @noagent view transform. @returns {boolean} true, wenn Items ohne Baumbezug vorliegen */
       isDetached() {
         return !this.model.source.instanceId && this.model.items.length > 0;
       },
 
-      /** Übernimmt die Baumwahl aus dem Select (`@change`) und aktualisiert den Sync-Status. */
+      /**
+       * @noagent DOM event handler: packt die Baumwahl aus dem Select aus.
+       * Geschrieben wird über `setSourceTree`, dieselbe Senke wie die der
+       * Agentenfläche.
+       */
       changeTree(ev) {
-        this.model.source.instanceId = ev.target.value || null;
+        this.setSourceTree(ev.target.value || null);
+      },
+
+      /**
+       * Verknüpft die Merkmale mit einer Instanz des VoC-CTx-Baum-Moduls.
+       * @agent
+       * @param {string|null} instanceId Instanz des Baum-Moduls, oder `null`
+       *   für keine Verknüpfung
+       * @returns {void}
+       * @throws {Error} wenn keine Baum-Instanz dieses Projekts diese id trägt
+       */
+      setSourceTree(instanceId) {
+        if (instanceId !== null) {
+          requireKnownId('instanceId', instanceId, this.treeList.map((t) => t.instanceId));
+        }
+        this.model.source.instanceId = instanceId;
         this.refreshPending();
       },
 
@@ -270,6 +321,13 @@ export default createModule({
        * und alle Antworten verloren gehen.
        * @param {Event} ev
        */
+      /**
+       * @noagent DOM event handler: packt die Ebenenwahl aus dem Select aus
+       * und fragt vor dem Verwerfen erfasster Antworten zurück; ein Agent
+       * darf keine Rückfrage auslösen — er blockierte den Stapel (E3).
+       * Geschrieben wird über `setSourceLevel`.
+       * @param {Event} ev
+       */
       async changeLevel(ev) {
         const next = ev.target.value;
         const hasAnswers = Object.values(this.model.answers)
@@ -279,22 +337,53 @@ export default createModule({
           const ok = await module._context.confirmPopout(_t('levelChangeConfirm'), { danger: true });
           if (!ok) { ev.target.value = this.model.source.level; return; }
         }
-        this.model.source.level = next;
-        this.model.setItems([]);
+        this.setSourceLevel(next);
+      },
+
+      /**
+       * Setzt die Ebene des Baums, aus der die Merkmale kommen. Die
+       * Merkmalliste und alle erfassten Antworten werden dabei verworfen —
+       * sie gehören zur alten Ebene.
+       * @agent
+       * @param {'need'|'driver'|'req'} level die Ebene des Baums
+       * @returns {void}
+       * @throws {Error} wenn `level` keine der drei Ebenen ist
+       */
+      setSourceLevel(level) {
+        requireEnum('level', level, LEVELS);
+        this.model.source.level = level;
+        this.setItems([]);
         this.model.answers = {};
         this.refreshPending();
         this.$nextTick(() => this.mountChart());
       },
 
-      /** Schaltet die dritte Frage (Wichtigkeit) für die Erfassung ein/aus. */
+      /**
+       * @noagent Umschaltung, deren Ausgang allein am Vorzustand hängt;
+       * delegiert an `setImportance`, damit das Feld genau eine
+       * Zuweisungsstelle hat.
+       */
       toggleImportance() {
-        this.model.options.importance = !this.model.options.importance;
+        this.setImportance(!this.model.options.importance);
+      },
+
+      /**
+       * Schaltet die dritte Frage nach der Wichtigkeit ein oder aus.
+       * @agent
+       * @param {boolean} enabled true erfasst die Wichtigkeit mit, false
+       *   lässt die Frage weg
+       * @returns {void}
+       * @throws {Error} wenn `enabled` kein Wahrheitswert ist
+       */
+      setImportance(enabled) {
+        requireEnum('enabled', enabled, [true, false]);
+        this.model.options.importance = enabled;
         this.$nextTick(() => this.mountChart());
       },
 
       // ── Sync ──────────────────────────────────────────────────
 
-      /** Zählt das offene Diff gegen den Baum. */
+      /** @noagent view transform: zählt das offene Diff gegen den Baum. */
       refreshPending() {
         const tree = this.activeTreeState();
         if (!tree) { this.pending = { added: 0, renamed: 0, missing: 0 }; return; }
@@ -302,13 +391,13 @@ export default createModule({
         this.pending = { added: d.added.length, renamed: d.renamed.length, missing: d.missing.length };
       },
 
-      /** @returns {boolean} true, wenn es etwas zu übernehmen gibt */
+      /** @noagent view transform. @returns {boolean} true, wenn es etwas zu übernehmen gibt */
       hasPending() {
         const p = this.pending;
         return p.added + p.renamed + p.missing > 0;
       },
 
-      /** Statuszeile unter dem Sync-Button. */
+      /** @noagent view transform: die Statuszeile unter dem Übernahmeknopf. */
       syncStatus() {
         if (this.isDetached()) return _t('syncDetached');
         if (!this.activeTreeState()) return '';
@@ -320,51 +409,169 @@ export default createModule({
         });
       },
 
-      /** Übernimmt das Diff in die Item-Liste. */
+      /**
+       * Übernimmt die Merkmale der eingestellten Ebene aus dem verknüpften
+       * Baum: neue kommen hinzu, umbenannte werden nachgezogen, im Baum nicht
+       * mehr vorhandene werden als fehlend markiert. Gelöscht wird nie.
+       * @agent
+       * @returns {boolean} true wenn übernommen wurde, false wenn keine
+       *   Baum-Instanz verknüpft ist und nichts zu übernehmen war
+       */
       applySync() {
         const tree = this.activeTreeState();
-        if (!tree) return;
+        // Keine Verknüpfung ist eine fachliche Absage: die Oberfläche
+        // deaktiviert den Knopf im selben Fall.
+        if (!tree) return false;
         const d = diff(this.model.items, flatten(tree, this.model.source.level));
-        this.model.setItems(applyDiff(this.model.items, d, () => uid()));
-        this.refreshPending();
+        this.setItems(applyDiff(this.model.items, d, () => uid()));
         this.$nextTick(() => this.mountChart());
+        return true;
+      },
+
+      /**
+       * Ersetzt die Liste der zu bewertenden Merkmale.
+       * @agent
+       * @param {Array<object>} items die Merkmale; je Merkmal `id` (nötig und
+       *   eindeutig), und wahlweise `label`, `path`, `nodeId` und `missing`
+       * @returns {number} die Zahl der übernommenen Merkmale
+       * @throws {Error} wenn `items` kein Array ist, einem Merkmal die `id`
+       *   fehlt, eine `id` doppelt vorkommt oder ein Feld den falschen Typ
+       *   trägt
+       */
+      setItems(items) {
+        if (!Array.isArray(items)) {
+          throw new Error(`invalid items ${JSON.stringify(items)}; allowed: an array of objects with at least id`);
+        }
+        const seen = new Set();
+        const normalized = items.map((raw) => {
+          if (!raw || typeof raw !== 'object' || Array.isArray(raw) || typeof raw.id !== 'string' || !raw.id) {
+            throw new Error(`invalid items ${JSON.stringify(items)}; allowed: an array of objects with at least id`);
+          }
+          for (const key of Object.keys(raw)) {
+            if (!ITEM_FIELDS.includes(key)) {
+              throw new Error(`invalid item field ${JSON.stringify(key)}; allowed: ${ITEM_FIELDS.join(', ')}`);
+            }
+          }
+          if (seen.has(raw.id)) {
+            throw new Error(`invalid items; allowed: an array with distinct ids, ${JSON.stringify(raw.id)} appears twice`);
+          }
+          seen.add(raw.id);
+          if (raw.nodeId !== undefined && raw.nodeId !== null && typeof raw.nodeId !== 'string') {
+            throw new Error(`invalid nodeId ${JSON.stringify(raw.nodeId)}; allowed: a string or null`);
+          }
+          for (const key of ['label', 'path']) {
+            if (raw[key] !== undefined && typeof raw[key] !== 'string') {
+              throw new Error(`invalid ${key} ${JSON.stringify(raw[key])}; allowed: any string, "" clears it`);
+            }
+          }
+          if (raw.missing !== undefined) requireEnum('missing', raw.missing, [true, false]);
+          return {
+            id: raw.id,
+            nodeId: raw.nodeId ?? null,
+            label: raw.label ?? '',
+            path: raw.path ?? '',
+            missing: raw.missing ?? false,
+          };
+        });
+        this.model.setItems(normalized);
+        this.refreshPending();
+        return normalized.length;
       },
 
       // ── Befragte ──────────────────────────────────────────────
 
-      /** Legt eine:n neue:n Befragte:n mit Default-Namen an und aktiviert sie/ihn ggf. */
+      /**
+       * Legt eine Befragte mit einem laufenden Vorgabenamen an. Die erste
+       * Befragte wird dabei ausgewählt.
+       * @agent
+       * @returns {string} die id der neuen Befragten
+       */
       addRespondent() {
         const n = this.model.respondents.length + 1;
-        this.model.addRespondent(_t('respondentDefault', { n }));
+        return this.model.addRespondent(_t('respondentDefault', { n }));
+      },
+
+      /**
+       * Benennt eine Befragte um.
+       * @agent
+       * @param {string} id id der Befragten
+       * @param {string} name der neue Name
+       * @returns {boolean} true wenn umbenannt wurde, false wenn der Name
+       *   leer war und der alte stehen blieb
+       * @throws {Error} wenn keine Befragte diese id trägt oder `name` keine
+       *   Zeichenkette ist
+       */
+      renameRespondent(id, name) {
+        requireKnownId('id', id, this.model.respondents.map((r) => r.id));
+        if (typeof name !== 'string') {
+          throw new Error(`invalid name ${JSON.stringify(name)}; allowed: a non-empty string`);
+        }
+        const trimmed = name.trim();
+        // Ein leerer Name ist die fachliche Absage: das Inline-Feld verwirft
+        // ihn genauso und lässt den alten stehen.
+        if (!trimmed) return false;
+        this.model.renameRespondent(id, trimmed);
+        return true;
+      },
+
+      /**
+       * Entfernt eine Befragte samt allen ihren Antworten. War sie
+       * ausgewählt, rückt die erste verbleibende nach.
+       * @agent
+       * @param {string} id id der Befragten
+       * @returns {void}
+       * @throws {Error} wenn keine Befragte diese id trägt
+       */
+      deleteRespondent(id) {
+        requireKnownId('id', id, this.model.respondents.map((r) => r.id));
+        this.model.deleteRespondent(id);
+        this.$nextTick(() => this.mountChart());
       },
 
       /**
        * Fragt nach und löscht danach eine:n Befragte:n samt aller Antworten.
        * @param {string} id
        */
+      /**
+       * @noagent fragt vor dem Löschen zurück; ein Agent darf keine Rückfrage
+       * auslösen — er blockierte den Stapel (E3). Delegiert an
+       * `deleteRespondent`.
+       * @param {string} id
+       */
       async removeRespondent(id) {
         const ok = await module._context.confirmPopout(_t('respondentDeleteConfirm'), { danger: true });
-        if (ok) {
-          this.model.deleteRespondent(id);
-          this.$nextTick(() => this.mountChart());
-        }
+        if (ok && this.model.respondents.some((r) => r.id === id)) this.deleteRespondent(id);
       },
 
-      /** Aktiviert einen Reiter — ändert nie Antwortdaten. */
-      selectRespondent(id) { this.model.activeRespondentId = id; },
+      /**
+       * Wählt die Befragte aus, deren Antworten das Erfassungsraster zeigt.
+       * Antwortdaten bleiben unberührt.
+       * @agent
+       * @param {string|null} id id der Befragten, oder `null` für keine Auswahl
+       * @returns {void}
+       * @throws {Error} wenn keine Befragte diese id trägt
+       */
+      selectRespondent(id) {
+        // `null` ist der dokumentierte Leerwert des Feldes (Ruling 52): das
+        // Model setzt ihn selbst, wenn die letzte Befragte entfernt wird.
+        if (id !== null) {
+          requireKnownId('id', id, this.model.respondents.map((r) => r.id));
+        }
+        this.model.activeRespondentId = id;
+      },
 
-      /** Klassen des Reiters — aktiver Reiter bekommt den Modifier. */
+      /** @noagent view transform: Klassen des Reiters — aktiver Reiter bekommt den Modifier. */
       tabClass(id) {
         return id === this.model.activeRespondentId ? 'dmike-tab--active' : '';
       },
 
-      /** @returns {boolean} true, wenn der Reitername dieser:s Befragten gerade bearbeitet wird */
+      /** @noagent view transform. @returns {boolean} true, wenn der Reitername gerade bearbeitet wird */
       isRenaming(id) { return this.renamingRespondentId === id; },
 
-      /** Tooltip auf dem Reiter: Name + Rename-Hinweis (Muster raci-matrix.js). */
+      /** @noagent view transform: Tooltip auf dem Reiter — Name und Umbenennhinweis. */
       respondentRenameTitle(name) { return `${name} — ${_t('respondentRenameHint')}`; },
 
-      /** Öffnet das Inline-Eingabefeld für den Reiter-Namen. */
+      /** @noagent öffnet das Inline-Eingabefeld für den Reiternamen (Umbenennpuffer der Oberfläche). */
       startRename(id) {
         const r = this.model.respondents.find((x) => x.id === id);
         if (!r) return;
@@ -376,16 +583,21 @@ export default createModule({
         });
       },
 
-      /** Übernimmt den bearbeiteten Namen; ein leerer Name wird verworfen (alter Name bleibt). */
+      /**
+       * @noagent schließt das Inline-Umbenennen ab; geschrieben wird über
+       * `renameRespondent`, dieselbe Senke wie die der Agentenfläche. Ein
+       * leerer Name wird verworfen, der alte bleibt stehen.
+       */
       commitRename() {
         if (!this.renamingRespondentId) return;
-        const name = this.renameValue.trim();
-        if (name) this.model.renameRespondent(this.renamingRespondentId, name);
+        if (this.model.respondents.some((r) => r.id === this.renamingRespondentId)) {
+          this.renameRespondent(this.renamingRespondentId, this.renameValue);
+        }
         this.renamingRespondentId = null;
         this.renameValue = '';
       },
 
-      /** Bricht das Umbenennen ohne Übernahme ab. */
+      /** @noagent bricht das Inline-Umbenennen ohne Übernahme ab. */
       cancelRename() {
         this.renamingRespondentId = null;
         this.renameValue = '';
@@ -393,39 +605,69 @@ export default createModule({
 
       // ── Antworten ─────────────────────────────────────────────
 
-      /** @returns {string} Wert für das Select ('' wenn nicht gesetzt) */
+      /** @noagent view transform. @returns {string} Wert für das Select ('' wenn nicht gesetzt) */
       answerValue(itemId, field) {
         const v = this.model.answerOf(this.model.activeRespondentId, itemId)[field];
         return v === null ? '' : String(v);
       },
 
       /**
-       * Übernimmt den Select-Wert aus dem `@change`-Event in die aktive Antwort.
+       * @noagent DOM event handler: packt den Select-Wert aus. Geschrieben
+       * wird über `setAnswer`, dieselbe Senke wie die der Agentenfläche.
        * @param {string} itemId
        * @param {'f'|'d'|'w'} field
        * @param {Event} ev
        */
       setAnswerFromEvent(itemId, field, ev) {
         const raw = ev.target.value;
-        this.model.setAnswer(
+        this.setAnswer(
           this.model.activeRespondentId, itemId, field, raw === '' ? null : Number(raw)
         );
+      },
+
+      /**
+       * Setzt eine einzelne Antwort einer Befragten zu einem Merkmal.
+       * @agent
+       * @param {string} respondentId id der Befragten
+       * @param {string} itemId id des Merkmals
+       * @param {'f'|'d'|'w'} field das Antwortfeld: `f` funktional, `d`
+       *   dysfunktional, `w` Wichtigkeit
+       * @param {number|null} value die Stufe — 1 bis 5 für `f` und `d`, 1 bis
+       *   9 für `w`; `null` heißt unbeantwortet
+       * @returns {void}
+       * @throws {Error} wenn keine Befragte oder kein Merkmal diese id trägt,
+       *   `field` keines der drei Antwortfelder ist oder `value` nicht auf der
+       *   Skala dieses Feldes liegt
+       */
+      setAnswer(respondentId, itemId, field, value) {
+        requireKnownId('respondentId', respondentId, this.model.respondents.map((r) => r.id));
+        requireKnownId('itemId', itemId, this.model.items.map((i) => i.id));
+        requireEnum('field', field, ANSWER_FIELDS);
+        if (value !== null) requireEnum('value', value, field === 'w' ? SCALE_9 : SCALE_5);
+        this.model.setAnswer(respondentId, itemId, field, value);
         this.$nextTick(() => this.mountChart());
       },
 
       // ── Items ─────────────────────────────────────────────────
 
-      /** Löscht ein Item samt aller Antworten dazu. */
+      /**
+       * Entfernt ein Merkmal samt allen Antworten dazu.
+       * @agent
+       * @param {string} id id des Merkmals
+       * @returns {void}
+       * @throws {Error} wenn kein Merkmal diese id trägt
+       */
       removeItem(id) {
+        requireKnownId('id', id, this.model.items.map((i) => i.id));
         this.model.deleteItem(id);
         this.refreshPending();
         this.$nextTick(() => this.mountChart());
       },
 
-      /** Zeilenklasse: verwaiste Items werden markiert. */
+      /** @noagent view transform: Zeilenklasse — verwaiste Merkmale werden markiert. */
       itemRowClass(item) { return item.missing ? 'kano__row--missing' : ''; },
 
-      /** @returns {boolean} true, wenn Erfassung möglich ist */
+      /** @noagent view transform. @returns {boolean} true, wenn Erfassung möglich ist */
       canCapture() {
         return this.model.items.length > 0 && Boolean(this.model.activeRespondentId);
       },
@@ -439,47 +681,48 @@ export default createModule({
        * Live-Auswertung. Bewusst ohne Cache: die Rechenlast ist trivial und ein
        * Cache müsste an Items, Befragten, Antworten und Optionen hängen.
        */
+      /** @noagent view transform: die Live-Auswertung. */
       result() {
         return evaluate(
           this.model.items, this.model.respondents, this.model.answers, this.model.options
         );
       },
 
-      /** Kategoriename aus i18n; '—' wenn nicht klassifiziert. */
+      /** @noagent view transform: Kategoriename aus i18n; '—' wenn nicht klassifiziert. */
       catLabel(cat) { return cat ? _t(`cat${cat}`) : '—'; },
 
       /** Aktuelle Locale für Zahlenformate ('de-DE' | 'en-US'), aus dem Modul-Kontext. */
       _locale() { return module._context.i18n.getLanguage() === 'de' ? 'de-DE' : 'en-US'; },
 
-      /** Zahl mit fester Nachkommastelle, lokalisiert (Komma im Deutschen); '—' für null. */
+      /** @noagent view transform: Zahl mit fester Nachkommastelle, lokalisiert; '—' für null. */
       fmt(v, dec) {
         return v === null || v === undefined ? '—'
           : Number(v).toLocaleString(this._locale(), { minimumFractionDigits: dec, maximumFractionDigits: dec });
       },
 
-      /** Anteil als lokalisierter Prozenttext. */
+      /** @noagent view transform: Anteil als lokalisierter Prozenttext. */
       pct(v) {
         const p = Math.round((v || 0) * 100) || 0; // `|| 0` glättet ein mögliches -0
         return `${p.toLocaleString(this._locale())} %`;
       },
 
-      /** @returns {boolean} true, wenn der Q-Anteil insgesamt zu hoch ist */
+      /** @noagent view transform. @returns {boolean} true, wenn der Q-Anteil insgesamt zu hoch ist */
       qWarn() { return this.result().totals.qShare > this.Q_WARN; },
 
-      /** Warntext mit eingesetztem Anteil. */
+      /** @noagent view transform: Warntext mit eingesetztem Anteil. */
       qWarnText() {
         return _t('warnQShare', { share: this.pct(this.result().totals.qShare) });
       },
 
-      /** @returns {boolean} true, wenn ein einzelnes Item zu viele Q-Antworten hat */
+      /** @noagent view transform. @returns {boolean} true, wenn ein Merkmal zu viele Q-Antworten hat */
       rowQWarn(row) { return row.n > 0 && row.counts.Q / row.n > this.Q_WARN; },
 
-      /** Zeilenklasse der Ergebnistabelle. */
+      /** @noagent view transform: Zeilenklasse der Ergebnistabelle. */
       resultRowClass(row) { return this.rowQWarn(row) ? 'kano__row--warn' : ''; },
 
       // ── Export ────────────────────────────────────────────────
 
-      /** Kopfzeile des Exports; die Wichtigkeitsspalte nur wenn aktiv. */
+      /** @noagent lädt eine Datei herunter; ein Agent liest den Zustand über `read()`. */
       exportHeaders() {
         const h = [_t('colItem'), 'M', 'O', 'A', 'I', 'R', 'Q',
           _t('colCategory'), _t('colCs'), _t('colDs')];
@@ -498,7 +741,7 @@ export default createModule({
        */
       _csvNum(v, dec) { return v === null || v === undefined ? '—' : Number(v).toFixed(dec); },
 
-      /** Ergebniszeilen für den CSV-Export, gleiche Reihenfolge wie die Tabelle. */
+      /** @noagent lädt eine Datei herunter; ein Agent liest den Zustand über `read()`. */
       exportRows() {
         return this.result().rows.map((r) => {
           const row = [r.label, r.counts.M, r.counts.O, r.counts.A, r.counts.I, r.counts.R,
@@ -523,7 +766,7 @@ export default createModule({
         });
       },
 
-      /** Exportiert die Ergebnistabelle als CSV; tut nichts ohne Zeilen. */
+      /** @noagent lädt eine Datei herunter; ein Agent liest den Zustand über `read()`. */
       exportCSV() {
         const rows = this.exportRows();
         if (rows.length === 0) return;
@@ -537,7 +780,7 @@ export default createModule({
         downloadBlob(blob, 'kano.csv');
       },
 
-      /** Exportiert die Ergebnistabelle als XLSX; tut nichts ohne Zeilen. */
+      /** @noagent lädt eine Datei herunter; ein Agent liest den Zustand über `read()`. */
       async exportXLSX() {
         const rows = this._exportRowsXLSX();
         if (rows.length === 0) return;
@@ -553,10 +796,10 @@ export default createModule({
         return module._container.querySelector('[data-ref="chart"] svg');
       },
 
-      /** Exportiert das Diagramm als PNG; tut nichts ohne gemountetes Diagramm. */
+      /** @noagent lädt eine Datei herunter; ein Agent liest den Zustand über `read()`. */
       exportPNG() { const svg = this._chartSvg(); if (svg) exportSvgAsPNG(svg, 'kano.png'); },
 
-      /** Exportiert das Diagramm als SVG; tut nichts ohne gemountetes Diagramm. */
+      /** @noagent lädt eine Datei herunter; ein Agent liest den Zustand über `read()`. */
       exportSVG() { const svg = this._chartSvg(); if (svg) exportSvgAsFile(svg, 'kano.svg'); },
 
       // ── Chart ─────────────────────────────────────────────────
@@ -567,6 +810,7 @@ export default createModule({
        * denn sizes[i] <= 0 rendert der Scatter-Typ unsichtbar.
        * @param {object[]} rows
        * @returns {number[]}
+       * @noagent view transform
        */
       bubbleSizes(rows) {
         return rows.map((r) => {
@@ -575,7 +819,7 @@ export default createModule({
         });
       },
 
-      /** Räumt alle gemounteten Chart-Instanzen ab. */
+      /** @noagent lifecycle, kein Zustandsweg: räumt alle gemounteten Chart-Instanzen ab. */
       destroyCharts() {
         for (const c of this._charts) {
           try { module._context.chartManager.destroy(c); } catch { /* ignore */ }
@@ -583,7 +827,7 @@ export default createModule({
         this._charts = [];
       },
 
-      /** Mountet das Better/Worse-Diagramm neu. */
+      /** @noagent lifecycle, kein Zustandsweg: mountet das Better/Worse-Diagramm neu. */
       async mountChart() {
         if (this._destroyed) return;
         this._renderGen++;

@@ -1527,7 +1527,95 @@
       "exportCsv": "CSV",
       "exportXlsx": "XLSX",
       "exportPng": "PNG",
-      "exportSvg": "SVG"
+      "exportSvg": "SVG",
+
+      "whenToUse": "Wenn Merkmale danach eingeordnet werden sollen, wie stark ihr Vorhandensein die Zufriedenheit hebt und ihr Fehlen sie senkt — Basis-, Leistungs- und Begeisterungsmerkmale, erhoben über die funktionale und die dysfunktionale Frage je Befragter; nicht für das Gewichten von Kriterien gegeneinander, dafür ist der Paarvergleich da.",
+      "actions": {
+        "setSourceTree": {
+          "help": "Verknüpft die Merkmale mit einer Instanz des VoC-CTx-Baum-Moduls.",
+          "params": {
+            "instanceId": "Die Instanz des Baum-Moduls, aus dem die Merkmale kommen, oder null für keine Verknüpfung. Eine Instanz, die es in diesem Projekt nicht gibt, ist ein Fehler."
+          }
+        },
+        "setSourceLevel": {
+          "help": "Setzt die Ebene des Baums, aus der die Merkmale kommen. Die Merkmalliste und alle erfassten Antworten werden dabei verworfen, weil sie zur alten Ebene gehören.",
+          "params": {
+            "level": "Die Ebene des Baums: need für Bedürfnisse, driver für Treiber, req für Anforderungen. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "setImportance": {
+          "help": "Schaltet die dritte Frage nach der Wichtigkeit ein oder aus.",
+          "params": {
+            "enabled": "true erfasst die Wichtigkeit mit und lässt sie in die Blasengröße der Auswertung eingehen, false lässt die Frage weg. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "applySync": {
+          "help": "Übernimmt die Merkmale der eingestellten Ebene aus dem verknüpften Baum: neue kommen hinzu, umbenannte werden nachgezogen, im Baum nicht mehr vorhandene werden als fehlend markiert. Gelöscht wird nie. Ohne Verknüpfung ist nichts zu übernehmen und der Rückgabewert ist false."
+        },
+        "setItems": {
+          "help": "Ersetzt die Liste der zu bewertenden Merkmale.",
+          "params": {
+            "items": "Die Merkmale als Array von Objekten. Je Merkmal ist id nötig und muss eindeutig sein; label (sein Name), path (seine Herkunft), nodeId (der Knoten im Baum, null bei einem losgelösten Merkmal) und missing (ob der Knoten fehlt) sind wahlweise. Ein fehlendes oder doppeltes id, ein unbekanntes Feld und ein falscher Typ sind Fehler."
+          }
+        },
+        "addRespondent": {
+          "help": "Legt eine Befragte mit einem laufenden Vorgabenamen an und gibt deren id zurück. Die erste Befragte wird dabei ausgewählt."
+        },
+        "renameRespondent": {
+          "help": "Benennt eine Befragte um.",
+          "params": {
+            "id": "Die id der Befragten, wie read() sie unter respondents führt. Eine unbekannte id ist ein Fehler.",
+            "name": "Der neue Name. Ein leerer Name lässt den alten stehen und liefert false zurück; ein fehlendes Argument ist ein Fehler."
+          }
+        },
+        "deleteRespondent": {
+          "help": "Entfernt eine Befragte samt allen ihren Antworten. War sie ausgewählt, rückt die erste verbleibende nach.",
+          "params": {
+            "id": "Die id der Befragten. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "selectRespondent": {
+          "help": "Wählt die Befragte aus, deren Antworten das Erfassungsraster zeigt. Antwortdaten bleiben unberührt.",
+          "params": {
+            "id": "Die id der Befragten, oder null für keine Auswahl. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "setAnswer": {
+          "help": "Setzt eine einzelne Antwort einer Befragten zu einem Merkmal.",
+          "params": {
+            "respondentId": "Die id der Befragten. Eine unbekannte id ist ein Fehler.",
+            "itemId": "Die id des Merkmals, wie read() sie unter items führt. Eine unbekannte id ist ein Fehler.",
+            "field": "Das Antwortfeld: f für die funktionale Frage (wie wäre es, wenn das Merkmal vorhanden ist), d für die dysfunktionale (wie wäre es, wenn es fehlt), w für die Wichtigkeit. Jeder andere Wert ist ein Fehler.",
+            "value": "Die Stufe: 1 bis 5 für f und d (1 würde mich sehr freuen bis 5 würde mich sehr stören), 1 bis 9 für w (1 völlig unwichtig bis 9 außerordentlich wichtig). null heißt unbeantwortet; jeder andere Wert ist ein Fehler."
+          }
+        },
+        "removeItem": {
+          "help": "Entfernt ein Merkmal samt allen Antworten dazu.",
+          "params": {
+            "id": "Die id des Merkmals. Eine unbekannte id ist ein Fehler."
+          }
+        }
+      },
+      "fields": {
+        "source": {
+          "help": "Woher die Merkmale stammen. instanceId nennt die Instanz des VoC-CTx-Baum-Moduls, aus der sie gelesen werden — die Merkmale kommen also aus einer anderen Modulinstanz desselben Projekts; null heißt losgelöst, die Merkmale stehen dann für sich. level nennt die Ebene dieses Baums: need, driver oder req."
+        },
+        "options": {
+          "help": "Die Erfassungsoptionen. importance schaltet die dritte Frage nach der Wichtigkeit ein oder aus; sie bestimmt die Blasengröße der Auswertung."
+        },
+        "items": {
+          "help": "Die zu bewertenden Merkmale in Erfassungsreihenfolge. Je Merkmal: id (damit sprechen die Aktionen es an), nodeId (der Knoten im Baum, null bei einem losgelösten Merkmal), label (sein Name), path (seine Herkunft im Baum) und missing (ob der Knoten im Baum nicht mehr vorkommt). Massendaten: ohne options.fields = ['items'] kommt nur der Umfang."
+        },
+        "respondents": {
+          "help": "Die Befragten in Anlegereihenfolge. Je Befragte: id (damit sprechen die Aktionen sie an) und name."
+        },
+        "answers": {
+          "help": "Die Antworten, nach Befragter und darin nach Merkmal: { respondentId: { itemId: { f, d, w } } }. f ist die funktionale, d die dysfunktionale Antwort auf der Skala 1 bis 5, w die Wichtigkeit auf der Skala 1 bis 9; null heißt unbeantwortet."
+        },
+        "activeRespondentId": {
+          "help": "Die id der Befragten, deren Antworten das Erfassungsraster zeigt; null heißt, keine ist ausgewählt."
+        }
+      }
     },
     "process-map": {
       "name": "Process Map",

@@ -2900,86 +2900,196 @@ export const AGENT_REGISTRY = {
     }
   },
   "kano": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unmarked_method:refreshTrees",
-      "unmarked_method:treeLabel",
-      "unmarked_method:activeTreeState",
-      "unmarked_method:hasNoTree",
-      "unmarked_method:isDetached",
-      "unmarked_method:changeTree",
-      "unmarked_method:changeLevel",
-      "unmarked_method:toggleImportance",
-      "unmarked_method:refreshPending",
-      "unmarked_method:hasPending",
-      "unmarked_method:syncStatus",
-      "unmarked_method:applySync",
-      "unmarked_method:addRespondent",
-      "unmarked_method:removeRespondent",
-      "unmarked_method:selectRespondent",
-      "unmarked_method:tabClass",
-      "unmarked_method:isRenaming",
-      "unmarked_method:respondentRenameTitle",
-      "unmarked_method:startRename",
-      "unmarked_method:commitRename",
-      "unmarked_method:cancelRename",
-      "unmarked_method:answerValue",
-      "unmarked_method:setAnswerFromEvent",
-      "unmarked_method:removeItem",
-      "unmarked_method:itemRowClass",
-      "unmarked_method:canCapture",
-      "unmarked_method:result",
-      "unmarked_method:catLabel",
-      "unmarked_method:fmt",
-      "unmarked_method:pct",
-      "unmarked_method:qWarn",
-      "unmarked_method:qWarnText",
-      "unmarked_method:rowQWarn",
-      "unmarked_method:resultRowClass",
-      "unmarked_method:exportHeaders",
-      "unmarked_method:exportRows",
-      "unmarked_method:exportCSV",
-      "unmarked_method:exportXLSX",
-      "unmarked_method:exportPNG",
-      "unmarked_method:exportSVG",
-      "unmarked_method:bubbleSizes",
-      "unmarked_method:destroyCharts",
-      "unmarked_method:mountChart"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "setSourceTree": {
+        "params": [
+          {
+            "name": "instanceId",
+            "type": "string|null",
+            "optional": false,
+            "help": "Instanz des Baum-Moduls, oder `null` für keine Verknüpfung"
+          }
+        ],
+        "returns": "void",
+        "help": "Verknüpft die Merkmale mit einer Instanz des VoC-CTx-Baum-Moduls."
+      },
+      "setSourceLevel": {
+        "params": [
+          {
+            "name": "level",
+            "type": "'need'|'driver'|'req'",
+            "optional": false,
+            "help": "die Ebene des Baums"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Ebene des Baums, aus der die Merkmale kommen. Die Merkmalliste und alle erfassten Antworten werden dabei verworfen — sie gehören zur alten Ebene."
+      },
+      "setImportance": {
+        "params": [
+          {
+            "name": "enabled",
+            "type": "boolean",
+            "optional": false,
+            "help": "true erfasst die Wichtigkeit mit, false lässt die Frage weg"
+          }
+        ],
+        "returns": "void",
+        "help": "Schaltet die dritte Frage nach der Wichtigkeit ein oder aus."
+      },
+      "applySync": {
+        "params": [],
+        "returns": "boolean",
+        "help": "Übernimmt die Merkmale der eingestellten Ebene aus dem verknüpften Baum: neue kommen hinzu, umbenannte werden nachgezogen, im Baum nicht mehr vorhandene werden als fehlend markiert. Gelöscht wird nie."
+      },
+      "setItems": {
+        "params": [
+          {
+            "name": "items",
+            "type": "Array<object>",
+            "optional": false,
+            "help": "die Merkmale; je Merkmal `id` (nötig und eindeutig), und wahlweise `label`, `path`, `nodeId` und `missing`"
+          }
+        ],
+        "returns": "number",
+        "help": "Ersetzt die Liste der zu bewertenden Merkmale."
+      },
+      "addRespondent": {
+        "params": [],
+        "returns": "string",
+        "help": "Legt eine Befragte mit einem laufenden Vorgabenamen an. Die erste Befragte wird dabei ausgewählt."
+      },
+      "renameRespondent": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "id der Befragten"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "der neue Name"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Benennt eine Befragte um."
+      },
+      "deleteRespondent": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "id der Befragten"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt eine Befragte samt allen ihren Antworten. War sie ausgewählt, rückt die erste verbleibende nach."
+      },
+      "selectRespondent": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string|null",
+            "optional": false,
+            "help": "id der Befragten, oder `null` für keine Auswahl"
+          }
+        ],
+        "returns": "void",
+        "help": "Wählt die Befragte aus, deren Antworten das Erfassungsraster zeigt. Antwortdaten bleiben unberührt."
+      },
+      "setAnswer": {
+        "params": [
+          {
+            "name": "respondentId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Befragten"
+          },
+          {
+            "name": "itemId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Merkmals"
+          },
+          {
+            "name": "field",
+            "type": "'f'|'d'|'w'",
+            "optional": false,
+            "help": "das Antwortfeld: `f` funktional, `d` dysfunktional, `w` Wichtigkeit"
+          },
+          {
+            "name": "value",
+            "type": "number|null",
+            "optional": false,
+            "help": "die Stufe — 1 bis 5 für `f` und `d`, 1 bis 9 für `w`; `null` heißt unbeantwortet"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt eine einzelne Antwort einer Befragten zu einem Merkmal."
+      },
+      "removeItem": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "id des Merkmals"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt ein Merkmal samt allen Antworten dazu."
+      }
+    },
     "fields": {
       "source": {
         "type": "{ instanceId: string|null, level: 'need'|'driver'|'req' }",
-        "help": "",
+        "help": "woher die Merkmale stammen: `instanceId` ist die Instanz des VoC-CTx-Baum-Moduls, aus dem sie gelesen werden (`null` heißt losgelöst), `level` die Ebene dieses Baums — `need`, `driver` oder `req`",
         "bulk": false
       },
       "options": {
         "type": "{ importance: boolean }",
-        "help": "",
+        "help": "die Erfassungsoptionen: `importance` schaltet die dritte Frage nach der Wichtigkeit ein oder aus",
         "bulk": false
       },
       "items": {
         "type": "Array<{id: string, nodeId: string|null, label: string, path: string, missing: boolean}>",
-        "help": "",
-        "bulk": false
+        "help": "die zu bewertenden Merkmale in Erfassungsreihenfolge; je Merkmal `id` (zum Ansprechen), `nodeId` (der Knoten im Baum, `null` bei einem losgelösten Merkmal), `label` (sein Name), `path` (seine Herkunft im Baum) und `missing` (ob der Knoten im Baum nicht mehr vorkommt)",
+        "bulk": true,
+        "bulkKind": "table"
       },
       "respondents": {
         "type": "Array<{id: string, name: string}>",
-        "help": "",
+        "help": "die Befragten in Anlegereihenfolge; je Befragter `id` (zum Ansprechen) und `name`",
         "bulk": false
       },
       "answers": {
         "type": "object",
-        "help": "{ [respondentId]: { [itemId]: { f, d, w } } }",
+        "help": "die Antworten, nach Befragter und darin nach Merkmal: `{ [respondentId]: { [itemId]: { f, d, w } } }`. `f` ist die funktionale, `d` die dysfunktionale Antwort auf der Skala 1 bis 5, `w` die Wichtigkeit auf der Skala 1 bis 9; `null` heißt unbeantwortet",
         "bulk": false
       },
       "activeRespondentId": {
         "type": "string|null",
-        "help": "",
+        "help": "die id der Befragten, deren Antworten das Erfassungsraster zeigt; `null` heißt, keine ist ausgewählt",
         "bulk": false
       }
     }
@@ -7913,4 +8023,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":23};
+export const AGENT_COVERAGE = {"total":74,"available":24};
