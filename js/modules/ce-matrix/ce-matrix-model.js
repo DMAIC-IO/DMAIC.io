@@ -23,6 +23,12 @@ export const RATING_SCALES = {
 /** Default rating scale id. */
 export const DEFAULT_SCALE = '0-10';
 
+/** Die ids der Bewertungsskalen — die erklärte Wertemenge von `setScale`. */
+export const SCALE_IDS = Object.keys(RATING_SCALES);
+
+/** Die erlaubten Kundenwichtigkeiten, 1 bis 10 — die Wertemenge von `setWeight`. */
+export const WEIGHTS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
 /** Clamp a raw weight to the valid 1..10 range, defaulting invalid input to 1. */
 function clampWeight(w) {
   const n = parseInt(w, 10);
@@ -31,15 +37,30 @@ function clampWeight(w) {
 }
 
 export class State {
-  /** @type {string[]} input (X) row labels */
+  /**
+   * @type {string[]} die Eingangsgrößen (Zeilen) in Anzeigereihenfolge,
+   *   adressiert über ihre Zeilennummer ab 0
+   */
   inputs = ['Input 1', 'Input 2', 'Input 3'];
-  /** @type {string[]} output (Y) column labels */
+  /**
+   * @type {string[]} die Ergebnisgrößen (Spalten) in Anzeigereihenfolge,
+   *   adressiert über ihre Spaltennummer ab 0
+   */
   outputs = ['Output 1', 'Output 2', 'Output 3'];
-  /** @type {Record<string, number>} sparse score map keyed "r-c" → rating */
+  /**
+   * @type {Record<string, number>} die gesetzten Bewertungen, adressiert als
+   *   scores["zeile-spalte"] mit Nummern ab 0; eine Kreuzung ohne Eintrag
+   *   zählt als 0
+   */
   scores = {};
-  /** @type {string} rating scale id, key of RATING_SCALES */
+  /**
+   * @type {string} die aktive Bewertungsskala: 0-10, 0-1-3-9 oder 0-3-7-10
+   */
   scale = DEFAULT_SCALE;
-  /** @type {number[]} customer-importance weight per output (1..10) */
+  /**
+   * @type {number[]} je Ergebnisgröße ihre Kundenwichtigkeit, eine ganze
+   *   Zahl von 1 bis 10, in Spaltenreihenfolge
+   */
   weights = [1, 1, 1];
 
   // ─── Keys & scores ──────────────────────────────────────────
@@ -84,7 +105,7 @@ export class State {
    * @returns {boolean} false for an unknown id
    */
   setScale(id) {
-    if (!Object.hasOwn(RATING_SCALES, id)) return false;
+    if (!SCALE_IDS.includes(id)) return false;
     this.scale = id;
     return true;
   }

@@ -621,53 +621,172 @@ export const AGENT_REGISTRY = {
     }
   },
   "ce-matrix": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:scoreDisplay",
-      "unmarked_method:rowSumStyle",
-      "unmarked_method:colSumStyle",
-      "unmarked_method:scoreInput",
-      "unmarked_method:scaleChanged",
-      "unmarked_method:scoreMax",
-      "unmarked_method:scoreClass",
-      "unmarked_method:scoreTitle",
-      "unmarked_method:inputNameChanged",
-      "unmarked_method:outputNameChanged",
-      "unmarked_method:weightChanged",
-      "unmarked_method:addInput",
-      "unmarked_method:addOutput",
-      "unmarked_method:removeInput",
-      "unmarked_method:removeOutput",
-      "unmarked_method:init",
-      "unmarked_method:destroy"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "addInput": {
+        "params": [],
+        "returns": "number",
+        "help": "Hängt eine weitere Eingangsgröße (Zeile) an die Matrix an."
+      },
+      "addOutput": {
+        "params": [],
+        "returns": "number",
+        "help": "Hängt eine weitere Ergebnisgröße (Spalte) mit der Kundenwichtigkeit 1 an die Matrix an."
+      },
+      "removeInput": {
+        "params": [
+          {
+            "name": "r",
+            "type": "number",
+            "optional": false,
+            "help": "die Zeilennummer, von 0 an gezählt"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Entfernt eine Eingangsgröße samt ihrer Bewertungen."
+      },
+      "removeOutput": {
+        "params": [
+          {
+            "name": "c",
+            "type": "number",
+            "optional": false,
+            "help": "die Spaltennummer, von 0 an gezählt"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Entfernt eine Ergebnisgröße samt ihrer Bewertungen und ihrer Kundenwichtigkeit."
+      },
+      "setScore": {
+        "params": [
+          {
+            "name": "r",
+            "type": "number",
+            "optional": false,
+            "help": "die Zeilennummer der Eingangsgröße, von 0 an gezählt"
+          },
+          {
+            "name": "c",
+            "type": "number",
+            "optional": false,
+            "help": "die Spaltennummer der Ergebnisgröße, von 0 an gezählt"
+          },
+          {
+            "name": "value",
+            "type": "number|null",
+            "optional": false,
+            "help": "die Bewertung aus der aktiven Skala; `null` löscht die Bewertung"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Bewertet die Kreuzung einer Eingangs- mit einer Ergebnisgröße."
+      },
+      "setScale": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "die id der Skala"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Wechselt die Bewertungsskala. Vorhandene Bewertungen bleiben stehen; solche, die die neue Skala nicht zulässt, werden markiert statt stillschweigend verändert."
+      },
+      "setInputName": {
+        "params": [
+          {
+            "name": "r",
+            "type": "number",
+            "optional": false,
+            "help": "die Zeilennummer, von 0 an gezählt"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der neue Name"
+          }
+        ],
+        "returns": "void",
+        "help": "Benennt eine Eingangsgröße."
+      },
+      "setOutputName": {
+        "params": [
+          {
+            "name": "c",
+            "type": "number",
+            "optional": false,
+            "help": "die Spaltennummer, von 0 an gezählt"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der neue Name"
+          }
+        ],
+        "returns": "void",
+        "help": "Benennt eine Ergebnisgröße."
+      },
+      "setWeight": {
+        "params": [
+          {
+            "name": "c",
+            "type": "number",
+            "optional": false,
+            "help": "die Spaltennummer, von 0 an gezählt"
+          },
+          {
+            "name": "value",
+            "type": "number",
+            "optional": false,
+            "help": "die Kundenwichtigkeit, eine ganze Zahl von 1 bis 10"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Kundenwichtigkeit einer Ergebnisgröße — den Faktor, mit dem ihre Bewertungen in die Zeilensummen eingehen."
+      }
+    },
     "fields": {
       "inputs": {
         "type": "string[]",
-        "help": "input (X) row labels",
+        "help": "die Eingangsgrößen (Zeilen) in Anzeigereihenfolge, adressiert über ihre Zeilennummer ab 0",
         "bulk": false
       },
       "outputs": {
         "type": "string[]",
-        "help": "output (Y) column labels",
+        "help": "die Ergebnisgrößen (Spalten) in Anzeigereihenfolge, adressiert über ihre Spaltennummer ab 0",
         "bulk": false
       },
       "scores": {
         "type": "Record<string, number>",
-        "help": "sparse score map keyed \"r-c\" → rating",
+        "help": "die gesetzten Bewertungen, adressiert als scores[\"zeile-spalte\"] mit Nummern ab 0; eine Kreuzung ohne Eintrag zählt als 0",
         "bulk": false
       },
       "scale": {
         "type": "string",
-        "help": "rating scale id, key of RATING_SCALES",
+        "help": "die aktive Bewertungsskala: 0-10, 0-1-3-9 oder 0-3-7-10",
         "bulk": false
       },
       "weights": {
         "type": "number[]",
-        "help": "customer-importance weight per output (1..10)",
+        "help": "je Ergebnisgröße ihre Kundenwichtigkeit, eine ganze Zahl von 1 bis 10, in Spaltenreihenfolge",
         "bulk": false
       }
     }
@@ -6666,4 +6785,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":15};
+export const AGENT_COVERAGE = {"total":74,"available":16};

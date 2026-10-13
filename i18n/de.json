@@ -2716,6 +2716,79 @@
     "ce-matrix": {
       "name": "C&E-Matrix",
       "description": "Ursache-Wirkungs-Matrix",
+      "whenToUse": "Wenn mehrere Prozesseingänge danach geordnet werden sollen, wie stark sie auf die kundenwichtigen Ergebnisgrößen wirken — die gewichtete Zeilensumme sagt, welcher Eingang zuerst untersucht wird; nicht zur Bewertung von Fehlerarten nach Auftreten und Entdeckung, dafür ist die FMEA da.",
+      "actions": {
+        "addInput": {
+          "help": "Hängt eine weitere Eingangsgröße (Zeile) an die Matrix an und liefert ihre Zeilennummer."
+        },
+        "addOutput": {
+          "help": "Hängt eine weitere Ergebnisgröße (Spalte) mit der Kundenwichtigkeit 1 an die Matrix an und liefert ihre Spaltennummer."
+        },
+        "removeInput": {
+          "help": "Entfernt eine Eingangsgröße samt ihrer Bewertungen; die übrigen Zeilen rücken nach.",
+          "params": {
+            "r": "Die Zeilennummer der Eingangsgröße, von 0 an gezählt. Eine Nummer, die keine Eingangsgröße bezeichnet, ist ein Fehler. Die letzte verbleibende Zeile bleibt stehen — der Aufruf liefert dann false, das ist eine Absage und kein Fehler."
+          }
+        },
+        "removeOutput": {
+          "help": "Entfernt eine Ergebnisgröße samt ihrer Bewertungen und ihrer Kundenwichtigkeit; die übrigen Spalten rücken nach.",
+          "params": {
+            "c": "Die Spaltennummer der Ergebnisgröße, von 0 an gezählt. Eine Nummer, die keine Ergebnisgröße bezeichnet, ist ein Fehler. Die letzte verbleibende Spalte bleibt stehen — der Aufruf liefert dann false, das ist eine Absage und kein Fehler."
+          }
+        },
+        "setScore": {
+          "help": "Bewertet die Kreuzung einer Eingangs- mit einer Ergebnisgröße.",
+          "params": {
+            "r": "Die Zeilennummer der Eingangsgröße, von 0 an gezählt. Eine Nummer, die keine Eingangsgröße bezeichnet, ist ein Fehler.",
+            "c": "Die Spaltennummer der Ergebnisgröße, von 0 an gezählt. Eine Nummer, die keine Ergebnisgröße bezeichnet, ist ein Fehler.",
+            "value": "Die Bewertung aus der aktiven Skala; null löscht die Bewertung. Die Vorgabeskala 0-10 lässt jede ganze Zahl von 0 bis 10 zu, die Skala 0-1-3-9 nur 0, 1, 3 und 9, die Skala 0-3-7-10 nur 0, 3, 7 und 10. Ein Wert, den die aktive Skala nicht zulässt, ist ein Fehler."
+          }
+        },
+        "setScale": {
+          "help": "Wechselt die Bewertungsskala. Vorhandene Bewertungen bleiben stehen; solche, die die neue Skala nicht zulässt, werden markiert statt stillschweigend verändert.",
+          "params": {
+            "id": "Die Skala: 0-10 (jede ganze Zahl von 0 bis 10), 0-1-3-9 oder 0-3-7-10. Ein Wert daneben ist ein Fehler."
+          }
+        },
+        "setInputName": {
+          "help": "Benennt eine Eingangsgröße.",
+          "params": {
+            "r": "Die Zeilennummer der Eingangsgröße, von 0 an gezählt. Eine Nummer, die keine Eingangsgröße bezeichnet, ist ein Fehler.",
+            "text": "Der neue Name der Eingangsgröße; ein leerer Text löscht ihn."
+          }
+        },
+        "setOutputName": {
+          "help": "Benennt eine Ergebnisgröße.",
+          "params": {
+            "c": "Die Spaltennummer der Ergebnisgröße, von 0 an gezählt. Eine Nummer, die keine Ergebnisgröße bezeichnet, ist ein Fehler.",
+            "text": "Der neue Name der Ergebnisgröße; ein leerer Text löscht ihn."
+          }
+        },
+        "setWeight": {
+          "help": "Setzt die Kundenwichtigkeit einer Ergebnisgröße — den Faktor, mit dem ihre Bewertungen in die Zeilensummen eingehen.",
+          "params": {
+            "c": "Die Spaltennummer der Ergebnisgröße, von 0 an gezählt. Eine Nummer, die keine Ergebnisgröße bezeichnet, ist ein Fehler.",
+            "value": "Die Kundenwichtigkeit, eine ganze Zahl von 1 bis 10. Ein Wert daneben ist ein Fehler."
+          }
+        }
+      },
+      "fields": {
+        "inputs": {
+          "help": "Die Eingangsgrößen (Zeilen) in Anzeigereihenfolge, adressiert über ihre Zeilennummer ab 0."
+        },
+        "outputs": {
+          "help": "Die Ergebnisgrößen (Spalten) in Anzeigereihenfolge, adressiert über ihre Spaltennummer ab 0."
+        },
+        "scores": {
+          "help": "Die gesetzten Bewertungen, adressiert als scores[\"zeile-spalte\"] mit Nummern ab 0. Eine Kreuzung ohne Eintrag zählt in den Summen als 0."
+        },
+        "scale": {
+          "help": "Die aktive Bewertungsskala: 0-10, 0-1-3-9 oder 0-3-7-10."
+        },
+        "weights": {
+          "help": "Je Ergebnisgröße ihre Kundenwichtigkeit, eine ganze Zahl von 1 bis 10, in Spaltenreihenfolge."
+        }
+      },
       "addInput": "Input",
       "addOutput": "Output",
       "reset": "Reset",

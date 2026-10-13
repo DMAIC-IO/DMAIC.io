@@ -2712,6 +2712,79 @@
     "ce-matrix": {
       "name": "C&E Matrix",
       "description": "Cause and Effect Matrix",
+      "whenToUse": "When several process inputs are to be ranked by how strongly they act on the outputs that matter to the customer — the weighted row sum says which input to investigate first; not for rating failure modes by occurrence and detection, which is what the FMEA is for.",
+      "actions": {
+        "addInput": {
+          "help": "Appends another input (row) to the matrix and returns its row number."
+        },
+        "addOutput": {
+          "help": "Appends another output (column) with a customer importance of 1 to the matrix and returns its column number."
+        },
+        "removeInput": {
+          "help": "Removes an input together with its ratings; the remaining rows move up.",
+          "params": {
+            "r": "The row number of the input, counted from 0. A number that names no input is an error. The last remaining row stays — the call then returns false, which is a refusal and not an error."
+          }
+        },
+        "removeOutput": {
+          "help": "Removes an output together with its ratings and its customer importance; the remaining columns move left.",
+          "params": {
+            "c": "The column number of the output, counted from 0. A number that names no output is an error. The last remaining column stays — the call then returns false, which is a refusal and not an error."
+          }
+        },
+        "setScore": {
+          "help": "Rates the crossing of an input with an output.",
+          "params": {
+            "r": "The row number of the input, counted from 0. A number that names no input is an error.",
+            "c": "The column number of the output, counted from 0. A number that names no output is an error.",
+            "value": "The rating from the active scale; null clears the rating. The default scale 0-10 allows every integer from 0 to 10, the scale 0-1-3-9 only 0, 1, 3 and 9, the scale 0-3-7-10 only 0, 3, 7 and 10. A value the active scale does not allow is an error."
+          }
+        },
+        "setScale": {
+          "help": "Switches the rating scale. Existing ratings stay; those the new scale does not allow are flagged instead of silently changed.",
+          "params": {
+            "id": "The scale: 0-10 (every integer from 0 to 10), 0-1-3-9 or 0-3-7-10. Any other value is an error."
+          }
+        },
+        "setInputName": {
+          "help": "Names an input.",
+          "params": {
+            "r": "The row number of the input, counted from 0. A number that names no input is an error.",
+            "text": "The new name of the input; an empty text clears it."
+          }
+        },
+        "setOutputName": {
+          "help": "Names an output.",
+          "params": {
+            "c": "The column number of the output, counted from 0. A number that names no output is an error.",
+            "text": "The new name of the output; an empty text clears it."
+          }
+        },
+        "setWeight": {
+          "help": "Sets the customer importance of an output — the factor its ratings carry into the row sums.",
+          "params": {
+            "c": "The column number of the output, counted from 0. A number that names no output is an error.",
+            "value": "The customer importance, an integer from 1 to 10. Any other value is an error."
+          }
+        }
+      },
+      "fields": {
+        "inputs": {
+          "help": "The inputs (rows) in display order, addressed by their row number from 0."
+        },
+        "outputs": {
+          "help": "The outputs (columns) in display order, addressed by their column number from 0."
+        },
+        "scores": {
+          "help": "The ratings that are set, addressed as scores[\"row-column\"] with numbers from 0. A crossing without an entry counts as 0 in the sums."
+        },
+        "scale": {
+          "help": "The active rating scale: 0-10, 0-1-3-9 or 0-3-7-10."
+        },
+        "weights": {
+          "help": "The customer importance of each output, an integer from 1 to 10, in column order."
+        }
+      },
       "addInput": "Input",
       "addOutput": "Output",
       "reset": "Reset",
