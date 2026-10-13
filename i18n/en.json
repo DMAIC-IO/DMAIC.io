@@ -1306,7 +1306,151 @@
       "colorCtdTip": "Critical to Delivery – Delivery characteristic that is decisive for the customer",
       "colorCtc": "CTC",
       "colorCtcTip": "Critical to Cost – Cost characteristic that is decisive for the customer",
-      "colorReq": "Requirement"
+      "colorReq": "Requirement",
+      "whenToUse": "When customer statements should be translated into a chain of requirements — the voice of the customer, the need behind it, the measurable driver (CTQ, CTD, CTC) and the testable requirement with a target value and a measure; not for collecting or rating customer statements themselves, that is what the survey and Kano tools are for.",
+      "actions": {
+        "addVoc": {
+          "help": "Adds a voice-of-customer statement and selects it.",
+          "params": {
+            "text": "The wording of the statement. Empty wording adds nothing and returns null; a missing argument is an error.",
+            "source": "Where the statement came from, e.g. a survey or a complaint. An empty string means no source; a non-string is an error."
+          }
+        },
+        "updateVoc": {
+          "help": "Changes the wording and source of a voice-of-customer statement.",
+          "params": {
+            "vocId": "The id of the statement as read() lists it under vocs. An unknown id is an error.",
+            "text": "The new wording. Empty wording changes nothing and returns false; a missing argument is an error.",
+            "source": "The new source. An empty string clears it; a missing argument is an error."
+          }
+        },
+        "removeVoc": {
+          "help": "Removes a voice-of-customer statement with its whole tree. If it was selected, the first remaining one takes over.",
+          "params": {
+            "vocId": "The id of the statement. An unknown id is an error."
+          }
+        },
+        "setActiveVoc": {
+          "help": "Selects the voice-of-customer statement whose tree is shown.",
+          "params": {
+            "vocId": "The id of the statement, or null for no selection. Any other value is an error."
+          }
+        },
+        "addNeed": {
+          "help": "Adds a need under a voice-of-customer statement.",
+          "params": {
+            "vocId": "The id of the statement. An unknown id is an error.",
+            "text": "The wording of the need. Empty wording adds nothing and returns null; a missing argument is an error."
+          }
+        },
+        "updateNeed": {
+          "help": "Changes the wording of a need.",
+          "params": {
+            "vocId": "The id of the statement. An unknown id is an error.",
+            "needId": "The id of the need as read() lists it under vocs[].needs. An unknown id is an error.",
+            "text": "The new wording. Empty wording changes nothing and returns false; a missing argument is an error."
+          }
+        },
+        "deleteNeed": {
+          "help": "Removes a need with its drivers and requirements.",
+          "params": {
+            "vocId": "The id of the statement. An unknown id is an error.",
+            "needId": "The id of the need. An unknown id is an error."
+          }
+        },
+        "addDriver": {
+          "help": "Adds a driver under a need.",
+          "params": {
+            "vocId": "The id of the statement. An unknown id is an error.",
+            "needId": "The id of the need. An unknown id is an error.",
+            "text": "The wording of the driver. Empty wording adds nothing and returns null; a missing argument is an error.",
+            "type": "The driver kind: ctq for quality, ctd for delivery, ctc for cost. Any other value is an error."
+          }
+        },
+        "updateDriver": {
+          "help": "Changes the wording and kind of a driver.",
+          "params": {
+            "vocId": "The id of the statement. An unknown id is an error.",
+            "needId": "The id of the need. An unknown id is an error.",
+            "drvId": "The id of the driver as read() lists it under vocs[].needs[].drivers. An unknown id is an error.",
+            "text": "The new wording. Empty wording changes nothing and returns false; a missing argument is an error.",
+            "type": "The driver kind: ctq for quality, ctd for delivery, ctc for cost. Any other value is an error."
+          }
+        },
+        "deleteDriver": {
+          "help": "Removes a driver with its requirements.",
+          "params": {
+            "vocId": "The id of the statement. An unknown id is an error.",
+            "needId": "The id of the need. An unknown id is an error.",
+            "drvId": "The id of the driver. An unknown id is an error."
+          }
+        },
+        "addRequirement": {
+          "help": "Adds a requirement under a driver.",
+          "params": {
+            "vocId": "The id of the statement. An unknown id is an error.",
+            "needId": "The id of the need. An unknown id is an error.",
+            "drvId": "The id of the driver. An unknown id is an error.",
+            "text": "The wording of the requirement. Empty wording adds nothing and returns null; a missing argument is an error.",
+            "target": "The target value the requirement is checked against. An empty string means no target; a non-string is an error.",
+            "measure": "The measure used to check the target value. An empty string means no measure; a non-string is an error."
+          }
+        },
+        "updateRequirement": {
+          "help": "Changes the wording, target value and measure of a requirement.",
+          "params": {
+            "vocId": "The id of the statement. An unknown id is an error.",
+            "needId": "The id of the need. An unknown id is an error.",
+            "drvId": "The id of the driver. An unknown id is an error.",
+            "reqId": "The id of the requirement as read() lists it under vocs[].needs[].drivers[].requirements. An unknown id is an error.",
+            "text": "The new wording. Empty wording changes nothing and returns false; a missing argument is an error.",
+            "target": "The new target value. An empty string clears it; a missing argument is an error.",
+            "measure": "The new measure. An empty string clears it; a missing argument is an error."
+          }
+        },
+        "deleteReq": {
+          "help": "Removes a requirement.",
+          "params": {
+            "vocId": "The id of the statement. An unknown id is an error.",
+            "needId": "The id of the need. An unknown id is an error.",
+            "drvId": "The id of the driver. An unknown id is an error.",
+            "reqId": "The id of the requirement. An unknown id is an error."
+          }
+        },
+        "reorderNodes": {
+          "help": "Moves a node to the slot of one of its siblings.",
+          "params": {
+            "kind": "The level the move happens on: need, driver or req. Any other value is an error.",
+            "scope": "The parent chain as an object: vocId for a need, plus needId for a driver, plus drvId for a requirement. An unknown id in it is an error.",
+            "fromId": "The id of the node being moved. It must sit on the named level; otherwise it is an error.",
+            "toId": "The id of the sibling whose slot it takes. The same id as fromId leaves the order untouched and returns false; an id outside the sibling list is an error."
+          }
+        },
+        "setBorderWidth": {
+          "help": "Sets the border width of the nodes.",
+          "params": {
+            "width": "The border width in pixels: 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5 or 4. Any other value is an error."
+          }
+        },
+        "setNodeColor": {
+          "help": "Sets the colour of one node kind.",
+          "params": {
+            "key": "The node kind: voc, need, ctq, ctd, ctc or req. Any other value is an error.",
+            "color": "The colour as rgb(r,g,b) or rgba(r,g,b,a). Any other notation is an error."
+          }
+        }
+      },
+      "fields": {
+        "vocs": {
+          "help": "The voice-of-customer statements in insertion order. Per statement: id (that is how the actions address it), text, source (where it came from) and needs. Per need: id, text and drivers. Per driver: id, text, type (ctq, ctd or ctc) and requirements. Per requirement: id, text, target (the target value) and measure."
+        },
+        "activeVocId": {
+          "help": "The id of the statement whose tree is shown; null means none is selected."
+        },
+        "styles": {
+          "help": "The appearance of the tree: borderWidth as the node border width in pixels from 0 to 4 in steps of 0.5, and colors with one colour as rgba(r,g,b,a) under each of voc, need, ctq, ctd, ctc and req."
+        }
+      }
     },
     "kano": {
       "name": "Kano Model",

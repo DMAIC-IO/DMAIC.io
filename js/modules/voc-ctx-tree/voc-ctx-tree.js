@@ -16,6 +16,14 @@
  * documented imperative exceptions (chart-editor widgets / pure SVG export util).
  *
  * Spec: docs/modules/VOC-CTX-TREE.md
+ *
+ * @agent  Vollständig über das Viewmodel steuerbar: Kundenstimmen anlegen,
+ *   ändern, auswählen und entfernen; darunter Bedürfnisse, Treiber (CTQ, CTD,
+ *   CTC) und Anforderungen mit Zielwert und Messgröße; die Reihenfolge von
+ *   Geschwisterknoten; Randstärke und Knotenfarben der Darstellung. Der
+ *   Oberfläche bleiben der Formulardialog samt seinem Entwurf, die Rückfrage
+ *   vor dem Löschen einer Kundenstimme, die Maus-Gestik des Umsortierens und
+ *   der Dateidownload.
  */
 
 import { createModule } from '../../core/template-module.js';
@@ -26,7 +34,9 @@ import {
 import { ensureXLSX, downloadBlob } from '../../core/export-utils.js';
 import { shortcutRegistry } from '../../core/shortcut-registry.js';
 import { draggablePopout } from '../../ui/draggable-popout.js';
-import { State } from './voc-ctx-tree-model.js';
+import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { State, VALID_TYPES } from './voc-ctx-tree-model.js';
 import { buildTreeSVG } from './voc-ctx-tree-svg.js';
 
 /** CSS custom-property map for the node colours. */
@@ -38,6 +48,53 @@ const COLOR_PROP = {
   ctc:  '--color-vct-ctc',
   req:  '--color-vct-req',
 };
+
+/** Die Farbschlüssel der Darstellung, in der Reihenfolge des Einstellbereichs. */
+const COLOR_KEYS = Object.keys(COLOR_PROP);
+
+// Die Randstärke läuft von 0 bis 4 in Schritten von 0,5 — genau die Stufen des
+// Schiebereglers. `requireIndex` passt darauf nicht: es verlangt eine GANZE
+// Zahl und meldete „allowed: 0..4", ließe also 2,5 fallen und 3,7 durch. Die
+// erklärte Wertemenge ist hier der richtige Prüfer (Ruling 51).
+const BORDER_WIDTHS = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4];
+
+// `parseRGBA` (chart-core.js:151) gibt bei einer unlesbaren Farbe STILL ein
+// Grau zurück. Ungeprüft hätte ein Agent damit Erfolg gemeldet und eine
+// andere Farbe bekommen, als er gesetzt hat — deshalb die Form hier vorab.
+const COLOR_RE = /^rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(?:,\s*(?:0|1|0?\.\d+)\s*)?\)$/;
+
+/**
+ * Ein Textargument prüfen, bevor es zum dokumentierten Leerwert wird.
+ *
+ * Ruling 55: `agent-ops.js` übergibt `action.args ?? []` ohne Arity-Prüfung,
+ * ein FEHLENDES Argument kommt also als `undefined` an. Ein `String(v ?? '')`
+ * machte daraus stillschweigend den Leerwert — ein Aufruf mit zu wenigen
+ * Argumenten löschte dann einen Text und meldete Erfolg. Die Meldungsgestalt
+ * ist dieselbe wie in `agent-argcheck.js`.
+ *
+ * @param {string} name Name des Arguments (erscheint in der Meldung)
+ * @param {any} value der übergebene Wert
+ * @throws {Error} wenn `value` keine Zeichenkette ist
+ * @returns {void}
+ */
+function requireText(name, value) {
+  if (typeof value !== 'string') {
+    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any string, "" clears it`);
+  }
+}
+
+/**
+ * Eine Farbe gegen ihre Schreibweise prüfen.
+ * @param {string} name Name des Arguments (erscheint in der Meldung)
+ * @param {any} value der übergebene Wert
+ * @throws {Error} wenn `value` keine Farbe als `rgb()`/`rgba()` ist
+ * @returns {void}
+ */
+function requireColor(name, value) {
+  if (typeof value !== 'string' || !COLOR_RE.test(value)) {
+    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: rgb(r,g,b) or rgba(r,g,b,a)`);
+  }
+}
 
 export default createModule({
   config: {
@@ -52,6 +109,7 @@ export default createModule({
 
   data(module, _t) {
     return {
+      ...agentReadMixin(module),
       ...draggablePopout({
         size: 'width:480px;height:auto;min-height:240px;max-height:80vh;',
         initialPosition: 'left:calc(50% - 240px);top:calc(50% - 180px)',
@@ -70,26 +128,36 @@ export default createModule({
       _drag: null,
 
       // ── View transforms ───────────────────────────────────────
+      /** @noagent view transform: hebt die ausgewählte Karte hervor. */
       cardClass(voc) {
         return voc.id === this.model.activeVocId ? 'vct__card--active' : '';
       },
-      /** Card meta: "{needs} Needs · {reqs} Req." (mirrors legacy). */
+      /** @noagent view transform: „{needs} Needs · {reqs} Req." auf der Karte. */
       cardCountText(voc) {
         return `${voc.needs.length  } ${  _t('needCount') 
           } · ${  this.model.totalReqs(voc)  } Req.`;
       },
+      /** @noagent view transform: setzt den Text in Anführungszeichen. */
       quoted(text) { return `„${  text  }“`; },
+      /** @noagent view transform: die Herkunftszeile eines Knotens. */
       sourceLine(src) { return `${_t('source')  }: ${  src}`; },
+      /** @noagent view transform: die Zielwertzeile einer Anforderung. */
       targetLine(v) { return `${_t('target')  }: ${  v}`; },
+      /** @noagent view transform: die Messgrößenzeile einer Anforderung. */
       measureLine(v) { return `${_t('measurement')  }: ${  v}`; },
+      /** @noagent view transform: die Treiberart als Kürzel in Großbuchstaben. */
       driverBadge(type) { return type.toUpperCase(); },
+      /** @noagent view transform: die Knotenklasse der Treiberart. */
       driverNodeClass(drv) { return `vct__node--${  drv.type}`; },
+      /** @noagent view transform: die Kindklasse der Treiberart. */
       driverChildrenClass(drv) { return `vct__children--${  drv.type}`; },
+      /** @noagent view transform: hebt die gewählte Treiberart im Formular hervor. */
       typeOptClass(type) {
         return this.modalData.type === type ? `vct__type-option--${  type}` : '';
       },
 
       // ── Form labels / placeholders (per modal kind) ───────────
+      /** @noagent view transform: die Feldbeschriftung des Formulars. */
       textLabel() {
         const k = this.modalKind;
         if (k === 'voc') return `${_t('vocText')  } *`;
@@ -97,6 +165,7 @@ export default createModule({
         if (k === 'driver') return `${_t('driverText')  } *`;
         return `${_t('reqText')  } *`;
       },
+      /** @noagent view transform: der Platzhalter des Formulars. */
       textPlaceholder() {
         const k = this.modalKind;
         if (k === 'voc') return _t('vocPlaceholder');
@@ -104,9 +173,11 @@ export default createModule({
         if (k === 'driver') return _t('driverPlaceholder');
         return _t('reqPlaceholder');
       },
+      /** @noagent view transform: die Höchstlänge des Formularfelds. */
       textMaxLength() {
         return this.modalKind === 'voc' ? 1000 : 500;
       },
+      /** @noagent view transform: die Überschrift des Formulars. */
       modalTitle() {
         const editing = Boolean(this.modalCtx.editId);
         const k = this.modalKind;
@@ -121,63 +192,369 @@ export default createModule({
       _afterMutate() {
         this.$nextTick(() => this.applyStyles());
       },
+      /**
+       * @noagent DOM event handler: packt den Klick aus, um einen Treffer auf
+       * den Karten-Knöpfen auszuschließen. Geschrieben wird über
+       * `setActiveVoc`, dieselbe Senke wie die der Agentenfläche.
+       */
       selectVoc(id, event) {
         if (event && event.target.closest('.vct__card-action-btn')) return;
-        this.model.setActiveVoc(id);
-        this._afterMutate();
+        this.setActiveVoc(id);
       },
+      /**
+       * @noagent öffnet den Formulardialog für eine neue Kundenstimme; ein
+       * Agent darf keinen Dialog öffnen — er blockierte den Stapel (E3).
+       */
       openVocModal() {
         this._openModal('voc', {}, { text: '', source: '' });
       },
+      /**
+       * @noagent öffnet den Formulardialog einer vorhandenen Kundenstimme und
+       * füllt seinen Entwurf; ein Agent darf keinen Dialog öffnen (E3).
+       */
       editVoc(voc, event) {
         event?.stopPropagation?.();
         this._openModal('voc', { editId: voc.id }, { text: voc.text, source: voc.source || '' });
       },
+      /**
+       * @noagent fragt vor dem Löschen zurück; ein Agent darf keine Rückfrage
+       * auslösen — er blockierte den Stapel (E3). Delegiert an `removeVoc`.
+       */
       async deleteVoc(voc, event) {
         event?.stopPropagation?.();
         const ok = await module._context.confirmPopout(
           _t('deleteVocConfirm'), { danger: true }
         );
         if (!ok) return;
-        this.model.deleteVoc(voc.id);
+        if (this.model.vocs.some((v) => v.id === voc.id)) this.removeVoc(voc.id);
+      },
+
+      /**
+       * Legt eine Kundenstimme an und wählt sie aus.
+       * @agent
+       * @param {string} text der Wortlaut der Kundenstimme
+       * @param {string} [source] woher sie stammt; leer heißt ohne Angabe
+       * @returns {string|null} die id der neuen Kundenstimme, oder null wenn
+       *   der Wortlaut leer war und nichts angelegt wurde
+       * @throws {Error} wenn `text` oder `source` keine Zeichenkette ist
+       */
+      addVoc(text, source = '') {
+        requireText('text', text);
+        requireText('source', source);
+        const trimmed = text.trim();
+        // Ein leerer Wortlaut ist eine fachliche Absage, kein ungültiges
+        // Argument: das Formular verwirft ihn genauso und legt nichts an.
+        if (!trimmed) return null;
+        const id = this.model.addVoc(trimmed, source.trim());
+        this._afterMutate();
+        return id;
+      },
+
+      /**
+       * Ändert Wortlaut und Herkunft einer Kundenstimme.
+       * @agent
+       * @param {string} vocId id der Kundenstimme
+       * @param {string} text der neue Wortlaut
+       * @param {string} source die neue Herkunft; leer heißt ohne Angabe
+       * @returns {boolean} true wenn geändert wurde, false wenn der Wortlaut
+       *   leer war und alles stehen blieb
+       * @throws {Error} wenn keine Kundenstimme diese id trägt oder `text`
+       *   oder `source` keine Zeichenkette ist
+       */
+      updateVoc(vocId, text, source) {
+        requireKnownId('vocId', vocId, this.model.vocs.map((v) => v.id));
+        requireText('text', text);
+        requireText('source', source);
+        const trimmed = text.trim();
+        if (!trimmed) return false;
+        this.model.updateVoc(vocId, trimmed, source.trim());
+        this._afterMutate();
+        return true;
+      },
+
+      /**
+       * Entfernt eine Kundenstimme samt ihrem Baum. War sie ausgewählt, rückt
+       * die erste verbleibende nach.
+       * @agent
+       * @param {string} vocId id der Kundenstimme
+       * @returns {void}
+       * @throws {Error} wenn keine Kundenstimme diese id trägt
+       */
+      removeVoc(vocId) {
+        requireKnownId('vocId', vocId, this.model.vocs.map((v) => v.id));
+        this.model.deleteVoc(vocId);
+        this._afterMutate();
+      },
+
+      /**
+       * Wählt die Kundenstimme aus, deren Baum angezeigt wird.
+       * @agent
+       * @param {string|null} vocId id der Kundenstimme; `null` wählt keine aus
+       * @returns {void}
+       * @throws {Error} wenn keine Kundenstimme diese id trägt
+       */
+      setActiveVoc(vocId) {
+        // `null` ist der dokumentierte Leerwert des Feldes (Ruling 52): das
+        // Model setzt ihn selbst, wenn die letzte Stimme entfernt wird.
+        requireKnownId('vocId', vocId, [null, ...this.model.vocs.map((v) => v.id)]);
+        this.model.setActiveVoc(vocId);
         this._afterMutate();
       },
 
       // ── Need handlers ─────────────────────────────────────────
+      /** @noagent öffnet den Formulardialog für ein neues Bedürfnis (E3). */
       openNeedModal(vocId) {
         this._openModal('need', { vocId }, { text: '' });
       },
+      /** @noagent öffnet den Formulardialog eines Bedürfnisses (E3). */
       editNeed(vocId, need) {
         this._openModal('need', { vocId, editId: need.id }, { text: need.text });
       },
+
+      /**
+       * Legt ein Bedürfnis unter einer Kundenstimme an.
+       * @agent
+       * @param {string} vocId id der Kundenstimme
+       * @param {string} text der Wortlaut des Bedürfnisses
+       * @returns {string|null} die id des neuen Bedürfnisses, oder null wenn
+       *   der Wortlaut leer war und nichts angelegt wurde
+       * @throws {Error} wenn keine Kundenstimme diese id trägt oder `text`
+       *   keine Zeichenkette ist
+       */
+      addNeed(vocId, text) {
+        requireKnownId('vocId', vocId, this.model.vocs.map((v) => v.id));
+        requireText('text', text);
+        const trimmed = text.trim();
+        if (!trimmed) return null;
+        const id = this.model.addNeed(vocId, trimmed);
+        this._afterMutate();
+        return id;
+      },
+
+      /**
+       * Ändert den Wortlaut eines Bedürfnisses.
+       * @agent
+       * @param {string} vocId id der Kundenstimme
+       * @param {string} needId id des Bedürfnisses
+       * @param {string} text der neue Wortlaut
+       * @returns {boolean} true wenn geändert wurde, false wenn der Wortlaut
+       *   leer war und alles stehen blieb
+       * @throws {Error} wenn keine Kundenstimme oder kein Bedürfnis diese id
+       *   trägt oder `text` keine Zeichenkette ist
+       */
+      updateNeed(vocId, needId, text) {
+        requireKnownId('vocId', vocId, this.model.vocs.map((v) => v.id));
+        requireKnownId('needId', needId, this._needIds(vocId));
+        requireText('text', text);
+        const trimmed = text.trim();
+        if (!trimmed) return false;
+        this.model.updateNeed(vocId, needId, trimmed);
+        this._afterMutate();
+        return true;
+      },
+
+      /**
+       * Entfernt ein Bedürfnis samt seinen Treibern und Anforderungen.
+       * @agent
+       * @param {string} vocId id der Kundenstimme
+       * @param {string} needId id des Bedürfnisses
+       * @returns {void}
+       * @throws {Error} wenn keine Kundenstimme oder kein Bedürfnis diese id
+       *   trägt
+       */
       deleteNeed(vocId, needId) {
+        requireKnownId('vocId', vocId, this.model.vocs.map((v) => v.id));
+        requireKnownId('needId', needId, this._needIds(vocId));
         this.model.deleteNeed(vocId, needId);
         this._afterMutate();
       },
 
       // ── Driver handlers ───────────────────────────────────────
+      /** @noagent öffnet den Formulardialog für einen neuen Treiber (E3). */
       openDriverModal(vocId, needId) {
         this._openModal('driver', { vocId, needId }, { text: '', type: 'ctq' });
       },
+      /**
+       * @noagent öffnet den Formulardialog eines Treibers (E3). Die Art wird
+       * auf die Auswahl des Formulars normalisiert: `fromJSON` lässt sie als
+       * freien Text durch, ein importierter Baum darf also eine unbekannte
+       * Art tragen, und `updateDriver` lehnte sie beim Speichern ab.
+       */
       editDriver(vocId, needId, drv) {
-        this._openModal('driver', { vocId, needId, editId: drv.id }, { text: drv.text, type: drv.type });
+        this._openModal('driver', { vocId, needId, editId: drv.id }, {
+          text: drv.text,
+          type: VALID_TYPES.includes(drv.type) ? drv.type : 'ctq',
+        });
       },
+
+      /**
+       * Legt einen Treiber unter einem Bedürfnis an.
+       * @agent
+       * @param {string} vocId id der Kundenstimme
+       * @param {string} needId id des Bedürfnisses
+       * @param {string} text der Wortlaut des Treibers
+       * @param {'ctq'|'ctd'|'ctc'} type die Treiberart
+       * @returns {string|null} die id des neuen Treibers, oder null wenn der
+       *   Wortlaut leer war und nichts angelegt wurde
+       * @throws {Error} wenn keine Kundenstimme oder kein Bedürfnis diese id
+       *   trägt, `text` keine Zeichenkette ist oder `type` keine der drei
+       *   Treiberarten ist
+       */
+      addDriver(vocId, needId, text, type) {
+        requireKnownId('vocId', vocId, this.model.vocs.map((v) => v.id));
+        requireKnownId('needId', needId, this._needIds(vocId));
+        requireText('text', text);
+        requireEnum('type', type, VALID_TYPES);
+        const trimmed = text.trim();
+        if (!trimmed) return null;
+        const id = this.model.addDriver(vocId, needId, trimmed, type);
+        this._afterMutate();
+        return id;
+      },
+
+      /**
+       * Ändert Wortlaut und Art eines Treibers.
+       * @agent
+       * @param {string} vocId id der Kundenstimme
+       * @param {string} needId id des Bedürfnisses
+       * @param {string} drvId id des Treibers
+       * @param {string} text der neue Wortlaut
+       * @param {'ctq'|'ctd'|'ctc'} type die neue Treiberart
+       * @returns {boolean} true wenn geändert wurde, false wenn der Wortlaut
+       *   leer war und alles stehen blieb
+       * @throws {Error} wenn eine der drei ids unbekannt ist, `text` keine
+       *   Zeichenkette ist oder `type` keine der drei Treiberarten ist
+       */
+      updateDriver(vocId, needId, drvId, text, type) {
+        requireKnownId('vocId', vocId, this.model.vocs.map((v) => v.id));
+        requireKnownId('needId', needId, this._needIds(vocId));
+        requireKnownId('drvId', drvId, this._driverIds(vocId, needId));
+        requireText('text', text);
+        requireEnum('type', type, VALID_TYPES);
+        const trimmed = text.trim();
+        if (!trimmed) return false;
+        this.model.updateDriver(vocId, needId, drvId, trimmed, type);
+        this._afterMutate();
+        return true;
+      },
+
+      /**
+       * Entfernt einen Treiber samt seinen Anforderungen.
+       * @agent
+       * @param {string} vocId id der Kundenstimme
+       * @param {string} needId id des Bedürfnisses
+       * @param {string} drvId id des Treibers
+       * @returns {void}
+       * @throws {Error} wenn eine der drei ids unbekannt ist
+       */
       deleteDriver(vocId, needId, drvId) {
+        requireKnownId('vocId', vocId, this.model.vocs.map((v) => v.id));
+        requireKnownId('needId', needId, this._needIds(vocId));
+        requireKnownId('drvId', drvId, this._driverIds(vocId, needId));
         this.model.deleteDriver(vocId, needId, drvId);
         this._afterMutate();
       },
 
       // ── Requirement handlers ──────────────────────────────────
+      /** @noagent öffnet den Formulardialog für eine neue Anforderung (E3). */
       openReqModal(vocId, needId, drvId) {
         this._openModal('req', { vocId, needId, drvId }, { text: '', target: '', measure: '' });
       },
+      /** @noagent öffnet den Formulardialog einer Anforderung (E3). */
       editReq(vocId, needId, drvId, req) {
         this._openModal('req', { vocId, needId, drvId, editId: req.id },
           { text: req.text, target: req.target || '', measure: req.measure || '' });
       },
+
+      /**
+       * Legt eine Anforderung unter einem Treiber an.
+       * @agent
+       * @param {string} vocId id der Kundenstimme
+       * @param {string} needId id des Bedürfnisses
+       * @param {string} drvId id des Treibers
+       * @param {string} text der Wortlaut der Anforderung
+       * @param {string} [target] der Zielwert; leer heißt ohne Zielwert
+       * @param {string} [measure] die Messgröße; leer heißt ohne Messgröße
+       * @returns {string|null} die id der neuen Anforderung, oder null wenn
+       *   der Wortlaut leer war und nichts angelegt wurde
+       * @throws {Error} wenn eine der drei ids unbekannt ist oder `text`,
+       *   `target` oder `measure` keine Zeichenkette ist
+       */
+      addRequirement(vocId, needId, drvId, text, target = '', measure = '') {
+        requireKnownId('vocId', vocId, this.model.vocs.map((v) => v.id));
+        requireKnownId('needId', needId, this._needIds(vocId));
+        requireKnownId('drvId', drvId, this._driverIds(vocId, needId));
+        requireText('text', text);
+        requireText('target', target);
+        requireText('measure', measure);
+        const trimmed = text.trim();
+        if (!trimmed) return null;
+        const id = this.model.addRequirement(vocId, needId, drvId, trimmed, target.trim(), measure.trim());
+        this._afterMutate();
+        return id;
+      },
+
+      /**
+       * Ändert Wortlaut, Zielwert und Messgröße einer Anforderung.
+       * @agent
+       * @param {string} vocId id der Kundenstimme
+       * @param {string} needId id des Bedürfnisses
+       * @param {string} drvId id des Treibers
+       * @param {string} reqId id der Anforderung
+       * @param {string} text der neue Wortlaut
+       * @param {string} target der neue Zielwert; leer heißt ohne Zielwert
+       * @param {string} measure die neue Messgröße; leer heißt ohne Messgröße
+       * @returns {boolean} true wenn geändert wurde, false wenn der Wortlaut
+       *   leer war und alles stehen blieb
+       * @throws {Error} wenn eine der vier ids unbekannt ist oder `text`,
+       *   `target` oder `measure` keine Zeichenkette ist
+       */
+      updateRequirement(vocId, needId, drvId, reqId, text, target, measure) {
+        requireKnownId('vocId', vocId, this.model.vocs.map((v) => v.id));
+        requireKnownId('needId', needId, this._needIds(vocId));
+        requireKnownId('drvId', drvId, this._driverIds(vocId, needId));
+        requireKnownId('reqId', reqId, this._reqIds(vocId, needId, drvId));
+        requireText('text', text);
+        requireText('target', target);
+        requireText('measure', measure);
+        const trimmed = text.trim();
+        if (!trimmed) return false;
+        this.model.updateRequirement(vocId, needId, drvId, reqId, trimmed, target.trim(), measure.trim());
+        this._afterMutate();
+        return true;
+      },
+
+      /**
+       * Entfernt eine Anforderung.
+       * @agent
+       * @param {string} vocId id der Kundenstimme
+       * @param {string} needId id des Bedürfnisses
+       * @param {string} drvId id des Treibers
+       * @param {string} reqId id der Anforderung
+       * @returns {void}
+       * @throws {Error} wenn eine der vier ids unbekannt ist
+       */
       deleteReq(vocId, needId, drvId, reqId) {
+        requireKnownId('vocId', vocId, this.model.vocs.map((v) => v.id));
+        requireKnownId('needId', needId, this._needIds(vocId));
+        requireKnownId('drvId', drvId, this._driverIds(vocId, needId));
+        requireKnownId('reqId', reqId, this._reqIds(vocId, needId, drvId));
         this.model.deleteRequirement(vocId, needId, drvId, reqId);
         this._afterMutate();
+      },
+
+      // ── id-Listen für die Argumentprüfungen ───────────────────
+      _needIds(vocId) {
+        return (this.model.findVoc(vocId)?.needs ?? []).map((n) => n.id);
+      },
+      _driverIds(vocId, needId) {
+        const need = (this.model.findVoc(vocId)?.needs ?? []).find((n) => n.id === needId);
+        return (need?.drivers ?? []).map((d) => d.id);
+      },
+      _reqIds(vocId, needId, drvId) {
+        const need = (this.model.findVoc(vocId)?.needs ?? []).find((n) => n.id === needId);
+        const drv = (need?.drivers ?? []).find((d) => d.id === drvId);
+        return (drv?.requirements ?? []).map((r) => r.id);
       },
 
       // ── Modal open / save ─────────────────────────────────────
@@ -191,17 +568,23 @@ export default createModule({
           ta?.focus();
         });
       },
+      /** @noagent schließt den Formulardialog (E3). */
       closeModal() {
         this.modalKind = null;
         this.popoutResetPosition();
       },
-      /** Ctrl+Enter (configurable) commits the form. */
+      /** @noagent DOM event handler: Strg+Enter schließt das Formular ab. */
       commitKey(event) {
         if (shortcutRegistry.matches(event, 'vocCtxTree.commit')) {
           event.preventDefault();
           this.saveModal();
         }
       },
+      /**
+       * @noagent schließt den Formulardialog ab; ein Agent darf keinen Dialog
+       * bedienen (E3). Geschrieben wird über `addVoc`/`updateVoc` und ihre
+       * Geschwister — dieselben Senken wie die der Agentenfläche.
+       */
       saveModal() {
         const d = this.modalData;
         const text = (d.text || '').trim();
@@ -211,41 +594,53 @@ export default createModule({
         }
         const ctx = this.modalCtx;
         const k = this.modalKind;
+        const source = String(d.source || '');
+        const target = String(d.target || '');
+        const measure = String(d.measure || '');
+        const type = d.type || 'ctq';
+        // Ein Eintrag, der zwischen dem Öffnen und dem Speichern verschwunden
+        // ist, wird neu angelegt — dasselbe Verhalten wie vor dem Umbau, als
+        // das Model bei unbekannter id still zurückkehrte.
+        const editing = ctx.editId && this._editTargetExists(k, ctx);
         if (k === 'voc') {
-          const source = (d.source || '').trim();
-          if (ctx.editId) this.model.updateVoc(ctx.editId, text, source);
-          else this.model.addVoc(text, source);
+          if (editing) this.updateVoc(ctx.editId, text, source);
+          else this.addVoc(text, source);
         } else if (k === 'need') {
-          if (ctx.editId) this.model.updateNeed(ctx.vocId, ctx.editId, text);
-          else this.model.addNeed(ctx.vocId, text);
+          if (editing) this.updateNeed(ctx.vocId, ctx.editId, text);
+          else this.addNeed(ctx.vocId, text);
         } else if (k === 'driver') {
-          const type = d.type || 'ctq';
-          if (ctx.editId) this.model.updateDriver(ctx.vocId, ctx.needId, ctx.editId, text, type);
-          else this.model.addDriver(ctx.vocId, ctx.needId, text, type);
+          if (editing) this.updateDriver(ctx.vocId, ctx.needId, ctx.editId, text, type);
+          else this.addDriver(ctx.vocId, ctx.needId, text, type);
         } else if (k === 'req') {
-          const target = (d.target || '').trim();
-          const measure = (d.measure || '').trim();
-          if (ctx.editId) this.model.updateRequirement(ctx.vocId, ctx.needId, ctx.drvId, ctx.editId, text, target, measure);
-          else this.model.addRequirement(ctx.vocId, ctx.needId, ctx.drvId, text, target, measure);
+          if (editing) this.updateRequirement(ctx.vocId, ctx.needId, ctx.drvId, ctx.editId, text, target, measure);
+          else this.addRequirement(ctx.vocId, ctx.needId, ctx.drvId, text, target, measure);
         }
         this.closeModal();
-        this._afterMutate();
+      },
+      _editTargetExists(kind, ctx) {
+        if (kind === 'voc') return this.model.vocs.some((v) => v.id === ctx.editId);
+        if (kind === 'need') return this._needIds(ctx.vocId).includes(ctx.editId);
+        if (kind === 'driver') return this._driverIds(ctx.vocId, ctx.needId).includes(ctx.editId);
+        return this._reqIds(ctx.vocId, ctx.needId, ctx.drvId).includes(ctx.editId);
       },
 
       // ── Drag-and-drop reordering (badge handle → native drag) ─
       // Mirror legacy: arming a node for native HTML5 drag happens synchronously
       // on the badge mousedown (so the subsequent dragstart can fire). The node
       // is disarmed on the global mouseup (registered in init()).
+      /** @noagent DOM event handler: ein Agent kann kein DragEvent erzeugen. */
       startDrag(event) {
         const node = event.target.closest('.vct__node[data-drag-type]');
         if (node) node.setAttribute('draggable', 'true');
       },
+      /** @noagent DOM event handler: ein Agent kann kein DragEvent erzeugen. */
       dragStart(scope, id, kind, event) {
         this._drag = { kind, scope, id };
         const node = event.target.closest('.vct__node[data-drag-type]');
         if (node) node.classList.add('vct__node--dragging');
         if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
       },
+      /** @noagent DOM event handler: ein Agent kann kein DragEvent erzeugen. */
       dragOver(event) {
         const drag = this._drag;
         const treeArea = event.currentTarget;
@@ -258,6 +653,11 @@ export default createModule({
           n.classList.remove('vct__node--drag-over'));
         target.classList.add('vct__node--drag-over');
       },
+      /**
+       * @noagent DOM event handler: ein Agent kann kein DragEvent erzeugen.
+       * Geschrieben wird über `reorderNodes`, dieselbe Senke wie die der
+       * Agentenfläche.
+       */
       drop(event) {
         event.preventDefault();
         const drag = this._drag;
@@ -266,10 +666,10 @@ export default createModule({
         if (!target || target.dataset.dragType !== drag.kind) { this._clearDrag(event.currentTarget); return; }
         if (!this._areDragSiblings(drag, target.dataset)) { this._clearDrag(event.currentTarget); return; }
         const toId = this._targetId(drag.kind, target.dataset);
-        this.model.reorderNodes(drag.kind, drag.scope, drag.id, toId);
+        this.reorderNodes(drag.kind, drag.scope, drag.id, toId);
         this._clearDrag(event.currentTarget);
-        this._afterMutate();
       },
+      /** @noagent DOM event handler: ein Agent kann kein DragEvent erzeugen. */
       dragEnd(event) {
         this._clearDrag(event.currentTarget);
       },
@@ -298,6 +698,7 @@ export default createModule({
       },
 
       // ── Export ────────────────────────────────────────────────
+      /** @noagent DOM event handler: öffnet die Ausgabeliste der Oberfläche. */
       toggleExportMenu(event) {
         event.stopPropagation();
         this.exportMenuOpen = !this.exportMenuOpen;
@@ -313,6 +714,7 @@ export default createModule({
         menu.style.left = `${rect.left  }px`;
         menu.style.right = 'auto';
       },
+      /** @noagent lädt eine Datei herunter; ein Agent liest den Zustand über `read()`. */
       onExport(fmt) {
         this.exportMenuOpen = false;
         if (fmt === 'csv') this.exportCSV();
@@ -327,6 +729,7 @@ export default createModule({
           tk('driverType'), 'CTx', tk('legendReq'), tk('target'), tk('measurement'),
         ];
       },
+      /** @noagent lädt eine Datei herunter; ein Agent liest den Zustand über `read()`. */
       exportCSV() {
         const rows = this.model.getExportRows();
         if (rows.length === 0) return;
@@ -341,6 +744,7 @@ export default createModule({
         const blob = new Blob([`\uFEFF${  lines.join('\n')}`], { type: 'text/csv;charset=utf-8' });
         downloadBlob(blob, 'voc-ctx-tree.csv');
       },
+      /** @noagent lädt eine Datei herunter; ein Agent liest den Zustand über `read()`. */
       async exportXLSX() {
         const rows = this.model.getExportRows();
         if (rows.length === 0) return;
@@ -364,16 +768,89 @@ export default createModule({
           measurement: tk('measurement'),
         });
       },
+      /** @noagent lädt eine Datei herunter; ein Agent liest den Zustand über `read()`. */
       exportPNG() {
         const svg = this._buildSvg();
         if (svg) exportSvgAsPNG(svg, 'voc-ctx-tree.png');
       },
+      /** @noagent lädt eine Datei herunter; ein Agent liest den Zustand über `read()`. */
       exportSVG() {
         const svg = this._buildSvg();
         if (svg) exportSvgAsFile(svg, 'voc-ctx-tree.svg');
       },
 
+      /**
+       * Verschiebt einen Knoten an die Stelle eines Geschwisterknotens.
+       * @agent
+       * @param {'need'|'driver'|'req'} kind die Ebene, auf der verschoben wird
+       * @param {object} scope die Elternkette: `vocId` für ein Bedürfnis,
+       *   zusätzlich `needId` für einen Treiber, zusätzlich `drvId` für eine
+       *   Anforderung
+       * @param {string} fromId id des Knotens, der verschoben wird
+       * @param {string} toId id des Geschwisterknotens, an dessen Stelle er rückt
+       * @returns {boolean} true wenn verschoben wurde, false wenn beide ids
+       *   dieselbe waren und die Reihenfolge stehen blieb
+       * @throws {Error} wenn `kind` keine der drei Ebenen ist, eine id der
+       *   Elternkette unbekannt ist oder `fromId` oder `toId` kein
+       *   Geschwisterknoten dieser Ebene ist
+       */
+      reorderNodes(kind, scope, fromId, toId) {
+        requireEnum('kind', kind, ['need', 'driver', 'req']);
+        if (!scope || typeof scope !== 'object' || Array.isArray(scope)) {
+          throw new Error(`invalid scope ${JSON.stringify(scope)}; allowed: an object with at least vocId`);
+        }
+        requireKnownId('vocId', scope.vocId, this.model.vocs.map((v) => v.id));
+        let siblings;
+        if (kind === 'need') {
+          siblings = this._needIds(scope.vocId);
+        } else if (kind === 'driver') {
+          requireKnownId('needId', scope.needId, this._needIds(scope.vocId));
+          siblings = this._driverIds(scope.vocId, scope.needId);
+        } else {
+          requireKnownId('needId', scope.needId, this._needIds(scope.vocId));
+          requireKnownId('drvId', scope.drvId, this._driverIds(scope.vocId, scope.needId));
+          siblings = this._reqIds(scope.vocId, scope.needId, scope.drvId);
+        }
+        requireKnownId('fromId', fromId, siblings);
+        requireKnownId('toId', toId, siblings);
+        if (fromId === toId) return false;
+        this.model.reorderNodes(kind, scope, fromId, toId);
+        this._afterMutate();
+        return true;
+      },
+
+      /**
+       * Setzt die Randstärke der Knoten.
+       * @agent
+       * @param {number} width die Randstärke in Pixeln, von 0 bis 4 in
+       *   Schritten von 0,5
+       * @returns {void}
+       * @throws {Error} wenn `width` keine dieser Stufen ist
+       */
+      setBorderWidth(width) {
+        requireEnum('width', width, BORDER_WIDTHS);
+        this.model.styles.borderWidth = width;
+        this._afterMutate();
+      },
+
+      /**
+       * Setzt die Farbe einer Knotenart.
+       * @agent
+       * @param {'voc'|'need'|'ctq'|'ctd'|'ctc'|'req'} key die Knotenart
+       * @param {string} color die Farbe als `rgb(r,g,b)` oder `rgba(r,g,b,a)`
+       * @returns {void}
+       * @throws {Error} wenn `key` keine der sechs Knotenarten oder `color`
+       *   keine Farbe in dieser Schreibweise ist
+       */
+      setNodeColor(key, color) {
+        requireEnum('key', key, COLOR_KEYS);
+        requireColor('color', color);
+        this.model.styles.colors[key] = color;
+        this._afterMutate();
+      },
+
       // ── Appearance settings panel (chart-editor widgets) ──────
+      /** @noagent view transform: schreibt die Darstellung in die CSS-Variablen. */
       applyStyles() {
         const root = this.$el.querySelector('.vct') || this.$el;
         if (!root) return;
@@ -408,23 +885,26 @@ export default createModule({
         for (const { key, label, tip } of colorKeys) {
           const { el, swatch } = edColorPair(label, this.model.styles.colors[key], (e) => {
             openColorPicker(e, this.model.styles.colors[key], (newColor) => {
-              this.model.styles.colors[key] = newColor;
+              // Geschrieben wird über `setNodeColor` — dieselbe Senke wie die
+              // der Agentenfläche, eine Zuweisungsstelle je Feld.
+              this.setNodeColor(key, newColor);
               swatch.style.background = newColor;
-              this.applyStyles();
             });
           });
           if (tip) el.title = tip;
           section.appendChild(el);
         }
         section.appendChild(edRangeRow(tk('borderWidth'), this.model.styles.borderWidth, (val) => {
-          this.model.styles.borderWidth = val;
-          this.applyStyles();
+          // Dieselbe Senke wie die der Agentenfläche; der Schieberegler
+          // liefert seine Stufe als Zeichenkette, deshalb das `Number`.
+          this.setBorderWidth(Number(val));
         }, 0, 4, 0.5));
 
         panel.appendChild(section);
       },
 
       // ── Lifecycle (per Alpine instance) ───────────────────────
+      /** @noagent lifecycle, kein Zustandsweg. */
       init() {
         // Re-arm native drag once the dragId flips a node to draggable=true:
         // bind a single dragstart on the tree area that reads the armed node.
@@ -452,6 +932,7 @@ export default createModule({
           document.addEventListener('mouseup', this._onMouseUp);
         });
       },
+      /** @noagent lifecycle, kein Zustandsweg. */
       destroy() {
         if (this._onMouseUp) {
           document.removeEventListener('mouseup', this._onMouseUp);

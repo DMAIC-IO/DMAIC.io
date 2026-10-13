@@ -33,14 +33,31 @@ function defaultStyles() {
   return { borderWidth: 1, colors: { ...DEFAULT_COLORS } };
 }
 
-const VALID_TYPES = ['ctq', 'ctd', 'ctc'];
+/** Die drei Treiberarten: Critical to Quality, to Delivery, to Cost. */
+export const VALID_TYPES = ['ctq', 'ctd', 'ctc'];
 
 export class State {
-  /** @type {object[]} VoC statements, each with a nested CTx tree */
+  /**
+   * @type {Array<{id:string,text:string,source:string,needs:Array<{id:string,text:string,drivers:Array<{id:string,text:string,type:'ctq'|'ctd'|'ctc',requirements:Array<{id:string,text:string,target:string,measure:string}>}>}>}>}
+   *   die Kundenstimmen in Anlegereihenfolge; je Stimme `id` (zum
+   *   Ansprechen), `text`, `source` (woher sie stammt) und `needs` — je
+   *   Bedürfnis `id`, `text` und `drivers`, je Treiber `id`, `text`, `type`
+   *   (`ctq`, `ctd` oder `ctc`) und `requirements`, je Anforderung `id`,
+   *   `text`, `target` (der Zielwert) und `measure` (die Messgröße)
+   * @agentBulk tree
+   */
   vocs = [];
-  /** @type {string|null} id of the currently selected VoC */
+  /**
+   * @type {string|null} die id der ausgewählten Kundenstimme, deren Baum
+   *   angezeigt wird; `null` heißt, keine ist ausgewählt
+   */
   activeVocId = null;
-  /** @type {{ borderWidth: number, colors: object }} appearance settings */
+  /**
+   * @type {{ borderWidth: number, colors: object }} die Darstellung des
+   *   Baums: `borderWidth` als Randstärke der Knoten in Pixeln von 0 bis 4
+   *   in Schritten von 0,5 und `colors` mit je einer Farbe als
+   *   `rgba(r,g,b,a)` unter `voc`, `need`, `ctq`, `ctd`, `ctc` und `req`
+   */
   styles = defaultStyles();
 
   // ─── Lookup ─────────────────────────────────────────────────

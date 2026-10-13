@@ -1306,7 +1306,151 @@
       "colorCtdTip": "Critical to Delivery – Liefermerkmal, das für den Kunden entscheidend ist",
       "colorCtc": "CTC",
       "colorCtcTip": "Critical to Cost – Kostenmerkmal, das für den Kunden entscheidend ist",
-      "colorReq": "Anforderung"
+      "colorReq": "Anforderung",
+      "whenToUse": "Wenn Kundenaussagen in eine Anforderungskette übersetzt werden sollen — Kundenstimme, daraus das Bedürfnis, daraus der messbare Treiber (CTQ, CTD, CTC) und daraus die prüfbare Anforderung mit Zielwert und Messgröße; nicht für das Sammeln oder Bewerten von Kundenaussagen selbst, dafür sind die Befragungs- und Kano-Werkzeuge da.",
+      "actions": {
+        "addVoc": {
+          "help": "Legt eine Kundenstimme an und wählt sie aus.",
+          "params": {
+            "text": "Der Wortlaut der Kundenstimme. Ein leerer Wortlaut legt nichts an und liefert null zurück; ein fehlendes Argument ist ein Fehler.",
+            "source": "Woher die Kundenstimme stammt, etwa eine Befragung oder eine Beschwerde. Eine leere Zeichenkette heißt ohne Angabe; ein Nichttext ist ein Fehler."
+          }
+        },
+        "updateVoc": {
+          "help": "Ändert Wortlaut und Herkunft einer Kundenstimme.",
+          "params": {
+            "vocId": "Die id der Kundenstimme, wie read() sie unter vocs führt. Eine unbekannte id ist ein Fehler.",
+            "text": "Der neue Wortlaut. Ein leerer Wortlaut ändert nichts und liefert false zurück; ein fehlendes Argument ist ein Fehler.",
+            "source": "Die neue Herkunft. Eine leere Zeichenkette löscht sie; ein fehlendes Argument ist ein Fehler."
+          }
+        },
+        "removeVoc": {
+          "help": "Entfernt eine Kundenstimme samt ihrem Baum. War sie ausgewählt, rückt die erste verbleibende nach.",
+          "params": {
+            "vocId": "Die id der Kundenstimme. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "setActiveVoc": {
+          "help": "Wählt die Kundenstimme aus, deren Baum angezeigt wird.",
+          "params": {
+            "vocId": "Die id der Kundenstimme, oder null für keine Auswahl. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "addNeed": {
+          "help": "Legt ein Bedürfnis unter einer Kundenstimme an.",
+          "params": {
+            "vocId": "Die id der Kundenstimme. Eine unbekannte id ist ein Fehler.",
+            "text": "Der Wortlaut des Bedürfnisses. Ein leerer Wortlaut legt nichts an und liefert null zurück; ein fehlendes Argument ist ein Fehler."
+          }
+        },
+        "updateNeed": {
+          "help": "Ändert den Wortlaut eines Bedürfnisses.",
+          "params": {
+            "vocId": "Die id der Kundenstimme. Eine unbekannte id ist ein Fehler.",
+            "needId": "Die id des Bedürfnisses, wie read() sie unter vocs[].needs führt. Eine unbekannte id ist ein Fehler.",
+            "text": "Der neue Wortlaut. Ein leerer Wortlaut ändert nichts und liefert false zurück; ein fehlendes Argument ist ein Fehler."
+          }
+        },
+        "deleteNeed": {
+          "help": "Entfernt ein Bedürfnis samt seinen Treibern und Anforderungen.",
+          "params": {
+            "vocId": "Die id der Kundenstimme. Eine unbekannte id ist ein Fehler.",
+            "needId": "Die id des Bedürfnisses. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "addDriver": {
+          "help": "Legt einen Treiber unter einem Bedürfnis an.",
+          "params": {
+            "vocId": "Die id der Kundenstimme. Eine unbekannte id ist ein Fehler.",
+            "needId": "Die id des Bedürfnisses. Eine unbekannte id ist ein Fehler.",
+            "text": "Der Wortlaut des Treibers. Ein leerer Wortlaut legt nichts an und liefert null zurück; ein fehlendes Argument ist ein Fehler.",
+            "type": "Die Treiberart: ctq für Qualität, ctd für Liefertreue, ctc für Kosten. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "updateDriver": {
+          "help": "Ändert Wortlaut und Art eines Treibers.",
+          "params": {
+            "vocId": "Die id der Kundenstimme. Eine unbekannte id ist ein Fehler.",
+            "needId": "Die id des Bedürfnisses. Eine unbekannte id ist ein Fehler.",
+            "drvId": "Die id des Treibers, wie read() sie unter vocs[].needs[].drivers führt. Eine unbekannte id ist ein Fehler.",
+            "text": "Der neue Wortlaut. Ein leerer Wortlaut ändert nichts und liefert false zurück; ein fehlendes Argument ist ein Fehler.",
+            "type": "Die Treiberart: ctq für Qualität, ctd für Liefertreue, ctc für Kosten. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "deleteDriver": {
+          "help": "Entfernt einen Treiber samt seinen Anforderungen.",
+          "params": {
+            "vocId": "Die id der Kundenstimme. Eine unbekannte id ist ein Fehler.",
+            "needId": "Die id des Bedürfnisses. Eine unbekannte id ist ein Fehler.",
+            "drvId": "Die id des Treibers. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "addRequirement": {
+          "help": "Legt eine Anforderung unter einem Treiber an.",
+          "params": {
+            "vocId": "Die id der Kundenstimme. Eine unbekannte id ist ein Fehler.",
+            "needId": "Die id des Bedürfnisses. Eine unbekannte id ist ein Fehler.",
+            "drvId": "Die id des Treibers. Eine unbekannte id ist ein Fehler.",
+            "text": "Der Wortlaut der Anforderung. Ein leerer Wortlaut legt nichts an und liefert null zurück; ein fehlendes Argument ist ein Fehler.",
+            "target": "Der Zielwert, gegen den die Anforderung geprüft wird. Eine leere Zeichenkette heißt ohne Zielwert; ein Nichttext ist ein Fehler.",
+            "measure": "Die Messgröße, mit der der Zielwert gemessen wird. Eine leere Zeichenkette heißt ohne Messgröße; ein Nichttext ist ein Fehler."
+          }
+        },
+        "updateRequirement": {
+          "help": "Ändert Wortlaut, Zielwert und Messgröße einer Anforderung.",
+          "params": {
+            "vocId": "Die id der Kundenstimme. Eine unbekannte id ist ein Fehler.",
+            "needId": "Die id des Bedürfnisses. Eine unbekannte id ist ein Fehler.",
+            "drvId": "Die id des Treibers. Eine unbekannte id ist ein Fehler.",
+            "reqId": "Die id der Anforderung, wie read() sie unter vocs[].needs[].drivers[].requirements führt. Eine unbekannte id ist ein Fehler.",
+            "text": "Der neue Wortlaut. Ein leerer Wortlaut ändert nichts und liefert false zurück; ein fehlendes Argument ist ein Fehler.",
+            "target": "Der neue Zielwert. Eine leere Zeichenkette löscht ihn; ein fehlendes Argument ist ein Fehler.",
+            "measure": "Die neue Messgröße. Eine leere Zeichenkette löscht sie; ein fehlendes Argument ist ein Fehler."
+          }
+        },
+        "deleteReq": {
+          "help": "Entfernt eine Anforderung.",
+          "params": {
+            "vocId": "Die id der Kundenstimme. Eine unbekannte id ist ein Fehler.",
+            "needId": "Die id des Bedürfnisses. Eine unbekannte id ist ein Fehler.",
+            "drvId": "Die id des Treibers. Eine unbekannte id ist ein Fehler.",
+            "reqId": "Die id der Anforderung. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "reorderNodes": {
+          "help": "Verschiebt einen Knoten an die Stelle eines Geschwisterknotens.",
+          "params": {
+            "kind": "Die Ebene, auf der verschoben wird: need, driver oder req. Jeder andere Wert ist ein Fehler.",
+            "scope": "Die Elternkette als Objekt: vocId für ein Bedürfnis, zusätzlich needId für einen Treiber, zusätzlich drvId für eine Anforderung. Eine unbekannte id darin ist ein Fehler.",
+            "fromId": "Die id des Knotens, der verschoben wird. Sie muss auf der genannten Ebene liegen; andernfalls ist es ein Fehler.",
+            "toId": "Die id des Geschwisterknotens, an dessen Stelle er rückt. Dieselbe id wie fromId lässt die Reihenfolge stehen und liefert false zurück; eine id außerhalb der Geschwisterliste ist ein Fehler."
+          }
+        },
+        "setBorderWidth": {
+          "help": "Setzt die Randstärke der Knoten.",
+          "params": {
+            "width": "Die Randstärke in Pixeln: 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5 oder 4. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "setNodeColor": {
+          "help": "Setzt die Farbe einer Knotenart.",
+          "params": {
+            "key": "Die Knotenart: voc, need, ctq, ctd, ctc oder req. Jeder andere Wert ist ein Fehler.",
+            "color": "Die Farbe als rgb(r,g,b) oder rgba(r,g,b,a). Jede andere Schreibweise ist ein Fehler."
+          }
+        }
+      },
+      "fields": {
+        "vocs": {
+          "help": "Die Kundenstimmen in Anlegereihenfolge. Je Stimme: id (damit sprechen die Aktionen sie an), text, source (woher sie stammt) und needs. Je Bedürfnis: id, text und drivers. Je Treiber: id, text, type (ctq, ctd oder ctc) und requirements. Je Anforderung: id, text, target (der Zielwert) und measure (die Messgröße)."
+        },
+        "activeVocId": {
+          "help": "Die id der Kundenstimme, deren Baum angezeigt wird; null heißt, keine ist ausgewählt."
+        },
+        "styles": {
+          "help": "Die Darstellung des Baums: borderWidth als Randstärke der Knoten in Pixeln von 0 bis 4 in Schritten von 0,5 und colors mit je einer Farbe als rgba(r,g,b,a) unter voc, need, ctq, ctd, ctc und req."
+        }
+      }
     },
     "kano": {
       "name": "Kano-Modell",
