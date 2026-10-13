@@ -24,9 +24,9 @@
               :placeholder="t('criterionPlaceholder')"
               maxlength="60"
               :disabled="atMax()"
-              @keydown.enter.prevent="addCriterion()">
+              @keydown.enter.prevent="addCriterionFromInput()">
             <button class="pairwise__btn pairwise__btn--accent" type="button"
-              data-action="add" :disabled="atMax()" @click="addCriterion()"
+              data-action="add" :disabled="atMax()" @click="addCriterionFromInput()"
               x-text="addBtnLabel()"></button>
           </div>
           <div class="pairwise__chips">

@@ -40,16 +40,40 @@ function computeScores(matrix) {
   });
 }
 
+/** Die erklärte Wertemenge von `setViewPhase` — die drei Reiter. */
+export const VIEW_PHASES = ['input', 'compare', 'results'];
+
 export class State {
-  /** @type {string[]} */
+  /**
+   * @type {string[]} die Kriterien in Eingabereihenfolge, adressiert über
+   *   ihre Nummer ab 0; höchstens 15, mindestens 3 für einen Vergleich
+   */
   criteria = [];
-  /** @type {number[][]} */
+  /**
+   * @type {number[][]} die Vergleichsmatrix, matrix[i][j] sagt, wie Kriterium
+   *   i gegen Kriterium j abgeschnitten hat: 1 gewonnen, 0.5 unentschieden,
+   *   0 verloren. Leer, solange kein Vergleich läuft; die Diagonale ist ohne
+   *   Bedeutung
+   */
   matrix = [];
-  /** @type {[number, number][]} */
+  /**
+   * @type {[number, number][]} die gemischte Folge der zu entscheidenden
+   *   Paare, je Eintrag die zwei Kriteriennummern. Leer, solange kein
+   *   Vergleich läuft
+   */
   pairs = [];
-  /** @type {number} */
+  /**
+   * @type {number} wie viele Paare schon entschieden sind — und damit der
+   *   Index des nächsten in `pairs`; gleich der Länge von `pairs` heißt
+   *   fertig
+   */
   currentPair = 0;
-  /** @type {'input'|'compare'|'results'} */
+  /**
+   * @type {'input'|'compare'|'results'} der angezeigte Reiter: input
+   *   (Kriterien erfassen), compare (Paare entscheiden) oder results
+   *   (Rangfolge und Matrix). Persistiert, gehört also zum gespeicherten
+   *   Projekt
+   */
   viewPhase = 'input';
 
   // ── Raw derived getters ──
@@ -161,9 +185,7 @@ export class State {
       s.pairs = d.pairs.map((p) => (Array.isArray(p) ? p.slice() : []));
     }
     if (Number.isInteger(d.currentPair)) s.currentPair = d.currentPair;
-    if (d.viewPhase === 'input' || d.viewPhase === 'compare' || d.viewPhase === 'results') {
-      s.viewPhase = d.viewPhase;
-    }
+    if (VIEW_PHASES.includes(d.viewPhase)) s.viewPhase = d.viewPhase;
     return s;
   }
 }

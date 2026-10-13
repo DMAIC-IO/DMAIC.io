@@ -3810,77 +3810,122 @@ export const AGENT_REGISTRY = {
     }
   },
   "pairwise-comparison": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:init",
-      "unmarked_method:contentClass",
-      "unmarked_method:tabClass",
-      "unmarked_method:goToTab",
-      "unmarked_method:atMax",
-      "unmarked_method:chipNum",
-      "unmarked_method:addBtnLabel",
-      "unmarked_method:emptyHintText",
-      "unmarked_method:maxReachedText",
-      "unmarked_method:startLabel",
-      "unmarked_method:isStartReady",
-      "unmarked_method:addCriterion",
-      "unmarked_method:removeCriterion",
-      "unmarked_method:startComparison",
-      "unmarked_method:curPair",
-      "unmarked_method:leftName",
-      "unmarked_method:rightName",
-      "unmarked_method:tieLabel",
-      "unmarked_method:backLabel",
-      "unmarked_method:progressStyle",
-      "unmarked_method:progressText",
-      "unmarked_method:chooseLeft",
-      "unmarked_method:chooseRight",
-      "unmarked_method:tieCurrent",
-      "unmarked_method:backToInput",
-      "unmarked_method:compareKey",
-      "unmarked_method:medalClass",
-      "unmarked_method:rankDelay",
-      "unmarked_method:rankBarStyle",
-      "unmarked_method:rankScore",
-      "unmarked_method:scoreFmt",
-      "unmarked_method:matrixCellClass",
-      "unmarked_method:matrixCellText",
-      "unmarked_method:cellTitle",
-      "unmarked_method:cellClick",
-      "unmarked_method:legendWinText",
-      "unmarked_method:legendTieText",
-      "unmarked_method:legendLoseText",
-      "unmarked_method:exportCSV",
-      "unmarked_method:exportJSON",
-      "unmarked_method:copyResults"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "addCriterion": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der Name des Kriteriums; Leerzeichen am Rand fallen weg"
+          }
+        ],
+        "returns": "string",
+        "help": "Hängt ein Kriterium an die Liste an."
+      },
+      "removeCriterion": {
+        "params": [
+          {
+            "name": "i",
+            "type": "number",
+            "optional": false,
+            "help": "die Nummer des Kriteriums, von 0 an gezählt"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt ein Kriterium. Ein laufender Vergleich wird dadurch ungültig: Matrix, Paarfolge und Fortschritt gehen zurück auf leer."
+      },
+      "startComparison": {
+        "params": [],
+        "returns": "boolean",
+        "help": "Startet den Vergleich: baut die Matrix und die gemischte Paarfolge und wechselt in die Phase `compare`."
+      },
+      "setViewPhase": {
+        "params": [
+          {
+            "name": "phase",
+            "type": "string",
+            "optional": false,
+            "help": "der Reiter"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Setzt den angezeigten Reiter."
+      },
+      "chooseLeft": {
+        "params": [],
+        "returns": "boolean",
+        "help": "Entscheidet das anstehende Paar für sein erstes Kriterium und rückt einen Schritt vor; nach dem letzten Paar wechselt die Phase auf `results`. Welches Paar anstehend ist, sagt `pairs[currentPair]`."
+      },
+      "chooseRight": {
+        "params": [],
+        "returns": "boolean",
+        "help": "Entscheidet das anstehende Paar für sein zweites Kriterium und rückt einen Schritt vor; nach dem letzten Paar wechselt die Phase auf `results`."
+      },
+      "tieCurrent": {
+        "params": [],
+        "returns": "boolean",
+        "help": "Erklärt das anstehende Paar für unentschieden (je 0.5) und rückt einen Schritt vor."
+      },
+      "cycleCell": {
+        "params": [
+          {
+            "name": "i",
+            "type": "number",
+            "optional": false,
+            "help": "die Nummer des Kriteriums der Zeile, von 0 an gezählt"
+          },
+          {
+            "name": "j",
+            "type": "number",
+            "optional": false,
+            "help": "die Nummer des Kriteriums der Spalte, von 0 an gezählt"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Geht die Bewertung einer Matrixzelle einen Schritt weiter: 0 zu 0.5, 0.5 zu 1, 1 zurück zu 0. Die Gegenzelle wird mitgeführt."
+      }
+    },
     "fields": {
       "criteria": {
         "type": "string[]",
-        "help": "",
+        "help": "die Kriterien in Eingabereihenfolge, adressiert über ihre Nummer ab 0; höchstens 15, mindestens 3 für einen Vergleich",
         "bulk": false
       },
       "matrix": {
         "type": "number[][]",
-        "help": "",
+        "help": "die Vergleichsmatrix, matrix[i][j] sagt, wie Kriterium i gegen Kriterium j abgeschnitten hat: 1 gewonnen, 0.5 unentschieden, 0 verloren. Leer, solange kein Vergleich läuft; die Diagonale ist ohne Bedeutung",
         "bulk": false
       },
       "pairs": {
         "type": "[number, number][]",
-        "help": "",
+        "help": "die gemischte Folge der zu entscheidenden Paare, je Eintrag die zwei Kriteriennummern. Leer, solange kein Vergleich läuft",
         "bulk": false
       },
       "currentPair": {
         "type": "number",
-        "help": "",
+        "help": "wie viele Paare schon entschieden sind — und damit der Index des nächsten in `pairs`; gleich der Länge von `pairs` heißt fertig",
         "bulk": false
       },
       "viewPhase": {
         "type": "'input'|'compare'|'results'",
-        "help": "",
+        "help": "der angezeigte Reiter: input (Kriterien erfassen), compare (Paare entscheiden) oder results (Rangfolge und Matrix). Persistiert, gehört also zum gespeicherten Projekt",
         "bulk": false
       }
     }
@@ -6915,4 +6960,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":17};
+export const AGENT_COVERAGE = {"total":74,"available":18};

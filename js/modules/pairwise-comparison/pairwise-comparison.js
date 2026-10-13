@@ -3,10 +3,20 @@
  * createModule + Alpine view layer. Business logic lives in the State model.
  *
  * DMAIC phase: Analyze
+ *
+ * @agent  Vollständig über das Viewmodel steuerbar: Kriterien anlegen und
+ *   entfernen, den Vergleich starten, jedes Paar entscheiden, eine Zelle der
+ *   Matrix nachträglich ändern und den angezeigten Reiter wechseln. Der
+ *   Oberfläche bleiben nur die Ausgabe (CSV, JSON, Zwischenablage) und die
+ *   Tastenkürzel.
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State, MAX_CRITERIA, MIN_CRITERIA } from './pairwise-comparison-model.js';
+import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireIndex } from '../../core/agent/agent-argcheck.js';
+import {
+  State, MAX_CRITERIA, MIN_CRITERIA, VIEW_PHASES,
+} from './pairwise-comparison-model.js';
 
 /**
  * Trigger a client-side file download. This builds a transient download anchor,
@@ -34,11 +44,14 @@ export default createModule({
   Model: State,
   data(module, _t) {
     return {
+      ...agentReadMixin(module),
+
       // ── transient UI state (not persisted) ──
       inputValue: '',
 
       // Mirror legacy behavior: focus the criterion input when the input phase
       // is shown (runs on mount and after every setState/loadExample rebuild).
+      /** @noagent lifecycle, kein Zustandsweg */
       init() {
         this.$nextTick(() => {
           if (this.model.viewPhase === 'input') {
@@ -48,7 +61,9 @@ export default createModule({
       },
 
       // ── phase / tabs ──
+      /** @noagent view transform */
       contentClass() { return `pairwise__content--${  this.model.viewPhase}`; },
+      /** @noagent view transform */
       tabClass(i) {
         const active = ['input', 'compare', 'results'].indexOf(this.model.viewPhase);
         const cls = [];
@@ -58,50 +73,179 @@ export default createModule({
         if (i === 2 && !this.model.resultsReachable) cls.push('pairwise__tab--disabled');
         return cls.join(' ');
       },
+      /**
+       * @noagent Reiterklick der Oberfläche; die Phase geht durch
+       *   `setViewPhase`, das die Erreichbarkeit selbst prüft.
+       */
       goToTab(name) {
-        if (name === 'input') this.model.viewPhase = 'input';
-        else if (name === 'compare' && this.model.compareReachable) this.model.viewPhase = 'compare';
-        else if (name === 'results' && this.model.resultsReachable) this.model.viewPhase = 'results';
+        if (VIEW_PHASES.includes(name)) this.setViewPhase(name);
       },
 
       // ── input phase ──
+      /** @noagent view transform */
       atMax() { return this.model.criteria.length >= MAX_CRITERIA; },
+      /** @noagent view transform */
       chipNum(i) { return String(i + 1).padStart(2, '0'); },
+      /** @noagent view transform */
       addBtnLabel() { return `+ ${  _t('addBtn')}`; },
+      /** @noagent view transform */
       emptyHintText() { return _t('emptyHint', { n: MIN_CRITERIA }); },
+      /** @noagent view transform */
       maxReachedText() { return _t('maxReached', { n: MAX_CRITERIA }); },
+      /** @noagent view transform */
       startLabel() {
         const n = this.model.criteria.length;
         return n < MIN_CRITERIA
           ? _t('startBtnNeed', { n: MIN_CRITERIA - n })
           : _t('startBtnReady', { n: this.model.pairCount });
       },
-      /** @returns {boolean} true once enough criteria exist to start — the state in which the start button carries the send-to icon. */
+      /**
+       * @returns {boolean} true once enough criteria exist to start — the state in which the start button carries the send-to icon.
+       * @noagent view transform
+       */
       isStartReady() { return this.model.criteria.length >= MIN_CRITERIA; },
-      addCriterion() {
-        const status = this.model.addCriterion(this.inputValue);
+      /**
+       * @noagent liest den Eingabepuffer der Oberfläche aus; der Text geht
+       *   durch `addCriterion`, und eine Doppelung bekommt hier ihren
+       *   Hinweis.
+       */
+      addCriterionFromInput() {
+        const status = this.addCriterion(this.inputValue);
         this.inputValue = '';
         if (status === 'duplicate') module._context.notify(_t('duplicateWarning'));
       },
-      removeCriterion(i) { this.model.removeCriterion(i); },
-      startComparison() { this.model.startComparison(); },
+
+      /**
+       * Hängt ein Kriterium an die Liste an.
+       * @agent
+       * @param {string} text der Name des Kriteriums; Leerzeichen am Rand
+       *   fallen weg
+       * @returns {string} `'ok'`, wenn das Kriterium angelegt wurde;
+       *   `'empty'` bei leerem Text, `'duplicate'` bei einem Namen, der
+       *   schon in der Liste steht, `'max'` wenn schon 15 Kriterien erfasst
+       *   sind — alle drei sind Absagen, keine Fehler
+       */
+      addCriterion(text) {
+        return this.model.addCriterion(text);
+      },
+
+      /**
+       * Entfernt ein Kriterium. Ein laufender Vergleich wird dadurch
+       * ungültig: Matrix, Paarfolge und Fortschritt gehen zurück auf leer.
+       * @agent
+       * @param {number} i die Nummer des Kriteriums, von 0 an gezählt
+       * @returns {void}
+       * @throws {Error} wenn `i` kein Kriterium bezeichnet
+       */
+      removeCriterion(i) {
+        requireIndex('i', i, this.model.criteria.length - 1);
+        this.model.removeCriterion(i);
+      },
+
+      /**
+       * Startet den Vergleich: baut die Matrix und die gemischte Paarfolge
+       * und wechselt in die Phase `compare`.
+       * @agent
+       * @returns {boolean} true wenn der Vergleich gestartet wurde, false
+       *   wenn weniger als drei Kriterien erfasst sind — das ist eine
+       *   Absage, kein Fehler
+       */
+      startComparison() {
+        return this.model.startComparison();
+      },
+
+      /**
+       * Setzt den angezeigten Reiter.
+       * @agent
+       * @param {string} phase der Reiter
+       * @returns {boolean} true wenn gewechselt wurde, false wenn der Reiter
+       *   im aktuellen Lauf nicht erreichbar ist (die Oberfläche sperrt ihn
+       *   dann ebenfalls) — das ist eine Absage, kein Fehler
+       * @throws {Error} wenn `phase` keiner der drei Reiter ist
+       */
+      setViewPhase(phase) {
+        requireEnum('phase', phase, VIEW_PHASES);
+        if (phase === 'compare' && !this.model.compareReachable) return false;
+        if (phase === 'results' && !this.model.resultsReachable) return false;
+        this.model.viewPhase = phase;
+        return true;
+      },
 
       // ── compare phase ──
+      /** @noagent view transform */
       curPair() { return this.model.pairs[this.model.currentPair] || [0, 0]; },
+      /** @noagent view transform */
       leftName() { return this.model.criteria[this.curPair()[0]] ?? ''; },
+      /** @noagent view transform */
       rightName() { return this.model.criteria[this.curPair()[1]] ?? ''; },
+      /** @noagent view transform */
       tieLabel() { return `= ${  _t('tie')}`; },
+      /** @noagent view transform */
       backLabel() { return _t('backToInput'); },
+      /** @noagent view transform */
       progressStyle() {
         const total = this.model.pairs.length;
         const pct = total > 0 ? (this.model.currentPair / total) * 100 : 0;
         return `width:${  pct  }%`;
       },
+      /** @noagent view transform */
       progressText() { return `${this.model.currentPair  } / ${  this.model.pairs.length}`; },
-      chooseLeft() { const [a, b] = this.curPair(); this.model.choose(a, b); },
-      chooseRight() { const [a, b] = this.curPair(); this.model.choose(b, a); },
-      tieCurrent() { const [a, b] = this.curPair(); this.model.chooseTie(a, b); },
-      backToInput() { this.model.viewPhase = 'input'; },
+      /**
+       * Entscheidet das anstehende Paar für sein erstes Kriterium und rückt
+       * einen Schritt vor; nach dem letzten Paar wechselt die Phase auf
+       * `results`. Welches Paar anstehend ist, sagt `pairs[currentPair]`.
+       * @agent
+       * @returns {boolean} true wenn eine Entscheidung vermerkt wurde, false
+       *   wenn kein Paar mehr aussteht — das ist eine Absage, kein Fehler
+       */
+      chooseLeft() {
+        if (!this.model.compareReachable) return false;
+        const [a, b] = this.curPair();
+        this.model.choose(a, b);
+        return true;
+      },
+
+      /**
+       * Entscheidet das anstehende Paar für sein zweites Kriterium und rückt
+       * einen Schritt vor; nach dem letzten Paar wechselt die Phase auf
+       * `results`.
+       * @agent
+       * @returns {boolean} true wenn eine Entscheidung vermerkt wurde, false
+       *   wenn kein Paar mehr aussteht — das ist eine Absage, kein Fehler
+       */
+      chooseRight() {
+        if (!this.model.compareReachable) return false;
+        const [a, b] = this.curPair();
+        this.model.choose(b, a);
+        return true;
+      },
+
+      /**
+       * Erklärt das anstehende Paar für unentschieden (je 0.5) und rückt
+       * einen Schritt vor.
+       * @agent
+       * @returns {boolean} true wenn eine Entscheidung vermerkt wurde, false
+       *   wenn kein Paar mehr aussteht — das ist eine Absage, kein Fehler
+       */
+      tieCurrent() {
+        if (!this.model.compareReachable) return false;
+        const [a, b] = this.curPair();
+        this.model.chooseTie(a, b);
+        return true;
+      },
+
+      // `backToInput` bleibt der Weg des Knopfes und ist KEIN eigener
+      // Katalogeintrag: sein ganzer Inhalt ist `setViewPhase('input')`, und
+      // ein zweiter agentensichtbarer Weg zu demselben Feld wäre ein
+      // redundanter Eintrag mit genau einer Zuweisungsstelle weniger.
+      // Dasselbe Verhältnis wie `toggleMatrix` zu `setShowMatrix` in
+      // `triz-contradiction-matrix`.
+      /**
+       * @noagent Knopfhandler der Oberfläche; die Phase geht durch
+       *   `setViewPhase`.
+       */
+      backToInput() { this.setViewPhase('input'); },
+      /** @noagent DOM event handler — Tastaturbehandlung der Oberfläche */
       compareKey(e) {
         if (this.model.viewPhase !== 'compare') return;
         const tag = (document.activeElement && document.activeElement.tagName) || '';
@@ -113,17 +257,23 @@ export default createModule({
       },
 
       // ── results phase ──
+      /** @noagent view transform */
       medalClass(pos) {
         return pos < 3 ? `pairwise__rank-item--${  ['gold', 'silver', 'bronze'][pos]}` : '';
       },
+      /** @noagent view transform */
       rankDelay(pos) { return `animation-delay:${  pos * 0.05  }s`; },
+      /** @noagent view transform */
       rankBarStyle(score) {
         const m = this.model.maxScore;
         const pct = m > 0 ? (score / m) * 100 : 0;
         return `width:${  pct  }%`;
       },
+      /** @noagent view transform */
       rankScore(score) { return score.toFixed(1); },
+      /** @noagent view transform */
       scoreFmt(i) { return this.model.scores[i].toFixed(1); },
+      /** @noagent view transform */
       matrixCellClass(i, j) {
         if (i === j) return 'pairwise__matrix-cell--diag';
         const v = this.model.matrix[i][j];
@@ -132,14 +282,49 @@ export default createModule({
             : 'pairwise__matrix-cell--lose';
         return `pairwise__matrix-cell--editable ${  cls}`;
       },
+      /** @noagent view transform */
       matrixCellText(i, j) { return i === j ? '—' : String(this.model.matrix[i][j]); },
+      /** @noagent view transform */
       cellTitle(i, j) { return i === j ? null : _t('matrixCellHint'); },
-      cellClick(i, j) { if (i !== j) this.model.cycleCell(i, j); },
+      /**
+       * @noagent Zellenklick der Oberfläche; der Wert geht durch
+       *   `cycleCell`.
+       */
+      cellClick(i, j) { this.cycleCell(i, j); },
+
+      /**
+       * Geht die Bewertung einer Matrixzelle einen Schritt weiter: 0 zu 0.5,
+       * 0.5 zu 1, 1 zurück zu 0. Die Gegenzelle wird mitgeführt.
+       * @agent
+       * @param {number} i die Nummer des Kriteriums der Zeile, von 0 an gezählt
+       * @param {number} j die Nummer des Kriteriums der Spalte, von 0 an gezählt
+       * @returns {boolean} true wenn die Zelle geändert wurde, false auf der
+       *   Diagonale (ein Kriterium gegen sich selbst ist keine Bewertung)
+       *   und solange kein Vergleich gestartet ist — beides sind Absagen,
+       *   keine Fehler
+       * @throws {Error} wenn `i` oder `j` kein Kriterium bezeichnet
+       */
+      cycleCell(i, j) {
+        const last = this.model.criteria.length - 1;
+        requireIndex('i', i, last);
+        requireIndex('j', j, last);
+        if (i === j) return false;
+        if (this.model.matrix.length === 0) return false;
+        this.model.cycleCell(i, j);
+        return true;
+      },
+      /** @noagent view transform */
       legendWinText() { return `1 = ${  _t('legendWin')}`; },
+      /** @noagent view transform */
       legendTieText() { return `0.5 = ${  _t('legendTie')}`; },
+      /** @noagent view transform */
       legendLoseText() { return `0 = ${  _t('legendLose')}`; },
 
       // ── exports ──
+      /**
+       * @noagent gibt eine Datei bzw. die Zwischenablage aus; ein Agent
+       *   liest den Zustand über `read()`.
+       */
       exportCSV() {
         const n = this.model.criteria.length;
         if (n === 0) return;
@@ -155,6 +340,10 @@ export default createModule({
         downloadFile(csv, 'pairwise-comparison.csv', 'text/csv');
         module._context.notify(_t('exportedCSV'));
       },
+      /**
+       * @noagent gibt eine Datei bzw. die Zwischenablage aus; ein Agent
+       *   liest den Zustand über `read()`.
+       */
       exportJSON() {
         const n = this.model.criteria.length;
         if (n === 0) return;
@@ -174,6 +363,10 @@ export default createModule({
         downloadFile(JSON.stringify(out, null, 2), 'pairwise-comparison.json', 'application/json');
         module._context.notify(_t('exportedJSON'));
       },
+      /**
+       * @noagent gibt eine Datei bzw. die Zwischenablage aus; ein Agent
+       *   liest den Zustand über `read()`.
+       */
       copyResults() {
         const n = this.model.criteria.length;
         if (n === 0) return;

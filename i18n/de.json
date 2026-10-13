@@ -2749,6 +2749,63 @@
     "pairwise-comparison": {
       "name": "Paarweiser Vergleich",
       "description": "Priorisierung von Kriterien durch systematischen paarweisen Vergleich. Jedes Kriterium wird gegen jedes andere bewertet.",
+      "whenToUse": "Wenn aus einer Handvoll gleichrangiger Kriterien eine begründete Rangfolge werden soll und ein direktes Punktevergeben zu willkürlich wäre — jedes Kriterium wird einmal gegen jedes andere gestellt, drei bis fünfzehn Kriterien; nicht, wenn die Kriterien gegen MEHRERE Ergebnisgrößen gewichtet werden sollen, dafür ist die C&E-Matrix da.",
+      "actions": {
+        "addCriterion": {
+          "help": "Hängt ein Kriterium an die Liste an.",
+          "params": {
+            "text": "Der Name des Kriteriums; Leerzeichen am Rand fallen weg. Der Aufruf liefert ok, wenn das Kriterium angelegt wurde, sonst empty (leerer Text), duplicate (der Name steht schon in der Liste) oder max (es sind schon 15 Kriterien erfasst) — alle drei sind Absagen, keine Fehler."
+          }
+        },
+        "removeCriterion": {
+          "help": "Entfernt ein Kriterium. Ein laufender Vergleich wird dadurch ungültig: Matrix, Paarfolge und Fortschritt gehen zurück auf leer.",
+          "params": {
+            "i": "Die Nummer des Kriteriums, von 0 an gezählt. Eine Nummer, die kein Kriterium bezeichnet, ist ein Fehler."
+          }
+        },
+        "startComparison": {
+          "help": "Startet den Vergleich: baut die Matrix und die gemischte Paarfolge und wechselt in die Phase compare. Unter drei Kriterien liefert der Aufruf false — eine Absage, kein Fehler."
+        },
+        "chooseLeft": {
+          "help": "Entscheidet das anstehende Paar für sein erstes Kriterium und rückt einen Schritt vor; nach dem letzten Paar wechselt die Phase auf results. Welches Paar anstehend ist, steht in pairs[currentPair]. Steht kein Paar mehr aus, liefert der Aufruf false."
+        },
+        "chooseRight": {
+          "help": "Entscheidet das anstehende Paar für sein zweites Kriterium und rückt einen Schritt vor; nach dem letzten Paar wechselt die Phase auf results. Steht kein Paar mehr aus, liefert der Aufruf false."
+        },
+        "tieCurrent": {
+          "help": "Erklärt das anstehende Paar für unentschieden — beide Kriterien bekommen 0.5 — und rückt einen Schritt vor. Steht kein Paar mehr aus, liefert der Aufruf false."
+        },
+        "setViewPhase": {
+          "help": "Setzt den angezeigten Reiter.",
+          "params": {
+            "phase": "Der Reiter: input (Kriterien erfassen), compare (Paare entscheiden) oder results (Rangfolge und Matrix). Ein Wert daneben ist ein Fehler. compare braucht einen laufenden Vergleich, results einen abgeschlossenen — ist der Reiter nicht erreichbar, liefert der Aufruf false, so wie die Oberfläche ihn dann sperrt."
+          }
+        },
+        "cycleCell": {
+          "help": "Geht die Bewertung einer Matrixzelle einen Schritt weiter: 0 zu 0.5, 0.5 zu 1, 1 zurück zu 0. Die Gegenzelle wird mitgeführt — derselbe Weg wie der Zellenklick in der Matrix.",
+          "params": {
+            "i": "Die Nummer des Kriteriums der Zeile, von 0 an gezählt. Eine Nummer, die kein Kriterium bezeichnet, ist ein Fehler.",
+            "j": "Die Nummer des Kriteriums der Spalte, von 0 an gezählt. Eine Nummer, die kein Kriterium bezeichnet, ist ein Fehler."
+          }
+        }
+      },
+      "fields": {
+        "criteria": {
+          "help": "Die Kriterien in Eingabereihenfolge, adressiert über ihre Nummer ab 0. Höchstens 15; ein Vergleich braucht mindestens 3."
+        },
+        "matrix": {
+          "help": "Die Vergleichsmatrix: matrix[i][j] sagt, wie Kriterium i gegen Kriterium j abgeschnitten hat — 1 gewonnen, 0.5 unentschieden, 0 verloren. Leer, solange kein Vergleich läuft; die Diagonale ist ohne Bedeutung."
+        },
+        "pairs": {
+          "help": "Die gemischte Folge der zu entscheidenden Paare, je Eintrag die zwei Kriteriennummern. Leer, solange kein Vergleich läuft; bei n Kriterien sind es n·(n−1)/2 Paare."
+        },
+        "currentPair": {
+          "help": "Wie viele Paare schon entschieden sind — und damit der Index des nächsten in pairs. Gleich der Länge von pairs heißt fertig."
+        },
+        "viewPhase": {
+          "help": "Der angezeigte Reiter: input (Kriterien erfassen), compare (Paare entscheiden) oder results (Rangfolge und Matrix). Ein persistierter Anzeigezustand — er gehört zum gespeicherten Projekt."
+        }
+      },
       "tabInput": "Kriterien",
       "tabCompare": "Vergleich",
       "tabResults": "Ergebnis",

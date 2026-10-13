@@ -2745,6 +2745,63 @@
     "pairwise-comparison": {
       "name": "Pairwise Comparison",
       "description": "Prioritize criteria through systematic pairwise comparison. Every criterion is judged against every other.",
+      "whenToUse": "When a handful of equally ranked criteria needs a justified order and handing out points directly would be too arbitrary — every criterion is put against every other one, three to fifteen criteria; not when the criteria are to be weighted against SEVERAL outputs, which is what the C&E matrix is for.",
+      "actions": {
+        "addCriterion": {
+          "help": "Appends a criterion to the list.",
+          "params": {
+            "text": "The name of the criterion; surrounding whitespace is dropped. The call returns ok when the criterion was added, otherwise empty (empty text), duplicate (the name is already in the list) or max (15 criteria are already recorded) — all three are refusals, not errors."
+          }
+        },
+        "removeCriterion": {
+          "help": "Removes a criterion. A running comparison becomes invalid: matrix, pair order and progress go back to empty.",
+          "params": {
+            "i": "The number of the criterion, counted from 0. A number that names no criterion is an error."
+          }
+        },
+        "startComparison": {
+          "help": "Starts the comparison: builds the matrix and the shuffled pair order and switches to the compare phase. With fewer than three criteria the call returns false — a refusal, not an error."
+        },
+        "chooseLeft": {
+          "help": "Decides the pending pair in favour of its first criterion and advances one step; after the last pair the phase switches to results. Which pair is pending is in pairs[currentPair]. With no pair left the call returns false."
+        },
+        "chooseRight": {
+          "help": "Decides the pending pair in favour of its second criterion and advances one step; after the last pair the phase switches to results. With no pair left the call returns false."
+        },
+        "tieCurrent": {
+          "help": "Declares the pending pair a tie — both criteria get 0.5 — and advances one step. With no pair left the call returns false."
+        },
+        "setViewPhase": {
+          "help": "Sets the displayed tab.",
+          "params": {
+            "phase": "The tab: input (record criteria), compare (decide pairs) or results (ranking and matrix). Any other value is an error. compare needs a running comparison, results a finished one — if the tab is not reachable the call returns false, just as the UI locks it."
+          }
+        },
+        "cycleCell": {
+          "help": "Advances the rating of a matrix cell by one step: 0 to 0.5, 0.5 to 1, 1 back to 0. The opposite cell travels along — the same path as clicking the cell in the matrix.",
+          "params": {
+            "i": "The number of the row's criterion, counted from 0. A number that names no criterion is an error.",
+            "j": "The number of the column's criterion, counted from 0. A number that names no criterion is an error."
+          }
+        }
+      },
+      "fields": {
+        "criteria": {
+          "help": "The criteria in input order, addressed by their number from 0. At most 15; a comparison needs at least 3."
+        },
+        "matrix": {
+          "help": "The comparison matrix: matrix[i][j] says how criterion i fared against criterion j — 1 won, 0.5 tied, 0 lost. Empty while no comparison is running; the diagonal has no meaning."
+        },
+        "pairs": {
+          "help": "The shuffled order of the pairs to decide, each entry the two criterion numbers. Empty while no comparison is running; with n criteria there are n·(n−1)/2 pairs."
+        },
+        "currentPair": {
+          "help": "How many pairs are already decided — and therefore the index of the next one in pairs. Equal to the length of pairs means finished."
+        },
+        "viewPhase": {
+          "help": "The displayed tab: input (record criteria), compare (decide pairs) or results (ranking and matrix). A persisted display state — it belongs to the saved project."
+        }
+      },
       "tabInput": "Criteria",
       "tabCompare": "Comparison",
       "tabResults": "Result",
