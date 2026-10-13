@@ -1,6 +1,6 @@
 /**
  * D.Mike — Unit Converter Module (unit-converter.js)
- * Data phase: converts units across 18 categories + timezone converter.
+ * Data phase: converts units across 19 categories + timezone converter.
  *
  * Architecture: createModule + Alpine (CSP). Business logic & state live in
  * unit-converter-model.js; this file holds only view-logic (data-Fn).
@@ -167,12 +167,16 @@ export default createModule({
         return this.model.toUnitKeys();
       },
       /**
-       * @noagent Reaktion der Oberfläche auf die Einheitenauswahl: das
-       * Auswahlfeld schreibt `fromUnit` selbst, hier wird nur die
-       * Zieleinheit nachgezogen. Der Setzer `setFromUnit` tut dasselbe.
+       * @noagent Reaktion der Oberfläche auf die Einheitenauswahl. Das
+       * Auswahlfeld hat `fromUnit` selbst schon geschrieben; der Aufruf
+       * geht trotzdem durch die Senke, damit `toUnit` genau eine
+       * Zuweisungsstelle hat und die in einer `@agent`-Methode liegt
+       * (Ruling 56). Die Zuweisung an `fromUnit` ist dabei folgenlos, und
+       * werfen kann es nicht: das Feld bietet nur Einheiten der aktiven
+       * Größenart an.
        */
       onFromChange() {
-        this.model.ensureToCompatible(this.model.toUnit);
+        this.setFromUnit(this.model.fromUnit);
       },
 
       // ── Conversion display ────────────────────────────────
