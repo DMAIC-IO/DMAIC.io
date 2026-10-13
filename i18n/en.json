@@ -1595,6 +1595,45 @@
     "sipoc": {
       "name": "SIPOC",
       "description": "Supplier-Input-Process-Output-Customer diagram",
+      "whenToUse": "When the boundaries of a process need clarifying — who supplies, what goes in, which steps run, what comes out and who receives it; not for the flow itself with its decisions and branches, which is what a flowchart is for.",
+      "actions": {
+        "addItem": {
+          "help": "Appends an entry to one of the five SIPOC columns.",
+          "params": {
+            "colKey": "The column: suppliers, inputs, process, outputs or customers. Any other value is an error.",
+            "text": "The entry; surrounding whitespace is dropped. An empty text adds nothing and returns -1 — that is a refusal, not an error."
+          }
+        },
+        "setItem": {
+          "help": "Replaces the entry at a position of a SIPOC column.",
+          "params": {
+            "colKey": "The column: suppliers, inputs, process, outputs or customers. Any other value is an error.",
+            "idx": "The position of the entry in the column, counted from 0. A position where the column holds no entry is an error.",
+            "text": "The new entry. An empty text is rejected and leaves the old entry in place (returns false) — exactly as in the edit dialog."
+          }
+        },
+        "removeItem": {
+          "help": "Removes the entry at a position of a SIPOC column.",
+          "params": {
+            "colKey": "The column: suppliers, inputs, process, outputs or customers. Any other value is an error.",
+            "idx": "The position of the entry in the column, counted from 0. A position where the column holds no entry is an error."
+          }
+        },
+        "moveItem": {
+          "help": "Moves an entry within its column or into another column.",
+          "params": {
+            "sourceCol": "The column the entry comes from: suppliers, inputs, process, outputs or customers. Any other value is an error.",
+            "sourceIdx": "The position of the entry in the source column, counted from 0. A position without an entry is an error.",
+            "targetCol": "The column the entry goes to: suppliers, inputs, process, outputs or customers. Any other value is an error.",
+            "dropIdx": "The insert position in the target column, counted from 0; the length of the target column means \"at the end\". A value beyond that is an error."
+          }
+        }
+      },
+      "fields": {
+        "columns": {
+          "help": "The entries of each SIPOC column in display order, addressed as columns[column]. The five column keys are suppliers, inputs, process, outputs and customers."
+        }
+      },
       "col": {
         "suppliers": "Suppliers",
         "inputs": "Inputs",

@@ -11,6 +11,11 @@
  * the UI lives in sipoc.html.
  *
  * Spec: docs/modules/SIPOC.md
+ *
+ * @agent  Vollständig über das Viewmodel steuerbar: die Einträge aller fünf
+ *   SIPOC-Spalten — anlegen, ändern, entfernen und zwischen den Spalten
+ *   verschieben. Der Oberfläche bleiben nur der Dateidownload, der
+ *   Bearbeiten-Dialog und die Maus-Gestik des Verschiebens.
  */
 
 import { createModule } from '../../core/template-module.js';
@@ -19,7 +24,9 @@ import {
   exportColumnsAsPNG, exportColumnsAsSVG,
 } from '../../core/export-utils.js';
 import { draggableList } from '../../ui/draggable-list.js';
-import { State, COLUMNS } from './sipoc-model.js';
+import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireIndex } from '../../core/agent/agent-argcheck.js';
+import { State, COLUMNS, COL_KEYS } from './sipoc-model.js';
 
 const COL_COLORS = {
   suppliers: '#f59e0b',
@@ -55,6 +62,8 @@ export default createModule({
 
   data(module, _t) {
     return {
+      ...agentReadMixin(module),
+
       // ── Static view data ──────────────────────────────────────
       columns: COLUMNS,
 
@@ -67,7 +76,7 @@ export default createModule({
         draggingClass: 'sipoc__item--dragging',
         // Regular function: draggableList invokes it with `this` = Alpine component.
         onReorder({ sourceGroup, sourceIdx, targetGroup, targetIdx }) {
-          this.model.moveItem(sourceGroup, sourceIdx, targetGroup, targetIdx);
+          this.moveItem(sourceGroup, sourceIdx, targetGroup, targetIdx);
         },
       }),
 
@@ -76,33 +85,129 @@ export default createModule({
       editDraft: { text: '' },
 
       // ── View transforms ───────────────────────────────────────
+      /** @noagent view transform */
       dragOverClass(colKey) {
         return this.isDragOver(colKey) ? 'sipoc__column--drag-over' : '';
       },
 
       // ── Add handlers ──────────────────────────────────────────
+      /**
+       * @noagent packt ein Tastaturereignis des Eingabefeldes aus; der Text
+       *   geht durch `addItem`.
+       */
       addOnEnter(colKey, event) {
         this._add(colKey, event.target);
       },
+      /**
+       * @noagent packt ein Klickereignis des Plusknopfes aus; der Text geht
+       *   durch `addItem`.
+       */
       addOnClick(colKey, event) {
         const row = event.target.closest('.sipoc__add-row');
         const input = row?.querySelector('.sipoc__add-input');
         if (input) this._add(colKey, input);
       },
       _add(colKey, inputEl) {
-        if (this.model.addItem(colKey, inputEl.value)) {
+        if (this.addItem(colKey, inputEl.value) >= 0) {
           inputEl.value = '';
           inputEl.focus();
         }
       },
 
       // ── Delete handler ────────────────────────────────────────
+      /**
+       * @noagent Oberflächenhandler am Löschknopf; er stoppt die
+       *   Ereignisblase und ruft `removeItem`.
+       */
       deleteItem(colKey, idx, event) {
         event?.stopPropagation?.();
-        this.model.deleteItem(colKey, idx);
+        this.removeItem(colKey, idx);
+      },
+
+      // ── Zustands-Sinks: ein benannter Setter je Gestalt (E2, E7) ──
+      // Die Spaltenschlüssel sind eine feste Fünfer-Menge; `COL_KEYS` im
+      // Model ist deren einzige Quelle, damit Prüfmeldung und
+      // Persistenzform nicht auseinanderlaufen.
+      // Zu den Indexgrenzen: ein Eintrag, den es GIBT, liegt in
+      // `0..length-1` — darum wird `length - 1` übergeben. `dropIdx` von
+      // `moveItem` ist dagegen ein EINFÜGEPUNKT, dort heißt `length` „ans
+      // Ende" und wird selbst übergeben (`requireIndex` erlaubt die
+      // Obergrenze einschließlich).
+
+      /**
+       * Hängt einen Eintrag an eine SIPOC-Spalte an.
+       * @agent
+       * @param {string} colKey die Spalte
+       * @param {string} text der Eintrag
+       * @returns {number} der Index des neuen Eintrags, oder -1 wenn der
+       *   Text leer war und nichts angelegt wurde
+       * @throws {Error} wenn `colKey` keine der fünf SIPOC-Spalten ist
+       */
+      addItem(colKey, text) {
+        requireEnum('colKey', colKey, COL_KEYS);
+        if (!this.model.addItem(colKey, text)) return -1;
+        return this.model.columns[colKey].length - 1;
+      },
+
+      /**
+       * Ersetzt den Eintrag an einer Position einer SIPOC-Spalte.
+       * @agent
+       * @param {string} colKey die Spalte
+       * @param {number} idx die Position des Eintrags, von 0 an gezählt
+       * @param {string} text der neue Eintrag
+       * @returns {boolean} true wenn der Eintrag geändert wurde, false wenn
+       *   der Text leer war und der alte Eintrag stehen blieb
+       * @throws {Error} wenn `colKey` keine der fünf SIPOC-Spalten ist oder
+       *   die Spalte an `idx` keinen Eintrag hat
+       */
+      setItem(colKey, idx, text) {
+        requireEnum('colKey', colKey, COL_KEYS);
+        requireIndex('idx', idx, this.model.columns[colKey].length - 1);
+        return this.model.setItem(colKey, idx, text);
+      },
+
+      /**
+       * Entfernt den Eintrag an einer Position einer SIPOC-Spalte.
+       * @agent
+       * @param {string} colKey die Spalte
+       * @param {number} idx die Position des Eintrags, von 0 an gezählt
+       * @returns {boolean} true wenn ein Eintrag entfernt wurde
+       * @throws {Error} wenn `colKey` keine der fünf SIPOC-Spalten ist oder
+       *   die Spalte an `idx` keinen Eintrag hat
+       */
+      removeItem(colKey, idx) {
+        requireEnum('colKey', colKey, COL_KEYS);
+        requireIndex('idx', idx, this.model.columns[colKey].length - 1);
+        return this.model.deleteItem(colKey, idx);
+      },
+
+      /**
+       * Verschiebt einen Eintrag innerhalb einer Spalte oder in eine andere.
+       * @agent
+       * @param {string} sourceCol die Spalte, aus der der Eintrag kommt
+       * @param {number} sourceIdx seine Position dort, von 0 an gezählt
+       * @param {string} targetCol die Spalte, in die er soll
+       * @param {number} dropIdx die Einfügeposition in der Zielspalte; deren
+       *   Länge heißt „ans Ende“
+       * @returns {boolean} true wenn der Eintrag verschoben wurde
+       * @throws {Error} wenn eine der beiden Spalten keine der fünf
+       *   SIPOC-Spalten ist, `sourceIdx` dort keinen Eintrag bezeichnet oder
+       *   `dropIdx` hinter dem Ende der Zielspalte liegt
+       */
+      moveItem(sourceCol, sourceIdx, targetCol, dropIdx) {
+        requireEnum('sourceCol', sourceCol, COL_KEYS);
+        requireEnum('targetCol', targetCol, COL_KEYS);
+        requireIndex('sourceIdx', sourceIdx, this.model.columns[sourceCol].length - 1);
+        requireIndex('dropIdx', dropIdx, this.model.columns[targetCol].length);
+        return this.model.moveItem(sourceCol, sourceIdx, targetCol, dropIdx);
       },
 
       // ── Edit handler (borrows the in-template Alpine form) ─────
+      /**
+       * @noagent öffnet den Bearbeiten-Dialog — ein Agent darf keinen
+       *   Dialog öffnen, er blockierte den Stapel; der Text geht durch
+       *   `setItem`.
+       */
       async editItem(colKey, idx, event) {
         event?.stopPropagation?.();
         const colLabel = this.t(`col.${  colKey}`);
@@ -116,7 +221,7 @@ export default createModule({
               const ta = el.querySelector('[data-field="text"]');
               if (ta) { ta.focus(); ta.selectionStart = ta.value.length; }
             },
-            onConfirm: () => this.model.setItem(colKey, idx, this.editDraft.text),
+            onConfirm: () => this.setItem(colKey, idx, this.editDraft.text),
           },
         );
       },

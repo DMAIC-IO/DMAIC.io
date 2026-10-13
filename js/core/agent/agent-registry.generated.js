@@ -5051,21 +5051,118 @@ export const AGENT_REGISTRY = {
     }
   },
   "sipoc": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:dragOverClass",
-      "unmarked_method:addOnEnter",
-      "unmarked_method:addOnClick",
-      "unmarked_method:deleteItem",
-      "unmarked_method:editItem"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "addItem": {
+        "params": [
+          {
+            "name": "colKey",
+            "type": "string",
+            "optional": false,
+            "help": "die Spalte"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der Eintrag"
+          }
+        ],
+        "returns": "number",
+        "help": "Hängt einen Eintrag an eine SIPOC-Spalte an."
+      },
+      "setItem": {
+        "params": [
+          {
+            "name": "colKey",
+            "type": "string",
+            "optional": false,
+            "help": "die Spalte"
+          },
+          {
+            "name": "idx",
+            "type": "number",
+            "optional": false,
+            "help": "die Position des Eintrags, von 0 an gezählt"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der neue Eintrag"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Ersetzt den Eintrag an einer Position einer SIPOC-Spalte."
+      },
+      "removeItem": {
+        "params": [
+          {
+            "name": "colKey",
+            "type": "string",
+            "optional": false,
+            "help": "die Spalte"
+          },
+          {
+            "name": "idx",
+            "type": "number",
+            "optional": false,
+            "help": "die Position des Eintrags, von 0 an gezählt"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Entfernt den Eintrag an einer Position einer SIPOC-Spalte."
+      },
+      "moveItem": {
+        "params": [
+          {
+            "name": "sourceCol",
+            "type": "string",
+            "optional": false,
+            "help": "die Spalte, aus der der Eintrag kommt"
+          },
+          {
+            "name": "sourceIdx",
+            "type": "number",
+            "optional": false,
+            "help": "seine Position dort, von 0 an gezählt"
+          },
+          {
+            "name": "targetCol",
+            "type": "string",
+            "optional": false,
+            "help": "die Spalte, in die er soll"
+          },
+          {
+            "name": "dropIdx",
+            "type": "number",
+            "optional": false,
+            "help": "die Einfügeposition in der Zielspalte; deren Länge heißt „ans Ende“"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Verschiebt einen Eintrag innerhalb einer Spalte oder in eine andere."
+      }
+    },
     "fields": {
       "columns": {
         "type": "Record<string, string[]>",
-        "help": "",
+        "help": "je SIPOC-Spalte die Einträge in Anzeigereihenfolge, adressiert als columns[spalte]. Die fünf Spaltenschlüssel sind suppliers (Lieferanten), inputs (Eingaben), process (Prozessschritte), outputs (Ergebnisse) und customers (Kunden).",
         "bulk": false
       }
     }
@@ -6569,4 +6666,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":14};
+export const AGENT_COVERAGE = {"total":74,"available":15};

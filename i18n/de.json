@@ -1595,6 +1595,45 @@
     "sipoc": {
       "name": "SIPOC",
       "description": "Supplier-Input-Process-Output-Customer Diagramm",
+      "whenToUse": "Wenn die Grenzen eines Prozesses geklärt werden sollen — wer liefert, was geht hinein, welche Schritte laufen, was kommt heraus und wer empfängt es; nicht für den Ablauf selbst mit Entscheidungen und Verzweigungen, dafür ist ein Flussdiagramm da.",
+      "actions": {
+        "addItem": {
+          "help": "Hängt einen Eintrag an eine der fünf SIPOC-Spalten an.",
+          "params": {
+            "colKey": "Die Spalte: suppliers (Lieferanten), inputs (Eingaben), process (Prozessschritte), outputs (Ergebnisse) oder customers (Kunden). Ein Wert daneben ist ein Fehler.",
+            "text": "Der Eintrag; Leerzeichen am Rand fallen weg. Ein leerer Text legt nichts an und liefert -1 zurück — das ist eine Absage, kein Fehler."
+          }
+        },
+        "setItem": {
+          "help": "Ersetzt den Eintrag an einer Position einer SIPOC-Spalte.",
+          "params": {
+            "colKey": "Die Spalte: suppliers (Lieferanten), inputs (Eingaben), process (Prozessschritte), outputs (Ergebnisse) oder customers (Kunden). Ein Wert daneben ist ein Fehler.",
+            "idx": "Die Position des Eintrags in der Spalte, von 0 an gezählt. Eine Position, an der die Spalte keinen Eintrag hat, ist ein Fehler.",
+            "text": "Der neue Eintrag. Ein leerer Text wird abgelehnt und lässt den alten Eintrag stehen (Rückgabe false) — genau wie im Bearbeiten-Dialog."
+          }
+        },
+        "removeItem": {
+          "help": "Entfernt den Eintrag an einer Position einer SIPOC-Spalte.",
+          "params": {
+            "colKey": "Die Spalte: suppliers (Lieferanten), inputs (Eingaben), process (Prozessschritte), outputs (Ergebnisse) oder customers (Kunden). Ein Wert daneben ist ein Fehler.",
+            "idx": "Die Position des Eintrags in der Spalte, von 0 an gezählt. Eine Position, an der die Spalte keinen Eintrag hat, ist ein Fehler."
+          }
+        },
+        "moveItem": {
+          "help": "Verschiebt einen Eintrag innerhalb seiner Spalte oder in eine andere Spalte.",
+          "params": {
+            "sourceCol": "Die Spalte, aus der der Eintrag kommt: suppliers, inputs, process, outputs oder customers. Ein Wert daneben ist ein Fehler.",
+            "sourceIdx": "Die Position des Eintrags in der Quellspalte, von 0 an gezählt. Eine Position ohne Eintrag ist ein Fehler.",
+            "targetCol": "Die Spalte, in die der Eintrag soll: suppliers, inputs, process, outputs oder customers. Ein Wert daneben ist ein Fehler.",
+            "dropIdx": "Die Einfügeposition in der Zielspalte, von 0 an gezählt; die Länge der Zielspalte heißt „ans Ende“. Ein Wert dahinter ist ein Fehler."
+          }
+        }
+      },
+      "fields": {
+        "columns": {
+          "help": "Je SIPOC-Spalte die Einträge in Anzeigereihenfolge, adressiert als columns[spalte]. Die fünf Spaltenschlüssel sind suppliers (Lieferanten), inputs (Eingaben), process (Prozessschritte), outputs (Ergebnisse) und customers (Kunden)."
+        }
+      },
       "col": {
         "suppliers": "Suppliers",
         "inputs": "Inputs",

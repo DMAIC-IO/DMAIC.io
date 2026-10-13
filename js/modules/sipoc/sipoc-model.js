@@ -30,7 +30,12 @@ export class State {
   static VERSION = '1.0';
   static ID = 'sipoc';
 
-  /** @type {Record<string, string[]>} */
+  /**
+   * @type {Record<string, string[]>} je SIPOC-Spalte die Einträge in
+   *   Anzeigereihenfolge, adressiert als columns[spalte]. Die fünf
+   *   Spaltenschlüssel sind suppliers (Lieferanten), inputs (Eingaben),
+   *   process (Prozessschritte), outputs (Ergebnisse) und customers (Kunden).
+   */
   columns = emptyColumns();
 
   /** @returns {boolean} true if any column holds at least one entry */
