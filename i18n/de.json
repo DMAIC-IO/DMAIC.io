@@ -6657,7 +6657,7 @@
           "help": "Setzt die erreichte Stufe eines Trends. Liefert false, wenn der Trend keine Stufenskala hat (uneven ist qualitativ) — dann ist nichts passiert.",
           "params": {
             "trendId": "Die id des Trends: aggregation, dynamism, scale, automation, completeness, controllability, matching oder uneven. Eine unbekannte id ist ein Fehler.",
-            "stage": "Die erreichte Stufe, 0-basiert. Außerhalb der Skala dieses Trends ist sie ein Fehler; die Skalenlänge steht in der Trendbeschreibung der Oberfläche."
+            "stage": "Die erreichte Stufe, 0-basiert. Außerhalb der Skala dieses Trends ist sie ein Fehler. dynamism hat fünf Stufen (0 bis 4); aggregation, scale, automation, completeness, controllability und matching haben je vier (0 bis 3); uneven hat keine."
           }
         },
         "setTrendNotes": {

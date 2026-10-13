@@ -63,7 +63,6 @@ export default createModule({
 
       /**
        * Setzt das betrachtete System, dessen Entwicklung eingeordnet wird.
-       * Schreibt dasselbe Feld wie das Systemeingabefeld der Vorlage.
        * @agent
        * @param {string} text Name oder kurze Beschreibung des Systems
        * @returns {void}

@@ -2,6 +2,7 @@
   <div class="module-container__body triz-res__body">
     <section class="triz-res__topbar">
       <label class="triz-res__label" x-text="t('systemLabel')"></label>
+      <!-- zweiter Codeweg zu `model.system`; Sink: `setSystem()` -->
       <input class="field triz-res__system-input" type="text" data-role="system"
         x-model="model.system"
         :placeholder="t('systemPlaceholder')">

@@ -59,8 +59,8 @@ export default createModule({
             // einer Meldung, die die gültigen Schlüssel nennt.
 
             /**
-             * Setzt das betrachtete System. Schreibt dasselbe Feld wie
-             * `x-model="model.system"` in der Vorlage.
+             * Setzt das betrachtete System, dessen Ressourcen aufgenommen
+             * werden.
              * @agent
              * @param {string} text Name oder kurze Beschreibung des Systems
              * @returns {void}

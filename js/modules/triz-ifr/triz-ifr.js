@@ -40,8 +40,8 @@ export default createModule({
       // eine Fehlermeldung über einen `name`-Parameter zu verschieben.
 
       /**
-       * Setzt das betrachtete System. Schreibt dasselbe Feld wie
-       * `x-model="model.system"` in der Vorlage.
+       * Setzt das betrachtete System, auf das sich alle
+       * IFR-Formulierungen beziehen.
        * @agent
        * @param {string} text Name oder kurze Beschreibung des Systems
        * @returns {void}
@@ -50,8 +50,6 @@ export default createModule({
 
       /**
        * Setzt die nützliche Funktion, die das System erfüllen soll.
-       * Schreibt dasselbe Feld wie `x-model="model.usefulFunction"` in der
-       * Vorlage.
        * @agent
        * @param {string} text die nützliche Funktion
        * @returns {void}
@@ -60,8 +58,7 @@ export default createModule({
 
       /**
        * Setzt die schädliche Wirkung oder den Kompromiss, den das System
-       * heute mitbringt. Schreibt dasselbe Feld wie
-       * `x-model="model.harmfulEffect"` in der Vorlage.
+       * heute mitbringt.
        * @agent
        * @param {string} text die schädliche Wirkung
        * @returns {void}
@@ -70,8 +67,7 @@ export default createModule({
 
       /**
        * Setzt die IFR-1-Formulierung: das System bleibt, die schädliche
-       * Wirkung verschwindet ohne neuen Mechanismus. Schreibt dasselbe Feld
-       * wie `x-model="model.ifr1"` in der Vorlage.
+       * Wirkung verschwindet ohne neuen Mechanismus.
        * @agent
        * @param {string} text die IFR-1-Formulierung
        * @returns {void}
@@ -80,8 +76,7 @@ export default createModule({
 
       /**
        * Setzt die IFR-2-Formulierung: die nützliche Funktion entsteht, ohne
-       * dass das System überhaupt existiert. Schreibt dasselbe Feld wie
-       * `x-model="model.ifr2"` in der Vorlage.
+       * dass das System überhaupt existiert.
        * @agent
        * @param {string} text die IFR-2-Formulierung
        * @returns {void}
@@ -89,9 +84,8 @@ export default createModule({
       setIfr2(text) { this.model.ifr2 = String(text ?? ''); },
 
       /**
-       * Setzt die IFR-3-Formulierung: eine vorhandene Ressource aus dem
-       * Supersystem übernimmt die Funktion. Schreibt dasselbe Feld wie
-       * `x-model="model.ifr3"` in der Vorlage.
+       * Setzt die IFR-3-Formulierung: eine bereits vorhandene Ressource aus
+       * dem Supersystem übernimmt die Funktion.
        * @agent
        * @param {string} text die IFR-3-Formulierung
        * @returns {void}
@@ -100,8 +94,7 @@ export default createModule({
 
       /**
        * Setzt die Liste der Hindernisse, die das System heute vom IFR
-       * trennen. Schreibt dasselbe Feld wie `x-model="model.obstacles"` in
-       * der Vorlage.
+       * trennen — sie ist die eigentliche Aufgabenliste.
        * @agent
        * @param {string} text die Hindernisse, eines je Zeile
        * @returns {void}

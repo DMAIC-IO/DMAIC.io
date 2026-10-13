@@ -6653,7 +6653,7 @@
           "help": "Sets the stage a trend has reached. Returns false if the trend has no stage scale (uneven is qualitative) — nothing happens then.",
           "params": {
             "trendId": "The id of the trend: aggregation, dynamism, scale, automation, completeness, controllability, matching or uneven. An unknown id is an error.",
-            "stage": "The stage reached, zero-based. Outside this trend's scale it is an error; the scale length is shown in the trend description in the UI."
+            "stage": "The stage reached, zero-based. Outside this trend's scale it is an error. dynamism has five stages (0 to 4); aggregation, scale, automation, completeness, controllability and matching have four each (0 to 3); uneven has none."
           }
         },
         "setTrendNotes": {

@@ -6,6 +6,7 @@
 
       <div class="triz-ifr__field">
         <label class="triz-ifr__label" for="triz-ifr-system" x-text="t('systemLabel')"></label>
+        <!-- zweiter Codeweg zu `model.system`; Sink: `setSystem()` -->
         <input id="triz-ifr-system" class="field" type="text" data-role="system"
           x-model="model.system"
           :placeholder="t('systemPlaceholder')">
@@ -13,6 +14,7 @@
 
       <div class="triz-ifr__field">
         <label class="triz-ifr__label" for="triz-ifr-useful" x-text="t('usefulLabel')"></label>
+        <!-- zweiter Codeweg zu `model.usefulFunction`; Sink: `setUsefulFunction()` -->
         <input id="triz-ifr-useful" class="field" type="text" data-role="useful"
           x-model="model.usefulFunction"
           :placeholder="t('usefulPlaceholder')">
@@ -20,6 +22,7 @@
 
       <div class="triz-ifr__field">
         <label class="triz-ifr__label" for="triz-ifr-harmful" x-text="t('harmfulLabel')"></label>
+        <!-- zweiter Codeweg zu `model.harmfulEffect`; Sink: `setHarmfulEffect()` -->
         <input id="triz-ifr-harmful" class="field" type="text" data-role="harmful"
           x-model="model.harmfulEffect"
           :placeholder="t('harmfulPlaceholder')">
@@ -36,6 +39,7 @@
           <span class="triz-ifr__level-title" x-text="t('ifr1Title')"></span>
         </div>
         <p class="triz-ifr__level-desc" x-text="t('ifr1Desc')"></p>
+        <!-- zweiter Codeweg zu `model.ifr1`; Sink: `setIfr1()` -->
         <textarea class="field triz-ifr__textarea" rows="2" data-role="ifr1"
           :placeholder="t('ifr1Placeholder')"
           x-model="model.ifr1"></textarea>
@@ -47,6 +51,7 @@
           <span class="triz-ifr__level-title" x-text="t('ifr2Title')"></span>
         </div>
         <p class="triz-ifr__level-desc" x-text="t('ifr2Desc')"></p>
+        <!-- zweiter Codeweg zu `model.ifr2`; Sink: `setIfr2()` -->
         <textarea class="field triz-ifr__textarea" rows="2" data-role="ifr2"
           :placeholder="t('ifr2Placeholder')"
           x-model="model.ifr2"></textarea>
@@ -58,6 +63,7 @@
           <span class="triz-ifr__level-title" x-text="t('ifr3Title')"></span>
         </div>
         <p class="triz-ifr__level-desc" x-text="t('ifr3Desc')"></p>
+        <!-- zweiter Codeweg zu `model.ifr3`; Sink: `setIfr3()` -->
         <textarea class="field triz-ifr__textarea" rows="2" data-role="ifr3"
           :placeholder="t('ifr3Placeholder')"
           x-model="model.ifr3"></textarea>
@@ -67,6 +73,7 @@
     <section class="triz-ifr__section">
       <h3 class="triz-ifr__section-title" x-text="t('obstaclesHeading')"></h3>
       <p class="triz-ifr__hint" x-text="t('obstaclesHint')"></p>
+      <!-- zweiter Codeweg zu `model.obstacles`; Sink: `setObstacles()` -->
       <textarea class="field triz-ifr__textarea triz-ifr__obstacles" rows="4" data-role="obstacles"
         :placeholder="t('obstaclesPlaceholder')"
         x-model="model.obstacles"></textarea>

@@ -5413,7 +5413,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt das betrachtete System, dessen Entwicklung eingeordnet wird. Schreibt dasselbe Feld wie das Systemeingabefeld der Vorlage."
+        "help": "Setzt das betrachtete System, dessen Entwicklung eingeordnet wird."
       },
       "setTrendStage": {
         "params": [
@@ -5493,7 +5493,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt das betrachtete System. Schreibt dasselbe Feld wie `x-model=\"model.system\"` in der Vorlage."
+        "help": "Setzt das betrachtete System, auf das sich alle IFR-Formulierungen beziehen."
       },
       "setUsefulFunction": {
         "params": [
@@ -5505,7 +5505,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt die nützliche Funktion, die das System erfüllen soll. Schreibt dasselbe Feld wie `x-model=\"model.usefulFunction\"` in der Vorlage."
+        "help": "Setzt die nützliche Funktion, die das System erfüllen soll."
       },
       "setHarmfulEffect": {
         "params": [
@@ -5517,7 +5517,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt die schädliche Wirkung oder den Kompromiss, den das System heute mitbringt. Schreibt dasselbe Feld wie `x-model=\"model.harmfulEffect\"` in der Vorlage."
+        "help": "Setzt die schädliche Wirkung oder den Kompromiss, den das System heute mitbringt."
       },
       "setIfr1": {
         "params": [
@@ -5529,7 +5529,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt die IFR-1-Formulierung: das System bleibt, die schädliche Wirkung verschwindet ohne neuen Mechanismus. Schreibt dasselbe Feld wie `x-model=\"model.ifr1\"` in der Vorlage."
+        "help": "Setzt die IFR-1-Formulierung: das System bleibt, die schädliche Wirkung verschwindet ohne neuen Mechanismus."
       },
       "setIfr2": {
         "params": [
@@ -5541,7 +5541,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt die IFR-2-Formulierung: die nützliche Funktion entsteht, ohne dass das System überhaupt existiert. Schreibt dasselbe Feld wie `x-model=\"model.ifr2\"` in der Vorlage."
+        "help": "Setzt die IFR-2-Formulierung: die nützliche Funktion entsteht, ohne dass das System überhaupt existiert."
       },
       "setIfr3": {
         "params": [
@@ -5553,7 +5553,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt die IFR-3-Formulierung: eine vorhandene Ressource aus dem Supersystem übernimmt die Funktion. Schreibt dasselbe Feld wie `x-model=\"model.ifr3\"` in der Vorlage."
+        "help": "Setzt die IFR-3-Formulierung: eine bereits vorhandene Ressource aus dem Supersystem übernimmt die Funktion."
       },
       "setObstacles": {
         "params": [
@@ -5565,7 +5565,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt die Liste der Hindernisse, die das System heute vom IFR trennen. Schreibt dasselbe Feld wie `x-model=\"model.obstacles\"` in der Vorlage."
+        "help": "Setzt die Liste der Hindernisse, die das System heute vom IFR trennen — sie ist die eigentliche Aufgabenliste."
       }
     },
     "fields": {
@@ -5695,7 +5695,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt das betrachtete System. Schreibt dasselbe Feld wie `x-model=\"model.system\"` in der Vorlage."
+        "help": "Setzt das betrachtete System, dessen Ressourcen aufgenommen werden."
       },
       "setCellNotes": {
         "params": [
