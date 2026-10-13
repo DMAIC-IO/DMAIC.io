@@ -6288,6 +6288,78 @@
     "triz-physical-contradiction": {
       "name": "Physikalischer Widerspruch (TRIZ)",
       "description": "Ein Parameter soll A und ¬A sein — Auflösung über vier Separationsprinzipien",
+      "whenToUse": "Wenn ein einzelner Parameter gleichzeitig zwei entgegengesetzte Werte haben müsste und der Widerspruch durch Trennung in Zeit, Raum, Bedingung oder Systemebene aufgelöst werden soll — nicht für einen Widerspruch zwischen zwei verschiedenen Merkmalen, dafür ist die Widerspruchsmatrix da.",
+      "actions": {
+        "setParameter": {
+          "help": "Setzt den technischen Parameter, der die beiden gegensätzlichen Anforderungen tragen muss.",
+          "params": {
+            "text": "Name des Parameters, zum Beispiel Flügellänge oder Härte; ein leerer Text löscht das Feld."
+          }
+        },
+        "setRequirementA": {
+          "help": "Setzt die Anforderung A — die eine Seite des Widerspruchs.",
+          "params": {
+            "text": "Die Anforderung A samt ihrer Begründung; ein leerer Text löscht das Feld."
+          }
+        },
+        "setRequirementNotA": {
+          "help": "Setzt die Anforderung Nicht-A — die entgegengesetzte Seite des Widerspruchs.",
+          "params": {
+            "text": "Die entgegengesetzte Anforderung samt ihrer Begründung; ein leerer Text löscht das Feld."
+          }
+        },
+        "setProblemNote": {
+          "help": "Setzt die Problemnotiz: warum beide Anforderungen zugleich unmöglich sind.",
+          "params": {
+            "text": "Die Problemnotiz; ein leerer Text löscht sie."
+          }
+        },
+        "setSolutionNote": {
+          "help": "Setzt die Lösungsnotiz zum gewählten Trennungsprinzip.",
+          "params": {
+            "text": "Die Lösungsnotiz; ein leerer Text löscht sie."
+          }
+        },
+        "setPrincipleNote": {
+          "help": "Setzt die Notiz zu einem der vier Trennungsprinzipien.",
+          "params": {
+            "key": "Das Trennungsprinzip: time (Zeit), space (Raum), condition (Bedingung) oder system (Systemebene). Ein Wert daneben ist ein Fehler.",
+            "text": "Die Notiz zu diesem Prinzip; ein leerer Text löscht sie."
+          }
+        },
+        "selectPrinciple": {
+          "help": "Wählt das Trennungsprinzip, mit dem der Widerspruch aufgelöst wird; erst danach ist eine Lösungsnotiz sinnvoll.",
+          "params": {
+            "key": "Das Trennungsprinzip: time (Zeit), space (Raum), condition (Bedingung) oder system (Systemebene). Ein Wert daneben ist ein Fehler."
+          }
+        },
+        "swap": {
+          "help": "Tauscht die beiden gegensätzlichen Anforderungen gegeneinander."
+        }
+      },
+      "fields": {
+        "parameter": {
+          "help": "Der technische Parameter, der die beiden gegensätzlichen Anforderungen tragen muss."
+        },
+        "requirementA": {
+          "help": "Die Anforderung A — die eine Seite des Widerspruchs."
+        },
+        "requirementNotA": {
+          "help": "Die Anforderung Nicht-A — die entgegengesetzte Seite des Widerspruchs."
+        },
+        "problemNote": {
+          "help": "Die Problemnotiz: warum beide Anforderungen zugleich unmöglich sind."
+        },
+        "principleNotes": {
+          "help": "Je Trennungsprinzip eine Notiz, adressiert als principleNotes[prinzip]. Die vier Schlüssel sind time (Zeit), space (Raum), condition (Bedingung) und system (Systemebene)."
+        },
+        "selectedPrinciple": {
+          "help": "Das gewählte Trennungsprinzip (time, space, condition oder system) oder null, solange keines gewählt ist."
+        },
+        "solutionNote": {
+          "help": "Die Lösungsnotiz zum gewählten Trennungsprinzip."
+        }
+      },
       "subtitle": "Formuliere einen Parameter, der gleichzeitig zwei entgegengesetzte Werte annehmen muss, und löse den Widerspruch über Zeit, Raum, Bedingung oder Systemebene.",
       "problemHeading": "Widerspruch",
       "parameterLabel": "Parameter (ein messbares Attribut)",

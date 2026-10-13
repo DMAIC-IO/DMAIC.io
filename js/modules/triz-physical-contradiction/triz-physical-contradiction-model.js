@@ -1,4 +1,8 @@
-const PRINCIPLES = ['time', 'space', 'condition', 'system'];
+/**
+ * @type {readonly string[]} die vier Trennungsprinzipien des physikalischen
+ *   Widerspruchs, in Anzeigereihenfolge
+ */
+export const PRINCIPLES = ['time', 'space', 'condition', 'system'];
 
 function emptyPrincipleNotes() {
   return { time: '', space: '', condition: '', system: '' };
@@ -9,12 +13,25 @@ export class State {
   static ID = 'triz-physical-contradiction';
 
   _schema = { name: State.ID, version: State.VERSION };
+  /** @type {string} der technische Parameter, der die beiden gegensätzlichen Anforderungen trägt */
   parameter = '';
+
+  /** @type {string} die Anforderung A — die eine Seite des Widerspruchs */
   requirementA = '';
+
+  /** @type {string} die Anforderung Nicht-A — die entgegengesetzte Seite des Widerspruchs */
   requirementNotA = '';
+
+  /** @type {string} die Problemnotiz: warum beide Anforderungen zugleich unmöglich sind */
   problemNote = '';
+
+  /** @type {Record<string, string>} je Trennungsprinzip (time, space, condition, system) eine Notiz */
   principleNotes = emptyPrincipleNotes();
+
+  /** @type {string|null} das gewählte Trennungsprinzip (time, space, condition, system) oder null */
   selectedPrinciple = null;
+
+  /** @type {string} die Lösungsnotiz zum gewählten Trennungsprinzip */
   solutionNote = '';
 
   swap() {

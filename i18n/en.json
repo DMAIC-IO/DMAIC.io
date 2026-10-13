@@ -6284,6 +6284,78 @@
     "triz-physical-contradiction": {
       "name": "Physical Contradiction (TRIZ)",
       "description": "One parameter must be A and ¬A — resolution via four separation principles",
+      "whenToUse": "When a single parameter would have to hold two opposite values at the same time and the contradiction is to be resolved by separation in time, space, condition or system level — not for a contradiction between two different characteristics, which is what the contradiction matrix is for.",
+      "actions": {
+        "setParameter": {
+          "help": "Sets the technical parameter that has to carry both opposing requirements.",
+          "params": {
+            "text": "Name of the parameter, for example wing length or hardness; an empty text clears the field."
+          }
+        },
+        "setRequirementA": {
+          "help": "Sets requirement A — one side of the contradiction.",
+          "params": {
+            "text": "Requirement A together with its rationale; an empty text clears the field."
+          }
+        },
+        "setRequirementNotA": {
+          "help": "Sets requirement not-A — the opposite side of the contradiction.",
+          "params": {
+            "text": "The opposing requirement together with its rationale; an empty text clears the field."
+          }
+        },
+        "setProblemNote": {
+          "help": "Sets the problem note: why both requirements are impossible at the same time.",
+          "params": {
+            "text": "The problem note; an empty text clears it."
+          }
+        },
+        "setSolutionNote": {
+          "help": "Sets the solution note for the chosen separation principle.",
+          "params": {
+            "text": "The solution note; an empty text clears it."
+          }
+        },
+        "setPrincipleNote": {
+          "help": "Sets the note for one of the four separation principles.",
+          "params": {
+            "key": "The separation principle: time, space, condition or system (system level). Any other value is an error.",
+            "text": "The note for that principle; an empty text clears it."
+          }
+        },
+        "selectPrinciple": {
+          "help": "Chooses the separation principle that resolves the contradiction; only then does a solution note make sense.",
+          "params": {
+            "key": "The separation principle: time, space, condition or system (system level). Any other value is an error."
+          }
+        },
+        "swap": {
+          "help": "Swaps the two opposing requirements against each other."
+        }
+      },
+      "fields": {
+        "parameter": {
+          "help": "The technical parameter that has to carry both opposing requirements."
+        },
+        "requirementA": {
+          "help": "Requirement A — one side of the contradiction."
+        },
+        "requirementNotA": {
+          "help": "Requirement not-A — the opposite side of the contradiction."
+        },
+        "problemNote": {
+          "help": "The problem note: why both requirements are impossible at the same time."
+        },
+        "principleNotes": {
+          "help": "One note per separation principle, addressed as principleNotes[principle]. The four keys are time, space, condition and system (system level)."
+        },
+        "selectedPrinciple": {
+          "help": "The chosen separation principle (time, space, condition or system) or null while none is chosen."
+        },
+        "solutionNote": {
+          "help": "The solution note for the chosen separation principle."
+        }
+      },
       "subtitle": "State a parameter that must take two opposite values at the same time, then resolve the contradiction via time, space, condition or system level.",
       "problemHeading": "Contradiction",
       "parameterLabel": "Parameter (one measurable attribute)",

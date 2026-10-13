@@ -5607,62 +5607,153 @@ export const AGENT_REGISTRY = {
     }
   },
   "triz-physical-contradiction": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:principleNum",
-      "unmarked_method:principleIcon",
-      "unmarked_method:principleName",
-      "unmarked_method:principleQuestion",
-      "unmarked_method:principleExample",
-      "unmarked_method:principleSelectedClass",
-      "unmarked_method:chosenPrincipleName",
-      "unmarked_method:isChecked",
-      "unmarked_method:swap",
-      "unmarked_method:selectPrinciple",
-      "unmarked_method:principleNoteChanged",
-      "unreachable_write:parameter",
-      "unreachable_write:requirementA",
-      "unreachable_write:requirementNotA",
-      "unreachable_write:problemNote",
-      "unreachable_write:solutionNote"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "swap": {
+        "params": [],
+        "returns": "void",
+        "help": "Tauscht die beiden gegensätzlichen Anforderungen gegeneinander."
+      },
+      "selectPrinciple": {
+        "params": [
+          {
+            "name": "key",
+            "type": "string",
+            "optional": false,
+            "help": "Schlüssel des Trennungsprinzips"
+          }
+        ],
+        "returns": "void",
+        "help": "Wählt das Trennungsprinzip, mit dem der Widerspruch aufgelöst wird."
+      },
+      "setParameter": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "Name des Parameters"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den technischen Parameter, der die beiden gegensätzlichen Anforderungen trägt."
+      },
+      "setRequirementA": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die Anforderung A"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Anforderung A — die eine Seite des Widerspruchs."
+      },
+      "setRequirementNotA": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die Anforderung Nicht-A"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Anforderung Nicht-A — die entgegengesetzte Seite des Widerspruchs."
+      },
+      "setProblemNote": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die Problemnotiz"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Problemnotiz zum Widerspruch."
+      },
+      "setSolutionNote": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die Lösungsnotiz"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Lösungsnotiz zum gewählten Trennungsprinzip."
+      },
+      "setPrincipleNote": {
+        "params": [
+          {
+            "name": "key",
+            "type": "string",
+            "optional": false,
+            "help": "Schlüssel des Trennungsprinzips"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die Notiz zu diesem Prinzip"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Notiz zu einem der vier Trennungsprinzipien."
+      }
+    },
     "fields": {
       "parameter": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "der technische Parameter, der die beiden gegensätzlichen Anforderungen trägt",
         "bulk": false
       },
       "requirementA": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "die Anforderung A — die eine Seite des Widerspruchs",
         "bulk": false
       },
       "requirementNotA": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "die Anforderung Nicht-A — die entgegengesetzte Seite des Widerspruchs",
         "bulk": false
       },
       "problemNote": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "die Problemnotiz: warum beide Anforderungen zugleich unmöglich sind",
         "bulk": false
       },
       "principleNotes": {
-        "type": "any",
-        "help": "",
+        "type": "Record<string, string>",
+        "help": "je Trennungsprinzip (time, space, condition, system) eine Notiz",
         "bulk": false
       },
       "selectedPrinciple": {
-        "type": "any",
-        "help": "",
+        "type": "string|null",
+        "help": "das gewählte Trennungsprinzip (time, space, condition, system) oder null",
         "bulk": false
       },
       "solutionNote": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "die Lösungsnotiz zum gewählten Trennungsprinzip",
         "bulk": false
       }
     }
@@ -6238,4 +6329,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":10};
+export const AGENT_COVERAGE = {"total":74,"available":11};

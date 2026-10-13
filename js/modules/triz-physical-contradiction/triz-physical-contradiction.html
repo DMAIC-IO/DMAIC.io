@@ -6,6 +6,7 @@
       <div class="triz-pc__field">
         <label class="triz-pc__label" :for="paramId" x-text="t('parameterLabel')">
         </label>
+        <!-- zweiter Codeweg zu `model.parameter`; Sink: `setParameter()` -->
         <input class="field triz-pc__input" type="text" data-role="parameter"
           :id="paramId"
           x-model="model.parameter"
@@ -18,6 +19,7 @@
             <span class="triz-pc__dot triz-pc__dot--a"></span>
             <span x-text="t('requirementALabel')"></span>
           </label>
+          <!-- zweiter Codeweg zu `model.requirementA`; Sink: `setRequirementA()` -->
           <input class="field triz-pc__input" type="text" data-role="requirement-a"
             :id="reqAId"
             x-model="model.requirementA"
@@ -34,6 +36,7 @@
             <span class="triz-pc__dot triz-pc__dot--b"></span>
             <span x-text="t('requirementNotALabel')"></span>
           </label>
+          <!-- zweiter Codeweg zu `model.requirementNotA`; Sink: `setRequirementNotA()` -->
           <input class="field triz-pc__input" type="text" data-role="requirement-not-a"
             :id="reqBId"
             x-model="model.requirementNotA"
@@ -44,6 +47,7 @@
       <div class="triz-pc__field">
         <label class="triz-pc__label" :for="problemNoteId" x-text="t('problemNoteLabel')">
         </label>
+        <!-- zweiter Codeweg zu `model.problemNote`; Sink: `setProblemNote()` -->
         <textarea class="field triz-pc__textarea" rows="2" data-role="problem-note"
           :id="problemNoteId"
           x-model="model.problemNote"
@@ -92,6 +96,7 @@
         <span x-text="t('chosenPrinciple')"></span>:
         <strong x-text="chosenPrincipleName(model.selectedPrinciple)"></strong>
       </p>
+      <!-- zweiter Codeweg zu `model.solutionNote`; Sink: `setSolutionNote()` -->
       <textarea class="field triz-pc__textarea" rows="3" data-role="solution-note"
         :placeholder="t('solutionPlaceholder')"
         x-model="model.solutionNote"></textarea>
