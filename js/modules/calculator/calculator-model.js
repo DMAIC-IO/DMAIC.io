@@ -111,23 +111,26 @@ export class State {
   static ID = 'calculator';
 
   constructor() {
-    /** @type {'sci'|'stats'|'sixsigma'} */
+    /**
+     * @type {'sci'|'stats'|'sixsigma'} der aktive Rechenbereich: sci
+     *   wissenschaftlich, stats Statistik, sixsigma Prozessfähigkeit
+     */
     this.mode = 'sci';
-    /** @type {string} raw display expression */
+    /** @type {string} der eingegebene Ausdruck, so wie er in der Anzeige steht */
     this.expression = '';
-    /** @type {number|null} last evaluated numeric result */
+    /** @type {number|null} das Ergebnis der letzten Rechnung; null, solange keines vorliegt */
     this.lastResult = null;
-    /** @type {number} memory register */
+    /** @type {number} der Speicherwert; 0 heißt leer */
     this.memory = 0;
-    /** @type {'DEG'|'RAD'} */
+    /** @type {'DEG'|'RAD'} die Winkeleinheit der Trigonometrie: DEG Grad, RAD Radiant */
     this.angleMode = 'DEG';
-    /** @type {number[]} statistics dataset */
+    /** @type {number[]} die Werte des Statistikbereichs in Eingabereihenfolge */
     this.dataset = [];
-    /** @type {number[]} Six Sigma process dataset */
+    /** @type {number[]} die Werte des Prozessbereichs in Eingabereihenfolge */
     this.ssDataset = [];
-    /** @type {string} lower spec limit (raw input string) */
+    /** @type {string} die untere Spezifikationsgrenze als Text; leer heißt nicht gesetzt */
     this.lsl = '';
-    /** @type {string} upper spec limit (raw input string) */
+    /** @type {string} die obere Spezifikationsgrenze als Text; leer heißt nicht gesetzt */
     this.usl = '';
   }
 
@@ -166,18 +169,28 @@ export class State {
     this.lastResult = null;
   }
 
-  /** Toggle between DEG and RAD. */
-  toggleAngle() {
-    this.angleMode = this.angleMode === 'DEG' ? 'RAD' : 'DEG';
+  /** Die Winkeleinheit setzen. Einzige Zuweisungsstelle von `angleMode`. */
+  setAngleMode(m) {
+    this.angleMode = m;
   }
 
-  /** Store the current value (last result or evaluated expression) to memory. */
+  /** Zwischen DEG und RAD wechseln. */
+  toggleAngle() {
+    this.setAngleMode(this.angleMode === 'DEG' ? 'RAD' : 'DEG');
+  }
+
+  /** Den Speicherwert setzen. Einzige Zuweisungsstelle von `memory`. */
+  setMemory(v) {
+    this.memory = v;
+  }
+
+  /** Den angezeigten Wert (letztes Ergebnis oder Ausdruck) in den Speicher legen. */
   memStore() {
     if (this.lastResult !== null) {
-      this.memory = this.lastResult;
+      this.setMemory(this.lastResult);
     } else {
-      try { this.memory = evalExpression(this.expression, this.angleMode); }
-      catch { this.memory = 0; }
+      try { this.setMemory(evalExpression(this.expression, this.angleMode)); }
+      catch { this.setMemory(0); }
     }
   }
 
@@ -190,27 +203,47 @@ export class State {
 
   // ── Dataset management ─────────────────────────────────────
 
-  /** Parse the current expression and push to the stats dataset.
-   *  @returns {number|null} the pushed value, or null if invalid */
-  addDataPoint() {
-    const v = parseFloat(this.expression);
-    if (isNaN(v)) return null;
+  /**
+   * Eine Zahl an den Statistikdatensatz anhängen und den Ausdruck leeren.
+   * Einzige Zuweisungsstelle von `dataset` im Erfassungsweg.
+   * @param {number} v
+   * @returns {number} der angehängte Wert
+   */
+  addDataValue(v) {
     this.dataset.push(v);
     this.expression = '';
     return v;
   }
 
+  /** Den aktuellen Ausdruck als Zahl an den Statistikdatensatz anhängen.
+   *  @returns {number|null} der angehängte Wert, oder null bei keiner Zahl */
+  addDataPoint() {
+    const v = parseFloat(this.expression);
+    if (isNaN(v)) return null;
+    return this.addDataValue(v);
+  }
+
   removeLastData() { this.dataset.pop(); }
   clearData() { this.dataset = []; this.clearAll(); }
 
-  /** Parse the current expression and push to the Six Sigma dataset.
-   *  @returns {number|null} */
-  addSSDataPoint() {
-    const v = parseFloat(this.expression);
-    if (isNaN(v)) return null;
+  /**
+   * Eine Zahl an den Prozessdatensatz anhängen und den Ausdruck leeren.
+   * Einzige Zuweisungsstelle von `ssDataset` im Erfassungsweg.
+   * @param {number} v
+   * @returns {number} der angehängte Wert
+   */
+  addSSDataValue(v) {
     this.ssDataset.push(v);
     this.expression = '';
     return v;
+  }
+
+  /** Den aktuellen Ausdruck als Zahl an den Prozessdatensatz anhängen.
+   *  @returns {number|null} der angehängte Wert, oder null bei keiner Zahl */
+  addSSDataPoint() {
+    const v = parseFloat(this.expression);
+    if (isNaN(v)) return null;
+    return this.addSSDataValue(v);
   }
 
   removeLastSSData() { this.ssDataset.pop(); }

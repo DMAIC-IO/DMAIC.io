@@ -6917,7 +6917,138 @@
       "statSum": "Summe",
       "statCount": "Anzahl",
       "statSkewness": "Schiefe",
-      "statStdDev": "Std.Abw."
+      "statStdDev": "Std.Abw.",
+      "whenToUse": "Wenn eine Zahl, ein statistischer Kennwert oder eine Prozessfähigkeit schnell gerechnet werden soll, ohne dafür eine Datensammlung anzulegen — wissenschaftlich, als Lage- und Streuungsmaß über eine kurze Werteliste, oder als Cp/Cpk, Sigma-Niveau und DPMO aus Werten und Spezifikationsgrenzen; nicht für eine dauerhafte Auswertung über eine Datentabelle, dafür sind die Datensammlung, das Histogramm und die Prozessfähigkeitsanalyse da.",
+      "actions": {
+        "inputText": {
+          "help": "Hängt ein Zeichen oder eine Zahl an die Eingabezeile an.",
+          "params": {
+            "ch": "Ein Zeichen der Eingabezeile — eine Ziffer, ein Punkt, + - × ÷ ^ ( ) π oder e — oder eine Zahl in Dezimalschreibweise. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "inputFn": {
+          "help": "Hängt eine Funktion samt öffnender Klammer an die Eingabezeile an.",
+          "params": {
+            "fn": "Die Funktion mit öffnender Klammer, so wie das Tastenfeld sie schreibt: sin(, cos(, tan(, asin(, acos(, atan(, log(, ln(, sqrt(, cbrt(, exp( oder fact(. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "backspace": {
+          "help": "Löscht das letzte Zeichen der Eingabezeile."
+        },
+        "clear": {
+          "help": "Leert die Eingabezeile und das letzte Ergebnis."
+        },
+        "setAngleMode": {
+          "help": "Setzt die Winkeleinheit der trigonometrischen Funktionen.",
+          "params": {
+            "mode": "DEG rechnet in Grad, RAD in Radiant. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "memStore": {
+          "help": "Legt den angezeigten Wert in den Speicher — das letzte Ergebnis, sonst den gerechneten Wert der Eingabezeile."
+        },
+        "setMemory": {
+          "help": "Setzt den Speicherwert.",
+          "params": {
+            "value": "Der neue Speicherwert; 0 heißt leer. Ein Wert, der keine endliche Zahl ist, ist ein Fehler."
+          }
+        },
+        "memRecall": {
+          "help": "Hängt den Speicherwert an die Eingabezeile an."
+        },
+        "switchMode": {
+          "help": "Wechselt den Rechenbereich und leert die Eingabezeile.",
+          "params": {
+            "m": "sci rechnet wissenschaftlich, stats wertet den Statistikdatensatz aus, sixsigma den Prozessdatensatz. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "calculate": {
+          "help": "Rechnet die Eingabezeile aus und merkt das Ergebnis. Enthält sie keinen rechenbaren Ausdruck, bleibt das letzte Ergebnis stehen und der Aufruf liefert null."
+        },
+        "calcStat": {
+          "help": "Rechnet einen Kennwert über den Statistikdatensatz und merkt ihn als letztes Ergebnis. Ist der Datensatz leer, zu klein oder ohne Modalwert, liefert der Aufruf null.",
+          "params": {
+            "type": "Der Kennwert: mean (Mittelwert), median, mode (Modalwert), range (Spannweite), stdS und varS (Standardabweichung und Varianz der Stichprobe), stdP und varP (der Grundgesamtheit), sum, min, max, count, q1, q3, iqr oder skew (Schiefe). Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "calcSS": {
+          "help": "Rechnet einen Kennwert über den Prozessdatensatz und merkt ihn als letztes Ergebnis. Fehlen Werte oder die Spezifikationsgrenzen, liefert der Aufruf null.",
+          "params": {
+            "type": "Der Kennwert: cp, cpk, pp, ppk, sigma (Sigma-Niveau), dpmo, yield, zscore, mean, std, ucl oder lcl. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "addData": {
+          "help": "Übernimmt die Eingabezeile als Wert in den Statistikdatensatz. Beginnt sie mit keiner Zahl, bleibt der Datensatz unverändert und der Aufruf liefert null."
+        },
+        "addDataValue": {
+          "help": "Hängt eine Zahl an den Statistikdatensatz an und leert die Eingabezeile.",
+          "params": {
+            "value": "Der Wert, als Zahl oder als Zahl in Dezimalschreibweise. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "removeLast": {
+          "help": "Entfernt den letzten Wert des Statistikdatensatzes."
+        },
+        "clearData": {
+          "help": "Leert den Statistikdatensatz."
+        },
+        "addSSData": {
+          "help": "Übernimmt die Eingabezeile als Wert in den Prozessdatensatz. Beginnt sie mit keiner Zahl, bleibt der Datensatz unverändert und der Aufruf liefert null."
+        },
+        "addSSDataValue": {
+          "help": "Hängt eine Zahl an den Prozessdatensatz an und leert die Eingabezeile.",
+          "params": {
+            "value": "Der Wert, als Zahl oder als Zahl in Dezimalschreibweise. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "removeLastSS": {
+          "help": "Entfernt den letzten Wert des Prozessdatensatzes."
+        },
+        "clearSSData": {
+          "help": "Leert den Prozessdatensatz."
+        },
+        "setLsl": {
+          "help": "Setzt die untere Spezifikationsgrenze.",
+          "params": {
+            "value": "Die Grenze als Zahl oder als Text; der leere Text löscht sie. Ein Wert, der weder leer noch eine endliche Zahl ist, ist ein Fehler."
+          }
+        },
+        "setUsl": {
+          "help": "Setzt die obere Spezifikationsgrenze.",
+          "params": {
+            "value": "Die Grenze als Zahl oder als Text; der leere Text löscht sie. Ein Wert, der weder leer noch eine endliche Zahl ist, ist ein Fehler."
+          }
+        }
+      },
+      "fields": {
+        "mode": {
+          "help": "Der aktive Rechenbereich: sci wissenschaftlich, stats Statistik, sixsigma Prozessfähigkeit."
+        },
+        "expression": {
+          "help": "Die Eingabezeile, so wie sie in der Anzeige steht. Leer heißt: nichts eingegeben."
+        },
+        "lastResult": {
+          "help": "Das Ergebnis der letzten Rechnung als Zahl; null, solange keines vorliegt."
+        },
+        "memory": {
+          "help": "Der Speicherwert. 0 heißt leer — die Anzeige zeigt dann kein M."
+        },
+        "angleMode": {
+          "help": "Die Winkeleinheit der trigonometrischen Funktionen: DEG Grad, RAD Radiant."
+        },
+        "dataset": {
+          "help": "Die Werte des Statistikbereichs als Zahlen, in Eingabereihenfolge."
+        },
+        "ssDataset": {
+          "help": "Die Werte des Prozessbereichs als Zahlen, in Eingabereihenfolge."
+        },
+        "lsl": {
+          "help": "Die untere Spezifikationsgrenze als Text, so wie sie eingegeben wurde; leer heißt nicht gesetzt."
+        },
+        "usl": {
+          "help": "Die obere Spezifikationsgrenze als Text, so wie sie eingegeben wurde; leer heißt nicht gesetzt."
+        }
+      }
     },
     "data-transformation": {
       "name": "Datentransformation",

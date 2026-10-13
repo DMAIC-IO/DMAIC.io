@@ -544,78 +544,255 @@ export const AGENT_REGISTRY = {
     }
   },
   "calculator": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:inputText",
-      "unmarked_method:inputFn",
-      "unmarked_method:backspace",
-      "unmarked_method:clear",
-      "unmarked_method:toggleAngle",
-      "unmarked_method:memStore",
-      "unmarked_method:memRecall",
-      "unmarked_method:switchMode",
-      "unmarked_method:calculate",
-      "unmarked_method:calcStat",
-      "unmarked_method:calcSS",
-      "unmarked_method:addData",
-      "unmarked_method:removeLast",
-      "unmarked_method:clearData",
-      "unmarked_method:addSSData",
-      "unmarked_method:removeLastSS",
-      "unmarked_method:clearSSData",
-      "unmarked_method:onKeydown",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unreachable_write:lsl",
-      "unreachable_write:usl"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "inputText": {
+        "params": [
+          {
+            "name": "ch",
+            "type": "string",
+            "optional": false,
+            "help": "das Zeichen, oder eine Zahl in Dezimalschreibweise. Jeder andere Wert ist ein Fehler."
+          }
+        ],
+        "returns": "string",
+        "help": "Hängt ein Zeichen oder eine Zahl an die Eingabezeile an."
+      },
+      "inputFn": {
+        "params": [
+          {
+            "name": "fn",
+            "type": "string",
+            "optional": false,
+            "help": "die Funktion, mit öffnender Klammer: sin(, cos(, tan(, asin(, acos(, atan(, log(, ln(, sqrt(, cbrt(, exp(, fact(. Jeder andere Wert ist ein Fehler."
+          }
+        ],
+        "returns": "string",
+        "help": "Hängt eine Funktion samt öffnender Klammer an die Eingabezeile an."
+      },
+      "backspace": {
+        "params": [],
+        "returns": "string",
+        "help": "Löscht das letzte Zeichen der Eingabezeile."
+      },
+      "clear": {
+        "params": [],
+        "returns": "void",
+        "help": "Leert die Eingabezeile und das letzte Ergebnis."
+      },
+      "setAngleMode": {
+        "params": [
+          {
+            "name": "mode",
+            "type": "'DEG'|'RAD'",
+            "optional": false,
+            "help": "DEG rechnet in Grad, RAD in Radiant"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Winkeleinheit der trigonometrischen Funktionen."
+      },
+      "memStore": {
+        "params": [],
+        "returns": "number",
+        "help": "Legt den angezeigten Wert in den Speicher — das letzte Ergebnis, sonst den gerechneten Wert der Eingabezeile."
+      },
+      "setMemory": {
+        "params": [
+          {
+            "name": "value",
+            "type": "number",
+            "optional": false,
+            "help": "der neue Speicherwert; 0 heißt leer. Ein Wert, der keine endliche Zahl ist, ist ein Fehler."
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Speicherwert."
+      },
+      "memRecall": {
+        "params": [],
+        "returns": "string",
+        "help": "Hängt den Speicherwert an die Eingabezeile an."
+      },
+      "switchMode": {
+        "params": [
+          {
+            "name": "m",
+            "type": "'sci'|'stats'|'sixsigma'",
+            "optional": false,
+            "help": "sci rechnet wissenschaftlich, stats wertet den Statistikdatensatz aus, sixsigma den Prozessdatensatz. Jeder andere Wert ist ein Fehler."
+          }
+        ],
+        "returns": "void",
+        "help": "Wechselt den Rechenbereich und leert die Eingabezeile."
+      },
+      "calculate": {
+        "params": [],
+        "returns": "string|null",
+        "help": "Rechnet die Eingabezeile aus und merkt das Ergebnis."
+      },
+      "calcStat": {
+        "params": [
+          {
+            "name": "type",
+            "type": "string",
+            "optional": false,
+            "help": "der Kennwert: mean, median, mode, range, stdS, stdP, varS, varP, sum, min, max, count, q1, q3, iqr oder skew. Jeder andere Wert ist ein Fehler."
+          }
+        ],
+        "returns": "string|null",
+        "help": "Rechnet einen Kennwert über den Statistikdatensatz und merkt ihn als letztes Ergebnis."
+      },
+      "calcSS": {
+        "params": [
+          {
+            "name": "type",
+            "type": "string",
+            "optional": false,
+            "help": "der Kennwert: cp, cpk, pp, ppk, sigma, dpmo, yield, zscore, mean, std, ucl oder lcl. Jeder andere Wert ist ein Fehler."
+          }
+        ],
+        "returns": "string|null",
+        "help": "Rechnet einen Kennwert über den Prozessdatensatz und merkt ihn als letztes Ergebnis."
+      },
+      "addData": {
+        "params": [],
+        "returns": "number|null",
+        "help": "Übernimmt die Eingabezeile als Wert in den Statistikdatensatz."
+      },
+      "addDataValue": {
+        "params": [
+          {
+            "name": "value",
+            "type": "number",
+            "optional": false,
+            "help": "der Wert; eine Zahl in Dezimalschreibweise als Zeichenkette geht auch. Jeder andere Wert ist ein Fehler."
+          }
+        ],
+        "returns": "number",
+        "help": "Hängt eine Zahl an den Statistikdatensatz an."
+      },
+      "removeLast": {
+        "params": [],
+        "returns": "void",
+        "help": "Entfernt den letzten Wert des Statistikdatensatzes."
+      },
+      "clearData": {
+        "params": [],
+        "returns": "void",
+        "help": "Leert den Statistikdatensatz."
+      },
+      "addSSData": {
+        "params": [],
+        "returns": "number|null",
+        "help": "Übernimmt die Eingabezeile als Wert in den Prozessdatensatz."
+      },
+      "addSSDataValue": {
+        "params": [
+          {
+            "name": "value",
+            "type": "number",
+            "optional": false,
+            "help": "der Wert; eine Zahl in Dezimalschreibweise als Zeichenkette geht auch. Jeder andere Wert ist ein Fehler."
+          }
+        ],
+        "returns": "number",
+        "help": "Hängt eine Zahl an den Prozessdatensatz an."
+      },
+      "removeLastSS": {
+        "params": [],
+        "returns": "void",
+        "help": "Entfernt den letzten Wert des Prozessdatensatzes."
+      },
+      "clearSSData": {
+        "params": [],
+        "returns": "void",
+        "help": "Leert den Prozessdatensatz."
+      },
+      "setLsl": {
+        "params": [
+          {
+            "name": "value",
+            "type": "number|string",
+            "optional": false,
+            "help": "die Grenze; der leere Text löscht sie. Ein Wert, der weder leer noch eine endliche Zahl ist, ist ein Fehler."
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die untere Spezifikationsgrenze."
+      },
+      "setUsl": {
+        "params": [
+          {
+            "name": "value",
+            "type": "number|string",
+            "optional": false,
+            "help": "die Grenze; der leere Text löscht sie. Ein Wert, der weder leer noch eine endliche Zahl ist, ist ein Fehler."
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die obere Spezifikationsgrenze."
+      }
+    },
     "fields": {
       "mode": {
         "type": "'sci'|'stats'|'sixsigma'",
-        "help": "",
+        "help": "der aktive Rechenbereich: sci wissenschaftlich, stats Statistik, sixsigma Prozessfähigkeit",
         "bulk": false
       },
       "expression": {
         "type": "string",
-        "help": "raw display expression",
+        "help": "der eingegebene Ausdruck, so wie er in der Anzeige steht",
         "bulk": false
       },
       "lastResult": {
         "type": "number|null",
-        "help": "last evaluated numeric result",
+        "help": "das Ergebnis der letzten Rechnung; null, solange keines vorliegt",
         "bulk": false
       },
       "memory": {
         "type": "number",
-        "help": "memory register",
+        "help": "der Speicherwert; 0 heißt leer",
         "bulk": false
       },
       "angleMode": {
         "type": "'DEG'|'RAD'",
-        "help": "",
+        "help": "die Winkeleinheit der Trigonometrie: DEG Grad, RAD Radiant",
         "bulk": false
       },
       "dataset": {
         "type": "number[]",
-        "help": "statistics dataset",
+        "help": "die Werte des Statistikbereichs in Eingabereihenfolge",
         "bulk": false
       },
       "ssDataset": {
         "type": "number[]",
-        "help": "Six Sigma process dataset",
+        "help": "die Werte des Prozessbereichs in Eingabereihenfolge",
         "bulk": false
       },
       "lsl": {
         "type": "string",
-        "help": "lower spec limit (raw input string)",
+        "help": "die untere Spezifikationsgrenze als Text; leer heißt nicht gesetzt",
         "bulk": false
       },
       "usl": {
         "type": "string",
-        "help": "upper spec limit (raw input string)",
+        "help": "die obere Spezifikationsgrenze als Text; leer heißt nicht gesetzt",
         "bulk": false
       }
     }
@@ -8209,4 +8386,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":26};
+export const AGENT_COVERAGE = {"total":74,"available":27};

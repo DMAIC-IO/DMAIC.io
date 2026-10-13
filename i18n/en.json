@@ -6913,7 +6913,138 @@
       "statSum": "Sum",
       "statCount": "Count",
       "statSkewness": "Skewness",
-      "statStdDev": "Std.Dev."
+      "statStdDev": "Std.Dev.",
+      "whenToUse": "When a number, a statistic or a process capability has to be computed quickly without setting up a data collection — scientifically, as a location and spread measure over a short list of values, or as Cp/Cpk, sigma level and DPMO from values and specification limits; not for a lasting analysis over a data table, that is what the data collection, the histogram and the process capability analysis are for.",
+      "actions": {
+        "inputText": {
+          "help": "Appends a character or a number to the input line.",
+          "params": {
+            "ch": "A character of the input line — a digit, a dot, + - × ÷ ^ ( ) π or e — or a number in decimal notation. Any other value is an error."
+          }
+        },
+        "inputFn": {
+          "help": "Appends a function together with its opening bracket to the input line.",
+          "params": {
+            "fn": "The function with its opening bracket, exactly as the keypad writes it: sin(, cos(, tan(, asin(, acos(, atan(, log(, ln(, sqrt(, cbrt(, exp( or fact(. Any other value is an error."
+          }
+        },
+        "backspace": {
+          "help": "Deletes the last character of the input line."
+        },
+        "clear": {
+          "help": "Clears the input line and the last result."
+        },
+        "setAngleMode": {
+          "help": "Sets the angle unit of the trigonometric functions.",
+          "params": {
+            "mode": "DEG computes in degrees, RAD in radians. Any other value is an error."
+          }
+        },
+        "memStore": {
+          "help": "Stores the displayed value in memory — the last result, otherwise the evaluated input line."
+        },
+        "setMemory": {
+          "help": "Sets the memory value.",
+          "params": {
+            "value": "The new memory value; 0 means empty. A value that is not a finite number is an error."
+          }
+        },
+        "memRecall": {
+          "help": "Appends the memory value to the input line."
+        },
+        "switchMode": {
+          "help": "Switches the calculator area and clears the input line.",
+          "params": {
+            "m": "sci computes scientifically, stats evaluates the statistics data set, sixsigma the process data set. Any other value is an error."
+          }
+        },
+        "calculate": {
+          "help": "Evaluates the input line and remembers the result. If it holds no computable expression, the last result stays and the call returns null."
+        },
+        "calcStat": {
+          "help": "Computes a statistic over the statistics data set and remembers it as the last result. If the data set is empty, too small or has no mode, the call returns null.",
+          "params": {
+            "type": "The statistic: mean, median, mode, range, stdS and varS (sample standard deviation and variance), stdP and varP (population), sum, min, max, count, q1, q3, iqr or skew. Any other value is an error."
+          }
+        },
+        "calcSS": {
+          "help": "Computes a metric over the process data set and remembers it as the last result. Without enough values or without both spec limits the call returns null.",
+          "params": {
+            "type": "The metric: cp, cpk, pp, ppk, sigma (sigma level), dpmo, yield, zscore, mean, std, ucl or lcl. Any other value is an error."
+          }
+        },
+        "addData": {
+          "help": "Takes the input line as a value into the statistics data set. If it does not start with a number, the data set stays unchanged and the call returns null."
+        },
+        "addDataValue": {
+          "help": "Appends a number to the statistics data set and clears the input line.",
+          "params": {
+            "value": "The value, as a number or as a number in decimal notation. Any other value is an error."
+          }
+        },
+        "removeLast": {
+          "help": "Removes the last value of the statistics data set."
+        },
+        "clearData": {
+          "help": "Clears the statistics data set."
+        },
+        "addSSData": {
+          "help": "Takes the input line as a value into the process data set. If it does not start with a number, the data set stays unchanged and the call returns null."
+        },
+        "addSSDataValue": {
+          "help": "Appends a number to the process data set and clears the input line.",
+          "params": {
+            "value": "The value, as a number or as a number in decimal notation. Any other value is an error."
+          }
+        },
+        "removeLastSS": {
+          "help": "Removes the last value of the process data set."
+        },
+        "clearSSData": {
+          "help": "Clears the process data set."
+        },
+        "setLsl": {
+          "help": "Sets the lower specification limit.",
+          "params": {
+            "value": "The limit as a number or as text; empty text clears it. A value that is neither empty nor a finite number is an error."
+          }
+        },
+        "setUsl": {
+          "help": "Sets the upper specification limit.",
+          "params": {
+            "value": "The limit as a number or as text; empty text clears it. A value that is neither empty nor a finite number is an error."
+          }
+        }
+      },
+      "fields": {
+        "mode": {
+          "help": "The active calculator area: sci scientific, stats statistics, sixsigma process capability."
+        },
+        "expression": {
+          "help": "The input line as shown in the display. Empty means nothing entered."
+        },
+        "lastResult": {
+          "help": "The result of the last computation as a number; null while there is none."
+        },
+        "memory": {
+          "help": "The memory value. 0 means empty — the display then shows no M."
+        },
+        "angleMode": {
+          "help": "The angle unit of the trigonometric functions: DEG degrees, RAD radians."
+        },
+        "dataset": {
+          "help": "The values of the statistics area as numbers, in entry order."
+        },
+        "ssDataset": {
+          "help": "The values of the process area as numbers, in entry order."
+        },
+        "lsl": {
+          "help": "The lower specification limit as text, exactly as entered; empty means not set."
+        },
+        "usl": {
+          "help": "The upper specification limit as text, exactly as entered; empty means not set."
+        }
+      }
     },
     "data-transformation": {
       "name": "Data Transformation",
