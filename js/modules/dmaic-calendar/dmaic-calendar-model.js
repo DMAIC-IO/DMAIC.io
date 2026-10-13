@@ -73,13 +73,28 @@ function sanitizeEvent(e) {
 }
 
 export class State {
+  /**
+   * @type {Array<{id:string,title:string,date:string,time:string,duration:number,desc:string,phase:string,source?:string}>}
+   *   die Termine; je Termin `id` (zum Ansprechen), `title`, `date` als
+   *   `JJJJ-MM-TT`, `time` als `HH:MM`, `duration` in Minuten, `desc` und
+   *   `phase` (die Phase des aktiven Zyklus, nach der der Termin eingefärbt
+   *   wird). Ein Termin, der aus einer Aufgabenliste gespiegelt wurde, trägt
+   *   zusätzlich `source: 'todo'`
+   * @agentBulk
+   */
   events = [];
+  /** @type {number} die erste angezeigte Stunde der Tagesachse, 0 bis 23 */
   axisFrom = DEFAULTS.axisFrom;
+  /** @type {number} die letzte angezeigte Stunde der Tagesachse, 1 bis 24 */
   axisTo = DEFAULTS.axisTo;
+  /** @type {number} der erste angezeigte Wochentag, 0 für Montag bis 6 für Sonntag */
   dayFrom = DEFAULTS.dayFrom;
+  /** @type {number} der letzte angezeigte Wochentag, 0 für Montag bis 6 für Sonntag */
   dayTo = DEFAULTS.dayTo;
-  // Active calendar view ('month' | 'week'). Persisted so a chosen view
-  // survives a reload instead of snapping back to the month default.
+  /**
+   * @type {'month'|'week'} die Kalenderansicht; gespeichert, damit die Wahl
+   *   einen Neustart übersteht
+   */
   viewMode = 'month';
 
   // ─── Persistence ───────────────────────────────────────

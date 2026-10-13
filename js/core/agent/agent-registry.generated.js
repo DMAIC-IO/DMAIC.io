@@ -1524,109 +1524,156 @@ export const AGENT_REGISTRY = {
     }
   },
   "dmaic-calendar": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unmarked_method:applyTodoSync",
-      "unmarked_method:phaseName",
-      "unmarked_method:allDayNames",
-      "unmarked_method:dayHeads",
-      "unmarked_method:phaseDotStyle",
-      "unmarked_method:phaseTagClass",
-      "unmarked_method:togglePhaseFilter",
-      "unmarked_method:hourLabel",
-      "unmarked_method:axisFromChanged",
-      "unmarked_method:axisToChanged",
-      "unmarked_method:dayFromChanged",
-      "unmarked_method:dayToChanged",
-      "unmarked_method:upcomingList",
-      "unmarked_method:upcomingStyle",
-      "unmarked_method:upcomingDateLabel",
-      "unmarked_method:newEventBtnLabel",
-      "unmarked_method:viewBtnClass",
-      "unmarked_method:setView",
-      "unmarked_method:prevPeriod",
-      "unmarked_method:nextPeriod",
-      "unmarked_method:goToday",
-      "unmarked_method:calTitleMain",
-      "unmarked_method:calTitleYear",
-      "unmarked_method:monthGridStyle",
-      "unmarked_method:monthCells",
-      "unmarked_method:headClass",
-      "unmarked_method:dayClass",
-      "unmarked_method:monthEvStyle",
-      "unmarked_method:firstEvents",
-      "unmarked_method:moreText",
-      "unmarked_method:onDayClick",
-      "unmarked_method:onMonthEventClick",
-      "unmarked_method:weekShowClass",
-      "unmarked_method:hoursList",
-      "unmarked_method:slotsList",
-      "unmarked_method:weekDates",
-      "unmarked_method:weekColStyle",
-      "unmarked_method:weekHdayClass",
-      "unmarked_method:weekHdayName",
-      "unmarked_method:weekTimeLabel",
-      "unmarked_method:weekEventsForDay",
-      "unmarked_method:weekEvStyle",
-      "unmarked_method:weekEvTimeText",
-      "unmarked_method:nowOffsetPx",
-      "unmarked_method:showNowLine",
-      "unmarked_method:nowLineStyle",
-      "unmarked_method:onSlotClick",
-      "unmarked_method:slotSelClass",
-      "unmarked_method:slotDragStart",
-      "unmarked_method:slotDragEnter",
-      "unmarked_method:resizeDurText",
-      "unmarked_method:showResizeDur",
-      "unmarked_method:weekEvClick",
-      "unmarked_method:weekEvMouseDown",
-      "unmarked_method:startDrag",
-      "unmarked_method:startResize",
-      "unmarked_method:modalTitle",
-      "unmarked_method:phaseChipStyle",
-      "unmarked_method:phaseChipClass",
-      "unmarked_method:openModal",
-      "unmarked_method:openNew",
-      "unmarked_method:openEdit",
-      "unmarked_method:formDuration",
-      "unmarked_method:durationLabel",
-      "unmarked_method:handleSave",
-      "unmarked_method:handleDelete"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "setAxisFrom": {
+        "params": [
+          {
+            "name": "hour",
+            "type": "number",
+            "optional": false,
+            "help": "die Stunde, 0 bis 23"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Setzt die erste angezeigte Stunde der Tagesachse."
+      },
+      "setAxisTo": {
+        "params": [
+          {
+            "name": "hour",
+            "type": "number",
+            "optional": false,
+            "help": "die Stunde, 1 bis 24"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Setzt die letzte angezeigte Stunde der Tagesachse."
+      },
+      "setDayFrom": {
+        "params": [
+          {
+            "name": "dayIndex",
+            "type": "number",
+            "optional": false,
+            "help": "der Wochentag, 0 für Montag bis 6 für Sonntag"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Setzt den ersten angezeigten Wochentag."
+      },
+      "setDayTo": {
+        "params": [
+          {
+            "name": "dayIndex",
+            "type": "number",
+            "optional": false,
+            "help": "der Wochentag, 0 für Montag bis 6 für Sonntag"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Setzt den letzten angezeigten Wochentag."
+      },
+      "addEvent": {
+        "params": [
+          {
+            "name": "fields",
+            "type": "{title: string, date: string, time?: string, duration?: number, desc?: string, phase?: string}",
+            "optional": false,
+            "help": "Titel und Datum sind nötig; ohne Startzeit beginnt der Termin 09:00, ohne Dauer läuft er 60 Minuten, ohne Phase fällt er auf die erste Phase des aktiven Zyklus"
+          }
+        ],
+        "returns": "string",
+        "help": "Legt einen Termin an."
+      },
+      "updateEvent": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "id des Termins"
+          },
+          {
+            "name": "fields",
+            "type": "{title?: string, date?: string, time?: string, duration?: number, desc?: string, phase?: string}",
+            "optional": false,
+            "help": "mindestens ein Feld"
+          }
+        ],
+        "returns": "void",
+        "help": "Ändert die übergebenen Felder eines Termins; die übrigen bleiben stehen."
+      },
+      "removeEvent": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "id des Termins"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt einen Termin."
+      },
+      "setView": {
+        "params": [
+          {
+            "name": "v",
+            "type": "'month'|'week'",
+            "optional": false,
+            "help": "`month` zeigt den Monat, `week` die Woche"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Kalenderansicht."
+      }
+    },
     "fields": {
       "events": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "Array<{id:string,title:string,date:string,time:string,duration:number,desc:string,phase:string,source?:string}>",
+        "help": "die Termine; je Termin `id` (zum Ansprechen), `title`, `date` als `JJJJ-MM-TT`, `time` als `HH:MM`, `duration` in Minuten, `desc` und `phase` (die Phase des aktiven Zyklus, nach der der Termin eingefärbt wird). Ein Termin, der aus einer Aufgabenliste gespiegelt wurde, trägt zusätzlich `source: 'todo'`",
+        "bulk": true,
+        "bulkKind": "table"
       },
       "axisFrom": {
-        "type": "any",
-        "help": "",
+        "type": "number",
+        "help": "die erste angezeigte Stunde der Tagesachse, 0 bis 23",
         "bulk": false
       },
       "axisTo": {
-        "type": "any",
-        "help": "",
+        "type": "number",
+        "help": "die letzte angezeigte Stunde der Tagesachse, 1 bis 24",
         "bulk": false
       },
       "dayFrom": {
-        "type": "any",
-        "help": "",
+        "type": "number",
+        "help": "der erste angezeigte Wochentag, 0 für Montag bis 6 für Sonntag",
         "bulk": false
       },
       "dayTo": {
-        "type": "any",
-        "help": "",
+        "type": "number",
+        "help": "der letzte angezeigte Wochentag, 0 für Montag bis 6 für Sonntag",
         "bulk": false
       },
       "viewMode": {
-        "type": "any",
-        "help": "",
+        "type": "'month'|'week'",
+        "help": "die Kalenderansicht; gespeichert, damit die Wahl einen Neustart übersteht",
         "bulk": false
       }
     }
@@ -8162,4 +8209,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":25};
+export const AGENT_COVERAGE = {"total":74,"available":26};

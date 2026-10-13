@@ -2092,7 +2092,80 @@
       "week": "Week",
       "today": "Today",
       "invalidTimeRange": "The end time must be after the start time.",
-      "requiredFields": "Title and date are required fields."
+      "requiredFields": "Title and date are required fields.",
+
+      "whenToUse": "When the appointments of a project should be kept — meetings, measurement windows, deadlines —, each assigned to a phase and shown in a month or week view; not for tasks without a fixed point in time, that is what the todo list is for, and not for planning activity durations and dependencies.",
+      "actions": {
+        "addEvent": {
+          "help": "Adds an appointment and returns its id.",
+          "params": {
+            "fields": "The fields of the appointment: title (the label, must not be empty), date (the day as YYYY-MM-DD), time (the start time as HH:MM, 09:00 if omitted), duration (the duration in whole minutes, at least 5, 60 if omitted), desc (the description, empty if omitted) and phase (the phase of the active cycle the appointment is coloured by; the first phase if omitted). Title and date must be present. An unknown key, a value outside the value set of its field and a missing argument are errors."
+          }
+        },
+        "updateEvent": {
+          "help": "Changes the supplied fields of an appointment; the others stay as they are.",
+          "params": {
+            "id": "The id of the appointment as read() lists it under events. An unknown id is an error.",
+            "fields": "The fields to change, at least one of title, date, time, duration, desc and phase — with the same meaning and the same value sets as in addEvent. An empty field set, an unknown key, a value outside the value set of its field and a missing argument are errors."
+          }
+        },
+        "removeEvent": {
+          "help": "Removes an appointment.",
+          "params": {
+            "id": "The id of the appointment as read() lists it under events. An unknown id is an error."
+          }
+        },
+        "setView": {
+          "help": "Sets the calendar view.",
+          "params": {
+            "v": "The view: month shows the month, week the week. Any other value is an error."
+          }
+        },
+        "setAxisFrom": {
+          "help": "Sets the first hour shown on the day axis. If it is not before the last hour shown, the axis stays as it is and the call reports false.",
+          "params": {
+            "hour": "The hour from 0 to 23. Any other value is an error."
+          }
+        },
+        "setAxisTo": {
+          "help": "Sets the last hour shown on the day axis. If it is not after the first hour shown, the axis stays as it is and the call reports false.",
+          "params": {
+            "hour": "The hour from 1 to 24; 24 is the end of the day. Any other value is an error."
+          }
+        },
+        "setDayFrom": {
+          "help": "Sets the first weekday shown. If it is after the last weekday shown, the selection stays as it is and the call reports false.",
+          "params": {
+            "dayIndex": "The weekday, 0 for Monday through 6 for Sunday. Any other value is an error."
+          }
+        },
+        "setDayTo": {
+          "help": "Sets the last weekday shown. If it is before the first weekday shown, the selection stays as it is and the call reports false.",
+          "params": {
+            "dayIndex": "The weekday, 0 for Monday through 6 for Sunday. Any other value is an error."
+          }
+        }
+      },
+      "fields": {
+        "events": {
+          "help": "The appointments. Per appointment: id (what the actions address it by), title (the label), date (the day as YYYY-MM-DD), time (the start time as HH:MM), duration (the duration in minutes), desc (the description) and phase (the phase of the active cycle the appointment is coloured by). An appointment mirrored from a todo list also carries source with the value todo; it is replaced on the next mirroring. The end of an appointment is computed from start time and duration and is held in no field. Bulk data: without options.fields = ['events'] only the extent is delivered."
+        },
+        "axisFrom": {
+          "help": "The first hour shown on the day axis, 0 to 23. It only bounds the display of the week view, not the appointments themselves."
+        },
+        "axisTo": {
+          "help": "The last hour shown on the day axis, 1 to 24. It only bounds the display of the week view, not the appointments themselves."
+        },
+        "dayFrom": {
+          "help": "The first weekday shown, 0 for Monday through 6 for Sunday."
+        },
+        "dayTo": {
+          "help": "The last weekday shown, 0 for Monday through 6 for Sunday."
+        },
+        "viewMode": {
+          "help": "The calendar view: month shows the month, week the week. The choice is persisted and survives a restart."
+        }
+      }
     },
     "todo": {
       "name": "Todo",

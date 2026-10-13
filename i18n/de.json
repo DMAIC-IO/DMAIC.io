@@ -2096,7 +2096,80 @@
       "week": "Woche",
       "today": "Heute",
       "invalidTimeRange": "Die Endzeit muss nach der Startzeit liegen.",
-      "requiredFields": "Titel und Datum sind Pflichtfelder."
+      "requiredFields": "Titel und Datum sind Pflichtfelder.",
+
+      "whenToUse": "Wenn die Termine eines Projekts geführt werden sollen — Besprechungen, Messzeiträume, Stichtage —, je Termin einer Phase zugeordnet und in einer Monats- oder Wochenansicht dargestellt; nicht für Aufgaben ohne festen Zeitpunkt, dafür ist die Aufgabenliste da, und nicht für die Planung von Vorgangsdauern und Abhängigkeiten.",
+      "actions": {
+        "addEvent": {
+          "help": "Legt einen Termin an und gibt dessen id zurück.",
+          "params": {
+            "fields": "Die Felder des Termins: title (die Bezeichnung, darf nicht leer sein), date (der Tag als JJJJ-MM-TT), time (die Startzeit als HH:MM, ohne Angabe 09:00), duration (die Dauer in ganzen Minuten, mindestens 5, ohne Angabe 60), desc (die Beschreibung, ohne Angabe leer) und phase (die Phase des aktiven Zyklus, nach der der Termin eingefärbt wird; ohne Angabe die erste Phase). Titel und Datum müssen dabei sein. Ein unbekannter Schlüssel, ein Wert außerhalb der Wertemenge seines Feldes und ein fehlendes Argument sind Fehler."
+          }
+        },
+        "updateEvent": {
+          "help": "Ändert die übergebenen Felder eines Termins; die übrigen bleiben stehen.",
+          "params": {
+            "id": "Die id des Termins, wie read() sie unter events führt. Eine unbekannte id ist ein Fehler.",
+            "fields": "Die zu ändernden Felder, mindestens eines von title, date, time, duration, desc und phase — mit derselben Bedeutung und denselben Wertemengen wie bei addEvent. Ein leerer Feldsatz, ein unbekannter Schlüssel, ein Wert außerhalb der Wertemenge seines Feldes und ein fehlendes Argument sind Fehler."
+          }
+        },
+        "removeEvent": {
+          "help": "Entfernt einen Termin.",
+          "params": {
+            "id": "Die id des Termins, wie read() sie unter events führt. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "setView": {
+          "help": "Setzt die Kalenderansicht.",
+          "params": {
+            "v": "Die Ansicht: month zeigt den Monat, week die Woche. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "setAxisFrom": {
+          "help": "Setzt die erste angezeigte Stunde der Tagesachse. Liegt sie nicht vor der letzten angezeigten, bleibt die Achse stehen und der Aufruf meldet false.",
+          "params": {
+            "hour": "Die Stunde von 0 bis 23. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "setAxisTo": {
+          "help": "Setzt die letzte angezeigte Stunde der Tagesachse. Liegt sie nicht nach der ersten angezeigten, bleibt die Achse stehen und der Aufruf meldet false.",
+          "params": {
+            "hour": "Die Stunde von 1 bis 24; 24 ist das Tagesende. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "setDayFrom": {
+          "help": "Setzt den ersten angezeigten Wochentag. Liegt er nach dem letzten angezeigten, bleibt die Auswahl stehen und der Aufruf meldet false.",
+          "params": {
+            "dayIndex": "Der Wochentag, 0 für Montag bis 6 für Sonntag. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "setDayTo": {
+          "help": "Setzt den letzten angezeigten Wochentag. Liegt er vor dem ersten angezeigten, bleibt die Auswahl stehen und der Aufruf meldet false.",
+          "params": {
+            "dayIndex": "Der Wochentag, 0 für Montag bis 6 für Sonntag. Jeder andere Wert ist ein Fehler."
+          }
+        }
+      },
+      "fields": {
+        "events": {
+          "help": "Die Termine. Je Termin: id (damit sprechen die Aktionen ihn an), title (die Bezeichnung), date (der Tag als JJJJ-MM-TT), time (die Startzeit als HH:MM), duration (die Dauer in Minuten), desc (die Beschreibung) und phase (die Phase des aktiven Zyklus, nach der der Termin eingefärbt wird). Ein Termin, der aus einer Aufgabenliste gespiegelt wurde, trägt zusätzlich source mit dem Wert todo; er wird bei der nächsten Spiegelung ersetzt. Das Ende eines Termins ist aus Startzeit und Dauer gerechnet und steht in keinem Feld. Massendaten: ohne options.fields = ['events'] kommt nur der Umfang."
+        },
+        "axisFrom": {
+          "help": "Die erste angezeigte Stunde der Tagesachse, 0 bis 23. Sie begrenzt nur die Anzeige der Wochenansicht, nicht die Termine selbst."
+        },
+        "axisTo": {
+          "help": "Die letzte angezeigte Stunde der Tagesachse, 1 bis 24. Sie begrenzt nur die Anzeige der Wochenansicht, nicht die Termine selbst."
+        },
+        "dayFrom": {
+          "help": "Der erste angezeigte Wochentag, 0 für Montag bis 6 für Sonntag."
+        },
+        "dayTo": {
+          "help": "Der letzte angezeigte Wochentag, 0 für Montag bis 6 für Sonntag."
+        },
+        "viewMode": {
+          "help": "Die Kalenderansicht: month zeigt den Monat, week die Woche. Die Wahl wird gespeichert und übersteht einen Neustart."
+        }
+      }
     },
     "todo": {
       "name": "Todo",
