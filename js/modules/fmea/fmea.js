@@ -66,10 +66,6 @@ const ACTION_FIELDS = ['text', 'resp', 'date', 'done', 'deltaS', 'deltaO', 'delt
 const SOD_VALUES = ['', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
 const DELTA_VALUES = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
-/** Die Felder, die ein freier Text sind — die leere Zeichenkette löscht sie. */
-const RISK_TEXT_FIELDS = ['step', 'failureMode', 'effect', 'cause', 'prevention',
-  'control', 'justification'];
-
 /**
  * Alle Schlüssel, unter denen ein eigener Skalentext stehen darf: die 30
  * Schlüssel der RPN-Skalen plus die 120 der beiden AP-Skalen.
