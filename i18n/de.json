@@ -2864,6 +2864,178 @@
         "overprocessing": "Über-Bearbeitung",
         "defects": "Defekte / Nacharbeit",
         "skills": "Ungenutztes Potenzial"
+      },
+      "whenToUse": "Wenn ein abteilungsübergreifender Ablauf Schritt für Schritt mit Zuständigkeit, Bearbeitungszeit, Wartezeit und Verschwendungsarten aufgenommen werden soll, um Liegezeiten sichtbar zu machen; nicht für die reine Ablauflogik mit Entscheidungen und Verzweigungen, dafür ist ein Flussdiagramm da.",
+      "actions": {
+        "setTitle": {
+          "help": "Setzt den Namen des betrachteten Prozesses.",
+          "params": {
+            "text": "Der Name des Prozesses. Eine leere Zeichenkette löscht ihn; ein fehlendes Argument ist ein Fehler."
+          }
+        },
+        "addRole": {
+          "help": "Legt eine Rolle ohne Namen an und liefert ihre id zurück.",
+          "params": {}
+        },
+        "addStep": {
+          "help": "Legt einen Prozessschritt ohne Titel am Ende der Kette an und liefert seine id zurück.",
+          "params": {}
+        },
+        "setRoleLabel": {
+          "help": "Setzt den Namen einer Rolle.",
+          "params": {
+            "roleId": "Die id der Rolle, wie read() sie unter roles führt. Eine unbekannte id ist ein Fehler.",
+            "label": "Der Name der Rolle. Eine leere Zeichenkette löscht ihn; ein fehlendes Argument ist ein Fehler."
+          }
+        },
+        "setStepTitle": {
+          "help": "Setzt den Titel eines Prozessschritts.",
+          "params": {
+            "stepId": "Die id des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte id ist ein Fehler.",
+            "text": "Der Titel des Schritts. Eine leere Zeichenkette löscht ihn; ein fehlendes Argument ist ein Fehler."
+          }
+        },
+        "setStepDescription": {
+          "help": "Setzt die Beschreibung der Tätigkeit eines Prozessschritts.",
+          "params": {
+            "stepId": "Die id des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte id ist ein Fehler.",
+            "text": "Die Beschreibung der Tätigkeit. Eine leere Zeichenkette löscht ihn; ein fehlendes Argument ist ein Fehler."
+          }
+        },
+        "setStepNotes": {
+          "help": "Setzt die Notiz eines Prozessschritts.",
+          "params": {
+            "stepId": "Die id des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte id ist ein Fehler.",
+            "text": "Die Notiz zum Schritt. Eine leere Zeichenkette löscht ihn; ein fehlendes Argument ist ein Fehler."
+          }
+        },
+        "setStepProcessTime": {
+          "help": "Setzt die Bearbeitungszeit eines Prozessschritts — die Zeit, in der am Vorgang gearbeitet wird.",
+          "params": {
+            "stepId": "Die id des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte id ist ein Fehler.",
+            "text": "Die Dauer als Text aus Zahl und Einheit, etwa 30 min oder 1 d 2 h; die erkannten Einheiten stehen in timeUnits. Eine leere Zeichenkette löscht die Angabe; ein nicht lesbarer Text wird gespeichert, geht aber nicht in die Kennzahlen ein und liefert false zurück. Ein fehlendes Argument ist ein Fehler."
+          }
+        },
+        "setStepWaitTime": {
+          "help": "Setzt die Wartezeit eines Prozessschritts — die Zeit, in der der Vorgang liegt.",
+          "params": {
+            "stepId": "Die id des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte id ist ein Fehler.",
+            "text": "Die Dauer als Text aus Zahl und Einheit, etwa 30 min oder 1 d 2 h; die erkannten Einheiten stehen in timeUnits. Eine leere Zeichenkette löscht die Angabe; ein nicht lesbarer Text wird gespeichert, geht aber nicht in die Kennzahlen ein und liefert false zurück. Ein fehlendes Argument ist ein Fehler."
+          }
+        },
+        "setStepExpanded": {
+          "help": "Klappt die Karte eines Prozessschritts auf oder zu. Der Zustand ist gespeichert, am Inhalt des Schritts ändert er nichts.",
+          "params": {
+            "stepId": "Die id des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte id ist ein Fehler.",
+            "expanded": "true klappt die Karte auf, false klappt sie zu. Jeder andere Wert — auch ein fehlendes Argument — ist ein Fehler."
+          }
+        },
+        "setParticipation": {
+          "help": "Bestimmt, ob eine Rolle an einem Prozessschritt mitwirkt.",
+          "params": {
+            "stepId": "Die id des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte id ist ein Fehler.",
+            "roleId": "Die id der Rolle, wie read() sie unter roles führt. Eine unbekannte id ist ein Fehler.",
+            "participates": "true lässt die Rolle mitwirken, false nimmt die Mitwirkung zurück. Jeder andere Wert — auch ein fehlendes Argument — ist ein Fehler."
+          }
+        },
+        "setMuda": {
+          "help": "Bestimmt, ob eine Verschwendungsart einen Prozessschritt kennzeichnet.",
+          "params": {
+            "stepId": "Die id des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte id ist ein Fehler.",
+            "mudaId": "Die id der Verschwendungsart, wie read() sie unter mudaCategories führt. Eine unbekannte id ist ein Fehler.",
+            "marked": "true kennzeichnet den Schritt, false nimmt die Kennzeichnung zurück. Jeder andere Wert — auch ein fehlendes Argument — ist ein Fehler."
+          }
+        },
+        "removeStep": {
+          "help": "Entfernt einen Prozessschritt.",
+          "params": {
+            "stepId": "Die id des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "removeRole": {
+          "help": "Entfernt eine Rolle samt ihren Mitwirkungen an allen Schritten.",
+          "params": {
+            "roleId": "Die id der Rolle, wie read() sie unter roles führt. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "reorderSteps": {
+          "help": "Stellt einen Prozessschritt vor einen anderen; die übrigen rücken nach.",
+          "params": {
+            "draggedId": "Die id des Schritts, der umziehen soll. Eine unbekannte id ist ein Fehler.",
+            "targetId": "Die id des Schritts, vor den er soll. Dieselbe id wie draggedId lässt die Reihenfolge unverändert; eine unbekannte id ist ein Fehler."
+          }
+        },
+        "reorderRoles": {
+          "help": "Stellt eine Rolle vor eine andere; die übrigen rücken nach.",
+          "params": {
+            "draggedId": "Die id der Rolle, die umziehen soll. Eine unbekannte id ist ein Fehler.",
+            "targetId": "Die id der Rolle, vor die sie soll. Dieselbe id wie draggedId lässt die Reihenfolge unverändert; eine unbekannte id ist ein Fehler."
+          }
+        },
+        "addMudaCategory": {
+          "help": "Legt eine Verschwendungsart ohne Kürzel und Namen an und liefert ihre id zurück.",
+          "params": {}
+        },
+        "setMudaCategory": {
+          "help": "Ändert die genannten Felder einer Verschwendungsart; alle übrigen bleiben stehen.",
+          "params": {
+            "mudaId": "Die id der Verschwendungsart, wie read() sie unter mudaCategories führt. Eine unbekannte id ist ein Fehler.",
+            "data": "Ein Objekt mit genau den Feldern, die sich ändern sollen — code (das Kürzel in der Matrix), label (der Name) oder color (ein Hexwert wie #4a90e2). Was nicht darin steht, bleibt unverändert; ein fehlendes Objekt und ein Wert, der keine Zeichenkette ist, sind Fehler."
+          }
+        },
+        "deleteMudaCategory": {
+          "help": "Entfernt eine Verschwendungsart und ihre Kennzeichnungen an allen Schritten.",
+          "params": {
+            "mudaId": "Die id der Verschwendungsart, wie read() sie unter mudaCategories führt. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "addTimeUnit": {
+          "help": "Legt eine Zeiteinheit ohne Kürzel mit der Länge einer Sekunde an und liefert ihre id zurück.",
+          "params": {}
+        },
+        "setTimeUnit": {
+          "help": "Ändert die genannten Felder einer Zeiteinheit; alle übrigen bleiben stehen.",
+          "params": {
+            "unitId": "Die id der Zeiteinheit, wie read() sie unter timeUnits führt. Eine unbekannte id ist ein Fehler.",
+            "data": "Ein Objekt mit genau den Feldern, die sich ändern sollen — label (das Kürzel, das in einem Dauertext erkannt wird) oder factorSeconds (die Länge der Einheit in Sekunden, eine Zahl größer als 0). Was nicht darin steht, bleibt unverändert; ein fehlendes Objekt, ein label, das keine Zeichenkette ist, und ein factorSeconds von 0 oder weniger sind Fehler."
+          }
+        },
+        "deleteTimeUnit": {
+          "help": "Entfernt eine Zeiteinheit. Dauertexte, die nur diese Einheit benutzen, sind danach nicht mehr lesbar und gehen nicht in die Kennzahlen ein.",
+          "params": {
+            "unitId": "Die id der Zeiteinheit, wie read() sie unter timeUnits führt. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "resetSettingsToDefaults": {
+          "help": "Stellt die acht mitgelieferten Verschwendungsarten und die vier mitgelieferten Zeiteinheiten wieder her; Kennzeichnungen auf entfallene Arten fallen weg.",
+          "params": {}
+        },
+        "setSettingsOpen": {
+          "help": "Öffnet oder schließt den Einstellungsbereich für Verschwendungsarten und Zeiteinheiten. Der Zustand ist gespeichert, an den Daten ändert er nichts.",
+          "params": {
+            "open": "true öffnet den Bereich, false schließt ihn. Jeder andere Wert — auch ein fehlendes Argument — ist ein Fehler."
+          }
+        }
+      },
+      "fields": {
+        "title": {
+          "help": "Der Name des betrachteten Prozesses."
+        },
+        "roles": {
+          "help": "Die beteiligten Rollen in Anzeigereihenfolge. Je Rolle: id (damit sprechen die Aktionen sie an) und label (ihr Name)."
+        },
+        "steps": {
+          "help": "Die Prozessschritte in Ablaufreihenfolge. Je Schritt: id (damit sprechen die Aktionen ihn an), title, description, notes, roleIds (die mitwirkenden Rollen), mudaIds (die zugeordneten Verschwendungsarten), processTime und waitTime als Dauertext sowie expanded (ob die Karte aufgeklappt ist)."
+        },
+        "mudaCategories": {
+          "help": "Die Verschwendungsarten, auf die ein Schritt zeigen kann, vorbelegt mit den acht Arten von TIMWOODS+S. Je Art: id (damit sprechen die Aktionen sie an), code (das Kürzel in der Matrix), label (ein eigener Name; leer heißt, es gilt der mitgelieferte) und color als Hexwert."
+        },
+        "timeUnits": {
+          "help": "Die Zeiteinheiten, die in einem Dauertext erkannt werden. Je Einheit: id (damit sprechen die Aktionen sie an), label (das Kürzel im Text, etwa min) und factorSeconds (ihre Länge in Sekunden; ein Arbeitstag zählt 28800)."
+        },
+        "settingsOpen": {
+          "help": "Ob der Einstellungsbereich für Verschwendungsarten und Zeiteinheiten offen steht."
+        }
       }
     },
     "pairwise-comparison": {

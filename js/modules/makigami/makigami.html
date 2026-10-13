@@ -9,6 +9,13 @@
       :placeholder="t('titlePlaceholder')"
       :aria-label="t('title')">
 
+    <!-- Parität: jedes Eingabefeld dieser Vorlage schreibt über die
+         benannte Senke, die auch die Agentenfläche benutzt — `:value` plus
+         `@input` statt eines verschachtelten `x-model`, das am Setter vorbei
+         schriebe. Die Objektsenken (`setMudaCategory`, `setTimeUnit`) haben
+         dafür je einen Auspacker, weil eine Alpine-CSP-Bindung nur
+         Methodenaufrufe trägt. -->
+
     <!-- ── Settings ──────────────────────────────────────────── -->
     <div class="makigami__settings-area" data-ref="settings" :hidden="!model.settingsOpen">
       <div class="makigami__settings-head">
@@ -44,7 +51,8 @@
                     class="makigami__settings-input makigami__settings-input--code"
                     data-action="edit-muda-code"
                     :data-muda-id="cat.id"
-                    x-model="cat.code"
+                    :value="cat.code"
+                    @input="mudaCodeChanged(cat, $event)"
                     maxlength="4"
                     :aria-label="t('colCode')">
                 </td>
@@ -54,7 +62,8 @@
                     class="makigami__settings-input"
                     data-action="edit-muda-label"
                     :data-muda-id="cat.id"
-                    x-model="cat.label"
+                    :value="cat.label"
+                    @input="mudaLabelChanged(cat, $event)"
                     :placeholder="mudaPlaceholder(cat)"
                     :aria-label="t('colLabel')">
                 </td>
@@ -64,7 +73,8 @@
                     class="makigami__settings-color"
                     data-action="edit-muda-color"
                     :data-muda-id="cat.id"
-                    x-model="cat.color"
+                    :value="cat.color"
+                    @input="mudaColorChanged(cat, $event)"
                     :aria-label="t('colColor')">
                 </td>
                 <td>
@@ -109,7 +119,8 @@
                     class="makigami__settings-input makigami__settings-input--code"
                     data-action="edit-unit-label"
                     :data-unit-id="unit.id"
-                    x-model="unit.label"
+                    :value="unit.label"
+                    @input="unitLabelChanged(unit, $event)"
                     maxlength="8"
                     :aria-label="t('colLabel')">
                 </td>
@@ -204,7 +215,8 @@
                         class="makigami__step-title-input"
                         :data-step-id="step.id"
                         data-action="edit-step-title"
-                        x-model="step.title"
+                        :value="step.title"
+                        @input="setStepTitle(step.id, $event.target.value)"
                         :placeholder="t('stepTitlePlaceholder')"
                         :aria-label="t('stepTitlePlaceholder')">
                       <button
@@ -247,7 +259,8 @@
                         class="makigami__role-label-input"
                         :data-role-id="role.id"
                         data-action="edit-role-label"
-                        x-model="role.label"
+                        :value="role.label"
+                        @input="setRoleLabel(role.id, $event.target.value)"
                         :placeholder="t('rolePlaceholder')"
                         :aria-label="t('rolePlaceholder')">
                       <button
@@ -350,7 +363,8 @@
                 data-action="edit-description"
                 :data-step-id="step.id"
                 rows="2"
-                x-model="step.description"
+                :value="step.description"
+                @input="setStepDescription(step.id, $event.target.value)"
                 :placeholder="t('cardActivityPlaceholder')"></textarea>
             </div>
 
@@ -388,7 +402,8 @@
                   :class="timeValid(step.processTime) ? '' : 'makigami__time-input--invalid'"
                   data-action="edit-process-time"
                   :data-step-id="step.id"
-                  x-model="step.processTime"
+                  :value="step.processTime"
+                  @input="setStepProcessTime(step.id, $event.target.value)"
                   @blur="timeBlur(step, 'processTime', $event)"
                   :placeholder="t('cardTimeHint')"
                   :aria-invalid="timeValid(step.processTime) ? 'false' : 'true'">
@@ -403,7 +418,8 @@
                   :class="timeValid(step.waitTime) ? '' : 'makigami__time-input--invalid'"
                   data-action="edit-wait-time"
                   :data-step-id="step.id"
-                  x-model="step.waitTime"
+                  :value="step.waitTime"
+                  @input="setStepWaitTime(step.id, $event.target.value)"
                   @blur="timeBlur(step, 'waitTime', $event)"
                   :placeholder="t('cardTimeHint')"
                   :aria-invalid="timeValid(step.waitTime) ? 'false' : 'true'">
@@ -448,7 +464,8 @@
                 data-action="edit-notes"
                 :data-step-id="step.id"
                 rows="2"
-                x-model="step.notes"
+                :value="step.notes"
+                @input="setStepNotes(step.id, $event.target.value)"
                 :placeholder="t('cardNotesPlaceholder')"></textarea>
             </div>
           </div>

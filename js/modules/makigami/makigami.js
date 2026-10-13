@@ -15,6 +15,14 @@
  * export are exposed via config.actions (unified workspace action bar) rather
  * than an in-content toolbar. No HTML is built in JS for the UI — the markup
  * lives in makigami.html.
+ *
+ * @agent  Vollständig über das Viewmodel steuerbar: Prozessname, Rollen,
+ *   Prozessschritte samt Beschreibung, Notiz, Bearbeitungs- und Wartezeit,
+ *   die Mitwirkung einer Rolle an einem Schritt, die Verschwendungsarten
+ *   eines Schritts, deren Katalog und die Zeiteinheiten, die Reihenfolge von
+ *   Schritten und Rollen sowie der Einstellungsbereich. Der Oberfläche
+ *   bleiben der Dateidownload, die Rückfragen vor dem Löschen und die
+ *   Maus-Gestik des Verschiebens.
  */
 
 import { createModule } from '../../core/template-module.js';
@@ -23,7 +31,29 @@ import {
 } from '../../core/export-utils.js';
 import { escAttr } from '../../core/html-utils.js';
 import { parseDuration, formatDuration, canonicalize } from './makigami-duration.js';
+import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
 import { State } from './makigami-model.js';
+
+/**
+ * Ein freier Text, dessen dokumentierter Leerwert die leere Zeichenkette ist.
+ *
+ * Ruling 55: `agent-ops.js` übergibt `action.args ?? []` ohne Arity-Prüfung,
+ * ein FEHLENDES Argument kommt also als `undefined` an. Ein `String(v ?? '')`
+ * machte daraus stillschweigend den dokumentierten Leerwert — ein Aufruf mit
+ * zu wenigen Argumenten löschte dann einen Text und meldete Erfolg. Die
+ * Meldungsgestalt ist dieselbe wie in `agent-argcheck.js`.
+ *
+ * @param {string} name Name des Arguments (erscheint in der Meldung)
+ * @param {any} value der übergebene Wert
+ * @throws {Error} wenn `value` keine Zeichenkette ist
+ * @returns {void}
+ */
+function requireText(name, value) {
+  if (typeof value !== 'string') {
+    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any string, "" clears it`);
+  }
+}
 
 export default createModule({
   config: {
@@ -33,6 +63,11 @@ export default createModule({
     icon: 'module.makigami',
     version: '1.0.0',
     meta: import.meta,
+    // Der Einstellungsknopf UMSCHALTET; die Agentenentsprechung ist der
+    // absolute `setSettingsOpen`, also trägt die Leistenaktion kein
+    // `agentAction` (das nennt eine Agentenmethode, und `toggleSettings` ist
+    // keine). Die Exportaktionen tragen keines: ihre Methoden sind
+    // `_`-präfigiert und stehen in keiner Registry.
     actions: [
       { icon: 'action.settings', title: 'settings', onClick: (d) => d.toggleSettings() },
       {
@@ -52,6 +87,8 @@ export default createModule({
 
   data(module, _t) {
     return {
+      ...agentReadMixin(module),
+
       // ── Transient UI state (never persisted) ──────────────────
       /** @type {string|null} */
       _draggedId: null,
@@ -61,26 +98,311 @@ export default createModule({
       _dragMouseUpHandler: null,
 
       // ── Settings toggle ───────────────────────────────────────
-      toggleSettings() {
-        this.model.settingsOpen = !this.model.settingsOpen;
-        if (this.model.settingsOpen) {
+      /**
+       * Öffnet oder schließt den Einstellungsbereich.
+       * @agent
+       * @param {boolean} open true öffnet ihn, false schließt ihn
+       * @returns {void}
+       * @throws {Error} wenn `open` nicht true oder false ist
+       */
+      setSettingsOpen(open) {
+        // `requireEnum` über die zwei Wahrheitswerte statt eines `=== true`:
+        // ein fehlendes Argument (`undefined`) wäre sonst stillschweigend
+        // „schließen" statt ein Fehler (Ruling 55).
+        requireEnum('open', open, [true, false]);
+        this.model.settingsOpen = open;
+        if (open) {
           this.$nextTick(() => {
             this.$el.querySelector('[data-ref="settings"]')
               ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
           });
         }
       },
+      /**
+       * @noagent Knopf der Leiste: der Ausgang hängt am Vorzustand, für einen
+       * Agenten ist das keine eigene Fähigkeit — `setSettingsOpen` ist der
+       * Weg. Die Zuweisung liegt dort, dieses Feld hat genau eine
+       * Zuweisungsstelle.
+       */
+      toggleSettings() {
+        this.setSettingsOpen(!this.model.settingsOpen);
+      },
+      /** @noagent Schließknopf des Bereichs; delegiert an `setSettingsOpen`. */
       closeSettings() {
-        this.model.settingsOpen = false;
+        this.setSettingsOpen(false);
       },
 
       // ── Roles & steps ─────────────────────────────────────────
-      addRole() { this.model.addRole(); },
-      addStep() { this.model.addStep(); },
-      toggleParticipation(stepId, roleId) { this.model.toggleParticipation(stepId, roleId); },
-      toggleMuda(stepId, mudaId) { this.model.toggleMuda(stepId, mudaId); },
-      toggleStepExpanded(stepId) { this.model.toggleStepExpanded(stepId); },
+      /**
+       * Legt eine Rolle ohne Namen an.
+       * @agent
+       * @returns {string} die id der neuen Rolle, mit der alle weiteren
+       *   Rollenaktionen sie ansprechen
+       */
+      addRole() {
+        this.model.addRole();
+        return this.model.roles[this.model.roles.length - 1].id;
+      },
+      /**
+       * Legt einen Prozessschritt ohne Titel am Ende der Kette an.
+       * @agent
+       * @returns {string} die id des neuen Schritts, mit der alle weiteren
+       *   Schrittaktionen ihn ansprechen
+       */
+      addStep() {
+        this.model.addStep();
+        return this.model.steps[this.model.steps.length - 1].id;
+      },
+      /**
+       * Bestimmt, ob eine Rolle an einem Schritt mitwirkt.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {string} roleId id der Rolle
+       * @param {boolean} participates true setzt die Mitwirkung, false nimmt
+       *   sie zurück
+       * @returns {void}
+       * @throws {Error} wenn kein Schritt oder keine Rolle diese id trägt oder
+       *   `participates` nicht true oder false ist
+       */
+      setParticipation(stepId, roleId, participates) {
+        requireKnownId('stepId', stepId, this.model.steps.map(s => s.id));
+        requireKnownId('roleId', roleId, this.model.roles.map(r => r.id));
+        requireEnum('participates', participates, [true, false]);
+        this.model.setParticipation(stepId, roleId, participates);
+      },
+      /**
+       * Bestimmt, ob eine Verschwendungsart einen Schritt kennzeichnet.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {string} mudaId id der Verschwendungsart
+       * @param {boolean} marked true setzt die Kennzeichnung, false nimmt sie
+       *   zurück
+       * @returns {void}
+       * @throws {Error} wenn kein Schritt oder keine Verschwendungsart diese
+       *   id trägt oder `marked` nicht true oder false ist
+       */
+      setMuda(stepId, mudaId, marked) {
+        requireKnownId('stepId', stepId, this.model.steps.map(s => s.id));
+        requireKnownId('mudaId', mudaId, this.model.mudaCategories.map(m => m.id));
+        requireEnum('marked', marked, [true, false]);
+        this.model.setMuda(stepId, mudaId, marked);
+      },
+      /**
+       * Klappt die Karte eines Schritts auf oder zu.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {boolean} expanded true klappt sie auf, false klappt sie zu
+       * @returns {void}
+       * @throws {Error} wenn kein Schritt diese id trägt oder `expanded` nicht
+       *   true oder false ist
+       */
+      setStepExpanded(stepId, expanded) {
+        requireKnownId('stepId', stepId, this.model.steps.map(s => s.id));
+        requireEnum('expanded', expanded, [true, false]);
+        this.model.setStepExpanded(stepId, expanded);
+      },
+      /**
+       * @noagent Klick auf den Punkt der Matrix bzw. auf eine Rollenmarke der
+       * Karte: der Ausgang hängt am Vorzustand, für einen Agenten ist das
+       * keine eigene Fähigkeit — `setParticipation` ist der Weg. Die
+       * Zuweisung liegt dort, dieses Feld hat genau eine Zuweisungsstelle.
+       */
+      toggleParticipation(stepId, roleId) {
+        const step = this._step(stepId);
+        if (!step) return;
+        this.setParticipation(stepId, roleId, !step.roleIds.includes(roleId));
+      },
+      /**
+       * @noagent Klick auf eine Verschwendungsmarke der Karte; delegiert an
+       * `setMuda` (siehe `toggleParticipation`).
+       */
+      toggleMuda(stepId, mudaId) {
+        const step = this._step(stepId);
+        if (!step) return;
+        this.setMuda(stepId, mudaId, !step.mudaIds.includes(mudaId));
+      },
+      /**
+       * @noagent Klick auf den Aufklapp-Knopf der Karte; delegiert an
+       * `setStepExpanded` (siehe `toggleParticipation`).
+       */
+      toggleStepExpanded(stepId) {
+        const step = this._step(stepId);
+        if (!step) return;
+        this.setStepExpanded(stepId, step.expanded === false);
+      },
+      /**
+       * Setzt den Namen des betrachteten Prozesses.
+       * @agent
+       * @param {string} text der Name; die leere Zeichenkette löscht ihn
+       * @returns {void}
+       * @throws {Error} wenn `text` keine Zeichenkette ist
+       */
+      setTitle(text) {
+        requireText('text', text);
+        this.model.title = text;
+      },
+      /**
+       * Setzt den Namen einer Rolle.
+       * @agent
+       * @param {string} roleId id der Rolle
+       * @param {string} label der Name; die leere Zeichenkette löscht ihn
+       * @returns {void}
+       * @throws {Error} wenn keine Rolle diese id trägt oder `label` keine
+       *   Zeichenkette ist
+       */
+      setRoleLabel(roleId, label) {
+        requireKnownId('roleId', roleId, this.model.roles.map(r => r.id));
+        requireText('label', label);
+        this.model.roles.find(r => r.id === roleId).label = label;
+      },
+      /**
+       * Setzt den Titel eines Prozessschritts.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {string} text der Titel; die leere Zeichenkette löscht ihn
+       * @returns {void}
+       * @throws {Error} wenn kein Schritt diese id trägt oder `text` keine
+       *   Zeichenkette ist
+       */
+      setStepTitle(stepId, text) {
+        requireKnownId('stepId', stepId, this.model.steps.map(s => s.id));
+        requireText('text', text);
+        this._step(stepId).title = text;
+      },
+      /**
+       * Setzt die Beschreibung eines Prozessschritts.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {string} text die Beschreibung; die leere Zeichenkette löscht sie
+       * @returns {void}
+       * @throws {Error} wenn kein Schritt diese id trägt oder `text` keine
+       *   Zeichenkette ist
+       */
+      setStepDescription(stepId, text) {
+        requireKnownId('stepId', stepId, this.model.steps.map(s => s.id));
+        requireText('text', text);
+        this._step(stepId).description = text;
+      },
+      /**
+       * Setzt die Notiz eines Prozessschritts.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {string} text die Notiz; die leere Zeichenkette löscht sie
+       * @returns {void}
+       * @throws {Error} wenn kein Schritt diese id trägt oder `text` keine
+       *   Zeichenkette ist
+       */
+      setStepNotes(stepId, text) {
+        requireKnownId('stepId', stepId, this.model.steps.map(s => s.id));
+        requireText('text', text);
+        this._step(stepId).notes = text;
+      },
+      /**
+       * Setzt die Bearbeitungszeit eines Prozessschritts.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {string} text die Dauer als Text, etwa `30 min` oder
+       *   `1 d 2 h`; die leere Zeichenkette löscht sie
+       * @returns {boolean} true wenn die Dauer lesbar ist und in die
+       *   Kennzahlen eingeht, false wenn sie gespeichert, aber nicht lesbar
+       *   ist
+       * @throws {Error} wenn kein Schritt diese id trägt oder `text` keine
+       *   Zeichenkette ist
+       */
+      setStepProcessTime(stepId, text) {
+        return this._setStepTime(stepId, 'processTime', text);
+      },
+      /**
+       * Setzt die Wartezeit eines Prozessschritts.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {string} text die Dauer als Text, etwa `30 min` oder
+       *   `1 d 2 h`; die leere Zeichenkette löscht sie
+       * @returns {boolean} true wenn die Dauer lesbar ist und in die
+       *   Kennzahlen eingeht, false wenn sie gespeichert, aber nicht lesbar
+       *   ist
+       * @throws {Error} wenn kein Schritt diese id trägt oder `text` keine
+       *   Zeichenkette ist
+       */
+      setStepWaitTime(stepId, text) {
+        return this._setStepTime(stepId, 'waitTime', text);
+      },
+      /**
+       * Entfernt einen Prozessschritt.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @returns {void}
+       * @throws {Error} wenn kein Schritt diese id trägt
+       */
+      removeStep(stepId) {
+        requireKnownId('stepId', stepId, this.model.steps.map(s => s.id));
+        this.model.deleteStep(stepId);
+      },
+      /**
+       * Entfernt eine Rolle und ihre Mitwirkungen.
+       * @agent
+       * @param {string} roleId id der Rolle
+       * @returns {void}
+       * @throws {Error} wenn keine Rolle diese id trägt
+       */
+      removeRole(roleId) {
+        requireKnownId('roleId', roleId, this.model.roles.map(r => r.id));
+        this.model.deleteRole(roleId);
+      },
+      /**
+       * Stellt einen Prozessschritt vor einen anderen.
+       * @agent
+       * @param {string} draggedId id des Schritts, der umziehen soll
+       * @param {string} targetId id des Schritts, vor den er soll; dieselbe id
+       *   wie `draggedId` lässt die Reihenfolge unverändert
+       * @returns {void}
+       * @throws {Error} wenn kein Schritt eine dieser ids trägt
+       */
+      reorderSteps(draggedId, targetId) {
+        const ids = this.model.steps.map(s => s.id);
+        requireKnownId('draggedId', draggedId, ids);
+        requireKnownId('targetId', targetId, ids);
+        this.model.reorderSteps(draggedId, targetId);
+      },
+      /**
+       * Stellt eine Rolle vor eine andere.
+       * @agent
+       * @param {string} draggedId id der Rolle, die umziehen soll
+       * @param {string} targetId id der Rolle, vor die sie soll; dieselbe id
+       *   wie `draggedId` lässt die Reihenfolge unverändert
+       * @returns {void}
+       * @throws {Error} wenn keine Rolle eine dieser ids trägt
+       */
+      reorderRoles(draggedId, targetId) {
+        const ids = this.model.roles.map(r => r.id);
+        requireKnownId('draggedId', draggedId, ids);
+        requireKnownId('targetId', targetId, ids);
+        this.model.reorderRoles(draggedId, targetId);
+      },
 
+      /** Der Schritt mit dieser id; jede Senke prüft die id vorher. */
+      _step(stepId) {
+        return this.model.steps.find(s => s.id === stepId);
+      },
+      /**
+       * Bearbeitungs- oder Wartezeit setzen. Ein nicht lesbarer Dauertext ist
+       * KEIN Wurf: die Oberfläche speichert ihn genauso und markiert das Feld
+       * nur (`timeValid`), und `computeKPI` überspringt ihn. Ein Wurf machte
+       * das Eingabefeld unbenutzbar, weil jeder Tastendruck durch diese Senke
+       * läuft. Der Rückgabewert sagt dem Agenten, was die Markierung dem
+       * Nutzer sagt.
+       */
+      _setStepTime(stepId, field, text) {
+        requireKnownId('stepId', stepId, this.model.steps.map(s => s.id));
+        requireText('text', text);
+        this._step(stepId)[field] = text;
+        return parseDuration(text, this.model.timeUnits).valid;
+      },
+
+      /**
+       * @noagent fragt vor dem Löschen zurück; ein Agent darf keine Rückfrage
+       * auslösen — er blockierte den Stapel (E3). Delegiert an `removeStep`.
+       */
       async deleteStep(stepId) {
         const idx = this.model.steps.findIndex(s => s.id === stepId);
         if (idx === -1) return;
@@ -92,9 +414,13 @@ export default createModule({
            
           : confirm(msg);
         if (!ok) return;
-        this.model.deleteStep(stepId);
+        this.removeStep(stepId);
       },
 
+      /**
+       * @noagent fragt vor dem Löschen zurück; ein Agent darf keine Rückfrage
+       * auslösen — er blockierte den Stapel (E3). Delegiert an `removeRole`.
+       */
       async deleteRole(roleId) {
         const role = this.model.roles.find(r => r.id === roleId);
         if (!role) return;
@@ -105,55 +431,210 @@ export default createModule({
            
           : confirm(msg);
         if (!ok) return;
-        this.model.deleteRole(roleId);
+        this.removeRole(roleId);
       },
 
       // ── Settings mutators ─────────────────────────────────────
-      addMudaCategory() { this.model.addMudaCategory(); },
-      addTimeUnit() { this.model.addTimeUnit(); },
-      deleteMudaCategory(mudaId) { this.model.deleteMudaCategory(mudaId); },
-      deleteTimeUnit(unitId) { this.model.deleteTimeUnit(unitId); },
+      /**
+       * Legt eine Verschwendungsart ohne Kürzel und Namen an.
+       * @agent
+       * @returns {string} die id der neuen Verschwendungsart
+       */
+      addMudaCategory() {
+        this.model.addMudaCategory();
+        return this.model.mudaCategories[this.model.mudaCategories.length - 1].id;
+      },
+      /**
+       * Legt eine Zeiteinheit ohne Kürzel mit der Länge einer Sekunde an.
+       * @agent
+       * @returns {string} die id der neuen Zeiteinheit
+       */
+      addTimeUnit() {
+        this.model.addTimeUnit();
+        return this.model.timeUnits[this.model.timeUnits.length - 1].id;
+      },
+      /**
+       * Entfernt eine Verschwendungsart und ihre Kennzeichnungen an den
+       * Schritten.
+       * @agent
+       * @param {string} mudaId id der Verschwendungsart
+       * @returns {void}
+       * @throws {Error} wenn keine Verschwendungsart diese id trägt
+       */
+      deleteMudaCategory(mudaId) {
+        requireKnownId('mudaId', mudaId, this.model.mudaCategories.map(m => m.id));
+        this.model.deleteMudaCategory(mudaId);
+      },
+      /**
+       * Entfernt eine Zeiteinheit. Dauertexte, die nur sie benutzen, sind
+       * danach nicht mehr lesbar und gehen nicht in die Kennzahlen ein.
+       * @agent
+       * @param {string} unitId id der Zeiteinheit
+       * @returns {void}
+       * @throws {Error} wenn keine Zeiteinheit diese id trägt
+       */
+      deleteTimeUnit(unitId) {
+        requireKnownId('unitId', unitId, this.model.timeUnits.map(u => u.id));
+        this.model.deleteTimeUnit(unitId);
+      },
+      /**
+       * Ändert die genannten Felder einer Verschwendungsart; alle übrigen
+       * bleiben stehen.
+       * @agent
+       * @param {string} mudaId id der Verschwendungsart
+       * @param {object} data die zu ändernden Felder — `code` (das Kürzel in
+       *   der Matrix), `label` (der Name) oder `color` (ein Hexwert wie
+       *   `#4a90e2`)
+       * @returns {void}
+       * @throws {Error} wenn keine Verschwendungsart diese id trägt, `data`
+       *   kein Objekt ist oder ein genannter Wert keine Zeichenkette ist
+       */
+      setMudaCategory(mudaId, data) {
+        requireKnownId('mudaId', mudaId, this.model.mudaCategories.map(m => m.id));
+        this._requireData(data);
+        const cat = this.model.mudaCategories.find(m => m.id === mudaId);
+        if (data.code !== undefined) { requireText('code', data.code); cat.code = data.code; }
+        if (data.label !== undefined) { requireText('label', data.label); cat.label = data.label; }
+        if (data.color !== undefined) { requireText('color', data.color); cat.color = data.color; }
+      },
+      /**
+       * Ändert die genannten Felder einer Zeiteinheit; alle übrigen bleiben
+       * stehen.
+       * @agent
+       * @param {string} unitId id der Zeiteinheit
+       * @param {object} data die zu ändernden Felder — `label` (das Kürzel,
+       *   das in einem Dauertext erkannt wird) oder `factorSeconds` (ihre
+       *   Länge in Sekunden, eine Zahl größer als 0)
+       * @returns {void}
+       * @throws {Error} wenn keine Zeiteinheit diese id trägt, `data` kein
+       *   Objekt ist, `label` keine Zeichenkette oder `factorSeconds` keine
+       *   Zahl größer als 0 ist
+       */
+      setTimeUnit(unitId, data) {
+        requireKnownId('unitId', unitId, this.model.timeUnits.map(u => u.id));
+        this._requireData(data);
+        const unit = this.model.timeUnits.find(u => u.id === unitId);
+        if (data.label !== undefined) { requireText('label', data.label); unit.label = data.label; }
+        if (data.factorSeconds !== undefined) {
+          const n = Number(data.factorSeconds);
+          if (!Number.isFinite(n) || n <= 0) {
+            throw new Error(`invalid factorSeconds ${JSON.stringify(data.factorSeconds)}; allowed: a number greater than 0`);
+          }
+          unit.factorSeconds = n;
+        }
+      },
+      /**
+       * Stellt die mitgelieferten Verschwendungsarten und Zeiteinheiten
+       * wieder her; Kennzeichnungen auf entfallene Arten fallen weg.
+       * @agent
+       * @returns {void}
+       */
+      resetSettingsToDefaults() {
+        this.model.resetSettings();
+      },
+      /**
+       * Prüft, dass ein Änderungsobjekt überhaupt eines ist. Ein fehlendes
+       * Argument (`undefined`) ist ein Fehler und kein leeres Objekt — sonst
+       * änderte ein Aufruf ohne Argument stillschweigend nichts und meldete
+       * Erfolg (Ruling 55).
+       */
+      _requireData(data) {
+        if (!data || typeof data !== 'object' || Array.isArray(data)) {
+          throw new Error(`invalid data ${JSON.stringify(data)}; allowed: an object with at least one field`);
+        }
+      },
+      /**
+       * @noagent Ereignis-Auspacker des Kürzelfeldes einer Verschwendungsart;
+       * delegiert an `setMudaCategory`. Ein eigener Auspacker, weil eine
+       * Alpine-CSP-Bindung nur Methodenaufrufe trägt und kein Objektliteral.
+       */
+      mudaCodeChanged(cat, event) {
+        this.setMudaCategory(cat.id, { code: event.target.value });
+      },
+      /**
+       * @noagent Ereignis-Auspacker des Namensfeldes einer Verschwendungsart;
+       * delegiert an `setMudaCategory`.
+       */
+      mudaLabelChanged(cat, event) {
+        this.setMudaCategory(cat.id, { label: event.target.value });
+      },
+      /**
+       * @noagent Ereignis-Auspacker des Farbfeldes einer Verschwendungsart;
+       * delegiert an `setMudaCategory`.
+       */
+      mudaColorChanged(cat, event) {
+        this.setMudaCategory(cat.id, { color: event.target.value });
+      },
+      /**
+       * @noagent Ereignis-Auspacker des Kürzelfeldes einer Zeiteinheit;
+       * delegiert an `setTimeUnit`.
+       */
+      unitLabelChanged(unit, event) {
+        this.setTimeUnit(unit.id, { label: event.target.value });
+      },
+      /**
+       * @noagent Ereignis-Auspacker des Faktorfeldes; delegiert an
+       * `setTimeUnit`. Ein unbrauchbarer Wert bleibt hier ohne Wirkung, so wie
+       * vorher — die Oberfläche hat dafür keine Meldung.
+       */
       unitFactorChanged(unit, event) {
         const n = Number(event.target.value);
         if (!Number.isFinite(n) || n <= 0) return;
-        unit.factorSeconds = n;
+        this.setTimeUnit(unit.id, { factorSeconds: n });
       },
+      /**
+       * @noagent fragt vor dem Zurücksetzen zurück; ein Agent darf keine
+       * Rückfrage auslösen — er blockierte den Stapel (E3). Delegiert an
+       * `resetSettingsToDefaults`.
+       */
       async resetSettings() {
         const ok = module._context?.confirmPopout
           ? await module._context.confirmPopout(_t('settingsResetConfirm'), { danger: true })
            
           : confirm(_t('settingsResetConfirm'));
         if (!ok) return;
-        this.model.resetSettings();
+        this.resetSettingsToDefaults();
       },
 
       // ── View helpers ──────────────────────────────────────────
+      /** @noagent view transform: die Nummer eines Schritts in der Matrix. */
       stepBadge(i) { return `S${  i + 1}`; },
+      /** @noagent view transform: ob die Karte eines Schritts aufgeklappt ist. */
       cardExpanded(step) { return step.expanded !== false; },
+      /** @noagent view transform: der Titel einer Karte, ersatzweise ihre Nummer. */
       cardTitle(step, idx) {
         return step.title.trim() || (`S${  idx + 1}`);
       },
+      /** @noagent view transform: ob eine Rolle an einem Schritt mitwirkt. */
       stepHasRole(step, roleId) { return step.roleIds.includes(roleId); },
+      /** @noagent view transform: ob eine Verschwendungsart einen Schritt kennzeichnet. */
       stepHasMuda(step, mudaId) { return step.mudaIds.includes(mudaId); },
+      /** @noagent view transform: der Name einer Rolle, ersatzweise ein Platzhalter. */
       roleChipLabel(role) { return role.label.trim() || _t('rolePlaceholder'); },
+      /** @noagent view transform: der Name einer Verschwendungsart. */
       mudaLabel(cat) {
         if (cat.label) return cat.label;
         if (cat.labelKey) return _t(cat.labelKey);
         return cat.code || '';
       },
+      /** @noagent view transform: der Platzhalter im Namensfeld einer Verschwendungsart. */
       mudaPlaceholder(cat) {
         return cat.labelKey ? _t(cat.labelKey) : '';
       },
+      /** @noagent view transform: ob ein Dauertext lesbar ist. */
       timeValid(text) {
         return parseDuration(text, this.model.timeUnits).valid;
       },
 
       // ── KPI ───────────────────────────────────────────────────
+      /** @noagent view transform: die gerechneten Kennzahlen. */
       kpi() { return this.model.computeKPI(); },
+      /** @noagent view transform: eine Sekundenzahl als Dauertext. */
       kpiTime(seconds) {
         if (this.model.steps.length === 0) return _t('kpiNoData');
         return formatDuration(seconds, this.model.timeUnits);
       },
+      /** @noagent view transform: ein Verhältnis als Prozentangabe. */
       kpiPCE(ratio) {
         if (ratio == null) return _t('kpiNoData');
         const locale = module._context.i18n.getLanguage() === 'de' ? 'de-DE' : 'en-US';
@@ -161,11 +642,16 @@ export default createModule({
       },
 
       // ── Time input blur — canonicalize valid, non-empty input ─
+      /**
+       * @noagent Ereignis-Auspacker des Zeitfeldes: er schreibt die lesbare
+       * Form eines gültigen Dauertexts zurück. Delegiert an die Senke des
+       * jeweiligen Feldes.
+       */
       timeBlur(step, field, event) {
         const el = event.target;
         const result = canonicalize(el.value, this.model.timeUnits);
         if (result.valid && result.text !== el.value && el.value.trim() !== '') {
-          step[field] = result.text;
+          this._setStepTime(step.id, field, result.text);
         }
       },
 
@@ -173,6 +659,7 @@ export default createModule({
       // Replicates the legacy grip-handle drag: the handle arms `draggable` on
       // the parent th on mousedown; a document mouseup disarms it. dragstart on a
       // th records source id+type; drop on a same-type th reorders before target.
+      /** @noagent DOM event handler — ein Agent kann kein `DragEvent` erzeugen. */
       dragHandleDown(event) {
         const root = event.target.closest('.makigami__matrix-step-head, .makigami__matrix-role-head');
         if (root) root.setAttribute('draggable', 'true');
@@ -213,27 +700,37 @@ export default createModule({
         if (!node.contains(event.relatedTarget)) node.classList.remove(overClass);
       },
 
+      /** @noagent DOM event handler — ein Agent kann kein `DragEvent` erzeugen. */
       dragStartStep(id, event) { this._startDrag(id, 'step', event); },
+      /** @noagent DOM event handler. */
       dragEndStep(event) { this._endDrag(event); },
+      /** @noagent DOM event handler. */
       dragOverStep(id, event) { this._overDrag(id, 'step', event, 'makigami__matrix-step-head--drag-over'); },
+      /** @noagent DOM event handler. */
       dragLeaveStep(id, event) { this._leaveDrag(event, 'makigami__matrix-step-head--drag-over'); },
+      /** @noagent DOM event handler; die Verschiebung selbst läuft über `reorderSteps`. */
       dropStep(id, event) {
         if (this._draggedType !== 'step') return;
         event.preventDefault();
         if (this._draggedId && this._draggedId !== id) {
-          this.model.reorderSteps(this._draggedId, id);
+          this.reorderSteps(this._draggedId, id);
         }
       },
 
+      /** @noagent DOM event handler — ein Agent kann kein `DragEvent` erzeugen. */
       dragStartRole(id, event) { this._startDrag(id, 'role', event); },
+      /** @noagent DOM event handler. */
       dragEndRole(event) { this._endDrag(event); },
+      /** @noagent DOM event handler. */
       dragOverRole(id, event) { this._overDrag(id, 'role', event, 'makigami__matrix-role-head--drag-over'); },
+      /** @noagent DOM event handler. */
       dragLeaveRole(id, event) { this._leaveDrag(event, 'makigami__matrix-role-head--drag-over'); },
+      /** @noagent DOM event handler; die Verschiebung selbst läuft über `reorderRoles`. */
       dropRole(id, event) {
         if (this._draggedType !== 'role') return;
         event.preventDefault();
         if (this._draggedId && this._draggedId !== id) {
-          this.model.reorderRoles(this._draggedId, id);
+          this.reorderRoles(this._draggedId, id);
         }
       },
 
@@ -455,6 +952,7 @@ export default createModule({
       },
 
       // ── Lifecycle (per Alpine instance) ───────────────────────
+      /** @noagent lifecycle, kein Zustandsweg. */
       init() {
         // Global mouseup disarms any `draggable` armed by a grip handle.
         this._dragMouseUpHandler = () => {
@@ -462,6 +960,7 @@ export default createModule({
         };
         document.addEventListener('mouseup', this._dragMouseUpHandler);
       },
+      /** @noagent lifecycle, kein Zustandsweg. */
       destroy() {
         if (this._dragMouseUpHandler) {
           document.removeEventListener('mouseup', this._dragMouseUpHandler);

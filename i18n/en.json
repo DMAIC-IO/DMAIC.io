@@ -2860,6 +2860,178 @@
         "overprocessing": "Over-processing",
         "defects": "Defects / Rework",
         "skills": "Unused potential"
+      },
+      "whenToUse": "When a cross-department process is to be recorded step by step with responsibility, processing time, waiting time and waste categories so that idle time becomes visible; not for the flow logic itself with its decisions and branches, which is what a flowchart is for.",
+      "actions": {
+        "setTitle": {
+          "help": "Sets the name of the process under study.",
+          "params": {
+            "text": "The name of the process. An empty string clears it; a missing argument is an error."
+          }
+        },
+        "addRole": {
+          "help": "Adds a role without a name and returns its id.",
+          "params": {}
+        },
+        "addStep": {
+          "help": "Adds a process step without a title at the end of the chain and returns its id.",
+          "params": {}
+        },
+        "setRoleLabel": {
+          "help": "Sets the name of a role.",
+          "params": {
+            "roleId": "The id of the role as read() lists it under roles. An unknown id is an error.",
+            "label": "The name of the role. An empty string clears it; a missing argument is an error."
+          }
+        },
+        "setStepTitle": {
+          "help": "Sets the title of a process step.",
+          "params": {
+            "stepId": "The id of the process step as read() lists it under steps. An unknown id is an error.",
+            "text": "The title of the step. An empty string clears it; a missing argument is an error."
+          }
+        },
+        "setStepDescription": {
+          "help": "Sets the description of what happens in a process step.",
+          "params": {
+            "stepId": "The id of the process step as read() lists it under steps. An unknown id is an error.",
+            "text": "The description of the activity. An empty string clears it; a missing argument is an error."
+          }
+        },
+        "setStepNotes": {
+          "help": "Sets the note of a process step.",
+          "params": {
+            "stepId": "The id of the process step as read() lists it under steps. An unknown id is an error.",
+            "text": "The note on the step. An empty string clears it; a missing argument is an error."
+          }
+        },
+        "setStepProcessTime": {
+          "help": "Sets the processing time of a process step — the time actually spent working on the case.",
+          "params": {
+            "stepId": "The id of the process step as read() lists it under steps. An unknown id is an error.",
+            "text": "The duration as text made of a number and a unit, e.g. 30 min or 1 d 2 h; the units recognised are listed in timeUnits. An empty string clears the entry; an unreadable text is stored but does not count towards the key figures and returns false. A missing argument is an error."
+          }
+        },
+        "setStepWaitTime": {
+          "help": "Sets the waiting time of a process step — the time the case lies idle.",
+          "params": {
+            "stepId": "The id of the process step as read() lists it under steps. An unknown id is an error.",
+            "text": "The duration as text made of a number and a unit, e.g. 30 min or 1 d 2 h; the units recognised are listed in timeUnits. An empty string clears the entry; an unreadable text is stored but does not count towards the key figures and returns false. A missing argument is an error."
+          }
+        },
+        "setStepExpanded": {
+          "help": "Unfolds or folds the card of a process step. The state is stored; it changes nothing about the content of the step.",
+          "params": {
+            "stepId": "The id of the process step as read() lists it under steps. An unknown id is an error.",
+            "expanded": "true unfolds the card, false folds it. Any other value — a missing argument included — is an error."
+          }
+        },
+        "setParticipation": {
+          "help": "Decides whether a role takes part in a process step.",
+          "params": {
+            "stepId": "The id of the process step as read() lists it under steps. An unknown id is an error.",
+            "roleId": "The id of the role as read() lists it under roles. An unknown id is an error.",
+            "participates": "true makes the role take part, false takes the participation back. Any other value — a missing argument included — is an error."
+          }
+        },
+        "setMuda": {
+          "help": "Decides whether a waste category marks a process step.",
+          "params": {
+            "stepId": "The id of the process step as read() lists it under steps. An unknown id is an error.",
+            "mudaId": "The id of the waste category as read() lists it under mudaCategories. An unknown id is an error.",
+            "marked": "true marks the step, false takes the marking back. Any other value — a missing argument included — is an error."
+          }
+        },
+        "removeStep": {
+          "help": "Removes a process step.",
+          "params": {
+            "stepId": "The id of the process step as read() lists it under steps. An unknown id is an error."
+          }
+        },
+        "removeRole": {
+          "help": "Removes a role together with its participations in every step.",
+          "params": {
+            "roleId": "The id of the role as read() lists it under roles. An unknown id is an error."
+          }
+        },
+        "reorderSteps": {
+          "help": "Places a process step in front of another; the remaining ones move up.",
+          "params": {
+            "draggedId": "The id of the step that should move. An unknown id is an error.",
+            "targetId": "The id of the step it should go in front of. The same id as draggedId leaves the order unchanged; an unknown id is an error."
+          }
+        },
+        "reorderRoles": {
+          "help": "Places a role in front of another; the remaining ones move up.",
+          "params": {
+            "draggedId": "The id of the role that should move. An unknown id is an error.",
+            "targetId": "The id of the role it should go in front of. The same id as draggedId leaves the order unchanged; an unknown id is an error."
+          }
+        },
+        "addMudaCategory": {
+          "help": "Adds a waste category without a code or a name and returns its id.",
+          "params": {}
+        },
+        "setMudaCategory": {
+          "help": "Changes the named fields of a waste category; all others stay as they are.",
+          "params": {
+            "mudaId": "The id of the waste category as read() lists it under mudaCategories. An unknown id is an error.",
+            "data": "An object holding exactly the fields that should change — code (the short code in the matrix), label (the name) or color (a hex value such as #4a90e2). Whatever is not in it stays unchanged; a missing object and a value that is not a string are errors."
+          }
+        },
+        "deleteMudaCategory": {
+          "help": "Removes a waste category and its markings on every step.",
+          "params": {
+            "mudaId": "The id of the waste category as read() lists it under mudaCategories. An unknown id is an error."
+          }
+        },
+        "addTimeUnit": {
+          "help": "Adds a time unit without a code and one second long, and returns its id.",
+          "params": {}
+        },
+        "setTimeUnit": {
+          "help": "Changes the named fields of a time unit; all others stay as they are.",
+          "params": {
+            "unitId": "The id of the time unit as read() lists it under timeUnits. An unknown id is an error.",
+            "data": "An object holding exactly the fields that should change — label (the code recognised inside a duration text) or factorSeconds (the length of the unit in seconds, a number greater than 0). Whatever is not in it stays unchanged; a missing object, a label that is not a string and a factorSeconds of 0 or less are errors."
+          }
+        },
+        "deleteTimeUnit": {
+          "help": "Removes a time unit. Duration texts that use only this unit are unreadable afterwards and no longer count towards the key figures.",
+          "params": {
+            "unitId": "The id of the time unit as read() lists it under timeUnits. An unknown id is an error."
+          }
+        },
+        "resetSettingsToDefaults": {
+          "help": "Restores the eight shipped waste categories and the four shipped time units; markings on categories that fall away are dropped.",
+          "params": {}
+        },
+        "setSettingsOpen": {
+          "help": "Opens or closes the settings area for waste categories and time units. The state is stored; it changes nothing about the data.",
+          "params": {
+            "open": "true opens the area, false closes it. Any other value — a missing argument included — is an error."
+          }
+        }
+      },
+      "fields": {
+        "title": {
+          "help": "The name of the process under study."
+        },
+        "roles": {
+          "help": "The roles involved, in display order. Per role: id (this is how the actions address it) and label (its name)."
+        },
+        "steps": {
+          "help": "The process steps in flow order. Per step: id (this is how the actions address it), title, description, notes, roleIds (the roles taking part), mudaIds (the waste categories assigned), processTime and waitTime as duration text plus expanded (whether the card is unfolded)."
+        },
+        "mudaCategories": {
+          "help": "The waste categories a step can point to, preset with the eight TIMWOODS+S categories. Per category: id (this is how the actions address it), code (the short code in the matrix), label (a name of your own; empty means the shipped one applies) and color as a hex value."
+        },
+        "timeUnits": {
+          "help": "The time units recognised inside a duration text. Per unit: id (this is how the actions address it), label (the code used in the text, e.g. min) and factorSeconds (its length in seconds; a working day counts 28800)."
+        },
+        "settingsOpen": {
+          "help": "Whether the settings area for waste categories and time units is open."
+        }
       }
     },
     "pairwise-comparison": {

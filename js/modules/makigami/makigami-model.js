@@ -49,17 +49,42 @@ export function uid(prefix) {
 }
 
 export class State {
-  /** @type {string} */
+  /** @type {string} der Name des betrachteten Prozesses */
   title = '';
-  /** @type {Array<{id:string,label:string}>} */
+  /**
+   * @type {Array<{id:string,label:string}>} die beteiligten Rollen in
+   *   Anzeigereihenfolge — je Rolle `id` (zum Ansprechen) und `label`
+   */
   roles = [];
-  /** @type {Array<{id:string,title:string,description:string,roleIds:string[],processTime:string,waitTime:string,mudaIds:string[],notes:string,expanded:boolean}>} */
+  /**
+   * @type {Array<{id:string,title:string,description:string,roleIds:string[],processTime:string,waitTime:string,mudaIds:string[],notes:string,expanded:boolean}>}
+   *   die Prozessschritte in Ablaufreihenfolge; je Schritt `id` (zum
+   *   Ansprechen), `title`, `description`, `notes`, `roleIds` (die
+   *   mitwirkenden Rollen), `mudaIds` (die zugeordneten Verschwendungsarten),
+   *   `processTime` und `waitTime` als Dauertext (etwa `30 min`, `1 d 2 h`)
+   *   sowie `expanded` (ob die Karte aufgeklappt ist)
+   * @agentBulk
+   */
   steps = [];
-  /** @type {Array<{id:string,code:string,labelKey?:string,label:string,color:string}>} */
+  /**
+   * @type {Array<{id:string,code:string,labelKey?:string,label:string,color:string}>}
+   *   die Verschwendungsarten, auf die ein Schritt zeigen kann — je Art `id`
+   *   (zum Ansprechen), `code` (das Kürzel in der Matrix), `label` (eigener
+   *   Name; leer heißt, es gilt der mitgelieferte aus `labelKey`) und `color`
+   *   als Hexwert. Vorbelegt mit den acht Arten von TIMWOODS+S
+   */
   mudaCategories = createDefaultMudaCategories();
-  /** @type {Array<{id:string,label:string,factorSeconds:number}>} */
+  /**
+   * @type {Array<{id:string,label:string,factorSeconds:number}>} die
+   *   Zeiteinheiten, die in einem Dauertext erkannt werden — je Einheit `id`
+   *   (zum Ansprechen), `label` (das Kürzel im Text, etwa `min`) und
+   *   `factorSeconds` (ihre Länge in Sekunden; ein Arbeitstag zählt 28800)
+   */
   timeUnits = createDefaultTimeUnits();
-  /** @type {boolean} */
+  /**
+   * @type {boolean} ob der Einstellungsbereich für Verschwendungsarten und
+   *   Zeiteinheiten offen steht; gespeichert, damit er eine Sitzung übersteht
+   */
   settingsOpen = false;
 
   // ─── Roles & steps ─────────────────────────────────────────
@@ -82,33 +107,59 @@ export class State {
     });
   }
 
+  /**
+   * Set, rather than flip, whether a role takes part in a step.
+   * @param {string} stepId @param {string} roleId @param {boolean} on
+   */
+  setParticipation(stepId, roleId, on) {
+    const step = this.steps.find(s => s.id === stepId);
+    if (!step) return;
+    const has = step.roleIds.includes(roleId);
+    if (on && !has) step.roleIds.push(roleId);
+    else if (!on && has) step.roleIds = step.roleIds.filter(id => id !== roleId);
+  }
+
   /** @param {string} stepId @param {string} roleId */
   toggleParticipation(stepId, roleId) {
     const step = this.steps.find(s => s.id === stepId);
     if (!step) return;
-    if (step.roleIds.includes(roleId)) {
-      step.roleIds = step.roleIds.filter(id => id !== roleId);
-    } else {
-      step.roleIds.push(roleId);
-    }
+    this.setParticipation(stepId, roleId, !step.roleIds.includes(roleId));
+  }
+
+  /**
+   * Set, rather than flip, whether a waste category marks a step.
+   * @param {string} stepId @param {string} mudaId @param {boolean} on
+   */
+  setMuda(stepId, mudaId, on) {
+    const step = this.steps.find(s => s.id === stepId);
+    if (!step) return;
+    const has = step.mudaIds.includes(mudaId);
+    if (on && !has) step.mudaIds.push(mudaId);
+    else if (!on && has) step.mudaIds = step.mudaIds.filter(id => id !== mudaId);
   }
 
   /** @param {string} stepId @param {string} mudaId */
   toggleMuda(stepId, mudaId) {
     const step = this.steps.find(s => s.id === stepId);
     if (!step) return;
-    if (step.mudaIds.includes(mudaId)) {
-      step.mudaIds = step.mudaIds.filter(id => id !== mudaId);
-    } else {
-      step.mudaIds.push(mudaId);
-    }
+    this.setMuda(stepId, mudaId, !step.mudaIds.includes(mudaId));
+  }
+
+  /**
+   * Set, rather than flip, whether a step card is unfolded.
+   * @param {string} stepId @param {boolean} expanded
+   */
+  setStepExpanded(stepId, expanded) {
+    const step = this.steps.find(s => s.id === stepId);
+    if (!step) return;
+    step.expanded = expanded;
   }
 
   /** @param {string} stepId */
   toggleStepExpanded(stepId) {
     const step = this.steps.find(s => s.id === stepId);
     if (!step) return;
-    step.expanded = step.expanded === false;
+    this.setStepExpanded(stepId, step.expanded === false);
   }
 
   /** @param {string} stepId */

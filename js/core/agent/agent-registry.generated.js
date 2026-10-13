@@ -3115,83 +3115,397 @@ export const AGENT_REGISTRY = {
     }
   },
   "makigami": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:toggleSettings",
-      "unmarked_method:closeSettings",
-      "unmarked_method:addRole",
-      "unmarked_method:addStep",
-      "unmarked_method:toggleParticipation",
-      "unmarked_method:toggleMuda",
-      "unmarked_method:toggleStepExpanded",
-      "unmarked_method:deleteStep",
-      "unmarked_method:deleteRole",
-      "unmarked_method:addMudaCategory",
-      "unmarked_method:addTimeUnit",
-      "unmarked_method:deleteMudaCategory",
-      "unmarked_method:deleteTimeUnit",
-      "unmarked_method:unitFactorChanged",
-      "unmarked_method:resetSettings",
-      "unmarked_method:stepBadge",
-      "unmarked_method:cardExpanded",
-      "unmarked_method:cardTitle",
-      "unmarked_method:stepHasRole",
-      "unmarked_method:stepHasMuda",
-      "unmarked_method:roleChipLabel",
-      "unmarked_method:mudaLabel",
-      "unmarked_method:mudaPlaceholder",
-      "unmarked_method:timeValid",
-      "unmarked_method:kpi",
-      "unmarked_method:kpiTime",
-      "unmarked_method:kpiPCE",
-      "unmarked_method:timeBlur",
-      "unmarked_method:dragHandleDown",
-      "unmarked_method:dragStartStep",
-      "unmarked_method:dragEndStep",
-      "unmarked_method:dragOverStep",
-      "unmarked_method:dragLeaveStep",
-      "unmarked_method:dropStep",
-      "unmarked_method:dragStartRole",
-      "unmarked_method:dragEndRole",
-      "unmarked_method:dragOverRole",
-      "unmarked_method:dragLeaveRole",
-      "unmarked_method:dropRole",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unreachable_write:title"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "setSettingsOpen": {
+        "params": [
+          {
+            "name": "open",
+            "type": "boolean",
+            "optional": false,
+            "help": "true öffnet ihn, false schließt ihn"
+          }
+        ],
+        "returns": "void",
+        "help": "Öffnet oder schließt den Einstellungsbereich."
+      },
+      "addRole": {
+        "params": [],
+        "returns": "string",
+        "help": "Legt eine Rolle ohne Namen an."
+      },
+      "addStep": {
+        "params": [],
+        "returns": "string",
+        "help": "Legt einen Prozessschritt ohne Titel am Ende der Kette an."
+      },
+      "setParticipation": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "roleId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Rolle"
+          },
+          {
+            "name": "participates",
+            "type": "boolean",
+            "optional": false,
+            "help": "true setzt die Mitwirkung, false nimmt sie zurück"
+          }
+        ],
+        "returns": "void",
+        "help": "Bestimmt, ob eine Rolle an einem Schritt mitwirkt."
+      },
+      "setMuda": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "mudaId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Verschwendungsart"
+          },
+          {
+            "name": "marked",
+            "type": "boolean",
+            "optional": false,
+            "help": "true setzt die Kennzeichnung, false nimmt sie zurück"
+          }
+        ],
+        "returns": "void",
+        "help": "Bestimmt, ob eine Verschwendungsart einen Schritt kennzeichnet."
+      },
+      "setStepExpanded": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "expanded",
+            "type": "boolean",
+            "optional": false,
+            "help": "true klappt sie auf, false klappt sie zu"
+          }
+        ],
+        "returns": "void",
+        "help": "Klappt die Karte eines Schritts auf oder zu."
+      },
+      "setTitle": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der Name; die leere Zeichenkette löscht ihn"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Namen des betrachteten Prozesses."
+      },
+      "setRoleLabel": {
+        "params": [
+          {
+            "name": "roleId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Rolle"
+          },
+          {
+            "name": "label",
+            "type": "string",
+            "optional": false,
+            "help": "der Name; die leere Zeichenkette löscht ihn"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Namen einer Rolle."
+      },
+      "setStepTitle": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der Titel; die leere Zeichenkette löscht ihn"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Titel eines Prozessschritts."
+      },
+      "setStepDescription": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die Beschreibung; die leere Zeichenkette löscht sie"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Beschreibung eines Prozessschritts."
+      },
+      "setStepNotes": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die Notiz; die leere Zeichenkette löscht sie"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Notiz eines Prozessschritts."
+      },
+      "setStepProcessTime": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die Dauer als Text, etwa `30 min` oder `1 d 2 h`; die leere Zeichenkette löscht sie"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Setzt die Bearbeitungszeit eines Prozessschritts."
+      },
+      "setStepWaitTime": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die Dauer als Text, etwa `30 min` oder `1 d 2 h`; die leere Zeichenkette löscht sie"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Setzt die Wartezeit eines Prozessschritts."
+      },
+      "removeStep": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt einen Prozessschritt."
+      },
+      "removeRole": {
+        "params": [
+          {
+            "name": "roleId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Rolle"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt eine Rolle und ihre Mitwirkungen."
+      },
+      "reorderSteps": {
+        "params": [
+          {
+            "name": "draggedId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts, der umziehen soll"
+          },
+          {
+            "name": "targetId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts, vor den er soll; dieselbe id wie `draggedId` lässt die Reihenfolge unverändert"
+          }
+        ],
+        "returns": "void",
+        "help": "Stellt einen Prozessschritt vor einen anderen."
+      },
+      "reorderRoles": {
+        "params": [
+          {
+            "name": "draggedId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Rolle, die umziehen soll"
+          },
+          {
+            "name": "targetId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Rolle, vor die sie soll; dieselbe id wie `draggedId` lässt die Reihenfolge unverändert"
+          }
+        ],
+        "returns": "void",
+        "help": "Stellt eine Rolle vor eine andere."
+      },
+      "addMudaCategory": {
+        "params": [],
+        "returns": "string",
+        "help": "Legt eine Verschwendungsart ohne Kürzel und Namen an."
+      },
+      "addTimeUnit": {
+        "params": [],
+        "returns": "string",
+        "help": "Legt eine Zeiteinheit ohne Kürzel mit der Länge einer Sekunde an."
+      },
+      "deleteMudaCategory": {
+        "params": [
+          {
+            "name": "mudaId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Verschwendungsart"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt eine Verschwendungsart und ihre Kennzeichnungen an den Schritten."
+      },
+      "deleteTimeUnit": {
+        "params": [
+          {
+            "name": "unitId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Zeiteinheit"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt eine Zeiteinheit. Dauertexte, die nur sie benutzen, sind danach nicht mehr lesbar und gehen nicht in die Kennzahlen ein."
+      },
+      "setMudaCategory": {
+        "params": [
+          {
+            "name": "mudaId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Verschwendungsart"
+          },
+          {
+            "name": "data",
+            "type": "object",
+            "optional": false,
+            "help": "die zu ändernden Felder — `code` (das Kürzel in der Matrix), `label` (der Name) oder `color` (ein Hexwert wie `#4a90e2`)"
+          }
+        ],
+        "returns": "void",
+        "help": "Ändert die genannten Felder einer Verschwendungsart; alle übrigen bleiben stehen."
+      },
+      "setTimeUnit": {
+        "params": [
+          {
+            "name": "unitId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Zeiteinheit"
+          },
+          {
+            "name": "data",
+            "type": "object",
+            "optional": false,
+            "help": "die zu ändernden Felder — `label` (das Kürzel, das in einem Dauertext erkannt wird) oder `factorSeconds` (ihre Länge in Sekunden, eine Zahl größer als 0)"
+          }
+        ],
+        "returns": "void",
+        "help": "Ändert die genannten Felder einer Zeiteinheit; alle übrigen bleiben stehen."
+      },
+      "resetSettingsToDefaults": {
+        "params": [],
+        "returns": "void",
+        "help": "Stellt die mitgelieferten Verschwendungsarten und Zeiteinheiten wieder her; Kennzeichnungen auf entfallene Arten fallen weg."
+      }
+    },
     "fields": {
       "title": {
         "type": "string",
-        "help": "",
+        "help": "der Name des betrachteten Prozesses",
         "bulk": false
       },
       "roles": {
         "type": "Array<{id:string,label:string}>",
-        "help": "",
+        "help": "die beteiligten Rollen in Anzeigereihenfolge — je Rolle `id` (zum Ansprechen) und `label`",
         "bulk": false
       },
       "steps": {
         "type": "Array<{id:string,title:string,description:string,roleIds:string[],processTime:string,waitTime:string,mudaIds:string[],notes:string,expanded:boolean}>",
-        "help": "",
-        "bulk": false
+        "help": "die Prozessschritte in Ablaufreihenfolge; je Schritt `id` (zum Ansprechen), `title`, `description`, `notes`, `roleIds` (die mitwirkenden Rollen), `mudaIds` (die zugeordneten Verschwendungsarten), `processTime` und `waitTime` als Dauertext (etwa `30 min`, `1 d 2 h`) sowie `expanded` (ob die Karte aufgeklappt ist)",
+        "bulk": true,
+        "bulkKind": "table"
       },
       "mudaCategories": {
         "type": "Array<{id:string,code:string,labelKey?:string,label:string,color:string}>",
-        "help": "",
+        "help": "die Verschwendungsarten, auf die ein Schritt zeigen kann — je Art `id` (zum Ansprechen), `code` (das Kürzel in der Matrix), `label` (eigener Name; leer heißt, es gilt der mitgelieferte aus `labelKey`) und `color` als Hexwert. Vorbelegt mit den acht Arten von TIMWOODS+S",
         "bulk": false
       },
       "timeUnits": {
         "type": "Array<{id:string,label:string,factorSeconds:number}>",
-        "help": "",
+        "help": "die Zeiteinheiten, die in einem Dauertext erkannt werden — je Einheit `id` (zum Ansprechen), `label` (das Kürzel im Text, etwa `min`) und `factorSeconds` (ihre Länge in Sekunden; ein Arbeitstag zählt 28800)",
         "bulk": false
       },
       "settingsOpen": {
         "type": "boolean",
-        "help": "",
+        "help": "ob der Einstellungsbereich für Verschwendungsarten und Zeiteinheiten offen steht; gespeichert, damit er eine Sitzung übersteht",
         "bulk": false
       }
     }
@@ -7234,4 +7548,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":21};
+export const AGENT_COVERAGE = {"total":74,"available":22};
