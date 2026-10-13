@@ -706,7 +706,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "boolean",
-        "help": "Wechselt die Bewertungsskala. Vorhandene Bewertungen bleiben stehen; solche, die die neue Skala nicht zulässt, werden markiert statt stillschweigend verändert."
+        "help": "Wechselt die Bewertungsskala. Vorhandene Bewertungen bleiben unverändert stehen, auch solche, die die neue Skala nicht zulässt."
       },
       "setInputName": {
         "params": [

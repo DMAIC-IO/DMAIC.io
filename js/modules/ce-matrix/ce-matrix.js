@@ -293,9 +293,8 @@ export default createModule({
       },
 
       /**
-       * Wechselt die Bewertungsskala. Vorhandene Bewertungen bleiben stehen;
-       * solche, die die neue Skala nicht zulässt, werden markiert statt
-       * stillschweigend verändert.
+       * Wechselt die Bewertungsskala. Vorhandene Bewertungen bleiben
+       * unverändert stehen, auch solche, die die neue Skala nicht zulässt.
        * @agent
        * @param {string} id die id der Skala
        * @returns {boolean} true

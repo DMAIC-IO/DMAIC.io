@@ -1590,7 +1590,7 @@
           }
         },
         "cycleRole": {
-          "help": "Geht die Rolle einer Zelle einen Schritt weiter: ohne Rolle zu R, R zu A, A zu C, C zu I, I zurück zu ohne Rolle — derselbe Weg wie der Zellenklick. Für einen gezielten Wert ist setRole der direkte Weg.",
+          "help": "Geht die Rolle einer Zelle einen Schritt weiter: ohne Rolle zu R, R zu A, A zu C, C zu I, I zurück zu ohne Rolle. Für einen gezielten Wert ist setRole der direkte Weg.",
           "params": {
             "aIdx": "Die Zeilennummer der Aktivität, von 0 an gezählt. Eine Nummer, die keine Aktivität bezeichnet, ist ein Fehler.",
             "sIdx": "Die Spaltennummer des Beteiligten, von 0 an gezählt. Eine Nummer, die keinen Beteiligten bezeichnet, ist ein Fehler."
@@ -1600,14 +1600,14 @@
           "help": "Benennt eine Aktivität um.",
           "params": {
             "idx": "Die Zeilennummer der Aktivität, von 0 an gezählt. Eine Nummer, die keine Aktivität bezeichnet, ist ein Fehler.",
-            "value": "Der neue Name. Ein leerer Text wird abgelehnt und lässt den alten Namen stehen (Rückgabe false) — genau wie im Umbenennen-Feld."
+            "value": "Der neue Name. Ein leerer Text wird abgelehnt und lässt den alten Namen stehen (Rückgabe false)."
           }
         },
         "renameStakeholder": {
           "help": "Benennt einen Beteiligten um.",
           "params": {
             "idx": "Die Spaltennummer des Beteiligten, von 0 an gezählt. Eine Nummer, die keinen Beteiligten bezeichnet, ist ein Fehler.",
-            "value": "Der neue Name. Ein leerer Text wird abgelehnt und lässt den alten Namen stehen (Rückgabe false) — genau wie im Umbenennen-Feld."
+            "value": "Der neue Name. Ein leerer Text wird abgelehnt und lässt den alten Namen stehen (Rückgabe false)."
           }
         },
         "removeActivity": {
@@ -1683,7 +1683,7 @@
           "params": {
             "colKey": "Die Spalte: suppliers (Lieferanten), inputs (Eingaben), process (Prozessschritte), outputs (Ergebnisse) oder customers (Kunden). Ein Wert daneben ist ein Fehler.",
             "idx": "Die Position des Eintrags in der Spalte, von 0 an gezählt. Eine Position, an der die Spalte keinen Eintrag hat, ist ein Fehler.",
-            "text": "Der neue Eintrag. Ein leerer Text wird abgelehnt und lässt den alten Eintrag stehen (Rückgabe false) — genau wie im Bearbeiten-Dialog."
+            "text": "Der neue Eintrag. Ein leerer Text wird abgelehnt und lässt den alten Eintrag stehen (Rückgabe false)."
           }
         },
         "removeItem": {
@@ -2778,11 +2778,11 @@
         "setViewPhase": {
           "help": "Setzt den angezeigten Reiter.",
           "params": {
-            "phase": "Der Reiter: input (Kriterien erfassen), compare (Paare entscheiden) oder results (Rangfolge und Matrix). Ein Wert daneben ist ein Fehler. compare braucht einen laufenden Vergleich, results einen abgeschlossenen — ist der Reiter nicht erreichbar, liefert der Aufruf false, so wie die Oberfläche ihn dann sperrt."
+            "phase": "Der Reiter: input (Kriterien erfassen), compare (Paare entscheiden) oder results (Rangfolge und Matrix). Ein Wert daneben ist ein Fehler. compare braucht einen laufenden Vergleich, results einen abgeschlossenen — ist der Reiter nicht erreichbar, liefert der Aufruf false — eine Absage, kein Fehler."
           }
         },
         "cycleCell": {
-          "help": "Geht die Bewertung einer Matrixzelle einen Schritt weiter: 0 zu 0.5, 0.5 zu 1, 1 zurück zu 0. Die Gegenzelle wird mitgeführt — derselbe Weg wie der Zellenklick in der Matrix.",
+          "help": "Geht die Bewertung einer Matrixzelle einen Schritt weiter: 0 zu 0.5, 0.5 zu 1, 1 zurück zu 0. Die Gegenzelle wird mitgeführt.",
           "params": {
             "i": "Die Nummer des Kriteriums der Zeile, von 0 an gezählt. Eine Nummer, die kein Kriterium bezeichnet, ist ein Fehler.",
             "j": "Die Nummer des Kriteriums der Spalte, von 0 an gezählt. Eine Nummer, die kein Kriterium bezeichnet, ist ein Fehler."
@@ -2876,7 +2876,7 @@
           }
         },
         "setScale": {
-          "help": "Wechselt die Bewertungsskala. Vorhandene Bewertungen bleiben stehen; solche, die die neue Skala nicht zulässt, werden markiert statt stillschweigend verändert.",
+          "help": "Wechselt die Bewertungsskala. Vorhandene Bewertungen bleiben unverändert stehen, auch solche, die die neue Skala nicht zulässt.",
           "params": {
             "id": "Die Skala: 0-10 (jede ganze Zahl von 0 bis 10), 0-1-3-9 oder 0-3-7-10. Ein Wert daneben ist ein Fehler."
           }
