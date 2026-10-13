@@ -148,19 +148,12 @@ const mod = createModule({
         this._categories = categories;
         this._groups = groups;
 
-        const chartArea = module._container?.querySelector('[data-ref="chart-area"]');
-        const placeholder = module._container?.querySelector('[data-ref="placeholder"]');
-
         if (categories.length === 0 || groups.length === 0) {
-          if (chartArea) chartArea.style.display = 'none';
-          if (placeholder) placeholder.style.display = '';
-          this._destroyChart();
-          this._clearStats();
+          this._showPlaceholder();
           return;
         }
 
-        if (chartArea) chartArea.style.display = '';
-        if (placeholder) placeholder.style.display = 'none';
+        this._showChartArea();
 
         const xLabel = cfg.xLabel || this._xColumnName() || '';
         let yLabel = cfg.yLabel;
@@ -191,26 +184,7 @@ const mod = createModule({
           bgColor: cfg.bgColor,
         };
 
-        // Guard: this async plot can be scheduled (rAF/$watch) before this
-        // detached/torn-down instance's container was cleared by destroy()
-        // during Dev-Tools seeding — chart-wrap is then gone. Nothing to
-        // render into; bail out silently.
-        const chartWrap = module._container?.querySelector('[data-ref="chart-wrap"]');
-        if (!chartWrap) return;
-        if (this._chart) {
-          module._context.chartManager.update(this._chart, barConfig);
-        } else {
-          const gen = ++this._renderGen;
-          chartWrap.replaceChildren();
-          const chart = await module._context.chartManager.create(chartWrap, 'bar', barConfig);
-          if (gen !== this._renderGen) {
-            try { module._context.chartManager.destroy(chart); } catch { /* ignore */ }
-            return;
-          }
-          this._chart = chart;
-        }
-
-        this._renderStats();
+        if (await this._upsertChart('bar', barConfig)) this._renderStats();
       },
 
       // ── Stats table (declarative — structured reactive data) ──

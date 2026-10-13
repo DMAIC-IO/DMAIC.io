@@ -101,19 +101,12 @@ const mod = createModule({
       async _plot() {
         this._slices = this.model.buildSlices((ref) => this._getColumnValues(ref));
 
-        const chartArea = module._container?.querySelector('[data-ref="chart-area"]');
-        const placeholder = module._container?.querySelector('[data-ref="placeholder"]');
-
         if (this._slices.length === 0) {
-          if (chartArea) chartArea.style.display = 'none';
-          if (placeholder) placeholder.style.display = '';
-          this._destroyChart();
-          this._clearStats();
+          this._showPlaceholder();
           return;
         }
 
-        if (chartArea) chartArea.style.display = '';
-        if (placeholder) placeholder.style.display = 'none';
+        this._showChartArea();
 
         const cfg = this.model.chartConfig;
         const pieConfig = {
@@ -137,26 +130,7 @@ const mod = createModule({
           bgColor: cfg.bgColor,
         };
 
-        // Guard: this async plot can be scheduled (rAF/$watch) before this
-        // detached/torn-down instance's container was cleared by destroy()
-        // during Dev-Tools seeding — chart-wrap is then gone. Nothing to
-        // render into; bail out silently.
-        const chartWrap = module._container?.querySelector('[data-ref="chart-wrap"]');
-        if (!chartWrap) return;
-        if (this._chart) {
-          module._context.chartManager.update(this._chart, pieConfig);
-        } else {
-          const gen = ++this._renderGen;
-          chartWrap.replaceChildren();
-          const chart = await module._context.chartManager.create(chartWrap, 'pie', pieConfig);
-          if (gen !== this._renderGen) {
-            try { module._context.chartManager.destroy(chart); } catch { /* ignore */ }
-            return;
-          }
-          this._chart = chart;
-        }
-
-        this._renderStats();
+        if (await this._upsertChart('pie', pieConfig)) this._renderStats();
       },
 
       // ── Stats table (declarative — structured reactive data) ──
