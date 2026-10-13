@@ -1856,7 +1856,100 @@
       "showInCalendar": "Show in calendar",
       "delete": "Delete",
       "emptyState": "No tasks yet. Click \"+ Add Task\" to get started.",
-      "noMatch": "No tasks match the current filter."
+      "noMatch": "No tasks match the current filter.",
+      "whenToUse": "When the open tasks of a project need tracking with an owner, a due date and a status — not for scheduling in a calendar view and not for rating or selecting measures, which is what the calendar module and the rating matrices are for.",
+      "actions": {
+        "addTodo": {
+          "help": "Appends an empty task to the list and returns its id.",
+          "params": {}
+        },
+        "setTodoText": {
+          "help": "Sets the text of a task.",
+          "params": {
+            "itemId": "The id of the task as read() lists it under items. An unknown id is an error.",
+            "text": "The new text. An empty string clears it; a missing argument is an error."
+          }
+        },
+        "setTodoOwner": {
+          "help": "Sets the owner of a task.",
+          "params": {
+            "itemId": "The id of the task as read() lists it under items. An unknown id is an error.",
+            "owner": "The name of the owner. An empty string leaves the task without an owner; a missing argument is an error."
+          }
+        },
+        "setTodoDue": {
+          "help": "Sets the due date of a task.",
+          "params": {
+            "itemId": "The id of the task as read() lists it under items. An unknown id is an error.",
+            "isoDate": "The due date written as YYYY-MM-DD. An empty string clears it; any other value is an error."
+          }
+        },
+        "setTodoStatus": {
+          "help": "Sets the status of a task.",
+          "params": {
+            "itemId": "The id of the task as read() lists it under items. An unknown id is an error.",
+            "status": "One of the four values open, in-progress, done or blocked. Any other value is an error."
+          }
+        },
+        "setTodoCalendar": {
+          "help": "Decides whether a task is reported to a calendar module of the project. Without a calendar module the mark is still stored and takes effect once one is added.",
+          "params": {
+            "itemId": "The id of the task as read() lists it under items. An unknown id is an error.",
+            "inCalendar": "true reports the task, false does not. Any other value — a missing argument included — is an error."
+          }
+        },
+        "removeTodo": {
+          "help": "Removes a task from the list.",
+          "params": {
+            "itemId": "The id of the task as read() lists it under items. An unknown id is an error."
+          }
+        },
+        "setFilterStatus": {
+          "help": "Sets the status filter of the list. The filter only decides which tasks the list shows; it removes none.",
+          "params": {
+            "value": "all shows every task, otherwise one of the four status values open, in-progress, done or blocked. Any other value is an error."
+          }
+        },
+        "setFilterOwner": {
+          "help": "Sets the filter to one owner. The filter only decides which tasks the list shows; it removes none.",
+          "params": {
+            "value": "all shows every task, otherwise the name of an owner that at least one task carries. A name no task carries is an error."
+          }
+        },
+        "setSearch": {
+          "help": "Sets the search text; it searches task text and owner, case-insensitively.",
+          "params": {
+            "text": "The search text. An empty string lifts the search; a missing argument is an error."
+          }
+        },
+        "setSort": {
+          "help": "Sets the sort column and the sort direction of the list.",
+          "params": {
+            "column": "The column to sort by: text, owner, due or status. Any other value is an error.",
+            "ascending": "true sorts ascending, false descending. Any other value — a missing argument included — is an error."
+          }
+        }
+      },
+      "fields": {
+        "items": {
+          "help": "The tasks in entry order. Per task: id (this is how the actions address it), text, owner, due (due date as YYYY-MM-DD or empty), status (open, in-progress, done or blocked) and cal (whether it is reported to a calendar module)."
+        },
+        "filterStatus": {
+          "help": "The stored status filter: all or one of the four status values open, in-progress, done, blocked."
+        },
+        "filterOwner": {
+          "help": "The stored filter on one owner: all or that owner's name."
+        },
+        "search": {
+          "help": "The stored search text over task text and owner; empty means no search."
+        },
+        "sortCol": {
+          "help": "The sort column: text, owner, due or status."
+        },
+        "sortAsc": {
+          "help": "true means sorted ascending, false descending."
+        }
+      }
     },
     "gage-run-chart": {
       "name": "Gage Run Chart",

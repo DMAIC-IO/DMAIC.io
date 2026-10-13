@@ -2,6 +2,9 @@ import { isIsoDate } from '../../core/local-date.js';
 
 export const STATUSES = ['open', 'in-progress', 'done', 'blocked'];
 
+/** Die Spalten, nach denen die Liste sortiert werden kann. */
+export const SORT_COLUMNS = ['text', 'owner', 'due', 'status'];
+
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
@@ -44,11 +47,24 @@ export class State {
   static ID = 'todo';
 
   _schema = { name: State.ID, version: State.VERSION }
+  /**
+   * @type {Item[]} die Aufgaben in Eingabereihenfolge; je Aufgabe `id`
+   *   (zum Ansprechen), `text`, `owner` (Verantwortlicher), `due`
+   *   (Zieldatum als `JJJJ-MM-TT` oder leer), `status` (`open`,
+   *   `in-progress`, `done` oder `blocked`) und `cal` (ob sie an ein
+   *   Kalendermodul gemeldet wird)
+   * @agentBulk
+   */
   items = []
+  /** @type {string} der Statusfilter: `all` oder einer der vier Statuswerte */
   filterStatus = 'all'
+  /** @type {string} der Filter auf einen Verantwortlichen: `all` oder sein Name */
   filterOwner = 'all'
+  /** @type {string} der Suchtext über Aufgabentext und Verantwortlichen; leer heißt keine Suche */
   search = ''
+  /** @type {string} die Sortierspalte: `text`, `owner`, `due` oder `status` */
   sortCol = 'due'
+  /** @type {boolean} true sortiert aufsteigend, false absteigend */
   sortAsc = true
 
   hasContent() {
@@ -83,7 +99,7 @@ export class State {
     if (typeof d.search === 'string') {
       s.search = d.search;
     }
-    if (typeof d.sortCol === 'string') {
+    if (typeof d.sortCol === 'string' && SORT_COLUMNS.includes(d.sortCol)) {
       s.sortCol = d.sortCol;
     }
     if (typeof d.sortAsc === 'boolean') {

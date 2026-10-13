@@ -5591,61 +5591,215 @@ export const AGENT_REGISTRY = {
     }
   },
   "todo": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:statusName",
-      "unmarked_method:todayISO",
-      "unmarked_method:owners",
-      "unmarked_method:filteredItems",
-      "unmarked_method:sortedItems",
-      "unmarked_method:filteredCount",
-      "unmarked_method:rowClass",
-      "unmarked_method:sortArrowIcon",
-      "unmarked_method:sortArrowClass",
-      "unmarked_method:addTodo",
-      "unmarked_method:sortBy",
-      "unmarked_method:toggleDone",
-      "unmarked_method:toggleCal",
-      "unmarked_method:deleteTodo",
-      "unmarked_method:syncCalendar",
-      "unmarked_method:checkCalendar",
-      "unmarked_method:init",
-      "unreachable_write:filterStatus",
-      "unreachable_write:filterOwner",
-      "unreachable_write:search"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "addTodo": {
+        "params": [],
+        "returns": "string",
+        "help": "Legt eine leere Aufgabe am Ende der Liste an."
+      },
+      "setTodoText": {
+        "params": [
+          {
+            "name": "itemId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Aufgabe"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der neue Text; die leere Zeichenkette löscht ihn"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Text einer Aufgabe."
+      },
+      "setTodoOwner": {
+        "params": [
+          {
+            "name": "itemId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Aufgabe"
+          },
+          {
+            "name": "owner",
+            "type": "string",
+            "optional": false,
+            "help": "der neue Verantwortliche; die leere Zeichenkette lässt die Aufgabe ohne Verantwortlichen"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Verantwortlichen einer Aufgabe."
+      },
+      "setTodoDue": {
+        "params": [
+          {
+            "name": "itemId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Aufgabe"
+          },
+          {
+            "name": "isoDate",
+            "type": "string",
+            "optional": false,
+            "help": "das Zieldatum als `JJJJ-MM-TT`; die leere Zeichenkette löscht es"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt das Zieldatum einer Aufgabe."
+      },
+      "setTodoStatus": {
+        "params": [
+          {
+            "name": "itemId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Aufgabe"
+          },
+          {
+            "name": "status",
+            "type": "'open'|'in-progress'|'done'|'blocked'",
+            "optional": false,
+            "help": "der neue Status"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Status einer Aufgabe."
+      },
+      "setTodoCalendar": {
+        "params": [
+          {
+            "name": "itemId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Aufgabe"
+          },
+          {
+            "name": "inCalendar",
+            "type": "boolean",
+            "optional": false,
+            "help": "true meldet sie, false nicht"
+          }
+        ],
+        "returns": "void",
+        "help": "Bestimmt, ob eine Aufgabe an ein Kalendermodul gemeldet wird."
+      },
+      "removeTodo": {
+        "params": [
+          {
+            "name": "itemId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Aufgabe"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt eine Aufgabe."
+      },
+      "setFilterStatus": {
+        "params": [
+          {
+            "name": "value",
+            "type": "'all'|'open'|'in-progress'|'done'|'blocked'",
+            "optional": false,
+            "help": "`all` zeigt alle Aufgaben, jeder andere Wert nur die mit diesem Status"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Statusfilter der Liste."
+      },
+      "setFilterOwner": {
+        "params": [
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "`all` zeigt alle Aufgaben, sonst der Name eines Verantwortlichen, der in der Liste vorkommt"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Filter auf einen Verantwortlichen."
+      },
+      "setSearch": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der Suchtext; die leere Zeichenkette hebt die Suche auf"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Suchtext, der Text und Verantwortlichen durchsucht."
+      },
+      "setSort": {
+        "params": [
+          {
+            "name": "column",
+            "type": "'text'|'owner'|'due'|'status'",
+            "optional": false,
+            "help": "die Spalte, nach der sortiert wird"
+          },
+          {
+            "name": "ascending",
+            "type": "boolean",
+            "optional": false,
+            "help": "true sortiert aufsteigend, false absteigend"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt Sortierspalte und Richtung der Liste."
+      }
+    },
     "fields": {
       "items": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "Item[]",
+        "help": "die Aufgaben in Eingabereihenfolge; je Aufgabe `id` (zum Ansprechen), `text`, `owner` (Verantwortlicher), `due` (Zieldatum als `JJJJ-MM-TT` oder leer), `status` (`open`, `in-progress`, `done` oder `blocked`) und `cal` (ob sie an ein Kalendermodul gemeldet wird)",
+        "bulk": true,
+        "bulkKind": "table"
       },
       "filterStatus": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "der Statusfilter: `all` oder einer der vier Statuswerte",
         "bulk": false
       },
       "filterOwner": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "der Filter auf einen Verantwortlichen: `all` oder sein Name",
         "bulk": false
       },
       "search": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "der Suchtext über Aufgabentext und Verantwortlichen; leer heißt keine Suche",
         "bulk": false
       },
       "sortCol": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "die Sortierspalte: `text`, `owner`, `due` oder `status`",
         "bulk": false
       },
       "sortAsc": {
-        "type": "any",
-        "help": "",
+        "type": "boolean",
+        "help": "true sortiert aufsteigend, false absteigend",
         "bulk": false
       }
     }
@@ -6960,4 +7114,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":18};
+export const AGENT_COVERAGE = {"total":74,"available":19};

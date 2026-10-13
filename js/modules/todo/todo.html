@@ -59,20 +59,29 @@
                      @change="toggleDone(item)">
             </td>
             <td class="todo__cell-text">
+              <!-- Parität: dieselbe Senke wie `setTodoText` der Agentenfläche.
+                   Ein `x-model` am Eintrag schriebe am Setter vorbei. -->
               <input type="text" class="field field--sm field--ghost todo__inline-input" data-field="text"
-                     x-model="item.text" :placeholder="t('textPlaceholder')">
+                     :value="item.text" @input="setTodoText(item.id, $event.target.value)"
+                     :placeholder="t('textPlaceholder')">
             </td>
             <td>
+              <!-- Parität: dieselbe Senke wie `setTodoOwner`. -->
               <input type="text" class="field field--sm field--ghost todo__inline-input" data-field="owner"
-                     x-model="item.owner" :placeholder="t('ownerPlaceholder')">
+                     :value="item.owner" @input="setTodoOwner(item.id, $event.target.value)"
+                     :placeholder="t('ownerPlaceholder')">
             </td>
             <td class="todo__cell-due">
+              <!-- Parität: dieselbe Senke wie `setTodoDue`. `@change` statt
+                   `@input`, weil ein Datumsfeld erst beim Abschluss einen
+                   lesbaren Wert hat. -->
               <input type="date" class="field field--sm field--ghost todo__inline-date" data-field="due"
-                     x-model="item.due">
+                     :value="item.due" @change="setTodoDue(item.id, $event.target.value)">
             </td>
             <td>
+              <!-- Parität: dieselbe Senke wie `setTodoStatus`. -->
               <select class="field field--sm todo__inline-select" data-field="status"
-                      @change="item.status = $event.target.value">
+                      @change="setTodoStatus(item.id, $event.target.value)">
                 <template x-for="s in statuses">
                   <option :value="s" :selected="item.status === s" x-text="statusName(s)"></option>
                 </template>

@@ -1860,7 +1860,100 @@
       "showInCalendar": "Im Kalender anzeigen",
       "delete": "Löschen",
       "emptyState": "Noch keine Aufgaben. Klicken Sie auf „+ Aufgabe hinzufügen“.",
-      "noMatch": "Keine Aufgaben gefunden."
+      "noMatch": "Keine Aufgaben gefunden.",
+      "whenToUse": "Wenn offene Aufgaben eines Projekts mit Verantwortlichem, Zieldatum und Status verfolgt werden sollen — nicht für die Terminplanung in einer Kalenderansicht und nicht für die Bewertung oder Auswahl von Maßnahmen, dafür sind das Kalendermodul und die Bewertungsmatrizen da.",
+      "actions": {
+        "addTodo": {
+          "help": "Legt eine leere Aufgabe am Ende der Liste an und liefert ihre id zurück.",
+          "params": {}
+        },
+        "setTodoText": {
+          "help": "Setzt den Text einer Aufgabe.",
+          "params": {
+            "itemId": "Die id der Aufgabe, wie read() sie unter items führt. Eine unbekannte id ist ein Fehler.",
+            "text": "Der neue Text. Eine leere Zeichenkette löscht ihn; ein fehlendes Argument ist ein Fehler."
+          }
+        },
+        "setTodoOwner": {
+          "help": "Setzt den Verantwortlichen einer Aufgabe.",
+          "params": {
+            "itemId": "Die id der Aufgabe, wie read() sie unter items führt. Eine unbekannte id ist ein Fehler.",
+            "owner": "Der Name des Verantwortlichen. Eine leere Zeichenkette lässt die Aufgabe ohne Verantwortlichen; ein fehlendes Argument ist ein Fehler."
+          }
+        },
+        "setTodoDue": {
+          "help": "Setzt das Zieldatum einer Aufgabe.",
+          "params": {
+            "itemId": "Die id der Aufgabe, wie read() sie unter items führt. Eine unbekannte id ist ein Fehler.",
+            "isoDate": "Das Zieldatum in der Schreibweise JJJJ-MM-TT. Eine leere Zeichenkette löscht es; jeder andere Wert ist ein Fehler."
+          }
+        },
+        "setTodoStatus": {
+          "help": "Setzt den Status einer Aufgabe.",
+          "params": {
+            "itemId": "Die id der Aufgabe, wie read() sie unter items führt. Eine unbekannte id ist ein Fehler.",
+            "status": "Einer der vier Werte open (offen), in-progress (in Bearbeitung), done (erledigt) oder blocked (blockiert). Ein Wert daneben ist ein Fehler."
+          }
+        },
+        "setTodoCalendar": {
+          "help": "Bestimmt, ob eine Aufgabe an ein Kalendermodul des Projekts gemeldet wird. Ohne Kalendermodul bleibt die Marke gespeichert und wirkt, sobald eines dazukommt.",
+          "params": {
+            "itemId": "Die id der Aufgabe, wie read() sie unter items führt. Eine unbekannte id ist ein Fehler.",
+            "inCalendar": "true meldet die Aufgabe, false nicht. Jeder andere Wert — auch ein fehlendes Argument — ist ein Fehler."
+          }
+        },
+        "removeTodo": {
+          "help": "Entfernt eine Aufgabe aus der Liste.",
+          "params": {
+            "itemId": "Die id der Aufgabe, wie read() sie unter items führt. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "setFilterStatus": {
+          "help": "Setzt den Statusfilter der Liste. Der Filter bestimmt nur, welche Aufgaben die Liste zeigt; er entfernt keine.",
+          "params": {
+            "value": "all zeigt alle Aufgaben, sonst einer der vier Statuswerte open, in-progress, done oder blocked. Ein Wert daneben ist ein Fehler."
+          }
+        },
+        "setFilterOwner": {
+          "help": "Setzt den Filter auf einen Verantwortlichen. Der Filter bestimmt nur, welche Aufgaben die Liste zeigt; er entfernt keine.",
+          "params": {
+            "value": "all zeigt alle Aufgaben, sonst der Name eines Verantwortlichen, der bei mindestens einer Aufgabe steht. Ein Name, den keine Aufgabe trägt, ist ein Fehler."
+          }
+        },
+        "setSearch": {
+          "help": "Setzt den Suchtext; er durchsucht Aufgabentext und Verantwortlichen, Groß- und Kleinschreibung spielt keine Rolle.",
+          "params": {
+            "text": "Der Suchtext. Eine leere Zeichenkette hebt die Suche auf; ein fehlendes Argument ist ein Fehler."
+          }
+        },
+        "setSort": {
+          "help": "Setzt Sortierspalte und Sortierrichtung der Liste.",
+          "params": {
+            "column": "Die Spalte, nach der sortiert wird: text, owner, due oder status. Ein Wert daneben ist ein Fehler.",
+            "ascending": "true sortiert aufsteigend, false absteigend. Jeder andere Wert — auch ein fehlendes Argument — ist ein Fehler."
+          }
+        }
+      },
+      "fields": {
+        "items": {
+          "help": "Die Aufgaben in Eingabereihenfolge. Je Aufgabe: id (damit sprechen die Aktionen sie an), text, owner (Verantwortlicher), due (Zieldatum als JJJJ-MM-TT oder leer), status (open, in-progress, done oder blocked) und cal (ob sie an ein Kalendermodul gemeldet wird)."
+        },
+        "filterStatus": {
+          "help": "Der gespeicherte Statusfilter: all oder einer der vier Statuswerte open, in-progress, done, blocked."
+        },
+        "filterOwner": {
+          "help": "Der gespeicherte Filter auf einen Verantwortlichen: all oder dessen Name."
+        },
+        "search": {
+          "help": "Der gespeicherte Suchtext über Aufgabentext und Verantwortlichen; leer heißt keine Suche."
+        },
+        "sortCol": {
+          "help": "Die Sortierspalte: text, owner, due oder status."
+        },
+        "sortAsc": {
+          "help": "true heißt aufsteigend sortiert, false absteigend."
+        }
+      }
     },
     "gage-run-chart": {
       "name": "Messverlaufsdiagramm",
