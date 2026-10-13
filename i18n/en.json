@@ -6347,6 +6347,74 @@
     "triz-ifr": {
       "name": "Ideal Final Result (TRIZ)",
       "description": "State the ideal and work backwards to a solution",
+      "whenToUse": "When a target image is needed to work backwards from towards a solution — not to judge a solution already found or to pick between variants.",
+      "actions": {
+        "setSystem": {
+          "help": "Sets the system under study that all IFR statements refer to.",
+          "params": {
+            "text": "Name or short description of the system; an empty text clears the field."
+          }
+        },
+        "setUsefulFunction": {
+          "help": "Sets the useful function the system is meant to deliver.",
+          "params": {
+            "text": "The useful function, phrased as an activity; an empty text clears the field."
+          }
+        },
+        "setHarmfulEffect": {
+          "help": "Sets the harmful effect or compromise the system carries today.",
+          "params": {
+            "text": "The harmful effect the IFR is meant to dissolve; an empty text clears the field."
+          }
+        },
+        "setIfr1": {
+          "help": "Sets the IFR-1 statement: the system remains, the harmful effect disappears without a new mechanism.",
+          "params": {
+            "text": "The IFR-1 statement, phrased as a present-tense state; an empty text clears the field."
+          }
+        },
+        "setIfr2": {
+          "help": "Sets the IFR-2 statement: the useful function exists without the system being present at all.",
+          "params": {
+            "text": "The IFR-2 statement, phrased as a present-tense state; an empty text clears the field."
+          }
+        },
+        "setIfr3": {
+          "help": "Sets the IFR-3 statement: a resource already present in the supersystem takes over the function.",
+          "params": {
+            "text": "The IFR-3 statement, phrased as a present-tense state; an empty text clears the field."
+          }
+        },
+        "setObstacles": {
+          "help": "Sets the list of obstacles that separate the system from the IFR today — this list is the actual task list.",
+          "params": {
+            "text": "The obstacles, one per line; an empty text clears the list."
+          }
+        }
+      },
+      "fields": {
+        "system": {
+          "help": "The system under study — name or short description."
+        },
+        "usefulFunction": {
+          "help": "The useful function the system is meant to deliver."
+        },
+        "harmfulEffect": {
+          "help": "The harmful effect or compromise the system carries today."
+        },
+        "ifr1": {
+          "help": "IFR-1: the system remains, the harmful effect disappears without a new mechanism."
+        },
+        "ifr2": {
+          "help": "IFR-2: the useful function exists without the system being present at all."
+        },
+        "ifr3": {
+          "help": "IFR-3: a resource already present in the supersystem takes over the function."
+        },
+        "obstacles": {
+          "help": "The obstacles that separate the system from the IFR today — one per line."
+        }
+      },
       "subtitle": "Useful function fulfilled, system disappears, no cost, no harmful side-effect — phrase three IFR levels and analyse the gap.",
       "taskHeading": "Task",
       "systemLabel": "System",

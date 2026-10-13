@@ -5418,54 +5418,142 @@ export const AGENT_REGISTRY = {
     }
   },
   "triz-ifr": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:openResources",
-      "unreachable_write:system",
-      "unreachable_write:usefulFunction",
-      "unreachable_write:harmfulEffect",
-      "unreachable_write:ifr1",
-      "unreachable_write:ifr2",
-      "unreachable_write:ifr3",
-      "unreachable_write:obstacles"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "setSystem": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "Name oder kurze Beschreibung des Systems"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt das betrachtete System. Schreibt dasselbe Feld wie `x-model=\"model.system\"` in der Vorlage."
+      },
+      "setUsefulFunction": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die nützliche Funktion"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die nützliche Funktion, die das System erfüllen soll. Schreibt dasselbe Feld wie `x-model=\"model.usefulFunction\"` in der Vorlage."
+      },
+      "setHarmfulEffect": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die schädliche Wirkung"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die schädliche Wirkung oder den Kompromiss, den das System heute mitbringt. Schreibt dasselbe Feld wie `x-model=\"model.harmfulEffect\"` in der Vorlage."
+      },
+      "setIfr1": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die IFR-1-Formulierung"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die IFR-1-Formulierung: das System bleibt, die schädliche Wirkung verschwindet ohne neuen Mechanismus. Schreibt dasselbe Feld wie `x-model=\"model.ifr1\"` in der Vorlage."
+      },
+      "setIfr2": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die IFR-2-Formulierung"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die IFR-2-Formulierung: die nützliche Funktion entsteht, ohne dass das System überhaupt existiert. Schreibt dasselbe Feld wie `x-model=\"model.ifr2\"` in der Vorlage."
+      },
+      "setIfr3": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die IFR-3-Formulierung"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die IFR-3-Formulierung: eine vorhandene Ressource aus dem Supersystem übernimmt die Funktion. Schreibt dasselbe Feld wie `x-model=\"model.ifr3\"` in der Vorlage."
+      },
+      "setObstacles": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die Hindernisse, eines je Zeile"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Liste der Hindernisse, die das System heute vom IFR trennen. Schreibt dasselbe Feld wie `x-model=\"model.obstacles\"` in der Vorlage."
+      }
+    },
     "fields": {
       "system": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "das betrachtete System — Name oder kurze Beschreibung",
         "bulk": false
       },
       "usefulFunction": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "die nützliche Funktion, die das System erfüllen soll",
         "bulk": false
       },
       "harmfulEffect": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "die schädliche Wirkung oder der Kompromiss, den das System heute mitbringt",
         "bulk": false
       },
       "ifr1": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "IFR-1: das System bleibt, die schädliche Wirkung verschwindet ohne neuen Mechanismus",
         "bulk": false
       },
       "ifr2": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "IFR-2: die nützliche Funktion entsteht, ohne dass das System überhaupt existiert",
         "bulk": false
       },
       "ifr3": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "IFR-3: eine vorhandene Ressource aus dem Supersystem übernimmt die Funktion",
         "bulk": false
       },
       "obstacles": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "die Hindernisse, die das System heute vom IFR trennen — eines je Zeile",
         "bulk": false
       }
     }
@@ -6019,4 +6107,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":7};
+export const AGENT_COVERAGE = {"total":74,"available":8};

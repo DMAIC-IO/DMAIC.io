@@ -3,12 +3,26 @@ export class State {
   static ID = 'triz-ifr'
 
   _schema = { name: State.ID, version: State.VERSION }
+
+  /** @type {string} das betrachtete System — Name oder kurze Beschreibung */
   system = ''
+
+  /** @type {string} die nützliche Funktion, die das System erfüllen soll */
   usefulFunction = ''
+
+  /** @type {string} die schädliche Wirkung oder der Kompromiss, den das System heute mitbringt */
   harmfulEffect = ''
+
+  /** @type {string} IFR-1: das System bleibt, die schädliche Wirkung verschwindet ohne neuen Mechanismus */
   ifr1 = ''
+
+  /** @type {string} IFR-2: die nützliche Funktion entsteht, ohne dass das System überhaupt existiert */
   ifr2 = ''
+
+  /** @type {string} IFR-3: eine vorhandene Ressource aus dem Supersystem übernimmt die Funktion */
   ifr3 = ''
+
+  /** @type {string} die Hindernisse, die das System heute vom IFR trennen — eines je Zeile */
   obstacles = ''
 
   hasContent() {

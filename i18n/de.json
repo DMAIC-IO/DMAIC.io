@@ -6351,6 +6351,74 @@
     "triz-ifr": {
       "name": "Ideales Endresultat (TRIZ)",
       "description": "Formuliere den Idealzustand und arbeite rückwärts zur Lösung",
+      "whenToUse": "Wenn ein Zielbild gebraucht wird, von dem aus rückwärts zur Lösung gearbeitet wird — nicht, um eine bereits gefundene Lösung zu bewerten oder zwischen Varianten zu wählen.",
+      "actions": {
+        "setSystem": {
+          "help": "Setzt das betrachtete System, auf das sich alle IFR-Formulierungen beziehen.",
+          "params": {
+            "text": "Name oder kurze Beschreibung des Systems; ein leerer Text löscht das Feld."
+          }
+        },
+        "setUsefulFunction": {
+          "help": "Setzt die nützliche Funktion, die das System erfüllen soll.",
+          "params": {
+            "text": "Die nützliche Funktion, als Tätigkeit formuliert; ein leerer Text löscht das Feld."
+          }
+        },
+        "setHarmfulEffect": {
+          "help": "Setzt die schädliche Wirkung oder den Kompromiss, den das System heute mitbringt.",
+          "params": {
+            "text": "Die schädliche Wirkung, die der IFR auflösen soll; ein leerer Text löscht das Feld."
+          }
+        },
+        "setIfr1": {
+          "help": "Setzt die IFR-1-Formulierung: das System bleibt, die schädliche Wirkung verschwindet ohne neuen Mechanismus.",
+          "params": {
+            "text": "Die IFR-1-Formulierung, als Zustandsaussage im Präsens; ein leerer Text löscht das Feld."
+          }
+        },
+        "setIfr2": {
+          "help": "Setzt die IFR-2-Formulierung: die nützliche Funktion entsteht, ohne dass das System überhaupt existiert.",
+          "params": {
+            "text": "Die IFR-2-Formulierung, als Zustandsaussage im Präsens; ein leerer Text löscht das Feld."
+          }
+        },
+        "setIfr3": {
+          "help": "Setzt die IFR-3-Formulierung: eine bereits vorhandene Ressource aus dem Supersystem übernimmt die Funktion.",
+          "params": {
+            "text": "Die IFR-3-Formulierung, als Zustandsaussage im Präsens; ein leerer Text löscht das Feld."
+          }
+        },
+        "setObstacles": {
+          "help": "Setzt die Liste der Hindernisse, die das System heute vom IFR trennen — sie ist die eigentliche Aufgabenliste.",
+          "params": {
+            "text": "Die Hindernisse, eines je Zeile; ein leerer Text löscht die Liste."
+          }
+        }
+      },
+      "fields": {
+        "system": {
+          "help": "Das betrachtete System — Name oder kurze Beschreibung."
+        },
+        "usefulFunction": {
+          "help": "Die nützliche Funktion, die das System erfüllen soll."
+        },
+        "harmfulEffect": {
+          "help": "Die schädliche Wirkung oder der Kompromiss, den das System heute mitbringt."
+        },
+        "ifr1": {
+          "help": "IFR-1: das System bleibt, die schädliche Wirkung verschwindet ohne neuen Mechanismus."
+        },
+        "ifr2": {
+          "help": "IFR-2: die nützliche Funktion entsteht, ohne dass das System überhaupt existiert."
+        },
+        "ifr3": {
+          "help": "IFR-3: eine bereits vorhandene Ressource aus dem Supersystem übernimmt die Funktion."
+        },
+        "obstacles": {
+          "help": "Die Hindernisse, die das System heute vom IFR trennen — eines je Zeile."
+        }
+      },
       "subtitle": "Funktion erfüllt, System verschwindet, keine Kosten, keine schädliche Nebenwirkung — formuliere drei IFR-Stufen und analysiere die Lücke.",
       "taskHeading": "Aufgabe",
       "systemLabel": "System",
