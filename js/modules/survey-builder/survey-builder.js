@@ -83,6 +83,19 @@ export default createModule({
   Model: State,
 
   /**
+   * Every load of the example gets its own survey id. Response files are
+   * matched to a survey by that id, so two instances loaded from the same
+   * example would otherwise accept each other's responses as "ok".
+   * @param {object} data the example's module state
+   * @returns {object} a copy with a fresh `survey.id`
+   */
+  beforeLoadExample(data) {
+    const copy = JSON.parse(JSON.stringify(data));
+    if (copy.survey && typeof copy.survey === 'object') copy.survey.id = uid();
+    return copy;
+  },
+
+  /**
    * Alpine data function of the module.
    * @param {object} module the module instance (`_context`, `_container`)
    * @param {function(string, object=): string} _t translation function of the module
