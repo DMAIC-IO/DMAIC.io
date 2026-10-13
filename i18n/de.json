@@ -6236,16 +6236,13 @@
           }
         },
         "setShowMatrix": {
-          "help": "Legt fest, ob die vollständige 39×39-Matrix angezeigt wird.",
+          "help": "Legt fest, ob die vollständige 39×39-Matrix angezeigt wird — absolut, nicht umschaltend.",
           "params": {
             "visible": "true zeigt die Matrix, false verbirgt sie."
           }
         },
         "swapParams": {
           "help": "Tauscht verbesserndes und verschlechterndes Merkmal gegeneinander."
-        },
-        "toggleMatrix": {
-          "help": "Schaltet die Anzeige der vollständigen 39×39-Matrix um; für einen bestimmten Zustand ist setShowMatrix der direkte Weg."
         }
       },
       "fields": {
@@ -6429,7 +6426,7 @@
         "selectPrinciple": {
           "help": "Wählt das Trennungsprinzip, mit dem der Widerspruch aufgelöst wird; erst danach ist eine Lösungsnotiz sinnvoll.",
           "params": {
-            "key": "Das Trennungsprinzip: time (Zeit), space (Raum), condition (Bedingung) oder system (Systemebene). Ein Wert daneben ist ein Fehler."
+            "key": "Das Trennungsprinzip: time (Zeit), space (Raum), condition (Bedingung) oder system (Systemebene). null nimmt die Wahl zurück; jeder andere Wert ist ein Fehler."
           }
         },
         "swap": {
@@ -6828,7 +6825,7 @@
           "help": "Setzt die erreichte Stufe eines Trends. Liefert false, wenn der Trend keine Stufenskala hat (uneven ist qualitativ) — dann ist nichts passiert.",
           "params": {
             "trendId": "Die id des Trends: aggregation, dynamism, scale, automation, completeness, controllability, matching oder uneven. Eine unbekannte id ist ein Fehler.",
-            "stage": "Die erreichte Stufe, 0-basiert. Außerhalb der Skala dieses Trends ist sie ein Fehler. dynamism hat fünf Stufen (0 bis 4); aggregation, scale, automation, completeness, controllability und matching haben je vier (0 bis 3); uneven hat keine."
+            "stage": "Die erreichte Stufe, 0-basiert. -1 nimmt die Einordnung zurück; jeder andere Wert außerhalb der Skala dieses Trends ist ein Fehler. dynamism hat fünf Stufen (0 bis 4); aggregation, scale, automation, completeness, controllability und matching haben je vier (0 bis 3); uneven hat keine."
           }
         },
         "setTrendNotes": {

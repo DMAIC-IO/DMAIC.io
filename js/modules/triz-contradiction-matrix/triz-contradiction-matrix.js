@@ -134,13 +134,18 @@ const base = createModule({
         this.model.worsening = a;
       },
 
+      // `toggleMatrix` bleibt der Weg des Knopfes und schreibt nicht mehr
+      // selbst: ein Feld, eine Zuweisungsstelle. @noagent, weil ein
+      // Umschalter für einen Agenten nichts kann, was `setShowMatrix` nicht
+      // besser kann — sein Ergebnis hängt am Vorzustand, er muss also erst
+      // lesen, und wer gelesen hat, setzt direkt. Dasselbe Verhältnis wie
+      // `classToggled` zu `setClassExpanded` in `triz-sufield`.
       /**
-       * Schaltet die Anzeige der vollständigen 39×39-Matrix um.
-       * @agent
-       * @returns {void}
+       * @noagent Knopfhandler der Oberfläche; der neue Wert geht durch
+       *   `setShowMatrix`.
        */
       toggleMatrix() {
-        this.model.showMatrix = !this.model.showMatrix;
+        this.setShowMatrix(!this.model.showMatrix);
       },
 
       /** @noagent view transform */

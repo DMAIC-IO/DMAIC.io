@@ -94,7 +94,7 @@ export class State {
     s.problemNote = typeof d.problemNote === 'string' ? d.problemNote : ''
     s.notes = (d.notes && typeof d.notes === 'object') ? { ...d.notes } : {}
     s.selected = (d.selected && typeof d.selected === 'object') ? { ...d.selected } : {}
-    s.filterMode = d.filterMode === 'all' ? 'all' : 'auto'
+    s.filterMode = FILTER_MODES.includes(d.filterMode) ? d.filterMode : 'auto'
     s.expandedClasses = Array.isArray(d.expandedClasses)
       ? d.expandedClasses.filter(n => Number.isInteger(n))
       : []

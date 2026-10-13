@@ -69,15 +69,21 @@ export default createModule({
        */
       setSystem(text) { this.model.system = String(text ?? ''); },
 
+      // `-1` nimmt die Einordnung zurück und wirft nicht: die Feldhilfe von
+      // `trends` liefert `-1` als Leerwert aus („-1 heißt: keine gewählt"),
+      // also muss diese Senke ihn erreichen können (Ruling 52). `fromJSON`
+      // kennt `-1` ohnehin als gültigen persistierten Wert. Jede ANDERE
+      // Stufe außerhalb der Skala wirft weiter.
       /**
        * Setzt die erreichte Stufe eines Trends.
        * @agent
        * @param {string} trendId id des Trends
-       * @param {number} stage die Stufe, 0-basiert
+       * @param {number} stage die Stufe, 0-basiert; `-1` nimmt die
+       *   Einordnung zurück
        * @returns {boolean} true wenn gesetzt, false wenn der Trend keine
        *   Stufenskala hat — dann ist nichts passiert
        * @throws {Error} wenn kein Trend diese id trägt, oder wenn die Stufe
-       *   keine ganze Zahl innerhalb der Skala dieses Trends ist
+       *   keine ganze Zahl innerhalb der Skala dieses Trends und nicht `-1` ist
        */
       setTrendStage(trendId, stage) {
         requireKnownId('trendId', trendId, Object.keys(this.model.trends));
@@ -86,6 +92,7 @@ export default createModule({
         // keine Radiogruppe. Das ist eine fachliche Absage, kein Fehler:
         // die id ist gültig und bekannt, nur die Skala fehlt.
         if (!entry.hasStages) return false;
+        if (stage === -1) { entry.stage = -1; return true; }
         requireIndex('stage', stage, entry.availableStages.length - 1);
         entry.stage = stage;
         return true;

@@ -78,14 +78,20 @@ export default createModule({
         this.model.swap();
       },
 
+      // `null` nimmt die Wahl zurück und wirft nicht: die Feldhilfe von
+      // `selectedPrinciple` liefert `null` als Leerwert aus, also muss diese
+      // Senke ihn erreichen können (Ruling 52). Jeder ANDERE unbekannte Wert
+      // wirft weiter.
       /**
        * Wählt das Trennungsprinzip, mit dem der Widerspruch aufgelöst wird.
        * @agent
-       * @param {string} key Schlüssel des Trennungsprinzips
+       * @param {string|null} key Schlüssel des Trennungsprinzips; `null`
+       *   nimmt die Wahl zurück
        * @returns {void}
        * @throws {Error} wenn kein Trennungsprinzip diesen Schlüssel trägt
        */
       selectPrinciple(key) {
+        if (key === null || key === undefined) { this.model.selectedPrinciple = null; return; }
         requireKnownId('principleKey', key, PRINCIPLES);
         this.model.selectedPrinciple = key;
       },

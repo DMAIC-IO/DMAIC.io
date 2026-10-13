@@ -5500,11 +5500,6 @@ export const AGENT_REGISTRY = {
         "params": [],
         "returns": "void",
         "help": "Tauscht verbesserndes und verschlechterndes Merkmal gegeneinander."
-      },
-      "toggleMatrix": {
-        "params": [],
-        "returns": "void",
-        "help": "Schaltet die Anzeige der vollständigen 39×39-Matrix um."
       }
     },
     "fields": {
@@ -5572,7 +5567,7 @@ export const AGENT_REGISTRY = {
             "name": "stage",
             "type": "number",
             "optional": false,
-            "help": "die Stufe, 0-basiert"
+            "help": "die Stufe, 0-basiert; `-1` nimmt die Einordnung zurück"
           }
         ],
         "returns": "boolean",
@@ -5778,9 +5773,9 @@ export const AGENT_REGISTRY = {
         "params": [
           {
             "name": "key",
-            "type": "string",
+            "type": "string|null",
             "optional": false,
-            "help": "Schlüssel des Trennungsprinzips"
+            "help": "Schlüssel des Trennungsprinzips; `null` nimmt die Wahl zurück"
           }
         ],
         "returns": "void",

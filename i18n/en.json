@@ -6232,16 +6232,13 @@
           }
         },
         "setShowMatrix": {
-          "help": "Determines whether the full 39×39 matrix is shown.",
+          "help": "Determines whether the full 39×39 matrix is shown — absolutely, not by toggling.",
           "params": {
             "visible": "true shows the matrix, false hides it."
           }
         },
         "swapParams": {
           "help": "Swaps the improving and the degrading characteristic against each other."
-        },
-        "toggleMatrix": {
-          "help": "Toggles the display of the full 39×39 matrix; for a specific state, setShowMatrix is the direct route."
         }
       },
       "fields": {
@@ -6425,7 +6422,7 @@
         "selectPrinciple": {
           "help": "Chooses the separation principle that resolves the contradiction; only then does a solution note make sense.",
           "params": {
-            "key": "The separation principle: time, space, condition or system (system level). Any other value is an error."
+            "key": "The separation principle: time, space, condition or system (system level). null clears the choice; any other value is an error."
           }
         },
         "swap": {
@@ -6824,7 +6821,7 @@
           "help": "Sets the stage a trend has reached. Returns false if the trend has no stage scale (uneven is qualitative) — nothing happens then.",
           "params": {
             "trendId": "The id of the trend: aggregation, dynamism, scale, automation, completeness, controllability, matching or uneven. An unknown id is an error.",
-            "stage": "The stage reached, zero-based. Outside this trend's scale it is an error. dynamism has five stages (0 to 4); aggregation, scale, automation, completeness, controllability and matching have four each (0 to 3); uneven has none."
+            "stage": "The stage reached, zero-based. -1 clears the classification; any other value outside this trend's scale is an error. dynamism has five stages (0 to 4); aggregation, scale, automation, completeness, controllability and matching have four each (0 to 3); uneven has none."
           }
         },
         "setTrendNotes": {
