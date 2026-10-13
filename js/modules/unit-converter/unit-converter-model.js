@@ -58,14 +58,22 @@ export class State {
 
   _schema = { name: State.ID, version: State.VERSION };
 
+  /** @type {string} der Schlüssel der aktiven Größenart, z. B. laenge oder masse */
   activeCat = DEFAULT_CAT;
+  /** @type {string} der Schlüssel der Einheit, aus der umgerechnet wird */
   fromUnit = '';
+  /** @type {string} der Schlüssel der Einheit, in die umgerechnet wird */
   toUnit = '';
+  /** @type {string} der eingegebene Wert als Text; ein Komma gilt als Dezimaltrennzeichen */
   inputVal = '';
 
+  /** @type {number} die Position der Ausgangszeitzone in der Zeitzonenliste */
   tzFrom = 1; // Berlin
+  /** @type {number} die Position der Zielzeitzone in der Zeitzonenliste */
   tzTo = 0;   // UTC
+  /** @type {string} die Uhrzeit der Umrechnung als HH:MM; leer heißt nicht gesetzt */
   tzTime = '12:00';
+  /** @type {string} das Datum der Umrechnung als YYYY-MM-DD; leer heißt nicht gesetzt */
   tzDate = '';
 
   constructor() {

@@ -7654,83 +7654,174 @@ export const AGENT_REGISTRY = {
     }
   },
   "unit-converter": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unmarked_method:catName",
-      "unmarked_method:catIcon",
-      "unmarked_method:catActiveClass",
-      "unmarked_method:unitLabel",
-      "unmarked_method:fromGroups",
-      "unmarked_method:fromFlatUnits",
-      "unmarked_method:toUnitKeys",
-      "unmarked_method:onFromChange",
-      "unmarked_method:fmt",
-      "unmarked_method:fmtResult",
-      "unmarked_method:resultText",
-      "unmarked_method:formulaText",
-      "unmarked_method:refRows",
-      "unmarked_method:selectCategory",
-      "unmarked_method:swapUnits",
-      "unmarked_method:tzLabel",
-      "unmarked_method:tzNowLabel",
-      "unmarked_method:tzResultText",
-      "unmarked_method:tzResultDateText",
-      "unmarked_method:tzDiffText",
-      "unmarked_method:swapTimezones",
-      "unmarked_method:tzSetNow",
-      "unmarked_method:worldClock",
-      "unreachable_write:fromUnit",
-      "unreachable_write:inputVal",
-      "unreachable_write:toUnit",
-      "unreachable_write:tzFrom",
-      "unreachable_write:tzTime",
-      "unreachable_write:tzDate",
-      "unreachable_write:tzTo"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "selectCategory": {
+        "params": [
+          {
+            "name": "catKey",
+            "type": "string",
+            "optional": false,
+            "help": "der Schlüssel der Größenart. Jeder andere Wert ist ein Fehler."
+          }
+        ],
+        "returns": "void",
+        "help": "Wechselt die Größenart und stellt beide Einheiten auf deren Vorgaben."
+      },
+      "setFromUnit": {
+        "params": [
+          {
+            "name": "unitKey",
+            "type": "string",
+            "optional": false,
+            "help": "der Schlüssel einer Einheit der aktiven Größenart. Eine Einheit einer anderen Größenart ist ein Fehler."
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Einheit, aus der umgerechnet wird, und zieht die Zieleinheit nach, wenn sie dazu nicht mehr passt."
+      },
+      "setToUnit": {
+        "params": [
+          {
+            "name": "unitKey",
+            "type": "string",
+            "optional": false,
+            "help": "der Schlüssel einer Einheit, die zur Ausgangseinheit passt. Jede andere Einheit ist ein Fehler."
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Einheit, in die umgerechnet wird."
+      },
+      "setInputValue": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der Wert als Text; ein Komma gilt als Dezimaltrennzeichen, der leere Text löscht die Eingabe. Ein Text, der keine Zahl ergibt, ergibt kein Ergebnis — ein Fehler ist er nicht."
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt den Wert, der umgerechnet wird."
+      },
+      "swapUnits": {
+        "params": [],
+        "returns": "void",
+        "help": "Tauscht Ausgangs- und Zieleinheit."
+      },
+      "setTzFrom": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "die Position der Zeitzone in der Zeitzonenliste, von 0 an. Jeder andere Wert ist ein Fehler."
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Ausgangszeitzone."
+      },
+      "setTzTo": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "die Position der Zeitzone in der Zeitzonenliste, von 0 an. Jeder andere Wert ist ein Fehler."
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Zielzeitzone."
+      },
+      "setTzTime": {
+        "params": [
+          {
+            "name": "hhmm",
+            "type": "string",
+            "optional": false,
+            "help": "die Uhrzeit als HH:MM von 00:00 bis 23:59; der leere Text löscht sie. Jeder andere Wert ist ein Fehler."
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Uhrzeit, die umgerechnet wird."
+      },
+      "setTzDate": {
+        "params": [
+          {
+            "name": "isoDate",
+            "type": "string",
+            "optional": false,
+            "help": "das Datum als YYYY-MM-DD; der leere Text löscht es. Jeder andere Wert ist ein Fehler."
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt das Datum, zu dem umgerechnet wird."
+      },
+      "swapTimezones": {
+        "params": [],
+        "returns": "void",
+        "help": "Tauscht Ausgangs- und Zielzeitzone."
+      },
+      "tzSetNow": {
+        "params": [],
+        "returns": "boolean",
+        "help": "Setzt Uhrzeit und Datum auf das Jetzt der Ausgangszeitzone."
+      }
+    },
     "fields": {
       "activeCat": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "der Schlüssel der aktiven Größenart, z. B. laenge oder masse",
         "bulk": false
       },
       "fromUnit": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "der Schlüssel der Einheit, aus der umgerechnet wird",
         "bulk": false
       },
       "toUnit": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "der Schlüssel der Einheit, in die umgerechnet wird",
         "bulk": false
       },
       "inputVal": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "der eingegebene Wert als Text; ein Komma gilt als Dezimaltrennzeichen",
         "bulk": false
       },
       "tzFrom": {
-        "type": "any",
-        "help": "",
+        "type": "number",
+        "help": "die Position der Ausgangszeitzone in der Zeitzonenliste",
         "bulk": false
       },
       "tzTo": {
-        "type": "any",
-        "help": "",
+        "type": "number",
+        "help": "die Position der Zielzeitzone in der Zeitzonenliste",
         "bulk": false
       },
       "tzTime": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "die Uhrzeit der Umrechnung als HH:MM; leer heißt nicht gesetzt",
         "bulk": false
       },
       "tzDate": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "das Datum der Umrechnung als YYYY-MM-DD; leer heißt nicht gesetzt",
         "bulk": false
       }
     }
@@ -8386,4 +8477,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":27};
+export const AGENT_COVERAGE = {"total":74,"available":28};

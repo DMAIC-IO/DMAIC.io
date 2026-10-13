@@ -7316,7 +7316,93 @@
       "tzDenver": "US Mountain (MST/MDT)",
       "tzLosAngeles": "US West Coast (PST/PDT)",
       "tzMexicoCity": "Mexico City (CST/CDT)",
-      "tzSaoPaulo": "São Paulo (BRT)"
+      "tzSaoPaulo": "São Paulo (BRT)",
+      "whenToUse": "When a measured value has to be expressed in another unit — length, area, volume, mass, pressure, temperature, force, torque, energy, power, flow rate, speed, time, angle, rotational speed, pH, concentration, sound or lab values — or when a time has to be converted between two time zones; not for converting a whole data column, that is what the data transformation is for.",
+      "actions": {
+        "selectCategory": {
+          "help": "Switches the quantity category and resets both units to its defaults.",
+          "params": {
+            "catKey": "The key of the category: laenge (length), flaeche (area), volumen, masse (mass), druck (pressure), temperatur, kraft (force), drehmoment (torque), energie, leistung (power), durchfluss (flow rate), geschwindigkeit (speed), zeit (time), winkel (angle), drehzahl (rotational speed), ph, konzentration, schall (sound) or laborwerte (lab values). Any other value is an error."
+          }
+        },
+        "setFromUnit": {
+          "help": "Sets the unit converted from, and pulls the target unit along when it no longer fits.",
+          "params": {
+            "unitKey": "The key of a unit of the active category, as read() reports it under fromUnit. A unit of another category is an error; the error message names the allowed keys."
+          }
+        },
+        "setToUnit": {
+          "help": "Sets the unit converted to.",
+          "params": {
+            "unitKey": "The key of a unit that fits the source unit. For lab values those are only the units of the same group; any other is an error, and the error message names the allowed keys."
+          }
+        },
+        "setInputValue": {
+          "help": "Sets the value that is converted.",
+          "params": {
+            "text": "The value as text; a comma counts as the decimal separator, empty text clears the entry. Text that is not a number is not an error — nothing is converted then. A missing argument is an error."
+          }
+        },
+        "swapUnits": {
+          "help": "Swaps the source and the target unit."
+        },
+        "setTzFrom": {
+          "help": "Sets the source time zone.",
+          "params": {
+            "index": "The position of the time zone in the time-zone list, from 0; 0 is UTC, 1 Berlin. Any other value is an error, and the error message names the allowed positions."
+          }
+        },
+        "setTzTo": {
+          "help": "Sets the target time zone.",
+          "params": {
+            "index": "The position of the time zone in the time-zone list, from 0; 0 is UTC, 1 Berlin. Any other value is an error, and the error message names the allowed positions."
+          }
+        },
+        "setTzTime": {
+          "help": "Sets the time that is converted.",
+          "params": {
+            "hhmm": "The time as HH:MM from 00:00 to 23:59; empty text clears it. Any other value is an error."
+          }
+        },
+        "setTzDate": {
+          "help": "Sets the date the conversion refers to.",
+          "params": {
+            "isoDate": "The date as YYYY-MM-DD; empty text clears it. Any other value is an error."
+          }
+        },
+        "swapTimezones": {
+          "help": "Swaps the source and the target time zone."
+        },
+        "tzSetNow": {
+          "help": "Sets time and date to the current moment in the source time zone. If the source time zone is unknown, both stay as they are and the call returns false."
+        }
+      },
+      "fields": {
+        "activeCat": {
+          "help": "The key of the active quantity category, e.g. laenge (length) or masse (mass)."
+        },
+        "fromUnit": {
+          "help": "The key of the unit converted from."
+        },
+        "toUnit": {
+          "help": "The key of the unit converted to."
+        },
+        "inputVal": {
+          "help": "The entered value as text; a comma counts as the decimal separator. Empty means nothing entered. The converted result is computed and lives in no field."
+        },
+        "tzFrom": {
+          "help": "The position of the source time zone in the time-zone list; 0 is UTC, 1 Berlin."
+        },
+        "tzTo": {
+          "help": "The position of the target time zone in the time-zone list; 0 is UTC, 1 Berlin."
+        },
+        "tzTime": {
+          "help": "The time of the conversion as HH:MM; empty means not set."
+        },
+        "tzDate": {
+          "help": "The date of the conversion as YYYY-MM-DD; empty means not set."
+        }
+      }
     },
     "triz-contradiction-matrix": {
       "name": "Contradiction Matrix (TRIZ)",

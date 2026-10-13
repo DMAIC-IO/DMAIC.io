@@ -7320,7 +7320,93 @@
       "tzDenver": "US Mountain (MST/MDT)",
       "tzLosAngeles": "US Westküste (PST/PDT)",
       "tzMexicoCity": "Mexiko-Stadt (CST/CDT)",
-      "tzSaoPaulo": "São Paulo (BRT)"
+      "tzSaoPaulo": "São Paulo (BRT)",
+      "whenToUse": "Wenn ein Messwert in eine andere Einheit gebracht werden muss — Länge, Fläche, Volumen, Masse, Druck, Temperatur, Kraft, Drehmoment, Energie, Leistung, Durchfluss, Geschwindigkeit, Zeit, Winkel, Drehzahl, pH, Konzentration, Schall oder Laborwerte — oder wenn eine Uhrzeit zwischen zwei Zeitzonen umgerechnet werden soll; nicht für das Umrechnen einer ganzen Datenspalte, dafür ist die Datentransformation da.",
+      "actions": {
+        "selectCategory": {
+          "help": "Wechselt die Größenart und stellt beide Einheiten auf deren Vorgaben.",
+          "params": {
+            "catKey": "Der Schlüssel der Größenart: laenge, flaeche, volumen, masse, druck, temperatur, kraft, drehmoment, energie, leistung, durchfluss, geschwindigkeit, zeit, winkel, drehzahl, ph, konzentration, schall oder laborwerte. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "setFromUnit": {
+          "help": "Setzt die Einheit, aus der umgerechnet wird, und zieht die Zieleinheit nach, wenn sie dazu nicht mehr passt.",
+          "params": {
+            "unitKey": "Der Schlüssel einer Einheit der aktiven Größenart, wie read() ihn unter fromUnit führt. Eine Einheit einer anderen Größenart ist ein Fehler; die Fehlermeldung nennt die zulässigen Schlüssel."
+          }
+        },
+        "setToUnit": {
+          "help": "Setzt die Einheit, in die umgerechnet wird.",
+          "params": {
+            "unitKey": "Der Schlüssel einer Einheit, die zur Ausgangseinheit passt. Bei den Laborwerten sind das nur die Einheiten derselben Gruppe; jede andere ist ein Fehler, und die Fehlermeldung nennt die zulässigen Schlüssel."
+          }
+        },
+        "setInputValue": {
+          "help": "Setzt den Wert, der umgerechnet wird.",
+          "params": {
+            "text": "Der Wert als Text; ein Komma gilt als Dezimaltrennzeichen, der leere Text löscht die Eingabe. Ein Text, der keine Zahl ergibt, ist kein Fehler — es wird dann nichts umgerechnet. Ein fehlendes Argument ist ein Fehler."
+          }
+        },
+        "swapUnits": {
+          "help": "Tauscht Ausgangs- und Zieleinheit."
+        },
+        "setTzFrom": {
+          "help": "Setzt die Ausgangszeitzone.",
+          "params": {
+            "index": "Die Position der Zeitzone in der Zeitzonenliste, von 0 an; 0 ist UTC, 1 Berlin. Jeder andere Wert ist ein Fehler, und die Fehlermeldung nennt die zulässigen Positionen."
+          }
+        },
+        "setTzTo": {
+          "help": "Setzt die Zielzeitzone.",
+          "params": {
+            "index": "Die Position der Zeitzone in der Zeitzonenliste, von 0 an; 0 ist UTC, 1 Berlin. Jeder andere Wert ist ein Fehler, und die Fehlermeldung nennt die zulässigen Positionen."
+          }
+        },
+        "setTzTime": {
+          "help": "Setzt die Uhrzeit, die umgerechnet wird.",
+          "params": {
+            "hhmm": "Die Uhrzeit als HH:MM von 00:00 bis 23:59; der leere Text löscht sie. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "setTzDate": {
+          "help": "Setzt das Datum, zu dem umgerechnet wird.",
+          "params": {
+            "isoDate": "Das Datum als YYYY-MM-DD; der leere Text löscht es. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "swapTimezones": {
+          "help": "Tauscht Ausgangs- und Zielzeitzone."
+        },
+        "tzSetNow": {
+          "help": "Setzt Uhrzeit und Datum auf das Jetzt der Ausgangszeitzone. Ist die Ausgangszeitzone unbekannt, bleibt beides stehen und der Aufruf liefert false."
+        }
+      },
+      "fields": {
+        "activeCat": {
+          "help": "Der Schlüssel der aktiven Größenart, z. B. laenge oder masse."
+        },
+        "fromUnit": {
+          "help": "Der Schlüssel der Einheit, aus der umgerechnet wird."
+        },
+        "toUnit": {
+          "help": "Der Schlüssel der Einheit, in die umgerechnet wird."
+        },
+        "inputVal": {
+          "help": "Der eingegebene Wert als Text; ein Komma gilt als Dezimaltrennzeichen. Leer heißt: nichts eingegeben. Das umgerechnete Ergebnis ist gerechnet und steht in keinem Feld."
+        },
+        "tzFrom": {
+          "help": "Die Position der Ausgangszeitzone in der Zeitzonenliste; 0 ist UTC, 1 Berlin."
+        },
+        "tzTo": {
+          "help": "Die Position der Zielzeitzone in der Zeitzonenliste; 0 ist UTC, 1 Berlin."
+        },
+        "tzTime": {
+          "help": "Die Uhrzeit der Umrechnung als HH:MM; leer heißt nicht gesetzt."
+        },
+        "tzDate": {
+          "help": "Das Datum der Umrechnung als YYYY-MM-DD; leer heißt nicht gesetzt."
+        }
+      }
     },
     "triz-contradiction-matrix": {
       "name": "Widerspruchsmatrix (TRIZ)",
