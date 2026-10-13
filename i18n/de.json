@@ -7682,6 +7682,7 @@
       "filterAuto": "Nur empfohlene Klassen",
       "filterAll": "Alle anzeigen",
       "loading": "Lade Standardlösungen…",
+      "loadError": "Daten konnten nicht geladen werden",
       "loadExample": "Beispiel laden",
       "reset": "Zurücksetzen",
       "resetTitle": "Substanz-Feld-Analyse zurücksetzen?",

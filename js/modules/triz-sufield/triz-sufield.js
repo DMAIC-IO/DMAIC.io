@@ -18,7 +18,14 @@ let _dataPromise = null;
 /**
  * Die ids und Klassennummern der geladenen Standardtabelle — feste
  * Tabellendaten, kein Zustand, darum auf Modulebene und nicht je Instanz.
- * Vor dem Laden leer; die Prüfungen unten nennen dann eine leere Liste.
+ *
+ * Sie sind gefüllt, bevor ein Aufruf sie sehen kann: der `init`-Überbau am
+ * Ende dieser Datei wartet `loadData()` ab, BEVOR das Viewmodel entsteht.
+ * Ohne dieses Warten bot die Agentenfläche `setClassExpanded`,
+ * `setStandardNote` und `setStandardSelected` in dem Fenster zwischen dem
+ * Einhängen und dem Eintreffen der Datei mit einer LEEREN Wertemenge an —
+ * die Meldung `unknown cls 4; available:` behauptete dem Aufrufer gegenüber,
+ * es gebe keine einzige Standardklasse.
  */
 let _standardIds = [];
 let _classNumbers = [];
@@ -40,7 +47,14 @@ function truncate(s, n) {
   return str.length > n ? `${str.slice(0, n - 1)  }…` : str;
 }
 
-export default createModule({
+function el(tag, className, text) {
+  const n = document.createElement(tag);
+  if (className) n.className = className;
+  if (text != null) n.textContent = text;
+  return n;
+}
+
+const base = createModule({
   config: {
     id: 'triz-sufield',
     engine: 'alpine',
@@ -401,7 +415,11 @@ export default createModule({
           if (this.model.expandedClasses.length === 0) {
             const model = this.model;
             const diag = diagnose(model.s1, model.s2, model.field, model.link);
-            diag.suggestedClasses.forEach(c => model.expandedClasses.push(c));
+            // Über die benannte Senke, nicht mit einem eigenen `push`: so
+            // bleibt EINE Zuweisungsstelle je Feld, und die Vorauswahl
+            // durchläuft dieselbe Prüfung wie ein Aufruf von außen. Die
+            // Tabelle ist hier garantiert geladen (siehe `base.init` unten).
+            diag.suggestedClasses.forEach(c => this.setClassExpanded(c, true));
           }
           this.classList = Object.keys(mapped).map(key => ({
             key,
@@ -415,3 +433,31 @@ export default createModule({
     };
   },
 });
+
+// Die Standardtabelle muss stehen, bevor das Viewmodel lebt: `agent-ops.js`
+// holt sich das Viewmodel direkt nach dem Einhängen und ruft darauf sofort.
+// Dasselbe Vorgehen wie in `triz-contradiction-matrix`.
+const origInit = base.init;
+base.init = async function (container, context) {
+  this._container = container;
+  this._context = context;
+  const wrap = el('div', 'module-container triz-sufield');
+  const body = el('div', 'module-container__body');
+  body.appendChild(el('p', 'triz-sufield__hint', '\u2026'));
+  wrap.appendChild(body);
+  container.replaceChildren(wrap);
+  try {
+    await loadData();
+  } catch (err) {
+    console.error('[triz-sufield] failed to load data:', err);
+    const title = context.i18n.t('modules.triz-sufield.loadError');
+    const errWrap = el('div', 'module-error');
+    errWrap.appendChild(el('div', 'module-error__title', title));
+    errWrap.appendChild(el('div', 'module-error__message', err.message));
+    container.replaceChildren(errWrap);
+    return;
+  }
+  return origInit.call(this, container, context);
+};
+
+export default base;

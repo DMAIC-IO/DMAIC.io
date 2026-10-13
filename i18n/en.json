@@ -7678,6 +7678,7 @@
       "filterAuto": "Suggested classes only",
       "filterAll": "Show all",
       "loading": "Loading standard solutions…",
+      "loadError": "Could not load data",
       "loadExample": "Load example",
       "reset": "Reset",
       "resetTitle": "Reset Substance-Field analysis?",
