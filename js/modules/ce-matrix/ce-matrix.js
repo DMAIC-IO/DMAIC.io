@@ -277,19 +277,23 @@ export default createModule({
        * @param {number|null} value die Bewertung aus der aktiven Skala;
        *   `null` löscht die Bewertung
        * @returns {boolean} true
-       * @throws {Error} wenn `r` oder `c` keine Größe bezeichnet oder die
-       *   aktive Skala `value` nicht zulässt
+       * @throws {Error} wenn `r` oder `c` keine Größe bezeichnet, die aktive
+       *   Skala `value` nicht zulässt oder `value` ganz fehlt
        */
       setScore(r, c, value) {
         requireIndex('r', r, this.model.inputs.length - 1);
         requireIndex('c', c, this.model.outputs.length - 1);
         // `null` ist der dokumentierte Leerwert der Feldhilfe von `scores`
         // und muss die Senke erreichen (Ruling 52); jede andere Bewertung
-        // ausserhalb der Skala wirft weiter.
-        if (value !== null && value !== undefined) {
+        // ausserhalb der Skala wirft weiter. `undefined` zählt NICHT als
+        // Leerwert: die Fläche prüft die Argumentzahl nicht, ein vergessenes
+        // drittes Argument käme hier als `undefined` an und würde sonst
+        // still löschen und Erfolg melden. Es fällt darum in `requireEnum`
+        // und wirft (`invalid value undefined; allowed: …`).
+        if (value !== null) {
           requireEnum('value', value, this.model.allowedScores());
         }
-        return this.model.setScore(r, c, value ?? null);
+        return this.model.setScore(r, c, value);
       },
 
       /**

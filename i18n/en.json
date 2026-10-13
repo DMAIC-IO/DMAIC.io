@@ -2763,13 +2763,13 @@
           "help": "Starts the comparison: builds the matrix and the shuffled pair order and switches to the compare phase. With fewer than three criteria the call returns false — a refusal, not an error."
         },
         "chooseLeft": {
-          "help": "Decides the pending pair in favour of its first criterion and advances one step; after the last pair the phase switches to results. Which pair is pending is in pairs[currentPair]. With no pair left the call returns false."
+          "help": "Decides the pending pair in favour of its first criterion and advances one step; after the last pair the phase switches to results. Which pair is pending is in pairs[currentPair]. While no comparison is running — before startComparison or after all pairs are decided — the call returns false; that is a refusal, not an error."
         },
         "chooseRight": {
-          "help": "Decides the pending pair in favour of its second criterion and advances one step; after the last pair the phase switches to results. With no pair left the call returns false."
+          "help": "Decides the pending pair in favour of its second criterion and advances one step; after the last pair the phase switches to results. While no comparison is running — before startComparison or after all pairs are decided — the call returns false; that is a refusal, not an error."
         },
         "tieCurrent": {
-          "help": "Declares the pending pair a tie — both criteria get 0.5 — and advances one step. With no pair left the call returns false."
+          "help": "Declares the pending pair a tie — both criteria get 0.5 — and advances one step. While no comparison is running — before startComparison or after all pairs are decided — the call returns false; that is a refusal, not an error."
         },
         "setViewPhase": {
           "help": "Sets the displayed tab.",
@@ -2778,7 +2778,7 @@
           }
         },
         "cycleCell": {
-          "help": "Advances the rating of a matrix cell by one step: 0 to 0.5, 0.5 to 1, 1 back to 0. The opposite cell travels along.",
+          "help": "Advances the rating of a matrix cell by one step: 0 to 0.5, 0.5 to 1, 1 back to 0. The opposite cell travels along. On the diagonal — a criterion against itself — and while no comparison is running the call returns false; both are refusals, not errors.",
           "params": {
             "i": "The number of the row's criterion, counted from 0. A number that names no criterion is an error.",
             "j": "The number of the column's criterion, counted from 0. A number that names no criterion is an error."

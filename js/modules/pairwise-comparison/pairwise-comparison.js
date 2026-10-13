@@ -196,7 +196,8 @@ export default createModule({
        * `results`. Welches Paar anstehend ist, sagt `pairs[currentPair]`.
        * @agent
        * @returns {boolean} true wenn eine Entscheidung vermerkt wurde, false
-       *   wenn kein Paar mehr aussteht — das ist eine Absage, kein Fehler
+       *   solange kein Vergleich läuft — vor `startComparison` oder nachdem
+       *   alle Paare entschieden sind; das ist eine Absage, kein Fehler
        */
       chooseLeft() {
         if (!this.model.compareReachable) return false;
@@ -211,7 +212,8 @@ export default createModule({
        * `results`.
        * @agent
        * @returns {boolean} true wenn eine Entscheidung vermerkt wurde, false
-       *   wenn kein Paar mehr aussteht — das ist eine Absage, kein Fehler
+       *   solange kein Vergleich läuft — vor `startComparison` oder nachdem
+       *   alle Paare entschieden sind; das ist eine Absage, kein Fehler
        */
       chooseRight() {
         if (!this.model.compareReachable) return false;
@@ -225,7 +227,8 @@ export default createModule({
        * einen Schritt vor.
        * @agent
        * @returns {boolean} true wenn eine Entscheidung vermerkt wurde, false
-       *   wenn kein Paar mehr aussteht — das ist eine Absage, kein Fehler
+       *   solange kein Vergleich läuft — vor `startComparison` oder nachdem
+       *   alle Paare entschieden sind; das ist eine Absage, kein Fehler
        */
       tieCurrent() {
         if (!this.model.compareReachable) return false;

@@ -2767,13 +2767,13 @@
           "help": "Startet den Vergleich: baut die Matrix und die gemischte Paarfolge und wechselt in die Phase compare. Unter drei Kriterien liefert der Aufruf false — eine Absage, kein Fehler."
         },
         "chooseLeft": {
-          "help": "Entscheidet das anstehende Paar für sein erstes Kriterium und rückt einen Schritt vor; nach dem letzten Paar wechselt die Phase auf results. Welches Paar anstehend ist, steht in pairs[currentPair]. Steht kein Paar mehr aus, liefert der Aufruf false."
+          "help": "Entscheidet das anstehende Paar für sein erstes Kriterium und rückt einen Schritt vor; nach dem letzten Paar wechselt die Phase auf results. Welches Paar anstehend ist, steht in pairs[currentPair]. Solange kein Vergleich läuft — vor startComparison oder nachdem alle Paare entschieden sind — liefert der Aufruf false; das ist eine Absage, kein Fehler."
         },
         "chooseRight": {
-          "help": "Entscheidet das anstehende Paar für sein zweites Kriterium und rückt einen Schritt vor; nach dem letzten Paar wechselt die Phase auf results. Steht kein Paar mehr aus, liefert der Aufruf false."
+          "help": "Entscheidet das anstehende Paar für sein zweites Kriterium und rückt einen Schritt vor; nach dem letzten Paar wechselt die Phase auf results. Solange kein Vergleich läuft — vor startComparison oder nachdem alle Paare entschieden sind — liefert der Aufruf false; das ist eine Absage, kein Fehler."
         },
         "tieCurrent": {
-          "help": "Erklärt das anstehende Paar für unentschieden — beide Kriterien bekommen 0.5 — und rückt einen Schritt vor. Steht kein Paar mehr aus, liefert der Aufruf false."
+          "help": "Erklärt das anstehende Paar für unentschieden — beide Kriterien bekommen 0.5 — und rückt einen Schritt vor. Solange kein Vergleich läuft — vor startComparison oder nachdem alle Paare entschieden sind — liefert der Aufruf false; das ist eine Absage, kein Fehler."
         },
         "setViewPhase": {
           "help": "Setzt den angezeigten Reiter.",
@@ -2782,7 +2782,7 @@
           }
         },
         "cycleCell": {
-          "help": "Geht die Bewertung einer Matrixzelle einen Schritt weiter: 0 zu 0.5, 0.5 zu 1, 1 zurück zu 0. Die Gegenzelle wird mitgeführt.",
+          "help": "Geht die Bewertung einer Matrixzelle einen Schritt weiter: 0 zu 0.5, 0.5 zu 1, 1 zurück zu 0. Die Gegenzelle wird mitgeführt. Auf der Diagonale — ein Kriterium gegen sich selbst — und solange kein Vergleich läuft, liefert der Aufruf false; beides sind Absagen, keine Fehler.",
           "params": {
             "i": "Die Nummer des Kriteriums der Zeile, von 0 an gezählt. Eine Nummer, die kein Kriterium bezeichnet, ist ein Fehler.",
             "j": "Die Nummer des Kriteriums der Spalte, von 0 an gezählt. Eine Nummer, die kein Kriterium bezeichnet, ist ein Fehler."
