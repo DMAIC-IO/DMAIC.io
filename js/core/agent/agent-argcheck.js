@@ -1,17 +1,30 @@
 /**
  * D.Mike — Argumentprüfungen der Agentenfläche (agent-argcheck.js)
  *
- * Die zwei Fehlermeldungen, die jedes freigegebene Modul braucht, an EINER
- * Stelle. Die Regel der Fläche ist „ungültiges Argument wirft, fachliche
- * Absage liefert einen Wert" — geworfen wird hier also, und `agent-ops.js`
- * macht daraus `call_failed` samt Meldung.
+ * Die Fehlermeldungen, die jedes freigegebene Modul braucht, an EINER Stelle.
+ * Die Regel der Fläche ist „ungültiges Argument wirft, fachliche Absage
+ * liefert einen Wert" — geworfen wird hier also, und `agent-ops.js` macht
+ * daraus `call_failed` samt Meldung.
  *
  * Grund für die eigene Datei: die Pilotmodule hatten dieselbe Meldung drei
  * Mal gebaut (`unknown … id "x"; available: …`) und das Aufzähl-Argument ein
  * Mal generisch. Die GESTALT der Meldung ist dabei längst Vertrag — ein Agent
- * liest „available:"/„allowed:" und die Liste, um seinen Tippfehler selbst zu
+ * liest das Listenwort und die Liste dahinter, um seinen Tippfehler selbst zu
  * finden, und die Paritätstests sichern sie mit `toContain` zu. Darum steht
  * sie hier wörtlich so, wie sie vorher an fünf Aufrufstellen stand.
+ *
+ * Fünf Prüfer, drei Listenwörter — das ist der vollständige Vertrag:
+ *
+ * | Prüfer | Listenwort | Beispielmeldung |
+ * |---|---|---|
+ * | `requireEnum`    | `allowed:`  | `invalid mode "x"; allowed: DEG, RAD` |
+ * | `requireKnownId` | `available:`| `unknown stepId "x"; available: s-1, s-2` |
+ * | `requireIndex`   | `allowed:`  | `invalid idx 9; allowed: 0..3` |
+ * | `requireArity`   | `expected:` | `missing argument "values" of setCells; expected: columnId, startRow, values` |
+ * | `requireText`    | `allowed:`  | `invalid text 7; allowed: any string, "" clears it` |
+ *
+ * Ein neuer Prüfer nimmt eines dieser drei Listenwörter, oder er begründet
+ * sein viertes hier.
  *
  * Die Kernschicht benutzt von diesen Funktionen genau eine — `requireArity`,
  * aus `agent-ops.js` vor dem Methodenaufruf. Ein fehlendes Argument IST ein

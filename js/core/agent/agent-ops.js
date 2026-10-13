@@ -149,6 +149,25 @@ export function createOps(deps) {
         return axiError(ERRORS.MODULE_NOT_AGENT_READY,
           t('agent.errors.moduleNotAgentReady', { module: found.module }));
       }
+      // Der Katalog IST die Fläche. Zeigt `instance` auf eine Referenz, die
+      // nicht aus einem `module.add` mit literalem Modulnamen stammt, kann
+      // `staticTargetModule` das Zielmodul nicht bestimmen, und Prüfstufe 5
+      // überspringt die Methodenprüfung (agent-validate.js) — ohne diese
+      // Zeilen blieb nur die Prüfung gegen das LEBENDE Viewmodel, und damit
+      // war jedes öffentliche `@noagent`-Mitglied aufrufbar: ein Dialog zum
+      // Öffnen (E3), eine bewusst nicht freigegebene Umschaltung, ein
+      // Zurücksetzen von Einstellungen. Geprüft wird VOR `getViewmodel`:
+      // ein abgewiesener Aufruf soll die Ansicht nicht erst öffnen.
+      const spec = entry.actions?.[action.method];
+      if (!spec) {
+        // Dieselbe Fehlerform wie unten; `available` nennt aber die
+        // KATALOG-Aktionen — was der Agent statt dessen rufen darf. Die
+        // Methodenliste des Viewmodels wäre hier eine Einladung zu genau dem
+        // Aufruf, der gerade abgewiesen wurde.
+        return axiError(ERRORS.UNKNOWN_METHOD,
+          t('agent.errors.unknownMethod', { module: found.module, method: action.method }),
+          { available: Object.keys(entry.actions ?? {}).sort() });
+      }
       const viewmodel = await host.getViewmodel(action.instance);
       if (!viewmodel) {
         // Derselbe Vertragscode wie „Instanz unbekannt" (ERRORS.UNKNOWN_INSTANCE,
@@ -175,10 +194,10 @@ export function createOps(deps) {
         // Quelle, aus der der Agent die Signatur liest. Ohne sie kam ein
         // FEHLENDES Argument als `undefined` bei der Senke an und wurde dort
         // wie der dokumentierte Leerwert behandelt: der Aufruf löschte einen
-        // Wert und meldete Erfolg (Ruling 55). Führt die Registry die Methode
-        // nicht (ein öffentliches Mitglied ohne Aktionseintrag), bleibt es
-        // beim alten Verhalten — geraten wird nichts.
-        requireArity(action.method, args, entry?.actions?.[action.method]?.params ?? []);
+        // Wert und meldete Erfolg (Ruling 55). Der Parametersatz ist immer da
+        // — ein Aufruf ohne Katalogeintrag ist oben schon abgewiesen, die
+        // Prüfung läuft also nie mehr fail open.
+        requireArity(action.method, args, spec.params ?? []);
         const value = await viewmodel[action.method](...args);
         return { instanceId: action.instance, method: action.method, value: value ?? null };
       } catch (err) {
