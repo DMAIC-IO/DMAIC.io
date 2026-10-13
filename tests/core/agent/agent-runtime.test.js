@@ -340,12 +340,68 @@ suite('agent runtime — the seven ops', () => {
     const out = await runtime.interact([
       { id: 'a1', op: 'module.add', module: 'worksheet', phase: 'data' },
       { id: 'a2', op: 'instance.call', instance: { $from: 'a1', path: 'instanceId' },
-                  method: 'importCsv', args: [] },
+                  // Ein Argument MUSS übergeben werden: `csv` ist in der
+                  // Registry pflichtig, und die Fläche weist einen Aufruf mit
+                  // zu wenigen Argumenten ab, bevor die Senke läuft (siehe
+                  // den Fall unten). Hier geht es um den Wurf DER SENKE.
+                  method: 'importCsv', args: ['x'] },
     ]);
     assertEqual(out.ok, false);
     const entry = out.results[out.results.length - 1];
     assertEqual(['op_failed', 'call_failed'].includes(entry.error), true, `unerwarteter Code: ${entry.error}`);
     assertEqual(/addSubstep/.test(entry.message), true, `die Meldung nennt die Methode nicht: ${entry.message}`);
+  });
+
+  test('ein fehlendes Pflichtargument wird abgewiesen, bevor die Senke läuft', async () => {
+    // Ruling 55: `agent-ops.js` spreadet `action.args ?? []`, ein
+    // weggelassenes Argument kam als `undefined` bei der Senke an und wurde
+    // dort wie der dokumentierte Leerwert behandelt — der Aufruf löschte
+    // einen Wert und meldete Erfolg. Geprüft wird gegen den Parametersatz der
+    // Registry, und zwar VOR dem Aufruf: `calls` bleibt leer.
+    const calls = [];
+    const { runtime } = makeRuntime({
+      viewmodel: { importCsv: (csv) => { calls.push(csv); return true; } },
+    });
+    const out = await runtime.interact([
+      { id: 'a1', op: 'module.add', module: 'worksheet', phase: 'data' },
+      { id: 'a2', op: 'instance.call', instance: { $from: 'a1', path: 'instanceId' },
+                  method: 'importCsv' },
+    ]);
+    assertEqual(out.ok, false);
+    const entry = out.results[out.results.length - 1];
+    assertEqual(entry.error, 'call_failed');
+    assertEqual(/missing argument "csv" of importCsv; expected: csv/.test(entry.message), true,
+      `unerwartete Meldung: ${entry.message}`);
+    assertDeepEqual(calls, []);
+  });
+
+  test('ein weggelassenes OPTIONALES Argument bleibt gültig', async () => {
+    // Die Gegenprobe zur Arity-Prüfung: wäre sie auf `params.length`
+    // gebaut statt auf die Pflichtparameter, bräche sie jede Aktion mit
+    // optionalem Parameter — `read(options)` und `addRows(count)` ruft die
+    // Oberfläche selbst ohne Argument.
+    const calls = [];
+    const { runtime } = makeRuntime({
+      viewmodel: { addRows: (count) => { calls.push(count); return true; } },
+      registry: {
+        worksheet: {
+          tagged: true, available: true, violations: [], fields: {},
+          actions: {
+            read: { params: [], returns: 'object', help: 'liest' },
+            addRows: { params: [{ name: 'count', type: 'number', optional: true, help: '' }],
+                       returns: 'boolean', help: '' },
+          },
+        },
+      },
+    });
+    const out = await runtime.interact([
+      { id: 'a1', op: 'module.add', module: 'worksheet', phase: 'data' },
+      { id: 'a2', op: 'instance.call', instance: { $from: 'a1', path: 'instanceId' },
+                  method: 'addRows' },
+    ]);
+    assertEqual(out.ok, true, JSON.stringify(out));
+    // Die Senke LIEF, und zwar ohne Argument — genau wie am Leistenknopf.
+    assertDeepEqual(calls, [undefined]);
   });
 
   test('a method missing from the LIVE viewmodel reports unknown_method with what is there', async () => {

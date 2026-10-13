@@ -19,6 +19,7 @@ import { CONTRACT_VERSION, ERRORS } from './agent-contract.js';
 import { axiError } from './agent-errors.js';
 import { buildCatalog, buildInstanceList, describeModule, allowedPhasesFor, isSingleton } from './agent-catalog.js';
 import { getAllPhaseIds } from '../cycles/cycles.js';
+import { requireArity } from './agent-argcheck.js';
 
 /**
  * @param {object} deps  { stateManager, moduleRegistry, i18n, registry, getHelp, host, appVersion }
@@ -168,8 +169,17 @@ export function createOps(deps) {
           t('agent.errors.unknownMethod', { module: found.module, method: action.method }),
           { available: publicMethodsOf(viewmodel) });
       }
+      const args = action.args ?? [];
       try {
-        const value = await viewmodel[action.method](...(action.args ?? []));
+        // Die Argumentzahl gegen den Parametersatz der Registry — dieselbe
+        // Quelle, aus der der Agent die Signatur liest. Ohne sie kam ein
+        // FEHLENDES Argument als `undefined` bei der Senke an und wurde dort
+        // wie der dokumentierte Leerwert behandelt: der Aufruf löschte einen
+        // Wert und meldete Erfolg (Ruling 55). Führt die Registry die Methode
+        // nicht (ein öffentliches Mitglied ohne Aktionseintrag), bleibt es
+        // beim alten Verhalten — geraten wird nichts.
+        requireArity(action.method, args, entry?.actions?.[action.method]?.params ?? []);
+        const value = await viewmodel[action.method](...args);
         return { instanceId: action.instance, method: action.method, value: value ?? null };
       } catch (err) {
         return axiError(ERRORS.CALL_FAILED,

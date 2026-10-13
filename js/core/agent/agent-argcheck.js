@@ -13,8 +13,12 @@
  * finden, und die Paritätstests sichern sie mit `toContain` zu. Darum steht
  * sie hier wörtlich so, wie sie vorher an fünf Aufrufstellen stand.
  *
- * Die Kernschicht selbst benutzt diese Funktionen nicht: ihre eigenen
- * Ablehnungen sind AXI-Fehlerobjekte (`agent-errors.js`), keine Ausnahmen.
+ * Die Kernschicht benutzt von diesen Funktionen genau eine — `requireArity`,
+ * aus `agent-ops.js` vor dem Methodenaufruf. Ein fehlendes Argument IST ein
+ * ungültiges Argument eines Methodenaufrufs und gehört damit in dieselbe
+ * Fehlerform wie die übrigen drei (`call_failed` samt Meldung); die
+ * Ablehnungen der Kernschicht an ihren eigenen Stufen bleiben
+ * AXI-Fehlerobjekte (`agent-errors.js`).
  */
 
 /**
@@ -83,5 +87,42 @@ export function requireKnownId(kind, id, availableIds) {
 export function requireIndex(name, value, length) {
   if (!Number.isInteger(value) || value < 0 || value > length) {
     throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: 0..${length}`);
+  }
+}
+
+/**
+ * Die Argumentzahl eines Methodenaufrufs gegen den Parametersatz prüfen.
+ *
+ * `agent-ops.js` ruft die Senke mit `...(action.args ?? [])` auf: ein
+ * WEGGELASSENES Argument kommt als `undefined` an. Eine Senke, die ihren
+ * dokumentierten Leerwert (`null`, `''`, `-1`) annimmt, löschte damit bei
+ * einem Aufruf mit zu wenigen Argumenten still einen Wert und meldete
+ * Erfolg — gemessen an `ce-matrix.setScore(0, 0)`, wo das dritte Argument
+ * fehlte und die Bewertung verschwand.
+ *
+ * Geprüft wird hier und nicht in der Senke: dieselben Senken ruft auch die
+ * Oberfläche, und dort ist ein weggelassenes Argument zulässig (der
+ * Leistenknopf ruft `addRows()`, Alpine CSP erlaubt im `@click` kein
+ * Argument). Eine Prüfung in der Senke bräche also die Bedienung. Der
+ * Parametersatz, gegen den geprüft wird, ist der der erzeugten Registry —
+ * dieselbe Quelle, aus der der Agent die Signatur liest.
+ *
+ * Ein ausdrücklich übergebenes `null` bleibt ein Argument: der
+ * dokumentierte Leerwert ist weiter erreichbar (Ruling 52).
+ *
+ * @param {string} method Name der Methode (erscheint in der Meldung)
+ * @param {readonly any[]} args die übergebenen Argumente
+ * @param {ReadonlyArray<{ name: string, optional?: boolean }>} params der
+ *   Parametersatz der Aktion, in Reihenfolge
+ * @throws {Error} wenn ein Pflichtargument fehlt
+ * @returns {void}
+ */
+export function requireArity(method, args, params) {
+  const list = Array.isArray(params) ? params : [];
+  const expected = list.map(p => (p.optional ? `[${p.name}]` : p.name)).join(', ');
+  for (let i = 0; i < list.length; i++) {
+    if (list[i].optional) continue;
+    if (i < args.length) continue;
+    throw new Error(`missing argument ${JSON.stringify(list[i].name)} of ${method}; expected: ${expected}`);
   }
 }
