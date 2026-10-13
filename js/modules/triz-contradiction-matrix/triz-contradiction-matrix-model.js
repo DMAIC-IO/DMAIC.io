@@ -31,9 +31,16 @@ function _lookupCached(model) {
 }
 
 export class State {
+  /** @type {number|null} Nummer des Merkmals, das verbessert werden soll (1 bis 39), oder null */
   improving = null;
+
+  /** @type {number|null} Nummer des Merkmals, das sich dabei verschlechtert (1 bis 39), oder null */
   worsening = null;
+
+  /** @type {string} die Problemnotiz zum Widerspruch */
   problemNote = '';
+
+  /** @type {boolean} ob die vollständige 39×39-Matrix angezeigt wird — persistierter Anzeigezustand */
   showMatrix = false;
 
   hasContent() {

@@ -6215,6 +6215,53 @@
     "triz-contradiction-matrix": {
       "name": "Widerspruchsmatrix (TRIZ)",
       "description": "Erfinderische Prinzipien für technische Widersprüche nach Altschuller",
+      "whenToUse": "Wenn zwei verschiedene technische Merkmale im Konflikt stehen — eines verbessern verschlechtert das andere — und die Matrix die erprobten Lösungsprinzipien dazu nennen soll; nicht, wenn ein einzelnes Merkmal selbst zwei entgegengesetzte Werte haben müsste, dafür ist der physikalische Widerspruch da.",
+      "actions": {
+        "setImproving": {
+          "help": "Setzt das Merkmal, das verbessert werden soll.",
+          "params": {
+            "param": "Die Nummer des Merkmals aus der Liste der 39 technischen Merkmale, 1 bis 39 (1 Gewicht eines bewegten Objekts bis 39 Produktivität). Eine Nummer, die kein Merkmal trägt, ist ein Fehler; null nimmt die Wahl zurück."
+          }
+        },
+        "setWorsening": {
+          "help": "Setzt das Merkmal, das sich beim Verbessern verschlechtert.",
+          "params": {
+            "param": "Die Nummer des Merkmals aus der Liste der 39 technischen Merkmale, 1 bis 39 (1 Gewicht eines bewegten Objekts bis 39 Produktivität). Eine Nummer, die kein Merkmal trägt, ist ein Fehler; null nimmt die Wahl zurück."
+          }
+        },
+        "setProblemNote": {
+          "help": "Setzt die Problemnotiz zum Widerspruch.",
+          "params": {
+            "text": "Die Problemnotiz; ein leerer Text löscht sie."
+          }
+        },
+        "setShowMatrix": {
+          "help": "Legt fest, ob die vollständige 39×39-Matrix angezeigt wird.",
+          "params": {
+            "visible": "true zeigt die Matrix, false verbirgt sie."
+          }
+        },
+        "swapParams": {
+          "help": "Tauscht verbesserndes und verschlechterndes Merkmal gegeneinander."
+        },
+        "toggleMatrix": {
+          "help": "Schaltet die Anzeige der vollständigen 39×39-Matrix um; für einen bestimmten Zustand ist setShowMatrix der direkte Weg."
+        }
+      },
+      "fields": {
+        "improving": {
+          "help": "Die Nummer des Merkmals, das verbessert werden soll (1 bis 39), oder null, solange keines gewählt ist."
+        },
+        "worsening": {
+          "help": "Die Nummer des Merkmals, das sich beim Verbessern verschlechtert (1 bis 39), oder null, solange keines gewählt ist."
+        },
+        "problemNote": {
+          "help": "Die Problemnotiz zum Widerspruch."
+        },
+        "showMatrix": {
+          "help": "Ob die vollständige 39×39-Matrix angezeigt wird. Ein persistierter Anzeigezustand — er gehört zum gespeicherten Projekt, nicht zur Analyse."
+        }
+      },
       "subtitle": "Wähle einen zu verbessernden und einen sich dabei verschlechternden Parameter — die Matrix empfiehlt erfinderische Prinzipien.",
       "problemHeading": "Problembeschreibung",
       "problemPlaceholder": "z.B. Die Tragstruktur soll fester werden — wird dabei aber zu schwer.",

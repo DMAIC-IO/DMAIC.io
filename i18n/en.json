@@ -6211,6 +6211,53 @@
     "triz-contradiction-matrix": {
       "name": "Contradiction Matrix (TRIZ)",
       "description": "Inventive principles for technical contradictions (Altschuller)",
+      "whenToUse": "When two different engineering characteristics are in conflict — improving one degrades the other — and the matrix should name the proven solution principles for that pair; not when a single characteristic itself would have to hold two opposite values, which is what the physical contradiction is for.",
+      "actions": {
+        "setImproving": {
+          "help": "Sets the characteristic that is to be improved.",
+          "params": {
+            "param": "The number of the characteristic from the list of 39 engineering characteristics, 1 to 39 (1 weight of moving object through 39 productivity). A number no characteristic carries is an error; null clears the choice."
+          }
+        },
+        "setWorsening": {
+          "help": "Sets the characteristic that degrades while improving the other.",
+          "params": {
+            "param": "The number of the characteristic from the list of 39 engineering characteristics, 1 to 39 (1 weight of moving object through 39 productivity). A number no characteristic carries is an error; null clears the choice."
+          }
+        },
+        "setProblemNote": {
+          "help": "Sets the problem note for the contradiction.",
+          "params": {
+            "text": "The problem note; an empty text clears it."
+          }
+        },
+        "setShowMatrix": {
+          "help": "Determines whether the full 39×39 matrix is shown.",
+          "params": {
+            "visible": "true shows the matrix, false hides it."
+          }
+        },
+        "swapParams": {
+          "help": "Swaps the improving and the degrading characteristic against each other."
+        },
+        "toggleMatrix": {
+          "help": "Toggles the display of the full 39×39 matrix; for a specific state, setShowMatrix is the direct route."
+        }
+      },
+      "fields": {
+        "improving": {
+          "help": "The number of the characteristic to be improved (1 to 39), or null while none is chosen."
+        },
+        "worsening": {
+          "help": "The number of the characteristic that degrades while improving the other (1 to 39), or null while none is chosen."
+        },
+        "problemNote": {
+          "help": "The problem note for the contradiction."
+        },
+        "showMatrix": {
+          "help": "Whether the full 39×39 matrix is shown. A persisted display state — it belongs to the saved project, not to the analysis."
+        }
+      },
       "subtitle": "Pick a parameter to improve and a parameter that worsens — the matrix recommends inventive principles.",
       "problemHeading": "Problem description",
       "problemPlaceholder": "e.g. The support structure must become stronger — but then becomes too heavy.",
