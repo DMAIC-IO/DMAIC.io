@@ -156,6 +156,22 @@ export class FlowchartState {
   }
 
   /**
+   * Set a step's substep disclosure absolutely — the counterpart `toggleSubsteps`
+   * is UI-only (W1-3: a toggle whose outcome depends only on prior state is not
+   * its own capability for an agent).
+   * @param {string} stepId
+   * @param {boolean} expanded
+   * @returns {boolean} true if the step was found and set
+   */
+  setSubstepsExpanded(stepId, expanded) {
+    const step = this.steps.find((s) => s.id === stepId);
+    if (!step) return false;
+    if (!Array.isArray(step.substeps)) step.substeps = [];
+    step.expanded = expanded === true;
+    return true;
+  }
+
+  /**
    * Remove a substep from a parent step by id.
    * @param {string} parentId
    * @param {string} substepId

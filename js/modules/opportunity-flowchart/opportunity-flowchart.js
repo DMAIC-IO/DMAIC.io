@@ -149,14 +149,28 @@ export default createModule({
       /**
        * Schiebt einen Schritt in die andere Spalte; seine Kettenposition
        * bleibt.
-       * @agent
-       * @param {string} stepId id des Schritts
-       * @returns {void}
-       * @throws {Error} wenn kein Schritt diese id trägt
+       * @noagent — eine Umschaltung, deren Ausgang allein am Vorzustand
+       * hängt, ist für einen Agenten keine eigene Fähigkeit; `setSide` ist
+       * der absolute Weg (W1-3).
        */
       toggleSide(stepId) {
         const s = this._requireStep(stepId);
         this.model.setSide(s.id, s.side === 'va' ? 'nva' : 'va');
+      },
+
+      /**
+       * Setzt die Spalte eines Schritts absolut; seine Kettenposition bleibt.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {'va'|'nva'} side Spalte: wertschöpfend oder Nacharbeit
+       * @returns {void}
+       * @throws {Error} wenn kein Schritt diese id trägt, oder side
+       *   außerhalb seiner Wertemenge liegt
+       */
+      setSide(stepId, side) {
+        const s = this._requireStep(stepId);
+        requireEnum('side', side, ['va', 'nva']);
+        this.model.setSide(s.id, side);
       },
 
       /**

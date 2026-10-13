@@ -282,6 +282,23 @@ suite('chainViewMixin — substeps', () => {
     assertEqual(calls.map((x) => x[0]).join(','), 'toggle,add,remove');
   });
 
+  test('setSubstepsExpanded delegates to the model with a boolean (W1-3)', () => {
+    const calls = [];
+    const c = ctx({
+      steps: [{ id: 's1' }],
+      setSubstepsExpanded: (id, expanded) => calls.push([id, expanded]),
+    });
+    c.setSubstepsExpanded('s1', 'yes');
+    assertEqual(calls.length, 1);
+    assertEqual(calls[0][0], 's1');
+    assertEqual(calls[0][1], true);
+  });
+
+  test('setSubstepsExpanded wirft bei unbekannter stepId', () => {
+    const c = ctx({ steps: [{ id: 's1' }], setSubstepsExpanded: () => {} });
+    assertThrows(() => c.setSubstepsExpanded('unbekannt', true), /unknown stepId/);
+  });
+
   test('ein Model OHNE addSubstep wirft und nennt die Methode', () => {
     const c = ctx({});
     assertThrows(() => c.addSubstep('s1'), /addSubstep/);
@@ -300,5 +317,29 @@ suite('chainViewMixin — substeps', () => {
   test('ein fehlendes Model wirft ebenfalls, statt still nichts zu tun', () => {
     const c = ctx(null);
     assertThrows(() => c.addSubstep('s1'), /addSubstep/);
+  });
+
+  test('setSubstepTitle lehnt ein nicht-stringiges Argument ab (W1-1)', () => {
+    const c = ctx({ steps: [{ id: 's1', substeps: [{ id: 'sub1', title: 'alt' }] }] });
+    assertThrows(() => c.setSubstepTitle('s1', 'sub1', {}), /invalid text/);
+    // der Titel bleibt unverändert — kein "[object Object]" im Zustand
+    assertEqual(c.model.steps[0].substeps[0].title, 'alt');
+  });
+
+  test('setSubstepTitle übernimmt eine echte Zeichenkette', () => {
+    const c = ctx({ steps: [{ id: 's1', substeps: [{ id: 'sub1', title: 'alt' }] }] });
+    c.setSubstepTitle('s1', 'sub1', 'neu');
+    assertEqual(c.model.steps[0].substeps[0].title, 'neu');
+  });
+
+  test('setSubstepTitle wirft bei fehlendem model.steps keinen TypeError (W1-2)', () => {
+    const c = ctx({});
+    let caught = null;
+    try {
+      c.setSubstepTitle('s1', 'sub1', 'x');
+    } catch (err) {
+      caught = err;
+    }
+    assertEqual(caught instanceof TypeError, false);
   });
 });

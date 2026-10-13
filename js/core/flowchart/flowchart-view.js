@@ -9,7 +9,7 @@
  * See spec §1 "Architektur".
  */
 
-import { requireKnownId } from '../agent/agent-argcheck.js';
+import { requireKnownId, requireText } from '../agent/agent-argcheck.js';
 
 /**
  * @param {object|null} module   the createModule instance (reserved for future hooks)
@@ -351,17 +351,32 @@ export function chainViewMixin(module, _t, opts = {}) {
     // sentence kept to behaviour only, rationale moved here).
     /**
      * Show or hide the substep list of a step.
-     * @agent
+     * @noagent — eine Umschaltung, deren Ausgang allein am Vorzustand hängt,
+     * ist für einen Agenten keine eigene Fähigkeit; `setSubstepsExpanded` ist
+     * der absolute Weg (W1-3).
      * @param {string} stepId  id of the step whose substeps are toggled
      * @returns {void}
-     * @throws {Error} wenn stepId unbekannt ist, oder das Model die Methode
-     *   `toggleSubsteps` nicht führt
      */
     toggleSubsteps(stepId) {
       if (Array.isArray(this.model?.steps)) {
         requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
       }
       callModel(this.model, 'toggleSubsteps', [stepId]);
+    },
+    /**
+     * Set a step's substep disclosure absolutely.
+     * @agent
+     * @param {string} stepId    id of the step whose substeps are shown or hidden
+     * @param {boolean} expanded whether the substep list should be shown
+     * @returns {void}
+     * @throws {Error} wenn stepId unbekannt ist, oder das Model die Methode
+     *   `setSubstepsExpanded` nicht führt
+     */
+    setSubstepsExpanded(stepId, expanded) {
+      if (Array.isArray(this.model?.steps)) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+      }
+      callModel(this.model, 'setSubstepsExpanded', [stepId, Boolean(expanded)]);
     },
     /**
      * Append an empty substep to a step.
@@ -407,13 +422,16 @@ export function chainViewMixin(module, _t, opts = {}) {
      * @param {string} substepId id of the substep
      * @param {string} text      the new title
      * @returns {void}
-     * @throws {Error} wenn stepId oder substepId unbekannt ist
+     * @throws {Error} wenn stepId oder substepId unbekannt ist, oder text keine
+     *   Zeichenkette ist
      */
     setSubstepTitle(stepId, substepId, text) {
-      requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
-      const step = this.model.steps.find((s) => s.id === stepId);
-      requireKnownId('substepId', substepId, (step.substeps || []).map((s) => s.id));
-      step.substeps.find((s) => s.id === substepId).title = String(text ?? '');
+      if (Array.isArray(this.model?.steps)) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+        const step = this.model.steps.find((s) => s.id === stepId);
+        requireKnownId('substepId', substepId, (step.substeps || []).map((s) => s.id));
+        step.substeps.find((s) => s.id === substepId).title = requireText('text', text);
+      }
     },
 
     /** @noagent */
