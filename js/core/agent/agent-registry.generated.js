@@ -21,17 +21,23 @@ export const AGENT_REGISTRY = {
         "returns": "object",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
       },
-      "toggleSubsteps": {
+      "setSubstepsExpanded": {
         "params": [
           {
             "name": "stepId",
             "type": "string",
             "optional": false,
-            "help": "id of the step whose substeps are toggled"
+            "help": "id of the step whose substeps are shown or hidden"
+          },
+          {
+            "name": "expanded",
+            "type": "boolean",
+            "optional": false,
+            "help": "whether the substep list should be shown"
           }
         ],
         "returns": "void",
-        "help": "Show or hide the substep list of a step."
+        "help": "Set a step's substep disclosure absolutely."
       },
       "addSubstep": {
         "params": [
@@ -1463,17 +1469,23 @@ export const AGENT_REGISTRY = {
         "returns": "object",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
       },
-      "toggleSubsteps": {
+      "setSubstepsExpanded": {
         "params": [
           {
             "name": "stepId",
             "type": "string",
             "optional": false,
-            "help": "id of the step whose substeps are toggled"
+            "help": "id of the step whose substeps are shown or hidden"
+          },
+          {
+            "name": "expanded",
+            "type": "boolean",
+            "optional": false,
+            "help": "whether the substep list should be shown"
           }
         ],
         "returns": "void",
-        "help": "Show or hide the substep list of a step."
+        "help": "Set a step's substep disclosure absolutely."
       },
       "addSubstep": {
         "params": [
@@ -4468,17 +4480,23 @@ export const AGENT_REGISTRY = {
         "returns": "object",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
       },
-      "toggleSubsteps": {
+      "setSubstepsExpanded": {
         "params": [
           {
             "name": "stepId",
             "type": "string",
             "optional": false,
-            "help": "id of the step whose substeps are toggled"
+            "help": "id of the step whose substeps are shown or hidden"
+          },
+          {
+            "name": "expanded",
+            "type": "boolean",
+            "optional": false,
+            "help": "whether the substep list should be shown"
           }
         ],
         "returns": "void",
-        "help": "Show or hide the substep list of a step."
+        "help": "Set a step's substep disclosure absolutely."
       },
       "addSubstep": {
         "params": [
@@ -4594,17 +4612,23 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Entfernt einen Schritt aus der Kette."
       },
-      "toggleSide": {
+      "setSide": {
         "params": [
           {
             "name": "stepId",
             "type": "string",
             "optional": false,
             "help": "id des Schritts"
+          },
+          {
+            "name": "side",
+            "type": "'va'|'nva'",
+            "optional": false,
+            "help": "Spalte: wertschöpfend oder Nacharbeit"
           }
         ],
         "returns": "void",
-        "help": "Schiebt einen Schritt in die andere Spalte; seine Kettenposition bleibt."
+        "help": "Setzt die Spalte eines Schritts absolut; seine Kettenposition bleibt."
       },
       "insertAt": {
         "params": [
@@ -5017,17 +5041,23 @@ export const AGENT_REGISTRY = {
     "violations": [],
     "reported": [],
     "actions": {
-      "toggleSubsteps": {
+      "setSubstepsExpanded": {
         "params": [
           {
             "name": "stepId",
             "type": "string",
             "optional": false,
-            "help": "id des Schritts"
+            "help": "id of the step whose substeps are shown or hidden"
+          },
+          {
+            "name": "expanded",
+            "type": "boolean",
+            "optional": false,
+            "help": "whether the substep list should be shown"
           }
         ],
         "returns": "void",
-        "help": "Klappt die Teilschritte eines Schritts auf oder zu."
+        "help": "Set a step's substep disclosure absolutely."
       },
       "addSubstep": {
         "params": [
@@ -5257,17 +5287,23 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Setzt den Namen eines Inputs oder Outputs."
       },
-      "toggleLoop": {
+      "setLoop": {
         "params": [
           {
             "name": "stepId",
             "type": "string",
             "optional": false,
             "help": "id des Schritts"
+          },
+          {
+            "name": "on",
+            "type": "boolean",
+            "optional": false,
+            "help": "true legt den Loop an, false entfernt ihn"
           }
         ],
         "returns": "void",
-        "help": "Schaltet den Loop eines Schritts an oder aus. Beim Anlegen entsteht ein leerer Loop ohne Bedingung, Ziel oder Rework-Schritte."
+        "help": "Legt den Loop eines Schritts an oder entfernt ihn. Ein neu angelegter Loop ist leer — ohne Bedingung, Ziel oder Rework-Schritte; ein entfernter nimmt diese Angaben mit."
       },
       "setLoopCondition": {
         "params": [

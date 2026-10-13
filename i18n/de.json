@@ -1685,10 +1685,11 @@
             "name": "Der neue Name."
           }
         },
-        "toggleLoop": {
-          "help": "Schaltet den Loop eines Schritts an oder aus. Beim Anlegen entsteht ein leerer Loop ohne Bedingung, Ziel oder Rework-Schritte.",
+        "setLoop": {
+          "help": "Legt den Loop eines Schritts an oder entfernt ihn. Ein neu angelegter Loop ist leer — ohne Bedingung, Ziel oder Rework-Schritte; ein entfernter nimmt diese Angaben mit.",
           "params": {
-            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler."
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+            "on": "true legt den Loop an, false entfernt ihn."
           }
         },
         "setLoopCondition": {
@@ -1732,10 +1733,11 @@
             "text": "Der neue Titel."
           }
         },
-        "toggleSubsteps": {
-          "help": "Klappt die Unter-Schritte eines Schritts auf oder zu; rein darstellend, der Inhalt bleibt.",
+        "setSubstepsExpanded": {
+          "help": "Zeigt die Unter-Schritte eines Schritts oder verbirgt sie; rein darstellend, der Inhalt bleibt.",
           "params": {
-            "stepId": "Die id des Schritts, dessen Unter-Schritte umgeschaltet werden. Eine unbekannte id ist ein Fehler."
+            "stepId": "Die id des Schritts, dessen Unter-Schritte gezeigt oder verborgen werden. Eine unbekannte id ist ein Fehler.",
+            "expanded": "true zeigt die Unter-Schritte, false verbirgt sie."
           }
         },
         "addSubstep": {
@@ -3622,10 +3624,11 @@
             "bandId": "Die id eines Bands außer dem Hauptpfad. Eine unbekannte Band-id, oder das Hauptpfad-Band selbst, ist ein Fehler."
           }
         },
-        "toggleSubsteps": {
-          "help": "Klappt die Unter-Schritte eines Schritts auf oder zu; rein darstellend, der Inhalt bleibt.",
+        "setSubstepsExpanded": {
+          "help": "Zeigt die Unter-Schritte eines Schritts oder verbirgt sie; rein darstellend, der Inhalt bleibt.",
           "params": {
-            "stepId": "Die id des Schritts, dessen Unter-Schritte umgeschaltet werden. Eine unbekannte id ist ein Fehler."
+            "stepId": "Die id des Schritts, dessen Unter-Schritte gezeigt oder verborgen werden. Eine unbekannte id ist ein Fehler.",
+            "expanded": "true zeigt die Unter-Schritte, false verbirgt sie."
           }
         },
         "addSubstep": {
@@ -3711,10 +3714,11 @@
             "text": "Die neue Beschreibung."
           }
         },
-        "toggleSide": {
-          "help": "Schiebt einen Schritt in die andere Spalte; seine Position in der Kette bleibt.",
+        "setSide": {
+          "help": "Setzt die Spalte eines Schritts; seine Position in der Kette bleibt.",
           "params": {
-            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler."
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
+            "side": "Spalte des Schritts: 'va' wertschöpfend oder 'nva' Nacharbeit. Ein Wert außerhalb dieser Menge ist ein Fehler."
           }
         },
         "insertAt": {
@@ -3730,10 +3734,11 @@
             "stepId": "Die id des zu entfernenden Schritts. Eine unbekannte id ist ein Fehler."
           }
         },
-        "toggleSubsteps": {
-          "help": "Klappt die Unter-Schritte eines Schritts auf oder zu; rein darstellend, der Inhalt bleibt.",
+        "setSubstepsExpanded": {
+          "help": "Zeigt die Unter-Schritte eines Schritts oder verbirgt sie; rein darstellend, der Inhalt bleibt.",
           "params": {
-            "stepId": "Die id des Schritts, dessen Unter-Schritte umgeschaltet werden. Eine unbekannte id ist ein Fehler."
+            "stepId": "Die id des Schritts, dessen Unter-Schritte gezeigt oder verborgen werden. Eine unbekannte id ist ein Fehler.",
+            "expanded": "true zeigt die Unter-Schritte, false verbirgt sie."
           }
         },
         "addSubstep": {
@@ -3845,10 +3850,11 @@
             "laneId": "Die id einer vorhandenen Bahn, in der der neue Schritt landet. Eine unbekannte id ist ein Fehler."
           }
         },
-        "toggleSubsteps": {
-          "help": "Klappt die Unter-Schritte eines Schritts auf oder zu; rein darstellend, der Inhalt bleibt.",
+        "setSubstepsExpanded": {
+          "help": "Zeigt die Unter-Schritte eines Schritts oder verbirgt sie; rein darstellend, der Inhalt bleibt.",
           "params": {
-            "stepId": "Die id des Schritts, dessen Unter-Schritte umgeschaltet werden. Eine unbekannte id ist ein Fehler."
+            "stepId": "Die id des Schritts, dessen Unter-Schritte gezeigt oder verborgen werden. Eine unbekannte id ist ein Fehler.",
+            "expanded": "true zeigt die Unter-Schritte, false verbirgt sie."
           }
         },
         "addSubstep": {

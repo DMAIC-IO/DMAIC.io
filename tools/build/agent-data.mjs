@@ -813,7 +813,7 @@ function templateBindings(moduleDir) {
     if (!file.endsWith('.html')) continue;
     const html = readFileSync(join(moduleDir, file), 'utf8');
     for (const m of html.matchAll(/x-model(?:\.[a-z]+)*="model\.([A-Za-z_$][\w$]*)"/g)) models.push(m[1]);
-    for (const m of html.matchAll(/(?:@|x-on:)[a-z]+="model\.([A-Za-z_$][\w$]*)\(/g)) calls.push(m[1]);
+    for (const m of html.matchAll(/(?:@|x-on:)[a-z]+(?:\.[a-z]+)*="model\.([A-Za-z_$][\w$]*)\(/g)) calls.push(m[1]);
   }
   return { models, calls };
 }

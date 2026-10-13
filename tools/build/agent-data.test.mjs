@@ -1699,6 +1699,22 @@ test('template_model_call: ein direkter model.*-Aufruf aus der Vorlage ist ein B
   assert.equal(modules.foo.available, false);
 });
 
+test('template_model_call: ein Ereignismodifikator verdeckt den model.*-Aufruf nicht (W1-4)', () => {
+  const root = fixture({ foo: {
+    'foo.js': TAGGED_VM,
+    'foo-model.js': `export class State {
+      /** @type {string} der Titel */
+      title = '';
+      toJSON() { return { title: this.title }; }
+    }`,
+    'foo.html': '<button @click.stop.prevent="model.removeTitle()">',
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['template_model_call:removeTitle']);
+  assert.ok(modules.foo.violations.includes('template_model_call:removeTitle'));
+  assert.equal(modules.foo.available, false);
+});
+
 test('unreachable_write: eine Delegation an eine zuweisende Model-Methode deckt ab', () => {
   // `setTitle` ruft nicht `this.model.title = …` direkt auf, sondern
   // delegiert an `this.model.setTitle(t)` — und GENAU DIE Model-Methode

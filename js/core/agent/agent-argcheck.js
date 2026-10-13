@@ -20,7 +20,7 @@
  * | `requireEnum`    | `allowed:`  | `invalid mode "x"; allowed: DEG, RAD` |
  * | `requireKnownId` | `available:`| `unknown stepId "x"; available: s-1, s-2` |
  * | `requireIndex`   | `allowed:`  | `invalid idx 9; allowed: 0..3` |
- * | `requireArity`   | `expected:` | `missing argument "values" of setCells; expected: columnId, startRow, values` |
+ * | `requireArity`   | `expected:` | `missing argument "values" of setCells; expected: columnId, startRow, values` — ein optionaler Parameter steht darin in Klammerform (`[name]`) |
  * | `requireText`    | `allowed:`  | `invalid text 7; allowed: any string, "" clears it` |
  *
  * Ein neuer Prüfer nimmt eines dieser drei Listenwörter, oder er begründet

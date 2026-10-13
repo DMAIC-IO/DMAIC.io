@@ -1685,10 +1685,11 @@
             "name": "The new name."
           }
         },
-        "toggleLoop": {
-          "help": "Toggles a step's loop on or off. Creating one starts empty — no condition, target or rework steps.",
+        "setLoop": {
+          "help": "Creates or removes a step's loop. A newly created loop is empty — no condition, target or rework steps; removing one takes those details with it.",
           "params": {
-            "stepId": "The step's id. An unknown id is an error."
+            "stepId": "The step's id. An unknown id is an error.",
+            "on": "true creates the loop, false removes it."
           }
         },
         "setLoopCondition": {
@@ -1732,10 +1733,11 @@
             "text": "The new title."
           }
         },
-        "toggleSubsteps": {
-          "help": "Expands or collapses a step's sub-steps; display only, the content stays.",
+        "setSubstepsExpanded": {
+          "help": "Shows or hides a step's sub-steps; display only, the content stays.",
           "params": {
-            "stepId": "The id of the step whose sub-steps are toggled. An unknown id is an error."
+            "stepId": "The id of the step whose sub-steps are shown or hidden. An unknown id is an error.",
+            "expanded": "true shows the sub-steps, false hides them."
           }
         },
         "addSubstep": {
@@ -3618,10 +3620,11 @@
             "bandId": "The id of a band other than the main path. An unknown band id, or the main path itself, is an error."
           }
         },
-        "toggleSubsteps": {
-          "help": "Shows or hides a step's sub-steps; purely visual, the content stays.",
+        "setSubstepsExpanded": {
+          "help": "Shows or hides a step's sub-steps; display only, the content stays.",
           "params": {
-            "stepId": "The id of the step whose sub-steps are toggled. An unknown id is an error."
+            "stepId": "The id of the step whose sub-steps are shown or hidden. An unknown id is an error.",
+            "expanded": "true shows the sub-steps, false hides them."
           }
         },
         "addSubstep": {
@@ -3707,10 +3710,11 @@
             "text": "The new description."
           }
         },
-        "toggleSide": {
-          "help": "Moves a step into the other column; its position in the chain stays.",
+        "setSide": {
+          "help": "Sets a step's column; its position in the chain stays.",
           "params": {
-            "stepId": "The step's id. An unknown id is an error."
+            "stepId": "The step's id. An unknown id is an error.",
+            "side": "Column of the step: 'va' value-added or 'nva' rework. A value outside that set is an error."
           }
         },
         "insertAt": {
@@ -3726,10 +3730,11 @@
             "stepId": "The id of the step to remove. An unknown id is an error."
           }
         },
-        "toggleSubsteps": {
-          "help": "Expands or collapses a step's sub-steps; display only, the content stays.",
+        "setSubstepsExpanded": {
+          "help": "Shows or hides a step's sub-steps; display only, the content stays.",
           "params": {
-            "stepId": "The id of the step whose sub-steps are toggled. An unknown id is an error."
+            "stepId": "The id of the step whose sub-steps are shown or hidden. An unknown id is an error.",
+            "expanded": "true shows the sub-steps, false hides them."
           }
         },
         "addSubstep": {
@@ -3841,10 +3846,11 @@
             "laneId": "The id of an existing lane the new step lands in. An unknown id is an error."
           }
         },
-        "toggleSubsteps": {
-          "help": "Expands or collapses a step's sub-steps; display only, the content stays.",
+        "setSubstepsExpanded": {
+          "help": "Shows or hides a step's sub-steps; display only, the content stays.",
           "params": {
-            "stepId": "The id of the step whose sub-steps are toggled. An unknown id is an error."
+            "stepId": "The id of the step whose sub-steps are shown or hidden. An unknown id is an error.",
+            "expanded": "true shows the sub-steps, false hides them."
           }
         },
         "addSubstep": {

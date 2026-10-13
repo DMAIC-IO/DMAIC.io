@@ -332,9 +332,9 @@ export default createModule({
       // eigener Code mit eigener Wirkung (Fokussprung, Marker-Abräumen).
       /**
        * Klappt die Teilschritte eines Schritts auf oder zu.
-       * @agent
-       * @param {string} stepId id des Schritts
-       * @returns {void}
+       * @noagent — eine Umschaltung, deren Ausgang allein am Vorzustand
+       * hängt, ist für einen Agenten keine eigene Fähigkeit;
+       * `setSubstepsExpanded` aus dem Mixin ist der absolute Weg (W1-3).
        */
       toggleSubsteps(stepId) {
         _core.toggleSubsteps.call(this, stepId);
@@ -372,16 +372,29 @@ export default createModule({
 
       // ── Loop handlers ─────────────────────────────────────────
       /**
-       * Schaltet den Loop eines Schritts an oder aus. Beim Anlegen entsteht
-       * ein leerer Loop ohne Bedingung, Ziel oder Rework-Schritte.
+       * Schaltet den Loop eines Schritts an oder aus.
+       * @noagent — eine Umschaltung, deren Ausgang allein am Vorzustand
+       * hängt, ist für einen Agenten keine eigene Fähigkeit; `setLoop` ist
+       * der absolute Weg (W1-3).
+       */
+      toggleLoop(stepId) {
+        const step = this.model.steps.find((s) => s.id === stepId);
+        this.setLoop(stepId, !step?.loop);
+      },
+
+      /**
+       * Legt den Loop eines Schritts an oder entfernt ihn. Ein neu angelegter
+       * Loop ist leer — ohne Bedingung, Ziel oder Rework-Schritte; ein
+       * entfernter nimmt diese Angaben mit.
        * @agent
        * @param {string} stepId id des Schritts
+       * @param {boolean} on true legt den Loop an, false entfernt ihn
        * @returns {void}
        * @throws {Error} wenn stepId unbekannt ist
        */
-      toggleLoop(stepId) {
+      setLoop(stepId, on) {
         requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
-        this.model.toggleLoop(stepId);
+        this.model.setLoop(stepId, Boolean(on));
       },
 
       // ── Drag markers ──────────────────────────────────────────

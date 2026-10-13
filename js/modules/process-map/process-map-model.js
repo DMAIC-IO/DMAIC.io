@@ -215,7 +215,23 @@ export class State extends FlowchartState {
   toggleLoop(stepId) {
     const step = this.findStep(stepId);
     if (!step) return;
-    step.loop = step.loop ? null : { targetStepId: null, condition: '', steps: [] };
+    this.setLoop(stepId, !step.loop);
+  }
+
+  /**
+   * Set a step's loop absolutely — the counterpart `toggleLoop` is UI-only
+   * (W1-3: a toggle whose outcome depends only on prior state is not its own
+   * capability for an agent). Switching the loop on creates an empty one;
+   * switching it off drops it with its condition, target and rework steps.
+   * @param {string} stepId
+   * @param {boolean} on
+   * @returns {boolean} true if the step was found and set
+   */
+  setLoop(stepId, on) {
+    const step = this.findStep(stepId);
+    if (!step) return false;
+    step.loop = on === true ? (step.loop || { targetStepId: null, condition: '', steps: [] }) : null;
+    return true;
   }
 
   removeLoop(stepId) {
