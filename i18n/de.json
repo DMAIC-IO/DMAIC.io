@@ -1653,7 +1653,7 @@
           "help": "Verschiebt eine Aktivität an eine andere Stelle der Reihenfolge; ihre Rollen wandern mit.",
           "params": {
             "from": "Die Zeilennummer der Aktivität, von 0 an gezählt. Eine Nummer, die keine Aktivität bezeichnet, ist ein Fehler.",
-            "to": "Die Zeilennummer, an die die Aktivität soll, von 0 an gezählt. Eine Nummer ausserhalb der Matrix ist ein Fehler; dieselbe Nummer wie from lässt alles stehen und liefert false."
+            "to": "Die Zeilennummer, an die die Aktivität soll, von 0 an gezählt. Eine Nummer außerhalb der Matrix ist ein Fehler; dieselbe Nummer wie from lässt alles stehen und liefert false."
           }
         }
       },
