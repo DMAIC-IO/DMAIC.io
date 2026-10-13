@@ -79,7 +79,16 @@ export class State {
   static ID = 'stakeholder-analysis';
 
   _schema = { name: State.ID, version: State.VERSION };
-  /** @type {Stakeholder[]} */
+  /**
+   * @type {Stakeholder[]} die Beteiligten in Anlegereihenfolge; je Beteiligter
+   *   `id` (zum Ansprechen), `name`, `role`, `power` und `interest` als Stufe
+   *   von 1 bis 5, `support` (`supporter`, `neutral` oder `critic`),
+   *   `category` (`intern`, `extern`, `kunde`, `lieferant` oder `behoerde`)
+   *   und `notes`. Aus `power` und `interest` leitet die Auswertung den
+   *   Vorrangquadranten ab — er wird nicht gespeichert und steht deshalb in
+   *   keinem Feld
+   * @agentBulk
+   */
   stakeholders = [];
 
   hasContent() {

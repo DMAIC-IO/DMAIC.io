@@ -5556,46 +5556,72 @@ export const AGENT_REGISTRY = {
     }
   },
   "stakeholder-analysis": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:avatarColor",
-      "unmarked_method:initials",
-      "unmarked_method:quadLabel",
-      "unmarked_method:quadDesc",
-      "unmarked_method:strategyColor",
-      "unmarked_method:strategyBg",
-      "unmarked_method:strategyStyle",
-      "unmarked_method:supportPct",
-      "unmarked_method:supportColor",
-      "unmarked_method:supportLabel",
-      "unmarked_method:supportBadgeClass",
-      "unmarked_method:catLabel",
-      "unmarked_method:meterStyle",
-      "unmarked_method:dotClass",
-      "unmarked_method:roleText",
-      "unmarked_method:axisYLabel",
-      "unmarked_method:axisXLabel",
-      "unmarked_method:chipsFor",
-      "unmarked_method:sortedStakeholders",
-      "unmarked_method:commFreq",
-      "unmarked_method:commChannel",
-      "unmarked_method:commContent",
-      "unmarked_method:commAction",
-      "unmarked_method:commQuadLine",
-      "unmarked_method:modalTitle",
-      "unmarked_method:openModal",
-      "unmarked_method:closeModal",
-      "unmarked_method:saveModal",
-      "unmarked_method:deleteStakeholder"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "addStakeholder": {
+        "params": [
+          {
+            "name": "data",
+            "type": "object",
+            "optional": false,
+            "help": "der Beteiligte: `name` (nötig), und wahlweise `role`, `power`, `interest`, `support`, `category` und `notes`"
+          }
+        ],
+        "returns": "string|null",
+        "help": "Legt einen Beteiligten an."
+      },
+      "updateStakeholder": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "id des Beteiligten"
+          },
+          {
+            "name": "data",
+            "type": "object",
+            "optional": false,
+            "help": "die zu ändernden Felder — `name`, `role`, `power`, `interest`, `support`, `category` oder `notes`"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Ändert die genannten Felder eines Beteiligten; alle übrigen bleiben stehen."
+      },
+      "removeStakeholder": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "id des Beteiligten"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt einen Beteiligten."
+      }
+    },
     "fields": {
       "stakeholders": {
         "type": "Stakeholder[]",
-        "help": "",
-        "bulk": false
+        "help": "die Beteiligten in Anlegereihenfolge; je Beteiligter `id` (zum Ansprechen), `name`, `role`, `power` und `interest` als Stufe von 1 bis 5, `support` (`supporter`, `neutral` oder `critic`), `category` (`intern`, `extern`, `kunde`, `lieferant` oder `behoerde`) und `notes`. Aus `power` und `interest` leitet die Auswertung den Vorrangquadranten ab — er wird nicht gespeichert und steht deshalb in keinem Feld",
+        "bulk": true,
+        "bulkKind": "table"
       }
     }
   },
@@ -7208,4 +7234,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":20};
+export const AGENT_COVERAGE = {"total":74,"available":21};

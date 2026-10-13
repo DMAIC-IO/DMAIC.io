@@ -1228,7 +1228,34 @@
       "noStakeholders": "No Stakeholders",
       "noStakeholdersHint": "Add your first stakeholder to start the analysis.",
       "notesLabel": "Expectations / Concerns",
-      "notesPlaceholder": "What does this stakeholder expect? What concerns do they have?"
+      "notesPlaceholder": "What does this stakeholder expect? What concerns do they have?",
+      "whenToUse": "When the stakeholders of a project need recording and placing by power and interest so that communication can follow that order; not for assigning responsibility to activities, which is what the RACI matrix is for.",
+      "actions": {
+        "addStakeholder": {
+          "help": "Adds a stakeholder and returns their id.",
+          "params": {
+            "data": "An object with name (required) and optionally role, power and interest (each a whole number from 1 to 5; default 3), support (supporter, neutral or critic; default neutral), category (intern, extern, kunde, lieferant or behoerde; default intern) and notes. A value outside the named sets is an error, as is a missing object; an empty name adds nothing and returns null — that is a refusal, not an error."
+          }
+        },
+        "updateStakeholder": {
+          "help": "Changes the named fields of a stakeholder; all others stay as they are.",
+          "params": {
+            "id": "The id of the stakeholder as read() lists it under stakeholders. An unknown id is an error.",
+            "data": "An object holding exactly the fields that should change — name, role, power, interest, support, category or notes. Whatever is not in it stays unchanged. A value outside the named sets is an error; an empty name passed in changes nothing and returns false."
+          }
+        },
+        "removeStakeholder": {
+          "help": "Removes a stakeholder.",
+          "params": {
+            "id": "The id of the stakeholder as read() lists it under stakeholders. An unknown id is an error."
+          }
+        }
+      },
+      "fields": {
+        "stakeholders": {
+          "help": "The stakeholders in the order they were added. Per stakeholder: id (this is how the actions address them), name, role, power and interest as a level from 1 to 5, support (supporter, neutral or critic), category (intern, extern, kunde, lieferant or behoerde) and notes. The priority quadrant follows from power and interest (4 and above counts as high for both) and is not stored; from a project import support and category may also carry a value other than the ones the actions accept."
+        }
+      }
     },
     "voc-ctx-tree": {
       "name": "VoC → CTx Tree",

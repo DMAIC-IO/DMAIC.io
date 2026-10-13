@@ -1228,7 +1228,34 @@
       "noStakeholders": "Keine Stakeholder",
       "noStakeholdersHint": "Fügen Sie Ihren ersten Stakeholder hinzu, um die Analyse zu starten.",
       "notesLabel": "Erwartungen / Bedenken",
-      "notesPlaceholder": "Was erwartet dieser Stakeholder? Welche Bedenken hat er?"
+      "notesPlaceholder": "Was erwartet dieser Stakeholder? Welche Bedenken hat er?",
+      "whenToUse": "Wenn die Beteiligten eines Projekts erfasst und nach Macht und Interesse eingeordnet werden sollen, um die Kommunikation darauf auszurichten; nicht für die Verteilung von Verantwortung auf Aufgaben, dafür ist die RACI-Matrix da.",
+      "actions": {
+        "addStakeholder": {
+          "help": "Legt einen Beteiligten an und liefert seine id zurück.",
+          "params": {
+            "data": "Ein Objekt mit name (nötig) und wahlweise role, power und interest (je eine ganze Zahl von 1 bis 5; Vorgabe 3), support (supporter, neutral oder critic; Vorgabe neutral), category (intern, extern, kunde, lieferant oder behoerde; Vorgabe intern) und notes. Ein Wert ausserhalb der genannten Wertemengen ist ein Fehler, ebenso ein fehlendes Objekt; ein leerer Name legt nichts an und liefert null zurück — das ist eine Absage, kein Fehler."
+          }
+        },
+        "updateStakeholder": {
+          "help": "Ändert die genannten Felder eines Beteiligten; alle übrigen bleiben stehen.",
+          "params": {
+            "id": "Die id des Beteiligten, wie read() sie unter stakeholders führt. Eine unbekannte id ist ein Fehler.",
+            "data": "Ein Objekt mit genau den Feldern, die sich ändern sollen — name, role, power, interest, support, category oder notes. Was nicht darin steht, bleibt unverändert. Ein Wert ausserhalb der Wertemengen ist ein Fehler; ein mitgegebener leerer Name ändert nichts und liefert false zurück."
+          }
+        },
+        "removeStakeholder": {
+          "help": "Entfernt einen Beteiligten.",
+          "params": {
+            "id": "Die id des Beteiligten, wie read() sie unter stakeholders führt. Eine unbekannte id ist ein Fehler."
+          }
+        }
+      },
+      "fields": {
+        "stakeholders": {
+          "help": "Die Beteiligten in Anlegereihenfolge. Je Beteiligter: id (damit sprechen die Aktionen ihn an), name, role, power und interest als Stufe von 1 bis 5, support (supporter, neutral oder critic), category (intern, extern, kunde, lieferant oder behoerde) und notes. Der Vorrangquadrant folgt aus power und interest (ab 4 gilt beides als hoch) und wird nicht gespeichert; aus einem Projektimport können support und category auch einen anderen Wert tragen, als die Aktionen annehmen."
+        }
+      }
     },
     "voc-ctx-tree": {
       "name": "VoC → CTx-Baum",
