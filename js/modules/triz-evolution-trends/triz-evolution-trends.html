@@ -5,7 +5,7 @@
       <input class="field triz-evo__system-input" type="text" data-role="system"
         :value="model.system"
         :placeholder="t('systemPlaceholder')"
-        @input="systemChanged($event)">
+        @input="setSystem($event.target.value)">
     </section>
 
     <template x-for="(entry, trendId) in model.trends">
@@ -27,7 +27,7 @@
                 data-role="stage"
                 :data-trend="trendId"
                 :checked="isSelected(entry,s)"
-                @change="stageChanged(entry, s, $event)">
+                @change="setTrendStage(trendId, s)">
               <span class="triz-evo__stage-idx" x-text="trendNum(s)"></span>
               <span class="triz-evo__stage-label" x-text="trendStageName(trendId,s)"></span>
             </label>
@@ -37,7 +37,8 @@
         <textarea class="field triz-evo__notes" rows="3" data-role="notes"
           :data-trend="trendId"
           :placeholder="notesPlaceholder(trendId, entry)"
-          x-model="entry.notes"></textarea>
+          :value="entry.notes"
+          @input="setTrendNotes(trendId, $event.target.value)"></textarea>
       </section>
     </template>
   </div>

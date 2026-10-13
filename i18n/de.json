@@ -6645,6 +6645,37 @@
     "triz-evolution-trends": {
       "name": "Trends der technischen Evolution (TRIZ)",
       "description": "Acht klassische Evolutionslinien — verorte das System und identifiziere den nächsten Stufensprung",
+      "whenToUse": "Wenn gefragt ist, wo ein System auf den klassischen Entwicklungslinien steht und welcher Stufensprung als nächster ansteht — nicht, um einen konkreten Widerspruch zu lösen oder eine Variante auszuwählen.",
+      "actions": {
+        "setSystem": {
+          "help": "Setzt das betrachtete System, dessen Entwicklung eingeordnet wird.",
+          "params": {
+            "text": "Name oder kurze Beschreibung des Systems; ein leerer Text löscht das Feld."
+          }
+        },
+        "setTrendStage": {
+          "help": "Setzt die erreichte Stufe eines Trends. Liefert false, wenn der Trend keine Stufenskala hat (uneven ist qualitativ) — dann ist nichts passiert.",
+          "params": {
+            "trendId": "Die id des Trends: aggregation, dynamism, scale, automation, completeness, controllability, matching oder uneven. Eine unbekannte id ist ein Fehler.",
+            "stage": "Die erreichte Stufe, 0-basiert. Außerhalb der Skala dieses Trends ist sie ein Fehler; die Skalenlänge steht in der Trendbeschreibung der Oberfläche."
+          }
+        },
+        "setTrendNotes": {
+          "help": "Setzt die Notiz eines Trends — was die Einordnung für dieses System konkret bedeutet und welcher Schritt als nächster ansteht.",
+          "params": {
+            "trendId": "Die id des Trends: aggregation, dynamism, scale, automation, completeness, controllability, matching oder uneven. Eine unbekannte id ist ein Fehler.",
+            "text": "Die Notiz zum Trend; ein leerer Text löscht sie."
+          }
+        }
+      },
+      "fields": {
+        "system": {
+          "help": "Das betrachtete System, dessen Entwicklung eingeordnet wird."
+        },
+        "trends": {
+          "help": "Die acht Evolutionstrends, nach ihrer id adressiert (aggregation, dynamism, scale, automation, completeness, controllability, matching, uneven). Jeder Eintrag trägt stage (die erreichte Stufe, 0-basiert; -1 heißt: keine gewählt) und notes. uneven ist qualitativ und hat keine Stufenskala."
+        }
+      },
       "subtitle": "Verorte das System auf acht Evolutionslinien und identifiziere für jede den nächsten Stufensprung.",
       "systemLabel": "System",
       "systemPlaceholder": "z.B. Pkw-Beleuchtung",

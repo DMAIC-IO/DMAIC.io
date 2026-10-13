@@ -6641,6 +6641,37 @@
     "triz-evolution-trends": {
       "name": "Trends of Technical Evolution (TRIZ)",
       "description": "Eight classical evolution trajectories — locate the system and identify the next stage jump",
+      "whenToUse": "When the question is where a system sits on the classical evolution trajectories and which stage jump comes next — not to resolve a specific contradiction or pick a variant.",
+      "actions": {
+        "setSystem": {
+          "help": "Sets the system under study whose evolution is being located.",
+          "params": {
+            "text": "Name or short description of the system; an empty text clears the field."
+          }
+        },
+        "setTrendStage": {
+          "help": "Sets the stage a trend has reached. Returns false if the trend has no stage scale (uneven is qualitative) — nothing happens then.",
+          "params": {
+            "trendId": "The id of the trend: aggregation, dynamism, scale, automation, completeness, controllability, matching or uneven. An unknown id is an error.",
+            "stage": "The stage reached, zero-based. Outside this trend's scale it is an error; the scale length is shown in the trend description in the UI."
+          }
+        },
+        "setTrendNotes": {
+          "help": "Sets a trend's note — what the placement means for this system in concrete terms and which step comes next.",
+          "params": {
+            "trendId": "The id of the trend: aggregation, dynamism, scale, automation, completeness, controllability, matching or uneven. An unknown id is an error.",
+            "text": "The note for the trend; an empty text clears it."
+          }
+        }
+      },
+      "fields": {
+        "system": {
+          "help": "The system under study whose evolution is being located."
+        },
+        "trends": {
+          "help": "The eight evolution trends, addressed by their id (aggregation, dynamism, scale, automation, completeness, controllability, matching, uneven). Each entry carries stage (the stage reached, zero-based; -1 means none selected) and notes. uneven is qualitative and has no stage scale."
+        }
+      },
       "subtitle": "Place the system on eight evolution trajectories and identify the next stage jump for each.",
       "systemLabel": "System",
       "systemPlaceholder": "e.g. passenger-car headlight",

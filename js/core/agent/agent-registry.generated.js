@@ -5386,33 +5386,81 @@ export const AGENT_REGISTRY = {
     }
   },
   "triz-evolution-trends": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:selectedClass",
-      "unmarked_method:isSelected",
-      "unmarked_method:qualClass",
-      "unmarked_method:trendName",
-      "unmarked_method:trendDesc",
-      "unmarked_method:trendStageName",
-      "unmarked_method:notesPlaceholder",
-      "unmarked_method:radioName",
-      "unmarked_method:trendNum",
-      "unmarked_method:trendNumById",
-      "unmarked_method:stageChanged",
-      "unmarked_method:systemChanged"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "setSystem": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "Name oder kurze Beschreibung des Systems"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt das betrachtete System, dessen Entwicklung eingeordnet wird. Schreibt dasselbe Feld wie das Systemeingabefeld der Vorlage."
+      },
+      "setTrendStage": {
+        "params": [
+          {
+            "name": "trendId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Trends"
+          },
+          {
+            "name": "stage",
+            "type": "number",
+            "optional": false,
+            "help": "die Stufe, 0-basiert"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Setzt die erreichte Stufe eines Trends."
+      },
+      "setTrendNotes": {
+        "params": [
+          {
+            "name": "trendId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Trends"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "die Notiz"
+          }
+        ],
+        "returns": "void",
+        "help": "Setzt die Notiz eines Trends — was die Einordnung für dieses System konkret bedeutet."
+      }
+    },
     "fields": {
       "system": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "das betrachtete System, dessen Entwicklung eingeordnet wird",
         "bulk": false
       },
       "trends": {
-        "type": "any",
-        "help": "",
+        "type": "Record<string, {stage: number, notes: string}>",
+        "help": "die acht Trends, nach ihrer id adressiert (aggregation, dynamism, scale, automation, completeness, controllability, matching, uneven). Jeder Eintrag trägt `stage` (die erreichte Stufe, 0-basiert; -1 heißt „keine gewählt\") und `notes`. `uneven` ist qualitativ und hat keine Stufenskala.",
         "bulk": false
       }
     }
@@ -6190,4 +6238,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":9};
+export const AGENT_COVERAGE = {"total":74,"available":10};

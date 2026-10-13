@@ -10,7 +10,10 @@ export const TRENDS = [
 ];
 
 export class Trend {
+  /** @type {number} die erreichte Stufe, 0-basiert; -1 heißt „keine gewählt" */
   stage = -1
+
+  /** @type {string} die Notiz zu diesem Trend */
   notes = ''
 
   constructor(id) {
@@ -49,7 +52,16 @@ function initTrends() {
 }
 
 export class State {
+  /** @type {string} das betrachtete System, dessen Entwicklung eingeordnet wird */
   system = ''
+
+  /**
+   * @type {Record<string, {stage: number, notes: string}>} die acht Trends,
+   *   nach ihrer id adressiert (aggregation, dynamism, scale, automation,
+   *   completeness, controllability, matching, uneven). Jeder Eintrag trägt
+   *   `stage` (die erreichte Stufe, 0-basiert; -1 heißt „keine gewählt") und
+   *   `notes`. `uneven` ist qualitativ und hat keine Stufenskala.
+   */
   trends = initTrends()
 
   hasContent() {
