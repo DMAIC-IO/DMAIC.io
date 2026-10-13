@@ -2985,38 +2985,132 @@ export const AGENT_REGISTRY = {
     }
   },
   "lessons-learned": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:phaseOptions",
-      "unmarked_method:addDraftAction",
-      "unmarked_method:removeDraftAction",
-      "unmarked_method:onActionTagsClick",
-      "unmarked_method:stats",
-      "unmarked_method:filteredLessons",
-      "unmarked_method:catLabel",
-      "unmarked_method:impactLabel",
-      "unmarked_method:phaseLabel",
-      "unmarked_method:formatDate",
-      "unmarked_method:actionsSummary",
-      "unmarked_method:setFilter",
-      "unmarked_method:chevronIcon",
-      "unmarked_method:toggleCard",
-      "unmarked_method:toggleAction",
-      "unmarked_method:deleteLesson",
-      "unmarked_method:openAddModal",
-      "unmarked_method:openEditModal",
-      "unmarked_method:exportJSON",
-      "unmarked_method:openImport",
-      "unmarked_method:handleImport"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "addLesson": {
+        "params": [
+          {
+            "name": "data",
+            "type": "object",
+            "optional": false,
+            "help": "die Erfahrung: `title` (nötig), und wahlweise `category`, `impact`, `phase`, `owner`, `description`, `rootCause`, `recommendation` und `actions`"
+          }
+        ],
+        "returns": "string|null",
+        "help": "Legt eine Erfahrung an."
+      },
+      "updateLesson": {
+        "params": [
+          {
+            "name": "lessonId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Erfahrung"
+          },
+          {
+            "name": "data",
+            "type": "object",
+            "optional": false,
+            "help": "die zu ändernden Felder — `title`, `category`, `impact`, `phase`, `owner`, `description`, `rootCause`, `recommendation` oder `actions`"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Ändert die genannten Felder einer Erfahrung; alle übrigen bleiben stehen."
+      },
+      "removeLesson": {
+        "params": [
+          {
+            "name": "lessonId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Erfahrung"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt eine Erfahrung samt ihren Maßnahmen."
+      },
+      "addAction": {
+        "params": [
+          {
+            "name": "lessonId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Erfahrung"
+          },
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der Text der Maßnahme"
+          }
+        ],
+        "returns": "number",
+        "help": "Hängt eine Maßnahme an eine Erfahrung an."
+      },
+      "removeAction": {
+        "params": [
+          {
+            "name": "lessonId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Erfahrung"
+          },
+          {
+            "name": "actionIndex",
+            "type": "number",
+            "optional": false,
+            "help": "die Position der Maßnahme, von 0 an gezählt"
+          }
+        ],
+        "returns": "void",
+        "help": "Entfernt eine Maßnahme einer Erfahrung."
+      },
+      "setActionDone": {
+        "params": [
+          {
+            "name": "lessonId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Erfahrung"
+          },
+          {
+            "name": "actionIndex",
+            "type": "number",
+            "optional": false,
+            "help": "die Position der Maßnahme, von 0 an gezählt"
+          },
+          {
+            "name": "done",
+            "type": "boolean",
+            "optional": false,
+            "help": "true hakt sie ab, false nimmt den Haken zurück"
+          }
+        ],
+        "returns": "void",
+        "help": "Hakt eine Maßnahme einer Erfahrung ab oder nimmt den Haken zurück."
+      }
+    },
     "fields": {
       "lessons": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "Lesson[]",
+        "help": "die erfassten Erfahrungen in Anlegereihenfolge; je Erfahrung `id` (zum Ansprechen), `title`, `category` (`success`, `problem` oder `improve`), `phase` (eine Phase des aktiven Zyklus), `impact` (`high`, `medium` oder `low`), `owner`, `description`, `rootCause`, `recommendation`, `actions` (je Maßnahme `text` und `done`) sowie `createdAt` und `updatedAt` als Zeitstempel in Millisekunden",
+        "bulk": true,
+        "bulkKind": "table"
       }
     }
   },
@@ -7114,4 +7208,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":19};
+export const AGENT_COVERAGE = {"total":74,"available":20};

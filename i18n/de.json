@@ -6240,7 +6240,56 @@
       "fieldRecommendation": "Empfehlung / Maßnahmen",
       "fieldRecommendationPlaceholder": "Was soll beim nächsten Mal anders gemacht werden?",
       "fieldActions": "Action Items",
-      "fieldActionPlaceholder": "Action Item eingeben…"
+      "fieldActionPlaceholder": "Action Item eingeben…",
+      "whenToUse": "Wenn die Erfahrungen eines Projekts festgehalten werden sollen — was gut lief, was nicht, die Ursache und die Empfehlung samt Maßnahmen; nicht für die laufende Aufgabenverfolgung und nicht für eine Ursachenanalyse selbst, dafür sind die Aufgabenliste und die 5-Why-Analyse da.",
+      "actions": {
+        "addLesson": {
+          "help": "Legt eine Erfahrung an und liefert ihre id zurück.",
+          "params": {
+            "data": "Ein Objekt mit title (nötig) und wahlweise category (success, problem oder improve; Vorgabe success), impact (high, medium oder low; Vorgabe medium), phase (eine Phase des aktiven Zyklus; Vorgabe ist dessen letzte), owner, description, rootCause, recommendation und actions (eine Liste aus Texten oder aus { text, done }). Ein Wert ausserhalb der genannten Wertemengen ist ein Fehler, ebenso ein fehlendes Objekt; ein leerer Titel legt nichts an und liefert null zurück — das ist eine Absage, kein Fehler."
+          }
+        },
+        "updateLesson": {
+          "help": "Ändert die genannten Felder einer Erfahrung; alle übrigen bleiben stehen.",
+          "params": {
+            "lessonId": "Die id der Erfahrung, wie read() sie unter lessons führt. Eine unbekannte id ist ein Fehler.",
+            "data": "Ein Objekt mit genau den Feldern, die sich ändern sollen — title, category, impact, phase, owner, description, rootCause, recommendation oder actions. Was nicht darin steht, bleibt unverändert. Ein Wert ausserhalb der Wertemengen ist ein Fehler; ein mitgegebener leerer Titel ändert nichts und liefert false zurück."
+          }
+        },
+        "removeLesson": {
+          "help": "Entfernt eine Erfahrung samt ihren Maßnahmen.",
+          "params": {
+            "lessonId": "Die id der Erfahrung, wie read() sie unter lessons führt. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "addAction": {
+          "help": "Hängt eine Maßnahme an eine Erfahrung an.",
+          "params": {
+            "lessonId": "Die id der Erfahrung, wie read() sie unter lessons führt. Eine unbekannte id ist ein Fehler.",
+            "text": "Der Text der Maßnahme; Leerzeichen am Rand fallen weg. Ein leerer Text legt nichts an und liefert -1 zurück — das ist eine Absage, kein Fehler."
+          }
+        },
+        "removeAction": {
+          "help": "Entfernt eine Maßnahme einer Erfahrung; die übrigen rücken nach.",
+          "params": {
+            "lessonId": "Die id der Erfahrung, wie read() sie unter lessons führt. Eine unbekannte id ist ein Fehler.",
+            "actionIndex": "Die Position der Maßnahme innerhalb der Erfahrung, von 0 an gezählt. Eine Position, an der die Erfahrung keine Maßnahme hat, ist ein Fehler."
+          }
+        },
+        "setActionDone": {
+          "help": "Hakt eine Maßnahme einer Erfahrung ab oder nimmt den Haken zurück.",
+          "params": {
+            "lessonId": "Die id der Erfahrung, wie read() sie unter lessons führt. Eine unbekannte id ist ein Fehler.",
+            "actionIndex": "Die Position der Maßnahme innerhalb der Erfahrung, von 0 an gezählt. Eine Position, an der die Erfahrung keine Maßnahme hat, ist ein Fehler.",
+            "done": "true hakt die Maßnahme ab, false nimmt den Haken zurück. Jeder andere Wert — auch ein fehlendes Argument — ist ein Fehler."
+          }
+        }
+      },
+      "fields": {
+        "lessons": {
+          "help": "Die erfassten Erfahrungen in Anlegereihenfolge. Je Erfahrung: id (damit sprechen die Aktionen sie an), title, category (success, problem oder improve), phase (eine Phase des aktiven Zyklus), impact (high, medium oder low), owner, description, rootCause, recommendation, actions (je Maßnahme text und done) sowie createdAt und updatedAt als Zeitstempel in Millisekunden."
+        }
+      }
     },
     "calculator": {
       "name": "Taschenrechner",

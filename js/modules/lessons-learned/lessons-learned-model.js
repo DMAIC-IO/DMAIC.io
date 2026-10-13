@@ -74,6 +74,16 @@ export class Lesson {
 }
 
 export class State {
+  /**
+   * @type {Lesson[]} die erfassten Erfahrungen in Anlegereihenfolge; je
+   *   Erfahrung `id` (zum Ansprechen), `title`, `category` (`success`,
+   *   `problem` oder `improve`), `phase` (eine Phase des aktiven Zyklus),
+   *   `impact` (`high`, `medium` oder `low`), `owner`, `description`,
+   *   `rootCause`, `recommendation`, `actions` (je Maßnahme `text` und
+   *   `done`) sowie `createdAt` und `updatedAt` als Zeitstempel in
+   *   Millisekunden
+   * @agentBulk
+   */
   lessons = []
 
   computeStats() {
