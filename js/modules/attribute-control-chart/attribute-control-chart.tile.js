@@ -52,7 +52,9 @@ function stat(label, value) {
  * @param {Set<number>} violationIndices
  * @param {number|null} baselineEnd
  * @param {number} lastN
- * @returns {{values: number[], cl: any, ucl: any, lcl: any, sigma: any, violationIndices: Set<number>, baselineEnd: number|null}}
+ * `xOffset` is the number of points cut off in front, so the chart keeps the
+ * real sample numbers.
+ * @returns {{values: number[], cl: any, ucl: any, lcl: any, sigma: any, violationIndices: Set<number>, baselineEnd: number|null, xOffset: number}}
  */
 export function windowed(result, violationIndices, baselineEnd, lastN) {
   const offset = lastN > 0 ? Math.max(0, result.values.length - lastN) : 0;
@@ -61,7 +63,7 @@ export function windowed(result, violationIndices, baselineEnd, lastN) {
   const end = baselineEnd != null && baselineEnd - offset > 0 ? baselineEnd - offset : null;
   return {
     values: cut(result.values), cl: cut(result.cl), ucl: cut(result.ucl), lcl: cut(result.lcl), sigma: cut(result.sigma),
-    violationIndices: shifted, baselineEnd: end,
+    violationIndices: shifted, baselineEnd: end, xOffset: offset,
   };
 }
 

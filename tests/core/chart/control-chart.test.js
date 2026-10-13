@@ -70,3 +70,24 @@ suite('Control-chart type — variable Grenzen', () => {
     chart.destroy();
   });
 });
+
+suite('Control-chart type — xOffset', () => {
+  test('ohne xOffset beginnt die Achse bei Stichprobe 1', () => {
+    const { chart } = mount({ values: VALUES, cl: 10, ucl: 12, lcl: 8, sigma: 0.667 });
+    const ext = chart._getDataExtent();
+    assertEqual(ext.xMin, 0.5);
+    assertEqual(ext.xMax, VALUES.length + 0.5);
+    chart.destroy();
+  });
+
+  test('xOffset verschiebt Achse und Tooltip auf die echten Stichprobennummern', () => {
+    const { chart } = mount({ values: VALUES, cl: 10, ucl: 12, lcl: 8, sigma: 0.667, xOffset: 20 });
+    const ext = chart._getDataExtent();
+    assertEqual(ext.xMin, 20.5);
+    assertEqual(ext.xMax, 20 + VALUES.length + 0.5);
+    const [hit] = chart._findNearby(21, VALUES[0], 1);
+    assertEqual(hit.px, 21, 'erster Punkt sitzt bei x = 21');
+    assertEqual(hit.node.querySelector('strong').textContent, '#21');
+    chart.destroy();
+  });
+});

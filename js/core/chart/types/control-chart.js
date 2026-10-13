@@ -32,6 +32,9 @@ export default class ControlChartType extends ChartBase {
       sigma: 0,
       /** Index labels (1-based) */
       labels: [],
+      /** Sample number before values[0]; a window over the last N points
+       *  sets it so the x axis and tooltips keep the real sample numbers. */
+      xOffset: 0,
       /** Set of indices that are violations */
       violationIndices: new Set(),
       /** Set of indices marked excluded by the user (Phase-I exclusion) */
@@ -77,7 +80,7 @@ export default class ControlChartType extends ChartBase {
 
   /** @override */
   _getDataExtent() {
-    const { values, ucl, lcl, cl, sigma, usl, lsl } = this.config;
+    const { values, ucl, lcl, cl, sigma, usl, lsl, xOffset } = this.config;
     const valid = values.filter(v => v !== null && v !== undefined);
     if (!valid.length) return { xMin: 0, xMax: 1, yMin: 0, yMax: 1 };
 
@@ -101,8 +104,8 @@ export default class ControlChartType extends ChartBase {
     const pad = (yMax - yMin) * 0.05 || 1;
 
     return {
-      xMin: 0.5,
-      xMax: values.length + 0.5,
+      xMin: xOffset + 0.5,
+      xMax: xOffset + values.length + 0.5,
       yMin: yMin - pad,
       yMax: yMax + pad,
     };
@@ -113,7 +116,7 @@ export default class ControlChartType extends ChartBase {
    * plotGroup already has clip-path from ChartBase — no need to clip children.
    */
   _renderData(svg, plotGroup, xScale, yScale, xTick, yTick, plotArea, _defs) {
-    const { values, cl, ucl, lcl, sigma, violationIndices, baselineEnd, showZones } = this.config;
+    const { values, cl, ucl, lcl, sigma, violationIndices, baselineEnd, showZones, xOffset } = this.config;
     if (!values.length) return;
 
     const variableLimits = Array.isArray(ucl) || Array.isArray(lcl) || Array.isArray(sigma);
@@ -187,7 +190,7 @@ export default class ControlChartType extends ChartBase {
       ? this.config.stageBoundaries.filter(b => b > 0 && b < values.length)
       : [];
     for (const b of stageBoundaries) {
-      const sx = xScale(b + 0.5);
+      const sx = xScale(xOffset + b + 0.5);
       plotGroup.appendChild(svgEl('line', {
         x1: sx, y1: plotArea.y, x2: sx, y2: plotArea.y + plotArea.h,
         stroke: resolveColor(this.config.phaseColor), 'stroke-width': 1.5,
@@ -197,7 +200,7 @@ export default class ControlChartType extends ChartBase {
 
     // ── Phase divider (legacy single-baseline) ──
     if (baselineEnd !== null && baselineEnd < values.length) {
-      const px = xScale(baselineEnd + 0.5);
+      const px = xScale(xOffset + baselineEnd + 0.5);
       plotGroup.appendChild(svgEl('line', {
         x1: px, y1: plotArea.y, x2: px, y2: plotArea.y + plotArea.h,
         stroke: resolveColor(this.config.phaseColor), 'stroke-width': 1.5,
@@ -209,7 +212,7 @@ export default class ControlChartType extends ChartBase {
     let pathD = '';
     for (let i = 0; i < values.length; i++) {
       if (values[i] === null) continue;
-      const x = xScale(i + 1);
+      const x = xScale(xOffset + i + 1);
       const y = yScale(values[i]);
       pathD += (pathD === '' ? `M${x},${y}` : ` L${x},${y}`);
     }
@@ -230,7 +233,7 @@ export default class ControlChartType extends ChartBase {
 
     for (let i = 0; i < values.length; i++) {
       if (values[i] === null) continue;
-      const x = xScale(i + 1);
+      const x = xScale(xOffset + i + 1);
       const y = yScale(values[i]);
       const isExcluded = exclSet.has(i);
       const isViol = violSet.has(i);
@@ -323,13 +326,13 @@ export default class ControlChartType extends ChartBase {
 
   /** @override */
   _findNearby(dataX, dataY, proximityPx) {
-    const { values, violationIndices } = this.config;
+    const { values, violationIndices, xOffset } = this.config;
     const results = [];
     const violSet = violationIndices instanceof Set ? violationIndices : new Set(violationIndices);
 
     for (let i = 0; i < values.length; i++) {
       if (values[i] === null) continue;
-      const px = i + 1;
+      const px = xOffset + i + 1;
       const py = values[i];
       const dx = Math.abs(px - dataX);
       const dy = Math.abs(py - dataY);
@@ -338,7 +341,7 @@ export default class ControlChartType extends ChartBase {
       if (dist <= proximityPx * 2) {
         const isViol = violSet.has(i);
         const node = h('div', null,
-          h('strong', null, `#${i + 1}`),
+          h('strong', null, `#${px}`),
           h('br'),
           formatNum(values[i], null, this.locale),
           isViol ? h('br') : null,
@@ -424,12 +427,13 @@ export default class ControlChartType extends ChartBase {
    */
   _drawSteppedLine(plotGroup, xScale, yScale, valuesArr, color, label, dashed, ref) {
     if (!valuesArr || !valuesArr.length) return;
+    const { xOffset } = this.config;
     let pathD = '';
     for (let i = 0; i < valuesArr.length; i++) {
       const v = valuesArr[i];
       if (v == null || !Number.isFinite(v)) continue;
-      const x1 = xScale(i + 0.5);
-      const x2 = xScale(i + 1.5);
+      const x1 = xScale(xOffset + i + 0.5);
+      const x2 = xScale(xOffset + i + 1.5);
       const y = yScale(v);
       pathD += (pathD === '' ? `M${x1},${y}` : ` L${x1},${y}`);
       pathD += ` L${x2},${y}`;
@@ -456,7 +460,7 @@ export default class ControlChartType extends ChartBase {
     if (finite.length) {
       const yMean = yScale(mean);
       const txt = svgEl('text', {
-        x: xScale(0.5) - 4, y: yMean + 4,
+        x: xScale(xOffset + 0.5) - 4, y: yMean + 4,
         fill: resolveColor(color), 'font-size': 10, 'font-weight': 500,
         'text-anchor': 'end',
       });

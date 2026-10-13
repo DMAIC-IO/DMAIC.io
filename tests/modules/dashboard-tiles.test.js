@@ -871,6 +871,7 @@ suite('dashboard tiles: attribute-control-chart', () => {
     const labels = [...host.querySelectorAll('.dashboard-spc__stat-label')].map(e => e.textContent);
     assertDeepEqual(labels, ['CL', 'UCL̄', 'LCL̄']);
     assertEqual(cm.made[0].cfg.showZones, false);
+    assertEqual(cm.made[0].cfg.xOffset, 0, 'no window, no offset');
     host.remove();
   });
 
@@ -879,6 +880,7 @@ suite('dashboard tiles: attribute-control-chart', () => {
     const cfg = cm.made[0].cfg;
     assertEqual(cfg.values.length, 4);
     assertTrue(cfg.violationIndices.has(3));
+    assertEqual(cfg.xOffset, 6, 'points keep their real sample numbers 7..10');
     assertEqual(host.querySelector('.dashboard-spc__metric-sub').textContent, 'dashboard.spcOf');
     host.remove();
   });
