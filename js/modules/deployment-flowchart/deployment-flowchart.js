@@ -124,8 +124,7 @@ export default createModule({
       },
 
       /**
-       * Setzt den Titel eines Schritts. Schreibt dasselbe Feld wie
-       * `x-model="step.title"` in der Vorlage.
+       * Setzt den Titel eines Schritts.
        * @agent
        * @param {string} stepId id des Schritts
        * @param {string} text der neue Titel
@@ -138,8 +137,7 @@ export default createModule({
       },
 
       /**
-       * Setzt die Beschreibung eines Schritts. Schreibt dasselbe Feld wie
-       * `x-model="step.description"` in der Vorlage.
+       * Setzt die Beschreibung eines Schritts.
        * @agent
        * @param {string} stepId id des Schritts
        * @param {string} text die neue Beschreibung
@@ -153,8 +151,7 @@ export default createModule({
 
       /**
        * Weist einen vorhandenen Schritt einer Bahn zu; seine Kettenposition
-       * bleibt. Schreibt dasselbe Feld wie der Drop auf ein Bahn-Band
-       * (`dropOnLane`) in der Vorlage.
+       * bleibt.
        * @agent
        * @param {string} stepId id des Schritts
        * @param {string} laneId id einer vorhandenen Bahn
@@ -219,8 +216,7 @@ export default createModule({
       // Muster wie `worksheet.undo()` bei leerer Historie). Nur eine
       // UNBEKANNTE id bleibt ein Fehler.
       /**
-       * Benennt eine Bahn um. Schreibt dasselbe Feld wie `x-model="lane.name"`
-       * in der Vorlage.
+       * Benennt eine Bahn um.
        * @agent
        * @param {string} laneId id der Bahn
        * @param {string} name der neue Name

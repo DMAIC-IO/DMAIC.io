@@ -94,8 +94,7 @@ export default createModule({
       },
 
       /**
-       * Setzt den Titel eines Schritts. Schreibt dasselbe Feld wie
-       * `x-model="step.title"` in der Vorlage.
+       * Setzt den Titel eines Schritts.
        * @agent
        * @param {string} stepId id des Schritts
        * @param {string} text der neue Titel
@@ -108,8 +107,7 @@ export default createModule({
       },
 
       /**
-       * Setzt die Beschreibung eines Schritts. Schreibt dasselbe Feld wie
-       * `x-model="step.description"` in der Vorlage.
+       * Setzt die Beschreibung eines Schritts.
        * @agent
        * @param {string} stepId id des Schritts
        * @param {string} text die neue Beschreibung

@@ -115,7 +115,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt den Titel eines Schritts. Schreibt dasselbe Feld wie `x-model=\"step.title\"` in der Vorlage."
+        "help": "Setzt den Titel eines Schritts."
       },
       "setStepDescription": {
         "params": [
@@ -133,7 +133,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt die Beschreibung eines Schritts. Schreibt dasselbe Feld wie `x-model=\"step.description\"` in der Vorlage."
+        "help": "Setzt die Beschreibung eines Schritts."
       },
       "setDecisionLabel": {
         "params": [
@@ -151,7 +151,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt die Frage einer Entscheidung. Schreibt dasselbe Feld wie `x-model=\"step.decision.label\"` in der Vorlage."
+        "help": "Setzt die Frage einer Entscheidung."
       },
       "setDecisionTarget": {
         "params": [
@@ -199,7 +199,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt das Band eines vorhandenen Schritts; seine Kettenposition bleibt. Schreibt dasselbe Feld wie der Drop auf eine Bandzeile (`dropOnBand`) in der Vorlage."
+        "help": "Setzt das Band eines vorhandenen Schritts; seine Kettenposition bleibt."
       },
       "insertInBand": {
         "params": [
@@ -1254,7 +1254,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt den Titel eines Schritts. Schreibt dasselbe Feld wie `x-model=\"step.title\"` in der Vorlage."
+        "help": "Setzt den Titel eines Schritts."
       },
       "setStepDescription": {
         "params": [
@@ -1272,7 +1272,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt die Beschreibung eines Schritts. Schreibt dasselbe Feld wie `x-model=\"step.description\"` in der Vorlage."
+        "help": "Setzt die Beschreibung eines Schritts."
       },
       "setLaneForStep": {
         "params": [
@@ -1290,7 +1290,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Weist einen vorhandenen Schritt einer Bahn zu; seine Kettenposition bleibt. Schreibt dasselbe Feld wie der Drop auf ein Bahn-Band (`dropOnLane`) in der Vorlage."
+        "help": "Weist einen vorhandenen Schritt einer Bahn zu; seine Kettenposition bleibt."
       },
       "removeStep": {
         "params": [
@@ -1325,7 +1325,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "boolean",
-        "help": "Benennt eine Bahn um. Schreibt dasselbe Feld wie `x-model=\"lane.name\"` in der Vorlage."
+        "help": "Benennt eine Bahn um."
       },
       "removeLaneById": {
         "params": [
@@ -1853,7 +1853,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Set the observed problem statement. Same sink as the template's `x-model=\"model.problem\"`."
+        "help": "Set the observed problem statement."
       },
       "setAnswer": {
         "params": [
@@ -1871,7 +1871,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Set the answer of a Why node. Same sink as the template's `x-model=\"nN.answer\"`."
+        "help": "Set the answer of a Why node."
       },
       "addRoot": {
         "params": [],
@@ -3545,7 +3545,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt den Titel eines Schritts. Schreibt dasselbe Feld wie `x-model=\"step.title\"` in der Vorlage."
+        "help": "Setzt den Titel eines Schritts."
       },
       "setStepDescription": {
         "params": [
@@ -3563,7 +3563,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt die Beschreibung eines Schritts. Schreibt dasselbe Feld wie `x-model=\"step.description\"` in der Vorlage."
+        "help": "Setzt die Beschreibung eines Schritts."
       },
       "removeStep": {
         "params": [
@@ -4145,7 +4145,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt den Titel eines Schritts. Schreibt dasselbe Feld wie `x-model=\"step.title\"` in der Vorlage."
+        "help": "Setzt den Titel eines Schritts."
       },
       "setStepDescription": {
         "params": [
@@ -4163,7 +4163,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt die Beschreibung eines Schritts. Schreibt dasselbe Feld wie `x-model=\"step.description\"` in der Vorlage."
+        "help": "Setzt die Beschreibung eines Schritts."
       },
       "setIOName": {
         "params": [
@@ -4193,7 +4193,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt den Namen eines Inputs oder Outputs. Schreibt dasselbe Feld wie `x-model=\"io.name\"` in der Vorlage."
+        "help": "Setzt den Namen eines Inputs oder Outputs."
       },
       "toggleLoop": {
         "params": [
@@ -4223,7 +4223,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "boolean",
-        "help": "Setzt die Auslösebedingung eines Loops. Schreibt dasselbe Feld wie `@input` auf `.pmap__loop-condition` in der Vorlage."
+        "help": "Setzt die Auslösebedingung eines Loops."
       },
       "setLoopTarget": {
         "params": [
@@ -4241,7 +4241,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "boolean",
-        "help": "Setzt den Zielschritt eines Loops (zu welchem früheren Schritt er zurückführt). Schreibt dasselbe Feld wie `@change` auf `.pmap__loop-target-select` in der Vorlage."
+        "help": "Setzt den Zielschritt eines Loops (zu welchem früheren Schritt er zurückführt)."
       },
       "removeLoop": {
         "params": [
@@ -4307,7 +4307,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt den Titel eines Rework-Schritts. Schreibt dasselbe Feld wie `@input` auf `.pmap__loop-step-title` in der Vorlage."
+        "help": "Setzt den Titel eines Rework-Schritts."
       }
     },
     "fields": {

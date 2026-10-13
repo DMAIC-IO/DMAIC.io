@@ -283,8 +283,7 @@ export default createModule({
 
       // ── New sinks (E2) ─────────────────────────────────────────
       /**
-       * Setzt den Titel eines Schritts. Schreibt dasselbe Feld wie
-       * `x-model="step.title"` in der Vorlage.
+       * Setzt den Titel eines Schritts.
        * @agent
        * @param {string} stepId id des Schritts
        * @param {string} text der neue Titel
@@ -296,8 +295,7 @@ export default createModule({
         this.model.findStep(stepId).title = String(text ?? '');
       },
       /**
-       * Setzt die Beschreibung eines Schritts. Schreibt dasselbe Feld wie
-       * `x-model="step.description"` in der Vorlage.
+       * Setzt die Beschreibung eines Schritts.
        * @agent
        * @param {string} stepId id des Schritts
        * @param {string} text die neue Beschreibung
@@ -309,8 +307,7 @@ export default createModule({
         this.model.findStep(stepId).description = String(text ?? '');
       },
       /**
-       * Setzt den Namen eines Inputs oder Outputs. Schreibt dasselbe Feld
-       * wie `x-model="io.name"` in der Vorlage.
+       * Setzt den Namen eines Inputs oder Outputs.
        * @agent
        * @param {string} stepId id des Schritts
        * @param {'inputs'|'outputs'} type die Liste, in der der Eintrag steht
@@ -554,8 +551,7 @@ export default createModule({
         return (step && step.loop && step.loop.condition) ? step.loop.condition : '';
       },
       /**
-       * Setzt die Auslösebedingung eines Loops. Schreibt dasselbe Feld wie
-       * `@input` auf `.pmap__loop-condition` in der Vorlage.
+       * Setzt die Auslösebedingung eines Loops.
        * @agent
        * @param {string} stepId id des Schritts
        * @param {string} text die neue Bedingung
@@ -577,8 +573,7 @@ export default createModule({
       },
       /**
        * Setzt den Zielschritt eines Loops (zu welchem früheren Schritt er
-       * zurückführt). Schreibt dasselbe Feld wie `@change` auf
-       * `.pmap__loop-target-select` in der Vorlage.
+       * zurückführt).
        * @agent
        * @param {string} stepId id des Schritts
        * @param {string|null} targetStepId id eines vorhandenen Schritts, oder
@@ -651,8 +646,7 @@ export default createModule({
         this.model.removeLoopStep(stepId, loopStepId);
       },
       /**
-       * Setzt den Titel eines Rework-Schritts. Schreibt dasselbe Feld wie
-       * `@input` auf `.pmap__loop-step-title` in der Vorlage.
+       * Setzt den Titel eines Rework-Schritts.
        * @agent
        * @param {string} stepId id des Schritts, der den Loop trägt
        * @param {string} loopStepId id des Rework-Schritts

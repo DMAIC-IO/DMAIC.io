@@ -118,8 +118,7 @@ export function activityFlowchartData(module, _t) {
     },
 
     /**
-     * Setzt den Titel eines Schritts. Schreibt dasselbe Feld wie
-     * `x-model="step.title"` in der Vorlage.
+     * Setzt den Titel eines Schritts.
      * @agent
      * @param {string} stepId id des Schritts
      * @param {string} text der neue Titel
@@ -132,8 +131,7 @@ export function activityFlowchartData(module, _t) {
     },
 
     /**
-     * Setzt die Beschreibung eines Schritts. Schreibt dasselbe Feld wie
-     * `x-model="step.description"` in der Vorlage.
+     * Setzt die Beschreibung eines Schritts.
      * @agent
      * @param {string} stepId id des Schritts
      * @param {string} text die neue Beschreibung
@@ -146,8 +144,7 @@ export function activityFlowchartData(module, _t) {
     },
 
     /**
-     * Setzt die Frage einer Entscheidung. Schreibt dasselbe Feld wie
-     * `x-model="step.decision.label"` in der Vorlage.
+     * Setzt die Frage einer Entscheidung.
      * @agent
      * @param {string} stepId id der Entscheidung
      * @param {string} text der neue Text
@@ -214,8 +211,7 @@ export function activityFlowchartData(module, _t) {
 
     /**
      * Setzt das Band eines vorhandenen Schritts; seine Kettenposition
-     * bleibt. Schreibt dasselbe Feld wie der Drop auf eine Bandzeile
-     * (`dropOnBand`) in der Vorlage.
+     * bleibt.
      * @agent
      * @param {string} stepId id des Schritts
      * @param {string} bandId id eines vorhandenen Bands (`'main'` oder `no:<id>`)

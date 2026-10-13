@@ -124,8 +124,7 @@ export default createModule({
 
       // ── State actions (UI handlers AND agent surface — one sink) ───
       /**
-       * Set the observed problem statement. Same sink as the template's
-       * `x-model="model.problem"`.
+       * Set the observed problem statement.
        * @agent
        * @param {string} text the problem statement
        * @returns {void}
@@ -134,8 +133,7 @@ export default createModule({
         this.model.problem = String(text ?? '');
       },
       /**
-       * Set the answer of a Why node. Same sink as the template's
-       * `x-model="nN.answer"`.
+       * Set the answer of a Why node.
        * @agent
        * @param {number} nodeId id of the node
        * @param {string} text the answer text
