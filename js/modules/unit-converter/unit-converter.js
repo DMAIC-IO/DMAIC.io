@@ -14,7 +14,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireText } from '../../core/agent/agent-argcheck.js';
 import { CATEGORIES, TIMEZONES, TZ_WORLD_CLOCK_INDICES } from './unit-data.js';
 import { State, formatNumber } from './unit-converter-model.js';
 
@@ -44,21 +44,6 @@ function isCalendarDate(s) {
   const [y, m, d] = s.split('-').map(Number);
   const dt = new Date(Date.UTC(y, m - 1, d));
   return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
-}
-
-/**
- * Ein Textargument prüfen, bevor es zum dokumentierten Leerwert wird
- * (Ruling 55): ein FEHLENDES Argument kommt als `undefined` an.
- * @param {string} name
- * @param {any} value
- * @returns {string} der geprüfte Text
- * @throws {Error} wenn `value` keine Zeichenkette ist
- */
-function requireText(name, value) {
-  if (typeof value !== 'string') {
-    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any string, "" clears it`);
-  }
-  return value;
 }
 
 // ── Pure view helpers (Intl, no state) ───────────────────────

@@ -22,7 +22,7 @@ import { State, Lesson, Action, CATEGORIES, IMPACTS } from './lessons-learned-mo
 import { resolveEpochOffset } from '../../core/date-offset.js';
 import { getPhaseIds, DEFAULT_CYCLE } from '../../core/cycles/cycles.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireIndex } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId, requireIndex, requireText } from '../../core/agent/agent-argcheck.js';
 
 // Dieselben Wertemengen wie im Model; die Auswahllisten der Vorlage lesen
 // sie, die Senken prüfen gegen sie.
@@ -37,18 +37,6 @@ const LESSON_FIELDS = [
   'title', 'category', 'impact', 'phase', 'owner',
   'description', 'rootCause', 'recommendation', 'actions',
 ];
-
-/**
- * Prüft, dass ein Text wirklich ein Text ist. Ein fehlendes Argument
- * (`undefined`) ist ein Fehler, die leere Zeichenkette der dokumentierte
- * Leerwert — `agent-ops.js` spreadet `action.args ?? []` ohne Arity-Prüfung,
- * ohne diesen Wächter käme beides als derselbe Wert an (Ruling 55).
- */
-function requireText(name, value) {
-  if (typeof value !== 'string') {
-    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any string, "" clears it`);
-  }
-}
 
 const m = createModule({
   config: {

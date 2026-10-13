@@ -23,7 +23,7 @@ import { resolveDateOffset } from '../../core/date-offset.js';
 import { draggablePopout } from '../../ui/draggable-popout.js';
 import { isIsoDate } from '../../core/local-date.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
 import { State, METHODS, FMEA_TYPES, SPECIAL_CHARS, fmeaCreateDefault } from './fmea-model.js';
 import { S_BANDS, O_BANDS, D_BANDS, AP_TABLE, AP_CATEGORY, bandLabel } from './fmea-ap.js';
 
@@ -69,20 +69,6 @@ const DELTA_VALUES = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 /** Die Felder, die ein freier Text sind — die leere Zeichenkette löscht sie. */
 const RISK_TEXT_FIELDS = ['step', 'failureMode', 'effect', 'cause', 'prevention',
   'control', 'justification'];
-
-/**
- * Ein Textargument prüfen, bevor es zum dokumentierten Leerwert wird
- * (Ruling 55): ein FEHLENDES Argument kommt als `undefined` an, und ein
- * `String(v ?? '')` machte daraus stillschweigend den Leerwert.
- * @param {string} name @param {any} value
- * @throws {Error} wenn `value` keine Zeichenkette ist
- * @returns {void}
- */
-function requireText(name, value) {
-  if (typeof value !== 'string') {
-    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any string, "" clears it`);
-  }
-}
 
 /**
  * Alle Schlüssel, unter denen ein eigener Skalentext stehen darf: die 30

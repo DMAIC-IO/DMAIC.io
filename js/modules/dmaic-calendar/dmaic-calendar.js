@@ -17,7 +17,7 @@ import { createModule } from '../../core/template-module.js';
 import { getPhaseIds, DEFAULT_CYCLE } from '../../core/cycles/cycles.js';
 import { isIsoDate } from '../../core/local-date.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
 import {
   State, MIN_DUR,
   fmt2, dkd, isoDow, getMonday, snp, mtt, ttm, fmtEnd, fmtDur,
@@ -44,19 +44,6 @@ const AXIS_TO_HOURS = Array.from({ length: 24 }, (_, h) => h + 1);
 
 /** "HH:MM" mit Stunde 0..23 und Minute 0..59. */
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
-
-/**
- * Ein Textargument prüfen, bevor es zum dokumentierten Leerwert wird
- * (Ruling 55): ein FEHLENDES Argument kommt als `undefined` an.
- * @param {string} name @param {any} value
- * @throws {Error} wenn `value` keine Zeichenkette ist
- * @returns {void}
- */
-function requireText(name, value) {
-  if (typeof value !== 'string') {
-    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any string, "" clears it`);
-  }
-}
 
 /**
  * Den Feldsatz eines Termins prüfen und auf die gespeicherte Form bringen.

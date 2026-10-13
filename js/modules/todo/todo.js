@@ -21,28 +21,7 @@ import { State, Item, STATUSES, SORT_COLUMNS } from './todo-model.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
 import { todayISO, isIsoDate } from '../../core/local-date.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
-
-/**
- * Ein freier Text, dessen dokumentierter Leerwert die leere Zeichenkette ist.
- *
- * Ruling 55: `agent-ops.js` übergibt `action.args ?? []` ohne Arity-Prüfung,
- * ein FEHLENDES Argument kommt also als `undefined` an. Ein `String(v ?? '')`
- * machte daraus stillschweigend den dokumentierten Leerwert — ein Aufruf mit
- * zu wenigen Argumenten löschte dann einen Text und meldete Erfolg. Die
- * Meldungsgestalt (`invalid <name> <wert>; allowed: …`) ist dieselbe wie in
- * `agent-argcheck.js`, damit ein Agent sie wie jede andere lesen kann.
- *
- * @param {string} name Name des Arguments (erscheint in der Meldung)
- * @param {any} value der übergebene Wert
- * @throws {Error} wenn `value` keine Zeichenkette ist
- * @returns {void}
- */
-function requireText(name, value) {
-  if (typeof value !== 'string') {
-    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any string, "" clears it`);
-  }
-}
+import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
 
 export default createModule({
   config: {

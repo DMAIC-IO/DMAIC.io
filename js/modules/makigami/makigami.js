@@ -32,28 +32,8 @@ import {
 import { escAttr } from '../../core/html-utils.js';
 import { parseDuration, formatDuration, canonicalize } from './makigami-duration.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
 import { State } from './makigami-model.js';
-
-/**
- * Ein freier Text, dessen dokumentierter Leerwert die leere Zeichenkette ist.
- *
- * Ruling 55: `agent-ops.js` übergibt `action.args ?? []` ohne Arity-Prüfung,
- * ein FEHLENDES Argument kommt also als `undefined` an. Ein `String(v ?? '')`
- * machte daraus stillschweigend den dokumentierten Leerwert — ein Aufruf mit
- * zu wenigen Argumenten löschte dann einen Text und meldete Erfolg. Die
- * Meldungsgestalt ist dieselbe wie in `agent-argcheck.js`.
- *
- * @param {string} name Name des Arguments (erscheint in der Meldung)
- * @param {any} value der übergebene Wert
- * @throws {Error} wenn `value` keine Zeichenkette ist
- * @returns {void}
- */
-function requireText(name, value) {
-  if (typeof value !== 'string') {
-    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any string, "" clears it`);
-  }
-}
 
 // Die Felder, die die beiden Objektsenken entgegennehmen. Die Listen tragen
 // die Prüfung „das Objekt nennt überhaupt ein Feld" — ohne sie meldete

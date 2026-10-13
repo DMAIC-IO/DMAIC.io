@@ -126,3 +126,27 @@ export function requireArity(method, args, params) {
     throw new Error(`missing argument ${JSON.stringify(list[i].name)} of ${method}; expected: ${expected}`);
   }
 }
+
+/**
+ * Ein freies Textargument prüfen, dessen dokumentierter Leerwert die leere
+ * Zeichenkette ist.
+ *
+ * Das Eingabefeld der Oberfläche kann nur eine Zeichenkette liefern, ein
+ * Agent jeden Typ. Ohne diese Prüfung landete eine Zahl oder ein Objekt im
+ * Zustand und tauchte als `[object Object]` in der Anzeige auf. `''` bleibt
+ * ausdrücklich zulässig — er ist der dokumentierte Leerwert (Ruling 52).
+ *
+ * Die Rückgabe erlaubt die Kurzform `this.model.feld = requireText(…)`;
+ * Aufrufer, die nur prüfen wollen, ignorieren sie.
+ *
+ * @param {string} name Name des Arguments (erscheint in der Meldung)
+ * @param {any} value der übergebene Wert
+ * @throws {Error} wenn `value` keine Zeichenkette ist
+ * @returns {string} der geprüfte Text
+ */
+export function requireText(name, value) {
+  if (typeof value !== 'string') {
+    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any string, "" clears it`);
+  }
+  return value;
+}

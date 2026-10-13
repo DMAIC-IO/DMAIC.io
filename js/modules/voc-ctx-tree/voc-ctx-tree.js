@@ -35,7 +35,7 @@ import { ensureXLSX, downloadBlob } from '../../core/export-utils.js';
 import { shortcutRegistry } from '../../core/shortcut-registry.js';
 import { draggablePopout } from '../../ui/draggable-popout.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
 import { State, VALID_TYPES } from './voc-ctx-tree-model.js';
 import { buildTreeSVG } from './voc-ctx-tree-svg.js';
 
@@ -68,26 +68,6 @@ const BORDER_WIDTHS = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4];
 // die Schreibweise ab, die die eigene Oberfläche erzeugt, und das Einfärben
 // der Knoten war damit kaputt. Werte über 1 bleiben ungültig.
 const COLOR_RE = /^rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(?:,\s*(?:0(?:\.\d+)?|1(?:\.0+)?|\.\d+)\s*)?\)$/;
-
-/**
- * Ein Textargument prüfen, bevor es zum dokumentierten Leerwert wird.
- *
- * Ruling 55: `agent-ops.js` übergibt `action.args ?? []` ohne Arity-Prüfung,
- * ein FEHLENDES Argument kommt also als `undefined` an. Ein `String(v ?? '')`
- * machte daraus stillschweigend den Leerwert — ein Aufruf mit zu wenigen
- * Argumenten löschte dann einen Text und meldete Erfolg. Die Meldungsgestalt
- * ist dieselbe wie in `agent-argcheck.js`.
- *
- * @param {string} name Name des Arguments (erscheint in der Meldung)
- * @param {any} value der übergebene Wert
- * @throws {Error} wenn `value` keine Zeichenkette ist
- * @returns {void}
- */
-function requireText(name, value) {
-  if (typeof value !== 'string') {
-    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any string, "" clears it`);
-  }
-}
 
 /**
  * Eine Farbe gegen ihre Schreibweise prüfen.
