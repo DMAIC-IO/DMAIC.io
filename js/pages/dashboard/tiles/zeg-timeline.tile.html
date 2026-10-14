@@ -1,0 +1,11 @@
+<template x-if="vm.empty">
+  <p class="dashboard-area__empty" x-text="vm.empty"></p>
+</template>
+<template x-if="vm.chart">
+  <div class="dashboard-area__plot" data-ref="plot" data-tile-slot="chart"></div>
+</template>
+<template x-if="vm.showEdit">
+  <div class="dashboard-zeg__actions">
+    <a class="btn btn--ghost btn--sm dashboard-zeg__edit" href="#/action/zeg-sheet" data-action="zeg-sheet"><span class="icon icon--sm" data-icon="module.worksheet" aria-hidden="true"></span><span x-text="vm.editLabel"></span></a>
+  </div>
+</template>

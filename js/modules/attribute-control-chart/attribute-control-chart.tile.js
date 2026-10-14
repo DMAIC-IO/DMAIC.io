@@ -4,10 +4,10 @@
  * "Is the process stable?" — stable/unstable badge, violated points, CL and
  * limits, and a compact control chart through the tile-bound chartManager.
  * One tile per instance; source/copies via the host. Imports only the pure
- * analysis and model files. Contract: docs/DASHBOARD.md.
+ * analysis and model files. The markup lives in
+ * attribute-control-chart.tile.html. Contract: docs/DASHBOARD.md.
  */
 
-import { h } from '../../core/dom.js';
 import { getColumnValues } from '../../ui/column-picker.js';
 import { State } from './attribute-control-chart-model.js';
 import { analyzeState } from './attribute-control-chart-analysis.js';
@@ -35,14 +35,6 @@ function meanOf(v) {
 /** Four decimals, '—' when missing. */
 function fmt(v) {
   return Number.isFinite(v) ? v.toFixed(4) : '—';
-}
-
-/** Small label/value stat (SPC tile classes). */
-function stat(label, value) {
-  return h('div', { class: 'dashboard-spc__stat' },
-    h('span', { class: 'dashboard-spc__stat-label' }, label),
-    h('span', { class: 'dashboard-spc__stat-value' }, value),
-  );
 }
 
 /**
@@ -76,66 +68,83 @@ export default {
     showChart: { type: 'boolean', default: true, label: 'dashboard.tileSettings.showChart' },
   },
 
-  /**
-   * Render figures and (optionally) the control chart. A newer render or
-   * dispose invalidates a chart that is still being created.
-   * @param {HTMLElement} host
-   * @param {{state: object, settings: {lastN: number, showChart: boolean}, i18n: object,
-   *   chartManager: object, stateManager: object}} args
-   * @returns {Promise<void>}
-   */
-  async render(host, { state, settings, i18n, chartManager, stateManager }) {
-    release(host);
-    const token = {};
-    charts.set(host, { chart: null, chartManager, token });
+  template: 'js/modules/attribute-control-chart/attribute-control-chart.tile.html',
 
+  /**
+   * Stability badge, violation count, CL/limits and the windowed control
+   * chart config (null when hidden). Violation indices are a number array.
+   * @param {{state: object, settings: {lastN: number, showChart: boolean}, i18n: object,
+   *   stateManager: object}} args
+   * @returns {object} view model for attribute-control-chart.tile.html
+   */
+  viewModel({ state, settings, i18n, stateManager }) {
+    const none = (key) => ({ empty: i18n.t(key), type: '', badgeModifier: '', badge: '', metric: null, stats: [], chart: null });
     const model = State.fromJSON(state);
-    const empty = (key) => h('p', { class: 'dashboard-area__empty' }, i18n.t(key));
-    if (!model.defectsRef) { host.replaceChildren(empty('dashboard.attrSpcEmpty')); return; }
+    if (!model.defectsRef) return none('dashboard.attrSpcEmpty');
     const a = analyzeState(model, (ref) => getColumnValues(stateManager, ref));
-    if (!a) { host.replaceChildren(empty('dashboard.attrSpcNoData')); return; }
+    if (!a) return none('dashboard.attrSpcNoData');
 
     const { result, ct, violations, valid } = a;
     const violationIndices = new Set(violations.map(v => v.index));
     const stable = violations.length === 0;
     const variable = !!result.variableLimits;
 
-    const wrap = h('div', { class: 'dashboard-attr-spc' },
-      h('div', { class: 'dashboard-spc__header' },
-        h('span', { class: 'dashboard-spc__type dashboard-attr-spc__type' }, ct.id),
-        h('span', { class: `dashboard-attr-spc__badge dashboard-attr-spc__badge--${stable ? 'ok' : 'bad'}` },
-          i18n.t(stable ? 'dashboard.attrSpcStable' : 'dashboard.attrSpcUnstable')),
-      ),
-      h('div', { class: 'dashboard-spc__metrics' },
-        h('div', { class: `dashboard-spc__metric dashboard-spc__metric--${stable ? 'ok' : 'bad'}` },
-          h('span', { class: 'dashboard-spc__metric-value' }, String(violationIndices.size)),
-          h('span', { class: 'dashboard-spc__metric-label' }, i18n.t('dashboard.spcViolations')),
-          h('span', { class: 'dashboard-spc__metric-sub' }, i18n.t('dashboard.spcOf', { total: valid })),
-        ),
-      ),
-      h('div', { class: 'dashboard-spc__stats dashboard-attr-spc__stats' },
-        stat('CL', fmt(meanOf(result.cl))),
-        stat(variable ? 'UCL̄' : 'UCL', fmt(meanOf(result.ucl))),
-        stat(variable ? 'LCL̄' : 'LCL', fmt(meanOf(result.lcl))),
-      ),
-    );
-    host.replaceChildren(wrap);
-    if (!settings.showChart || !chartManager) return;
+    let chart = null;
+    if (settings.showChart) {
+      const baselineEnd = model.baselineCount && model.baselineCount < result.values.length ? model.baselineCount : null;
+      const win = windowed(result, violationIndices, baselineEnd, settings.lastN);
+      chart = {
+        ...win,
+        violationIndices: [...win.violationIndices],
+        usl: null, lsl: null,
+        showZones: !variable,
+        xLabel: i18n.t('modules.attribute-control-chart.xLabelSample'),
+        yLabel: i18n.t(`modules.attribute-control-chart.yLabel_${model.chartTypeId}`),
+        showTitle: false, showXLabel: false, showYLabel: false,
+        showXTicks: false, showYTicks: false, showLegend: false,
+      };
+    }
 
-    const baselineEnd = model.baselineCount && model.baselineCount < result.values.length ? model.baselineCount : null;
-    const win = windowed(result, violationIndices, baselineEnd, settings.lastN);
-    const plotEl = h('div', { class: 'dashboard-area__plot dashboard-attr-spc__plot' });
-    wrap.append(plotEl);
-    const chart = await chartManager.create(plotEl, 'control-chart', {
-      ...win,
-      usl: null, lsl: null,
-      showZones: !variable,
-      xLabel: i18n.t('modules.attribute-control-chart.xLabelSample'),
-      yLabel: i18n.t(`modules.attribute-control-chart.yLabel_${model.chartTypeId}`),
-      showTitle: false, showXLabel: false, showYLabel: false,
-      showXTicks: false, showYTicks: false, showLegend: false,
+    return {
+      empty: null,
+      type: ct.id,
+      badgeModifier: `dashboard-attr-spc__badge--${stable ? 'ok' : 'bad'}`,
+      badge: i18n.t(stable ? 'dashboard.attrSpcStable' : 'dashboard.attrSpcUnstable'),
+      metric: {
+        modifier: `dashboard-spc__metric--${stable ? 'ok' : 'bad'}`,
+        value: String(violationIndices.size),
+        label: i18n.t('dashboard.spcViolations'),
+        sub: i18n.t('dashboard.spcOf', { total: valid }),
+      },
+      stats: [
+        { label: 'CL', value: fmt(meanOf(result.cl)) },
+        { label: variable ? 'UCL̄' : 'UCL', value: fmt(meanOf(result.ucl)) },
+        { label: variable ? 'LCL̄' : 'LCL', value: fmt(meanOf(result.lcl)) },
+      ],
+      chart,
+    };
+  },
+
+  /**
+   * Create the control chart in the chart slot. A newer render or dispose
+   * invalidates a chart that is still being created.
+   * @param {HTMLElement} root  tile body
+   * @param {object} vm  view model from viewModel()
+   * @param {{chartManager: object}} args
+   * @returns {Promise<void>}
+   */
+  async mount(root, vm, { chartManager }) {
+    release(root);
+    const token = {};
+    charts.set(root, { chart: null, chartManager, token });
+    if (!vm.chart || !chartManager) return;
+
+    const slot = root.querySelector('[data-tile-slot="chart"]');
+    const chart = await chartManager.create(slot, 'control-chart', {
+      ...vm.chart,
+      violationIndices: new Set(vm.chart.violationIndices),
     });
-    const entry = charts.get(host);
+    const entry = charts.get(root);
     if (entry?.token !== token) { chartManager.destroy(chart); return; }
     entry.chart = chart;
   },

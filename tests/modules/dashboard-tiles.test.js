@@ -585,6 +585,31 @@ suite('dashboard tiles: zeg-timeline', () => {
     assertEqual(base.made[0].cfg.showLegend, false);
     host.remove();
   });
+
+  test('viewModel: chart config without functions, edit link flags', () => {
+    const vm = vmOf(zegTile, null, { showLegend: false }, { stateManager: zegStateManager({ define: [{ t: 1, v: 10 }] }) });
+    assertPlain(vm);
+    assertEqual(vm.empty, null);
+    assertEqual(vm.showEdit, true);
+    assertEqual(vm.editLabel, 'dashboard.zegSheet.edit');
+    assertEqual(vm.chart.showLegend, false);
+    assertEqual(vm.chart.yMax, 100);
+    assertEqual(vm.chart.xTickFormat, undefined);
+  });
+
+  test('viewModel: empty history and read-only project without sheet', () => {
+    const vm = vmOf(zegTile, null, {}, { stateManager: zegStateManager({}, { completed: true }) });
+    assertEqual(vm.empty, 'dashboard.noHistory');
+    assertEqual(vm.chart, null);
+    assertEqual(vm.showEdit, false);
+  });
+
+  test('mount adds the localized date tick format', async () => {
+    const host = document.createElement('div'); const cm = fakeChartManager();
+    await mountTile(zegTile, args(cm, zegStateManager({ define: [{ t: 1, v: 10 }] })), host);
+    assertEqual(typeof cm.made[0].cfg.xTickFormat, 'function');
+    assertEqual(cm.made[0].cfg.xTickFormat(Date.UTC(2026, 9, 14, 12)), '14.10.26');
+  });
 });
 
 const TODO_STATE = {
@@ -1109,6 +1134,31 @@ suite('dashboard tiles: attribute-control-chart', () => {
     pending[0](); await first;
     assertTrue(destroyed.includes(made[0]), 'stale chart destroyed');
     assertTrue(!destroyed.includes(made[1]), 'current chart kept');
+  });
+
+  test('viewModel: badge, metric, stats and windowed chart config as display data', () => {
+    const vm = vmOf(attrSpcTile, C_STATE, {}, { stateManager: columnStateManager(C_UNSTABLE) });
+    assertPlain({ ...vm, chart: null });
+    assertEqual(vm.empty, null);
+    assertEqual(vm.type, 'c');
+    assertEqual(vm.badgeModifier, 'dashboard-attr-spc__badge--bad');
+    assertEqual(vm.badge, 'dashboard.attrSpcUnstable');
+    assertDeepEqual(vm.metric, { modifier: 'dashboard-spc__metric--bad', value: '1',
+      label: 'dashboard.spcViolations', sub: 'dashboard.spcOf' });
+    assertDeepEqual(vm.stats.map(s => s.label), ['CL', 'UCL', 'LCL']);
+    assertDeepEqual(vm.chart.violationIndices, [9]);
+    assertEqual(vm.chart.showZones, true);
+    assertEqual(vm.chart.yLabel, 'modules.attribute-control-chart.yLabel_c');
+  });
+
+  test('viewModel: empty, no-data and showChart off', () => {
+    assertEqual(vmOf(attrSpcTile, { chartTypeId: 'c' }, {}, { stateManager: columnStateManager({}) }).empty,
+      'dashboard.attrSpcEmpty');
+    assertEqual(vmOf(attrSpcTile, C_STATE, {}, { stateManager: columnStateManager({ d: [3] }) }).empty,
+      'dashboard.attrSpcNoData');
+    const off = vmOf(attrSpcTile, C_STATE, { showChart: false }, { stateManager: columnStateManager(C_STABLE) });
+    assertEqual(off.chart, null);
+    assertEqual(off.badgeModifier, 'dashboard-attr-spc__badge--ok');
   });
 });
 
