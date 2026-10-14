@@ -5,6 +5,7 @@
 
 import { uid as coreUid } from '../uid.js';
 import { icon } from '../icon.js';
+import { todayISO } from '../local-date.js';
 
 // ─── ID & Math ─────────────────────────────────────────────
 
@@ -233,8 +234,16 @@ export function parseCellInput(col, raw) {
         const y = deMatch[3].length === 2 ? `20${  deMatch[3]}` : deMatch[3];
         return `${y}-${deMatch[2].padStart(2, '0')}-${deMatch[1].padStart(2, '0')}`;
       }
+      // Y-M-D is built as a local date: `new Date('2026-7-1')` is local
+      // midnight, and toISOString() would shift it to the previous UTC day.
+      const ymdMatch = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+      if (ymdMatch) {
+        const [y, m, d] = ymdMatch.slice(1).map(Number);
+        const local = new Date(y, m - 1, d);
+        return local.getMonth() === m - 1 && local.getDate() === d ? todayISO(local) : s;
+      }
       const dt = new Date(s);
-      if (!isNaN(dt)) return dt.toISOString().split('T')[0];
+      if (!isNaN(dt)) return todayISO(dt);
       return s;
     }
     case 'time': {
