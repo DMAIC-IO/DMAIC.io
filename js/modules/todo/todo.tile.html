@@ -1,0 +1,33 @@
+<template x-if="vm.empty">
+  <p class="dashboard-area__empty" x-text="vm.empty"></p>
+</template>
+<template x-if="!vm.empty">
+  <div class="dashboard-fmea__summary">
+    <template x-for="s in vm.summary">
+      <span :data-status="s.status"><span x-text="s.label"></span><strong x-text="s.count"></strong></span>
+    </template>
+  </div>
+</template>
+<template x-if="!vm.empty">
+  <div class="dashboard-fmea__bar">
+    <template x-for="seg in vm.segments">
+      <div class="dashboard-fmea__bar-seg" :data-status="seg.status" :style="seg.style" :title="seg.title"></div>
+    </template>
+  </div>
+</template>
+<template x-if="vm.nextLabel">
+  <div class="dashboard-fmea__top-label" x-text="vm.nextLabel"></div>
+</template>
+<template x-if="vm.nextLabel">
+  <ol class="dashboard-fmea__top-list">
+    <template x-for="item in vm.next">
+      <li class="dashboard-fmea__top-item" :class="item.modifier" :title="item.title">
+        <span class="dashboard-fmea__top-desc" x-text="item.text"></span>
+        <template x-if="item.owner">
+          <span class="dashboard-todo__owner" x-text="item.owner"></span>
+        </template>
+        <span class="dashboard-todo__due" x-text="item.due"></span>
+      </li>
+    </template>
+  </ol>
+</template>

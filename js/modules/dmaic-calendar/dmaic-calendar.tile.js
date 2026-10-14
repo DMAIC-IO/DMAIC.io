@@ -2,10 +2,9 @@
  * D.Mike — DMAIC calendar dashboard tile (dmaic-calendar.tile.js)
  *
  * Upcoming events within a selectable horizon. Imports only the pure
- * calendar model. Contract: docs/DASHBOARD.md.
+ * calendar model; the markup lives in dmaic-calendar.tile.html. Contract: docs/DASHBOARD.md.
  */
 
-import { h } from '../../core/dom.js';
 import { todayISO } from '../../core/local-date.js';
 import { State, upcomingEvents } from './dmaic-calendar-model.js';
 
@@ -17,28 +16,29 @@ export default {
       optionLabels: { 7: 'dashboard.tileSettings.horizon7', 14: 'dashboard.tileSettings.horizon14', 30: 'dashboard.tileSettings.horizon30' } },
   },
 
+  template: 'js/modules/dmaic-calendar/dmaic-calendar.tile.html',
+
   /**
-   * @param {HTMLElement} host
+   * Upcoming events within the selected horizon.
    * @param {{state: object, settings: {topN: number, horizon: string}, i18n: object}} args
+   * @returns {object} view model for dmaic-calendar.tile.html
    */
-  render(host, { state, settings, i18n }) {
+  viewModel({ state, settings, i18n }) {
     const model = State.fromJSON(state);
     if (model.events.length === 0) {
-      host.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.calendarEmpty')));
-      return;
+      return { empty: i18n.t('dashboard.calendarEmpty'), summary: null, none: null, events: [] };
     }
     const days = Number(settings.horizon);
     const upcoming = upcomingEvents(model.events, todayISO(), days);
-    const summary = h('div', { class: 'dashboard-fmea__summary' },
-      i18n.t('dashboard.calendarSummary', { count: upcoming.length, days }));
-    if (upcoming.length === 0) {
-      host.replaceChildren(summary, h('p', { class: 'dashboard-calendar__none' }, i18n.t('dashboard.calendarNone')));
-      return;
-    }
-    host.replaceChildren(summary, h('ol', { class: 'dashboard-fmea__top-list' },
-      ...upcoming.slice(0, settings.topN).map(e => h('li', { class: 'dashboard-fmea__top-item' },
-        h('span', { class: 'dashboard-calendar__when' }, `${e.date} ${e.time}`),
-        h('span', { class: 'dashboard-fmea__top-desc' }, e.title || '—'),
-        h('span', { class: 'dashboard-calendar__phase' }, i18n.t(`phases.${e.phase}`))))));
+    return {
+      empty: null,
+      summary: i18n.t('dashboard.calendarSummary', { count: upcoming.length, days }),
+      none: upcoming.length === 0 ? i18n.t('dashboard.calendarNone') : null,
+      events: upcoming.slice(0, settings.topN).map(e => ({
+        when: `${e.date} ${e.time}`,
+        title: e.title || '—',
+        phase: i18n.t(`phases.${e.phase}`),
+      })),
+    };
   },
 };

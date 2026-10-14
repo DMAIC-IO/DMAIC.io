@@ -527,6 +527,21 @@ suite('dashboard tiles: todo', () => {
       assertEqual((await render(todoTile, s)).querySelector('.dashboard-area__empty').textContent, 'dashboard.todoEmpty');
     }
   });
+
+  test('viewModel: summary, segments and next items as display data', () => {
+    const vm = vmOf(todoTile, TODO_STATE);
+    assertPlain(vm);
+    assertDeepEqual(vm.summary.map(s => [s.status, s.label, s.count]), [
+      ['open', 'modules.todo.status_open: ', '1'],
+      ['in-progress', 'modules.todo.status_in-progress: ', '1'],
+      ['blocked', 'modules.todo.status_blocked: ', '1'],
+    ]);
+    assertEqual(vm.segments[0].style, 'width:33.33333333333333%;background:var(--color-text-tertiary)');
+    assertEqual(vm.nextLabel, 'dashboard.todoNextDue');
+    assertDeepEqual(vm.next[0], { modifier: 'dashboard-todo__overdue', title: 'dashboard.todoOverdue',
+      text: 'Past', owner: 'Ann', due: '2000-01-01' });
+    assertDeepEqual(vm.next[2], { modifier: '', title: null, text: 'Undated', owner: null, due: '—' });
+  });
 });
 
 suite('dashboard tiles: dmaic-calendar', () => {
@@ -571,6 +586,15 @@ suite('dashboard tiles: dmaic-calendar', () => {
   test('no upcoming events shows a hint; no events at all the empty state', async () => {
     assertTrue((await render(calendarTile, { events: [CAL_STATE.events[3]] })).querySelector('.dashboard-calendar__none') !== null);
     assertEqual((await render(calendarTile, undefined)).querySelector('.dashboard-area__empty').textContent, 'dashboard.calendarEmpty');
+  });
+
+  test('viewModel: summary, hint and events as display data', () => {
+    const vm = vmOf(calendarTile, CAL_STATE);
+    assertPlain(vm);
+    assertEqual(vm.summary, 'dashboard.calendarSummary');
+    assertEqual(vm.none, null);
+    assertDeepEqual(vm.events[0], { when: `${t0} 10:00`, title: 'Kickoff', phase: 'phases.define' });
+    assertEqual(vmOf(calendarTile, { events: [CAL_STATE.events[3]] }).none, 'dashboard.calendarNone');
   });
 });
 
@@ -631,6 +655,17 @@ suite('dashboard tiles: lessons-learned', () => {
 
   test('empty state', async () => {
     assertEqual((await render(lessonsTile, null)).querySelector('.dashboard-area__empty').textContent, 'dashboard.lessonsEmpty');
+  });
+
+  test('viewModel: stats with alert modifier and the open-action list', () => {
+    const vm = vmOf(lessonsTile, LL_STATE);
+    assertPlain(vm);
+    assertDeepEqual(vm.stats.map(s => s.key), ['success', 'problem', 'improve', 'openActions']);
+    assertDeepEqual(vm.stats[3], { key: 'openActions', label: 'dashboard.lessonsOpenActions: ', value: '3',
+      modifier: 'dashboard-lessons__open--alert' });
+    assertEqual(vm.stats[0].modifier, '');
+    assertEqual(vm.topLabel, 'dashboard.lessonsHighOpen');
+    assertDeepEqual(vm.top, [{ title: 'Scope creep', open: '2' }, { title: 'Data access', open: '1' }]);
   });
 });
 

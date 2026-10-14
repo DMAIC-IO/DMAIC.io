@@ -1,0 +1,20 @@
+<template x-if="vm.empty">
+  <p class="dashboard-area__empty" x-text="vm.empty"></p>
+</template>
+<template x-if="vm.summary">
+  <div class="dashboard-fmea__summary" x-text="vm.summary"></div>
+</template>
+<template x-if="vm.none">
+  <p class="dashboard-calendar__none" x-text="vm.none"></p>
+</template>
+<template x-if="vm.events.length">
+  <ol class="dashboard-fmea__top-list">
+    <template x-for="e in vm.events">
+      <li class="dashboard-fmea__top-item">
+        <span class="dashboard-calendar__when" x-text="e.when"></span>
+        <span class="dashboard-fmea__top-desc" x-text="e.title"></span>
+        <span class="dashboard-calendar__phase" x-text="e.phase"></span>
+      </li>
+    </template>
+  </ol>
+</template>

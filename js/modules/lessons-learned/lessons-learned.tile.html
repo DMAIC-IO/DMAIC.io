@@ -1,0 +1,23 @@
+<template x-if="vm.empty">
+  <p class="dashboard-area__empty" x-text="vm.empty"></p>
+</template>
+<template x-if="!vm.empty">
+  <div class="dashboard-fmea__summary">
+    <template x-for="s in vm.stats">
+      <span :data-stat="s.key" :class="s.modifier"><span x-text="s.label"></span><strong x-text="s.value"></strong></span>
+    </template>
+  </div>
+</template>
+<template x-if="vm.topLabel">
+  <div class="dashboard-fmea__top-label" x-text="vm.topLabel"></div>
+</template>
+<template x-if="vm.topLabel">
+  <ol class="dashboard-fmea__top-list">
+    <template x-for="l in vm.top">
+      <li class="dashboard-fmea__top-item">
+        <span class="dashboard-fmea__top-desc" x-text="l.title"></span>
+        <span class="dashboard-fmea__top-rpn" x-text="l.open"></span>
+      </li>
+    </template>
+  </ol>
+</template>
