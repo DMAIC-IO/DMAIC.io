@@ -372,6 +372,37 @@
   flex-shrink: 0;
 }
 
+.sha__chip-dot--supporter { background: var(--color-success); }
+.sha__chip-dot--neutral { background: var(--color-warning); }
+.sha__chip-dot--critic { background: var(--color-error); }
+
+/* Critic in "manage closely" — key stakeholder that must not be against the project */
+.sha__chip--alert {
+  border-color: var(--color-error);
+}
+
+.sha__critic-warning {
+  width: 100%;
+  max-width: 640px;
+  margin-left: var(--spacing-2xl);
+  margin-bottom: var(--spacing-md);
+}
+
+.sha__legend {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.sha__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
 /* ===== Summary Table ===== */
 .sha__summary-container {
   padding: var(--spacing-lg);

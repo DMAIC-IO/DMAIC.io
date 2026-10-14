@@ -126,10 +126,19 @@ export function supportCounts(list) {
 }
 
 /**
+ * Whether a stakeholder is a critic in the manage-closely quadrant.
+ * @param {Stakeholder} s
+ * @returns {boolean}
+ */
+export function isKeyCritic(s) {
+  return s.quadrant === 'manage-closely' && s.support === 'critic';
+}
+
+/**
  * Critics in the manage-closely quadrant.
  * @param {Stakeholder[]} list
  * @returns {Stakeholder[]}
  */
 export function criticalCritics(list) {
-  return list.filter(s => s.quadrant === 'manage-closely' && s.support === 'critic');
+  return list.filter(isKeyCritic);
 }

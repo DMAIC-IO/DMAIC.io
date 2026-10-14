@@ -8,7 +8,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import { draggablePopout } from '../../ui/draggable-popout.js';
-import { Stakeholder, State, QUAD_ORDER } from './stakeholder-analysis-model.js';
+import { Stakeholder, State, QUAD_ORDER, SUPPORT_VALUES, criticalCritics, isKeyCritic } from './stakeholder-analysis-model.js';
 
 const AVATAR_COLORS = [
   '#3b82f6', '#22c55e', '#ef4444', '#eab308', '#f97316',
@@ -45,6 +45,11 @@ function pascal(s) {
 function capFirst(s) {
   const str = String(s);
   return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+/** Colour tone of an attitude; unknown (imported) values get critic styling, like supportColor. */
+function supportToneOf(support) {
+  return SUPPORT_VALUES.includes(support) ? support : 'critic';
 }
 
 function avatarColorOf(name) {
@@ -98,6 +103,8 @@ export default createModule({
       supportColor: (s) => (s === 'supporter' ? 'var(--color-success)' : s === 'neutral' ? 'var(--color-warning)' : 'var(--color-error)'),
       supportLabel: (s) => _raw(`support${  capFirst(s)}`),
       supportBadgeClass: (s) => `sha__support-badge sha__support-badge--${  s}`,
+      supportTones: SUPPORT_VALUES,
+      chipDotClass: (s) => `sha__chip-dot sha__chip-dot--${supportToneOf(s)}`,
 
       // ── View transforms: category (mirrors legacy key construction 1:1) ──
       catLabel: (c) => _raw(`category${  capFirst(c)}`),
@@ -114,6 +121,17 @@ export default createModule({
       // ── Grouped / sorted lists (read from reactive model) ──
       chipsFor(quad) {
         return this.model.stakeholders.filter((s) => s.quadrant === quad);
+      },
+      chipClass(sh) {
+        return isKeyCritic(sh) ? 'sha__chip sha__chip--alert' : 'sha__chip';
+      },
+
+      // ── Key-stakeholder warning: critics in "manage closely" ──
+      keyCritics() {
+        return criticalCritics(this.model.stakeholders);
+      },
+      criticWarningText() {
+        return this.t('criticWarningText', { names: this.keyCritics().map((s) => s.name).join(', ') });
       },
       sortedStakeholders() {
         return [...this.model.stakeholders].sort(

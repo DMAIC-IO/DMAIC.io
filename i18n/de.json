@@ -1193,7 +1193,9 @@
       "noStakeholders": "Keine Stakeholder",
       "noStakeholdersHint": "Fügen Sie Ihren ersten Stakeholder hinzu, um die Analyse zu starten.",
       "notesLabel": "Erwartungen / Bedenken",
-      "notesPlaceholder": "Was erwartet dieser Stakeholder? Welche Bedenken hat er?"
+      "notesPlaceholder": "Was erwartet dieser Stakeholder? Welche Bedenken hat er?",
+      "criticWarningLabel": "Kritiker unter den Schlüssel-Stakeholdern",
+      "criticWarningText": "{names} — eng managen heißt hier: Bedenken klären und gezielt einbinden, bevor sie das Projekt blockieren."
     },
     "voc-ctx-tree": {
       "name": "VoC → CTx-Baum",

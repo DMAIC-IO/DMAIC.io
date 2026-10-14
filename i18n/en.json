@@ -1193,7 +1193,9 @@
       "noStakeholders": "No Stakeholders",
       "noStakeholdersHint": "Add your first stakeholder to start the analysis.",
       "notesLabel": "Expectations / Concerns",
-      "notesPlaceholder": "What does this stakeholder expect? What concerns do they have?"
+      "notesPlaceholder": "What does this stakeholder expect? What concerns do they have?",
+      "criticWarningLabel": "Critics among key stakeholders",
+      "criticWarningText": "{names} — managing closely means: address their concerns and involve them before they block the project."
     },
     "voc-ctx-tree": {
       "name": "VoC → CTx Tree",
