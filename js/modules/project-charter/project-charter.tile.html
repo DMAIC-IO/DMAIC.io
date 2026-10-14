@@ -1,0 +1,9 @@
+<template x-if="vm.empty">
+  <p class="dashboard-area__empty" x-text="vm.empty"></p>
+</template>
+<template x-if="!vm.empty">
+  <div class="dashboard-charter__problem-label" x-text="vm.problemLabel"></div>
+</template>
+<template x-if="!vm.empty">
+  <div class="dashboard-charter__problem" data-tile-slot="problem"></div>
+</template>

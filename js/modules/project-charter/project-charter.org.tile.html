@@ -1,0 +1,6 @@
+<template x-if="vm.empty">
+  <p class="dashboard-area__empty" x-text="vm.empty"></p>
+</template>
+<template x-if="!vm.empty">
+  <div class="dashboard-area__org" data-tile-slot="org"></div>
+</template>

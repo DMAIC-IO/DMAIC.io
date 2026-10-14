@@ -1389,7 +1389,7 @@ body.dev-area-open .dmaic-tiles {
   margin-bottom: var(--spacing-xs);
 }
 
-.dashboard-charter__problem-label:first-child { margin-top: 0; }
+.dashboard-charter__problem-label:first-of-type { margin-top: 0; }
 
 .dashboard-charter__problem {
   font-size: var(--font-size-sm);

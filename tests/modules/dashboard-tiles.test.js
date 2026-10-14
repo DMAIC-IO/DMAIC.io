@@ -304,6 +304,61 @@ suite('dashboard tiles: project-charter array', () => {
     const host = (await render(orgTile, { orgChart: [{ id: 'a', pid: null, title: 'A' }, { id: 'b', pid: 'a', title: 'B' }] }));
     assertEqual(host.querySelectorAll('.dashboard-org__node').length, 2);
   });
+
+  test('charter renders the problem statement Markdown as <strong>, not raw **', async () => {
+    const host = await render(charterTile, { problemStatement: '**bold** text' });
+    const problem = host.querySelector('.dashboard-charter__problem');
+    assertEqual(problem.querySelector('strong').textContent, 'bold');
+    assertEqual(problem.textContent, 'bold text');
+    assertEqual(problem.textContent.includes('**'), false);
+    assertEqual(host.querySelector('.dashboard-charter__problem-label').textContent, 'dashboard.charterProblem');
+  });
+
+  test('charter: no instance → charterEmpty, no problem statement → charterNoProblem', async () => {
+    assertEqual((await render(charterTile, null)).querySelector('.dashboard-area__empty').textContent, 'dashboard.charterEmpty');
+    assertEqual((await render(charterTile, { problemStatement: '' })).querySelector('.dashboard-area__empty').textContent,
+      'dashboard.charterNoProblem');
+  });
+
+  test('charter: raw HTML in the problem statement stays text', async () => {
+    const host = await render(charterTile, { problemStatement: '<img src=x onerror="bad()">' });
+    assertEqual(host.querySelector('.dashboard-charter__problem img'), null);
+    assertEqual(host.querySelector('.dashboard-charter__problem').textContent, '<img src=x onerror="bad()">');
+  });
+
+  test('viewModel: charter keeps the Markdown, translated label', () => {
+    const vm = vmOf(charterTile, { problemStatement: '**bold** text' });
+    assertPlain(vm);
+    assertDeepEqual(vm, { empty: null, problemLabel: 'dashboard.charterProblem', problem: '**bold** text' });
+  });
+
+  test('viewModel: goals with clamped ZEG, colour styles and unnamed fallback', () => {
+    const vm = vmOf(goalsTile, { goals: [{ description: 'A', achievementLevel: 150 }, { achievementLevel: 30 }, { description: 'C' }] });
+    assertPlain(vm);
+    assertEqual(vm.empty, null);
+    assertDeepEqual(vm.goals[0], { desc: 'A', zeg: '100%', zegStyle: 'color:var(--color-success)',
+      fillStyle: 'width:100%; background:var(--color-success)' });
+    assertEqual(vm.goals[1].desc, 'dashboard.charterGoalUnnamed');
+    assertEqual(vm.goals[1].fillStyle, 'width:30%; background:var(--color-warning)');
+    assertEqual(vm.goals[2].zeg, '0%');
+    assertEqual(vmOf(goalsTile, { goals: [] }).empty, 'dashboard.charterNoGoals');
+  });
+
+  test('viewModel: org chart nodes as plain data', () => {
+    const nodes = [{ id: 'a', pid: null, title: 'A' }, { id: 'b', pid: 'a', title: 'B', desc: 'x' }];
+    const vm = vmOf(orgTile, { orgChart: nodes });
+    assertPlain(vm);
+    assertDeepEqual(vm, { empty: null, nodes });
+    assertEqual(vmOf(orgTile, { orgChart: [] }).empty, 'dashboard.orgChartEmpty');
+    assertEqual(vmOf(orgTile, null).empty, 'dashboard.orgChartEmpty');
+  });
+
+  test('org chart draws one edge per child and the description line', async () => {
+    const host = await render(orgTile, { orgChart: [{ id: 'a', pid: null, title: 'A' }, { id: 'b', pid: 'a', title: 'B', desc: 'x' }] });
+    assertEqual(host.querySelectorAll('.dashboard-org__edges path').length, 1);
+    assertEqual(host.querySelectorAll('.dashboard-org__node-desc').length, 1);
+    assertTrue(host.querySelector('.dashboard-area__org > svg.dashboard-org__svg') !== null);
+  });
 });
 
 const VOC_STATE = {

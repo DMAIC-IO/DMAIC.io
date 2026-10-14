@@ -1,0 +1,18 @@
+<template x-if="vm.empty">
+  <p class="dashboard-area__empty" x-text="vm.empty"></p>
+</template>
+<template x-if="!vm.empty">
+  <ol class="dashboard-charter__goals">
+    <template x-for="g in vm.goals">
+      <li class="dashboard-charter__goal">
+        <div class="dashboard-charter__goal-head">
+          <span class="dashboard-charter__goal-desc" x-text="g.desc"></span>
+          <span class="dashboard-charter__goal-zeg" :style="g.zegStyle" x-text="g.zeg"></span>
+        </div>
+        <div class="dashboard-charter__goal-bar">
+          <div class="dashboard-charter__goal-bar-fill" :style="g.fillStyle"></div>
+        </div>
+      </li>
+    </template>
+  </ol>
+</template>
