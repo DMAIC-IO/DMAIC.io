@@ -3034,6 +3034,8 @@
         "multiTimeSeries": "Multi-line time series",
         "groupedTimeSeries": "Grouped time series",
         "controlChart": "Control chart",
+        "imrRowOrder": "I-MR chart (row order as time axis)",
+        "transformedImr": "Box-Cox I-MR chart",
         "ewma": "EWMA control chart",
         "cusum": "CUSUM control chart",
         "bar": "Bar chart",
@@ -3052,7 +3054,8 @@
         "bubble": "Bubble chart"
       },
       "notes": {
-        "matrixTruncated": "Only the first {shown} of {total} columns are shown in the matrix."
+        "matrixTruncated": "Only the first {shown} of {total} columns are shown in the matrix.",
+        "transformedImrReason": "Skewed distribution, transformation recommended: the values are clearly right-skewed and all positive. An I-MR chart on the raw data would raise too many false alarms above the mean and too few below."
       }
     },
     "xy-plot": {

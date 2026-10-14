@@ -8,7 +8,9 @@
       "charts": [
         { "type": "histogram",             "score": 90, "i18nKey": "histogram",              "conditions": { "minN": 20 } },
         { "type": "boxplot",               "score": 88, "i18nKey": "boxplotSingle" },
+        { "type": "transformed-imr-chart", "score": 86, "i18nKey": "transformedImr",         "conditions": { "minN": 20, "minSkewness": 1, "positiveOnly": true }, "notesKey": "transformedImrReason" },
         { "type": "individual-value-plot", "score": 82, "i18nKey": "ivpSingle",              "conditions": { "maxN": 200 } },
+        { "type": "control-chart",         "score": 78, "i18nKey": "imrRowOrder",            "conditions": { "minN": 20 } },
         { "type": "run-chart",             "score": 75, "i18nKey": "runChart" },
         { "type": "probability-plot",      "score": 70, "i18nKey": "probabilityPlot",        "conditions": { "minN": 10 } }
       ]

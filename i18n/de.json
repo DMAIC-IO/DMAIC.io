@@ -3034,6 +3034,8 @@
         "multiTimeSeries": "Mehrlinien-Zeitreihe",
         "groupedTimeSeries": "Gruppierte Zeitreihe",
         "controlChart": "Regelkarte",
+        "imrRowOrder": "I-MR-Karte (Zeilenreihenfolge als Zeitachse)",
+        "transformedImr": "Box-Cox-I-MR-Karte",
         "ewma": "EWMA-Regelkarte",
         "cusum": "CUSUM-Regelkarte",
         "bar": "Balkendiagramm",
@@ -3052,7 +3054,8 @@
         "bubble": "Blasendiagramm"
       },
       "notes": {
-        "matrixTruncated": "Nur die ersten {shown} von {total} Spalten werden in der Matrix gezeigt."
+        "matrixTruncated": "Nur die ersten {shown} von {total} Spalten werden in der Matrix gezeigt.",
+        "transformedImrReason": "Schief verteilt, Transformation empfohlen: Die Werte sind deutlich rechtsschief und alle positiv. Eine I-MR-Karte auf den Rohdaten gäbe oben zu viele und unten zu wenige Fehlalarme."
       }
     },
     "xy-plot": {
