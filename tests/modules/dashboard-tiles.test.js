@@ -241,6 +241,26 @@ suite('dashboard tiles: ishikawa', () => {
   test('title prefix keeps the legacy title', async () => {
     assertEqual(ishikawaTile.titlePrefix, 'Ishikawa');
   });
+
+  test('viewModel: problem, summary, both legends and scored list as display data', () => {
+    const vm = vmOf(ishikawaTile, ISHIKAWA_STATE);
+    assertPlain(vm);
+    assertEqual(vm.problem, 'Scrap rate');
+    assertDeepEqual(vm.summary, [
+      { label: 'dashboard.ishikawaHypotheses: ', value: '4' },
+      { label: 'dashboard.ishikawaExperts: ', value: '1' },
+    ]);
+    assertDeepEqual(vm.segments[0], { style: 'width:25%;background:#2563eb', title: 'modules.ishikawa.cat.man: 1' });
+    assertDeepEqual(vm.legend.map(l => l.text), [' modules.ishikawa.cat.man: 1', ' modules.ishikawa.cat.machine: 1',
+      ' modules.ishikawa.cat.material: 1', ' modules.ishikawa.cat.method: 1']);
+    assertDeepEqual(vm.statusLegend.map(l => l.text), [' modules.ishikawa.status.open: 2',
+      ' modules.ishikawa.status.testing: 1', ' modules.ishikawa.status.confirmed: 1']);
+    assertEqual(vm.topLabel, 'dashboard.ishikawaTopScored');
+    assertDeepEqual(vm.top[0], { name: 'A', score: '5.0', style: 'color:#2563eb' });
+    const off = vmOf(ishikawaTile, ISHIKAWA_STATE, { showLegend: false });
+    assertEqual(off.legend, null);
+    assertEqual(off.statusLegend, null);
+  });
 });
 
 suite('dashboard tiles: project-charter array', () => {
@@ -323,6 +343,37 @@ suite('dashboard tiles: voc', () => {
     const host = (await render(vocTile, { vocs: [] }));
     assertTrue(host.querySelector('.dashboard-area__empty') !== null);
   });
+
+  test('viewModel: stats, driver bar, legend and statements as display data', () => {
+    const vm = vmOf(vocTile, VOC_STATE);
+    assertPlain(vm);
+    assertDeepEqual(vm.stats, [
+      { value: '8', label: ' VoC' },
+      { value: '8', label: ' dashboard.vocNeeds' },
+      { value: '8', label: ' dashboard.vocDrivers' },
+      { value: '0', label: ' dashboard.vocReqs' },
+    ]);
+    assertDeepEqual(vm.segments, [{ style: 'flex:8;background:var(--color-voc-ctq, rgba(39,174,96,1))', title: 'CTQ: 8' }]);
+    assertDeepEqual(vm.legend, [{ dot: 'background:var(--color-voc-ctq, rgba(39,174,96,1))', text: 'CTQ: 8' }]);
+    assertEqual(vm.listLabel, 'dashboard.vocStatements');
+    assertEqual(vm.items.length, 6);
+    assertDeepEqual(vm.items[0], { quote: '„S0“', source: null });
+    assertEqual(vm.more, '… +2');
+  });
+
+  test('viewModel: a statement with source gets a trailing space and the bracketed source', () => {
+    const vm = vmOf(vocTile, { vocs: [{ id: 'v', text: 'Fast', source: 'Call' }] });
+    assertDeepEqual(vm.items, [{ quote: '„Fast“ ', source: '(Call)' }]);
+    assertEqual(vm.segments.length, 0);
+    assertEqual(vm.legend, null);
+  });
+
+  test('a statement with source renders the same text as before', async () => {
+    const host = await render(vocTile, { vocs: [{ id: 'v', text: 'Fast', source: 'Call' }] });
+    const li = host.querySelector('.dashboard-voc__item');
+    assertEqual(li.textContent, '„Fast“ (Call)');
+    assertEqual(li.querySelector('.dashboard-area__muted').textContent, '(Call)');
+  });
 });
 
 const RACI_STATE = {
@@ -360,6 +411,23 @@ suite('dashboard tiles: raci', () => {
   test('empty state without activities and stakeholders', async () => {
     assertTrue((await render(raciTile, { activities: [], stakeholders: [], assignments: {} }))
       .querySelector('.dashboard-area__empty') !== null);
+  });
+
+  test('viewModel: summary, bar, legend and capped warnings as display data', () => {
+    const vm = vmOf(raciTile, RACI_STATE);
+    assertPlain(vm);
+    assertDeepEqual(vm.summary, [
+      { label: 'dashboard.raciActivities: ', value: '4' },
+      { label: 'dashboard.raciStakeholders: ', value: '1' },
+      { label: 'dashboard.raciCoverage: ', value: '50%' },
+    ]);
+    assertDeepEqual(vm.segments.map(s => s.title), ['C: 1', 'I: 1']);
+    assertDeepEqual(vm.legend.map(l => l.text), ['C: 1', 'I: 1']);
+    assertEqual(vm.warnLabel, 'dashboard.raciWarnings');
+    assertEqual(vm.warnings.length, 5);
+    assertDeepEqual(vm.warnings[0], { role: 'R', style: 'color:var(--color-error)', text: ' dashboard.raciMissing: A1' });
+    assertEqual(vm.more, '… +3');
+    assertEqual(vmOf(raciTile, RACI_STATE, { topN: 8 }).more, null);
   });
 });
 
