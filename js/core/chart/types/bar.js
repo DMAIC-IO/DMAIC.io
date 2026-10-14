@@ -176,7 +176,7 @@ export default class BarChart extends ChartBase {
       const labelX = catCx;
       const labelY = plotArea.y + plotArea.h + 14;
 
-      if (nCats > 6 || cats.some(c => c.length > 8)) {
+      if (this._rotatesCategoryLabels()) {
         svgText(label, {
           x: labelX, y: labelY,
           'text-anchor': 'end',
@@ -288,8 +288,16 @@ export default class BarChart extends ChartBase {
 
   /** @override — category labels are drawn below the plot (rotated ones need the full default bottom). */
   _getBottomTickGutter() {
+    return this._rotatesCategoryLabels() ? DEFAULT_MARGIN.bottom : X_TICKS_BOTTOM;
+  }
+
+  /**
+   * Whether category labels are drawn rotated — the one rule both the label
+   * drawing and the bottom gutter follow.
+   * @returns {boolean}
+   */
+  _rotatesCategoryLabels() {
     const cats = this.config.categories || [];
-    const rotated = cats.length > 6 || cats.some(c => c.length > 8);
-    return rotated ? DEFAULT_MARGIN.bottom : X_TICKS_BOTTOM;
+    return cats.length > 6 || cats.some(c => c.length > 8);
   }
 }

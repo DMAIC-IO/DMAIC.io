@@ -93,6 +93,27 @@ suite('ChartBase margins', () => {
     chart.destroy(); host.remove();
   });
 
+  test('bar reserves the rotated-label bottom exactly when it draws rotated labels', () => {
+    const cases = [
+      ['a', 'b', 'c'],
+      ['a', 'b', 'c', 'd', 'e', 'f'],
+      ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
+      ['12345678', 'b'],
+      ['123456789', 'b'],
+    ];
+    for (const cats of cases) {
+      const { host, chart } = mount(BarChart, {
+        categories: cats, groups: [{ name: 'S', values: cats.map(() => 1) }], showXLabel: false,
+      });
+      const labels = [...host.querySelectorAll('text')].filter(t => cats.includes(t.textContent));
+      assertEqual(labels.length, cats.length, `all labels drawn for ${cats.join(',')}`);
+      const drawnRotated = labels.every(t => /rotate\(/.test(t.getAttribute('transform') || ''));
+      const reservedRotated = margins(chart).bottom === DEFAULT_MARGIN.bottom;
+      assertEqual(drawnRotated, reservedRotated, `rotation and gutter agree for ${cats.join(',')}`);
+      chart.destroy(); host.remove();
+    }
+  });
+
   test('individual-value plot keeps its hanging category labels inside the chart', () => {
     const { host, chart } = mount(IndividualValuePlotChart, {
       groups: [{ name: 'A', values: [1, 2, 3] }, { name: 'B', values: [2, 3, 4] }],
