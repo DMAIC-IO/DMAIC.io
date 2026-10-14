@@ -29,30 +29,14 @@ inline('test/slot.html', '<template x-if="vm.on"><div data-tile-slot="chart"></d
 
 const scopeTile = (vm) => ({ template: 'test/scope.html', viewModel: () => vm });
 
-suite('renderTileSafely: legacy render()', () => {
-  test('passes args through and reports success', async () => {
+suite('renderTileSafely: contract', () => {
+  test('a tile with only render() is not called and shows the error placeholder', silenced(async () => {
     const body = document.createElement('div');
-    let seen = null;
-    const ok = await renderTileSafely({ render: (host, args) => { seen = args; host.textContent = 'hi'; } },
-      body, { tileId: 't', settings: { topN: 2 } }, i18n);
-    assertTrue(ok);
-    assertEqual(body.textContent, 'hi');
-    assertEqual(seen.settings.topN, 2);
-  });
-
-  test('a throwing render shows the error placeholder', silenced(async () => {
-    const body = document.createElement('div');
-    body.textContent = 'stale';
-    const ok = await renderTileSafely({ render: () => { throw new Error('boom'); } }, body, { tileId: 't' }, i18n);
+    let called = false;
+    const ok = await renderTileSafely({ render: () => { called = true; } }, body, { tileId: 't' }, i18n);
     assertEqual(ok, false);
-    assertEqual(body.querySelector('.dashboard-area__empty').textContent, 'dashboard.tileSettings.renderError');
-  }));
-
-  test('a rejecting async render shows the error placeholder', silenced(async () => {
-    const body = document.createElement('div');
-    const ok = await renderTileSafely({ render: async () => { throw new Error('boom'); } }, body, { tileId: 't' }, i18n);
-    assertEqual(ok, false);
-    assertTrue(body.querySelector('.dashboard-area__tile-error') !== null);
+    assertEqual(called, false);
+    assertEqual(body.querySelector('.dashboard-area__tile-error').textContent, 'dashboard.tileSettings.renderError');
   }));
 });
 

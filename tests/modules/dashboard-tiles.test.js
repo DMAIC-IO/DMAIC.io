@@ -72,7 +72,7 @@ suite('dashboard tiles: manifest', () => {
       'sipoc', 'kano']) assertTrue(ids.includes(id), id);
   });
 
-  test('every tile object loads, renders and has a valid size and schema', async () => {
+  test('every tile object loads, has template + viewModel, a valid size and schema', async () => {
     const sources = [
       ...withTile.map(e => ({ name: e.id, load: async () => (await e.loadTile()).default })),
       ...HOST_TILES.map(h => ({ name: h.id, load: async () => (await h.load()).default })),
@@ -80,11 +80,16 @@ suite('dashboard tiles: manifest', () => {
     for (const src of sources) {
       const exported = await src.load();
       const tiles = Array.isArray(exported) ? exported : [exported];
-      tiles.forEach((tile, i) => {
+      for (const [i, tile] of tiles.entries()) {
         const name = `${src.name}#${i}`;
-        // Until every tile is migrated, a tile has either render() or template + viewModel().
-        assertTrue(typeof tile.render === 'function'
-          || (typeof tile.template === 'string' && typeof tile.viewModel === 'function'), `${name}: render or template + viewModel`);
+        assertEqual(typeof tile.template, 'string', `${name}: template`);
+        assertEqual(typeof tile.viewModel, 'function', `${name}: viewModel`);
+        assertEqual(tile.render, undefined, `${name}: no render()`);
+        if (tile.mount !== undefined) assertEqual(typeof tile.mount, 'function', `${name}: mount`);
+        const res = await fetch(new URL(`../../${tile.template}`, import.meta.url));
+        assertTrue(res.ok, `${name}: template file ${tile.template}`);
+        const html = await res.text();
+        assertTrue(!/x-html|\?\.|\?\?/.test(html), `${name}: template uses no x-html, ?. or ??`);
         if (Array.isArray(exported)) assertEqual(typeof tile.enumerate, 'function', `${name}: enumerate`);
         if (Array.isArray(exported)) {
           assertEqual(typeof tile.kind, 'string', `${name}: kind`);
@@ -96,7 +101,7 @@ suite('dashboard tiles: manifest', () => {
         const warnings = [];
         validateSchema(tile.settings, (m) => warnings.push(m));
         assertDeepEqual(warnings, [], `${name}: schema`);
-      });
+      }
     }
   });
 
@@ -122,6 +127,19 @@ suite('dashboard tiles: manifest', () => {
     for (const file of files) {
       const src = await (await fetch(file.url)).text();
       assertTrue(!shell.test(src), `${file.name}.tile.js imports the module shell`);
+    }
+  });
+
+  test('tile files build no HTML imperatively (no h(), no createElement)', async () => {
+    const usesH = /import\s*\{[^}]*\bh\b[^}]*\}\s*from\s*['"][^'"]*core\/dom\.js['"]/;
+    const files = [
+      ...withTile.map(e => ({ name: e.id, url: new URL(`../../js/modules/${e.id}/${e.id}.tile.js`, import.meta.url) })),
+      ...HOST_TILES.map(h => ({ name: h.id, url: new URL(`../../js/pages/dashboard/tiles/${h.id}.tile.js`, import.meta.url) })),
+    ];
+    for (const file of files) {
+      const src = await (await fetch(file.url)).text();
+      assertTrue(!usesH.test(src), `${file.name}.tile.js imports h()`);
+      assertTrue(!src.includes('createElement('), `${file.name}.tile.js calls createElement`);
     }
   });
 

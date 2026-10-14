@@ -69,7 +69,7 @@ function callDispose(tile, body, tileId) {
 
 /**
  * Render a module tile into its body and contain its errors.
- * @param {{template?: string, viewModel?: function, mount?: function, dispose?: function, render?: function}} tile
+ * @param {{template: string, viewModel: function, mount?: function, dispose?: function}} tile
  * @param {HTMLElement} body  tile body element
  * @param {object} args  tileId, instanceId, state, settings, i18n, theme, chartManager, stateManager
  * @param {{t: function}} i18n
@@ -80,10 +80,6 @@ export async function renderTileSafely(tile, body, args, i18n) {
   renders.set(body, token);
   const stale = () => renders.get(body) !== token;
   try {
-    if (typeof tile.render === 'function') {
-      await tile.render(body, args);
-      return true;
-    }
     const vm = await tile.viewModel(args);
     if (stale()) return false;
     mountTemplate(body, tile.template, vm);
