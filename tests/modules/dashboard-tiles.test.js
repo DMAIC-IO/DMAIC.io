@@ -470,6 +470,45 @@ suite('dashboard tiles: spc', () => {
     assertTrue((await renderSpcTile({ ...SPC_STATE, columnRef: null }, [])).querySelector('.dashboard-area__empty') !== null);
     assertTrue((await renderSpcTile(SPC_STATE, [10])).querySelector('.dashboard-area__empty') !== null);
   });
+
+  const SPC_VALUES = [10, 10.2, 9.8, 10.1, 9.9, 10.3];
+  const spcVm = (state, values = SPC_VALUES) => vmOf(spcTile, state, {}, { stateManager: fakeStateManager(values) });
+
+  test('viewModel: header, stats, metrics and sparkline data as display data', () => {
+    const vm = spcVm(SPC_STATE);
+    assertPlain(vm);
+    assertEqual(vm.empty, null);
+    assertEqual(vm.typeLabel, 'I-MR');
+    assertEqual(vm.colName, 'Measure');
+    assertDeepEqual(vm.stats.map(s => s.label), ['CL', 'UCL', 'LCL', 'σ̂']);
+    assertTrue(/^\d+\.\d{4}$/.test(vm.stats[0].value), vm.stats[0].value);
+    assertEqual(vm.metrics.length, 1, 'no spec: violations only');
+    assertDeepEqual(vm.metrics[0], { modifier: 'dashboard-spc__metric--ok', value: '0',
+      label: 'dashboard.spcViolations', sub: 'dashboard.spcOf' });
+    assertEqual(vm.spark.values.length, SPC_VALUES.length);
+    assertDeepEqual(vm.spark.violations, []);
+  });
+
+  test('viewModel: a spec limit adds the out-of-spec metric and Cpk', () => {
+    const vm = spcVm({ ...SPC_STATE, usl: 10.25 });
+    assertDeepEqual(vm.metrics[1], { modifier: 'dashboard-spc__metric--warn', value: '1',
+      label: 'dashboard.spcOutOfSpec', sub: 'dashboard.spcOf' });
+    assertEqual(vm.metrics[2].label, 'Cpk');
+    assertTrue(/^dashboard-spc__metric--(ok|warn|bad)$/.test(vm.metrics[2].modifier), vm.metrics[2].modifier);
+    assertEqual(vm.spark.usl, 10.25);
+  });
+
+  test('viewModel: empty, no-data and unknown chart type', () => {
+    assertEqual(spcVm({ ...SPC_STATE, columnRef: null }).empty, 'dashboard.spcEmpty');
+    assertEqual(spcVm(undefined).empty, 'dashboard.spcEmpty');
+    assertEqual(spcVm(SPC_STATE, [10]).empty, 'dashboard.spcNoData');
+    assertEqual(spcVm({ ...SPC_STATE, chartTypeId: 'no-such-type' }).empty, 'dashboard.spcNoData');
+  });
+
+  test('out-of-spec points are marked in the sparkline', async () => {
+    const host = await renderSpcTile({ ...SPC_STATE, usl: 10.25 }, SPC_VALUES);
+    assertEqual(host.querySelectorAll('.dashboard-spc__sparkline circle').length, 1);
+  });
 });
 
 function zegStateManager(history, { completed = false, withSheet = false } = {}) {

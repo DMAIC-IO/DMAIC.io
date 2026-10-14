@@ -3,10 +3,11 @@
  *
  * One tile per control-chart instance (`spc:<instanceId>`). The sparkline
  * follows the tile width, so the tile re-renders on resize. Loaded via the
- * manifest's `loadTile`. Contract: docs/DASHBOARD.md.
+ * manifest's `loadTile`. The markup lives in control-chart.tile.html; the
+ * sparkline is drawn in mount(). Contract: docs/DASHBOARD.md.
  */
 
-import { h, svg } from '../../core/dom.js';
+import { svg } from '../../core/dom.js';
 import { getChartType, evaluateNelsonRules, computeCapability, capabilitySigma, DEFAULT_ENABLED_RULES } from '../../engines/control-chart-engine.js';
 import { getColumnValues, getColumnName } from '../../ui/column-picker.js';
 
@@ -96,26 +97,24 @@ export default {
     }));
   },
 
+  template: 'js/modules/control-chart/control-chart.tile.html',
+
   /**
-   * @param {HTMLElement} host
+   * Chart type, column, CL/limits/sigma, violation / out-of-spec / Cpk
+   * metrics and the data the sparkline is drawn from.
    * @param {{state: object, i18n: object, stateManager: object}} args
+   * @returns {object} view model for control-chart.tile.html
    */
-  render(host, { state, i18n, stateManager }) {
-    if (!state || !state.columnRef) {
-      host.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.spcEmpty')));
-      return;
-    }
+  viewModel({ state, i18n, stateManager }) {
+    const none = (key) => ({ empty: i18n.t(key), typeLabel: '', colName: '', stats: [], metrics: [], spark: null });
+    if (!state || !state.columnRef) return none('dashboard.spcEmpty');
 
     const ct = getChartType(state.chartTypeId || 'i-mr');
-    if (!ct) return;
+    if (!ct) return none('dashboard.spcNoData');
 
     const rawValues = getColumnValues(stateManager, state.columnRef);
     const values = rawValues.filter(v => v != null && typeof v === 'number' && !isNaN(v));
-
-    if (values.length < 2) {
-      host.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.spcNoData')));
-      return;
-    }
+    if (values.length < 2) return none('dashboard.spcNoData');
 
     const n = state.subgroupSize || 1;
     const baselineEnd = state.baselineCount || values.length;
@@ -133,86 +132,73 @@ export default {
       state.usl ?? null, state.lsl ?? null,
     );
 
-    const vCount = new Set(violations.map(v => v.index)).size;
+    const violationSet = new Set(violations.map(v => v.index));
     const totalPts = primaryData.values.filter(v => v !== null).length;
-    const isStable = vCount === 0;
-    const colName = getColumnName(stateManager, state.columnRef) || '?';
     const fmt = (v) => v != null ? v.toFixed(4) : '—';
+    const of = i18n.t('dashboard.spcOf', { total: totalPts });
 
     const usl = state.usl ?? null;
     const lsl = state.lsl ?? null;
     const hasSpec = usl != null || lsl != null;
 
-    let oosCount = 0;
+    const metrics = [{
+      modifier: `dashboard-spc__metric--${violationSet.size === 0 ? 'ok' : 'bad'}`,
+      value: String(violationSet.size),
+      label: i18n.t('dashboard.spcViolations'),
+      sub: of,
+    }];
     if (hasSpec) {
+      let oosCount = 0;
       for (const v of primaryData.values) {
         if (v === null) continue;
         if ((usl != null && v > usl) || (lsl != null && v < lsl)) oosCount++;
       }
+      metrics.push({
+        modifier: `dashboard-spc__metric--${oosCount === 0 ? 'ok' : 'warn'}`,
+        value: String(oosCount),
+        label: i18n.t('dashboard.spcOutOfSpec'),
+        sub: of,
+      });
     }
-
-    const chartTypeLabel = {
-      'i-mr': 'I-MR', 'xbar-r': 'X̄-R', 'xbar-s': 'X̄-S',
-    }[ct.id] || ct.id;
-
-    const sparkWidth = host.clientWidth - 16;
-    const violationSet = new Set(violations.map(v => v.index));
-    const sparkSvg = buildSparkline(primaryData, violationSet, usl, lsl, sparkWidth);
-
-    const stat = (label, value) => h('div', { class: 'dashboard-spc__stat' },
-      h('span', { class: 'dashboard-spc__stat-label' }, label),
-      h('span', { class: 'dashboard-spc__stat-value' }, value),
-    );
-
-    const metrics = h('div', { class: 'dashboard-spc__metrics' });
-    metrics.append(
-      h('div', { class: `dashboard-spc__metric ${isStable ? 'dashboard-spc__metric--ok' : 'dashboard-spc__metric--bad'}` },
-        h('span', { class: 'dashboard-spc__metric-value' }, String(vCount)),
-        h('span', { class: 'dashboard-spc__metric-label' }, i18n.t('dashboard.spcViolations')),
-        h('span', { class: 'dashboard-spc__metric-sub' }, i18n.t('dashboard.spcOf', { total: totalPts })),
-      ),
-    );
-
-    if (hasSpec) {
-      const oosCls = oosCount === 0 ? '--ok' : '--warn';
-      metrics.append(
-        h('div', { class: `dashboard-spc__metric dashboard-spc__metric${oosCls}` },
-          h('span', { class: 'dashboard-spc__metric-value' }, String(oosCount)),
-          h('span', { class: 'dashboard-spc__metric-label' }, i18n.t('dashboard.spcOutOfSpec')),
-          h('span', { class: 'dashboard-spc__metric-sub' }, i18n.t('dashboard.spcOf', { total: totalPts })),
-        ),
-      );
-    }
-
     if (capability) {
-      const cpkCls = capability.cpk >= 1.33 ? '--ok' : capability.cpk >= 1.0 ? '--warn' : '--bad';
-      metrics.append(
-        h('div', { class: `dashboard-spc__metric dashboard-spc__metric${cpkCls}` },
-          h('span', { class: 'dashboard-spc__metric-value' }, capability.cpk.toFixed(3)),
-          h('span', { class: 'dashboard-spc__metric-label' }, 'Cpk'),
-          capability.cp ? h('span', { class: 'dashboard-spc__metric-sub' }, `Cp = ${capability.cp.toFixed(3)}`) : null,
-        ),
-      );
+      const cpkMod = capability.cpk >= 1.33 ? 'ok' : capability.cpk >= 1.0 ? 'warn' : 'bad';
+      metrics.push({
+        modifier: `dashboard-spc__metric--${cpkMod}`,
+        value: capability.cpk.toFixed(3),
+        label: 'Cpk',
+        sub: capability.cp ? `Cp = ${capability.cp.toFixed(3)}` : null,
+      });
     }
 
-    const spark = h('div', { class: 'dashboard-spc__spark' });
-    if (sparkSvg) spark.append(sparkSvg);
+    return {
+      empty: null,
+      typeLabel: { 'i-mr': 'I-MR', 'xbar-r': 'X̄-R', 'xbar-s': 'X̄-S' }[ct.id] || ct.id,
+      colName: getColumnName(stateManager, state.columnRef) || '?',
+      stats: [
+        { label: 'CL', value: fmt(primaryData.cl) },
+        { label: 'UCL', value: fmt(primaryData.ucl) },
+        { label: 'LCL', value: fmt(primaryData.lcl) },
+        { label: 'σ̂', value: fmt(primaryData.sigma) },
+      ],
+      metrics,
+      spark: {
+        values: primaryData.values,
+        cl: primaryData.cl, ucl: primaryData.ucl, lcl: primaryData.lcl, sigma: primaryData.sigma,
+        violations: [...violationSet],
+        usl, lsl,
+      },
+    };
+  },
 
-    host.replaceChildren(
-      h('div', { class: 'dashboard-spc' },
-        h('div', { class: 'dashboard-spc__header' },
-          h('span', { class: 'dashboard-spc__type' }, chartTypeLabel),
-          h('span', { class: 'dashboard-spc__col' }, colName),
-        ),
-        spark,
-        h('div', { class: 'dashboard-spc__stats' },
-          stat('CL', fmt(primaryData.cl)),
-          stat('UCL', fmt(primaryData.ucl)),
-          stat('LCL', fmt(primaryData.lcl)),
-          stat('σ̂', fmt(primaryData.sigma)),
-        ),
-        metrics,
-      ),
-    );
+  /**
+   * Draw the sparkline into the spark slot; it follows the tile width.
+   * @param {HTMLElement} root  tile body
+   * @param {object} vm  view model from viewModel()
+   */
+  mount(root, vm) {
+    if (vm.empty || !vm.spark) return;
+    const { spark } = vm;
+    const sparkSvg = buildSparkline(spark, new Set(spark.violations), spark.usl, spark.lsl, root.clientWidth - 16);
+    if (sparkSvg) root.querySelector('[data-tile-slot="spark"]').append(sparkSvg);
   },
 };
