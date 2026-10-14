@@ -5,6 +5,8 @@
  *
  * @param {Array<object>|null|undefined} actions - descriptor list from config.actions
  * @param {(key: string, params?: object) => string} tf - module translation fn (i18n.tf(i18nKey))
+ *   An action's optional `dynamicText(data, tf)` receives the live Alpine data
+ *   plus this tf; the view model exposes it bound as `dynamicText(data)`.
  * @returns {Array<{iconId:string, text:string, tooltip:string|null,
  *   variant:'primary'|'secondary', isDropdown:boolean,
  *   onClick:?function, dynamicText:?function, children:Array<object>}>}
@@ -22,7 +24,8 @@ export function resolveActions(actions, tf) {
       variant: a.variant === 'primary' ? 'primary' : 'secondary',
       isDropdown: children.length > 0,
       onClick: a.onClick ?? null,
-      dynamicText: a.dynamicText ?? null,
+      // Bind the module tf so a reactive label can pick its own i18n key.
+      dynamicText: a.dynamicText ? (data) => a.dynamicText(data, tf) : null,
       children,
     };
   });

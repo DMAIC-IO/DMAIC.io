@@ -3870,6 +3870,8 @@
       "description": "Fehlermöglichkeits- und Einflussanalyse mit RPN-Berechnung",
       "addRisk": "Risiko hinzufügen",
       "scales": "Skalen",
+      "scalesShow": "Skalen anzeigen",
+      "scalesHide": "Skalen ausblenden",
       "methodLabel": "Bewertung",
       "methodAp": "AP (AIAG-VDA)",
       "methodRpn": "RPN (klassisch)",

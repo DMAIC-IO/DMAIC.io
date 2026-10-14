@@ -34,7 +34,8 @@ export default createModule({
     version: '1.0.0',
     meta: import.meta,
     actions: [
-      { icon: 'action.settings', title: 'settings', onClick: (d) => d.toggleSettings() },
+      { icon: 'action.settings', title: 'settings', onClick: (d) => d.toggleSettings(),
+        dynamicText: (d, tf) => tf(d?.model?.settingsOpen ? 'settingsClose' : 'settingsOpen') },
       {
         icon: 'action.download',
         title: 'export.label',

@@ -3870,6 +3870,8 @@
       "description": "Failure Mode and Effects Analysis with RPN calculation",
       "addRisk": "Add Risk",
       "scales": "Scales",
+      "scalesShow": "Show scales",
+      "scalesHide": "Hide scales",
       "methodLabel": "Rating",
       "methodAp": "AP (AIAG-VDA)",
       "methodRpn": "RPN (classic)",
