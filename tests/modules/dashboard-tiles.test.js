@@ -50,6 +50,18 @@ async function render(tile, state, overrides = {}) {
   return mountTile(tile, { tileId: 't', instanceId: 'i', state, settings, i18n, theme: 'light', chartManager: null, stateManager: null });
 }
 
+/** Call a tile's viewModel the way the host does, with optional setting overrides. */
+function vmOf(tile, state, overrides = {}, extra = {}) {
+  const settings = resolveSettings(validateSchema(tile.settings), overrides);
+  return tile.viewModel({ tileId: 't', instanceId: 'i', state, settings, i18n, theme: 'light',
+    chartManager: null, stateManager: null, ...extra });
+}
+
+/** A view model is plain display data: a JSON round trip leaves it unchanged. */
+function assertPlain(vm) {
+  assertDeepEqual(JSON.parse(JSON.stringify(vm)), vm, 'view model is plain JSON-like data');
+}
+
 suite('dashboard tiles: manifest', () => {
   const withTile = manifest.filter(e => typeof e.loadTile === 'function');
 
@@ -70,7 +82,9 @@ suite('dashboard tiles: manifest', () => {
       const tiles = Array.isArray(exported) ? exported : [exported];
       tiles.forEach((tile, i) => {
         const name = `${src.name}#${i}`;
-        assertEqual(typeof tile.render, 'function', `${name}: render`);
+        // Until every tile is migrated, a tile has either render() or template + viewModel().
+        assertTrue(typeof tile.render === 'function'
+          || (typeof tile.template === 'string' && typeof tile.viewModel === 'function'), `${name}: render or template + viewModel`);
         if (Array.isArray(exported)) assertEqual(typeof tile.enumerate, 'function', `${name}: enumerate`);
         if (Array.isArray(exported)) {
           assertEqual(typeof tile.kind, 'string', `${name}: kind`);
@@ -1000,6 +1014,23 @@ suite('dashboard tiles: sipoc', () => {
     const host = (await render(sipocTile, full));
     assertEqual(host.querySelectorAll('.dashboard-sipoc__col--gap').length, 0);
     assertEqual(host.querySelector('.dashboard-sipoc__filled'), null);
+  });
+
+  test('viewModel: translated, plain column data', () => {
+    const vm = vmOf(sipocTile, SIPOC_STATE);
+    assertPlain(vm);
+    assertEqual(vm.empty, null);
+    assertEqual(vm.filled, 'dashboard.sipocFilled');
+    assertDeepEqual(vm.columns[1], { key: 'inputs', letter: 'I', name: 'modules.sipoc.col.inputs', count: '4',
+      gap: false, modifier: '', items: ['Flour', 'Water', 'Yeast'], more: 'dashboard.sipocMore' });
+    assertDeepEqual(vm.columns[4], { key: 'customers', letter: 'C', name: 'modules.sipoc.col.customers', count: '0',
+      gap: true, modifier: 'dashboard-sipoc__col--gap', items: [], more: null });
+  });
+
+  test('viewModel: empty state', () => {
+    const vm = vmOf(sipocTile, undefined);
+    assertPlain(vm);
+    assertEqual(vm.empty, 'dashboard.sipocEmpty');
   });
 });
 
