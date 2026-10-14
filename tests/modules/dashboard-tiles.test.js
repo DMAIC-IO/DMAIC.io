@@ -1,4 +1,5 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
+import { mountTile, waitFor } from './tile-test-utils.js';
 import manifest from '../../js/modules/manifest.js';
 import fmeaTile from '../../js/modules/fmea/fmea.tile.js';
 import ishikawaTile from '../../js/modules/ishikawa/ishikawa.tile.js';
@@ -44,17 +45,15 @@ const ISHIKAWA_STATE = {
 };
 
 /** Render a tile the way the host does, with optional setting overrides. */
-function render(tile, state, overrides = {}) {
-  const host = document.createElement('div');
+async function render(tile, state, overrides = {}) {
   const settings = resolveSettings(validateSchema(tile.settings), overrides);
-  tile.render(host, { tileId: 't', instanceId: 'i', state, settings, i18n, theme: 'light', chartManager: null, stateManager: null });
-  return host;
+  return mountTile(tile, { tileId: 't', instanceId: 'i', state, settings, i18n, theme: 'light', chartManager: null, stateManager: null });
 }
 
 suite('dashboard tiles: manifest', () => {
   const withTile = manifest.filter(e => typeof e.loadTile === 'function');
 
-  test('modules with a tile declare loadTile', () => {
+  test('modules with a tile declare loadTile', async () => {
     const ids = withTile.map(e => e.id);
     for (const id of ['fmea', 'ishikawa', 'project-charter', 'voc-ctx-tree', 'raci-matrix', 'control-chart',
       'todo', 'dmaic-calendar', 'stakeholder-analysis', 'lessons-learned', 'process-capability', 'attribute-control-chart',
@@ -112,7 +111,7 @@ suite('dashboard tiles: manifest', () => {
     }
   });
 
-  test('re-bindable tiles declare how to title another instance', () => {
+  test('re-bindable tiles declare how to title another instance', async () => {
     assertEqual(spcTile.titlePrefix, 'SPC');
     assertEqual(attrSpcTile.titlePrefix, 'SPC');
     assertEqual(raciTile.titlePrefix, 'RACI');
@@ -128,50 +127,50 @@ suite('dashboard tiles: manifest', () => {
 });
 
 suite('dashboard tiles: fmea', () => {
-  test('defaults show every rated risk and the legend', () => {
-    const host = render(fmeaTile, FMEA_STATE);
+  test('defaults show every rated risk and the legend', async () => {
+    const host = (await render(fmeaTile, FMEA_STATE));
     assertEqual(host.querySelectorAll('.dashboard-fmea__top-item').length, 4);
     assertTrue(host.querySelector('.dashboard-fmea__legend') !== null);
   });
 
-  test('topN limits the list', () => {
-    const host = render(fmeaTile, FMEA_STATE, { topN: 2 });
+  test('topN limits the list', async () => {
+    const host = (await render(fmeaTile, FMEA_STATE, { topN: 2 }));
     assertEqual(host.querySelectorAll('.dashboard-fmea__top-item').length, 2);
   });
 
-  test('showLegend=false hides the legend', () => {
-    const host = render(fmeaTile, FMEA_STATE, { showLegend: false });
+  test('showLegend=false hides the legend', async () => {
+    const host = (await render(fmeaTile, FMEA_STATE, { showLegend: false }));
     assertEqual(host.querySelector('.dashboard-fmea__legend'), null);
   });
 
-  test('empty state without risks', () => {
-    const host = render(fmeaTile, { risks: [] });
+  test('empty state without risks', async () => {
+    const host = (await render(fmeaTile, { risks: [] }));
     assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.fmeaEmpty');
   });
 
-  test('title prefix keeps the legacy title', () => {
+  test('title prefix keeps the legacy title', async () => {
     assertEqual(fmeaTile.titlePrefix, 'FMEA');
   });
 
-  test('RPN mode summary shows the S ≥ 9 count', () => {
-    const host = render(fmeaTile, FMEA_STATE);   // no method → RPN; one risk with S 10
+  test('RPN mode summary shows the S ≥ 9 count', async () => {
+    const host = (await render(fmeaTile, FMEA_STATE));   // no method → RPN; one risk with S 10
     const flag = host.querySelector('.dashboard-fmea__flag-count');
     assertEqual(flag.textContent, 'dashboard.fmeaSevere: 1');
   });
 
-  test('AP mode summary shows the H-without-action count', () => {
-    const host = render(fmeaTile, { method: 'ap', risks: [
+  test('AP mode summary shows the H-without-action count', async () => {
+    const host = (await render(fmeaTile, { method: 'ap', risks: [
       { failureMode: 'No action', sev: '9', occ: '10', det: '10' },
       { failureMode: 'Justified', sev: '9', occ: '10', det: '10', justification: 'ok' },
-    ] });
+    ] }));
     assertEqual(host.querySelector('.dashboard-fmea__flag-count').textContent, 'dashboard.fmeaUnjustified: 1');
   });
 
-  test('top list shows the CC/SC badge', () => {
-    const host = render(fmeaTile, { risks: [
+  test('top list shows the CC/SC badge', async () => {
+    const host = (await render(fmeaTile, { risks: [
       { failureMode: 'Flagged', sev: '10', occ: '8', det: '7', specialChar: 'CC' },
       { failureMode: 'Plain', sev: '7', occ: '5', det: '4' },
-    ] });
+    ] }));
     const flags = host.querySelectorAll('.dashboard-fmea__top-flag');
     assertEqual(flags.length, 1);
     assertEqual(flags[0].textContent, 'CC');
@@ -179,28 +178,28 @@ suite('dashboard tiles: fmea', () => {
 });
 
 suite('dashboard tiles: ishikawa', () => {
-  test('defaults show every scored hypothesis and both legends', () => {
-    const host = render(ishikawaTile, ISHIKAWA_STATE);
+  test('defaults show every scored hypothesis and both legends', async () => {
+    const host = (await render(ishikawaTile, ISHIKAWA_STATE));
     assertEqual(host.querySelectorAll('.dashboard-fmea__top-item').length, 4);
     assertEqual(host.querySelectorAll('.dashboard-fmea__legend').length, 2);
   });
 
-  test('topN limits the list', () => {
-    const host = render(ishikawaTile, ISHIKAWA_STATE, { topN: 1 });
+  test('topN limits the list', async () => {
+    const host = (await render(ishikawaTile, ISHIKAWA_STATE, { topN: 1 }));
     assertEqual(host.querySelectorAll('.dashboard-fmea__top-item').length, 1);
   });
 
-  test('showLegend=false hides both legends', () => {
-    const host = render(ishikawaTile, ISHIKAWA_STATE, { showLegend: false });
+  test('showLegend=false hides both legends', async () => {
+    const host = (await render(ishikawaTile, ISHIKAWA_STATE, { showLegend: false }));
     assertEqual(host.querySelectorAll('.dashboard-fmea__legend').length, 0);
   });
 
-  test('empty state without rows', () => {
-    const host = render(ishikawaTile, { rows: [] });
+  test('empty state without rows', async () => {
+    const host = (await render(ishikawaTile, { rows: [] }));
     assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.ishikawaEmpty');
   });
 
-  test('title prefix keeps the legacy title', () => {
+  test('title prefix keeps the legacy title', async () => {
     assertEqual(ishikawaTile.titlePrefix, 'Ishikawa');
   });
 });
@@ -208,42 +207,42 @@ suite('dashboard tiles: ishikawa', () => {
 suite('dashboard tiles: project-charter array', () => {
   const ctxWith = (ids) => ({ i18n, findInstances: () => ids.map(instanceId => ({ instanceId, customName: '' })) });
 
-  test('exports charter, goals and org chart in that order', () => {
+  test('exports charter, goals and org chart in that order', async () => {
     assertDeepEqual(charterTiles, [charterTile, goalsTile, orgTile]);
   });
 
-  test('has no settings', () => {
+  test('has no settings', async () => {
     assertEqual(charterTile.settings, undefined);
   });
 
-  test('each tile enumerates its fixed id for the first charter instance', () => {
+  test('each tile enumerates its fixed id for the first charter instance', async () => {
     assertDeepEqual(charterTile.enumerate(ctxWith(['c'])), [{ tileId: 'project-charter', instanceId: 'c', title: 'dashboard.charterTitle' }]);
     assertDeepEqual(goalsTile.enumerate(ctxWith(['c'])), [{ tileId: 'project-goals', instanceId: 'c', title: 'dashboard.goalsTitle' }]);
     assertDeepEqual(orgTile.enumerate(ctxWith(['c'])), [{ tileId: 'org-chart', instanceId: 'c', title: 'dashboard.orgChartTitle' }]);
   });
 
-  test('no charter instance gives no tiles', () => {
+  test('no charter instance gives no tiles', async () => {
     for (const t of charterTiles) assertDeepEqual(t.enumerate(ctxWith([])), []);
   });
 
-  test('org chart is wide by default', () => {
+  test('org chart is wide by default', async () => {
     assertDeepEqual(orgTile.size, { defaultW: 6, defaultH: 10, minW: 3, minH: 6 });
   });
 
-  test('goals render one row per goal with clamped ZEG', () => {
-    const host = render(goalsTile, { goals: [{ description: 'A', achievementLevel: 150 }, { achievementLevel: 30 }] });
+  test('goals render one row per goal with clamped ZEG', async () => {
+    const host = (await render(goalsTile, { goals: [{ description: 'A', achievementLevel: 150 }, { achievementLevel: 30 }] }));
     const rows = host.querySelectorAll('.dashboard-charter__goal');
     assertEqual(rows.length, 2);
     assertTrue(rows[0].textContent.includes('100%'));
   });
 
-  test('goals and org chart show empty states', () => {
-    assertTrue(render(goalsTile, { goals: [] }).querySelector('.dashboard-area__empty') !== null);
-    assertTrue(render(orgTile, { orgChart: [] }).querySelector('.dashboard-area__empty') !== null);
+  test('goals and org chart show empty states', async () => {
+    assertTrue((await render(goalsTile, { goals: [] })).querySelector('.dashboard-area__empty') !== null);
+    assertTrue((await render(orgTile, { orgChart: [] })).querySelector('.dashboard-area__empty') !== null);
   });
 
-  test('org chart draws one node per entry', () => {
-    const host = render(orgTile, { orgChart: [{ id: 'a', pid: null, title: 'A' }, { id: 'b', pid: 'a', title: 'B' }] });
+  test('org chart draws one node per entry', async () => {
+    const host = (await render(orgTile, { orgChart: [{ id: 'a', pid: null, title: 'A' }, { id: 'b', pid: 'a', title: 'B' }] }));
     assertEqual(host.querySelectorAll('.dashboard-org__node').length, 2);
   });
 });
@@ -256,33 +255,33 @@ const VOC_STATE = {
 };
 
 suite('dashboard tiles: voc', () => {
-  test('enumerates one tile for the first instance only', () => {
+  test('enumerates one tile for the first instance only', async () => {
     const ctx = { i18n, findInstances: () => [{ instanceId: 'a' }, { instanceId: 'b' }] };
     assertDeepEqual(vocTile.enumerate(ctx), [{ tileId: 'voc-ctx-tree', instanceId: 'a', title: 'dashboard.vocTitle' }]);
     assertDeepEqual(vocTile.enumerate({ i18n, findInstances: () => [] }), []);
   });
 
-  test('defaults: 6 statements + overflow line, legend shown', () => {
-    const host = render(vocTile, VOC_STATE);
+  test('defaults: 6 statements + overflow line, legend shown', async () => {
+    const host = (await render(vocTile, VOC_STATE));
     assertEqual(host.querySelectorAll('.dashboard-voc__item').length, 7);
     assertTrue(host.querySelector('.dashboard-voc__driver-legend') !== null);
   });
 
-  test('topN limits the list and the overflow counts the rest', () => {
-    const host = render(vocTile, VOC_STATE, { topN: 2 });
+  test('topN limits the list and the overflow counts the rest', async () => {
+    const host = (await render(vocTile, VOC_STATE, { topN: 2 }));
     const items = host.querySelectorAll('.dashboard-voc__item');
     assertEqual(items.length, 3);
     assertTrue(items[2].textContent.includes('+6'));
   });
 
-  test('showLegend=false hides the legend, keeps the bar', () => {
-    const host = render(vocTile, VOC_STATE, { showLegend: false });
+  test('showLegend=false hides the legend, keeps the bar', async () => {
+    const host = (await render(vocTile, VOC_STATE, { showLegend: false }));
     assertEqual(host.querySelector('.dashboard-voc__driver-legend'), null);
     assertTrue(host.querySelector('.dashboard-voc__driver-bar') !== null);
   });
 
-  test('empty state without statements', () => {
-    const host = render(vocTile, { vocs: [] });
+  test('empty state without statements', async () => {
+    const host = (await render(vocTile, { vocs: [] }));
     assertTrue(host.querySelector('.dashboard-area__empty') !== null);
   });
 });
@@ -294,7 +293,7 @@ const RACI_STATE = {
 };
 
 suite('dashboard tiles: raci', () => {
-  test('enumerates one tile per instance with the RACI prefix', () => {
+  test('enumerates one tile per instance with the RACI prefix', async () => {
     const ctx = { i18n, findInstances: () => [{ instanceId: 'a', customName: 'Team' }, { instanceId: 'b', customName: '' }] };
     assertDeepEqual(raciTile.enumerate(ctx), [
       { tileId: 'raci:a', instanceId: 'a', title: 'RACI — Team' },
@@ -302,25 +301,25 @@ suite('dashboard tiles: raci', () => {
     ]);
   });
 
-  test('defaults: 5 warnings + overflow line, legend shown', () => {
-    const host = render(raciTile, RACI_STATE);
+  test('defaults: 5 warnings + overflow line, legend shown', async () => {
+    const host = (await render(raciTile, RACI_STATE));
     assertEqual(host.querySelectorAll('.dashboard-raci__warn-item').length, 5);
     assertTrue(host.querySelector('.dashboard-raci__warn-list').textContent.includes('+3'));
     assertTrue(host.querySelector('.dashboard-raci__legend') !== null);
   });
 
-  test('topN limits the warnings', () => {
-    const host = render(raciTile, RACI_STATE, { topN: 2 });
+  test('topN limits the warnings', async () => {
+    const host = (await render(raciTile, RACI_STATE, { topN: 2 }));
     assertEqual(host.querySelectorAll('.dashboard-raci__warn-item').length, 2);
     assertTrue(host.querySelector('.dashboard-raci__warn-list').textContent.includes('+6'));
   });
 
-  test('showLegend=false hides the legend', () => {
-    assertEqual(render(raciTile, RACI_STATE, { showLegend: false }).querySelector('.dashboard-raci__legend'), null);
+  test('showLegend=false hides the legend', async () => {
+    assertEqual((await render(raciTile, RACI_STATE, { showLegend: false })).querySelector('.dashboard-raci__legend'), null);
   });
 
-  test('empty state without activities and stakeholders', () => {
-    assertTrue(render(raciTile, { activities: [], stakeholders: [], assignments: {} })
+  test('empty state without activities and stakeholders', async () => {
+    assertTrue((await render(raciTile, { activities: [], stakeholders: [], assignments: {} }))
       .querySelector('.dashboard-area__empty') !== null);
   });
 });
@@ -332,37 +331,37 @@ function fakeStateManager(values) {
 const SPC_STATE = { chartTypeId: 'i-mr', subgroupSize: 1, baselineCount: null,
   columnRef: { instanceId: 'ws', sheetId: 's', columnId: 'c' }, usl: null, lsl: null };
 
-function renderSpcTile(state, values) {
+async function renderSpcTile(state, values) {
   const host = document.createElement('div');
   host.style.width = '300px';
   document.body.append(host);
-  spcTile.render(host, { tileId: 'spc:x', instanceId: 'x', state, settings: {}, i18n, theme: 'light',
-    chartManager: null, stateManager: fakeStateManager(values) });
+  await mountTile(spcTile, { tileId: 'spc:x', instanceId: 'x', state, settings: {}, i18n, theme: 'light',
+    chartManager: null, stateManager: fakeStateManager(values) }, host);
   host.remove();
   return host;
 }
 
 suite('dashboard tiles: spc', () => {
-  test('enumerates per instance with the SPC prefix and refreshes on resize', () => {
+  test('enumerates per instance with the SPC prefix and refreshes on resize', async () => {
     const ctx = { i18n, findInstances: () => [{ instanceId: 'a', customName: 'Line' }] };
     assertDeepEqual(spcTile.enumerate(ctx), [{ tileId: 'spc:a', instanceId: 'a', title: 'SPC — Line' }]);
     assertDeepEqual(spcTile.refreshOn, ['state:saved', 'resize']);
   });
 
-  test('renders sparkline and four stats with data', () => {
-    const host = renderSpcTile(SPC_STATE, [10, 10.2, 9.8, 10.1, 9.9, 10.3]);
+  test('renders sparkline and four stats with data', async () => {
+    const host = (await renderSpcTile(SPC_STATE, [10, 10.2, 9.8, 10.1, 9.9, 10.3]));
     assertTrue(host.querySelector('.dashboard-spc__sparkline') !== null);
     assertEqual(host.querySelectorAll('.dashboard-spc__stat').length, 4);
   });
 
-  test('sparkline width follows the host width', () => {
-    const host = renderSpcTile(SPC_STATE, [10, 10.2, 9.8, 10.1, 9.9, 10.3]);
+  test('sparkline width follows the host width', async () => {
+    const host = (await renderSpcTile(SPC_STATE, [10, 10.2, 9.8, 10.1, 9.9, 10.3]));
     assertEqual(host.querySelector('.dashboard-spc__sparkline').getAttribute('width'), '284');
   });
 
-  test('empty state without column, no-data state with one point', () => {
-    assertTrue(renderSpcTile({ ...SPC_STATE, columnRef: null }, []).querySelector('.dashboard-area__empty') !== null);
-    assertTrue(renderSpcTile(SPC_STATE, [10]).querySelector('.dashboard-area__empty') !== null);
+  test('empty state without column, no-data state with one point', async () => {
+    assertTrue((await renderSpcTile({ ...SPC_STATE, columnRef: null }, [])).querySelector('.dashboard-area__empty') !== null);
+    assertTrue((await renderSpcTile(SPC_STATE, [10])).querySelector('.dashboard-area__empty') !== null);
   });
 });
 
@@ -391,7 +390,7 @@ suite('dashboard tiles: zeg-timeline', () => {
     ({ tileId: 'zeg-timeline', instanceId: null, state: null, settings, i18n: { t: (k) => k, language: 'de' },
       theme: 'light', chartManager: cm, stateManager: sm });
 
-  test('always enumerates one tile and refreshes on achievement changes', () => {
+  test('always enumerates one tile and refreshes on achievement changes', async () => {
     assertDeepEqual(zegTile.enumerate({ i18n, findInstances: () => [] }),
       [{ tileId: 'zeg-timeline', instanceId: null, title: 'dashboard.zegTimeline' }]);
     assertDeepEqual(zegTile.refreshOn, ['phase:achievement-changed']);
@@ -399,7 +398,7 @@ suite('dashboard tiles: zeg-timeline', () => {
 
   test('empty history shows the empty state and creates no chart', async () => {
     const host = document.createElement('div'); const cm = fakeChartManager();
-    await zegTile.render(host, args(cm, zegStateManager({})));
+    await mountTile(zegTile, args(cm, zegStateManager({})), host);
     assertTrue(host.querySelector('.dashboard-area__empty') !== null);
     assertEqual(cm.made.length, 0);
   });
@@ -407,7 +406,7 @@ suite('dashboard tiles: zeg-timeline', () => {
   test('empty state and chart both offer the edit-data link', async () => {
     for (const hist of [{}, { define: [{ t: 1, v: 10 }] }]) {
       const host = document.createElement('div');
-      await zegTile.render(host, args(fakeChartManager(), zegStateManager(hist)));
+      await mountTile(zegTile, args(fakeChartManager(), zegStateManager(hist)), host);
       const link = host.querySelector('a[data-action="zeg-sheet"]');
       assertTrue(link !== null, `link missing (${Object.keys(hist).length ? 'chart' : 'empty'})`);
       assertEqual(link.getAttribute('href'), '#/action/zeg-sheet');
@@ -418,26 +417,26 @@ suite('dashboard tiles: zeg-timeline', () => {
   test('read-only project without a ZEG sheet offers no edit-data link', async () => {
     for (const hist of [{}, { define: [{ t: 1, v: 10 }] }]) {
       const host = document.createElement('div');
-      await zegTile.render(host, args(fakeChartManager(), zegStateManager(hist, { completed: true })));
+      await mountTile(zegTile, args(fakeChartManager(), zegStateManager(hist, { completed: true })), host);
       assertEqual(host.querySelector('a[data-action="zeg-sheet"]'), null);
     }
     const host = document.createElement('div');
-    await zegTile.render(host, args(fakeChartManager(), zegStateManager({}, { completed: true, withSheet: true })));
+    await mountTile(zegTile, args(fakeChartManager(), zegStateManager({}, { completed: true, withSheet: true })), host);
     assertTrue(host.querySelector('a[data-action="zeg-sheet"]') !== null);
   });
 
   test('showLegend is passed to the chart', async () => {
     const host = document.createElement('div'); const cm = fakeChartManager();
     const sm = zegStateManager({ define: [{ t: 1, v: 10 }, { t: 2, v: 20 }] });
-    await zegTile.render(host, args(cm, sm, { showLegend: false }));
+    await mountTile(zegTile, args(cm, sm, { showLegend: false }), host);
     assertEqual(cm.made[0].cfg.showLegend, false);
   });
 
   test('a second render destroys the first chart', async () => {
     const host = document.createElement('div'); const cm = fakeChartManager();
     const sm = zegStateManager({ define: [{ t: 1, v: 10 }] });
-    await zegTile.render(host, args(cm, sm));
-    await zegTile.render(host, args(cm, sm));
+    await mountTile(zegTile, args(cm, sm), host);
+    await mountTile(zegTile, args(cm, sm), host);
     assertDeepEqual(cm.destroyed, [cm.made[0]]);
   });
 
@@ -449,8 +448,10 @@ suite('dashboard tiles: zeg-timeline', () => {
       create: (el, type, cfg) => new Promise(r => { const c = { cfg }; made.push(c); pending.push(() => r(c)); }),
       destroy: (c) => destroyed.push(c),
     };
-    const first = zegTile.render(host, args(cm, sm));
-    const second = zegTile.render(host, args(cm, sm));
+    const first = mountTile(zegTile, args(cm, sm), host);
+    await waitFor(() => pending.length === 1);
+    const second = mountTile(zegTile, args(cm, sm), host);
+    await waitFor(() => pending.length === 2);
     pending[1](); await second;
     pending[0](); await first;
     assertTrue(destroyed.includes(made[0]), 'stale chart destroyed');
@@ -459,7 +460,7 @@ suite('dashboard tiles: zeg-timeline', () => {
 
   test('dispose destroys the chart', async () => {
     const host = document.createElement('div'); const cm = fakeChartManager();
-    await zegTile.render(host, args(cm, zegStateManager({ define: [{ t: 1, v: 10 }] })));
+    await mountTile(zegTile, args(cm, zegStateManager({ define: [{ t: 1, v: 10 }] })), host);
     zegTile.dispose(host, { tileId: 'zeg-timeline' });
     assertDeepEqual(cm.destroyed, [cm.made[0]]);
   });
@@ -473,7 +474,7 @@ suite('dashboard tiles: zeg-timeline', () => {
       read: () => ({ showLegend: false }), write: () => {}, keys: [...LABEL_EDIT_KEYS, ...TILE_EDIT_KEYS],
     });
     const sm = zegStateManager({ define: [{ t: 1, v: 10 }, { t: 2, v: 20 }] });
-    await zegTile.render(host, args(cm, sm, { showLegend: true }));
+    await mountTile(zegTile, args(cm, sm, { showLegend: true }), host);
     assertEqual(base.made[0].cfg.showLegend, false);
     host.remove();
   });
@@ -489,27 +490,27 @@ const TODO_STATE = {
 };
 
 suite('dashboard tiles: todo', () => {
-  test('lists open items by due date and marks overdue ones', () => {
-    const host = render(todoTile, TODO_STATE);
+  test('lists open items by due date and marks overdue ones', async () => {
+    const host = (await render(todoTile, TODO_STATE));
     const items = [...host.querySelectorAll('.dashboard-fmea__top-item')];
     assertDeepEqual(items.map(li => li.querySelector('.dashboard-fmea__top-desc').textContent), ['Past', 'Future', 'Undated']);
     assertEqual(host.querySelectorAll('.dashboard-todo__overdue').length, 1);
   });
 
-  test('topN caps the list', () => {
-    assertEqual(render(todoTile, TODO_STATE, { topN: 1 }).querySelectorAll('.dashboard-fmea__top-item').length, 1);
+  test('topN caps the list', async () => {
+    assertEqual((await render(todoTile, TODO_STATE, { topN: 1 })).querySelectorAll('.dashboard-fmea__top-item').length, 1);
   });
 
-  test('showDone controls the done segment and count', () => {
-    const off = render(todoTile, TODO_STATE);
+  test('showDone controls the done segment and count', async () => {
+    const off = (await render(todoTile, TODO_STATE));
     assertEqual(off.querySelector('[data-status="done"]'), null);
-    const on = render(todoTile, TODO_STATE, { showDone: true });
+    const on = (await render(todoTile, TODO_STATE, { showDone: true }));
     assertTrue(on.querySelector('.dashboard-fmea__bar-seg[data-status="done"]') !== null);
   });
 
-  test('empty and missing state show the empty hint', () => {
+  test('empty and missing state show the empty hint', async () => {
     for (const s of [{ items: [] }, undefined, null]) {
-      assertEqual(render(todoTile, s).querySelector('.dashboard-area__empty').textContent, 'dashboard.todoEmpty');
+      assertEqual((await render(todoTile, s)).querySelector('.dashboard-area__empty').textContent, 'dashboard.todoEmpty');
     }
   });
 });
@@ -523,18 +524,18 @@ suite('dashboard tiles: dmaic-calendar', () => {
     { id: '4', title: 'Past', date: addDaysISO(t0, -1), time: '09:00', duration: 60, phase: 'define' },
   ] };
 
-  test('default horizon (14 days) lists today and +10', () => {
-    const host = render(calendarTile, CAL_STATE);
+  test('default horizon (14 days) lists today and +10', async () => {
+    const host = (await render(calendarTile, CAL_STATE));
     assertDeepEqual([...host.querySelectorAll('.dashboard-fmea__top-desc')].map(e => e.textContent), ['Kickoff', 'Review']);
   });
 
-  test('horizon 30 adds +20; topN caps', () => {
-    assertEqual(render(calendarTile, CAL_STATE, { horizon: '30' }).querySelectorAll('.dashboard-fmea__top-item').length, 3);
-    assertEqual(render(calendarTile, CAL_STATE, { horizon: '30', topN: 1 }).querySelectorAll('.dashboard-fmea__top-item').length, 1);
+  test('horizon 30 adds +20; topN caps', async () => {
+    assertEqual((await render(calendarTile, CAL_STATE, { horizon: '30' })).querySelectorAll('.dashboard-fmea__top-item').length, 3);
+    assertEqual((await render(calendarTile, CAL_STATE, { horizon: '30', topN: 1 })).querySelectorAll('.dashboard-fmea__top-item').length, 1);
   });
 
-  test('summary names count and horizon', () => {
-    assertEqual(render(calendarTile, CAL_STATE, { horizon: '7' }).querySelector('.dashboard-fmea__summary').textContent,
+  test('summary names count and horizon', async () => {
+    assertEqual((await render(calendarTile, CAL_STATE, { horizon: '7' })).querySelector('.dashboard-fmea__summary').textContent,
       'dashboard.calendarSummary');
   });
 
@@ -546,16 +547,16 @@ suite('dashboard tiles: dmaic-calendar', () => {
     const host = document.createElement('div');
     const one = { events: [CAL_STATE.events[0]] };
     const settings = resolveSettings(validateSchema(calendarTile.settings), {});
-    calendarTile.render(host, { state: one, settings, i18n: real });
+    await mountTile(calendarTile, { tileId: 'cal', state: one, settings, i18n: real }, host);
     assertEqual(host.querySelector('.dashboard-fmea__summary').textContent, '1 Termin in den nächsten 14 Tagen');
     real._lang = 'en';
-    calendarTile.render(host, { state: one, settings, i18n: real });
+    await mountTile(calendarTile, { tileId: 'cal', state: one, settings, i18n: real }, host);
     assertEqual(host.querySelector('.dashboard-fmea__summary').textContent, '1 event in the next 14 days');
   });
 
-  test('no upcoming events shows a hint; no events at all the empty state', () => {
-    assertTrue(render(calendarTile, { events: [CAL_STATE.events[3]] }).querySelector('.dashboard-calendar__none') !== null);
-    assertEqual(render(calendarTile, undefined).querySelector('.dashboard-area__empty').textContent, 'dashboard.calendarEmpty');
+  test('no upcoming events shows a hint; no events at all the empty state', async () => {
+    assertTrue((await render(calendarTile, { events: [CAL_STATE.events[3]] })).querySelector('.dashboard-calendar__none') !== null);
+    assertEqual((await render(calendarTile, undefined)).querySelector('.dashboard-area__empty').textContent, 'dashboard.calendarEmpty');
   });
 });
 
@@ -566,26 +567,26 @@ const SH_STATE = { stakeholders: [
 ] };
 
 suite('dashboard tiles: stakeholder-analysis', () => {
-  test('matrix shows a count per quadrant, manage-closely first', () => {
-    const cells = [...render(stakeholderTile, SH_STATE).querySelectorAll('.dashboard-stakeholder__cell')];
+  test('matrix shows a count per quadrant, manage-closely first', async () => {
+    const cells = [...(await render(stakeholderTile, SH_STATE)).querySelectorAll('.dashboard-stakeholder__cell')];
     assertEqual(cells.length, 4);
     assertEqual(cells[0].dataset.quadrant, 'manage-closely');
     assertEqual(cells[0].querySelector('strong').textContent, '2');
   });
 
-  test('support row includes other only when present', () => {
-    assertTrue(render(stakeholderTile, SH_STATE).querySelector('[data-support="other"]') !== null);
+  test('support row includes other only when present', async () => {
+    assertTrue((await render(stakeholderTile, SH_STATE)).querySelector('[data-support="other"]') !== null);
     const noOther = { stakeholders: SH_STATE.stakeholders.slice(0, 2) };
-    assertEqual(render(stakeholderTile, noOther).querySelector('[data-support="other"]'), null);
+    assertEqual((await render(stakeholderTile, noOther)).querySelector('[data-support="other"]'), null);
   });
 
-  test('showCritics toggles the critic list', () => {
-    assertEqual(render(stakeholderTile, SH_STATE).querySelectorAll('.dashboard-stakeholder__critics li').length, 1);
-    assertEqual(render(stakeholderTile, SH_STATE, { showCritics: false }).querySelector('.dashboard-stakeholder__critics'), null);
+  test('showCritics toggles the critic list', async () => {
+    assertEqual((await render(stakeholderTile, SH_STATE)).querySelectorAll('.dashboard-stakeholder__critics li').length, 1);
+    assertEqual((await render(stakeholderTile, SH_STATE, { showCritics: false })).querySelector('.dashboard-stakeholder__critics'), null);
   });
 
-  test('empty state', () => {
-    assertEqual(render(stakeholderTile, undefined).querySelector('.dashboard-area__empty').textContent, 'dashboard.stakeholderEmpty');
+  test('empty state', async () => {
+    assertEqual((await render(stakeholderTile, undefined)).querySelector('.dashboard-area__empty').textContent, 'dashboard.stakeholderEmpty');
   });
 });
 
@@ -596,26 +597,26 @@ const LL_STATE = { lessons: [
 ] };
 
 suite('dashboard tiles: lessons-learned', () => {
-  test('summary shows category counts and open actions (alerted when > 0)', () => {
-    const host = render(lessonsTile, LL_STATE);
+  test('summary shows category counts and open actions (alerted when > 0)', async () => {
+    const host = (await render(lessonsTile, LL_STATE));
     assertEqual(host.querySelector('[data-stat="openActions"] strong').textContent, '3');
     assertTrue(host.querySelector('.dashboard-lessons__open--alert') !== null);
   });
 
-  test('lists high-impact lessons with open action counts; topN caps', () => {
-    const host = render(lessonsTile, LL_STATE);
+  test('lists high-impact lessons with open action counts; topN caps', async () => {
+    const host = (await render(lessonsTile, LL_STATE));
     assertDeepEqual([...host.querySelectorAll('.dashboard-fmea__top-desc')].map(e => e.textContent), ['Scope creep', 'Data access']);
     assertEqual(host.querySelector('.dashboard-fmea__top-rpn').textContent, '2');
-    assertEqual(render(lessonsTile, LL_STATE, { topN: 1 }).querySelectorAll('.dashboard-fmea__top-item').length, 1);
+    assertEqual((await render(lessonsTile, LL_STATE, { topN: 1 })).querySelectorAll('.dashboard-fmea__top-item').length, 1);
   });
 
-  test('no open actions: no alert', () => {
+  test('no open actions: no alert', async () => {
     const done = { lessons: [{ id: 'z', title: 'z', impact: 'high', actions: [{ text: 'x', done: true }] }] };
-    assertEqual(render(lessonsTile, done).querySelector('.dashboard-lessons__open--alert'), null);
+    assertEqual((await render(lessonsTile, done)).querySelector('.dashboard-lessons__open--alert'), null);
   });
 
-  test('empty state', () => {
-    assertEqual(render(lessonsTile, null).querySelector('.dashboard-area__empty').textContent, 'dashboard.lessonsEmpty');
+  test('empty state', async () => {
+    assertEqual((await render(lessonsTile, null)).querySelector('.dashboard-area__empty').textContent, 'dashboard.lessonsEmpty');
   });
 });
 
@@ -634,7 +635,7 @@ async function renderChartTile(tile, state, overrides = {}, cm = recordingChartM
   const host = document.createElement('div');
   document.body.appendChild(host);
   const settings = resolveSettings(validateSchema(tile.settings), overrides);
-  await tile.render(host, { tileId: 't', instanceId: 'i', state, settings, i18n, theme: 'light', chartManager: cm, stateManager: null });
+  await mountTile(tile, { tileId: 't', instanceId: 'i', state, settings, i18n, theme: 'light', chartManager: cm, stateManager: null }, host);
   return { host, cm };
 }
 
@@ -642,7 +643,7 @@ const CAP_VALUES = [9.8, 10.1, 10.0, 9.9, 10.2, 10.05, 9.95, 10.1, 9.85, 10.0];
 const CAP_STATE = { embeddedValues: CAP_VALUES, params: { lsl: '9.5', usl: '10.5', target: '10' } };
 
 suite('dashboard tiles: process-capability', () => {
-  test('declares the Cpk prefix and refreshes on resize', () => {
+  test('declares the Cpk prefix and refreshes on resize', async () => {
     assertEqual(capabilityTile.titlePrefix, 'Cpk');
     assertDeepEqual(capabilityTile.refreshOn, ['state:saved', 'resize']);
   });
@@ -746,8 +747,8 @@ suite('dashboard tiles: process-capability', () => {
   test('a second render and dispose destroy the previous chart', async () => {
     const cm = recordingChartManager();
     const { host } = await renderChartTile(capabilityTile, CAP_STATE, {}, cm);
-    await capabilityTile.render(host, { tileId: 't', instanceId: 'i', state: CAP_STATE,
-      settings: resolveSettings(validateSchema(capabilityTile.settings), {}), i18n, theme: 'light', chartManager: cm, stateManager: null });
+    await mountTile(capabilityTile, { tileId: 't', instanceId: 'i', state: CAP_STATE,
+      settings: resolveSettings(validateSchema(capabilityTile.settings), {}), i18n, theme: 'light', chartManager: cm, stateManager: null }, host);
     assertDeepEqual(cm.destroyed, [cm.made[0]]);
     capabilityTile.dispose(host, { tileId: 't' });
     assertDeepEqual(cm.destroyed, [cm.made[0], cm.made[1]]);
@@ -763,9 +764,10 @@ suite('dashboard tiles: process-capability', () => {
     const host = document.createElement('div');
     const args = { tileId: 't', instanceId: 'i', state: CAP_STATE,
       settings: resolveSettings(validateSchema(capabilityTile.settings), {}), i18n, theme: 'light', chartManager: cm, stateManager: null };
-    const first = capabilityTile.render(host, args);
-    const second = capabilityTile.render(host, args);
-    await Promise.resolve(); await Promise.resolve();
+    const first = mountTile(capabilityTile, args, host);
+    await waitFor(() => pending.length === 1);
+    const second = mountTile(capabilityTile, args, host);
+    await waitFor(() => pending.length === 2);
     pending[1](); await second;
     pending[0](); await first;
     assertTrue(destroyed.includes(made[0]), 'stale chart destroyed');
@@ -797,8 +799,8 @@ async function renderAttr(state, cols, overrides = {}, cm = recordingChartManage
   const host = document.createElement('div');
   document.body.appendChild(host);
   const settings = resolveSettings(validateSchema(attrSpcTile.settings), overrides);
-  await attrSpcTile.render(host, { tileId: 't', instanceId: 'i', state, settings, i18n, theme: 'light',
-    chartManager: cm, stateManager: columnStateManager(cols) });
+  await mountTile(attrSpcTile, { tileId: 't', instanceId: 'i', state, settings, i18n, theme: 'light',
+    chartManager: cm, stateManager: columnStateManager(cols) }, host);
   return { host, cm };
 }
 
@@ -817,7 +819,7 @@ suite('dashboard tiles: attribute-control-chart', () => {
     host.remove();
   });
 
-  test('refreshes on resize', () => {
+  test('refreshes on resize', async () => {
     assertDeepEqual(attrSpcTile.refreshOn, ['state:saved', 'resize']);
   });
 
@@ -902,9 +904,9 @@ suite('dashboard tiles: attribute-control-chart', () => {
   test('a second render and dispose destroy the previous chart', async () => {
     const cm = recordingChartManager();
     const { host } = await renderAttr(C_STATE, C_STABLE, {}, cm);
-    await attrSpcTile.render(host, { tileId: 't', instanceId: 'i', state: C_STATE,
+    await mountTile(attrSpcTile, { tileId: 't', instanceId: 'i', state: C_STATE,
       settings: resolveSettings(validateSchema(attrSpcTile.settings), {}), i18n, theme: 'light',
-      chartManager: cm, stateManager: columnStateManager(C_STABLE) });
+      chartManager: cm, stateManager: columnStateManager(C_STABLE) }, host);
     assertDeepEqual(cm.destroyed, [cm.made[0]]);
     attrSpcTile.dispose(host, { tileId: 't' });
     assertDeepEqual(cm.destroyed, [cm.made[0], cm.made[1]]);
@@ -921,9 +923,10 @@ suite('dashboard tiles: attribute-control-chart', () => {
     const args = { tileId: 't', instanceId: 'i', state: C_STATE,
       settings: resolveSettings(validateSchema(attrSpcTile.settings), {}), i18n, theme: 'light',
       chartManager: cm, stateManager: columnStateManager(C_STABLE) };
-    const first = attrSpcTile.render(host, args);
-    const second = attrSpcTile.render(host, args);
-    await Promise.resolve(); await Promise.resolve();
+    const first = mountTile(attrSpcTile, args, host);
+    await waitFor(() => pending.length === 1);
+    const second = mountTile(attrSpcTile, args, host);
+    await waitFor(() => pending.length === 2);
     pending[1](); await second;
     pending[0](); await first;
     assertTrue(destroyed.includes(made[0]), 'stale chart destroyed');
@@ -942,20 +945,20 @@ const SIPOC_STATE = {
 };
 
 suite('dashboard tiles: sipoc', () => {
-  test('declares the SIPOC prefix and a wide default size', () => {
+  test('declares the SIPOC prefix and a wide default size', async () => {
     assertEqual(sipocTile.titlePrefix, 'SIPOC');
     assertDeepEqual(sipocTile.size, { defaultW: 6, defaultH: 10, minW: 4, minH: 6 });
   });
 
-  test('empty state for an empty or undefined state', () => {
+  test('empty state for an empty or undefined state', async () => {
     for (const state of [{}, undefined, { columns: { inputs: [] } }]) {
-      const host = render(sipocTile, state);
+      const host = (await render(sipocTile, state));
       assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.sipocEmpty');
     }
   });
 
-  test('five columns in order with letter, name and count', () => {
-    const host = render(sipocTile, SIPOC_STATE);
+  test('five columns in order with letter, name and count', async () => {
+    const host = (await render(sipocTile, SIPOC_STATE));
     const cols = [...host.querySelectorAll('.dashboard-sipoc__col')];
     assertDeepEqual(cols.map(c => c.dataset.col), ['suppliers', 'inputs', 'process', 'outputs', 'customers']);
     assertDeepEqual(cols.map(c => c.querySelector('.dashboard-sipoc__letter').textContent), ['S', 'I', 'P', 'O', 'C']);
@@ -963,38 +966,38 @@ suite('dashboard tiles: sipoc', () => {
     assertDeepEqual(cols.map(c => c.querySelector('.dashboard-sipoc__count').textContent), ['2', '4', '2', '1', '0']);
   });
 
-  test('default topN 3: first three entries and a "more" line', () => {
-    const host = render(sipocTile, SIPOC_STATE);
+  test('default topN 3: first three entries and a "more" line', async () => {
+    const host = (await render(sipocTile, SIPOC_STATE));
     const inputs = host.querySelector('[data-col="inputs"]');
     assertDeepEqual([...inputs.querySelectorAll('.dashboard-sipoc__item')].map(e => e.textContent), ['Flour', 'Water', 'Yeast']);
     assertEqual(inputs.querySelector('.dashboard-sipoc__more').textContent, 'dashboard.sipocMore');
     assertEqual(host.querySelector('[data-col="process"] .dashboard-sipoc__more'), null);
   });
 
-  test('topN 4 shows all inputs, no "more" line', () => {
-    const host = render(sipocTile, SIPOC_STATE, { topN: 4 });
+  test('topN 4 shows all inputs, no "more" line', async () => {
+    const host = (await render(sipocTile, SIPOC_STATE, { topN: 4 }));
     const inputs = host.querySelector('[data-col="inputs"]');
     assertEqual(inputs.querySelectorAll('.dashboard-sipoc__item').length, 4);
     assertEqual(inputs.querySelector('.dashboard-sipoc__more'), null);
   });
 
-  test('every entry carries its full text as title', () => {
-    const host = render(sipocTile, SIPOC_STATE);
+  test('every entry carries its full text as title', async () => {
+    const host = (await render(sipocTile, SIPOC_STATE));
     const item = host.querySelector('[data-col="outputs"] .dashboard-sipoc__item');
     assertEqual(item.getAttribute('title'), SIPOC_STATE.columns.outputs[0]);
   });
 
-  test('an empty column is marked as gap; the filled line appears', () => {
-    const host = render(sipocTile, SIPOC_STATE);
+  test('an empty column is marked as gap; the filled line appears', async () => {
+    const host = (await render(sipocTile, SIPOC_STATE));
     const gaps = [...host.querySelectorAll('.dashboard-sipoc__col--gap')].map(c => c.dataset.col);
     assertDeepEqual(gaps, ['customers']);
     assertEqual(host.querySelector('[data-col="customers"] .dashboard-sipoc__gap').textContent, '—');
     assertEqual(host.querySelector('.dashboard-sipoc__filled').textContent, 'dashboard.sipocFilled');
   });
 
-  test('all five filled: no gap, no filled line', () => {
+  test('all five filled: no gap, no filled line', async () => {
     const full = { columns: { ...SIPOC_STATE.columns, customers: ['Shop'] } };
-    const host = render(sipocTile, full);
+    const host = (await render(sipocTile, full));
     assertEqual(host.querySelectorAll('.dashboard-sipoc__col--gap').length, 0);
     assertEqual(host.querySelector('.dashboard-sipoc__filled'), null);
   });
@@ -1018,7 +1021,7 @@ function kanoState(grid) {
 const KANO_STATE = kanoState({ r1: { i1: 'O', i2: 'M', i3: 'A' }, r2: { i1: 'O', i2: 'M', i3: 'A' } });
 
 suite('dashboard tiles: kano', () => {
-  test('declares the Kano prefix and refreshes on resize', () => {
+  test('declares the Kano prefix and refreshes on resize', async () => {
     assertEqual(kanoTile.titlePrefix, 'Kano');
     assertDeepEqual(kanoTile.refreshOn, ['state:saved', 'resize']);
   });
@@ -1100,9 +1103,9 @@ suite('dashboard tiles: kano', () => {
   test('a second render and dispose destroy the previous chart', async () => {
     const cm = recordingChartManager();
     const { host } = await renderChartTile(kanoTile, KANO_STATE, {}, cm);
-    await kanoTile.render(host, { tileId: 't', instanceId: 'i', state: KANO_STATE,
+    await mountTile(kanoTile, { tileId: 't', instanceId: 'i', state: KANO_STATE,
       settings: resolveSettings(validateSchema(kanoTile.settings), {}), i18n, theme: 'light',
-      chartManager: cm, stateManager: null });
+      chartManager: cm, stateManager: null }, host);
     assertDeepEqual(cm.destroyed, [cm.made[0]]);
     kanoTile.dispose(host, { tileId: 't' });
     assertDeepEqual(cm.destroyed, [cm.made[0], cm.made[1]]);
@@ -1119,9 +1122,10 @@ suite('dashboard tiles: kano', () => {
     const args = { tileId: 't', instanceId: 'i', state: KANO_STATE,
       settings: resolveSettings(validateSchema(kanoTile.settings), {}), i18n, theme: 'light',
       chartManager: cm, stateManager: null };
-    const first = kanoTile.render(host, args);
-    const second = kanoTile.render(host, args);
-    await Promise.resolve(); await Promise.resolve();
+    const first = mountTile(kanoTile, args, host);
+    await waitFor(() => pending.length === 1);
+    const second = mountTile(kanoTile, args, host);
+    await waitFor(() => pending.length === 2);
     pending[1](); await second;
     pending[0](); await first;
     assertTrue(destroyed.includes(made[0]), 'stale chart destroyed');

@@ -11,7 +11,7 @@ import { h } from '../../core/dom.js';
 import { DashboardGrid } from '../../ui/dashboard-grid.js';
 import { DEFAULT_DASHBOARD_LAYOUT } from './default-layout.js';
 import { enumerateTiles, loadTileModules, refreshEventsOf, copyId, copyDescriptor, sourceChoices, customRefreshEvents, refreshTargets } from './enumerate-tiles.js';
-import { renderTileSafely } from './tile-render.js';
+import { renderTileSafely, disposeTile } from './tile-render.js';
 import { schemaOf, resolveSettings, toStored, withTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave, titlesToStoreOnLayoutSave, chartEditsToStoreOnLayoutSave, withCopiedChartEdits, SOURCE_KEY, sourceField, coerceValue } from './tile-settings.js';
 import { buildSettingsForm } from './tile-settings-form.js';
 
@@ -50,11 +50,7 @@ const page = createPage({
     const disposePlacedTiles = () => {
       if (!handle.grid) return;
       for (const id of handle.grid.getPlacedTileIds()) {
-        try {
-          descriptorFor(id)?.tile?.dispose?.(handle.grid.getTileBody(id), { tileId: id });
-        } catch (err) {
-          console.error(`[dashboard] tile "${id}" failed to dispose`, err);
-        }
+        disposeTile(descriptorFor(id)?.tile, handle.grid.getTileBody(id), { tileId: id });
       }
     };
     handle.disposePlacedTiles = disposePlacedTiles;
@@ -113,13 +109,7 @@ const page = createPage({
         if (rebound) handle.grid?.setTileTitle(tileId, rebound.title);
       }
       const body = handle.grid?.getTileBody(tileId);
-      if (body) {
-        try {
-          d.tile.dispose?.(body, { tileId });
-        } catch (err) {
-          console.error(`[dashboard] tile "${tileId}" failed to dispose`, err);
-        }
-      }
+      if (body) disposeTile(d.tile, body, { tileId });
       await renderTile(tileId);
     };
 
@@ -315,13 +305,9 @@ const page = createPage({
           if (d?.tile && resized && refreshEventsOf(d.tile).includes('resize')) renderTile(item.tileId);
         }
       };
-      handle.grid.onTileRemoved = (tileId) => {
+      handle.grid.onTileRemoved = (tileId, body) => {
         const d = descriptorFor(tileId);
-        try {
-          d?.tile?.dispose?.(handle.grid?.getTileBody(tileId) ?? gridAnchor, { tileId });
-        } catch (err) {
-          console.error(`[dashboard] tile "${tileId}" failed to dispose`, err);
-        }
+        if (body) disposeTile(d?.tile, body, { tileId });
         const allSettings = stateManager.get('dashboard.tileSettings') || {};
         if (Object.hasOwn(allSettings, tileId)) {
           stateManager.set('dashboard.tileSettings', withTileSettings(allSettings, tileId, {}));

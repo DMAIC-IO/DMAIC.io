@@ -14,7 +14,7 @@
  * Lifecycle callbacks:
  *   onLayoutChange(layout)       – called when a move/resize/add/remove completes
  *   onTileResized(id, layout)    – called while a resize is in progress
- *   onTileRemoved(id)            – called after a tile is removed
+ *   onTileRemoved(id, body)      – called after a tile is removed, with the removed tile's body
  *   onTitleChanged(id, title)    – called after an inline title edit
  *   onSettingsRequested(id)      – called when a tile's gear is clicked
  *   onDuplicateRequested(id)     – called when a tile's duplicate button is clicked
@@ -247,7 +247,7 @@ export class DashboardGrid {
     entry.el.remove();
     this._tiles.delete(tileId);
     this._updateContainerHeight();
-    this.onTileRemoved?.(tileId);
+    this.onTileRemoved?.(tileId, entry.bodyEl);
     this._notifyChange();
   }
 
