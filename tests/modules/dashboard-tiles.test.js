@@ -189,6 +189,31 @@ suite('dashboard tiles: fmea', () => {
     assertEqual(flags.length, 1);
     assertEqual(flags[0].textContent, 'CC');
   });
+
+  test('viewModel: RPN summary, bar, legend and top list as display data', () => {
+    const vm = vmOf(fmeaTile, FMEA_STATE);
+    assertPlain(vm);
+    assertDeepEqual(vm.summary.map(s => [s.label, s.value, s.modifier]), [
+      ['dashboard.fmeaRisks: ', '5', ''],
+      ['dashboard.fmeaMaxRPN: ', '560', ''],
+      ['dashboard.fmeaSevere: ', '1', 'dashboard-fmea__flag-count'],
+    ]);
+    assertEqual(vm.summary[0].style, '');
+    assertEqual(vm.summary[2].style, 'color:var(--fmea-cat-critical-text)');
+    assertEqual(vm.segments.length, 4);
+    assertEqual(vm.legend[0].dot, 'background:var(--fmea-cat-critical)');
+    assertEqual(vm.legend[0].text, ' dashboard.fmeaCritical: 1');
+    assertEqual(vm.top[0].badge, 'RPN 560');
+    assertEqual(vm.top[0].flag, null);
+    assertEqual(vmOf(fmeaTile, FMEA_STATE, { showLegend: false }).legend, null);
+  });
+
+  test('viewModel: AP mode shows the H count and AP badges', () => {
+    const vm = vmOf(fmeaTile, { method: 'ap', risks: [{ failureMode: 'X', sev: '9', occ: '10', det: '10' }] });
+    assertEqual(vm.summary[1].label, 'dashboard.fmeaApHigh: ');
+    assertEqual(vm.summary[1].value, '1');
+    assertEqual(vm.top[0].badge, 'AP H');
+  });
 });
 
 suite('dashboard tiles: ishikawa', () => {
@@ -625,6 +650,18 @@ suite('dashboard tiles: stakeholder-analysis', () => {
 
   test('empty state', async () => {
     assertEqual((await render(stakeholderTile, undefined)).querySelector('.dashboard-area__empty').textContent, 'dashboard.stakeholderEmpty');
+  });
+
+  test('viewModel: quadrant cells, support row and critics as display data', () => {
+    const vm = vmOf(stakeholderTile, SH_STATE);
+    assertPlain(vm);
+    assertDeepEqual(vm.quadrants[0], { quadrant: 'manage-closely', modifier: 'dashboard-stakeholder__cell--manage-closely',
+      count: '2', label: 'modules.stakeholder-analysis.quadManageClosely' });
+    assertDeepEqual(vm.support.map(s => s.key), ['supporter', 'neutral', 'critic', 'other']);
+    assertEqual(vm.support[0].label, 'modules.stakeholder-analysis.supportSupporter: ');
+    assertEqual(vm.criticsLabel, 'dashboard.stakeholderCritics');
+    assertDeepEqual(vm.critics, [{ name: 'CFO', role: 'Finance' }]);
+    assertEqual(vmOf(stakeholderTile, SH_STATE, { showCritics: false }).criticsLabel, null);
   });
 });
 

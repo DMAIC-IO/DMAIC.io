@@ -2,10 +2,10 @@
  * D.Mike — FMEA dashboard tile (fmea.tile.js)
  *
  * Loaded by the dashboard via the manifest's `loadTile`. Imports only the
- * pure FMEA model, never the module shell. Contract: docs/DASHBOARD.md.
+ * pure FMEA model, never the module shell; the markup lives in
+ * fmea.tile.html. Contract: docs/DASHBOARD.md.
  */
 
-import { h } from '../../core/dom.js';
 import { State, rpnCategory } from './fmea-model.js';
 
 const CATS = new Set(['critical', 'high', 'medium', 'low']);
@@ -22,15 +22,17 @@ export default {
     showLegend: { type: 'boolean', default: true, label: 'dashboard.tileSettings.showLegend' },
   },
 
+  template: 'js/modules/fmea/fmea.tile.html',
+
   /**
-   * @param {HTMLElement} host
+   * Risk summary, category bar, legend and the top risks (RPN or AP rating).
    * @param {{state: object, settings: {topN: number, showLegend: boolean}, i18n: object}} args
+   * @returns {object} view model for fmea.tile.html
    */
-  render(host, { state, settings, i18n }) {
+  viewModel({ state, settings, i18n }) {
     const risks = (state && Array.isArray(state.risks)) ? state.risks : [];
     if (risks.length === 0) {
-      host.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.fmeaEmpty')));
-      return;
+      return { empty: i18n.t('dashboard.fmeaEmpty'), summary: [], segments: [], legend: null, topLabel: null, top: [] };
     }
     const model = State.fromJSON(state);
     const rating = model.rating();
@@ -48,46 +50,42 @@ export default {
     const barCats = isAp ? ['high', 'medium', 'low'] : ['critical', 'high', 'medium', 'low'];
     const badge = (r) => (isAp ? `AP ${r.ap()}` : `RPN ${r.rpn()}`);
 
-    const summaryParts = [h('span', {}, `${i18n.t('dashboard.fmeaRisks')}: `, h('strong', {}, String(model.risks.length)))];
+    const summary = [{ label: `${i18n.t('dashboard.fmeaRisks')}: `, value: String(model.risks.length), style: '', modifier: '' }];
     if (isAp) {
-      summaryParts.push(h('span', {}, `${catLabels.high}: `,
-        h('strong', { style: `color:${catTextColor('high')}` }, String(cats.high))));
+      summary.push({ label: `${catLabels.high}: `, value: String(cats.high),
+        style: `color:${catTextColor('high')}`, modifier: '' });
     } else {
       const maxRPN = Math.max(0, ...model.risks.map(r => r.rpn()));
-      summaryParts.push(h('span', {}, `${i18n.t('dashboard.fmeaMaxRPN')}: `,
-        h('strong', { style: `color:${catTextColor(rpnCategory(maxRPN))}` }, maxRPN ? String(maxRPN) : '—')));
+      summary.push({ label: `${i18n.t('dashboard.fmeaMaxRPN')}: `, value: maxRPN ? String(maxRPN) : '—',
+        style: `color:${catTextColor(rpnCategory(maxRPN))}`, modifier: '' });
     }
     const st = model.stats();
     const flagCount = isAp ? st.unjustified : st.highSeverity;
-    const flagLabel = i18n.t(isAp ? 'dashboard.fmeaUnjustified' : 'dashboard.fmeaSevere');
-    summaryParts.push(h('span', { class: 'dashboard-fmea__flag-count' }, `${flagLabel}: `,
-      h('strong', { style: flagCount ? `color:${catTextColor(isAp ? 'high' : 'critical')}` : null }, String(flagCount))));
-    const summary = h('div', { class: 'dashboard-fmea__summary' }, ...summaryParts);
-    const bar = h('div', { class: 'dashboard-fmea__bar' },
-      ...barCats.map(cat => {
-        const pct = model.risks.length ? (cats[cat] / model.risks.length * 100) : 0;
-        if (pct === 0) return null;
-        return h('div', { class: 'dashboard-fmea__bar-seg',
-          style: `width:${pct}%;background:${catColor(cat)}`, title: `${catLabels[cat]}: ${cats[cat]}` });
-      }).filter(Boolean),
-    );
-    const children = [summary, bar];
-    if (settings.showLegend) {
-      children.push(h('div', { class: 'dashboard-fmea__legend' },
-        ...[...barCats, 'none'].filter(c => cats[c] > 0)
-          .map(cat => h('span', { class: 'dashboard-fmea__legend-item' },
-            h('span', { class: 'dashboard-fmea__legend-dot', style: `background:${catColor(cat)}` }),
-            ` ${catLabels[cat]}: ${cats[cat]}`)),
-      ));
-    }
-    if (top.length) {
-      children.push(h('div', { class: 'dashboard-fmea__top-label' }, i18n.t('dashboard.fmeaTopRisks')));
-      children.push(h('ol', { class: 'dashboard-fmea__top-list' },
-        ...top.map(r => h('li', { class: 'dashboard-fmea__top-item' },
-          h('span', { class: 'dashboard-fmea__top-desc' }, r.failureMode || r.step || '—'),
-          r.specialChar ? h('span', { class: 'dashboard-fmea__top-flag' }, r.specialChar) : null,
-          h('span', { class: 'dashboard-fmea__top-rpn', style: `color:${catTextColor(rating.category(r))}` }, badge(r))))));
-    }
-    host.replaceChildren(...children);
+    summary.push({
+      label: `${i18n.t(isAp ? 'dashboard.fmeaUnjustified' : 'dashboard.fmeaSevere')}: `,
+      value: String(flagCount),
+      style: flagCount ? `color:${catTextColor(isAp ? 'high' : 'critical')}` : '',
+      modifier: 'dashboard-fmea__flag-count',
+    });
+
+    return {
+      empty: null,
+      summary,
+      segments: barCats.filter(cat => cats[cat] > 0).map(cat => ({
+        style: `width:${cats[cat] / model.risks.length * 100}%;background:${catColor(cat)}`,
+        title: `${catLabels[cat]}: ${cats[cat]}`,
+      })),
+      legend: settings.showLegend
+        ? [...barCats, 'none'].filter(c => cats[c] > 0)
+          .map(cat => ({ dot: `background:${catColor(cat)}`, text: ` ${catLabels[cat]}: ${cats[cat]}` }))
+        : null,
+      topLabel: top.length ? i18n.t('dashboard.fmeaTopRisks') : null,
+      top: top.map(r => ({
+        desc: r.failureMode || r.step || '—',
+        flag: r.specialChar || null,
+        badge: badge(r),
+        style: `color:${catTextColor(rating.category(r))}`,
+      })),
+    };
   },
 };
