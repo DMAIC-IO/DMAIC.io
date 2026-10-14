@@ -4,10 +4,10 @@
  * "Is the process capable?" — Cpk traffic light, Ppk, PPM, n and a compact
  * histogram through the tile-bound chartManager (editor edits persist per
  * tile). One tile per instance; source/copies via the host. Imports only the
- * pure analysis, model and format files. Contract: docs/DASHBOARD.md.
+ * pure analysis, model and format files. The markup lives in
+ * process-capability.tile.html. Contract: docs/DASHBOARD.md.
  */
 
-import { h } from '../../core/dom.js';
 import { getColumnValues } from '../../ui/column-picker.js';
 import { State } from './process-capability-model.js';
 import { analyzeState, formatHint, specRefLines } from './process-capability-analysis.js';
@@ -30,23 +30,6 @@ function release(host) {
   const entry = charts.get(host);
   if (entry?.chart) entry.chartManager.destroy(entry.chart);
   charts.delete(host);
-}
-
-/** Key-figure box (SPC tile classes). */
-function metric(modifier, value, label, sub) {
-  return h('div', { class: `dashboard-spc__metric${modifier ? ` dashboard-spc__metric--${modifier}` : ''}` },
-    h('span', { class: 'dashboard-spc__metric-value' }, value),
-    h('span', { class: 'dashboard-spc__metric-label' }, label),
-    sub ? h('span', { class: 'dashboard-spc__metric-sub' }, sub) : null,
-  );
-}
-
-/** Small label/value stat (SPC tile classes). */
-function stat(label, value) {
-  return h('div', { class: 'dashboard-spc__stat' },
-    h('span', { class: 'dashboard-spc__stat-label' }, label),
-    h('span', { class: 'dashboard-spc__stat-value' }, value),
-  );
 }
 
 /** Fixed decimals, '—' when missing or not finite (e.g. Cp with a within-sigma of 0). */
@@ -76,59 +59,72 @@ export default {
     showChart: { type: 'boolean', default: true, label: 'dashboard.tileSettings.showChart' },
   },
 
-  /**
-   * Render figures and (optionally) the histogram. A newer render or dispose
-   * invalidates a chart that is still being created.
-   * @param {HTMLElement} host
-   * @param {{state: object, settings: {ppmBasis: string, showChart: boolean}, i18n: object,
-   *   chartManager: object, stateManager: object}} args
-   * @returns {Promise<void>}
-   */
-  async render(host, { state, settings, i18n, chartManager, stateManager }) {
-    release(host);
-    const token = {};
-    charts.set(host, { chart: null, chartManager, token });
+  template: 'js/modules/process-capability/process-capability.tile.html',
 
+  /**
+   * Cpk traffic light, Ppk, PPM, n, the analysis hint and the histogram
+   * config (null when hidden).
+   * @param {{state: object, settings: {ppmBasis: string, showChart: boolean}, i18n: object,
+   *   stateManager: object}} args
+   * @returns {object} view model for process-capability.tile.html
+   */
+  viewModel({ state, settings, i18n, stateManager }) {
     const t = (key, params) => i18n.t(`modules.process-capability.${key}`, params);
     const a = analyzeState(State.fromJSON(state), (ref) => getColumnValues(stateManager, ref),
       { defaultConfidence: stateManager?.get?.('settings.confidenceLevel') ?? 95 });
-    const empty = (key) => h('p', { class: 'dashboard-area__empty' }, i18n.t(key));
-    const hintText = formatHint(a.hint, t);
-    const hint = hintText ? h('p', { class: 'dashboard-capability__hint' }, hintText) : null;
+    const hint = formatHint(a.hint, t) || null;
+    const none = (key, hintText) => ({ empty: i18n.t(key), hint: hintText, metrics: [], stats: [], chart: null });
 
-    if (a.empty) { host.replaceChildren(empty('dashboard.capabilityEmpty')); return; }
-    if (!a.result) { host.replaceChildren(...[empty('dashboard.capabilityNoData'), hint].filter(Boolean)); return; }
+    if (a.empty) return none('dashboard.capabilityEmpty', null);
+    if (!a.result) return none('dashboard.capabilityNoData', hint);
 
     const r = a.result;
-    const wrap = h('div', { class: 'dashboard-capability' },
-      h('div', { class: 'dashboard-spc__metrics' },
-        metric(CPK_MODIFIER[r.cpkStatus] || 'warn', fmt(r.Cpk, 2), 'Cpk', r.Cp != null ? `Cp = ${fmt(r.Cp, 2)}` : null),
-        metric('', fmt(r.Ppk, 2), 'Ppk'),
-      ),
-      h('div', { class: 'dashboard-capability__stats' },
-        stat(i18n.t('dashboard.capabilityPpm'), ppmText(r[PPM_FIELD[settings.ppmBasis]])),
-        stat('n', String(r.n)),
-      ),
+    return {
+      empty: null,
       hint,
-    );
-    host.replaceChildren(wrap);
-    if (!settings.showChart || !chartManager) return;
+      metrics: [
+        { modifier: `dashboard-spc__metric--${CPK_MODIFIER[r.cpkStatus] || 'warn'}`, value: fmt(r.Cpk, 2), label: 'Cpk',
+          sub: r.Cp != null ? `Cp = ${fmt(r.Cp, 2)}` : null },
+        { modifier: '', value: fmt(r.Ppk, 2), label: 'Ppk', sub: null },
+      ],
+      stats: [
+        { label: i18n.t('dashboard.capabilityPpm'), value: ppmText(r[PPM_FIELD[settings.ppmBasis]]) },
+        { label: 'n', value: String(r.n) },
+      ],
+      chart: settings.showChart
+        ? {
+          data: a.values,
+          binMethod: 'sturges',
+          showNormalCurve: true,
+          barColor: 'var(--color-accent)',
+          normalCurveColor: 'var(--color-info)',
+          refLines: specRefLines(r),
+          xLabel: i18n.t('modules.histogram.xLabel'),
+          yLabel: i18n.t('modules.histogram.yLabel'),
+          showTitle: false, showXLabel: false, showYLabel: false,
+          showXTicks: false, showYTicks: false, showLegend: false,
+        }
+        : null,
+    };
+  },
 
-    const plotEl = h('div', { class: 'dashboard-area__plot dashboard-capability__plot' });
-    wrap.append(plotEl);
-    const chart = await chartManager.create(plotEl, 'histogram', {
-      data: a.values,
-      binMethod: 'sturges',
-      showNormalCurve: true,
-      barColor: 'var(--color-accent)',
-      normalCurveColor: 'var(--color-info)',
-      refLines: specRefLines(r),
-      xLabel: i18n.t('modules.histogram.xLabel'),
-      yLabel: i18n.t('modules.histogram.yLabel'),
-      showTitle: false, showXLabel: false, showYLabel: false,
-      showXTicks: false, showYTicks: false, showLegend: false,
-    });
-    const entry = charts.get(host);
+  /**
+   * Create the histogram in the chart slot. A newer render or dispose
+   * invalidates a chart that is still being created.
+   * @param {HTMLElement} root  tile body
+   * @param {object} vm  view model from viewModel()
+   * @param {{chartManager: object}} args
+   * @returns {Promise<void>}
+   */
+  async mount(root, vm, { chartManager }) {
+    release(root);
+    const token = {};
+    charts.set(root, { chart: null, chartManager, token });
+    if (!vm.chart || !chartManager) return;
+
+    const slot = root.querySelector('[data-tile-slot="chart"]');
+    const chart = await chartManager.create(slot, 'histogram', { ...vm.chart });
+    const entry = charts.get(root);
     if (entry?.token !== token) { chartManager.destroy(chart); return; }
     entry.chart = chart;
   },

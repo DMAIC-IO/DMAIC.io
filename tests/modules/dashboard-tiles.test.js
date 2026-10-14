@@ -934,6 +934,30 @@ suite('dashboard tiles: process-capability', () => {
     assertTrue(host.querySelector('.dashboard-spc__metric') !== null);
     host.remove();
   });
+
+  test('viewModel: metrics, stats and histogram config as display data', () => {
+    const vm = vmOf(capabilityTile, CAP_STATE);
+    assertPlain({ ...vm, chart: null });
+    assertEqual(vm.empty, null);
+    assertEqual(vm.hint, null);
+    assertTrue(/^dashboard-spc__metric--(ok|warn|bad)$/.test(vm.metrics[0].modifier), vm.metrics[0].modifier);
+    assertEqual(vm.metrics[0].label, 'Cpk');
+    assertTrue(vm.metrics[0].sub.startsWith('Cp = '));
+    assertDeepEqual({ ...vm.metrics[1], value: null }, { modifier: '', value: null, label: 'Ppk', sub: null });
+    assertDeepEqual(vm.stats.map(s => s.label), ['dashboard.capabilityPpm', 'n']);
+    assertEqual(vm.stats[1].value, '10');
+    assertEqual(vm.chart.data.length, CAP_VALUES.length);
+    assertEqual(vm.chart.binMethod, 'sturges');
+    assertDeepEqual(vm.chart.refLines.map(l => l.label), ['LSL', 'USL', 'Target']);
+  });
+
+  test('viewModel: empty and no-data states, showChart off', () => {
+    const empty = vmOf(capabilityTile, {});
+    assertEqual(empty.empty, 'dashboard.capabilityEmpty');
+    assertEqual(empty.hint, null);
+    assertEqual(vmOf(capabilityTile, { embeddedValues: CAP_VALUES }).empty, 'dashboard.capabilityNoData');
+    assertEqual(vmOf(capabilityTile, CAP_STATE, { showChart: false }).chart, null);
+  });
 });
 
 const ATTR_D = { instanceId: 'w', sheetId: 's', columnId: 'd' };
@@ -1301,5 +1325,43 @@ suite('dashboard tiles: kano', () => {
     pending[0](); await first;
     assertTrue(destroyed.includes(made[0]), 'stale chart destroyed');
     assertTrue(!destroyed.includes(made[1]), 'current chart kept');
+  });
+
+  test('viewModel: bar, legend, totals and chart config as display data', () => {
+    const vm = vmOf(kanoTile, KANO_STATE);
+    assertPlain({ ...vm, chart: null });
+    assertEqual(vm.empty, null);
+    assertDeepEqual(vm.bar.map(b => b.cat), ['M', 'O', 'A']);
+    assertEqual(vm.bar[0].title, 'modules.kano.catM: 1');
+    assertTrue(vm.bar[0].style.endsWith(';background:var(--color-chart-1)'), vm.bar[0].style);
+    assertDeepEqual(vm.legend[0], { cat: 'M', dot: 'background:var(--color-chart-1)', text: ' modules.kano.catM: 1' });
+    assertDeepEqual(vm.totals, [
+      { label: 'dashboard.kanoCompleteness', value: '100 %' },
+      { label: 'dashboard.kanoItems', value: '3' },
+      { label: 'dashboard.kanoRespondents', value: '2' },
+    ]);
+    assertEqual(vm.warn, null);
+    assertEqual(vm.chart.series.length, 3);
+    assertEqual(vm.chart.refLines.length, 2);
+    assertEqual(vm.chart.xLabel, 'modules.kano.chartX');
+    assertEqual(vm.chart.yLabel, 'modules.kano.chartY');
+    assertEqual(vm.chart.showLegend, false);
+  });
+
+  test('viewModel: no chart config with showChart off or without cs/ds rows', () => {
+    assertEqual(vmOf(kanoTile, KANO_STATE, { showChart: false }).chart, null);
+    assertEqual(vmOf(kanoTile, kanoState({ r1: { i1: 'R', i2: 'Q' } })).chart, null);
+  });
+
+  test('viewModel: empty and no-data states', () => {
+    assertEqual(vmOf(kanoTile, undefined).empty, 'dashboard.kanoEmpty');
+    assertEqual(vmOf(kanoTile, kanoState({ r1: { i1: null, i2: null } })).empty, 'dashboard.kanoNoData');
+  });
+
+  test('the totals label carries its full text as title', async () => {
+    const { host } = await renderChartTile(kanoTile, KANO_STATE);
+    const label = host.querySelector('.dashboard-kano__totals .dashboard-spc__stat-label');
+    assertEqual(label.getAttribute('title'), 'dashboard.kanoCompleteness');
+    host.remove();
   });
 });

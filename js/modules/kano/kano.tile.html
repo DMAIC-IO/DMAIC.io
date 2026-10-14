@@ -1,0 +1,31 @@
+<template x-if="vm.empty">
+  <p class="dashboard-area__empty" x-text="vm.empty"></p>
+</template>
+<template x-if="!vm.empty">
+  <div class="dashboard-kano">
+    <div class="dashboard-fmea__bar">
+      <template x-for="seg in vm.bar">
+        <div class="dashboard-fmea__bar-seg" :data-cat="seg.cat" :style="seg.style" :title="seg.title"></div>
+      </template>
+    </div>
+    <div class="dashboard-fmea__legend">
+      <template x-for="l in vm.legend">
+        <span class="dashboard-fmea__legend-item" :data-cat="l.cat"><span class="dashboard-fmea__legend-dot" :style="l.dot"></span><span x-text="l.text"></span></span>
+      </template>
+    </div>
+    <div class="dashboard-kano__totals">
+      <template x-for="t in vm.totals">
+        <div class="dashboard-spc__stat">
+          <span class="dashboard-spc__stat-label" :title="t.label" x-text="t.label"></span>
+          <span class="dashboard-spc__stat-value" x-text="t.value"></span>
+        </div>
+      </template>
+    </div>
+    <template x-if="vm.warn">
+      <p class="dashboard-kano__warn" x-text="vm.warn"></p>
+    </template>
+    <template x-if="vm.chart">
+      <div class="dashboard-area__plot dashboard-kano__plot" data-tile-slot="chart"></div>
+    </template>
+  </div>
+</template>

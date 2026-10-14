@@ -1,0 +1,35 @@
+<template x-if="vm.empty">
+  <p class="dashboard-area__empty" x-text="vm.empty"></p>
+</template>
+<template x-if="vm.empty && vm.hint">
+  <p class="dashboard-capability__hint" x-text="vm.hint"></p>
+</template>
+<template x-if="!vm.empty">
+  <div class="dashboard-capability">
+    <div class="dashboard-spc__metrics">
+      <template x-for="m in vm.metrics">
+        <div class="dashboard-spc__metric" :class="m.modifier">
+          <span class="dashboard-spc__metric-value" x-text="m.value"></span>
+          <span class="dashboard-spc__metric-label" x-text="m.label"></span>
+          <template x-if="m.sub">
+            <span class="dashboard-spc__metric-sub" x-text="m.sub"></span>
+          </template>
+        </div>
+      </template>
+    </div>
+    <div class="dashboard-capability__stats">
+      <template x-for="s in vm.stats">
+        <div class="dashboard-spc__stat">
+          <span class="dashboard-spc__stat-label" x-text="s.label"></span>
+          <span class="dashboard-spc__stat-value" x-text="s.value"></span>
+        </div>
+      </template>
+    </div>
+    <template x-if="vm.hint">
+      <p class="dashboard-capability__hint" x-text="vm.hint"></p>
+    </template>
+    <template x-if="vm.chart">
+      <div class="dashboard-area__plot dashboard-capability__plot" data-tile-slot="chart"></div>
+    </template>
+  </div>
+</template>
