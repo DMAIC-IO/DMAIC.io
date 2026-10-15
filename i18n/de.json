@@ -750,6 +750,7 @@
   },
   "chart": {
     "renderError": "Diagramm konnte nicht gezeichnet werden.",
+    "exportError": "Das Bild konnte nicht exportiert werden.",
     "pareto": {
       "other": "Sonstige"
     },

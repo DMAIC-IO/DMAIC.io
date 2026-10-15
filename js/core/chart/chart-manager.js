@@ -4,6 +4,7 @@
  * Lazy-loads chart type modules on first use.
  */
 
+import { notify } from '../notify.js';
 import { createInstanceChartManager, createEditBoundChartManager, LABEL_EDIT_KEYS, TILE_EDIT_KEYS } from './instance-chart-manager.js';
 
 /** @type {Object<string, function(): Promise>} */
@@ -45,6 +46,8 @@ export default class ChartManager {
     this._ctorCache = new Map();
     /** @private @type {Set<import('./chart-base.js').default>} All live chart instances */
     this._charts = new Set();
+    /** @private Toast function; replaceable in tests. */
+    this._notify = notify;
 
     // React to theme changes — re-render all charts (colors re-resolved from CSS)
     this._eventBus.on('theme:changed', () => {
@@ -165,6 +168,41 @@ export default class ChartManager {
       await chart.exportSVG();
     } else {
       await chart.exportPNG();
+    }
+  }
+
+  /**
+   * Render a chart into a hidden host only for an image export, then remove it.
+   * The host is sized from the type's static contentSize(config) when present.
+   * A type that fails to load shows a `chart.exportError` toast and resolves.
+   * @param {string} type - Chart type key, e.g. 'node-diagram'
+   * @param {Object} config - Chart configuration
+   * @param {'png'|'svg'} format
+   * @param {string} filename - Download name without extension
+   * @returns {Promise<void>}
+   */
+  async exportOffscreen(type, config, format, filename) {
+    const host = document.createElement('div');
+    Object.assign(host.style, { position: 'fixed', left: '-100000px', top: '0', visibility: 'hidden' });
+    document.body.appendChild(host);
+    let chart = null;
+    try {
+      const Ctor = await this._loadType(type).catch(() => null);
+      const size = Ctor?.contentSize?.(config);
+      if (size) {
+        host.style.width = `${size.w}px`;
+        host.style.height = `${size.h}px`;
+      }
+      chart = await this.create(host, type, { ...config, showModebar: false, fileName: filename });
+      if (!chart) {
+        this._notify(this._i18n.t('chart.exportError'), 'error');
+        return;
+      }
+      chart.render();
+      await this.exportImage(chart, format);
+    } finally {
+      this.destroy(chart);
+      host.remove();
     }
   }
 

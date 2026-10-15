@@ -750,6 +750,7 @@
   },
   "chart": {
     "renderError": "The chart could not be drawn.",
+    "exportError": "The image could not be exported.",
     "pareto": {
       "other": "Other"
     },
