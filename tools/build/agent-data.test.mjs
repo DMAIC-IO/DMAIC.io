@@ -2270,3 +2270,220 @@ test('unresolvable_tojson: eine Pfeilfunktions-toJSON als Klassenfeld wird nicht
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unresolvable_tojson']);
 });
+
+test('undeclared_option_source: eine zustandsabhängige Menge über einen lokalen Namen ist ein Befund', () => {
+  // Die Form aus doe-advisor.js:170,176 — das dritte Argument ist ein
+  // Bezeichner, nicht `this.*`.
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} opt die Möglichkeit
+       * @returns {void}
+       */
+      answer(opt) {
+        const options = this.model.currentOptions;
+        requireEnum('opt', opt, options);
+        this.model.chosen = opt;
+      },`);
+  const root = fixture({ foo: {
+    'foo.js': vm,
+    'foo-model.js': `export class State {
+      /** @type {string} die Wahl */
+      chosen = '';
+      get currentOptions() { return ['a', 'b']; }
+      toJSON() { return { chosen: this.chosen }; }
+    }`,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['undeclared_option_source:answer:opt']);
+});
+
+test('undeclared_option_source: eine eingewickelte Menge wird am inneren Zugriff benannt', () => {
+  // Die Form aus unit-converter.js:217 — `Object.keys(this.model.unitKeys())`.
+  // Der Feldname ist der letzte an `this` hängende Zugriff: `unitKeys`.
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} unitKey die Einheit
+       * @returns {void}
+       */
+      setUnit(unitKey) {
+        requireEnum('unitKey', unitKey, Object.keys(this.model.unitKeys()));
+        this.model.chosen = unitKey;
+      },`);
+  const root = fixture({ foo: {
+    'foo.js': vm,
+    'foo-model.js': `export class State {
+      /** @type {string} die Wahl */
+      chosen = '';
+      unitKeys() { return { m: 1, km: 1000 }; }
+      toJSON() { return { chosen: this.chosen }; }
+    }`,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['undeclared_option_source:setUnit:unitKey']);
+});
+
+test('undeclared_option_source: auch requireKnownId zählt', () => {
+  // E1: die Spaltenmenge aus E3 wird mit requireKnownId geprüft. Ein Gate,
+  // das nur requireEnum ansieht, ließe den Vorzeigefall dieses Plans durch.
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} key der Schlüssel
+       * @returns {void}
+       */
+      setColumn(key) {
+        requireKnownId('key', key, this.pickableColumns());
+        this.model.chosen = key;
+      },`);
+  const root = fixture({ foo: {
+    'foo.js': vm,
+    'foo-model.js': `export class State {
+      /** @type {string} die Wahl */
+      chosen = '';
+      toJSON() { return { chosen: this.chosen }; }
+    }`,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['undeclared_option_source:setColumn:key']);
+});
+
+test('undeclared_option_source: eine Konstante als Wertemenge ist kein Befund', () => {
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} mode der Modus
+       * @returns {void}
+       */
+      setMode(mode) {
+        requireEnum('mode', mode, MODES);
+        this.model.chosen = mode;
+      },`);
+  const root = fixture({ foo: {
+    'foo.js': `const MODES = ['DEG', 'RAD'];\n${vm}`,
+    'foo-model.js': `export class State {
+      /** @type {string} die Wahl */
+      chosen = '';
+      toJSON() { return { chosen: this.chosen }; }
+    }`,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, []);
+});
+
+test('undeclared_option_source: ein deklariertes Lesefeld desselben Namens genügt', () => {
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} opt die Möglichkeit
+       * @returns {void}
+       */
+      answer(opt) {
+        const options = this.model.currentOptions;
+        requireEnum('opt', opt, options);
+        this.model.chosen = opt;
+      },`);
+  const root = fixture({ foo: {
+    // Der Typedef muss an der `export default`-Anweisung hängen, nicht am Dateikopf.
+    'foo.js': vm.replace('export default createModule', `/**
+ * @typedef {object} AgentRead
+ * @property {string} chosen  die Wahl
+ * @property {string[]} currentOptions  die Möglichkeiten der offenen Frage
+ */
+export default createModule`),
+    'foo-model.js': `export class State {
+      /** @type {string} die Wahl */
+      chosen = '';
+      get currentOptions() { return ['a', 'b']; }
+      toJSON() { return { chosen: this.chosen }; }
+    }`,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, []);
+});
+
+test('undeclared_option_source: eine _-präfixierte Menge ist kein Befund', () => {
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} v der Wert
+       * @returns {void}
+       */
+      pick(v) {
+        requireEnum('v', v, this._ids());
+        this.model.chosen = v;
+      },`);
+  const root = fixture({ foo: {
+    'foo.js': `${vm}`,
+    'foo-model.js': `export class State {
+      /** @type {string} die Wahl */
+      chosen = '';
+      toJSON() { return { chosen: this.chosen }; }
+    }`,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, []);
+});
+
+test('undeclared_option_source: ein parametrisierter Aufruf ist kein Befund', () => {
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} v der Wert
+       * @returns {void}
+       */
+      pick(v) {
+        requireEnum('v', v, this.idsFor(v));
+        this.model.chosen = v;
+      },`);
+  const root = fixture({ foo: {
+    'foo.js': `${vm}`,
+    'foo-model.js': `export class State {
+      /** @type {string} die Wahl */
+      chosen = '';
+      toJSON() { return { chosen: this.chosen }; }
+    }`,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, []);
+});
+
+test('undeclared_option_source: die Projektion eines deklarierten Feldes ist kein Befund', () => {
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} v der Wert
+       * @returns {void}
+       */
+      pick(v) {
+        requireEnum('v', v, this.model.items.map(i => i.id));
+        this.model.chosen = v;
+      },`);
+  const root = fixture({ foo: {
+    'foo.js': `${vm}`,
+    'foo-model.js': `export class State {
+      /** @type {string} die Wahl */
+      chosen = '';
+      /** @type {string[]} die Einträge */
+      items = [];
+      toJSON() { return { chosen: this.chosen, items: this.items }; }
+    }`,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, []);
+});
+
+test('undeclared_option_source: die Projektion eines nicht deklarierten Namens ist ein Befund', () => {
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} v der Wert
+       * @returns {void}
+       */
+      pick(v) {
+        requireEnum('v', v, this.activeParams().map(p => p.key));
+        this.model.chosen = v;
+      },`);
+  const root = fixture({ foo: {
+    'foo.js': `${vm}`,
+    'foo-model.js': `export class State {
+      /** @type {string} die Wahl */
+      chosen = '';
+      toJSON() { return { chosen: this.chosen }; }
+    }`,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['undeclared_option_source:pick:v']);
+});

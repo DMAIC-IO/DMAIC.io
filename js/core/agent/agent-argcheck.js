@@ -26,6 +26,13 @@
  * Ein neuer Prüfer nimmt eines dieser drei Listenwörter, oder er begründet
  * sein viertes hier.
  *
+ * Build-Gate `undeclared_option_source` (agent-data.mjs): hängt das dritte
+ * Argument von `requireEnum`/`requireKnownId` an `this` (`this.model.opts`,
+ * `Object.keys(this.model.keys())`, `this.columns()`), muss die Lesefläche
+ * dieselbe Menge unter diesem Namen nennen — sonst erfährt ein Agent sie nur
+ * aus dem Fehlschlag. Konstanten sind frei. Erkennung ist formgebunden;
+ * Spread im Array-Literal, `(x ?? [])` und Cache-Variablen sieht sie nicht.
+ *
  * Die Kernschicht benutzt von diesen Funktionen genau eine — `requireArity`,
  * aus `agent-ops.js` vor dem Methodenaufruf. Ein fehlendes Argument IST ein
  * ungültiges Argument eines Methodenaufrufs und gehört damit in dieselbe

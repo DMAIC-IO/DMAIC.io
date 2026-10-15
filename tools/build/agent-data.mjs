@@ -101,7 +101,7 @@ export function collectAgentData(appDir) {
 function buildEntry(resolver, appDir, viewmodelFile) {
   const sf = resolver.parse(viewmodelFile);
   const tagged = hasModuleTag(sf);
-  const { actions, violations, written } = readViewmodel(sf, resolver, appDir);
+  const { actions, violations, written, optionSources } = readViewmodel(sf, resolver, appDir);
 
   // Deklarierte Lesefläche hat Vorrang und ERSETZT die Model-Ableitung —
   // nicht ergänzt sie: zwei Quellen für dieselbe Fläche wäre genau die
@@ -160,11 +160,15 @@ function buildEntry(resolver, appDir, viewmodelFile) {
     .filter(f => !written.has(f))
     .map(f => `unreachable_write:${f}`);
   const templateCalls = bindings.calls.map(m => `template_model_call:${m}`);
+  // Zustandsabhängige Wertemengen (Task 2a): siehe `stateOptionSources`.
+  const undeclaredOptions = [...new Set(optionSources
+    .filter(o => !Object.prototype.hasOwnProperty.call(model.fields, o.field))
+    .map(o => `undeclared_option_source:${o.action}:${o.arg}`))];
 
   const reported = [...violations, ...surface, ...model.violations,
     ...persistence.violations, ...unreadable,
     ...invalidBulkKinds(model.fields), ...collectDomDetours(sf),
-    ...unreachable, ...templateCalls];
+    ...unreachable, ...templateCalls, ...undeclaredOptions];
   // Verstöße zählen nur, wenn das Modul etwas behauptet (Spec §9).
   const effective = tagged ? reported : [];
   return {
@@ -380,19 +384,20 @@ function hasModuleTag(sf) {
  * @param {ts.SourceFile} sf  die Moduldatei
  * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
  * @param {string} appDir  Wurzel von app/dev, Bezugspunkt der Herkunftsangaben
- * @returns {{ actions: Record<string, object>, violations: string[], written: Set<string> }}
+ * @returns {{ actions: Record<string, object>, violations: string[], written: Set<string>, optionSources: Array<{ action: string, arg: string, field: string }> }}
  */
 function readViewmodel(sf, resolver, appDir) {
   const actions = {};
   const violations = [];
   const written = new Set();
+  const optionSources = [];
   const literal = resolver.findDataReturnLiteral(sf);
   // Was der Generator NICHT sehen kann, muss er melden — sonst ginge ein
   // solches Modul mit gesetztem Modul-Tag und NULL Verstößen durch den Build
   // und würde `available: true`, obwohl keine einzige seiner Methoden
   // begutachtet wurde (Review-Befund I6/P1). Die Zusage aus Spec §9 („das
   // Modul-Tag ist maschinell nachgeprüft") wäre sonst eine leere Operation.
-  if (!literal) return { actions, violations: ['unresolvable_data_literal'], written };
+  if (!literal) return { actions, violations: ['unresolvable_data_literal'], written, optionSources };
 
   const { members, unresolved } = resolver.collectMembers(literal, sf);
   // Die unauflösbaren Spreads stehen VORAN: sie sind der Befund über die
@@ -451,8 +456,9 @@ function readViewmodel(sf, resolver, appDir) {
     // Vorlagenbindung NICHT ab — genau das ist der Unterschied zwischen
     // „ein Agent kann das Feld schreiben" und „irgendeine Methode tut es".
     for (const field of writtenModelFields(fn, resolver, modelDecl)) written.add(field);
+    for (const source of stateOptionSources(fn.body)) optionSources.push({ action: name, ...source });
   }
-  return { actions, violations, written };
+  return { actions, violations, written, optionSources };
 }
 
 /**
@@ -715,6 +721,100 @@ function expandDerivedNames(body, names) {
     }
   }
   return derived;
+}
+
+/**
+ * Zustandsabhängige Wertemengen einer `@agent`-Methode: Aufrufe von
+ * `requireEnum`/`requireKnownId`, deren drittes Argument an `this` hängt.
+ * Dann muss die Lesefläche die Menge nennen — sonst erfährt ein Agent sie
+ * nur aus einem Fehlschlag (Plan E1).
+ *
+ * Erkennung ist FORMGEBUNDEN, nicht fail closed. Das dritte Argument zählt,
+ * wenn es auf einen Zugriff an `this` zurückführt: direkt, über einen lokalen
+ * `const`-Alias auf der Top-Ebene des Körpers (Kette bis Fixpunkt), über
+ * EINEN fremden Wrapper-Aufruf (`Object.keys(this.model.unitKeys())`) oder mit
+ * angehängter Projektion (`.map(…)`/`.filter(…)`). Der abgeleitete Name ist
+ * das erste Segment nach `this.model.` bzw. `this.`, ohne `()`:
+ *   `this.model.currentOptions`           → `currentOptions`
+ *   `Object.keys(this.model.unitKeys())`  → `unitKeys`
+ *   `this.pickableColumns()`              → `pickableColumns`
+ * Kein Name ergibt sich bei: `_`-Präfix, Aufruf MIT Argumenten
+ * (`this.idsFor(x)`), bares `this.model`. DOKUMENTIERTER BLINDER FLECK:
+ * Spread im Array-Literal (`['all', ...this.owners()]`), `(x ?? []).map(…)`,
+ * Parameter-/Cache-Variablen und Konstanten — all das ist kein Befund.
+ * Ob der Name als Lesefeld deklariert ist, entscheidet `buildEntry`.
+ *
+ * @param {ts.Block|undefined} body
+ * @returns {Array<{ arg: string, field: string }>}
+ */
+function stateOptionSources(body) {
+  if (!body || !ts.isBlock(body)) return [];
+  const aliases = new Map();
+  for (const statement of body.statements) {
+    if (!ts.isVariableStatement(statement)) continue;
+    if (!(statement.declarationList.flags & ts.NodeFlags.Const)) continue;
+    for (const decl of statement.declarationList.declarations) {
+      if (ts.isIdentifier(decl.name) && decl.initializer) aliases.set(decl.name.text, decl.initializer);
+    }
+  }
+  const out = [];
+  forEachCall(body, call => {
+    if (!ts.isIdentifier(call.expression)) return;
+    if (call.expression.text !== 'requireEnum' && call.expression.text !== 'requireKnownId') return;
+    const [first, , allowed] = call.arguments;
+    if (!first || !allowed) return;
+    const field = optionFieldOf(allowed, aliases, new Set());
+    if (!field) return;
+    out.push({ arg: ts.isStringLiteralLike(first) ? first.text : first.getText(), field });
+  });
+  return out;
+}
+
+/**
+ * Das erste Segment nach `this.model.`/`this.`, wenn `expr` rein aus einer
+ * `this`-Kette besteht — oder `null`. Siehe `stateOptionSources`.
+ * @param {ts.Expression} expr
+ * @param {Map<string, ts.Expression>} aliases
+ * @param {Set<string>} seen  Zyklenschutz für Alias-Ketten
+ * @returns {string|null}
+ */
+function optionFieldOf(expr, aliases, seen) {
+  while (ts.isParenthesizedExpression(expr) || ts.isNonNullExpression(expr) || ts.isAsExpression(expr)) expr = expr.expression;
+  if (ts.isIdentifier(expr)) {
+    const init = aliases.get(expr.text);
+    if (!init || seen.has(expr.text)) return null;
+    seen.add(expr.text);
+    return optionFieldOf(init, aliases, seen);
+  }
+  if (ts.isCallExpression(expr)) {
+    const callee = expr.expression;
+    if (ts.isPropertyAccessExpression(callee) && (callee.name.text === 'map' || callee.name.text === 'filter')) {
+      return optionFieldOf(callee.expression, aliases, seen);
+    }
+    const segments = thisSegments(callee);
+    if (segments) return expr.arguments.length === 0 ? firstOptionSegment(segments) : null;
+    // Ein fremder Wrapper (`Object.keys(…)`): genau EIN Argument.
+    return expr.arguments.length === 1 ? optionFieldOf(expr.arguments[0], aliases, seen) : null;
+  }
+  const segments = thisSegments(expr);
+  return segments ? firstOptionSegment(segments) : null;
+}
+
+/** Die Segmente einer reinen `this.a.b`-Kette, sonst `null`. */
+function thisSegments(node) {
+  const segments = [];
+  while (ts.isPropertyAccessExpression(node)) {
+    segments.unshift(node.name.text);
+    node = node.expression;
+  }
+  return node.kind === ts.SyntaxKind.ThisKeyword && segments.length > 0 ? segments : null;
+}
+
+/** Erstes Segment nach `model.`, ohne `_`-Präfix; `null` bei bares `this.model`. */
+function firstOptionSegment(segments) {
+  const rest = segments[0] === 'model' ? segments.slice(1) : segments;
+  const name = rest[0];
+  return name && !name.startsWith('_') ? name : null;
 }
 
 /**
