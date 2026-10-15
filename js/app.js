@@ -8,6 +8,7 @@ import { bootKernel }     from './core/kernel.js';
 import { DmaicTiles }     from './ui/dmaic-tiles.js';
 import { Workspace }      from './ui/workspace.js';
 import { Modal }          from './ui/modal.js';
+import { createDialogService } from './ui/dialog/dialog.js';
 import { HelpPanel }      from './ui/help-panel.js';
 import { VERSION }        from './core/version.js';
 import { initNightlyMode }   from './core/nightly-mode.js';
@@ -45,6 +46,8 @@ async function init() {
   // ─── UI Components ───────────────────────────────────────
 
   const modal = new Modal(i18n);
+  // One dialog service for the whole app: modules get it as context.dialog.
+  const dialog = createDialogService({ i18n });
 
   initNightlyMode({ modal, i18n });
 
@@ -62,7 +65,7 @@ async function init() {
 
   const workspace = new Workspace(
     document.getElementById('app-workspace'),
-    { moduleRegistry, eventBus, stateManager, i18n, modal, notify, helpPanel, chartManager, examples: examplesRegistry, glossary: glossaryRegistry }
+    { moduleRegistry, eventBus, stateManager, i18n, modal, dialog, notify, helpPanel, chartManager, examples: examplesRegistry, glossary: glossaryRegistry }
   );
   workspace.render();
 
@@ -105,7 +108,7 @@ async function init() {
   setCreatePageRouter(router);
 
   // ─── Startup concerns (deeplink, prompts, viewport, auto-save, e2e) ───
-  const startupCtx = { ...kernel, modal, notify, workspace, exportReminder };
+  const startupCtx = { ...kernel, modal, dialog, notify, workspace, exportReminder };
   for (const task of startupTasks) await task.init(startupCtx);
 
   // ─── Update title ────────────────────────────────────────

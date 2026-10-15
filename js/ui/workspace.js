@@ -18,14 +18,16 @@ export class Workspace {
    * @param {import('../core/state-manager.js').StateManager} deps.stateManager
    * @param {import('../core/i18n.js').I18n} deps.i18n
    * @param {import('./modal.js').Modal} deps.modal
+   * @param {object} deps.dialog  dialog service (ui/dialog/dialog.js)
    */
-  constructor(container, { moduleRegistry, eventBus, stateManager, i18n, modal, ...rest }) {
+  constructor(container, { moduleRegistry, eventBus, stateManager, i18n, modal, dialog, ...rest }) {
     this._container = container;
     this._moduleRegistry = moduleRegistry;
     this._eventBus = eventBus;
     this._stateManager = stateManager;
     this._i18n = i18n;
     this._modal = modal;
+    this._dialog = dialog;
     this._context = rest; // remainder of context passed to modules
     this._activePhase = 'define';
     this._activeInstanceId = null;
@@ -563,6 +565,7 @@ export class Workspace {
       i18n: this._i18n,
       showModal: this._modal,
       confirmPopout: (message, options = {}) => confirmPopout(message, { ...options, i18n: this._i18n }),
+      dialog: this._dialog,
       notify: this._context.notify,
       chartManager: this._context.chartManager?.forInstance?.(instanceId, container) ?? this._context.chartManager,
       examples: this._context.examples,
@@ -588,7 +591,7 @@ export class Workspace {
     // Detached/headless mount must not drive user-facing UI:
     //  • notify → no-op, else loadExample() fires one toast per seeded module
     //    (toast storm).
-    //  • confirmPopout → auto-confirm, else modules whose Model.hasContent() is
+    //  • confirmPopout / dialog.confirm → auto-confirm, else modules whose Model.hasContent() is
     //    truthy by default (e.g. contour-plot, ce-matrix) open an overwrite
     //    modal inside loadExample() that never resolves headless and HANGS the
     //    whole seed. A freshly seeded instance holds only defaults, so there is
@@ -601,6 +604,7 @@ export class Workspace {
       ...this._buildContext(instanceId, container),
       notify: () => {},
       confirmPopout: async () => true,
+      dialog: { ...this._dialog, confirm: async () => true },
       detached: true,
       ...extraContext,
     };

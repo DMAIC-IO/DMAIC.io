@@ -11,6 +11,7 @@ function makeWorkspace(instantiateImpl) {
     stateManager: { get: () => ({}), getActiveProjectId: () => 'p1' },
     i18n: { t: (k) => k, getLanguage: () => 'de' },
     modal: () => {},
+    dialog: { confirm: async () => false, form: async () => false },
     notify: () => {},
     chartManager: {},
     examples: {},
@@ -69,6 +70,9 @@ suite('ui/workspace detached mount — headless contract', () => {
     assertEqual(seen.detached, true);
     assertEqual(typeof seen.notify, 'function');
     assertEqual(typeof seen.confirmPopout, 'function');
+    assertEqual(typeof seen.dialog.confirm, 'function', 'detached context has the dialog service');
+    assertEqual(await seen.dialog.confirm({ message: 'x' }), true, 'detached confirm auto-confirms');
+    assertEqual(typeof seen.dialog.form, 'function', 'the rest of the service is kept');
   });
 
   test('a normally mounted module is not marked detached', () => {

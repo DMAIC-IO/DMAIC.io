@@ -13,6 +13,7 @@ function makeContext(extra = {}) {
     i18n: { t: (k) => k, getLanguage: () => 'de' },
     notify: () => {},
     confirmPopout: async () => true,
+    dialog: { confirm: async () => true },
     stateManager: {
       get: (key) => (key === 'phases' ? phases : phases[key.split('.')[1]] ?? []),
       set: (key, value) => { phases[key.split('.')[1]] = value; },
