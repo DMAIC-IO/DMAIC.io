@@ -40,7 +40,7 @@ export function createDialogService({ i18n }) {
    * @param {KeyboardEvent} e
    */
   function onKeydown(e) {
-    if (e.key !== 'Escape' || stack.length === 0) return;
+    if (e.key !== 'Escape' || e.isComposing || stack.length === 0) return;
     e.stopImmediatePropagation();
     e.preventDefault();
     stack[stack.length - 1].dlg.dismiss();
@@ -89,6 +89,8 @@ export function createDialogService({ i18n }) {
       /** ✕, Escape and overlay click — only for dismissible dialogs. */
       dismiss() { if (dlg.dismissible) handlers.cancel(); },
       overlayPress() { dlg._overlayPressed = true; },
+      /** A press inside the window cancels a stale overlay press (one whose release happened elsewhere). */
+      windowPress() { dlg._overlayPressed = false; },
       /** A click counts only if it also started on the overlay — a drag released there does not. */
       overlayClick() {
         const pressed = dlg._overlayPressed;
@@ -193,5 +195,54 @@ export function createDialogService({ i18n }) {
     return { close };
   }
 
-  return { confirm, alert, show };
+  /**
+   * Form dialog. `content` is moved into the body slot (borrowed if it has a
+   * DOM home). Settles exactly once — a late confirm()/cancel() from a caller
+   * holding on to the api is a no-op and never re-runs onConfirm.
+   * @param {{ title: string, content: Node, size?: string, confirmLabel?: string,
+   *   cancelLabel?: string, hideConfirm?: boolean, deleteLabel?: string,
+   *   onMount?: (body: HTMLElement, api: {confirm: Function, cancel: Function}) => void,
+   *   onConfirm?: (body: HTMLElement) => (boolean|void),
+   *   onDelete?: (body: HTMLElement) => (boolean|void),
+   *   footerStart?: Node }} opts
+   * @returns {Promise<true|false|'deleted'>}
+   */
+  function form(opts) {
+    return new Promise((resolve) => {
+      let entry = null;
+      let settled = false;
+      const body = () => entry.root.querySelector('[data-dialog-slot="body"]');
+      const settle = (result) => {
+        if (settled) return;
+        settled = true;
+        unmount(entry);
+        resolve(result);
+      };
+      const runConfirm = () => {
+        if (settled) return;
+        if (opts.onConfirm && opts.onConfirm(body()) === false) return; // veto
+        settle(true);
+      };
+      const runDelete = () => {
+        if (settled) return;
+        if (opts.onDelete(body()) === false) return; // veto
+        settle('deleted');
+      };
+      const cancel = () => settle(false);
+      entry = mount('form', opts, { body: opts.content, footerStart: opts.footerStart },
+        { confirm: runConfirm, cancel, remove: runDelete });
+      if (opts.onMount) {
+        try {
+          opts.onMount(body(), { confirm: runConfirm, cancel });
+        } catch (err) {
+          // Never leave a dead dialog behind: remove it, then reject.
+          settled = true;
+          unmount(entry);
+          throw err;   // inside the executor → rejects the promise
+        }
+      }
+    });
+  }
+
+  return { confirm, alert, form, show };
 }

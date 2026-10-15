@@ -4,7 +4,8 @@
      @click.self="dlg.overlayClick()"
      @mousemove.window="dlg.popoutDragMove($event)"
      @mouseup.window="dlg.popoutDragEnd()">
-  <div class="dialog__window dmike-chart-popout" :style="dlg.popoutStyle()">
+  <div class="dialog__window dmike-chart-popout" :style="dlg.popoutStyle()"
+       @mousedown="dlg.windowPress()">
     <div class="dialog__titlebar dmike-chart-popout-titlebar" @mousedown="dlg.titlePress($event)">
       <span class="dialog__title" x-text="dlg.title"></span>
       <template x-if="dlg.dismissible">
