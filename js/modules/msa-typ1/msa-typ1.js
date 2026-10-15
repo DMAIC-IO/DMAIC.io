@@ -11,12 +11,21 @@
  * SVG charts are mounted imperatively (they are not pure-template concerns).
  *
  * Spec: docs/modules/MSA-TYP1.md
+ *
+ * @agent  Steuerbar über das Viewmodel: die sieben Parameter (setParam), die
+ *   Messwertspalte (setColumn) und das Rechnen selbst. Gelesen wird über
+ *   read() mit erklärter Lesefläche (AgentRead) — Konfiguration, wählbare
+ *   Mengen und gerechnetes Ergebnis. Der Agent bekommt Zahlen, keine
+ *   Diagramme.
  */
 
 import { createModule } from '../../core/template-module.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
+import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { State } from './msa-typ1-model.js';
 import { validate, analyze } from '../../engines/msa-typ1-engine.js';
-import { ColumnPicker, getColumnValues } from '../../ui/column-picker.js';
+import { ColumnPicker, getColumnValues, refToKey } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 
 /** @param {number} v @param {number} d @returns {string} */
@@ -31,6 +40,51 @@ function fmtP(p) {
   return p < 0.001 ? '< 0.001' : `= ${p.toFixed(3)}`;
 }
 
+/** Die sieben Parameter, die `setParam` annimmt (Reihenfolge wie im Model). */
+const PARAM_KEYS = ['name', 'ref', 'unit', 'lsl', 'usl', 'k1', 'k2'];
+
+/** Die Werte der beiden Auswahllisten (k₁ Anteil der Toleranz, k₂ Streuungsfaktor). */
+const K1_OPTIONS = ['0.2', '0.15', '0.1'];
+const K2_OPTIONS = ['3', '4', '6'];
+
+/** Je Parameter sein Prüfer; freie Texte nehmen nur eine Zeichenkette an. */
+const PARAM_CHECKS = {
+  name: (v) => requireText('value', v),
+  ref: (v) => requireText('value', v),
+  unit: (v) => requireText('value', v),
+  lsl: (v) => requireText('value', v),
+  usl: (v) => requireText('value', v),
+  k1: (v) => requireEnum('value', v, K1_OPTIONS),
+  k2: (v) => requireEnum('value', v, K2_OPTIONS),
+};
+
+/** Die Spalten-Slots dieses Moduls: genau einer, die Messwertspalte. */
+const COLUMN_SLOTS = ['value'];
+
+/** Je Slot der Filter, den der Wähler dieses Slots bekommt (Typ `'numeric'`). */
+const SLOT_FILTERS = { value: { types: ['numeric'] } };
+
+/** Je Slot die eine Zuweisungsstelle seines Model-Feldes. */
+const COLUMN_SINKS = { value: (m, ref) => { m.columnRef = ref; } };
+
+/**
+ * Die Agenten-Lesefläche von MSA Typ 1.
+ *
+ * Nicht die persistierte Form: das Model hält NUR die Eingaben, das Ergebnis
+ * entsteht transient am Viewmodel (`result`). Darum erklärt dieses Modul seine
+ * Lesefläche: Konfiguration, die zwei abgeleiteten Mengen, die `setParam` und
+ * `setColumn` prüfen, und das Ergebnis — ohne die interne
+ * Beispiel-Buchführung (`exampleWorksheetId`).
+ *
+ * @typedef {object} AgentRead
+ * @property {object} params  the entered parameters (name, ref, unit, lsl, usl, k1, k2), values as text as entered
+ * @property {object|null} columnRef  the chosen measurement column, `{ instanceId, sheetId, columnId }`, or null
+ * @property {string[]} activeParams  the keys `setParam` accepts in the current state
+ * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state
+ * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
+ * @property {object|null} result  the computed result, or null while the inputs are incomplete
+ * @property {string} errorMsg  the rejection of the last computation, empty if none
+ */
 const mod = createModule({
   config: {
     id: 'msa-typ1',
@@ -53,26 +107,105 @@ const mod = createModule({
       _debTimer: null,
       _renderGen: 0,
 
+      // ── Agent surface ─────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Konfiguration, wählbare Mengen und gerechnetes Ergebnis
+       */
+      read(options) {
+        return readAgentState('msa-typ1', {
+          ...this.model.toJSON(),
+          activeParams: this.activeParams(),
+          activeColumnSlots: this.activeColumnSlots(),
+          pickableColumns: this.pickableColumns(),
+          result: this.result,
+          errorMsg: this.errorMsg,
+        }, options);
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeParams */
+      activeParams() { return [...PARAM_KEYS]; },
+
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() { return [...COLUMN_SLOTS]; },
+
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() {
+        const sm = module._context.stateManager;
+        return Object.fromEntries(COLUMN_SLOTS.map(slot =>
+          [slot, pickableColumnList(sm, SLOT_FILTERS[slot])]));
+      },
+
+      /**
+       * Einen Parameter setzen.
+       * @agent
+       * @param {'name'|'ref'|'unit'|'lsl'|'usl'|'k1'|'k2'} key welcher Parameter
+       * @param {string} value der Wert als Text, wie er eingegeben würde
+       * @returns {void}
+       * @throws {Error} wenn `key` kein Parameter dieses Moduls ist
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        PARAM_CHECKS[key](value);
+        this.model.params[key] = value;
+        this.scheduleAnalysis();
+      },
+
+      /**
+       * Eine Spalte einem Slot zuweisen.
+       * @agent
+       * @param {'value'} slot der Slot; dieses Modul führt nur `value`
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
+       *   der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren
+       * @returns {void}
+       * @throws {Error} wenn `slot` unbekannt ist oder die Spalte nicht wählbar
+       */
+      setColumn(slot, ref) {
+        requireEnum('slot', slot, this.activeColumnSlots());
+        if (ref == null) {
+          COLUMN_SINKS[slot](this.model, null);
+          this._picker?.syncValue(null);
+          this.scheduleAnalysis();
+          return;
+        }
+        const keys = this.pickableColumns()[slot].map(c => c.key);
+        requireKnownId('ref', refToKey(ref), keys);
+        COLUMN_SINKS[slot](this.model, ref);
+        this._picker?.syncValue(ref);
+        this.scheduleAnalysis();
+      },
+
       // ── View transformations ──────────────────────────────────
 
+      /** @noagent view transform */
       fmt,
+      /** @noagent view transform */
       fmtOpt,
+      /** @noagent view transform */
       fmtP,
+      /** @noagent view transform */
       abs: (v) => Math.abs(v),
 
+      /** @noagent view transform */
       statusLabel(r) {
         if (r?.noSpread) return _t('statusNoSpread');
         return _t({ pass: 'statusPass', fail: 'statusFail', warn: 'statusWarn', none: 'statusOneSided' }[r?.overall] || 'statusWarn');
       },
+      /** @noagent view transform */
       badgeLabel: (s) => (s == null ? '–' : _t({ pass: 'capable', fail: 'notCapable', warn: 'condCapable' }[s] || 'condCapable')),
+      /** @noagent view transform */
       kpiModClass: (s) => ({ pass: 'dmike-kpi--good', warn: 'dmike-kpi--warn', fail: 'dmike-kpi--bad' }[s] || ''),
 
+      /** @noagent view transform */
       featureName() { return this.model.params.name || '–'; },
 
-      /** @returns {boolean} true when the analysis ran in two-sided tolerance mode. */
+      /** @noagent view transform @returns {boolean} true when the analysis ran in two-sided tolerance mode. */
       isTwoSided() { return this.result?.mode === 'two-sided'; },
 
-      /** @returns {string} formatted bias one-sample t-test line (always available, both modes). */
+      /** @noagent view transform @returns {string} formatted bias one-sample t-test line (always available, both modes). */
       biasTestText() {
         const bt = this.result?.biasTest;
         if (!bt || bt.t == null) return '–';
@@ -81,7 +214,7 @@ const mod = createModule({
         return `${line} · ${sig}`;
       },
 
-      /** Horizontal stats table columns (label/value pairs). */
+      /** @noagent view transform; Horizontal stats table columns (label/value pairs). */
       statCols() {
         const r = this.result;
         if (!r) return [];
@@ -102,11 +235,13 @@ const mod = createModule({
 
       // ── Analysis (controller — needs context + live worksheet data) ──
 
+      /** @noagent helper; Zahlenlesen der Rechnung */
       parseNum(s) {
         if (s == null || s === '') return NaN;
         return parseFloat(String(s).replace(',', '.').trim());
       },
 
+      /** @noagent helper; liest die Spaltenwerte der Rechnung */
       getColumnValues() {
         if (!this.model.columnRef) return [];
         return getColumnValues(module._context.stateManager, this.model.columnRef)
@@ -114,8 +249,10 @@ const mod = createModule({
       },
 
       /**
-       * Run analysis if all inputs are valid; otherwise silently clear results
-       * (no error shown — matches the legacy auto-analysis behaviour).
+       * Rechnet mit den aktuellen Eingaben. Unvollständige Eingaben lassen
+       * result auf null (keine Absage, wie die Oberfläche).
+       * @agent
+       * @returns {void}
        */
       runAnalysis() {
         if (!this.model.columnRef) return this.clearResults();
@@ -138,11 +275,21 @@ const mod = createModule({
         this.$nextTick(() => this._renderCharts(r, gen));
       },
 
+      /**
+       * Die Rechnung nach kurzer Ruhezeit anstoßen.
+       * @agent
+       * @returns {void}
+       */
       scheduleAnalysis() {
         clearTimeout(this._debTimer);
         this._debTimer = setTimeout(() => this.runAnalysis(), 600);
       },
 
+      /**
+       * Das Ergebnis und die Diagramme verwerfen.
+       * @agent
+       * @returns {void}
+       */
       clearResults() {
         this.result = null;
         this._destroyCharts();
@@ -228,6 +375,7 @@ const mod = createModule({
 
       // ── Algorithm Lab link ────────────────────────────────────
 
+      /** @noagent navigation */
       algoNavigate(algoId, event) {
         event?.stopPropagation();
         if (algoId && module._context.eventBus) {
@@ -243,9 +391,9 @@ const mod = createModule({
         this._picker?.destroy();
         this._picker = new ColumnPicker(wrap, module._context, {
           mode: 'single',
-          types: ['numeric'],
+          ...SLOT_FILTERS.value,
           onChange: (ref) => {
-            this.model.columnRef = ref;
+            COLUMN_SINKS.value(this.model, ref);
             this.runAnalysis();
           },
         });
@@ -254,6 +402,7 @@ const mod = createModule({
 
       // ── Lifecycle (per Alpine component) ──────────────────────
 
+      /** @noagent lifecycle */
       init() {
         // Fresh per-instance collections (the data() object is shared by Alpine.data).
         this._charts = [];
@@ -278,6 +427,7 @@ const mod = createModule({
         this.runAnalysis();
       },
 
+      /** @noagent lifecycle */
       destroy() {
         for (const unsub of this._unsubs) unsub();
         this._unsubs = [];

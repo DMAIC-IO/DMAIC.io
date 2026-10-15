@@ -2336,6 +2336,39 @@
     "msa-typ1": {
       "name": "MSA Typ 1 (Cg/Cgk)",
       "description": "Messmittelanalyse Typ 1 — Wiederholbarkeit (Cg) und Bias (Cgk)",
+      "whenToUse": "Wenn die Eignung eines einzelnen Messmittels geprüft werden soll: ein Normal oder Referenzteil wird wiederholt gemessen, daraus folgen Wiederholbarkeit (Cg) und Bias (Cgk) — nicht für Messsysteme mit mehreren Prüfern oder Teilen, dafür sind die Typ-2-, Typ-4-, Typ-5- und Typ-6-Studien da. Setzt die Messwerte als numerische Spalte einer Datensammlung voraus.",
+      "actions": {
+        "read": {
+          "help": "Liefert die Eingaben, die wählbaren Mengen und das gerechnete Ergebnis. result ist null, solange die Eingaben unvollständig sind.",
+          "params": { "options": "Optional; dieses Modul führt keine Massendaten." }
+        },
+        "setParam": {
+          "help": "Setzt einen Parameter der Studie; die Neuberechnung folgt nach kurzer Ruhezeit.",
+          "params": {
+            "key": "Einer der Schlüssel aus activeParams: name, ref, unit, lsl, usl, k1 oder k2. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert als Text, zum Beispiel '10' oder '0.5'; die leere Zeichenkette leert das Feld. k1 nimmt '0.2', '0.15' oder '0.1', k2 nimmt '3', '4' oder '6'."
+          }
+        },
+        "setColumn": {
+          "help": "Verweist die Messwertreihe auf eine numerische Spalte einer Datensammlung; die Neuberechnung folgt nach kurzer Ruhezeit.",
+          "params": {
+            "slot": "Einer der Slots aus activeColumnSlots; dieses Modul führt nur 'value'.",
+            "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Leeren."
+          }
+        },
+        "runAnalysis": { "help": "Rechnet mit den aktuellen Eingaben. Mehrfachaufruf ist unschädlich; unvollständige Eingaben lassen result auf null." },
+        "scheduleAnalysis": { "help": "Stößt die Rechnung nach kurzer Ruhezeit an; eine zweite Anforderung davor ersetzt die erste." },
+        "clearResults": { "help": "Verwirft das Ergebnis; die Eingaben bleiben." }
+      },
+      "fields": {
+        "params": { "help": "Die eingegebenen Parameter, Werte als Text: name (Merkmal), ref (Referenzwert), unit (Einheit), lsl und usl (Toleranzgrenzen, leer für einseitig), k1 (Anteil der Toleranz) und k2 (Streuungsfaktor)." },
+        "columnRef": { "help": "Die gewählte Messwertspalte als { instanceId, sheetId, columnId }, oder null." },
+        "activeParams": { "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt." },
+        "activeColumnSlots": { "help": "Die Slots, die setColumn im aktuellen Zustand annimmt." },
+        "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'." },
+        "result": { "help": "Das gerechnete Ergebnis mit Cg, Cgk, Bias und den Einzelwerten, oder null, solange die Eingaben unvollständig sind." },
+        "errorMsg": { "help": "Die Absage der letzten Rechnung, leer wenn keine." }
+      },
       "sectionParams": "Parameter",
       "sectionValues": "Messwerte eingeben",
       "featureName": "Bezeichnung / Merkmal",

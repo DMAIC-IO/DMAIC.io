@@ -4177,50 +4177,117 @@ export const AGENT_REGISTRY = {
     }
   },
   "msa-typ1": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:abs",
-      "unmarked_method:statusLabel",
-      "unmarked_method:badgeLabel",
-      "unmarked_method:kpiModClass",
-      "unmarked_method:featureName",
-      "unmarked_method:isTwoSided",
-      "unmarked_method:biasTestText",
-      "unmarked_method:statCols",
-      "unmarked_method:parseNum",
-      "unmarked_method:getColumnValues",
-      "unmarked_method:runAnalysis",
-      "unmarked_method:scheduleAnalysis",
-      "unmarked_method:clearResults",
-      "unmarked_method:algoNavigate",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unreachable_write:params.name",
-      "unreachable_write:params.ref",
-      "unreachable_write:params.unit",
-      "unreachable_write:params.lsl",
-      "unreachable_write:params.usl",
-      "unreachable_write:params.k1",
-      "unreachable_write:params.k2"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'name'|'ref'|'unit'|'lsl'|'usl'|'k1'|'k2'",
+            "optional": false,
+            "help": "welcher Parameter"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "der Wert als Text, wie er eingegeben würde"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Parameter setzen."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'value'",
+            "optional": false,
+            "help": "der Slot; dieses Modul führt nur `value`"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Spalte einem Slot zuweisen."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Rechnet mit den aktuellen Eingaben. Unvollständige Eingaben lassen result auf null (keine Absage, wie die Oberfläche)."
+      },
+      "scheduleAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Die Rechnung nach kurzer Ruhezeit anstoßen."
+      },
+      "clearResults": {
+        "params": [],
+        "returns": "void",
+        "help": "Das Ergebnis und die Diagramme verwerfen."
+      }
+    },
     "fields": {
       "params": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object",
+        "help": "the entered parameters (name, ref, unit, lsl, usl, k1, k2), values as text as entered",
+        "bulk": false,
+        "derived": true
       },
       "columnRef": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the chosen measurement column, `{ instanceId, sheetId, columnId }`, or null",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "the computed result, or null while the inputs are incomplete",
+        "bulk": false,
+        "derived": true
+      },
+      "errorMsg": {
+        "type": "string",
+        "help": "the rejection of the last computation, empty if none",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -8665,4 +8732,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":29};
+export const AGENT_COVERAGE = {"total":74,"available":30};
