@@ -4286,54 +4286,131 @@ export const AGENT_REGISTRY = {
     }
   },
   "msa-typ2": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:statusLabel",
-      "unmarked_method:badgeLabel",
-      "unmarked_method:ndcBadge",
-      "unmarked_method:kpiModClass",
-      "unmarked_method:typeLabel",
-      "unmarked_method:statusDetail",
-      "unmarked_method:isVerdictBasis",
-      "unmarked_method:grrKpiClass",
-      "unmarked_method:grrKpiSub",
-      "unmarked_method:hasProcess",
-      "unmarked_method:fmtP",
-      "unmarked_method:anovaRows",
-      "unmarked_method:varCompHasTol",
-      "unmarked_method:varCompRows",
-      "unmarked_method:parseNum",
-      "unmarked_method:runAnalysis",
-      "unmarked_method:scheduleAnalysis",
-      "unmarked_method:clearResults",
-      "unmarked_method:algoNavigate",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unreachable_write:params.lsl",
-      "unreachable_write:params.usl",
-      "unreachable_write:params.alpha",
-      "unreachable_write:params.k",
-      "unreachable_write:params.verdictBasis",
-      "unreachable_write:params.sigmaHist"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'lsl'|'usl'|'alpha'|'k'|'verdictBasis'|'sigmaHist'",
+            "optional": false,
+            "help": "welcher Parameter"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "der Wert als Text, wie er eingegeben würde"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Parameter setzen."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'part'|'operator'|'measurement'",
+            "optional": false,
+            "help": "der Slot"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Spalte einem Slot zuweisen."
+      },
+      "runAnalysis": {
+        "params": [
+          {
+            "name": "options",
+            "type": "{ showErrors?: boolean }",
+            "optional": true,
+            "help": ""
+          }
+        ],
+        "returns": "void",
+        "help": "Run analysis if all inputs are valid. Missing columns or no usable data clear the results silently; invalid inputs (validation failure) clear them and show the validation message — unless `showErrors` is false (debounced typing), so the message only appears once the field is committed."
+      },
+      "scheduleAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Die Rechnung nach kurzer Ruhezeit anstoßen."
+      },
+      "clearResults": {
+        "params": [
+          {
+            "name": "msg",
+            "type": "string",
+            "optional": true,
+            "help": "validation message to show ('' clears it)"
+          }
+        ],
+        "returns": "void",
+        "help": "Das Ergebnis und die Diagramme verwerfen, optional mit Meldung."
+      }
+    },
     "fields": {
       "params": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object",
+        "help": "the entered parameters (lsl, usl, alpha, k, verdictBasis, sigmaHist), values as text as entered",
+        "bulk": false,
+        "derived": true
       },
       "columnRefs": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object",
+        "help": "the chosen columns per slot (part, operator, measurement), each `{ instanceId, sheetId, columnId }` or null",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "the computed Gage R&R result, or null while the inputs are incomplete or invalid",
+        "bulk": false,
+        "derived": true
+      },
+      "errorMsg": {
+        "type": "string",
+        "help": "the rejection of the last computation, empty if none",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -8726,4 +8803,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":30};
+export const AGENT_COVERAGE = {"total":74,"available":31};

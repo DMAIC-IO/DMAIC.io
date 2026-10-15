@@ -2433,6 +2433,45 @@
     "msa-typ2": {
       "name": "MSA Typ 2/3 (Gage R&R)",
       "description": "Messmittelanalyse Typ 2 (mit Prüfer, Gage R&R) und Typ 3 (ohne Prüfer, automatisierte Messsysteme)",
+      "whenToUse": "Wenn ein Messsystem mit mehreren Teilen (und meist mehreren Prüfern) bewertet werden soll: eine gekreuzte Studie liefert Wiederholbarkeit und Reproduzierbarkeit (Gage R&R) per ANOVA; ohne Prüferspalte rechnet das Modul als Typ 3 für automatisierte Messsysteme — nicht für die Eignung eines einzelnen Messmittels an einem Normal, dafür ist Typ 1 da. Setzt Teile, optional Prüfer und die Messwerte als Spalten einer Datensammlung voraus.",
+      "actions": {
+        "read": {
+          "help": "Liefert die Eingaben, die wählbaren Mengen und das gerechnete Ergebnis. result ist null, solange die Eingaben unvollständig oder ungültig sind; errorMsg nennt dann den Grund.",
+          "params": { "options": "Optional; dieses Modul führt keine Massendaten." }
+        },
+        "setParam": {
+          "help": "Setzt einen Parameter der Studie; die Neuberechnung folgt nach kurzer Ruhezeit.",
+          "params": {
+            "key": "Einer der Schlüssel aus activeParams: lsl, usl, alpha, k, verdictBasis oder sigmaHist. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert als Text, zum Beispiel '9.5' oder '0.05'; die leere Zeichenkette leert das Feld. k nimmt '6' oder '5.15', verdictBasis nimmt 'auto', 'tolerance' oder 'studyVar'."
+          }
+        },
+        "setColumn": {
+          "help": "Verweist einen der drei Slots auf eine Spalte einer Datensammlung; die Neuberechnung folgt nach kurzer Ruhezeit.",
+          "params": {
+            "slot": "Einer der Slots aus activeColumnSlots: part (Teile), operator (Prüfer, optional) oder measurement (Messwerte, numerisch).",
+            "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Leeren."
+          }
+        },
+        "runAnalysis": {
+          "help": "Rechnet mit den aktuellen Eingaben. Mehrfachaufruf ist unschädlich; fehlende Spalten leeren result still, ungültige Eingaben leeren es und setzen errorMsg.",
+          "params": { "options": "Optional; { showErrors: false } unterdrückt die Meldung in errorMsg." }
+        },
+        "scheduleAnalysis": { "help": "Stößt die Rechnung nach kurzer Ruhezeit an; eine zweite Anforderung davor ersetzt die erste." },
+        "clearResults": {
+          "help": "Verwirft das Ergebnis; die Eingaben bleiben.",
+          "params": { "msg": "Optional; eine Meldung, die in errorMsg stehen soll." }
+        }
+      },
+      "fields": {
+        "params": { "help": "Die eingegebenen Parameter, Werte als Text: lsl und usl (Toleranzgrenzen, leer für fehlend), alpha (Signifikanzniveau), k (Streuungsfaktor 6 oder 5.15), verdictBasis (Bezug des Urteils) und sigmaHist (historische Streuung, leer für keine)." },
+        "columnRefs": { "help": "Die gewählten Spalten je Slot (part, operator, measurement) als { instanceId, sheetId, columnId }, oder null." },
+        "activeParams": { "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt." },
+        "activeColumnSlots": { "help": "Die Slots, die setColumn im aktuellen Zustand annimmt." },
+        "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'." },
+        "result": { "help": "Das gerechnete Gage-R&R-Ergebnis mit ANOVA, Varianzkomponenten, %GRR und ndc, oder null, solange die Eingaben unvollständig oder ungültig sind." },
+        "errorMsg": { "help": "Die Absage der letzten Rechnung als Text, leer wenn keine." }
+      },
       "typeLabelTyp2": "Typ 2",
       "typeLabelTyp3": "Typ 3",
       "operatorHint": "Prüfer-Spalte leer lassen für Typ 3 (ohne Prüfereinfluss)",

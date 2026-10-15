@@ -13,13 +13,22 @@
  * charts are mounted imperatively (they are not pure-template concerns).
  *
  * Spec: docs/modules/MSA-TYP2.md
+ *
+ * @agent  Steuerbar über das Viewmodel: die sechs Parameter (setParam), die drei
+ *   Spalten Prüfeinheit, Prüfer und Messwert (setColumn) und das Rechnen selbst.
+ *   Gelesen wird über read() mit erklärter Lesefläche (AgentRead) —
+ *   Konfiguration, wählbare Mengen und gerechnetes Ergebnis. Der Agent bekommt
+ *   Zahlen, keine Diagramme.
  */
 
 import { toNum } from '../../core/chart/chart-data-prep.js';
 import { createModule } from '../../core/template-module.js';
-import { State } from './msa-typ2-model.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
+import { pickableColumnList } from '../../core/agent/agent-options.js';
+import { State, K_OPTIONS, VERDICT_BASES } from './msa-typ2-model.js';
 import { validate, analyze } from '../../engines/msa-typ2-engine.js';
-import { ColumnPicker, getColumnValues } from '../../ui/column-picker.js';
+import { ColumnPicker, getColumnValues, refToKey, keyToRef } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 import { panelsFromCells } from '../../engines/gage-run-chart-engine.js';
 import { renderGageRunStrips } from '../../core/chart/gage-run-strips.js';
@@ -27,6 +36,50 @@ import { renderGageRunStrips } from '../../core/chart/gage-run-strips.js';
 /** @param {number} v @param {number} d @returns {string} */
 function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–'; }
 
+/** Die sechs Parameter, die `setParam` annimmt (Reihenfolge wie im Model). */
+const PARAM_KEYS = ['lsl', 'usl', 'alpha', 'k', 'verdictBasis', 'sigmaHist'];
+
+/** Je Parameter sein Prüfer; freie Texte nehmen nur eine Zeichenkette an. */
+const PARAM_CHECKS = {
+  lsl: (v) => requireText('value', v),
+  usl: (v) => requireText('value', v),
+  alpha: (v) => requireText('value', v),
+  k: (v) => requireEnum('value', v, K_OPTIONS),
+  verdictBasis: (v) => requireEnum('value', v, VERDICT_BASES),
+  sigmaHist: (v) => requireText('value', v),
+};
+
+/** Die Spalten-Slots dieses Moduls: Prüfeinheit, Prüfer, Messwert. */
+const COLUMN_SLOTS = ['part', 'operator', 'measurement'];
+
+/** Je Slot der Filter, den der Wähler dieses Slots bekommt. */
+const SLOT_FILTERS = { part: {}, operator: {}, measurement: { types: ['numeric'] } };
+
+/** Je Slot die eine Zuweisungsstelle seines Model-Feldes. */
+const COLUMN_SINKS = {
+  part: (m, ref) => { m.columnRefs.part = ref; },
+  operator: (m, ref) => { m.columnRefs.operator = ref; },
+  measurement: (m, ref) => { m.columnRefs.measurement = ref; },
+};
+
+/**
+ * Die Agenten-Lesefläche von MSA Typ 2.
+ *
+ * Nicht die persistierte Form: das Model hält NUR die Eingaben, das Ergebnis
+ * entsteht transient am Viewmodel (`result`). Darum erklärt dieses Modul seine
+ * Lesefläche: Konfiguration, die zwei abgeleiteten Mengen, die `setParam` und
+ * `setColumn` prüfen, und das Ergebnis — ohne die interne
+ * Beispiel-Buchführung (`exampleWorksheetId`) und ohne die Streifendiagramme.
+ *
+ * @typedef {object} AgentRead
+ * @property {object} params  the entered parameters (lsl, usl, alpha, k, verdictBasis, sigmaHist), values as text as entered
+ * @property {object} columnRefs  the chosen columns per slot (part, operator, measurement), each `{ instanceId, sheetId, columnId }` or null
+ * @property {string[]} activeParams  the keys `setParam` accepts in the current state
+ * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state
+ * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
+ * @property {object|null} result  the computed Gage R&R result, or null while the inputs are incomplete or invalid
+ * @property {string} errorMsg  the rejection of the last computation, empty if none
+ */
 const mod = createModule({
   config: {
     id: 'msa-typ2',
@@ -49,16 +102,95 @@ const mod = createModule({
       _debTimer: null,
       _renderGen: 0,
 
+      // ── Agent surface ─────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Konfiguration, wählbare Mengen und gerechnetes Ergebnis
+       */
+      read(options) {
+        return readAgentState('msa-typ2', {
+          ...this.model.toJSON(),
+          activeParams: this.activeParams(),
+          activeColumnSlots: this.activeColumnSlots(),
+          pickableColumns: this.pickableColumns(),
+          result: this.result,
+          errorMsg: this.errorMsg,
+        }, options);
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeParams */
+      activeParams() { return [...PARAM_KEYS]; },
+
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() { return [...COLUMN_SLOTS]; },
+
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() {
+        const sm = module._context.stateManager;
+        return Object.fromEntries(COLUMN_SLOTS.map(slot =>
+          [slot, pickableColumnList(sm, SLOT_FILTERS[slot])]));
+      },
+
+      /**
+       * Einen Parameter setzen.
+       * @agent
+       * @param {'lsl'|'usl'|'alpha'|'k'|'verdictBasis'|'sigmaHist'} key welcher Parameter
+       * @param {string} value der Wert als Text, wie er eingegeben würde
+       * @returns {void}
+       * @throws {Error} wenn `key` kein Parameter dieses Moduls ist
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        PARAM_CHECKS[key](value);
+        this.model.params[key] = value;
+        this.scheduleAnalysis();
+      },
+
+      /**
+       * Eine Spalte einem Slot zuweisen.
+       * @agent
+       * @param {'part'|'operator'|'measurement'} slot der Slot
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
+       *   der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren
+       * @returns {void}
+       * @throws {Error} wenn `slot` unbekannt ist oder die Spalte nicht wählbar
+       */
+      setColumn(slot, ref) {
+        requireEnum('slot', slot, this.activeColumnSlots());
+        if (ref == null) {
+          COLUMN_SINKS[slot](this.model, null);
+          this._pickers[slot]?.syncValue(null);
+          this.scheduleAnalysis();
+          return;
+        }
+        const keys = this.pickableColumns()[slot].map(c => c.key);
+        requireKnownId('ref', refToKey(ref), keys);
+        const clean = keyToRef(refToKey(ref));
+        COLUMN_SINKS[slot](this.model, clean);
+        this._pickers[slot]?.syncValue(clean);
+        this.scheduleAnalysis();
+      },
+
       // ── View transformations ──────────────────────────────────
 
+      /** @noagent view transform */
       fmt,
 
+      /** @noagent view transform */
       statusLabel: (s) => _t({ pass: 'statusPass', fail: 'statusFail', warn: 'statusWarn' }[s] || 'statusWarn'),
+      /** @noagent view transform */
       badgeLabel: (s) => _t({ pass: 'capable', fail: 'notCapable', warn: 'condCapable' }[s] || 'condCapable'),
+      /** @noagent view transform */
       ndcBadge: (s) => (s === 'pass' ? _t('capable') : _t('notCapable')),
+      /** @noagent view transform */
       kpiModClass: (s) => ({ pass: 'dmike-kpi--good', warn: 'dmike-kpi--warn', fail: 'dmike-kpi--bad' }[s] || ''),
+      /** @noagent view transform */
       typeLabel: (mode) => _t(mode === 'typ3' ? 'typeLabelTyp3' : 'typeLabelTyp2'),
 
+      /** @noagent view transform */
       statusDetail(r) {
         const basis = ` — ${_t('basisPrefix')}: ${_t(r.verdictBasis === 'tolerance' ? 'verdictBasisTolerance' : 'verdictBasisStudyVar')}`;
         return r.mode === 'typ3'
@@ -66,33 +198,35 @@ const mod = createModule({
           : `— ${r.p} ${_t('parts')}, ${r.o} ${_t('operators')}, ${r.r} ${_t('replicates')} — n = ${r.n}${basis}`;
       },
 
-      /** True if the %GRR tile of `basis` carries the verdict. */
+      /** @noagent view transform; True if the %GRR tile of `basis` carries the verdict. */
       isVerdictBasis(basis) {
         return Boolean(this.result && this.result.verdictBasis === basis);
       },
 
-      /** Status class for a %GRR tile: coloured only on the effective basis. */
+      /** @noagent view transform; Status class for a %GRR tile: coloured only on the effective basis. */
       grrKpiClass(basis) {
         return this.isVerdictBasis(basis) ? this.kpiModClass(this.result.grrStatus) : '';
       },
 
-      /** Sub line of a %GRR tile: threshold and badge on the verdict tile, reference otherwise. */
+      /** @noagent view transform; Sub line of a %GRR tile: threshold and badge on the verdict tile, reference otherwise. */
       grrKpiSub(basis) {
         if (this.isVerdictBasis(basis)) return `${_t('threshold')}: < 10 % · ${this.badgeLabel(this.result.grrStatus)}`;
         return _t(basis === 'tolerance' ? 'ofTolerance' : 'ofStudyVar');
       },
 
+      /** @noagent view transform */
       hasProcess() {
         return Boolean(this.result && this.result.varComp.grr.pctProcess != null);
       },
 
+      /** @noagent view transform */
       fmtP(p) {
         if (p == null || isNaN(p)) return '–';
         if (p < 0.001) return '< 0.001';
         return p.toFixed(3);
       },
 
-      /** ANOVA table rows. Operator/interaction rows only for Typ 2. */
+      /** @noagent view transform; ANOVA table rows. Operator/interaction rows only for Typ 2. */
       anovaRows() {
         const r = this.result;
         if (!r) return [];
@@ -115,11 +249,12 @@ const mod = createModule({
         return rows;
       },
 
+      /** @noagent view transform */
       varCompHasTol() {
         return Boolean(this.result && this.result.varComp.grr.pctTolerance != null);
       },
 
-      /** Variance components table rows. */
+      /** @noagent view transform; Variance components table rows. */
       varCompRows() {
         const r = this.result;
         if (!r) return [];
@@ -159,6 +294,7 @@ const mod = createModule({
 
       // ── Analysis (controller — needs context + live worksheet data) ──
 
+      /** @noagent view transform */
       parseNum(s) {
         if (s == null || s === '') return NaN;
         return parseFloat(String(s).replace(',', '.').trim());
@@ -208,9 +344,12 @@ const mod = createModule({
        * them and show the validation message — unless `showErrors` is false
        * (debounced typing), so the message only appears once the field is
        * committed.
+       * @agent
        * @param {{ showErrors?: boolean }} [options]
+       * @returns {void}
        */
-      runAnalysis({ showErrors = true } = {}) {
+      runAnalysis(options = {}) {
+        const { showErrors = true } = options;
         // A commit supersedes a pending debounced run, which would clear its message.
         clearTimeout(this._debTimer);
         const refs = this.model.columnRefs;
@@ -239,12 +378,22 @@ const mod = createModule({
         this.$nextTick(() => this._renderCharts(r, gen));
       },
 
+      /**
+       * Die Rechnung nach kurzer Ruhezeit anstoßen.
+       * @agent
+       * @returns {void}
+       */
       scheduleAnalysis() {
         clearTimeout(this._debTimer);
         this._debTimer = setTimeout(() => this.runAnalysis({ showErrors: false }), 600);
       },
 
-      /** @param {string} [msg] validation message to show ('' clears it) */
+      /**
+       * Das Ergebnis und die Diagramme verwerfen, optional mit Meldung.
+       * @agent
+       * @param {string} [msg] validation message to show ('' clears it)
+       * @returns {void}
+       */
       clearResults(msg = '') {
         this.errorMsg = msg;
         this.result = null;
@@ -253,6 +402,7 @@ const mod = createModule({
 
       // ── Algorithm Lab link ────────────────────────────────────
 
+      /** @noagent view transform */
       algoNavigate(algoId, event) {
         event?.stopPropagation();
         if (algoId && module._context.eventBus) {
@@ -555,22 +705,22 @@ const mod = createModule({
 
       _mountPickers() {
         const pickerConfig = [
-          { role: 'part', wrap: 'col-part-wrap', types: null },
-          { role: 'operator', wrap: 'col-operator-wrap', types: null },
-          { role: 'measurement', wrap: 'col-measurement-wrap', types: ['numeric'] },
+          { role: 'part', wrap: 'col-part-wrap' },
+          { role: 'operator', wrap: 'col-operator-wrap' },
+          { role: 'measurement', wrap: 'col-measurement-wrap' },
         ];
-        for (const { role, wrap, types } of pickerConfig) {
+        for (const { role, wrap } of pickerConfig) {
           const el = module._container.querySelector(`[data-ref="${wrap}"]`);
           if (!el) continue;
           this._pickers[role]?.destroy();
           const opts = {
             mode: 'single',
+            ...SLOT_FILTERS[role],
             onChange: (ref) => {
-              this.model.columnRefs[role] = ref;
+              COLUMN_SINKS[role](this.model, ref);
               this.runAnalysis();
             },
           };
-          if (types) opts.types = types;
           this._pickers[role] = new ColumnPicker(el, module._context, opts);
           if (this.model.columnRefs[role]) this._pickers[role].value = this.model.columnRefs[role];
         }
@@ -578,6 +728,7 @@ const mod = createModule({
 
       // ── Lifecycle (per Alpine component) ──────────────────────
 
+      /** @noagent view transform */
       init() {
         // Fresh per-instance collections (the data() object is shared by Alpine.data).
         this._charts = [];
@@ -611,6 +762,7 @@ const mod = createModule({
         this.runAnalysis();
       },
 
+      /** @noagent view transform */
       destroy() {
         for (const unsub of this._unsubs) unsub();
         this._unsubs = [];

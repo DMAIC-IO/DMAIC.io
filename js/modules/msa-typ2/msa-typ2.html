@@ -25,13 +25,13 @@
         <label x-text="t('lsl')"></label>
         <input type="text" class="field field--num" data-ref="inp-lsl"
                placeholder="24.900" inputmode="decimal"
-               x-model="model.params.lsl" @input="scheduleAnalysis()" @change="runAnalysis()">
+               :value="model.params.lsl" @input="setParam('lsl', $event.target.value)" @change="runAnalysis()">
       </div>
       <div class="field-group">
         <label x-text="t('usl')"></label>
         <input type="text" class="field field--num" data-ref="inp-usl"
                placeholder="25.100" inputmode="decimal"
-               x-model="model.params.usl" @input="scheduleAnalysis()" @change="runAnalysis()">
+               :value="model.params.usl" @input="setParam('usl', $event.target.value)" @change="runAnalysis()">
       </div>
     </div>
 
@@ -39,11 +39,11 @@
       <div class="field-group">
         <label x-text="t('alphaLabel')"></label>
         <input type="text" class="field field--num" data-ref="inp-alpha" inputmode="decimal"
-               x-model="model.params.alpha" @input="scheduleAnalysis()" @change="runAnalysis()">
+               :value="model.params.alpha" @input="setParam('alpha', $event.target.value)" @change="runAnalysis()">
       </div>
       <div class="field-group">
         <label x-text="t('kLabel')"></label>
-        <select class="field" data-ref="inp-k" x-model="model.params.k" @change="runAnalysis()">
+        <select class="field" data-ref="inp-k" :value="model.params.k" @input="setParam('k', $event.target.value)" @change="runAnalysis()">
           <option value="6" x-text="t('kOption6')"></option>
           <option value="5.15" x-text="t('kOption515')"></option>
         </select>
@@ -53,7 +53,7 @@
     <div class="msa-typ2__row">
       <div class="field-group msa-typ2__field--wide">
         <label x-text="t('verdictBasisLabel')"></label>
-        <select class="field" data-ref="inp-verdict-basis" x-model="model.params.verdictBasis" @change="runAnalysis()">
+        <select class="field" data-ref="inp-verdict-basis" :value="model.params.verdictBasis" @input="setParam('verdictBasis', $event.target.value)" @change="runAnalysis()">
           <option value="auto" x-text="t('verdictBasisAuto')"></option>
           <option value="tolerance" x-text="t('verdictBasisTolerance')"></option>
           <option value="studyVar" x-text="t('verdictBasisStudyVar')"></option>
@@ -62,7 +62,7 @@
       <div class="field-group">
         <label x-text="t('sigmaHistLabel')"></label>
         <input type="text" class="field field--num" data-ref="inp-sigma-hist" inputmode="decimal"
-               x-model="model.params.sigmaHist" @input="scheduleAnalysis()" @change="runAnalysis()">
+               :value="model.params.sigmaHist" @input="setParam('sigmaHist', $event.target.value)" @change="runAnalysis()">
       </div>
     </div>
 

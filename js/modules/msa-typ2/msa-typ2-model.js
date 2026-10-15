@@ -12,10 +12,10 @@
  */
 
 /** Allowed study-variation factor options (string form, matching the <select> values). */
-const K_OPTIONS = ['6', '5.15'];
+export const K_OPTIONS = ['6', '5.15'];
 
 /** Allowed verdict bases ('auto' = tolerance when both limits exist). */
-const VERDICT_BASES = ['auto', 'tolerance', 'studyVar'];
+export const VERDICT_BASES = ['auto', 'tolerance', 'studyVar'];
 
 /**
  * Coerce a persisted numeric/string field into the raw string the input shows.
