@@ -90,7 +90,7 @@
 
           <div class="dmike-split__section-title" x-text="t('functions')"></div>
           <template x-for="fn in model.functions" :key="fn.id">
-            <article class="tfa__fn" :class="fnClass(fn)" data-role="function" :data-id="fn.id" @click="select(fn.id)">
+            <article class="tfa__fn" :class="fnClass(fn)" data-role="function" :data-id="fn.id" @click="selectFunction(fn.id)">
               <div class="tfa__fn-row">
                 <select class="field" data-role="fn-carrier" :aria-label="t('carrier')" @change="setCarrier(fn, $event)">
                   <option value="" x-text="t('selectPlaceholder')"></option>

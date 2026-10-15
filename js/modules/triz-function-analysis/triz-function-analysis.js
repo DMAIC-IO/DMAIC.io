@@ -137,7 +137,8 @@ export default createModule({
       },
       fnClass(fn) {
         return [
-          fn.id === this.selectedId ? 'tfa__fn--selected' : '',
+          // The row itself, or a component it uses, is selected
+          this.selectedId && [fn.id, fn.carrier, fn.object].includes(this.selectedId) ? 'tfa__fn--selected' : '',
           fn.type === 'harmful' ? 'tfa__fn--harmful' : '',
         ].filter(Boolean).join(' ');
       },
@@ -246,6 +247,8 @@ export default createModule({
 
       // ── Selection ──
       select(id) { this.selectedId = this.selectedId === id ? null : id; },
+      /** Card clicks only select: editing a row must not toggle its selection. */
+      selectFunction(id) { this.selectedId = id; },
     };
   },
 });

@@ -361,9 +361,20 @@ suite('node-diagram — link decorations', () => {
     const pts = points(wavePath({ x1: 0, y1: 0, x2: 100, y2: 0 }));
     assertDeepEqual(pts[0], [0, 0]);
     assertDeepEqual(pts[pts.length - 1], [100, 0]);
-    assertEqual(pts.length, 51, '100 px sampled every 2 px');
+    assertEqual(pts.length, 47, '90 px of wave sampled every 2 px, plus the tail end');
     assertTrue(pts.every(([, y]) => Math.abs(y) <= 3), 'amplitude ≤ 3');
     assertTrue(pts.some(([, y]) => Math.abs(y) > 2), 'actually waves');
+  });
+
+  test('wavePath ends in a straight tail so an end marker points along the link', () => {
+    const p = { x1: 10, y1: 20, x2: 116.4, y2: 99.8 };   // 133 px, diagonal
+    const pts = points(wavePath(p));
+    const [ax, ay] = pts[pts.length - 2];
+    const [bx, by] = pts[pts.length - 1];
+    const linkAngle = Math.atan2(p.y2 - p.y1, p.x2 - p.x1);
+    const lastAngle = Math.atan2(by - ay, bx - ax);
+    assertTrue(Math.abs(lastAngle - linkAngle) < 0.02, `last segment along the link (${lastAngle} vs ${linkAngle})`);
+    assertTrue(Math.hypot(bx - ax, by - ay) >= 8, 'tail at least 8 px long');
   });
 
   test('style wave draws the wave path', () => {

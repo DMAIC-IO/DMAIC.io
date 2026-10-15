@@ -75,26 +75,32 @@ const LABEL = { h: 16, charW: 6.2, padX: 4, radius: 3 };
 let markerSeq = 0;
 
 /**
- * Sine path along a segment. The wavelength is stretched so a whole number of
- * half waves fits; the path starts and ends exactly on the endpoints.
+ * Sine path along a segment, ending in a straight tail so an end marker
+ * (orient="auto") points along the link. The wavelength is stretched so a
+ * whole number of half waves fits before the tail; the path starts and ends
+ * exactly on the endpoints.
  * @param {{x1:number,y1:number,x2:number,y2:number}} p
  * @param {number} [amp=3] @param {number} [wavelength=10] @param {number} [step=2]
+ * @param {number} [tail=10] - length of the straight end piece
  * @returns {string}
  */
-export function wavePath(p, amp = 3, wavelength = 10, step = 2) {
+export function wavePath(p, amp = 3, wavelength = 10, step = 2, tail = 10) {
   const dx = p.x2 - p.x1, dy = p.y2 - p.y1;
   const len = Math.hypot(dx, dy);
   if (len === 0) return `M ${p.x1} ${p.y1}`;
+  const end = `${r2(p.x2)} ${r2(p.y2)}`;
+  const waveLen = len - tail;
+  if (waveLen < wavelength) return `M ${r2(p.x1)} ${r2(p.y1)} L ${end}`;
   const ux = dx / len, uy = dy / len;
-  const halves = Math.max(1, Math.round((2 * len) / wavelength));
-  const n = Math.max(2, Math.ceil(len / step));
+  const halves = Math.max(1, Math.round((2 * waveLen) / wavelength));
+  const n = Math.max(2, Math.ceil(waveLen / step));
   const pts = [];
   for (let i = 0; i <= n; i++) {
-    const s = (len * i) / n;
-    const o = amp * Math.sin((Math.PI * halves * s) / len);
+    const s = (waveLen * i) / n;
+    const o = amp * Math.sin((Math.PI * halves * s) / waveLen);
     pts.push(`${r2(p.x1 + ux * s - uy * o)} ${r2(p.y1 + uy * s + ux * o)}`);
   }
-  return `M ${pts[0]} L ${pts.slice(1).join(' L ')}`;
+  return `M ${pts[0]} L ${pts.slice(1).join(' L ')} L ${end}`;
 }
 
 /**
