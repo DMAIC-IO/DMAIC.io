@@ -11,28 +11,10 @@
  */
 
 import Alpine from '@alpinejs/csp';
-import { h, cloneTemplate } from '../../core/dom.js';
+import { h, cloneTemplate, stripBlankText } from '../../core/dom.js';
 
 /** Latest render token per tile body; a render whose token is no longer current is dropped. */
 const renders = new WeakMap();
-
-const BLANK = /^[ \t\n\r]*$/;
-
-/**
- * Remove whitespace-only text nodes, recursively and inside nested
- * <template> contents, so indented templates render like h() output.
- * Non-breaking spaces are kept.
- * @param {Node} node
- */
-function stripBlankText(node) {
-  for (const child of [...node.childNodes]) {
-    if (child.nodeType === Node.TEXT_NODE) {
-      if (BLANK.test(child.data)) child.remove();
-    } else if (child.nodeType === Node.ELEMENT_NODE) {
-      stripBlankText(child instanceof HTMLTemplateElement ? child.content : child);
-    }
-  }
-}
 
 /**
  * Replace the body content with a fresh clone of the template, scoped to vm.
