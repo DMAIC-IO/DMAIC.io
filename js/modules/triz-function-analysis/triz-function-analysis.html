@@ -41,7 +41,40 @@
       </template>
     </div>
 
-    <!-- TASK7_INTERACTIONS -->
+    <!-- ── Tab: Interactions ── -->
+    <div class="dmike-tab-content" :class="contentClass('interactions')"
+      data-tab-content="interactions" x-show="model.activeTab === 'interactions'">
+      <p class="tfa__hint" data-role="matrix-empty" x-show="model.components.length < 2" x-text="t('matrixEmpty')"></p>
+      <div class="tfa__matrix-wrap" x-show="model.components.length >= 2">
+        <table class="tfa__matrix" data-role="matrix">
+          <thead>
+            <tr>
+              <th></th>
+              <template x-for="c in matrixComponents()" :key="c.id">
+                <th scope="col" :class="headClass(c)" x-text="c.name"></th>
+              </template>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="(r, ri) in matrixComponents()" :key="r.id">
+              <tr>
+                <th scope="row" :class="headClass(r)" x-text="r.name"></th>
+                <template x-for="(c, ci) in matrixComponents()" :key="c.id">
+                  <td :class="cellClass(ri, ci)">
+                    <button type="button" class="tfa__cell-btn" data-role="cell" :data-a="r.id" :data-b="c.id"
+                      x-show="ci > ri" :aria-pressed="isTicked(r, c) ? 'true' : 'false'" :title="cellTitle(r, c)"
+                      @click="toggleCell(r, c)">
+                      <span class="icon icon--sm" data-icon="action.confirm" x-show="isTicked(r, c)"></span>
+                    </button>
+                  </td>
+                </template>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+        <p class="tfa__hint" data-role="matrix-summary" x-text="matrixSummary()"></p>
+      </div>
+    </div>
     <!-- TASK8_MODEL -->
   </div>
 </section>

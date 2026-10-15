@@ -8,7 +8,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import {
-  State, KINDS, LEVELS, TABS,
+  State, KINDS, LEVELS, TABS, orderedComponents, openPairs,
 } from './triz-function-analysis-model.js';
 
 export default createModule({
@@ -68,6 +68,26 @@ export default createModule({
         if (!ok) return;
         this.model.removeComponent(c.id);
         if (this.selectedId === c.id) this.selectedId = null;
+      },
+
+      // ── Interaction matrix ──
+      matrixComponents() { return orderedComponents(this.model.components); },
+      headClass(c) { return `tfa__mh tfa__mh--${c.kind}`; },
+      cellClass(ri, ci) {
+        if (ci === ri) return 'tfa__cell tfa__cell--diag';
+        return ci > ri ? 'tfa__cell' : 'tfa__cell tfa__cell--off';
+      },
+      isTicked(r, c) { return this.model.hasInteraction(r.id, c.id); },
+      cellTitle(r, c) {
+        const n = this.model.usersOf(r.id, c.id);
+        return n ? _t('pairLocked', { count: n }) : '';
+      },
+      toggleCell(r, c) {
+        const res = this.model.toggleInteraction(r.id, c.id);
+        if (!res.ok && res.usedBy) notify(_t('pairLocked', { count: res.usedBy }));
+      },
+      matrixSummary() {
+        return _t('matrixSummary', { count: this.model.interactions.length, open: openPairs(this.model).length });
       },
 
       // ── Selection ──

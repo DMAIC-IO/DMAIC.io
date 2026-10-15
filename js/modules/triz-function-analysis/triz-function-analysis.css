@@ -29,3 +29,59 @@
 .tfa__add {
   align-self: flex-start;
 }
+
+/* Interaction matrix */
+.tfa__hint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.tfa__matrix-wrap {
+  overflow: auto;
+}
+
+.tfa__matrix {
+  border-collapse: collapse;
+}
+
+.tfa__mh {
+  padding: 4px 8px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-align: left;
+}
+
+thead .tfa__mh {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  text-align: left;
+}
+
+.tfa__mh--target { color: var(--color-accent); font-weight: 700; }
+.tfa__mh--supersystem { font-style: italic; }
+
+.tfa__cell {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--color-border-primary);
+  text-align: center;
+}
+
+.tfa__cell--diag,
+.tfa__cell--off {
+  background: var(--color-bg-tertiary);
+}
+
+.tfa__cell-btn {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--color-accent);
+  cursor: pointer;
+}
+
+.tfa__cell-btn:hover {
+  background: var(--color-bg-secondary);
+}
