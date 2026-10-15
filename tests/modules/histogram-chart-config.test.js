@@ -4,6 +4,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import { State } from '../../js/modules/histogram/histogram-model.js';
 import { buildChartConfig, copyBack, toOverrides } from '../../js/modules/histogram/histogram-chart-config.js';
+import { histogramData } from '../../js/modules/histogram/histogram.js';
 
 const AUTO = { title: 'Histogramm: A', xLabel: 'Wert', yLabel: 'Häufigkeit' };
 const series = () => [{ name: 'A', values: [1, 2, 3], visible: true, fillColor: 'f', borderColor: 'b', borderWidth: 1, borderStyle: 'solid', pattern: '', patternColor: '', patternSolidity: 0.4, showNormalCurve: true }];
@@ -55,5 +56,47 @@ suite('histogram module — chart config', () => {
     const back = State.fromJSON(JSON.parse(JSON.stringify(m.toJSON())));
     assertEqual(back.chartConfig.yLabel, 'Anzahl');
     assertTrue(back.chartConfig.title === '');
+  });
+});
+
+suite('histogram module — error state', () => {
+  function mount() {
+    const container = document.createElement('div');
+    container.innerHTML = '<div data-ref="placeholder" style="display:none"></div>'
+      + '<div data-ref="chart-area"></div><div data-ref="stats-panel"></div><div data-ref="error-box"></div>';
+    const module = {
+      _container: container,
+      _context: {
+        i18n: { t: (k) => k },
+        chartManager: { destroy: () => {} },
+      },
+    };
+    const c = histogramData(module, (k) => k);
+    c.model = new State();
+    c._seriesData = [{ name: 'A', values: [1, 2, 3, 4, 5], fillColor: 'rgb(1 2 3)', visible: true }];
+    return { c, container };
+  }
+  const q = (el, ref) => el.querySelector(`[data-ref="${ref}"]`);
+
+  test('stats table renders for valid series data', () => {
+    const { c, container } = mount();
+    c._renderStats();
+    assertTrue(q(container, 'stats-panel').children.length > 0);
+  });
+
+  test('an error clears series, hides stats and chart, shows the placeholder', () => {
+    const { c, container } = mount();
+    c._renderStats();
+    c._showError('boom');
+    assertEqual(c._seriesData, null);
+    assertEqual(q(container, 'stats-panel').children.length, 0);
+    assertEqual(q(container, 'chart-area').style.display, 'none');
+    assertEqual(q(container, 'placeholder').style.display, '');
+    c.confLevelChanged({ target: { value: '90' } });
+    assertEqual(q(container, 'stats-panel').children.length, 0);
+    c.model.showStats = true;
+    c._renderStats();
+    assertEqual(q(container, 'stats-panel').children.length, 0);
+    clearTimeout(c._errorTimer);
   });
 });
