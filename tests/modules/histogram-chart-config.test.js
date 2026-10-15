@@ -71,7 +71,7 @@ suite('histogram module — destroy before the queued auto-plot', () => {
         i18n: { t: (k) => k },
         eventBus: { on: () => {}, off: () => {} },
         stateManager: { getModuleState: () => null },
-        chartManager: { create: async (...a) => { created.push(a); return { id: created.length }; }, update: () => {}, destroy: () => {} },
+        chartManager: { create: async (...a) => { created.push(a); return { id: created.length, refreshEditor: () => {} }; }, update: () => {}, destroy: () => {} },
       },
     };
     const c = histogramData(module, (k) => k);
