@@ -8,7 +8,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import {
-  State, KINDS, LEVELS, TABS, orderedComponents, openPairs,
+  State, KINDS, LEVELS, TABS, orderedComponents, openPairs, rankOf, disadvantages,
 } from './triz-function-analysis-model.js';
 
 export default createModule({
@@ -89,6 +89,62 @@ export default createModule({
       matrixSummary() {
         return _t('matrixSummary', { count: this.model.interactions.length, open: openPairs(this.model).length });
       },
+
+      // ── Function model: open pairs and function cards ──
+      openPairChips() {
+        const order = new Map(this.matrixComponents().map((c, i) => [c.id, i]));
+        const name = (id) => label(this.model.component(id));
+        return openPairs(this.model).map((p) => {
+          const [a, b] = order.get(p.a) <= order.get(p.b) ? [p.a, p.b] : [p.b, p.a];
+          return { key: `${a}|${b}`, a, b, label: `${name(a)} — ${name(b)}` };
+        });
+      },
+      createFromPair(p) { this.selectedId = this.model.addFunction(p.a, p.b).id; },
+      addFunction() { this.selectedId = this.model.addFunction().id; },
+      setCarrier(fn, ev) {
+        if (!this.model.setEndpoints(fn.id, ev.target.value, fn.object)) {
+          ev.target.value = fn.carrier;
+          notify(_t('sameEndpoint'));
+        }
+      },
+      setObject(fn, ev) {
+        if (!this.model.setEndpoints(fn.id, fn.carrier, ev.target.value)) {
+          ev.target.value = fn.object;
+          notify(_t('sameEndpoint'));
+        }
+      },
+      setVerb(fn, ev) { fn.verb = ev.target.value; },
+      setParameter(fn, ev) { fn.parameter = ev.target.value; },
+      changeType(fn, ev) { this.model.setType(fn.id, ev.target.value); },
+      changeLevel(fn, ev) { this.model.setLevel(fn.id, ev.target.value); },
+      swap(fn) { this.model.swapDirection(fn.id); },
+      removeFunction(fn) {
+        this.model.removeFunction(fn.id);
+        if (this.selectedId === fn.id) this.selectedId = null;
+      },
+      rankLabel(fn) {
+        const r = rankOf(fn, this.model.components);
+        return r ? _t(`rank.${r}`) : '';
+      },
+      fnClass(fn) {
+        return [
+          fn.id === this.selectedId ? 'tfa__fn--selected' : '',
+          fn.type === 'harmful' ? 'tfa__fn--harmful' : '',
+        ].filter(Boolean).join(' ');
+      },
+
+      // ── Disadvantages ──
+      disadvantageGroups() {
+        const all = disadvantages(this.model);
+        return ['harmful', 'insufficient', 'excessive']
+          .map((kind) => ({
+            kind,
+            title: _t(`disadvantage.${kind}`),
+            items: all.filter((d) => d.kind === kind).map((d) => ({ ...d, verb: d.verb || _t('verbMissing') })),
+          }))
+          .filter((g) => g.items.length > 0);
+      },
+      paramText(d) { return d.parameter ? ` (${d.parameter})` : ''; },
 
       // ── Selection ──
       select(id) { this.selectedId = this.selectedId === id ? null : id; },

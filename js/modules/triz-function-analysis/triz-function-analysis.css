@@ -85,3 +85,95 @@ thead .tfa__mh {
 .tfa__cell-btn:hover {
   background: var(--color-bg-secondary);
 }
+
+/* Function model */
+.tfa__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs, 6px);
+  margin-bottom: var(--space-sm, 10px);
+}
+
+.tfa__chip {
+  padding: 2px 10px;
+  border: 1px dashed var(--color-border-primary);
+  border-radius: 999px;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.tfa__chip:hover {
+  border-color: var(--color-accent);
+}
+
+.tfa__fn {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-xs, 6px);
+  margin-bottom: var(--space-xs, 6px);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md, 6px);
+  background: var(--color-bg-primary);
+}
+
+.tfa__fn--harmful {
+  border-left: 3px solid var(--color-error);
+}
+
+.tfa__fn--selected {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.tfa__fn-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto auto;
+  gap: 4px;
+  align-items: center;
+}
+
+.tfa__fn-row + .tfa__fn-row {
+  grid-template-columns: 1fr 1fr 1fr auto;
+}
+
+.tfa__rank {
+  padding: 1px 6px;
+  border-radius: var(--radius-sm, 3px);
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs, 0.75rem);
+  white-space: nowrap;
+}
+
+.tfa__disadvantages {
+  border-top: 1px solid var(--color-border-primary);
+  padding-top: var(--space-sm, 10px);
+}
+
+.tfa__dis-title {
+  margin: var(--space-xs, 6px) 0 2px;
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.tfa__dis-group[data-kind="harmful"] .tfa__dis-title { color: var(--color-error); }
+.tfa__dis-group[data-kind="insufficient"] .tfa__dis-title,
+.tfa__dis-group[data-kind="excessive"] .tfa__dis-title { color: var(--color-warning); }
+
+.tfa__dis-list {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.tfa__dis {
+  cursor: pointer;
+}
+
+.tfa__dis:hover {
+  color: var(--color-accent);
+}
+
+.tfa__dis-param {
+  color: var(--color-text-secondary);
+}
