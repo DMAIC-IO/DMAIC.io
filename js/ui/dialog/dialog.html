@@ -20,7 +20,7 @@
       <div class="dialog__body" data-dialog-slot="body"></div>
       <template x-if="dlg.isProgress()">
         <div class="action-modal" role="status" aria-live="polite" :aria-label="dlg.progressLabel">
-          <div class="app-loading__spinner" x-show="dlg.progress.spinner"></div>
+          <div class="app-loading__spinner" :style="dlg.spinnerStyle()"></div>
           <div class="action-modal__subtitle" x-text="dlg.progress.subtitle"></div>
           <div class="action-modal__progress" x-show="dlg.progress.line" x-text="dlg.progress.line"></div>
           <ul class="action-modal__list" aria-live="off" x-show="dlg.hasItems()">
@@ -38,12 +38,12 @@
           <div class="action-modal__body" x-show="dlg.progress.note">
             <p class="action-modal__failed" x-text="dlg.progress.note"></p>
           </div>
-          <div class="action-modal__footer" x-show="dlg.progress.holding">
-            <template x-if="dlg.progress.holding">
+          <template x-if="dlg.progress.holding">
+            <div class="action-modal__footer">
               <button type="button" class="btn btn--primary dialog__confirm action-modal__confirm"
                       x-text="dlg.progress.holdLabel" @click="dlg.holdConfirm()"></button>
-            </template>
-          </div>
+            </div>
+          </template>
         </div>
       </template>
     </div>

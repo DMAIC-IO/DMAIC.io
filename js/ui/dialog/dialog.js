@@ -13,11 +13,8 @@ import Alpine from '@alpinejs/csp';
 import { cloneTemplate, stripBlankText } from '../../core/dom.js';
 import { draggablePopout } from '../draggable-popout.js';
 import { buildDialogState } from './dialog-state.js';
+import { createProgress, STATUS_ICON, STATUS_LABEL } from './progress.js';
 
-/** Row markers of the progress list; `pending` shows a dot instead. */
-const STATUS_ICON = { ok: 'status.ok', failed: 'status.error' };
-/** Translated aria-label per row status. */
-const STATUS_LABEL = { pending: 'actions.itemPending', ok: 'actions.itemLoaded', failed: 'actions.itemFailed' };
 
 /** Inlined template key of the shell. */
 export const DIALOG_TEMPLATE = 'js/ui/dialog/dialog.html';
@@ -80,7 +77,7 @@ export function createDialogService({ i18n }) {
         size: `width:${state.width}px;height:auto;max-height:80vh;`,
         initialPosition: `left:calc(50% - ${half}px);top:10vh`,
       }),
-      progress: { spinner: true, subtitle: '', line: '', note: '', items: [], holding: false, holdLabel: '' },
+      progress: { spinner: true, subtitle: '', line: '', note: '', items: [], holding: false, holdLabel: '', ...opts.progress },
       _overlayPressed: false,
       confirm() { handlers.confirm(); },
       cancel() { handlers.cancel(); },
@@ -106,6 +103,8 @@ export function createDialogService({ i18n }) {
       itemClass(item) { return `action-modal__item action-modal__item--${item.status}`; },
       itemPending(item) { return item.status === 'pending'; },
       itemSettled(item) { return item.status !== 'pending'; },
+      /** A :style binding (not x-show) so the hidden state lands in the same flush as the hold button. */
+      spinnerStyle() { return dlg.progress.spinner ? '' : 'display:none'; },
       pendingMark() { return '·'; },
       itemIcon(item) { return STATUS_ICON[item.status] || ''; },
       itemIconClass(item) { return item.status === 'ok' ? 'icon icon--sm icon--success' : 'icon icon--sm icon--danger'; },
@@ -244,5 +243,45 @@ export function createDialogService({ i18n }) {
     });
   }
 
-  return { confirm, alert, form, show };
+  /**
+   * A fresh progress controller (see progress.js). The app creates one.
+   * @returns {object}
+   */
+  function progress() {
+    return createProgress({
+      i18n,
+      openShell({ title, subtitle = '', onHoldConfirm }) {
+        // The initial subtitle goes in with the state so the first render
+        // already shows it (later changes only render on the next tick).
+        const entry = mount('progress', { title, progress: { subtitle } }, {}, {
+          confirm() {}, cancel() {}, holdConfirm: onHoldConfirm,
+        });
+        let observer = null;
+        return {
+          dlg: entry.dlg,
+          focusHold() {
+            // The button is rendered by an x-if, so it does not exist yet:
+            // focus it as soon as it shows up (the observer callback runs
+            // after Alpine's flush).
+            const find = () => entry.root.querySelector('.action-modal__confirm');
+            if (find()) { find().focus(); return; }
+            observer = new MutationObserver(() => {
+              const btn = find();
+              if (!btn) return;
+              observer.disconnect();
+              observer = null;
+              btn.focus();
+            });
+            observer.observe(entry.root, { childList: true, subtree: true });
+          },
+          close() {
+            if (observer) { observer.disconnect(); observer = null; }
+            unmount(entry);
+          },
+        };
+      },
+    });
+  }
+
+  return { confirm, alert, form, show, progress };
 }
