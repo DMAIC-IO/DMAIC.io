@@ -24,6 +24,10 @@ import { checkSkipList, parseRunnerFiles } from './skip-list-check.mjs';
 
 const TESTS_DIR = dirname(fileURLToPath(import.meta.url));
 
+// Pin the time zone: date suites guard calendar-day handling east of UTC and
+// would fail on a UTC CI runner. Set before any suite is imported.
+process.env.TZ = 'Europe/Berlin';
+
 // Fixture-driven tests load JSON via `fetch(new URL('../fixtures/…', import.meta.url))`.
 // In the browser that base URL is http(s); under node it is a file:// URL, which
 // node's global fetch rejects. Teach the global fetch to serve file:// from disk.

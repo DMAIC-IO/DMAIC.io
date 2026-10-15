@@ -84,7 +84,8 @@ let exitCode = 0;
 try {
   // Inside the try: a missing browser binary must still shut the server down.
   browser = await chromium.launch({ headless: !HEADED });
-  const page = await browser.newPage();
+  // Same pinned time zone as tests/run-node.mjs — CI runners default to UTC.
+  const page = await browser.newPage({ timezoneId: 'Europe/Berlin' });
   page.on('pageerror', (err) => pageErrors.push(err.message));
 
   await page.goto(`${server.origin}/tests/runner.html`, { waitUntil: 'load' });
