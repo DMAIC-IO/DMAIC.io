@@ -2840,7 +2840,10 @@
             "slot": "One of the slots in activeColumnSlots: timestamp (timestamp or order), value (measurement) or subgroup. subgroup applies only with chartType xbar-r.",
             "ref": "Column reference { instanceId, sheetId, columnId } of a column in pickableColumns, or null to clear."
           }
-        }
+        },
+        "runAnalysis": { "help": "Computes with the current inputs. Calling it repeatedly is harmless; missing or invalid inputs clear result." },
+        "scheduleAnalysis": { "help": "Triggers the computation after a short pause; a second request before then replaces the first." },
+        "clearResults": { "help": "Discards the result and the charts; the inputs stay." }
       },
       "fields": {
         "params": { "help": "The entered parameters: measurementName, unit, chartType (i-mr or xbar-r), limitsMode (from-study or given), baselineK (number of baseline subgroups), mu0 and sigma0 (given limits, null while unset), sourceTyp1InstanceId (adopted type 1 instance, not settable through the surface), enabledRules (list of ticked rule ids as numbers) and alpha (significance level of the drift test, as text)." },

@@ -12,7 +12,7 @@
  * werden imperativ gemountet (keine reinen Template-Belange).
  *
  * Task 8: Input-Panel Controls (Kartentyp, drei ColumnPicker, Grenzen-Modus,
- * Nelson-Regeln, α) + debounced Auto-Run (`_analyzeNow()`).
+ * Nelson-Regeln, α) + debounced Auto-Run (`scheduleAnalysis()`).
  * Task 9: Output-Panel Verdikt-Header + KPI-Strip (`_fmt`/`_mean`-Helfer).
  * Task 10: Regelkarten-Charts primary (I bzw. x̄) + secondary (MR bzw. R) via
  * `_renderCharts()`/`_destroyCharts()`/`_whenAnchor()` (chartManager
@@ -40,7 +40,7 @@
  * den Alpine-Baum der Instanz bei Sprachumschaltung komplett neu auf (wie bei
  * msa-typ5/msa-typ4), wodurch Tabelle, KPI-Strip und dieser Absatz ohnehin
  * neu gerendert werden. Charts überleben das nicht automatisch, sind aber
- * reine Zahlen-Renderings ohne Sprachbezug — `init()` ruft `_analyzeNow()`
+ * reine Zahlen-Renderings ohne Sprachbezug — `init()` ruft `scheduleAnalysis()`
  * ohnehin erneut auf, was `_renderCharts()` nach dem Re-Mount neu anstößt.
  * Task 14 (dieser Stand): `theme:changed`-Subscription (Charts neu rendern —
  * bislang fehlte sie hier, anders als msa-typ1/msa-typ4) + Typ-1-Cross-Modul-
@@ -71,7 +71,9 @@
  *
  * @agent  Steuerbar über das Viewmodel: die neun Parameter (setParam) und die
  *   drei Einzel-Spalten (setColumn); die Analyse läuft nach jeder Eingabe von
- *   selbst. Gelesen wird über read() mit erklärter Lesefläche (AgentRead).
+ *   selbst und lässt sich mit runAnalysis, scheduleAnalysis und clearResults
+ *   auch anstoßen oder verwerfen. `sourceTyp1InstanceId` (übernommene
+ *   Typ-1-Instanz) bleibt der Oberfläche. Gelesen wird über read() mit erklärter Lesefläche (AgentRead).
  *   Der Agent bekommt Zahlen, keine Diagramme.
  */
 
@@ -221,7 +223,7 @@ const mod = createModule({
         requireEnum('key', key, PARAM_KEYS);
         requireEnum('key', key, this.activeParams());
         this.model.params[key] = PARAM_CHECKS[key](value);
-        this._analyzeNow();
+        this.scheduleAnalysis();
       },
 
       /**
@@ -234,19 +236,20 @@ const mod = createModule({
        * @throws {Error} wenn `slot` im aktuellen Zustand unbekannt ist oder die Spalte nicht wählbar
        */
       setColumn(slot, ref) {
-        requireEnum('slot', slot, this.activeColumnSlots());
+        requireEnum('slot', slot, PICKER_ROLES);
         if (ref == null) {
           this.model.columns[slot] = null;
           this._pickers[slot]?.syncValue(null);
-          this._analyzeNow();
+          this.scheduleAnalysis();
           return;
         }
+        requireEnum('slot', slot, this.activeColumnSlots());
         const keys = this.pickableColumns()[slot].map(c => c.key);
         requireKnownId('ref', refToKey(ref), keys);
         const clean = keyToRef(refToKey(ref));
         this.model.columns[slot] = clean;
         this._pickers[slot]?.syncValue(clean);
-        this._analyzeNow();
+        this.scheduleAnalysis();
       },
 
       /** @noagent view transform; die Optionen der Optionsgruppen */
@@ -415,31 +418,51 @@ const mod = createModule({
       },
 
       /**
-       * Debounced Auto-Run (~120 ms): jede Input-Änderung ruft dies auf statt
-       * direkt zu analysieren, damit schnelle Tipp-/Klick-Folgen nur einen
-       * `analyze()`-Aufruf auslösen.
+       * Rechnet sofort mit den aktuellen Eingaben und zeichnet die Regelkarten
+       * neu; fehlende oder ungültige Eingaben leeren das Ergebnis (bei einem
+       * Rechenfehler nennt `errorMsg` dessen Code).
+       * @agent
+       * @returns {void}
        */
-      _analyzeNow() {
+      runAnalysis() {
         clearTimeout(this._debTimer);
-        this._debTimer = setTimeout(() => {
-          const inputs = this._buildInputs();
-          if (!inputs) {
-            this._lastResult = null;
-            this._lastError = null;
-          } else {
-            try {
-              this._lastResult = analyze(inputs);
-              this._lastError = null;
-            } catch (e) {
-              this._lastResult = null;
-              this._lastError = e.code;
-            }
-          }
-          // Immer aufrufen (auch im !inputs/Fehler-Zweig) — sonst blieben
-          // Charts einer vorherigen erfolgreichen Analyse stehen, wenn der
-          // Nutzer z. B. die Werte-Spalte wieder abwählt.
-          this._renderCharts();
-        }, 120);
+        const inputs = this._buildInputs();
+        if (!inputs) return this.clearResults();
+        try {
+          this._lastResult = analyze(inputs);
+          this._lastError = null;
+        } catch (e) {
+          this._lastResult = null;
+          this._lastError = e.code;
+        }
+        // Immer zeichnen (auch im Fehlerzweig) — sonst blieben Charts einer
+        // vorherigen erfolgreichen Analyse stehen.
+        this._renderCharts();
+      },
+
+      /**
+       * Die Rechnung nach kurzer Ruhezeit (~120 ms) anstoßen; jede
+       * Eingabe-Änderung ruft dies auf, damit schnelle Tipp-/Klick-Folgen nur
+       * einen `analyze()`-Aufruf auslösen.
+       * @agent
+       * @returns {void}
+       */
+      scheduleAnalysis() {
+        clearTimeout(this._debTimer);
+        this._debTimer = setTimeout(() => this.runAnalysis(), 120);
+      },
+
+      /**
+       * Das Ergebnis und die Diagramme verwerfen; die Eingaben bleiben.
+       * @agent
+       * @returns {void}
+       */
+      clearResults() {
+        clearTimeout(this._debTimer);
+        this._lastResult = null;
+        this._lastError = null;
+        // Auch ohne Ergebnis aufrufen — die Charts der letzten Analyse müssen weg.
+        this._renderCharts();
       },
 
       // ── Regelkarten-Charts (imperative widgets, Task 10) ──────
@@ -624,19 +647,14 @@ const mod = createModule({
       // ── ColumnPickers (imperative widgets) ────────────────────
 
       _mountPickers() {
-        const typesByRole = {
-          value: ['numeric', 'currency', 'percent'],
-          timestamp: ['numeric', 'date'],
-          subgroup: undefined, // Untergruppen-Key: jeder Spaltentyp zulässig
-        };
         for (const role of PICKER_ROLES) {
           const el = module._container.querySelector(`[data-ref="col-picker-${role}"]`);
           if (!el) continue;
           this._pickers[role]?.destroy();
           this._pickers[role] = new ColumnPicker(el, module._context, {
             mode: 'single',
-            types: typesByRole[role],
-            onChange: (ref) => this.setColumn(role, ref),
+            ...SLOT_FILTERS[role],
+            onChange: (ref) => { this.setColumn(role, ref); this.runAnalysis(); },
           });
           if (this.model.columns[role]) {
             this._pickers[role].value = this.model.columns[role];
@@ -710,11 +728,11 @@ const mod = createModule({
         if (instanceId) {
           const inst = this._typ1Instances.find((i) => i.instanceId === instanceId);
           if (inst) {
-            this.model.params.mu0 = inst.mean;
-            this.model.params.sigma0 = inst.stdDev;
+            this.setParam('mu0', Number.isFinite(inst.mean) ? inst.mean : null);
+            this.setParam('sigma0', Number.isFinite(inst.stdDev) ? inst.stdDev : null);
           }
         }
-        this._analyzeNow();
+        this.scheduleAnalysis();
       },
 
       // ── Lifecycle (per Alpine component) ──────────────────────
@@ -741,7 +759,7 @@ const mod = createModule({
             this._loadTyp1Instances(module);
           }
         };
-        const rerun = () => this._analyzeNow();
+        const rerun = () => this.scheduleAnalysis();
         const nullOnColumnRemoved = ({ instanceId, columnId } = {}) => {
           let touched = false;
           for (const role of PICKER_ROLES) {
@@ -751,7 +769,7 @@ const mod = createModule({
               touched = true;
             }
           }
-          if (touched) this._analyzeNow();
+          if (touched) this.scheduleAnalysis();
         };
         const nullOnWorksheetRemoved = ({ instanceId } = {}) => {
           let touched = false;
@@ -761,7 +779,7 @@ const mod = createModule({
               touched = true;
             }
           }
-          if (touched) this._analyzeNow();
+          if (touched) this.scheduleAnalysis();
         };
         const onTheme = () => this._renderCharts();
         // Dormant bis msa-typ1 dieses Event tatsächlich emittiert (Stand
@@ -771,9 +789,12 @@ const mod = createModule({
         // Kommentar Task 14 + Spec § 6 Events-Tabelle).
         const onTyp1ResultUpdated = (evt = {}) => {
           if (evt.instanceId && evt.instanceId === this.model.params.sourceTyp1InstanceId) {
-            if (Number.isFinite(evt.mean)) this.model.params.mu0 = evt.mean;
-            if (Number.isFinite(evt.stdDev)) this.model.params.sigma0 = evt.stdDev;
-            this._analyzeNow();
+            // mu0/sigma0 sind nur bei limitsMode given aktiv (setParam wirft sonst).
+            if (this.model.params.limitsMode === 'given') {
+              if (Number.isFinite(evt.mean)) this.setParam('mu0', evt.mean);
+              if (Number.isFinite(evt.stdDev)) this.setParam('sigma0', evt.stdDev);
+            }
+            this.scheduleAnalysis();
           }
         };
         eb.on('module:activated',         onActivated);
@@ -792,7 +813,7 @@ const mod = createModule({
         );
 
         // Ergebnis aus wiederhergestelltem State neu berechnen.
-        this._analyzeNow();
+        this.scheduleAnalysis();
       },
 
       /** @noagent lifecycle */

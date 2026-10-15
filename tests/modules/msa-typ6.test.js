@@ -567,15 +567,15 @@ suite('msa-typ6 module — Events + Typ-1-Cross-Modul-Anbindung (Task 14)', () =
 
     const gateIdx = body.indexOf('sourceTyp1InstanceId');
     assertTrue(gateIdx !== -1, 'handler must compare evt.instanceId against model.params.sourceTyp1InstanceId');
-    const mu0Idx = body.indexOf('.mu0 = evt.mean');
-    assertTrue(mu0Idx !== -1, 'handler must write params.mu0 = evt.mean');
-    const sigma0Idx = body.indexOf('.sigma0 = evt.stdDev');
-    assertTrue(sigma0Idx !== -1, 'handler must write params.sigma0 = evt.stdDev');
+    const mu0Idx = body.indexOf("setParam('mu0', evt.mean)");
+    assertTrue(mu0Idx !== -1, 'handler must write mu0 = evt.mean through setParam');
+    const sigma0Idx = body.indexOf("setParam('sigma0', evt.stdDev)");
+    assertTrue(sigma0Idx !== -1, 'handler must write sigma0 = evt.stdDev through setParam');
     assertTrue(gateIdx < mu0Idx && gateIdx < sigma0Idx,
       'the sourceTyp1InstanceId gate must be checked BEFORE mu0/sigma0 are written ' +
       '(so an update from a non-matching instance leaves this instance untouched)');
-    assertTrue(body.includes('_analyzeNow()'),
-      'handler must trigger _analyzeNow() after updating mu0/sigma0');
+    assertTrue(body.includes('scheduleAnalysis()'),
+      'handler must trigger scheduleAnalysis() after updating mu0/sigma0');
   });
 
   test('_onTyp1Selected writes mu0/sigma0/sourceTyp1InstanceId from the picked instance and re-analyzes (source assertion)', async () => {
@@ -588,12 +588,12 @@ suite('msa-typ6 module — Events + Typ-1-Cross-Modul-Anbindung (Task 14)', () =
       'must write params.sourceTyp1InstanceId from the selected instanceId');
     assertTrue(body.includes('_typ1Instances.find'),
       'must look up the picked instance in _typ1Instances');
-    assertTrue(body.includes('model.params.mu0 = inst.mean'),
+    assertTrue(body.includes("setParam('mu0', Number.isFinite(inst.mean)"),
       'must write params.mu0 from the picked instance\'s mean');
-    assertTrue(body.includes('model.params.sigma0 = inst.stdDev'),
+    assertTrue(body.includes("setParam('sigma0', Number.isFinite(inst.stdDev)"),
       'must write params.sigma0 from the picked instance\'s stdDev');
-    assertTrue(body.includes('_analyzeNow()'),
-      '_onTyp1Selected must trigger _analyzeNow() after updating params');
+    assertTrue(body.includes('scheduleAnalysis()'),
+      '_onTyp1Selected must trigger scheduleAnalysis() after updating params');
   });
 
   test('_loadTyp1Instances enumerates msa-typ1 instances across all phases via stateManager (source assertion)', async () => {

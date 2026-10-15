@@ -172,6 +172,9 @@ export function requireText(name, value) {
   return value;
 }
 
+/** Dezimalschreibweise eines Zahlentexts; `Number()` nähme sonst auch '0x10' und '0b101'. */
+const DECIMAL_NUMBER = /^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/;
+
 /**
  * Ein Zahlenargument prüfen, das die Oberfläche über `x-model.number` bindet.
  *
@@ -179,7 +182,7 @@ export function requireText(name, value) {
  * jeden Typ schicken. Als Text im Model landete `'zehn'` dort, wo eine Zahl
  * erwartet wird, und `toJSON()` machte daraus beim Lesen `null`. Angenommen
  * werden darum endliche Zahlen und Zahlentexte (`'10'`, wie ein Feld sie
- * liefert); alles andere — `NaN`, `Infinity`, leerer Text, `null` — wirft.
+ * liefert, auch `'1e3'`; nicht `'0x10'` oder `'0b101'`); alles andere — `NaN`, `Infinity`, leerer Text, `null` — wirft.
  *
  * Die Rückgabe ist die Zahl; Aufrufer schreiben `model.feld = requireNumber(…)`.
  *
@@ -190,7 +193,7 @@ export function requireText(name, value) {
  */
 export function requireNumber(name, value) {
   const n = typeof value === 'number' ? value
-    : (typeof value === 'string' && value.trim() !== '' ? Number(value) : NaN);
+    : (typeof value === 'string' && DECIMAL_NUMBER.test(value.trim()) ? Number(value) : NaN);
   if (!Number.isFinite(n)) {
     throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any finite number`);
   }

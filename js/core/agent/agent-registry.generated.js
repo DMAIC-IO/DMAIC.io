@@ -4692,6 +4692,21 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Eine Spalte einem Slot zuweisen."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Rechnet sofort mit den aktuellen Eingaben und zeichnet die Regelkarten neu; fehlende oder ungültige Eingaben leeren das Ergebnis (bei einem Rechenfehler nennt `errorMsg` dessen Code)."
+      },
+      "scheduleAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Die Rechnung nach kurzer Ruhezeit (~120 ms) anstoßen; jede Eingabe-Änderung ruft dies auf, damit schnelle Tipp-/Klick-Folgen nur einen `analyze()`-Aufruf auslösen."
+      },
+      "clearResults": {
+        "params": [],
+        "returns": "void",
+        "help": "Das Ergebnis und die Diagramme verwerfen; die Eingaben bleiben."
       }
     },
     "fields": {

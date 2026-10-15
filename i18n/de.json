@@ -2844,7 +2844,10 @@
             "slot": "Einer der Slots aus activeColumnSlots: timestamp (Zeitstempel oder Reihenfolge), value (Messwert) oder subgroup (Untergruppe). subgroup gilt nur bei chartType xbar-r.",
             "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Leeren."
           }
-        }
+        },
+        "runAnalysis": { "help": "Rechnet mit den aktuellen Eingaben. Mehrfachaufruf ist unschädlich; fehlende oder ungültige Eingaben leeren result." },
+        "scheduleAnalysis": { "help": "Stößt die Rechnung nach kurzer Ruhezeit an; eine zweite Anforderung davor ersetzt die erste." },
+        "clearResults": { "help": "Verwirft das Ergebnis und die Diagramme; die Eingaben bleiben." }
       },
       "fields": {
         "params": { "help": "Die eingegebenen Parameter: measurementName (Merkmalsname), unit (Einheit), chartType (i-mr oder xbar-r), limitsMode (from-study oder given), baselineK (Anzahl Basis-Untergruppen), mu0 und sigma0 (vorgegebene Grenzen, null solange nicht gesetzt), sourceTyp1InstanceId (übernommene Typ-1-Instanz, über die Fläche nicht setzbar), enabledRules (Liste der angehakten Regel-Ids als Zahlen) und alpha (Signifikanzniveau des Drift-Tests, als Text)." },
