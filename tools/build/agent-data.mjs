@@ -503,7 +503,8 @@ function readViewmodel(sf, resolver, appDir) {
  * @returns {Set<string>}
  */
 function writtenModelFields(fn, resolver, modelDecl) {
-  // `expandDerivedNames` zieht die Kette durch lokale `const`-Zwischenschritte
+  // `expandDerivedNames` zieht die Kette durch lokale Variablendeklarationen
+  // (auch `let`) als Zwischenschritte
   // weiter (`const n = parseFloat(v)` leitet `n` von `v` ab) — ohne das bräche
   // sie bei der ersten Hilfsvariablen, und genau das tut `hypothesis-test`
   // (`setPowerGoal(v) { const n = parseFloat(v); … this.powerGoal = …(n); }`).
@@ -513,16 +514,18 @@ function writtenModelFields(fn, resolver, modelDecl) {
   // löst seine Konstanten und Hilfsfunktionen in seiner eigenen Datei auf.
   const sf = fn.getSourceFile();
   const keySets = requireEnumKeySets(fn.body, ownParams, sf);
-  const fields = collectCoveredFields(fn.body, 'model', agentParams, keySets);
+  // Die Pfad-Hilfe läuft IM Walk von `collectCoveredFields` mit: nur dort ist
+  // die aktive, um Überschattungen bereinigte Namensmenge bekannt
+  // (`xs.forEach(key => setAtPath(this.model.params, key, value))` bindet
+  // `key` neu — Abschluss-Review A-M2).
+  const fields = collectCoveredFields(fn.body, 'model', agentParams, keySets,
+    (node, active) => fieldsCoveredByPathHelper(node, sf, keySets, active));
   forEachCall(fn.body, node => {
     const methodName = modelMethodCallOf(node);
-    if (methodName && modelDecl) {
-      for (const field of fieldsCoveredByDelegation(resolver, modelDecl, methodName, node.arguments, agentParams)) {
-        fields.add(field);
-      }
-      return;
+    if (!methodName || !modelDecl) return;
+    for (const field of fieldsCoveredByDelegation(resolver, modelDecl, methodName, node.arguments, agentParams)) {
+      fields.add(field);
     }
-    for (const field of fieldsCoveredByPathHelper(node, sf, keySets)) fields.add(field);
   });
   return fields;
 }
@@ -585,24 +588,31 @@ function resolveStringArray(expr, sf) {
  * `setAtPath(this.model.params, key, value)` zählt wie
  * `this.model.params[key] = value`.
  *
- * Vier Bedingungen, alle vier notwendig (fail closed): die gerufene Funktion
+ * Fünf Bedingungen, alle fünf notwendig (fail closed): die gerufene Funktion
  * ist im Modul als FUNKTION auflösbar (ein importierter oder unbekannter
  * Name deckt nichts ab, eine gleichnamige Klasse oder eine Konstante ohne
  * Funktionsinitialisierer ebenso nicht), sie WEIST in ihrem Körper
  * tatsächlich zu (`pathHelperAssigns` — Review-Fund: `logKeys(this.model.params, key)`
  * erfüllte sonst alle äußeren Merkmale und gab ein Feld frei, das kein Agent
  * setzen kann), ihr erstes Argument ist eine statische `this.model.<pfad>`-
- * Kette, und ein weiteres Argument ist ein Parameter mit geprüfter
- * Schlüsselmenge. Ein Schlüssel mit Punkt (`'tolerance.LSL'`) wird wörtlich
+ * Kette, ein weiteres Argument ist ein Parameter mit geprüfter
+ * Schlüsselmenge, der an der Aufrufstelle NICHT überschattet ist, und ein
+ * drittes Argument (weder Basis noch Schlüssel) stammt aus den Parametern
+ * der `@agent`-Methode (`derivesFromParams` — Abschluss-Review A-I3:
+ * `reset(key) { …; setAtPath(this.model.params, key, 0); }` setzt eine
+ * Konstante und ist kein Setter, genau wie `this.model.params[key] = 0`).
+ * Ein Schlüssel mit Punkt (`'tolerance.LSL'`) wird wörtlich
  * angehängt — damit deckt derselbe Mechanismus die zweite Ebene ab, ohne
  * eine eigene Regel.
  *
  * @param {ts.CallExpression} call
  * @param {ts.SourceFile} sf
  * @param {Map<string, string[]>} keySets
+ * @param {Set<string>} active  die an der Aufrufstelle gültigen, aus den
+ *   Parametern der `@agent`-Methode abgeleiteten Namen
  * @returns {string[]}
  */
-function fieldsCoveredByPathHelper(call, sf, keySets) {
+function fieldsCoveredByPathHelper(call, sf, keySets, active) {
   if (keySets.size === 0) return [];
   if (!ts.isIdentifier(call.expression)) return [];
   const decl = findLocalDeclaration(call.expression.text, sf);
@@ -616,8 +626,10 @@ function fieldsCoveredByPathHelper(call, sf, keySets) {
   if (!base) return [];
   const target = assignTargetAfterThis(base, 'model');
   if (!target || target.key) return [];
-  const keyArg = rest.find(argument => ts.isIdentifier(argument) && keySets.has(argument.text));
+  const keyArg = rest.find(argument => ts.isIdentifier(argument)
+    && keySets.has(argument.text) && active.has(argument.text));
   if (!keyArg) return [];
+  if (!rest.some(argument => argument !== keyArg && derivesFromParams(argument, active))) return [];
   return keySets.get(keyArg.text).map(key => `${target.path}.${key}`);
 }
 
@@ -690,7 +702,7 @@ function pathHelperAssigns(fn) {
 }
 
 /**
- * Erweitert `names` um lokale `const`-Variablen, deren Initialisierer
+ * Erweitert `names` um lokale Variablendeklarationen (auch `let`), deren Initialisierer
  * (bereits bekanntermaßen) aus `names` ableitet — die Kette durch eine
  * Zwischenvariable weiterziehen, statt an ihr abzureißen. Nur TOP-LEVEL-
  * Deklarationen im übergebenen Block zählen, keine in einer Verzweigung
@@ -732,8 +744,10 @@ function expandDerivedNames(body, names) {
  * Erkennung ist FORMGEBUNDEN, nicht fail closed. Das dritte Argument zählt,
  * wenn es auf einen Zugriff an `this` zurückführt: direkt, über einen lokalen
  * `const`-Alias auf der Top-Ebene des Körpers (Kette bis Fixpunkt), über
- * EINEN fremden Wrapper-Aufruf (`Object.keys(this.model.unitKeys())`) oder mit
- * angehängter Projektion (`.map(…)`/`.filter(…)`). Der abgeleitete Name ist
+ * fremde Wrapper-Aufrufe mit genau einem Argument (`Object.keys(this.model.unitKeys())`;
+ * beliebig tief verschachtelt — meldet eher zu viel), mit angehängter
+ * Projektion (`.map(…)`/`.filter(…)`) oder mit Elementzugriff
+ * (`this.pickableColumns()[slot]`). Der abgeleitete Name ist
  * das erste Segment nach `this.model.` bzw. `this.`, ohne `()`:
  *   `this.model.currentOptions`           → `currentOptions`
  *   `Object.keys(this.model.unitKeys())`  → `unitKeys`
@@ -741,7 +755,9 @@ function expandDerivedNames(body, names) {
  * Kein Name ergibt sich bei: `_`-Präfix, Aufruf MIT Argumenten
  * (`this.idsFor(x)`), bares `this.model`. DOKUMENTIERTER BLINDER FLECK:
  * Spread im Array-Literal (`['all', ...this.owners()]`), `(x ?? []).map(…)`,
- * Parameter-/Cache-Variablen und Konstanten — all das ist kein Befund.
+ * ein `let`-Alias (nur `const` wird verfolgt), Parameter-/Cache-Variablen,
+ * Konstanten und bares `this.model`
+ * (`Object.keys(this.model)`) — all das ist kein Befund.
  * Ob der Name als Lesefeld deklariert ist, entscheidet `buildEntry`.
  *
  * @param {ts.Block|undefined} body
@@ -786,6 +802,9 @@ function optionFieldOf(expr, aliases, seen) {
     seen.add(expr.text);
     return optionFieldOf(init, aliases, seen);
   }
+  // `this.pickableColumns()[slot]`: der Elementzugriff wählt nur aus der
+  // Menge aus — benannt wird sie am Zugriff davor (Abschluss-Review A-I1).
+  if (ts.isElementAccessExpression(expr)) return optionFieldOf(expr.expression, aliases, seen);
   if (ts.isCallExpression(expr)) {
     const callee = expr.expression;
     if (ts.isPropertyAccessExpression(callee) && (callee.name.text === 'map' || callee.name.text === 'filter')) {
@@ -906,9 +925,12 @@ function forEachCall(node, visit) {
  *   dieser Methode; leer bei der Delegationsauflösung — eine im MODEL
  *   geprüfte Menge zählt nicht, weil die Prüfung dort nicht die Fläche des
  *   Agenten begrenzt (fail closed).
+ * @param {(call: ts.CallExpression, active: Set<string>) => string[]} [onCall]
+ *   weitere Abdeckung je Aufruf, mit der an dieser Stelle aktiven Namensmenge
+ *   (die Pfad-Hilfe)
  * @returns {Set<string>}
  */
-function collectCoveredFields(body, through, names, keySets = new Map()) {
+function collectCoveredFields(body, through, names, keySets = new Map(), onCall = null) {
   const fields = new Set();
   const walk = (node, active) => {
     if (isFunctionLike(node)) {
@@ -924,8 +946,11 @@ function collectCoveredFields(body, through, names, keySets = new Map()) {
     if (ts.isBinaryExpression(node) && ASSIGN_KINDS.has(node.operatorToken.kind)) {
       const target = assignTargetAfterThis(node.left, through);
       if (target && derivesFromParams(node.right, active)) {
-        for (const field of fieldsOfTarget(target, keySets)) fields.add(field);
+        for (const field of fieldsOfTarget(target, keySets, active)) fields.add(field);
       }
+    }
+    if (onCall && ts.isCallExpression(node)) {
+      for (const field of onCall(node, active)) fields.add(field);
     }
     ts.forEachChild(node, child => walk(child, active));
   };
@@ -1025,13 +1050,17 @@ function assignTargetAfterThis(node, through) {
 /**
  * Die Felder, die ein Zuweisungsziel trifft — der Pfad selbst, oder bei
  * einem dynamischen Schlüssel ein Pfad je geprüftem Schlüssel. Ohne
- * geprüfte Menge: nichts (fail closed).
+ * geprüfte Menge: nichts (fail closed). Ebenso nichts, wenn der Schlüssel
+ * an dieser Stelle überschattet ist (`xs.forEach(key => { this.model.params[key] = v; })`
+ * — das innere `key` ist nicht das geprüfte; Abschluss-Review A-M2).
  * @param {{ path: string, key: string|null }} target
  * @param {Map<string, string[]>} keySets
+ * @param {Set<string>} active  die an dieser Stelle gültigen Namen
  * @returns {string[]}
  */
-function fieldsOfTarget(target, keySets) {
+function fieldsOfTarget(target, keySets, active) {
   if (target.key === null) return [target.path];
+  if (!active.has(target.key)) return [];
   const keys = keySets.get(target.key);
   if (!keys) return [];
   return keys.map(key => `${target.path}.${key}`);

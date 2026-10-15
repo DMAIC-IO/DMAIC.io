@@ -2487,3 +2487,207 @@ test('undeclared_option_source: die Projektion eines nicht deklarierten Namens i
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['undeclared_option_source:pick:v']);
 });
+
+// ── Abschluss-Review Welle 2, Teil F-A ────────────────────────────────────
+
+/** Ein `@agent`-Methodenrumpf im Testmodul, der `cardClass` ersetzt. */
+function vmWithAgent(method) {
+  return TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", method);
+}
+
+const CHOSEN_MODEL = `export class State {
+      /** @type {string} die Wahl */
+      chosen = '';
+      toJSON() { return { chosen: this.chosen }; }
+    }`;
+
+const SET_COLUMN_ELEMENT_ACCESS = `/**
+       * @agent
+       * @param {string} slot der Platz
+       * @param {string} ref die Spalte
+       * @returns {void}
+       */
+      setColumn(slot, ref) {
+        const keys = this.pickableColumns()[slot].map(c => c.key);
+        requireKnownId('ref', ref, keys);
+        this.model.chosen = ref;
+      },`;
+
+test('undeclared_option_source: ein Elementzugriff ohne Lesefeld ist ein Befund (A-I1)', () => {
+  const root = fixture({ foo: {
+    'foo.js': vmWithAgent(SET_COLUMN_ELEMENT_ACCESS),
+    'foo-model.js': CHOSEN_MODEL,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['undeclared_option_source:setColumn:ref']);
+});
+
+test('undeclared_option_source: ein Elementzugriff mit Lesefeld ist kein Befund (A-I1)', () => {
+  const root = fixture({ foo: {
+    'foo.js': vmWithAgent(SET_COLUMN_ELEMENT_ACCESS).replace('export default createModule', `/**
+ * @typedef {object} AgentRead
+ * @property {string} chosen  die Wahl
+ * @property {object} pickableColumns  die wählbaren Spalten je Platz
+ */
+export default createModule`),
+    'foo-model.js': CHOSEN_MODEL,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, []);
+});
+
+test('undeclared_option_source: eine Alias-Kette über zwei Stufen wird verfolgt', () => {
+  const root = fixture({ foo: {
+    'foo.js': vmWithAgent(`/**
+       * @agent
+       * @param {string} v der Wert
+       * @returns {void}
+       */
+      pick(v) {
+        const a = this.owners();
+        const b = a;
+        requireEnum('v', v, b);
+        this.model.chosen = v;
+      },`),
+    'foo-model.js': CHOSEN_MODEL,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['undeclared_option_source:pick:v']);
+});
+
+test('undeclared_option_source: eine .filter-Projektion eines nicht deklarierten Namens ist ein Befund', () => {
+  const root = fixture({ foo: {
+    'foo.js': vmWithAgent(`/**
+       * @agent
+       * @param {string} v der Wert
+       * @returns {void}
+       */
+      pick(v) {
+        requireEnum('v', v, this.owners().filter(o => o));
+        this.model.chosen = v;
+      },`),
+    'foo-model.js': CHOSEN_MODEL,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['undeclared_option_source:pick:v']);
+});
+
+test('undeclared_option_source: bares this.model als Menge ist kein Befund (blinder Fleck)', () => {
+  const root = fixture({ foo: {
+    'foo.js': vmWithAgent(`/**
+       * @agent
+       * @param {string} v der Wert
+       * @returns {void}
+       */
+      pick(v) {
+        requireEnum('v', v, Object.keys(this.model));
+        this.model.chosen = v;
+      },`),
+    'foo-model.js': CHOSEN_MODEL,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, []);
+});
+
+test('undeclared_option_source: zwei Prüfungen derselben Menge sind EIN Befund', () => {
+  const root = fixture({ foo: {
+    'foo.js': vmWithAgent(`/**
+       * @agent
+       * @param {string} v der Wert
+       * @returns {void}
+       */
+      pick(v) {
+        requireEnum('v', v, this.owners());
+        requireKnownId('v', v, this.owners());
+        this.model.chosen = v;
+      },`),
+    'foo-model.js': CHOSEN_MODEL,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['undeclared_option_source:pick:v']);
+});
+
+const PARAMS_MODEL = `export class State {
+      /** @type {object} die Parameter */
+      params = { alpha: 0, beta: 0 };
+      toJSON() { return { params: { ...this.params } }; }
+    }`;
+const PARAMS_HTML = '<input x-model="model.params.alpha"><input x-model="model.params.beta">';
+const SET_AT_PATH = `const KEYS = ['alpha', 'beta'];
+function setAtPath(obj, path, value) { obj[path] = value; }
+`;
+
+test('unreachable_write: eine Pfad-Hilfe mit konstantem Wert deckt NICHTS ab (A-I3)', () => {
+  const root = fixture({ foo: {
+    'foo.js': SET_AT_PATH + vmWithAgent(`/**
+       * @agent
+       * @param {string} key der Schlüssel
+       * @returns {void}
+       */
+      reset(key) {
+        requireEnum('key', key, KEYS);
+        setAtPath(this.model.params, key, 0);
+      },`),
+    'foo-model.js': PARAMS_MODEL,
+    'foo.html': PARAMS_HTML,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unreachable_write:params.alpha', 'unreachable_write:params.beta']);
+});
+
+test('unreachable_write: ein überschatteter Schlüssel deckt NICHTS ab (A-M2)', () => {
+  const root = fixture({ foo: {
+    'foo.js': `const KEYS = ['alpha', 'beta'];\n` + vmWithAgent(`/**
+       * @agent
+       * @param {string} key der Schlüssel
+       * @param {number} value der Wert
+       * @returns {void}
+       */
+      setParam(key, value) {
+        requireEnum('key', key, KEYS);
+        Object.keys(this.model.params).forEach(key => { this.model.params[key] = value; });
+      },`),
+    'foo-model.js': PARAMS_MODEL,
+    'foo.html': PARAMS_HTML,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unreachable_write:params.alpha', 'unreachable_write:params.beta']);
+});
+
+test('unreachable_write: ein überschatteter Schlüssel an einer Pfad-Hilfe deckt NICHTS ab (A-M2)', () => {
+  const root = fixture({ foo: {
+    'foo.js': SET_AT_PATH + vmWithAgent(`/**
+       * @agent
+       * @param {string} key der Schlüssel
+       * @param {number} value der Wert
+       * @returns {void}
+       */
+      setParam(key, value) {
+        requireEnum('key', key, KEYS);
+        Object.keys(this.model.params).forEach(key => setAtPath(this.model.params, key, value));
+      },`),
+    'foo-model.js': PARAMS_MODEL,
+    'foo.html': PARAMS_HTML,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unreachable_write:params.alpha', 'unreachable_write:params.beta']);
+});
+
+test('unreachable_write: eine Pfad-Hilfe mit Parameterwert deckt die geprüfte Menge ab', () => {
+  const root = fixture({ foo: {
+    'foo.js': SET_AT_PATH + vmWithAgent(`/**
+       * @agent
+       * @param {string} key der Schlüssel
+       * @param {number} value der Wert
+       * @returns {void}
+       */
+      setParam(key, value) {
+        requireEnum('key', key, KEYS);
+        setAtPath(this.model.params, key, value);
+      },`),
+    'foo-model.js': PARAMS_MODEL,
+    'foo.html': PARAMS_HTML,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, []);
+});

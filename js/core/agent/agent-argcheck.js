@@ -37,7 +37,7 @@
  * Die Kernschicht benutzt von diesen Funktionen genau eine — `requireArity`,
  * aus `agent-ops.js` vor dem Methodenaufruf. Ein fehlendes Argument IST ein
  * ungültiges Argument eines Methodenaufrufs und gehört damit in dieselbe
- * Fehlerform wie die übrigen vier (`call_failed` samt Meldung); die
+ * Fehlerform wie die übrigen fünf (`call_failed` samt Meldung); die
  * Ablehnungen der Kernschicht an ihren eigenen Stufen bleiben
  * AXI-Fehlerobjekte (`agent-errors.js`).
  */
