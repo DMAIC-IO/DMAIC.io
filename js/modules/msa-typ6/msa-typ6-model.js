@@ -13,15 +13,15 @@
  */
 
 /** Allowed chart-type options. */
-const CHART_TYPES = ['i-mr', 'xbar-r'];
+export const CHART_TYPES = ['i-mr', 'xbar-r'];
 /** Allowed limits-mode options. */
-const LIMITS_MODES = ['from-study', 'given'];
+export const LIMITS_MODES = ['from-study', 'given'];
 /** Allowed α options (string form, matching the <select> values). */
-const ALPHA_OPTIONS = ['0.01', '0.05', '0.10'];
+export const ALPHA_OPTIONS = ['0.01', '0.05', '0.10'];
 /** Nelson rule ids the engine understands (1..8). */
-const RULE_IDS = [1, 2, 3, 4, 5, 6, 7, 8];
+export const RULE_IDS = [1, 2, 3, 4, 5, 6, 7, 8];
 /** Default enabled Nelson rules (matches msa-typ6-engine.js's DEFAULT_ENABLED_RULES). */
-const DEFAULT_ENABLED_RULES = [1, 2, 3, 4, 5, 6];
+export const DEFAULT_ENABLED_RULES = [1, 2, 3, 4, 5, 6];
 
 /** @param {*} v @param {string[]} allowed @param {string} fallback */
 function pickEnum(v, allowed, fallback) {
@@ -71,7 +71,7 @@ function baselineKOf(v) {
  * @param {*} v
  * @returns {number[]}
  */
-function enabledRulesOf(v) {
+export function enabledRulesOf(v) {
   if (!Array.isArray(v)) return DEFAULT_ENABLED_RULES.slice();
   const ids = [...new Set(v.map((r) => Number(r)).filter((r) => RULE_IDS.includes(r)))];
   ids.sort((a, b) => a - b);

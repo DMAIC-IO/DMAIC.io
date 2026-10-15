@@ -9,29 +9,26 @@
         <label x-text="t('input.measurementName')"></label>
         <input type="text" class="field" data-ref="inp-measurement-name"
                placeholder="z. B. Wellendurchmesser"
-               x-model="model.params.measurementName" @input="_analyzeNow()">
+               :value="model.params.measurementName" @input="setParam('measurementName', $event.target.value)">
       </div>
       <div class="field-group field-group--minor">
         <label x-text="t('input.unit')"></label>
         <input type="text" class="field" data-ref="inp-unit"
                placeholder="mm"
-               x-model="model.params.unit" @input="_analyzeNow()">
+               :value="model.params.unit" @input="setParam('unit', $event.target.value)">
       </div>
     </div>
 
     <!-- Kartentyp -->
     <fieldset class="module-msa-typ6__radios">
       <legend x-text="t('input.chartType')"></legend>
-      <label>
-        <input type="radio" name="msa-typ6-chartType" value="i-mr"
-               x-model="model.params.chartType" @change="_analyzeNow()">
-        <span x-text="t('input.chartTypeImr')"></span>
-      </label>
-      <label>
-        <input type="radio" name="msa-typ6-chartType" value="xbar-r"
-               x-model="model.params.chartType" @change="_analyzeNow()">
-        <span x-text="t('input.chartTypeXbarR')"></span>
-      </label>
+      <template x-for="o in chartTypeOptions()" :key="o">
+        <label>
+          <input type="radio" name="msa-typ6-chartType" :value="o"
+                 :checked="model.params.chartType === o" @input="setParam('chartType', o)">
+          <span x-text="optionLabel('chartType', o)"></span>
+        </label>
+      </template>
     </fieldset>
 
     <!-- Datenquelle -->
@@ -56,16 +53,13 @@
 
     <fieldset class="module-msa-typ6__radios">
       <legend x-text="t('input.limitsMode')"></legend>
-      <label>
-        <input type="radio" name="msa-typ6-limitsMode" value="from-study"
-               x-model="model.params.limitsMode" @change="_analyzeNow()">
-        <span x-text="t('input.limitsModeFromStudy')"></span>
-      </label>
-      <label>
-        <input type="radio" name="msa-typ6-limitsMode" value="given"
-               x-model="model.params.limitsMode" @change="_analyzeNow()">
-        <span x-text="t('input.limitsModeGiven')"></span>
-      </label>
+      <template x-for="o in limitsModeOptions()" :key="o">
+        <label>
+          <input type="radio" name="msa-typ6-limitsMode" :value="o"
+                 :checked="model.params.limitsMode === o" @input="setParam('limitsMode', o)">
+          <span x-text="optionLabel('limitsMode', o)"></span>
+        </label>
+      </template>
     </fieldset>
 
     <div class="field-group" data-ref="group-baseline-k"
@@ -73,7 +67,7 @@
       <label x-text="t('input.baselineK')"></label>
       <input type="number" class="field field--num" data-ref="inp-baseline-k"
              min="5" step="1"
-             x-model.number="model.params.baselineK" @change="_analyzeNow()">
+             :value="model.params.baselineK" @change="onNumberInput('baselineK', $event.target.value)">
     </div>
 
     <div data-ref="group-given-limits"
@@ -83,13 +77,13 @@
           <label x-text="t('input.mu0')"></label>
           <input type="number" class="field field--num" data-ref="inp-mu0"
                  step="any"
-                 x-model.number="model.params.mu0" @change="_analyzeNow()">
+                 :value="model.params.mu0" @change="onNumberInput('mu0', $event.target.value)">
         </div>
         <div class="field-group">
           <label x-text="t('input.sigma0')"></label>
           <input type="number" class="field field--num" data-ref="inp-sigma0"
                  min="0" step="any"
-                 x-model.number="model.params.sigma0" @change="_analyzeNow()">
+                 :value="model.params.sigma0" @change="onNumberInput('sigma0', $event.target.value)">
         </div>
       </div>
       <div class="field-group">
@@ -116,48 +110,22 @@
     <!-- Nelson-Regeln -->
     <div class="dmike-split__section-title"><span class="glossary-term" data-glossary-term="nelson-regeln"><span x-text="t('input.nelsonRules')"></span></span></div>
     <div class="module-msa-typ6__nelson-list" data-ref="nelson-list">
-      <label class="module-msa-typ6__nelson-rule">
-        <input type="checkbox" value="1" x-model="model.params.enabledRules" @change="_analyzeNow()">
-        <span><span class="glossary-term" data-glossary-term="nelson-regel-1"><strong x-text="_ruleShort(1)"></strong></span><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(1)"></span></span>
-      </label>
-      <label class="module-msa-typ6__nelson-rule">
-        <input type="checkbox" value="2" x-model="model.params.enabledRules" @change="_analyzeNow()">
-        <span><span class="glossary-term" data-glossary-term="nelson-regel-2"><strong x-text="_ruleShort(2)"></strong></span><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(2)"></span></span>
-      </label>
-      <label class="module-msa-typ6__nelson-rule">
-        <input type="checkbox" value="3" x-model="model.params.enabledRules" @change="_analyzeNow()">
-        <span><span class="glossary-term" data-glossary-term="nelson-regel-3"><strong x-text="_ruleShort(3)"></strong></span><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(3)"></span></span>
-      </label>
-      <label class="module-msa-typ6__nelson-rule">
-        <input type="checkbox" value="4" x-model="model.params.enabledRules" @change="_analyzeNow()">
-        <span><span class="glossary-term" data-glossary-term="nelson-regel-4"><strong x-text="_ruleShort(4)"></strong></span><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(4)"></span></span>
-      </label>
-      <label class="module-msa-typ6__nelson-rule">
-        <input type="checkbox" value="5" x-model="model.params.enabledRules" @change="_analyzeNow()">
-        <span><span class="glossary-term" data-glossary-term="nelson-regel-5"><strong x-text="_ruleShort(5)"></strong></span><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(5)"></span></span>
-      </label>
-      <label class="module-msa-typ6__nelson-rule">
-        <input type="checkbox" value="6" x-model="model.params.enabledRules" @change="_analyzeNow()">
-        <span><span class="glossary-term" data-glossary-term="nelson-regel-6"><strong x-text="_ruleShort(6)"></strong></span><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(6)"></span></span>
-      </label>
-      <label class="module-msa-typ6__nelson-rule">
-        <input type="checkbox" value="7" x-model="model.params.enabledRules" @change="_analyzeNow()">
-        <span><span class="glossary-term" data-glossary-term="nelson-regel-7"><strong x-text="_ruleShort(7)"></strong></span><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(7)"></span></span>
-      </label>
-      <label class="module-msa-typ6__nelson-rule">
-        <input type="checkbox" value="8" x-model="model.params.enabledRules" @change="_analyzeNow()">
-        <span><span class="glossary-term" data-glossary-term="nelson-regel-8"><strong x-text="_ruleShort(8)"></strong></span><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(8)"></span></span>
-      </label>
+      <template x-for="id in ruleIds()" :key="id">
+        <label class="module-msa-typ6__nelson-rule">
+          <input type="checkbox" :value="id" :checked="isRuleEnabled(id)" @change="toggleRule(id)">
+          <span><span class="glossary-term" :data-glossary-term="'nelson-regel-' + id"><strong x-text="_ruleShort(id)"></strong></span><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(id)"></span></span>
+        </label>
+      </template>
     </div>
 
     <!-- α für Drift-Test -->
     <div class="field-group">
       <label x-text="t('input.alpha')"></label>
       <select class="field" data-ref="sel-alpha"
-              x-model="model.params.alpha" @change="_analyzeNow()">
-        <option value="0.01">0.01</option>
-        <option value="0.05">0.05</option>
-        <option value="0.10">0.10</option>
+              :value="model.params.alpha" @input="setParam('alpha', $event.target.value)">
+        <template x-for="a in alphaOptions()" :key="a">
+          <option :value="a" :selected="a === model.params.alpha" x-text="a"></option>
+        </template>
       </select>
     </div>
   </div>

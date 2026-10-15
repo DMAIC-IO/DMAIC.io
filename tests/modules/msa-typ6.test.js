@@ -89,13 +89,21 @@ suite('msa-typ6 module — Input-Panel Controls (Task 8)', () => {
     return new DOMParser().parseFromString(html, 'text/html');
   }
 
-  test('template has two chartType radio inputs', async () => {
+  /** querySelectorAll, das auch in <template>-Inhalte (x-for) hineinsieht. */
+  function queryAllDeep(root, selector) {
+    const out = [...root.querySelectorAll(selector)];
+    for (const t of root.querySelectorAll('template')) out.push(...queryAllDeep(t.content, selector));
+    return out;
+  }
+
+  test('template renders the chartType radios from the module option list', async () => {
+    // Die Wertemenge steht einmal im Model (CHART_TYPES); das Template iteriert
+    // sie per x-for, statt die zwei Werte hart zu codieren.
     const doc = await loadTemplateDoc();
-    const radios = doc.querySelectorAll('input[type="radio"][name*="chartType"]');
-    assertEqual(radios.length, 2, 'expected exactly two chartType radio inputs');
-    const values = [...radios].map((r) => r.getAttribute('value')).sort();
-    assertEqual(values[0], 'i-mr');
-    assertEqual(values[1], 'xbar-r');
+    const radios = queryAllDeep(doc, 'input[type="radio"][name*="chartType"]');
+    assertEqual(radios.length, 1, 'expected one chartType radio inside one x-for template');
+    assertTrue(doc.querySelector('template[x-for="o in chartTypeOptions()"]') !== null, 'missing x-for over chartTypeOptions()');
+    assertEqual(radios[0].getAttribute('@input'), "setParam('chartType', o)");
   });
 
   test('template has three ColumnPicker hosts (timestamp/value/subgroup)', async () => {
@@ -108,27 +116,24 @@ suite('msa-typ6 module — Input-Panel Controls (Task 8)', () => {
       'missing col-picker-subgroup host');
   });
 
-  test('template has eight Nelson-rule checkboxes (values 1..8)', async () => {
+  test('template renders the Nelson-rule checkboxes from ruleIds() and routes them through setParam', async () => {
     const doc = await loadTemplateDoc();
-    for (let id = 1; id <= 8; id++) {
-      const cb = doc.querySelector(`input[type="checkbox"][value="${id}"]`);
-      assertTrue(cb !== null, `missing Nelson-rule checkbox for rule ${id}`);
-      assertEqual(cb.getAttribute('x-model'), 'model.params.enabledRules');
-    }
-    assertEqual(doc.querySelectorAll('input[type="checkbox"][x-model="model.params.enabledRules"]').length, 8);
+    const boxes = queryAllDeep(doc, 'input[type="checkbox"]');
+    assertEqual(boxes.length, 1, 'expected one checkbox inside one x-for template');
+    assertTrue(doc.querySelector('.module-msa-typ6__nelson-list template[x-for="id in ruleIds()"]') !== null, 'missing x-for over ruleIds()');
+    assertEqual(boxes[0].getAttribute('@change'), 'toggleRule(id)');
+    assertEqual(boxes[0].hasAttribute('x-model'), false, 'no x-model on model.params.*');
   });
 
   test('every Nelson-rule label carries a glossary chip for its own rule', async () => {
     const doc = await loadTemplateDoc();
-    for (let id = 1; id <= 8; id++) {
-      const label = doc.querySelector(`input[type="checkbox"][value="${id}"]`)?.closest('label');
-      assertTrue(label != null, `rule ${id} checkbox must sit in a <label>`);
-      const chip = label.querySelector('.glossary-term[data-glossary-term]');
-      assertTrue(chip !== null, `rule ${id} label has no glossary chip`);
-      assertEqual(chip.getAttribute('data-glossary-term'), `nelson-regel-${id}`);
-      // x-text on the chip itself would wipe the button the augmenter appends.
-      assertEqual(chip.hasAttribute('x-text'), false, `rule ${id} chip must keep x-text on an inner element`);
-    }
+    const label = queryAllDeep(doc, 'input[type="checkbox"]')[0]?.closest('label');
+    assertTrue(label != null, 'the rule checkbox must sit in a <label>');
+    const chip = label.querySelector('.glossary-term');
+    assertTrue(chip !== null, 'rule label has no glossary chip');
+    assertEqual(chip.getAttribute(':data-glossary-term'), "'nelson-regel-' + id");
+    // x-text on the chip itself would wipe the button the augmenter appends.
+    assertEqual(chip.hasAttribute('x-text'), false, 'chip must keep x-text on an inner element');
   });
 
   test('the Nelson section title links the overview glossary entry', async () => {

@@ -4640,38 +4640,102 @@ export const AGENT_REGISTRY = {
     }
   },
   "msa-typ6": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unreachable_write:params.measurementName",
-      "unreachable_write:params.unit",
-      "unreachable_write:params.chartType",
-      "unreachable_write:params.limitsMode",
-      "unreachable_write:params.baselineK",
-      "unreachable_write:params.mu0",
-      "unreachable_write:params.sigma0",
-      "unreachable_write:params.enabledRules",
-      "unreachable_write:params.alpha"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'measurementName'|'unit'|'chartType'|'limitsMode'|'baselineK'|'mu0'|'sigma0'|'enabledRules'|'alpha'",
+            "optional": false,
+            "help": "welcher Parameter; `baselineK` nur bei limitsMode from-study, `mu0` und `sigma0` nur bei limitsMode given"
+          },
+          {
+            "name": "value",
+            "type": "string|number|number[]",
+            "optional": false,
+            "help": "der Wert; Text für `measurementName` und `unit`, `chartType`: i-mr oder xbar-r, `limitsMode`: from-study oder given, `alpha`: 0.01, 0.05 oder 0.10; eine Zahl (oder Zahlentext) für `baselineK` (ganze Zahl ab 1), `mu0` und `sigma0`; `enabledRules`: die Liste der angehakten Regel-Ids (Zahlen 1 bis 8)"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Parameter setzen; die Analyse folgt nach kurzer Ruhezeit."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'timestamp'|'value'|'subgroup'",
+            "optional": false,
+            "help": "der Slot; `subgroup` nur bei chartType xbar-r"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Spalte einem Slot zuweisen."
+      }
+    },
     "fields": {
       "params": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object",
+        "help": "the entered parameters (measurementName, unit, chartType, limitsMode, baselineK, mu0, sigma0, sourceTyp1InstanceId, enabledRules, alpha); `enabledRules` is a list of rule ids (numbers), `mu0` and `sigma0` are numbers or null while unset",
+        "bulk": false,
+        "derived": true
       },
       "columns": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object",
+        "help": "the chosen columns `{ timestamp, value, subgroup }`, each a `{ instanceId, sheetId, columnId }` or null",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts in the current state (`baselineK` only for limitsMode from-study, `mu0` and `sigma0` only for limitsMode given)",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts in the current state (`subgroup` only for chartType xbar-r)",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "the computed stability result (verdict, control chart series, Nelson rule violations, drift test), or null while the inputs are incomplete or invalid",
+        "bulk": false,
+        "derived": true
+      },
+      "errorMsg": {
+        "type": "string|null",
+        "help": "the error code of a failed analysis, or null",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -8900,4 +8964,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":33};
+export const AGENT_COVERAGE = {"total":74,"available":34};

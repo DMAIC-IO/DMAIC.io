@@ -68,17 +68,82 @@
  * Option, analog zu `doe-planner.html`s `sourceWorksheetChanged()`-Muster.
  *
  * Spec: docs/superpowers/specs/2026-07-16-msa-typ6-design.md § 6
+ *
+ * @agent  Steuerbar über das Viewmodel: die neun Parameter (setParam) und die
+ *   drei Einzel-Spalten (setColumn); die Analyse läuft nach jeder Eingabe von
+ *   selbst. Gelesen wird über read() mit erklärter Lesefläche (AgentRead).
+ *   Der Agent bekommt Zahlen, keine Diagramme.
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State } from './msa-typ6-model.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId, requireText, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { pickableColumnList } from '../../core/agent/agent-options.js';
+import { State, CHART_TYPES, LIMITS_MODES, ALPHA_OPTIONS, RULE_IDS, enabledRulesOf } from './msa-typ6-model.js';
 import { analyze, NELSON_RULES } from '../../engines/msa-typ6-engine.js';
-import { ColumnPicker, getColumnValues } from '../../ui/column-picker.js';
+import { ColumnPicker, getColumnValues, refToKey, keyToRef } from '../../ui/column-picker.js';
 import { mean as typ1Mean, stddev as typ1Stddev } from '../../engines/msa-typ1-engine.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 
 /** Roles mounted as ColumnPicker instances, matching `model.columns` keys. */
 const PICKER_ROLES = ['timestamp', 'value', 'subgroup'];
+
+/** Die neun Parameter, die `setParam` kennt (`sourceTyp1InstanceId` bleibt der Oberfläche). */
+const PARAM_KEYS = ['measurementName', 'unit', 'chartType', 'limitsMode', 'baselineK', 'mu0', 'sigma0', 'enabledRules', 'alpha'];
+
+/**
+ * Je Parameter sein Prüfer; er gibt den Wert in der Form zurück, die das Model
+ * hält (Zahlen als Zahl, die Regelauswahl sortiert und ohne Doppelte).
+ */
+const PARAM_CHECKS = {
+  measurementName: (v) => requireText('value', v),
+  unit: (v) => requireText('value', v),
+  chartType: (v) => { requireEnum('value', v, CHART_TYPES); return v; },
+  limitsMode: (v) => { requireEnum('value', v, LIMITS_MODES); return v; },
+  baselineK: (v) => {
+    const n = requireNumber('value', v);
+    if (!Number.isInteger(n) || n < 1) {
+      throw new Error(`invalid value ${JSON.stringify(v)}; allowed: a positive whole number`);
+    }
+    return n;
+  },
+  mu0: (v) => requireNumber('value', v),
+  sigma0: (v) => requireNumber('value', v),
+  enabledRules: (v) => {
+    if (!Array.isArray(v)) {
+      throw new Error(`invalid value ${JSON.stringify(v)}; allowed: a list of rule ids from ${RULE_IDS.join(', ')}`);
+    }
+    for (const r of v) requireEnum('rule', r, RULE_IDS);
+    return enabledRulesOf(v);
+  },
+  alpha: (v) => { requireEnum('value', v, ALPHA_OPTIONS); return v; },
+};
+
+/** Je Slot der Filter für den Wähler (dieselben Typen wie in `_mountPickers`). */
+const SLOT_FILTERS = {
+  timestamp: { types: ['numeric', 'date'] },
+  value: { types: ['numeric', 'currency', 'percent'] },
+  subgroup: {},
+};
+
+/**
+ * Die Agenten-Lesefläche von MSA Typ 6.
+ *
+ * Nicht die persistierte Form: das Model hält NUR die Eingaben, das Ergebnis
+ * entsteht transient am Viewmodel. Darum erklärt dieses Modul seine
+ * Lesefläche: Konfiguration, die abgeleiteten Mengen, die `setParam` und
+ * `setColumn` prüfen, und das Ergebnis — ohne die interne Beispiel-Buchführung
+ * (`exampleWorksheetId`) und ohne die Diagramme.
+ *
+ * @typedef {object} AgentRead
+ * @property {object} params  the entered parameters (measurementName, unit, chartType, limitsMode, baselineK, mu0, sigma0, sourceTyp1InstanceId, enabledRules, alpha); `enabledRules` is a list of rule ids (numbers), `mu0` and `sigma0` are numbers or null while unset
+ * @property {object} columns  the chosen columns `{ timestamp, value, subgroup }`, each a `{ instanceId, sheetId, columnId }` or null
+ * @property {string[]} activeParams  the keys `setParam` accepts in the current state (`baselineK` only for limitsMode from-study, `mu0` and `sigma0` only for limitsMode given)
+ * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state (`subgroup` only for chartType xbar-r)
+ * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
+ * @property {object|null} result  the computed stability result (verdict, control chart series, Nelson rule violations, drift test), or null while the inputs are incomplete or invalid
+ * @property {string|null} errorMsg  the error code of a failed analysis, or null
+ */
 
 const mod = createModule({
   config: {
@@ -101,6 +166,114 @@ const mod = createModule({
       _unsubs: [],
       _pickers: { timestamp: null, value: null, subgroup: null },
       _debTimer: null,
+
+      // ── Agent surface ─────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Konfiguration, wählbare Mengen und gerechnetes Ergebnis
+       */
+      read(options) {
+        return readAgentState('msa-typ6', {
+          ...this.model.toJSON(),
+          activeParams: this.activeParams(),
+          activeColumnSlots: this.activeColumnSlots(),
+          pickableColumns: this.pickableColumns(),
+          result: this._lastResult,
+          errorMsg: this._lastError,
+        }, options);
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeParams */
+      activeParams() {
+        const given = this.model.params.limitsMode === 'given';
+        return PARAM_KEYS.filter(k =>
+          (k !== 'baselineK' || !given) && (k !== 'mu0' || given) && (k !== 'sigma0' || given));
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() {
+        return PICKER_ROLES.filter(s => s !== 'subgroup' || this.model.params.chartType === 'xbar-r');
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() {
+        const sm = module._context.stateManager;
+        return Object.fromEntries(PICKER_ROLES.map(slot =>
+          [slot, pickableColumnList(sm, SLOT_FILTERS[slot])]));
+      },
+
+      /**
+       * Einen Parameter setzen; die Analyse folgt nach kurzer Ruhezeit.
+       * @agent
+       * @param {'measurementName'|'unit'|'chartType'|'limitsMode'|'baselineK'|'mu0'|'sigma0'|'enabledRules'|'alpha'} key
+       *   welcher Parameter; `baselineK` nur bei limitsMode from-study, `mu0` und `sigma0` nur bei limitsMode given
+       * @param {string|number|number[]} value der Wert; Text für `measurementName` und `unit`, `chartType`: i-mr oder xbar-r, `limitsMode`: from-study oder given, `alpha`: 0.01, 0.05 oder 0.10; eine Zahl (oder Zahlentext) für `baselineK` (ganze Zahl ab 1), `mu0` und `sigma0`; `enabledRules`: die Liste der angehakten Regel-Ids (Zahlen 1 bis 8)
+       * @returns {void}
+       * @throws {Error} wenn `key` im aktuellen Zustand kein Parameter ist oder `value` nicht zulässig
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        requireEnum('key', key, this.activeParams());
+        this.model.params[key] = PARAM_CHECKS[key](value);
+        this._analyzeNow();
+      },
+
+      /**
+       * Eine Spalte einem Slot zuweisen.
+       * @agent
+       * @param {'timestamp'|'value'|'subgroup'} slot der Slot; `subgroup` nur bei chartType xbar-r
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
+       *   der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren
+       * @returns {void}
+       * @throws {Error} wenn `slot` im aktuellen Zustand unbekannt ist oder die Spalte nicht wählbar
+       */
+      setColumn(slot, ref) {
+        requireEnum('slot', slot, this.activeColumnSlots());
+        if (ref == null) {
+          this.model.columns[slot] = null;
+          this._pickers[slot]?.syncValue(null);
+          this._analyzeNow();
+          return;
+        }
+        const keys = this.pickableColumns()[slot].map(c => c.key);
+        requireKnownId('ref', refToKey(ref), keys);
+        const clean = keyToRef(refToKey(ref));
+        this.model.columns[slot] = clean;
+        this._pickers[slot]?.syncValue(clean);
+        this._analyzeNow();
+      },
+
+      /** @noagent view transform; die Optionen der Optionsgruppen */
+      chartTypeOptions() { return CHART_TYPES; },
+      /** @noagent view transform */
+      limitsModeOptions() { return LIMITS_MODES; },
+      /** @noagent view transform */
+      alphaOptions() { return ALPHA_OPTIONS; },
+      /** @noagent view transform */
+      ruleIds() { return RULE_IDS; },
+      /** @noagent view transform; Beschriftung eines Optionswerts, `input.<gruppe><Wert>` */
+      optionLabel(group, value) {
+        const camel = value.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+        return _t(`input.${group}${camel}`);
+      },
+      /** @noagent view transform */
+      isRuleEnabled(id) { return enabledRulesOf(this.model.params.enabledRules).includes(id); },
+      /** @noagent UI-only: schaltet eine Regel um und geht durch setParam */
+      toggleRule(id) {
+        const cur = enabledRulesOf(this.model.params.enabledRules);
+        this.setParam('enabledRules', cur.includes(id) ? cur.filter(r => r !== id) : [...cur, id]);
+      },
+      /** @noagent UI-only: ein geleertes Zahlenfeld heißt „nicht gesetzt“, alles andere geht durch setParam */
+      onNumberInput(key, raw) {
+        if (raw === '') {
+          if (key !== 'baselineK') { this.model.params[key] = NaN; this._analyzeNow(); }
+          return;
+        }
+        this.setParam(key, raw);
+      },
 
       // Verletzungs-Tabelle Row-Highlight (Task 11): primaryIndex der zuletzt
       // angeklickten Zeile, für die kurze Dauer der :class-Bindung im
@@ -460,10 +633,7 @@ const mod = createModule({
           this._pickers[role] = new ColumnPicker(el, module._context, {
             mode: 'single',
             types: typesByRole[role],
-            onChange: (ref) => {
-              this.model.columns[role] = ref;
-              this._analyzeNow();
-            },
+            onChange: (ref) => this.setColumn(role, ref),
           });
           if (this.model.columns[role]) {
             this._pickers[role].value = this.model.columns[role];
@@ -546,6 +716,7 @@ const mod = createModule({
 
       // ── Lifecycle (per Alpine component) ──────────────────────
 
+      /** @noagent lifecycle */
       init() {
         // Fresh per-instance collections (das data()-Objekt wird per Alpine.data geteilt).
         this._charts = [];
@@ -621,6 +792,7 @@ const mod = createModule({
         this._analyzeNow();
       },
 
+      /** @noagent lifecycle */
       destroy() {
         clearTimeout(this._debTimer);
         clearTimeout(this._highlightTimer);

@@ -2825,6 +2825,37 @@
     "msa-typ6": {
       "name": "MSA Typ 6 (Stabilität)",
       "description": "Stabilität / Langzeitverhalten — Regelkarte (I-MR/x̄-R) über ein wiederholt gemessenes Referenzteil, Nelson-Regeln 1–8 und linearer Drift-Test",
+      "whenToUse": "Wenn ein Messsystem über längere Zeit stabil bleiben soll: ein Referenzteil wird wiederholt gemessen, die Regelkarte (I-MR oder x̄-R) zeigt Verletzungen der Nelson-Regeln, ein linearer Drift-Test prüft den Trend. Braucht eine Datensammlung mit einer Messwert-Spalte, optional Zeitstempel und bei x̄-R eine Untergruppen-Spalte — nicht für die Streuung einer einzelnen Messreihe, dafür gelten die Typen 1 bis 3.",
+      "actions": {
+        "read": {
+          "help": "Liefert die Eingaben, die wählbaren Mengen und das gerechnete Ergebnis. result ist null, solange die Eingaben unvollständig oder ungültig sind; errorMsg nennt dann den Fehlercode einer gescheiterten Rechnung.",
+          "params": { "options": "Optional; dieses Modul führt keine Massendaten." }
+        },
+        "setParam": {
+          "help": "Setzt einen Parameter der Studie; die Neuberechnung folgt nach kurzer Ruhezeit.",
+          "params": {
+            "key": "Einer der Schlüssel aus activeParams: measurementName, unit, chartType, limitsMode, baselineK, mu0, sigma0, enabledRules oder alpha. baselineK gilt nur bei limitsMode from-study, mu0 und sigma0 nur bei limitsMode given; jeder andere Schlüssel ist ein Fehler.",
+            "value": "Der Wert. measurementName und unit nehmen Text, chartType 'i-mr' oder 'xbar-r', limitsMode 'from-study' oder 'given', alpha '0.01', '0.05' oder '0.10'. baselineK (ganze Zahl ab 1), mu0 und sigma0 nehmen eine Zahl oder einen Zahlentext, zum Beispiel 10. enabledRules nimmt die Liste der angehakten Regel-Ids als Zahlen von 1 bis 8, zum Beispiel [1, 4]."
+          }
+        },
+        "setColumn": {
+          "help": "Zeigt einen der drei Slots auf eine Spalte einer Datensammlung; die Neuberechnung folgt nach kurzer Ruhezeit.",
+          "params": {
+            "slot": "Einer der Slots aus activeColumnSlots: timestamp (Zeitstempel oder Reihenfolge), value (Messwert) oder subgroup (Untergruppe). subgroup gilt nur bei chartType xbar-r.",
+            "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Leeren."
+          }
+        }
+      },
+      "fields": {
+        "params": { "help": "Die eingegebenen Parameter: measurementName (Merkmalsname), unit (Einheit), chartType (i-mr oder xbar-r), limitsMode (from-study oder given), baselineK (Anzahl Basis-Untergruppen), mu0 und sigma0 (vorgegebene Grenzen, null solange nicht gesetzt), sourceTyp1InstanceId (übernommene Typ-1-Instanz, über die Fläche nicht setzbar), enabledRules (Liste der angehakten Regel-Ids als Zahlen) und alpha (Signifikanzniveau des Drift-Tests, als Text)." },
+        "columns": { "help": "Die gewählten Spalten: timestamp, value und subgroup je als { instanceId, sheetId, columnId } oder null." },
+        "exampleWorksheetId": { "help": "Interne Buchführung: die Datensammlung, die ein geladenes Beispiel angelegt hat; null ohne Beispiel." },
+        "activeParams": { "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt; baselineK fehlt bei limitsMode given, mu0 und sigma0 fehlen bei limitsMode from-study." },
+        "activeColumnSlots": { "help": "Die Slots, die setColumn im aktuellen Zustand annimmt; subgroup fehlt außerhalb von chartType xbar-r." },
+        "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'." },
+        "result": { "help": "Das gerechnete Ergebnis mit Urteil, Regelkarten-Reihen, Nelson-Verletzungen und Drift-Test, oder null, solange die Eingaben unvollständig oder ungültig sind." },
+        "errorMsg": { "help": "Der Fehlercode einer gescheiterten Rechnung, sonst null." }
+      },
       "emptyHint": "Zeitstempel/Reihenfolge- und Messwert-Spalte wählen, um die Analyse zu starten.",
       "empty": "Zeitstempel/Reihenfolge- und Messwert-Spalte wählen, um die Analyse zu starten.",
       "sections": {
@@ -2835,7 +2866,7 @@
         "measurementName": "Merkmalsname",
         "unit": "Einheit",
         "chartType": "Kartentyp",
-        "chartTypeImr": "I-MR",
+        "chartTypeIMr": "I-MR",
         "chartTypeXbarR": "x̄-R",
         "timestampColumn": "Zeitstempel / Reihenfolge",
         "valueColumn": "Messwert",
