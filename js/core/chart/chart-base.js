@@ -287,6 +287,11 @@ export default class ChartBase {
 
   /**
    * Build or rebuild the standard editor panel contents.
+   *
+   * After every edit the chart is re-rendered and `config.onEditorChange(chart)`
+   * is called (if set). Chart types receive `onChange()` (re-render + notify,
+   * editor DOM kept) as 4th argument of `_buildTypeEditor(inner, t, onUpdate, onChange)`;
+   * `onUpdate()` additionally rebuilds the editor and notifies as well.
    * @private
    */
   _buildEditor() {
@@ -302,15 +307,25 @@ export default class ChartBase {
       }
       return key;
     };
+    const notify = () => {
+      if (typeof cfg.onEditorChange === 'function') cfg.onEditorChange(this);
+    };
+    // Re-render after an edit that keeps the editor's DOM as is.
+    const onChange = () => {
+      this.render();
+      notify();
+    };
+    // Re-render and rebuild the editor (sections whose rows depend on the edit).
     const onUpdate = () => {
       this.render();
       this._buildEditor();
+      notify();
     };
     const onEdit = (key, value) => this._onLabelEdit?.(key, value);
     const auto = this._autoLabels || {};
 
     // Title section
-    inner.appendChild(edTitleSection(cfg, () => this.render(), t, onEdit, auto));
+    inner.appendChild(edTitleSection(cfg, onChange, t, onEdit, auto));
 
     // Legend toggle
     if (this._getLegendItems().length > 0 || (cfg.refLines && cfg.refLines.length) || (cfg.refAreas && cfg.refAreas.length)) {
@@ -322,19 +337,19 @@ export default class ChartBase {
     }
 
     // Font sizes
-    inner.appendChild(edFontSizeSection(cfg, () => this.render(), t));
+    inner.appendChild(edFontSizeSection(cfg, onChange, t));
 
     // Axis labels
-    inner.appendChild(edAxisLabelSection(cfg, () => this.render(), t, onEdit, auto));
+    inner.appendChild(edAxisLabelSection(cfg, onChange, t, onEdit, auto));
 
     // Axis ticks (suppressed when both axes are categorical)
-    const tickSec = edAxisTickSection(cfg, () => this.render(), t, onEdit);
+    const tickSec = edAxisTickSection(cfg, onChange, t, onEdit);
     if (tickSec) inner.appendChild(tickSec);
 
     // Background color
     inner.appendChild(edBgColorSection(cfg, (changes) => {
       Object.assign(cfg, changes);
-      this.render();
+      onChange();
     }, (e, color, cb) => {
       openColorPicker(e, color, cb);
     }, t));
@@ -376,7 +391,7 @@ export default class ChartBase {
           openColorPicker(e, d.getColor(), (c) => {
             d.setColor(c);
             swatch.style.background = c;
-            this.render();
+            onChange();
             if (typeof cfg.onSeriesChange === 'function') cfg.onSeriesChange(d.index, 'color', c);
           });
         });
@@ -385,7 +400,7 @@ export default class ChartBase {
         nameInp.value = d.getName();
         nameInp.addEventListener('change', () => {
           d.setName(nameInp.value);
-          this.render();
+          onChange();
           if (typeof cfg.onSeriesChange === 'function') cfg.onSeriesChange(d.index, 'name', nameInp.value);
         });
 
@@ -407,13 +422,13 @@ export default class ChartBase {
         if (typeof d.getSymbol === 'function') {
           details.appendChild(edSelectRow(tm('symbol'), MARKER_SYMBOLS, d.getSymbol() || 'circle', (v) => {
             d.setSymbol(v);
-            this.render();
+            onChange();
           }));
         }
         if (typeof d.getSize === 'function') {
           details.appendChild(edRangeRow(tm('size'), d.getSize() ?? 8, (v) => {
             d.setSize(v);
-            this.render();
+            onChange();
           }, 0, 24, 1));
         }
         // Fill color row (more detailed than the header swatch)
@@ -424,7 +439,7 @@ export default class ChartBase {
               d.setColor(c);
               fillSw.style.background = c;
               swatch.style.background = c;
-              this.render();
+              onChange();
               if (typeof cfg.onSeriesChange === 'function') cfg.onSeriesChange(d.index, 'color', c);
             });
           });
@@ -436,7 +451,7 @@ export default class ChartBase {
             openColorPicker(e, d.getStroke(), (c) => {
               d.setStroke(c);
               strokeSw.style.background = c;
-              this.render();
+              onChange();
             });
           });
           details.appendChild(strokeRow);
@@ -444,7 +459,7 @@ export default class ChartBase {
         if (typeof d.getStrokeWidth === 'function') {
           details.appendChild(edRangeRow(tm('strokeWidth'), d.getStrokeWidth() ?? 1, (v) => {
             d.setStrokeWidth(v);
-            this.render();
+            onChange();
           }, 0, 6, 0.5));
         }
 
@@ -457,7 +472,7 @@ export default class ChartBase {
 
     // Let chart types add their own editor sections
     if (typeof this._buildTypeEditor === 'function') {
-      this._buildTypeEditor(inner, t, onUpdate);
+      this._buildTypeEditor(inner, t, onUpdate, onChange);
     }
 
     // Let consumers add custom editor sections (receives seriesItemEls for appending details)
