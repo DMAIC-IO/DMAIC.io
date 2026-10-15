@@ -5,9 +5,21 @@
 export const AGENT_REGISTRY = {
   "activity-flowchart": {
     "tagged": true,
-    "available": true,
-    "violations": [],
-    "reported": [],
+    "available": false,
+    "violations": [
+      "undeclared_option_source:setStepBand:bandId",
+      "undeclared_option_source:insertInBand:bandId",
+      "undeclared_option_source:addActivityToBand:bandId",
+      "undeclared_option_source:addDecisionToBand:bandId",
+      "undeclared_option_source:clearExit:bandId"
+    ],
+    "reported": [
+      "undeclared_option_source:setStepBand:bandId",
+      "undeclared_option_source:insertInBand:bandId",
+      "undeclared_option_source:addActivityToBand:bandId",
+      "undeclared_option_source:addDecisionToBand:bandId",
+      "undeclared_option_source:clearExit:bandId"
+    ],
     "actions": {
       "read": {
         "params": [
@@ -813,9 +825,13 @@ export const AGENT_REGISTRY = {
   },
   "ce-matrix": {
     "tagged": true,
-    "available": true,
-    "violations": [],
-    "reported": [],
+    "available": false,
+    "violations": [
+      "undeclared_option_source:setScore:value"
+    ],
+    "reported": [
+      "undeclared_option_source:setScore:value"
+    ],
     "actions": {
       "read": {
         "params": [
@@ -1877,9 +1893,13 @@ export const AGENT_REGISTRY = {
   },
   "doe-advisor": {
     "tagged": true,
-    "available": true,
-    "violations": [],
-    "reported": [],
+    "available": false,
+    "violations": [
+      "undeclared_option_source:answer:opt"
+    ],
+    "reported": [
+      "undeclared_option_source:answer:opt"
+    ],
     "actions": {
       "read": {
         "params": [
@@ -3310,9 +3330,13 @@ export const AGENT_REGISTRY = {
   },
   "kano": {
     "tagged": true,
-    "available": true,
-    "violations": [],
-    "reported": [],
+    "available": false,
+    "violations": [
+      "undeclared_option_source:setSourceTree:instanceId"
+    ],
+    "reported": [
+      "undeclared_option_source:setSourceTree:instanceId"
+    ],
     "actions": {
       "read": {
         "params": [
@@ -7783,9 +7807,15 @@ export const AGENT_REGISTRY = {
   },
   "unit-converter": {
     "tagged": true,
-    "available": true,
-    "violations": [],
-    "reported": [],
+    "available": false,
+    "violations": [
+      "undeclared_option_source:setFromUnit:unitKey",
+      "undeclared_option_source:setToUnit:unitKey"
+    ],
+    "reported": [
+      "undeclared_option_source:setFromUnit:unitKey",
+      "undeclared_option_source:setToUnit:unitKey"
+    ],
     "actions": {
       "read": {
         "params": [
@@ -8605,4 +8635,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":29};
+export const AGENT_COVERAGE = {"total":74,"available":24};
