@@ -851,6 +851,11 @@
       "file": "terms/substanz-feld-analyse.json"
     },
     {
+      "id": "funktionsanalyse",
+      "category": "triz",
+      "file": "terms/funktionsanalyse.json"
+    },
+    {
       "id": "standardloesungen",
       "category": "triz",
       "file": "terms/standardloesungen.json"

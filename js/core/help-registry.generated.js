@@ -66,14 +66,15 @@ import h63 from '../modules/transformed-imr-chart/transformed-imr-chart-help.js'
 import h64 from '../modules/triz-9-windows/triz-9-windows-help.js';
 import h65 from '../modules/triz-contradiction-matrix/triz-contradiction-matrix-help.js';
 import h66 from '../modules/triz-evolution-trends/triz-evolution-trends-help.js';
-import h67 from '../modules/triz-ifr/triz-ifr-help.js';
-import h68 from '../modules/triz-physical-contradiction/triz-physical-contradiction-help.js';
-import h69 from '../modules/triz-resources/triz-resources-help.js';
-import h70 from '../modules/triz-sufield/triz-sufield-help.js';
-import h71 from '../modules/unit-converter/unit-converter-help.js';
-import h72 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
-import h73 from '../modules/worksheet/worksheet-help.js';
-import h74 from '../modules/xy-plot/xy-plot-help.js';
+import h67 from '../modules/triz-function-analysis/triz-function-analysis-help.js';
+import h68 from '../modules/triz-ifr/triz-ifr-help.js';
+import h69 from '../modules/triz-physical-contradiction/triz-physical-contradiction-help.js';
+import h70 from '../modules/triz-resources/triz-resources-help.js';
+import h71 from '../modules/triz-sufield/triz-sufield-help.js';
+import h72 from '../modules/unit-converter/unit-converter-help.js';
+import h73 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
+import h74 from '../modules/worksheet/worksheet-help.js';
+import h75 from '../modules/xy-plot/xy-plot-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
@@ -143,12 +144,13 @@ export const HELP = {
   "triz-9-windows": h64,
   "triz-contradiction-matrix": h65,
   "triz-evolution-trends": h66,
-  "triz-ifr": h67,
-  "triz-physical-contradiction": h68,
-  "triz-resources": h69,
-  "triz-sufield": h70,
-  "unit-converter": h71,
-  "voc-ctx-tree": h72,
-  "worksheet": h73,
-  "xy-plot": h74,
+  "triz-function-analysis": h67,
+  "triz-ifr": h68,
+  "triz-physical-contradiction": h69,
+  "triz-resources": h70,
+  "triz-sufield": h71,
+  "unit-converter": h72,
+  "voc-ctx-tree": h73,
+  "worksheet": h74,
+  "xy-plot": h75,
 };

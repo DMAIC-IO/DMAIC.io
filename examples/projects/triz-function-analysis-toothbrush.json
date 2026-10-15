@@ -1,0 +1,30 @@
+{
+  "_schema": { "name": "triz-function-analysis", "version": "1.0" },
+  "components": [
+    { "id": "c-belag", "name": "Belag", "kind": "target", "note": "Bakterieller Zahnbelag" },
+    { "id": "c-borsten", "name": "Borsten", "kind": "system", "note": "" },
+    { "id": "c-kopf", "name": "Bürstenkopf", "kind": "system", "note": "" },
+    { "id": "c-griff", "name": "Griff", "kind": "system", "note": "" },
+    { "id": "c-hand", "name": "Hand", "kind": "supersystem", "note": "" },
+    { "id": "c-zahnfleisch", "name": "Zahnfleisch", "kind": "supersystem", "note": "" },
+    { "id": "c-paste", "name": "Zahnpasta", "kind": "supersystem", "note": "" }
+  ],
+  "interactions": [
+    { "a": "c-belag", "b": "c-borsten" },
+    { "a": "c-belag", "b": "c-paste" },
+    { "a": "c-borsten", "b": "c-kopf" },
+    { "a": "c-griff", "b": "c-kopf" },
+    { "a": "c-griff", "b": "c-hand" },
+    { "a": "c-borsten", "b": "c-zahnfleisch" }
+  ],
+  "functions": [
+    { "id": "f-entfernen", "carrier": "c-borsten", "verb": "entfernen", "object": "c-belag", "parameter": "auf der Zahnoberfläche", "type": "useful", "level": "insufficient", "note": "Zwischenräume werden kaum erreicht" },
+    { "id": "f-loesen", "carrier": "c-paste", "verb": "löst", "object": "c-belag", "parameter": "", "type": "useful", "level": "adequate", "note": "" },
+    { "id": "f-halten-b", "carrier": "c-kopf", "verb": "hält", "object": "c-borsten", "parameter": "", "type": "useful", "level": "adequate", "note": "" },
+    { "id": "f-halten-k", "carrier": "c-griff", "verb": "hält", "object": "c-kopf", "parameter": "", "type": "useful", "level": "adequate", "note": "" },
+    { "id": "f-fuehren", "carrier": "c-hand", "verb": "führt", "object": "c-griff", "parameter": "", "type": "useful", "level": "adequate", "note": "" },
+    { "id": "f-verletzen", "carrier": "c-borsten", "verb": "verletzen", "object": "c-zahnfleisch", "parameter": "", "type": "harmful", "level": null, "note": "Bei zu hohem Druck" }
+  ],
+  "positions": {},
+  "activeTab": "model"
+}
