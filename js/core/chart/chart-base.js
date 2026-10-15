@@ -246,11 +246,14 @@ export default class ChartBase {
     this._editorInner.className = 'dmike-chart-editor-inner';
     this._editorPanel.appendChild(this._editorInner);
 
-    // Assemble: svgWrap first, then modebar LAST so it paints on top
+    // Assemble: svgWrap first, then modebar LAST so it paints on top.
+    // showModebar:false (offscreen exports, overlays) leaves out modebar and
+    // editor panel; the modebar instance still exists so destroy() is uniform.
+    const showModebar = this.config.showModebar !== false;
     this._wrap.appendChild(this._svgWrap);
-    this._wrap.appendChild(this._modebarInstance.el);
+    if (showModebar) this._wrap.appendChild(this._modebarInstance.el);
     this._card.appendChild(this._wrap);
-    this._card.appendChild(this._editorPanel);
+    if (showModebar) this._card.appendChild(this._editorPanel);
     this.container.appendChild(this._card);
   }
 
@@ -1264,8 +1267,14 @@ export default class ChartBase {
 
   // ── Export ────────────────────────────────────────────────────────
 
-  /** @private */
+  /**
+   * Download name without extension: `config.fileName` if set, else the
+   * sanitised title.
+   * @protected
+   * @returns {string}
+   */
   _getFileName() {
+    if (this.config.fileName) return this.config.fileName;
     return (this.config.title || 'chart').replace(/[^a-zA-Z0-9_\-äöüÄÖÜß]/g, '_');
   }
 
