@@ -336,7 +336,7 @@ export default class HistogramChart extends ChartBase {
       const pi = this._paretoSeriesIndex();
       if (pi >= 0 && res.bins[pi].length) {
         drawPareto(svg, plotGroup, res.bins[pi], cumulativePercent(res.bins[pi]), xScale, _plotArea, {
-          color: PARETO_COLOR, label: this._th('paretoCum'), textColor: PARETO_COLOR,
+          color: PARETO_COLOR, label: this._th('paretoCum'),
           tickSize: this.config.tickSize || 11,
         });
       }
@@ -586,9 +586,9 @@ export default class HistogramChart extends ChartBase {
   _getSeriesLegendItems() {
     const items = [];
     const curves = [];
-    this.config.series.forEach((s) => {
+    this.config.series.forEach((s, si) => {
       if (s.visible === false) return;
-      items.push({ type: 'rect', color: s.fillColor, label: s.name });
+      items.push({ type: 'rect', color: s.fillColor, label: s.name, patternId: s.pattern ? `hist-pat-${this._uid}-${si}` : null });
       const { n, sd } = seriesMoments(s.values);
       if (s.showNormalCurve !== false && n >= 2 && sd > 0) {
         curves.push({ type: 'line', color: s.borderColor, width: 2, label: `${s.name} · ${this._th('normal')}` });

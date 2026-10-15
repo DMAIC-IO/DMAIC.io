@@ -262,7 +262,7 @@ export function histogramData(module, _t) {
       auto = this._autoLabels();
       const cfg = buildChartConfig(this.model, this._seriesData, auto);
       const cm = module._context.chartManager;
-      if (chart) { cm.update(chart, cfg); return; }
+      if (chart) { cm.update(chart, cfg); chart.refreshEditor(); return; }
       const gen = ++this._renderGen;
       const created = await cm.create(host, 'histogram', {
         ...cfg,
@@ -272,7 +272,10 @@ export function histogramData(module, _t) {
       if (this._destroyed || gen !== this._renderGen || !module._container) { if (created) cm.destroy(created); return; }
       chart = created;
       // Data or inputs changed while create was pending: draw the latest state.
-      if (chart && this._seriesData) cm.update(chart, buildChartConfig(this.model, this._seriesData, (auto = this._autoLabels())));
+      if (chart && this._seriesData) {
+        cm.update(chart, buildChartConfig(this.model, this._seriesData, (auto = this._autoLabels())));
+        chart.refreshEditor();
+      }
     },
 
     /** Destroy the chart (error, empty data, teardown). */
@@ -295,6 +298,8 @@ export function histogramData(module, _t) {
 
     /** Statistics-table toggle in the chart type's Display section. */
     _addStatsToggle(inner) {
+      // The legend toggle is not part of the persisted model shape: hide it.
+      inner.querySelector('input[data-key="showLegend"]')?.closest('label')?.remove();
       const target = inner.querySelector('[data-ed-section="display"]') || inner;
       target.appendChild(edCheckboxRow(t('showStats'), this.model.showStats, (v) => {
         this.model.showStats = v;

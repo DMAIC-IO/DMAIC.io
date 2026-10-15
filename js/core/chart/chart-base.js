@@ -1271,6 +1271,10 @@ export default class ChartBase {
         svgEl('line', lineAttrs, svg);
       } else {
         svgEl('rect', { x: lx, y: y + 1, width: 14, height: 12, fill: resolveColor(item.color), rx: 2 }, svg);
+        // Optional pattern overlay: id of a <pattern> already defined in this svg.
+        if (item.patternId) {
+          svgEl('rect', { x: lx, y: y + 1, width: 14, height: 12, fill: `url(#${item.patternId})`, rx: 2, 'data-legend-pattern': '' }, svg);
+        }
       }
       svgText(item.label, {
         x: lx + 20, y: y + 11,
@@ -1653,6 +1657,15 @@ export default class ChartBase {
       this._renderErrorEl.textContent = this.context.i18n?.t('chart.renderError') ?? 'chart.renderError';
     }
     this._svgWrap?.append(this._renderErrorEl);
+  }
+
+  /**
+   * Rebuild the editor panel from the current config, only while it is open.
+   * Call after `update()` replaced config objects the editor rows close over
+   * (series, reference lines), so later edits reach the new objects.
+   */
+  refreshEditor() {
+    if (this._editorOpen) this._buildEditor();
   }
 
   /**

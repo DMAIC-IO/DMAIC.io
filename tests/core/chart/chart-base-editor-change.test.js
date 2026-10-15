@@ -30,6 +30,7 @@ function mount(cfg) {
   document.body.appendChild(host);
   const chart = new TwoSeries(host, cfg, { language: 'de' });
   chart.render();
+  chart._editorOpen = true;
   chart._buildEditor();
   return { host, chart, inner: chart._editorInner };
 }
@@ -76,6 +77,28 @@ suite('ChartBase — onEditorChange', () => {
     const m = mount({ s: { name: 'A', visible: true } });
     m.inner.querySelector('[data-test="type-change"]').click();
     assertEqual(m.chart.config.flag, true);
+    m.chart.destroy(); m.host.remove();
+  });
+  test('refreshEditor: after update() with new objects an edit reaches the new config', () => {
+    let calls = 0;
+    const m = mount({ s: { name: 'A', visible: true }, onEditorChange: () => { calls++; } });
+    const fresh = { name: 'A', visible: true };
+    m.chart.update({ s: fresh });
+    m.chart.refreshEditor();
+    const inp = m.inner.querySelector('.dmike-chart-ed-series-header input');
+    inp.value = 'Z';
+    inp.dispatchEvent(new Event('change'));
+    assertEqual(fresh.name, 'Z');
+    assertEqual(m.chart.config.s.name, 'Z');
+    assertTrue(calls >= 1);
+    m.chart.destroy(); m.host.remove();
+  });
+  test('refreshEditor: does nothing while the editor is closed', () => {
+    const m = mount({ s: { name: 'A', visible: true } });
+    m.chart._editorOpen = false;
+    const before = m.inner.firstChild;
+    m.chart.refreshEditor();
+    assertEqual(m.inner.firstChild, before);
     m.chart.destroy(); m.host.remove();
   });
 });

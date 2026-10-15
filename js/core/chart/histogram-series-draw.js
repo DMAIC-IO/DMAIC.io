@@ -9,8 +9,18 @@ import { svgEl, svgText, resolveColor, dashArray, createPattern, formatNum } fro
 import { h } from '../dom.js';
 import { seriesMoments } from './histogram-series.js';
 
-/** Default pattern line colour of the series path (matches the old module look). */
-const PATTERN_LINE = 'rgba(0,0,0,0.5)';
+/** Fallback pattern line colour when the theme variable is unavailable. */
+const PATTERN_LINE_FALLBACK = 'rgba(0,0,0,0.5)';
+
+/**
+ * Default pattern line colour: the theme's secondary text colour, so the
+ * pattern stays visible in dark mode (read at render time, like chart-base).
+ * @returns {string}
+ */
+function patternLineColor() {
+  const v = getComputedStyle(document.documentElement).getPropertyValue('--color-text-secondary').trim();
+  return v || PATTERN_LINE_FALLBACK;
+}
 /** Width reserved right of the plot for the Pareto %-axis. */
 export const PARETO_AXIS_W = 48;
 /** Cumulative line colour, same as types/pareto.js. */
@@ -36,7 +46,7 @@ export function drawSeriesBars(group, defs, uid, series, binData, xScale, yScale
     if (s.visible === false) return;
     const bins = binData.bins[si] || [];
     const patId = s.pattern ? `hist-pat-${uid}-${si}` : null;
-    if (patId) createPattern(defs, patId, { ...s, patternColor: s.patternColor || PATTERN_LINE });
+    if (patId) createPattern(defs, patId, { ...s, patternColor: s.patternColor || patternLineColor() });
     const bw = s.borderStyle === 'none' ? 0 : (s.borderWidth ?? 1);
     const da = dashArray(s.borderStyle, bw || 1);
     bins.forEach((b, bi) => {
@@ -134,7 +144,7 @@ export function binTooltip({ series, binData, bi, locale, t, cumPct = null }) {
  * @param {number[]} cum - cumulativePercent(bins)
  * @param {Function} xScale
  * @param {{x:number,y:number,w:number,h:number}} pa
- * @param {{ color: string, label: string, textColor: string, tickSize: number }} o
+ * @param {{ color: string, label: string, tickSize: number }} o
  */
 export function drawPareto(svg, group, bins, cum, xScale, pa, o) {
   const yPct = (p) => pa.y + pa.h - (p / 100) * pa.h;

@@ -121,6 +121,21 @@ suite('Histogram type — legacy path unchanged', () => {
     assertEqual(m.chart._seriesBins, undefined);
     unmount(m);
   });
+  test('series-path option keys without series leave the drawn element set identical', () => {
+    const tagCounts = (svg) => {
+      const o = {};
+      svg.querySelectorAll('*').forEach((e) => { o[e.tagName] = (o[e.tagName] || 0) + 1; });
+      return o;
+    };
+    const base = mount({ data: A, binMethod: 'manual', binCount: 4 });
+    const extra = mount({ data: A, binMethod: 'manual', binCount: 4, barGap: 3, binWidth: 2, pareto: true, boxplotStrip: true, series: undefined });
+    const a = tagCounts(base.svg);
+    const b = tagCounts(extra.svg);
+    assertEqual(JSON.stringify(Object.entries(a).sort()), JSON.stringify(Object.entries(b).sort()));
+    assertTrue((a.rect || 0) >= 4, 'legacy bars drawn');
+    assertEqual(base.svg.querySelectorAll('[data-box-strip],[data-pareto],[data-pattern]').length, 0);
+    unmount(base); unmount(extra);
+  });
   test('empty series array falls back to the legacy path', () => {
     const m = mount({ series: [], data: A });
     assertTrue(Array.isArray(m.chart._bins));
@@ -129,6 +144,24 @@ suite('Histogram type — legacy path unchanged', () => {
 });
 
 suite('Histogram type — series path: legend, descriptors, tooltip', () => {
+  test('legend swatch carries the series pattern', () => {
+    const m = mount({ series: [s('A', A, { pattern: '/' }), s('B', B)], binWidth: 1 });
+    const sw = m.svg.querySelectorAll('rect[data-legend-pattern]');
+    assertEqual(sw.length, 1);
+    const id = sw[0].getAttribute('fill').slice(5, -1);
+    assertTrue(!!m.svg.querySelector(`pattern[id="${id}"]`), 'legend pattern id is defined');
+    unmount(m);
+  });
+  test('default pattern line colour follows the theme text colour', () => {
+    const root = document.documentElement;
+    const prev = root.style.getPropertyValue('--color-text-secondary');
+    root.style.setProperty('--color-text-secondary', 'rgb(200, 201, 202)');
+    const m = mount({ series: [s('A', A, { pattern: '/' })], binWidth: 1 });
+    const line = m.svg.querySelector('pattern line');
+    assertEqual(line.getAttribute('stroke'), 'rgb(200, 201, 202)');
+    unmount(m);
+    if (prev) root.style.setProperty('--color-text-secondary', prev); else root.style.removeProperty('--color-text-secondary');
+  });
   test('legend: rect per visible series, line per drawn curve', () => {
     const m = mount({ series: [s('A', A), s('B', B, { showNormalCurve: false }), s('C', A, { visible: false })], binWidth: 1 });
     const items = m.chart._getLegendItems();
