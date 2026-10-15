@@ -13,7 +13,7 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireText } from '../../core/agent/agent-argcheck.js';
 import { CATEGORIES, TIMEZONES, TZ_WORLD_CLOCK_INDICES } from './unit-data.js';
 import { State, formatNumber } from './unit-converter-model.js';
@@ -71,6 +71,19 @@ function getTzOffset(tz, date) {
   return hours * 60 + (hours < 0 ? -mins : mins);
 }
 
+/**
+ * @typedef {object} AgentRead
+ * @property {string} activeCat  key of the active quantity category
+ * @property {string} fromUnit  key of the unit converted from
+ * @property {string} toUnit  key of the unit converted to
+ * @property {string} inputVal  the entered value as text
+ * @property {number} tzFrom  position of the source time zone in the zone list
+ * @property {number} tzTo  position of the target time zone in the zone list
+ * @property {string} tzTime  the conversion time as HH:MM, empty if unset
+ * @property {string} tzDate  the conversion date as YYYY-MM-DD, empty if unset
+ * @property {string[]} unitKeys  the unit keys `setFromUnit` accepts in the active category
+ * @property {string[]} toUnitKeys  the unit keys `setToUnit` accepts for the current source unit
+ */
 export default createModule({
   config: {
     id: 'unit-converter',
@@ -86,7 +99,19 @@ export default createModule({
     const isDe = () => module._context?.language !== 'en';
 
     return {
-      ...agentReadMixin(module),
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Einstellungen und die wählbaren Einheiten
+       */
+      read(options) {
+        return readAgentState('unit-converter', {
+          ...this.model.toJSON(),
+          unitKeys: Object.keys(this.model.unitKeys()),
+          toUnitKeys: this.model.toUnitKeys(),
+        }, options);
+      },
 
       // Raw data for x-for iteration in the template.
       categories: CATEGORIES,

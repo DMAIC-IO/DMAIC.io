@@ -1893,13 +1893,9 @@ export const AGENT_REGISTRY = {
   },
   "doe-advisor": {
     "tagged": true,
-    "available": false,
-    "violations": [
-      "undeclared_option_source:answer:opt"
-    ],
-    "reported": [
-      "undeclared_option_source:answer:opt"
-    ],
+    "available": true,
+    "violations": [],
+    "reported": [],
     "actions": {
       "read": {
         "params": [
@@ -1907,11 +1903,11 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "switchTab": {
         "params": [
@@ -1951,23 +1947,33 @@ export const AGENT_REGISTRY = {
     "fields": {
       "tab": {
         "type": "'overview'|'wizard'|'ccd'",
-        "help": "der angezeigte Bereich: overview der Versuchsplankatalog, wizard der geführte Berater, ccd der Vergleich der zentral zusammengesetzten Pläne",
-        "bulk": false
+        "help": "the shown section",
+        "bulk": false,
+        "derived": true
       },
       "currentStep": {
         "type": "string",
-        "help": "die id der offenen Frage — phase, goal, screening-curvature, factor-count, factor-levels, robustness-type, limits oder corners —, oder `result:<schlüssel>`, sobald eine Empfehlung steht",
-        "bulk": false
+        "help": "id of the open question, or `result:<key>` once a recommendation stands",
+        "bulk": false,
+        "derived": true
       },
       "answers": {
-        "type": "Record<string,string>",
-        "help": "die gegebenen Antworten, je Frage eine: der Schlüssel ist phase, goal, screeningCurvature, factorCount, factorLevels, robustnessType, limits oder corners, der Wert die gewählte Antwortmöglichkeit",
-        "bulk": false
+        "type": "object",
+        "help": "the given answers, one per question",
+        "bulk": false,
+        "derived": true
       },
       "history": {
         "type": "string[]",
-        "help": "die ids der beantworteten Fragen in der Reihenfolge, in der sie beantwortet wurden; der letzte Eintrag ist der, zu dem zurückgehen führt",
-        "bulk": false
+        "help": "ids of the answered questions, in answering order",
+        "bulk": false,
+        "derived": true
+      },
+      "currentOptions": {
+        "type": "string[]",
+        "help": "the answer options the open question accepts; empty on a recommendation",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -7807,15 +7813,9 @@ export const AGENT_REGISTRY = {
   },
   "unit-converter": {
     "tagged": true,
-    "available": false,
-    "violations": [
-      "undeclared_option_source:setFromUnit:unitKey",
-      "undeclared_option_source:setToUnit:unitKey"
-    ],
-    "reported": [
-      "undeclared_option_source:setFromUnit:unitKey",
-      "undeclared_option_source:setToUnit:unitKey"
-    ],
+    "available": true,
+    "violations": [],
+    "reported": [],
     "actions": {
       "read": {
         "params": [
@@ -7823,11 +7823,11 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "selectCategory": {
         "params": [
@@ -7944,43 +7944,63 @@ export const AGENT_REGISTRY = {
     "fields": {
       "activeCat": {
         "type": "string",
-        "help": "der Schlüssel der aktiven Größenart, z. B. laenge oder masse",
-        "bulk": false
+        "help": "key of the active quantity category",
+        "bulk": false,
+        "derived": true
       },
       "fromUnit": {
         "type": "string",
-        "help": "der Schlüssel der Einheit, aus der umgerechnet wird",
-        "bulk": false
+        "help": "key of the unit converted from",
+        "bulk": false,
+        "derived": true
       },
       "toUnit": {
         "type": "string",
-        "help": "der Schlüssel der Einheit, in die umgerechnet wird",
-        "bulk": false
+        "help": "key of the unit converted to",
+        "bulk": false,
+        "derived": true
       },
       "inputVal": {
         "type": "string",
-        "help": "der eingegebene Wert als Text; ein Komma gilt als Dezimaltrennzeichen",
-        "bulk": false
+        "help": "the entered value as text",
+        "bulk": false,
+        "derived": true
       },
       "tzFrom": {
         "type": "number",
-        "help": "die Position der Ausgangszeitzone in der Zeitzonenliste",
-        "bulk": false
+        "help": "position of the source time zone in the zone list",
+        "bulk": false,
+        "derived": true
       },
       "tzTo": {
         "type": "number",
-        "help": "die Position der Zielzeitzone in der Zeitzonenliste",
-        "bulk": false
+        "help": "position of the target time zone in the zone list",
+        "bulk": false,
+        "derived": true
       },
       "tzTime": {
         "type": "string",
-        "help": "die Uhrzeit der Umrechnung als HH:MM; leer heißt nicht gesetzt",
-        "bulk": false
+        "help": "the conversion time as HH:MM, empty if unset",
+        "bulk": false,
+        "derived": true
       },
       "tzDate": {
         "type": "string",
-        "help": "das Datum der Umrechnung als YYYY-MM-DD; leer heißt nicht gesetzt",
-        "bulk": false
+        "help": "the conversion date as YYYY-MM-DD, empty if unset",
+        "bulk": false,
+        "derived": true
+      },
+      "unitKeys": {
+        "type": "string[]",
+        "help": "the unit keys `setFromUnit` accepts in the active category",
+        "bulk": false,
+        "derived": true
+      },
+      "toUnitKeys": {
+        "type": "string[]",
+        "help": "the unit keys `setToUnit` accepts for the current source unit",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -8635,4 +8655,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":24};
+export const AGENT_COVERAGE = {"total":74,"available":26};

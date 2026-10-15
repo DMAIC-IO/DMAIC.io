@@ -15,7 +15,7 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum } from '../../core/agent/agent-argcheck.js';
 import {
   State,
@@ -28,6 +28,14 @@ import {
 /** Die Bereiche des Moduls — die Wertemenge von `switchTab`. */
 const TABS = ['overview', 'wizard', 'ccd'];
 
+/**
+ * @typedef {object} AgentRead
+ * @property {'overview'|'wizard'|'ccd'} tab  the shown section
+ * @property {string} currentStep  id of the open question, or `result:<key>` once a recommendation stands
+ * @property {object} answers  the given answers, one per question
+ * @property {string[]} history  ids of the answered questions, in answering order
+ * @property {string[]} currentOptions  the answer options the open question accepts; empty on a recommendation
+ */
 export default createModule({
   config: {
     id: 'doe-advisor',
@@ -41,7 +49,18 @@ export default createModule({
 
   data(module, _t) {
     return {
-      ...agentReadMixin(module),
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Berater-Zustand und die Antwortmöglichkeiten der offenen Frage
+       */
+      read(options) {
+        return readAgentState('doe-advisor', {
+          ...this.model.toJSON(),
+          currentOptions: this.model.currentOptions,
+        }, options);
+      },
 
       // ─── Static id lists (iterated by x-for) ────────────────
       designIds: DESIGN_IDS,

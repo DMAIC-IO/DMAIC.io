@@ -4610,6 +4610,10 @@
     "doe-advisor": {
       "whenToUse": "When an improvement project still has to settle WHICH design of experiments fits — screening, interactions, optimisation, robustness or mixture — or when the design catalogue and the comparison of the central composite designs are needed; not for planning or evaluating a concrete experiment, that is what the design planner and its evaluation are for.",
       "actions": {
+        "read": {
+          "help": "Returns the advisor state and the answer options of the open question.",
+          "params": { "options": "Optional; this module holds no bulk data." }
+        },
         "switchTab": {
           "help": "Switches the displayed area.",
           "params": {
@@ -4630,6 +4634,9 @@
         }
       },
       "fields": {
+        "currentOptions": {
+          "help": "The answer options of the open question — exactly the values answer(opt) accepts. Empty once the advisor stands on its recommendation."
+        },
         "tab": {
           "help": "The displayed area: overview the design catalogue, wizard the guided advisor, ccd the comparison of the central composite designs."
         },
@@ -7363,6 +7370,10 @@
       "tzSaoPaulo": "São Paulo (BRT)",
       "whenToUse": "When a measured value has to be expressed in another unit — length, area, volume, mass, pressure, temperature, force, torque, energy, power, flow rate, speed, time, angle, rotational speed, pH, concentration, sound or lab values — or when a time has to be converted between two time zones; not for converting a whole data column, that is what the data transformation is for.",
       "actions": {
+        "read": {
+          "help": "Returns the settings and the selectable units.",
+          "params": { "options": "Optional; this module holds no bulk data." }
+        },
         "selectCategory": {
           "help": "Switches the quantity category and resets both units to its defaults.",
           "params": {
@@ -7422,6 +7433,12 @@
         }
       },
       "fields": {
+        "unitKeys": {
+          "help": "The unit keys of the active category — exactly the values setFromUnit accepts."
+        },
+        "toUnitKeys": {
+          "help": "The unit keys setToUnit accepts for the current source unit; they depend on fromUnit."
+        },
         "activeCat": {
           "help": "The key of the active quantity category, e.g. laenge (length) or masse (mass)."
         },

@@ -4614,6 +4614,10 @@
     "doe-advisor": {
       "whenToUse": "Wenn für ein Verbesserungsvorhaben erst noch die Frage zu klären ist, WELCHER Versuchsplan passt — Screening, Wechselwirkungen, Optimierung, Robustheit oder Mischung —, oder wenn der Katalog der Pläne und der Vergleich der zentral zusammengesetzten Pläne gebraucht wird; nicht für das Planen oder Auswerten eines konkreten Versuchs, dafür sind der Versuchsplaner und die Auswertung da.",
       "actions": {
+        "read": {
+          "help": "Liefert den Zustand des Beraters und die Antwortmöglichkeiten der offenen Frage.",
+          "params": { "options": "Optional; dieses Modul führt keine Massendaten." }
+        },
         "switchTab": {
           "help": "Wechselt den angezeigten Bereich.",
           "params": {
@@ -4634,6 +4638,9 @@
         }
       },
       "fields": {
+        "currentOptions": {
+          "help": "Die Antwortmöglichkeiten der offenen Frage — genau die Werte, die answer(opt) annimmt. Leer, sobald der Berater auf seiner Empfehlung steht."
+        },
         "tab": {
           "help": "Der angezeigte Bereich: overview der Versuchsplankatalog, wizard der geführte Berater, ccd der Vergleich der zentral zusammengesetzten Pläne."
         },
@@ -7367,6 +7374,10 @@
       "tzSaoPaulo": "São Paulo (BRT)",
       "whenToUse": "Wenn ein Messwert in eine andere Einheit gebracht werden muss — Länge, Fläche, Volumen, Masse, Druck, Temperatur, Kraft, Drehmoment, Energie, Leistung, Durchfluss, Geschwindigkeit, Zeit, Winkel, Drehzahl, pH, Konzentration, Schall oder Laborwerte — oder wenn eine Uhrzeit zwischen zwei Zeitzonen umgerechnet werden soll; nicht für das Umrechnen einer ganzen Datenspalte, dafür ist die Datentransformation da.",
       "actions": {
+        "read": {
+          "help": "Liefert die Einstellungen und die wählbaren Einheiten.",
+          "params": { "options": "Optional; dieses Modul führt keine Massendaten." }
+        },
         "selectCategory": {
           "help": "Wechselt die Größenart und stellt beide Einheiten auf deren Vorgaben.",
           "params": {
@@ -7426,6 +7437,12 @@
         }
       },
       "fields": {
+        "unitKeys": {
+          "help": "Die Einheitenschlüssel der aktiven Größenart — genau die Werte, die setFromUnit annimmt."
+        },
+        "toUnitKeys": {
+          "help": "Die Einheitenschlüssel, die setToUnit für die aktuelle Ausgangseinheit annimmt; sie hängen von fromUnit ab."
+        },
         "activeCat": {
           "help": "Der Schlüssel der aktiven Größenart, z. B. laenge oder masse."
         },
