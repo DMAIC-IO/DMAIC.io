@@ -2831,7 +2831,7 @@
           "help": "Sets one parameter of the study; the analysis reruns after a short pause.",
           "params": {
             "key": "One of the keys in activeParams: measurementName, unit, chartType, limitsMode, baselineK, mu0, sigma0, enabledRules or alpha. baselineK applies only with limitsMode from-study, mu0 and sigma0 only with limitsMode given; any other key is an error.",
-            "value": "The value. measurementName and unit take text, chartType 'i-mr' or 'xbar-r', limitsMode 'from-study' or 'given', alpha '0.01', '0.05' or '0.10'. baselineK (whole number from 1), mu0 and sigma0 take a number or numeric text, for example 10. enabledRules takes the list of ticked rule ids as numbers from 1 to 8, for example [1, 4]."
+            "value": "The value. measurementName and unit take text, chartType 'i-mr' or 'xbar-r', limitsMode 'from-study' or 'given', alpha '0.01', '0.05' or '0.10'. baselineK (whole number from 1), mu0 and sigma0 take a number or numeric text, for example 10; null or an empty string clears them again (not set). enabledRules takes the list of ticked rule ids as numbers from 1 to 8, for example [1, 4]."
           }
         },
         "setColumn": {

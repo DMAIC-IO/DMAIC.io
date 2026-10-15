@@ -2835,7 +2835,7 @@
           "help": "Setzt einen Parameter der Studie; die Neuberechnung folgt nach kurzer Ruhezeit.",
           "params": {
             "key": "Einer der Schlüssel aus activeParams: measurementName, unit, chartType, limitsMode, baselineK, mu0, sigma0, enabledRules oder alpha. baselineK gilt nur bei limitsMode from-study, mu0 und sigma0 nur bei limitsMode given; jeder andere Schlüssel ist ein Fehler.",
-            "value": "Der Wert. measurementName und unit nehmen Text, chartType 'i-mr' oder 'xbar-r', limitsMode 'from-study' oder 'given', alpha '0.01', '0.05' oder '0.10'. baselineK (ganze Zahl ab 1), mu0 und sigma0 nehmen eine Zahl oder einen Zahlentext, zum Beispiel 10. enabledRules nimmt die Liste der angehakten Regel-Ids als Zahlen von 1 bis 8, zum Beispiel [1, 4]."
+            "value": "Der Wert. measurementName und unit nehmen Text, chartType 'i-mr' oder 'xbar-r', limitsMode 'from-study' oder 'given', alpha '0.01', '0.05' oder '0.10'. baselineK (ganze Zahl ab 1), mu0 und sigma0 nehmen eine Zahl oder einen Zahlentext, zum Beispiel 10; null oder '' leert sie wieder (nicht gesetzt). enabledRules nimmt die Liste der angehakten Regel-Ids als Zahlen von 1 bis 8, zum Beispiel [1, 4]."
           }
         },
         "setColumn": {

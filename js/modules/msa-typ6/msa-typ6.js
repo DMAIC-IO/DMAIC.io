@@ -91,6 +91,9 @@ const PICKER_ROLES = ['timestamp', 'value', 'subgroup'];
 /** Die neun Parameter, die `setParam` kennt (`sourceTyp1InstanceId` bleibt der Oberfläche). */
 const PARAM_KEYS = ['measurementName', 'unit', 'chartType', 'limitsMode', 'baselineK', 'mu0', 'sigma0', 'enabledRules', 'alpha'];
 
+/** Die Leerform eines Zahlenfelds („nicht gesetzt“): `null` oder `''`; das Model hält dafür NaN. */
+const isEmptyForm = (v) => v === null || v === '';
+
 /**
  * Je Parameter sein Prüfer; er gibt den Wert in der Form zurück, die das Model
  * hält (Zahlen als Zahl, die Regelauswahl sortiert und ohne Doppelte).
@@ -107,8 +110,8 @@ const PARAM_CHECKS = {
     }
     return n;
   },
-  mu0: (v) => requireNumber('value', v),
-  sigma0: (v) => requireNumber('value', v),
+  mu0: (v) => (isEmptyForm(v) ? NaN : requireNumber('value', v)),
+  sigma0: (v) => (isEmptyForm(v) ? NaN : requireNumber('value', v)),
   enabledRules: (v) => {
     if (!Array.isArray(v)) {
       throw new Error(`invalid value ${JSON.stringify(v)}; allowed: a list of rule ids from ${RULE_IDS.join(', ')}`);
@@ -210,7 +213,7 @@ const mod = createModule({
        * @agent
        * @param {'measurementName'|'unit'|'chartType'|'limitsMode'|'baselineK'|'mu0'|'sigma0'|'enabledRules'|'alpha'} key
        *   welcher Parameter; `baselineK` nur bei limitsMode from-study, `mu0` und `sigma0` nur bei limitsMode given
-       * @param {string|number|number[]} value der Wert; Text für `measurementName` und `unit`, `chartType`: i-mr oder xbar-r, `limitsMode`: from-study oder given, `alpha`: 0.01, 0.05 oder 0.10; eine Zahl (oder Zahlentext) für `baselineK` (ganze Zahl ab 1), `mu0` und `sigma0`; `enabledRules`: die Liste der angehakten Regel-Ids (Zahlen 1 bis 8)
+       * @param {string|number|number[]} value der Wert; Text für `measurementName` und `unit`, `chartType`: i-mr oder xbar-r, `limitsMode`: from-study oder given, `alpha`: 0.01, 0.05 oder 0.10; eine Zahl (oder Zahlentext) für `baselineK` (ganze Zahl ab 1), `mu0` und `sigma0` (null oder '' leert sie); `enabledRules`: die Liste der angehakten Regel-Ids (Zahlen 1 bis 8)
        * @returns {void}
        * @throws {Error} wenn `key` im aktuellen Zustand kein Parameter ist oder `value` nicht zulässig
        */
@@ -269,7 +272,7 @@ const mod = createModule({
       /** @noagent UI-only: ein geleertes Zahlenfeld heißt „nicht gesetzt“, alles andere geht durch setParam */
       onNumberInput(key, raw) {
         if (raw === '') {
-          if (key !== 'baselineK') { this.model.params[key] = NaN; this._analyzeNow(); }
+          if (key !== 'baselineK') this.setParam(key, null);
           return;
         }
         this.setParam(key, raw);

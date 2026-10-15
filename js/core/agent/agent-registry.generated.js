@@ -4669,7 +4669,7 @@ export const AGENT_REGISTRY = {
             "name": "value",
             "type": "string|number|number[]",
             "optional": false,
-            "help": "der Wert; Text für `measurementName` und `unit`, `chartType`: i-mr oder xbar-r, `limitsMode`: from-study oder given, `alpha`: 0.01, 0.05 oder 0.10; eine Zahl (oder Zahlentext) für `baselineK` (ganze Zahl ab 1), `mu0` und `sigma0`; `enabledRules`: die Liste der angehakten Regel-Ids (Zahlen 1 bis 8)"
+            "help": "der Wert; Text für `measurementName` und `unit`, `chartType`: i-mr oder xbar-r, `limitsMode`: from-study oder given, `alpha`: 0.01, 0.05 oder 0.10; eine Zahl (oder Zahlentext) für `baselineK` (ganze Zahl ab 1), `mu0` und `sigma0` (null oder '' leert sie); `enabledRules`: die Liste der angehakten Regel-Ids (Zahlen 1 bis 8)"
           }
         ],
         "returns": "void",
