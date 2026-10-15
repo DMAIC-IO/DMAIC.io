@@ -59,6 +59,58 @@ suite('histogram module — chart config', () => {
   });
 });
 
+suite('histogram module — destroy before the queued auto-plot', () => {
+  function mountSaved() {
+    const container = document.createElement('div');
+    container.innerHTML = '<div data-ref="chart-area"></div><div data-ref="chart"></div>'
+      + '<div data-ref="placeholder"></div><div data-ref="stats-panel"></div><div data-ref="error-box"></div>';
+    const created = [];
+    const module = {
+      _container: container,
+      _context: {
+        i18n: { t: (k) => k },
+        eventBus: { on: () => {}, off: () => {} },
+        stateManager: { getModuleState: () => null },
+        chartManager: { create: async (...a) => { created.push(a); return { id: created.length }; }, update: () => {}, destroy: () => {} },
+      },
+    };
+    const c = histogramData(module, (k) => k);
+    c.model = new State();
+    c.model.datasets = [{ valueRef: { instanceId: 'w', sheetId: 's', columnId: 'c-0' }, groupRef: null }];
+    c._getColumnValues = () => [1, 2, 3, 4, 5];
+    c._getColumnName = () => 'A';
+    return { c, created };
+  }
+  const frame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+  test('destroy before the frame fires: no chart is created', async () => {
+    const { c, created } = mountSaved();
+    c.init();
+    c.destroy();
+    await frame();
+    assertEqual(created.length, 0);
+  });
+
+  test('a late autoPlot/plot/render after destroy creates nothing', async () => {
+    const { c, created } = mountSaved();
+    c.init();
+    c.destroy();
+    c._autoPlot();
+    c._plot();
+    await c._renderChart();
+    await frame();
+    assertEqual(created.length, 0);
+  });
+
+  test('control: without destroy the queued auto-plot creates the chart', async () => {
+    const { c, created } = mountSaved();
+    c.init();
+    await frame();
+    assertEqual(created.length, 1);
+    c.destroy();
+  });
+});
+
 suite('histogram module — error state', () => {
   function mount() {
     const container = document.createElement('div');

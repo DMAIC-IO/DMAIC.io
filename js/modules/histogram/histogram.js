@@ -55,6 +55,10 @@ export function histogramData(module, _t) {
     _errorTimer: null,
     _exampleWorksheetId: null,
     _renderGen: 0,
+    // Per Alpine instance (the closure is shared across remounts): set by destroy(),
+    // checked by every async path so a destroyed instance never draws.
+    _destroyed: false,
+    _rafId: 0,
 
     ctx() { return module._container; },
 
@@ -117,6 +121,7 @@ export function histogramData(module, _t) {
 
     // ── Auto-plot ─────────────────────────────────────────────
     _autoPlot() {
+      if (this._destroyed) return;
       const hasData = this.model.datasets.some(d => d.valueRef);
       if (hasData) {
         this._plot();
@@ -149,7 +154,7 @@ export function histogramData(module, _t) {
 
     // ── Plot (expand datasets → seriesData) ───────────────────
     _plot() {
-      if (this._plotting) return;
+      if (this._destroyed || this._plotting) return;
       this._plotting = true;
       try {
         const errBox = module._container?.querySelector('[data-ref="error-box"]');
@@ -253,7 +258,7 @@ export function histogramData(module, _t) {
     /** Create the chart on first plot, update it afterwards. Stale creates are dropped. */
     async _renderChart() {
       const host = module._container?.querySelector('[data-ref="chart"]');
-      if (!host || !this._seriesData) return;
+      if (this._destroyed || !host || !this._seriesData) return;
       auto = this._autoLabels();
       const cfg = buildChartConfig(this.model, this._seriesData, auto);
       const cm = module._context.chartManager;
@@ -264,7 +269,7 @@ export function histogramData(module, _t) {
         onEditorChange: (c) => this._onEditorChange(c),
         onEditorBuild: (inner) => this._addStatsToggle(inner),
       });
-      if (gen !== this._renderGen || !module._container) { if (created) cm.destroy(created); return; }
+      if (this._destroyed || gen !== this._renderGen || !module._container) { if (created) cm.destroy(created); return; }
       chart = created;
       // Data or inputs changed while create was pending: draw the latest state.
       if (chart && this._seriesData) cm.update(chart, buildChartConfig(this.model, this._seriesData, (auto = this._autoLabels())));
@@ -332,12 +337,14 @@ export function histogramData(module, _t) {
 
       // Auto-plot saved datasets.
       if (this.model.datasets.some(d => d.valueRef)) {
-        requestAnimationFrame(() => this._autoPlot());
+        this._rafId = requestAnimationFrame(() => { this._rafId = 0; this._autoPlot(); });
       }
     },
 
     /** Chart first: a pending create sees the bumped generation and destroys its result. */
     destroy() {
+      this._destroyed = true;
+      if (this._rafId) { cancelAnimationFrame(this._rafId); this._rafId = 0; }
       this._destroyChart();
       for (const unsub of this._unsubs) unsub();
       this._unsubs = [];
