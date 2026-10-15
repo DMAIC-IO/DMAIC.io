@@ -8,7 +8,7 @@
 
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
 import {
-  State, KINDS, pairKey, orderedComponents,
+  State, KINDS, pairKey, orderedComponents, isComplete, rankOf, openPairs, disadvantages,
 } from '../../js/modules/triz-function-analysis/triz-function-analysis-model.js';
 
 /** Toothbrush: target teeth, system bristles + handle, supersystem gums + paste. */
@@ -132,5 +132,162 @@ suite('triz-function-analysis — components', () => {
     s.addComponent('system', 'Kopf');
     assertDeepEqual(orderedComponents(s.components).map((c) => c.name),
       ['Zähne', 'Borsten', 'Griff', 'Kopf', 'Zahnfleisch', 'Zahnpasta']);
+  });
+});
+
+suite('triz-function-analysis — interactions', () => {
+  test('toggleInteraction ticks and unticks an unused pair', () => {
+    const s = fixture();
+    assertDeepEqual(s.toggleInteraction('t', 'g'), { ok: true });
+    assertTrue(s.hasInteraction('g', 't'));
+    assertDeepEqual(s.toggleInteraction('g', 't'), { ok: true });
+    assertEqual(s.hasInteraction('t', 'g'), false);
+  });
+
+  test('a pair used by functions cannot be unticked', () => {
+    const s = fixture();
+    assertDeepEqual(s.toggleInteraction('t', 'b'), { ok: false, usedBy: 1 });
+    assertTrue(s.hasInteraction('b', 't'));
+  });
+
+  test('self pairs are refused', () => {
+    assertDeepEqual(fixture().toggleInteraction('b', 'b'), { ok: false, usedBy: 0 });
+  });
+});
+
+suite('triz-function-analysis — functions', () => {
+  test('addFunction with both ends ticks its pair', () => {
+    const s = fixture();
+    const f = s.addFunction('p', 't');
+    assertDeepEqual([f.carrier, f.object, f.type, f.level, f.verb], ['p', 't', 'useful', 'adequate', '']);
+    assertTrue(s.hasInteraction('t', 'p'));
+  });
+
+  test('addFunction without both ends ticks nothing', () => {
+    const s = fixture();
+    const before = s.interactions.length;
+    s.addFunction('p', '');
+    s.addFunction();
+    assertEqual(s.interactions.length, before);
+    assertEqual(isComplete(s.functions[3]), false);
+  });
+
+  test('setEndpoints refuses carrier === object and ticks the new pair', () => {
+    const s = fixture();
+    assertEqual(s.setEndpoints('f1', 'b', 'b'), false);
+    assertDeepEqual([s.fn('f1').carrier, s.fn('f1').object], ['b', 't']);
+    assertEqual(s.setEndpoints('f1', 'p', 't'), true);
+    assertTrue(s.hasInteraction('p', 't'));
+    assertTrue(s.hasInteraction('b', 't'), 'old pair stays ticked (now an open pair)');
+  });
+
+  test('swapDirection exchanges carrier and object', () => {
+    const s = fixture();
+    s.swapDirection('f3');
+    assertDeepEqual([s.fn('f3').carrier, s.fn('f3').object], ['b', 'h']);
+  });
+
+  test('setType resets the level; same type keeps it', () => {
+    const s = fixture();
+    s.setType('f1', 'useful');
+    assertEqual(s.fn('f1').level, 'insufficient');
+    s.setType('f1', 'harmful');
+    assertEqual(s.fn('f1').level, null);
+    s.setType('f1', 'useful');
+    assertEqual(s.fn('f1').level, 'adequate');
+    s.setType('f1', 'bogus');
+    assertEqual(s.fn('f1').type, 'useful');
+  });
+
+  test('setLevel only applies to useful functions', () => {
+    const s = fixture();
+    s.setLevel('f2', 'excessive');
+    assertEqual(s.fn('f2').level, null);
+    s.setLevel('f3', 'excessive');
+    assertEqual(s.fn('f3').level, 'excessive');
+    s.setLevel('f3', 'bogus');
+    assertEqual(s.fn('f3').level, 'excessive');
+  });
+
+  test('removeFunction unlocks the pair', () => {
+    const s = fixture();
+    s.removeFunction('f1');
+    assertEqual(s.fn('f1'), null);
+    assertDeepEqual(s.toggleInteraction('b', 't'), { ok: true });
+  });
+
+  test('movePosition rounds, clamps at 0 and ignores unknown ids', () => {
+    const s = fixture();
+    s.movePosition('t', 12.6, -30);
+    assertDeepEqual(s.positions.t, { x: 13, y: 0 });
+    s.movePosition('gone', 1, 1);
+    assertEqual(s.positions.gone, undefined);
+    s.resetPositions();
+    assertDeepEqual(s.positions, {});
+  });
+
+  test('discardIfEmpty removes only unused empty components', () => {
+    const s = fixture();
+    const { component } = s.addComponent('system', '  ');
+    assertEqual(s.discardIfEmpty(component.id), true);
+    assertEqual(s.component(component.id), null);
+    assertEqual(s.discardIfEmpty('t'), false, 'named component stays');
+  });
+
+  test('discardIfEmpty keeps a component that is in use', () => {
+    const s = fixture();
+    s.component('b').name = '';
+    assertEqual(s.discardIfEmpty('b'), false);
+    assertEqual(s.functions.length, 3);
+    const lonely = s.addComponent('system', '').component;
+    s.toggleInteraction(lonely.id, 't');
+    assertEqual(s.discardIfEmpty(lonely.id), false, 'ticked pair counts as use');
+  });
+});
+
+suite('triz-function-analysis — derived values', () => {
+  test('rankOf follows the object kind', () => {
+    const s = fixture();
+    assertEqual(rankOf(s.fn('f1'), s.components), 'basic');
+    assertEqual(rankOf(s.fn('f2'), s.components), null, 'harmful');
+    assertEqual(rankOf(s.fn('f3'), s.components), 'auxiliary');
+    assertEqual(rankOf(s.addFunction('b', 'p'), s.components), 'additional');
+    assertEqual(rankOf(s.addFunction('b', ''), s.components), null, 'draft');
+  });
+
+  test('openPairs lists ticked pairs without a function in either direction', () => {
+    const s = fixture();
+    assertDeepEqual(openPairs(s), []);
+    s.toggleInteraction('t', 'g');
+    assertDeepEqual(openPairs(s), [{ a: 'g', b: 't' }]);
+    s.addFunction('g', '');
+    assertDeepEqual(openPairs(s), [{ a: 'g', b: 't' }]);
+  });
+
+  test('openPairs ignores drafts; a reverse function closes the pair', () => {
+    const s = fixture();
+    s.toggleInteraction('t', 'g');
+    s.addFunction('t', 'g');
+    assertDeepEqual(openPairs(s), []);
+  });
+
+  test('disadvantages lists harmful, insufficient and excessive functions with names', () => {
+    const s = fixture();
+    assertDeepEqual(disadvantages(s), [
+      { functionId: 'f1', carrier: 'Borsten', verb: 'entfernt', object: 'Zähne', parameter: 'Belag', kind: 'insufficient' },
+      { functionId: 'f2', carrier: 'Borsten', verb: 'verletzt', object: 'Zahnfleisch', parameter: '', kind: 'harmful' },
+    ]);
+  });
+
+  test('disadvantages skips drafts', () => {
+    const s = fixture();
+    const f = s.addFunction('b', '');
+    s.setType(f.id, 'harmful');
+    assertEqual(disadvantages(s).length, 2);
+  });
+
+  test('pairKey matches sorted interactions', () => {
+    const s = fixture();
+    assertTrue(s.interactions.every((i) => pairKey(i.a, i.b) === `${i.a}|${i.b}`));
   });
 });

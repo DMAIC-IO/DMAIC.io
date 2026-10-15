@@ -32,6 +32,54 @@ export function orderedComponents(components) {
   return KINDS.flatMap((k) => components.filter((c) => c.kind === k));
 }
 
+/** @param {Object} fn @returns {boolean} both ends set and different */
+export function isComplete(fn) {
+  return Boolean(fn && fn.carrier && fn.object && fn.carrier !== fn.object);
+}
+
+const RANK_BY_KIND = { target: 'basic', supersystem: 'additional', system: 'auxiliary' };
+
+/**
+ * Derived rank of a function: useful on the target → basic, on a supersystem
+ * element → additional, on a system component → auxiliary; harmful or draft → null.
+ * @param {Object} fn @param {Array<Object>} components
+ * @returns {'basic'|'additional'|'auxiliary'|null}
+ */
+export function rankOf(fn, components) {
+  if (!isComplete(fn) || fn.type !== 'useful') return null;
+  const obj = components.find((c) => c.id === fn.object);
+  return obj ? RANK_BY_KIND[obj.kind] ?? null : null;
+}
+
+/**
+ * Ticked pairs that no complete function uses (in either direction).
+ * @param {State} state
+ * @returns {Array<{a:string,b:string}>}
+ */
+export function openPairs(state) {
+  const used = new Set(state.functions.filter(isComplete).map((f) => pairKey(f.carrier, f.object)));
+  return state.interactions.filter((i) => !used.has(pairKey(i.a, i.b))).map((i) => ({ a: i.a, b: i.b }));
+}
+
+/**
+ * Functional disadvantages — the handover shape for part 2.
+ * @param {State} state
+ * @returns {Array<{functionId:string,carrier:string,verb:string,object:string,parameter:string,kind:'harmful'|'insufficient'|'excessive'}>}
+ */
+export function disadvantages(state) {
+  const name = (id) => state.components.find((c) => c.id === id)?.name ?? '';
+  const out = [];
+  for (const f of state.functions) {
+    if (!isComplete(f)) continue;
+    let kind = null;
+    if (f.type === 'harmful') kind = 'harmful';
+    else if (f.level === 'insufficient' || f.level === 'excessive') kind = f.level;
+    if (!kind) continue;
+    out.push({ functionId: f.id, carrier: name(f.carrier), verb: f.verb, object: name(f.object), parameter: f.parameter, kind });
+  }
+  return out;
+}
+
 const str = (v) => (typeof v === 'string' ? v : '');
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 
@@ -156,6 +204,118 @@ export class State {
     this.interactions = this.interactions.filter((i) => i.a !== id && i.b !== id);
     this.functions = this.functions.filter((f) => f.carrier !== id && f.object !== id);
     delete this.positions[id];
+  }
+
+  /** @param {string} a @param {string} b @returns {boolean} */
+  hasInteraction(a, b) {
+    const k = pairKey(a, b);
+    return this.interactions.some((i) => pairKey(i.a, i.b) === k);
+  }
+
+  /** @param {string} a @param {string} b @returns {number} complete functions on the pair */
+  usersOf(a, b) {
+    const k = pairKey(a, b);
+    return this.functions.filter((f) => isComplete(f) && pairKey(f.carrier, f.object) === k).length;
+  }
+
+  /**
+   * Tick or untick a pair. Unticking is refused while functions use it.
+   * @param {string} a @param {string} b
+   * @returns {{ok: boolean, usedBy?: number}}
+   */
+  toggleInteraction(a, b) {
+    if (!a || !b || a === b) return { ok: false, usedBy: 0 };
+    if (!this.hasInteraction(a, b)) {
+      this._tick(a, b);
+      return { ok: true };
+    }
+    const usedBy = this.usersOf(a, b);
+    if (usedBy) return { ok: false, usedBy };
+    const k = pairKey(a, b);
+    this.interactions = this.interactions.filter((i) => pairKey(i.a, i.b) !== k);
+    return { ok: true };
+  }
+
+  /** @param {string} id @returns {Object|null} */
+  fn(id) {
+    return this.functions.find((f) => f.id === id) || null;
+  }
+
+  /**
+   * New function; ticks its pair once both ends are set.
+   * @param {string} [carrier=''] @param {string} [object='']
+   * @returns {Object} the (reactive) function object
+   */
+  addFunction(carrier = '', object = '') {
+    const id = uid();
+    this.functions.push({
+      id, carrier, verb: '', object: carrier && carrier === object ? '' : object,
+      parameter: '', type: 'useful', level: 'adequate', note: '',
+    });
+    const f = this.fn(id);
+    if (isComplete(f)) this._tick(f.carrier, f.object);
+    return f;
+  }
+
+  /**
+   * @param {string} id @param {string} carrier @param {string} object
+   * @returns {boolean} false when carrier === object (nothing changes)
+   */
+  setEndpoints(id, carrier, object) {
+    const f = this.fn(id);
+    if (!f || (carrier && carrier === object)) return false;
+    f.carrier = carrier;
+    f.object = object;
+    if (isComplete(f)) this._tick(carrier, object);
+    return true;
+  }
+
+  /** @param {string} id */
+  swapDirection(id) {
+    const f = this.fn(id);
+    if (f) [f.carrier, f.object] = [f.object, f.carrier];
+  }
+
+  /** Switching to harmful clears the level, back to useful sets 'adequate'. @param {string} id @param {string} type */
+  setType(id, type) {
+    const f = this.fn(id);
+    if (!f || !TYPES.includes(type) || f.type === type) return;
+    f.type = type;
+    f.level = type === 'harmful' ? null : 'adequate';
+  }
+
+  /** @param {string} id @param {string} level */
+  setLevel(id, level) {
+    const f = this.fn(id);
+    if (f && f.type === 'useful' && LEVELS.includes(level)) f.level = level;
+  }
+
+  /** @param {string} id */
+  removeFunction(id) {
+    this.functions = this.functions.filter((f) => f.id !== id);
+  }
+
+  /** Store a dragged position (rounded, clamped to ≥ 0). @param {string} id @param {number} x @param {number} y */
+  movePosition(id, x, y) {
+    if (!this.component(id)) return;
+    this.positions[id] = { x: Math.max(0, Math.round(x)), y: Math.max(0, Math.round(y)) };
+  }
+
+  resetPositions() {
+    this.positions = {};
+  }
+
+  /**
+   * Drop a component whose name is blank — unless functions or ticked pairs use it.
+   * @param {string} id
+   * @returns {boolean} true if removed
+   */
+  discardIfEmpty(id) {
+    const c = this.component(id);
+    if (!c || c.name.trim()) return false;
+    if (this.impactOf(id) > 0 || this.interactions.some((i) => i.a === id || i.b === id)) return false;
+    this.removeComponent(id);
+    return true;
   }
 
   /** Tick a pair (sorted, no duplicates, no self pairs). @private */
