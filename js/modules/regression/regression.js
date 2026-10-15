@@ -1161,8 +1161,8 @@ mod.loadExample = async function loadExample(payload) {
   const curJson = this.getState();
   const cur = curJson ? State.fromJSON(curJson) : null;
   const hasContent = cur ? cur.hasContent() : false;
-  if (hasContent && ctx?.confirmPopout) {
-    const ok = await ctx.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+  if (hasContent && ctx?.dialog) {
+    const ok = await ctx.dialog.confirm({ message: t('moduleHelp.confirmOverwrite'), danger: true });
     if (!ok) return;
   }
 

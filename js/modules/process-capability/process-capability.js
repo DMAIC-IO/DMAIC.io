@@ -515,8 +515,8 @@ mod.loadExample = async function loadExample(payload) {
   // Warn before overwriting existing data.
   const current = this.getState();
   const model = current ? State.fromJSON(current) : null;
-  if (model?.hasContent() && ctx?.confirmPopout) {
-    const ok = await ctx.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+  if (model?.hasContent() && ctx?.dialog) {
+    const ok = await ctx.dialog.confirm({ message: t('moduleHelp.confirmOverwrite'), danger: true });
     if (!ok) return;
   }
 

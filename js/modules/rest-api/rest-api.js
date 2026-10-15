@@ -109,10 +109,10 @@ export default createModule({
 
       async deleteEndpoint(ep, event) {
         event?.stopPropagation?.();
-        const confirmed = await module._context.confirmPopout(
-          this.t('deleteConfirm', { name: ep.name || ep.url || this.t('unnamed') }),
-          { danger: true }
-        );
+        const confirmed = await module._context.dialog.confirm({
+          message: this.t('deleteConfirm', { name: ep.name || ep.url || this.t('unnamed') }),
+          danger: true,
+        });
         if (!confirmed) return;
         this._stopSchedule(ep.id);
         const idx = this.model.endpoints.findIndex(e => e.id === ep.id);

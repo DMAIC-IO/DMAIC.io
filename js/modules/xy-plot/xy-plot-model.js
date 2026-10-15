@@ -81,7 +81,7 @@ export class State {
 
   /**
    * True if any dataset has an X or Y column selected (drives the
-   * confirmPopout check in loadExample — matches the legacy
+   * dialog.confirm check in loadExample — matches the legacy
    * `d.xRef || d.yRef` predicate).
    * @returns {boolean}
    */

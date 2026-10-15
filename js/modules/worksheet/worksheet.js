@@ -1250,8 +1250,8 @@ mod.loadExample = async function loadExample(payload) {
   if (!payload || !payload.data) return;
   const current = this.getState();
   const model = current ? State.fromJSON(current) : null;
-  if (model && model.hasContent() && this._context?.confirmPopout) {
-    const ok = await this._context.confirmPopout(this._context.i18n.t('moduleHelp.confirmOverwrite'), { danger: true });
+  if (model && model.hasContent() && this._context?.dialog) {
+    const ok = await this._context.dialog.confirm({ message: this._context.i18n.t('moduleHelp.confirmOverwrite'), danger: true });
     if (!ok) return;
   }
   if (!payload.data.sheets || !Array.isArray(payload.data.sheets) || payload.data.sheets.length === 0) {

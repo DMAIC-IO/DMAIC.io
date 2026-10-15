@@ -81,6 +81,6 @@ suite('Workspace.instantiateDetached extraContext', () => {
     const ws = makeWorkspace();
     const inst = await ws.instantiateDetached('i-2', 'demo', { worksheetKey: 'w.json' });
     assertEqual(typeof inst.context.notify, 'function');
-    assertEqual(await inst.context.confirmPopout('x'), true);
+    assertEqual(await inst.context.dialog.confirm({ message: 'x' }), true);
   });
 });

@@ -588,7 +588,8 @@ const mod = createModule({
         const img = list.find(x => x.id === id);
         if (!img) return;
         const label = (img.caption && img.caption.trim()) || `#${list.indexOf(img) + 1}`;
-        const ok = await module._context.confirmPopout(_t('delImageConfirm', { name: label }), {
+        const ok = await module._context.dialog.confirm({
+          message: _t('delImageConfirm', { name: label }),
           title: i18n().t('common.delete'),
           confirmLabel: i18n().t('common.delete'),
           danger: true,
@@ -702,7 +703,8 @@ const mod = createModule({
         const message = descIds.length > 0
           ? _t('delRowConfirmWithSubs', { name: label, count: descIds.length })
           : _t('delRowConfirm', { name: label });
-        const confirmed = await module._context.confirmPopout(message, {
+        const confirmed = await module._context.dialog.confirm({
+          message,
           title: i18n().t('common.delete'),
           confirmLabel: i18n().t('common.delete'),
           danger: true,
@@ -818,7 +820,7 @@ const mod = createModule({
         this.compareSnapId = (this.compareSnapId === id) ? null : id;
       },
       async loadSnapshot(id) {
-        const confirmed = await module._context.confirmPopout(_t('loadSnapConfirm'));
+        const confirmed = await module._context.dialog.confirm({ message: _t('loadSnapConfirm') });
         if (!confirmed) return;
         this.model.loadSnapshot(id);
         this.collapsed = {};
@@ -868,7 +870,8 @@ const mod = createModule({
         const x = this.model.experiments.find(y => y.id === id);
         if (!x) return;
         const label = (x.title && x.title.trim()) || `#${this.model.experiments.indexOf(x) + 1}`;
-        const ok = await module._context.confirmPopout(_t('delExperimentConfirm', { name: label }), {
+        const ok = await module._context.dialog.confirm({
+          message: _t('delExperimentConfirm', { name: label }),
           title: i18n().t('common.delete'),
           confirmLabel: i18n().t('common.delete'),
           danger: true,
@@ -904,7 +907,8 @@ const mod = createModule({
         const f = this.model.facts.find(x => x.id === id);
         if (!f) return;
         const label = (f.name && f.name.trim()) || `#${this.model.facts.indexOf(f) + 1}`;
-        const ok = await module._context.confirmPopout(_t('delFactConfirm', { name: label }), {
+        const ok = await module._context.dialog.confirm({
+          message: _t('delFactConfirm', { name: label }),
           title: i18n().t('common.delete'),
           confirmLabel: i18n().t('common.delete'),
           danger: true,

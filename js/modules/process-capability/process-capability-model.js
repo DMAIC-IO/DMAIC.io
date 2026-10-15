@@ -150,7 +150,7 @@ export class State {
     this.embeddedLabel = '';
   }
 
-  /** @returns {boolean} true if any meaningful field is set (drives confirmPopout). */
+  /** @returns {boolean} true if any meaningful field is set (drives dialog.confirm). */
   hasContent() {
     const p = this.params;
     return Boolean(this.columnRef) || Boolean(this.subgroupColumnRef)

@@ -39,7 +39,7 @@ export class State {
 
   // ── Business / helper logic ───────────────────────────────
 
-  /** confirmPopout content check — matches legacy `!!this._columnRef`. */
+  /** dialog.confirm content check — matches legacy `!!this._columnRef`. */
   hasContent() {
     return Boolean(this.columnRef);
   }

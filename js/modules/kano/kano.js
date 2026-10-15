@@ -252,7 +252,7 @@ export default createModule({
           .some((byItem) => Object.values(byItem || {})
             .some((a) => a.f !== null || a.d !== null || a.w !== null));
         if (hasAnswers) {
-          const ok = await module._context.confirmPopout(_t('levelChangeConfirm'), { danger: true });
+          const ok = await module._context.dialog.confirm({ message: _t('levelChangeConfirm'), danger: true });
           if (!ok) { ev.target.value = this.model.source.level; return; }
         }
         this.model.source.level = next;
@@ -319,7 +319,7 @@ export default createModule({
        * @param {string} id
        */
       async removeRespondent(id) {
-        const ok = await module._context.confirmPopout(_t('respondentDeleteConfirm'), { danger: true });
+        const ok = await module._context.dialog.confirm({ message: _t('respondentDeleteConfirm'), danger: true });
         if (ok) {
           this.model.deleteRespondent(id);
           this.$nextTick(() => this.mountChart());

@@ -191,9 +191,10 @@ export default createModule({
         this.closeModal();
       },
       async deleteStakeholder(sh) {
-        const ok = await module._context.confirmPopout(
-          this.t('deleteConfirm', { name: sh.name }), { danger: true }
-        );
+        const ok = await module._context.dialog.confirm({
+          message: this.t('deleteConfirm', { name: sh.name }),
+          danger: true,
+        });
         if (!ok) return;
         const idx = this.model.stakeholders.findIndex((s) => s.id === sh.id);
         if (idx !== -1) this.model.stakeholders.splice(idx, 1);

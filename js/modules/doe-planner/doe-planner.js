@@ -1488,8 +1488,8 @@ mod.loadExample = async function (payload) {
   // Confirm before overwriting a configured design.
   const current = this.getState();
   const model = current ? State.fromJSON(current) : null;
-  if (model && typeof model.hasContent === 'function' && model.hasContent() && ctx?.confirmPopout) {
-    const ok = await ctx.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+  if (model && typeof model.hasContent === 'function' && model.hasContent() && ctx?.dialog) {
+    const ok = await ctx.dialog.confirm({ message: t('moduleHelp.confirmOverwrite'), danger: true });
     if (!ok) return;
   }
 

@@ -276,7 +276,7 @@ export default createModule({
         if (!sec) return;
         const count = sec.questions.length;
         if (count > 0) {
-          const ok = await module._context.confirmPopout(_t('confirmSectionDelete', { count }), { danger: true });
+          const ok = await module._context.dialog.confirm({ message: _t('confirmSectionDelete', { count }), danger: true });
           if (!ok) return;
         }
         if (this.selectedSectionId === id) this.selectedSectionId = null;
@@ -311,7 +311,7 @@ export default createModule({
       async deleteQuestion(id) {
         const count = this.model.countAffectedResponses(id);
         if (count > 0) {
-          const ok = await module._context.confirmPopout(_t('confirmDeleteAffected', { count }), { danger: true });
+          const ok = await module._context.dialog.confirm({ message: _t('confirmDeleteAffected', { count }), danger: true });
           if (!ok) return;
         }
         this.reportRemoved(this.model.deleteQuestion(id));
@@ -398,7 +398,7 @@ export default createModule({
         const type = ev.target.value;
         const count = this.model.countAffectedResponses(q.id);
         if (count > 0) {
-          const ok = await module._context.confirmPopout(_t('confirmChangeType', { count }), { danger: true });
+          const ok = await module._context.dialog.confirm({ message: _t('confirmChangeType', { count }), danger: true });
           if (!ok) { ev.target.value = q.type; return; }
         }
         this.reportRemoved(this.model.changeType(q.id, type));
@@ -502,7 +502,7 @@ export default createModule({
         if (!q || !kind) return;
         const count = this.model.countAffectedResponses(q.id, itemId);
         if (count > 0) {
-          const ok = await module._context.confirmPopout(_t('confirmDeleteAffected', { count }), { danger: true });
+          const ok = await module._context.dialog.confirm({ message: _t('confirmDeleteAffected', { count }), danger: true });
           if (!ok) return;
         }
         this.reportRemoved(this.model.deleteItem(q.id, kind, itemId));
@@ -788,7 +788,7 @@ export default createModule({
       async deleteRecipient(id) {
         if (this.model.recipientStatus(id) === 'answered') {
           const name = this.recipientName(id) || _t('recipientUnnamed');
-          const ok = await module._context.confirmPopout(_t('confirmRecipientDelete', { name }), { danger: true });
+          const ok = await module._context.dialog.confirm({ message: _t('confirmRecipientDelete', { name }), danger: true });
           if (!ok) return;
         }
         this.model.deleteRecipient(id);
@@ -1005,7 +1005,7 @@ export default createModule({
        * @param {string} id response id
        */
       async deleteResponse(id) {
-        const ok = await module._context.confirmPopout(_t('confirmResponseDelete'), { danger: true });
+        const ok = await module._context.dialog.confirm({ message: _t('confirmResponseDelete'), danger: true });
         if (!ok) return;
         if (this.openResponseId === id) this.openResponseId = null;
         this.vocSelected = this.vocSelected.filter((k) => !k.startsWith(`${id}:`));

@@ -288,10 +288,11 @@ export function createModule(base) {
       // lives inside the Alpine component, not in _tmpl._state.
       const current = this.getState();
       const model = current ? Model.fromJSON(current) : null;
-      if (typeof model?.hasContent === 'function' && model.hasContent() && this._context?.confirmPopout) {
-        const ok = await this._context.confirmPopout(
-          this._context.i18n.t('moduleHelp.confirmOverwrite'), { danger: true }
-        );
+      if (typeof model?.hasContent === 'function' && model.hasContent() && this._context?.dialog) {
+        const ok = await this._context.dialog.confirm({
+          message: this._context.i18n.t('moduleHelp.confirmOverwrite'),
+          danger: true,
+        });
         if (!ok) return;
       }
       let exampleData = payload.data;

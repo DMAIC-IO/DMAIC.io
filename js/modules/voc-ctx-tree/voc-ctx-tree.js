@@ -135,9 +135,10 @@ export default createModule({
       },
       async deleteVoc(voc, event) {
         event?.stopPropagation?.();
-        const ok = await module._context.confirmPopout(
-          _t('deleteVocConfirm'), { danger: true }
-        );
+        const ok = await module._context.dialog.confirm({
+          message: _t('deleteVocConfirm'),
+          danger: true,
+        });
         if (!ok) return;
         this.model.deleteVoc(voc.id);
         this._afterMutate();

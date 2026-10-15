@@ -138,7 +138,7 @@ const m = createModule({
 
       deleteLesson(lesson) {
         const self = this;
-        module._context.confirmPopout(_t('deleteConfirm'), { danger: true }).then(confirmed => {
+        module._context.dialog.confirm({ message: _t('deleteConfirm'), danger: true }).then(confirmed => {
           if (!confirmed) return;
           const idx = self.model.lessons.findIndex(l => l.id === lesson.id);
           if (idx !== -1) {

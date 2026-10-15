@@ -877,10 +877,10 @@ export default createModule({
         const t = (k, p) => _t(k, p);
         const node = this.model.orgNodes.find(n => n.id === id);
         if (!node) return;
-        const confirmed = await module._context.confirmPopout(
-          t('orgDeleteConfirm', { name: node.title || t('nodeTitle') }),
-          { danger: true }
-        );
+        const confirmed = await module._context.dialog.confirm({
+          message: t('orgDeleteConfirm', { name: node.title || t('nodeTitle') }),
+          danger: true,
+        });
         if (!confirmed) return;
         this._pushUndo();
         const delRecursive = (pid) => {

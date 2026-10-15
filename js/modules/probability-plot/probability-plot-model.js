@@ -79,7 +79,7 @@ export class State {
   exampleWorksheetId = null;
 
   /**
-   * True if any dataset has a value column selected (drives confirmPopout
+   * True if any dataset has a value column selected (drives dialog.confirm
    * check in loadExample).
    * @returns {boolean}
    */

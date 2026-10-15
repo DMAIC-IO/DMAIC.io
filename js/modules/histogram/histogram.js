@@ -1087,8 +1087,8 @@ mod.loadExample = async function loadExample(payload) {
   // confirm overwrite if the live model already has content
   const current = this.getState();
   const hasContent = current && Array.isArray(current.datasets) && current.datasets.some(d => d && d.valueRef);
-  if (hasContent && ctx?.confirmPopout) {
-    const ok = await ctx.confirmPopout(ti('moduleHelp.confirmOverwrite'), { danger: true });
+  if (hasContent && ctx?.dialog) {
+    const ok = await ctx.dialog.confirm({ message: ti('moduleHelp.confirmOverwrite'), danger: true });
     if (!ok) return;
   }
 

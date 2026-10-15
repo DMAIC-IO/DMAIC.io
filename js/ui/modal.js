@@ -2,10 +2,8 @@
  * D.Mike — Modal / Dialog System (modal.js)
  * Shared modal dialogs: alert + form + custom content.
  *
- * NOTE: For confirm dialogs use `context.confirmPopout(...)` (defined in
- * js/ui/popout.js) — it builds on the dmike-chart-popout shell instead of
- * this modal system. The legacy `confirm()` method here was removed in
- * favor of the popout helper.
+ * NOTE: For confirm dialogs use `context.dialog.confirm(...)` (the dialog
+ * service in js/ui/dialog/). The legacy `confirm()` method here was removed.
  */
 
 import { h } from '../core/dom.js';
