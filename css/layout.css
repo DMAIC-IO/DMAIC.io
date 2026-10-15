@@ -79,6 +79,7 @@ html.is-nightly body {
   display: none;
   position: fixed;
   inset: 0;
+
   /* Must stay above every dialog (10000), toast and colour-picker layer
      (10002/10003): below the minimum viewport nothing else may show. */
   z-index: 100000;
