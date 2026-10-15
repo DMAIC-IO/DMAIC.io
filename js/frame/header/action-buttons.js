@@ -33,10 +33,10 @@ export function exportStamp(now = new Date()) {
     + `_${p(now.getHours())}-${p(now.getMinutes())}-${p(now.getSeconds())}`;
 }
 
-/** @param {object} kernel - { stateManager, eventBus, i18n }  @param {object} ui - { modal, notify } */
-export function initActionButtons({ stateManager, eventBus, i18n }, { modal, notify }) {
+/** @param {object} kernel - { stateManager, eventBus, i18n }  @param {object} ui - { dialog, notify } */
+export function initActionButtons({ stateManager, eventBus, i18n }, { dialog, notify }) {
   initFullscreen();
-  initExportImport({ stateManager, eventBus, i18n }, { modal, notify });
+  initExportImport({ stateManager, eventBus, i18n }, { dialog, notify });
 }
 
 function initFullscreen() {
@@ -62,7 +62,7 @@ function initFullscreen() {
   document.addEventListener('fullscreenchange', updateIcon);
 }
 
-function initExportImport({ stateManager, eventBus, i18n }, { modal, notify }) {
+function initExportImport({ stateManager, eventBus, i18n }, { dialog, notify }) {
   const exportBtn = document.getElementById('export-btn');
   const importBtn = document.getElementById('import-btn');
   const importInput = document.getElementById('import-file-input');
@@ -84,7 +84,7 @@ function initExportImport({ stateManager, eventBus, i18n }, { modal, notify }) {
     }
 
     // Multiple projects — choose scope via dialog
-    const scope = await exportScopeDialog.open(modal, { projectCount: projects.length }, {
+    const scope = await exportScopeDialog.open(dialog, { projectCount: projects.length }, {
       confirmLabel: i18n.t('app.export'),
     });
     if (scope === null) return; // cancelled

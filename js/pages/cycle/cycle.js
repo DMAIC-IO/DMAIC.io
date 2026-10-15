@@ -66,7 +66,7 @@ export function computeSwitchImpact(fromCycle, toCycle, phases, moduleRegistry) 
  * @param {string} context 'create'|'switch'
  * @returns {Promise<{cycleId: string, scenarioId: string|null, projectName: string|null}|null>}
  */
-function _renderPicker(dialog, modal, i18n, currentCycle, context) {
+function _renderPicker(picker, dialog, i18n, currentCycle, context) {
   const preselected = currentCycle ?? DEFAULT_CYCLE;
   const cycles = Object.values(CYCLES).map(c => ({
     id: c.id,
@@ -74,7 +74,7 @@ function _renderPicker(dialog, modal, i18n, currentCycle, context) {
     short: i18n.t(`${c.i18nKey}.short`),
     description: i18n.t(`${c.i18nKey}.description`),
   }));
-  return dialog.open(modal, {
+  return picker.open(dialog, {
     cycles,
     preselected,
     allowScenarios: context === 'create',
@@ -90,7 +90,7 @@ function _renderPicker(dialog, modal, i18n, currentCycle, context) {
  * (Same DOM/keys as the legacy _confirmCycleSwitch.)
  * @returns {Promise<boolean>}
  */
-function _renderConfirm(dialog, modal, i18n, stateManager, moduleRegistry, fromCycle, toCycle) {
+function _renderConfirm(picker, dialog, i18n, stateManager, moduleRegistry, fromCycle, toCycle) {
   const phases = stateManager.get('phases') || {};
   const { lostPhases, newAdded, mapped, fallback } =
     computeSwitchImpact(fromCycle, toCycle, phases, moduleRegistry);
@@ -100,7 +100,7 @@ function _renderConfirm(dialog, modal, i18n, stateManager, moduleRegistry, fromC
   const fromName = i18n.t(`cycles.${fromCycle}.name`);
   const toName = i18n.t(`cycles.${toCycle}.name`);
 
-  return dialog.open(modal, {
+  return picker.open(dialog, {
     lostPhasesText: lostPhases.map(p => i18n.t(`phases.${p}`)).join(', '),
     newAddedText: newAdded.map(p => i18n.t(`phases.${p}`)).join(', '),
     mapped,
@@ -114,14 +114,14 @@ function _renderConfirm(dialog, modal, i18n, stateManager, moduleRegistry, fromC
 
 /**
  * Register the cycle picker/confirm dialog handlers.
- * @param {object} ctx - kernel services container, plus `modal` (the shared Modal).
- *   Uses: ctx.eventBus, ctx.i18n, ctx.stateManager, ctx.moduleRegistry, ctx.modal
+ * @param {object} ctx - kernel services container, plus `dialog` (the dialog service).
+ *   Uses: ctx.eventBus, ctx.i18n, ctx.stateManager, ctx.moduleRegistry, ctx.dialog
  */
 export default {
   id: 'cycle',
 
   async init(ctx) {
-    const { eventBus, i18n, stateManager, moduleRegistry, modal, examplesRegistry } = ctx;
+    const { eventBus, i18n, stateManager, moduleRegistry, dialog, examplesRegistry } = ctx;
     const pickerDialog = buildCyclePickerDialog({ i18n, eventBus, examplesRegistry });
     const confirmDialog = buildCycleSwitchConfirmDialog({ i18n, eventBus });
     // Mount both dialog nodes up front so open() has no first-time fetch latency
@@ -129,7 +129,7 @@ export default {
     await Promise.all([pickerDialog.prewarm(), confirmDialog.prewarm()]);
 
     eventBus.on('cycle:pick-requested', async ({ context, currentCycle }) => {
-      const picked = await _renderPicker(pickerDialog, modal, i18n, currentCycle ?? null, context);
+      const picked = await _renderPicker(pickerDialog, dialog, i18n, currentCycle ?? null, context);
       eventBus.emit('cycle:picked', {
         context,
         cycleId: picked?.cycleId ?? null,
@@ -139,7 +139,7 @@ export default {
     });
 
     eventBus.on('cycle:switch-requested', async ({ from, to }) => {
-      const confirmed = await _renderConfirm(confirmDialog, modal, i18n, stateManager, moduleRegistry, from, to);
+      const confirmed = await _renderConfirm(confirmDialog, dialog, i18n, stateManager, moduleRegistry, from, to);
       eventBus.emit('cycle:switch-confirmed', { from, to, confirmed });
     });
   },

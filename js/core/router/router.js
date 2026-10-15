@@ -47,7 +47,7 @@ export class Router {
   }
 
   /**
-   * The shared action modal controller (see ui/action-modal.js). Consumers
+   * The shared action modal controller (the progress dialog, ui/dialog/progress.js). Consumers
    * that want to show the same dialog for their own long-running action
    * (rather than a second, independent one) read it from here.
    * @returns {object|null}

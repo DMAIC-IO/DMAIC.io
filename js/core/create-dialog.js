@@ -1,11 +1,11 @@
 /**
  * D.Mike — createDialog (create-dialog.js)
- * Lazy Alpine-CSP factory for shared-Modal FORM dialogs (confirm/cancel → result).
+ * Lazy Alpine-CSP factory for shared-dialog FORM dialogs (confirm/cancel → result).
  * Sibling of createModule / createPage, sharing their template mechanics
  * (clone an inlined ./<id>.html template, register Alpine.data(camelName), initTree) but
- * targeting ui/modal.js form() instead of a phase tile or full-screen page.
+ * targeting the dialog service's form() instead of a phase tile or full-screen page.
  *
- * The mounted node lives in a hidden frame host (#app-dialogs). modal.form()
+ * The mounted node lives in a hidden frame host (#app-dialogs). dialog.form()
  * borrows the node into the overlay and restores it to that host on close, so
  * the Alpine reactive scope survives across opens.
  *
@@ -19,11 +19,11 @@ import { cloneTemplate, templateKey } from './dom.js';
  * @param {object} config
  * @param {string}  config.id        kebab-case id → camelCase Alpine name + ./<id>.html
  * @param {string}  config.i18nKey   i18n namespace for the injected t()
- * @param {string} [config.titleKey] key (relative to i18nKey) for the default modal title
+ * @param {string} [config.titleKey] key (relative to i18nKey) for the default dialog title
  * @param {Function} config.Model    Model class — instance exposed as this.model; needs apply(init), result(), validate()
  * @param {object}  config.ctx       { i18n, eventBus } (kernel services the dialog needs)
  * @param {(t:Function, dialog:object)=>object} [config.data]  extra reactive view helpers
- * @returns {{ id:string, open:(modal:object, init:object, opts?:object)=>Promise<any|null> }}
+ * @returns {{ id:string, open:(dialog:object, init:object, opts?:object)=>Promise<any|null> }}
  */
 export function createDialog(config) {
   const { id, i18nKey, titleKey = 'title', Model, ctx, data } = config;
@@ -37,7 +37,7 @@ export function createDialog(config) {
   let _node = null;          // the mounted [x-data] root inside the host
   let _host = null;
   let _registered = false;
-  let _api = null;           // modal.form()'s onMount api while a dialog is open
+  let _api = null;           // dialog.form()'s onMount api while a dialog is open
 
   function host() {
     if (!_host) _host = document.getElementById('app-dialogs');
@@ -98,15 +98,15 @@ export function createDialog(config) {
     cancel() { _api?.cancel(); },
 
     /**
-     * @param {object} modal  ui/modal.js Modal instance
+     * @param {object} dialog  dialog service (ui/dialog/dialog.js)
      * @param {object} init    per-open data fed to model.apply(init)
      * @param {object} [opts]  { title, confirmLabel, cancelLabel, onConfirm, hideConfirm, onMount }
      * @returns {Promise<any|null>}  model.result() on confirm, null on cancel
-     * @throws propagates if `opts.onMount` throws while the modal mounts; the
+     * @throws propagates if `opts.onMount` throws while the dialog mounts; the
      *   dialog's own `_api` is always reset first, so `submit()`/`cancel()`
      *   called afterwards are safe no-ops rather than acting on a dead dialog.
      */
-    async open(modal, init, opts = {}) {
+    async open(dialog, init, opts = {}) {
       await ensureMounted();
       const node = _node;
       const cmp = Alpine.$data(node);
@@ -124,12 +124,14 @@ export function createDialog(config) {
       // `_api` is reset in `finally` — not right after the `await` — so a
       // throwing `opts.onMount` (e.g. verb-supplied content that fails to
       // render) cannot leak a stale `_api` pointing at a dead dialog: the
-      // rejection from modal.form()'s Promise executor would otherwise skip
+      // rejection from dialog.form()'s Promise executor would otherwise skip
       // straight past a plain post-await reset. The throw itself still
       // propagates to our caller (see JSDoc) — we only guarantee cleanup.
       let confirmed;
       try {
-        confirmed = await modal.form(title, node, {
+        confirmed = await dialog.form({
+          title,
+          content: node,
           confirmLabel: opts.confirmLabel,
           cancelLabel: opts.cancelLabel,
           hideConfirm: opts.hideConfirm === true,

@@ -2,26 +2,23 @@ import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { createDialog } from '../../js/core/create-dialog.js';
 
-// Minimal fake modal mirroring ui/modal.js form() borrow/restore + onConfirm.
-function fakeModal() {
+// Minimal fake dialog service mirroring dialog.form() borrow/restore + onConfirm.
+function fakeDialog() {
   const calls = [];
   return {
     calls,
-    form(title, node, opts = {}) {
-      calls.push({ title, node, opts });
-      // Borrow: move node into a detached body, like the real modal.
+    form(opts = {}) {
+      calls.push(opts);
+      const node = opts.content;
       const home = node.parentNode;
       const next = node.nextSibling;
       const body = document.createElement('div');
       body.append(node);
       return Promise.resolve().then(() => {
-        // Simulate confirm unless opts._cancel is set by the test.
         let confirmed = true;
         if (!opts._cancel && opts.onConfirm) {
-          const r = opts.onConfirm(node);
-          if (r === false) confirmed = false;
+          if (opts.onConfirm(node) === false) confirmed = false;
         }
-        // Restore home BEFORE resolve (Alpine scope survives).
         if (home) home.insertBefore(node, next);
         return opts._cancel ? false : confirmed;
       });
@@ -68,7 +65,7 @@ suite('createDialog', () => {
       document.body.append(tplEl);
     }
 
-    const dialog = createDialog({
+    const dlg = createDialog({
       id: 'fake-dialog',
       i18nKey: 'fake',
       titleKey: 'title',
@@ -76,23 +73,23 @@ suite('createDialog', () => {
       ctx: { i18n, eventBus },
     });
 
-    const modal = fakeModal();
-    const result = await dialog.open(modal, { selected: 'abc' });
+    const svc = fakeDialog();
+    const result = await dlg.open(svc, { selected: 'abc' });
     assertEqual(result, 'abc', 'confirm resolves model.result()');
     assertTrue(document.querySelector('#app-dialogs .dlg') !== null, 'node restored to host');
 
     // Second open reuses the cached node (same DOM element).
     const node1 = document.querySelector('#app-dialogs .dlg');
-    await dialog.open(modal, { selected: 'def' });
+    await dlg.open(svc, { selected: 'def' });
     const node2 = document.querySelector('#app-dialogs .dlg');
     assertEqual(node1, node2, 'node reused across opens (borrow/restore)');
 
     // Cancel resolves null.
-    modal.form = (t, n, o) => fakeModal().form(t, n, { ...o, _cancel: true });
-    const cancelled = await dialog.open(modal, { selected: 'ghi' });
+    svc.form = (o) => fakeDialog().form({ ...o, _cancel: true });
+    const cancelled = await dlg.open(svc, { selected: 'ghi' });
     assertEqual(cancelled, null, 'cancel resolves null');
 
-    // Invalid (empty selected) keeps modal open → default path returns false → null.
+    // Invalid (empty selected) keeps the dialog open → default path returns false → null.
   });
 
   test('language:changed rebuilds the host node', async () => {
@@ -101,7 +98,7 @@ suite('createDialog', () => {
     assertTrue(true);
   });
 
-  test('dialog.submit() confirms and resolves with model.result()', async () => {
+  test('dlg.submit() confirms and resolves with model.result()', async () => {
     if (!document.getElementById('app-dialogs')) {
       const host = document.createElement('div');
       host.id = 'app-dialogs';
@@ -118,10 +115,11 @@ suite('createDialog', () => {
       document.body.append(tplEl);
     }
 
-    // Fake modal that hands the api out via onMount, mirroring ui/modal.js form().
+    // Fake dialog service that hands the api out via onMount, mirroring dialog.form().
     let api = null;
-    const modal = {
-      form: (title, node, opts) => new Promise((resolve) => {
+    const svc = {
+      form: (opts) => new Promise((resolve) => {
+        const node = opts.content;
         opts.onMount?.(node, {
           confirm: () => { if (opts.onConfirm?.(node) === false) return; resolve(true); },
           cancel: () => resolve(false),
@@ -129,26 +127,26 @@ suite('createDialog', () => {
       }),
     };
 
-    const dialog = createDialog({
+    const dlg = createDialog({
       id: 'fake-submit-dialog',
       i18nKey: 'fake',
       titleKey: 'title',
       Model: FakeModel,
       ctx: { i18n, eventBus },
-      // `dialog` is the outer createDialog return value, in scope via closure
+      // `dlg` is the outer createDialog return value, in scope via closure
       // (data() is invoked lazily by Alpine.data(), by which point it exists).
-      data: (t, dlg) => ({ go() { dlg.submit(); api = { confirm: dlg.submit, cancel: dlg.cancel }; } }),
+      data: (t, self) => ({ go() { self.submit(); api = { confirm: self.submit, cancel: self.cancel }; } }),
     });
 
-    await dialog.prewarm();
-    const result = dialog.open(modal, { selected: 'xyz' });
-    // open() awaits ensureMounted() before calling modal.form() (where onMount
+    await dlg.prewarm();
+    const result = dlg.open(svc, { selected: 'xyz' });
+    // open() awaits ensureMounted() before calling dialog.form() (where onMount
     // wires up `_api`), so give the microtask queue a chance to drain before
     // clicking — a macrotask boundary guarantees it without depending on an
     // exact tick count.
     await new Promise((r) => setTimeout(r, 0));
     const node = document.querySelector('#app-dialogs .dlg-submit');
-    node.querySelector('button').click(); // triggers go() → dialog.submit()
+    node.querySelector('button').click(); // triggers go() → dlg.submit()
 
     assertEqual(await result, 'xyz', 'submit() confirms and resolves model.result()');
     assertTrue(typeof api?.confirm === 'function' && typeof api?.cancel === 'function', 'api captured for later use');
@@ -171,12 +169,13 @@ suite('createDialog', () => {
       document.body.append(tplEl);
     }
 
-    // Fake modal mirroring ui/modal.js form(): onMount runs synchronously
+    // Fake dialog service mirroring dialog.form(): onMount runs synchronously
     // inside the Promise executor, so a throwing onMount auto-rejects the
     // promise per JS spec — no explicit try/catch needed here, same as the
-    // real modal.
-    const modal = {
-      form: (title, node, opts) => new Promise((resolve) => {
+    // real dialog service.
+    const svc = {
+      form: (opts) => new Promise((resolve) => {
+        const node = opts.content;
         opts.onMount?.(node, {
           confirm: () => { if (opts.onConfirm?.(node) === false) return; resolve(true); },
           cancel: () => resolve(false),
@@ -184,7 +183,7 @@ suite('createDialog', () => {
       }),
     };
 
-    const dialog = createDialog({
+    const dlg = createDialog({
       id: 'fake-throw-dialog',
       i18nKey: 'fake',
       titleKey: 'title',
@@ -195,7 +194,7 @@ suite('createDialog', () => {
     let confirmCalls = 0;
     let threw = false;
     try {
-      await dialog.open(modal, { selected: 'boom' }, {
+      await dlg.open(svc, { selected: 'boom' }, {
         onMount: () => { throw new Error('boom'); },
         onConfirm: () => { confirmCalls += 1; },
       });
@@ -207,15 +206,15 @@ suite('createDialog', () => {
     // Without resetting `_api` on the throw path, it would still point at
     // the failed open's api here — calling submit() before any new open()
     // would silently re-invoke that dead call's onConfirm.
-    dialog.submit();
+    dlg.submit();
     assertEqual(confirmCalls, 0, 'a stale submit() after a failed open() must not fire the old onConfirm');
 
     // The failed open() above must not leave a stale `_api` behind: a fresh
     // open() + submit() has to work normally, not silently confirm/no-op
     // against the dead dialog from the throw.
-    const result = dialog.open(modal, { selected: 'ok' });
+    const result = dlg.open(svc, { selected: 'ok' });
     await new Promise((r) => setTimeout(r, 0));
-    dialog.submit();
+    dlg.submit();
     assertEqual(await result, 'ok', 'submit() still confirms correctly after a prior onMount throw');
   });
 });

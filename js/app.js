@@ -7,7 +7,6 @@
 import { bootKernel }     from './core/kernel.js';
 import { DmaicTiles }     from './ui/dmaic-tiles.js';
 import { Workspace }      from './ui/workspace.js';
-import { Modal }          from './ui/modal.js';
 import { createDialogService } from './ui/dialog/dialog.js';
 import { HelpPanel }      from './ui/help-panel.js';
 import { VERSION }        from './core/version.js';
@@ -23,7 +22,6 @@ import { initPages }  from './pages/index.js';
 import { startupTasks } from './startup/index.js';
 import { initRouteDirectives, initRouter, createAppActionVerbs } from './core/router/index.js';
 import { setCreatePageRouter } from './core/create-page.js';
-import { createActionModal } from './ui/action-modal.js';
 
 async function init() {
   // ─── Core Services ───────────────────────────────────────
@@ -45,11 +43,10 @@ async function init() {
 
   // ─── UI Components ───────────────────────────────────────
 
-  const modal = new Modal(i18n);
   // One dialog service for the whole app: modules get it as context.dialog.
   const dialog = createDialogService({ i18n });
 
-  initNightlyMode({ modal, i18n });
+  initNightlyMode({ dialog, i18n });
 
   const dmaicTiles = new DmaicTiles(
     document.getElementById('dmaic-tiles'),
@@ -65,7 +62,7 @@ async function init() {
 
   const workspace = new Workspace(
     document.getElementById('app-workspace'),
-    { moduleRegistry, eventBus, stateManager, i18n, modal, dialog, notify, helpPanel, chartManager, examples: examplesRegistry, glossary: glossaryRegistry }
+    { moduleRegistry, eventBus, stateManager, i18n, dialog, notify, helpPanel, chartManager, examples: examplesRegistry, glossary: glossaryRegistry }
   );
   workspace.render();
 
@@ -80,9 +77,9 @@ async function init() {
   const exportReminder = new ExportReminder({ stateManager, eventBus, i18n, notify });
   exportReminder.init();
 
-  // One shared action modal: the router shows it for #/action/… URLs, the
+  // One shared progress dialog: the router shows it for #/action/… URLs, the
   // frame chrome shows the SAME dialog for its own long-running actions.
-  const actionModal = createActionModal({ i18n, modal });
+  const actionModal = dialog.progress();
 
   // Verb registry (`#/action/<verb>/<arg…>`) built ahead of the Router itself
   // — settings' action-URL list (task 12) reads it via the page context, and
@@ -92,12 +89,12 @@ async function init() {
   const routerBox = { current: null };
   const actionVerbs = createAppActionVerbs(kernel, { dmaicTiles, workspace, notify }, routerBox);
 
-  buildFrame(kernel, { modal, dmaicTiles, helpPanel, workspace, notify, actionModal });
-  const pages = await initPages(kernel, { modal, actionVerbs, notify });
+  buildFrame(kernel, { dialog, dmaicTiles, helpPanel, workspace, notify, actionModal });
+  const pages = await initPages(kernel, { dialog, actionVerbs, notify });
 
   const router = initRouter(
     kernel,
-    { dmaicTiles, workspace, notify, modal, actionModal, actionVerbs, routerBox },
+    { dmaicTiles, workspace, notify, dialog, actionModal, actionVerbs, routerBox },
     pages, Alpine,
   );
   routeDirectives.setRouter(router);
@@ -108,7 +105,7 @@ async function init() {
   setCreatePageRouter(router);
 
   // ─── Startup concerns (deeplink, prompts, viewport, auto-save, e2e) ───
-  const startupCtx = { ...kernel, modal, dialog, notify, workspace, exportReminder };
+  const startupCtx = { ...kernel, dialog, notify, workspace, exportReminder };
   for (const task of startupTasks) await task.init(startupCtx);
 
   // ─── Update title ────────────────────────────────────────

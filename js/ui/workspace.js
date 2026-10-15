@@ -16,16 +16,14 @@ export class Workspace {
    * @param {import('../core/event-bus.js').EventBus} deps.eventBus
    * @param {import('../core/state-manager.js').StateManager} deps.stateManager
    * @param {import('../core/i18n.js').I18n} deps.i18n
-   * @param {import('./modal.js').Modal} deps.modal
    * @param {object} deps.dialog  dialog service (ui/dialog/dialog.js)
    */
-  constructor(container, { moduleRegistry, eventBus, stateManager, i18n, modal, dialog, ...rest }) {
+  constructor(container, { moduleRegistry, eventBus, stateManager, i18n, dialog, ...rest }) {
     this._container = container;
     this._moduleRegistry = moduleRegistry;
     this._eventBus = eventBus;
     this._stateManager = stateManager;
     this._i18n = i18n;
-    this._modal = modal;
     this._dialog = dialog;
     this._context = rest; // remainder of context passed to modules
     this._activePhase = 'define';

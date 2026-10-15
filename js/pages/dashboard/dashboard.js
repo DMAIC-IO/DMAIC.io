@@ -33,7 +33,7 @@ const page = createPage({
   },
 
   mount(containerEl, ctx) {
-    const { eventBus, stateManager, i18n, chartManager, themeManager, moduleRegistry, modal } = ctx;
+    const { eventBus, stateManager, i18n, chartManager, themeManager, moduleRegistry, dialog } = ctx;
     const gridAnchor = containerEl.querySelector('[data-ref="grid"]');
 
     const handle = { grid: null, addMenuEl: null, _onDocClick: null, _unsubs: [], render: null, _renderGen: 0, _toolbarWired: false, _allTilesLoaded: false, _refreshUnsubs: [], _lastLayout: [], tileModules: [] };
@@ -78,7 +78,7 @@ const page = createPage({
     // copy has no enumerated instance, so its `_source` is always stored.
     const openTileSettings = async (tileId) => {
       const d = descriptorFor(tileId);
-      if (!d?.tile || !modal) return;
+      if (!d?.tile || !dialog) return;
       const ownSchema = schemaOf(d.tile);
       const capable = isSourceCapable(d);
       const schema = capable
@@ -92,8 +92,11 @@ const page = createPage({
       const stored = (stateManager.get('dashboard.tileSettings') || {})[tileId];
       const form = buildSettingsForm(schema, resolveSettings(schema, stored), i18n);
       const tileTitle = (stateManager.get('dashboard.titles') || {})[tileId] || d.title;
-      const confirmed = await modal.form(i18n.t('dashboard.tileSettings.title', { title: tileTitle }), form.el,
-        { footerStart: form.reset });
+      const confirmed = await dialog.form({
+        title: i18n.t('dashboard.tileSettings.title', { title: tileTitle }),
+        content: form.el,
+        footerStart: form.reset,
+      });
       if (confirmed !== true) return;
       const values = form.read();
       const latest = stateManager.get('dashboard.tileSettings') || {};

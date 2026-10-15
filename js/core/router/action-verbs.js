@@ -38,7 +38,7 @@
  */
 
 import { getPhaseIds, DEFAULT_CYCLE } from '../cycles/cycles.js';
-import { scenarioDoneState } from '../../ui/action-modal.js';
+import { scenarioDoneState } from '../../ui/dialog/progress.js';
 import { ensureZegSheet } from '../zeg-sheet/zeg-sheet.js';
 
 /**

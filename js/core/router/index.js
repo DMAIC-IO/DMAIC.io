@@ -5,7 +5,6 @@
 import { Router } from './router.js';
 import { registerRouteDirectives } from './route-store.js';
 import { createActionVerbs } from './action-verbs.js';
-import { createActionModal } from '../../ui/action-modal.js';
 import { loadScenario } from '../scenario-loader.js';
 import { rehydrateProject } from '../../frame/project-rehydrate.js';
 
@@ -87,13 +86,13 @@ export function createAppActionVerbs(kernel, ui, routerBox) {
  * `router.start()` — the boot hash may itself be an action URL, whose verb
  * closures read the box.
  *
- * The modal instance: pass one in via `ui.actionModal` so the rest of the
+ * The progress dialog: pass one in via `ui.actionModal` (from `dialog.progress()`) so the rest of the
  * chrome (built earlier in app.js) shares it; if omitted, one is created here.
  * Either way the live instance is reachable as `router.getActionModal()`.
  *
  * @param {object} kernel
  * @param {{ dmaicTiles: object, workspace: object, notify?: function,
- *          modal?: object, actionModal?: object, actionVerbs: Map<string, object>,
+ *          dialog: object, actionModal?: object, actionVerbs: Map<string, object>,
  *          routerBox: { current: object|null } }} ui
  * @param {Map<string, object>} pages
  * @param {object} Alpine
@@ -104,7 +103,7 @@ export function initRouter(kernel, ui, pages, Alpine) {
     console.warn('[router] no ui.actionModal passed — creating a second, ' +
       'independent dialog. Pass the app-wide instance (see app.js) instead.');
   }
-  const actionModal = ui.actionModal ?? createActionModal({ i18n: kernel.i18n, modal: ui.modal });
+  const actionModal = ui.actionModal ?? ui.dialog.progress();
   const router = new Router({
     stateManager: kernel.stateManager,
     moduleRegistry: kernel.moduleRegistry,
