@@ -84,8 +84,8 @@ function kappaClass(k, ruleSet) {
   return levelClass(kappaLevel(k, ruleSet));
 }
 
-/** Die sechs Parameter, die `setParam` kennt. */
-const PARAM_KEYS = ['type', 'weights', 'layout', 'trials', 'ruleSet', 'alpha'];
+/** Die sieben Parameter, die `setParam` kennt. */
+const PARAM_KEYS = ['type', 'weights', 'layout', 'trials', 'ruleSet', 'alpha', 'positiveLevel'];
 
 /** Je Parameter sein Prüfer; `trials` ist freier Text. */
 const PARAM_CHECKS = {
@@ -95,6 +95,7 @@ const PARAM_CHECKS = {
   trials: (v) => requireText('value', v),
   ruleSet: (v) => requireEnum('value', v, RULESET_OPTIONS),
   alpha: (v) => requireEnum('value', v, ALPHA_OPTIONS),
+  positiveLevel: null, // Wertemenge ist zustandsabhängig: setParam prüft gegen detectedLevels()
 };
 
 /** Die fünf Einzel-Spalten-Slots; der Matrix-Slot `ratings` bleibt außerhalb der Fläche. */
@@ -113,9 +114,10 @@ const SLOT_FILTERS = { part: {}, appraiser: {}, rating: {}, reference: {}, repli
  * (`exampleWorksheetId`) und ohne die Diagramme.
  *
  * @typedef {object} AgentRead
- * @property {object} params  the entered parameters (type, positiveLevel, weights, alpha, ordinalOrder, ruleSet, layout, trials)
+ * @property {object} params  the entered parameters (type, positiveLevel, weights, alpha, ordinalOrder, ruleSet, layout, trials); ordinalOrder cannot be set through the surface
  * @property {object} columns  the chosen columns `{ part, appraiser, rating, reference, replicate, ratings }`, each a `{ instanceId, sheetId, columnId }` or null; `ratings` is a list
- * @property {string[]} activeParams  the keys `setParam` accepts in the current state (`weights` only for the ordinal type, `trials` only for the wide layout)
+ * @property {string[]} detectedLevels  the rating levels found in the chosen rating column(s); the values `setParam('positiveLevel', …)` accepts
+ * @property {string[]} activeParams  the keys `setParam` accepts in the current state (`weights` only for the ordinal type, `trials` only for the wide layout, `positiveLevel` only for the binary type with detected levels)
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state; the matrix slot `ratings` of the wide layout is not among them, so the module cannot be fully operated through the surface in the wide layout
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
  * @property {object|null} result  the computed agreement result (verdict, kappa, effectiveness, tables), or null while the inputs are incomplete or invalid; problems are in `result.meta.errors`
@@ -157,6 +159,7 @@ const mod = createModule({
       read(options) {
         return readAgentState('msa-typ5', {
           ...this.model.toJSON(),
+          detectedLevels: this.detectedLevels(),
           activeParams: this.activeParams(),
           activeColumnSlots: this.activeColumnSlots(),
           pickableColumns: this.pickableColumns(),
@@ -168,7 +171,8 @@ const mod = createModule({
       activeParams() {
         const p = this.model.params;
         return PARAM_KEYS.filter(k =>
-          (k !== 'weights' || p.type === 'ordinal') && (k !== 'trials' || p.layout === 'wide'));
+          (k !== 'weights' || p.type === 'ordinal') && (k !== 'trials' || p.layout === 'wide')
+          && (k !== 'positiveLevel' || (p.type === 'binary' && this.detectedLevels().length > 0)));
       },
 
       /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
@@ -187,18 +191,20 @@ const mod = createModule({
       /**
        * Einen Parameter setzen. Ein neuer Merkmalstyp setzt die positive Stufe zurück.
        * @agent
-       * @param {'type'|'weights'|'layout'|'trials'|'ruleSet'|'alpha'} key
-       *   welcher Parameter; `weights` nur beim Typ ordinal, `trials` nur beim Layout wide
-       * @param {string} value der Wert als Text; `type`: binary, nominal oder ordinal, `weights`: linear oder quadratic, `layout`: long oder wide, `ruleSet`: aiag oder bosch, `alpha`: 0.01, 0.05 oder 0.10, `trials`: Anzahl als Text
+       * @param {'type'|'weights'|'layout'|'trials'|'ruleSet'|'alpha'|'positiveLevel'} key
+       *   welcher Parameter; `weights` nur beim Typ ordinal, `trials` nur beim Layout wide, `positiveLevel` nur beim Typ binary mit erkannten Stufen
+       * @param {string} value der Wert als Text; `type`: binary, nominal oder ordinal, `weights`: linear oder quadratic, `layout`: long oder wide, `ruleSet`: aiag oder bosch, `alpha`: 0.01, 0.05 oder 0.10, `trials`: Anzahl als Text, `positiveLevel`: eine der erkannten Stufen (read().detectedLevels)
        * @returns {void}
        * @throws {Error} wenn `key` im aktuellen Zustand kein Parameter ist oder `value` nicht zulässig
        */
       setParam(key, value) {
         requireEnum('key', key, PARAM_KEYS);
         requireEnum('key', key, this.activeParams());
-        PARAM_CHECKS[key](value);
+        if (key === 'positiveLevel') requireEnum('value', value, this.detectedLevels());
+        else PARAM_CHECKS[key](value);
+        const old = this.model.params[key];
         this.model.params[key] = value;
-        if (key === 'type') this.model.params.positiveLevel = null;
+        if (key === 'type' && value !== old) this.model.params.positiveLevel = null;
         this.scheduleAnalysis();
       },
 
@@ -323,11 +329,11 @@ const mod = createModule({
         return neg ?? '—';
       },
 
-      /** @noagent UI-only: tauscht die positive Stufe der Binärdarstellung; der Agent liest sie über read().params.positiveLevel */
+      /** @noagent UI-Weg zu setParam('positiveLevel', …): tauscht die positive Stufe der Binärdarstellung */
       swapPositive() {
         const neg = this.binaryNegative();
         if (neg === '—') return;
-        this.model.params.positiveLevel = neg;
+        this.setParam('positiveLevel', neg);
         this.runAnalysis();
       },
 

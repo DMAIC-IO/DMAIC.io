@@ -4551,15 +4551,15 @@ export const AGENT_REGISTRY = {
         "params": [
           {
             "name": "key",
-            "type": "'type'|'weights'|'layout'|'trials'|'ruleSet'|'alpha'",
+            "type": "'type'|'weights'|'layout'|'trials'|'ruleSet'|'alpha'|'positiveLevel'",
             "optional": false,
-            "help": "welcher Parameter; `weights` nur beim Typ ordinal, `trials` nur beim Layout wide"
+            "help": "welcher Parameter; `weights` nur beim Typ ordinal, `trials` nur beim Layout wide, `positiveLevel` nur beim Typ binary mit erkannten Stufen"
           },
           {
             "name": "value",
             "type": "string",
             "optional": false,
-            "help": "der Wert als Text; `type`: binary, nominal oder ordinal, `weights`: linear oder quadratic, `layout`: long oder wide, `ruleSet`: aiag oder bosch, `alpha`: 0.01, 0.05 oder 0.10, `trials`: Anzahl als Text"
+            "help": "der Wert als Text; `type`: binary, nominal oder ordinal, `weights`: linear oder quadratic, `layout`: long oder wide, `ruleSet`: aiag oder bosch, `alpha`: 0.01, 0.05 oder 0.10, `trials`: Anzahl als Text, `positiveLevel`: eine der erkannten Stufen (read().detectedLevels)"
           }
         ],
         "returns": "void",
@@ -4597,7 +4597,7 @@ export const AGENT_REGISTRY = {
     "fields": {
       "params": {
         "type": "object",
-        "help": "the entered parameters (type, positiveLevel, weights, alpha, ordinalOrder, ruleSet, layout, trials)",
+        "help": "the entered parameters (type, positiveLevel, weights, alpha, ordinalOrder, ruleSet, layout, trials); ordinalOrder cannot be set through the surface",
         "bulk": false,
         "derived": true
       },
@@ -4607,9 +4607,15 @@ export const AGENT_REGISTRY = {
         "bulk": false,
         "derived": true
       },
+      "detectedLevels": {
+        "type": "string[]",
+        "help": "the rating levels found in the chosen rating column(s); the values `setParam('positiveLevel', …)` accepts",
+        "bulk": false,
+        "derived": true
+      },
       "activeParams": {
         "type": "string[]",
-        "help": "the keys `setParam` accepts in the current state (`weights` only for the ordinal type, `trials` only for the wide layout)",
+        "help": "the keys `setParam` accepts in the current state (`weights` only for the ordinal type, `trials` only for the wide layout, `positiveLevel` only for the binary type with detected levels)",
         "bulk": false,
         "derived": true
       },

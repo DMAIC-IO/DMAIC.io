@@ -2667,8 +2667,8 @@
         "setParam": {
           "help": "Setzt einen Parameter der Studie; die Neuberechnung folgt nach kurzer Ruhezeit. Ein neuer Merkmalstyp setzt die positive Stufe zurück.",
           "params": {
-            "key": "Einer der Schlüssel aus activeParams: type, weights, layout, trials, ruleSet oder alpha. weights gilt nur beim Typ ordinal, trials nur beim Layout wide; jeder andere Wert ist ein Fehler.",
-            "value": "Der Wert als Text. type nimmt 'binary', 'nominal' oder 'ordinal', weights 'linear' oder 'quadratic', layout 'long' oder 'wide', ruleSet 'aiag' oder 'bosch', alpha '0.01', '0.05' oder '0.10'; trials die Anzahl der Versuche je Prüfer als Text, zum Beispiel '2'."
+            "key": "Einer der Schlüssel aus activeParams: type, weights, layout, trials, ruleSet, alpha oder positiveLevel. weights gilt nur beim Typ ordinal, trials nur beim Layout wide, positiveLevel nur beim Typ binary mit erkannten Stufen; jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert als Text. type nimmt 'binary', 'nominal' oder 'ordinal', weights 'linear' oder 'quadratic', layout 'long' oder 'wide', ruleSet 'aiag' oder 'bosch', alpha '0.01', '0.05' oder '0.10'; trials die Anzahl der Versuche je Prüfer als Text, zum Beispiel '2'; positiveLevel eine der Stufen aus detectedLevels."
           }
         },
         "setColumn": {
@@ -2682,9 +2682,10 @@
         "scheduleAnalysis": { "help": "Stößt die Rechnung nach kurzer Ruhezeit an; eine zweite Anforderung davor ersetzt die erste." }
       },
       "fields": {
-        "params": { "help": "Die eingegebenen Parameter: type (Merkmalstyp), positiveLevel (positive Stufe der Binärdarstellung, null solange unbestimmt), weights (Gewichtung beim Typ ordinal), alpha (Signifikanzniveau, als Text), ordinalOrder (Reihenfolge der Stufen, null solange automatisch), ruleSet (Urteilsregel), layout (long oder wide) und trials (Versuche je Prüfer im breiten Layout, als Text)." },
+        "params": { "help": "Die eingegebenen Parameter: type (Merkmalstyp), positiveLevel (positive Stufe der Binärdarstellung, null solange unbestimmt; setzbar), weights (Gewichtung beim Typ ordinal), alpha (Signifikanzniveau, als Text), ordinalOrder (Reihenfolge der Stufen, null solange automatisch; über die Fläche nicht setzbar), ruleSet (Urteilsregel), layout (long oder wide) und trials (Versuche je Prüfer im breiten Layout, als Text)." },
         "columns": { "help": "Die gewählten Spalten: part, appraiser, rating, reference und replicate je als { instanceId, sheetId, columnId } oder null, dazu ratings als Liste der Bewertungsspalten des breiten Layouts (über die Fläche nicht setzbar)." },
-        "activeParams": { "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt; weights fehlt außerhalb des Typs ordinal, trials außerhalb des Layouts wide." },
+        "detectedLevels": { "help": "Die Bewertungsstufen, die in der gewählten Bewertungsspalte (oder den Spalten des breiten Layouts) vorkommen; die Werte, die setParam für positiveLevel annimmt. Leer, solange keine Bewertungsspalte gewählt ist." },
+        "activeParams": { "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt; weights fehlt außerhalb des Typs ordinal, trials außerhalb des Layouts wide, positiveLevel außerhalb des Typs binary oder ohne erkannte Stufen." },
         "activeColumnSlots": { "help": "Die Slots, die setColumn im aktuellen Zustand annimmt. Im Layout wide fehlen appraiser, rating und replicate, und der Matrix-Slot ratings gehört nicht dazu: das breite Layout ist über die Fläche nicht vollständig bedienbar." },
         "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'." },
         "result": { "help": "Das gerechnete Ergebnis mit Urteil, Kappa-Werten, Effektivität und den Tabellen, oder null, solange die Eingaben unvollständig oder ungültig sind." }
