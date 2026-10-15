@@ -162,3 +162,44 @@ suite('Histogram type — series path: legend, descriptors, tooltip', () => {
     unmount(m);
   });
 });
+
+suite('Histogram type — series path: Pareto', () => {
+  test('drawn only with exactly one visible series', () => {
+    const two = mount({ series: [s('A', A), s('B', B)], binWidth: 1, pareto: true });
+    assertEqual(two.svg.querySelectorAll('[data-pareto]').length, 0);
+    unmount(two);
+    const one = mount({ series: [s('A', A), s('B', B, { visible: false })], binWidth: 1, pareto: true });
+    assertEqual(one.svg.querySelectorAll('polyline[data-pareto]').length, 1);
+    unmount(one);
+  });
+  test('line ends at 100 % = top of the plot area', () => {
+    const m = mount({ series: [s('A', A)], binWidth: 1, pareto: true });
+    const pts = m.svg.querySelector('polyline[data-pareto]').getAttribute('points').trim().split(/\s+/);
+    const lastY = Number(pts[pts.length - 1].split(',')[1]);
+    assertAlmostEqual(lastY, m.chart._plotArea.y, 1e-6);
+    unmount(m);
+  });
+  test('right axis has five ticks and the legend sits right of it', () => {
+    const m = mount({ series: [s('A', A)], binWidth: 1, pareto: true });
+    const ticks = [...m.svg.querySelectorAll('text[data-pareto-tick]')];
+    assertEqual(ticks.length, 5);
+    const pa = m.chart._plotArea;
+    const tickRight = Math.max(...ticks.map(t => Number(t.getAttribute('x'))));
+    const legendText = [...m.svg.querySelectorAll('text')].find(t => t.textContent === 'A');
+    assertTrue(Number(legendText.getAttribute('x')) > tickRight + 20, 'legend does not overlap the %-axis');
+    assertTrue(tickRight > pa.x + pa.w);
+    unmount(m);
+  });
+  test('pareto off → no extra right space', () => {
+    const on = mount({ series: [s('A', A)], binWidth: 1, pareto: true });
+    const off = mount({ series: [s('A', A)], binWidth: 1, pareto: false });
+    assertAlmostEqual(off.chart._plotArea.w - on.chart._plotArea.w, 48, 1e-6);
+    unmount(on); unmount(off);
+  });
+  test('tooltip adds the cumulative share', () => {
+    const m = mount({ series: [s('A', A)], binWidth: 1, pareto: true });
+    const txt = m.chart._findNearby(3.5, 1, 10)[0].node.textContent; // [1,2)=1,[2,3)=2,[3,4)=3 → 6/9
+    assertTrue(txt.includes('66,7'), txt);
+    unmount(m);
+  });
+});

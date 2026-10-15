@@ -5,12 +5,16 @@
  * Stateless; the chart type passes scales, plot area and its uid.
  */
 
-import { svgEl, resolveColor, dashArray, createPattern, formatNum } from './chart-core.js';
+import { svgEl, svgText, resolveColor, dashArray, createPattern, formatNum } from './chart-core.js';
 import { h } from '../dom.js';
 import { seriesMoments } from './histogram-series.js';
 
 /** Default pattern line colour of the series path (matches the old module look). */
 const PATTERN_LINE = 'rgba(0,0,0,0.5)';
+/** Width reserved right of the plot for the Pareto %-axis. */
+export const PARETO_AXIS_W = 48;
+/** Cumulative line colour, same as types/pareto.js. */
+export const PARETO_COLOR = '#ef4444';
 /** Sample points per normal curve. */
 const CURVE_STEPS = 120;
 
@@ -119,4 +123,38 @@ export function binTooltip({ series, binData, bi, locale, t, cumPct = null }) {
   });
   if (cumPct != null) rows.push(h('div', null, `${t('cumulative')}: ${formatNum(cumPct, 1, locale)} %`));
   return h('div', null, ...rows);
+}
+
+/**
+ * Pareto overlay of one series: cumulative-% polyline with dots (in the
+ * clipped plot group) and a right 0–100 % axis (in the svg).
+ * @param {SVGSVGElement} svg
+ * @param {SVGGElement} group
+ * @param {{xMin:number,xMax:number}[]} bins
+ * @param {number[]} cum - cumulativePercent(bins)
+ * @param {Function} xScale
+ * @param {{x:number,y:number,w:number,h:number}} pa
+ * @param {{ color: string, label: string, textColor: string, tickSize: number }} o
+ */
+export function drawPareto(svg, group, bins, cum, xScale, pa, o) {
+  const yPct = (p) => pa.y + pa.h - (p / 100) * pa.h;
+  const pts = bins.map((b, i) => `${xScale(b.xMax).toFixed(2)},${yPct(cum[i]).toFixed(2)}`);
+  if (bins.length) pts.unshift(`${xScale(bins[0].xMin).toFixed(2)},${yPct(0).toFixed(2)}`);
+  svgEl('polyline', { points: pts.join(' '), fill: 'none', stroke: o.color, 'stroke-width': 2, 'data-pareto': '' }, group);
+  bins.forEach((b, i) => {
+    svgEl('circle', { cx: xScale(b.xMax), cy: yPct(cum[i]), r: 3, fill: o.color, 'data-pareto-dot': '' }, group);
+  });
+  const ax = pa.x + pa.w;
+  svgEl('line', { x1: ax, y1: pa.y, x2: ax, y2: pa.y + pa.h, stroke: o.color, 'stroke-width': 1, 'data-pareto': '' }, svg);
+  [0, 25, 50, 75, 100].forEach((p) => {
+    const y = yPct(p);
+    svgEl('line', { x1: ax, y1: y, x2: ax + 5, y2: y, stroke: o.color, 'stroke-width': 1 }, svg);
+    svgText(`${p}%`, { x: ax + 8, y: y + 4, 'text-anchor': 'start', 'font-size': `${o.tickSize}px`, fill: o.color, 'data-pareto-tick': '' }, svg);
+  });
+  const lx = ax + PARETO_AXIS_W - 6;
+  const ly = pa.y + pa.h / 2;
+  svgText(o.label, {
+    x: lx, y: ly, 'text-anchor': 'middle', 'font-size': `${o.tickSize}px`, fill: o.color,
+    transform: `rotate(90, ${lx}, ${ly})`,
+  }, svg);
 }

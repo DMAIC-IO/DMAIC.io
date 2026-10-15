@@ -805,7 +805,8 @@
         "curveColor": "Kurvenfarbe",
         "normal": "Normalverteilung",
         "range": "Bereich",
-        "cumulative": "Kumuliert"
+        "cumulative": "Kumuliert",
+        "paretoCum": "Kumuliert (%)"
       },
       "boxplot": {
         "appearance": "Darstellung",

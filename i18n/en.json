@@ -805,7 +805,8 @@
         "curveColor": "Curve color",
         "normal": "Normal",
         "range": "Range",
-        "cumulative": "Cumulative"
+        "cumulative": "Cumulative",
+        "paretoCum": "Cumulative (%)"
       },
       "boxplot": {
         "appearance": "Appearance",

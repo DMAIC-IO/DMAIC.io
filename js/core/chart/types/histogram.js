@@ -14,8 +14,8 @@ import {
 import {
   edSection, edSelectRow, edCheckboxRow, edInlineNum,
 } from '../chart-editor.js';
-import { binAll, seriesMoments } from '../histogram-series.js';
-import { drawSeriesBars, drawNormalCurves, normalPeak, binTooltip } from '../histogram-series-draw.js';
+import { binAll, seriesMoments, cumulativePercent } from '../histogram-series.js';
+import { drawSeriesBars, drawNormalCurves, normalPeak, binTooltip, drawPareto, PARETO_AXIS_W, PARETO_COLOR } from '../histogram-series-draw.js';
 
 /**
  * Compute IQR for Freedman-Diaconis rule.
@@ -267,6 +267,39 @@ export default class HistogramChart extends ChartBase {
       : { xMin: valMin, xMax: valMax, yMin: 0, yMax: denMax };
   }
 
+  /** Index of the single visible series when the Pareto line applies, else -1. */
+  _paretoSeriesIndex() {
+    if (!this._isSeriesMode() || !this.config.pareto) return -1;
+    const vis = [];
+    this.config.series.forEach((s, si) => { if (s.visible !== false) vis.push(si); });
+    return vis.length === 1 ? vis[0] : -1;
+  }
+
+  /**
+   * Cumulative % at the right edge of bin `bi` while the Pareto line is shown.
+   * @param {number} bi
+   * @returns {number|null}
+   */
+  _paretoCumAt(bi) {
+    const si = this._paretoSeriesIndex();
+    const res = this._seriesBins;
+    if (si < 0 || !res || !res.bins[si][bi]) return null;
+    return cumulativePercent(res.bins[si])[bi];
+  }
+
+  /** @override Reserve room for the Pareto %-axis right of the plot (series mode only). */
+  _getPlotArea() {
+    const pa = super._getPlotArea();
+    if (this._paretoSeriesIndex() < 0) return pa;
+    return { ...pa, w: pa.w - PARETO_AXIS_W, rMargin: pa.rMargin + PARETO_AXIS_W };
+  }
+
+  /** @override Legend starts right of the Pareto %-axis. */
+  _drawLegend(svg, pa, size, textColor) {
+    const shift = this._paretoSeriesIndex() >= 0 ? PARETO_AXIS_W : 0;
+    super._drawLegend(svg, { ...pa, w: pa.w + shift }, size, textColor);
+  }
+
   // ── Abstract Implementation: Render Data ─────────────────────────
 
   /** @override */
@@ -275,6 +308,13 @@ export default class HistogramChart extends ChartBase {
       const res = this._seriesBins || this._resolveSeriesBins();
       drawSeriesBars(plotGroup, defs, this._uid, this.config.series, res, xScale, yScale, this.config.barGap);
       drawNormalCurves(plotGroup, this.config.series, res.binWidth, xScale, yScale, xTick.min, xTick.max);
+      const pi = this._paretoSeriesIndex();
+      if (pi >= 0 && res.bins[pi].length) {
+        drawPareto(svg, plotGroup, res.bins[pi], cumulativePercent(res.bins[pi]), xScale, _plotArea, {
+          color: PARETO_COLOR, label: this._th('paretoCum'), textColor: PARETO_COLOR,
+          tickSize: this.config.tickSize || 11,
+        });
+      }
       return;
     }
     const resolved = this._resolveBins();
@@ -480,6 +520,9 @@ export default class HistogramChart extends ChartBase {
         curves.push({ type: 'line', color: s.borderColor, width: 2, label: `${s.name} · ${this._th('normal')}` });
       }
     });
+    if (this._paretoSeriesIndex() >= 0) {
+      curves.push({ type: 'line', color: PARETO_COLOR, width: 2, label: this._th('paretoCum') });
+    }
     return [...items, ...curves];
   }
 
