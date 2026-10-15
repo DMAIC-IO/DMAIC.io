@@ -4530,77 +4530,106 @@ export const AGENT_REGISTRY = {
     }
   },
   "msa-typ5": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:fmt",
-      "unmarked_method:fmtPct",
-      "unmarked_method:detectedLevels",
-      "unmarked_method:binaryPositive",
-      "unmarked_method:binaryNegative",
-      "unmarked_method:swapPositive",
-      "unmarked_method:weightsHiddenClass",
-      "unmarked_method:onTypeChanged",
-      "unmarked_method:referenceSourceLabel",
-      "unmarked_method:verdictLabel",
-      "unmarked_method:emptyStateText",
-      "unmarked_method:warningEntries",
-      "unmarked_method:verdictSubline",
-      "unmarked_method:criteriaRows",
-      "unmarked_method:hasReferenceNote",
-      "unmarked_method:referenceNoteText",
-      "unmarked_method:fleissKappa",
-      "unmarked_method:fleissKappaClass",
-      "unmarked_method:fleissMethod",
-      "unmarked_method:meanRepeatability",
-      "unmarked_method:meanEffectiveness",
-      "unmarked_method:meanKappaVsRef",
-      "unmarked_method:interpretationText",
-      "unmarked_method:perAppraiserRows",
-      "unmarked_method:pairTableTitle",
-      "unmarked_method:pairRows",
-      "unmarked_method:vsRefKappaHeader",
-      "unmarked_method:vsRefRows",
-      "unmarked_method:partAppraisers",
-      "unmarked_method:perPartRows",
-      "unmarked_method:hasDisputedParts",
-      "unmarked_method:toggleOnlyDisputed",
-      "unmarked_method:disagreementRows",
-      "unmarked_method:overallBetweenRate",
-      "unmarked_method:overallBetweenSub",
-      "unmarked_method:hasOverallVsRef",
-      "unmarked_method:overallVsRefRate",
-      "unmarked_method:overallVsRefSub",
-      "unmarked_method:hasEffectivenessChart",
-      "unmarked_method:hasSdtChart",
-      "unmarked_method:hasGageRunChart",
-      "unmarked_method:runAnalysis",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unreachable_write:params.type",
-      "unreachable_write:params.weights",
-      "unreachable_write:params.layout",
-      "unreachable_write:params.trials",
-      "unreachable_write:params.ruleSet",
-      "unreachable_write:params.alpha"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'type'|'weights'|'layout'|'trials'|'ruleSet'|'alpha'",
+            "optional": false,
+            "help": "welcher Parameter; `weights` nur beim Typ ordinal, `trials` nur beim Layout wide"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "der Wert als Text; `type`: binary, nominal oder ordinal, `weights`: linear oder quadratic, `layout`: long oder wide, `ruleSet`: aiag oder bosch, `alpha`: 0.01, 0.05 oder 0.10, `trials`: Anzahl als Text"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Parameter setzen. Ein neuer Merkmalstyp setzt die positive Stufe zurück."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'part'|'appraiser'|'rating'|'reference'|'replicate'",
+            "optional": false,
+            "help": "der Slot; `appraiser`, `rating` und `replicate` nur beim Layout long"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Spalte einem Slot zuweisen."
+      },
+      "scheduleAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Die Rechnung nach kurzer Ruhezeit anstoßen."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Baut das Long-Format-Ratings-Array (aus dem langen oder breiten Datenlayout) und ruft die Engine. Aktualisiert `this.result` und triggert das Chart-Rendering."
+      }
+    },
     "fields": {
       "params": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object",
+        "help": "the entered parameters (type, positiveLevel, weights, alpha, ordinalOrder, ruleSet, layout, trials)",
+        "bulk": false,
+        "derived": true
       },
       "columns": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object",
+        "help": "the chosen columns `{ part, appraiser, rating, reference, replicate, ratings }`, each a `{ instanceId, sheetId, columnId }` or null; `ratings` is a list",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts in the current state (`weights` only for the ordinal type, `trials` only for the wide layout)",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts in the current state; the matrix slot `ratings` of the wide layout is not among them, so the module cannot be fully operated through the surface in the wide layout",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "the computed agreement result (verdict, kappa, effectiveness, tables), or null while the inputs are incomplete or invalid; problems are in `result.meta.errors`",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -8865,4 +8894,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":32};
+export const AGENT_COVERAGE = {"total":74,"available":33};

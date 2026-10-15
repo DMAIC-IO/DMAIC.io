@@ -4,35 +4,24 @@
 
     <fieldset class="msa-typ5__radios">
       <legend x-text="t('labels.type')"></legend>
-      <label>
-        <input type="radio" name="msa5-type" value="binary"
-               x-model="model.params.type" @change="onTypeChanged()">
-        <span x-text="t('labels.typeBinary')"></span>
-      </label>
-      <label>
-        <input type="radio" name="msa5-type" value="nominal"
-               x-model="model.params.type" @change="onTypeChanged()">
-        <span x-text="t('labels.typeNominal')"></span>
-      </label>
-      <label>
-        <input type="radio" name="msa5-type" value="ordinal"
-               x-model="model.params.type" @change="onTypeChanged()">
-        <span x-text="t('labels.typeOrdinal')"></span>
-      </label>
+      <template x-for="o in typeOptions()" :key="o">
+        <label>
+          <input type="radio" name="msa5-type" :value="o"
+                 :checked="model.params.type === o" @input="setParam('type', o)" @change="runAnalysis()">
+          <span x-text="optionLabel('type', o)"></span>
+        </label>
+      </template>
     </fieldset>
 
     <fieldset class="msa-typ5__radios" :class="weightsHiddenClass()">
       <legend x-text="t('labels.weights')"></legend>
-      <label>
-        <input type="radio" name="msa5-weights" value="linear"
-               x-model="model.params.weights" @change="runAnalysis()">
-        <span x-text="t('labels.weightsLinear')"></span>
-      </label>
-      <label>
-        <input type="radio" name="msa5-weights" value="quadratic"
-               x-model="model.params.weights" @change="runAnalysis()">
-        <span x-text="t('labels.weightsQuadratic')"></span>
-      </label>
+      <template x-for="o in weightsOptions()" :key="o">
+        <label>
+          <input type="radio" name="msa5-weights" :value="o"
+                 :checked="model.params.weights === o" @input="setParam('weights', o)" @change="runAnalysis()">
+          <span x-text="optionLabel('weights', o)"></span>
+        </label>
+      </template>
     </fieldset>
 
     <div class="dmike-split__section-title" x-text="t('sections.dataSource')"></div>
@@ -40,9 +29,10 @@
     <div class="field-group">
       <label x-text="t('labels.layout')"></label>
       <select class="field" data-ref="sel-layout"
-              x-model="model.params.layout" @change="runAnalysis()">
-        <option value="long" x-text="t('labels.layoutLong')"></option>
-        <option value="wide" x-text="t('labels.layoutWide')"></option>
+              :value="model.params.layout" @input="setParam('layout', $event.target.value)" @change="runAnalysis()">
+        <template x-for="o in layoutOptions()" :key="o">
+          <option :value="o" :selected="o === model.params.layout" x-text="optionLabel('layout', o)"></option>
+        </template>
       </select>
     </div>
     <div class="field-group">
@@ -65,7 +55,7 @@
     <div class="field-group" x-show="model.params.layout === 'wide'">
       <label for="msa5-trials" x-text="t('labels.trials')"></label>
       <input id="msa5-trials" class="field" type="number" min="1" step="1" data-ref="inp-trials"
-             x-model="model.params.trials" @change="runAnalysis()">
+             :value="model.params.trials" @input="setParam('trials', $event.target.value)" @change="runAnalysis()">
     </div>
     <div class="field-group">
       <label x-text="t('labels.referenceColumn')"></label>
@@ -110,19 +100,20 @@
     <div class="field-group">
       <label x-text="t('labels.ruleSet')"></label>
       <select class="field" data-ref="sel-ruleset"
-              x-model="model.params.ruleSet" @change="runAnalysis()">
-        <option value="aiag" x-text="t('labels.ruleSetAiag')"></option>
-        <option value="bosch" x-text="t('labels.ruleSetBosch')"></option>
+              :value="model.params.ruleSet" @input="setParam('ruleSet', $event.target.value)" @change="runAnalysis()">
+        <template x-for="o in ruleSetOptions()" :key="o">
+          <option :value="o" :selected="o === model.params.ruleSet" x-text="optionLabel('ruleSet', o)"></option>
+        </template>
       </select>
     </div>
 
     <div class="field-group">
       <label x-text="t('labels.alpha')"></label>
       <select class="field" data-ref="sel-alpha"
-              x-model="model.params.alpha" @change="runAnalysis()">
-        <option value="0.01">0.01</option>
-        <option value="0.05">0.05</option>
-        <option value="0.10">0.10</option>
+              :value="model.params.alpha" @input="setParam('alpha', $event.target.value)" @change="runAnalysis()">
+        <template x-for="a in alphaOptions()" :key="a">
+          <option :value="a" :selected="a === model.params.alpha" x-text="a"></option>
+        </template>
       </select>
     </div>
 

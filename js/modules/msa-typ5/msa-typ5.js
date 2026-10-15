@@ -12,12 +12,20 @@
  * imperativ gemountet (keine reinen Template-Belange).
  *
  * Spec: docs/superpowers/specs/2026-07-15-msa-typ5-design.md
+ *
+ * @agent  Steuerbar über das Viewmodel: die sechs Parameter (setParam), die
+ *   fünf Einzel-Spalten (setColumn) und das Rechnen selbst. Gelesen wird über
+ *   read() mit erklärter Lesefläche (AgentRead) — Konfiguration, wählbare
+ *   Mengen und gerechnetes Ergebnis. Der Agent bekommt Zahlen, keine Diagramme.
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State, formatP, formatNum, formatPct } from './msa-typ5-model.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
+import { pickableColumnList } from '../../core/agent/agent-options.js';
+import { State, TYPE_OPTIONS, WEIGHTS_OPTIONS, RULESET_OPTIONS, LAYOUT_OPTIONS, ALPHA_OPTIONS, formatP, formatNum, formatPct } from './msa-typ5-model.js';
 import { analyze, kappaLevel, ratedShare, stackWide } from '../../engines/msa-typ5-engine.js';
-import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-picker.js';
+import { ColumnPicker, getColumnValues, getColumnName, refToKey, keyToRef } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 import { computeGageRunChart } from '../../engines/gage-run-chart-engine.js';
 import { renderGageRunStrips } from '../../core/chart/gage-run-strips.js';
@@ -76,6 +84,42 @@ function kappaClass(k, ruleSet) {
   return levelClass(kappaLevel(k, ruleSet));
 }
 
+/** Die sechs Parameter, die `setParam` kennt. */
+const PARAM_KEYS = ['type', 'weights', 'layout', 'trials', 'ruleSet', 'alpha'];
+
+/** Je Parameter sein Prüfer; `trials` ist freier Text. */
+const PARAM_CHECKS = {
+  type: (v) => requireEnum('value', v, TYPE_OPTIONS),
+  weights: (v) => requireEnum('value', v, WEIGHTS_OPTIONS),
+  layout: (v) => requireEnum('value', v, LAYOUT_OPTIONS),
+  trials: (v) => requireText('value', v),
+  ruleSet: (v) => requireEnum('value', v, RULESET_OPTIONS),
+  alpha: (v) => requireEnum('value', v, ALPHA_OPTIONS),
+};
+
+/** Die fünf Einzel-Spalten-Slots; der Matrix-Slot `ratings` bleibt außerhalb der Fläche. */
+const COLUMN_SLOTS = ['part', 'appraiser', 'rating', 'reference', 'replicate'];
+
+/** Je Slot der Filter für den Wähler; Teil, Prüfer, Referenz und Wiederholung sind keine Zahlpflicht. */
+const SLOT_FILTERS = { part: {}, appraiser: {}, rating: {}, reference: {}, replicate: {} };
+
+/**
+ * Die Agenten-Lesefläche von MSA Typ 5.
+ *
+ * Nicht die persistierte Form: das Model hält NUR die Eingaben, das Ergebnis
+ * entsteht transient am Viewmodel (`result`). Darum erklärt dieses Modul seine
+ * Lesefläche: Konfiguration, die abgeleiteten Mengen, die `setParam` und
+ * `setColumn` prüfen, und das Ergebnis — ohne die interne Beispiel-Buchführung
+ * (`exampleWorksheetId`) und ohne die Diagramme.
+ *
+ * @typedef {object} AgentRead
+ * @property {object} params  the entered parameters (type, positiveLevel, weights, alpha, ordinalOrder, ruleSet, layout, trials)
+ * @property {object} columns  the chosen columns `{ part, appraiser, rating, reference, replicate, ratings }`, each a `{ instanceId, sheetId, columnId }` or null; `ratings` is a list
+ * @property {string[]} activeParams  the keys `setParam` accepts in the current state (`weights` only for the ordinal type, `trials` only for the wide layout)
+ * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state; the matrix slot `ratings` of the wide layout is not among them, so the module cannot be fully operated through the surface in the wide layout
+ * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
+ * @property {object|null} result  the computed agreement result (verdict, kappa, effectiveness, tables), or null while the inputs are incomplete or invalid; problems are in `result.meta.errors`
+ */
 const mod = createModule({
   config: {
     id: 'msa-typ5',
@@ -94,6 +138,7 @@ const mod = createModule({
       // i18n text of a wide-layout problem (trials vs. column count), else null.
       layoutError: null,
       _pickers: { part: null, appraiser: null, rating: null, reference: null, replicate: null, ratings: null },
+      _debTimer: null,
       _charts: [],
       _unsubs: [],
       _renderGen: 0,
@@ -101,12 +146,118 @@ const mod = createModule({
       // ein neu geladenes Projekt startet bewusst mit allen Teilen sichtbar.
       onlyDisputed: false,
 
+      // ── Agent surface ─────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Konfiguration, wählbare Mengen und gerechnetes Ergebnis
+       */
+      read(options) {
+        return readAgentState('msa-typ5', {
+          ...this.model.toJSON(),
+          activeParams: this.activeParams(),
+          activeColumnSlots: this.activeColumnSlots(),
+          pickableColumns: this.pickableColumns(),
+          result: this.result,
+        }, options);
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeParams */
+      activeParams() {
+        const p = this.model.params;
+        return PARAM_KEYS.filter(k =>
+          (k !== 'weights' || p.type === 'ordinal') && (k !== 'trials' || p.layout === 'wide'));
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() {
+        const wide = this.model.params.layout === 'wide';
+        return COLUMN_SLOTS.filter(s => !wide || (s !== 'appraiser' && s !== 'rating' && s !== 'replicate'));
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() {
+        const sm = module._context.stateManager;
+        return Object.fromEntries(COLUMN_SLOTS.map(slot =>
+          [slot, pickableColumnList(sm, SLOT_FILTERS[slot])]));
+      },
+
+      /**
+       * Einen Parameter setzen. Ein neuer Merkmalstyp setzt die positive Stufe zurück.
+       * @agent
+       * @param {'type'|'weights'|'layout'|'trials'|'ruleSet'|'alpha'} key
+       *   welcher Parameter; `weights` nur beim Typ ordinal, `trials` nur beim Layout wide
+       * @param {string} value der Wert als Text; `type`: binary, nominal oder ordinal, `weights`: linear oder quadratic, `layout`: long oder wide, `ruleSet`: aiag oder bosch, `alpha`: 0.01, 0.05 oder 0.10, `trials`: Anzahl als Text
+       * @returns {void}
+       * @throws {Error} wenn `key` im aktuellen Zustand kein Parameter ist oder `value` nicht zulässig
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        requireEnum('key', key, this.activeParams());
+        PARAM_CHECKS[key](value);
+        this.model.params[key] = value;
+        if (key === 'type') this.model.params.positiveLevel = null;
+        this.scheduleAnalysis();
+      },
+
+      /**
+       * Eine Spalte einem Slot zuweisen.
+       * @agent
+       * @param {'part'|'appraiser'|'rating'|'reference'|'replicate'} slot der Slot; `appraiser`, `rating` und `replicate` nur beim Layout long
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
+       *   der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren
+       * @returns {void}
+       * @throws {Error} wenn `slot` im aktuellen Zustand unbekannt ist oder die Spalte nicht wählbar
+       */
+      setColumn(slot, ref) {
+        requireEnum('slot', slot, this.activeColumnSlots());
+        if (ref == null) {
+          this.model.columns[slot] = null;
+          this._pickers[slot]?.syncValue(null);
+          this.scheduleAnalysis();
+          return;
+        }
+        const keys = this.pickableColumns()[slot].map(c => c.key);
+        requireKnownId('ref', refToKey(ref), keys);
+        const clean = keyToRef(refToKey(ref));
+        this.model.columns[slot] = clean;
+        this._pickers[slot]?.syncValue(clean);
+        this.scheduleAnalysis();
+      },
+
+      /**
+       * Die Rechnung nach kurzer Ruhezeit anstoßen.
+       * @agent
+       * @returns {void}
+       */
+      scheduleAnalysis() {
+        clearTimeout(this._debTimer);
+        this._debTimer = setTimeout(() => this.runAnalysis(), 600);
+      },
+
+      /** @noagent view transform; die Optionen der Auswahlfelder und Optionsgruppen */
+      typeOptions() { return TYPE_OPTIONS; },
+      /** @noagent view transform */
+      weightsOptions() { return WEIGHTS_OPTIONS; },
+      /** @noagent view transform */
+      layoutOptions() { return LAYOUT_OPTIONS; },
+      /** @noagent view transform */
+      ruleSetOptions() { return RULESET_OPTIONS; },
+      /** @noagent view transform */
+      alphaOptions() { return ALPHA_OPTIONS; },
+      /** @noagent view transform; Beschriftung eines Optionswerts, `labels.<gruppe><Wert>` */
+      optionLabel(group, value) {
+        return _t(`labels.${group}${value.charAt(0).toUpperCase()}${value.slice(1)}`);
+      },
+
       // Passthroughs für Template-Ausdrücke
       verdictClass,
 
-      /** κ and other numbers with the language decimal separator. */
+      /** @noagent view transform; κ and other numbers with the language decimal separator. */
       fmt(v, d = 3) { return formatNum(v, d, this._lang()); },
-      /** Rate (0…1) as percent with the language decimal separator. */
+      /** @noagent view transform; Rate (0…1) as percent with the language decimal separator. */
       fmtPct(rate) { return formatPct(rate, this._lang()); },
 
       // ── Levels-Panel (View-Getter) ────────────────────────────
@@ -126,7 +277,7 @@ const mod = createModule({
         return ref ? (getColumnValues(sm, ref) || []) : null;
       },
 
-      /** Rohwerte aus der Bewertungs-Spalte (dedupliziert + sortiert). */
+      /** @noagent view transform; Rohwerte aus der Bewertungs-Spalte (dedupliziert + sortiert). */
       detectedLevels() {
         const vals = this._ratingValues();
         if (!vals) return [];
@@ -153,6 +304,7 @@ const mod = createModule({
         return [sorted[0] ?? levels[0], sorted[1] ?? levels[1]];
       },
 
+      /** @noagent view transform */
       binaryPositive() {
         const levels = this.detectedLevels();
         const [firstTwo] = [this._twoMostFrequent()];
@@ -162,6 +314,7 @@ const mod = createModule({
         return pos ?? '—';
       },
 
+      /** @noagent view transform */
       binaryNegative() {
         const levels = this.detectedLevels();
         const [firstTwo] = [this._twoMostFrequent()];
@@ -170,6 +323,7 @@ const mod = createModule({
         return neg ?? '—';
       },
 
+      /** @noagent UI-only: tauscht die positive Stufe der Binärdarstellung; der Agent liest sie über read().params.positiveLevel */
       swapPositive() {
         const neg = this.binaryNegative();
         if (neg === '—') return;
@@ -177,19 +331,14 @@ const mod = createModule({
         this.runAnalysis();
       },
 
+      /** @noagent view transform */
       weightsHiddenClass() {
         return this.model.params.type === 'ordinal' ? '' : 'msa-typ5__hidden';
       },
 
-      // ── Feature-type change resets positiveLevel + neu analysieren ──
-
-      onTypeChanged() {
-        this.model.params.positiveLevel = null;
-        this.runAnalysis();
-      },
-
       // ── Referenzquelle-Anzeige ────────────────────────────────
 
+      /** @noagent view transform */
       referenceSourceLabel() {
         const src = this.result?.meta?.referenceSource;
         if (!src) return '—';
@@ -199,11 +348,13 @@ const mod = createModule({
 
       // ── Verdikt / Empty-State ────────────────────────────────
 
+      /** @noagent view transform */
       verdictLabel(level) {
         const key = `verdict${level.charAt(0).toUpperCase() + level.slice(1)}`;
         return _t(key);
       },
 
+      /** @noagent view transform */
       emptyStateText() {
         if (this.layoutError) return this.layoutError;
         if (this.model.params.layout === 'wide' && !this.result) return _t('emptyStateWide');
@@ -212,6 +363,7 @@ const mod = createModule({
         return _t('emptyState');
       },
 
+      /** @noagent view transform */
       warningEntries() {
         const ws = this.result?.meta?.warnings || [];
         return ws.map((w) => {
@@ -233,6 +385,7 @@ const mod = createModule({
         return module._context?.i18n?.getLanguage?.() || module._context?.language || 'de';
       },
 
+      /** @noagent view transform */
       verdictSubline() {
         const r = this.result;
         if (!r) return '';
@@ -274,6 +427,7 @@ const mod = createModule({
       /**
        * Rows of the verdict-criteria table. Limits carry ≥ / ≤ by
        * direction; the row that decided the verdict is highlighted.
+       * @noagent view transform
        */
       criteriaRows() {
         const v = this.result?.verdict;
@@ -295,10 +449,12 @@ const mod = createModule({
         });
       },
 
+      /** @noagent view transform */
       hasReferenceNote() {
         return !!this.result?.verdict?.referenceNote;
       },
 
+      /** @noagent view transform */
       referenceNoteText() {
         const note = this.result?.verdict?.referenceNote;
         return note ? _t(`verdictNote.${note}`) : '';
@@ -306,6 +462,7 @@ const mod = createModule({
 
       // ── KPI-Aggregate ────────────────────────────────────────
 
+      /** @noagent view transform */
       fleissKappa()  { return this.result?.betweenAppraisers?.fleissKappa?.kappa ?? null; },
 
       /**
@@ -313,12 +470,14 @@ const mod = createModule({
        * active rule set — not the overall verdict, which a miss rate can
        * drive while κ itself is fine. No colour when the rule set does not
        * rate Fleiss κ on its own.
+       * @noagent view transform
        */
       fleissKappaClass() {
         const c = (this.result?.verdict?.criteria || []).find((x) =>
           x.id === 'fleissKappa' || (x.id === 'minKappa' && x.source === 'fleiss'));
         return c ? verdictClass(c.level) : '';
       },
+      /** @noagent view transform */
       fleissMethod() { return this.result?.betweenAppraisers?.fleissKappa?.method || ''; },
 
       _repRates()   { return Object.values(this.result?.perAppraiser || {}).map((x) => x.repeatability?.rate).filter(Number.isFinite); },
@@ -334,10 +493,14 @@ const mod = createModule({
         return this.result?.verdict?.ruleSet === 'bosch' ? v.vsReference?.fleissKappa : v.vsReference?.kappa;
       },
 
+      /** @noagent view transform */
       meanRepeatability() { return mean(this._repRates()); },
+      /** @noagent view transform */
       meanEffectiveness() { return mean(this._effRates()); },
+      /** @noagent view transform */
       meanKappaVsRef()    { return mean(this._kappaVsRefs()); },
 
+      /** @noagent view transform */
       interpretationText() {
         const ip = this.result?.interpretation;
         if (!ip) return '';
@@ -362,6 +525,7 @@ const mod = createModule({
 
       // ── Tabellen (View-Rows) ─────────────────────────────────
 
+      /** @noagent view transform */
       perAppraiserRows() {
         const per = this.result?.perAppraiser;
         if (!per) return [];
@@ -386,10 +550,12 @@ const mod = createModule({
         });
       },
 
+      /** @noagent view transform */
       pairTableTitle() {
         return `${_t('table.pair')} — ${_t('table.cohenKappa')}`;
       },
 
+      /** @noagent view transform */
       pairRows() {
         const p = this.result?.betweenAppraisers?.pairwiseCohenKappa;
         if (!p) return [];
@@ -411,11 +577,12 @@ const mod = createModule({
         });
       },
 
-      /** Header of the κ column in the vs-reference table. */
+      /** @noagent view transform; Header of the κ column in the vs-reference table. */
       vsRefKappaHeader() {
         return _t(this.result?.verdict?.ruleSet === 'bosch' ? 'table.fleissKappa' : 'table.cohenKappa');
       },
 
+      /** @noagent view transform */
       vsRefRows() {
         const per = this.result?.perAppraiser;
         if (!per) return [];
@@ -441,7 +608,7 @@ const mod = createModule({
 
       // ── Fehlerdetails: Teile-Sicht ───────────────────────────
 
-      /** Prüfer-Spalten der Teile-Tabelle, in stabiler Reihenfolge. */
+      /** @noagent view transform; Prüfer-Spalten der Teile-Tabelle, in stabiler Reihenfolge. */
       partAppraisers() {
         return Object.keys(this.result?.perAppraiser || {});
       },
@@ -451,6 +618,7 @@ const mod = createModule({
        * Problemgrad sortiert; hier kommt nur der Filter und die Formatierung
        * dazu. Ein Teil ohne bekannte Referenz zeigt „—" statt einer Null,
        * damit „nicht bewertbar" nicht wie „fehlerfrei" aussieht.
+       * @noagent view transform
        */
       perPartRows() {
         const rows = this.result?.perPart || [];
@@ -478,10 +646,12 @@ const mod = createModule({
           }));
       },
 
+      /** @noagent view transform */
       hasDisputedParts() {
         return (this.result?.perPart || []).some((r) => r.isDisputed);
       },
 
+      /** @noagent view transform */
       toggleOnlyDisputed() {
         this.onlyDisputed = !this.onlyDisputed;
       },
@@ -493,6 +663,7 @@ const mod = createModule({
        * Zeile „gemischt" für in sich uneinheitliche Wiederholungen. Prüfer
        * ohne jeden Befund erscheinen nicht; ist die Tabelle dadurch leer,
        * zeigt das Template den Hinweis `table.noDisagreement`.
+       * @noagent view transform
        */
       disagreementRows() {
         const d = this.result?.disagreement || {};
@@ -527,34 +698,41 @@ const mod = createModule({
       // Flach gehalten, weil Alpine CSP keine verschachtelten Ausdrücke im
       // Template kann: je Kachel eine Methode für Wert und Unterzeile.
 
+      /** @noagent view transform */
       overallBetweenRate() {
         return this.fmtPct(this.result?.overall?.betweenAppraisers?.rate);
       },
 
+      /** @noagent view transform */
       overallBetweenSub() {
         const o = this.result?.overall?.betweenAppraisers;
         return o ? `${o.agree} / ${o.n}` : '';
       },
 
+      /** @noagent view transform */
       hasOverallVsRef() {
         return !!this.result?.overall?.allVsReference;
       },
 
+      /** @noagent view transform */
       overallVsRefRate() {
         return this.fmtPct(this.result?.overall?.allVsReference?.rate);
       },
 
+      /** @noagent view transform */
       overallVsRefSub() {
         const o = this.result?.overall?.allVsReference;
         return o ? `${o.agree} / ${o.n}` : '';
       },
 
+      /** @noagent view transform */
       hasEffectivenessChart() {
         const per = this.result?.perAppraiser;
         if (!per) return false;
         return Object.values(per).some((x) => x.vsReference?.effectiveness);
       },
 
+      /** @noagent view transform */
       hasSdtChart() {
         return !!this.result?.signalDetection;
       },
@@ -595,6 +773,7 @@ const mod = createModule({
         return null;
       },
 
+      /** @noagent view transform */
       hasGageRunChart() {
         return this._gageRunEncoding() !== null;
       },
@@ -604,6 +783,8 @@ const mod = createModule({
       /**
        * Baut das Long-Format-Ratings-Array (aus dem langen oder breiten
        * Datenlayout) und ruft die Engine. Aktualisiert `this.result` und triggert das Chart-Rendering.
+       * @agent
+       * @returns {void}
        */
       runAnalysis() {
         this.layoutError = null;
@@ -1029,10 +1210,8 @@ const mod = createModule({
           this._pickers[role]?.destroy();
           this._pickers[role] = new ColumnPicker(el, module._context, {
             mode: 'single',
-            onChange: (ref) => {
-              this.model.columns[role] = ref;
-              this.runAnalysis();
-            },
+            ...SLOT_FILTERS[role],
+            onChange: (ref) => { this.setColumn(role, ref); this.runAnalysis(); },
           });
           if (this.model.columns[role]) {
             this._pickers[role].value = this.model.columns[role];
@@ -1055,6 +1234,7 @@ const mod = createModule({
 
       // ── Lifecycle (per Alpine component) ──────────────────────
 
+      /** @noagent lifecycle */
       init() {
         // Fresh per-instance collections (das data()-Objekt wird per Alpine.data geteilt).
         this._charts = [];
@@ -1125,9 +1305,11 @@ const mod = createModule({
         this.runAnalysis();
       },
 
+      /** @noagent lifecycle */
       destroy() {
         for (const unsub of this._unsubs) unsub();
         this._unsubs = [];
+        clearTimeout(this._debTimer);
         for (const p of Object.values(this._pickers)) p?.destroy?.();
         this._pickers = { part: null, appraiser: null, rating: null, reference: null, replicate: null, ratings: null };
         this._destroyCharts();

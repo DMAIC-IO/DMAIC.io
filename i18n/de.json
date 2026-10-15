@@ -2658,6 +2658,37 @@
     "msa-typ5": {
       "name": "MSA Typ 5 (attributiv)",
       "description": "Attributive Prüfmittel-Fähigkeit — mehrere Prüfer, Kappa-basierte Übereinstimmung (Cohen, Fleiss, weighted)",
+      "whenToUse": "Wenn ein attributives Prüfmittel (gut/schlecht, Klassen, Ordnungsstufen) bewertet werden soll: mehrere Prüfer bewerten Teile, auch wiederholt, gegen einen optionalen Referenzwert. Ergebnis sind Kappa-Übereinstimmung, Effektivität und ein Urteil nach AIAG oder Bosch — nicht für messende Merkmale, dafür gelten die Typen 1 bis 3. Braucht eine Datensammlung mit Teile-, Prüfer- und Bewertungsspalte; das breite Layout (eine Spalte je Prüfer und Versuch) ist über die Fläche nicht vollständig bedienbar.",
+      "actions": {
+        "read": {
+          "help": "Liefert die Eingaben, die wählbaren Mengen und das gerechnete Ergebnis. result ist null, solange die Eingaben unvollständig oder ungültig sind; Probleme stehen dann in result.meta.errors, soweit eine Rechnung lief.",
+          "params": { "options": "Optional; dieses Modul führt keine Massendaten." }
+        },
+        "setParam": {
+          "help": "Setzt einen Parameter der Studie; die Neuberechnung folgt nach kurzer Ruhezeit. Ein neuer Merkmalstyp setzt die positive Stufe zurück.",
+          "params": {
+            "key": "Einer der Schlüssel aus activeParams: type, weights, layout, trials, ruleSet oder alpha. weights gilt nur beim Typ ordinal, trials nur beim Layout wide; jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert als Text. type nimmt 'binary', 'nominal' oder 'ordinal', weights 'linear' oder 'quadratic', layout 'long' oder 'wide', ruleSet 'aiag' oder 'bosch', alpha '0.01', '0.05' oder '0.10'; trials die Anzahl der Versuche je Prüfer als Text, zum Beispiel '2'."
+          }
+        },
+        "setColumn": {
+          "help": "Zeigt einen der fünf Slots auf eine Spalte einer Datensammlung; die Neuberechnung folgt nach kurzer Ruhezeit. Die Bewertungsspalten des breiten Layouts lassen sich nicht setzen.",
+          "params": {
+            "slot": "Einer der Slots aus activeColumnSlots: part (Teil), appraiser (Prüfer), rating (Bewertung), reference (Referenz) oder replicate (Wiederholung). appraiser, rating und replicate gelten nur beim Layout long.",
+            "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Leeren."
+          }
+        },
+        "runAnalysis": { "help": "Rechnet mit den aktuellen Eingaben. Wiederholtes Aufrufen schadet nicht; fehlende oder ungültige Eingaben leeren result." },
+        "scheduleAnalysis": { "help": "Stößt die Rechnung nach kurzer Ruhezeit an; eine zweite Anforderung davor ersetzt die erste." }
+      },
+      "fields": {
+        "params": { "help": "Die eingegebenen Parameter: type (Merkmalstyp), positiveLevel (positive Stufe der Binärdarstellung, null solange unbestimmt), weights (Gewichtung beim Typ ordinal), alpha (Signifikanzniveau, als Text), ordinalOrder (Reihenfolge der Stufen, null solange automatisch), ruleSet (Urteilsregel), layout (long oder wide) und trials (Versuche je Prüfer im breiten Layout, als Text)." },
+        "columns": { "help": "Die gewählten Spalten: part, appraiser, rating, reference und replicate je als { instanceId, sheetId, columnId } oder null, dazu ratings als Liste der Bewertungsspalten des breiten Layouts (über die Fläche nicht setzbar)." },
+        "activeParams": { "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt; weights fehlt außerhalb des Typs ordinal, trials außerhalb des Layouts wide." },
+        "activeColumnSlots": { "help": "Die Slots, die setColumn im aktuellen Zustand annimmt. Im Layout wide fehlen appraiser, rating und replicate, und der Matrix-Slot ratings gehört nicht dazu: das breite Layout ist über die Fläche nicht vollständig bedienbar." },
+        "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'." },
+        "result": { "help": "Das gerechnete Ergebnis mit Urteil, Kappa-Werten, Effektivität und den Tabellen, oder null, solange die Eingaben unvollständig oder ungültig sind." }
+      },
       "title": "MSA Typ 5",
       "titleLong": "Attributive Prüfmittel-Fähigkeit",
       "sections": {

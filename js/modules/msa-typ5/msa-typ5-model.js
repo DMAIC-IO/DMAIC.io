@@ -14,15 +14,15 @@
  */
 
 /** Allowed feature-type options. */
-const TYPE_OPTIONS = ['binary', 'nominal', 'ordinal'];
+export const TYPE_OPTIONS = ['binary', 'nominal', 'ordinal'];
 /** Allowed ordinal-weight options. */
-const WEIGHTS_OPTIONS = ['linear', 'quadratic'];
+export const WEIGHTS_OPTIONS = ['linear', 'quadratic'];
 /** Allowed verdict rule sets: AIAG MSA 4th ed. ch. III-C or Bosch Heft 10. */
 export const RULESET_OPTIONS = ['aiag', 'bosch'];
 /** Allowed data layouts: one rating column (long) or one column per appraiser × trial (wide). */
 export const LAYOUT_OPTIONS = ['long', 'wide'];
 /** Allowed α options (string form, matching the <select> values). */
-const ALPHA_OPTIONS = ['0.01', '0.05', '0.10'];
+export const ALPHA_OPTIONS = ['0.01', '0.05', '0.10'];
 
 /**
  * Coerce a persisted α (either string or legacy number) into the raw string
