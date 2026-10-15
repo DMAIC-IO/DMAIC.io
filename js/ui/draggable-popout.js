@@ -4,8 +4,8 @@
  *
  * Unlike the dialog service (js/ui/dialog/, driven via `context.dialog`),
  * this keeps the markup in the module's own template: the module renders the
- * overlay with `x-if`/`x-show` and binds the handlers below. Spread the returned object into
- * the module's `data()` return value.
+ * overlay with `x-if`/`x-show` and binds the handlers below. Spread the
+ * returned object into the module's `data()` return value.
  *
  * Template contract:
  * ```html

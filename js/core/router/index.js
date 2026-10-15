@@ -82,9 +82,8 @@ export function createAppActionVerbs(kernel, ui, routerBox) {
  * Build the Router and start it (attaches hashchange, applies the boot hash).
  * Wires the action verb registry (built earlier via `createAppActionVerbs`,
  * see `ui.actionVerbs`) into the Router together with a progress dialog.
- * Fills `ui.routerBox.current` with the new Router BEFORE
- * `router.start()` — the boot hash may itself be an action URL, whose verb
- * closures read the box.
+ * Fills `ui.routerBox.current` with the new Router BEFORE `router.start()` —
+ * the boot hash may itself be an action URL, whose verb closures read the box.
  *
  * `ui.progress` is the app-wide progress controller (from `dialog.progress()`,
  * created once in app.js). The router subscribes it to the scenario progress

@@ -198,6 +198,11 @@ export function createDialogService({ i18n }) {
    * Form dialog. `content` is moved into the body slot (borrowed if it has a
    * DOM home). Settles exactly once — a late confirm()/cancel() from a caller
    * holding on to the api is a no-op and never re-runs onConfirm.
+   *
+   * `onConfirm` / `onDelete` may return `false` to veto (the dialog stays
+   * open). If a callback THROWS, the dialog also stays open, the returned
+   * promise stays pending, and the error is not caught here — it surfaces as
+   * an uncaught error in the console. Catch inside the callback to recover.
    * @param {{ title: string, content: Node, size?: string, confirmLabel?: string,
    *   cancelLabel?: string, hideConfirm?: boolean, deleteLabel?: string,
    *   onMount?: (body: HTMLElement, api: {confirm: Function, cancel: Function}) => void,

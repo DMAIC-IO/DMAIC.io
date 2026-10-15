@@ -130,6 +130,9 @@ export function createProgress({ i18n, openShell }) {
      */
     async hold({ title, subtitle = '', note = null, confirmLabel }) {
       if (!shell) return false;
+      // A second hold() without an open() in between must not overwrite the
+      // first resolver: settle the earlier caller as "not confirmed" first.
+      settleHold(false);
       const p = shell.dlg.progress;
       shell.dlg.title = title;
       p.spinner = false;

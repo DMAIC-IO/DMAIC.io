@@ -180,6 +180,19 @@ suite('dialog.progress', () => {
     assertDeepEqual(errors, []);
   });
 
+  test('a second hold without open settles the first as false instead of stranding it', async () => {
+    const am = await make();
+    am.open({ title: 'T' });
+    const first = am.hold({ title: 'Fertig' });
+    await tick();
+    const second = am.hold({ title: 'Fertig 2' });
+    await tick();
+    const outcome = await Promise.race([first, new Promise((r) => setTimeout(() => r('stranded'), 100))]);
+    am.close();
+    assertEqual(outcome, false);
+    assertEqual(await second, false);
+  });
+
   test('hold without an open dialog resolves false', async () => {
     const am = await make();
     assertEqual(await am.hold({ title: 'X' }), false);

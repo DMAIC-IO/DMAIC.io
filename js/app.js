@@ -90,7 +90,7 @@ async function init() {
   const routerBox = { current: null };
   const actionVerbs = createAppActionVerbs(kernel, { dmaicTiles, workspace, notify }, routerBox);
 
-  buildFrame(kernel, { dialog, dmaicTiles, helpPanel, workspace, notify, actionModal: progress });
+  buildFrame(kernel, { dialog, dmaicTiles, helpPanel, workspace, notify, progress });
   const pages = await initPages(kernel, { dialog, actionVerbs, notify });
 
   const router = initRouter(

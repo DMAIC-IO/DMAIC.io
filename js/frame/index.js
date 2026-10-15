@@ -26,7 +26,7 @@ import { startGlossaryAugmenter } from '../core/glossary-inline.js';
  * @param {object} ui.helpPanel - Help panel instance.
  * @param {object} ui.workspace - Module workspace.
  * @param {Function} ui.notify - Toast notification helper.
- * @param {object} [ui.actionModal] - Progress dialog controller
+ * @param {object} [ui.progress] - Progress dialog controller
  *   (from dialog.progress()). The SAME instance the router uses and feeds
  *   with scenario item events.
  */
