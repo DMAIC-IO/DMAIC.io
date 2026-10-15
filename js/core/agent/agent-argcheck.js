@@ -13,7 +13,7 @@
  * finden, und die Paritätstests sichern sie mit `toContain` zu. Darum steht
  * sie hier wörtlich so, wie sie vorher an fünf Aufrufstellen stand.
  *
- * Fünf Prüfer, drei Listenwörter — das ist der vollständige Vertrag:
+ * Sechs Prüfer, drei Listenwörter — das ist der vollständige Vertrag:
  *
  * | Prüfer | Listenwort | Beispielmeldung |
  * |---|---|---|
@@ -22,6 +22,7 @@
  * | `requireIndex`   | `allowed:`  | `invalid idx 9; allowed: 0..3` |
  * | `requireArity`   | `expected:` | `missing argument "values" of setCells; expected: columnId, startRow, values` — ein optionaler Parameter steht darin in Klammerform (`[name]`) |
  * | `requireText`    | `allowed:`  | `invalid text 7; allowed: any string, "" clears it` |
+ * | `requireNumber`  | `allowed:`  | `invalid mu0 "zehn"; allowed: any finite number` |
  *
  * Ein neuer Prüfer nimmt eines dieser drei Listenwörter, oder er begründet
  * sein viertes hier.
@@ -169,4 +170,29 @@ export function requireText(name, value) {
     throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any string, "" clears it`);
   }
   return value;
+}
+
+/**
+ * Ein Zahlenargument prüfen, das die Oberfläche über `x-model.number` bindet.
+ *
+ * Das Zahlenfeld der Oberfläche liefert dem Model eine Zahl; ein Agent kann
+ * jeden Typ schicken. Als Text im Model landete `'zehn'` dort, wo eine Zahl
+ * erwartet wird, und `toJSON()` machte daraus beim Lesen `null`. Angenommen
+ * werden darum endliche Zahlen und Zahlentexte (`'10'`, wie ein Feld sie
+ * liefert); alles andere — `NaN`, `Infinity`, leerer Text, `null` — wirft.
+ *
+ * Die Rückgabe ist die Zahl; Aufrufer schreiben `model.feld = requireNumber(…)`.
+ *
+ * @param {string} name Name des Arguments (erscheint in der Meldung)
+ * @param {any} value der übergebene Wert
+ * @throws {Error} wenn `value` keine endliche Zahl und kein Zahlentext ist
+ * @returns {number} der geprüfte Wert als Zahl
+ */
+export function requireNumber(name, value) {
+  const n = typeof value === 'number' ? value
+    : (typeof value === 'string' && value.trim() !== '' ? Number(value) : NaN);
+  if (!Number.isFinite(n)) {
+    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any finite number`);
+  }
+  return n;
 }
