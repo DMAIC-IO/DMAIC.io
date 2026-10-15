@@ -5,7 +5,8 @@
  * Stateless; the chart type passes scales, plot area and its uid.
  */
 
-import { svgEl, resolveColor, dashArray, createPattern } from './chart-core.js';
+import { svgEl, resolveColor, dashArray, createPattern, formatNum } from './chart-core.js';
+import { h } from '../dom.js';
 import { seriesMoments } from './histogram-series.js';
 
 /** Default pattern line colour of the series path (matches the old module look). */
@@ -94,4 +95,28 @@ export function drawNormalCurves(group, series, binWidth, xScale, yScale, xFrom,
       d, fill: 'none', stroke: resolveColor(s.borderColor), 'stroke-width': 2, 'data-normal': si,
     }, group);
   });
+}
+
+/**
+ * Tooltip body for bin `bi`: range, then count and share per visible series,
+ * then the cumulative share when the Pareto line is shown.
+ * @param {{ series: object[], binData: object, bi: number, locale: string,
+ *           t: (key: string) => string, cumPct?: number|null }} p
+ * @returns {HTMLElement}
+ */
+export function binTooltip({ series, binData, bi, locale, t, cumPct = null }) {
+  const first = series.findIndex((s, si) => s.visible !== false && binData.bins[si][bi]);
+  const ref = binData.bins[first][bi];
+  const rows = [h('div', null, `${t('range')}: ${formatNum(ref.xMin, 2, locale)} – ${formatNum(ref.xMax, 2, locale)}`)];
+  series.forEach((s, si) => {
+    const bin = binData.bins[si][bi];
+    if (s.visible === false || !bin) return;
+    const total = binData.bins[si].reduce((a, b) => a + b.count, 0);
+    const pct = total > 0 ? (bin.count / total) * 100 : 0;
+    rows.push(h('div', null,
+      h('b', { style: `color:${resolveColor(s.borderColor)}` }, s.name),
+      `: ${bin.count} (${formatNum(pct, 1, locale)} %)`));
+  });
+  if (cumPct != null) rows.push(h('div', null, `${t('cumulative')}: ${formatNum(cumPct, 1, locale)} %`));
+  return h('div', null, ...rows);
 }

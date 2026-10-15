@@ -14,8 +14,8 @@ import {
 import {
   edSection, edSelectRow, edCheckboxRow, edInlineNum,
 } from '../chart-editor.js';
-import { binAll } from '../histogram-series.js';
-import { drawSeriesBars, drawNormalCurves, normalPeak } from '../histogram-series-draw.js';
+import { binAll, seriesMoments } from '../histogram-series.js';
+import { drawSeriesBars, drawNormalCurves, normalPeak, binTooltip } from '../histogram-series-draw.js';
 
 /**
  * Compute IQR for Freedman-Diaconis rule.
@@ -359,17 +359,21 @@ export default class HistogramChart extends ChartBase {
 
   // ── Type-Specific Editor ──────────────────────────────────────
 
+  /**
+   * i18n for chart.editor.histogram.<key> (falls back to the key).
+   * @param {string} key
+   * @returns {string}
+   */
+  _th(key) {
+    const full = `chart.editor.histogram.${key}`;
+    const val = this.context?.i18n?.t(full);
+    return val && val !== full ? val : key;
+  }
+
   /** @override */
   _buildTypeEditor(inner, t, onUpdate) {
     const cfg = this.config;
-    const th = (key) => {
-      if (this.context && this.context.i18n) {
-        const full = `chart.editor.histogram.${key}`;
-        const val = this.context.i18n.t(full);
-        if (val !== full) return val;
-      }
-      return key;
-    };
+    const th = (key) => this._th(key);
 
     // ── Binning ──
     const binSec = edSection(th('binning'));
@@ -408,6 +412,16 @@ export default class HistogramChart extends ChartBase {
 
   /** @override */
   _getSeriesDescriptors() {
+    if (this._isSeriesMode()) {
+      return this.config.series.map((s, index) => ({
+        index,
+        getName: () => s.name, setName: (v) => { s.name = v; },
+        getColor: () => s.fillColor, setColor: (c) => { s.fillColor = c; },
+        isVisible: () => s.visible !== false, setVisible: (v) => { s.visible = v; },
+        getStroke: () => s.borderColor, setStroke: (c) => { s.borderColor = c; },
+        getStrokeWidth: () => s.borderWidth ?? 1, setStrokeWidth: (v) => { s.borderWidth = v; },
+      }));
+    }
     const cfg = this.config;
     const chartColors = getChartColors();
     const descriptors = [{
@@ -451,8 +465,27 @@ export default class HistogramChart extends ChartBase {
 
   // ── Abstract Implementation: Legend Items ────────────────────────
 
+  /**
+   * Legend of the series path: a rect per visible series, a line per drawn normal curve.
+   * @returns {{type: string, color: string, label: string, width?: number}[]}
+   */
+  _getSeriesLegendItems() {
+    const items = [];
+    const curves = [];
+    this.config.series.forEach((s) => {
+      if (s.visible === false) return;
+      items.push({ type: 'rect', color: s.fillColor, label: s.name });
+      const { n, sd } = seriesMoments(s.values);
+      if (s.showNormalCurve !== false && n >= 2 && sd > 0) {
+        curves.push({ type: 'line', color: s.borderColor, width: 2, label: `${s.name} · ${this._th('normal')}` });
+      }
+    });
+    return [...items, ...curves];
+  }
+
   /** @override */
   _getLegendItems() {
+    if (this._isSeriesMode()) return this._getSeriesLegendItems();
     const items = [];
     const chartColors = getChartColors();
     const barColor = this.config.barColor || chartColors[0] || 'var(--color-chart-1)';
@@ -474,8 +507,31 @@ export default class HistogramChart extends ChartBase {
 
   // ── Abstract Implementation: Find Nearby ─────────────────────────
 
+  /**
+   * Tooltip hit-test of the series path: the shared bin under the cursor,
+   * only up to the height of its highest visible bar.
+   * @param {number} dataX
+   * @param {number} dataY
+   * @returns {{node: HTMLElement}[]}
+   */
+  _findNearbySeries(dataX, dataY) {
+    const res = this._seriesBins;
+    if (!res) return [];
+    const series = this.config.series;
+    const first = series.findIndex((s, si) => s.visible !== false && res.bins[si].length);
+    if (first < 0) return [];
+    const bi = res.bins[first].findIndex((b, i, arr) =>
+      dataX >= b.xMin && (dataX < b.xMax || (i === arr.length - 1 && dataX <= b.xMax)));
+    if (bi < 0) return [];
+    let top = 0;
+    series.forEach((s, si) => { if (s.visible !== false && res.bins[si][bi]) top = Math.max(top, res.bins[si][bi].count); });
+    if (dataY < 0 || dataY > top) return [];
+    return [{ node: binTooltip({ series, binData: res, bi, locale: this.locale, t: (k) => this._th(k), cumPct: this._paretoCumAt?.(bi) ?? null }) }];
+  }
+
   /** @override */
   _findNearby(dataX, dataY, _proximityPx) {
+    if (this._isSeriesMode()) return this._findNearbySeries(dataX, dataY);
     const bins = this._bins;
     if (!bins) return [];
 

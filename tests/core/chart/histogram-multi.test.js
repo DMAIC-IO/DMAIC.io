@@ -127,3 +127,38 @@ suite('Histogram type — legacy path unchanged', () => {
     unmount(m);
   });
 });
+
+suite('Histogram type — series path: legend, descriptors, tooltip', () => {
+  test('legend: rect per visible series, line per drawn curve', () => {
+    const m = mount({ series: [s('A', A), s('B', B, { showNormalCurve: false }), s('C', A, { visible: false })], binWidth: 1 });
+    const items = m.chart._getLegendItems();
+    assertEqual(items.filter(i => i.type === 'rect').map(i => i.label).join(','), 'A,B');
+    assertEqual(items.filter(i => i.type === 'line').length, 1);
+    unmount(m);
+  });
+  test('descriptors edit the series objects in config.series', () => {
+    const m = mount({ series: [s('A', A), s('B', B)], binWidth: 1 });
+    const d = m.chart._getSeriesDescriptors();
+    assertEqual(d.length, 2);
+    d[1].setName('Bee'); d[1].setVisible(false); d[0].setColor('rgba(1,2,3,0.5)'); d[0].setStroke('red'); d[0].setStrokeWidth(3);
+    const [sa, sb] = m.chart.config.series;
+    assertEqual(sb.name, 'Bee'); assertEqual(sb.visible, false);
+    assertEqual(sa.fillColor, 'rgba(1,2,3,0.5)'); assertEqual(sa.borderColor, 'red'); assertEqual(sa.borderWidth, 3);
+    unmount(m);
+  });
+  test('tooltip over a bar lists range and count with share per visible series', () => {
+    const m = mount({ series: [s('A', A), s('B', B)], binWidth: 1 });
+    const hits = m.chart._findNearby(3.5, 1, 10); // bin [3,4): A=3 of 9, B=1 of 9
+    assertEqual(hits.length, 1);
+    const txt = hits[0].node.textContent;
+    assertTrue(txt.includes('3') && txt.includes('4'), txt);
+    assertTrue(txt.includes('A') && txt.includes('33,3'), txt);
+    assertTrue(txt.includes('B') && txt.includes('11,1'), txt);
+    unmount(m);
+  });
+  test('no tooltip above the highest bar of that bin', () => {
+    const m = mount({ series: [s('A', A)], binWidth: 1 });
+    assertEqual(m.chart._findNearby(3.5, 3.2, 10).length, 0);
+    unmount(m);
+  });
+});

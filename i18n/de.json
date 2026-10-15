@@ -802,7 +802,10 @@
         "barOpacity": "Transparenz",
         "normalCurve": "Normalverteilungskurve",
         "showNormalCurve": "Kurve anzeigen",
-        "curveColor": "Kurvenfarbe"
+        "curveColor": "Kurvenfarbe",
+        "normal": "Normalverteilung",
+        "range": "Bereich",
+        "cumulative": "Kumuliert"
       },
       "boxplot": {
         "appearance": "Darstellung",

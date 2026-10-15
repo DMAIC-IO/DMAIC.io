@@ -802,7 +802,10 @@
         "barOpacity": "Opacity",
         "normalCurve": "Normal Curve",
         "showNormalCurve": "Show curve",
-        "curveColor": "Curve color"
+        "curveColor": "Curve color",
+        "normal": "Normal",
+        "range": "Range",
+        "cumulative": "Cumulative"
       },
       "boxplot": {
         "appearance": "Appearance",
