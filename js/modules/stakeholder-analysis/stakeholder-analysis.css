@@ -76,9 +76,6 @@
   border: var(--border-width) solid var(--color-border-secondary);
   background: var(--color-bg-primary);
   color: var(--color-accent);
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-bold);
-  line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -182,9 +179,6 @@
 }
 
 /* Card actions use global .btn .btn--icon-sm */
-.sha__card-action-btn {
-  font-size: var(--font-size-sm);
-}
 
 /* ===== Meters ===== */
 .sha__meters {

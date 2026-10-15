@@ -6,7 +6,7 @@
       <span class="sha__sidebar-title" x-text="t('name')"></span>
       <div class="sha__sidebar-header-right">
         <span class="sha__counter" x-text="model.stakeholders.length"></span>
-        <button class="sha__add-btn" type="button" :title="t('addStakeholder')" @click="openModal(null)">+</button>
+        <button class="sha__add-btn" type="button" :title="t('addStakeholder')" :aria-label="t('addStakeholder')" @click="openModal(null)"><span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span></button>
       </div>
     </div>
     <div class="sha__sidebar-body" data-ref="shList">
@@ -26,8 +26,8 @@
               <div class="sha__card-role" x-text="roleText(sh)"></div>
             </div>
             <div class="sha__card-actions">
-              <button class="btn btn--icon-sm sha__card-action-btn sha__edit-btn" :title="t('editStakeholder')" :data-id="sh.id" @click="openModal(sh)">&#9998;</button>
-              <button class="btn btn--icon-sm btn--danger sha__card-action-btn sha__del-btn" :title="t('common.delete')" :data-id="sh.id" @click="deleteStakeholder(sh)">&#10005;</button>
+              <button class="btn btn--icon-sm sha__card-action-btn sha__edit-btn" :title="t('editStakeholder')" :data-id="sh.id" :aria-label="t('editStakeholder')" @click="openModal(sh)"><span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span></button>
+              <button class="btn btn--icon-sm btn--danger sha__card-action-btn sha__del-btn" :title="t('common.delete')" :data-id="sh.id" :aria-label="t('common.delete')" @click="deleteStakeholder(sh)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
             </div>
           </div>
           <div class="sha__meters">
