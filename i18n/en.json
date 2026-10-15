@@ -2565,7 +2565,7 @@
           }
         },
         "setColumn": {
-          "help": "Points one of the two slots at a column of a data collection; the recomputation follows immediately.",
+          "help": "Points one of the two slots at a column of a data collection; the recomputation follows after a short pause.",
           "params": {
             "slot": "One of the slots in activeColumnSlots: reference (reference values, numeric) or measured (measured values, numeric).",
             "ref": "Column reference { instanceId, sheetId, columnId } of a column in pickableColumns, or null to clear."

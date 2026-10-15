@@ -86,9 +86,9 @@
       <label x-text="t('labels.alpha')"></label>
       <select class="field" data-ref="sel-alpha"
               :value="model.params.alpha" @input="setParam('alpha', $event.target.value)" @change="runAnalysis()">
-        <option value="0.01">0.01</option>
-        <option value="0.05">0.05</option>
-        <option value="0.10">0.10</option>
+        <template x-for="a in alphaOptions()" :key="a">
+          <option :value="a" :selected="a === model.params.alpha" x-text="a"></option>
+        </template>
       </select>
     </div>
 

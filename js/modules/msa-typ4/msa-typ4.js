@@ -185,7 +185,7 @@ const mod = createModule({
         if (ref == null) {
           COLUMN_SINKS[slot](this.model, null);
           this._pickers[slot]?.syncValue(null);
-          this.runAnalysis();
+          this.scheduleAnalysis();
           return;
         }
         const keys = this.pickableColumns()[slot].map(c => c.key);
@@ -193,7 +193,7 @@ const mod = createModule({
         const clean = keyToRef(refToKey(ref));
         COLUMN_SINKS[slot](this.model, clean);
         this._pickers[slot]?.syncValue(clean);
-        this.runAnalysis();
+        this.scheduleAnalysis();
       },
 
       // ── View transformations ──────────────────────────────────
@@ -203,6 +203,8 @@ const mod = createModule({
       /** @noagent view transform */
       fmtP,
 
+      /** @noagent view transform; die Alpha-Optionen des Auswahlfeldes */
+      alphaOptions() { return ALPHA_OPTIONS; },
       /** @noagent view transform */
       isTolerance() { return this.model.params.pvMode === 'tolerance'; },
       /** @noagent view transform */
@@ -607,7 +609,7 @@ const mod = createModule({
           this._pickers[slot] = new ColumnPicker(el, module._context, {
             mode: 'single',
             ...SLOT_FILTERS[slot],
-            onChange: (ref) => { COLUMN_SINKS[slot](this.model, ref); this.runAnalysis(); },
+            onChange: (ref) => this.setColumn(slot, ref),
           });
           const current = slot === 'reference' ? this.model.refColumn : this.model.measColumn;
           if (current) this._pickers[slot].value = current;
