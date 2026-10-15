@@ -10,6 +10,15 @@ import { createModule } from '../../core/template-module.js';
 import {
   State, KINDS, LEVELS, TABS, orderedComponents, openPairs, rankOf, disadvantages,
 } from './triz-function-analysis-model.js';
+import {
+  NODE_W, NODE_H, resolvePositions, buildFunctionDiagram,
+} from './triz-function-analysis-diagram.js';
+
+/** Arrow overlay chart per component root (not reactive, not persisted). */
+const arrowCharts = new WeakMap();
+const DRAG_THRESHOLD = 3;
+const CANVAS_PAD = 20;
+const CANVAS_MIN = { w: 480, h: 240 };
 
 export default createModule({
   config: {
@@ -145,6 +154,95 @@ export default createModule({
           .filter((g) => g.items.length > 0);
       },
       paramText(d) { return d.parameter ? ` (${d.parameter})` : ''; },
+
+      // ── Lifecycle: arrow overlay ──
+      init() {
+        this.$nextTick(() => this._mountArrows());
+      },
+      destroy() {
+        this._unmounted = true;
+        const chart = arrowCharts.get(this.$root);
+        if (chart) { module._context.chartManager.destroy(chart); arrowCharts.delete(this.$root); }
+      },
+      _mountArrows() {
+        const host = this.$root.querySelector('[data-ref="arrows"]');
+        if (!host) return;
+        const root = this.$root;
+        const cm = module._context.chartManager;
+        cm.create(host, 'node-diagram', {
+          showModebar: false, origin: 'zero', padding: 0, nodes: [], links: [], highlightClass: 'tfa__arrow--hl',
+        }).then((chart) => {
+          if (!chart) return;
+          // Unmounted while the chart type was loading: do not keep an orphan.
+          if (this._unmounted || !root.isConnected) { cm.destroy(chart); return; }
+          arrowCharts.set(root, chart);
+          this.drawArrows();
+        });
+      },
+
+      /**
+       * Redraw the arrows. Called by x-effect (reads model + selection, writes
+       * nothing reactive) and on every pointer move of a drag with the
+       * dragged box's live position as override.
+       * @param {{id:string,x:number,y:number}|null} [override]
+       */
+      drawArrows(override = null) {
+        const positions = override
+          ? { ...this.model.positions, [override.id]: { x: override.x, y: override.y } }
+          : this.model.positions;
+        const { links } = buildFunctionDiagram(
+          { components: this.model.components, functions: this.model.functions, positions },
+          { selectedId: this.selectedId });
+        const chart = arrowCharts.get(this.$root);
+        if (chart) module._context.chartManager.update(chart, { links });
+      },
+
+      // ── Boxes ──
+      canvasStyle() {
+        const pos = Object.values(resolvePositions(this.model));
+        const w = Math.max(CANVAS_MIN.w, ...pos.map((p) => p.x + NODE_W + CANVAS_PAD));
+        const h = Math.max(CANVAS_MIN.h, ...pos.map((p) => p.y + NODE_H + CANVAS_PAD));
+        return `width:${w}px;height:${h}px`;
+      },
+      nodeStyle(c) {
+        const p = resolvePositions(this.model)[c.id];
+        return `left:${p.x}px;top:${p.y}px;width:${NODE_W}px;height:${NODE_H}px`;
+      },
+      nodeClass(c) {
+        return [`tfa__node--${c.kind}`, c.id === this.selectedId ? 'tfa__node--selected' : ''].filter(Boolean).join(' ');
+      },
+      startDrag(c, ev) {
+        if (ev.button !== 0) return;
+        const el = ev.currentTarget;
+        const start = resolvePositions(this.model)[c.id];
+        const sx = ev.clientX, sy = ev.clientY;
+        let moved = false, x = start.x, y = start.y;
+        const onMove = (e) => {
+          const dx = e.clientX - sx, dy = e.clientY - sy;
+          if (!moved && Math.abs(dx) <= DRAG_THRESHOLD && Math.abs(dy) <= DRAG_THRESHOLD) return;
+          moved = true;
+          x = Math.max(0, start.x + dx);
+          y = Math.max(0, start.y + dy);
+          el.style.left = `${x}px`;
+          el.style.top = `${y}px`;
+          el.classList.add('tfa__node--drag');
+          this.drawArrows({ id: c.id, x, y });
+        };
+        const onUp = () => {
+          window.removeEventListener('pointermove', onMove);
+          window.removeEventListener('pointerup', onUp);
+          el.classList.remove('tfa__node--drag');
+          if (moved) this.model.movePosition(c.id, x, y);
+          else this.select(c.id);
+        };
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+      },
+      resetLayout() { this.model.resetPositions(); },
+      async exportDiagram(fmt) {
+        const { nodes, links } = buildFunctionDiagram(this.model);
+        await module._context.chartManager.exportOffscreen('node-diagram', { nodes, links, padding: 30 }, fmt, 'funktionsmodell');
+      },
 
       // ── Selection ──
       select(id) { this.selectedId = this.selectedId === id ? null : id; },

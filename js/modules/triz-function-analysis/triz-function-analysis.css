@@ -177,3 +177,128 @@ thead .tfa__mh {
 .tfa__dis-param {
   color: var(--color-text-secondary);
 }
+
+/* Diagram */
+.tfa__toolbar {
+  display: flex;
+  gap: var(--space-xs, 6px);
+  margin-bottom: var(--space-xs, 6px);
+}
+
+.tfa__stage {
+  overflow: auto;
+  max-height: 560px;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md, 6px);
+  background: var(--color-bg-primary);
+}
+
+.tfa__canvas {
+  position: relative;
+}
+
+.tfa__arrows {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* The overlay is a node-diagram chart: no frame, no background, no clipping. */
+.tfa__arrows .dmike-chart-card,
+.tfa__arrows .dmike-chart-wrap,
+.tfa__arrows .dmike-chart-svg-wrap {
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
+.tfa__arrows .dmike-chart-svg-wrap svg {
+  overflow: visible;
+}
+
+.tfa__arrows path.tfa__arrow--hl {
+  stroke: var(--color-accent);
+  stroke-width: 3;
+}
+
+.tfa__node {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-md, 6px);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+/* Ellipsis needs a block child — a flex container does not truncate its own text. */
+.tfa__node-text {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+.tfa__node--target {
+  border: 2px solid var(--color-accent);
+  font-weight: 600;
+}
+
+.tfa__node--supersystem {
+  border-style: dashed;
+  background: var(--color-bg-tertiary);
+}
+
+.tfa__node--selected {
+  box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+.tfa__node--drag {
+  cursor: grabbing;
+  opacity: 0.85;
+}
+
+.tfa__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md, 16px);
+  margin: var(--space-xs, 6px) 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.tfa__legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tfa__legend-line {
+  display: inline-block;
+  width: 28px;
+  border-top: 2px solid var(--color-border-primary);
+}
+
+.tfa__legend-line--dashed { border-top-style: dashed; }
+.tfa__legend-line--bold { border-top-width: 3px; }
+
+.tfa__legend-line--wave {
+  border-top: 0;
+  text-decoration: underline wavy var(--color-error);
+}
+
+.tfa__legend-line--wave::before {
+  content: "\00a0\00a0\00a0\00a0\00a0\00a0\00a0";
+}
