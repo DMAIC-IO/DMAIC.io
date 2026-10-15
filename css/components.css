@@ -389,65 +389,6 @@ select.input {
 [data-theme="dark"] .badge--warning { background: #3d2e00; }
 [data-theme="dark"] .badge--error   { background: #3d1a1a; }
 
-/* ===== Modal ===== */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--color-modal-overlay);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: fadeIn var(--transition-speed) ease;
-}
-
-.modal {
-  background: var(--color-bg-elevated);
-  border: var(--border-width) solid var(--color-border-primary);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-lg);
-  min-width: 320px;
-  max-width: 600px;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  animation: slideUp var(--transition-speed) ease;
-}
-
-.modal__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-bottom: var(--border-width) solid var(--color-border-secondary);
-}
-
-.modal__title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-}
-
-.modal__body {
-  flex: 1;
-  overflow-y: auto;
-  padding: var(--spacing-lg);
-}
-
-.modal__footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-top: var(--border-width) solid var(--color-border-secondary);
-}
-
-/* Optional left-aligned footer items (Modal.form({ onDelete, footerStart })):
-   pushed to the far left while confirm/cancel stay right-aligned. */
-.modal__footer-delete,
-.modal__footer-start {
-  margin-right: auto;
-}
-
 /* ===== Toast Notifications ===== */
 .toast-container {
   position: fixed;
@@ -979,16 +920,6 @@ select.input {
 }
 
 /* ===== Animations ===== */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(12px); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
-
 @keyframes slideInRight {
   from { transform: translateX(12px); opacity: 0; }
   to   { transform: translateX(0);    opacity: 1; }
@@ -1925,8 +1856,7 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
   text-decoration: underline;
 }
 
-/* Action modal — progress/completion dialog for action URLs. */
-.modal-overlay--action { z-index: 10000; }   /* above #app-loading (9999) */
+/* Action modal — progress/completion body of the dialog service (js/ui/dialog/). */
 
 /* Fixed footprint: the body swaps between the running state (spinner +
    subtitle + progress line) and the hold state (subtitle + optional failed-
@@ -1937,10 +1867,6 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
    failed-items list on its own scrollbar instead of growing this box; the
    remaining `max-height: 60vh` + `overflow-y: auto` here is only a
    last-resort guard against a viewport too short for 12rem. */
-.modal-overlay--action .modal {
-  width: 26rem;
-}
-
 .action-modal {
   display: flex;
   flex-direction: column;
@@ -1999,16 +1925,6 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
   list-style: none;
   text-align: left;
 }
-
-/* An unused slot must cost nothing — not even the column's flex gap, which a
-   zero-height element still generates. Without this the counting phase (no
-   list, no progress line, no body, no footer) renders its spinner and
-   subtitle ~37px above the centre of the box. The spinner is deliberately NOT
-   in this list: it is empty by construction (a pure CSS ring). */
-.action-modal__list:empty,
-.action-modal__progress:empty,
-.action-modal__body:empty,
-.action-modal__footer:empty { display: none; }
 
 .action-modal__item {
   display: flex;

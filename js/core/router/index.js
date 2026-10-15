@@ -81,29 +81,23 @@ export function createAppActionVerbs(kernel, ui, routerBox) {
 /**
  * Build the Router and start it (attaches hashchange, applies the boot hash).
  * Wires the action verb registry (built earlier via `createAppActionVerbs`,
- * see `ui.actionVerbs`) into the Router together with the shared action
- * splash. Fills `ui.routerBox.current` with the new Router BEFORE
+ * see `ui.actionVerbs`) into the Router together with a progress dialog. Fills `ui.routerBox.current` with the new Router BEFORE
  * `router.start()` — the boot hash may itself be an action URL, whose verb
  * closures read the box.
  *
- * The progress dialog: pass one in via `ui.actionModal` (from `dialog.progress()`) so the rest of the
- * chrome (built earlier in app.js) shares it; if omitted, one is created here.
- * Either way the live instance is reachable as `router.getActionModal()`.
+ * The progress dialog is created here from `ui.dialog.progress()`; the live
+ * instance is reachable as `router.getActionModal()`.
  *
  * @param {object} kernel
  * @param {{ dmaicTiles: object, workspace: object, notify?: function,
- *          dialog: object, actionModal?: object, actionVerbs: Map<string, object>,
+ *          dialog: object, actionVerbs: Map<string, object>,
  *          routerBox: { current: object|null } }} ui
  * @param {Map<string, object>} pages
  * @param {object} Alpine
  * @returns {Router}
  */
 export function initRouter(kernel, ui, pages, Alpine) {
-  if (!ui.actionModal) {
-    console.warn('[router] no ui.actionModal passed — creating a second, ' +
-      'independent dialog. Pass the app-wide instance (see app.js) instead.');
-  }
-  const actionModal = ui.actionModal ?? ui.dialog.progress();
+  const actionModal = ui.dialog.progress();
   const router = new Router({
     stateManager: kernel.stateManager,
     moduleRegistry: kernel.moduleRegistry,

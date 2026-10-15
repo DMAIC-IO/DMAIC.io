@@ -77,8 +77,8 @@ async function init() {
   const exportReminder = new ExportReminder({ stateManager, eventBus, i18n, notify });
   exportReminder.init();
 
-  // One shared progress dialog: the router shows it for #/action/… URLs, the
-  // frame chrome shows the SAME dialog for its own long-running actions.
+  // Progress dialog for the frame chrome's own long-running actions; the
+  // router creates its own from the dialog service for #/action/… URLs.
   const actionModal = dialog.progress();
 
   // Verb registry (`#/action/<verb>/<arg…>`) built ahead of the Router itself
@@ -94,7 +94,7 @@ async function init() {
 
   const router = initRouter(
     kernel,
-    { dmaicTiles, workspace, notify, dialog, actionModal, actionVerbs, routerBox },
+    { dmaicTiles, workspace, notify, dialog, actionVerbs, routerBox },
     pages, Alpine,
   );
   routeDirectives.setRouter(router);

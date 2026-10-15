@@ -40,16 +40,16 @@ export class Router {
     this._currentRoute = null;
     /** @type {Map<string, object>|null} Action verb registry (see action-verbs.js). */
     this._verbs = null;
-    /** @type {object|null} Shared action modal controller. */
+    /** @type {object|null} Progress dialog controller (ui/dialog/progress.js). */
     this._actionModal = null;
     this._notify = null;
     this._i18n = null;
   }
 
   /**
-   * The shared action modal controller (the progress dialog, ui/dialog/progress.js). Consumers
+   * The router's progress dialog controller (ui/dialog/progress.js). Consumers
    * that want to show the same dialog for their own long-running action
-   * (rather than a second, independent one) read it from here.
+   * read it from here.
    * @returns {object|null}
    */
   getActionModal() {
@@ -60,7 +60,7 @@ export class Router {
    * Wire the action verb registry after construction (the verbs need a router
    * reference themselves, so they cannot be built before it exists).
    * @param {Map<string, object>} verbs
-   * @param {object} actionModal  action modal controller (open/update/close)
+   * @param {object} actionModal  progress dialog controller (open/update/close)
    * @param {function} notify
    * @param {object} i18n
    * @returns {void}
@@ -82,7 +82,7 @@ export class Router {
       if (!this._currentRoute || this._currentRoute.kind !== 'page' || this._currentRoute.pageId !== pageId) return;
       this.navigateBackFromPage(pageId);
     });
-    // Mirror scenario-loader progress into the action modal as a LIST: one row
+    // Mirror scenario-loader progress into the progress dialog as a LIST: one row
     // per item, newest on top, so the user can read what happened instead of
     // watching a single line flash past. `index` is the row key — the loader
     // emits it on both events for the same item.
