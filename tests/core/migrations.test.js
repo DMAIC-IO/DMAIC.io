@@ -119,6 +119,26 @@ suite('Migrations — goldene Fixtures', () => {
     });
   }
 
+  // The app writes ZEG history entries as { t: <epoch ms>, v: <percent> }
+  // (js/ui/dmaic-tiles.js) and has never written anything else, so a
+  // fixture in another shape would not resemble a real export.
+  for (const { file, kind } of KNOWN_FIXTURES) {
+    test(`${file} stores ZEG history in the app's {t, v} shape`, async () => {
+      const data = await loadFixture(file);
+      const projects = kind === 'single' ? [data] : data.projects;
+      for (const proj of projects) {
+        for (const [phase, entries] of Object.entries(proj.phaseAchievementHistory || {})) {
+          for (const e of entries) {
+            const where = `${phase} entry ${JSON.stringify(e)}`;
+            assertEqual(Object.keys(e).sort().join(','), 't,v', `${where}: expected keys t, v`);
+            assertEqual(Number.isFinite(e.t), true, `${where}: t must be epoch ms`);
+            assertEqual(Number.isFinite(e.v), true, `${where}: v must be a number`);
+          }
+        }
+      }
+    });
+  }
+
   test('current VERSION fixture exists', () => {
     const currentMM = stripPatch(VERSION);
     const matching = KNOWN_FIXTURES.filter(f => f.file.startsWith(`v${currentMM}.`));

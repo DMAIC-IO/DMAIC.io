@@ -55,10 +55,10 @@
     "control": 20
   },
   "phaseAchievementHistory": {
-    "define":  [ { "ts": "2026-06-02T10:00:00.000Z", "value": 100 } ],
-    "measure": [ { "ts": "2026-06-03T10:00:00.000Z", "value": 100 } ],
-    "analyze": [ { "ts": "2026-06-04T10:00:00.000Z", "value": 80 } ],
-    "improve": [ { "ts": "2026-06-05T10:00:00.000Z", "value": 50 } ]
+    "define":  [ { "t": 1780394400000, "v": 100 } ],
+    "measure": [ { "t": 1780480800000, "v": 100 } ],
+    "analyze": [ { "t": 1780567200000, "v": 80 } ],
+    "improve": [ { "t": 1780653600000, "v": 50 } ]
   },
   "dashboard": {
     "layout": []
