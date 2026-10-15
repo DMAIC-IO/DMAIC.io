@@ -25,6 +25,7 @@ const TYPE_MAP = {
   pie:                () => import('./types/pie.js'),
   mosaic:             () => import('./types/mosaic.js'),
   heatmap:            () => import('./types/heatmap.js'),
+  'node-diagram':     () => import('./types/node-diagram.js'),
 };
 
 export default class ChartManager {
