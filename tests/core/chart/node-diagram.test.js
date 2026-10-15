@@ -7,7 +7,7 @@
  */
 
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
-import NodeDiagram, { contentBox, linkEndpoints } from '../../../js/core/chart/types/node-diagram.js';
+import NodeDiagram, { contentBox, linkEndpoints, linkPath, straightEndpoints } from '../../../js/core/chart/types/node-diagram.js';
 import ChartManager from '../../../js/core/chart/chart-manager.js';
 
 const A = { id: 'a', x: 40, y: 30, w: 100, h: 50, lines: [{ text: 'Alpha' }] };
@@ -256,6 +256,51 @@ suite('node-diagram — lifecycle', () => {
     const avg = (performance.now() - t0) / runs;
     console.info(`[node-diagram] 30-link update: ${avg.toFixed(2)} ms`);
     assertTrue(avg < 16, `avg ${avg.toFixed(2)} ms per update`);
+    done();
+  });
+});
+
+const P = { id: 'p', x: 0, y: 0, w: 100, h: 40 };
+const Q = { id: 'q', x: 200, y: 0, w: 100, h: 40 };
+const R = { id: 'r', x: 200, y: 200, w: 100, h: 40 };
+
+suite('node-diagram — straight links', () => {
+  test('straightEndpoints clips a horizontal link to both borders', () => {
+    assertDeepEqual(straightEndpoints(P, Q), { x1: 100, y1: 20, x2: 200, y2: 20 });
+  });
+
+  test('straightEndpoints clips a diagonal link at the first border hit', () => {
+    assertDeepEqual(straightEndpoints(P, R), { x1: 70, y1: 40, x2: 230, y2: 200 });
+  });
+
+  test('offset shifts the link perpendicular to its direction', () => {
+    assertDeepEqual(straightEndpoints(P, Q, 10), { x1: 100, y1: 30, x2: 200, y2: 30 });
+    assertDeepEqual(straightEndpoints(Q, P, 10), { x1: 200, y1: 10, x2: 100, y2: 10 });
+  });
+
+  test('boxes with the same centre give a zero-length link, no NaN', () => {
+    const p = straightEndpoints(P, { ...P, id: 'p2' });
+    assertTrue([p.x1, p.y1, p.x2, p.y2].every(Number.isFinite), 'finite coordinates');
+  });
+
+  test('linkEndpoints derives straight endpoints with offset', () => {
+    const byId = new Map([[P.id, P], [Q.id, Q]]);
+    assertDeepEqual(linkEndpoints({ from: 'p', to: 'q', shape: 'straight', offset: 10 }, byId, 18),
+      { x1: 100, y1: 30, x2: 200, y2: 30 });
+  });
+
+  test('explicit endpoints win; offset does not shift them again', () => {
+    assertDeepEqual(linkEndpoints({ shape: 'straight', offset: 50, x1: 1, y1: 2, x2: 3, y2: 4 }, new Map(), 18),
+      { x1: 1, y1: 2, x2: 3, y2: 4 });
+  });
+
+  test('linkPath draws a straight segment', () => {
+    assertEqual(linkPath('straight', { x1: 1, y1: 2, x2: 3, y2: 4 }), 'M 1 2 L 3 4');
+  });
+
+  test('a straight link renders between the box borders', () => {
+    const { svg, done } = mount({ nodes: [P, Q], links: [{ from: 'p', to: 'q', shape: 'straight' }] });
+    assertEqual(paths(svg)[0].getAttribute('d'), 'M 100 20 L 200 20');
     done();
   });
 });

@@ -26,6 +26,46 @@ const NODE_DEFAULTS = { radius: 6, padX: 10, padY: 6, lineHeight: 16, strokeWidt
 const BADGE = { h: 14, gap: 4, charW: 6.5, extraW: 8, fontSize: 9, radius: 3 };
 const LINK_DEFAULT_WIDTH = 1.5;
 
+/** Round to two decimals so path data stays short and deterministic. */
+const r2 = (v) => Math.round(v * 100) / 100;
+
+/**
+ * Point where a ray from (px, py) in direction (dx, dy) leaves the rectangle.
+ * The start is expected inside the rectangle; t is clamped to ≥ 0.
+ * @returns {{x:number,y:number}}
+ */
+function rayExit(px, py, dx, dy, rect) {
+  let t = Infinity;
+  if (dx > 0) t = Math.min(t, (rect.x + rect.w - px) / dx);
+  if (dx < 0) t = Math.min(t, (rect.x - px) / dx);
+  if (dy > 0) t = Math.min(t, (rect.y + rect.h - py) / dy);
+  if (dy < 0) t = Math.min(t, (rect.y - py) / dy);
+  if (!Number.isFinite(t)) t = 0;
+  t = Math.max(0, t);
+  return { x: px + dx * t, y: py + dy * t };
+}
+
+/**
+ * Straight link between two boxes: centre to centre, shifted perpendicular by
+ * `offset` (positive = left of the direction of travel in screen coordinates),
+ * clipped to both box borders.
+ * @param {{x:number,y:number,w:number,h:number}} from
+ * @param {{x:number,y:number,w:number,h:number}} to
+ * @param {number} [offset=0]
+ * @returns {{x1:number,y1:number,x2:number,y2:number}}
+ */
+export function straightEndpoints(from, to, offset = 0) {
+  const cx1 = from.x + from.w / 2, cy1 = from.y + from.h / 2;
+  const cx2 = to.x + to.w / 2, cy2 = to.y + to.h / 2;
+  const len = Math.hypot(cx2 - cx1, cy2 - cy1);
+  if (len === 0) return { x1: r2(cx1), y1: r2(cy1), x2: r2(cx2), y2: r2(cy2) };
+  const ux = (cx2 - cx1) / len, uy = (cy2 - cy1) / len;
+  const nx = -uy * offset, ny = ux * offset;
+  const a = rayExit(cx1 + nx, cy1 + ny, ux, uy, from);
+  const b = rayExit(cx2 + nx, cy2 + ny, -ux, -uy, to);
+  return { x1: r2(a.x), y1: r2(a.y), x2: r2(b.x), y2: r2(b.y) };
+}
+
 /**
  * Endpoints of a link: explicit x1…y2 win, else derived from the nodes.
  * @param {Object} link
@@ -40,6 +80,7 @@ export function linkEndpoints(link, byId, elbowInset) {
   const from = byId.get(link.from);
   const to = byId.get(link.to);
   if (!from || !to) return null;
+  if (link.shape === 'straight') return straightEndpoints(from, to, link.offset ?? 0);
   if (link.shape === 'elbow') {
     return { x1: to.x - elbowInset, y1: from.y + from.h, x2: to.x, y2: to.y + to.h / 2 };
   }
@@ -48,11 +89,12 @@ export function linkEndpoints(link, byId, elbowInset) {
 
 /**
  * SVG path data for a link.
- * @param {'elbow'|'curve'} shape
+ * @param {'elbow'|'curve'|'straight'} shape
  * @param {{x1:number,y1:number,x2:number,y2:number}} p
  * @returns {string}
  */
 export function linkPath(shape, p) {
+  if (shape === 'straight') return `M ${p.x1} ${p.y1} L ${p.x2} ${p.y2}`;
   if (shape === 'elbow') return `M ${p.x1} ${p.y1} L ${p.x1} ${p.y2} L ${p.x2} ${p.y2}`;
   const mid = (p.y1 + p.y2) / 2;
   return `M ${p.x1} ${p.y1} C ${p.x1} ${mid}, ${p.x2} ${mid}, ${p.x2} ${p.y2}`;
