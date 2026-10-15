@@ -812,12 +812,12 @@
 .dmike-chart-ed-cp-overlay {
   position: fixed;
   inset: 0;
-  z-index: 2100;
+  z-index: 10002; /* above the dialog overlay (10000): swatches inside dialog forms open this */
 }
 
 .dmike-chart-ed-cp-popup {
   position: fixed;
-  z-index: 2101;
+  z-index: 10003;
   background: var(--color-bg-primary);
   border: var(--border-width) solid var(--color-border-secondary);
   border-radius: var(--border-radius-lg, 8px);
