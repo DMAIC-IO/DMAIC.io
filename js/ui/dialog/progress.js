@@ -4,9 +4,10 @@
  * loading a scenario), on top of the dialog service.
  *
  * Instance contract: createProgress() holds NO module-level state — every
- * call returns an independent controller. The app creates one for the frame
- * chrome (app.js, passed into buildFrame()) and initRouter() creates another
- * for action URLs.
+ * call returns an independent controller. The app creates exactly ONE
+ * (app.js, `dialog.progress()`) and passes it to both buildFrame() and
+ * initRouter(): the router feeds it the scenario item events, so the help
+ * panel's example load must drive the same instance to show the item rows.
  *
  * Not dismissible on purpose: aborting halfway through would leave a
  * half-built project behind. There is no ✕, no Escape, no overlay click.

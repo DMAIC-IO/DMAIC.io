@@ -77,9 +77,10 @@ async function init() {
   const exportReminder = new ExportReminder({ stateManager, eventBus, i18n, notify });
   exportReminder.init();
 
-  // Progress dialog for the frame chrome's own long-running actions; the
-  // router creates its own from the dialog service for #/action/… URLs.
-  const actionModal = dialog.progress();
+  // One shared progress dialog: the router shows it for #/action/… URLs (and
+  // feeds it the scenario item events), the frame chrome drives the SAME
+  // instance for its own long-running actions.
+  const progress = dialog.progress();
 
   // Verb registry (`#/action/<verb>/<arg…>`) built ahead of the Router itself
   // — settings' action-URL list (task 12) reads it via the page context, and
@@ -89,12 +90,12 @@ async function init() {
   const routerBox = { current: null };
   const actionVerbs = createAppActionVerbs(kernel, { dmaicTiles, workspace, notify }, routerBox);
 
-  buildFrame(kernel, { dialog, dmaicTiles, helpPanel, workspace, notify, actionModal });
+  buildFrame(kernel, { dialog, dmaicTiles, helpPanel, workspace, notify, actionModal: progress });
   const pages = await initPages(kernel, { dialog, actionVerbs, notify });
 
   const router = initRouter(
     kernel,
-    { dmaicTiles, workspace, notify, dialog, actionVerbs, routerBox },
+    { dmaicTiles, workspace, notify, progress, actionVerbs, routerBox },
     pages, Alpine,
   );
   routeDirectives.setRouter(router);

@@ -81,23 +81,24 @@ export function createAppActionVerbs(kernel, ui, routerBox) {
 /**
  * Build the Router and start it (attaches hashchange, applies the boot hash).
  * Wires the action verb registry (built earlier via `createAppActionVerbs`,
- * see `ui.actionVerbs`) into the Router together with a progress dialog. Fills `ui.routerBox.current` with the new Router BEFORE
+ * see `ui.actionVerbs`) into the Router together with a progress dialog.
+ * Fills `ui.routerBox.current` with the new Router BEFORE
  * `router.start()` — the boot hash may itself be an action URL, whose verb
  * closures read the box.
  *
- * The progress dialog is created here from `ui.dialog.progress()`; the live
- * instance is reachable as `router.getActionModal()`.
+ * `ui.progress` is the app-wide progress controller (from `dialog.progress()`,
+ * created once in app.js). The router subscribes it to the scenario progress
+ * events, so the frame chrome must drive the SAME instance.
  *
  * @param {object} kernel
  * @param {{ dmaicTiles: object, workspace: object, notify?: function,
- *          dialog: object, actionVerbs: Map<string, object>,
+ *          progress: object, actionVerbs: Map<string, object>,
  *          routerBox: { current: object|null } }} ui
  * @param {Map<string, object>} pages
  * @param {object} Alpine
  * @returns {Router}
  */
 export function initRouter(kernel, ui, pages, Alpine) {
-  const actionModal = ui.dialog.progress();
   const router = new Router({
     stateManager: kernel.stateManager,
     moduleRegistry: kernel.moduleRegistry,
@@ -109,7 +110,7 @@ export function initRouter(kernel, ui, pages, Alpine) {
   });
   if (ui.routerBox) ui.routerBox.current = router;
 
-  router.setActionVerbs(ui.actionVerbs, actionModal, ui.notify, kernel.i18n);
+  router.setActionVerbs(ui.actionVerbs, ui.progress, ui.notify, kernel.i18n);
 
   router.start();
   return router;
