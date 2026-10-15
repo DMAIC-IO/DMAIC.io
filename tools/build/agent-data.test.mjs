@@ -1901,7 +1901,7 @@ test('unreachable_write: eine Model-Methode, die an eine weitere Methode delegie
 });
 
 test('unreachable_write: eine direkte `this.<feld>`-Zuweisung am Viewmodel (ohne `.model`) deckt NICHT ab', () => {
-  // Guard (b): `fieldAfterThis` mit `through: 'model'` muss `this.title = t`
+  // Guard (b): `assignTargetAfterThis` mit `through: 'model'` muss `this.title = t`
   // (am Viewmodel selbst, kein `this.model...`) verwerfen — sonst würde ein
   // Tippfehler im Modulquelltext als Abdeckung durchgehen.
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
@@ -2039,6 +2039,122 @@ test('unreachable_write: eine blockweit neu gebundene lokale Variable überschat
   } });
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
+});
+
+test('unreachable_write: eine verschachtelte Bindung ohne Setter ist ein Befund', () => {
+  const root = fixture({ foo: {
+    'foo.js': TAGGED_VM,
+    'foo-model.js': `export class State {
+      /** @type {object} die Parameter */
+      params = { alpha: '' };
+      toJSON() { return { params: { alpha: this.params.alpha } }; }
+    }`,
+    'foo.html': '<input x-model="model.params.alpha">',
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unreachable_write:params.alpha']);
+  assert.equal(modules.foo.available, false);
+});
+
+test('unreachable_write: eine verschachtelte Zuweisung aus einem Parameter deckt ab', () => {
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} value der Wert
+       * @returns {void}
+       */
+      setAlpha(value) { this.model.params.alpha = value; },`);
+  const root = fixture({ foo: {
+    'foo.js': vm,
+    'foo-model.js': `export class State {
+      /** @type {object} die Parameter */
+      params = { alpha: '' };
+      toJSON() { return { params: { alpha: this.params.alpha } }; }
+    }`,
+    'foo.html': '<input x-model="model.params.alpha">',
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, []);
+  assert.equal(modules.foo.available, true);
+});
+
+test('unreachable_write: ein dynamischer Schlüssel deckt genau die geprüfte Menge ab', () => {
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} key der Schlüssel
+       * @param {string} value der Wert
+       * @returns {void}
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        this.model.params[key] = value;
+      },`);
+  const root = fixture({ foo: {
+    'foo.js': `const PARAM_KEYS = ['alpha', 'beta'];\n${vm}`,
+    'foo-model.js': `export class State {
+      /** @type {object} die Parameter */
+      params = { alpha: '', beta: '', gamma: '' };
+      toJSON() { return { params: { ...this.params } }; }
+    }`,
+    'foo.html': '<input x-model="model.params.alpha"><input x-model="model.params.beta"><input x-model="model.params.gamma">',
+  } });
+  const { modules } = collectAgentData(root);
+  // alpha und beta sind abgedeckt, gamma NICHT — es steht nicht in PARAM_KEYS.
+  assert.deepEqual(modules.foo.reported, ['unreachable_write:params.gamma']);
+});
+
+test('unreachable_write: ein Schlüssel mit Punkt deckt die zweite Ebene ab', () => {
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} key der Schlüssel
+       * @param {string} value der Wert
+       * @returns {void}
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        setAtPath(this.model.params, key, value);
+      },`);
+  const root = fixture({ foo: {
+    'foo.js': `const PARAM_KEYS = ['alpha', 'tolerance.LSL'];
+function setAtPath(obj, path, value) {
+  const parts = path.split('.');
+  let cur = obj;
+  for (const p of parts.slice(0, -1)) cur = cur[p];
+  cur[parts[parts.length - 1]] = value;
+}
+${vm}`,
+    'foo-model.js': `export class State {
+      /** @type {object} die Parameter */
+      params = { alpha: '', tolerance: { LSL: '', USL: '' } };
+      toJSON() { return { params: { alpha: this.params.alpha, tolerance: { ...this.params.tolerance } } }; }
+    }`,
+    'foo.html': '<input x-model="model.params.alpha"><input x-model="model.params.tolerance.LSL"><input x-model="model.params.tolerance.USL">',
+  } });
+  const { modules } = collectAgentData(root);
+  // `tolerance.USL` steht nicht in PARAM_KEYS — genau dieses Feld bleibt offen.
+  assert.deepEqual(modules.foo.reported, ['unreachable_write:params.tolerance.USL']);
+});
+
+test('unreachable_write: ein dynamischer Schlüssel ohne auflösbare Menge deckt NICHTS ab', () => {
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} key der Schlüssel
+       * @param {string} value der Wert
+       * @returns {void}
+       */
+      setParam(key, value) { this.model.params[key] = value; },`);
+  const root = fixture({ foo: {
+    'foo.js': vm,
+    'foo-model.js': `export class State {
+      /** @type {object} die Parameter */
+      params = { alpha: '' };
+      toJSON() { return { params: { alpha: this.params.alpha } }; }
+    }`,
+    'foo.html': '<input x-model="model.params.alpha">',
+  } });
+  const { modules } = collectAgentData(root);
+  // Fail closed: ohne geprüfte Schlüsselmenge ist nicht entscheidbar, welche
+  // Felder der Agent wirklich treffen kann.
+  assert.deepEqual(modules.foo.reported, ['unreachable_write:params.alpha']);
 });
 
 test('unresolvable_tojson: eine Pfeilfunktions-toJSON als Klassenfeld wird nicht als MethodDeclaration erkannt und klettert nicht zur Basisklasse', () => {

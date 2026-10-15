@@ -387,6 +387,12 @@ export const AGENT_REGISTRY = {
       "unmarked_method:runAnalysis",
       "unmarked_method:init",
       "unmarked_method:destroy",
+      "unreachable_write:summary.x",
+      "unreachable_write:summary.n",
+      "unreachable_write:summary.x1",
+      "unreachable_write:summary.n1",
+      "unreachable_write:summary.x2",
+      "unreachable_write:summary.n2",
       "unreachable_write:p0",
       "unreachable_write:direction",
       "unreachable_write:pooled"
@@ -451,7 +457,9 @@ export const AGENT_REGISTRY = {
     "violations": [],
     "reported": [
       "unmarked_method:aggregationChanged",
-      "unmarked_method:stackedChanged"
+      "unmarked_method:stackedChanged",
+      "unreachable_write:chartConfig.aggregation",
+      "unreachable_write:chartConfig.stacked"
     ],
     "actions": {},
     "fields": {
@@ -2096,7 +2104,10 @@ export const AGENT_REGISTRY = {
       "unreadable_state_key:version",
       "unreachable_write:projectMode",
       "unreachable_write:projectName",
-      "unreachable_write:doeName"
+      "unreachable_write:doeName",
+      "unreachable_write:options.randomize",
+      "unreachable_write:options.centerPoints",
+      "unreachable_write:options.alphaType"
     ],
     "actions": {},
     "fields": {
@@ -2545,7 +2556,12 @@ export const AGENT_REGISTRY = {
       "unmarked_method:init",
       "unmarked_method:destroy",
       "unreachable_write:connectWithin",
-      "unreachable_write:showOperatorMean"
+      "unreachable_write:showOperatorMean",
+      "unreachable_write:gageInfo.name",
+      "unreachable_write:gageInfo.date",
+      "unreachable_write:gageInfo.reporter",
+      "unreachable_write:gageInfo.tolerance",
+      "unreachable_write:gageInfo.misc"
     ],
     "actions": {},
     "fields": {
@@ -2710,7 +2726,8 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:onAggregationChange"
+      "unmarked_method:onAggregationChange",
+      "unreachable_write:chartConfig.aggregation"
     ],
     "actions": {},
     "fields": {
@@ -4139,7 +4156,14 @@ export const AGENT_REGISTRY = {
       "unmarked_method:clearResults",
       "unmarked_method:algoNavigate",
       "unmarked_method:init",
-      "unmarked_method:destroy"
+      "unmarked_method:destroy",
+      "unreachable_write:params.name",
+      "unreachable_write:params.ref",
+      "unreachable_write:params.unit",
+      "unreachable_write:params.lsl",
+      "unreachable_write:params.usl",
+      "unreachable_write:params.k1",
+      "unreachable_write:params.k2"
     ],
     "actions": {},
     "fields": {
@@ -4185,7 +4209,13 @@ export const AGENT_REGISTRY = {
       "unmarked_method:clearResults",
       "unmarked_method:algoNavigate",
       "unmarked_method:init",
-      "unmarked_method:destroy"
+      "unmarked_method:destroy",
+      "unreachable_write:params.lsl",
+      "unreachable_write:params.usl",
+      "unreachable_write:params.alpha",
+      "unreachable_write:params.k",
+      "unreachable_write:params.verdictBasis",
+      "unreachable_write:params.sigmaHist"
     ],
     "actions": {},
     "fields": {
@@ -4225,7 +4255,17 @@ export const AGENT_REGISTRY = {
       "unmarked_method:scheduleAnalysis",
       "unmarked_method:clearResults",
       "unmarked_method:init",
-      "unmarked_method:destroy"
+      "unmarked_method:destroy",
+      "unreachable_write:params.name",
+      "unreachable_write:params.unit",
+      "unreachable_write:params.norm",
+      "unreachable_write:params.norm",
+      "unreachable_write:params.pvMode",
+      "unreachable_write:params.pvMode",
+      "unreachable_write:params.tolerance.LSL",
+      "unreachable_write:params.tolerance.USL",
+      "unreachable_write:params.sigmaP",
+      "unreachable_write:params.alpha"
     ],
     "actions": {},
     "fields": {
@@ -4299,7 +4339,16 @@ export const AGENT_REGISTRY = {
       "unmarked_method:hasGageRunChart",
       "unmarked_method:runAnalysis",
       "unmarked_method:init",
-      "unmarked_method:destroy"
+      "unmarked_method:destroy",
+      "unreachable_write:params.type",
+      "unreachable_write:params.type",
+      "unreachable_write:params.type",
+      "unreachable_write:params.weights",
+      "unreachable_write:params.weights",
+      "unreachable_write:params.layout",
+      "unreachable_write:params.trials",
+      "unreachable_write:params.ruleSet",
+      "unreachable_write:params.alpha"
     ],
     "actions": {},
     "fields": {
@@ -4326,7 +4375,25 @@ export const AGENT_REGISTRY = {
     "violations": [],
     "reported": [
       "unmarked_method:init",
-      "unmarked_method:destroy"
+      "unmarked_method:destroy",
+      "unreachable_write:params.measurementName",
+      "unreachable_write:params.unit",
+      "unreachable_write:params.chartType",
+      "unreachable_write:params.chartType",
+      "unreachable_write:params.limitsMode",
+      "unreachable_write:params.limitsMode",
+      "unreachable_write:params.baselineK",
+      "unreachable_write:params.mu0",
+      "unreachable_write:params.sigma0",
+      "unreachable_write:params.enabledRules",
+      "unreachable_write:params.enabledRules",
+      "unreachable_write:params.enabledRules",
+      "unreachable_write:params.enabledRules",
+      "unreachable_write:params.enabledRules",
+      "unreachable_write:params.enabledRules",
+      "unreachable_write:params.enabledRules",
+      "unreachable_write:params.enabledRules",
+      "unreachable_write:params.alpha"
     ],
     "actions": {},
     "fields": {
@@ -4864,7 +4931,8 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:onAggregationChange"
+      "unmarked_method:onAggregationChange",
+      "unreachable_write:chartConfig.aggregation"
     ],
     "actions": {},
     "fields": {
@@ -5011,7 +5079,18 @@ export const AGENT_REGISTRY = {
       "unmarked_method:scheduleAnalysis",
       "unmarked_method:clearResults",
       "unmarked_method:init",
-      "unmarked_method:destroy"
+      "unmarked_method:destroy",
+      "unreachable_write:params.name",
+      "unreachable_write:params.lsl",
+      "unreachable_write:params.target",
+      "unreachable_write:params.usl",
+      "unreachable_write:params.unit",
+      "unreachable_write:params.confidence",
+      "unreachable_write:params.subgroupMode",
+      "unreachable_write:params.subgroupMode",
+      "unreachable_write:params.subgroupSize",
+      "unreachable_write:params.mrSpan",
+      "unreachable_write:params.unbiased"
     ],
     "actions": {},
     "fields": {
@@ -5966,6 +6045,10 @@ export const AGENT_REGISTRY = {
       "unmarked_method:init",
       "unmarked_method:destroy",
       "unreachable_write:statisticId",
+      "unreachable_write:statParams.trim",
+      "unreachable_write:statParams.p",
+      "unreachable_write:statParams.lsl",
+      "unreachable_write:statParams.usl",
       "unreachable_write:contrast",
       "unreachable_write:direction",
       "unreachable_write:target",

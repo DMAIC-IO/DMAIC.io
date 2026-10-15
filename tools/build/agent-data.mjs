@@ -52,7 +52,7 @@
 import ts from 'typescript';
 import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { join, relative, sep, dirname } from 'node:path';
-import { createResolver, functionFromMember, isFunctionMember, isFunctionLike, findCreateModuleMember, memberName } from './agent-resolve.mjs';
+import { createResolver, functionFromMember, isFunctionMember, isFunctionLike, findCreateModuleMember, memberName, findLocalDeclaration } from './agent-resolve.mjs';
 
 const MODULES_DIR = 'js/modules';
 
@@ -465,7 +465,14 @@ function readViewmodel(sf, resolver, appDir) {
  *   1. `this.model.<feld> = <ausdruck>` / `+= <ausdruck>` direkt im
  *      `@agent`-Methodenkörper, wenn `<ausdruck>` einen Bezeichner eines
  *      Parameters DIESER Methode enthält (`derivesFromParams`). Eine
- *      Zuweisung an `this.model.<a>.<b>` zählt für `<a>`.
+ *      Zuweisung an `this.model.<a>.<b>` zählt für den PFAD `<a>.<b>` —
+ *      und nur für ihn, nicht mehr für `<a>`: wer bloß `<a>.<b>` setzt,
+ *      kann `<a>` nicht als Ganzes setzen. `this.model.<a>[<key>] = …`
+ *      zählt für `<a>.<k>` je Schlüssel `<k>` einer im Methodenkörper
+ *      per `requireEnum('…', <key>, <MENGE>)` GEPRÜFTEN, im Modul
+ *      auflösbaren Schlüsselmenge; ohne diese Prüfung zählt sie für
+ *      NICHTS (fail closed). Dasselbe gilt für eine lokale Pfad-Hilfe
+ *      (`setAtPath(this.model.<a>, <key>, …)`).
  *   2. `this.model.<methode>(…)` — eine Delegation an eine Model-Methode,
  *      GENAU EINE Ebene tief (`fieldsCoveredByDelegation`): die Model-Methode
  *      muss SELBST `this.<feld> = <ausdruck>` zuweisen, `<ausdruck>` muss
@@ -485,17 +492,109 @@ function writtenModelFields(fn, resolver, modelDecl) {
   // weiter (`const n = parseFloat(v)` leitet `n` von `v` ab) — ohne das bräche
   // sie bei der ersten Hilfsvariablen, und genau das tut `hypothesis-test`
   // (`setPowerGoal(v) { const n = parseFloat(v); … this.powerGoal = …(n); }`).
-  const agentParams = expandDerivedNames(fn.body, new Set(parameterNames(fn).filter(Boolean)));
-  const fields = collectCoveredFields(fn.body, 'model', agentParams);
+  const ownParams = new Set(parameterNames(fn).filter(Boolean));
+  const agentParams = expandDerivedNames(fn.body, ownParams);
+  // Die Datei der METHODE, nicht die des Moduls: ein Mitglied aus einem Mixin
+  // löst seine Konstanten und Hilfsfunktionen in seiner eigenen Datei auf.
+  const sf = fn.getSourceFile();
+  const keySets = requireEnumKeySets(fn.body, ownParams, sf);
+  const fields = collectCoveredFields(fn.body, 'model', agentParams, keySets);
   forEachCall(fn.body, node => {
     const methodName = modelMethodCallOf(node);
     if (methodName && modelDecl) {
       for (const field of fieldsCoveredByDelegation(resolver, modelDecl, methodName, node.arguments, agentParams)) {
         fields.add(field);
       }
+      return;
     }
+    for (const field of fieldsCoveredByPathHelper(node, sf, keySets)) fields.add(field);
   });
   return fields;
+}
+
+/**
+ * Die geprüften Schlüsselmengen einer Methode: je Parametername die Liste
+ * der Schlüssel, die ein `requireEnum('<name>', <param>, <MENGE>)` im
+ * Methodenkörper zusichert.
+ *
+ * Nur so wird ein dynamischer Schreibweg (`this.model.params[key] = …`)
+ * überhaupt entscheidbar — die Laufzeitprüfung IST die statische Grenze der
+ * Fläche. Fehlt sie, oder ist `<MENGE>` nicht als Array-Literal aus
+ * Zeichenketten auflösbar (ein Ausdruck, ein Methodenaufruf, Zahlen oder
+ * Wahrheitswerte), bleibt der Parameter ohne Eintrag und der Schreibweg
+ * deckt NICHTS ab (fail closed).
+ *
+ * @param {ts.Block|undefined} body
+ * @param {Set<string>} ownParams  die Parameternamen DIESER Methode
+ * @param {ts.SourceFile} sf
+ * @returns {Map<string, string[]>}
+ */
+function requireEnumKeySets(body, ownParams, sf) {
+  const sets = new Map();
+  forEachCall(body, call => {
+    if (!ts.isIdentifier(call.expression) || call.expression.text !== 'requireEnum') return;
+    const [, value, allowed] = call.arguments;
+    if (!value || !allowed || !ts.isIdentifier(value) || !ownParams.has(value.text)) return;
+    const keys = resolveStringArray(allowed, sf);
+    if (keys) sets.set(value.text, keys);
+  });
+  return sets;
+}
+
+/**
+ * Die Zeichenketten eines Array-Literals — direkt (`['a', 'b']`) oder über
+ * eine im Modul deklarierte Konstante (`PARAM_KEYS`). `null`, sobald ein
+ * Element keine Zeichenkette ist oder die Konstante nicht auflösbar ist.
+ * @param {ts.Expression} expr
+ * @param {ts.SourceFile} sf
+ * @returns {string[]|null}
+ */
+function resolveStringArray(expr, sf) {
+  let literal = expr;
+  if (ts.isIdentifier(expr)) {
+    const decl = findLocalDeclaration(expr.text, sf);
+    if (!decl || !ts.isVariableDeclaration(decl) || !decl.initializer) return null;
+    literal = decl.initializer;
+  }
+  if (!ts.isArrayLiteralExpression(literal)) return null;
+  const keys = [];
+  for (const element of literal.elements) {
+    if (!ts.isStringLiteralLike(element)) return null;
+    keys.push(element.text);
+  }
+  return keys;
+}
+
+/**
+ * Die Felder, die ein Aufruf einer LOKALEN Pfad-Hilfe abdeckt —
+ * `setAtPath(this.model.params, key, value)` zählt wie
+ * `this.model.params[key] = value`.
+ *
+ * Drei Bedingungen, alle drei notwendig (fail closed): die gerufene Funktion
+ * ist im Modul auflösbar (ein importierter oder unbekannter Name deckt
+ * nichts ab), ihr erstes Argument ist eine statische `this.model.<pfad>`-
+ * Kette, und ein weiteres Argument ist ein Parameter mit geprüfter
+ * Schlüsselmenge. Ein Schlüssel mit Punkt (`'tolerance.LSL'`) wird wörtlich
+ * angehängt — damit deckt derselbe Mechanismus die zweite Ebene ab, ohne
+ * eine eigene Regel.
+ *
+ * @param {ts.CallExpression} call
+ * @param {ts.SourceFile} sf
+ * @param {Map<string, string[]>} keySets
+ * @returns {string[]}
+ */
+function fieldsCoveredByPathHelper(call, sf, keySets) {
+  if (keySets.size === 0) return [];
+  if (!ts.isIdentifier(call.expression)) return [];
+  const helper = findLocalDeclaration(call.expression.text, sf);
+  if (!helper) return [];
+  const [base, ...rest] = call.arguments;
+  if (!base) return [];
+  const target = assignTargetAfterThis(base, 'model');
+  if (!target || target.key) return [];
+  const keyArg = rest.find(argument => ts.isIdentifier(argument) && keySets.has(argument.text));
+  if (!keyArg) return [];
+  return keySets.get(keyArg.text).map(key => `${target.path}.${key}`);
 }
 
 /**
@@ -617,9 +716,13 @@ function forEachCall(node, visit) {
  * @param {ts.Block|undefined} body
  * @param {string|null} through
  * @param {Set<string>} names
+ * @param {Map<string, string[]>} [keySets]  die geprüften Schlüsselmengen
+ *   dieser Methode; leer bei der Delegationsauflösung — eine im MODEL
+ *   geprüfte Menge zählt nicht, weil die Prüfung dort nicht die Fläche des
+ *   Agenten begrenzt (fail closed).
  * @returns {Set<string>}
  */
-function collectCoveredFields(body, through, names) {
+function collectCoveredFields(body, through, names, keySets = new Map()) {
   const fields = new Set();
   const walk = (node, active) => {
     if (isFunctionLike(node)) {
@@ -633,8 +736,10 @@ function collectCoveredFields(body, through, names) {
       return;
     }
     if (ts.isBinaryExpression(node) && ASSIGN_KINDS.has(node.operatorToken.kind)) {
-      const field = fieldAfterThis(node.left, through);
-      if (field && derivesFromParams(node.right, active)) fields.add(field);
+      const target = assignTargetAfterThis(node.left, through);
+      if (target && derivesFromParams(node.right, active)) {
+        for (const field of fieldsOfTarget(target, keySets)) fields.add(field);
+      }
     }
     ts.forEachChild(node, child => walk(child, active));
   };
@@ -688,24 +793,62 @@ function topLevelDeclaredNames(block) {
 }
 
 /**
- * Das Feld hinter `this.<durch>.…` (oder direkt `this.…`, wenn `durch` null
- * ist) in einer Zuweisungs-Zielkette, oder `null`, wenn die Kette nicht an
- * `this` (bzw. `this.<durch>`) hängt.
+ * Das Zuweisungsziel hinter `this.<durch>.…` (oder direkt `this.…`, wenn
+ * `durch` null ist) als PFAD — `null`, wenn die Kette nicht an `this`
+ * (bzw. `this.<durch>`) hängt oder nicht entscheidbar ist.
+ *
+ * Zwei Formen kommen heraus, und nur diese zwei:
+ *   • `{ path: 'a.b', key: null }` für eine durchgehend statische Kette
+ *     `this.<durch>.a.b` — der volle Pfad, nicht das erste Segment.
+ *   • `{ path: 'a', key: 'key' }` für `this.<durch>.a[key]`, also einen
+ *     Bezeichner als LETZTES Glied; welche Felder das trifft, entscheidet
+ *     erst die geprüfte Schlüsselmenge (`requireEnumKeySets`).
+ * Alles andere ist `null` (fail closed): ein Index MITTEN in der Kette
+ * (`this.model.rows[0].a`) nennt kein Feld der Lesefläche, ein berechneter
+ * Schlüssel ohne Bezeichner (`this.model.a[i + 1]`) nennt keinen, und
+ * `this.<durch>[key]` hat keine Basis, an die ein Schlüssel passte.
+ *
  * @param {ts.Node} node  die linke Seite einer Zuweisung
  * @param {string|null} through  das Zwischenglied (`'model'`), oder `null`
  *   für eine direkte `this.<feld>`-Kette (innerhalb der Model-Klasse selbst)
- * @returns {string|null}
+ * @returns {{ path: string, key: string|null }|null}
  */
-function fieldAfterThis(node, through) {
-  const path = [];
+function assignTargetAfterThis(node, through) {
+  const segments = [];
   let current = node;
   while (ts.isPropertyAccessExpression(current) || ts.isElementAccessExpression(current)) {
-    path.unshift(ts.isPropertyAccessExpression(current) ? current.name.text : null);
+    segments.unshift(ts.isPropertyAccessExpression(current)
+      ? { name: current.name.text, key: null }
+      : { name: null, key: ts.isIdentifier(current.argumentExpression) ? current.argumentExpression.text : null });
     current = current.expression;
   }
   if (current.kind !== ts.SyntaxKind.ThisKeyword) return null;
-  if (through) return path[0] === through ? (path[1] ?? null) : null;
-  return path[0] ?? null;
+  if (through) {
+    if (segments[0]?.name !== through) return null;
+    segments.shift();
+  }
+  if (segments.length === 0) return null;
+  const last = segments.pop();
+  if (segments.some(segment => segment.name === null)) return null;
+  const base = segments.map(segment => segment.name);
+  if (last.name !== null) return { path: [...base, last.name].join('.'), key: null };
+  if (last.key === null || base.length === 0) return null;
+  return { path: base.join('.'), key: last.key };
+}
+
+/**
+ * Die Felder, die ein Zuweisungsziel trifft — der Pfad selbst, oder bei
+ * einem dynamischen Schlüssel ein Pfad je geprüftem Schlüssel. Ohne
+ * geprüfte Menge: nichts (fail closed).
+ * @param {{ path: string, key: string|null }} target
+ * @param {Map<string, string[]>} keySets
+ * @returns {string[]}
+ */
+function fieldsOfTarget(target, keySets) {
+  if (target.key === null) return [target.path];
+  const keys = keySets.get(target.key);
+  if (!keys) return [];
+  return keys.map(key => `${target.path}.${key}`);
 }
 
 /**
@@ -812,7 +955,15 @@ function templateBindings(moduleDir) {
   for (const file of readdirSync(moduleDir)) {
     if (!file.endsWith('.html')) continue;
     const html = readFileSync(join(moduleDir, file), 'utf8');
-    for (const m of html.matchAll(/x-model(?:\.[a-z]+)*="model\.([A-Za-z_$][\w$]*)"/g)) models.push(m[1]);
+    // Der VOLLE Pfad hinter `model.` zählt, nicht nur das erste Segment:
+    // `model.params.alpha` bindet `params.alpha`, und nur ein Setter für
+    // genau diesen Pfad (oder für `params` als Ganzes über einen
+    // dynamischen Schlüssel) deckt die Bindung ab. Indexformen
+    // (`model.rows[0]`) bleiben absichtlich DRAUSSEN: ein Index ist kein
+    // Feldname, und `writtenModelFields` könnte ihn nicht gegenrechnen.
+    for (const m of html.matchAll(/x-model(?:\.[a-z]+)*="model\.([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)"/g)) {
+      models.push(m[1]);
+    }
     for (const m of html.matchAll(/(?:@|x-on:)[a-z]+(?:\.[a-z]+)*="model\.([A-Za-z_$][\w$]*)\(/g)) calls.push(m[1]);
   }
   return { models, calls };
