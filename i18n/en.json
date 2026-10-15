@@ -3565,6 +3565,10 @@
       "description": "Chain of activities and decisions with rework loops",
       "whenToUse": "When a process is a chain of activities and yes/no decisions with rework loops — not for a plain chain without branches (Process Map covers that).",
       "actions": {
+        "read": {
+          "help": "Returns the chain and the bands that steps can stand in.",
+          "params": { "options": "Optional; this module holds no bulk data." }
+        },
         "appendStep": {
           "help": "Appends an activity or decision to the chain and returns its id.",
           "params": {
@@ -3667,6 +3671,9 @@
         }
       },
       "fields": {
+        "bands": {
+          "help": "The bands from top to bottom, main path first — exactly the bandId values that setStepBand, insertInBand, addActivityToBand and addDecisionToBand accept. Per band: id ('main' or 'no:<id>'), ownerId (the id of the decision that opens it, null for the main path), label and depth."
+        },
         "steps": {
           "help": "The chain in order. Each step carries id, title, description, kind ('activity' or 'decision'), branchId (the band it sits in), expanded and substeps (each with id and title); a decision additionally carries decision ({label, noTarget})."
         }

@@ -5,21 +5,9 @@
 export const AGENT_REGISTRY = {
   "activity-flowchart": {
     "tagged": true,
-    "available": false,
-    "violations": [
-      "undeclared_option_source:setStepBand:bandId",
-      "undeclared_option_source:insertInBand:bandId",
-      "undeclared_option_source:addActivityToBand:bandId",
-      "undeclared_option_source:addDecisionToBand:bandId",
-      "undeclared_option_source:clearExit:bandId"
-    ],
-    "reported": [
-      "undeclared_option_source:setStepBand:bandId",
-      "undeclared_option_source:insertInBand:bandId",
-      "undeclared_option_source:addActivityToBand:bandId",
-      "undeclared_option_source:addDecisionToBand:bandId",
-      "undeclared_option_source:clearExit:bandId"
-    ],
+    "available": true,
+    "violations": [],
+    "reported": [],
     "actions": {
       "read": {
         "params": [
@@ -27,11 +15,11 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "setSubstepsExpanded": {
         "params": [
@@ -276,9 +264,16 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "steps": {
-        "type": "Array<object>",
-        "help": "die Kette in Reihenfolge; jeder Schritt trägt id, title, description, expanded und substeps (je id und title), dazu die modulspezifischen Felder (decision, side, laneId, …)",
-        "bulk": false
+        "type": "object[]",
+        "help": "the chain in order; each step carries id, title, description, kind, branchId, expanded and substeps",
+        "bulk": false,
+        "derived": true
+      },
+      "bands": {
+        "type": "Array<{id: string, ownerId: string|null, label: string, depth: number}>",
+        "help": "the bands `bandId` accepts, main path first",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -8670,4 +8665,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":28};
+export const AGENT_COVERAGE = {"total":74,"available":29};

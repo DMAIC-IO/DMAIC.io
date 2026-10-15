@@ -3569,6 +3569,10 @@
       "description": "Kette aus Aktivitäten und Entscheidungen mit Nacharbeits-Bögen",
       "whenToUse": "Wenn ein Ablauf aus Aktivitäten und Ja/Nein-Entscheidungen mit Nacharbeits-Schleifen abgebildet werden soll — nicht für eine reine Verkettung ohne Verzweigungen (dafür reicht Process Map).",
       "actions": {
+        "read": {
+          "help": "Liefert die Kette und die Bänder, in denen Schritte stehen können.",
+          "params": { "options": "Optional; dieses Modul führt keine Massendaten." }
+        },
         "appendStep": {
           "help": "Hängt eine Aktivität oder Entscheidung an die Kette und liefert ihre id.",
           "params": {
@@ -3671,6 +3675,9 @@
         }
       },
       "fields": {
+        "bands": {
+          "help": "Die Bänder von oben nach unten, der Hauptpfad zuerst — genau die bandId-Werte, die setStepBand, insertInBand, addActivityToBand und addDecisionToBand annehmen. Je Band: id ('main' oder 'no:<id>'), ownerId (die id der Entscheidung, die es öffnet, beim Hauptpfad null), label und depth."
+        },
         "steps": {
           "help": "Die Kette in Reihenfolge. Jeder Schritt trägt id, title, description, kind ('activity' oder 'decision'), branchId (das Band, in dem er steht), expanded und substeps (je id und title); eine Entscheidung trägt zusätzlich decision ({label, noTarget})."
         }

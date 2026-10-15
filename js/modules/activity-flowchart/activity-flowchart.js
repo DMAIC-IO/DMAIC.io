@@ -29,7 +29,7 @@ import { chainViewMixin } from '../../core/flowchart/flowchart-view.js';
 import {
   listSourceInstances, appendFromInstance,
 } from '../../core/flowchart/flowchart-import.js';
-import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireIndex } from '../../core/agent/agent-argcheck.js';
 import {
   ActivityModel, MAIN_BRANCH, BRANCH_PREFIX, branchOwnerId,
@@ -37,6 +37,11 @@ import {
 
 const IMPORT_SOURCES = ['process-map', 'sipoc'];
 
+/**
+ * @typedef {object} AgentRead
+ * @property {object[]} steps  the chain in order; each step carries id, title, description, kind, branchId, expanded and substeps
+ * @property {Array<{id: string, ownerId: string|null, label: string, depth: number}>} bands  the bands `bandId` accepts, main path first
+ */
 export default createModule({
   config: {
     id: 'activity-flowchart',
@@ -79,7 +84,18 @@ export function activityFlowchartData(module, _t) {
   const memo = { key: null, bands: null, layout: null };
 
   return {
-    ...agentReadMixin(module),
+    /**
+     * Den vollständigen Lesezustand dieser Instanz liefern.
+     * @agent
+     * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+     * @returns {AgentRead} Kette und die Bänder, in denen Schritte stehen können
+     */
+    read(options) {
+      return readAgentState('activity-flowchart', {
+        ...this.model.toJSON(),
+        bands: this.bands().map((b) => ({ ...b })),
+      }, options);
+    },
     ...chainViewMixin(module, _t, {
       autoSizeSelector: 'textarea.af__step-title, textarea.af__decision-label, textarea.af__step-description',
       dragRowSelector: '.af__step',
