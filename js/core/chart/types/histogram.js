@@ -600,6 +600,24 @@ export default class HistogramChart extends ChartBase {
     return [...items, ...curves];
   }
 
+  /**
+   * Every label the series legend can show — curve and Pareto entries
+   * included, hidden series too — so the measured legend width fits the
+   * longest entry and stays put while series are toggled. The base class
+   * only measures series names.
+   * @override
+   */
+  _getAllLegendLabels() {
+    if (!this._isSeriesMode()) return super._getAllLegendLabels();
+    const labels = [];
+    this.config.series.forEach((s) => {
+      labels.push(s.name);
+      if (s.showNormalCurve !== false) labels.push(`${s.name} · ${this._th('normal')}`);
+    });
+    if (this.config.pareto) labels.push(this._th('paretoCum'));
+    return labels;
+  }
+
   /** @override */
   _getLegendItems() {
     if (this._isSeriesMode()) return this._getSeriesLegendItems();

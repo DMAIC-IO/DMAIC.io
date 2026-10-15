@@ -144,6 +144,21 @@ suite('Histogram type — legacy path unchanged', () => {
 });
 
 suite('Histogram type — series path: legend, descriptors, tooltip', () => {
+  test('legend reserves room for curve and Pareto labels, not only series names', () => {
+    const m = mount({ series: [s('Messwert', A)], binWidth: 1, pareto: true });
+    const width = m.chart._plotArea.totalW;
+    const clipped = [...m.svg.querySelectorAll('text')]
+      .filter(t => t.textContent && t.getBBox().x + t.getBBox().width > width + 0.5)
+      .map(t => t.textContent);
+    assertEqual(clipped.join(' | '), '');
+    unmount(m);
+  });
+  test('legend width does not change when a series is hidden', () => {
+    const shown = mount({ series: [s('A', A), s('Längerer Name', B)], binWidth: 1 });
+    const hidden = mount({ series: [s('A', A), s('Längerer Name', B, { visible: false })], binWidth: 1 });
+    assertEqual(hidden.chart._plotArea.w, shown.chart._plotArea.w);
+    unmount(shown); unmount(hidden);
+  });
   test('legend swatch carries the series pattern', () => {
     const m = mount({ series: [s('A', A, { pattern: '/' }), s('B', B)], binWidth: 1 });
     const sw = m.svg.querySelectorAll('rect[data-legend-pattern]');
