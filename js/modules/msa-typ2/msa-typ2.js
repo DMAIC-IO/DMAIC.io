@@ -717,7 +717,7 @@ const mod = createModule({
             mode: 'single',
             ...SLOT_FILTERS[role],
             onChange: (ref) => {
-              COLUMN_SINKS[role](this.model, ref);
+              this.setColumn(role, ref);
               this.runAnalysis();
             },
           };
