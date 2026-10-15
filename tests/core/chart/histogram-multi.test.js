@@ -203,3 +203,58 @@ suite('Histogram type — series path: Pareto', () => {
     unmount(m);
   });
 });
+
+suite('Histogram type — series path: boxplot strip', () => {
+  test('one box per visible series', () => {
+    const m = mount({ series: [s('A', A), s('B', B), s('C', A, { visible: false })], binWidth: 1, boxplotStrip: true });
+    assertEqual(m.svg.querySelectorAll('g[data-box]').length, 2);
+    unmount(m);
+  });
+  test('strip height shrinks the plot area', () => {
+    const off = mount({ series: [s('A', A), s('B', B)], binWidth: 1 });
+    const on = mount({ series: [s('A', A), s('B', B)], binWidth: 1, boxplotStrip: true });
+    assertAlmostEqual(off.chart._plotArea.h - on.chart._plotArea.h, 2 * (22 + 6) + 6, 1e-6);
+    unmount(off); unmount(on);
+  });
+  test('box uses the bars’ x scale: median line at xScale(median)', () => {
+    const m = mount({ series: [s('A', A)], binWidth: 1, boxplotStrip: true });
+    const med = m.svg.querySelector('g[data-box="0"] line[data-box-median]');
+    assertAlmostEqual(Number(med.getAttribute('x1')), m.chart._xScale(3), 1e-6);
+    unmount(m);
+  });
+  test('box follows zoom (view state)', () => {
+    const m = mount({ series: [s('A', A)], binWidth: 1, boxplotStrip: true });
+    m.chart._viewState = { xMin: 2, xMax: 4, yMin: 0, yMax: 4 };
+    m.chart.render();
+    const med = m.svg.querySelector('g[data-box="0"] line[data-box-median]');
+    assertAlmostEqual(Number(med.getAttribute('x1')), m.chart._plotArea.x + m.chart._plotArea.w / 2, 1);
+    unmount(m);
+  });
+  test('outliers drawn as circles', () => {
+    const m = mount({ series: [s('O', [10, 11, 11, 12, 12, 12, 13, 13, 14, 40])], boxplotStrip: true });
+    assertEqual(m.svg.querySelectorAll('circle[data-box-outlier]').length, 1);
+    unmount(m);
+  });
+  test('single-value series → degenerate box, no NaN', () => {
+    const m = mount({ series: [s('A', A), s('One', [4])], binWidth: 1, boxplotStrip: true });
+    assertEqual(m.svg.querySelectorAll('g[data-box]').length, 2);
+    assertTrue(!m.svg.outerHTML.includes('NaN'));
+    unmount(m);
+  });
+  test('tooltip in the strip row shows n, quartiles, mean and outliers', () => {
+    const m = mount({ series: [s('O', [10, 11, 11, 12, 12, 12, 13, 13, 14, 40])], boxplotStrip: true });
+    const rowMidPx = m.chart._stripTop + 6 + 11;
+    const hits = m.chart._findNearby(m.chart._xScaleInv(m.chart._xScale(12)), m.chart._yScaleInv(rowMidPx), 10);
+    assertEqual(hits.length, 1);
+    const txt = hits[0].node.textContent;
+    assertTrue(txt.includes('n = 10') && txt.includes('Q1') && txt.includes('Q3') && txt.includes('1'), txt);
+    unmount(m);
+  });
+  test('strip sits below the plot with Pareto and strip together', () => {
+    const m = mount({ series: [s('A', A)], binWidth: 1, boxplotStrip: true, pareto: true });
+    const pa = m.chart._plotArea;
+    assertTrue(m.chart._stripTop >= pa.y + pa.h, `${m.chart._stripTop} < ${pa.y + pa.h}`);
+    assertEqual(m.svg.querySelectorAll('g[data-box]').length, 1);
+    unmount(m);
+  });
+});

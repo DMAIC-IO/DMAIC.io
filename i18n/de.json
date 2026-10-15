@@ -806,7 +806,10 @@
         "normal": "Normalverteilung",
         "range": "Bereich",
         "cumulative": "Kumuliert",
-        "paretoCum": "Kumuliert (%)"
+        "paretoCum": "Kumuliert (%)",
+        "median": "Median",
+        "mean": "Mittelwert",
+        "outliers": "Ausreißer"
       },
       "boxplot": {
         "appearance": "Darstellung",

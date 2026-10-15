@@ -14,8 +14,11 @@ import {
 import {
   edSection, edSelectRow, edCheckboxRow, edInlineNum,
 } from '../chart-editor.js';
-import { binAll, seriesMoments, cumulativePercent } from '../histogram-series.js';
-import { drawSeriesBars, drawNormalCurves, normalPeak, binTooltip, drawPareto, PARETO_AXIS_W, PARETO_COLOR } from '../histogram-series-draw.js';
+import { binAll, seriesMoments, cumulativePercent, computeBoxStats } from '../histogram-series.js';
+import {
+  drawSeriesBars, drawNormalCurves, normalPeak, binTooltip, drawPareto, PARETO_AXIS_W, PARETO_COLOR,
+  stripHeight, drawBoxStrip, boxTooltip, BOX_H, BOX_GAP,
+} from '../histogram-series-draw.js';
 
 /**
  * Compute IQR for Freedman-Diaconis rule.
@@ -294,6 +297,28 @@ export default class HistogramChart extends ChartBase {
     return { ...pa, w: pa.w - PARETO_AXIS_W, rMargin: pa.rMargin + PARETO_AXIS_W };
   }
 
+  /**
+   * Visible series with box statistics, in series order (strip rows).
+   * @returns {{ si: number, series: object, stats: object }[]}
+   */
+  _stripRows() {
+    if (!this._isSeriesMode() || !this.config.boxplotStrip) return [];
+    const rows = [];
+    this.config.series.forEach((s, si) => {
+      if (s.visible === false) return;
+      const stats = computeBoxStats(s.values);
+      if (stats) rows.push({ si, series: s, stats });
+    });
+    return rows;
+  }
+
+  /** @override Room for the boxplot strip below the x-axis title. */
+  _getMargins() {
+    const m = super._getMargins();
+    const extra = stripHeight(this._stripRows().length);
+    return extra ? { ...m, bottom: m.bottom + extra } : m;
+  }
+
   /** @override Legend starts right of the Pareto %-axis. */
   _drawLegend(svg, pa, size, textColor) {
     const shift = this._paretoSeriesIndex() >= 0 ? PARETO_AXIS_W : 0;
@@ -315,6 +340,10 @@ export default class HistogramChart extends ChartBase {
           tickSize: this.config.tickSize || 11,
         });
       }
+      const rows = this._stripRows();
+      this._stripRowsCache = rows;
+      this._stripTop = rows.length ? _plotArea.totalH - stripHeight(rows.length) : null;
+      if (rows.length) drawBoxStrip(svg, defs, this._uid, rows, xScale, _plotArea, this._stripTop);
       return;
     }
     const resolved = this._resolveBins();
@@ -558,6 +587,16 @@ export default class HistogramChart extends ChartBase {
    * @returns {{node: HTMLElement}[]}
    */
   _findNearbySeries(dataX, dataY) {
+    const rows = this._stripRowsCache || [];
+    if (rows.length && this._stripTop != null) {
+      const py = this._yScale(dataY);
+      if (py >= this._stripTop) {
+        const ri = Math.floor((py - this._stripTop - BOX_GAP / 2) / (BOX_H + BOX_GAP));
+        const row = rows[ri];
+        if (!row) return [];
+        return [{ node: boxTooltip({ series: row.series, stats: row.stats, locale: this.locale, t: (k) => this._th(k) }) }];
+      }
+    }
     const res = this._seriesBins;
     if (!res) return [];
     const series = this.config.series;

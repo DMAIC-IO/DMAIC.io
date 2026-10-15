@@ -158,3 +158,76 @@ export function drawPareto(svg, group, bins, cum, xScale, pa, o) {
     transform: `rotate(90, ${lx}, ${ly})`,
   }, svg);
 }
+
+/** Box height and gap of the boxplot strip in px. */
+export const BOX_H = 22;
+export const BOX_GAP = 6;
+
+/**
+ * Height of the boxplot strip for `rows` boxes.
+ * @param {number} rows
+ * @returns {number}
+ */
+export function stripHeight(rows) {
+  return rows > 0 ? rows * (BOX_H + BOX_GAP) + BOX_GAP : 0;
+}
+
+/**
+ * Boxplot strip below the plot: one horizontal box per row on the bars' x scale.
+ * @param {SVGSVGElement} svg
+ * @param {SVGDefsElement} defs
+ * @param {string|number} uid
+ * @param {{ si: number, series: object, stats: object }[]} rows
+ * @param {Function} xScale
+ * @param {{x:number,w:number}} pa
+ * @param {number} top - y of the strip's upper edge
+ */
+export function drawBoxStrip(svg, defs, uid, rows, xScale, pa, top) {
+  const clipId = `hist-strip-${uid}`;
+  const clip = svgEl('clipPath', { id: clipId }, defs);
+  svgEl('rect', { x: pa.x, y: top, width: pa.w, height: stripHeight(rows.length) }, clip);
+  const g = svgEl('g', { 'clip-path': `url(#${clipId})`, 'data-box-strip': '' }, svg);
+  rows.forEach(({ si, series, stats }, ri) => {
+    const y = top + BOX_GAP + ri * (BOX_H + BOX_GAP);
+    const cy = y + BOX_H / 2;
+    const stroke = resolveColor(series.borderColor);
+    const box = svgEl('g', { 'data-box': si }, g);
+    const line = (x1, y1, x2, y2, extra = {}) => svgEl('line', { x1, y1, x2, y2, stroke, 'stroke-width': 1.5, ...extra }, box);
+    line(xScale(stats.whiskerLo), cy, xScale(stats.q1), cy);
+    line(xScale(stats.q3), cy, xScale(stats.whiskerHi), cy);
+    line(xScale(stats.whiskerLo), y + 5, xScale(stats.whiskerLo), y + BOX_H - 5);
+    line(xScale(stats.whiskerHi), y + 5, xScale(stats.whiskerHi), y + BOX_H - 5);
+    const x1 = xScale(stats.q1);
+    svgEl('rect', {
+      x: x1, y, width: Math.max(1, xScale(stats.q3) - x1), height: BOX_H,
+      fill: resolveColor(series.fillColor), 'fill-opacity': 0.35, stroke, 'stroke-width': 1.5, 'data-box-iqr': '',
+    }, box);
+    line(xScale(stats.median), y, xScale(stats.median), y + BOX_H, { 'stroke-width': 2.5, 'data-box-median': '' });
+    const mx = xScale(stats.mean);
+    svgEl('path', { d: `M${mx},${cy - 5}L${mx + 5},${cy}L${mx},${cy + 5}L${mx - 5},${cy}Z`, fill: stroke, 'data-box-mean': '' }, box);
+    stats.outliers.forEach((v) => {
+      svgEl('circle', { cx: xScale(v), cy, r: 2.5, fill: 'none', stroke, 'stroke-width': 1.2, 'data-box-outlier': '' }, box);
+    });
+  });
+}
+
+/**
+ * Tooltip body of one box.
+ * @param {{ series: object, stats: object, locale: string, t: (key: string) => string }} p
+ * @returns {HTMLElement}
+ */
+export function boxTooltip({ series, stats, locale, t }) {
+  const f = (v) => formatNum(v, 3, locale);
+  const rows = [
+    h('div', null, h('b', { style: `color:${resolveColor(series.borderColor)}` }, series.name)),
+    h('div', null, `n = ${stats.n}`),
+    h('div', null, `Min: ${f(stats.min)}`),
+    h('div', null, `Q1: ${f(stats.q1)}`),
+    h('div', null, `${t('median')}: ${f(stats.median)}`),
+    h('div', null, `${t('mean')}: ${f(stats.mean)}`),
+    h('div', null, `Q3: ${f(stats.q3)}`),
+    h('div', null, `Max: ${f(stats.max)}`),
+  ];
+  if (stats.outliers.length) rows.push(h('div', null, `${t('outliers')}: ${stats.outliers.length}`));
+  return h('div', null, ...rows);
+}

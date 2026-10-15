@@ -806,7 +806,10 @@
         "normal": "Normal",
         "range": "Range",
         "cumulative": "Cumulative",
-        "paretoCum": "Cumulative (%)"
+        "paretoCum": "Cumulative (%)",
+        "median": "Median",
+        "mean": "Mean",
+        "outliers": "Outliers"
       },
       "boxplot": {
         "appearance": "Appearance",
