@@ -47,7 +47,8 @@ import { DatasetPicker, getColumnValues, getColumnName } from '../../ui/dataset-
 import { computeSeriesStats, renderStatsTable } from '../../core/stats-panel.js';
 import { CHART_COLORS_RGBA, BORDER_COLORS } from '../../core/chart/chart-colors.js';
 import { debounce } from '../../core/debounce.js';
-import { binAll, computeBoxStats, createBarPattern } from './histogram-binning.js';
+import { binAll, computeBoxStats } from '../../core/chart/histogram-series.js';
+import { createBarPattern } from './histogram-binning.js';
 import {
   provisionWorksheet, removeProvisionedWorksheet, csvPayloadToWorksheetState,
 } from '../../core/examples-registry.js';
