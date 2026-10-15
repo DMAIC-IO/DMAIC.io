@@ -2157,6 +2157,102 @@ test('unreachable_write: ein dynamischer Schlüssel ohne auflösbare Menge deckt
   assert.deepEqual(modules.foo.reported, ['unreachable_write:params.alpha']);
 });
 
+test('unreachable_write: eine Pfad-Hilfe, die nur LIEST, deckt NICHTS ab (Review-Fund)', () => {
+  // Der Repro-Fall des Reviews: `logKeys` erfüllt alle äußeren Merkmale einer
+  // Pfad-Hilfe (lokal auflösbar, erstes Argument `this.model.params`, ein
+  // Argument mit geprüfter Schlüsselmenge) — und weist doch nichts zu. Zählte
+  // sie als Abdeckung, gäbe das Gate ein Feld frei, das kein Agent setzen kann.
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} key der Schlüssel
+       * @param {string} value der Wert
+       * @returns {void}
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        logKeys(this.model.params, key, value);
+      },`);
+  const root = fixture({ foo: {
+    'foo.js': `const PARAM_KEYS = ['alpha'];
+function logKeys(obj, path, value) {
+  const parts = path.split('.');
+  report(obj[parts[0]], value);
+}
+${vm}`,
+    'foo-model.js': `export class State {
+      /** @type {object} die Parameter */
+      params = { alpha: '' };
+      toJSON() { return { params: { alpha: this.params.alpha } }; }
+    }`,
+    'foo.html': '<input x-model="model.params.alpha">',
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unreachable_write:params.alpha']);
+  assert.equal(modules.foo.available, false);
+});
+
+test('unreachable_write: eine Pfeilfunktions-Pfad-Hilfe deckt ab, eine gleichnamige Klasse NICHT', () => {
+  // Zwei Deklarationsformen am selben Aufruf: die Pfeilfunktion führt dieselbe
+  // Aliaskette (`let cur = obj`) wie die Funktionsdeklaration und deckt
+  // deshalb ab; die Klasse hat keinen Funktionskörper, den die Prüfung lesen
+  // könnte, und deckt deshalb nichts ab (fail closed).
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} key der Schlüssel
+       * @param {string} value der Wert
+       * @returns {void}
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        setAtPath(this.model.params, key, value);
+      },`);
+  const model = `export class State {
+      /** @type {object} die Parameter */
+      params = { alpha: '' };
+      toJSON() { return { params: { alpha: this.params.alpha } }; }
+    }`;
+  const html = '<input x-model="model.params.alpha">';
+  const arrow = fixture({ foo: {
+    'foo.js': `const PARAM_KEYS = ['alpha'];
+const setAtPath = (obj, path, value) => {
+  const parts = path.split('.');
+  let cur = obj;
+  for (const p of parts.slice(0, -1)) cur = cur[p];
+  cur[parts[parts.length - 1]] = value;
+};
+${vm}`,
+    'foo-model.js': model,
+    'foo.html': html,
+  } });
+  assert.deepEqual(collectAgentData(arrow).modules.foo.reported, []);
+
+  const asClass = fixture({ foo: {
+    'foo.js': `const PARAM_KEYS = ['alpha'];
+class setAtPath { constructor(obj, path, value) { this.obj = obj; } }
+${vm}`,
+    'foo-model.js': model,
+    'foo.html': html,
+  } });
+  assert.deepEqual(collectAgentData(asClass).modules.foo.reported, ['unreachable_write:params.alpha']);
+});
+
+test('unreachable_write: ein zweimal gebundener Pfad ist EIN Befund, nicht zwei', () => {
+  // `bindings.models` trägt einen Eintrag JE Bindung. Ohne Entdoppelung
+  // stünde derselbe Code mehrfach in `reported` — und die Vertragsfläche,
+  // die Gate und Agent lesen, zählte Bindungen statt Felder.
+  const root = fixture({ foo: {
+    'foo.js': TAGGED_VM,
+    'foo-model.js': `export class State {
+      /** @type {object} die Parameter */
+      params = { alpha: '' };
+      toJSON() { return { params: { alpha: this.params.alpha } }; }
+    }`,
+    'foo.html': '<input x-model="model.params.alpha"><select x-model="model.params.alpha"></select>',
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unreachable_write:params.alpha']);
+});
+
 test('unresolvable_tojson: eine Pfeilfunktions-toJSON als Klassenfeld wird nicht als MethodDeclaration erkannt und klettert nicht zur Basisklasse', () => {
   // Review-Fund 3 (latent, 0 Treffer im Bestand): die alte Fassung suchte
   // `toJSON` nur als `MethodDeclaration`. Eine überschreibende Pfeilfunktion

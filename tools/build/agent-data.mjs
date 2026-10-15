@@ -149,7 +149,14 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   // (`written`) — nicht gegen die Modellfelder, denn ein Feld kann lesbar
   // und trotzdem für die Fläche unerreichbar sein.
   const bindings = templateBindings(dirname(viewmodelFile));
-  const unreachable = bindings.models
+  // Entdoppelt: `bindings.models` trägt einen Eintrag JE Bindung, und eine
+  // Vorlage bindet denselben Pfad gern mehrfach (Eingabefeld und Auswahlfeld
+  // auf `params.type`, acht Schalter auf `params.enabledRules`). Ohne das
+  // `Set` stünde derselbe Code mehrfach in `reported` — die Vertragsfläche,
+  // die Gate und Agent lesen, zählte dann Bindungen statt unerreichbarer
+  // Felder (Review-Fund). `Set` erhält die Erstsichtungsreihenfolge, die
+  // Ausgabereihenfolge bleibt also dieselbe.
+  const unreachable = [...new Set(bindings.models)]
     .filter(f => !written.has(f))
     .map(f => `unreachable_write:${f}`);
   const templateCalls = bindings.calls.map(m => `template_model_call:${m}`);
@@ -472,7 +479,9 @@ function readViewmodel(sf, resolver, appDir) {
  *      per `requireEnum('…', <key>, <MENGE>)` GEPRÜFTEN, im Modul
  *      auflösbaren Schlüsselmenge; ohne diese Prüfung zählt sie für
  *      NICHTS (fail closed). Dasselbe gilt für eine lokale Pfad-Hilfe
- *      (`setAtPath(this.model.<a>, <key>, …)`).
+ *      (`setAtPath(this.model.<a>, <key>, …)`) — die muss ihrerseits
+ *      nachweislich ZUWEISEN (`pathHelperAssigns`), sonst deckt sie nichts
+ *      ab: eine nur lesende Hilfe ist kein Schreibweg.
  *   2. `this.model.<methode>(…)` — eine Delegation an eine Model-Methode,
  *      GENAU EINE Ebene tief (`fieldsCoveredByDelegation`): die Model-Methode
  *      muss SELBST `this.<feld> = <ausdruck>` zuweisen, `<ausdruck>` muss
@@ -570,9 +579,13 @@ function resolveStringArray(expr, sf) {
  * `setAtPath(this.model.params, key, value)` zählt wie
  * `this.model.params[key] = value`.
  *
- * Drei Bedingungen, alle drei notwendig (fail closed): die gerufene Funktion
- * ist im Modul auflösbar (ein importierter oder unbekannter Name deckt
- * nichts ab), ihr erstes Argument ist eine statische `this.model.<pfad>`-
+ * Vier Bedingungen, alle vier notwendig (fail closed): die gerufene Funktion
+ * ist im Modul als FUNKTION auflösbar (ein importierter oder unbekannter
+ * Name deckt nichts ab, eine gleichnamige Klasse oder eine Konstante ohne
+ * Funktionsinitialisierer ebenso nicht), sie WEIST in ihrem Körper
+ * tatsächlich zu (`pathHelperAssigns` — Review-Fund: `logKeys(this.model.params, key)`
+ * erfüllte sonst alle äußeren Merkmale und gab ein Feld frei, das kein Agent
+ * setzen kann), ihr erstes Argument ist eine statische `this.model.<pfad>`-
  * Kette, und ein weiteres Argument ist ein Parameter mit geprüfter
  * Schlüsselmenge. Ein Schlüssel mit Punkt (`'tolerance.LSL'`) wird wörtlich
  * angehängt — damit deckt derselbe Mechanismus die zweite Ebene ab, ohne
@@ -586,8 +599,13 @@ function resolveStringArray(expr, sf) {
 function fieldsCoveredByPathHelper(call, sf, keySets) {
   if (keySets.size === 0) return [];
   if (!ts.isIdentifier(call.expression)) return [];
-  const helper = findLocalDeclaration(call.expression.text, sf);
-  if (!helper) return [];
+  const decl = findLocalDeclaration(call.expression.text, sf);
+  // Fail closed: ohne Deklaration im Modul ist der Körper nicht lesbar.
+  if (!decl) return [];
+  const helper = functionOfDeclaration(decl);
+  // Fail closed: `findLocalDeclaration` liefert auch Klassen und
+  // Variablen — nur ein lesbarer Funktionskörper ist prüfbar.
+  if (!helper || !pathHelperAssigns(helper)) return [];
   const [base, ...rest] = call.arguments;
   if (!base) return [];
   const target = assignTargetAfterThis(base, 'model');
@@ -595,6 +613,74 @@ function fieldsCoveredByPathHelper(call, sf, keySets) {
   const keyArg = rest.find(argument => ts.isIdentifier(argument) && keySets.has(argument.text));
   if (!keyArg) return [];
   return keySets.get(keyArg.text).map(key => `${target.path}.${key}`);
+}
+
+/**
+ * Die Funktion hinter einer Deklaration — die Deklaration selbst, wenn sie
+ * eine `function`-Deklaration ist, sonst der Funktions- oder
+ * Pfeilfunktions-Initialisierer einer Variablen (`const setAtPath = (…) => …`).
+ * `null` für alles andere (fail closed): eine Klasse, ein Objektliteral oder
+ * eine Variable ohne Initialisierer hat keinen Körper, dessen Zuweisungen
+ * sich prüfen ließen.
+ * @param {ts.FunctionDeclaration|ts.VariableDeclaration|ts.ClassDeclaration} decl
+ * @returns {ts.FunctionDeclaration|ts.FunctionExpression|ts.ArrowFunction|null}
+ */
+function functionOfDeclaration(decl) {
+  if (ts.isFunctionDeclaration(decl)) return decl;
+  if (!ts.isVariableDeclaration(decl) || !decl.initializer) return null;
+  const init = decl.initializer;
+  if (ts.isFunctionExpression(init) || ts.isArrowFunction(init)) return init;
+  return null;
+}
+
+/**
+ * Ob eine Pfad-Hilfe wirklich SCHREIBT: ein `<basis>[<schlüssel>] = <wert>`
+ * in ihrem Körper, dessen Basis auf ihren ERSTEN Parameter zurückgeht und
+ * dessen rechte Seite aus einem ihrer eigenen Parameter stammt.
+ *
+ * Das ist die Gegenprobe, die `fieldsCoveredByDelegation` für Delegationen
+ * längst verlangt (die Model-Methode muss selbst aus einem IHRER Parameter
+ * zuweisen) — ohne sie zählte eine rein lesende Hilfe
+ * (`logKeys(this.model.params, key)`, `validate(this.model.params, key)`)
+ * als volle Abdeckung jedes Schlüssels der geprüften Menge.
+ *
+ * Die Aliaskette ist dabei ausdrücklich erlaubt, denn die kanonische Form
+ * schreibt nicht an `obj` selbst:
+ *   `let cur = obj; for (…) cur = cur[p]; cur[letztes] = value;`
+ * `expandDerivedNames` zieht `cur` über `let cur = obj` an den ersten
+ * Parameter heran; die Neuzuweisung in der Schleife ändert daran nichts, weil
+ * sie `cur` aus `cur` ableitet. Verlangt wird ein BERECHNETES Glied
+ * (`<basis>[…]`), denn nur ein solches trägt den dynamischen Schlüssel —
+ * `obj.feld = wert` wäre ein fester Pfad und keine Pfad-Hilfe.
+ *
+ * @param {ts.FunctionDeclaration|ts.FunctionExpression|ts.ArrowFunction} fn
+ * @returns {boolean}
+ */
+function pathHelperAssigns(fn) {
+  // Fail closed: eine Kurzform-Pfeilfunktion (`(o, k) => o[k]`) hat keinen
+  // Block — ein Ausdruck ohne Zuweisung deckt nichts ab.
+  if (!fn.body || !ts.isBlock(fn.body)) return false;
+  const params = parameterNames(fn).filter(Boolean);
+  const [first] = parameterNames(fn);
+  // Fail closed: ohne benannten ersten Parameter (destrukturiert, gar keiner)
+  // ist nicht entscheidbar, ob die Zuweisung das übergebene Ziel trifft.
+  if (!first) return false;
+  const bases = expandDerivedNames(fn.body, new Set([first]));
+  const values = expandDerivedNames(fn.body, new Set(params));
+  let assigns = false;
+  const walk = (node) => {
+    if (assigns) return;
+    if (ts.isBinaryExpression(node) && ASSIGN_KINDS.has(node.operatorToken.kind)
+      && ts.isElementAccessExpression(node.left)
+      && derivesFromParams(node.left.expression, bases)
+      && derivesFromParams(node.right, values)) {
+      assigns = true;
+      return;
+    }
+    ts.forEachChild(node, walk);
+  };
+  walk(fn.body);
+  return assigns;
 }
 
 /**
