@@ -292,6 +292,21 @@ tbody .pc__col-nr:active { cursor: grabbing; }
   filter: drop-shadow(0 0 4px var(--color-accent-light));
 }
 
+/* The connector overlay is a node-diagram chart: no frame, no background,
+   no clipping — content coordinates map 1:1 onto the node canvas. */
+.pc__org-lines .dmike-chart-card,
+.pc__org-lines .dmike-chart-wrap,
+.pc__org-lines .dmike-chart-svg-wrap {
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
+.pc__org-lines .dmike-chart-svg-wrap svg {
+  overflow: visible;
+}
+
 /* Nodes */
 .pc__org-node {
   position: absolute;

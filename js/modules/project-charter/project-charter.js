@@ -33,6 +33,13 @@ const ORG_PAD = 40;   // padding around content inside the org window (px)
 const ORG_MIN_H = 420; // minimum / base height of the org window (px)
 const UNDO_MAX = 50;
 
+/**
+ * Connector-overlay chart per component root. Kept outside Alpine's reactive
+ * proxy: a chart instance holds DOM nodes and must not be made reactive.
+ * @type {WeakMap<Element, import('../../core/chart/chart-base.js').default>}
+ */
+const orgLineCharts = new WeakMap();
+
 /** Convert stored Markdown content to a DocumentFragment for the editor. */
 function prepareFragment(raw) {
   return markdownToFragment(raw);
@@ -101,6 +108,7 @@ export default createModule({
             editor.replaceChildren(prepareFragment(this.model.problemStatement));
             editor.classList.toggle('pc__problem-editor--empty', !editor.textContent.trim());
           }
+          this._orgMountLines();
           this._orgRender();
           this._orgInitModebar();
           this._orgApplyStyle();
@@ -112,6 +120,9 @@ export default createModule({
       },
 
       destroy() {
+        this._orgUnmounted = true;
+        const lines = orgLineCharts.get(this.$root);
+        if (lines) { module._context.chartManager.destroy(lines); orgLineCharts.delete(this.$root); }
         if (this._modebar) { this._modebar.destroy(); this._modebar = null; }
         if (this._orgResizeObs) { this._orgResizeObs.disconnect(); this._orgResizeObs = null; }
       },
@@ -415,48 +426,30 @@ export default createModule({
         });
       },
 
+      /** Create the links-only node-diagram that draws the connector lines. */
+      _orgMountLines() {
+        const host = this.$root.querySelector('[data-ref="orgLines"]');
+        if (!host) return;
+        const root = this.$root;
+        const cm = module._context.chartManager;
+        cm.create(host, 'node-diagram', {
+          showModebar: false, origin: 'zero', padding: 0,
+          nodes: [], links: [], highlightClass: 'pc__org-line--hl',
+        }).then((chart) => {
+          if (!chart) return;
+          // Unmounted while the type was loading: do not keep an orphan.
+          if (this._orgUnmounted || !root.isConnected) { cm.destroy(chart); return; }
+          orgLineCharts.set(root, chart);
+          this._orgDrawLines();
+        });
+      },
+
       _orgDrawLines() {
-        const svg = this.$root.querySelector('[data-ref="orgLines"]');
-        if (!svg) return;
-        svg.replaceChildren();
-
-        let maxX = 0, maxY = 0;
-        this.model.orgNodes.filter(n => !n._h).forEach(n => {
-          const el = this.$root.querySelector(`[data-org-id="${  n.id  }"]`);
-          const nodeH = el ? el.offsetHeight : 80;
-          maxX = Math.max(maxX, n._x + NW);
-          maxY = Math.max(maxY, n._y + nodeH);
-        });
-        svg.setAttribute('width', maxX + 50);
-        svg.setAttribute('height', maxY + 50);
-
-        this.model.orgNodes.filter(n => !n._h && n.pid !== null).forEach(n => {
-          const parent = this.model.orgNodes.find(p => p.id === n.pid);
-          if (!parent || parent._h) return;
-          const pe = this.$root.querySelector(`[data-org-id="${  parent.id  }"]`);
-          const ce = this.$root.querySelector(`[data-org-id="${  n.id  }"]`);
-          if (!pe || !ce) return;
-
-          const x1 = parent._x + NW / 2;
-          const y1 = parent._y + pe.offsetHeight;
-          const x2 = n._x + NW / 2;
-          const y2 = n._y;
-          const mid = y1 + (y2 - y1) / 2;
-
-          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-          path.setAttribute('d', `M${x1} ${y1}C${x1} ${mid},${x2} ${mid},${x2} ${y2}`);
-          path.setAttribute('fill', 'none');
-          path.setAttribute('stroke', this.model.orgStyle.lineColor ||
-            getComputedStyle(svg).getPropertyValue('--color-border-secondary').trim() || '#94a3b8');
-          path.setAttribute('stroke-width', String(this.model.orgStyle.lineWidth || 2));
-          const dash = DASH_MAP[this.model.orgStyle.lineStyle];
-          if (dash && dash !== 'none') path.setAttribute('stroke-dasharray', dash);
-          path.setAttribute('stroke-linecap', 'round');
-          if (n.id === this._orgSel || parent.id === this._orgSel) {
-            path.classList.add('pc__org-line--hl');
-          }
-          svg.appendChild(path);
-        });
+        const chart = orgLineCharts.get(this.$root);
+        if (!chart) return;
+        const { links } = buildOrgDiagram(this.model.orgNodes, this.model.orgStyle, this._orgHeights(),
+          { selectedId: this._orgSel, width: NW });
+        module._context.chartManager.update(chart, { links });
       },
 
       _orgApplyTransform() {
