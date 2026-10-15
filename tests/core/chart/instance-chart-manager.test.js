@@ -196,6 +196,26 @@ suite('InstanceChartManager', () => {
     assertEqual(c.config.title, 'y');
     assertTrue(c._autoLabels === undefined);
   });
+
+  test('persistEdits:false — stored edits are not laid over and nothing is recorded', async () => {
+    const store = fakeStore({ i1: { histogram: { title: 'Stored' } } });
+    const f = createInstanceChartManager(fakeManager(), store, 'i1');
+    const c = await f.create({}, 'histogram', { title: 'Model', persistEdits: false });
+    assertEqual(c.config.title, 'Model');
+    assertEqual(c._onLabelEdit, undefined);
+    assertEqual(c._autoLabels, undefined);
+    f.update(c, { title: 'Model 2' });
+    assertEqual(c.config.title, 'Model 2');
+    assertDeepEqual(store.data, { i1: { histogram: { title: 'Stored' } } });
+  });
+
+  test('persistEdits:false does not take the chart key from a bound chart', async () => {
+    const store = fakeStore({ i1: { histogram: { title: 'Stored' } } });
+    const f = createInstanceChartManager(fakeManager(), store, 'i1');
+    await f.create({}, 'histogram', { persistEdits: false });
+    const bound = await f.create({}, 'histogram', { title: 'Auto' });
+    assertEqual(bound.config.title, 'Stored');
+  });
 });
 
 function boundStore(initial = {}) {

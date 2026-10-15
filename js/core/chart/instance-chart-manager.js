@@ -73,8 +73,12 @@ export function createEditBoundChartManager(manager, { read, write, keys, isInsi
    * Create a chart; stored edits win over the caller's config.
    * The chart key is `config.editKey || type`, suffixed `#2`, `#3`, ... while
    * another live chart of this owner holds it.
+   * `config.persistEdits === false` bypasses the binding entirely (see the
+   * histogram module, whose model stores every setting): no stored edits are
+   * laid over, nothing is recorded, and no chart key is allocated.
    */
   facade.create = async function create(container, type, config = {}) {
+    if (config.persistEdits === false) return manager.create(container, type, config);
     const key = allocateKey(config.editKey || type, container);
     const slot = { key, container };
     reserved.add(slot);
