@@ -825,13 +825,9 @@ export const AGENT_REGISTRY = {
   },
   "ce-matrix": {
     "tagged": true,
-    "available": false,
-    "violations": [
-      "undeclared_option_source:setScore:value"
-    ],
-    "reported": [
-      "undeclared_option_source:setScore:value"
-    ],
+    "available": true,
+    "violations": [],
+    "reported": [],
     "actions": {
       "read": {
         "params": [
@@ -839,11 +835,11 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "addInput": {
         "params": [],
@@ -973,28 +969,39 @@ export const AGENT_REGISTRY = {
     "fields": {
       "inputs": {
         "type": "string[]",
-        "help": "die Eingangsgrößen (Zeilen) in Anzeigereihenfolge, adressiert über ihre Zeilennummer ab 0",
-        "bulk": false
+        "help": "the process inputs (rows) in display order",
+        "bulk": false,
+        "derived": true
       },
       "outputs": {
         "type": "string[]",
-        "help": "die Ergebnisgrößen (Spalten) in Anzeigereihenfolge, adressiert über ihre Spaltennummer ab 0",
-        "bulk": false
+        "help": "the result variables (columns) in display order",
+        "bulk": false,
+        "derived": true
       },
       "scores": {
-        "type": "Record<string, number>",
-        "help": "die gesetzten Bewertungen, adressiert als scores[\"zeile-spalte\"] mit Nummern ab 0; eine Kreuzung ohne Eintrag zählt als 0",
-        "bulk": false
-      },
-      "scale": {
-        "type": "string",
-        "help": "die aktive Bewertungsskala: 0-10, 0-1-3-9 oder 0-3-7-10",
-        "bulk": false
+        "type": "object",
+        "help": "the ratings, keyed \"row-column\", e.g. \"0-1\"",
+        "bulk": false,
+        "derived": true
       },
       "weights": {
         "type": "number[]",
-        "help": "je Ergebnisgröße ihre Kundenwichtigkeit, eine ganze Zahl von 1 bis 10, in Spaltenreihenfolge",
-        "bulk": false
+        "help": "the customer importance per output, 1 to 10",
+        "bulk": false,
+        "derived": true
+      },
+      "scale": {
+        "type": "string",
+        "help": "id of the rating scale",
+        "bulk": false,
+        "derived": true
+      },
+      "allowedScores": {
+        "type": "number[]",
+        "help": "the ratings `setScore` accepts on the active scale",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -3336,13 +3343,9 @@ export const AGENT_REGISTRY = {
   },
   "kano": {
     "tagged": true,
-    "available": false,
-    "violations": [
-      "undeclared_option_source:setSourceTree:instanceId"
-    ],
-    "reported": [
-      "undeclared_option_source:setSourceTree:instanceId"
-    ],
+    "available": true,
+    "violations": [],
+    "reported": [],
     "actions": {
       "read": {
         "params": [
@@ -3350,11 +3353,11 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "setSourceTree": {
         "params": [
@@ -3508,35 +3511,47 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "source": {
-        "type": "{ instanceId: string|null, level: 'need'|'driver'|'req' }",
-        "help": "woher die Merkmale stammen: `instanceId` ist die Instanz des VoC-CTx-Baum-Moduls, aus dem sie gelesen werden (`null` heißt losgelöst), `level` die Ebene dieses Baums — `need`, `driver` oder `req`",
-        "bulk": false
+        "type": "object",
+        "help": "origin of the items: `{ instanceId, level }`",
+        "bulk": false,
+        "derived": true
       },
       "options": {
-        "type": "{ importance: boolean }",
-        "help": "die Erfassungsoptionen: `importance` schaltet die dritte Frage nach der Wichtigkeit ein oder aus",
-        "bulk": false
+        "type": "object",
+        "help": "the capture options (`importance`)",
+        "bulk": false,
+        "derived": true
       },
       "items": {
-        "type": "Array<{id: string, nodeId: string|null, label: string, path: string, missing: boolean}>",
-        "help": "die zu bewertenden Merkmale in Erfassungsreihenfolge; je Merkmal `id` (zum Ansprechen), `nodeId` (der Knoten im Baum, `null` bei einem losgelösten Merkmal), `label` (sein Name), `path` (seine Herkunft im Baum) und `missing` (ob der Knoten im Baum nicht mehr vorkommt)",
+        "type": "object[]",
+        "help": "the items to rate, in capture order",
         "bulk": true,
-        "bulkKind": "table"
+        "bulkKind": "table",
+        "derived": true
       },
       "respondents": {
-        "type": "Array<{id: string, name: string}>",
-        "help": "die Befragten in Anlegereihenfolge; je Befragter `id` (zum Ansprechen) und `name`",
-        "bulk": false
+        "type": "object[]",
+        "help": "the respondents in creation order",
+        "bulk": false,
+        "derived": true
       },
       "answers": {
         "type": "object",
-        "help": "die Antworten, nach Befragter und darin nach Merkmal: `{ [respondentId]: { [itemId]: { f, d, w } } }`. `f` ist die funktionale, `d` die dysfunktionale Antwort auf der Skala 1 bis 5, `w` die Wichtigkeit auf der Skala 1 bis 9; `null` heißt unbeantwortet",
-        "bulk": false
+        "help": "the answers by respondent and item",
+        "bulk": false,
+        "derived": true
       },
       "activeRespondentId": {
         "type": "string|null",
-        "help": "die id der Befragten, deren Antworten das Erfassungsraster zeigt; `null` heißt, keine ist ausgewählt",
-        "bulk": false
+        "help": "id of the respondent shown in the capture grid",
+        "bulk": false,
+        "derived": true
+      },
+      "treeList": {
+        "type": "Array<{instanceId: string, name: string}>",
+        "help": "the VoC-CTx trees `setSourceTree` accepts",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -8655,4 +8670,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":26};
+export const AGENT_COVERAGE = {"total":74,"available":28};

@@ -23,7 +23,7 @@ import {
   downloadFile, ensureXLSX,
   exportTableAsPNG, exportTableAsSVG,
 } from '../../core/export-utils.js';
-import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireIndex } from '../../core/agent/agent-argcheck.js';
 import {
   State, RATING_SCALES, SCALE_IDS, WEIGHTS,
@@ -69,6 +69,15 @@ function textColorForValue(val, min, max) {
   return `rgb(${r},${g},${b})`;
 }
 
+/**
+ * @typedef {object} AgentRead
+ * @property {string[]} inputs  the process inputs (rows) in display order
+ * @property {string[]} outputs  the result variables (columns) in display order
+ * @property {object} scores  the ratings, keyed "row-column", e.g. "0-1"
+ * @property {number[]} weights  the customer importance per output, 1 to 10
+ * @property {string} scale  id of the rating scale
+ * @property {number[]} allowedScores  the ratings `setScore` accepts on the active scale
+ */
 export default createModule({
   config: {
     id: 'ce-matrix',
@@ -97,7 +106,18 @@ export default createModule({
 
   data(module, _t) {
     return {
-      ...agentReadMixin(module),
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Matrix, Skala und die zulässigen Bewertungen
+       */
+      read(options) {
+        return readAgentState('ce-matrix', {
+          ...this.model.toJSON(),
+          allowedScores: this.model.allowedScores(),
+        }, options);
+      },
 
       // ── Static view data ──────────────────────────────────────
       weightOptions: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],

@@ -1531,6 +1531,10 @@
 
       "whenToUse": "When features should be classified by how much their presence raises satisfaction and their absence lowers it — must-be, performance and delight features, surveyed with the functional and the dysfunctional question per respondent; not for weighting criteria against each other, that is what the pairwise comparison is for.",
       "actions": {
+        "read": {
+          "help": "Returns the capture, the respondents and the selectable trees.",
+          "params": { "options": "Optional; this module holds no bulk data." }
+        },
         "setSourceTree": {
           "help": "Links the features to an instance of the VoC-CTx tree module.",
           "params": {
@@ -1600,6 +1604,9 @@
         }
       },
       "fields": {
+        "treeList": {
+          "help": "The VoC-CTx trees of the project the items can be read from — exactly the instanceId values setSourceTree accepts. Per tree: instanceId and name."
+        },
         "source": {
           "help": "Where the features come from. instanceId names the instance of the VoC-CTx tree module they are read from — the features therefore come from another module instance of the same project; null means detached, the features then stand on their own. level names the level of that tree: need, driver or req."
         },
@@ -3448,6 +3455,10 @@
       "description": "Cause and Effect Matrix",
       "whenToUse": "When several process inputs are to be ranked by how strongly they act on the outputs that matter to the customer — the weighted row sum says which input to investigate first; not for rating failure modes by occurrence and detection, which is what the FMEA is for.",
       "actions": {
+        "read": {
+          "help": "Returns the matrix, the scale and the permitted ratings.",
+          "params": { "options": "Optional; this module holds no bulk data." }
+        },
         "addInput": {
           "help": "Appends another input (row) to the matrix and returns its row number."
         },
@@ -3503,6 +3514,9 @@
         }
       },
       "fields": {
+        "allowedScores": {
+          "help": "The ratings setScore accepts on the active scale — exactly the values of the scale named in scale."
+        },
         "inputs": {
           "help": "The inputs (rows) in display order, addressed by their row number from 0."
         },

@@ -23,7 +23,7 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
 import { State } from './kano-model.js';
 import { listTrees, flatten, diff, applyDiff, LEVELS } from './kano-link.js';
@@ -76,6 +76,16 @@ function treePhaseForCycle(cycleId) {
   return def?.cycles?.[cycleId]?.phase || def?.phase || 'define';
 }
 
+/**
+ * @typedef {object} AgentRead
+ * @property {object} source  origin of the items: `{ instanceId, level }`
+ * @property {object} options  the capture options (`importance`)
+ * @property {object[]} items  [bulk] the items to rate, in capture order
+ * @property {object[]} respondents  the respondents in creation order
+ * @property {object} answers  the answers by respondent and item
+ * @property {string|null} activeRespondentId  id of the respondent shown in the capture grid
+ * @property {Array<{instanceId: string, name: string}>} treeList  the VoC-CTx trees `setSourceTree` accepts
+ */
 export default createModule({
   config: {
     id: 'kano',
@@ -158,7 +168,18 @@ export default createModule({
 
   data(module, _t) {
     return {
-      ...agentReadMixin(module),
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Erfassung, Befragte und die wählbaren Bäume
+       */
+      read(options) {
+        return readAgentState('kano', {
+          ...this.model.toJSON(),
+          treeList: this.treeList.map((tr) => ({ instanceId: tr.instanceId, name: this.treeLabel(tr) })),
+        }, options);
+      },
       /** @type {Array<{instanceId: string, state: object|null}>} */
       treeList: [],
       /** @type {{added: number, renamed: number, missing: number}} */

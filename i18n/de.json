@@ -1531,6 +1531,10 @@
 
       "whenToUse": "Wenn Merkmale danach eingeordnet werden sollen, wie stark ihr Vorhandensein die Zufriedenheit hebt und ihr Fehlen sie senkt — Basis-, Leistungs- und Begeisterungsmerkmale, erhoben über die funktionale und die dysfunktionale Frage je Befragter; nicht für das Gewichten von Kriterien gegeneinander, dafür ist der Paarvergleich da.",
       "actions": {
+        "read": {
+          "help": "Liefert die Erfassung, die Befragten und die wählbaren Bäume.",
+          "params": { "options": "Optional; dieses Modul führt keine Massendaten." }
+        },
         "setSourceTree": {
           "help": "Verknüpft die Merkmale mit einer Instanz des VoC-CTx-Baum-Moduls.",
           "params": {
@@ -1600,6 +1604,9 @@
         }
       },
       "fields": {
+        "treeList": {
+          "help": "Die VoC-CTx-Bäume des Projekts, aus denen sich die Merkmale lesen lassen — genau die instanceId-Werte, die setSourceTree annimmt. Je Baum: instanceId und name."
+        },
         "source": {
           "help": "Woher die Merkmale stammen. instanceId nennt die Instanz des VoC-CTx-Baum-Moduls, aus der sie gelesen werden — die Merkmale kommen also aus einer anderen Modulinstanz desselben Projekts; null heißt losgelöst, die Merkmale stehen dann für sich. level nennt die Ebene dieses Baums: need, driver oder req."
         },
@@ -3452,6 +3459,10 @@
       "description": "Ursache-Wirkungs-Matrix",
       "whenToUse": "Wenn mehrere Prozesseingänge danach geordnet werden sollen, wie stark sie auf die kundenwichtigen Ergebnisgrößen wirken — die gewichtete Zeilensumme sagt, welcher Eingang zuerst untersucht wird; nicht zur Bewertung von Fehlerarten nach Auftreten und Entdeckung, dafür ist die FMEA da.",
       "actions": {
+        "read": {
+          "help": "Liefert die Matrix, die Skala und die zulässigen Bewertungen.",
+          "params": { "options": "Optional; dieses Modul führt keine Massendaten." }
+        },
         "addInput": {
           "help": "Hängt eine weitere Eingangsgröße (Zeile) an die Matrix an und liefert ihre Zeilennummer."
         },
@@ -3507,6 +3518,9 @@
         }
       },
       "fields": {
+        "allowedScores": {
+          "help": "Die Bewertungen, die setScore auf der aktiven Skala annimmt — genau die Werte der Skala aus scale."
+        },
         "inputs": {
           "help": "Die Eingangsgrößen (Zeilen) in Anzeigereihenfolge, adressiert über ihre Zeilennummer ab 0."
         },
