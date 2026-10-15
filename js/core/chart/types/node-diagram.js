@@ -1,8 +1,8 @@
 /**
  * node-diagram.js — Boxes connected by lines, at positions the caller computed.
  *
- * Used for the VoC → CTx tree export, the org-chart export and the org chart's
- * on-screen connector overlay (links only). Layout is the module's job; this
+ * Used for the VoC → CTx tree export, the org chart (export + overlay) and the
+ * TRIZ function model (export + arrow overlay). Layout is the module's job; this
  * type only draws. No axes, no zoom/pan/tooltip. See docs/CHARTING.md.
  */
 
@@ -20,6 +20,7 @@ const TOKENS = {
   nodeFill: '--color-bg-secondary',
   link: '--color-border-primary',
   badgeText: '--color-text-inverse',
+  labelBg: '--color-bg-primary',
 };
 
 const NODE_DEFAULTS = { radius: 6, padX: 10, padY: 6, lineHeight: 16, strokeWidth: 1 };
@@ -64,6 +65,36 @@ export function straightEndpoints(from, to, offset = 0) {
   const a = rayExit(cx1 + nx, cy1 + ny, ux, uy, from);
   const b = rayExit(cx2 + nx, cy2 + ny, -ux, -uy, to);
   return { x1: r2(a.x), y1: r2(a.y), x2: r2(b.x), y2: r2(b.y) };
+}
+
+const BOLD_WIDTH = 3;
+const DASHED = '6 4';
+const LABEL = { h: 16, charW: 6.2, padX: 4, radius: 3 };
+
+/** Per-instance marker id prefix counter (marker ids must be unique per document). */
+let markerSeq = 0;
+
+/**
+ * Sine path along a segment. The wavelength is stretched so a whole number of
+ * half waves fits; the path starts and ends exactly on the endpoints.
+ * @param {{x1:number,y1:number,x2:number,y2:number}} p
+ * @param {number} [amp=3] @param {number} [wavelength=10] @param {number} [step=2]
+ * @returns {string}
+ */
+export function wavePath(p, amp = 3, wavelength = 10, step = 2) {
+  const dx = p.x2 - p.x1, dy = p.y2 - p.y1;
+  const len = Math.hypot(dx, dy);
+  if (len === 0) return `M ${p.x1} ${p.y1}`;
+  const ux = dx / len, uy = dy / len;
+  const halves = Math.max(1, Math.round((2 * len) / wavelength));
+  const n = Math.max(2, Math.ceil(len / step));
+  const pts = [];
+  for (let i = 0; i <= n; i++) {
+    const s = (len * i) / n;
+    const o = amp * Math.sin((Math.PI * halves * s) / len);
+    pts.push(`${r2(p.x1 + ux * s - uy * o)} ${r2(p.y1 + uy * s + ux * o)}`);
+  }
+  return `M ${pts[0]} L ${pts.slice(1).join(' L ')}`;
 }
 
 /**
@@ -191,25 +222,63 @@ export default class NodeDiagram extends ChartBase {
     const col = {};
     for (const [k, token] of Object.entries(TOKENS)) col[k] = resolveColor(`var(${token})`);
 
+    const defs = (cfg.links || []).some((l) => l.arrow === 'end') ? svgEl('defs', {}, svg) : null;
     const g = svgEl('g', { 'data-part': 'content', transform: `translate(${-box.x} ${-box.y})` }, svg);
     const { ends } = resolveLinks(cfg);
-    for (const { link, p } of ends) this._drawLink(g, link, p, col);
+    ends.forEach(({ link, p }, i) => this._drawLink(g, link, p, col, defs, i));
+    for (const { link, p } of ends) if (link.label) this._drawLabel(g, link, p, col);
     for (const node of cfg.nodes || []) this._drawNode(g, node, col);
     this._hasRendered = true;
   }
 
   /** @private */
-  _drawLink(parent, link, p, col) {
+  _drawLink(parent, link, p, col, defs, index) {
+    const stroke = link.color ? resolveColor(link.color) : col.link;
     const attrs = {
       'data-part': 'link',
-      d: linkPath(link.shape, p),
+      d: link.style === 'wave' ? wavePath(p) : linkPath(link.shape, p),
       fill: 'none',
-      stroke: link.color ? resolveColor(link.color) : col.link,
-      'stroke-width': link.width ?? LINK_DEFAULT_WIDTH,
+      stroke,
+      'stroke-width': link.width ?? (link.style === 'bold' ? BOLD_WIDTH : LINK_DEFAULT_WIDTH),
     };
-    if (link.dash && link.dash !== 'none') attrs['stroke-dasharray'] = link.dash;
+    const dash = link.dash ?? (link.style === 'dashed' ? DASHED : null);
+    if (dash && dash !== 'none') attrs['stroke-dasharray'] = dash;
+    if (link.id != null) attrs['data-id'] = link.id;
+    if (link.arrow === 'end' && defs) attrs['marker-end'] = `url(#${this._marker(defs, index, stroke)})`;
     const path = svgEl('path', attrs, parent);
     if (link.highlight && this.config.highlightClass) path.classList.add(this.config.highlightClass);
+  }
+
+  /**
+   * One arrowhead marker per link, filled in the link colour.
+   * @private
+   * @returns {string} marker id
+   */
+  _marker(defs, index, color) {
+    this._markerPrefix ??= `nd-${++markerSeq}`;
+    const id = `${this._markerPrefix}-a${index}`;
+    const marker = svgEl('marker', {
+      id, viewBox: '0 0 10 10', refX: 9, refY: 5,
+      markerWidth: 10, markerHeight: 10, markerUnits: 'userSpaceOnUse', orient: 'auto',
+    }, defs);
+    svgEl('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: color }, marker);
+    return id;
+  }
+
+  /** Verb label at the midpoint of the link's endpoints. @private */
+  _drawLabel(parent, link, p, col) {
+    const text = String(link.label);
+    const mx = r2((p.x1 + p.x2) / 2), my = r2((p.y1 + p.y2) / 2);
+    const w = text.length * LABEL.charW + LABEL.padX * 2;
+    svgEl('rect', {
+      'data-part': 'link-label-bg',
+      x: r2(mx - w / 2), y: my - LABEL.h / 2, width: r2(w), height: LABEL.h, rx: LABEL.radius,
+      fill: col.labelBg,
+    }, parent);
+    svgText(text, {
+      'data-part': 'link-label',
+      x: mx, y: my + 4, 'text-anchor': 'middle', 'font-size': this.config.tickSize, fill: col.muted,
+    }, parent);
   }
 
   /** @private */

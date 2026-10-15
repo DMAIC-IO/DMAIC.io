@@ -7,7 +7,7 @@
  */
 
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
-import NodeDiagram, { contentBox, linkEndpoints, linkPath, straightEndpoints } from '../../../js/core/chart/types/node-diagram.js';
+import NodeDiagram, { contentBox, linkEndpoints, linkPath, straightEndpoints, wavePath } from '../../../js/core/chart/types/node-diagram.js';
 import ChartManager from '../../../js/core/chart/chart-manager.js';
 
 const A = { id: 'a', x: 40, y: 30, w: 100, h: 50, lines: [{ text: 'Alpha' }] };
@@ -301,6 +301,93 @@ suite('node-diagram — straight links', () => {
   test('a straight link renders between the box borders', () => {
     const { svg, done } = mount({ nodes: [P, Q], links: [{ from: 'p', to: 'q', shape: 'straight' }] });
     assertEqual(paths(svg)[0].getAttribute('d'), 'M 100 20 L 200 20');
+    done();
+  });
+});
+
+/** "M x y L x y …" → [[x, y], …] */
+function points(d) {
+  const nums = d.replace(/[ML]/g, ' ').trim().split(/\s+/).map(Number);
+  const out = [];
+  for (let i = 0; i < nums.length; i += 2) out.push([nums[i], nums[i + 1]]);
+  return out;
+}
+
+suite('node-diagram — link decorations', () => {
+  test('regression: a link without new fields renders exactly as before', () => {
+    const { svg, done } = mount({ nodes: [A, B], links: [{ from: 'a', to: 'b', shape: 'curve' }] });
+    assertEqual(svg.querySelector('defs'), null, 'no <defs>');
+    assertEqual(svg.querySelector('[data-part="link-label"]'), null, 'no label');
+    assertDeepEqual(paths(svg)[0].getAttributeNames().sort(), ['d', 'data-part', 'fill', 'stroke', 'stroke-width']);
+    done();
+  });
+
+  test('arrow: end adds a marker in the link colour', () => {
+    const { svg, done } = mount({ nodes: [P, Q], links: [{ from: 'p', to: 'q', shape: 'straight', arrow: 'end', color: 'rgb(1, 2, 3)' }] });
+    const path = paths(svg)[0];
+    const id = path.getAttribute('marker-end').match(/^url\(#(.+)\)$/)[1];
+    const marker = svg.querySelector(`defs marker[id="${id}"]`);
+    assertTrue(marker !== null, 'marker exists');
+    assertEqual(marker.querySelector('path').getAttribute('fill'), path.getAttribute('stroke'));
+    done();
+  });
+
+  test('marker ids are unique across chart instances', () => {
+    const link = { from: 'p', to: 'q', shape: 'straight', arrow: 'end' };
+    const one = mount({ nodes: [P, Q], links: [link] });
+    const two = mount({ nodes: [P, Q], links: [link] });
+    const id1 = one.svg.querySelector('marker').id;
+    const id2 = two.svg.querySelector('marker').id;
+    assertTrue(id1 !== id2, `distinct ids (${id1} vs ${id2})`);
+    one.done(); two.done();
+  });
+
+  test('style dashed and bold; explicit dash/width win', () => {
+    const { svg, done } = mount({ nodes: [P, Q], links: [
+      { from: 'p', to: 'q', shape: 'straight', style: 'dashed' },
+      { from: 'p', to: 'q', shape: 'straight', style: 'dashed', dash: '2 2' },
+      { from: 'p', to: 'q', shape: 'straight', style: 'bold' },
+      { from: 'p', to: 'q', shape: 'straight', style: 'bold', width: 5 },
+    ] });
+    const [d1, d2, b1, b2] = paths(svg);
+    assertEqual(d1.getAttribute('stroke-dasharray'), '6 4');
+    assertEqual(d2.getAttribute('stroke-dasharray'), '2 2');
+    assertEqual(b1.getAttribute('stroke-width'), '3');
+    assertEqual(b2.getAttribute('stroke-width'), '5');
+    done();
+  });
+
+  test('wavePath starts and ends exactly on the endpoints and stays within the amplitude', () => {
+    const pts = points(wavePath({ x1: 0, y1: 0, x2: 100, y2: 0 }));
+    assertDeepEqual(pts[0], [0, 0]);
+    assertDeepEqual(pts[pts.length - 1], [100, 0]);
+    assertEqual(pts.length, 51, '100 px sampled every 2 px');
+    assertTrue(pts.every(([, y]) => Math.abs(y) <= 3), 'amplitude ≤ 3');
+    assertTrue(pts.some(([, y]) => Math.abs(y) > 2), 'actually waves');
+  });
+
+  test('style wave draws the wave path', () => {
+    const { svg, done } = mount({ nodes: [P, Q], links: [{ from: 'p', to: 'q', shape: 'straight', style: 'wave' }] });
+    assertEqual(paths(svg)[0].getAttribute('d'), wavePath({ x1: 100, y1: 20, x2: 200, y2: 20 }));
+    done();
+  });
+
+  test('label sits at the midpoint on a background; empty label draws nothing', () => {
+    const { svg, done } = mount({ nodes: [P, Q], links: [
+      { from: 'p', to: 'q', shape: 'straight', label: 'entfernt' },
+      { from: 'q', to: 'p', shape: 'straight', label: '' },
+    ] });
+    const texts = svg.querySelectorAll('[data-part="link-label"]');
+    assertEqual(texts.length, 1);
+    assertEqual(texts[0].textContent, 'entfernt');
+    assertEqual(texts[0].getAttribute('x'), '150');
+    assertEqual(svg.querySelectorAll('[data-part="link-label-bg"]').length, 1);
+    done();
+  });
+
+  test('link.id is written as data-id', () => {
+    const { svg, done } = mount({ nodes: [P, Q], links: [{ id: 'f1', from: 'p', to: 'q', shape: 'straight' }] });
+    assertEqual(paths(svg)[0].getAttribute('data-id'), 'f1');
     done();
   });
 });
