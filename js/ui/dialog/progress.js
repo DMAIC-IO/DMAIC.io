@@ -55,7 +55,7 @@ export function scenarioDoneState({ i18n, result, total, confirmLabel }) {
  * @param {object} deps
  * @param {object} deps.i18n
  * @param {(o: {title: string, subtitle: string, onHoldConfirm: () => void}) =>
- *   {dlg: object, focusHold: () => void, close: () => void}} deps.openShell
+ *   {dlg: object, focusHold: () => void, cancelFocus: () => void, close: () => void}} deps.openShell
  * @returns {object} progress controller (see dialog.js `progress()`)
  */
 export function createProgress({ i18n, openShell }) {
@@ -76,6 +76,7 @@ export function createProgress({ i18n, openShell }) {
   }
 
   function reset(title, subtitle) {
+    shell.cancelFocus();
     const p = shell.dlg.progress;
     shell.dlg.title = title;
     p.spinner = true;

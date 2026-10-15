@@ -257,6 +257,7 @@ export function createDialogService({ i18n }) {
           confirm() {}, cancel() {}, holdConfirm: onHoldConfirm,
         });
         let observer = null;
+        const cancelFocus = () => { if (observer) { observer.disconnect(); observer = null; } };
         return {
           dlg: entry.dlg,
           focusHold() {
@@ -264,18 +265,22 @@ export function createDialogService({ i18n }) {
             // focus it as soon as it shows up (the observer callback runs
             // after Alpine's flush).
             const find = () => entry.root.querySelector('.action-modal__confirm');
+            cancelFocus();
             if (find()) { find().focus(); return; }
-            observer = new MutationObserver(() => {
+            const obs = new MutationObserver(() => {
               const btn = find();
               if (!btn) return;
-              observer.disconnect();
-              observer = null;
+              obs.disconnect();
+              if (observer === obs) observer = null;
               btn.focus();
             });
-            observer.observe(entry.root, { childList: true, subtree: true });
+            observer = obs;
+            obs.observe(entry.root, { childList: true, subtree: true });
           },
+          /** Stop waiting for the hold button (hold settled or dialog re-purposed). */
+          cancelFocus,
           close() {
-            if (observer) { observer.disconnect(); observer = null; }
+            cancelFocus();
             unmount(entry);
           },
         };

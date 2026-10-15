@@ -156,6 +156,30 @@ suite('dialog.progress', () => {
     assertEqual(q('.action-modal'), null);
   });
 
+  test('hold, open, hold again focuses the second button without errors', async () => {
+    const am = await make();
+    const errors = [];
+    const onError = (e) => errors.push(e.message);
+    window.addEventListener('error', onError);
+    try {
+      am.open({ title: 'T' });
+      const first = am.hold({ title: 'Fertig' });
+      am.open({ title: 'Neu' });
+      assertEqual(await first, false);
+      const second = am.hold({ title: 'Fertig 2' });
+      await tick();
+      await tick();
+      assertEqual(document.activeElement, q('.action-modal__confirm'));
+      q('.action-modal__confirm').click();
+      assertEqual(await second, true);
+      await tick();
+    } finally {
+      window.removeEventListener('error', onError);
+      am.close();
+    }
+    assertDeepEqual(errors, []);
+  });
+
   test('hold without an open dialog resolves false', async () => {
     const am = await make();
     assertEqual(await am.hold({ title: 'X' }), false);
