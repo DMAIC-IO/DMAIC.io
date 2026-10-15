@@ -218,13 +218,14 @@ const mod = createModule({
        * @throws {Error} wenn `slot` im aktuellen Zustand unbekannt ist oder die Spalte nicht wählbar
        */
       setColumn(slot, ref) {
-        requireEnum('slot', slot, this.activeColumnSlots());
+        requireEnum('slot', slot, COLUMN_SLOTS);
         if (ref == null) {
           this.model.columns[slot] = null;
           this._pickers[slot]?.syncValue(null);
           this.scheduleAnalysis();
           return;
         }
+        requireEnum('slot', slot, this.activeColumnSlots());
         const keys = this.pickableColumns()[slot].map(c => c.key);
         requireKnownId('ref', refToKey(ref), keys);
         const clean = keyToRef(refToKey(ref));
@@ -795,9 +796,9 @@ const mod = createModule({
       runAnalysis() {
         this.layoutError = null;
         const built = this.model.params.layout === 'wide' ? this._wideRows() : this._longRows();
-        if (!built) return this._clearResult();
+        if (!built) return this.clearResults();
         const { rows, referenceMap } = built;
-        if (rows.length === 0) return this._clearResult();
+        if (rows.length === 0) return this.clearResults();
         const cols = this.model.columns;
 
         // Klassen aus den vorkommenden Bewertungs-Werten ableiten.
@@ -840,7 +841,7 @@ const mod = createModule({
         } catch (err) {
           // eslint-disable-next-line no-console
           console.error('[msa-typ5] analyze() threw:', err);
-          return this._clearResult();
+          return this.clearResults();
         }
 
         this.result = result;
@@ -945,7 +946,12 @@ const mod = createModule({
         return [...refs].sort((a, b) => pos(a) - pos(b));
       },
 
-      _clearResult() {
+      /**
+       * Das Ergebnis und die Diagramme verwerfen; die Eingaben bleiben.
+       * @agent
+       * @returns {void}
+       */
+      clearResults() {
         this.result = null;
         this._destroyCharts();
       },

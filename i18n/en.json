@@ -2675,7 +2675,8 @@
           }
         },
         "runAnalysis": { "help": "Computes with the current inputs. Calling it repeatedly is harmless; missing or invalid inputs clear result." },
-        "scheduleAnalysis": { "help": "Triggers the computation after a short pause; a second request before then replaces the first." }
+        "scheduleAnalysis": { "help": "Triggers the computation after a short pause; a second request before then replaces the first." },
+        "clearResults": { "help": "Discards the result and the charts; the inputs stay." }
       },
       "fields": {
         "params": { "help": "The entered parameters: type (feature type), positiveLevel (positive level of the binary view, null while undetermined; settable), weights (weighting for the ordinal type), alpha (significance level, as text), ordinalOrder (order of the levels, null while automatic; cannot be set through the surface), ruleSet (verdict rule), layout (long or wide) and trials (trials per appraiser in the wide layout, as text)." },

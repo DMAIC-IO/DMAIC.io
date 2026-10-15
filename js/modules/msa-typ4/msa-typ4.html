@@ -31,30 +31,24 @@
 
     <fieldset class="msa-typ4__radios">
       <legend x-text="t('labels.norm')"></legend>
-      <label>
-        <input type="radio" name="msa4-norm" value="AIAG"
-               :checked="model.params.norm === 'AIAG'" @input="setParam('norm', 'AIAG')" @change="runAnalysis()">
-        <span x-text="t('labels.normAiag')"></span>
-      </label>
-      <label>
-        <input type="radio" name="msa4-norm" value="VDA5"
-               :checked="model.params.norm === 'VDA5'" @input="setParam('norm', 'VDA5')" @change="runAnalysis()">
-        <span x-text="t('labels.normVda')"></span>
-      </label>
+      <template x-for="o in normOptions()" :key="o.value">
+        <label>
+          <input type="radio" name="msa4-norm" :value="o.value"
+                 :checked="model.params.norm === o.value" @input="setParam('norm', o.value)" @change="runAnalysis()">
+          <span x-text="o.label"></span>
+        </label>
+      </template>
     </fieldset>
 
     <fieldset class="msa-typ4__radios">
       <legend x-text="t('labels.pvMode')"></legend>
-      <label>
-        <input type="radio" name="msa4-pv" value="tolerance"
-               :checked="model.params.pvMode === 'tolerance'" @input="setParam('pvMode', 'tolerance')" @change="runAnalysis()">
-        <span x-text="t('labels.pvModeTolerance')"></span>
-      </label>
-      <label>
-        <input type="radio" name="msa4-pv" value="sixSigma"
-               :checked="model.params.pvMode === 'sixSigma'" @input="setParam('pvMode', 'sixSigma')" @change="runAnalysis()">
-        <span x-text="t('labels.pvModeSixSigma')"></span>
-      </label>
+      <template x-for="o in pvOptions()" :key="o.value">
+        <label>
+          <input type="radio" name="msa4-pv" :value="o.value"
+                 :checked="model.params.pvMode === o.value" @input="setParam('pvMode', o.value)" @change="runAnalysis()">
+          <span x-text="o.label"></span>
+        </label>
+      </template>
     </fieldset>
 
     <div class="field-row">

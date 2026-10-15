@@ -124,6 +124,17 @@ const mod = createModule({
       /** @noagent derived set; der Agent liest sie über read().activeParams */
       activeParams() { return [...PARAM_KEYS]; },
 
+      /** @noagent view transform; die Optionen des k-Auswahlfeldes (eine Quelle: K_OPTIONS) */
+      kOptions() {
+        const keys = { '6': 'kOption6', '5.15': 'kOption515' };
+        return K_OPTIONS.map(v => ({ value: v, label: _t(keys[v]) }));
+      },
+      /** @noagent view transform; die Optionen der Beurteilungsbasis (eine Quelle: VERDICT_BASES) */
+      verdictBasisOptions() {
+        const keys = { auto: 'verdictBasisAuto', tolerance: 'verdictBasisTolerance', studyVar: 'verdictBasisStudyVar' };
+        return VERDICT_BASES.map(v => ({ value: v, label: _t(keys[v]) }));
+      },
+
       /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
       activeColumnSlots() { return [...COLUMN_SLOTS]; },
 
@@ -159,13 +170,14 @@ const mod = createModule({
        * @throws {Error} wenn `slot` unbekannt ist oder die Spalte nicht wählbar
        */
       setColumn(slot, ref) {
-        requireEnum('slot', slot, this.activeColumnSlots());
+        requireEnum('slot', slot, COLUMN_SLOTS);
         if (ref == null) {
           COLUMN_SINKS[slot](this.model, null);
           this._pickers[slot]?.syncValue(null);
           this.scheduleAnalysis();
           return;
         }
+        requireEnum('slot', slot, this.activeColumnSlots());
         const keys = this.pickableColumns()[slot].map(c => c.key);
         requireKnownId('ref', refToKey(ref), keys);
         const clean = keyToRef(refToKey(ref));

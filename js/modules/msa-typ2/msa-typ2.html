@@ -44,8 +44,9 @@
       <div class="field-group">
         <label x-text="t('kLabel')"></label>
         <select class="field" data-ref="inp-k" :value="model.params.k" @input="setParam('k', $event.target.value)" @change="runAnalysis()">
-          <option value="6" x-text="t('kOption6')"></option>
-          <option value="5.15" x-text="t('kOption515')"></option>
+          <template x-for="o in kOptions()" :key="o.value">
+            <option :value="o.value" :selected="o.value === model.params.k" x-text="o.label"></option>
+          </template>
         </select>
       </div>
     </div>
@@ -54,9 +55,9 @@
       <div class="field-group msa-typ2__field--wide">
         <label x-text="t('verdictBasisLabel')"></label>
         <select class="field" data-ref="inp-verdict-basis" :value="model.params.verdictBasis" @input="setParam('verdictBasis', $event.target.value)" @change="runAnalysis()">
-          <option value="auto" x-text="t('verdictBasisAuto')"></option>
-          <option value="tolerance" x-text="t('verdictBasisTolerance')"></option>
-          <option value="studyVar" x-text="t('verdictBasisStudyVar')"></option>
+          <template x-for="o in verdictBasisOptions()" :key="o.value">
+            <option :value="o.value" :selected="o.value === model.params.verdictBasis" x-text="o.label"></option>
+          </template>
         </select>
       </div>
       <div class="field-group">

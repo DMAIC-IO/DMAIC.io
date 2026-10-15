@@ -181,13 +181,14 @@ const mod = createModule({
        * @throws {Error} wenn `slot` unbekannt ist oder die Spalte nicht wählbar
        */
       setColumn(slot, ref) {
-        requireEnum('slot', slot, this.activeColumnSlots());
+        requireEnum('slot', slot, COLUMN_SLOTS);
         if (ref == null) {
           COLUMN_SINKS[slot](this.model, null);
           this._pickers[slot]?.syncValue(null);
           this.scheduleAnalysis();
           return;
         }
+        requireEnum('slot', slot, this.activeColumnSlots());
         const keys = this.pickableColumns()[slot].map(c => c.key);
         requireKnownId('ref', refToKey(ref), keys);
         const clean = keyToRef(refToKey(ref));
@@ -203,6 +204,16 @@ const mod = createModule({
       /** @noagent view transform */
       fmtP,
 
+      /** @noagent view transform; die Optionen der Norm-Auswahl (eine Quelle: NORM_OPTIONS) */
+      normOptions() {
+        const keys = { AIAG: 'labels.normAiag', VDA5: 'labels.normVda' };
+        return NORM_OPTIONS.map(v => ({ value: v, label: _t(keys[v]) }));
+      },
+      /** @noagent view transform; die Optionen der PV-Auswahl (eine Quelle: PV_OPTIONS) */
+      pvOptions() {
+        const keys = { tolerance: 'labels.pvModeTolerance', sixSigma: 'labels.pvModeSixSigma' };
+        return PV_OPTIONS.map(v => ({ value: v, label: _t(keys[v]) }));
+      },
       /** @noagent view transform; die Alpha-Optionen des Auswahlfeldes */
       alphaOptions() { return ALPHA_OPTIONS; },
       /** @noagent view transform */
@@ -609,7 +620,7 @@ const mod = createModule({
           this._pickers[slot] = new ColumnPicker(el, module._context, {
             mode: 'single',
             ...SLOT_FILTERS[slot],
-            onChange: (ref) => this.setColumn(slot, ref),
+            onChange: (ref) => { this.setColumn(slot, ref); this.runAnalysis(); },
           });
           const current = slot === 'reference' ? this.model.refColumn : this.model.measColumn;
           if (current) this._pickers[slot].value = current;

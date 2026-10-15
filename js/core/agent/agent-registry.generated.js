@@ -4592,6 +4592,11 @@ export const AGENT_REGISTRY = {
         "params": [],
         "returns": "void",
         "help": "Baut das Long-Format-Ratings-Array (aus dem langen oder breiten Datenlayout) und ruft die Engine. Aktualisiert `this.result` und triggert das Chart-Rendering."
+      },
+      "clearResults": {
+        "params": [],
+        "returns": "void",
+        "help": "Das Ergebnis und die Diagramme verwerfen; die Eingaben bleiben."
       }
     },
     "fields": {

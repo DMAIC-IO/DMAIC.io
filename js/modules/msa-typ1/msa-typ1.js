@@ -127,6 +127,13 @@ const mod = createModule({
       /** @noagent derived set; der Agent liest sie über read().activeParams */
       activeParams() { return [...PARAM_KEYS]; },
 
+      /** @noagent view transform; die Optionen des k1-Auswahlfeldes (eine Quelle: K1_OPTIONS) */
+      k1Options() {
+        return K1_OPTIONS.map(v => ({ value: v, label: `${Number(v).toFixed(2)} (${Math.round(Number(v) * 100)} %)` }));
+      },
+      /** @noagent view transform; die Optionen des k2-Auswahlfeldes (eine Quelle: K2_OPTIONS) */
+      k2Options() { return K2_OPTIONS.map(v => ({ value: v, label: _t(`k2Opt${v}`) })); },
+
       /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
       activeColumnSlots() { return [...COLUMN_SLOTS]; },
 
@@ -162,13 +169,14 @@ const mod = createModule({
        * @throws {Error} wenn `slot` unbekannt ist oder die Spalte nicht wählbar
        */
       setColumn(slot, ref) {
-        requireEnum('slot', slot, this.activeColumnSlots());
+        requireEnum('slot', slot, COLUMN_SLOTS);
         if (ref == null) {
           COLUMN_SINKS[slot](this.model, null);
           this._picker?.syncValue(null);
           this.scheduleAnalysis();
           return;
         }
+        requireEnum('slot', slot, this.activeColumnSlots());
         const keys = this.pickableColumns()[slot].map(c => c.key);
         requireKnownId('ref', refToKey(ref), keys);
         // Normalisierte Form: fremde Eigenschaften des Agentenobjekts bleiben draußen.

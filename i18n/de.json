@@ -2679,7 +2679,8 @@
           }
         },
         "runAnalysis": { "help": "Rechnet mit den aktuellen Eingaben. Wiederholtes Aufrufen schadet nicht; fehlende oder ungültige Eingaben leeren result." },
-        "scheduleAnalysis": { "help": "Stößt die Rechnung nach kurzer Ruhezeit an; eine zweite Anforderung davor ersetzt die erste." }
+        "scheduleAnalysis": { "help": "Stößt die Rechnung nach kurzer Ruhezeit an; eine zweite Anforderung davor ersetzt die erste." },
+        "clearResults": { "help": "Verwirft das Ergebnis und die Diagramme; die Eingaben bleiben." }
       },
       "fields": {
         "params": { "help": "Die eingegebenen Parameter: type (Merkmalstyp), positiveLevel (positive Stufe der Binärdarstellung, null solange unbestimmt; setzbar), weights (Gewichtung beim Typ ordinal), alpha (Signifikanzniveau, als Text), ordinalOrder (Reihenfolge der Stufen, null solange automatisch; über die Fläche nicht setzbar), ruleSet (Urteilsregel), layout (long oder wide) und trials (Versuche je Prüfer im breiten Layout, als Text)." },
