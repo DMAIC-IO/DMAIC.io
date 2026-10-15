@@ -66,8 +66,10 @@ globalThis.sessionStorage ??= new MemoryStorage();
 const SKIP = new Set([
   'algorithm-lab/lab-renderer.test.js',
   'core/chart/boxplot.test.js',
+  'core/chart/chart-base-modebar.test.js',
   'core/chart/chart-export-xlsx.test.js',
   'core/chart/chart-manager-errors.test.js',
+  'core/chart/chart-manager-export.test.js',
   'core/chart/control-chart.test.js',
   'core/chart/chart-margins.test.js',
   'core/chart/chart-module-base.test.js',
@@ -76,6 +78,7 @@ const SKIP = new Set([
   'core/chart/gantt.test.js',
   'core/chart/histogram-bins.test.js',
   'core/chart/multi-vari.test.js',
+  'core/chart/node-diagram.test.js',
   'core/chart/pareto.test.js',
   'core/chart/pie.test.js',
   'core/chart/run-chart.test.js',

@@ -4,7 +4,7 @@
  * Renders a chart into a hidden host only for the export, then removes it.
  */
 
-import { suite, test, assertEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual } from '../../test-utils.js';
 import ChartManager from '../../../js/core/chart/chart-manager.js';
 
 const i18n = { language: 'de', t: (k) => (k === 'chart.exportError' ? 'export-error-text' : k) };
