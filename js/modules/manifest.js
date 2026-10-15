@@ -772,4 +772,12 @@ export default [
       eightd: { phase: 'corrective' },
     },
   },
+  {
+    id: 'triz-function-analysis',
+    phase: 'improve',
+    load: () => import('./triz-function-analysis/triz-function-analysis.js'),
+    cycles: {
+      eightd: { phase: 'corrective' },
+    },
+  },
 ];

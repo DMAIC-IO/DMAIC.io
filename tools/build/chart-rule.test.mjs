@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 const MODULES_DIR = join(dirname(fileURLToPath(import.meta.url)), '../../js/modules');
 
-const CHART_RULE_MODULES = ['voc-ctx-tree', 'project-charter'];
+const CHART_RULE_MODULES = ['voc-ctx-tree', 'project-charter', 'triz-function-analysis'];
 
 const FORBIDDEN = [
   { name: 'createElementNS', re: /createElementNS\s*\(/ },

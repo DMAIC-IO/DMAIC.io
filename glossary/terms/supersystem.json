@@ -80,7 +80,8 @@
     "triz-9-windows",
     "triz-resources",
     "triz-ifr",
-    "triz-sufield"
+    "triz-sufield",
+    "triz-function-analysis"
   ],
   "algoLab": [],
   "sources": [

@@ -1,0 +1,47 @@
+<section class="module-container tfa" x-data="trizFunctionAnalysis">
+  <div class="module-container__body tfa__body">
+
+    <div class="dmike-tabs tfa__tabs">
+      <template x-for="tab in TABS" :key="tab">
+        <button type="button" class="dmike-tab" :class="tabClass(tab)"
+          data-role="tab" :data-tab="tab" @click="setTab(tab)" x-text="tabLabel(tab)"></button>
+      </template>
+    </div>
+
+    <!-- ── Tab: Components ── -->
+    <div class="dmike-tab-content" :class="contentClass('components')"
+      data-tab-content="components" x-show="model.activeTab === 'components'">
+      <template x-for="kind in KINDS" :key="kind">
+        <section class="tfa__group" :data-group="kind">
+          <h3 class="tfa__group-title" x-text="groupLabel(kind)"></h3>
+          <template x-for="c in componentsOf(kind)" :key="c.id">
+            <div class="tfa__row" data-role="component" :data-id="c.id">
+              <input class="field tfa__name" type="text" data-role="component-name"
+                :value="c.name" :placeholder="t('namePlaceholder')"
+                @input="setName(c, $event)" @keydown.enter.prevent="addComponent(kind)" @blur="discardIfEmpty(c)">
+              <input class="field tfa__note" type="text" data-role="component-note"
+                :value="c.note" :placeholder="t('notePlaceholder')" @input="setNote(c, $event)">
+              <select class="field tfa__kind" data-role="component-kind" @change="changeKind(c, $event)">
+                <option value="target" :selected="c.kind === 'target'" x-text="t('kind.target')"></option>
+                <option value="system" :selected="c.kind === 'system'" x-text="t('kind.system')"></option>
+                <option value="supersystem" :selected="c.kind === 'supersystem'" x-text="t('kind.supersystem')"></option>
+              </select>
+              <button type="button" class="btn btn--sm" data-role="component-remove"
+                :title="t('removeComponent')" :aria-label="t('removeComponent')" @click="removeComponent(c)">
+                <span class="icon icon--sm" data-icon="action.delete"></span>
+              </button>
+            </div>
+          </template>
+          <button type="button" class="btn btn--sm tfa__add" data-role="component-add" :data-kind="kind"
+            x-show="canAdd(kind)" @click="addComponent(kind)">
+            <span class="icon icon--sm" data-icon="action.add"></span>
+            <span x-text="t('addComponent')"></span>
+          </button>
+        </section>
+      </template>
+    </div>
+
+    <!-- TASK7_INTERACTIONS -->
+    <!-- TASK8_MODEL -->
+  </div>
+</section>

@@ -1,0 +1,31 @@
+/* TRIZ function analysis — tabs, component groups (more rules follow in later tasks). */
+
+.tfa__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md, 16px);
+}
+
+.tfa__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs, 6px);
+  margin-bottom: var(--space-md, 16px);
+}
+
+.tfa__group-title {
+  margin: 0;
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text-secondary);
+}
+
+.tfa__row {
+  display: grid;
+  grid-template-columns: minmax(160px, 2fr) minmax(160px, 3fr) 180px auto;
+  gap: var(--space-xs, 6px);
+  align-items: center;
+}
+
+.tfa__add {
+  align-self: flex-start;
+}

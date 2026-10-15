@@ -166,6 +166,7 @@
   "module.triz-physical-contradiction": "lucide:split",
   "module.triz-resources": "lucide:package",
   "module.triz-sufield": "lucide:triangle",
+  "module.triz-function-analysis": "lucide:workflow",
   "module.unit-converter": "lucide:ruler",
   "module.voc-ctx-tree": "lucide:message-circle",
   "module.worksheet": "lucide:table",

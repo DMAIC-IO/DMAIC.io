@@ -85,7 +85,8 @@
     "triz-ifr",
     "triz-physical-contradiction",
     "triz-resources",
-    "triz-sufield"
+    "triz-sufield",
+    "triz-function-analysis"
   ],
   "algoLab": [],
   "sources": [
