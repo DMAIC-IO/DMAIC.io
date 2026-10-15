@@ -12,14 +12,14 @@
  * and the imperative appearance settings panel (chart-editor building blocks).
  *
  * No HTML is built in JS for the module UI — the tree, cards, and form popout
- * live in voc-ctx-tree.html. The settings panel and the SVG export image are the
- * documented imperative exceptions (chart-editor widgets / pure SVG export util).
+ * live in voc-ctx-tree.html. The settings panel is the documented imperative
+ * exception (chart-editor widgets); the PNG/SVG export draws through the
+ * `node-diagram` chart type.
  *
  * Spec: docs/modules/VOC-CTX-TREE.md
  */
 
 import { createModule } from '../../core/template-module.js';
-import { exportSvgAsPNG, exportSvgAsFile } from '../../core/chart/modebar.js';
 import {
   edSection, edColorPair, edRangeRow, openColorPicker, parseRGBA, rgbaStr,
 } from '../../core/chart/chart-editor.js';
@@ -27,7 +27,7 @@ import { ensureXLSX, downloadBlob } from '../../core/export-utils.js';
 import { shortcutRegistry } from '../../core/shortcut-registry.js';
 import { draggablePopout } from '../../ui/draggable-popout.js';
 import { State } from './voc-ctx-tree-model.js';
-import { buildTreeSVG } from './voc-ctx-tree-svg.js';
+import { buildTreeDiagram } from './voc-ctx-tree-diagram.js';
 
 /** CSS custom-property map for the node colours. */
 const COLOR_PROP = {
@@ -352,11 +352,9 @@ export default createModule({
         XLSX.utils.book_append_sheet(wb, ws, 'VoC-CTx');
         XLSX.writeFile(wb, 'voc-ctx-tree.xlsx');
       },
-      _buildSvg() {
-        const voc = this.model.activeVoc;
-        if (!voc) return null;
+      _buildDiagram() {
         const tk = _t;
-        return buildTreeSVG(voc, this.model.styles, {
+        return buildTreeDiagram(this.model.activeVoc, this.model.styles, {
           source: tk('source'),
           badgeNeed: tk('badgeNeed'),
           badgeReq: tk('badgeReq'),
@@ -364,14 +362,14 @@ export default createModule({
           measurement: tk('measurement'),
         });
       },
-      exportPNG() {
-        const svg = this._buildSvg();
-        if (svg) exportSvgAsPNG(svg, 'voc-ctx-tree.png');
+      /** Image export through the chart framework (theme-aware). */
+      async _exportImage(fmt) {
+        const diagram = this._buildDiagram();
+        if (!diagram) return;
+        await module._context.chartManager.exportOffscreen('node-diagram', diagram, fmt, 'voc-ctx-tree');
       },
-      exportSVG() {
-        const svg = this._buildSvg();
-        if (svg) exportSvgAsFile(svg, 'voc-ctx-tree.svg');
-      },
+      exportPNG() { return this._exportImage('png'); },
+      exportSVG() { return this._exportImage('svg'); },
 
       // ── Appearance settings panel (chart-editor widgets) ──────
       applyStyles() {
