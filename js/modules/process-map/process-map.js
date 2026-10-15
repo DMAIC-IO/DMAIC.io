@@ -543,15 +543,13 @@ export default createModule({
         // sipocForm subtree before the modal borrows it — otherwise onMount
         // sees an empty form (no radios) and the initial check never lands.
         this.$nextTick(() => {
-          module._context.showModal.form(
-            _t('importFromSipocTitle'),
-            this.$refs.sipocForm,
-            {
-              confirmLabel: _t('importFromSipocConfirm'),
-              onMount: (body) => this._sipocFormMount(body),
-              onConfirm: (body) => this._runSipocImport(body),
-            },
-          );
+          module._context.dialog.form({
+            title: _t('importFromSipocTitle'),
+            content: this.$refs.sipocForm,
+            confirmLabel: _t('importFromSipocConfirm'),
+            onMount: (body) => this._sipocFormMount(body),
+            onConfirm: (body) => this._runSipocImport(body),
+          });
         });
       },
 
@@ -646,18 +644,16 @@ export default createModule({
           // modal borrows the sipocForm subtree (empty form → onMount sees
           // no radios and the initial check never lands).
           this.$nextTick(() => {
-            module._context.showModal.form(
-              _t('importFromSipocTitle'),
-              this.$refs.sipocForm,
-              {
-                confirmLabel: _t('importFromSipocConfirm'),
-                onMount: (body) => this._sipocFormMount(body),
-                onConfirm: (body) => {
-                  const ok = this._runSipocImport(body);
-                  if (!ok) this._seedEmptyIfFresh();
-                },
+            module._context.dialog.form({
+              title: _t('importFromSipocTitle'),
+              content: this.$refs.sipocForm,
+              confirmLabel: _t('importFromSipocConfirm'),
+              onMount: (body) => this._sipocFormMount(body),
+              onConfirm: (body) => {
+                const ok = this._runSipocImport(body);
+                if (!ok) this._seedEmptyIfFresh();
               },
-            ).then((confirmed) => { if (!confirmed) this._seedEmptyIfFresh(); });
+            }).then((confirmed) => { if (!confirmed) this._seedEmptyIfFresh(); });
           });
         });
 

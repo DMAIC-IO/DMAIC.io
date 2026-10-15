@@ -13,7 +13,7 @@
  * Trend canvas — chart-tier, not pure-template concerns). The three form modals
  * (cat rename, link-experiments, choose-hypotheses) are authored as Alpine
  * templates in ishikawa.html (hidden home, `x-ref`), bound to draft state, and
- * borrowed into the shared `showModal.form` overlay (restored to home on close).
+ * borrowed into the shared `dialog.form` overlay (restored to home on close).
  */
 
 import { createModule } from '../../core/template-module.js';
@@ -580,7 +580,7 @@ const mod = createModule({
         const content = h('div', { class: 'ishikawa__img-lightbox' },
           h('img', { src: img.dataUrl, alt: img.caption || '' }),
           img.caption ? h('p', { class: 'ishikawa__img-lightbox-caption' }, img.caption) : null);
-        module._context.showModal.show(_t('openImage'), content, { wide: true });
+        module._context.dialog.show({ title: _t('openImage'), content, size: 'wide' });
       },
 
       async deleteImage(kind, id) {
@@ -845,7 +845,9 @@ const mod = createModule({
           def: i18n().t(`modules.ishikawa.cat.${  c.key}`),
           name: (this.model.catLabels && this.model.catLabels[c.key]) || '',
         }));
-        module._context.showModal.form(_t('renameCatsTitle'), this.$refs.catRenameForm, {
+        module._context.dialog.form({
+          title: _t('renameCatsTitle'),
+          content: this.$refs.catRenameForm,
           confirmLabel: i18n().t('common.save'),
           onConfirm: () => {
             const next = {};
@@ -939,7 +941,9 @@ const mod = createModule({
             };
           }),
         };
-        module._context.showModal.form(_t('linkExperimentsTitle'), this.$refs.expLinkForm, {
+        module._context.dialog.form({
+          title: _t('linkExperimentsTitle'),
+          content: this.$refs.expLinkForm,
           confirmLabel: i18n().t('common.save'),
           onConfirm: () => {
             this.expLinkDraft.items.forEach(it => {
@@ -974,7 +978,9 @@ const mod = createModule({
             };
           }),
         };
-        module._context.showModal.form(_t('chooseHypotheses'), this.$refs.hypLinkForm, {
+        module._context.dialog.form({
+          title: _t('chooseHypotheses'),
+          content: this.$refs.hypLinkForm,
           confirmLabel: i18n().t('common.save'),
           onConfirm: () => {
             experiment.hypothesisIds = this.hypLinkDraft.items

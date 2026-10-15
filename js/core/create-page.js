@@ -1,6 +1,6 @@
 /**
  * D.Mike — createPage (create-page.js)
- * Lazy Alpine overlay factory for full-screen / modal "page" views outside the
+ * Lazy Alpine overlay factory for full-screen "page" views outside the
  * module system (training, dashboard, settings, …). Mirrors createModule but
  * without the module lifecycle (no Model/persist/getState).
  */

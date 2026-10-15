@@ -167,10 +167,9 @@ const m = createModule({
       async openAddModal() {
         const self = this;
         this._resetDraft(null);
-        await module._context.showModal.form(
-          _t('addTitle'),
-          this.$refs.lessonForm,
-          {
+        await module._context.dialog.form({
+          title: _t('addTitle'),
+          content: this.$refs.lessonForm,
             confirmLabel: _t('common.save'),
             cancelLabel: _t('common.cancel'),
             onMount: (modalEl) => {
@@ -208,10 +207,9 @@ const m = createModule({
       async openEditModal(lesson) {
         const self = this;
         this._resetDraft(lesson);
-        await module._context.showModal.form(
-          _t('editTitle'),
-          this.$refs.lessonForm,
-          {
+        await module._context.dialog.form({
+          title: _t('editTitle'),
+          content: this.$refs.lessonForm,
             confirmLabel: _t('common.save'),
             cancelLabel: _t('common.cancel'),
             onMount: (modalEl) => {

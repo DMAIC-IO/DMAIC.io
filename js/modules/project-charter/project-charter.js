@@ -795,7 +795,9 @@ export default createModule({
         this.nodeDraft.title = '';
         this.nodeDraft.desc = '';
 
-        await module._context.showModal.form(heading, this.$refs.nodeForm, {
+        await module._context.dialog.form({
+          title: heading,
+          content: this.$refs.nodeForm,
           confirmLabel: module._context.i18n.t('common.save'),
           onMount: (el) => el.querySelector('[data-field="title"]')?.focus(),
           onConfirm: (el) => {
@@ -853,7 +855,9 @@ export default createModule({
         d.borderStyle = n.borderStyle || this.model.orgStyle.nodeBorderStyle || '';
         d.borderWidth = n.borderWidth || this.model.orgStyle.nodeBorderWidth || 1;
 
-        await module._context.showModal.form(module._context.i18n.t('common.edit'), this.$refs.nodeStyleForm, {
+        await module._context.dialog.form({
+          title: module._context.i18n.t('common.edit'),
+          content: this.$refs.nodeStyleForm,
           confirmLabel: module._context.i18n.t('common.save'),
           onMount: (el) => el.querySelector('[data-field="title"]')?.focus(),
           onConfirm: () => {

@@ -562,7 +562,6 @@ export class Workspace {
       eventBus: this._eventBus,
       stateManager: this._stateManager,
       i18n: this._i18n,
-      showModal: this._modal,
       dialog: this._dialog,
       notify: this._context.notify,
       chartManager: this._context.chartManager?.forInstance?.(instanceId, container) ?? this._context.chartManager,

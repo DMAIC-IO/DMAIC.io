@@ -160,15 +160,13 @@ export default createModule({
         // importForm subtree before the modal borrows it (mirrors Activity
         // Flowchart / Process Map's SIPOC picker).
         this.$nextTick(() => {
-          module._context.showModal.form(
-            _t('importTitle'),
-            this.$refs.importForm,
-            {
-              confirmLabel: _t('importConfirm'),
-              onMount: (body) => this._importFormMount(body),
-              onConfirm: (body) => this._runImport(body),
-            },
-          );
+          module._context.dialog.form({
+            title: _t('importTitle'),
+            content: this.$refs.importForm,
+            confirmLabel: _t('importConfirm'),
+            onMount: (body) => this._importFormMount(body),
+            onConfirm: (body) => this._runImport(body),
+          });
         });
       },
 

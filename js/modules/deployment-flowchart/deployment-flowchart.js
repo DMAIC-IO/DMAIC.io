@@ -183,15 +183,13 @@ export default createModule({
         // Wait one Alpine tick so the x-for renders the option rows into the
         // importForm subtree before the modal borrows it.
         this.$nextTick(() => {
-          module._context.showModal.form(
-            _t('importTitle'),
-            this.$refs.importForm,
-            {
-              confirmLabel: _t('importConfirm'),
-              onMount: (body) => this._importFormMount(body),
-              onConfirm: (body) => this._runImport(body),
-            },
-          );
+          module._context.dialog.form({
+            title: _t('importTitle'),
+            content: this.$refs.importForm,
+            confirmLabel: _t('importConfirm'),
+            onMount: (body) => this._importFormMount(body),
+            onConfirm: (body) => this._runImport(body),
+          });
         });
       },
 

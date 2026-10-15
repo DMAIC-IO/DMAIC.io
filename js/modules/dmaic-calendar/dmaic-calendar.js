@@ -463,7 +463,7 @@ export default createModule({
       },
 
       // ─── Modal ────────────────────────────────────────────
-      // Uses the shared modal (ui/modal) via context.showModal.form(): the
+      // Uses the shared dialog (ui/dialog) via context.dialog.form(): the
       // event form lives hidden in the template (x-ref="eventForm") and is
       // borrowed into the dialog. Title + footer buttons are owned by the modal;
       // the delete button only appears when editing (onDelete option).
@@ -483,8 +483,8 @@ export default createModule({
           opts.deleteLabel = _t('deleteEvent');
           opts.onDelete = () => this.handleDelete();
         }
-        module._context.showModal
-          .form(this.modalTitle(), this.$refs.eventForm, opts)
+        module._context.dialog
+          .form({ title: this.modalTitle(), content: this.$refs.eventForm, ...opts })
           .finally(() => { this.editingId = null; });
       },
       openNew(ds, t, endT) {
