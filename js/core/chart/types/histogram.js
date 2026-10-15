@@ -2,6 +2,8 @@
  * histogram.js — Histogram chart type for the D.Mike chart framework.
  * Supports: auto-binning (Sturges/Scott/Freedman-Diaconis/manual) or precomputed bins,
  * normal curve overlay, spec limit lines, tooltips.
+ * Series path (`config.series`): several series on shared bins, count axis, patterns,
+ * per-series normal curve, Pareto line, boxplot strip — used by the histogram module.
  */
 
 import ChartBase from '../chart-base.js';
@@ -12,6 +14,8 @@ import {
 import {
   edSection, edSelectRow, edCheckboxRow, edInlineNum,
 } from '../chart-editor.js';
+import { binAll } from '../histogram-series.js';
+import { drawSeriesBars, drawNormalCurves, normalPeak } from '../histogram-series-draw.js';
 
 /**
  * Compute IQR for Freedman-Diaconis rule.
@@ -131,6 +135,12 @@ export default class HistogramChart extends ChartBase {
       showNormalCurve: false,
       normalCurveColor: null,
       normalCurves: [],
+      // Series path (histogram module) — used only when series is a non-empty array
+      series: null,
+      binWidth: null,
+      barGap: 1,
+      pareto: false,
+      boxplotStrip: false,
     };
     super(container, Object.assign(defaults, config), context);
   }
@@ -202,10 +212,39 @@ export default class HistogramChart extends ChartBase {
     return buildBins(data, computeBinCount(data, this.config.binMethod, this.config.binCount));
   }
 
+  /** Series path is active: config.series is a non-empty array. */
+  _isSeriesMode() {
+    return Array.isArray(this.config.series) && this.config.series.length > 0;
+  }
+
+  /** Shared bins of the series path (cached on the instance for tooltips). */
+  _resolveSeriesBins() {
+    this._seriesBins = binAll(this.config.series, this.config.binWidth || null);
+    return this._seriesBins;
+  }
+
+  /**
+   * Extent of the series path: shared bin range, count axis with 12 % headroom.
+   * Vertical only — `orientation` is ignored on this path.
+   * @private
+   */
+  _getSeriesExtent() {
+    const res = this._resolveSeriesBins();
+    if (!res.bins.some(b => b.length)) return { xMin: 0, xMax: 1, yMin: 0, yMax: 1 };
+    let top = 0;
+    this.config.series.forEach((s, si) => {
+      if (s.visible === false) return;
+      for (const b of res.bins[si]) top = Math.max(top, b.count);
+      if (s.showNormalCurve !== false) top = Math.max(top, normalPeak(s.values, res.binWidth));
+    });
+    return { xMin: res.globalMin, xMax: res.globalMax, yMin: 0, yMax: (top || 1) * 1.12 };
+  }
+
   // ── Abstract Implementation: Data Extent ─────────────────────────
 
   /** @override */
   _getDataExtent() {
+    if (this._isSeriesMode()) return this._getSeriesExtent();
     const resolved = this._resolveBins();
     if (!resolved) return { xMin: 0, xMax: 1, yMin: 0, yMax: 1 };
     const { bins } = resolved;
@@ -231,7 +270,13 @@ export default class HistogramChart extends ChartBase {
   // ── Abstract Implementation: Render Data ─────────────────────────
 
   /** @override */
-  _renderData(svg, plotGroup, xScale, yScale, _xTick, _yTick, _plotArea, _defs) {
+  _renderData(svg, plotGroup, xScale, yScale, xTick, _yTick, _plotArea, defs) {
+    if (this._isSeriesMode()) {
+      const res = this._seriesBins || this._resolveSeriesBins();
+      drawSeriesBars(plotGroup, defs, this._uid, this.config.series, res, xScale, yScale, this.config.barGap);
+      drawNormalCurves(plotGroup, this.config.series, res.binWidth, xScale, yScale, xTick.min, xTick.max);
+      return;
+    }
     const resolved = this._resolveBins();
     if (!resolved) return;
     const { bins, binWidth } = resolved;

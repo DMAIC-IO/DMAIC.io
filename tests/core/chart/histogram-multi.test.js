@@ -1,0 +1,129 @@
+/**
+ * D.Mike — Histogram type, series path (config.series): several series on
+ * shared bins, count axis, patterns, normal curves. The legacy path
+ * (no series) is covered by histogram-bins.test.js.
+ */
+import { suite, test, assertEqual, assertAlmostEqual, assertTrue } from '../../test-utils.js';
+import HistogramChart from '../../../js/core/chart/types/histogram.js';
+
+const A = [1, 2, 2, 3, 3, 3, 4, 4, 5];
+const B = [3, 4, 4, 5, 5, 5, 6, 6, 7];
+
+function s(name, values, extra = {}) {
+  return {
+    name, values, visible: true, fillColor: 'rgba(52,152,219,0.6)', borderColor: 'rgba(41,128,185,1)',
+    borderWidth: 1, borderStyle: 'solid', pattern: '', patternColor: '', patternSolidity: 0.4,
+    showNormalCurve: true, ...extra,
+  };
+}
+
+function mount(cfg) {
+  const host = document.createElement('div');
+  host.style.width = '900px';
+  host.style.height = '480px';
+  document.body.appendChild(host);
+  const chart = new HistogramChart(host, cfg, { language: 'de' });
+  chart.render();
+  return { host, chart, svg: chart._svg };
+}
+function unmount(m) { m.chart.destroy(); m.host.remove(); }
+const bars = (m, si) => m.svg.querySelectorAll(`rect[data-series="${si}"][data-bin]`);
+
+suite('Histogram type — series path: bins and bars', () => {
+  test('all series share one set of bins with the fixed width', () => {
+    const m = mount({ series: [s('A', A), s('B', B)], binWidth: 1 });
+    const { bins, binWidth, globalMin, globalMax } = m.chart._seriesBins;
+    assertEqual(binWidth, 1);
+    assertEqual(globalMin, 1);
+    assertEqual(globalMax, 7);
+    assertEqual(bins[0].length, bins[1].length);
+    unmount(m);
+  });
+  test('y axis is count: extent top is 1.12 × the highest bin count', () => {
+    const m = mount({ series: [s('A', A, { showNormalCurve: false }), s('B', B, { showNormalCurve: false })], binWidth: 1 });
+    const e = m.chart._getDataExtent();
+    assertEqual(e.yMin, 0);
+    assertAlmostEqual(e.yMax, 3 * 1.12, 1e-12);
+    unmount(m);
+  });
+  test('one bar per non-empty bin and visible series; hidden series draws none', () => {
+    const m = mount({ series: [s('A', A), s('B', B, { visible: false })], binWidth: 1 });
+    assertTrue(bars(m, 0).length > 0);
+    assertEqual(bars(m, 1).length, 0);
+    unmount(m);
+  });
+  test('bar height maps the count on the y scale', () => {
+    const m = mount({ series: [s('A', A)], binWidth: 1 });
+    const r = [...bars(m, 0)].find(el => el.getAttribute('data-bin') === '2'); // [3,4): 3 values
+    const yS = m.chart._yScale;
+    assertAlmostEqual(Number(r.getAttribute('height')), yS(0) - yS(3), 1e-6);
+    unmount(m);
+  });
+  test('barGap shrinks each bar by the gap in px', () => {
+    const m = mount({ series: [s('A', A)], binWidth: 1, barGap: 4 });
+    const r = bars(m, 0)[0];
+    const xS = m.chart._xScale;
+    assertAlmostEqual(Number(r.getAttribute('width')), xS(2) - xS(1) - 4, 1e-6);
+    unmount(m);
+  });
+  test('pattern draws an overlay rect filled with a chart-unique pattern', () => {
+    const m = mount({ series: [s('A', A, { pattern: '/' })], binWidth: 1 });
+    const ov = m.svg.querySelector('rect[data-pattern][data-series="0"]');
+    assertTrue(!!ov, 'overlay drawn');
+    const id = ov.getAttribute('fill').match(/url\(#(.+)\)/)[1];
+    assertTrue(!!m.svg.querySelector(`pattern[id="${id}"]`), 'pattern defined');
+    assertTrue(id.includes(String(m.chart._uid)), 'id carries the chart uid');
+    unmount(m);
+  });
+  test('border style dash and none', () => {
+    const m = mount({ series: [s('A', A, { borderStyle: 'dash' }), s('B', B, { borderStyle: 'none' })], binWidth: 1 });
+    assertTrue(!!bars(m, 0)[0].getAttribute('stroke-dasharray'));
+    assertEqual(bars(m, 1)[0].getAttribute('stroke-width'), '0');
+    unmount(m);
+  });
+  test('all series hidden → default extent, no bars, no NaN', () => {
+    const m = mount({ series: [s('A', A, { visible: false }), s('B', B, { visible: false })] });
+    assertEqual(m.svg.querySelectorAll('rect[data-bin]').length, 0);
+    assertTrue(!m.svg.outerHTML.includes('NaN'));
+    unmount(m);
+  });
+});
+
+suite('Histogram type — series path: normal curves', () => {
+  test('one curve per visible series with the flag on', () => {
+    const m = mount({ series: [s('A', A), s('B', B, { showNormalCurve: false })], binWidth: 1 });
+    assertEqual(m.svg.querySelectorAll('path[data-normal]').length, 1);
+    unmount(m);
+  });
+  test('curve is scaled by n · binWidth (peak in count units)', () => {
+    const m = mount({ series: [s('A', A)], binWidth: 1 });
+    const n = A.length;
+    const mean = A.reduce((a, b) => a + b, 0) / n;
+    const sd = Math.sqrt(A.reduce((a, v) => a + (v - mean) ** 2, 0) / (n - 1));
+    const peak = n * 1 / (sd * Math.sqrt(2 * Math.PI));
+    assertTrue(m.chart._getDataExtent().yMax >= peak, 'extent covers the peak');
+    unmount(m);
+  });
+  test('sd = 0 series draws bars but no curve and no NaN', () => {
+    const m = mount({ series: [s('C', [5, 5, 5, 5])] });
+    assertEqual(m.svg.querySelectorAll('path[data-normal]').length, 0);
+    assertTrue(bars(m, 0).length > 0);
+    assertTrue(!m.svg.outerHTML.includes('NaN'));
+    unmount(m);
+  });
+});
+
+suite('Histogram type — legacy path unchanged', () => {
+  test('without series the density bars are drawn as before (no data-series rects)', () => {
+    const m = mount({ data: A, binMethod: 'manual', binCount: 4 });
+    assertEqual(m.chart._bins.length, 4);
+    assertEqual(m.svg.querySelectorAll('rect[data-series]').length, 0);
+    assertEqual(m.chart._seriesBins, undefined);
+    unmount(m);
+  });
+  test('empty series array falls back to the legacy path', () => {
+    const m = mount({ series: [], data: A });
+    assertTrue(Array.isArray(m.chart._bins));
+    unmount(m);
+  });
+});
