@@ -12,7 +12,7 @@ import {
   svgEl, resolveColor, formatNum, getChartColors
 } from '../chart-core.js';
 import {
-  edSection, edSelectRow, edCheckboxRow, edInlineNum,
+  edSection, edSelectRow, edCheckboxRow, edInlineNum, edColorPair, edRangeRow, openColorPicker,
 } from '../chart-editor.js';
 import { binAll, seriesMoments, cumulativePercent, computeBoxStats } from '../histogram-series.js';
 import {
@@ -439,8 +439,15 @@ export default class HistogramChart extends ChartBase {
     return val && val !== full ? val : key;
   }
 
-  /** @override */
-  _buildTypeEditor(inner, t, onUpdate) {
+  /**
+   * @override
+   * @param {HTMLElement} inner
+   * @param {function} t
+   * @param {function} onUpdate - re-render and rebuild the editor
+   * @param {function} [onChange] - re-render, keep the editor DOM, notify onEditorChange
+   */
+  _buildTypeEditor(inner, t, onUpdate, onChange = onUpdate) {
+    if (this._isSeriesMode()) { this._buildSeriesTypeEditor(inner, onUpdate, onChange); return; }
     const cfg = this.config;
     const th = (key) => this._th(key);
 
@@ -478,6 +485,44 @@ export default class HistogramChart extends ChartBase {
   }
 
   // ── Series Descriptors (for base editor) ──────────────────────
+
+  /**
+   * Editor of the series path: Display section and per-series fields.
+   * @param {HTMLElement} inner
+   * @param {function} onUpdate
+   * @param {function} onChange
+   */
+  _buildSeriesTypeEditor(inner, onUpdate, onChange) {
+    const cfg = this.config;
+    const th = (k) => this._th(k);
+    const disp = edSection(th('display'));
+    disp.dataset.edSection = 'display';
+    disp.appendChild(edCheckboxRow(th('pareto'), !!cfg.pareto, (v) => { cfg.pareto = v; onUpdate(); }));
+    disp.appendChild(edCheckboxRow(th('boxplotStrip'), !!cfg.boxplotStrip, (v) => { cfg.boxplotStrip = v; onUpdate(); }));
+    disp.appendChild(edInlineNum(th('barGap'), cfg.barGap ?? 1, (v) => { cfg.barGap = Math.max(0, v); onChange(); }, 0, 20, 1));
+    inner.prepend(disp);
+
+    const patterns = ['', '/', '\\', 'x', '-', '|', '+', '.']
+      .map(v => ({ value: v, label: v === '' ? '—' : v === 'x' ? '×' : v === '.' ? '·' : v }));
+    const styles = ['solid', 'dash', 'dot', 'none']
+      .map(v => ({ value: v, label: th(`style${v[0].toUpperCase()}${v.slice(1)}`) }));
+    (this._seriesItemEls || []).forEach((item, si) => {
+      const s = cfg.series[si];
+      const details = item.querySelector('.dmike-chart-ed-series-details');
+      if (!s || !details) return;
+      const normal = edCheckboxRow(th('normal'), s.showNormalCurve !== false, (v) => { s.showNormalCurve = v; onChange(); });
+      normal.querySelector('input').dataset.ed = 'normal';
+      const pat = edSelectRow(th('pattern'), patterns, s.pattern || '', (v) => { s.pattern = v; onChange(); });
+      pat.querySelector('select').dataset.ed = 'pattern';
+      const bst = edSelectRow(th('borderStyle'), styles, s.borderStyle || 'solid', (v) => { s.borderStyle = v; onChange(); });
+      bst.querySelector('select').dataset.ed = 'borderStyle';
+      const { el: pcRow, swatch: pcSw } = edColorPair(th('patternColor'), s.patternColor || 'rgba(0,0,0,0.5)', (e) => {
+        openColorPicker(e, s.patternColor || 'rgba(0,0,0,0.5)', (c) => { s.patternColor = c; pcSw.style.background = c; onChange(); });
+      });
+      const solid = edRangeRow(th('patternSolidity'), s.patternSolidity ?? 0.4, (v) => { s.patternSolidity = v; onChange(); }, 0.1, 1, 0.1);
+      details.append(normal, pat, bst, pcRow, solid);
+    });
+  }
 
   /** @override */
   _getSeriesDescriptors() {

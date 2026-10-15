@@ -809,7 +809,19 @@
         "paretoCum": "Kumuliert (%)",
         "median": "Median",
         "mean": "Mittelwert",
-        "outliers": "Ausreißer"
+        "outliers": "Ausreißer",
+        "display": "Anzeige",
+        "pareto": "Pareto-Linie",
+        "boxplotStrip": "Boxplot",
+        "barGap": "Balkenabstand (px)",
+        "pattern": "Muster",
+        "borderStyle": "Randstil",
+        "patternColor": "Musterfarbe",
+        "patternSolidity": "Musterdichte",
+        "styleSolid": "Durchgezogen",
+        "styleDash": "Gestrichelt",
+        "styleDot": "Gepunktet",
+        "styleNone": "Ohne"
       },
       "boxplot": {
         "appearance": "Darstellung",

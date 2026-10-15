@@ -258,3 +258,63 @@ suite('Histogram type — series path: boxplot strip', () => {
     unmount(m);
   });
 });
+
+suite('Histogram type — series path: editor', () => {
+  function openEditor(cfg) {
+    const m = mount(cfg);
+    m.chart._buildEditor();
+    return { ...m, inner: m.chart._editorInner };
+  }
+  test('Display section toggles Pareto and boxplot and reports the change', () => {
+    let calls = 0;
+    const m = openEditor({ series: [s('A', A)], binWidth: 1, onEditorChange: () => { calls++; } });
+    const sec = m.inner.querySelector('[data-ed-section="display"]');
+    const [pareto, strip] = sec.querySelectorAll('input[type="checkbox"]');
+    pareto.checked = true; pareto.dispatchEvent(new Event('change', { bubbles: true }));
+    strip.checked = true; strip.dispatchEvent(new Event('change', { bubbles: true }));
+    assertEqual(m.chart.config.pareto, true);
+    assertEqual(m.chart.config.boxplotStrip, true);
+    assertTrue(calls >= 2);
+    unmount(m);
+  });
+  test('bar gap number reports the change through onEditorChange', () => {
+    let calls = 0;
+    const m = openEditor({ series: [s('A', A)], binWidth: 1, onEditorChange: () => { calls++; } });
+    const num = m.inner.querySelector('[data-ed-section="display"] input[type="number"]');
+    num.value = '3'; num.dispatchEvent(new Event('change', { bubbles: true }));
+    assertEqual(m.chart.config.barGap, 3);
+    assertEqual(calls, 1);
+    unmount(m);
+  });
+  test('legacy Binning section is not shown in series mode', () => {
+    const m = openEditor({ series: [s('A', A)] });
+    const titles = [...m.inner.querySelectorAll('.dmike-chart-ed-section-title')].map(el => el.textContent);
+    assertTrue(titles.includes('display'), titles.join('|'));
+    assertTrue(!titles.some(x => /Klassen|binning|normalCurve/i.test(x)), titles.join('|'));
+    unmount(m);
+  });
+  test('per-series pattern select writes the series and re-renders', () => {
+    const m = openEditor({ series: [s('A', A), s('B', B)], binWidth: 1 });
+    const item = m.chart._seriesItemEls[1];
+    const sel = item.querySelector('select[data-ed="pattern"]');
+    sel.value = 'x'; sel.dispatchEvent(new Event('change', { bubbles: true }));
+    assertEqual(m.chart.config.series[1].pattern, 'x');
+    assertTrue(!!m.svg.querySelector('rect[data-pattern][data-series="1"]'));
+    unmount(m);
+  });
+  test('per-series border style select writes the series', () => {
+    const m = openEditor({ series: [s('A', A)], binWidth: 1 });
+    const sel = m.chart._seriesItemEls[0].querySelector('select[data-ed="borderStyle"]');
+    sel.value = 'dash'; sel.dispatchEvent(new Event('change', { bubbles: true }));
+    assertEqual(m.chart.config.series[0].borderStyle, 'dash');
+    unmount(m);
+  });
+  test('per-series normal curve checkbox', () => {
+    const m = openEditor({ series: [s('A', A)], binWidth: 1 });
+    const box = m.chart._seriesItemEls[0].querySelector('input[type="checkbox"][data-ed="normal"]');
+    box.checked = false; box.dispatchEvent(new Event('change', { bubbles: true }));
+    assertEqual(m.chart.config.series[0].showNormalCurve, false);
+    assertEqual(m.svg.querySelectorAll('path[data-normal]').length, 0);
+    unmount(m);
+  });
+});
