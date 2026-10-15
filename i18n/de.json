@@ -2366,8 +2366,7 @@
         "activeParams": { "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt." },
         "activeColumnSlots": { "help": "Die Slots, die setColumn im aktuellen Zustand annimmt." },
         "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'." },
-        "result": { "help": "Das gerechnete Ergebnis mit Cg, Cgk, Bias und den Einzelwerten, oder null, solange die Eingaben unvollständig sind." },
-        "errorMsg": { "help": "Die Absage der letzten Rechnung, leer wenn keine." }
+        "result": { "help": "Das gerechnete Ergebnis mit Cg, Cgk, Bias und den Einzelwerten, oder null, solange die Eingaben unvollständig sind." }
       },
       "sectionParams": "Parameter",
       "sectionValues": "Messwerte eingeben",

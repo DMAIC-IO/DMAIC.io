@@ -4282,12 +4282,6 @@ export const AGENT_REGISTRY = {
         "help": "the computed result, or null while the inputs are incomplete",
         "bulk": false,
         "derived": true
-      },
-      "errorMsg": {
-        "type": "string",
-        "help": "the rejection of the last computation, empty if none",
-        "bulk": false,
-        "derived": true
       }
     }
   },

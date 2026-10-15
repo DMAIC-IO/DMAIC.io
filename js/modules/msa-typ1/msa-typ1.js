@@ -25,7 +25,7 @@ import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { State } from './msa-typ1-model.js';
 import { validate, analyze } from '../../engines/msa-typ1-engine.js';
-import { ColumnPicker, getColumnValues, refToKey } from '../../ui/column-picker.js';
+import { ColumnPicker, getColumnValues, refToKey, keyToRef } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 
 /** @param {number} v @param {number} d @returns {string} */
@@ -83,7 +83,6 @@ const COLUMN_SINKS = { value: (m, ref) => { m.columnRef = ref; } };
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
  * @property {object|null} result  the computed result, or null while the inputs are incomplete
- * @property {string} errorMsg  the rejection of the last computation, empty if none
  */
 const mod = createModule({
   config: {
@@ -122,7 +121,6 @@ const mod = createModule({
           activeColumnSlots: this.activeColumnSlots(),
           pickableColumns: this.pickableColumns(),
           result: this.result,
-          errorMsg: this.errorMsg,
         }, options);
       },
 
@@ -173,8 +171,10 @@ const mod = createModule({
         }
         const keys = this.pickableColumns()[slot].map(c => c.key);
         requireKnownId('ref', refToKey(ref), keys);
-        COLUMN_SINKS[slot](this.model, ref);
-        this._picker?.syncValue(ref);
+        // Normalisierte Form: fremde Eigenschaften des Agentenobjekts bleiben draußen.
+        const clean = keyToRef(refToKey(ref));
+        COLUMN_SINKS[slot](this.model, clean);
+        this._picker?.syncValue(clean);
         this.scheduleAnalysis();
       },
 
@@ -393,7 +393,7 @@ const mod = createModule({
           mode: 'single',
           ...SLOT_FILTERS.value,
           onChange: (ref) => {
-            COLUMN_SINKS.value(this.model, ref);
+            this.setColumn('value', ref);
             this.runAnalysis();
           },
         });
