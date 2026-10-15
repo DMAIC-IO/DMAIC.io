@@ -11,8 +11,10 @@
  */
 
 /** Allowed <select>/<radio> option values (as strings). */
-const NORM_OPTIONS = ['AIAG', 'VDA5'];
-const PV_OPTIONS = ['tolerance', 'sixSigma'];
+export const NORM_OPTIONS = ['AIAG', 'VDA5'];
+export const PV_OPTIONS = ['tolerance', 'sixSigma'];
+/** Allowed significance levels α (string form, matching the <select> values). */
+export const ALPHA_OPTIONS = ['0.01', '0.05', '0.10'];
 
 /**
  * Coerce a persisted numeric/string field into the raw string the input shows.
@@ -44,10 +46,7 @@ function alphaStr(v) {
   if (v == null || v === '') return '0.05';
   const n = typeof v === 'number' ? v : parseFloat(String(v).replace(',', '.'));
   if (!isFinite(n)) return '0.05';
-  if (Math.abs(n - 0.01) < 1e-9) return '0.01';
-  if (Math.abs(n - 0.05) < 1e-9) return '0.05';
-  if (Math.abs(n - 0.10) < 1e-9) return '0.10';
-  return '0.05';
+  return ALPHA_OPTIONS.find(o => Math.abs(n - parseFloat(o)) < 1e-9) ?? '0.05';
 }
 
 /** @param {*} d @returns {{instanceId:string,sheetId:string,columnId:string}|null} */

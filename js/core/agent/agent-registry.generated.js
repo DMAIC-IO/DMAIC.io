@@ -4415,55 +4415,117 @@ export const AGENT_REGISTRY = {
     }
   },
   "msa-typ4": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:isTolerance",
-      "unmarked_method:isAiag",
-      "unmarked_method:isVda",
-      "unmarked_method:currentVerdictColor",
-      "unmarked_method:interpretationClass",
-      "unmarked_method:interpretationText",
-      "unmarked_method:kpiModClass",
-      "unmarked_method:kpiTiles",
-      "unmarked_method:tableRows",
-      "unmarked_method:parseNum",
-      "unmarked_method:runAnalysis",
-      "unmarked_method:scheduleAnalysis",
-      "unmarked_method:clearResults",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unreachable_write:params.name",
-      "unreachable_write:params.unit",
-      "unreachable_write:params.norm",
-      "unreachable_write:params.pvMode",
-      "unreachable_write:params.tolerance.LSL",
-      "unreachable_write:params.tolerance.USL",
-      "unreachable_write:params.sigmaP",
-      "unreachable_write:params.alpha"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'name'|'unit'|'norm'|'pvMode'|'tolerance.LSL'|'tolerance.USL'|'sigmaP'|'alpha'",
+            "optional": false,
+            "help": "welcher Parameter; die beiden Toleranzgrenzen mit Punkt; `sigmaP` nur außerhalb des Toleranzmodus"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "der Wert als Text, wie er eingegeben würde; `norm`: AIAG oder VDA5, `pvMode`: tolerance oder sixSigma, `alpha`: 0.01, 0.05 oder 0.10"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Parameter setzen."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'reference'|'measured'",
+            "optional": false,
+            "help": "der Slot"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Spalte einem Slot zuweisen."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Run analysis if both columns are selected; otherwise silently clear results (mirrors msa-typ1/msa-typ2 auto-analysis behaviour)."
+      },
+      "scheduleAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Die Rechnung nach kurzer Ruhezeit anstoßen."
+      },
+      "clearResults": {
+        "params": [],
+        "returns": "void",
+        "help": "Das Ergebnis und die Diagramme verwerfen."
+      }
+    },
     "fields": {
       "params": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object",
+        "help": "the entered parameters (name, unit, norm, pvMode, tolerance { LSL, USL }, sigmaP, alpha), values as text as entered",
+        "bulk": false,
+        "derived": true
       },
       "refColumn": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the chosen reference column, `{ instanceId, sheetId, columnId }`, or null",
+        "bulk": false,
+        "derived": true
       },
       "measColumn": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the chosen measured column, `{ instanceId, sheetId, columnId }`, or null",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts in the current state (`sigmaP` only outside the tolerance mode)",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "the computed linearity and bias result, or null while the inputs are incomplete or invalid",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -8803,4 +8865,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":31};
+export const AGENT_COVERAGE = {"total":74,"available":32};

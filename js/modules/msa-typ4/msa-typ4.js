@@ -13,13 +13,22 @@
  * are not pure-template concerns).
  *
  * Spec: docs/modules/MSA-TYP4.md
+ *
+ * @agent  Steuerbar über das Viewmodel: die acht Parameter (setParam, auch der
+ *   Punkt-Schlüssel der Toleranz), die zwei Spalten Referenz und Messwert
+ *   (setColumn) und das Rechnen selbst. Gelesen wird über read() mit erklärter
+ *   Lesefläche (AgentRead) — Konfiguration, wählbare Mengen und gerechnetes
+ *   Ergebnis. Der Agent bekommt Zahlen, keine Diagramme.
  */
 
 import { toNum } from '../../core/chart/chart-data-prep.js';
 import { createModule } from '../../core/template-module.js';
-import { State } from './msa-typ4-model.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
+import { pickableColumnList } from '../../core/agent/agent-options.js';
+import { State, NORM_OPTIONS, PV_OPTIONS, ALPHA_OPTIONS } from './msa-typ4-model.js';
 import { analyze } from '../../engines/msa-typ4-engine.js';
-import { ColumnPicker, getColumnValues } from '../../ui/column-picker.js';
+import { ColumnPicker, getColumnValues, refToKey, keyToRef } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 
 /** @param {number} v @param {number} d @returns {string} */
@@ -32,6 +41,64 @@ function fmtP(p) {
   return p.toFixed(3);
 }
 
+/** Die acht Parameter, die `setParam` kennt; die Toleranz als Punkt-Schlüssel. */
+const PARAM_KEYS = ['name', 'unit', 'norm', 'pvMode', 'tolerance.LSL', 'tolerance.USL', 'sigmaP', 'alpha'];
+
+/** Je Parameter sein Prüfer; freie Texte nehmen nur eine Zeichenkette an. */
+const PARAM_CHECKS = {
+  name: (v) => requireText('value', v),
+  unit: (v) => requireText('value', v),
+  norm: (v) => requireEnum('value', v, NORM_OPTIONS),
+  pvMode: (v) => requireEnum('value', v, PV_OPTIONS),
+  'tolerance.LSL': (v) => requireText('value', v),
+  'tolerance.USL': (v) => requireText('value', v),
+  sigmaP: (v) => requireText('value', v),
+  alpha: (v) => requireEnum('value', v, ALPHA_OPTIONS),
+};
+
+/**
+ * Einen Wert unter einem Punkt-Schlüssel (`'tolerance.LSL'`) in `obj` ablegen.
+ * @param {object} obj Wurzel, deren Pfad beschrieben wird
+ * @param {string} key Schlüssel, gegebenenfalls mit Punkt
+ * @param {string} value der abzulegende Wert
+ */
+function setAtPath(obj, key, value) {
+  const parts = key.split('.');
+  let cur = obj;
+  for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
+  cur[parts[parts.length - 1]] = value;
+}
+
+/** Die Spalten-Slots dieses Moduls: Referenz- und Messwertspalte. */
+const COLUMN_SLOTS = ['reference', 'measured'];
+
+/** Je Slot der Filter, den der Wähler dieses Slots bekommt. */
+const SLOT_FILTERS = { reference: { types: ['numeric'] }, measured: { types: ['numeric'] } };
+
+/** Je Slot die eine Zuweisungsstelle seines Model-Feldes. */
+const COLUMN_SINKS = {
+  reference: (m, ref) => { m.refColumn = ref; },
+  measured: (m, ref) => { m.measColumn = ref; },
+};
+
+/**
+ * Die Agenten-Lesefläche von MSA Typ 4.
+ *
+ * Nicht die persistierte Form: das Model hält NUR die Eingaben, das Ergebnis
+ * entsteht transient am Viewmodel (`result`). Darum erklärt dieses Modul seine
+ * Lesefläche: Konfiguration, die abgeleiteten Mengen, die `setParam` und
+ * `setColumn` prüfen, und das Ergebnis — ohne die interne
+ * Beispiel-Buchführung (`exampleWorksheetId`) und ohne die Diagramme.
+ *
+ * @typedef {object} AgentRead
+ * @property {object} params  the entered parameters (name, unit, norm, pvMode, tolerance { LSL, USL }, sigmaP, alpha), values as text as entered
+ * @property {object|null} refColumn  the chosen reference column, `{ instanceId, sheetId, columnId }`, or null
+ * @property {object|null} measColumn  the chosen measured column, `{ instanceId, sheetId, columnId }`, or null
+ * @property {string[]} activeParams  the keys `setParam` accepts in the current state (`sigmaP` only outside the tolerance mode)
+ * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state
+ * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
+ * @property {object|null} result  the computed linearity and bias result, or null while the inputs are incomplete or invalid
+ */
 const mod = createModule({
   config: {
     id: 'msa-typ4',
@@ -48,8 +115,7 @@ const mod = createModule({
       // ── Transient view state (not persisted) ──────────────────
       result: null,
       errorMsg: '',
-      _pickerRef: null,
-      _pickerMeas: null,
+      _pickers: {},
       _charts: [],
       _unsubs: [],
       _debTimer: null,
@@ -57,13 +123,91 @@ const mod = createModule({
       _lastRef: null,
       _lastMeas: null,
 
+      // ── Agent surface ─────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Konfiguration, wählbare Mengen und gerechnetes Ergebnis
+       */
+      read(options) {
+        return readAgentState('msa-typ4', {
+          ...this.model.toJSON(),
+          activeParams: this.activeParams(),
+          activeColumnSlots: this.activeColumnSlots(),
+          pickableColumns: this.pickableColumns(),
+          result: this.result,
+        }, options);
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeParams */
+      activeParams() { return PARAM_KEYS.filter(k => k !== 'sigmaP' || !this.isTolerance()); },
+
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() { return [...COLUMN_SLOTS]; },
+
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() {
+        const sm = module._context.stateManager;
+        return Object.fromEntries(COLUMN_SLOTS.map(slot =>
+          [slot, pickableColumnList(sm, SLOT_FILTERS[slot])]));
+      },
+
+      /**
+       * Einen Parameter setzen.
+       * @agent
+       * @param {'name'|'unit'|'norm'|'pvMode'|'tolerance.LSL'|'tolerance.USL'|'sigmaP'|'alpha'} key
+       *   welcher Parameter; die beiden Toleranzgrenzen mit Punkt; `sigmaP` nur außerhalb des Toleranzmodus
+       * @param {string} value der Wert als Text, wie er eingegeben würde; `norm`: AIAG oder VDA5, `pvMode`: tolerance oder sixSigma, `alpha`: 0.01, 0.05 oder 0.10
+       * @returns {void}
+       * @throws {Error} wenn `key` im aktuellen Zustand kein Parameter ist oder `value` nicht zulässig
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        requireEnum('key', key, this.activeParams());
+        PARAM_CHECKS[key](value);
+        setAtPath(this.model.params, key, value);
+        this.scheduleAnalysis();
+      },
+
+      /**
+       * Eine Spalte einem Slot zuweisen.
+       * @agent
+       * @param {'reference'|'measured'} slot der Slot
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
+       *   der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren
+       * @returns {void}
+       * @throws {Error} wenn `slot` unbekannt ist oder die Spalte nicht wählbar
+       */
+      setColumn(slot, ref) {
+        requireEnum('slot', slot, this.activeColumnSlots());
+        if (ref == null) {
+          COLUMN_SINKS[slot](this.model, null);
+          this._pickers[slot]?.syncValue(null);
+          this.runAnalysis();
+          return;
+        }
+        const keys = this.pickableColumns()[slot].map(c => c.key);
+        requireKnownId('ref', refToKey(ref), keys);
+        const clean = keyToRef(refToKey(ref));
+        COLUMN_SINKS[slot](this.model, clean);
+        this._pickers[slot]?.syncValue(clean);
+        this.runAnalysis();
+      },
+
       // ── View transformations ──────────────────────────────────
 
+      /** @noagent view transform */
       fmt,
+      /** @noagent view transform */
       fmtP,
 
+      /** @noagent view transform */
       isTolerance() { return this.model.params.pvMode === 'tolerance'; },
+      /** @noagent view transform */
       isAiag()      { return this.model.params.norm !== 'VDA5'; },
+      /** @noagent view transform */
       isVda()       { return this.model.params.norm === 'VDA5'; },
 
       /** Current-norm KPI block (AIAG or VDA5). */
@@ -72,21 +216,25 @@ const mod = createModule({
         return this.isVda() ? this.result.kpi.vda5 : this.result.kpi.aiag;
       },
 
+      /** @noagent view transform */
       currentVerdictColor() {
         const k = this._currentKpi();
         return k ? k.verdict.color : 'green';
       },
 
+      /** @noagent view transform */
       interpretationClass() {
         return `msa-typ4__interp msa-typ4__interp--${this.currentVerdictColor()}`;
       },
 
+      /** @noagent view transform */
       interpretationText() {
         if (!this.result) return '';
         const i = this.result.interpretation;
         return _t(i.textKey, i.params);
       },
 
+      /** @noagent view transform */
       kpiModClass(color) {
         const map = { green: 'dmike-kpi--good', yellow: 'dmike-kpi--warn', red: 'dmike-kpi--bad' };
         return map[color] || '';
@@ -95,6 +243,7 @@ const mod = createModule({
       /**
        * Compose the KPI-strip tiles for the currently selected norm. Kept in a
        * single data-fn to avoid conditional-branch soup in the template.
+       * @noagent view transform
        * @returns {Array<{ key:string, mod:string, label:string, value:string, sub:string }>}
        */
       kpiTiles() {
@@ -131,7 +280,7 @@ const mod = createModule({
         return tiles;
       },
 
-      /** Per-reference table rows (view-formatted). */
+      /** @noagent view transform; Per-reference table rows (view-formatted). */
       tableRows() {
         const r = this.result;
         if (!r || !r.perReference) return [];
@@ -150,6 +299,7 @@ const mod = createModule({
 
       // ── Analysis (controller — needs context + live worksheet data) ──
 
+      /** @noagent view transform */
       parseNum(s) {
         if (s == null || s === '') return NaN;
         return parseFloat(String(s).replace(',', '.').trim());
@@ -183,6 +333,8 @@ const mod = createModule({
       /**
        * Run analysis if both columns are selected; otherwise silently clear
        * results (mirrors msa-typ1/msa-typ2 auto-analysis behaviour).
+       * @agent
+       * @returns {void}
        */
       runAnalysis() {
         this.errorMsg = '';
@@ -210,11 +362,21 @@ const mod = createModule({
         this.$nextTick(() => this._renderCharts(res, gen));
       },
 
+      /**
+       * Die Rechnung nach kurzer Ruhezeit anstoßen.
+       * @agent
+       * @returns {void}
+       */
       scheduleAnalysis() {
         clearTimeout(this._debTimer);
         this._debTimer = setTimeout(() => this.runAnalysis(), 600);
       },
 
+      /**
+       * Das Ergebnis und die Diagramme verwerfen.
+       * @agent
+       * @returns {void}
+       */
       clearResults() {
         this.result = null;
         this._destroyCharts();
@@ -434,34 +596,32 @@ const mod = createModule({
       // ── ColumnPickers (imperative widgets) ────────────────────
 
       _mountPickers() {
-        const wrapRef = module._container.querySelector('[data-ref="picker-ref"]');
-        if (wrapRef) {
-          this._pickerRef?.destroy();
-          this._pickerRef = new ColumnPicker(wrapRef, module._context, {
+        const pickerConfig = [
+          { slot: 'reference', wrap: 'picker-ref' },
+          { slot: 'measured', wrap: 'picker-meas' },
+        ];
+        for (const { slot, wrap } of pickerConfig) {
+          const el = module._container.querySelector(`[data-ref="${wrap}"]`);
+          if (!el) continue;
+          this._pickers[slot]?.destroy();
+          this._pickers[slot] = new ColumnPicker(el, module._context, {
             mode: 'single',
-            types: ['numeric'],
-            onChange: (ref) => { this.model.refColumn = ref; this.runAnalysis(); },
+            ...SLOT_FILTERS[slot],
+            onChange: (ref) => { COLUMN_SINKS[slot](this.model, ref); this.runAnalysis(); },
           });
-          if (this.model.refColumn) this._pickerRef.value = this.model.refColumn;
-        }
-        const wrapMeas = module._container.querySelector('[data-ref="picker-meas"]');
-        if (wrapMeas) {
-          this._pickerMeas?.destroy();
-          this._pickerMeas = new ColumnPicker(wrapMeas, module._context, {
-            mode: 'single',
-            types: ['numeric'],
-            onChange: (ref) => { this.model.measColumn = ref; this.runAnalysis(); },
-          });
-          if (this.model.measColumn) this._pickerMeas.value = this.model.measColumn;
+          const current = slot === 'reference' ? this.model.refColumn : this.model.measColumn;
+          if (current) this._pickers[slot].value = current;
         }
       },
 
       // ── Lifecycle (per Alpine component) ──────────────────────
 
+      /** @noagent lifecycle */
       init() {
         // Fresh per-instance collections (the data() object is shared by Alpine.data).
         this._charts = [];
         this._unsubs = [];
+        this._pickers = {};
 
         // Ensure module-scoped CSS is loaded (msa-typ4.css is not statically
         // linked from index.dist.html — matches the legacy pattern).
@@ -478,8 +638,7 @@ const mod = createModule({
         const eb = module._context.eventBus;
         const onActivated = ({ instanceId }) => {
           if (instanceId === module._context.instanceId) {
-            this._pickerRef?.refresh();
-            this._pickerMeas?.refresh();
+            for (const picker of Object.values(this._pickers)) picker?.refresh();
           }
         };
         eb.on('module:activated', onActivated);
@@ -504,14 +663,13 @@ const mod = createModule({
         this.runAnalysis();
       },
 
+      /** @noagent lifecycle */
       destroy() {
         for (const unsub of this._unsubs) unsub();
         this._unsubs = [];
         clearTimeout(this._debTimer);
-        this._pickerRef?.destroy();
-        this._pickerMeas?.destroy();
-        this._pickerRef = null;
-        this._pickerMeas = null;
+        for (const picker of Object.values(this._pickers)) picker?.destroy();
+        this._pickers = {};
         this._destroyCharts();
       },
     };

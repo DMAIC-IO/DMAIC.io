@@ -2555,6 +2555,39 @@
     "msa-typ4": {
       "name": "MSA Typ 4 (Linearität)",
       "description": "Messmittelanalyse Typ 4 — Linearität und Bias über den Messbereich (AIAG %Lin, VDA 5 Q_MS,BI)",
+      "whenToUse": "Wenn geprüft werden soll, ob ein Messsystem über den ganzen Messbereich gleich richtig misst: Referenzwerte und gemessene Werte als Spalten liefern Bias je Referenzpunkt und eine Regression des Bias über den Bereich (AIAG %Linearität oder VDA 5 Q_MS,BI) — nicht für die Eignung an einem einzelnen Normal, dafür ist Typ 1 da. Setzt eine Referenz- und eine Messwertspalte einer Datensammlung voraus.",
+      "actions": {
+        "read": {
+          "help": "Liefert die Eingaben, die wählbaren Mengen und das gerechnete Ergebnis. result ist null, solange die Eingaben unvollständig oder ungültig sind.",
+          "params": { "options": "Optional; dieses Modul führt keine Massendaten." }
+        },
+        "setParam": {
+          "help": "Setzt einen Parameter der Linearitätsstudie; die Neuberechnung folgt nach kurzer Ruhezeit.",
+          "params": {
+            "key": "Einer der Schlüssel aus activeParams: name, unit, norm, pvMode, tolerance.LSL, tolerance.USL, sigmaP oder alpha. Die Toleranzgrenzen tragen den Punkt im Schlüssel. sigmaP gilt nur, wenn pvMode nicht tolerance ist; jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert als Text, zum Beispiel '9.80'; die leere Zeichenkette leert das Feld. norm nimmt 'AIAG' oder 'VDA5', pvMode nimmt 'tolerance' oder 'sixSigma', alpha nimmt '0.01', '0.05' oder '0.10'."
+          }
+        },
+        "setColumn": {
+          "help": "Verweist einen der zwei Slots auf eine Spalte einer Datensammlung; die Neuberechnung folgt sofort.",
+          "params": {
+            "slot": "Einer der Slots aus activeColumnSlots: reference (Referenzwerte, numerisch) oder measured (Messwerte, numerisch).",
+            "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Leeren."
+          }
+        },
+        "runAnalysis": { "help": "Rechnet mit den aktuellen Eingaben. Mehrfachaufruf ist unschädlich; fehlende oder ungültige Eingaben leeren result." },
+        "scheduleAnalysis": { "help": "Stößt die Rechnung nach kurzer Ruhezeit an; eine zweite Anforderung davor ersetzt die erste." },
+        "clearResults": { "help": "Verwirft das Ergebnis und die Diagramme; die Eingaben bleiben." }
+      },
+      "fields": {
+        "params": { "help": "Die eingegebenen Parameter, Werte als Text: name und unit (Merkmal und Einheit), norm (AIAG oder VDA5), pvMode (Prozessstreuung aus der Toleranz oder aus sixSigma), tolerance mit LSL und USL (Toleranzgrenzen, leer für fehlend), sigmaP (Prozessstreuung, nur außerhalb des Toleranzmodus) und alpha (Signifikanzniveau)." },
+        "refColumn": { "help": "Die gewählte Referenzspalte als { instanceId, sheetId, columnId }, oder null." },
+        "measColumn": { "help": "Die gewählte Messwertspalte als { instanceId, sheetId, columnId }, oder null." },
+        "activeParams": { "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt; sigmaP fehlt im Toleranzmodus." },
+        "activeColumnSlots": { "help": "Die Slots, die setColumn im aktuellen Zustand annimmt." },
+        "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'." },
+        "result": { "help": "Das gerechnete Linearitätsergebnis mit Regression, Bias je Referenzpunkt und den Kennzahlen der gewählten Norm, oder null, solange die Eingaben unvollständig oder ungültig sind." }
+      },
       "title": "MSA Typ 4",
       "titleLong": "Linearität & Bias über den Messbereich",
       "sections": {

@@ -6,13 +6,13 @@
       <div class="field-group field-group--major">
         <label x-text="t('labels.name')"></label>
         <input type="text" class="field" data-ref="inp-name"
-               x-model="model.params.name" @input="scheduleAnalysis()">
+               :value="model.params.name" @input="setParam('name', $event.target.value)">
       </div>
       <div class="field-group field-group--minor">
         <label x-text="t('labels.unit')"></label>
         <input type="text" class="field" data-ref="inp-unit"
                placeholder="mm"
-               x-model="model.params.unit" @input="scheduleAnalysis()">
+               :value="model.params.unit" @input="setParam('unit', $event.target.value)">
       </div>
     </div>
 
@@ -33,12 +33,12 @@
       <legend x-text="t('labels.norm')"></legend>
       <label>
         <input type="radio" name="msa4-norm" value="AIAG"
-               x-model="model.params.norm" @change="runAnalysis()">
+               :checked="model.params.norm === 'AIAG'" @input="setParam('norm', 'AIAG')" @change="runAnalysis()">
         <span x-text="t('labels.normAiag')"></span>
       </label>
       <label>
         <input type="radio" name="msa4-norm" value="VDA5"
-               x-model="model.params.norm" @change="runAnalysis()">
+               :checked="model.params.norm === 'VDA5'" @input="setParam('norm', 'VDA5')" @change="runAnalysis()">
         <span x-text="t('labels.normVda')"></span>
       </label>
     </fieldset>
@@ -47,12 +47,12 @@
       <legend x-text="t('labels.pvMode')"></legend>
       <label>
         <input type="radio" name="msa4-pv" value="tolerance"
-               x-model="model.params.pvMode" @change="runAnalysis()">
+               :checked="model.params.pvMode === 'tolerance'" @input="setParam('pvMode', 'tolerance')" @change="runAnalysis()">
         <span x-text="t('labels.pvModeTolerance')"></span>
       </label>
       <label>
         <input type="radio" name="msa4-pv" value="sixSigma"
-               x-model="model.params.pvMode" @change="runAnalysis()">
+               :checked="model.params.pvMode === 'sixSigma'" @input="setParam('pvMode', 'sixSigma')" @change="runAnalysis()">
         <span x-text="t('labels.pvModeSixSigma')"></span>
       </label>
     </fieldset>
@@ -62,15 +62,15 @@
         <label x-text="t('labels.lsl')"></label>
         <input type="text" class="field field--num" data-ref="inp-lsl" inputmode="decimal"
                placeholder="0.000"
-               x-model="model.params.tolerance.LSL"
-               @input="scheduleAnalysis()" @change="runAnalysis()">
+               :value="model.params.tolerance.LSL"
+               @input="setParam('tolerance.LSL', $event.target.value)" @change="runAnalysis()">
       </div>
       <div class="field-group">
         <label x-text="t('labels.usl')"></label>
         <input type="text" class="field field--num" data-ref="inp-usl" inputmode="decimal"
                placeholder="0.000"
-               x-model="model.params.tolerance.USL"
-               @input="scheduleAnalysis()" @change="runAnalysis()">
+               :value="model.params.tolerance.USL"
+               @input="setParam('tolerance.USL', $event.target.value)" @change="runAnalysis()">
       </div>
     </div>
 
@@ -78,14 +78,14 @@
          :class="{ 'msa-typ4__field--hidden': isTolerance() }">
       <label x-text="t('labels.sigmaP')"></label>
       <input type="text" class="field field--num" data-ref="inp-sigma" inputmode="decimal"
-             x-model="model.params.sigmaP"
-             @input="scheduleAnalysis()" @change="runAnalysis()">
+             :value="model.params.sigmaP"
+             @input="setParam('sigmaP', $event.target.value)" @change="runAnalysis()">
     </div>
 
     <div class="field-group">
       <label x-text="t('labels.alpha')"></label>
       <select class="field" data-ref="sel-alpha"
-              x-model="model.params.alpha" @change="runAnalysis()">
+              :value="model.params.alpha" @input="setParam('alpha', $event.target.value)" @change="runAnalysis()">
         <option value="0.01">0.01</option>
         <option value="0.05">0.05</option>
         <option value="0.10">0.10</option>
