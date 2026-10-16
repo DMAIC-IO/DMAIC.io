@@ -5,41 +5,6 @@
 
 /* Fields use global .field / .field-group (components.css) */
 
-/* ─── Method selector radio group ─────────────────────────────── */
-
-.glm__method-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-xs) 0;
-}
-
-.glm__method-option {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-s);
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  padding: var(--spacing-xs) var(--spacing-xs);
-  border-radius: var(--border-radius);
-  transition: background 0.15s;
-}
-
-.glm__method-option:hover {
-  background: var(--color-bg-hover);
-}
-
-.glm__method-option input[type="radio"] {
-  margin: 0;
-  accent-color: var(--color-accent);
-}
-
-.glm__method-option--disabled {
-  opacity: 0.4;
-  pointer-events: none;
-}
-
 /* ─── Auto-detect info box ────────────────────────────────────── */
 
 .glm__detect-info {

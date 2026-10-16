@@ -50,13 +50,13 @@
 
     <div class="field-group">
       <label x-text="t('subgroupModeLabel')"></label>
-      <div class="pc__mode">
-        <label class="pc__mode-option">
+      <div class="field-radios field-radios--inline">
+        <label>
           <input type="radio" name="pc-subgroup-mode" value="size" data-ref="inp-subgroup-mode-size"
                  x-model="model.params.subgroupMode" @change="onSubgroupModeChange()">
           <span x-text="t('subgroupModeSize')"></span>
         </label>
-        <label class="pc__mode-option">
+        <label>
           <input type="radio" name="pc-subgroup-mode" value="column" data-ref="inp-subgroup-mode-column"
                  :disabled="!!model.embeddedValues"
                  x-model="model.params.subgroupMode" @change="onSubgroupModeChange()">

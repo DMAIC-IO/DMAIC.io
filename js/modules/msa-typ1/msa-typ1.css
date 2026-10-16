@@ -7,12 +7,6 @@
 
 /* Fields use global .field / .field-group (components.css) */
 
-.msa-typ1__row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-m);
-}
-
 /* ─── Error Box ──────────────────────────────────────────── */
 
 /* ─── Status Bar migriert → generisches .dmike-infobox (css/components.css).

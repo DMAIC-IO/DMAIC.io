@@ -369,6 +369,52 @@ select.input {
   margin-bottom: 0;
 }
 
+/* ── Radio group: stacked by default, --inline puts options side by side.
+      Markup: .field-radios > label > input[type=radio] + span.
+      A <fieldset> carries its caption as <legend>; inside a .field-group
+      the group's own label serves as caption instead. ── */
+.field-radios {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+  border: none;
+  padding: 0;
+  margin: 0 0 var(--spacing-sm);
+}
+
+.field-group > .field-radios {
+  margin-bottom: 0;
+}
+
+.field-radios--inline {
+  flex-direction: row;
+  flex-wrap: wrap;
+  column-gap: var(--spacing-md);
+}
+
+.field-radios > legend {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
+  padding: 0;
+}
+
+.field-radios > label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.field-radios input[type="radio"] {
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
 /* ── Field feedback: hint text under a field, error box in an input pane ── */
 .field-hint {
   font-size: var(--font-size-xs);

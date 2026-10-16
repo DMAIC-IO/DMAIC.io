@@ -30,20 +30,20 @@
 
     <div class="dmike-split__section-title" x-text="t('sectionMethod')"></div>
 
-    <div class="glm__method-group" data-ref="method-group" @change="onMethodChange($event)">
-      <label class="glm__method-option">
+    <div class="field-radios" data-ref="method-group" @change="onMethodChange($event)">
+      <label>
         <input type="radio" :name="methodRadioName()" value="auto" :checked="model.method === 'auto'">
         <span x-text="t('methodAuto')"></span>
       </label>
-      <label class="glm__method-option">
+      <label>
         <input type="radio" :name="methodRadioName()" value="binomial" :checked="model.method === 'binomial'">
         <span x-text="t('methodBinomial')"></span>
       </label>
-      <label class="glm__method-option">
+      <label>
         <input type="radio" :name="methodRadioName()" value="poisson" :checked="model.method === 'poisson'">
         <span x-text="t('methodPoisson')"></span>
       </label>
-      <label class="glm__method-option">
+      <label>
         <input type="radio" :name="methodRadioName()" value="negbin" :checked="model.method === 'negbin'">
         <span x-text="t('methodNegbin')"></span>
       </label>

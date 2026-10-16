@@ -20,14 +20,14 @@
 
     <div class="dmike-split__section-title" x-text="t('sectionParams')"></div>
 
-    <div class="msa-typ2__row">
-      <div class="field-group">
+    <div class="field-row">
+      <div class="field-group field-group--grow">
         <label x-text="t('lsl')"></label>
         <input type="text" class="field field--num" data-ref="inp-lsl"
                placeholder="24.900" inputmode="decimal"
                x-model="model.params.lsl" @input="scheduleAnalysis()" @change="runAnalysis()">
       </div>
-      <div class="field-group">
+      <div class="field-group field-group--grow">
         <label x-text="t('usl')"></label>
         <input type="text" class="field field--num" data-ref="inp-usl"
                placeholder="25.100" inputmode="decimal"
@@ -35,13 +35,13 @@
       </div>
     </div>
 
-    <div class="msa-typ2__row">
-      <div class="field-group">
+    <div class="field-row">
+      <div class="field-group field-group--grow">
         <label x-text="t('alphaLabel')"></label>
         <input type="text" class="field field--num" data-ref="inp-alpha" inputmode="decimal"
                x-model="model.params.alpha" @input="scheduleAnalysis()" @change="runAnalysis()">
       </div>
-      <div class="field-group">
+      <div class="field-group field-group--grow">
         <label x-text="t('kLabel')"></label>
         <select class="field" data-ref="inp-k" x-model="model.params.k" @change="runAnalysis()">
           <option value="6" x-text="t('kOption6')"></option>
@@ -50,20 +50,18 @@
       </div>
     </div>
 
-    <div class="msa-typ2__row">
-      <div class="field-group msa-typ2__field--wide">
-        <label x-text="t('verdictBasisLabel')"></label>
-        <select class="field" data-ref="inp-verdict-basis" x-model="model.params.verdictBasis" @change="runAnalysis()">
-          <option value="auto" x-text="t('verdictBasisAuto')"></option>
-          <option value="tolerance" x-text="t('verdictBasisTolerance')"></option>
-          <option value="studyVar" x-text="t('verdictBasisStudyVar')"></option>
-        </select>
-      </div>
-      <div class="field-group">
-        <label x-text="t('sigmaHistLabel')"></label>
-        <input type="text" class="field field--num" data-ref="inp-sigma-hist" inputmode="decimal"
-               x-model="model.params.sigmaHist" @input="scheduleAnalysis()" @change="runAnalysis()">
-      </div>
+    <div class="field-group">
+      <label x-text="t('verdictBasisLabel')"></label>
+      <select class="field" data-ref="inp-verdict-basis" x-model="model.params.verdictBasis" @change="runAnalysis()">
+        <option value="auto" x-text="t('verdictBasisAuto')"></option>
+        <option value="tolerance" x-text="t('verdictBasisTolerance')"></option>
+        <option value="studyVar" x-text="t('verdictBasisStudyVar')"></option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label x-text="t('sigmaHistLabel')"></label>
+      <input type="text" class="field field--num" data-ref="inp-sigma-hist" inputmode="decimal"
+             x-model="model.params.sigmaHist" @input="scheduleAnalysis()" @change="runAnalysis()">
     </div>
 
     <div class="field-error" data-ref="error-box" x-text="errorMsg"></div>
