@@ -8125,6 +8125,27 @@
       }
     },
     "short-run-chart": {
+      "whenToUse": "Control-chart short production runs that mix parts with different targets: each value is standardised within its part and plotted on one Z-MR chart.",
+      "actions": {
+        "read": { "help": "Read the chosen columns, the per-part statistics, the Z and MR limits, the signal points and z and MR per value." },
+        "setColumn": {
+          "help": "Assign a column to a slot and recompute. The other slot keeps its column.",
+          "params": {
+            "slot": "'values' — the measured values in time order (required); 'groups' — the part or group of each value, numbers or text (required). A result needs at least 4 usable pairs.",
+            "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null to clear the slot."
+          }
+        },
+        "runAnalysis": { "help": "Recompute with the current column values, for example after the data changed." }
+      },
+      "fields": {
+        "valuesRef": { "help": "The measured column (slot 'values'), or null." },
+        "groupsRef": { "help": "The part or group column (slot 'groups'), or null." },
+        "activeColumnSlots": { "help": "The slots setColumn accepts: values, groups." },
+        "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
+        "warningMsg": { "help": "The notice about parts that were skipped (too few values to estimate their spread), or ''." },
+        "result": { "help": "{ n, skipped, groups: [{ group, count, mean, sigma, mrBar }], z: { cl, ucl, lcl }, mr: { cl, ucl, lcl }, signalsZ, signalsMR }; signals are point indices; null with fewer than 4 usable pairs." },
+        "points": { "help": "One row per usable value: { z, mr, signalZ, signalMR }. read({ fields: ['points'] }) returns them in full." }
+      },
       "name": "Control Chart (Short-Run Z-MR)",
       "description": "Standardised I-MR across parts with different targets",
       "sectionData": "Data Source",

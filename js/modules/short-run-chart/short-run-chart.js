@@ -16,19 +16,59 @@
  *   - Two ColumnPickers are imperative widgets mounted in init(), disposed in destroy().
  *   - chartManager control-charts use _renderGen stale-guard.
  *   - _unsubs collects event-bus subscriptions for cleanup.
+ *
+ * @agent  Steuerbar über das Viewmodel: Messwert- und Gruppenspalte
+ *   (setColumn), neu rechnen (runAnalysis). Gelesen wird über read() mit
+ *   erklärter Lesefläche (AgentRead) — Bezüge, Gruppenkennzahlen, Grenzen
+ *   der Z- und MR-Karte, Signalpunkte und je Punkt z und MR.
  */
 
 import { createModule } from '../../core/template-module.js';
 import { State } from './short-run-chart-model.js';
 import {
-  ColumnPicker, getColumnValues, getColumnName,
+  ColumnPicker, getColumnValues, getColumnName, refToKey, keyToRef,
 } from '../../ui/column-picker.js';
 import { computeZMR } from '../../engines/short-run-chart-engine.js';
 import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-registry.js';
 import { whenAnchor } from '../../core/chart/chart-module-base.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { pickableColumnList } from '../../core/agent/agent-options.js';
+import { finiteOrNull, zipPoints } from '../../core/agent/agent-results.js';
 
-/** Auto-run debounce delay in ms. */
-const AUTORUN_DELAY = 120;
+/** Die Spalten-Slots in der Reihenfolge der Oberfläche: Messwerte, dann Teile/Gruppen. */
+const COLUMN_SLOTS = ['values', 'groups'];
+
+/** Je Slot der Filter seines Wählers — eine Quelle für Wähler und Lesefläche. */
+const SLOT_FILTERS = {
+  values: { types: ['numeric'], minCount: 4 },
+  // Groups can be numeric or text — accept both.
+  groups: { types: ['numeric', 'text'], minCount: 4 },
+};
+
+/** Je Slot die eine Zuweisungsstelle seines Model-Feldes. */
+const COLUMN_SINKS = {
+  values: (m, ref) => { m.valuesRef = ref; },
+  groups: (m, ref) => { m.groupsRef = ref; },
+};
+
+/**
+ * Die Agenten-Lesefläche der Kurzserien-Karte (Z-MR).
+ *
+ * Eingaben (Messwert- und Gruppenspalte), die Mengen von `setColumn`, das
+ * Ergebnis als Zahlen (Plan Welle 3 B, E4) und der Hinweis, den die
+ * Oberfläche bei übersprungenen Gruppen zeigt. Nicht darin: Kennzahlenleiste
+ * und Gruppentabelle als Text, `exampleWorksheetId`.
+ *
+ * @typedef {object} AgentRead
+ * @property {object|null} valuesRef  the measured column (slot `values`), `{ instanceId, sheetId, columnId }`, or null
+ * @property {object|null} groupsRef  the part/group column (slot `groups`), or null
+ * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
+ * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
+ * @property {string} warningMsg  the notice about groups that were skipped, or ''
+ * @property {object|null} result  `{ n, skipped, groups: [{ group, count, mean, sigma, mrBar }], z: { cl, ucl, lcl }, mr: { cl, ucl, lcl }, signalsZ, signalsMR }` — z per value standardised within its group; signals are point indices; null with fewer than 4 usable pairs
+ * @property {object[]} points  [bulk] one row per usable value: `{ z, mr, signalZ, signalMR }`
+ */
 
 const mod = createModule({
   config: {
@@ -54,7 +94,7 @@ const mod = createModule({
       _renderGen: 0,
       /** @type {Array} — unsub functions for event-bus listeners */
       _unsubs: [],
-      /** Debounce timer handle */
+      /** Pending-run timer handle (cleared by runAnalysis/destroy) */
       _autoRunTimer: null,
       /** KPI strip (declarative — structured cells, see _renderStats) */
       kpiCells: [],
@@ -66,18 +106,106 @@ const mod = createModule({
        * into the templated host via whenAnchor). See _renderCharts. */
       /** @type {Array<{id:string, title:string, badgeText:string, badgeClass:string}>} */
       chartViews: [],
+      /** Das Engine-Ergebnis der letzten Rechnung samt Zahl der Paare, synchron vor dem Zeichnen gesetzt (E3). */
+      _lastRun: null,
 
-      // ── Auto-run / scheduling ─────────────────────────────────
+      // ── Agent surface ─────────────────────────────────────────
 
-      _scheduleAutoRun() {
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       *   — `fields: ['points']` liefert die Punkte vollständig, `rows` schneidet sie zu
+       * @returns {AgentRead} Spaltenbezüge, wählbare Mengen und das gerechnete Ergebnis
+       */
+      read(options) {
+        const { result, points, pointsColumns } = this._agentResult();
+        return readAgentState('short-run-chart', {
+          valuesRef: this.model.valuesRef,
+          groupsRef: this.model.groupsRef,
+          activeColumnSlots: this.activeColumnSlots(),
+          pickableColumns: this.pickableColumns(),
+          warningMsg: this.warningMsg,
+          result,
+          points,
+          pointsColumns,
+        }, options);
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() { return [...COLUMN_SLOTS]; },
+
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() {
+        const sm = module._context.stateManager;
+        return Object.fromEntries(COLUMN_SLOTS.map(slot => [slot, pickableColumnList(sm, SLOT_FILTERS[slot])]));
+      },
+
+      /**
+       * Eine Spalte einem Slot zuweisen und neu rechnen.
+       * @agent
+       * @param {'values'|'groups'} slot der Slot
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
+       *   der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren
+       * @returns {Promise<void>}
+       * @throws {Error} wenn `slot` unbekannt ist oder die Spalte nicht wählbar
+       */
+      async setColumn(slot, ref) {
+        requireEnum('slot', slot, COLUMN_SLOTS);
+        let clean = null;
+        if (ref != null) {
+          requireEnum('slot', slot, this.activeColumnSlots());
+          const keys = this.pickableColumns()[slot].map(c => c.key);
+          requireKnownId('ref', refToKey(ref), keys);
+          // Normalisierte Form: fremde Eigenschaften des Agentenobjekts bleiben draußen.
+          clean = keyToRef(refToKey(ref));
+        }
+        COLUMN_SINKS[slot](this.model, clean);
+        this._pickerOf(slot)?.syncValue(clean);
+        await this.runAnalysis();
+      },
+
+      /**
+       * Mit den aktuellen Eingaben und Spaltenwerten neu rechnen.
+       * @agent
+       * @returns {Promise<void>}
+       */
+      async runAnalysis() {
         clearTimeout(this._autoRunTimer);
-        this._autoRunTimer = setTimeout(() => this._runAnalysis(), AUTORUN_DELAY);
+        await this._runAnalysis();
+      },
+
+      /** Der Wähler eines Slots. */
+      _pickerOf(slot) { return slot === 'values' ? this._pickerVal : this._pickerGrp; },
+
+      /** Ergebnis und Punkte für read(), aus `_lastRun` (E4). */
+      _agentResult() {
+        if (!this._lastRun) return { result: null, points: [], pointsColumns: [] };
+        const { r, n } = this._lastRun;
+        const { rows, columns } = zipPoints({ z: r.z, mr: r.mr }, { signalZ: r.signalsZ, signalMR: r.signalsMR });
+        return {
+          result: {
+            n,
+            skipped: r.skipped,
+            groups: r.groups.map(g => ({
+              group: String(g.group), count: g.count,
+              mean: finiteOrNull(g.mean), sigma: finiteOrNull(g.sigma), mrBar: finiteOrNull(g.mrBar),
+            })),
+            z: { cl: finiteOrNull(r.clZ), ucl: finiteOrNull(r.uclZ), lcl: finiteOrNull(r.lclZ) },
+            mr: { cl: finiteOrNull(r.mrBarZ), ucl: finiteOrNull(r.uclMR), lcl: finiteOrNull(r.lclMR) },
+            signalsZ: [...r.signalsZ],
+            signalsMR: [...r.signalsMR],
+          },
+          points: rows,
+          pointsColumns: columns,
+        };
       },
 
       // ── Analysis ─────────────────────────────────────────────
 
       async _runAnalysis() {
         const clear = () => {
+          this._lastRun = null;
           this._renderGen++;
           this._destroyCharts();
           this.chartViews = [];
@@ -106,6 +234,7 @@ const mod = createModule({
         if (values.length < 4) { clear(); return; }
 
         const r = computeZMR(values, groups);
+        this._lastRun = { r, n: values.length };
 
         this.warningMsg = r.skipped > 0 ? _t('warningSkipped', { count: r.skipped }) : '';
 
@@ -218,22 +347,15 @@ const mod = createModule({
         const grpWrap = module._container.querySelector('[data-ref="grp-picker"]');
         if (valWrap) {
           this._pickerVal = new ColumnPicker(valWrap, module._context, {
-            mode: 'single', types: ['numeric'], minCount: 4,
-            onChange: (ref) => {
-              this.model.valuesRef = ref;
-              this._scheduleAutoRun();
-            },
+            mode: 'single', ...SLOT_FILTERS.values,
+            onChange: (ref) => this.setColumn('values', ref),
           });
           if (this.model.valuesRef) this._pickerVal.value = this.model.valuesRef;
         }
         if (grpWrap) {
-          // Groups can be numeric or text — accept both.
           this._pickerGrp = new ColumnPicker(grpWrap, module._context, {
-            mode: 'single', types: ['numeric', 'text'], minCount: 4,
-            onChange: (ref) => {
-              this.model.groupsRef = ref;
-              this._scheduleAutoRun();
-            },
+            mode: 'single', ...SLOT_FILTERS.groups,
+            onChange: (ref) => this.setColumn('groups', ref),
           });
           if (this.model.groupsRef) this._pickerGrp.value = this.model.groupsRef;
         }
@@ -241,6 +363,7 @@ const mod = createModule({
 
       // ── Alpine component lifecycle ────────────────────────────
 
+      /** @noagent lifecycle */
       init() {
         // Fresh per-instance transient collections
         this._unsubs = [];
@@ -275,6 +398,7 @@ const mod = createModule({
         this._runAnalysis();
       },
 
+      /** @noagent lifecycle */
       destroy() {
         for (const unsub of this._unsubs) unsub();
         this._unsubs = [];

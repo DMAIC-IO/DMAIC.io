@@ -8129,6 +8129,27 @@
       }
     },
     "short-run-chart": {
+      "whenToUse": "Kurze Serien mit Teilen unterschiedlicher Sollwerte in einer Regelkarte überwachen: jeder Wert wird innerhalb seines Teils standardisiert und in einer Z-MR-Karte gezeichnet.",
+      "actions": {
+        "read": { "help": "Gewählte Spalten, Kennzahlen je Teil, Grenzen der Z- und MR-Karte, Signalpunkte sowie z und MR je Wert lesen." },
+        "setColumn": {
+          "help": "Eine Spalte einem Slot zuweisen und neu rechnen. Der andere Slot behält seine Spalte.",
+          "params": {
+            "slot": "'values' — die Messwerte in zeitlicher Reihenfolge (Pflicht); 'groups' — Teil oder Gruppe je Wert, Zahl oder Text (Pflicht). Ein Ergebnis braucht mindestens 4 verwertbare Paare.",
+            "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null zum Leeren."
+          }
+        },
+        "runAnalysis": { "help": "Mit den aktuellen Spaltenwerten neu rechnen, etwa nachdem sich die Daten geändert haben." }
+      },
+      "fields": {
+        "valuesRef": { "help": "Die Messwertspalte (Slot 'values'), oder null." },
+        "groupsRef": { "help": "Die Teile- bzw. Gruppenspalte (Slot 'groups'), oder null." },
+        "activeColumnSlots": { "help": "Die Slots, die setColumn annimmt: values, groups." },
+        "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
+        "warningMsg": { "help": "Der Hinweis auf übersprungene Teile (zu wenige Werte, um ihre Streuung zu schätzen), oder ''." },
+        "result": { "help": "{ n, skipped, groups: [{ group, count, mean, sigma, mrBar }], z: { cl, ucl, lcl }, mr: { cl, ucl, lcl }, signalsZ, signalsMR }; signals sind Punktindizes; null bei weniger als 4 verwertbaren Paaren." },
+        "points": { "help": "Je verwertbarem Wert eine Zeile: { z, mr, signalZ, signalMR }. read({ fields: ['points'] }) liefert sie vollständig." }
+      },
       "name": "Regelkarte (Kurzläufer Z-MR)",
       "description": "Standardisierte I-MR über mehrere Teile mit unterschiedlichen Targets",
       "sectionData": "Datenquelle",

@@ -8728,29 +8728,90 @@ export const AGENT_REGISTRY = {
     }
   },
   "short-run-chart": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:init",
-      "unmarked_method:destroy"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields: ['points']` liefert die Punkte vollständig, `rows` schneidet sie zu"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'values'|'groups'",
+            "optional": false,
+            "help": "der Slot"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "Promise<void>",
+        "help": "Eine Spalte einem Slot zuweisen und neu rechnen."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "Promise<void>",
+        "help": "Mit den aktuellen Eingaben und Spaltenwerten neu rechnen."
+      }
+    },
     "fields": {
       "valuesRef": {
-        "type": "{instanceId:string, sheetId:string, columnId:string}|null",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the measured column (slot `values`), `{ instanceId, sheetId, columnId }`, or null",
+        "bulk": false,
+        "derived": true
       },
       "groupsRef": {
-        "type": "{instanceId:string, sheetId:string, columnId:string}|null",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the part/group column (slot `groups`), or null",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "string|null",
-        "help": "",
-        "bulk": false
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "warningMsg": {
+        "type": "string",
+        "help": "the notice about groups that were skipped, or ''",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "`{ n, skipped, groups: [{ group, count, mean, sigma, mrBar }], z: { cl, ucl, lcl }, mr: { cl, ucl, lcl }, signalsZ, signalsMR }` — z per value standardised within its group; signals are point indices; null with fewer than 4 usable pairs",
+        "bulk": false,
+        "derived": true
+      },
+      "points": {
+        "type": "object[]",
+        "help": "one row per usable value: `{ z, mr, signalZ, signalMR }`",
+        "bulk": true,
+        "bulkKind": "table",
+        "derived": true
       }
     }
   },
@@ -11469,4 +11530,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":65};
+export const AGENT_COVERAGE = {"total":76,"available":66};
