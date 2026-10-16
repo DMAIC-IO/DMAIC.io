@@ -24,11 +24,11 @@
             <label class="dt-param__label" x-text="paramLabel(p.labelKey)"></label>
             <input class="field field--num field--inline dt-param__number" type="number"
                    :data-param-key="p.key" :min="p.min" :max="p.max"
-                   :value="p.val" @change="setParam(p.key, $event.target.value)">
+                   :value="p.val" @change="onParamInput(p.key, $event)">
             <input class="dt-param__range" type="range"
                    :min="p.min" :max="p.max" :step="p.step"
                    :data-range-for="p.key"
-                   :value="p.val" @input="setParam(p.key, $event.target.value)">
+                   :value="p.val" @input="onParamInput(p.key, $event)">
           </div>
         </template>
       </div>

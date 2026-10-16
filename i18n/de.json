@@ -6982,16 +6982,16 @@
           "params": {
             "attrId": "Die id einer Kategorie aus attributes oder die von addAttribute.",
             "key": "Entweder name oder weight; jeder andere Wert ist ein Fehler.",
-            "value": "Für name ein Text, auch leer; für weight eine Zahl, als Text angegebene Zahlen werden angenommen."
+            "value": "Für name ein Text, auch leer; für weight eine Zahl ab 0, als Text angegebene Zahlen werden angenommen."
           }
         },
         "generate": {
           "help": "Erzeugt die Werte mit den aktuellen Eingaben. Ohne gewählte Verteilung geschieht nichts; ein Fehler der Verteilung steht in errorMsg, keine Absage."
         },
         "toWorksheet": {
-          "help": "Sendet die erzeugten Werte als neue Spalte an einen neuen oder bestehenden leeren Worksheet und gibt den empfangenden Worksheet zurück. Ohne Werte wird nichts gesendet und null zurückgegeben.",
+          "help": "Sendet die erzeugten Werte an einen neuen Worksheet, in eine bestehende leere Spalte oder als neue Spalte an ein bestehendes Blatt und gibt den empfangenden Worksheet zurück. Ohne Werte wird nichts gesendet und null zurückgegeben.",
           "params": {
-            "target": "null für einen neuen Worksheet, sonst ein Spaltenbezug { instanceId, sheetId, columnId } aus targetColumns."
+            "target": "null für einen neuen Worksheet, sonst ein Spaltenbezug { instanceId, sheetId, columnId } aus targetColumns; columnId '__new__' hängt eine neue Spalte an das Blatt an."
           }
         }
       },
@@ -7007,7 +7007,7 @@
         "attrCount": { "help": "Umfang der Stichprobe bei der attributiven Verteilung." },
         "attrSeed": { "help": "Startwert des Zufallsgenerators bei der attributiven Verteilung." },
         "generated": { "help": "Zusammenfassung der erzeugten Werte: n, Mittelwert, Standardabweichung, Minimum und Maximum bei stetigen und diskreten Verteilungen; n und die Häufigkeit je Kategorie bei der attributiven; null ohne Werte." },
-        "targetColumns": { "help": "Die leeren Spalten bestehender Datensammlungen, die toWorksheet als Ziel annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'. Ein Ziel null legt einen neuen Worksheet an." },
+        "targetColumns": { "help": "Die Ziele, die toWorksheet annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'. Je Blatt mit einer leeren Spalte stehen dort seine leeren Spalten und danach ein Eintrag mit columnId '__new__' (name ist der Blattname), der eine neue Spalte anhängt. Ein Ziel null legt einen neuen Worksheet an." },
         "errorMsg": { "help": "Die Meldung, wenn die Verteilung keine Werte erzeugen konnte, sonst leer." }
       },
       "errGenerate": "Die Werte konnten nicht erzeugt werden: {message}",
@@ -8360,9 +8360,9 @@
           "help": "Rechnet die Transformation mit der aktuellen Quelle und den aktuellen Parametern. Weniger als drei endliche Werte lassen result auf null."
         },
         "toWorksheet": {
-          "help": "Sendet die transformierte Reihe als neue Spalte an einen neuen oder bestehenden Worksheet und liefert den empfangenden Worksheet. Ohne Ergebnis wird nichts gesendet und null geliefert.",
+          "help": "Sendet die transformierte Reihe an einen neuen Worksheet, in eine bestehende Spalte (deren Werte sie ersetzt) oder als neue Spalte an ein bestehendes Blatt und liefert den empfangenden Worksheet. Ohne Ergebnis wird nichts gesendet und null geliefert.",
           "params": {
-            "target": "null für einen neuen Worksheet, sonst ein Spaltenbezug aus targetColumns."
+            "target": "null für einen neuen Worksheet, sonst ein Spaltenbezug aus targetColumns; columnId '__new__' hängt eine neue Spalte an das Blatt an."
           }
         }
       },
@@ -8389,7 +8389,7 @@
           "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; key ist 'instanceId|sheetId|columnId'."
         },
         "targetColumns": {
-          "help": "Die bestehenden Spalten, die toWorksheet als Ziel annimmt, jeweils { key, name }; null als Ziel legt einen neuen Worksheet an."
+          "help": "Die Ziele, die toWorksheet annimmt, jeweils { key, name }: je Blatt seine Spalten und danach ein Eintrag mit columnId '__new__' (name ist der Blattname), der eine neue Spalte anhängt; null als Ziel legt einen neuen Worksheet an."
         },
         "result": {
           "help": "Kennwerte (Mittelwert, Streuung, Median, Schiefe, Wölbung, Minimum, Maximum) und Anderson-Darling-p der Original- und der transformierten Reihe, oder null ohne Ergebnis."

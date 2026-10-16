@@ -27,7 +27,7 @@ import { toNum } from '../../core/chart/chart-data-prep.js';
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
-import { pickableColumnList } from '../../core/agent/agent-options.js';
+import { pickableColumnList, targetColumnList } from '../../core/agent/agent-options.js';
 import {
   State, TRANSFORMS, TRANSFORM_IDS, applyTransform, optimizeBoxCox, optimizeYeoJohnson,
 } from './data-transformation-model.js';
@@ -69,7 +69,7 @@ function paramRowsFor(tfId) {
  * @property {Array<{ key: string, min: number, max: number }>} activeParams  the keys `setParam` accepts now, with their range
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
- * @property {Array<{ key: string, name: string }>} targetColumns  the existing columns `toWorksheet` accepts; null targets a new worksheet
+ * @property {Array<{ key: string, name: string }>} targetColumns  the targets `toWorksheet` accepts: per sheet its columns, then a `instanceId|sheetId|__new__` entry that appends a new column; null targets a new worksheet
  * @property {{ n: number, original: object, transformed: object }|null} result  descriptive statistics and Anderson-Darling p of both series, null without a result
  * @property {string} errorMsg  the message the module shows, '' without error
  */
@@ -140,7 +140,7 @@ const mod = createModule({
       },
       /** @noagent derived set; der Agent liest sie über read().targetColumns */
       targetColumns() {
-        return pickableColumnList(module._context.stateManager, TARGET_FILTER);
+        return targetColumnList(module._context.stateManager, TARGET_FILTER);
       },
 
       /**
@@ -184,6 +184,16 @@ const mod = createModule({
         const n = requireNumber('value', value, { min: row.min, max: row.max });
         row.val = String(n);
         this._autoRun();
+      },
+
+      /** @noagent DOM event handler; the agent uses setParam(). Eine abgewiesene Eingabe springt auf den gehaltenen Wert zurück. */
+      onParamInput(key, event) {
+        try {
+          this.setParam(key, event.target.value);
+        } catch {
+          const row = this.paramRows.find(p => p.key === key);
+          event.target.value = row ? row.val : '';
+        }
       },
 
       // ── View transformations (i18n / css) ─────────────────────
@@ -480,7 +490,8 @@ const mod = createModule({
        * Die transformierte Spalte an einen neuen oder bestehenden Worksheet senden.
        * @agent
        * @param {{ instanceId: string, sheetId: string, columnId: string }|null} target
-       *   null für einen neuen Worksheet, sonst ein Spaltenbezug aus `targetColumns`
+       *   null für einen neuen Worksheet, sonst ein Spaltenbezug aus `targetColumns`;
+       *   columnId `'__new__'` hängt eine neue Spalte an das Blatt an
        * @returns {Promise<{ instanceId: string }|null>} der empfangende Worksheet, oder null ohne Ergebnis
        * @throws {Error} wenn `target` keine wählbare Spalte ist
        */
@@ -506,13 +517,17 @@ const mod = createModule({
       },
 
       /** @noagent DOM event handler; the agent uses toWorksheet() */
-      onToWorksheet() {
+      async onToWorksheet() {
         const v = this._targetPicker?.value;
         if (!v) {
           module._context.notify?.(_t('selectTarget'), 'warning');
           return;
         }
-        this.toWorksheet(v === ColumnPicker.NEW_WORKSHEET ? null : v);
+        try {
+          await this.toWorksheet(v === ColumnPicker.NEW_WORKSHEET ? null : v);
+        } catch (err) {
+          module._context.notify?.(err?.message ?? String(err), 'error');
+        }
       },
 
       async _createWorksheetAndSend(name, values) {

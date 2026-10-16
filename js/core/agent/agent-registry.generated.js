@@ -1781,7 +1781,7 @@ export const AGENT_REGISTRY = {
             "name": "target",
             "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
             "optional": false,
-            "help": "null für einen neuen Worksheet, sonst ein Spaltenbezug aus `targetColumns`"
+            "help": "null für einen neuen Worksheet, sonst ein Spaltenbezug aus `targetColumns`; columnId `'__new__'` hängt eine neue Spalte an das Blatt an"
           }
         ],
         "returns": "Promise<{ instanceId: string }|null>",
@@ -1833,7 +1833,7 @@ export const AGENT_REGISTRY = {
       },
       "targetColumns": {
         "type": "Array<{ key: string, name: string }>",
-        "help": "the existing columns `toWorksheet` accepts; null targets a new worksheet",
+        "help": "the targets `toWorksheet` accepts: per sheet its columns, then a `instanceId|sheetId|__new__` entry that appends a new column; null targets a new worksheet",
         "bulk": false,
         "derived": true
       },
@@ -6913,7 +6913,7 @@ export const AGENT_REGISTRY = {
             "name": "value",
             "type": "string|number",
             "optional": false,
-            "help": "der Name (Text, leer erlaubt) oder das Gewicht (Zahl)"
+            "help": "der Name (Text, leer erlaubt) oder das Gewicht (Zahl ab 0)"
           }
         ],
         "returns": "void",
@@ -6930,7 +6930,7 @@ export const AGENT_REGISTRY = {
             "name": "target",
             "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
             "optional": false,
-            "help": "null für einen neuen Worksheet, sonst ein Spaltenbezug aus `targetColumns`"
+            "help": "null für einen neuen Worksheet, sonst ein Spaltenbezug aus `targetColumns`; columnId `'__new__'` hängt eine neue Spalte an das Blatt an"
           }
         ],
         "returns": "Promise<{ instanceId: string }|null>",
@@ -7006,7 +7006,7 @@ export const AGENT_REGISTRY = {
       },
       "targetColumns": {
         "type": "Array<{ key: string, name: string }>",
-        "help": "the empty columns `toWorksheet` accepts; null targets a new worksheet",
+        "help": "the targets `toWorksheet` accepts: per sheet with an empty column its empty columns, then a `instanceId|sheetId|__new__` entry that appends a new column; null targets a new worksheet",
         "bulk": false,
         "derived": true
       },

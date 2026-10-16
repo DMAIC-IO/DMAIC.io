@@ -1,8 +1,8 @@
 /**
- * Tests for core/agent/agent-options.js — pickableColumnList mit `filter`.
+ * Tests for core/agent/agent-options.js — pickableColumnList mit `filter`, targetColumnList.
  */
-import { suite, test, assertEqual } from '../../test-utils.js';
-import { pickableColumnList } from '../../../js/core/agent/agent-options.js';
+import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
+import { pickableColumnList, targetColumnList } from '../../../js/core/agent/agent-options.js';
 
 /** StateManager-Attrappe in der Form, die discoverColumns liest. */
 function smWithTwoColumns() {
@@ -29,5 +29,19 @@ suite('agent-options pickableColumnList', () => {
     assertEqual(all.length, 2);
     assertEqual(onlyB.length, 1);
     assertEqual(onlyB[0].name, 'C2');
+  });
+});
+
+suite('agent-options targetColumnList', () => {
+  test('nennt je Blatt seine Spalten und danach die neue Spalte', () => {
+    const keys = targetColumnList(smWithTwoColumns()).map(c => c.key);
+    assertDeepEqual(keys, ['ws-1|s1|a', 'ws-1|s1|b', 'ws-1|s1|__new__']);
+  });
+  test('ein Blatt ohne wählbare Spalte bietet keine neue Spalte, wie der Wähler', () => {
+    assertDeepEqual(targetColumnList(smWithTwoColumns(), { maxCount: 0 }), []);
+  });
+  test('die neue Spalte trägt den Blattnamen', () => {
+    const entry = targetColumnList(smWithTwoColumns()).at(-1);
+    assertEqual(entry.name, 'Blatt');
   });
 });

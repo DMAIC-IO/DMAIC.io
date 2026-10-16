@@ -28,7 +28,7 @@ import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import {
   requireEnum, requireKnownId, requireNumber, requireText,
 } from '../../core/agent/agent-argcheck.js';
-import { pickableColumnList } from '../../core/agent/agent-options.js';
+import { targetColumnList } from '../../core/agent/agent-options.js';
 import { ColumnPicker, refToKey, keyToRef } from '../../ui/column-picker.js';
 import { descriptiveStats } from '../../engines/normality-test-engine.js';
 import {
@@ -98,7 +98,7 @@ function fmtStatNum(v) {
  * @property {number} attrCount  sample size of the attributive distribution
  * @property {number} attrSeed  random seed of the attributive distribution
  * @property {object|null} generated  `{ n, mean, sd, min, max }` for numeric, `{ n, frequency: [{ name, count }] }` for attributive, null without values
- * @property {Array<{ key: string, name: string }>} targetColumns  the empty columns `toWorksheet` accepts; null targets a new worksheet
+ * @property {Array<{ key: string, name: string }>} targetColumns  the targets `toWorksheet` accepts: per sheet with an empty column its empty columns, then a `instanceId|sheetId|__new__` entry that appends a new column; null targets a new worksheet
  * @property {string} errorMsg  why the last generation failed, '' without error
  */
 export default createModule({
@@ -176,7 +176,7 @@ export default createModule({
       },
       /** @noagent derived set; der Agent liest sie über read().targetColumns */
       targetColumns() {
-        return pickableColumnList(module._context.stateManager, TARGET_FILTER);
+        return targetColumnList(module._context.stateManager, TARGET_FILTER);
       },
 
       /** Zusammenfassung der generierten Werte für die Lesefläche. */
@@ -414,7 +414,7 @@ export default createModule({
        * @agent
        * @param {string} attrId die id einer Kategorie aus `attributes`
        * @param {'name'|'weight'} key welches Feld
-       * @param {string|number} value der Name (Text, leer erlaubt) oder das Gewicht (Zahl)
+       * @param {string|number} value der Name (Text, leer erlaubt) oder das Gewicht (Zahl ab 0)
        * @returns {void}
        * @throws {Error} wenn `attrId` oder `key` unbekannt ist oder `value` nicht zum Feld passt
        */
@@ -423,7 +423,7 @@ export default createModule({
         requireEnum('key', key, ATTR_KEYS);
         const a = this.model.attributes.find(x => x.id === attrId);
         if (key === 'name') a.name = requireText('value', value);
-        else a.weight = requireNumber('value', value);
+        else a.weight = requireNumber('value', value, { min: 0 });
         this.generate();
       },
 
@@ -599,7 +599,8 @@ export default createModule({
        * Die generierten Werte als neue Spalte an einen neuen oder leeren Worksheet senden.
        * @agent
        * @param {{ instanceId: string, sheetId: string, columnId: string }|null} target
-       *   null für einen neuen Worksheet, sonst ein Spaltenbezug aus `targetColumns`
+       *   null für einen neuen Worksheet, sonst ein Spaltenbezug aus `targetColumns`;
+       *   columnId `'__new__'` hängt eine neue Spalte an das Blatt an
        * @returns {Promise<{ instanceId: string }|null>} der empfangende Worksheet, oder null ohne Werte
        * @throws {Error} wenn `target` keine wählbare Spalte ist
        */
@@ -631,13 +632,17 @@ export default createModule({
       },
 
       /** @noagent DOM event handler; the agent uses toWorksheet() */
-      onToWorksheet() {
+      async onToWorksheet() {
         const v = this._picker?.value;
         if (!v) {
           module._context.notify(_t('selectTarget'));
           return;
         }
-        this.toWorksheet(v === ColumnPicker.NEW_WORKSHEET ? null : v);
+        try {
+          await this.toWorksheet(v === ColumnPicker.NEW_WORKSHEET ? null : v);
+        } catch (err) {
+          module._context.notify(err?.message ?? String(err), 'error');
+        }
       },
 
       async _createWorksheetAndSend(name, values, type, discrete) {

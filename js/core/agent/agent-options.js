@@ -8,7 +8,7 @@
  *
  * Rein: kein DOM, kein `window`.
  */
-import { discoverColumns, refToKey } from '../../ui/column-picker.js';
+import { discoverColumns, groupColumnsBySheet, refToKey } from '../../ui/column-picker.js';
 
 /**
  * Die wählbaren Spalten EINES Slots als flache Liste für die Lesefläche.
@@ -24,10 +24,36 @@ import { discoverColumns, refToKey } from '../../ui/column-picker.js';
  *   die `refToKey` erzeugt) und ihr Anzeigename
  */
 export function pickableColumnList(stateManager, opts = {}) {
+  return discoverFiltered(stateManager, opts).map(columnEntry);
+}
+
+/**
+ * Die Ziele einer Übergabe an einen bestehenden Worksheet: je Blatt seine
+ * wählbaren Spalten und danach ein Eintrag „neue Spalte“ mit dem Schlüssel
+ * `instanceId|sheetId|__new__` — dieselbe Menge und Reihenfolge, die ein
+ * Zielwähler mit `allowCreateWorksheet` anbietet (beide gruppieren über
+ * `groupColumnsBySheet`).
+ *
+ * @param {object} stateManager der StateManager aus `module._context`
+ * @param {object} [opts] dieselben Einschränkungen wie bei `pickableColumnList`
+ * @returns {{ key: string, name: string }[]} je Ziel sein Schlüssel und sein
+ *   Anzeigename; ein Eintrag „neue Spalte“ trägt den Namen seines Blatts
+ */
+export function targetColumnList(stateManager, opts = {}) {
+  return groupColumnsBySheet(discoverFiltered(stateManager, opts)).flatMap(({ items, newColumnKey }) => [
+    ...items.map(columnEntry),
+    { key: newColumnKey, name: items[0].sheetName || newColumnKey },
+  ]);
+}
+
+function discoverFiltered(stateManager, opts) {
   const cols = discoverColumns(stateManager, opts);
-  const kept = typeof opts.filter === 'function' ? cols.filter(opts.filter) : cols;
-  return kept.map(col => ({
+  return typeof opts.filter === 'function' ? cols.filter(opts.filter) : cols;
+}
+
+function columnEntry(col) {
+  return {
     key: refToKey(col),
     name: col.columnName || col.shortName || refToKey(col),
-  }));
+  };
 }

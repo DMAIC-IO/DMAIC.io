@@ -137,6 +137,27 @@ export function discoverColumns(stateManager, filter) {
   return columns;
 }
 
+/** Column ID of a "new column in an existing sheet" target (`inst|sheet|__new__`). */
+export const NEW_COLUMN_ID = '__new__';
+
+/**
+ * Group discovered columns by sheet (instanceId|sheetId), in discovery order.
+ * Same-named sheets of different worksheets stay separate. A target picker
+ * with `allowCreateWorksheet` offers one "new column" entry per group.
+ * @param {ColumnInfo[]} cols
+ * @returns {Array<{ items: ColumnInfo[], newColumnKey: string }>} per sheet its
+ *   columns and the key of its "new column" entry
+ */
+export function groupColumnsBySheet(cols) {
+  const groups = new Map();
+  for (const c of cols) {
+    const gk = `${c.instanceId}|${c.sheetId}`;
+    if (!groups.has(gk)) groups.set(gk, { items: [], newColumnKey: `${gk}|${NEW_COLUMN_ID}` });
+    groups.get(gk).items.push(c);
+  }
+  return [...groups.values()];
+}
+
 // Re-exported for existing callers; the DOM-free home is core/worksheet-sheets.js.
 export { uniqueSheetName, buildInitialWorksheetState } from '../core/worksheet-sheets.js';
 
@@ -234,7 +255,7 @@ export class ColumnPicker {
   static NEW_WORKSHEET = '__create_worksheet__';
 
   /** Column ID used for "new column in existing sheet" entries. */
-  static NEW_COLUMN = '__new__';
+  static NEW_COLUMN = NEW_COLUMN_ID;
 
   /**
    * Whether this picker uses single-selection semantics (one <select>).
@@ -389,18 +410,6 @@ export class ColumnPicker {
       return;
     }
 
-    // Group by unique sheet key (instanceId|sheetId) to keep same-named sheets separate
-    const groupOrder = [];
-    const grouped = {};
-    for (const c of cols) {
-      const gk = `${c.instanceId}|${c.sheetId}`;
-      if (!grouped[gk]) {
-        grouped[gk] = [];
-        groupOrder.push(gk);
-      }
-      grouped[gk].push(c);
-    }
-
     const opts = [
       h('option', { value: '' }, this._t('placeholder')),
     ];
@@ -413,8 +422,8 @@ export class ColumnPicker {
       }, `+ ${this._t('newWorksheet')}`));
     }
 
-    for (const gk of groupOrder) {
-      const items = grouped[gk];
+    // Grouped by unique sheet key (instanceId|sheetId) to keep same-named sheets separate
+    for (const { items, newColumnKey } of groupColumnsBySheet(cols)) {
       const group = items[0].sheetName;
       const optgroup = h('optgroup', { label: group });
       for (const c of items) {
@@ -431,11 +440,9 @@ export class ColumnPicker {
       }
       // "+ new column" at end of each sheet group
       if (this._allowCreateWorksheet) {
-        const first = items[0];
-        const ncKey = `${first.instanceId}|${first.sheetId}|${ColumnPicker.NEW_COLUMN}`;
         optgroup.append(h('option', {
-          value: ncKey,
-          selected: ncKey === this._selectedKey,
+          value: newColumnKey,
+          selected: newColumnKey === this._selectedKey,
         }, `+ ${this._t('newColumn')}`));
       }
       opts.push(optgroup);

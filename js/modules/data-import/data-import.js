@@ -18,8 +18,10 @@
  * 🔴 CROSS-MODULE CONTRACT: `sendToWorksheet()` registers a new worksheet
  * instance in the host phase and emits `module:added` then, on the worksheet's
  * `module:activated`, one `worksheet:appendColumn` per imported column. The
- * event names, payload shapes and timing are preserved byte-identically from
- * the legacy implementation — the E2E asserts the worksheet receives the data.
+ * event names, payload shapes and their order are preserved from the legacy
+ * implementation; the column events now follow the awaited worksheet handoff
+ * (`openNewWorksheet`) and so fire one microtask later than before — the E2E
+ * asserts the worksheet receives the data.
  *
  * @agent  Steuerbar über das Viewmodel: CSV- oder JSON-Text importieren
  *   (importText), Parser-Optionen setzen (setParam), ein Blatt wählen
