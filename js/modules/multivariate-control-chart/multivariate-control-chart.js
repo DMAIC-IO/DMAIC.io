@@ -184,7 +184,8 @@ const mod = createModule({
         const keys = this.pickableColumns()[slot].map(c => c.key);
         for (const ref of refs) requireKnownId('ref', refToKey(ref), keys);
         // Normalisierte Form: fremde Eigenschaften des Agentenobjekts bleiben draußen.
-        const clean = refs.map(r => keyToRef(refToKey(r)));
+        // Doppelte Bezüge fallen weg (erstes Vorkommen bleibt), wie der Wähler sie über ein Set zusammenführt.
+        const clean = [...new Set(refs.map(refToKey))].map(keyToRef);
         this.model.columnRefs = clean;
         this._picker?.syncValue(clean);
         await this.runAnalysis();
