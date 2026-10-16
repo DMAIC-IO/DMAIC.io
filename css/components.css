@@ -955,6 +955,11 @@ select.input {
   border-bottom: var(--border-width) solid var(--color-border-secondary);
   padding: 0 var(--spacing-lg);
   flex-shrink: 0;
+  /* The dialog panel scrolls as a whole; keep the tabs pinned at its top. */
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-bg-primary);
 }
 
 .settings-tab {
@@ -981,8 +986,6 @@ select.input {
 
 .settings-panel__body {
   padding: var(--spacing-lg);
-  overflow-y: auto;
-  flex: 1;
 }
 
 .settings-tab-content {
