@@ -7637,7 +7637,90 @@
       "markerColor": "Fill color",
       "markerStroke": "Border color",
       "markerStrokeWidth": "Border width",
-      "markerStrokeDash": "Border style"
+      "markerStrokeDash": "Border style",
+      "whenToUse": "Draw the response surface of a two-factor model as contour lines — from polynomial coefficients or an own formula in x and y — optionally with measured points.",
+      "actions": {
+        "read": {
+          "help": "Read the model, coefficients or formula, axis ranges, labels, data columns and the formula error, and the min, max and optimum of the surface."
+        },
+        "setColumn": {
+          "help": "Assign a data column to a slot. The other slots keep their columns. With all three set, measured points are shown.",
+          "params": {
+            "slot": "'x' — the first factor; 'y' — the second factor; 'z' — the measured response.",
+            "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null to clear the slot."
+          }
+        },
+        "setParam": {
+          "help": "Set an option of the response surface. read().activeParams names the options valid right now.",
+          "params": {
+            "key": "'modelType', 'customFormula' (active only with modelType 'custom'), 'xLabel', 'yLabel', 'zLabel', 'xMin', 'xMax', 'yMin', 'yMax'.",
+            "value": "For 'modelType': 'quadratic', 'interaction' or 'custom'. For 'customFormula': a formula in x and y; an invalid formula is accepted and reported in read().formulaError. For the labels: any text. For the ranges: a finite number."
+          }
+        },
+        "setCoefficient": {
+          "help": "Set one of the six polynomial coefficients b0…b5. Not available while modelType is 'custom'.",
+          "params": {
+            "index": "Which coefficient, a whole number from 0 to 5.",
+            "value": "The coefficient, a finite number."
+          }
+        }
+      },
+      "fields": {
+        "modelType": {
+          "help": "The model form: quadratic, interaction or custom."
+        },
+        "b": {
+          "help": "The six polynomial coefficients b0…b5."
+        },
+        "customFormula": {
+          "help": "The own formula in x and y, used with modelType custom."
+        },
+        "xLabel": {
+          "help": "The label of the x factor."
+        },
+        "yLabel": {
+          "help": "The label of the y factor."
+        },
+        "zLabel": {
+          "help": "The label of the response."
+        },
+        "xMin": {
+          "help": "Lower end of the x range."
+        },
+        "xMax": {
+          "help": "Upper end of the x range."
+        },
+        "yMin": {
+          "help": "Lower end of the y range."
+        },
+        "yMax": {
+          "help": "Upper end of the y range."
+        },
+        "colRefX": {
+          "help": "The x data column (slot 'x'), or null."
+        },
+        "colRefY": {
+          "help": "The y data column (slot 'y'), or null."
+        },
+        "colRefZ": {
+          "help": "The response data column (slot 'z'), or null."
+        },
+        "formulaError": {
+          "help": "{ code, token } while the own formula is invalid, else null."
+        },
+        "activeParams": {
+          "help": "The options setParam accepts in the current state."
+        },
+        "activeColumnSlots": {
+          "help": "The slots setColumn accepts: x, y, z."
+        },
+        "pickableColumns": {
+          "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId."
+        },
+        "surface": {
+          "help": "The evaluated surface over the axis range: { zMin, zMax, range, optimum: { x, y, z } } — optimum is the highest point; null if the model cannot be evaluated."
+        }
+      }
     },
     "control-chart": {
       "name": "Control Chart",

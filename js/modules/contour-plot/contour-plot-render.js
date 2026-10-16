@@ -9,6 +9,7 @@
 export { getColor } from '../../core/chart/color-schemes.js';
 import { getColor } from '../../core/chart/color-schemes.js';
 import { legendModel } from './contour-plot-legend.js';
+import { scanSurface } from './contour-plot-surface.js';
 
 // ═══════════════════════════════════════════════════════════════
 // Axis tick generation
@@ -184,21 +185,10 @@ export const renderMethods = {
     const showLabels = this._state.showLabels !== false;
     const showPts = this._state.showDataPoints || false;
 
-    // Build grid
-    const grid = [];
-    let zMinG = Infinity, zMaxG = -Infinity;
-    let optX = 0, optY = 0;
-    for (let j = 0; j < res; j++) {
-      grid[j] = [];
-      for (let i = 0; i < res; i++) {
-        const x = xMin + (xMax - xMin) * i / (res - 1);
-        const y = yMax - (yMax - yMin) * j / (res - 1);
-        const z = this._evalModel(x, y);
-        grid[j][i] = z;
-        if (z < zMinG) zMinG = z;
-        if (z > zMaxG) { zMaxG = z; optX = x; optY = y; }
-      }
-    }
+    // Build grid (one sampling for drawing and the agent read surface)
+    const { grid, zMin: zMinG, zMax: zMaxG, optimum } = scanSurface(
+      (x, y) => this._evalModel(x, y), { xMin, xMax, yMin, yMax }, res);
+    const optX = optimum.x, optY = optimum.y;
     this._lastGrid = { grid, xMin, xMax, yMin, yMax, res, margin, plotW, plotH, W, H };
 
     // Helper: map data coords to canvas coords
@@ -248,7 +238,8 @@ export const renderMethods = {
 
       ctx.lineWidth = 0.8;
       levels.forEach(lv => {
-        const t = (lv - zMinG) / (zMaxG - zMinG);
+        // Constant surface: same guard as the fill above (else t = NaN breaks getColor).
+        const t = zMaxG === zMinG ? 0.5 : (lv - zMinG) / (zMaxG - zMinG);
         const c = getColor(t, scheme);
         ctx.strokeStyle = `rgba(${Math.min(255, c[0] + 80)},${Math.min(255, c[1] + 80)},${Math.min(255, c[2] + 80)},0.65)`;
 

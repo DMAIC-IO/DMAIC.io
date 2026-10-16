@@ -1255,140 +1255,186 @@ export const AGENT_REGISTRY = {
     }
   },
   "contour-plot": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:betaLabel",
-      "unmarked_method:revalidateFormula",
-      "unmarked_method:onFormulaInput",
-      "unmarked_method:formulaErrorText",
-      "unmarked_method:onModelTypeChange",
-      "unmarked_method:autoPlot",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unreadable_state_key:model",
-      "unreachable_write:modelType",
-      "unreachable_write:customFormula",
-      "unreachable_write:xLabel",
-      "unreachable_write:yLabel",
-      "unreachable_write:xMin",
-      "unreachable_write:xMax",
-      "unreachable_write:yMin",
-      "unreachable_write:yMax",
-      "unreachable_write:zLabel"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'modelType'|'customFormula'|'xLabel'|'yLabel'|'zLabel'|'xMin'|'xMax'|'yMin'|'yMax'",
+            "optional": false,
+            "help": "welche Option; read().activeParams nennt die im aktuellen Zustand gültigen"
+          },
+          {
+            "name": "value",
+            "type": "any",
+            "optional": false,
+            "help": "`modelType`: 'quadratic', 'interaction' oder 'custom'; Formel und Beschriftungen: Text; Bereichsgrenzen: Zahl"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Option der Antwortfläche setzen."
+      },
+      "setCoefficient": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "welcher Koeffizient, 0 bis 5 (b0…b5)"
+          },
+          {
+            "name": "value",
+            "type": "number",
+            "optional": false,
+            "help": "der Wert"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Polynomkoeffizienten setzen (nicht bei eigener Formel)."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'x'|'y'|'z'",
+            "optional": false,
+            "help": "der Slot"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Spalte einem Slot zuweisen; die übrigen Slots bleiben."
+      }
+    },
     "fields": {
       "modelType": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string",
+        "help": "`quadratic`, `interaction` or `custom`",
+        "bulk": false,
+        "derived": true
       },
       "b": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number[]",
+        "help": "the six polynomial coefficients b0…b5 (used unless `modelType` is `custom`)",
+        "bulk": false,
+        "derived": true
       },
       "customFormula": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string",
+        "help": "the formula in x and y (used with `modelType` `custom`)",
+        "bulk": false,
+        "derived": true
       },
       "xLabel": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string",
+        "help": "the label of the x factor",
+        "bulk": false,
+        "derived": true
       },
       "yLabel": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string",
+        "help": "the label of the y factor",
+        "bulk": false,
+        "derived": true
       },
       "zLabel": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string",
+        "help": "the label of the response",
+        "bulk": false,
+        "derived": true
       },
       "xMin": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "lower end of the x range",
+        "bulk": false,
+        "derived": true
       },
       "xMax": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "upper end of the x range",
+        "bulk": false,
+        "derived": true
       },
       "yMin": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "lower end of the y range",
+        "bulk": false,
+        "derived": true
       },
       "yMax": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "numLevels": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "gridRes": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "colorScheme": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "showLines": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "showLabels": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "showDataPoints": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "upper end of the y range",
+        "bulk": false,
+        "derived": true
       },
       "colRefX": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the optional x data column (slot `x`), or null",
+        "bulk": false,
+        "derived": true
       },
       "colRefY": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the optional y data column (slot `y`), or null",
+        "bulk": false,
+        "derived": true
       },
       "colRefZ": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the optional response data column (slot `z`), or null",
+        "bulk": false,
+        "derived": true
       },
-      "chartConfig": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "formulaError": {
+        "type": "object|null",
+        "help": "`{ code, token }` while the custom formula is invalid, else null",
+        "bulk": false,
+        "derived": true
       },
-      "refLines": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeParams": {
+        "type": "string[]",
+        "help": "the options `setParam` accepts in the current state",
+        "bulk": false,
+        "derived": true
       },
-      "refAreas": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "surface": {
+        "type": "object|null",
+        "help": "the evaluated surface over the axis range: `{ zMin, zMax, range, optimum: { x, y, z } }` (optimum = highest point), or null if the model cannot be evaluated",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -11043,4 +11089,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":59};
+export const AGENT_COVERAGE = {"total":76,"available":60};

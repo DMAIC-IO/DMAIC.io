@@ -4,46 +4,46 @@
     <div class="dmike-split__section-title" x-text="t('sectionModel')"></div>
     <div class="field-group">
       <label x-text="t('modelType')"></label>
-      <select data-ref="modelType" class="field" x-model="model.modelType" @change="onModelTypeChange()">
-        <option value="quadratic" x-text="t('modelQuadratic')"></option>
-        <option value="interaction" x-text="t('modelInteraction')"></option>
-        <option value="custom" x-text="t('modelCustom')"></option>
+      <select data-ref="modelType" class="field" :value="model.modelType" @change="setParam('modelType', $event.target.value)">
+        <template x-for="o in modelTypeOptions()" :key="o.value">
+          <option :value="o.value" :selected="o.value === model.modelType" x-text="o.label"></option>
+        </template>
       </select>
     </div>
 
-    <div data-ref="coeffSection" x-show="model.modelType !== 'custom'">
+    <div data-ref="coeffSection" x-show="!isCustomModel()">
       <label class="contour__coeff-label" x-text="t('coeffLabel')"></label>
       <div class="contour__coeff-grid">
-        <div class="field-group contour__field-sm"><label x-text="betaLabel(0)"></label><input type="number" class="field field--num" data-ref="b0" x-model.number="model.b[0]" @change="autoPlot()"></div>
-        <div class="field-group contour__field-sm"><label x-text="betaLabel(1)"></label><input type="number" class="field field--num" data-ref="b1" x-model.number="model.b[1]" @change="autoPlot()"></div>
-        <div class="field-group contour__field-sm"><label x-text="betaLabel(2)"></label><input type="number" class="field field--num" data-ref="b2" x-model.number="model.b[2]" @change="autoPlot()"></div>
-        <div class="field-group contour__field-sm"><label x-text="betaLabel(3)"></label><input type="number" class="field field--num" data-ref="b3" x-model.number="model.b[3]" @change="autoPlot()"></div>
-        <div class="field-group contour__field-sm"><label x-text="betaLabel(4)"></label><input type="number" class="field field--num" data-ref="b4" x-model.number="model.b[4]" @change="autoPlot()"></div>
-        <div class="field-group contour__field-sm"><label x-text="betaLabel(5)"></label><input type="number" class="field field--num" data-ref="b5" x-model.number="model.b[5]" @change="autoPlot()"></div>
+        <div class="field-group contour__field-sm"><label x-text="betaLabel(0)"></label><input type="number" class="field field--num" data-ref="b0" :value="model.b[0]" @change="onCoefficientInput(0, $event)"></div>
+        <div class="field-group contour__field-sm"><label x-text="betaLabel(1)"></label><input type="number" class="field field--num" data-ref="b1" :value="model.b[1]" @change="onCoefficientInput(1, $event)"></div>
+        <div class="field-group contour__field-sm"><label x-text="betaLabel(2)"></label><input type="number" class="field field--num" data-ref="b2" :value="model.b[2]" @change="onCoefficientInput(2, $event)"></div>
+        <div class="field-group contour__field-sm"><label x-text="betaLabel(3)"></label><input type="number" class="field field--num" data-ref="b3" :value="model.b[3]" @change="onCoefficientInput(3, $event)"></div>
+        <div class="field-group contour__field-sm"><label x-text="betaLabel(4)"></label><input type="number" class="field field--num" data-ref="b4" :value="model.b[4]" @change="onCoefficientInput(4, $event)"></div>
+        <div class="field-group contour__field-sm"><label x-text="betaLabel(5)"></label><input type="number" class="field field--num" data-ref="b5" :value="model.b[5]" @change="onCoefficientInput(5, $event)"></div>
       </div>
     </div>
 
-    <div data-ref="customSection" x-show="model.modelType === 'custom'">
+    <div data-ref="customSection" x-show="isCustomModel()">
       <div class="field-group">
         <label x-text="t('customFormula')"></label>
-        <textarea data-ref="customFormula" class="field contour__textarea" rows="2" x-model="model.customFormula" @input="onFormulaInput()"></textarea>
+        <textarea data-ref="customFormula" class="field contour__textarea" rows="2" :value="model.customFormula" @input="setParam('customFormula', $event.target.value)"></textarea>
         <p class="contour__formula-hint" x-text="t('formulaHint')"></p>
         <p class="contour__formula-error" role="alert" x-show="formulaError" x-text="formulaErrorText()"></p>
       </div>
     </div>
 
-    <input type="hidden" data-ref="xLabel" x-model="model.xLabel">
-    <input type="hidden" data-ref="yLabel" x-model="model.yLabel">
+    <input type="hidden" data-ref="xLabel" :value="model.xLabel" @change="setParam('xLabel', $event.target.value)">
+    <input type="hidden" data-ref="yLabel" :value="model.yLabel" @change="setParam('yLabel', $event.target.value)">
     <div class="dmike-split__section-title" x-text="t('sectionAxes')"></div>
     <div class="contour__row-2">
-      <div class="field-group contour__field-sm"><label>X min</label><input type="number" class="field field--num" data-ref="xMin" x-model.number="model.xMin" @change="autoPlot()"></div>
-      <div class="field-group contour__field-sm"><label>X max</label><input type="number" class="field field--num" data-ref="xMax" x-model.number="model.xMax" @change="autoPlot()"></div>
+      <div class="field-group contour__field-sm"><label>X min</label><input type="number" class="field field--num" data-ref="xMin" :value="model.xMin" @change="onAxisInput('xMin', $event)"></div>
+      <div class="field-group contour__field-sm"><label>X max</label><input type="number" class="field field--num" data-ref="xMax" :value="model.xMax" @change="onAxisInput('xMax', $event)"></div>
     </div>
     <div class="contour__row-2">
-      <div class="field-group contour__field-sm"><label>Y min</label><input type="number" class="field field--num" data-ref="yMin" x-model.number="model.yMin" @change="autoPlot()"></div>
-      <div class="field-group contour__field-sm"><label>Y max</label><input type="number" class="field field--num" data-ref="yMax" x-model.number="model.yMax" @change="autoPlot()"></div>
+      <div class="field-group contour__field-sm"><label>Y min</label><input type="number" class="field field--num" data-ref="yMin" :value="model.yMin" @change="onAxisInput('yMin', $event)"></div>
+      <div class="field-group contour__field-sm"><label>Y max</label><input type="number" class="field field--num" data-ref="yMax" :value="model.yMax" @change="onAxisInput('yMax', $event)"></div>
     </div>
-    <div class="field-group"><label x-text="t('zName')"></label><input type="text" class="field" data-ref="zLabel" x-model="model.zLabel" @change="autoPlot()"></div>
+    <div class="field-group"><label x-text="t('zName')"></label><input type="text" class="field" data-ref="zLabel" :value="model.zLabel" @change="setParam('zLabel', $event.target.value)"></div>
 
     <div class="dmike-split__section-title" x-text="t('sectionDataSource')"></div>
     <div data-ref="picker-wrap"></div>

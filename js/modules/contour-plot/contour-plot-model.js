@@ -16,7 +16,8 @@
  * is persisted under the key `model`, matching the legacy module).
  */
 
-const MODEL_TYPES = ['quadratic', 'interaction', 'custom'];
+/** Die Modellformen der Antwortfläche (eine Quelle für Auswahl und Prüfung). */
+export const MODEL_TYPES = ['quadratic', 'interaction', 'custom'];
 const COLOR_SCHEMES = ['viridis', 'plasma', 'thermal', 'green', 'grayscale'];
 
 const DEFAULT_B = [50, 8, 5, -3, -2, 1.5];

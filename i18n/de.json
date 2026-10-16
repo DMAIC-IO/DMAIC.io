@@ -7641,7 +7641,90 @@
       "markerColor": "Füllfarbe",
       "markerStroke": "Rahmenfarbe",
       "markerStrokeWidth": "Rahmendicke",
-      "markerStrokeDash": "Rahmenart"
+      "markerStrokeDash": "Rahmenart",
+      "whenToUse": "Die Antwortfläche eines Zwei-Faktor-Modells als Höhenlinien zeichnen — aus Polynomkoeffizienten oder einer eigenen Formel in x und y —, optional mit Messpunkten.",
+      "actions": {
+        "read": {
+          "help": "Modell, Koeffizienten oder Formel, Achsenbereiche, Beschriftungen, Datenspalten und den Formelfehler lesen, dazu Minimum, Maximum und Optimum der Fläche."
+        },
+        "setColumn": {
+          "help": "Eine Datenspalte einem Slot zuweisen. Die anderen Slots behalten ihre Spalten. Sind alle drei gesetzt, werden die Messpunkte gezeigt.",
+          "params": {
+            "slot": "'x' — der erste Faktor; 'y' — der zweite Faktor; 'z' — die gemessene Antwort.",
+            "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null zum Leeren."
+          }
+        },
+        "setParam": {
+          "help": "Eine Option der Antwortfläche setzen. read().activeParams nennt die gerade gültigen Optionen.",
+          "params": {
+            "key": "'modelType', 'customFormula' (nur bei modelType 'custom' aktiv), 'xLabel', 'yLabel', 'zLabel', 'xMin', 'xMax', 'yMin', 'yMax'.",
+            "value": "Für 'modelType': 'quadratic', 'interaction' oder 'custom'. Für 'customFormula': eine Formel in x und y; eine ungültige Formel wird angenommen und in read().formulaError gemeldet. Für die Beschriftungen: beliebiger Text. Für die Bereiche: eine endliche Zahl."
+          }
+        },
+        "setCoefficient": {
+          "help": "Einen der sechs Polynomkoeffizienten b0…b5 setzen. Nicht verfügbar, solange modelType 'custom' ist.",
+          "params": {
+            "index": "Welcher Koeffizient, eine ganze Zahl von 0 bis 5.",
+            "value": "Der Koeffizient, eine endliche Zahl."
+          }
+        }
+      },
+      "fields": {
+        "modelType": {
+          "help": "Die Modellform: quadratic, interaction oder custom."
+        },
+        "b": {
+          "help": "Die sechs Polynomkoeffizienten b0…b5."
+        },
+        "customFormula": {
+          "help": "Die eigene Formel in x und y, bei modelType custom."
+        },
+        "xLabel": {
+          "help": "Die Beschriftung des x-Faktors."
+        },
+        "yLabel": {
+          "help": "Die Beschriftung des y-Faktors."
+        },
+        "zLabel": {
+          "help": "Die Beschriftung der Antwort."
+        },
+        "xMin": {
+          "help": "Untere Grenze des x-Bereichs."
+        },
+        "xMax": {
+          "help": "Obere Grenze des x-Bereichs."
+        },
+        "yMin": {
+          "help": "Untere Grenze des y-Bereichs."
+        },
+        "yMax": {
+          "help": "Obere Grenze des y-Bereichs."
+        },
+        "colRefX": {
+          "help": "Die x-Datenspalte (Slot 'x'), oder null."
+        },
+        "colRefY": {
+          "help": "Die y-Datenspalte (Slot 'y'), oder null."
+        },
+        "colRefZ": {
+          "help": "Die Antwort-Datenspalte (Slot 'z'), oder null."
+        },
+        "formulaError": {
+          "help": "{ code, token }, solange die eigene Formel ungültig ist, sonst null."
+        },
+        "activeParams": {
+          "help": "Die Optionen, die setParam im aktuellen Zustand annimmt."
+        },
+        "activeColumnSlots": {
+          "help": "Die Slots, die setColumn annimmt: x, y, z."
+        },
+        "pickableColumns": {
+          "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId."
+        },
+        "surface": {
+          "help": "Die ausgewertete Fläche über dem Achsenbereich: { zMin, zMax, range, optimum: { x, y, z } } — optimum ist der höchste Punkt; null, wenn das Modell nicht auswertbar ist."
+        }
+      }
     },
     "control-chart": {
       "name": "Regelkarte",
