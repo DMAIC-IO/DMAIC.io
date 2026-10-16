@@ -55,6 +55,8 @@ const mod = createModule({
       _renderGen: 0,
       _picker: null,
       _lastResult: null,
+      /** @type {{cancel: Function}|null} api of the open annotation dialog */
+      _formApi: null,
       // Annotation dialog (transient UI)
       annIdx: -1,
       annComment: '',
@@ -215,12 +217,16 @@ const mod = createModule({
             content: this.$refs.annForm,
             confirmLabel: _t('annotationSave'),
             cancelLabel: module._context.i18n.t('common.cancel'),
-            onMount: (body) => body.querySelector('[data-ref="ann-comment"]')?.focus(),
+            onMount: (body, api) => {
+              this._formApi = api;
+              body.querySelector('[data-ref="ann-comment"]')?.focus();
+            },
             onConfirm: () => this.saveAnnotation(),
             onDelete: existing ? () => this.removeAnnotation() : undefined,
             deleteLabel: _t('annotationRemove'),
           });
         } finally {
+          this._formApi = null;
           this.annIdx = -1;
         }
       },
@@ -591,6 +597,7 @@ const mod = createModule({
       },
 
       destroy() {
+        this._formApi?.cancel();
         clearTimeout(this._debTimer);
         for (const unsub of this._unsubs) unsub();
         this._unsubs = [];

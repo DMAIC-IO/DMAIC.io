@@ -80,6 +80,8 @@ export default createModule({
     return {
       // ── Transient form state (NOT persisted) ──
       modalEditId: null,
+      /** @type {{cancel: Function}|null} api of the open form dialog */
+      _formApi: null,
       modalData: { name: '', role: '', power: 3, interest: 3, support: 'neutral', category: 'intern', notes: '' },
 
       // ── View transforms: avatars / initials ──
@@ -161,18 +163,25 @@ export default createModule({
           power: src.power, interest: src.interest,
           support: src.support, category: src.category, notes: src.notes,
         };
-        await module._context.dialog.form({
-          title: this.modalTitle(),
-          content: this.$refs.stakeholderForm,
-          confirmLabel: this.t('common.save'),
-          cancelLabel: this.t('common.cancel'),
-          onMount: (body) => body.querySelector('[data-field="name"]')?.focus(),
-          onConfirm: (body) => {
-            if (this.saveModal()) return true;
-            body.querySelector('[data-field="name"]')?.focus();
-            return false;
-          },
-        });
+        try {
+          await module._context.dialog.form({
+            title: this.modalTitle(),
+            content: this.$refs.stakeholderForm,
+            confirmLabel: this.t('common.save'),
+            cancelLabel: this.t('common.cancel'),
+            onMount: (body, api) => {
+              this._formApi = api;
+              body.querySelector('[data-field="name"]')?.focus();
+            },
+            onConfirm: (body) => {
+              if (this.saveModal()) return true;
+              body.querySelector('[data-field="name"]')?.focus();
+              return false;
+            },
+          });
+        } finally {
+          this._formApi = null;
+        }
       },
       /** @returns {boolean} false keeps the dialog open (empty name). */
       saveModal() {
@@ -206,6 +215,9 @@ export default createModule({
         if (!ok) return;
         const idx = this.model.stakeholders.findIndex((s) => s.id === sh.id);
         if (idx !== -1) this.model.stakeholders.splice(idx, 1);
+      },
+      destroy() {
+        this._formApi?.cancel();
       },
     };
   },

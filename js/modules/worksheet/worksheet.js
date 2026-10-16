@@ -469,6 +469,8 @@ const mod = createModule({
       // ── Transient view state ─────────────────────────────────
       _grid: null,
       _formulaEditor: null,
+      /** @type {{cancel: Function}|null} api of the open role confirmation */
+      _roleConfirmApi: null,
       _unsubs: [],
       _boundKeyDown: null,
       _onDocClick: null,
@@ -800,7 +802,8 @@ const mod = createModule({
           cancelLabel: ctx.i18n.t('common.cancel'),
           // Pull focus off the toolbar button behind the overlay: Enter would
           // click it again and open a second confirmation that borrows the form.
-          onMount: (body) => {
+          onMount: (body, api) => {
+            this._roleConfirmApi = api;
             this.$nextTick(() => body.closest('.dialog__window')?.querySelector('.dialog__confirm')?.focus());
           },
           onConfirm: () => {
@@ -809,6 +812,7 @@ const mod = createModule({
             }
           },
         });
+        this._roleConfirmApi = null;
         this.roleDraft = [];
         return result === true;
       },
@@ -960,6 +964,7 @@ const mod = createModule({
         // verwaisten Datensatz, den kein Aufräumpfad je wieder anfasst.
         this._autoSave?.cancel?.();
         this._persistAndNotify?.cancel?.();
+        this._roleConfirmApi?.cancel();
         if (this._boundKeyDown) document.removeEventListener('keydown', this._boundKeyDown, true);
         for (const unsub of this._unsubs) { try { unsub(); } catch { /* ignore */ } }
         this._unsubs = [];

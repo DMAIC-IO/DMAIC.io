@@ -465,6 +465,7 @@ export default createModule({
         });
       },
       destroy() {
+        this._formApi?.cancel();
         if (this._onMouseUp) {
           document.removeEventListener('mouseup', this._onMouseUp);
           this._onMouseUp = null;
