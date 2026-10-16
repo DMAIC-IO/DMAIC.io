@@ -5149,76 +5149,173 @@ export const AGENT_REGISTRY = {
     }
   },
   "outlier-test": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:isMethodEnabled",
-      "unmarked_method:methodLabel",
-      "unmarked_method:toggleMethod",
-      "unmarked_method:sideChanged",
-      "unmarked_method:paramChanged",
-      "unmarked_method:openAlgoLab",
-      "unmarked_method:selectChartMethod",
-      "unmarked_method:init",
-      "unmarked_method:destroy"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "runAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Rechnet mit der gewählten Spalte und allen aktivierten Methoden; ohne Spalte oder mit weniger als 3 numerischen Werten bleibt result null (keine Absage, wie die Oberfläche)."
+      },
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'alpha'|'side'|'tukeyFactor'|'hampelK'|'zThreshold'|'modZThreshold'|'esdMaxOutliers'|'enabled'",
+            "optional": false,
+            "help": "welcher Parameter"
+          },
+          {
+            "name": "value",
+            "type": "number|string|string[]|null",
+            "optional": false,
+            "help": "Zahl im Bereich des Parameters; `side`: `'two-sided'`, `'upper'` oder `'lower'`; `enabled`: Liste von Methoden-ids; `esdMaxOutliers`: ganze Zahl oder `null` für automatisch"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Parameter setzen; die Analyse läuft danach neu."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'value'",
+            "optional": false,
+            "help": "der Slot; dieses Modul führt nur `value`"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "void",
+        "help": "Die Messwertspalte wählen; die Analyse läuft danach neu."
+      },
+      "setChartMethod": {
+        "params": [
+          {
+            "name": "method",
+            "type": "string",
+            "optional": false,
+            "help": "`'all'` oder eine Methode aus chartMethodOptions"
+          }
+        ],
+        "returns": "void",
+        "help": "Wählt, welche Methode das Diagramm hervorhebt."
+      }
+    },
     "fields": {
       "colRef": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the chosen data column, `{ instanceId, sheetId, columnId }`, or null",
+        "bulk": false,
+        "derived": true
       },
       "alpha": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number|null",
+        "help": "significance level of Grubbs, Dixon Q and generalized ESD",
+        "bulk": false,
+        "derived": true
       },
       "side": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "'two-sided'|'upper'|'lower'",
+        "help": "which tail Grubbs and Dixon Q test",
+        "bulk": false,
+        "derived": true
       },
       "tukeyFactor": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "fence multiplier of the Tukey IQR rule",
+        "bulk": false,
+        "derived": true
       },
       "hampelK": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "threshold of the Hampel identifier in scaled MAD units",
+        "bulk": false,
+        "derived": true
       },
       "zThreshold": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "threshold of the Z-score rule",
+        "bulk": false,
+        "derived": true
       },
       "modZThreshold": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "threshold of the modified Z-score",
+        "bulk": false,
+        "derived": true
       },
       "esdMaxOutliers": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number|null",
+        "help": "upper limit of outliers for generalized ESD; null chooses it automatically",
+        "bulk": false,
+        "derived": true
       },
       "enabled": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string[]",
+        "help": "the methods that are run, in the fixed order of the module",
+        "bulk": false,
+        "derived": true
       },
       "chartMethod": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string",
+        "help": "the method the chart highlights; `'all'` or one of chartMethodOptions",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "chartMethodOptions": {
+        "type": "string[]",
+        "help": "the values `setChartMethod` accepts: `'all'` plus every method that flagged a value",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "`{ n, flaggedIdxs, methods }` or null while no column is chosen or it has fewer than 3 numeric values",
+        "bulk": false,
+        "derived": true
+      },
+      "errorMsg": {
+        "type": "string",
+        "help": "why drawing the chart failed, or an empty string",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -9083,4 +9180,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":36};
+export const AGENT_COVERAGE = {"total":74,"available":37};

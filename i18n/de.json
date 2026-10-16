@@ -6443,6 +6443,50 @@
     "outlier-test": {
       "name": "Test auf Ausreißer",
       "description": "Klassische Ausreißertests (Grubbs, Dixon Q, Generalized ESD, Tukey IQR, Hampel, Z-Score) parallel auf einer Spalte rechnen",
+      "whenToUse": "Wenn ein gemessenes Merkmal Ausreißer enthalten könnte: prüft eine numerische Spalte mit bis zu sieben Verfahren (Grubbs, Dixon Q, verallgemeinerter ESD, Tukey-IQR, Hampel, Z-Score, modifizierter Z-Score) und meldet, welche Werte jedes Verfahren markiert; braucht mindestens 3 numerische Werte.",
+      "actions": {
+        "read": {
+          "help": "Liefert die gewählte Spalte, die Parameter, die wählbaren Mengen und das Ergebnis. result ist null, solange keine Spalte gewählt ist oder sie weniger als 3 numerische Werte hat; errorMsg nennt nur, warum das Diagramm nicht gezeichnet werden konnte.",
+          "params": { "options": "Optional; dieses Modul führt keine Massendaten." }
+        },
+        "setParam": {
+          "help": "Setzt einen Parameter; die Analyse läuft danach auf der gewählten Spalte neu.",
+          "params": {
+            "key": "Einer der Schlüssel aus activeParams: alpha, side, tukeyFactor, hampelK, zThreshold, modZThreshold, esdMaxOutliers oder enabled. Jeder andere Wert ist ein Fehler.",
+            "value": "alpha: Zahl von 0.001 bis 0.5. side: 'two-sided', 'upper' oder 'lower'. tukeyFactor, zThreshold, modZThreshold: Zahl von 0.1 bis 10. hampelK: Zahl von 0.1 bis 20. esdMaxOutliers: ganze Zahl von 1 bis 50, oder null für automatisch. enabled: Liste von Methoden-ids (grubbs, dixon-q, generalized-esd, tukey-iqr, hampel, z-score, modified-z); Methoden außerhalb der Liste laufen nicht. Ein Wert außerhalb des Bereichs oder der Liste ist ein Fehler."
+          }
+        },
+        "setColumn": {
+          "help": "Richtet die Analyse auf eine numerische Spalte einer Datensammlung; die Analyse läuft danach neu.",
+          "params": {
+            "slot": "Einer der Slots aus activeColumnSlots; dieses Modul kennt nur 'value'.",
+            "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Leeren."
+          }
+        },
+        "runAnalysis": { "help": "Lässt alle aktivierten Verfahren auf der gewählten Spalte laufen. Ohne Spalte oder mit weniger als 3 numerischen Werten bleibt result null und es geschieht nichts weiter." },
+        "setChartMethod": {
+          "help": "Wählt, welches Verfahren das Diagramm hervorhebt; 'all' hebt jeden Wert hervor, den irgendein Verfahren markiert hat.",
+          "params": { "method": "Einer der Werte aus chartMethodOptions. Ein Verfahren, das im aktuellen Ergebnis nichts markiert hat, ist ein Fehler." }
+        }
+      },
+      "fields": {
+        "colRef": { "help": "Die gewählte Datenspalte als { instanceId, sheetId, columnId }, oder null." },
+        "alpha": { "help": "Signifikanzniveau von Grubbs, Dixon Q und verallgemeinertem ESD." },
+        "side": { "help": "Welche Seite Grubbs und Dixon Q prüfen: 'two-sided', 'upper' oder 'lower'." },
+        "tukeyFactor": { "help": "Zaunfaktor der Tukey-IQR-Regel." },
+        "hampelK": { "help": "Schwelle des Hampel-Identifiers in skalierten MAD-Einheiten." },
+        "zThreshold": { "help": "Schwelle der Z-Score-Regel." },
+        "modZThreshold": { "help": "Schwelle des modifizierten Z-Scores." },
+        "esdMaxOutliers": { "help": "Obergrenze der Ausreißer für den verallgemeinerten ESD; null wählt sie automatisch." },
+        "enabled": { "help": "Die Verfahren, die laufen, in der festen Reihenfolge des Moduls." },
+        "chartMethod": { "help": "Das Verfahren, das das Diagramm hervorhebt: 'all' oder eines aus chartMethodOptions. Es fällt auf 'all' zurück, wenn das Verfahren nach einer erneuten Rechnung nichts mehr markiert." },
+        "activeParams": { "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt." },
+        "activeColumnSlots": { "help": "Die Slots, die setColumn im aktuellen Zustand annimmt." },
+        "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; key ist 'instanceId|sheetId|columnId'." },
+        "chartMethodOptions": { "help": "Die Werte, die setChartMethod annimmt: 'all' und jedes Verfahren, das im aktuellen Ergebnis mindestens einen Wert markiert hat." },
+        "result": { "help": "{ n, flaggedIdxs, methods }: n ist die Zahl der numerischen Werte, flaggedIdxs die sortierten 0-basierten Positionen, die mindestens ein Verfahren markiert hat (unter den numerischen Werten; leere und nichtnumerische Zellen werden übersprungen), methods je aktiviertem Verfahren ein { id, flagged, error } mit seinen eigenen markierten Positionen und, wenn das Verfahren auf die Daten nicht anwendbar ist, dem Grund in error. null, solange keine Spalte gewählt ist oder sie weniger als 3 numerische Werte hat." },
+        "errorMsg": { "help": "Warum das Diagramm nicht gezeichnet werden konnte, oder ein leerer Text. Zu wenige Werte erzeugen keine Meldung; result ist dann null." }
+      },
       "sectionData": "Datenquelle",
       "column": "Spalte",
       "untitledColumn": "(unbenannt)",

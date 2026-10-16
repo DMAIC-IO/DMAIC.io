@@ -29,10 +29,10 @@
     <div class="field-row">
       <div class="field-group field-group--major">
         <label x-text="t('side')"></label>
-        <select data-ref="side" class="field" @change="sideChanged($event)">
-          <option value="two-sided" x-text="t('sideTwo')"></option>
-          <option value="upper" x-text="t('sideUpper')"></option>
-          <option value="lower" x-text="t('sideLower')"></option>
+        <select data-ref="side" class="field" :value="model.side" @change="setParam('side', $event.target.value)">
+          <template x-for="o in sideOptions()" :key="o.value">
+            <option :value="o.value" :selected="o.value === model.side" x-text="o.label"></option>
+          </template>
         </select>
       </div>
       <div class="field-group field-group--minor">
@@ -99,7 +99,7 @@
              @input="paramChanged('esd-max', $event)">
     </div>
 
-    <div class="outliertest__error" data-ref="error-box"></div>
+    <div class="outliertest__error" data-ref="error-box" x-show="errorMsg" x-text="errorMsg"></div>
 
   </div>
 

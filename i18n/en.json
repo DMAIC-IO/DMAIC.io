@@ -6439,6 +6439,50 @@
     "outlier-test": {
       "name": "Outlier Test",
       "description": "Run classical outlier tests (Grubbs, Dixon Q, Generalized ESD, Tukey IQR, Hampel, Z-Score) in parallel on a column",
+      "whenToUse": "When a measured characteristic may contain outliers: tests one numeric column with up to seven methods (Grubbs, Dixon Q, generalized ESD, Tukey IQR, Hampel, Z-score, modified Z-score) and reports which values each method flags; requires at least 3 numeric values.",
+      "actions": {
+        "read": {
+          "help": "Returns the chosen column, the parameters, the selectable sets and the result. result is null while no column is chosen or it has fewer than 3 numeric values; errorMsg only names why drawing the chart failed.",
+          "params": { "options": "Optional; this module holds no bulk data." }
+        },
+        "setParam": {
+          "help": "Sets one parameter; the analysis reruns on the chosen column.",
+          "params": {
+            "key": "One of the keys in activeParams: alpha, side, tukeyFactor, hampelK, zThreshold, modZThreshold, esdMaxOutliers or enabled. Any other value is an error.",
+            "value": "alpha: number from 0.001 to 0.5. side: 'two-sided', 'upper' or 'lower'. tukeyFactor, zThreshold, modZThreshold: number from 0.1 to 10. hampelK: number from 0.1 to 20. esdMaxOutliers: whole number from 1 to 50, or null for automatic. enabled: list of method ids (grubbs, dixon-q, generalized-esd, tukey-iqr, hampel, z-score, modified-z); methods not in the list are not run. A value outside the range or the list is an error."
+          }
+        },
+        "setColumn": {
+          "help": "Points the analysis at a numeric column of a data collection; the analysis reruns.",
+          "params": {
+            "slot": "One of the slots in activeColumnSlots; this module only has 'value'.",
+            "ref": "Column reference { instanceId, sheetId, columnId } of a column from pickableColumns, or null to clear."
+          }
+        },
+        "runAnalysis": { "help": "Runs all enabled methods on the chosen column. Without a column or with fewer than 3 numeric values result stays null and nothing else happens." },
+        "setChartMethod": {
+          "help": "Chooses which method the chart highlights; 'all' highlights every value any method flagged.",
+          "params": { "method": "One of the values in chartMethodOptions. A method that flagged nothing in the current result is an error." }
+        }
+      },
+      "fields": {
+        "colRef": { "help": "The chosen data column as { instanceId, sheetId, columnId }, or null." },
+        "alpha": { "help": "Significance level of Grubbs, Dixon Q and generalized ESD." },
+        "side": { "help": "Which tail Grubbs and Dixon Q test: 'two-sided', 'upper' or 'lower'." },
+        "tukeyFactor": { "help": "Fence multiplier of the Tukey IQR rule." },
+        "hampelK": { "help": "Threshold of the Hampel identifier in scaled MAD units." },
+        "zThreshold": { "help": "Threshold of the Z-score rule." },
+        "modZThreshold": { "help": "Threshold of the modified Z-score." },
+        "esdMaxOutliers": { "help": "Upper limit of outliers for generalized ESD; null chooses it automatically." },
+        "enabled": { "help": "The methods that are run, in the fixed order of the module." },
+        "chartMethod": { "help": "The method the chart highlights: 'all' or one of chartMethodOptions. It falls back to 'all' when the method no longer flags a value after a rerun." },
+        "activeParams": { "help": "The keys setParam accepts in the current state." },
+        "activeColumnSlots": { "help": "The slots setColumn accepts in the current state." },
+        "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; key is 'instanceId|sheetId|columnId'." },
+        "chartMethodOptions": { "help": "The values setChartMethod accepts: 'all' plus every method that flagged at least one value in the current result." },
+        "result": { "help": "{ n, flaggedIdxs, methods }: n is the number of numeric values, flaggedIdxs the sorted 0-based positions flagged by at least one method (among the numeric values; empty and non-numeric cells are skipped), methods one { id, flagged, error } per enabled method with its own flagged positions and, when the method is not applicable to the data, the reason in error. null while no column is chosen or it has fewer than 3 numeric values." },
+        "errorMsg": { "help": "Why drawing the chart failed, or an empty string. Too few values give no message; result is null then." }
+      },
       "sectionData": "Data Source",
       "column": "Column",
       "untitledColumn": "(unnamed)",

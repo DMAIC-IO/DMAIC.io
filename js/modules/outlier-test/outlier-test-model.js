@@ -23,7 +23,8 @@ export const ALL_METHODS = [
   'modified-z',
 ];
 
-const VALID_SIDES = ['two-sided', 'upper', 'lower'];
+/** Zulässige Seiten der Tests (Grubbs, Dixon Q). */
+export const VALID_SIDES = ['two-sided', 'upper', 'lower'];
 
 /**
  * Deserialize a column reference object.

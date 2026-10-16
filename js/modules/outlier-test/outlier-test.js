@@ -19,15 +19,24 @@
  *
  * Imperative widgets follow the msa-typ1 lifecycle pattern:
  *   _picker, _chart, _renderGen, _unsubs in data-Fn (transient, never in Model).
+ *
+ * @agent  Steuerbar über das Viewmodel: die Parameter (setParam), die
+ *   Messwertspalte (setColumn), das Rechnen (runAnalysis) und die
+ *   Diagrammwahl (setChartMethod). Gelesen wird über read() mit erklärter
+ *   Lesefläche (AgentRead) — Konfiguration, wählbare Spalten und je Methode
+ *   die markierten Werte. Der Agent bekommt Zahlen, keine Diagramme.
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State, ALL_METHODS } from './outlier-test-model.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { pickableColumnList } from '../../core/agent/agent-options.js';
+import { State, ALL_METHODS, VALID_SIDES } from './outlier-test-model.js';
 import {
   grubbsTest, dixonQTest, generalizedESD,
   tukeyIQR, hampelIdentifier, zScoreOutliers, modifiedZScore,
 } from '../../engines/outlier-test-engine.js';
-import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-picker.js';
+import { ColumnPicker, getColumnValues, getColumnName, refToKey, keyToRef } from '../../ui/column-picker.js';
 import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-registry.js';
 
 /** Mapping: test id → Algorithm Lab algorithm id. */
@@ -66,6 +75,102 @@ const SHORT_LABEL_MAP = {
 /** @param {number|null} v @param {number} d @returns {string} */
 function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–'; }
 
+/** Zulässige Bereiche der Zahlenparameter (einzige Quelle für Setter und Oberfläche). */
+const PARAM_RANGES = {
+  alpha: { min: 0.001, max: 0.5 },
+  tukeyFactor: { min: 0.1, max: 10 },
+  hampelK: { min: 0.1, max: 20 },
+  zThreshold: { min: 0.1, max: 10 },
+  modZThreshold: { min: 0.1, max: 10 },
+  esdMaxOutliers: { min: 1, max: 50, integer: true },
+};
+
+/** Zuordnung der Eingabefelder der Oberfläche (`data-ref`) zum Parameterschlüssel. */
+const PARAM_OF_REF = {
+  'alpha': 'alpha',
+  'tukey-factor': 'tukeyFactor',
+  'hampel-k': 'hampelK',
+  'z-threshold': 'zThreshold',
+  'modz-threshold': 'modZThreshold',
+  'esd-max': 'esdMaxOutliers',
+};
+
+/** Leerform eines Feldes: das Feld ist leer oder `null`. */
+const isEmptyForm = (v) => v === null || v === '';
+
+/** Die Parameter, die `setParam` annimmt (kein Modus schaltet einen ab). */
+const PARAM_KEYS = ['alpha', 'side', 'tukeyFactor', 'hampelK', 'zThreshold',
+  'modZThreshold', 'esdMaxOutliers', 'enabled'];
+
+/** Je Parameter sein Prüfer; gibt den normalisierten Wert zurück. */
+const PARAM_CHECKS = {
+  alpha: (v) => requireNumber('value', v, PARAM_RANGES.alpha),
+  side: (v) => { requireEnum('value', v, VALID_SIDES); return v; },
+  tukeyFactor: (v) => requireNumber('value', v, PARAM_RANGES.tukeyFactor),
+  hampelK: (v) => requireNumber('value', v, PARAM_RANGES.hampelK),
+  zThreshold: (v) => requireNumber('value', v, PARAM_RANGES.zThreshold),
+  modZThreshold: (v) => requireNumber('value', v, PARAM_RANGES.modZThreshold),
+  esdMaxOutliers: (v) => (isEmptyForm(v) ? null
+    : requireNumber('value', v, PARAM_RANGES.esdMaxOutliers)),
+  enabled: (v) => {
+    if (!Array.isArray(v)) {
+      throw new Error(`invalid value ${JSON.stringify(v)}; allowed: a list of method ids from ${ALL_METHODS.join(', ')}`);
+    }
+    for (const m of v) requireEnum('method', m, ALL_METHODS);
+    return ALL_METHODS.filter(m => v.includes(m));      // Reihenfolge der Konstante, ohne Doppelte
+  },
+};
+
+/**
+ * Setzt einen Wert unter einem Schlüssel in `obj`. Lokal geschrieben, weil der
+ * Generator (agent-data) Importe nicht liest und die Schreibstelle im Modul
+ * selbst sehen muss.
+ * @param {object} obj Wurzel, deren Schlüssel beschrieben wird
+ * @param {string} key Schlüssel
+ * @param {any} value der abzulegende Wert
+ */
+function setAtPath(obj, key, value) {
+  obj[key] = value;
+}
+
+/** Die Spalten-Slots dieses Moduls: genau einer, die Messwertspalte. */
+const COLUMN_SLOTS = ['value'];
+
+/** Je Slot der Filter, den der Wähler dieses Slots bekommt. */
+const SLOT_FILTERS = { value: { types: ['numeric'], minCount: 3 } };
+
+/** Je Slot die eine Zuweisungsstelle seines Model-Feldes. */
+const COLUMN_SINKS = { value: (m, ref) => { m.colRef = ref; } };
+
+/** Beschriftungsschlüssel der Seitenauswahl. */
+const SIDE_LABEL_KEYS = { 'two-sided': 'sideTwo', upper: 'sideUpper', lower: 'sideLower' };
+
+/**
+ * Die Agenten-Lesefläche von Outlier Test.
+ *
+ * Das Model hält die Eingaben flach; das Ergebnis entsteht transient am
+ * Viewmodel. Darum erklärt dieses Modul seine Lesefläche — ohne die interne
+ * Beispiel-Buchführung (`exampleWorksheetId`) und ohne Diagrammdaten.
+ *
+ * @typedef {object} AgentRead
+ * @property {object|null} colRef  the chosen data column, `{ instanceId, sheetId, columnId }`, or null
+ * @property {number|null} alpha  significance level of Grubbs, Dixon Q and generalized ESD
+ * @property {'two-sided'|'upper'|'lower'} side  which tail Grubbs and Dixon Q test
+ * @property {number} tukeyFactor  fence multiplier of the Tukey IQR rule
+ * @property {number} hampelK  threshold of the Hampel identifier in scaled MAD units
+ * @property {number} zThreshold  threshold of the Z-score rule
+ * @property {number} modZThreshold  threshold of the modified Z-score
+ * @property {number|null} esdMaxOutliers  upper limit of outliers for generalized ESD; null chooses it automatically
+ * @property {string[]} enabled  the methods that are run, in the fixed order of the module
+ * @property {string} chartMethod  the method the chart highlights; `'all'` or one of chartMethodOptions
+ * @property {string[]} activeParams  the keys `setParam` accepts in the current state
+ * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state
+ * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
+ * @property {string[]} chartMethodOptions  the values `setChartMethod` accepts: `'all'` plus every method that flagged a value
+ * @property {object|null} result  `{ n, flaggedIdxs, methods }` or null while no column is chosen or it has fewer than 3 numeric values
+ * @property {string} errorMsg  why drawing the chart failed, or an empty string
+ */
+
 const mod = createModule({
   config: {
     id: 'outlier-test',
@@ -100,6 +205,14 @@ const mod = createModule({
       flaggedHeaders: [],
       /** @type {Array} flagged-table rows (see _renderResults). */
       flaggedRows: [],
+      /**
+       * The analysis outcome the agent reads; null while no column is chosen or it has fewer than 3 numeric values.
+       * `flaggedIdxs` and each `flagged` are 0-based positions among the numeric values of the column (empty and non-numeric cells are skipped).
+       * @type {{n:number,flaggedIdxs:number[],methods:Array<{id:string,flagged:number[],error:string|null}>}|null}
+       */
+      result: null,
+      /** Why drawing the chart failed; empty while there is no failure. */
+      errorMsg: '',
       /** @type {object} transient render context for chart re-plots (not persisted). */
       _chartCtx: { data: [], colName: '', results: {}, flaggedIdxs: [] },
 
@@ -108,12 +221,18 @@ const mod = createModule({
       /** All method ids for x-for iteration in the template. */
       allMethods: ALL_METHODS,
 
-      /** Whether a method is enabled. */
+      /**
+       * Whether a method is enabled.
+       * @noagent view transform; der Agent liest die Menge über read().enabled
+       */
       isMethodEnabled(mid) {
         return this.model.enabled.includes(mid);
       },
 
-      /** i18n label for a method id. */
+      /**
+       * i18n label for a method id.
+       * @noagent view transform
+       */
       methodLabel(mid) {
         const key = LABEL_KEY_MAP[mid];
         return key ? _t(`m${  key}`) : mid;
@@ -121,70 +240,35 @@ const mod = createModule({
 
       // ── Event handlers (Alpine template → @change / @input) ───
 
-      /** Toggle a method checkbox on/off. */
+      /**
+       * Toggle a method checkbox on/off.
+       * @noagent DOM event handler; the agent uses setParam()
+       */
       toggleMethod(mid) {
-        const idx = this.model.enabled.indexOf(mid);
-        if (idx >= 0) {
-          this.model.enabled.splice(idx, 1);
-        } else {
-          this.model.enabled.push(mid);
-        }
-        this._runAnalysis();
-      },
-
-      /** Handle side <select> change. */
-      sideChanged(event) {
-        this.model.side = event.target.value;
-        this._runAnalysis();
+        const next = this.model.enabled.includes(mid)
+          ? this.model.enabled.filter(m => m !== mid)
+          : [...this.model.enabled, mid];
+        this.setParam('enabled', next);
       },
 
       /**
-       * Handle numeric parameter input changes.
+       * Handle numeric parameter input changes: clamp to the range, then set.
        * @param {'alpha'|'tukey-factor'|'hampel-k'|'z-threshold'|'modz-threshold'|'esd-max'} ref
        * @param {Event} event
+       * @noagent DOM event handler; the agent uses setParam()
        */
       paramChanged(ref, event) {
+        const key = PARAM_OF_REF[ref];
         const raw = event.target.value;
-        const isInt = ref === 'esd-max';
-        const parsed = raw === '' ? null : (isInt ? parseInt(raw, 10) : parseFloat(raw));
-
-        if (raw !== '' && (parsed == null || !isFinite(parsed))) return;
-
-        const clamp = (v, min, max) => v == null ? null
-          : v < min ? min : v > max ? max : v;
-
-        switch (ref) {
-          case 'alpha':
-            this.model.alpha = clamp(parsed, 0.001, 0.5);
-            break;
-          case 'tukey-factor':
-            this.model.tukeyFactor = clamp(parsed, 0.1, 10);
-            break;
-          case 'hampel-k':
-            this.model.hampelK = clamp(parsed, 0.1, 20);
-            break;
-          case 'z-threshold':
-            this.model.zThreshold = clamp(parsed, 0.1, 10);
-            break;
-          case 'modz-threshold':
-            this.model.modZThreshold = clamp(parsed, 0.1, 10);
-            break;
-          case 'esd-max':
-            this.model.esdMaxOutliers = raw === '' ? null : clamp(parsed, 1, 50);
-            break;
+        if (raw === '') {
+          // Only the ESD limit has an empty form (automatic).
+          if (key === 'esdMaxOutliers') this.setParam(key, null);
+          return;
         }
-        this._runAnalysis();
-      },
-
-      // ── Select-element value sync ─────────────────────────────
-
-      /**
-       * Sync the <select data-ref="side"> to the model value after Alpine
-       * reinit (e.g. after language change or setState). Called in init().
-       */
-      _syncSideSelect() {
-        const sel = module._container.querySelector('[data-ref="side"]');
-        if (sel) sel.value = this.model.side;
+        const { min, max, integer } = PARAM_RANGES[key];
+        const parsed = integer ? parseInt(raw, 10) : parseFloat(raw);
+        if (parsed == null || !isFinite(parsed)) return;
+        this.setParam(key, Math.min(max, Math.max(min, parsed)));
       },
 
       // ── ColumnPicker (imperative widget) ──────────────────────
@@ -195,11 +279,9 @@ const mod = createModule({
         this._picker && this._picker.destroy();
         this._picker = new ColumnPicker(wrap, module._context, {
           mode: 'single',
-          types: ['numeric'],
-          minCount: 3,
+          ...SLOT_FILTERS.value,
           onChange: (ref) => {
-            this.model.colRef = ref;
-            this._runAnalysis();
+            this.setColumn('value', ref);
           },
         });
         if (this.model.colRef) this._picker.value = this.model.colRef;
@@ -208,23 +290,19 @@ const mod = createModule({
       // ── Data retrieval ────────────────────────────────────────
 
       _getColumnData() {
-        if (!this._picker || !this._picker.value) return [];
-        const raw = getColumnValues(module._context.stateManager, this._picker.value);
+        if (!this.model.colRef) return [];
+        const raw = getColumnValues(module._context.stateManager, this.model.colRef);
         return raw.filter((v) => v != null && typeof v === 'number' && !isNaN(v));
       },
 
       // ── Error display ─────────────────────────────────────────
 
       _showError(msg) {
-        const eb = module._container.querySelector('[data-ref="error-box"]');
-        if (!eb) return;
-        eb.textContent = msg;
-        eb.style.display = 'block';
+        this.errorMsg = msg;
       },
 
       _hideError() {
-        const eb = module._container.querySelector('[data-ref="error-box"]');
-        if (eb) { eb.textContent = ''; eb.style.display = 'none'; }
+        this.errorMsg = '';
       },
 
       _hideResults() {
@@ -251,11 +329,18 @@ const mod = createModule({
 
       // ── Analysis ─────────────────────────────────────────────
 
-      _runAnalysis() {
+      /**
+       * Rechnet mit der gewählten Spalte und allen aktivierten Methoden; ohne
+       * Spalte oder mit weniger als 3 numerischen Werten bleibt result null
+       * (keine Absage, wie die Oberfläche).
+       * @agent
+       * @returns {void}
+       */
+      runAnalysis() {
         this._hideError();
 
         const data = this._getColumnData();
-        if (data.length < 3) { this._hideResults(); return; }
+        if (data.length < 3) { this.result = null; this._hideResults(); return; }
 
         const alpha = this.model.alpha;
         const enabled = new Set(this.model.enabled);
@@ -277,7 +362,28 @@ const mod = createModule({
         safe('z-score',         () => zScoreOutliers(data, this.model.zThreshold));
         safe('modified-z',      () => modifiedZScore(data, this.model.modZThreshold));
 
+        this.result = this._buildResult(data, results, errs);
         this._renderResults(data, results, errs);
+      },
+
+      /**
+       * Build the agent-facing outcome (no chart data) from the engine results.
+       * @param {number[]} data numeric values of the column
+       * @param {object} results engine result per method id
+       * @param {object} errs error message per method id
+       * @returns {{n:number,flaggedIdxs:number[],methods:Array<{id:string,flagged:number[],error:string|null}>}}
+       */
+      _buildResult(data, results, errs) {
+        const union = new Set();
+        const methods = [];
+        for (const id of ALL_METHODS) {
+          if (!results[id] && !errs[id]) continue;
+          const flagged = results[id] && results[id].outliers
+            ? results[id].outliers.map((o) => o.index) : [];
+          flagged.forEach((i) => union.add(i));
+          methods.push({ id, flagged, error: errs[id] || null });
+        }
+        return { n: data.length, flaggedIdxs: [...union].sort((a, b) => a - b), methods };
       },
 
       // ── Render results (declarative — structured reactive data) ──
@@ -294,6 +400,7 @@ const mod = createModule({
 
       /**
        * Navigate to an Algorithm Lab entry from a card link.
+       * @noagent navigation
        * @param {string} algoId
        * @param {Event} event
        */
@@ -557,11 +664,12 @@ const mod = createModule({
         this._renderChart(data, this._idxsForMethod(method), colName, method, results);
       },
 
-      /** Chart-method segmented button @click handler. */
+      /**
+       * Chart-method segmented button @click handler.
+       * @noagent DOM event handler; the agent uses setChartMethod()
+       */
       selectChartMethod(method) {
-        this.model.chartMethod = method;
-        for (const s of this.chartSegs) s.activeClass = s.val === method ? 'btn--active' : '';
-        this._plotForMethod(method);
+        this.setChartMethod(method);
       },
 
       // ── Chart ─────────────────────────────────────────────────
@@ -652,8 +760,111 @@ const mod = createModule({
         }
       },
 
+      // ── Agent surface ─────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Konfiguration, wählbare Spalten und Ergebnis
+       */
+      read(options) {
+        return readAgentState('outlier-test', {
+          ...this.model.toJSON(),
+          activeParams: this.activeParams(),
+          activeColumnSlots: this.activeColumnSlots(),
+          pickableColumns: this.pickableColumns(),
+          chartMethodOptions: this.chartMethodOptions(),
+          result: this.result,
+          errorMsg: this.errorMsg,
+        }, options);
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeParams */
+      activeParams() {
+        return [...PARAM_KEYS];
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() {
+        return [...COLUMN_SLOTS];
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() {
+        const sm = module._context.stateManager;
+        return { value: pickableColumnList(sm, SLOT_FILTERS.value) };
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().chartMethodOptions */
+      chartMethodOptions() {
+        return ['all', ...this.chartSegs.map(s => s.val).filter(v => v !== 'all')];
+      },
+
+      /** @noagent view transform; die Auswahl rendert aus VALID_SIDES */
+      sideOptions() {
+        return VALID_SIDES.map(v => ({ value: v, label: _t(SIDE_LABEL_KEYS[v]) }));
+      },
+
+      /**
+       * Einen Parameter setzen; die Analyse läuft danach neu.
+       * @agent
+       * @param {'alpha'|'side'|'tukeyFactor'|'hampelK'|'zThreshold'|'modZThreshold'|'esdMaxOutliers'|'enabled'} key welcher Parameter
+       * @param {number|string|string[]|null} value Zahl im Bereich des Parameters; `side`: `'two-sided'`, `'upper'` oder `'lower'`; `enabled`: Liste von Methoden-ids; `esdMaxOutliers`: ganze Zahl oder `null` für automatisch
+       * @returns {void}
+       * @throws {Error} wenn `key` kein Parameter dieses Moduls ist oder `value` nicht zulässig
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        requireEnum('key', key, this.activeParams());
+        setAtPath(this.model, key, PARAM_CHECKS[key](value));
+        this.runAnalysis();
+      },
+
+      /**
+       * Die Messwertspalte wählen; die Analyse läuft danach neu.
+       * @agent
+       * @param {'value'} slot der Slot; dieses Modul führt nur `value`
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
+       *   der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren
+       * @returns {void}
+       * @throws {Error} wenn `slot` unbekannt ist oder die Spalte nicht wählbar
+       */
+      setColumn(slot, ref) {
+        requireEnum('slot', slot, COLUMN_SLOTS);
+        if (ref == null) {
+          COLUMN_SINKS[slot](this.model, null);
+          this._picker?.syncValue(null);
+          this.runAnalysis();
+          return;
+        }
+        requireEnum('slot', slot, this.activeColumnSlots());
+        const keys = this.pickableColumns()[slot].map(c => c.key);
+        requireKnownId('ref', refToKey(ref), keys);
+        // Normalisierte Form: fremde Eigenschaften des Agentenobjekts bleiben draußen.
+        const clean = keyToRef(refToKey(ref));
+        COLUMN_SINKS[slot](this.model, clean);
+        this._picker?.syncValue(clean);
+        this.runAnalysis();
+      },
+
+      /**
+       * Wählt, welche Methode das Diagramm hervorhebt.
+       * @agent
+       * @param {string} method `'all'` oder eine Methode aus chartMethodOptions
+       * @returns {void}
+       * @throws {Error} wenn die Methode im aktuellen Ergebnis nichts markiert hat
+       */
+      setChartMethod(method) {
+        requireEnum('method', method, this.chartMethodOptions());
+        this.model.chartMethod = method;
+        for (const s of this.chartSegs) s.activeClass = s.val === method ? 'btn--active' : '';
+        if (this.panelShow) this._plotForMethod(method);
+      },
+
       // ── Alpine lifecycle ──────────────────────────────────────
 
+      /** @noagent lifecycle */
       init() {
         this._unsubs = [];
         this._renderGen = 0;
@@ -665,7 +876,6 @@ const mod = createModule({
         }
 
         this._mountPicker();
-        this._syncSideSelect();
 
         const eb = module._context.eventBus;
         const onActivated = ({ instanceId }) => {
@@ -677,14 +887,15 @@ const mod = createModule({
         this._unsubs.push(() => eb.off('module:activated', onActivated));
 
         const onTheme = () => {
-          this._runAnalysis();
+          this.runAnalysis();
         };
         eb.on('theme:changed', onTheme);
         this._unsubs.push(() => eb.off('theme:changed', onTheme));
 
-        this._runAnalysis();
+        this.runAnalysis();
       },
 
+      /** @noagent lifecycle */
       destroy() {
         for (const unsub of this._unsubs) unsub();
         this._unsubs = [];
