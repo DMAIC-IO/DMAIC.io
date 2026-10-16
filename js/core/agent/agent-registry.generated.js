@@ -1292,85 +1292,142 @@ export const AGENT_REGISTRY = {
     }
   },
   "correlation": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:sm",
-      "unmarked_method:colGroups",
-      "unmarked_method:colKey",
-      "unmarked_method:colDisplayName",
-      "unmarked_method:toggleColumn",
-      "unmarked_method:selectedInfoText",
-      "unmarked_method:selectedInfoClass",
-      "unmarked_method:confDisplay",
-      "unmarked_method:confPctText",
-      "unmarked_method:commitConf",
-      "unmarked_method:confKeydown",
-      "unmarked_method:errorText",
-      "unmarked_method:errorDisplay",
-      "unmarked_method:mode",
-      "unmarked_method:autoRun",
-      "unmarked_method:clearResults",
-      "unmarked_method:runAnalysis",
-      "unmarked_method:runPairwise",
-      "unmarked_method:runMatrix",
-      "unmarked_method:buildPairwiseView",
-      "unmarked_method:cellPassesFilter",
-      "unmarked_method:buildMatrixView",
-      "unmarked_method:setMethod",
-      "unmarked_method:filterMinRDisplay",
-      "unmarked_method:filterMaxPDisplay",
-      "unmarked_method:applyFilterMinR",
-      "unmarked_method:applyFilterMaxP",
-      "unmarked_method:rerenderMatrix",
-      "unmarked_method:matrixHover",
-      "unmarked_method:matrixHoverClear",
-      "unmarked_method:hoverClass",
-      "unmarked_method:matrixClick",
-      "unmarked_method:selectClass",
-      "unmarked_method:plotCardClass",
-      "unmarked_method:plotCardDisplay",
-      "unmarked_method:togglePlot",
-      "unmarked_method:collapseAllLabel",
-      "unmarked_method:toggleAllPlots",
-      "unmarked_method:mountScatter",
-      "unmarked_method:mountMatrixScatters",
-      "unmarked_method:destroyCharts",
-      "unmarked_method:init",
-      "unmarked_method:destroy"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "clearResults": {
+        "params": [],
+        "returns": "void",
+        "help": "Verwirft Ergebnis und Ansicht; die gewählten Spalten bleiben."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Rechnet mit den gewählten Spalten neu: bei zwei Spalten paarweise, ab drei als Matrix. Mit weniger als zwei Spalten geschieht nichts außer dem Löschen der Fehlermeldung; result und matrixResult bleiben, wie sie sind."
+      },
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'confidenceLevel'|'matrixMethod'|'filterMinR'|'filterMaxP'",
+            "optional": false,
+            "help": "welcher Parameter; die Matrixschlüssel gelten erst ab drei Spalten"
+          },
+          {
+            "name": "value",
+            "type": "number|string|null",
+            "optional": false,
+            "help": "`confidenceLevel`: Bruch von 0.5 bis 0.999; `matrixMethod`: `'pearson'`, `'spearman'` oder `'kendall'`; `filterMinR`/`filterMaxP`: Zahl von 0 bis 1 oder `null` ohne Filter"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Parameter setzen; die Analyse läuft danach neu bzw. die Matrix wird neu aufgebaut."
+      },
+      "setColumns": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'columns'",
+            "optional": false,
+            "help": "der Slot; dieses Modul führt nur `columns`"
+          },
+          {
+            "name": "refs",
+            "type": "Array<{ instanceId: string, sheetId: string, columnId: string }>",
+            "optional": false,
+            "help": "die Spaltenbezüge wählbarer Spalten in der gewünschten Reihenfolge; `[]` leert die Auswahl"
+          }
+        ],
+        "returns": "void",
+        "help": "Die Spaltenauswahl ersetzen; die Reihenfolge zählt (die erste Spalte ist X, die zweite Y). Danach läuft die Analyse neu; mit weniger als zwei Spalten werden die Ergebnisse verworfen. Doppelte Einträge zählen einmal."
+      }
+    },
     "fields": {
       "colRefs": {
-        "type": "Array<{ instanceId: string, sheetId: string, columnId: string }>",
-        "help": "",
-        "bulk": false
+        "type": "object[]",
+        "help": "the chosen columns in order, each `{ instanceId, sheetId, columnId }`; the first is X, the second Y",
+        "bulk": false,
+        "derived": true
       },
       "confidenceLevel": {
-        "type": "number|null",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "confidence level as a fraction, for example 0.95",
+        "bulk": false,
+        "derived": true
       },
       "matrixMethod": {
         "type": "'pearson'|'spearman'|'kendall'",
-        "help": "",
-        "bulk": false
+        "help": "the method the correlation matrix shows",
+        "bulk": false,
+        "derived": true
       },
       "filterMinR": {
         "type": "number|null",
-        "help": "",
-        "bulk": false
+        "help": "the matrix hides pairs with |r| below this value; null means no filter",
+        "bulk": false,
+        "derived": true
       },
       "filterMaxP": {
         "type": "number|null",
-        "help": "",
-        "bulk": false
+        "help": "the matrix hides pairs with a p-value above this value; null means no filter",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "string|null",
-        "help": "",
-        "bulk": false
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "activeMultiSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumns` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumns` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "mode": {
+        "type": "'pairwise'|'matrix'|'none'",
+        "help": "'pairwise' with two columns, 'matrix' from three, 'none' otherwise or while no result exists",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "the pairwise analysis (two columns) or null",
+        "bulk": false,
+        "derived": true
+      },
+      "matrixResult": {
+        "type": "object|null",
+        "help": "the correlation matrix (three or more columns) or null",
+        "bulk": false,
+        "derived": true
+      },
+      "errorMsg": {
+        "type": "string",
+        "help": "why the analysis gave no result, or an empty string",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -9180,4 +9237,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":37};
+export const AGENT_COVERAGE = {"total":74,"available":38};

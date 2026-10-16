@@ -4108,6 +4108,73 @@
     "correlation": {
       "name": "Korrelationsanalyse",
       "description": "Pearson-, Spearman- und Kendall-Korrelation zwischen Variablen",
+      "whenToUse": "Wenn zwei oder mehr numerische Größen zusammenhängen könnten: berechnet die Korrelation zweier Spalten (Pearson, Spearman und Kendall nebeneinander, mit Konfidenzintervall und Diagnose) oder dreier und mehr Spalten als Korrelationsmatrix; jede Spalte braucht mindestens 5 numerische Werte.",
+      "actions": {
+        "read": {
+          "help": "Liefert die gewählten Spalten, die Parameter, die wählbaren Spalten, den Modus und das Ergebnis. result ist bei genau zwei Spalten gefüllt, matrixResult bei drei und mehr; sonst sind beide null. errorMsg nennt, warum eine Auswertung mit zwei Spalten kein Ergebnis hat.",
+          "params": {
+            "options": "Optional; dieses Modul hält keine Massendaten."
+          }
+        },
+        "setParam": {
+          "help": "Setzt einen Parameter; die Analyse läuft neu (confidenceLevel) oder die Matrix wird neu aufgebaut (die übrigen Schlüssel).",
+          "params": {
+            "key": "Einer der Schlüssel aus activeParams: confidenceLevel immer; matrixMethod, filterMinR und filterMaxP nur bei drei und mehr Spalten. Jeder andere Wert ist ein Fehler.",
+            "value": "confidenceLevel: Bruch von 0.5 bis 0.999, zum Beispiel 0.95. matrixMethod: 'pearson', 'spearman' oder 'kendall'. filterMinR und filterMaxP: Zahl von 0 bis 1 oder null für keinen Filter. Ein Wert außerhalb des Bereichs oder der Liste ist ein Fehler."
+          }
+        },
+        "setColumns": {
+          "help": "Ersetzt die Spaltenauswahl; die Analyse läuft neu. Die Reihenfolge zählt: die erste Spalte ist X, die zweite Y. Mit weniger als zwei Spalten werden die Ergebnisse verworfen. Doppelte Einträge zählen einmal.",
+          "params": {
+            "slot": "Einer der Slots aus activeMultiSlots; dieses Modul hat nur 'columns'.",
+            "refs": "Liste von Spaltenbezügen { instanceId, sheetId, columnId } von Spalten aus pickableColumns in der gewünschten Reihenfolge; [] leert die Auswahl."
+          }
+        },
+        "runAnalysis": {
+          "help": "Rechnet mit den gewählten Spalten neu: paarweise bei zwei, als Matrix bei drei und mehr. Mit weniger als zwei Spalten wird nichts berechnet; die Fehlermeldung wird gelöscht, result und matrixResult bleiben, wie sie sind."
+        },
+        "clearResults": {
+          "help": "Verwirft result, matrixResult und die Fehlermeldung; die gewählten Spalten bleiben."
+        }
+      },
+      "fields": {
+        "colRefs": {
+          "help": "Die gewählten Spalten in Reihenfolge, je { instanceId, sheetId, columnId }; die erste ist X, die zweite Y."
+        },
+        "confidenceLevel": {
+          "help": "Konfidenzniveau als Bruch, zum Beispiel 0.95."
+        },
+        "matrixMethod": {
+          "help": "Das Verfahren, das die Korrelationsmatrix zeigt: 'pearson', 'spearman' oder 'kendall'. Nur bei drei und mehr Spalten von Belang."
+        },
+        "filterMinR": {
+          "help": "Die Matrix blendet Paare mit |r| unter diesem Wert aus; null heißt kein Filter."
+        },
+        "filterMaxP": {
+          "help": "Die Matrix blendet Paare mit einem p-Wert über diesem Wert aus; null heißt kein Filter."
+        },
+        "activeParams": {
+          "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt: confidenceLevel, dazu matrixMethod, filterMinR und filterMaxP, solange mode 'matrix' ist."
+        },
+        "activeMultiSlots": {
+          "help": "Die Slots, die setColumns im aktuellen Zustand annimmt."
+        },
+        "pickableColumns": {
+          "help": "Je Slot die Spalten, die setColumns annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'. Nur Spalten vom Typ numerisch, Währung, Prozent, Datum oder Zeit mit mindestens 5 in eine Zahl umwandelbaren Werten."
+        },
+        "mode": {
+          "help": "'pairwise' bei zwei Spalten und einem Ergebnis ohne Fehler, 'matrix' bei drei und mehr Spalten, sobald die Matrix berechnet ist, sonst 'none'."
+        },
+        "result": {
+          "help": "Die paarweise Auswertung: Pearson-, Spearman- und Kendall-Koeffizient mit Konfidenzintervallen und p-Werten, eine Empfehlung, beschreibende Statistik, Diagnose, die gepaarten Werte und die Spaltennamen. null, solange nicht genau zwei Spalten gewählt sind und die Auswertung gelang: weniger als 4 gepaarte Werte, eine Spalte ohne Streuung oder eine Spalte ohne verwertbare Werte lassen es null."
+        },
+        "matrixResult": {
+          "help": "Die Korrelationsmatrix aus drei und mehr Spalten: names, die Matrizen je Verfahren (matrix, ciMatrix, pMatrix), nMatrix mit den Paarzahlen und pairs mit den gepaarten Werten; Paare mit weniger als 4 gepaarten Werten ergeben NaN (null in JSON). null, solange weniger als drei Spalten gewählt sind. Die Filter ändern sie nicht."
+        },
+        "errorMsg": {
+          "help": "Der Grund, warum eine Auswertung mit zwei Spalten kein Ergebnis hat (weniger als 4 gepaarte Werte oder eine Spalte ohne Streuung), oder ein leerer Text. Eine Spalte ohne verwertbare Werte lässt result ohne Meldung null."
+        }
+      },
       "sectionData": "Datenquelle",
       "sectionCompare": "Vergleich der Koeffizienten",
       "sectionScatter": "Streudiagramm mit Regressionsgerade",

@@ -120,15 +120,11 @@
             <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionMatrix')"></span></div>
             <div class="corr__matrix-toolbar">
               <div class="btn-group corr__matrix-toggle">
-                <button class="btn--segment corr__toggle-btn" data-method="pearson"
-                  :class="model.matrixMethod === 'pearson' ? 'btn--active' : ''"
-                  @click="setMethod('pearson')">Pearson r</button>
-                <button class="btn--segment corr__toggle-btn" data-method="spearman"
-                  :class="model.matrixMethod === 'spearman' ? 'btn--active' : ''"
-                  @click="setMethod('spearman')" x-text="'Spearman ' + GLYPH_RHO"></button>
-                <button class="btn--segment corr__toggle-btn" data-method="kendall"
-                  :class="model.matrixMethod === 'kendall' ? 'btn--active' : ''"
-                  @click="setMethod('kendall')" x-text="'Kendall ' + GLYPH_TAU"></button>
+                <template x-for="opt in methodOptions()">
+                  <button class="btn--segment corr__toggle-btn" :key="opt.value" :data-method="opt.value"
+                    :class="model.matrixMethod === opt.value ? 'btn--active' : ''"
+                    @click="setMethod(opt.value)" x-text="opt.label"></button>
+                </template>
               </div>
               <div class="corr__filter-bar">
                 <span class="corr__filter-label" x-text="t('filter')"></span>

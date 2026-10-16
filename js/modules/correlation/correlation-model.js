@@ -18,7 +18,8 @@ import {
 import { getColumnName } from '../../ui/column-picker.js';
 import { resolveColumnRef } from '../../core/worksheet-columns.js';
 
-const METHODS = ['pearson', 'spearman', 'kendall'];
+/** Die Korrelationsmethoden der Matrix; einzige Quelle für Prüfer und Auswahl. */
+export const METHODS = ['pearson', 'spearman', 'kendall'];
 
 /** Accepted column types for correlation (everything except plain text). */
 const CORR_TYPES = new Set(['numeric', 'currency', 'percent', 'date', 'time']);

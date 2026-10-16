@@ -15,11 +15,19 @@
  * [data-ref] anchors and disposed in destroy() (sanctioned chart-tier exception).
  * The previous correlation-render.js subfile is gone — its table/card HTML is
  * now template, its chart config is now the data-fn chart helpers below.
+ *
+ * @agent  Steuerbar über das Viewmodel: die gewählten Spalten (setColumns,
+ *   Reihenfolge zählt), die Parameter (setParam), das Rechnen (runAnalysis)
+ *   und das Leeren der Ergebnisse (clearResults). Gelesen wird über read() mit
+ *   erklärter Lesefläche (AgentRead) — Auswahl, Parameter, wählbare Spalten,
+ *   Modus und Ergebnis. Der Agent bekommt Zahlen, keine Diagramme.
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State, parseConfPercent, formatConfPercent } from './correlation-model.js';
-import { isPickerFocused, refToKey } from '../../ui/column-picker.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { State, METHODS, parseConfPercent, formatConfPercent } from './correlation-model.js';
+import { isPickerFocused, refToKey, keyToRef } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 
 // Unicode glyphs carried over from the legacy innerHTML (kept out of x-text
@@ -45,6 +53,70 @@ function fmtP(p) {
 }
 
 const REC_NAMES = { pearson: 'Pearson r', spearman: `Spearman ${GLYPH_RHO}`, kendall: `Kendall ${GLYPH_TAU}` };
+
+/** Zulässige Bereiche der Zahlenparameter (einzige Quelle für Setter und Oberfläche). */
+const PARAM_RANGES = {
+  confidenceLevel: { min: 0.5, max: 0.999 },
+  filterMinR: { min: 0, max: 1 },
+  filterMaxP: { min: 0, max: 1 },
+};
+
+/** Leerform eines Feldes: das Feld ist leer oder `null`. */
+const isEmptyForm = (v) => v === null || v === '';
+
+/** Die Parameter, die `setParam` kennt; welche gelten, sagt `activeParams()`. */
+const PARAM_KEYS = ['confidenceLevel', 'matrixMethod', 'filterMinR', 'filterMaxP'];
+
+/** Die drei Schlüssel der Matrixansicht; sie gelten erst ab drei Spalten. */
+const MATRIX_KEYS = ['matrixMethod', 'filterMinR', 'filterMaxP'];
+
+/** Je Parameter sein Prüfer; gibt den normalisierten Wert zurück. */
+const PARAM_CHECKS = {
+  confidenceLevel: (v) => requireNumber('value', v, PARAM_RANGES.confidenceLevel),
+  matrixMethod: (v) => { requireEnum('value', v, METHODS); return v; },
+  filterMinR: (v) => (isEmptyForm(v) ? null : requireNumber('value', v, PARAM_RANGES.filterMinR)),
+  filterMaxP: (v) => (isEmptyForm(v) ? null : requireNumber('value', v, PARAM_RANGES.filterMaxP)),
+};
+
+/**
+ * Setzt einen Wert unter einem Schlüssel in `obj`. Lokal geschrieben, weil der
+ * Generator (agent-data) Importe nicht liest und die Schreibstelle im Modul
+ * selbst sehen muss.
+ * @param {object} obj Wurzel, deren Schlüssel beschrieben wird
+ * @param {string} key Schlüssel
+ * @param {any} value der abzulegende Wert
+ */
+function setAtPath(obj, key, value) {
+  obj[key] = value;
+}
+
+/** Die Mehrfachspalten dieses Moduls: genau eine Liste, die Auswahl. */
+const MULTI_SLOTS = ['columns'];
+
+/** Je Slot die eine Zuweisungsstelle seines Model-Feldes. */
+const MULTI_SINKS = { columns: (m, refs) => { m.colRefs = refs; } };
+
+/**
+ * Die Agenten-Lesefläche von Correlation.
+ *
+ * Das Model hält die Eingaben flach; das Ergebnis entsteht transient am
+ * Viewmodel. Darum erklärt dieses Modul seine Lesefläche — ohne die interne
+ * Beispiel-Buchführung (`exampleWorksheetId`) und ohne Diagrammdaten.
+ *
+ * @typedef {object} AgentRead
+ * @property {object[]} colRefs  the chosen columns in order, each `{ instanceId, sheetId, columnId }`; the first is X, the second Y
+ * @property {number} confidenceLevel  confidence level as a fraction, for example 0.95
+ * @property {'pearson'|'spearman'|'kendall'} matrixMethod  the method the correlation matrix shows
+ * @property {number|null} filterMinR  the matrix hides pairs with |r| below this value; null means no filter
+ * @property {number|null} filterMaxP  the matrix hides pairs with a p-value above this value; null means no filter
+ * @property {string[]} activeParams  the keys `setParam` accepts in the current state
+ * @property {string[]} activeMultiSlots  the slots `setColumns` accepts in the current state
+ * @property {object} pickableColumns  per slot the columns `setColumns` accepts, each `{ key, name }`
+ * @property {'pairwise'|'matrix'|'none'} mode  'pairwise' with two columns, 'matrix' from three, 'none' otherwise or while no result exists
+ * @property {object|null} result  the pairwise analysis (two columns) or null
+ * @property {object|null} matrixResult  the correlation matrix (three or more columns) or null
+ * @property {string} errorMsg  why the analysis gave no result, or an empty string
+ */
 
 const mod = createModule({
   config: {
@@ -83,23 +155,28 @@ const mod = createModule({
       _lastFingerprint: null,
 
       // ── stateManager accessor ────────────────────────────────
+      /** @noagent helper */
       sm() { return module._context?.stateManager; },
 
       // ── Column list ──────────────────────────────────────────
+      /** @noagent view transform; der Agent liest read().pickableColumns */
       colGroups() { return this.model.columnGroups(this.sm()); },
+      /** @noagent view transform */
       colKey(col) { return refToKey(col); },
+      /** @noagent view transform */
       colDisplayName(col) {
         return col.columnName ? `${col.shortName} ${EN_DASH} ${col.columnName}` : col.shortName;
       },
+      /** @noagent DOM event handler; the agent uses setColumns() */
       toggleColumn(col) {
-        this.model.toggleColumn(col);
-        this.result = null;
-        this.matrixResult = null;
-        this._lastFingerprint = null;
-        this.autoRun();
+        const key = refToKey(col);
+        const keys = this.model.colRefs.map(refToKey);
+        const next = keys.includes(key) ? keys.filter(k => k !== key) : [...keys, key];
+        this.setColumns('columns', next.map(keyToRef));
       },
 
       // ── Selected-info hint ───────────────────────────────────
+      /** @noagent view transform */
       selectedInfoText() {
         const n = this.model.colRefs.length;
         if (n === 0) return _t('selectMinTwo');
@@ -107,36 +184,42 @@ const mod = createModule({
         if (n === 2) return _t('pairwiseMode');
         return _t('matrixMode', { n });
       },
+      /** @noagent view transform */
       selectedInfoClass() {
         return this.model.colRefs.length < 2 ? 'corr__hint' : 'corr__col-info';
       },
 
       // ── Confidence level ─────────────────────────────────────
+      /** @noagent view transform */
       confDisplay() { return formatConfPercent(this.model.confidenceLevel); },
+      /** @noagent view transform */
       confPctText() { return String(Math.round(this.model.confidenceLevel * 100)); },
+      /** @noagent DOM event handler; the agent uses setParam() */
       commitConf(event) {
         const input = event.target;
         const parsed = parseConfPercent(input.value);
-        if (parsed == null) { input.value = formatConfPercent(this.model.confidenceLevel); return; }
-        if (parsed === this.model.confidenceLevel) { input.value = formatConfPercent(parsed); return; }
-        this.model.confidenceLevel = parsed;
-        input.value = formatConfPercent(parsed);
-        this._lastFingerprint = null;
-        this.autoRun();
+        if (parsed != null && parsed !== this.model.confidenceLevel) {
+          try { this.setParam('confidenceLevel', parsed); } catch { /* außerhalb des Bereichs: Feld zeigt den Modellwert */ }
+        }
+        input.value = formatConfPercent(this.model.confidenceLevel);
       },
+      /** @noagent DOM event handler */
       confKeydown(event) {
         if (event.key === 'Enter') { event.preventDefault(); event.target.blur(); }
       },
 
       // ── Error box ────────────────────────────────────────────
+      /** @noagent view transform; der Agent liest read().errorMsg */
       errorText() {
         if (!this.errorKey) return '';
         if (this.errorKey === 'errMin4') return _t('errMin4', { n: this._errN ?? 0 });
         return _t(this.errorKey);
       },
+      /** @noagent view transform */
       errorDisplay() { return this.errorKey ? 'display:block' : 'display:none'; },
 
       // ── Mode ─────────────────────────────────────────────────
+      /** @noagent derived set; der Agent liest read().mode */
       mode() {
         const n = this.model.colRefs.length;
         if (n === 2 && this.result && !this.result.error) return 'pairwise';
@@ -145,6 +228,7 @@ const mod = createModule({
       },
 
       // ── Auto-run (recompute + chart mount) ───────────────────
+      /** @noagent helper; der Agent nutzt runAnalysis() */
       autoRun() {
         if (!module._container) return;
         if (this.model.colRefs.length < 2) { this.clearResults(); return; }
@@ -154,6 +238,11 @@ const mod = createModule({
         this.runAnalysis();
       },
 
+      /**
+       * Verwirft Ergebnis und Ansicht; die gewählten Spalten bleiben.
+       * @agent
+       * @returns {void}
+       */
       clearResults() {
         this.result = null;
         this.matrixResult = null;
@@ -172,6 +261,13 @@ const mod = createModule({
         this.destroyCharts();
       },
 
+      /**
+       * Rechnet mit den gewählten Spalten neu: bei zwei Spalten paarweise, ab
+       * drei als Matrix. Mit weniger als zwei Spalten geschieht nichts außer
+       * dem Löschen der Fehlermeldung; result und matrixResult bleiben, wie sie sind.
+       * @agent
+       * @returns {void}
+       */
       runAnalysis() {
         this.errorKey = null;
         this._renderGen++;
@@ -182,6 +278,7 @@ const mod = createModule({
         else this.runMatrix();
       },
 
+      /** @noagent helper; der Agent nutzt runAnalysis() */
       runPairwise() {
         this.matrixResult = null;
         const res = this.model.computePairwise(this.sm());
@@ -197,6 +294,7 @@ const mod = createModule({
         this.$nextTick(() => this.mountScatter(res));
       },
 
+      /** @noagent helper; der Agent nutzt runAnalysis() */
       runMatrix() {
         this.result = null;
         // Fresh collapse state per analysis: "i-j" keys are index-based, so a
@@ -211,6 +309,7 @@ const mod = createModule({
       },
 
       // ── View builders (pairwise) ─────────────────────────────
+      /** @noagent view transform */
       buildPairwiseView(result) {
         const { pearson, spearman, kendall, recommendation, descriptive, diagnostics, n, df } = result;
 
@@ -313,6 +412,7 @@ const mod = createModule({
       },
 
       // ── View builders (matrix) ───────────────────────────────
+      /** @noagent view transform */
       cellPassesFilter(r, p) {
         const minR = this.model.filterMinR;
         const maxP = this.model.filterMaxP;
@@ -323,6 +423,7 @@ const mod = createModule({
         return true;
       },
 
+      /** @noagent view transform */
       buildMatrixView(matrixResult) {
         const { names, matrix, ciMatrix, pMatrix, nMatrix, pairs } = matrixResult;
         const k = names.length;
@@ -397,8 +498,21 @@ const mod = createModule({
         });
       },
 
+      /** @noagent DOM event handler; the agent uses setParam() */
       setMethod(method) {
-        this.model.matrixMethod = method;
+        this.setParam('matrixMethod', method);
+      },
+
+      /** @noagent view transform; die Auswahl rendert aus METHODS */
+      methodOptions() {
+        return METHODS.map(value => ({ value, label: REC_NAMES[value] }));
+      },
+
+      /**
+       * Die Matrix nach einem Methodenwechsel neu aufbauen.
+       * @returns {void}
+       */
+      _applyMethod() {
         if (this.matrixResult) {
           this._renderGen++;
           this.destroyCharts();
@@ -409,18 +523,31 @@ const mod = createModule({
       },
 
       // ── Matrix filter inputs ─────────────────────────────────
+      /** @noagent view transform */
       filterMinRDisplay() { return this.model.filterMinR != null ? String(this.model.filterMinR) : ''; },
+      /** @noagent view transform */
       filterMaxPDisplay() { return this.model.filterMaxP != null ? String(this.model.filterMaxP) : ''; },
+      /** @noagent DOM event handler; the agent uses setParam() */
       applyFilterMinR(event) {
-        const v = event.target.value.trim();
-        this.model.filterMinR = v !== '' ? parseFloat(v) : null;
-        this.rerenderMatrix();
+        this._applyFilter('filterMinR', event.target);
       },
+      /** @noagent DOM event handler; the agent uses setParam() */
       applyFilterMaxP(event) {
-        const v = event.target.value.trim();
-        this.model.filterMaxP = v !== '' ? parseFloat(v) : null;
-        this.rerenderMatrix();
+        this._applyFilter('filterMaxP', event.target);
       },
+      /**
+       * Einen Filterwert der Eingabe über setParam übernehmen; bei Absage zeigt
+       * das Feld wieder den Modellwert.
+       * @param {'filterMinR'|'filterMaxP'} key welcher Filter
+       * @param {HTMLInputElement} input das Eingabefeld
+       */
+      _applyFilter(key, input) {
+        const v = input.value.trim();
+        try { this.setParam(key, v === '' ? null : parseFloat(v)); } catch {
+          input.value = this.model[key] != null ? String(this.model[key]) : '';
+        }
+      },
+      /** @noagent helper */
       rerenderMatrix() {
         if (!this.matrixResult) return;
         this._renderGen++;
@@ -430,19 +557,23 @@ const mod = createModule({
       },
 
       // ── Matrix hover / select / collapse (transient) ─────────
+      /** @noagent DOM event handler */
       matrixHover(event) {
         const cell = event.target.closest('[data-row][data-col]');
         if (!cell) return;
         this.hoverRow = cell.dataset.row;
         this.hoverCol = cell.dataset.col;
       },
+      /** @noagent DOM event handler */
       matrixHoverClear() { this.hoverRow = -1; this.hoverCol = -1; },
+      /** @noagent view transform */
       hoverClass(i, j) {
         const hr = this.hoverRow, hc = this.hoverCol;
         if (hr === -1 && hc === -1) return '';
         const match = String(i) === String(hr) || String(j) === String(hc);
         return match ? ' corr__matrix--highlight' : '';
       },
+      /** @noagent DOM event handler */
       matrixClick(event) {
         const cell = event.target.closest('[data-row][data-col]');
         if (!cell) return;
@@ -455,23 +586,29 @@ const mod = createModule({
         const pairKey = `${pairI}-${pairJ}`;
         this.selectedPair = this.selectedPair === pairKey ? null : pairKey;
       },
+      /** @noagent view transform */
       selectClass(i, j) {
         if (!this.selectedPair) return '';
         const [pi, pj] = this.selectedPair.split('-').map(Number);
         const match = (i === pi && j === pj) || (i === pj && j === pi);
         return match ? ' corr__matrix-cell--selected' : '';
       },
+      /** @noagent view transform */
       plotCardClass(pair) {
         return this.collapsedPairs[pair.key] ? 'corr__matrix-plot-card--collapsed' : '';
       },
+      /** @noagent view transform */
       plotCardDisplay(pair) {
         if (!this.selectedPair) return '';
         return this.selectedPair === pair.key ? '' : 'display:none';
       },
+      /** @noagent DOM event handler */
       togglePlot(key) {
         this.collapsedPairs = { ...this.collapsedPairs, [key]: !this.collapsedPairs[key] };
       },
+      /** @noagent view transform */
       collapseAllLabel() { return this.allCollapsed ? _t('expandAll') : _t('collapseAll'); },
+      /** @noagent DOM event handler */
       toggleAllPlots() {
         const next = !this.allCollapsed;
         const map = {};
@@ -503,6 +640,7 @@ const mod = createModule({
         });
       },
 
+      /** @noagent helper */
       async mountScatter(result) {
         const gen = this._renderGen;
         if (!result._x || !result._y) return;
@@ -518,6 +656,7 @@ const mod = createModule({
         });
       },
 
+      /** @noagent helper */
       async mountMatrixScatters(matrixResult) {
         const gen = this._renderGen;
         const { names } = matrixResult;
@@ -568,6 +707,7 @@ const mod = createModule({
         this._charts.push(chart);
       },
 
+      /** @noagent helper */
       destroyCharts() {
         for (const chart of this._charts) {
           try { module._context.chartManager.destroy(chart); } catch { /* ignore */ }
@@ -575,7 +715,95 @@ const mod = createModule({
         this._charts = [];
       },
 
+      // ── Agent surface ────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Auswahl, Parameter, wählbare Spalten, Modus und Ergebnis
+       */
+      read(options) {
+        return readAgentState('correlation', {
+          ...this.model.toJSON(),
+          activeParams: this.activeParams(),
+          activeMultiSlots: this.activeMultiSlots(),
+          pickableColumns: this.pickableColumns(),
+          mode: this.mode(),
+          result: this.result,
+          matrixResult: this.matrixResult,
+          errorMsg: this.errorText(),
+        }, options);
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeParams */
+      activeParams() {
+        return this.mode() === 'matrix' ? ['confidenceLevel', ...MATRIX_KEYS] : ['confidenceLevel'];
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeMultiSlots */
+      activeMultiSlots() {
+        return [...MULTI_SLOTS];
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() {
+        return { columns: this.model.discoverColumns(this.sm()).map(c => ({
+          key: refToKey(c), name: c.columnName || c.shortName || refToKey(c) })) };
+      },
+
+      /**
+       * Einen Parameter setzen; die Analyse läuft danach neu bzw. die Matrix
+       * wird neu aufgebaut.
+       * @agent
+       * @param {'confidenceLevel'|'matrixMethod'|'filterMinR'|'filterMaxP'} key welcher Parameter; die Matrixschlüssel gelten erst ab drei Spalten
+       * @param {number|string|null} value `confidenceLevel`: Bruch von 0.5 bis 0.999; `matrixMethod`: `'pearson'`, `'spearman'` oder `'kendall'`; `filterMinR`/`filterMaxP`: Zahl von 0 bis 1 oder `null` ohne Filter
+       * @returns {void}
+       * @throws {Error} wenn `key` im aktuellen Zustand nicht gilt oder `value` nicht zulässig ist
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        requireEnum('key', key, this.activeParams());
+        setAtPath(this.model, key, PARAM_CHECKS[key](value));
+        if (key === 'confidenceLevel') {
+          this._lastFingerprint = null;
+          this.autoRun();
+        } else if (key === 'matrixMethod') {
+          this._applyMethod();
+        } else {
+          this.rerenderMatrix();
+        }
+      },
+
+      /**
+       * Die Spaltenauswahl ersetzen; die Reihenfolge zählt (die erste Spalte
+       * ist X, die zweite Y). Danach läuft die Analyse neu; mit weniger als
+       * zwei Spalten werden die Ergebnisse verworfen. Doppelte Einträge zählen einmal.
+       * @agent
+       * @param {'columns'} slot der Slot; dieses Modul führt nur `columns`
+       * @param {Array<{ instanceId: string, sheetId: string, columnId: string }>} refs
+       *   die Spaltenbezüge wählbarer Spalten in der gewünschten Reihenfolge; `[]` leert die Auswahl
+       * @returns {void}
+       * @throws {Error} wenn `slot` unbekannt ist, `refs` keine Liste ist oder eine Spalte nicht wählbar ist
+       */
+      setColumns(slot, refs) {
+        requireEnum('slot', slot, MULTI_SLOTS);
+        requireEnum('slot', slot, this.activeMultiSlots());
+        if (!Array.isArray(refs)) {
+          throw new Error(`invalid refs ${JSON.stringify(refs)}; allowed: a list of column references, [] clears it`);
+        }
+        const keys = this.pickableColumns()[slot].map(c => c.key);
+        for (const ref of refs) requireKnownId('ref', refToKey(ref), keys);
+        const clean = [...new Set(refs.map(refToKey))].map(keyToRef);
+        MULTI_SINKS[slot](this.model, clean);
+        this.result = null;
+        this.matrixResult = null;
+        this._lastFingerprint = null;
+        this.autoRun();
+      },
+
       // ── Lifecycle ────────────────────────────────────────────
+      /** @noagent lifecycle */
       init() {
         const ctx = module._context;
 
@@ -612,6 +840,7 @@ const mod = createModule({
         this.$nextTick(() => this.autoRun());
       },
 
+      /** @noagent lifecycle */
       destroy() {
         for (const u of this._unsubs) u();
         this._unsubs = [];

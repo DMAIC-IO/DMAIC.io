@@ -4104,6 +4104,73 @@
     "correlation": {
       "name": "Correlation Analysis",
       "description": "Pearson, Spearman, and Kendall correlation between variables",
+      "whenToUse": "When two or more numeric variables may be related: computes the correlation of two columns (Pearson, Spearman and Kendall side by side, with confidence interval and diagnostics) or of three or more columns as a correlation matrix; each column needs at least 5 numeric values.",
+      "actions": {
+        "read": {
+          "help": "Returns the chosen columns, the parameters, the selectable columns, the mode and the result. result is filled with exactly two columns, matrixResult with three or more; both are null otherwise. errorMsg names why a two-column analysis gave no result.",
+          "params": {
+            "options": "Optional; this module holds no bulk data."
+          }
+        },
+        "setParam": {
+          "help": "Sets one parameter; the analysis reruns (confidenceLevel) or the matrix is rebuilt (the other keys).",
+          "params": {
+            "key": "One of the keys in activeParams: confidenceLevel always; matrixMethod, filterMinR and filterMaxP only with three or more columns. Any other value is an error.",
+            "value": "confidenceLevel: fraction from 0.5 to 0.999, for example 0.95. matrixMethod: 'pearson', 'spearman' or 'kendall'. filterMinR and filterMaxP: number from 0 to 1, or null for no filter. A value outside the range or the list is an error."
+          }
+        },
+        "setColumns": {
+          "help": "Replaces the column selection; the analysis reruns. The order matters: the first column is X, the second Y. With fewer than two columns the results are discarded. Duplicate entries count once.",
+          "params": {
+            "slot": "One of the slots in activeMultiSlots; this module only has 'columns'.",
+            "refs": "List of column references { instanceId, sheetId, columnId } of columns from pickableColumns, in the wanted order; [] clears the selection."
+          }
+        },
+        "runAnalysis": {
+          "help": "Recomputes with the chosen columns: pairwise with two, as a matrix with three or more. With fewer than two columns nothing is computed; the error message is cleared and result and matrixResult stay as they are."
+        },
+        "clearResults": {
+          "help": "Discards result, matrixResult and the error message; the chosen columns stay."
+        }
+      },
+      "fields": {
+        "colRefs": {
+          "help": "The chosen columns in order, each { instanceId, sheetId, columnId }; the first is X, the second Y."
+        },
+        "confidenceLevel": {
+          "help": "Confidence level as a fraction, for example 0.95."
+        },
+        "matrixMethod": {
+          "help": "The method the correlation matrix shows: 'pearson', 'spearman' or 'kendall'. Only relevant with three or more columns."
+        },
+        "filterMinR": {
+          "help": "The matrix hides pairs with |r| below this value; null means no filter."
+        },
+        "filterMaxP": {
+          "help": "The matrix hides pairs with a p-value above this value; null means no filter."
+        },
+        "activeParams": {
+          "help": "The keys setParam accepts in the current state: confidenceLevel, plus matrixMethod, filterMinR and filterMaxP while mode is 'matrix'."
+        },
+        "activeMultiSlots": {
+          "help": "The slots setColumns accepts in the current state."
+        },
+        "pickableColumns": {
+          "help": "Per slot the columns setColumns accepts, each { key, name }; key is 'instanceId|sheetId|columnId'. Only columns of a numeric, currency, percent, date or time type with at least 5 values convertible to a number."
+        },
+        "mode": {
+          "help": "'pairwise' with two columns and a result without error, 'matrix' with three or more columns once the matrix is computed, 'none' otherwise."
+        },
+        "result": {
+          "help": "The pairwise analysis: Pearson, Spearman and Kendall coefficients with confidence intervals and p-values, a recommendation, descriptive statistics, diagnostics, the paired values and the column names. null unless exactly two columns are chosen and the analysis succeeded: fewer than 4 paired values, a column without variance, or a column without usable values leave it null."
+        },
+        "matrixResult": {
+          "help": "The correlation matrix of three or more columns: names, the matrices per method (matrix, ciMatrix, pMatrix), nMatrix with the pair counts and pairs with the paired values; pairs with fewer than 4 paired values give NaN (null in JSON). null while fewer than three columns are chosen. The filters do not change it."
+        },
+        "errorMsg": {
+          "help": "The reason a two-column analysis gave no result (fewer than 4 paired values, or a column without variance), or an empty string. A column without usable values leaves result null without a message."
+        }
+      },
       "sectionData": "Data Source",
       "sectionCompare": "Coefficient Comparison",
       "sectionScatter": "Scatter Plot with Regression Line",
