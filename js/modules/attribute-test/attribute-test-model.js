@@ -8,10 +8,11 @@
 
 /** @typedef {{ instanceId: string, sheetId?: string, columnId: string }} ColumnRef */
 
-const TEST_KINDS = ['one', 'two', 'assoc'];
-const INPUT_MODES = ['summary', 'columns'];
-const DIRECTIONS = ['two-sided', 'greater', 'less'];
-const MIN_DIM = 2;
+export const TEST_KINDS = ['one', 'two', 'assoc'];
+export const INPUT_MODES = ['summary', 'columns'];
+export const DIRECTIONS = ['two-sided', 'greater', 'less'];
+/** Mindestanzahl Zeilen und Spalten der Kreuztabelle. */
+export const MIN_DIM = 2;
 
 function refOrNull(r) {
   if (r && typeof r === 'object' && r.instanceId != null && r.columnId != null) return { ...r };

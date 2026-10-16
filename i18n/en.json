@@ -5833,7 +5833,120 @@
       "errP0Range": "p₀ must lie strictly between 0 and 1.",
       "errResponseLevels": "The response column needs exactly 2 distinct values.",
       "errGroupLevels": "The group column needs exactly 2 levels.",
-      "errTableTooSmall": "The table needs at least 2 × 2 cells with observations."
+      "errTableTooSmall": "The table needs at least 2 × 2 cells with observations.",
+      "whenToUse": "When counts of events are compared: tests one proportion against a hypothesized value, two proportions against each other (z test and Fisher's exact test) or the association of two categorical variables (chi-square on a cross table). The counts are given as summarized numbers or taken from worksheet columns.",
+      "actions": {
+        "read": {
+          "help": "Returns the entered configuration, the keys and roles valid in the current state, the selectable columns, the selectable event values and the result. result is null while the inputs are incomplete or invalid; errorMsg then names the reason (an input hint or a refusal such as a too small table) and is empty while a result exists.",
+          "params": {
+            "options": "Optional; this module holds no bulk data."
+          }
+        },
+        "setParam": {
+          "help": "Sets one parameter; the test reruns. Switching testKind or inputMode keeps all other inputs, so switching back loses nothing.",
+          "params": {
+            "key": "One of the keys in activeParams: testKind, inputMode and alpha always; summary.x and summary.n (one proportion), summary.x1, summary.n1, summary.x2 and summary.n2 (two proportions) with summarized input; eventValue with column input and one or two proportions; p0 with one proportion; direction (with the association test only for a 2 x 2 table); pooled with two proportions. Any other key is an error.",
+            "value": "testKind: 'one', 'two' or 'assoc'. inputMode: 'summary' or 'columns'. alpha: number greater than 0 and less than 1, for example 0.05. direction: 'two-sided', 'greater' or 'less'. pooled: true or false. p0 and the summary.* counts: text as entered, '' clears it. eventValue: one of eventValueOptions. A value outside the range or the list is an error."
+          }
+        },
+        "setColumn": {
+          "help": "Assigns a column to a role; the test reruns. null clears the role. With column input and one or two proportions the response (and for two proportions the group) is used; for the association test the row and column variables. The event value is set to the last value of the response column when the current one does not occur in it.",
+          "params": {
+            "slot": "One of the roles in activeColumnSlots: response, group, rowVar or colVar.",
+            "ref": "The reference { instanceId, sheetId, columnId } of a column from pickableColumns for that role, or null to clear the role."
+          }
+        },
+        "setTableCell": {
+          "help": "Sets one count of the cross table used by the association test with summarized input.",
+          "params": {
+            "row": "Row index, 0 is the first row.",
+            "col": "Column index, 0 is the first column.",
+            "value": "The count as text, '' clears the cell."
+          }
+        },
+        "setTableRowName": {
+          "help": "Sets the name of one row of the cross table.",
+          "params": {
+            "row": "Row index, 0 is the first row.",
+            "name": "The name as text, '' clears it."
+          }
+        },
+        "setTableColName": {
+          "help": "Sets the name of one column of the cross table.",
+          "params": {
+            "col": "Column index, 0 is the first column.",
+            "name": "The name as text, '' clears it."
+          }
+        },
+        "addRow": {
+          "help": "Appends a row with empty counts to the cross table; its name is the next letter."
+        },
+        "addCol": {
+          "help": "Appends a column with empty counts to the cross table; its name is the next one of X, Y, Z and then C4, C5 and so on."
+        },
+        "removeRow": {
+          "help": "Removes one row of the cross table with its counts. Only while more than two rows remain; otherwise an error.",
+          "params": {
+            "row": "Row index, 0 is the first row."
+          }
+        },
+        "removeCol": {
+          "help": "Removes one column of the cross table with its counts. Only while more than two columns remain; otherwise an error.",
+          "params": {
+            "col": "Column index, 0 is the first column."
+          }
+        },
+        "runAnalysis": {
+          "help": "Recomputes the test from the current inputs. Missing or invalid inputs are no refusal of the action: result becomes null and errorMsg names the reason."
+        }
+      },
+      "fields": {
+        "testKind": {
+          "help": "The kind of test: 'one' (one proportion), 'two' (two proportions) or 'assoc' (association in a cross table)."
+        },
+        "inputMode": {
+          "help": "Where the counts come from: 'summary' (entered numbers) or 'columns' (worksheet columns)."
+        },
+        "direction": {
+          "help": "The alternative hypothesis: 'two-sided', 'greater' or 'less'. With the association test only used for a 2 x 2 table."
+        },
+        "alpha": {
+          "help": "The significance level, greater than 0 and less than 1. Starts from the confidence level of the settings."
+        },
+        "p0": {
+          "help": "The hypothesized proportion for one proportion, as entered; it must lie between 0 and 1, exclusive."
+        },
+        "pooled": {
+          "help": "For two proportions: true uses the pooled standard error for the z statistic."
+        },
+        "summary": {
+          "help": "The summarized counts as entered: x and n (one proportion), x1, n1, x2 and n2 (two proportions) and table { rows, cols, counts } (association), all as text."
+        },
+        "colRefs": {
+          "help": "The chosen column per role: response, group, rowVar and colVar, each { instanceId, sheetId, columnId } or null."
+        },
+        "eventValue": {
+          "help": "The value of the response column that counts as event, or null while there is none."
+        },
+        "activeParams": {
+          "help": "The keys setParam accepts in the current state."
+        },
+        "activeColumnSlots": {
+          "help": "The roles setColumn accepts in the current state: none with summarized input, response (and group for two proportions) or rowVar and colVar for the association test with column input."
+        },
+        "pickableColumns": {
+          "help": "Per role the columns setColumn accepts, each { key, name }; key is 'instanceId|sheetId|columnId'. Any column with at least 2 values."
+        },
+        "eventValueOptions": {
+          "help": "The values setParam accepts for eventValue: the distinct values of the chosen response column; empty while there is none."
+        },
+        "result": {
+          "help": "The test report: stats (key figures), notes, the decision against alpha and, for the association test, the cross table with observed and expected counts. null while the inputs are incomplete or invalid."
+        },
+        "errorMsg": {
+          "help": "The reason there is no result: an input hint while counts or columns are missing, or the refusal (for example a table that is too small or a p0 outside the range); an empty string while a result exists."
+        }
+      }
     },
     "hypothesis-test": {
       "name": "Hypothesis Test",

@@ -5837,7 +5837,120 @@
       "errP0Range": "p₀ muss zwischen 0 und 1 liegen (ausschließlich).",
       "errResponseLevels": "Die Antwortspalte braucht genau 2 verschiedene Werte.",
       "errGroupLevels": "Die Gruppenspalte braucht genau 2 Stufen.",
-      "errTableTooSmall": "Die Tabelle braucht mindestens 2 × 2 Zellen mit Beobachtungen."
+      "errTableTooSmall": "Die Tabelle braucht mindestens 2 × 2 Zellen mit Beobachtungen.",
+      "whenToUse": "Wenn Häufigkeiten von Ereignissen verglichen werden: prüft einen Anteil gegen einen vermuteten Wert, zwei Anteile gegeneinander (z-Test und exakter Test nach Fisher) oder den Zusammenhang zweier kategorialer Merkmale (Chi-Quadrat auf einer Kreuztabelle). Die Häufigkeiten werden als Zusammenfassung angegeben oder aus Tabellenspalten gezählt.",
+      "actions": {
+        "read": {
+          "help": "Liefert die eingegebene Konfiguration, die im Zustand gültigen Schlüssel und Rollen, die wählbaren Spalten, die wählbaren Ereigniswerte und das Ergebnis. result ist null, solange die Eingaben unvollständig oder ungültig sind; errorMsg nennt dann den Grund (einen Eingabehinweis oder eine Absage wie eine zu kleine Tabelle) und ist leer, solange ein Ergebnis vorliegt.",
+          "params": {
+            "options": "Optional; dieses Modul hält keine Massendaten."
+          }
+        },
+        "setParam": {
+          "help": "Setzt einen Parameter; der Test rechnet danach neu. Ein Wechsel von testKind oder inputMode behält alle anderen Eingaben, beim Zurückwechseln geht also nichts verloren.",
+          "params": {
+            "key": "Einer der Schlüssel aus activeParams: testKind, inputMode und alpha immer; summary.x und summary.n (ein Anteil), summary.x1, summary.n1, summary.x2 und summary.n2 (zwei Anteile) bei Eingabe als Zusammenfassung; eventValue bei Spalteneingabe mit einem oder zwei Anteilen; p0 bei einem Anteil; direction (beim Zusammenhangstest nur für eine 2 x 2-Tabelle); pooled bei zwei Anteilen. Jeder andere Schlüssel ist ein Fehler.",
+            "value": "testKind: 'one', 'two' oder 'assoc'. inputMode: 'summary' oder 'columns'. alpha: Zahl größer 0 und kleiner 1, zum Beispiel 0.05. direction: 'two-sided', 'greater' oder 'less'. pooled: true oder false. p0 und die summary.*-Anzahlen: Text wie eingegeben, '' leert. eventValue: einer der Werte aus eventValueOptions. Ein Wert außerhalb von Bereich oder Liste ist ein Fehler."
+          }
+        },
+        "setColumn": {
+          "help": "Weist einer Rolle eine Spalte zu; der Test rechnet danach neu. null leert die Rolle. Bei Spalteneingabe und einem oder zwei Anteilen zählen Antwort (und bei zwei Anteilen die Gruppe); beim Zusammenhangstest Zeilen- und Spaltenmerkmal. Der Ereigniswert wird auf den letzten Wert der Antwortspalte gesetzt, wenn der bisherige dort nicht vorkommt.",
+          "params": {
+            "slot": "Eine der Rollen aus activeColumnSlots: response, group, rowVar oder colVar.",
+            "ref": "Der Bezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns für diese Rolle, oder null, um die Rolle zu leeren."
+          }
+        },
+        "setTableCell": {
+          "help": "Setzt eine Anzahl der Kreuztabelle, die der Zusammenhangstest bei Eingabe als Zusammenfassung benutzt.",
+          "params": {
+            "row": "Zeilenindex, 0 ist die erste Zeile.",
+            "col": "Spaltenindex, 0 ist die erste Spalte.",
+            "value": "Die Anzahl als Text, '' leert die Zelle."
+          }
+        },
+        "setTableRowName": {
+          "help": "Setzt den Namen einer Zeile der Kreuztabelle.",
+          "params": {
+            "row": "Zeilenindex, 0 ist die erste Zeile.",
+            "name": "Der Name als Text, '' leert ihn."
+          }
+        },
+        "setTableColName": {
+          "help": "Setzt den Namen einer Spalte der Kreuztabelle.",
+          "params": {
+            "col": "Spaltenindex, 0 ist die erste Spalte.",
+            "name": "Der Name als Text, '' leert ihn."
+          }
+        },
+        "addRow": {
+          "help": "Hängt der Kreuztabelle eine Zeile mit leeren Anzahlen an; ihr Name ist der nächste Buchstabe."
+        },
+        "addCol": {
+          "help": "Hängt der Kreuztabelle eine Spalte mit leeren Anzahlen an; ihr Name ist der nächste aus X, Y, Z und danach C4, C5 und so weiter."
+        },
+        "removeRow": {
+          "help": "Entfernt eine Zeile der Kreuztabelle samt Anzahlen. Nur solange mehr als zwei Zeilen bleiben; sonst ein Fehler.",
+          "params": {
+            "row": "Zeilenindex, 0 ist die erste Zeile."
+          }
+        },
+        "removeCol": {
+          "help": "Entfernt eine Spalte der Kreuztabelle samt Anzahlen. Nur solange mehr als zwei Spalten bleiben; sonst ein Fehler.",
+          "params": {
+            "col": "Spaltenindex, 0 ist die erste Spalte."
+          }
+        },
+        "runAnalysis": {
+          "help": "Rechnet den Test aus den aktuellen Eingaben neu. Fehlende oder ungültige Eingaben sind keine Absage der Aktion: result wird null, und errorMsg nennt den Grund."
+        }
+      },
+      "fields": {
+        "testKind": {
+          "help": "Die Testart: 'one' (ein Anteil), 'two' (zwei Anteile) oder 'assoc' (Zusammenhang in einer Kreuztabelle)."
+        },
+        "inputMode": {
+          "help": "Woher die Häufigkeiten kommen: 'summary' (eingegebene Zahlen) oder 'columns' (Tabellenspalten)."
+        },
+        "direction": {
+          "help": "Die Alternativhypothese: 'two-sided', 'greater' oder 'less'. Beim Zusammenhangstest nur für eine 2 x 2-Tabelle benutzt."
+        },
+        "alpha": {
+          "help": "Das Signifikanzniveau, größer 0 und kleiner 1. Startet aus dem Vertrauensniveau der Einstellungen."
+        },
+        "p0": {
+          "help": "Der vermutete Anteil bei einem Anteil, wie eingegeben; er muss zwischen 0 und 1 liegen, Grenzen ausgeschlossen."
+        },
+        "pooled": {
+          "help": "Bei zwei Anteilen: true nimmt für die z-Statistik den gepoolten Standardfehler."
+        },
+        "summary": {
+          "help": "Die zusammengefassten Häufigkeiten wie eingegeben: x und n (ein Anteil), x1, n1, x2 und n2 (zwei Anteile) und table { rows, cols, counts } (Zusammenhang), alle als Text."
+        },
+        "colRefs": {
+          "help": "Die gewählte Spalte je Rolle: response, group, rowVar und colVar, je { instanceId, sheetId, columnId } oder null."
+        },
+        "eventValue": {
+          "help": "Der Wert der Antwortspalte, der als Ereignis zählt, oder null, solange es keinen gibt."
+        },
+        "activeParams": {
+          "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt."
+        },
+        "activeColumnSlots": {
+          "help": "Die Rollen, die setColumn im aktuellen Zustand annimmt: keine bei Eingabe als Zusammenfassung, response (bei zwei Anteilen auch group) oder rowVar und colVar beim Zusammenhangstest mit Spalteneingabe."
+        },
+        "pickableColumns": {
+          "help": "Je Rolle die Spalten, die setColumn annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'. Jede Spalte mit mindestens 2 Werten."
+        },
+        "eventValueOptions": {
+          "help": "Die Werte, die setParam für eventValue annimmt: die verschiedenen Werte der gewählten Antwortspalte; leer, solange es keine gibt."
+        },
+        "result": {
+          "help": "Der Testbericht: stats (Kennzahlen), notes, die Entscheidung gegen alpha und beim Zusammenhangstest die Kreuztabelle mit beobachteten und erwarteten Anzahlen. null, solange die Eingaben unvollständig oder ungültig sind."
+        },
+        "errorMsg": {
+          "help": "Der Grund, warum kein Ergebnis vorliegt: ein Eingabehinweis, solange Häufigkeiten oder Spalten fehlen, oder die Absage (zum Beispiel eine zu kleine Tabelle oder ein p0 außerhalb des Bereichs); eine leere Zeichenkette, solange ein Ergebnis vorliegt."
+        }
+      }
     },
     "hypothesis-test": {
       "name": "Hypothesentest",

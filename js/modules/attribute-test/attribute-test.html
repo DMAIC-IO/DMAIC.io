@@ -25,9 +25,9 @@
     <template x-if="isMode('summary') && isKind('one')">
       <div class="attrtest__grid">
         <label class="field-group"><span x-text="t('events')"></span>
-          <input type="text" inputmode="numeric" data-ref="x" x-model="model.summary.x"></label>
+          <input type="text" inputmode="numeric" data-ref="x" :value="model.summary.x" @input="onTextInput('summary.x', $event)"></label>
         <label class="field-group"><span x-text="t('trials')"></span>
-          <input type="text" inputmode="numeric" data-ref="n" x-model="model.summary.n"></label>
+          <input type="text" inputmode="numeric" data-ref="n" :value="model.summary.n" @input="onTextInput('summary.n', $event)"></label>
       </div>
     </template>
 
@@ -37,11 +37,11 @@
         <span class="attrtest__grid-head" x-text="t('events')"></span>
         <span class="attrtest__grid-head" x-text="t('trials')"></span>
         <span x-text="t('sample1')"></span>
-        <input type="text" inputmode="numeric" data-ref="x1" x-model="model.summary.x1">
-        <input type="text" inputmode="numeric" data-ref="n1" x-model="model.summary.n1">
+        <input type="text" inputmode="numeric" data-ref="x1" :value="model.summary.x1" @input="onTextInput('summary.x1', $event)">
+        <input type="text" inputmode="numeric" data-ref="n1" :value="model.summary.n1" @input="onTextInput('summary.n1', $event)">
         <span x-text="t('sample2')"></span>
-        <input type="text" inputmode="numeric" data-ref="x2" x-model="model.summary.x2">
-        <input type="text" inputmode="numeric" data-ref="n2" x-model="model.summary.n2">
+        <input type="text" inputmode="numeric" data-ref="x2" :value="model.summary.x2" @input="onTextInput('summary.x2', $event)">
+        <input type="text" inputmode="numeric" data-ref="n2" :value="model.summary.n2" @input="onTextInput('summary.n2', $event)">
       </div>
     </template>
 
@@ -55,7 +55,7 @@
                 <th>
                   <input type="text" class="attrtest__name" :data-col-name="j" :value="colName(j)"
                     @input="setColName(j, $event)">
-                  <button class="btn--icon attrtest__remove" :title="t('removeCol')" @click="removeCol(j)">
+                  <button class="btn--icon attrtest__remove" :title="t('removeCol')" @click="onRemoveCol(j)">
                     <span class="icon icon--sm" data-icon="action.delete"></span>
                   </button>
                 </th>
@@ -68,7 +68,7 @@
                 <th>
                   <input type="text" class="attrtest__name" :data-row-name="i" :value="rowName(i)"
                     @input="setRowName(i, $event)">
-                  <button class="btn--icon attrtest__remove" :title="t('removeRow')" @click="removeRow(i)">
+                  <button class="btn--icon attrtest__remove" :title="t('removeRow')" @click="onRemoveRow(i)">
                     <span class="icon icon--sm" data-icon="action.delete"></span>
                   </button>
                 </th>
@@ -127,14 +127,14 @@
     <div class="dmike-split__section-title" x-text="t('sectionOptions')"></div>
     <template x-if="isKind('one')">
       <label class="field-group"><span x-text="t('p0')"></span>
-        <input type="text" inputmode="decimal" data-ref="p0" x-model="model.p0"></label>
+        <input type="text" inputmode="decimal" data-ref="p0" :value="model.p0" @input="onTextInput('p0', $event)"></label>
     </template>
     <template x-if="showDirection()">
       <label class="field-group"><span x-text="t('direction')"></span>
-        <select data-ref="direction" x-model="model.direction">
-          <option value="two-sided" x-text="t('dirTwoSided')"></option>
-          <option value="greater" x-text="t('dirGreater')"></option>
-          <option value="less" x-text="t('dirLess')"></option>
+        <select data-ref="direction" @change="onDirectionChange($event)">
+          <template x-for="o in directionOptions()" :key="o.value">
+            <option :value="o.value" :selected="isDirection(o.value)" x-text="o.label"></option>
+          </template>
         </select>
       </label>
     </template>
@@ -142,7 +142,7 @@
       <input type="text" inputmode="decimal" data-ref="alpha" :value="model.alpha" @change="onAlphaInput($event)"></label>
     <template x-if="isKind('two')">
       <label class="attrtest__check">
-        <input type="checkbox" data-ref="pooled" x-model="model.pooled">
+        <input type="checkbox" data-ref="pooled" :checked="model.pooled" @change="onPooledChange($event)">
         <span x-text="t('pooled')"></span>
       </label>
     </template>

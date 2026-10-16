@@ -351,110 +351,249 @@ export const AGENT_REGISTRY = {
     }
   },
   "attribute-test": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:isKind",
-      "unmarked_method:isMode",
-      "unmarked_method:hasResult",
-      "unmarked_method:message",
-      "unmarked_method:isHint",
-      "unmarked_method:stats",
-      "unmarked_method:notes",
-      "unmarked_method:statLabel",
-      "unmarked_method:noteText",
-      "unmarked_method:hasTable",
-      "unmarked_method:tableCols",
-      "unmarked_method:tableRows",
-      "unmarked_method:decisionText",
-      "unmarked_method:decisionClass",
-      "unmarked_method:basisText",
-      "unmarked_method:hypotheses",
-      "unmarked_method:is2x2",
-      "unmarked_method:showDirection",
-      "unmarked_method:cellValue",
-      "unmarked_method:tableRowIdx",
-      "unmarked_method:tableColIdx",
-      "unmarked_method:rowName",
-      "unmarked_method:colName",
-      "unmarked_method:showEvent",
-      "unmarked_method:isEvent",
-      "unmarked_method:setKind",
-      "unmarked_method:setMode",
-      "unmarked_method:onAlphaInput",
-      "unmarked_method:setCell",
-      "unmarked_method:setRowName",
-      "unmarked_method:setColName",
-      "unmarked_method:addRow",
-      "unmarked_method:addCol",
-      "unmarked_method:removeRow",
-      "unmarked_method:removeCol",
-      "unmarked_method:onEventChange",
-      "unmarked_method:runAnalysis",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unreachable_write:summary.x",
-      "unreachable_write:summary.n",
-      "unreachable_write:summary.x1",
-      "unreachable_write:summary.n1",
-      "unreachable_write:summary.x2",
-      "unreachable_write:summary.n2",
-      "unreachable_write:p0",
-      "unreachable_write:direction",
-      "unreachable_write:pooled"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'testKind'|'inputMode'|'alpha'|'direction'|'p0'|'pooled'|'summary.x'|'summary.n'|'summary.x1'|'summary.n1'|'summary.x2'|'summary.n2'|'eventValue'",
+            "optional": false,
+            "help": "welcher Parameter"
+          },
+          {
+            "name": "value",
+            "type": "string|number|boolean",
+            "optional": false,
+            "help": "der Wert; Typ und Bereich je Schlüssel"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Parameter setzen; die Analyse läuft danach neu."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'response'|'group'|'rowVar'|'colVar'",
+            "optional": false,
+            "help": "die Rolle; activeColumnSlots nennt die im Zustand gültigen"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Spalte einer Rolle zuweisen; die Analyse läuft danach neu."
+      },
+      "setTableCell": {
+        "params": [
+          {
+            "name": "row",
+            "type": "number",
+            "optional": false,
+            "help": "Zeilenindex, 0 ist die erste Zeile"
+          },
+          {
+            "name": "col",
+            "type": "number",
+            "optional": false,
+            "help": "Spaltenindex, 0 ist die erste Spalte"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "die Anzahl als Text, '' leert die Zelle"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Zelle der Kreuztabelle setzen (Zusammenfassung, Zusammenhang). Die Tabelle gilt nur bei der Testart assoc mit Eingabe über Zusammenfassung."
+      },
+      "setTableRowName": {
+        "params": [
+          {
+            "name": "row",
+            "type": "number",
+            "optional": false,
+            "help": "Zeilenindex, 0 ist die erste Zeile"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "der Name, '' leert ihn"
+          }
+        ],
+        "returns": "void",
+        "help": "Den Namen einer Zeile der Kreuztabelle setzen."
+      },
+      "setTableColName": {
+        "params": [
+          {
+            "name": "col",
+            "type": "number",
+            "optional": false,
+            "help": "Spaltenindex, 0 ist die erste Spalte"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "der Name, '' leert ihn"
+          }
+        ],
+        "returns": "void",
+        "help": "Den Namen einer Spalte der Kreuztabelle setzen."
+      },
+      "addRow": {
+        "params": [],
+        "returns": "void",
+        "help": "Eine Zeile ans Ende der Kreuztabelle hängen; die Zählwerte sind leer."
+      },
+      "addCol": {
+        "params": [],
+        "returns": "void",
+        "help": "Eine Spalte ans Ende der Kreuztabelle hängen; die Zählwerte sind leer."
+      },
+      "removeRow": {
+        "params": [
+          {
+            "name": "row",
+            "type": "number",
+            "optional": false,
+            "help": "Zeilenindex, 0 ist die erste Zeile"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Zeile der Kreuztabelle entfernen."
+      },
+      "removeCol": {
+        "params": [
+          {
+            "name": "col",
+            "type": "number",
+            "optional": false,
+            "help": "Spaltenindex, 0 ist die erste Spalte"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Spalte der Kreuztabelle entfernen."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Das Ergebnis aus den aktuellen Eingaben neu rechnen. Fehlen Eingaben oder sind sie ungültig, bleibt `result` ohne Bericht und `errorMsg` nennt den Grund; das ist keine Absage der Aktion."
+      }
+    },
     "fields": {
       "testKind": {
         "type": "'one'|'two'|'assoc'",
-        "help": "",
-        "bulk": false
+        "help": "the kind of test",
+        "bulk": false,
+        "derived": true
       },
       "inputMode": {
         "type": "'summary'|'columns'",
-        "help": "",
-        "bulk": false
+        "help": "where the counts come from",
+        "bulk": false,
+        "derived": true
       },
       "direction": {
         "type": "'two-sided'|'greater'|'less'",
-        "help": "",
-        "bulk": false
+        "help": "the alternative hypothesis",
+        "bulk": false,
+        "derived": true
       },
       "alpha": {
         "type": "number|null",
-        "help": "significance level; null until seeded from settings",
-        "bulk": false
+        "help": "the significance level",
+        "bulk": false,
+        "derived": true
       },
       "p0": {
         "type": "string",
-        "help": "hypothesized proportion (raw input)",
-        "bulk": false
+        "help": "the hypothesized proportion as entered",
+        "bulk": false,
+        "derived": true
       },
       "pooled": {
         "type": "boolean",
-        "help": "pooled SE for the 2-proportion z statistic",
-        "bulk": false
+        "help": "pooled standard error for the 2-proportion z statistic",
+        "bulk": false,
+        "derived": true
       },
       "summary": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object",
+        "help": "the summarized counts as entered: x, n, x1, n1, x2, n2 and the cross table `{ rows, cols, counts }`",
+        "bulk": false,
+        "derived": true
       },
       "colRefs": {
-        "type": "{ response: ColumnRef|null, group: ColumnRef|null, rowVar: ColumnRef|null, colVar: ColumnRef|null }",
-        "help": "",
-        "bulk": false
+        "type": "object",
+        "help": "the chosen column per role (response, group, rowVar, colVar), each `{ instanceId, sheetId, columnId }` or null",
+        "bulk": false,
+        "derived": true
       },
       "eventValue": {
         "type": "string|null",
-        "help": "value of the response column that counts as event",
-        "bulk": false
+        "help": "the value of the response column that counts as event",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "string|null",
-        "help": "worksheet provisioned by loadExample",
-        "bulk": false
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "eventValueOptions": {
+        "type": "string[]",
+        "help": "the values `setParam('eventValue', …)` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "the test report, or null while the inputs are incomplete or invalid",
+        "bulk": false,
+        "derived": true
+      },
+      "errorMsg": {
+        "type": "string",
+        "help": "the reason there is no result (input hint or refusal), or an empty string",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -9237,4 +9376,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":38};
+export const AGENT_COVERAGE = {"total":74,"available":39};
