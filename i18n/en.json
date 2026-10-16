@@ -8084,6 +8084,76 @@
       }
     },
     "data-transformation": {
+      "whenToUse": "When non-normal measurements should be transformed for a method that assumes normality — Box-Cox, Yeo-Johnson, Johnson, logarithm, square root, reciprocal, square — and the result is reused as a new column. Requires the measurements as a numeric column of a data collection (at least three values).",
+      "actions": {
+        "read": {
+          "help": "Returns the transformation, the source, the parameters, the selectable sets and the result. result is null while there is no calculation.",
+          "params": {
+            "options": "Optional; this module holds no bulk data."
+          }
+        },
+        "selectTF": {
+          "help": "Chooses the transformation and calculates at once. For Box-Cox and Yeo-Johnson, λ is optimized again for the source.",
+          "params": {
+            "id": "One of the transformations in transforms; any other value is an error."
+          }
+        },
+        "setColumn": {
+          "help": "Points the transformation at a numeric column of a data collection and calculates at once; for Box-Cox and Yeo-Johnson, λ is optimized again.",
+          "params": {
+            "slot": "One of the slots in activeColumnSlots; this module only has 'source'.",
+            "ref": "Column reference { instanceId, sheetId, columnId } of a column from pickableColumns, or null to clear."
+          }
+        },
+        "setParam": {
+          "help": "Sets one parameter of the current transformation; the calculation follows after a short pause. Values outside the range are rejected, not clamped.",
+          "params": {
+            "key": "One of the keys in activeParams: lambda, gamma, delta, xi or lambdaJ. Which apply depends on the transformation.",
+            "value": "A number within the range from activeParams; numbers given as text are accepted."
+          }
+        },
+        "runAnalysis": {
+          "help": "Calculates the transformation with the current source and parameters. Fewer than three finite values leave result at null."
+        },
+        "toWorksheet": {
+          "help": "Sends the transformed series as a new column to a new or existing worksheet and returns the receiving worksheet. Without a result nothing is sent and null is returned.",
+          "params": {
+            "target": "null for a new worksheet, otherwise a column reference from targetColumns."
+          }
+        }
+      },
+      "fields": {
+        "currentTF": {
+          "help": "The chosen transformation, one of the ids in transforms."
+        },
+        "transforms": {
+          "help": "All transformations selectTF accepts."
+        },
+        "columnRef": {
+          "help": "The chosen source column as { instanceId, sheetId, columnId }, or null."
+        },
+        "params": {
+          "help": "The parameters of the current transformation as numbers, by key."
+        },
+        "activeParams": {
+          "help": "The keys setParam accepts in the current state, each with its range."
+        },
+        "activeColumnSlots": {
+          "help": "The slots setColumn accepts in the current state."
+        },
+        "pickableColumns": {
+          "help": "Per slot the columns setColumn accepts, each { key, name }; key is 'instanceId|sheetId|columnId'."
+        },
+        "targetColumns": {
+          "help": "The existing columns toWorksheet accepts as target, each { key, name }; a null target creates a new worksheet."
+        },
+        "result": {
+          "help": "Statistics (mean, spread, median, skewness, kurtosis, minimum, maximum) and Anderson-Darling p of the original and the transformed series, or null without a result."
+        },
+        "errorMsg": {
+          "help": "The message the module gives when the calculation fails, otherwise empty."
+        }
+      },
       "name": "Data Transformation",
       "description": "Transform data (Box-Cox, Johnson, Log, …) for normality",
       "selectColumn": "Data Column",

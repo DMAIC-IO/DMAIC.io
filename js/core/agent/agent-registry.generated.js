@@ -1628,47 +1628,149 @@ export const AGENT_REGISTRY = {
     }
   },
   "data-transformation": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:tfName",
-      "unmarked_method:tfDesc",
-      "unmarked_method:tfOptClass",
-      "unmarked_method:paramLabel",
-      "unmarked_method:normLabel",
-      "unmarked_method:normStat",
-      "unmarked_method:normHasBadge",
-      "unmarked_method:normBadgeClass",
-      "unmarked_method:normBadgeIcon",
-      "unmarked_method:normBadgeText",
-      "unmarked_method:normAlpha",
-      "unmarked_method:paramFn",
-      "unmarked_method:paramNumberChanged",
-      "unmarked_method:paramSliderChanged",
-      "unmarked_method:selectTF",
-      "unmarked_method:copyExport",
-      "unmarked_method:downloadCSV",
-      "unmarked_method:toWorksheet",
-      "unmarked_method:init",
-      "unmarked_method:destroy"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'source'",
+            "optional": false,
+            "help": "der Slot; dieses Modul führt nur `source`"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "void",
+        "help": "Die Quellspalte setzen und sofort rechnen."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'lambda'|'gamma'|'delta'|'xi'|'lambdaJ'",
+            "optional": false,
+            "help": "welcher Parameter; `activeParams` nennt die gültigen"
+          },
+          {
+            "name": "value",
+            "type": "number|string",
+            "optional": false,
+            "help": "Zahl im Bereich aus `activeParams`; Textzahlen werden angenommen"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Parameter der aktuellen Transformation setzen; die Rechnung folgt verzögert."
+      },
+      "selectTF": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "eine der Transformationen aus `transforms`"
+          }
+        ],
+        "returns": "void",
+        "help": "Die Transformation wählen und sofort rechnen."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Rechnet die Transformation mit der aktuellen Quelle und den aktuellen Parametern. Weniger als drei endliche Werte lassen `result` auf null — keine Absage."
+      },
+      "toWorksheet": {
+        "params": [
+          {
+            "name": "target",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "null für einen neuen Worksheet, sonst ein Spaltenbezug aus `targetColumns`"
+          }
+        ],
+        "returns": "Promise<{ instanceId: string }|null>",
+        "help": "Die transformierte Spalte an einen neuen oder bestehenden Worksheet senden."
+      }
+    },
     "fields": {
       "currentTF": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string",
+        "help": "the selected transformation, one of `transforms`",
+        "bulk": false,
+        "derived": true
+      },
+      "transforms": {
+        "type": "string[]",
+        "help": "all transformation ids",
+        "bulk": false,
+        "derived": true
       },
       "columnRef": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+        "help": "the source column",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "params": {
+        "type": "Object<string, number>",
+        "help": "the parameters of the current transformation by key",
+        "bulk": false,
+        "derived": true
+      },
+      "activeParams": {
+        "type": "Array<{ key: string, min: number, max: number }>",
+        "help": "the keys `setParam` accepts now, with their range",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "targetColumns": {
+        "type": "Array<{ key: string, name: string }>",
+        "help": "the existing columns `toWorksheet` accepts; null targets a new worksheet",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "{ n: number, original: object, transformed: object }|null",
+        "help": "descriptive statistics and Anderson-Darling p of both series, null without a result",
+        "bulk": false,
+        "derived": true
+      },
+      "errorMsg": {
+        "type": "string",
+        "help": "the message the module shows, '' without error",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -10023,4 +10125,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":43};
+export const AGENT_COVERAGE = {"total":76,"available":44};

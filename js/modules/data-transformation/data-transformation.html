@@ -24,11 +24,11 @@
             <label class="dt-param__label" x-text="paramLabel(p.labelKey)"></label>
             <input class="field field--num field--inline dt-param__number" type="number"
                    :data-param-key="p.key" :min="p.min" :max="p.max"
-                   x-model="p.val" @input="paramNumberChanged(p)">
+                   :value="p.val" @change="setParam(p.key, $event.target.value)">
             <input class="dt-param__range" type="range"
                    :min="p.min" :max="p.max" :step="p.step"
                    :data-range-for="p.key"
-                   x-model="p.val" @input="paramSliderChanged(p)">
+                   :value="p.val" @input="setParam(p.key, $event.target.value)">
           </div>
         </template>
       </div>
@@ -108,7 +108,7 @@
             <span class="icon icon--sm" data-icon="action.download" aria-hidden="true"></span>
           </button>
           <span id="dt-target-wrap" data-ref="target-wrap"></span>
-          <button class="btn btn--secondary btn--sm" data-action="to-worksheet" @click="toWorksheet()">
+          <button class="btn btn--secondary btn--sm" data-action="to-worksheet" @click="onToWorksheet()">
             <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
             <span x-text="t('toWorksheet')"></span>
           </button>

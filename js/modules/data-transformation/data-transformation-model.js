@@ -50,7 +50,7 @@ export const TRANSFORMS = [
   { id: 'square', nameKey: 'tfSquare', descKey: 'tfSquareDesc', params: [] },
 ];
 
-const TRANSFORM_IDS = TRANSFORMS.map(t => t.id);
+export const TRANSFORM_IDS = TRANSFORMS.map(t => t.id);
 
 // ═══════════════════════════════════════════════════════════════
 // Transform functions (pure)

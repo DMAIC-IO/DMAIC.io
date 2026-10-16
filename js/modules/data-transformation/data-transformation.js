@@ -14,16 +14,25 @@
  *
  * 🔴 CROSS-MODULE CONTRACT: emits `worksheet:appendColumn` to push transformed
  * columns into the Worksheet module — preserved byte-identically below.
+ *
+ * @agent  Steuerbar über das Viewmodel: Transformation wählen (selectTF),
+ *   Quellspalte setzen (setColumn), Parameter setzen (setParam), rechnen
+ *   (runAnalysis) und das Ergebnis an einen neuen oder bestehenden
+ *   Worksheet senden (toWorksheet). Zwischenablage und CSV-Download bleiben
+ *   der Oberfläche vorbehalten; gelesen wird über read() (AgentRead).
  */
 
 import { openNewWorksheet } from '../../core/worksheet-handoff.js';
 import { toNum } from '../../core/chart/chart-data-prep.js';
 import { createModule } from '../../core/template-module.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { pickableColumnList } from '../../core/agent/agent-options.js';
 import {
-  State, TRANSFORMS, applyTransform, optimizeBoxCox, optimizeYeoJohnson,
+  State, TRANSFORMS, TRANSFORM_IDS, applyTransform, optimizeBoxCox, optimizeYeoJohnson,
 } from './data-transformation-model.js';
 import {
-  ColumnPicker, getColumnValues, getColumnName, refToKey,
+  ColumnPicker, getColumnValues, getColumnName, refToKey, keyToRef,
 } from '../../ui/column-picker.js';
 import { mean, std, median, skewness, kurtosis } from '../../engines/distribution-fit-engine.js';
 import { andersonDarling } from '../../engines/normality-test-engine.js';
@@ -32,12 +41,38 @@ import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examp
 const AUTORUN_DELAY = 80;
 const ALPHA = 0.05;
 
+/** Alle Parameterschlüssel aller Transformationen; `activeParams` nennt die des aktuellen Zustands. */
+const PARAM_KEYS = ['lambda', 'gamma', 'delta', 'xi', 'lambdaJ'];
+const COLUMN_SLOTS = ['source'];
+const SLOT_FILTERS = { source: { types: ['numeric'], minCount: 3 } };
+const TARGET_FILTER = {};
+
 /** Build the transient param rows for a transform id (with default values). */
 function paramRowsFor(tfId) {
   const tf = TRANSFORMS.find(t => t.id === tfId);
   return tf.params.map(p => ({ ...p, val: String(p.val) }));
 }
 
+/**
+ * Die Agenten-Lesefläche von Datentransformation.
+ *
+ * Die Parameter leben nur flüchtig in `paramRows` und werden beim Wechsel der
+ * Transformation und — bei λ — beim Wechsel der Spalte neu belegt; persistiert
+ * sind nur Transformation und Quelle. Die Lesefläche zeigt die Zahlen, nicht
+ * die Eingabetexte.
+ *
+ * @typedef {object} AgentRead
+ * @property {string} currentTF  the selected transformation, one of `transforms`
+ * @property {string[]} transforms  all transformation ids
+ * @property {{ instanceId: string, sheetId: string, columnId: string }|null} columnRef  the source column
+ * @property {Object<string, number>} params  the parameters of the current transformation by key
+ * @property {Array<{ key: string, min: number, max: number }>} activeParams  the keys `setParam` accepts now, with their range
+ * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
+ * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
+ * @property {Array<{ key: string, name: string }>} targetColumns  the existing columns `toWorksheet` accepts; null targets a new worksheet
+ * @property {{ n: number, original: object, transformed: object }|null} result  descriptive statistics and Anderson-Darling p of both series, null without a result
+ * @property {string} errorMsg  the message the module shows, '' without error
+ */
 const mod = createModule({
   config: {
     id: 'data-transformation',
@@ -71,60 +106,156 @@ const mod = createModule({
       _lastColumnKey: null,
       _renderGen: 0,
 
+      // ── Agent surface ─────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Transformation, Quelle, Parameter, wählbare Mengen und Ergebnis
+       */
+      read(options) {
+        return readAgentState('data-transformation', {
+          currentTF: this.model.currentTF,
+          transforms: TRANSFORM_IDS,
+          columnRef: this.model.columnRef,
+          params: Object.fromEntries(this.paramRows.map(p => [p.key, this.paramFn(p.key)])),
+          activeParams: this.activeParams(),
+          activeColumnSlots: this.activeColumnSlots(),
+          pickableColumns: this.pickableColumns(),
+          targetColumns: this.targetColumns(),
+          result: this.hasResults ? this._agentResult() : null,
+          errorMsg: this.errorMsg,
+        }, options);
+      },
+      /** @noagent derived set; der Agent liest sie über read().activeParams */
+      activeParams() {
+        return this.paramRows.map(p => ({ key: p.key, min: p.min, max: p.max }));
+      },
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() { return COLUMN_SLOTS; },
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() {
+        return { source: pickableColumnList(module._context.stateManager, SLOT_FILTERS.source) };
+      },
+      /** @noagent derived set; der Agent liest sie über read().targetColumns */
+      targetColumns() {
+        return pickableColumnList(module._context.stateManager, TARGET_FILTER);
+      },
+
+      /**
+       * Die Quellspalte setzen und sofort rechnen.
+       * @agent
+       * @param {'source'} slot der Slot; dieses Modul führt nur `source`
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
+       *   der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren
+       * @returns {void}
+       * @throws {Error} wenn `slot` unbekannt ist oder die Spalte nicht wählbar
+       */
+      setColumn(slot, ref) {
+        requireEnum('slot', slot, COLUMN_SLOTS);
+        if (ref == null) {
+          this.model.columnRef = null;
+          this._picker?.syncValue(null);
+          this.runAnalysis();
+          return;
+        }
+        requireEnum('slot', slot, this.activeColumnSlots());
+        requireKnownId('ref', refToKey(ref), this.pickableColumns()[slot].map(c => c.key));
+        // Normalisierte Form: fremde Eigenschaften des Agentenobjekts bleiben draußen.
+        const clean = keyToRef(refToKey(ref));
+        this.model.columnRef = clean;
+        this._picker?.syncValue(clean);
+        this.runAnalysis();
+      },
+
+      /**
+       * Einen Parameter der aktuellen Transformation setzen; die Rechnung folgt verzögert.
+       * @agent
+       * @param {'lambda'|'gamma'|'delta'|'xi'|'lambdaJ'} key welcher Parameter; `activeParams` nennt die gültigen
+       * @param {number|string} value Zahl im Bereich aus `activeParams`; Textzahlen werden angenommen
+       * @returns {void}
+       * @throws {Error} wenn `key` zur aktuellen Transformation nicht passt oder `value` außerhalb des Bereichs liegt
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        requireEnum('key', key, this.activeParams().map(p => p.key));
+        const row = this.paramRows.find(p => p.key === key);
+        const n = requireNumber('value', value, { min: row.min, max: row.max });
+        row.val = String(n);
+        this._autoRun();
+      },
+
       // ── View transformations (i18n / css) ─────────────────────
 
+      /** @noagent view transform */
       tfName: (id) => _t(TRANSFORMS.find(t => t.id === id).nameKey),
+      /** @noagent view transform */
       tfDesc: (id) => _t(TRANSFORMS.find(t => t.id === id).descKey),
+      /** @noagent view transform */
       tfOptClass(id) { return this.model.currentTF === id ? 'dt-tf-opt--active' : ''; },
+      /** @noagent view transform */
       paramLabel: (key) => _t(key),
 
       // ── Normality view helpers ────────────────────────────────
 
+      /** @noagent view transform */
       normLabel: (which) => `${_t(which === 'original' ? 'original' : 'transformed')  }:`,
+      /** @noagent view transform */
       normStat(slot) {
         const ad = this._norm[slot];
         if (!ad) return '—';
         return `A² = ${ad.statisticAdj.toFixed(4)}, p ≈ ${ad.pValue.toFixed(4)}`;
       },
+      /** @noagent view transform */
       normHasBadge(slot) { return Boolean(this._norm[slot]); },
+      /** @noagent view transform */
       normBadgeClass(slot) {
         const ad = this._norm[slot];
         if (!ad) return '';
         return ad.pValue >= ALPHA ? 'dt-badge--pass' : 'dt-badge--fail';
       },
+      /** @noagent view transform */
       normBadgeIcon(slot) {
         const ad = this._norm[slot];
         if (!ad) return null;
         return ad.pValue >= ALPHA ? 'status.ok' : 'status.error';
       },
+      /** @noagent view transform */
       normBadgeText(slot) {
         const ad = this._norm[slot];
         if (!ad) return '';
         return ad.pValue >= ALPHA ? _t('normal') : _t('notNormal');
       },
+      /** @noagent view transform */
       normAlpha: () => `α = ${ALPHA} | H₀: ${_t('h0Normal')}`,
 
       // ── Param handling ────────────────────────────────────────
 
-      /** (key) => number — reads the current param value. */
+      /** @noagent helper; liest den aktuellen Parameterwert als Zahl */
       paramFn(key) {
         const row = this.paramRows.find(p => p.key === key);
         return row ? parseFloat(row.val) : 0;
       },
 
-      paramNumberChanged() { this._autoRun(); },
-      paramSliderChanged() { this._autoRun(); },
-
       // ── Transform selection ───────────────────────────────────
 
+      /**
+       * Die Transformation wählen und sofort rechnen.
+       * @agent
+       * @param {string} id eine der Transformationen aus `transforms`
+       * @returns {void}
+       * @throws {Error} wenn `id` keine Transformation dieses Moduls ist
+       */
       selectTF(id) {
+        requireEnum('id', id, TRANSFORM_IDS);
         this.model.currentTF = id;
         this.paramRows = paramRowsFor(id);
         // Re-optimize λ when switching to a λ-transform (only if data present)
         if (this.rawData.length >= 3 && (id === 'boxcox' || id === 'yeojohnson')) {
           this._optimizeLambda();
         }
-        this._autoRun();
+        this.runAnalysis();
       },
 
       /** Switch transform type without triggering another autoRun cycle. */
@@ -137,10 +268,18 @@ const mod = createModule({
 
       _autoRun() {
         clearTimeout(this._autoRunTimer);
-        this._autoRunTimer = setTimeout(() => this._runTransform(), AUTORUN_DELAY);
+        this._autoRunTimer = setTimeout(() => this.runAnalysis(), AUTORUN_DELAY);
       },
 
-      _runTransform() {
+      /**
+       * Rechnet die Transformation mit der aktuellen Quelle und den aktuellen
+       * Parametern. Weniger als drei endliche Werte lassen `result` auf null —
+       * keine Absage.
+       * @agent
+       * @returns {void}
+       */
+      runAnalysis() {
+        clearTimeout(this._autoRunTimer);
         const ref = this.model.columnRef;
         if (!ref) { this._clearOutput(); return; }
 
@@ -248,6 +387,26 @@ const mod = createModule({
         this._norm = { orig: adOrig, trans: adTrans };
       },
 
+      /** Zahlen für die Lesefläche: Kennwerte und Anderson-Darling-p beider Reihen. */
+      _agentResult() {
+        const num = v => (isFinite(v) ? v : null);
+        const describe = (arr, ad) => ({
+          mean: num(mean(arr)),
+          std: num(std(arr)),
+          median: num(median(arr)),
+          skewness: num(skewness(arr)),
+          kurtosis: num(kurtosis(arr)),
+          min: num(Math.min(...arr)),
+          max: num(Math.max(...arr)),
+          adPValue: ad?.pValue ?? null,
+        });
+        return {
+          n: this.rawData.length,
+          original: describe(this.rawData, this._norm.orig),
+          transformed: describe(this.transData, this._norm.trans),
+        };
+      },
+
       _buildExport() {
         this.exportText = this.transData.map(v => v.toFixed(6)).join('\n');
       },
@@ -286,12 +445,14 @@ const mod = createModule({
 
       // ── Export actions ────────────────────────────────────────
 
+      /** @noagent clipboard; an agent reads the data via read() */
       copyExport() {
         navigator.clipboard.writeText(this.exportText).then(() => {
           module._context.notify?.(_t('copied'), 'success');
         });
       },
 
+      /** @noagent downloads a file; an agent reads the data via read() */
       downloadCSV() {
         if (!this.transData.length) return;
         let csv = `${_t('original')};${_t('transformed')}\n`;
@@ -315,29 +476,43 @@ const mod = createModule({
       },
 
       // 🔴 CROSS-MODULE CONTRACT — preserved byte-identically
-      toWorksheet() {
-        if (!this.transData.length) return;
-        const pickerValue = this._targetPicker?.value;
-        if (!pickerValue) {
-          module._context.notify?.(_t('selectTarget'), 'warning');
-          return;
+      /**
+       * Die transformierte Spalte an einen neuen oder bestehenden Worksheet senden.
+       * @agent
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} target
+       *   null für einen neuen Worksheet, sonst ein Spaltenbezug aus `targetColumns`
+       * @returns {Promise<{ instanceId: string }|null>} der empfangende Worksheet, oder null ohne Ergebnis
+       * @throws {Error} wenn `target` keine wählbare Spalte ist
+       */
+      async toWorksheet(target) {
+        if (target != null) {
+          requireKnownId('target', refToKey(target), this.targetColumns().map(c => c.key));
         }
-
+        if (!this.transData.length) return null;
         const name = this._colName();
         const values = [...this.transData];
-
-        if (pickerValue === ColumnPicker.NEW_WORKSHEET) {
-          this._createWorksheetAndSend(name, values);
-          return;
+        if (target == null) {
+          return { instanceId: await this._createWorksheetAndSend(name, values) };
         }
-
+        const clean = keyToRef(refToKey(target));
         module._context.eventBus.emit('worksheet:appendColumn', {
-          instanceId: pickerValue.instanceId,
-          sheetId: pickerValue.sheetId,
-          colId: pickerValue.columnId,
+          instanceId: clean.instanceId,
+          sheetId: clean.sheetId,
+          colId: clean.columnId,
           name, values,
         });
         module._context.notify?.(_t('sentToWorksheet'), 'success');
+        return { instanceId: clean.instanceId };
+      },
+
+      /** @noagent DOM event handler; the agent uses toWorksheet() */
+      onToWorksheet() {
+        const v = this._targetPicker?.value;
+        if (!v) {
+          module._context.notify?.(_t('selectTarget'), 'warning');
+          return;
+        }
+        this.toWorksheet(v === ColumnPicker.NEW_WORKSHEET ? null : v);
       },
 
       async _createWorksheetAndSend(name, values) {
@@ -363,9 +538,8 @@ const mod = createModule({
         this._picker?.destroy();
         this._picker = new ColumnPicker(wrap, module._context, {
           mode: 'single',
-          types: ['numeric'],
-          minCount: 3,
-          onChange: (ref) => { this.model.columnRef = ref; this._autoRun(); },
+          ...SLOT_FILTERS.source,
+          onChange: (ref) => this.setColumn('source', ref),
         });
         if (this.model.columnRef) this._picker.value = this.model.columnRef;
       },
@@ -377,6 +551,7 @@ const mod = createModule({
         this._targetPicker = new ColumnPicker(wrap, module._context, {
           mode: 'single',
           allowCreateWorksheet: true,
+          ...TARGET_FILTER,
           onChange: () => {},
         });
       },
@@ -388,6 +563,7 @@ const mod = createModule({
 
       // ── Lifecycle ─────────────────────────────────────────────
 
+      /** @noagent lifecycle */
       init() {
         // Fresh per-instance collections (the data() object is shared by Alpine.data).
         this._charts = {};
@@ -413,6 +589,7 @@ const mod = createModule({
         if (this.model.columnRef) this._autoRun();
       },
 
+      /** @noagent lifecycle */
       destroy() {
         clearTimeout(this._autoRunTimer);
         for (const unsub of this._unsubs) unsub();

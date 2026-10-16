@@ -8088,6 +8088,76 @@
       }
     },
     "data-transformation": {
+      "whenToUse": "Wenn nicht normalverteilte Messwerte für ein Verfahren mit Normalitätsannahme transformiert werden sollen — Box-Cox, Yeo-Johnson, Johnson, Logarithmus, Wurzel, Kehrwert, Quadrat — und das Ergebnis als neue Spalte weiterverwendet wird. Braucht die Messwerte als numerische Spalte (mindestens drei Werte) einer Datensammlung.",
+      "actions": {
+        "read": {
+          "help": "Liefert Transformation, Quelle, Parameter, wählbare Mengen und das Ergebnis. result ist null, solange keine Rechnung vorliegt.",
+          "params": {
+            "options": "Optional; dieses Modul führt keine Massendaten."
+          }
+        },
+        "selectTF": {
+          "help": "Wählt die Transformation und rechnet sofort. Bei Box-Cox und Yeo-Johnson wird λ für die Quelle neu optimiert.",
+          "params": {
+            "id": "Eine der Transformationen aus transforms; jeder andere Wert ist ein Fehler."
+          }
+        },
+        "setColumn": {
+          "help": "Richtet die Transformation auf eine numerische Spalte einer Datensammlung und rechnet sofort; λ wird bei Box-Cox und Yeo-Johnson neu optimiert.",
+          "params": {
+            "slot": "Einer der Slots aus activeColumnSlots; dieses Modul kennt nur 'source'.",
+            "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Leeren."
+          }
+        },
+        "setParam": {
+          "help": "Setzt einen Parameter der aktuellen Transformation; die Rechnung folgt nach kurzer Pause. Werte außerhalb des Bereichs werden abgewiesen, nicht begrenzt.",
+          "params": {
+            "key": "Einer der Schlüssel aus activeParams: lambda, gamma, delta, xi oder lambdaJ. Welche gelten, hängt von der Transformation ab.",
+            "value": "Zahl im Bereich aus activeParams; Textzahlen werden angenommen."
+          }
+        },
+        "runAnalysis": {
+          "help": "Rechnet die Transformation mit der aktuellen Quelle und den aktuellen Parametern. Weniger als drei endliche Werte lassen result auf null."
+        },
+        "toWorksheet": {
+          "help": "Sendet die transformierte Reihe als neue Spalte an einen neuen oder bestehenden Worksheet und liefert den empfangenden Worksheet. Ohne Ergebnis wird nichts gesendet und null geliefert.",
+          "params": {
+            "target": "null für einen neuen Worksheet, sonst ein Spaltenbezug aus targetColumns."
+          }
+        }
+      },
+      "fields": {
+        "currentTF": {
+          "help": "Die gewählte Transformation, eine der Kennungen aus transforms."
+        },
+        "transforms": {
+          "help": "Alle Transformationen, die selectTF annimmt."
+        },
+        "columnRef": {
+          "help": "Die gewählte Quellspalte als { instanceId, sheetId, columnId }, oder null."
+        },
+        "params": {
+          "help": "Die Parameter der aktuellen Transformation als Zahlen, nach Schlüssel."
+        },
+        "activeParams": {
+          "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt, jeweils mit Bereich."
+        },
+        "activeColumnSlots": {
+          "help": "Die Slots, die setColumn im aktuellen Zustand annimmt."
+        },
+        "pickableColumns": {
+          "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; key ist 'instanceId|sheetId|columnId'."
+        },
+        "targetColumns": {
+          "help": "Die bestehenden Spalten, die toWorksheet als Ziel annimmt, jeweils { key, name }; null als Ziel legt einen neuen Worksheet an."
+        },
+        "result": {
+          "help": "Kennwerte (Mittelwert, Streuung, Median, Schiefe, Wölbung, Minimum, Maximum) und Anderson-Darling-p der Original- und der transformierten Reihe, oder null ohne Ergebnis."
+        },
+        "errorMsg": {
+          "help": "Die Meldung, die das Modul bei einer fehlgeschlagenen Rechnung nennt, sonst leer."
+        }
+      },
       "name": "Datentransformation",
       "description": "Daten transformieren (Box-Cox, Johnson, Log, …) für Normalverteilung",
       "selectColumn": "Datenspalte",
