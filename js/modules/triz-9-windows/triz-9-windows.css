@@ -213,45 +213,10 @@
   background: var(--color-error);
 }
 
-/* ── Enlarged image overlay ──────────────────────────────── */
-.triz-9w__overlay {
-  position: fixed;
-  inset: 0;
-  background: rgb(0 0 0 / 78%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  cursor: zoom-out;
-  padding: var(--spacing-lg);
-}
-
-.triz-9w__overlay-img {
-  max-width: 90vw;
-  max-height: 90vh;
-  background: var(--color-bg-elevated);
-  border-radius: var(--border-radius);
-  cursor: default;
-  box-shadow: 0 12px 40px rgb(0 0 0 / 50%);
-}
-
-.triz-9w__overlay-close {
-  position: absolute;
-  top: var(--spacing-md);
-  right: var(--spacing-md);
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: 50%;
-  background: rgb(255 255 255 / 15%);
-  color: #fff;
-  font-size: 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.triz-9w__overlay-close:hover {
-  background: rgb(255 255 255 / 30%);
+/* ── Enlarged image (inside the dialog service's window) ─── */
+.triz-9w__enlarged img {
+  display: block;
+  max-width: 100%;
+  max-height: 70vh;
+  margin: 0 auto;
 }

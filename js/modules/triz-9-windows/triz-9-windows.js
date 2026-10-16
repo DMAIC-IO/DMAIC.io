@@ -15,6 +15,8 @@ export default createModule({
   data(module, _t) {
     return {
       enlarged: null,
+      /** @type {{close: Function}|null} open enlarged-image dialog */
+      _enlargedDialog: null,
 
       colPlaceholder(c) {
         return [_t('colPast'), _t('colPresent'), _t('colFuture')][c];
@@ -54,7 +56,8 @@ export default createModule({
 
       enlargedImageSrc() {
         const e = this.enlarged;
-        return e ? this.model.rows[e.r].cells[e.c].image : null;
+        // The holder renders all the time, so no image means an empty src.
+        return e ? this.model.rows[e.r].cells[e.c].image || '' : '';
       },
 
       uploadBtnStyle(cell) {
@@ -82,13 +85,24 @@ export default createModule({
         this.model.clearCellImage(r, c);
       },
 
+      /**
+       * Show one cell's image enlarged in a wide dialog (holder x-ref="enlargedView").
+       * @param {number} r  row index
+       * @param {number} c  column index
+       */
       enlarge(r, c) {
+        this._enlargedDialog?.close();
         this.enlarged = { r, c };
+        this._enlargedDialog = module._context.dialog.show({
+          title: _t('imageEnlargedAria'),
+          size: 'wide',
+          content: this.$refs.enlargedView,
+          onClose: () => { this.enlarged = null; this._enlargedDialog = null; },
+        });
       },
 
-      closeEnlarged(event) {
-        if (event.target.classList.contains('triz-9w__overlay-img')) return;
-        this.enlarged = null;
+      destroy() {
+        this._enlargedDialog?.close();
       },
     };
   },

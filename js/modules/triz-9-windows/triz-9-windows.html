@@ -78,13 +78,11 @@
       </template>
     </section>
 
-    <template x-if="enlarged"><div class="triz-9w__overlay"
-      data-action="close-enlarged" role="dialog"
-      :aria-label="t('imageEnlargedAria')"
-      @click="closeEnlarged($event)">
-      <img class="triz-9w__overlay-img" :src="enlargedImageSrc()" alt="">
-      <button class="triz-9w__overlay-close" type="button" data-action="close-enlarged"
-        :aria-label="t('close')">&times;</button>
-    </div></template>
+    <!-- Enlarged image: hidden here, lent to the dialog service by enlarge() -->
+    <div class="triz-9w__modal-forms" hidden>
+      <div class="triz-9w__enlarged" x-ref="enlargedView">
+        <img :src="enlargedImageSrc()" alt="">
+      </div>
+    </div>
   </div>
 </section>
