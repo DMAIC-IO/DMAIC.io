@@ -266,3 +266,98 @@ suite('createPage — load hook', () => {
     page.destroy();
   });
 });
+
+suite('createPage — dialog option', () => {
+  let container, tplEl, bus, page, opened, langCount;
+
+  /** Minimal dialog service: records show() calls, lends content like the real one. */
+  function fakeDialog() {
+    return {
+      show(opts) {
+        const entry = { opts, home: opts.content.parentNode, open: true };
+        opened.push(entry);
+        document.body.append(opts.content);
+        const close = () => {
+          if (!entry.open) return;
+          entry.open = false;
+          entry.home.append(opts.content);
+          opts.onClose?.();
+        };
+        return { close, setTitle: (t) => { entry.opts.title = t; } };
+      },
+    };
+  }
+
+  beforeEach(() => {
+    opened = [];
+    langCount = 0;
+    container = document.createElement('div');
+    container.id = 'cp-dlg-area';
+    container.style.display = 'none';
+    document.body.append(container);
+    tplEl = document.createElement('template');
+    tplEl.setAttribute('data-tpl', 'js/pages/cp-dlg/cp-dlg.html');
+    tplEl.innerHTML = '<div class="cp-dlg__root" x-data="cpDlg"><span x-text="t(\'title\')"></span></div>';
+    document.body.append(tplEl);
+    bus = makeBus();
+    page = createPage({
+      id: 'cp-dlg',
+      templateUrl: 'js/pages/cp-dlg/cp-dlg.html',
+      container: '#cp-dlg-area',
+      overlay: 'cp-dlg',
+      dialog: { titleKey: 'title' },
+      data() { langCount += 1; return {}; },
+    });
+  });
+
+  afterEach(() => { page.destroy(); container.remove(); tplEl.remove(); });
+
+  let lang = 'de';
+  const ctx = () => ({ i18n: { t: (k) => `${lang}:${k}`, tf: () => (k) => `${lang}:${k}` }, eventBus: bus, dialog: fakeDialog() });
+
+  test('show lends the template root to one dialog; container stays hidden', async () => {
+    lang = 'de';
+    await page.init(ctx());
+    await page.show();
+    assertEqual(opened.length, 1);
+    assertEqual(opened[0].opts.title, 'de:title');
+    assertEqual(opened[0].opts.content.classList.contains('cp-dlg__root'), true);
+    assertEqual(container.style.display, 'none');
+    assertEqual(page.isOpen(), true);
+  });
+
+  test('hide closes the dialog and the root returns to the container', async () => {
+    await page.init(ctx());
+    await page.show();
+    page.hide();
+    assertEqual(opened[0].open, false);
+    assertEqual(container.firstElementChild.classList.contains('cp-dlg__root'), true);
+    assertEqual(page.isOpen(), false);
+  });
+
+  test('dismissing the dialog hides the page once (one page:closed)', async () => {
+    let closed = 0;
+    bus.on('page:closed', () => { closed += 1; });
+    await page.init(ctx());
+    await page.show();
+    opened[0].opts.onClose();          // ✕ / Escape / overlay path
+    assertEqual(page.isOpen(), false);
+    assertEqual(closed, 1);
+  });
+
+  test('language change while open reopens with the new title, page stays open', async () => {
+    let closed = 0;
+    bus.on('page:closed', () => { closed += 1; });
+    lang = 'de';
+    await page.init(ctx());
+    await page.show();
+    lang = 'en';
+    bus.emit('language:changed', 'en');
+    assertEqual(opened.length, 2);
+    assertEqual(opened[0].open, false);
+    assertEqual(opened[1].open, true);
+    assertEqual(opened[1].opts.title, 'en:title');
+    assertEqual(page.isOpen(), true);
+    assertEqual(closed, 0);
+  });
+});
