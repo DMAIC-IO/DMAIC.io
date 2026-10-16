@@ -291,7 +291,9 @@
                 <div class="glm__predict-row">
                   <label x-text="term.label"></label>
                   <input type="text" class="field field--num" :data-ref="'pred-x-' + term.idx"
-                    inputmode="decimal" placeholder="0">
+                    inputmode="decimal" placeholder="0"
+                    :value="predictInputs[term.label] ?? ''"
+                    @input="setPredictInput(term.label, $event.target.value)">
                 </div>
               </template>
             </div>

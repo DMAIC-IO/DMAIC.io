@@ -14,8 +14,32 @@
  * `getState()` did, so the persistence shape stays byte-for-byte compatible.
  */
 
-import { autoDetect } from '../../engines/glm-engine.js';
+import { autoDetect, predictGLM } from '../../engines/glm-engine.js';
 import { resolveColumnRef, getColumnRawValues, coerceNumeric } from '../../core/worksheet-columns.js';
+
+/**
+ * Vorhersage für eine Zeile, Terme in der Reihenfolge des Fits.
+ * @param {object} fit ein konvergierter Fit (nicht verschlankt: braucht invXtWX für das Intervall)
+ * @param {Object<string, number|string>} values je Term (ab Index 1) ein Wert
+ * @returns {{ linear: number, response: number, ciLower: number|null, ciUpper: number|null }|null}
+ */
+export function predictFor(fit, values) {
+  if (!fit) return null;
+  const row = [1];
+  for (let j = 1; j < fit.terms.length; j++) {
+    const raw = values?.[fit.terms[j]];
+    const v = typeof raw === 'number' ? raw : parseFloat(raw);
+    if (!Number.isFinite(v)) return null;
+    row.push(v);
+  }
+  const pred = predictGLM(fit, [row]);
+  return {
+    linear: pred.linear[0],
+    response: pred.response[0],
+    ciLower: pred.ciValid ? pred.ciLower[0] : null,
+    ciUpper: pred.ciValid ? pred.ciUpper[0] : null,
+  };
+}
 
 const METHODS = ['auto', 'binomial', 'poisson', 'negbin'];
 const TABS = ['model', 'diagnostics', 'roc', 'prediction'];

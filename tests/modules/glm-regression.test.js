@@ -7,8 +7,9 @@
  * column read + row-filter (buildFitData), family resolution, and the
  * structuredClone-safety of the persisted shape.
  */
-import { suite, test, assertEqual } from '../test-utils.js';
-import { State } from '../../js/modules/glm-regression/glm-regression-model.js';
+import { suite, test, assertEqual, assertAlmostEqual } from '../test-utils.js';
+import { State, predictFor } from '../../js/modules/glm-regression/glm-regression-model.js';
+import { fitGLM, predictGLM } from '../../js/engines/glm-engine.js';
 
 // ── Minimal fake stateManager exposing one worksheet ────────────────
 function makeSM(columns) {
@@ -312,5 +313,39 @@ suite('GLM Regression Model — resolveFamily', () => {
     const f = s.resolveFamily([1, 2, 3, 4, 5, 2, 3]);
     assertEqual(f.familyName, 'poisson');
     assertEqual(f.auto, true);
+  });
+});
+
+// ── predictFor (pure prediction from state values) ──────────────────
+function poissonFit() {
+  const x1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const x2 = [2, 1, 4, 3, 6, 5, 8, 7, 10, 9];
+  const y = [1, 2, 2, 4, 5, 6, 9, 11, 14, 20];
+  const X = x1.map((v, i) => [1, v, x2[i]]);
+  return fitGLM(X, y, { familyName: 'poisson', link: 'log', terms: ['Intercept', 'A', 'B'], confLevel: 0.95 });
+}
+
+suite('glm-regression predictFor', () => {
+  test('predictFor rechnet wie predictGLM für eine Zeile', () => {
+    const fit = poissonFit();
+    const values = Object.fromEntries(fit.terms.slice(1).map(t => [t, 1]));
+    const out = predictFor(fit, values);
+    const ref = predictGLM(fit, [[1, ...fit.terms.slice(1).map(() => 1)]]);
+    assertAlmostEqual(out.response, ref.response[0], 1e-12);
+    assertAlmostEqual(out.linear, ref.linear[0], 1e-12);
+  });
+
+  test('predictFor akzeptiert Text-Eingaben', () => {
+    const fit = poissonFit();
+    const a = predictFor(fit, { A: '2.5', B: 3 });
+    const b = predictFor(fit, { A: 2.5, B: 3 });
+    assertAlmostEqual(a.response, b.response, 1e-12);
+  });
+
+  test('predictFor gibt null bei fehlendem oder nicht endlichem Wert', () => {
+    const fit = poissonFit();
+    assertEqual(predictFor(fit, {}), null);
+    assertEqual(predictFor(null, { A: 1, B: 1 }), null);
+    assertEqual(predictFor(fit, { A: 'x', B: 1 }), null);
   });
 });

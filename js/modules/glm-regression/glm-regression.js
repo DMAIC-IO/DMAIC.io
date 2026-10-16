@@ -20,9 +20,9 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State, keyToRef } from './glm-regression-model.js';
+import { State, keyToRef, predictFor } from './glm-regression-model.js';
 import {
-  fitGLM, buildGLMDesignMatrix, predictGLM,
+  fitGLM, buildGLMDesignMatrix,
   computeROC, classificationTable, hosmerLemeshow,
   overdispersionCheck, hatValues, cookDistance, computeGLMVIF,
   normalOrderStats,
@@ -99,6 +99,7 @@ const mod = createModule({
       _fit: null,           // raw engine fit result (for charts/prediction)
       predictResult: null,
       predictError: null,
+      predictInputs: {},    // term label -> typed text (transient)
       _detectKey: null,     // auto-detect reason key (transient)
       _detectVisible: false,
       _classCutoff: 0.5,    // current classification cutoff (mirrors model.cutoff)
@@ -391,6 +392,7 @@ const mod = createModule({
         this.model.result = this.model.slimResult(result);
         this.predictResult = null;
         this.predictError = null;
+        this.predictInputs = {};
 
         this.$nextTick(() => this.renderActiveChart());
       },
@@ -542,28 +544,27 @@ const mod = createModule({
       },
 
       // ── Prediction ───────────────────────────────────────────
+      /** @noagent DOM event handler (prediction inputs) */
+      setPredictInput(term, text) {
+        this.predictInputs = { ...this.predictInputs, [term]: text };
+      },
+
       runPrediction() {
         const r = this._fit;
         if (!r) return;
-        const row = [1];
-        for (let j = 1; j < r.terms.length; j++) {
-          const input = module._container.querySelector(`[data-ref="pred-x-${j}"]`);
-          const v = parseFloat(input?.value);
-          if (!isFinite(v)) { this.predictResult = null; this.predictError = _t('errorInvalidInput'); return; }
-          row.push(v);
-        }
-        const pred = predictGLM(r, [row]);
+        const pred = predictFor(r, this.predictInputs);
+        if (!pred) { this.predictResult = null; this.predictError = _t('errorInvalidInput'); return; }
         const isBinomial = r.family.name === 'binomial';
         const responseLabel = isBinomial ? _t('probability') : _t('expectedCount');
         const confPct = (r.confLevel * 100).toFixed(0);
         this.predictError = null;
         this.predictResult = {
-          linear: fmt(pred.linear[0], 6),
+          linear: fmt(pred.linear, 6),
           respLabel: responseLabel,
-          response: fmt(pred.response[0], 6),
+          response: fmt(pred.response, 6),
           ciLabel: `CI ${confPct}%:`,
-          ci: pred.ciValid ? `[${fmt(pred.ciLower[0], 6)}, ${fmt(pred.ciUpper[0], 6)}]` : EN_DASH,
-          ciHint: pred.ciValid ? null : _t('predictCiUnavailable'),
+          ci: pred.ciLower !== null ? `[${fmt(pred.ciLower, 6)}, ${fmt(pred.ciUpper, 6)}]` : EN_DASH,
+          ciHint: pred.ciLower !== null ? null : _t('predictCiUnavailable'),
         };
       },
 
