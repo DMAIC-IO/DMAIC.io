@@ -4,7 +4,7 @@
  * Die übrigen Prüfer sind über die Paritätsspecs der Module belegt; requireNumber
  * hat eine Zwischenform (Zahl oder Zahlentext), die hier direkt gesichert wird.
  */
-import { suite, test, assertEqual } from '../../test-utils.js';
+import { suite, test, assertEqual, assertThrows } from '../../test-utils.js';
 import { requireNumber } from '../../../js/core/agent/agent-argcheck.js';
 
 suite('agent-argcheck requireNumber', () => {
@@ -34,5 +34,23 @@ suite('agent-argcheck requireNumber', () => {
       try { requireNumber('value', bad); } catch (e) { msg = e.message; }
       assertEqual(msg.includes('allowed: any finite number'), true, `Wert ${String(bad)}: ${msg}`);
     }
+  });
+
+  test('prüft einen Bereich und nennt ihn', () => {
+    assertEqual(requireNumber('value', '0.8', { min: 0.5, max: 0.99 }), 0.8);
+    assertThrows(() => requireNumber('value', 0.3, { min: 0.5, max: 0.99 }),
+      /invalid value 0\.3; allowed: a number from 0\.5 to 0\.99/);
+    assertThrows(() => requireNumber('value', 51, { min: 1, max: 50, integer: true }),
+      /allowed: a whole number from 1 to 50/);
+    assertThrows(() => requireNumber('value', 2.5, { min: 1, max: 50, integer: true }),
+      /allowed: a whole number from 1 to 50/);
+    assertThrows(() => requireNumber('value', -1, { min: 0 }), /allowed: a number of at least 0/);
+    assertThrows(() => requireNumber('value', 9, { max: 5 }), /allowed: a number of at most 5/);
+    assertThrows(() => requireNumber('value', 1.5, { integer: true }), /allowed: a whole number$/);
+  });
+
+  test('ohne Bereich bleibt die Prüfung unverändert', () => {
+    assertEqual(requireNumber('mu0', '10'), 10);
+    assertThrows(() => requireNumber('mu0', 'zehn'), /allowed: any finite number/);
   });
 });

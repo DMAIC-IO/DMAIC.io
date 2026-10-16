@@ -22,7 +22,7 @@
  * | `requireIndex`   | `allowed:`  | `invalid idx 9; allowed: 0..3` |
  * | `requireArity`   | `expected:` | `missing argument "values" of setCells; expected: columnId, startRow, values` — ein optionaler Parameter steht darin in Klammerform (`[name]`) |
  * | `requireText`    | `allowed:`  | `invalid text 7; allowed: any string, "" clears it` |
- * | `requireNumber`  | `allowed:`  | `invalid mu0 "zehn"; allowed: any finite number` |
+ * | `requireNumber`  | `allowed:`  | `invalid mu0 "zehn"; allowed: any finite number`, mit Bereich `invalid value 0.3; allowed: a number from 0.5 to 0.99` |
  *
  * Ein neuer Prüfer nimmt eines dieser drei Listenwörter, oder er begründet
  * sein viertes hier.
@@ -188,14 +188,38 @@ const DECIMAL_NUMBER = /^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/;
  *
  * @param {string} name Name des Arguments (erscheint in der Meldung)
  * @param {any} value der übergebene Wert
- * @throws {Error} wenn `value` keine endliche Zahl und kein Zahlentext ist
+ * @param {{ min?: number, max?: number, integer?: boolean }} [bounds] optionaler
+ *   Bereich (beide Grenzen inklusive) und Ganzzahligkeit; die Meldung nennt ihn
+ * @throws {Error} wenn `value` keine endliche Zahl und kein Zahlentext ist oder
+ *   außerhalb von `bounds` liegt
  * @returns {number} der geprüfte Wert als Zahl
  */
-export function requireNumber(name, value) {
+export function requireNumber(name, value, bounds = {}) {
   const n = typeof value === 'number' ? value
     : (typeof value === 'string' && DECIMAL_NUMBER.test(value.trim()) ? Number(value) : NaN);
   if (!Number.isFinite(n)) {
     throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any finite number`);
   }
+  const { min, max, integer = false } = bounds;
+  const outside = (min !== undefined && n < min) || (max !== undefined && n > max)
+    || (integer && !Number.isInteger(n));
+  if (outside) {
+    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: ${describeBounds(min, max, integer)}`);
+  }
   return n;
+}
+
+/**
+ * Den zulässigen Bereich als Satzteil nach `allowed:` formulieren.
+ * @param {number|undefined} min
+ * @param {number|undefined} max
+ * @param {boolean} integer
+ * @returns {string}
+ */
+function describeBounds(min, max, integer) {
+  const kind = integer ? 'a whole number' : 'a number';
+  if (min !== undefined && max !== undefined) return `${kind} from ${min} to ${max}`;
+  if (min !== undefined) return `${kind} of at least ${min}`;
+  if (max !== undefined) return `${kind} of at most ${max}`;
+  return kind;
 }

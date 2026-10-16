@@ -14,14 +14,19 @@ import { discoverColumns, refToKey } from '../../ui/column-picker.js';
  * Die wählbaren Spalten EINES Slots als flache Liste für die Lesefläche.
  *
  * @param {object} stateManager der StateManager aus `module._context`
- * @param {{ types?: string[], minCount?: number, maxCount?: number }} [opts]
+ * @param {{ types?: string[], minCount?: number, maxCount?: number,
+ *   filter?: (col: object) => boolean }} [opts]
  *   dieselben Einschränkungen, die der Wähler DIESES Slots bekommt — der
- *   Spaltentyp heißt `'numeric'`, nicht `'number'`
+ *   Spaltentyp heißt `'numeric'`, nicht `'number'`; `filter` hat dieselbe
+ *   Bedeutung wie die Wähleroption (Prädikat über den Eintrag aus
+ *   `discoverColumns`, angewendet nach Typ und Anzahl)
  * @returns {{ key: string, name: string }[]} je Spalte ihr Schlüssel (die Form,
  *   die `refToKey` erzeugt) und ihr Anzeigename
  */
 export function pickableColumnList(stateManager, opts = {}) {
-  return discoverColumns(stateManager, opts).map(col => ({
+  const cols = discoverColumns(stateManager, opts);
+  const kept = typeof opts.filter === 'function' ? cols.filter(opts.filter) : cols;
+  return kept.map(col => ({
     key: refToKey(col),
     name: col.columnName || col.shortName || refToKey(col),
   }));
