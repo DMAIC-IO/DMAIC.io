@@ -390,13 +390,18 @@ export default createModule({
         const root = this.$el.querySelector('.vct') || this.$el;
         if (!root) return;
         const s = this.model.styles;
+        // The node form is lent to the dialog service and leaves .vct while
+        // open, so it carries its own copy of the colour properties.
+        const targets = [root, this.$refs.nodeForm].filter(Boolean);
         for (const [key, prop] of Object.entries(COLOR_PROP)) {
           const c = parseRGBA(s.colors[key]);
-          root.style.setProperty(prop, rgbaStr({ ...c, a: 1 }));
-          root.style.setProperty(`${prop}-bg`, rgbaStr({ ...c, a: 0.06 }));
-          root.style.setProperty(`${prop}-border`, rgbaStr({ ...c, a: 0.20 }));
-          root.style.setProperty(`${prop}-badge-bg`, rgbaStr({ ...c, a: 0.12 }));
-          root.style.setProperty(`${prop}-line`, rgbaStr({ ...c, a: 0.25 }));
+          for (const el of targets) {
+            el.style.setProperty(prop, rgbaStr({ ...c, a: 1 }));
+            el.style.setProperty(`${prop}-bg`, rgbaStr({ ...c, a: 0.06 }));
+            el.style.setProperty(`${prop}-border`, rgbaStr({ ...c, a: 0.20 }));
+            el.style.setProperty(`${prop}-badge-bg`, rgbaStr({ ...c, a: 0.12 }));
+            el.style.setProperty(`${prop}-line`, rgbaStr({ ...c, a: 0.25 }));
+          }
         }
         root.querySelectorAll('.vct__node').forEach((node) => {
           node.style.borderWidth = `${s.borderWidth}px`;
