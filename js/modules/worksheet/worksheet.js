@@ -529,6 +529,7 @@ const mod = createModule({
       canSuggest: false,
       exportOpen: false,
       feOpen: false,
+      roleDraft: [],
       renamingId: null,
       renameValue: '',
       // Reactive nonce — bumped on grid render/selection so the status-bar
@@ -833,114 +834,36 @@ const mod = createModule({
         return this._openRoleConfirmPopout(unconfirmed);
       },
 
-      /** Imperative role-confirmation popout (POM reads this exact markup). */
-      _openRoleConfirmPopout(columns) {
-        const t = _t;
+      /** Role confirmation before chart suggestions. Resolves true when confirmed. */
+      async _openRoleConfirmPopout(columns) {
         const ctx = module._context;
-        return new Promise((resolve) => {
-          const overlay = document.createElement('div');
-          overlay.className = 'dmike-chart-popout-overlay';
-
-          const win = document.createElement('div');
-          win.className = 'dmike-chart-popout dmike-chart-popout--compact worksheet-role-confirm';
-          win.style.width = '480px';
-          win.style.height = 'auto';
-          win.style.maxHeight = '80vh';
-          win.style.left = 'calc(50% - 240px)';
-          win.style.top = '120px';
-
-          const titleBar = document.createElement('div');
-          titleBar.className = 'dmike-chart-popout-titlebar';
-          const titleText = document.createElement('span');
-          titleText.textContent = t('confirmRolesTitle');
-          const closeBtn = document.createElement('button');
-          closeBtn.className = 'dmike-chart-popout-close';
-          closeBtn.replaceChildren(icon('action.close'));
-          titleBar.append(titleText, closeBtn);
-
-          const body = document.createElement('div');
-          body.className = 'dmike-chart-popout-body dmike-popout-body--column';
-
-          const message = document.createElement('div');
-          message.className = 'dmike-popout-message';
-          message.textContent = t('confirmRolesIntro');
-          body.appendChild(message);
-
-          const list = document.createElement('div');
-          list.className = 'worksheet-role-confirm__list';
-          const roleLabels = {
-            continuous: ctx.i18n.t('ui.datagrid.roleContinuous'),
-            categorical: ctx.i18n.t('ui.datagrid.roleCategorical'),
-            ordinal: ctx.i18n.t('ui.datagrid.roleOrdinal'),
-            date: ctx.i18n.t('ui.datagrid.roleDate'),
-            identifier: ctx.i18n.t('ui.datagrid.roleIdentifier'),
-            freeText: ctx.i18n.t('ui.datagrid.roleFreeText'),
-          };
-          const rowSelects = [];
-          for (const col of columns) {
-            const row = document.createElement('div');
-            row.className = 'worksheet-role-confirm__row';
-
-            const nameEl = document.createElement('div');
-            nameEl.className = 'worksheet-role-confirm__name';
-            nameEl.textContent = col.name || col.shortName || '?';
-            row.appendChild(nameEl);
-
-            const typeEl = document.createElement('div');
-            typeEl.className = 'worksheet-role-confirm__type';
-            typeEl.textContent = col.type || '';
-            row.appendChild(typeEl);
-
-            const select = document.createElement('select');
-            select.className = 'worksheet-role-confirm__select';
-            const valid = validRolesForType(col.type);
-            for (const role of valid) {
-              const opt = document.createElement('option');
-              opt.value = role;
-              opt.textContent = roleLabels[role] || role;
-              if (role === col.role) opt.selected = true;
-              select.appendChild(opt);
+        const label = (role) => ctx.i18n.t(`ui.datagrid.role${role.charAt(0).toUpperCase()}${role.slice(1)}`);
+        this.roleDraft = columns.map((col) => ({
+          colId: col.id,
+          name: col.name || col.shortName || '?',
+          type: col.type || '',
+          role: col.role,
+          options: validRolesForType(col.type).map((value) => ({ value, label: label(value) })),
+        }));
+        await this.$nextTick();
+        const result = await ctx.dialog.form({
+          title: _t('confirmRolesTitle'),
+          content: this.$refs.roleConfirmForm,
+          confirmLabel: _t('confirmRolesConfirm'),
+          cancelLabel: ctx.i18n.t('common.cancel'),
+          onConfirm: () => {
+            for (const { colId, role } of this.roleDraft) {
+              try { this._grid.setColumnRole(colId, role); } catch { /* invalid role for type: keep */ }
             }
-            row.appendChild(select);
-            list.appendChild(row);
-            rowSelects.push({ colId: col.id, select });
-          }
-          body.appendChild(list);
-
-          const footer = document.createElement('div');
-          footer.className = 'dmike-popout-footer';
-          const cancelBtn = document.createElement('button');
-          cancelBtn.className = 'btn btn--secondary';
-          cancelBtn.textContent = ctx.i18n.t('common.cancel');
-          const confirmBtn = document.createElement('button');
-          confirmBtn.className = 'btn btn--primary';
-          confirmBtn.textContent = t('confirmRolesConfirm');
-          footer.append(cancelBtn, confirmBtn);
-          body.appendChild(footer);
-
-          win.append(titleBar, body);
-          overlay.appendChild(win);
-          document.body.appendChild(overlay);
-
-          const close = (result) => {
-            window.removeEventListener('keydown', onKey);
-            overlay.remove();
-            resolve(result);
-          };
-          const onKey = (e) => { if (e.key === 'Escape') close(false); };
-          window.addEventListener('keydown', onKey);
-          closeBtn.addEventListener('click', () => close(false));
-          cancelBtn.addEventListener('click', () => close(false));
-          overlay.addEventListener('click', (e) => { if (e.target === overlay) close(false); });
-          confirmBtn.addEventListener('click', () => {
-            for (const { colId, select } of rowSelects) {
-              try { this._grid.setColumnRole(colId, select.value); } catch { /* ignore */ }
-            }
-            close(true);
-          });
-
-          setTimeout(() => confirmBtn.focus(), 0);
+          },
         });
+        this.roleDraft = [];
+        return result === true;
+      },
+
+      /** Keeps the role-confirm draft in step with its select (options differ per row, so no x-model). */
+      onRoleDraftChange(event, row) {
+        row.role = event.target.value;
       },
 
       // ── Lifecycle ────────────────────────────────────────────

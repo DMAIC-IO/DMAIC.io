@@ -91,6 +91,26 @@
     <div data-ref="fe-body"></div>
   </div>
 
+  <!-- Role confirmation: hidden here, lent to the dialog service -->
+  <div class="worksheet__modal-forms" hidden>
+    <div class="worksheet-role-confirm" x-ref="roleConfirmForm">
+      <div class="dmike-popout-message" x-text="t('confirmRolesIntro')"></div>
+      <div class="worksheet-role-confirm__list">
+        <template x-for="row in roleDraft" :key="row.colId">
+          <div class="worksheet-role-confirm__row">
+            <div class="worksheet-role-confirm__name" x-text="row.name"></div>
+            <div class="worksheet-role-confirm__type" x-text="row.type"></div>
+            <select class="worksheet-role-confirm__select" @change="onRoleDraftChange($event, row)">
+              <template x-for="opt in row.options" :key="opt.value">
+                <option :value="opt.value" x-text="opt.label" :selected="opt.value === row.role"></option>
+              </template>
+            </select>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+
   <!-- Hidden file input -->
   <input type="file" accept=".csv,.tsv,.xlsx,.xls" style="display:none" data-ref="file-input" @change="onFileChange($event)">
 
