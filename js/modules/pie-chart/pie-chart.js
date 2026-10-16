@@ -20,6 +20,11 @@
  * The chart-editor the user edits (`.dmike-chart-editor`) is built INSIDE the
  * pie chart type and owned by the chart instance — the module mounts no separate
  * editor widget, mirroring the legacy behavior (it only imports `esc`).
+ *
+ * @agent  Steuerbar über das Viewmodel: Wert- und Beschriftungsspalte
+ *   (setColumn). Gelesen wird über read() mit erklärter Lesefläche
+ *   (AgentRead) — die zwei Spaltenbezüge und die wählbaren Spalten je Slot.
+ *   Der Agent bekommt Bezüge, kein Diagramm.
  */
 
 import { createModule } from '../../core/template-module.js';
@@ -29,9 +34,39 @@ import { formatNum } from '../../core/chart/chart-core.js';
 import {
   DatasetPicker,
   getColumnValues,
+  refToKey,
+  keyToRef,
 } from '../../ui/dataset-picker.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { datasetSlotColumns } from '../../core/agent/agent-datasets.js';
 import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
 import { chartModuleLifecycle } from '../../core/chart/chart-module-base.js';
+
+/** Die Slots des Pickers, ohne Beschriftung — eine Quelle für Picker und Lesefläche. */
+const DATASET_SLOTS = [
+  { key: 'value', minCount: 1, required: true },
+  { key: 'label', minCount: 1, group: true },
+];
+
+/** Die Slot-Schlüssel in der Reihenfolge der Oberfläche. */
+const COLUMN_SLOTS = ['value', 'label'];
+
+/**
+ * Die Agenten-Lesefläche des Kreisdiagramms.
+ *
+ * Die zwei Spaltenbezüge sind der Zustand, den ein Agent setzen kann; dazu
+ * die zwei Mengen, gegen die `setColumn` prüft. Nicht darin: `chartConfig`
+ * (Darstellung, nur über den Diagramm-Editor), das Diagrammbild und
+ * `exampleWorksheetId`. Die Segmenttabelle steht als Zahlen in `stats` (E8).
+ *
+ * @typedef {object} AgentRead
+ * @property {object|null} valueRef  the value column (slot `value`), `{ instanceId, sheetId, columnId }`, or null
+ * @property {object|null} labelRef  the label column (slot `label`), or null — without it slices count distinct values
+ * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
+ * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
+ * @property {object|null} stats  the slice table: `{ slices: [{ name, value, share }], total }` (share 0…1), or null while nothing is plotted
+ */
 
 const mod = createModule({
   config: {
@@ -54,21 +89,17 @@ const mod = createModule({
 
           const ctx = module._context;
           const i18n = ctx.i18n;
+          const SLOT_LABELS = {
+            value: { label: 'V', title: i18n.t('ui.datasetPicker.slotV') },
+            label: { label: 'G', title: i18n.t('ui.datasetPicker.slotG') },
+          };
           this._picker = new DatasetPicker(wrap, ctx, {
-            slots: [
-              { key: 'value', label: 'V', title: i18n.t('ui.datasetPicker.slotV'), minCount: 1, required: true },
-              { key: 'label', label: 'G', title: i18n.t('ui.datasetPicker.slotG'), minCount: 1, group: true },
-            ],
-            onChange: (datasets) => {
-              const ds = datasets[0] || {};
-              this.model.valueRef = ds.value || null;
-              this.model.labelRef = ds.label || null;
-              this._plot();
-            },
+            slots: DATASET_SLOTS.map(s => ({ ...s, ...SLOT_LABELS[s.key] })),
+            onChange: (rows) => this._applyDatasets(rows),
           });
 
           if (this.model.labelRef || this.model.valueRef) {
-            this._picker.value = [{ label: this.model.labelRef, value: this.model.valueRef }];
+            this._picker.value = this._datasetRows();
           }
         },
         themeMode: 'render',
@@ -79,6 +110,73 @@ const mod = createModule({
           }
         },
       }),
+
+      // ── Agent surface ─────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Spaltenbezüge, wählbare Mengen und Segmentkennzahlen
+       */
+      read(options) {
+        return readAgentState('pie-chart', {
+          valueRef: this.model.valueRef,
+          labelRef: this.model.labelRef,
+          activeColumnSlots: this.activeColumnSlots(),
+          pickableColumns: this.pickableColumns(),
+          stats: this._agentStats(),
+        }, options);
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() { return [...COLUMN_SLOTS]; },
+
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() { return datasetSlotColumns(module._context.stateManager, DATASET_SLOTS); },
+
+      /**
+       * Eine Spalte einem Slot zuweisen; der andere Slot bleibt.
+       * @agent
+       * @param {'value'|'label'} slot der Slot
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
+       *   der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren
+       * @returns {void}
+       * @throws {Error} wenn `slot` unbekannt ist oder die Spalte nicht wählbar
+       */
+      setColumn(slot, ref) {
+        requireEnum('slot', slot, this.activeColumnSlots());
+        const row = this._datasetRows()[0];
+        if (ref == null) {
+          row[slot] = null;
+        } else {
+          const keys = this.pickableColumns()[slot].map(c => c.key);
+          requireKnownId('ref', refToKey(ref), keys);
+          // Normalisierte Form: fremde Eigenschaften des Agentenobjekts bleiben draußen.
+          row[slot] = keyToRef(refToKey(ref));
+        }
+        this._applyDatasets([row]);
+        if (this._picker) this._picker.value = [row];
+      },
+
+      /** Der Körper des Picker-`onChange`: Zeilen ins Model, neu zeichnen. Picker und Aktion rufen ihn. */
+      _applyDatasets(rows) {
+        const ds = rows[0] || {};
+        this.model.valueRef = ds.value || null;
+        this.model.labelRef = ds.label || null;
+        this._plot();
+      },
+
+      /** Die aktuelle Zeile in Picker-Form, aus dem Model. */
+      _datasetRows() {
+        return [{ value: this.model.valueRef, label: this.model.labelRef }];
+      },
+
+      /** Die Kennzahlen für read() — beim Lesen gerechnet, dieselbe Quelle wie die Tabelle (E8). */
+      _agentStats() {
+        const slices = this.model.buildSlices((ref) => this._getColumnValues(ref));
+        return slices.length ? State.sliceStats(slices) : null;
+      },
 
       // ── Transient view state (not persisted) ──────────────────
       /** Last computed slices, for the stats re-render. */
@@ -136,17 +234,16 @@ const mod = createModule({
       // ── Stats table (declarative — structured reactive data) ──
 
       _renderStats() {
-        let total = 0;
-        for (const s of this._slices) total += Math.max(0, s.value);
+        const { slices, total } = State.sliceStats(this._slices);
 
         // Build structured rows with RAW text — x-text escapes structurally.
         // Number formatting matches the legacy string output (formatNum /
         // toFixed(1) + '%'). The color swatch is a structured 'color' field.
-        this.statsRows = this._slices.map((s) => ({
+        this.statsRows = this._slices.map((s, i) => ({
           color: s.color,
           name: s.name,
           value: formatNum(s.value),
-          pct: `${total > 0 ? ((s.value / total) * 100).toFixed(1) : '0.0'  }%`,
+          pct: `${(slices[i].share * 100).toFixed(1)}%`,
         }));
         this.statsTotal = formatNum(total);
         this.statsShow = true;

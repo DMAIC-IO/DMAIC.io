@@ -4831,6 +4831,24 @@
     "pie-chart": {
       "name": "Pie Chart",
       "description": "Pie/donut chart from worksheet columns or manual data",
+      "whenToUse": "Show how a total splits into parts: one slice per distinct value, or per label with the values summed.",
+      "actions": {
+        "read": { "help": "Read the chosen value and label columns and the columns each slot accepts, and the figures shown next to the chart." },
+        "setColumn": {
+          "help": "Assign a column to a slot. The other slot keeps its column.",
+          "params": {
+            "slot": "'value' — the values (required); 'label' — optional labels; with a label column the values are summed per label, without one each distinct value becomes a slice.",
+            "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null to clear the slot."
+          }
+        }
+      },
+      "fields": {
+        "valueRef": { "help": "The value column (slot 'value'), or null." },
+        "labelRef": { "help": "The label column (slot 'label'), or null." },
+        "activeColumnSlots": { "help": "The slots setColumn accepts: value, label." },
+        "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
+        "stats": { "help": "the slice table: { slices: [{ name, value, share }], total }; share is a fraction 0…1; null while nothing is plotted." }
+      },
       "sectionData": "Data Source",
       "tooltipValue": "Value",
       "tooltipShare": "Share",

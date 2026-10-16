@@ -4835,6 +4835,24 @@
     "pie-chart": {
       "name": "Kuchendiagramm",
       "description": "Kreisdiagramm (Pie/Donut) aus Worksheet-Spalten oder manuellen Daten",
+      "whenToUse": "Zeigen, wie sich eine Summe auf Anteile verteilt: ein Segment je unterschiedlichem Wert oder je Beschriftung mit summierten Werten.",
+      "actions": {
+        "read": { "help": "Die gewählte Wert- und Beschriftungsspalte lesen, die Spalten, die jeder Slot annimmt, und die Kennzahlen neben dem Diagramm." },
+        "setColumn": {
+          "help": "Eine Spalte einem Slot zuweisen. Der andere Slot behält seine Spalte.",
+          "params": {
+            "slot": "'value' — die Werte (Pflicht); 'label' — optionale Beschriftungen; mit Beschriftungsspalte werden die Werte je Beschriftung summiert, ohne sie wird jeder unterschiedliche Wert ein Segment.",
+            "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null zum Leeren."
+          }
+        }
+      },
+      "fields": {
+        "valueRef": { "help": "Die Wertespalte (Slot 'value'), oder null." },
+        "labelRef": { "help": "Die Beschriftungsspalte (Slot 'label'), oder null." },
+        "activeColumnSlots": { "help": "Die Slots, die setColumn annimmt: value, label." },
+        "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
+        "stats": { "help": "die Segmenttabelle: { slices: [{ name, value, share }], total }; share ist ein Anteil 0…1; null, solange nichts gezeichnet ist." }
+      },
       "sectionData": "Datenquelle",
       "tooltipValue": "Wert",
       "tooltipShare": "Anteil",

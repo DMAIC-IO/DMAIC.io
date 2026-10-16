@@ -131,6 +131,20 @@ export class State {
     return slices;
   }
 
+  /**
+   * Summe und Anteile der Segmente — dieselben Zahlen, die die Tabelle zeigt.
+   * @param {{ name: string, value: number }[]} slices aus `buildSlices`
+   * @returns {{ slices: { name: string, value: number, share: number }[], total: number }}
+   */
+  static sliceStats(slices) {
+    let total = 0;
+    for (const s of slices) total += Math.max(0, s.value);
+    return {
+      slices: slices.map(s => ({ name: s.name, value: s.value, share: total > 0 ? s.value / total : 0 })),
+      total,
+    };
+  }
+
   toJSON() {
     return {
       valueRef: this.valueRef ? { ...this.valueRef } : null,
