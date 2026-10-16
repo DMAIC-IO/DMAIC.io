@@ -7469,36 +7469,108 @@ export const AGENT_REGISTRY = {
     }
   },
   "rare-event-chart": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:fmt",
-      "unmarked_method:signalsClass",
-      "unmarked_method:chartTitle",
-      "unmarked_method:isStable",
-      "unmarked_method:badgeClass",
-      "unmarked_method:badgeText",
-      "unmarked_method:badgeIcon",
-      "unmarked_method:chartTypeChanged",
-      "unreachable_write:chartTypeId"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields: ['points']` liefert die Punkte vollständig, `rows` schneidet sie zu"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'value'",
+            "optional": false,
+            "help": "der Slot; dieses Modul führt nur `value`"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "Promise<void>",
+        "help": "Die Ereignisreihe wählen und neu rechnen."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'chartTypeId'",
+            "optional": false,
+            "help": "welche Option"
+          },
+          {
+            "name": "value",
+            "type": "'g'|'t'",
+            "optional": false,
+            "help": "der Kartentyp"
+          }
+        ],
+        "returns": "Promise<void>",
+        "help": "Eine Analyseoption setzen und neu rechnen."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "Promise<void>",
+        "help": "Mit dem aktuellen Kartentyp und den Spaltenwerten neu rechnen."
+      }
+    },
     "fields": {
       "chartTypeId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string",
+        "help": "`'g'` (opportunities between events) or `'t'` (time between events)",
+        "bulk": false,
+        "derived": true
       },
       "columnRef": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the event column (slot `value`), `{ instanceId, sheetId, columnId }`, or null",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "`{ chartType, n, cl, ucl, lcl, sigma, transformed, plotted: { cl, ucl, lcl, sigma }, signals }` — cl/ucl/lcl on the original scale, `plotted` on the plotted scale (transformed for the t chart), `signals` the indices of points outside the limits; null with fewer than 2 usable values",
+        "bulk": false,
+        "derived": true
+      },
+      "points": {
+        "type": "object[]",
+        "help": "one row per plotted point: `{ value, signal }`, value on the plotted scale, null where the t chart drops a non-positive value",
+        "bulk": true,
+        "bulkKind": "table",
+        "derived": true
       }
     }
   },
@@ -11159,4 +11231,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":61};
+export const AGENT_COVERAGE = {"total":76,"available":62};

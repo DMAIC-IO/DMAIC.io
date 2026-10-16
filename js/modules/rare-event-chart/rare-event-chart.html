@@ -4,9 +4,10 @@
     <div class="dmike-split__section-title" x-text="t('sectionChartType')"></div>
     <div class="field-group">
       <label x-text="t('chartType')"></label>
-      <select class="field" data-ref="chart-type" x-model="model.chartTypeId" @change="chartTypeChanged()">
-        <option value="g" x-text="t('type_g')"></option>
-        <option value="t" x-text="t('type_t')"></option>
+      <select class="field" data-ref="chart-type" :value="model.chartTypeId" @change="setParam('chartTypeId', $event.target.value)">
+        <template x-for="o in chartTypeOptions()" :key="o.value">
+          <option :value="o.value" :selected="o.value === model.chartTypeId" x-text="o.label"></option>
+        </template>
       </select>
       <span class="rec__hint" x-text="t('typeHint_' + model.chartTypeId)"></span>
     </div>

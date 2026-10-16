@@ -7969,7 +7969,53 @@
       "statCL": "CL",
       "statSignals": "Signale",
       "statOf": "von {total} Datenpunkten",
-      "originalScaleNote": "KPIs auf Original-Skala (rück-transformiert); Karte auf transformierter Skala."
+      "originalScaleNote": "KPIs auf Original-Skala (rück-transformiert); Karte auf transformierter Skala.",
+      "whenToUse": "Seltene Ereignisse überwachen: die g-Karte zählt die Gelegenheiten zwischen Ereignissen, die t-Karte die Zeit zwischen Ereignissen.",
+      "actions": {
+        "read": {
+          "help": "Kartentyp, gewählte Spalte, Grenzen, Signalpunkte und die gezeichneten Werte lesen."
+        },
+        "setColumn": {
+          "help": "Die Spalte mit Anzahlen oder Zeiten zwischen Ereignissen wählen und neu rechnen.",
+          "params": {
+            "slot": "'value' — Anzahlen (g-Karte) oder Zeiten (t-Karte) zwischen Ereignissen (Pflicht, mindestens 2 verwertbare Werte).",
+            "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns.value, oder null zum Leeren."
+          }
+        },
+        "setParam": {
+          "help": "Eine Analyseoption setzen und neu rechnen.",
+          "params": {
+            "key": "'chartTypeId' — welche Karte gezeichnet wird.",
+            "value": "Für chartTypeId 'g' (Gelegenheiten zwischen Ereignissen) oder 't' (Zeit zwischen Ereignissen; nimmt nur positive Werte und zeichnet sie transformiert)."
+          }
+        },
+        "runAnalysis": {
+          "help": "Mit den aktuellen Spaltenwerten neu rechnen, etwa nachdem sich die Daten geändert haben."
+        }
+      },
+      "fields": {
+        "chartTypeId": {
+          "help": "'g' oder 't'."
+        },
+        "columnRef": {
+          "help": "Die Spalte mit Anzahlen oder Zeiten zwischen Ereignissen (Slot 'value'), oder null."
+        },
+        "activeColumnSlots": {
+          "help": "Die Slots, die setColumn annimmt: value."
+        },
+        "activeParams": {
+          "help": "Die Schlüssel, die setParam annimmt: chartTypeId."
+        },
+        "pickableColumns": {
+          "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId."
+        },
+        "result": {
+          "help": "{ chartType, n, cl, ucl, lcl, sigma, transformed, plotted: { cl, ucl, lcl, sigma }, signals }; cl/ucl/lcl auf der Originalskala, plotted auf der gezeichneten Skala, signals die Indizes der Punkte außerhalb der Grenzen; null bei weniger als 2 verwertbaren Werten."
+        },
+        "points": {
+          "help": "Je gezeichnetem Punkt eine Zeile: { value, signal }; value auf der gezeichneten Skala, null, wo die t-Karte einen nicht positiven Wert auslässt. read({ fields: ['points'] }) liefert sie vollständig."
+        }
+      }
     },
     "multivariate-control-chart": {
       "name": "Multivariate Regelkarte (Hotelling T²)",

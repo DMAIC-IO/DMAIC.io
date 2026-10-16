@@ -17,7 +17,8 @@
  * it defaults safely to null on old projects).
  */
 
-const TYPES = ['g', 't'];
+/** Die Kartentypen: 'g' (Gelegenheiten zwischen Ereignissen), 't' (Zeit zwischen Ereignissen). */
+export const TYPES = ['g', 't'];
 
 /**
  * Restore a worksheet column reference from persisted JSON, or null.

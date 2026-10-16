@@ -7965,7 +7965,53 @@
       "statCL": "CL",
       "statSignals": "Signals",
       "statOf": "of {total} data points",
-      "originalScaleNote": "KPIs on the original scale (back-transformed); chart on the transformed scale."
+      "originalScaleNote": "KPIs on the original scale (back-transformed); chart on the transformed scale.",
+      "whenToUse": "Monitor rare events: the g chart counts opportunities between events, the t chart the time between events.",
+      "actions": {
+        "read": {
+          "help": "Read the chart type, the chosen column, the limits, the signal points and the plotted values."
+        },
+        "setColumn": {
+          "help": "Choose the column of counts or times between events and recompute.",
+          "params": {
+            "slot": "'value' — counts (g chart) or times (t chart) between events (required, at least 2 usable values).",
+            "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns.value, or null to clear it."
+          }
+        },
+        "setParam": {
+          "help": "Set an analysis option and recompute.",
+          "params": {
+            "key": "'chartTypeId' — which chart to draw.",
+            "value": "For chartTypeId 'g' (opportunities between events) or 't' (time between events; uses only positive values and plots them transformed)."
+          }
+        },
+        "runAnalysis": {
+          "help": "Recompute with the current column values, for example after the data changed."
+        }
+      },
+      "fields": {
+        "chartTypeId": {
+          "help": "'g' or 't'."
+        },
+        "columnRef": {
+          "help": "The column of counts or times between events (slot 'value'), or null."
+        },
+        "activeColumnSlots": {
+          "help": "The slots setColumn accepts: value."
+        },
+        "activeParams": {
+          "help": "The keys setParam accepts: chartTypeId."
+        },
+        "pickableColumns": {
+          "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId."
+        },
+        "result": {
+          "help": "{ chartType, n, cl, ucl, lcl, sigma, transformed, plotted: { cl, ucl, lcl, sigma }, signals }; cl/ucl/lcl on the original scale, plotted on the plotted scale, signals the indices of points outside the limits; null with fewer than 2 usable values."
+        },
+        "points": {
+          "help": "One row per plotted point: { value, signal }; value on the plotted scale, null where the t chart drops a non-positive value. read({ fields: ['points'] }) returns them in full."
+        }
+      }
     },
     "multivariate-control-chart": {
       "name": "Multivariate Control Chart (Hotelling T²)",
