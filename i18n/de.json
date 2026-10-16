@@ -6177,7 +6177,7 @@
           "help": "Zieht einen neuen Zufalls-Startwert zwischen 1 und 2147483647."
         },
         "compute": {
-          "help": "Rechnet das Resampling und kehrt nach dem letzten Durchlauf zurück; result enthält danach die neue Zusammenfassung. Es rechnet nicht, solange ein Lauf läuft oder validationMsg einen Grund nennt (ungültige Parameter, fehlende oder zu kurze Spalten, weniger als 3 Gruppen im Modus 'k'); result bleibt dann, wie es war, und es gibt keinen Fehler. Ein fehlgeschlagener Lauf lässt result, wie es war, und nennt den Grund in errorMsg."
+          "help": "Rechnet das Resampling und kehrt nach dem letzten Durchlauf zurück; result enthält danach die neue Zusammenfassung. Es rechnet nicht, solange ein Lauf läuft oder validationMsg einen Grund nennt (ungültige Parameter, fehlende oder zu kurze Spalten, weniger als 3 Gruppen im Modus 'k', das Verhältnis mit Werten von null oder darunter); result bleibt dann, wie es war, und es gibt keinen Fehler. Ein fehlgeschlagener Lauf lässt result, wie es war, und nennt den Grund in errorMsg."
         },
         "cancel": {
           "help": "Bricht einen laufenden Lauf ab; result bleibt, wie es war, und errorMsg bleibt leer. Ohne Lauf geschieht nichts."
@@ -6245,7 +6245,7 @@
           "help": "true, wenn ein Ergebnis vorliegt, das aus anderen Eingaben als den jetzigen berechnet wurde."
         },
         "validationMsg": {
-          "help": "Der Grund, warum compute nicht rechnen würde (ungültiger Parameter, fehlende oder zu kurze Spalte, weniger als 3 Gruppen im Modus 'k'), oder ein leerer Text. Ein laufender Lauf setzt ihn nicht."
+          "help": "Der Grund, warum compute nicht rechnen würde (ungültiger Parameter, fehlende oder zu kurze Spalte, weniger als 3 Gruppen im Modus 'k', das Verhältnis mit Werten von null oder darunter), oder ein leerer Text. Ein laufender Lauf setzt ihn nicht."
         },
         "errorMsg": {
           "help": "Der Grund, warum der letzte Lauf scheiterte, oder ein leerer Text; ein neuer und ein abgebrochener Lauf lassen ihn leer."

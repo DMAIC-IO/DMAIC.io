@@ -6812,7 +6812,7 @@ export const AGENT_REGISTRY = {
       "compute": {
         "params": [],
         "returns": "Promise<void>",
-        "help": "Rechnet auf Anforderung; kehrt nach dem letzten Durchlauf zurück. Bei ungültigen oder unvollständigen Eingaben oder während eines laufenden Laufs rechnet es nicht — validationMsg nennt den Grund, result bleibt, wie es war. Ein Abbruch lässt result ebenfalls unverändert."
+        "help": "Rechnet auf Anforderung; kehrt nach dem letzten Durchlauf zurück. Bei ungültigen oder unvollständigen Eingaben rechnet es nicht — validationMsg nennt den Grund, result bleibt, wie es war. Läuft schon ein Lauf (read().running ist true), kehrt es ebenfalls ohne Rechnen zurück; validationMsg ist dann leer. Ein Abbruch lässt result unverändert."
       },
       "cancel": {
         "params": [],

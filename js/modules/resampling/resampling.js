@@ -213,13 +213,12 @@ const mod = createModule({
 
       /** @noagent derived set; der Agent liest sie über read().activeParams */
       activeParams() {
-        const id = this.model.statisticId;
         const active = {
-          'statParams.trim': id === 'trimmedMean',
-          'statParams.p': id === 'quantile',
-          'statParams.lsl': id === 'ppk',
-          'statParams.usl': id === 'ppk',
-          contrast: this.model.mode === 'two',
+          'statParams.trim': this.showTrim(),
+          'statParams.p': this.showQuantileP(),
+          'statParams.lsl': this.showLimits(),
+          'statParams.usl': this.showLimits(),
+          contrast: this.showContrast(),
           direction: this.showDirection(),
           target: this.showTarget(),
         };
@@ -352,8 +351,6 @@ const mod = createModule({
       /** @noagent view transform */
       isMode(mode) { return this.model.mode === mode; },
       /** @noagent view transform */
-      isAllowed(id) { return this.model.allowedStatistics().includes(id); },
-      /** @noagent view transform */
       showTrim() { return this.model.statisticId === 'trimmedMean'; },
       /** @noagent view transform */
       showQuantileP() { return this.model.statisticId === 'quantile'; },
@@ -410,9 +407,10 @@ const mod = createModule({
 
       /**
        * Rechnet auf Anforderung; kehrt nach dem letzten Durchlauf zurück. Bei
-       * ungültigen oder unvollständigen Eingaben oder während eines laufenden
-       * Laufs rechnet es nicht — validationMsg nennt den Grund, result bleibt,
-       * wie es war. Ein Abbruch lässt result ebenfalls unverändert.
+       * ungültigen oder unvollständigen Eingaben rechnet es nicht — validationMsg
+       * nennt den Grund, result bleibt, wie es war. Läuft schon ein Lauf
+       * (read().running ist true), kehrt es ebenfalls ohne Rechnen zurück;
+       * validationMsg ist dann leer. Ein Abbruch lässt result unverändert.
        * @agent
        * @returns {Promise<void>}
        */

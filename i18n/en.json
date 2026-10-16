@@ -6173,7 +6173,7 @@
           "help": "Draws a new random seed between 1 and 2147483647."
         },
         "compute": {
-          "help": "Runs the resampling and returns after the last pass; result holds the new summary. It does not run while a run is in progress or while validationMsg names a reason (invalid parameters, missing or too short columns, fewer than 3 groups in mode 'k'); result then stays as it was and no error is raised. A failed run leaves result as it was and names the reason in errorMsg."
+          "help": "Runs the resampling and returns after the last pass; result holds the new summary. It does not run while a run is in progress or while validationMsg names a reason (invalid parameters, missing or too short columns, fewer than 3 groups in mode 'k', the ratio contrast with values of zero or below); result then stays as it was and no error is raised. A failed run leaves result as it was and names the reason in errorMsg."
         },
         "cancel": {
           "help": "Aborts a run in progress; result stays as it was and errorMsg stays empty. Without a run nothing happens."
@@ -6241,7 +6241,7 @@
           "help": "true when a result exists that was computed from other inputs than the current ones."
         },
         "validationMsg": {
-          "help": "The reason compute would not run (invalid parameter, missing or too short column, fewer than 3 groups in mode 'k'), or an empty string. A running run does not set it."
+          "help": "The reason compute would not run (invalid parameter, missing or too short column, fewer than 3 groups in mode 'k', the ratio contrast with values of zero or below), or an empty string. A running run does not set it."
         },
         "errorMsg": {
           "help": "The reason the last run failed, or an empty string; a new run and a cancelled run leave it empty."
