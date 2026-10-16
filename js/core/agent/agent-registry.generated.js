@@ -3299,39 +3299,108 @@ export const AGENT_REGISTRY = {
     }
   },
   "heatmap": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:onAggregationChange",
-      "unreachable_write:chartConfig.aggregation"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'x'|'g'|'v'",
+            "optional": false,
+            "help": "der Slot"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Spalte einem Slot zuweisen; die übrigen Slots bleiben."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'aggregation'",
+            "optional": false,
+            "help": "welche Option; read().activeParams nennt die im aktuellen Zustand gültigen"
+          },
+          {
+            "name": "value",
+            "type": "'mean'|'sum'",
+            "optional": false,
+            "help": "Mittelwert oder Summe der Wertespalte je Zelle"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Analyseoption setzen."
+      }
+    },
     "fields": {
       "xRef": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the column whose categories become the columns of the grid (slot `x`), or null",
+        "bulk": false,
+        "derived": true
       },
       "gRef": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the column whose categories become the rows (slot `g`), or null",
+        "bulk": false,
+        "derived": true
       },
       "vRef": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the optional numeric value column (slot `v`), or null — without it cells count rows",
+        "bulk": false,
+        "derived": true
       },
-      "chartConfig": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "aggregation": {
+        "type": "string",
+        "help": "how values are combined per cell: `mean` or `sum`; applies only with a value column",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeParams": {
+        "type": "string[]",
+        "help": "the options `setParam` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "stats": {
+        "type": "object|null",
+        "help": "the grid: `{ xCategories, yCategories, cells }` with `cells[row][column]` (count, mean or sum; null for an empty cell), or null while a slot is empty",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -10822,4 +10891,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":51};
+export const AGENT_COVERAGE = {"total":76,"available":52};

@@ -20,19 +20,80 @@
  * style-based visibility toggles byte-identical for the Page Object Model. The
  * color-domain / normalization that drives the cell coloring lives in the
  * `heatmap` chart type, fed the raw aggregated `cells` matrix from the model.
+ *
+ * @agent  Steuerbar über das Viewmodel: drei Spalten (setColumn) und die
+ *   Aggregation der Wertespalte (setParam). Gelesen wird über read() mit
+ *   erklärter Lesefläche (AgentRead) — Spaltenbezüge, Aggregation, die
+ *   wählbaren Mengen und das Raster als Zahlen (stats).
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State } from './heatmap-model.js';
+import { State, AGGREGATIONS } from './heatmap-model.js';
 
 import { formatNum } from '../../core/chart/chart-core.js';
 import {
   DatasetPicker,
   getColumnValues,
   getColumnName,
+  refToKey,
+  keyToRef,
 } from '../../ui/dataset-picker.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { datasetSlotColumns } from '../../core/agent/agent-datasets.js';
 import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-registry.js';
 import { chartModuleLifecycle } from '../../core/chart/chart-module-base.js';
+
+/** Die Slots des Pickers, ohne Beschriftung — eine Quelle für Picker und Lesefläche. */
+const DATASET_SLOTS = [
+  { key: 'x', minCount: 1, required: true },
+  { key: 'g', minCount: 1, required: true },
+  { key: 'v', types: ['numeric', 'currency', 'percent'], minCount: 1 },
+];
+
+/** Die Slot-Schlüssel in der Reihenfolge der Oberfläche. */
+const COLUMN_SLOTS = ['x', 'g', 'v'];
+
+/** Die Optionen, die `setParam` annimmt. */
+const PARAM_KEYS = ['aggregation'];
+
+/** Je Option ihr Prüfer; gibt den Wert zurück, den das Model hält. */
+const PARAM_CHECKS = {
+  aggregation: (v) => { requireEnum('value', v, AGGREGATIONS); return v; },
+};
+
+/**
+ * Einen Wert unter einem Punkt-Schlüssel (`'statParams.trim'`) in `obj` ablegen.
+ * @param {object} obj Wurzel, deren Pfad beschrieben wird
+ * @param {string} key Schlüssel, gegebenenfalls mit Punkt
+ * @param {any} value der abzulegende Wert
+ */
+function setAtPath(obj, key, value) {
+  const parts = key.split('.');
+  let cur = obj;
+  for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
+  cur[parts[parts.length - 1]] = value;
+}
+
+/**
+ * Die Agenten-Lesefläche der Heatmap.
+ *
+ * Drei Spaltenbezüge und die Aggregation sind der Zustand. Die Aggregation
+ * hält das Model in `chartConfig`; die Lesefläche hebt sie auf die oberste
+ * Ebene, unter ihren `setParam`-Schlüssel. Nicht darin: der Rest von
+ * `chartConfig` (Darstellung), das Diagrammbild, `exampleWorksheetId`. Das
+ * Raster steht als Zahlen in `stats` (E8).
+ *
+ * @typedef {object} AgentRead
+ * @property {object|null} xRef  the column whose categories become the columns of the grid (slot `x`), or null
+ * @property {object|null} gRef  the column whose categories become the rows (slot `g`), or null
+ * @property {object|null} vRef  the optional numeric value column (slot `v`), or null — without it cells count rows
+ * @property {string} aggregation  how values are combined per cell: `mean` or `sum`; applies only with a value column
+ * @property {string[]} activeParams  the options `setParam` accepts in the current state
+ * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
+ * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
+ * @property {object|null} stats  the grid: `{ xCategories, yCategories, cells }` with `cells[row][column]` (count, mean or sum; null for an empty cell), or null while a slot is empty
+ */
 
 const mod = createModule({
   config: {
@@ -55,24 +116,18 @@ const mod = createModule({
 
           const ctx = module._context;
           const i18n = ctx.i18n;
+          const SLOT_LABELS = {
+            x: { label: 'X', title: i18n.t('modules.heatmap.slotX') },
+            g: { label: 'G', title: i18n.t('modules.heatmap.slotG') },
+            v: { label: 'V', title: i18n.t('modules.heatmap.slotV') },
+          };
           this._picker = new DatasetPicker(wrap, ctx, {
-            slots: [
-              { key: 'x', label: 'X', title: i18n.t('modules.heatmap.slotX'), minCount: 1, required: true },
-              { key: 'g', label: 'G', title: i18n.t('modules.heatmap.slotG'), minCount: 1, required: true },
-              { key: 'v', label: 'V', title: i18n.t('modules.heatmap.slotV'), types: ['numeric', 'currency', 'percent'], minCount: 1 },
-            ],
-            onChange: (datasets) => {
-              const ds = datasets[0] || {};
-              this.model.xRef = ds.x || null;
-              this.model.gRef = ds.g || null;
-              this.model.vRef = ds.v || null;
-              this._syncOptions();
-              this._plot();
-            },
+            slots: DATASET_SLOTS.map(s => ({ ...s, ...SLOT_LABELS[s.key] })),
+            onChange: (rows) => this._applyDatasets(rows),
           });
 
           if (this.model.xRef || this.model.gRef || this.model.vRef) {
-            this._picker.value = [{ x: this.model.xRef, g: this.model.gRef, v: this.model.vRef }];
+            this._picker.value = this._datasetRows();
           }
 
           // Preserve the original init() ordering: _mountPicker() was followed
@@ -87,6 +142,106 @@ const mod = createModule({
           }
         },
       }),
+
+      // ── Agent surface ─────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Spaltenbezüge, Aggregation, wählbare Mengen und Raster
+       */
+      read(options) {
+        return readAgentState('heatmap', {
+          xRef: this.model.xRef,
+          gRef: this.model.gRef,
+          vRef: this.model.vRef,
+          aggregation: this.model.chartConfig.aggregation,
+          activeParams: this.activeParams(),
+          activeColumnSlots: this.activeColumnSlots(),
+          pickableColumns: this.pickableColumns(),
+          stats: this._agentStats(),
+        }, options);
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() { return [...COLUMN_SLOTS]; },
+
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() { return datasetSlotColumns(module._context.stateManager, DATASET_SLOTS); },
+
+      /** @noagent derived set; der Agent liest sie über read().activeParams — dasselbe Prädikat wie x-if="hasVRef" */
+      activeParams() { return this.hasVRef ? [...PARAM_KEYS] : []; },
+
+      /** @noagent view transform; die Optionen der Aggregation (eine Quelle: AGGREGATIONS) */
+      aggregationOptions() {
+        return AGGREGATIONS.map(v => ({ value: v, label: _t(v === 'sum' ? 'aggSum' : 'aggMean') }));
+      },
+
+      /**
+       * Eine Spalte einem Slot zuweisen; die übrigen Slots bleiben.
+       * @agent
+       * @param {'x'|'g'|'v'} slot der Slot
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
+       *   der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren
+       * @returns {void}
+       * @throws {Error} wenn `slot` unbekannt ist oder die Spalte nicht wählbar
+       */
+      setColumn(slot, ref) {
+        requireEnum('slot', slot, this.activeColumnSlots());
+        const row = this._datasetRows()[0];
+        if (ref == null) {
+          row[slot] = null;
+        } else {
+          const keys = this.pickableColumns()[slot].map(c => c.key);
+          requireKnownId('ref', refToKey(ref), keys);
+          // Normalisierte Form: fremde Eigenschaften des Agentenobjekts bleiben draußen.
+          row[slot] = keyToRef(refToKey(ref));
+        }
+        this._applyDatasets([row]);
+        if (this._picker) this._picker.value = [row];
+      },
+
+      /**
+       * Eine Analyseoption setzen.
+       * @agent
+       * @param {'aggregation'} key welche Option; read().activeParams nennt die im aktuellen Zustand gültigen
+       * @param {'mean'|'sum'} value Mittelwert oder Summe der Wertespalte je Zelle
+       * @returns {void}
+       * @throws {Error} wenn `key` unbekannt oder ohne Wertespalte nicht aktiv ist oder `value` ungültig
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        requireEnum('key', key, this.activeParams());
+        setAtPath(this.model.chartConfig, key, PARAM_CHECKS[key](value));
+        this._plot();
+      },
+
+      /** Der Körper des Picker-`onChange`: Zeilen ins Model, Optionen spiegeln, neu zeichnen. */
+      _applyDatasets(rows) {
+        const ds = rows[0] || {};
+        this.model.xRef = ds.x || null;
+        this.model.gRef = ds.g || null;
+        this.model.vRef = ds.v || null;
+        this._syncOptions();
+        this._plot();
+      },
+
+      /** Die aktuelle Zeile in Picker-Form, aus dem Model. */
+      _datasetRows() {
+        return [{ x: this.model.xRef, g: this.model.gRef, v: this.model.vRef }];
+      },
+
+      /** Die Kennzahlen für read() — das Raster aus derselben Quelle wie die Tabelle (E8). */
+      _agentStats() {
+        const d = this.model.buildChartData((ref) => this._getColumnValues(ref), this.model.chartConfig.aggregation);
+        if (!d.xCategories.length || !d.yCategories.length) return null;
+        return {
+          xCategories: [...d.xCategories],
+          yCategories: [...d.yCategories],
+          cells: d.cells.map(row => row.map(v => (Number.isFinite(v) ? v : null))),
+        };
+      },
 
       // ── Transient view state (not persisted) ──────────────────
       /** Last computed chart data, for the stats re-render. */
@@ -112,10 +267,6 @@ const mod = createModule({
       /** Reactive mirror of `!!model.vRef` for the options `x-if`. */
       hasVRef: false,
       _syncOptions() { this.hasVRef = Boolean(this.model.vRef); },
-      onAggregationChange() {
-        // model.chartConfig.aggregation already updated by x-model @change
-        this._plot();
-      },
 
       // ── Column helpers ────────────────────────────────────────
 

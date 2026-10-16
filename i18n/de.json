@@ -4981,6 +4981,34 @@
     "heatmap": {
       "name": "Heatmap",
       "description": "Kreuztabelle als farbcodiertes Gitter — Zellfarbe zeigt Häufigkeit, Mittelwert oder Summe je (X, G)-Kombination.",
+      "whenToUse": "Einen Wert oder eine Anzahl für jede Kombination zweier Kategorien als Farbraster zeigen — z. B. Zykluszeit je Schicht und Linie.",
+      "actions": {
+        "read": { "help": "Die drei gewählten Spalten, die Aggregation und die Spalten lesen, die jeder Slot annimmt, dazu die Kennzahlen neben dem Diagramm." },
+        "setColumn": {
+          "help": "Eine Spalte einem Slot zuweisen. Die anderen Slots behalten ihre Spalten.",
+          "params": {
+            "slot": "'x' — Kategorien, die zu den Rasterspalten werden (Pflicht); 'g' — Kategorien, die zu den Rasterzeilen werden (Pflicht); 'v' — eine optionale numerische Wertespalte; ohne sie zählt jede Zelle Zeilen.",
+            "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null zum Leeren."
+          }
+        },
+        "setParam": {
+          "help": "Eine Analyseoption setzen. read().activeParams nennt die gerade gültigen Optionen.",
+          "params": {
+            "key": "'aggregation' — nur aktiv, solange eine Wertespalte gewählt ist.",
+            "value": "Für 'aggregation': 'mean' (Mittelwert) oder 'sum' (Summe) der Werte je Zelle."
+          }
+        }
+      },
+      "fields": {
+        "xRef": { "help": "Die Kategorienspalte der Rasterspalten (Slot 'x'), oder null." },
+        "gRef": { "help": "Die Kategorienspalte der Rasterzeilen (Slot 'g'), oder null." },
+        "vRef": { "help": "Die Wertespalte (Slot 'v'), oder null." },
+        "aggregation": { "help": "Wie die Werte je Zelle zusammengefasst werden: mean oder sum." },
+        "activeParams": { "help": "Die Optionen, die setParam im aktuellen Zustand annimmt." },
+        "activeColumnSlots": { "help": "Die Slots, die setColumn annimmt: x, g, v." },
+        "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
+        "stats": { "help": "Das Raster: { xCategories, yCategories, cells } mit cells[Zeile][Spalte] — Anzahl, Mittel oder Summe, null für eine leere Zelle; null, solange ein Slot leer ist." }
+      },
       "sectionData": "Datenquelle",
       "slotX": "Spalten-Variable (X — kategorial)",
       "slotG": "Zeilen-Variable (G — kategorial)",

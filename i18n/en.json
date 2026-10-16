@@ -4977,6 +4977,34 @@
     "heatmap": {
       "name": "Heatmap",
       "description": "Cross-tabulation as a color-coded grid — cell color shows frequency, mean, or sum per (X, G) combination.",
+      "whenToUse": "Show a value or a count for every combination of two categories as a colour grid — e.g. cycle time per shift and line.",
+      "actions": {
+        "read": { "help": "Read the three chosen columns, the aggregation and the columns each slot accepts, and the figures shown next to the chart." },
+        "setColumn": {
+          "help": "Assign a column to a slot. The other slots keep their columns.",
+          "params": {
+            "slot": "'x' — categories that become the grid columns (required); 'g' — categories that become the grid rows (required); 'v' — an optional numeric value column; without it each cell counts rows.",
+            "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null to clear the slot."
+          }
+        },
+        "setParam": {
+          "help": "Set an analysis option. read().activeParams names the options valid right now.",
+          "params": {
+            "key": "'aggregation' — active only while a value column is chosen.",
+            "value": "For 'aggregation': 'mean' or 'sum' of the values per cell."
+          }
+        }
+      },
+      "fields": {
+        "xRef": { "help": "The column category column (slot 'x'), or null." },
+        "gRef": { "help": "The row category column (slot 'g'), or null." },
+        "vRef": { "help": "The value column (slot 'v'), or null." },
+        "aggregation": { "help": "How values are combined per cell: mean or sum." },
+        "activeParams": { "help": "The options setParam accepts in the current state." },
+        "activeColumnSlots": { "help": "The slots setColumn accepts: x, g, v." },
+        "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
+        "stats": { "help": "The grid: { xCategories, yCategories, cells } with cells[row][column] — a count, mean or sum, null for an empty cell; null while a slot is empty." }
+      },
       "sectionData": "Data Source",
       "slotX": "Column variable (X — categorical)",
       "slotG": "Row variable (G — categorical)",

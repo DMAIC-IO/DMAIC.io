@@ -19,6 +19,9 @@
 
 import { toNum } from '../../core/chart/chart-data-prep.js';
 
+/** Die Aggregationen einer Wertespalte, in der Reihenfolge der Auswahl. */
+export const AGGREGATIONS = ['mean', 'sum'];
+
 /** Default chart-config block — identical to the legacy `_chartConfig`. */
 const CONFIG_DEFAULTS = {
   title: '',
