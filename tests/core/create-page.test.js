@@ -268,7 +268,7 @@ suite('createPage — load hook', () => {
 });
 
 suite('createPage — dialog option', () => {
-  let container, tplEl, bus, page, opened, langCount;
+  let container, tplEl, bus, page, opened;
 
   /** Minimal dialog service: records show() calls, lends content like the real one. */
   function fakeDialog() {
@@ -290,7 +290,6 @@ suite('createPage — dialog option', () => {
 
   beforeEach(() => {
     opened = [];
-    langCount = 0;
     container = document.createElement('div');
     container.id = 'cp-dlg-area';
     container.style.display = 'none';
@@ -306,7 +305,7 @@ suite('createPage — dialog option', () => {
       container: '#cp-dlg-area',
       overlay: 'cp-dlg',
       dialog: { titleKey: 'title' },
-      data() { langCount += 1; return {}; },
+      data() { return {}; },
     });
   });
 
