@@ -260,6 +260,7 @@ thead .tfa__mh {
   align-items: center;
   justify-content: center;
   padding: 0 var(--spacing-sm);
+
   /* Outline (box, ellipse, hexagon) and selection are drawn in the SVG layer below. */
   border: 0;
   background: transparent;
