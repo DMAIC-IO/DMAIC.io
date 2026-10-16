@@ -11,7 +11,8 @@
  * run against an Alpine reactive proxy) is safe.
  */
 
-const BIN_MODES = ['auto', 'manual'];
+/** Die Klassenbildungen: automatisch oder mit fester Breite. */
+export const BIN_MODES = ['auto', 'manual'];
 
 /** Deep-copy a column ref (or null). */
 function cloneRef(r) {

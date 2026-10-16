@@ -4638,6 +4638,51 @@
       "recLowMono": "Monotonie-Index niedrig ({pct} %) — Zusammenhang möglicherweise nicht monoton."
     },
     "histogram": {
+      "whenToUse": "Die Verteilung einer oder mehrerer numerischer Spalten als Häufigkeitsbalken zeigen, mit Kennzahlen und Konfidenzintervall.",
+      "actions": {
+        "read": {
+          "help": "Die Datenreihen, die Klassenbildung, das Konfidenzniveau und die Spalten lesen, die jeder Slot annimmt, dazu die Kennzahlen neben dem Diagramm."
+        },
+        "setDatasets": {
+          "help": "Die ganze Liste der Datenreihen auf einmal ersetzen. Unvollständige Reihen bleiben stehen, werden aber nicht gezeichnet.",
+          "params": {
+            "rows": "Eine Liste von Reihen, jeweils { value, group }: 'value' — eine numerische Spalte (Pflicht, damit die Reihe gezeichnet wird); 'group' — eine optionale Spalte, die die Reihe in Serien aufteilt. Jeder Eintrag ist ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null. [] leert die Liste."
+          }
+        },
+        "setParam": {
+          "help": "Eine Analyseoption setzen. read().activeParams nennt die gerade gültigen Optionen.",
+          "params": {
+            "key": "'binMode' — automatische oder feste Klassen; 'binWidth' — nur bei binMode 'manual' aktiv; 'confLevel' — das Konfidenzniveau der Kennzahlen.",
+            "value": "Für 'binMode': 'auto' oder 'manual' ('auto' leert auch binWidth). Für 'binWidth': eine Zahl größer 0, oder null für eine automatische Breite. Für 'confLevel': eine Zahl in Prozent, größer 0 und kleiner 100."
+          }
+        }
+      },
+      "fields": {
+        "datasets": {
+          "help": "Je Datenreihe { valueRef, groupRef } aus den Slots value und group, jeweils ein Spaltenbezug oder null."
+        },
+        "binMode": {
+          "help": "Wie die Klassen gebildet werden: auto oder manual."
+        },
+        "binWidth": {
+          "help": "Die feste Klassenbreite bei binMode manual, oder null."
+        },
+        "confLevel": {
+          "help": "Das Konfidenzniveau der Kennzahlen in Prozent."
+        },
+        "activeParams": {
+          "help": "Die Optionen, die setParam im aktuellen Zustand annimmt."
+        },
+        "activeColumnSlots": {
+          "help": "Die Slot-Schlüssel, die eine Reihe tragen darf: value, group."
+        },
+        "pickableColumns": {
+          "help": "Je Slot die Spalten, die setDatasets annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId."
+        },
+        "stats": {
+          "help": "Je gezeichneter Reihe { name, stats, ci }: stats { n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }, ci { mean, variance, stddev } als [unten, oben]; null, solange nichts gerechnet werden kann."
+        }
+      },
       "name": "Histogramm",
       "description": "Häufigkeitsverteilung mit Boxplot und Statistik",
       "sectionData": "Datenquelle",

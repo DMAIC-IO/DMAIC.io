@@ -3475,91 +3475,102 @@ export const AGENT_REGISTRY = {
     }
   },
   "histogram": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:ctx",
-      "unmarked_method:binModeChanged",
-      "unmarked_method:binWidthChanged",
-      "unmarked_method:confLevelChanged",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unreadable_state_key:showTitle",
-      "unreadable_state_key:chartTitleText",
-      "unreadable_state_key:chartXLabelText",
-      "unreadable_state_key:chartYLabelText",
-      "unreadable_state_key:titleSize",
-      "unreadable_state_key:labelSize",
-      "unreadable_state_key:tickSize",
-      "unreadable_state_key:showXLabel",
-      "unreadable_state_key:showYLabel",
-      "unreadable_state_key:showXTicks",
-      "unreadable_state_key:showYTicks",
-      "unreadable_state_key:bgColor",
-      "unreachable_write:binMode"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setDatasets": {
+        "params": [
+          {
+            "name": "rows",
+            "type": "object[]",
+            "optional": false,
+            "help": "je Reihe `{ <slot>: ref|null }`; Slots siehe read().activeColumnSlots, Spalten siehe read().pickableColumns; [] leert"
+          }
+        ],
+        "returns": "void",
+        "help": "Die ganze Liste der Datenreihen setzen."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'binMode'|'binWidth'|'confLevel'",
+            "optional": false,
+            "help": "welche Option; read().activeParams nennt die im aktuellen Zustand gültigen"
+          },
+          {
+            "name": "value",
+            "type": "any",
+            "optional": false,
+            "help": "`binMode`: 'auto' oder 'manual'; `binWidth`: Zahl größer 0 oder null; `confLevel`: Zahl größer 0 und kleiner 100"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Analyseoption setzen."
+      }
+    },
     "fields": {
       "datasets": {
-        "type": "{valueRef: object|null, groupRef: object|null}[]",
-        "help": "",
-        "bulk": false
-      },
-      "seriesOverrides": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object[]",
+        "help": "per data row `{ valueRef, groupRef }` from the slots `value` and `group`, each a column reference or null",
+        "bulk": false,
+        "derived": true
       },
       "binMode": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string",
+        "help": "`auto` or `manual`",
+        "bulk": false,
+        "derived": true
       },
       "binWidth": {
         "type": "number|null",
-        "help": "",
-        "bulk": false
-      },
-      "showPareto": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "showStats": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "showBoxplot": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "help": "the fixed bin width with `binMode` `manual`, or null for an automatic width",
+        "bulk": false,
+        "derived": true
       },
       "confLevel": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "the confidence level of the statistics in percent, between 0 and 100 (exclusive)",
+        "bulk": false,
+        "derived": true
       },
-      "chartConfig": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeParams": {
+        "type": "string[]",
+        "help": "the options `setParam` accepts in the current state",
+        "bulk": false,
+        "derived": true
       },
-      "barGap": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slot keys a row of `setDatasets` may carry",
+        "bulk": false,
+        "derived": true
       },
-      "refLines": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setDatasets` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
       },
-      "refAreas": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "stats": {
+        "type": "object[]|null",
+        "help": "per plotted series `{ name, stats, ci }` — stats `{ n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }`, ci `{ mean, variance, stddev }` as `[low, high]` at the confidence level — or null while nothing can be computed",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -11032,4 +11043,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":58};
+export const AGENT_COVERAGE = {"total":76,"available":59};

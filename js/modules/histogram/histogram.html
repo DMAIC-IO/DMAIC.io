@@ -8,12 +8,13 @@
     <div class="histogram__options">
       <div class="field-group">
         <label x-text="t('binMode')"></label>
-        <select class="field" data-ref="bin-mode" x-model="model.binMode" @change="binModeChanged()">
-          <option value="auto" x-text="t('binAuto')"></option>
-          <option value="manual" x-text="t('binManual')"></option>
+        <select class="field" data-ref="bin-mode" :value="model.binMode" @change="setParam('binMode', $event.target.value)">
+          <template x-for="o in binModeOptions()" :key="o.value">
+            <option :value="o.value" :selected="o.value === model.binMode" x-text="o.label"></option>
+          </template>
         </select>
       </div>
-      <div class="field-group" data-ref="bin-width-row" x-show="model.binMode === 'manual'">
+      <div class="field-group" data-ref="bin-width-row" x-show="isManualBins()">
         <label x-text="t('binWidth')"></label>
         <input type="number" class="field field--num" data-ref="bin-width" min="0.01"
                x-model="binWidthInput" :placeholder="t('binWidthAuto')" @change="binWidthChanged($event)">

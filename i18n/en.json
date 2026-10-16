@@ -4634,6 +4634,51 @@
       "recLowMono": "Monotonicity index low ({pct}%) — relationship may not be monotonic."
     },
     "histogram": {
+      "whenToUse": "Show the distribution of one or more numeric columns as frequency bars, with summary statistics and a confidence interval.",
+      "actions": {
+        "read": {
+          "help": "Read the data rows, the binning, the confidence level and the columns each slot accepts, and the figures shown next to the chart."
+        },
+        "setDatasets": {
+          "help": "Replace the whole list of data rows at once. Incomplete rows are kept but not plotted.",
+          "params": {
+            "rows": "A list of rows, each { value, group }: 'value' — a numeric column (required for the row to be plotted); 'group' — an optional column that splits the row into series. Each entry is a column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null. [] clears the list."
+          }
+        },
+        "setParam": {
+          "help": "Set an analysis option. read().activeParams names the options valid right now.",
+          "params": {
+            "key": "'binMode' — automatic or fixed bins; 'binWidth' — active only with binMode 'manual'; 'confLevel' — the confidence level of the statistics.",
+            "value": "For 'binMode': 'auto' or 'manual' ('auto' also clears binWidth). For 'binWidth': a number greater than 0, or null for an automatic width. For 'confLevel': a number in percent, greater than 0 and less than 100."
+          }
+        }
+      },
+      "fields": {
+        "datasets": {
+          "help": "Per data row { valueRef, groupRef } from the slots value and group, each a column reference or null."
+        },
+        "binMode": {
+          "help": "How bins are formed: auto or manual."
+        },
+        "binWidth": {
+          "help": "The fixed bin width with binMode manual, or null."
+        },
+        "confLevel": {
+          "help": "The confidence level of the statistics in percent."
+        },
+        "activeParams": {
+          "help": "The options setParam accepts in the current state."
+        },
+        "activeColumnSlots": {
+          "help": "The slot keys a row may carry: value, group."
+        },
+        "pickableColumns": {
+          "help": "Per slot the columns setDatasets accepts, each { key, name }; the key is instanceId|sheetId|columnId."
+        },
+        "stats": {
+          "help": "Per plotted series { name, stats, ci }: stats { n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }, ci { mean, variance, stddev } as [low, high]; null while nothing can be computed."
+        }
+      },
       "name": "Histogram",
       "description": "Frequency distribution with boxplot and statistics",
       "sectionData": "Data Source",
