@@ -71,8 +71,12 @@ export function createPage(config) {
         _dialog = null;
         if (_silentClose || !_open) return;
         // ✕ / Escape / overlay: close the page the way the header button does.
-        if (_router) _router.navigateBackFromPage(config.id);
-        else page.hide();
+        if (!_router) { page.hide(); return; }
+        // A router busy applying another route ignores the navigation; the
+        // dialog is gone either way, so make sure the page is closed too
+        // (unless it was reopened meanwhile).
+        Promise.resolve(_router.navigateBackFromPage(config.id))
+          .finally(() => { if (_open && !_dialog) page.hide(); });
       },
     });
   }

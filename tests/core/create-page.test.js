@@ -1,5 +1,5 @@
 import { suite, test, assertEqual, beforeEach, afterEach } from '../test-utils.js';
-import { createPage } from '../../js/core/create-page.js';
+import { createPage, setCreatePageRouter } from '../../js/core/create-page.js';
 import { setChunkErrorHandler } from '../../js/core/chunks.js';
 
 function makeBus() {
@@ -283,7 +283,8 @@ suite('createPage — dialog option', () => {
           entry.home.append(opts.content);
           opts.onClose?.();
         };
-        return { close, setTitle: (t) => { entry.opts.title = t; } };
+        entry.handle = { close, setTitle: (t) => { entry.opts.title = t; } };
+        return entry.handle;
       },
     };
   }
@@ -339,9 +340,37 @@ suite('createPage — dialog option', () => {
     bus.on('page:closed', () => { closed += 1; });
     await page.init(ctx());
     await page.show();
-    opened[0].opts.onClose();          // ✕ / Escape / overlay path
+    opened[0].handle.close();          // ✕ / Escape / overlay path
     assertEqual(page.isOpen(), false);
     assertEqual(closed, 1);
+  });
+
+  test('destroy() while open closes the dialog without a page:closed', async () => {
+    let closed = 0;
+    bus.on('page:closed', () => { closed += 1; });
+    await page.init(ctx());
+    await page.show();
+    page.destroy();
+    assertEqual(opened[0].open, false);
+    assertEqual(page.isOpen(), false);
+    assertEqual(closed, 0);
+  });
+
+  test('dismissing the dialog hides the page even when the router does not navigate', async () => {
+    // A router busy applying another route ignores navigate() (re-entrancy guard).
+    let asked = 0;
+    setCreatePageRouter({ navigateBackFromPage: async () => { asked += 1; } });
+    try {
+      await page.init(ctx());
+      await page.show();
+      opened[0].handle.close();
+      await Promise.resolve();
+      await Promise.resolve();
+      assertEqual(asked, 1);
+      assertEqual(page.isOpen(), false);
+    } finally {
+      setCreatePageRouter(null);
+    }
   });
 
   test('language change while open reopens with the new title, page stays open', async () => {
