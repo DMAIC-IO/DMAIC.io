@@ -54,28 +54,25 @@
           <label class="data-import__option">
             <span class="data-import__option-label" x-text="t('csv_preset')"></span>
             <select data-csv-opt="preset" @change="onCsvOpt('preset', $event)">
-              <option value="generic" :selected="model.csvOptions.preset === 'generic'" x-text="t('csv_preset_generic')"></option>
-              <option value="zeiss-calypso" :selected="model.csvOptions.preset === 'zeiss-calypso'" x-text="t('csv_preset_zeiss_calypso')"></option>
-              <option value="hexagon-pcdmis" :selected="model.csvOptions.preset === 'hexagon-pcdmis'" x-text="t('csv_preset_hexagon_pcdmis')"></option>
-              <option value="mitutoyo-measurlink" :selected="model.csvOptions.preset === 'mitutoyo-measurlink'" x-text="t('csv_preset_mitutoyo_measurlink')"></option>
+              <template x-for="o in presetOptions()" :key="o.value">
+                <option :value="o.value" :selected="model.csvOptions.preset === o.value" x-text="o.label"></option>
+              </template>
             </select>
           </label>
           <label class="data-import__option">
             <span class="data-import__option-label" x-text="t('delimiter')"></span>
             <select data-csv-opt="delimiter" @change="onCsvOpt('delimiter', $event)">
-              <option value="auto" :selected="model.csvOptions.delimiter === 'auto'" x-text="t('delim_auto')"></option>
-              <option value="comma" :selected="model.csvOptions.delimiter === 'comma'" x-text="t('delim_comma')"></option>
-              <option value="semicolon" :selected="model.csvOptions.delimiter === 'semicolon'" x-text="t('delim_semicolon')"></option>
-              <option value="tab" :selected="model.csvOptions.delimiter === 'tab'" x-text="t('delim_tab')"></option>
-              <option value="pipe" :selected="model.csvOptions.delimiter === 'pipe'" x-text="t('delim_pipe')"></option>
+              <template x-for="o in delimiterOptions()" :key="o.value">
+                <option :value="o.value" :selected="model.csvOptions.delimiter === o.value" x-text="o.label"></option>
+              </template>
             </select>
           </label>
-          <label class="data-import__option">
+          <label class="data-import__option" x-show="!isTextSource()">
             <span class="data-import__option-label" x-text="t('encoding')"></span>
             <select data-csv-opt="encoding" @change="onCsvOpt('encoding', $event)">
-              <option value="utf-8" :selected="model.csvOptions.encoding === 'utf-8'" x-text="t('enc_utf8')"></option>
-              <option value="windows-1252" :selected="model.csvOptions.encoding === 'windows-1252'" x-text="t('enc_windows1252')"></option>
-              <option value="iso-8859-1" :selected="model.csvOptions.encoding === 'iso-8859-1'" x-text="t('enc_latin1')"></option>
+              <template x-for="o in csvEncodingOptions()" :key="o.value">
+                <option :value="o.value" :selected="model.csvOptions.encoding === o.value" x-text="o.label"></option>
+              </template>
             </select>
           </label>
           <label class="data-import__option">
@@ -108,9 +105,9 @@
           <label class="data-import__option">
             <span class="data-import__option-label" x-text="t('encoding')"></span>
             <select data-aqdef-opt="encoding" @change="onAqdefOpt('encoding', $event)">
-              <option value="windows-1252" :selected="model.aqdefOptions.encoding === 'windows-1252'" x-text="t('enc_windows1252')"></option>
-              <option value="iso-8859-1" :selected="model.aqdefOptions.encoding === 'iso-8859-1'" x-text="t('enc_latin1')"></option>
-              <option value="utf-8" :selected="model.aqdefOptions.encoding === 'utf-8'" x-text="t('enc_utf8')"></option>
+              <template x-for="o in aqdefEncodingOptions()" :key="o.value">
+                <option :value="o.value" :selected="model.aqdefOptions.encoding === o.value" x-text="o.label"></option>
+              </template>
             </select>
           </label>
         </div>
@@ -187,7 +184,7 @@
 
           <div class="data-import__send-row">
             <button class="dmike-btn-run" data-action="send" type="button"
-              @click="sendToWorksheet()">
+              @click="onSend()">
               <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
               <span x-text="t('sendToWorksheet')"></span>
             </button>

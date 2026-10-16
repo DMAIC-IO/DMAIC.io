@@ -6807,6 +6807,71 @@
       "errSigma": "Bitte eine gültige Standardabweichung > 0 eingeben."
     },
     "data-import": {
+      "whenToUse": "Wenn Daten aus einer Fremdquelle in eine Datensammlung übernommen werden sollen; für einen Agenten aus CSV- oder JSON-Text, mit Profilen für gängige Messmaschinen-Exporte.",
+      "textInputName": "Eingefügter Text",
+      "actions": {
+        "read": {
+          "help": "Liefert die zuletzt eingelesene Quelle, die Parser-Optionen, die im aktuellen Format gültigen Schlüssel, die Blätter mit ihren Spalten und den Zustand des Parsens. Geparste Daten werden nicht gespeichert: nach einem Neuladen ist sheets leer, bis erneut importiert wird. Die Werte selbst liest man nach sendToWorksheet aus dem Worksheet.",
+          "params": {
+            "options": "Optional; dieses Modul führt keine Massendaten."
+          }
+        },
+        "importText": {
+          "help": "Liest CSV- oder JSON-Text wie eine Datei ein und baut die Vorschau auf. Gibt die Zahl der Blätter zurück, bei einem Parse-Fehler null; der Grund steht dann in errorMsg. Ein leerer Text ist ein Parse-Fehler, keine Absage.",
+          "params": {
+            "text": "Der Inhalt als Text; bei CSV gilt immer UTF-8.",
+            "format": "Eines der Formate in textFormats, csv oder json; jeder andere Wert ist ein Fehler."
+          }
+        },
+        "setParam": {
+          "help": "Setzt eine Parser-Option und liest die Daten mit ihr neu ein. Werte außerhalb des Bereichs werden abgewiesen, nicht geklemmt.",
+          "params": {
+            "key": "Einer der Schlüssel in activeParams: csvOptions.preset, csvOptions.delimiter, csvOptions.encoding, csvOptions.hasHeader, csvOptions.skipRows, xlsxOptions.hasHeader, aqdefOptions.encoding. Welche gelten, hängt vom Format ab; bei Text entfällt csvOptions.encoding.",
+            "value": "csvOptions.preset: eines der Profile generic, zeiss-calypso, hexagon-pcdmis, mitutoyo-measurlink (setzt auch Trennzeichen, Kodierung und übersprungene Zeilen des Profils). csvOptions.delimiter: auto, comma, semicolon, tab oder pipe. csvOptions.encoding und aqdefOptions.encoding: utf-8, windows-1252 oder iso-8859-1. csvOptions.hasHeader und xlsxOptions.hasHeader: true oder false. csvOptions.skipRows: eine ganze Zahl ab 0."
+          }
+        },
+        "selectSheet": {
+          "help": "Wählt das Blatt, dessen Spalten die Vorschau zeigt und das sendToWorksheet sendet.",
+          "params": {
+            "index": "Die Nummer des Blatts in sheets, ab 0; jede andere Zahl ist ein Fehler."
+          }
+        },
+        "sendToWorksheet": {
+          "help": "Sendet die Spalten des gewählten Blatts an einen neuen Worksheet und gibt dessen Instanz zurück. Ohne Daten oder ohne Spalten wird nichts gesendet und null zurückgegeben."
+        }
+      },
+      "fields": {
+        "file": {
+          "help": "Die zuletzt eingelesene Quelle mit Name, Größe, Format und Herkunft (file oder text), oder null."
+        },
+        "csvOptions": {
+          "help": "Die CSV-Optionen: preset, delimiter, encoding, hasHeader und skipRows."
+        },
+        "xlsxOptions": {
+          "help": "Die XLSX-Optionen: hasHeader."
+        },
+        "aqdefOptions": {
+          "help": "Die AQDEF-Optionen: encoding."
+        },
+        "activeParams": {
+          "help": "Die Schlüssel, die setParam im aktuellen Format annimmt; ohne Quelle leer."
+        },
+        "textFormats": {
+          "help": "Die Formate, die importText annimmt."
+        },
+        "sheets": {
+          "help": "Die eingelesenen Blätter mit Name, Zeilenzahl und den Spalten (Name, Typ); ohne Daten leer."
+        },
+        "activeSheetIdx": {
+          "help": "Die Nummer des Blatts, das sendToWorksheet sendet."
+        },
+        "busy": {
+          "help": "Ob gerade ein Parsen läuft."
+        },
+        "errorMsg": {
+          "help": "Die Meldung zum letzten Parse-Fehler, null ohne Fehler."
+        }
+      },
       "name": "Datenimport",
       "description": "Daten aus Fremdformaten einlesen (Minitab .mpx, CSV/TSV/TXT, Excel/ODS, JSON/NDJSON, Q-DAS AQDEF) und ins Worksheet übernehmen",
       "dropHere": "Datei hier ablegen",

@@ -1570,60 +1570,137 @@ export const AGENT_REGISTRY = {
     }
   },
   "data-import": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:fileName",
-      "unmarked_method:formatLabel",
-      "unmarked_method:fileSizeText",
-      "unmarked_method:isCsv",
-      "unmarked_method:isXlsx",
-      "unmarked_method:isAqdef",
-      "unmarked_method:hasMultipleSheets",
-      "unmarked_method:hasColumns",
-      "unmarked_method:previewMeta",
-      "unmarked_method:sheetTabClass",
-      "unmarked_method:moreRowsCount",
-      "unmarked_method:moreRowsText",
-      "unmarked_method:rebuildView",
-      "unmarked_method:openPicker",
-      "unmarked_method:onFileInput",
-      "unmarked_method:onDropzoneKey",
-      "unmarked_method:onDragOver",
-      "unmarked_method:onDragLeave",
-      "unmarked_method:onDrop",
-      "unmarked_method:onCsvOpt",
-      "unmarked_method:onXlsxOpt",
-      "unmarked_method:onAqdefOpt",
-      "unmarked_method:selectSheet",
-      "unmarked_method:handleFile",
-      "unmarked_method:runParse",
-      "unmarked_method:reparse",
-      "unmarked_method:sendToWorksheet",
-      "unmarked_method:init"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "importText": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "der Inhalt; ein leerer Text ergibt einen Parse-Fehler in errorMsg"
+          },
+          {
+            "name": "format",
+            "type": "string",
+            "optional": false,
+            "help": "eines der Formate aus textFormats"
+          }
+        ],
+        "returns": "Promise<{ sheets: number }|null>",
+        "help": "CSV- oder JSON-Text wie eine Datei einlesen und die Vorschau aufbauen."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "string",
+            "optional": false,
+            "help": "einer der Schlüssel aus activeParams"
+          },
+          {
+            "name": "value",
+            "type": "string|number|boolean",
+            "optional": false,
+            "help": "der neue Wert; Art und Bereich hängen vom Schlüssel ab"
+          }
+        ],
+        "returns": "Promise<void>",
+        "help": "Eine Parser-Option setzen und die Daten neu einlesen."
+      },
+      "selectSheet": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "Nummer des Blatts in sheets, ab 0"
+          }
+        ],
+        "returns": "void",
+        "help": "Das Blatt wählen, das die Vorschau zeigt und `sendToWorksheet` sendet."
+      },
+      "sendToWorksheet": {
+        "params": [],
+        "returns": "Promise<{ instanceId: string }|null>",
+        "help": "Das gewählte Blatt an einen neuen Worksheet senden."
+      }
+    },
     "fields": {
       "file": {
-        "type": "{name:string,size:number,formatId:string|null}|null",
-        "help": "",
-        "bulk": false
+        "type": "{ name: string, size: number, formatId: string|null, source: 'file'|'text' }|null",
+        "help": "what was imported last",
+        "bulk": false,
+        "derived": true
       },
       "csvOptions": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object",
+        "help": "`{ preset, delimiter, encoding, hasHeader, skipRows }`",
+        "bulk": false,
+        "derived": true
       },
       "xlsxOptions": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object",
+        "help": "`{ hasHeader }`",
+        "bulk": false,
+        "derived": true
       },
       "aqdefOptions": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object",
+        "help": "`{ encoding }`",
+        "bulk": false,
+        "derived": true
+      },
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts for the current format",
+        "bulk": false,
+        "derived": true
+      },
+      "textFormats": {
+        "type": "string[]",
+        "help": "the formats `importText` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "sheets": {
+        "type": "Array<{ name: string, rowCount: number, columns: Array<{ name: string, type: string }> }>",
+        "help": "the parsed sheets, [] without data",
+        "bulk": false,
+        "derived": true
+      },
+      "activeSheetIdx": {
+        "type": "number",
+        "help": "the sheet `sendToWorksheet` sends",
+        "bulk": false,
+        "derived": true
+      },
+      "busy": {
+        "type": "boolean",
+        "help": "a parse is running",
+        "bulk": false,
+        "derived": true
+      },
+      "errorMsg": {
+        "type": "string|null",
+        "help": "the message the module shows, null without error",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -10254,4 +10331,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":45};
+export const AGENT_COVERAGE = {"total":76,"available":46};

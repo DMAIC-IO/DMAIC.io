@@ -6803,6 +6803,71 @@
       "errSigma": "Please enter a valid standard deviation > 0."
     },
     "data-import": {
+      "whenToUse": "When data from a third-party source is to be brought into a data collection; for an agent from CSV or JSON text, with profiles for common measuring-machine exports.",
+      "textInputName": "Pasted text",
+      "actions": {
+        "read": {
+          "help": "Returns the source imported last, the parser options, the keys valid in the current format, the sheets with their columns and the state of the parse. Parsed data is not stored: after a reload sheets is empty until imported again. Read the values themselves from the worksheet after sendToWorksheet.",
+          "params": {
+            "options": "Optional; this module holds no bulk data."
+          }
+        },
+        "importText": {
+          "help": "Reads CSV or JSON text like a file and builds the preview. Returns the number of sheets, or null when the parse failed; the reason is then in errorMsg. An empty text is a parse failure, not a rejection.",
+          "params": {
+            "text": "The content as text; CSV is always read as UTF-8.",
+            "format": "One of the formats in textFormats, csv or json; any other value is an error."
+          }
+        },
+        "setParam": {
+          "help": "Sets a parser option and reads the data again with it. Values outside the range are rejected, not clamped.",
+          "params": {
+            "key": "One of the keys in activeParams: csvOptions.preset, csvOptions.delimiter, csvOptions.encoding, csvOptions.hasHeader, csvOptions.skipRows, xlsxOptions.hasHeader, aqdefOptions.encoding. Which apply depends on the format; for text csvOptions.encoding does not apply.",
+            "value": "csvOptions.preset: one of the profiles generic, zeiss-calypso, hexagon-pcdmis, mitutoyo-measurlink (also sets the profile's delimiter, encoding and skipped rows). csvOptions.delimiter: auto, comma, semicolon, tab or pipe. csvOptions.encoding and aqdefOptions.encoding: utf-8, windows-1252 or iso-8859-1. csvOptions.hasHeader and xlsxOptions.hasHeader: true or false. csvOptions.skipRows: a whole number of at least 0."
+          }
+        },
+        "selectSheet": {
+          "help": "Chooses the sheet whose columns the preview shows and sendToWorksheet sends.",
+          "params": {
+            "index": "The number of the sheet in sheets, from 0; any other number is an error."
+          }
+        },
+        "sendToWorksheet": {
+          "help": "Sends the columns of the chosen sheet to a new worksheet and returns its instance. Without data or without columns nothing is sent and null is returned."
+        }
+      },
+      "fields": {
+        "file": {
+          "help": "The source imported last with name, size, format and origin (file or text), or null."
+        },
+        "csvOptions": {
+          "help": "The CSV options: preset, delimiter, encoding, hasHeader and skipRows."
+        },
+        "xlsxOptions": {
+          "help": "The XLSX options: hasHeader."
+        },
+        "aqdefOptions": {
+          "help": "The AQDEF options: encoding."
+        },
+        "activeParams": {
+          "help": "The keys setParam accepts in the current format; empty without a source."
+        },
+        "textFormats": {
+          "help": "The formats importText accepts."
+        },
+        "sheets": {
+          "help": "The parsed sheets with name, row count and columns (name, type); empty without data."
+        },
+        "activeSheetIdx": {
+          "help": "The number of the sheet sendToWorksheet sends."
+        },
+        "busy": {
+          "help": "Whether a parse is running."
+        },
+        "errorMsg": {
+          "help": "The message of the last parse failure, null without failure."
+        }
+      },
       "name": "Data Import",
       "description": "Read data from third-party formats (Minitab .mpx, CSV/TSV/TXT, Excel/ODS, JSON/NDJSON, Q-DAS AQDEF) into a worksheet",
       "dropHere": "Drop a file here",
