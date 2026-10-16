@@ -7832,6 +7832,12 @@
         },
         "saveAsModel": {
           "help": "Speichert das Polynommodell mit mehreren X in die Projektmodelle (neu oder als Aktualisierung des zuletzt gespeicherten) und gibt die id zurück; null, wenn canSaveModel false ist. savedModelId zieht nach."
+        },
+        "predict": {
+          "help": "Sagt die Zielgröße für die angegebenen Werte der Einflussgrößen vorher und füllt prediction; null, wenn ein Prädiktor ohne Wert bleibt.",
+          "params": {
+            "values": "Ein Objekt mit je Prädiktor-id aus predictors einem Wert: eine Zahl, bei kategorialen Prädiktoren eine der Stufen. Fehlende Prädiktoren lassen das Ergebnis null."
+          }
         }
       },
       "fields": {
@@ -7906,6 +7912,9 @@
         },
         "savedModelId": {
           "help": "Die id des zuletzt in die Projektmodelle gespeicherten Modells, oder null."
+        },
+        "prediction": {
+          "help": "{ yHat, piLow, piHigh } der letzten Vorhersage, null ohne eine; piLow und piHigh sind null, wo das Modell kein Prognoseintervall liefert."
         }
       },
       "name": "Regressionsanalyse",

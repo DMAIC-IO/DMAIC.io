@@ -7166,6 +7166,18 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Bei Einzel-X-Modellen (exponentiell, logarithmisch, Potenz mit mehreren X) das Modell wählen, das `result` zeigt."
       },
+      "predict": {
+        "params": [
+          {
+            "name": "values",
+            "type": "object",
+            "optional": false,
+            "help": "je Prädiktor-id aus predictors ein Wert (Zahl, bei kategorialen Prädiktoren eine Stufe)"
+          }
+        ],
+        "returns": "{ yHat: number, piLow: number|null, piHigh: number|null }|null",
+        "help": "Die Zielgröße für Werte der Einflussgrößen vorhersagen."
+      },
       "autoRun": {
         "params": [],
         "returns": "void",
@@ -7312,6 +7324,12 @@ export const AGENT_REGISTRY = {
       "predictors": {
         "type": "Array<{ id: string, label: string, kind: string, levels?: string[] }>",
         "help": "the inputs `predict` takes",
+        "bulk": false,
+        "derived": true
+      },
+      "prediction": {
+        "type": "{ yHat: number, piLow: number|null, piHigh: number|null }|null",
+        "help": "the last prediction, null without one; piLow/piHigh are null where the model gives no prediction interval",
         "bulk": false,
         "derived": true
       },

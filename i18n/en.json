@@ -7828,6 +7828,12 @@
         },
         "saveAsModel": {
           "help": "Saves the polynomial model with several X in the project models (new, or as an update of the model saved last) and returns its id; returns null when canSaveModel is false. savedModelId follows."
+        },
+        "predict": {
+          "help": "Predicts the response for the given values of the predictors and fills prediction; returns null when a predictor is left without a value.",
+          "params": {
+            "values": "An object with one value per predictor id from predictors: a number, or one of the levels for categorical predictors. Missing predictors make the result null."
+          }
         }
       },
       "fields": {
@@ -7902,6 +7908,9 @@
         },
         "savedModelId": {
           "help": "The id of the model saved last in the project models, or null."
+        },
+        "prediction": {
+          "help": "{ yHat, piLow, piHigh } of the last prediction, null without one; piLow and piHigh are null where the model gives no prediction interval."
         }
       },
       "name": "Regression Analysis",

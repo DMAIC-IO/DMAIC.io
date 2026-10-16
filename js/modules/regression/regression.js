@@ -115,6 +115,7 @@ function requireFraction(value) {
  * @property {object|null} result  the fitted model as numbers, null without a shown result
  * @property {string} errorMsg  the message the module shows, '' without error
  * @property {Array<{ id: string, label: string, kind: string, levels?: string[] }>} predictors  the inputs `predict` takes
+ * @property {{ yHat: number, piLow: number|null, piHigh: number|null }|null} prediction  the last prediction, null without one; piLow/piHigh are null where the model gives no prediction interval
  * @property {boolean} canSaveModel  saveAsModel would store a model now
  * @property {string|null} savedModelId  id of the model saved last in the project models
  */
@@ -144,6 +145,8 @@ const mod = createModule({
       /** Predict output. */
       _predictText: '',
       _predictInterval: '',
+      /** Last prediction { yHat, piLow, piHigh } or null. */
+      _prediction: null,
       /** Cached degree availability { n, options }. */
       _degree: { n: 0, options: DEGREES.map(deg => ({ deg, terms: deg === 1 ? 2 : 0, disabled: false })) },
       _picker: null,
@@ -182,6 +185,7 @@ const mod = createModule({
           result: this.result ? this._agentResult(m.activeResult) : null,
           errorMsg: this._errorText,
           predictors: this.result ? predictorsOf(m.activeResult) : [],
+          prediction: this._prediction ?? null,
           canSaveModel: Boolean(this.result?.canSaveModel),
           savedModelId: m.savedModelId,
         }, options);
@@ -699,7 +703,7 @@ const mod = createModule({
       /** @noagent helper; Rebuild transient result view + predict inputs from the active result. */
       rebuildResult() {
         const r = this.model.activeResult;
-        if (!r) { this.result = null; this._predictForm = []; this._predictText = ''; this._predictInterval = ''; return; }
+        if (!r) { this.result = null; this._predictForm = []; this._predictText = ''; this._predictInterval = ''; this._prediction = null; return; }
         this.result = this.buildResultView(r);
         this.buildPredictForm(r);
         // Reset stale active tab if the current tab is not available for this result.
@@ -708,6 +712,7 @@ const mod = createModule({
         }
         this._predictText = '';
         this._predictInterval = '';
+        this._prediction = null;
       },
 
       // ── Predict inputs ───────────────────────────────────────
@@ -726,18 +731,28 @@ const mod = createModule({
       /** @noagent view transform */
       predictInterval() { return this._predictInterval; },
 
-      /** @noagent DOM event handler (prediction inputs) */
+      /** @noagent DOM event handler; the agent uses predict() */
       onPredictInput() {
+        this._showPrediction();
+      },
+
+      /**
+       * Die Vorhersage für die Werte der Eingabefelder rechnen und anzeigen.
+       * @returns {{ yHat: number, piLow: number|null, piHigh: number|null }|null} null bei fehlender Eingabe
+       */
+      _showPrediction() {
         const r = this.model.activeResult;
-        if (!r) return;
         this._predictText = '';
         this._predictInterval = '';
+        this._prediction = null;
+        if (!r) return null;
 
         const values = Object.fromEntries(this._predictForm.map(f => [
           f.id, f.kind === 'categorical' ? (f.value || (f.levels && f.levels[0])) : f.value,
         ]));
         const out = predictAt(r, values);
-        if (!out) return;
+        if (!out) return null;
+        this._prediction = out;
         const parts = this._predictForm.map(f => {
           if (f.kind === 'single') return fmt(parseFloat(f.value), 3);
           const name = r.spec ? f.id : f.label;
@@ -747,6 +762,30 @@ const mod = createModule({
         if (out.piLow != null && out.piHigh != null) {
           this._predictInterval = `${_t('predictionInterval', { level: (r.confLevel * 100).toFixed(0) })}: [${fmt(out.piLow)}, ${fmt(out.piHigh)}]`;
         }
+        return out;
+      },
+
+      /**
+       * Die Zielgröße für Werte der Einflussgrößen vorhersagen.
+       * @agent
+       * @param {object} values je Prädiktor-id aus predictors ein Wert (Zahl, bei kategorialen Prädiktoren eine Stufe)
+       * @returns {{ yHat: number, piLow: number|null, piHigh: number|null }|null} null, wenn ein Prädiktor ohne Wert bleibt
+       */
+      predict(values) {
+        if (values == null || typeof values !== 'object' || Array.isArray(values)) {
+          throw new Error(`invalid values ${JSON.stringify(values)}; allowed: an object with one value per predictor id`);
+        }
+        const preds = this.result ? predictorsOf(this.model.activeResult) : [];
+        for (const key of Object.keys(values)) requireKnownId('values', key, preds.map(p => p.id));
+        for (const p of preds) {
+          if (!(p.id in values)) continue;
+          if (p.kind === 'categorical') requireEnum(p.id, values[p.id], p.levels);
+          else requireNumber(p.id, values[p.id]);
+        }
+        for (const f of this._predictForm) {
+          if (f.id in values) f.value = String(values[f.id]);
+        }
+        return this._showPrediction();
       },
 
       // ── Event handlers ───────────────────────────────────────
