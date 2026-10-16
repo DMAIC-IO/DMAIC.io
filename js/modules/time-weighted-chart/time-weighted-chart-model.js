@@ -30,6 +30,12 @@ export const DEFAULTS = {
   hSigma: 4,
 };
 
+/** Die Kartentypen: EWMA (gleitender gewichteter Mittelwert) und tabellarische CUSUM. */
+export const CHART_TYPE_IDS = ['ewma', 'cusum'];
+
+/** Die Schätzer für σ aus der Phase I: mittlere gleitende Spannweite oder Standardabweichung. */
+export const SIGMA_METHODS = ['mr', 'sd'];
+
 /**
  * Validate a single column reference object.
  * @param {*} d

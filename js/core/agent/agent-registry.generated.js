@@ -9155,87 +9155,156 @@ export const AGENT_REGISTRY = {
     }
   },
   "time-weighted-chart": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:typeHint",
-      "unmarked_method:sectionParamsLabel",
-      "unmarked_method:baselineCountValue",
-      "unmarked_method:targetOverrideValue",
-      "unmarked_method:sigmaOverrideValue",
-      "unmarked_method:onChartTypeChange",
-      "unmarked_method:onSigmaMethodChange",
-      "unmarked_method:onBaselineCountChange",
-      "unmarked_method:onTargetOverrideChange",
-      "unmarked_method:onSigmaOverrideChange",
-      "unmarked_method:onLambdaChange",
-      "unmarked_method:onLChange",
-      "unmarked_method:onKSigmaChange",
-      "unmarked_method:onHSigmaChange",
-      "unreachable_write:chartTypeId",
-      "unreachable_write:sigmaMethod",
-      "unreachable_write:lambda",
-      "unreachable_write:L",
-      "unreachable_write:kSigma",
-      "unreachable_write:hSigma"
-    ],
-    "actions": {},
-    "fields": {
-      "chartTypeId": {
-        "type": "'ewma'|'cusum'",
-        "help": "",
-        "bulk": false
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields: ['points']` liefert die Punkte vollständig, `rows` schneidet sie zu"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'chartTypeId'|'sigmaMethod'|'baselineCount'|'targetOverride'|'sigmaOverride'|'lambda'|'L'|'kSigma'|'hSigma'",
+            "optional": false,
+            "help": "welche Option; read().activeParams nennt die für den aktuellen Kartentyp gültigen"
+          },
+          {
+            "name": "value",
+            "type": "any",
+            "optional": false,
+            "help": "Typ und Bereich je Schlüssel siehe Hilfe"
+          }
+        ],
+        "returns": "Promise<void>",
+        "help": "Eine Analyseoption setzen und neu rechnen."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'value'",
+            "optional": false,
+            "help": "der Slot; dieses Modul führt nur `value`"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "Promise<void>",
+        "help": "Die Messreihe wählen und neu rechnen."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "Promise<void>",
+        "help": "Mit den aktuellen Eingaben und Spaltenwerten neu rechnen."
+      }
+    },
+    "fields": {
       "columnRef": {
-        "type": "{instanceId:string, sheetId:string, columnId:string}|null",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the measured column (slot `value`), `{ instanceId, sheetId, columnId }`, or null",
+        "bulk": false,
+        "derived": true
+      },
+      "chartTypeId": {
+        "type": "string",
+        "help": "`'ewma'` or `'cusum'`",
+        "bulk": false,
+        "derived": true
       },
       "sigmaMethod": {
-        "type": "'mr'|'sd'",
-        "help": "",
-        "bulk": false
+        "type": "string",
+        "help": "σ estimator from Phase I: `'mr'` (average moving range) or `'sd'` (standard deviation)",
+        "bulk": false,
+        "derived": true
       },
       "baselineCount": {
         "type": "number|null",
-        "help": "",
-        "bulk": false
+        "help": "Phase I length (first n values), or null for all values",
+        "bulk": false,
+        "derived": true
       },
       "targetOverride": {
         "type": "number|null",
-        "help": "",
-        "bulk": false
+        "help": "the target used instead of the Phase I mean, or null",
+        "bulk": false,
+        "derived": true
       },
       "sigmaOverride": {
         "type": "number|null",
-        "help": "",
-        "bulk": false
+        "help": "the σ used instead of the estimate (only when greater than 0), or null",
+        "bulk": false,
+        "derived": true
       },
       "lambda": {
         "type": "number",
-        "help": "",
-        "bulk": false
+        "help": "EWMA weight, 0 < lambda ≤ 1",
+        "bulk": false,
+        "derived": true
       },
       "L": {
         "type": "number",
-        "help": "",
-        "bulk": false
+        "help": "EWMA limit width in σ, greater than 0",
+        "bulk": false,
+        "derived": true
       },
       "kSigma": {
         "type": "number",
-        "help": "",
-        "bulk": false
+        "help": "CUSUM allowance k in σ, greater than 0",
+        "bulk": false,
+        "derived": true
       },
       "hSigma": {
         "type": "number",
-        "help": "",
-        "bulk": false
+        "help": "CUSUM decision interval h in σ, greater than 0",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "string|null",
-        "help": "",
-        "bulk": false
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts for the current chart type",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "EWMA `{ chartType: 'ewma', n, target, sigma, lambda, L, cl, sigmaSteady, signals }`, CUSUM `{ chartType: 'cusum', n, target, sigma, k, h, signalsHigh, signalsLow }` — signals are point indices; null with fewer than 3 values or σ ≤ 0",
+        "bulk": false,
+        "derived": true
+      },
+      "points": {
+        "type": "object[]",
+        "help": "one row per value — EWMA `{ ewma, ucl, lcl, signal }`, CUSUM `{ cPlus, cMinus, signalHigh, signalLow }`",
+        "bulk": true,
+        "bulkKind": "table",
+        "derived": true
       }
     }
   },
@@ -11400,4 +11469,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":64};
+export const AGENT_COVERAGE = {"total":76,"available":65};

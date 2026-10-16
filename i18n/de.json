@@ -7944,7 +7944,43 @@
       "statSigmaSteady": "σ_z (Steady-State)",
       "statHLimit": "h (Grenze)",
       "statSignals": "Signale",
-      "statOf": "von {total} Datenpunkten"
+      "statOf": "von {total} Datenpunkten",
+      "whenToUse": "Kleine, anhaltende Verschiebungen früher erkennen als mit einer Shewhart-Karte: EWMA gewichtet die jüngsten Werte, CUSUM summiert die Abweichungen vom Ziel auf.",
+      "actions": {
+        "read": { "help": "Gewählte Spalte, alle Einstellungen, Ziel, σ, Grenzen, Signalpunkte und die gezeichneten Werte lesen." },
+        "setColumn": {
+          "help": "Die Messreihe wählen und neu rechnen.",
+          "params": {
+            "slot": "'value' — die Messwerte in zeitlicher Reihenfolge (Pflicht, mindestens 3).",
+            "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns.value, oder null zum Leeren."
+          }
+        },
+        "setParam": {
+          "help": "Eine Analyseoption setzen und neu rechnen.",
+          "params": {
+            "key": "'chartTypeId', 'sigmaMethod', 'baselineCount', 'targetOverride', 'sigmaOverride' immer; 'lambda' und 'L' bei EWMA; 'kSigma' und 'hSigma' bei CUSUM.",
+            "value": "chartTypeId 'ewma' oder 'cusum'; sigmaMethod 'mr' oder 'sd'; baselineCount eine ganze Zahl ab 1, oder null für alle Werte; targetOverride eine beliebige Zahl, oder null für das Mittel der Phase I; sigmaOverride eine Zahl ab 0, oder null für die Schätzung; lambda größer als 0 und höchstens 1; L, kSigma, hSigma größer als 0."
+          }
+        },
+        "runAnalysis": { "help": "Mit den aktuellen Spaltenwerten neu rechnen, etwa nachdem sich die Daten geändert haben." }
+      },
+      "fields": {
+        "columnRef": { "help": "Die Messreihe (Slot 'value'), oder null." },
+        "chartTypeId": { "help": "'ewma' oder 'cusum'." },
+        "sigmaMethod": { "help": "σ-Schätzer aus der Phase I: 'mr' (mittlere gleitende Spannweite) oder 'sd' (Standardabweichung)." },
+        "baselineCount": { "help": "Länge der Phase I (die ersten n Werte), oder null für alle Werte." },
+        "targetOverride": { "help": "Ziel statt des Mittels der Phase I, oder null." },
+        "sigmaOverride": { "help": "σ statt der Schätzung, wenn größer als 0, oder null." },
+        "lambda": { "help": "EWMA-Gewicht, 0 < λ ≤ 1." },
+        "L": { "help": "Breite der EWMA-Grenzen in σ." },
+        "kSigma": { "help": "CUSUM-Referenzwert k in σ." },
+        "hSigma": { "help": "CUSUM-Entscheidungsgrenze h in σ." },
+        "activeColumnSlots": { "help": "Die Slots, die setColumn annimmt: value." },
+        "activeParams": { "help": "Die Schlüssel, die setParam für den aktuellen Kartentyp annimmt." },
+        "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
+        "result": { "help": "EWMA { chartType, n, target, sigma, lambda, L, cl, sigmaSteady, signals }; CUSUM { chartType, n, target, sigma, k, h, signalsHigh, signalsLow }; signals sind Punktindizes; null bei weniger als 3 Werten oder σ ≤ 0." },
+        "points": { "help": "Je Wert eine Zeile — EWMA { ewma, ucl, lcl, signal }, CUSUM { cPlus, cMinus, signalHigh, signalLow }. read({ fields: ['points'] }) liefert sie vollständig." }
+      }
     },
     "rare-event-chart": {
       "name": "Regelkarte (seltene Ereignisse)",

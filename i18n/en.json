@@ -7821,7 +7821,43 @@
       "statSigmaSteady": "σ_z (steady state)",
       "statHLimit": "h (limit)",
       "statSignals": "Signals",
-      "statOf": "of {total} data points"
+      "statOf": "of {total} data points",
+      "whenToUse": "Detect small, persistent shifts earlier than a Shewhart chart: EWMA weights recent values, CUSUM accumulates deviations from the target.",
+      "actions": {
+        "read": { "help": "Read the chosen column, all settings, target, σ, limits, signal points and the plotted values." },
+        "setColumn": {
+          "help": "Choose the measured column and recompute.",
+          "params": {
+            "slot": "'value' — the measured values in time order (required, at least 3).",
+            "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns.value, or null to clear it."
+          }
+        },
+        "setParam": {
+          "help": "Set an analysis option and recompute.",
+          "params": {
+            "key": "'chartTypeId', 'sigmaMethod', 'baselineCount', 'targetOverride', 'sigmaOverride' always; 'lambda' and 'L' for EWMA; 'kSigma' and 'hSigma' for CUSUM.",
+            "value": "chartTypeId 'ewma' or 'cusum'; sigmaMethod 'mr' or 'sd'; baselineCount a whole number of at least 1, or null for all values; targetOverride any number, or null for the Phase I mean; sigmaOverride a number of at least 0, or null for the estimate; lambda greater than 0 and at most 1; L, kSigma, hSigma greater than 0."
+          }
+        },
+        "runAnalysis": { "help": "Recompute with the current column values, for example after the data changed." }
+      },
+      "fields": {
+        "columnRef": { "help": "The measured column (slot 'value'), or null." },
+        "chartTypeId": { "help": "'ewma' or 'cusum'." },
+        "sigmaMethod": { "help": "σ estimator from Phase I: 'mr' (average moving range) or 'sd' (standard deviation)." },
+        "baselineCount": { "help": "Phase I length (the first n values), or null for all values." },
+        "targetOverride": { "help": "Target used instead of the Phase I mean, or null." },
+        "sigmaOverride": { "help": "σ used instead of the estimate when greater than 0, or null." },
+        "lambda": { "help": "EWMA weight, 0 < λ ≤ 1." },
+        "L": { "help": "EWMA limit width in σ." },
+        "kSigma": { "help": "CUSUM allowance k in σ." },
+        "hSigma": { "help": "CUSUM decision interval h in σ." },
+        "activeColumnSlots": { "help": "The slots setColumn accepts: value." },
+        "activeParams": { "help": "The keys setParam accepts for the current chart type." },
+        "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
+        "result": { "help": "EWMA { chartType, n, target, sigma, lambda, L, cl, sigmaSteady, signals }; CUSUM { chartType, n, target, sigma, k, h, signalsHigh, signalsLow }; signals are point indices; null with fewer than 3 values or σ ≤ 0." },
+        "points": { "help": "One row per value — EWMA { ewma, ucl, lcl, signal }, CUSUM { cPlus, cMinus, signalHigh, signalLow }. read({ fields: ['points'] }) returns them in full." }
+      }
     },
     "run-chart": {
       "name": "Run Chart",

@@ -20,18 +20,28 @@
  *   - chartManager control-charts use a _renderGen stale-guard.
  *   - _unsubs collects event-bus subscriptions for cleanup.
  *   - EWMA / CUSUM math stays in the engine (time-weighted-chart-engine.js).
+ *
+ * @agent  Steuerbar über das Viewmodel: Messreihe (setColumn), Kartentyp,
+ *   Phase I, Ziel- und σ-Vorgabe, λ/L bzw. k/h (setParam), neu rechnen
+ *   (runAnalysis). Gelesen wird über read() mit erklärter Lesefläche
+ *   (AgentRead) — Eingaben, Ziel, σ, Grenzen, Signalpunkte und je Punkt die
+ *   gezeichneten Größen.
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State, DEFAULTS } from './time-weighted-chart-model.js';
+import { State, DEFAULTS, CHART_TYPE_IDS, SIGMA_METHODS } from './time-weighted-chart-model.js';
 import {
-  ColumnPicker, getColumnValues, getColumnName,
+  ColumnPicker, getColumnValues, getColumnName, refToKey, keyToRef,
 } from '../../ui/column-picker.js';
 import {
   computeEWMA, computeCUSUM, estimateSigma,
 } from '../../engines/time-weighted-chart-engine.js';
 import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-registry.js';
 import { chartModuleLifecycle } from '../../core/chart/chart-module-base.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { pickableColumnList } from '../../core/agent/agent-options.js';
+import { finiteOrNull, zipPoints } from '../../core/agent/agent-results.js';
 
 /** parseFloat → finite number or null. */
 function numOrNull(v) {
@@ -44,6 +54,72 @@ function intOrNull(v) {
   return Number.isFinite(i) ? i : null;
 }
 
+/** Die Spalten-Slots: genau einer, die Messreihe. */
+const COLUMN_SLOTS = ['value'];
+
+/** Je Slot der Filter seines Wählers — eine Quelle für Wähler und Lesefläche. */
+const SLOT_FILTERS = { value: { types: ['numeric'], minCount: 3 } };
+
+/** Die Optionen, die `setParam` annimmt (die letzten vier je nach Kartentyp). */
+const PARAM_KEYS = ['chartTypeId', 'sigmaMethod', 'baselineCount', 'targetOverride', 'sigmaOverride', 'lambda', 'L', 'kSigma', 'hSigma'];
+
+/** Die Optionen, die für beide Kartentypen gelten. */
+const BASE_PARAMS = ['chartTypeId', 'sigmaMethod', 'baselineCount', 'targetOverride', 'sigmaOverride'];
+
+/** Die Leerform eines Zahlenfelds („aus den Daten" bzw. „alle Punkte"): `null` oder `''`. */
+const isEmptyForm = (v) => v === null || v === '';
+
+/** Je Option ihr Prüfer; er gibt den Wert in der Form des Models zurück. */
+const PARAM_CHECKS = {
+  chartTypeId: (v) => { requireEnum('value', v, CHART_TYPE_IDS); return v; },
+  sigmaMethod: (v) => { requireEnum('value', v, SIGMA_METHODS); return v; },
+  baselineCount: (v) => (isEmptyForm(v) ? null : requireNumber('value', v, { min: 1, integer: true })),
+  targetOverride: (v) => (isEmptyForm(v) ? null : requireNumber('value', v)),
+  sigmaOverride: (v) => (isEmptyForm(v) ? null : requireNumber('value', v, { min: 0 })),
+  lambda: (v) => requireNumber('value', v, { exclusiveMin: 0, max: 1 }),
+  L: (v) => requireNumber('value', v, { exclusiveMin: 0 }),
+  kSigma: (v) => requireNumber('value', v, { exclusiveMin: 0 }),
+  hSigma: (v) => requireNumber('value', v, { exclusiveMin: 0 }),
+};
+/**
+ * Einen Wert unter einem Punkt-Schlüssel in `obj` ablegen.
+ * @param {object} obj Wurzel, deren Pfad beschrieben wird
+ * @param {string} key Schlüssel, gegebenenfalls mit Punkt
+ * @param {any} value der abzulegende Wert
+ */
+function setAtPath(obj, key, value) {
+  const parts = key.split('.');
+  let cur = obj;
+  for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
+  cur[parts[parts.length - 1]] = value;
+}
+
+/**
+ * Die Agenten-Lesefläche der zeitgewichteten Karten (EWMA, CUSUM).
+ *
+ * Eingaben (Spalte, Kartentyp, Phase I, Ziel- und σ-Vorgabe, die Parameter
+ * des gewählten Typs), die Mengen der Setter und das Ergebnis als Zahlen
+ * (Plan Welle 3 B, E4). Die Parameter des jeweils anderen Typs bleiben im
+ * Model und in der Lesefläche, `activeParams` nennt nur die gerade
+ * wirksamen. Nicht darin: Kennzahlenleiste als Text, `exampleWorksheetId`.
+ *
+ * @typedef {object} AgentRead
+ * @property {object|null} columnRef  the measured column (slot `value`), `{ instanceId, sheetId, columnId }`, or null
+ * @property {string} chartTypeId  `'ewma'` or `'cusum'`
+ * @property {string} sigmaMethod  σ estimator from Phase I: `'mr'` (average moving range) or `'sd'` (standard deviation)
+ * @property {number|null} baselineCount  Phase I length (first n values), or null for all values
+ * @property {number|null} targetOverride  the target used instead of the Phase I mean, or null
+ * @property {number|null} sigmaOverride  the σ used instead of the estimate (only when greater than 0), or null
+ * @property {number} lambda  EWMA weight, 0 < lambda ≤ 1
+ * @property {number} L  EWMA limit width in σ, greater than 0
+ * @property {number} kSigma  CUSUM allowance k in σ, greater than 0
+ * @property {number} hSigma  CUSUM decision interval h in σ, greater than 0
+ * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
+ * @property {string[]} activeParams  the keys `setParam` accepts for the current chart type
+ * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
+ * @property {object|null} result  EWMA `{ chartType: 'ewma', n, target, sigma, lambda, L, cl, sigmaSteady, signals }`, CUSUM `{ chartType: 'cusum', n, target, sigma, k, h, signalsHigh, signalsLow }` — signals are point indices; null with fewer than 3 values or σ ≤ 0
+ * @property {object[]} points  [bulk] one row per value — EWMA `{ ewma, ucl, lcl, signal }`, CUSUM `{ cPlus, cMinus, signalHigh, signalLow }`
+ */
 const mod = createModule({
   config: {
     id: 'time-weighted-chart',
@@ -63,12 +139,8 @@ const mod = createModule({
           if (!wrap) return;
           this._picker = new ColumnPicker(wrap, module._context, {
             mode: 'single',
-            types: ['numeric'],
-            minCount: 3,
-            onChange: (ref) => {
-              this.model.columnRef = ref;
-              this._scheduleAutoRun();
-            },
+            ...SLOT_FILTERS.value,
+            onChange: (ref) => this.setColumn('value', ref),
           });
           if (this.model.columnRef) this._picker.value = this.model.columnRef;
         },
@@ -84,12 +156,153 @@ const mod = createModule({
        * (EWMA → 1 entry; CUSUM → 2 entries). See _renderChart*. */
       /** @type {Array<{id:string, title:string, badgeText:string, badgeClass:string}>} */
       chartViews: [],
+      /** Typ, Engine-Ergebnis, Ziel, σ und Punktzahl der letzten Rechnung, synchron vor dem Zeichnen gesetzt (E3). */
+      _lastRun: null,
+
+      // ── Agent surface ─────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       *   — `fields: ['points']` liefert die Punkte vollständig, `rows` schneidet sie zu
+       * @returns {AgentRead} Eingaben, wählbare Mengen und das gerechnete Ergebnis
+       */
+      read(options) {
+        const m = this.model;
+        const { result, points, pointsColumns } = this._agentResult();
+        return readAgentState('time-weighted-chart', {
+          columnRef: m.columnRef,
+          chartTypeId: m.chartTypeId,
+          sigmaMethod: m.sigmaMethod,
+          baselineCount: m.baselineCount,
+          targetOverride: m.targetOverride,
+          sigmaOverride: m.sigmaOverride,
+          lambda: m.lambda,
+          L: m.L,
+          kSigma: m.kSigma,
+          hSigma: m.hSigma,
+          activeColumnSlots: this.activeColumnSlots(),
+          activeParams: this.activeParams(),
+          pickableColumns: this.pickableColumns(),
+          result,
+          points,
+          pointsColumns,
+        }, options);
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() { return [...COLUMN_SLOTS]; },
+
+      /** @noagent derived set; der Agent liest sie über read().activeParams */
+      activeParams() {
+        return [...BASE_PARAMS, ...(this.isEwma() ? ['lambda', 'L'] : ['kSigma', 'hSigma'])];
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() {
+        const sm = module._context.stateManager;
+        return Object.fromEntries(COLUMN_SLOTS.map(slot => [slot, pickableColumnList(sm, SLOT_FILTERS[slot])]));
+      },
+
+      /** @noagent view transform; EWMA gewählt — dasselbe Prädikat für x-if und activeParams */
+      isEwma() { return this.model.chartTypeId === 'ewma'; },
+
+      /** @noagent view transform; CUSUM gewählt — das Gegenstück für das zweite x-if */
+      isCusum() { return this.model.chartTypeId === 'cusum'; },
+
+      /** @noagent view transform; die Optionen der Kartentyp-Auswahl (eine Quelle: CHART_TYPE_IDS) */
+      chartTypeOptions() { return CHART_TYPE_IDS.map(v => ({ value: v, label: _t(`type_${v}`) })); },
+
+      /** @noagent view transform; die Optionen der σ-Schätzer (eine Quelle: SIGMA_METHODS) */
+      sigmaMethodOptions() { return SIGMA_METHODS.map(v => ({ value: v, label: _t(`sigma_${v}`) })); },
+
+      /**
+       * Eine Analyseoption setzen und neu rechnen.
+       * @agent
+       * @param {'chartTypeId'|'sigmaMethod'|'baselineCount'|'targetOverride'|'sigmaOverride'|'lambda'|'L'|'kSigma'|'hSigma'} key
+       *   welche Option; read().activeParams nennt die für den aktuellen Kartentyp gültigen
+       * @param {any} value Typ und Bereich je Schlüssel siehe Hilfe
+       * @returns {Promise<void>}
+       * @throws {Error} wenn `key` unbekannt oder für diesen Kartentyp nicht aktiv ist oder `value` ungültig
+       */
+      async setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        requireEnum('key', key, this.activeParams());
+        setAtPath(this.model, key, PARAM_CHECKS[key](value));
+        await this.runAnalysis();
+      },
+
+      /** Ergebnis und Punkte für read(), aus `_lastRun` (E4). */
+      _agentResult() {
+        const run = this._lastRun;
+        if (!run) return { result: null, points: [], pointsColumns: [] };
+        const { r } = run;
+        const base = { n: run.n, target: finiteOrNull(run.target), sigma: finiteOrNull(run.sigma) };
+        if (run.type === 'ewma') {
+          const { rows, columns } = zipPoints({ ewma: r.values, ucl: r.ucl, lcl: r.lcl }, { signal: r.signals });
+          return {
+            result: {
+              chartType: 'ewma', ...base, lambda: this.model.lambda, L: this.model.L,
+              cl: finiteOrNull(r.cl), sigmaSteady: finiteOrNull(r.sigmaSteady), signals: [...r.signals],
+            },
+            points: rows,
+            pointsColumns: columns,
+          };
+        }
+        const { rows, columns } = zipPoints({ cPlus: r.cPlus, cMinus: r.cMinus },
+          { signalHigh: r.signalsHi, signalLow: r.signalsLo });
+        return {
+          result: {
+            chartType: 'cusum', ...base, k: finiteOrNull(r.k), h: finiteOrNull(r.h),
+            signalsHigh: [...r.signalsHi], signalsLow: [...r.signalsLo],
+          },
+          points: rows,
+          pointsColumns: columns,
+        };
+      },
+
+      /**
+       * Die Messreihe wählen und neu rechnen.
+       * @agent
+       * @param {'value'} slot der Slot; dieses Modul führt nur `value`
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
+       *   der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren
+       * @returns {Promise<void>}
+       * @throws {Error} wenn `slot` unbekannt ist oder die Spalte nicht wählbar
+       */
+      async setColumn(slot, ref) {
+        requireEnum('slot', slot, COLUMN_SLOTS);
+        let clean = null;
+        if (ref != null) {
+          requireEnum('slot', slot, this.activeColumnSlots());
+          const keys = this.pickableColumns()[slot].map(c => c.key);
+          requireKnownId('ref', refToKey(ref), keys);
+          // Normalisierte Form: fremde Eigenschaften des Agentenobjekts bleiben draußen.
+          clean = keyToRef(refToKey(ref));
+        }
+        this.model.columnRef = clean;
+        this._picker?.syncValue(clean);
+        await this.runAnalysis();
+      },
+
+      /**
+       * Mit den aktuellen Eingaben und Spaltenwerten neu rechnen.
+       * @agent
+       * @returns {Promise<void>}
+       */
+      async runAnalysis() {
+        clearTimeout(this._autoRunTimer);
+        await this._runAnalysis();
+      },
 
       // ── View transforms (i18n) ────────────────────────────────
 
+      /** @noagent view transform */
       typeHint() {
         return _t(`typeHint_${  this.model.chartTypeId}`);
       },
+      /** @noagent view transform */
       sectionParamsLabel() {
         return _t(`sectionParams_${  this.model.chartTypeId}`);
       },
@@ -97,66 +310,97 @@ const mod = createModule({
       // ── Nullable input display values ─────────────────────────
       // Legacy stored null for empty; the input shows '' for null.
 
+      /** @noagent view transform */
       baselineCountValue() {
         return this.model.baselineCount == null ? '' : String(this.model.baselineCount);
       },
+      /** @noagent view transform */
       targetOverrideValue() {
         return this.model.targetOverride == null ? '' : String(this.model.targetOverride);
       },
+      /** @noagent view transform */
       sigmaOverrideValue() {
         return this.model.sigmaOverride == null ? '' : String(this.model.sigmaOverride);
       },
 
       // ── Change handlers ───────────────────────────────────────
 
-      onChartTypeChange() {
-        // model.chartTypeId already updated by x-model. The <template x-if>
-        // swaps the param block automatically; just re-run the analysis
-        // (EWMA → 1 chart, CUSUM → 2 charts).
-        this._scheduleAutoRun();
+      /**
+       * @noagent DOM event handler; the agent uses setParam()
+       * @param {Event} ev die Änderung des Phase-I-Feldes
+       */
+      async onBaselineCountChange(ev) {
+        const v = intOrNull(ev.target.value);
+        // Leer, unlesbar oder < 1 heißt „alle Punkte" (E6).
+        await this.setParam('baselineCount', v != null && v >= 1 ? v : null);
+        // Das Feld zeigt den Model-Wert, auch wenn er sich nicht geändert hat (0 bei leerem Feld).
+        ev.target.value = this.baselineCountValue();
       },
-      onSigmaMethodChange() {
-        // model.sigmaMethod already updated by x-model
-        this._scheduleAutoRun();
+
+      /**
+       * @noagent DOM event handler; the agent uses setParam()
+       * @param {Event} ev die Änderung der Zielvorgabe
+       */
+      async onTargetOverrideChange(ev) {
+        await this.setParam('targetOverride', numOrNull(ev.target.value));
+        ev.target.value = this.targetOverrideValue();
       },
-      onBaselineCountChange(ev) {
-        this.model.baselineCount = intOrNull(ev.target.value);
-        this._scheduleAutoRun();
-      },
-      onTargetOverrideChange(ev) {
-        this.model.targetOverride = numOrNull(ev.target.value);
-        this._scheduleAutoRun();
-      },
-      onSigmaOverrideChange(ev) {
+
+      /**
+       * @noagent DOM event handler; the agent uses setParam()
+       * @param {Event} ev die Änderung der σ-Vorgabe
+       */
+      async onSigmaOverrideChange(ev) {
         const v = numOrNull(ev.target.value);
-        this.model.sigmaOverride = (v != null && v >= 0) ? v : null;
-        this._scheduleAutoRun();
+        await this.setParam('sigmaOverride', (v != null && v >= 0) ? v : null);
+        ev.target.value = this.sigmaOverrideValue();
       },
-      onLambdaChange(ev) {
+
+      /**
+       * @noagent DOM event handler; the agent uses setParam()
+       * @param {Event} ev die Änderung von λ
+       */
+      async onLambdaChange(ev) {
         const v = numOrNull(ev.target.value);
-        this.model.lambda = (v != null && v > 0 && v <= 1) ? v : DEFAULTS.lambda;
-        this._scheduleAutoRun();
+        await this.setParam('lambda', (v != null && v > 0 && v <= 1) ? v : DEFAULTS.lambda);
+        ev.target.value = String(this.model.lambda);
       },
-      onLChange(ev) {
+
+      /**
+       * @noagent DOM event handler; the agent uses setParam()
+       * @param {Event} ev die Änderung von L
+       */
+      async onLChange(ev) {
         const v = numOrNull(ev.target.value);
-        this.model.L = (v != null && v > 0) ? v : DEFAULTS.L;
-        this._scheduleAutoRun();
+        await this.setParam('L', (v != null && v > 0) ? v : DEFAULTS.L);
+        ev.target.value = String(this.model.L);
       },
-      onKSigmaChange(ev) {
+
+      /**
+       * @noagent DOM event handler; the agent uses setParam()
+       * @param {Event} ev die Änderung von k
+       */
+      async onKSigmaChange(ev) {
         const v = numOrNull(ev.target.value);
-        this.model.kSigma = (v != null && v > 0) ? v : DEFAULTS.kSigma;
-        this._scheduleAutoRun();
+        await this.setParam('kSigma', (v != null && v > 0) ? v : DEFAULTS.kSigma);
+        ev.target.value = String(this.model.kSigma);
       },
-      onHSigmaChange(ev) {
+
+      /**
+       * @noagent DOM event handler; the agent uses setParam()
+       * @param {Event} ev die Änderung von h
+       */
+      async onHSigmaChange(ev) {
         const v = numOrNull(ev.target.value);
-        this.model.hSigma = (v != null && v > 0) ? v : DEFAULTS.hSigma;
-        this._scheduleAutoRun();
+        await this.setParam('hSigma', (v != null && v > 0) ? v : DEFAULTS.hSigma);
+        ev.target.value = String(this.model.hSigma);
       },
 
       // ── Analysis ─────────────────────────────────────────────
 
       async _runAnalysis() {
         const clear = () => {
+          this._lastRun = null;
           this._renderGen++;
           this._destroyCharts();
           this.chartViews = [];
@@ -188,10 +432,12 @@ const mod = createModule({
 
         if (this.model.chartTypeId === 'ewma') {
           const r = computeEWMA(values, target, sigma, this.model.lambda, this.model.L);
+          this._lastRun = { type: 'ewma', r, target, sigma, n: values.length };
           this._renderStatsEWMA(r, target, sigma, values.length);
           await this._renderChartEWMA(r);
         } else {
           const r = computeCUSUM(values, target, sigma, this.model.kSigma, this.model.hSigma);
+          this._lastRun = { type: 'cusum', r, target, sigma, n: values.length };
           this._renderStatsCUSUM(r, target, sigma, values.length);
           await this._renderChartCUSUM(r, values.length);
         }
