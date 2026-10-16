@@ -8138,7 +8138,7 @@
         "predict": {
           "help": "Gibt Zielgröße und Konfidenzgrenzen für die angegebenen Werte der Terme aus predictionTerms zurück (linear, response, ciLower, ciUpper; die Grenzen sind null, wenn der Fit sie nicht trägt) und füllt prediction. Gibt null zurück, wenn ein Term ohne Wert bleibt oder kein Ergebnis vorliegt; das ist keine Absage.",
           "params": {
-            "values": "Ein Objekt mit je Term aus predictionTerms einer Zahl; kategoriale Prädiktoren als 0/1 je Dummy-Term. Fehlende Terme lassen das Ergebnis null."
+            "values": "Ein Objekt mit einer Zahl je Term aus predictionTerms; kategoriale Prädiktoren als 0/1 je Dummy-Term. Fehlende Terme lassen das Ergebnis null."
           }
         }
       },
