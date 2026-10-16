@@ -362,24 +362,10 @@
 
   </div>
 
-  <!-- ── Burndown popout (declarative; chart mounted imperatively into anchor) ── -->
-  <template x-if="burndownOpen">
-    <div class="dmike-chart-popout-overlay"
-      @click.self="closeBurndown()"
-      @keydown.escape.window="closeBurndown()"
-      @mousemove.window="popoutDragMove($event)"
-      @mouseup.window="popoutDragEnd()">
-      <div class="dmike-chart-popout" :style="popoutStyle()">
-        <div class="dmike-chart-popout-titlebar" @mousedown="popoutDragStart($event)">
-          <span x-text="t('burndownTitle')"></span>
-          <button class="dmike-chart-popout-close" type="button" :aria-label="t('common.close')" @click="closeBurndown()">
-            <span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span>
-          </button>
-        </div>
-        <div class="dmike-chart-popout-body">
-          <div data-ref="burndown-chart" style="width:100%;height:500px;resize:both;overflow:auto"></div>
-        </div>
-      </div>
+  <!-- Burndown: hidden here, lent to the dialog service by showBurndown() -->
+  <div class="fmea__modal-forms" hidden>
+    <div class="fmea__burndown" x-ref="burndown">
+      <div data-ref="burndown-chart" style="width:100%;height:500px;resize:both;overflow:auto"></div>
     </div>
-  </template>
+  </div>
 </section>
