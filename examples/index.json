@@ -2294,8 +2294,8 @@
         "en": "TRIZ function analysis: toothbrush"
       },
       "description": {
-        "de": "Funktionsmodell einer Handzahnbürste mit Zielobjekt Belag: eine unzureichende Reinigungsfunktion und eine schädliche Wirkung auf das Zahnfleisch.",
-        "en": "Function model of a manual toothbrush with plaque as target: an insufficient cleaning function and a harmful effect on the gums."
+        "de": "Funktionsmodell einer Handzahnbürste mit Zielobjekt Belag: eine unzureichende Reinigungsfunktion und zwei schädliche Wirkungen auf das Zahnfleisch.",
+        "en": "Function model of a manual toothbrush with plaque as target: an insufficient cleaning function and two harmful effects on the gums."
       },
       "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
