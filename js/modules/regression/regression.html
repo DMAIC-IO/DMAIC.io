@@ -38,20 +38,19 @@
 
     <div class="field-group">
       <label x-text="t('regType')"></label>
-      <select class="field" data-ref="reg-type" x-model="model.regType" @change="onRegTypeChange()">
-        <option value="polynomial" x-text="t('typePolynomial')"></option>
-        <option value="exponential" x-text="t('typeExponential')"></option>
-        <option value="logarithmic" x-text="t('typeLogarithmic')"></option>
-        <option value="power" x-text="t('typePower')"></option>
+      <select class="field" data-ref="reg-type" :value="model.regType" @change="onRegTypeSelect($event)">
+        <template x-for="o in regTypeOptions()" :key="o.value">
+          <option :value="o.value" :selected="o.value === model.regType" x-text="o.label"></option>
+        </template>
       </select>
     </div>
 
     <div class="field-group" data-ref="degree-field" x-show="model.isPolynomial">
       <label x-text="t('polyDegree')"></label>
-      <select class="field" data-ref="poly-degree" x-model.number="model.polyDegree" @change="onDegreeChange()">
-        <option :value="1" :disabled="degreeDisabled(1)" :title="degreeOptionTitle(1)" x-text="t('degree1')"></option>
-        <option :value="2" :disabled="degreeDisabled(2)" :title="degreeOptionTitle(2)" x-text="t('degree2')"></option>
-        <option :value="3" :disabled="degreeDisabled(3)" :title="degreeOptionTitle(3)" x-text="t('degree3')"></option>
+      <select class="field" data-ref="poly-degree" :value="model.polyDegree" @change="onDegreeSelect($event)">
+        <template x-for="o in degreeOptions()" :key="o.value">
+          <option :value="o.value" :selected="o.value === model.polyDegree" :disabled="o.disabled" :title="o.title" x-text="o.label"></option>
+        </template>
       </select>
       <div class="reg__degree-hint" data-ref="degree-hint" :style="degreeHint() ? '' : 'display:none'" x-text="degreeHint()"></div>
     </div>

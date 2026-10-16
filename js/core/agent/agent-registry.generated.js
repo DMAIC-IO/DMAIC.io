@@ -7053,172 +7053,279 @@ export const AGENT_REGISTRY = {
     }
   },
   "regression": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:sm",
-      "unmarked_method:confDisplay",
-      "unmarked_method:alphaDisplay",
-      "unmarked_method:errorText",
-      "unmarked_method:importOptions",
-      "unmarked_method:yOptions",
-      "unmarked_method:selectedInfoText",
-      "unmarked_method:selectedInfoClass",
-      "unmarked_method:degreeDisabled",
-      "unmarked_method:degreeOptionTitle",
-      "unmarked_method:degreeHint",
-      "unmarked_method:refreshDegree",
-      "unmarked_method:algoNavigate",
-      "unmarked_method:xSelectorButtons",
-      "unmarked_method:setActiveX",
-      "unmarked_method:anovaHeader",
-      "unmarked_method:anova",
-      "unmarked_method:coefView",
-      "unmarked_method:buildResultView",
-      "unmarked_method:rebuildResult",
-      "unmarked_method:buildPredictForm",
-      "unmarked_method:predictForm",
-      "unmarked_method:predictText",
-      "unmarked_method:predictInterval",
-      "unmarked_method:onPredictInput",
-      "unmarked_method:onImportChange",
-      "unmarked_method:onYChange",
-      "unmarked_method:onRegTypeChange",
-      "unmarked_method:onDegreeChange",
-      "unmarked_method:onConfChange",
-      "unmarked_method:onAlphaChange",
-      "unmarked_method:toggleCI",
-      "unmarked_method:togglePI",
-      "unmarked_method:toggleSort",
-      "unmarked_method:toggleTerm",
-      "unmarked_method:designNoticeLines",
-      "unmarked_method:hasDesignNotice",
-      "unmarked_method:aliasedRows",
-      "unmarked_method:excludeAliased",
-      "unmarked_method:autoRun",
-      "unmarked_method:runAnalysis",
-      "unmarked_method:formatPerXError",
-      "unmarked_method:saveAsModel",
-      "unmarked_method:initPicker",
-      "unmarked_method:destroyCharts",
-      "unmarked_method:renderActiveChart",
-      "unmarked_method:renderScatterChart",
-      "unmarked_method:renderResidualChart",
-      "unmarked_method:renderOrderChart",
-      "unmarked_method:renderQQChart",
-      "unmarked_method:renderHistogramChart",
-      "unmarked_method:renderSSPieChart",
-      "unmarked_method:toggleSSPie",
-      "unmarked_method:renderMainEffectsChart",
-      "unmarked_method:renderInteractionChart",
-      "unmarked_method:init",
-      "unmarked_method:onRouteChanged",
-      "unmarked_method:destroy",
-      "unreachable_write:regType",
-      "unreachable_write:polyDegree"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setColumns": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'x'",
+            "optional": false,
+            "help": "der Slot; dieses Modul führt nur `x`"
+          },
+          {
+            "name": "refs",
+            "type": "Array<{ instanceId: string, sheetId: string, columnId: string }>",
+            "optional": false,
+            "help": "die Spaltenbezüge wählbarer Spalten (`pickableColumns.x`); `[]` leert die Auswahl"
+          }
+        ],
+        "returns": "void",
+        "help": "Die Einflussgrößen X ersetzen; die Reihenfolge bleibt, Doppelte zählen einmal. Steht die Zielgröße Y unter den neuen X, wird Y geleert. Danach wird gerechnet; ohne X oder Y wird das Ergebnis verworfen."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'y'",
+            "optional": false,
+            "help": "der Slot; dieses Modul führt nur `y`"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte (`pickableColumns.y`, ohne die X), oder null zum Leeren"
+          }
+        ],
+        "returns": "void",
+        "help": "Die Zielgröße Y setzen oder mit null leeren. Danach wird gerechnet; ohne X oder Y wird das Ergebnis verworfen."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'regType'|'polyDegree'|'confLevel'|'alpha'",
+            "optional": false,
+            "help": "welcher Parameter; `activeParams` nennt die jetzt gültigen"
+          },
+          {
+            "name": "value",
+            "type": "string|number",
+            "optional": false,
+            "help": "regType: einer aus `regTypes`; polyDegree: eine Zahl aus `activeDegrees`; confLevel, alpha: ein Anteil größer 0 und kleiner 1"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Parameter setzen und neu rechnen."
+      },
+      "setTerm": {
+        "params": [
+          {
+            "name": "term",
+            "type": "string",
+            "optional": false,
+            "help": "eine Term-id aus `terms`"
+          },
+          {
+            "name": "included",
+            "type": "boolean",
+            "optional": false,
+            "help": "true schließt den Term ein, false aus"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Term des Polynoms ein- oder ausschließen und neu rechnen."
+      },
+      "importExperiment": {
+        "params": [
+          {
+            "name": "key",
+            "type": "string|null",
+            "optional": false,
+            "help": "ein Schlüssel aus `experimentImports`, oder null"
+          }
+        ],
+        "returns": "void",
+        "help": "Faktoren und Antwort eines DoE-Versuchs als X und Y übernehmen und rechnen; null löst die Übernahme und lässt die Spalten stehen."
+      },
+      "setActiveX": {
+        "params": [
+          {
+            "name": "key",
+            "type": "string",
+            "optional": false,
+            "help": "ein Schlüssel aus `perXKeys`"
+          }
+        ],
+        "returns": "void",
+        "help": "Bei Einzel-X-Modellen (exponentiell, logarithmisch, Potenz mit mehreren X) das Modell wählen, das `result` zeigt."
+      },
+      "autoRun": {
+        "params": [],
+        "returns": "void",
+        "help": "Rechnet, wenn X und Y gewählt sind, sonst verwirft es das Ergebnis."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Das Modell mit den aktuellen Eingaben rechnen. Schlägt der Fit fehl, ist `result` null und `errorMsg` nennt den Grund; bei Aliasing nennt `terms` die Terme, die `setTerm` dann ausschließen kann."
+      },
+      "saveAsModel": {
+        "params": [],
+        "returns": "string|null",
+        "help": "Speichert das Polynommodell mit mehreren X in die Projektmodelle (neu oder als Aktualisierung des zuletzt gespeicherten). Gibt die id zurück, oder null, wenn kein speicherbares Modell vorliegt (`read().canSaveModel`)."
+      }
+    },
     "fields": {
       "colRefs": {
-        "type": "Array<{instanceId:string, sheetId:string, columnId:string}>",
-        "help": "",
-        "bulk": false
+        "type": "Array<{ instanceId: string, sheetId: string, columnId: string }>",
+        "help": "the predictor columns X, in order",
+        "bulk": false,
+        "derived": true
       },
       "yKey": {
         "type": "string|null",
-        "help": "Y column key (from separate dropdown).",
-        "bulk": false
+        "help": "the response column Y as key `instanceId|sheetId|columnId`",
+        "bulk": false,
+        "derived": true
       },
       "regType": {
-        "type": "'polynomial'|'exponential'|'logarithmic'|'power'",
-        "help": "",
-        "bulk": false
+        "type": "string",
+        "help": "one of `regTypes`",
+        "bulk": false,
+        "derived": true
+      },
+      "regTypes": {
+        "type": "string[]",
+        "help": "all regression types",
+        "bulk": false,
+        "derived": true
       },
       "polyDegree": {
-        "type": "1|2|3",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "polynomial degree",
+        "bulk": false,
+        "derived": true
+      },
+      "activeDegrees": {
+        "type": "number[]",
+        "help": "the degrees `setParam('polyDegree')` accepts now",
+        "bulk": false,
+        "derived": true
       },
       "confLevel": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "confidence level as a fraction",
+        "bulk": false,
+        "derived": true
       },
       "alpha": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "showCI": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "showPI": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "result": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "perXResults": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "activeXKey": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "activeTab": {
-        "type": "string",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "significance level as a fraction",
+        "bulk": false,
+        "derived": true
       },
       "excludedTerms": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string[]",
+        "help": "the terms left out of the polynomial",
+        "bulk": false,
+        "derived": true
       },
-      "designTerms": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "terms": {
+        "type": "string[]",
+        "help": "the term ids `setTerm` accepts now",
+        "bulk": false,
+        "derived": true
       },
-      "designNotice": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "coefSortByP": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "experimentImports": {
+        "type": "Array<{ key: string, label: string }>",
+        "help": "the DoE responses `importExperiment` accepts",
+        "bulk": false,
+        "derived": true
       },
       "activeImportSource": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "{ experimentId: string, sourceColumn: string, transform: string }|null",
+        "help": "the DoE response the model came from",
+        "bulk": false,
+        "derived": true
+      },
+      "designNotice": {
+        "type": "object|null",
+        "help": "the note left by a DoE preset, `{ aliased, saturated }`",
+        "bulk": false,
+        "derived": true
+      },
+      "perXKeys": {
+        "type": "string[]",
+        "help": "the single-X models `setActiveX` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "activeXKey": {
+        "type": "string|null",
+        "help": "the single-X model the result shows",
+        "bulk": false,
+        "derived": true
+      },
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts now",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "activeMultiSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumns` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn`/`setColumns` accept, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "the fitted model as numbers, null without a shown result",
+        "bulk": false,
+        "derived": true
+      },
+      "errorMsg": {
+        "type": "string",
+        "help": "the message the module shows, '' without error",
+        "bulk": false,
+        "derived": true
+      },
+      "predictors": {
+        "type": "Array<{ id: string, label: string, kind: string, levels?: string[] }>",
+        "help": "the inputs `predict` takes",
+        "bulk": false,
+        "derived": true
+      },
+      "canSaveModel": {
+        "type": "boolean",
+        "help": "saveAsModel would store a model now",
+        "bulk": false,
+        "derived": true
       },
       "savedModelId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "savedModelName": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "exampleWorksheetId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string|null",
+        "help": "id of the model saved last in the project models",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -10518,4 +10625,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":47};
+export const AGENT_COVERAGE = {"total":76,"available":48};

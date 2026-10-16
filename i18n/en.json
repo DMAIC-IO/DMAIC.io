@@ -7775,6 +7775,135 @@
       "scheduleRunning": "Fetching…"
     },
     "regression": {
+      "whenToUse": "When the relationship between a continuous response and one or more predictors is to be described as an equation — linear, polynomial with interactions, exponential, logarithmic or power — to assess effects, predict, or save a model for optimisation.",
+      "actions": {
+        "read": {
+          "help": "Returns the inputs (X, Y, type, degree, confidence, α, excluded terms), the sets the actions accept now, and the fitted model as numbers in result (null without a fit or after a failed fit; errorMsg then names the reason)."
+        },
+        "setColumns": {
+          "help": "Replaces the predictor columns X; order is kept, duplicates count once. If Y is among the new X, yKey is cleared. Fits again; without X or Y, result becomes null.",
+          "params": {
+            "slot": "One of activeMultiSlots; this module only has 'x'.",
+            "refs": "List of column references { instanceId, sheetId, columnId } from pickableColumns.x, in order; [] clears X."
+          }
+        },
+        "setColumn": {
+          "help": "Sets the response column Y and fits again; null clears Y and result becomes null.",
+          "params": {
+            "slot": "One of activeColumnSlots; this module only has 'y'.",
+            "ref": "Column reference { instanceId, sheetId, columnId } from pickableColumns.y (the columns not chosen as X), or null to clear."
+          }
+        },
+        "setParam": {
+          "help": "Sets the regression type, the polynomial degree, the confidence level or α and fits again.",
+          "params": {
+            "key": "One of regType, polyDegree, confLevel, alpha; activeParams names those valid now (polyDegree only for the polynomial type).",
+            "value": "regType: one of the values in regTypes; polyDegree: a whole number from activeDegrees; confLevel, alpha: a fraction greater than 0 and less than 1 (0.95, not 95)."
+          }
+        },
+        "setTerm": {
+          "help": "Includes or excludes one polynomial term and fits again; excludedTerms and result.excludedTerms follow.",
+          "params": {
+            "term": "A term id from terms (the fitted terms without Intercept, plus the aliased terms of a failed fit).",
+            "included": "true includes the term, false excludes it."
+          }
+        },
+        "importExperiment": {
+          "help": "Takes the factors and a response of a DoE experiment as X and Y and fits; activeImportSource names the source. null releases the source and keeps the columns.",
+          "params": {
+            "key": "A key from experimentImports, or null."
+          }
+        },
+        "setActiveX": {
+          "help": "For single-X models (exponential, logarithmic, power with several X) chooses the model that result shows; activeXKey follows.",
+          "params": {
+            "key": "A key from perXKeys."
+          }
+        },
+        "autoRun": {
+          "help": "Fits when X and Y are set; otherwise discards the result (result becomes null)."
+        },
+        "runAnalysis": {
+          "help": "Fits the model with the current inputs. On failure result is null and errorMsg names the reason; with aliasing, terms lists the terms setTerm can exclude."
+        },
+        "saveAsModel": {
+          "help": "Saves the polynomial model with several X in the project models (new, or as an update of the model saved last) and returns its id; returns null when canSaveModel is false. savedModelId follows."
+        }
+      },
+      "fields": {
+        "colRefs": {
+          "help": "The predictor columns X as { instanceId, sheetId, columnId }, in order."
+        },
+        "yKey": {
+          "help": "The response column Y as key instanceId|sheetId|columnId, or null."
+        },
+        "regType": {
+          "help": "The regression type, one of regTypes."
+        },
+        "regTypes": {
+          "help": "All regression types setParam('regType') accepts."
+        },
+        "polyDegree": {
+          "help": "The polynomial degree (only used with the polynomial type)."
+        },
+        "activeDegrees": {
+          "help": "The degrees setParam('polyDegree') accepts now; a degree with too few paired rows for its term count is missing."
+        },
+        "confLevel": {
+          "help": "The confidence level as a fraction (0.95)."
+        },
+        "alpha": {
+          "help": "The significance level α as a fraction (0.05)."
+        },
+        "excludedTerms": {
+          "help": "The term ids left out of the polynomial."
+        },
+        "terms": {
+          "help": "The term ids setTerm accepts now; empty without a polynomial fit or aliasing."
+        },
+        "experimentImports": {
+          "help": "The DoE responses importExperiment accepts, each { key, label }."
+        },
+        "activeImportSource": {
+          "help": "The DoE response the inputs came from, { experimentId, sourceColumn, transform }, or null."
+        },
+        "designNotice": {
+          "help": "The note left by a DoE preset, { aliased, saturated }, or null."
+        },
+        "perXKeys": {
+          "help": "The single-X models setActiveX accepts; empty for the polynomial type."
+        },
+        "activeXKey": {
+          "help": "The single-X model result shows, or null."
+        },
+        "activeParams": {
+          "help": "The keys setParam accepts now."
+        },
+        "activeColumnSlots": {
+          "help": "The slots setColumn accepts: 'y'."
+        },
+        "activeMultiSlots": {
+          "help": "The slots setColumns accepts: 'x'."
+        },
+        "pickableColumns": {
+          "help": "Per slot (x, y) the columns setColumns and setColumn accept, each { key, name }; y leaves out the columns chosen as X."
+        },
+        "result": {
+          "help": "The fitted model as numbers: type, equation, n, R2, adjR2, R2pred, Se, Fstat, fPVal, dw, coefficients [{ term, coeff, se, t, pval, ciLow, ciHigh, vif }], excludedTerms; null without a fit or after a failed fit."
+        },
+        "errorMsg": {
+          "help": "The message of the last failed fit, '' without error."
+        },
+        "predictors": {
+          "help": "The inputs of the fitted model, each { id, label, kind, levels? }; empty without result."
+        },
+        "canSaveModel": {
+          "help": "true when saveAsModel would store a model now (polynomial type, several X, a fit)."
+        },
+        "savedModelId": {
+          "help": "The id of the model saved last in the project models, or null."
+        }
+      },
       "name": "Regression Analysis",
       "description": "Polynomial regression (degree 1–3, interactions), Exponential, Logarithmic, Power",
       "importFromExperiment": "Import from experiment",

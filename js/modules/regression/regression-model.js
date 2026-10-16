@@ -25,7 +25,10 @@ import { defaultActiveTerms, quadTermId, parseTermId, compareTermIds } from '../
 import { tInv } from '../../engines/math-utils.js';
 import { refToKey, keyToRef } from '../../ui/column-picker.js';
 
-const REG_TYPES = ['polynomial', 'exponential', 'logarithmic', 'power'];
+/** Die Regressionstypen, die das Modul anbietet. */
+export const REG_TYPES = ['polynomial', 'exponential', 'logarithmic', 'power'];
+/** Die Polynomgrade, die das Modul anbietet. */
+export const DEGREES = [1, 2, 3];
 const TABS = ['scatter', 'residuals', 'order', 'qq', 'histogram', 'ss-pie', 'main-effects', 'interaction'];
 
 /**
@@ -201,7 +204,7 @@ export class State {
     if (Array.isArray(d.colRefs)) s.colRefs = d.colRefs.filter(Boolean).map(r => ({ ...r }));
     s.yKey = typeof d.yKey === 'string' ? d.yKey : null;
     s.regType = REG_TYPES.includes(d.regType) ? d.regType : 'polynomial';
-    s.polyDegree = (d.polyDegree === 1 || d.polyDegree === 2 || d.polyDegree === 3) ? d.polyDegree : 1;
+    s.polyDegree = DEGREES.includes(d.polyDegree) ? d.polyDegree : 1;
     s.confLevel = (typeof d.confLevel === 'number' && d.confLevel > 0 && d.confLevel < 1) ? d.confLevel : null;
     s.alpha = (typeof d.alpha === 'number' && d.alpha > 0 && d.alpha < 1) ? d.alpha : null;
     s.showCI = typeof d.showCI === 'boolean' ? d.showCI : true;
@@ -398,7 +401,7 @@ export class State {
       }
     }
     const excludedCount = (this.excludedTerms || []).length;
-    const options = [1, 2, 3].map(deg => {
+    const options = DEGREES.map(deg => {
       const all = polyTermCount(k || 1, deg);
       const terms = deg === this.polyDegree ? all - excludedCount : all;
       return { deg, terms, disabled: n > 0 && n <= terms };

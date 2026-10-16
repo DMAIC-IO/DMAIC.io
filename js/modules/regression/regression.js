@@ -18,17 +18,27 @@
  * Supports:
  *   - Polynomial (degree 1–3) with all X in one combined model + interactions
  *   - Exponential, Logarithmic, Power (single-X per predictor)
+ *
+ * @agent  Steuerbar über das Viewmodel: X und Y wählen (setColumns,
+ *   setColumn), Typ, Grad, Konfidenz und α setzen (setParam), Terme ein-
+ *   und ausschließen (setTerm), einen DoE-Versuch übernehmen
+ *   (importExperiment), rechnen (autoRun, runAnalysis), bei Einzel-X-Modellen
+ *   das gezeigte wählen (setActiveX) und als Projektmodell speichern
+ *   (saveAsModel). Diagramme, Tabs und die Anzeigeschalter bleiben der
+ *   Oberfläche vorbehalten; gelesen wird über read() (AgentRead).
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State, keyToRef, refToKey, predictorsOf, predictAt } from './regression-model.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { pickableColumnList } from '../../core/agent/agent-options.js';
 import {
-  regressionCurvePoints, confidenceBand, predictionBand, normalQuantile,
-  predictMulti, predictValue, compileModelSpec,
+  State, keyToRef, refToKey, predictorsOf, predictAt, REG_TYPES, DEGREES,
+} from './regression-model.js';
+import {
+  regressionCurvePoints, confidenceBand, predictionBand, normalQuantile, predictMulti,
 } from '../../engines/regression-engine.js';
-import {
-  ColumnPicker, discoverColumns, isPickerFocused,
-} from '../../ui/column-picker.js';
+import { ColumnPicker, isPickerFocused } from '../../ui/column-picker.js';
 import { provisionWorksheet as _provisionWorksheet, removeProvisionedWorksheet as _removeProvisionedWorksheet } from '../../core/examples-registry.js';
 import { saveModel, buildDataSnapshot, computeDataHash } from '../../core/models-store.js';
 import { getChartColors } from '../../core/chart/chart-core.js';
@@ -47,6 +57,67 @@ function fmt(v, d = 4) {
 }
 function fmtP(p) { return p < 0.0001 ? '< 0.0001' : p.toFixed(4); }
 
+/** Die vier Parameter, die `setParam` annimmt (flach am Model). */
+const PARAM_KEYS = ['regType', 'polyDegree', 'confLevel', 'alpha'];
+/** Die Werte von `included` in `setTerm`. */
+const BOOL_VALUES = [true, false];
+/** Die Einzelspalten-Slots: die Zielgröße Y. */
+const COLUMN_SLOTS = ['y'];
+/** Die Mehrfachspalten-Slots: die Einflussgrößen X, geordnet. */
+const MULTI_SLOTS = ['x'];
+/** Die Spaltentypen beider Slots (dieselben für Wähler, Y-Auswahl und Lesefläche). */
+const COLUMN_TYPES = { types: ['numeric', 'currency', 'percent', 'date', 'time'], minCount: 1 };
+/** Je Slot der Filter seines Wählers. */
+const SLOT_FILTERS = { x: COLUMN_TYPES, y: COLUMN_TYPES };
+
+/**
+ * Ein Anteil strikt zwischen 0 und 1 (Konfidenz, α).
+ * @param {any} value der übergebene Wert
+ * @returns {number} der geprüfte Anteil
+ * @throws {Error} wenn `value` keine Zahl in (0, 1) ist
+ */
+function requireFraction(value) {
+  const n = requireNumber('value', value);
+  if (n <= 0 || n >= 1) {
+    throw new Error(`invalid value ${JSON.stringify(value)}; allowed: a number greater than 0 and less than 1`);
+  }
+  return n;
+}
+
+/**
+ * Die Agenten-Lesefläche der Regression.
+ *
+ * Das Ergebnis liegt im Model **und** als Anzeigeobjekt im Viewmodel; nach
+ * einem Fehlschlag behält das Model den alten Fit. Die Lesefläche zeigt
+ * deshalb nur dann ein Ergebnis, wenn auch die Oberfläche eines zeigt, und
+ * nur Zahlen — keine Residuen-, Matrix- oder Vorhersagevektoren.
+ *
+ * @typedef {object} AgentRead
+ * @property {Array<{ instanceId: string, sheetId: string, columnId: string }>} colRefs  the predictor columns X, in order
+ * @property {string|null} yKey  the response column Y as key `instanceId|sheetId|columnId`
+ * @property {string} regType  one of `regTypes`
+ * @property {string[]} regTypes  all regression types
+ * @property {number} polyDegree  polynomial degree
+ * @property {number[]} activeDegrees  the degrees `setParam('polyDegree')` accepts now
+ * @property {number} confLevel  confidence level as a fraction
+ * @property {number} alpha  significance level as a fraction
+ * @property {string[]} excludedTerms  the terms left out of the polynomial
+ * @property {string[]} terms  the term ids `setTerm` accepts now
+ * @property {Array<{ key: string, label: string }>} experimentImports  the DoE responses `importExperiment` accepts
+ * @property {{ experimentId: string, sourceColumn: string, transform: string }|null} activeImportSource  the DoE response the model came from
+ * @property {object|null} designNotice  the note left by a DoE preset, `{ aliased, saturated }`
+ * @property {string[]} perXKeys  the single-X models `setActiveX` accepts
+ * @property {string|null} activeXKey  the single-X model the result shows
+ * @property {string[]} activeParams  the keys `setParam` accepts now
+ * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
+ * @property {string[]} activeMultiSlots  the slots `setColumns` accepts
+ * @property {object} pickableColumns  per slot the columns `setColumn`/`setColumns` accept, each `{ key, name }`
+ * @property {object|null} result  the fitted model as numbers, null without a shown result
+ * @property {string} errorMsg  the message the module shows, '' without error
+ * @property {Array<{ id: string, label: string, kind: string, levels?: string[] }>} predictors  the inputs `predict` takes
+ * @property {boolean} canSaveModel  saveAsModel would store a model now
+ * @property {string|null} savedModelId  id of the model saved last in the project models
+ */
 const mod = createModule({
   config: {
     id: 'regression',
@@ -74,7 +145,7 @@ const mod = createModule({
       _predictText: '',
       _predictInterval: '',
       /** Cached degree availability { n, options }. */
-      _degree: { n: 0, options: [{ deg: 1, terms: 2, disabled: false }, { deg: 2, terms: 0, disabled: false }, { deg: 3, terms: 0, disabled: false }] },
+      _degree: { n: 0, options: DEGREES.map(deg => ({ deg, terms: deg === 1 ? 2 : 0, disabled: false })) },
       _picker: null,
       _charts: [],
       _unsubs: [],
@@ -86,41 +157,228 @@ const mod = createModule({
       /** SS-pie transient render context (chart instances + rebuild closures). */
       _ssPie: null,
 
+      /** @noagent helper */
       sm() { return module._context?.stateManager; },
 
+      // ── Agent surface ────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Eingaben, wählbare Mengen und das gerechnete Modell als Zahlen
+       */
+      read(options) {
+        const m = this.model;
+        return readAgentState('regression', {
+          colRefs: m.colRefs, yKey: m.yKey, regType: m.regType, regTypes: REG_TYPES,
+          polyDegree: m.polyDegree, activeDegrees: this.activeDegrees(),
+          confLevel: m.confLevel, alpha: m.alpha, excludedTerms: m.excludedTerms,
+          terms: this.terms(), experimentImports: this.experimentImports(),
+          activeImportSource: m.activeImportSource, designNotice: m.designNotice,
+          perXKeys: this.perXKeys(), activeXKey: m.activeXKey,
+          activeParams: this.activeParams(), activeColumnSlots: COLUMN_SLOTS,
+          activeMultiSlots: MULTI_SLOTS, pickableColumns: this.pickableColumns(),
+          result: this.result ? this._agentResult(m.activeResult) : null,
+          errorMsg: this._errorText,
+          predictors: this.result ? predictorsOf(m.activeResult) : [],
+          canSaveModel: Boolean(this.result?.canSaveModel),
+          savedModelId: m.savedModelId,
+        }, options);
+      },
+
+      /** Das aktive Modell als Zahlenzusammenfassung (ohne Vektoren). */
+      _agentResult(r) {
+        if (!r) return null;
+        const vifByName = {};
+        if (Array.isArray(r.vif) && Array.isArray(r.xNames)) {
+          r.xNames.forEach((name, i) => { vifByName[name] = r.vif[i] ?? null; });
+        }
+        const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+        return {
+          type: r.multiX || this.model.isPolynomial ? 'polynomial' : this.model.regType,
+          equation: r.equation ?? null,
+          n: num(r.n), R2: num(r.R2), adjR2: num(r.adjR2), R2pred: num(r.R2pred), Se: num(r.Se),
+          Fstat: num(r.Fstat), fPVal: num(r.fPVal), dw: num(r.dw),
+          coefficients: (r.coefDetails ?? []).map(c => {
+            const term = c.columnName ?? c.term;
+            return {
+              term, coeff: num(c.coeff), se: num(c.se), t: num(c.t), pval: num(c.pval),
+              ciLow: num(c.ciLow), ciHigh: num(c.ciHigh), vif: vifByName[term] ?? null,
+            };
+          }),
+          excludedTerms: [...(r.excludeTerms ?? [])],
+        };
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeParams */
+      activeParams() {
+        return this.model.isPolynomial ? PARAM_KEYS : PARAM_KEYS.filter(k => k !== 'polyDegree');
+      },
+      /** @noagent derived set; der Agent liest sie über read().activeDegrees */
+      activeDegrees() { return DEGREES.filter(d => !this.degreeDisabled(d)); },
+      /** @noagent derived set; der Agent liest sie über read().terms */
+      terms() {
+        const r = this.result ? this.model.activeResult : null;
+        const fitted = (r?.allTerms ?? []).filter(t => t !== 'Intercept');
+        return [...new Set([...fitted, ...this._aliased.map(a => a.term)])];
+      },
+      /** @noagent derived set; der Agent liest sie über read().experimentImports */
+      experimentImports() { return this.importOptions().map(o => ({ key: o.key, label: o.label })); },
+      /** @noagent derived set; der Agent liest sie über read().perXKeys */
+      perXKeys() { return Object.keys(this.model.perXResults ?? {}); },
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() {
+        const sm = this.sm();
+        if (!sm) return { x: [], y: [] };
+        const xKeys = new Set(this.model.colRefs.map(refToKey));
+        return {
+          x: pickableColumnList(sm, SLOT_FILTERS.x),
+          y: pickableColumnList(sm, SLOT_FILTERS.y).filter(c => !xKeys.has(c.key)),
+        };
+      },
+      /** @noagent derived set; der Agent liest sie über read().activeMultiSlots */
+      activeMultiSlots() { return MULTI_SLOTS; },
+
+      /**
+       * Die Einflussgrößen X ersetzen; die Reihenfolge bleibt, Doppelte zählen
+       * einmal. Steht die Zielgröße Y unter den neuen X, wird Y geleert. Danach
+       * wird gerechnet; ohne X oder Y wird das Ergebnis verworfen.
+       * @agent
+       * @param {'x'} slot der Slot; dieses Modul führt nur `x`
+       * @param {Array<{ instanceId: string, sheetId: string, columnId: string }>} refs
+       *   die Spaltenbezüge wählbarer Spalten (`pickableColumns.x`); `[]` leert die Auswahl
+       * @returns {void}
+       * @throws {Error} wenn `slot` unbekannt ist, `refs` keine Liste ist oder eine Spalte nicht wählbar ist
+       */
+      setColumns(slot, refs) {
+        requireEnum('slot', slot, MULTI_SLOTS);
+        requireEnum('slot', slot, this.activeMultiSlots());
+        if (!Array.isArray(refs)) {
+          throw new Error(`invalid refs ${JSON.stringify(refs)}; allowed: a list of column references, [] clears it`);
+        }
+        const keys = this.pickableColumns()[slot].map(c => c.key);
+        for (const ref of refs) requireKnownId('ref', refToKey(ref), keys);
+        const clean = [...new Set(refs.map(refToKey))].map(keyToRef);
+        this.model.clearDesignPreset();
+        this.model.colRefs = clean;
+        if (this.model.yKey && clean.some(r => refToKey(r) === this.model.yKey)) this.model.yKey = null;
+        this._picker?.syncValue(clean);
+        this.refreshDegree();
+        this.autoRun();
+      },
+
+      /**
+       * Die Zielgröße Y setzen oder mit null leeren. Danach wird gerechnet;
+       * ohne X oder Y wird das Ergebnis verworfen.
+       * @agent
+       * @param {'y'} slot der Slot; dieses Modul führt nur `y`
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
+       *   der Spaltenbezug einer wählbaren Spalte (`pickableColumns.y`, ohne die X), oder null zum Leeren
+       * @returns {void}
+       * @throws {Error} wenn `slot` unbekannt ist oder die Spalte nicht wählbar
+       */
+      setColumn(slot, ref) {
+        requireEnum('slot', slot, COLUMN_SLOTS);
+        if (ref != null) requireKnownId('ref', refToKey(ref), this.pickableColumns()[slot].map(c => c.key));
+        this.model.clearDesignPreset();
+        this.model.yKey = ref == null ? null : refToKey(ref);
+        this.refreshDegree();
+        this.autoRun();
+      },
+
+      /**
+       * Einen Parameter setzen und neu rechnen.
+       * @agent
+       * @param {'regType'|'polyDegree'|'confLevel'|'alpha'} key welcher Parameter; `activeParams` nennt die jetzt gültigen
+       * @param {string|number} value regType: einer aus `regTypes`; polyDegree: eine Zahl aus
+       *   `activeDegrees`; confLevel, alpha: ein Anteil größer 0 und kleiner 1
+       * @returns {void}
+       * @throws {Error} wenn `key` jetzt nicht gilt oder `value` außerhalb seiner Menge liegt
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        requireEnum('key', key, this.activeParams());
+        if (key === 'regType') {
+          requireEnum('value', value, REG_TYPES);
+          this.model.clearDesignPreset();
+          this.model.regType = value;
+        } else if (key === 'polyDegree') {
+          requireEnum('value', value, this.activeDegrees());
+          this.model.clearDesignPreset();
+          this.model.polyDegree = value;
+        } else {
+          this.model[key] = requireFraction(value);
+        }
+        this.autoRun();
+      },
+
+      /**
+       * Einen Term des Polynoms ein- oder ausschließen und neu rechnen.
+       * @agent
+       * @param {string} term eine Term-id aus `terms`
+       * @param {boolean} included true schließt den Term ein, false aus
+       * @returns {void}
+       * @throws {Error} wenn `term` nicht in `terms` steht oder `included` kein Wahrheitswert ist
+       */
+      setTerm(term, included) {
+        requireKnownId('term', term, this.terms());
+        requireEnum('included', included, BOOL_VALUES);
+        this.model.clearDesignPreset();
+        const rest = this.model.excludedTerms.filter(t => t !== term);
+        this.model.excludedTerms = included ? rest : [...rest, term];
+        this.runAnalysis();
+      },
+
+      /**
+       * Faktoren und Antwort eines DoE-Versuchs als X und Y übernehmen und
+       * rechnen; null löst die Übernahme und lässt die Spalten stehen.
+       * @agent
+       * @param {string|null} key ein Schlüssel aus `experimentImports`, oder null
+       * @returns {void}
+       * @throws {Error} wenn `key` nicht in `experimentImports` steht
+       */
+      importExperiment(key) {
+        if (key == null) {
+          this.model.activeImportSource = null;
+          this.model.clearDesignPreset();
+          return;
+        }
+        requireKnownId('key', key, this.experimentImports().map(o => o.key));
+        if (this.model.applyExperimentImport(this.sm(), key)) {
+          if (this._picker) this._picker.value = this.model.colRefs;
+          this.refreshDegree();
+          this.autoRun();
+        }
+      },
+
       // ── Number / i18n display helpers ────────────────────────
+      /** @noagent view transform */
       confDisplay() {
         const c = this.model.confLevel;
         return c == null ? '' : String(Number((c * 100).toFixed(2)));
       },
+      /** @noagent view transform */
       alphaDisplay() {
         const a = this.model.alpha;
         return a == null ? '' : String(Number((a * 100).toFixed(2)));
       },
+      /** @noagent view transform */
       errorText() { return this._errorText; },
 
       // ── DoE import options ───────────────────────────────────
+      /** @noagent derived set; der Agent liest sie über read().experimentImports */
       importOptions() {
         const sm = this.sm();
         return sm ? this.model.listExperimentImports(sm) : [];
       },
 
       // ── Column option lists (Y dropdown; not x-model-bound) ──
-      yOptions() {
-        const sm = this.sm();
-        if (!sm) return [];
-        const selected = new Set(this.model.colRefs.map(r => refToKey(r)));
-        const all = discoverColumns(sm, { types: ['numeric', 'currency', 'percent', 'date', 'time'], minCount: 1 });
-        const out = [];
-        for (const col of all) {
-          const key = refToKey({ instanceId: col.instanceId, sheetId: col.sheetId, columnId: col.columnId });
-          if (selected.has(key)) continue;
-          out.push({ key, name: col.columnName || col.shortName || '?' });
-        }
-        return out;
-      },
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns.y */
+      yOptions() { return this.pickableColumns().y; },
 
       // ── Selected-info hint ───────────────────────────────────
+      /** @noagent view transform */
       selectedInfoText() {
         const xCount = this.model.colRefs.length;
         if (xCount === 0) return _t('selectColumns');
@@ -128,32 +386,48 @@ const mod = createModule({
         if (xCount === 1) return _t('singleMode');
         return _t('multiMode', { n: xCount });
       },
+      /** @noagent view transform */
       selectedInfoClass() {
         const xCount = this.model.colRefs.length;
         return (xCount === 0 || !this.model.yKey) ? 'reg__hint' : 'reg__info';
       },
 
       // ── Degree options ───────────────────────────────────────
+      /** @noagent view transform */
       degreeDisabled(deg) {
         const o = this._degree.options.find(x => x.deg === deg);
         return Boolean(o && o.disabled);
       },
+      /** @noagent view transform */
       degreeOptionTitle(deg) {
         const o = this._degree.options.find(x => x.deg === deg);
         if (!o || !o.disabled) return '';
         return _t('degreeDisabledHint', { deg, terms: o.terms, n: this._degree.n });
       },
+      /** @noagent view transform */
       degreeHint() {
         const first = this._degree.options.find(o => o.disabled);
         if (!first) return '';
         return _t('degreeDisabledHint', { deg: first.deg, terms: first.terms, n: this._degree.n });
       },
+      /** @noagent view transform; die Optionen der Typauswahl (eine Quelle: REG_TYPES) */
+      regTypeOptions() {
+        return REG_TYPES.map(v => ({ value: v, label: _t(`type${v[0].toUpperCase()}${v.slice(1)}`) }));
+      },
+      /** @noagent view transform; die Optionen der Gradauswahl (eine Quelle: DEGREES) */
+      degreeOptions() {
+        return DEGREES.map(d => ({
+          value: d, label: _t(`degree${d}`), disabled: this.degreeDisabled(d), title: this.degreeOptionTitle(d),
+        }));
+      },
+      /** @noagent helper */
       refreshDegree() {
         const sm = this.sm();
         if (sm) this._degree = this.model.degreeAvailability(sm);
       },
 
       // ── Algorithm Lab link ───────────────────────────────────
+      /** @noagent navigation */
       algoNavigate(algoId) {
         if (algoId && module._context.eventBus) {
           module._context.eventBus.emit('lab:navigate', { algoId, tab: 'docs' });
@@ -161,6 +435,7 @@ const mod = createModule({
       },
 
       // ── X-selector (per-X single models) ─────────────────────
+      /** @noagent view transform */
       xSelectorButtons() {
         if (!this.model.perXResults) return [];
         const keys = Object.keys(this.model.perXResults);
@@ -170,14 +445,25 @@ const mod = createModule({
           active: key === this.model.activeXKey,
         }));
       },
+      /**
+       * Bei Einzel-X-Modellen (exponentiell, logarithmisch, Potenz mit
+       * mehreren X) das Modell wählen, das `result` zeigt.
+       * @agent
+       * @param {string} key ein Schlüssel aus `perXKeys`
+       * @returns {void}
+       * @throws {Error} wenn `key` nicht in `perXKeys` steht
+       */
       setActiveX(key) {
+        requireKnownId('key', key, this.perXKeys());
         this.model.activeXKey = key;
         this.rebuildResult();
         this.$nextTick(() => this.renderActiveChart());
       },
 
       // ── ANOVA view-model ─────────────────────────────────────
+      /** @noagent view transform */
       anovaHeader: () => 'SS',
+      /** @noagent view transform */
       anova() {
         const r = this.model.activeResult;
         if (!r) return { termRows: [] };
@@ -223,6 +509,7 @@ const mod = createModule({
       },
 
       // ── Coefficient view-model ───────────────────────────────
+      /** @noagent view transform */
       coefView() {
         const r = this.model.activeResult;
         if (!r) return { rows: [], canExclude: false, hasDetails: false, hasVIF: false };
@@ -370,6 +657,7 @@ const mod = createModule({
       },
 
       // ── Build the full result view-model ─────────────────────
+      /** @noagent view transform */
       buildResultView(r) {
         const r2class = r.R2 >= 0.8 ? 'dmike-kpi--good' : r.R2 >= 0.5 ? 'dmike-kpi--warn' : 'dmike-kpi--bad';
         const r2pVal = r.R2pred ?? null;
@@ -408,7 +696,7 @@ const mod = createModule({
         };
       },
 
-      /** Rebuild transient result view + predict inputs from the active result. */
+      /** @noagent helper; Rebuild transient result view + predict inputs from the active result. */
       rebuildResult() {
         const r = this.model.activeResult;
         if (!r) { this.result = null; this._predictForm = []; this._predictText = ''; this._predictInterval = ''; return; }
@@ -423,6 +711,7 @@ const mod = createModule({
       },
 
       // ── Predict inputs ───────────────────────────────────────
+      /** @noagent helper */
       buildPredictForm(r) {
         this._predictForm = predictorsOf(r).map(p => ({
           ...p,
@@ -430,10 +719,14 @@ const mod = createModule({
           value: p.kind === 'categorical' ? ((p.levels && p.levels[0]) || '') : '',
         }));
       },
+      /** @noagent view transform */
       predictForm() { return this._predictForm; },
+      /** @noagent view transform */
       predictText() { return this._predictText; },
+      /** @noagent view transform */
       predictInterval() { return this._predictInterval; },
 
+      /** @noagent DOM event handler (prediction inputs) */
       onPredictInput() {
         const r = this.model.activeResult;
         if (!r) return;
@@ -457,58 +750,59 @@ const mod = createModule({
       },
 
       // ── Event handlers ───────────────────────────────────────
+      /** @noagent DOM event handler; the agent uses importExperiment() */
       onImportChange(event) {
         const key = event.target.value;
-        if (!key) return;
-        const sm = this.sm();
-        if (sm && this.model.applyExperimentImport(sm, key)) {
-          if (this._picker) this._picker.value = this.model.colRefs;
-          this.refreshDegree();
-          this.autoRun();
-        }
+        if (key) this.importExperiment(key);
       },
+      /** @noagent DOM event handler; the agent uses setColumn() */
       onYChange(event) {
-        this.model.clearDesignPreset();
-        this.model.yKey = event.target.value || null;
-        this.refreshDegree();
-        this.autoRun();
+        this.setColumn('y', event.target.value ? keyToRef(event.target.value) : null);
       },
-      onRegTypeChange() {
-        this.model.clearDesignPreset();
-        // model.regType already updated via x-model.
-        this.autoRun();
+      /** @noagent DOM event handler; the agent uses setParam() */
+      onRegTypeSelect(event) {
+        this._selectParam(event, 'regType', event.target.value, () => this.model.regType);
       },
-      onDegreeChange() {
-        this.model.clearDesignPreset();
-        // model.polyDegree already updated via x-model.number.
-        this.autoRun();
+      /** @noagent DOM event handler; the agent uses setParam() */
+      onDegreeSelect(event) {
+        this._selectParam(event, 'polyDegree', Number(event.target.value), () => this.model.polyDegree);
       },
-      onConfChange(event) {
-        const v = parseFloat(String(event.target.value).replace(',', '.'));
-        if (Number.isFinite(v) && v > 0 && v < 100) this.model.confLevel = v / 100;
-        event.target.value = Number((this.model.confLevel * 100).toFixed(2));
-        this.autoRun();
-      },
-      onAlphaChange(event) {
-        const v = parseFloat(String(event.target.value).replace(',', '.'));
-        if (Number.isFinite(v) && v > 0 && v < 100) this.model.alpha = v / 100;
-        event.target.value = Number((this.model.alpha * 100).toFixed(2));
-        this.autoRun();
-      },
-      toggleCI() { this.model.showCI = !this.model.showCI; this.autoRun(); },
-      togglePI() { this.model.showPI = !this.model.showPI; this.autoRun(); },
-      toggleSort() { this.model.coefSortByP = !this.model.coefSortByP; },
-      toggleTerm(term, event) {
-        this.model.clearDesignPreset();
-        if (event.target.checked) {
-          this.model.excludedTerms = this.model.excludedTerms.filter(t => t !== term);
-        } else {
-          this.model.excludedTerms = [...this.model.excludedTerms, term];
+      /** Eine Auswahl durch setParam; eine Absage stellt die Auswahl auf den Model-Wert zurück. */
+      _selectParam(event, key, value, stored) {
+        try {
+          this.setParam(key, value);
+        } catch {
+          event.target.value = String(stored());
         }
-        this.runAnalysis();
+      },
+      /** @noagent DOM event handler; the agent uses setParam() */
+      onConfChange(event) { this._percentParam(event, 'confLevel'); },
+      /** @noagent DOM event handler; the agent uses setParam() */
+      onAlphaChange(event) { this._percentParam(event, 'alpha'); },
+      /**
+       * Eine Prozenteingabe als Anteil durch setParam; außerhalb von (0, 100)
+       * oder bei einer Absage bleibt der Model-Wert. Das Feld zeigt danach
+       * immer den Model-Wert.
+       */
+      _percentParam(event, key) {
+        const v = parseFloat(String(event.target.value).replace(',', '.'));
+        if (Number.isFinite(v) && v > 0 && v < 100) {
+          try { this.setParam(key, v / 100); } catch { /* das Feld zeigt unten wieder den Model-Wert */ }
+        }
+        event.target.value = Number((this.model[key] * 100).toFixed(2));
+      },
+      /** @noagent view toggle (Anzeige) */
+      toggleCI() { this.model.showCI = !this.model.showCI; this.autoRun(); },
+      /** @noagent view toggle (Anzeige) */
+      togglePI() { this.model.showPI = !this.model.showPI; this.autoRun(); },
+      /** @noagent view toggle (Anzeige) */
+      toggleSort() { this.model.coefSortByP = !this.model.coefSortByP; },
+      /** @noagent DOM event handler; the agent uses setTerm() */
+      toggleTerm(term, event) {
+        this.setTerm(term, Boolean(event.target.checked));
       },
 
-      /** Localised lines of the design-term preset notice (CSP-safe). */
+      /** @noagent view transform; Localised lines of the design-term preset notice (CSP-safe). */
       designNoticeLines() {
         const n = this.model.designNotice;
         if (!n) return [];
@@ -516,17 +810,19 @@ const mod = createModule({
         if (n.saturated.length > 0) lines.push(_t('designNoticeSaturated', { terms: n.saturated.join(', ') }));
         return lines;
       },
+      /** @noagent view transform */
       hasDesignNotice() { return this.designNoticeLines().length > 0; },
-      /** Aliased terms from the last failed fit, for the exclude buttons. */
+      /** @noagent view transform; Aliased terms from the last failed fit, for the exclude buttons. */
       aliasedRows() { return this._aliased; },
-      /** Exclude an aliased term named by the fit error and re-run. */
-      excludeAliased(term) {
-        if (!this.model.excludedTerms.includes(term)) this.model.excludedTerms = [...this.model.excludedTerms, term];
-        this.model.clearDesignPreset();
-        this.runAnalysis();
-      },
+      /** @noagent DOM event handler; the agent uses setTerm() */
+      excludeAliased(term) { this.setTerm(term, false); },
 
       // ── Auto-run gate ────────────────────────────────────────
+      /**
+       * Rechnet, wenn X und Y gewählt sind, sonst verwirft es das Ergebnis.
+       * @agent
+       * @returns {void}
+       */
       autoRun() {
         if (this.model.colRefs.length === 0 || !this.model.yKey) {
           if (this.model.result || this.model.perXResults) {
@@ -541,6 +837,13 @@ const mod = createModule({
         this.runAnalysis();
       },
 
+      /**
+       * Das Modell mit den aktuellen Eingaben rechnen. Schlägt der Fit fehl,
+       * ist `result` null und `errorMsg` nennt den Grund; bei Aliasing nennt
+       * `terms` die Terme, die `setTerm` dann ausschließen kann.
+       * @agent
+       * @returns {void}
+       */
       runAnalysis() {
         const sm = this.sm();
         if (!sm) return;
@@ -568,14 +871,22 @@ const mod = createModule({
         this.$nextTick(() => this.renderActiveChart());
       },
 
+      /** @noagent view transform */
       formatPerXError(e) {
         return `${e.name  }: ${  _t(e.key, e.params || undefined)}`;
       },
 
       // ── Save as model (models-store WRITE — cross-module) ────
+      /**
+       * Speichert das Polynommodell mit mehreren X in die Projektmodelle (neu
+       * oder als Aktualisierung des zuletzt gespeicherten). Gibt die id zurück,
+       * oder null, wenn kein speicherbares Modell vorliegt (`read().canSaveModel`).
+       * @agent
+       * @returns {string|null} die id des gespeicherten Modells, oder null
+       */
       saveAsModel() {
         const r = this.model.result;
-        if (!r || !r.multiX || !this.model.isPolynomial) return;
+        if (!r || !r.multiX || !this.model.isPolynomial) return null;
         const sm = this.sm();
         const m = this.model;
 
@@ -638,28 +949,24 @@ const mod = createModule({
         m.savedModelId = id;
         m.savedModelName = record.name;
         module._context.notify(_t('modelSaved'), 'success');
+        return id;
       },
 
       // ── Imperative widgets: ColumnPicker ─────────────────────
+      /** @noagent lifecycle */
       initPicker() {
         const wrap = module._container.querySelector('[data-ref="picker-cols"]');
         if (!wrap) return;
         this._picker = new ColumnPicker(wrap, module._context, {
           mode: 'multi',
-          types: ['numeric', 'currency', 'percent', 'date', 'time'],
-          minCount: 1,
-          onChange: (refs) => {
-            this.model.clearDesignPreset();
-            this.model.colRefs = refs.map(r => ({ ...r }));
-            if (this.model.yKey && refs.some(r => refToKey(r) === this.model.yKey)) this.model.yKey = null;
-            this.refreshDegree();
-            this.autoRun();
-          },
+          ...SLOT_FILTERS.x,
+          onChange: (refs) => this.setColumns('x', refs),
         });
         if (this.model.colRefs.length > 0) this._picker.value = this.model.colRefs;
       },
 
       // ── Charts ───────────────────────────────────────────────
+      /** @noagent lifecycle */
       destroyCharts() {
         for (const ch of this._charts) {
           if (ch && typeof ch.destroy === 'function') { try { ch.destroy(); } catch { /* ignore */ } }
@@ -683,6 +990,7 @@ const mod = createModule({
         });
       },
 
+      /** @noagent chart rendering */
       async renderActiveChart() {
         this.destroyCharts();
         const r = this.model.activeResult;
@@ -709,6 +1017,7 @@ const mod = createModule({
         return chart;
       },
 
+      /** @noagent chart rendering */
       async renderScatterChart(r, gen) {
         const plotEl = await this._whenAnchor('[data-ref="chart-scatter"]', gen);
         if (!plotEl) return;
@@ -783,6 +1092,7 @@ const mod = createModule({
         }, gen);
       },
 
+      /** @noagent chart rendering */
       async renderResidualChart(r, gen) {
         const plotEl = await this._whenAnchor('[data-ref="chart-residuals"]', gen);
         if (!plotEl) return;
@@ -794,6 +1104,7 @@ const mod = createModule({
         }, gen);
       },
 
+      /** @noagent chart rendering */
       async renderOrderChart(r, gen) {
         const plotEl = await this._whenAnchor('[data-ref="chart-order"]', gen);
         if (!plotEl) return;
@@ -806,6 +1117,7 @@ const mod = createModule({
         }, gen);
       },
 
+      /** @noagent chart rendering */
       async renderQQChart(r, gen) {
         const plotEl = await this._whenAnchor('[data-ref="chart-qq"]', gen);
         if (!plotEl) return;
@@ -827,6 +1139,7 @@ const mod = createModule({
         }, gen);
       },
 
+      /** @noagent chart rendering */
       async renderHistogramChart(r, gen) {
         const plotEl = await this._whenAnchor('[data-ref="chart-histogram"]', gen);
         if (!plotEl) return;
@@ -836,6 +1149,7 @@ const mod = createModule({
         }, gen);
       },
 
+      /** @noagent chart rendering */
       async renderSSPieChart(r, gen) {
         const items = [];
         const coefs = r.coefDetails || [];
@@ -893,6 +1207,7 @@ const mod = createModule({
       },
 
       /**
+       * @noagent view toggle (Diagramm)
        * SS-pie legend checkbox @change handler — toggles a term's visibility
        * and re-plots the pie + bar charts. Replaces the legacy post-render
        * addEventListener delegate.
@@ -934,6 +1249,7 @@ const mod = createModule({
         return result;
       },
 
+      /** @noagent chart rendering */
       async renderMainEffectsChart(r, gen) {
         const plotEl = await this._whenAnchor('[data-ref="chart-main-effects"]', gen);
         if (!plotEl || !r.multiX) return;
@@ -972,6 +1288,7 @@ const mod = createModule({
         }
       },
 
+      /** @noagent chart rendering */
       async renderInteractionChart(r, gen) {
         const plotEl = await this._whenAnchor('[data-ref="chart-interaction"]', gen);
         if (!plotEl || !r.multiX || r.xCount < 2) return;
@@ -1020,6 +1337,7 @@ const mod = createModule({
       },
 
       // ── Lifecycle ────────────────────────────────────────────
+      /** @noagent lifecycle */
       init() {
         const ctx = module._context;
         const globalConf = (ctx.stateManager.get('settings.confidenceLevel') ?? 95) / 100;
@@ -1073,6 +1391,7 @@ const mod = createModule({
        * currently-available tab. Empty sub ⇒ keep the persisted activeTab.
        *
        * @param {string[]} sub  Route sub-path array from the route store.
+       * @noagent navigation
        */
       onRouteChanged(sub) {
         const key = Array.isArray(sub) && sub.length > 0 ? sub[0] : null;
@@ -1085,6 +1404,7 @@ const mod = createModule({
         this.$nextTick(() => this.renderActiveChart());
       },
 
+      /** @noagent lifecycle */
       destroy() {
         for (const u of this._unsubs) u();
         this._unsubs = [];

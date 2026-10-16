@@ -7779,6 +7779,135 @@
       "scheduleRunning": "Abruf läuft…"
     },
     "regression": {
+      "whenToUse": "Wenn der Zusammenhang einer stetigen Zielgröße mit einer oder mehreren Einflussgrößen als Gleichung beschrieben werden soll — linear, polynomial mit Wechselwirkungen, exponentiell, logarithmisch oder als Potenz —, um Einflüsse zu bewerten, vorherzusagen oder ein Modell für die Optimierung zu speichern.",
+      "actions": {
+        "read": {
+          "help": "Liefert die Eingaben (X, Y, Typ, Grad, Konfidenz, α, ausgeschlossene Terme), die Mengen, die die Aktionen jetzt annehmen, und das gerechnete Modell als Zahlen in result (null ohne Fit oder nach einem Fehlschlag; errorMsg nennt dann den Grund)."
+        },
+        "setColumns": {
+          "help": "Ersetzt die Einflussgrößen X; die Reihenfolge bleibt, Doppelte zählen einmal. Steht Y unter den neuen X, wird yKey geleert. Rechnet neu; ohne X oder Y wird result null.",
+          "params": {
+            "slot": "Einer der Slots aus activeMultiSlots; dieses Modul führt nur 'x'.",
+            "refs": "Liste von Spaltenbezügen { instanceId, sheetId, columnId } aus pickableColumns.x, in Reihenfolge; [] leert X."
+          }
+        },
+        "setColumn": {
+          "help": "Setzt die Zielgröße Y und rechnet neu; null leert Y, result wird null.",
+          "params": {
+            "slot": "Einer der Slots aus activeColumnSlots; dieses Modul führt nur 'y'.",
+            "ref": "Spaltenbezug { instanceId, sheetId, columnId } aus pickableColumns.y (die nicht als X gewählten Spalten), oder null zum Leeren."
+          }
+        },
+        "setParam": {
+          "help": "Setzt den Regressionstyp, den Polynomgrad, das Konfidenzniveau oder α und rechnet neu.",
+          "params": {
+            "key": "Einer von regType, polyDegree, confLevel, alpha; activeParams nennt die jetzt gültigen (polyDegree nur beim Typ polynomial).",
+            "value": "regType: einer der Werte aus regTypes; polyDegree: eine ganze Zahl aus activeDegrees; confLevel, alpha: Anteil größer 0 und kleiner 1 (0.95, nicht 95)."
+          }
+        },
+        "setTerm": {
+          "help": "Schließt einen Polynomterm ein oder aus und rechnet neu; excludedTerms und result.excludedTerms ziehen nach.",
+          "params": {
+            "term": "Eine Term-id aus terms (die gerechneten Terme ohne Intercept, dazu die Aliasing-Terme eines Fehlschlags).",
+            "included": "true schließt den Term ein, false aus."
+          }
+        },
+        "importExperiment": {
+          "help": "Übernimmt die Faktoren und eine Antwort eines DoE-Versuchs als X und Y und rechnet; activeImportSource nennt die Quelle. null löst die Quelle und lässt die Spalten stehen.",
+          "params": {
+            "key": "Ein Schlüssel aus experimentImports, oder null."
+          }
+        },
+        "setActiveX": {
+          "help": "Wählt bei Einzel-X-Modellen (exponentiell, logarithmisch, Potenz mit mehreren X) das Modell, das result zeigt; activeXKey zieht nach.",
+          "params": {
+            "key": "Ein Schlüssel aus perXKeys."
+          }
+        },
+        "autoRun": {
+          "help": "Rechnet, wenn X und Y gewählt sind, sonst verwirft es das Ergebnis (result wird null)."
+        },
+        "runAnalysis": {
+          "help": "Rechnet das Modell mit den aktuellen Eingaben. Bei einem Fehlschlag ist result null und errorMsg nennt den Grund; bei Aliasing nennt terms die Terme, die setTerm dann ausschließen kann."
+        },
+        "saveAsModel": {
+          "help": "Speichert das Polynommodell mit mehreren X in die Projektmodelle (neu oder als Aktualisierung des zuletzt gespeicherten) und gibt die id zurück; null, wenn canSaveModel false ist. savedModelId zieht nach."
+        }
+      },
+      "fields": {
+        "colRefs": {
+          "help": "Die Einflussgrößen X als { instanceId, sheetId, columnId }, in Reihenfolge."
+        },
+        "yKey": {
+          "help": "Die Zielgröße Y als Schlüssel instanceId|sheetId|columnId, oder null."
+        },
+        "regType": {
+          "help": "Der Regressionstyp, einer aus regTypes."
+        },
+        "regTypes": {
+          "help": "Alle Regressionstypen, die setParam('regType') annimmt."
+        },
+        "polyDegree": {
+          "help": "Der Polynomgrad (nur beim Typ polynomial wirksam)."
+        },
+        "activeDegrees": {
+          "help": "Die Grade, die setParam('polyDegree') jetzt annimmt; ein Grad mit zu wenigen gepaarten Zeilen für seine Termzahl fehlt."
+        },
+        "confLevel": {
+          "help": "Das Konfidenzniveau als Anteil (0.95)."
+        },
+        "alpha": {
+          "help": "Das Signifikanzniveau α als Anteil (0.05)."
+        },
+        "excludedTerms": {
+          "help": "Die Term-ids, die aus dem Polynom herausgenommen sind."
+        },
+        "terms": {
+          "help": "Die Term-ids, die setTerm jetzt annimmt; leer ohne Polynom-Fit und ohne Aliasing."
+        },
+        "experimentImports": {
+          "help": "Die DoE-Antworten, die importExperiment annimmt, je { key, label }."
+        },
+        "activeImportSource": {
+          "help": "Die DoE-Antwort, aus der die Eingaben stammen, { experimentId, sourceColumn, transform }, oder null."
+        },
+        "designNotice": {
+          "help": "Der Hinweis einer DoE-Vorgabe, { aliased, saturated }, oder null."
+        },
+        "perXKeys": {
+          "help": "Die Einzel-X-Modelle, die setActiveX annimmt; leer beim Typ polynomial."
+        },
+        "activeXKey": {
+          "help": "Das Einzel-X-Modell, das result zeigt, oder null."
+        },
+        "activeParams": {
+          "help": "Die Schlüssel, die setParam jetzt annimmt."
+        },
+        "activeColumnSlots": {
+          "help": "Die Slots, die setColumn annimmt: 'y'."
+        },
+        "activeMultiSlots": {
+          "help": "Die Slots, die setColumns annimmt: 'x'."
+        },
+        "pickableColumns": {
+          "help": "Je Slot (x, y) die Spalten, die setColumns und setColumn annehmen, je { key, name }; y lässt die als X gewählten Spalten aus."
+        },
+        "result": {
+          "help": "Das gerechnete Modell als Zahlen: type, equation, n, R2, adjR2, R2pred, Se, Fstat, fPVal, dw, coefficients [{ term, coeff, se, t, pval, ciLow, ciHigh, vif }], excludedTerms; null ohne Fit oder nach einem Fehlschlag."
+        },
+        "errorMsg": {
+          "help": "Die Meldung des letzten Fehlschlags, '' ohne Fehler."
+        },
+        "predictors": {
+          "help": "Die Eingaben des gerechneten Modells, je { id, label, kind, levels? }; leer ohne result."
+        },
+        "canSaveModel": {
+          "help": "true, wenn saveAsModel jetzt ein Modell speichern würde (Typ polynomial, mehrere X, ein Fit)."
+        },
+        "savedModelId": {
+          "help": "Die id des zuletzt in die Projektmodelle gespeicherten Modells, oder null."
+        }
+      },
       "name": "Regressionsanalyse",
       "description": "Polynom-Regression (Grad 1–3, Wechselwirkungen), Exponentiell, Logarithmisch, Potenz",
       "importFromExperiment": "Aus Versuchsplan importieren",
