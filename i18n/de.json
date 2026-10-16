@@ -8134,6 +8134,12 @@
         },
         "saveAsModel": {
           "help": "Speichert den gezeigten Fit in die Projektmodelle (neu oder als Aktualisierung des zuletzt gespeicherten) und gibt seine id zurück; savedModelId zieht nach. Gibt null ohne konvergierten Fit oder wenn die Zielgröße keine Werte hat."
+        },
+        "predict": {
+          "help": "Gibt Zielgröße und Konfidenzgrenzen für die angegebenen Werte der Terme aus predictionTerms zurück (linear, response, ciLower, ciUpper; die Grenzen sind null, wenn der Fit sie nicht trägt) und füllt prediction. Gibt null zurück, wenn ein Term ohne Wert bleibt oder kein Ergebnis vorliegt; das ist keine Absage.",
+          "params": {
+            "values": "Ein Objekt mit je Term aus predictionTerms einer Zahl; kategoriale Prädiktoren als 0/1 je Dummy-Term. Fehlende Terme lassen das Ergebnis null."
+          }
         }
       },
       "fields": {
@@ -8190,6 +8196,9 @@
         },
         "savedModelId": {
           "help": "Id des zuletzt in die Projektmodelle gespeicherten Modells, oder null."
+        },
+        "prediction": {
+          "help": "Die letzte Vorhersage als Zahlen (linear, response, ciLower, ciUpper), oder null ohne Vorhersage, nach neuem Fit oder ohne gezeigtes Ergebnis."
         }
       },
       "name": "Regression (attributiv)",

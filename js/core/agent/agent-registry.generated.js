@@ -3163,6 +3163,18 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Jetzt rechnen. Ohne X, ohne Y oder mit weniger als drei Zeilen wird das Ergebnis verworfen und `errorMsg` nennt den Grund."
       },
+      "predict": {
+        "params": [
+          {
+            "name": "values",
+            "type": "object",
+            "optional": false,
+            "help": "je Term aus predictionTerms eine Zahl"
+          }
+        ],
+        "returns": "{ linear: number, response: number, ciLower: number|null, ciUpper: number|null }|null",
+        "help": "Die Zielgröße für Werte der Terme vorhersagen."
+      },
       "saveAsModel": {
         "params": [],
         "returns": "string|null",
@@ -3269,6 +3281,12 @@ export const AGENT_REGISTRY = {
       "predictionTerms": {
         "type": "string[]",
         "help": "the terms `predict` takes, in model order",
+        "bulk": false,
+        "derived": true
+      },
+      "prediction": {
+        "type": "{ linear: number, response: number, ciLower: number|null, ciUpper: number|null }|null",
+        "help": "the last prediction, null without one or without a shown result",
         "bulk": false,
         "derived": true
       },

@@ -152,6 +152,7 @@ function num(v) { return typeof v === 'number' && Number.isFinite(v) ? v : null;
  * @property {object|null} classification  confusion table and rates at `cutoff`, binomial only
  * @property {string} errorMsg  the message the module shows, '' without error
  * @property {string[]} predictionTerms  the terms `predict` takes, in model order
+ * @property {{ linear: number, response: number, ciLower: number|null, ciUpper: number|null }|null} prediction  the last prediction, null without one or without a shown result
  * @property {string|null} savedModelId  id of the model saved last in the project models
  */
 const mod = createModule({
@@ -174,6 +175,7 @@ const mod = createModule({
       predictResult: null,
       predictError: null,
       predictInputs: {},    // term label -> typed text (transient)
+      _prediction: null,    // last prediction as numbers (transient, read().prediction)
       _detectKey: null,     // auto-detect reason key (transient)
       _detectVisible: false,
       _classCutoff: 0.5,    // current classification cutoff (mirrors model.cutoff)
@@ -222,6 +224,7 @@ const mod = createModule({
           } : null,
           errorMsg: this.errorText(),
           predictionTerms: shown ? this.predictionTerms().map(t => t.label) : [],
+          prediction: shown ? (this._prediction ?? null) : null,
           savedModelId: m.savedModelId,
         }, options);
       },
@@ -600,6 +603,7 @@ const mod = createModule({
         this._errorText = _t(key);
         this.result = null;
         this._fit = null;
+        this._prediction = null;
       },
       /** @noagent helper */
       showErrorMsg(text) {
@@ -607,6 +611,7 @@ const mod = createModule({
         this._errorText = text;
         this.result = null;
         this._fit = null;
+        this._prediction = null;
       },
 
       /** @noagent helper */
@@ -690,6 +695,7 @@ const mod = createModule({
         this.predictResult = null;
         this.predictError = null;
         this.predictInputs = {};
+        this._prediction = null;
 
         this.$nextTick(() => this.renderActiveChart());
       },
@@ -843,21 +849,32 @@ const mod = createModule({
       },
 
       // ── Prediction ───────────────────────────────────────────
-      /** @noagent DOM event handler (prediction inputs); provisorisch bis predict() (Task 3) */
+      /** @noagent DOM event handler (prediction inputs); the agent uses predict() */
       setPredictInput(term, text) {
         this.predictInputs = { ...this.predictInputs, [term]: text };
       },
 
-      /** @noagent DOM event handler (prediction button); provisorisch bis predict() (Task 3) */
+      /** @noagent DOM event handler (prediction button); the agent uses predict() */
       runPrediction() {
-        const r = this._fit;
-        if (!r) return;
+        this._showPrediction();
+      },
+
+      /**
+       * Die Vorhersage für die Werte in predictInputs rechnen und anzeigen.
+       * Gerechnet wird nur auf dem gezeigten Ergebnis.
+       * @returns {{ linear: number, response: number, ciLower: number|null, ciUpper: number|null }|null} null ohne Ergebnis oder bei fehlender Eingabe
+       */
+      _showPrediction() {
+        this._prediction = null;
+        const r = this.result ? this._fit : null;
+        if (!r) return null;
         const pred = predictFor(r, this.predictInputs);
-        if (!pred) { this.predictResult = null; this.predictError = _t('errorInvalidInput'); return; }
+        if (!pred) { this.predictResult = null; this.predictError = _t('errorInvalidInput'); return null; }
         const isBinomial = r.family.name === 'binomial';
         const responseLabel = isBinomial ? _t('probability') : _t('expectedCount');
         const confPct = (r.confLevel * 100).toFixed(0);
         this.predictError = null;
+        this._prediction = pred;
         this.predictResult = {
           linear: fmt(pred.linear, 6),
           respLabel: responseLabel,
@@ -866,6 +883,38 @@ const mod = createModule({
           ci: pred.ciLower !== null ? `[${fmt(pred.ciLower, 6)}, ${fmt(pred.ciUpper, 6)}]` : EN_DASH,
           ciHint: pred.ciLower !== null ? null : _t('predictCiUnavailable'),
         };
+        return pred;
+      },
+
+      /**
+       * Die Zielgröße für Werte der Terme vorhersagen.
+       * @agent
+       * @param {object} values je Term aus predictionTerms eine Zahl
+       * @returns {{ linear: number, response: number, ciLower: number|null, ciUpper: number|null }|null} null, wenn ein Term ohne Wert bleibt oder kein Ergebnis gezeigt wird
+       */
+      predict(values) {
+        if (values == null || typeof values !== 'object' || Array.isArray(values)) {
+          throw new Error(`invalid values ${JSON.stringify(values)}; allowed: an object with one number per term`);
+        }
+        // Ohne gezeigtes Ergebnis gibt es keine Terme: „nicht bereit“, keine Absage.
+        if (!this.result) { this._prediction = null; return null; }
+        const terms = this.predictionTerms().map(t => t.label);
+        for (const key of Object.keys(values)) {
+          requireKnownId('values', key, terms);
+          requireNumber(key, values[key]);
+        }
+        this.predictInputs = {
+          ...this.predictInputs,
+          ...Object.fromEntries(Object.entries(values).map(([k, v]) => [k, String(v)])),
+        };
+        // Ein Term ohne Wert ist „nicht bereit“: keine Vorhersage aus alten Eingabewerten.
+        if (terms.some(t => !(t in values))) {
+          this._prediction = null;
+          this.predictResult = null;
+          this.predictError = _t('errorInvalidInput');
+          return null;
+        }
+        return this._showPrediction();
       },
 
       // ── Save as model (models-store WRITE — cross-module) ────

@@ -8130,6 +8130,12 @@
         },
         "saveAsModel": {
           "help": "Saves the shown fit to the project models (new, or as an update of the one saved last) and returns its id; savedModelId follows. Returns null without a converged fit or when the response has no values."
+        },
+        "predict": {
+          "help": "Returns the response and confidence limits for the given values of the terms in predictionTerms (linear, response, ciLower, ciUpper; the limits are null when the fit does not carry them) and fills prediction. Returns null when a term is left without a value or there is no result; that is not a rejection.",
+          "params": {
+            "values": "An object with one number per term from predictionTerms; categorical predictors as 0/1 per dummy term. Missing terms leave the result null."
+          }
         }
       },
       "fields": {
@@ -8186,6 +8192,9 @@
         },
         "savedModelId": {
           "help": "Id of the model saved last in the project models, or null."
+        },
+        "prediction": {
+          "help": "The last prediction as numbers (linear, response, ciLower, ciUpper), or null without a prediction, after a new fit or without a shown result."
         }
       },
       "name": "Regression (Attributive)",
