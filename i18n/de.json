@@ -4842,6 +4842,32 @@
     "xy-plot": {
       "name": "XY-Diagramm",
       "description": "Streudiagramm aus Worksheet-Spalten erstellen",
+      "whenToUse": "Den Zusammenhang zweier numerischer Spalten als Streudiagramm zeigen, optional gruppiert oder als Blasen, deren Größe eine dritte Spalte bestimmt.",
+      "actions": {
+        "read": {
+          "help": "Die Datenreihen (X-, Y-, Gruppen- und Größenspalte je Reihe) und die Spalten lesen, die jeder Slot annimmt, dazu die Kennzahlen neben dem Diagramm."
+        },
+        "setDatasets": {
+          "help": "Die ganze Liste der Datenreihen auf einmal ersetzen. Unvollständige Reihen bleiben stehen, werden aber nicht gezeichnet.",
+          "params": {
+            "rows": "Eine Liste von Reihen, jeweils { x, y, group, size }: 'x' und 'y' — numerische Spalten (beide Pflicht, damit die Reihe gezeichnet wird); 'group' — eine optionale Spalte, die die Punkte einfärbt; 'size' — eine optionale numerische Spalte, die Punkte zu Blasen macht. Jeder Eintrag ist ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null. [] leert die Liste."
+          }
+        }
+      },
+      "fields": {
+        "datasets": {
+          "help": "Je Datenreihe { xRef, yRef, groupRef, sizeRef } aus den Slots x, y, group, size, jeweils ein Spaltenbezug oder null."
+        },
+        "activeColumnSlots": {
+          "help": "Die Slot-Schlüssel, die eine Reihe tragen darf: x, y, group, size."
+        },
+        "pickableColumns": {
+          "help": "Je Slot die Spalten, die setDatasets annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId."
+        },
+        "stats": {
+          "help": "Je gezeichneter Reihe die Kennzahlen ihrer y-Werte { name, stats, ci }: stats { n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }, ci { mean, variance, stddev } als [unten, oben]; null, solange nichts gerechnet werden kann."
+        }
+      },
       "sectionData": "Datenquelle",
       "datasets": "Datensätze",
       "showMarkers": "Punkte",

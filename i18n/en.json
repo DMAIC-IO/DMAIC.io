@@ -4838,6 +4838,32 @@
     "xy-plot": {
       "name": "XY Plot",
       "description": "Create scatter plots from worksheet columns",
+      "whenToUse": "Show the relationship between two numeric columns as a scatter plot, optionally grouped or as bubbles sized by a third column.",
+      "actions": {
+        "read": {
+          "help": "Read the data rows (x, y, group and size column per row) and the columns each slot accepts, and the figures shown next to the chart."
+        },
+        "setDatasets": {
+          "help": "Replace the whole list of data rows at once. Incomplete rows are kept but not plotted.",
+          "params": {
+            "rows": "A list of rows, each { x, y, group, size }: 'x' and 'y' — numeric columns (both required for the row to be plotted); 'group' — an optional column that colours the points; 'size' — an optional numeric column that turns points into bubbles. Each entry is a column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null. [] clears the list."
+          }
+        }
+      },
+      "fields": {
+        "datasets": {
+          "help": "Per data row { xRef, yRef, groupRef, sizeRef } from the slots x, y, group, size, each a column reference or null."
+        },
+        "activeColumnSlots": {
+          "help": "The slot keys a row may carry: x, y, group, size."
+        },
+        "pickableColumns": {
+          "help": "Per slot the columns setDatasets accepts, each { key, name }; the key is instanceId|sheetId|columnId."
+        },
+        "stats": {
+          "help": "Per plotted series the statistics of its y values { name, stats, ci }: stats { n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }, ci { mean, variance, stddev } as [low, high]; null while nothing can be computed."
+        }
+      },
       "sectionData": "Data Source",
       "datasets": "Datasets",
       "showMarkers": "Markers",

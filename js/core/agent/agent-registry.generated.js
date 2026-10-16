@@ -10972,68 +10972,64 @@ export const AGENT_REGISTRY = {
     }
   },
   "xy-plot": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:init",
-      "unmarked_method:destroy"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setDatasets": {
+        "params": [
+          {
+            "name": "rows",
+            "type": "object[]",
+            "optional": false,
+            "help": "je Reihe `{ <slot>: ref|null }`; Slots siehe read().activeColumnSlots, Spalten siehe read().pickableColumns; [] leert"
+          }
+        ],
+        "returns": "void",
+        "help": "Die ganze Liste der Datenreihen setzen."
+      }
+    },
     "fields": {
       "datasets": {
-        "type": "{ xRef: object|null, yRef: object|null, groupRef: object|null, sizeRef: object|null }[]",
-        "help": "",
-        "bulk": false
-      },
-      "showLines": {
-        "type": "boolean",
-        "help": "",
-        "bulk": false
-      },
-      "showMarkers": {
-        "type": "boolean",
-        "help": "",
-        "bulk": false
-      },
-      "seriesOverrides": {
         "type": "object[]",
-        "help": "",
-        "bulk": false
+        "help": "per data row `{ xRef, yRef, groupRef, sizeRef }` from the slots `x`, `y`, `group`, `size`, each a column reference or null",
+        "bulk": false,
+        "derived": true
       },
-      "refLines": {
-        "type": "object[]",
-        "help": "",
-        "bulk": false
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slot keys a row of `setDatasets` may carry",
+        "bulk": false,
+        "derived": true
       },
-      "refAreas": {
-        "type": "object[]",
-        "help": "",
-        "bulk": false
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setDatasets` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
       },
-      "bgColor": {
-        "type": "string|null",
-        "help": "",
-        "bulk": false
-      },
-      "showStats": {
-        "type": "boolean",
-        "help": "",
-        "bulk": false
-      },
-      "confLevel": {
-        "type": "number",
-        "help": "",
-        "bulk": false
-      },
-      "exampleWorksheetId": {
-        "type": "string|null",
-        "help": "",
-        "bulk": false
+      "stats": {
+        "type": "object[]|null",
+        "help": "per plotted series `{ name, stats, ci }` — stats `{ n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }`, ci `{ mean, variance, stddev }` as `[low, high]` at the confidence level — or null while nothing can be computed",
+        "bulk": false,
+        "derived": true
       }
     }
   }
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":56};
+export const AGENT_COVERAGE = {"total":76,"available":57};

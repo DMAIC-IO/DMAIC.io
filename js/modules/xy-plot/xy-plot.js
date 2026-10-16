@@ -18,9 +18,16 @@
  *   - _unsubs collects event-bus subscriptions for cleanup.
  *   - getState() syncs chart-editor changes back to the model before
  *     serialising (refLines/refAreas/bgColor/seriesOverrides).
+ *
+ * @agent  Steuerbar über das Viewmodel: die Datenreihen, je Reihe X-, Y-,
+ *   Gruppen- und Größenspalte (setDatasets). Gelesen wird über read() mit
+ *   erklärter Lesefläche (AgentRead), samt den Kennzahlen der Y-Werte je
+ *   Reihe (stats).
  */
 
 import { createModule } from '../../core/template-module.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { datasetSlotColumns, requireDatasetRows } from '../../core/agent/agent-datasets.js';
 import Alpine from '@alpinejs/csp';
 import { State } from './xy-plot-model.js';
 import {
@@ -35,6 +42,34 @@ import {
 import { computeSeriesStats, renderStatsTable } from '../../core/stats-panel.js';
 import { CHART_COLORS } from '../../core/chart/chart-colors.js';
 import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
+
+/** Die Slots des Pickers, ohne Beschriftung — eine Quelle für Picker und Lesefläche. */
+const DATASET_SLOTS = [
+  { key: 'x', types: ['numeric'], minCount: 1, required: true },
+  { key: 'y', types: ['numeric'], minCount: 1, required: true },
+  { key: 'group', group: true },
+  { key: 'size', types: ['numeric'], minCount: 1 },
+];
+
+/** Die Slot-Schlüssel in der Reihenfolge der Oberfläche. */
+const COLUMN_SLOTS = ['x', 'y', 'group', 'size'];
+
+/**
+ * Die Agenten-Lesefläche des XY-Diagramms.
+ *
+ * Die Datenreihen sind der Zustand, im Model als `datasets` mit
+ * `{ xRef, yRef, groupRef, sizeRef }` je Reihe; unvollständige Reihen
+ * bleiben stehen (wie bei der Oberfläche). Nicht darin: Darstellung
+ * (`showLines`, `showMarkers`, `seriesOverrides`, Referenzlinien,
+ * Hintergrund — nur über den Diagramm-Editor), `showStats`/`confLevel`,
+ * das Diagrammbild, `exampleWorksheetId`. Die Kennzahlen stehen in `stats` (E8).
+ *
+ * @typedef {object} AgentRead
+ * @property {object[]} datasets  per data row `{ xRef, yRef, groupRef, sizeRef }` from the slots `x`, `y`, `group`, `size`, each a column reference or null
+ * @property {string[]} activeColumnSlots  the slot keys a row of `setDatasets` may carry
+ * @property {object} pickableColumns  per slot the columns `setDatasets` accepts, each `{ key, name }`
+ * @property {object[]|null} stats  per plotted series `{ name, stats, ci }` — stats `{ n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }`, ci `{ mean, variance, stddev }` as `[low, high]` at the confidence level — or null while nothing can be computed
+ */
 
 const mod = createModule({
   config: {
@@ -65,6 +100,82 @@ const mod = createModule({
       /** @type {Array} — unsub functions for event-bus listeners */
       _unsubs: [],
 
+      // ── Agent surface ─────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Spaltenbezüge, wählbare Mengen und Kennzahlen
+       */
+      read(options) {
+        return readAgentState('xy-plot', {
+          datasets: this.model.datasets,
+          activeColumnSlots: this.activeColumnSlots(),
+          pickableColumns: this.pickableColumns(),
+          stats: this._agentStats(),
+        }, options);
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() { return [...COLUMN_SLOTS]; },
+
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() { return datasetSlotColumns(module._context.stateManager, DATASET_SLOTS); },
+
+      /**
+       * Die ganze Liste der Datenreihen setzen.
+       * @agent
+       * @param {object[]} rows je Reihe `{ <slot>: ref|null }`; Slots siehe
+       *   read().activeColumnSlots, Spalten siehe read().pickableColumns; [] leert
+       * @returns {void}
+       * @throws {Error} wenn `rows` keine Liste ist, ein Slot unbekannt oder eine Spalte nicht wählbar
+       */
+      setDatasets(rows) {
+        const clean = requireDatasetRows(rows, this.pickableColumns());
+        this._applyDatasets(clean);
+        if (this._picker) this._picker.value = clean;
+      },
+
+      /** Der Körper des Picker-`onChange`: Zeilen ins Model, Serienanpassungen verwerfen, neu zeichnen. */
+      _applyDatasets(rows) {
+        this.model.datasets = rows.map(ds => ({
+          xRef: ds.x || null,
+          yRef: ds.y || null,
+          groupRef: ds.group || null,
+          sizeRef: ds.size || null,
+        }));
+        // Series count may change — drop stale overrides when structure changes.
+        this.model.seriesOverrides = [];
+        this._plot();
+      },
+
+      /** Die aktuellen Zeilen in Picker-Form, aus dem Model. */
+      _datasetRows() {
+        return this.model.datasets.map(ds => ({ x: ds.xRef, y: ds.yRef, group: ds.groupRef, size: ds.sizeRef }));
+      },
+
+      /** Die Kennzahlen für read() — dieselben Reihen und dieselbe Rechnung wie die Tabelle (E8). */
+      _agentStats() {
+        let series;
+        try { series = this._buildSeries(); } catch { return null; }
+        if (!series.length) return null;
+        return computeSeriesStats(this._statsInput(series), this.model.confLevel / 100)
+          .map(({ name, stats, ci }) => ({ name, stats, ci }));
+      },
+
+      /** Die Abbildung Reihe → Statistikeingabe (Y-Werte sichtbarer Reihen) — Quelle für Tabelle und read(). */
+      _statsInput(series) {
+        return series
+          .filter(s => s.visible !== false)
+          .map(s => ({
+            name: s.name,
+            values: s.y,
+            color: s.color,
+            visible: true,
+          }));
+      },
+
       // ── Column helpers ────────────────────────────────────────
 
       _getColumnValues(ref) {
@@ -83,36 +194,23 @@ const mod = createModule({
         this._picker?.destroy();
         this._picker = null;
 
+        const i18n = module._context.i18n;
+        const SLOT_LABELS = {
+          x: { label: 'X', title: i18n.t('ui.datasetPicker.slotX') },
+          y: { label: 'Y', title: i18n.t('ui.datasetPicker.slotY') },
+          group: { label: 'G', title: i18n.t('ui.datasetPicker.slotG') },
+          size: { label: 'S', title: i18n.t('ui.datasetPicker.slotS') },
+        };
         this._picker = new DatasetPicker(pickerWrap, module._context, {
           multi: true,
           colors: CHART_COLORS,
-          slots: [
-            { key: 'x', label: 'X', title: module._context.i18n.t('ui.datasetPicker.slotX'), types: ['numeric'], minCount: 1, required: true },
-            { key: 'y', label: 'Y', title: module._context.i18n.t('ui.datasetPicker.slotY'), types: ['numeric'], minCount: 1, required: true },
-            { key: 'group', label: 'G', title: module._context.i18n.t('ui.datasetPicker.slotG'), group: true },
-            { key: 'size', label: 'S', title: module._context.i18n.t('ui.datasetPicker.slotS'), types: ['numeric'], minCount: 1 },
-          ],
-          onChange: (datasets) => {
-            this.model.datasets = datasets.map(ds => ({
-              xRef: ds.x || null,
-              yRef: ds.y || null,
-              groupRef: ds.group || null,
-              sizeRef: ds.size || null,
-            }));
-            // Series count may change — drop stale overrides when structure changes.
-            this.model.seriesOverrides = [];
-            this._plot();
-          },
+          slots: DATASET_SLOTS.map(s => ({ ...s, ...SLOT_LABELS[s.key] })),
+          onChange: (rows) => this._applyDatasets(rows),
         });
 
         // Restore saved refs
         if (this.model.datasets.some(ds => ds.xRef || ds.yRef || ds.groupRef || ds.sizeRef)) {
-          this._picker.value = this.model.datasets.map(ds => ({
-            x: ds.xRef,
-            y: ds.yRef,
-            group: ds.groupRef,
-            size: ds.sizeRef,
-          }));
+          this._picker.value = this._datasetRows();
         }
       },
 
@@ -183,13 +281,12 @@ const mod = createModule({
 
       // ── Plot ──────────────────────────────────────────────────
 
-      async _plot() {
-        if (this._plotting) return;
-        this._plotting = true;
-
-        const errBox = module._container.querySelector('[data-ref="error-box"]');
-        if (errBox) errBox.style.display = 'none';
-
+      /**
+       * Die Reihen aus den Datensätzen bilden (paarweise Filter, Gruppen, Größe, Anpassungen).
+       * @returns {object[]} die Reihen `{ name, color, visible, x, y, … }`, wie `_plot` sie zeichnet
+       * @throws {Error} mit der übersetzten Meldung, die `_plot` über `_showError` zeigt
+       */
+      _buildSeries() {
         const series = [];
         const pushSeries = (x, y, name, bubble) => {
           const seriesIdx = series.length;
@@ -220,12 +317,10 @@ const mod = createModule({
           series.push(s);
         };
 
-        let firstReadyXRef = null;
         for (let i = 0; i < this.model.datasets.length; i++) {
           const ds = this.model.datasets[i];
           // Skip incomplete datasets silently — the chart updates as the user selects columns.
           if (!ds.xRef || !ds.yRef) continue;
-          if (!firstReadyXRef) firstReadyXRef = ds.xRef;
 
           const xVals = this._getColumnValues(ds.xRef);
           const yVals = this._getColumnValues(ds.yRef);
@@ -262,9 +357,7 @@ const mod = createModule({
             }
 
             if (buckets.size === 0) {
-              this._showError(_t('errNoGroupLevels', { n: i + 1 }));
-              this._plotting = false;
-              return;
+              throw new Error(_t('errNoGroupLevels', { n: i + 1 }));
             }
 
             let hasAny = false;
@@ -275,9 +368,7 @@ const mod = createModule({
               hasAny = true;
             }
             if (!hasAny) {
-              this._showError(_t('errTooFew', { col: yName }));
-              this._plotting = false;
-              return;
+              throw new Error(_t('errTooFew', { col: yName }));
             }
           } else {
             const x = [], y = [], rawSizes = sizeVals ? [] : null;
@@ -299,15 +390,34 @@ const mod = createModule({
             }
 
             if (x.length < 2) {
-              this._showError(_t('errTooFew', { col: yName }));
-              this._plotting = false;
-              return;
+              throw new Error(_t('errTooFew', { col: yName }));
             }
 
             const bubble = rawSizes ? this._buildBubble(rawSizes, sizeName) : null;
             pushSeries(x, y, yName, bubble);
           }
         }
+
+        return series;
+      },
+
+      async _plot() {
+        if (this._plotting) return;
+        this._plotting = true;
+
+        const errBox = module._container.querySelector('[data-ref="error-box"]');
+        if (errBox) errBox.style.display = 'none';
+
+        let series;
+        try {
+          series = this._buildSeries();
+        } catch (err) {
+          this._showError(err.message);
+          this._plotting = false;
+          return;
+        }
+        // First ready dataset's X column names the x axis (a ready dataset always yields a series, or throws).
+        const firstReadyXRef = this.model.datasets.find(ds => ds.xRef && ds.yRef)?.xRef || null;
 
         if (series.length === 0) {
           // Nothing ready to plot yet — fall back to placeholder.
@@ -377,15 +487,7 @@ const mod = createModule({
           return;
         }
 
-        const mapped = this._lastSeries
-          .filter(s => s.visible !== false)
-          .map(s => ({
-            name: s.name,
-            values: s.y,
-            color: s.color,
-            visible: true,
-          }));
-        const seriesStats = computeSeriesStats(mapped, this.model.confLevel / 100);
+        const seriesStats = computeSeriesStats(this._statsInput(this._lastSeries), this.model.confLevel / 100);
         renderStatsTable(panel, seriesStats, {
           i18n: module._context.i18n,
           confLevel: this.model.confLevel,
@@ -453,6 +555,7 @@ const mod = createModule({
 
       // ── Alpine component lifecycle ────────────────────────────
 
+      /** @noagent lifecycle */
       init() {
         // Fresh per-instance transient collections
         this._chart = null;
@@ -505,6 +608,7 @@ const mod = createModule({
         this._plot();
       },
 
+      /** @noagent lifecycle */
       destroy() {
         this._closeCp();
         for (const unsub of this._unsubs) unsub();
@@ -574,12 +678,14 @@ mod.loadExample = async function loadExample(payload) {
   ctx.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
 };
 
+// Nicht an `mod` gebunden: die Registry legt je Instanz eine Kopie an (`{ ...moduleExport }`),
+// der Aufruf muss auf der Instanz laufen, sonst liefert er den Zustand der Vorlage (null).
+const _origGetState = mod.getState;
 /**
  * Override getState to sync chart-editor changes before serialising, so any
  * editor modifications (refLines, refAreas, bgColor) are captured when state
  * is persisted. Series overrides are kept in sync live via onSeriesChange.
  */
-const _origGetState = mod.getState.bind(mod);
 mod.getState = function getState() {
   if (this._container) {
     const root = this._container.querySelector('[x-data]');
@@ -592,7 +698,7 @@ mod.getState = function getState() {
       } catch { /* ignore — component may not be mounted yet */ }
     }
   }
-  return _origGetState();
+  return _origGetState.call(this);
 };
 
 export default mod;
