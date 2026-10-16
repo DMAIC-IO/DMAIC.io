@@ -6817,7 +6817,7 @@
           }
         },
         "importText": {
-          "help": "Liest CSV- oder JSON-Text wie eine Datei ein und baut die Vorschau auf. Gibt die Zahl der Blätter zurück, bei einem Parse-Fehler null; der Grund steht dann in errorMsg. Ein leerer Text ist ein Parse-Fehler, keine Absage.",
+          "help": "Liest CSV- oder JSON-Text wie eine Datei ein und füllt sheets. Gibt die Zahl der Blätter zurück, bei einem Parse-Fehler null; der Grund steht dann in errorMsg. Ein leerer Text ist ein Parse-Fehler, keine Absage.",
           "params": {
             "text": "Der Inhalt als Text; bei CSV gilt immer UTF-8.",
             "format": "Eines der Formate in textFormats, csv oder json; jeder andere Wert ist ein Fehler."
@@ -6831,7 +6831,7 @@
           }
         },
         "selectSheet": {
-          "help": "Wählt das Blatt, dessen Spalten die Vorschau zeigt und das sendToWorksheet sendet.",
+          "help": "Wählt das Blatt in sheets, das sendToWorksheet sendet; activeSheetIdx nennt es.",
           "params": {
             "index": "Die Nummer des Blatts in sheets, ab 0; jede andere Zahl ist ein Fehler."
           }

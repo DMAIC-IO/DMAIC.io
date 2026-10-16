@@ -6813,7 +6813,7 @@
           }
         },
         "importText": {
-          "help": "Reads CSV or JSON text like a file and builds the preview. Returns the number of sheets, or null when the parse failed; the reason is then in errorMsg. An empty text is a parse failure, not a rejection.",
+          "help": "Reads CSV or JSON text like a file and fills sheets. Returns the number of sheets, or null when the parse failed; the reason is then in errorMsg. An empty text is a parse failure, not a rejection.",
           "params": {
             "text": "The content as text; CSV is always read as UTF-8.",
             "format": "One of the formats in textFormats, csv or json; any other value is an error."
@@ -6827,7 +6827,7 @@
           }
         },
         "selectSheet": {
-          "help": "Chooses the sheet whose columns the preview shows and sendToWorksheet sends.",
+          "help": "Chooses the sheet in sheets that sendToWorksheet sends; activeSheetIdx names it.",
           "params": {
             "index": "The number of the sheet in sheets, from 0; any other number is an error."
           }
