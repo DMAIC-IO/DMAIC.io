@@ -9,6 +9,7 @@
  */
 
 import { getColumnValues } from '../../ui/column-picker.js';
+import { windowed } from '../../ui/tile-chart-window.js';
 import { State } from './attribute-control-chart-model.js';
 import { analyzeState } from './attribute-control-chart-analysis.js';
 
@@ -35,28 +36,6 @@ function meanOf(v) {
 /** Four decimals, '—' when missing. */
 function fmt(v) {
   return Number.isFinite(v) ? v.toFixed(4) : '—';
-}
-
-/**
- * Chart data for the last `lastN` points (0 = all): series and limit arrays
- * are cut, violation indices and the baseline end shifted into the window.
- * @param {object} result - engine result
- * @param {Set<number>} violationIndices
- * @param {number|null} baselineEnd
- * @param {number} lastN
- * `xOffset` is the number of points cut off in front, so the chart keeps the
- * real sample numbers.
- * @returns {{values: number[], cl: any, ucl: any, lcl: any, sigma: any, violationIndices: Set<number>, baselineEnd: number|null, xOffset: number}}
- */
-export function windowed(result, violationIndices, baselineEnd, lastN) {
-  const offset = lastN > 0 ? Math.max(0, result.values.length - lastN) : 0;
-  const cut = (v) => (Array.isArray(v) ? v.slice(offset) : v);
-  const shifted = new Set([...violationIndices].filter(i => i >= offset).map(i => i - offset));
-  const end = baselineEnd != null && baselineEnd - offset > 0 ? baselineEnd - offset : null;
-  return {
-    values: cut(result.values), cl: cut(result.cl), ucl: cut(result.ucl), lcl: cut(result.lcl), sigma: cut(result.sigma),
-    violationIndices: shifted, baselineEnd: end, xOffset: offset,
-  };
 }
 
 export default {

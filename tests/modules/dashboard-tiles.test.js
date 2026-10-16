@@ -511,14 +511,14 @@ function fakeStateManager(values) {
 const SPC_STATE = { chartTypeId: 'i-mr', subgroupSize: 1, baselineCount: null,
   columnRef: { instanceId: 'ws', sheetId: 's', columnId: 'c' }, usl: null, lsl: null };
 
-async function renderSpcTile(state, values) {
+async function renderSpcTile(state, values, overrides = {}, cm = recordingChartManager()) {
   const host = document.createElement('div');
-  host.style.width = '300px';
   document.body.append(host);
-  await mountTile(spcTile, { tileId: 'spc:x', instanceId: 'x', state, settings: {}, i18n, theme: 'light',
-    chartManager: null, stateManager: fakeStateManager(values) }, host);
+  const settings = resolveSettings(validateSchema(spcTile.settings), overrides);
+  await mountTile(spcTile, { tileId: 'spc:x', instanceId: 'x', state, settings, i18n, theme: 'light',
+    chartManager: cm, stateManager: fakeStateManager(values) }, host);
   host.remove();
-  return host;
+  return { host, cm };
 }
 
 suite('dashboard tiles: spc', () => {
@@ -528,26 +528,40 @@ suite('dashboard tiles: spc', () => {
     assertDeepEqual(spcTile.refreshOn, ['state:saved', 'resize']);
   });
 
-  test('renders sparkline and four stats with data', async () => {
-    const host = (await renderSpcTile(SPC_STATE, [10, 10.2, 9.8, 10.1, 9.9, 10.3]));
-    assertTrue(host.querySelector('.dashboard-spc__sparkline') !== null);
+  test('renders a control chart and four stats with data', async () => {
+    const { host, cm } = await renderSpcTile(SPC_STATE, [10, 10.2, 9.8, 10.1, 9.9, 10.3]);
+    assertEqual(cm.made.length, 1);
+    assertEqual(cm.made[0].type, 'control-chart');
+    assertTrue(cm.made[0].el === host.querySelector('[data-tile-slot="chart"]'), 'chart goes into the chart slot');
     assertEqual(host.querySelectorAll('.dashboard-spc__stat').length, 4);
   });
 
-  test('sparkline width follows the host width', async () => {
-    const host = (await renderSpcTile(SPC_STATE, [10, 10.2, 9.8, 10.1, 9.9, 10.3]));
-    assertEqual(host.querySelector('.dashboard-spc__sparkline').getAttribute('width'), '284');
+  test('chart config: compact control chart with every element hidden', async () => {
+    const { cm } = await renderSpcTile(SPC_STATE, [10, 10.2, 9.8, 10.1, 9.9, 10.3]);
+    const { cfg } = cm.made[0];
+    assertEqual(cfg.values.length, 6);
+    assertEqual(cfg.showZones, true);
+    assertTrue(cfg.violationIndices instanceof Set, 'violation indices as a Set');
+    assertEqual(cfg.xLabel, 'modules.control-chart.xLabelSample');
+    for (const k of ['showTitle', 'showXLabel', 'showYLabel', 'showXTicks', 'showYTicks', 'showLegend']) {
+      assertEqual(cfg[k], false, k);
+    }
   });
 
   test('empty state without column, no-data state with one point', async () => {
-    assertTrue((await renderSpcTile({ ...SPC_STATE, columnRef: null }, [])).querySelector('.dashboard-area__empty') !== null);
-    assertTrue((await renderSpcTile(SPC_STATE, [10])).querySelector('.dashboard-area__empty') !== null);
+    let r = await renderSpcTile({ ...SPC_STATE, columnRef: null }, []);
+    assertTrue(r.host.querySelector('.dashboard-area__empty') !== null);
+    assertEqual(r.cm.made.length, 0);
+    r = await renderSpcTile(SPC_STATE, [10]);
+    assertTrue(r.host.querySelector('.dashboard-area__empty') !== null);
+    assertEqual(r.cm.made.length, 0);
   });
 
   const SPC_VALUES = [10, 10.2, 9.8, 10.1, 9.9, 10.3];
-  const spcVm = (state, values = SPC_VALUES) => vmOf(spcTile, state, {}, { stateManager: fakeStateManager(values) });
+  const spcVm = (state, values = SPC_VALUES, overrides = {}) =>
+    vmOf(spcTile, state, overrides, { stateManager: fakeStateManager(values) });
 
-  test('viewModel: header, stats, metrics and sparkline data as display data', () => {
+  test('viewModel: header, stats, metrics and chart config as display data', () => {
     const vm = spcVm(SPC_STATE);
     assertPlain(vm);
     assertEqual(vm.empty, null);
@@ -558,8 +572,12 @@ suite('dashboard tiles: spc', () => {
     assertEqual(vm.metrics.length, 1, 'no spec: violations only');
     assertDeepEqual(vm.metrics[0], { modifier: 'dashboard-spc__metric--ok', value: '0',
       label: 'dashboard.spcViolations', sub: 'dashboard.spcOf' });
-    assertEqual(vm.spark.values.length, SPC_VALUES.length);
-    assertDeepEqual(vm.spark.violations, []);
+    assertEqual(vm.chart.values.length, SPC_VALUES.length);
+    assertDeepEqual(vm.chart.violationIndices, []);
+    assertEqual(vm.chart.xOffset, 0);
+    assertEqual(vm.chart.xMin, 0.5, 'x axis starts half a step before the first point');
+    assertEqual(vm.chart.xMax, SPC_VALUES.length + 0.5, 'x axis ends half a step after the last point');
+    assertEqual(vm.chart.baselineEnd, null);
   });
 
   test('viewModel: a spec limit adds the out-of-spec metric and Cpk', () => {
@@ -568,7 +586,8 @@ suite('dashboard tiles: spc', () => {
       label: 'dashboard.spcOutOfSpec', sub: 'dashboard.spcOf' });
     assertEqual(vm.metrics[2].label, 'Cpk');
     assertTrue(/^dashboard-spc__metric--(ok|warn|bad)$/.test(vm.metrics[2].modifier), vm.metrics[2].modifier);
-    assertEqual(vm.spark.usl, 10.25);
+    assertEqual(vm.chart.usl, 10.25);
+    assertEqual(vm.chart.lsl, null);
   });
 
   test('viewModel: empty, no-data and unknown chart type', () => {
@@ -578,9 +597,80 @@ suite('dashboard tiles: spc', () => {
     assertEqual(spcVm({ ...SPC_STATE, chartTypeId: 'no-such-type' }).empty, 'dashboard.spcNoData');
   });
 
-  test('out-of-spec points are marked in the sparkline', async () => {
-    const host = await renderSpcTile({ ...SPC_STATE, usl: 10.25 }, SPC_VALUES);
-    assertEqual(host.querySelectorAll('.dashboard-spc__sparkline circle').length, 1);
+  test('spec limits reach the chart, which marks out-of-spec points itself', async () => {
+    const { cm } = await renderSpcTile({ ...SPC_STATE, usl: 10.25, lsl: 9.75 }, SPC_VALUES);
+    assertEqual(cm.made[0].cfg.usl, 10.25);
+    assertEqual(cm.made[0].cfg.lsl, 9.75);
+  });
+
+  // Point 7 (index 6) lies far above the limits of the first six.
+  const SPC_SHIFT = [10, 10.2, 9.8, 10.1, 9.9, 10.3, 14, 10, 10.1, 9.9];
+
+  test('a Nelson violation reaches the chart as an index', async () => {
+    const { cm } = await renderSpcTile({ ...SPC_STATE, baselineCount: 6 }, SPC_SHIFT);
+    assertTrue(cm.made[0].cfg.violationIndices.has(6));
+    assertEqual(cm.made[0].cfg.baselineEnd, 6);
+  });
+
+  test('lastN shows the last points with shifted indices; figures stay on all points', async () => {
+    const { cm } = await renderSpcTile({ ...SPC_STATE, baselineCount: 6 }, SPC_SHIFT, { lastN: 5 });
+    const { cfg } = cm.made[0];
+    assertEqual(cfg.values.length, 5);
+    assertTrue(cfg.violationIndices.has(1));
+    assertEqual(cfg.xOffset, 5, 'points keep their real sample numbers 6..10');
+    assertEqual(cfg.xMin, 5.5);
+    assertEqual(cfg.xMax, 10.5);
+    assertEqual(cfg.baselineEnd, 1);
+    const vm = spcVm({ ...SPC_STATE, baselineCount: 6 }, SPC_SHIFT, { lastN: 5 });
+    assertEqual(vm.metrics[0].value, '1', 'violation count over all points');
+  });
+
+  test('xbar-r: the baseline marker counts subgroups', () => {
+    const vm = spcVm({ ...SPC_STATE, chartTypeId: 'xbar-r', subgroupSize: 2, baselineCount: 4 },
+      [10, 10.2, 9.8, 10.1, 9.9, 10.3, 10, 10.1]);
+    assertEqual(vm.chart.values.length, 4);
+    assertEqual(vm.chart.baselineEnd, 2);
+  });
+
+  test('showChart off: figures only, no chart slot', async () => {
+    const { host, cm } = await renderSpcTile(SPC_STATE, SPC_VALUES, { showChart: false });
+    assertEqual(cm.made.length, 0);
+    assertEqual(host.querySelector('[data-tile-slot="chart"]'), null);
+    assertEqual(host.querySelectorAll('.dashboard-spc__stat').length, 4);
+    assertEqual(spcVm(SPC_STATE, SPC_VALUES, { showChart: false }).chart, null);
+  });
+
+  test('a second render and dispose destroy the previous chart', async () => {
+    const cm = recordingChartManager();
+    const host = document.createElement('div');
+    const args = { tileId: 'spc:x', instanceId: 'x', state: SPC_STATE,
+      settings: resolveSettings(validateSchema(spcTile.settings), {}), i18n, theme: 'light',
+      chartManager: cm, stateManager: fakeStateManager(SPC_VALUES) };
+    await mountTile(spcTile, args, host);
+    await mountTile(spcTile, args, host);
+    assertDeepEqual(cm.destroyed, [cm.made[0]]);
+    spcTile.dispose(host, { tileId: 'spc:x' });
+    assertDeepEqual(cm.destroyed, [cm.made[0], cm.made[1]]);
+  });
+
+  test('a chart that resolves after a newer render is destroyed (stale token)', async () => {
+    const made = []; const destroyed = []; const pending = [];
+    const cm = {
+      create: (el, type, cfg) => new Promise(r => { const c = { cfg }; made.push(c); pending.push(() => r(c)); }),
+      destroy: (c) => destroyed.push(c),
+    };
+    const host = document.createElement('div');
+    const args = { tileId: 'spc:x', instanceId: 'x', state: SPC_STATE,
+      settings: resolveSettings(validateSchema(spcTile.settings), {}), i18n, theme: 'light',
+      chartManager: cm, stateManager: fakeStateManager(SPC_VALUES) };
+    const first = mountTile(spcTile, args, host);
+    await waitFor(() => pending.length === 1);
+    const second = mountTile(spcTile, args, host);
+    await waitFor(() => pending.length === 2);
+    pending[1](); await second;
+    pending[0](); await first;
+    assertTrue(destroyed.includes(made[0]), 'stale chart destroyed');
+    assertTrue(!destroyed.includes(made[1]), 'current chart kept');
   });
 });
 
@@ -1198,6 +1288,8 @@ suite('dashboard tiles: attribute-control-chart', () => {
     assertEqual(cfg.values.length, 4);
     assertTrue(cfg.violationIndices.has(3));
     assertEqual(cfg.xOffset, 6, 'points keep their real sample numbers 7..10');
+    assertEqual(cfg.xMin, 6.5);
+    assertEqual(cfg.xMax, 10.5);
     assertEqual(host.querySelector('.dashboard-spc__metric-sub').textContent, 'dashboard.spcOf');
     host.remove();
   });

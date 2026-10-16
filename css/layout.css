@@ -1754,6 +1754,8 @@ body.dev-area-open .dmaic-tiles {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
+  height: 100%;
+  min-height: 0;
   font-size: var(--font-size-sm, 13px);
 }
 
@@ -1777,17 +1779,11 @@ body.dev-area-open .dmaic-tiles {
   color: var(--color-text-secondary);
 }
 
-.dashboard-spc__spark {
+.dashboard-spc__plot {
   border: var(--border-width) solid var(--color-border-secondary);
-  border-radius: 4px;
+  border-radius: var(--border-radius-sm);
   background: var(--color-bg-secondary);
   overflow: hidden;
-  line-height: 0;
-}
-
-.dashboard-spc__sparkline {
-  display: block;
-  height: 160px;
 }
 
 .dashboard-spc__stats {

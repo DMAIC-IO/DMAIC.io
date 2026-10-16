@@ -1,88 +1,38 @@
 /**
  * D.Mike — SPC dashboard tile (control-chart.tile.js)
  *
- * One tile per control-chart instance (`spc:<instanceId>`). The sparkline
- * follows the tile width, so the tile re-renders on resize. Loaded via the
- * manifest's `loadTile`. The markup lives in control-chart.tile.html; the
- * sparkline is drawn in mount(). Contract: docs/DASHBOARD.md.
+ * One tile per control-chart instance (`spc:<instanceId>`): CL/limits/sigma,
+ * violation / out-of-spec / Cpk metrics and a compact control chart through
+ * the tile-bound chartManager. The chart follows the tile width, so the tile
+ * re-renders on resize. Loaded via the manifest's `loadTile`. The markup
+ * lives in control-chart.tile.html. Contract: docs/DASHBOARD.md.
  */
 
-import { svg } from '../../core/dom.js';
 import { getChartType, evaluateNelsonRules, computeCapability, capabilitySigma, DEFAULT_ENABLED_RULES } from '../../engines/control-chart-engine.js';
 import { getColumnValues, getColumnName } from '../../ui/column-picker.js';
+import { windowed } from '../../ui/tile-chart-window.js';
+
+/** host -> { chart, chartManager, token } of the latest render. */
+const charts = new WeakMap();
 
 /**
- * Sparkline of the primary subchart; null with fewer than two points.
- * @param {{values: Array<number|null>, lcl: number, ucl: number, cl: number, sigma: number}} scData
- * @param {Set<number>} violationSet  indices with Nelson violations
- * @param {number|null} usl
- * @param {number|null} lsl
- * @param {number} width  pixel width (0/undefined falls back to 320)
- * @returns {SVGElement|null}
+ * Destroy the chart of the latest render in a host and forget it.
+ * @param {HTMLElement} host
  */
-function buildSparkline(scData, violationSet, usl, lsl, width) {
-  const W = width || 320, H = 160, PAD_X = 2, PAD_Y = 6;
-  const pts = scData.values.filter(v => v !== null);
-  if (pts.length < 2) return null;
-
-  const extents = [scData.lcl, scData.ucl, ...pts];
-  if (usl != null) extents.push(usl);
-  if (lsl != null) extents.push(lsl);
-  const yMin = Math.min(...extents) - scData.sigma * 0.3;
-  const yMax = Math.max(...extents) + scData.sigma * 0.3;
-  const yRange = yMax - yMin || 1;
-
-  const sx = (i) => PAD_X + (i / (scData.values.length - 1)) * (W - 2 * PAD_X);
-  const sy = (v) => PAD_Y + (1 - (v - yMin) / yRange) * (H - 2 * PAD_Y);
-
-  const uclY = sy(scData.ucl), lclY = sy(scData.lcl), clY = sy(scData.cl);
-  const kids = [
-    svg('rect', { x: PAD_X, y: uclY, width: W - 2 * PAD_X, height: lclY - uclY,
-      fill: 'var(--color-success)', opacity: 0.06, rx: 2 }),
-    svg('line', { x1: PAD_X, y1: uclY, x2: W - PAD_X, y2: uclY,
-      stroke: 'var(--color-error)', 'stroke-width': 0.8, 'stroke-dasharray': '4,3', opacity: 0.6 }),
-    svg('line', { x1: PAD_X, y1: lclY, x2: W - PAD_X, y2: lclY,
-      stroke: 'var(--color-error)', 'stroke-width': 0.8, 'stroke-dasharray': '4,3', opacity: 0.6 }),
-    svg('line', { x1: PAD_X, y1: clY, x2: W - PAD_X, y2: clY,
-      stroke: 'var(--color-accent)', 'stroke-width': 0.8, opacity: 0.5 }),
-  ];
-
-  if (usl != null) {
-    const uslY = sy(usl);
-    kids.push(svg('line', { x1: PAD_X, y1: uslY, x2: W - PAD_X, y2: uslY,
-      stroke: 'var(--color-warning)', 'stroke-width': 1, opacity: 0.7 }));
-  }
-  if (lsl != null) {
-    const lslY = sy(lsl);
-    kids.push(svg('line', { x1: PAD_X, y1: lslY, x2: W - PAD_X, y2: lslY,
-      stroke: 'var(--color-warning)', 'stroke-width': 1, opacity: 0.7 }));
-  }
-
-  const polyPts = [];
-  for (let i = 0; i < scData.values.length; i++) {
-    if (scData.values[i] === null) continue;
-    polyPts.push(`${sx(i).toFixed(1)},${sy(scData.values[i]).toFixed(1)}`);
-  }
-  kids.push(svg('polyline', { points: polyPts.join(' '), fill: 'none',
-    stroke: 'var(--color-text-secondary)', 'stroke-width': 1.2, 'stroke-linejoin': 'round' }));
-
-  for (let i = 0; i < scData.values.length; i++) {
-    if (scData.values[i] === null) continue;
-    const v = scData.values[i];
-    const isNelson = violationSet.has(i);
-    const isOos = (usl != null && v > usl) || (lsl != null && v < lsl);
-    if (!isNelson && !isOos) continue;
-    const color = isNelson ? 'var(--color-error)' : 'var(--color-warning)';
-    kids.push(svg('circle', { cx: sx(i).toFixed(1), cy: sy(v).toFixed(1), r: 2.5, fill: color }));
-  }
-
-  return svg('svg', { class: 'dashboard-spc__sparkline', viewBox: `0 0 ${W} ${H}`, width: W, height: H }, kids);
+function release(host) {
+  const entry = charts.get(host);
+  if (entry?.chart) entry.chartManager.destroy(entry.chart);
+  charts.delete(host);
 }
 
 export default {
   size: { defaultW: 3, defaultH: 10, minW: 2, minH: 6 },
   titlePrefix: 'SPC',
   refreshOn: ['state:saved', 'resize'],
+  settings: {
+    lastN: { type: 'number', min: 0, max: 500, step: 1, default: 0, label: 'dashboard.tileSettings.lastN' },
+    showChart: { type: 'boolean', default: true, label: 'dashboard.tileSettings.showChart' },
+  },
 
   /**
    * One tile per control-chart instance.
@@ -101,12 +51,13 @@ export default {
 
   /**
    * Chart type, column, CL/limits/sigma, violation / out-of-spec / Cpk
-   * metrics and the data the sparkline is drawn from.
-   * @param {{state: object, i18n: object, stateManager: object}} args
+   * metrics over all points and the windowed control chart config (null
+   * when hidden). Violation indices are a number array.
+   * @param {{state: object, settings: {lastN: number, showChart: boolean}, i18n: object, stateManager: object}} args
    * @returns {object} view model for control-chart.tile.html
    */
-  viewModel({ state, i18n, stateManager }) {
-    const none = (key) => ({ empty: i18n.t(key), typeLabel: '', colName: '', stats: [], metrics: [], spark: null });
+  viewModel({ state, settings, i18n, stateManager }) {
+    const none = (key) => ({ empty: i18n.t(key), typeLabel: '', colName: '', stats: [], metrics: [], chart: null });
     if (!state || !state.columnRef) return none('dashboard.spcEmpty');
 
     const ct = getChartType(state.chartTypeId || 'i-mr');
@@ -120,8 +71,8 @@ export default {
     const baselineEnd = state.baselineCount || values.length;
     const result = ct.compute(values, n, baselineEnd);
 
-    const primaryId = ct.subcharts[0].id;
-    const primaryData = result.subcharts[primaryId];
+    const primary = ct.subcharts[0];
+    const primaryData = result.subcharts[primary.id];
     const enabledRules = state.enabledRules || [...DEFAULT_ENABLED_RULES];
     const violations = evaluateNelsonRules(
       primaryData.values, primaryData.cl, primaryData.sigma, enabledRules,
@@ -170,6 +121,26 @@ export default {
       });
     }
 
+    let chart = null;
+    if (settings.showChart) {
+      // The baseline counts observations; subgroup charts plot one point per subgroup.
+      const blEnd = state.baselineCount
+        ? (ct.id === 'i-mr' ? state.baselineCount : Math.ceil(state.baselineCount / n))
+        : null;
+      const win = windowed(primaryData, violationSet,
+        blEnd != null && blEnd < primaryData.values.length ? blEnd : null, settings.lastN);
+      chart = {
+        ...win,
+        violationIndices: [...win.violationIndices],
+        usl, lsl,
+        showZones: true,
+        xLabel: i18n.t('modules.control-chart.xLabelSample'),
+        yLabel: primary.yLabel?.[i18n.language] || primary.yLabel?.de || '',
+        showTitle: false, showXLabel: false, showYLabel: false,
+        showXTicks: false, showYTicks: false, showLegend: false,
+      };
+    }
+
     return {
       empty: null,
       typeLabel: { 'i-mr': 'I-MR', 'xbar-r': 'X̄-R', 'xbar-s': 'X̄-S' }[ct.id] || ct.id,
@@ -181,24 +152,39 @@ export default {
         { label: 'σ̂', value: fmt(primaryData.sigma) },
       ],
       metrics,
-      spark: {
-        values: primaryData.values,
-        cl: primaryData.cl, ucl: primaryData.ucl, lcl: primaryData.lcl, sigma: primaryData.sigma,
-        violations: [...violationSet],
-        usl, lsl,
-      },
+      chart,
     };
   },
 
   /**
-   * Draw the sparkline into the spark slot; it follows the tile width.
+   * Create the control chart in the chart slot. A newer render or dispose
+   * invalidates a chart that is still being created.
    * @param {HTMLElement} root  tile body
    * @param {object} vm  view model from viewModel()
+   * @param {{chartManager: object}} args
+   * @returns {Promise<void>}
    */
-  mount(root, vm) {
-    if (vm.empty || !vm.spark) return;
-    const { spark } = vm;
-    const sparkSvg = buildSparkline(spark, new Set(spark.violations), spark.usl, spark.lsl, root.clientWidth - 16);
-    if (sparkSvg) root.querySelector('[data-tile-slot="spark"]').append(sparkSvg);
+  async mount(root, vm, { chartManager }) {
+    release(root);
+    const token = {};
+    charts.set(root, { chart: null, chartManager, token });
+    if (!vm.chart || !chartManager) return;
+
+    const slot = root.querySelector('[data-tile-slot="chart"]');
+    const chart = await chartManager.create(slot, 'control-chart', {
+      ...vm.chart,
+      violationIndices: new Set(vm.chart.violationIndices),
+    });
+    const entry = charts.get(root);
+    if (entry?.token !== token) { chartManager.destroy(chart); return; }
+    entry.chart = chart;
+  },
+
+  /**
+   * Release the chart of the host (tile removed or host abandoned).
+   * @param {HTMLElement} host
+   */
+  dispose(host) {
+    release(host);
   },
 };
