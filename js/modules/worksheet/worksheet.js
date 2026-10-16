@@ -787,13 +787,18 @@ const mod = createModule({
       async _openRoleConfirmPopout(columns) {
         const ctx = module._context;
         const label = (role) => ctx.i18n.t(`ui.datagrid.role${role.charAt(0).toUpperCase()}${role.slice(1)}`);
-        this.roleDraft = columns.map((col) => ({
-          colId: col.id,
-          name: col.name || col.shortName || '?',
-          type: col.type || '',
-          role: col.role,
-          options: validRolesForType(col.type).map((value) => ({ value, label: label(value) })),
-        }));
+        this.roleDraft = columns.map((col) => {
+          const valid = validRolesForType(col.type);
+          return {
+            colId: col.id,
+            name: col.name || col.shortName || '?',
+            type: col.type || '',
+            // A role the type no longer allows shows as the first option, so
+            // the draft starts there too: Confirm applies what the user saw.
+            role: valid.includes(col.role) ? col.role : (valid[0] ?? col.role),
+            options: valid.map((value) => ({ value, label: label(value) })),
+          };
+        });
         await this.$nextTick();
         const result = await ctx.dialog.form({
           title: _t('confirmRolesTitle'),
