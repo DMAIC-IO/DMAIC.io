@@ -6733,115 +6733,231 @@ export const AGENT_REGISTRY = {
     }
   },
   "resampling": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:isMode",
-      "unmarked_method:isAllowed",
-      "unmarked_method:showTarget",
-      "unmarked_method:showDirection",
-      "unmarked_method:showValidation",
-      "unmarked_method:canCompute",
-      "unmarked_method:sampleLabelKey",
-      "unmarked_method:setMode",
-      "unmarked_method:rollSeed",
-      "unmarked_method:refresh",
-      "unmarked_method:statementText",
-      "unmarked_method:compute",
-      "unmarked_method:cancel",
-      "unmarked_method:renderCharts",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unreachable_write:statisticId",
-      "unreachable_write:statParams.trim",
-      "unreachable_write:statParams.p",
-      "unreachable_write:statParams.lsl",
-      "unreachable_write:statParams.usl",
-      "unreachable_write:contrast",
-      "unreachable_write:direction",
-      "unreachable_write:target",
-      "unreachable_write:B",
-      "unreachable_write:confidence",
-      "unreachable_write:seed",
-      "unreachable_write:ciMethod"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'mode'|'statisticId'|'statParams.trim'|'statParams.p'|'statParams.lsl'|'statParams.usl'|'contrast'|'direction'|'target'|'B'|'seed'|'confidence'|'ciMethod'",
+            "optional": false,
+            "help": "welcher Parameter"
+          },
+          {
+            "name": "value",
+            "type": "string|number",
+            "optional": false,
+            "help": "der Wert; Zahlen als Zahl oder Zahlentext, Grenzen und Zielwert als Text"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Parameter setzen; Gültigkeit und Bereiche prüft die Validierung, deren Grund `validationMsg` nennt. Ein Moduswechsel setzt eine Statistik, die der neue Modus nicht anbietet, auf den Mittelwert zurück."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'colRef1'|'colRef2'",
+            "optional": false,
+            "help": "der Slot; `colRef2` nur in den Modi two und paired"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Stichprobenspalte einem Slot zuweisen (Modi one, two, paired)."
+      },
+      "setColumns": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'colRefsK'",
+            "optional": false,
+            "help": "der Slot; nur im Modus k"
+          },
+          {
+            "name": "refs",
+            "type": "Array<{ instanceId: string, sheetId: string, columnId: string }>",
+            "optional": false,
+            "help": "die Spaltenbezüge wählbarer Spalten; `[]` leert die Auswahl"
+          }
+        ],
+        "returns": "void",
+        "help": "Die Gruppenspalten des Modus k ersetzen; die Reihenfolge ist die der Gruppen."
+      },
+      "rollSeed": {
+        "params": [],
+        "returns": "void",
+        "help": "Einen neuen Startwert ziehen (1 bis 2147483647)."
+      },
+      "compute": {
+        "params": [],
+        "returns": "Promise<void>",
+        "help": "Rechnet auf Anforderung; kehrt nach dem letzten Durchlauf zurück. Bei ungültigen oder unvollständigen Eingaben oder während eines laufenden Laufs rechnet es nicht — validationMsg nennt den Grund, result bleibt, wie es war. Ein Abbruch lässt result ebenfalls unverändert."
+      },
+      "cancel": {
+        "params": [],
+        "returns": "void",
+        "help": "Einen laufenden Lauf abbrechen; result bleibt, wie es war. Ohne Lauf geschieht nichts."
+      }
+    },
     "fields": {
       "mode": {
         "type": "'one'|'two'|'paired'|'k'",
-        "help": "",
-        "bulk": false
+        "help": "the sample design",
+        "bulk": false,
+        "derived": true
       },
       "statisticId": {
         "type": "string",
-        "help": "one of STATS_BY_MODE[mode]",
-        "bulk": false
+        "help": "the statistic that is resampled",
+        "bulk": false,
+        "derived": true
       },
       "statParams": {
-        "type": "{ trim: number, p: number, lsl: string, usl: string }",
-        "help": "",
-        "bulk": false
+        "type": "object",
+        "help": "`{ trim, p, lsl, usl }`: trimming share, quantile level, lower and upper limit (limits as text)",
+        "bulk": false,
+        "derived": true
       },
       "contrast": {
         "type": "'difference'|'ratio'",
-        "help": "mode 'two' only",
-        "bulk": false
+        "help": "how two samples are compared (mode 'two')",
+        "bulk": false,
+        "derived": true
       },
       "direction": {
         "type": "'two-sided'|'greater'|'less'",
-        "help": "modes 'two' and 'paired'",
-        "bulk": false
+        "help": "the alternative (modes 'two' and 'paired')",
+        "bulk": false,
+        "derived": true
       },
       "target": {
         "type": "string",
-        "help": "mode 'one': hypothesised value, kept as text",
-        "bulk": false
+        "help": "the hypothesised value as text (mode 'one'); empty means none",
+        "bulk": false,
+        "derived": true
       },
       "colRef1": {
-        "type": "ColumnRef|null",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the first sample column, `{ instanceId, sheetId, columnId }`, or null",
+        "bulk": false,
+        "derived": true
       },
       "colRef2": {
-        "type": "ColumnRef|null",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the second sample column (modes 'two' and 'paired'), or null",
+        "bulk": false,
+        "derived": true
       },
       "colRefsK": {
-        "type": "ColumnRef[]",
-        "help": "",
-        "bulk": false
+        "type": "object[]",
+        "help": "the group columns in order (mode 'k'), each `{ instanceId, sheetId, columnId }`",
+        "bulk": false,
+        "derived": true
       },
       "B": {
         "type": "number",
-        "help": "resamples / Monte Carlo permutations",
-        "bulk": false
+        "help": "number of resamples or permutations",
+        "bulk": false,
+        "derived": true
       },
       "seed": {
         "type": "number",
-        "help": "",
-        "bulk": false
+        "help": "random seed",
+        "bulk": false,
+        "derived": true
       },
       "confidence": {
         "type": "number",
-        "help": "",
-        "bulk": false
+        "help": "confidence level as a fraction, for example 0.95",
+        "bulk": false,
+        "derived": true
       },
       "ciMethod": {
         "type": "'bca'|'percentile'",
-        "help": "",
-        "bulk": false
+        "help": "interval method",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "string|null",
-        "help": "worksheet provisioned by loadExample",
-        "bulk": false
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "statisticOptions": {
+        "type": "string[]",
+        "help": "the statistics the current mode offers",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "activeMultiSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumns` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns it accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "running": {
+        "type": "boolean",
+        "help": "true while a run is in progress",
+        "bulk": false,
+        "derived": true
+      },
+      "stale": {
+        "type": "boolean",
+        "help": "true when a result exists that was computed from other inputs",
+        "bulk": false,
+        "derived": true
+      },
+      "validationMsg": {
+        "type": "string",
+        "help": "why `compute` would not run, or an empty string",
+        "bulk": false,
+        "derived": true
+      },
+      "errorMsg": {
+        "type": "string",
+        "help": "why the last run failed, or an empty string",
+        "bulk": false,
+        "derived": true
       },
       "result": {
         "type": "object|null",
-        "help": "summary from resampling-analysis summarize()",
-        "bulk": false
+        "help": "the summary of the last run (estimate, interval, p-value, histogram bins), or null",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -9376,4 +9492,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":39};
+export const AGENT_COVERAGE = {"total":74,"available":40};

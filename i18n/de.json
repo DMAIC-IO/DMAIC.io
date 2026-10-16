@@ -6144,6 +6144,116 @@
     "resampling": {
       "name": "Resampling",
       "description": "Bootstrap-Konfidenzintervalle und Permutationstests für eine, zwei, gepaarte und k Stichproben",
+      "whenToUse": "Wenn für eine Kennzahl von einer, zwei, gepaarten oder k Stichproben ein Konfidenzintervall oder ein Test ohne Verteilungsannahme gebraucht wird: bestimmt das Intervall per Bootstrap (BCa oder Perzentil) und testet per Permutation (zwei Stichproben, gepaart, k Gruppen) beziehungsweise gegen einen Zielwert (eine Stichprobe). Jede Stichprobe braucht mindestens 2 numerische Werte (10 bei Ppk).",
+      "actions": {
+        "read": {
+          "help": "Liefert den Aufbau (Modus, Statistik und ihre Parameter, Kontrast, Richtung, Zielwert), die gewählten Spalten, die Laufeinstellungen (B, seed, confidence, ciMethod), die wählbaren Mengen, den Laufzustand und das Ergebnis. result ist null, bis ein Lauf fertig war; ein abgebrochener oder fehlgeschlagener Lauf lässt es, wie es war.",
+          "params": {
+            "options": "Optional; dieses Modul hält keine Massendaten."
+          }
+        },
+        "setParam": {
+          "help": "Setzt einen Parameter. Ein Wert außerhalb seines Bereichs wird angenommen; validationMsg nennt dann den Grund, und compute rechnet nicht. Ein Moduswechsel setzt eine Statistik, die der neue Modus nicht anbietet, auf 'mean' zurück.",
+          "params": {
+            "key": "Einer der Schlüssel aus activeParams: mode, statisticId, B, seed, confidence und ciMethod immer; statParams.trim nur bei der Statistik 'trimmedMean'; statParams.p nur bei 'quantile'; statParams.lsl und statParams.usl nur bei 'ppk'; contrast nur im Modus 'two'; direction in den Modi 'two' und 'paired'; target im Modus 'one'. Jeder andere Wert ist ein Fehler.",
+            "value": "mode: 'one', 'two', 'paired' oder 'k'. statisticId: eine aus statisticOptions. statParams.trim und statParams.p: Zahl (trim ab 0 bis unter 0.5, p zwischen 0 und 1 ausschließlich). statParams.lsl, statParams.usl und target: Text mit einer Zahl, '' für keinen. B: ganze Zahl, gültig von 1000 bis 100000. seed: ganze Zahl, gültig von 0 bis 2147483647. confidence: Anteil, gültig zwischen 0 und 1 ausschließlich, zum Beispiel 0.95. contrast: 'difference' oder 'ratio'. direction: 'two-sided', 'greater' oder 'less'. ciMethod: 'bca' oder 'percentile'. Ein Wert der falschen Art oder außerhalb der Liste ist ein Fehler; eine Zahl außerhalb des genannten Bereichs wird angenommen und in validationMsg gemeldet."
+          }
+        },
+        "setColumn": {
+          "help": "Weist einem Slot eine Stichprobenspalte zu oder leert ihn mit null. Im Modus 'one' ist colRef1 die Stichprobe, in 'two' die beiden Gruppen, in 'paired' die Paare (colRef1 zuerst, colRef2 danach).",
+          "params": {
+            "slot": "Einer der Slots aus activeColumnSlots: 'colRef1' in jedem Modus außer 'k', dazu 'colRef2' in den Modi 'two' und 'paired'.",
+            "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Leeren des Slots."
+          }
+        },
+        "setColumns": {
+          "help": "Ersetzt die Gruppenspalten des Modus 'k'; die Reihenfolge ist die der Gruppen. Doppelte Einträge zählen einmal. Zum Rechnen sind mindestens 3 Spalten nötig.",
+          "params": {
+            "slot": "Einer der Slots aus activeMultiSlots; dieses Modul kennt nur 'colRefsK', und nur im Modus 'k'.",
+            "refs": "Liste von Spaltenbezügen { instanceId, sheetId, columnId } von Spalten aus pickableColumns; [] leert die Auswahl."
+          }
+        },
+        "rollSeed": {
+          "help": "Zieht einen neuen Zufalls-Startwert zwischen 1 und 2147483647."
+        },
+        "compute": {
+          "help": "Rechnet das Resampling und kehrt nach dem letzten Durchlauf zurück; result enthält danach die neue Zusammenfassung. Es rechnet nicht, solange ein Lauf läuft oder validationMsg einen Grund nennt (ungültige Parameter, fehlende oder zu kurze Spalten, weniger als 3 Gruppen im Modus 'k'); result bleibt dann, wie es war, und es gibt keinen Fehler. Ein fehlgeschlagener Lauf lässt result, wie es war, und nennt den Grund in errorMsg."
+        },
+        "cancel": {
+          "help": "Bricht einen laufenden Lauf ab; result bleibt, wie es war, und errorMsg bleibt leer. Ohne Lauf geschieht nichts."
+        }
+      },
+      "fields": {
+        "mode": {
+          "help": "Der Stichprobenaufbau: 'one' (eine Stichprobe gegen einen Zielwert), 'two' (zwei Gruppen), 'paired' (Paare vorher und nachher) oder 'k' (drei oder mehr Gruppen)."
+        },
+        "statisticId": {
+          "help": "Die Statistik, die neu gezogen wird; eine aus statisticOptions."
+        },
+        "statParams": {
+          "help": "{ trim, p, lsl, usl }: Trimmanteil (Statistik 'trimmedMean'), Quantilstufe (Statistik 'quantile'), untere und obere Spezifikationsgrenze als Text (Statistik 'ppk'). Nur die Einträge der gewählten Statistik zählen."
+        },
+        "contrast": {
+          "help": "Wie zwei Gruppen verglichen werden: 'difference' oder 'ratio'. Nur im Modus 'two' relevant; das Verhältnis braucht positive Werte."
+        },
+        "direction": {
+          "help": "Die Alternative des Tests: 'two-sided', 'greater' oder 'less'. Nur in den Modi 'two' und 'paired' relevant."
+        },
+        "target": {
+          "help": "Der vermutete Wert als Text; '' heißt keiner. Nur im Modus 'one' relevant."
+        },
+        "colRef1": {
+          "help": "Die erste Stichprobenspalte { instanceId, sheetId, columnId } (die Stichprobe, die erste Gruppe oder die erste Seite der Paare), oder null."
+        },
+        "colRef2": {
+          "help": "Die zweite Stichprobenspalte { instanceId, sheetId, columnId } (Modi 'two' und 'paired'), oder null."
+        },
+        "colRefsK": {
+          "help": "Die Gruppenspalten des Modus 'k' in der Reihenfolge, jede { instanceId, sheetId, columnId }."
+        },
+        "B": {
+          "help": "Anzahl der Ziehungen oder Permutationen; gültig von 1000 bis 100000."
+        },
+        "seed": {
+          "help": "Zufalls-Startwert, eine ganze Zahl von 0 bis 2147483647; gleicher Startwert und gleiche Eingaben geben dasselbe Ergebnis."
+        },
+        "confidence": {
+          "help": "Konfidenzniveau als Anteil zwischen 0 und 1 ausschließlich, zum Beispiel 0.95."
+        },
+        "ciMethod": {
+          "help": "Die Intervallmethode: 'bca' oder 'percentile'."
+        },
+        "activeParams": {
+          "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt: mode, statisticId, B, seed, confidence und ciMethod immer, dazu die Schlüssel, die Statistik und Modus brauchen."
+        },
+        "statisticOptions": {
+          "help": "Die Statistiken, die der aktuelle Modus anbietet: im Modus 'k' alle außer 'ppk', im Modus 'paired' nur 'mean', 'median' und 'trimmedMean'."
+        },
+        "activeColumnSlots": {
+          "help": "Die Slots, die setColumn im aktuellen Zustand annimmt: 'colRef1' im Modus 'one', 'colRef1' und 'colRef2' in den Modi 'two' und 'paired', im Modus 'k' keine."
+        },
+        "activeMultiSlots": {
+          "help": "Die Slots, die setColumns im aktuellen Zustand annimmt: 'colRefsK' im Modus 'k', sonst keine."
+        },
+        "pickableColumns": {
+          "help": "Je Slot die Spalten, die er annimmt, jede { key, name }; key ist 'instanceId|sheetId|columnId'. Nur Spalten eines numerischen Typs mit mindestens 2 Werten."
+        },
+        "running": {
+          "help": "true, solange ein Lauf läuft."
+        },
+        "stale": {
+          "help": "true, wenn ein Ergebnis vorliegt, das aus anderen Eingaben als den jetzigen berechnet wurde."
+        },
+        "validationMsg": {
+          "help": "Der Grund, warum compute nicht rechnen würde (ungültiger Parameter, fehlende oder zu kurze Spalte, weniger als 3 Gruppen im Modus 'k'), oder ein leerer Text. Ein laufender Lauf setzt ihn nicht."
+        },
+        "errorMsg": {
+          "help": "Der Grund, warum der letzte Lauf scheiterte, oder ein leerer Text; ein neuer und ein abgebrochener Lauf lassen ihn leer."
+        },
+        "result": {
+          "help": "Die Zusammenfassung des letzten fertigen Laufs: Schätzwert, Standardfehler, Verzerrung, Intervall, p-Wert, Gruppenergebnisse und Post-hoc-Vergleiche, wo sie gelten, und Histogramm-Klassen der gezogenen Verteilungen (keine einzelnen Ziehungen). null, bis ein Lauf fertig war."
+        }
+      },
       "sectionMode": "Modus",
       "modeOne": "1 Stichprobe",
       "modeTwo": "2 Stichproben",

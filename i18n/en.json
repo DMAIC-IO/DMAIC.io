@@ -6140,6 +6140,116 @@
     "resampling": {
       "name": "Resampling",
       "description": "Bootstrap confidence intervals and permutation tests for one, two, paired and k samples",
+      "whenToUse": "When a statistic of one, two, paired or k samples needs a confidence interval or a test without assuming a distribution: bootstraps the interval (BCa or percentile) and tests by permutation (two samples, paired, k groups) or against a target value (one sample). Each sample needs at least 2 numeric values (10 for Ppk).",
+      "actions": {
+        "read": {
+          "help": "Returns the design (mode, statistic and its parameters, contrast, direction, target), the chosen columns, the run settings (B, seed, confidence, ciMethod), the selectable sets, the run state and the result. result is null until a run has completed; a cancelled or failed run leaves it as it was.",
+          "params": {
+            "options": "Optional; this module holds no bulk data."
+          }
+        },
+        "setParam": {
+          "help": "Sets one parameter. A value outside its range is accepted; validationMsg then names the reason and compute does not run. Changing mode resets a statistic the new mode does not offer to 'mean'.",
+          "params": {
+            "key": "One of the keys in activeParams: mode, statisticId, B, seed, confidence and ciMethod always; statParams.trim only for statistic 'trimmedMean'; statParams.p only for 'quantile'; statParams.lsl and statParams.usl only for 'ppk'; contrast only in mode 'two'; direction in modes 'two' and 'paired'; target in mode 'one'. Any other value is an error.",
+            "value": "mode: 'one', 'two', 'paired' or 'k'. statisticId: one of statisticOptions. statParams.trim and statParams.p: number (trim from 0 up to below 0.5, p between 0 and 1 exclusive). statParams.lsl, statParams.usl and target: text with a number, '' for none. B: integer, valid from 1000 to 100000. seed: integer, valid from 0 to 2147483647. confidence: fraction, valid between 0 and 1 exclusive, for example 0.95. contrast: 'difference' or 'ratio'. direction: 'two-sided', 'greater' or 'less'. ciMethod: 'bca' or 'percentile'. A value of the wrong kind or outside the list is an error; a number outside the stated range is accepted and reported in validationMsg."
+          }
+        },
+        "setColumn": {
+          "help": "Assigns a sample column to a slot, or clears it with null. In mode 'one' the slot colRef1 is the sample; in 'two' the two groups; in 'paired' the pairs (colRef1 first, colRef2 second).",
+          "params": {
+            "slot": "One of the slots in activeColumnSlots: 'colRef1' in every mode except 'k', plus 'colRef2' in modes 'two' and 'paired'.",
+            "ref": "Column reference { instanceId, sheetId, columnId } of a column from pickableColumns, or null to clear the slot."
+          }
+        },
+        "setColumns": {
+          "help": "Replaces the group columns of mode 'k'; the order is the order of the groups. Duplicate entries count once. At least 3 columns are needed to compute.",
+          "params": {
+            "slot": "One of the slots in activeMultiSlots; this module only has 'colRefsK', and only in mode 'k'.",
+            "refs": "List of column references { instanceId, sheetId, columnId } of columns from pickableColumns; [] clears the selection."
+          }
+        },
+        "rollSeed": {
+          "help": "Draws a new random seed between 1 and 2147483647."
+        },
+        "compute": {
+          "help": "Runs the resampling and returns after the last pass; result holds the new summary. It does not run while a run is in progress or while validationMsg names a reason (invalid parameters, missing or too short columns, fewer than 3 groups in mode 'k'); result then stays as it was and no error is raised. A failed run leaves result as it was and names the reason in errorMsg."
+        },
+        "cancel": {
+          "help": "Aborts a run in progress; result stays as it was and errorMsg stays empty. Without a run nothing happens."
+        }
+      },
+      "fields": {
+        "mode": {
+          "help": "The sample design: 'one' (one sample against a target), 'two' (two groups), 'paired' (before and after pairs) or 'k' (three or more groups)."
+        },
+        "statisticId": {
+          "help": "The statistic that is resampled; one of statisticOptions."
+        },
+        "statParams": {
+          "help": "{ trim, p, lsl, usl }: trimming share (statistic 'trimmedMean'), quantile level (statistic 'quantile'), lower and upper specification limit as text (statistic 'ppk'). Only the entries of the chosen statistic count."
+        },
+        "contrast": {
+          "help": "How two groups are compared: 'difference' or 'ratio'. Only relevant in mode 'two'; the ratio needs positive values."
+        },
+        "direction": {
+          "help": "The alternative of the test: 'two-sided', 'greater' or 'less'. Only relevant in modes 'two' and 'paired'."
+        },
+        "target": {
+          "help": "The hypothesised value as text; '' means none. Only relevant in mode 'one'."
+        },
+        "colRef1": {
+          "help": "The first sample column { instanceId, sheetId, columnId } (the sample, the first group or the first side of the pairs), or null."
+        },
+        "colRef2": {
+          "help": "The second sample column { instanceId, sheetId, columnId } (modes 'two' and 'paired'), or null."
+        },
+        "colRefsK": {
+          "help": "The group columns of mode 'k' in order, each { instanceId, sheetId, columnId }."
+        },
+        "B": {
+          "help": "Number of resamples or permutations; valid from 1000 to 100000."
+        },
+        "seed": {
+          "help": "Random seed, an integer from 0 to 2147483647; the same seed and inputs give the same result."
+        },
+        "confidence": {
+          "help": "Confidence level as a fraction between 0 and 1 exclusive, for example 0.95."
+        },
+        "ciMethod": {
+          "help": "The interval method: 'bca' or 'percentile'."
+        },
+        "activeParams": {
+          "help": "The keys setParam accepts in the current state: mode, statisticId, B, seed, confidence and ciMethod always, plus the keys that statistic and mode need."
+        },
+        "statisticOptions": {
+          "help": "The statistics the current mode offers: all except 'ppk' in mode 'k', only 'mean', 'median' and 'trimmedMean' in mode 'paired'."
+        },
+        "activeColumnSlots": {
+          "help": "The slots setColumn accepts in the current state: 'colRef1' in mode 'one', 'colRef1' and 'colRef2' in modes 'two' and 'paired', none in mode 'k'."
+        },
+        "activeMultiSlots": {
+          "help": "The slots setColumns accepts in the current state: 'colRefsK' in mode 'k', none otherwise."
+        },
+        "pickableColumns": {
+          "help": "Per slot the columns it accepts, each { key, name }; key is 'instanceId|sheetId|columnId'. Only columns of a numeric type with at least 2 values."
+        },
+        "running": {
+          "help": "true while a run is in progress."
+        },
+        "stale": {
+          "help": "true when a result exists that was computed from other inputs than the current ones."
+        },
+        "validationMsg": {
+          "help": "The reason compute would not run (invalid parameter, missing or too short column, fewer than 3 groups in mode 'k'), or an empty string. A running run does not set it."
+        },
+        "errorMsg": {
+          "help": "The reason the last run failed, or an empty string; a new run and a cancelled run leave it empty."
+        },
+        "result": {
+          "help": "The summary of the last completed run: estimate, standard error, bias, interval, p-value, per-group results and post-hoc comparisons where they apply, and histogram bins of the resampled distributions (no single replicates). null until a run has completed."
+        }
+      },
       "sectionMode": "Mode",
       "modeOne": "1 sample",
       "modeTwo": "2 samples",

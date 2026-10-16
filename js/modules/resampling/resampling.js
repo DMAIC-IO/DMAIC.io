@@ -12,19 +12,130 @@
  * Native objects (AbortController, charts, pickers) stay in closure locals of
  * `data()`: on reactive Alpine data they would be proxied and their methods
  * would throw "Illegal invocation".
+ *
+ * @agent  Steuerbar über das Viewmodel: die dreizehn Parameter (setParam), die
+ *   Stichprobenspalten (setColumn, setColumns für die k Gruppen) und das
+ *   Rechnen selbst (compute wartet bis zum letzten Durchlauf, cancel bricht
+ *   ab). Gelesen wird über read() mit erklärter Lesefläche (AgentRead) —
+ *   Konfiguration, wählbare Mengen, Laufzustand und das Ergebnis. Der Agent
+ *   bekommt Zahlen, keine Diagramme.
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State } from './resampling-model.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId, requireNumber, requireText } from '../../core/agent/agent-argcheck.js';
+import { pickableColumnList } from '../../core/agent/agent-options.js';
+import { State, MODES, CONTRASTS, DIRECTIONS, CI_METHODS, STATS_BY_MODE } from './resampling-model.js';
 import {
   readInputs, validateInputs, errorKeyForCode, buildJobs, computeInputsHash, summarize,
 } from './resampling-analysis.js';
 import { resultView, bootChartConfig, permChartConfig, statisticKey } from './resampling-presenter.js';
 import { statementParts, renderStatement } from './resampling-statement.js';
 import { createInlineRunner } from '../../engines/resampling-runner.js';
-import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-picker.js';
+import { ColumnPicker, getColumnValues, getColumnName, refToKey, keyToRef } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 
+/** Die Parameter, die `setParam` annimmt; `statParams.*` liegt unter dem Model-Feld `statParams`. */
+const PARAM_KEYS = ['mode', 'statisticId', 'statParams.trim', 'statParams.p',
+  'statParams.lsl', 'statParams.usl', 'contrast', 'direction', 'target',
+  'B', 'seed', 'confidence', 'ciMethod'];
+
+/**
+ * Je Parameter sein Prüfer; gibt den normalisierten Wert zurück. Wie die
+ * Oberfläche nimmt er jede endliche Zahl an — die Absage für Werte außerhalb
+ * der Bereiche (B, Konfidenz, Trimmanteil …) steht in `validationMsg`.
+ * `statisticId` prüft `setParam` gegen die Statistiken des Modus.
+ */
+const PARAM_CHECKS = {
+  mode: (v) => { requireEnum('value', v, MODES); return v; },
+  statisticId: (v) => requireText('value', v),
+  'statParams.trim': (v) => requireNumber('value', v),
+  'statParams.p': (v) => requireNumber('value', v),
+  'statParams.lsl': (v) => requireText('value', v),
+  'statParams.usl': (v) => requireText('value', v),
+  contrast: (v) => { requireEnum('value', v, CONTRASTS); return v; },
+  direction: (v) => { requireEnum('value', v, DIRECTIONS); return v; },
+  target: (v) => requireText('value', v),
+  B: (v) => requireNumber('value', v, { integer: true }),
+  seed: (v) => requireNumber('value', v, { integer: true }),
+  confidence: (v) => requireNumber('value', v),
+  ciMethod: (v) => { requireEnum('value', v, CI_METHODS); return v; },
+};
+
+/**
+ * Einen Wert unter einem Punkt-Schlüssel (`'statParams.trim'`) in `obj` ablegen.
+ * Lokal geschrieben, weil der Generator (agent-data) Importe nicht liest.
+ * @param {object} obj Wurzel, deren Pfad beschrieben wird
+ * @param {string} key Schlüssel, gegebenenfalls mit Punkt
+ * @param {any} value der abzulegende Wert
+ */
+function setAtPath(obj, key, value) {
+  const parts = key.split('.');
+  let cur = obj;
+  for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
+  cur[parts[parts.length - 1]] = value;
+}
+
+/** Die Einzelspalten-Slots in der Reihenfolge der Oberfläche; die Namen sind die Model-Felder. */
+const COLUMN_SLOTS = ['colRef1', 'colRef2'];
+/** Der Mehrfachspalten-Slot (Modus k). */
+const MULTI_SLOTS = ['colRefsK'];
+
+/** Je Slot die Filter, die der Wähler dieses Slots bekommt. */
+const SLOT_FILTERS = {
+  colRef1: { types: ['numeric'], minCount: 2 },
+  colRef2: { types: ['numeric'], minCount: 2 },
+  colRefsK: { types: ['numeric'], minCount: 2 },
+};
+
+/** Je Slot die eine Zuweisungsstelle seines Model-Feldes. */
+const COLUMN_SINKS = {
+  colRef1: (m, ref) => { m.colRef1 = ref; },
+  colRef2: (m, ref) => { m.colRef2 = ref; },
+};
+const MULTI_SINKS = { colRefsK: (m, refs) => { m.colRefsK = refs; } };
+
+/** Beschriftungsschlüssel der Auswahllisten (Werte kommen aus den Model-Konstanten). */
+const STATISTIC_LABEL_KEYS = {
+  mean: 'statMean', median: 'statMedian', stddev: 'statStddev', variance: 'statVariance',
+  trimmedMean: 'statTrimmedMean', quantile: 'statQuantile', cv: 'statCv', ppk: 'statPpk',
+};
+const CONTRAST_LABEL_KEYS = { difference: 'contrastDifference', ratio: 'contrastRatio' };
+const DIRECTION_LABEL_KEYS = { 'two-sided': 'twoSided', greater: 'greater', less: 'less' };
+const CI_METHOD_LABEL_KEYS = { bca: 'ciBca', percentile: 'ciPercentile' };
+
+/**
+ * Die Agenten-Lesefläche von Resampling.
+ *
+ * Das Model hält die Eingaben und die verdichtete Ergebniszusammenfassung;
+ * Laufzustand und Hinweise entstehen am Viewmodel. Darum erklärt dieses Modul
+ * seine Lesefläche — ohne die interne Beispiel-Buchführung (`exampleWorksheetId`).
+ *
+ * @typedef {object} AgentRead
+ * @property {'one'|'two'|'paired'|'k'} mode  the sample design
+ * @property {string} statisticId  the statistic that is resampled
+ * @property {object} statParams  `{ trim, p, lsl, usl }`: trimming share, quantile level, lower and upper limit (limits as text)
+ * @property {'difference'|'ratio'} contrast  how two samples are compared (mode 'two')
+ * @property {'two-sided'|'greater'|'less'} direction  the alternative (modes 'two' and 'paired')
+ * @property {string} target  the hypothesised value as text (mode 'one'); empty means none
+ * @property {object|null} colRef1  the first sample column, `{ instanceId, sheetId, columnId }`, or null
+ * @property {object|null} colRef2  the second sample column (modes 'two' and 'paired'), or null
+ * @property {object[]} colRefsK  the group columns in order (mode 'k'), each `{ instanceId, sheetId, columnId }`
+ * @property {number} B  number of resamples or permutations
+ * @property {number} seed  random seed
+ * @property {number} confidence  confidence level as a fraction, for example 0.95
+ * @property {'bca'|'percentile'} ciMethod  interval method
+ * @property {string[]} activeParams  the keys `setParam` accepts in the current state
+ * @property {string[]} statisticOptions  the statistics the current mode offers
+ * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state
+ * @property {string[]} activeMultiSlots  the slots `setColumns` accepts in the current state
+ * @property {object} pickableColumns  per slot the columns it accepts, each `{ key, name }`
+ * @property {boolean} running  true while a run is in progress
+ * @property {boolean} stale  true when a result exists that was computed from other inputs
+ * @property {string} validationMsg  why `compute` would not run, or an empty string
+ * @property {string} errorMsg  why the last run failed, or an empty string
+ * @property {object|null} result  the summary of the last run (estimate, interval, p-value, histogram bins), or null
+ */
 const mod = createModule({
   config: {
     id: 'resampling',
@@ -41,6 +152,8 @@ const mod = createModule({
     let renderGen = 0;
     let charts = [];
     let pickers = [];
+    /** Wähler je Slot, damit `setColumn`/`setColumns` ihn nachziehen kann. */
+    let pickerBySlot = {};
     let unsubs = [];
 
     const chartManager = () => module._context.chartManager;
@@ -53,6 +166,7 @@ const mod = createModule({
     const disposePickers = () => {
       for (const p of pickers) p.destroy();
       pickers = [];
+      pickerBySlot = {};
     };
     const valuesOf = (ref) => (ref ? getColumnValues(module._context.stateManager, ref) : null);
 
@@ -70,28 +184,209 @@ const mod = createModule({
       /** Completed runs in this view instance (not persisted; lets E2E detect a finished recompute). */
       runCount: 0,
 
+      /** @noagent view transform */
       statisticKey,
 
+      // ── Agent surface ─────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Konfiguration, wählbare Mengen, Laufzustand und Ergebnis
+       */
+      read(options) {
+        const { exampleWorksheetId: _book, ...state } = this.model.toJSON();
+        return readAgentState('resampling', {
+          ...state,
+          activeParams: this.activeParams(),
+          statisticOptions: this.statisticOptions(),
+          activeColumnSlots: this.activeColumnSlots(),
+          activeMultiSlots: this.activeMultiSlots(),
+          pickableColumns: this.pickableColumns(),
+          running: this.running,
+          stale: this.stale,
+          validationMsg: this.validationKey ? _t(this.validationKey) : '',
+          errorMsg: this.errorKey ? _t(this.errorKey) : '',
+        }, options);
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeParams */
+      activeParams() {
+        const id = this.model.statisticId;
+        const active = {
+          'statParams.trim': id === 'trimmedMean',
+          'statParams.p': id === 'quantile',
+          'statParams.lsl': id === 'ppk',
+          'statParams.usl': id === 'ppk',
+          contrast: this.model.mode === 'two',
+          direction: this.showDirection(),
+          target: this.showTarget(),
+        };
+        return PARAM_KEYS.filter((key) => active[key] !== false);
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().statisticOptions */
+      statisticOptions() { return [...STATS_BY_MODE[this.model.mode]]; },
+
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() {
+        if (this.model.mode === 'k') return [];
+        return this.model.mode === 'one' ? ['colRef1'] : [...COLUMN_SLOTS];
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeMultiSlots */
+      activeMultiSlots() { return this.model.mode === 'k' ? [...MULTI_SLOTS] : []; },
+
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() {
+        const sm = module._context.stateManager;
+        return Object.fromEntries([...COLUMN_SLOTS, ...MULTI_SLOTS].map((slot) =>
+          [slot, pickableColumnList(sm, SLOT_FILTERS[slot])]));
+      },
+
+      /**
+       * Einen Parameter setzen; Gültigkeit und Bereiche prüft die Validierung,
+       * deren Grund `validationMsg` nennt. Ein Moduswechsel setzt eine Statistik,
+       * die der neue Modus nicht anbietet, auf den Mittelwert zurück.
+       * @agent
+       * @param {'mode'|'statisticId'|'statParams.trim'|'statParams.p'|'statParams.lsl'|'statParams.usl'|'contrast'|'direction'|'target'|'B'|'seed'|'confidence'|'ciMethod'} key welcher Parameter
+       * @param {string|number} value der Wert; Zahlen als Zahl oder Zahlentext, Grenzen und Zielwert als Text
+       * @returns {void}
+       * @throws {Error} wenn `key` im aktuellen Zustand nicht gilt oder `value` nicht zur Art des Parameters passt
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        requireEnum('key', key, this.activeParams());
+        if (key === 'mode') {
+          this.model.setMode(PARAM_CHECKS.mode(value));
+          this.$nextTick(() => { this._remountPickers(); this.refresh(); });
+          this.refresh();
+          return;
+        }
+        if (key === 'statisticId') requireEnum('value', value, this.statisticOptions());
+        setAtPath(this.model, key, PARAM_CHECKS[key](value));
+        this.refresh();
+      },
+
+      /**
+       * Eine Stichprobenspalte einem Slot zuweisen (Modi one, two, paired).
+       * @agent
+       * @param {'colRef1'|'colRef2'} slot der Slot; `colRef2` nur in den Modi two und paired
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
+       *   der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren
+       * @returns {void}
+       * @throws {Error} wenn `slot` im aktuellen Modus nicht gilt oder die Spalte nicht wählbar ist
+       */
+      setColumn(slot, ref) {
+        requireEnum('slot', slot, this.activeColumnSlots());
+        if (ref == null) {
+          COLUMN_SINKS[slot](this.model, null);
+          pickerBySlot[slot]?.syncValue(null);
+          this.refresh();
+          return;
+        }
+        const keys = this.pickableColumns()[slot].map((c) => c.key);
+        requireKnownId('ref', refToKey(ref), keys);
+        // Normalisierte Form: fremde Eigenschaften des Agentenobjekts bleiben draußen.
+        const clean = keyToRef(refToKey(ref));
+        COLUMN_SINKS[slot](this.model, clean);
+        pickerBySlot[slot]?.syncValue(clean);
+        this.refresh();
+      },
+
+      /**
+       * Die Gruppenspalten des Modus k ersetzen; die Reihenfolge ist die der Gruppen.
+       * @agent
+       * @param {'colRefsK'} slot der Slot; nur im Modus k
+       * @param {Array<{ instanceId: string, sheetId: string, columnId: string }>} refs
+       *   die Spaltenbezüge wählbarer Spalten; `[]` leert die Auswahl
+       * @returns {void}
+       * @throws {Error} wenn `slot` im aktuellen Modus nicht gilt, `refs` keine Liste ist oder eine Spalte nicht wählbar ist
+       */
+      setColumns(slot, refs) {
+        requireEnum('slot', slot, this.activeMultiSlots());
+        if (!Array.isArray(refs)) {
+          throw new Error(`invalid refs ${JSON.stringify(refs)}; allowed: a list of column references, [] clears it`);
+        }
+        const keys = this.pickableColumns()[slot].map((c) => c.key);
+        for (const ref of refs) requireKnownId('ref', refToKey(ref), keys);
+        const clean = [...new Set(refs.map(refToKey))].map(keyToRef);
+        MULTI_SINKS[slot](this.model, clean);
+        pickerBySlot[slot]?.syncValue(clean);
+        this.refresh();
+      },
+
+      /**
+       * Eingabefeld → Senke: ein Wert, den der Prüfer abweist, setzt das Feld auf
+       * den Stand des Models zurück.
+       * @noagent DOM event handler; the agent uses setParam()
+       */
+      onParamInput(key, event) {
+        const raw = event.target.value;
+        try {
+          PARAM_CHECKS[key](raw);
+        } catch {
+          event.target.value = this.paramValue(key);
+          return;
+        }
+        this.setParam(key, raw);
+      },
+
+      /** @noagent view transform; der Stand eines Parameters für das Eingabefeld */
+      paramValue(key) {
+        return key.split('.').reduce((o, k) => o[k], this.model);
+      },
+
+      /** @noagent view transform; die Statistiken des Modus (eine Quelle: STATS_BY_MODE) */
+      statisticChoices() {
+        return this.statisticOptions().map((v) => ({ value: v, label: _t(STATISTIC_LABEL_KEYS[v]) }));
+      },
+      /** @noagent view transform; die Kontraste (eine Quelle: CONTRASTS) */
+      contrastChoices() { return CONTRASTS.map((v) => ({ value: v, label: _t(CONTRAST_LABEL_KEYS[v]) })); },
+      /** @noagent view transform; die Alternativen (eine Quelle: DIRECTIONS) */
+      directionChoices() { return DIRECTIONS.map((v) => ({ value: v, label: _t(DIRECTION_LABEL_KEYS[v]) })); },
+      /** @noagent view transform; die Intervallmethoden (eine Quelle: CI_METHODS) */
+      ciMethodChoices() { return CI_METHODS.map((v) => ({ value: v, label: _t(CI_METHOD_LABEL_KEYS[v]) })); },
+
+      /** @noagent view transform */
       isMode(mode) { return this.model.mode === mode; },
+      /** @noagent view transform */
       isAllowed(id) { return this.model.allowedStatistics().includes(id); },
+      /** @noagent view transform */
+      showTrim() { return this.model.statisticId === 'trimmedMean'; },
+      /** @noagent view transform */
+      showQuantileP() { return this.model.statisticId === 'quantile'; },
+      /** @noagent view transform */
+      showLimits() { return this.model.statisticId === 'ppk'; },
+      /** @noagent view transform */
+      showContrast() { return this.model.mode === 'two'; },
+      /** @noagent view transform */
       showTarget() { return this.model.mode === 'one'; },
+      /** @noagent view transform */
       showDirection() { return this.model.mode === 'two' || this.model.mode === 'paired'; },
+      /** @noagent view transform */
       showValidation() { return Boolean(this.validationKey) && this.model.hasContent(); },
+      /** @noagent helper; ob ein Lauf starten darf */
       canCompute() { return !this.running && !this.validationKey; },
+      /** @noagent view transform */
       sampleLabelKey(which) {
         if (this.model.mode === 'paired') return which === 1 ? 'pairedXColumn' : 'pairedYColumn';
         if (this.model.mode === 'two') return which === 1 ? 'group1Column' : 'group2Column';
         return 'sampleColumn';
       },
 
-      setMode(mode) {
-        this.model.setMode(mode);
-        this.$nextTick(() => { this._remountPickers(); this.refresh(); });
-      },
+      /** @noagent DOM event handler; the agent uses setParam('mode', …) */
+      setMode(mode) { this.setParam('mode', mode); },
 
-      rollSeed() { this.model.rollSeed(); },
+      /**
+       * Einen neuen Startwert ziehen (1 bis 2147483647).
+       * @agent
+       * @returns {void}
+       */
+      rollSeed() { this.model.rollSeed(); this.refresh(); },
 
-      /** Recompute validation, hash, staleness and the result view. */
+      /** @noagent helper; Validierung, Hash, Veraltet-Anzeige und Ergebnisansicht neu berechnen */
       refresh() {
         const inputs = readInputs(this.model, valuesOf);
         this.validationKey = validateInputs(this.model, inputs);
@@ -102,7 +397,7 @@ const mod = createModule({
         this.statement = statementParts(this.model.result, opts);
       },
 
-      /** Key statement as one translated paragraph. */
+      /** @noagent view transform; Kernaussage als ein übersetzter Absatz */
       statementText() { return renderStatement(this.statement, _t); },
 
       _labels() {
@@ -113,9 +408,16 @@ const mod = createModule({
         return refs.map((r) => getColumnName(sm, r));
       },
 
-      /** Run all jobs of the current settings; keeps the old result on cancel. */
+      /**
+       * Rechnet auf Anforderung; kehrt nach dem letzten Durchlauf zurück. Bei
+       * ungültigen oder unvollständigen Eingaben oder während eines laufenden
+       * Laufs rechnet es nicht — validationMsg nennt den Grund, result bleibt,
+       * wie es war. Ein Abbruch lässt result ebenfalls unverändert.
+       * @agent
+       * @returns {Promise<void>}
+       */
       async compute() {
-        if (this.running) return;
+        if (!this.canCompute()) return;
         this.refresh();
         if (this.validationKey) return;
         // Snapshot: the inputs stay editable during the run, so everything the run
@@ -154,10 +456,17 @@ const mod = createModule({
         }
       },
 
+      /**
+       * Einen laufenden Lauf abbrechen; result bleibt, wie es war. Ohne Lauf
+       * geschieht nichts.
+       * @agent
+       * @returns {void}
+       */
       cancel() {
         if (abortCtl) abortCtl.abort();
       },
 
+      /** @noagent view transform; zeichnet die Diagramme */
       async renderCharts() {
         const gen = ++renderGen;
         destroyCharts();
@@ -189,27 +498,34 @@ const mod = createModule({
           const wrap = c.querySelector(selector);
           if (!wrap) return;
           const picker = new ColumnPicker(wrap, ctx, {
-            mode: 'single', types: ['numeric'], minCount: 2,
-            onChange: (ref) => { this.model[key] = ref; this.refresh(); },
+            mode: 'single', ...SLOT_FILTERS[key],
+            onChange: (ref) => { this.setColumn(key, ref); },
           });
           if (this.model[key]) picker.value = this.model[key];
           pickers.push(picker);
+          pickerBySlot[key] = picker;
         };
         single('[data-ref="picker1-wrap"]', 'colRef1');
         single('[data-ref="picker2-wrap"]', 'colRef2');
         const wrapK = c.querySelector('[data-ref="picker-k-wrap"]');
         if (wrapK) {
           const picker = new ColumnPicker(wrapK, ctx, {
-            mode: 'multi', types: ['numeric'], minCount: 2,
-            onChange: (refs) => { this.model.colRefsK = refs; this.refresh(); },
+            mode: 'multi', ...SLOT_FILTERS.colRefsK,
+            onChange: (refs) => {
+              // Veraltete Einträge (Spalte nicht mehr wählbar) fallen heraus, sonst weist die Senke die ganze Liste ab.
+              const keys = this.pickableColumns().colRefsK.map((x) => x.key);
+              this.setColumns('colRefsK', refs.filter((r) => keys.includes(refToKey(r))));
+            },
           });
           if (this.model.colRefsK.length) picker.value = this.model.colRefsK;
           pickers.push(picker);
+          pickerBySlot.colRefsK = picker;
         }
       },
 
       // ── Lifecycle ──────────────────────────────────────────────
 
+      /** @noagent lifecycle */
       init() {
         unsubs = [];
         this.refresh();
@@ -235,6 +551,7 @@ const mod = createModule({
         unsubs.push(() => eb.off('module:activated', onActivated));
       },
 
+      /** @noagent lifecycle */
       destroy() {
         if (abortCtl) abortCtl.abort();
         abortCtl = null;
