@@ -22,7 +22,7 @@
  * | `requireIndex`   | `allowed:`  | `invalid idx 9; allowed: 0..3` |
  * | `requireArity`   | `expected:` | `missing argument "values" of setCells; expected: columnId, startRow, values` — ein optionaler Parameter steht darin in Klammerform (`[name]`) |
  * | `requireText`    | `allowed:`  | `invalid text 7; allowed: any string, "" clears it` |
- * | `requireNumber`  | `allowed:`  | `invalid mu0 "zehn"; allowed: any finite number`, mit Bereich `invalid value 0.3; allowed: a number from 0.5 to 0.99` |
+ * | `requireNumber`  | `allowed:`  | `invalid mu0 "zehn"; allowed: any finite number`, mit Bereich `invalid value 0.3; allowed: a number from 0.5 to 0.99`, offen `invalid value 0; allowed: a number greater than 0 and less than 1` |
  *
  * Ein neuer Prüfer nimmt eines dieser drei Listenwörter, oder er begründet
  * sein viertes hier.
@@ -188,8 +188,9 @@ const DECIMAL_NUMBER = /^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/;
  *
  * @param {string} name Name des Arguments (erscheint in der Meldung)
  * @param {any} value der übergebene Wert
- * @param {{ min?: number, max?: number, integer?: boolean }} [bounds] optionaler
- *   Bereich (beide Grenzen inklusive) und Ganzzahligkeit; die Meldung nennt ihn
+ * @param {{ min?: number, max?: number, exclusiveMin?: number, exclusiveMax?: number, integer?: boolean }} [bounds]
+ *   optionaler Bereich — `min`/`max` schließen die Grenze ein, `exclusiveMin`/`exclusiveMax`
+ *   schließen sie aus — und Ganzzahligkeit; die Meldung nennt ihn
  * @throws {Error} wenn `value` keine endliche Zahl und kein Zahlentext ist oder
  *   außerhalb von `bounds` liegt
  * @returns {number} der geprüfte Wert als Zahl
@@ -200,11 +201,13 @@ export function requireNumber(name, value, bounds = {}) {
   if (!Number.isFinite(n)) {
     throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any finite number`);
   }
-  const { min, max, integer = false } = bounds;
+  const { min, max, exclusiveMin, exclusiveMax, integer = false } = bounds;
   const outside = (min !== undefined && n < min) || (max !== undefined && n > max)
+    || (exclusiveMin !== undefined && n <= exclusiveMin)
+    || (exclusiveMax !== undefined && n >= exclusiveMax)
     || (integer && !Number.isInteger(n));
   if (outside) {
-    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: ${describeBounds(min, max, integer)}`);
+    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: ${describeBounds(bounds)}`);
   }
   return n;
 }
@@ -217,24 +220,30 @@ export function requireNumber(name, value, bounds = {}) {
  * @throws {Error} wenn `value` keine Zahl ist oder nicht in (0, 100) liegt
  */
 export function requireConfLevel(value) {
-  const n = requireNumber('value', value);
-  if (!(n > 0 && n < 100)) {
-    throw new Error(`invalid value ${JSON.stringify(value)}; allowed: a number greater than 0 and less than 100`);
-  }
-  return n;
+  return requireNumber('value', value, { exclusiveMin: 0, exclusiveMax: 100 });
 }
 
 /**
  * Den zulässigen Bereich als Satzteil nach `allowed:` formulieren.
- * @param {number|undefined} min
- * @param {number|undefined} max
- * @param {boolean} integer
+ *
+ * Nur geschlossene Grenzen behalten die bisherigen Sätze („from … to …",
+ * „of at least …", „of at most …"); eine offene Grenze macht daraus
+ * „greater than …" / „less than …", verbunden mit „and".
+ *
+ * @param {{ min?: number, max?: number, exclusiveMin?: number, exclusiveMax?: number, integer?: boolean }} bounds
  * @returns {string}
  */
-function describeBounds(min, max, integer) {
+function describeBounds({ min, max, exclusiveMin, exclusiveMax, integer = false }) {
   const kind = integer ? 'a whole number' : 'a number';
-  if (min !== undefined && max !== undefined) return `${kind} from ${min} to ${max}`;
-  if (min !== undefined) return `${kind} of at least ${min}`;
-  if (max !== undefined) return `${kind} of at most ${max}`;
-  return kind;
+  if (exclusiveMin === undefined && exclusiveMax === undefined) {
+    if (min !== undefined && max !== undefined) return `${kind} from ${min} to ${max}`;
+    if (min !== undefined) return `${kind} of at least ${min}`;
+    if (max !== undefined) return `${kind} of at most ${max}`;
+    return kind;
+  }
+  const lower = exclusiveMin !== undefined ? `greater than ${exclusiveMin}`
+    : (min !== undefined ? `at least ${min}` : '');
+  const upper = exclusiveMax !== undefined ? `less than ${exclusiveMax}`
+    : (max !== undefined ? `at most ${max}` : '');
+  return `${kind} ${[lower, upper].filter(Boolean).join(' and ')}`;
 }

@@ -53,6 +53,22 @@ suite('agent-argcheck requireNumber', () => {
     assertEqual(requireNumber('mu0', '10'), 10);
     assertThrows(() => requireNumber('mu0', 'zehn'), /allowed: any finite number/);
   });
+
+  test('prüft offene Grenzen und nennt sie', () => {
+    assertEqual(requireNumber('value', 0.5, { exclusiveMin: 0, exclusiveMax: 1 }), 0.5);
+    assertThrows(() => requireNumber('value', 0, { exclusiveMin: 0, exclusiveMax: 1 }),
+      /invalid value 0; allowed: a number greater than 0 and less than 1$/);
+    assertThrows(() => requireNumber('value', 1, { exclusiveMin: 0, exclusiveMax: 1 }),
+      /allowed: a number greater than 0 and less than 1$/);
+    assertEqual(requireNumber('value', 1, { exclusiveMin: 0, max: 1 }), 1);
+    assertThrows(() => requireNumber('value', 0, { exclusiveMin: 0, max: 1 }),
+      /allowed: a number greater than 0 and at most 1$/);
+    assertThrows(() => requireNumber('value', -1, { exclusiveMin: 0 }), /allowed: a number greater than 0$/);
+    assertThrows(() => requireNumber('value', 1, { min: 0, exclusiveMax: 1 }),
+      /allowed: a number at least 0 and less than 1$/);
+    assertThrows(() => requireNumber('value', 0, { exclusiveMin: 0, integer: true }),
+      /allowed: a whole number greater than 0$/);
+  });
 });
 
 suite('agent-argcheck requireConfLevel', () => {
