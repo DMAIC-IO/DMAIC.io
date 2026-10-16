@@ -7,11 +7,11 @@
  * the persisted state (vocs tree + activeVocId + appearance styles) plus all node
  * CRUD, sibling reorder, and export-row flattening. This data-fn owns the view
  * transforms (card/ node CSS classes, i18n badge/ count text), the add/edit/delete
- * form-popout handlers (declarative popout via the draggablePopout mixin), the
+ * form handlers (content lent to the dialog service), the
  * badge-handle drag reordering (transient state), the export dropdown + exporters,
  * and the imperative appearance settings panel (chart-editor building blocks).
  *
- * No HTML is built in JS for the module UI — the tree, cards, and form popout
+ * No HTML is built in JS for the module UI — the tree, cards, and node form
  * live in voc-ctx-tree.html. The settings panel is the documented imperative
  * exception (chart-editor widgets); the PNG/SVG export draws through the
  * `node-diagram` chart type.
@@ -25,7 +25,6 @@ import {
 } from '../../core/chart/chart-editor.js';
 import { ensureXLSX, downloadBlob } from '../../core/export-utils.js';
 import { shortcutRegistry } from '../../core/shortcut-registry.js';
-import { draggablePopout } from '../../ui/dialog/draggable.js';
 import { State } from './voc-ctx-tree-model.js';
 import { buildTreeDiagram } from './voc-ctx-tree-diagram.js';
 
@@ -52,11 +51,6 @@ export default createModule({
 
   data(module, _t) {
     return {
-      ...draggablePopout({
-        size: 'width:480px;height:auto;min-height:240px;max-height:80vh;',
-        initialPosition: 'left:calc(50% - 240px);top:calc(50% - 180px)',
-      }),
-
       // ── Transient UI state (never persisted) ──────────────────
       /** @type {string|null} export dropdown open flag */
       exportMenuOpen: false,
@@ -66,6 +60,8 @@ export default createModule({
       modalData: { text: '', source: '', type: 'ctq', target: '', measure: '' },
       /** @type {object} context ids for the current edit (vocId/needId/drvId) + editId */
       modalCtx: {},
+      /** @type {{confirm: Function, cancel: Function}|null} open form dialog's api */
+      _formApi: null,
       /** @type {{kind:string, scope:object, id:string}|null} active drag source */
       _drag: null,
 
@@ -182,33 +178,50 @@ export default createModule({
       },
 
       // ── Modal open / save ─────────────────────────────────────
-      _openModal(kind, ctx, fields) {
+      /**
+       * Open the node form in a form dialog. The form lives hidden in the
+       * template (x-ref="nodeForm") and is borrowed by the dialog.
+       * @param {'voc'|'need'|'driver'|'req'} kind
+       * @param {object} ctx  context ids (vocId/needId/drvId) + editId
+       * @param {object} fields  initial field values
+       * @returns {Promise<void>} resolves once the dialog is closed
+       */
+      async _openModal(kind, ctx, fields) {
         this.modalCtx = ctx;
         this.modalData = { text: '', source: '', type: 'ctq', target: '', measure: '', ...fields };
-        this.popoutResetPosition();
         this.modalKind = kind;
-        this.$nextTick(() => {
-          const ta = this.$el.querySelector('[data-ref="modalText"]');
-          ta?.focus();
-        });
-      },
-      closeModal() {
-        this.modalKind = null;
-        this.popoutResetPosition();
+        await this.$nextTick(); // let the kind-specific fields render before lending
+        try {
+          await module._context.dialog.form({
+            title: this.modalTitle(),
+            content: this.$refs.nodeForm,
+            confirmLabel: module._context.i18n.t('common.save'),
+            cancelLabel: module._context.i18n.t('common.cancel'),
+            onMount: (body, api) => {
+              this._formApi = api;
+              body.querySelector('[data-ref="modalText"]')?.focus();
+            },
+            onConfirm: () => this.saveModal(),
+          });
+        } finally {
+          this._formApi = null;
+          this.modalKind = null;
+        }
       },
       /** Ctrl+Enter (configurable) commits the form. */
       commitKey(event) {
-        if (shortcutRegistry.matches(event, 'vocCtxTree.commit')) {
+        if (this._formApi && shortcutRegistry.matches(event, 'vocCtxTree.commit')) {
           event.preventDefault();
-          this.saveModal();
+          this._formApi.confirm();
         }
       },
+      /** @returns {boolean} false keeps the dialog open (empty text). */
       saveModal() {
         const d = this.modalData;
         const text = (d.text || '').trim();
         if (!text) {
-          this.$el.querySelector('[data-ref="modalText"]')?.focus();
-          return; // empty text rejected — form stays open
+          this.$refs.nodeForm.querySelector('[data-ref="modalText"]')?.focus();
+          return false;
         }
         const ctx = this.modalCtx;
         const k = this.modalKind;
@@ -229,8 +242,8 @@ export default createModule({
           if (ctx.editId) this.model.updateRequirement(ctx.vocId, ctx.needId, ctx.drvId, ctx.editId, text, target, measure);
           else this.model.addRequirement(ctx.vocId, ctx.needId, ctx.drvId, text, target, measure);
         }
-        this.closeModal();
         this._afterMutate();
+        return true;
       },
 
       // ── Drag-and-drop reordering (badge handle → native drag) ─
