@@ -2691,3 +2691,69 @@ test('unreachable_write: eine Pfad-Hilfe mit Parameterwert deckt die geprüfte M
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
 });
+
+// Flaches Model: Schlüssel liegen an der Wurzel (`this.model[key]`), nicht unter `params`.
+const FLAT_MODEL = `export class State {
+      /** @type {number} Alpha */
+      alpha = 0.05;
+      /** @type {number} Power */
+      power = 0.8;
+      /** @type {object} Statistik-Parameter */
+      statParams = { trim: 0.1 };
+      toJSON() { return { alpha: this.alpha, power: this.power, statParams: { ...this.statParams } }; }
+    }`;
+const FLAT_HTML = '<input x-model="model.alpha"><input x-model="model.power">'
+  + '<input x-model.number="model.statParams.trim">';
+
+/**
+ * Fixture für das flache Model: eine `@agent`-Methode `setParam` mit dem
+ * gegebenen Rumpf, davor die gegebene Schlüsselkonstante und Hilfen.
+ * @param {string} head  Deklarationen vor der Klasse
+ * @param {string} body  Rumpf von `setParam(key, value)`
+ * @returns {string}
+ */
+function flatRoot(head, body) {
+  return fixture({ foo: {
+    'foo.js': head + vmWithAgent(`/**
+       * @agent
+       * @param {string} key der Schlüssel
+       * @param {number} value der Wert
+       * @returns {void}
+       */
+      setParam(key, value) {
+${body}
+      },`),
+    'foo-model.js': FLAT_MODEL,
+    'foo.html': FLAT_HTML,
+  } });
+}
+
+test('unreachable_write: eine Direktzuweisung an der Model-Wurzel deckt die geprüften Schlüssel ab', () => {
+  const root = flatRoot(`const PARAM_KEYS = ['alpha', 'power'];\n`,
+    `        requireEnum('key', key, PARAM_KEYS);\n        this.model[key] = value;`);
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported.filter(r => /:(alpha|power)$/.test(r)), []);
+});
+
+test('unreachable_write: eine Pfad-Hilfe an der Model-Wurzel deckt Punkt-Schlüssel ab', () => {
+  const root = flatRoot(`const PARAM_KEYS = ['alpha', 'statParams.trim'];
+function setAtPath(obj, path, value) { obj[path] = value; }
+`, `        requireEnum('key', key, PARAM_KEYS);\n        setAtPath(this.model, key, value);`);
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported.filter(r => /:(alpha|statParams\.trim)$/.test(r)), []);
+});
+
+test('unreachable_write: Wächter – ohne requireEnum bleibt die Wurzelzuweisung ungedeckt', () => {
+  const root = flatRoot(`const PARAM_KEYS = ['alpha', 'power'];\n`, `        this.model[key] = value;`);
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported.filter(r => /:(alpha|power)$/.test(r)),
+    ['unreachable_write:alpha', 'unreachable_write:power']);
+});
+
+test('unreachable_write: Wächter – ein konstanter Wert an der Model-Wurzel deckt NICHTS ab', () => {
+  const root = flatRoot(`const PARAM_KEYS = ['alpha', 'power'];\n`,
+    `        requireEnum('key', key, PARAM_KEYS);\n        this.model[key] = 42;`);
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported.filter(r => /:(alpha|power)$/.test(r)),
+    ['unreachable_write:alpha', 'unreachable_write:power']);
+});

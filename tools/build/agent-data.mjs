@@ -624,13 +624,24 @@ function fieldsCoveredByPathHelper(call, sf, keySets, active) {
   if (!helper || !pathHelperAssigns(helper)) return [];
   const [base, ...rest] = call.arguments;
   if (!base) return [];
-  const target = assignTargetAfterThis(base, 'model');
+  const target = isModelRoot(base) ? { path: '', key: null } : assignTargetAfterThis(base, 'model');
   if (!target || target.key) return [];
   const keyArg = rest.find(argument => ts.isIdentifier(argument)
     && keySets.has(argument.text) && active.has(argument.text));
   if (!keyArg) return [];
   if (!rest.some(argument => argument !== keyArg && derivesFromParams(argument, active))) return [];
-  return keySets.get(keyArg.text).map(key => `${target.path}.${key}`);
+  return keySets.get(keyArg.text).map(key => (target.path ? `${target.path}.${key}` : key));
+}
+
+/**
+ * Ob ein Ausdruck genau `this.model` ist — die Wurzel des Models als Basis
+ * einer Pfad-Hilfe (`setAtPath(this.model, key, value)`).
+ * @param {ts.Expression} node
+ * @returns {boolean}
+ */
+function isModelRoot(node) {
+  return ts.isPropertyAccessExpression(node) && node.name.text === 'model'
+    && node.expression.kind === ts.SyntaxKind.ThisKeyword;
 }
 
 /**
@@ -1043,7 +1054,9 @@ function assignTargetAfterThis(node, through) {
   if (segments.some(segment => segment.name === null)) return null;
   const base = segments.map(segment => segment.name);
   if (last.name !== null) return { path: [...base, last.name].join('.'), key: null };
-  if (last.key === null || base.length === 0) return null;
+  // Leere Basis nur an der Model-Wurzel (`this.model[key]`); `this[key] = …`
+  // am Viewmodel ist keine Model-Abdeckung.
+  if (last.key === null || (base.length === 0 && through !== 'model')) return null;
   return { path: base.join('.'), key: last.key };
 }
 
@@ -1063,7 +1076,7 @@ function fieldsOfTarget(target, keySets, active) {
   if (!active.has(target.key)) return [];
   const keys = keySets.get(target.key);
   if (!keys) return [];
-  return keys.map(key => `${target.path}.${key}`);
+  return keys.map(key => (target.path ? `${target.path}.${key}` : key));
 }
 
 /**
