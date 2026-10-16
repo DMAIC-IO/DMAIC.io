@@ -81,7 +81,7 @@
         data-action="toggle-pi" type="button" @click="togglePI()"></button>
     </div>
 
-    <div class="reg__error" data-ref="error-box" :style="errorText() ? 'display:block' : 'display:none'" x-text="errorText()"></div>
+    <div class="field-error" data-ref="error-box" :style="errorText() ? 'display:block' : 'display:none'" x-text="errorText()"></div>
     <div class="reg__aliased" data-ref="aliased-list" :style="aliasedRows().length ? '' : 'display:none'">
       <template x-for="row in aliasedRows()" :key="row.term">
         <div class="reg__aliased-row">

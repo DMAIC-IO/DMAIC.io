@@ -3,13 +3,6 @@
    BEM: .timr__ prefix
    ============================================================ */
 
-
-.timr__hint {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
-  margin-top: var(--spacing-2xs);
-}
-
 .timr__lambda-row {
   display: grid;
   grid-template-columns: 1fr 80px;

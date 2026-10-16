@@ -58,16 +58,6 @@
 
 /* ─── Error / warning boxes ───────────────────────────────────── */
 
-.glm__error {
-  display: none;
-  padding: var(--spacing-sm) var(--spacing-m);
-  font-size: var(--font-size-xs);
-  color: var(--color-error);
-  background: var(--color-error-bg, rgb(239 68 68 / 8%));
-  border: var(--border-width) solid var(--color-error);
-  border-radius: var(--border-radius);
-}
-
 .glm__warning {
   padding: var(--spacing-s) var(--spacing-sm);
   font-size: var(--font-size-xs);

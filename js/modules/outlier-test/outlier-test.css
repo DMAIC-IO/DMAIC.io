@@ -55,16 +55,6 @@
 
 /* ── Error box (shared with other modules) ─────────────────── */
 
-.outliertest__error {
-  display: none;
-  margin-top: var(--spacing-sm);
-  padding: var(--spacing-sm);
-  border-radius: var(--border-radius);
-  background: rgb(var(--color-error-rgb, 239, 68, 68), 0.1);
-  color: var(--color-error);
-  font-size: var(--font-size-xs);
-}
-
 /* ── Placeholder ──────────────────────────────────────────── */
 
 .outliertest__placeholder {
@@ -239,13 +229,6 @@
 }
 
 /* ── Hint / footnote ──────────────────────────────────────── */
-
-.outliertest__hint {
-  margin-top: var(--spacing-xs);
-  font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
-  font-style: italic;
-}
 
 /* ── Algorithm Lab link button ─────────────────────────────── */
 

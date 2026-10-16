@@ -369,6 +369,32 @@ select.input {
   margin-bottom: 0;
 }
 
+/* ── Field feedback: hint text under a field, error box in an input pane ── */
+.field-hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: var(--spacing-2xs);
+}
+
+.field-hint--warn {
+  color: var(--color-warning);
+}
+
+/* Hidden while empty, so modules only fill or clear the text */
+.field-error {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 8%, transparent);
+  border: var(--border-width) solid color-mix(in srgb, var(--color-error) 20%, transparent);
+  border-radius: var(--border-radius);
+}
+
+.field-error:empty {
+  display: none;
+}
+
 /* ===== Badges ===== */
 .badge {
   display: inline-flex;

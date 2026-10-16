@@ -29,7 +29,7 @@
       <input type="number" class="field field--num" data-ref="baseline-count"
         :value="baselineValue()" min="2" :placeholder="t('baselineAll')"
         @change="baselineChanged($event)">
-      <span class="control-chart__hint" x-text="t('baselineHint')"></span>
+      <span class="field-hint" x-text="t('baselineHint')"></span>
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionStages')"></div>
@@ -38,8 +38,8 @@
       <input type="text" class="field" data-ref="stages"
         :value="model.stagesText" :placeholder="t('stagesPlaceholder')"
         @change="stagesChanged($event)">
-      <span class="control-chart__hint" x-text="t('stagesHint')"></span>
-      <span class="control-chart__hint control-chart__hint--warn" data-ref="stages-warning"
+      <span class="field-hint" x-text="t('stagesHint')"></span>
+      <span class="field-hint field-hint--warn" data-ref="stages-warning"
         x-show="stagesWarning" x-text="stagesWarning"></span>
     </div>
 
@@ -53,7 +53,7 @@
       </div>
       <button type="button" class="btn btn--small" :class="phase2BtnClass()"
         data-ref="phase2-toggle" @click="phase2Toggle()" x-text="phase2BtnText()"></button>
-      <span class="control-chart__hint" x-text="t('phase2Hint')"></span>
+      <span class="field-hint" x-text="t('phase2Hint')"></span>
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionSpec')"></div>
@@ -69,7 +69,7 @@
           :value="uslValue()" placeholder="—" @change="uslChanged($event)">
       </div>
     </div>
-    <span class="control-chart__hint" x-text="t('specHint')"></span>
+    <span class="field-hint" x-text="t('specHint')"></span>
 
     <div class="dmike-split__section-title control-chart__collapsible" data-ref="nelson-toggle"
       :class="nelsonToggleClass()" @click="toggleNelson()">
@@ -87,7 +87,7 @@
           </span>
         </label>
       </template>
-      <span class="control-chart__hint" data-ref="secondary-rules-hint" x-text="t('secondaryRulesHint')"></span>
+      <span class="field-hint" data-ref="secondary-rules-hint" x-text="t('secondaryRulesHint')"></span>
     </div>
 
   </div>
@@ -99,7 +99,7 @@
           <template x-for="(c, i) in kpiCells" :key="i">
             <div class="dmike-kpi" :class="c.mod">
               <div class="dmike-kpi-value" x-text="c.value"></div>
-              <div class="dmike-kpi-label"><span x-text="c.label"></span><template x-if="c.labelHint"><span class="control-chart__hint" x-text="' (' + c.labelHint + ')'"></span></template></div>
+              <div class="dmike-kpi-label"><span x-text="c.label"></span><template x-if="c.labelHint"><span class="field-hint" x-text="' (' + c.labelHint + ')'"></span></template></div>
               <div class="dmike-kpi-sub" x-text="c.sub"></div>
             </div>
           </template>
@@ -161,7 +161,7 @@
           <input type="checkbox" data-ref="ann-excluded" x-model="annExcluded">
           <span x-text="t('annotationExclude')"></span>
         </label>
-        <span class="control-chart__hint" x-text="t('annotationExcludeHint')"></span>
+        <span class="field-hint" x-text="t('annotationExcludeHint')"></span>
       </div>
     </div>
   </div>

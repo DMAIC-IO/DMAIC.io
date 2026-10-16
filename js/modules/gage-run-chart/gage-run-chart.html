@@ -11,7 +11,7 @@
     <div class="field-group">
       <label x-text="t('operatorColumn')"></label>
       <div data-ref="col-operator-wrap"></div>
-      <span class="gage-run-chart__hint" x-text="t('operatorHint')"></span>
+      <span class="field-hint" x-text="t('operatorHint')"></span>
     </div>
 
     <div class="field-group">
@@ -25,7 +25,7 @@
       <label x-text="t('refValue')"></label>
       <input type="text" class="field field--num" data-ref="inp-ref-value"
         inputmode="decimal" :value="model.refValue" @change="refValueChanged($event)">
-      <span class="gage-run-chart__hint" x-text="t('refValueHint')"></span>
+      <span class="field-hint" x-text="t('refValueHint')"></span>
     </div>
 
     <div class="field-group">
@@ -70,8 +70,7 @@
       <input type="text" class="field" data-ref="inp-gage-misc" x-model="model.gageInfo.misc">
     </div>
 
-    <div class="gage-run-chart__error" data-ref="error-box"
-      :class="{ visible: errorMsg }" x-text="errorMsg"></div>
+    <div class="field-error" data-ref="error-box" x-text="errorMsg"></div>
   </div>
 
   <div class="gage-run-chart__output dmike-split__output">

@@ -10,7 +10,7 @@
         <option value="c" x-text="t('type_c')"></option>
         <option value="u" x-text="t('type_u')"></option>
       </select>
-      <span class="attr-cc__hint" x-text="t('typeHint_' + model.chartTypeId)"></span>
+      <span class="field-hint" x-text="t('typeHint_' + model.chartTypeId)"></span>
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
@@ -23,7 +23,7 @@
     <div class="field-group" data-ref="size-row" x-show="requiresSampleSize()">
       <label x-text="t('sizeColumn')"></label>
       <div data-ref="size-picker"></div>
-      <span class="attr-cc__hint" x-text="t('sizeHint')"></span>
+      <span class="field-hint" x-text="t('sizeHint')"></span>
     </div>
 
     <div class="field-group" data-ref="constn-row" x-show="requiresConstantN()">
@@ -31,7 +31,7 @@
       <input type="number" class="field field--num" data-ref="constant-n"
         min="1" step="1"
         x-model="model.constantN" @change="constantNChanged($event)">
-      <span class="attr-cc__hint" x-text="t('constantNHint')"></span>
+      <span class="field-hint" x-text="t('constantNHint')"></span>
     </div>
 
     <div class="field-group">
@@ -40,7 +40,7 @@
         min="2" :placeholder="t('baselineAll')"
         :value="model.baselineCount == null ? '' : model.baselineCount"
         @change="baselineCountChanged($event)">
-      <span class="attr-cc__hint" x-text="t('baselineHint')"></span>
+      <span class="field-hint" x-text="t('baselineHint')"></span>
     </div>
 
     <div class="dmike-split__section-title attr-cc__collapsible" data-ref="nelson-toggle"

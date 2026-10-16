@@ -28,10 +28,6 @@
 }
 
 .resampling__validation,
-.resampling__error {
-  color: var(--color-error);
-  margin: var(--spacing-sm) 0;
-}
 
 .resampling__stale {
   border-left: 3px solid var(--color-warning);

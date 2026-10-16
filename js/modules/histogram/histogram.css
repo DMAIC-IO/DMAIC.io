@@ -13,16 +13,6 @@
 
 /* Buttons: use global .btn (components.css) */
 
-.histogram__error {
-  display: none;
-  font-size: var(--font-size-sm);
-  color: var(--color-error, #ef4444);
-  background: rgb(239 68 68 / 8%);
-  border: var(--border-width) solid rgb(239 68 68 / 20%);
-  border-radius: var(--border-radius);
-  padding: var(--spacing-sm);
-}
-
 /* Options */
 .histogram__options {
   display: flex;

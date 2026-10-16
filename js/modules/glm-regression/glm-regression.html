@@ -19,7 +19,7 @@
     </div>
 
     <div class="field-group">
-      <label><span x-text="t('columnTrials')"></span> <span class="dmike-hint" x-text="t('columnTrialsHint')"></span></label>
+      <label><span x-text="t('columnTrials')"></span> <span class="field-hint" x-text="t('columnTrialsHint')"></span></label>
       <select class="field" data-ref="trials-select" @change="onTrialsChange($event)">
         <option value="" :selected="!model.trialsKey" x-text="t('trialsNone')"></option>
         <template x-for="opt in trialsOptions()" :key="opt.key">
@@ -66,7 +66,7 @@
       </div>
     </div>
 
-    <div class="glm__error" data-ref="error-box" :style="errorStyle()" x-text="errorText()"></div>
+    <div class="field-error" data-ref="error-box" :style="errorStyle()" x-text="errorText()"></div>
   </div>
 
   <!-- ─── Output (right) ───────────────────────────────────────── -->

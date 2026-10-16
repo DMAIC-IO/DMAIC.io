@@ -3,13 +3,6 @@
    BEM: .src__ prefix
    ============================================================ */
 
-
-.src__hint {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
-  margin-top: var(--spacing-2xs);
-}
-
 .src__chart-section {
   background: var(--color-bg-secondary);
   border: var(--border-width) solid var(--color-border-secondary);

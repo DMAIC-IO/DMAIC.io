@@ -68,15 +68,6 @@
 }
 
 /* Error box */
-.reg__error {
-  display: none;
-  padding: var(--spacing-sm) var(--spacing-m);
-  font-size: var(--font-size-xs);
-  color: var(--color-error);
-  background: var(--color-error-bg, rgb(239 68 68 / 8%));
-  border: var(--border-width) solid var(--color-error);
-  border-radius: var(--border-radius);
-}
 
 /* Design-term notice (DOE hand-off) */
 .reg__notice {
@@ -329,7 +320,6 @@
   grid-template-columns: 1fr 1fr;
   gap: var(--spacing-xs) var(--spacing-sm);
 }
-
 
 .reg__predict-result {
   margin-top: var(--spacing-sm);

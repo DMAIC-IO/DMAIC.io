@@ -38,7 +38,7 @@
           </template>
         </tbody>
       </table>
-      <span class="multi-vari__hint" x-text="t('factorsHint')"></span>
+      <span class="field-hint" x-text="t('factorsHint')"></span>
       <button class="btn btn--sm" type="button" data-ref="btn-add-factor"
               :disabled="model.factors.length >= 4" @click="addFactor()"
               x-text="t('addFactor')"></button>
@@ -89,8 +89,7 @@
       </label>
     </div>
 
-    <div class="multi-vari__error" data-ref="error-box"
-         :class="{ visible: errorMsg }" x-text="errorMsg"></div>
+    <div class="field-error" data-ref="error-box" x-text="errorMsg"></div>
   </div>
 
   <div class="multi-vari__output dmike-split__output">

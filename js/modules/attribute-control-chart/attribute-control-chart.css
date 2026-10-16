@@ -3,13 +3,6 @@
    BEM: .attr-cc__ prefix
    ============================================================ */
 
-
-.attr-cc__hint {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
-  margin-top: var(--spacing-2xs);
-}
-
 /* ── Nelson rules panel ── */
 
 .attr-cc__collapsible {

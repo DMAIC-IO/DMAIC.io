@@ -6,7 +6,7 @@
     <div class="field-group">
       <label x-text="t('variables')"></label>
       <div data-ref="col-picker-wrap"></div>
-      <span class="mvcc__hint" x-text="t('variablesHint')"></span>
+      <span class="field-hint" x-text="t('variablesHint')"></span>
     </div>
 
     <div class="field-group">
@@ -16,7 +16,7 @@
         min="2"
         :placeholder="t('baselineAll')"
         @change="baselineCountChanged($event)">
-      <span class="mvcc__hint" x-text="t('baselineHint')"></span>
+      <span class="field-hint" x-text="t('baselineHint')"></span>
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionLimit')"></div>
@@ -27,7 +27,7 @@
         :value="model.alpha"
         step="0.001" min="0.0001" max="0.5"
         @change="alphaChanged($event)">
-      <span class="mvcc__hint" x-text="t('alphaHint')"></span>
+      <span class="field-hint" x-text="t('alphaHint')"></span>
     </div>
 
   </div>
@@ -39,7 +39,7 @@
           <template x-for="(c, i) in kpiCells" :key="i">
             <div class="dmike-kpi" :class="c.mod">
               <div class="dmike-kpi-value" x-text="c.value"></div>
-              <div class="dmike-kpi-label"><span x-text="c.label"></span><template x-if="c.labelHint"><span class="mvcc__hint" x-text="' (' + c.labelHint + ')'"></span></template></div>
+              <div class="dmike-kpi-label"><span x-text="c.label"></span><template x-if="c.labelHint"><span class="field-hint" x-text="' (' + c.labelHint + ')'"></span></template></div>
               <div class="dmike-kpi-sub" x-text="c.sub"></div>
             </div>
           </template>
