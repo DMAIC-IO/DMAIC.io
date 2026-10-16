@@ -4923,6 +4923,34 @@
     "pareto": {
       "name": "Pareto Chart",
       "description": "Bar chart sorted by descending value with a cumulative-percentage line — the classic \"vital few\" tool.",
+      "whenToUse": "Rank categories by frequency or by a summed value to find the vital few — with a cumulative percentage line.",
+      "actions": {
+        "read": { "help": "Read the three chosen columns, the aggregation and the columns each slot accepts, and the figures shown next to the chart." },
+        "setColumn": {
+          "help": "Assign a column to a slot. The other slots keep their columns.",
+          "params": {
+            "slot": "'x' — the categories to rank (required); 'y' — an optional numeric value column; without it bars count rows; 'g' — an optional column that stacks each bar.",
+            "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null to clear the slot."
+          }
+        },
+        "setParam": {
+          "help": "Set an analysis option. read().activeParams names the options valid right now.",
+          "params": {
+            "key": "'aggregation' — active only while a value column is chosen.",
+            "value": "For 'aggregation': 'sum' or 'mean' of the values per category."
+          }
+        }
+      },
+      "fields": {
+        "xRef": { "help": "The category column (slot 'x'), or null." },
+        "yRef": { "help": "The value column (slot 'y'), or null." },
+        "gRef": { "help": "The stacking column (slot 'g'), or null." },
+        "aggregation": { "help": "How values are combined per category: sum or mean." },
+        "activeParams": { "help": "The options setParam accepts in the current state." },
+        "activeColumnSlots": { "help": "The slots setColumn accepts: x, y, g." },
+        "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
+        "stats": { "help": "The ranked table: { rows: [{ name, value, cumPct }], total }; rows sorted by value descending, cumPct 0…100; null while nothing is plotted." }
+      },
       "sectionData": "Data Source",
       "slotX": "Category column (X axis)",
       "slotY": "Value column (numeric, optional — sum per category)",

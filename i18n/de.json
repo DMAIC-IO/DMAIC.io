@@ -4927,6 +4927,34 @@
     "pareto": {
       "name": "Pareto-Diagramm",
       "description": "Nach Größe sortiertes Säulendiagramm mit kumulativer Prozent-Linie — das klassische „vital few“-Werkzeug.",
+      "whenToUse": "Kategorien nach Häufigkeit oder nach einem summierten Wert ordnen, um die wenigen wichtigen zu finden — mit Linie der kumulierten Anteile.",
+      "actions": {
+        "read": { "help": "Die drei gewählten Spalten, die Aggregation und die Spalten lesen, die jeder Slot annimmt, dazu die Kennzahlen neben dem Diagramm." },
+        "setColumn": {
+          "help": "Eine Spalte einem Slot zuweisen. Die anderen Slots behalten ihre Spalten.",
+          "params": {
+            "slot": "'x' — die zu ordnenden Kategorien (Pflicht); 'y' — eine optionale numerische Wertespalte; ohne sie zählen die Balken Zeilen; 'g' — eine optionale Spalte, die jeden Balken stapelt.",
+            "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null zum Leeren."
+          }
+        },
+        "setParam": {
+          "help": "Eine Analyseoption setzen. read().activeParams nennt die gerade gültigen Optionen.",
+          "params": {
+            "key": "'aggregation' — nur aktiv, solange eine Wertespalte gewählt ist.",
+            "value": "Für 'aggregation': 'sum' (Summe) oder 'mean' (Mittelwert) der Werte je Kategorie."
+          }
+        }
+      },
+      "fields": {
+        "xRef": { "help": "Die Kategorienspalte (Slot 'x'), oder null." },
+        "yRef": { "help": "Die Wertespalte (Slot 'y'), oder null." },
+        "gRef": { "help": "Die Stapelspalte (Slot 'g'), oder null." },
+        "aggregation": { "help": "Wie die Werte je Kategorie zusammengefasst werden: sum oder mean." },
+        "activeParams": { "help": "Die Optionen, die setParam im aktuellen Zustand annimmt." },
+        "activeColumnSlots": { "help": "Die Slots, die setColumn annimmt: x, y, g." },
+        "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
+        "stats": { "help": "Die geordnete Tabelle: { rows: [{ name, value, cumPct }], total }; Zeilen absteigend nach Wert, cumPct 0…100; null, solange nichts gezeichnet ist." }
+      },
       "sectionData": "Datenquelle",
       "slotX": "Kategorie-Spalte (X-Achse)",
       "slotY": "Wert-Spalte (numerisch, optional — Summe je Kategorie)",

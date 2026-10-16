@@ -7,9 +7,10 @@
       <template x-if="hasYRef">
         <label class="pareto-module__opt-row">
           <span x-text="t('aggregation')"></span>
-          <select data-action="set-agg" x-model="model.chartConfig.aggregation" @change="onAggregationChange()">
-            <option value="sum" x-text="t('aggSum')"></option>
-            <option value="mean" x-text="t('aggMean')"></option>
+          <select data-action="set-agg" :value="model.chartConfig.aggregation" @change="setParam('aggregation', $event.target.value)">
+            <template x-for="o in aggregationOptions()" :key="o.value">
+              <option :value="o.value" :selected="o.value === model.chartConfig.aggregation" x-text="o.label"></option>
+            </template>
           </select>
         </label>
       </template>

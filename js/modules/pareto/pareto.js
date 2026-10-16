@@ -20,19 +20,81 @@
  * data-fn. The DatasetPicker, the SVG chart, the aggregation `<select>` and the
  * stats `<table>` are mounted imperatively to keep the legacy DOM selectors and
  * style-based visibility toggles byte-identical for the Page Object Model.
+ *
+ * @agent  Steuerbar über das Viewmodel: Kategorie-, Werte- und
+ *   Stapelspalte (setColumn) und die Aggregation (setParam). Gelesen wird
+ *   über read() mit erklärter Lesefläche (AgentRead) — Spaltenbezüge,
+ *   Aggregation, die wählbaren Mengen und die geordnete Tabelle als Zahlen
+ *   (stats).
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State } from './pareto-model.js';
+import { State, AGGREGATIONS } from './pareto-model.js';
 
 import { formatNum } from '../../core/chart/chart-core.js';
 import {
   DatasetPicker,
   getColumnValues,
   getColumnName,
+  refToKey,
+  keyToRef,
 } from '../../ui/dataset-picker.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { datasetSlotColumns } from '../../core/agent/agent-datasets.js';
 import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-registry.js';
 import { chartModuleLifecycle } from '../../core/chart/chart-module-base.js';
+
+/** Die Slots des Pickers, ohne Beschriftung — eine Quelle für Picker und Lesefläche. */
+const DATASET_SLOTS = [
+  { key: 'x', minCount: 1, required: true },
+  { key: 'y', types: ['numeric', 'currency', 'percent'], minCount: 1 },
+  { key: 'g', group: true },
+];
+
+/** Die Slot-Schlüssel in der Reihenfolge der Oberfläche. */
+const COLUMN_SLOTS = ['x', 'y', 'g'];
+
+/** Die Optionen, die `setParam` annimmt. */
+const PARAM_KEYS = ['aggregation'];
+
+/** Je Option ihr Prüfer; gibt den Wert zurück, den das Model hält. */
+const PARAM_CHECKS = {
+  aggregation: (v) => { requireEnum('value', v, AGGREGATIONS); return v; },
+};
+
+/**
+ * Einen Wert unter einem Punkt-Schlüssel (`'statParams.trim'`) in `obj` ablegen.
+ * @param {object} obj Wurzel, deren Pfad beschrieben wird
+ * @param {string} key Schlüssel, gegebenenfalls mit Punkt
+ * @param {any} value der abzulegende Wert
+ */
+function setAtPath(obj, key, value) {
+  const parts = key.split('.');
+  let cur = obj;
+  for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
+  cur[parts[parts.length - 1]] = value;
+}
+
+/**
+ * Die Agenten-Lesefläche des Pareto-Diagramms.
+ *
+ * Drei Spaltenbezüge und die Aggregation sind der Zustand; die Aggregation
+ * hält das Model in `chartConfig`, die Lesefläche oben unter ihrem
+ * `setParam`-Schlüssel. Nicht darin: der Rest von `chartConfig`
+ * (Darstellung), Balken, Summenlinie und Tabelle (Ausgabe), `exampleWorksheetId`.
+ * Die Tabelle steht als Zahlen in `stats` (E8).
+ *
+ * @typedef {object} AgentRead
+ * @property {object|null} xRef  the category column (slot `x`), or null
+ * @property {object|null} yRef  the optional numeric value column (slot `y`), or null — without it bars count rows
+ * @property {object|null} gRef  the optional column that stacks each bar (slot `g`), or null
+ * @property {string} aggregation  how values are combined per category: `sum` or `mean`; applies only with a value column
+ * @property {string[]} activeParams  the options `setParam` accepts in the current state
+ * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
+ * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
+ * @property {object|null} stats  the ranked table: `{ rows: [{ name, value, cumPct }], total }`, rows sorted by value descending, cumPct 0…100, or null while nothing is plotted
+ */
 
 const mod = createModule({
   config: {
@@ -55,24 +117,18 @@ const mod = createModule({
 
           const ctx = module._context;
           const i18n = ctx.i18n;
+          const SLOT_LABELS = {
+            x: { label: 'X', title: i18n.t('modules.pareto.slotX') },
+            y: { label: 'Y', title: i18n.t('modules.pareto.slotY') },
+            g: { label: 'G', title: i18n.t('modules.pareto.slotG') },
+          };
           this._picker = new DatasetPicker(wrap, ctx, {
-            slots: [
-              { key: 'x', label: 'X', title: i18n.t('modules.pareto.slotX'), minCount: 1, required: true },
-              { key: 'y', label: 'Y', title: i18n.t('modules.pareto.slotY'), types: ['numeric', 'currency', 'percent'], minCount: 1 },
-              { key: 'g', label: 'G', title: i18n.t('modules.pareto.slotG'), group: true },
-            ],
-            onChange: (datasets) => {
-              const ds = datasets[0] || {};
-              this.model.xRef = ds.x || null;
-              this.model.yRef = ds.y || null;
-              this.model.gRef = ds.g || null;
-              this._syncOptions();
-              this._plot();
-            },
+            slots: DATASET_SLOTS.map(s => ({ ...s, ...SLOT_LABELS[s.key] })),
+            onChange: (rows) => this._applyDatasets(rows),
           });
 
           if (this.model.xRef || this.model.yRef || this.model.gRef) {
-            this._picker.value = [{ x: this.model.xRef, y: this.model.yRef, g: this.model.gRef }];
+            this._picker.value = this._datasetRows();
           }
 
           // Preserve the original init() ordering: _mountPicker() was followed
@@ -87,6 +143,116 @@ const mod = createModule({
           }
         },
       }),
+
+      // ── Agent surface ─────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Spaltenbezüge, Aggregation, wählbare Mengen und geordnete Tabelle
+       */
+      read(options) {
+        return readAgentState('pareto', {
+          xRef: this.model.xRef,
+          yRef: this.model.yRef,
+          gRef: this.model.gRef,
+          aggregation: this.model.chartConfig.aggregation,
+          activeParams: this.activeParams(),
+          activeColumnSlots: this.activeColumnSlots(),
+          pickableColumns: this.pickableColumns(),
+          stats: this._agentStats(),
+        }, options);
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() { return [...COLUMN_SLOTS]; },
+
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() { return datasetSlotColumns(module._context.stateManager, DATASET_SLOTS); },
+
+      /** @noagent derived set; der Agent liest sie über read().activeParams — dasselbe Prädikat wie x-if="hasYRef" */
+      activeParams() { return this.hasYRef ? [...PARAM_KEYS] : []; },
+
+      /** @noagent view transform; die Optionen der Aggregation (eine Quelle: AGGREGATIONS) */
+      aggregationOptions() {
+        return AGGREGATIONS.map(v => ({ value: v, label: _t(v === 'sum' ? 'aggSum' : 'aggMean') }));
+      },
+
+      /**
+       * Eine Spalte einem Slot zuweisen; die übrigen Slots bleiben.
+       * @agent
+       * @param {'x'|'y'|'g'} slot der Slot
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
+       *   der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren
+       * @returns {void}
+       * @throws {Error} wenn `slot` unbekannt ist oder die Spalte nicht wählbar
+       */
+      setColumn(slot, ref) {
+        requireEnum('slot', slot, this.activeColumnSlots());
+        const row = this._datasetRows()[0];
+        if (ref == null) {
+          row[slot] = null;
+        } else {
+          const keys = this.pickableColumns()[slot].map(c => c.key);
+          requireKnownId('ref', refToKey(ref), keys);
+          // Normalisierte Form: fremde Eigenschaften des Agentenobjekts bleiben draußen.
+          row[slot] = keyToRef(refToKey(ref));
+        }
+        this._applyDatasets([row]);
+        if (this._picker) this._picker.value = [row];
+      },
+
+      /**
+       * Eine Analyseoption setzen.
+       * @agent
+       * @param {'aggregation'} key welche Option; read().activeParams nennt die im aktuellen Zustand gültigen
+       * @param {'sum'|'mean'} value Summe oder Mittelwert der Wertespalte je Kategorie
+       * @returns {void}
+       * @throws {Error} wenn `key` unbekannt oder ohne Wertespalte nicht aktiv ist oder `value` ungültig
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        requireEnum('key', key, this.activeParams());
+        setAtPath(this.model.chartConfig, key, PARAM_CHECKS[key](value));
+        this._plot();
+      },
+
+      /** Der Körper des Picker-`onChange`: Zeilen ins Model, Optionen spiegeln, neu zeichnen. */
+      _applyDatasets(rows) {
+        const ds = rows[0] || {};
+        this.model.xRef = ds.x || null;
+        this.model.yRef = ds.y || null;
+        this.model.gRef = ds.g || null;
+        this._syncOptions();
+        this._plot();
+      },
+
+      /** Die aktuelle Zeile in Picker-Form, aus dem Model. */
+      _datasetRows() {
+        return [{ x: this.model.xRef, y: this.model.yRef, g: this.model.gRef }];
+      },
+
+      /** Die Diagrammdaten aus den gewählten Spalten — eine Quelle für _plot und _agentStats. */
+      _chartData() {
+        return this.model.buildChartData(
+          (ref) => this._getColumnValues(ref),
+          this.model.chartConfig.aggregation,
+        );
+      },
+
+      /** Ob die Daten ein Diagramm tragen — dasselbe Prädikat für _plot und _agentStats. */
+      _hasData(data) {
+        return (data.items.length > 0) || (data.categories.length > 0 && data.groups.length > 0);
+      },
+
+      /** Die Kennzahlen für read() — die sortierten Zeilen aus derselben Quelle wie die Tabelle (E8). */
+      _agentStats() {
+        const d = this._chartData();
+        if (!this._hasData(d)) return null;
+        const { rows, grandTotal } = State.computeStatsRows(d);
+        return { rows: rows.map(r => ({ name: r.name, value: r.value, cumPct: r.cumPct })), total: grandTotal };
+      },
 
       // ── Transient view state (not persisted) ──────────────────
       /** Last computed chart data, for the stats re-render. */
@@ -105,10 +271,6 @@ const mod = createModule({
       /** Reactive mirror of `!!model.yRef` for the options `x-if`. */
       hasYRef: false,
       _syncOptions() { this.hasYRef = Boolean(this.model.yRef); },
-      onAggregationChange() {
-        // model.chartConfig.aggregation already updated by x-model @change
-        this._plot();
-      },
 
       // ── Column helpers ────────────────────────────────────────
 
@@ -131,15 +293,12 @@ const mod = createModule({
       // ── Plot (controller — needs context + live worksheet data) ──
 
       async _plot() {
-        const data = this.model.buildChartData(
-          (ref) => this._getColumnValues(ref),
-          this.model.chartConfig.aggregation,
-        );
+        const data = this._chartData();
         this._items = data.items;
         this._categories = data.categories;
         this._groups = data.groups;
 
-        const hasData = (data.items.length > 0) || (data.categories.length > 0 && data.groups.length > 0);
+        const hasData = this._hasData(data);
 
         if (!hasData) {
           this._showPlaceholder();
