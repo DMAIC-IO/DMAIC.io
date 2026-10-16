@@ -4663,6 +4663,23 @@
     "boxplot": {
       "name": "Boxplot",
       "description": "Horizontal boxplots for comparing distributions",
+      "whenToUse": "Compare the spread, median and outliers of one or more numeric columns, optionally split by a group.",
+      "actions": {
+        "read": { "help": "Read the data rows (value and group column per row) and the columns each slot accepts, and the figures shown next to the chart." },
+        "setDatasets": {
+          "help": "Replace the whole list of data rows at once. A row without a value column is dropped.",
+          "params": {
+            "rows": "A list of rows, each { value, group }: 'value' — a numeric column (required for the row to count); 'group' — an optional column that splits the row into boxes. Each entry is a column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null. [] clears the list."
+          }
+        }
+      },
+      "fields": {
+        "seriesRefs": { "help": "Per data row its value column (slot 'value')." },
+        "groupRefs": { "help": "Per data row its group column (slot 'group'), or null; same order as seriesRefs." },
+        "activeColumnSlots": { "help": "The slot keys a row may carry: value, group." },
+        "pickableColumns": { "help": "Per slot the columns setDatasets accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
+        "stats": { "help": "Per plotted series { name, stats, ci }: stats { n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }, ci { mean, variance, stddev } as [low, high]; null while nothing can be computed." }
+      },
       "sectionData": "Data Source",
       "datasets": "Data series",
       "showMean": "Show mean",

@@ -709,69 +709,66 @@ export const AGENT_REGISTRY = {
     }
   },
   "boxplot": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:init",
-      "unmarked_method:destroy"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setDatasets": {
+        "params": [
+          {
+            "name": "rows",
+            "type": "object[]",
+            "optional": false,
+            "help": "je Reihe `{ <slot>: ref|null }`; Slots siehe read().activeColumnSlots, Spalten siehe read().pickableColumns; [] leert"
+          }
+        ],
+        "returns": "void",
+        "help": "Die ganze Liste der Datenreihen setzen."
+      }
+    },
     "fields": {
       "seriesRefs": {
-        "type": "Array<{instanceId:string,sheetId:string,columnId:string}>",
-        "help": "",
-        "bulk": false
+        "type": "object[]",
+        "help": "per data row its value column (slot `value`), `{ instanceId, sheetId, columnId }`",
+        "bulk": false,
+        "derived": true
       },
       "groupRefs": {
-        "type": "Array<{instanceId:string,sheetId:string,columnId:string}|null>",
-        "help": "",
-        "bulk": false
+        "type": "(object|null)[]",
+        "help": "per data row its optional group column (slot `group`), or null",
+        "bulk": false,
+        "derived": true
       },
-      "showMean": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slot keys a row of `setDatasets` may carry",
+        "bulk": false,
+        "derived": true
       },
-      "showOutliers": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setDatasets` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
       },
-      "showStats": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "confLevel": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "refLines": {
-        "type": "Array",
-        "help": "— reference lines passed to chartManager",
-        "bulk": false
-      },
-      "refAreas": {
-        "type": "Array",
-        "help": "— reference areas passed to chartManager",
-        "bulk": false
-      },
-      "bgColor": {
-        "type": "string|null",
-        "help": "— background color override for the chart",
-        "bulk": false
-      },
-      "boxColors": {
-        "type": "Array<string>",
-        "help": "— per-box color overrides",
-        "bulk": false
-      },
-      "exampleWorksheetId": {
-        "type": "string|null",
-        "help": "— instance id of a worksheet provisioned by loadExample",
-        "bulk": false
+      "stats": {
+        "type": "object[]|null",
+        "help": "per plotted series `{ name, stats, ci }` — stats `{ n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }`, ci `{ mean, variance, stddev }` as `[low, high]` at the confidence level — or null while nothing can be computed",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -11033,4 +11030,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":54};
+export const AGENT_COVERAGE = {"total":76,"available":55};

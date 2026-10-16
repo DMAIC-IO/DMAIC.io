@@ -15,9 +15,16 @@
  *   - Stats table    (renderStatsTable — POM locates [data-ref="stats-panel"] table)
  *
  * Key reference: js/modules/msa-typ1/ (DatasetPicker + chartManager pattern)
+ *
+ * @agent  Steuerbar über das Viewmodel: die Datenreihen, je Reihe Werte-
+ *   und optionale Gruppenspalte (setDatasets, die ganze Liste auf einmal).
+ *   Gelesen wird über read() mit erklärter Lesefläche (AgentRead), samt den
+ *   Kennzahlen je Box (stats).
  */
 
 import { createModule } from '../../core/template-module.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { datasetSlotColumns, requireDatasetRows } from '../../core/agent/agent-datasets.js';
 import { State } from './boxplot-model.js';
 import {
   DatasetPicker,
@@ -26,6 +33,33 @@ import {
 import { computeSeriesStats, renderStatsTable } from '../../core/stats-panel.js';
 import { CHART_COLORS } from '../../core/chart/chart-colors.js';
 import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
+
+/** Die Slots des Pickers, ohne Beschriftung — eine Quelle für Picker und Lesefläche. */
+const DATASET_SLOTS = [
+  { key: 'value', types: ['numeric'], minCount: 1, required: true },
+  { key: 'group', group: true },
+];
+
+/** Die Slot-Schlüssel in der Reihenfolge der Oberfläche. */
+const COLUMN_SLOTS = ['value', 'group'];
+
+/**
+ * Die Agenten-Lesefläche des Boxplots.
+ *
+ * Die Datenreihen sind der Zustand: je Reihe eine Wertespalte und eine
+ * optionale Gruppenspalte, als zwei gleich lange Listen wie im Model. Eine
+ * Reihe ohne Wertespalte verwirft das Model (wie bei der Oberfläche). Nicht
+ * darin: Darstellung (`showMean`, `showOutliers`, Farben, Referenzlinien),
+ * `showStats`/`confLevel` (ohne Bedienelement), das Diagrammbild,
+ * `exampleWorksheetId`. Die Kennzahlen stehen in `stats` (E8).
+ *
+ * @typedef {object} AgentRead
+ * @property {object[]} seriesRefs  per data row its value column (slot `value`), `{ instanceId, sheetId, columnId }`
+ * @property {(object|null)[]} groupRefs  per data row its optional group column (slot `group`), or null
+ * @property {string[]} activeColumnSlots  the slot keys a row of `setDatasets` may carry
+ * @property {object} pickableColumns  per slot the columns `setDatasets` accepts, each `{ key, name }`
+ * @property {object[]|null} stats  per plotted series `{ name, stats, ci }` — stats `{ n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }`, ci `{ mean, variance, stddev }` as `[low, high]` at the confidence level — or null while nothing can be computed
+ */
 
 const mod = createModule({
   config: {
@@ -53,6 +87,76 @@ const mod = createModule({
       _lastGroups: null,
       /** True while a plot is in progress (prevents concurrent renders) */
       _plotting: false,
+
+      // ── Agent surface ─────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Spaltenbezüge, wählbare Mengen und Kennzahlen
+       */
+      read(options) {
+        return readAgentState('boxplot', {
+          seriesRefs: this.model.seriesRefs,
+          groupRefs: this.model.groupRefs,
+          activeColumnSlots: this.activeColumnSlots(),
+          pickableColumns: this.pickableColumns(),
+          stats: this._agentStats(),
+        }, options);
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() { return [...COLUMN_SLOTS]; },
+
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() { return datasetSlotColumns(module._context.stateManager, DATASET_SLOTS); },
+
+      /**
+       * Die ganze Liste der Datenreihen setzen.
+       * @agent
+       * @param {object[]} rows je Reihe `{ <slot>: ref|null }`; Slots siehe
+       *   read().activeColumnSlots, Spalten siehe read().pickableColumns; [] leert
+       * @returns {void}
+       * @throws {Error} wenn `rows` keine Liste ist, ein Slot unbekannt oder eine Spalte nicht wählbar
+       */
+      setDatasets(rows) {
+        const clean = requireDatasetRows(rows, this.pickableColumns());
+        this._applyDatasets(clean);
+        if (this._picker) this._picker.value = clean;
+      },
+
+      /** Der Körper des Picker-`onChange`: Zeilen mit Wert ins Model, neu zeichnen. Picker und Aktion rufen ihn. */
+      _applyDatasets(rows) {
+        // Only keep datasets that have a value column selected
+        const valid = rows.filter(ds => ds.value != null);
+        this.model.seriesRefs = valid.map(ds => ds.value);
+        this.model.groupRefs = valid.map(ds => ds.group || null);
+        this._autoPlot();
+      },
+
+      /** Die aktuellen Zeilen in Picker-Form, aus dem Model. */
+      _datasetRows() {
+        return this.model.seriesRefs.map((ref, i) => ({ value: ref, group: this.model.groupRefs[i] || null }));
+      },
+
+      /** Die Kennzahlen für read() — dieselben Gruppen und dieselbe Rechnung wie die Tabelle (E8). */
+      _agentStats() {
+        let groups;
+        try { groups = this._buildGroups(_t); } catch { return null; }
+        return this._seriesStats(groups).map(({ name, stats, ci }) => ({ name, stats, ci }));
+      },
+
+      /** Kennzahlen je Gruppe (mit Boxfarbe) — Quelle für Tabelle und read(). */
+      _seriesStats(groups) {
+        const series = groups.map((g, i) => ({
+          name: g.name,
+          values: g.values,
+          color: (this.model.boxColors[i] || CHART_COLORS[i % CHART_COLORS.length]),
+          visible: true,
+        }));
+        return computeSeriesStats(series, this.model.confLevel / 100);
+      },
 
       // ── Column helpers ────────────────────────────────────────
 
@@ -241,13 +345,7 @@ const mod = createModule({
           return;
         }
 
-        const series = this._lastGroups.map((g, i) => ({
-          name: g.name,
-          values: g.values,
-          color: (this.model.boxColors[i] || CHART_COLORS[i % CHART_COLORS.length]),
-          visible: true,
-        }));
-        const seriesStats = computeSeriesStats(series, this.model.confLevel / 100);
+        const seriesStats = this._seriesStats(this._lastGroups);
         renderStatsTable(panel, seriesStats, {
           i18n: module._context.i18n,
           confLevel: this.model.confLevel,
@@ -260,34 +358,27 @@ const mod = createModule({
         const pickerWrap = module._container.querySelector('[data-ref="picker-wrap"]');
         if (!pickerWrap) return;
 
+        const SLOT_LABELS = {
+          value: { label: 'V', title: module._context.i18n.t('ui.datasetPicker.slotV') },
+          group: { label: 'G', title: module._context.i18n.t('ui.datasetPicker.slotG') },
+        };
         this._picker?.destroy();
         this._picker = new DatasetPicker(pickerWrap, module._context, {
           multi: true,
           colors: CHART_COLORS,
-          slots: [
-            { key: 'value', label: 'V', title: module._context.i18n.t('ui.datasetPicker.slotV'), types: ['numeric'], minCount: 1, required: true },
-            { key: 'group', label: 'G', title: module._context.i18n.t('ui.datasetPicker.slotG'), group: true },
-          ],
-          onChange: (datasets) => {
-            // Only keep datasets that have a value column selected
-            const valid = datasets.filter(ds => ds.value != null);
-            this.model.seriesRefs = valid.map(ds => ds.value);
-            this.model.groupRefs = valid.map(ds => ds.group || null);
-            this._autoPlot();
-          },
+          slots: DATASET_SLOTS.map(s => ({ ...s, ...SLOT_LABELS[s.key] })),
+          onChange: (rows) => this._applyDatasets(rows),
         });
 
         // Restore saved refs
         if (this.model.seriesRefs.length > 0) {
-          this._picker.value = this.model.seriesRefs.map((ref, i) => ({
-            value: ref,
-            group: this.model.groupRefs[i] || null,
-          }));
+          this._picker.value = this._datasetRows();
         }
       },
 
       // ── Alpine component lifecycle ────────────────────────────
 
+      /** @noagent lifecycle */
       init() {
         // Fresh per-instance transient collections
         this._chart = null;
@@ -319,6 +410,7 @@ const mod = createModule({
         this._autoPlot();
       },
 
+      /** @noagent lifecycle */
       destroy() {
         for (const unsub of this._unsubs) unsub();
         this._unsubs = [];
