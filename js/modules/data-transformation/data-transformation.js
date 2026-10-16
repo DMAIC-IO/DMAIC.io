@@ -16,7 +16,7 @@
  * columns into the Worksheet module — preserved byte-identically below.
  */
 
-import { uid } from '../../core/uid.js';
+import { openNewWorksheet } from '../../core/worksheet-handoff.js';
 import { toNum } from '../../core/chart/chart-data-prep.js';
 import { createModule } from '../../core/template-module.js';
 import {
@@ -24,7 +24,6 @@ import {
 } from './data-transformation-model.js';
 import {
   ColumnPicker, getColumnValues, getColumnName, refToKey,
-  uniqueSheetName, buildInitialWorksheetState,
 } from '../../ui/column-picker.js';
 import { mean, std, median, skewness, kurtosis } from '../../engines/distribution-fit-engine.js';
 import { andersonDarling } from '../../engines/normality-test-engine.js';
@@ -341,46 +340,19 @@ const mod = createModule({
         module._context.notify?.(_t('sentToWorksheet'), 'success');
       },
 
-      _createWorksheetAndSend(name, values) {
-        const sm = module._context.stateManager;
-        const eb = module._context.eventBus;
-        const phase = this._findOwnPhase();
-        const wsId = `worksheet_${uid()}`;
-
-        const existing = sm.get(`phases.${phase}`) ?? [];
-        sm.set(`phases.${phase}`, [
-          ...existing,
-          { instanceId: wsId, moduleId: 'worksheet', order: existing.length, state: {} },
-        ]);
-
-        const baseName = module._context.i18n.t('modules.worksheet.defaultSheetName');
-        const sheetName = uniqueSheetName(sm, baseName);
-        sm.setModuleState(wsId, buildInitialWorksheetState(sheetName));
-
-        const onActivated = ({ instanceId }) => {
-          if (instanceId !== wsId) return;
-          eb.off('module:activated', onActivated);
-
-          eb.emit('worksheet:appendColumn', {
-            instanceId: wsId,
-            sheetId: 'sheet_1',
-            colId: '__first__',
-            name, values,
-          });
-          module._context.notify?.(_t('sentToWorksheet'), 'success');
-        };
-        eb.on('module:activated', onActivated);
-        eb.emit('module:added', { moduleId: 'worksheet', phase, instanceId: wsId });
-      },
-
-      _findOwnPhase() {
-        const sm = module._context.stateManager;
-        const id = module._context.instanceId;
-        for (const p of Object.keys(sm.get('phases') || {})) {
-          const items = sm.get(`phases.${p}`) ?? [];
-          if (items.some(i => i.instanceId === id)) return p;
-        }
-        return 'data';
+      async _createWorksheetAndSend(name, values) {
+        const ctx = module._context;
+        const wsId = await openNewWorksheet(ctx, {
+          sheetName: ctx.i18n.t('modules.worksheet.defaultSheetName'),
+        });
+        ctx.eventBus.emit('worksheet:appendColumn', {
+          instanceId: wsId,
+          sheetId: 'sheet_1',
+          colId: '__first__',
+          name, values,
+        });
+        ctx.notify?.(_t('sentToWorksheet'), 'success');
+        return wsId;
       },
 
       // ── ColumnPickers (imperative widgets) ────────────────────

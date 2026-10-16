@@ -25,9 +25,8 @@
  * XLSX / XLSM / XLS / ODS, JSON / NDJSON / JSONL, Q-DAS AQDEF (.dfq/.dfd/.dfx).
  */
 
-import { uid } from '../../core/uid.js';
+import { openNewWorksheet } from '../../core/worksheet-handoff.js';
 import { createModule } from '../../core/template-module.js';
-import { uniqueSheetName, buildInitialWorksheetState } from '../../ui/column-picker.js';
 import {
   State, clampSkipRows, parseErrorMessage,
 } from './data-import-model.js';
@@ -363,70 +362,38 @@ export default createModule({
 
       // ── Send to worksheet ─────────────────────────────────────
 
-      sendToWorksheet() {
+      async sendToWorksheet() {
         const parsed = this.parsed;
-        if (!parsed || !parsed.sheets.length) return;
+        if (!parsed || !parsed.sheets.length) return null;
         const idx = Math.min(this.activeSheetIdx, parsed.sheets.length - 1);
         const sheet = parsed.sheets[idx];
         if (sheet.columns.length === 0) {
           module._context.notify(_t('noColumns'), 'warning');
-          return;
+          return null;
         }
 
-        const sm = module._context.stateManager;
-        const eb = module._context.eventBus;
-        const phase = this._findOwnPhase();
-        const wsId = `worksheet_${uid()}`;
-
-        // Register new worksheet in the same phase the import module lives in.
-        const existing = sm.get(`phases.${phase}`) ?? [];
-        sm.set(`phases.${phase}`, [
-          ...existing,
-          { instanceId: wsId, moduleId: 'worksheet', order: existing.length, state: {} },
-        ]);
-
+        const ctx = module._context;
         // Pre-name the sheet using the imported sheet's name, deduplicated.
-        const baseName = sheet.name || module._context.i18n.t('modules.worksheet.defaultSheetName');
-        const sheetName = uniqueSheetName(sm, baseName);
-        sm.setModuleState(wsId, buildInitialWorksheetState(sheetName));
-
+        const baseName = sheet.name || ctx.i18n.t('modules.worksheet.defaultSheetName');
         const cols = sheet.columns;
-        const onActivated = ({ instanceId }) => {
-          if (instanceId !== wsId) return;
-          eb.off('module:activated', onActivated);
-
-          // Map imported columns 0..N-1 onto the worksheet's default empty slots
-          // (C1..C5 from _initEmptyGrid). Any imports past slot 5 simply append.
-          for (let i = 0; i < cols.length; i++) {
-            const c = cols[i];
-            eb.emit('worksheet:appendColumn', {
-              instanceId: wsId,
-              sheetId: 'sheet_1',
-              colId: '__slot__',
-              slot: i,
-              name: c.name || c.shortName || `C${i + 1}`,
-              values: c.values,
-              discrete: false,
-              type: c.type === 'text' ? 'text' : 'numeric',
-            });
-          }
-          module._context.notify(_t('sentToWorksheet', { count: cols.length }), 'success');
-        };
-        eb.on('module:activated', onActivated);
-
-        // Navigate to the new worksheet so it instantiates and the writes land.
-        eb.emit('module:added', { moduleId: 'worksheet', phase, instanceId: wsId });
-      },
-
-      /** Locate which phase this module instance is registered under. */
-      _findOwnPhase() {
-        const sm = module._context.stateManager;
-        const id = module._context.instanceId;
-        for (const p of Object.keys(sm.get('phases') || {})) {
-          const items = sm.get(`phases.${p}`) ?? [];
-          if (items.some(i => i.instanceId === id)) return p;
+        const wsId = await openNewWorksheet(ctx, { sheetName: baseName });
+        // Map imported columns 0..N-1 onto the worksheet's default empty slots
+        // (C1..C5 from _initEmptyGrid). Any imports past slot 5 simply append.
+        for (let i = 0; i < cols.length; i++) {
+          const c = cols[i];
+          ctx.eventBus.emit('worksheet:appendColumn', {
+            instanceId: wsId,
+            sheetId: 'sheet_1',
+            colId: '__slot__',
+            slot: i,
+            name: c.name || c.shortName || `C${i + 1}`,
+            values: c.values,
+            discrete: false,
+            type: c.type === 'text' ? 'text' : 'numeric',
+          });
         }
-        return 'data';
+        ctx.notify(_t('sentToWorksheet', { count: cols.length }), 'success');
+        return { instanceId: wsId };
       },
 
       // ── Lifecycle ─────────────────────────────────────────────
