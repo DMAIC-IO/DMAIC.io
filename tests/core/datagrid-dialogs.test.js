@@ -71,6 +71,19 @@ suite('DataGrid — column dialogs', () => {
     assertEqual(grid._columnScanRenderHandler, null);
   });
 
+  test('destroying the grid closes an open scan and stats dialog', () => {
+    const d = recorder();
+    const { grid, el } = gridWith(d);
+    cleanup.push(() => el.remove());
+    grid._showColumnScan(0);
+    grid._showColumnStats(0);
+    assertEqual(d.calls.length, 2);
+    grid.destroy();
+    assertEqual(d.calls[0].open, false, 'scan dialog closed');
+    assertEqual(d.calls[1].open, false, 'stats dialog closed');
+    assertEqual(grid._columnScanState, null);
+  });
+
   test('without a dialog service nothing opens', () => {
     const { grid, el } = gridWith(undefined);
     cleanup.push(() => { grid.destroy(); el.remove(); });
