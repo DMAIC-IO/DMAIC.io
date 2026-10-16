@@ -8,6 +8,13 @@
  *
  * Migrated to createModule + Alpine CSP. Business logic lives in State model;
  * view transforms in data-Fn; template in response-optimization.html.
+ *
+ * @agent  Steuerbar über das Viewmodel: die Zielvorgabe je gespeichertem
+ *   Modell (setSpec: Auswahl, Ziel, Grenzen, Gewicht) und das Optimieren
+ *   selbst (runOptimize). Gelesen wird über read() mit erklärter Lesefläche
+ *   (AgentRead) — Vorgaben, die wählbaren Modelle als Verweise (id, Name),
+ *   ob optimiert werden kann und warum nicht, das Ergebnis. Die Modelle
+ *   selbst entstehen im Regressionsmodul; hier gibt es nur Verweise.
  */
 
 import { createModule } from '../../core/template-module.js';
@@ -15,8 +22,37 @@ import { listModels, getModel } from '../../core/models-store.js';
 import {
   optimizeResponses, buildResponseSurface,
 } from '../../engines/response-optimization-engine.js';
-import { State } from './response-optimization-model.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { State, VALID_KINDS } from './response-optimization-model.js';
 import { uid } from '../../core/uid.js';
+
+const BOOL_VALUES = [true, false];
+const SPEC_KEYS = ['selected', 'kind', 'lower', 'upper', 'target', 'weight'];
+
+/**
+ * Prüfung des Gewichts: eine endliche Zahl größer 0 (wie `SpecEntry.fromJSON`).
+ * Eigene Prüfung, weil `requireNumber` keine offene untere Grenze kennt.
+ * @param {*} v der Kandidat
+ * @returns {number} das geprüfte Gewicht
+ * @throws {Error} wenn v keine endliche Zahl größer 0 ist
+ */
+function requireWeight(v) {
+  if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) {
+    throw new Error(`invalid value ${JSON.stringify(v)}; allowed: a number greater than 0`);
+  }
+  return v;
+}
+
+/** Eine Prüfung je Zielvorgabe-Schlüssel; Agent und Oberfläche teilen sie. */
+const SPEC_CHECKS = {
+  selected: (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
+  kind: (v) => { requireEnum('value', v, VALID_KINDS); return v; },
+  lower: (v) => requireNumber('value', v),
+  upper: (v) => requireNumber('value', v),
+  target: (v) => requireNumber('value', v),
+  weight: requireWeight,
+};
 
 /** Tick formatter for SVG axis labels. */
 function tickFmt(v) {
@@ -240,6 +276,17 @@ function buildContourSVGElement(d) {
   return svg;
 }
 
+/**
+ * @typedef {object} AgentRead
+ * @property {object} specs  per model id the target specification `{ selected, kind, lower, upper, target, weight }`; `selected` marks the models of the optimisation
+ * @property {string|null} optId  the id of the stored optimisation, or null before the first successful run
+ * @property {Array<{ id: string, name: string }>} selectableModels  the saved models of the project as references (no coefficients); read a model in the regression module that created it
+ * @property {boolean} canOptimize  whether `runOptimize` computes: at least one model selected and no diagnostic reason
+ * @property {string[]} diagnosticReasons  the reasons that block the optimisation (low R², lack of fit, factor mismatch), or an empty list
+ * @property {object|null} result  the stored optimum `{ xOpt, yPredictions, dPerResponse, D, ciAtOpt, factorNames, modelNames, paretoFront, iter }`, or null while no optimisation has run
+ * @property {string} errorMsg  why the last `runOptimize` computed nothing (the blocking reasons, no model selected, or the engine error), or an empty string
+ */
+
 export default createModule({
   config: {
     id: 'response-optimization',
@@ -273,11 +320,14 @@ export default createModule({
       /** Computed SVG data for contour plot (null when not shown). */
       contourData: null,
       contourSVG: null,
+      /** Why the last runOptimize computed nothing; '' otherwise. */
+      errorMsg: '',
       /** Render generation counter — invalidates stale rAF mount polls. */
       _renderGen: 0,
 
       // ── Alpine lifecycle ───────────────────────────────────────
 
+      /** @noagent lifecycle */
       init() {
         // Initial refresh: reconcile specs first so entries exist for toggleModel
         const models = listModels(module._context.stateManager);
@@ -294,6 +344,7 @@ export default createModule({
         _unsubs.push(() => module._context.eventBus.off('state:saved', onState));
       },
 
+      /** @noagent lifecycle */
       destroy() {
         for (const u of _unsubs) u();
         _unsubs.length = 0;
@@ -466,23 +517,23 @@ export default createModule({
 
       // ── View transforms ───────────────────────────────────────
 
-      /** Whether a given model ID is selected. Used in template for x-show and :checked. */
+      /** @noagent view transform; Whether a given model ID is selected. Used in template for x-show and :checked. */
       isSelected(modelId) {
         return Boolean(this.model.specs[modelId]?.selected);
       },
 
-      /** Whether the spec for a model has a given kind. Used for :selected on option. */
+      /** @noagent view transform; Whether the spec for a model has a given kind. Used for :selected on option. */
       isKind(modelId, kind) {
         return this.model.specs[modelId]?.kind === kind;
       },
 
-      /** Get a numeric spec value for a model. Used for :value on number inputs. */
+      /** @noagent view transform; Get a numeric spec value for a model. Used for :value on number inputs. */
       specVal(modelId, key) {
         const entry = this.model.specs[modelId];
         return entry != null ? entry[key] : '';
       },
 
-      /** CSS class for R² badge. */
+      /** @noagent view transform; CSS class for R² badge. */
       r2Class(m) {
         const v = m.rSqAdj ?? 0;
         if (v >= 0.8) return 'ro__r2 ro__r2--good';
@@ -490,18 +541,18 @@ export default createModule({
         return 'ro__r2 ro__r2--bad';
       },
 
-      /** Formatted R² text. */
+      /** @noagent view transform; Formatted R² text. */
       r2Text(m) {
         const v = m.rSqAdj;
         return `R²adj ${  v != null ? v.toFixed(3) : '—'}`;
       },
 
-      /** Diagnostic "blocked" label. */
+      /** @noagent view transform; Diagnostic "blocked" label. */
       diagnosticBlockedLabel() {
         return `${_t('diagnosticBlocked')  }:`;
       },
 
-      /** CSS class for composite desirability KPI. */
+      /** @noagent view transform; CSS class for composite desirability KPI. */
       dClass() {
         const opt = this.currentOpt;
         const D = opt?.result?.D ?? 0;
@@ -510,13 +561,13 @@ export default createModule({
         return 'dmike-kpi dmike-kpi--bad';
       },
 
-      /** Formatted composite desirability value. */
+      /** @noagent view transform; Formatted composite desirability value. */
       dValue() {
         const D = this.currentOpt?.result?.D;
         return D != null ? D.toFixed(3) : '';
       },
 
-      /** Build table rows for the optimum factor point table. */
+      /** @noagent view transform; Build table rows for the optimum factor point table. */
       optimumRows() {
         const opt = this.currentOpt;
         if (!opt?.result) return [];
@@ -528,7 +579,7 @@ export default createModule({
         });
       },
 
-      /** Build table rows for the predictions table. */
+      /** @noagent view transform; Build table rows for the predictions table. */
       predictionRows() {
         const opt = this.currentOpt;
         if (!opt?.result) return [];
@@ -542,49 +593,116 @@ export default createModule({
 
       // ── Event handlers ────────────────────────────────────────
 
-      /** Toggle model selection checkbox. */
+      /** @noagent derived set; die Optionen des Zielauswahlfeldes (eine Quelle: VALID_KINDS) */
+      kindOptions() {
+        const labels = { max: 'goalMax', min: 'goalMin', target: 'goalTarget' };
+        return VALID_KINDS.map(v => ({ value: v, label: _t(labels[v]) }));
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().selectableModels */
+      selectableModels() { return this.modelList.map(m => ({ id: m.id, name: m.name ?? m.id })); },
+
+      // ── Agent surface ─────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Vorgaben, wählbare Modelle, Optimierbarkeit mit Gründen und Ergebnis
+       */
+      read(options) {
+        return readAgentState('response-optimization', {
+          ...this.model.toJSON(),
+          selectableModels: this.selectableModels(),
+          canOptimize: this.canOptimize,
+          diagnosticReasons: this.diagnosticReasons.map(r => r.text),
+          result: this.currentOpt?.result ?? null,
+          errorMsg: this.errorMsg,
+        }, options);
+      },
+
+      /**
+       * Eine Zielvorgabe eines gespeicherten Modells setzen.
+       * @agent
+       * @param {string} modelId id aus selectableModels
+       * @param {'selected'|'kind'|'lower'|'upper'|'target'|'weight'} key welche Vorgabe
+       * @param {boolean|string|number} value selected: true oder false; kind: max, min oder target; sonst eine Zahl (weight größer 0)
+       * @returns {void}
+       * @throws {Error} wenn das Modell, der Schlüssel oder der Wert unzulässig ist
+       */
+      setSpec(modelId, key, value) {
+        requireKnownId('modelId', modelId, this.selectableModels().map(m => m.id));
+        requireEnum('key', key, SPEC_KEYS);
+        this.model.specs[modelId][key] = SPEC_CHECKS[key](value);
+        this._refreshDiagnostic();
+      },
+
+      // ── Event handlers ────────────────────────────────────────
+
+      /** @noagent DOM event handler; the agent uses setSpec() */
       toggleModel(modelId, event) {
-        const entry = this.model.specs[modelId];
-        if (!entry) return;
-        entry.selected = event.target.checked;
-        this._refreshDiagnostic();
+        if (!this.model.specs[modelId]) return;
+        this.setSpec(modelId, 'selected', event.target.checked);
       },
 
-      /** Change desirability goal (max/min/target). Triggers re-render for target field. */
+      /** @noagent DOM event handler; the agent uses setSpec() */
       setSpecKind(modelId, event) {
-        const entry = this.model.specs[modelId];
-        if (!entry) return;
-        entry.kind = event.target.value;
-        this._refreshDiagnostic();
+        if (!this.model.specs[modelId]) return;
+        this.setSpec(modelId, 'kind', event.target.value);
       },
 
-      /** Update a numeric spec field (lower/upper/target/weight). */
+      /** @noagent DOM event handler; the agent uses setSpec() */
       setSpecNum(modelId, key, event) {
-        const entry = this.model.specs[modelId];
-        if (!entry) return;
+        if (!this.model.specs[modelId]) return;
         const v = parseFloat(event.target.value);
-        entry[key] = Number.isFinite(v) ? v : 0;
+        let ok = Number.isFinite(v);
+        if (ok) {
+          try { SPEC_CHECKS[key](v); } catch { ok = false; }
+        }
+        if (!ok) {
+          // Verweigerte Eingabe: das Feld zeigt wieder den Wert des Modells.
+          event.target.value = this.model.specs[modelId][key];
+          return;
+        }
+        this.setSpec(modelId, key, v);
       },
 
-      /** Set a categorical fixing for the contour plot. */
+      /** @noagent view transform; Set a categorical fixing for the contour plot. */
       setContourFix(predictorId, event) {
         this.contourFixings = { ...this.contourFixings, [predictorId]: event.target.value };
         this._refreshContour();
       },
 
-      /** Set contour X or Y axis. */
+      /** @noagent view transform; Set contour X or Y axis. */
       setContourAxis(axis, event) {
         if (axis === 'x') this.contourXId = event.target.value;
         else this.contourYId = event.target.value;
         this._refreshContour();
       },
 
-      /** Run the optimisation engine and persist the result. */
+      /**
+       * Optimieren: die gewählten Modelle gemeinsam über den Faktorraum
+       * maximieren und das Ergebnis im Projekt speichern. Ist `canOptimize`
+       * falsch, wird nicht gerechnet: `result` bleibt, wie es war, und
+       * `errorMsg` nennt die Gründe (oder dass kein Modell gewählt ist).
+       * Scheitert die Engine, bleibt `result` ebenfalls unverändert und
+       * `errorMsg` nennt den Fehler. Bei Erfolg ist `errorMsg` leer.
+       * @agent
+       * @returns {void}
+       */
       runOptimize() {
+        if (!this.canOptimize) {
+          this.errorMsg = this.diagnosticReasons.map(r => r.text).join('; ') || _t('noModelSelected');
+          return;
+        }
         const sm = module._context.stateManager;
         const selectedIds = this.model.selectedIds;
         const models = selectedIds.map(id => getModel(sm, id)).filter(Boolean);
-        if (models.length === 0) return;
+        if (models.length === 0) {
+          this.errorMsg = _t('noModelSelected');
+          return;
+        }
+        this.errorMsg = '';
 
         const desirSpecs = models.map(m => {
           const s = this.model.specs[m.id];
@@ -604,6 +722,7 @@ export default createModule({
         try {
           result = optimizeResponses(models, desirSpecs, factorBounds, { nStarts: 8, seed: 42, maxIter: 400 });
         } catch (e) {
+          this.errorMsg = e.message;
           module._context.notify(e.message, 'error');
           return;
         }

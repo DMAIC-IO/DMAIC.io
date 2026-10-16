@@ -15,7 +15,7 @@ const MIN_R2_ADJ = 0.5;
 const LOF_ALPHA = 0.05;
 
 /** Valid spec kinds. */
-const VALID_KINDS = ['max', 'min', 'target'];
+export const VALID_KINDS = ['max', 'min', 'target'];
 
 /**
  * Per-model desirability specification.

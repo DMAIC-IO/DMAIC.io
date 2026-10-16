@@ -35,9 +35,9 @@
                   <select class="field ro__spec-kind"
                           data-action="kind"
                           @change="setSpecKind(m.id, $event)">
-                    <option value="max" :selected="isKind(m.id, 'max')" x-text="t('goalMax')"></option>
-                    <option value="min" :selected="isKind(m.id, 'min')" x-text="t('goalMin')"></option>
-                    <option value="target" :selected="isKind(m.id, 'target')" x-text="t('goalTarget')"></option>
+                    <template x-for="o in kindOptions()" :key="o.value">
+                      <option :value="o.value" :selected="isKind(m.id, o.value)" x-text="o.label"></option>
+                    </template>
                   </select>
 
                   <label>
@@ -86,6 +86,10 @@
                 </template>
               </ul>
             </div>
+          </template>
+
+          <template x-if="errorMsg">
+            <div class="ro__diagnostic" role="alert" data-ref="error-msg" x-text="errorMsg"></div>
           </template>
 
           <button class="btn btn--primary ro__optimize-btn"

@@ -7419,6 +7419,50 @@
     "response-optimization": {
       "name": "Zielgrößenoptimierung",
       "description": "Kombiniert mehrere gespeicherte Regressionsmodelle und sucht den Faktor-Punkt mit höchster gemeinsamer Wunschbarkeit (Derringer-Suich, Multi-Start Nelder-Mead).",
+      "noModelSelected": "Kein Modell ausgewählt.",
+      "whenToUse": "Wenn mehrere gespeicherte Regressionsmodelle (Zielgrößen eines Versuchsplans) gegeneinander abgewogen werden müssen: gibt jedem gewählten Modell ein Ziel (maximieren, minimieren, Zielwert) mit Grenzen und Gewicht und sucht im Faktorraum den Punkt mit der höchsten gemeinsamen Wunschbarkeit D (Derringer-Suich, Multi-Start Nelder-Mead). Braucht mindestens ein gespeichertes Regressionsmodell im Projekt; die Modelle selbst entstehen im Regressionsmodul.",
+      "actions": {
+        "read": {
+          "help": "Liefert die Zielvorgaben je Modell, die Optimierungs-id, die gespeicherten Modelle als Verweise (id und Name), ob optimiert werden kann und warum nicht, das gespeicherte Optimum und den letzten Fehler. result ist null, solange in diesem Modul noch nicht optimiert wurde (optId ist dann null) und wenn der gespeicherte Datensatz fehlt; es zeigt den letzten erfolgreichen Lauf, nicht unbedingt die aktuellen Vorgaben. errorMsg bleibt leer, bis ein runOptimize-Lauf nichts rechnet.",
+          "params": {
+            "options": "Optional; dieses Modul hält keine Massendaten."
+          }
+        },
+        "setSpec": {
+          "help": "Setzt eine Zielvorgabe eines gespeicherten Modells: selected, kind (max, min, target), lower, upper, target oder weight. Es wird nichts gerechnet; canOptimize und diagnosticReasons werden aktualisiert, das gespeicherte Ergebnis bleibt bis zum nächsten runOptimize. Verweigert eine modelId, die nicht in selectableModels steht, einen unbekannten Schlüssel und einen Wert, der nicht zum Schlüssel passt.",
+          "params": {
+            "modelId": "Die id eines Modells aus selectableModels. Jeder andere Wert ist ein Fehler.",
+            "key": "Eines von selected, kind, lower, upper, target, weight. Jeder andere Wert ist ein Fehler.",
+            "value": "selected: true oder false. kind: 'max', 'min' oder 'target'. lower, upper, target: eine endliche Zahl. weight: eine Zahl größer 0. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "runOptimize": {
+          "help": "Optimiert die gewählten Modelle gemeinsam und speichert das Optimum im Projekt; zu lesen unter result. Ist canOptimize falsch (kein Modell gewählt, R²adj zu niedrig, signifikanter Anpassungsmangel oder unterschiedliche Faktoren der gewählten Modelle), wird nichts gerechnet, result bleibt, wie es war, und errorMsg nennt die Gründe. Scheitert die Engine, bleibt result ebenfalls unverändert und errorMsg enthält den Engine-Fehler. Nach einem erfolgreichen Lauf ist errorMsg leer."
+        }
+      },
+      "fields": {
+        "specs": {
+          "help": "Je Modell-id die Zielvorgabe { selected, kind, lower, upper, target, weight }; selected markiert die Modelle der Optimierung."
+        },
+        "optId": {
+          "help": "Die id der gespeicherten Optimierung; null vor dem ersten erfolgreichen runOptimize."
+        },
+        "selectableModels": {
+          "help": "Die gespeicherten Modelle des Projekts als Verweise { id, name } - keine Koeffizienten; ein Modell liest man im Regressionsmodul, das es erzeugt hat. Leer, solange das Projekt kein gespeichertes Modell hat. Diese ids nimmt setSpec als modelId."
+        },
+        "canOptimize": {
+          "help": "Nur wahr, wenn mindestens ein Modell gewählt ist und diagnosticReasons leer ist; sonst rechnet runOptimize nichts."
+        },
+        "diagnosticReasons": {
+          "help": "Die Gründe, die das Optimieren sperren, als Texte: R²adj unter 0,5, signifikanter Anpassungsmangel (p unter 0,05) oder unterschiedliche Faktorstruktur der gewählten Modelle. Leer, wenn nichts sperrt, und auch leer, solange kein Modell gewählt ist (canOptimize ist dann falsch)."
+        },
+        "result": {
+          "help": "Das gespeicherte Optimum { xOpt, yPredictions, dPerResponse, D, ciAtOpt, factorNames, modelNames, paretoFront, iter }; ciAtOpt und paretoFront sind null. null, solange nicht optimiert wurde, und wenn der gespeicherte Datensatz fehlt."
+        },
+        "errorMsg": {
+          "help": "Warum das letzte runOptimize nichts gerechnet hat: die sperrenden Gründe, mit '; ' verbunden, 'Kein Modell ausgewählt.' oder der Engine-Fehler. Leer vor dem ersten runOptimize und nach einem erfolgreichen Lauf."
+        }
+      },
       "sectionModels": "Modelle und Wunschfunktionen",
       "emptyState": "Noch keine gespeicherten Modelle vorhanden. Speichere zuerst ein Regressionsmodell über das Regressions-Modul.",
       "placeholderResult": "Noch kein Optimum berechnet. Modell auswählen, Wunschfunktion einstellen, optimieren.",

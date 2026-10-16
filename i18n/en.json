@@ -7415,6 +7415,50 @@
     "response-optimization": {
       "name": "Response Optimization",
       "description": "Combines several saved regression models and searches for the factor point with the highest joint desirability (Derringer-Suich, multi-start Nelder-Mead).",
+      "noModelSelected": "No model selected.",
+      "whenToUse": "When several saved regression models (responses of one design) must be traded off: assigns each selected model a goal (maximise, minimise, hit a target) with limits and weight, then searches the factor box for the point with the highest composite desirability D (Derringer-Suich, multi-start Nelder-Mead). Needs at least one saved regression model in the project; the models themselves are created in the regression module.",
+      "actions": {
+        "read": {
+          "help": "Returns the target specifications per model, the optimisation id, the saved models as references (id and name), whether an optimisation can run and why not, the stored optimum and the last error. result is null while no optimisation has run in this module (optId is then null) and when the stored optimisation record is gone; it shows the last successful run, not necessarily the current specifications. errorMsg stays empty until a runOptimize run computes nothing.",
+          "params": {
+            "options": "Optional; this module holds no bulk data."
+          }
+        },
+        "setSpec": {
+          "help": "Sets one target specification of a saved model: selected, kind (max, min, target), lower, upper, target or weight. Nothing is computed; canOptimize and diagnosticReasons update, the stored result stays until runOptimize runs. Refuses a modelId that is not in selectableModels, an unknown key and a value that does not fit the key.",
+          "params": {
+            "modelId": "The id of a model from selectableModels. Any other value is an error.",
+            "key": "One of selected, kind, lower, upper, target, weight. Any other value is an error.",
+            "value": "selected: true or false. kind: 'max', 'min' or 'target'. lower, upper, target: a finite number. weight: a number greater than 0. Any other value is an error."
+          }
+        },
+        "runOptimize": {
+          "help": "Optimises the selected models together and stores the optimum in the project; read it from result. If canOptimize is false (no model selected, R²adj too low, significant lack of fit or different factors across the selected models) nothing is computed, result stays as it was and errorMsg names the reasons. If the engine fails, result stays as it was and errorMsg holds the engine error. After a successful run errorMsg is empty."
+        }
+      },
+      "fields": {
+        "specs": {
+          "help": "Per model id the target specification { selected, kind, lower, upper, target, weight }; selected marks the models of the optimisation."
+        },
+        "optId": {
+          "help": "The id of the stored optimisation; null before the first successful runOptimize."
+        },
+        "selectableModels": {
+          "help": "The saved models of the project as references { id, name } - no coefficients; read a model in the regression module that created it. Empty while the project has no saved model. These ids are what setSpec accepts as modelId."
+        },
+        "canOptimize": {
+          "help": "True only if at least one model is selected and diagnosticReasons is empty; otherwise runOptimize computes nothing."
+        },
+        "diagnosticReasons": {
+          "help": "The reasons that block the optimisation, as texts: R²adj below 0.5, significant lack of fit (p below 0.05) or a different factor structure among the selected models. Empty when nothing blocks, and also empty while no model is selected (canOptimize is false then)."
+        },
+        "result": {
+          "help": "The stored optimum { xOpt, yPredictions, dPerResponse, D, ciAtOpt, factorNames, modelNames, paretoFront, iter }; ciAtOpt and paretoFront are null. null while no optimisation has run and when the stored record is gone."
+        },
+        "errorMsg": {
+          "help": "Why the last runOptimize computed nothing: the blocking reasons joined by '; ', 'No model selected.' or the engine error. Empty before the first runOptimize and after a successful run."
+        }
+      },
       "sectionModels": "Models and desirability functions",
       "emptyState": "No saved models yet. Save a regression model from the Regression module first.",
       "placeholderResult": "No optimum computed yet. Select a model, set the desirability spec, then optimise.",

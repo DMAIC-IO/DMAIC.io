@@ -7145,40 +7145,95 @@ export const AGENT_REGISTRY = {
     }
   },
   "response-optimization": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unmarked_method:isSelected",
-      "unmarked_method:isKind",
-      "unmarked_method:specVal",
-      "unmarked_method:r2Class",
-      "unmarked_method:r2Text",
-      "unmarked_method:diagnosticBlockedLabel",
-      "unmarked_method:dClass",
-      "unmarked_method:dValue",
-      "unmarked_method:optimumRows",
-      "unmarked_method:predictionRows",
-      "unmarked_method:toggleModel",
-      "unmarked_method:setSpecKind",
-      "unmarked_method:setSpecNum",
-      "unmarked_method:setContourFix",
-      "unmarked_method:setContourAxis",
-      "unmarked_method:runOptimize"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setSpec": {
+        "params": [
+          {
+            "name": "modelId",
+            "type": "string",
+            "optional": false,
+            "help": "id aus selectableModels"
+          },
+          {
+            "name": "key",
+            "type": "'selected'|'kind'|'lower'|'upper'|'target'|'weight'",
+            "optional": false,
+            "help": "welche Vorgabe"
+          },
+          {
+            "name": "value",
+            "type": "boolean|string|number",
+            "optional": false,
+            "help": "selected: true oder false; kind: max, min oder target; sonst eine Zahl (weight größer 0)"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Zielvorgabe eines gespeicherten Modells setzen."
+      },
+      "runOptimize": {
+        "params": [],
+        "returns": "void",
+        "help": "Optimieren: die gewählten Modelle gemeinsam über den Faktorraum maximieren und das Ergebnis im Projekt speichern. Ist `canOptimize` falsch, wird nicht gerechnet: `result` bleibt, wie es war, und `errorMsg` nennt die Gründe (oder dass kein Modell gewählt ist). Scheitert die Engine, bleibt `result` ebenfalls unverändert und `errorMsg` nennt den Fehler. Bei Erfolg ist `errorMsg` leer."
+      }
+    },
     "fields": {
       "specs": {
-        "type": "Object.<string, SpecEntry>",
-        "help": "modelId → SpecEntry",
-        "bulk": false
+        "type": "object",
+        "help": "per model id the target specification `{ selected, kind, lower, upper, target, weight }`; `selected` marks the models of the optimisation",
+        "bulk": false,
+        "derived": true
       },
       "optId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string|null",
+        "help": "the id of the stored optimisation, or null before the first successful run",
+        "bulk": false,
+        "derived": true
+      },
+      "selectableModels": {
+        "type": "Array<{ id: string, name: string }>",
+        "help": "the saved models of the project as references (no coefficients); read a model in the regression module that created it",
+        "bulk": false,
+        "derived": true
+      },
+      "canOptimize": {
+        "type": "boolean",
+        "help": "whether `runOptimize` computes: at least one model selected and no diagnostic reason",
+        "bulk": false,
+        "derived": true
+      },
+      "diagnosticReasons": {
+        "type": "string[]",
+        "help": "the reasons that block the optimisation (low R², lack of fit, factor mismatch), or an empty list",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "the stored optimum `{ xOpt, yPredictions, dPerResponse, D, ciAtOpt, factorNames, modelNames, paretoFront, iter }`, or null while no optimisation has run",
+        "bulk": false,
+        "derived": true
+      },
+      "errorMsg": {
+        "type": "string",
+        "help": "why the last `runOptimize` computed nothing (the blocking reasons, no model selected, or the engine error), or an empty string",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -9675,4 +9730,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":42};
+export const AGENT_COVERAGE = {"total":74,"available":43};
