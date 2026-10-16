@@ -206,10 +206,3 @@
   height: 11px;
 }
 
-/* Formula-editor apply button checkmark icon (was an inline 13px SVG). */
-.worksheet__fe-check {
-  width: 13px;
-  height: 13px;
-  margin-right: var(--spacing-xs);
-  vertical-align: middle;
-}

@@ -32,99 +32,94 @@ import { debounce } from '../../core/debounce.js';
 
 // ═══════════════════════════════════════════════════════════
 //  FORMULA EDITOR (imperative — bound to the live DataGrid)
-//  Identical behaviour to the legacy editor; the only change is that
-//  visibility is delegated to Alpine (feOpen flag) instead of toggling
-//  overlay.style.display directly, so Alpine's x-show owns the display.
+//  The editor body is built once and lives in a hidden holder; open()
+//  lends it to the dialog service (dialog.form), which owns the window,
+//  title bar, ✕, Escape, overlay and the Cancel / Apply buttons.
 // ═══════════════════════════════════════════════════════════
 
 class FormulaEditor {
   /**
    * @param {DataGrid} grid
-   * @param {HTMLElement} overlayEl  the [data-ref="fe-overlay"] element
-   * @param {HTMLElement} bodyAnchor the [data-ref="fe-body"] element to fill
+   * @param {HTMLElement} holderEl hidden [data-ref="fe-holder"] the content lives in while closed
    * @param {Function} t i18n helper (bare keys → modules.worksheet.*)
    * @param {Function} toast
-   * @param {(open:boolean)=>void} onVisibility  toggles the Alpine feOpen flag
+   * @param {object} dialog the dialog service
    */
-  constructor(grid, overlayEl, bodyAnchor, t, toast, onVisibility) {
+  constructor(grid, holderEl, t, toast, dialog) {
     this.grid = grid;
-    this.overlay = overlayEl;
     this._t = t;
     this._toast = toast;
-    this._onVisibility = onVisibility;
+    this._dialog = dialog;
     this._targetCell = null;
     this._open = false;
-
-    bodyAnchor.replaceChildren(this._buildHTML(t));
-
-    this.textarea = overlayEl.querySelector('.formula-editor__textarea');
-    this.previewVal = overlayEl.querySelector('.formula-editor__preview-value');
-    this.cellLabel = overlayEl.querySelector('.formula-editor__cell-ref');
-    this.colsBar = overlayEl.querySelector('.formula-editor__cols-bar');
-    this.win = overlayEl.querySelector('.dmike-chart-popout');
-    this.titlebar = overlayEl.querySelector('.dmike-chart-popout-titlebar');
-
+    this._api = null;
+    this.root = this._buildHTML(t);
+    holderEl.replaceChildren(this.root);
+    this.textarea = this.root.querySelector('.formula-editor__textarea');
+    this.previewVal = this.root.querySelector('.formula-editor__preview-value');
+    this.colsBar = this.root.querySelector('.formula-editor__cols-bar');
     this._bindUI();
-    this._initDrag();
   }
 
   get isOpen() { return this._open; }
 
+  /**
+   * Open the editor for one cell.
+   * @param {number} colIdx
+   * @param {number} rowIdx
+   * @param {string} [initialFormula] text to start with instead of the cell's formula
+   */
   open(colIdx, rowIdx, initialFormula) {
+    if (this._open) return;
     this.grid._cancelEdit();
-
     this._targetCell = { colIdx, rowIdx };
     this._open = true;
-
     const col = this.grid.columns[colIdx];
     const cellRef = `${col ? col.shortName : 'C?'}[${rowIdx + 1}]`;
     const hasCustomName = col && col.name && col.name !== col.shortName;
-
-    this.cellLabel.textContent = hasCustomName
+    const cellLabel = hasCustomName
       ? `${this._t('feCell')} ${cellRef} · ${col.name}`
       : `${this._t('feCell')} ${cellRef}`;
     const existingFormula = col?.formulas?.[rowIdx];
-    this.textarea.value = initialFormula != null
-      ? initialFormula
-      : (existingFormula || '=');
-
+    this.textarea.value = initialFormula != null ? initialFormula : (existingFormula || '=');
     this._renderColPills();
-
-    this._onVisibility(true);
-    requestAnimationFrame(() => {
-      this.textarea.focus();
-      const len = this.textarea.value.length;
-      this.textarea.setSelectionRange(len, len);
-      this._updatePreview();
+    this._dialog.form({
+      title: `${this._t('formulaEditor')} — ${cellLabel}`,
+      size: 'wide',
+      content: this.root,
+      confirmLabel: this._t('feApply'),
+      cancelLabel: this._t('cancel'),
+      onMount: (_body, api) => {
+        this._api = api;
+        requestAnimationFrame(() => {
+          this.textarea.focus();
+          const len = this.textarea.value.length;
+          this.textarea.setSelectionRange(len, len);
+          this._updatePreview();
+        });
+      },
+      onConfirm: () => this._apply(),
+    }).then(() => {
+      this._open = false;
+      this._targetCell = null;
+      this._api = null;
+      // Return focus to body so grid keyboard shortcuts work immediately
+      document.activeElement?.blur();
     });
   }
 
-  close() {
-    this._open = false;
-    this._targetCell = null;
-    this._onVisibility(false);
-    // Return focus to body so grid keyboard shortcuts work immediately
-    document.activeElement?.blur();
-  }
+  /** Close without applying. */
+  close() { this._api?.cancel(); }
 
   _bindUI() {
-    this.overlay.querySelector('.dmike-chart-popout-close').addEventListener('click', () => this.close());
-    this.overlay.querySelector('[data-action="fe-cancel"]').addEventListener('click', () => this.close());
-    this.overlay.querySelector('[data-action="fe-apply"]').addEventListener('click', () => this._apply());
-
-    this.overlay.addEventListener('click', (e) => {
-      if (e.target === this.overlay) this.close();
-    });
-
     this.textarea.addEventListener('input', () => this._updatePreview());
     this.textarea.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { e.preventDefault(); this.close(); }
-      if (shortcutRegistry.matches(e, 'worksheet.applyFormula')) { e.preventDefault(); this._apply(); }
-      e.stopPropagation();
+      if (shortcutRegistry.matches(e, 'worksheet.applyFormula')) { e.preventDefault(); this._api?.confirm(); }
+      if (e.key !== 'Escape') e.stopPropagation();   // Escape belongs to the dialog
     });
 
     // Simple chips (no dropdown)
-    this.overlay.querySelectorAll('.fn-chip:not(.fn-chip--has-menu)').forEach(chip => {
+    this.root.querySelectorAll('.fn-chip:not(.fn-chip--has-menu)').forEach(chip => {
       chip.addEventListener('click', () => {
         const insert = chip.dataset.insert || '';
         const cursorOffset = parseInt(chip.dataset.cursor ?? '-1');
@@ -134,10 +129,10 @@ class FormulaEditor {
     });
 
     const closeAllMenus = () => {
-      this.overlay.querySelectorAll('.fn-chip-group--open').forEach(g => g.classList.remove('fn-chip-group--open'));
+      this.root.querySelectorAll('.fn-chip-group--open').forEach(g => g.classList.remove('fn-chip-group--open'));
     };
 
-    this.overlay.querySelectorAll('.fn-chip--has-menu').forEach(trigger => {
+    this.root.querySelectorAll('.fn-chip--has-menu').forEach(trigger => {
       trigger.addEventListener('click', (e) => {
         e.stopPropagation();
         const group = trigger.closest('.fn-chip-group');
@@ -161,7 +156,7 @@ class FormulaEditor {
       });
     });
 
-    this.overlay.querySelectorAll('.fn-chip-group__item').forEach(item => {
+    this.root.querySelectorAll('.fn-chip-group__item').forEach(item => {
       item.addEventListener('click', (e) => {
         e.stopPropagation();
         const insert = item.dataset.insert || '';
@@ -172,7 +167,7 @@ class FormulaEditor {
       });
     });
 
-    this.overlay.addEventListener('click', closeAllMenus);
+    this.root.addEventListener('click', closeAllMenus);
   }
 
   _renderColPills() {
@@ -257,14 +252,13 @@ class FormulaEditor {
     }
   }
 
+  /** @returns {boolean} false keeps the editor open (commit threw). */
   _apply() {
-    if (!this._targetCell) { this.close(); return; }
+    if (!this._targetCell) return true;
     const { colIdx, rowIdx } = this._targetCell;
     const raw = this.textarea.value.trim();
-
     const col = this.grid.columns[colIdx];
-    if (!col) { this.close(); return; }
-
+    if (!col) return true;
     try {
       const oldFormula = col.formulas?.[rowIdx] || null;
       const oldValue = col.values[rowIdx];
@@ -287,53 +281,23 @@ class FormulaEditor {
         oldValue, newValue: col.values[rowIdx],
         oldFormula, newFormula: col.formulas?.[rowIdx] || null,
       });
-    } finally {
-      this.close();
-      this.grid.render();
-
-      this.grid.setSelection({
-        startCol: colIdx, startRow: rowIdx,
-        endCol: colIdx, endRow: rowIdx,
-        activeCol: colIdx, activeRow: rowIdx,
-      });
+    } catch (err) {
+      this._toast(err.message, 'error');
+      return false;
     }
-
+    this.grid.render();
+    this.grid.setSelection({
+      startCol: colIdx, startRow: rowIdx, endCol: colIdx, endRow: rowIdx,
+      activeCol: colIdx, activeRow: rowIdx,
+    });
     this._toast(this._t('formulaApplied'), 'success');
+    return true;
   }
 
-  _initDrag() {
-    if (!this.titlebar || !this.win) return;
-    let dx = 0, dy = 0, dragging = false;
-
-    this._onDragStart = (e) => {
-      if (e.target.closest('.dmike-chart-popout-close')) return;
-      dragging = true;
-      const rect = this.win.getBoundingClientRect();
-      dx = e.clientX - rect.left;
-      dy = e.clientY - rect.top;
-      this.win.style.left = `${rect.left  }px`;
-      this.win.style.top = `${rect.top  }px`;
-      e.preventDefault();
-    };
-    this._onDragMove = (e) => {
-      if (!dragging) return;
-      this.win.style.left = `${e.clientX - dx  }px`;
-      this.win.style.top = `${e.clientY - dy  }px`;
-    };
-    this._onDragEnd = () => { dragging = false; };
-
-    this.titlebar.addEventListener('mousedown', this._onDragStart);
-    window.addEventListener('mousemove', this._onDragMove);
-    window.addEventListener('mouseup', this._onDragEnd);
-  }
-
-  destroy() {
-    if (this._onDragMove) window.removeEventListener('mousemove', this._onDragMove);
-    if (this._onDragEnd)  window.removeEventListener('mouseup',   this._onDragEnd);
-  }
+  destroy() { this.close(); }
 
   /**
-   * Build the formula-editor body (injected into the overlay shell).
+   * Build the formula-editor body (lent to the dialog service on open).
    * Returns a live HTMLElement built with h() — no HTML-string sink.
    * Every class / data-* attribute the POM + _bindUI selectors rely on
    * is preserved verbatim.
@@ -470,24 +434,11 @@ class FormulaEditor {
         h('kbd', null, 'Esc'), ` ${t('cancel')}`),
     );
 
-    return h('div', { class: 'dmike-chart-popout dmike-chart-popout--formula-editor' },
-      h('div', { class: 'dmike-chart-popout-titlebar' },
-        h('span', null,
-          h('span', { class: 'formula-editor__icon' }, 'ƒ'),
-          ` ${t('formulaEditor')} `,
-          h('span', { class: 'formula-editor__cell-ref' }, `${t('feCell')} —`)),
-        h('button', { class: 'dmike-chart-popout-close', title: `${t('close')} (Esc)` },
-          icon('action.close'))),
-      h('div', { class: 'dmike-chart-popout-body dmike-popout-body--column' },
-        fnBar,
-        h('div', { class: 'formula-editor__cols-bar' },
-          h('div', { class: 'formula-editor__cols-label' }, t('feColumnRefs'))),
-        body),
-      h('div', { class: 'dmike-popout-footer' },
-        h('button', { class: 'btn', 'data-action': 'fe-cancel' }, t('cancel')),
-        h('button', { class: 'btn btn--primary', 'data-action': 'fe-apply' },
-          icon('action.confirm', { cls: 'worksheet__fe-check' }), ` ${t('feApply')}`)),
-    );
+    return h('div', { class: 'formula-editor' },
+      fnBar,
+      h('div', { class: 'formula-editor__cols-bar' },
+        h('div', { class: 'formula-editor__cols-label' }, t('feColumnRefs'))),
+      body);
   }
 }
 
@@ -528,7 +479,6 @@ const mod = createModule({
       canRedo: false,
       canSuggest: false,
       exportOpen: false,
-      feOpen: false,
       roleDraft: [],
       renamingId: null,
       renameValue: '',
@@ -592,7 +542,7 @@ const mod = createModule({
       },
       closeFormulaEditor() { this._formulaEditor?.close(); },
       cancelFormula() { this._formulaEditor?.close(); },
-      applyFormula() { this._formulaEditor?._apply(); },
+      applyFormula() { this._formulaEditor?._api?.confirm(); },
 
       suggestChart() { this._openChartSuggestion(); },
 
@@ -887,13 +837,9 @@ const mod = createModule({
         // Expose for the POM (window.__dmike.workspace.getActiveInstance()._grid).
         module._grid = this._grid;
 
-        // FormulaEditor (imperative; body injected into the overlay shell anchor).
-        const feOverlay = container.querySelector('[data-ref="fe-overlay"]');
-        const feBody = container.querySelector('[data-ref="fe-body"]');
-        this._formulaEditor = new FormulaEditor(
-          this._grid, feOverlay, feBody, _t, toast,
-          (open) => { this.feOpen = open; },
-        );
+        // FormulaEditor (imperative; its body waits in a hidden holder and is lent to the dialog service).
+        const feHolder = container.querySelector('[data-ref="fe-holder"]');
+        this._formulaEditor = new FormulaEditor(this._grid, feHolder, _t, toast, module._context.dialog);
         module._formulaEditor = this._formulaEditor;
 
         // Restore workbook into the grid; seed first sheet if empty.

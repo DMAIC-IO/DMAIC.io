@@ -82,17 +82,10 @@
     <span class="sheet-tabs__status" data-ref="status-dims" x-text="statusDims()"></span>
   </div>
 
-  <!-- ═══ Formula editor overlay shell (declarative x-show) ═══
-       The body is built and wired imperatively by the FormulaEditor class
-       (formula parsing/preview/cell-commit + drag stay imperative); it is
-       injected into the [data-ref="fe-body"] anchor on init. -->
-  <div class="dmike-chart-popout-overlay" data-ref="fe-overlay" role="dialog" aria-modal="true"
-       x-show="feOpen" style="display:none">
-    <div data-ref="fe-body"></div>
-  </div>
-
-  <!-- Role confirmation: hidden here, lent to the dialog service -->
+  <!-- Role confirmation and formula editor: hidden here, lent to the dialog service.
+       The formula editor body is built by FormulaEditor into fe-holder. -->
   <div class="worksheet__modal-forms" hidden>
+    <div data-ref="fe-holder"></div>
     <div class="worksheet-role-confirm" x-ref="roleConfirmForm">
       <div class="dmike-popout-message" x-text="t('confirmRolesIntro')"></div>
       <div class="worksheet-role-confirm__list">

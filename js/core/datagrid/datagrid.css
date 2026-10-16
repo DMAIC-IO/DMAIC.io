@@ -1234,32 +1234,11 @@ td.datagrid__row-header:active {
    FORMULA EDITOR POPUP
    ═══════════════════════════════════════════════════════════ */
 
-/* Outer shell uses the shared dmike-chart-popout — base styles handle
-   sizing (720px wide, content-driven height, max 90vh). Drag is wired
-   by FormulaEditor._initDrag(); cursor: move comes from the base
-   .dmike-chart-popout-titlebar rule. */
-.dmike-chart-popout--formula-editor .dmike-chart-popout-titlebar span {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  white-space: normal;
-  overflow: visible;
-}
-
-/* Small inline ƒ badge in the titlebar */
-.formula-editor__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  background: rgb(59 130 246 / 15%);
-  border-radius: var(--border-radius-sm);
-  color: var(--color-accent);
-  font-size: 12px;
-  font-weight: 700;
-  font-family: var(--font-family-mono);
-  flex-shrink: 0;
+/* The window, title bar and footer come from the dialog service; the
+   editor body stacks its sections in a column. */
+.formula-editor {
+  display: flex;
+  flex-direction: column;
 }
 
 /* Function chips */
@@ -1532,13 +1511,6 @@ td.datagrid__row-header:active {
   font-family: var(--font-family-mono);
   font-size: 9px;
   color: var(--color-text-secondary);
-}
-
-/* Cell reference in the titlebar — kept on the popout's titlebar span */
-.formula-editor__cell-ref {
-  font-family: var(--font-family-mono);
-  font-size: 11px;
-  color: var(--color-text-tertiary);
 }
 
 /* ═══════════════════════════════════════════════════════════
