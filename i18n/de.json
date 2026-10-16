@@ -2964,7 +2964,7 @@
       "whenToUse": "Wenn die Streuung eines Merkmals auf ihre Quellen zurückgeführt werden soll: staffelt jede Einzelmessung nach zwei bis vier Einflussgrößen (etwa Schicht, Nest, Teil) und zerlegt die Varianz in Komponenten, geschachtelt oder gekreuzt, per ANOVA oder REML; braucht eine numerische Messwertspalte und zwei Faktorspalten.",
       "actions": {
         "read": {
-          "help": "Liefert Messwertspalte, Faktorzeilen in Reihenfolge, Modellform, Schätzer, die vier Anzeigeschalter, die wählbaren Spalten und das Ergebnis. result ist null, bis eine Messwertspalte und zwei Faktorspalten gewählt sind; errorMsg nennt dann den Grund, außer solange die Messwertspalte noch fehlt (errorMsg bleibt leer).",
+          "help": "Liefert Messwertspalte, Faktorzeilen in Reihenfolge, Modellform, Schätzer, die vier Anzeigeschalter, die wählbaren Spalten und das Ergebnis. result ist null, bis eine Messwertspalte und zwei Faktorspalten gewählt sind; errorMsg nennt dann den Grund (weniger als zwei Faktoren, ungültiger Versuchsplan, keine verwertbaren Daten), außer solange die Messwertspalte noch fehlt (errorMsg bleibt leer).",
           "params": { "options": "Optional; dieses Modul hält keine Massendaten." }
         },
         "setParam": {
@@ -2990,7 +2990,7 @@
           "help": "Schiebt eine Faktorzeile direkt vor eine andere; die Zeilenfolge ist die Schachtelung, die Analyse läuft danach neu.",
           "params": {
             "rowId": "Die id der zu schiebenden Zeile aus read().factors.",
-            "beforeRowId": "Die id der Zeile, vor der sie landet, aus read().factors. Pflicht; um eine Zeile ans Ende zu bringen, die letzte Zeile stattdessen vor sie schieben."
+            "beforeRowId": "Die id der Zeile, vor der sie landet, aus read().factors. Pflicht; eine unbekannte id ist ein Fehler. Um eine Zeile ans Ende zu bringen, die Zeilen dahinter nacheinander vor sie verschieben."
           }
         },
         "setFactorColumn": {
@@ -3000,7 +3000,7 @@
             "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns.factor, oder null, um die Zeile zu leeren."
           }
         },
-        "runAnalysis": { "help": "Rechnet mit den gewählten Spalten. Ohne Messwertspalte oder mit weniger als zwei belegten Faktorzeilen bleibt result null; im zweiten Fall nennt errorMsg den Grund." }
+        "runAnalysis": { "help": "Rechnet mit den gewählten Spalten. Ohne Messwertspalte, mit weniger als zwei belegten Faktorzeilen, bei einem ungültigen Versuchsplan oder ohne verwertbare Daten bleibt result null; errorMsg nennt dann den Grund (ohne Messwertspalte bleibt errorMsg leer)." }
       },
       "fields": {
         "columnRefs": { "help": "Die gewählte Messwertspalte als { measurement: { instanceId, sheetId, columnId } }, oder measurement null." },

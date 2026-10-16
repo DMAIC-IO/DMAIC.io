@@ -29,7 +29,7 @@
               <td class="multi-vari__factor-actions">
                 <button class="btn btn--icon btn--ghost" type="button"
                         :data-remove-factor="f.id" :aria-label="t('removeFactor')"
-                        :disabled="model.factors.length <= 2"
+                        :disabled="!canRemoveFactor()"
                         @click="removeFactor(f.id)">
                   <span class="icon icon--sm" data-icon="action.delete"></span>
                 </button>
@@ -40,7 +40,7 @@
       </table>
       <span class="multi-vari__hint" x-text="t('factorsHint')"></span>
       <button class="btn btn--sm" type="button" data-ref="btn-add-factor"
-              :disabled="model.factors.length >= 4" @click="addFactor()"
+              :disabled="!canAddFactor()" @click="addFactor()"
               x-text="t('addFactor')"></button>
     </div>
 

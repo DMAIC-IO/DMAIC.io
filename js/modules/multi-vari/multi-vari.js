@@ -422,6 +422,12 @@ const mod = createModule({
         this._scheduleRerun();
       },
 
+      /** @noagent derived set; ein Prädikat für Vorlage und addFactor: noch Platz unter MAX_FACTORS */
+      canAddFactor() { return this.model.factors.length < MAX_FACTORS; },
+
+      /** @noagent derived set; ein Prädikat für Vorlage und removeFactor: mehr als MIN_FACTORS Zeilen */
+      canRemoveFactor() { return this.model.factors.length > MIN_FACTORS; },
+
       /**
        * Eine leere Faktorzeile anhängen.
        * @agent
@@ -429,7 +435,7 @@ const mod = createModule({
        * @throws {Error} wenn schon vier Faktoren geführt werden
        */
       addFactor() {
-        if (this.model.factors.length >= MAX_FACTORS) {
+        if (!this.canAddFactor()) {
           throw new Error(`cannot add factor; allowed: at most ${MAX_FACTORS} factors`);
         }
         this.model.addFactor();
@@ -446,7 +452,7 @@ const mod = createModule({
        */
       removeFactor(rowId) {
         requireKnownId('rowId', rowId, this.model.factors.map(f => f.id));
-        if (this.model.factors.length <= MIN_FACTORS) {
+        if (!this.canRemoveFactor()) {
           throw new Error(`cannot remove factor; allowed: at least ${MIN_FACTORS} factors`);
         }
         this.model.removeFactor(rowId);
@@ -505,9 +511,10 @@ const mod = createModule({
       },
 
       /**
-       * Die Analyse jetzt rechnen. Ohne Messwertspalte oder mit weniger als zwei
-       * belegten Faktoren entsteht kein Ergebnis (`result` null; im zweiten
-       * Fall nennt `errorMsg` den Grund).
+       * Die Analyse jetzt rechnen. `result` bleibt null ohne Messwertspalte
+       * (`errorMsg` leer), mit weniger als zwei belegten Faktoren, bei einem
+       * ungültigen Versuchsplan (die Engine wirft) und wenn keine verwertbaren
+       * Daten übrig bleiben; in diesen drei Fällen nennt `errorMsg` den Grund.
        * @agent
        * @returns {void}
        */

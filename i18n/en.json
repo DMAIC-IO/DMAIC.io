@@ -2960,7 +2960,7 @@
       "whenToUse": "When the spread of a measured characteristic must be traced to its sources: stages every single measurement by two to four factors (for example shift, cavity, part) and splits the variance into components, nested or crossed, by ANOVA or REML; needs one numeric measurement column and two factor columns.",
       "actions": {
         "read": {
-          "help": "Returns the measurement column, the factor rows in order, model form, estimator, the four display switches, the selectable columns and the result. result is null until a measurement column and two factor columns are chosen; errorMsg then names the reason, except while the measurement column is still missing (errorMsg stays empty).",
+          "help": "Returns the measurement column, the factor rows in order, model form, estimator, the four display switches, the selectable columns and the result. result is null until a measurement column and two factor columns are chosen; errorMsg then names the reason (fewer than two factors, invalid design, no usable data), except while the measurement column is still missing (errorMsg stays empty).",
           "params": { "options": "Optional; this module holds no bulk data." }
         },
         "setParam": {
@@ -2986,7 +2986,7 @@
           "help": "Moves a factor row directly before another one; the row order is the nesting, so the analysis reruns.",
           "params": {
             "rowId": "The id of the row to move, from read().factors.",
-            "beforeRowId": "The id of the row it is placed in front of, from read().factors. Required; to move a row to the end, move the last row before it instead."
+            "beforeRowId": "The id of the row it is placed in front of, from read().factors. Required; an unknown id is an error. To make a row last, move each row after it in front of it, in turn."
           }
         },
         "setFactorColumn": {
@@ -2996,7 +2996,7 @@
             "ref": "Column reference { instanceId, sheetId, columnId } of a column from pickableColumns.factor, or null to clear the row."
           }
         },
-        "runAnalysis": { "help": "Computes with the chosen columns. Without a measurement column or with fewer than two filled factor rows result stays null; in the second case errorMsg names the reason." }
+        "runAnalysis": { "help": "Computes with the chosen columns. Without a measurement column, with fewer than two filled factor rows, with an invalid design or without usable data result stays null; errorMsg then names the reason (without a measurement column errorMsg stays empty)." }
       },
       "fields": {
         "columnRefs": { "help": "The chosen measurement column as { measurement: { instanceId, sheetId, columnId } }, or measurement null." },

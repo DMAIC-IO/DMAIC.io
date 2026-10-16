@@ -5137,7 +5137,7 @@ export const AGENT_REGISTRY = {
       "runAnalysis": {
         "params": [],
         "returns": "void",
-        "help": "Die Analyse jetzt rechnen. Ohne Messwertspalte oder mit weniger als zwei belegten Faktoren entsteht kein Ergebnis (`result` null; im zweiten Fall nennt `errorMsg` den Grund)."
+        "help": "Die Analyse jetzt rechnen. `result` bleibt null ohne Messwertspalte (`errorMsg` leer), mit weniger als zwei belegten Faktoren, bei einem ungültigen Versuchsplan (die Engine wirft) und wenn keine verwertbaren Daten übrig bleiben; in diesen drei Fällen nennt `errorMsg` den Grund."
       }
     },
     "fields": {
