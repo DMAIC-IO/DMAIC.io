@@ -540,9 +540,6 @@ const mod = createModule({
         if (!sel) { this._toast(_t('selectCellFirst'), 'error'); return; }
         this._formulaEditor.open(sel.activeCol, sel.activeRow);
       },
-      closeFormulaEditor() { this._formulaEditor?.close(); },
-      cancelFormula() { this._formulaEditor?.close(); },
-      applyFormula() { this._formulaEditor?._api?.confirm(); },
 
       suggestChart() { this._openChartSuggestion(); },
 
