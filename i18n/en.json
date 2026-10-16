@@ -2335,7 +2335,7 @@
       "whenToUse": "When the capability of a single gage should be checked: a standard or reference part is measured repeatedly, giving repeatability (Cg) and bias (Cgk) — not for measurement systems with several appraisers or parts, which the type 2, 4, 5 and 6 studies cover. Requires the measurements as a numeric column of a data collection.",
       "actions": {
         "read": {
-          "help": "Returns the inputs, the selectable sets and the computed result. result is null while the inputs are incomplete or not positive numbers.",
+          "help": "Returns the inputs, the selectable sets and the computed result. result is null while the inputs are incomplete.",
           "params": { "options": "Optional; this module holds no bulk data." }
         },
         "setParam": {
@@ -6091,7 +6091,7 @@
       "whenToUse": "When you need to know how many observations a test requires: computes the required sample size for variance tests (chi-square, F) and mean tests (one- and two-sample t) from the effect to detect, the significance level and the target power.",
       "actions": {
         "read": {
-          "help": "Returns the ten inputs, the keys valid in the current state and the result. result is null while the inputs are incomplete.",
+          "help": "Returns the ten inputs, the keys valid in the current state and the result. result is null while the inputs are incomplete or not positive numbers.",
           "params": { "options": "Optional; this module holds no bulk data." }
         },
         "setParam": {

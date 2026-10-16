@@ -2339,7 +2339,7 @@
       "whenToUse": "Wenn die Eignung eines einzelnen Messmittels geprüft werden soll: ein Normal oder Referenzteil wird wiederholt gemessen, daraus folgen Wiederholbarkeit (Cg) und Bias (Cgk) — nicht für Messsysteme mit mehreren Prüfern oder Teilen, dafür sind die Typ-2-, Typ-4-, Typ-5- und Typ-6-Studien da. Setzt die Messwerte als numerische Spalte einer Datensammlung voraus.",
       "actions": {
         "read": {
-          "help": "Liefert die Eingaben, die wählbaren Mengen und das gerechnete Ergebnis. result ist null, solange die Eingaben unvollständig sind oder keine positiven Zahlen ergeben.",
+          "help": "Liefert die Eingaben, die wählbaren Mengen und das gerechnete Ergebnis. result ist null, solange die Eingaben unvollständig sind.",
           "params": { "options": "Optional; dieses Modul führt keine Massendaten." }
         },
         "setParam": {
@@ -6095,7 +6095,7 @@
       "whenToUse": "Wenn offen ist, wie viele Beobachtungen ein Test braucht: berechnet den erforderlichen Stichprobenumfang für Varianztests (Chi-Quadrat, F) und Mittelwerttests (Ein- und Zwei-Stichproben-t) aus dem nachzuweisenden Effekt, dem Signifikanzniveau und der Ziel-Power.",
       "actions": {
         "read": {
-          "help": "Liefert die zehn Eingaben, die im aktuellen Zustand gültigen Schlüssel und das Ergebnis. result ist null, solange die Eingaben unvollständig sind.",
+          "help": "Liefert die zehn Eingaben, die im aktuellen Zustand gültigen Schlüssel und das Ergebnis. result ist null, solange die Eingaben unvollständig sind oder keine positiven Zahlen ergeben.",
           "params": { "options": "Optional; dieses Modul hält keine Massendaten." }
         },
         "setParam": {
