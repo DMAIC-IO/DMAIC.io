@@ -6309,7 +6309,7 @@
       "whenToUse": "When it is unclear which distribution describes a measured characteristic: fits normal, lognormal, Weibull, exponential and further distributions to one numeric column and ranks them by goodness of fit; requires at least 5 values.",
       "actions": {
         "read": {
-          "help": "Returns the chosen column, the data type, the selectable sets and the result. result is null while no analysis exists; errorMsg then names the reason.",
+          "help": "Returns the chosen column, the data type, the selectable sets and the result. result is null while no analysis exists; errorMsg is empty without a column and otherwise names the reason.",
           "params": { "options": "Optional; this module holds no bulk data." }
         },
         "setParam": {
@@ -6326,7 +6326,7 @@
             "ref": "Column reference { instanceId, sheetId, columnId } of a column from pickableColumns, or null to clear."
           }
         },
-        "runAnalysis": { "help": "Computes with the chosen column. Without a column or with fewer than 5 values result stays null and errorMsg names the reason." }
+        "runAnalysis": { "help": "Computes with the chosen column. Without a column result stays null and errorMsg stays empty; with fewer than 5 values result stays null and errorMsg names the reason." }
       },
       "fields": {
         "columnRef": { "help": "The chosen data column as { instanceId, sheetId, columnId }, or null." },

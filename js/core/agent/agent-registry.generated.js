@@ -1762,7 +1762,7 @@ export const AGENT_REGISTRY = {
       "runAnalysis": {
         "params": [],
         "returns": "void",
-        "help": "Rechnet mit der gewählten Spalte; ohne Spalte oder mit weniger als 5 Werten bleibt result null und errorMsg nennt den Grund."
+        "help": "Rechnet mit der gewählten Spalte. Ohne Spalte bleibt result null und errorMsg leer; mit weniger als 5 Werten bleibt result null und errorMsg nennt den Grund."
       }
     },
     "fields": {

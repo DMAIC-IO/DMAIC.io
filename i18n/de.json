@@ -6313,7 +6313,7 @@
       "whenToUse": "Wenn unklar ist, welche Verteilung ein gemessenes Merkmal beschreibt: passt Normal-, Lognormal-, Weibull-, Exponential- und weitere Verteilungen an eine numerische Spalte an und reiht sie nach der Güte der Anpassung; braucht mindestens 5 Werte.",
       "actions": {
         "read": {
-          "help": "Liefert die gewählte Spalte, den Datentyp, die wählbaren Mengen und das Ergebnis. result ist null, solange keine Analyse vorliegt; errorMsg nennt dann den Grund.",
+          "help": "Liefert die gewählte Spalte, den Datentyp, die wählbaren Mengen und das Ergebnis. result ist null, solange keine Analyse vorliegt; errorMsg ist ohne Spalte leer und nennt sonst den Grund.",
           "params": { "options": "Optional; dieses Modul führt keine Massendaten." }
         },
         "setParam": {
@@ -6330,7 +6330,7 @@
             "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Leeren."
           }
         },
-        "runAnalysis": { "help": "Rechnet mit der gewählten Spalte. Ohne Spalte oder mit weniger als 5 Werten bleibt result null und errorMsg nennt den Grund." }
+        "runAnalysis": { "help": "Rechnet mit der gewählten Spalte. Ohne Spalte bleibt result null und errorMsg leer; mit weniger als 5 Werten bleibt result null und errorMsg nennt den Grund." }
       },
       "fields": {
         "columnRef": { "help": "Die gewählte Datenspalte als { instanceId, sheetId, columnId }, oder null." },
