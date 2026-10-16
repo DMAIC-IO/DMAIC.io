@@ -29,6 +29,8 @@ export class DataGrid {
   /**
    * @param {HTMLElement} container
    * @param {object} [options]
+   * @param {{show: Function}} [options.dialog]  dialog service (context.dialog);
+   *   needed for column scan and column stats — without it those menu items do nothing
    */
   constructor(container, options = {}) {
     this.container = container;
@@ -77,6 +79,9 @@ export class DataGrid {
 
     // Toast callback (set by worksheet module)
     this._toast = options.toast || (() => {});
+
+    // Dialog service (column scan / column stats); optional
+    this._dialog = options.dialog || null;
 
     // Build DOM
     this._buildDOM();
@@ -2984,7 +2989,12 @@ export class DataGrid {
     }
   }
 
+  /**
+   * Show summary statistics of one column in a compact dialog.
+   * @param {number} colIdx
+   */
   _showColumnStats(colIdx) {
+    if (!this._dialog) return;
     const col = this.columns[colIdx];
     if (!col) return;
     const t = (k) => this._t(`ui.datagrid.${k}`);
@@ -2993,12 +3003,6 @@ export class DataGrid {
 
     const vals = col.values.slice(0, this.rowCount).filter(v => v != null);
     const colLabel = col.name ? `${col.shortName} · ${col.name}` : col.shortName;
-
-    const overlay = document.createElement('div');
-    overlay.className = 'column-scan-overlay column-scan-overlay--modal';
-
-    const panel = document.createElement('div');
-    panel.className = 'column-scan';
 
     // Build a stats table DOM node from [label, value] rows (null = separator).
     const statsTable = (rows) => {
@@ -3058,114 +3062,53 @@ export class DataGrid {
       bodyNode = statsTable(rows);
     }
 
-    panel.append(
-      h('div', { class: 'column-scan__header' },
-        h('div', { class: 'column-scan__title' }, t('columnStats')),
-        h('div', { class: 'column-scan__subtitle' }, `${colLabel} — ${this._typeLabel(col.type)}`),
-        h('button', { class: 'column-scan__close' }, '×'),
-      ),
+    const content = h('div', { class: 'column-scan__stats' },
+      h('div', { class: 'column-scan__subtitle' }, `${colLabel} — ${this._typeLabel(col.type)}`),
       h('div', { class: 'column-scan__body' }, bodyNode),
     );
-
-    overlay.appendChild(panel);
-    document.body.appendChild(overlay);
-    this._columnStats = overlay;
-
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) this._closeColumnStats();
+    this._columnStatsHandle = this._dialog.show({
+      title: t('columnStats'),
+      size: 'compact',
+      content,
+      onClose: () => { this._columnStatsHandle = null; },
     });
-    panel.querySelector('.column-scan__close').addEventListener('click', () => this._closeColumnStats());
   }
 
+  /** Close the column-stats dialog if open. */
   _closeColumnStats() {
-    if (this._columnStats) {
-      this._columnStats.remove();
-      this._columnStats = null;
-    }
+    this._columnStatsHandle?.close();
   }
 
+  /**
+   * Open the column scan in a dialog; it refreshes on every grid render
+   * until the dialog closes.
+   * @param {number} colIdx
+   */
   _showColumnScan(colIdx) {
+    if (!this._dialog) return;
     this._closeColumnScan();
 
     const col = this.columns[colIdx];
     if (!col) return;
 
     const t = (k) => this._t(`ui.datagrid.${k}`);
-
-    // ── Build popout overlay (reuses dmike-chart-popout CSS) ──
-    const overlay = document.createElement('div');
-    overlay.className = 'dmike-chart-popout-overlay';
-
-    const win = document.createElement('div');
-    win.className = 'dmike-chart-popout';
-    win.style.width = '440px';
-    win.style.height = 'auto';
-    win.style.maxHeight = '80vh';
-    win.style.left = 'calc(50% - 220px)';
-    win.style.top = '60px';
-
-    const titleBar = document.createElement('div');
-    titleBar.className = 'dmike-chart-popout-titlebar';
-    const titleText = document.createElement('span');
-    titleText.textContent = t('scanTitle');
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'dmike-chart-popout-close';
-    closeBtn.appendChild(icon('action.close'));
-    titleBar.append(titleText, closeBtn);
-
-    const body = document.createElement('div');
-    body.className = 'dmike-chart-popout-body';
-    const scanBody = document.createElement('div');
-    scanBody.className = 'column-scan__body';
-    scanBody.style.height = '100%';
-    body.appendChild(scanBody);
-
-    win.append(titleBar, body);
-    overlay.appendChild(win);
-    document.body.appendChild(overlay);
-
-    // ── Drag title bar ──
-    let dragX = 0, dragY = 0, isDragging = false;
-    const onDragStart = (e) => {
-      if (closeBtn.contains(e.target)) return;
-      isDragging = true;
-      dragX = e.clientX - win.offsetLeft;
-      dragY = e.clientY - win.offsetTop;
-      win.style.transition = 'none';
-    };
-    const onDragMove = (e) => {
-      if (!isDragging) return;
-      win.style.left = `${e.clientX - dragX  }px`;
-      win.style.top = `${e.clientY - dragY  }px`;
-    };
-    const onDragEnd = () => { isDragging = false; win.style.transition = ''; };
-    titleBar.addEventListener('mousedown', onDragStart);
-    window.addEventListener('mousemove', onDragMove);
-    window.addEventListener('mouseup', onDragEnd);
-
-    const onKeyDown = (e) => { if (e.key === 'Escape') this._closeColumnScan(); };
-    window.addEventListener('keydown', onKeyDown);
-    closeBtn.addEventListener('click', () => this._closeColumnScan());
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) this._closeColumnScan(); });
-
-    this._columnScanState = {
-      colIdx, overlay, titleText, scanBody,
-      teardown: () => {
-        window.removeEventListener('mousemove', onDragMove);
-        window.removeEventListener('mouseup', onDragEnd);
-        window.removeEventListener('keydown', onKeyDown);
-      },
-    };
-    this._refreshColumnScan();
+    const scanBody = h('div', { class: 'column-scan__body' });
+    const handle = this._dialog.show({
+      title: t('scanTitle'),
+      content: scanBody,
+      onClose: () => this._teardownColumnScan(),
+    });
+    this._columnScanState = { colIdx, scanBody, handle };
 
     this._columnScanRenderHandler = () => {
       if (this._columnScanState) this._refreshColumnScan();
     };
     this.on('render', this._columnScanRenderHandler);
+    this._refreshColumnScan();
   }
 
   _refreshColumnScan() {
-    const { colIdx, titleText, scanBody } = this._columnScanState;
+    const { colIdx, scanBody, handle } = this._columnScanState;
     const col = this.columns[colIdx];
     if (!col) { this._closeColumnScan(); return; }
 
@@ -3177,7 +3120,7 @@ export class DataGrid {
       ? this._typeLabel(scan.dominantType)
       : '—';
 
-    titleText.textContent = `${t('scanTitle')} — ${colLabel} (${t('scanDominant')}: ${dominantLabel})`;
+    handle.setTitle(`${t('scanTitle')} — ${colLabel} (${t('scanDominant')}: ${dominantLabel})`);
 
     // Column-scan badges reuse the same COLUMN_TYPES badge definitions as the
     // header/attr-picker badges (see renderColTypeBadge in datagrid-utils.js)
@@ -3334,16 +3277,19 @@ export class DataGrid {
     });
   }
 
+  /** Close the scan dialog (its onClose runs the teardown). */
   _closeColumnScan() {
+    if (this._columnScanState) this._columnScanState.handle.close();
+    else this._teardownColumnScan();
+  }
+
+  /** Forget scan state and stop refreshing on render. */
+  _teardownColumnScan() {
     if (this._columnScanRenderHandler) {
       this.off('render', this._columnScanRenderHandler);
       this._columnScanRenderHandler = null;
     }
-    if (this._columnScanState) {
-      this._columnScanState.teardown?.();
-      this._columnScanState.overlay.remove();
-      this._columnScanState = null;
-    }
+    this._columnScanState = null;
   }
 
   _typeLabel(type) {

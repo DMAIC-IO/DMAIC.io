@@ -673,75 +673,12 @@ th.col-locked--hard .col-lock-icon {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   COLUMN SCAN POPUP
+   COLUMN SCAN / COLUMN STATS (content of a dialog-service window)
    ═══════════════════════════════════════════════════════════ */
-.column-scan-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1100;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-  padding: var(--spacing-xl) var(--spacing-l);
-}
-
-.column-scan-overlay--modal {
-  justify-content: center;
-  align-items: center;
-  padding: 0;
-  background: rgb(0 0 0 / 35%);
-}
-
-.column-scan {
-  background: var(--color-bg-elevated);
-  border: 1px solid var(--color-border-primary);
-  border-radius: var(--border-radius-lg, 8px);
-  box-shadow: var(--datagrid-shadow-popup);
-  width: 380px;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.column-scan__header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--spacing-xs) var(--spacing-m);
-  padding: var(--spacing-m) var(--spacing-ml) var(--spacing-sm);
-  border-bottom: 1px solid var(--color-border-primary);
-  position: relative;
-}
-
-.column-scan__title {
-  font-weight: 600;
-  font-size: var(--font-size-base);
-  color: var(--color-text-primary);
-}
-
 .column-scan__subtitle {
   font-size: var(--font-size-sm);
   color: var(--color-text-tertiary);
-  width: 100%;
-}
-
-.column-scan__close {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  color: var(--color-text-tertiary);
-  padding: var(--spacing-2xs) var(--spacing-s);
-  border-radius: var(--border-radius);
-}
-
-.column-scan__close:hover {
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-primary);
+  padding: 0 var(--spacing-ml);
 }
 
 .column-scan__body {

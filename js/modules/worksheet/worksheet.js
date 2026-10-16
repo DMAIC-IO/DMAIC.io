@@ -955,7 +955,9 @@ const mod = createModule({
         // Mount DataGrid into its anchor.
         const gridWrap = container.querySelector('[data-ref="grid-wrap"]');
         const dropzone = container.querySelector('[data-ref="dropzone"]');
-        this._grid = new DataGrid(gridWrap, { toast, t: (k, v) => context.i18n.t(k, v) });
+        this._grid = new DataGrid(gridWrap, {
+          toast, t: (k, v) => context.i18n.t(k, v), dialog: context.dialog,
+        });
         if (context.eventBus) bridgeEmitter(this._grid, context.eventBus, 'datagrid');
         this._grid.setDropzone(dropzone);
 
