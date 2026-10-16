@@ -142,6 +142,30 @@ suite('dialog service — confirm / alert / show', () => {
     home.remove();
   });
 
+  test('Escape is left to the content while it marks data-dialog-owns-escape', async () => {
+    // e.g. the Settings shortcut capture: Escape stops capturing, not the dialog.
+    const d = await service();
+    const content = document.createElement('div');
+    const widget = document.createElement('button');
+    widget.setAttribute('data-dialog-owns-escape', '');
+    content.append(widget);
+    let reached = 0;
+    const own = (e) => { if (e.key === 'Escape') reached += 1; };
+    document.addEventListener('keydown', own, true);
+    try {
+      const h = d.show({ title: 'K', content });
+      escape();
+      assertEqual(dialogs().length, 1, 'still open');
+      assertEqual(reached, 1, 'the content saw the Escape');
+      widget.removeAttribute('data-dialog-owns-escape');
+      escape();
+      assertEqual(dialogs().length, 0, 'closes once the mark is gone');
+      h.close();
+    } finally {
+      document.removeEventListener('keydown', own, true);
+    }
+  });
+
   test('show setTitle updates the title and is a no-op after close', async () => {
     const d = await service();
     const h = d.show({ title: 'Alt', content: document.createElement('div') });

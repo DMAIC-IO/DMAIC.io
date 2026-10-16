@@ -34,10 +34,15 @@ export function createDialogService({ i18n }) {
    * and stopImmediatePropagation keeps the Escape from closing that popout
    * too. A non-dismissible top dialog swallows the Escape as well: it is
    * modal, nothing behind it may react.
+   *
+   * Content that needs Escape for itself while a mode is active (the Settings
+   * shortcut capture) marks an element with `data-dialog-owns-escape`; while
+   * that mark is in the top dialog, Escape passes through untouched.
    * @param {KeyboardEvent} e
    */
   function onKeydown(e) {
     if (e.key !== 'Escape' || e.isComposing || stack.length === 0) return;
+    if (stack[stack.length - 1].root.querySelector('[data-dialog-owns-escape]')) return;
     e.stopImmediatePropagation();
     e.preventDefault();
     stack[stack.length - 1].dlg.dismiss();

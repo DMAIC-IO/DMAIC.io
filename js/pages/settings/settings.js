@@ -1,15 +1,14 @@
 /**
  * D.Mike — Settings page (settings.js)
  * Fully-Alpine conversion of the former _initSettings + _initShortcutsTab.
- * Rendered as a centered DRAGGABLE popout (dmike-chart-popout shell) via the
- * createPage() factory. The data-fn owns all control state; two imperative
+ * Rendered in a dialog of the dialog service via the createPage() factory
+ * (`dialog` option). The data-fn owns all control state; two imperative
  * exceptions (per spec §Conventions) are wrapped by Alpine state:
  *   - the color picker (openColorPicker — imperative widget),
  *   - the shortcuts capture keydown listener (document-level, capture phase).
  */
 
 import { createPage } from '../../core/create-page.js';
-import { draggablePopout } from '../../ui/dialog/draggable.js';
 import { openColorPicker, hexToRGBA, rgbaToHex6 } from '../../core/color-picker.js';
 import {
   shortcutRegistry, normalizeCombo, formatCombo,
@@ -141,16 +140,13 @@ export function copyToClipboardFallback(text) {
 export default createPage({
   id: 'settings',
   templateUrl: new URL('js/pages/settings/settings.html', document.baseURI).href,
-  // The popout overlay IS the mount container; the panel lives inside the template.
+  // The container is a hidden holder; createPage lends the template root to the dialog service.
   container: '#settings-overlay',
   button: '#settings-btn',
   overlay: 'settings',
   i18nKey: 'settings',
-  onShow(containerEl) {
-    const root = containerEl.querySelector('[x-data]');
-    if (root && root._x_dataStack) root._x_dataStack[0].popoutResetPosition?.();
-  },
-  data(context, t, page) {
+  dialog: { titleKey: 'title' },
+  data(context, t) {
     const { stateManager, themeManager, i18n, eventBus, tipEngine } = context;
 
     return {
@@ -168,13 +164,6 @@ export default createPage({
         }
       },
 
-      // size + initialPosition left empty so the centred geometry comes from the
-      // CSS rule `#settings-panel.dmike-chart-popout` (width/max-height/left/top).
-      // popoutStyle() then returns '' until the user drags — keeping the inline
-      // style.left/top empty initially (drag-test contract) and matching the
-      // legacy 480px visual baseline.
-      ...draggablePopout({ size: '', initialPosition: '' }),
-
       // ── tabs ──────────────────────────────────────────────
       tabs: [
         { id: 'appearance', labelKey: 'tabAppearance' },
@@ -191,9 +180,6 @@ export default createPage({
           ? 'settings-tab settings-tab--active'
           : 'settings-tab';
       },
-
-      // ── close (overlay outside-click; Escape handled by factory) ──
-      close() { page.hide(); },
 
       // ── dev-tools ─────────────────────────────────────────
       seedAllModules() { eventBus.emit('devtools:seed-all'); },
@@ -439,6 +425,8 @@ export default createPage({
           .map(c => `„${i18n.t(c.descriptionKey) || c.id}"`).join(', ');
         return (i18n.t('settings.shortcutsConflict') || 'Konflikt mit {name}.').replace('{name}', names);
       },
+      /** While capturing, Escape belongs to the capture, not to the dialog (null removes the mark). */
+      ownsEscape(item) { return this.capturingId === item.id ? '' : null; },
       startCapture(item) {
         if (this.capturingId === item.id) { this._stopCapture(); return; }
         this.capturingId = item.id;

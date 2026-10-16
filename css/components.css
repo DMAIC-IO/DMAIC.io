@@ -940,23 +940,9 @@ select.input {
 }
 
 /* ===== Settings Panel =====
-   Hosted inside the global dmike-chart-popout shell (see js/core/chart/chart.css).
-   The popout provides the overlay, frame, titlebar, drag, and close affordances;
-   the rules below only describe the inner layout (tabs + scrolling content). */
-
-/* The settings template mounts an inner wrapper inside #settings-overlay so its
-   @click.self (outside-click close) covers the whole dimmed backdrop. */
-.dmike-chart-popout-overlay-inner {
-  position: absolute;
-  inset: 0;
-}
-
-#settings-panel.dmike-chart-popout {
-  width: 480px;
-  max-height: 80vh;
-  left: calc(50% - 240px);
-  top: 10vh;
-}
+   Shown in a dialog of the dialog service (createPage `dialog` option). The
+   dialog provides overlay, frame, title bar, drag and close; the rules below
+   only describe the inner layout (tabs + content). */
 
 .settings-panel__layout {
   display: flex;
@@ -1747,20 +1733,11 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
 }
 
 /* ── Open-Source Licenses panel ─────────────────────────────────────────
-   Attribution overlay listing bundled third-party runtime libraries.
-   Hosted inside the global dmike-chart-popout shell (see chart.css); the
-   rules below cover the inner layout (subtitle, table, badges, links). */
-.dmike-chart-popout.licenses-panel {
-  width: 560px;
-  max-width: calc(100vw - 48px);
-  max-height: 80vh;
-  left: calc(50% - 280px);
-  top: 10vh;
-}
-
-.licenses-panel .dmike-chart-popout-body {
+   Attribution list of bundled third-party runtime libraries, shown in a
+   dialog of the dialog service; the rules below cover the inner layout
+   (subtitle, table, badges, links). */
+.licenses-panel {
   padding: var(--spacing-lg);
-  overflow-y: auto;
 }
 
 .licenses-panel__subtitle {
