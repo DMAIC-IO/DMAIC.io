@@ -7809,7 +7809,53 @@
       "test_oscillation": "Oszillation",
       "testDesc_oscillation": "Zu viele Runs ↑/↓ — Übersteuerung, systematisches Hin-und-Her",
       "flagPass": "OK",
-      "flagFail": "auffällig"
+      "flagFail": "auffällig",
+      "whenToUse": "Eine Reihe über die Zeit auf nicht zufällige Muster prüfen — Häufung, Mischung, Trend, Oszillation —, bevor Eingriffsgrenzen gebildet werden.",
+      "actions": {
+        "read": {
+          "help": "Die gewählte Spalte, α, den Median, die Anzahl der Läufe, die vier p-Werte der Tests und die gezeichneten Werte lesen."
+        },
+        "setColumn": {
+          "help": "Die Messreihe wählen und neu rechnen.",
+          "params": {
+            "slot": "'value' — die Messwerte in zeitlicher Reihenfolge (Pflicht, für ein Ergebnis mindestens 3 Zahlen).",
+            "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns.value, oder null zum Leeren."
+          }
+        },
+        "setParam": {
+          "help": "Eine Analyseoption setzen und neu rechnen.",
+          "params": {
+            "key": "'alpha' — das Signifikanzniveau der vier Lauftests.",
+            "value": "Für alpha eine Zahl größer als 0 und kleiner als 1; ein Test schlägt an, wenn sein p-Wert darunter liegt."
+          }
+        },
+        "runAnalysis": {
+          "help": "Mit den aktuellen Spaltenwerten neu rechnen, etwa nachdem sich die Daten geändert haben."
+        }
+      },
+      "fields": {
+        "columnRef": {
+          "help": "Die Messreihe (Slot 'value'), oder null."
+        },
+        "alpha": {
+          "help": "Das Signifikanzniveau der Lauftests, 0 < α < 1."
+        },
+        "activeColumnSlots": {
+          "help": "Die Slots, die setColumn annimmt: value."
+        },
+        "activeParams": {
+          "help": "Die Schlüssel, die setParam annimmt: alpha."
+        },
+        "pickableColumns": {
+          "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId."
+        },
+        "result": {
+          "help": "{ n, median, runsAboutMedian, runsUpDown, flagged, tests: [{ id, p, observed, flagged }] }; Test-Ids clustering, mixtures, trends, oscillation; observed ist die Zahl der Läufe, auf der der Test beruht; null bei weniger als 3 Zahlen."
+        },
+        "points": {
+          "help": "Je gezeichnetem Wert eine Zeile in Datenreihenfolge: { value }. read({ fields: ['points'] }) liefert sie vollständig."
+        }
+      }
     },
     "attribute-control-chart": {
       "name": "Regelkarte (attributiv)",

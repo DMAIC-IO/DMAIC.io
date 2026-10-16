@@ -8348,38 +8348,108 @@ export const AGENT_REGISTRY = {
     }
   },
   "run-chart": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:fmt",
-      "unmarked_method:fmtP",
-      "unmarked_method:flaggedKpiClass",
-      "unmarked_method:testName",
-      "unmarked_method:testDesc",
-      "unmarked_method:testStatusClass",
-      "unmarked_method:testStatusText",
-      "unmarked_method:isTestFlagged",
-      "unmarked_method:chartTitle",
-      "unmarked_method:alphaChanged",
-      "unreachable_write:alpha"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields: ['points']` liefert die Punkte vollständig, `rows` schneidet sie zu"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'value'",
+            "optional": false,
+            "help": "der Slot; dieses Modul führt nur `value`"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "Promise<void>",
+        "help": "Die Messreihe wählen und neu rechnen."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'alpha'",
+            "optional": false,
+            "help": "welche Option"
+          },
+          {
+            "name": "value",
+            "type": "number",
+            "optional": false,
+            "help": "das Signifikanzniveau, 0 < alpha < 1"
+          }
+        ],
+        "returns": "Promise<void>",
+        "help": "Eine Analyseoption setzen und neu rechnen."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "Promise<void>",
+        "help": "Mit der gewählten Spalte und α neu rechnen."
+      }
+    },
     "fields": {
       "columnRef": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the measured column (slot `value`), `{ instanceId, sheetId, columnId }`, or null",
+        "bulk": false,
+        "derived": true
       },
       "alpha": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "significance level of the four runs tests, 0 < alpha < 1",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "`{ n, median, runsAboutMedian, runsUpDown, flagged, tests: [{ id, p, observed, flagged }] }` with test ids clustering, mixtures, trends, oscillation; null with fewer than 3 numeric values",
+        "bulk": false,
+        "derived": true
+      },
+      "points": {
+        "type": "object[]",
+        "help": "one row per plotted value in data order: `{ value }`",
+        "bulk": true,
+        "bulkKind": "table",
+        "derived": true
       }
     }
   },
@@ -11089,4 +11159,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":60};
+export const AGENT_COVERAGE = {"total":76,"available":61};

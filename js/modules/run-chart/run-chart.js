@@ -14,12 +14,21 @@
  * math lives in `js/engines/run-chart-engine.js` and is reused unchanged. The
  * ColumnPicker and the SVG run chart are mounted imperatively (they are not
  * pure-template concerns).
+ *
+ * @agent  Steuerbar über das Viewmodel: Messreihe (setColumn), α (setParam),
+ *   neu rechnen (runAnalysis). Gelesen wird über read() mit erklärter
+ *   Lesefläche (AgentRead) — Eingaben, Median, Läufe, die vier p-Werte und je
+ *   Punkt der Wert. The read surface carries the computed result and points.
  */
 
 import { createModule } from '../../core/template-module.js';
 import { State } from './run-chart-model.js';
 
-import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-picker.js';
+import { ColumnPicker, getColumnValues, getColumnName, refToKey, keyToRef } from '../../ui/column-picker.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { pickableColumnList } from '../../core/agent/agent-options.js';
+import { finiteOrNull, zipPoints } from '../../core/agent/agent-results.js';
 import { computeRunChart } from '../../engines/run-chart-engine.js';
 import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-registry.js';
 import { chartModuleLifecycle } from '../../core/chart/chart-module-base.js';
@@ -27,6 +36,49 @@ import { chartModuleLifecycle } from '../../core/chart/chart-module-base.js';
 /** Default significance level (mirrors the legacy module). */
 const DEFAULT_ALPHA = 0.05;
 
+/** Die Spalten-Slots: genau einer, die Messreihe. */
+const COLUMN_SLOTS = ['value'];
+
+/** Je Slot der Filter seines Wählers — eine Quelle für Wähler und Lesefläche. */
+const SLOT_FILTERS = { value: { types: ['numeric'], minCount: 2 } };
+
+/** Die Optionen, die `setParam` annimmt. */
+const PARAM_KEYS = ['alpha'];
+
+/** Je Option ihr Prüfer; er gibt den Wert in der Form des Models zurück. */
+const PARAM_CHECKS = {
+  alpha: (v) => requireNumber('value', v, { exclusiveMin: 0, exclusiveMax: 1 }),
+};
+
+/**
+ * Einen Wert unter einem Punkt-Schlüssel in `obj` ablegen.
+ * @param {object} obj Wurzel, deren Pfad beschrieben wird
+ * @param {string} key Schlüssel, gegebenenfalls mit Punkt
+ * @param {any} value der abzulegende Wert
+ */
+function setAtPath(obj, key, value) {
+  const parts = key.split('.');
+  let cur = obj;
+  for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
+  cur[parts[parts.length - 1]] = value;
+}
+
+/**
+ * Die Agenten-Lesefläche der Verlaufskarte.
+ *
+ * Eingaben (Spalte, α), die Mengen, gegen die die Setter prüfen, und das
+ * gerechnete Ergebnis als Zahlen (Plan Welle 3 B, E4). Nicht darin: die
+ * Kennzahlenleiste und die Testtabelle als Text, `exampleWorksheetId`.
+ *
+ * @typedef {object} AgentRead
+ * @property {object|null} columnRef  the measured column (slot `value`), `{ instanceId, sheetId, columnId }`, or null
+ * @property {number} alpha  significance level of the four runs tests, 0 < alpha < 1
+ * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
+ * @property {string[]} activeParams  the keys `setParam` accepts
+ * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
+ * @property {object|null} result  `{ n, median, runsAboutMedian, runsUpDown, flagged, tests: [{ id, p, observed, flagged }] }` with test ids clustering, mixtures, trends, oscillation; null with fewer than 3 numeric values
+ * @property {object[]} points  [bulk] one row per plotted value in data order: `{ value }`
+ */
 const mod = createModule({
   config: {
     id: 'run-chart',
@@ -48,12 +100,8 @@ const mod = createModule({
           this._picker?.destroy();
           this._picker = new ColumnPicker(wrap, module._context, {
             mode: 'single',
-            types: ['numeric'],
-            minCount: 2,
-            onChange: (ref) => {
-              this.model.columnRef = ref;
-              this._scheduleAutoRun();
-            },
+            ...SLOT_FILTERS.value,
+            onChange: (ref) => this.setColumn('value', ref),
           });
           if (this.model.columnRef) this._picker.value = this.model.columnRef;
         },
@@ -78,44 +126,160 @@ const mod = createModule({
        */
       result: null,
 
+      // ── Agent surface ─────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       *   — `fields: ['points']` liefert die Punkte vollständig, `rows` schneidet sie zu
+       * @returns {AgentRead} Eingaben, wählbare Mengen und das gerechnete Ergebnis
+       */
+      read(options) {
+        const { result, points, pointsColumns } = this._agentResult();
+        return readAgentState('run-chart', {
+          columnRef: this.model.columnRef,
+          alpha: this.model.alpha,
+          activeColumnSlots: this.activeColumnSlots(),
+          activeParams: this.activeParams(),
+          pickableColumns: this.pickableColumns(),
+          result,
+          points,
+          pointsColumns,
+        }, options);
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() { return [...COLUMN_SLOTS]; },
+
+      /** @noagent derived set; der Agent liest sie über read().activeParams */
+      activeParams() { return [...PARAM_KEYS]; },
+
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() {
+        const sm = module._context.stateManager;
+        return Object.fromEntries(COLUMN_SLOTS.map(slot => [slot, pickableColumnList(sm, SLOT_FILTERS[slot])]));
+      },
+
+      /**
+       * Die Messreihe wählen und neu rechnen.
+       * @agent
+       * @param {'value'} slot der Slot; dieses Modul führt nur `value`
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
+       *   der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren
+       * @returns {Promise<void>}
+       * @throws {Error} wenn `slot` unbekannt ist oder die Spalte nicht wählbar
+       */
+      async setColumn(slot, ref) {
+        requireEnum('slot', slot, COLUMN_SLOTS);
+        let clean = null;
+        if (ref != null) {
+          requireEnum('slot', slot, this.activeColumnSlots());
+          const keys = this.pickableColumns()[slot].map(c => c.key);
+          requireKnownId('ref', refToKey(ref), keys);
+          // Normalisierte Form: fremde Eigenschaften des Agentenobjekts bleiben draußen.
+          clean = keyToRef(refToKey(ref));
+        }
+        this.model.columnRef = clean;
+        this._picker?.syncValue(clean);
+        await this.runAnalysis();
+      },
+
+      /**
+       * Eine Analyseoption setzen und neu rechnen.
+       * @agent
+       * @param {'alpha'} key welche Option
+       * @param {number} value das Signifikanzniveau, 0 < alpha < 1
+       * @returns {Promise<void>}
+       * @throws {Error} wenn `key` unbekannt ist oder `value` außerhalb von (0, 1)
+       */
+      async setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        requireEnum('key', key, this.activeParams());
+        setAtPath(this.model, key, PARAM_CHECKS[key](value));
+        await this.runAnalysis();
+      },
+
+      /**
+       * Mit der gewählten Spalte und α neu rechnen.
+       * @agent
+       * @returns {Promise<void>}
+       */
+      async runAnalysis() {
+        clearTimeout(this._autoRunTimer);
+        this._runAnalysis();
+      },
+
+      /** Ergebnis und Punkte für read(), aus dem Vorlagenfeld `result` (E4). */
+      _agentResult() {
+        const r = this.result;
+        if (!r) return { result: null, points: [], pointsColumns: [] };
+        const { rows, columns } = zipPoints({ value: r.values });
+        return {
+          result: {
+            n: r.n,
+            median: finiteOrNull(r.median),
+            runsAboutMedian: r.runsAboutMedian,
+            runsUpDown: r.runsUpDown,
+            flagged: r.flagged,
+            tests: r.tests.map(t => ({
+              id: t.id, p: finiteOrNull(t.p), observed: t.obs, flagged: this.isTestFlagged(t.p),
+            })),
+          },
+          points: rows,
+          pointsColumns: columns,
+        };
+      },
+
       // ── View transformations ──────────────────────────────────
 
+      /** @noagent view transform */
       fmt(v) {
         return Number.isFinite(v) ? v.toFixed(4) : '–';
       },
 
+      /** @noagent view transform */
       fmtP(p) {
         return p < 0.0001 ? '< 0.0001' : p.toFixed(4);
       },
 
+      /** @noagent view transform */
       flaggedKpiClass() {
         const r = this.result;
         return r && r.flagged === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad';
       },
 
+      /** @noagent view transform */
       testName(id) {
         return _t(`test_${  id}`);
       },
 
+      /** @noagent view transform */
       testDesc(id) {
         return _t(`testDesc_${  id}`);
       },
 
+      /** @noagent view transform */
       testStatusClass(p) {
         return p < this.model.alpha
           ? 'run-chart__test-status--bad'
           : 'run-chart__test-status--ok';
       },
 
+      /** @noagent view transform */
       testStatusText(p) {
         return p < this.model.alpha ? _t('flagFail') : _t('flagPass');
       },
 
-      /** @returns {boolean} true once a test is flagged — the state in which the status carries the warning icon. */
+      /**
+       * @noagent view transform
+       * @returns {boolean} true once a test is flagged — the state in which the status carries the warning icon.
+       */
       isTestFlagged(p) {
         return p < this.model.alpha;
       },
 
+      /** @noagent view transform */
       chartTitle() {
         const colName = getColumnName(module._context.stateManager, this.model.columnRef);
         return _t('chartTitle', { col: colName });
@@ -123,10 +287,15 @@ const mod = createModule({
 
       // ── Event handlers ─────────────────────────────────────────
 
-      alphaChanged(event) {
+      /**
+       * @noagent DOM event handler; the agent uses setParam()
+       * @param {Event} event die Änderung des α-Feldes
+       */
+      async alphaChanged(event) {
         const v = parseFloat(event.target.value);
-        this.model.alpha = (Number.isFinite(v) && v > 0 && v < 1) ? v : DEFAULT_ALPHA;
-        this._scheduleAutoRun();
+        // Wie bisher: ein ungültiger Wert fällt auf die Vorgabe zurück — vor der Senke (E6).
+        await this.setParam('alpha', (Number.isFinite(v) && v > 0 && v < 1) ? v : DEFAULT_ALPHA);
+        event.target.value = String(this.model.alpha);
       },
 
       // ── Analysis (controller — needs context + live worksheet data) ──

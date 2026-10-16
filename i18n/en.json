@@ -7849,7 +7849,53 @@
       "test_oscillation": "Oscillation",
       "testDesc_oscillation": "Too many runs ↑/↓ — over-correction, systematic zigzag",
       "flagPass": "OK",
-      "flagFail": "flagged"
+      "flagFail": "flagged",
+      "whenToUse": "Look at a series over time for non-random patterns — clustering, mixtures, trends, oscillation — before building control limits.",
+      "actions": {
+        "read": {
+          "help": "Read the chosen column, alpha, the median, the run counts, the four test p-values and the plotted values."
+        },
+        "setColumn": {
+          "help": "Choose the measured column and recompute.",
+          "params": {
+            "slot": "'value' — the measured values in time order (required, at least 3 numbers for a result).",
+            "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns.value, or null to clear it."
+          }
+        },
+        "setParam": {
+          "help": "Set an analysis option and recompute.",
+          "params": {
+            "key": "'alpha' — the significance level of the four runs tests.",
+            "value": "For alpha a number greater than 0 and less than 1; a test is flagged when its p-value is below it."
+          }
+        },
+        "runAnalysis": {
+          "help": "Recompute with the current column values, for example after the data changed."
+        }
+      },
+      "fields": {
+        "columnRef": {
+          "help": "The measured column (slot 'value'), or null."
+        },
+        "alpha": {
+          "help": "The significance level of the runs tests, 0 < alpha < 1."
+        },
+        "activeColumnSlots": {
+          "help": "The slots setColumn accepts: value."
+        },
+        "activeParams": {
+          "help": "The keys setParam accepts: alpha."
+        },
+        "pickableColumns": {
+          "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId."
+        },
+        "result": {
+          "help": "{ n, median, runsAboutMedian, runsUpDown, flagged, tests: [{ id, p, observed, flagged }] }; test ids clustering, mixtures, trends, oscillation; observed is the run count the test is based on; null with fewer than 3 numbers."
+        },
+        "points": {
+          "help": "One row per plotted value in data order: { value }. read({ fields: ['points'] }) returns them in full."
+        }
+      }
     },
     "attribute-control-chart": {
       "name": "Control Chart (Attribute)",
