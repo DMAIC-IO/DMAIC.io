@@ -886,7 +886,9 @@ const mod = createModule({
        */
       saveAsModel() {
         const r = this.model.result;
-        if (!r || !r.multiX || !this.model.isPolynomial) return null;
+        // Nach einem Fehlschlag hält das Model noch den alten Fit; gespeichert
+        // wird nur, was auch angezeigt wird (dieselbe Bedingung wie canSaveModel).
+        if (!this.result?.canSaveModel || !r || !r.multiX || !this.model.isPolynomial) return null;
         const sm = this.sm();
         const m = this.model;
 
