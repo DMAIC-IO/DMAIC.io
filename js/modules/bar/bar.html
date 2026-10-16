@@ -3,17 +3,18 @@
     <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
     <div data-ref="picker-wrap"></div>
 
-    <div class="bar-module__options" data-ref="options-wrap" x-show="!!model.yRef || !!model.gRef">
-      <label class="bar-module__opt-row" x-show="!!model.yRef">
+    <div class="bar-module__options" data-ref="options-wrap" x-show="hasValueColumn() || hasGroupColumn()">
+      <label class="bar-module__opt-row" x-show="hasValueColumn()">
         <span x-text="t('aggregation')"></span>
-        <select data-action="set-agg" x-model="model.chartConfig.aggregation" @change="aggregationChanged()">
-          <option value="mean" x-text="t('aggMean')"></option>
-          <option value="sum" x-text="t('aggSum')"></option>
+        <select data-action="set-agg" :value="model.chartConfig.aggregation" @change="setParam('aggregation', $event.target.value)">
+          <template x-for="o in aggregationOptions()" :key="o.value">
+            <option :value="o.value" :selected="o.value === model.chartConfig.aggregation" x-text="o.label"></option>
+          </template>
         </select>
       </label>
 
-      <label class="bar-module__opt-row" x-show="!!model.gRef">
-        <input type="checkbox" data-action="set-stacked" x-model="model.chartConfig.stacked" @change="stackedChanged()">
+      <label class="bar-module__opt-row" x-show="hasGroupColumn()">
+        <input type="checkbox" data-action="set-stacked" :checked="model.chartConfig.stacked" @change="setParam('stacked', $event.target.checked)">
         <span x-text="t('stacked')"></span>
       </label>
     </div>

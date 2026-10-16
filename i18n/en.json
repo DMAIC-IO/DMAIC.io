@@ -4918,7 +4918,36 @@
       "statCount": "Count",
       "statMean": "Mean",
       "statSum": "Sum",
-      "statTotal": "Total"
+      "statTotal": "Total",
+      "whenToUse": "Compare counts or values across categories, optionally split or stacked by a group.",
+      "actions": {
+        "read": { "help": "Read the three chosen columns, aggregation, stacking and the columns each slot accepts, and the figures shown next to the chart." },
+        "setColumn": {
+          "help": "Assign a column to a slot. The other slots keep their columns.",
+          "params": {
+            "slot": "'x' — the categories (required); 'y' — an optional numeric value column; without it bars count rows; 'g' — an optional group column that splits each category.",
+            "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null to clear the slot."
+          }
+        },
+        "setParam": {
+          "help": "Set an analysis option. read().activeParams names the options valid right now.",
+          "params": {
+            "key": "'aggregation' — active only with a value column; 'stacked' — active only with a group column.",
+            "value": "For 'aggregation': 'mean' or 'sum' of the values per bar. For 'stacked': true stacks the groups, false places them side by side."
+          }
+        }
+      },
+      "fields": {
+        "xRef": { "help": "The category column (slot 'x'), or null." },
+        "yRef": { "help": "The value column (slot 'y'), or null." },
+        "gRef": { "help": "The group column (slot 'g'), or null." },
+        "aggregation": { "help": "How values are combined per bar: mean or sum." },
+        "stacked": { "help": "Whether the groups are stacked." },
+        "activeParams": { "help": "The options setParam accepts in the current state." },
+        "activeColumnSlots": { "help": "The slots setColumn accepts: x, y, g." },
+        "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
+        "stats": { "help": "The bar values: { categories, groups: [{ name, values }] }; values per category — a count, mean or sum; null while nothing is plotted." }
+      }
     },
     "pareto": {
       "name": "Pareto Chart",

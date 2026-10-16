@@ -37,6 +37,9 @@ import { PALETTE, refFromJSON, crossTabMatrix } from '../../core/chart/chart-dat
 /** Re-export the shared series palette for parity with legacy consumers/tests. */
 export { PALETTE };
 
+/** Die Aggregationen einer Wertespalte, in der Reihenfolge der Auswahl. */
+export const AGGREGATIONS = ['mean', 'sum'];
+
 /** Default chart-config block — identical to the legacy `_chartConfig`. */
 const CONFIG_DEFAULTS = {
   showTitle: true,

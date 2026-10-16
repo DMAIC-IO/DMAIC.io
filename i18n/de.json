@@ -4922,7 +4922,36 @@
       "statCount": "Häufigkeit",
       "statMean": "Mittelwert",
       "statSum": "Summe",
-      "statTotal": "Gesamt"
+      "statTotal": "Gesamt",
+      "whenToUse": "Anzahlen oder Werte über Kategorien vergleichen, optional nach einer Gruppe aufgeteilt oder gestapelt.",
+      "actions": {
+        "read": { "help": "Die drei gewählten Spalten, Aggregation, Stapeln und die Spalten lesen, die jeder Slot annimmt, dazu die Kennzahlen neben dem Diagramm." },
+        "setColumn": {
+          "help": "Eine Spalte einem Slot zuweisen. Die anderen Slots behalten ihre Spalten.",
+          "params": {
+            "slot": "'x' — die Kategorien (Pflicht); 'y' — eine optionale numerische Wertespalte; ohne sie zählen die Balken Zeilen; 'g' — eine optionale Gruppenspalte, die jede Kategorie aufteilt.",
+            "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null zum Leeren."
+          }
+        },
+        "setParam": {
+          "help": "Eine Analyseoption setzen. read().activeParams nennt die gerade gültigen Optionen.",
+          "params": {
+            "key": "'aggregation' — nur mit Wertespalte aktiv; 'stacked' — nur mit Gruppenspalte aktiv.",
+            "value": "Für 'aggregation': 'mean' (Mittelwert) oder 'sum' (Summe) der Werte je Balken. Für 'stacked': true stapelt die Gruppen, false stellt sie nebeneinander."
+          }
+        }
+      },
+      "fields": {
+        "xRef": { "help": "Die Kategorienspalte (Slot 'x'), oder null." },
+        "yRef": { "help": "Die Wertespalte (Slot 'y'), oder null." },
+        "gRef": { "help": "Die Gruppenspalte (Slot 'g'), oder null." },
+        "aggregation": { "help": "Wie die Werte je Balken zusammengefasst werden: mean oder sum." },
+        "stacked": { "help": "Ob die Gruppen gestapelt werden." },
+        "activeParams": { "help": "Die Optionen, die setParam im aktuellen Zustand annimmt." },
+        "activeColumnSlots": { "help": "Die Slots, die setColumn annimmt: x, y, g." },
+        "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
+        "stats": { "help": "Die Balkenwerte: { categories, groups: [{ name, values }] }; Werte je Kategorie — Anzahl, Mittel oder Summe; null, solange nichts gezeichnet ist." }
+      }
     },
     "pareto": {
       "name": "Pareto-Diagramm",
