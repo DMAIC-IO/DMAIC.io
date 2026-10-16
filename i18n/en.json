@@ -4720,6 +4720,32 @@
     "probability-plot": {
       "name": "Probability Plot",
       "description": "Normal probability plot for checking normality, with optional grouping",
+      "whenToUse": "Check whether one or more numeric columns follow a distribution: points on the straight line mean a good fit.",
+      "actions": {
+        "read": {
+          "help": "Read the data rows (value and group column per row) and the columns each slot accepts, and the figures shown next to the chart."
+        },
+        "setDatasets": {
+          "help": "Replace the whole list of data rows at once. Incomplete rows are kept but not plotted.",
+          "params": {
+            "rows": "A list of rows, each { value, group }: 'value' — a numeric column with at least two values (required for the row to be plotted); 'group' — an optional column that splits the row into series. Each entry is a column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null. [] clears the list."
+          }
+        }
+      },
+      "fields": {
+        "datasets": {
+          "help": "Per data row { valueRef, groupRef }: valueRef from slot 'value', groupRef from slot 'group', each a column reference or null."
+        },
+        "activeColumnSlots": {
+          "help": "The slot keys a row may carry: value, group."
+        },
+        "pickableColumns": {
+          "help": "Per slot the columns setDatasets accepts, each { key, name }; the key is instanceId|sheetId|columnId."
+        },
+        "stats": {
+          "help": "Per plotted series { name, stats, ci }: stats { n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }, ci { mean, variance, stddev } as [low, high]; null while nothing can be computed."
+        }
+      },
       "sectionData": "Data Source",
       "valueColumn": "Value column (numeric)",
       "selectColumn": "— Select column —",
