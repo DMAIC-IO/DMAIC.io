@@ -94,7 +94,7 @@ export default createModule({
         this._enlargedDialog?.close();
         this.enlarged = { r, c };
         this._enlargedDialog = module._context.dialog.show({
-          title: _t('imageEnlargedAria'),
+          title: this.imageAlt(r, c),
           size: 'wide',
           content: this.$refs.enlargedView,
           onClose: () => { this.enlarged = null; this._enlargedDialog = null; },

@@ -5904,8 +5904,6 @@
       "addImage": "Image",
       "clearImage": "Remove image",
       "imageAlt": "Sketch for {row} · {col}",
-      "imageEnlargedAria": "Show image enlarged",
-      "close": "Close",
       "imageTooLarge": "Image too large (max. 2 MB).",
       "imageReadError": "Could not read image.",
       "imageTypeError": "Selected file is not an image.",
