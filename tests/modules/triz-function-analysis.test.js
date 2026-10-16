@@ -207,15 +207,6 @@ suite('triz-function-analysis — functions', () => {
     assertEqual(isComplete(s.functions[3]), false);
   });
 
-  test('setEndpoints refuses carrier === object and ticks the new pair', () => {
-    const s = fixture();
-    assertEqual(s.setEndpoints('f1', 'b', 'b'), false);
-    assertDeepEqual([s.fn('f1').carrier, s.fn('f1').object], ['b', 't']);
-    assertEqual(s.setEndpoints('f1', 'p', 't'), true);
-    assertTrue(s.hasInteraction('p', 't'));
-    assertTrue(s.hasInteraction('b', 't'), 'old pair stays ticked (now an open pair)');
-  });
-
   test('swapDirection exchanges carrier and object', () => {
     const s = fixture();
     s.swapDirection('f3');

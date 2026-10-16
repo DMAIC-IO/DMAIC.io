@@ -93,23 +93,17 @@
           <template x-for="fn in model.functions" :key="fn.id">
             <article class="tfa__fn" :class="fnClass(fn)" data-role="function" :data-id="fn.id" @click="selectFunction(fn.id)">
               <div class="tfa__fn-row">
-                <select class="field" data-role="fn-carrier" :aria-label="t('carrier')" @change="setCarrier(fn, $event)">
-                  <option value="" x-text="t('selectPlaceholder')"></option>
-                  <template x-for="c in matrixComponents()" :key="c.id">
-                    <option :value="c.id" :selected="c.id === fn.carrier" x-text="c.name"></option>
-                  </template>
-                </select>
+                <span class="tfa__fn-end" data-role="fn-carrier" :title="t('carrier')" x-text="endName(fn.carrier)"></span>
                 <input class="field" type="text" data-role="fn-verb" :aria-label="t('verb')"
                   :placeholder="t('verbPlaceholder')" :value="fn.verb" @input="setVerb(fn, $event)">
-                <select class="field" data-role="fn-object" :aria-label="t('object')" @change="setObject(fn, $event)">
-                  <option value="" x-text="t('selectPlaceholder')"></option>
-                  <template x-for="c in matrixComponents()" :key="c.id">
-                    <option :value="c.id" :selected="c.id === fn.object" x-text="c.name"></option>
-                  </template>
-                </select>
+                <span class="tfa__fn-end" data-role="fn-object" :title="t('object')" x-text="endName(fn.object)"></span>
                 <button type="button" class="btn btn--sm" data-role="fn-swap" :title="t('swapDirection')"
                   :aria-label="t('swapDirection')" @click.stop="swap(fn)">
                   <span class="icon icon--sm" data-icon="action.swap"></span>
+                </button>
+                <button type="button" class="btn btn--sm" data-role="fn-add-on-pair" :title="t('addOnPair')"
+                  :aria-label="t('addOnPair')" x-show="isComplete(fn)" @click.stop="addOnPair(fn)">
+                  <span class="icon icon--sm" data-icon="action.add"></span>
                 </button>
                 <button type="button" class="btn btn--sm" data-role="fn-remove" :title="t('removeFunction')"
                   :aria-label="t('removeFunction')" @click.stop="removeFunction(fn)">
@@ -133,10 +127,6 @@
             </article>
           </template>
           <p class="tfa__hint" x-show="model.functions.length === 0" x-text="t('noFunctions')"></p>
-          <button type="button" class="btn btn--sm tfa__add" data-role="fn-add" @click="addFunction()">
-            <span class="icon icon--sm" data-icon="action.add"></span>
-            <span x-text="t('addFunction')"></span>
-          </button>
         </div>
 
         <div class="dmike-split__output" data-role="diagram-pane">

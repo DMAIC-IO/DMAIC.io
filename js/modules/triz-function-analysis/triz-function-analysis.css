@@ -133,13 +133,20 @@ thead .tfa__mh {
 
 .tfa__fn-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr auto auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto auto auto;
   gap: var(--spacing-xs);
   align-items: center;
 }
 
 .tfa__fn-row + .tfa__fn-row {
   grid-template-columns: 1fr 1fr 1fr auto;
+}
+
+.tfa__fn-end {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tfa__rank {

@@ -8,7 +8,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import {
-  State, KINDS, GROUPS, LEVELS, TABS, orderedComponents, openPairs, rankOf, disadvantages,
+  State, KINDS, GROUPS, LEVELS, TABS, orderedComponents, openPairs, rankOf, disadvantages, isComplete,
 } from './triz-function-analysis-model.js';
 import {
   NODE_W, NODE_H, resolvePositions, buildFunctionDiagram,
@@ -113,18 +113,11 @@ export default createModule({
         });
       },
       createFromPair(p) { this.selectedId = this.model.addFunction(p.a, p.b).id; },
-      addFunction() { this.selectedId = this.model.addFunction().id; },
-      setCarrier(fn, ev) {
-        if (!this.model.setEndpoints(fn.id, ev.target.value, fn.object)) {
-          ev.target.value = fn.carrier;
-          notify(_t('sameEndpoint'));
-        }
-      },
-      setObject(fn, ev) {
-        if (!this.model.setEndpoints(fn.id, fn.carrier, ev.target.value)) {
-          ev.target.value = fn.object;
-          notify(_t('sameEndpoint'));
-        }
+      addOnPair(fn) { this.selectedId = this.model.addFunction(fn.carrier, fn.object).id; },
+      isComplete(fn) { return isComplete(fn); },
+      endName(id) {
+        const c = this.model.component(id);
+        return c ? label(c) : '—';
       },
       setVerb(fn, ev) { fn.verb = ev.target.value; },
       setParameter(fn, ev) { fn.parameter = ev.target.value; },

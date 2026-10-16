@@ -283,19 +283,6 @@ export class State {
     return f;
   }
 
-  /**
-   * @param {string} id @param {string} carrier @param {string} object
-   * @returns {boolean} false when carrier === object (nothing changes)
-   */
-  setEndpoints(id, carrier, object) {
-    const f = this.fn(id);
-    if (!f || (carrier && carrier === object)) return false;
-    f.carrier = carrier;
-    f.object = object;
-    if (isComplete(f)) this._tick(carrier, object);
-    return true;
-  }
-
   /** @param {string} id */
   swapDirection(id) {
     const f = this.fn(id);
