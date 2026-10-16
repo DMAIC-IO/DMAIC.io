@@ -17,7 +17,7 @@ import { draggablePopout } from '../../ui/draggable-popout.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
 import {
-  Stakeholder, State, QUAD_ORDER, SUPPORT_VALUES, CATEGORY_VALUES,
+  Stakeholder, State, QUAD_ORDER, SUPPORT_VALUES, CATEGORY_VALUES, criticalCritics, isKeyCritic,
 } from './stakeholder-analysis-model.js';
 
 // Macht und Interesse laufen von 1 bis 5. `requireIndex` passt darauf nicht:
@@ -66,6 +66,11 @@ function pascal(s) {
 function capFirst(s) {
   const str = String(s);
   return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+/** Colour tone of an attitude; unknown (imported) values get critic styling, like supportColor. */
+function supportToneOf(support) {
+  return SUPPORT_VALUES.includes(support) ? support : 'critic';
 }
 
 function avatarColorOf(name) {
@@ -132,6 +137,8 @@ export default createModule({
       supportLabel: (s) => _raw(`support${  capFirst(s)}`),
       /** @noagent view transform: die Klasse der Haltungsmarke. */
       supportBadgeClass: (s) => `sha__support-badge sha__support-badge--${  s}`,
+      supportTones: SUPPORT_VALUES,
+      chipDotClass: (s) => `sha__chip-dot sha__chip-dot--${supportToneOf(s)}`,
 
       // ── View transforms: category (mirrors legacy key construction 1:1) ──
       /** @noagent view transform: der übersetzte Name der Kategorie. */
@@ -156,6 +163,21 @@ export default createModule({
       chipsFor(quad) {
         return this.model.stakeholders.filter((s) => s.quadrant === quad);
       },
+      /** @noagent view transform: CSS-Klasse des Chips, hervorgehoben für Schlüssel-Kritiker. */
+      chipClass(sh) {
+        return isKeyCritic(sh) ? 'sha__chip sha__chip--alert' : 'sha__chip';
+      },
+
+      // ── Key-stakeholder warning: critics in "manage closely" ──
+      /** @noagent view transform: die Kritiker im Quadranten „eng managen". */
+      keyCritics() {
+        return criticalCritics(this.model.stakeholders);
+      },
+      /** @noagent view transform: der Warntext mit den Namen der Schlüssel-Kritiker. */
+      criticWarningText() {
+        return this.t('criticWarningText', { names: this.keyCritics().map((s) => s.name).join(', ') });
+      },
+
       /** @noagent view transform: die Beteiligten nach Quadrantenrang. */
       sortedStakeholders() {
         return [...this.model.stakeholders].sort(
@@ -245,9 +267,10 @@ export default createModule({
        * `removeStakeholder`.
        */
       async deleteStakeholder(sh) {
-        const ok = await module._context.confirmPopout(
-          this.t('deleteConfirm', { name: sh.name }), { danger: true }
-        );
+        const ok = await module._context.dialog.confirm({
+          message: this.t('deleteConfirm', { name: sh.name }),
+          danger: true,
+        });
         if (!ok) return;
         if (this.model.stakeholders.some((s) => s.id === sh.id)) this.removeStakeholder(sh.id);
       },

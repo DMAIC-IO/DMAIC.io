@@ -24,10 +24,10 @@ export function isNightly() {
  * No-op when not on the nightly hostname.
  *
  * @param {object} ctx
- * @param {import('../ui/modal.js').Modal} ctx.modal
+ * @param {object} ctx.dialog  dialog service (ui/dialog/dialog.js)
  * @param {import('./i18n.js').I18n} ctx.i18n
  */
-export function initNightlyMode({ modal, i18n }) {
+export function initNightlyMode({ dialog, i18n }) {
   if (!isNightly()) return;
 
   document.documentElement.classList.add('is-nightly');
@@ -35,7 +35,7 @@ export function initNightlyMode({ modal, i18n }) {
 
   if (localStorage.getItem(ACKNOWLEDGED_KEY) !== '1') {
     // Defer slightly so the rest of the app finishes rendering first
-    setTimeout(() => _showWelcomeModal(modal, i18n), 50);
+    setTimeout(() => _showWelcomeModal(dialog, i18n), 50);
   }
 }
 
@@ -61,11 +61,11 @@ function _renderBanner(i18n) {
   document.body.prepend(banner);
 }
 
-async function _showWelcomeModal(modal, i18n) {
-  await modal.alert(
-    i18n.t('nightly.modalBody'),
-    i18n.t('nightly.modalTitle'),
-  );
+async function _showWelcomeModal(dialog, i18n) {
+  await dialog.alert({
+    message: i18n.t('nightly.modalBody'),
+    title: i18n.t('nightly.modalTitle'),
+  });
   try {
     localStorage.setItem(ACKNOWLEDGED_KEY, '1');
   } catch {

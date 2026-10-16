@@ -5,7 +5,6 @@
 import { Router } from './router.js';
 import { registerRouteDirectives } from './route-store.js';
 import { createActionVerbs } from './action-verbs.js';
-import { createActionModal } from '../../ui/action-modal.js';
 import { loadScenario } from '../scenario-loader.js';
 import { rehydrateProject } from '../../frame/project-rehydrate.js';
 
@@ -57,6 +56,7 @@ export function createAppActionVerbs(kernel, ui, routerBox) {
     i18n: kernel.i18n,
     examplesRegistry: kernel.examplesRegistry,
     stateManager: kernel.stateManager,
+    eventBus: kernel.eventBus,
     notify: ui.notify,
     loadScenario: (args) => loadScenario({
       examplesRegistry: kernel.examplesRegistry,
@@ -81,29 +81,23 @@ export function createAppActionVerbs(kernel, ui, routerBox) {
 /**
  * Build the Router and start it (attaches hashchange, applies the boot hash).
  * Wires the action verb registry (built earlier via `createAppActionVerbs`,
- * see `ui.actionVerbs`) into the Router together with the shared action
- * splash. Fills `ui.routerBox.current` with the new Router BEFORE
- * `router.start()` — the boot hash may itself be an action URL, whose verb
- * closures read the box.
+ * see `ui.actionVerbs`) into the Router together with a progress dialog.
+ * Fills `ui.routerBox.current` with the new Router BEFORE `router.start()` —
+ * the boot hash may itself be an action URL, whose verb closures read the box.
  *
- * The modal instance: pass one in via `ui.actionModal` so the rest of the
- * chrome (built earlier in app.js) shares it; if omitted, one is created here.
- * Either way the live instance is reachable as `router.getActionModal()`.
+ * `ui.progress` is the app-wide progress controller (from `dialog.progress()`,
+ * created once in app.js). The router subscribes it to the scenario progress
+ * events, so the frame chrome must drive the SAME instance.
  *
  * @param {object} kernel
  * @param {{ dmaicTiles: object, workspace: object, notify?: function,
- *          modal?: object, actionModal?: object, actionVerbs: Map<string, object>,
+ *          progress: object, actionVerbs: Map<string, object>,
  *          routerBox: { current: object|null } }} ui
  * @param {Map<string, object>} pages
  * @param {object} Alpine
  * @returns {Router}
  */
 export function initRouter(kernel, ui, pages, Alpine) {
-  if (!ui.actionModal) {
-    console.warn('[router] no ui.actionModal passed — creating a second, ' +
-      'independent dialog. Pass the app-wide instance (see app.js) instead.');
-  }
-  const actionModal = ui.actionModal ?? createActionModal({ i18n: kernel.i18n, modal: ui.modal });
   const router = new Router({
     stateManager: kernel.stateManager,
     moduleRegistry: kernel.moduleRegistry,
@@ -115,7 +109,7 @@ export function initRouter(kernel, ui, pages, Alpine) {
   });
   if (ui.routerBox) ui.routerBox.current = router;
 
-  router.setActionVerbs(ui.actionVerbs, actionModal, ui.notify, kernel.i18n);
+  router.setActionVerbs(ui.actionVerbs, ui.progress, ui.notify, kernel.i18n);
 
   router.start();
   return router;

@@ -204,7 +204,7 @@ const m = createModule({
        */
       deleteLesson(lesson) {
         const self = this;
-        module._context.confirmPopout(_t('deleteConfirm'), { danger: true }).then(confirmed => {
+        module._context.dialog.confirm({ message: _t('deleteConfirm'), danger: true }).then(confirmed => {
           if (!confirmed) return;
           if (self.model.lessons.some(l => l.id === lesson.id)) self.removeLesson(lesson.id);
         });
@@ -449,10 +449,9 @@ const m = createModule({
       async openAddModal() {
         const self = this;
         this._resetDraft(null);
-        await module._context.showModal.form(
-          _t('addTitle'),
-          this.$refs.lessonForm,
-          {
+        await module._context.dialog.form({
+          title: _t('addTitle'),
+          content: this.$refs.lessonForm,
             confirmLabel: _t('common.save'),
             cancelLabel: _t('common.cancel'),
             onMount: (modalEl) => {
@@ -491,10 +490,9 @@ const m = createModule({
       async openEditModal(lesson) {
         const self = this;
         this._resetDraft(lesson);
-        await module._context.showModal.form(
-          _t('editTitle'),
-          this.$refs.lessonForm,
-          {
+        await module._context.dialog.form({
+          title: _t('editTitle'),
+          content: this.$refs.lessonForm,
             confirmLabel: _t('common.save'),
             cancelLabel: _t('common.cancel'),
             onMount: (modalEl) => {

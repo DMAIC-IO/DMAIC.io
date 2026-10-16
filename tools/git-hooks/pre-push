@@ -16,8 +16,10 @@ fail() { echo "" >&2; echo "❌ pre-push: $*" >&2; exit 1; }
 # ── DOM-free unit tests (~1 s) ───────────────────────────────────
 # The same run that gates nightly and release deploys. It also fails when the
 # SKIP list in tests/run-node.mjs drifts away from tests/runner.html.
-echo "▶ pre-push: npm run test:unit"
-if ! out="$(npm run -s test:unit 2>&1)"; then
+# TZ=UTC like the GitHub runners — a suite that only passes in local time
+# must fail here, not after the push.
+echo "▶ pre-push: TZ=UTC npm run test:unit"
+if ! out="$(TZ=UTC npm run -s test:unit 2>&1)"; then
   printf '%s\n' "$out" >&2
   fail "unit tests red — details above."
 fi

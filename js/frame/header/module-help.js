@@ -12,7 +12,7 @@ import { getModuleHelp } from '../../core/help-registry.js';
 import { GUIDE_I18N_KEYS } from '../../help/help-keys.js';
 import { loadScenario, describeScenario, countScenarioWorksheets } from '../../core/scenario-loader.js';
 import { buildScenarioConfirmDialog } from '../../dialogs/scenario-confirm/scenario-confirm.js';
-import { scenarioDoneState } from '../../ui/action-modal.js';
+import { scenarioDoneState } from '../../ui/dialog/progress.js';
 
 /**
  * Wire the global "Module Help" header button.
@@ -26,11 +26,11 @@ import { scenarioDoneState } from '../../ui/action-modal.js';
  *
  * @param {object} kernel - { i18n, eventBus, examplesRegistry, videosRegistry, glossaryRegistry,
  *   moduleRegistry, stateManager }
- * @param {object} ui     - { workspace, helpPanel, modal, notify, actionModal }
+ * @param {object} ui     - { workspace, helpPanel, dialog, notify, progress }
  */
 export function initModuleHelp(
   { i18n, eventBus, examplesRegistry, videosRegistry, glossaryRegistry, moduleRegistry, stateManager },
-  { workspace, helpPanel, modal, notify, actionModal },
+  { workspace, helpPanel, dialog, notify, progress },
 ) {
   const btn = document.getElementById('module-help-btn');
   if (!btn || !workspace || !helpPanel) return;
@@ -94,7 +94,7 @@ export function initModuleHelp(
   // awaits one examplesRegistry.load() per item (21 for the full pizza
   // scenario, each uncached, several fetching a second worksheet file), so the
   // row stays clickable for seconds before the confirm dialog appears. A
-  // second click would open a SECOND dialog on the shared modal host — whose
+  // second click would open a SECOND dialog on the shared dialog host — whose
   // Alpine node borrow/restore does not survive being re-entered.
   let scenarioBusy = false;
 
@@ -105,7 +105,7 @@ export function initModuleHelp(
   // the failing example ids go to the user, the raw error to console.warn
   // (mirrors action-verbs.js reportScenarioResult()).
   const loadScenarioAndApply = async (scenarioId) => {
-    if (!examplesRegistry || !moduleRegistry || !stateManager || !modal) return;
+    if (!examplesRegistry || !moduleRegistry || !stateManager || !dialog) return;
     if (scenarioBusy) return;
     scenarioBusy = true;
 
@@ -122,16 +122,16 @@ export function initModuleHelp(
       if (!scenario) return;
       scenarioTitle = scenario.title?.[i18n.getLanguage()] || scenario.title?.en || scenario.id;
 
-      // The shared modal (never a second createActionModal() — there is
+      // The shared progress dialog (never a second dialog.progress() — there is
       // exactly one dialog) covers the counting phase, the slow part.
-      actionModal?.open({ title: i18n.t('actions.loadingScenario'), subtitle: scenarioTitle });
+      progress?.open({ title: i18n.t('actions.loadingScenario'), subtitle: scenarioTitle });
       try {
         worksheetCount = await countScenarioWorksheets({ scenario, examplesRegistry });
       } finally {
-        actionModal?.close();
+        progress?.close();
       }
 
-      confirmed = await scenarioConfirmDialog.open(modal, {
+      confirmed = await scenarioConfirmDialog.open(dialog, {
         scenarioTitle, newCount: describeScenario({ scenario }).newCount, worksheetCount,
       }, {
         title: i18n.t('scenarios.confirmTitle', { title: scenarioTitle }),
@@ -145,7 +145,7 @@ export function initModuleHelp(
     }
     if (!confirmed) return;
 
-    actionModal?.open({ title: i18n.t('actions.loadingScenario'), subtitle: scenarioTitle });
+    progress?.open({ title: i18n.t('actions.loadingScenario'), subtitle: scenarioTitle });
     try {
       const result = await loadScenario({
         scenario, examplesRegistry, moduleRegistry, stateManager, eventBus, workspace,
@@ -178,7 +178,7 @@ export function initModuleHelp(
       // to the action-URL path only; this entry point never touches the hash.
       // The awaited hold() also resolves false if anything closes the dialog
       // from outside, so this can never strand the finally below.
-      await actionModal?.hold(scenarioDoneState({
+      await progress?.hold(scenarioDoneState({
         i18n, result, total, confirmLabel: 'common.close',
       }));
     } catch (err) {
@@ -192,7 +192,7 @@ export function initModuleHelp(
     } finally {
       // Idempotent: hold() already closed the dialog on the confirmed path.
       // This covers the throwing path and a hold cancelled from outside.
-      actionModal?.close();
+      progress?.close();
       scenarioBusy = false;
     }
   };

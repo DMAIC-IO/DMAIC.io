@@ -2,6 +2,7 @@ import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-u
 import {
   validateSchema, schemaOf, coerceValue, resolveSettings, toStored,
   withTileSettings, pruneTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave, titlesToStoreOnLayoutSave,
+  chartEditsToStoreOnLayoutSave, withCopiedChartEdits,
   SOURCE_KEY, sourceField,
 } from '../../js/pages/dashboard/tile-settings.js';
 
@@ -251,5 +252,28 @@ suite('tile-settings: copies on layout save', () => {
   test('a copy whose tile file failed to load keeps layout entry and settings', () => {
     assertEqual(settingsToStoreOnLayoutSave({ 'fmea~c1': { _source: 'i1' } }, [], false), null);
     assertDeepEqual(layoutToStoreOnSave([], LAYOUT, [], false), LAYOUT);
+  });
+});
+
+suite('tile settings: chart edits', () => {
+  const EDITS = { 'cap:a': { histogram: { showYTicks: true } }, 'cap~x': { histogram: { title: 'T' } } };
+
+  test('layout save prunes edits of tiles that no longer enumerate', () => {
+    assertDeepEqual(chartEditsToStoreOnLayoutSave(EDITS, ['cap:a'], true), { 'cap:a': { histogram: { showYTicks: true } } });
+  });
+
+  test('nothing changes while a tile file failed to load, or when all are live', () => {
+    assertEqual(chartEditsToStoreOnLayoutSave(EDITS, ['cap:a'], false), null);
+    assertEqual(chartEditsToStoreOnLayoutSave(EDITS, ['cap:a', 'cap~x'], true), null);
+    assertEqual(chartEditsToStoreOnLayoutSave(undefined, [], true), null);
+  });
+
+  test('duplicate copies the edits deeply; nothing to copy gives null', () => {
+    const next = withCopiedChartEdits(EDITS, 'cap:a', 'cap~y');
+    assertDeepEqual(next['cap~y'], { histogram: { showYTicks: true } });
+    next['cap~y'].histogram.showYTicks = false;
+    assertEqual(EDITS['cap:a'].histogram.showYTicks, true);
+    assertEqual(withCopiedChartEdits(EDITS, 'none', 'cap~z'), null);
+    assertEqual(withCopiedChartEdits(undefined, 'cap:a', 'cap~z'), null);
   });
 });

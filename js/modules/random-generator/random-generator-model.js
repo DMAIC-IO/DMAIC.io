@@ -144,7 +144,7 @@ export class State {
   attrCount = 50;
   attrSeed = 42;
 
-  /** True when a distribution has been selected (used by loadExample/confirmPopout). */
+  /** True when a distribution has been selected (used by loadExample/dialog.confirm). */
   hasContent() {
     return this.currentDist != null;
   }

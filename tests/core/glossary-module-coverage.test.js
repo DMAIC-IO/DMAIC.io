@@ -83,6 +83,12 @@ suite('Glossar: Modul-Abdeckung', () => {
     }
   });
 
+  test('der Begriff "customer-survey" ist survey-builder zugeordnet', () => {
+    assertTrue(TERM_IDS.has('customer-survey'), 'Begriff "customer-survey" fehlt');
+    assertTrue(termsForModule('survey-builder').includes('customer-survey'),
+      'customer-survey ist nicht mit survey-builder verknüpft');
+  });
+
   // Die Abdeckung wird als Komplement formuliert, damit die Lücke nicht
   // unbemerkt mitwächst: nur Module ohne eigenes Six-Sigma-Vokabular dürfen
   // leer bleiben. Ein neues Modul schlägt hier auf — dann entweder einen

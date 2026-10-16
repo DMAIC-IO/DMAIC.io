@@ -1,0 +1,37 @@
+<template x-if="vm.empty">
+  <p class="dashboard-area__empty" x-text="vm.empty"></p>
+</template>
+<template x-if="!vm.empty">
+  <div class="dashboard-voc__summary">
+    <template x-for="s in vm.stats">
+      <span class="dashboard-voc__stat"><strong x-text="s.value"></strong><span x-text="s.label"></span></span>
+    </template>
+  </div>
+</template>
+<template x-if="vm.segments.length">
+  <div class="dashboard-voc__driver-bar">
+    <template x-for="seg in vm.segments">
+      <div class="dashboard-voc__bar-seg" :style="seg.style" :title="seg.title"></div>
+    </template>
+  </div>
+</template>
+<template x-if="vm.legend">
+  <div class="dashboard-voc__driver-legend">
+    <template x-for="l in vm.legend">
+      <span class="dashboard-voc__legend-item"><span class="dashboard-fmea__legend-dot" :style="l.dot"></span><span x-text="l.text"></span></span>
+    </template>
+  </div>
+</template>
+<template x-if="vm.listLabel">
+  <div class="dashboard-voc__list-label" x-text="vm.listLabel"></div>
+</template>
+<template x-if="vm.listLabel">
+  <ul class="dashboard-voc__list">
+    <template x-for="v in vm.items">
+      <li class="dashboard-voc__item"><span x-text="v.quote"></span><template x-if="v.source"><span class="dashboard-area__muted" x-text="v.source"></span></template></li>
+    </template>
+    <template x-if="vm.more">
+      <li class="dashboard-voc__item dashboard-area__muted" x-text="vm.more"></li>
+    </template>
+  </ul>
+</template>

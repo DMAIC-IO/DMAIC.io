@@ -32,7 +32,7 @@ export function scenarioConfirmData(t) {
 /**
  * @param {{ i18n: object, eventBus: object }} ctx
  * @returns {{ prewarm: () => Promise<void>,
- *             open: (modal: object, init: object, opts?: object) => Promise<true|null> }}
+ *             open: (dialog: object, init: object, opts?: object) => Promise<true|null> }}
  */
 export function buildScenarioConfirmDialog(ctx) {
   return createDialog({

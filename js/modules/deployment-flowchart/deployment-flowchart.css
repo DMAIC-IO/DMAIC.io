@@ -92,11 +92,11 @@
 
 /* ── Import picker form (borrowed into the shared modal) ────────────── */
 
-/* Hidden inside the module container; the shared modal borrows the node,
-   so it must become visible again once it sits in the modal body
-   (mirrors .modal__body .pmap__sipoc-form in process-map.css). */
+/* Hidden inside the module container; the shared dialog borrows the node,
+   so it must become visible again once it sits in the dialog body
+   (mirrors .dialog__body .pmap__sipoc-form in process-map.css). */
 .df__import-form { display: none; }
-.modal__body .df__import-form { display: block; }
+.dialog__body .df__import-form { display: block; }
 
 .df__import-hint {
   color: var(--color-text-secondary);

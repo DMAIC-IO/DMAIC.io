@@ -8,12 +8,13 @@
  * §2 "Datenmodell".
  */
 
+import { uid } from '../uid.js';
 /**
  * Generate a unique step ID.
  * @returns {string}
  */
 function genStepId() {
-  return 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  return `s${uid()}`;
 }
 
 /**

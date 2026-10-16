@@ -31,6 +31,7 @@ import { h } from '../../core/dom.js';
 import { icon } from '../../core/icon.js';
 import { CHART_COLORS } from '../../core/chart/chart-colors.js';
 import { computeIMR } from '../../engines/control-chart-engine.js';
+import { computeTransformedIMR } from '../../engines/transformed-chart-engine.js';
 import { computeEWMA, computeCUSUM, estimateSigma } from '../../engines/time-weighted-chart-engine.js';
 import { groupedMeans, cellMeans } from '../../engines/grouped-aggregations.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
@@ -775,6 +776,16 @@ function buildChartConfig(chartType, columns, t) {
       const sub = result.subcharts.i;
       return { title: prep.valueName, xLabel: prep.xLabel || t('axis.observation'), yLabel: prep.valueName, values: sub.values, cl: sub.cl, ucl: sub.ucl, lcl: sub.lcl, sigma: sub.sigma, labels: result.labels };
     }
+    case 'transformed-imr-chart': {
+      // I chart on the original scale with the back-transformed (asymmetric)
+      // Box-Cox limits; zones would assume symmetry, so they stay off.
+      const prep = collectTimeOrderedSeries(date, cont);
+      if (!prep || prep.values.length < 2 || prep.values.some(v => !(v > 0))) return null;
+      const r = computeTransformedIMR(prep.values);
+      const lim = r.iLimitsOriginal;
+      if (![lim.cl, lim.ucl, lim.lcl].every(Number.isFinite)) return null;
+      return { chartType: 'control-chart', title: `${prep.valueName} (λ = ${r.lambda.toFixed(2)})`, xLabel: prep.xLabel || t('axis.observation'), yLabel: prep.valueName, values: prep.values, cl: lim.cl, ucl: lim.ucl, lcl: lim.lcl, sigma: 0, showZones: false, violationIndices: new Set(r.signalsI) };
+    }
     case 'ewma': {
       const prep = collectTimeOrderedSeries(date, cont);
       if (!prep || prep.values.length < 3) return null;
@@ -962,8 +973,11 @@ const KNOWN_THUMBS = new Set([
   'mosaic', 'pareto', 'pie', 'probability-plot', 'run-chart', 'scatter',
   'scatter-marginal-boxplot', 'scatter-marginal-histogram', 'scatter-matrix',
 ]);
+/** Chart types that share another type's thumbnail. */
+const THUMB_ALIASES = { 'transformed-imr-chart': 'control-chart' };
 function chartThumbNode(type) {
-  const name = KNOWN_THUMBS.has(type) ? type : 'generic';
+  const thumb = THUMB_ALIASES[type] || type;
+  const name = KNOWN_THUMBS.has(thumb) ? thumb : 'generic';
   // Dynamischer Name: der Lint in tools/build-icons.mjs sieht nur Literale. Die
   // Abdeckung garantiert stattdessen icon-map.json, die alle chart.*-Einträge führt.
   return icon(`chart.${name}`, { raw: RAW_THUMBS.has(type), cls: 'chart-suggestion__thumb-ico' });

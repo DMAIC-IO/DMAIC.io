@@ -27,8 +27,16 @@ import { debounce } from '../debounce.js';
 const FONT_MAIN = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
 const FONT_MONO = "'SF Mono', 'Cascadia Code', Consolas, 'Liberation Mono', monospace";
 
-/** Default margins */
-const DEFAULT_MARGIN = { top: 48, right: 24, bottom: 58, left: 72 };
+/** Default margins (every element drawn). */
+export const DEFAULT_MARGIN = { top: 48, right: 24, bottom: 58, left: 72 };
+/** Margins of a side whose title / ticks are not drawn (top still fits ref-line labels at pa.y - 4). */
+export const COMPACT_MARGIN = { top: 16, bottom: 8, left: 8 };
+/** Bottom margin for tick or category labels without an x axis title (labels sit at pa.y + pa.h + 14…18). */
+export const X_TICKS_BOTTOM = 28;
+/** Bottom margin for an x axis title without tick labels (the title moves up to pa.y + pa.h + 20). */
+export const X_LABEL_ONLY_BOTTOM = 32;
+/** Left gutter for the rotated y axis title (drawn centred at x = 18) without tick labels. */
+export const Y_LABEL_GUTTER = 28;
 const LEGEND_WIDTH = 90;
 // Gutter between the widest y-axis label and the plot area. Covers the largest
 // offset any chart type draws its left labels at (base ticks sit at `pa.x - 10`)
@@ -238,11 +246,14 @@ export default class ChartBase {
     this._editorInner.className = 'dmike-chart-editor-inner';
     this._editorPanel.appendChild(this._editorInner);
 
-    // Assemble: svgWrap first, then modebar LAST so it paints on top
+    // Assemble: svgWrap first, then modebar LAST so it paints on top.
+    // showModebar:false (offscreen exports, overlays) leaves out modebar and
+    // editor panel; the modebar instance still exists so destroy() is uniform.
+    const showModebar = this.config.showModebar !== false;
     this._wrap.appendChild(this._svgWrap);
-    this._wrap.appendChild(this._modebarInstance.el);
+    if (showModebar) this._wrap.appendChild(this._modebarInstance.el);
     this._card.appendChild(this._wrap);
-    this._card.appendChild(this._editorPanel);
+    if (showModebar) this._card.appendChild(this._editorPanel);
     this.container.appendChild(this._card);
   }
 
@@ -276,6 +287,11 @@ export default class ChartBase {
 
   /**
    * Build or rebuild the standard editor panel contents.
+   *
+   * After every edit the chart is re-rendered and `config.onEditorChange(chart)`
+   * is called (if set). Chart types receive `onChange()` (re-render + notify,
+   * editor DOM kept) as 4th argument of `_buildTypeEditor(inner, t, onUpdate, onChange)`;
+   * `onUpdate()` additionally rebuilds the editor and notifies as well.
    * @private
    */
   _buildEditor() {
@@ -291,35 +307,49 @@ export default class ChartBase {
       }
       return key;
     };
+    const notify = () => {
+      if (typeof cfg.onEditorChange === 'function') cfg.onEditorChange(this);
+    };
+    // Re-render after an edit that keeps the editor's DOM as is.
+    const onChange = () => {
+      this.render();
+      notify();
+    };
+    // Re-render and rebuild the editor (sections whose rows depend on the edit).
     const onUpdate = () => {
       this.render();
       this._buildEditor();
+      notify();
     };
     const onEdit = (key, value) => this._onLabelEdit?.(key, value);
     const auto = this._autoLabels || {};
 
     // Title section
-    inner.appendChild(edTitleSection(cfg, () => this.render(), t, onEdit, auto));
+    inner.appendChild(edTitleSection(cfg, onChange, t, onEdit, auto));
 
     // Legend toggle
     if (this._getLegendItems().length > 0 || (cfg.refLines && cfg.refLines.length) || (cfg.refAreas && cfg.refAreas.length)) {
-      inner.appendChild(edCheckboxRow(t('showLegend'), cfg.showLegend !== false, (v) => { cfg.showLegend = v; onUpdate(); }));
+      inner.appendChild(edCheckboxRow(t('showLegend'), cfg.showLegend !== false, (v) => {
+        cfg.showLegend = v;
+        onEdit('showLegend', v);
+        onUpdate();
+      }, 'showLegend'));
     }
 
     // Font sizes
-    inner.appendChild(edFontSizeSection(cfg, () => this.render(), t));
+    inner.appendChild(edFontSizeSection(cfg, onChange, t));
 
     // Axis labels
-    inner.appendChild(edAxisLabelSection(cfg, () => this.render(), t, onEdit, auto));
+    inner.appendChild(edAxisLabelSection(cfg, onChange, t, onEdit, auto));
 
     // Axis ticks (suppressed when both axes are categorical)
-    const tickSec = edAxisTickSection(cfg, () => this.render(), t);
+    const tickSec = edAxisTickSection(cfg, onChange, t, onEdit);
     if (tickSec) inner.appendChild(tickSec);
 
     // Background color
     inner.appendChild(edBgColorSection(cfg, (changes) => {
       Object.assign(cfg, changes);
-      this.render();
+      onChange();
     }, (e, color, cb) => {
       openColorPicker(e, color, cb);
     }, t));
@@ -361,7 +391,7 @@ export default class ChartBase {
           openColorPicker(e, d.getColor(), (c) => {
             d.setColor(c);
             swatch.style.background = c;
-            this.render();
+            onChange();
             if (typeof cfg.onSeriesChange === 'function') cfg.onSeriesChange(d.index, 'color', c);
           });
         });
@@ -370,7 +400,7 @@ export default class ChartBase {
         nameInp.value = d.getName();
         nameInp.addEventListener('change', () => {
           d.setName(nameInp.value);
-          this.render();
+          onChange();
           if (typeof cfg.onSeriesChange === 'function') cfg.onSeriesChange(d.index, 'name', nameInp.value);
         });
 
@@ -392,13 +422,13 @@ export default class ChartBase {
         if (typeof d.getSymbol === 'function') {
           details.appendChild(edSelectRow(tm('symbol'), MARKER_SYMBOLS, d.getSymbol() || 'circle', (v) => {
             d.setSymbol(v);
-            this.render();
+            onChange();
           }));
         }
         if (typeof d.getSize === 'function') {
           details.appendChild(edRangeRow(tm('size'), d.getSize() ?? 8, (v) => {
             d.setSize(v);
-            this.render();
+            onChange();
           }, 0, 24, 1));
         }
         // Fill color row (more detailed than the header swatch)
@@ -409,7 +439,7 @@ export default class ChartBase {
               d.setColor(c);
               fillSw.style.background = c;
               swatch.style.background = c;
-              this.render();
+              onChange();
               if (typeof cfg.onSeriesChange === 'function') cfg.onSeriesChange(d.index, 'color', c);
             });
           });
@@ -421,7 +451,7 @@ export default class ChartBase {
             openColorPicker(e, d.getStroke(), (c) => {
               d.setStroke(c);
               strokeSw.style.background = c;
-              this.render();
+              onChange();
             });
           });
           details.appendChild(strokeRow);
@@ -429,7 +459,7 @@ export default class ChartBase {
         if (typeof d.getStrokeWidth === 'function') {
           details.appendChild(edRangeRow(tm('strokeWidth'), d.getStrokeWidth() ?? 1, (v) => {
             d.setStrokeWidth(v);
-            this.render();
+            onChange();
           }, 0, 6, 0.5));
         }
 
@@ -442,7 +472,7 @@ export default class ChartBase {
 
     // Let chart types add their own editor sections
     if (typeof this._buildTypeEditor === 'function') {
-      this._buildTypeEditor(inner, t, onUpdate);
+      this._buildTypeEditor(inner, t, onUpdate, onChange);
     }
 
     // Let consumers add custom editor sections (receives seriesItemEls for appending details)
@@ -781,6 +811,54 @@ export default class ChartBase {
   }
 
   /**
+   * Pixels reserved under the plot for tick or category labels; 0 = none.
+   * Types that draw labels below the plot regardless of `showXTicks` override it.
+   * @protected
+   * @returns {number}
+   */
+  _getBottomTickGutter() {
+    return this.config.showXTicks !== false ? X_TICKS_BOTTOM : 0;
+  }
+
+  /**
+   * Whether labels are drawn left of the plot although `_getYAxisLabels()`
+   * reports none (types that draw their own y ticks override it).
+   * @protected
+   * @returns {boolean}
+   */
+  _hasLeftTickLabels() {
+    return this.config.showYTicks !== false;
+  }
+
+  /**
+   * Extra pixels a type draws directly above the plot (e.g. a panel band);
+   * only reserved when no title is drawn (the title margin already covers it).
+   * @protected
+   * @returns {number}
+   */
+  _getTopGutter() {
+    return 0;
+  }
+
+  /**
+   * Top and bottom margins from the drawn elements. With everything drawn
+   * they equal DEFAULT_MARGIN.
+   * @protected
+   * @returns {{top: number, bottom: number}}
+   */
+  _getMargins() {
+    const c = this.config;
+    const hasTitle = c.showTitle !== false && !!c.title;
+    const hasXLabel = c.showXLabel !== false && !!c.xLabel;
+    const gutter = this._getBottomTickGutter();
+    const top = hasTitle ? DEFAULT_MARGIN.top : COMPACT_MARGIN.top + this._getTopGutter();
+    const bottom = hasXLabel
+      ? (gutter > 0 ? Math.max(DEFAULT_MARGIN.bottom, gutter) : X_LABEL_ONLY_BOTTOM)
+      : Math.max(gutter, COMPACT_MARGIN.bottom);
+    return { top, bottom };
+  }
+
+  /**
    * Measure the left margin needed for the y-axis labels, using an offscreen
    * Canvas (works before the SVG is laid out) — the mirror image of
    * `_measureLegendWidth` for the right side.
@@ -790,11 +868,15 @@ export default class ChartBase {
    * `overflow: hidden` on `.dmike-chart-svg-wrap`.
    *
    * @private
-   * @returns {number} Required left margin in px (never below the default)
+   * @returns {number} Required left margin in px (the default floor applies only while labels are drawn)
    */
   _measureLeftMargin() {
     const { labels, mono } = this._getYAxisLabels();
-    if (!labels || labels.length === 0) return DEFAULT_MARGIN.left;
+    if (!labels || labels.length === 0) {
+      if (this._hasLeftTickLabels()) return DEFAULT_MARGIN.left;
+      const hasYLabel = this.config.showYLabel !== false && !!this.config.yLabel;
+      return COMPACT_MARGIN.left + (hasYLabel ? Y_LABEL_GUTTER : 0);
+    }
 
     const ctx = document.createElement('canvas').getContext('2d');
     ctx.font = `${this.config.tickSize || 11}px ${mono ? FONT_MONO : FONT_MAIN}`;
@@ -813,12 +895,13 @@ export default class ChartBase {
     const size = this._getSize();
     const lw = this._legendWidth || LEGEND_WIDTH;
     const rMargin = this.config.showLegend ? lw + 16 : DEFAULT_MARGIN.right;
-    const lMargin = this._leftMargin || DEFAULT_MARGIN.left;
+    const lMargin = this._leftMargin ?? DEFAULT_MARGIN.left;
+    const { top, bottom } = this._getMargins();
     return {
       x: lMargin,
-      y: DEFAULT_MARGIN.top,
+      y: top,
       w: size.w - lMargin - rMargin,
-      h: size.h - DEFAULT_MARGIN.top - DEFAULT_MARGIN.bottom,
+      h: size.h - top - bottom,
       totalW: size.w,
       totalH: size.h,
       rMargin,
@@ -995,7 +1078,7 @@ export default class ChartBase {
     // X Label
     if (this.config.showXLabel !== false && this.config.xLabel) {
       svgText(this.config.xLabel, {
-        x: pa.x + pa.w / 2, y: pa.y + pa.h + 46,
+        x: pa.x + pa.w / 2, y: pa.y + pa.h + (this._getBottomTickGutter() > 0 ? 46 : 20),
         'text-anchor': 'middle', 'font-size': `${this.config.labelSize  }px`, 'font-weight': '600', fill: textPrimary,
         'font-family': FONT_MAIN
       }, svg);
@@ -1188,6 +1271,10 @@ export default class ChartBase {
         svgEl('line', lineAttrs, svg);
       } else {
         svgEl('rect', { x: lx, y: y + 1, width: 14, height: 12, fill: resolveColor(item.color), rx: 2 }, svg);
+        // Optional pattern overlay: id of a <pattern> already defined in this svg.
+        if (item.patternId) {
+          svgEl('rect', { x: lx, y: y + 1, width: 14, height: 12, fill: `url(#${item.patternId})`, rx: 2, 'data-legend-pattern': '' }, svg);
+        }
       }
       svgText(item.label, {
         x: lx + 20, y: y + 11,
@@ -1199,8 +1286,14 @@ export default class ChartBase {
 
   // ── Export ────────────────────────────────────────────────────────
 
-  /** @private */
+  /**
+   * Download name without extension: `config.fileName` if set, else the
+   * sanitised title.
+   * @protected
+   * @returns {string}
+   */
   _getFileName() {
+    if (this.config.fileName) return this.config.fileName;
     return (this.config.title || 'chart').replace(/[^a-zA-Z0-9_\-äöüÄÖÜß]/g, '_');
   }
 
@@ -1564,6 +1657,15 @@ export default class ChartBase {
       this._renderErrorEl.textContent = this.context.i18n?.t('chart.renderError') ?? 'chart.renderError';
     }
     this._svgWrap?.append(this._renderErrorEl);
+  }
+
+  /**
+   * Rebuild the editor panel from the current config, only while it is open.
+   * Call after `update()` replaced config objects the editor rows close over
+   * (series, reference lines), so later edits reach the new objects.
+   */
+  refreshEditor() {
+    if (this._editorOpen) this._buildEditor();
   }
 
   /**

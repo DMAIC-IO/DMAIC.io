@@ -20,7 +20,7 @@
  *   showCellLabels: true — draw count text inside cells big enough
  */
 
-import ChartBase from '../chart-base.js';
+import ChartBase, { X_TICKS_BOTTOM } from '../chart-base.js';
 import { h } from '../../dom.js';
 import { svgEl, svgText, resolveColor, formatNum, getChartColors } from '../chart-core.js';
 import { edSection, edCheckboxRow, edRangeRow } from '../chart-editor.js';
@@ -225,5 +225,10 @@ export default class MosaicChart extends ChartBase {
       px: hit.x + hit.w / 2,
       py: hit.y + hit.h / 2,
     }];
+  }
+
+  /** @override — category labels are drawn below the plot regardless of showXTicks. */
+  _getBottomTickGutter() {
+    return X_TICKS_BOTTOM;
   }
 }

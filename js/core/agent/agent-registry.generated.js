@@ -304,7 +304,6 @@ export const AGENT_REGISTRY = {
       "unmarked_method:toggleNelson",
       "unmarked_method:toggleRule",
       "unmarked_method:scheduleAutoRun",
-      "unmarked_method:readNumericColumn",
       "unmarked_method:runAnalysis",
       "unmarked_method:init",
       "unmarked_method:destroy",
@@ -1156,10 +1155,10 @@ export const AGENT_REGISTRY = {
       "unmarked_method:openInModule",
       "unmarked_method:init",
       "unmarked_method:destroy",
-      "dom_detour:dataset.matrixSize@237",
-      "dom_detour:dataset.matrixSize@307",
-      "dom_detour:dataset.matrixSize@423",
-      "dom_detour:dataset.matrixSize@532"
+      "dom_detour:dataset.matrixSize@238",
+      "dom_detour:dataset.matrixSize@308",
+      "dom_detour:dataset.matrixSize@424",
+      "dom_detour:dataset.matrixSize@533"
     ],
     "actions": {},
     "fields": {
@@ -5924,7 +5923,7 @@ export const AGENT_REGISTRY = {
       "runAnalysis": {
         "params": [],
         "returns": "void",
-        "help": "Computes with the current inputs. Incomplete or invalid inputs leave `result` at null without an error; a problem with the estimator (wrong method for the data, table limits) is named in `withinHint`."
+        "help": "Computes with the current inputs. Incomplete or invalid inputs leave `result` at null without an error; a problem with the estimator (wrong method for the data, table limits) is named in `withinHint`. The computation lives in process-capability-analysis.js."
       },
       "scheduleAnalysis": {
         "params": [],
@@ -6427,7 +6426,7 @@ export const AGENT_REGISTRY = {
       "unmarked_method:orgUndo",
       "unmarked_method:nodeStylePickColor",
       "unreadable_state_key:orgChart",
-      "dom_detour:dataset.orgId@356"
+      "dom_detour:dataset.orgId@365"
     ],
     "actions": {},
     "fields": {
@@ -7577,9 +7576,13 @@ export const AGENT_REGISTRY = {
   },
   "stakeholder-analysis": {
     "tagged": true,
-    "available": true,
-    "violations": [],
-    "reported": [],
+    "available": false,
+    "violations": [
+      "unmarked_method:chipDotClass"
+    ],
+    "reported": [
+      "unmarked_method:chipDotClass"
+    ],
     "actions": {
       "read": {
         "params": [
@@ -7642,6 +7645,219 @@ export const AGENT_REGISTRY = {
         "help": "die Beteiligten in Anlegereihenfolge; je Beteiligter `id` (zum Ansprechen), `name`, `role`, `power` und `interest` als Stufe von 1 bis 5, `support` (`supporter`, `neutral` oder `critic`), `category` (`intern`, `extern`, `kunde`, `lieferant` oder `behoerde`) und `notes`. Aus `power` und `interest` leitet die Auswertung den Vorrangquadranten ab — er wird nicht gespeichert und steht deshalb in keinem Feld",
         "bulk": true,
         "bulkKind": "table"
+      }
+    }
+  },
+  "survey-builder": {
+    "tagged": false,
+    "available": false,
+    "violations": [],
+    "reported": [
+      "unmarked_method:init",
+      "unmarked_method:destroy",
+      "unmarked_method:destroyCharts",
+      "unmarked_method:isTab",
+      "unmarked_method:tabClass",
+      "unmarked_method:setTab",
+      "unmarked_method:typeLabel",
+      "unmarked_method:questionLabel",
+      "unmarked_method:sectionPlaceholder",
+      "unmarked_method:hasCondition",
+      "unmarked_method:reportRemoved",
+      "unmarked_method:setHeaderFromEvent",
+      "unmarked_method:addSection",
+      "unmarked_method:updateSectionFromEvent",
+      "unmarked_method:moveSectionUp",
+      "unmarked_method:moveSectionDown",
+      "unmarked_method:deleteSection",
+      "unmarked_method:addQuestionFromEvent",
+      "unmarked_method:moveQuestionUp",
+      "unmarked_method:moveQuestionDown",
+      "unmarked_method:deleteQuestion",
+      "unmarked_method:selectQuestion",
+      "unmarked_method:selectSection",
+      "unmarked_method:selectedQuestion",
+      "unmarked_method:selectedSection",
+      "unmarked_method:hasSelectedQuestion",
+      "unmarked_method:hasSelectedSection",
+      "unmarked_method:hasNoSelection",
+      "unmarked_method:questionClass",
+      "unmarked_method:sectionClass",
+      "unmarked_method:sectionField",
+      "unmarked_method:updateSelectedSectionFromEvent",
+      "unmarked_method:questionField",
+      "unmarked_method:updateQuestionFromEvent",
+      "unmarked_method:isSelectedType",
+      "unmarked_method:changeTypeFromEvent",
+      "unmarked_method:canBeRequired",
+      "unmarked_method:flags",
+      "unmarked_method:flagLabel",
+      "unmarked_method:hasFlag",
+      "unmarked_method:toggleFlag",
+      "unmarked_method:itemKind",
+      "unmarked_method:hasItems",
+      "unmarked_method:items",
+      "unmarked_method:itemsTitle",
+      "unmarked_method:isMulti",
+      "unmarked_method:itemGroup",
+      "unmarked_method:addItem",
+      "unmarked_method:updateItemFromEvent",
+      "unmarked_method:moveItemUp",
+      "unmarked_method:moveItemDown",
+      "unmarked_method:deleteItem",
+      "unmarked_method:condNodeId",
+      "unmarked_method:hasCondNode",
+      "unmarked_method:condSources",
+      "unmarked_method:hasCondSources",
+      "unmarked_method:addCondition",
+      "unmarked_method:setCondSource",
+      "unmarked_method:condOptions",
+      "unmarked_method:condOptionChecked",
+      "unmarked_method:toggleCondOption",
+      "unmarked_method:removeCondition",
+      "unmarked_method:sourceLabel",
+      "unmarked_method:optionText",
+      "unmarked_method:warnings",
+      "unmarked_method:hasWarnings",
+      "unmarked_method:schedulePreview",
+      "unmarked_method:renderPreview",
+      "unmarked_method:versionLine",
+      "unmarked_method:exportGeneral",
+      "unmarked_method:formatDateTime",
+      "unmarked_method:fmtPct",
+      "unmarked_method:fmtNum",
+      "unmarked_method:hasRecipients",
+      "unmarked_method:addRecipient",
+      "unmarked_method:updateRecipientFromEvent",
+      "unmarked_method:recipientName",
+      "unmarked_method:deleteRecipient",
+      "unmarked_method:recipientStatusLabel",
+      "unmarked_method:isOutdated",
+      "unmarked_method:outdatedHint",
+      "unmarked_method:sentLabel",
+      "unmarked_method:countsLine",
+      "unmarked_method:exportForRecipient",
+      "unmarked_method:openImport",
+      "unmarked_method:importFromEvent",
+      "unmarked_method:onDragOver",
+      "unmarked_method:onDrop",
+      "unmarked_method:importFiles",
+      "unmarked_method:hasImportLog",
+      "unmarked_method:importStatusLabel",
+      "unmarked_method:importStatusClass",
+      "unmarked_method:noteLine",
+      "unmarked_method:hasResponses",
+      "unmarked_method:responseRows",
+      "unmarked_method:toggleResponse",
+      "unmarked_method:isResponseOpen",
+      "unmarked_method:responseDetails",
+      "unmarked_method:catLabel",
+      "unmarked_method:deleteResponse",
+      "unmarked_method:filterOptions",
+      "unmarked_method:filterValue",
+      "unmarked_method:isFilterValue",
+      "unmarked_method:setFilterFromEvent",
+      "unmarked_method:filtered",
+      "unmarked_method:nLine",
+      "unmarked_method:blocks",
+      "unmarked_method:isType",
+      "unmarked_method:isChoice",
+      "unmarked_method:chartKey",
+      "unmarked_method:blockN",
+      "unmarked_method:hasImportance",
+      "unmarked_method:hasOther",
+      "unmarked_method:otherShare",
+      "unmarked_method:hasOtherTexts",
+      "unmarked_method:distLabel",
+      "unmarked_method:textAnswers",
+      "unmarked_method:otherAnswers",
+      "unmarked_method:hasTextAnswers",
+      "unmarked_method:hasName",
+      "unmarked_method:isVocSelected",
+      "unmarked_method:isVocTaken",
+      "unmarked_method:toggleVoc",
+      "unmarked_method:hasVocSelection",
+      "unmarked_method:takeToVocTree",
+      "unmarked_method:kanoTargetOptions",
+      "unmarked_method:kanoTargetValue",
+      "unmarked_method:isKanoTarget",
+      "unmarked_method:setKanoTargetFromEvent",
+      "unmarked_method:handOverToKano",
+      "unmarked_method:toWorksheet",
+      "unmarked_method:rateLine",
+      "unmarked_method:hasWithoutRecipient",
+      "unmarked_method:withoutRecipientLine",
+      "unmarked_method:hasRateGroups",
+      "unmarked_method:rateGroups",
+      "unmarked_method:hasRanking",
+      "unmarked_method:rankingRows",
+      "unmarked_method:hasMoreRanking",
+      "unmarked_method:toggleRanking",
+      "unmarked_method:rankingToggleLabel",
+      "unmarked_method:hasKanoOverview",
+      "unmarked_method:kanoOverviewRows",
+      "unmarked_method:freeTextLine",
+      "unmarked_method:groupByOptions",
+      "unmarked_method:isGroupBy",
+      "unmarked_method:setGroupByFromEvent",
+      "unmarked_method:hasComparison",
+      "unmarked_method:groupsTitle",
+      "unmarked_method:groupHeads",
+      "unmarked_method:comparisonParts",
+      "unmarked_method:cellClass",
+      "unmarked_method:rowClass",
+      "unmarked_method:canShowNames",
+      "unmarked_method:isReportWithNames",
+      "unmarked_method:setReportWithNamesFromEvent",
+      "unmarked_method:exportReport",
+      "unmarked_method:scheduleCharts",
+      "unmarked_method:questionChartJobs",
+      "unmarked_method:chartJobs",
+      "unmarked_method:summaryChartJobs",
+      "unmarked_method:groupChartJobs",
+      "unmarked_method:mountCharts"
+    ],
+    "actions": {},
+    "fields": {
+      "survey": {
+        "type": "any",
+        "help": "",
+        "bulk": false
+      },
+      "recipients": {
+        "type": "Array<{id, name, organisation, group, email, note, sentAt: string|null, sentVersion: number|null}>",
+        "help": "",
+        "bulk": false
+      },
+      "responses": {
+        "type": "Array<{id, surveyVersion, recipientId: string|null, viaRecipient: boolean, submittedAt, answers: object}>",
+        "help": "",
+        "bulk": false
+      },
+      "answeredRecipientIds": {
+        "type": "string[]",
+        "help": "",
+        "bulk": false
+      },
+      "transfers": {
+        "type": "any",
+        "help": "",
+        "bulk": false
+      },
+      "ui": {
+        "type": "any",
+        "help": "",
+        "bulk": false
+      },
+      "dirtyStructure": {
+        "type": "any",
+        "help": "",
+        "bulk": false
+      },
+      "exportedOnce": {
+        "type": "any",
+        "help": "",
+        "bulk": false
       }
     }
   },
@@ -8286,6 +8502,87 @@ export const AGENT_REGISTRY = {
       "trends": {
         "type": "Record<string, {stage: number, notes: string}>",
         "help": "die acht Trends, nach ihrer id adressiert (aggregation, dynamism, scale, automation, completeness, controllability, matching, uneven). Jeder Eintrag trägt `stage` (die erreichte Stufe, 0-basiert; -1 heißt „keine gewählt\") und `notes`. `uneven` ist qualitativ und hat keine Stufenskala.",
+        "bulk": false
+      }
+    }
+  },
+  "triz-function-analysis": {
+    "tagged": false,
+    "available": false,
+    "violations": [],
+    "reported": [
+      "unmarked_method:setTab",
+      "unmarked_method:tabLabel",
+      "unmarked_method:tabClass",
+      "unmarked_method:contentClass",
+      "unmarked_method:groupLabel",
+      "unmarked_method:componentsOf",
+      "unmarked_method:canAdd",
+      "unmarked_method:addComponent",
+      "unmarked_method:setName",
+      "unmarked_method:setNote",
+      "unmarked_method:changeKind",
+      "unmarked_method:discardIfEmpty",
+      "unmarked_method:removeComponent",
+      "unmarked_method:matrixComponents",
+      "unmarked_method:headClass",
+      "unmarked_method:cellClass",
+      "unmarked_method:isTicked",
+      "unmarked_method:cellTitle",
+      "unmarked_method:toggleCell",
+      "unmarked_method:matrixSummary",
+      "unmarked_method:openPairChips",
+      "unmarked_method:createFromPair",
+      "unmarked_method:addFunction",
+      "unmarked_method:setCarrier",
+      "unmarked_method:setObject",
+      "unmarked_method:setVerb",
+      "unmarked_method:setParameter",
+      "unmarked_method:changeType",
+      "unmarked_method:changeLevel",
+      "unmarked_method:swap",
+      "unmarked_method:removeFunction",
+      "unmarked_method:rankLabel",
+      "unmarked_method:fnClass",
+      "unmarked_method:disadvantageGroups",
+      "unmarked_method:paramText",
+      "unmarked_method:init",
+      "unmarked_method:destroy",
+      "unmarked_method:drawArrows",
+      "unmarked_method:canvasStyle",
+      "unmarked_method:nodeStyle",
+      "unmarked_method:nodeClass",
+      "unmarked_method:startDrag",
+      "unmarked_method:resetLayout",
+      "unmarked_method:exportDiagram",
+      "unmarked_method:select",
+      "unmarked_method:selectFunction"
+    ],
+    "actions": {},
+    "fields": {
+      "components": {
+        "type": "any",
+        "help": "",
+        "bulk": false
+      },
+      "interactions": {
+        "type": "any",
+        "help": "",
+        "bulk": false
+      },
+      "functions": {
+        "type": "any",
+        "help": "",
+        "bulk": false
+      },
+      "positions": {
+        "type": "any",
+        "help": "",
+        "bulk": false
+      },
+      "activeTab": {
+        "type": "any",
+        "help": "",
         "bulk": false
       }
     }
@@ -9730,4 +10027,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":43};
+export const AGENT_COVERAGE = {"total":76,"available":42};

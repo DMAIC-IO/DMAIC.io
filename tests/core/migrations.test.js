@@ -27,6 +27,7 @@ const KNOWN_FIXTURES = [
   { file: 'v1.0.0_single_project.json', kind: 'single' },
   { file: 'v1.1.0_single_project.json', kind: 'single' },
   { file: 'v1.2.0_single_project.json', kind: 'single' },
+  { file: 'v1.3.0_single_project.json', kind: 'single' },
 ];
 
 async function loadFixture(file) {
@@ -46,6 +47,7 @@ suite('Migrations — behavioural', () => {
     const data = { appVersion: '0.2.0', foo: 'bar' };
     const result = migrateToLatest(data, '0.2.5');
     assertEqual(result.foo, 'bar');
+    assertEqual(result.appVersion, '0.2.5');
   });
 
   test('stamps target version on output', () => {
@@ -113,6 +115,26 @@ suite('Migrations — goldene Fixtures', () => {
         assertEqual(typeof migrated.moduleStates, 'object');
       } else {
         assertEqual(Array.isArray(migrated.projects), true);
+      }
+    });
+  }
+
+  // The app writes ZEG history entries as { t: <epoch ms>, v: <percent> }
+  // (js/ui/dmaic-tiles.js) and has never written anything else, so a
+  // fixture in another shape would not resemble a real export.
+  for (const { file, kind } of KNOWN_FIXTURES) {
+    test(`${file} stores ZEG history in the app's {t, v} shape`, async () => {
+      const data = await loadFixture(file);
+      const projects = kind === 'single' ? [data] : data.projects;
+      for (const proj of projects) {
+        for (const [phase, entries] of Object.entries(proj.phaseAchievementHistory || {})) {
+          for (const e of entries) {
+            const where = `${phase} entry ${JSON.stringify(e)}`;
+            assertEqual(Object.keys(e).sort().join(','), 't,v', `${where}: expected keys t, v`);
+            assertEqual(Number.isFinite(e.t), true, `${where}: t must be epoch ms`);
+            assertEqual(Number.isFinite(e.v), true, `${where}: v must be a number`);
+          }
+        }
       }
     });
   }

@@ -20,12 +20,12 @@ export default createStartup({
     return _isFreshInstall(stateManager);
   },
 
-  run({ stateManager, modal, notify, i18n, eventBus }) {
+  run({ stateManager, dialog, notify, i18n, eventBus }) {
     const others = findOtherVersions();
 
-    const dialog = buildCrossVersionImportDialog({ i18n, eventBus });
+    const importDialog = buildCrossVersionImportDialog({ i18n, eventBus });
 
-    dialog.open(modal, { versions: others }, {
+    importDialog.open(dialog, { versions: others }, {
       confirmLabel: i18n.t('crossVersion.takeover'),
       cancelLabel: i18n.t('crossVersion.dismiss'),
       onConfirm: async (body, model) => {

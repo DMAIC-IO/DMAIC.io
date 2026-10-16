@@ -97,7 +97,7 @@ export class State {
   exampleWorksheetId = null;
 
   /**
-   * Returns true if the module has meaningful content (drives confirmPopout).
+   * Returns true if the module has meaningful content (drives dialog.confirm).
    * @returns {boolean}
    */
   hasContent() {

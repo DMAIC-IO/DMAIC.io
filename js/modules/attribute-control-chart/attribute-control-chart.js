@@ -30,8 +30,8 @@ import {
 import {
   getAttributeChartType,
   ATTRIBUTE_NELSON_RULES,
-  evaluateAttributeRules,
 } from '../../engines/attribute-control-chart-engine.js';
+import { analyzeState } from './attribute-control-chart-analysis.js';
 
 import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-registry.js';
 
@@ -199,72 +199,18 @@ const mod = createModule({
 
       // ── Analysis (controller — needs context + live worksheet data) ──
 
-      readNumericColumn(ref) {
-        const raw = getColumnValues(module._context.stateManager, ref);
-        return raw.map(v => (typeof v === 'number' && !isNaN(v)) ? v : null);
-      },
-
       runAnalysis() {
-        const clear = () => {
+        const analysis = analyzeState(this.model, (ref) => getColumnValues(module._context.stateManager, ref));
+        if (!analysis) {
           this._destroyCharts();
           this.result = null;
           this._lastResult = null;
-        };
-
-        if (!this.model.defectsRef) return clear();
-
-        const ct = getAttributeChartType(this.model.chartTypeId);
-        if (!ct) return clear();
-
-        const defectsRaw = this.readNumericColumn(this.model.defectsRef);
-        const typeId = this.model.chartTypeId;
-        const baselineEnd = this.model.baselineCount;
-
-        let result, n, valid;
-        try {
-          if (typeId === 'p' || typeId === 'u') {
-            if (!this.model.sizeRef) return clear();
-            const sizesRaw = this.readNumericColumn(this.model.sizeRef);
-            const pairs = [];
-            const len = Math.min(defectsRaw.length, sizesRaw.length);
-            for (let i = 0; i < len; i++) {
-              if (defectsRaw[i] != null && sizesRaw[i] != null && sizesRaw[i] > 0) {
-                pairs.push([defectsRaw[i], sizesRaw[i]]);
-              }
-            }
-            if (pairs.length < 2) return clear();
-            const defects = pairs.map(p => p[0]);
-            const sizes = pairs.map(p => p[1]);
-            result = ct.compute({ defects, n: sizes, baselineEnd });
-            n = sizes;
-            valid = pairs.length;
-          } else if (typeId === 'np') {
-            const defects = defectsRaw.filter(v => v != null);
-            if (defects.length < 2) return clear();
-            result = ct.compute({ defects, n: this.model.constantN, baselineEnd });
-            n = result.n;
-            valid = defects.length;
-          } else { // c
-            const defects = defectsRaw.filter(v => v != null);
-            if (defects.length < 2) return clear();
-            result = ct.compute({ defects, baselineEnd });
-            n = null;
-            valid = defects.length;
-          }
-        } catch (err) {
-          console.error('attribute-control-chart compute error', err);
-          return clear();
+          return;
         }
-
-        const violations = evaluateAttributeRules(
-          result.values, result.cl, result.ucl, result.lcl, result.sigma, this.model.enabledRules,
-        );
-
-        this._lastResult = { result, ct, violations, n, valid };
-        this.result = result;
-
+        this._lastResult = analysis;
+        this.result = analysis.result;
         const gen = ++this._renderGen;
-        this.$nextTick(() => this._renderChart(result, violations, gen));
+        this.$nextTick(() => this._renderChart(analysis.result, analysis.violations, gen));
       },
 
       // ── SVG control chart (imperative via chartManager) ───────

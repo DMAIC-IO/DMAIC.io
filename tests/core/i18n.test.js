@@ -81,3 +81,37 @@ suite('I18n', () => {
   test.todo('setLanguage: emits language:changed event');
   test.todo('registerModuleTranslations: makes module keys accessible');
 });
+
+suite('I18n.section', () => {
+  function seeded() {
+    const i18n = new I18n('de');
+    i18n._cache.set('de', { m: { r: { save: 'Speichern', nested: { a: 'A-de' } } } });
+    i18n._cache.set('en', { m: { r: { save: 'Save', reset: 'Start over', nested: { a: 'A-en', b: 'B-en' } } } });
+    return i18n;
+  }
+
+  test('returns the subtree in the requested language, not the active one', async () => {
+    const i18n = seeded();
+    const s = await i18n.section('m.r', 'en');
+    assertEqual(s.save, 'Save');
+  });
+
+  test('fills keys missing in the requested language from en (deep)', async () => {
+    const s = await seeded().section('m.r', 'de');
+    assertEqual(s.save, 'Speichern');
+    assertEqual(s.reset, 'Start over');
+    assertEqual(s.nested.a, 'A-de');
+    assertEqual(s.nested.b, 'B-en');
+  });
+
+  test('returns a copy that does not alias the cache', async () => {
+    const i18n = seeded();
+    const s = await i18n.section('m.r', 'de');
+    s.save = 'x';
+    assertEqual((await i18n.section('m.r', 'de')).save, 'Speichern');
+  });
+
+  test('unknown key yields an empty object', async () => {
+    assertEqual(JSON.stringify(await seeded().section('nope.x', 'de')), '{}');
+  });
+});

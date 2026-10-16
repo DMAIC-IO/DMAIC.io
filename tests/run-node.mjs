@@ -24,6 +24,10 @@ import { checkSkipList, parseRunnerFiles } from './skip-list-check.mjs';
 
 const TESTS_DIR = dirname(fileURLToPath(import.meta.url));
 
+// Pin the time zone: date suites guard calendar-day handling east of UTC and
+// would fail on a UTC CI runner. Set before any suite is imported.
+process.env.TZ = 'Europe/Berlin';
+
 // Fixture-driven tests load JSON via `fetch(new URL('../fixtures/…', import.meta.url))`.
 // In the browser that base URL is http(s); under node it is a file:// URL, which
 // node's global fetch rejects. Teach the global fetch to serve file:// from disk.
@@ -66,15 +70,23 @@ globalThis.sessionStorage ??= new MemoryStorage();
 const SKIP = new Set([
   'algorithm-lab/lab-renderer.test.js',
   'core/chart/boxplot.test.js',
+  'core/chart/chart-base-editor-change.test.js',
+  'core/chart/chart-base-modebar.test.js',
   'core/chart/chart-export-xlsx.test.js',
   'core/chart/chart-manager-errors.test.js',
+  'core/chart/chart-manager-export.test.js',
   'core/chart/control-chart.test.js',
+  'core/chart/chart-margins.test.js',
+  'core/chart/chart-module-base.test.js',
   'core/chart/cumulative-cost.test.js',
   'core/chart/gage-run-chart.test.js',
   'core/chart/gantt.test.js',
   'core/chart/histogram-bins.test.js',
+  'core/chart/histogram-multi.test.js',
   'core/chart/multi-vari.test.js',
+  'core/chart/node-diagram.test.js',
   'core/chart/pareto.test.js',
+  'core/chart/pie.test.js',
   'core/chart/run-chart.test.js',
   'core/chart/trend.test.js',
   'core/chunks.test.js',
@@ -110,6 +122,7 @@ const SKIP = new Set([
   // (tests/runner.html) — dort ist die Suite seit jeher registriert.
   'modules/activity-flowchart.test.js',
   'modules/dashboard-tiles.test.js',
+  'modules/histogram-chart-config.test.js',
   'modules/ishikawa-cost.test.js',
   'modules/ishikawa-gantt.test.js',
   'modules/ishikawa-trend.test.js',
@@ -117,6 +130,7 @@ const SKIP = new Set([
   'modules/process-map-export.test.js',
   'modules/project-charter-richtext.test.js',
   'modules/project-charter.test.js',
+  'modules/survey-runner-dom.test.js',
   'pages/cycle.test.js',
   'pages/settings.test.js',
   'pages/tile-render.test.js',
@@ -124,16 +138,16 @@ const SKIP = new Set([
   'pages/training.test.js',
   'startup/cross-version-prompt.test.js',
   'startup/example-deeplink.test.js',
-  'ui/action-modal.test.js',
   'ui/column-picker-filter.test.js',
   'ui/column-picker-sync-value.test.js',
   'ui/dashboard-grid-settings.test.js',
   'ui/dmaic-tiles-can-add.test.js',
+  'ui/dialog-progress.test.js',
+  'ui/dialog.test.js',
   'ui/dmaic-tiles-rebuild.test.js',
   'ui/help-panel-references.test.js',
   'ui/help-panel-videos.test.js',
   'ui/layout-primitives.test.js',
-  'ui/modal-dialog-api.test.js',
   'ui/split-layout.test.js',
   'ui/workspace-action-help.test.js',
   'ui/workspace-instance-ready.test.js',

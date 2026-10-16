@@ -214,7 +214,7 @@ export default createModule({
        */
       deleteNode(node) {
         if (this.model.nodeHasChildren(node.id)) {
-          module._context.confirmPopout(_t('modules.five-why.deleteConfirm'), { danger: true })
+          module._context.dialog.confirm({ message: _t('modules.five-why.deleteConfirm'), danger: true })
             .then((confirmed) => { if (confirmed) this.removeNode(node.id); });
           return;
         }

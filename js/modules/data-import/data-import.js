@@ -25,6 +25,7 @@
  * XLSX / XLSM / XLS / ODS, JSON / NDJSON / JSONL, Q-DAS AQDEF (.dfq/.dfd/.dfx).
  */
 
+import { uid } from '../../core/uid.js';
 import { createModule } from '../../core/template-module.js';
 import { uniqueSheetName, buildInitialWorksheetState } from '../../ui/column-picker.js';
 import {
@@ -375,7 +376,7 @@ export default createModule({
         const sm = module._context.stateManager;
         const eb = module._context.eventBus;
         const phase = this._findOwnPhase();
-        const wsId = `worksheet_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+        const wsId = `worksheet_${uid()}`;
 
         // Register new worksheet in the same phase the import module lives in.
         const existing = sm.get(`phases.${phase}`) ?? [];

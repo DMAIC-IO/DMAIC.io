@@ -17,7 +17,8 @@
 
 import { createModule } from '../../core/template-module.js';
 import { State } from './project-charter-model.js';
-import { createModebar, exportSvgAsPNG, exportSvgAsFile } from '../../core/chart/modebar.js';
+import { createModebar } from '../../core/chart/modebar.js';
+import { DASH_MAP, buildOrgDiagram } from './project-charter-org-diagram.js';
 import { edSection, edInlineNum, edSelectRow, edColorPair, openColorPicker } from '../../core/chart/chart-editor.js';
 import { h } from '../../core/dom.js';
 import { markdownToFragment, domToMarkdown } from './project-charter-richtext.js';
@@ -32,8 +33,12 @@ const ORG_PAD = 40;   // padding around content inside the org window (px)
 const ORG_MIN_H = 420; // minimum / base height of the org window (px)
 const UNDO_MAX = 50;
 
-/** Map line style names to SVG stroke-dasharray values */
-const DASH_MAP = { solid: 'none', dashed: '8 4', dotted: '2 4' };
+/**
+ * Connector-overlay chart per component root. Kept outside Alpine's reactive
+ * proxy: a chart instance holds DOM nodes and must not be made reactive.
+ * @type {WeakMap<Element, import('../../core/chart/chart-base.js').default>}
+ */
+const orgLineCharts = new WeakMap();
 
 /** Convert stored Markdown content to a DocumentFragment for the editor. */
 function prepareFragment(raw) {
@@ -103,6 +108,7 @@ export default createModule({
             editor.replaceChildren(prepareFragment(this.model.problemStatement));
             editor.classList.toggle('pc__problem-editor--empty', !editor.textContent.trim());
           }
+          this._orgMountLines();
           this._orgRender();
           this._orgInitModebar();
           this._orgApplyStyle();
@@ -114,6 +120,9 @@ export default createModule({
       },
 
       destroy() {
+        this._orgUnmounted = true;
+        const lines = orgLineCharts.get(this.$root);
+        if (lines) { module._context.chartManager.destroy(lines); orgLineCharts.delete(this.$root); }
         if (this._modebar) { this._modebar.destroy(); this._modebar = null; }
         if (this._orgResizeObs) { this._orgResizeObs.disconnect(); this._orgResizeObs = null; }
       },
@@ -417,48 +426,30 @@ export default createModule({
         });
       },
 
+      /** Create the links-only node-diagram that draws the connector lines. */
+      _orgMountLines() {
+        const host = this.$root.querySelector('[data-ref="orgLines"]');
+        if (!host) return;
+        const root = this.$root;
+        const cm = module._context.chartManager;
+        cm.create(host, 'node-diagram', {
+          showModebar: false, origin: 'zero', padding: 0,
+          nodes: [], links: [], highlightClass: 'pc__org-line--hl',
+        }).then((chart) => {
+          if (!chart) return;
+          // Unmounted while the type was loading: do not keep an orphan.
+          if (this._orgUnmounted || !root.isConnected) { cm.destroy(chart); return; }
+          orgLineCharts.set(root, chart);
+          this._orgDrawLines();
+        });
+      },
+
       _orgDrawLines() {
-        const svg = this.$root.querySelector('[data-ref="orgLines"]');
-        if (!svg) return;
-        svg.replaceChildren();
-
-        let maxX = 0, maxY = 0;
-        this.model.orgNodes.filter(n => !n._h).forEach(n => {
-          const el = this.$root.querySelector(`[data-org-id="${  n.id  }"]`);
-          const nodeH = el ? el.offsetHeight : 80;
-          maxX = Math.max(maxX, n._x + NW);
-          maxY = Math.max(maxY, n._y + nodeH);
-        });
-        svg.setAttribute('width', maxX + 50);
-        svg.setAttribute('height', maxY + 50);
-
-        this.model.orgNodes.filter(n => !n._h && n.pid !== null).forEach(n => {
-          const parent = this.model.orgNodes.find(p => p.id === n.pid);
-          if (!parent || parent._h) return;
-          const pe = this.$root.querySelector(`[data-org-id="${  parent.id  }"]`);
-          const ce = this.$root.querySelector(`[data-org-id="${  n.id  }"]`);
-          if (!pe || !ce) return;
-
-          const x1 = parent._x + NW / 2;
-          const y1 = parent._y + pe.offsetHeight;
-          const x2 = n._x + NW / 2;
-          const y2 = n._y;
-          const mid = y1 + (y2 - y1) / 2;
-
-          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-          path.setAttribute('d', `M${x1} ${y1}C${x1} ${mid},${x2} ${mid},${x2} ${y2}`);
-          path.setAttribute('fill', 'none');
-          path.setAttribute('stroke', this.model.orgStyle.lineColor ||
-            getComputedStyle(svg).getPropertyValue('--color-border-secondary').trim() || '#94a3b8');
-          path.setAttribute('stroke-width', String(this.model.orgStyle.lineWidth || 2));
-          const dash = DASH_MAP[this.model.orgStyle.lineStyle];
-          if (dash && dash !== 'none') path.setAttribute('stroke-dasharray', dash);
-          path.setAttribute('stroke-linecap', 'round');
-          if (n.id === this._orgSel || parent.id === this._orgSel) {
-            path.classList.add('pc__org-line--hl');
-          }
-          svg.appendChild(path);
-        });
+        const chart = orgLineCharts.get(this.$root);
+        if (!chart) return;
+        const { links } = buildOrgDiagram(this.model.orgNodes, this.model.orgStyle, this._orgHeights(),
+          { selectedId: this._orgSel, width: NW });
+        module._context.chartManager.update(chart, { links });
       },
 
       _orgApplyTransform() {
@@ -804,7 +795,9 @@ export default createModule({
         this.nodeDraft.title = '';
         this.nodeDraft.desc = '';
 
-        await module._context.showModal.form(heading, this.$refs.nodeForm, {
+        await module._context.dialog.form({
+          title: heading,
+          content: this.$refs.nodeForm,
           confirmLabel: module._context.i18n.t('common.save'),
           onMount: (el) => el.querySelector('[data-field="title"]')?.focus(),
           onConfirm: (el) => {
@@ -862,7 +855,9 @@ export default createModule({
         d.borderStyle = n.borderStyle || this.model.orgStyle.nodeBorderStyle || '';
         d.borderWidth = n.borderWidth || this.model.orgStyle.nodeBorderWidth || 1;
 
-        await module._context.showModal.form(module._context.i18n.t('common.edit'), this.$refs.nodeStyleForm, {
+        await module._context.dialog.form({
+          title: module._context.i18n.t('common.edit'),
+          content: this.$refs.nodeStyleForm,
           confirmLabel: module._context.i18n.t('common.save'),
           onMount: (el) => el.querySelector('[data-field="title"]')?.focus(),
           onConfirm: () => {
@@ -886,10 +881,10 @@ export default createModule({
         const t = (k, p) => _t(k, p);
         const node = this.model.orgNodes.find(n => n.id === id);
         if (!node) return;
-        const confirmed = await module._context.confirmPopout(
-          t('orgDeleteConfirm', { name: node.title || t('nodeTitle') }),
-          { danger: true }
-        );
+        const confirmed = await module._context.dialog.confirm({
+          message: t('orgDeleteConfirm', { name: node.title || t('nodeTitle') }),
+          danger: true,
+        });
         if (!confirmed) return;
         this._pushUndo();
         const delRecursive = (pid) => {
@@ -1009,119 +1004,21 @@ export default createModule({
 
       // ─── SVG / PNG export ───────────────────────────────────
 
-      _orgBuildExportSVG() {
-        const visible = this.model.orgNodes.filter(n => !n._h);
-        if (!visible.length) return null;
-
-        let x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
-        visible.forEach(n => {
-          const nodeH = this._orgNodeHeight(n.id);
-          x1 = Math.min(x1, n._x);
-          y1 = Math.min(y1, n._y);
-          x2 = Math.max(x2, n._x + NW);
-          y2 = Math.max(y2, n._y + nodeH);
-        });
-
-        const pad = 30;
-        const vw = x2 - x1 + pad * 2;
-        const vh = y2 - y1 + pad * 2;
-        const offX = -x1 + pad;
-        const offY = -y1 + pad;
-
-        const NS = 'http://www.w3.org/2000/svg';
-        const svg = document.createElementNS(NS, 'svg');
-        svg.setAttribute('xmlns', NS);
-        svg.setAttribute('viewBox', `0 0 ${vw} ${vh}`);
-        svg.setAttribute('width', vw);
-        svg.setAttribute('height', vh);
-
-        const styles = getComputedStyle(document.documentElement);
-        const bgPrimary = styles.getPropertyValue('--color-bg-primary').trim() || '#ffffff';
-        const bgSecondary = styles.getPropertyValue('--color-bg-secondary').trim() || '#f8fafc';
-        const borderColor = styles.getPropertyValue('--color-border-secondary').trim() || '#e2e8f0';
-        const textPrimary = styles.getPropertyValue('--color-text-primary').trim() || '#1e293b';
-        const textSecondary = styles.getPropertyValue('--color-text-secondary').trim() || '#64748b';
-        const lineColor = styles.getPropertyValue('--color-border-primary').trim() || '#cbd5e1';
-
-        const bg = document.createElementNS(NS, 'rect');
-        bg.setAttribute('width', vw);
-        bg.setAttribute('height', vh);
-        bg.setAttribute('fill', bgPrimary);
-        svg.appendChild(bg);
-
-        visible.filter(n => n.pid !== null).forEach(n => {
-          const parent = this.model.orgNodes.find(p => p.id === n.pid);
-          if (!parent || parent._h) return;
-          const ph = this._orgNodeHeight(parent.id);
-          const px1 = parent._x + NW / 2 + offX;
-          const py1 = parent._y + ph + offY;
-          const px2 = n._x + NW / 2 + offX;
-          const py2 = n._y + offY;
-          const mid = py1 + (py2 - py1) / 2;
-          const path = document.createElementNS(NS, 'path');
-          path.setAttribute('d', `M${px1} ${py1}C${px1} ${mid},${px2} ${mid},${px2} ${py2}`);
-          path.setAttribute('fill', 'none');
-          path.setAttribute('stroke', this.model.orgStyle.lineColor || lineColor);
-          path.setAttribute('stroke-width', String(this.model.orgStyle.lineWidth || 2));
-          const lineDash = DASH_MAP[this.model.orgStyle.lineStyle];
-          if (lineDash && lineDash !== 'none') path.setAttribute('stroke-dasharray', lineDash);
-          svg.appendChild(path);
-        });
-
-        visible.forEach(n => {
-          const nh = this._orgNodeHeight(n.id);
-          const nx = n._x + offX;
-          const ny = n._y + offY;
-          const rect = document.createElementNS(NS, 'rect');
-          rect.setAttribute('x', nx);
-          rect.setAttribute('y', ny);
-          rect.setAttribute('width', NW);
-          rect.setAttribute('height', nh);
-          rect.setAttribute('rx', 6);
-          rect.setAttribute('fill', n.bg || this.model.orgStyle.nodeBg || bgSecondary);
-          rect.setAttribute('stroke', n.borderColor || this.model.orgStyle.nodeBorderColor || borderColor);
-          rect.setAttribute('stroke-width', String(n.borderWidth || this.model.orgStyle.nodeBorderWidth || 1));
-          const nbs = n.borderStyle || this.model.orgStyle.nodeBorderStyle;
-          const nodeDash = DASH_MAP[nbs];
-          if (nodeDash && nodeDash !== 'none') rect.setAttribute('stroke-dasharray', nodeDash);
-          svg.appendChild(rect);
-
-          const title = document.createElementNS(NS, 'text');
-          title.setAttribute('x', nx + 12);
-          title.setAttribute('y', ny + 22);
-          title.setAttribute('font-family', 'system-ui, -apple-system, sans-serif');
-          title.setAttribute('font-size', '13');
-          title.setAttribute('font-weight', '600');
-          title.setAttribute('fill', textPrimary);
-          title.textContent = n.title;
-          svg.appendChild(title);
-
-          if (n.desc) {
-            const desc = document.createElementNS(NS, 'text');
-            desc.setAttribute('x', nx + 12);
-            desc.setAttribute('y', ny + 40);
-            desc.setAttribute('font-family', 'system-ui, -apple-system, sans-serif');
-            desc.setAttribute('font-size', '11');
-            desc.setAttribute('fill', textSecondary);
-            desc.textContent = n.desc;
-            svg.appendChild(desc);
-          }
-        });
-
-        return svg;
+      /** Rendered heights of the visible nodes (the layout is measured from the DOM). */
+      _orgHeights() {
+        return new Map(this.model.orgNodes.filter(n => !n._h).map(n => [n.id, this._orgNodeHeight(n.id)]));
       },
 
-      async _orgExportPNG() {
-        const svg = this._orgBuildExportSVG();
-        if (!svg) return;
-        await exportSvgAsPNG(svg, 'organigramm.png');
+      /** Image export through the chart framework (theme-aware). */
+      async _orgExportImage(fmt) {
+        if (!this.model.orgNodes.some(n => !n._h)) return;
+        const diagram = buildOrgDiagram(this.model.orgNodes, this.model.orgStyle, this._orgHeights(),
+          { selectedId: null, width: NW });
+        await module._context.chartManager.exportOffscreen('node-diagram', { ...diagram, padding: 30 }, fmt, 'organigramm');
       },
 
-      _orgExportSVG() {
-        const svg = this._orgBuildExportSVG();
-        if (!svg) return;
-        exportSvgAsFile(svg, 'organigramm.svg');
-      },
+      _orgExportPNG() { return this._orgExportImage('png'); },
+      _orgExportSVG() { return this._orgExportImage('svg'); },
 
       // ─── Undo ───────────────────────────────────────────────
 

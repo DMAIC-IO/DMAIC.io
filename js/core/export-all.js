@@ -6,7 +6,7 @@
  * Agentenfläche fordert beim Erteilen einen Export an — das ist die
  * vereinbarte Sicherung anstelle eines Undo-Mechanismus (Spec §3.2).
  *
- * Verhalten unverändert: alle Projekte, Dateiname mit Datum, danach
+ * Verhalten unverändert: alle Projekte, Dateiname mit Zeitstempel, danach
  * `project:exported` (daran hängt der ExportReminder, der
  * `settings.lastExportAt` stempelt) und ein Erfolgs-Toast.
  */
@@ -27,14 +27,25 @@ export function downloadJSON(json, filename) {
 }
 
 /**
+ * Local timestamp for export filenames: YYYY-MM-DD_HH-MM-SS.
+ * Dashes instead of colons — colons are not allowed in Windows filenames.
+ * @param {Date} [now]
+ * @returns {string}
+ */
+export function exportStamp(now = new Date()) {
+  const p = (n) => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`
+    + `_${p(now.getHours())}-${p(now.getMinutes())}-${p(now.getSeconds())}`;
+}
+
+/**
  * Alle Projekte als eine JSON-Datei herunterladen.
  * @param {{ stateManager: object, eventBus: object, i18n: object, notify: Function }} deps
  * @returns {Promise<void>}
  */
 export async function exportAllProjects({ stateManager, eventBus, i18n, notify }) {
-  const date = new Date().toISOString().split('T')[0];
   const json = await stateManager.exportAllJSON();
-  downloadJSON(json, `dmike_alle_projekte_${date}.json`);
+  downloadJSON(json, `dmaic-io_alle_projekte_${exportStamp()}.json`);
   eventBus.emit('project:exported');
   notify?.(i18n.t('app.export'), 'success', 'status.ok');
 }

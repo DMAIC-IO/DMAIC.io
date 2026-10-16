@@ -273,7 +273,7 @@ select.input {
 /* ── Size variants ── */
 .field--sm {
   /* tighter padding for dense layouts (table cells, toolbars) — font-size unchanged */
-  padding: 3px var(--spacing-xs);
+  padding: var(--spacing-xs);
 }
 
 .field--xs {
@@ -389,72 +389,13 @@ select.input {
 [data-theme="dark"] .badge--warning { background: #3d2e00; }
 [data-theme="dark"] .badge--error   { background: #3d1a1a; }
 
-/* ===== Modal ===== */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--color-modal-overlay);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: fadeIn var(--transition-speed) ease;
-}
-
-.modal {
-  background: var(--color-bg-elevated);
-  border: var(--border-width) solid var(--color-border-primary);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-lg);
-  min-width: 320px;
-  max-width: 600px;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  animation: slideUp var(--transition-speed) ease;
-}
-
-.modal__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-bottom: var(--border-width) solid var(--color-border-secondary);
-}
-
-.modal__title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-}
-
-.modal__body {
-  flex: 1;
-  overflow-y: auto;
-  padding: var(--spacing-lg);
-}
-
-.modal__footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-top: var(--border-width) solid var(--color-border-secondary);
-}
-
-/* Optional left-aligned footer items (Modal.form({ onDelete, footerStart })):
-   pushed to the far left while confirm/cancel stay right-aligned. */
-.modal__footer-delete,
-.modal__footer-start {
-  margin-right: auto;
-}
-
 /* ===== Toast Notifications ===== */
 .toast-container {
   position: fixed;
   bottom: calc(var(--footer-height) + var(--spacing-md));
   right: var(--spacing-md);
 
-  /* Above every overlay, including .modal-overlay--action (10000): a toast is
+  /* Above every overlay, including the dialog overlay `.dialog` (10000): a toast is
      a transient notice that must stay readable while a dialog is up — dimmed
      out behind a backdrop it would expire unseen. The action modal still
      carries the outcome itself; the toast is the second channel, not the
@@ -741,13 +682,13 @@ select.input {
   background: var(--color-bg-primary);
   border: var(--border-width) solid var(--color-border-secondary);
   border-radius: var(--border-radius);
-  padding: 3px;
+  padding: var(--spacing-xs);
   margin-bottom: var(--spacing-md);
 }
 
 .dmike-tab {
   flex: 1;
-  padding: 7px var(--spacing-sm);
+  padding: var(--spacing-sm);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   font-family: var(--font-family);
@@ -979,16 +920,6 @@ select.input {
 }
 
 /* ===== Animations ===== */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(12px); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
-
 @keyframes slideInRight {
   from { transform: translateX(12px); opacity: 0; }
   to   { transform: translateX(0);    opacity: 1; }
@@ -1212,8 +1143,8 @@ select.input {
 .settings-shortcuts-list {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  margin-top: 18px;
+  gap: var(--spacing-ml);
+  margin-top: var(--spacing-ml);
   margin-bottom: var(--spacing-ml);
 }
 
@@ -1232,7 +1163,7 @@ select.input {
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-sm);
-  padding: var(--spacing-sm) 10px;
+  padding: var(--spacing-sm);
   border: 1px solid var(--color-border-secondary);
   border-radius: 6px;
   margin-bottom: var(--spacing-xs);
@@ -1260,7 +1191,7 @@ select.input {
   font-family: var(--font-mono, ui-monospace, Menlo, Consolas, monospace);
   font-size: 12px;
   min-width: 90px;
-  padding: var(--spacing-xs) 10px;
+  padding: var(--spacing-xs) var(--spacing-sm);
   border: 1px solid var(--color-border-primary);
   border-radius: 4px;
   background: var(--color-bg-primary);
@@ -1545,7 +1476,7 @@ select.input {
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
-  padding: 3px var(--spacing-xs);
+  padding: var(--spacing-xs);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
   font-size: var(--font-size-sm);
@@ -2039,8 +1970,7 @@ body.dmike-context-help-armed .context-help__btn {
   text-decoration: underline;
 }
 
-/* Action modal — progress/completion dialog for action URLs. */
-.modal-overlay--action { z-index: 10000; }   /* above #app-loading (9999) */
+/* Action modal — progress/completion body of the dialog service (js/ui/dialog/). */
 
 /* Fixed footprint: the body swaps between the running state (spinner +
    subtitle + progress line) and the hold state (subtitle + optional failed-
@@ -2051,10 +1981,6 @@ body.dmike-context-help-armed .context-help__btn {
    failed-items list on its own scrollbar instead of growing this box; the
    remaining `max-height: 60vh` + `overflow-y: auto` here is only a
    last-resort guard against a viewport too short for 12rem. */
-.modal-overlay--action .modal {
-  width: 26rem;
-}
-
 .action-modal {
   display: flex;
   flex-direction: column;
@@ -2114,16 +2040,6 @@ body.dmike-context-help-armed .context-help__btn {
   text-align: left;
 }
 
-/* An unused slot must cost nothing — not even the column's flex gap, which a
-   zero-height element still generates. Without this the counting phase (no
-   list, no progress line, no body, no footer) renders its spinner and
-   subtitle ~37px above the centre of the box. The spinner is deliberately NOT
-   in this list: it is empty by construction (a pure CSS ring). */
-.action-modal__list:empty,
-.action-modal__progress:empty,
-.action-modal__body:empty,
-.action-modal__footer:empty { display: none; }
-
 .action-modal__item {
   display: flex;
   align-items: baseline;
@@ -2161,6 +2077,22 @@ body.dmike-context-help-armed .context-help__btn {
 .action-modal__item--failed .action-modal__item-status { color: var(--color-error); }
 
 .action-modal__footer { margin-top: var(--spacing-sm); }
+
+/* Dialog service (js/ui/dialog/) — the look comes from the dmike-chart-popout
+   shell in chart.css. The compound selector outranks that rule even when
+   chart.css loads later: dialogs sit above #app-loading (9999) and below
+   toasts (10001), and use the theme overlay colour. */
+.dmike-chart-popout-overlay.dialog {
+  z-index: 10000;
+  background: var(--color-modal-overlay);
+}
+
+.dialog__body:empty { display: none; }
+
+.dialog__footer-start:empty { display: none; }
+
+.dialog__footer-start,
+.dialog__delete { margin-right: auto; }
 
 /* ============================================================
    Layout-Primitive

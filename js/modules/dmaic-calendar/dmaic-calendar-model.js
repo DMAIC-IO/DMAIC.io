@@ -4,6 +4,7 @@
  * configuration, month/week layout math. No DOM, no i18n, no CSS.
  */
 
+import { uid as coreUid } from '../../core/uid.js';
 import { addDaysISO, isIsoDate } from '../../core/local-date.js';
 
 export const SNAP = 5;
@@ -53,7 +54,7 @@ export function fmtDur(m) {
 }
 
 /** Unique id for a new event. */
-export function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+export function uid() { return coreUid(); }
 
 const DEFAULTS = { axisFrom: 6, axisTo: 22, dayFrom: 0, dayTo: 6 };
 

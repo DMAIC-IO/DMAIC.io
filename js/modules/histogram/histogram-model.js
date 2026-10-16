@@ -2,8 +2,7 @@
  * D.Mike — Histogram Module Model (histogram-model.js)
  *
  * Holds ONLY persistence state + serialization. No i18n, no CSS, no DOM,
- * no view flags. The pure binning engine lives in histogram-binning.js and is
- * imported by both the model consumers and the data-fn (unit-tested separately).
+ * no view flags. The pure binning engine lives in js/core/chart/histogram-series.js.
  *
  * Persistence shape (toJSON) matches the legacy getState() EXACTLY — the
  * chartConfig fields are persisted FLAT (chartTitleText, showTitle, titleSize, …),

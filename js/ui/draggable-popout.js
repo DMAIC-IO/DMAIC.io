@@ -2,10 +2,10 @@
  * Alpine data-mixin for a draggable popout that lives **inside** a module's
  * Alpine template, reusing the dmike-chart-popout CSS shell.
  *
- * Unlike popout.js (imperative createElement helpers for confirm/alert/form),
- * this keeps the markup in the template: the module renders the overlay with
- * `x-if`/`x-show` and binds the handlers below. Spread the returned object into
- * the module's `data()` return value.
+ * Unlike the dialog service (js/ui/dialog/, driven via `context.dialog`),
+ * this keeps the markup in the module's own template: the module renders the
+ * overlay with `x-if`/`x-show` and binds the handlers below. Spread the
+ * returned object into the module's `data()` return value.
  *
  * Template contract:
  * ```html

@@ -74,7 +74,7 @@ export class State {
   /** Instance id of a worksheet provisioned by loadExample (for cleanup on re-load). */
   exampleWorksheetId = null;
 
-  /** @returns {boolean} true if any meaningful field is set (drives confirmPopout). */
+  /** @returns {boolean} true if any meaningful field is set (drives dialog.confirm). */
   hasContent() {
     const c = this.columnRefs;
     return Boolean(c.part) || Boolean(c.operator) || Boolean(c.measurement) || Boolean(this.params.lsl) || Boolean(this.params.usl);

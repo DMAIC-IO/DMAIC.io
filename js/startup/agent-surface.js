@@ -34,16 +34,16 @@ import { VERSION } from '../core/version.js';
 export default createStartup({
   id: 'agent-surface',
 
-  run({ stateManager, moduleRegistry, eventBus, i18n, modal, notify, workspace, router }) {
-    const dialog = buildAgentConsentDialog({ i18n, eventBus });
+  run({ stateManager, moduleRegistry, eventBus, i18n, dialog, notify, workspace, router }) {
+    const consentDialog = buildAgentConsentDialog({ i18n, eventBus });
 
     const consent = createConsentGate({
       stateManager,
       eventBus,
       t: (key, params) => i18n.t(key, params),
       // Partiell angewandt: das Tor ruft `openDialog()` ohne Argumente auf,
-      // `openAgentConsent` braucht Modal, i18n und Dialog.
-      openDialog: () => openAgentConsent(modal, i18n, dialog, {
+      // `openAgentConsent` braucht Dialog-Service, i18n und Dialog.
+      openDialog: () => openAgentConsent(dialog, i18n, consentDialog, {
         projectName: stateManager.get('projectMeta.name') ?? '',
       }),
       // Spec §3.2: beim Erteilen wird der Nutzer zum Projekt-Export

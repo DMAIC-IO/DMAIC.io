@@ -46,7 +46,7 @@ export class State {
 
   /**
    * Returns true when any meaningful column selection has been made.
-   * Drives the confirmPopout gate in loadExample.
+   * Drives the dialog.confirm gate in loadExample.
    * @returns {boolean}
    */
   hasContent() {

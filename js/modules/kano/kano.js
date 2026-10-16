@@ -27,34 +27,15 @@ import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
 import { State } from './kano-model.js';
 import { listTrees, flatten, diff, applyDiff, LEVELS } from './kano-link.js';
-import { evaluate } from '../../engines/kano-engine.js';
+import { evaluate, Q_WARN } from '../../engines/kano-engine.js';
+import { kanoScatterConfig } from './kano-chart.js';
 import { ensureXLSX, downloadBlob } from '../../core/export-utils.js';
 import { exportSvgAsPNG, exportSvgAsFile } from '../../core/chart/modebar.js';
 import { provisionInstance } from '../../core/examples-registry.js';
-import manifest from '../manifest.js';
+import { treePhaseForCycle } from '../voc-ctx-tree/voc-ctx-tree-phase.js';
 import { DEFAULT_CYCLE } from '../../core/cycles/cycles.js';
 import { uid } from '../../core/uid.js';
 
-/**
- * Ermittelt die Phase, in der eine frisch provisionierte `voc-ctx-tree`-
- * Instanz im aktiven Zyklus landen muss.
- *
- * `voc-ctx-tree` ist zyklusabhängig verortet (`js/modules/manifest.js`):
- * unter DMAIC/DMADV in `define`, unter 8D aber in `problem` — der 8D-Zyklus
- * kennt gar keine `define`-Phase. Ein fest verdrahtetes `'define'` hätte die
- * neue Instanz unter 8D in eine nicht existierende Phase geschrieben
- * (unsichtbar, und bei einem Zyklenwechsel potenziell als zweiter Baum, was
- * die Singleton-Annahme der Lage-3-Schutzlogik in `beforeLoadExample`
- * untergräbt).
- *
- * Der Modul-Kontext (`js/ui/workspace.js` `_buildContext`) reicht keine
- * `moduleRegistry` durch, daher direkt aus dem statischen Manifest gelesen
- * (reine Daten, keine Bootstrap-Seiteneffekte) statt über die zur Laufzeit
- * gepflegte Registry.
- *
- * @param {string} cycleId
- * @returns {string}
- */
 // Die Antwortfelder und ihre Wertemengen. Beide Skalen sind 1-BASIERT;
 // `requireIndex` passt darauf nicht (es ließe die 0 durch und meldete
 // „allowed: 0..5"), deshalb die tatsächliche Wertemenge — `null` ist der
@@ -70,11 +51,6 @@ const SCALE_9 = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 /** Die Felder, die ein Merkmal trägt — die Prüfliste von `setItems`. */
 const ITEM_FIELDS = ['id', 'nodeId', 'label', 'path', 'missing'];
-
-function treePhaseForCycle(cycleId) {
-  const def = manifest.find((m) => m.id === 'voc-ctx-tree');
-  return def?.cycles?.[cycleId]?.phase || def?.phase || 'define';
-}
 
 /**
  * @typedef {object} AgentRead
@@ -349,7 +325,7 @@ export default createModule({
           .some((byItem) => Object.values(byItem || {})
             .some((a) => a.f !== null || a.d !== null || a.w !== null));
         if (hasAnswers) {
-          const ok = await module._context.confirmPopout(_t('levelChangeConfirm'), { danger: true });
+          const ok = await module._context.dialog.confirm({ message: _t('levelChangeConfirm'), danger: true });
           if (!ok) { ev.target.value = this.model.source.level; return; }
         }
         this.setSourceLevel(next);
@@ -556,7 +532,7 @@ export default createModule({
        * @param {string} id
        */
       async removeRespondent(id) {
-        const ok = await module._context.confirmPopout(_t('respondentDeleteConfirm'), { danger: true });
+        const ok = await module._context.dialog.confirm({ message: _t('respondentDeleteConfirm'), danger: true });
         if (ok && this.model.respondents.some((r) => r.id === id)) this.deleteRespondent(id);
       },
 
@@ -691,9 +667,6 @@ export default createModule({
 
       // ── Auswertung ────────────────────────────────────────────
 
-      /** Schwelle, ab der ein Q-Anteil als Datenqualitätsproblem gilt. */
-      Q_WARN: 0.10,
-
       // Bewusst ohne Cache: die Rechenlast ist trivial und ein Cache müsste an
       // Items, Befragten, Antworten und Optionen hängen.
       /** @noagent view transform: die Live-Auswertung. */
@@ -722,7 +695,7 @@ export default createModule({
       },
 
       /** @noagent view transform. @returns {boolean} true, wenn der Q-Anteil insgesamt zu hoch ist */
-      qWarn() { return this.result().totals.qShare > this.Q_WARN; },
+      qWarn() { return this.result().totals.qShare > Q_WARN; },
 
       /** @noagent view transform: Warntext mit eingesetztem Anteil. */
       qWarnText() {
@@ -730,7 +703,7 @@ export default createModule({
       },
 
       /** @noagent view transform. @returns {boolean} true, wenn ein Merkmal zu viele Q-Antworten hat */
-      rowQWarn(row) { return row.n > 0 && row.counts.Q / row.n > this.Q_WARN; },
+      rowQWarn(row) { return row.n > 0 && row.counts.Q / row.n > Q_WARN; },
 
       /** @noagent view transform: Zeilenklasse der Ergebnistabelle. */
       resultRowClass(row) { return this.rowQWarn(row) ? 'kano__row--warn' : ''; },
@@ -819,21 +792,6 @@ export default createModule({
 
       // ── Chart ─────────────────────────────────────────────────
 
-      /**
-       * Blasendurchmesser aus der mittleren Wichtigkeit: 10 px (w̄ = 1) bis
-       * 26 px (w̄ = 9). Items ohne Wichtigkeitsangabe bekommen 10 px — nie 0,
-       * denn sizes[i] <= 0 rendert der Scatter-Typ unsichtbar.
-       * @param {object[]} rows
-       * @returns {number[]}
-       * @noagent view transform
-       */
-      bubbleSizes(rows) {
-        return rows.map((r) => {
-          if (r.importanceMean === null) return 10;
-          return 10 + ((r.importanceMean - 1) / 8) * 16;
-        });
-      },
-
       /** @noagent lifecycle, kein Zustandsweg: räumt alle gemounteten Chart-Instanzen ab. */
       destroyCharts() {
         for (const c of this._charts) {
@@ -852,44 +810,20 @@ export default createModule({
         const host = module._container.querySelector('[data-ref="chart"]');
         if (!host) return;
 
-        const rows = this.result().rows.filter((r) => r.cs !== null && r.ds !== null);
-        if (rows.length === 0) return;
-
-        // Eine Serie je Item (statt einer Serie mit vielen Punkten): der
-        // Scatter-Typ nimmt den Serien-Namen als Tooltip-Kopf (scatter.js:301),
-        // ein gemeinsames `labels`-Feld an der Serie wird dort nirgends
-        // gelesen. showLegend bleibt aus, sonst würde aus der Legende eine
-        // Itemliste — Achsenbereich (dataExtent) und Tooltip-Trefferauswahl
-        // (_findNearby) arbeiten unverändert über alle Serien hinweg.
-        const useImportance = this.model.options.importance;
-        const sizes = useImportance ? this.bubbleSizes(rows) : null;
-        const series = rows.map((r, i) => {
-          const s = {
-            name: r.label,
-            color: 'var(--color-chart-1)',
-            symbol: 'circle',
-            markerSize: 8,
-            strokeWidth: 1,
-            x: [Math.abs(r.ds)],
-            y: [r.cs],
-          };
-          if (useImportance) {
-            s.sizes = [sizes[i]];
-            s.sizeValues = [r.importanceMean];
-            s.sizeLabel = _t('colImportanceMean');
-          }
-          return s;
+        // Eine Serie je Item, Legende aus: siehe kano-chart.js. Achsenbereich
+        // und Tooltip-Trefferauswahl arbeiten unverändert über alle Serien.
+        const { series, refLines } = kanoScatterConfig(this.result().rows, {
+          importance: this.model.options.importance,
+          sizeLabel: _t('colImportanceMean'),
         });
+        if (series.length === 0) return;
 
         const chart = await module._context.chartManager.create(host, 'scatter', {
           xLabel: _t('chartX'),
           yLabel: _t('chartY'),
           showLegend: false,
           series,
-          refLines: [
-            { dir: 'h', value: 0.5, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)' },
-            { dir: 'v', value: 0.5, dash: 'dash', width: 1, color: 'var(--color-text-tertiary)' },
-          ],
+          refLines,
         });
         // `_destroyed` mitprüfen, nicht nur die Generation: läuft destroy()
         // während `create()` noch im await hängt, ist `_charts` beim

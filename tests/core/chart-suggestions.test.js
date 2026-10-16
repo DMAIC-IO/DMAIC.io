@@ -17,6 +17,7 @@ import {
   conditionsHold,
   effectiveN,
   categoricalCardinality,
+  continuousShape,
   findRule,
   RULES,
 } from '../../js/core/chart-suggestions/chart-suggestions.js';
@@ -42,6 +43,11 @@ function ordinal(levels = ['low', 'mid', 'high'], repeats = 20) {
 function date(n = 30) {
   const values = Array.from({ length: n }, (_, i) => `2026-01-${String((i % 28) + 1).padStart(2, '0')}`);
   return { role: 'date', type: 'date', values };
+}
+/** Right-skewed, strictly positive column (geometric growth, skewness ≈ 1.46). */
+function skewed(n = 50) {
+  const values = Array.from({ length: n }, (_, i) => 1.1 ** i);
+  return { role: 'continuous', type: 'numeric', values };
 }
 function chartTypes(suggestions) {
   return suggestions.map(s => s.type);
@@ -116,6 +122,18 @@ suite('chart-suggestions — conditionsHold', () => {
     assertEqual(conditionsHold({ minN: 20 }, { n: 50, maxCategories: null }), true);
   });
 
+  test('minSkewness gate (unknown shape fails)', () => {
+    assertEqual(conditionsHold({ minSkewness: 1 }, { n: 50, maxCategories: null, shape: { skewness: 1.2, allPositive: true } }), true);
+    assertEqual(conditionsHold({ minSkewness: 1 }, { n: 50, maxCategories: null, shape: { skewness: 0.8, allPositive: true } }), false);
+    assertEqual(conditionsHold({ minSkewness: 1 }, { n: 50, maxCategories: null, shape: null }), false);
+  });
+
+  test('positiveOnly gate (unknown shape fails)', () => {
+    assertEqual(conditionsHold({ positiveOnly: true }, { n: 50, maxCategories: null, shape: { skewness: 0, allPositive: true } }), true);
+    assertEqual(conditionsHold({ positiveOnly: true }, { n: 50, maxCategories: null, shape: { skewness: 0, allPositive: false } }), false);
+    assertEqual(conditionsHold({ positiveOnly: true }, { n: 50, maxCategories: null }), false);
+  });
+
   test('maxN gate', () => {
     assertEqual(conditionsHold({ maxN: 200 }, { n: 200, maxCategories: null }), true);
     assertEqual(conditionsHold({ maxN: 200 }, { n: 201, maxCategories: null }), false);
@@ -153,12 +171,12 @@ suite('chart-suggestions — effectiveN & categoricalCardinality', () => {
 // ─── End-to-end matcher tests ─────────────────────────────────
 
 suite('chart-suggestions — getSuggestionsFor: single continuous', () => {
-  test('n=50 → histogram first, then boxplot, IVP, run-chart, probability-plot', () => {
+  test('n=50 → histogram first, then boxplot, IVP, I-MR, run-chart, probability-plot', () => {
     const out = chartTypes(getSuggestionsFor([cont(50)]));
-    assertArrayEqual(out, ['histogram', 'boxplot', 'individual-value-plot', 'run-chart', 'probability-plot']);
+    assertArrayEqual(out, ['histogram', 'boxplot', 'individual-value-plot', 'control-chart', 'run-chart', 'probability-plot']);
   });
 
-  test('n=15 → histogram filtered out (minN 20), probability-plot still in', () => {
+  test('n=15 → histogram and I-MR filtered out (minN 20), probability-plot still in', () => {
     const out = chartTypes(getSuggestionsFor([cont(15)]));
     assertArrayEqual(out, ['boxplot', 'individual-value-plot', 'run-chart', 'probability-plot']);
   });
@@ -170,7 +188,65 @@ suite('chart-suggestions — getSuggestionsFor: single continuous', () => {
 
   test('n=300 → IVP filtered out (maxN 200), rest in', () => {
     const out = chartTypes(getSuggestionsFor([cont(300)]));
-    assertArrayEqual(out, ['histogram', 'boxplot', 'run-chart', 'probability-plot']);
+    assertArrayEqual(out, ['histogram', 'boxplot', 'control-chart', 'run-chart', 'probability-plot']);
+  });
+
+  test('I-MR suggestion uses the row-order wording', () => {
+    const imr = getSuggestionsFor([cont(50)]).find(s => s.type === 'control-chart');
+    assertEqual(imr.i18nKey, 'imrRowOrder');
+  });
+
+  test('right-skewed positive column → Box-Cox I-MR right after the boxplot, with reason', () => {
+    const sugg = getSuggestionsFor([skewed(50)]);
+    assertArrayEqual(chartTypes(sugg), ['histogram', 'boxplot', 'transformed-imr-chart', 'individual-value-plot', 'control-chart', 'run-chart', 'probability-plot']);
+    const tr = sugg.find(s => s.type === 'transformed-imr-chart');
+    assertEqual(tr.i18nKey, 'transformedImr');
+    assertEqual(tr.notesKey, 'transformedImrReason');
+  });
+
+  test('skewed column with a value ≤ 0 → no Box-Cox I-MR', () => {
+    const col = skewed(50);
+    col.values[0] = 0;
+    assertEqual(chartTypes(getSuggestionsFor([col])).includes('transformed-imr-chart'), false);
+  });
+
+  test('skewed column with n < 20 → no Box-Cox I-MR', () => {
+    // Strongly skewed (skewness ≈ 1.71) but only 15 points.
+    const col = { role: 'continuous', type: 'numeric', values: Array.from({ length: 15 }, (_, i) => 1.5 ** i) };
+    assertEqual(chartTypes(getSuggestionsFor([col])).includes('transformed-imr-chart'), false);
+  });
+
+  test('mildly skewed column (skewness < 1) → no Box-Cox I-MR', () => {
+    const col = { role: 'continuous', type: 'numeric', values: Array.from({ length: 50 }, (_, i) => Math.exp(i / 50 * 1.2)) };
+    assertEqual(chartTypes(getSuggestionsFor([col])).includes('transformed-imr-chart'), false);
+  });
+
+  test('column with only n and no values → no Box-Cox I-MR (shape unknown)', () => {
+    const out = chartTypes(getSuggestionsFor([{ role: 'continuous', n: 50 }]));
+    assertEqual(out.includes('transformed-imr-chart'), false);
+  });
+});
+
+suite('chart-suggestions — continuousShape', () => {
+  test('skewness and positivity of the first continuous column', () => {
+    const shape = continuousShape([cat(), skewed(50)]);
+    assertEqual(Math.abs(shape.skewness - 1.4649) < 1e-3, true);
+    assertEqual(shape.allPositive, true);
+  });
+
+  test('ignores blanks and parses numeric strings with a decimal comma', () => {
+    const shape = continuousShape([{ role: 'continuous', values: ['1,5', '', null, 2, 3] }]);
+    assertEqual(shape.allPositive, true);
+    assertEqual(Number.isFinite(shape.skewness), true);
+  });
+
+  test('a zero makes allPositive false', () => {
+    assertEqual(continuousShape([{ role: 'continuous', values: [0, 1, 2, 3] }]).allPositive, false);
+  });
+
+  test('no continuous column or no values → null', () => {
+    assertEqual(continuousShape([cat()]), null);
+    assertEqual(continuousShape([{ role: 'continuous', n: 50 }]), null);
   });
 });
 

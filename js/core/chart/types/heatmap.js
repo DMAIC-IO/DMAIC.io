@@ -23,7 +23,7 @@
  *   showYLabel/showXLabel come from base; row/col labels are drawn here.
  */
 
-import ChartBase from '../chart-base.js';
+import ChartBase, { X_TICKS_BOTTOM } from '../chart-base.js';
 import { h } from '../../dom.js';
 import { svgEl, svgText, resolveColor, formatNum } from '../chart-core.js';
 import { edSection, edCheckboxRow, edRangeRow, edInlineNum, edSelectRow } from '../chart-editor.js';
@@ -298,5 +298,10 @@ export default class HeatmapChart extends ChartBase {
       px: hit.x + hit.w / 2,
       py: hit.y + hit.h / 2,
     }];
+  }
+
+  /** @override — category labels are drawn below the plot regardless of showXTicks. */
+  _getBottomTickGutter() {
+    return X_TICKS_BOTTOM;
   }
 }

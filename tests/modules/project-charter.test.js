@@ -1,7 +1,6 @@
 import { suite, test, assertEqual } from '../test-utils.js';
 import { State } from '../../js/modules/project-charter/project-charter-model.js';
 import { prepareFragment } from '../../js/modules/project-charter/project-charter.js';
-import { renderDashboardTile } from '../../js/modules/project-charter/project-charter.tile.js';
 
 suite('Project Charter Model — defaults', () => {
   test('constructor sets empty defaults', () => {
@@ -249,30 +248,5 @@ suite('project-charter: prepareFragment', () => {
     host.appendChild(prepareFragment('line1\nline2'));
     assertEqual(host.querySelectorAll('br').length, 1);
     assertEqual(host.textContent, 'line1line2');
-  });
-});
-
-suite('project-charter: dashboard tile render', () => {
-  const i18n = { t: (k) => k };
-
-  test('renders problem statement Markdown as <strong>, not raw **', () => {
-    const host = document.createElement('div');
-    renderDashboardTile(host, { state: { problemStatement: '**bold** text' }, i18n });
-    const problem = host.querySelector('.dashboard-charter__problem');
-    assertEqual(problem.querySelector('strong').textContent, 'bold');
-    assertEqual(problem.textContent, 'bold text');
-    assertEqual(problem.textContent.includes('**'), false);
-  });
-
-  test('no instance → charterEmpty placeholder', () => {
-    const host = document.createElement('div');
-    renderDashboardTile(host, { state: null, i18n });
-    assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.charterEmpty');
-  });
-
-  test('instance without problem statement → charterNoProblem placeholder', () => {
-    const host = document.createElement('div');
-    renderDashboardTile(host, { state: { problemStatement: '' }, i18n });
-    assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.charterNoProblem');
   });
 });

@@ -11,7 +11,7 @@
  *   boxColors: []               — override colors per group
  */
 
-import ChartBase from '../chart-base.js';
+import ChartBase, { X_TICKS_BOTTOM } from '../chart-base.js';
 import { h } from '../../dom.js';
 import {
   svgEl, svgText, resolveColor, formatNum, getChartColors, drawMarker
@@ -510,5 +510,10 @@ export default class BoxplotChart extends ChartBase {
         tk,
       ));
     }
+  }
+
+  /** @override — vertical boxplots draw their group labels below the plot. */
+  _getBottomTickGutter() {
+    return this.config.orientation === 'vertical' ? X_TICKS_BOTTOM : super._getBottomTickGutter();
   }
 }

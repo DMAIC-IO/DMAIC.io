@@ -37,7 +37,7 @@ export default {
           {
             type: 'definition',
             term: 'Einstellung',
-            content: 'Wo steht der Stakeholder heute: Unterstützer, neutral oder Kritiker? Erfasst wird die aktuelle Einstellung. Wo er stehen sollte, damit das Projekt gelingt, und wie Sie ihn dorthin bringen, halten Sie unter „Erwartungen / Bedenken“ fest — die Differenz markiert den Handlungsbedarf.',
+            content: 'Wo steht der Stakeholder heute: Unterstützer, neutral oder Kritiker? Erfasst wird die aktuelle Einstellung. Wo er stehen sollte, damit das Projekt gelingt, und wie Sie ihn dorthin bringen, halten Sie unter „Erwartungen / Bedenken“ fest — die Differenz markiert den Handlungsbedarf. In der Matrix zeigt die Punktfarbe die Einstellung (grün Unterstützer, gelb neutral, rot Kritiker). Sitzt ein Kritiker im Quadranten „Eng managen“, warnt das Werkzeug über der Matrix — ein Schlüssel-Stakeholder darf nicht gegen das Projekt stehen.',
           },
         ],
       },
@@ -71,7 +71,7 @@ export default {
           {
             type: 'definition',
             term: 'Attitude',
-            content: 'Where does the stakeholder stand today: supporter, neutral, or critic? The tool records the current attitude. Note under "Expectations / Concerns" where they should stand for the project to succeed and how you will get them there — the gap marks the action need.',
+            content: 'Where does the stakeholder stand today: supporter, neutral, or critic? The tool records the current attitude. Note under "Expectations / Concerns" where they should stand for the project to succeed and how you will get them there — the gap marks the action need. In the matrix, the dot colour shows the attitude (green supporter, yellow neutral, red critic). If a critic sits in the "Manage Closely" quadrant, the tool shows a warning above the matrix — a key stakeholder must not be against the project.',
           },
         ],
       },

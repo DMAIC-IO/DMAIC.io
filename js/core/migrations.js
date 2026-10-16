@@ -48,7 +48,10 @@ export function migrateToLatest(data, targetVersion) {
   let current = stripPatch(result.appVersion || '0.1.0');
   const target = stripPatch(targetVersion);
 
-  if (current === target) return result;
+  if (current === target) {
+    result.appVersion = targetVersion;
+    return result;
+  }
 
   const steps = Object.keys(migrations);
   for (const step of steps) {

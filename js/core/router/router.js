@@ -40,34 +40,24 @@ export class Router {
     this._currentRoute = null;
     /** @type {Map<string, object>|null} Action verb registry (see action-verbs.js). */
     this._verbs = null;
-    /** @type {object|null} Shared action modal controller. */
-    this._actionModal = null;
+    /** @type {object|null} Progress dialog controller (ui/dialog/progress.js). */
+    this._progress = null;
     this._notify = null;
     this._i18n = null;
-  }
-
-  /**
-   * The shared action modal controller (see ui/action-modal.js). Consumers
-   * that want to show the same dialog for their own long-running action
-   * (rather than a second, independent one) read it from here.
-   * @returns {object|null}
-   */
-  getActionModal() {
-    return this._actionModal;
   }
 
   /**
    * Wire the action verb registry after construction (the verbs need a router
    * reference themselves, so they cannot be built before it exists).
    * @param {Map<string, object>} verbs
-   * @param {object} actionModal  action modal controller (open/update/close)
+   * @param {object} progress  progress dialog controller (open/update/close)
    * @param {function} notify
    * @param {object} i18n
    * @returns {void}
    */
-  setActionVerbs(verbs, actionModal, notify, i18n) {
+  setActionVerbs(verbs, progress, notify, i18n) {
     this._verbs = verbs;
-    this._actionModal = actionModal;
+    this._progress = progress;
     this._notify = notify;
     this._i18n = i18n;
   }
@@ -82,13 +72,13 @@ export class Router {
       if (!this._currentRoute || this._currentRoute.kind !== 'page' || this._currentRoute.pageId !== pageId) return;
       this.navigateBackFromPage(pageId);
     });
-    // Mirror scenario-loader progress into the action modal as a LIST: one row
+    // Mirror scenario-loader progress into the progress dialog as a LIST: one row
     // per item, newest on top, so the user can read what happened instead of
     // watching a single line flash past. `index` is the row key — the loader
     // emits it on both events for the same item.
     this._bus.on('scenario:progress', ({ index, total, exampleId, title }) => {
       const name = title?.[this._i18n?.getLanguage?.()] || title?.en || exampleId || '';
-      this._actionModal?.addItem({
+      this._progress?.addItem({
         id: index,
         label: this._i18n?.t('actions.progressModule', { index, total, name }) ?? `${index}/${total} ${name}`,
       });
@@ -97,7 +87,7 @@ export class Router {
     // that row. Only the boolean `ok` is used — the payload's developer-facing
     // error text (if any) never reaches the UI.
     this._bus.on('scenario:item-done', ({ index, ok }) => {
-      this._actionModal?.markItem(index, ok !== false);
+      this._progress?.markItem(index, ok !== false);
     });
     return this.applyHash();
   }
@@ -242,14 +232,14 @@ export class Router {
           // false only when a hold() was cancelled from outside (see below).
           let confirmed = true;
           try {
-            if (cfg) this._actionModal?.open(cfg.render(route.args));
+            if (cfg) this._progress?.open(cfg.render(route.args));
             const res = await verb.run(route.args);
             target = res?.route ?? null;
             // hold() resolves true on the user's confirm and false when the
             // dialog was closed/re-purposed by anyone else — so it can never
             // wait forever, and a cancellation is not read as "go ahead".
             if (cfg?.done) {
-              const held = await this._actionModal?.hold(cfg.done(res?.detail ?? null, route.args));
+              const held = await this._progress?.hold(cfg.done(res?.detail ?? null, route.args));
               confirmed = held !== false;
             }
           } catch (err) {
@@ -262,7 +252,7 @@ export class Router {
           } finally {
             // Always: a stuck dialog would leave the app unusable. Idempotent —
             // on the holding path hold() has already closed it.
-            this._actionModal?.close();
+            this._progress?.close();
           }
           // A cancelled hold means someone else took over the UI — navigating
           // to the verb's target now would fight them for the route.

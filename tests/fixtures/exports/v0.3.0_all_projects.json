@@ -62,10 +62,10 @@
       },
       "phaseAchievement": { "data": 60, "define": 100, "measure": 80, "analyze": 50, "improve": 25, "control": 0 },
       "phaseAchievementHistory": {
-        "define":  [ { "ts": "2026-04-08T12:00:00.000Z", "value":  60 }, { "ts": "2026-04-15T12:00:00.000Z", "value": 100 } ],
-        "measure": [ { "ts": "2026-04-22T12:00:00.000Z", "value":  80 } ],
-        "analyze": [ { "ts": "2026-04-30T12:00:00.000Z", "value":  50 } ],
-        "improve": [ { "ts": "2026-05-02T12:00:00.000Z", "value":  25 } ]
+        "define":  [ { "t": 1775649600000, "v":  60 }, { "t": 1776254400000, "v": 100 } ],
+        "measure": [ { "t": 1776859200000, "v":  80 } ],
+        "analyze": [ { "t": 1777550400000, "v":  50 } ],
+        "improve": [ { "t": 1777723200000, "v":  25 } ]
       },
       "dashboard": {
         "layout": [
@@ -286,10 +286,10 @@
       },
       "phaseAchievement": { "data": 50, "define": 100, "measure": 80, "analyze": 70, "design": 30, "verify": 0 },
       "phaseAchievementHistory": {
-        "define":  [ { "ts": "2026-03-15T12:00:00.000Z", "value": 100 } ],
-        "measure": [ { "ts": "2026-04-01T12:00:00.000Z", "value":  80 } ],
-        "analyze": [ { "ts": "2026-04-20T12:00:00.000Z", "value":  70 } ],
-        "design":  [ { "ts": "2026-05-01T12:00:00.000Z", "value":  30 } ]
+        "define":  [ { "t": 1773576000000, "v": 100 } ],
+        "measure": [ { "t": 1775044800000, "v":  80 } ],
+        "analyze": [ { "t": 1776686400000, "v":  70 } ],
+        "design":  [ { "t": 1777636800000, "v":  30 } ]
       },
       "dashboard": null,
       "moduleStates": {
@@ -429,7 +429,7 @@
       },
       "phaseAchievement": { "data": 100, "define": 100, "measure": 100, "analyze": 100, "improve": 100, "control": 100 },
       "phaseAchievementHistory": {
-        "control": [ { "ts": "2026-04-30T17:00:00.000Z", "value": 100 } ]
+        "control": [ { "t": 1777568400000, "v": 100 } ]
       },
       "dashboard": null,
       "moduleStates": {

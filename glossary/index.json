@@ -851,6 +851,11 @@
       "file": "terms/substanz-feld-analyse.json"
     },
     {
+      "id": "funktionsanalyse",
+      "category": "triz",
+      "file": "terms/funktionsanalyse.json"
+    },
+    {
       "id": "standardloesungen",
       "category": "triz",
       "file": "terms/standardloesungen.json"
@@ -1009,6 +1014,11 @@
       "id": "kano-fragebogen",
       "category": "methodology",
       "file": "terms/kano-fragebogen.json"
+    },
+    {
+      "id": "customer-survey",
+      "category": "methodology",
+      "file": "terms/customer-survey.json"
     },
     {
       "id": "multi-vari-diagramm",

@@ -1,0 +1,305 @@
+/* TRIZ function analysis — tabs, component groups (more rules follow in later tasks). */
+
+.tfa__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-ml);
+}
+
+.tfa__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+  margin-bottom: var(--spacing-ml);
+}
+
+.tfa__group-title {
+  margin: 0;
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text-secondary);
+}
+
+.tfa__row {
+  display: grid;
+  grid-template-columns: minmax(160px, 2fr) minmax(160px, 3fr) 180px auto;
+  gap: var(--spacing-s);
+  align-items: center;
+}
+
+.tfa__add {
+  align-self: flex-start;
+}
+
+/* Interaction matrix */
+.tfa__hint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.tfa__matrix-wrap {
+  overflow: auto;
+}
+
+.tfa__matrix {
+  border-collapse: collapse;
+}
+
+.tfa__mh {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-weight: 500;
+  white-space: nowrap;
+  text-align: left;
+}
+
+thead .tfa__mh {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  text-align: left;
+}
+
+.tfa__mh--target { color: var(--color-accent); font-weight: 700; }
+.tfa__mh--supersystem { font-style: italic; }
+
+.tfa__cell {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--color-border-primary);
+  text-align: center;
+}
+
+.tfa__cell--diag,
+.tfa__cell--off {
+  background: var(--color-bg-tertiary);
+}
+
+.tfa__cell-btn {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--color-accent);
+  cursor: pointer;
+}
+
+.tfa__cell-btn:hover {
+  background: var(--color-bg-secondary);
+}
+
+/* Function model */
+.tfa__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-s);
+  margin-bottom: var(--spacing-sm);
+}
+
+.tfa__chip {
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  border: 1px dashed var(--color-border-primary);
+  border-radius: 999px;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.tfa__chip:hover {
+  border-color: var(--color-accent);
+}
+
+.tfa__fn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-s);
+  margin-bottom: var(--spacing-s);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md, 6px);
+  background: var(--color-bg-primary);
+}
+
+.tfa__fn--harmful {
+  border-left: 3px solid var(--color-error);
+}
+
+.tfa__fn--selected {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.tfa__fn-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto auto;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+.tfa__fn-row + .tfa__fn-row {
+  grid-template-columns: 1fr 1fr 1fr auto;
+}
+
+.tfa__rank {
+  padding: 1px var(--spacing-s);
+  border-radius: var(--radius-sm, 3px);
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs, 0.75rem);
+  white-space: nowrap;
+}
+
+.tfa__disadvantages {
+  border-top: 1px solid var(--color-border-primary);
+  padding-top: var(--spacing-sm);
+}
+
+.tfa__dis-title {
+  margin: var(--spacing-s) 0 var(--spacing-2xs);
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.tfa__dis-group[data-kind="harmful"] .tfa__dis-title { color: var(--color-error); }
+
+.tfa__dis-group[data-kind="insufficient"] .tfa__dis-title,
+.tfa__dis-group[data-kind="excessive"] .tfa__dis-title { color: var(--color-warning); }
+
+.tfa__dis-list {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.tfa__dis {
+  cursor: pointer;
+}
+
+.tfa__dis:hover {
+  color: var(--color-accent);
+}
+
+.tfa__dis-param {
+  color: var(--color-text-secondary);
+}
+
+/* Diagram */
+.tfa__toolbar {
+  display: flex;
+  gap: var(--spacing-s);
+  margin-bottom: var(--spacing-s);
+}
+
+.tfa__stage {
+  overflow: auto;
+  max-height: 560px;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md, 6px);
+  background: var(--color-bg-primary);
+}
+
+.tfa__canvas {
+  position: relative;
+}
+
+.tfa__arrows {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* The overlay is a node-diagram chart: no frame, no background, no clipping. */
+.tfa__arrows .dmike-chart-card,
+.tfa__arrows .dmike-chart-wrap,
+.tfa__arrows .dmike-chart-svg-wrap {
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
+.tfa__arrows .dmike-chart-svg-wrap svg {
+  overflow: visible;
+}
+
+.tfa__arrows path.tfa__arrow--hl {
+  stroke: var(--color-accent);
+  stroke-width: 3;
+}
+
+.tfa__node {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--spacing-sm);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-md, 6px);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+/* Ellipsis needs a block child — a flex container does not truncate its own text. */
+.tfa__node-text {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+.tfa__node--target {
+  border: 2px solid var(--color-accent);
+  font-weight: 600;
+}
+
+.tfa__node--supersystem {
+  border-style: dashed;
+  background: var(--color-bg-tertiary);
+}
+
+.tfa__node--selected {
+  box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+.tfa__node--drag {
+  cursor: grabbing;
+  opacity: 0.85;
+}
+
+.tfa__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-ml);
+  margin: var(--spacing-s) 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.tfa__legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+}
+
+.tfa__legend-line {
+  display: inline-block;
+  width: 28px;
+  border-top: 2px solid var(--color-border-primary);
+}
+
+.tfa__legend-line--dashed { border-top-style: dashed; }
+.tfa__legend-line--bold { border-top-width: 3px; }
+
+.tfa__legend-line--wave {
+  border-top: 0;
+  text-decoration: underline wavy var(--color-error);
+}
+
+.tfa__legend-line--wave::before {
+  content: "\00a0\00a0\00a0\00a0\00a0\00a0\00a0";
+}

@@ -117,6 +117,35 @@ export class I18n {
   }
 
   /**
+   * Return a deep copy of a translation subtree in a given language,
+   * independent of the active language. Keys missing in `lang` are filled
+   * from English. Used where strings leave the app (exported survey page).
+   * @param {string} key dot-separated path, e.g. 'modules.survey-builder.runner'
+   * @param {string} lang
+   * @returns {Promise<object>}
+   */
+  async section(key, lang) {
+    for (const l of new Set([lang, 'en'])) {
+      if (!this._cache.has(l)) {
+        try { await this.loadLanguage(l); } catch { /* fall back to what is cached */ }
+      }
+    }
+    const merge = (base, over) => {
+      if (!over || typeof over !== 'object') return base;
+      const out = { ...base };
+      for (const [k, v] of Object.entries(over)) {
+        out[k] = v && typeof v === 'object' && !Array.isArray(v)
+          ? merge(base?.[k] && typeof base[k] === 'object' ? base[k] : {}, v)
+          : v;
+      }
+      return out;
+    };
+    const en = this._resolve(key, 'en');
+    const own = lang === 'en' ? undefined : this._resolve(key, lang);
+    return JSON.parse(JSON.stringify(merge(merge({}, en), own)));
+  }
+
+  /**
    * Register module translations at runtime.
    * @param {string} moduleId
    * @param {{ de: object, en: object }} translations

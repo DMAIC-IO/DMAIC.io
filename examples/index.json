@@ -314,6 +314,21 @@
       "tags": ["kano", "voc", "define", "priorisierung"]
     },
     {
+      "id": "survey-builder-software",
+      "type": "project",
+      "title": { "de": "Fragebogen: Software-Support", "en": "Questionnaire: software support" },
+      "description": {
+        "de": "Kundenbefragung zum Software-Support mit Kundengruppe, einem nur für Industriekunden sichtbaren Abschnitt, Zufriedenheitsmatrix, Kano-Frage und Freitext — drei verschickte Fragebögen und sechs eingelesene Antworten, bereit für Gruppenvergleich und Kano-Übergabe.",
+        "en": "Customer survey on software support with a customer-group question, a section shown only to industry customers, a rating matrix, a Kano question and a free text — three questionnaires sent and six responses imported, ready for the group comparison and the Kano hand-over."
+      },
+      "source": "Qprovement Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/survey-builder-software.json",
+      "format": "json",
+      "modules": ["survey-builder"],
+      "tags": ["voc", "kano", "define", "befragung"]
+    },
+    {
       "id": "regression-collinear",
       "type": "project",
       "title": {
@@ -2269,6 +2284,30 @@
         "triz",
         "sufield",
         "standards"
+      ]
+    },
+    {
+      "id": "triz-function-analysis-toothbrush",
+      "type": "project",
+      "title": {
+        "de": "TRIZ-Funktionsanalyse: Zahnbürste",
+        "en": "TRIZ function analysis: toothbrush"
+      },
+      "description": {
+        "de": "Funktionsmodell einer Handzahnbürste mit Zielobjekt Belag: eine unzureichende Reinigungsfunktion und eine schädliche Wirkung auf das Zahnfleisch.",
+        "en": "Function model of a manual toothbrush with plaque as target: an insufficient cleaning function and a harmful effect on the gums."
+      },
+      "source": "Qprovement Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/triz-function-analysis-toothbrush.json",
+      "format": "json",
+      "modules": [
+        "triz-function-analysis"
+      ],
+      "tags": [
+        "triz",
+        "function-analysis",
+        "funktionsanalyse"
       ]
     },
     {

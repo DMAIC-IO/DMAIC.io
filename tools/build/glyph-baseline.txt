@@ -31,22 +31,22 @@
 # waren schon vor dieser Härtung sauber). Das ist der Arbeitsvorrat für die
 # Migrationsfolge-Aufgabe — diese Aufgabe migriert nichts.
 
-js/core/chart/chart-editor.js:498:●
-js/core/chart/chart-editor.js:500:◆
-js/core/chart/chart-editor.js:501:▲
-js/core/chart/chart-editor.js:502:▼
-js/core/chart/chart-editor.js:504:★
+js/core/chart/chart-editor.js:500:●
+js/core/chart/chart-editor.js:502:◆
+js/core/chart/chart-editor.js:503:▲
+js/core/chart/chart-editor.js:504:▼
+js/core/chart/chart-editor.js:506:★
 js/core/cycles/cycles.js:79:⊞
-js/core/migrations.js:55:→
+js/core/migrations.js:58:→
 js/modules/contour-plot/contour-plot-editor.js:81:●
 js/modules/contour-plot/contour-plot-editor.js:82:◆
 js/modules/contour-plot/contour-plot-editor.js:83:▼
 js/modules/contour-plot/contour-plot-editor.js:84:★
 js/modules/control-chart/control-chart-help.js:148:✕
 js/modules/control-chart/control-chart-help.js:171:✕
-js/modules/ishikawa/ishikawa.js:1089:●
-js/modules/ishikawa/ishikawa.js:1090:◆
-js/modules/ishikawa/ishikawa.js:1091:▼
-js/modules/ishikawa/ishikawa.js:1092:★
+js/modules/ishikawa/ishikawa.js:1099:●
+js/modules/ishikawa/ishikawa.js:1100:◆
+js/modules/ishikawa/ishikawa.js:1101:▼
+js/modules/ishikawa/ishikawa.js:1102:★
 js/modules/kano/kano-link.js:20:▸
 js/modules/process-map/process-map.js:731:→

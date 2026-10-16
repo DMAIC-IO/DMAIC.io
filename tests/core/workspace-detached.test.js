@@ -11,6 +11,7 @@ function makeWorkspace(instantiateImpl) {
     stateManager: { get: () => ({}), getActiveProjectId: () => 'p1' },
     i18n: { t: (k) => k, getLanguage: () => 'de' },
     modal: () => {},
+    dialog: { confirm: async () => false, form: async () => false },
     notify: () => {},
     chartManager: {},
     examples: {},
@@ -58,7 +59,7 @@ suite('ui/workspace detached lifecycle', () => {
 
 suite('ui/workspace detached mount — headless contract', () => {
   test('marks the context detached so modules can skip user-facing UI', async () => {
-    // A detached mount drives no UI: notify is a no-op and confirmPopout
+    // A detached mount drives no UI: notify is a no-op and dialog.confirm
     // auto-confirms. Modules that open a modal on their OWN initiative (e.g.
     // Process Map offering its SIPOC import to a fresh instance) cannot be
     // covered by those two hooks — a modal opened during a dev-tools seed
@@ -68,7 +69,9 @@ suite('ui/workspace detached mount — headless contract', () => {
     await ws.instantiateDetached('i1', 'process-map');
     assertEqual(seen.detached, true);
     assertEqual(typeof seen.notify, 'function');
-    assertEqual(typeof seen.confirmPopout, 'function');
+    assertEqual(typeof seen.dialog.confirm, 'function', 'detached context has the dialog service');
+    assertEqual(await seen.dialog.confirm({ message: 'x' }), true, 'detached confirm auto-confirms');
+    assertEqual(typeof seen.dialog.form, 'function', 'the rest of the service is kept');
   });
 
   test('a normally mounted module is not marked detached', () => {

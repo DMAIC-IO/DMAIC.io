@@ -228,6 +228,18 @@ export default [
     group: 'customer',
     allowedPhases: ['define'],
     load: () => import('./kano/kano.js'),
+    loadTile: () => import('./kano/kano.tile.js'),
+    cycles: {
+      dmaic: { phase: 'define', allowedPhases: ['define'] },
+      dmadv: { phase: 'define', allowedPhases: ['define'] },
+    },
+  },
+  {
+    id: 'survey-builder',
+    phase: 'define',
+    group: 'customer',
+    allowedPhases: ['define'],
+    load: () => import('./survey-builder/survey-builder.js'),
     cycles: {
       dmaic: { phase: 'define', allowedPhases: ['define'] },
       dmadv: { phase: 'define', allowedPhases: ['define'] },
@@ -251,6 +263,7 @@ export default [
     phase: 'define',
     group: 'scope',
     load: () => import('./sipoc/sipoc.js'),
+    loadTile: () => import('./sipoc/sipoc.tile.js'),
     cycles: {
       dmaic:  { phase: 'define'  },
       dmadv:  { phase: 'define'  },
@@ -352,6 +365,7 @@ export default [
     phase: 'measure',
     group: 'capability',
     load: () => import('./process-capability/process-capability.js'),
+    loadTile: () => import('./process-capability/process-capability.tile.js'),
     cycles: {
       dmaic:  { phase: 'measure' },
       dmadv:  { phase: 'measure', allowedPhases: ['measure', 'verify']   },
@@ -618,6 +632,7 @@ export default [
     group: 'charts',
     allowedPhases: ['control'],
     load: () => import('./attribute-control-chart/attribute-control-chart.js'),
+    loadTile: () => import('./attribute-control-chart/attribute-control-chart.tile.js'),
     cycles: {
       dmaic:  { phase: 'control',        allowedPhases: ['control'] },
       dmadv:  { phase: 'verify',         allowedPhases: ['verify']  },
@@ -753,6 +768,14 @@ export default [
     id: 'triz-sufield',
     phase: 'improve',
     load: () => import('./triz-sufield/triz-sufield.js'),
+    cycles: {
+      eightd: { phase: 'corrective' },
+    },
+  },
+  {
+    id: 'triz-function-analysis',
+    phase: 'improve',
+    load: () => import('./triz-function-analysis/triz-function-analysis.js'),
     cycles: {
       eightd: { phase: 'corrective' },
     },

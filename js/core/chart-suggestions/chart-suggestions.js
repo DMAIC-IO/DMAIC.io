@@ -11,8 +11,9 @@
  *   - `match`: object mapping role → exact count (number) or comparator
  *              string (e.g. ">=3"). Roles not listed must have count 0.
  *   - `charts`: ordered list of `{type, score, i18nKey, conditions?, notesKey?}`.
- *              `conditions` may carry `minN`, `maxN`, `maxCategories` — if any
- *              fails for the current selection, the chart is dropped.
+ *              `conditions` may carry `minN`, `maxN`, `maxCategories`,
+ *              `minSkewness`, `positiveOnly` — if any fails for the current
+ *              selection, the chart is dropped.
  *
  * Multiple rules may match (in theory); the first matching rule wins —
  * patterns are mutually exclusive by design.
@@ -23,6 +24,7 @@
  */
 
 import RULES_JSON from './chart-suggestions.json' with { type: 'json' };
+import { descriptiveStats } from '../../engines/normality-test-engine.js';
 
 /** Deep-freeze the imported rules so callers can't mutate the cached module data. */
 function deepFreeze(obj) {
@@ -116,11 +118,14 @@ export function findRule(roleCounts, rules = RULES) {
  * Test whether a chart's `conditions` block is satisfied for the current
  * selection. Unknown condition keys are ignored (forwards-compatible).
  *
+ * `minSkewness` and `positiveOnly` need the column's shape; when it is unknown
+ * they fail, so a shape-dependent chart is never suggested blindly.
+ *
  * @param {object} conditions — may be undefined/null
- * @param {{n: number, maxCategories: number|null}} ctx
+ * @param {{n: number, maxCategories: number|null, shape?: {skewness: number, allPositive: boolean}|null}} ctx
  * @returns {boolean}
  */
-export function conditionsHold(conditions, { n, maxCategories }) {
+export function conditionsHold(conditions, { n, maxCategories, shape = null }) {
   if (!conditions) return true;
   if (conditions.minN != null && !(n >= conditions.minN)) return false;
   if (conditions.maxN != null && !(n <= conditions.maxN)) return false;
@@ -128,6 +133,8 @@ export function conditionsHold(conditions, { n, maxCategories }) {
     if (maxCategories == null) return true; // unknown — don't reject
     if (!(maxCategories <= conditions.maxCategories)) return false;
   }
+  if (conditions.minSkewness != null && !(shape && shape.skewness >= conditions.minSkewness)) return false;
+  if (conditions.positiveOnly && !(shape && shape.allPositive)) return false;
   return true;
 }
 
@@ -172,6 +179,31 @@ export function categoricalCardinality(columns) {
 }
 
 /**
+ * Distribution shape of the first continuous column, used to evaluate
+ * `minSkewness` and `positiveOnly`. Blank cells are skipped; numeric strings
+ * may use a decimal comma. Returns null if there is no continuous column or
+ * it carries no numeric values (only `n`).
+ *
+ * @param {Array<{role: string, values?: any[]}>} columns
+ * @returns {{skewness: number, allPositive: boolean}|null}
+ */
+export function continuousShape(columns) {
+  const target = columns.find(c => c.role === 'continuous');
+  if (!target || !Array.isArray(target.values)) return null;
+  const nums = [];
+  for (const v of target.values) {
+    if (v == null || v === '') continue;
+    const x = typeof v === 'number' ? v : Number(String(v).trim().replace(',', '.'));
+    if (Number.isFinite(x)) nums.push(x);
+  }
+  if (nums.length === 0) return null;
+  return {
+    skewness: descriptiveStats(nums).skewness,
+    allPositive: nums.every(x => x > 0),
+  };
+}
+
+/**
  * @typedef {object} Suggestion
  * @property {string} type — chart type id (e.g. 'histogram')
  * @property {number} score — sorting score (higher = better)
@@ -197,10 +229,11 @@ export function getSuggestionsFor(columns, options = {}) {
 
   const n = effectiveN(columns);
   const maxCategories = categoricalCardinality(columns);
+  const shape = continuousShape(columns);
 
   const out = [];
   for (const chart of rule.charts) {
-    if (!conditionsHold(chart.conditions, { n, maxCategories })) continue;
+    if (!conditionsHold(chart.conditions, { n, maxCategories, shape })) continue;
     out.push({
       type:     chart.type,
       score:    chart.score,

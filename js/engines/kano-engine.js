@@ -16,6 +16,9 @@
 /** Kategorien in absteigender Stärke — zugleich die Tie-Break-Reihenfolge. */
 export const CATEGORIES = ['M', 'O', 'A', 'I', 'R', 'Q'];
 
+/** Share of questionable (Q) answers above which the data quality is flagged. */
+export const Q_WARN = 0.10;
+
 /**
  * Kanonische Kano-Auswertungstabelle (Kano et al. 1984).
  * Zeile = funktionale Antwort 1..5, Spalte = dysfunktionale Antwort 1..5.

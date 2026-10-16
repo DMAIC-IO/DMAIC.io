@@ -6,13 +6,13 @@
       <span class="sha__sidebar-title" x-text="t('name')"></span>
       <div class="sha__sidebar-header-right">
         <span class="sha__counter" x-text="model.stakeholders.length"></span>
-        <button class="sha__add-btn" type="button" :title="t('addStakeholder')" @click="openModal(null)">+</button>
+        <button class="sha__add-btn" type="button" :title="t('addStakeholder')" :aria-label="t('addStakeholder')" @click="openModal(null)"><span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span></button>
       </div>
     </div>
     <div class="sha__sidebar-body" data-ref="shList">
       <template x-if="model.stakeholders.length === 0">
         <div class="sha__empty">
-          <div class="sha__empty-icon">&#128101;</div>
+          <div class="sha__empty-icon"><span class="icon" data-icon="module.stakeholder-analysis" aria-hidden="true"></span></div>
           <div class="sha__empty-title" x-text="t('noStakeholders')"></div>
           <p class="sha__empty-text" x-text="t('noStakeholdersHint')"></p>
         </div>
@@ -26,8 +26,8 @@
               <div class="sha__card-role" x-text="roleText(sh)"></div>
             </div>
             <div class="sha__card-actions">
-              <button class="btn btn--icon-sm sha__card-action-btn sha__edit-btn" :title="t('editStakeholder')" :data-id="sh.id" @click="openModal(sh)">&#9998;</button>
-              <button class="btn btn--icon-sm btn--danger sha__card-action-btn sha__del-btn" :title="t('common.delete')" :data-id="sh.id" @click="deleteStakeholder(sh)">&#10005;</button>
+              <button class="btn btn--icon-sm sha__card-action-btn sha__edit-btn" :title="t('editStakeholder')" :data-id="sh.id" :aria-label="t('editStakeholder')" @click="openModal(sh)"><span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span></button>
+              <button class="btn btn--icon-sm btn--danger sha__card-action-btn sha__del-btn" :title="t('common.delete')" :data-id="sh.id" :aria-label="t('common.delete')" @click="deleteStakeholder(sh)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
             </div>
           </div>
           <div class="sha__meters">
@@ -56,6 +56,12 @@
       <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('tabMatrix')"></span></div>
       <div class="sha__section-body">
         <div class="sha__matrix-container">
+          <template x-if="keyCritics().length > 0">
+            <div class="dmike-infobox dmike-infobox--warn sha__critic-warning" data-ref="criticWarning">
+              <span class="dmike-infobox__label" x-text="t('criticWarningLabel')"></span>
+              <span class="dmike-infobox__detail" x-text="criticWarningText()"></span>
+            </div>
+          </template>
           <div class="sha__matrix-wrapper">
             <div class="sha__matrix-ylabel">
               <span x-text="axisYLabel()"></span>
@@ -75,8 +81,8 @@
                 <div class="sha__cell-desc" x-text="quadDesc('keep-satisfied')"></div>
                 <div class="sha__cell-chips">
                   <template x-for="sh in chipsFor('keep-satisfied')">
-                    <span class="sha__chip" :key="sh.id">
-                      <span class="sha__chip-dot" :style="'background:' + avatarColor(sh.name)"></span>
+                    <span :class="chipClass(sh)" :key="sh.id">
+                      <span :class="chipDotClass(sh.support)"></span>
                       <span x-text="sh.name"></span>
                     </span>
                   </template>
@@ -87,8 +93,8 @@
                 <div class="sha__cell-desc" x-text="quadDesc('manage-closely')"></div>
                 <div class="sha__cell-chips">
                   <template x-for="sh in chipsFor('manage-closely')">
-                    <span class="sha__chip" :key="sh.id">
-                      <span class="sha__chip-dot" :style="'background:' + avatarColor(sh.name)"></span>
+                    <span :class="chipClass(sh)" :key="sh.id">
+                      <span :class="chipDotClass(sh.support)"></span>
                       <span x-text="sh.name"></span>
                     </span>
                   </template>
@@ -99,8 +105,8 @@
                 <div class="sha__cell-desc" x-text="quadDesc('monitor')"></div>
                 <div class="sha__cell-chips">
                   <template x-for="sh in chipsFor('monitor')">
-                    <span class="sha__chip" :key="sh.id">
-                      <span class="sha__chip-dot" :style="'background:' + avatarColor(sh.name)"></span>
+                    <span :class="chipClass(sh)" :key="sh.id">
+                      <span :class="chipDotClass(sh.support)"></span>
                       <span x-text="sh.name"></span>
                     </span>
                   </template>
@@ -111,8 +117,8 @@
                 <div class="sha__cell-desc" x-text="quadDesc('keep-informed')"></div>
                 <div class="sha__cell-chips">
                   <template x-for="sh in chipsFor('keep-informed')">
-                    <span class="sha__chip" :key="sh.id">
-                      <span class="sha__chip-dot" :style="'background:' + avatarColor(sh.name)"></span>
+                    <span :class="chipClass(sh)" :key="sh.id">
+                      <span :class="chipDotClass(sh.support)"></span>
                       <span x-text="sh.name"></span>
                     </span>
                   </template>
@@ -123,6 +129,14 @@
               <span x-text="t('axisLow')"></span>
               <span></span>
               <span x-text="t('axisHigh')"></span>
+            </div>
+            <div class="sha__legend">
+              <template x-for="tone in supportTones">
+                <span class="sha__legend-item" :key="tone" :data-tone="tone">
+                  <span :class="chipDotClass(tone)"></span>
+                  <span x-text="supportLabel(tone)"></span>
+                </span>
+              </template>
             </div>
           </div>
         </div>

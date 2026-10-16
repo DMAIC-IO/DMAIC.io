@@ -13,6 +13,8 @@
  * i18n-derived (default name, "(Copy)" suffix) are passed in by the caller.
  */
 
+import { uid } from '../../core/uid.js';
+
 /** @typedef {{ id: string, name: string, state: object|null }} Sheet */
 
 export class State {
@@ -166,7 +168,7 @@ export class State {
     if (!d || typeof d !== 'object' || !Array.isArray(d.sheets)) return s;
 
     s.sheets = d.sheets.map(sh => ({
-      id: sh && typeof sh.id === 'string' ? sh.id : `sheet_${  Math.random().toString(36).slice(2)}`,
+      id: sh && typeof sh.id === 'string' ? sh.id : `sheet_${uid()}`,
       name: sh && typeof sh.name === 'string' ? sh.name : '',
       state: sh && sh.state && typeof sh.state === 'object' ? sh.state : null,
     }));

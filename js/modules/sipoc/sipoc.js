@@ -212,18 +212,16 @@ export default createModule({
         event?.stopPropagation?.();
         const colLabel = this.t(`col.${  colKey}`);
         this.editDraft.text = this.model.columns[colKey][idx] ?? '';
-        await module._context.showModal.form(
-          `${colLabel} — ${this.t('common.edit')}`,
-          this.$refs.editForm,
-          {
-            confirmLabel: this.t('common.save'),
-            onMount: (el) => {
-              const ta = el.querySelector('[data-field="text"]');
-              if (ta) { ta.focus(); ta.selectionStart = ta.value.length; }
-            },
-            onConfirm: () => this.setItem(colKey, idx, this.editDraft.text),
+        await module._context.dialog.form({
+          title: `${colLabel} — ${this.t('common.edit')}`,
+          content: this.$refs.editForm,
+          confirmLabel: this.t('common.save'),
+          onMount: (el) => {
+            const ta = el.querySelector('[data-field="text"]');
+            if (ta) { ta.focus(); ta.selectionStart = ta.value.length; }
           },
-        );
+          onConfirm: () => this.setItem(colKey, idx, this.editDraft.text),
+        });
       },
 
       // ── Export ────────────────────────────────────────────────

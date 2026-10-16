@@ -1,13 +1,10 @@
+import { uid } from '../../core/uid.js';
 import { isIsoDate } from '../../core/local-date.js';
 
 export const STATUSES = ['open', 'in-progress', 'done', 'blocked'];
 
 /** Die Spalten, nach denen die Liste sortiert werden kann. */
 export const SORT_COLUMNS = ['text', 'owner', 'due', 'status'];
-
-function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-}
 
 export class Item {
   id = uid()

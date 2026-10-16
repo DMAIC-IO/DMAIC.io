@@ -11,12 +11,14 @@ import { stripPatch }      from '../../core/version-utils.js';
 import { VERSION }         from '../../core/version.js';
 import { shortcutRegistry } from '../../core/shortcut-registry.js';
 import { buildExportScopeDialog } from '../../dialogs/export-scope/export-scope.js';
-import { downloadJSON, exportAllProjects } from '../../core/export-all.js';
+import { downloadJSON, exportAllProjects, exportStamp } from '../../core/export-all.js';
 
-/** @param {object} kernel - { stateManager, eventBus, i18n }  @param {object} ui - { modal, notify } */
-export function initActionButtons({ stateManager, eventBus, i18n }, { modal, notify }) {
+export { exportStamp };
+
+/** @param {object} kernel - { stateManager, eventBus, i18n }  @param {object} ui - { dialog, notify } */
+export function initActionButtons({ stateManager, eventBus, i18n }, { dialog, notify }) {
   initFullscreen();
-  initExportImport({ stateManager, eventBus, i18n }, { modal, notify });
+  initExportImport({ stateManager, eventBus, i18n }, { dialog, notify });
 }
 
 function initFullscreen() {
@@ -42,7 +44,7 @@ function initFullscreen() {
   document.addEventListener('fullscreenchange', updateIcon);
 }
 
-function initExportImport({ stateManager, eventBus, i18n }, { modal, notify }) {
+function initExportImport({ stateManager, eventBus, i18n }, { dialog, notify }) {
   const exportBtn = document.getElementById('export-btn');
   const importBtn = document.getElementById('import-btn');
   const importInput = document.getElementById('import-file-input');
@@ -57,21 +59,21 @@ function initExportImport({ stateManager, eventBus, i18n }, { modal, notify }) {
       // Single project — export directly
       const json = stateManager.exportJSON();
       const name = (stateManager.get('projectMeta.name') ?? 'projekt').replace(/[^a-z0-9_-]/gi, '_');
-      downloadJSON(json, `${name}_${new Date().toISOString().split('T')[0]}.json`);
+      downloadJSON(json, `${name}_${exportStamp()}.json`);
       eventBus.emit('project:exported');
       notify(i18n.t('app.export'), 'success', 'status.ok');
       return;
     }
 
     // Multiple projects — choose scope via dialog
-    const scope = await exportScopeDialog.open(modal, { projectCount: projects.length }, {
+    const scope = await exportScopeDialog.open(dialog, { projectCount: projects.length }, {
       confirmLabel: i18n.t('app.export'),
     });
     if (scope === null) return; // cancelled
-    const date = new Date().toISOString().split('T')[0];
+    const date = exportStamp();
     if (scope === 'all') {
       const json = await stateManager.exportAllJSON();
-      downloadJSON(json, `dmike_alle_projekte_${date}.json`);
+      downloadJSON(json, `dmaic-io_alle_projekte_${date}.json`);
     } else {
       const json = stateManager.exportJSON();
       const name = (stateManager.get('projectMeta.name') ?? 'projekt').replace(/[^a-z0-9_-]/gi, '_');

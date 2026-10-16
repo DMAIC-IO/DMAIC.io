@@ -3445,7 +3445,7 @@ export class DataGrid {
       if (!firstNumeric) hasHeader = true;
     }
 
-    // Direct import (no preview modal in module context — use context.showModal for that)
+    // Direct import (no preview modal in module context — use context.dialog for that)
     const header = hasHeader ? rows[0] : null;
     const data = hasHeader ? rows.slice(1) : rows;
     const numCols = Math.max(...rows.map(r => r.length));

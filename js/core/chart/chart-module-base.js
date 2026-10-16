@@ -18,7 +18,8 @@
  *
  * The factory returns a plain object that the module spreads into the head of
  * its data-fn return. It provides the transient lifecycle fields, the picker /
- * chart disposal helpers, the bounded rAF anchor poll (`whenAnchor`), the
+ * chart disposal helpers, the PLOT-cluster render helpers (`_showPlaceholder`,
+ * `_showChartArea`, `_upsertChart`), the bounded rAF anchor poll (`whenAnchor`), the
  * debounce scheduler, and `init` / `destroy`. The bodies mirror the original
  * per-module code verbatim so runtime behavior is byte-identical.
  *
@@ -138,6 +139,60 @@ export function chartModuleLifecycle(module, cfg) {
         try { module._context.chartManager.destroy(this._chart); } catch { /* ignore */ }
         this._chart = null;
       }
+    },
+
+    // ── Single-chart render helpers (PLOT cluster) ────────────
+
+    /**
+     * Empty state: hide the chart area, show the placeholder, dispose the chart
+     * and clear the module's stats (`this._clearStats()`, module-provided).
+     */
+    _showPlaceholder() {
+      const chartArea = module._container?.querySelector('[data-ref="chart-area"]');
+      const placeholder = module._container?.querySelector('[data-ref="placeholder"]');
+      if (chartArea) chartArea.style.display = 'none';
+      if (placeholder) placeholder.style.display = '';
+      this._destroyChart();
+      this._clearStats();
+    },
+
+    /** Data state: show the chart area, hide the placeholder. */
+    _showChartArea() {
+      const chartArea = module._container?.querySelector('[data-ref="chart-area"]');
+      const placeholder = module._container?.querySelector('[data-ref="placeholder"]');
+      if (chartArea) chartArea.style.display = '';
+      if (placeholder) placeholder.style.display = 'none';
+    },
+
+    /**
+     * Update the single chart in place, or create it into `[data-ref="chart-wrap"]`
+     * on first use. A create overtaken by a newer render is disposed.
+     *
+     * Returns `false` when nothing was rendered: the chart-wrap is gone (the plot
+     * was scheduled via rAF/$watch for an instance that destroy() already cleared,
+     * e.g. during Dev-Tools seeding) or the create went stale.
+     *
+     * @param {string} type   chart type name for `chartManager.create`
+     * @param {object} config chart config
+     * @returns {Promise<boolean>} true when the chart now shows `config`
+     */
+    async _upsertChart(type, config) {
+      const chartWrap = module._container?.querySelector('[data-ref="chart-wrap"]');
+      if (!chartWrap) return false;
+      const cm = module._context.chartManager;
+      if (this._chart) {
+        cm.update(this._chart, config);
+        return true;
+      }
+      const gen = ++this._renderGen;
+      chartWrap.replaceChildren();
+      const chart = await cm.create(chartWrap, type, config);
+      if (gen !== this._renderGen) {
+        try { cm.destroy(chart); } catch { /* ignore */ }
+        return false;
+      }
+      this._chart = chart;
+      return true;
     },
 
     /** Dispose all chart instances (AUTORUN cluster). */

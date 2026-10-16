@@ -1,0 +1,67 @@
+{
+  "id": "funktionsanalyse",
+  "category": "triz",
+  "title": {
+    "de": "Funktionsanalyse",
+    "en": "Function analysis"
+  },
+  "short": {
+    "de": "Zerlegt ein System in Komponenten und beschreibt jede Wechselwirkung als Funktion Träger – Verb – Objekt; liefert die Liste der funktionalen Nachteile.",
+    "en": "Breaks a system down into components and describes every interaction as a function carrier – verb – object; yields the list of functional disadvantages."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die Funktionsanalyse gehört zu den Werkzeugen der modernen {{term:triz|TRIZ}}. Sie läuft in drei Schritten: **Komponentenanalyse** (Zielobjekt, Systemkomponenten, Elemente des {{term:supersystem|Supersystems}}), **Interaktionsanalyse** (welche Komponenten stehen in {{term:wechselwirkung|Wechselwirkung}}?) und **Funktionsmodellierung**."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Funktion** — ein Träger verändert oder erhält einen Parameter eines Objekts (z. B. „Borsten entfernen Belag“).",
+          "**Ausprägung** — nützlich und ausreichend, unzureichend oder übermäßig; oder schädlich.",
+          "**Rang** — Basisfunktion (wirkt auf das Zielobjekt), Zusatzfunktion (wirkt auf das Supersystem), Hilfsfunktion (wirkt auf eine Systemkomponente)."
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Die schädlichen, unzureichenden und übermäßigen Funktionen bilden die Nachteilsliste — Ausgangspunkt für die {{term:substanz-feld-analyse|Stoff-Feld-Analyse}} und die Widerspruchswerkzeuge."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "Function analysis is one of the tools of modern {{term:triz|TRIZ}}. It runs in three steps: **component analysis** (target, system components, elements of the {{term:supersystem|supersystem}}), **interaction analysis** (which components {{term:wechselwirkung|interact}}?) and **function modelling**."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Function** — a carrier changes or maintains a parameter of an object (e.g. \"bristles remove plaque\").",
+          "**Level** — useful and adequate, insufficient or excessive; or harmful.",
+          "**Rank** — basic function (acts on the target), additional function (acts on the supersystem), auxiliary function (acts on a system component)."
+        ]
+      },
+      {
+        "type": "note",
+        "text": "The harmful, insufficient and excessive functions form the disadvantage list — the starting point for {{term:substanz-feld-analyse|Su-Field analysis}} and the contradiction tools."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Funktionsmodell", "Komponentenanalyse", "Interaktionsanalyse", "Funktionsmodellierung"],
+    "en": ["function model", "component analysis", "interaction analysis", "function modelling"]
+  },
+  "seeAlso": ["triz", "supersystem", "wechselwirkung", "substanz-feld-analyse"],
+  "modules": ["triz-function-analysis"],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Koltze, K. & Souchkov, V. — Systematische Innovation: TRIZ-Anwendung in der Produkt- und Prozessentwicklung, 3. Auflage, Hanser, 2018",
+      "url": null
+    },
+    {
+      "label": "Gadd, K. — TRIZ for Engineers: Enabling Inventive Problem Solving, Wiley, 2011",
+      "url": null
+    }
+  ]
+}

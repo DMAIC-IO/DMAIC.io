@@ -5,7 +5,7 @@
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import { EventBus } from '../../js/core/event-bus.js';
-import { StateManager } from '../../js/core/state-manager.js';
+import { StateManager, withChartEdit } from '../../js/core/state-manager.js';
 import { StorageAdapter } from '../../js/core/storage/storage-adapter.js';
 import { ModuleRegistry } from '../../js/core/module-registry.js';
 import { VERSION } from '../../js/core/version.js';
@@ -565,5 +565,58 @@ suite('StateManager chartEdits', () => {
     adapter._fireRemote();
     await Promise.resolve(); await Promise.resolve();
     assertDeepEqual(sm.getChartEdits('i1', 'scatter'), { title: 'Remote' });
+  });
+});
+
+suite('StateManager tile chart edits', () => {
+  test('withChartEdit is pure and prunes empty levels', () => {
+    const before = { t1: { histogram: { title: 'A' } } };
+    const after = withChartEdit(before, 't1', 'histogram', 'title', '');
+    assertDeepEqual(after, {});
+    assertDeepEqual(before, { t1: { histogram: { title: 'A' } } });
+    assertDeepEqual(withChartEdit(undefined, 't1', 'h', 'showYTicks', false), { t1: { h: { showYTicks: false } } });
+  });
+
+  test('setTileChartEdit stores under dashboard.chartEdits[tileId][chartKey]', () => {
+    const sm = new StateManager(new EventBus());
+    sm.setTileChartEdit('cap:i1', 'histogram', 'showYTicks', true);
+    assertDeepEqual(sm.get('dashboard.chartEdits'), { 'cap:i1': { histogram: { showYTicks: true } } });
+    assertDeepEqual(sm.getTileChartEdits('cap:i1', 'histogram'), { showYTicks: true });
+    assertEqual(sm.getTileChartEdits('cap:i1', 'other'), null);
+    assertEqual(sm.getChartEdits('cap:i1', 'histogram'), null);
+  });
+
+  test('a tile chart edit saves quietly and emits data:changed', () => {
+    const bus = new EventBus();
+    const sm = new StateManager(bus);
+    const calls = []; const changed = [];
+    sm.save = (opts) => calls.push(!!opts?.quiet);
+    bus.on('data:changed', (p) => changed.push(p));
+    sm.setTileChartEdit('t', 'histogram', 'title', 'A');
+    clearTimeout(sm._saveTimer);
+    sm._runScheduledSave();
+    assertDeepEqual(calls, [true]);
+    assertDeepEqual(changed, ['dashboard.chartEdits']);
+  });
+
+  test('works when the loaded dashboard is null', () => {
+    const sm = new StateManager(new EventBus());
+    sm._state.dashboard = null;
+    sm.setTileChartEdit('t', 'histogram', 'showLegend', true);
+    assertDeepEqual(sm.getTileChartEdits('t', 'histogram'), { showLegend: true });
+  });
+
+  test('writing dashboard.layout keeps the sibling dashboard.chartEdits', () => {
+    const sm = new StateManager(new EventBus());
+    sm.setTileChartEdit('t', 'histogram', 'title', 'A');
+    sm.set('dashboard.layout', [{ id: 't', x: 0, y: 0, w: 2, h: 2 }]);
+    assertDeepEqual(sm.getTileChartEdits('t', 'histogram'), { title: 'A' });
+  });
+
+  test('completed project ignores tile chart edits', () => {
+    const sm = new StateManager(new EventBus());
+    sm.isCompleted = () => true;
+    sm.setTileChartEdit('t', 'histogram', 'title', 'A');
+    assertEqual(sm.getTileChartEdits('t', 'histogram'), null);
   });
 });

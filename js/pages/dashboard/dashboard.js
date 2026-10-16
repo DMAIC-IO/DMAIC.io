@@ -11,8 +11,8 @@ import { h } from '../../core/dom.js';
 import { DashboardGrid } from '../../ui/dashboard-grid.js';
 import { DEFAULT_DASHBOARD_LAYOUT } from './default-layout.js';
 import { enumerateTiles, loadTileModules, refreshEventsOf, copyId, copyDescriptor, sourceChoices, customRefreshEvents, refreshTargets } from './enumerate-tiles.js';
-import { renderTileSafely } from './tile-render.js';
-import { schemaOf, resolveSettings, toStored, withTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave, titlesToStoreOnLayoutSave, SOURCE_KEY, sourceField, coerceValue } from './tile-settings.js';
+import { renderTileSafely, disposeTile } from './tile-render.js';
+import { schemaOf, resolveSettings, toStored, withTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave, titlesToStoreOnLayoutSave, chartEditsToStoreOnLayoutSave, withCopiedChartEdits, SOURCE_KEY, sourceField, coerceValue } from './tile-settings.js';
 import { buildSettingsForm } from './tile-settings-form.js';
 
 const page = createPage({
@@ -33,7 +33,7 @@ const page = createPage({
   },
 
   mount(containerEl, ctx) {
-    const { eventBus, stateManager, i18n, chartManager, themeManager, moduleRegistry, modal } = ctx;
+    const { eventBus, stateManager, i18n, chartManager, themeManager, moduleRegistry, dialog } = ctx;
     const gridAnchor = containerEl.querySelector('[data-ref="grid"]');
 
     const handle = { grid: null, addMenuEl: null, _onDocClick: null, _unsubs: [], render: null, _renderGen: 0, _toolbarWired: false, _allTilesLoaded: false, _refreshUnsubs: [], _lastLayout: [], tileModules: [] };
@@ -50,11 +50,7 @@ const page = createPage({
     const disposePlacedTiles = () => {
       if (!handle.grid) return;
       for (const id of handle.grid.getPlacedTileIds()) {
-        try {
-          descriptorFor(id)?.tile?.dispose?.(handle.grid.getTileBody(id), { tileId: id });
-        } catch (err) {
-          console.error(`[dashboard] tile "${id}" failed to dispose`, err);
-        }
+        disposeTile(descriptorFor(id)?.tile, handle.grid.getTileBody(id), { tileId: id });
       }
     };
     handle.disposePlacedTiles = disposePlacedTiles;
@@ -72,7 +68,7 @@ const page = createPage({
       await renderTileSafely(descriptor.tile, body, {
         tileId: descriptor.id, instanceId: descriptor.instanceId, state,
         settings: settingsFor(descriptor.id, descriptor.tile),
-        i18n, theme: theme(), chartManager, stateManager,
+        i18n, theme: theme(), chartManager: chartManager?.forTile?.(descriptor.id) ?? chartManager, stateManager,
       }, i18n);
     };
 
@@ -82,7 +78,7 @@ const page = createPage({
     // copy has no enumerated instance, so its `_source` is always stored.
     const openTileSettings = async (tileId) => {
       const d = descriptorFor(tileId);
-      if (!d?.tile || !modal) return;
+      if (!d?.tile || !dialog) return;
       const ownSchema = schemaOf(d.tile);
       const capable = isSourceCapable(d);
       const schema = capable
@@ -96,8 +92,11 @@ const page = createPage({
       const stored = (stateManager.get('dashboard.tileSettings') || {})[tileId];
       const form = buildSettingsForm(schema, resolveSettings(schema, stored), i18n);
       const tileTitle = (stateManager.get('dashboard.titles') || {})[tileId] || d.title;
-      const confirmed = await modal.form(i18n.t('dashboard.tileSettings.title', { title: tileTitle }), form.el,
-        { footerStart: form.reset });
+      const confirmed = await dialog.form({
+        title: i18n.t('dashboard.tileSettings.title', { title: tileTitle }),
+        content: form.el,
+        footerStart: form.reset,
+      });
       if (confirmed !== true) return;
       const values = form.read();
       const latest = stateManager.get('dashboard.tileSettings') || {};
@@ -113,19 +112,13 @@ const page = createPage({
         if (rebound) handle.grid?.setTileTitle(tileId, rebound.title);
       }
       const body = handle.grid?.getTileBody(tileId);
-      if (body) {
-        try {
-          d.tile.dispose?.(body, { tileId });
-        } catch (err) {
-          console.error(`[dashboard] tile "${tileId}" failed to dispose`, err);
-        }
-      }
+      if (body) disposeTile(d.tile, body, { tileId });
       await renderTile(tileId);
     };
 
     // ── Duplicate ────────────────────────────────────────────────────────
-    // A copy is "<kind>~<uid>" with the original's stored settings and its
-    // effective source; a user-edited title is not copied. Settings and
+    // A copy is "<kind>~<uid>" with the original's stored settings, chart
+    // edits and effective source; a user-edited title is not copied. Settings and
     // descriptor exist before addTile, whose layout save prunes unknown ids.
     const duplicateTile = async (tileId) => {
       const d = descriptorFor(tileId);
@@ -136,6 +129,8 @@ const page = createPage({
       const all = stateManager.get('dashboard.tileSettings') || {};
       stateManager.set('dashboard.tileSettings',
         withTileSettings(all, id, { ...(all[tileId] || {}), [SOURCE_KEY]: d.instanceId }));
+      const copiedEdits = withCopiedChartEdits(stateManager.get('dashboard.chartEdits'), tileId, id);
+      if (copiedEdits) stateManager.set('dashboard.chartEdits', copiedEdits);
       descriptors.push(copy);
       const def = buildTileDefs().find(x => x.id === id);
       if (handle.grid.addTile(def)) {
@@ -145,6 +140,11 @@ const page = createPage({
       descriptors = descriptors.filter(x => x.id !== id);
       stateManager.set('dashboard.tileSettings',
         withTileSettings(stateManager.get('dashboard.tileSettings'), id, {}));
+      if (copiedEdits) {
+        const rest = { ...(stateManager.get('dashboard.chartEdits') || {}) };
+        delete rest[id];
+        stateManager.set('dashboard.chartEdits', rest);
+      }
     };
 
     // ── Tile-def assembly ───────────────────────────────────────
@@ -183,6 +183,9 @@ const page = createPage({
       const titles = titlesToStoreOnLayoutSave(
         stateManager.get('dashboard.titles'), ids, handle._allTilesLoaded);
       if (titles) stateManager.set('dashboard.titles', titles);
+      const edits = chartEditsToStoreOnLayoutSave(
+        stateManager.get('dashboard.chartEdits'), ids, handle._allTilesLoaded);
+      if (edits) stateManager.set('dashboard.chartEdits', edits);
     };
 
     // ── Add-menu popover ─────────────────────────────────────────────────
@@ -305,24 +308,26 @@ const page = createPage({
           if (d?.tile && resized && refreshEventsOf(d.tile).includes('resize')) renderTile(item.tileId);
         }
       };
-      handle.grid.onTileRemoved = (tileId) => {
+      handle.grid.onTileRemoved = (tileId, body) => {
         const d = descriptorFor(tileId);
-        try {
-          d?.tile?.dispose?.(handle.grid?.getTileBody(tileId) ?? gridAnchor, { tileId });
-        } catch (err) {
-          console.error(`[dashboard] tile "${tileId}" failed to dispose`, err);
-        }
+        if (body) disposeTile(d?.tile, body, { tileId });
         const allSettings = stateManager.get('dashboard.tileSettings') || {};
         if (Object.hasOwn(allSettings, tileId)) {
           stateManager.set('dashboard.tileSettings', withTileSettings(allSettings, tileId, {}));
         }
-        // A removed copy is gone for good, so is its user title. A base tile
-        // keeps its title for when it is added back.
+        // A removed copy is gone for good, so are its user title and chart edits.
+        // A base tile keeps both for when it is added back.
         const titles = stateManager.get('dashboard.titles') || {};
         if (d?.isCopy && Object.hasOwn(titles, tileId)) {
           const rest = { ...titles };
           delete rest[tileId];
           stateManager.set('dashboard.titles', rest);
+        }
+        const chartEdits = stateManager.get('dashboard.chartEdits') || {};
+        if (d?.isCopy && Object.hasOwn(chartEdits, tileId)) {
+          const rest = { ...chartEdits };
+          delete rest[tileId];
+          stateManager.set('dashboard.chartEdits', rest);
         }
         // Removing a re-bound base tile dropped its `_source`; re-enumerate so
         // the add menu offers it on its own instance with its own title.

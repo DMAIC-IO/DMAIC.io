@@ -59,12 +59,18 @@ suite('resolveActions', () => {
     assertEqual(vm.isDropdown, false, 'empty children → not dropdown');
   });
 
-  test('passes onClick and dynamicText through unchanged', () => {
+  test('passes onClick through unchanged', () => {
     const onClick = () => {};
-    const dynamicText = (d) => `${d.n}`;
-    const [vm] = resolveActions([{ icon: 'x', title: 'a', onClick, dynamicText }], tf);
+    const [vm] = resolveActions([{ icon: 'x', title: 'a', onClick }], tf);
     assertTrue(vm.onClick === onClick, 'onClick identity preserved');
-    assertTrue(vm.dynamicText === dynamicText, 'dynamicText identity preserved');
+    assertEqual(vm.dynamicText, null, 'no dynamicText → null');
+  });
+
+  test('dynamicText receives live data and the module tf', () => {
+    const dynamicText = (d, t) => t(d.open ? 'hide' : 'show');
+    const [vm] = resolveActions([{ icon: 'x', title: 'a', dynamicText }], tf);
+    assertEqual(vm.dynamicText({ open: false }), 'T(show)', 'closed → show key resolved');
+    assertEqual(vm.dynamicText({ open: true }), 'T(hide)', 'open → hide key resolved');
   });
 
   test('null/undefined actions → empty array', () => {

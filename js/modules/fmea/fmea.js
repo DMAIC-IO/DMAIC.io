@@ -103,7 +103,8 @@ const mod = createModule({
     version: '1.3.0',
     meta: import.meta,
     actions: [
-      { icon: 'action.glossary', title: 'scales', onClick: (d) => d.toggleScale() },
+      { icon: 'action.glossary', title: 'scales', onClick: (d) => d.toggleScale(),
+        dynamicText: (d, tf) => tf(d?.scaleVisible ? 'scalesHide' : 'scalesShow') },
       { icon: 'chart.run-chart', title: 'burndown', onClick: (d) => d.showBurndown() },
       // `agentAction` nennt die Agentenmethode hinter der Leistenaktion.
       { icon: 'nav.expand-down', title: 'sortByPriority', agentAction: 'sortByPriority',

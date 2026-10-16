@@ -319,6 +319,34 @@ suite('chart-suggestion Model — buildPrefill', () => {
     assertEqual(p.target, 'probability-plot');
     assertEqual(p.state.columnRef.columnId, 'a');
   });
+
+  test('transformed-imr-chart → Box-Cox I-MR module with auto λ', () => {
+    const s = new State();
+    s.selection = { sourceInstanceId: srcId, sourceSheetId: sheetId, columns: [cont(30, 'a')] };
+    s.selectedChartType = 'transformed-imr-chart';
+    const p = s.buildPrefill();
+    assertEqual(p.target, 'transformed-imr-chart');
+    assertEqual(p.state.columnRef.columnId, 'a');
+    assertEqual(p.state.lambdaMode, 'auto');
+  });
+
+  test('control-chart on a single column → I-MR in the control-chart module', () => {
+    const s = new State();
+    s.selection = { sourceInstanceId: srcId, sourceSheetId: sheetId, columns: [cont(30, 'a')] };
+    s.selectedChartType = 'control-chart';
+    const p = s.buildPrefill();
+    assertEqual(p.target, 'control-chart');
+    assertEqual(p.state.chartTypeId, 'i-mr');
+    assertEqual(p.state.columnRef.columnId, 'a');
+  });
+
+  test('control-chart with a date column → null (the module would ignore the date order)', () => {
+    const s = new State();
+    const d = { id: 'd', name: 'd', role: 'date', type: 'date', values: ['2026-01-02', '2026-01-01'] };
+    s.selection = { sourceInstanceId: srcId, sourceSheetId: sheetId, columns: [d, cont(2, 'a')] };
+    s.selectedChartType = 'control-chart';
+    assertEqual(s.buildPrefill(), null);
+  });
 });
 
 suite('chart-suggestion Model — refreshFromSource', () => {

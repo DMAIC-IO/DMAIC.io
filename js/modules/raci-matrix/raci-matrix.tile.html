@@ -1,0 +1,37 @@
+<template x-if="vm.empty">
+  <p class="dashboard-area__empty" x-text="vm.empty"></p>
+</template>
+<template x-if="!vm.empty">
+  <div class="dashboard-raci__summary">
+    <template x-for="s in vm.summary">
+      <span><span x-text="s.label"></span><strong x-text="s.value"></strong></span>
+    </template>
+  </div>
+</template>
+<template x-if="vm.segments.length">
+  <div class="dashboard-raci__bar">
+    <template x-for="seg in vm.segments">
+      <div class="dashboard-raci__bar-seg" :style="seg.style" :title="seg.title"></div>
+    </template>
+  </div>
+</template>
+<template x-if="vm.legend">
+  <div class="dashboard-raci__legend">
+    <template x-for="l in vm.legend">
+      <span class="dashboard-raci__legend-item"><span class="dashboard-fmea__legend-dot" :style="l.dot"></span><span x-text="l.text"></span></span>
+    </template>
+  </div>
+</template>
+<template x-if="vm.warnLabel">
+  <div class="dashboard-raci__warn-label" x-text="vm.warnLabel"></div>
+</template>
+<template x-if="vm.warnLabel">
+  <ul class="dashboard-raci__warn-list">
+    <template x-for="w in vm.warnings">
+      <li class="dashboard-raci__warn-item"><span class="dashboard-raci__warn-role" :style="w.style" x-text="w.role"></span><span x-text="w.text"></span></li>
+    </template>
+    <template x-if="vm.more">
+      <li class="dashboard-area__muted" x-text="vm.more"></li>
+    </template>
+  </ul>
+</template>

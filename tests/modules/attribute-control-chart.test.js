@@ -9,8 +9,9 @@
  *     against hand-computed reference values.
  */
 
-import { suite, test, assertEqual, assertAlmostEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertAlmostEqual, assertTrue } from '../test-utils.js';
 import { State } from '../../js/modules/attribute-control-chart/attribute-control-chart-model.js';
+import { analyzeState } from '../../js/modules/attribute-control-chart/attribute-control-chart-analysis.js';
 import {
   computeP, computeNP, computeC, computeU,
   evaluateAttributeRules, ATTR_DEFAULT_ENABLED_RULES,
@@ -339,3 +340,49 @@ function assertArrayClose(a, b, tol = 1e-9) {
   assertEqual(a.length, b.length);
   for (let i = 0; i < a.length; i++) assertAlmostEqual(a[i], b[i], tol);
 }
+
+// ─────────────────────────────────────────────────────────────
+// Shared analysis — analyzeState
+// ─────────────────────────────────────────────────────────────
+
+const D_REF = { instanceId: 'w', sheetId: 's', columnId: 'd' };
+const N_REF = { instanceId: 'w', sheetId: 's', columnId: 'n' };
+const reader = (cols) => (ref) => cols[ref.columnId] || [];
+
+suite('Attribute CC analysis — analyzeState', () => {
+  test('no defects column → null', () => {
+    assertEqual(analyzeState(State.fromJSON({ chartTypeId: 'c' }), reader({})), null);
+  });
+
+  test('p: pairs drop missing defects and missing or zero sizes', () => {
+    const a = analyzeState(State.fromJSON({ chartTypeId: 'p', defectsRef: D_REF, sizeRef: N_REF }),
+      reader({ d: [2, 'x', 1, 4, 3], n: [50, 50, 0, 50, null] }));
+    assertEqual(a.valid, 2);
+    assertEqual(JSON.stringify(a.n), JSON.stringify([50, 50]));
+    assertEqual(a.ct.id, 'p');
+  });
+
+  test('p without a size column → null', () => {
+    assertEqual(analyzeState(State.fromJSON({ chartTypeId: 'p', defectsRef: D_REF }), reader({ d: [1, 2, 3] })), null);
+  });
+
+  test('np: nulls filtered, n is the constant n', () => {
+    const a = analyzeState(State.fromJSON({ chartTypeId: 'np', defectsRef: D_REF, constantN: 40 }),
+      reader({ d: [1, null, 2, 3] }));
+    assertEqual(a.valid, 3);
+    assertEqual(JSON.stringify(a.n), JSON.stringify([40, 40, 40])); // engine returns n per point
+  });
+
+  test('c: n is null; fewer than two points → null', () => {
+    const a = analyzeState(State.fromJSON({ chartTypeId: 'c', defectsRef: D_REF }), reader({ d: [3, 5, 4] }));
+    assertEqual(a.valid, 3);
+    assertEqual(a.n, null);
+    assertEqual(analyzeState(State.fromJSON({ chartTypeId: 'c', defectsRef: D_REF }), reader({ d: [3] })), null);
+  });
+
+  test('a point beyond the limits is a violation (rule 1)', () => {
+    const a = analyzeState(State.fromJSON({ chartTypeId: 'c', defectsRef: D_REF }),
+      reader({ d: [2, 2, 2, 2, 2, 2, 2, 2, 2, 30] }));
+    assertTrue(a.violations.some(v => v.index === 9));
+  });
+});

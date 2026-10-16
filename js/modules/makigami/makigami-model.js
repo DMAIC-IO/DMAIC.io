@@ -9,6 +9,7 @@
  * The free-text duration parser lives in the pure helper makigami-duration.js.
  */
 
+import { uid as coreUid } from '../../core/uid.js';
 import { parseDuration } from './makigami-duration.js';
 
 /**
@@ -45,7 +46,7 @@ export function createDefaultTimeUnits() {
 
 /** Generate a short unique id with a prefix. */
 export function uid(prefix) {
-  return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  return prefix + coreUid();
 }
 
 export class State {

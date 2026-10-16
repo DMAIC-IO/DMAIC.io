@@ -5,7 +5,7 @@
  */
 
 import { suite, test, assert, assertEqual, assertAlmostEqual, assertDeepEqual } from '../test-utils.js';
-import { classify, aggregate, evaluate } from '../../js/engines/kano-engine.js';
+import { classify, aggregate, evaluate, Q_WARN } from '../../js/engines/kano-engine.js';
 import fixtures from '../fixtures/kano/classification.json' with { type: 'json' };
 import aggFixtures from '../fixtures/kano/aggregation.json' with { type: 'json' };
 
@@ -181,5 +181,11 @@ suite('kano-engine — evaluate', () => {
   test('fehlende Antwortobjekte werden wie unbeantwortet behandelt', () => {
     const res = evaluate(ITEMS, RESP, { r1: null }, OPTS);
     assertEqual(res.rows[0].n, 0);
+  });
+});
+
+suite('kano-engine — Q_WARN', () => {
+  test('threshold for a questionable-answer share is 10 %', () => {
+    assertEqual(Q_WARN, 0.10);
   });
 });

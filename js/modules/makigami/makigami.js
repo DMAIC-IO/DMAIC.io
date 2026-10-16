@@ -56,7 +56,8 @@ export default createModule({
     // keine). Die Exportaktionen tragen keines: ihre Methoden sind
     // `_`-präfigiert und stehen in keiner Registry.
     actions: [
-      { icon: 'action.settings', title: 'settings', onClick: (d) => d.toggleSettings() },
+      { icon: 'action.settings', title: 'settings', onClick: (d) => d.toggleSettings(),
+        dynamicText: (d, tf) => tf(d?.model?.settingsOpen ? 'settingsClose' : 'settingsOpen') },
       {
         icon: 'action.download',
         title: 'export.label',
@@ -396,8 +397,8 @@ export default createModule({
         const step = this.model.steps[idx];
         const label = step.title || (`S${  idx + 1}`);
         const msg = _t('delStepConfirm').replace('{title}', label);
-        const ok = module._context?.confirmPopout
-          ? await module._context.confirmPopout(msg, { danger: true })
+        const ok = module._context?.dialog
+          ? await module._context.dialog.confirm({ message: msg, danger: true })
            
           : confirm(msg);
         if (!ok) return;
@@ -413,8 +414,8 @@ export default createModule({
         if (!role) return;
         const label = role.label || _t('rolePlaceholder');
         const msg = _t('delRoleConfirm').replace('{label}', label);
-        const ok = module._context?.confirmPopout
-          ? await module._context.confirmPopout(msg, { danger: true })
+        const ok = module._context?.dialog
+          ? await module._context.dialog.confirm({ message: msg, danger: true })
            
           : confirm(msg);
         if (!ok) return;
@@ -581,8 +582,8 @@ export default createModule({
        * `resetSettingsToDefaults`.
        */
       async resetSettings() {
-        const ok = module._context?.confirmPopout
-          ? await module._context.confirmPopout(_t('settingsResetConfirm'), { danger: true })
+        const ok = module._context?.dialog
+          ? await module._context.dialog.confirm({ message: _t('settingsResetConfirm'), danger: true })
            
           : confirm(_t('settingsResetConfirm'));
         if (!ok) return;

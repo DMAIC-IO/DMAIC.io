@@ -55,7 +55,7 @@ export class State {
   /** Instance id of a worksheet provisioned by loadExample (for cleanup on re-load). */
   exampleWorksheetId = null;
 
-  /** @returns {boolean} true if a defect or size column is selected (drives confirmPopout). */
+  /** @returns {boolean} true if a defect or size column is selected (drives dialog.confirm). */
   hasContent() {
     return Boolean(this.defectsRef) || Boolean(this.sizeRef);
   }

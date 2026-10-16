@@ -351,7 +351,7 @@ export function csvPayloadToWorksheetState(csvData, meta = {}) {
  *
  * @param {object} module — the module instance (provides `_context`, `getState`,
  *   `setState`). `module._context` must expose `i18n`, `stateManager`,
- *   `instanceId`, and may expose `confirmPopout`/`notify`.
+ *   `instanceId`, and may expose `dialog`/`notify`.
  * @param {{ meta: object, data: object }} payload
  * @param {{
  *   State: { fromJSON: (json: object) => any },
@@ -368,8 +368,8 @@ export async function loadExampleViaWorksheet(module, payload, options) {
 
   const current = module.getState();
   const currentModel = current ? State.fromJSON(current) : null;
-  if (currentModel?.hasContent?.() && ctx?.confirmPopout) {
-    const ok = await ctx.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+  if (currentModel?.hasContent?.() && ctx?.dialog) {
+    const ok = await ctx.dialog.confirm({ message: t('moduleHelp.confirmOverwrite'), danger: true });
     if (!ok) return;
   }
 
@@ -465,7 +465,7 @@ export function rewriteRefArray(field) {
  *
  * @param {object} mod — module instance (provides `_context`, `getState`, `setState`).
  *   `mod._context` must expose `i18n`, `stateManager`, `instanceId`; may expose
- *   `confirmPopout` and `notify`.
+ *   `dialog` and `notify`.
  * @param {{ meta: object, data: object }} payload
  * @param {{
  *   Model: { fromJSON: (json: object) => { hasContent: () => boolean, exampleWorksheetId?: string } },
@@ -480,8 +480,8 @@ export async function loadWorksheetExample(mod, payload, { Model, rewriteRefs })
 
   const current = mod.getState();
   const currentModel = current ? Model.fromJSON(current) : null;
-  if (currentModel?.hasContent() && ctx?.confirmPopout) {
-    const ok = await ctx.confirmPopout(t('moduleHelp.confirmOverwrite'), { danger: true });
+  if (currentModel?.hasContent() && ctx?.dialog) {
+    const ok = await ctx.dialog.confirm({ message: t('moduleHelp.confirmOverwrite'), danger: true });
     if (!ok) return;
   }
 

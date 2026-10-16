@@ -2,7 +2,7 @@
  * D.Mike — Frame Composition Root (frame/index.js)
  * Wires the application chrome (header controls, glossary, footer) against the
  * static anchors in index.html. Called once from app.js after the core UI
- * widgets (modal, dmaicTiles, helpPanel, workspace) have been constructed.
+ * widgets (dialog, dmaicTiles, helpPanel, workspace) have been constructed.
  */
 
 import { initProjectSwitcher } from './header/project-switcher.js';
@@ -22,15 +22,14 @@ import { setContextHelpConfig, startContextHelp } from '../core/context-help.js'
  *   stateManager, i18n, themeManager, moduleRegistry, chartManager,
  *   examplesRegistry, glossaryRegistry, tipEngine, shortcutRegistry).
  * @param {object} ui - UI widgets built in app.js.
- * @param {object} ui.modal - Shared modal dialog host.
+ * @param {object} ui.dialog - Dialog service (ui/dialog/dialog.js).
  * @param {object} ui.dmaicTiles - DMAIC phase tiles.
  * @param {object} ui.helpPanel - Help panel instance.
  * @param {object} ui.workspace - Module workspace.
  * @param {Function} ui.notify - Toast notification helper.
- * @param {object} [ui.actionModal] - Shared action modal controller
- *   (ui/action-modal.js). The SAME instance the router uses for
- *   `#/action/…` URLs — chrome that runs its own long action shows this one
- *   rather than creating a second dialog.
+ * @param {object} [ui.progress] - Progress dialog controller
+ *   (from dialog.progress()). The SAME instance the router uses and feeds
+ *   with scenario item events.
  */
 export function buildFrame(kernel, ui) {
   // Glossary wiring on the help panel:

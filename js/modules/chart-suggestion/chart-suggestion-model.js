@@ -76,6 +76,19 @@ const MODULE_PREFILL = {
     if (cont.length === 0) return null;
     return { target: 'run-chart', state: { columnRef: _ref(srcId, sheetId, cont[0]) } };
   },
+  imr(cols, srcId, sheetId) {
+    // The control-chart module plots in row order; with a date column the
+    // preview sorts by date, so opening it would show a different chart.
+    if (cols.some(c => c.role === 'date')) return null;
+    const cont = cols.filter(c => c.role === 'continuous');
+    if (cont.length === 0) return null;
+    return { target: 'control-chart', state: { chartTypeId: 'i-mr', columnRef: _ref(srcId, sheetId, cont[0]) } };
+  },
+  transformedImr(cols, srcId, sheetId) {
+    const cont = cols.filter(c => c.role === 'continuous');
+    if (cont.length === 0) return null;
+    return { target: 'transformed-imr-chart', state: { columnRef: _ref(srcId, sheetId, cont[0]), lambdaMode: 'auto' } };
+  },
   boxplot(cols, srcId, sheetId) {
     const cont = cols.filter(c => c.role === 'continuous');
     const grp = cols.find(c => c.role === 'categorical' || c.role === 'ordinal');
@@ -180,13 +193,15 @@ const MODULE_PREFILL = {
 
 /**
  * Suggestion chart-type → prefill adapter. Types not in this table have no
- * open-in-module button (pie, control-chart, scatter-matrix, and preview-only
+ * open-in-module button (pie, ewma, scatter-matrix, and preview-only
  * composites like main-effects / interaction-plot / scatter-marginal / cusum).
  */
 export const CHART_TYPE_TO_PREFILL = {
   'histogram':             MODULE_PREFILL.histogram,
   'scatter':               MODULE_PREFILL.xy,
   'run-chart':             MODULE_PREFILL.run,
+  'control-chart':         MODULE_PREFILL.imr,
+  'transformed-imr-chart': MODULE_PREFILL.transformedImr,
   'boxplot':               MODULE_PREFILL.boxplot,
   'individual-value-plot': MODULE_PREFILL.ivp,
   'probability-plot':      MODULE_PREFILL.probability,

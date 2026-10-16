@@ -4,36 +4,13 @@
  * Loaded by the dashboard via the manifest's `loadTile`. Exports an array of
  * three singleton tiles with fixed ids: `project-charter`, `project-goals`
  * and `org-chart`; each exists only while a charter instance exists.
- * Contract: docs/DASHBOARD.md.
+ * The markup lives in project-charter{,.goals,.org}.tile.html; the org chart
+ * SVG is drawn in mount(). Contract: docs/DASHBOARD.md.
  */
 
-import { h, svg, s } from '../../core/dom.js';
+import { svg, s } from '../../core/dom.js';
 import { markdownToFragment } from './project-charter-richtext.js';
 import { ORG_NW, ORG_NH, orgPositions } from './project-charter-org-layout.js';
-
-/**
- * Render the charter problem-statement dashboard tile. Distinguishes "no
- * instance" (charterEmpty) from "instance, no problem statement"
- * (charterNoProblem). The problem statement is stored as the RTE Markdown
- * subset and rendered sink-free via markdownToFragment (NOT as a raw string —
- * h() would otherwise show literal `**bold**`).
- * @param {HTMLElement} host
- * @param {{state: object, i18n: object}} args
- */
-export function renderDashboardTile(host, { state, i18n }) {
-  if (!state) {
-    host.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.charterEmpty')));
-    return;
-  }
-  if (!state.problemStatement) {
-    host.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.charterNoProblem')));
-    return;
-  }
-  host.replaceChildren(
-    h('div', { class: 'dashboard-charter__problem-label' }, i18n.t('dashboard.charterProblem')),
-    h('div', { class: 'dashboard-charter__problem' }, markdownToFragment(state.problemStatement)),
-  );
-}
 
 /**
  * ZEG colour token for an achievement percentage.
@@ -48,48 +25,71 @@ function zegColor(zeg) {
 }
 
 /**
- * Render the goals list with clamped achievement bars.
- * @param {HTMLElement} host
+ * Problem statement: distinguishes "no instance" (charterEmpty) from
+ * "instance, no problem statement" (charterNoProblem). The statement stays
+ * the stored RTE Markdown subset; mount() renders it sink-free.
  * @param {{state: object|null, i18n: object}} args
+ * @returns {{empty: string|null, problemLabel: string, problem: string}}
  */
-function renderGoals(host, { state, i18n }) {
-  const goals = (state && state.goals) || [];
-  if (goals.length === 0) {
-    host.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.charterNoGoals')));
-    return;
-  }
-  const ol = h('ol', { class: 'dashboard-charter__goals' });
-  goals.forEach((g, i) => {
-    const zeg = Math.max(0, Math.min(100, g.achievementLevel ?? 0));
-    const color = zegColor(zeg);
-    const desc = g.description || i18n.t('dashboard.charterGoalUnnamed', { n: i + 1 });
-    ol.append(
-      h('li', { class: 'dashboard-charter__goal' },
-        h('div', { class: 'dashboard-charter__goal-head' },
-          h('span', { class: 'dashboard-charter__goal-desc' }, desc),
-          h('span', { class: 'dashboard-charter__goal-zeg', style: `color:${color}` }, `${zeg}%`),
-        ),
-        h('div', { class: 'dashboard-charter__goal-bar' },
-          h('div', { class: 'dashboard-charter__goal-bar-fill', style: `width:${zeg}%; background:${color}` }),
-        ),
-      ),
-    );
-  });
-  host.replaceChildren(ol);
+function charterViewModel({ state, i18n }) {
+  const empty = !state ? i18n.t('dashboard.charterEmpty')
+    : !state.problemStatement ? i18n.t('dashboard.charterNoProblem') : null;
+  return { empty, problemLabel: i18n.t('dashboard.charterProblem'), problem: empty ? '' : state.problemStatement };
 }
 
 /**
- * Render the org chart as an SVG tree.
- * @param {HTMLElement} host
- * @param {{state: object|null, i18n: object}} args
+ * Render the problem-statement Markdown via markdownToFragment (no HTML
+ * string sink).
+ * @param {HTMLElement} root  tile body
+ * @param {object} vm  view model from charterViewModel()
  */
-function renderOrgChart(host, { state, i18n }) {
-  const nodes = (state && Array.isArray(state.orgChart)) ? state.orgChart : [];
-  if (!nodes.length) {
-    host.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.orgChartEmpty')));
-    return;
-  }
+function mountCharter(root, vm) {
+  if (vm.empty) return;
+  root.querySelector('[data-tile-slot="problem"]').append(markdownToFragment(vm.problem));
+}
 
+/**
+ * Goals with clamped achievement (0..100) and its colour.
+ * @param {{state: object|null, i18n: object}} args
+ * @returns {{empty: string|null, goals: Array<{desc: string, zeg: string, zegStyle: string, fillStyle: string}>}}
+ */
+function goalsViewModel({ state, i18n }) {
+  const goals = (state && state.goals) || [];
+  if (goals.length === 0) return { empty: i18n.t('dashboard.charterNoGoals'), goals: [] };
+  return {
+    empty: null,
+    goals: goals.map((g, i) => {
+      const zeg = Math.max(0, Math.min(100, g.achievementLevel ?? 0));
+      const color = zegColor(zeg);
+      return {
+        desc: g.description || i18n.t('dashboard.charterGoalUnnamed', { n: i + 1 }),
+        zeg: `${zeg}%`,
+        zegStyle: `color:${color}`,
+        fillStyle: `width:${zeg}%; background:${color}`,
+      };
+    }),
+  };
+}
+
+/**
+ * Org chart nodes as a plain copy of the stored flat list.
+ * @param {{state: object|null, i18n: object}} args
+ * @returns {{empty: string|null, nodes: object[]}}
+ */
+function orgViewModel({ state, i18n }) {
+  const nodes = (state && Array.isArray(state.orgChart)) ? state.orgChart : [];
+  if (!nodes.length) return { empty: i18n.t('dashboard.orgChartEmpty'), nodes: [] };
+  return { empty: null, nodes: nodes.map(n => ({ ...n })) };
+}
+
+/**
+ * Draw the org chart as an SVG tree into the org slot.
+ * @param {HTMLElement} root  tile body
+ * @param {object} vm  view model from orgViewModel()
+ */
+function mountOrgChart(root, vm) {
+  if (vm.empty) return;
+  const { nodes } = vm;
   const positions = orgPositions(nodes);
 
   let xMin = Infinity, yMin = Infinity, xMax = -Infinity, yMax = -Infinity;
@@ -141,14 +141,13 @@ function renderOrgChart(host, { state, i18n }) {
     );
   });
 
-  const orgSvg = svg('svg', {
+  root.querySelector('[data-tile-slot="org"]').append(svg('svg', {
     class: 'dashboard-org__svg', viewBox: `0 0 ${vbW} ${vbH}`,
     preserveAspectRatio: 'xMidYMid meet',
   },
     svg('g', { class: 'dashboard-org__edges' }, edges),
     svg('g', { class: 'dashboard-org__nodes' }, rects),
-  );
-  host.replaceChildren(h('div', { class: 'dashboard-area__org' }, orgSvg));
+  ));
 }
 
 /**
@@ -157,10 +156,10 @@ function renderOrgChart(host, { state, i18n }) {
  * @param {string} kind  tile id and kind
  * @param {string} titleKey  i18n key of the tile title
  * @param {object} size
- * @param {function} render
+ * @param {{template: string, viewModel: function, mount?: function}} parts
  * @returns {object} tile object
  */
-function singletonTile(kind, titleKey, size, render) {
+function singletonTile(kind, titleKey, size, parts) {
   return {
     kind,
     titleKey,
@@ -169,20 +168,23 @@ function singletonTile(kind, titleKey, size, render) {
       const inst = ctx.findInstances('project-charter')[0] || null;
       return inst ? [{ tileId: kind, instanceId: inst.instanceId, title: ctx.i18n.t(titleKey) }] : [];
     },
-    render,
+    ...parts,
   };
 }
 
 /** Problem-statement tile. */
 export const charterTile = singletonTile('project-charter', 'dashboard.charterTitle',
-  { defaultW: 3, defaultH: 10, minW: 2, minH: 6 }, renderDashboardTile);
+  { defaultW: 3, defaultH: 10, minW: 2, minH: 6 },
+  { template: 'js/modules/project-charter/project-charter.tile.html', viewModel: charterViewModel, mount: mountCharter });
 
 /** Goals tile (achievement per goal). */
 export const goalsTile = singletonTile('project-goals', 'dashboard.goalsTitle',
-  { defaultW: 3, defaultH: 10, minW: 2, minH: 6 }, renderGoals);
+  { defaultW: 3, defaultH: 10, minW: 2, minH: 6 },
+  { template: 'js/modules/project-charter/project-charter.goals.tile.html', viewModel: goalsViewModel });
 
 /** Org chart tile. */
 export const orgTile = singletonTile('org-chart', 'dashboard.orgChartTitle',
-  { defaultW: 6, defaultH: 10, minW: 3, minH: 6 }, renderOrgChart);
+  { defaultW: 6, defaultH: 10, minW: 3, minH: 6 },
+  { template: 'js/modules/project-charter/project-charter.org.tile.html', viewModel: orgViewModel, mount: mountOrgChart });
 
 export default [charterTile, goalsTile, orgTile];

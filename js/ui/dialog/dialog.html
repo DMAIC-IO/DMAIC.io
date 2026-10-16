@@ -1,0 +1,66 @@
+<div class="dialog dmike-chart-popout-overlay" :class="'dialog--' + dlg.variant"
+     role="dialog" aria-modal="true" :aria-label="dlg.title"
+     @mousedown.self="dlg.overlayPress()"
+     @click.self="dlg.overlayClick()"
+     @mousemove.window="dlg.popoutDragMove($event)"
+     @mouseup.window="dlg.popoutDragEnd()">
+  <div class="dialog__window dmike-chart-popout" :style="dlg.popoutStyle()"
+       @mousedown="dlg.windowPress()">
+    <div class="dialog__titlebar dmike-chart-popout-titlebar" @mousedown="dlg.titlePress($event)">
+      <span class="dialog__title" x-text="dlg.title"></span>
+      <template x-if="dlg.dismissible">
+        <button type="button" class="dialog__close dmike-chart-popout-close"
+                :aria-label="dlg.closeLabel" @click="dlg.dismiss()">
+          <span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span>
+        </button>
+      </template>
+    </div>
+    <div class="dialog__panel dmike-chart-popout-body dmike-popout-body--column">
+      <p class="dialog__message dmike-popout-message" x-show="dlg.message" x-text="dlg.message"></p>
+      <div class="dialog__body" data-dialog-slot="body"></div>
+      <template x-if="dlg.isProgress()">
+        <div class="action-modal" role="status" aria-live="polite" :aria-label="dlg.progressLabel">
+          <div class="app-loading__spinner" :style="dlg.spinnerStyle()"></div>
+          <div class="action-modal__subtitle" x-text="dlg.progress.subtitle"></div>
+          <div class="action-modal__progress" x-show="dlg.progress.line" x-text="dlg.progress.line"></div>
+          <ul class="action-modal__list" aria-live="off" x-show="dlg.hasItems()">
+            <template x-for="item in dlg.progress.items" :key="item.id">
+              <li :class="dlg.itemClass(item)">
+                <span class="action-modal__item-status" :aria-label="dlg.itemStatusLabel(item)">
+                  <span x-show="dlg.itemPending(item)" x-text="dlg.pendingMark()"></span>
+                  <span x-show="dlg.itemSettled(item)" :class="dlg.itemIconClass(item)"
+                        :data-icon="dlg.itemIcon(item)" aria-hidden="true"></span>
+                </span>
+                <span class="action-modal__item-label" x-text="item.label"></span>
+              </li>
+            </template>
+          </ul>
+          <div class="action-modal__body" x-show="dlg.progress.note">
+            <p class="action-modal__failed" x-text="dlg.progress.note"></p>
+          </div>
+          <template x-if="dlg.progress.holding">
+            <div class="action-modal__footer">
+              <button type="button" class="btn btn--primary dialog__confirm action-modal__confirm"
+                      x-text="dlg.progress.holdLabel" @click="dlg.holdConfirm()"></button>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+    <div class="dialog__footer dmike-popout-footer" x-show="dlg.hasFooter">
+      <div class="dialog__footer-start" data-dialog-slot="footer-start"></div>
+      <template x-if="dlg.hasDelete">
+        <button type="button" class="btn btn--danger dialog__delete"
+                x-text="dlg.deleteLabel" @click="dlg.remove()"></button>
+      </template>
+      <template x-if="dlg.hasCancel">
+        <button type="button" class="btn btn--secondary dialog__cancel"
+                x-text="dlg.cancelLabel" @click="dlg.cancel()"></button>
+      </template>
+      <template x-if="dlg.hasConfirm">
+        <button type="button" class="btn dialog__confirm" :class="dlg.confirmClass"
+                x-text="dlg.confirmLabel" @click="dlg.confirm()"></button>
+      </template>
+    </div>
+  </div>
+</div>

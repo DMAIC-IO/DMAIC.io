@@ -213,6 +213,22 @@ export function settingsToStoreOnLayoutSave(all, liveIds, allLoaded) {
 }
 
 /**
+ * Keep only entries of live tiles; null when nothing changes or while a tile
+ * file failed to load (a transient chunk error must never delete data).
+ * @param {object|undefined} map  tile id → anything
+ * @param {Iterable<string>} liveIds
+ * @param {boolean} allLoaded
+ * @returns {object|null}
+ */
+function pruneByTileId(map, liveIds, allLoaded) {
+  if (!allLoaded) return null;
+  const live = new Set(liveIds);
+  const current = map || {};
+  const pruned = Object.fromEntries(Object.entries(current).filter(([id]) => live.has(id)));
+  return Object.keys(pruned).length !== Object.keys(current).length ? pruned : null;
+}
+
+/**
  * Decide what the layout-save path does with user-edited titles
  * (dashboard.titles): drop titles of tiles that no longer enumerate (removed
  * copies, deleted instances), with the same all-loaded guard as settings.
@@ -222,11 +238,34 @@ export function settingsToStoreOnLayoutSave(all, liveIds, allLoaded) {
  * @returns {object|null} the pruned object to store, or null when nothing changes
  */
 export function titlesToStoreOnLayoutSave(titles, liveIds, allLoaded) {
-  if (!allLoaded) return null;
-  const live = new Set(liveIds);
-  const current = titles || {};
-  const pruned = Object.fromEntries(Object.entries(current).filter(([id]) => live.has(id)));
-  return Object.keys(pruned).length !== Object.keys(current).length ? pruned : null;
+  return pruneByTileId(titles, liveIds, allLoaded);
+}
+
+/**
+ * Decide what the layout-save path does with per-tile chart edits
+ * (dashboard.chartEdits): drop edits of tiles that no longer enumerate, with
+ * the same all-loaded guard as titles.
+ * @param {object|undefined} edits  stored dashboard.chartEdits
+ * @param {Iterable<string>} liveIds  ids of all current tile descriptors
+ * @param {boolean} allLoaded  whether every tile file loaded in this render
+ * @returns {object|null} the pruned object to store, or null when nothing changes
+ */
+export function chartEditsToStoreOnLayoutSave(edits, liveIds, allLoaded) {
+  return pruneByTileId(edits, liveIds, allLoaded);
+}
+
+/**
+ * Chart edits map with `fromId`'s edits copied to `toId` (duplicate tile).
+ * @param {object|undefined} all  stored dashboard.chartEdits
+ * @param {string} fromId
+ * @param {string} toId
+ * @returns {object|null} the new map, or null when `fromId` has no edits
+ */
+export function withCopiedChartEdits(all, fromId, toId) {
+  const src = all?.[fromId];
+  if (!src) return null;
+  const copy = Object.fromEntries(Object.entries(src).map(([key, entry]) => [key, { ...entry }]));
+  return { ...all, [toId]: copy };
 }
 
 /**

@@ -1,4 +1,4 @@
-import { suite, test, assertEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import { DashboardGrid } from '../../js/ui/dashboard-grid.js';
 
 function withGrid(fn) {
@@ -94,5 +94,20 @@ suite('DashboardGrid: addTile placement', () => {
       grid.destroy();
       container.remove();
     }
+  });
+});
+
+suite('DashboardGrid: tile removal', () => {
+  test('removeTile passes the removed tile body to onTileRemoved', () => {
+    withGrid((grid) => {
+      const body = grid.getTileBody('a');
+      const seen = [];
+      grid.onTileRemoved = (id, removedBody) => seen.push([id, removedBody]);
+      grid.removeTile('a');
+      assertEqual(seen.length, 1);
+      assertEqual(seen[0][0], 'a');
+      assertTrue(seen[0][1] === body, 'body of the removed tile');
+      assertEqual(grid.getTileBody('a'), null);
+    });
   });
 });

@@ -1,0 +1,35 @@
+<template x-if="vm.empty">
+  <p class="dashboard-area__empty" x-text="vm.empty"></p>
+</template>
+<template x-if="!vm.empty">
+  <div class="dashboard-stakeholder__matrix">
+    <template x-for="q in vm.quadrants">
+      <div class="dashboard-stakeholder__cell" :class="q.modifier" :data-quadrant="q.quadrant">
+        <strong x-text="q.count"></strong>
+        <span x-text="q.label"></span>
+      </div>
+    </template>
+  </div>
+</template>
+<template x-if="!vm.empty">
+  <div class="dashboard-fmea__summary">
+    <template x-for="s in vm.support">
+      <span :data-support="s.key"><span x-text="s.label"></span><strong x-text="s.count"></strong></span>
+    </template>
+  </div>
+</template>
+<template x-if="vm.criticsLabel">
+  <div class="dashboard-fmea__top-label" x-text="vm.criticsLabel"></div>
+</template>
+<template x-if="vm.criticsLabel">
+  <ul class="dashboard-fmea__top-list dashboard-stakeholder__critics">
+    <template x-for="c in vm.critics">
+      <li class="dashboard-fmea__top-item">
+        <span class="dashboard-fmea__top-desc" x-text="c.name"></span>
+        <template x-if="c.role">
+          <span class="dashboard-todo__owner" x-text="c.role"></span>
+        </template>
+      </li>
+    </template>
+  </ul>
+</template>

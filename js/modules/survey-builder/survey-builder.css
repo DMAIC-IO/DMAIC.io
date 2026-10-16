@@ -1,0 +1,350 @@
+/**
+ * D.Mike — Survey builder styles (survey-builder.css)
+ * Only additions to the shared classes (.dmike-split, .dmike-tabs, .dmike-table, …).
+ * The preview's look comes from RUNNER_CSS inside its shadow root.
+ */
+
+.survey-builder__body {
+  display: flex;
+  flex-direction: column;
+
+  /* The body is the scroll container; 100cqh below is its visible height. */
+  container-type: size;
+}
+
+.survey-builder__tab {
+  flex: 1;
+  min-height: 0;
+}
+
+.survey-builder__page {
+  padding: var(--spacing-m);
+  overflow: auto;
+}
+
+.survey-builder__label {
+  display: block;
+  margin: var(--spacing-sm) 0 var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.survey-builder__textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.survey-builder__check {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+}
+
+.survey-builder__hint {
+  margin: var(--spacing-xs) 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+/* ── Outline ──────────────────────────────────────────────────── */
+
+.survey-builder__section {
+  margin-bottom: var(--spacing-sm);
+  padding: var(--spacing-xs);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+}
+
+.survey-builder__section--selected {
+  border-color: var(--color-accent);
+}
+
+.survey-builder__section-head,
+.survey-builder__question,
+.survey-builder__item,
+.survey-builder__condition {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.survey-builder__section-title,
+.survey-builder__item-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.survey-builder__questions {
+  margin: var(--spacing-xs) 0;
+  padding: 0;
+  list-style: none;
+}
+
+.survey-builder__question {
+  padding: var(--spacing-2xs) var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+}
+
+.survey-builder__question:hover {
+  background: var(--color-bg-tertiary);
+}
+
+.survey-builder__question--selected {
+  background: var(--color-accent-light);
+}
+
+.survey-builder__question-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.survey-builder__badge {
+  flex: none;
+  padding: 0 var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-secondary);
+}
+
+.survey-builder__badge--condition {
+  color: var(--color-accent);
+}
+
+.survey-builder__required {
+  color: var(--color-error);
+}
+
+.survey-builder__add-question {
+  width: 100%;
+}
+
+/* ── Properties and conditions ────────────────────────────────── */
+
+.survey-builder__item {
+  margin-bottom: var(--spacing-xs);
+}
+
+.survey-builder__item-group {
+  width: 30%;
+}
+
+.survey-builder__condition {
+  align-items: flex-start;
+  margin-bottom: var(--spacing-sm);
+}
+
+.survey-builder__cond-options {
+  flex: 1;
+}
+
+/* ── Output column ────────────────────────────────────────────── */
+
+.survey-builder__warnings {
+  margin: var(--spacing-xs) 0 0;
+  padding-left: var(--spacing-l);
+}
+
+.survey-builder__export {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin: var(--spacing-sm) 0;
+}
+
+.survey-builder__version {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+/* The draft tab grows with the input panel so the body scrolls it as a
+   whole; the output column sticks to the top of the visible area and takes
+   at most its height, so the preview follows the scroll and fills it. */
+.survey-builder__draft {
+  min-height: auto;
+}
+
+.survey-builder__draft > .dmike-split__output {
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  max-height: 100cqh;
+}
+
+.survey-builder__preview {
+  flex: 1;
+  min-height: 0;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  overflow: auto;
+}
+
+/* ── Recipients tab ───────────────────────────────────────────── */
+
+.survey-builder__toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.survey-builder__counts {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.survey-builder__recipients .field {
+  width: 100%;
+  min-width: 6rem;
+}
+
+.survey-builder__outdated {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--color-error);
+}
+
+.survey-builder__nowrap {
+  white-space: nowrap;
+}
+
+/* ── Results tab ──────────────────────────────────────────────── */
+
+.survey-builder__dropzone {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-m);
+  border: 1px dashed var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+}
+
+.survey-builder__subtitle {
+  margin: var(--spacing-sm) 0 var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.survey-builder__import-log,
+.survey-builder__texts {
+  margin: 0 0 var(--spacing-sm);
+  padding-left: var(--spacing-l);
+  font-size: var(--font-size-sm);
+}
+
+.survey-builder__import-log li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.survey-builder__file {
+  font-weight: 600;
+}
+
+.survey-builder__import--ok [data-ref="importStatus"] {
+  color: var(--color-success);
+}
+
+.survey-builder__import--rejected [data-ref="importStatus"] {
+  color: var(--color-error);
+}
+
+.survey-builder__details {
+  margin: 0;
+}
+
+.survey-builder__detail {
+  display: grid;
+  grid-template-columns: minmax(10rem, 30%) 1fr;
+  gap: var(--spacing-sm);
+}
+
+.survey-builder__detail dt {
+  color: var(--color-text-secondary);
+}
+
+.survey-builder__detail dd {
+  margin: 0;
+}
+
+.survey-builder__block {
+  margin-top: var(--spacing-m);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border-primary);
+}
+
+.survey-builder__block-title {
+  margin: 0;
+  font-size: var(--font-size-md);
+}
+
+.survey-builder__stats {
+  width: auto;
+  min-width: 24rem;
+}
+
+.survey-builder__chart {
+  height: 16rem;
+  margin-top: var(--spacing-sm);
+}
+
+.survey-builder__answer {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-xs);
+}
+
+.survey-builder__taken {
+  color: var(--color-success);
+}
+
+/* ── Summary, group comparison, report ────────────────────────── */
+
+.survey-builder__summary {
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.survey-builder__switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+}
+
+.survey-builder__group-heads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-m);
+  margin: 0 0 var(--spacing-sm);
+  padding: 0;
+  list-style: none;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.survey-builder__group-part {
+  margin-top: var(--spacing-m);
+}
+
+.survey-builder__part-title {
+  margin: 0 0 var(--spacing-xs);
+  font-size: var(--font-size-md);
+}
+
+.survey-builder__cell--deviates {
+  background: color-mix(in srgb, var(--color-warning) 22%, transparent);
+  font-weight: 600;
+}
+
+.survey-builder__row--differs td {
+  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+}

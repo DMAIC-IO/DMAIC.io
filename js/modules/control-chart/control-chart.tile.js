@@ -1,87 +1,38 @@
 /**
  * D.Mike — SPC dashboard tile (control-chart.tile.js)
  *
- * One tile per control-chart instance (`spc:<instanceId>`). The sparkline
- * follows the tile width, so the tile re-renders on resize. Loaded via the
- * manifest's `loadTile`. Contract: docs/DASHBOARD.md.
+ * One tile per control-chart instance (`spc:<instanceId>`): CL/limits/sigma,
+ * violation / out-of-spec / Cpk metrics and a compact control chart through
+ * the tile-bound chartManager. The chart follows the tile width, so the tile
+ * re-renders on resize. Loaded via the manifest's `loadTile`. The markup
+ * lives in control-chart.tile.html. Contract: docs/DASHBOARD.md.
  */
 
-import { h, svg } from '../../core/dom.js';
 import { getChartType, evaluateNelsonRules, computeCapability, capabilitySigma, DEFAULT_ENABLED_RULES } from '../../engines/control-chart-engine.js';
 import { getColumnValues, getColumnName } from '../../ui/column-picker.js';
+import { windowed } from '../../ui/tile-chart-window.js';
+
+/** host -> { chart, chartManager, token } of the latest render. */
+const charts = new WeakMap();
 
 /**
- * Sparkline of the primary subchart; null with fewer than two points.
- * @param {{values: Array<number|null>, lcl: number, ucl: number, cl: number, sigma: number}} scData
- * @param {Set<number>} violationSet  indices with Nelson violations
- * @param {number|null} usl
- * @param {number|null} lsl
- * @param {number} width  pixel width (0/undefined falls back to 320)
- * @returns {SVGElement|null}
+ * Destroy the chart of the latest render in a host and forget it.
+ * @param {HTMLElement} host
  */
-function buildSparkline(scData, violationSet, usl, lsl, width) {
-  const W = width || 320, H = 160, PAD_X = 2, PAD_Y = 6;
-  const pts = scData.values.filter(v => v !== null);
-  if (pts.length < 2) return null;
-
-  const extents = [scData.lcl, scData.ucl, ...pts];
-  if (usl != null) extents.push(usl);
-  if (lsl != null) extents.push(lsl);
-  const yMin = Math.min(...extents) - scData.sigma * 0.3;
-  const yMax = Math.max(...extents) + scData.sigma * 0.3;
-  const yRange = yMax - yMin || 1;
-
-  const sx = (i) => PAD_X + (i / (scData.values.length - 1)) * (W - 2 * PAD_X);
-  const sy = (v) => PAD_Y + (1 - (v - yMin) / yRange) * (H - 2 * PAD_Y);
-
-  const uclY = sy(scData.ucl), lclY = sy(scData.lcl), clY = sy(scData.cl);
-  const kids = [
-    svg('rect', { x: PAD_X, y: uclY, width: W - 2 * PAD_X, height: lclY - uclY,
-      fill: 'var(--color-success)', opacity: 0.06, rx: 2 }),
-    svg('line', { x1: PAD_X, y1: uclY, x2: W - PAD_X, y2: uclY,
-      stroke: 'var(--color-error)', 'stroke-width': 0.8, 'stroke-dasharray': '4,3', opacity: 0.6 }),
-    svg('line', { x1: PAD_X, y1: lclY, x2: W - PAD_X, y2: lclY,
-      stroke: 'var(--color-error)', 'stroke-width': 0.8, 'stroke-dasharray': '4,3', opacity: 0.6 }),
-    svg('line', { x1: PAD_X, y1: clY, x2: W - PAD_X, y2: clY,
-      stroke: 'var(--color-accent)', 'stroke-width': 0.8, opacity: 0.5 }),
-  ];
-
-  if (usl != null) {
-    const uslY = sy(usl);
-    kids.push(svg('line', { x1: PAD_X, y1: uslY, x2: W - PAD_X, y2: uslY,
-      stroke: 'var(--color-warning)', 'stroke-width': 1, opacity: 0.7 }));
-  }
-  if (lsl != null) {
-    const lslY = sy(lsl);
-    kids.push(svg('line', { x1: PAD_X, y1: lslY, x2: W - PAD_X, y2: lslY,
-      stroke: 'var(--color-warning)', 'stroke-width': 1, opacity: 0.7 }));
-  }
-
-  const polyPts = [];
-  for (let i = 0; i < scData.values.length; i++) {
-    if (scData.values[i] === null) continue;
-    polyPts.push(`${sx(i).toFixed(1)},${sy(scData.values[i]).toFixed(1)}`);
-  }
-  kids.push(svg('polyline', { points: polyPts.join(' '), fill: 'none',
-    stroke: 'var(--color-text-secondary)', 'stroke-width': 1.2, 'stroke-linejoin': 'round' }));
-
-  for (let i = 0; i < scData.values.length; i++) {
-    if (scData.values[i] === null) continue;
-    const v = scData.values[i];
-    const isNelson = violationSet.has(i);
-    const isOos = (usl != null && v > usl) || (lsl != null && v < lsl);
-    if (!isNelson && !isOos) continue;
-    const color = isNelson ? 'var(--color-error)' : 'var(--color-warning)';
-    kids.push(svg('circle', { cx: sx(i).toFixed(1), cy: sy(v).toFixed(1), r: 2.5, fill: color }));
-  }
-
-  return svg('svg', { class: 'dashboard-spc__sparkline', viewBox: `0 0 ${W} ${H}`, width: W, height: H }, kids);
+function release(host) {
+  const entry = charts.get(host);
+  if (entry?.chart) entry.chartManager.destroy(entry.chart);
+  charts.delete(host);
 }
 
 export default {
   size: { defaultW: 3, defaultH: 10, minW: 2, minH: 6 },
   titlePrefix: 'SPC',
   refreshOn: ['state:saved', 'resize'],
+  settings: {
+    lastN: { type: 'number', min: 0, max: 500, step: 1, default: 0, label: 'dashboard.tileSettings.lastN' },
+    showChart: { type: 'boolean', default: true, label: 'dashboard.tileSettings.showChart' },
+  },
 
   /**
    * One tile per control-chart instance.
@@ -96,33 +47,32 @@ export default {
     }));
   },
 
+  template: 'js/modules/control-chart/control-chart.tile.html',
+
   /**
-   * @param {HTMLElement} host
-   * @param {{state: object, i18n: object, stateManager: object}} args
+   * Chart type, column, CL/limits/sigma, violation / out-of-spec / Cpk
+   * metrics over all points and the windowed control chart config (null
+   * when hidden). Violation indices are a number array.
+   * @param {{state: object, settings: {lastN: number, showChart: boolean}, i18n: object, stateManager: object}} args
+   * @returns {object} view model for control-chart.tile.html
    */
-  render(host, { state, i18n, stateManager }) {
-    if (!state || !state.columnRef) {
-      host.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.spcEmpty')));
-      return;
-    }
+  viewModel({ state, settings, i18n, stateManager }) {
+    const none = (key) => ({ empty: i18n.t(key), typeLabel: '', colName: '', stats: [], metrics: [], chart: null });
+    if (!state || !state.columnRef) return none('dashboard.spcEmpty');
 
     const ct = getChartType(state.chartTypeId || 'i-mr');
-    if (!ct) return;
+    if (!ct) return none('dashboard.spcNoData');
 
     const rawValues = getColumnValues(stateManager, state.columnRef);
     const values = rawValues.filter(v => v != null && typeof v === 'number' && !isNaN(v));
-
-    if (values.length < 2) {
-      host.replaceChildren(h('p', { class: 'dashboard-area__empty' }, i18n.t('dashboard.spcNoData')));
-      return;
-    }
+    if (values.length < 2) return none('dashboard.spcNoData');
 
     const n = state.subgroupSize || 1;
     const baselineEnd = state.baselineCount || values.length;
     const result = ct.compute(values, n, baselineEnd);
 
-    const primaryId = ct.subcharts[0].id;
-    const primaryData = result.subcharts[primaryId];
+    const primary = ct.subcharts[0];
+    const primaryData = result.subcharts[primary.id];
     const enabledRules = state.enabledRules || [...DEFAULT_ENABLED_RULES];
     const violations = evaluateNelsonRules(
       primaryData.values, primaryData.cl, primaryData.sigma, enabledRules,
@@ -133,86 +83,108 @@ export default {
       state.usl ?? null, state.lsl ?? null,
     );
 
-    const vCount = new Set(violations.map(v => v.index)).size;
+    const violationSet = new Set(violations.map(v => v.index));
     const totalPts = primaryData.values.filter(v => v !== null).length;
-    const isStable = vCount === 0;
-    const colName = getColumnName(stateManager, state.columnRef) || '?';
     const fmt = (v) => v != null ? v.toFixed(4) : '—';
+    const of = i18n.t('dashboard.spcOf', { total: totalPts });
 
     const usl = state.usl ?? null;
     const lsl = state.lsl ?? null;
     const hasSpec = usl != null || lsl != null;
 
-    let oosCount = 0;
+    const metrics = [{
+      modifier: `dashboard-spc__metric--${violationSet.size === 0 ? 'ok' : 'bad'}`,
+      value: String(violationSet.size),
+      label: i18n.t('dashboard.spcViolations'),
+      sub: of,
+    }];
     if (hasSpec) {
+      let oosCount = 0;
       for (const v of primaryData.values) {
         if (v === null) continue;
         if ((usl != null && v > usl) || (lsl != null && v < lsl)) oosCount++;
       }
+      metrics.push({
+        modifier: `dashboard-spc__metric--${oosCount === 0 ? 'ok' : 'warn'}`,
+        value: String(oosCount),
+        label: i18n.t('dashboard.spcOutOfSpec'),
+        sub: of,
+      });
     }
-
-    const chartTypeLabel = {
-      'i-mr': 'I-MR', 'xbar-r': 'X̄-R', 'xbar-s': 'X̄-S',
-    }[ct.id] || ct.id;
-
-    const sparkWidth = host.clientWidth - 16;
-    const violationSet = new Set(violations.map(v => v.index));
-    const sparkSvg = buildSparkline(primaryData, violationSet, usl, lsl, sparkWidth);
-
-    const stat = (label, value) => h('div', { class: 'dashboard-spc__stat' },
-      h('span', { class: 'dashboard-spc__stat-label' }, label),
-      h('span', { class: 'dashboard-spc__stat-value' }, value),
-    );
-
-    const metrics = h('div', { class: 'dashboard-spc__metrics' });
-    metrics.append(
-      h('div', { class: `dashboard-spc__metric ${isStable ? 'dashboard-spc__metric--ok' : 'dashboard-spc__metric--bad'}` },
-        h('span', { class: 'dashboard-spc__metric-value' }, String(vCount)),
-        h('span', { class: 'dashboard-spc__metric-label' }, i18n.t('dashboard.spcViolations')),
-        h('span', { class: 'dashboard-spc__metric-sub' }, i18n.t('dashboard.spcOf', { total: totalPts })),
-      ),
-    );
-
-    if (hasSpec) {
-      const oosCls = oosCount === 0 ? '--ok' : '--warn';
-      metrics.append(
-        h('div', { class: `dashboard-spc__metric dashboard-spc__metric${oosCls}` },
-          h('span', { class: 'dashboard-spc__metric-value' }, String(oosCount)),
-          h('span', { class: 'dashboard-spc__metric-label' }, i18n.t('dashboard.spcOutOfSpec')),
-          h('span', { class: 'dashboard-spc__metric-sub' }, i18n.t('dashboard.spcOf', { total: totalPts })),
-        ),
-      );
-    }
-
     if (capability) {
-      const cpkCls = capability.cpk >= 1.33 ? '--ok' : capability.cpk >= 1.0 ? '--warn' : '--bad';
-      metrics.append(
-        h('div', { class: `dashboard-spc__metric dashboard-spc__metric${cpkCls}` },
-          h('span', { class: 'dashboard-spc__metric-value' }, capability.cpk.toFixed(3)),
-          h('span', { class: 'dashboard-spc__metric-label' }, 'Cpk'),
-          capability.cp ? h('span', { class: 'dashboard-spc__metric-sub' }, `Cp = ${capability.cp.toFixed(3)}`) : null,
-        ),
-      );
+      const cpkMod = capability.cpk >= 1.33 ? 'ok' : capability.cpk >= 1.0 ? 'warn' : 'bad';
+      metrics.push({
+        modifier: `dashboard-spc__metric--${cpkMod}`,
+        value: capability.cpk.toFixed(3),
+        label: 'Cpk',
+        sub: capability.cp ? `Cp = ${capability.cp.toFixed(3)}` : null,
+      });
     }
 
-    const spark = h('div', { class: 'dashboard-spc__spark' });
-    if (sparkSvg) spark.append(sparkSvg);
+    let chart = null;
+    if (settings.showChart) {
+      // The baseline counts observations; subgroup charts plot one point per subgroup.
+      const blEnd = state.baselineCount
+        ? (ct.id === 'i-mr' ? state.baselineCount : Math.ceil(state.baselineCount / n))
+        : null;
+      const win = windowed(primaryData, violationSet,
+        blEnd != null && blEnd < primaryData.values.length ? blEnd : null, settings.lastN);
+      chart = {
+        ...win,
+        violationIndices: [...win.violationIndices],
+        usl, lsl,
+        showZones: true,
+        xLabel: i18n.t('modules.control-chart.xLabelSample'),
+        yLabel: primary.yLabel?.[i18n.language] || primary.yLabel?.de || '',
+        showTitle: false, showXLabel: false, showYLabel: false,
+        showXTicks: false, showYTicks: false, showLegend: false,
+      };
+    }
 
-    host.replaceChildren(
-      h('div', { class: 'dashboard-spc' },
-        h('div', { class: 'dashboard-spc__header' },
-          h('span', { class: 'dashboard-spc__type' }, chartTypeLabel),
-          h('span', { class: 'dashboard-spc__col' }, colName),
-        ),
-        spark,
-        h('div', { class: 'dashboard-spc__stats' },
-          stat('CL', fmt(primaryData.cl)),
-          stat('UCL', fmt(primaryData.ucl)),
-          stat('LCL', fmt(primaryData.lcl)),
-          stat('σ̂', fmt(primaryData.sigma)),
-        ),
-        metrics,
-      ),
-    );
+    return {
+      empty: null,
+      typeLabel: { 'i-mr': 'I-MR', 'xbar-r': 'X̄-R', 'xbar-s': 'X̄-S' }[ct.id] || ct.id,
+      colName: getColumnName(stateManager, state.columnRef) || '?',
+      stats: [
+        { label: 'CL', value: fmt(primaryData.cl) },
+        { label: 'UCL', value: fmt(primaryData.ucl) },
+        { label: 'LCL', value: fmt(primaryData.lcl) },
+        { label: 'σ̂', value: fmt(primaryData.sigma) },
+      ],
+      metrics,
+      chart,
+    };
+  },
+
+  /**
+   * Create the control chart in the chart slot. A newer render or dispose
+   * invalidates a chart that is still being created.
+   * @param {HTMLElement} root  tile body
+   * @param {object} vm  view model from viewModel()
+   * @param {{chartManager: object}} args
+   * @returns {Promise<void>}
+   */
+  async mount(root, vm, { chartManager }) {
+    release(root);
+    const token = {};
+    charts.set(root, { chart: null, chartManager, token });
+    if (!vm.chart || !chartManager) return;
+
+    const slot = root.querySelector('[data-tile-slot="chart"]');
+    const chart = await chartManager.create(slot, 'control-chart', {
+      ...vm.chart,
+      violationIndices: new Set(vm.chart.violationIndices),
+    });
+    const entry = charts.get(root);
+    if (entry?.token !== token) { chartManager.destroy(chart); return; }
+    entry.chart = chart;
+  },
+
+  /**
+   * Release the chart of the host (tile removed or host abandoned).
+   * @param {HTMLElement} host
+   */
+  dispose(host) {
+    release(host);
   },
 };

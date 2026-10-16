@@ -692,11 +692,11 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ===== SIPOC import picker (rendered inside the shared modal) =====
+/* ===== SIPOC import picker (rendered inside the shared dialog) =====
    Hidden while the form node lives inside the module container; the shared
-   modal borrows the node into .modal__body which un-hides it. */
+   dialog borrows the node into .dialog__body which un-hides it. */
 .pmap__sipoc-form { display: none; }
-.modal__body .pmap__sipoc-form { display: block; }
+.dialog__body .pmap__sipoc-form { display: block; }
 
 .pmap__sipoc-hint {
   margin: 0 0 var(--spacing-md);

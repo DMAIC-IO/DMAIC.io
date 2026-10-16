@@ -1044,13 +1044,24 @@ const mod = createModule({
         if (!this._grid) return [];
         return this._grid.getSelectedColumnIndices();
       },
+      /**
+       * Columns the chart suggestion works on: the selection when there is
+       * one, otherwise the only column holding data (if exactly one does).
+       */
+      _suggestColumnIndices() {
+        const selected = this._selectedColumnIndices();
+        if (selected.length > 0 || !this._grid) return selected;
+        const withData = [];
+        this._grid.columns.forEach((col, i) => { if (this._columnHasData(col)) withData.push(i); });
+        return withData.length === 1 ? withData : [];
+      },
       _canSuggestChart() {
-        const indices = this._selectedColumnIndices();
+        const indices = this._suggestColumnIndices();
         if (indices.length === 0) return false;
         return indices.every(i => this._columnHasData(this._grid.columns[i]));
       },
       _snapshotSelectedColumns() {
-        const indices = this._selectedColumnIndices();
+        const indices = this._suggestColumnIndices();
         const out = [];
         for (const idx of indices) {
           const col = this._grid.columns[idx];
@@ -1115,7 +1126,7 @@ const mod = createModule({
       },
 
       _confirmAutoInferredRoles() {
-        const indices = this._selectedColumnIndices() || [];
+        const indices = this._suggestColumnIndices() || [];
         const unconfirmed = indices
           .map(idx => this._grid.columns[idx])
           .filter(col => col && this._columnHasData(col) && col.roleManual !== true);
@@ -1542,8 +1553,8 @@ mod.loadExample = async function loadExample(payload) {
   if (!payload || !payload.data) return;
   const current = this.getState();
   const model = current ? State.fromJSON(current) : null;
-  if (model && model.hasContent() && this._context?.confirmPopout) {
-    const ok = await this._context.confirmPopout(this._context.i18n.t('moduleHelp.confirmOverwrite'), { danger: true });
+  if (model && model.hasContent() && this._context?.dialog) {
+    const ok = await this._context.dialog.confirm({ message: this._context.i18n.t('moduleHelp.confirmOverwrite'), danger: true });
     if (!ok) return;
   }
   if (!payload.data.sheets || !Array.isArray(payload.data.sheets) || payload.data.sheets.length === 0) {

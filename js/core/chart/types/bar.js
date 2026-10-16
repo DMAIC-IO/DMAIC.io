@@ -12,7 +12,7 @@
  *   categoryGap: 0.3               — fraction of category width reserved as spacing (0–0.8)
  */
 
-import ChartBase from '../chart-base.js';
+import ChartBase, { X_TICKS_BOTTOM, DEFAULT_MARGIN } from '../chart-base.js';
 import { h } from '../../dom.js';
 import {
   svgEl, svgText, resolveColor, formatNum, getChartColors
@@ -176,7 +176,7 @@ export default class BarChart extends ChartBase {
       const labelX = catCx;
       const labelY = plotArea.y + plotArea.h + 14;
 
-      if (nCats > 6 || cats.some(c => c.length > 8)) {
+      if (this._rotatesCategoryLabels()) {
         svgText(label, {
           x: labelX, y: labelY,
           'text-anchor': 'end',
@@ -284,5 +284,20 @@ export default class BarChart extends ChartBase {
       px: best.x + best.w / 2,
       py: best.y,
     }];
+  }
+
+  /** @override — category labels are drawn below the plot (rotated ones need the full default bottom). */
+  _getBottomTickGutter() {
+    return this._rotatesCategoryLabels() ? DEFAULT_MARGIN.bottom : X_TICKS_BOTTOM;
+  }
+
+  /**
+   * Whether category labels are drawn rotated — the one rule both the label
+   * drawing and the bottom gutter follow.
+   * @returns {boolean}
+   */
+  _rotatesCategoryLabels() {
+    const cats = this.config.categories || [];
+    return cats.length > 6 || cats.some(c => c.length > 8);
   }
 }

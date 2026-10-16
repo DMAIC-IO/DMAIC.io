@@ -1,15 +1,29 @@
 /**
- * D.Mike — Histogram Binning Engine (histogram-binning.js)
- * Pure functions for bin computation, statistics, and bar patterns.
+ * D.Mike — Histogram series math (histogram-series.js)
+ * Pure functions, no DOM: shared bins across several series, box statistics,
+ * moments and Pareto cumulation. Used by the series path of types/histogram.js.
  */
 
-import { niceNum, svgEl } from '../../core/chart/chart-core.js';
+import { niceNum } from './chart-core.js';
 
 // ─── Binning Engine ─────────────────────────────────────────
+/**
+ * Sturges bin count with a floor of 3.
+ * @param {number} n - number of values
+ * @returns {number}
+ */
 export function autoBinCount(n) {
   return Math.max(3, Math.ceil(Math.log2(n) + 1));
 }
 
+/**
+ * Count values into [edge, upper) bins; the last bin is closed.
+ * @param {number[]} values
+ * @param {number} globalMin
+ * @param {number} globalMax
+ * @param {number} binWidth
+ * @returns {{xMin:number,xMax:number,count:number}[]}
+ */
 export function computeBins(values, globalMin, globalMax, binWidth) {
   const bins = [];
   let edge = globalMin;
@@ -28,6 +42,11 @@ export function computeBins(values, globalMin, globalMax, binWidth) {
   return bins;
 }
 
+/**
+ * Min, max and value count over all visible series.
+ * @param {{values:number[],visible?:boolean}[]} seriesData
+ * @returns {{min:number,max:number,count:number}}
+ */
 export function globalRange(seriesData) {
   const allVals = [];
   seriesData.forEach(s => {
@@ -38,6 +57,11 @@ export function globalRange(seriesData) {
   return { min: Math.min(...allVals), max: Math.max(...allVals), count: allVals.length };
 }
 
+/**
+ * Nice automatic bin width over all visible series.
+ * @param {{values:number[],visible?:boolean}[]} seriesData
+ * @returns {number}
+ */
 export function autoBinWidth(seriesData) {
   const range = globalRange(seriesData);
   if (range.count === 0) return 1;
@@ -47,6 +71,12 @@ export function autoBinWidth(seriesData) {
   return niceNum(raw, true);
 }
 
+/**
+ * Bin all series on one shared set of edges; hidden series yield [].
+ * @param {{values:number[],visible?:boolean}[]} seriesData
+ * @param {number|null} [binWidth] - automatic when falsy
+ * @returns {{bins:{xMin:number,xMax:number,count:number}[][],globalMin:number,globalMax:number,binWidth:number}}
+ */
 export function binAll(seriesData, binWidth) {
   const range = globalRange(seriesData);
   if (range.count === 0) return { bins: [], globalMin: 0, globalMax: 1, binWidth: 1 };
@@ -63,6 +93,12 @@ export function binAll(seriesData, binWidth) {
 }
 
 // ─── Statistics Engine ──────────────────────────────────────
+/**
+ * Linear-interpolated percentile of a sorted array.
+ * @param {number[]} sorted
+ * @param {number} p - 0..100
+ * @returns {number}
+ */
 export function percentile(sorted, p) {
   const n = sorted.length;
   const k = (p / 100) * (n - 1);
@@ -73,6 +109,11 @@ export function percentile(sorted, p) {
 }
 
 // ─── Boxplot Stats ──────────────────────────────────────────
+/**
+ * Box-plot statistics (1.5 IQR whiskers) of a value list.
+ * @param {number[]} values
+ * @returns {{min:number,max:number,q1:number,median:number,q3:number,whiskerLo:number,whiskerHi:number,outliers:number[],mean:number,n:number}|null}
+ */
 export function computeBoxStats(values) {
   if (!values || values.length === 0) return null;
   const s = values.slice().sort((a, b) => a - b);
@@ -91,30 +132,37 @@ export function computeBoxStats(values) {
     if (s[i] < whiskerLo || s[i] > whiskerHi) outliers.push(s[i]);
   }
   const mean = values.reduce((a, b) => a + b, 0) / n;
-  return { min: s[0], max: s[n - 1], q1, median, q3, whiskerLo, whiskerHi, outliers, mean };
+  return { min: s[0], max: s[n - 1], q1, median, q3, whiskerLo, whiskerHi, outliers, mean, n };
 }
 
-// ─── Pattern helper ─────────────────────────────────────────
-export function createBarPattern(defs, id, s) {
-  const size = 8;
-  const pat = svgEl('pattern', {
-    id, patternUnits: 'userSpaceOnUse', width: size, height: size,
-  }, defs);
-  const lineColor = s.patternColor || 'rgba(0,0,0,0.5)';
-  const sw = s.patternSolidity ? s.patternSolidity * 2 : 0.8;
-  switch (s.pattern) {
-    case '/':  svgEl('line', { x1: 0, y1: size, x2: size, y2: 0, stroke: lineColor, 'stroke-width': sw }, pat); break;
-    case '\\': svgEl('line', { x1: 0, y1: 0, x2: size, y2: size, stroke: lineColor, 'stroke-width': sw }, pat); break;
-    case '-':  svgEl('line', { x1: 0, y1: size / 2, x2: size, y2: size / 2, stroke: lineColor, 'stroke-width': sw }, pat); break;
-    case '|':  svgEl('line', { x1: size / 2, y1: 0, x2: size / 2, y2: size, stroke: lineColor, 'stroke-width': sw }, pat); break;
-    case 'x':
-      svgEl('line', { x1: 0, y1: size, x2: size, y2: 0, stroke: lineColor, 'stroke-width': sw }, pat);
-      svgEl('line', { x1: 0, y1: 0, x2: size, y2: size, stroke: lineColor, 'stroke-width': sw }, pat);
-      break;
-    case '+':
-      svgEl('line', { x1: 0, y1: size / 2, x2: size, y2: size / 2, stroke: lineColor, 'stroke-width': sw }, pat);
-      svgEl('line', { x1: size / 2, y1: 0, x2: size / 2, y2: size, stroke: lineColor, 'stroke-width': sw }, pat);
-      break;
-    case '.':  svgEl('circle', { cx: size / 2, cy: size / 2, r: sw, fill: lineColor }, pat); break;
-  }
+/**
+ * Count, mean and sample standard deviation of a value list.
+ * @param {number[]} values
+ * @returns {{ n: number, mean: number, sd: number }} sd is 0 for fewer than two values
+ */
+export function seriesMoments(values) {
+  const n = values ? values.length : 0;
+  if (n === 0) return { n: 0, mean: 0, sd: 0 };
+  let sum = 0;
+  for (const v of values) sum += v;
+  const mean = sum / n;
+  if (n < 2) return { n, mean, sd: 0 };
+  let ss = 0;
+  for (const v of values) ss += (v - mean) ** 2;
+  return { n, mean, sd: Math.sqrt(ss / (n - 1)) };
+}
+
+/**
+ * Cumulative percentage at the right edge of every bin.
+ * @param {{ count: number }[]} bins
+ * @returns {number[]} same length as bins; all 0 when the total count is 0
+ */
+export function cumulativePercent(bins) {
+  let total = 0;
+  for (const b of bins) total += b.count;
+  let cum = 0;
+  return bins.map((b) => {
+    cum += b.count;
+    return total > 0 ? (cum / total) * 100 : 0;
+  });
 }

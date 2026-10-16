@@ -80,3 +80,21 @@ export function cloneTemplate(key) {
   return [...tpl.content.cloneNode(true).childNodes];
 }
 
+
+const BLANK = /^[ \t\n\r]*$/;
+
+/**
+ * Remove whitespace-only text nodes, recursively and inside nested
+ * <template> contents, so indented templates render like h() output.
+ * Non-breaking spaces are kept.
+ * @param {Node} node
+ */
+export function stripBlankText(node) {
+  for (const child of [...node.childNodes]) {
+    if (child.nodeType === Node.TEXT_NODE) {
+      if (BLANK.test(child.data)) child.remove();
+    } else if (child.nodeType === Node.ELEMENT_NODE) {
+      stripBlankText(child instanceof HTMLTemplateElement ? child.content : child);
+    }
+  }
+}

@@ -13,19 +13,19 @@
  * Öffnet den Einwilligungsdialog und übersetzt jeden Nicht-Erfolg in eine
  * Ablehnung.
  *
- * Ein Abbruch liefert `null` (createDialog-Vertrag), ein kaputter Modal wirft
+ * Ein Abbruch liefert `null` (createDialog-Vertrag), ein kaputter Dialog wirft
  * — beides heißt „nicht zugestimmt". Die vorsichtige Richtung ist hier die
  * einzige vertretbare: niemals aus einem Fehler eine Zustimmung ableiten.
  *
- * @param {object} modal  ui/modal.js Instanz
+ * @param {object} dialogService  Dialog-Service (ui/dialog/dialog.js)
  * @param {{ t: (key: string) => string }} i18n
  * @param {{ open: Function }} dialog  Rückgabe von buildAgentConsentDialog
  * @param {{ projectName?: string }} [init]
  * @returns {Promise<boolean>}
  */
-export async function openAgentConsent(modal, i18n, dialog, init) {
+export async function openAgentConsent(dialogService, i18n, dialog, init) {
   try {
-    const result = await dialog.open(modal, init, {
+    const result = await dialog.open(dialogService, init, {
       confirmLabel: i18n.t('agent.consent.grant'),
       cancelLabel: i18n.t('agent.consent.deny'),
     });

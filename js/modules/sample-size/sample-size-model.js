@@ -52,7 +52,7 @@ export class State {
   sigma = '';
 
   /**
-   * Returns true when any input field has been filled — drives confirmPopout.
+   * Returns true when any input field has been filled — drives dialog.confirm.
    * Note: alpha/power/category/direction changes alone don't count as "content".
    * @returns {boolean}
    */

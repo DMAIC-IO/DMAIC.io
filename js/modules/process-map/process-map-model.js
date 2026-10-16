@@ -21,11 +21,12 @@
  *   Loop      { targetStepId: string|null, condition: string, steps: { id, title }[] }
  */
 
+import { uid } from '../../core/uid.js';
 import { FlowchartState } from '../../core/flowchart/flowchart-model.js';
 
 /** @returns {string} Unique id for steps and IO items (mirrors legacy generateId). */
 function generateId() {
-  return `s${  Date.now().toString(36)  }${Math.random().toString(36).slice(2, 6)}`;
+  return `s${uid()}`;
 }
 
 const VALUE_CYCLE = [null, 'va', 'bnva', 'nva'];

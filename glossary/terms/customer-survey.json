@@ -1,0 +1,69 @@
+{
+  "id": "customer-survey",
+  "category": "methodology",
+  "title": {
+    "de": "Kundenbefragung",
+    "en": "Customer Survey"
+  },
+  "short": {
+    "de": "Strukturierter Fragebogen, der die Stimme des Kunden in vergleichbare Antworten übersetzt — Grundlage für VoC-Baum und Kano-Analyse.",
+    "en": "A structured questionnaire that turns the voice of the customer into comparable answers — the basis for the VoC tree and the Kano analysis."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Eine **Kundenbefragung** holt die {{term:voc|Stimme des Kunden}} mit festen Fragen ein, sodass sich die Antworten vieler Befragter zählen und vergleichen lassen. Sie ergänzt Interviews und Beobachtung: Interviews finden neue Themen, die Befragung zeigt, wie verbreitet sie sind."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Auswahlfragen** ordnen Befragte zu, etwa einer Kundengruppe — die Grundlage für einen Gruppenvergleich.",
+          "**Bewertungsmatrizen** messen Zufriedenheit auf einer festen Skala, meist 1 bis 5.",
+          "**Kano-Fragen** stellen jedes Merkmal funktional und dysfunktional, siehe {{term:kano-fragebogen|Kano-Fragebogen}}.",
+          "**Freitexte** fangen ein, was sich nicht vorhersehen lässt; sie werden zu Einträgen im VoC-Baum."
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Kleine Gruppen zeigen eine Richtung, keinen Beleg. Unterschiede zwischen Gruppen mit wenigen Antworten sind ein Anlass nachzufragen, kein Ergebnis."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **customer survey** collects the {{term:voc|voice of the customer}} with fixed questions, so that the answers of many respondents can be counted and compared. It complements interviews and observation: interviews find new topics, the survey shows how widespread they are."
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Choice questions** classify respondents, for example by customer group — the basis of a group comparison.",
+          "**Rating matrices** measure satisfaction on a fixed scale, usually 1 to 5.",
+          "**Kano questions** ask each attribute functionally and dysfunctionally, see {{term:kano-fragebogen|Kano questionnaire}}.",
+          "**Free texts** capture what cannot be foreseen; they become entries in the VoC tree."
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Small groups show a direction, not proof. Differences between groups with few responses are a reason to ask again, not a result."
+      }
+    ]
+  },
+  "aliases": {
+    "de": ["Fragebogen", "Kundenumfrage", "Befragung"],
+    "en": ["questionnaire", "customer questionnaire", "survey"]
+  },
+  "seeAlso": ["voc", "kano-fragebogen", "kano", "ctx-baum"],
+  "modules": ["survey-builder"],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Dillman, D. A., Smyth, J. D. & Christian, L. M. — Internet, Phone, Mail, and Mixed-Mode Surveys: The Tailored Design Method, 4th ed., Wiley, 2014",
+      "url": null
+    },
+    {
+      "label": "Griffin, A. & Hauser, J. R. — The Voice of the Customer, Marketing Science, 12(1), 1993",
+      "url": null
+    }
+  ]
+}
