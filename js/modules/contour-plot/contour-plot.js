@@ -282,6 +282,7 @@ const mod = createModule({
 
       /** Die Kennzahlen der Fläche für read() — dieselbe Abtastung wie das Zeichnen (E8). */
       _agentSurface() {
+        if (this.isCustomModel() && this.formulaError) return null;
         const { zMin, zMax, optimum } = scanSurface((x, y) => this._evalModel(x, y), {
           xMin: this._numVal('xMin', -3), xMax: this._numVal('xMax', 3),
           yMin: this._numVal('yMin', -3), yMax: this._numVal('yMax', 3),
