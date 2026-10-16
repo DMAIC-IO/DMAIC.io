@@ -11,7 +11,7 @@
     <!-- ── Tab: Components ── -->
     <div class="dmike-tab-content" :class="contentClass('components')"
       data-tab-content="components" x-show="model.activeTab === 'components'">
-      <template x-for="kind in KINDS" :key="kind">
+      <template x-for="kind in GROUPS" :key="kind">
         <section class="tfa__group" :data-group="kind">
           <h3 class="tfa__group-title" x-text="groupLabel(kind)"></h3>
           <template x-for="c in componentsOf(kind)" :key="c.id">
@@ -62,9 +62,10 @@
                 <template x-for="(c, ci) in matrixComponents()" :key="c.id">
                   <td :class="cellClass(ri, ci)">
                     <button type="button" class="tfa__cell-btn" data-role="cell" :data-a="r.id" :data-b="c.id"
-                      x-show="ci > ri" :aria-pressed="isTicked(r, c) ? 'true' : 'false'" :title="cellTitle(r, c)"
-                      @click="toggleCell(r, c)">
+                      :data-state="cellState(r, c)" x-show="ci > ri" :aria-pressed="isTicked(r, c) ? 'true' : 'false'"
+                      :title="cellTitle(r, c)" @click="toggleCell(r, c)">
                       <span class="icon icon--sm" data-icon="action.confirm" x-show="isTicked(r, c)"></span>
+                      <span class="icon icon--sm tfa__cell-excluded" data-icon="action.close" x-show="isExcluded(r, c)"></span>
                     </button>
                   </td>
                 </template>

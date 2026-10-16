@@ -82,6 +82,10 @@ thead .tfa__mh {
   cursor: pointer;
 }
 
+.tfa__cell-excluded {
+  color: var(--color-text-secondary);
+}
+
 .tfa__cell-btn:hover {
   background: var(--color-bg-secondary);
 }

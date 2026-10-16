@@ -1,8 +1,8 @@
 /**
  * D.Mike — TRIZ function analysis: data model.
  *
- * Components (exactly one target), unordered interaction pairs and directed
- * functions. Derived values (rank, open pairs, disadvantages) are pure
+ * Components (exactly one target), unordered interaction pairs, pairs
+ * explicitly excluded from interacting, and directed functions. Derived values (rank, open pairs, disadvantages) are pure
  * functions and never stored. See
  * docs/superpowers/specs/2026-10-15-triz-function-analysis-design.md.
  */
@@ -10,6 +10,8 @@
 import { uid } from '../../core/uid.js';
 
 export const KINDS = ['target', 'system', 'supersystem'];
+/** Display order of the component groups: outermost level first. */
+export const GROUPS = ['supersystem', 'system', 'target'];
 export const TYPES = ['useful', 'harmful'];
 export const LEVELS = ['adequate', 'insufficient', 'excessive'];
 export const TABS = ['components', 'interactions', 'model'];
@@ -90,6 +92,7 @@ export class State {
   _schema = { name: State.ID, version: State.VERSION };
   components = [];
   interactions = [];
+  exclusions = [];
   functions = [];
   positions = {};
   activeTab = 'components';
@@ -105,6 +108,7 @@ export class State {
       _schema: { ...this._schema },
       components: this.components.map((c) => ({ ...c })),
       interactions: this.interactions.map((i) => ({ ...i })),
+      exclusions: this.exclusions.map((x) => ({ ...x })),
       functions: this.functions.map((f) => ({ ...f })),
       positions: Object.fromEntries(Object.entries(this.positions).map(([k, p]) => [k, { ...p }])),
       activeTab: this.activeTab,
@@ -134,6 +138,9 @@ export class State {
 
     for (const i of Array.isArray(d.interactions) ? d.interactions : []) {
       if (isObj(i) && known(i.a) && known(i.b)) s._tick(i.a, i.b);
+    }
+    for (const x of Array.isArray(d.exclusions) ? d.exclusions : []) {
+      if (isObj(x) && known(x.a) && known(x.b) && !s.hasInteraction(x.a, x.b)) s._exclude(x.a, x.b);
     }
 
     for (const f of Array.isArray(d.functions) ? d.functions : []) {
@@ -198,10 +205,11 @@ export class State {
     return this.functions.filter((f) => f.carrier === id || f.object === id).length;
   }
 
-  /** Remove a component with its interactions, functions and stored position. @param {string} id */
+  /** Remove a component with its interactions, exclusions, functions and stored position. @param {string} id */
   removeComponent(id) {
     this.components = this.components.filter((c) => c.id !== id);
     this.interactions = this.interactions.filter((i) => i.a !== id && i.b !== id);
+    this.exclusions = this.exclusions.filter((x) => x.a !== id && x.b !== id);
     this.functions = this.functions.filter((f) => f.carrier !== id && f.object !== id);
     delete this.positions[id];
   }
@@ -212,6 +220,18 @@ export class State {
     return this.interactions.some((i) => pairKey(i.a, i.b) === k);
   }
 
+  /** @param {string} a @param {string} b @returns {boolean} explicitly marked as not interacting */
+  isExcluded(a, b) {
+    const k = pairKey(a, b);
+    return this.exclusions.some((x) => pairKey(x.a, x.b) === k);
+  }
+
+  /** @param {string} a @param {string} b @returns {'none'|'ticked'|'excluded'} */
+  pairState(a, b) {
+    if (this.hasInteraction(a, b)) return 'ticked';
+    return this.isExcluded(a, b) ? 'excluded' : 'none';
+  }
+
   /** @param {string} a @param {string} b @returns {number} complete functions on the pair */
   usersOf(a, b) {
     const k = pairKey(a, b);
@@ -219,20 +239,26 @@ export class State {
   }
 
   /**
-   * Tick or untick a pair. Unticking is refused while functions use it.
+   * Cycle a pair: empty → ticked → excluded → empty. Leaving "ticked" is
+   * refused while functions use the pair.
    * @param {string} a @param {string} b
    * @returns {{ok: boolean, usedBy?: number}}
    */
   toggleInteraction(a, b) {
     if (!a || !b || a === b) return { ok: false, usedBy: 0 };
+    const k = pairKey(a, b);
+    if (this.isExcluded(a, b)) {
+      this.exclusions = this.exclusions.filter((x) => pairKey(x.a, x.b) !== k);
+      return { ok: true };
+    }
     if (!this.hasInteraction(a, b)) {
       this._tick(a, b);
       return { ok: true };
     }
     const usedBy = this.usersOf(a, b);
     if (usedBy) return { ok: false, usedBy };
-    const k = pairKey(a, b);
     this.interactions = this.interactions.filter((i) => pairKey(i.a, i.b) !== k);
+    this._exclude(a, b);
     return { ok: true };
   }
 
@@ -318,11 +344,18 @@ export class State {
     return true;
   }
 
-  /** Tick a pair (sorted, no duplicates, no self pairs). @private */
+  /** Tick a pair (sorted, no duplicates, no self pairs); lifts an exclusion. @private */
   _tick(a, b) {
     if (!a || !b || a === b) return;
     const k = pairKey(a, b);
+    this.exclusions = this.exclusions.filter((x) => pairKey(x.a, x.b) !== k);
     if (this.interactions.some((i) => pairKey(i.a, i.b) === k)) return;
     this.interactions.push(a < b ? { a, b } : { a: b, b: a });
+  }
+
+  /** Exclude a pair (sorted, no duplicates, no self pairs). @private */
+  _exclude(a, b) {
+    if (!a || !b || a === b || this.isExcluded(a, b)) return;
+    this.exclusions.push(a < b ? { a, b } : { a: b, b: a });
   }
 }

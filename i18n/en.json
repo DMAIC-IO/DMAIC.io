@@ -6323,6 +6323,7 @@
       "matrixEmpty": "Add at least two components on the \"Components\" tab.",
       "matrixSummary": "{count} interactions, {open} without a function",
       "pairLocked": "Used by {count} function(s) – delete those functions first.",
+      "pairExcluded": "Explicitly excluded – no interaction",
       "openPairs": "Open pairs",
       "noOpenPairs": "No open pairs.",
       "functions": "Functions",

@@ -136,18 +136,53 @@ suite('triz-function-analysis — components', () => {
 });
 
 suite('triz-function-analysis — interactions', () => {
-  test('toggleInteraction ticks and unticks an unused pair', () => {
+  test('toggleInteraction cycles an unused pair: empty → ticked → excluded → empty', () => {
     const s = fixture();
+    assertEqual(s.pairState('t', 'g'), 'none');
     assertDeepEqual(s.toggleInteraction('t', 'g'), { ok: true });
     assertTrue(s.hasInteraction('g', 't'));
+    assertEqual(s.pairState('g', 't'), 'ticked');
     assertDeepEqual(s.toggleInteraction('g', 't'), { ok: true });
     assertEqual(s.hasInteraction('t', 'g'), false);
+    assertTrue(s.isExcluded('t', 'g'));
+    assertEqual(s.pairState('t', 'g'), 'excluded');
+    assertDeepEqual(s.toggleInteraction('t', 'g'), { ok: true });
+    assertEqual(s.pairState('t', 'g'), 'none');
+    assertDeepEqual(s.exclusions, []);
   });
 
   test('a pair used by functions cannot be unticked', () => {
     const s = fixture();
     assertDeepEqual(s.toggleInteraction('t', 'b'), { ok: false, usedBy: 1 });
     assertTrue(s.hasInteraction('b', 't'));
+    assertEqual(s.isExcluded('b', 't'), false);
+  });
+
+  test('a function on an excluded pair ticks it again', () => {
+    const s = fixture();
+    s.toggleInteraction('t', 'g');
+    s.toggleInteraction('t', 'g');
+    s.addFunction('g', 't');
+    assertEqual(s.pairState('t', 'g'), 'ticked');
+    assertDeepEqual(s.exclusions, []);
+  });
+
+  test('exclusions survive a round trip and are repaired on load', () => {
+    const s = State.fromJSON({
+      components: [{ id: 'x', name: 'X', kind: 'target' }, { id: 'y', name: 'Y', kind: 'system' }, { id: 'z', name: 'Z', kind: 'system' }],
+      interactions: [{ a: 'x', b: 'y' }],
+      exclusions: [{ a: 'z', b: 'x' }, { a: 'x', b: 'z' }, { a: 'y', b: 'x' }, { a: 'z', b: 'z' }, { a: 'z', b: 'gone' }],
+    });
+    assertDeepEqual(s.exclusions, [{ a: 'x', b: 'z' }], 'sorted, deduplicated, ticked pairs win');
+    assertDeepEqual(State.fromJSON(s.toJSON()).exclusions, [{ a: 'x', b: 'z' }]);
+  });
+
+  test('removeComponent drops its exclusions', () => {
+    const s = fixture();
+    s.toggleInteraction('t', 'p');
+    s.toggleInteraction('t', 'p');
+    s.removeComponent('p');
+    assertDeepEqual(s.exclusions, []);
   });
 
   test('self pairs are refused', () => {

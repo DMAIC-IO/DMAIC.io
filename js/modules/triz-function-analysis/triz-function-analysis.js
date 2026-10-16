@@ -8,7 +8,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import {
-  State, KINDS, LEVELS, TABS, orderedComponents, openPairs, rankOf, disadvantages,
+  State, KINDS, GROUPS, LEVELS, TABS, orderedComponents, openPairs, rankOf, disadvantages,
 } from './triz-function-analysis-model.js';
 import {
   NODE_W, NODE_H, resolvePositions, buildFunctionDiagram,
@@ -38,6 +38,7 @@ export default createModule({
     return {
       TABS,
       KINDS,
+      GROUPS,
       LEVELS,
       selectedId: null,
 
@@ -87,7 +88,10 @@ export default createModule({
         return ci > ri ? 'tfa__cell' : 'tfa__cell tfa__cell--off';
       },
       isTicked(r, c) { return this.model.hasInteraction(r.id, c.id); },
+      isExcluded(r, c) { return this.model.isExcluded(r.id, c.id); },
+      cellState(r, c) { return this.model.pairState(r.id, c.id); },
       cellTitle(r, c) {
+        if (this.isExcluded(r, c)) return _t('pairExcluded');
         const n = this.model.usersOf(r.id, c.id);
         return n ? _t('pairLocked', { count: n }) : '';
       },
