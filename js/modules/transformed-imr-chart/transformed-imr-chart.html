@@ -12,18 +12,19 @@
     <div class="timr__lambda-row">
       <div class="field-group">
         <label x-text="t('lambdaMode')"></label>
-        <select class="field" data-ref="lambda-mode" x-model="model.lambdaMode" @change="onLambdaModeChange()">
-          <option value="auto" x-text="t('lambdaAuto')"></option>
-          <option value="manual" x-text="t('lambdaManual')"></option>
+        <select class="field" data-ref="lambda-mode" :value="model.lambdaMode" @change="setParam('lambdaMode', $event.target.value)">
+          <template x-for="o in lambdaModeOptions()" :key="o.value">
+            <option :value="o.value" :selected="o.value === model.lambdaMode" x-text="o.label"></option>
+          </template>
         </select>
       </div>
       <div class="field-group">
         <label>λ</label>
         <input type="number" class="field field--num" data-ref="lambda-manual"
-          x-model.number="model.lambdaManual"
+          :value="model.lambdaManual"
           step="0.05" min="-3" max="3"
-          :disabled="model.lambdaMode === 'auto'"
-          @change="onLambdaManualChange()">
+          :disabled="!isManualLambda()"
+          @change="lambdaManualChanged($event)">
       </div>
     </div>
     <span class="timr__hint" x-text="t('lambdaHint')"></span>

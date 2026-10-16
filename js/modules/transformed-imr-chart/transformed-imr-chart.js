@@ -18,16 +18,77 @@
  *   - One ColumnPicker is an imperative widget mounted in init(), disposed in destroy().
  *   - chartManager control-chart uses _renderGen stale-guard.
  *   - _unsubs collects event-bus subscriptions for cleanup.
+ *
+ * @agent  Steuerbar über das Viewmodel: Messreihe (setColumn), λ automatisch
+ *   oder von Hand (setParam), neu rechnen (runAnalysis). Gelesen wird über
+ *   read() mit erklärter Lesefläche (AgentRead) — Eingaben, λ, Grenzen auf
+ *   transformierter und Originalskala, Signalpunkte, je Punkt der
+ *   transformierte Wert.
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State } from './transformed-imr-chart-model.js';
+import { State, LAMBDA_MODES } from './transformed-imr-chart-model.js';
 import {
-  ColumnPicker, getColumnValues, getColumnName,
+  ColumnPicker, getColumnValues, getColumnName, refToKey, keyToRef,
 } from '../../ui/column-picker.js';
 import { computeTransformedIMR } from '../../engines/transformed-chart-engine.js';
 import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-registry.js';
 import { chartModuleLifecycle } from '../../core/chart/chart-module-base.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { pickableColumnList } from '../../core/agent/agent-options.js';
+import { finiteOrNull, zipPoints } from '../../core/agent/agent-results.js';
+
+/** Die Spalten-Slots: genau einer, die Messreihe. */
+const COLUMN_SLOTS = ['value'];
+
+/** Je Slot der Filter seines Wählers — eine Quelle für Wähler und Lesefläche. */
+const SLOT_FILTERS = { value: { types: ['numeric'], minCount: 5 } };
+
+/** Die Optionen, die `setParam` annimmt. */
+const PARAM_KEYS = ['lambdaMode', 'lambdaManual'];
+
+/** Je Option ihr Prüfer; er gibt den Wert in der Form des Models zurück. */
+const PARAM_CHECKS = {
+  lambdaMode: (v) => { requireEnum('value', v, LAMBDA_MODES); return v; },
+  lambdaManual: (v) => requireNumber('value', v),
+};
+
+/** Die i18n-Schlüssel der λ-Arten, wie die Vorlage sie bisher nannte. */
+const LAMBDA_MODE_LABELS = { auto: 'lambdaAuto', manual: 'lambdaManual' };
+
+/**
+ * Einen Wert unter einem Punkt-Schlüssel in `obj` ablegen.
+ * @param {object} obj Wurzel, deren Pfad beschrieben wird
+ * @param {string} key Schlüssel, gegebenenfalls mit Punkt
+ * @param {any} value der abzulegende Wert
+ */
+function setAtPath(obj, key, value) {
+  const parts = key.split('.');
+  let cur = obj;
+  for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
+  cur[parts[parts.length - 1]] = value;
+}
+
+/**
+ * Die Agenten-Lesefläche der transformierten I-MR-Karte.
+ *
+ * Eingaben (Spalte, λ-Art, λ), die Mengen der Setter, das Ergebnis als
+ * Zahlen (Plan Welle 3 B, E4) und der Text, den die Oberfläche bei
+ * unbrauchbaren Daten zeigt. Nicht darin: Kennzahlenleiste und
+ * Grenzentabelle als Text, `exampleWorksheetId`.
+ *
+ * @typedef {object} AgentRead
+ * @property {object|null} columnRef  the measured column (slot `value`), `{ instanceId, sheetId, columnId }`, or null
+ * @property {string} lambdaMode  `'auto'` (estimated from the data) or `'manual'`
+ * @property {number} lambdaManual  the Box-Cox λ used in manual mode; in auto mode it mirrors the estimated λ after each computation
+ * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
+ * @property {string[]} activeParams  the keys `setParam` accepts in the current state (`lambdaManual` only in manual mode)
+ * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
+ * @property {string} errorMsg  why nothing was computed (non-positive values, computation error), or ''
+ * @property {object|null} result  `{ n, lambda, lambdaAuto, i: { cl, ucl, lcl, sigma }, mr: { cl, ucl, lcl }, iOriginal: { cl, ucl, lcl }, signals }` — i and mr on the transformed scale, iOriginal back-transformed, signals the indices of I-chart signal points; null while nothing is computed
+ * @property {object[]} points  [bulk] one row per value: `{ transformed, signal }`
+ */
 
 const mod = createModule({
   config: {
@@ -47,11 +108,9 @@ const mod = createModule({
           const wrap = module._container.querySelector('[data-ref="col-picker"]');
           if (!wrap) return;
           this._picker = new ColumnPicker(wrap, module._context, {
-            mode: 'single', types: ['numeric'], minCount: 5,
-            onChange: (ref) => {
-              this.model.columnRef = ref;
-              this._scheduleAutoRun();
-            },
+            mode: 'single',
+            ...SLOT_FILTERS.value,
+            onChange: (ref) => this.setColumn('value', ref),
           });
           if (this.model.columnRef) this._picker.value = this.model.columnRef;
         },
@@ -70,25 +129,140 @@ const mod = createModule({
        * into the templated host via _whenAnchor). See _renderCharts. */
       /** @type {Array<{id:string, title:string, badgeText:string, badgeClass:string}>} */
       chartViews: [],
+      /** Das Engine-Ergebnis der letzten Rechnung samt Punktzahl, synchron vor dem Zeichnen gesetzt (E3). */
+      _lastRun: null,
 
-      // ── Lambda mode/manual change handlers ───────────────────
+      // ── Agent surface ─────────────────────────────────────────
 
-      onLambdaModeChange() {
-        // model.lambdaMode already updated by x-model @change
-        this._scheduleAutoRun();
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       *   — `fields: ['points']` liefert die Punkte vollständig, `rows` schneidet sie zu
+       * @returns {AgentRead} Eingaben, wählbare Mengen und das gerechnete Ergebnis
+       */
+      read(options) {
+        const { result, points, pointsColumns } = this._agentResult();
+        return readAgentState('transformed-imr-chart', {
+          columnRef: this.model.columnRef,
+          lambdaMode: this.model.lambdaMode,
+          lambdaManual: this.model.lambdaManual,
+          activeColumnSlots: this.activeColumnSlots(),
+          activeParams: this.activeParams(),
+          pickableColumns: this.pickableColumns(),
+          errorMsg: this.errorMsg,
+          result,
+          points,
+          pointsColumns,
+        }, options);
       },
 
-      onLambdaManualChange() {
-        // model.lambdaManual already updated by x-model.number @change
-        if (this.model.lambdaMode === 'manual') {
-          this._scheduleAutoRun();
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() { return [...COLUMN_SLOTS]; },
+
+      /** @noagent derived set; der Agent liest sie über read().activeParams */
+      activeParams() {
+        return this.isManualLambda() ? ['lambdaMode', 'lambdaManual'] : ['lambdaMode'];
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() {
+        const sm = module._context.stateManager;
+        return Object.fromEntries(COLUMN_SLOTS.map(slot => [slot, pickableColumnList(sm, SLOT_FILTERS[slot])]));
+      },
+
+      /** @noagent view transform; λ von Hand — dasselbe Prädikat für :disabled und activeParams */
+      isManualLambda() { return this.model.lambdaMode === 'manual'; },
+
+      /** @noagent view transform; die Optionen der λ-Auswahl (eine Quelle: LAMBDA_MODES) */
+      lambdaModeOptions() { return LAMBDA_MODES.map(v => ({ value: v, label: _t(LAMBDA_MODE_LABELS[v]) })); },
+
+      /**
+       * Die Messreihe wählen und neu rechnen.
+       * @agent
+       * @param {'value'} slot der Slot; dieses Modul führt nur `value`
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
+       *   der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren
+       * @returns {Promise<void>}
+       * @throws {Error} wenn `slot` unbekannt ist oder die Spalte nicht wählbar
+       */
+      async setColumn(slot, ref) {
+        requireEnum('slot', slot, COLUMN_SLOTS);
+        let clean = null;
+        if (ref != null) {
+          requireEnum('slot', slot, this.activeColumnSlots());
+          const keys = this.pickableColumns()[slot].map(c => c.key);
+          requireKnownId('ref', refToKey(ref), keys);
+          // Normalisierte Form: fremde Eigenschaften des Agentenobjekts bleiben draußen.
+          clean = keyToRef(refToKey(ref));
         }
+        this.model.columnRef = clean;
+        this._picker?.syncValue(clean);
+        await this.runAnalysis();
+      },
+
+      /**
+       * Eine Analyseoption setzen und neu rechnen.
+       * @agent
+       * @param {'lambdaMode'|'lambdaManual'} key welche Option; read().activeParams nennt die gerade gültigen
+       * @param {any} value lambdaMode `'auto'`|`'manual'`; lambdaManual eine endliche Zahl
+       * @returns {Promise<void>}
+       * @throws {Error} wenn `key` unbekannt oder gerade nicht aktiv ist oder `value` ungültig
+       */
+      async setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        requireEnum('key', key, this.activeParams());
+        setAtPath(this.model, key, PARAM_CHECKS[key](value));
+        await this.runAnalysis();
+      },
+
+      /**
+       * @noagent DOM event handler; the agent uses setParam()
+       * @param {Event} event die Änderung des λ-Feldes
+       */
+      async lambdaManualChanged(event) {
+        const v = parseFloat(event.target.value);
+        // Ein leeres oder unlesbares Feld setzt nichts; das Feld zeigt wieder den Model-Wert.
+        if (!Number.isFinite(v)) { event.target.value = String(this.model.lambdaManual); return; }
+        await this.setParam('lambdaManual', v);
+      },
+
+      /**
+       * Mit der aktuellen Spalte und λ-Einstellung neu rechnen.
+       * @agent
+       * @returns {Promise<void>}
+       */
+      async runAnalysis() {
+        clearTimeout(this._autoRunTimer);
+        await this._runAnalysis();
+      },
+
+      /** Ergebnis und Punkte für read(), aus `_lastRun` (E4). */
+      _agentResult() {
+        if (!this._lastRun) return { result: null, points: [], pointsColumns: [] };
+        const { r, n } = this._lastRun;
+        const lim = (o, keys) => Object.fromEntries(keys.map(k => [k, finiteOrNull(o[k])]));
+        const { rows, columns } = zipPoints({ transformed: r.transformed }, { signal: r.signalsI });
+        return {
+          result: {
+            n,
+            lambda: finiteOrNull(r.lambda),
+            lambdaAuto: Boolean(r.lambdaAuto),
+            i: lim(r.iLimits, ['cl', 'ucl', 'lcl', 'sigma']),
+            mr: lim(r.mrLimits, ['cl', 'ucl', 'lcl']),
+            iOriginal: lim(r.iLimitsOriginal, ['cl', 'ucl', 'lcl']),
+            signals: [...r.signalsI],
+          },
+          points: rows,
+          pointsColumns: columns,
+        };
       },
 
       // ── Analysis ─────────────────────────────────────────────
 
       async _runAnalysis() {
         const clear = () => {
+          this._lastRun = null;
           this._renderGen++;
           this._destroyCharts();
           this.chartViews = [];
@@ -130,6 +304,7 @@ const mod = createModule({
 
         // Clear any previous error
         this.errorMsg = '';
+        this._lastRun = { r: result, n: values.length };
 
         this._renderStats(result, values.length);
         await this._renderCharts(result);

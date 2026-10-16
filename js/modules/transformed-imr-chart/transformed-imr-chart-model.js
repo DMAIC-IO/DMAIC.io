@@ -25,6 +25,9 @@ function columnRefFromJSON(d) {
   };
 }
 
+/** Die Arten, λ zu bestimmen: aus den Daten geschätzt oder von Hand gesetzt. */
+export const LAMBDA_MODES = ['auto', 'manual'];
+
 export class State {
   /** @type {{instanceId:string, sheetId:string, columnId:string}|null} */
   columnRef = null;

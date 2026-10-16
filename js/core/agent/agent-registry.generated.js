@@ -9369,36 +9369,120 @@ export const AGENT_REGISTRY = {
     }
   },
   "transformed-imr-chart": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:onLambdaModeChange",
-      "unmarked_method:onLambdaManualChange",
-      "unreachable_write:lambdaMode",
-      "unreachable_write:lambdaManual"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields: ['points']` liefert die Punkte vollständig, `rows` schneidet sie zu"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'value'",
+            "optional": false,
+            "help": "der Slot; dieses Modul führt nur `value`"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "Promise<void>",
+        "help": "Die Messreihe wählen und neu rechnen."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'lambdaMode'|'lambdaManual'",
+            "optional": false,
+            "help": "welche Option; read().activeParams nennt die gerade gültigen"
+          },
+          {
+            "name": "value",
+            "type": "any",
+            "optional": false,
+            "help": "lambdaMode `'auto'`|`'manual'`; lambdaManual eine endliche Zahl"
+          }
+        ],
+        "returns": "Promise<void>",
+        "help": "Eine Analyseoption setzen und neu rechnen."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "Promise<void>",
+        "help": "Mit der aktuellen Spalte und λ-Einstellung neu rechnen."
+      }
+    },
     "fields": {
       "columnRef": {
-        "type": "{instanceId:string, sheetId:string, columnId:string}|null",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the measured column (slot `value`), `{ instanceId, sheetId, columnId }`, or null",
+        "bulk": false,
+        "derived": true
       },
       "lambdaMode": {
-        "type": "'auto'|'manual'",
-        "help": "",
-        "bulk": false
+        "type": "string",
+        "help": "`'auto'` (estimated from the data) or `'manual'`",
+        "bulk": false,
+        "derived": true
       },
       "lambdaManual": {
         "type": "number",
-        "help": "",
-        "bulk": false
+        "help": "the Box-Cox λ used in manual mode; in auto mode it mirrors the estimated λ after each computation",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "string|null",
-        "help": "",
-        "bulk": false
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts in the current state (`lambdaManual` only in manual mode)",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "errorMsg": {
+        "type": "string",
+        "help": "why nothing was computed (non-positive values, computation error), or ''",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "`{ n, lambda, lambdaAuto, i: { cl, ucl, lcl, sigma }, mr: { cl, ucl, lcl }, iOriginal: { cl, ucl, lcl }, signals }` — i and mr on the transformed scale, iOriginal back-transformed, signals the indices of I-chart signal points; null while nothing is computed",
+        "bulk": false,
+        "derived": true
+      },
+      "points": {
+        "type": "object[]",
+        "help": "one row per value: `{ transformed, signal }`",
+        "bulk": true,
+        "bulkKind": "table",
+        "derived": true
       }
     }
   },
@@ -11231,4 +11315,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":62};
+export const AGENT_COVERAGE = {"total":76,"available":63};

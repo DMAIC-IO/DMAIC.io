@@ -8086,7 +8086,59 @@
       "thTransformed": "transformiert (y)",
       "thOriginal": "Original (x)",
       "errPositiveOnly": "Box-Cox erfordert strikt positive Werte. Bitte Spalte filtern oder Yeo-Johnson nutzen.",
-      "errCompute": "Berechnung fehlgeschlagen: {msg}"
+      "errCompute": "Berechnung fehlgeschlagen: {msg}",
+      "whenToUse": "Schiefe, streng positive Daten in einer Regelkarte überwachen: eine Box-Cox-Transformation macht sie annähernd normal, bevor die I-MR-Grenzen gerechnet werden.",
+      "actions": {
+        "read": {
+          "help": "Gewählte Spalte, λ-Einstellung, Grenzen auf beiden Skalen, Signalpunkte und die transformierten Werte lesen."
+        },
+        "setColumn": {
+          "help": "Die Messreihe wählen und neu rechnen.",
+          "params": {
+            "slot": "'value' — die Messwerte in zeitlicher Reihenfolge (Pflicht; mindestens 5, alle größer als 0).",
+            "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns.value, oder null zum Leeren."
+          }
+        },
+        "setParam": {
+          "help": "Eine Analyseoption setzen und neu rechnen.",
+          "params": {
+            "key": "'lambdaMode' — λ aus den Daten schätzen oder setzen; 'lambdaManual' — das zu verwendende λ, nur im Modus manual.",
+            "value": "lambdaMode 'auto' oder 'manual'; lambdaManual eine beliebige endliche Zahl (0 bedeutet die Log-Transformation)."
+          }
+        },
+        "runAnalysis": {
+          "help": "Mit den aktuellen Spaltenwerten neu rechnen, etwa nachdem sich die Daten geändert haben."
+        }
+      },
+      "fields": {
+        "columnRef": {
+          "help": "Die Messreihe (Slot 'value'), oder null."
+        },
+        "lambdaMode": {
+          "help": "'auto' oder 'manual'."
+        },
+        "lambdaManual": {
+          "help": "Das λ im Modus manual; im Modus auto spiegelt es nach jeder Rechnung das geschätzte λ."
+        },
+        "activeColumnSlots": {
+          "help": "Die Slots, die setColumn annimmt: value."
+        },
+        "activeParams": {
+          "help": "Die Schlüssel, die setParam gerade annimmt: lambdaMode, im Modus manual zusätzlich lambdaManual."
+        },
+        "pickableColumns": {
+          "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId."
+        },
+        "errorMsg": {
+          "help": "Warum nichts gerechnet wurde, etwa wegen nicht positiver Werte; sonst ''."
+        },
+        "result": {
+          "help": "{ n, lambda, lambdaAuto, i: { cl, ucl, lcl, sigma }, mr: { cl, ucl, lcl }, iOriginal: { cl, ucl, lcl }, signals }; i und mr auf der transformierten Skala, iOriginal zurücktransformiert, signals die Indizes der Signalpunkte der I-Karte; null, solange nichts gerechnet ist."
+        },
+        "points": {
+          "help": "Je Wert eine Zeile: { transformed, signal }. read({ fields: ['points'] }) liefert sie vollständig."
+        }
+      }
     },
     "rest-api": {
       "name": "REST API",

@@ -8082,7 +8082,59 @@
       "thTransformed": "transformed (y)",
       "thOriginal": "original (x)",
       "errPositiveOnly": "Box-Cox requires strictly positive values. Filter the column or use Yeo-Johnson.",
-      "errCompute": "Computation failed: {msg}"
+      "errCompute": "Computation failed: {msg}",
+      "whenToUse": "Control-chart skewed, strictly positive data: a Box-Cox transformation makes them near-normal before I-MR limits are computed.",
+      "actions": {
+        "read": {
+          "help": "Read the chosen column, the λ settings, the limits on both scales, the signal points and the transformed values."
+        },
+        "setColumn": {
+          "help": "Choose the measured column and recompute.",
+          "params": {
+            "slot": "'value' — the measured values in time order (required; at least 5, all greater than 0).",
+            "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns.value, or null to clear it."
+          }
+        },
+        "setParam": {
+          "help": "Set an analysis option and recompute.",
+          "params": {
+            "key": "'lambdaMode' — estimate λ from the data or set it; 'lambdaManual' — the λ to use, only in manual mode.",
+            "value": "lambdaMode 'auto' or 'manual'; lambdaManual any finite number (0 means the log transformation)."
+          }
+        },
+        "runAnalysis": {
+          "help": "Recompute with the current column values, for example after the data changed."
+        }
+      },
+      "fields": {
+        "columnRef": {
+          "help": "The measured column (slot 'value'), or null."
+        },
+        "lambdaMode": {
+          "help": "'auto' or 'manual'."
+        },
+        "lambdaManual": {
+          "help": "The λ used in manual mode; in auto mode it mirrors the estimated λ after each computation."
+        },
+        "activeColumnSlots": {
+          "help": "The slots setColumn accepts: value."
+        },
+        "activeParams": {
+          "help": "The keys setParam accepts now: lambdaMode, and lambdaManual in manual mode."
+        },
+        "pickableColumns": {
+          "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId."
+        },
+        "errorMsg": {
+          "help": "Why nothing was computed, for example values that are not positive; '' otherwise."
+        },
+        "result": {
+          "help": "{ n, lambda, lambdaAuto, i: { cl, ucl, lcl, sigma }, mr: { cl, ucl, lcl }, iOriginal: { cl, ucl, lcl }, signals }; i and mr on the transformed scale, iOriginal back-transformed, signals the indices of I-chart signal points; null while nothing is computed."
+        },
+        "points": {
+          "help": "One row per value: { transformed, signal }. read({ fields: ['points'] }) returns them in full."
+        }
+      }
     },
     "rest-api": {
       "name": "REST API",
