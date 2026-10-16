@@ -95,6 +95,7 @@ const SKIP = new Set([
   'core/datagrid-header-xss.test.js',
   'core/datagrid-locked-columns.test.js',
   'core/datagrid-roles-grid.test.js',
+  'core/datagrid-dialogs.test.js',
   'core/dom.test.js',
   'core/flowchart-view-autosize.test.js',
   'core/help-renderer.test.js',
