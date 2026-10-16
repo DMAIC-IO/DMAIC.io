@@ -384,10 +384,13 @@ export default createModule({
         if (this.model.endpoints.some(e => e.id === ep.id)) this.removeEndpoint(ep.id);
       },
 
-      /** @noagent DOM event handler (input); the agent uses setMapping() */
+      /**
+       * @noagent DOM event handler (input); the agent uses setMapping(). Schreibt
+       * nur den Pfad: die Spalte bleibt unberührt (keine erneute Prüfung, kein
+       * Neuaufbau der Wähler bei jedem Tastendruck).
+       */
       onMappingPath(i, event) {
-        const ep = this.model.activeEndpoint();
-        this.setMapping(i, event.target.value, ep.mappings[i].columnRef);
+        this.model.activeEndpoint().mappings[i].jsonPath = event.target.value;
       },
 
       /** @noagent DOM event handler (change); the agent uses setSchedule() */
