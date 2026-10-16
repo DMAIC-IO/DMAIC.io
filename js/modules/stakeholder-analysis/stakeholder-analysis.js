@@ -138,6 +138,7 @@ export default createModule({
       /** @noagent view transform: die Klasse der Haltungsmarke. */
       supportBadgeClass: (s) => `sha__support-badge sha__support-badge--${  s}`,
       supportTones: SUPPORT_VALUES,
+      /** @noagent view transform: die Klasse des Haltungspunkts am Chip. */
       chipDotClass: (s) => `sha__chip-dot sha__chip-dot--${supportToneOf(s)}`,
 
       // ── View transforms: category (mirrors legacy key construction 1:1) ──

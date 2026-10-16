@@ -7576,13 +7576,9 @@ export const AGENT_REGISTRY = {
   },
   "stakeholder-analysis": {
     "tagged": true,
-    "available": false,
-    "violations": [
-      "unmarked_method:chipDotClass"
-    ],
-    "reported": [
-      "unmarked_method:chipDotClass"
-    ],
+    "available": true,
+    "violations": [],
+    "reported": [],
     "actions": {
       "read": {
         "params": [
@@ -10027,4 +10023,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":42};
+export const AGENT_COVERAGE = {"total":76,"available":43};
