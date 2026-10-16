@@ -57,6 +57,23 @@ export { discoverColumns, getColumnValues, getColumnName, refToKey, keyToRef, is
 
 import { h } from '../core/dom.js';
 
+/**
+ * Der Spaltenfilter EINES Slots: `types`, `minCount`, `maxCount`. `group` und
+ * `required` filtern nicht. Eine Quelle für den Picker und für die
+ * Lesefläche der Agenten (`datasetSlotColumns`) — beide zeigen damit
+ * dieselben Spalten.
+ *
+ * @param {{ types?: string[], minCount?: number, maxCount?: number }} slot
+ * @returns {{ types?: string[], minCount?: number, maxCount?: number }}
+ */
+export function slotFilter(slot) {
+  const filter = {};
+  if (slot.types) filter.types = slot.types;
+  if (slot.minCount != null) filter.minCount = slot.minCount;
+  if (slot.maxCount != null) filter.maxCount = slot.maxCount;
+  return filter;
+}
+
 // ── DatasetPicker ──────────────────────────────────────────────────
 
 export class DatasetPicker {
@@ -144,11 +161,7 @@ export class DatasetPicker {
 
   /** Discover columns for a given slot config. */
   _discoverForSlot(slot) {
-    const filter = {};
-    if (slot.types) filter.types = slot.types;
-    if (slot.minCount != null) filter.minCount = slot.minCount;
-    if (slot.maxCount != null) filter.maxCount = slot.maxCount;
-    return discoverColumns(this._ctx.stateManager, filter);
+    return discoverColumns(this._ctx.stateManager, slotFilter(slot));
   }
 
   /** Refresh without thrashing open dropdowns. */
