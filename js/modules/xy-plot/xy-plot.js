@@ -160,8 +160,9 @@ const mod = createModule({
         let series;
         try { series = this._buildSeries(); } catch { return null; }
         if (!series.length) return null;
-        return computeSeriesStats(this._statsInput(series), this.model.confLevel / 100)
+        const result = computeSeriesStats(this._statsInput(series), this.model.confLevel / 100)
           .map(({ name, stats, ci }) => ({ name, stats, ci }));
+        return result.length ? result : null;
       },
 
       /** Die Abbildung Reihe → Statistikeingabe (Y-Werte sichtbarer Reihen) — Quelle für Tabelle und read(). */

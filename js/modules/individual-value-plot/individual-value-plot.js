@@ -194,8 +194,18 @@ const mod = createModule({
             this._errMsgs()
           );
         } catch { return null; }
-        return computeSeriesStats(groups.map((g) => ({ name: g.name, values: g.values })), this._resolveConfLevel() / 100)
-          .map(({ name, stats, ci }) => ({ name, stats, ci }));
+        // E8: nicht endliche Zahlen (Einzelwertgruppe: Varianz, Streuung, seMean) → null
+        const finiteOrNull = (v) => {
+          if (typeof v === 'number') return Number.isFinite(v) ? v : null;
+          if (Array.isArray(v)) return v.map(finiteOrNull);
+          if (v && typeof v === 'object') {
+            return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, finiteOrNull(x)]));
+          }
+          return v;
+        };
+        const result = computeSeriesStats(groups.map((g) => ({ name: g.name, values: g.values })), this._resolveConfLevel() / 100)
+          .map(({ name, stats, ci }) => finiteOrNull({ name, stats, ci }));
+        return result.length ? result : null;
       },
 
       // ── View transforms ───────────────────────────────────────

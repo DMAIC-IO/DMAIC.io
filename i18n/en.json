@@ -5209,7 +5209,7 @@
         }
       },
       "fields": {
-        "xRef": { "help": "The column category column (slot 'x'), or null." },
+        "xRef": { "help": "The category column that becomes the grid columns (slot 'x'), or null." },
         "gRef": { "help": "The row category column (slot 'g'), or null." },
         "vRef": { "help": "The value column (slot 'v'), or null." },
         "aggregation": { "help": "How values are combined per cell: mean or sum." },
