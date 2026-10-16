@@ -39,6 +39,10 @@ function resolveAlgoId(category, testType) {
   return testType === 'two' ? 'two-sample-t-test' : 'one-sample-t-test';
 }
 
+/** Zulässige Bereiche von alpha und power (einzige Quelle für Setter und Oberfläche). */
+const ALPHA_RANGE = { min: 0.001, max: 0.5 };
+const POWER_RANGE = { min: 0.5, max: 0.99 };
+
 /** Die Parameter, die `setParam` annimmt. */
 const PARAM_KEYS = ['category', 'testType', 'direction', 'alpha', 'power',
   'sigma0', 'sigmaAlt', 'ratio', 'delta', 'sigma'];
@@ -48,8 +52,8 @@ const PARAM_CHECKS = {
   category: (v) => { requireEnum('value', v, VALID_CATEGORIES); return v; },
   testType: (v) => { requireEnum('value', v, VALID_TEST_TYPES); return v; },
   direction: (v) => { requireEnum('value', v, VALID_DIRECTIONS); return v; },
-  alpha: (v) => requireNumber('value', v, { min: 0.001, max: 0.5 }),
-  power: (v) => requireNumber('value', v, { min: 0.5, max: 0.99 }),
+  alpha: (v) => requireNumber('value', v, ALPHA_RANGE),
+  power: (v) => requireNumber('value', v, POWER_RANGE),
   sigma0: (v) => requireText('value', v),
   sigmaAlt: (v) => requireText('value', v),
   ratio: (v) => requireText('value', v),
@@ -95,7 +99,7 @@ const DIRECTION_LABEL_METHODS = {
  * @property {string} delta  mean difference Δ, as entered (mean tests)
  * @property {string} sigma  standard deviation σ, as entered (mean tests)
  * @property {string[]} activeParams  the keys `setParam` accepts in the current state
- * @property {object|null} result  the required sample size with key figures, or null while the inputs are incomplete
+ * @property {object|null} result  the required sample size with key figures, or null while the inputs are incomplete or not positive numbers
  */
 export default createModule({
   config: {
@@ -130,7 +134,7 @@ export default createModule({
       /** Algorithm-Lab id bound to the curve-section link button. */
       curveAlgoId: '',
       /**
-       * The calculation outcome the agent reads; null while the inputs are incomplete.
+       * The calculation outcome the agent reads; null while the inputs are incomplete or not positive numbers.
        * @type {{nRequired:number,totalN:number,alpha:number,power:number,effectLabel:string,effectValue:number,algoId:string}|null}
        */
       result: null,
@@ -240,29 +244,29 @@ export default createModule({
       },
 
       /**
-       * Power input: clamp to [0.5, 0.99] then recalculate.
+       * Power input: clamp to the allowed range, then recalculate.
        * @noagent DOM event handler; the agent uses setParam()
        */
       powerChanged(event) {
         const val = parseFloat(event.target.value);
         if (!isNaN(val)) {
-          this.setParam('power', Math.min(0.99, Math.max(0.5, val)));
+          this.setParam('power', Math.min(POWER_RANGE.max, Math.max(POWER_RANGE.min, val)));
         } else {
           this.runAnalysis();
         }
       },
 
       /**
-       * Alpha input: take a value inside [0.001, 0.5]; while the typed text is
-       * not (yet) such a value, keep the last valid one and recalculate.
+       * Alpha input: goes through setParam. While typing (input) a refused
+       * value is skipped so half-typed text is not disturbed; on commit
+       * (change) a refusal resets the field to the model value.
        * @noagent DOM event handler; the agent uses setParam()
        */
       alphaChanged(event) {
-        const val = parseFloat(event.target.value);
-        if (isFinite(val) && val >= 0.001 && val <= 0.5) {
-          this.setParam('alpha', val);
-        } else {
-          this.runAnalysis();
+        try {
+          this.setParam('alpha', event.target.value);
+        } catch {
+          if (event.type === 'change') event.target.value = this.model.alpha;
         }
       },
 
@@ -313,7 +317,7 @@ export default createModule({
 
       /**
        * Die Berechnung mit den aktuellen Eingaben ausführen. Bei unvollständigen
-       * Eingaben bleibt result null.
+       * Eingaben oder Werten, die keine positiven Zahlen sind, bleibt result null.
        * @agent
        * @returns {void}
        */

@@ -2335,7 +2335,7 @@
       "whenToUse": "When the capability of a single gage should be checked: a standard or reference part is measured repeatedly, giving repeatability (Cg) and bias (Cgk) — not for measurement systems with several appraisers or parts, which the type 2, 4, 5 and 6 studies cover. Requires the measurements as a numeric column of a data collection.",
       "actions": {
         "read": {
-          "help": "Returns the inputs, the selectable sets and the computed result. result is null while the inputs are incomplete.",
+          "help": "Returns the inputs, the selectable sets and the computed result. result is null while the inputs are incomplete or not positive numbers.",
           "params": { "options": "Optional; this module holds no bulk data." }
         },
         "setParam": {
@@ -6101,7 +6101,7 @@
             "value": "category: 'variance' or 'mean'. testType: 'one' or 'two'. direction: 'two-sided', 'greater' or 'less'. alpha: a number from 0.001 to 0.5. power: a number from 0.5 to 0.99 (out-of-range values are an error, not clamped). sigma0, sigmaAlt, ratio, delta, sigma: a text such as '2.5', '' clears it."
           }
         },
-        "runAnalysis": { "help": "Calculates the required sample size from the current inputs. While the inputs are incomplete result stays null." }
+        "runAnalysis": { "help": "Calculates the required sample size from the current inputs. While the inputs are incomplete or not positive numbers result stays null." }
       },
       "fields": {
         "category": { "help": "Which kind of test the sample size is for: 'variance' or 'mean'." },
@@ -6115,7 +6115,7 @@
         "delta": { "help": "Mean difference Δ to detect, as entered; applies to mean tests." },
         "sigma": { "help": "Standard deviation σ, as entered; applies to mean tests." },
         "activeParams": { "help": "The keys setParam accepts in the current state." },
-        "result": { "help": "The required sample size per group { nRequired, totalN, alpha, power, effectLabel, effectValue, algoId }, or null while the inputs are incomplete. totalN is nRequired times two for two-sample tests, otherwise equal to nRequired; nRequired is capped at 5000." }
+        "result": { "help": "The required sample size { nRequired, totalN, alpha, power, effectLabel, effectValue, algoId }, or null while the inputs are incomplete or not positive numbers. nRequired is per group; totalN is nRequired times two for two-sample tests, otherwise equal to nRequired; nRequired is capped at 5000." }
       },
       "placeholderText": "Enter parameters on the left and run the calculation.",
       "sectionCategory": "Test Category",

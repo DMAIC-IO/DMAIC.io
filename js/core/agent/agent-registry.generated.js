@@ -6706,7 +6706,7 @@ export const AGENT_REGISTRY = {
       "runAnalysis": {
         "params": [],
         "returns": "void",
-        "help": "Die Berechnung mit den aktuellen Eingaben ausführen. Bei unvollständigen Eingaben bleibt result null."
+        "help": "Die Berechnung mit den aktuellen Eingaben ausführen. Bei unvollständigen Eingaben oder Werten, die keine positiven Zahlen sind, bleibt result null."
       }
     },
     "fields": {
@@ -6778,7 +6778,7 @@ export const AGENT_REGISTRY = {
       },
       "result": {
         "type": "object|null",
-        "help": "the required sample size with key figures, or null while the inputs are incomplete",
+        "help": "the required sample size with key figures, or null while the inputs are incomplete or not positive numbers",
         "bulk": false,
         "derived": true
       }

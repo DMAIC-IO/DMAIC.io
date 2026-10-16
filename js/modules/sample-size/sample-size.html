@@ -97,7 +97,7 @@
         <label>&#945;</label>
         <input type="number" data-ref="alpha" class="field field--num" min="0.001" max="0.5"
                :value="model.alpha"
-               @input="alphaChanged($event)">
+               @input="alphaChanged($event)" @change="alphaChanged($event)">
       </div>
     </div>
     <div class="field-group">
