@@ -148,38 +148,21 @@
     </div>
   </div>
 
-  <template x-if="annOpen">
-    <div class="dmike-chart-popout-overlay" @click="annOverlayClick($event)"
-      @keydown.escape.window="closeAnnotation()">
-      <div class="dmike-chart-popout dmike-chart-popout--compact"
-        style="width:420px;height:auto;max-height:80vh;left:calc(50% - 210px);top:120px;">
-        <div class="dmike-chart-popout-titlebar">
-          <span x-text="annTitle()"></span>
-          <button class="dmike-chart-popout-close" type="button" :aria-label="t('common.close')" @click="closeAnnotation()">
-            <span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span>
-          </button>
-        </div>
-        <div class="dmike-chart-popout-body dmike-popout-body--column">
-          <div class="field-group">
-            <label x-text="t('annotationComment')"></label>
-            <textarea class="field" data-ref="ann-comment" rows="3"
-              :placeholder="t('annotationPlaceholder')" x-model="annComment"></textarea>
-          </div>
-          <div class="field-group">
-            <label class="control-chart__check">
-              <input type="checkbox" data-ref="ann-excluded" x-model="annExcluded">
-              <span x-text="t('annotationExclude')"></span>
-            </label>
-            <span class="control-chart__hint" x-text="t('annotationExcludeHint')"></span>
-          </div>
-          <div class="dmike-popout-footer">
-            <button class="btn btn--secondary" type="button"
-              :style="annRemoveStyle()" @click="removeAnnotation()" x-text="t('annotationRemove')"></button>
-            <button class="btn btn--secondary" type="button" @click="closeAnnotation()" x-text="cancelLabel()"></button>
-            <button class="btn btn--primary" type="button" @click="saveAnnotation()" x-text="t('annotationSave')"></button>
-          </div>
-        </div>
+  <!-- Annotation form: hidden here, lent to the dialog service by openAnnotation() -->
+  <div class="control-chart__modal-forms" hidden>
+    <div class="control-chart__ann-form" x-ref="annForm">
+      <div class="field-group">
+        <label x-text="t('annotationComment')"></label>
+        <textarea class="field" data-ref="ann-comment" rows="3"
+          :placeholder="t('annotationPlaceholder')" x-model="annComment"></textarea>
+      </div>
+      <div class="field-group">
+        <label class="control-chart__check">
+          <input type="checkbox" data-ref="ann-excluded" x-model="annExcluded">
+          <span x-text="t('annotationExclude')"></span>
+        </label>
+        <span class="control-chart__hint" x-text="t('annotationExcludeHint')"></span>
       </div>
     </div>
-  </template>
+  </div>
 </section>

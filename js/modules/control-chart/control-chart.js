@@ -56,7 +56,6 @@ const mod = createModule({
       _picker: null,
       _lastResult: null,
       // Annotation dialog (transient UI)
-      annOpen: false,
       annIdx: -1,
       annComment: '',
       annExcluded: false,
@@ -195,32 +194,35 @@ const mod = createModule({
         this.scheduleAnalysis();
       },
 
-      // ── Annotation dialog (declarative) ───────────────────────
+      // ── Annotation dialog (form lent to the dialog service) ───
 
       annTitle() { return _t('annotationTitle', { idx: this.annIdx + 1 }); },
-      cancelLabel() { return module._context.i18n.t('common.cancel'); },
-      annRemoveStyle() {
-        // Object form so Alpine renders the canonical "visibility: hidden;"
-        // (with a space) — the POM checks getAttribute('style') for that exact
-        // substring. A bare string ('visibility:hidden') would fail the match.
-        return this.model.annotations[this.annIdx] ? {} : { visibility: 'hidden' };
-      },
-      openAnnotation(idx) {
-        const existing = this.model.annotations[idx] || { comment: '', excluded: false };
+      /**
+       * Open the annotation form for one point in a compact form dialog.
+       * The delete button only appears for an existing annotation.
+       * @param {number} idx  point index
+       * @returns {Promise<void>} resolves once the dialog is closed
+       */
+      async openAnnotation(idx) {
+        const existing = this.model.annotations[idx];
         this.annIdx = idx;
-        this.annComment = existing.comment || '';
-        this.annExcluded = Boolean(existing.excluded);
-        this.annOpen = true;
-        this.$nextTick(() => {
-          module._container.querySelector('[data-ref="ann-comment"]')?.focus();
-        });
-      },
-      closeAnnotation() {
-        this.annOpen = false;
-        this.annIdx = -1;
-      },
-      annOverlayClick(e) {
-        if (e.target.classList.contains('dmike-chart-popout-overlay')) this.closeAnnotation();
+        this.annComment = existing?.comment || '';
+        this.annExcluded = Boolean(existing?.excluded);
+        try {
+          await module._context.dialog.form({
+            title: this.annTitle(),
+            size: 'compact',
+            content: this.$refs.annForm,
+            confirmLabel: _t('annotationSave'),
+            cancelLabel: module._context.i18n.t('common.cancel'),
+            onMount: (body) => body.querySelector('[data-ref="ann-comment"]')?.focus(),
+            onConfirm: () => this.saveAnnotation(),
+            onDelete: existing ? () => this.removeAnnotation() : undefined,
+            deleteLabel: _t('annotationRemove'),
+          });
+        } finally {
+          this.annIdx = -1;
+        }
       },
       saveAnnotation() {
         const idx = this.annIdx;
@@ -228,12 +230,10 @@ const mod = createModule({
         const excluded = Boolean(this.annExcluded);
         if (!comment && !excluded) delete this.model.annotations[idx];
         else this.model.annotations[idx] = { comment, excluded };
-        this.closeAnnotation();
         this.scheduleAnalysis();
       },
       removeAnnotation() {
         delete this.model.annotations[this.annIdx];
-        this.closeAnnotation();
         this.scheduleAnalysis();
       },
 
