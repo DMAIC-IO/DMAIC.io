@@ -15,12 +15,21 @@
  *   - _unsubs collects event-bus subscriptions for cleanup.
  *
  * Spec: docs/modules/DISTRIBUTION-FIT.md
+ *
+ * @agent  Steuerbar über das Viewmodel: der Datentyp (setParam), die
+ *   Messwertspalte (setColumn) und das Rechnen selbst. Gelesen wird über
+ *   read() mit erklärter Lesefläche (AgentRead) — Konfiguration, wählbare
+ *   Spalten und die Rangfolge der angepassten Verteilungen. Der Agent
+ *   bekommt Zahlen, keine Diagramme.
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State } from './distribution-fit-model.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { pickableColumnList } from '../../core/agent/agent-options.js';
+import { State, DATA_TYPES } from './distribution-fit-model.js';
 import { runDistributionFit } from '../../engines/distribution-fit-engine.js';
-import { ColumnPicker, getColumnValues } from '../../ui/column-picker.js';
+import { ColumnPicker, getColumnValues, refToKey, keyToRef } from '../../ui/column-picker.js';
 import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-registry.js';
 import { whenAnchor } from '../../core/chart/chart-module-base.js';
 
@@ -45,6 +54,58 @@ function fmt(v, d = 4) {
   return v.toFixed(d);
 }
 
+/** Die Parameter, die `setParam` annimmt. */
+const PARAM_KEYS = ['dataType'];
+
+/** Je Parameter sein Prüfer; gibt den normalisierten Wert zurück. */
+const PARAM_CHECKS = {
+  dataType: (v) => { requireEnum('value', v, DATA_TYPES); return v; },
+};
+
+/**
+ * Setzt einen Wert unter einem Schlüssel in `obj`. Lokal geschrieben, weil der
+ * Generator (agent-data) Importe nicht liest und die Schreibstelle im Modul
+ * selbst sehen muss.
+ * @param {object} obj Wurzel, deren Schlüssel beschrieben wird
+ * @param {string} key Schlüssel
+ * @param {any} value der abzulegende Wert
+ */
+function setAtPath(obj, key, value) {
+  obj[key] = value;
+}
+
+/** Die Spalten-Slots dieses Moduls: genau einer, die Messwertspalte. */
+const COLUMN_SLOTS = ['value'];
+
+/** Je Slot der Filter, den der Wähler dieses Slots bekommt. */
+const SLOT_FILTERS = { value: { types: ['numeric'], minCount: 1 } };
+
+/** Je Slot die eine Zuweisungsstelle seines Model-Feldes. */
+const COLUMN_SINKS = { value: (m, ref) => { m.columnRef = ref; } };
+
+/** Beschriftungsschlüssel der Datentyp-Segmente. */
+const DATA_TYPE_LABEL_KEYS = {
+  auto: 'dataTypeAuto',
+  continuous: 'dataTypeCont',
+  discrete: 'dataTypeDisc',
+};
+
+/**
+ * Die Agenten-Lesefläche von Distribution Fit.
+ *
+ * Nicht die persistierte Form: das Model hält nur Spalte und Datentyp, das
+ * Ergebnis entsteht transient am Viewmodel. Darum erklärt dieses Modul seine
+ * Lesefläche — ohne die interne Beispiel-Buchführung (`exampleWorksheetId`).
+ *
+ * @typedef {object} AgentRead
+ * @property {object|null} columnRef  the chosen data column, `{ instanceId, sheetId, columnId }`, or null
+ * @property {'auto'|'continuous'|'discrete'} dataType  how the data is treated
+ * @property {string[]} activeParams  the keys `setParam` accepts in the current state
+ * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state
+ * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
+ * @property {object|null} result  the ranking of the fitted distributions with key figures, or null
+ * @property {string} errorMsg  the reason no result exists (too few values, zero variance), or an empty string
+ */
 const mod = createModule({
   config: {
     id: 'distribution-fit',
@@ -61,6 +122,8 @@ const mod = createModule({
       // ── Transient view state (not persisted) ──────────────────
       /** @type {object|null} — current analysis result */
       _result: null,
+      /** Reason shown in the error box; empty while there is none. */
+      errorMsg: '',
       /** @type {Array} — active chart instances */
       _charts: [],
       /** @type {import('../../ui/column-picker.js').ColumnPicker|null} */
@@ -90,11 +153,85 @@ const mod = createModule({
       /** Consensus block: { cls, title, text, scoreLabel }. */
       nddConsensus: { cls: '', title: '', text: '', scoreLabel: '' },
 
-      // ── View helpers (data type toggle) ──────────────────────
+      // ── Agent surface ─────────────────────────────────────────
 
-      /** Switch the data type and re-run analysis. */
-      setDataType(dtype) {
-        this.model.dataType = dtype;
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Konfiguration, wählbare Spalten und Rangfolge
+       */
+      read(options) {
+        return readAgentState('distribution-fit', {
+          ...this.model.toJSON(),
+          activeParams: this.activeParams(),
+          activeColumnSlots: this.activeColumnSlots(),
+          pickableColumns: this.pickableColumns(),
+          result: this._result,
+          errorMsg: this.errorMsg,
+        }, options);
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeParams */
+      activeParams() {
+        return [...PARAM_KEYS];
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() {
+        return [...COLUMN_SLOTS];
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() {
+        const sm = module._context.stateManager;
+        return { value: pickableColumnList(sm, SLOT_FILTERS.value) };
+      },
+
+      /** @noagent view transform; die Segmente rendern aus DATA_TYPES */
+      dataTypeOptions() {
+        return DATA_TYPES.map(v => ({ value: v, label: _t(DATA_TYPE_LABEL_KEYS[v]) }));
+      },
+
+      /**
+       * Den Datentyp setzen; die Analyse läuft danach neu.
+       * @agent
+       * @param {'dataType'} key welcher Parameter
+       * @param {'auto'|'continuous'|'discrete'} value der Datentyp
+       * @returns {void}
+       * @throws {Error} wenn `key` kein Parameter dieses Moduls ist oder `value` nicht zulässig
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        requireEnum('key', key, this.activeParams());
+        setAtPath(this.model, key, PARAM_CHECKS[key](value));
+        this._autoRun();
+      },
+
+      /**
+       * Eine Spalte einem Slot zuweisen; die Analyse läuft danach neu.
+       * @agent
+       * @param {'value'} slot der Slot; dieses Modul führt nur `value`
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
+       *   der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren
+       * @returns {void}
+       * @throws {Error} wenn `slot` unbekannt ist oder die Spalte nicht wählbar
+       */
+      setColumn(slot, ref) {
+        requireEnum('slot', slot, COLUMN_SLOTS);
+        if (ref == null) {
+          COLUMN_SINKS[slot](this.model, null);
+          this._picker?.syncValue(null);
+          this._autoRun();
+          return;
+        }
+        requireEnum('slot', slot, this.activeColumnSlots());
+        const keys = this.pickableColumns()[slot].map(c => c.key);
+        requireKnownId('ref', refToKey(ref), keys);
+        // Normalisierte Form: fremde Eigenschaften des Agentenobjekts bleiben draußen.
+        const clean = keyToRef(refToKey(ref));
+        COLUMN_SINKS[slot](this.model, clean);
+        this._picker?.syncValue(clean);
         this._autoRun();
       },
 
@@ -114,28 +251,39 @@ const mod = createModule({
       _autoRun() {
         if (!this.model.columnRef) {
           this._result = null;
+          this.errorMsg = '';
           this._destroyCharts();
           this._clearPanel();
-          const placeholder = module._container.querySelector('[data-ref="placeholder"]');
-          const resultsEl = module._container.querySelector('[data-ref="results"]');
-          if (placeholder) placeholder.style.display = '';
-          if (resultsEl) resultsEl.style.display = 'none';
-          const errBox = module._container.querySelector('[data-ref="error-box"]');
-          if (errBox) { errBox.textContent = ''; errBox.style.display = 'none'; }
+          this._showPlaceholder();
           return;
         }
-        this._runAnalysis();
+        this.runAnalysis();
       },
 
-      /** Run the distribution fit analysis and render results. */
-      _runAnalysis() {
-        const t = (k) => _t(k);
-        const errBox = module._container.querySelector('[data-ref="error-box"]');
-        if (errBox) { errBox.textContent = ''; errBox.style.display = 'none'; }
+      /** Show the placeholder and hide the results container. */
+      _showPlaceholder() {
+        const placeholder = module._container.querySelector('[data-ref="placeholder"]');
+        const resultsEl = module._container.querySelector('[data-ref="results"]');
+        if (placeholder) placeholder.style.display = '';
+        if (resultsEl) resultsEl.style.display = 'none';
+      },
+
+      /**
+       * Rechnet mit der gewählten Spalte; ohne Spalte oder mit weniger als 5
+       * Werten bleibt result null und errorMsg nennt den Grund.
+       * @agent
+       * @returns {void}
+       */
+      runAnalysis() {
+        this.errorMsg = '';
 
         const values = this._getColumnValues();
         if (values.length < 5) {
-          if (errBox) { errBox.textContent = t('errMin5'); errBox.style.display = 'block'; }
+          this.errorMsg = this.model.columnRef ? _t('errMin5') : '';
+          this._result = null;
+          this._destroyCharts();
+          this._clearPanel();
+          this._showPlaceholder();
           return;
         }
 
@@ -144,16 +292,11 @@ const mod = createModule({
           this._result._dataType = this.model.dataType;
           this._renderResults(this._result);
         } catch (err) {
-          const key = err.message === 'zeroVariance' ? 'errZeroVariance' : 'errGeneric';
-          if (errBox) { errBox.textContent = t(key); errBox.style.display = 'block'; }
+          this.errorMsg = _t(err.message === 'zeroVariance' ? 'errZeroVariance' : 'errGeneric');
           this._result = null;
           this._destroyCharts();
           this._clearPanel();
-          // Hide results
-          const placeholder = module._container.querySelector('[data-ref="placeholder"]');
-          const resultsEl = module._container.querySelector('[data-ref="results"]');
-          if (placeholder) placeholder.style.display = '';
-          if (resultsEl) resultsEl.style.display = 'none';
+          this._showPlaceholder();
         }
       },
 
@@ -378,28 +521,41 @@ const mod = createModule({
         this.nddShow = true;
       },
 
-      /** Toggle the normality deep-dive body (collapse / expand). */
+      /**
+       * Toggle the normality deep-dive body (collapse / expand).
+       * @noagent view transform
+       */
       toggleNdd() {
         this.nddCollapsed = !this.nddCollapsed;
       },
 
-      /** Icon name for the normality toggle button. */
+      /**
+       * Icon name for the normality toggle button.
+       * @noagent view transform
+       */
       nddChevronIcon() {
         return this.nddCollapsed ? 'nav.expand-down' : 'nav.collapse-up';
       },
 
-      /** Accessible title for the normality toggle button. */
+      /**
+       * Accessible title for the normality toggle button.
+       * @noagent view transform
+       */
       nddToggleTitle() {
         return this.nddCollapsed ? this.t('nddExpand') : this.t('nddCollapse');
       },
 
-      /** CSS class for the collapsible normality body. */
+      /**
+       * CSS class for the collapsible normality body.
+       * @noagent view transform
+       */
       nddBodyClass() {
         return this.nddCollapsed ? 'distfit__ndd-body--collapsed' : '';
       },
 
       /**
        * Navigate to an Algorithm Lab entry from a normality card link.
+       * @noagent navigation
        * @param {string} algoId
        * @param {Event} event
        */
@@ -475,11 +631,9 @@ const mod = createModule({
         this._picker?.destroy();
         this._picker = new ColumnPicker(wrap, module._context, {
           mode: 'single',
-          types: ['numeric'],
-          minCount: 1,
+          ...SLOT_FILTERS.value,
           onChange: (ref) => {
-            this.model.columnRef = ref;
-            this._autoRun();
+            this.setColumn('value', ref);
           },
         });
         if (this.model.columnRef) this._picker.value = this.model.columnRef;
@@ -487,6 +641,7 @@ const mod = createModule({
 
       // ── Alpine component lifecycle ────────────────────────────
 
+      /** @noagent lifecycle */
       init() {
         // Fresh per-instance transient collections
         this._charts = [];
@@ -520,6 +675,7 @@ const mod = createModule({
         this._autoRun();
       },
 
+      /** @noagent lifecycle */
       destroy() {
         for (const unsub of this._unsubs) unsub();
         this._unsubs = [];

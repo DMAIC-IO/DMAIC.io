@@ -6306,6 +6306,37 @@
     "distribution-fit": {
       "name": "Distribution Fit",
       "description": "Fit data to multiple distributions and rank by Goodness-of-Fit test",
+      "whenToUse": "When it is unclear which distribution describes a measured characteristic: fits normal, lognormal, Weibull, exponential and further distributions to one numeric column and ranks them by goodness of fit; requires at least 5 values.",
+      "actions": {
+        "read": {
+          "help": "Returns the chosen column, the data type, the selectable sets and the result. result is null while no analysis exists; errorMsg then names the reason.",
+          "params": { "options": "Optional; this module holds no bulk data." }
+        },
+        "setParam": {
+          "help": "Sets the data type; the analysis reruns on the chosen column.",
+          "params": {
+            "key": "One of the keys in activeParams; this module only has dataType. Any other value is an error.",
+            "value": "The data type: 'auto', 'continuous' or 'discrete'. Any other value is an error."
+          }
+        },
+        "setColumn": {
+          "help": "Points the analysis at a numeric column of a data collection; the analysis reruns.",
+          "params": {
+            "slot": "One of the slots in activeColumnSlots; this module only has 'value'.",
+            "ref": "Column reference { instanceId, sheetId, columnId } of a column from pickableColumns, or null to clear."
+          }
+        },
+        "runAnalysis": { "help": "Computes with the chosen column. Without a column or with fewer than 5 values result stays null and errorMsg names the reason." }
+      },
+      "fields": {
+        "columnRef": { "help": "The chosen data column as { instanceId, sheetId, columnId }, or null." },
+        "dataType": { "help": "How the data is treated: 'auto', 'continuous' or 'discrete'." },
+        "activeParams": { "help": "The keys setParam accepts in the current state." },
+        "activeColumnSlots": { "help": "The slots setColumn accepts in the current state." },
+        "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; key is 'instanceId|sheetId|columnId'." },
+        "result": { "help": "The ranking of the fitted distributions with key figures, or null while no analysis exists." },
+        "errorMsg": { "help": "The reason no result exists (too few values, zero variance), or an empty string." }
+      },
       "sectionData": "Data Source",
       "sectionDescriptive": "Descriptive Statistics",
       "sectionHistogram": "Histogram",

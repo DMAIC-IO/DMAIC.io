@@ -15,7 +15,6 @@
 /* ── Buttons: use global .btn (components.css) ── */
 
 .distfit__error {
-  display: none;
   margin-top: var(--spacing-sm);
   padding: var(--spacing-sm);
   border-radius: var(--border-radius);

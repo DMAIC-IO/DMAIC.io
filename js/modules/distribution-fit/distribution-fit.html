@@ -10,25 +10,17 @@
     <div class="field-group">
       <label x-text="t('dataTypeLabel')"></label>
       <div class="btn-group distfit__toggle-row">
-        <button class="btn--segment distfit__toggle-btn"
-                :class="model.dataType === 'auto' ? 'btn--active' : ''"
-                data-dtype="auto"
-                @click="setDataType('auto')"
-                x-text="t('dataTypeAuto')"></button>
-        <button class="btn--segment distfit__toggle-btn"
-                :class="model.dataType === 'continuous' ? 'btn--active' : ''"
-                data-dtype="continuous"
-                @click="setDataType('continuous')"
-                x-text="t('dataTypeCont')"></button>
-        <button class="btn--segment distfit__toggle-btn"
-                :class="model.dataType === 'discrete' ? 'btn--active' : ''"
-                data-dtype="discrete"
-                @click="setDataType('discrete')"
-                x-text="t('dataTypeDisc')"></button>
+        <template x-for="opt in dataTypeOptions()" :key="opt.value">
+          <button class="btn--segment distfit__toggle-btn"
+                  :class="model.dataType === opt.value ? 'btn--active' : ''"
+                  :data-dtype="opt.value"
+                  @click="setParam('dataType', opt.value)"
+                  x-text="opt.label"></button>
+        </template>
       </div>
     </div>
 
-    <div class="distfit__error" data-ref="error-box"></div>
+    <div class="distfit__error" data-ref="error-box" x-show="errorMsg" x-text="errorMsg"></div>
   </div>
 
   <div class="distfit__output dmike-split__output">

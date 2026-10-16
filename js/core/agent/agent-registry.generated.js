@@ -1706,35 +1706,107 @@ export const AGENT_REGISTRY = {
     }
   },
   "distribution-fit": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:setDataType",
-      "unmarked_method:toggleNdd",
-      "unmarked_method:nddChevronIcon",
-      "unmarked_method:nddToggleTitle",
-      "unmarked_method:nddBodyClass",
-      "unmarked_method:openAlgoLab",
-      "unmarked_method:init",
-      "unmarked_method:destroy"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'dataType'",
+            "optional": false,
+            "help": "welcher Parameter"
+          },
+          {
+            "name": "value",
+            "type": "'auto'|'continuous'|'discrete'",
+            "optional": false,
+            "help": "der Datentyp"
+          }
+        ],
+        "returns": "void",
+        "help": "Den Datentyp setzen; die Analyse läuft danach neu."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'value'",
+            "optional": false,
+            "help": "der Slot; dieses Modul führt nur `value`"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Spalte einem Slot zuweisen; die Analyse läuft danach neu."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Rechnet mit der gewählten Spalte; ohne Spalte oder mit weniger als 5 Werten bleibt result null und errorMsg nennt den Grund."
+      }
+    },
     "fields": {
       "columnRef": {
-        "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the chosen data column, `{ instanceId, sheetId, columnId }`, or null",
+        "bulk": false,
+        "derived": true
       },
       "dataType": {
         "type": "'auto'|'continuous'|'discrete'",
-        "help": "",
-        "bulk": false
+        "help": "how the data is treated",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "string|null",
-        "help": "— instance id of a worksheet provisioned by loadExample",
-        "bulk": false
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "the ranking of the fitted distributions with key figures, or null",
+        "bulk": false,
+        "derived": true
+      },
+      "errorMsg": {
+        "type": "string",
+        "help": "the reason no result exists (too few values, zero variance), or an empty string",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -8984,4 +9056,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":34};
+export const AGENT_COVERAGE = {"total":74,"available":35};

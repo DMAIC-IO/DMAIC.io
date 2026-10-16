@@ -11,7 +11,7 @@
  */
 
 /** Allowed data-type values. */
-const DATA_TYPES = ['auto', 'continuous', 'discrete'];
+export const DATA_TYPES = ['auto', 'continuous', 'discrete'];
 
 /**
  * Validate and coerce a column reference object.

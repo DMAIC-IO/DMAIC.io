@@ -6310,6 +6310,37 @@
     "distribution-fit": {
       "name": "Verteilungstests",
       "description": "Datensatz auf verschiedene Verteilungsfunktionen testen und nach Güte ranken",
+      "whenToUse": "Wenn unklar ist, welche Verteilung ein gemessenes Merkmal beschreibt: passt Normal-, Lognormal-, Weibull-, Exponential- und weitere Verteilungen an eine numerische Spalte an und reiht sie nach der Güte der Anpassung; braucht mindestens 5 Werte.",
+      "actions": {
+        "read": {
+          "help": "Liefert die gewählte Spalte, den Datentyp, die wählbaren Mengen und das Ergebnis. result ist null, solange keine Analyse vorliegt; errorMsg nennt dann den Grund.",
+          "params": { "options": "Optional; dieses Modul führt keine Massendaten." }
+        },
+        "setParam": {
+          "help": "Setzt den Datentyp; die Analyse läuft danach auf der gewählten Spalte neu.",
+          "params": {
+            "key": "Einer der Schlüssel aus activeParams; dieses Modul kennt nur dataType. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Datentyp: 'auto', 'continuous' oder 'discrete'. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "setColumn": {
+          "help": "Richtet die Analyse auf eine numerische Spalte einer Datensammlung; die Analyse läuft danach neu.",
+          "params": {
+            "slot": "Einer der Slots aus activeColumnSlots; dieses Modul kennt nur 'value'.",
+            "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Leeren."
+          }
+        },
+        "runAnalysis": { "help": "Rechnet mit der gewählten Spalte. Ohne Spalte oder mit weniger als 5 Werten bleibt result null und errorMsg nennt den Grund." }
+      },
+      "fields": {
+        "columnRef": { "help": "Die gewählte Datenspalte als { instanceId, sheetId, columnId }, oder null." },
+        "dataType": { "help": "Wie die Daten behandelt werden: 'auto', 'continuous' oder 'discrete'." },
+        "activeParams": { "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt." },
+        "activeColumnSlots": { "help": "Die Slots, die setColumn im aktuellen Zustand annimmt." },
+        "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; key ist 'instanceId|sheetId|columnId'." },
+        "result": { "help": "Die Rangfolge der angepassten Verteilungen mit Kennzahlen, oder null, solange keine Analyse vorliegt." },
+        "errorMsg": { "help": "Der Grund, warum es kein Ergebnis gibt (zu wenige Werte, Varianz null), oder ein leerer Text." }
+      },
       "sectionData": "Datenquelle",
       "sectionDescriptive": "Deskriptive Statistik",
       "sectionHistogram": "Histogramm",
