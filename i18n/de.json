@@ -4951,6 +4951,24 @@
     "mosaic": {
       "name": "Mosaikdiagramm",
       "description": "Visualisiert die gemeinsame Verteilung zweier kategorialer Variablen — Spaltenbreiten zeigen die Randhäufigkeit, Segmenthöhen die bedingten Anteile.",
+      "whenToUse": "Zeigen, wie zwei kategoriale Merkmale zusammenspielen: die Balkenbreite zeigt den Anteil jeder x-Kategorie, die Segmenthöhe den Anteil jeder Gruppe darin.",
+      "actions": {
+        "read": { "help": "Die zwei gewählten Kategorienspalten lesen, die Spalten, die jeder Slot annimmt, und die Kennzahlen neben dem Diagramm." },
+        "setColumn": {
+          "help": "Eine Spalte einem Slot zuweisen. Der andere Slot behält seine Spalte.",
+          "params": {
+            "slot": "'x' — Kategorien entlang der x-Achse; 'g' — Kategorien, die jeden Balken teilen. Beide sind für ein Diagramm Pflicht.",
+            "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null zum Leeren."
+          }
+        }
+      },
+      "fields": {
+        "xRef": { "help": "Die x-Kategorienspalte (Slot 'x'), oder null." },
+        "gRef": { "help": "Die Gruppenspalte (Slot 'g'), oder null." },
+        "activeColumnSlots": { "help": "Die Slots, die setColumn annimmt: x, g." },
+        "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
+        "stats": { "help": "Die Kreuztabelle: { categories, groups: [{ name, counts }] }; Anzahlen je x-Kategorie; null, solange ein Slot leer ist." }
+      },
       "sectionData": "Datenquelle",
       "slotX": "1. Kategorie (X — bestimmt Spaltenbreiten)",
       "slotG": "2. Kategorie (G — bestimmt Segmenthöhen)",

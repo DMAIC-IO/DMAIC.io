@@ -20,6 +20,11 @@
  * The chart-editor the user edits (`.dmike-chart-editor`) is built INSIDE the
  * mosaic chart type and owned by the chart instance — the module mounts no
  * separate editor widget, mirroring the legacy behavior.
+ *
+ * @agent  Steuerbar über das Viewmodel: die zwei Kategorienspalten
+ *   (setColumn). Gelesen wird über read() mit erklärter Lesefläche
+ *   (AgentRead) — die zwei Spaltenbezüge, die wählbaren Spalten je Slot und
+ *   die Kreuztabelle als Zahlen (stats).
  */
 
 import { createModule } from '../../core/template-module.js';
@@ -30,9 +35,38 @@ import {
   DatasetPicker,
   getColumnValues,
   getColumnName,
+  refToKey,
+  keyToRef,
 } from '../../ui/dataset-picker.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { datasetSlotColumns } from '../../core/agent/agent-datasets.js';
 import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-registry.js';
 import { chartModuleLifecycle } from '../../core/chart/chart-module-base.js';
+
+/** Die Slots des Pickers, ohne Beschriftung — eine Quelle für Picker und Lesefläche. */
+const DATASET_SLOTS = [
+  { key: 'x', minCount: 1, required: true },
+  { key: 'g', minCount: 1, required: true },
+];
+
+/** Die Slot-Schlüssel in der Reihenfolge der Oberfläche. */
+const COLUMN_SLOTS = ['x', 'g'];
+
+/**
+ * Die Agenten-Lesefläche des Mosaikdiagramms.
+ *
+ * Die zwei Kategorienspalten sind der Zustand; dazu die Mengen, gegen die
+ * `setColumn` prüft; die Kreuztabelle als Zahlen in `stats` (E8). Nicht
+ * darin: `chartConfig` (Darstellung), das Diagrammbild, `exampleWorksheetId`.
+ *
+ * @typedef {object} AgentRead
+ * @property {object|null} xRef  the category column on the x axis (slot `x`), or null
+ * @property {object|null} gRef  the column whose categories split each bar (slot `g`), or null
+ * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
+ * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
+ * @property {object|null} stats  the cross table: `{ categories, groups: [{ name, counts }] }`, counts per x category, or null while a slot is empty
+ */
 
 const mod = createModule({
   config: {
@@ -55,21 +89,17 @@ const mod = createModule({
 
           const ctx = module._context;
           const i18n = ctx.i18n;
+          const SLOT_LABELS = {
+            x: { label: 'X', title: i18n.t('modules.mosaic.slotX') },
+            g: { label: 'G', title: i18n.t('modules.mosaic.slotG') },
+          };
           this._picker = new DatasetPicker(wrap, ctx, {
-            slots: [
-              { key: 'x', label: 'X', title: i18n.t('modules.mosaic.slotX'), minCount: 1, required: true },
-              { key: 'g', label: 'G', title: i18n.t('modules.mosaic.slotG'), minCount: 1, required: true },
-            ],
-            onChange: (datasets) => {
-              const ds = datasets[0] || {};
-              this.model.xRef = ds.x || null;
-              this.model.gRef = ds.g || null;
-              this._plot();
-            },
+            slots: DATASET_SLOTS.map(s => ({ ...s, ...SLOT_LABELS[s.key] })),
+            onChange: (rows) => this._applyDatasets(rows),
           });
 
           if (this.model.xRef || this.model.gRef) {
-            this._picker.value = [{ x: this.model.xRef, g: this.model.gRef }];
+            this._picker.value = this._datasetRows();
           }
         },
         themeMode: 'render',
@@ -80,6 +110,74 @@ const mod = createModule({
           }
         },
       }),
+
+      // ── Agent surface ─────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Spaltenbezüge, wählbare Mengen und Kreuztabelle
+       */
+      read(options) {
+        return readAgentState('mosaic', {
+          xRef: this.model.xRef,
+          gRef: this.model.gRef,
+          activeColumnSlots: this.activeColumnSlots(),
+          pickableColumns: this.pickableColumns(),
+          stats: this._agentStats(),
+        }, options);
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() { return [...COLUMN_SLOTS]; },
+
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() { return datasetSlotColumns(module._context.stateManager, DATASET_SLOTS); },
+
+      /**
+       * Eine Spalte einem Slot zuweisen; der andere Slot bleibt.
+       * @agent
+       * @param {'x'|'g'} slot der Slot
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
+       *   der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren
+       * @returns {void}
+       * @throws {Error} wenn `slot` unbekannt ist oder die Spalte nicht wählbar
+       */
+      setColumn(slot, ref) {
+        requireEnum('slot', slot, this.activeColumnSlots());
+        const row = this._datasetRows()[0];
+        if (ref == null) {
+          row[slot] = null;
+        } else {
+          const keys = this.pickableColumns()[slot].map(c => c.key);
+          requireKnownId('ref', refToKey(ref), keys);
+          // Normalisierte Form: fremde Eigenschaften des Agentenobjekts bleiben draußen.
+          row[slot] = keyToRef(refToKey(ref));
+        }
+        this._applyDatasets([row]);
+        if (this._picker) this._picker.value = [row];
+      },
+
+      /** Der Körper des Picker-`onChange`: Zeilen ins Model, neu zeichnen. Picker und Aktion rufen ihn. */
+      _applyDatasets(rows) {
+        const ds = rows[0] || {};
+        this.model.xRef = ds.x || null;
+        this.model.gRef = ds.g || null;
+        this._plot();
+      },
+
+      /** Die aktuelle Zeile in Picker-Form, aus dem Model. */
+      _datasetRows() {
+        return [{ x: this.model.xRef, g: this.model.gRef }];
+      },
+
+      /** Die Kennzahlen für read() — die Kreuztabelle aus derselben Quelle wie die Tabelle (E8). */
+      _agentStats() {
+        const d = this.model.buildChartData((ref) => this._getColumnValues(ref));
+        if (!d.categories.length || !d.groups.length) return null;
+        return { categories: [...d.categories], groups: d.groups.map(g => ({ name: g.name, counts: [...g.values] })) };
+      },
 
       // ── Transient view state (not persisted) ──────────────────
       /** Last computed chart data, for the stats re-render. */

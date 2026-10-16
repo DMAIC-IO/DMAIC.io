@@ -4694,34 +4694,72 @@ export const AGENT_REGISTRY = {
     }
   },
   "mosaic": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "module_tag_without_actions",
-      "no_read_action"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'x'|'g'",
+            "optional": false,
+            "help": "der Slot"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Spalte einem Slot zuweisen; der andere Slot bleibt."
+      }
+    },
     "fields": {
       "xRef": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the category column on the x axis (slot `x`), or null",
+        "bulk": false,
+        "derived": true
       },
       "gRef": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the column whose categories split each bar (slot `g`), or null",
+        "bulk": false,
+        "derived": true
       },
-      "chartConfig": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "stats": {
+        "type": "object|null",
+        "help": "the cross table: `{ categories, groups: [{ name, counts }] }`, counts per x category, or null while a slot is empty",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -10784,4 +10822,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":50};
+export const AGENT_COVERAGE = {"total":76,"available":51};

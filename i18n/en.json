@@ -4947,6 +4947,24 @@
     "mosaic": {
       "name": "Mosaic Plot",
       "description": "Visualises the joint distribution of two categorical variables — column widths show the marginal frequency, segment heights show the conditional shares.",
+      "whenToUse": "Compare how two categorical variables combine: bar widths show the share of each x category, segment heights the share of each group within it.",
+      "actions": {
+        "read": { "help": "Read the two chosen category columns and the columns each slot accepts, and the figures shown next to the chart." },
+        "setColumn": {
+          "help": "Assign a column to a slot. The other slot keeps its column.",
+          "params": {
+            "slot": "'x' — categories along the x axis; 'g' — categories that split each bar. Both are required for a chart.",
+            "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null to clear the slot."
+          }
+        }
+      },
+      "fields": {
+        "xRef": { "help": "The x category column (slot 'x'), or null." },
+        "gRef": { "help": "The group column (slot 'g'), or null." },
+        "activeColumnSlots": { "help": "The slots setColumn accepts: x, g." },
+        "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
+        "stats": { "help": "The cross table: { categories, groups: [{ name, counts }] }; counts per x category; null while a slot is empty." }
+      },
       "sectionData": "Data Source",
       "slotX": "1st category (X — sets column widths)",
       "slotG": "2nd category (G — sets segment heights)",
