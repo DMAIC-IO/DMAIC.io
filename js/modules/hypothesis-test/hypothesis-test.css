@@ -327,14 +327,6 @@
   border: var(--border-width) solid rgb(251 191 36 / 20%);
 }
 
-/* Table (aligned with global .stats-table pattern) */
-
-/* Table styling handled by global .dmike-split table rules in components.css.
-   Override only header alignment so th matches td (browsers center th by default). */
-.hyptest__result-card table th {
-  text-align: left;
-}
-
 /* Text colors */
 .hyptest__text-success { color: var(--color-success); font-weight: 600; }
 .hyptest__text-danger { color: var(--color-error); font-weight: 600; }

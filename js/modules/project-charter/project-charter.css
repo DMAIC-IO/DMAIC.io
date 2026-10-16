@@ -107,38 +107,22 @@
   margin-bottom: var(--spacing-sm);
 }
 
-.pc__goals-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-sm);
-}
-
 .pc__goals-table th {
-  text-align: left;
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-bottom: 2px solid var(--color-border-primary);
   white-space: nowrap;
 }
 
 .pc__goals-table td {
-  padding: var(--spacing-xs) var(--spacing-xs);
-  border-bottom: var(--border-width) solid var(--color-border-secondary);
+  padding: var(--spacing-xs);
   vertical-align: top;
-}
-
-.pc__goal-row:hover td {
-  background: var(--color-bg-secondary);
 }
 
 /* Column widths */
 .pc__col-nr    { width: 28px; text-align: center; color: var(--color-text-tertiary); font-size: var(--font-size-xs); }
 
-/* Reorder grip — glyph and drag state classes come from components.css
-   (.dmike-table__grip, .dmike-table__row--dragging/--drop-target). */
-.pc__col-grip  { width: 32px; padding-right: 0; text-align: center; }
-.pc__goal-row:hover .dmike-table__grip { opacity: 1; }
+/* Reorder grip — column, glyph, hover and drag states come from
+   .dmike-table--draggable in components.css. */
 
 /* Description is the only flexible column — fills the remaining space.
    All other columns shrink to their content via width:1%; the inputs

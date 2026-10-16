@@ -206,7 +206,7 @@
           <!-- ANOVA table -->
           <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('anovaTable')"></span></div>
           <div class="reg__table-wrap">
-            <table class="reg__table">
+            <table class="dmike-table reg__table">
               <thead><tr>
                 <th x-text="t('source')"></th>
                 <th>SS <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
@@ -251,7 +251,7 @@
           <!-- Coefficient table -->
           <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('coefTable')"></span></div>
           <div class="reg__table-wrap">
-            <table class="reg__table" data-ref="coef-table">
+            <table class="dmike-table reg__table" data-ref="coef-table">
               <thead><tr>
                 <template x-if="coefView().canExclude">
                   <th class="reg__th--cb"></th>

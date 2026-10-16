@@ -182,7 +182,7 @@
                     </div>
                   </template>
                   <template x-if="card.steps.length">
-                    <table class="outliertest__steps">
+                    <table class="dmike-table outliertest__steps">
                       <thead><tr><th>i</th><th x-text="t('value')"></th><th>Rᵢ</th><th>λᵢ</th><th x-text="card.stepsHeader"></th></tr></thead>
                       <tbody>
                         <template x-for="(st, si) in card.steps" :key="si">
@@ -208,7 +208,7 @@
           <template x-if="flaggedShow">
             <div class="outliertest__flagged-block">
               <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionFlagged')"></span></div>
-              <table class="outliertest__flagged">
+              <table class="dmike-table outliertest__flagged">
                 <thead><tr>
                   <th>#</th>
                   <th x-text="t('value')"></th>

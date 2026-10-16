@@ -85,33 +85,23 @@
 /* ─── Coefficient table ───────────────────────────────────────── */
 
 .glm__coef-table {
-  width: 100%;
-  border-collapse: collapse;
   font-size: var(--font-size-xs);
 }
 
 .glm__coef-table th {
-  text-align: left;
   padding: var(--spacing-s) var(--spacing-sm);
-  font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
   border-bottom: 2px solid var(--color-border-secondary);
   white-space: nowrap;
 }
 
 .glm__coef-table td {
-  padding: var(--spacing-xs) var(--spacing-sm);
   border-bottom: var(--border-width) solid var(--color-border-primary);
-  font-variant-numeric: tabular-nums;
 }
 
 .glm__coef-table td:first-child {
   font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
-}
-
-.glm__coef-table tr:hover td {
-  background: var(--color-bg-hover);
 }
 
 /* Significance coloring */
@@ -149,10 +139,14 @@
 
 /* ─── Classification table ────────────────────────────────────── */
 
+/* Confusion matrix: all-side borders and centred cells, so it is not a
+   .dmike-table and is excluded from the .dmike-split fallback. */
+
 .glm__class-table {
   width: auto;
   border-collapse: collapse;
   font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
   margin: var(--spacing-sm) 0;
 }
 

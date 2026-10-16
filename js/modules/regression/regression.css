@@ -142,7 +142,7 @@
   margin-bottom: var(--spacing-md);
 }
 
-/* Tables — base inherited from global .dmike-split table rule */
+/* Tables — base from .dmike-table (components.css) */
 .reg__table-wrap {
   margin-bottom: var(--spacing-md);
 }
@@ -167,20 +167,17 @@
   font-weight: var(--font-weight-medium);
 }
 
-.reg__td--sig {
-  color: #2e7d32;
+/* Scoped to .reg__table so they outrank `.reg__table td` (0,1,1). */
+.reg__table .reg__td--sig {
+  color: var(--color-success-text);
   font-weight: var(--font-weight-semibold);
 }
 
-[data-theme="dark"] .reg__td--sig {
-  color: #a5d6a7;
-}
-
-.reg__td--not-sig {
+.reg__table .reg__td--not-sig {
   color: var(--color-error);
 }
 
-.reg__td--vif-warn {
+.reg__table .reg__td--vif-warn {
   color: var(--color-warning);
   font-weight: var(--font-weight-medium);
 }

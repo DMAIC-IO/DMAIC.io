@@ -482,11 +482,18 @@ select.input {
 
 /* Global table style for all module tables outside of DataGrid.
    Applied via .dmike-table class or automatically to any <table>
-   inside .dmike-split that is not a datagrid. */
+   inside .dmike-split that is not a datagrid.
+
+   The .dmike-split fallback skips .dmike-table on purpose: its :not() list
+   lifts it to (0,2,x), which would silently beat every module override
+   such as `.foo__table th` (0,1,1). An explicit .dmike-table stays at
+   (0,1,x), so module rules loaded later win. Matrix-style tables with a
+   complete style of their own (all-side borders, centred cells) belong in
+   the :not() list, too. */
 
 .dmike-table,
 .stats-table,
-.dmike-split table:not(.datagrid__table, .corr__matrix-table, .doe__preview-table) {
+.dmike-split table:not(.dmike-table, .datagrid__table, .corr__matrix-table, .doe__preview-table, .glm__class-table) {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--font-size-sm);
@@ -495,7 +502,7 @@ select.input {
 
 .dmike-table th,
 .stats-table th,
-.dmike-split table:not(.datagrid__table, .corr__matrix-table, .doe__preview-table) th {
+.dmike-split table:not(.dmike-table, .datagrid__table, .corr__matrix-table, .doe__preview-table, .glm__class-table) th {
   padding: var(--spacing-xs) var(--spacing-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-tertiary);
@@ -514,20 +521,20 @@ select.input {
 
 .dmike-table td,
 .stats-table td,
-.dmike-split table:not(.datagrid__table, .corr__matrix-table, .doe__preview-table) td {
+.dmike-split table:not(.dmike-table, .datagrid__table, .corr__matrix-table, .doe__preview-table, .glm__class-table) td {
   padding: var(--spacing-xs) var(--spacing-sm);
   border-bottom: var(--border-width) solid var(--color-border-secondary);
 }
 
 .dmike-table tr:last-child td,
 .stats-table tr:last-child td,
-.dmike-split table:not(.datagrid__table, .corr__matrix-table, .doe__preview-table) tr:last-child td {
+.dmike-split table:not(.dmike-table, .datagrid__table, .corr__matrix-table, .doe__preview-table, .glm__class-table) tr:last-child td {
   border-bottom: none;
 }
 
 .dmike-table tr:hover td,
 .stats-table tr:hover td,
-.dmike-split table:not(.datagrid__table, .corr__matrix-table, .doe__preview-table) tr:hover td {
+.dmike-split table:not(.dmike-table, .datagrid__table, .corr__matrix-table, .doe__preview-table, .glm__class-table) tr:hover td {
   background: var(--color-bg-secondary);
 }
 

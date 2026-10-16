@@ -37,10 +37,10 @@
 
       <template x-if="model.goals.length > 0">
         <div class="pc__goals-table-wrap" @focusin="goalFieldFocus()">
-          <table class="pc__goals-table">
+          <table class="dmike-table dmike-table--draggable pc__goals-table">
             <thead>
               <tr>
-                <th class="dmike-table__grip-col pc__col-grip"></th>
+                <th class="dmike-table__grip-col"></th>
                 <th class="pc__col-nr" aria-label="Reihenfolge">#</th>
                 <th class="pc__col-description" x-text="t('goalDescription')"></th>
                 <th class="pc__col-date" x-text="t('goalTargetDate')"></th>
@@ -57,7 +57,7 @@
                   @dragend="dragEnd($event)"
                   @dragover="dragOver('goals', goal.id, $event)"
                   @drop="dragDrop('goals', goal.id, $event)">
-                  <td class="dmike-table__grip-col pc__col-grip">
+                  <td class="dmike-table__grip-col">
                     <button class="dmike-table__grip" type="button"
                             :aria-label="t('common.reorder')"
                             @mousedown="dragArm($event)"

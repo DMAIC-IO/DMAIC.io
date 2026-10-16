@@ -152,7 +152,7 @@
                   <span x-text="card.label"></span>
                   <span class="hyptest__badge" :class="card.badgeClass" x-text="card.badgeText"></span>
                 </div>
-                <table>
+                <table class="dmike-table">
                   <thead><tr>
                     <th>Test</th><th x-text="t('statistic')"></th><th>p</th><th x-text="t('decision')"></th>
                   </tr></thead>
@@ -273,7 +273,7 @@
 
             <!-- ANOVA table (k-sample mean, ANOVA route) -->
             <template x-if="result.main.anovaRows">
-              <table>
+              <table class="dmike-table">
                 <thead><tr>
                   <th x-text="t('source')"></th><th>SS</th><th>df</th><th>MS</th><th>F</th><th>p</th>
                 </tr></thead>
@@ -294,7 +294,7 @@
 
             <!-- Group summary table (k-sample) -->
             <template x-if="result.main.groupRows">
-              <table>
+              <table class="dmike-table">
                 <thead><tr>
                   <th x-text="t('group')"></th><th>n</th><th>x̄</th><th>s²</th>
                   <template x-if="result.main.showCld">
@@ -378,7 +378,7 @@
                   </strong>
                   · <span x-text="result.pairwise.hint"></span>
                 </div>
-                <table class="hyptest__pairwise">
+                <table class="dmike-table hyptest__pairwise">
                   <thead><tr>
                     <th></th>
                     <template x-for="h in result.pairwise.headers"><th :key="h" x-text="h"></th></template>

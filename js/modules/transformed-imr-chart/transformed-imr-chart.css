@@ -60,19 +60,12 @@
 }
 
 .timr__limits-table {
-  width: 100%;
-  border-collapse: collapse;
   font-size: var(--font-size-xs);
   margin-top: var(--spacing-sm);
 }
 
 .timr__limits-table th,
-.timr__limits-table td {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  text-align: right;
-  border-bottom: var(--border-width) solid var(--color-border-secondary);
-}
-.timr__limits-table th { color: var(--color-text-tertiary); font-weight: var(--font-weight-medium); }
+.timr__limits-table td { text-align: right; }
 
 .timr__limits-table td:first-child,
 .timr__limits-table th:first-child { text-align: left; }

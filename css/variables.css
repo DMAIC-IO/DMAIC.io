@@ -96,6 +96,7 @@
 
   /* Status */
   --color-success: #34c759;
+  --color-success-text: #2e7d32; /* readable as text on light backgrounds */
   --color-warning: #ff9500;
   --color-error: #ff3b30;
   --color-info: #007aff;
@@ -283,6 +284,7 @@
   --color-accent: #4da3ff;
   --color-accent-hover: #6db5ff;
   --color-accent-light: #1a3a5c;
+  --color-success-text: #a5d6a7;
 
   /* Column-role palette (dark theme — brighter fg, low-luminance bg). */
   --color-role-continuous-fg:  #60a5fa;  /* blue-400  */

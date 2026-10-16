@@ -139,7 +139,7 @@
             <div class="glm__equation" x-text="result.equation"></div>
 
             <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('coefTable')"></span></div>
-            <table class="glm__coef-table">
+            <table class="dmike-table glm__coef-table">
               <thead><tr>
                 <th x-text="t('term')"></th>
                 <th x-text="t('coefficient')"></th>
@@ -194,7 +194,7 @@
             <template x-if="result.vifRows">
               <div>
                 <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span>VIF</span></div>
-                <table class="glm__coef-table">
+                <table class="dmike-table glm__coef-table">
                   <thead><tr><th x-text="t('term')"></th><th>VIF</th><th></th></tr></thead>
                   <tbody>
                     <template x-for="row in result.vifRows" :key="row.term">
