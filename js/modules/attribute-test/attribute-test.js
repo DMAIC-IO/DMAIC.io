@@ -398,7 +398,7 @@ const mod = createModule({
       removeRow(row) {
         const t = this.model.summary.table;
         requireIndex('row', row, t.rows.length - 1);
-        if (t.rows.length <= MIN_DIM) {
+        if (!this.canRemoveRow()) {
           throw new Error(`invalid row ${row}; allowed: removing only while more than ${MIN_DIM} rows remain`);
         }
         this.model.removeRow(row);
@@ -415,7 +415,7 @@ const mod = createModule({
       removeCol(col) {
         const t = this.model.summary.table;
         requireIndex('col', col, t.cols.length - 1);
-        if (t.cols.length <= MIN_DIM) {
+        if (!this.canRemoveCol()) {
           throw new Error(`invalid col ${col}; allowed: removing only while more than ${MIN_DIM} columns remain`);
         }
         this.model.removeCol(col);

@@ -55,7 +55,7 @@
                 <th>
                   <input type="text" class="attrtest__name" :data-col-name="j" :value="colName(j)"
                     @input="setColName(j, $event)">
-                  <button class="btn--icon attrtest__remove" :title="t('removeCol')" @click="onRemoveCol(j)">
+                  <button class="btn--icon attrtest__remove" :title="t('removeCol')" :disabled="!canRemoveCol()" @click="onRemoveCol(j)">
                     <span class="icon icon--sm" data-icon="action.delete"></span>
                   </button>
                 </th>
@@ -68,7 +68,7 @@
                 <th>
                   <input type="text" class="attrtest__name" :data-row-name="i" :value="rowName(i)"
                     @input="setRowName(i, $event)">
-                  <button class="btn--icon attrtest__remove" :title="t('removeRow')" @click="onRemoveRow(i)">
+                  <button class="btn--icon attrtest__remove" :title="t('removeRow')" :disabled="!canRemoveRow()" @click="onRemoveRow(i)">
                     <span class="icon icon--sm" data-icon="action.delete"></span>
                   </button>
                 </th>

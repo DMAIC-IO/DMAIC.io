@@ -5849,7 +5849,7 @@
         "setParam": {
           "help": "Setzt einen Parameter; der Test rechnet danach neu. Ein Wechsel von testKind oder inputMode behält alle anderen Eingaben, beim Zurückwechseln geht also nichts verloren.",
           "params": {
-            "key": "Einer der Schlüssel aus activeParams: testKind, inputMode und alpha immer; summary.x und summary.n (ein Anteil), summary.x1, summary.n1, summary.x2 und summary.n2 (zwei Anteile) bei Eingabe als Zusammenfassung; eventValue bei Spalteneingabe mit einem oder zwei Anteilen; p0 bei einem Anteil; direction (beim Zusammenhangstest nur für eine 2 x 2-Tabelle); pooled bei zwei Anteilen. Jeder andere Schlüssel ist ein Fehler.",
+            "key": "Einer der Schlüssel aus activeParams: testKind, inputMode und alpha immer; summary.x und summary.n (ein Anteil), summary.x1, summary.n1, summary.x2 und summary.n2 (zwei Anteile) bei Eingabe als Zusammenfassung; eventValue bei Spalteneingabe mit einem oder zwei Anteilen; p0 bei einem Anteil; direction (beim Zusammenhangstest erst, wenn ein Ergebnis für eine 2 x 2-Tabelle vorliegt); pooled bei zwei Anteilen. Jeder andere Schlüssel ist ein Fehler.",
             "value": "testKind: 'one', 'two' oder 'assoc'. inputMode: 'summary' oder 'columns'. alpha: Zahl größer 0 und kleiner 1, zum Beispiel 0.05. direction: 'two-sided', 'greater' oder 'less'. pooled: true oder false. p0 und die summary.*-Anzahlen: Text wie eingegeben, '' leert. eventValue: einer der Werte aus eventValueOptions. Ein Wert außerhalb von Bereich oder Liste ist ein Fehler."
           }
         },
@@ -5889,13 +5889,13 @@
           "help": "Hängt der Kreuztabelle eine Spalte mit leeren Anzahlen an; ihr Name ist der nächste aus X, Y, Z und danach C4, C5 und so weiter."
         },
         "removeRow": {
-          "help": "Entfernt eine Zeile der Kreuztabelle samt Anzahlen. Nur solange mehr als zwei Zeilen bleiben; sonst ein Fehler.",
+          "help": "Entfernt eine Zeile der Kreuztabelle samt Anzahlen. Nur solange die Tabelle mehr als zwei Zeilen hat (mindestens zwei bleiben); sonst ein Fehler.",
           "params": {
             "row": "Zeilenindex, 0 ist die erste Zeile."
           }
         },
         "removeCol": {
-          "help": "Entfernt eine Spalte der Kreuztabelle samt Anzahlen. Nur solange mehr als zwei Spalten bleiben; sonst ein Fehler.",
+          "help": "Entfernt eine Spalte der Kreuztabelle samt Anzahlen. Nur solange die Tabelle mehr als zwei Spalten hat (mindestens zwei bleiben); sonst ein Fehler.",
           "params": {
             "col": "Spaltenindex, 0 ist die erste Spalte."
           }
@@ -5912,7 +5912,7 @@
           "help": "Woher die Häufigkeiten kommen: 'summary' (eingegebene Zahlen) oder 'columns' (Tabellenspalten)."
         },
         "direction": {
-          "help": "Die Alternativhypothese: 'two-sided', 'greater' oder 'less'. Beim Zusammenhangstest nur für eine 2 x 2-Tabelle benutzt."
+          "help": "Die Alternativhypothese: 'two-sided', 'greater' oder 'less'. Beim Zusammenhangstest erst aktiv, wenn ein Ergebnis für eine 2 x 2-Tabelle vorliegt."
         },
         "alpha": {
           "help": "Das Signifikanzniveau, größer 0 und kleiner 1. Startet aus dem Vertrauensniveau der Einstellungen."

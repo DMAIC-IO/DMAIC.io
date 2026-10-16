@@ -5845,7 +5845,7 @@
         "setParam": {
           "help": "Sets one parameter; the test reruns. Switching testKind or inputMode keeps all other inputs, so switching back loses nothing.",
           "params": {
-            "key": "One of the keys in activeParams: testKind, inputMode and alpha always; summary.x and summary.n (one proportion), summary.x1, summary.n1, summary.x2 and summary.n2 (two proportions) with summarized input; eventValue with column input and one or two proportions; p0 with one proportion; direction (with the association test only for a 2 x 2 table); pooled with two proportions. Any other key is an error.",
+            "key": "One of the keys in activeParams: testKind, inputMode and alpha always; summary.x and summary.n (one proportion), summary.x1, summary.n1, summary.x2 and summary.n2 (two proportions) with summarized input; eventValue with column input and one or two proportions; p0 with one proportion; direction (with the association test only once a result for a 2 x 2 table exists); pooled with two proportions. Any other key is an error.",
             "value": "testKind: 'one', 'two' or 'assoc'. inputMode: 'summary' or 'columns'. alpha: number greater than 0 and less than 1, for example 0.05. direction: 'two-sided', 'greater' or 'less'. pooled: true or false. p0 and the summary.* counts: text as entered, '' clears it. eventValue: one of eventValueOptions. A value outside the range or the list is an error."
           }
         },
@@ -5885,13 +5885,13 @@
           "help": "Appends a column with empty counts to the cross table; its name is the next one of X, Y, Z and then C4, C5 and so on."
         },
         "removeRow": {
-          "help": "Removes one row of the cross table with its counts. Only while more than two rows remain; otherwise an error.",
+          "help": "Removes one row of the cross table with its counts. Only while the table has more than two rows (at least two remain); otherwise an error.",
           "params": {
             "row": "Row index, 0 is the first row."
           }
         },
         "removeCol": {
-          "help": "Removes one column of the cross table with its counts. Only while more than two columns remain; otherwise an error.",
+          "help": "Removes one column of the cross table with its counts. Only while the table has more than two columns (at least two remain); otherwise an error.",
           "params": {
             "col": "Column index, 0 is the first column."
           }
@@ -5908,7 +5908,7 @@
           "help": "Where the counts come from: 'summary' (entered numbers) or 'columns' (worksheet columns)."
         },
         "direction": {
-          "help": "The alternative hypothesis: 'two-sided', 'greater' or 'less'. With the association test only used for a 2 x 2 table."
+          "help": "The alternative hypothesis: 'two-sided', 'greater' or 'less'. With the association test only active once a result for a 2 x 2 table exists."
         },
         "alpha": {
           "help": "The significance level, greater than 0 and less than 1. Starts from the confidence level of the settings."
