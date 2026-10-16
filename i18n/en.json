@@ -8093,6 +8093,101 @@
       "defaultName": "Optimisation"
     },
     "glm-regression": {
+      "whenToUse": "When a response is attributive — good/bad, yes/no, proportions — or a count (defects, complaints), and its relationship with predictors is to be modelled: binary logistic, Poisson or negative binomial, detected automatically on request.",
+      "actions": {
+        "read": {
+          "help": "Returns the inputs (X, Y, trials column, method, confidence, α, cutoff), the sets the actions accept now, and the fit as numbers in result (null without a shown fit or after a failed fit; errorMsg then names the reason). If Y or X is cleared, the last result stays, as in the module."
+        },
+        "setColumns": {
+          "help": "Replaces the predictor columns X; order is kept, duplicates count once, text columns become categorical predictors. If Y is among the new X, yKey is cleared. Fits again when X and Y are set.",
+          "params": {
+            "slot": "One of activeMultiSlots; this module only has 'x'.",
+            "refs": "List of column references { instanceId, sheetId, columnId } from pickableColumns.x, in order; [] clears X."
+          }
+        },
+        "setColumn": {
+          "help": "Sets the response column (slot 'y') or the column with the number of trials (slot 'trials', grouped binomial data; Y is then read as a proportion), or clears it with null. Setting Y to the trials column clears trialsKey. Fits again when X and Y are set.",
+          "params": {
+            "slot": "One of activeColumnSlots: 'y' or 'trials'.",
+            "ref": "Column reference { instanceId, sheetId, columnId } from pickableColumns.y (columns not chosen as X) or pickableColumns.trials (additionally without Y), or null to clear."
+          }
+        },
+        "setParam": {
+          "help": "Sets the method, the confidence level, α or the classification cutoff. method, confLevel and alpha fit again; cutoff only recomputes classification.",
+          "params": {
+            "key": "One of method, confLevel, alpha, cutoff; activeParams names those valid now (cutoff only with a binomial result).",
+            "value": "method: one of the values in methods; confLevel, alpha: a fraction greater than 0 and less than 1 (0.95, not 95), the other becomes 1 minus this value; cutoff: a number from 0 to 1, only with a binomial result."
+          }
+        },
+        "swapSuccess": {
+          "help": "For a binary response swaps success and failure and fits again; successClass follows. Without a binary result nothing happens."
+        },
+        "autoRun": {
+          "help": "Fits when X and Y are set; otherwise nothing happens and an earlier result stays."
+        },
+        "runAnalysis": {
+          "help": "Fits now. Without X, without Y or with fewer than three rows the result is discarded and errorMsg names the reason."
+        },
+        "saveAsModel": {
+          "help": "Saves the shown fit to the project models (new, or as an update of the one saved last) and returns its id; savedModelId follows. Returns null without a converged fit or when the response has no values."
+        }
+      },
+      "fields": {
+        "colRefs": {
+          "help": "The predictor columns X as column references, in order."
+        },
+        "yKey": {
+          "help": "The response column as key instanceId|sheetId|columnId, or null."
+        },
+        "trialsKey": {
+          "help": "The column with the number of trials per row (grouped binomial data), or null."
+        },
+        "method": {
+          "help": "The chosen method: one of methods; 'auto' detects the family from the response."
+        },
+        "methods": {
+          "help": "All methods setParam accepts for method."
+        },
+        "confLevel": {
+          "help": "Confidence level as a fraction; alpha is 1 minus this value."
+        },
+        "alpha": {
+          "help": "Significance level as a fraction; confLevel is 1 minus this value."
+        },
+        "cutoff": {
+          "help": "Classification threshold for a binomial fit, from 0 to 1."
+        },
+        "successClass": {
+          "help": "For a binary response the level counted as success and the other one, { success, failure }; null otherwise."
+        },
+        "activeParams": {
+          "help": "The keys setParam accepts now."
+        },
+        "activeColumnSlots": {
+          "help": "The slots setColumn accepts."
+        },
+        "activeMultiSlots": {
+          "help": "The slots setColumns accepts."
+        },
+        "pickableColumns": {
+          "help": "Per slot (x, y, trials) the columns setColumns/setColumn accept, each { key, name }."
+        },
+        "result": {
+          "help": "The fit as numbers: family, quasi, autoReason, n, iterations, aic, bic, deviance, nullDeviance, logLikelihood, pseudoR2, coefficients (with odds or rate ratio), auc, hosmerLemeshow, overdispersionRatio, vif, warnings; null without a shown fit."
+        },
+        "classification": {
+          "help": "For a binomial fit the confusion table (tp, fn, fp, tn) and the rates at cutoff; null otherwise."
+        },
+        "errorMsg": {
+          "help": "The message of the last failed fit, '' without error."
+        },
+        "predictionTerms": {
+          "help": "The terms a prediction takes, in model order (dummies and interactions included); [] without a shown fit."
+        },
+        "savedModelId": {
+          "help": "Id of the model saved last in the project models, or null."
+        }
+      },
       "name": "Regression (Attributive)",
       "description": "Binary logistic, Poisson, and negative binomial regression for attributive/count data",
       "sectionData": "Data Source",

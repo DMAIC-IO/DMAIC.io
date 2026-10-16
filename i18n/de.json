@@ -8097,6 +8097,101 @@
       "defaultName": "Optimierung"
     },
     "glm-regression": {
+      "whenToUse": "Wenn eine Zielgröße attributiv ist — gut/schlecht, ja/nein, Anteile — oder eine Anzahl (Fehler, Reklamationen), und ihr Zusammenhang mit Einflussgrößen modelliert werden soll: binär-logistisch, Poisson oder negativ-binomial, auf Wunsch automatisch erkannt.",
+      "actions": {
+        "read": {
+          "help": "Liefert die Eingaben (X, Y, Versuchszahl, Verfahren, Konfidenz, α, Schwelle), die Mengen, die die Aktionen jetzt annehmen, und den Fit als Zahlen in result (null ohne gezeigten Fit oder nach einem Fehlschlag; errorMsg nennt dann den Grund). Wird Y oder X geleert, bleibt das letzte Ergebnis stehen, wie im Modul."
+        },
+        "setColumns": {
+          "help": "Ersetzt die Einflussgrößen X; die Reihenfolge bleibt, Doppelte zählen einmal, Textspalten werden kategoriale Prädiktoren. Steht Y unter den neuen X, wird yKey geleert. Rechnet neu, wenn X und Y gewählt sind.",
+          "params": {
+            "slot": "Einer der Slots aus activeMultiSlots; dieses Modul führt nur 'x'.",
+            "refs": "Liste von Spaltenbezügen { instanceId, sheetId, columnId } aus pickableColumns.x, in Reihenfolge; [] leert X."
+          }
+        },
+        "setColumn": {
+          "help": "Setzt die Zielgröße (Slot 'y') oder die Spalte mit der Versuchszahl (Slot 'trials', gruppierte binomiale Daten; Y wird dann als Anteil gelesen), oder leert sie mit null. Y auf die Spalte der Versuchszahl leert trialsKey. Rechnet neu, wenn X und Y gewählt sind.",
+          "params": {
+            "slot": "Einer der Slots aus activeColumnSlots: 'y' oder 'trials'.",
+            "ref": "Spaltenbezug { instanceId, sheetId, columnId } aus pickableColumns.y (die nicht als X gewählten Spalten) oder pickableColumns.trials (zusätzlich ohne Y), oder null zum Leeren."
+          }
+        },
+        "setParam": {
+          "help": "Setzt das Verfahren, das Konfidenzniveau, α oder die Klassifikationsschwelle. method, confLevel und alpha rechnen neu; cutoff rechnet nur classification neu.",
+          "params": {
+            "key": "Einer von method, confLevel, alpha, cutoff; activeParams nennt die jetzt gültigen (cutoff nur bei binomialem Ergebnis).",
+            "value": "method: einer der Werte aus methods; confLevel, alpha: Anteil größer 0 und kleiner 1 (0.95, nicht 95), das jeweils andere wird zu 1 minus diesem Wert; cutoff: Zahl von 0 bis 1, nur bei binomialem Ergebnis."
+          }
+        },
+        "swapSuccess": {
+          "help": "Tauscht bei binärer Zielgröße Erfolg und Misserfolg und rechnet neu; successClass zieht nach. Ohne binäres Ergebnis geschieht nichts."
+        },
+        "autoRun": {
+          "help": "Rechnet, wenn X und Y gewählt sind; sonst geschieht nichts, und ein früheres Ergebnis bleibt stehen."
+        },
+        "runAnalysis": {
+          "help": "Rechnet jetzt. Ohne X, ohne Y oder mit weniger als drei Zeilen wird das Ergebnis verworfen, und errorMsg nennt den Grund."
+        },
+        "saveAsModel": {
+          "help": "Speichert den gezeigten Fit in die Projektmodelle (neu oder als Aktualisierung des zuletzt gespeicherten) und gibt seine id zurück; savedModelId zieht nach. Gibt null ohne konvergierten Fit oder wenn die Zielgröße keine Werte hat."
+        }
+      },
+      "fields": {
+        "colRefs": {
+          "help": "Die Einflussgrößen X als Spaltenbezüge, in Reihenfolge."
+        },
+        "yKey": {
+          "help": "Die Zielgröße als Schlüssel instanceId|sheetId|columnId, oder null."
+        },
+        "trialsKey": {
+          "help": "Die Spalte mit der Versuchszahl je Zeile (gruppierte binomiale Daten), oder null."
+        },
+        "method": {
+          "help": "Das gewählte Verfahren: einer der Werte aus methods; 'auto' erkennt die Familie aus der Zielgröße."
+        },
+        "methods": {
+          "help": "Alle Verfahren, die setParam für method annimmt."
+        },
+        "confLevel": {
+          "help": "Konfidenzniveau als Anteil; alpha ist 1 minus diesem Wert."
+        },
+        "alpha": {
+          "help": "Signifikanzniveau als Anteil; confLevel ist 1 minus diesem Wert."
+        },
+        "cutoff": {
+          "help": "Klassifikationsschwelle eines binomialen Fits, von 0 bis 1."
+        },
+        "successClass": {
+          "help": "Bei binärer Zielgröße die als Erfolg gezählte Stufe und die andere, { success, failure }; sonst null."
+        },
+        "activeParams": {
+          "help": "Die Schlüssel, die setParam jetzt annimmt."
+        },
+        "activeColumnSlots": {
+          "help": "Die Slots, die setColumn annimmt."
+        },
+        "activeMultiSlots": {
+          "help": "Die Slots, die setColumns annimmt."
+        },
+        "pickableColumns": {
+          "help": "Je Slot (x, y, trials) die Spalten, die setColumns/setColumn annehmen, je { key, name }."
+        },
+        "result": {
+          "help": "Der Fit als Zahlen: family, quasi, autoReason, n, iterations, aic, bic, deviance, nullDeviance, logLikelihood, pseudoR2, coefficients (mit Odds- bzw. Ratenverhältnis), auc, hosmerLemeshow, overdispersionRatio, vif, warnings; null ohne gezeigten Fit."
+        },
+        "classification": {
+          "help": "Bei binomialem Fit die Konfusionstafel (tp, fn, fp, tn) und die Raten zur Schwelle cutoff; sonst null."
+        },
+        "errorMsg": {
+          "help": "Die Meldung des letzten Fehlschlags, '' ohne Fehler."
+        },
+        "predictionTerms": {
+          "help": "Die Terme, die eine Vorhersage nimmt, in Modellreihenfolge (Dummies und Wechselwirkungen eingeschlossen); [] ohne gezeigten Fit."
+        },
+        "savedModelId": {
+          "help": "Id des zuletzt in die Projektmodelle gespeicherten Modells, oder null."
+        }
+      },
       "name": "Regression (attributiv)",
       "description": "Binäre logistische, Poisson- und Negativ-Binomial-Regression für attributive Daten und Zähldaten",
       "sectionData": "Datenquelle",

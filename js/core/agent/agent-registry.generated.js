@@ -3077,121 +3077,206 @@ export const AGENT_REGISTRY = {
     }
   },
   "glm-regression": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:chartErr",
-      "unmarked_method:sm",
-      "unmarked_method:yOptions",
-      "unmarked_method:trialsOptions",
-      "unmarked_method:methodRadioName",
-      "unmarked_method:detectInfoText",
-      "unmarked_method:detectInfoClass",
-      "unmarked_method:confDisplay",
-      "unmarked_method:alphaDisplay",
-      "unmarked_method:errorText",
-      "unmarked_method:errorStyle",
-      "unmarked_method:resultsStyle",
-      "unmarked_method:cutoffDisplay",
-      "unmarked_method:tabs",
-      "unmarked_method:predictionTerms",
-      "unmarked_method:classView",
-      "unmarked_method:onYChange",
-      "unmarked_method:onTrialsChange",
-      "unmarked_method:onMethodChange",
-      "unmarked_method:onConfChange",
-      "unmarked_method:onAlphaChange",
-      "unmarked_method:switchTab",
-      "unmarked_method:onRouteChanged",
-      "unmarked_method:swapSuccess",
-      "unmarked_method:onCutoff",
-      "unmarked_method:autoRun",
-      "unmarked_method:showSlimResult",
-      "unmarked_method:runAnalysis",
-      "unmarked_method:showError",
-      "unmarked_method:showErrorMsg",
-      "unmarked_method:fitAndDisplay",
-      "unmarked_method:buildResultView",
-      "unmarked_method:buildEquation",
-      "unmarked_method:runPrediction",
-      "unmarked_method:saveAsModel",
-      "unmarked_method:initPicker",
-      "unmarked_method:destroyCharts",
-      "unmarked_method:renderActiveChart",
-      "unmarked_method:renderResidualsVsFitted",
-      "unmarked_method:renderQQPlot",
-      "unmarked_method:renderCooksPlot",
-      "unmarked_method:renderROCChart",
-      "unmarked_method:init",
-      "unmarked_method:destroy"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setColumns": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'x'",
+            "optional": false,
+            "help": "der Slot; dieses Modul führt nur `x`"
+          },
+          {
+            "name": "refs",
+            "type": "Array<{ instanceId: string, sheetId: string, columnId: string }>",
+            "optional": false,
+            "help": "die Spaltenbezüge wählbarer Spalten (`pickableColumns.x`); `[]` leert die Auswahl"
+          }
+        ],
+        "returns": "void",
+        "help": "Die Einflussgrößen X ersetzen; die Reihenfolge bleibt, Doppelte zählen einmal, Textspalten werden kategoriale Prädiktoren. Steht die Zielgröße Y unter den neuen X, wird Y geleert. Danach wird gerechnet, wenn X und Y gewählt sind."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'y'|'trials'",
+            "optional": false,
+            "help": "der Slot; `activeColumnSlots` nennt sie"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte (`pickableColumns.y` ohne die X, `pickableColumns.trials` zusätzlich ohne Y), oder null zum Leeren"
+          }
+        ],
+        "returns": "void",
+        "help": "Die Zielgröße (`y`) oder die Versuchszahl (`trials`) setzen oder mit null leeren. Y auf die Spalte der Versuchszahl leert diese. Danach wird gerechnet, wenn X und Y gewählt sind."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'method'|'confLevel'|'alpha'|'cutoff'",
+            "optional": false,
+            "help": "welcher Parameter; `activeParams` nennt die jetzt gültigen"
+          },
+          {
+            "name": "value",
+            "type": "string|number",
+            "optional": false,
+            "help": "method: einer aus `methods`; confLevel, alpha: ein Anteil größer 0 und kleiner 1, das andere wird 1 minus diesem Wert; cutoff: eine Zahl von 0 bis 1"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Parameter setzen. `method`, `confLevel` und `alpha` rechnen neu; `cutoff` rechnet nur die Klassifikationstafel neu."
+      },
+      "swapSuccess": {
+        "params": [],
+        "returns": "void",
+        "help": "Bei binärer Zielgröße Erfolg und Misserfolg tauschen und neu rechnen (`successClass`); ohne binären Fit geschieht nichts."
+      },
+      "autoRun": {
+        "params": [],
+        "returns": "void",
+        "help": "Rechnet, wenn X und Y gewählt sind; sonst geschieht nichts — ein früheres Ergebnis bleibt stehen, wie in der Oberfläche."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Jetzt rechnen. Ohne X, ohne Y oder mit weniger als drei Zeilen wird das Ergebnis verworfen und `errorMsg` nennt den Grund."
+      },
+      "saveAsModel": {
+        "params": [],
+        "returns": "string|null",
+        "help": "Den gezeigten Fit in die Projektmodelle speichern (neu oder als Aktualisierung des zuletzt gespeicherten). Gibt die id zurück, oder null, wenn kein gezeigter konvergierter Fit vorliegt oder die Zielgröße keine Werte hat."
+      }
+    },
     "fields": {
       "colRefs": {
-        "type": "Array<{instanceId:string, sheetId:string, columnId:string}>",
-        "help": "",
-        "bulk": false
+        "type": "Array<{ instanceId: string, sheetId: string, columnId: string }>",
+        "help": "the predictor columns X",
+        "bulk": false,
+        "derived": true
       },
       "yKey": {
         "type": "string|null",
-        "help": "",
-        "bulk": false
+        "help": "the response column as key `instanceId|sheetId|columnId`",
+        "bulk": false,
+        "derived": true
       },
       "trialsKey": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "successClass": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string|null",
+        "help": "the column with the number of trials, null for none",
+        "bulk": false,
+        "derived": true
       },
       "method": {
-        "type": "'auto'|'binomial'|'poisson'|'negbin'",
-        "help": "",
-        "bulk": false
+        "type": "string",
+        "help": "one of `methods`",
+        "bulk": false,
+        "derived": true
+      },
+      "methods": {
+        "type": "string[]",
+        "help": "all methods, `auto` included",
+        "bulk": false,
+        "derived": true
       },
       "confLevel": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "confidence level as a fraction; alpha is 1 − confLevel",
+        "bulk": false,
+        "derived": true
       },
       "alpha": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "significance level as a fraction",
+        "bulk": false,
+        "derived": true
       },
       "cutoff": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "classification threshold of a binomial fit",
+        "bulk": false,
+        "derived": true
       },
-      "activeTab": {
-        "type": "'model'|'diagnostics'|'roc'|'prediction'",
-        "help": "",
-        "bulk": false
+      "successClass": {
+        "type": "{ success: number, failure: number }|null",
+        "help": "the levels of a binary response, null otherwise",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts now",
+        "bulk": false,
+        "derived": true
       },
-      "savedModelId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts",
+        "bulk": false,
+        "derived": true
       },
-      "savedModelName": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeMultiSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumns` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn`/`setColumns` accept, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
       },
       "result": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the fit as numbers, null without a shown result",
+        "bulk": false,
+        "derived": true
+      },
+      "classification": {
+        "type": "object|null",
+        "help": "confusion table and rates at `cutoff`, binomial only",
+        "bulk": false,
+        "derived": true
+      },
+      "errorMsg": {
+        "type": "string",
+        "help": "the message the module shows, '' without error",
+        "bulk": false,
+        "derived": true
+      },
+      "predictionTerms": {
+        "type": "string[]",
+        "help": "the terms `predict` takes, in model order",
+        "bulk": false,
+        "derived": true
+      },
+      "savedModelId": {
+        "type": "string|null",
+        "help": "id of the model saved last in the project models",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -10643,4 +10728,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":48};
+export const AGENT_COVERAGE = {"total":76,"available":49};

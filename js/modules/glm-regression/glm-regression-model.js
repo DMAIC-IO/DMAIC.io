@@ -41,7 +41,8 @@ export function predictFor(fit, values) {
   };
 }
 
-const METHODS = ['auto', 'binomial', 'poisson', 'negbin'];
+/** Die Verfahren (Familien) in Reihenfolge der Oberfläche, `auto` eingeschlossen. */
+export const METHODS = ['auto', 'binomial', 'poisson', 'negbin'];
 const TABS = ['model', 'diagnostics', 'roc', 'prediction'];
 
 /** Split a pipe-delimited key `instanceId|sheetId|columnId` into a ref. */

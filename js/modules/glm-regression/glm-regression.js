@@ -17,10 +17,20 @@
  *
  * Supports: binary logistic (binomial/logit), Poisson (log, with quasi-Poisson
  * refit on overdispersion), negative binomial (log), and auto-detect.
+ *
+ * @agent  Steuerbar über das Viewmodel: X, Y und Versuchszahl wählen
+ *   (setColumns, setColumn), Verfahren, Konfidenz/α und Schwelle setzen
+ *   (setParam), die Erfolgsklasse tauschen (swapSuccess), rechnen (autoRun,
+ *   runAnalysis) und als Projektmodell speichern (saveAsModel). Diagramme
+ *   und Tabs bleiben der Oberfläche vorbehalten; gelesen wird über read()
+ *   (AgentRead).
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State, keyToRef, predictFor } from './glm-regression-model.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { pickableColumnList } from '../../core/agent/agent-options.js';
+import { State, keyToRef, predictFor, METHODS } from './glm-regression-model.js';
 import {
   fitGLM, buildGLMDesignMatrix,
   computeROC, classificationTable, hosmerLemeshow,
@@ -28,7 +38,7 @@ import {
   normalOrderStats,
 } from '../../engines/glm-engine.js';
 import {
-  ColumnPicker, discoverColumns, refToKey, isPickerFocused,
+  ColumnPicker, refToKey, isPickerFocused,
 } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 import { saveModel, buildDataSnapshot, computeDataHash } from '../../core/models-store.js';
@@ -80,6 +90,70 @@ function eventsPerPredictor(y, weights, p) {
   return Math.min(events, total - events) / (p - 1);
 }
 
+/** Die Parameter, die `setParam` annimmt (flach am Model). */
+const PARAM_KEYS = ['method', 'confLevel', 'alpha', 'cutoff'];
+/** Die Einzelspalten-Slots in Reihenfolge der Oberfläche: Zielgröße, Versuchszahl. */
+const COLUMN_SLOTS = ['y', 'trials'];
+/** Die Mehrfachspalten-Slots: die Einflussgrößen X, geordnet. */
+const MULTI_SLOTS = ['x'];
+/** Je Slot der Filter seines Wählers (X: Textspalten werden kategorial). */
+const SLOT_FILTERS = {
+  x: { types: ['numeric', 'currency', 'percent', 'text'], minCount: 1 },
+  y: { minCount: 1 },
+  trials: { minCount: 1 },
+};
+
+/**
+ * Ein Anteil strikt zwischen 0 und 1 (Konfidenz, α).
+ * @param {any} value der übergebene Wert
+ * @returns {number} der geprüfte Anteil
+ * @throws {Error} wenn `value` keine Zahl in (0, 1) ist
+ */
+function requireFraction(value) {
+  const n = requireNumber('value', value);
+  if (n <= 0 || n >= 1) {
+    throw new Error(`invalid value ${JSON.stringify(value)}; allowed: a number greater than 0 and less than 1`);
+  }
+  return n;
+}
+
+/** Welcher Model-Schlüssel ein Slot ist; Y auf die Versuchszahl leert diese. */
+const COLUMN_SINKS = {
+  y: (m, key) => { m.yKey = key; if (key && m.trialsKey === key) m.trialsKey = null; },
+  trials: (m, key) => { m.trialsKey = key; },
+};
+
+/** Eine endliche Zahl oder null. */
+function num(v) { return typeof v === 'number' && Number.isFinite(v) ? v : null; }
+
+/**
+ * Die Agenten-Lesefläche der GLM-Regression.
+ *
+ * Ergebnis im Viewmodel (`_fit`) und verschlankt im Model; die Lesefläche
+ * zeigt die Zahlen des Fits, wenn die Oberfläche ein Ergebnis zeigt. Ein
+ * unvollständig gewordener Eingabestand lässt — wie in der Oberfläche — das
+ * letzte Ergebnis stehen.
+ *
+ * @typedef {object} AgentRead
+ * @property {Array<{ instanceId: string, sheetId: string, columnId: string }>} colRefs  the predictor columns X
+ * @property {string|null} yKey  the response column as key `instanceId|sheetId|columnId`
+ * @property {string|null} trialsKey  the column with the number of trials, null for none
+ * @property {string} method  one of `methods`
+ * @property {string[]} methods  all methods, `auto` included
+ * @property {number} confLevel  confidence level as a fraction; alpha is 1 − confLevel
+ * @property {number} alpha  significance level as a fraction
+ * @property {number} cutoff  classification threshold of a binomial fit
+ * @property {{ success: number, failure: number }|null} successClass  the levels of a binary response, null otherwise
+ * @property {string[]} activeParams  the keys `setParam` accepts now
+ * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
+ * @property {string[]} activeMultiSlots  the slots `setColumns` accepts
+ * @property {object} pickableColumns  per slot the columns `setColumn`/`setColumns` accept, each `{ key, name }`
+ * @property {object|null} result  the fit as numbers, null without a shown result
+ * @property {object|null} classification  confusion table and rates at `cutoff`, binomial only
+ * @property {string} errorMsg  the message the module shows, '' without error
+ * @property {string[]} predictionTerms  the terms `predict` takes, in model order
+ * @property {string|null} savedModelId  id of the model saved last in the project models
+ */
 const mod = createModule({
   config: {
     id: 'glm-regression',
@@ -114,52 +188,234 @@ const mod = createModule({
       /** Per-anchor chart-render error messages (declarative — x-if/x-text). */
       chartErrors: { residuals: '', qq: '', cooks: '', roc: '' },
 
-      /** Error message for a given chart anchor (empty string when none). */
+      /** @noagent view transform; Error message for a given chart anchor (empty string when none). */
       chartErr(key) { return this.chartErrors[key] || ''; },
 
+      /** @noagent helper */
       sm() { return module._context?.stateManager; },
 
-      // ── Column option lists (data-driven; selects NOT x-model-bound) ──
-      yOptions() {
-        const selected = new Set(this.model.colRefs.map(r => refToKey(r)));
-        const all = discoverColumns(this.sm(), { minCount: 1 });
-        const out = [];
-        for (const col of all) {
-          const key = refToKey({ instanceId: col.instanceId, sheetId: col.sheetId, columnId: col.columnId });
-          if (selected.has(key)) continue;
-          out.push({ key, name: col.columnName || col.shortName || '?' });
+      // ── Agent surface ────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Eingaben, wählbare Mengen und der gerechnete Fit als Zahlen
+       */
+      read(options) {
+        const m = this.model;
+        const shown = Boolean(this.result);
+        const binomial = shown && this._fit?.family.name === 'binomial';
+        const ct = binomial ? this._classCache : null;
+        return readAgentState('glm-regression', {
+          colRefs: m.colRefs, yKey: m.yKey, trialsKey: m.trialsKey,
+          method: m.method, methods: METHODS,
+          confLevel: m.confLevel, alpha: m.alpha, cutoff: m.cutoff,
+          successClass: shown ? (this._fit?._successClassInfo ?? null) : null,
+          activeParams: this.activeParams(), activeColumnSlots: this.activeColumnSlots(),
+          activeMultiSlots: this.activeMultiSlots(), pickableColumns: this.pickableColumns(),
+          result: shown ? this._agentResult(this._fit) : null,
+          classification: ct ? {
+            cutoff: this._classCutoff, tp: ct.tp, fn: ct.fn, fp: ct.fp, tn: ct.tn,
+            sensitivity: num(ct.sensitivity), specificity: num(ct.specificity),
+            accuracy: num(ct.accuracy), precision: num(ct.precision),
+          } : null,
+          errorMsg: this.errorText(),
+          predictionTerms: shown ? this.predictionTerms().map(t => t.label) : [],
+          savedModelId: m.savedModelId,
+        }, options);
+      },
+
+      /** Der Fit als Zahlenzusammenfassung (ohne Residuen- und Matrixvektoren). */
+      _agentResult(r) {
+        if (!r) return null;
+        const isBinomial = r.family.name === 'binomial';
+        const isCount = r.family.name === 'poisson' || r.family.name === 'negbin';
+        const ratioOf = (j) => {
+          if (j === 0) return null;
+          if (isBinomial && r.oddsRatios?.[j]) {
+            const o = r.oddsRatios[j];
+            return { value: num(o.or), lower: num(o.lower), upper: num(o.upper) };
+          }
+          if (isCount && r.rateRatios?.[j]) {
+            const o = r.rateRatios[j];
+            return { value: num(o.rr), lower: num(o.lower), upper: num(o.upper) };
+          }
+          return null;
+        };
+        return {
+          family: { name: r.family.name, link: r.family.link, theta: r.family.name === 'negbin' ? num(r.family.theta) : null },
+          quasi: Boolean(r._quasiActivated),
+          autoReason: this.model.method === 'auto' ? this._detectKey : null,
+          n: num(r.n), iterations: num(r.iterations), aic: num(r.aic), bic: num(r.bic),
+          deviance: num(r.deviance), nullDeviance: num(r.nullDeviance), logLikelihood: num(r.logLikelihood),
+          pseudoR2: {
+            mcfadden: num(r.pseudoR2?.mcfadden), nagelkerke: num(r.pseudoR2?.nagelkerke),
+            coxSnell: num(r.pseudoR2?.coxSnell),
+          },
+          coefficients: r.terms.map((term, j) => ({
+            term, estimate: num(r.coefficients[j]), se: num(r.stdErrors?.[j]), z: num(r.zValues?.[j]),
+            p: num(r.pValues?.[j]), ciLower: num(r.ciLower?.[j]), ciUpper: num(r.ciUpper?.[j]),
+            ratio: ratioOf(j),
+          })),
+          auc: num(r._roc?.auc),
+          hosmerLemeshow: r._hl ? { statistic: num(r._hl.statistic), pValue: num(r._hl.pValue) } : null,
+          overdispersionRatio: num(r._overdispersion?.ratio),
+          vif: Array.isArray(r._vifs) ? r._vifs.map(num) : null,
+          warnings: [...(this.result?.warnings ?? [])],
+        };
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeParams */
+      activeParams() {
+        const binomial = Boolean(this.result) && this._fit?.family.name === 'binomial';
+        return binomial ? PARAM_KEYS : PARAM_KEYS.filter(k => k !== 'cutoff');
+      },
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() { return COLUMN_SLOTS; },
+      /** @noagent derived set; der Agent liest sie über read().activeMultiSlots */
+      activeMultiSlots() { return MULTI_SLOTS; },
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() {
+        const sm = this.sm();
+        if (!sm) return { x: [], y: [], trials: [] };
+        const xKeys = new Set(this.model.colRefs.map(refToKey));
+        const y = pickableColumnList(sm, SLOT_FILTERS.y).filter(c => !xKeys.has(c.key));
+        return {
+          x: pickableColumnList(sm, SLOT_FILTERS.x),
+          y,
+          trials: y.filter(c => c.key !== this.model.yKey),
+        };
+      },
+
+      /**
+       * Die Einflussgrößen X ersetzen; die Reihenfolge bleibt, Doppelte zählen
+       * einmal, Textspalten werden kategoriale Prädiktoren. Steht die
+       * Zielgröße Y unter den neuen X, wird Y geleert. Danach wird gerechnet,
+       * wenn X und Y gewählt sind.
+       * @agent
+       * @param {'x'} slot der Slot; dieses Modul führt nur `x`
+       * @param {Array<{ instanceId: string, sheetId: string, columnId: string }>} refs
+       *   die Spaltenbezüge wählbarer Spalten (`pickableColumns.x`); `[]` leert die Auswahl
+       * @returns {void}
+       * @throws {Error} wenn `slot` unbekannt ist, `refs` keine Liste ist oder eine Spalte nicht wählbar ist
+       */
+      setColumns(slot, refs) {
+        requireEnum('slot', slot, MULTI_SLOTS);
+        requireEnum('slot', slot, this.activeMultiSlots());
+        if (!Array.isArray(refs)) {
+          throw new Error(`invalid refs ${JSON.stringify(refs)}; allowed: a list of column references, [] clears it`);
         }
-        return out;
+        const keys = this.pickableColumns()[slot].map(c => c.key);
+        for (const ref of refs) requireKnownId('ref', refToKey(ref), keys);
+        const clean = [...new Set(refs.map(refToKey))].map(keyToRef);
+        this.model.colRefs = clean;
+        if (this.model.yKey && clean.some(r => refToKey(r) === this.model.yKey)) this.model.yKey = null;
+        this._picker?.syncValue(clean);
+        this.autoRun();
       },
-      trialsOptions() {
-        // Trials dropdown also excludes the Y column (same column can't be both).
-        return this.yOptions().filter(o => o.key !== this.model.yKey);
+
+      /**
+       * Die Zielgröße (`y`) oder die Versuchszahl (`trials`) setzen oder mit
+       * null leeren. Y auf die Spalte der Versuchszahl leert diese. Danach
+       * wird gerechnet, wenn X und Y gewählt sind.
+       * @agent
+       * @param {'y'|'trials'} slot der Slot; `activeColumnSlots` nennt sie
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
+       *   der Spaltenbezug einer wählbaren Spalte (`pickableColumns.y` ohne die X,
+       *   `pickableColumns.trials` zusätzlich ohne Y), oder null zum Leeren
+       * @returns {void}
+       * @throws {Error} wenn `slot` unbekannt ist oder die Spalte nicht wählbar
+       */
+      setColumn(slot, ref) {
+        requireEnum('slot', slot, COLUMN_SLOTS);
+        if (ref == null) {
+          COLUMN_SINKS[slot](this.model, null);
+        } else {
+          requireEnum('slot', slot, this.activeColumnSlots());
+          requireKnownId('ref', refToKey(ref), this.pickableColumns()[slot].map(c => c.key));
+          COLUMN_SINKS[slot](this.model, refToKey(ref));
+        }
+        this.autoRun();
       },
+
+      /**
+       * Einen Parameter setzen. `method`, `confLevel` und `alpha` rechnen neu;
+       * `cutoff` rechnet nur die Klassifikationstafel neu.
+       * @agent
+       * @param {'method'|'confLevel'|'alpha'|'cutoff'} key welcher Parameter; `activeParams` nennt die jetzt gültigen
+       * @param {string|number} value method: einer aus `methods`; confLevel, alpha: ein Anteil
+       *   größer 0 und kleiner 1, das andere wird 1 minus diesem Wert; cutoff: eine Zahl von 0 bis 1
+       * @returns {void}
+       * @throws {Error} wenn `key` jetzt nicht gilt oder `value` außerhalb seiner Menge liegt
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        requireEnum('key', key, this.activeParams());
+        if (key === 'method') {
+          requireEnum('value', value, METHODS);
+          this.model.method = value;
+        } else if (key === 'confLevel') {
+          this.model.confLevel = requireFraction(value);
+          this.model.alpha = 1 - this.model.confLevel;
+        } else if (key === 'alpha') {
+          this.model.alpha = requireFraction(value);
+          this.model.confLevel = 1 - this.model.alpha;
+        } else {
+          this.model.cutoff = requireNumber('value', value, { min: 0, max: 1 });
+          this._applyCutoff();
+          return;
+        }
+        this.autoRun();
+      },
+
+      // ── Column option lists (data-driven; selects NOT x-model-bound) ──
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns.y */
+      yOptions() { return this.pickableColumns().y; },
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns.trials */
+      trialsOptions() { return this.pickableColumns().trials; },
 
       // ── Method radio ─────────────────────────────────────────
+      /** @noagent view transform */
       methodRadioName() { return `glm-method-${  module._context.instanceId}`; },
+      /** @noagent view transform; die Optionen der Verfahrenswahl (eine Quelle: METHODS) */
+      methodOptions() {
+        return METHODS.map(v => ({
+          value: v,
+          label: _t(`method${v === 'negbin' ? 'Negbin' : v[0].toUpperCase() + v.slice(1)}`),
+        }));
+      },
 
       // ── Detect-info box ──────────────────────────────────────
+      /** @noagent view transform */
       detectInfoText() { return this._detectKey ? _t(this._detectKey) : ''; },
+      /** @noagent view transform */
       detectInfoClass() { return this._detectVisible ? 'glm__detect-info--visible' : ''; },
 
       // ── Conf / alpha display ─────────────────────────────────
+      /** @noagent view transform */
       confDisplay() {
         const c = this.model.confLevel;
         return c == null ? '' : String(Number((c * 100).toFixed(2)));
       },
+      /** @noagent view transform */
       alphaDisplay() {
         const a = this.model.alpha;
         return a == null ? '' : String(Number((a * 100).toFixed(2)));
       },
 
       // ── Error box ────────────────────────────────────────────
+      /** @noagent view transform */
       errorText() { return this._errorKey ? this._errorText : ''; },
+      /** @noagent view transform */
       errorStyle() { return this._errorKey ? 'display:block' : 'display:none'; },
+      /** @noagent view transform */
       resultsStyle() { return this.result ? '' : 'display:none'; },
+      /** @noagent view transform */
       cutoffDisplay() { return this._classCutoff.toFixed(2); },
 
       // ── Tabs ─────────────────────────────────────────────────
+      /** @noagent view transform */
       tabs() {
         const list = [
           { id: 'model', label: _t('tabModel') },
@@ -171,6 +427,7 @@ const mod = createModule({
       },
 
       // ── Prediction inputs ────────────────────────────────────
+      /** @noagent derived set; der Agent liest sie über read().predictionTerms */
       predictionTerms() {
         const r = this._fit;
         if (!r) return [];
@@ -180,6 +437,7 @@ const mod = createModule({
       },
 
       // ── Classification view (recomputed at the current cutoff) ──
+      /** @noagent view transform */
       classView() {
         const r = this._fit;
         if (!r || r.family.name !== 'binomial') {
@@ -198,59 +456,82 @@ const mod = createModule({
       },
 
       // ── Event handlers ───────────────────────────────────────
-      onYChange(event) {
-        this.model.yKey = event.target.value || null;
-        if (this.model.yKey && this.model.trialsKey === this.model.yKey) this.model.trialsKey = null;
-        this.autoRun();
+      /** @noagent DOM event handler; the agent uses setColumn() */
+      onYChange(event) { this._selectColumn(event, 'y', () => this.model.yKey); },
+      /** @noagent DOM event handler; the agent uses setColumn() */
+      onTrialsChange(event) { this._selectColumn(event, 'trials', () => this.model.trialsKey); },
+      /** Eine Spaltenauswahl durch setColumn; eine Absage stellt die Auswahl auf den Model-Wert zurück. */
+      _selectColumn(event, slot, stored) {
+        const v = event.target.value;
+        try {
+          this.setColumn(slot, v ? keyToRef(v) : null);
+        } catch {
+          event.target.value = stored() ?? '';
+        }
       },
-      onTrialsChange(event) {
-        this.model.trialsKey = event.target.value || null;
-        this.autoRun();
-      },
+      /** @noagent DOM event handler; the agent uses setParam() */
       onMethodChange(event) {
-        if (event.target.name?.startsWith('glm-method')) {
-          this.model.method = event.target.value;
-          this.autoRun();
+        if (!event.target.name?.startsWith('glm-method')) return;
+        try {
+          this.setParam('method', event.target.value);
+        } catch {
+          event.target.checked = event.target.value === this.model.method;
         }
       },
       // confLevel is the single source of truth; alpha mirrors it.
-      onConfChange(event) {
+      /** @noagent DOM event handler; the agent uses setParam() */
+      onConfChange(event) { this._percentParam(event, 'confLevel'); },
+      /** @noagent DOM event handler; the agent uses setParam() */
+      onAlphaChange(event) { this._percentParam(event, 'alpha'); },
+      /**
+       * Eine Prozenteingabe als Anteil durch setParam; außerhalb von (0, 100)
+       * oder bei einer Absage bleibt der Model-Wert. Das Feld zeigt danach
+       * immer den Model-Wert.
+       */
+      _percentParam(event, key) {
         const v = parseFloat(event.target.value);
         if (v > 0 && v < 100) {
-          this.model.confLevel = v / 100;
-          this.model.alpha = 1 - this.model.confLevel;
-          this.autoRun();
+          try { this.setParam(key, v / 100); } catch { /* das Feld zeigt unten wieder den Model-Wert */ }
         }
+        event.target.value = key === 'confLevel' ? this.confDisplay() : this.alphaDisplay();
       },
-      onAlphaChange(event) {
-        const v = parseFloat(event.target.value);
-        if (v > 0 && v < 100) {
-          this.model.confLevel = 1 - v / 100;
-          this.model.alpha = v / 100;
-          this.autoRun();
-        }
-      },
+      /** @noagent navigation */
       switchTab(tabId) {
         this._renderGen++;
         this.destroyCharts();
         this.model.activeTab = tabId;
         this.$nextTick(() => this.renderActiveChart());
       },
+      /** @noagent navigation */
       onRouteChanged(sub) {
         const key = Array.isArray(sub) && sub.length ? sub[0] : null;
         if (!key || key === this.model.activeTab) return;
         if (!this.tabs().some(tb => tb.id === key)) return;
         this.switchTab(key);
       },
+      /**
+       * Bei binärer Zielgröße Erfolg und Misserfolg tauschen und neu rechnen
+       * (`successClass`); ohne binären Fit geschieht nichts.
+       * @agent
+       * @returns {void}
+       */
       swapSuccess() {
-        const info = this._fit?._successClassInfo;
+        const info = this.result ? this._fit?._successClassInfo : null;
         if (!info) return;
         this.model.successClass = info.failure;
         this.runAnalysis();
       },
+      /** @noagent DOM event handler; the agent uses setParam() */
       onCutoff(event) {
-        this._classCutoff = parseFloat(event.target.value);
-        this.model.cutoff = this._classCutoff;
+        try {
+          this.setParam('cutoff', parseFloat(event.target.value));
+        } catch {
+          event.target.value = String(this.model.cutoff);
+        }
+      },
+      /** Die Klassifikationstafel zur Schwelle `model.cutoff` neu rechnen. */
+      _applyCutoff() {
+        this._classCutoff = this.model.cutoff;
         const r = this._fit;
         if (r) {
           this._classCache = classificationTable(r.y, r.fittedValues, this._classCutoff, r.priorWeights ?? undefined);
@@ -259,6 +540,12 @@ const mod = createModule({
       },
 
       // ── Auto-run gate ────────────────────────────────────────
+      /**
+       * Rechnet, wenn X und Y gewählt sind; sonst geschieht nichts — ein
+       * früheres Ergebnis bleibt stehen, wie in der Oberfläche.
+       * @agent
+       * @returns {void}
+       */
       autoRun() {
         if (this.model.canRun()) this.runAnalysis();
       },
@@ -269,6 +556,7 @@ const mod = createModule({
        * fields survive slimming, so the model/quality tables still render;
        * charts that need raw residual arrays simply stay empty — matching the
        * legacy slim-view behaviour.
+       * @noagent helper
        */
       showSlimResult() {
         const r = this.model.result;
@@ -281,6 +569,12 @@ const mod = createModule({
       },
 
       // ── Analysis (delegates statistics to the engine) ────────
+      /**
+       * Jetzt rechnen. Ohne X, ohne Y oder mit weniger als drei Zeilen wird
+       * das Ergebnis verworfen und `errorMsg` nennt den Grund.
+       * @agent
+       * @returns {void}
+       */
       runAnalysis() {
         this._renderGen++;
         this.destroyCharts();
@@ -300,12 +594,14 @@ const mod = createModule({
         this.fitAndDisplay(X, y, terms, yName, xNames, weights);
       },
 
+      /** @noagent helper */
       showError(key) {
         this._errorKey = key;
         this._errorText = _t(key);
         this.result = null;
         this._fit = null;
       },
+      /** @noagent helper */
       showErrorMsg(text) {
         this._errorKey = '_raw';
         this._errorText = text;
@@ -313,6 +609,7 @@ const mod = createModule({
         this._fit = null;
       },
 
+      /** @noagent helper */
       fitAndDisplay(X, y, terms, yName, xNames, weights) {
         const fam = this.model.resolveFamily(y);
         const familyName = fam.familyName;
@@ -398,6 +695,7 @@ const mod = createModule({
       },
 
       // ── Result view-model (no HTML; pure data) ───────────────
+      /** @noagent view transform */
       buildResultView(r) {
         const isBinomial = r.family.name === 'binomial';
         const isCount = r.family.name === 'poisson' || r.family.name === 'negbin';
@@ -530,6 +828,7 @@ const mod = createModule({
         };
       },
 
+      /** @noagent view transform */
       buildEquation(r) {
         const isBinomial = r.family.name === 'binomial';
         const lhs = isBinomial ? 'logit(p)' : 'log(μ)';
@@ -544,11 +843,12 @@ const mod = createModule({
       },
 
       // ── Prediction ───────────────────────────────────────────
-      /** @noagent DOM event handler (prediction inputs) */
+      /** @noagent DOM event handler (prediction inputs); provisorisch bis predict() (Task 3) */
       setPredictInput(term, text) {
         this.predictInputs = { ...this.predictInputs, [term]: text };
       },
 
+      /** @noagent DOM event handler (prediction button); provisorisch bis predict() (Task 3) */
       runPrediction() {
         const r = this._fit;
         if (!r) return;
@@ -569,13 +869,22 @@ const mod = createModule({
       },
 
       // ── Save as model (models-store WRITE — cross-module) ────
+      /**
+       * Den gezeigten Fit in die Projektmodelle speichern (neu oder als
+       * Aktualisierung des zuletzt gespeicherten). Gibt die id zurück, oder
+       * null, wenn kein gezeigter konvergierter Fit vorliegt oder die
+       * Zielgröße keine Werte hat.
+       * @agent
+       * @returns {string|null} die id des gespeicherten Modells, oder null
+       */
       saveAsModel() {
-        const r = this._fit;
-        if (!r || !r.converged) return;
+        // Gespeichert wird nur, was auch angezeigt wird.
+        const r = this.result ? this._fit : null;
+        if (!r || !r.converged) return null;
         const sm = this.sm();
         const fd = this.model.buildFitData(sm);
         const { y, xCols, xNames, xIsCat, yName } = fd;
-        if (y.length === 0) { module._context.notify(_t('errorTooFew'), 'error'); return; }
+        if (y.length === 0) { module._context.notify(_t('errorTooFew'), 'error'); return null; }
 
         const factorSpec = xNames.map((name, j) => {
           if (xIsCat[j]) {
@@ -632,27 +941,32 @@ const mod = createModule({
         this.model.savedModelId = id;
         this.model.savedModelName = record.name;
         module._context.notify(_t('modelSaved'), 'success');
+        return id;
       },
 
       // ── Imperative widgets: ColumnPicker + charts ────────────
+      /** @noagent lifecycle */
       initPicker() {
         const wrap = module._container.querySelector('[data-ref="picker-cols"]');
         if (!wrap) return;
         this._picker = new ColumnPicker(wrap, module._context, {
           mode: 'multi',
-          types: ['numeric', 'currency', 'percent', 'text'],
-          minCount: 1,
+          ...SLOT_FILTERS.x,
           onChange: (refs) => {
-            this.model.colRefs = refs.map(r => ({ ...r }));
-            if (this.model.yKey && refs.some(r => refToKey(r) === this.model.yKey)) {
-              this.model.yKey = null;
+            // Eine veraltete gespeicherte Spalte lehnt setColumns ab: melden
+            // und den Wähler auf die X des Models zurückstellen.
+            try {
+              this.setColumns('x', refs);
+            } catch (err) {
+              module._context.notify(err?.message ?? String(err), 'error');
+              this._picker?.syncValue(this.model.colRefs);
             }
-            this.autoRun();
           },
         });
         if (this.model.colRefs.length > 0) this._picker.value = this.model.colRefs;
       },
 
+      /** @noagent lifecycle */
       destroyCharts() {
         for (const ch of this._charts) {
           if (ch && typeof ch.destroy === 'function') { try { ch.destroy(); } catch { /* ignore */ } }
@@ -673,6 +987,7 @@ const mod = createModule({
         });
       },
 
+      /** @noagent chart rendering */
       async renderActiveChart() {
         this.destroyCharts();
         const r = this._fit;
@@ -703,6 +1018,7 @@ const mod = createModule({
         this._charts.push(chart);
       },
 
+      /** @noagent chart rendering */
       async renderResidualsVsFitted(r, gen) {
         await this._mkScatter('[data-ref="chart-residuals"]', gen, {
           title: _t('residualsVsFitted'),
@@ -716,6 +1032,7 @@ const mod = createModule({
         }, 'residuals');
       },
 
+      /** @noagent chart rendering */
       async renderQQPlot(r, gen) {
         const sorted = [...r.devianceResiduals].sort((a, b) => a - b);
         const theoretical = normalOrderStats(sorted.length);
@@ -732,6 +1049,7 @@ const mod = createModule({
         }, 'qq');
       },
 
+      /** @noagent chart rendering */
       async renderCooksPlot(r, gen) {
         if (!r._cooks) return;
         const indices = r._cooks.map((_, i) => i + 1);
@@ -749,6 +1067,7 @@ const mod = createModule({
         }, 'cooks');
       },
 
+      /** @noagent chart rendering */
       async renderROCChart(r, gen) {
         if (r.family.name !== 'binomial') return;
         const roc = computeROC(r.y, r.fittedValues, r.priorWeights ?? undefined);
@@ -765,6 +1084,7 @@ const mod = createModule({
       },
 
       // ── Lifecycle ────────────────────────────────────────────
+      /** @noagent lifecycle */
       init() {
         const ctx = module._context;
 
@@ -827,6 +1147,7 @@ const mod = createModule({
         this._unsubs.push(() => eb.off('theme:changed', onTheme));
       },
 
+      /** @noagent lifecycle */
       destroy() {
         for (const u of this._unsubs) u();
         this._unsubs = [];
