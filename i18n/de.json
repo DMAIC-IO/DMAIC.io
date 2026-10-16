@@ -6521,7 +6521,7 @@
           "help": "Setzt eine Eingabe; die Berechnung läuft danach neu.",
           "params": {
             "key": "Einer der Schlüssel aus activeParams. Welche von sigma0, sigmaAlt, ratio, delta und sigma gelten, hängt von category und testType ab; jeder andere Schlüssel ist ein Fehler.",
-            "value": "category: 'variance' oder 'mean'. testType: 'one' oder 'two'. direction: 'two-sided', 'greater' oder 'less'. alpha: eine Zahl von 0.001 bis 0.5. power: eine Zahl von 0.5 bis 0.99 (Werte außerhalb sind ein Fehler, sie werden nicht geklemmt). sigma0, sigmaAlt, ratio, delta, sigma: ein Text wie '2.5', '' leert den Wert."
+            "value": "category: 'variance' oder 'mean'. testType: 'one' oder 'two'. direction: 'two-sided', 'greater' oder 'less'. alpha: eine Zahl von 0.0001 bis 0.5. power: eine Zahl von 0.5 bis 0.9999 (Werte außerhalb sind ein Fehler, sie werden nicht geklemmt). sigma0, sigmaAlt, ratio, delta, sigma: ein Text wie '2.5', '' leert den Wert."
           }
         },
         "runAnalysis": { "help": "Berechnet den erforderlichen Stichprobenumfang aus den aktuellen Eingaben. Bei unvollständigen Eingaben oder Werten, die keine positiven Zahlen sind, bleibt result null." }
@@ -6872,7 +6872,7 @@
           "help": "Setzt einen Parameter; die Analyse läuft danach auf der gewählten Spalte neu.",
           "params": {
             "key": "Einer der Schlüssel aus activeParams: alpha, side, tukeyFactor, hampelK, zThreshold, modZThreshold, esdMaxOutliers oder enabled. Jeder andere Wert ist ein Fehler.",
-            "value": "alpha: Zahl von 0.001 bis 0.5. side: 'two-sided', 'upper' oder 'lower'. tukeyFactor, zThreshold, modZThreshold: Zahl von 0.1 bis 10. hampelK: Zahl von 0.1 bis 20. esdMaxOutliers: ganze Zahl von 1 bis 50, oder null für automatisch. enabled: Liste von Methoden-ids (grubbs, dixon-q, generalized-esd, tukey-iqr, hampel, z-score, modified-z); Methoden außerhalb der Liste laufen nicht. Ein Wert außerhalb des Bereichs oder der Liste ist ein Fehler."
+            "value": "alpha: Zahl von 0.0001 bis 0.5. side: 'two-sided', 'upper' oder 'lower'. tukeyFactor, zThreshold, modZThreshold: Zahl von 0.1 bis 10. hampelK: Zahl von 0.1 bis 20. esdMaxOutliers: ganze Zahl von 1 bis 50, oder null für automatisch. enabled: Liste von Methoden-ids (grubbs, dixon-q, generalized-esd, tukey-iqr, hampel, z-score, modified-z); Methoden außerhalb der Liste laufen nicht. Ein Wert außerhalb des Bereichs oder der Liste ist ein Fehler."
           }
         },
         "setColumn": {
@@ -7460,7 +7460,7 @@
           "help": "Das gespeicherte Optimum { xOpt, yPredictions, dPerResponse, D, ciAtOpt, factorNames, modelNames, paretoFront, iter }; ciAtOpt und paretoFront sind null. null, solange nicht optimiert wurde, und wenn der gespeicherte Datensatz fehlt."
         },
         "errorMsg": {
-          "help": "Warum das letzte runOptimize nichts gerechnet hat: die sperrenden Gründe, mit '; ' verbunden, 'Kein Modell ausgewählt.' oder der Engine-Fehler. Leer vor dem ersten runOptimize und nach einem erfolgreichen Lauf."
+          "help": "Warum das letzte runOptimize nichts gerechnet hat: die sperrenden Gründe, mit '; ' verbunden, 'Kein Modell ausgewählt.' oder der Engine-Fehler. Leer vor dem ersten runOptimize und nach einem erfolgreichen Lauf; wird wieder geleert, sobald sich die Modellliste, die Auswahl oder eine Zielvorgabe ändert."
         }
       },
       "sectionModels": "Modelle und Wunschfunktionen",

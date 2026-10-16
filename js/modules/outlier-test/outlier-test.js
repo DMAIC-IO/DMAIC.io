@@ -77,7 +77,8 @@ function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–';
 
 /** Zulässige Bereiche der Zahlenparameter (einzige Quelle für Setter und Oberfläche). */
 const PARAM_RANGES = {
-  alpha: { min: 0.001, max: 0.5 },
+  // Nicht enger als die Einstellungen säen können (settings.js clampConfPower: bis 99,99 % → alpha 0.0001).
+  alpha: { min: 0.0001, max: 0.5 },
   tukeyFactor: { min: 0.1, max: 10 },
   hampelK: { min: 0.1, max: 20 },
   zThreshold: { min: 0.1, max: 10 },

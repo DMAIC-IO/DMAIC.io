@@ -6517,7 +6517,7 @@
           "help": "Sets one input; the calculation reruns.",
           "params": {
             "key": "One of the keys in activeParams. Which of sigma0, sigmaAlt, ratio, delta and sigma apply depends on category and testType; any other key is an error.",
-            "value": "category: 'variance' or 'mean'. testType: 'one' or 'two'. direction: 'two-sided', 'greater' or 'less'. alpha: a number from 0.001 to 0.5. power: a number from 0.5 to 0.99 (out-of-range values are an error, not clamped). sigma0, sigmaAlt, ratio, delta, sigma: a text such as '2.5', '' clears it."
+            "value": "category: 'variance' or 'mean'. testType: 'one' or 'two'. direction: 'two-sided', 'greater' or 'less'. alpha: a number from 0.0001 to 0.5. power: a number from 0.5 to 0.9999 (out-of-range values are an error, not clamped). sigma0, sigmaAlt, ratio, delta, sigma: a text such as '2.5', '' clears it."
           }
         },
         "runAnalysis": { "help": "Calculates the required sample size from the current inputs. While the inputs are incomplete or not positive numbers result stays null." }
@@ -6868,7 +6868,7 @@
           "help": "Sets one parameter; the analysis reruns on the chosen column.",
           "params": {
             "key": "One of the keys in activeParams: alpha, side, tukeyFactor, hampelK, zThreshold, modZThreshold, esdMaxOutliers or enabled. Any other value is an error.",
-            "value": "alpha: number from 0.001 to 0.5. side: 'two-sided', 'upper' or 'lower'. tukeyFactor, zThreshold, modZThreshold: number from 0.1 to 10. hampelK: number from 0.1 to 20. esdMaxOutliers: whole number from 1 to 50, or null for automatic. enabled: list of method ids (grubbs, dixon-q, generalized-esd, tukey-iqr, hampel, z-score, modified-z); methods not in the list are not run. A value outside the range or the list is an error."
+            "value": "alpha: number from 0.0001 to 0.5. side: 'two-sided', 'upper' or 'lower'. tukeyFactor, zThreshold, modZThreshold: number from 0.1 to 10. hampelK: number from 0.1 to 20. esdMaxOutliers: whole number from 1 to 50, or null for automatic. enabled: list of method ids (grubbs, dixon-q, generalized-esd, tukey-iqr, hampel, z-score, modified-z); methods not in the list are not run. A value outside the range or the list is an error."
           }
         },
         "setColumn": {
@@ -7456,7 +7456,7 @@
           "help": "The stored optimum { xOpt, yPredictions, dPerResponse, D, ciAtOpt, factorNames, modelNames, paretoFront, iter }; ciAtOpt and paretoFront are null. null while no optimisation has run and when the stored record is gone."
         },
         "errorMsg": {
-          "help": "Why the last runOptimize computed nothing: the blocking reasons joined by '; ', 'No model selected.' or the engine error. Empty before the first runOptimize and after a successful run."
+          "help": "Why the last runOptimize computed nothing: the blocking reasons joined by '; ', 'No model selected.' or the engine error. Empty before the first runOptimize and after a successful run; cleared again as soon as the model list, the selection or a target specification changes."
         }
       },
       "sectionModels": "Models and desirability functions",

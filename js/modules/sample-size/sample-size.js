@@ -39,9 +39,13 @@ function resolveAlgoId(category, testType) {
   return testType === 'two' ? 'two-sample-t-test' : 'one-sample-t-test';
 }
 
-/** Zulässige Bereiche von alpha und power (einzige Quelle für Setter und Oberfläche). */
-const ALPHA_RANGE = { min: 0.001, max: 0.5 };
-const POWER_RANGE = { min: 0.5, max: 0.99 };
+/**
+ * Zulässige Bereiche von alpha und power (einzige Quelle für Setter und Oberfläche).
+ * Nicht enger als das, was die Einstellungen säen können (settings.js clampConfPower:
+ * Konfidenz bis 99,99 % → alpha 0.0001, power bis 0.9999).
+ */
+const ALPHA_RANGE = { min: 0.0001, max: 0.5 };
+const POWER_RANGE = { min: 0.5, max: 0.9999 };
 
 /** Die Parameter, die `setParam` annimmt. */
 const PARAM_KEYS = ['category', 'testType', 'direction', 'alpha', 'power',
@@ -264,10 +268,12 @@ export default createModule({
        */
       alphaChanged(event) {
         try {
-          this.setParam('alpha', event.target.value);
+          PARAM_CHECKS.alpha(event.target.value);
         } catch {
           if (event.type === 'change') event.target.value = this.model.alpha;
+          return;
         }
+        this.setParam('alpha', event.target.value);
       },
 
       // ── Agent surface ─────────────────────────────────────────

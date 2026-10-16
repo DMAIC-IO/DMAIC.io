@@ -7231,7 +7231,7 @@ export const AGENT_REGISTRY = {
       },
       "errorMsg": {
         "type": "string",
-        "help": "why the last `runOptimize` computed nothing (the blocking reasons, no model selected, or the engine error), or an empty string",
+        "help": "why the last `runOptimize` computed nothing (the blocking reasons, no model selected, or the engine error), or an empty string; cleared again as soon as the model list, the selection or a specification changes",
         "bulk": false,
         "derived": true
       }

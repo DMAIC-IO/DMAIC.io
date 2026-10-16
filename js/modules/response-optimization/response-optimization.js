@@ -284,7 +284,7 @@ function buildContourSVGElement(d) {
  * @property {boolean} canOptimize  whether `runOptimize` computes: at least one model selected and no diagnostic reason
  * @property {string[]} diagnosticReasons  the reasons that block the optimisation (low R², lack of fit, factor mismatch), or an empty list
  * @property {object|null} result  the stored optimum `{ xOpt, yPredictions, dPerResponse, D, ciAtOpt, factorNames, modelNames, paretoFront, iter }`, or null while no optimisation has run
- * @property {string} errorMsg  why the last `runOptimize` computed nothing (the blocking reasons, no model selected, or the engine error), or an empty string
+ * @property {string} errorMsg  why the last `runOptimize` computed nothing (the blocking reasons, no model selected, or the engine error), or an empty string; cleared again as soon as the model list, the selection or a specification changes
  */
 
 export default createModule({
@@ -368,6 +368,8 @@ export default createModule({
       },
 
       _refreshDiagnostic() {
+        // Eine frühere Ablehnung gilt nicht mehr, sobald sich Auswahl oder Vorgaben ändern.
+        this.errorMsg = '';
         const selectedIds = this.model.selectedIds;
         const rawReasons = this.model.diagnose(
           selectedIds,
