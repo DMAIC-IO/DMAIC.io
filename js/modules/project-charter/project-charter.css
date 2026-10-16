@@ -134,12 +134,11 @@
 
 /* Column widths */
 .pc__col-nr    { width: 28px; text-align: center; color: var(--color-text-tertiary); font-size: var(--font-size-xs); }
-tbody .pc__col-nr { cursor: grab; user-select: none; }
-tbody .pc__col-nr:active { cursor: grabbing; }
 
-.pc__goal-row--dragging td { opacity: 0.4; }
-.pc__goal-row--drop-before td { box-shadow: inset 0 2px 0 0 var(--color-accent, var(--color-info)); }
-.pc__goal-row--drop-after  td { box-shadow: inset 0 -2px 0 0 var(--color-accent, var(--color-info)); }
+/* Reorder grip — glyph and drag state classes come from components.css
+   (.dmike-table__grip, .dmike-table__row--dragging/--drop-target). */
+.pc__col-grip  { width: 32px; padding-right: 0; text-align: center; }
+.pc__goal-row:hover .dmike-table__grip { opacity: 1; }
 
 /* Description is the only flexible column — fills the remaining space.
    All other columns shrink to their content via width:1%; the inputs

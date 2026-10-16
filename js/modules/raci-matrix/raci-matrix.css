@@ -197,41 +197,18 @@
   font-style: italic;
 }
 
-/* ── Drag handle ───────────────────────────────────────── */
+/* ── Reorder grip ──────────────────────────────────────
+   The grip and the drag state classes come from components.css
+   (.dmike-table__grip, .dmike-table__row--dragging/--drop-target); the matrix
+   is not a .dmike-table, so only the placement and hover strength live here. */
 
-.raci__drag-handle {
-  display: inline-block;
-  cursor: grab;
-  color: var(--color-text-tertiary);
-  font-size: 14px;
-  line-height: 1;
+.raci__grip {
   vertical-align: middle;
   margin-right: var(--spacing-xs);
-  user-select: none;
-  opacity: 0.5;
-  transition: opacity 0.15s;
 }
 
-.raci__activity-cell:hover .raci__drag-handle {
+.raci__activity-cell:hover .raci__grip {
   opacity: 1;
-}
-
-/* ── Row drag states ───────────────────────────────────── */
-
-tr[data-drag-a] {
-  transition: opacity 0.15s;
-}
-
-.raci__row--dragging {
-  opacity: 0.35;
-}
-
-.raci__row--drop-before td {
-  box-shadow: inset 0 3px 0 var(--color-accent);
-}
-
-.raci__row--drop-after td {
-  box-shadow: inset 0 -3px 0 var(--color-accent);
 }
 
 /* ── Inline rename ─────────────────────────────────────── */

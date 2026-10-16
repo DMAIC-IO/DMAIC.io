@@ -25,6 +25,7 @@ import { markdownToFragment, domToMarkdown } from './project-charter-richtext.js
 import { icon } from '../../core/icon.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
 import { uid } from '../../core/uid.js';
+import { draggableRows } from '../../ui/draggable-list.js';
 
 const NW = 220;   // node width (px)
 const HG = 44;    // horizontal gap between sibling subtrees
@@ -68,6 +69,19 @@ export default createModule({
 
   data(module, _t) {
     return {
+      // Goal row reorder: grip, Alt+Arrow keys and drop = "insert before".
+      ...draggableRows({
+        onMove({ group, sourceId, targetId }) {
+          if (group !== 'goals') return;
+          this._pushUndo();
+          this.model.reorderGoal(sourceId, targetId, false);
+        },
+        rowIds(group) {
+          return group === 'goals' ? this.model.goals.map(g => g.id) : [];
+        },
+        t: (key, params) => module._context.i18n.t(key, params),
+      }),
+
       // ── Transient view state (never persisted) ───────────────
       _orgSel: null,
       _orgPan: { x: 0, y: 0 },
@@ -96,6 +110,7 @@ export default createModule({
       // ── Lifecycle: mount/dispose imperative org-chart widgets ─
       init() {
         this._undoStack = [];
+        this.dragRowsInit();
         // Initial contenteditable content (Alpine must not own it).
         this.$nextTick(() => {
           // Point the framework's _tmpl._state at THIS component's live reactive
@@ -121,6 +136,7 @@ export default createModule({
 
       destroy() {
         this._orgUnmounted = true;
+        this.dragRowsDestroy();
         const lines = orgLineCharts.get(this.$root);
         if (lines) { module._context.chartManager.destroy(lines); orgLineCharts.delete(this.$root); }
         if (this._modebar) { this._modebar.destroy(); this._modebar = null; }
@@ -233,53 +249,6 @@ export default createModule({
           };
           setTimeout(() => document.addEventListener('click', cancel), 0);
         }
-      },
-
-      // goal row drag reorder (custom dataTransfer mime for parity)
-      goalDragStart(id, event) {
-        const row = event.target.closest('.pc__goal-row');
-        event.dataTransfer.effectAllowed = 'move';
-        event.dataTransfer.setData('application/x-pc-goal', id);
-        const rect = row.getBoundingClientRect();
-        event.dataTransfer.setDragImage(row, event.clientX - rect.left, event.clientY - rect.top);
-        row.classList.add('pc__goal-row--dragging');
-      },
-
-      goalDragEnd(event) {
-        const row = event.target.closest('.pc__goal-row');
-        row?.classList.remove('pc__goal-row--dragging');
-        this.$root.querySelectorAll('.pc__goal-row').forEach(r =>
-          r.classList.remove('pc__goal-row--drop-before', 'pc__goal-row--drop-after'));
-      },
-
-      goalDragOver(id, event) {
-        if (!event.dataTransfer.types.includes('application/x-pc-goal')) return;
-        event.preventDefault();
-        event.dataTransfer.dropEffect = 'move';
-        const row = event.currentTarget;
-        const rect = row.getBoundingClientRect();
-        const isAfter = (event.clientY - rect.top) > rect.height / 2;
-        row.classList.toggle('pc__goal-row--drop-before', !isAfter);
-        row.classList.toggle('pc__goal-row--drop-after', isAfter);
-      },
-
-      goalDragLeave(id, event) {
-        const row = event.currentTarget;
-        if (row.contains(event.relatedTarget)) return;
-        row.classList.remove('pc__goal-row--drop-before', 'pc__goal-row--drop-after');
-      },
-
-      goalDrop(id, event) {
-        if (!event.dataTransfer.types.includes('application/x-pc-goal')) return;
-        event.preventDefault();
-        const row = event.currentTarget;
-        row.classList.remove('pc__goal-row--drop-before', 'pc__goal-row--drop-after');
-        const srcId = event.dataTransfer.getData('application/x-pc-goal');
-        if (!srcId || srcId === id) return;
-        const rect = row.getBoundingClientRect();
-        const isAfter = (event.clientY - rect.top) > rect.height / 2;
-        this._pushUndo();
-        this.model.reorderGoal(srcId, id, isAfter);
       },
 
       // ═══════════════════════════════════════════════════════

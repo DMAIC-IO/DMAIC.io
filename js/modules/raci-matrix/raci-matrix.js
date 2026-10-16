@@ -7,12 +7,13 @@
  * holds the persisted state (activities, stakeholders, assignments) plus all
  * RACI business logic (cycle, add/remove with reindexing, move, rename,
  * validation). The data-fn owns the view transforms (role colors, legend,
- * warnings), the add/cell/delete/rename/drag handlers, the transient rename
- * and drag UI state, and CSV export.
+ * warnings), the add/cell/delete/rename handlers, the row reorder (draggableRows),
+ * the transient rename UI state, and CSV export.
  */
 
 import { createModule } from '../../core/template-module.js';
 import { downloadFile } from '../../core/export-utils.js';
+import { draggableRows } from '../../ui/draggable-list.js';
 import {
   State, ROLES, ACTIVITY_MAXLEN, STAKEHOLDER_MAXLEN,
 } from './raci-matrix-model.js';
@@ -44,6 +45,21 @@ export default createModule({
 
   data(module, _t) {
     return {
+      // Activities have no ids, so the row index is the id. A move rebuilds
+      // the indices, but the mixin resets its drag state on every drop.
+      ...draggableRows({
+        onMove({ group, sourceId, targetId }) {
+          if (group !== 'activities') return;
+          // "before targetId" — removing the source first shifts later rows up.
+          const to = sourceId < targetId ? targetId - 1 : targetId;
+          this.model.moveActivity(sourceId, to);
+        },
+        rowIds(group) {
+          return group === 'activities' ? this.model.activities.map((_, i) => i) : [];
+        },
+        t: (key, params) => module._context.i18n.t(key, params),
+      }),
+
       // ── Static view data ──────────────────────────────────────
       roles: ROLES,
       activityMaxlen: ACTIVITY_MAXLEN,
@@ -54,8 +70,6 @@ export default createModule({
       /** @type {{type:'activity'|'stakeholder', idx:number}|null} */
       rename: null,
       renameValue: '',
-      /** @type {number|null} index of the row currently being dragged */
-      dragIdx: null,
 
       // ── View transforms ───────────────────────────────────────
       legendStyle(role) {
@@ -164,43 +178,12 @@ export default createModule({
         this.renameValue = '';
       },
 
-      // ── Drag & drop row reorder ───────────────────────────────
-      dragStart(aIdx, event) {
-        this.dragIdx = aIdx;
-        event.dataTransfer.effectAllowed = 'move';
-        event.dataTransfer.setData('text/plain', ''); // required for Firefox
-        event.currentTarget.classList.add('raci__row--dragging');
+      // ── Lifecycle ─────────────────────────────────────────────
+      init() {
+        this.dragRowsInit();
       },
-      dragEnd(event) {
-        event.currentTarget.classList.remove('raci__row--dragging');
-        this.$el.querySelectorAll('.raci__row--drop-before, .raci__row--drop-after').forEach(
-          r => r.classList.remove('raci__row--drop-before', 'raci__row--drop-after')
-        );
-        this.dragIdx = null;
-      },
-      dragOver(aIdx, event) {
-        if (this.dragIdx === null) return;
-        event.preventDefault();
-        event.dataTransfer.dropEffect = 'move';
-        const row = event.currentTarget;
-        const rect = row.getBoundingClientRect();
-        const before = event.clientY < rect.top + rect.height / 2;
-        row.classList.toggle('raci__row--drop-before', before);
-        row.classList.toggle('raci__row--drop-after', !before);
-      },
-      dragLeave(event) {
-        event.currentTarget.classList.remove('raci__row--drop-before', 'raci__row--drop-after');
-      },
-      drop(targetIdx, event) {
-        event.preventDefault();
-        event.currentTarget.classList.remove('raci__row--drop-before', 'raci__row--drop-after');
-        if (this.dragIdx === null || this.dragIdx === targetIdx) { this.dragIdx = null; return; }
-        const rect = event.currentTarget.getBoundingClientRect();
-        const before = event.clientY < rect.top + rect.height / 2;
-        let toIdx = before ? targetIdx : targetIdx + 1;
-        if (this.dragIdx < toIdx) toIdx--;
-        this.model.moveActivity(this.dragIdx, toIdx);
-        this.dragIdx = null;
+      destroy() {
+        this.dragRowsDestroy();
       },
 
       // ── Export ────────────────────────────────────────────────
