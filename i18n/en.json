@@ -7827,10 +7827,10 @@
           "help": "Fits the model with the current inputs. On failure result is null and errorMsg names the reason; with aliasing, terms lists the terms setTerm can exclude."
         },
         "saveAsModel": {
-          "help": "Saves the polynomial model with several X in the project models (new, or as an update of the model saved last) and returns its id; returns null when canSaveModel is false. savedModelId follows."
+          "help": "Saves the polynomial model (one or several X) in the project models (new, or as an update of the model saved last) and returns its id; returns null when canSaveModel is false. savedModelId follows."
         },
         "predict": {
-          "help": "Predicts the response for the given values of the predictors and fills prediction; returns null when a predictor is left without a value.",
+          "help": "Predicts the response for the given values of the predictors and fills prediction; returns null when a predictor is left without a value or there is no result.",
           "params": {
             "values": "An object with one value per predictor id from predictors: a number, or one of the levels for categorical predictors. Missing predictors make the result null."
           }
@@ -7877,7 +7877,7 @@
           "help": "The note left by a DoE preset, { aliased, saturated }, or null."
         },
         "perXKeys": {
-          "help": "The single-X models setActiveX accepts; empty for the polynomial type."
+          "help": "The single-X models setActiveX accepts; empty for the polynomial type and without result."
         },
         "activeXKey": {
           "help": "The single-X model result shows, or null."
@@ -7895,7 +7895,7 @@
           "help": "Per slot (x, y) the columns setColumns and setColumn accept, each { key, name }; y leaves out the columns chosen as X."
         },
         "result": {
-          "help": "The fitted model as numbers: type, equation, n, R2, adjR2, R2pred, Se, Fstat, fPVal, dw, coefficients [{ term, coeff, se, t, pval, ciLow, ciHigh, vif }], excludedTerms; null without a fit or after a failed fit."
+          "help": "The fitted model as numbers: type, equation, n, R2, adjR2, R2pred, Se, Fstat, fPVal, dw, coefficients [{ term, coeff, se, t, pval, ciLow, ciHigh, vif }], excludedTerms; null without a fit or after a failed fit. coefficients[].term is the coefficient name: for a categorical term it carries the level (Material[B]), while terms, excludedTerms and setTerm use the term id without the level (Material)."
         },
         "errorMsg": {
           "help": "The message of the last failed fit, '' without error."
@@ -7904,13 +7904,13 @@
           "help": "The inputs of the fitted model, each { id, label, kind, levels? }; empty without result."
         },
         "canSaveModel": {
-          "help": "true when saveAsModel would store a model now (polynomial type, several X, a fit)."
+          "help": "true when saveAsModel would store a model now (polynomial type with one or several X, and a result)."
         },
         "savedModelId": {
           "help": "The id of the model saved last in the project models, or null."
         },
         "prediction": {
-          "help": "{ yHat, piLow, piHigh } of the last prediction, null without one; piLow and piHigh are null where the model gives no prediction interval."
+          "help": "{ yHat, piLow, piHigh } of the last prediction, null without one and without result; piLow and piHigh are null where the model gives no prediction interval."
         }
       },
       "name": "Regression Analysis",

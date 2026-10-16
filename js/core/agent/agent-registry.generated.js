@@ -7191,7 +7191,7 @@ export const AGENT_REGISTRY = {
       "saveAsModel": {
         "params": [],
         "returns": "string|null",
-        "help": "Speichert das Polynommodell mit mehreren X in die Projektmodelle (neu oder als Aktualisierung des zuletzt gespeicherten). Gibt die id zurück, oder null, wenn kein speicherbares Modell vorliegt (`read().canSaveModel`)."
+        "help": "Speichert das Polynommodell (ein oder mehrere X) in die Projektmodelle (neu oder als Aktualisierung des zuletzt gespeicherten). Gibt die id zurück, oder null, wenn kein speicherbares Modell vorliegt (`read().canSaveModel`)."
       }
     },
     "fields": {

@@ -230,7 +230,7 @@ const mod = createModule({
       /** @noagent derived set; der Agent liest sie über read().experimentImports */
       experimentImports() { return this.importOptions().map(o => ({ key: o.key, label: o.label })); },
       /** @noagent derived set; der Agent liest sie über read().perXKeys */
-      perXKeys() { return Object.keys(this.model.perXResults ?? {}); },
+      perXKeys() { return this.result ? Object.keys(this.model.perXResults ?? {}) : []; },
       /** @noagent derived set; der Agent liest sie über read().pickableColumns */
       pickableColumns() {
         const sm = this.sm();
@@ -703,13 +703,18 @@ const mod = createModule({
       /** @noagent helper; Rebuild transient result view + predict inputs from the active result. */
       rebuildResult() {
         const r = this.model.activeResult;
-        if (!r) { this.result = null; this._predictForm = []; this._predictText = ''; this._predictInterval = ''; this._prediction = null; return; }
+        if (!r) { this.result = null; this._predictForm = []; this._clearPrediction(); return; }
         this.result = this.buildResultView(r);
         this.buildPredictForm(r);
         // Reset stale active tab if the current tab is not available for this result.
         if (!this.result.tabs.some(tb => tb.id === this.model.activeTab)) {
           this.model.activeTab = 'scatter';
         }
+        this._clearPrediction();
+      },
+
+      /** @noagent helper; Die angezeigte Vorhersage verwerfen. */
+      _clearPrediction() {
         this._predictText = '';
         this._predictInterval = '';
         this._prediction = null;
@@ -741,10 +746,10 @@ const mod = createModule({
        * @returns {{ yHat: number, piLow: number|null, piHigh: number|null }|null} null bei fehlender Eingabe
        */
       _showPrediction() {
-        const r = this.model.activeResult;
-        this._predictText = '';
-        this._predictInterval = '';
-        this._prediction = null;
+        // Nach einem Fehlschlag hält das Model noch den alten Fit: gerechnet
+        // wird nur auf dem gezeigten Ergebnis.
+        const r = this.result ? this.model.activeResult : null;
+        this._clearPrediction();
         if (!r) return null;
 
         const values = Object.fromEntries(this._predictForm.map(f => [
@@ -769,7 +774,7 @@ const mod = createModule({
        * Die Zielgröße für Werte der Einflussgrößen vorhersagen.
        * @agent
        * @param {object} values je Prädiktor-id aus predictors ein Wert (Zahl, bei kategorialen Prädiktoren eine Stufe)
-       * @returns {{ yHat: number, piLow: number|null, piHigh: number|null }|null} null, wenn ein Prädiktor ohne Wert bleibt
+       * @returns {{ yHat: number, piLow: number|null, piHigh: number|null }|null} null, wenn ein Prädiktor ohne Wert bleibt oder kein Ergebnis gezeigt wird
        */
       predict(values) {
         if (values == null || typeof values !== 'object' || Array.isArray(values)) {
@@ -787,9 +792,7 @@ const mod = createModule({
         }
         // Ein Prädiktor ohne Wert ist „nicht bereit“: keine Vorhersage aus alten Feldwerten.
         if (preds.some(p => !(p.id in values))) {
-          this._prediction = null;
-          this._predictText = '';
-          this._predictInterval = '';
+          this._clearPrediction();
           return null;
         }
         return this._showPrediction();
@@ -874,6 +877,7 @@ const mod = createModule({
           if (this.model.result || this.model.perXResults) {
             this.model.clearResults();
             this.result = null;
+            this._clearPrediction();
             this._errorText = '';
             this._renderGen++;
             this.destroyCharts();
@@ -907,6 +911,7 @@ const mod = createModule({
             this._aliased = Array.isArray(res.aliased) ? res.aliased.map(a => ({ term: a.term })) : [];
           }
           this.result = null;
+          this._clearPrediction();
           return;
         }
         // Per-X path may carry partial errors alongside a result.
@@ -924,7 +929,7 @@ const mod = createModule({
 
       // ── Save as model (models-store WRITE — cross-module) ────
       /**
-       * Speichert das Polynommodell mit mehreren X in die Projektmodelle (neu
+       * Speichert das Polynommodell (ein oder mehrere X) in die Projektmodelle (neu
        * oder als Aktualisierung des zuletzt gespeicherten). Gibt die id zurück,
        * oder null, wenn kein speicherbares Modell vorliegt (`read().canSaveModel`).
        * @agent
@@ -1008,7 +1013,16 @@ const mod = createModule({
         this._picker = new ColumnPicker(wrap, module._context, {
           mode: 'multi',
           ...SLOT_FILTERS.x,
-          onChange: (refs) => this.setColumns('x', refs),
+          onChange: (refs) => {
+            // Eine veraltete gespeicherte Spalte lehnt setColumns ab: melden
+            // und den Wähler auf die X des Models zurückstellen.
+            try {
+              this.setColumns('x', refs);
+            } catch (err) {
+              module._context.notify(err?.message ?? String(err), 'error');
+              this._picker?.syncValue(this.model.colRefs);
+            }
+          },
         });
         if (this.model.colRefs.length > 0) this._picker.value = this.model.colRefs;
       },

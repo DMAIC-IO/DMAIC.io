@@ -7831,10 +7831,10 @@
           "help": "Rechnet das Modell mit den aktuellen Eingaben. Bei einem Fehlschlag ist result null und errorMsg nennt den Grund; bei Aliasing nennt terms die Terme, die setTerm dann ausschließen kann."
         },
         "saveAsModel": {
-          "help": "Speichert das Polynommodell mit mehreren X in die Projektmodelle (neu oder als Aktualisierung des zuletzt gespeicherten) und gibt die id zurück; null, wenn canSaveModel false ist. savedModelId zieht nach."
+          "help": "Speichert das Polynommodell (ein oder mehrere X) in die Projektmodelle (neu oder als Aktualisierung des zuletzt gespeicherten) und gibt die id zurück; null, wenn canSaveModel false ist. savedModelId zieht nach."
         },
         "predict": {
-          "help": "Sagt die Zielgröße für die angegebenen Werte der Einflussgrößen vorher und füllt prediction; null, wenn ein Prädiktor ohne Wert bleibt.",
+          "help": "Sagt die Zielgröße für die angegebenen Werte der Einflussgrößen vorher und füllt prediction; null, wenn ein Prädiktor ohne Wert bleibt oder kein result vorliegt.",
           "params": {
             "values": "Ein Objekt mit je Prädiktor-id aus predictors einem Wert: eine Zahl, bei kategorialen Prädiktoren eine der Stufen. Fehlende Prädiktoren lassen das Ergebnis null."
           }
@@ -7881,7 +7881,7 @@
           "help": "Der Hinweis einer DoE-Vorgabe, { aliased, saturated }, oder null."
         },
         "perXKeys": {
-          "help": "Die Einzel-X-Modelle, die setActiveX annimmt; leer beim Typ polynomial."
+          "help": "Die Einzel-X-Modelle, die setActiveX annimmt; leer beim Typ polynomial und ohne result."
         },
         "activeXKey": {
           "help": "Das Einzel-X-Modell, das result zeigt, oder null."
@@ -7899,7 +7899,7 @@
           "help": "Je Slot (x, y) die Spalten, die setColumns und setColumn annehmen, je { key, name }; y lässt die als X gewählten Spalten aus."
         },
         "result": {
-          "help": "Das gerechnete Modell als Zahlen: type, equation, n, R2, adjR2, R2pred, Se, Fstat, fPVal, dw, coefficients [{ term, coeff, se, t, pval, ciLow, ciHigh, vif }], excludedTerms; null ohne Fit oder nach einem Fehlschlag."
+          "help": "Das gerechnete Modell als Zahlen: type, equation, n, R2, adjR2, R2pred, Se, Fstat, fPVal, dw, coefficients [{ term, coeff, se, t, pval, ciLow, ciHigh, vif }], excludedTerms; null ohne Fit oder nach einem Fehlschlag. coefficients[].term ist der Name des Koeffizienten: bei einem kategorialen Term trägt er die Stufe (Material[B]), während terms, excludedTerms und setTerm die Term-id ohne Stufe führen (Material)."
         },
         "errorMsg": {
           "help": "Die Meldung des letzten Fehlschlags, '' ohne Fehler."
@@ -7908,13 +7908,13 @@
           "help": "Die Eingaben des gerechneten Modells, je { id, label, kind, levels? }; leer ohne result."
         },
         "canSaveModel": {
-          "help": "true, wenn saveAsModel jetzt ein Modell speichern würde (Typ polynomial, mehrere X, ein Fit)."
+          "help": "true, wenn saveAsModel jetzt ein Modell speichern würde (Typ polynomial mit einem oder mehreren X und ein result)."
         },
         "savedModelId": {
           "help": "Die id des zuletzt in die Projektmodelle gespeicherten Modells, oder null."
         },
         "prediction": {
-          "help": "{ yHat, piLow, piHigh } der letzten Vorhersage, null ohne eine; piLow und piHigh sind null, wo das Modell kein Prognoseintervall liefert."
+          "help": "{ yHat, piLow, piHigh } der letzten Vorhersage, null ohne eine und ohne result; piLow und piHigh sind null, wo das Modell kein Prognoseintervall liefert."
         }
       },
       "name": "Regressionsanalyse",
