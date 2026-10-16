@@ -785,6 +785,13 @@ const mod = createModule({
         for (const f of this._predictForm) {
           if (f.id in values) f.value = String(values[f.id]);
         }
+        // Ein Prädiktor ohne Wert ist „nicht bereit“: keine Vorhersage aus alten Feldwerten.
+        if (preds.some(p => !(p.id in values))) {
+          this._prediction = null;
+          this._predictText = '';
+          this._predictInterval = '';
+          return null;
+        }
         return this._showPrediction();
       },
 
