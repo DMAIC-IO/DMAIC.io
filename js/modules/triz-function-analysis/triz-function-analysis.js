@@ -198,11 +198,13 @@ export default createModule({
         const positions = override
           ? { ...this.model.positions, [override.id]: { x: override.x, y: override.y } }
           : this.model.positions;
-        const { links } = buildFunctionDiagram(
+        const { nodes, links } = buildFunctionDiagram(
           { components: this.model.components, functions: this.model.functions, positions },
           { selectedId: this.selectedId });
         const chart = arrowCharts.get(this.$root);
-        if (chart) module._context.chartManager.update(chart, { links });
+        // Outlines come from the SVG (ellipse/hexagon), names from the draggable HTML boxes.
+        const outlines = nodes.map((n) => ({ ...n, lines: [] }));
+        if (chart) module._context.chartManager.update(chart, { nodes: outlines, links });
       },
 
       // ── Boxes ──

@@ -264,6 +264,44 @@ const P = { id: 'p', x: 0, y: 0, w: 100, h: 40 };
 const Q = { id: 'q', x: 200, y: 0, w: 100, h: 40 };
 const R = { id: 'r', x: 200, y: 200, w: 100, h: 40 };
 
+suite('node-diagram — node shapes', () => {
+  const E = { ...P, shape: 'ellipse' };
+  const H = { ...P, shape: 'hexagon' };
+  const near = (a, b) => Math.abs(a - b) < 0.02;
+
+  test('a straight link leaves an ellipse on its outline, not the bounding box', () => {
+    const p = straightEndpoints(E, R);
+    assertTrue(near(p.x1, 68.57) && near(p.y1, 38.57), `got ${p.x1}, ${p.y1}`);
+    assertDeepEqual([p.x2, p.y2], [230, 200]);
+  });
+
+  test('a straight link leaves a hexagon on its slanted edge', () => {
+    assertDeepEqual(straightEndpoints(H, Q), { x1: 100, y1: 20, x2: 200, y2: 20 });
+    const p = straightEndpoints(H, Q, 10);
+    assertDeepEqual([p.x1, p.y1], [90, 30]);
+  });
+
+  test('ellipse and hexagon nodes render as <ellipse> and a six-point <polygon>', () => {
+    const { svg, done } = mount({ nodes: [{ ...A, shape: 'ellipse' }, { ...B, shape: 'hexagon' }], links: [] });
+    const ell = svg.querySelector('ellipse[data-part="node"]');
+    assertDeepEqual(['cx', 'cy', 'rx', 'ry'].map((k) => Number(ell.getAttribute(k))), [90, 55, 50, 25]);
+    const poly = svg.querySelector('polygon[data-part="node"]');
+    assertEqual(poly.getAttribute('points').trim().split(/\s+/).length, 6);
+    assertEqual(svg.querySelectorAll('rect[data-part="node"]').length, 0);
+    done();
+  });
+
+  test('align: center centres the lines; highlight adds the highlight class to the node', () => {
+    const n = { ...A, align: 'center', highlight: true };
+    const { svg, done } = mount({ nodes: [n], links: [], highlightClass: 'hl' });
+    const line = svg.querySelector('text[data-part="line"]');
+    assertEqual(line.getAttribute('text-anchor'), 'middle');
+    assertEqual(Number(line.getAttribute('x')), 90);
+    assertTrue(svg.querySelector('[data-part="node"]').classList.contains('hl'));
+    done();
+  });
+});
+
 suite('node-diagram — straight links', () => {
   test('straightEndpoints clips a horizontal link to both borders', () => {
     assertDeepEqual(straightEndpoints(P, Q), { x1: 100, y1: 20, x2: 200, y2: 20 });

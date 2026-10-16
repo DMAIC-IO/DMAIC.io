@@ -61,12 +61,12 @@ export default {
               '**Gestrichelter Pfeil** — nützlich, aber unzureichend.',
               '**Dicker Pfeil** — nützlich, aber übermäßig.',
               '**Wellenlinie (rot)** — schädliche Funktion.',
-              '**Kasten mit kräftigem Rand** — Zielobjekt; **gestrichelter Kasten** — Supersystem-Element.',
+              '**Oval** — Zielobjekt; **Kasten** — Systemkomponente; **Sechseck (gestrichelt)** — Supersystem-Element.',
             ],
           },
           {
             type: 'paragraph',
-            content: 'Die Kästen lassen sich verschieben; die Anordnung wird gespeichert. „Anordnung zurücksetzen“ stellt die automatische Startanordnung wieder her. Ein Klick auf einen Kasten oder eine Funktion hebt die zugehörigen Pfeile hervor.',
+            content: 'Die Komponenten lassen sich verschieben; die Anordnung wird gespeichert. „Anordnung zurücksetzen“ stellt die automatische Startanordnung wieder her. Ein Klick auf eine Komponente oder eine Funktion hebt sie und die zugehörigen Pfeile hervor.',
           },
         ],
       },
@@ -80,12 +80,12 @@ export default {
               '**Dashed arrow** — useful but insufficient.',
               '**Bold arrow** — useful but excessive.',
               '**Wavy line (red)** — harmful function.',
-              '**Box with a strong border** — target; **dashed box** — supersystem element.',
+              '**Oval** — target; **box** — system component; **hexagon (dashed)** — supersystem element.',
             ],
           },
           {
             type: 'paragraph',
-            content: 'Boxes can be dragged; the layout is saved. "Reset layout" restores the automatic start layout. Clicking a box or a function highlights the related arrows.',
+            content: 'Components can be dragged; the layout is saved. "Reset layout" restores the automatic start layout. Clicking a component or a function highlights it and the related arrows.',
           },
         ],
       },
@@ -96,7 +96,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Zielobjekt ist der **Belag**. Die Borsten entfernen ihn (nützlich, aber **unzureichend** — die Zwischenräume werden kaum erreicht), die Zahnpasta löst ihn. Bürstenkopf, Griff und Hand halten bzw. führen — Hilfs- und Zusatzfunktionen. Bei zu hohem Druck **verletzen** die Borsten das Zahnfleisch (schädlich). Die Nachteilsliste nennt genau diese beiden Punkte. Das Beispiel lässt sich über die Beispielprojekte laden.',
+            content: 'Zielobjekt ist der **Belag**. Die Borsten entfernen ihn (nützlich, aber **unzureichend** — die Zwischenräume werden kaum erreicht), die Zahnpasta löst ihn. Bürstenkopf, Griff und Hand halten bzw. führen — Hilfs- und Zusatzfunktionen. Bei zu hohem Druck **verletzen** die Borsten das Zahnfleisch, der Belag selbst **reizt** es (beides schädlich). Die Nachteilsliste nennt genau diese drei Punkte. In der Matrix ist jedes Paar entschieden: Haken für Paare, die zusammenwirken, „x“ für alle anderen. Das Beispiel lässt sich über die Beispielprojekte laden.',
           },
         ],
       },
@@ -105,7 +105,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The target is the **plaque**. The bristles remove it (useful but **insufficient** — the gaps are hardly reached), the toothpaste dissolves it. Brush head, handle and hand hold or guide — auxiliary and additional functions. With too much pressure the bristles **injure** the gums (harmful). The disadvantage list names exactly these two points. The example can be loaded from the example projects.',
+            content: 'The target is the **plaque**. The bristles remove it (useful but **insufficient** — the gaps are hardly reached), the toothpaste dissolves it. Brush head, handle and hand hold or guide — auxiliary and additional functions. With too much pressure the bristles **injure** the gums, and the plaque itself **irritates** them (both harmful). The disadvantage list names exactly these three points. Every pair in the matrix is decided: a tick for pairs that interact, an “x” for all others. The example can be loaded from the example projects.',
           },
         ],
       },

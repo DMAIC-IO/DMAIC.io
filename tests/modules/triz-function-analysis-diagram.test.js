@@ -72,7 +72,8 @@ suite('triz-function-analysis — buildFunctionDiagram', () => {
   test('opposite links between the same pair are offset to different sides', () => {
     const { links } = buildFunctionDiagram(pair([fnc('f', 'a', 'b'), fnc('g', 'b', 'a')]));
     assertDeepEqual(links.map((l) => [l.y1, l.y2]), [[15, 15], [29, 29]]);
-    assertDeepEqual([links[1].x1, links[1].x2], [220, 140]);
+    // b is the target: its ellipse (rx 70, ry 22) is cut 7 px below the centre → 290 - 70·√(1 - (7/22)²)
+    assertDeepEqual([links[1].x1, links[1].x2], [223.64, 140]);
   });
 
   test('three parallel links get three distinct tracks', () => {

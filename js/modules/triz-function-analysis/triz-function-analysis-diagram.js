@@ -18,9 +18,9 @@ const PARALLEL_GAP = 14;
 const EXPORT_NAME_MAX = 20;
 
 const NODE_STYLE = {
-  target: { stroke: 'var(--color-accent)', strokeWidth: 2 },
+  target: { shape: 'ellipse', stroke: 'var(--color-accent)', strokeWidth: 2 },
   system: {},
-  supersystem: { fill: 'var(--color-bg-tertiary)', dash: '4 3' },
+  supersystem: { shape: 'hexagon', fill: 'var(--color-bg-tertiary)', dash: '4 3' },
 };
 const LEVEL_STYLE = { adequate: 'solid', insufficient: 'dashed', excessive: 'bold' };
 
@@ -79,10 +79,13 @@ const shorten = (s) => (s.length > EXPORT_NAME_MAX ? `${s.slice(0, EXPORT_NAME_M
  */
 export function buildFunctionDiagram(state, { selectedId = null } = {}) {
   const pos = resolvePositions(state);
-  const boxes = new Map(state.components.map((c) => [c.id, { x: pos[c.id].x, y: pos[c.id].y, w: NODE_W, h: NODE_H }]));
+  const boxes = new Map(state.components.map((c) => [c.id, {
+    x: pos[c.id].x, y: pos[c.id].y, w: NODE_W, h: NODE_H, shape: NODE_STYLE[c.kind].shape,
+  }]));
   const nodes = state.components.map((c) => ({
-    id: c.id, ...boxes.get(c.id), ...NODE_STYLE[c.kind], padY: 14,
+    id: c.id, ...boxes.get(c.id), ...NODE_STYLE[c.kind], padY: 14, align: 'center',
     lines: [{ text: shorten(c.name), weight: c.kind === 'target' ? 600 : null }],
+    highlight: selectedId != null && selectedId === c.id,
   }));
 
   const complete = state.functions.filter((f) => isComplete(f) && boxes.has(f.carrier) && boxes.has(f.object));

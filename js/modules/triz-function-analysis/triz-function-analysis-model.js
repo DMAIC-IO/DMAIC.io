@@ -10,8 +10,8 @@
 import { uid } from '../../core/uid.js';
 
 export const KINDS = ['target', 'system', 'supersystem'];
-/** Display order of the component groups: outermost level first. */
-export const GROUPS = ['supersystem', 'system', 'target'];
+/** Display order of the component groups: supersystem, then the target, then the system. */
+export const GROUPS = ['supersystem', 'target', 'system'];
 export const TYPES = ['useful', 'harmful'];
 export const LEVELS = ['adequate', 'insufficient', 'excessive'];
 export const TABS = ['components', 'interactions', 'model'];
