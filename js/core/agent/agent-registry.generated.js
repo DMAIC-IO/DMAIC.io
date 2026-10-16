@@ -7545,43 +7545,230 @@ export const AGENT_REGISTRY = {
     }
   },
   "rest-api": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:unitLabel",
-      "unmarked_method:scheduleBadgeText",
-      "unmarked_method:formatTime",
-      "unmarked_method:isScheduleRunning",
-      "unmarked_method:lastRunText",
-      "unmarked_method:nextRunText",
-      "unmarked_method:addEndpoint",
-      "unmarked_method:selectEndpoint",
-      "unmarked_method:focusEndpoint",
-      "unmarked_method:deleteEndpoint",
-      "unmarked_method:addHeader",
-      "unmarked_method:deleteHeader",
-      "unmarked_method:addMapping",
-      "unmarked_method:deleteMapping",
-      "unmarked_method:toggleSchedule",
-      "unmarked_method:changeScheduleValue",
-      "unmarked_method:changeScheduleUnit",
-      "unmarked_method:sendRequest",
-      "unmarked_method:copyResponse",
-      "unmarked_method:init",
-      "unmarked_method:destroy"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "addEndpoint": {
+        "params": [],
+        "returns": "string",
+        "help": "Einen neuen Endpunkt anlegen und aktiv setzen."
+      },
+      "selectEndpoint": {
+        "params": [
+          {
+            "name": "endpointId",
+            "type": "string",
+            "optional": false,
+            "help": "eine id aus `endpoints`"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Endpunkt aktiv setzen; die Detailaktionen bearbeiten ihn."
+      },
+      "renameEndpoint": {
+        "params": [
+          {
+            "name": "endpointId",
+            "type": "string",
+            "optional": false,
+            "help": "eine id aus `endpoints`"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "der neue Name; \"\" löscht ihn"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Endpunkt umbenennen."
+      },
+      "removeEndpoint": {
+        "params": [
+          {
+            "name": "endpointId",
+            "type": "string",
+            "optional": false,
+            "help": "eine id aus `endpoints`"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Endpunkt entfernen, ohne Rückfrage; sein Zeitplan wird gestoppt."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'url'|'writeMode'|'schedule.intervalValue'|'schedule.intervalUnit'",
+            "optional": false,
+            "help": "welcher Wert; `activeParams` nennt die gültigen"
+          },
+          {
+            "name": "value",
+            "type": "string|number",
+            "optional": false,
+            "help": "Text für `url`; `replace`, `append` oder `prepend` für `writeMode`; ganze Zahl von 1 bis 999 für `schedule.intervalValue`; `minutes` oder `hours` für `schedule.intervalUnit`"
+          }
+        ],
+        "returns": "void",
+        "help": "URL, Schreibmodus oder Zeitplan des aktiven Endpunkts setzen."
+      },
+      "addHeader": {
+        "params": [],
+        "returns": "number",
+        "help": "Eine leere Kopfzeile an den aktiven Endpunkt hängen."
+      },
+      "setHeader": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "Index in `endpoints[].headers`"
+          },
+          {
+            "name": "key",
+            "type": "string",
+            "optional": false,
+            "help": "der Name der Kopfzeile"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "der Wert der Kopfzeile"
+          }
+        ],
+        "returns": "void",
+        "help": "Name und Wert einer Kopfzeile des aktiven Endpunkts setzen."
+      },
+      "deleteHeader": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "Index in `endpoints[].headers`"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Kopfzeile des aktiven Endpunkts löschen."
+      },
+      "addMapping": {
+        "params": [],
+        "returns": "number",
+        "help": "Ein leeres Mapping an den aktiven Endpunkt hängen. Mappings werden gespeichert, aber noch nicht angewendet."
+      },
+      "setMapping": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "Index in `endpoints[].mappings`"
+          },
+          {
+            "name": "jsonPath",
+            "type": "string",
+            "optional": false,
+            "help": "der Pfad in der JSON-Antwort; \"\" löscht ihn"
+          },
+          {
+            "name": "ref",
+            "type": "object|null",
+            "optional": false,
+            "help": "eine Spalte aus `pickableColumns` als `{ instanceId, sheetId, columnId }`; null löst die Zuordnung"
+          }
+        ],
+        "returns": "void",
+        "help": "Pfad und Zielspalte eines Mappings des aktiven Endpunkts setzen."
+      },
+      "deleteMapping": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "Index in `endpoints[].mappings`"
+          }
+        ],
+        "returns": "void",
+        "help": "Ein Mapping des aktiven Endpunkts löschen."
+      },
+      "setSchedule": {
+        "params": [
+          {
+            "name": "enabled",
+            "type": "boolean",
+            "optional": false,
+            "help": "true startet die regelmäßigen Abrufe (nur mit gesetzter URL), false stoppt sie"
+          }
+        ],
+        "returns": "void",
+        "help": "Den Zeitplan des aktiven Endpunkts ein- oder ausschalten."
+      },
+      "sendRequest": {
+        "params": [],
+        "returns": "Promise<{ status: number, statusText: string, ok: boolean, body: string }|null>",
+        "help": "Führt eine GET-Anfrage an die URL des aktiven Endpunkts aus und wartet auf die Antwort. Ein Netzfehler wird zur Antwort mit Status 0."
+      }
+    },
     "fields": {
       "endpoints": {
-        "type": "Endpoint[]",
-        "help": "",
-        "bulk": false
+        "type": "Array<{ id: string, name: string, url: string, headers: Array<{ key: string, value: string }>, mappings: Array<{ jsonPath: string, columnRef: object|null }>, writeMode: string, schedule: { enabled: boolean, intervalValue: number, intervalUnit: string } }>",
+        "help": "all endpoints",
+        "bulk": false,
+        "derived": true
       },
       "activeId": {
         "type": "string|null",
-        "help": "",
-        "bulk": false
+        "help": "the endpoint the detail actions edit",
+        "bulk": false,
+        "derived": true
+      },
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts; [] without active endpoint",
+        "bulk": false,
+        "derived": true
+      },
+      "scheduleRunning": {
+        "type": "boolean",
+        "help": "a timer runs for the active endpoint",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "Array<{ key: string, name: string }>",
+        "help": "the columns `setMapping` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "loading": {
+        "type": "boolean",
+        "help": "a request is running",
+        "bulk": false,
+        "derived": true
+      },
+      "lastResponse": {
+        "type": "{ status: number, statusText: string, ok: boolean, body: string }|null",
+        "help": "the last response of the active endpoint",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -10331,4 +10518,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":46};
+export const AGENT_COVERAGE = {"total":76,"available":47};

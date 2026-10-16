@@ -15,12 +15,13 @@
             class="rest-api__list-item"
             :class="ep.id === model.activeId ? 'rest-api__list-item--active' : ''"
             :data-id="ep.id"
-            @click="selectEndpoint(ep, $event)">
+            @click="onEndpointClick(ep, $event)">
             <template x-if="isScheduleRunning(ep)">
               <span class="rest-api__schedule-dot" :title="t('scheduleActive')"></span>
             </template>
             <input class="rest-api__ep-name-input" :data-name-id="ep.id"
-              x-model="ep.name" :placeholder="t('namePlaceholder')"
+              @input="renameEndpoint(ep.id, $event.target.value)"
+              :value="ep.name" :placeholder="t('namePlaceholder')"
               @focus="focusEndpoint(ep)">
             <button class="rest-api__item-del" :data-del="ep.id" :title="t('delete')" @click="deleteEndpoint(ep, $event)">
               <span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span>
@@ -38,7 +39,8 @@
           <div class="rest-api__url-bar">
             <span class="rest-api__method-label">GET</span>
             <input class="field rest-api__url-input" data-field="url"
-              x-model="model.activeEndpoint().url" placeholder="https://api.example.com/data">
+              @input="setParam('url', $event.target.value)"
+              :value="model.activeEndpoint().url" placeholder="https://api.example.com/data">
             <button class="rest-api__send-btn dmike-btn-run" data-action="send" @click="sendRequest()">
               <span class="icon icon--sm" data-icon="action.run" aria-hidden="true"></span>
               <span x-text="t('send')"></span>
@@ -57,8 +59,8 @@
             <div class="rest-api__headers-list" data-ref="headers">
               <template x-for="(h, i) in model.activeEndpoint().headers">
                 <div class="rest-api__header-row" :key="i" :data-idx="i">
-                  <input class="field rest-api__header-key" x-model="h.key" placeholder="Key">
-                  <input class="field rest-api__header-val" x-model="h.value" placeholder="Value">
+                  <input class="field rest-api__header-key" :value="h.key" @input="setHeader(i, $event.target.value, h.value)" placeholder="Key">
+                  <input class="field rest-api__header-val" :value="h.value" @input="setHeader(i, h.key, $event.target.value)" placeholder="Value">
                   <button class="rest-api__header-del" :data-hdr-del="i" :title="t('delete')" @click="deleteHeader(i)">&times;</button>
                 </div>
               </template>
@@ -75,23 +77,19 @@
               </button>
             </div>
             <div class="rest-api__write-mode">
-              <label class="rest-api__write-mode-option">
-                <input type="radio" :name="'writeMode-' + model.activeEndpoint().id" value="replace" x-model="model.activeEndpoint().writeMode">
-                <span x-text="t('modeReplace')"></span>
-              </label>
-              <label class="rest-api__write-mode-option">
-                <input type="radio" :name="'writeMode-' + model.activeEndpoint().id" value="append" x-model="model.activeEndpoint().writeMode">
-                <span x-text="t('modeAppend')"></span>
-              </label>
-              <label class="rest-api__write-mode-option">
-                <input type="radio" :name="'writeMode-' + model.activeEndpoint().id" value="prepend" x-model="model.activeEndpoint().writeMode">
-                <span x-text="t('modePrepend')"></span>
-              </label>
+              <template x-for="wm in writeModes()" :key="wm">
+                <label class="rest-api__write-mode-option">
+                  <input type="radio" :name="'writeMode-' + model.activeEndpoint().id" :value="wm"
+                    :checked="model.activeEndpoint().writeMode === wm"
+                    @change="setParam('writeMode', wm)">
+                  <span x-text="writeModeLabel(wm)"></span>
+                </label>
+              </template>
             </div>
             <div class="rest-api__mappings-list" data-ref="mappings">
               <template x-for="(m, i) in model.activeEndpoint().mappings">
                 <div class="rest-api__mapping-row" :key="i" :data-midx="i">
-                  <input class="field rest-api__mapping-path" x-model="m.jsonPath"
+                  <input class="field rest-api__mapping-path" @input="onMappingPath(i, $event)" :value="m.jsonPath"
                     :placeholder="t('jsonPathPlaceholder')">
                   <span class="rest-api__mapping-arrow">&rarr;</span>
                   <div class="rest-api__mapping-picker" :data-picker-idx="i"></div>

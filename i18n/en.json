@@ -7635,6 +7635,110 @@
     "rest-api": {
       "name": "REST API",
       "description": "Centrally manage and test REST API endpoints",
+      "whenToUse": "When data should be fetched regularly from a web service — manage endpoints with headers and a schedule, and check the response.",
+      "actions": {
+        "read": {
+          "help": "Returns the endpoints, the active endpoint, the selectable sets and the last response.",
+          "params": {
+            "options": "Optional; this module holds no bulk data."
+          }
+        },
+        "addEndpoint": {
+          "help": "Creates a new endpoint and makes it the active one. Returns its id."
+        },
+        "selectEndpoint": {
+          "help": "Makes an endpoint the active one; the header, mapping, schedule and parameter actions edit it. Clears lastResponse.",
+          "params": {
+            "endpointId": "The id of an endpoint in endpoints."
+          }
+        },
+        "renameEndpoint": {
+          "help": "Renames an endpoint; it does not have to be the active one.",
+          "params": {
+            "endpointId": "The id of an endpoint in endpoints.",
+            "name": "The new name; the empty string clears it."
+          }
+        },
+        "removeEndpoint": {
+          "help": "Removes an endpoint without asking back and stops its schedule. If it was the active one, the first remaining endpoint becomes active.",
+          "params": {
+            "endpointId": "The id of an endpoint in endpoints."
+          }
+        },
+        "setParam": {
+          "help": "Sets one parameter of the active endpoint. A changed schedule interval restarts a running schedule.",
+          "params": {
+            "key": "One of the keys in activeParams: url, writeMode, schedule.intervalValue or schedule.intervalUnit. Any other value is an error.",
+            "value": "url takes text; writeMode takes replace, append or prepend; schedule.intervalValue takes a whole number from 1 to 999; schedule.intervalUnit takes minutes or hours."
+          }
+        },
+        "addHeader": {
+          "help": "Appends an empty request header to the active endpoint. Returns its index in endpoints[].headers."
+        },
+        "setHeader": {
+          "help": "Sets name and value of a request header of the active endpoint.",
+          "params": {
+            "index": "The index of a header in endpoints[].headers.",
+            "key": "The header name; the empty string clears it.",
+            "value": "The header value; the empty string clears it."
+          }
+        },
+        "deleteHeader": {
+          "help": "Deletes a request header of the active endpoint.",
+          "params": {
+            "index": "The index of a header in endpoints[].headers."
+          }
+        },
+        "addMapping": {
+          "help": "Appends an empty mapping to the active endpoint. Mappings are stored but not applied yet. Returns its index in endpoints[].mappings."
+        },
+        "setMapping": {
+          "help": "Sets path and target column of a mapping of the active endpoint. A column can belong to only one mapping per endpoint.",
+          "params": {
+            "index": "The index of a mapping in endpoints[].mappings.",
+            "jsonPath": "The path in the JSON response; the empty string clears it.",
+            "ref": "Column reference { instanceId, sheetId, columnId } of a column from pickableColumns, or null to clear."
+          }
+        },
+        "deleteMapping": {
+          "help": "Deletes a mapping of the active endpoint.",
+          "params": {
+            "index": "The index of a mapping in endpoints[].mappings."
+          }
+        },
+        "setSchedule": {
+          "help": "Switches the schedule of the active endpoint on or off. It runs only while a URL is set.",
+          "params": {
+            "enabled": "true starts the regular requests, false stops them."
+          }
+        },
+        "sendRequest": {
+          "help": "Performs a GET request to the set URL of the active endpoint and waits for the response. This sends a real request over the network and leaves the device. Returns the response, also stored in lastResponse; a network error becomes status 0. Returns null without an active endpoint or without a URL."
+        }
+      },
+      "fields": {
+        "endpoints": {
+          "help": "All endpoints with id, name, url, headers, mappings, writeMode and schedule. Mappings are stored but not applied yet."
+        },
+        "activeId": {
+          "help": "The id of the endpoint that the header, mapping, schedule and parameter actions edit, or null."
+        },
+        "activeParams": {
+          "help": "The keys setParam accepts in the current state; empty without an active endpoint."
+        },
+        "scheduleRunning": {
+          "help": "Whether a timer runs for the active endpoint."
+        },
+        "pickableColumns": {
+          "help": "The columns setMapping accepts, each { key, name }; key is 'instanceId|sheetId|columnId'."
+        },
+        "loading": {
+          "help": "Whether a request is running."
+        },
+        "lastResponse": {
+          "help": "The last response of the active endpoint as { status, statusText, ok, body }, or null."
+        }
+      },
       "addEndpoint": "Add endpoint",
       "unnamed": "Unnamed",
       "delete": "Delete",

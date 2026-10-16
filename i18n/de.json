@@ -7639,6 +7639,110 @@
     "rest-api": {
       "name": "REST API",
       "description": "REST API Endpunkte zentral verwalten und testen",
+      "whenToUse": "Wenn Daten regelmäßig von einem Webdienst abgerufen werden sollen — Endpunkte mit Headern und Zeitplan verwalten und die Antwort prüfen.",
+      "actions": {
+        "read": {
+          "help": "Liefert die Endpunkte, den aktiven Endpunkt, die wählbaren Mengen und die letzte Antwort.",
+          "params": {
+            "options": "Optional; dieses Modul hält keine Massendaten."
+          }
+        },
+        "addEndpoint": {
+          "help": "Legt einen neuen Endpunkt an und macht ihn zum aktiven. Gibt seine id zurück."
+        },
+        "selectEndpoint": {
+          "help": "Macht einen Endpunkt zum aktiven; die Aktionen für Header, Mappings, Zeitplan und Parameter bearbeiten ihn. Leert lastResponse.",
+          "params": {
+            "endpointId": "Die id eines Endpunkts aus endpoints."
+          }
+        },
+        "renameEndpoint": {
+          "help": "Benennt einen Endpunkt um; er muss nicht der aktive sein.",
+          "params": {
+            "endpointId": "Die id eines Endpunkts aus endpoints.",
+            "name": "Der neue Name; der leere Text löscht ihn."
+          }
+        },
+        "removeEndpoint": {
+          "help": "Entfernt einen Endpunkt ohne Rückfrage und stoppt seinen Zeitplan. War er der aktive, wird der erste verbleibende aktiv.",
+          "params": {
+            "endpointId": "Die id eines Endpunkts aus endpoints."
+          }
+        },
+        "setParam": {
+          "help": "Setzt einen Parameter des aktiven Endpunkts. Ein geändertes Zeitplan-Intervall startet einen laufenden Zeitplan neu.",
+          "params": {
+            "key": "Einer der Schlüssel aus activeParams: url, writeMode, schedule.intervalValue oder schedule.intervalUnit. Jeder andere Wert ist ein Fehler.",
+            "value": "url nimmt Text; writeMode nimmt replace, append oder prepend; schedule.intervalValue nimmt eine ganze Zahl von 1 bis 999; schedule.intervalUnit nimmt minutes oder hours."
+          }
+        },
+        "addHeader": {
+          "help": "Hängt dem aktiven Endpunkt einen leeren Request-Header an. Gibt seinen Index in endpoints[].headers zurück."
+        },
+        "setHeader": {
+          "help": "Setzt Name und Wert eines Request-Headers des aktiven Endpunkts.",
+          "params": {
+            "index": "Der Index eines Headers in endpoints[].headers.",
+            "key": "Der Name des Headers; der leere Text löscht ihn.",
+            "value": "Der Wert des Headers; der leere Text löscht ihn."
+          }
+        },
+        "deleteHeader": {
+          "help": "Löscht einen Request-Header des aktiven Endpunkts.",
+          "params": {
+            "index": "Der Index eines Headers in endpoints[].headers."
+          }
+        },
+        "addMapping": {
+          "help": "Hängt dem aktiven Endpunkt ein leeres Mapping an. Mappings werden gespeichert, aber noch nicht angewendet. Gibt seinen Index in endpoints[].mappings zurück."
+        },
+        "setMapping": {
+          "help": "Setzt Pfad und Zielspalte eines Mappings des aktiven Endpunkts. Eine Spalte kann je Endpunkt nur zu einem Mapping gehören.",
+          "params": {
+            "index": "Der Index eines Mappings in endpoints[].mappings.",
+            "jsonPath": "Der Pfad in der JSON-Antwort; der leere Text löscht ihn.",
+            "ref": "Spaltenverweis { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Lösen."
+          }
+        },
+        "deleteMapping": {
+          "help": "Löscht ein Mapping des aktiven Endpunkts.",
+          "params": {
+            "index": "Der Index eines Mappings in endpoints[].mappings."
+          }
+        },
+        "setSchedule": {
+          "help": "Schaltet den Zeitplan des aktiven Endpunkts ein oder aus. Er läuft nur, solange eine URL gesetzt ist.",
+          "params": {
+            "enabled": "true startet die regelmäßigen Abrufe, false stoppt sie."
+          }
+        },
+        "sendRequest": {
+          "help": "Führt eine GET-Anfrage an die gesetzte URL des aktiven Endpunkts aus und wartet auf die Antwort. Die Anfrage geht tatsächlich über das Netz und verlässt das Gerät. Gibt die Antwort zurück, auch in lastResponse abgelegt; ein Netzfehler wird zu Status 0. Gibt null zurück ohne aktiven Endpunkt oder ohne URL."
+        }
+      },
+      "fields": {
+        "endpoints": {
+          "help": "Alle Endpunkte mit id, name, url, headers, mappings, writeMode und schedule. Mappings werden gespeichert, aber noch nicht angewendet."
+        },
+        "activeId": {
+          "help": "Die id des Endpunkts, den die Aktionen für Header, Mappings, Zeitplan und Parameter bearbeiten, oder null."
+        },
+        "activeParams": {
+          "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt; leer ohne aktiven Endpunkt."
+        },
+        "scheduleRunning": {
+          "help": "Ob für den aktiven Endpunkt ein Zeitgeber läuft."
+        },
+        "pickableColumns": {
+          "help": "Die Spalten, die setMapping annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'."
+        },
+        "loading": {
+          "help": "Ob gerade eine Anfrage läuft."
+        },
+        "lastResponse": {
+          "help": "Die letzte Antwort des aktiven Endpunkts als { status, statusText, ok, body }, oder null."
+        }
+      },
       "addEndpoint": "Endpunkt hinzufügen",
       "unnamed": "Unbenannt",
       "delete": "Löschen",
