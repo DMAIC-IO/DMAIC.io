@@ -7,7 +7,7 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { draggablePopout } from '../../ui/draggable-popout.js';
+import { draggablePopout } from '../../ui/dialog/draggable.js';
 import { Stakeholder, State, QUAD_ORDER, SUPPORT_VALUES, criticalCritics, isKeyCritic } from './stakeholder-analysis-model.js';
 
 const AVATAR_COLORS = [

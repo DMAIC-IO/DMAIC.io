@@ -25,7 +25,7 @@ import {
 } from '../../core/chart/chart-editor.js';
 import { ensureXLSX, downloadBlob } from '../../core/export-utils.js';
 import { shortcutRegistry } from '../../core/shortcut-registry.js';
-import { draggablePopout } from '../../ui/draggable-popout.js';
+import { draggablePopout } from '../../ui/dialog/draggable.js';
 import { State } from './voc-ctx-tree-model.js';
 import { buildTreeDiagram } from './voc-ctx-tree-diagram.js';
 

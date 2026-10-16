@@ -11,7 +11,7 @@
 
 import Alpine from '@alpinejs/csp';
 import { cloneTemplate, stripBlankText } from '../../core/dom.js';
-import { draggablePopout } from '../draggable-popout.js';
+import { draggablePopout } from './draggable.js';
 import { buildDialogState } from './dialog-state.js';
 import { createProgress, STATUS_ICON, STATUS_LABEL } from './progress.js';
 
@@ -183,15 +183,22 @@ export function createDialogService({ i18n }) {
   }
 
   /**
-   * Custom content without buttons.
-   * @param {{ title: string, content: Node, size?: string, dismissible?: boolean }} opts
-   * @returns {{ close: () => void }}
+   * Custom content without buttons. `onClose` runs exactly once, after the
+   * dialog is gone and borrowed content is back home — whichever way it
+   * closed (✕, Escape, overlay click or the handle's close()). An error
+   * thrown by onClose is not caught.
+   * @param {{ title: string, content: Node, size?: string, dismissible?: boolean,
+   *           onClose?: () => void }} opts
+   * @returns {{ close: () => void, setTitle: (text: string) => void }}
    */
   function show(opts) {
     let entry = null;
-    const close = () => { unmount(entry); };
+    const close = () => {
+      if (unmount(entry) && opts.onClose) opts.onClose();
+    };
     entry = mount('show', opts, { body: opts.content }, { confirm: close, cancel: close });
-    return { close };
+    const setTitle = (text) => { if (stack.includes(entry)) entry.dlg.title = text; };
+    return { close, setTitle };
   }
 
   /**

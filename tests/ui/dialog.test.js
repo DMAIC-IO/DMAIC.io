@@ -109,6 +109,50 @@ suite('dialog service — confirm / alert / show', () => {
     h.close();
   });
 
+  test('show onClose fires once for ✕, Escape, overlay and close()', async () => {
+    const d = await service();
+    const ways = {
+      x: () => top().querySelector('.dialog__close').click(),
+      escape: () => escape(),
+      overlay: () => clickOverlay(top()),
+      handle: (h) => h.close(),
+    };
+    for (const [name, closeIt] of Object.entries(ways)) {
+      let calls = 0;
+      const h = d.show({ title: name, content: document.createElement('div'), onClose: () => { calls += 1; } });
+      await tick();
+      closeIt(h);
+      h.close();                      // a second close is a no-op
+      assertEqual(dialogs().length, 0, `${name}: closed`);
+      assertEqual(calls, 1, `${name}: onClose once`);
+    }
+  });
+
+  test('show onClose runs after the borrowed node is home again', async () => {
+    const d = await service();
+    const home = document.createElement('div');
+    const content = document.createElement('p');
+    home.append(content);
+    document.body.append(home);
+    let parentAtClose = null;
+    const h = d.show({ title: 'B', content, onClose: () => { parentAtClose = content.parentNode; } });
+    assertEqual(content.parentNode.getAttribute('data-dialog-slot'), 'body');
+    h.close();
+    assertEqual(parentAtClose, home);
+    home.remove();
+  });
+
+  test('show setTitle updates the title and is a no-op after close', async () => {
+    const d = await service();
+    const h = d.show({ title: 'Alt', content: document.createElement('div') });
+    h.setTitle('Neu');
+    await tick();
+    assertEqual(top().querySelector('.dialog__title').textContent, 'Neu');
+    h.close();
+    h.setTitle('Danach');             // must not throw
+    assertEqual(dialogs().length, 0);
+  });
+
   test('Escape does not reach window listeners behind the dialog', async () => {
     // Module popouts (fmea, stakeholder-analysis) close on @keydown.escape.window.
     const d = await service();

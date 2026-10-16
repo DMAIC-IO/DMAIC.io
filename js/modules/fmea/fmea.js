@@ -14,7 +14,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
-import { draggablePopout } from '../../ui/draggable-popout.js';
+import { draggablePopout } from '../../ui/dialog/draggable.js';
 import { State, METHODS, FMEA_TYPES, fmeaCreateDefault } from './fmea-model.js';
 import { S_BANDS, O_BANDS, D_BANDS, AP_TABLE, AP_CATEGORY, bandLabel } from './fmea-ap.js';
 

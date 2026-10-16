@@ -9,7 +9,7 @@
  */
 
 import { createPage } from '../../core/create-page.js';
-import { draggablePopout } from '../../ui/draggable-popout.js';
+import { draggablePopout } from '../../ui/dialog/draggable.js';
 import { openColorPicker, hexToRGBA, rgbaToHex6 } from '../../core/color-picker.js';
 import {
   shortcutRegistry, normalizeCombo, formatCombo,
