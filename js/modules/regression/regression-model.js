@@ -19,7 +19,7 @@
 
 import {
   runRegression, computeVIF, generatePolynomialTerms, fitFromSpec, lackOfFitTest,
-  compileModelSpec, estimableTerms,
+  compileModelSpec, estimableTerms, predictMulti, predictValue,
 } from '../../engines/regression-engine.js';
 import { defaultActiveTerms, quadTermId, parseTermId, compareTermIds } from '../../engines/doe-terms.js';
 import { tInv } from '../../engines/math-utils.js';
@@ -54,6 +54,59 @@ export function stripFunctions(obj) {
     out[k] = (v && typeof v === 'object') ? stripFunctions(v) : v;
   }
   return out;
+}
+
+/**
+ * Die Eingaben einer Vorhersage für ein Ergebnis — dieselbe Liste, aus der
+ * die Oberfläche ihre Felder baut.
+ * @param {object} r ein Ergebnis aus runPolynomial oder runSingleXModels
+ * @returns {Array<{ id: string, label: string, kind: 'numeric'|'categorical'|'single', levels?: string[] }>}
+ */
+export function predictorsOf(r) {
+  if (!r) return [];
+  if (!r.multiX) return [{ id: 'single', label: r._nameX ?? 'X', kind: 'single' }];
+  const predictors = r.spec?.predictors;
+  if (predictors) {
+    return predictors.map(p => (p.kind === 'categorical'
+      ? { id: p.id, label: p.id, kind: 'categorical', levels: p.levels || [] }
+      : { id: p.id, label: p.id, kind: 'numeric' }));
+  }
+  return (r._xNames || []).map((name, i) => ({ id: `idx-${i}`, label: name, kind: 'numeric' }));
+}
+
+/**
+ * ŷ und, wo die Engine es liefert, das Prognoseintervall für eine Eingabe.
+ * Keine eigene Statistik: Spezifikationsweg compileModelSpec · beta, sonst
+ * predictMulti / predictValue aus der Engine.
+ * @param {object} r ein Ergebnis
+ * @param {Object<string, number|string>} values je Prädiktor-id der Wert
+ * @returns {{ yHat: number, piLow: number|null, piHigh: number|null }|null}
+ *   null bei fehlender oder ungültiger Eingabe
+ */
+export function predictAt(r, values) {
+  if (!r) return null;
+  const preds = predictorsOf(r);
+  const num = (v) => (typeof v === 'number' ? v : parseFloat(v));
+  if (r.multiX && r.spec) {
+    const columns = {};
+    for (const p of preds) {
+      const v = p.kind === 'categorical' ? values[p.id] : num(values[p.id]);
+      if (p.kind === 'categorical' ? !p.levels.includes(v) : !Number.isFinite(v)) return null;
+      columns[p.id] = [v];
+    }
+    let row;
+    try { row = compileModelSpec(r.spec, { columns }).X[0]; } catch { return null; }
+    const beta = r._coefficients ?? r.fit?.ols?.beta;
+    if (!Array.isArray(beta) || beta.length !== row.length) return null;
+    let yHat = 0;
+    for (let i = 0; i < row.length; i++) yHat += row[i] * beta[i];
+    return { yHat, piLow: null, piHigh: null };
+  }
+  if (r.multiX && preds.length !== r.xCount) return null;
+  const xVals = preds.map(p => num(values[p.id]));
+  if (xVals.some(v => !Number.isFinite(v))) return null;
+  const pred = r.multiX ? predictMulti(r, xVals) : predictValue(r, xVals[0]);
+  return { yHat: pred.yHat, piLow: pred.piLow ?? null, piHigh: pred.piHigh ?? null };
 }
 
 export class State {

@@ -21,7 +21,7 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State, keyToRef, refToKey } from './regression-model.js';
+import { State, keyToRef, refToKey, predictorsOf, predictAt } from './regression-model.js';
 import {
   regressionCurvePoints, confidenceBand, predictionBand, normalQuantile,
   predictMulti, predictValue, compileModelSpec,
@@ -424,24 +424,11 @@ const mod = createModule({
 
       // ── Predict inputs ───────────────────────────────────────
       buildPredictForm(r) {
-        const form = [];
-        if (r.multiX) {
-          const predictors = r.spec?.predictors;
-          if (predictors) {
-            for (const p of predictors) {
-              if (p.kind === 'categorical') {
-                form.push({ id: p.id, label: p.id, kind: 'categorical', levels: p.levels || [], value: (p.levels && p.levels[0]) || '' });
-              } else {
-                form.push({ id: p.id, label: p.id, kind: 'numeric', value: '' });
-              }
-            }
-          } else {
-            (r._xNames || []).forEach((name, i) => form.push({ id: `idx-${  i}`, label: name, kind: 'numeric', value: '', _idx: i }));
-          }
-        } else {
-          form.push({ id: 'single', label: _t('predictXValue'), kind: 'single', value: '' });
-        }
-        this._predictForm = form;
+        this._predictForm = predictorsOf(r).map(p => ({
+          ...p,
+          label: p.kind === 'single' ? _t('predictXValue') : p.label,
+          value: p.kind === 'categorical' ? ((p.levels && p.levels[0]) || '') : '',
+        }));
       },
       predictForm() { return this._predictForm; },
       predictText() { return this._predictText; },
@@ -453,54 +440,19 @@ const mod = createModule({
         this._predictText = '';
         this._predictInterval = '';
 
-        if (r.multiX) {
-          if (r.spec) {
-            const columns = {};
-            const labelParts = [];
-            for (const f of this._predictForm) {
-              let v;
-              if (f.kind === 'categorical') {
-                v = f.value || (f.levels && f.levels[0]);
-                if (!f.levels?.includes(v)) return;
-              } else {
-                v = parseFloat(f.value);
-                if (!Number.isFinite(v)) return;
-              }
-              columns[f.id] = [v];
-              labelParts.push(`${f.id}=${typeof v === 'number' ? fmt(v, 3) : v}`);
-            }
-            let row;
-            try { row = compileModelSpec(r.spec, { columns }).X[0]; } catch { return; }
-            const beta = r._coefficients ?? r.fit?.ols?.beta;
-            if (!Array.isArray(beta) || beta.length !== row.length) return;
-            let yHat = 0;
-            for (let i = 0; i < row.length; i++) yHat += row[i] * beta[i];
-            this._predictText = `${Y_HAT}(${labelParts.join(', ')}) = ${fmt(yHat)}`;
-            return;
-          }
-          // Legacy multi-X (continuous-only, no spec).
-          const xVals = [];
-          for (const f of this._predictForm) {
-            const v = parseFloat(f.value);
-            if (isNaN(v)) return;
-            xVals.push(v);
-          }
-          if (xVals.length !== r.xCount) return;
-          const pred = predictMulti(r, xVals);
-          const xStr = xVals.map((v, i) => `${r._xNames[i]}=${fmt(v, 3)}`).join(', ');
-          this._predictText = `${Y_HAT}(${xStr}) = ${fmt(pred.yHat)}`;
-          if (pred.piLow != null && pred.piHigh != null) {
-            this._predictInterval = `${_t('predictionInterval', { level: (r.confLevel * 100).toFixed(0) })}: [${fmt(pred.piLow)}, ${fmt(pred.piHigh)}]`;
-          }
-        } else {
-          const f = this._predictForm[0];
-          const xVal = parseFloat(f?.value);
-          if (isNaN(xVal)) return;
-          const pred = predictValue(r, xVal);
-          this._predictText = `${Y_HAT}(${fmt(xVal, 3)}) = ${fmt(pred.yHat)}`;
-          if (pred.piLow != null && pred.piHigh != null) {
-            this._predictInterval = `${_t('predictionInterval', { level: (r.confLevel * 100).toFixed(0) })}: [${fmt(pred.piLow)}, ${fmt(pred.piHigh)}]`;
-          }
+        const values = Object.fromEntries(this._predictForm.map(f => [
+          f.id, f.kind === 'categorical' ? (f.value || (f.levels && f.levels[0])) : f.value,
+        ]));
+        const out = predictAt(r, values);
+        if (!out) return;
+        const parts = this._predictForm.map(f => {
+          if (f.kind === 'single') return fmt(parseFloat(f.value), 3);
+          const name = r.spec ? f.id : f.label;
+          return `${name}=${f.kind === 'categorical' ? values[f.id] : fmt(parseFloat(f.value), 3)}`;
+        });
+        this._predictText = `${Y_HAT}(${parts.join(', ')}) = ${fmt(out.yHat)}`;
+        if (out.piLow != null && out.piHigh != null) {
+          this._predictInterval = `${_t('predictionInterval', { level: (r.confLevel * 100).toFixed(0) })}: [${fmt(out.piLow)}, ${fmt(out.piHigh)}]`;
         }
       },
 

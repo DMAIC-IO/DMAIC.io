@@ -9,7 +9,7 @@
  */
 
 import { suite, test, assertEqual, assertAlmostEqual, assertDeepEqual } from '../test-utils.js';
-import { State, polyTermCount, stripFunctions } from '../../js/modules/regression/regression-model.js';
+import { State, polyTermCount, stripFunctions, predictorsOf, predictAt } from '../../js/modules/regression/regression-model.js';
 import {
   runMultiRegression, confidenceBand, predictionBand, predictMulti,
 } from '../../js/engines/regression-engine.js';
@@ -584,5 +584,73 @@ suite('Regression Model — degreeAvailability honours exclusions', () => {
     const opt = s.degreeAvailability(sm).options.find(o => o.deg === 2);
     assertEqual(opt.terms, 4);
     assertEqual(opt.disabled, false);
+  });
+});
+
+// ── Vorhersage als reine Zahlenfunktion ─────────────────────────────
+
+suite('regression-model predictAt', () => {
+  function fitted() {
+    const x1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const x2 = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3];
+    const y = x1.map((v, i) => 10 + 3 * v + 2 * x2[i]);
+    const { sm, wsInstanceId, sheetId } = makeSM({ columns: [
+      { id: 'cx1', name: 'X1', type: 'numeric', values: x1 },
+      { id: 'cx2', name: 'X2', type: 'numeric', values: x2 },
+      { id: 'cy', name: 'Y', type: 'numeric', values: y },
+    ] });
+    const s = new State();
+    s.colRefs = [colRef(wsInstanceId, sheetId, 'cx1'), colRef(wsInstanceId, sheetId, 'cx2')];
+    s.yKey = `${wsInstanceId}|${sheetId}|cy`;
+    s.polyDegree = 1;
+    s.confLevel = 0.95;
+    s.runAnalysis(sm);
+    return s.result;
+  }
+  function single() {
+    const xs = [1, 2, 3, 4, 5, 6, 7, 8];
+    const ys = xs.map(x => 2 * Math.exp(0.3 * x) * (1 + 0.01 * ((x % 3) - 1)));
+    const { sm, wsInstanceId, sheetId } = makeSM({ columns: [
+      { id: 'cx', name: 'X', type: 'numeric', values: xs },
+      { id: 'cy', name: 'Y', type: 'numeric', values: ys },
+    ] });
+    const s = new State();
+    s.regType = 'exponential';
+    s.colRefs = [colRef(wsInstanceId, sheetId, 'cx')];
+    s.yKey = `${wsInstanceId}|${sheetId}|cy`;
+    s.confLevel = 0.95;
+    s.runAnalysis(sm);
+    return s.activeResult;
+  }
+
+  test('predictorsOf nennt die Spezifikations-Prädiktoren eines Polynomfits', () => {
+    const r = fitted();
+    assertDeepEqual(predictorsOf(r).map(p => p.kind), ['numeric', 'numeric']);
+  });
+
+  test('predictAt rechnet ŷ wie die Oberfläche', () => {
+    const r = fitted();
+    const ids = predictorsOf(r).map(p => p.id);
+    const out = predictAt(r, { [ids[0]]: 4, [ids[1]]: 15 });
+    // Dieselbe Rechnung wie onPredictInput: compileModelSpec · beta.
+    assertAlmostEqual(out.yHat, 10 + 3 * 4 + 2 * 15, 1e-6);
+    assertEqual(out.piLow, null);
+  });
+
+  test('predictAt gibt null bei fehlender oder ungültiger Eingabe', () => {
+    const r = fitted();
+    const ids = predictorsOf(r).map(p => p.id);
+    assertEqual(predictAt(r, { [ids[0]]: 4 }), null);
+    assertEqual(predictAt(r, { [ids[0]]: 4, [ids[1]]: 'x' }), null);
+  });
+
+  test('predictAt rechnet beim Einzel-X-Modell wie predictValue (kein Prognoseintervall)', () => {
+    const r = single();
+    assertEqual(predictorsOf(r)[0].id, 'single');
+    const out = predictAt(r, { single: 3 });
+    assertAlmostEqual(out.yHat, r.reg.predict(3), 1e-12);
+    // Die Engine liefert für Einzel-X-Modelle kein Intervall (predictValue: null).
+    assertEqual(out.piLow, null);
+    assertEqual(out.piHigh, null);
   });
 });
