@@ -9,6 +9,14 @@
  * zwischen den Schichten, zwischen den Werkzeugnestern oder innerhalb eines
  * Teils? Die Tabelle darunter beziffert, was das Bild zeigt.
  *
+ * @agent  Steuerbar über das Viewmodel: Modellform, Schätzer und die vier
+ *   Anzeigeschalter (setParam), die Messwertspalte (setColumn), die
+ *   Faktorzeilen über ihre id (addFactor, removeFactor, moveFactor,
+ *   setFactorColumn) und das Rechnen selbst (runAnalysis). Gelesen wird über
+ *   read() mit erklärter Lesefläche (AgentRead) — Konfiguration,
+ *   Faktorzeilen in Schachtelungsreihenfolge, wählbare Spalten und Ergebnis
+ *   samt Varianzkomponenten. Der Agent bekommt Zahlen, keine Diagramme.
+ *
  * Zwei Engines, bewusst getrennt: `multi-vari-engine.js` gruppiert (und rechnet
  * nichts), `variance-components-engine.js` zerlegt (und weiß nichts vom Bild).
  * `multi-vari-analysis.js` verbindet beide — insbesondere sorgt sie dafür,
@@ -22,10 +30,13 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State } from './multi-vari-model.js';
-import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-picker.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { pickableColumnList } from '../../core/agent/agent-options.js';
+import { State, MODEL_FORMS, ESTIMATORS } from './multi-vari-model.js';
+import { ColumnPicker, getColumnValues, getColumnName, refToKey, keyToRef } from '../../ui/column-picker.js';
 import { draggableRows } from '../../ui/draggable-list.js';
-import { computeMultiVari } from '../../engines/multi-vari-engine.js';
+import { computeMultiVari, MIN_FACTORS, MAX_FACTORS } from '../../engines/multi-vari-engine.js';
 import { loadWorksheetExample } from '../../core/examples-registry.js';
 import {
   runVarianceDecomposition,
@@ -38,6 +49,72 @@ import { downloadFile } from '../../core/export-utils.js';
 
 /** Debounce für den Neulauf nach einer Eingabeänderung. */
 const RERUN_DELAY = 120;
+
+/** Die Werte der vier Anzeigeschalter. */
+const BOOL_VALUES = [true, false];
+
+/** Die Parameter, die `setParam` setzt (flaches Model). */
+const PARAM_KEYS = ['modelForm', 'estimator', 'showPoints', 'connectMeans', 'showGroupMean', 'showRefLine'];
+
+/** Je Parameter sein Prüfer; gibt den normalisierten Wert zurück. */
+const PARAM_CHECKS = {
+  modelForm: (v) => { requireEnum('value', v, MODEL_FORMS); return v; },
+  estimator: (v) => { requireEnum('value', v, ESTIMATORS); return v; },
+  showPoints: (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
+  connectMeans: (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
+  showGroupMean: (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
+  showRefLine: (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
+};
+
+/**
+ * Setzt einen Wert unter einem Schlüssel in `obj`. Lokal geschrieben, weil der
+ * Generator (agent-data) Importe nicht liest und die Schreibstelle im Modul
+ * selbst sehen muss.
+ * @param {object} obj Wurzel, deren Schlüssel beschrieben wird
+ * @param {string} key Schlüssel
+ * @param {any} value der abzulegende Wert
+ */
+function setAtPath(obj, key, value) {
+  obj[key] = value;
+}
+
+/** Die Spalten-Slots dieses Moduls: genau einer, die Messwertspalte. */
+const COLUMN_SLOTS = ['measurement'];
+
+/** Je Slot der Filter, den der Wähler dieses Slots bekommt. */
+const SLOT_FILTERS = { measurement: { types: ['numeric', 'percent', 'currency'] } };
+
+/** Je Slot die eine Zuweisungsstelle seines Model-Feldes. */
+const COLUMN_SINKS = { measurement: (m, ref) => { m.columnRefs.measurement = ref; } };
+
+/** Der Filter der Faktorwähler: jede Spalte, kein Typfilter. */
+const FACTOR_FILTER = {};
+
+/**
+ * Die Agenten-Lesefläche von Multi-Vari.
+ *
+ * Nicht die persistierte Form: `toJSON()` führt die Faktorzeilen als
+ * `factorRows` und spiegelt die Referenzen zusätzlich flach in
+ * `columnRefs.factors`, und das Ergebnis entsteht transient am Viewmodel.
+ * Darum erklärt dieses Modul seine Lesefläche: die Zeilen heißen `factors`
+ * (das ist der Name, den `removeFactor`/`setFactorColumn` für ihre Zeilen-id
+ * ableiten), die Beispiel-Buchführung (`exampleWorksheetId`) bleibt draußen.
+ *
+ * @typedef {object} AgentRead
+ * @property {{ measurement: object|null }} columnRefs  the chosen measurement column, `{ instanceId, sheetId, columnId }`, or null
+ * @property {Array<{ id: string, ref: object|null }>} factors  the factor rows in order, each `{ id, ref }`; the order is the nesting (row 0 = outermost, X axis)
+ * @property {'nested'|'crossed'} modelForm  nested (A > B(A) > …) or crossed (A, B, A×B, …) variance model
+ * @property {'anova'|'reml'} estimator  the variance-component estimator
+ * @property {boolean} showPoints  display switch: draw single measurements; does not change the result
+ * @property {boolean} connectMeans  display switch: connect the group means; does not change the result
+ * @property {boolean} showGroupMean  display switch: mark the group means; does not change the result
+ * @property {boolean} showRefLine  display switch: draw the grand-mean reference line; does not change the result
+ * @property {string[]} activeParams  the keys `setParam` accepts in the current state
+ * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state
+ * @property {object} pickableColumns  per slot (`measurement`, `factor`) the columns `setColumn` / `setFactorColumn` accept, each `{ key, name }`
+ * @property {object|null} result  the computed result, or null while measurement or two factor columns are missing or the analysis failed
+ * @property {string} errorMsg  the reason the last analysis produced no result, or an empty string
+ */
 
 const mod = createModule({
   config: {
@@ -55,10 +132,9 @@ const mod = createModule({
       ...draggableRows({
         onMove({ group, sourceId, targetId }) {
           if (group !== 'factors') return;
-          this.model.moveFactorBefore(sourceId, targetId);
-          // Die Reihenfolge ist die Eingabe — nach dem Verschieben neu rechnen.
+          // Die Reihenfolge ist die Eingabe — moveFactor rechnet neu.
+          this.moveFactor(sourceId, targetId);
           this._syncFactorPickers();
-          this._scheduleRerun();
         },
         rowIds(group) {
           return group === 'factors' ? this.model.factors.map(f => f.id) : [];
@@ -85,33 +161,38 @@ const mod = createModule({
 
       // ── Anzeige-Helfer ────────────────────────────────────────
 
+      /** @noagent view transform */
       fmt(v) {
         return Number.isFinite(v) ? v.toFixed(4) : '–';
       },
 
+      /** @noagent view transform */
       pct(v) {
         return Number.isFinite(v) ? v.toFixed(1) : '–';
       },
 
+      /** @noagent view transform */
       factorRole(idx) {
         return _t(`factorRole_${idx}`);
       },
 
+      /** @noagent view transform */
       chartTitle() {
         const col = getColumnName(module._context.stateManager, this.model.columnRefs.measurement);
         return _t('chartTitle', { col });
       },
 
+      /** @noagent view transform */
       termLabel(term) {
         return term.id === 'Error' ? _t('termError') : term.label;
       },
 
-      /** Ganzzahl oder Gedankenstrich — REML liefert keine Freiheitsgrade. */
+      /** Ganzzahl oder Gedankenstrich — REML liefert keine Freiheitsgrade. @noagent view transform */
       intOrDash(v) {
         return intOrDash(v);
       },
 
-      /** Zeilen der Varianztabelle, Error-Zeile eingeschlossen. */
+      /** Zeilen der Varianztabelle, Error-Zeile eingeschlossen. @noagent view transform */
       vcTerms() {
         return vcTermRows(this.result);
       },
@@ -122,6 +203,8 @@ const mod = createModule({
        * nur aus, hängt sie aber nicht ab — bei gescheiterter Zerlegung
        * (`vc === null`) liefe die Bindung weiter und würde bei jedem
        * Reaktivitätszyklus einen Alpine-Ausdrucksfehler loggen.
+       *
+       * @noagent view transform
        */
       totalVarianceText() {
         return this.fmt(this.result?.vc?.totalVariance);
@@ -132,6 +215,8 @@ const mod = createModule({
        * Template: Alpines CSP-Evaluator löst nackte Bezeichner nur gegen den
        * Komponenten-Scope auf, und `Math` steht dort nicht — der Ausdruck
        * scheiterte an „Undefined variable: Math".
+       *
+       * @noagent view transform
        */
       totalSd() {
         return this.fmt(totalSdValue(this.result?.vc));
@@ -142,21 +227,25 @@ const mod = createModule({
        * eine geklemmte (auf 0 gesetzte) Komponente oder ein auf dem Rand
        * stehengebliebener REML-Fit lassen die Spalte durchaus auf etwas
        * anderes hinauslaufen — dann muss die Summe das auch zeigen.
+       *
+       * @noagent view transform
        */
       totalPercent() {
         return this.pct(totalPercentValue(this.result?.vc));
       },
 
-      /** Term mit dem größten Varianzanteil, `Error` eingeschlossen. */
+      /** Term mit dem größten Varianzanteil, `Error` eingeschlossen. @noagent view transform */
       largestTerm() {
         return pickLargestTerm(this.result?.vc?.terms);
       },
 
+      /** @noagent view transform */
       largestPercent() {
         const t = this.largestTerm();
         return t ? `${this.pct(t.percent)} %` : '–';
       },
 
+      /** @noagent view transform */
       largestTermLabel() {
         const t = this.largestTerm();
         return t ? this.termLabel(t) : '';
@@ -165,6 +254,8 @@ const mod = createModule({
       /**
        * Ein Satz, der die Tabelle liest. Steht die Reststreuung oben, sagt er
        * genau das — die Einflussgrößen erklären die Streuung dann eben nicht.
+       *
+       * @noagent view transform
        */
       interpretationText() {
         const t = this.largestTerm();
@@ -177,16 +268,19 @@ const mod = createModule({
        * Ehrlichkeitsregel: bei unbalanciertem Plan hängen die Komponenten vom
        * Verfahren ab. Das gehört sichtbar unter die Tabelle, nicht in die
        * Fußnote eines Handbuchs.
+       *
+       * @noagent view transform
        */
       showUnbalancedNote() {
         return isUnbalanced(this.result);
       },
 
+      /** @noagent view transform */
       showClampedNote() {
         return hasClampedTerm(this.vcTerms());
       },
 
-      /** Tabelle als CSV — dieselben Spalten wie die Anzeige, Punkt als Dezimaltrenner. */
+      /** Tabelle als CSV — dieselben Spalten wie die Anzeige, Punkt als Dezimaltrenner. @noagent helper; the agent reads the numbers via read().result */
       exportCsv() {
         const vc = this.result?.vc;
         if (!vc) return;
@@ -200,17 +294,19 @@ const mod = createModule({
         downloadFile(csv, `${_t('csvFileName')}.csv`, 'text/csv;charset=utf-8');
       },
 
-      /** Engine-Warnungen plus die synthetische `droppedRows`-Meldung. */
+      /** Engine-Warnungen plus die synthetische `droppedRows`-Meldung. @noagent view transform */
       warningCodes() {
         const r = this.result;
         if (!r) return [];
         return r.droppedRows > 0 ? [...r.warnings, 'droppedRows'] : r.warnings;
       },
 
+      /** @noagent view transform */
       hasWarnings() {
         return this.warningCodes().length > 0;
       },
 
+      /** @noagent view transform */
       warningText(code) {
         if (code === 'droppedRows') {
           return _t('warnDroppedRows', { count: this.result.droppedRows });
@@ -229,29 +325,175 @@ const mod = createModule({
        * Diagramm nicht gezeichnet — die Spaltenauswahl bleibt unangetastet,
        * die Warnung nennt die verantwortliche Spalte, und die
        * Varianzkomponenten-Tabelle bleibt sichtbar.
+       *
+       * @noagent view transform
        */
       canRender() {
         return Boolean(this.result) && this.result.renderable !== false;
       },
 
-      // ── Ereignisse ────────────────────────────────────────────
+      // ── Agent surface ─────────────────────────────────────────
 
-      addFactor() {
-        this.model.addFactor();
-        this.$nextTick(() => { this._syncFactorPickers(); });
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Konfiguration, Faktorzeilen, wählbare Mengen und Ergebnis
+       */
+      read(options) {
+        const json = this.model.toJSON();
+        return readAgentState('multi-vari', {
+          columnRefs: { measurement: json.columnRefs.measurement },
+          factors: json.factorRows,
+          modelForm: json.modelForm,
+          estimator: json.estimator,
+          showPoints: json.showPoints,
+          connectMeans: json.connectMeans,
+          showGroupMean: json.showGroupMean,
+          showRefLine: json.showRefLine,
+          activeParams: this.activeParams(),
+          activeColumnSlots: this.activeColumnSlots(),
+          pickableColumns: this.pickableColumns(),
+          result: this.result,
+          errorMsg: this.errorMsg,
+        }, options);
       },
 
-      removeFactor(id) {
-        this.model.removeFactor(id);
-        this._factorPickers.get(id)?.destroy();
-        this._factorPickers.delete(id);
+      /** @noagent derived set; der Agent liest sie über read().activeParams */
+      activeParams() { return [...PARAM_KEYS]; },
+
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() { return [...COLUMN_SLOTS]; },
+
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() {
+        const sm = module._context.stateManager;
+        return {
+          measurement: pickableColumnList(sm, SLOT_FILTERS.measurement),
+          factor: pickableColumnList(sm, FACTOR_FILTER),
+        };
+      },
+
+      /** @noagent view transform; die Optionen des Modellform-Auswahlfeldes (eine Quelle: MODEL_FORMS) */
+      modelFormOptions() { return MODEL_FORMS.map(v => ({ value: v, label: _t(`modelForm_${v}`) })); },
+
+      /** @noagent view transform; die Optionen des Schätzer-Auswahlfeldes (eine Quelle: ESTIMATORS) */
+      estimatorOptions() { return ESTIMATORS.map(v => ({ value: v, label: _t(`estimator_${v}`) })); },
+
+      /**
+       * Einen Parameter setzen; die Analyse läuft danach neu.
+       * @agent
+       * @param {'modelForm'|'estimator'|'showPoints'|'connectMeans'|'showGroupMean'|'showRefLine'} key welcher Parameter
+       * @param {string|boolean} value modelForm: `nested` oder `crossed`; estimator: `anova` oder `reml`; die vier Anzeigeschalter: `true` oder `false`
+       * @returns {void}
+       * @throws {Error} wenn `key` kein Parameter dieses Moduls ist oder `value` nicht zulässig
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        requireEnum('key', key, this.activeParams());
+        setAtPath(this.model, key, PARAM_CHECKS[key](value));
+        this._scheduleRerun();
+      },
+
+      /**
+       * Die Messwertspalte zuweisen; die Analyse läuft danach neu.
+       * @agent
+       * @param {'measurement'} slot der Slot; dieses Modul führt nur `measurement` (die Faktoren setzt `setFactorColumn`)
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
+       *   der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren
+       * @returns {void}
+       * @throws {Error} wenn `slot` unbekannt ist oder die Spalte nicht wählbar
+       */
+      setColumn(slot, ref) {
+        requireEnum('slot', slot, COLUMN_SLOTS);
+        if (ref == null) {
+          COLUMN_SINKS[slot](this.model, null);
+          this._measurementPicker?.syncValue(null);
+          this._scheduleRerun();
+          return;
+        }
+        requireEnum('slot', slot, this.activeColumnSlots());
+        const keys = this.pickableColumns()[slot].map(c => c.key);
+        requireKnownId('ref', refToKey(ref), keys);
+        // Normalisierte Form: fremde Eigenschaften des Agentenobjekts bleiben draußen.
+        const clean = keyToRef(refToKey(ref));
+        COLUMN_SINKS[slot](this.model, clean);
+        this._measurementPicker?.syncValue(clean);
+        this._scheduleRerun();
+      },
+
+      /**
+       * Eine leere Faktorzeile anhängen.
+       * @agent
+       * @returns {string} die id der neuen Zeile
+       * @throws {Error} wenn schon vier Faktoren geführt werden
+       */
+      addFactor() {
+        if (this.model.factors.length >= MAX_FACTORS) {
+          throw new Error(`cannot add factor; allowed: at most ${MAX_FACTORS} factors`);
+        }
+        this.model.addFactor();
+        this.$nextTick(() => { this._syncFactorPickers(); });
+        return this.model.factors[this.model.factors.length - 1].id;
+      },
+
+      /**
+       * Eine Faktorzeile entfernen; die Analyse läuft danach neu.
+       * @agent
+       * @param {string} rowId die id einer Zeile aus read().factors
+       * @returns {void}
+       * @throws {Error} wenn die id unbekannt ist oder nur noch zwei Zeilen bleiben
+       */
+      removeFactor(rowId) {
+        requireKnownId('rowId', rowId, this.model.factors.map(f => f.id));
+        if (this.model.factors.length <= MIN_FACTORS) {
+          throw new Error(`cannot remove factor; allowed: at least ${MIN_FACTORS} factors`);
+        }
+        this.model.removeFactor(rowId);
+        this._factorPickers.get(rowId)?.destroy();
+        this._factorPickers.delete(rowId);
         this.$nextTick(() => {
           this._syncFactorPickers();
           this._scheduleRerun();
         });
       },
 
-      optionChanged() {
+      /**
+       * Eine Faktorzeile vor eine andere schieben; die Reihenfolge ist die
+       * Schachtelung, die Analyse läuft danach neu.
+       * @agent
+       * @param {string} rowId die id der zu schiebenden Zeile
+       * @param {string} beforeRowId die id der Zeile, vor der sie landet
+       * @returns {void}
+       * @throws {Error} wenn eine der ids unbekannt ist
+       */
+      moveFactor(rowId, beforeRowId) {
+        const ids = this.model.factors.map(f => f.id);
+        requireKnownId('rowId', rowId, ids);
+        requireKnownId('beforeRowId', beforeRowId, ids);
+        this.model.moveFactorBefore(rowId, beforeRowId);
+        this._scheduleRerun();
+      },
+
+      /**
+       * Die Spalte einer Faktorzeile setzen; die Analyse läuft danach neu.
+       * @agent
+       * @param {string} rowId die id einer Zeile aus read().factors
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
+       *   der Spaltenbezug einer wählbaren Spalte (read().pickableColumns.factor), oder null zum Leeren
+       * @returns {void}
+       * @throws {Error} wenn die Zeilen-id unbekannt ist oder die Spalte nicht wählbar
+       */
+      setFactorColumn(rowId, ref) {
+        requireKnownId('rowId', rowId, this.model.factors.map(f => f.id));
+        let clean = null;
+        if (ref != null) {
+          const keys = this.pickableColumns().factor.map(c => c.key);
+          requireKnownId('ref', refToKey(ref), keys);
+          clean = keyToRef(refToKey(ref));
+        }
+        this.model.setFactorRef(rowId, clean);
+        this._factorPickers.get(rowId)?.syncValue(clean);
         this._scheduleRerun();
       },
 
@@ -259,10 +501,17 @@ const mod = createModule({
 
       _scheduleRerun() {
         clearTimeout(this._rerunTimer);
-        this._rerunTimer = setTimeout(() => this._runAnalysis(), RERUN_DELAY);
+        this._rerunTimer = setTimeout(() => this.runAnalysis(), RERUN_DELAY);
       },
 
-      _runAnalysis() {
+      /**
+       * Die Analyse jetzt rechnen. Ohne Messwertspalte oder mit weniger als zwei
+       * belegten Faktoren entsteht kein Ergebnis (`result` null; im zweiten
+       * Fall nennt `errorMsg` den Grund).
+       * @agent
+       * @returns {void}
+       */
+      runAnalysis() {
         const clear = (msg = '') => {
           this._destroyCharts();
           this.result = null;
@@ -329,7 +578,7 @@ const mod = createModule({
         const axisName = res.factorNames[0] || '';
 
         for (const strip of res.strips) {
-          const host = await this.whenAnchor(`[data-strip="${strip.idx}"]`, gen);
+          const host = await this._whenAnchor(`[data-strip="${strip.idx}"]`, gen);
           if (!host || gen !== this._renderGen) return;
           host.replaceChildren();
 
@@ -360,7 +609,7 @@ const mod = createModule({
         }
       },
 
-      whenAnchor(selector, gen, maxFrames = 30) {
+      _whenAnchor(selector, gen, maxFrames = 30) {
         return whenAnchor(module, this, selector, gen, maxFrames);
       },
 
@@ -379,11 +628,8 @@ const mod = createModule({
         this._measurementPicker?.destroy();
         this._measurementPicker = new ColumnPicker(el, module._context, {
           mode: 'single',
-          types: ['numeric', 'percent', 'currency'],
-          onChange: (ref) => {
-            this.model.columnRefs.measurement = ref;
-            this._scheduleRerun();
-          },
+          ...SLOT_FILTERS.measurement,
+          onChange: (ref) => { this.setColumn('measurement', ref); },
         });
         if (this.model.columnRefs.measurement) {
           this._measurementPicker.value = this.model.columnRefs.measurement;
@@ -410,10 +656,8 @@ const mod = createModule({
           cell.replaceChildren();
           const picker = new ColumnPicker(cell, module._context, {
             mode: 'single',
-            onChange: (ref) => {
-              this.model.setFactorRef(f.id, ref);
-              this._scheduleRerun();
-            },
+            ...FACTOR_FILTER,
+            onChange: (ref) => { this.setFactorColumn(f.id, ref); },
           });
           if (f.ref) picker.value = f.ref;
           this._factorPickers.set(f.id, picker);
@@ -422,6 +666,7 @@ const mod = createModule({
 
       // ── Lebenszyklus ──────────────────────────────────────────
 
+      /** @noagent lifecycle */
       init() {
         this._unsubs = [];
         this._charts = [];
@@ -449,9 +694,10 @@ const mod = createModule({
         eb.on('theme:changed', onTheme);
         this._unsubs.push(() => eb.off('theme:changed', onTheme));
 
-        this._runAnalysis();
+        this.runAnalysis();
       },
 
+      /** @noagent lifecycle */
       destroy() {
         for (const unsub of this._unsubs) unsub();
         this._unsubs = [];

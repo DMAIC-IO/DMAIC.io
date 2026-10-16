@@ -49,18 +49,20 @@
     <div class="field-group">
       <label x-text="t('modelForm')"></label>
       <select class="field" data-ref="sel-model-form"
-              x-model="model.modelForm" @change="optionChanged()">
-        <option value="nested" x-text="t('modelForm_nested')"></option>
-        <option value="crossed" x-text="t('modelForm_crossed')"></option>
+              :value="model.modelForm" @change="setParam('modelForm', $event.target.value)">
+        <template x-for="o in modelFormOptions()" :key="o.value">
+          <option :value="o.value" :selected="o.value === model.modelForm" x-text="o.label"></option>
+        </template>
       </select>
     </div>
 
     <div class="field-group">
       <label x-text="t('estimator')"></label>
       <select class="field" data-ref="sel-estimator"
-              x-model="model.estimator" @change="optionChanged()">
-        <option value="anova" x-text="t('estimator_anova')"></option>
-        <option value="reml" x-text="t('estimator_reml')"></option>
+              :value="model.estimator" @change="setParam('estimator', $event.target.value)">
+        <template x-for="o in estimatorOptions()" :key="o.value">
+          <option :value="o.value" :selected="o.value === model.estimator" x-text="o.label"></option>
+        </template>
       </select>
     </div>
 
@@ -69,22 +71,22 @@
     <div class="field-group">
       <label class="multi-vari__check">
         <input type="checkbox" data-ref="chk-points"
-               x-model="model.showPoints" @change="optionChanged()">
+               :checked="model.showPoints" @change="setParam('showPoints', $event.target.checked)">
         <span x-text="t('showPoints')"></span>
       </label>
       <label class="multi-vari__check">
         <input type="checkbox" data-ref="chk-connect"
-               x-model="model.connectMeans" @change="optionChanged()">
+               :checked="model.connectMeans" @change="setParam('connectMeans', $event.target.checked)">
         <span x-text="t('connectMeans')"></span>
       </label>
       <label class="multi-vari__check">
         <input type="checkbox" data-ref="chk-group-mean"
-               x-model="model.showGroupMean" @change="optionChanged()">
+               :checked="model.showGroupMean" @change="setParam('showGroupMean', $event.target.checked)">
         <span x-text="t('showGroupMean')"></span>
       </label>
       <label class="multi-vari__check">
         <input type="checkbox" data-ref="chk-ref-line"
-               x-model="model.showRefLine" @change="optionChanged()">
+               :checked="model.showRefLine" @change="setParam('showRefLine', $event.target.checked)">
         <span x-text="t('showRefLine')"></span>
       </label>
     </div>

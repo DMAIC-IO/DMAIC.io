@@ -2957,6 +2957,62 @@
     "multi-vari": {
       "name": "Multi-Vari Chart",
       "description": "Stages single measurements across up to four factors and splits the spread into variance components — shows where the variation actually comes from.",
+      "whenToUse": "When the spread of a measured characteristic must be traced to its sources: stages every single measurement by two to four factors (for example shift, cavity, part) and splits the variance into components, nested or crossed, by ANOVA or REML; needs one numeric measurement column and two factor columns.",
+      "actions": {
+        "read": {
+          "help": "Returns the measurement column, the factor rows in order, model form, estimator, the four display switches, the selectable columns and the result. result is null until a measurement column and two factor columns are chosen; errorMsg then names the reason, except while the measurement column is still missing (errorMsg stays empty).",
+          "params": { "options": "Optional; this module holds no bulk data." }
+        },
+        "setParam": {
+          "help": "Sets the model form, the estimator or one of the four display switches; the analysis reruns. The display switches only change the chart, not the result.",
+          "params": {
+            "key": "One of the keys in activeParams: modelForm, estimator, showPoints, connectMeans, showGroupMean, showRefLine. Any other value is an error.",
+            "value": "modelForm: 'nested' or 'crossed'. estimator: 'anova' or 'reml'. The four display switches: true or false. Any other value is an error."
+          }
+        },
+        "setColumn": {
+          "help": "Points the analysis at the numeric measurement column of a data collection; the analysis reruns. Factor columns are set per row with setFactorColumn.",
+          "params": {
+            "slot": "One of the slots in activeColumnSlots; this module only has 'measurement'.",
+            "ref": "Column reference { instanceId, sheetId, columnId } of a column from pickableColumns.measurement, or null to clear."
+          }
+        },
+        "addFactor": { "help": "Appends an empty factor row at the end (innermost nesting level) and returns its id. An error once four factors exist." },
+        "removeFactor": {
+          "help": "Removes a factor row; the analysis reruns. An error when only two rows remain.",
+          "params": { "rowId": "The id of a row from read().factors. An unknown id is an error." }
+        },
+        "moveFactor": {
+          "help": "Moves a factor row directly before another one; the row order is the nesting, so the analysis reruns.",
+          "params": {
+            "rowId": "The id of the row to move, from read().factors.",
+            "beforeRowId": "The id of the row it is placed in front of, from read().factors. Required; to move a row to the end, move the last row before it instead."
+          }
+        },
+        "setFactorColumn": {
+          "help": "Points a factor row at a column of a data collection; the analysis reruns.",
+          "params": {
+            "rowId": "The id of a row from read().factors. An unknown id is an error.",
+            "ref": "Column reference { instanceId, sheetId, columnId } of a column from pickableColumns.factor, or null to clear the row."
+          }
+        },
+        "runAnalysis": { "help": "Computes with the chosen columns. Without a measurement column or with fewer than two filled factor rows result stays null; in the second case errorMsg names the reason." }
+      },
+      "fields": {
+        "columnRefs": { "help": "The chosen measurement column as { measurement: { instanceId, sheetId, columnId } }, or measurement null." },
+        "factors": { "help": "The factor rows in order, each { id, ref }; ref is the column reference or null. The order is the nesting: row 0 is outermost (X axis)." },
+        "modelForm": { "help": "Variance model: 'nested' (A > B(A) > …) or 'crossed' (A, B, A×B, …)." },
+        "estimator": { "help": "Variance-component estimator: 'anova' or 'reml'." },
+        "showPoints": { "help": "Display switch: draw the single measurements. Changes only the chart, not the result." },
+        "connectMeans": { "help": "Display switch: connect the group means. Changes only the chart, not the result." },
+        "showGroupMean": { "help": "Display switch: mark the group means. Changes only the chart, not the result." },
+        "showRefLine": { "help": "Display switch: draw the grand-mean reference line. Changes only the chart, not the result." },
+        "activeParams": { "help": "The keys setParam accepts in the current state." },
+        "activeColumnSlots": { "help": "The slots setColumn accepts in the current state." },
+        "pickableColumns": { "help": "Per slot (measurement, factor) the columns setColumn and setFactorColumn accept, each { key, name }; key is 'instanceId|sheetId|columnId'." },
+        "result": { "help": "The staged groups, grand mean, warnings and variance components, or null while no measurement column or fewer than two factor columns are chosen or the analysis failed." },
+        "errorMsg": { "help": "The reason no result exists (fewer than two factors, no usable data, invalid design) or that the variance decomposition failed; an empty string otherwise, including while the measurement column is missing." }
+      },
       "sectionColumns": "Columns",
       "sectionModel": "Model",
       "sectionDisplay": "Display",

@@ -2961,6 +2961,62 @@
     "multi-vari": {
       "name": "Multi-Vari-Diagramm",
       "description": "Zeigt Einzelmessungen nach bis zu vier Einflussgrößen gestaffelt und zerlegt die Streuung in Varianzkomponenten — macht sichtbar, wo die Streuung wirklich entsteht.",
+      "whenToUse": "Wenn die Streuung eines Merkmals auf ihre Quellen zurückgeführt werden soll: staffelt jede Einzelmessung nach zwei bis vier Einflussgrößen (etwa Schicht, Nest, Teil) und zerlegt die Varianz in Komponenten, geschachtelt oder gekreuzt, per ANOVA oder REML; braucht eine numerische Messwertspalte und zwei Faktorspalten.",
+      "actions": {
+        "read": {
+          "help": "Liefert Messwertspalte, Faktorzeilen in Reihenfolge, Modellform, Schätzer, die vier Anzeigeschalter, die wählbaren Spalten und das Ergebnis. result ist null, bis eine Messwertspalte und zwei Faktorspalten gewählt sind; errorMsg nennt dann den Grund, außer solange die Messwertspalte noch fehlt (errorMsg bleibt leer).",
+          "params": { "options": "Optional; dieses Modul hält keine Massendaten." }
+        },
+        "setParam": {
+          "help": "Setzt Modellform, Schätzer oder einen der vier Anzeigeschalter; die Analyse läuft danach neu. Die Anzeigeschalter ändern nur das Diagramm, nicht das Ergebnis.",
+          "params": {
+            "key": "Einer der Schlüssel aus activeParams: modelForm, estimator, showPoints, connectMeans, showGroupMean, showRefLine. Jeder andere Wert ist ein Fehler.",
+            "value": "modelForm: 'nested' oder 'crossed'. estimator: 'anova' oder 'reml'. Die vier Anzeigeschalter: true oder false. Jeder andere Wert ist ein Fehler."
+          }
+        },
+        "setColumn": {
+          "help": "Richtet die Analyse auf die numerische Messwertspalte einer Datensammlung; die Analyse läuft danach neu. Die Faktorspalten setzt setFactorColumn je Zeile.",
+          "params": {
+            "slot": "Einer der Slots aus activeColumnSlots; dieses Modul kennt nur 'measurement'.",
+            "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns.measurement, oder null zum Leeren."
+          }
+        },
+        "addFactor": { "help": "Hängt eine leere Faktorzeile ans Ende (innerste Schachtelungsstufe) und gibt ihre id zurück. Fehler, sobald vier Faktoren geführt werden." },
+        "removeFactor": {
+          "help": "Entfernt eine Faktorzeile; die Analyse läuft danach neu. Fehler, wenn nur noch zwei Zeilen bleiben.",
+          "params": { "rowId": "Die id einer Zeile aus read().factors. Eine unbekannte id ist ein Fehler." }
+        },
+        "moveFactor": {
+          "help": "Schiebt eine Faktorzeile direkt vor eine andere; die Zeilenfolge ist die Schachtelung, die Analyse läuft danach neu.",
+          "params": {
+            "rowId": "Die id der zu schiebenden Zeile aus read().factors.",
+            "beforeRowId": "Die id der Zeile, vor der sie landet, aus read().factors. Pflicht; um eine Zeile ans Ende zu bringen, die letzte Zeile stattdessen vor sie schieben."
+          }
+        },
+        "setFactorColumn": {
+          "help": "Richtet eine Faktorzeile auf eine Spalte einer Datensammlung; die Analyse läuft danach neu.",
+          "params": {
+            "rowId": "Die id einer Zeile aus read().factors. Eine unbekannte id ist ein Fehler.",
+            "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns.factor, oder null, um die Zeile zu leeren."
+          }
+        },
+        "runAnalysis": { "help": "Rechnet mit den gewählten Spalten. Ohne Messwertspalte oder mit weniger als zwei belegten Faktorzeilen bleibt result null; im zweiten Fall nennt errorMsg den Grund." }
+      },
+      "fields": {
+        "columnRefs": { "help": "Die gewählte Messwertspalte als { measurement: { instanceId, sheetId, columnId } }, oder measurement null." },
+        "factors": { "help": "Die Faktorzeilen in Reihenfolge, je { id, ref }; ref ist der Spaltenbezug oder null. Die Reihenfolge ist die Schachtelung: Zeile 0 ist die äußerste (X-Achse)." },
+        "modelForm": { "help": "Varianzmodell: 'nested' (A > B(A) > …) oder 'crossed' (A, B, A×B, …)." },
+        "estimator": { "help": "Schätzer der Varianzkomponenten: 'anova' oder 'reml'." },
+        "showPoints": { "help": "Anzeigeschalter: Einzelmessungen zeichnen. Ändert nur das Diagramm, nicht das Ergebnis." },
+        "connectMeans": { "help": "Anzeigeschalter: Gruppenmittelwerte verbinden. Ändert nur das Diagramm, nicht das Ergebnis." },
+        "showGroupMean": { "help": "Anzeigeschalter: Gruppenmittelwerte markieren. Ändert nur das Diagramm, nicht das Ergebnis." },
+        "showRefLine": { "help": "Anzeigeschalter: Referenzlinie des Gesamtmittelwerts zeichnen. Ändert nur das Diagramm, nicht das Ergebnis." },
+        "activeParams": { "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt." },
+        "activeColumnSlots": { "help": "Die Slots, die setColumn im aktuellen Zustand annimmt." },
+        "pickableColumns": { "help": "Je Slot (measurement, factor) die Spalten, die setColumn und setFactorColumn annehmen, je { key, name }; key ist 'instanceId|sheetId|columnId'." },
+        "result": { "help": "Die gestaffelten Gruppen, Gesamtmittelwert, Warnungen und Varianzkomponenten, oder null, solange keine Messwertspalte oder weniger als zwei Faktorspalten gewählt sind oder die Analyse scheiterte." },
+        "errorMsg": { "help": "Der Grund, warum kein Ergebnis vorliegt (weniger als zwei Faktoren, keine verwertbaren Daten, ungültiger Versuchsplan) oder dass die Varianzzerlegung scheiterte; sonst ein leerer Text, auch solange die Messwertspalte fehlt." }
+      },
       "sectionColumns": "Spalten",
       "sectionModel": "Modell",
       "sectionDisplay": "Darstellung",

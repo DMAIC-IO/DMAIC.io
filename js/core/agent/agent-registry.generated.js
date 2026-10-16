@@ -5028,91 +5028,196 @@ export const AGENT_REGISTRY = {
     }
   },
   "multi-vari": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:fmt",
-      "unmarked_method:pct",
-      "unmarked_method:factorRole",
-      "unmarked_method:chartTitle",
-      "unmarked_method:termLabel",
-      "unmarked_method:intOrDash",
-      "unmarked_method:vcTerms",
-      "unmarked_method:totalVarianceText",
-      "unmarked_method:totalSd",
-      "unmarked_method:totalPercent",
-      "unmarked_method:largestTerm",
-      "unmarked_method:largestPercent",
-      "unmarked_method:largestTermLabel",
-      "unmarked_method:interpretationText",
-      "unmarked_method:showUnbalancedNote",
-      "unmarked_method:showClampedNote",
-      "unmarked_method:exportCsv",
-      "unmarked_method:warningCodes",
-      "unmarked_method:hasWarnings",
-      "unmarked_method:warningText",
-      "unmarked_method:canRender",
-      "unmarked_method:addFactor",
-      "unmarked_method:removeFactor",
-      "unmarked_method:optionChanged",
-      "unmarked_method:whenAnchor",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unreadable_state_key:factorRows",
-      "unreachable_write:modelForm",
-      "unreachable_write:estimator",
-      "unreachable_write:showPoints",
-      "unreachable_write:connectMeans",
-      "unreachable_write:showGroupMean",
-      "unreachable_write:showRefLine"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'modelForm'|'estimator'|'showPoints'|'connectMeans'|'showGroupMean'|'showRefLine'",
+            "optional": false,
+            "help": "welcher Parameter"
+          },
+          {
+            "name": "value",
+            "type": "string|boolean",
+            "optional": false,
+            "help": "modelForm: `nested` oder `crossed`; estimator: `anova` oder `reml`; die vier Anzeigeschalter: `true` oder `false`"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Parameter setzen; die Analyse läuft danach neu."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'measurement'",
+            "optional": false,
+            "help": "der Slot; dieses Modul führt nur `measurement` (die Faktoren setzt `setFactorColumn`)"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "void",
+        "help": "Die Messwertspalte zuweisen; die Analyse läuft danach neu."
+      },
+      "addFactor": {
+        "params": [],
+        "returns": "string",
+        "help": "Eine leere Faktorzeile anhängen."
+      },
+      "removeFactor": {
+        "params": [
+          {
+            "name": "rowId",
+            "type": "string",
+            "optional": false,
+            "help": "die id einer Zeile aus read().factors"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Faktorzeile entfernen; die Analyse läuft danach neu."
+      },
+      "moveFactor": {
+        "params": [
+          {
+            "name": "rowId",
+            "type": "string",
+            "optional": false,
+            "help": "die id der zu schiebenden Zeile"
+          },
+          {
+            "name": "beforeRowId",
+            "type": "string",
+            "optional": false,
+            "help": "die id der Zeile, vor der sie landet"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Faktorzeile vor eine andere schieben; die Reihenfolge ist die Schachtelung, die Analyse läuft danach neu."
+      },
+      "setFactorColumn": {
+        "params": [
+          {
+            "name": "rowId",
+            "type": "string",
+            "optional": false,
+            "help": "die id einer Zeile aus read().factors"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte (read().pickableColumns.factor), oder null zum Leeren"
+          }
+        ],
+        "returns": "void",
+        "help": "Die Spalte einer Faktorzeile setzen; die Analyse läuft danach neu."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Die Analyse jetzt rechnen. Ohne Messwertspalte oder mit weniger als zwei belegten Faktoren entsteht kein Ergebnis (`result` null; im zweiten Fall nennt `errorMsg` den Grund)."
+      }
+    },
     "fields": {
       "columnRefs": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "{ measurement: object|null }",
+        "help": "the chosen measurement column, `{ instanceId, sheetId, columnId }`, or null",
+        "bulk": false,
+        "derived": true
       },
       "factors": {
-        "type": "Array<{id: string, ref: object|null}>",
-        "help": "",
-        "bulk": false
+        "type": "Array<{ id: string, ref: object|null }>",
+        "help": "the factor rows in order, each `{ id, ref }`; the order is the nesting (row 0 = outermost, X axis)",
+        "bulk": false,
+        "derived": true
       },
       "modelForm": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "'nested'|'crossed'",
+        "help": "nested (A > B(A) > …) or crossed (A, B, A×B, …) variance model",
+        "bulk": false,
+        "derived": true
       },
       "estimator": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "'anova'|'reml'",
+        "help": "the variance-component estimator",
+        "bulk": false,
+        "derived": true
       },
       "showPoints": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "boolean",
+        "help": "display switch: draw single measurements; does not change the result",
+        "bulk": false,
+        "derived": true
       },
       "connectMeans": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "boolean",
+        "help": "display switch: connect the group means; does not change the result",
+        "bulk": false,
+        "derived": true
       },
       "showGroupMean": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "boolean",
+        "help": "display switch: mark the group means; does not change the result",
+        "bulk": false,
+        "derived": true
       },
       "showRefLine": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "boolean",
+        "help": "display switch: draw the grand-mean reference line; does not change the result",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot (`measurement`, `factor`) the columns `setColumn` / `setFactorColumn` accept, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "the computed result, or null while measurement or two factor columns are missing or the analysis failed",
+        "bulk": false,
+        "derived": true
+      },
+      "errorMsg": {
+        "type": "string",
+        "help": "the reason the last analysis produced no result, or an empty string",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -9570,4 +9675,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":41};
+export const AGENT_COVERAGE = {"total":74,"available":42};
