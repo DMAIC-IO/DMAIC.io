@@ -801,6 +801,11 @@ const mod = createModule({
           content: this.$refs.roleConfirmForm,
           confirmLabel: _t('confirmRolesConfirm'),
           cancelLabel: ctx.i18n.t('common.cancel'),
+          // Pull focus off the toolbar button behind the overlay: Enter would
+          // click it again and open a second confirmation that borrows the form.
+          onMount: (body) => {
+            this.$nextTick(() => body.closest('.dialog__window')?.querySelector('.dialog__confirm')?.focus());
+          },
           onConfirm: () => {
             for (const { colId, role } of this.roleDraft) {
               try { this._grid.setColumnRole(colId, role); } catch { /* invalid role for type: keep */ }
