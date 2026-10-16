@@ -7,7 +7,6 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { draggablePopout } from '../../ui/dialog/draggable.js';
 import { Stakeholder, State, QUAD_ORDER, SUPPORT_VALUES, criticalCritics, isKeyCritic } from './stakeholder-analysis-model.js';
 
 const AVATAR_COLORS = [
@@ -79,11 +78,7 @@ export default createModule({
     // identically to before the migration).
     const _raw = (key) => module._context.i18n.t(`modules.stakeholder-analysis.${  key}`);
     return {
-      // ── Draggable popout shell (drag + position handlers) ──
-      ...draggablePopout(),
-
-      // ── Transient modal state (NOT persisted) ──
-      modalOpen: false,
+      // ── Transient form state (NOT persisted) ──
       modalEditId: null,
       modalData: { name: '', role: '', power: 3, interest: 3, support: 'neutral', category: 'intern', notes: '' },
 
@@ -148,11 +143,17 @@ export default createModule({
         return `${this.quadLabel(sh.quadrant)  } · ${  this.catLabel(sh.category)}`;
       },
 
-      // ── Modal ──
+      // ── Add/edit form (lent to the dialog service) ──
       modalTitle() {
         return this.modalEditId ? this.t('editStakeholder') : this.t('addStakeholder');
       },
-      openModal(existing) {
+      /**
+       * Open the add/edit form in a form dialog. The form lives hidden in
+       * the template (x-ref="stakeholderForm") and is borrowed by the dialog.
+       * @param {Stakeholder|null} existing  stakeholder to edit, or null to add
+       * @returns {Promise<void>} resolves once the dialog is closed
+       */
+      async openModal(existing) {
         this.modalEditId = existing ? existing.id : null;
         const src = existing || { name: '', role: '', power: 3, interest: 3, support: 'neutral', category: 'intern', notes: '' };
         this.modalData = {
@@ -160,17 +161,24 @@ export default createModule({
           power: src.power, interest: src.interest,
           support: src.support, category: src.category, notes: src.notes,
         };
-        this.popoutResetPosition();
-        this.modalOpen = true;
+        await module._context.dialog.form({
+          title: this.modalTitle(),
+          content: this.$refs.stakeholderForm,
+          confirmLabel: this.t('common.save'),
+          cancelLabel: this.t('common.cancel'),
+          onMount: (body) => body.querySelector('[data-field="name"]')?.focus(),
+          onConfirm: (body) => {
+            if (this.saveModal()) return true;
+            body.querySelector('[data-field="name"]')?.focus();
+            return false;
+          },
+        });
       },
-      closeModal() {
-        this.modalOpen = false;
-        this.popoutResetPosition();
-      },
+      /** @returns {boolean} false keeps the dialog open (empty name). */
       saveModal() {
         const d = this.modalData;
         const name = (d.name || '').trim();
-        if (!name) return;
+        if (!name) return false;
         const sh = Stakeholder.fromJSON({
           id: this.modalEditId || undefined,
           name,
@@ -188,7 +196,7 @@ export default createModule({
         } else {
           this.model.stakeholders.push(sh);
         }
-        this.closeModal();
+        return true;
       },
       async deleteStakeholder(sh) {
         const ok = await module._context.dialog.confirm({

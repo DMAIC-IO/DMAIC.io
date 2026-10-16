@@ -234,81 +234,61 @@
   </div>
  </div>
 
- <!-- Add / Edit popout (reuses dmike-chart-popout overlay styling) -->
- <template x-if="modalOpen">
-   <div class="dmike-chart-popout-overlay"
-     @click.self="closeModal()"
-     @keydown.escape.window="closeModal()"
-     @mousemove.window="popoutDragMove($event)"
-     @mouseup.window="popoutDragEnd()">
-     <div class="dmike-chart-popout sha__popout-win" :style="popoutStyle()">
-       <div class="dmike-chart-popout-titlebar" @mousedown="popoutDragStart($event)">
-         <span x-text="modalTitle()"></span>
-         <button class="dmike-chart-popout-close" type="button" :aria-label="t('common.close')" @click="closeModal()">
-           <span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span>
-         </button>
+ <!-- Add/edit form: hidden here, lent to the dialog service by openModal() -->
+ <div class="sha__modal-forms" hidden>
+   <div class="sha__form" x-ref="stakeholderForm">
+     <div class="sha__form-row">
+       <div class="sha__form-group">
+         <label><span x-text="t('fieldName')"></span> *</label>
+         <input type="text" class="field" data-field="name" x-model="modalData.name" maxlength="100" :placeholder="t('fieldName')">
        </div>
-       <div class="dmike-chart-popout-body sha__popout-body">
-         <div class="sha__popout-form">
-           <div class="sha__form-row">
-             <div class="sha__form-group">
-               <label><span x-text="t('fieldName')"></span> *</label>
-               <input type="text" class="field" data-field="name" x-model="modalData.name" maxlength="100" :placeholder="t('fieldName')">
-             </div>
-             <div class="sha__form-group">
-               <label x-text="t('fieldRole')"></label>
-               <input type="text" class="field" data-field="role" x-model="modalData.role" maxlength="200" :placeholder="t('fieldRole')">
-             </div>
-           </div>
-
-           <div class="sha__slider-group">
-             <div class="sha__slider-header">
-               <label x-text="t('fieldPower')"></label>
-               <span class="sha__slider-value" data-ref="vPower" x-text="modalData.power"></span>
-             </div>
-             <input type="range" class="dmike-slider" min="1" max="5" data-field="power" x-model="modalData.power">
-           </div>
-
-           <div class="sha__slider-group">
-             <div class="sha__slider-header">
-               <label x-text="t('fieldInterest')"></label>
-               <span class="sha__slider-value" data-ref="vInterest" x-text="modalData.interest"></span>
-             </div>
-             <input type="range" class="dmike-slider" min="1" max="5" data-field="interest" x-model="modalData.interest">
-           </div>
-
-           <div class="sha__form-row">
-             <div class="sha__form-group">
-               <label x-text="t('fieldSupport')"></label>
-               <select class="field" data-field="support" x-model="modalData.support">
-                 <option value="supporter" x-text="t('supportSupporter')"></option>
-                 <option value="neutral" x-text="t('supportNeutral')"></option>
-                 <option value="critic" x-text="t('supportCritic')"></option>
-               </select>
-             </div>
-             <div class="sha__form-group">
-               <label x-text="t('fieldCategory')"></label>
-               <select class="field" data-field="category" x-model="modalData.category">
-                 <option value="intern" x-text="t('categoryIntern')"></option>
-                 <option value="extern" x-text="t('categoryExtern')"></option>
-                 <option value="kunde" x-text="t('categoryCustomer')"></option>
-                 <option value="lieferant" x-text="t('categorySupplier')"></option>
-                 <option value="behoerde" x-text="t('categoryAuthority')"></option>
-               </select>
-             </div>
-           </div>
-
-           <div class="sha__form-group">
-             <label x-text="t('notesLabel')"></label>
-             <textarea class="field" data-field="notes" x-model="modalData.notes" maxlength="500" :placeholder="t('notesPlaceholder')"></textarea>
-           </div>
-         </div>
-         <div class="sha__popout-footer">
-           <button class="btn btn--secondary" type="button" @click="closeModal()" x-text="t('common.cancel')"></button>
-           <button class="btn btn--primary" type="button" @click="saveModal()" x-text="t('common.save')"></button>
-         </div>
+       <div class="sha__form-group">
+         <label x-text="t('fieldRole')"></label>
+         <input type="text" class="field" data-field="role" x-model="modalData.role" maxlength="200" :placeholder="t('fieldRole')">
        </div>
      </div>
+
+     <div class="sha__slider-group">
+       <div class="sha__slider-header">
+         <label x-text="t('fieldPower')"></label>
+         <span class="sha__slider-value" data-ref="vPower" x-text="modalData.power"></span>
+       </div>
+       <input type="range" class="dmike-slider" min="1" max="5" data-field="power" x-model="modalData.power">
+     </div>
+
+     <div class="sha__slider-group">
+       <div class="sha__slider-header">
+         <label x-text="t('fieldInterest')"></label>
+         <span class="sha__slider-value" data-ref="vInterest" x-text="modalData.interest"></span>
+       </div>
+       <input type="range" class="dmike-slider" min="1" max="5" data-field="interest" x-model="modalData.interest">
+     </div>
+
+     <div class="sha__form-row">
+       <div class="sha__form-group">
+         <label x-text="t('fieldSupport')"></label>
+         <select class="field" data-field="support" x-model="modalData.support">
+           <option value="supporter" x-text="t('supportSupporter')"></option>
+           <option value="neutral" x-text="t('supportNeutral')"></option>
+           <option value="critic" x-text="t('supportCritic')"></option>
+         </select>
+       </div>
+       <div class="sha__form-group">
+         <label x-text="t('fieldCategory')"></label>
+         <select class="field" data-field="category" x-model="modalData.category">
+           <option value="intern" x-text="t('categoryIntern')"></option>
+           <option value="extern" x-text="t('categoryExtern')"></option>
+           <option value="kunde" x-text="t('categoryCustomer')"></option>
+           <option value="lieferant" x-text="t('categorySupplier')"></option>
+           <option value="behoerde" x-text="t('categoryAuthority')"></option>
+         </select>
+       </div>
+     </div>
+
+     <div class="sha__form-group">
+       <label x-text="t('notesLabel')"></label>
+       <textarea class="field" data-field="notes" x-model="modalData.notes" maxlength="500" :placeholder="t('notesPlaceholder')"></textarea>
+     </div>
    </div>
- </template>
+ </div>
 </div>
