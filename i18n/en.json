@@ -6871,6 +6871,77 @@
       "createNewWorksheet": "New in dedicated worksheet"
     },
     "random-generator": {
+      "whenToUse": "When random data from a known distribution or from weighted categories is needed — for practice, simulations or test data — reproducible through the seed.",
+      "actions": {
+        "read": {
+          "help": "Returns the distribution, its parameters, sample size and seed, the categories, the selectable sets and a summary of the generated values. generated is null while there are no values; read the values themselves from the worksheet after toWorksheet.",
+          "params": {
+            "options": "Optional; this module holds no bulk data."
+          }
+        },
+        "selectDistribution": {
+          "help": "Chooses the distribution and generates values at once with the sample size and seed that apply to it.",
+          "params": {
+            "key": "One of the distributions in distributions, attributive included; any other value is an error."
+          }
+        },
+        "setDistParam": {
+          "help": "Sets one parameter of the chosen continuous or discrete distribution and generates again at once. Values outside the range are rejected, not clamped.",
+          "params": {
+            "id": "One of the parameters in activeDistParams, for example mu or sigma. Which apply depends on the distribution.",
+            "value": "A number within min to max from activeDistParams; numbers given as text are accepted."
+          }
+        },
+        "setParam": {
+          "help": "Sets the sample size or the seed and generates again at once. Values outside the range are rejected, not clamped.",
+          "params": {
+            "key": "One of the keys in activeParams: count and seed for a continuous or discrete distribution, attrCount and attrSeed for the attributive one. Any other value is an error.",
+            "value": "A whole number; numbers given as text are accepted. Sample size (count, attrCount) from 1 to 100000, seed (seed, attrSeed) any whole number except 0."
+          }
+        },
+        "addAttribute": {
+          "help": "Adds a category to the attributive distribution (empty name, weight 1) and generates again. Returns the id of the category. Categories without a name are skipped when generating."
+        },
+        "removeAttribute": {
+          "help": "Removes a category of the attributive distribution and generates again.",
+          "params": {
+            "attrId": "The id of a category from attributes; any other id is an error."
+          }
+        },
+        "setAttribute": {
+          "help": "Sets the name or the weight of a category of the attributive distribution and generates again. Categories with an empty name or a weight of 0 or less are skipped when generating.",
+          "params": {
+            "attrId": "The id of a category from attributes, or the one addAttribute returned.",
+            "key": "Either name or weight; any other value is an error.",
+            "value": "For name a text, empty allowed; for weight a number, numbers given as text are accepted."
+          }
+        },
+        "generate": {
+          "help": "Generates the values with the current inputs. Without a chosen distribution nothing happens; a failure of the distribution is reported in errorMsg, not as a rejection."
+        },
+        "toWorksheet": {
+          "help": "Sends the generated values as a new column to a new worksheet or an existing empty column and returns the receiving worksheet. Without values nothing is sent and null is returned.",
+          "params": {
+            "target": "null for a new worksheet, otherwise a column reference { instanceId, sheetId, columnId } from targetColumns."
+          }
+        }
+      },
+      "fields": {
+        "currentDist": { "help": "The chosen distribution, one of the keys in distributions, or null." },
+        "distributions": { "help": "All distributions selectDistribution accepts, attributive included." },
+        "params": { "help": "The parameters of the chosen continuous or discrete distribution as numbers, by id." },
+        "activeDistParams": { "help": "The parameters setDistParam accepts in the chosen distribution, each with id, bounds (null without a bound) and default." },
+        "activeParams": { "help": "The keys setParam accepts in the current state; empty without a chosen distribution." },
+        "count": { "help": "Sample size of a continuous or discrete distribution." },
+        "seed": { "help": "Random seed of a continuous or discrete distribution." },
+        "attributes": { "help": "The categories of the attributive distribution, each with id, name and weight." },
+        "attrCount": { "help": "Sample size of the attributive distribution." },
+        "attrSeed": { "help": "Random seed of the attributive distribution." },
+        "generated": { "help": "Summary of the generated values: n, mean, standard deviation, minimum and maximum for continuous and discrete distributions; n and the frequency per category for the attributive one; null without values." },
+        "targetColumns": { "help": "The empty columns of existing data collections that toWorksheet accepts as target, each { key, name }; key is 'instanceId|sheetId|columnId'. A null target creates a new worksheet." },
+        "errorMsg": { "help": "The message when the distribution could not produce values, otherwise empty." }
+      },
+      "errGenerate": "The values could not be generated: {message}",
       "name": "Random Generator",
       "description": "Generate reproducible samples from statistical distributions",
       "selectDistribution": "Select a distribution on the left to get started.",

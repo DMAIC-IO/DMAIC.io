@@ -429,3 +429,8 @@
   background: color-mix(in srgb, var(--rg-attr-color, var(--color-accent)) 14%, transparent);
   border: 1px solid color-mix(in srgb, var(--rg-attr-color, var(--color-accent)) 30%, transparent);
 }
+
+.rg-error {
+  margin: var(--spacing-sm) 0;
+  color: var(--color-error);
+}

@@ -6736,79 +6736,208 @@ export const AGENT_REGISTRY = {
     }
   },
   "random-generator": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:categories",
-      "unmarked_method:isAttributive",
-      "unmarked_method:isNumeric",
-      "unmarked_method:selectDistribution",
-      "unmarked_method:isEn",
-      "unmarked_method:distName",
-      "unmarked_method:distFormula",
-      "unmarked_method:distParams",
-      "unmarked_method:paramLabel",
-      "unmarked_method:paramHint",
-      "unmarked_method:paramMin",
-      "unmarked_method:paramMax",
-      "unmarked_method:attrColor",
-      "unmarked_method:removeGlyph",
-      "unmarked_method:attrFormula",
-      "unmarked_method:fmtValue",
-      "unmarked_method:hasResults",
-      "unmarked_method:dataCountLabel",
-      "unmarked_method:dataValues",
-      "unmarked_method:statKpis",
-      "unmarked_method:probBars",
-      "unmarked_method:attrKpis",
-      "unmarked_method:freqRows",
-      "unmarked_method:dataChips",
-      "unmarked_method:addAttribute",
-      "unmarked_method:removeAttribute",
-      "unmarked_method:autoGenerate",
-      "unmarked_method:generate",
-      "unmarked_method:exportCSV",
-      "unmarked_method:toWorksheet",
-      "unmarked_method:init",
-      "unmarked_method:destroy"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "selectDistribution": {
+        "params": [
+          {
+            "name": "key",
+            "type": "string",
+            "optional": false,
+            "help": "eine der Verteilungen aus `distributions`"
+          }
+        ],
+        "returns": "void",
+        "help": "Die Verteilung wählen und sofort generieren."
+      },
+      "setDistParam": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "einer der Parameter aus `activeDistParams`"
+          },
+          {
+            "name": "value",
+            "type": "number|string",
+            "optional": false,
+            "help": "Zahl im Bereich aus `activeDistParams`; Textzahlen werden angenommen"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Parameter der gewählten Verteilung setzen und sofort generieren."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'count'|'seed'|'attrCount'|'attrSeed'",
+            "optional": false,
+            "help": "welcher Wert; `activeParams` nennt die gültigen"
+          },
+          {
+            "name": "value",
+            "type": "number|string",
+            "optional": false,
+            "help": "ganze Zahl; Umfang von 1 bis 100000, Startwert ungleich 0; Textzahlen werden angenommen"
+          }
+        ],
+        "returns": "void",
+        "help": "Umfang oder Startwert setzen und sofort generieren."
+      },
+      "addAttribute": {
+        "params": [],
+        "returns": "string",
+        "help": "Eine Kategorie der attributiven Verteilung anlegen und sofort generieren."
+      },
+      "removeAttribute": {
+        "params": [
+          {
+            "name": "attrId",
+            "type": "string",
+            "optional": false,
+            "help": "die id einer Kategorie aus `attributes`"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Kategorie entfernen und sofort generieren."
+      },
+      "setAttribute": {
+        "params": [
+          {
+            "name": "attrId",
+            "type": "string",
+            "optional": false,
+            "help": "die id einer Kategorie aus `attributes`"
+          },
+          {
+            "name": "key",
+            "type": "'name'|'weight'",
+            "optional": false,
+            "help": "welches Feld"
+          },
+          {
+            "name": "value",
+            "type": "string|number",
+            "optional": false,
+            "help": "der Name (Text, leer erlaubt) oder das Gewicht (Zahl)"
+          }
+        ],
+        "returns": "void",
+        "help": "Name oder Gewicht einer Kategorie setzen und sofort generieren."
+      },
+      "generate": {
+        "params": [],
+        "returns": "void",
+        "help": "Erzeugt die Werte mit den aktuellen Eingaben. Ohne gewählte Verteilung geschieht nichts; ein Fehler der Verteilung steht in `errorMsg`, keine Absage."
+      },
+      "toWorksheet": {
+        "params": [
+          {
+            "name": "target",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "null für einen neuen Worksheet, sonst ein Spaltenbezug aus `targetColumns`"
+          }
+        ],
+        "returns": "Promise<{ instanceId: string }|null>",
+        "help": "Die generierten Werte als neue Spalte an einen neuen oder leeren Worksheet senden."
+      }
+    },
     "fields": {
       "currentDist": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string|null",
+        "help": "the selected distribution key, one of `distributions`, or null",
+        "bulk": false,
+        "derived": true
       },
-      "seed": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "count": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "distributions": {
+        "type": "string[]",
+        "help": "all distribution keys, `attributive` included",
+        "bulk": false,
+        "derived": true
       },
       "params": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "Object<string, number>",
+        "help": "the parameters of the current numeric distribution by id",
+        "bulk": false,
+        "derived": true
+      },
+      "activeDistParams": {
+        "type": "Array<{ id: string, min: number|null, max: number|null, default: number }>",
+        "help": "the ids `setDistParam` accepts now",
+        "bulk": false,
+        "derived": true
+      },
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts now",
+        "bulk": false,
+        "derived": true
+      },
+      "count": {
+        "type": "number",
+        "help": "sample size of a numeric distribution",
+        "bulk": false,
+        "derived": true
+      },
+      "seed": {
+        "type": "number",
+        "help": "random seed of a numeric distribution",
+        "bulk": false,
+        "derived": true
       },
       "attributes": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "Array<{ id: string, name: string, weight: number }>",
+        "help": "the categories of the attributive distribution",
+        "bulk": false,
+        "derived": true
       },
       "attrCount": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "sample size of the attributive distribution",
+        "bulk": false,
+        "derived": true
       },
       "attrSeed": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "random seed of the attributive distribution",
+        "bulk": false,
+        "derived": true
+      },
+      "generated": {
+        "type": "object|null",
+        "help": "`{ n, mean, sd, min, max }` for numeric, `{ n, frequency: [{ name, count }] }` for attributive, null without values",
+        "bulk": false,
+        "derived": true
+      },
+      "targetColumns": {
+        "type": "Array<{ key: string, name: string }>",
+        "help": "the empty columns `toWorksheet` accepts; null targets a new worksheet",
+        "bulk": false,
+        "derived": true
+      },
+      "errorMsg": {
+        "type": "string",
+        "help": "why the last generation failed, '' without error",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -10125,4 +10254,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":44};
+export const AGENT_COVERAGE = {"total":76,"available":45};

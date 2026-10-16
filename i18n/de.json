@@ -6875,6 +6875,77 @@
       "createNewWorksheet": "Neu in eigenem Worksheet"
     },
     "random-generator": {
+      "whenToUse": "Wenn Zufallsdaten aus einer bekannten Verteilung oder aus gewichteten Kategorien gebraucht werden — zum Üben, für Simulationen oder als Testdaten — reproduzierbar über den Startwert.",
+      "actions": {
+        "read": {
+          "help": "Liefert die Verteilung, ihre Parameter, Umfang und Startwert, die Kategorien, die wählbaren Mengen und eine Zusammenfassung der erzeugten Werte. generated ist null, solange keine Werte vorliegen; die Werte selbst liest man nach toWorksheet aus dem Worksheet.",
+          "params": {
+            "options": "Optional; dieses Modul führt keine Massendaten."
+          }
+        },
+        "selectDistribution": {
+          "help": "Wählt die Verteilung und erzeugt sofort Werte mit Umfang und Startwert, die für sie gelten.",
+          "params": {
+            "key": "Eine der Verteilungen aus distributions, auch attributive; jeder andere Wert ist ein Fehler."
+          }
+        },
+        "setDistParam": {
+          "help": "Setzt einen Parameter der gewählten stetigen oder diskreten Verteilung und erzeugt sofort neu. Werte außerhalb des Bereichs werden abgewiesen, nicht geklemmt.",
+          "params": {
+            "id": "Einer der Parameter aus activeDistParams, zum Beispiel mu oder sigma. Welche gelten, hängt von der Verteilung ab.",
+            "value": "Eine Zahl im Bereich min bis max aus activeDistParams; als Text angegebene Zahlen werden angenommen."
+          }
+        },
+        "setParam": {
+          "help": "Setzt Umfang oder Startwert und erzeugt sofort neu. Werte außerhalb des Bereichs werden abgewiesen, nicht geklemmt.",
+          "params": {
+            "key": "Einer der Schlüssel aus activeParams: count und seed für eine stetige oder diskrete Verteilung, attrCount und attrSeed für die attributive. Jeder andere Wert ist ein Fehler.",
+            "value": "Eine ganze Zahl; als Text angegebene Zahlen werden angenommen. Umfang (count, attrCount) von 1 bis 100000, Startwert (seed, attrSeed) jede ganze Zahl außer 0."
+          }
+        },
+        "addAttribute": {
+          "help": "Legt eine Kategorie der attributiven Verteilung an (leerer Name, Gewicht 1) und erzeugt neu. Gibt die id der Kategorie zurück. Kategorien ohne Namen zählen beim Erzeugen nicht."
+        },
+        "removeAttribute": {
+          "help": "Entfernt eine Kategorie der attributiven Verteilung und erzeugt neu.",
+          "params": {
+            "attrId": "Die id einer Kategorie aus attributes; jede andere ist ein Fehler."
+          }
+        },
+        "setAttribute": {
+          "help": "Setzt Name oder Gewicht einer Kategorie der attributiven Verteilung und erzeugt neu. Kategorien mit leerem Namen oder einem Gewicht von höchstens 0 werden beim Erzeugen übergangen.",
+          "params": {
+            "attrId": "Die id einer Kategorie aus attributes oder die von addAttribute.",
+            "key": "Entweder name oder weight; jeder andere Wert ist ein Fehler.",
+            "value": "Für name ein Text, auch leer; für weight eine Zahl, als Text angegebene Zahlen werden angenommen."
+          }
+        },
+        "generate": {
+          "help": "Erzeugt die Werte mit den aktuellen Eingaben. Ohne gewählte Verteilung geschieht nichts; ein Fehler der Verteilung steht in errorMsg, keine Absage."
+        },
+        "toWorksheet": {
+          "help": "Sendet die erzeugten Werte als neue Spalte an einen neuen oder bestehenden leeren Worksheet und gibt den empfangenden Worksheet zurück. Ohne Werte wird nichts gesendet und null zurückgegeben.",
+          "params": {
+            "target": "null für einen neuen Worksheet, sonst ein Spaltenbezug { instanceId, sheetId, columnId } aus targetColumns."
+          }
+        }
+      },
+      "fields": {
+        "currentDist": { "help": "Die gewählte Verteilung, eine der Schlüssel aus distributions, oder null." },
+        "distributions": { "help": "Alle Verteilungen, die selectDistribution annimmt, die attributive eingeschlossen." },
+        "params": { "help": "Die Parameter der gewählten stetigen oder diskreten Verteilung als Zahlen, nach id." },
+        "activeDistParams": { "help": "Die Parameter, die setDistParam in der gewählten Verteilung annimmt, je mit id, Grenzen (null ohne Grenze) und Vorgabe." },
+        "activeParams": { "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt; ohne gewählte Verteilung leer." },
+        "count": { "help": "Umfang der Stichprobe bei einer stetigen oder diskreten Verteilung." },
+        "seed": { "help": "Startwert des Zufallsgenerators bei einer stetigen oder diskreten Verteilung." },
+        "attributes": { "help": "Die Kategorien der attributiven Verteilung, je mit id, Name und Gewicht." },
+        "attrCount": { "help": "Umfang der Stichprobe bei der attributiven Verteilung." },
+        "attrSeed": { "help": "Startwert des Zufallsgenerators bei der attributiven Verteilung." },
+        "generated": { "help": "Zusammenfassung der erzeugten Werte: n, Mittelwert, Standardabweichung, Minimum und Maximum bei stetigen und diskreten Verteilungen; n und die Häufigkeit je Kategorie bei der attributiven; null ohne Werte." },
+        "targetColumns": { "help": "Die leeren Spalten bestehender Datensammlungen, die toWorksheet als Ziel annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'. Ein Ziel null legt einen neuen Worksheet an." },
+        "errorMsg": { "help": "Die Meldung, wenn die Verteilung keine Werte erzeugen konnte, sonst leer." }
+      },
+      "errGenerate": "Die Werte konnten nicht erzeugt werden: {message}",
       "name": "Zufallszahlen-Generator",
       "description": "Erzeugt reproduzierbare Stichproben aus statistischen Verteilungen",
       "selectDistribution": "Verteilung links auswählen, um zu starten.",

@@ -12,16 +12,30 @@
  * Generated random VALUES are transient (not persisted) — they are regenerated
  * deterministically from the persisted seed on render, matching the legacy
  * getState()/setState() behaviour.
+ *
+ * @agent  Steuerbar über das Viewmodel: Verteilung wählen
+ *   (selectDistribution), ihre Parameter (setDistParam), Umfang und
+ *   Startwert (setParam), Kategorien der attributiven Verteilung
+ *   (addAttribute, setAttribute, removeAttribute), generieren (generate) und
+ *   an einen neuen oder leeren Worksheet senden (toWorksheet). Der
+ *   CSV-Download bleibt der Oberfläche vorbehalten; gelesen wird über read()
+ *   (AgentRead).
  */
 
 import { openNewWorksheet } from '../../core/worksheet-handoff.js';
 import { createModule } from '../../core/template-module.js';
-import { ColumnPicker } from '../../ui/column-picker.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import {
+  requireEnum, requireKnownId, requireNumber, requireText,
+} from '../../core/agent/agent-argcheck.js';
+import { pickableColumnList } from '../../core/agent/agent-options.js';
+import { ColumnPicker, refToKey, keyToRef } from '../../ui/column-picker.js';
 import { descriptiveStats } from '../../engines/normality-test-engine.js';
 import {
   State,
   DISTRIBUTIONS,
   ATTRIBUTIVE_KEY,
+  DIST_KEYS,
   generateSamples,
   generateAttributive,
   attrProbabilities,
@@ -35,12 +49,58 @@ import {
 const AUTORUN_DELAY = 80;
 const DISPLAY_MAX = 2000;
 
+const PARAM_KEYS = ['count', 'seed', 'attrCount', 'attrSeed'];
+const ATTR_KEYS = ['name', 'weight'];
+const TARGET_FILTER = { maxCount: 0 };
+/** Welche Eingabe ein fester Schlüssel beschreibt. */
+const PARAM_INPUTS = { count: 'countInput', seed: 'seedInput', attrCount: 'attrCountInput', attrSeed: 'attrSeedInput' };
+
+/**
+ * Prüft einen Startwert: ganze Zahl ungleich 0 (0 würde still zu 42).
+ * @param {number|string} value
+ * @returns {number}
+ */
+function requireSeed(value) {
+  const n = requireNumber('value', value, { integer: true });
+  if (n === 0) throw new Error(`invalid value ${JSON.stringify(value)}; allowed: a whole number other than 0`);
+  return n;
+}
+const PARAM_CHECKS = {
+  count: (v) => requireNumber('value', v, { min: 1, max: 100000, integer: true }),
+  attrCount: (v) => requireNumber('value', v, { min: 1, max: 100000, integer: true }),
+  seed: requireSeed,
+  attrSeed: requireSeed,
+};
+
 /** @param {number} v @returns {string} */
 function fmtStatNum(v) {
   if (Math.abs(v) >= 1e6 || (Math.abs(v) < 0.001 && v !== 0)) return v.toExponential(4);
   return v.toFixed(4);
 }
 
+/**
+ * Die Agenten-Lesefläche des Zufallsgenerators.
+ *
+ * Die Eingaben leben als Text im flüchtigen Zustand; persistiert sind die beim
+ * Generieren aufgelösten Zahlen. Die Lesefläche zeigt die Zahlen und fasst die
+ * generierten Werte zusammen — die Werte selbst liest ein Agent nach
+ * `toWorksheet` aus dem Worksheet.
+ *
+ * @typedef {object} AgentRead
+ * @property {string|null} currentDist  the selected distribution key, one of `distributions`, or null
+ * @property {string[]} distributions  all distribution keys, `attributive` included
+ * @property {Object<string, number>} params  the parameters of the current numeric distribution by id
+ * @property {Array<{ id: string, min: number|null, max: number|null, default: number }>} activeDistParams  the ids `setDistParam` accepts now
+ * @property {string[]} activeParams  the keys `setParam` accepts now
+ * @property {number} count  sample size of a numeric distribution
+ * @property {number} seed  random seed of a numeric distribution
+ * @property {Array<{ id: string, name: string, weight: number }>} attributes  the categories of the attributive distribution
+ * @property {number} attrCount  sample size of the attributive distribution
+ * @property {number} attrSeed  random seed of the attributive distribution
+ * @property {object|null} generated  `{ n, mean, sd, min, max }` for numeric, `{ n, frequency: [{ name, count }] }` for attributive, null without values
+ * @property {Array<{ key: string, name: string }>} targetColumns  the empty columns `toWorksheet` accepts; null targets a new worksheet
+ * @property {string} errorMsg  why the last generation failed, '' without error
+ */
 export default createModule({
   config: {
     id: 'random-generator',
@@ -66,6 +126,8 @@ export default createModule({
       attrSeedInput: '42',
       /** Generated values (numbers or category strings). */
       genData: [],
+      /** Why the last generation failed; '' without error. */
+      errorMsg: '',
       _chart: null,
       _picker: null,
       _unsubs: [],
@@ -74,24 +136,71 @@ export default createModule({
 
       // ── Sidebar / selection ───────────────────────────────────
 
-      /** Distribution categories (closed enum from the registry). */
-      categories() {
-        const cats = {};
-        for (const [key, d] of Object.entries(DISTRIBUTIONS)) {
-          if (!cats[d.categoryKey]) cats[d.categoryKey] = [];
-          cats[d.categoryKey].push(key);
+      // ── Agent surface ─────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Verteilung, Parameter, Kategorien, wählbare Mengen und Zusammenfassung der Werte
+       */
+      read(options) {
+        return readAgentState('random-generator', {
+          currentDist: this.model.currentDist,
+          distributions: DIST_KEYS,
+          params: this.isNumeric() ? { ...this.model.params } : {},
+          activeDistParams: this.activeDistParams(),
+          activeParams: this.activeParams(),
+          count: this.model.count,
+          seed: this.model.seed,
+          attributes: this.model.attributes.map(a => ({ id: a.id, name: a.name, weight: a.weight })),
+          attrCount: this.model.attrCount,
+          attrSeed: this.model.attrSeed,
+          generated: this._agentGenerated(),
+          targetColumns: this.targetColumns(),
+          errorMsg: this.errorMsg,
+        }, options);
+      },
+      /** @noagent derived set; der Agent liest sie über read().activeDistParams */
+      activeDistParams() {
+        if (!this.isNumeric()) return [];
+        return DISTRIBUTIONS[this.model.currentDist].params.map(p => ({
+          id: p.id, min: p.min ?? null, max: p.max ?? null, default: p.default,
+        }));
+      },
+      /** @noagent derived set; der Agent liest sie über read().activeParams */
+      activeParams() {
+        if (this.isNumeric()) return ['count', 'seed'];
+        if (this.isAttributive()) return ['attrCount', 'attrSeed'];
+        return [];
+      },
+      /** @noagent derived set; der Agent liest sie über read().targetColumns */
+      targetColumns() {
+        return pickableColumnList(module._context.stateManager, TARGET_FILTER);
+      },
+
+      /** Zusammenfassung der generierten Werte für die Lesefläche. */
+      _agentGenerated() {
+        if (!this.genData.length) return null;
+        if (this.isAttributive()) {
+          return {
+            n: this.genData.length,
+            frequency: frequency(this.genData).map(([name, count]) => ({ name, count })),
+          };
         }
-        return Object.entries(cats).map(([key, dists]) => ({ key, dists }));
+        const ds = descriptiveStats(this.genData);
+        return { n: ds.n, mean: ds.mean, sd: ds.stdDev, min: ds.min, max: ds.max };
       },
 
-      isAttributive() { return this.model.currentDist === ATTRIBUTIVE_KEY; },
-      isNumeric() {
-        return Boolean(this.model.currentDist)
-          && this.model.currentDist !== ATTRIBUTIVE_KEY
-          && Boolean(DISTRIBUTIONS[this.model.currentDist]);
-      },
-
+      /**
+       * Die Verteilung wählen und sofort generieren.
+       * @agent
+       * @param {string} key eine der Verteilungen aus `distributions`
+       * @returns {void}
+       * @throws {Error} wenn `key` keine Verteilung dieses Moduls ist
+       */
       selectDistribution(key) {
+        requireEnum('key', key, DIST_KEYS);
         this._destroyChart();
         this.model.currentDist = key;
         this.genData = [];
@@ -100,43 +209,109 @@ export default createModule({
         } else {
           this._syncParamInputs(key);
         }
-        this.$nextTick(() => {
-          this._mountPicker();
-          this.generate();
-        });
+        this.generate();
+        this.$nextTick(() => this._mountPicker());
+      },
+
+      /**
+       * Einen Parameter der gewählten Verteilung setzen und sofort generieren.
+       * @agent
+       * @param {string} id einer der Parameter aus `activeDistParams`
+       * @param {number|string} value Zahl im Bereich aus `activeDistParams`; Textzahlen werden angenommen
+       * @returns {void}
+       * @throws {Error} wenn `id` zur gewählten Verteilung nicht passt oder `value` außerhalb des Bereichs liegt
+       */
+      setDistParam(id, value) {
+        const defs = this.activeDistParams();
+        requireEnum('id', id, defs.map(p => p.id));
+        const p = defs.find(d => d.id === id);
+        const n = requireNumber('value', value, { min: p.min ?? undefined, max: p.max ?? undefined });
+        this.paramInputs = { ...this.paramInputs, [id]: String(n) };
+        this.generate();
+      },
+
+      /**
+       * Umfang oder Startwert setzen und sofort generieren.
+       * @agent
+       * @param {'count'|'seed'|'attrCount'|'attrSeed'} key welcher Wert; `activeParams` nennt die gültigen
+       * @param {number|string} value ganze Zahl; Umfang von 1 bis 100000, Startwert ungleich 0; Textzahlen werden angenommen
+       * @returns {void}
+       * @throws {Error} wenn `key` zur gewählten Verteilung nicht passt oder `value` außerhalb des Bereichs liegt
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        requireEnum('key', key, this.activeParams());
+        this[PARAM_INPUTS[key]] = String(PARAM_CHECKS[key](value));
+        this.generate();
+      },
+
+      /** @noagent derived set; the agent reads the distributions via read().distributions */
+      categories() {
+        const cats = {};
+        for (const key of DIST_KEYS.filter(k => k !== ATTRIBUTIVE_KEY)) {
+          const d = DISTRIBUTIONS[key];
+          if (!cats[d.categoryKey]) cats[d.categoryKey] = [];
+          cats[d.categoryKey].push(key);
+        }
+        return Object.entries(cats).map(([key, dists]) => ({ key, dists }));
+      },
+
+      /** @noagent view transform */
+      isAttributive() { return this.model.currentDist === ATTRIBUTIVE_KEY; },
+      /** @noagent view transform */
+      isNumeric() {
+        return Boolean(this.model.currentDist)
+          && this.model.currentDist !== ATTRIBUTIVE_KEY
+          && Boolean(DISTRIBUTIONS[this.model.currentDist]);
       },
 
       // ── View transformations ──────────────────────────────────
 
+      /** @noagent view transform */
       isEn() { return module._context.language === 'en'; },
+      /** @noagent view transform */
       distName(key) { return _t(DISTRIBUTIONS[key].nameKey); },
+      /** @noagent view transform */
       distFormula(key) { return DISTRIBUTIONS[key].formula; },
+      /** @noagent view transform */
       distParams() { return DISTRIBUTIONS[this.model.currentDist]?.params || []; },
 
+      /** @noagent view transform */
       paramLabel(p) { return this.isEn() ? p.labelEn : p.label; },
+      /** @noagent view transform */
       paramHint(p) { return this.isEn() ? (p.hintEn || '') : (p.hint || ''); },
+      /** @noagent view transform */
       paramMin(p) { return p.min !== undefined ? p.min : false; },
+      /** @noagent view transform */
       paramMax(p) { return p.max !== undefined ? p.max : false; },
 
+      /** @noagent view transform */
       attrColor(i) { return `var(--color-chart-${  (i % 10) + 1  })`; },
+      /** @noagent view transform */
       removeGlyph() { return '×'; },
+      /** @noagent view transform */
       attrFormula() { return 'X ~ Categorical(p₁, p₂, …, pₖ)'; },
 
+      /** @noagent view transform */
       fmtValue(v) {
         const d = DISTRIBUTIONS[this.model.currentDist];
         return (d && d.discrete) ? v.toString() : v.toFixed(6);
       },
 
+      /** @noagent view transform */
       hasResults() { return this.genData.length > 0; },
 
+      /** @noagent view transform */
       dataCountLabel() {
         const total = this.genData.length;
         return total > DISPLAY_MAX ? `${DISPLAY_MAX} / ${total}` : `${total}`;
       },
+      /** @noagent view transform; the agent reads a summary via read().generated */
       dataValues() { return this.genData.slice(0, DISPLAY_MAX); },
 
       // ── Numeric stats KPIs ────────────────────────────────────
 
+      /** @noagent view transform; the agent reads a summary via read().generated */
       statKpis() {
         if (!this.genData.length || this.isAttributive()) return [];
         const ds = descriptiveStats(this.genData);
@@ -154,6 +329,7 @@ export default createModule({
 
       // ── Attributive view helpers ──────────────────────────────
 
+      /** @noagent view transform */
       probBars() {
         const probs = attrProbabilities(this.model.attributes);
         return this.model.attributes.map((a, i) => {
@@ -167,6 +343,7 @@ export default createModule({
         });
       },
 
+      /** @noagent view transform; the agent reads a summary via read().generated */
       attrKpis() {
         if (!this.genData.length || !this.isAttributive()) return [];
         const total = this.genData.length;
@@ -178,6 +355,7 @@ export default createModule({
         ];
       },
 
+      /** @noagent view transform; the agent reads a summary via read().generated */
       freqRows() {
         if (!this.genData.length || !this.isAttributive()) return [];
         const total = this.genData.length;
@@ -197,6 +375,7 @@ export default createModule({
         });
       },
 
+      /** @noagent view transform */
       dataChips() {
         const attrOrder = this.model.attributes.map(a => a.name);
         return this.genData.slice(0, DISPLAY_MAX).map((v) => {
@@ -207,27 +386,107 @@ export default createModule({
 
       // ── Attribute grid handlers ───────────────────────────────
 
+      /**
+       * Eine Kategorie der attributiven Verteilung anlegen und sofort generieren.
+       * @agent
+       * @returns {string} die id der neuen Kategorie (leerer Name, Gewicht 1)
+       */
       addAttribute() {
-        this.model.attributes.push({ id: genId(), name: '', weight: 1 });
-        this.autoGenerate();
+        const attr = { id: genId(), name: '', weight: 1 };
+        this.model.attributes.push(attr);
+        this.generate();
+        return attr.id;
       },
-      removeAttribute(i) {
-        this.model.attributes.splice(i, 1);
-        this.autoGenerate();
+      /**
+       * Eine Kategorie entfernen und sofort generieren.
+       * @agent
+       * @param {string} attrId die id einer Kategorie aus `attributes`
+       * @returns {void}
+       * @throws {Error} wenn `attrId` keine Kategorie ist
+       */
+      removeAttribute(attrId) {
+        requireKnownId('attrId', attrId, this.model.attributes.map(a => a.id));
+        this.model.attributes = this.model.attributes.filter(a => a.id !== attrId);
+        this.generate();
+      },
+      /**
+       * Name oder Gewicht einer Kategorie setzen und sofort generieren.
+       * @agent
+       * @param {string} attrId die id einer Kategorie aus `attributes`
+       * @param {'name'|'weight'} key welches Feld
+       * @param {string|number} value der Name (Text, leer erlaubt) oder das Gewicht (Zahl)
+       * @returns {void}
+       * @throws {Error} wenn `attrId` oder `key` unbekannt ist oder `value` nicht zum Feld passt
+       */
+      setAttribute(attrId, key, value) {
+        requireKnownId('attrId', attrId, this.model.attributes.map(a => a.id));
+        requireEnum('key', key, ATTR_KEYS);
+        const a = this.model.attributes.find(x => x.id === attrId);
+        if (key === 'name') a.name = requireText('value', value);
+        else a.weight = requireNumber('value', value);
+        this.generate();
+      },
+
+      // ── DOM input handlers ────────────────────────────────────
+      // Die Oberfläche klemmt wie bisher, bevor sie die Senke ruft; eine
+      // abgewiesene Eingabe wird auf den gehaltenen Wert zurückgesetzt.
+
+      /** @noagent DOM event handler; the agent uses setDistParam() */
+      onDistParamInput(id, event) {
+        try {
+          this.setDistParam(id, event.target.value);
+        } catch {
+          event.target.value = this.paramInputs[id] ?? '';
+        }
+      },
+
+      /** @noagent DOM event handler; the agent uses setParam() */
+      onParamInput(key, event) {
+        let v = event.target.value;
+        if (key === 'count' || key === 'attrCount') v = clampCount(v, key === 'count' ? 1000 : 50);
+        if ((key === 'seed' || key === 'attrSeed') && !(parseInt(v, 10))) v = 42;
+        event.target.value = String(v);
+        try {
+          this.setParam(key, v);
+        } catch {
+          event.target.value = this[PARAM_INPUTS[key]];
+        }
+      },
+
+      /** @noagent DOM event handler; the agent uses setAttribute() */
+      onAttributeInput(attrId, key, event) {
+        try {
+          this.setAttribute(attrId, key, event.target.value);
+        } catch {
+          const a = this.model.attributes.find(x => x.id === attrId);
+          event.target.value = a ? String(a[key]) : '';
+        }
       },
 
       // ── Generation ────────────────────────────────────────────
 
+      /** @noagent helper; verzögertes Generieren für die Oberfläche */
       autoGenerate() {
         clearTimeout(this._autoTimer);
-        this._autoTimer = setTimeout(() => {
-          try { this.generate(); } catch (e) { console.error('Auto-generate failed:', e); }
-        }, AUTORUN_DELAY);
+        this._autoTimer = setTimeout(() => this.generate(), AUTORUN_DELAY);
       },
 
+      /**
+       * Erzeugt die Werte mit den aktuellen Eingaben. Ohne gewählte Verteilung
+       * geschieht nichts; ein Fehler der Verteilung steht in `errorMsg`, keine Absage.
+       * @agent
+       * @returns {void}
+       */
       generate() {
-        if (this.isAttributive()) return this._generateAttributive();
-        if (this.isNumeric()) return this._generateNumeric();
+        this.errorMsg = '';
+        try {
+          if (this.isAttributive()) return this._generateAttributive();
+          if (this.isNumeric()) return this._generateNumeric();
+        } catch (err) {
+          this.genData = [];
+          this._destroyChart();
+          this.errorMsg = _t('errGenerate', { message: err?.message ?? String(err) });
+        }
       },
 
       _generateNumeric() {
@@ -314,6 +573,7 @@ export default createModule({
 
       // ── CSV export ────────────────────────────────────────────
 
+      /** @noagent downloads a file; an agent sends the values to a worksheet via toWorksheet() */
       exportCSV() {
         if (!this.genData.length) return;
         const lines = ['Value'];
@@ -335,13 +595,19 @@ export default createModule({
 
       // ── To Worksheet ──────────────────────────────────────────
 
-      toWorksheet() {
-        if (!this.genData.length) return;
-        const pickerValue = this._picker?.value;
-        if (!pickerValue) {
-          module._context.notify(_t('selectTarget'));
-          return;
+      /**
+       * Die generierten Werte als neue Spalte an einen neuen oder leeren Worksheet senden.
+       * @agent
+       * @param {{ instanceId: string, sheetId: string, columnId: string }|null} target
+       *   null für einen neuen Worksheet, sonst ein Spaltenbezug aus `targetColumns`
+       * @returns {Promise<{ instanceId: string }|null>} der empfangende Worksheet, oder null ohne Werte
+       * @throws {Error} wenn `target` keine wählbare Spalte ist
+       */
+      async toWorksheet(target) {
+        if (target != null) {
+          requireKnownId('target', refToKey(target), this.targetColumns().map(c => c.key));
         }
+        if (!this.genData.length) return null;
 
         const isAttr = this.isAttributive();
         const name = isAttr ? _t('distAttributive') : _t(DISTRIBUTIONS[this.model.currentDist].nameKey);
@@ -349,18 +615,29 @@ export default createModule({
         const type = isAttr ? 'text' : 'numeric';
         const values = [...this.genData];
 
-        if (pickerValue === ColumnPicker.NEW_WORKSHEET) {
-          this._createWorksheetAndSend(name, values, type, discrete);
-          return;
+        if (target == null) {
+          return { instanceId: await this._createWorksheetAndSend(name, values, type, discrete) };
         }
 
+        const clean = keyToRef(refToKey(target));
         module._context.eventBus.emit('worksheet:appendColumn', {
-          instanceId: pickerValue.instanceId,
-          sheetId: pickerValue.sheetId,
-          colId: pickerValue.columnId,
+          instanceId: clean.instanceId,
+          sheetId: clean.sheetId,
+          colId: clean.columnId,
           name, values, discrete, type,
         });
         module._context.notify(_t('sentToWorksheet'));
+        return { instanceId: clean.instanceId };
+      },
+
+      /** @noagent DOM event handler; the agent uses toWorksheet() */
+      onToWorksheet() {
+        const v = this._picker?.value;
+        if (!v) {
+          module._context.notify(_t('selectTarget'));
+          return;
+        }
+        this.toWorksheet(v === ColumnPicker.NEW_WORKSHEET ? null : v);
       },
 
       async _createWorksheetAndSend(name, values, type, discrete) {
@@ -405,13 +682,14 @@ export default createModule({
         this._picker?.destroy();
         this._picker = new ColumnPicker(wrap, module._context, {
           mode: 'single',
-          maxCount: 0,
+          ...TARGET_FILTER,
           allowCreateWorksheet: true,
         });
       },
 
       // ── Lifecycle (per Alpine component) ──────────────────────
 
+      /** @noagent lifecycle */
       init() {
         this._unsubs = [];
         this.genData = [];
@@ -447,6 +725,7 @@ export default createModule({
         });
       },
 
+      /** @noagent lifecycle */
       destroy() {
         clearTimeout(this._autoTimer);
         for (const unsub of this._unsubs) unsub();

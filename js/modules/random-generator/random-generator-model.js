@@ -42,6 +42,9 @@ export {
 // Special distribution key for the attribute-based (categorical) generator.
 export const ATTRIBUTIVE_KEY = 'attributive';
 
+/** Alle wählbaren Verteilungen, die attributive eingeschlossen (Seitenleiste und Prüfer lesen diese Liste). */
+export const DIST_KEYS = [...Object.keys(DISTRIBUTIONS), ATTRIBUTIVE_KEY];
+
 // ═══════════════════════════════════════════════════════════════
 // Sampling helpers (module-specific)
 // ═══════════════════════════════════════════════════════════════
@@ -115,9 +118,9 @@ export function csvEscape(v) {
 // ═══════════════════════════════════════════════════════════════
 
 /**
- * Generate a stable, session-transient id for an attribute row. Used only as a
- * key for the editable attribute grid (Alpine x-for :key) — NOT persisted, so
- * the serialized state shape stays identical to the legacy format.
+ * Generate a stable id for an attribute row. Key for the editable attribute
+ * grid (Alpine x-for :key) and the handle an agent addresses a row by; it is
+ * persisted so that reloading does not change the ids an agent just read.
  * @returns {string}
  */
 export function genId() {
@@ -155,7 +158,7 @@ export class State {
       seed: this.seed,
       count: this.count,
       params: { ...this.params },
-      attributes: this.attributes.map(a => ({ name: a.name, weight: a.weight })),
+      attributes: this.attributes.map(a => ({ id: a.id, name: a.name, weight: a.weight })),
       attrCount: this.attrCount,
       attrSeed: this.attrSeed,
     };
@@ -169,14 +172,14 @@ export class State {
     const s = new State();
     if (!d || typeof d !== 'object') return s;
 
-    s.currentDist = (typeof d.currentDist === 'string') ? d.currentDist : null;
+    s.currentDist = (typeof d.currentDist === 'string' && DIST_KEYS.includes(d.currentDist)) ? d.currentDist : null;
     s.seed = Number.isFinite(d.seed) ? d.seed : 42;
     s.count = Number.isFinite(d.count) ? d.count : 1000;
     s.params = (d.params && typeof d.params === 'object' && !Array.isArray(d.params)) ? { ...d.params } : {};
 
     if (Array.isArray(d.attributes) && d.attributes.length) {
       s.attributes = d.attributes.map(a => ({
-        id: genId(),
+        id: (typeof a?.id === 'string' && a.id) ? a.id : genId(),
         name: typeof a?.name === 'string' ? a.name : '',
         weight: Number.isFinite(a?.weight) ? a.weight : 0,
       }));
