@@ -8096,7 +8096,7 @@
       "whenToUse": "When a response is attributive — good/bad, yes/no, proportions — or a count (defects, complaints), and its relationship with predictors is to be modelled: binary logistic, Poisson or negative binomial, detected automatically on request.",
       "actions": {
         "read": {
-          "help": "Returns the inputs (X, Y, trials column, method, confidence, α, cutoff), the sets the actions accept now, and the fit as numbers in result (null without a shown fit or after a failed fit; errorMsg then names the reason). If Y or X is cleared, the last result stays, as in the module."
+          "help": "Returns the inputs (X, Y, trials column, method, confidence, α, cutoff), the sets the actions accept now, and the fit as numbers in result (null without a shown fit or after a failed fit; errorMsg then names the reason). If Y or X is cleared, the last result stays in result."
         },
         "setColumns": {
           "help": "Replaces the predictor columns X; order is kept, duplicates count once, text columns become categorical predictors. If Y is among the new X, yKey is cleared. Fits again when X and Y are set.",

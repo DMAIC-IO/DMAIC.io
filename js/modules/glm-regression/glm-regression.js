@@ -21,9 +21,9 @@
  * @agent  Steuerbar über das Viewmodel: X, Y und Versuchszahl wählen
  *   (setColumns, setColumn), Verfahren, Konfidenz/α und Schwelle setzen
  *   (setParam), die Erfolgsklasse tauschen (swapSuccess), rechnen (autoRun,
- *   runAnalysis) und als Projektmodell speichern (saveAsModel). Diagramme
- *   und Tabs bleiben der Oberfläche vorbehalten; gelesen wird über read()
- *   (AgentRead).
+ *   runAnalysis), für Termwerte vorhersagen (predict) und als Projektmodell
+ *   speichern (saveAsModel). Diagramme und Tabs bleiben der Oberfläche
+ *   vorbehalten; gelesen wird über read() (AgentRead).
  */
 
 import { createModule } from '../../core/template-module.js';
@@ -92,6 +92,8 @@ function eventsPerPredictor(y, weights, p) {
 
 /** Die Parameter, die `setParam` annimmt (flach am Model). */
 const PARAM_KEYS = ['method', 'confLevel', 'alpha', 'cutoff'];
+/** i18n-Schlüssel der Verfahrensnamen, je Wert aus METHODS. */
+const METHOD_LABEL_KEYS = { auto: 'methodAuto', binomial: 'methodBinomial', poisson: 'methodPoisson', negbin: 'methodNegbin' };
 /** Die Einzelspalten-Slots in Reihenfolge der Oberfläche: Zielgröße, Versuchszahl. */
 const COLUMN_SLOTS = ['y', 'trials'];
 /** Die Mehrfachspalten-Slots: die Einflussgrößen X, geordnet. */
@@ -249,7 +251,7 @@ const mod = createModule({
         return {
           family: { name: r.family.name, link: r.family.link, theta: r.family.name === 'negbin' ? num(r.family.theta) : null },
           quasi: Boolean(r._quasiActivated),
-          autoReason: this.model.method === 'auto' ? this._detectKey : null,
+          autoReason: this._detectKey,
           n: num(r.n), iterations: num(r.iterations), aic: num(r.aic), bic: num(r.bic),
           deviance: num(r.deviance), nullDeviance: num(r.nullDeviance), logLikelihood: num(r.logLikelihood),
           pseudoR2: {
@@ -271,7 +273,9 @@ const mod = createModule({
 
       /** @noagent derived set; der Agent liest sie über read().activeParams */
       activeParams() {
-        const binomial = Boolean(this.result) && this._fit?.family.name === 'binomial';
+        // Ein schlanker (wiederhergestellter) Fit hat keine y/fittedValues: die
+        // Tafel lässt sich nicht neu rechnen, cutoff gilt dann nicht.
+        const binomial = Boolean(this.result) && this._fit?.family.name === 'binomial' && !this._fit._slim;
         return binomial ? PARAM_KEYS : PARAM_KEYS.filter(k => k !== 'cutoff');
       },
       /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
@@ -383,10 +387,7 @@ const mod = createModule({
       methodRadioName() { return `glm-method-${  module._context.instanceId}`; },
       /** @noagent view transform; die Optionen der Verfahrenswahl (eine Quelle: METHODS) */
       methodOptions() {
-        return METHODS.map(v => ({
-          value: v,
-          label: _t(`method${v === 'negbin' ? 'Negbin' : v[0].toUpperCase() + v.slice(1)}`),
-        }));
+        return METHODS.map(v => ({ value: v, label: _t(METHOD_LABEL_KEYS[v]) }));
       },
 
       // ── Detect-info box ──────────────────────────────────────
@@ -492,8 +493,8 @@ const mod = createModule({
        * immer den Model-Wert.
        */
       _percentParam(event, key) {
-        const v = parseFloat(event.target.value);
-        if (v > 0 && v < 100) {
+        const v = parseFloat(String(event.target.value).replace(',', '.'));
+        if (Number.isFinite(v) && v > 0 && v < 100) {
           try { this.setParam(key, v / 100); } catch { /* das Feld zeigt unten wieder den Model-Wert */ }
         }
         event.target.value = key === 'confLevel' ? this.confDisplay() : this.alphaDisplay();

@@ -8100,7 +8100,7 @@
       "whenToUse": "Wenn eine Zielgröße attributiv ist — gut/schlecht, ja/nein, Anteile — oder eine Anzahl (Fehler, Reklamationen), und ihr Zusammenhang mit Einflussgrößen modelliert werden soll: binär-logistisch, Poisson oder negativ-binomial, auf Wunsch automatisch erkannt.",
       "actions": {
         "read": {
-          "help": "Liefert die Eingaben (X, Y, Versuchszahl, Verfahren, Konfidenz, α, Schwelle), die Mengen, die die Aktionen jetzt annehmen, und den Fit als Zahlen in result (null ohne gezeigten Fit oder nach einem Fehlschlag; errorMsg nennt dann den Grund). Wird Y oder X geleert, bleibt das letzte Ergebnis stehen, wie im Modul."
+          "help": "Liefert die Eingaben (X, Y, Versuchszahl, Verfahren, Konfidenz, α, Schwelle), die Mengen, die die Aktionen jetzt annehmen, und den Fit als Zahlen in result (null ohne gezeigten Fit oder nach einem Fehlschlag; errorMsg nennt dann den Grund). Wird Y oder X geleert, bleibt das letzte Ergebnis in result stehen."
         },
         "setColumns": {
           "help": "Ersetzt die Einflussgrößen X; die Reihenfolge bleibt, Doppelte zählen einmal, Textspalten werden kategoriale Prädiktoren. Steht Y unter den neuen X, wird yKey geleert. Rechnet neu, wenn X und Y gewählt sind.",
