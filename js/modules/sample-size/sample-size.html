@@ -37,16 +37,16 @@
         <div class="field-group field-group--grow">
           <label x-text="hypothesizedStdLabel()"></label>
           <input type="number" data-ref="sigma0" class="field field--num" min="0"
-                 x-model="model.sigma0"
+                 :value="model.sigma0"
                  :placeholder="t('sigma0Placeholder')"
-                 @input="autoCalc()">
+                 @input="setParam('sigma0', $event.target.value)">
         </div>
         <div class="field-group field-group--grow">
           <label x-text="expectedStdLabel()"></label>
           <input type="number" data-ref="sigma-alt" class="field field--num" min="0"
-                 x-model="model.sigmaAlt"
+                 :value="model.sigmaAlt"
                  :placeholder="t('sigmaAltPlaceholder')"
-                 @input="autoCalc()">
+                 @input="setParam('sigmaAlt', $event.target.value)">
         </div>
       </div>
     </template>
@@ -56,9 +56,9 @@
       <div class="field-group">
         <label x-text="varianceRatioLabel()"></label>
         <input type="number" data-ref="ratio" class="field field--num" min="0"
-               x-model="model.ratio"
+               :value="model.ratio"
                :placeholder="t('ratioPlaceholder')"
-               @input="autoCalc()">
+                 @input="setParam('ratio', $event.target.value)">
       </div>
     </template>
 
@@ -68,16 +68,16 @@
         <div class="field-group field-group--major">
           <label x-text="meanDifferenceLabel()"></label>
           <input type="number" data-ref="delta" class="field field--num" min="0"
-                 x-model="model.delta"
+                 :value="model.delta"
                  :placeholder="t('deltaPlaceholder')"
-                 @input="autoCalc()">
+                 @input="setParam('delta', $event.target.value)">
         </div>
         <div class="field-group field-group--minor">
           <label x-text="stdDevLabel()"></label>
           <input type="number" data-ref="sigma" class="field field--num" min="0"
-                 x-model="model.sigma"
+                 :value="model.sigma"
                  :placeholder="t('sigmaPlaceholder')"
-                 @input="autoCalc()">
+                 @input="setParam('sigma', $event.target.value)">
         </div>
       </div>
     </template>
@@ -86,23 +86,24 @@
     <div class="field-row">
       <div class="field-group field-group--major">
         <label x-text="t('direction')"></label>
-        <select data-ref="direction" class="field" x-model="model.direction" @change="autoCalc()">
-          <option value="two-sided" x-text="directionTwoSidedLabel()"></option>
-          <option value="greater" x-text="directionGreaterLabel()"></option>
-          <option value="less" x-text="directionLessLabel()"></option>
+        <select data-ref="direction" class="field" :value="model.direction"
+                @change="setParam('direction', $event.target.value)">
+          <template x-for="o in directionOptions()" :key="o.value">
+            <option :value="o.value" :selected="o.value === model.direction" x-text="o.label"></option>
+          </template>
         </select>
       </div>
       <div class="field-group field-group--minor">
         <label>&#945;</label>
         <input type="number" data-ref="alpha" class="field field--num" min="0.001" max="0.5"
-               x-model="model.alpha"
-               @input="autoCalc()">
+               :value="model.alpha"
+               @input="alphaChanged($event)">
       </div>
     </div>
     <div class="field-group">
       <label x-text="targetPowerLabel()"></label>
       <input type="number" data-ref="power" class="field field--num" min="0.5" max="0.99"
-             x-model="model.power"
+             :value="model.power"
              @input="powerChanged($event)">
     </div>
 

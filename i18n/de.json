@@ -6092,6 +6092,35 @@
     "sample-size": {
       "name": "Stichprobenumfang",
       "description": "Berechnet den erforderlichen Stichprobenumfang für Varianz- und Mittelwerttests",
+      "whenToUse": "Wenn offen ist, wie viele Beobachtungen ein Test braucht: berechnet den erforderlichen Stichprobenumfang für Varianztests (Chi-Quadrat, F) und Mittelwerttests (Ein- und Zwei-Stichproben-t) aus dem nachzuweisenden Effekt, dem Signifikanzniveau und der Ziel-Power.",
+      "actions": {
+        "read": {
+          "help": "Liefert die zehn Eingaben, die im aktuellen Zustand gültigen Schlüssel und das Ergebnis. result ist null, solange die Eingaben unvollständig sind.",
+          "params": { "options": "Optional; dieses Modul hält keine Massendaten." }
+        },
+        "setParam": {
+          "help": "Setzt eine Eingabe; die Berechnung läuft danach neu.",
+          "params": {
+            "key": "Einer der Schlüssel aus activeParams. Welche von sigma0, sigmaAlt, ratio, delta und sigma gelten, hängt von category und testType ab; jeder andere Schlüssel ist ein Fehler.",
+            "value": "category: 'variance' oder 'mean'. testType: 'one' oder 'two'. direction: 'two-sided', 'greater' oder 'less'. alpha: eine Zahl von 0.001 bis 0.5. power: eine Zahl von 0.5 bis 0.99 (Werte außerhalb sind ein Fehler, sie werden nicht geklemmt). sigma0, sigmaAlt, ratio, delta, sigma: ein Text wie '2.5', '' leert den Wert."
+          }
+        },
+        "runAnalysis": { "help": "Berechnet den erforderlichen Stichprobenumfang aus den aktuellen Eingaben. Bei unvollständigen Eingaben bleibt result null." }
+      },
+      "fields": {
+        "category": { "help": "Für welche Art Test der Stichprobenumfang gilt: 'variance' oder 'mean'." },
+        "testType": { "help": "Ein-Stichproben- ('one') oder Zwei-Stichproben-Test ('two')." },
+        "direction": { "help": "Die Alternativhypothese: 'two-sided', 'greater' oder 'less'." },
+        "alpha": { "help": "Das Signifikanzniveau als Zahl; null, bis es aus den Einstellungen übernommen ist." },
+        "power": { "help": "Die Ziel-Power (1 − β) als Zahl; null, bis sie aus den Einstellungen übernommen ist." },
+        "sigma0": { "help": "Soll-Standardabweichung σ₀ wie eingegeben; gilt für Varianz mit einer Stichprobe." },
+        "sigmaAlt": { "help": "Erwartete Standardabweichung σ₁ wie eingegeben; gilt für Varianz mit einer Stichprobe." },
+        "ratio": { "help": "Varianzverhältnis σ²₁/σ²₂ wie eingegeben; gilt für Varianz mit zwei Stichproben." },
+        "delta": { "help": "Nachzuweisende Mittelwertdifferenz Δ wie eingegeben; gilt für Mittelwerttests." },
+        "sigma": { "help": "Standardabweichung σ wie eingegeben; gilt für Mittelwerttests." },
+        "activeParams": { "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt." },
+        "result": { "help": "Der erforderliche Stichprobenumfang je Gruppe { nRequired, totalN, alpha, power, effectLabel, effectValue, algoId } oder null, solange die Eingaben unvollständig sind. totalN ist bei Zwei-Stichproben-Tests nRequired mal zwei, sonst gleich nRequired; nRequired ist bei 5000 gedeckelt." }
+      },
       "placeholderText": "Parameter links eingeben und Berechnung starten.",
       "sectionCategory": "Testkategorie",
       "catVariance": "Varianzen",

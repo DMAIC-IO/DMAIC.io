@@ -6088,6 +6088,35 @@
     "sample-size": {
       "name": "Sample Size",
       "description": "Calculate the required sample size for variance and mean tests",
+      "whenToUse": "When you need to know how many observations a test requires: computes the required sample size for variance tests (chi-square, F) and mean tests (one- and two-sample t) from the effect to detect, the significance level and the target power.",
+      "actions": {
+        "read": {
+          "help": "Returns the ten inputs, the keys valid in the current state and the result. result is null while the inputs are incomplete.",
+          "params": { "options": "Optional; this module holds no bulk data." }
+        },
+        "setParam": {
+          "help": "Sets one input; the calculation reruns.",
+          "params": {
+            "key": "One of the keys in activeParams. Which of sigma0, sigmaAlt, ratio, delta and sigma apply depends on category and testType; any other key is an error.",
+            "value": "category: 'variance' or 'mean'. testType: 'one' or 'two'. direction: 'two-sided', 'greater' or 'less'. alpha: a number from 0.001 to 0.5. power: a number from 0.5 to 0.99 (out-of-range values are an error, not clamped). sigma0, sigmaAlt, ratio, delta, sigma: a text such as '2.5', '' clears it."
+          }
+        },
+        "runAnalysis": { "help": "Calculates the required sample size from the current inputs. While the inputs are incomplete result stays null." }
+      },
+      "fields": {
+        "category": { "help": "Which kind of test the sample size is for: 'variance' or 'mean'." },
+        "testType": { "help": "One-sample ('one') or two-sample ('two') test." },
+        "direction": { "help": "The alternative hypothesis: 'two-sided', 'greater' or 'less'." },
+        "alpha": { "help": "The significance level as a number; null until it is taken from the settings." },
+        "power": { "help": "The target power (1 − β) as a number; null until it is taken from the settings." },
+        "sigma0": { "help": "Hypothesized standard deviation σ₀ as entered; applies to variance with one sample." },
+        "sigmaAlt": { "help": "Expected standard deviation σ₁ as entered; applies to variance with one sample." },
+        "ratio": { "help": "Variance ratio σ²₁/σ²₂ as entered; applies to variance with two samples." },
+        "delta": { "help": "Mean difference Δ to detect, as entered; applies to mean tests." },
+        "sigma": { "help": "Standard deviation σ, as entered; applies to mean tests." },
+        "activeParams": { "help": "The keys setParam accepts in the current state." },
+        "result": { "help": "The required sample size per group { nRequired, totalN, alpha, power, effectLabel, effectValue, algoId }, or null while the inputs are incomplete. totalN is nRequired times two for two-sample tests, otherwise equal to nRequired; nRequired is capped at 5000." }
+      },
       "placeholderText": "Enter parameters on the left and run the calculation.",
       "sectionCategory": "Test Category",
       "catVariance": "Variances",

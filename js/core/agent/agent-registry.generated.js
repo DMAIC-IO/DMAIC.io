@@ -6668,92 +6668,119 @@ export const AGENT_REGISTRY = {
     }
   },
   "sample-size": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:catVarianceLabel",
-      "unmarked_method:catMeanLabel",
-      "unmarked_method:directionTwoSidedLabel",
-      "unmarked_method:directionGreaterLabel",
-      "unmarked_method:directionLessLabel",
-      "unmarked_method:hypothesizedStdLabel",
-      "unmarked_method:expectedStdLabel",
-      "unmarked_method:varianceRatioLabel",
-      "unmarked_method:meanDifferenceLabel",
-      "unmarked_method:stdDevLabel",
-      "unmarked_method:targetPowerLabel",
-      "unmarked_method:isVar",
-      "unmarked_method:isTwoSample",
-      "unmarked_method:catActiveClass",
-      "unmarked_method:typeActiveClass",
-      "unmarked_method:setCategory",
-      "unmarked_method:setTestType",
-      "unmarked_method:powerChanged",
-      "unmarked_method:autoCalc",
-      "unmarked_method:openAlgoLab",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unreachable_write:sigma0",
-      "unreachable_write:sigmaAlt",
-      "unreachable_write:ratio",
-      "unreachable_write:delta",
-      "unreachable_write:sigma",
-      "unreachable_write:direction",
-      "unreachable_write:alpha",
-      "unreachable_write:power"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'category'|'testType'|'direction'|'alpha'|'power'|'sigma0'|'sigmaAlt'|'ratio'|'delta'|'sigma'",
+            "optional": false,
+            "help": "welcher Parameter"
+          },
+          {
+            "name": "value",
+            "type": "string|number",
+            "optional": false,
+            "help": "der neue Wert; Auswahlfelder nehmen einen Eintrag der Liste, alpha und power eine Zahl im Bereich, die übrigen einen Text"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Eingabewert setzen; die Berechnung läuft danach neu."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Die Berechnung mit den aktuellen Eingaben ausführen. Bei unvollständigen Eingaben bleibt result null."
+      }
+    },
     "fields": {
       "category": {
         "type": "'variance'|'mean'",
-        "help": "",
-        "bulk": false
+        "help": "which kind of test the sample size is for",
+        "bulk": false,
+        "derived": true
       },
       "testType": {
         "type": "'one'|'two'",
-        "help": "",
-        "bulk": false
+        "help": "one-sample or two-sample test",
+        "bulk": false,
+        "derived": true
       },
       "direction": {
         "type": "'two-sided'|'greater'|'less'",
-        "help": "",
-        "bulk": false
+        "help": "the alternative hypothesis",
+        "bulk": false,
+        "derived": true
       },
       "alpha": {
         "type": "number|null",
-        "help": "",
-        "bulk": false
+        "help": "significance level; null until resolved from the settings",
+        "bulk": false,
+        "derived": true
       },
       "power": {
         "type": "number|null",
-        "help": "",
-        "bulk": false
+        "help": "target power (1 − β); null until resolved from the settings",
+        "bulk": false,
+        "derived": true
       },
       "sigma0": {
         "type": "string",
-        "help": "",
-        "bulk": false
+        "help": "hypothesized standard deviation σ₀, as entered (one-sample variance)",
+        "bulk": false,
+        "derived": true
       },
       "sigmaAlt": {
         "type": "string",
-        "help": "",
-        "bulk": false
+        "help": "expected standard deviation σ₁, as entered (one-sample variance)",
+        "bulk": false,
+        "derived": true
       },
       "ratio": {
         "type": "string",
-        "help": "",
-        "bulk": false
+        "help": "variance ratio σ²₁/σ²₂, as entered (two-sample variance)",
+        "bulk": false,
+        "derived": true
       },
       "delta": {
         "type": "string",
-        "help": "",
-        "bulk": false
+        "help": "mean difference Δ, as entered (mean tests)",
+        "bulk": false,
+        "derived": true
       },
       "sigma": {
         "type": "string",
-        "help": "",
-        "bulk": false
+        "help": "standard deviation σ, as entered (mean tests)",
+        "bulk": false,
+        "derived": true
+      },
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "the required sample size with key figures, or null while the inputs are incomplete",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -9056,4 +9083,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":35};
+export const AGENT_COVERAGE = {"total":74,"available":36};

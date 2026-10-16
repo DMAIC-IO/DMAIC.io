@@ -10,9 +10,9 @@
  * { category, testType, direction, alpha, power, sigma0, sigmaAlt, ratio, delta, sigma }
  */
 
-const VALID_CATEGORIES = ['variance', 'mean'];
-const VALID_TEST_TYPES = ['one', 'two'];
-const VALID_DIRECTIONS = ['two-sided', 'greater', 'less'];
+export const VALID_CATEGORIES = ['variance', 'mean'];
+export const VALID_TEST_TYPES = ['one', 'two'];
+export const VALID_DIRECTIONS = ['two-sided', 'greater', 'less'];
 
 export class State {
   /** @type {'variance'|'mean'} */
