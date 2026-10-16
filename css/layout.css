@@ -138,6 +138,7 @@ html.is-nightly body {
 /* Der Bogen des Q läuft rechts flach aus; die Wortmarke rückt darunter, damit
    „Q" und „provement" als ein Wort lesen (Website: margin-right: -.18rem). */
 .app-header__logo-word {
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- optical kerning under the Q, not spacing */
   margin-left: -3px;
 }
 
@@ -324,7 +325,7 @@ html.is-nightly body {
   letter-spacing: 0.04em;
   color: var(--color-text-tertiary);
   background: var(--color-bg-tertiary);
-  padding: 1px 5px;
+  padding: 1px var(--spacing-s);
   border-radius: 3px;
   flex-shrink: 0;
   text-transform: uppercase;
@@ -362,8 +363,8 @@ html.is-nightly body {
 .cycle-picker__option {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 10px var(--spacing-m);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-m);
   border: 1px solid var(--color-border-secondary);
   border-radius: var(--border-radius);
   cursor: default;
@@ -388,14 +389,14 @@ html.is-nightly body {
 .cycle-picker__option-pick {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: var(--spacing-sm);
   flex: 1;
   min-width: 0;
   cursor: pointer;
 }
 
 .cycle-picker__option input[type="radio"] {
-  margin-top: 3px;
+  margin-top: var(--spacing-xs);
   flex-shrink: 0;
 }
 
@@ -466,7 +467,7 @@ html.is-nightly body {
   grid-template-columns: 1fr auto;
   align-items: center;
   gap: var(--spacing-xs) var(--spacing-md);
-  padding: 10px var(--spacing-m);
+  padding: var(--spacing-sm) var(--spacing-m);
   border: 1px solid var(--color-border-secondary);
   border-radius: var(--border-radius);
   transition: border-color 0.1s, background 0.1s;
@@ -506,7 +507,7 @@ html.is-nightly body {
 .cycle-picker__name-input {
   flex: 1;
   min-width: 0;
-  padding: 5px var(--spacing-sm);
+  padding: var(--spacing-s) var(--spacing-sm);
   font-size: 13px;
   color: var(--color-text-primary);
   background: var(--color-bg-primary);
@@ -537,7 +538,7 @@ html.is-nightly body {
 .cycle-switch {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--spacing-sm);
   font-size: 13px;
 }
 
@@ -545,7 +546,7 @@ html.is-nightly body {
 .scenario-confirm {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--spacing-sm);
   font-size: 13px;
 }
 
@@ -769,7 +770,7 @@ html.is-nightly body {
 /* Virtual tiles (data / extras) have no pencil+% segment, so the name would sit
    right against the divider — give it breathing room on the right. */
 .dmaic-tile--virtual .dmaic-tile__body {
-  padding-right: 10px;
+  padding-right: var(--spacing-sm);
 }
 
 .dmaic-tile__letter {
@@ -899,7 +900,7 @@ html.is-nightly body {
   background: var(--color-input-bg);
   border: var(--border-width) solid var(--color-accent);
   border-radius: var(--border-radius-sm);
-  padding: 1px 3px;
+  padding: 1px var(--spacing-xs);
   text-align: center;
   outline: none;
 }
@@ -1215,8 +1216,8 @@ body.dev-area-open .dmaic-tiles {
   font-weight: 600;
   color: var(--color-text-primary);
   margin: 0;
-  padding-left: 22px;
-  padding-right: 22px;
+  padding-left: var(--spacing-l);
+  padding-right: var(--spacing-l);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

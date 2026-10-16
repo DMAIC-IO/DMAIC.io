@@ -234,7 +234,7 @@
   gap: var(--spacing-s);
   width: 100%;
   margin-top: var(--spacing-sm);
-  padding: 10px var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-ml);
   background: var(--color-accent);
   color: var(--color-text-inverse);
   font-family: var(--font-family);

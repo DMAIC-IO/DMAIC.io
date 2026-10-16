@@ -121,7 +121,7 @@
   display: inline-block;
   font-size: 9px;
   font-weight: 600;
-  padding: 0 3px;
+  padding: 0 var(--spacing-xs);
   border-radius: 2px;
   margin-left: var(--spacing-2xs);
   vertical-align: middle;
@@ -208,7 +208,7 @@
 .attr-picker__item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--spacing-sm);
   padding: var(--spacing-s) var(--spacing-m);
   cursor: pointer;
   color: var(--color-text-secondary);
@@ -682,7 +682,7 @@ th.col-locked--hard .col-lock-icon {
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
-  padding: 40px var(--spacing-l);
+  padding: var(--spacing-xl) var(--spacing-l);
 }
 
 .column-scan-overlay--modal {
@@ -852,7 +852,7 @@ th.col-locked--hard .col-lock-icon {
 .column-scan__mismatch-header {
   background: var(--color-warning);
   color: #fff;
-  padding: var(--spacing-s) 10px;
+  padding: var(--spacing-s) var(--spacing-sm);
   font-size: var(--font-size-sm);
   font-weight: 600;
 }
@@ -866,7 +866,7 @@ th.col-locked--hard .col-lock-icon {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-xs) 10px;
+  padding: var(--spacing-xs) var(--spacing-sm);
   font-size: var(--font-size-sm);
   cursor: pointer;
   border-bottom: 1px solid var(--color-border-primary);
@@ -909,7 +909,7 @@ th.col-locked--hard .col-lock-icon {
 }
 
 .column-scan__mismatch-more {
-  padding: var(--spacing-xs) 10px;
+  padding: var(--spacing-xs) var(--spacing-sm);
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   font-style: italic;
@@ -934,7 +934,7 @@ th.col-locked--hard .col-lock-icon {
 .column-scan__clusters-header {
   background: var(--color-accent);
   color: #fff;
-  padding: var(--spacing-s) 10px;
+  padding: var(--spacing-s) var(--spacing-sm);
   font-size: var(--font-size-sm);
   font-weight: 600;
 }
@@ -946,7 +946,7 @@ th.col-locked--hard .col-lock-icon {
 
 .column-scan__cluster {
   border-bottom: 1px solid var(--color-border-primary);
-  padding: var(--spacing-s) 10px;
+  padding: var(--spacing-s) var(--spacing-sm);
 }
 
 .column-scan__cluster:last-child {
@@ -970,7 +970,7 @@ th.col-locked--hard .col-lock-icon {
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-sm);
-  padding: 3px var(--spacing-s);
+  padding: var(--spacing-xs) var(--spacing-s);
   font-size: var(--font-size-sm);
   cursor: pointer;
   border-radius: var(--border-radius);
@@ -1042,13 +1042,13 @@ th.col-locked--hard .col-lock-icon {
 }
 
 .column-stats__label {
-  padding: 5px var(--spacing-sm) 5px 0;
+  padding: var(--spacing-s) var(--spacing-sm) var(--spacing-s) 0;
   color: var(--color-text-secondary);
   white-space: nowrap;
 }
 
 .column-stats__value {
-  padding: 5px 0;
+  padding: var(--spacing-s) 0;
   text-align: right;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -1124,7 +1124,7 @@ th.col-locked--hard .col-lock-icon {
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
-  padding: 0 14px;
+  padding: 0 var(--spacing-m);
   font-family: var(--font-family);
   font-size: var(--font-size-sm);
   font-weight: 500;
@@ -1281,7 +1281,7 @@ td.datagrid__row-header:active {
   bottom: 40px;
   left: 50%;
   transform: translateX(-50%);
-  padding: var(--spacing-sm) 20px;
+  padding: var(--spacing-sm) var(--spacing-ml);
   border-radius: var(--border-radius);
   font-size: var(--font-size-sm);
   font-weight: 500;
@@ -1348,8 +1348,8 @@ td.datagrid__row-header:active {
 .fn-chip {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 3px var(--spacing-sm);
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--border-radius-sm);
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border-primary);
@@ -1406,7 +1406,7 @@ td.datagrid__row-header:active {
 .fn-chip-group--open > .fn-chip--has-menu { border-color: var(--color-accent); }
 
 .fn-chip-group__item {
-  padding: 5px 10px;
+  padding: var(--spacing-s) var(--spacing-sm);
   font-family: var(--font-family-mono);
   font-size: 11px;
   color: var(--color-text-secondary);
@@ -1476,7 +1476,7 @@ td.datagrid__row-header:active {
   min-height: 130px;
   max-height: 300px;
   resize: vertical;
-  padding: 10px var(--spacing-m);
+  padding: var(--spacing-sm) var(--spacing-m);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius);
   background: var(--color-input-bg);
@@ -1505,7 +1505,7 @@ td.datagrid__row-header:active {
   align-items: center;
   gap: var(--spacing-sm);
   margin-top: var(--spacing-sm);
-  padding: 7px 10px;
+  padding: var(--spacing-sm);
   border-radius: var(--border-radius-sm);
   background: var(--color-bg-tertiary);
   border: 1px solid var(--color-border-secondary);
@@ -1559,7 +1559,7 @@ td.datagrid__row-header:active {
 .formula-editor__ref-table .fe-ref-syntax {
   width: 1%;
   white-space: nowrap;
-  padding-right: 10px;
+  padding-right: var(--spacing-sm);
 }
 
 .formula-editor__ref-table code {
@@ -1573,8 +1573,8 @@ td.datagrid__row-header:active {
 }
 
 .formula-editor__ref-table--sep {
-  margin-top: 5px;
-  padding-top: 5px;
+  margin-top: var(--spacing-s);
+  padding-top: var(--spacing-s);
   border-top: 1px solid var(--color-border-secondary);
 }
 
@@ -1611,7 +1611,7 @@ td.datagrid__row-header:active {
   position: fixed;
   z-index: 1000;
   min-width: 200px;
-  padding: 10px 14px;
+  padding: var(--spacing-sm) var(--spacing-m);
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius);

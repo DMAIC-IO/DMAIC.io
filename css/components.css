@@ -273,7 +273,7 @@ select.input {
 /* ── Size variants ── */
 .field--sm {
   /* tighter padding for dense layouts (table cells, toolbars) — font-size unchanged */
-  padding: 3px var(--spacing-xs);
+  padding: var(--spacing-xs);
 }
 
 .field--xs {
@@ -682,13 +682,13 @@ select.input {
   background: var(--color-bg-primary);
   border: var(--border-width) solid var(--color-border-secondary);
   border-radius: var(--border-radius);
-  padding: 3px;
+  padding: var(--spacing-xs);
   margin-bottom: var(--spacing-md);
 }
 
 .dmike-tab {
   flex: 1;
-  padding: 7px var(--spacing-sm);
+  padding: var(--spacing-sm);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   font-family: var(--font-family);
@@ -1143,8 +1143,8 @@ select.input {
 .settings-shortcuts-list {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  margin-top: 18px;
+  gap: var(--spacing-ml);
+  margin-top: var(--spacing-ml);
   margin-bottom: var(--spacing-ml);
 }
 
@@ -1163,7 +1163,7 @@ select.input {
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-sm);
-  padding: var(--spacing-sm) 10px;
+  padding: var(--spacing-sm);
   border: 1px solid var(--color-border-secondary);
   border-radius: 6px;
   margin-bottom: var(--spacing-xs);
@@ -1191,7 +1191,7 @@ select.input {
   font-family: var(--font-mono, ui-monospace, Menlo, Consolas, monospace);
   font-size: 12px;
   min-width: 90px;
-  padding: var(--spacing-xs) 10px;
+  padding: var(--spacing-xs) var(--spacing-sm);
   border: 1px solid var(--color-border-primary);
   border-radius: 4px;
   background: var(--color-bg-primary);
@@ -1476,7 +1476,7 @@ select.input {
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
-  padding: 3px var(--spacing-xs);
+  padding: var(--spacing-xs);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
   font-size: var(--font-size-sm);

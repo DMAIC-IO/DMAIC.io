@@ -274,6 +274,7 @@ textarea.fc-card__description {
   bottom: -10px;
   left: 50%;
   width: 3px;
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- centres the 3px drop line, geometry not spacing */
   margin-left: -1.5px;
   border-radius: 2px;
   background: var(--color-accent);
