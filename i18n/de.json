@@ -4111,7 +4111,7 @@
       "whenToUse": "Wenn zwei oder mehr numerische Größen zusammenhängen könnten: berechnet die Korrelation zweier Spalten (Pearson, Spearman und Kendall nebeneinander, mit Konfidenzintervall und Diagnose) oder dreier und mehr Spalten als Korrelationsmatrix; jede Spalte braucht mindestens 5 numerische Werte.",
       "actions": {
         "read": {
-          "help": "Liefert die gewählten Spalten, die Parameter, die wählbaren Spalten, den Modus und das Ergebnis. result ist bei genau zwei Spalten gefüllt, matrixResult bei drei und mehr; sonst sind beide null. errorMsg nennt, warum eine Auswertung mit zwei Spalten kein Ergebnis hat.",
+          "help": "Liefert die gewählten Spalten, die Parameter, die wählbaren Spalten, den Modus und das Ergebnis. result enthält die Auswertung genau zweier Spalten, matrixResult die Matrix aus drei und mehr; sonst sind beide null. result ist auch bei zwei Spalten null, wenn die Auswertung scheiterte (weniger als 4 gepaarte Werte, eine Spalte ohne Streuung oder eine Spalte ohne verwertbare Werte); errorMsg nennt die ersten beiden Gründe.",
           "params": {
             "options": "Optional; dieses Modul hält keine Massendaten."
           }
@@ -4120,7 +4120,7 @@
           "help": "Setzt einen Parameter; die Analyse läuft neu (confidenceLevel) oder die Matrix wird neu aufgebaut (die übrigen Schlüssel).",
           "params": {
             "key": "Einer der Schlüssel aus activeParams: confidenceLevel immer; matrixMethod, filterMinR und filterMaxP nur bei drei und mehr Spalten. Jeder andere Wert ist ein Fehler.",
-            "value": "confidenceLevel: Bruch von 0.5 bis 0.999, zum Beispiel 0.95. matrixMethod: 'pearson', 'spearman' oder 'kendall'. filterMinR und filterMaxP: Zahl von 0 bis 1 oder null für keinen Filter. Ein Wert außerhalb des Bereichs oder der Liste ist ein Fehler."
+            "value": "confidenceLevel: Bruch von 0.5 bis 0.9999, zum Beispiel 0.95. matrixMethod: 'pearson', 'spearman' oder 'kendall'. filterMinR und filterMaxP: Zahl von 0 bis 1 oder null für keinen Filter. Ein Wert außerhalb des Bereichs oder der Liste ist ein Fehler."
           }
         },
         "setColumns": {

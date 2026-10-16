@@ -4107,7 +4107,7 @@
       "whenToUse": "When two or more numeric variables may be related: computes the correlation of two columns (Pearson, Spearman and Kendall side by side, with confidence interval and diagnostics) or of three or more columns as a correlation matrix; each column needs at least 5 numeric values.",
       "actions": {
         "read": {
-          "help": "Returns the chosen columns, the parameters, the selectable columns, the mode and the result. result is filled with exactly two columns, matrixResult with three or more; both are null otherwise. errorMsg names why a two-column analysis gave no result.",
+          "help": "Returns the chosen columns, the parameters, the selectable columns, the mode and the result. result holds the analysis of exactly two columns, matrixResult the matrix of three or more; both are null otherwise. result is also null with two columns when the analysis failed (fewer than 4 paired values, a column without variance, or a column without usable values); errorMsg names the first two reasons.",
           "params": {
             "options": "Optional; this module holds no bulk data."
           }
@@ -4116,7 +4116,7 @@
           "help": "Sets one parameter; the analysis reruns (confidenceLevel) or the matrix is rebuilt (the other keys).",
           "params": {
             "key": "One of the keys in activeParams: confidenceLevel always; matrixMethod, filterMinR and filterMaxP only with three or more columns. Any other value is an error.",
-            "value": "confidenceLevel: fraction from 0.5 to 0.999, for example 0.95. matrixMethod: 'pearson', 'spearman' or 'kendall'. filterMinR and filterMaxP: number from 0 to 1, or null for no filter. A value outside the range or the list is an error."
+            "value": "confidenceLevel: fraction from 0.5 to 0.9999, for example 0.95. matrixMethod: 'pearson', 'spearman' or 'kendall'. filterMinR and filterMaxP: number from 0 to 1, or null for no filter. A value outside the range or the list is an error."
           }
         },
         "setColumns": {

@@ -56,7 +56,9 @@ const REC_NAMES = { pearson: 'Pearson r', spearman: `Spearman ${GLYPH_RHO}`, ken
 
 /** Zulässige Bereiche der Zahlenparameter (einzige Quelle für Setter und Oberfläche). */
 const PARAM_RANGES = {
-  confidenceLevel: { min: 0.5, max: 0.999 },
+  // Wie die App-Einstellung (pages/settings/settings.js, clampConfPower 50–99.99 %),
+  // die confidenceLevel vorbelegt: ein engerer Setter wiese den eigenen Zustand ab.
+  confidenceLevel: { min: 0.5, max: 0.9999 },
   filterMinR: { min: 0, max: 1 },
   filterMaxP: { min: 0, max: 1 },
 };
@@ -171,7 +173,10 @@ const mod = createModule({
       toggleColumn(col) {
         const key = refToKey(col);
         const keys = this.model.colRefs.map(refToKey);
-        const next = keys.includes(key) ? keys.filter(k => k !== key) : [...keys, key];
+        const pickable = this.pickableColumns().columns.map(c => c.key);
+        // Veraltete Bezüge (Spalte nicht mehr wählbar) fallen heraus, sonst sperrten sie die Liste.
+        const next = (keys.includes(key) ? keys.filter(k => k !== key) : [...keys, key])
+          .filter(k => pickable.includes(k));
         this.setColumns('columns', next.map(keyToRef));
       },
 
@@ -199,7 +204,9 @@ const mod = createModule({
         const input = event.target;
         const parsed = parseConfPercent(input.value);
         if (parsed != null && parsed !== this.model.confidenceLevel) {
-          try { this.setParam('confidenceLevel', parsed); } catch { /* außerhalb des Bereichs: Feld zeigt den Modellwert */ }
+          let ok = true;
+          try { PARAM_CHECKS.confidenceLevel(parsed); } catch { ok = false; }
+          if (ok) this.setParam('confidenceLevel', parsed);
         }
         input.value = formatConfPercent(this.model.confidenceLevel);
       },
@@ -543,9 +550,11 @@ const mod = createModule({
        */
       _applyFilter(key, input) {
         const v = input.value.trim();
-        try { this.setParam(key, v === '' ? null : parseFloat(v)); } catch {
-          input.value = this.model[key] != null ? String(this.model[key]) : '';
-        }
+        const value = v === '' ? null : parseFloat(v);
+        let ok = true;
+        try { PARAM_CHECKS[key](value); } catch { ok = false; }
+        if (ok) this.setParam(key, value);
+        else input.value = this.model[key] != null ? String(this.model[key]) : '';
       },
       /** @noagent helper */
       rerenderMatrix() {
@@ -757,7 +766,7 @@ const mod = createModule({
        * wird neu aufgebaut.
        * @agent
        * @param {'confidenceLevel'|'matrixMethod'|'filterMinR'|'filterMaxP'} key welcher Parameter; die Matrixschlüssel gelten erst ab drei Spalten
-       * @param {number|string|null} value `confidenceLevel`: Bruch von 0.5 bis 0.999; `matrixMethod`: `'pearson'`, `'spearman'` oder `'kendall'`; `filterMinR`/`filterMaxP`: Zahl von 0 bis 1 oder `null` ohne Filter
+       * @param {number|string|null} value `confidenceLevel`: Bruch von 0.5 bis 0.9999; `matrixMethod`: `'pearson'`, `'spearman'` oder `'kendall'`; `filterMinR`/`filterMaxP`: Zahl von 0 bis 1 oder `null` ohne Filter
        * @returns {void}
        * @throws {Error} wenn `key` im aktuellen Zustand nicht gilt oder `value` nicht zulässig ist
        */

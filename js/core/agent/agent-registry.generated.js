@@ -1331,7 +1331,7 @@ export const AGENT_REGISTRY = {
             "name": "value",
             "type": "number|string|null",
             "optional": false,
-            "help": "`confidenceLevel`: Bruch von 0.5 bis 0.999; `matrixMethod`: `'pearson'`, `'spearman'` oder `'kendall'`; `filterMinR`/`filterMaxP`: Zahl von 0 bis 1 oder `null` ohne Filter"
+            "help": "`confidenceLevel`: Bruch von 0.5 bis 0.9999; `matrixMethod`: `'pearson'`, `'spearman'` oder `'kendall'`; `filterMinR`/`filterMaxP`: Zahl von 0 bis 1 oder `null` ohne Filter"
           }
         ],
         "returns": "void",
