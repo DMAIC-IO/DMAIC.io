@@ -16,6 +16,9 @@
 
 import { WITHIN_METHODS } from '../../engines/sigma-within-engine.js';
 
+/** The two ways subgroups are formed (the radio group and `setParam('subgroupMode', …)`). */
+export const SUBGROUP_MODES = ['size', 'column'];
+
 /**
  * Coerce a persisted numeric/string spec field into the raw string the input
  * shows. Legacy projects persisted lsl/usl/target as numbers (NaN when empty).
@@ -199,7 +202,7 @@ export class State {
     s.params.unit = typeof p.unit === 'string' && p.unit ? p.unit : 'mm';
     s.params.confidence = confStr(p.confidence);
     s.params.subgroupSize = String(subgroupInt(p.subgroupSize));
-    s.params.subgroupMode = p.subgroupMode === 'column' ? 'column' : 'size';
+    s.params.subgroupMode = SUBGROUP_MODES.includes(p.subgroupMode) ? p.subgroupMode : 'size';
     s.params.withinMethod = methodStr(p.withinMethod);
     s.params.unbiased = typeof p.unbiased === 'boolean' ? p.unbiased : true;
     s.params.mrSpan = String(spanInt(p.mrSpan));

@@ -3025,6 +3025,76 @@
     "process-capability": {
       "name": "Prozessfähigkeit",
       "description": "Prozessfähigkeitsanalyse — Cp, Cpk, Pp, Ppk, PPM, Sigma-Level",
+      "whenToUse": "Wenn gezeigt werden soll, wie gut ein Prozess ein Merkmal innerhalb seiner Spezifikationsgrenzen hält: Cp und Cpk (kurzfristig, aus der Streuung innerhalb der Untergruppen), Pp und Ppk (langfristig), PPM und Sigma-Level, jeweils mit Konfidenzintervallen. Geht mit einseitigen und zweiseitigen Grenzen, Einzelwerten und Untergruppen. Braucht mindestens eine Grenze (untere oder obere) und mindestens 2 numerische Werte aus einer Spalte einer Datensammlung oder aus geladenen Beispieldaten.",
+      "actions": {
+        "read": {
+          "help": "Liefert die eingetragene Spezifikation und die Einstellungen, die gewählten Spalten, geladene Beispieldaten, die wählbaren Mengen, den Schätzerhinweis und das gerechnete Ergebnis. result ist null, solange keine Daten gewählt sind, keine Grenze eingetragen ist, die obere Grenze die untere nicht übersteigt, weniger als 2 Werte vorliegen oder der Schätzer sich nicht berechnen lässt (withinHint nennt dann den Grund). Beispieldaten (embeddedValues) sind Massendaten: ohne options.fields = ['embeddedValues'] kommt nur der Umfang.",
+          "params": {
+            "options": "Optional: fields: ['embeddedValues'] liefert die Beispielwerte vollständig, rows: { from, to } schneidet sie zu."
+          }
+        },
+        "setParam": {
+          "help": "Setzt einen Parameter. Schätzer, Untergruppenmodus und -größe, gleitende Spannweite und Erwartungstreue rechnen sofort neu und können ändern, welche Parameter und Schätzer gelten; die übrigen Parameter rechnen nach einer kurzen Pause neu.",
+          "params": {
+            "key": "Einer der Schlüssel aus activeParams: name, lsl, target, usl, unit, confidence, subgroupMode und withinMethod immer; subgroupSize nur, solange die Untergruppen eine feste Größe haben (mit Beispieldaten immer); mrSpan nur, solange der geltende Schätzer averageMR oder medianMR ist; unbiased nur bei pooled, sbar oder sqrtMSSD. Jeder andere Wert ist ein Fehler.",
+            "value": "name, unit: Text. lsl, target, usl: Text mit einer Zahl, '' für keine (wie eingegeben, ein Dezimalkomma wird angenommen). confidence: Text mit dem Prozentwert, zum Beispiel '95'; ein Wert außerhalb von 50 bis 99,99 wird beim Rechnen begrenzt. subgroupMode: 'size' (feste Untergruppengröße) oder 'column' (Untergruppen aus einer ID-Spalte). subgroupSize: ganze Zahl ab 1, Zahl oder Zahlentext. withinMethod: einer der Werte aus withinMethodOptions; '' nimmt den Standard der Daten. mrSpan: ganze Zahl von 2 bis 100. unbiased: true oder false. Ein Wert der falschen Art oder außerhalb der Liste ist ein Fehler."
+          }
+        },
+        "setColumn": {
+          "help": "Weist einem Slot eine Spalte zu oder leert ihn mit null; die Neuberechnung folgt sofort. Wer die Messwertspalte wählt, verwirft geladene Beispieldaten. Die Untergruppenspalte wird aus dem Blatt der Messwertspalte angeboten, ohne die Messwertspalte selbst.",
+          "params": {
+            "slot": "Einer der Slots aus activeColumnSlots: 'value' (die Messwerte) immer, 'subgroup' (die Untergruppen-IDs) nur, solange die Untergruppen aus einer Spalte kommen und keine Beispieldaten geladen sind.",
+            "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Leeren des Slots."
+          }
+        },
+        "clearEmbedded": {
+          "help": "Verwirft geladene Beispieldaten; danach rechnet das Modul wieder auf einer Spalte und berechnet sofort neu. Ohne Beispieldaten ändert sich nichts."
+        },
+        "runAnalysis": {
+          "help": "Rechnet mit den aktuellen Eingaben. Wiederholte Aufrufe schaden nicht; unvollständige oder ungültige Eingaben lassen result ohne Fehler auf null, und ein nicht berechenbarer Schätzer steht in withinHint."
+        },
+        "scheduleAnalysis": {
+          "help": "Löst das Rechnen nach einer kurzen Pause aus; eine zweite Anforderung davor ersetzt die erste."
+        },
+        "clearResults": {
+          "help": "Verwirft das Ergebnis; die Eingaben bleiben. Die nächste Berechnung füllt es wieder."
+        }
+      },
+      "fields": {
+        "params": {
+          "help": "Die eingetragenen Werte: name (Merkmal), lsl, target und usl (Grenzen und Zielwert als Text, '' für keine), unit, confidence (Prozent als Text), subgroupMode ('size' oder 'column'), subgroupSize (Text), withinMethod (Schätzerschlüssel, '' für den Standard der Daten), mrSpan (Text) und unbiased (true oder false). Mit Beispieldaten haben die Untergruppen immer die feste Größe, was subgroupMode auch sagt."
+        },
+        "columnRef": {
+          "help": "Die gewählte Messwertspalte als { instanceId, sheetId, columnId } oder null. Geladene Beispieldaten haben Vorrang vor ihr."
+        },
+        "subgroupColumnRef": {
+          "help": "Die gewählte Untergruppen-ID-Spalte als { instanceId, sheetId, columnId } oder null. Sie zählt nur, solange die Untergruppen aus einer Spalte kommen."
+        },
+        "embeddedValues": {
+          "help": "Die Werte geladener Beispieldaten, die die Messwertspalte ersetzen, oder null. Massendaten: ohne options.fields = ['embeddedValues'] kommt nur der Umfang."
+        },
+        "embeddedLabel": {
+          "help": "Der Titel der geladenen Beispieldaten, '' wenn keine geladen sind."
+        },
+        "activeParams": {
+          "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt."
+        },
+        "withinMethodOptions": {
+          "help": "Die Werte, die setParam für withinMethod annimmt: '' (der Standard der Daten) und die Schätzer, die zu den Daten passen. Sie hängen von den Untergruppen ab: bei Einzelwerten nur die Schätzer über die gleitende Spannweite, bei Untergruppen die gepoolten, die Spannweiten- und die Standardabweichungs-Schätzer."
+        },
+        "activeColumnSlots": {
+          "help": "Die Slots, die setColumn im aktuellen Zustand annimmt."
+        },
+        "pickableColumns": {
+          "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; key ist 'instanceId|sheetId|columnId'. value nennt die numerischen Spalten, subgroup die übrigen Spalten des Blatts der Messwertspalte (leer ohne Messwertspalte)."
+        },
+        "result": {
+          "help": "Das gerechnete Fähigkeitsergebnis mit Cp, Cpk, Pp, Ppk, PPM, Sigma-Level, den Konfidenzintervallen und dem Status, oder null, solange die Eingaben unvollständig oder ungültig sind."
+        },
+        "withinHint": {
+          "help": "Ein Hinweis zu Schätzer oder Untergruppenspalte: der gespeicherte Schätzer passt nicht zu den Daten und ein anderer wird benutzt, die Untergruppenspalte fehlt, oder der Schätzer lässt sich für diese Daten nicht berechnen. '' wenn nichts zu vermerken ist."
+        }
+      },
       "sectionParams": "Spezifikation",
       "sectionData": "Prozessdaten",
       "featureName": "Bezeichnung / Merkmal",

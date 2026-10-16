@@ -5758,75 +5758,147 @@ export const AGENT_REGISTRY = {
     }
   },
   "process-capability": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:removeTitle",
-      "unmarked_method:clearEmbedded",
-      "unmarked_method:statusLabel",
-      "unmarked_method:badgeLabel",
-      "unmarked_method:kpiModClass",
-      "unmarked_method:featureName",
-      "unmarked_method:ciLabel",
-      "unmarked_method:mainKpis",
-      "unmarked_method:perfKpis",
-      "unmarked_method:methodName",
-      "unmarked_method:fmtDf",
-      "unmarked_method:withinLabel",
-      "unmarked_method:showMrSpan",
-      "unmarked_method:showUnbiased",
-      "unmarked_method:setWithinMethod",
-      "unmarked_method:onSubgroupModeChange",
-      "unmarked_method:statCols",
-      "unmarked_method:ppmRows",
-      "unmarked_method:zBenchLine",
-      "unmarked_method:parseNum",
-      "unmarked_method:confidenceFraction",
-      "unmarked_method:columnValues",
-      "unmarked_method:analysisInput",
-      "unmarked_method:runAnalysis",
-      "unmarked_method:scheduleAnalysis",
-      "unmarked_method:clearResults",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unreachable_write:params.name",
-      "unreachable_write:params.lsl",
-      "unreachable_write:params.target",
-      "unreachable_write:params.usl",
-      "unreachable_write:params.unit",
-      "unreachable_write:params.confidence",
-      "unreachable_write:params.subgroupMode",
-      "unreachable_write:params.subgroupSize",
-      "unreachable_write:params.mrSpan",
-      "unreachable_write:params.unbiased"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'name'|'lsl'|'target'|'usl'|'unit'|'confidence'|'subgroupMode'|'subgroupSize'|'withinMethod'|'mrSpan'|'unbiased'",
+            "optional": false,
+            "help": "welcher Parameter"
+          },
+          {
+            "name": "value",
+            "type": "string|number|boolean",
+            "optional": false,
+            "help": "der Wert; Texte als Text, Ganzzahlen als Zahl oder Zahlentext, unbiased als Wahrheitswert"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Parameter setzen."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'value'|'subgroup'",
+            "optional": false,
+            "help": "der Slot; `subgroup` gilt nur bei Untergruppen aus einer Spalte"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Spalte einem Slot zuweisen."
+      },
+      "clearEmbedded": {
+        "params": [],
+        "returns": "void",
+        "help": "Verwirft eingebettete Beispieldaten; danach rechnet das Modul wieder auf einer Spalte."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Computes with the current inputs. Incomplete or invalid inputs leave `result` at null without an error; a problem with the estimator (wrong method for the data, table limits) is named in `withinHint`."
+      },
+      "scheduleAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Triggers the computation after a short pause; a second request before that replaces the first."
+      },
+      "clearResults": {
+        "params": [],
+        "returns": "void",
+        "help": "Discards the result and the histogram; the inputs stay."
+      }
+    },
     "fields": {
       "params": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object",
+        "help": "the entered parameters (name, lsl, target, usl, unit, confidence, subgroupMode, subgroupSize, withinMethod, mrSpan, unbiased); values as text as entered, unbiased as boolean",
+        "bulk": false,
+        "derived": true
       },
       "columnRef": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the chosen measurement column, `{ instanceId, sheetId, columnId }`, or null",
+        "bulk": false,
+        "derived": true
       },
       "subgroupColumnRef": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the chosen subgroup ID column, `{ instanceId, sheetId, columnId }`, or null",
+        "bulk": false,
+        "derived": true
       },
       "embeddedValues": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number[]|null",
+        "help": "the values of loaded example data that replace the measurement column, or null",
+        "bulk": true,
+        "bulkKind": "table",
+        "derived": true
       },
       "embeddedLabel": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string",
+        "help": "the title of the loaded example data, '' when none",
+        "bulk": false,
+        "derived": true
+      },
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "withinMethodOptions": {
+        "type": "string[]",
+        "help": "the values `setParam('withinMethod', …)` accepts: '' (the default of the data) and the estimators that fit the data",
+        "bulk": false,
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts in the current state",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "the computed capability result, or null while the inputs are incomplete",
+        "bulk": false,
+        "derived": true
+      },
+      "withinHint": {
+        "type": "string",
+        "help": "the note on the estimator or the subgroup column, '' when there is none",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -9492,4 +9564,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":74,"available":40};
+export const AGENT_COVERAGE = {"total":74,"available":41};
