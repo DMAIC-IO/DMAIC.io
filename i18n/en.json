@@ -8034,7 +8034,59 @@
       "statSignals": "Signals",
       "statOf": "of {total} data points",
       "errTooFewRows": "Too few complete rows — need at least p+1 = {p}+1 observations.",
-      "errCompute": "Computation failed: {msg}"
+      "errCompute": "Computation failed: {msg}",
+      "whenToUse": "Monitor several correlated characteristics together: Hotelling T² flags rows whose combination is unusual even when each value alone is in control.",
+      "actions": {
+        "read": {
+          "help": "Read the chosen variables, alpha, the Phase I length, the T² limit, mean and covariance, the signal rows and T² per row."
+        },
+        "setColumns": {
+          "help": "Choose the variables and recompute.",
+          "params": {
+            "slot": "'variables' — the numeric characteristics monitored together (at least 2 for a result).",
+            "refs": "A list of column references { instanceId, sheetId, columnId } from read().pickableColumns.variables; [] clears it."
+          }
+        },
+        "setParam": {
+          "help": "Set an analysis option and recompute.",
+          "params": {
+            "key": "'alpha' — false-alarm rate of the T² limit; 'baselineCount' — rows used to estimate mean and covariance.",
+            "value": "alpha a number greater than 0 and less than 1; baselineCount a whole number of at least 1, or null or '' for all rows (used only when greater than the number of variables)."
+          }
+        },
+        "runAnalysis": {
+          "help": "Recompute with the current column values, for example after the data changed."
+        }
+      },
+      "fields": {
+        "columnRefs": {
+          "help": "The variable columns (slot 'variables')."
+        },
+        "alpha": {
+          "help": "False-alarm rate of the T² limit, 0 < alpha < 1."
+        },
+        "baselineCount": {
+          "help": "Rows used for Phase I, or null for all rows."
+        },
+        "activeMultiSlots": {
+          "help": "The slots setColumns accepts: variables."
+        },
+        "activeParams": {
+          "help": "The keys setParam accepts: alpha, baselineCount."
+        },
+        "pickableColumns": {
+          "help": "Per slot the columns setColumns accepts, each { key, name }; the key is instanceId|sheetId|columnId."
+        },
+        "errorMsg": {
+          "help": "Why nothing was computed, for example too few complete rows; '' otherwise."
+        },
+        "result": {
+          "help": "{ n, p, m, cl, ucl, mean, covariance, signals }; n complete rows, p variables, m Phase I rows, mean and covariance from Phase I, signals the indices of rows above ucl; null with fewer than 2 variables or on error."
+        },
+        "points": {
+          "help": "One row per complete data row: { t2, signal }. read({ fields: ['points'] }) returns them in full."
+        }
+      }
     },
     "short-run-chart": {
       "name": "Control Chart (Short-Run Z-MR)",

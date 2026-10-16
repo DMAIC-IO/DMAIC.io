@@ -8038,7 +8038,59 @@
       "statSignals": "Signale",
       "statOf": "von {total} Datenpunkten",
       "errTooFewRows": "Zu wenige vollständige Zeilen — mindestens p+1 = {p}+1 Beobachtungen nötig.",
-      "errCompute": "Berechnung fehlgeschlagen: {msg}"
+      "errCompute": "Berechnung fehlgeschlagen: {msg}",
+      "whenToUse": "Mehrere zusammenhängende Merkmale gemeinsam überwachen: Hotellings T² meldet Zeilen, deren Kombination ungewöhnlich ist, auch wenn jeder Einzelwert unauffällig ist.",
+      "actions": {
+        "read": {
+          "help": "Gewählte Variablen, α, Länge der Phase I, T²-Grenze, Mittelwert und Kovarianz, Signalzeilen und T² je Zeile lesen."
+        },
+        "setColumns": {
+          "help": "Die Variablen wählen und neu rechnen.",
+          "params": {
+            "slot": "'variables' — die gemeinsam überwachten Zahlenmerkmale (für ein Ergebnis mindestens 2).",
+            "refs": "Eine Liste von Spaltenbezügen { instanceId, sheetId, columnId } aus read().pickableColumns.variables; [] leert sie."
+          }
+        },
+        "setParam": {
+          "help": "Eine Analyseoption setzen und neu rechnen.",
+          "params": {
+            "key": "'alpha' — Fehlalarmrate der T²-Grenze; 'baselineCount' — Zeilen, aus denen Mittelwert und Kovarianz geschätzt werden.",
+            "value": "alpha eine Zahl größer als 0 und kleiner als 1; baselineCount eine ganze Zahl ab 1, oder null bzw. '' für alle Zeilen (wirkt nur, wenn größer als die Zahl der Variablen)."
+          }
+        },
+        "runAnalysis": {
+          "help": "Mit den aktuellen Spaltenwerten neu rechnen, etwa nachdem sich die Daten geändert haben."
+        }
+      },
+      "fields": {
+        "columnRefs": {
+          "help": "Die Variablenspalten (Slot 'variables')."
+        },
+        "alpha": {
+          "help": "Fehlalarmrate der T²-Grenze, 0 < α < 1."
+        },
+        "baselineCount": {
+          "help": "Zeilen der Phase I, oder null für alle Zeilen."
+        },
+        "activeMultiSlots": {
+          "help": "Die Slots, die setColumns annimmt: variables."
+        },
+        "activeParams": {
+          "help": "Die Schlüssel, die setParam annimmt: alpha, baselineCount."
+        },
+        "pickableColumns": {
+          "help": "Je Slot die Spalten, die setColumns annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId."
+        },
+        "errorMsg": {
+          "help": "Warum nichts gerechnet wurde, etwa zu wenige vollständige Zeilen; sonst ''."
+        },
+        "result": {
+          "help": "{ n, p, m, cl, ucl, mean, covariance, signals }; n vollständige Zeilen, p Variablen, m Zeilen der Phase I, Mittelwert und Kovarianz aus Phase I, signals die Indizes der Zeilen über ucl; null bei weniger als 2 Variablen oder bei einem Fehler."
+        },
+        "points": {
+          "help": "Je vollständiger Datenzeile eine Zeile: { t2, signal }. read({ fields: ['points'] }) liefert sie vollständig."
+        }
+      }
     },
     "short-run-chart": {
       "name": "Regelkarte (Kurzläufer Z-MR)",

@@ -5737,35 +5737,120 @@ export const AGENT_REGISTRY = {
     }
   },
   "multivariate-control-chart": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:baselineCountValue",
-      "unmarked_method:baselineCountChanged",
-      "unmarked_method:alphaChanged"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields: ['points']` liefert die Punkte vollständig, `rows` schneidet sie zu"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setColumns": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'variables'",
+            "optional": false,
+            "help": "der Slot; dieses Modul führt nur `variables`"
+          },
+          {
+            "name": "refs",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }[]",
+            "optional": false,
+            "help": "die Spaltenbezüge wählbarer Spalten (mindestens 2 für ein Ergebnis); [] leert"
+          }
+        ],
+        "returns": "Promise<void>",
+        "help": "Die Variablen wählen und neu rechnen."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'alpha'|'baselineCount'",
+            "optional": false,
+            "help": "welche Option"
+          },
+          {
+            "name": "value",
+            "type": "any",
+            "optional": false,
+            "help": "alpha eine Zahl mit 0 < alpha < 1; baselineCount eine ganze Zahl ≥ 1, oder null/'' für alle Zeilen"
+          }
+        ],
+        "returns": "Promise<void>",
+        "help": "Eine Analyseoption setzen und neu rechnen."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "Promise<void>",
+        "help": "Mit den aktuellen Eingaben und Spaltenwerten neu rechnen."
+      }
+    },
     "fields": {
       "columnRefs": {
-        "type": "Array<{instanceId:string, sheetId:string, columnId:string}>",
-        "help": "",
-        "bulk": false
+        "type": "object[]",
+        "help": "the variable columns (slot `variables`), each `{ instanceId, sheetId, columnId }`",
+        "bulk": false,
+        "derived": true
       },
       "alpha": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "false-alarm rate of the T² limit, 0 < alpha < 1",
+        "bulk": false,
+        "derived": true
       },
       "baselineCount": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number|null",
+        "help": "rows used to estimate mean and covariance (Phase I), or null for all rows; used only when greater than the number of variables",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "string|null",
-        "help": "",
-        "bulk": false
+      "activeMultiSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumns` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumns` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "errorMsg": {
+        "type": "string",
+        "help": "why nothing was computed (too few complete rows, computation error), or ''",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "`{ n, p, m, cl, ucl, mean, covariance, signals }` — n complete rows, p variables, m Phase-I rows, mean and covariance from Phase I, signals the indices of rows above ucl; null with fewer than 2 variables or on error",
+        "bulk": false,
+        "derived": true
+      },
+      "points": {
+        "type": "object[]",
+        "help": "one row per complete data row: `{ t2, signal }`",
+        "bulk": true,
+        "bulkKind": "table",
+        "derived": true
       }
     }
   },
@@ -11315,4 +11400,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":63};
+export const AGENT_COVERAGE = {"total":76,"available":64};
