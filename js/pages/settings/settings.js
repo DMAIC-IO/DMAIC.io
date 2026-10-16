@@ -483,10 +483,16 @@ export default createPage({
         // re-init, so we keep it — and clean it up in destroy() to avoid
         // accumulating a stale listener on every re-init.
         eventBus.on('shortcuts:changed', this._unsubShortcuts);
+        // Closing the page keeps this component alive, so a capture started
+        // before ✕/Escape/overlay would keep rebinding keys in the background.
+        this._onPageClosed = ({ pageId } = {}) => { if (pageId === 'settings') this._stopCapture(); };
+        eventBus.on('page:closed', this._onPageClosed);
       },
 
       destroy() {
+        this._stopCapture();
         eventBus.off('shortcuts:changed', this._unsubShortcuts);
+        eventBus.off('page:closed', this._onPageClosed);
       },
     };
   },
