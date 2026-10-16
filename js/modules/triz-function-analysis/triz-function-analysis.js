@@ -8,7 +8,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import {
-  State, KINDS, GROUPS, LEVELS, TABS, orderedComponents, openPairs, rankOf, disadvantages, isComplete,
+  State, KINDS, GROUPS, LEVELS, TABS, orderedComponents, openPairs, rankOf, disadvantages, functionPairs,
 } from './triz-function-analysis-model.js';
 import {
   NODE_W, NODE_H, resolvePositions, buildFunctionDiagram,
@@ -113,12 +113,22 @@ export default createModule({
         });
       },
       createFromPair(p) { this.selectedId = this.model.addFunction(p.a, p.b).id; },
-      addOnPair(fn) { this.selectedId = this.model.addFunction(fn.carrier, fn.object).id; },
-      isComplete(fn) { return isComplete(fn); },
+      /** Function blocks, one per pair; a/b follow the matrix order so the header never flips. */
+      pairBlocks() {
+        const order = new Map(this.matrixComponents().map((c, i) => [c.id, i]));
+        return functionPairs(this.model).map((g) => {
+          const [a, b] = g.complete && order.get(g.b) < order.get(g.a) ? [g.b, g.a] : [g.a, g.b];
+          return { ...g, a, b, label: `${this.endName(a)} — ${this.endName(b)}` };
+        });
+      },
+      addOnPair(g) { this.selectedId = this.model.addFunction(g.a, g.b).id; },
       endName(id) {
         const c = this.model.component(id);
         return c ? label(c) : '—';
       },
+      isForward(fn, g) { return fn.carrier === g.a; },
+      isBackward(fn, g) { return fn.carrier !== g.a; },
+      directionLabel(fn) { return `${this.endName(fn.carrier)} → ${this.endName(fn.object)}`; },
       setVerb(fn, ev) { fn.verb = ev.target.value; },
       setParameter(fn, ev) { fn.parameter = ev.target.value; },
       changeType(fn, ev) { this.model.setType(fn.id, ev.target.value); },

@@ -19,7 +19,7 @@ export default {
             items: [
               '**Komponenten** — ein Zielobjekt (worauf die Hauptfunktion wirkt), die Systemkomponenten und die Elemente des {{term:supersystem|Supersystems}}.',
               '**Interaktionen** — in der Matrix werden die Paare angekreuzt, die sich berühren oder beeinflussen. Jedes Kreuz ist ein Kandidat für mindestens eine Funktion. Ein zweiter Klick setzt ein „x“: Das Paar ist bewusst ausgeschlossen, ein dritter leert die Zelle wieder.',
-              '**Funktionsmodell** — ein Klick auf ein offenes Paar legt eine Funktion an; Träger und Objekt stehen damit fest, ⇄ kehrt die Richtung um, + legt eine weitere Funktion auf demselben Paar an (etwa für die Gegenrichtung). Jede Funktion ist nützlich (ausreichend, unzureichend, übermäßig) oder schädlich. Der Rang ergibt sich aus dem Objekt: Wirkung auf das Zielobjekt = Basisfunktion, auf das Supersystem = Zusatzfunktion, auf eine Systemkomponente = Hilfsfunktion.',
+              '**Funktionsmodell** — jedes Paar hat einen eigenen Block, ein Klick auf ein offenes Paar legt ihn mit dem ersten Pfeil an. + legt einen weiteren Pfeil auf dem Paar an (etwa für die Gegenrichtung), der Pfeilknopf kehrt die Richtung um. Jede Funktion ist nützlich (ausreichend, unzureichend, übermäßig) oder schädlich. Der Rang ergibt sich aus dem Objekt: Wirkung auf das Zielobjekt = Basisfunktion, auf das Supersystem = Zusatzfunktion, auf eine Systemkomponente = Hilfsfunktion.',
             ],
           },
           {
@@ -40,7 +40,7 @@ export default {
             items: [
               '**Components** — one target (what the main function acts on), the system components and the elements of the {{term:supersystem|supersystem}}.',
               '**Interactions** — tick the pairs in the matrix that touch or influence each other. Every tick is a candidate for at least one function. A second click sets an “x”: the pair is deliberately excluded; a third click clears the cell.',
-              '**Function model** — clicking an open pair creates a function; this fixes carrier and object, ⇄ reverses the direction, + adds another function on the same pair (e.g. for the opposite direction). Every function is useful (adequate, insufficient, excessive) or harmful. The rank follows from the object: acting on the target = basic function, on the supersystem = additional function, on a system component = auxiliary function.',
+              '**Function model** — every pair has a block of its own; clicking an open pair creates it with its first arrow. + adds another arrow on the pair (e.g. for the opposite direction), the arrow button reverses the direction. Every function is useful (adequate, insufficient, excessive) or harmful. The rank follows from the object: acting on the target = basic function, on the supersystem = additional function, on a system component = auxiliary function.',
             ],
           },
           {

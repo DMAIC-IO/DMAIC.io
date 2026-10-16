@@ -8,7 +8,7 @@
 
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
 import {
-  State, KINDS, pairKey, orderedComponents, isComplete, rankOf, openPairs, disadvantages,
+  State, KINDS, pairKey, orderedComponents, isComplete, rankOf, openPairs, disadvantages, functionPairs,
 } from '../../js/modules/triz-function-analysis/triz-function-analysis-model.js';
 
 /** Toothbrush: target teeth, system bristles + handle, supersystem gums + paste. */
@@ -205,6 +205,17 @@ suite('triz-function-analysis — functions', () => {
     s.addFunction();
     assertEqual(s.interactions.length, before);
     assertEqual(isComplete(s.functions[3]), false);
+  });
+
+  test('functionPairs groups both directions of a pair; drafts stay alone', () => {
+    const s = fixture();
+    s.addFunction('t', 'b');
+    s.addFunction('b', '');
+    const groups = functionPairs(s);
+    assertDeepEqual(groups.map((g) => g.functions.length), [2, 1, 1, 1]);
+    assertDeepEqual(groups.map((g) => g.complete), [true, true, true, false]);
+    assertEqual(groups[0].key, pairKey('b', 't'));
+    assertTrue(groups[3].key.startsWith('draft|'));
   });
 
   test('swapDirection exchanges carrier and object', () => {

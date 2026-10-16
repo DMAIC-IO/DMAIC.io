@@ -6337,7 +6337,7 @@
       "level": { "adequate": "ausreichend", "insufficient": "unzureichend", "excessive": "übermäßig" },
       "rank": { "basic": "Basisfunktion", "additional": "Zusatzfunktion", "auxiliary": "Hilfsfunktion" },
       "swapDirection": "Richtung umkehren",
-      "addOnPair": "Weitere Funktion auf diesem Paar",
+      "addOnPair": "Weiteren Pfeil auf diesem Paar anlegen",
       "removeFunction": "Funktion löschen",
       "resetLayout": "Anordnung zurücksetzen",
       "exportPng": "PNG",

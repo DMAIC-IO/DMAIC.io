@@ -6337,7 +6337,7 @@
       "level": { "adequate": "adequate", "insufficient": "insufficient", "excessive": "excessive" },
       "rank": { "basic": "Basic function", "additional": "Additional function", "auxiliary": "Auxiliary function" },
       "swapDirection": "Reverse direction",
-      "addOnPair": "Another function on this pair",
+      "addOnPair": "Add another arrow on this pair",
       "removeFunction": "Delete function",
       "resetLayout": "Reset layout",
       "exportPng": "PNG",

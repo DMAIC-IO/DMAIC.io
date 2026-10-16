@@ -111,12 +111,36 @@ thead .tfa__mh {
   border-color: var(--color-accent);
 }
 
-.tfa__fn {
+.tfa__pair {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
   padding: var(--spacing-s);
   margin-bottom: var(--spacing-s);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md, 6px);
+  background: var(--color-bg-secondary);
+}
+
+.tfa__pair-head {
+  display: flex;
+  gap: var(--spacing-s);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tfa__pair-name {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tfa__fn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-s);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--radius-md, 6px);
   background: var(--color-bg-primary);
@@ -133,20 +157,13 @@ thead .tfa__mh {
 
 .tfa__fn-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: var(--spacing-xs);
   align-items: center;
 }
 
 .tfa__fn-row + .tfa__fn-row {
   grid-template-columns: 1fr 1fr 1fr auto;
-}
-
-.tfa__fn-end {
-  overflow: hidden;
-  font-weight: 600;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .tfa__rank {

@@ -26,6 +26,23 @@ export function pairKey(a, b) {
 }
 
 /**
+ * Functions grouped by their (undirected) pair, in order of first appearance.
+ * Incomplete functions each get a group of their own (key `draft|<id>`).
+ * @param {{functions: Object[]}} state
+ * @returns {Array<{key:string,a:string,b:string,complete:boolean,functions:Object[]}>}
+ */
+export function functionPairs(state) {
+  const groups = new Map();
+  for (const f of state.functions) {
+    const complete = isComplete(f);
+    const key = complete ? pairKey(f.carrier, f.object) : `draft|${f.id}`;
+    if (!groups.has(key)) groups.set(key, { key, a: f.carrier, b: f.object, complete, functions: [] });
+    groups.get(key).functions.push(f);
+  }
+  return [...groups.values()];
+}
+
+/**
  * Components grouped target → system → supersystem, entry order within a group.
  * @param {Array<Object>} components
  * @returns {Array<Object>}
