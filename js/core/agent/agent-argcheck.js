@@ -210,6 +210,21 @@ export function requireNumber(name, value, bounds = {}) {
 }
 
 /**
+ * Ein Konfidenzniveau in Prozent prüfen: echt größer 0 und echt kleiner 100
+ * (die Grenzen selbst sind ausgeschlossen, anders als bei `requireNumber`).
+ * @param {any} value der übergebene Wert, Zahl oder Zahlentext
+ * @returns {number} der geprüfte Wert als Zahl
+ * @throws {Error} wenn `value` keine Zahl ist oder nicht in (0, 100) liegt
+ */
+export function requireConfLevel(value) {
+  const n = requireNumber('value', value);
+  if (!(n > 0 && n < 100)) {
+    throw new Error(`invalid value ${JSON.stringify(value)}; allowed: a number greater than 0 and less than 100`);
+  }
+  return n;
+}
+
+/**
  * Den zulässigen Bereich als Satzteil nach `allowed:` formulieren.
  * @param {number|undefined} min
  * @param {number|undefined} max

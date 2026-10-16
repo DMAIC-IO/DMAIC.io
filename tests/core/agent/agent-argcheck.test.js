@@ -5,7 +5,7 @@
  * hat eine Zwischenform (Zahl oder Zahlentext), die hier direkt gesichert wird.
  */
 import { suite, test, assertEqual, assertThrows } from '../../test-utils.js';
-import { requireNumber } from '../../../js/core/agent/agent-argcheck.js';
+import { requireNumber, requireConfLevel } from '../../../js/core/agent/agent-argcheck.js';
 
 suite('agent-argcheck requireNumber', () => {
   test('nimmt eine endliche Zahl und gibt sie zurück', () => {
@@ -52,5 +52,21 @@ suite('agent-argcheck requireNumber', () => {
   test('ohne Bereich bleibt die Prüfung unverändert', () => {
     assertEqual(requireNumber('mu0', '10'), 10);
     assertThrows(() => requireNumber('mu0', 'zehn'), /allowed: any finite number/);
+  });
+});
+
+suite('agent-argcheck requireConfLevel', () => {
+  test('nimmt Werte echt zwischen 0 und 100, auch als Zahlentext', () => {
+    assertEqual(requireConfLevel(95), 95);
+    assertEqual(requireConfLevel('95'), 95);
+    assertEqual(requireConfLevel(0.5), 0.5);
+  });
+
+  test('weist 0, 100, negative Werte und Nicht-Zahlen ab', () => {
+    for (const bad of [0, 100, -1, 150]) {
+      assertThrows(() => requireConfLevel(bad),
+        new RegExp(`invalid value ${bad}; allowed: a number greater than 0 and less than 100`));
+    }
+    assertThrows(() => requireConfLevel('x'), /allowed: any finite number/);
   });
 });

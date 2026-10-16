@@ -4697,6 +4697,48 @@
       "errGeneric": "An error occurred while creating the boxplot."
     },
     "individual-value-plot": {
+      "whenToUse": "Show every single value of one or more numeric columns, grouped by up to three categories, with mean and confidence interval per group.",
+      "actions": {
+        "read": {
+          "help": "Read the data rows, the confidence level and the columns each slot accepts, and the figures shown next to the chart."
+        },
+        "setDatasets": {
+          "help": "Replace the whole list of data rows at once. A row without a value column is dropped.",
+          "params": {
+            "rows": "A list of rows, each { value, group, group2, group3 }: 'value' — a numeric column (required for the row to count); 'group', 'group2', 'group3' — up to three optional nested grouping columns. Each entry is a column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null. [] clears the list."
+          }
+        },
+        "setParam": {
+          "help": "Set an analysis option.",
+          "params": {
+            "key": "'confLevel' — the confidence level of the interval.",
+            "value": "For 'confLevel': a number in percent, greater than 0 and less than 100 (e.g. 95)."
+          }
+        }
+      },
+      "fields": {
+        "seriesRefs": {
+          "help": "Per data row its value column (slot 'value')."
+        },
+        "groupRefs": {
+          "help": "Per data row its three group columns [group, group2, group3], each a column reference or null; same order as seriesRefs."
+        },
+        "confLevel": {
+          "help": "The confidence level of the interval in percent."
+        },
+        "activeParams": {
+          "help": "The options setParam accepts: confLevel."
+        },
+        "activeColumnSlots": {
+          "help": "The slot keys a row may carry: value, group, group2, group3."
+        },
+        "pickableColumns": {
+          "help": "Per slot the columns setDatasets accepts, each { key, name }; the key is instanceId|sheetId|columnId."
+        },
+        "stats": {
+          "help": "Per plotted series { name, stats, ci }: stats { n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }, ci { mean, variance, stddev } as [low, high]; null while nothing can be computed."
+        }
+      },
       "name": "Individual Value Plot",
       "description": "Plot every individual observation per group as a point",
       "sectionData": "Data Source",

@@ -4701,6 +4701,48 @@
       "errGeneric": "Beim Erstellen des Boxplots ist ein Fehler aufgetreten."
     },
     "individual-value-plot": {
+      "whenToUse": "Jeden Einzelwert einer oder mehrerer numerischer Spalten zeigen, nach bis zu drei Kategorien gruppiert, mit Mittelwert und Konfidenzintervall je Gruppe.",
+      "actions": {
+        "read": {
+          "help": "Die Datenreihen, das Konfidenzniveau und die Spalten lesen, die jeder Slot annimmt, dazu die Kennzahlen neben dem Diagramm."
+        },
+        "setDatasets": {
+          "help": "Die ganze Liste der Datenreihen auf einmal ersetzen. Eine Reihe ohne Wertespalte entfällt.",
+          "params": {
+            "rows": "Eine Liste von Reihen, jeweils { value, group, group2, group3 }: 'value' — eine numerische Spalte (Pflicht, damit die Reihe zählt); 'group', 'group2', 'group3' — bis zu drei optionale, verschachtelte Gruppierungsspalten. Jeder Eintrag ist ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null. [] leert die Liste."
+          }
+        },
+        "setParam": {
+          "help": "Eine Analyseoption setzen.",
+          "params": {
+            "key": "'confLevel' — das Konfidenzniveau des Intervalls.",
+            "value": "Für 'confLevel': eine Zahl in Prozent, größer 0 und kleiner 100 (z. B. 95)."
+          }
+        }
+      },
+      "fields": {
+        "seriesRefs": {
+          "help": "Je Datenreihe ihre Wertespalte (Slot 'value')."
+        },
+        "groupRefs": {
+          "help": "Je Datenreihe ihre drei Gruppenspalten [group, group2, group3], jeweils ein Spaltenbezug oder null; dieselbe Reihenfolge wie seriesRefs."
+        },
+        "confLevel": {
+          "help": "Das Konfidenzniveau des Intervalls in Prozent."
+        },
+        "activeParams": {
+          "help": "Die Optionen, die setParam annimmt: confLevel."
+        },
+        "activeColumnSlots": {
+          "help": "Die Slot-Schlüssel, die eine Reihe tragen darf: value, group, group2, group3."
+        },
+        "pickableColumns": {
+          "help": "Je Slot die Spalten, die setDatasets annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId."
+        },
+        "stats": {
+          "help": "Je gezeichneter Reihe { name, stats, ci }: stats { n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }, ci { mean, variance, stddev } als [unten, oben]; null, solange nichts gerechnet werden kann."
+        }
+      },
       "name": "Einzelwertdiagramm",
       "description": "Punktdiagramm jeder einzelnen Beobachtung pro Gruppe",
       "sectionData": "Datenquelle",

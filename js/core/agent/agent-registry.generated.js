@@ -3795,96 +3795,96 @@ export const AGENT_REGISTRY = {
     }
   },
   "individual-value-plot": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:confLevelDisplay",
-      "unmarked_method:confChanged",
-      "unmarked_method:init",
-      "unmarked_method:destroy"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setDatasets": {
+        "params": [
+          {
+            "name": "rows",
+            "type": "object[]",
+            "optional": false,
+            "help": "je Reihe `{ <slot>: ref|null }`; Slots siehe read().activeColumnSlots, Spalten siehe read().pickableColumns; [] leert"
+          }
+        ],
+        "returns": "void",
+        "help": "Die ganze Liste der Datenreihen setzen."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'confLevel'",
+            "optional": false,
+            "help": "welche Option"
+          },
+          {
+            "name": "value",
+            "type": "number",
+            "optional": false,
+            "help": "das Konfidenzniveau in Prozent, größer 0 und kleiner 100"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Analyseoption setzen."
+      }
+    },
     "fields": {
       "seriesRefs": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object[]",
+        "help": "per data row its value column (slot `value`)",
+        "bulk": false,
+        "derived": true
       },
       "groupRefs": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "showMean": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "showMedian": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "connectMeans": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "showOverallMean": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "jitter": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "showStats": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "(object|null)[][]",
+        "help": "per data row its three group columns `[group, group2, group3]`, each a column reference or null",
+        "bulk": false,
+        "derived": true
       },
       "confLevel": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "the confidence level of the interval in percent, between 0 and 100 (exclusive)",
+        "bulk": false,
+        "derived": true
       },
-      "refLines": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeParams": {
+        "type": "string[]",
+        "help": "the options `setParam` accepts",
+        "bulk": false,
+        "derived": true
       },
-      "refAreas": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slot keys a row of `setDatasets` may carry",
+        "bulk": false,
+        "derived": true
       },
-      "bgColor": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setDatasets` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
       },
-      "pointColors": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "pointSymbol": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "pointSize": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "exampleWorksheetId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "stats": {
+        "type": "object[]|null",
+        "help": "per plotted series `{ name, stats, ci }` — stats `{ n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }`, ci `{ mean, variance, stddev }` as `[low, high]` at the confidence level — or null while nothing can be computed",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -11032,4 +11032,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":57};
+export const AGENT_COVERAGE = {"total":76,"available":58};

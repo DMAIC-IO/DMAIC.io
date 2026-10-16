@@ -14,9 +14,17 @@
  * computed by the shared `core/stats-panel.js` engine and reused unchanged. The
  * DatasetPicker, the SVG plot, and the stats table are mounted imperatively
  * (they are not pure-template concerns).
+ *
+ * @agent  Steuerbar über das Viewmodel: die Datenreihen, je Reihe Werte-
+ *   und bis zu drei Gruppenspalten (setDatasets), und das Konfidenzniveau
+ *   (setParam). Gelesen wird über read() mit erklärter Lesefläche (AgentRead),
+ *   samt den Kennzahlen je Reihe (stats).
  */
 
 import { createModule } from '../../core/template-module.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireConfLevel } from '../../core/agent/agent-argcheck.js';
+import { datasetSlotColumns, requireDatasetRows } from '../../core/agent/agent-datasets.js';
 import { State } from './individual-value-plot-model.js';
 
 import {
@@ -29,6 +37,56 @@ import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examp
 
 /** Default confidence level when not resolved from settings. */
 const DEFAULT_CONF_LEVEL = 95;
+
+/** Die Slots des Pickers, ohne Beschriftung — eine Quelle für Picker und Lesefläche. */
+const DATASET_SLOTS = [
+  { key: 'value', types: ['numeric'], minCount: 1, required: true },
+  { key: 'group', group: true },
+  { key: 'group2', group: true },
+  { key: 'group3', group: true },
+];
+
+/** Die Slot-Schlüssel in der Reihenfolge der Oberfläche. */
+const COLUMN_SLOTS = ['value', 'group', 'group2', 'group3'];
+
+/** Die Optionen, die `setParam` annimmt. */
+const PARAM_KEYS = ['confLevel'];
+
+/** Je Option ihr Prüfer; gibt den Wert zurück, den das Model hält. */
+const PARAM_CHECKS = { confLevel: requireConfLevel };
+
+/**
+ * Einen Wert unter einem Punkt-Schlüssel (`'statParams.trim'`) in `obj` ablegen.
+ * @param {object} obj Wurzel, deren Pfad beschrieben wird
+ * @param {string} key Schlüssel, gegebenenfalls mit Punkt
+ * @param {any} value der abzulegende Wert
+ */
+function setAtPath(obj, key, value) {
+  const parts = key.split('.');
+  let cur = obj;
+  for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
+  cur[parts[parts.length - 1]] = value;
+}
+
+/**
+ * Die Agenten-Lesefläche des Einzelwertdiagramms.
+ *
+ * Die Datenreihen und das Konfidenzniveau der Mittelwertintervalle sind der
+ * Zustand: je Reihe eine Wertespalte und bis zu drei Gruppenspalten, als zwei
+ * gleich lange Listen wie im Model; eine Reihe ohne Wertespalte verwirft das
+ * Model (wie bei der Oberfläche). Nicht darin: Darstellung (Mittelwert,
+ * Median, Jitter, Punkte, Farben — nur über den Diagramm-Editor),
+ * das Diagrammbild, `exampleWorksheetId`. Die Kennzahlen stehen in `stats` (E8).
+ *
+ * @typedef {object} AgentRead
+ * @property {object[]} seriesRefs  per data row its value column (slot `value`)
+ * @property {(object|null)[][]} groupRefs  per data row its three group columns `[group, group2, group3]`, each a column reference or null
+ * @property {number} confLevel  the confidence level of the interval in percent, between 0 and 100 (exclusive)
+ * @property {string[]} activeParams  the options `setParam` accepts
+ * @property {string[]} activeColumnSlots  the slot keys a row of `setDatasets` may carry
+ * @property {object} pickableColumns  per slot the columns `setDatasets` accepts, each `{ key, name }`
+ * @property {object[]|null} stats  per plotted series `{ name, stats, ci }` — stats `{ n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }`, ci `{ mean, variance, stddev }` as `[low, high]` at the confidence level — or null while nothing can be computed
+ */
 
 const mod = createModule({
   config: {
@@ -52,9 +110,97 @@ const mod = createModule({
       /** Last computed groups, for stats re-render. */
       _lastGroups: null,
 
+      // ── Agent surface ─────────────────────────────────────────
+
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Spaltenbezüge, Konfidenzniveau, wählbare Mengen und Kennzahlen
+       */
+      read(options) {
+        return readAgentState('individual-value-plot', {
+          seriesRefs: this.model.seriesRefs,
+          groupRefs: this.model.groupRefs,
+          confLevel: this.model.confLevel,
+          activeParams: this.activeParams(),
+          activeColumnSlots: this.activeColumnSlots(),
+          pickableColumns: this.pickableColumns(),
+          stats: this._agentStats(),
+        }, options);
+      },
+
+      /** @noagent derived set; der Agent liest sie über read().activeParams */
+      activeParams() { return [...PARAM_KEYS]; },
+
+      /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
+      activeColumnSlots() { return [...COLUMN_SLOTS]; },
+
+      /** @noagent derived set; der Agent liest sie über read().pickableColumns */
+      pickableColumns() { return datasetSlotColumns(module._context.stateManager, DATASET_SLOTS); },
+
+      /**
+       * Die ganze Liste der Datenreihen setzen.
+       * @agent
+       * @param {object[]} rows je Reihe `{ <slot>: ref|null }`; Slots siehe
+       *   read().activeColumnSlots, Spalten siehe read().pickableColumns; [] leert
+       * @returns {void}
+       * @throws {Error} wenn `rows` keine Liste ist, ein Slot unbekannt oder eine Spalte nicht wählbar
+       */
+      setDatasets(rows) {
+        const clean = requireDatasetRows(rows, this.pickableColumns());
+        this._applyDatasets(clean);
+        if (this._picker) this._picker.value = clean;
+      },
+
+      /**
+       * Eine Analyseoption setzen.
+       * @agent
+       * @param {'confLevel'} key welche Option
+       * @param {number} value das Konfidenzniveau in Prozent, größer 0 und kleiner 100
+       * @returns {void}
+       * @throws {Error} wenn `key` unbekannt ist oder `value` außerhalb von (0, 100)
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        requireEnum('key', key, this.activeParams());
+        setAtPath(this.model, key, PARAM_CHECKS[key](value));
+        this._renderStats();
+      },
+
+      /** Der Körper des Picker-`onChange`: Zeilen mit Wert ins Model, neu zeichnen. Picker und Aktion rufen ihn. */
+      _applyDatasets(rows) {
+        const valid = rows.filter((ds) => ds.value != null);
+        this.model.seriesRefs = valid.map((ds) => ds.value);
+        this.model.groupRefs = valid.map((ds) => [ds.group || null, ds.group2 || null, ds.group3 || null]);
+        this._autoPlot();
+      },
+
+      /** Die aktuellen Zeilen in Picker-Form, aus dem Model. */
+      _datasetRows() {
+        return this.model.seriesRefs.map((ref, i) => {
+          const arr = this.model.groupRefsAt(i);
+          return { value: ref, group: arr[0] || null, group2: arr[1] || null, group3: arr[2] || null };
+        });
+      },
+
+      /** Die Kennzahlen für read() — dieselben Gruppen und dieselbe Rechnung wie die Tabelle (E8). */
+      _agentStats() {
+        let groups;
+        try {
+          groups = this.model.buildGroups(
+            (ref) => this._getColumnValues(ref),
+            (ref) => this._getColumnName(ref),
+            this._errMsgs()
+          );
+        } catch { return null; }
+        return computeSeriesStats(groups.map((g) => ({ name: g.name, values: g.values })), this._resolveConfLevel() / 100)
+          .map(({ name, stats, ci }) => ({ name, stats, ci }));
+      },
+
       // ── View transforms ───────────────────────────────────────
 
-      /** Value shown in the confidence-level input (resolved from settings). */
+      /** @noagent view transform; value shown in the confidence-level input (resolved from settings) */
       confLevelDisplay() {
         return this._resolveConfLevel();
       },
@@ -77,14 +223,13 @@ const mod = createModule({
 
       // ── Event handlers ─────────────────────────────────────────
 
+      /** @noagent DOM event handler; the agent uses setParam() */
       confChanged(event) {
         const input = event.target;
         const v = parseFloat(input.value.replace(',', '.'));
-        if (Number.isFinite(v) && v > 0 && v < 100) {
-          this.model.confLevel = v;
-        }
+        if (Number.isFinite(v) && v > 0 && v < 100) this.setParam('confLevel', v);
+        else this._renderStats();
         input.value = this.model.confLevel;
-        this._renderStats();
       },
 
       // ── Column helpers ────────────────────────────────────────
@@ -105,33 +250,21 @@ const mod = createModule({
         this._picker?.destroy();
 
         const ctx = module._context;
+        const SLOT_LABELS = {
+          value: { label: 'V', title: ctx.i18n.t('ui.datasetPicker.slotV') },
+          group: { label: 'G1', title: ctx.i18n.t('ui.datasetPicker.slotG1') },
+          group2: { label: 'G2', title: ctx.i18n.t('ui.datasetPicker.slotG2') },
+          group3: { label: 'G3', title: ctx.i18n.t('ui.datasetPicker.slotG3') },
+        };
         this._picker = new DatasetPicker(wrap, ctx, {
           multi: true,
           colors: CHART_COLORS,
-          slots: [
-            { key: 'value',  label: 'V',  title: ctx.i18n.t('ui.datasetPicker.slotV'),  types: ['numeric'], minCount: 1, required: true },
-            { key: 'group',  label: 'G1', title: ctx.i18n.t('ui.datasetPicker.slotG1'), group: true },
-            { key: 'group2', label: 'G2', title: ctx.i18n.t('ui.datasetPicker.slotG2'), group: true },
-            { key: 'group3', label: 'G3', title: ctx.i18n.t('ui.datasetPicker.slotG3'), group: true },
-          ],
-          onChange: (datasets) => {
-            const valid = datasets.filter((ds) => ds.value != null);
-            this.model.seriesRefs = valid.map((ds) => ds.value);
-            this.model.groupRefs = valid.map((ds) => [ds.group || null, ds.group2 || null, ds.group3 || null]);
-            this._autoPlot();
-          },
+          slots: DATASET_SLOTS.map((s) => ({ ...s, ...SLOT_LABELS[s.key] })),
+          onChange: (rows) => this._applyDatasets(rows),
         });
 
         if (this.model.seriesRefs.length > 0) {
-          this._picker.value = this.model.seriesRefs.map((ref, i) => {
-            const arr = this.model.groupRefsAt(i);
-            return {
-              value: ref,
-              group:  arr[0] || null,
-              group2: arr[1] || null,
-              group3: arr[2] || null,
-            };
-          });
+          this._picker.value = this._datasetRows();
         }
       },
 
@@ -286,6 +419,7 @@ const mod = createModule({
 
       // ── Lifecycle (per Alpine component) ──────────────────────
 
+      /** @noagent lifecycle */
       init() {
         this._unsubs = [];
         this._resolveConfLevel();
@@ -313,6 +447,7 @@ const mod = createModule({
         this._autoPlot();
       },
 
+      /** @noagent lifecycle */
       destroy() {
         for (const unsub of this._unsubs) unsub();
         this._unsubs = [];
