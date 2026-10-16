@@ -3,10 +3,10 @@
 # Required GitHub configuration (Settings → Secrets and variables → Actions):
 #
 #   Variables (vars.*):
-#     NIGHTLY_HOST   — SSH hostname, e.g. "nightly.dmaic.io"
+#     NIGHTLY_HOST   — SSH hostname, e.g. "nightly.qprovement.com"
 #     NIGHTLY_USER   — SSH username on the nightly server
 #     NIGHTLY_PORT   — optional, default 22
-#     NIGHTLY_ROOT   — vhost docroot, e.g. "/var/www/nightly.dmaic.io"
+#     NIGHTLY_ROOT   — vhost docroot, e.g. "/var/www/nightly.qprovement.com"
 #
 #   Secrets (secrets.*):
 #     DEPLOY_SSH_KEY     — same private key as production (or a separate one if
@@ -17,7 +17,7 @@
 # Trigger: any push to `dev` or `main` in this repo.
 # Keine Versionierung — der letzte Stand gewinnt immer. Gebaut und geprüft wird
 # aber sehr wohl: dieselben vier Test-Gates wie im Tag-Release laufen vor dem
-# Build, denn nightly.dmaic.io ist eine veröffentlichte Adresse. Ohne sie ginge
+# Build, denn nightly.qprovement.com ist eine veröffentlichte Adresse. Ohne sie ginge
 # jeder Push auf main ungeprüft live.
 
 name: Nightly Deploy
@@ -32,7 +32,7 @@ concurrency:
 
 jobs:
   nightly:
-    name: rsync dev → nightly.dmaic.io
+    name: rsync dev → nightly.qprovement.com
     runs-on: ubuntu-latest
     environment: production
 
