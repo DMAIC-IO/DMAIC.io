@@ -5870,6 +5870,12 @@ export const AGENT_REGISTRY = {
         "bulk": false,
         "derived": true
       },
+      "subgroupModeValues": {
+        "type": "string[]",
+        "help": "the values `setParam('subgroupMode', …)` accepts: 'size', and 'column' only while no example data are loaded",
+        "bulk": false,
+        "derived": true
+      },
       "withinMethodOptions": {
         "type": "string[]",
         "help": "the values `setParam('withinMethod', …)` accepts: '' (the default of the data) and the estimators that fit the data",

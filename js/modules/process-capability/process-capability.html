@@ -56,7 +56,7 @@
             <input type="radio" name="pc-subgroup-mode"
                    :value="mode.value" :data-ref="'inp-subgroup-mode-' + mode.value"
                    :checked="model.params.subgroupMode === mode.value"
-                   :disabled="mode.value === 'column' && !!model.embeddedValues"
+                   :disabled="!subgroupModeValues().includes(mode.value)"
                    @change="setParam('subgroupMode', mode.value)">
             <span x-text="mode.label"></span>
           </label>

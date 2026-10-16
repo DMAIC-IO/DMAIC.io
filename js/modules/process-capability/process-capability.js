@@ -114,6 +114,7 @@ const COLUMN_SINKS = {
  * @property {number[]|null} embeddedValues  [bulk] the values of loaded example data that replace the measurement column, or null
  * @property {string} embeddedLabel  the title of the loaded example data, '' when none
  * @property {string[]} activeParams  the keys `setParam` accepts in the current state
+ * @property {string[]} subgroupModeValues  the values `setParam('subgroupMode', …)` accepts: 'size', and 'column' only while no example data are loaded
  * @property {string[]} withinMethodOptions  the values `setParam('withinMethod', …)` accepts: '' (the default of the data) and the estimators that fit the data
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
@@ -172,6 +173,7 @@ const mod = createModule({
         return readAgentState('process-capability', {
           ...this.model.toJSON(),
           activeParams: this.activeParams(),
+          subgroupModeValues: this.subgroupModeValues(),
           withinMethodOptions: this.withinMethodOptions(),
           activeColumnSlots: this.activeColumnSlots(),
           pickableColumns: this.pickableColumns(),
@@ -228,6 +230,7 @@ const mod = createModule({
         requireEnum('key', key, PARAM_KEYS);
         requireEnum('key', key, this.activeParams());
         if (key === 'withinMethod') requireEnum('value', value, this.withinMethodOptions());
+        if (key === 'subgroupMode') requireEnum('value', value, this.subgroupModeValues());
         this.model.params[key] = PARAM_CHECKS[key](value);
         if (key === 'subgroupMode') this.$nextTick(() => this._mountSubgroupPicker());
         if (IMMEDIATE_KEYS.includes(key)) this.runAnalysis();
@@ -250,6 +253,7 @@ const mod = createModule({
           COLUMN_SINKS[slot](this.model, null);
           this._picker?.syncValue(this.model.columnRef);
           this._subgroupPicker?.syncValue(this.model.subgroupColumnRef);
+          if (slot === 'value') this._subgroupPicker?.refresh();
           this.runAnalysis();
           return;
         }
@@ -427,6 +431,11 @@ const mod = createModule({
       showSubgroupSize() { return this.model.effectiveSubgroupMode() === 'size'; },
       /** @noagent view transform; whether the subgroup column applies (activeColumnSlots uses the same test) */
       showSubgroupColumn() { return this.model.effectiveSubgroupMode() === 'column'; },
+
+      /** @noagent derived set; der Agent liest sie über read().subgroupModeValues ('column' nur, solange keine Beispieldaten geladen sind; Radio und setParam nutzen sie) */
+      subgroupModeValues() {
+        return SUBGROUP_MODES.filter(m => m !== 'column' || !this.model.embeddedValues);
+      },
 
       /** @noagent view transform; the subgroup modes of the radio group (one source: SUBGROUP_MODES) */
       subgroupModeOptions() {

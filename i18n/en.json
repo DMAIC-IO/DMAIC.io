@@ -3024,7 +3024,7 @@
       "whenToUse": "When it must be shown how well a process keeps a measured characteristic inside its specification limits: Cp and Cpk (short term, from the within-subgroup spread), Pp and Ppk (long term), PPM and sigma level, with confidence intervals. Works with one-sided or two-sided limits, individual values or subgroups. Needs at least one limit (lower or upper) and at least 2 numeric values from a data collection column or from loaded example data.",
       "actions": {
         "read": {
-          "help": "Returns the entered specification and settings, the chosen columns, any loaded example data, the selectable sets, the estimator note and the computed result. result is null while no data are chosen, no limit is entered, the upper limit does not exceed the lower, fewer than 2 values are available, or the estimator cannot be computed (withinHint then names the reason). Example data (embeddedValues) are bulk data: without options.fields = ['embeddedValues'] only the extent is returned.",
+          "help": "Returns the entered specification and settings, the chosen columns, any loaded example data, the selectable sets, the estimator note and the computed result. result is null while no data are chosen, no limit is entered, the upper limit does not exceed the lower, fewer than 2 values are available, the estimator cannot be computed, or in column mode no matching subgroup column is chosen (withinHint then names the reason). Example data (embeddedValues) are bulk data: without options.fields = ['embeddedValues'] only the extent is returned.",
           "params": {
             "options": "Optional: fields: ['embeddedValues'] returns the example values in full, rows: { from, to } trims them."
           }
@@ -3033,7 +3033,7 @@
           "help": "Sets one parameter. The estimator, the subgroup mode and size, the moving-range span and the unbiasing switch recalculate at once and can change which parameters and estimators apply; the other parameters recalculate after a short pause.",
           "params": {
             "key": "One of the keys in activeParams: name, lsl, target, usl, unit, confidence, subgroupMode and withinMethod always; subgroupSize only while the subgroups have a fixed size (always so with example data); mrSpan only while the estimator in force is averageMR or medianMR; unbiased only while it is pooled, sbar or sqrtMSSD. Any other value is an error.",
-            "value": "name, unit: text. lsl, target, usl: text with a number, '' for none (as entered, a decimal comma is accepted). confidence: text with the percent, for example '95'; a value outside 50 to 99.99 is clamped when computing. subgroupMode: 'size' (fixed subgroup size) or 'column' (subgroups from an ID column). subgroupSize: whole number from 1, number or numeric text. withinMethod: one of withinMethodOptions; '' takes the default of the data. mrSpan: whole number from 2 to 100. unbiased: true or false. A value of the wrong kind or outside the list is an error."
+            "value": "name, unit: text. lsl, target, usl: text with a number, '' for none (as entered, a decimal comma is accepted). confidence: text with the percent, for example '95'; a value outside 50 to 99.99 is clamped when computing. subgroupMode: 'size' (fixed subgroup size) or 'column' (subgroups from an ID column; only while no example data are loaded, otherwise an error). subgroupSize: whole number from 1, number or numeric text. withinMethod: one of withinMethodOptions; '' takes the default of the data. mrSpan: whole number from 2 to 100. unbiased: true or false. A value of the wrong kind or outside the list is an error."
           }
         },
         "setColumn": {
@@ -3047,7 +3047,7 @@
           "help": "Discards loaded example data; afterwards the module computes on a column again and recalculates at once. Without example data nothing changes."
         },
         "runAnalysis": {
-          "help": "Computes with the current inputs. Repeated calls are harmless; incomplete or invalid inputs leave result at null without an error, and an estimator that cannot be computed is named in withinHint."
+          "help": "Computes with the current inputs. Repeated calls are harmless; incomplete or invalid inputs leave result at null without an error, and an estimator that cannot be computed or a missing subgroup column is named in withinHint."
         },
         "scheduleAnalysis": {
           "help": "Triggers the computation after a short pause; a second request before that replaces the first."
@@ -3058,7 +3058,7 @@
       },
       "fields": {
         "params": {
-          "help": "The entered values: name (feature), lsl, target and usl (limits and target as text, '' for none), unit, confidence (percent as text), subgroupMode ('size' or 'column'), subgroupSize (text), withinMethod (estimator key, '' for the default of the data), mrSpan (text) and unbiased (true or false). With example data the subgroups always have the fixed size, whatever subgroupMode says."
+          "help": "The entered values: name (feature), lsl, target and usl (limits and target as text, '' for none), unit, confidence (percent as text), subgroupMode ('size' or 'column'), subgroupSize (text), withinMethod (estimator key, '' for the default of the data), mrSpan (text) and unbiased (true or false). 'column' can only be set while no example data are loaded; with example data the subgroups always have the fixed size."
         },
         "columnRef": {
           "help": "The chosen measurement column as { instanceId, sheetId, columnId }, or null. Loaded example data take precedence over it."
@@ -3074,6 +3074,9 @@
         },
         "activeParams": {
           "help": "The keys setParam accepts in the current state."
+        },
+        "subgroupModeValues": {
+          "help": "The values setParam accepts for subgroupMode: 'size' always, 'column' only while no example data are loaded."
         },
         "withinMethodOptions": {
           "help": "The values setParam accepts for withinMethod: '' (the default of the data) and the estimators that fit the data. They depend on the subgroups: with individual values only the moving-range estimators, with subgroups the pooled, range and standard-deviation estimators."
