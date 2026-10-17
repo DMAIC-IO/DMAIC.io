@@ -319,17 +319,37 @@ export const AGENT_REGISTRY = {
             "name": "key",
             "type": "'chartTypeId'|'constantN'|'baselineCount'|'enabledRules'",
             "optional": false,
-            "help": "welche Option; read().activeParams nennt die gültigen"
+            "help": "welche Option; die im Zustand zulässigen nennt `activeParams`"
           },
           {
             "name": "value",
-            "type": "any",
+            "type": "string|number|number[]|null",
             "optional": false,
-            "help": "chartTypeId 'p'|'np'|'c'|'u'; constantN eine ganze Zahl ≥ 1; baselineCount eine ganze Zahl ≥ 1 oder null; enabledRules eine Liste von Regel-Ids"
+            "help": "der Wert; Typ und Bereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "Promise<void>",
-        "help": "Eine Analyseoption setzen und neu rechnen."
+        "help": "Eine Analyseoption setzen und neu rechnen.",
+        "keysOf": "Params",
+        "keys": {
+          "chartTypeId": {
+            "type": "'p'|'np'|'c'|'u'",
+            "help": "Kartentyp"
+          },
+          "constantN": {
+            "type": "number",
+            "help": "fester Stichprobenumfang, nur bei np",
+            "optional": true
+          },
+          "baselineCount": {
+            "type": "number",
+            "help": "Punkte der Baseline, leer für alle"
+          },
+          "enabledRules": {
+            "type": "number[]",
+            "help": "angehakte Regeln aus 1, 2, 3, 5, 6"
+          }
+        }
       },
       "runAnalysis": {
         "params": [],
@@ -393,10 +413,64 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
-        "help": "`{ chartType, statistic, valid, cl, ucl, lcl, sigma, variableLimits, violations: [{ index, ruleId }], signals }` — ucl/lcl/sigma are null when the limits vary per point (see points); signals the distinct violating indices; null without the needed columns or with fewer than 2 usable points",
+        "type": "Result|null",
+        "help": "the computed result (ucl/lcl/sigma null when the limits vary per point); null without the needed columns or with fewer than 2 usable points",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "chartType": {
+            "type": "'p'|'np'|'c'|'u'",
+            "help": "Kartentyp"
+          },
+          "statistic": {
+            "type": "'proportion'|'count'|'rate'",
+            "help": "gezeichnete Größe"
+          },
+          "valid": {
+            "type": "number",
+            "help": "verwertete Punkte"
+          },
+          "cl": {
+            "type": "number|null",
+            "help": "Mittellinie"
+          },
+          "ucl": {
+            "type": "number|null",
+            "help": "obere Eingriffsgrenze, leer wenn je Punkt wechselnd"
+          },
+          "lcl": {
+            "type": "number|null",
+            "help": "untere Eingriffsgrenze, leer wenn je Punkt wechselnd"
+          },
+          "sigma": {
+            "type": "number|null",
+            "help": "Streuung, leer wenn je Punkt wechselnd"
+          },
+          "variableLimits": {
+            "type": "boolean",
+            "help": "Grenzen wechseln je Punkt"
+          },
+          "violations": {
+            "type": "Violation[]",
+            "help": "Regelverletzungen",
+            "keysOf": "Violation",
+            "keys": {
+              "index": {
+                "type": "number",
+                "help": "Punkt, ab 0 über die verwerteten Punkte"
+              },
+              "ruleId": {
+                "type": "number",
+                "help": "Regel"
+              }
+            }
+          },
+          "signals": {
+            "type": "number[]",
+            "help": "verletzende Punkte ohne Doppelte"
+          }
+        }
       },
       "points": {
         "type": "object[]",

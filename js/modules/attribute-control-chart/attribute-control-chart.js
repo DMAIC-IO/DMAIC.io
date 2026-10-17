@@ -104,6 +104,40 @@ function setAtPath(obj, key, value) {
 }
 
 /**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {'p'|'np'|'c'|'u'} chartTypeId  Kartentyp
+ * @property {number} [constantN]  fester Stichprobenumfang, nur bei np
+ * @property {number} baselineCount  Punkte der Baseline, leer für alle
+ * @property {number[]} enabledRules  angehakte Regeln aus 1, 2, 3, 5, 6
+ */
+
+/**
+ * Das gerechnete Ergebnis (`_agentResult()`), wie `read().result` es liefert
+ * — nicht das gleichnamige Viewmodel-Feld der Vorlage.
+ *
+ * @typedef {object} Result
+ * @property {'p'|'np'|'c'|'u'} chartType  Kartentyp
+ * @property {'proportion'|'count'|'rate'} statistic  gezeichnete Größe
+ * @property {number} valid  verwertete Punkte
+ * @property {number|null} cl  Mittellinie
+ * @property {number|null} ucl  obere Eingriffsgrenze, leer wenn je Punkt wechselnd
+ * @property {number|null} lcl  untere Eingriffsgrenze, leer wenn je Punkt wechselnd
+ * @property {number|null} sigma  Streuung, leer wenn je Punkt wechselnd
+ * @property {boolean} variableLimits  Grenzen wechseln je Punkt
+ * @property {Violation[]} violations  Regelverletzungen
+ * @property {number[]} signals  verletzende Punkte ohne Doppelte
+ */
+
+/**
+ * @typedef {object} Violation
+ * @property {number} index  Punkt, ab 0 über die verwerteten Punkte
+ * @property {number} ruleId  Regel
+ */
+
+/**
  * Die Agenten-Lesefläche der Attributkarte (p, np, c, u).
  *
  * Eingaben (Kartentyp, Fehler- und Stichprobenspalte, konstantes n, Phase I,
@@ -121,7 +155,7 @@ function setAtPath(obj, key, value) {
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts for the current chart type
  * @property {string[]} activeParams  the keys `setParam` accepts for the current chart type
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
- * @property {object|null} result  `{ chartType, statistic, valid, cl, ucl, lcl, sigma, variableLimits, violations: [{ index, ruleId }], signals }` — ucl/lcl/sigma are null when the limits vary per point (see points); signals the distinct violating indices; null without the needed columns or with fewer than 2 usable points
+ * @property {Result|null} result  the computed result (ucl/lcl/sigma null when the limits vary per point); null without the needed columns or with fewer than 2 usable points
  * @property {object[]} points  [bulk] one row per plotted point: `{ value, n, ucl, lcl, signal }` (n null for the c chart)
  */
 
@@ -226,8 +260,8 @@ const mod = createModule({
       /**
        * Eine Analyseoption setzen und neu rechnen.
        * @agent
-       * @param {'chartTypeId'|'constantN'|'baselineCount'|'enabledRules'} key welche Option; read().activeParams nennt die gültigen
-       * @param {any} value chartTypeId 'p'|'np'|'c'|'u'; constantN eine ganze Zahl ≥ 1; baselineCount eine ganze Zahl ≥ 1 oder null; enabledRules eine Liste von Regel-Ids
+       * @param {keyof Params} key welche Option; die im Zustand zulässigen nennt `activeParams`
+       * @param {string|number|number[]|null} value der Wert; Typ und Bereich je Schlüssel siehe `Params`
        * @returns {Promise<void>}
        * @throws {Error} wenn `key` unbekannt oder für den Kartentyp nicht aktiv ist oder `value` ungültig
        */

@@ -8548,7 +8548,7 @@
       "actions": {
         "read": { "help": "Kartentyp, gewählte Spalten, Einstellungen, Grenzen, Regelverletzungen und je Punkt Wert, n und Grenzen lesen." },
         "setColumn": {
-          "help": "Eine Spalte einem Slot zuweisen und neu rechnen.",
+          "help": "Die Spalte einer Datensammlung, die diese Rolle liefert; nach einer Änderung wird neu gerechnet.",
           "params": {
             "slot": "'defects' — fehlerhafte Einheiten (p, np) bzw. Fehler (c, u) je Stichprobe (Pflicht); 'size' — der Stichprobenumfang je Stichprobe, nur bei p und u.",
             "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null zum Leeren (in jedem Kartentyp erlaubt)."
@@ -8557,8 +8557,8 @@
         "setParam": {
           "help": "Eine Analyseoption setzen und neu rechnen.",
           "params": {
-            "key": "'chartTypeId', 'baselineCount', 'enabledRules' immer; 'constantN' nur bei der np-Karte.",
-            "value": "chartTypeId 'p', 'np', 'c' oder 'u'; constantN eine ganze Zahl ab 1; baselineCount eine ganze Zahl ab 1, oder null für alle Punkte; enabledRules eine Liste von Regel-Ids aus 1, 2, 3, 5, 6."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys. Bei baselineCount leert null oder '' das Feld."
           }
         },
         "runAnalysis": { "help": "Mit den aktuellen Spaltenwerten neu rechnen, etwa nachdem sich die Daten geändert haben." }
@@ -8573,8 +8573,32 @@
         "activeColumnSlots": { "help": "Die Slots, die setColumn für den aktuellen Kartentyp annimmt." },
         "activeParams": { "help": "Die Schlüssel, die setParam für den aktuellen Kartentyp annimmt." },
         "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
-        "result": { "help": "{ chartType, statistic, valid, cl, ucl, lcl, sigma, variableLimits, violations: [{ index, ruleId }], signals }; ucl, lcl und sigma sind null, wenn die Grenzen je Punkt wechseln; signals die verletzenden Indizes ohne Doppelte; null ohne die nötigen Spalten oder bei weniger als 2 verwertbaren Punkten." },
+        "result": { "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; null ohne die nötigen Spalten oder mit weniger als 2 verwertbaren Punkten." },
         "points": { "help": "Je gezeichnetem Punkt eine Zeile: { value, n, ucl, lcl, signal }; n ist bei der c-Karte null. read({ fields: ['points'] }) liefert sie vollständig." }
+      },
+      "types": {
+        "Params": {
+          "chartTypeId": "Der Regelkartentyp: p (Anteil fehlerhafter Einheiten je Stichprobe, Stichprobengröße darf wechseln), np (Anzahl fehlerhafter Einheiten bei konstanter Stichprobengröße n), c (Anzahl Fehler je Einheit bei konstanter Inspektionsgelegenheit) oder u (Fehler je Einheit bei wechselnder Inspektionsgelegenheit). Er bestimmt, welche Spalten und Einstellungen es gibt: die Stichprobenspalte nur bei p und u, die konstante Stichprobengröße nur bei np.",
+          "constantN": "Die konstante Stichprobengröße n der np-Karte, eine ganze Zahl ab 1; sie geht in Mittellinie n · p̄ und σ = √(n · p̄ · (1 − p̄)) ein. Es gibt sie nur bei der np-Karte; die Oberfläche lässt ab 1 zu, die Prüfung ebenfalls.",
+          "baselineCount": "Wie viele der ersten verwertbaren Punkte die Baseline (Phase I) bilden, eine ganze Zahl ab 1; aus ihr werden Mittellinie und Grenzen gerechnet, die Regeln prüfen dann alle Punkte. Leer heißt alle Punkte; ist die Zahl größer als die Punktzahl, zählen ebenfalls alle. Die Oberfläche verlangt im Feld mindestens 2, die Agentenprüfung nimmt ab 1.",
+          "enabledRules": "Die angehakten Regeln, eine Liste aus 1 (ein Punkt jenseits UCL oder LCL), 2 (9 Punkte in Folge auf derselben Seite der Mittellinie), 3 (6 Punkte in Folge steigend oder fallend), 5 (2 von 3 Punkten jenseits 2σ, gleiche Seite) und 6 (4 von 5 Punkten jenseits 1σ, gleiche Seite). Vorbelegt ist nur Regel 1. Die Regeln 4, 7 und 8 gibt es bei Attributkarten nicht: bei gezählten Daten sind gleiche Nachbarwerte häufig, Regel 4 (abwechselnd steigend und fallend) wäre damit unzuverlässig; 7 und 8 sind nicht vorgesehen. Die Regeln 5 und 6 werden nur bei gleichbleibendem σ geprüft, also nicht bei p und u mit wechselnder Stichprobengröße (dort sind die Grenzen je Punkt verschieden), und nicht bei σ = 0; sie werden dann still übersprungen, auch wenn sie angehakt sind."
+        },
+        "Result": {
+          "chartType": "Der Regelkartentyp, mit dem gerechnet wurde: p, np, c oder u.",
+          "statistic": "Die gezeichnete Größe: proportion (Anteil, p-Karte), count (Anzahl, np- und c-Karte) oder rate (Fehler je Einheit, u-Karte).",
+          "valid": "Die Zahl der verwerteten Punkte. Bei np und c sind es die Zahlen der Fehlerspalte (leere und nicht numerische Zellen sind aussortiert), bei p und u die Zeilen, in denen Fehlerzahl und Stichprobenumfang Zahlen sind und der Umfang größer als 0 ist. Die Kachel Verletzungen nennt sie als Gesamtzahl.",
+          "cl": "Die Mittellinie, aus der Baseline gerechnet: bei p der Anteil p̄ = Summe der Fehler / Summe der Umfänge, bei np n · p̄, bei c der Mittelwert c̄ der Fehlerzahlen, bei u ū = Summe der Fehler / Summe der Umfänge. Die Kachel CL (Mittellinie) zeigt sie mit vier Nachkommastellen.",
+          "ucl": "Die obere Eingriffsgrenze UCL = Mittellinie + 3σ, mit σ = √(p̄ · (1 − p̄) / n) bei p, √(n · p̄ · (1 − p̄)) bei np, √c̄ bei c und √(ū / n) bei u. Sie gilt für alle Punkte gleich und ist nur dann eine Zahl. Wechseln die Grenzen je Punkt (p und u mit ungleichen Stichprobenumfängen), ist sie leer, ebenso LCL und σ; die Grenzen je Punkt stehen im Massenfeld points. Die Kachel UCL / LCL zeigt dann unter der Beschriftung UCL̄ / LCL̄ das Mittel der Grenzen je Punkt, nicht diesen leeren Wert.",
+          "lcl": "Die untere Eingriffsgrenze LCL = Mittellinie − 3σ, nach unten bei 0 begrenzt, weil gezählte Werte nicht negativ sind; σ wie bei der oberen Grenze. Leer, wenn die Grenzen je Punkt wechseln.",
+          "sigma": "Die Streuung σ, die für die Grenzen und die Regeln 5 und 6 verwendet wird (Formel je Kartentyp bei der oberen Grenze). Leer, wenn die Grenzen je Punkt wechseln.",
+          "variableLimits": "Wahr, wenn die Grenzen je Punkt verschieden sind: das gibt es bei p und u, sobald die Stichprobenumfänge nicht alle gleich sind. Dann sind UCL, LCL und σ leer, und die Regeln 5 und 6 werden nicht geprüft.",
+          "violations": "Die Regelverletzungen nach den angehakten Regeln, je Punkt und Regel einmal, nach Punkt sortiert. Der Punkt zählt ab 0 über die verwerteten Punkte, also ohne aussortierte Zeilen und nicht über die Zeilen des Arbeitsblatts. Bei den Regeln 2, 3, 5 und 6 steht jeder Punkt des Musters als eigene Verletzung.",
+          "signals": "Die Punkte mit mindestens einer Regelverletzung, jeder nur einmal, nach Punkt sortiert und gezählt wie bei den Verletzungen (ab 0, über die verwerteten Punkte). Die Kachel Verletzungen zählt genau diese Punkte, nicht die einzelnen Regelverletzungen."
+        },
+        "Violation": {
+          "index": "Der verletzende Punkt, gezählt ab 0 über die verwerteten Punkte (nach dem Aussortieren leerer Zeilen), nicht über die Zeilen des Arbeitsblatts.",
+          "ruleId": "Die verletzte Regel: 1, 2, 3, 5 oder 6 (Bedeutung bei den angehakten Regeln)."
+        }
       },
       "name": "Regelkarte (attributiv)",
       "description": "SPC-Karten für Zähldaten: p, np, c, u",

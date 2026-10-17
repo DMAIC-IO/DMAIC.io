@@ -8624,7 +8624,7 @@
       "actions": {
         "read": { "help": "Read the chart type, chosen columns, settings, limits, rule violations and per point the value, n and limits." },
         "setColumn": {
-          "help": "Assign a column to a slot and recompute.",
+          "help": "The data collection column that supplies this role; after a change the analysis is recomputed.",
           "params": {
             "slot": "'defects' — defectives (p, np) or defects (c, u) per sample (required); 'size' — the sample size per sample, only for p and u.",
             "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null to clear the slot (allowed in any chart type)."
@@ -8633,8 +8633,8 @@
         "setParam": {
           "help": "Set an analysis option and recompute.",
           "params": {
-            "key": "'chartTypeId', 'baselineCount', 'enabledRules' always; 'constantN' only for the np chart.",
-            "value": "chartTypeId 'p', 'np', 'c' or 'u'; constantN a whole number of at least 1; baselineCount a whole number of at least 1, or null for all points; enabledRules a list of rule ids from 1, 2, 3, 5, 6."
+            "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys. For baselineCount, null or '' clears the field."
           }
         },
         "runAnalysis": { "help": "Recompute with the current column values, for example after the data changed." }
@@ -8649,8 +8649,32 @@
         "activeColumnSlots": { "help": "The slots setColumn accepts for the current chart type." },
         "activeParams": { "help": "The keys setParam accepts for the current chart type." },
         "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
-        "result": { "help": "{ chartType, statistic, valid, cl, ucl, lcl, sigma, variableLimits, violations: [{ index, ruleId }], signals }; ucl, lcl and sigma are null when the limits vary per point; signals the distinct violating indices; null without the needed columns or with fewer than 2 usable points." },
+        "result": { "help": "The computed result, each figure described individually under keys; null without the required columns or with fewer than 2 usable points." },
         "points": { "help": "One row per plotted point: { value, n, ucl, lcl, signal }; n is null for the c chart. read({ fields: ['points'] }) returns them in full." }
+      },
+      "types": {
+        "Params": {
+          "chartTypeId": "The control chart type: p (fraction of defective units per sample, sample size may vary), np (number of defective units at a constant sample size n), c (number of defects per unit at a constant inspection opportunity) or u (defects per unit at a varying inspection opportunity). It determines which columns and settings exist: the sample size column only for p and u, the constant sample size only for np.",
+          "constantN": "The constant sample size n of the np chart, a whole number of at least 1; it enters the center line n · p̄ and σ = √(n · p̄ · (1 − p̄)). It exists only for the np chart; the screen allows 1 and up, and so does the check.",
+          "baselineCount": "How many of the first usable points form the baseline (Phase I), a whole number of at least 1; center line and limits are computed from it, the rules then check all points. Empty means all points; if the number exceeds the point count, all points count as well. The screen field requires at least 2, the agent check accepts 1 and up.",
+          "enabledRules": "The checked rules, a list from 1 (one point beyond UCL or LCL), 2 (9 points in a row on the same side of the center line), 3 (6 points in a row rising or falling), 5 (2 of 3 points beyond 2σ, same side) and 6 (4 of 5 points beyond 1σ, same side). Only rule 1 is preselected. Rules 4, 7 and 8 do not exist for attribute charts: counted data often has equal neighbours, so rule 4 (alternating up and down) would be unreliable; 7 and 8 are not provided. Rules 5 and 6 are checked only when σ stays the same, so not for p and u with varying sample sizes (the limits differ per point there), and not when σ = 0; they are then silently skipped even if checked."
+        },
+        "Result": {
+          "chartType": "The control chart type used: p, np, c or u.",
+          "statistic": "The plotted quantity: proportion (p chart), count (np and c chart) or rate (defects per unit, u chart).",
+          "valid": "The number of usable points. For np and c these are the numbers in the defects column (empty and non-numeric cells are dropped); for p and u the rows where the defect count and the sample size are numbers and the size is greater than 0. The Violations tile shows it as the total.",
+          "cl": "The center line, computed from the baseline: for p the fraction p̄ = sum of defects / sum of sizes, for np n · p̄, for c the mean c̄ of the counts, for u ū = sum of defects / sum of sizes. The CL (Center Line) tile shows it with four decimals.",
+          "ucl": "The upper control limit UCL = center line + 3σ, with σ = √(p̄ · (1 − p̄) / n) for p, √(n · p̄ · (1 − p̄)) for np, √c̄ for c and √(ū / n) for u. It applies to all points alike and is a number only then. If the limits vary per point (p and u with unequal sample sizes) it is empty, as are LCL and σ; the limits per point are in the bulk field points. The UCL / LCL tile then shows, under the label UCL̄ / LCL̄, the mean of the per-point limits, not this empty value.",
+          "lcl": "The lower control limit LCL = center line − 3σ, floored at 0 because counted values are not negative; σ as for the upper limit. Empty when the limits vary per point.",
+          "sigma": "The spread σ used for the limits and for rules 5 and 6 (formula per chart type under the upper limit). Empty when the limits vary per point.",
+          "variableLimits": "True when the limits differ per point: this happens for p and u as soon as the sample sizes are not all equal. UCL, LCL and σ are then empty, and rules 5 and 6 are not checked.",
+          "violations": "The rule violations under the checked rules, once per point and rule, sorted by point. The point counts from 0 over the usable points, so without dropped rows and not over the worksheet rows. For rules 2, 3, 5 and 6 every point of the pattern is its own violation.",
+          "signals": "The points with at least one rule violation, each only once, sorted by point and counted like the violations (from 0, over the usable points). The Violations tile counts exactly these points, not the individual rule violations."
+        },
+        "Violation": {
+          "index": "The violating point, counted from 0 over the usable points (after empty rows are dropped), not over the worksheet rows.",
+          "ruleId": "The violated rule: 1, 2, 3, 5 or 6 (meaning under the checked rules)."
+        }
       },
       "name": "Control Chart (Attribute)",
       "description": "SPC charts for count data: p, np, c, u",
