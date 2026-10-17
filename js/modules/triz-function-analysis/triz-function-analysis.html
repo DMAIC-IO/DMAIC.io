@@ -1,9 +1,10 @@
 <section class="module-container tfa" x-data="trizFunctionAnalysis">
   <div class="module-container__body tfa__body">
 
-    <div class="dmike-tabs tfa__tabs">
+    <div class="dmike-tabs tfa__tabs" role="tablist" x-tablist>
       <template x-for="tab in TABS" :key="tab">
-        <button type="button" class="dmike-tab" :class="tabClass(tab)"
+        <button type="button" class="dmike-tab" role="tab" :class="tabClass(tab)"
+          :aria-selected="tab === model.activeTab ? 'true' : 'false'" :tabindex="tab === model.activeTab ? 0 : -1"
           data-role="tab" :data-tab="tab" @click="setTab(tab)" x-text="tabLabel(tab)"></button>
       </template>
     </div>

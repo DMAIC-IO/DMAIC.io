@@ -75,9 +75,10 @@
       <template x-if="result">
         <div>
           <!-- Tabs -->
-          <div class="glm__tabs dmike-tabs">
+          <div class="glm__tabs dmike-tabs" role="tablist" x-tablist>
             <template x-for="tb in tabs()" :key="tb.id">
-              <button class="dmike-tab" :class="tb.id === model.activeTab ? 'dmike-tab--active' : ''"
+              <button class="dmike-tab" type="button" role="tab" :class="tb.id === model.activeTab ? 'dmike-tab--active' : ''"
+                :aria-selected="tb.id === model.activeTab ? 'true' : 'false'" :tabindex="tb.id === model.activeTab ? 0 : -1"
                 data-action="tab" :data-tab="tb.id" @click="changeRoute(tb.id)" x-text="tb.label"></button>
             </template>
           </div>

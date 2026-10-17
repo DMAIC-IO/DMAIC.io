@@ -205,13 +205,6 @@
   white-space: nowrap;
 }
 
-/* ─── Tab override: narrower tab labels ───────────────────────── */
-
-.glm__tabs .dmike-tab {
-  padding: var(--spacing-s) var(--spacing-m);
-  font-size: var(--font-size-xs);
-}
-
 /* ─── Save-as-Model action (transfer to Response Optimizer) ───── */
 
 .glm__model-actions {

@@ -1,11 +1,14 @@
 <div class="module-container survey-builder" x-data="surveyBuilder">
   <div class="module-container__body survey-builder__body">
-    <nav class="dmike-tabs survey-builder__tabs" data-ref="tabs">
-      <button class="dmike-tab" type="button" data-tab="draft" :class="tabClass('draft')"
+    <nav class="dmike-tabs survey-builder__tabs" data-ref="tabs" role="tablist" x-tablist>
+      <button class="dmike-tab" type="button" role="tab" data-tab="draft" :class="tabClass('draft')"
+              :aria-selected="isTab('draft') ? 'true' : 'false'" :tabindex="isTab('draft') ? 0 : -1"
               x-text="t('tabDraft')" @click="setTab('draft')"></button>
-      <button class="dmike-tab" type="button" data-tab="recipients" :class="tabClass('recipients')"
+      <button class="dmike-tab" type="button" role="tab" data-tab="recipients" :class="tabClass('recipients')"
+              :aria-selected="isTab('recipients') ? 'true' : 'false'" :tabindex="isTab('recipients') ? 0 : -1"
               x-text="t('tabRecipients')" @click="setTab('recipients')"></button>
-      <button class="dmike-tab" type="button" data-tab="results" :class="tabClass('results')"
+      <button class="dmike-tab" type="button" role="tab" data-tab="results" :class="tabClass('results')"
+              :aria-selected="isTab('results') ? 'true' : 'false'" :tabindex="isTab('results') ? 0 : -1"
               x-text="t('tabResults')" @click="setTab('results')"></button>
     </nav>
 

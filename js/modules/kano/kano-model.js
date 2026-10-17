@@ -97,6 +97,17 @@ export class State {
     }
   }
 
+  /**
+   * Roving tabindex of a respondent tab: 0 for the active one — or for the
+   * first one while none is active, so the tab bar stays reachable — else -1.
+   * @param {string} id
+   * @returns {0|-1}
+   */
+  tabIndexOf(id) {
+    const stop = this.activeRespondentId || this.respondents[0]?.id;
+    return id === stop ? 0 : -1;
+  }
+
   // ─── Antworten ──────────────────────────────────────────────
 
   /**

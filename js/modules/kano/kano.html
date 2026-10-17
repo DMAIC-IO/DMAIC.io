@@ -45,10 +45,11 @@
                 x-text="t('respondentAdd')" @click="addRespondent()"></button>
       </div>
 
-      <div class="dmike-tabs" data-ref="respondentTabs">
+      <div class="dmike-tabs" data-ref="respondentTabs" role="tablist" x-tablist>
         <template x-for="r in model.respondents">
           <span class="kano__tab-wrap dmike-del-btn-host" :key="r.id">
-            <button class="dmike-tab" type="button" :data-respondent-id="r.id"
+            <button class="dmike-tab" type="button" role="tab" :data-tab="r.id" :data-respondent-id="r.id"
+                    :aria-selected="respondentSelected(r.id)" :tabindex="respondentTabIndex(r.id)"
                     :class="tabClass(r.id)" x-text="r.name" x-show="!isRenaming(r.id)"
                     :title="respondentRenameTitle(r.name)"
                     @click="selectRespondent(r.id)" @dblclick="startRename(r.id)"></button>
