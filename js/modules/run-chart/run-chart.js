@@ -18,7 +18,7 @@
  * @agent  Steuerbar über das Viewmodel: Messreihe (setColumn), α (setParam),
  *   neu rechnen (runAnalysis). Gelesen wird über read() mit erklärter
  *   Lesefläche (AgentRead) — Eingaben, Median, Läufe, die vier p-Werte und je
- *   Punkt der Wert. The read surface carries the computed result and points.
+ *   Punkt der Wert.
  */
 
 import { createModule } from '../../core/template-module.js';
@@ -207,7 +207,7 @@ const mod = createModule({
        */
       async runAnalysis() {
         clearTimeout(this._autoRunTimer);
-        this._runAnalysis();
+        await this._runAnalysis();
       },
 
       /** Ergebnis und Punkte für read(), aus dem Vorlagenfeld `result` (E4). */

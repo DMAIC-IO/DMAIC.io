@@ -258,6 +258,7 @@ const mod = createModule({
         const v = parseInt(event.target.value, 10);
         // Leer, unlesbar oder < 1 heißt „alle Zeilen" (E6).
         await this.setParam('baselineCount', Number.isInteger(v) && v >= 1 ? v : null);
+        event.target.value = this.baselineCountValue();
       },
 
       /**

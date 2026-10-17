@@ -13,7 +13,7 @@
  * The persisted JSON shape is identical to the legacy module's getState().
  */
 
-import { ATTRIBUTE_CHART_TYPES, ATTR_DEFAULT_ENABLED_RULES } from '../../engines/attribute-control-chart-engine.js';
+import { ATTRIBUTE_CHART_TYPES, ATTR_DEFAULT_ENABLED_RULES, ATTRIBUTE_NELSON_RULES } from '../../engines/attribute-control-chart-engine.js';
 
 /** Valid chart type ids ('p' | 'np' | 'c' | 'u'). */
 const CHART_TYPE_IDS = ATTRIBUTE_CHART_TYPES.map(t => t.id);
@@ -92,7 +92,7 @@ export class State {
     s.baselineCount = Number.isFinite(d.baselineCount) ? d.baselineCount : null;
 
     s.enabledRules = Array.isArray(d.enabledRules)
-      ? d.enabledRules.filter(r => Number.isFinite(r))
+      ? [...new Set(d.enabledRules.filter(r => ATTRIBUTE_NELSON_RULES.some(n => n.id === r)))].sort((a, b) => a - b)
       : [...ATTR_DEFAULT_ENABLED_RULES];
 
     s.exampleWorksheetId = typeof d.exampleWorksheetId === 'string' ? d.exampleWorksheetId : null;

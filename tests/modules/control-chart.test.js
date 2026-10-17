@@ -106,6 +106,11 @@ suite('Control Chart Model — toJSON', () => {
 });
 
 suite('Control Chart Model — fromJSON', () => {
+  test('fromJSON normalises restored enabledRules (known ids, unique, ascending)', () => {
+    const s = State.fromJSON({ enabledRules: [5, 1, 1, 99, 3] });
+    assertEqual(JSON.stringify(s.enabledRules), '[1,3,5]');
+  });
+
   test('fromJSON(null) yields valid default', () => {
     const s = State.fromJSON(null);
     assertEqual(s.chartTypeId, 'i-mr');

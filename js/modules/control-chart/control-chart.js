@@ -396,6 +396,7 @@ const mod = createModule({
         const v = parseInt(e.target.value, 10);
         // Leer, unlesbar oder < 1 heißt „alle Punkte" (E6, Abweichung 1).
         await this.setParam('baselineCount', Number.isInteger(v) && v >= 1 ? v : null);
+        e.target.value = this.baselineValue();
       },
       /**
        * @noagent DOM event handler; the agent uses setParam()

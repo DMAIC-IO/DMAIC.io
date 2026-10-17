@@ -11,7 +11,7 @@
  * No DOM, no i18n, no CSS, no view flags.
  */
 
-import { getChartType, DEFAULT_ENABLED_RULES } from '../../engines/control-chart-engine.js';
+import { getChartType, DEFAULT_ENABLED_RULES, NELSON_RULES } from '../../engines/control-chart-engine.js';
 
 export class State {
   /** @type {string} */
@@ -209,7 +209,7 @@ export class State {
     s.usl = Number.isFinite(d.usl) ? d.usl : null;
     s.lsl = Number.isFinite(d.lsl) ? d.lsl : null;
     s.enabledRules = Array.isArray(d.enabledRules)
-      ? d.enabledRules.filter(r => Number.isFinite(r))
+      ? [...new Set(d.enabledRules.filter(r => NELSON_RULES.some(n => n.id === r)))].sort((a, b) => a - b)
       : [...DEFAULT_ENABLED_RULES];
     s.annotations = (d.annotations && typeof d.annotations === 'object' && !Array.isArray(d.annotations))
       ? d.annotations

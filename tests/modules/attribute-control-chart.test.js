@@ -72,6 +72,11 @@ suite('Attribute CC Model — toJSON', () => {
 // ─────────────────────────────────────────────────────────────
 
 suite('Attribute CC Model — fromJSON robustness', () => {
+  test('fromJSON normalises restored enabledRules (known ids, unique, ascending)', () => {
+    const s = State.fromJSON({ enabledRules: [5, 1, 1, 99, 3] });
+    assertEqual(JSON.stringify(s.enabledRules), '[1,3,5]');
+  });
+
   test('fromJSON(null) returns valid default state', () => {
     const s = State.fromJSON(null);
     assertEqual(s.chartTypeId, 'p');
