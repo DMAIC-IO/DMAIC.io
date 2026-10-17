@@ -549,12 +549,20 @@ const mod = createModule({
         }
 
         // Normality
-        const sw1 = shapiroWilk(d1), ad1 = andersonDarling(d1);
-        const n1Normal = isNormalByAD(ad1, alpha);
-        let sw2 = null, ad2 = null, n2Normal = true;
-        if (d2) {
-          sw2 = shapiroWilk(d2); ad2 = andersonDarling(d2);
-          n2Normal = isNormalByAD(ad2, alpha);
+        // The normality engines throw on a constant sample (zero variance)
+        let sw1, ad1, n1Normal, sw2 = null, ad2 = null, n2Normal = true;
+        try {
+          sw1 = shapiroWilk(d1); ad1 = andersonDarling(d1);
+          n1Normal = isNormalByAD(ad1, alpha);
+          if (d2) {
+            sw2 = shapiroWilk(d2); ad2 = andersonDarling(d2);
+            n2Normal = isNormalByAD(ad2, alpha);
+          }
+        } catch (err) {
+          console.error('[hypothesis-test] normality check failed:', err);
+          this.result = null;
+          this.errorText = _t('testNotComputable');
+          return;
         }
         const allNormal = n1Normal && n2Normal;
 
