@@ -241,8 +241,19 @@
 
 /* ── Annotation dialog body ── */
 
+/* Der Popout-Körper hat keinen Innenabstand; ohne ihn klebten Textfeld und
+   Kästchen an den Dialogkanten, und die Kontexthilfe-Kreise (Alt) ragten über
+   den clippenden Körper hinaus. Abstand wie die Fußleiste. */
+.control-chart__ann-fields {
+  padding: var(--spacing-md) var(--spacing-lg);
+}
+
 .control-chart__check {
   display: flex;
+
+  /* Schrumpfbreit: als Kasten-Anker trägt das Label den Hilfekreis an seiner
+     rechten Kante — die gehört ans Ende des Textes, nicht an den Dialogrand. */
+  width: fit-content;
   align-items: center;
   gap: var(--spacing-xs);
   cursor: pointer;

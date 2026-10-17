@@ -160,17 +160,19 @@
           </button>
         </div>
         <div class="dmike-chart-popout-body dmike-popout-body--column">
-          <div class="field-group">
-            <label data-help-key="modules.control-chart.types.Annotation.comment" x-text="t('annotationComment')"></label>
-            <textarea class="field" data-ref="ann-comment" rows="3"
-              :placeholder="t('annotationPlaceholder')" x-model="annComment"></textarea>
-          </div>
-          <div class="field-group">
-            <label class="control-chart__check" data-help-key="modules.control-chart.types.Annotation.excluded" data-help-anchor="box">
-              <input type="checkbox" data-ref="ann-excluded" x-model="annExcluded">
-              <span x-text="t('annotationExclude')"></span>
-            </label>
-            <span class="control-chart__hint" x-text="t('annotationExcludeHint')"></span>
+          <div class="control-chart__ann-fields">
+            <div class="field-group">
+              <label data-help-key="modules.control-chart.types.Annotation.comment" x-text="t('annotationComment')"></label>
+              <textarea class="field" data-ref="ann-comment" rows="3"
+                :placeholder="t('annotationPlaceholder')" x-model="annComment"></textarea>
+            </div>
+            <div class="field-group">
+              <label class="control-chart__check" data-help-key="modules.control-chart.types.Annotation.excluded" data-help-anchor="box">
+                <input type="checkbox" data-ref="ann-excluded" x-model="annExcluded">
+                <span x-text="t('annotationExclude')"></span>
+              </label>
+              <span class="control-chart__hint" x-text="t('annotationExcludeHint')"></span>
+            </div>
           </div>
           <div class="dmike-popout-footer">
             <button class="btn btn--secondary" type="button"
