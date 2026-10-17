@@ -1463,6 +1463,7 @@
       "chartMean": "Mittelwert",
       "takeToVoc": "In VoC-Baum übernehmen",
       "previewFailed": "Die Vorschau konnte nicht erstellt werden.",
+      "reportExportFailed": "Der Bericht konnte nicht exportiert werden.",
       "vocTakenMark": "bereits in den VoC-Baum übernommen",
       "vocTaken": "In den VoC-Baum übernommen: {count}",
       "vocSource": "Fragebogen „{title}“",

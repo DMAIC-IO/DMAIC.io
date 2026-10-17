@@ -1463,6 +1463,7 @@
       "chartMean": "Mean",
       "takeToVoc": "Add to VoC tree",
       "previewFailed": "The preview could not be built.",
+      "reportExportFailed": "The report could not be exported.",
       "vocTakenMark": "already added to the VoC tree",
       "vocTaken": "Added to the VoC tree: {count}",
       "vocSource": "Questionnaire “{title}”",

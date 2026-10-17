@@ -1558,6 +1558,19 @@ export default createModule({
        * @returns {Promise<void>}
        */
       async exportReport() {
+        try {
+          await this._exportReport();
+        } catch (err) {
+          console.error('survey-builder: report export failed', err);
+          if (!this._destroyed) module._context.notify(_t('reportExportFailed'), 'error');
+        }
+      },
+
+      /**
+       * Builds and downloads the report; throws on failure.
+       * @returns {Promise<void>}
+       */
+      async _exportReport() {
         const data = {
           survey: _plain(this.model.survey),
           recipients: _plain(this.model.recipients),
