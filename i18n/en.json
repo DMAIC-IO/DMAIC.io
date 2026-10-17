@@ -8727,7 +8727,7 @@
           "sigma": "Spread σ of the chart. g chart: √(ḡ(ḡ + 1)). t chart: MR̄/1.128, the mean moving range of the transformed values divided by 1.128, so on the transformed scale and not on the scale of center line and limits. The tile shows it as σ̂ next to the center line of the original scale.",
           "transformed": "True for the t chart: it is drawn on the transformed scale y = t^(1/3.6). False for the g chart.",
           "plotted": "Center line, limits and σ on the plotted scale. For the g chart these are the same values as above, for the t chart the transformed ones.",
-          "signals": "Positions (from 0) of the points strictly above the upper or below the lower limit of the plotted scale, counted in the series of usable numbers, not in the worksheet rows. The tile counts these points."
+          "signals": "Positions (from 0) of the points strictly above the upper or below the lower limit of the plotted scale, counted among the numbers of the column (empty and non-numeric cells left out, not the worksheet rows); with the t chart, non-positive values count as a gap. The tile counts these points."
         },
         "PlottedLimits": {
           "cl": "Center line on the plotted scale.",
