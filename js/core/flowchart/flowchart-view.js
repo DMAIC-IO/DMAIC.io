@@ -84,6 +84,19 @@ export function chainViewMixin(module, _t, opts = {}) {
 
   return {
     /**
+     * Der Kontexthilfe-Schlüssel einer Aktion des einbindenden Moduls — für
+     * Anker in geteilten Bausteinen (`substeps.part.html`), die das Modul
+     * nicht kennen: `:data-help-key="actionHelp('addSubstep')"`. Derselbe
+     * Satz, den der Agent zur Aktion liest.
+     * @noagent — liefert nur einen Schlüssel, ändert nichts.
+     * @param {string} action  Name der Agentenaktion
+     * @returns {string} `modules.<id>.actions.<action>.help`, ohne Modul `''`
+     */
+    actionHelp(action) {
+      return module?.i18nKey ? `${module.i18nKey}.actions.${action}.help` : '';
+    },
+
+    /**
      * Scroll the canvas until a freshly created card is on screen. A chain
      * wider than its canvas otherwise answers "add" by growing out of sight,
      * and the user has to go looking for the very card they just asked for.

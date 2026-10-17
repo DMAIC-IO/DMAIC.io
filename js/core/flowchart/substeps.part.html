@@ -17,6 +17,7 @@
     toggleSubsteps() / addSubstep() / removeSubstep() / setSubstepTitle()
     armSubDrag() / subDrag*() / subDrop()
     t()                  — module-scoped i18n
+    actionHelp()         — Kontexthilfe-Schlüssel einer Aktion
 -->
 <div class="fc-substeps-bar" :class="step.substeps.length > 0 ? 'fc-substeps-bar--has' : ''"
      data-action="toggle-substeps" :data-step-id="step.id"
@@ -25,7 +26,7 @@
     <span class="icon icon--sm" x-show="step.expanded" data-icon="nav.expand-down" aria-hidden="true"></span>
     <span class="icon icon--sm" x-show="!step.expanded" data-icon="nav.expand-right" aria-hidden="true"></span>
   </span>
-  <span class="fc-substeps-bar-label" x-text="substepsBarLabel(step)"></span>
+  <span class="fc-substeps-bar-label" :data-help-key="actionHelp('setSubstepsExpanded')" x-text="substepsBarLabel(step)"></span>
 </div>
 <template x-if="step.expanded">
   <div class="fc-substeps" :data-step-id="step.id">
@@ -53,6 +54,7 @@
       </template>
     </div>
     <button class="fc-substep-add" data-action="add-substep" :data-step-id="step.id"
+            :data-help-key="actionHelp('addSubstep')"
             :title="t('addSubstep')" @click.stop="addSubstep(step.id)">
       <span class="icon" style="--icon-size: 12px" data-icon="action.add" aria-hidden="true"></span>
       <span x-text="t('addSubstep')"></span>

@@ -43,6 +43,7 @@
  *   maxCount  — Maximum non-null values (default: Infinity)
  *   required  — If true, dataset is incomplete without this column
  *   group     — If true, shows "no grouping" placeholder; accepts any type
+ *   helpKey   — Kontexthilfe-Schlüssel der Beschriftung (Alt-Taste), z. B. `modules.<id>.actions.setColumn.help`; ohne ihn kein Fragezeichen
  *
  * Returned datasets:  [{ x: ref|null, y: ref|null, group: ref|null }, ...]
  * In single mode the array always has length 1.
@@ -85,6 +86,7 @@ export class DatasetPicker {
    * @param {boolean} [options.multi=false] — Allow multiple datasets
    * @param {function} [options.onChange] — Called with datasets array
    * @param {string[]} [options.colors] — Optional per-dataset color indicators
+   * @param {string} [options.addHelpKey] — Kontexthilfe-Schlüssel für den Knopf „Datensatz hinzufügen“ (meist `modules.<id>.actions.setDatasets.help`)
    */
   constructor(container, context, options) {
     this._container = container;
@@ -93,6 +95,7 @@ export class DatasetPicker {
     this._multi = Boolean(options.multi);
     this._onChange = options.onChange || null;
     this._colors = options.colors || null;
+    this._addHelpKey = options.addHelpKey || null;
 
     // Datasets: array of objects mapping slotKey → ref|null
     this._datasets = [this._emptyDataset()];
@@ -186,7 +189,7 @@ export class DatasetPicker {
 
     if (this._multi) {
       root.append(
-        h('button', { class: 'ds-picker__add-btn', 'data-action': 'add-dataset' },
+        h('button', { class: 'ds-picker__add-btn', 'data-action': 'add-dataset', 'data-help-key': this._addHelpKey || false },
           `+ ${this._t('addDataset')}`),
       );
     }
@@ -262,7 +265,7 @@ export class DatasetPicker {
     }
 
     return h('div', { class: 'ds-picker__slot' },
-      h('span', { class: 'ds-picker__slot-label', title: slot.title || false }, slot.label),
+      h('span', { class: 'ds-picker__slot-label', title: slot.title || false, 'data-help-key': slot.helpKey || false }, slot.label),
       select,
     );
   }

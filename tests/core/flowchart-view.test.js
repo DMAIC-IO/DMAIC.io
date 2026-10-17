@@ -343,3 +343,14 @@ suite('chainViewMixin — substeps', () => {
     assertEqual(caught instanceof TypeError, false);
   });
 });
+
+suite('chainViewMixin — actionHelp', () => {
+  test('liefert den Aktionshilfe-Schlüssel des einbindenden Moduls', () => {
+    const mixin = chainViewMixin({ i18nKey: 'modules.process-map' }, (k) => k);
+    assertEqual(mixin.actionHelp('addSubstep'), 'modules.process-map.actions.addSubstep.help');
+  });
+
+  test('ohne Modul ein leerer Schlüssel — kein Fragezeichen statt eines falschen', () => {
+    assertEqual(chainViewMixin(null, (k) => k).actionHelp('addSubstep'), '');
+  });
+});
