@@ -98,7 +98,7 @@ suite('Bonett — 1 variance edge cases', () => {
     const r = bonettVarianceTest(x, 1e-6 * bonettVarianceTest(x, 1).sampleVariance);
     assertEqual(Number.isFinite(r.pValue), true);
     // Python reference: 2 * 7.4389669648871e-10 (never exactly 0 for this sample)
-    assertAlmostEqual(r.pValue, 1.4877933929774e-9, 1e-6);
+    assertAlmostEqual(r.pValue, 1.4877933929774e-9, { relative: 1e-6 });
   });
   test('p is finite for a hypothesized variance far above s²', () => {
     const r = bonettVarianceTest(x, 1e6 * bonettVarianceTest(x, 1).sampleVariance);

@@ -4,7 +4,7 @@
  */
 
 import { suite, test, assertAlmostEqual, assertEqual, assertTrue } from '../test-utils.js';
-import { normalCdfPrecise, normalQuantilePrecise } from '../../js/engines/normal-precise.js';
+import { normalCdfPrecise, normalQuantilePrecise, normalUpperTailPrecise } from '../../js/engines/normal-precise.js';
 
 suite('normal-precise — normalQuantilePrecise (AS241, as R qnorm)', () => {
   const cases = [
@@ -50,5 +50,29 @@ suite('normal-precise — normalCdfPrecise (Marsaglia 2004, as R pnorm)', () => 
     for (let x = -5; x <= 5; x += 0.25) {
       assertAlmostEqual(normalQuantilePrecise(normalCdfPrecise(x)), x, 1e-9, `x = ${x}`);
     }
+  });
+});
+
+suite('normal-precise — normalUpperTailPrecise (reference: scipy.stats.norm.sf)', () => {
+  const cases = [
+    [0, 0.5],
+    [1, 0.15865525393145707],
+    [2.9999, 0.001350341282954925],
+    [3.0001, 0.0013494549132607172],
+    [5, 2.866515718791933e-07],
+    [10, 7.61985302416047e-24],
+    [30, 4.906713927147908e-198],
+    [-2, 0.9772498680518208],
+  ];
+  for (const [x, expected] of cases) {
+    test(`sf(${x})`, () => {
+      assertAlmostEqual(normalUpperTailPrecise(x), expected, { relative: 1e-12 });
+    });
+  }
+  test('sf(-Infinity) = 1', () => {
+    assertEqual(normalUpperTailPrecise(-Infinity), 1);
+  });
+  test('sf(NaN) = NaN', () => {
+    assertTrue(Number.isNaN(normalUpperTailPrecise(NaN)));
   });
 });
