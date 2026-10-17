@@ -2557,6 +2557,39 @@
       }
     },
     "gage-run-chart": {
+      "whenToUse": "Look at a measurement system study before computing statistics: every measurement per part and operator, against a reference line.",
+      "actions": {
+        "read": { "help": "Read the chosen columns, all settings, the grand mean, the reference line, the mean per part and operator and every measurement." },
+        "setColumn": {
+          "help": "Assign a column to a role and recompute. The other roles keep their columns.",
+          "params": {
+            "slot": "'part' — the part of each measurement (required); 'operator' — the operator (optional; without it all repeats count as one operator); 'measurement' — the measured value, numeric or 0/1 (required).",
+            "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns of that role, or null to clear it."
+          }
+        },
+        "setParam": {
+          "help": "Set an option. Everything except the header lines recomputes.",
+          "params": {
+            "key": "'refValue', 'partsPerRow', 'connectWithin', 'showOperatorMean', or a header line 'gageInfo.name', 'gageInfo.date', 'gageInfo.reporter', 'gageInfo.tolerance', 'gageInfo.misc'.",
+            "value": "refValue text ('' uses the grand mean); partsPerRow a whole number from 1 to 20; connectWithin and showOperatorMean true or false; the header lines any text."
+          }
+        },
+        "runAnalysis": { "help": "Recompute with the current column values, for example after the data changed." }
+      },
+      "fields": {
+        "columnRefs": { "help": "Per role (part, operator, measurement) the column, or null." },
+        "refValue": { "help": "The reference line as entered; '' uses the grand mean." },
+        "partsPerRow": { "help": "Parts per strip, 1 to 20." },
+        "connectWithin": { "help": "Whether the repeats of one operator within a part are joined." },
+        "showOperatorMean": { "help": "Whether each operator's mean within a part is marked." },
+        "gageInfo": { "help": "The header lines { name, date, reporter, tolerance, misc } as text." },
+        "activeColumnSlots": { "help": "The roles setColumn accepts: part, operator, measurement." },
+        "activeParams": { "help": "The keys setParam accepts." },
+        "pickableColumns": { "help": "Per role the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
+        "errorMsg": { "help": "Why nothing was computed, for example no usable rows; '' otherwise." },
+        "result": { "help": "{ n, droppedRows, partCount, operatorCount, operators, hasOperators, grandMean, refValue, yMin, yMax, warnings, cellMeans: [{ part, operator, mean }] }; warnings are codes such as 'unbalanced'; null without part and measurement column or without usable rows." },
+        "points": { "help": "One row per measurement in panel order: { part, operator, value }. read({ fields: ['points'] }) returns them in full." }
+      },
       "name": "Gage Run Chart",
       "description": "Plots every single measurement grouped by part and appraiser against a common reference line — reveals appraiser bias and unusual parts.",
       "sectionColumns": "Columns",

@@ -2561,6 +2561,39 @@
       }
     },
     "gage-run-chart": {
+      "whenToUse": "Eine Messsystemstudie ansehen, bevor Kennzahlen gerechnet werden: jeder Messwert je Teil und Prüfer, gegen eine Bezugslinie.",
+      "actions": {
+        "read": { "help": "Gewählte Spalten, alle Einstellungen, Gesamtmittel, Bezugslinie, Mittel je Teil und Prüfer und jeden Messwert lesen." },
+        "setColumn": {
+          "help": "Einer Rolle eine Spalte zuweisen und neu rechnen. Die übrigen Rollen behalten ihre Spalten.",
+          "params": {
+            "slot": "'part' — das Teil je Messwert (Pflicht); 'operator' — der Prüfer (optional; ohne ihn zählen alle Wiederholungen als ein Prüfer); 'measurement' — der Messwert, Zahl oder 0/1 (Pflicht).",
+            "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieser Rolle, oder null zum Leeren."
+          }
+        },
+        "setParam": {
+          "help": "Eine Option setzen. Alles außer der Kopfzeile rechnet neu.",
+          "params": {
+            "key": "'refValue', 'partsPerRow', 'connectWithin', 'showOperatorMean' oder eine Kopfzeile 'gageInfo.name', 'gageInfo.date', 'gageInfo.reporter', 'gageInfo.tolerance', 'gageInfo.misc'.",
+            "value": "refValue ein Text ('' nimmt das Gesamtmittel); partsPerRow eine ganze Zahl von 1 bis 20; connectWithin und showOperatorMean true oder false; die Kopfzeilen beliebiger Text."
+          }
+        },
+        "runAnalysis": { "help": "Mit den aktuellen Spaltenwerten neu rechnen, etwa nachdem sich die Daten geändert haben." }
+      },
+      "fields": {
+        "columnRefs": { "help": "Je Rolle (part, operator, measurement) die Spalte, oder null." },
+        "refValue": { "help": "Die Bezugslinie wie eingegeben; '' nimmt das Gesamtmittel." },
+        "partsPerRow": { "help": "Teile je Streifen, 1 bis 20." },
+        "connectWithin": { "help": "Ob die Wiederholungen eines Prüfers innerhalb eines Teils verbunden werden." },
+        "showOperatorMean": { "help": "Ob das Mittel jedes Prüfers innerhalb eines Teils markiert wird." },
+        "gageInfo": { "help": "Die Kopfzeilen { name, date, reporter, tolerance, misc } als Text." },
+        "activeColumnSlots": { "help": "Die Rollen, die setColumn annimmt: part, operator, measurement." },
+        "activeParams": { "help": "Die Schlüssel, die setParam annimmt." },
+        "pickableColumns": { "help": "Je Rolle die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
+        "errorMsg": { "help": "Warum nichts gerechnet wurde, etwa ohne verwertbare Zeilen; sonst ''." },
+        "result": { "help": "{ n, droppedRows, partCount, operatorCount, operators, hasOperators, grandMean, refValue, yMin, yMax, warnings, cellMeans: [{ part, operator, mean }] }; warnings sind Codes wie 'unbalanced'; null ohne Teil- und Messwertspalte oder ohne verwertbare Zeilen." },
+        "points": { "help": "Je Messwert eine Zeile in Panel-Reihenfolge: { part, operator, value }. read({ fields: ['points'] }) liefert sie vollständig." }
+      },
       "name": "Messverlaufsdiagramm",
       "description": "Zeigt jede Einzelmessung, gruppiert nach Prüfeinheit und Prüfer, gegen eine gemeinsame Referenzlinie — deckt Prüfer-Bias und auffällige Prüfeinheiten auf.",
       "sectionColumns": "Spalten",

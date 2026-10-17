@@ -3185,68 +3185,138 @@ export const AGENT_REGISTRY = {
     }
   },
   "gage-run-chart": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:fmt",
-      "unmarked_method:gageInfoLabel",
-      "unmarked_method:gageInfoValue",
-      "unmarked_method:hasWarnings",
-      "unmarked_method:warningText",
-      "unmarked_method:refLabel",
-      "unmarked_method:refSubText",
-      "unmarked_method:chartTitle",
-      "unmarked_method:refValueChanged",
-      "unmarked_method:partsPerRowChanged",
-      "unmarked_method:optionToggled",
-      "unmarked_method:whenAnchor",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unreachable_write:connectWithin",
-      "unreachable_write:showOperatorMean",
-      "unreachable_write:gageInfo.name",
-      "unreachable_write:gageInfo.date",
-      "unreachable_write:gageInfo.reporter",
-      "unreachable_write:gageInfo.tolerance",
-      "unreachable_write:gageInfo.misc"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields: ['points']` liefert die Messwerte vollständig, `rows` schneidet sie zu"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'part'|'operator'|'measurement'",
+            "optional": false,
+            "help": "die Rolle"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "Promise<void>",
+        "help": "Eine Spalte einer Rolle zuweisen und neu rechnen."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'refValue'|'partsPerRow'|'connectWithin'|'showOperatorMean'|'gageInfo.name'|'gageInfo.date'|'gageInfo.reporter'|'gageInfo.tolerance'|'gageInfo.misc'",
+            "optional": false,
+            "help": "welche Option"
+          },
+          {
+            "name": "value",
+            "type": "any",
+            "optional": false,
+            "help": "Typ und Bereich je Schlüssel siehe Hilfe"
+          }
+        ],
+        "returns": "Promise<void>",
+        "help": "Eine Option setzen; alles außer der Kopfzeile rechnet neu."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "Promise<void>",
+        "help": "Mit den aktuellen Eingaben und Spaltenwerten neu rechnen."
+      }
+    },
     "fields": {
       "columnRefs": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object",
+        "help": "per slot (`part`, `operator`, `measurement`) the column `{ instanceId, sheetId, columnId }`, or null",
+        "bulk": false,
+        "derived": true
       },
       "refValue": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string",
+        "help": "the reference line as entered; '' uses the grand mean",
+        "bulk": false,
+        "derived": true
       },
       "partsPerRow": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "showOperatorMean": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "parts per strip, 1 to 20",
+        "bulk": false,
+        "derived": true
       },
       "connectWithin": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "boolean",
+        "help": "join the repeats of one operator within a part",
+        "bulk": false,
+        "derived": true
+      },
+      "showOperatorMean": {
+        "type": "boolean",
+        "help": "mark each operator's mean within a part",
+        "bulk": false,
+        "derived": true
       },
       "gageInfo": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object",
+        "help": "the header lines `{ name, date, reporter, tolerance, misc }` as text",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "errorMsg": {
+        "type": "string",
+        "help": "why nothing was computed, or ''",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "`{ n, droppedRows, partCount, operatorCount, operators, hasOperators, grandMean, refValue, yMin, yMax, warnings, cellMeans: [{ part, operator, mean }] }` — warnings are codes (e.g. 'unbalanced'); null without part and measurement column or without usable rows",
+        "bulk": false,
+        "derived": true
+      },
+      "points": {
+        "type": "object[]",
+        "help": "one row per measurement in panel order: `{ part, operator, value }` (part and operator as text)",
+        "bulk": true,
+        "bulkKind": "table",
+        "derived": true
       }
     }
   },
@@ -11588,4 +11658,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":67};
+export const AGENT_COVERAGE = {"total":76,"available":68};
