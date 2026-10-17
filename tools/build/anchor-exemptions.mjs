@@ -41,4 +41,10 @@ export const ANCHOR_EXEMPTIONS = {
     { match: "t('table.verdict')", reason: 'Ampel aus κ nach den Richtwerten derselben Zeile, kein eigener Wert; der Satz steht an der κ-Spalte', count: 2 },
     { match: ':key="a" x-text="a"', reason: 'eine Spalte je Prüfer, Kopf ist der Prüfername (Daten, keine Beschriftung)', count: 1 },
   ],
+  regression: [
+    { match: "t('showCI')", reason: 'Anzeigeschalter ohne Agentenbezug', count: 1 },
+    { match: "t('showPI')", reason: 'Anzeigeschalter ohne Agentenbezug', count: 1 },
+    { match: 'x-text="field.label"', reason: 'je Prädiktor ein Eingabefeld; der Satz steht am Abschnittstitel Vorhersage', count: 1 },
+    { match: 'reg__ss-pie-item', reason: 'je Term ein Kästchen im Kreisdiagramm; Anzeigeschalter ohne Agentenbezug', count: 1 },
+  ],
 };

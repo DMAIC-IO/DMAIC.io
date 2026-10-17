@@ -32,6 +32,7 @@ import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
+import { finiteOrNull } from '../../core/agent/agent-results.js';
 import {
   State, keyToRef, refToKey, predictorsOf, predictAt, REG_TYPES, DEGREES,
 } from './regression-model.js';
@@ -56,6 +57,38 @@ function fmt(v, d = 4) {
   return v.toFixed(d);
 }
 function fmtP(p) { return p < 0.0001 ? '< 0.0001' : p.toFixed(4); }
+
+/** Präfix der Typedef-Sätze; die Kennzahlen hängen ihren Schlüssel an. */
+const HELP = 'modules.regression.types.';
+
+/**
+ * Die ANOVA-Zerlegung eines Fits als Rohzahlen — Quelle für die Tabelle der
+ * Oberfläche und für `read().result.anova`.
+ * @param {object|null} r  `model.activeResult`
+ * @returns {{ regression: object, terms: object[], error: object, total: object }|null}
+ */
+function anovaOf(r) {
+  if (!r || typeof r.SSR !== 'number') return null;
+  const terms = [];
+  if (Array.isArray(r.blocks) && r.blocks.length > 0) {
+    for (const b of r.blocks) {
+      if (b.id === 'Intercept') continue;
+      terms.push({ term: b.id, ss: b.ss, df: b.df, ms: b.ms, f: b.fStat, p: b.pValue });
+    }
+  } else {
+    for (const c of (r.coefDetails || [])) {
+      if (c.term === 'Intercept' || c.t == null) continue;
+      const ss = c.t ** 2 * r.MSE;
+      terms.push({ term: c.term, ss, df: 1, ms: ss, f: r.MSE > 0 ? ss / r.MSE : 0, p: c.pval });
+    }
+  }
+  return {
+    regression: { ss: r.SSR, df: r.dfReg, ms: r.MSR, f: r.Fstat, p: r.fPVal },
+    terms,
+    error: { ss: r.SSE, df: r.dfRes, ms: r.MSE },
+    total: { ss: r.SST, df: r.dfTot },
+  };
+}
 
 /** Die vier Parameter, die `setParam` annimmt (flach am Model). */
 const PARAM_KEYS = ['regType', 'polyDegree', 'confLevel', 'alpha'];
@@ -85,6 +118,78 @@ function requireFraction(value) {
 }
 
 /**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {'polynomial'|'exponential'|'logarithmic'|'power'} regType  Modellform
+ * @property {1|2|3} [polyDegree]  Polynomgrad, nur bei polynomial
+ * @property {number} confLevel  Konfidenzniveau als Anteil
+ * @property {number} alpha  Signifikanzniveau als Anteil
+ */
+
+/**
+ * Das gerechnete Ergebnis (`_agentResult()`), wie `read().result` es liefert.
+ *
+ * @typedef {object} Result
+ * @property {'polynomial'|'exponential'|'logarithmic'|'power'} type  gerechnete Modellform
+ * @property {string|null} equation  Modellgleichung
+ * @property {number|null} n  verwertete Zeilen
+ * @property {number|null} R2  Bestimmtheitsmaß
+ * @property {number|null} adjR2  korrigiertes Bestimmtheitsmaß
+ * @property {number|null} R2pred  vorhergesagtes Bestimmtheitsmaß
+ * @property {number|null} Se  Standardfehler der Regression
+ * @property {number|null} Fstat  F-Statistik des Modells
+ * @property {number|null} fPVal  p-Wert des F-Tests
+ * @property {number|null} dw  Durbin-Watson-Statistik
+ * @property {Coefficient[]} coefficients  Koeffiziententabelle
+ * @property {string[]} excludedTerms  ausgeschlossene Terme
+ * @property {Anova|null} anova  Varianzanalyse des Modells
+ */
+
+/**
+ * @typedef {object} Coefficient
+ * @property {string} term  Term
+ * @property {number|null} coeff  Koeffizient
+ * @property {number|null} se  Standardfehler
+ * @property {number|null} t  t-Wert
+ * @property {number|null} pval  p-Wert
+ * @property {number|null} ciLow  untere Konfidenzgrenze
+ * @property {number|null} ciHigh  obere Konfidenzgrenze
+ * @property {number|null} vif  Varianzinflationsfaktor
+ */
+
+/**
+ * @typedef {object} Anova
+ * @property {AnovaRow} regression  Zeile Regression
+ * @property {AnovaRow[]} terms  Zeile je Term
+ * @property {AnovaRow} error  Zeile Residuen
+ * @property {AnovaRow} total  Zeile Gesamt
+ */
+
+/**
+ * @typedef {object} AnovaRow
+ * @property {string} [term]  Term, nur in den Termzeilen
+ * @property {number|null} ss  Quadratsumme
+ * @property {number|null} df  Freiheitsgrade
+ * @property {number|null} [ms]  mittlere Quadratsumme, fehlt in Gesamt
+ * @property {number|null} [f]  F-Wert, nur Regression und Terme
+ * @property {number|null} [p]  p-Wert, nur Regression und Terme
+ */
+
+/**
+ * @typedef {object} DesignNotice
+ * @property {AliasedTerm[]} aliased  vermengte Terme
+ * @property {string[]} saturated  Terme ohne Restfreiheitsgrad
+ */
+
+/**
+ * @typedef {object} AliasedTerm
+ * @property {string} term  Term
+ * @property {string[]} with  vermengt mit
+ */
+
+/**
  * Die Agenten-Lesefläche der Regression.
  *
  * Das Ergebnis liegt im Model **und** als Anzeigeobjekt im Viewmodel; nach
@@ -105,14 +210,14 @@ function requireFraction(value) {
  * @property {string[]} terms  the term ids `setTerm` accepts now
  * @property {Array<{ key: string, label: string }>} experimentImports  the DoE responses `importExperiment` accepts
  * @property {{ experimentId: string, sourceColumn: string, transform: string }|null} activeImportSource  the DoE response the model came from
- * @property {object|null} designNotice  the note left by a DoE preset, `{ aliased, saturated }`
+ * @property {DesignNotice|null} designNotice  the note left by a DoE preset, null without one
  * @property {string[]} perXKeys  the single-X models `setActiveX` accepts
  * @property {string|null} activeXKey  the single-X model the result shows
  * @property {string[]} activeParams  the keys `setParam` accepts now
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
  * @property {string[]} activeMultiSlots  the slots `setColumns` accepts
  * @property {object} pickableColumns  per slot the columns `setColumn`/`setColumns` accept, each `{ key, name }`
- * @property {object|null} result  the fitted model as numbers, null without a shown result
+ * @property {Result|null} result  the fitted model as numbers, null without X or Y or when the fit fails (errorMsg gives the reason)
  * @property {string} errorMsg  the message the module shows, '' without error
  * @property {Array<{ id: string, label: string, kind: string, levels?: string[] }>} predictors  the inputs `predict` takes
  * @property {{ yHat: number, piLow: number|null, piHigh: number|null }|null} prediction  the last prediction, null without one; piLow/piHigh are null where the model gives no prediction interval
@@ -212,6 +317,12 @@ const mod = createModule({
             };
           }),
           excludedTerms: [...(r.excludeTerms ?? [])],
+          anova: (() => {
+            const a = anovaOf(r);
+            if (!a) return null;
+            const fin = o => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, typeof v === 'number' ? finiteOrNull(v) : v]));
+            return { regression: fin(a.regression), terms: a.terms.map(fin), error: fin(a.error), total: fin(a.total) };
+          })(),
         };
       },
 
@@ -294,9 +405,8 @@ const mod = createModule({
       /**
        * Einen Parameter setzen und neu rechnen.
        * @agent
-       * @param {'regType'|'polyDegree'|'confLevel'|'alpha'} key welcher Parameter; `activeParams` nennt die jetzt gültigen
-       * @param {string|number} value regType: einer aus `regTypes`; polyDegree: eine Zahl aus
-       *   `activeDegrees`; confLevel, alpha: ein Anteil größer 0 und kleiner 1
+       * @param {keyof Params} key welche Option; die im Zustand zulässigen nennt `activeParams`
+       * @param {string|number} value der Wert; Bereich je Schlüssel siehe `Params`
        * @returns {void}
        * @throws {Error} wenn `key` jetzt nicht gilt oder `value` außerhalb seiner Menge liegt
        */
@@ -469,47 +579,30 @@ const mod = createModule({
       anovaHeader: () => 'SS',
       /** @noagent view transform */
       anova() {
-        const r = this.model.activeResult;
-        if (!r) return { termRows: [] };
+        const a = anovaOf(this.model.activeResult);
+        if (!a) return { termRows: [] };
         const alpha = this.model.alpha;
-        const regSig = r.fPVal < alpha;
-        const out = {
+        const regSig = a.regression.p < alpha;
+        const prefix = this.model.activeResult.blocks?.length > 0 ? 'b' : 'c';
+        return {
           regRowClass: regSig ? 'reg__tr--sig' : 'reg__tr--not-sig',
           pSig: regSig ? 'reg__td--sig' : 'reg__td--not-sig',
-          ssr: fmt(r.SSR), dfReg: r.dfReg, msr: fmt(r.MSR), fstat: fmt(r.Fstat), fp: fmtP(r.fPVal),
-          sse: fmt(r.SSE), dfRes: r.dfRes, mse: fmt(r.MSE),
-          sst: fmt(r.SST), dfTot: r.dfTot,
-          termRows: [],
+          ssr: fmt(a.regression.ss), dfReg: a.regression.df, msr: fmt(a.regression.ms),
+          fstat: fmt(a.regression.f), fp: fmtP(a.regression.p),
+          sse: fmt(a.error.ss), dfRes: a.error.df, mse: fmt(a.error.ms),
+          sst: fmt(a.total.ss), dfTot: a.total.df,
+          termRows: a.terms.map(row => {
+            const hasP = Number.isFinite(row.p);
+            const sig = hasP && row.p < alpha;
+            return {
+              id: `${prefix}-${row.term}`, label: row.term,
+              ss: fmt(row.ss), df: row.df, ms: fmt(row.ms), f: fmt(row.f),
+              p: hasP ? fmtP(row.p) : EN_DASH,
+              pSig: sig ? 'reg__td--sig' : (hasP ? 'reg__td--not-sig' : ''),
+              trClass: sig ? 'reg__tr--sig' : (hasP ? 'reg__tr--not-sig' : ''),
+            };
+          }),
         };
-        if (Array.isArray(r.blocks) && r.blocks.length > 0) {
-          for (const b of r.blocks) {
-            if (b.id === 'Intercept') continue;
-            const sig = Number.isFinite(b.pValue) && b.pValue < alpha;
-            out.termRows.push({
-              id: `b-${  b.id}`, label: b.id,
-              ss: fmt(b.ss), df: b.df, ms: fmt(b.ms), f: fmt(b.fStat),
-              p: Number.isFinite(b.pValue) ? fmtP(b.pValue) : EN_DASH,
-              pSig: sig ? 'reg__td--sig' : (Number.isFinite(b.pValue) ? 'reg__td--not-sig' : ''),
-              trClass: sig ? 'reg__tr--sig' : (Number.isFinite(b.pValue) ? 'reg__tr--not-sig' : ''),
-            });
-          }
-        } else {
-          const coefs = (r.coefDetails || []).filter(c => c.term !== 'Intercept');
-          for (const c of coefs) {
-            if (c.t == null) continue;
-            const ss = c.t ** 2 * r.MSE;
-            const f = r.MSE > 0 ? ss / r.MSE : 0;
-            const sig = c.pval != null && c.pval < alpha;
-            out.termRows.push({
-              id: `c-${  c.term}`, label: c.term,
-              ss: fmt(ss), df: 1, ms: fmt(ss), f: fmt(f),
-              p: c.pval != null ? fmtP(c.pval) : EN_DASH,
-              pSig: sig ? 'reg__td--sig' : (c.pval != null ? 'reg__td--not-sig' : ''),
-              trClass: sig ? 'reg__tr--sig' : (c.pval != null ? 'reg__tr--not-sig' : ''),
-            });
-          }
-        }
-        return out;
       },
 
       // ── Coefficient view-model ───────────────────────────────
@@ -670,14 +763,14 @@ const mod = createModule({
         const pClass = r.fPVal < alpha ? 'dmike-kpi--good' : r.fPVal < alpha * 2 ? 'dmike-kpi--warn' : 'dmike-kpi--bad';
 
         const kpis = [
-          { label: 'R²', value: fmt(r.R2), mod: r2class, tip: _t('tipR2') },
-          { label: _t('adjR2'), value: fmt(r.adjR2), mod: r2class, tip: _t('tipAdjR2') },
+          { label: 'R²', value: fmt(r.R2), mod: r2class, tip: _t('tipR2'), help: `${HELP}Result.R2` },
+          { label: _t('adjR2'), value: fmt(r.adjR2), mod: r2class, tip: _t('tipAdjR2'), help: `${HELP}Result.adjR2` },
         ];
-        if (r2pVal != null) kpis.push({ label: _t('predR2'), value: fmt(r2pVal), mod: r2pClass, tip: _t('tipPredR2') });
-        kpis.push({ label: _t('stdError'), value: fmt(r.Se), mod: '', tip: _t('tipStdError') });
-        kpis.push({ label: _t('fStat'), value: fmt(r.Fstat, 2), mod: '', tip: _t('tipFStat') });
-        kpis.push({ label: _t('pValueF'), value: fmtP(r.fPVal), mod: pClass, tip: _t('tipPValueF') });
-        kpis.push({ label: _t('durbinWatson'), value: fmt(r.dw, 3), mod: '', tip: _t('tipDurbinWatson') });
+        if (r2pVal != null) kpis.push({ label: _t('predR2'), value: fmt(r2pVal), mod: r2pClass, tip: _t('tipPredR2'), help: `${HELP}Result.R2pred` });
+        kpis.push({ label: _t('stdError'), value: fmt(r.Se), mod: '', tip: _t('tipStdError'), help: `${HELP}Result.Se` });
+        kpis.push({ label: _t('fStat'), value: fmt(r.Fstat, 2), mod: '', tip: _t('tipFStat'), help: `${HELP}Result.Fstat` });
+        kpis.push({ label: _t('pValueF'), value: fmtP(r.fPVal), mod: pClass, tip: _t('tipPValueF'), help: `${HELP}Result.fPVal` });
+        kpis.push({ label: _t('durbinWatson'), value: fmt(r.dw, 3), mod: '', tip: _t('tipDurbinWatson'), help: `${HELP}Result.dw` });
 
         const isMultiX = r.multiX && r.xCount > 1;
         const tabs = [

@@ -5,7 +5,7 @@
 
     <template x-if="importOptions().length > 0">
       <div class="field-group">
-        <label x-text="t('importFromExperiment')"></label>
+        <label data-help-key="modules.regression.actions.importExperiment.help" x-text="t('importFromExperiment')"></label>
         <select class="field" data-ref="doe-import" @change="onImportChange($event)">
           <option value="" x-text="t('importPlaceholder')"></option>
           <template x-for="o in importOptions()" :key="o.key">
@@ -16,12 +16,12 @@
     </template>
 
     <div class="field-group">
-      <label x-text="t('selectColumns')"></label>
+      <label data-help-key="modules.regression.actions.setColumns.help" x-text="t('selectColumns')"></label>
       <div data-ref="picker-cols"></div>
     </div>
 
     <div class="field-group">
-      <label x-text="t('columnY')"></label>
+      <label data-help-key="modules.regression.actions.setColumn.help" x-text="t('columnY')"></label>
       <select class="field" data-ref="y-select" @change="onYChange($event)">
         <option value="" :selected="!model.yKey" x-text="t('selectYHint')"></option>
         <template x-for="opt in yOptions()" :key="opt.key">
@@ -37,7 +37,7 @@
     <div class="dmike-split__section-title" x-text="t('sectionSettings')"></div>
 
     <div class="field-group">
-      <label x-text="t('regType')"></label>
+      <label data-help-key="modules.regression.types.Params.regType" x-text="t('regType')"></label>
       <select class="field" data-ref="reg-type" :value="model.regType" @change="onRegTypeSelect($event)">
         <template x-for="o in regTypeOptions()" :key="o.value">
           <option :value="o.value" :selected="o.value === model.regType" x-text="o.label"></option>
@@ -46,7 +46,7 @@
     </div>
 
     <div class="field-group" data-ref="degree-field" x-show="model.isPolynomial">
-      <label x-text="t('polyDegree')"></label>
+      <label data-help-key="modules.regression.types.Params.polyDegree" x-text="t('polyDegree')"></label>
       <select class="field" data-ref="poly-degree" :value="model.polyDegree" @change="onDegreeSelect($event)">
         <template x-for="o in degreeOptions()" :key="o.value">
           <option :value="o.value" :selected="o.value === model.polyDegree" :disabled="o.disabled" :title="o.title" x-text="o.label"></option>
@@ -57,12 +57,12 @@
 
     <div class="reg__level-row">
       <div class="field-group">
-        <label><span x-text="t('confLevel')"></span> (%)</label>
+        <label data-help-key="modules.regression.types.Params.confLevel"><span x-text="t('confLevel')"></span> (%)</label>
         <input type="text" class="field field--num" data-ref="conf-level" inputmode="decimal"
           :value="confDisplay()" placeholder="95" @change="onConfChange($event)">
       </div>
       <div class="field-group">
-        <label><span x-text="t('alphaRisk')"></span> (%)</label>
+        <label data-help-key="modules.regression.types.Params.alpha"><span x-text="t('alphaRisk')"></span> (%)</label>
         <input type="text" class="field field--num" data-ref="alpha-level" inputmode="decimal"
           :value="alphaDisplay()" placeholder="5" @change="onAlphaChange($event)">
       </div>
@@ -85,13 +85,13 @@
       <template x-for="row in aliasedRows()" :key="row.term">
         <div class="reg__aliased-row">
           <span x-text="row.term"></span>
-          <button type="button" class="btn btn--secondary btn--sm" data-action="exclude-aliased" :data-term="row.term"
+          <button type="button" class="btn btn--secondary btn--sm" data-action="exclude-aliased" data-help-key="modules.regression.actions.setTerm.help" :data-term="row.term"
             @click="excludeAliased(row.term)" x-text="t('excludeAliasedTerm')"></button>
         </div>
       </template>
     </div>
 
-    <div class="dmike-split__section-title reg__predict-title" data-ref="predict-title"
+    <div class="dmike-split__section-title reg__predict-title" data-ref="predict-title" data-help-key="modules.regression.actions.predict.help"
       :style="result ? '' : 'display:none'" x-text="t('prediction')"></div>
     <div class="reg__predict" data-ref="predict-section" :style="result ? '' : 'display:none'">
       <div data-ref="predict-inputs">
@@ -135,7 +135,7 @@
           <template x-if="xSelectorButtons().length > 0">
             <div class="reg__x-selector" data-ref="x-selector">
               <template x-for="b in xSelectorButtons()" :key="b.key">
-                <button class="reg__x-btn" :class="b.active ? 'reg__x-btn--active' : ''"
+                <button class="reg__x-btn" data-help-key="modules.regression.actions.setActiveX.help" :class="b.active ? 'reg__x-btn--active' : ''"
                   :data-x-key="b.key" @click="setActiveX(b.key)" x-text="b.label"></button>
               </template>
             </div>
@@ -146,7 +146,7 @@
             <template x-for="kpi in result.kpis" :key="kpi.label">
               <div class="dmike-kpi" :class="kpi.mod" :title="kpi.tip">
                 <div class="dmike-kpi-value" x-text="kpi.value"></div>
-                <div class="dmike-kpi-label" x-text="kpi.label"></div>
+                <div class="dmike-kpi-label" :data-help-key="kpi.help" x-text="kpi.label"></div>
               </div>
             </template>
           </div>
@@ -155,7 +155,7 @@
 
           <template x-if="result.canSaveModel">
             <div class="reg__model-actions">
-              <button class="btn btn--primary" data-action="save-as-model" type="button"
+              <button class="btn btn--primary" data-action="save-as-model" data-help-key="modules.regression.actions.saveAsModel.help" type="button"
                 @click="saveAsModel()"
                 x-text="model.savedModelId ? t('updateModel') : t('saveAsModel')"></button>
               <span class="reg__model-status" data-ref="model-status"
@@ -207,12 +207,12 @@
           <div class="reg__table-wrap">
             <table class="reg__table">
               <thead><tr>
-                <th x-text="t('source')"></th>
-                <th>SS <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
-                <th>DF <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
-                <th>MS <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
-                <th>F <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
-                <th><span x-text="t('pValue')"></span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
+                <th><span data-help-key="modules.regression.types.Result.anova" x-text="t('source')"></span></th>
+                <th><span data-help-key="modules.regression.types.AnovaRow.ss">SS</span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
+                <th><span data-help-key="modules.regression.types.AnovaRow.df">DF</span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
+                <th><span data-help-key="modules.regression.types.AnovaRow.ms">MS</span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
+                <th><span data-help-key="modules.regression.types.AnovaRow.f">F</span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
+                <th><span data-help-key="modules.regression.types.AnovaRow.p" x-text="t('pValue')"></span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
               </tr></thead>
               <tbody>
                 <tr :class="anova().regRowClass">
@@ -255,24 +255,24 @@
                 <template x-if="coefView().canExclude">
                   <th class="reg__th--cb"></th>
                 </template>
-                <th class="reg__th--term" x-text="t('term')"></th>
-                <th x-text="t('coefficient')"></th>
+                <th class="reg__th--term"><span data-help-key="modules.regression.types.Coefficient.term" x-text="t('term')"></span></th>
+                <th><span data-help-key="modules.regression.types.Coefficient.coeff" x-text="t('coefficient')"></span></th>
                 <template x-if="coefView().hasDetails">
-                  <th x-text="t('stdErrorCoef')"></th>
+                  <th><span data-help-key="modules.regression.types.Coefficient.se" x-text="t('stdErrorCoef')"></span></th>
                 </template>
                 <template x-if="coefView().hasDetails">
-                  <th><span x-text="t('tValue')"></span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-coefficients')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
+                  <th><span data-help-key="modules.regression.types.Coefficient.t" x-text="t('tValue')"></span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-coefficients')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
                 </template>
                 <template x-if="coefView().hasDetails">
                   <th>
-                    <span x-text="t('pValue')"></span>
+                    <span data-help-key="modules.regression.types.Coefficient.pval" x-text="t('pValue')"></span>
                     <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-coefficients')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
                     <button class="reg__sort-btn" :class="model.coefSortByP ? 'reg__sort-btn--active' : ''"
                       data-action="sort-coef-p" :title="t('sortByPValue')" @click="toggleSort()"><span class="icon icon--sm" data-icon="action.sort" aria-hidden="true"></span></button>
                   </th>
                 </template>
                 <template x-if="coefView().hasVIF">
-                  <th>VIF <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('vif')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
+                  <th><span data-help-key="modules.regression.types.Coefficient.vif">VIF</span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('vif')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
                 </template>
               </tr></thead>
               <tbody>

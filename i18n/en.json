@@ -9251,14 +9251,14 @@
           "help": "Returns the inputs (X, Y, type, degree, confidence, α, excluded terms), the sets the actions accept now, and the fitted model as numbers in result (null without a fit or after a failed fit; errorMsg then names the reason)."
         },
         "setColumns": {
-          "help": "Replaces the predictor columns X; order is kept, duplicates count once. If Y is among the new X, yKey is cleared. Fits again; without X or Y, result becomes null.",
+          "help": "The data collection columns that supply this role; after a change the analysis is recomputed. The order is kept and columns chosen twice count once; if the response is among the new predictors, it is cleared.",
           "params": {
             "slot": "One of activeMultiSlots; this module only has 'x'.",
             "refs": "List of column references { instanceId, sheetId, columnId } from pickableColumns.x, in order; [] clears X."
           }
         },
         "setColumn": {
-          "help": "Sets the response column Y and fits again; null clears Y and result becomes null.",
+          "help": "The data collection column that supplies this role; after a change the analysis is recomputed. Without a response there is no result.",
           "params": {
             "slot": "One of activeColumnSlots; this module only has 'y'.",
             "ref": "Column reference { instanceId, sheetId, columnId } from pickableColumns.y (the columns not chosen as X), or null to clear."
@@ -9267,25 +9267,25 @@
         "setParam": {
           "help": "Sets the regression type, the polynomial degree, the confidence level or α and fits again.",
           "params": {
-            "key": "One of regType, polyDegree, confLevel, alpha; activeParams names those valid now (polyDegree only for the polynomial type).",
-            "value": "regType: one of the values in regTypes; polyDegree: a whole number from activeDegrees; confLevel, alpha: a fraction greater than 0 and less than 1 (0.95, not 95)."
+            "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys. confLevel and alpha as a fraction (0.95, not 95)."
           }
         },
         "setTerm": {
-          "help": "Includes or excludes one polynomial term and fits again; excludedTerms and result.excludedTerms follow.",
+          "help": "Includes or excludes one polynomial term and fits again; the list of excluded terms in the state and in the result follows.",
           "params": {
             "term": "A term id from terms (the fitted terms without Intercept, plus the aliased terms of a failed fit).",
             "included": "true includes the term, false excludes it."
           }
         },
         "importExperiment": {
-          "help": "Takes the factors and a response of a DoE experiment as X and Y and fits; activeImportSource names the source. null releases the source and keeps the columns.",
+          "help": "Takes the factors and a response of an experimental design as predictors and response and fits; activeImportSource names the source. Without a choice the source is released and the columns stay.",
           "params": {
             "key": "A key from experimentImports, or null."
           }
         },
         "setActiveX": {
-          "help": "For single-X models (exponential, logarithmic, power with several X) chooses the model that result shows; activeXKey follows.",
+          "help": "For single-X models (exponential, logarithmic, power with several X) chooses the model whose result is shown; activeXKey follows.",
           "params": {
             "key": "A key from perXKeys."
           }
@@ -9297,10 +9297,10 @@
           "help": "Fits the model with the current inputs. On failure result is null and errorMsg names the reason; with aliasing, terms lists the terms setTerm can exclude."
         },
         "saveAsModel": {
-          "help": "Saves the polynomial model (one or several X) in the project models (new, or as an update of the model saved last) and returns its id; returns null when canSaveModel is false. savedModelId follows."
+          "help": "Saves the polynomial model (one or several X) in the project models, new or as an update of the model saved last, and returns its identifier; without a model that can be saved the return stays empty. savedModelId follows."
         },
         "predict": {
-          "help": "Predicts the response for the given values of the predictors and fills prediction; returns null when a predictor is left without a value or there is no result.",
+          "help": "Predicts the response for the given values of the predictors and fills prediction; the prediction stays empty when a predictor is left without a value or there is no result.",
           "params": {
             "values": "An object with one value per predictor id from predictors: a number, or one of the levels for categorical predictors. Missing predictors make the result null."
           }
@@ -9344,7 +9344,7 @@
           "help": "The DoE response the inputs came from, { experimentId, sourceColumn, transform }, or null."
         },
         "designNotice": {
-          "help": "The note left by a DoE preset, { aliased, saturated }, or null."
+          "help": "Notes on the term set of an experimental design, each figure described individually under keys; null without a term set from an experimental design."
         },
         "perXKeys": {
           "help": "The single-X models setActiveX accepts; empty for the polynomial type and without result."
@@ -9365,7 +9365,7 @@
           "help": "Per slot (x, y) the columns setColumns and setColumn accept, each { key, name }; y leaves out the columns chosen as X."
         },
         "result": {
-          "help": "The fitted model as numbers: type, equation, n, R2, adjR2, R2pred, Se, Fstat, fPVal, dw, coefficients [{ term, coeff, se, t, pval, ciLow, ciHigh, vif }], excludedTerms; null without a fit or after a failed fit. coefficients[].term is the coefficient name: for a categorical term it carries the level (Material[B]), while terms, excludedTerms and setTerm use the term id without the level (Material)."
+          "help": "The fitted regression model with coefficients and analysis of variance, each figure described individually under keys; null without X or Y or when the fit fails (errorMsg then gives the reason). coefficients[].term is the coefficient name: for a categorical term it carries the level (Material[B]), while terms, excludedTerms and setTerm use the term id without the level (Material)."
         },
         "errorMsg": {
           "help": "The message of the last failed fit, '' without error."
@@ -9381,6 +9381,61 @@
         },
         "prediction": {
           "help": "{ yHat, piLow, piHigh } of the last prediction, null without one and without result; piLow and piHigh are null where the model gives no prediction interval."
+        }
+      },
+      "types": {
+        "Params": {
+          "regType": "The model form: polynomial (main effects, from degree 2 also squares and interactions, with one or several X), exponential (y = a · eᵇˣ), logarithmic (y = a + b·ln(x)) or power (y = a · xᵇ). The last three fit a separate single model per X and use only suitable rows: exponential y > 0, logarithmic x > 0, power x > 0 and y > 0. A change fits again.",
+          "polyDegree": "The polynomial degree, 1, 2 or 3, default 1: degree 1 takes only the main effects, degree 2 adds squares and interactions, degree 3 adds cubic terms and higher interactions. A degree can only be chosen when there are more paired rows than terms; otherwise it is locked and the hint below the selection gives the number needed. Only used with the polynomial regression type.",
+          "confLevel": "The confidence level as a fraction between 0 and 1, so 0.95 instead of 95; the input field shows it in percent. It sets the confidence limits of the coefficients, the confidence and prediction bands in the chart and the prediction interval. The default is the project confidence level; it is independent of the significance level, the two are set separately.",
+          "alpha": "The significance level α as a fraction between 0 and 1, so 0.05 instead of 5; the input field shows it in percent. It changes no number, only the colouring: rows of the ANOVA and coefficient tables with p < α count as significant, the p-value (F) tile is green below α and yellow below 2α. The default is 1 − the project confidence level; after that it is independent of the confidence level, the two are set separately."
+        },
+        "Result": {
+          "type": "The model form actually fitted: polynomial as soon as several X are chosen or the type is polynomial, otherwise exponential, logarithmic or power for the single-X model shown.",
+          "equation": "The model equation as text, as shown below the figures, with coefficients rounded to four decimals.",
+          "n": "Number of rows used: rows with finite values in all X and in Y; for exponential, logarithmic and power only the rows that meet the condition of the model form (y > 0 or x > 0).",
+          "R2": "Coefficient of determination R² = 1 − SSE/SST: the share of the variation in Y the model explains, from 0 to 1. The tile is green from 0.8 and yellow from 0.5, red below.",
+          "adjR2": "Adjusted coefficient of determination, tile Adj. R²: 1 − (1 − R²) · (n − 1)/(n − p) with p coefficients including the intercept. It drops when a term costs more degrees of freedom than it explains, so it suits comparing models. The tile takes the colour of R².",
+          "R2pred": "Predicted coefficient of determination, tile R²(pred): 1 − PRESS/SST, where PRESS is the sum of the squared leave-one-out residuals eᵢ/(1 − hᵢᵢ). It measures how well the model predicts new data; well below R² it points to overfitting. Empty for exponential, logarithmic and power; the tile is then missing as well.",
+          "Se": "Standard error of the regression, tile Std. Error: S = √MSE, the typical deviation of the observations from the model, in the units of Y.",
+          "Fstat": "F statistic of the overall model, F = MSR/MSE from the Regression row of the ANOVA table; 0 when MSE is 0. The tile shows two decimals.",
+          "fPVal": "p-value of the F test, tile p-value (F): the probability of an F at least this large if all coefficients except the intercept were 0, from the F distribution with the degrees of freedom of regression and residuals. Below α the model counts as significant and the tile is green, below 2α yellow. 1 when the model has no degree of freedom or MSE is 0.",
+          "dw": "Durbin-Watson statistic Σ(eᵢ − eᵢ₋₁)²/SSE over the residuals in data order, between 0 and 4: around 2 no autocorrelation, below 1.5 positive, above 2.5 negative. 0 when SSE is 0; the tile shows three decimals.",
+          "coefficients": "The coefficient table, one row per estimated coefficient: for the polynomial first Intercept, then the terms; for exponential and power a and b, for logarithmic Intercept and ln(x).",
+          "excludedTerms": "The terms left out of the polynomial, by hand or because of aliasing, each as term name without level.",
+          "anova": "The analysis of variance of the model with the rows Regression, one per term, Residuals and Total; the same numbers as in the ANOVA table. For exponential, logarithmic and power there are no term rows."
+        },
+        "Coefficient": {
+          "term": "The coefficient name: Intercept, a column name or a square or interaction term. A categorical predictor gets one row per level, whose name carries the level; including and excluding uses the term name without level.",
+          "coeff": "The estimated coefficient b. The Coefficient column also shows the confidence interval next to it, from the lower to the upper confidence limit.",
+          "se": "Standard error of the coefficient, column Std. Error: √(MSE · ((XᵀX)⁻¹)ⱼⱼ). Empty for exponential, logarithmic and power.",
+          "t": "t-value b / Std. Error, tested against 0 with the degrees of freedom of the residuals. Empty for exponential, logarithmic and power.",
+          "pval": "Two-sided p-value of the t test of b = 0; below α the term counts as significant and the row is highlighted. Empty for exponential, logarithmic and power.",
+          "ciLow": "Lower confidence limit b − t · Std. Error, with t the (1 + confidence level)/2 quantile of the t distribution with the degrees of freedom of the residuals. Empty for exponential, logarithmic and power.",
+          "ciHigh": "Upper confidence limit b + t · Std. Error, with the same t as the lower limit. Empty for exponential, logarithmic and power.",
+          "vif": "Variance inflation factor 1/(1 − R²ⱼ), with R²ⱼ from regressing the predictor on the other continuous predictors that still have a term in the model. Only main effects of continuous predictors have a value, and only with at least two continuous predictors; otherwise empty. Above 5 the cell turns yellow, above 10 red; if the value over all chosen predictors differs, it is shown next to it in parentheses."
+        },
+        "Anova": {
+          "regression": "The Regression row: the variation SSR explained by the model, with the F test of the overall model; degrees of freedom equal to the number of coefficients without the intercept.",
+          "terms": "One indented row per term. When the polynomial is fitted with term blocks, this is the Type III decomposition per term block: the sum of squares the block explains in addition to all others, with the F test of the block. Otherwise one row per coefficient with SS = t² · MSE and one degree of freedom. Empty for exponential, logarithmic and power.",
+          "error": "The Residuals row: the unexplained variation SSE with n − p degrees of freedom and MSE = SSE/(n − p).",
+          "total": "The Total row: the total variation SST = Σ(yᵢ − ȳ)² with n − 1 degrees of freedom, the sum of Regression and Residuals."
+        },
+        "AnovaRow": {
+          "term": "The term name; only the term rows carry it.",
+          "ss": "Sum of squares of the row, column SS: the variation this source explains, that is left over (Residuals) or that is present in total (Total).",
+          "df": "Degrees of freedom of the row, column DF.",
+          "ms": "Mean square of the row, column MS = SS/DF. Missing in the Total row.",
+          "f": "F value of the row, column F: MS of the row divided by MS of the residuals. Only in the Regression row and the term rows.",
+          "p": "p-value of the F test of the row, from the F distribution with the DF of the row and the DF of the residuals; below α the row is highlighted as significant. Only in the Regression row and the term rows; empty where no p-value can be computed."
+        },
+        "DesignNotice": {
+          "aliased": "The terms the experimental design cannot separate from others and that were therefore excluded, each with the terms it is aliased with.",
+          "saturated": "The terms excluded because the model would otherwise be saturated, leaving no degree of freedom for the residuals."
+        },
+        "AliasedTerm": {
+          "term": "The excluded term.",
+          "with": "The terms it is aliased with."
         }
       },
       "name": "Regression Analysis",

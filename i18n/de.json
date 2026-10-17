@@ -9255,14 +9255,14 @@
           "help": "Liefert die Eingaben (X, Y, Typ, Grad, Konfidenz, α, ausgeschlossene Terme), die Mengen, die die Aktionen jetzt annehmen, und das gerechnete Modell als Zahlen in result (null ohne Fit oder nach einem Fehlschlag; errorMsg nennt dann den Grund)."
         },
         "setColumns": {
-          "help": "Ersetzt die Einflussgrößen X; die Reihenfolge bleibt, Doppelte zählen einmal. Steht Y unter den neuen X, wird yKey geleert. Rechnet neu; ohne X oder Y wird result null.",
+          "help": "Die Spalten einer Datensammlung, die diese Rolle liefern; nach einer Änderung wird neu gerechnet. Die Reihenfolge bleibt erhalten, doppelt gewählte Spalten zählen einmal; ist die Zielgröße unter den neuen Einflussgrößen, wird sie geleert.",
           "params": {
             "slot": "Einer der Slots aus activeMultiSlots; dieses Modul führt nur 'x'.",
             "refs": "Liste von Spaltenbezügen { instanceId, sheetId, columnId } aus pickableColumns.x, in Reihenfolge; [] leert X."
           }
         },
         "setColumn": {
-          "help": "Setzt die Zielgröße Y und rechnet neu; null leert Y, result wird null.",
+          "help": "Die Spalte einer Datensammlung, die diese Rolle liefert; nach einer Änderung wird neu gerechnet. Ohne Zielgröße gibt es kein Ergebnis.",
           "params": {
             "slot": "Einer der Slots aus activeColumnSlots; dieses Modul führt nur 'y'.",
             "ref": "Spaltenbezug { instanceId, sheetId, columnId } aus pickableColumns.y (die nicht als X gewählten Spalten), oder null zum Leeren."
@@ -9271,25 +9271,25 @@
         "setParam": {
           "help": "Setzt den Regressionstyp, den Polynomgrad, das Konfidenzniveau oder α und rechnet neu.",
           "params": {
-            "key": "Einer von regType, polyDegree, confLevel, alpha; activeParams nennt die jetzt gültigen (polyDegree nur beim Typ polynomial).",
-            "value": "regType: einer der Werte aus regTypes; polyDegree: eine ganze Zahl aus activeDegrees; confLevel, alpha: Anteil größer 0 und kleiner 1 (0.95, nicht 95)."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys. confLevel und alpha als Anteil (0.95, nicht 95)."
           }
         },
         "setTerm": {
-          "help": "Schließt einen Polynomterm ein oder aus und rechnet neu; excludedTerms und result.excludedTerms ziehen nach.",
+          "help": "Schließt einen Polynomterm ein oder aus und rechnet neu; die Liste der ausgeschlossenen Terme im Zustand und im Ergebnis zieht nach.",
           "params": {
             "term": "Eine Term-id aus terms (die gerechneten Terme ohne Intercept, dazu die Aliasing-Terme eines Fehlschlags).",
             "included": "true schließt den Term ein, false aus."
           }
         },
         "importExperiment": {
-          "help": "Übernimmt die Faktoren und eine Antwort eines DoE-Versuchs als X und Y und rechnet; activeImportSource nennt die Quelle. null löst die Quelle und lässt die Spalten stehen.",
+          "help": "Übernimmt die Faktoren und eine Antwort eines Versuchsplans als Einflussgrößen und Zielgröße und rechnet; activeImportSource nennt die Quelle. Ohne Auswahl wird die Quelle gelöst, die Spalten bleiben stehen.",
           "params": {
             "key": "Ein Schlüssel aus experimentImports, oder null."
           }
         },
         "setActiveX": {
-          "help": "Wählt bei Einzel-X-Modellen (exponentiell, logarithmisch, Potenz mit mehreren X) das Modell, das result zeigt; activeXKey zieht nach.",
+          "help": "Wählt bei Einzel-X-Modellen (Exponentiell, Logarithmisch, Potenz mit mehreren X) das Modell, dessen Ergebnis gezeigt wird; activeXKey zieht nach.",
           "params": {
             "key": "Ein Schlüssel aus perXKeys."
           }
@@ -9301,10 +9301,10 @@
           "help": "Rechnet das Modell mit den aktuellen Eingaben. Bei einem Fehlschlag ist result null und errorMsg nennt den Grund; bei Aliasing nennt terms die Terme, die setTerm dann ausschließen kann."
         },
         "saveAsModel": {
-          "help": "Speichert das Polynommodell (ein oder mehrere X) in die Projektmodelle (neu oder als Aktualisierung des zuletzt gespeicherten) und gibt die id zurück; null, wenn canSaveModel false ist. savedModelId zieht nach."
+          "help": "Speichert das Polynommodell (ein oder mehrere X) in die Projektmodelle, neu oder als Aktualisierung des zuletzt gespeicherten, und gibt dessen Kennung zurück; ohne speicherbares Modell bleibt die Rückgabe leer. savedModelId zieht nach."
         },
         "predict": {
-          "help": "Sagt die Zielgröße für die angegebenen Werte der Einflussgrößen vorher und füllt prediction; null, wenn ein Prädiktor ohne Wert bleibt oder kein result vorliegt.",
+          "help": "Sagt die Zielgröße für die angegebenen Werte der Einflussgrößen vorher und füllt prediction; die Vorhersage bleibt leer, wenn ein Prädiktor ohne Wert bleibt oder kein Ergebnis vorliegt.",
           "params": {
             "values": "Ein Objekt mit je Prädiktor-id aus predictors einem Wert: eine Zahl, bei kategorialen Prädiktoren eine der Stufen. Fehlende Prädiktoren lassen das Ergebnis null."
           }
@@ -9348,7 +9348,7 @@
           "help": "Die DoE-Antwort, aus der die Eingaben stammen, { experimentId, sourceColumn, transform }, oder null."
         },
         "designNotice": {
-          "help": "Der Hinweis einer DoE-Vorgabe, { aliased, saturated }, oder null."
+          "help": "Hinweise zur Termvorgabe eines Versuchsplans, jede Kennzahl unter keys einzeln beschrieben; null, ohne Vorgabe aus einem Versuchsplan."
         },
         "perXKeys": {
           "help": "Die Einzel-X-Modelle, die setActiveX annimmt; leer beim Typ polynomial und ohne result."
@@ -9369,7 +9369,7 @@
           "help": "Je Slot (x, y) die Spalten, die setColumns und setColumn annehmen, je { key, name }; y lässt die als X gewählten Spalten aus."
         },
         "result": {
-          "help": "Das gerechnete Modell als Zahlen: type, equation, n, R2, adjR2, R2pred, Se, Fstat, fPVal, dw, coefficients [{ term, coeff, se, t, pval, ciLow, ciHigh, vif }], excludedTerms; null ohne Fit oder nach einem Fehlschlag. coefficients[].term ist der Name des Koeffizienten: bei einem kategorialen Term trägt er die Stufe (Material[B]), während terms, excludedTerms und setTerm die Term-id ohne Stufe führen (Material)."
+          "help": "Das gerechnete Regressionsmodell mit Koeffizienten und Varianzanalyse, jede Kennzahl unter keys einzeln beschrieben; null, ohne X oder Y oder wenn die Anpassung scheitert (dann steht der Grund in errorMsg). coefficients[].term ist der Name des Koeffizienten: bei einem kategorialen Term trägt er die Stufe (Material[B]), während terms, excludedTerms und setTerm die Term-id ohne Stufe führen (Material)."
         },
         "errorMsg": {
           "help": "Die Meldung des letzten Fehlschlags, '' ohne Fehler."
@@ -9385,6 +9385,61 @@
         },
         "prediction": {
           "help": "{ yHat, piLow, piHigh } der letzten Vorhersage, null ohne eine und ohne result; piLow und piHigh sind null, wo das Modell kein Prognoseintervall liefert."
+        }
+      },
+      "types": {
+        "Params": {
+          "regType": "Die Modellform: Polynom (Haupteffekte, ab Grad 2 auch Quadrate und Wechselwirkungen, mit einem oder mehreren X), Exponentiell (y = a · eᵇˣ), Logarithmisch (y = a + b·ln(x)) oder Potenz (y = a · xᵇ). Die drei letzten passen je X ein eigenes Einzelmodell an und verwerten nur passende Zeilen: Exponentiell y > 0, Logarithmisch x > 0, Potenz x > 0 und y > 0. Eine Änderung rechnet neu.",
+          "polyDegree": "Der Grad des Polynoms, 1, 2 oder 3, voreingestellt 1: Grad 1 nimmt nur die Haupteffekte, Grad 2 zusätzlich Quadrate und Wechselwirkungen, Grad 3 dazu kubische Terme und höhere Wechselwirkungen. Ein Grad ist nur wählbar, wenn es mehr gepaarte Zeilen als Terme gibt; sonst ist er gesperrt, und der Hinweis unter der Auswahl nennt die nötige Zahl. Wirkt nur beim Regressionstyp Polynom.",
+          "confLevel": "Das Konfidenzniveau als Anteil zwischen 0 und 1, also 0,95 statt 95; das Eingabefeld zeigt es in Prozent. Es bestimmt die Konfidenzgrenzen der Koeffizienten, das Konfidenz- und das Vorhersageband im Diagramm und das Prognoseintervall. Voreingestellt ist das Konfidenzniveau des Projekts; es ist unabhängig vom Signifikanzniveau, beide werden getrennt gesetzt.",
+          "alpha": "Das Signifikanzniveau α als Anteil zwischen 0 und 1, also 0,05 statt 5; das Eingabefeld zeigt es in Prozent. Es ändert keine Zahl, nur die Färbung: Zeilen der ANOVA- und der Koeffiziententabelle mit p < α gelten als signifikant, die Kachel p-Wert (F) ist unter α grün und unter 2α gelb. Voreingestellt ist 1 − Konfidenzniveau des Projekts; danach ist es unabhängig vom Konfidenzniveau, beide werden getrennt gesetzt."
+        },
+        "Result": {
+          "type": "Die tatsächlich gerechnete Modellform: polynomial (Polynom), sobald mehrere X gewählt sind oder der Typ Polynom ist, sonst exponential, logarithmic oder power für das gerade gezeigte Einzel-X-Modell.",
+          "equation": "Die Modellgleichung als Text, wie sie unter den Kennzahlen steht, mit auf vier Nachkommastellen gerundeten Koeffizienten.",
+          "n": "Zahl der verwerteten Zeilen: Zeilen mit endlichen Werten in allen X und in Y; bei Exponentiell, Logarithmisch und Potenz nur die Zeilen, die die Bedingung der Modellform erfüllen (y > 0 beziehungsweise x > 0).",
+          "R2": "Bestimmtheitsmaß R² = 1 − SSE/SST: der Anteil der Streuung von Y, den das Modell erklärt, von 0 bis 1. Die Kachel ist ab 0,8 grün und ab 0,5 gelb, darunter rot.",
+          "adjR2": "Korrigiertes Bestimmtheitsmaß, Kachel Adj. R²: 1 − (1 − R²) · (n − 1)/(n − p) mit p Koeffizienten einschließlich Achsenabschnitt. Es sinkt, wenn ein Term mehr Freiheitsgrad kostet, als er erklärt, und taugt deshalb zum Vergleich von Modellen. Die Kachel übernimmt die Farbe von R².",
+          "R2pred": "Vorhergesagtes Bestimmtheitsmaß, Kachel R²(prog): 1 − PRESS/SST, wobei PRESS die Summe der quadrierten Leave-one-out-Residuen eᵢ/(1 − hᵢᵢ) ist. Es misst, wie gut das Modell neue Daten vorhersagt; liegt es deutlich unter R², deutet das auf Überanpassung. Leer bei Exponentiell, Logarithmisch und Potenz; dann fehlt auch die Kachel.",
+          "Se": "Standardfehler der Regression, Kachel Std.-Fehler: S = √MSE, die typische Abweichung der Beobachtungen vom Modell, in den Einheiten von Y.",
+          "Fstat": "F-Statistik des Gesamtmodells, F = MSR/MSE aus der Zeile Regression der ANOVA-Tabelle; 0, wenn MSE 0 ist. Die Kachel zeigt zwei Nachkommastellen.",
+          "fPVal": "p-Wert des F-Tests, Kachel p-Wert (F): die Wahrscheinlichkeit für ein mindestens so großes F, wenn alle Koeffizienten außer dem Achsenabschnitt 0 wären, aus der F-Verteilung mit den Freiheitsgraden von Regression und Residuen. Unter α gilt das Modell als signifikant und die Kachel ist grün, unter 2α gelb. 1, wenn das Modell keinen Freiheitsgrad hat oder MSE 0 ist.",
+          "dw": "Durbin-Watson-Statistik Σ(eᵢ − eᵢ₋₁)²/SSE über die Residuen in Datenreihenfolge, zwischen 0 und 4: um 2 keine Autokorrelation, unter 1,5 positive, über 2,5 negative. 0, wenn SSE 0 ist; die Kachel zeigt drei Nachkommastellen.",
+          "coefficients": "Die Koeffiziententabelle, eine Zeile je geschätztem Koeffizienten: beim Polynom zuerst Intercept, dann die Terme; bei Exponentiell und Potenz a und b, bei Logarithmisch Intercept und ln(x).",
+          "excludedTerms": "Die Terme, die aus dem Polynom herausgenommen sind, von Hand oder wegen Vermengung, jeweils als Termname ohne Stufe.",
+          "anova": "Die Varianzanalyse des Modells mit den Zeilen Regression, je Term, Residuen und Gesamt; dieselben Zahlen wie in der ANOVA-Tabelle. Bei Exponentiell, Logarithmisch und Potenz gibt es keine Termzeilen."
+        },
+        "Coefficient": {
+          "term": "Der Name des Koeffizienten: Intercept, ein Spaltenname oder ein Quadrat- oder Wechselwirkungsterm. Ein kategorialer Prädiktor bekommt je Stufe eine eigene Zeile, deren Name die Stufe trägt; Ein- und Ausschließen geht über den Termnamen ohne Stufe.",
+          "coeff": "Der geschätzte Koeffizient b. Die Spalte Koeffizient zeigt daneben zusätzlich das Konfidenzintervall von der unteren bis zur oberen Konfidenzgrenze.",
+          "se": "Standardfehler des Koeffizienten, Spalte Std.-Fehler: √(MSE · ((XᵀX)⁻¹)ⱼⱼ). Leer bei Exponentiell, Logarithmisch und Potenz.",
+          "t": "t-Wert b / Std.-Fehler, geprüft gegen 0 mit den Freiheitsgraden der Residuen. Leer bei Exponentiell, Logarithmisch und Potenz.",
+          "pval": "Zweiseitiger p-Wert des t-Tests auf b = 0; unter α gilt der Term als signifikant und die Zeile wird hervorgehoben. Leer bei Exponentiell, Logarithmisch und Potenz.",
+          "ciLow": "Untere Konfidenzgrenze b − t · Std.-Fehler, mit t als (1 + Konfidenzniveau)/2-Quantil der t-Verteilung mit den Freiheitsgraden der Residuen. Leer bei Exponentiell, Logarithmisch und Potenz.",
+          "ciHigh": "Obere Konfidenzgrenze b + t · Std.-Fehler, mit demselben t wie die untere Grenze. Leer bei Exponentiell, Logarithmisch und Potenz.",
+          "vif": "Varianzinflationsfaktor 1/(1 − R²ⱼ), mit R²ⱼ aus der Regression des Prädiktors auf die übrigen stetigen Prädiktoren, die noch einen Term im Modell haben. Nur Haupteffekte stetiger Prädiktoren haben einen Wert, und nur bei mindestens zwei stetigen Prädiktoren; sonst leer. Über 5 wird die Zelle gelb, über 10 rot; weicht der Wert über alle gewählten Prädiktoren ab, steht er in Klammern daneben."
+        },
+        "Anova": {
+          "regression": "Die Zeile Regression: die vom Modell erklärte Streuung SSR mit dem F-Test des Gesamtmodells; Freiheitsgrade gleich der Zahl der Koeffizienten ohne Achsenabschnitt.",
+          "terms": "Je Term eine eingerückte Zeile. Rechnet das Polynom mit Termblöcken, ist es die Typ-III-Zerlegung je Termblock: die Quadratsumme, die der Block zusätzlich zu allen anderen erklärt, mit dem F-Test des Blocks. Sonst eine Zeile je Koeffizient mit SS = t² · MSE und einem Freiheitsgrad. Bei Exponentiell, Logarithmisch und Potenz leer.",
+          "error": "Die Zeile Residuen: die unerklärte Streuung SSE mit n − p Freiheitsgraden und MSE = SSE/(n − p).",
+          "total": "Die Zeile Gesamt: die gesamte Streuung SST = Σ(yᵢ − ȳ)² mit n − 1 Freiheitsgraden, die Summe aus Regression und Residuen."
+        },
+        "AnovaRow": {
+          "term": "Der Name des Terms; nur die Termzeilen tragen ihn.",
+          "ss": "Quadratsumme der Zeile, Spalte SS: die Streuung, die diese Quelle erklärt, die übrig bleibt (Residuen) oder die insgesamt vorliegt (Gesamt).",
+          "df": "Freiheitsgrade der Zeile, Spalte DF.",
+          "ms": "Mittlere Quadratsumme der Zeile, Spalte MS = SS/DF. Fehlt in der Zeile Gesamt.",
+          "f": "F-Wert der Zeile, Spalte F: MS der Zeile geteilt durch MS der Residuen. Nur in der Zeile Regression und in den Termzeilen.",
+          "p": "p-Wert des F-Tests der Zeile, aus der F-Verteilung mit DF der Zeile und DF der Residuen; unter α wird die Zeile als signifikant hervorgehoben. Nur in der Zeile Regression und in den Termzeilen; leer, wo sich kein p-Wert berechnen lässt."
+        },
+        "DesignNotice": {
+          "aliased": "Die Terme, die der Versuchsplan nicht von anderen trennen kann und die deshalb ausgeschlossen wurden, je mit den Termen, mit denen sie vermengt sind.",
+          "saturated": "Die Terme, die ausgeschlossen wurden, weil das Modell sonst gesättigt wäre und kein Freiheitsgrad für die Residuen bliebe."
+        },
+        "AliasedTerm": {
+          "term": "Der ausgeschlossene Term.",
+          "with": "Die Terme, mit denen er vermengt ist."
         }
       },
       "name": "Regressionsanalyse",

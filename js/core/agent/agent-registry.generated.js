@@ -10602,17 +10602,37 @@ export const AGENT_REGISTRY = {
             "name": "key",
             "type": "'regType'|'polyDegree'|'confLevel'|'alpha'",
             "optional": false,
-            "help": "welcher Parameter; `activeParams` nennt die jetzt gültigen"
+            "help": "welche Option; die im Zustand zulässigen nennt `activeParams`"
           },
           {
             "name": "value",
             "type": "string|number",
             "optional": false,
-            "help": "regType: einer aus `regTypes`; polyDegree: eine Zahl aus `activeDegrees`; confLevel, alpha: ein Anteil größer 0 und kleiner 1"
+            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "void",
-        "help": "Einen Parameter setzen und neu rechnen."
+        "help": "Einen Parameter setzen und neu rechnen.",
+        "keysOf": "Params",
+        "keys": {
+          "regType": {
+            "type": "'polynomial'|'exponential'|'logarithmic'|'power'",
+            "help": "Modellform"
+          },
+          "polyDegree": {
+            "type": "1|2|3",
+            "help": "Polynomgrad, nur bei polynomial",
+            "optional": true
+          },
+          "confLevel": {
+            "type": "number",
+            "help": "Konfidenzniveau als Anteil"
+          },
+          "alpha": {
+            "type": "number",
+            "help": "Signifikanzniveau als Anteil"
+          }
+        }
       },
       "setTerm": {
         "params": [
@@ -10758,10 +10778,32 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "designNotice": {
-        "type": "object|null",
-        "help": "the note left by a DoE preset, `{ aliased, saturated }`",
+        "type": "DesignNotice|null",
+        "help": "the note left by a DoE preset, null without one",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "DesignNotice",
+        "keys": {
+          "aliased": {
+            "type": "AliasedTerm[]",
+            "help": "vermengte Terme",
+            "keysOf": "AliasedTerm",
+            "keys": {
+              "term": {
+                "type": "string",
+                "help": "Term"
+              },
+              "with": {
+                "type": "string[]",
+                "help": "vermengt mit"
+              }
+            }
+          },
+          "saturated": {
+            "type": "string[]",
+            "help": "Terme ohne Restfreiheitsgrad"
+          }
+        }
       },
       "perXKeys": {
         "type": "string[]",
@@ -10800,10 +10842,243 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
-        "help": "the fitted model as numbers, null without a shown result",
+        "type": "Result|null",
+        "help": "the fitted model as numbers, null without X or Y or when the fit fails (errorMsg gives the reason)",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "type": {
+            "type": "'polynomial'|'exponential'|'logarithmic'|'power'",
+            "help": "gerechnete Modellform"
+          },
+          "equation": {
+            "type": "string|null",
+            "help": "Modellgleichung"
+          },
+          "n": {
+            "type": "number|null",
+            "help": "verwertete Zeilen"
+          },
+          "R2": {
+            "type": "number|null",
+            "help": "Bestimmtheitsmaß"
+          },
+          "adjR2": {
+            "type": "number|null",
+            "help": "korrigiertes Bestimmtheitsmaß"
+          },
+          "R2pred": {
+            "type": "number|null",
+            "help": "vorhergesagtes Bestimmtheitsmaß"
+          },
+          "Se": {
+            "type": "number|null",
+            "help": "Standardfehler der Regression"
+          },
+          "Fstat": {
+            "type": "number|null",
+            "help": "F-Statistik des Modells"
+          },
+          "fPVal": {
+            "type": "number|null",
+            "help": "p-Wert des F-Tests"
+          },
+          "dw": {
+            "type": "number|null",
+            "help": "Durbin-Watson-Statistik"
+          },
+          "coefficients": {
+            "type": "Coefficient[]",
+            "help": "Koeffiziententabelle",
+            "keysOf": "Coefficient",
+            "keys": {
+              "term": {
+                "type": "string",
+                "help": "Term"
+              },
+              "coeff": {
+                "type": "number|null",
+                "help": "Koeffizient"
+              },
+              "se": {
+                "type": "number|null",
+                "help": "Standardfehler"
+              },
+              "t": {
+                "type": "number|null",
+                "help": "t-Wert"
+              },
+              "pval": {
+                "type": "number|null",
+                "help": "p-Wert"
+              },
+              "ciLow": {
+                "type": "number|null",
+                "help": "untere Konfidenzgrenze"
+              },
+              "ciHigh": {
+                "type": "number|null",
+                "help": "obere Konfidenzgrenze"
+              },
+              "vif": {
+                "type": "number|null",
+                "help": "Varianzinflationsfaktor"
+              }
+            }
+          },
+          "excludedTerms": {
+            "type": "string[]",
+            "help": "ausgeschlossene Terme"
+          },
+          "anova": {
+            "type": "Anova|null",
+            "help": "Varianzanalyse des Modells",
+            "keysOf": "Anova",
+            "keys": {
+              "regression": {
+                "type": "AnovaRow",
+                "help": "Zeile Regression",
+                "keysOf": "AnovaRow",
+                "keys": {
+                  "term": {
+                    "type": "string",
+                    "help": "Term, nur in den Termzeilen",
+                    "optional": true
+                  },
+                  "ss": {
+                    "type": "number|null",
+                    "help": "Quadratsumme"
+                  },
+                  "df": {
+                    "type": "number|null",
+                    "help": "Freiheitsgrade"
+                  },
+                  "ms": {
+                    "type": "number|null",
+                    "help": "mittlere Quadratsumme, fehlt in Gesamt",
+                    "optional": true
+                  },
+                  "f": {
+                    "type": "number|null",
+                    "help": "F-Wert, nur Regression und Terme",
+                    "optional": true
+                  },
+                  "p": {
+                    "type": "number|null",
+                    "help": "p-Wert, nur Regression und Terme",
+                    "optional": true
+                  }
+                }
+              },
+              "terms": {
+                "type": "AnovaRow[]",
+                "help": "Zeile je Term",
+                "keysOf": "AnovaRow",
+                "keys": {
+                  "term": {
+                    "type": "string",
+                    "help": "Term, nur in den Termzeilen",
+                    "optional": true
+                  },
+                  "ss": {
+                    "type": "number|null",
+                    "help": "Quadratsumme"
+                  },
+                  "df": {
+                    "type": "number|null",
+                    "help": "Freiheitsgrade"
+                  },
+                  "ms": {
+                    "type": "number|null",
+                    "help": "mittlere Quadratsumme, fehlt in Gesamt",
+                    "optional": true
+                  },
+                  "f": {
+                    "type": "number|null",
+                    "help": "F-Wert, nur Regression und Terme",
+                    "optional": true
+                  },
+                  "p": {
+                    "type": "number|null",
+                    "help": "p-Wert, nur Regression und Terme",
+                    "optional": true
+                  }
+                }
+              },
+              "error": {
+                "type": "AnovaRow",
+                "help": "Zeile Residuen",
+                "keysOf": "AnovaRow",
+                "keys": {
+                  "term": {
+                    "type": "string",
+                    "help": "Term, nur in den Termzeilen",
+                    "optional": true
+                  },
+                  "ss": {
+                    "type": "number|null",
+                    "help": "Quadratsumme"
+                  },
+                  "df": {
+                    "type": "number|null",
+                    "help": "Freiheitsgrade"
+                  },
+                  "ms": {
+                    "type": "number|null",
+                    "help": "mittlere Quadratsumme, fehlt in Gesamt",
+                    "optional": true
+                  },
+                  "f": {
+                    "type": "number|null",
+                    "help": "F-Wert, nur Regression und Terme",
+                    "optional": true
+                  },
+                  "p": {
+                    "type": "number|null",
+                    "help": "p-Wert, nur Regression und Terme",
+                    "optional": true
+                  }
+                }
+              },
+              "total": {
+                "type": "AnovaRow",
+                "help": "Zeile Gesamt",
+                "keysOf": "AnovaRow",
+                "keys": {
+                  "term": {
+                    "type": "string",
+                    "help": "Term, nur in den Termzeilen",
+                    "optional": true
+                  },
+                  "ss": {
+                    "type": "number|null",
+                    "help": "Quadratsumme"
+                  },
+                  "df": {
+                    "type": "number|null",
+                    "help": "Freiheitsgrade"
+                  },
+                  "ms": {
+                    "type": "number|null",
+                    "help": "mittlere Quadratsumme, fehlt in Gesamt",
+                    "optional": true
+                  },
+                  "f": {
+                    "type": "number|null",
+                    "help": "F-Wert, nur Regression und Terme",
+                    "optional": true
+                  },
+                  "p": {
+                    "type": "number|null",
+                    "help": "p-Wert, nur Regression und Terme",
+                    "optional": true
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       "errorMsg": {
         "type": "string",
