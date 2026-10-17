@@ -11,6 +11,7 @@
  *   robust (central limit theorem) and is kept; the rank test is then shown
  *   as a secondary result, because it tests a different hypothesis
  *   (distribution shift instead of means).
+ * - Variance (one/two samples): χ² / F under normality, Bonett otherwise.
  */
 
 /** Per-group sample size from which the parametric mean test is kept. */
@@ -34,6 +35,19 @@ export function isNormalByAD(ad, alpha) {
 export function meanRoute(allNormal, sizes) {
   if (allNormal) return 'parametric';
   return sizes.every(n => n >= LARGE_SAMPLE_N) ? 'parametric-large-n' : 'rank';
+}
+
+/**
+ * Pick the test for a one- or two-sample variance question. χ² and F are
+ * exact under normality but badly non-robust otherwise; Bonett's method
+ * (Minitab's default) replaces them when AD rejects normality (C1-012).
+ * @param {'one'|'two'} testType
+ * @param {boolean} allNormal every sample passed the normality check
+ * @returns {'chi2'|'bonett1'|'ftest'|'bonett2'}
+ */
+export function varianceRoute(testType, allNormal) {
+  if (testType === 'one') return allNormal ? 'chi2' : 'bonett1';
+  return allNormal ? 'ftest' : 'bonett2';
 }
 
 /** Relative spread below which values count as one value (rounding noise). */

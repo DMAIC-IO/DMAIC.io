@@ -1,6 +1,6 @@
 import { suite, test, assertEqual } from '../test-utils.js';
 import {
-  LARGE_SAMPLE_N, isNormalByAD, meanRoute, isConstant, ciContains,
+  LARGE_SAMPLE_N, isNormalByAD, meanRoute, isConstant, ciContains, varianceRoute,
 } from '../../js/modules/hypothesis-test/hypothesis-test-routing.js';
 
 // C1-017: normality is judged by Anderson-Darling alone; for means the
@@ -73,4 +73,11 @@ suite('Hypothesis Test Routing — ciContains', () => {
   test('false without an interval', () => {
     assertEqual(ciContains(null, 0), false);
   });
+});
+
+suite('Hypothesis routing — varianceRoute', () => {
+  test('one sample, normal → chi2', () => assertEqual(varianceRoute('one', true), 'chi2'));
+  test('one sample, non-normal → bonett1', () => assertEqual(varianceRoute('one', false), 'bonett1'));
+  test('two samples, normal → ftest', () => assertEqual(varianceRoute('two', true), 'ftest'));
+  test('two samples, non-normal → bonett2', () => assertEqual(varianceRoute('two', false), 'bonett2'));
 });
