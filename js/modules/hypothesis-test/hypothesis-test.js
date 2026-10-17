@@ -33,7 +33,7 @@ import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-pi
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 
 /** Mapping: test name → Algorithm Lab ID. */
-import { isNormalByAD, meanRoute } from './hypothesis-test-routing.js';
+import { isNormalByAD, meanRoute, isConstant, ciContains } from './hypothesis-test-routing.js';
 
 const ALGO_LAB_IDS = {
   'Shapiro-Wilk': 'shapiro-wilk',
@@ -334,10 +334,12 @@ const mod = createModule({
           : `${_t('notSignificant')}: ${_t('h0NotRejected')}`;
 
         let ciNote = '';
+        // A non-rejected one-sided test can leave the target outside the CI
+        const ciHoldsTarget = ciContains(r.ci, target ?? 0);
         if (isPaired && r.ci && !r.reject) {
-          ciNote = _t('ciPairedDiffNote', { lo: fmt(r.ci[0]), hi: fmt(r.ci[1]) });
+          if (ciHoldsTarget) ciNote = _t('ciPairedDiffNote', { lo: fmt(r.ci[0]), hi: fmt(r.ci[1]) });
         } else if (isMeanDiff && !r.reject) {
-          ciNote = _t('ciDiffNote', { lo: fmt(r.ci[0]), hi: fmt(r.ci[1]) });
+          if (ciHoldsTarget) ciNote = _t('ciDiffNote', { lo: fmt(r.ci[0]), hi: fmt(r.ci[1]) });
         } else if (r.hl) {
           const parts = [];
           if (!r.reject) parts.push(_t('ciShiftNote', { lo: fmt(r.hl.lower), hi: fmt(r.hl.upper) }));
@@ -464,11 +466,15 @@ const mod = createModule({
         const { x1, x2, d, dropped } = pairDifferences(
           getColumnValues(sm, this._picker1.value),
           getColumnValues(sm, this._picker2.value));
-        if (d.length < 3) { this.result = null; return; }
+        if (d.length < 3) {
+          this.result = null;
+          this.errorText = _t('pairedTooFew', { count: d.length, n: d.length });
+          return;
+        }
         const target = this.model.resolveTarget();
         if (target == null) { this.result = null; return; }
         // Identical columns (or a constant shift) leave no variation to test
-        if (d.every(v => v === d[0])) {
+        if (isConstant(d)) {
           this.result = null;
           this.errorText = _t('pairedNoVariation');
           return;

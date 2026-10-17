@@ -167,7 +167,7 @@
           <!-- After the title: a leading <template> would cost the title its :first-child margin rule -->
           <template x-if="result.pairInfo && result.pairInfo.dropped > 0">
             <p class="field-hint field-hint--warn" data-ref="paired-note"
-              x-text="t('pairedDropped', { n: result.pairInfo.n, k: result.pairInfo.dropped })"></p>
+              x-text="t('pairedDropped', { count: result.pairInfo.dropped, n: result.pairInfo.n, k: result.pairInfo.dropped })"></p>
           </template>
 
           <!-- k-sample: grid of per-group cards; otherwise stacked S1/S2 cards -->
