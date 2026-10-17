@@ -110,7 +110,7 @@ export default {
           { type: 'heading', content: 'Ansichtswechsel' },
           { type: 'paragraph', content: 'instance.call zeigt die Zielinstanz an, bevor es ihre Methode aufruft — das Viewmodel lebt nur in der aktiven Ansicht. Ein Stapel mit Aufrufen auf mehrere Instanzen wechselt die Ansicht entsprechend oft; das ist beabsichtigt und für den Nutzer die Rückmeldung, woran gearbeitet wird.' },
           { type: 'heading', content: 'Erklärte Schlüssel' },
-          { type: 'paragraph', content: 'module.describe beschreibt Aktionen und Lesefelder samt keys: bei einem generischen Setter wie setParam jeden zulässigen Schlüssel, bei einem Ergebnisfeld wie result jede Kennzahl, je mit type und help, verschachtelt in keys der nächsten Ebene. Eine leere keys-Liste heißt: keine erklärte Struktur. Derselbe help-Text erscheint in der Oberfläche an der Beschriftung, wenn der Mensch Alt hält.' },
+          { type: 'paragraph', content: 'module.describe beschreibt Aktionen und Lesefelder samt keys: bei einem generischen Setter wie setParam jeden zulässigen Schlüssel, bei einem Ergebnisfeld wie result jede Kennzahl, je mit type und help, verschachtelt in keys der nächsten Ebene. Eine leere keys-Liste heißt: keine erklärte Struktur. optional: true heißt, die Kennzahl fehlt in manchen Zuständen, etwa je Kartentyp oder bei einseitiger Toleranz. Derselbe help-Text erscheint in der Oberfläche an der Beschriftung, wenn der Mensch Alt hält.' },
         ],
       },
       en: {
@@ -133,7 +133,7 @@ export default {
           { type: 'heading', content: 'View switching' },
           { type: 'paragraph', content: 'instance.call shows the target instance before calling its method — the viewmodel only lives in the active view. A batch that calls several instances switches the view accordingly; that is intended, and it is how the user sees what is being worked on.' },
           { type: 'heading', content: 'Declared keys' },
-          { type: 'paragraph', content: 'module.describe describes actions and read fields including keys: for a generic setter such as setParam every allowed key, for a result field such as result every figure, each with type and help, nested in the keys of the next level. An empty keys list means no declared structure. The same help text appears in the interface at the label when the user holds Alt.' },
+          { type: 'paragraph', content: 'module.describe describes actions and read fields including keys: for a generic setter such as setParam every allowed key, for a result field such as result every figure, each with type and help, nested in the keys of the next level. An empty keys list means no declared structure. optional: true means the figure is absent in some states, for example per chart type or with a one-sided tolerance. The same help text appears in the interface at the label when the user holds Alt.' },
         ],
       },
     },

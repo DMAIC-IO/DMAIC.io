@@ -94,7 +94,7 @@ function deepFreeze(obj) {
  * die nächste Ebene (`biasTest.p`) und sonst leer; die Grammatik kennt keine
  * Rekursion, darum `any` eine Ebene tiefer.
  */
-const DESCRIBED_KEY = { name: 'string', type: 'string', help: 'string', keys: 'any' };
+const DESCRIBED_KEY = { name: 'string', type: 'string', help: 'string', optional: 'boolean', keys: 'any' };
 
 /**
  * Der Aktionskatalog. `params` beschreibt Pflicht- und Kürformen,
@@ -163,6 +163,7 @@ export const OPS = deepFreeze({
  * @typedef {object} AgentTypedefKey
  * @property {string} type
  * @property {string} help
+ * @property {true} [optional]  nur gesetzt, wenn die Property als `[name]` erklärt ist
  * @property {string} [keysOf]
  * @property {Record<string, AgentTypedefKey>} [keys]
  */

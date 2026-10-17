@@ -308,8 +308,8 @@ suite('agent catalog — module.describe', () => {
     const out = await describeModule({ ...deps, registry, i18n }, 'worksheet');
     const action = out.actions.find(a => a.name === 'setParam');
     assertDeepEqual(action.keys, [
-      { name: 'alpha', type: 'string', help: 'Das Signifikanzniveau.', keys: [] },
-      { name: 'k1', type: "'0.2'|'0.1'", help: 'JSDoc k1', keys: [] },
+      { name: 'alpha', type: 'string', help: 'Das Signifikanzniveau.', optional: false, keys: [] },
+      { name: 'k1', type: "'0.2'|'0.1'", help: 'JSDoc k1', optional: false, keys: [] },
     ]);
     // Eine verlässliche Form statt „mal da, mal nicht": die Vertragsform
     // (`OPS['module.describe'].result`) nennt `keys` an jeder Aktion.
@@ -340,18 +340,34 @@ suite('agent catalog — module.describe', () => {
     const out = await describeModule({ ...deps, registry, i18n }, 'worksheet');
     const result = out.fields.find(f => f.name === 'result');
     assertDeepEqual(result.keys, [
-      { name: 'Cg', type: 'number|null', help: 'Die Fähigkeit des Messsystems.', keys: [] },
-      { name: 'biasTest', type: 'BiasTest', help: 'JSDoc Test',
-        keys: [{ name: 'p', type: 'number|null', help: 'Der p-Wert des Bias-Tests.', keys: [] }] },
+      { name: 'Cg', type: 'number|null', help: 'Die Fähigkeit des Messsystems.', optional: false, keys: [] },
+      { name: 'biasTest', type: 'BiasTest', help: 'JSDoc Test', optional: false,
+        keys: [{ name: 'p', type: 'number|null', help: 'Der p-Wert des Bias-Tests.', optional: false, keys: [] }] },
     ]);
     assertDeepEqual(out.fields.find(f => f.name === 'rows').keys, []);
+  });
+
+  test('eine optionale Kennzahl trägt optional: true, alle anderen optional: false', async () => {
+    const registry = { ...REGISTRY, worksheet: { ...REGISTRY.worksheet, fields: {
+      ...REGISTRY.worksheet.fields,
+      result: {
+        type: 'Result|null', help: 'das Ergebnis', bulk: false, derived: true, keysOf: 'Result',
+        keys: {
+          Cg: { type: 'number', help: 'JSDoc Cg' },
+          Cgk: { type: 'number', help: 'JSDoc Cgk', optional: true },
+        },
+      },
+    } } };
+    const out = await describeModule({ ...deps, registry }, 'worksheet');
+    const keys = out.fields.find(f => f.name === 'result').keys;
+    assertDeepEqual(keys.map(k => [k.name, k.optional]), [['Cg', false], ['Cgk', true]]);
   });
 
   test('die Vertragsform von module.describe nennt keys an Aktionen, Feldern und Schlüsseln', () => {
     // Der Agent liest diese Form beim ersten interact() — und der Prüfer
     // lässt eine Referenz nur durch, wenn ihr Pfad in ihr steht.
     const shape = OPS['module.describe'].result;
-    for (const path of ['actions.0.keys.0.help', 'fields.0.keys.0.type', 'fields.0.keys.0.keys']) {
+    for (const path of ['actions.0.keys.0.help', 'fields.0.keys.0.type', 'fields.0.keys.0.keys', 'fields.0.keys.0.optional']) {
       assertEqual(pathExistsInShape(shape, path).ok, true, `${path} fehlt in der Vertragsform`);
     }
   });

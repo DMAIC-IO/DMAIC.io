@@ -403,7 +403,7 @@ function findTypedefLiteral(sf, name) {
  * @param {ts.SourceFile} sf
  * @param {string} name  der Typedef-Name
  * @param {Set<string>} [open]  die auf dem Pfad offenen Typedefs
- * @returns {Record<string, { type: string, help: string, keysOf?: string, keys?: object }>|null}
+ * @returns {Record<string, { type: string, help: string, optional?: true, keysOf?: string, keys?: object }>|null}
  *   null, wenn die Typedef in der Datei fehlt
  */
 function typedefKeys(sf, name, open = new Set()) {
@@ -415,7 +415,15 @@ function typedefKeys(sf, name, open = new Set()) {
     const prop = property.name?.getText(sf);
     if (!prop) continue;
     const type = property.typeExpression?.type?.getText(sf) ?? 'any';
-    keys[prop] = { type, help: cleanComment(property.comment), ...nestedKeys(sf, type, inner) };
+    keys[prop] = {
+      type,
+      help: cleanComment(property.comment),
+      // `[Cg]`: die Kennzahl fehlt in manchen Zuständen (Kartentyp,
+      // einseitige Toleranz). Nur der wahre Fall steht da — der
+      // Laufzeitabgleich vermisst einen optionalen Schlüssel nicht.
+      ...(property.isBracketed ? { optional: true } : {}),
+      ...nestedKeys(sf, type, inner),
+    };
   }
   return keys;
 }

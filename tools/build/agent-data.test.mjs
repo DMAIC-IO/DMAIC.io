@@ -3001,6 +3001,17 @@ test('Ausgaben: die Schlüsselfläche eines generischen Setters nennt ihre Typed
   assert.equal(foo.actions.setParam.keysOf, 'Params');
 });
 
+test('Ausgaben: eine eckig geklammerte Property ist optional, die anderen tragen kein optional', () => {
+  const vm = RESULT_VM.replace(
+    ' * @property {number|null} Cg die Fähigkeit',
+    ' * @property {number|null} Cg die Fähigkeit\n * @property {number} [Cgk] nur bei zweiseitiger Toleranz',
+  );
+  const { modules } = collectAgentData(fixture({ foo: { 'foo.js': vm } }));
+  const keys = modules.foo.fields.result.keys;
+  assert.deepEqual(keys.Cgk, { type: 'number', help: 'nur bei zweiseitiger Toleranz', optional: true });
+  assert.equal('optional' in keys.Cg, false);
+});
+
 test('Ausgaben: eine Typedef, die sich selbst enthält, bricht die Auflösung nicht', () => {
   const vm = RESULT_VM.replace(' * @property {number|null} p der p-Wert', ' * @property {number|null} p der p-Wert\n * @property {BiasTest} again zyklisch');
   const { modules } = collectAgentData(fixture({ foo: { 'foo.js': vm } }));
