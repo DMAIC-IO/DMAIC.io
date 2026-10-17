@@ -4,7 +4,7 @@
   <div class="hyptest__input dmike-split__input">
 
     <div class="dmike-split__section-title" x-text="t('sectionCategory')"></div>
-    <div class="btn-group hyptest__toggle-row">
+    <div class="btn-group hyptest__toggle-row" data-help-key="modules.hypothesis-test.actions.setCategory.help">
       <button class="btn--segment hyptest__toggle-btn" data-cat="variance"
         :class="model.category === 'variance' ? 'btn--active' : ''"
         @click="setCategory('variance')">σ² <span x-text="t('catVariance')"></span></button>
@@ -14,7 +14,7 @@
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionTestType')"></div>
-    <div class="btn-group hyptest__toggle-row">
+    <div class="btn-group hyptest__toggle-row" data-help-key="modules.hypothesis-test.actions.setTestType.help">
       <button class="btn--segment hyptest__toggle-btn" data-type="one"
         :class="model.testType === 'one' ? 'btn--active' : ''"
         @click="setTestType('one')" x-text="t('oneSample')"></button>
@@ -161,7 +161,7 @@
                 </div>
                 <table>
                   <thead><tr>
-                    <th>Test</th><th x-text="t('statistic')"></th><th>p</th><th x-text="t('decision')"></th>
+                    <th><span data-help-key="modules.hypothesis-test.types.NormRow.name">Test</span></th><th><span data-help-key="modules.hypothesis-test.types.NormRow.stat" x-text="t('statistic')"></span></th><th><span data-help-key="modules.hypothesis-test.types.NormRow.p">p</span></th><th><span data-help-key="modules.hypothesis-test.types.NormRow.decisionText" x-text="t('decision')"></span></th>
                   </tr></thead>
                   <tbody>
                     <template x-for="row in card.rows">
@@ -199,7 +199,7 @@
           <!-- Routing trail -->
           <div class="hyptest__route-card">
             <div class="hyptest__route-title" x-text="t('algoRouting')"></div>
-            <div class="hyptest__route-trail">
+            <div class="hyptest__route-trail" data-help-key="modules.hypothesis-test.types.Result.route">
               <span class="hyptest__trail-dot" :class="result.allNormal ? 'hyptest__trail-dot--pass' : 'hyptest__trail-dot--fail'"></span>
               <span><span x-text="t('normalLabel')"></span>: <strong x-text="result.allNormal ? t('yes') : t('no')"></strong></span>
               <template x-if="result.varEquality">
@@ -282,7 +282,7 @@
             <template x-if="result.main.anovaRows">
               <table>
                 <thead><tr>
-                  <th x-text="t('source')"></th><th>SS</th><th>df</th><th>MS</th><th>F</th><th>p</th>
+                  <th><span data-help-key="modules.hypothesis-test.types.AnovaRow.src" x-text="t('source')"></span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.ss">SS</span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.df">df</span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.ms">MS</span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.f">F</span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.p">p</span></th>
                 </tr></thead>
                 <tbody>
                   <template x-for="row in result.main.anovaRows">
@@ -303,9 +303,9 @@
             <template x-if="result.main.groupRows">
               <table>
                 <thead><tr>
-                  <th x-text="t('group')"></th><th>n</th><th>x̄</th><th>s²</th>
+                  <th><span data-help-key="modules.hypothesis-test.types.GroupRow.name" x-text="t('group')"></span></th><th><span data-help-key="modules.hypothesis-test.types.GroupRow.n">n</span></th><th><span data-help-key="modules.hypothesis-test.types.GroupRow.mean">x̄</span></th><th><span data-help-key="modules.hypothesis-test.types.GroupRow.variance">s²</span></th>
                   <template x-if="result.main.showCld">
-                    <th :title="t('groupingHint')" x-text="t('groupingLabel')"></th>
+                    <th :title="t('groupingHint')"><span data-help-key="modules.hypothesis-test.types.GroupRow.letters" x-text="t('groupingLabel')"></span></th>
                   </template>
                 </tr></thead>
                 <tbody>
@@ -356,7 +356,7 @@
               <div class="hyptest__result-card">
                 <div class="hyptest__decision" :class="result.power.goalBoxClass">
                   <strong><span x-text="t('powerGoal')"></span>: <span x-text="result.power.goalPct"></span>%</strong>
-                  <p x-text="result.power.requiredLine"></p>
+                  <p data-help-key="modules.hypothesis-test.types.PowerInfo.requiredLine" x-text="result.power.requiredLine"></p>
                 </div>
                 <div class="hyptest__metrics">
                   <template x-for="m in result.power.metrics">
@@ -373,7 +373,7 @@
           <!-- ── Section 5: Pairwise post-hoc (k ≥ 3) ── -->
           <template x-if="result.pairwise">
             <div class="hyptest__contents">
-              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionPairwise')"></span></div>
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.hypothesis-test.types.PairwiseCell.text" x-text="t('sectionPairwise')"></span></div>
               <div class="hyptest__result-card">
                 <div class="hyptest__pairwise-meta">
                   <span x-text="t('pairwiseMethod')"></span>: <strong>

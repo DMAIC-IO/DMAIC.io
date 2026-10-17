@@ -66,6 +66,147 @@ const ALGO_LAB_IDS = {
 function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–'; }
 
 /**
+ * Das Ergebnis, wie `read().result` es liefert: ein Anzeigemodell. Alle
+ * Werte sind formatierte Texte: Beschriftungen in der Sprache der
+ * Oberfläche, Zahlen mit Dezimalpunkt (meist vier Nachkommastellen, „–“ für
+ * nicht endliche Werte); die Klassenfelder sind
+ * Darstellungsklassen der Oberfläche.
+ *
+ * @typedef {object} Result
+ * @property {boolean} isK  k-Stichproben-Vergleich
+ * @property {boolean} allNormal  alle Stichproben normalverteilt
+ * @property {NormCard[]} normCards  Normalitätsprüfung je Stichprobe
+ * @property {Route} route  gewähltes Verfahren
+ * @property {VarEquality|null} varEquality  Varianzgleichheit
+ * @property {MainResult} main  Haupttest
+ * @property {SecondaryResult|null} secondary  Vergleichstest, nur großer Stichprobenweg
+ * @property {PowerInfo|null} power  Teststärke, nicht bei k
+ * @property {PairwiseSection|null} pairwise  Paarvergleiche, nur bei k ≥ 3
+ */
+
+/**
+ * @typedef {object} Route
+ * @property {string} name  Name des Verfahrens
+ * @property {string} algoId  Kennung im Algorithm Lab
+ */
+
+/**
+ * @typedef {object} NormCard
+ * @property {string} label  Stichprobe
+ * @property {string} badgeClass  Darstellungsklasse des Urteils
+ * @property {string} badgeText  Urteil normal oder nicht
+ * @property {NormRow[]} rows  Shapiro-Wilk und Anderson-Darling
+ * @property {Metric[]} metrics  n, x̄, s, s²
+ */
+
+/**
+ * @typedef {object} NormRow
+ * @property {string} name  Test
+ * @property {string} algoId  Kennung im Algorithm Lab
+ * @property {string} stat  Statistik
+ * @property {string} p  p-Wert
+ * @property {string} pClass  Darstellungsklasse des p-Werts
+ * @property {string} decisionIcon  Symbol der Entscheidung
+ * @property {string} decisionText  Entscheidung
+ */
+
+/**
+ * Eine Kennzahl. In den Normalitätskarten fehlt `valueClass`, `ci` steht
+ * nur dort (leer, wo kein Intervall berechenbar ist); `algoId` nur an der
+ * Testmethode.
+ *
+ * @typedef {object} Metric
+ * @property {string} label  Beschriftung
+ * @property {string} value  Wert
+ * @property {string} [valueClass]  Darstellungsklasse
+ * @property {string} title  Tooltip
+ * @property {string} [algoId]  Kennung im Algorithm Lab
+ * @property {string|null} [ci]  Konfidenzintervall
+ */
+
+/**
+ * @typedef {object} VarEquality
+ * @property {boolean} varsEqual  Varianzen gleich
+ * @property {Metric[]|null} metrics  Kennzahlen der Varianzprüfung, nur bei k
+ * @property {string} trailLabelKey  Text des Wegschritts
+ * @property {boolean} trailYes  Wegschritt mit ja beantwortet
+ */
+
+/**
+ * @typedef {object} MainResult
+ * @property {string} h0  Nullhypothese
+ * @property {string} h1  Alternativhypothese
+ * @property {string} [ciNote]  Hinweis zum Intervall, nicht bei k
+ * @property {string} h0Class  Darstellungsklasse H₀
+ * @property {string} h1Class  Darstellungsklasse H₁
+ * @property {string} h0Tip  Tooltip H₀
+ * @property {string} h1Tip  Tooltip H₁
+ * @property {Metric[]} metrics  Testmethode, Statistik, p und mehr
+ * @property {AnovaRow[]|null} [anovaRows]  ANOVA-Tabelle, nur k
+ * @property {GroupRow[]} [groupRows]  Gruppenübersicht, nur k
+ * @property {boolean} [showCld]  Buchstaben zeigen, nur k
+ */
+
+/**
+ * @typedef {object} AnovaRow
+ * @property {string} src  Quelle
+ * @property {string} ss  Quadratsumme
+ * @property {string} df  Freiheitsgrade
+ * @property {string} ms  mittlere Quadratsumme
+ * @property {string} f  F-Wert
+ * @property {string} p  p-Wert
+ * @property {string} pClass  Darstellungsklasse des p-Werts
+ * @property {boolean} bold  hervorgehoben
+ */
+
+/**
+ * @typedef {object} GroupRow
+ * @property {string} name  Gruppe
+ * @property {string} n  Anzahl
+ * @property {string} mean  Mittelwert
+ * @property {string} variance  Varianz
+ * @property {string} letters  Gruppierungsbuchstaben
+ */
+
+/**
+ * @typedef {object} SecondaryResult
+ * @property {Metric[]} metrics  Testmethode, Statistik, p
+ */
+
+/**
+ * @typedef {object} PowerInfo
+ * @property {string} goalPct  Ziel-Teststärke in Prozent
+ * @property {string} goalBoxClass  Darstellungsklasse
+ * @property {string} requiredLine  benötigter Stichprobenumfang
+ * @property {Metric[]} metrics  Power, n, Effekt, α
+ */
+
+/**
+ * @typedef {object} PairwiseSection
+ * @property {string} methodName  Verfahren
+ * @property {string} methodAlgoId  Kennung im Algorithm Lab
+ * @property {string} hint  Hinweis zur Korrektur
+ * @property {string[]} headers  Spaltenköpfe
+ * @property {PairwiseRow[]} rows  Zeilen der Matrix
+ * @property {string} lettersJoined  Buchstaben je Gruppe
+ */
+
+/**
+ * @typedef {object} PairwiseRow
+ * @property {string} head  Zeilenkopf
+ * @property {PairwiseCell[]} cells  Zellen
+ */
+
+/**
+ * @typedef {object} PairwiseCell
+ * @property {string} cls  Darstellungsklasse
+ * @property {string} title  Tooltip
+ * @property {string} text  angepasster p-Wert
+ * @property {string} ci  Konfidenzintervall der Differenz
+ * @property {string} key  Zellkennung
+ */
+
+/**
  * Die Agenten-Lesefläche des Hypothesentests.
  *
  * Nicht die persistierte Form: das Model hält NUR die Konfiguration, das
@@ -87,7 +228,7 @@ function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–';
  * @property {object|null} colRef2  column reference of sample 2, same shape
  * @property {object[]} colRefsK  the column references of the k-sample test
  * @property {boolean} equalVariances  two-sample means: assume equal variances (pooled t) instead of Welch
- * @property {object|null} result  the computed result, or null while the inputs are incomplete
+ * @property {Result|null} result  the computed result as a display model, or null while the inputs are incomplete
  */
 const mod = createModule({
   config: {

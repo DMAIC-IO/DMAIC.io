@@ -7161,11 +7161,11 @@
         },
         "runAnalysis": { "help": "Rechnet mit der aktuellen Konfiguration. Mehrfachaufruf ist unschädlich; unvollständige Eingaben lassen result auf null." },
         "setCategory": {
-          "help": "Wählt, was geprüft wird: Streuung (variance) oder Lage (mean). Die Neuberechnung folgt erst im nächsten Tick, weil die Spaltenauswahl neu eingehängt wird — ein read im selben Stapel sieht noch das alte Ergebnis beziehungsweise null.",
+          "help": "Wählt, was geprüft wird: die Streuung (Varianzen) oder die Lage (Mittelwerte). Die Neuberechnung folgt erst im nächsten Tick, weil die Spaltenauswahl neu eingehängt wird — eine Abfrage im selben Stapel sieht noch das alte oder ein leeres Ergebnis.",
           "params": { "cat": "'variance' oder 'mean'. Jeder andere Wert ist ein Fehler." }
         },
         "setTestType": {
-          "help": "Wählt die Stichprobenlage: eine Stichprobe gegen einen Zielwert, zwei Stichproben gegeneinander, oder k Gruppen. Die Neuberechnung folgt erst im nächsten Tick, weil die Spaltenauswahl neu eingehängt wird — ein read im selben Stapel sieht noch das alte Ergebnis beziehungsweise null.",
+          "help": "Wählt die Stichprobenlage: eine Stichprobe gegen einen Zielwert, zwei Stichproben gegeneinander oder k Gruppen. Die Neuberechnung folgt erst im nächsten Tick, weil die Spaltenauswahl neu eingehängt wird — eine Abfrage im selben Stapel sieht noch das alte oder ein leeres Ergebnis.",
           "params": { "type": "'one', 'two' oder 'k'. Jeder andere Wert ist ein Fehler." }
         },
         "setDirection": {
@@ -7217,7 +7217,112 @@
         "colRef2": { "help": "Spaltenbezug der zweiten Stichprobe." },
         "colRefsK": { "help": "Die Spaltenbezüge der k-Stichproben-Prüfung." },
         "equalVariances": { "help": "Ob bei zwei Stichproben der gepoolte t-Test statt Welch gerechnet wird." },
-        "result": { "help": "Das gerechnete Ergebnis: route nennt das gewählte Verfahren, main die Prüfgröße samt p-Wert und Konfidenzintervall, normCards die Normalitätsprüfung je Stichprobe, power die Stichprobenumfangsbetrachtung, pairwise die Paarvergleiche der k-Prüfung. null, solange die Eingaben unvollständig sind." }
+        "result": { "help": "Das Ergebnis als Anzeigemodell (formatierte Texte; Beschriftungen in der Sprache der Oberfläche, Zahlen mit Dezimalpunkt), jede Kennzahl unter keys einzeln beschrieben; null, solange die Eingaben unvollständig sind." }
+      },
+      "types": {
+        "Result": {
+          "isK": "Wahr beim Testtyp „k Stichproben“, sonst falsch. Bei wahr zeigt die Oberfläche je Gruppe eine Normalitätskarte, die Gruppenübersicht und gegebenenfalls die paarweisen Vergleiche, aber keine Power-Analyse.",
+          "allNormal": "Wahr, wenn jede Stichprobe als normalverteilt gilt, also der Anderson-Darling-Test für jede Stichprobe p ≥ α liefert; Shapiro-Wilk wird mit angezeigt, entscheidet aber nicht. Die Oberfläche zeigt das als Wegschritt „Normalverteilung: Ja/Nein“.",
+          "normCards": "Die Normalverteilungsprüfung, eine Karte je Stichprobe: eine oder zwei bei Ein- und Zwei-Stichproben, k beim Testtyp „k Stichproben“.",
+          "route": "Das gewählte Hauptverfahren, wie der Weg unter „Algorithmus-Routing“ es zeigt. Normalität entscheidet allein der Anderson-Darling-Test mit p ≥ α. Bei Varianzen: eine Stichprobe immer der χ²-Varianztest, zwei Stichproben der F-Test, wenn alle normal sind, sonst Levene (Brown-Forsythe), k Stichproben Bartlett bzw. Levene. Bei Mittelwerten: sind alle Stichproben normal, der parametrische Test; sonst bleibt er, wenn jede Stichprobe n ≥ 20 hat (der Rangtest kommt als Vergleich hinzu); sonst der Rangweg. Parametrisch heißt das Ein-Stichproben-t-Test, Welch-t-Test (gepoolter t-Test nur, wenn gleiche Varianzen angenommen sind) oder einfaktorielle ANOVA; der Rangweg Wilcoxon-Vorzeichen-Rang, Mann-Whitney-U oder Kruskal-Wallis.",
+          "varEquality": "Die Varianzgleichheit. Bei zwei Stichproben, Mittelwerten und parametrischem Weg ist es nur die Annahme aus dem Kästchen „Gleiche Varianzen annehmen“, ohne Kennzahlen; bei k Stichproben und Mittelwerten der Levene-Test (Brown-Forsythe) mit Kennzahlen im Abschnitt „Varianzgleichheit“. Leer bei Varianztests, bei einer Stichprobe und auf dem Rangweg zweier Stichproben.",
+          "main": "Der Haupttest im Abschnitt „Testergebnis“: Hypothesen und Kennzahlen des gewählten Verfahrens.",
+          "secondary": "Der Rangtest neben dem parametrischen Ergebnis im Abschnitt „Rangbasierter Vergleichstest“: Wilcoxon, Mann-Whitney-U oder Kruskal-Wallis. Nur auf dem Weg „nicht normalverteilt, aber jede Stichprobe n ≥ 20“, sonst leer.",
+          "power": "Die Power-Analyse, nur bei Ein- und Zwei-Stichproben; beim Testtyp „k Stichproben“ leer.",
+          "pairwise": "Die paarweisen Vergleiche, nur bei mindestens drei Gruppen; bei zwei Gruppen und außerhalb von „k Stichproben“ leer."
+        },
+        "Route": {
+          "name": "Name des gewählten Verfahrens als formatierter Text, immer der englische Verfahrensname, etwa „One-Way ANOVA“ oder „Welch t-Test“, auch in der deutschen Oberfläche.",
+          "algoId": "Kennung der passenden Seite im Algorithm Lab; die Oberfläche öffnet sie über den Knopf neben dem Verfahrensnamen. Leerer Text, wenn es keine Seite gibt."
+        },
+        "NormCard": {
+          "label": "Name der Stichprobe als formatierter Text: „S1“ bzw. „S2“ bei Ein- und Zwei-Stichproben, bei k Stichproben der Spaltenname aus der Datensammlung.",
+          "badgeClass": "Darstellungsklasse der Oberfläche; färbt das Urteilsabzeichen grün für normalverteilt und rot für nicht normalverteilt.",
+          "badgeText": "Das Urteil als formatierter Text, „Normalverteilt“ oder „Nicht normalverteilt“; es folgt allein dem Anderson-Darling-Test: normalverteilt bei p ≥ α.",
+          "rows": "Zwei Zeilen der Prüftabelle: Shapiro-Wilk und Anderson-Darling.",
+          "metrics": "Die Kennzahlen der Stichprobe als formatierte Texte: n, x̄, s und s². Zu x̄ gehört das t-Konfidenzintervall von μ, x̄ ± t(1 − α/2; n − 1) · s/√n, zu s² das χ²-Intervall von σ², (n − 1)s²/χ²(1 − α/2) bis (n − 1)s²/χ²(α/2), zu s dessen Wurzeln; alle zum Niveau 1 − α."
+        },
+        "NormRow": {
+          "name": "Name des Tests, „Shapiro-Wilk“ oder „Anderson-Darling“, Spalte „Test“.",
+          "algoId": "Kennung der Seite im Algorithm Lab für den Knopf neben dem Testnamen.",
+          "stat": "Die Teststatistik als formatierter Text mit vier Nachkommastellen: W bei Shapiro-Wilk, A² bei Anderson-Darling. Spalte „Statistik“.",
+          "p": "Der p-Wert des Tests als formatierter Text mit vier Nachkommastellen, Spalte „p“.",
+          "pClass": "Darstellungsklasse der Oberfläche; färbt den p-Wert rot bei p < α und grün sonst.",
+          "decisionIcon": "Kennung des Symbols vor der Entscheidung: ein Warnsymbol bei p < α, ein Haken sonst.",
+          "decisionText": "Die Entscheidung als formatierter Text, Spalte „Entscheidung“: „Ablehnen“ bei p < α, dann ist die Normalverteilungsannahme verworfen, sonst „Nicht ablehnen“."
+        },
+        "Metric": {
+          "label": "Beschriftung der Kennzahl als formatierter Text, so wie die Oberfläche sie zeigt, etwa „Testverfahren“, „Statistik“, „p“, „df“, „n“, „x̄“, „s²“ oder „95 % KI“; welche Kennzahlen erscheinen, wechselt mit Test und Weg.",
+          "value": "Der Wert als formatierter Text: Zahlen mit vier Nachkommastellen und Dezimalpunkt, Freiheitsgrade bei k-Tests als „df1 / df2“, die Power in Prozent, das Testverfahren als englischer Name, Intervalle als untere und obere Grenze; „–“ für einen nicht berechenbaren Wert.",
+          "valueClass": "Darstellungsklasse der Oberfläche; färbt den p-Wert rot bei p < α und grün sonst, setzt Testverfahren und Intervalle kleiner und färbt die Power nach erreichtem Ziel. Fehlt in den Normalitätskarten.",
+          "title": "Tooltip der Kennzahl als formatierter Text, eine kurze Erklärung; beim p-Wert ggf. mit der Berechnungsart, exakt oder per Normalapproximation. Kann leer sein.",
+          "algoId": "Kennung der Seite im Algorithm Lab, nur am Testverfahren und am Hodges-Lehmann-Schätzer; leerer Text, wenn es keine Seite gibt.",
+          "ci": "Nur in den Normalitätskarten: das Konfidenzintervall zum Niveau 1 − α als formatierter Text, das t-Intervall von μ bei x̄, das χ²-Intervall von σ² bei s², dessen Wurzeln bei s. Leer bei n und wenn n < 2 oder keine Streuung vorliegt."
+        },
+        "VarEquality": {
+          "varsEqual": "Wahr, wenn die Varianzen als gleich gelten: bei zwei Stichproben die Annahme aus dem Kästchen „Gleiche Varianzen annehmen“, bei k Stichproben ein nicht signifikanter Levene-Test, p ≥ α.",
+          "metrics": "Die Kennzahlen des Levene-Tests (Brown-Forsythe) als formatierte Texte: Testverfahren, Statistik, df als „df1 / df2“ und p. Nur bei k Stichproben, bei zwei Stichproben leer.",
+          "trailLabelKey": "Der Übersetzungsschlüssel des Wegschritts, kein angezeigter Text: „varEqualLabel“ (angezeigt „Gleiche Varianzen angenommen“) bei zwei Stichproben, „varDiffLabel“ (angezeigt „Signifikanter Varianzunterschied (Levene)“) bei k Stichproben.",
+          "trailYes": "Ob der Wegschritt mit „Ja“ beantwortet wird: bei zwei Stichproben, wenn die Varianzen als gleich angenommen sind; bei k Stichproben umgekehrt, wenn der Levene-Test einen Unterschied zeigt."
+        },
+        "MainResult": {
+          "h0": "Die Nullhypothese als formatierter Text mit Symbolen, etwa „μ₁ = μ₂ = … = μₖ“ oder „σ² ≤ 4.0000“; bei einer Stichprobe steht der Zielwert darin, das Zeichen folgt der Richtung: zweiseitig =, größer ≤, kleiner ≥.",
+          "h1": "Die Alternativhypothese als formatierter Text mit ≠, > oder <; bei k Stichproben „mindestens ein μ unterscheidet sich“ bzw. „mindestens eine Varianz unterscheidet sich“.",
+          "ciNote": "Ein Hinweis zum Intervall als formatierter Text, fehlt bei k Stichproben. Beim Mittelwertvergleich zweier Stichproben ohne Signifikanz nennt er den Bereich der Differenz μ₁−μ₂ und dass Gleichheit damit nicht gezeigt ist; im Mann-Whitney-Weg die Verschiebung η₁−η₂ oder dass die Stichproben für das Niveau 1 − α zu klein sind. Sonst leer.",
+          "h0Class": "Darstellungsklasse der Oberfläche; markiert die H₀-Box als abgelehnt, wenn p < α, sonst als angenommen.",
+          "h1Class": "Darstellungsklasse der Oberfläche; markiert die H₁-Box umgekehrt zur H₀-Box.",
+          "h0Tip": "Tooltip der H₀-Box als formatierter Text, etwa „H₀ wird abgelehnt: p … < α …“; bei k Stichproben leer.",
+          "h1Tip": "Tooltip der H₁-Box als formatierter Text, „Signifikant“ oder „Nicht signifikant“ mit dem Urteil über H₀; bei k Stichproben leer.",
+          "metrics": "Die Kennzahlen des Haupttests als formatierte Texte: immer Testverfahren, Statistik und p; je nach Test dazu df, das Konfidenzintervall zum Niveau 1 − α, im Mann-Whitney-Weg der Hodges-Lehmann-Schätzer der Verschiebung, x̄ bzw. x̄₁ und x̄₂, s² bzw. s²₁ und s²₂; bei k Stichproben k, N und die gepoolte Varianz s²ₚ.",
+          "anovaRows": "Die ANOVA-Tabelle, nur bei k Stichproben mit der einfaktoriellen ANOVA, drei Zeilen: Zwischen Gruppen, Innerhalb Gruppen, Gesamt. Bei anderen Verfahren leer.",
+          "groupRows": "Die Gruppenübersicht, nur bei k Stichproben: eine Zeile je ausgewählter Spalte.",
+          "showCld": "Ob die Spalte „Gruppe“ mit den Gruppierungsbuchstaben gezeigt wird; wahr, sobald die paarweisen Vergleiche Buchstaben liefern, also ab drei Gruppen. Nur bei k Stichproben."
+        },
+        "AnovaRow": {
+          "src": "Quelle der Streuung als formatierter Text: „Zwischen Gruppen“, „Innerhalb Gruppen“ oder „Gesamt“. Spalte „Quelle“.",
+          "ss": "Quadratsumme als formatierter Text, Spalte „SS“: zwischen den Gruppen Σ nᵢ(x̄ᵢ − x̄)², innerhalb die Summe der quadrierten Abweichungen vom Gruppenmittel, Gesamt die Summe beider.",
+          "df": "Freiheitsgrade als formatierter Text, Spalte „df“: k − 1 zwischen den Gruppen, N − k innerhalb, N − 1 gesamt.",
+          "ms": "Mittleres Quadrat als formatierter Text, Spalte „MS“: SS geteilt durch df; in der Zeile Gesamt „—“.",
+          "f": "F-Wert als formatierter Text, Spalte „F“: MS zwischen geteilt durch MS innerhalb, nur in der Zeile Zwischen Gruppen, sonst „—“.",
+          "p": "p-Wert des F-Tests als formatierter Text, Spalte „p“, nur in der Zeile Zwischen Gruppen, sonst „—“; unter α unterscheiden sich die Mittelwerte signifikant.",
+          "pClass": "Darstellungsklasse der Oberfläche; färbt den p-Wert rot bei p < α und grün sonst, leer in den übrigen Zeilen.",
+          "bold": "Ob die Zeile fett erscheint; nur die Zeile Gesamt."
+        },
+        "GroupRow": {
+          "name": "Name der Gruppe, der Spaltenname aus der Datensammlung. Spalte „Gruppe“.",
+          "n": "Anzahl der Werte der Gruppe als formatierter Text, Spalte „n“.",
+          "mean": "Mittelwert x̄ der Gruppe als formatierter Text mit vier Nachkommastellen, Spalte „x̄“.",
+          "variance": "Stichprobenvarianz s² der Gruppe als formatierter Text mit vier Nachkommastellen, Spalte „s²“.",
+          "letters": "Die Gruppierungsbuchstaben (Compact Letter Display) aus den paarweisen Vergleichen als formatierter Text, Spalte „Gruppe“: Gruppen mit gemeinsamem Buchstaben unterscheiden sich nicht signifikant, Gruppen ohne gemeinsamen Buchstaben unterscheiden sich. Leer bei zwei Gruppen."
+        },
+        "SecondaryResult": {
+          "metrics": "Die Kennzahlen des Rangtests als formatierte Texte: Testverfahren (Wilcoxon, Mann-Whitney-U oder Kruskal-Wallis), Statistik und p."
+        },
+        "PowerInfo": {
+          "goalPct": "Das Power-Ziel in Prozent als formatierter Text, ganzzahlig und ohne Prozentzeichen; die Box zeigt es als „Power-Ziel: 80%“.",
+          "goalBoxClass": "Darstellungsklasse der Oberfläche; färbt die Box grün, wenn die aktuelle Power das Ziel erreicht, sonst als Warnung.",
+          "requiredLine": "Die Zeile „Benötigtes n“ als formatierter Text, bei zwei Stichproben „je Gruppe“: das kleinste n zwischen 4 und 5000, bei dem die Power das Ziel erreicht; bei zwei Stichproben gleich große Gruppen. Wird das Ziel bis 5000 nicht erreicht, steht „> 5000“. Dahinter „Erreicht“ oder „Nicht erreicht“ für die aktuelle Power.",
+          "metrics": "Die Kennzahlen als formatierte Texte: aktuelle Power in Prozent mit einer Nachkommastelle, n (bei zwei Stichproben n₁ / n₂), die Effektgröße und α. Die Effektgröße ist bei Varianzen das Varianz-Verhältnis s²/σ²₀ bzw. s²₁/s²₂, bei Mittelwerten Cohen's d = |x̄ − μ₀|/s bzw. |x̄₁ − x̄₂|/sₚ, mit drei Nachkommastellen."
+        },
+        "PairwiseSection": {
+          "methodName": "Verfahren der Paarvergleiche als englischer Name, Beschriftung „Methode“, immer zweiseitig: bei Varianzen F-Test, wenn alle normal sind, sonst Levene (Brown-Forsythe); bei Mittelwerten der gepoolte t-Test, der Welch-t-Test, wenn Levene einen Varianzunterschied zeigt, auf dem Rangweg Mann-Whitney-U.",
+          "methodAlgoId": "Kennung der Seite im Algorithm Lab für den Knopf neben dem Verfahrensnamen.",
+          "hint": "Der Hinweis unter der Matrix als formatierter Text: „Bonferroni-korrigiert über m = … Paare“ mit m = k(k − 1)/2, bei Mittelwerten ergänzt darum, dass unter dem korrigierten p-Wert das Konfidenzintervall der Differenz μ(Zeile)−μ(Spalte) steht, auf dem Rangweg das Hodges-Lehmann-Intervall der Verschiebung.",
+          "headers": "Die Spaltenköpfe der Matrix: die Gruppennamen, also die Spaltennamen aus der Datensammlung.",
+          "rows": "Die Zeilen der Matrix, eine je Gruppe.",
+          "lettersJoined": "Die Gruppierungsbuchstaben aller Gruppen in Spaltenreihenfolge als formatierter Text, mit Komma verbunden; dieselben Buchstaben wie in der Gruppenübersicht."
+        },
+        "PairwiseRow": {
+          "head": "Der Zeilenkopf: der Gruppenname, also der Spaltenname aus der Datensammlung.",
+          "cells": "Die Zellen der Zeile, eine je Gruppe; gefüllt ist nur das obere Dreieck, die Diagonale und die Zellen darunter zeigen „—“."
+        },
+        "PairwiseCell": {
+          "cls": "Darstellungsklasse der Oberfläche; färbt die Zelle als nicht signifikant oder signifikant, leer auf der Diagonale und darunter.",
+          "title": "Tooltip der Zelle als formatierter Text mit dem rohen p-Wert, dem korrigierten p-Wert und dem Urteil; leer in leeren Zellen.",
+          "text": "Der Bonferroni-korrigierte p-Wert als formatierter Text: p · m, höchstens 1, mit m = k(k − 1)/2 Paaren. Ab α gilt das Paar als nicht signifikant unterschiedlich, darunter als signifikant. „—“ in leeren Zellen.",
+          "ci": "Das Konfidenzintervall zum Niveau 1 − α/m als formatierter Text: bei Mittelwerten das t-Intervall der Differenz μ(Zeile) − μ(Spalte), nach Welch bei ungleichen Varianzen, auf dem Rangweg das Hodges-Lehmann-Intervall der Verschiebung. Leer bei Varianztests und in leeren Zellen.",
+          "key": "Kennung der Zelle aus Zeilen- und Spaltennummer, ab 0 gezählt; nur für die Darstellung."
+        }
       },
       "sectionCategory": "Testkategorie",
       "catMean": "Mittelwerte",

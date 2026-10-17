@@ -4689,10 +4689,479 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
-        "help": "the computed result, or null while the inputs are incomplete",
+        "type": "Result|null",
+        "help": "the computed result as a display model, or null while the inputs are incomplete",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "isK": {
+            "type": "boolean",
+            "help": "k-Stichproben-Vergleich"
+          },
+          "allNormal": {
+            "type": "boolean",
+            "help": "alle Stichproben normalverteilt"
+          },
+          "normCards": {
+            "type": "NormCard[]",
+            "help": "Normalitätsprüfung je Stichprobe",
+            "keysOf": "NormCard",
+            "keys": {
+              "label": {
+                "type": "string",
+                "help": "Stichprobe"
+              },
+              "badgeClass": {
+                "type": "string",
+                "help": "Darstellungsklasse des Urteils"
+              },
+              "badgeText": {
+                "type": "string",
+                "help": "Urteil normal oder nicht"
+              },
+              "rows": {
+                "type": "NormRow[]",
+                "help": "Shapiro-Wilk und Anderson-Darling",
+                "keysOf": "NormRow",
+                "keys": {
+                  "name": {
+                    "type": "string",
+                    "help": "Test"
+                  },
+                  "algoId": {
+                    "type": "string",
+                    "help": "Kennung im Algorithm Lab"
+                  },
+                  "stat": {
+                    "type": "string",
+                    "help": "Statistik"
+                  },
+                  "p": {
+                    "type": "string",
+                    "help": "p-Wert"
+                  },
+                  "pClass": {
+                    "type": "string",
+                    "help": "Darstellungsklasse des p-Werts"
+                  },
+                  "decisionIcon": {
+                    "type": "string",
+                    "help": "Symbol der Entscheidung"
+                  },
+                  "decisionText": {
+                    "type": "string",
+                    "help": "Entscheidung"
+                  }
+                }
+              },
+              "metrics": {
+                "type": "Metric[]",
+                "help": "n, x̄, s, s²",
+                "keysOf": "Metric",
+                "keys": {
+                  "label": {
+                    "type": "string",
+                    "help": "Beschriftung"
+                  },
+                  "value": {
+                    "type": "string",
+                    "help": "Wert"
+                  },
+                  "valueClass": {
+                    "type": "string",
+                    "help": "Darstellungsklasse",
+                    "optional": true
+                  },
+                  "title": {
+                    "type": "string",
+                    "help": "Tooltip"
+                  },
+                  "algoId": {
+                    "type": "string",
+                    "help": "Kennung im Algorithm Lab",
+                    "optional": true
+                  },
+                  "ci": {
+                    "type": "string|null",
+                    "help": "Konfidenzintervall",
+                    "optional": true
+                  }
+                }
+              }
+            }
+          },
+          "route": {
+            "type": "Route",
+            "help": "gewähltes Verfahren",
+            "keysOf": "Route",
+            "keys": {
+              "name": {
+                "type": "string",
+                "help": "Name des Verfahrens"
+              },
+              "algoId": {
+                "type": "string",
+                "help": "Kennung im Algorithm Lab"
+              }
+            }
+          },
+          "varEquality": {
+            "type": "VarEquality|null",
+            "help": "Varianzgleichheit",
+            "keysOf": "VarEquality",
+            "keys": {
+              "varsEqual": {
+                "type": "boolean",
+                "help": "Varianzen gleich"
+              },
+              "metrics": {
+                "type": "Metric[]|null",
+                "help": "Kennzahlen der Varianzprüfung, nur bei k",
+                "keysOf": "Metric",
+                "keys": {
+                  "label": {
+                    "type": "string",
+                    "help": "Beschriftung"
+                  },
+                  "value": {
+                    "type": "string",
+                    "help": "Wert"
+                  },
+                  "valueClass": {
+                    "type": "string",
+                    "help": "Darstellungsklasse",
+                    "optional": true
+                  },
+                  "title": {
+                    "type": "string",
+                    "help": "Tooltip"
+                  },
+                  "algoId": {
+                    "type": "string",
+                    "help": "Kennung im Algorithm Lab",
+                    "optional": true
+                  },
+                  "ci": {
+                    "type": "string|null",
+                    "help": "Konfidenzintervall",
+                    "optional": true
+                  }
+                }
+              },
+              "trailLabelKey": {
+                "type": "string",
+                "help": "Text des Wegschritts"
+              },
+              "trailYes": {
+                "type": "boolean",
+                "help": "Wegschritt mit ja beantwortet"
+              }
+            }
+          },
+          "main": {
+            "type": "MainResult",
+            "help": "Haupttest",
+            "keysOf": "MainResult",
+            "keys": {
+              "h0": {
+                "type": "string",
+                "help": "Nullhypothese"
+              },
+              "h1": {
+                "type": "string",
+                "help": "Alternativhypothese"
+              },
+              "ciNote": {
+                "type": "string",
+                "help": "Hinweis zum Intervall, nicht bei k",
+                "optional": true
+              },
+              "h0Class": {
+                "type": "string",
+                "help": "Darstellungsklasse H₀"
+              },
+              "h1Class": {
+                "type": "string",
+                "help": "Darstellungsklasse H₁"
+              },
+              "h0Tip": {
+                "type": "string",
+                "help": "Tooltip H₀"
+              },
+              "h1Tip": {
+                "type": "string",
+                "help": "Tooltip H₁"
+              },
+              "metrics": {
+                "type": "Metric[]",
+                "help": "Testmethode, Statistik, p und mehr",
+                "keysOf": "Metric",
+                "keys": {
+                  "label": {
+                    "type": "string",
+                    "help": "Beschriftung"
+                  },
+                  "value": {
+                    "type": "string",
+                    "help": "Wert"
+                  },
+                  "valueClass": {
+                    "type": "string",
+                    "help": "Darstellungsklasse",
+                    "optional": true
+                  },
+                  "title": {
+                    "type": "string",
+                    "help": "Tooltip"
+                  },
+                  "algoId": {
+                    "type": "string",
+                    "help": "Kennung im Algorithm Lab",
+                    "optional": true
+                  },
+                  "ci": {
+                    "type": "string|null",
+                    "help": "Konfidenzintervall",
+                    "optional": true
+                  }
+                }
+              },
+              "anovaRows": {
+                "type": "AnovaRow[]|null",
+                "help": "ANOVA-Tabelle, nur k",
+                "optional": true,
+                "keysOf": "AnovaRow",
+                "keys": {
+                  "src": {
+                    "type": "string",
+                    "help": "Quelle"
+                  },
+                  "ss": {
+                    "type": "string",
+                    "help": "Quadratsumme"
+                  },
+                  "df": {
+                    "type": "string",
+                    "help": "Freiheitsgrade"
+                  },
+                  "ms": {
+                    "type": "string",
+                    "help": "mittlere Quadratsumme"
+                  },
+                  "f": {
+                    "type": "string",
+                    "help": "F-Wert"
+                  },
+                  "p": {
+                    "type": "string",
+                    "help": "p-Wert"
+                  },
+                  "pClass": {
+                    "type": "string",
+                    "help": "Darstellungsklasse des p-Werts"
+                  },
+                  "bold": {
+                    "type": "boolean",
+                    "help": "hervorgehoben"
+                  }
+                }
+              },
+              "groupRows": {
+                "type": "GroupRow[]",
+                "help": "Gruppenübersicht, nur k",
+                "optional": true,
+                "keysOf": "GroupRow",
+                "keys": {
+                  "name": {
+                    "type": "string",
+                    "help": "Gruppe"
+                  },
+                  "n": {
+                    "type": "string",
+                    "help": "Anzahl"
+                  },
+                  "mean": {
+                    "type": "string",
+                    "help": "Mittelwert"
+                  },
+                  "variance": {
+                    "type": "string",
+                    "help": "Varianz"
+                  },
+                  "letters": {
+                    "type": "string",
+                    "help": "Gruppierungsbuchstaben"
+                  }
+                }
+              },
+              "showCld": {
+                "type": "boolean",
+                "help": "Buchstaben zeigen, nur k",
+                "optional": true
+              }
+            }
+          },
+          "secondary": {
+            "type": "SecondaryResult|null",
+            "help": "Vergleichstest, nur großer Stichprobenweg",
+            "keysOf": "SecondaryResult",
+            "keys": {
+              "metrics": {
+                "type": "Metric[]",
+                "help": "Testmethode, Statistik, p",
+                "keysOf": "Metric",
+                "keys": {
+                  "label": {
+                    "type": "string",
+                    "help": "Beschriftung"
+                  },
+                  "value": {
+                    "type": "string",
+                    "help": "Wert"
+                  },
+                  "valueClass": {
+                    "type": "string",
+                    "help": "Darstellungsklasse",
+                    "optional": true
+                  },
+                  "title": {
+                    "type": "string",
+                    "help": "Tooltip"
+                  },
+                  "algoId": {
+                    "type": "string",
+                    "help": "Kennung im Algorithm Lab",
+                    "optional": true
+                  },
+                  "ci": {
+                    "type": "string|null",
+                    "help": "Konfidenzintervall",
+                    "optional": true
+                  }
+                }
+              }
+            }
+          },
+          "power": {
+            "type": "PowerInfo|null",
+            "help": "Teststärke, nicht bei k",
+            "keysOf": "PowerInfo",
+            "keys": {
+              "goalPct": {
+                "type": "string",
+                "help": "Ziel-Teststärke in Prozent"
+              },
+              "goalBoxClass": {
+                "type": "string",
+                "help": "Darstellungsklasse"
+              },
+              "requiredLine": {
+                "type": "string",
+                "help": "benötigter Stichprobenumfang"
+              },
+              "metrics": {
+                "type": "Metric[]",
+                "help": "Power, n, Effekt, α",
+                "keysOf": "Metric",
+                "keys": {
+                  "label": {
+                    "type": "string",
+                    "help": "Beschriftung"
+                  },
+                  "value": {
+                    "type": "string",
+                    "help": "Wert"
+                  },
+                  "valueClass": {
+                    "type": "string",
+                    "help": "Darstellungsklasse",
+                    "optional": true
+                  },
+                  "title": {
+                    "type": "string",
+                    "help": "Tooltip"
+                  },
+                  "algoId": {
+                    "type": "string",
+                    "help": "Kennung im Algorithm Lab",
+                    "optional": true
+                  },
+                  "ci": {
+                    "type": "string|null",
+                    "help": "Konfidenzintervall",
+                    "optional": true
+                  }
+                }
+              }
+            }
+          },
+          "pairwise": {
+            "type": "PairwiseSection|null",
+            "help": "Paarvergleiche, nur bei k ≥ 3",
+            "keysOf": "PairwiseSection",
+            "keys": {
+              "methodName": {
+                "type": "string",
+                "help": "Verfahren"
+              },
+              "methodAlgoId": {
+                "type": "string",
+                "help": "Kennung im Algorithm Lab"
+              },
+              "hint": {
+                "type": "string",
+                "help": "Hinweis zur Korrektur"
+              },
+              "headers": {
+                "type": "string[]",
+                "help": "Spaltenköpfe"
+              },
+              "rows": {
+                "type": "PairwiseRow[]",
+                "help": "Zeilen der Matrix",
+                "keysOf": "PairwiseRow",
+                "keys": {
+                  "head": {
+                    "type": "string",
+                    "help": "Zeilenkopf"
+                  },
+                  "cells": {
+                    "type": "PairwiseCell[]",
+                    "help": "Zellen",
+                    "keysOf": "PairwiseCell",
+                    "keys": {
+                      "cls": {
+                        "type": "string",
+                        "help": "Darstellungsklasse"
+                      },
+                      "title": {
+                        "type": "string",
+                        "help": "Tooltip"
+                      },
+                      "text": {
+                        "type": "string",
+                        "help": "angepasster p-Wert"
+                      },
+                      "ci": {
+                        "type": "string",
+                        "help": "Konfidenzintervall der Differenz"
+                      },
+                      "key": {
+                        "type": "string",
+                        "help": "Zellkennung"
+                      }
+                    }
+                  }
+                }
+              },
+              "lettersJoined": {
+                "type": "string",
+                "help": "Buchstaben je Gruppe"
+              }
+            }
+          }
+        }
       }
     }
   },

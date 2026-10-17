@@ -7157,11 +7157,11 @@
         },
         "runAnalysis": { "help": "Computes with the current configuration. Calling it repeatedly is harmless; incomplete inputs leave result at null." },
         "setCategory": {
-          "help": "Chooses what is being tested: spread (variance) or location (mean). The recomputation only follows on the next tick, because the column pickers are remounted — a read in the same batch still sees the old result, or null.",
+          "help": "Chooses what is being tested: the spread (Variances) or the location (Means). The recomputation only follows on the next tick, because the column pickers are remounted — a query in the same batch still sees the old or an empty result.",
           "params": { "cat": "'variance' or 'mean'. Any other value is an error." }
         },
         "setTestType": {
-          "help": "Chooses the sample layout: one sample against a target value, two samples against each other, or k groups. The recomputation only follows on the next tick, because the column pickers are remounted — a read in the same batch still sees the old result, or null.",
+          "help": "Chooses the sample layout: one sample against a target value, two samples against each other, or k groups. The recomputation only follows on the next tick, because the column pickers are remounted — a query in the same batch still sees the old or an empty result.",
           "params": { "type": "'one', 'two' or 'k'. Any other value is an error." }
         },
         "setDirection": {
@@ -7213,7 +7213,112 @@
         "colRef2": { "help": "Column reference of the second sample." },
         "colRefsK": { "help": "The column references of the k-sample test." },
         "equalVariances": { "help": "Whether two samples are compared with the pooled t-test instead of Welch." },
-        "result": { "help": "The computed result: route names the chosen procedure, main the test statistic with p-value and confidence interval, normCards the normality assessment per sample, power the sample-size assessment, pairwise the pairwise comparisons of the k-sample test. null while the inputs are incomplete." }
+        "result": { "help": "The result as a display model (formatted texts; labels in the interface language, numbers with a decimal point), each figure described individually under keys; null while the inputs are incomplete." }
+      },
+      "types": {
+        "Result": {
+          "isK": "True for the test type “k Samples”, otherwise false. When true, the interface shows a normality card per group, the group overview and, where applicable, the pairwise comparisons, but no power analysis.",
+          "allNormal": "True when every sample counts as normally distributed, that is, the Anderson-Darling test gives p ≥ α for each sample; Shapiro-Wilk is shown as well but does not decide. The interface shows this as the route step “Normality: Yes/No”.",
+          "normCards": "The normality assessment, one card per sample: one or two for one- and two-sample tests, k for the test type “k Samples”.",
+          "route": "The chosen main procedure, as the route under “Algorithm Routing” shows it. Normality is decided by the Anderson-Darling test alone, with p ≥ α. For variances: one sample always uses the χ² variance test, two samples the F-test when all are normal, otherwise Levene (Brown-Forsythe), k samples Bartlett or Levene. For means: when all samples are normal, the parametric test; otherwise it stays when every sample has n ≥ 20 (the rank test is added as a cross-check); otherwise the rank route. Parametric means the one-sample t-test, the Welch t-test (pooled t-test only when equal variances are assumed) or one-way ANOVA; the rank route means Wilcoxon signed-rank, Mann-Whitney U or Kruskal-Wallis.",
+          "varEquality": "The variance equality. For two samples, means and the parametric route it is only the assumption from the checkbox “Assume equal variances”, without figures; for k samples and means it is the Levene test (Brown-Forsythe) with figures in the section “Variance Equality”. Empty for variance tests, for one sample and on the rank route of two samples.",
+          "main": "The main test in the section “Test Result”: hypotheses and figures of the chosen procedure.",
+          "secondary": "The rank test next to the parametric result in the section “Rank-based comparison test”: Wilcoxon, Mann-Whitney U or Kruskal-Wallis. Only on the route “not normally distributed, but every sample has n ≥ 20”, otherwise empty.",
+          "power": "The power analysis, only for one- and two-sample tests; empty for the test type “k Samples”.",
+          "pairwise": "The pairwise comparisons, only for at least three groups; empty for two groups and outside “k Samples”."
+        },
+        "Route": {
+          "name": "Name of the chosen procedure as formatted text, always the English procedure name, such as “One-Way ANOVA” or “Welch t-Test”.",
+          "algoId": "Identifier of the matching page in the Algorithm Lab; the interface opens it through the button next to the procedure name. Empty text when there is no page."
+        },
+        "NormCard": {
+          "label": "Name of the sample as formatted text: “S1” or “S2” for one- and two-sample tests, the column name from the data collection for k samples.",
+          "badgeClass": "Display class of the interface; colours the verdict badge green for normal and red for not normal.",
+          "badgeText": "The verdict as formatted text, “Normal” or “Not normal”; it follows the Anderson-Darling test alone: normal when p ≥ α.",
+          "rows": "Two rows of the test table: Shapiro-Wilk and Anderson-Darling.",
+          "metrics": "The sample figures as formatted texts: n, x̄, s and s². x̄ carries the t confidence interval of μ, x̄ ± t(1 − α/2; n − 1) · s/√n, s² the χ² interval of σ², (n − 1)s²/χ²(1 − α/2) to (n − 1)s²/χ²(α/2), s its square roots; all at level 1 − α."
+        },
+        "NormRow": {
+          "name": "Name of the test, “Shapiro-Wilk” or “Anderson-Darling”, column “Test”.",
+          "algoId": "Identifier of the Algorithm Lab page for the button next to the test name.",
+          "stat": "The test statistic as formatted text with four decimals: W for Shapiro-Wilk, A² for Anderson-Darling. Column “Statistic”.",
+          "p": "The p-value of the test as formatted text with four decimals, column “p”.",
+          "pClass": "Display class of the interface; colours the p-value red when p < α and green otherwise.",
+          "decisionIcon": "Identifier of the symbol before the decision: a warning symbol when p < α, a check mark otherwise.",
+          "decisionText": "The decision as formatted text, column “Decision”: “Reject” when p < α, meaning the normality assumption is rejected, otherwise “Do not reject”."
+        },
+        "Metric": {
+          "label": "Label of the figure as formatted text, as the interface shows it, such as “Test Method”, “Statistic”, “p”, “df”, “n”, “x̄”, “s²” or “95% CI”; which figures appear changes with test and route.",
+          "value": "The value as formatted text: numbers with four decimals, degrees of freedom of k-sample tests as “df1 / df2”, power in percent, the test method as its English name, intervals as lower and upper bound; “–” for a value that cannot be computed.",
+          "valueClass": "Display class of the interface; colours the p-value red when p < α and green otherwise, sets test method and intervals in smaller type and colours power by whether the goal is achieved. Missing in the normality cards.",
+          "title": "Tooltip of the figure as formatted text, a short explanation; for the p-value possibly with the way it was computed, exact or by normal approximation. May be empty.",
+          "algoId": "Identifier of the Algorithm Lab page, only on the test method and on the Hodges-Lehmann estimate; empty text when there is no page.",
+          "ci": "Only in the normality cards: the confidence interval at level 1 − α as formatted text, the t interval of μ for x̄, the χ² interval of σ² for s², its square roots for s. Empty for n and when n < 2 or there is no spread."
+        },
+        "VarEquality": {
+          "varsEqual": "True when the variances count as equal: for two samples the assumption from the checkbox “Assume equal variances”, for k samples a non-significant Levene test, p ≥ α.",
+          "metrics": "The figures of the Levene test (Brown-Forsythe) as formatted texts: test method, statistic, df as “df1 / df2” and p. Only for k samples, empty for two samples.",
+          "trailLabelKey": "The translation key of the route step, not a displayed text: “varEqualLabel” (shown as “Equal variances assumed”) for two samples, “varDiffLabel” (shown as “Significant variance difference (Levene)”) for k samples.",
+          "trailYes": "Whether the route step is answered with “Yes”: for two samples when equal variances are assumed; for k samples the other way round, when the Levene test shows a difference."
+        },
+        "MainResult": {
+          "h0": "The null hypothesis as formatted text with symbols, such as “μ₁ = μ₂ = … = μₖ” or “σ² ≤ 4.0000”; for one sample it contains the target value, and the sign follows the direction: two-sided =, greater ≤, less ≥.",
+          "h1": "The alternative hypothesis as formatted text with ≠, > or <; for k samples “at least one μ differs” or “at least one variance differs”.",
+          "ciNote": "A note on the interval as formatted text, missing for k samples. When two sample means show no significant difference it gives the range of the difference μ₁−μ₂ and says that equality is not shown by this; on the Mann-Whitney route it gives the shift η₁−η₂ or says that the samples are too small for level 1 − α. Otherwise empty.",
+          "h0Class": "Display class of the interface; marks the H₀ box as rejected when p < α, otherwise as accepted.",
+          "h1Class": "Display class of the interface; marks the H₁ box the other way round from the H₀ box.",
+          "h0Tip": "Tooltip of the H₀ box as formatted text, such as “H₀ is rejected: p … < α …”; empty for k samples.",
+          "h1Tip": "Tooltip of the H₁ box as formatted text, “Significant” or “Not significant” with the verdict on H₀; empty for k samples.",
+          "metrics": "The figures of the main test as formatted texts: always test method, statistic and p; depending on the test also df, the confidence interval at level 1 − α, on the Mann-Whitney route the Hodges-Lehmann estimate of the shift, x̄ or x̄₁ and x̄₂, s² or s²₁ and s²₂; for k samples k, N and the pooled variance s²ₚ.",
+          "anovaRows": "The ANOVA table, only for k samples with one-way ANOVA, three rows: Between Groups, Within Groups, Total. Empty for other procedures.",
+          "groupRows": "The group overview, only for k samples: one row per selected column.",
+          "showCld": "Whether the column “Group” with the grouping letters is shown; true as soon as the pairwise comparisons supply letters, that is, from three groups on. Only for k samples."
+        },
+        "AnovaRow": {
+          "src": "Source of variation as formatted text: “Between Groups”, “Within Groups” or “Total”. Column “Source”.",
+          "ss": "Sum of squares as formatted text, column “SS”: between groups Σ nᵢ(x̄ᵢ − x̄)², within groups the sum of squared deviations from the group mean, total the sum of both.",
+          "df": "Degrees of freedom as formatted text, column “df”: k − 1 between groups, N − k within, N − 1 total.",
+          "ms": "Mean square as formatted text, column “MS”: SS divided by df; “—” in the row Total.",
+          "f": "F value as formatted text, column “F”: MS between divided by MS within, only in the row Between Groups, otherwise “—”.",
+          "p": "p-value of the F-test as formatted text, column “p”, only in the row Between Groups, otherwise “—”; below α the means differ significantly.",
+          "pClass": "Display class of the interface; colours the p-value red when p < α and green otherwise, empty in the other rows.",
+          "bold": "Whether the row appears in bold; only the row Total."
+        },
+        "GroupRow": {
+          "name": "Name of the group, the column name from the data collection. Column “Group”.",
+          "n": "Number of values in the group as formatted text, column “n”.",
+          "mean": "Mean x̄ of the group as formatted text with four decimals, column “x̄”.",
+          "variance": "Sample variance s² of the group as formatted text with four decimals, column “s²”.",
+          "letters": "The grouping letters (Compact Letter Display) from the pairwise comparisons as formatted text, column “Group”: groups sharing a letter do not differ significantly, groups without a shared letter differ. Empty for two groups."
+        },
+        "SecondaryResult": {
+          "metrics": "The figures of the rank test as formatted texts: test method (Wilcoxon, Mann-Whitney U or Kruskal-Wallis), statistic and p."
+        },
+        "PowerInfo": {
+          "goalPct": "The power goal in percent as formatted text, a whole number without the percent sign; the box shows it as “Power Goal: 80%”.",
+          "goalBoxClass": "Display class of the interface; colours the box green when the current power reaches the goal, otherwise as a warning.",
+          "requiredLine": "The line “Required n” as formatted text, “per group” for two samples: the smallest n between 4 and 5000 at which the power reaches the goal; for two samples with equally sized groups. If the goal is not reached up to 5000, it reads “> 5000”. After it “Achieved” or “Not achieved” for the current power.",
+          "metrics": "The figures as formatted texts: current power in percent with one decimal, n (n₁ / n₂ for two samples), the effect size and α. The effect size is the variance ratio s²/σ²₀ or s²₁/s²₂ for variances, Cohen's d = |x̄ − μ₀|/s or |x̄₁ − x̄₂|/sₚ for means, with three decimals."
+        },
+        "PairwiseSection": {
+          "methodName": "Procedure of the pairwise comparisons as its English name, label “Method”, always two-sided: for variances the F-test when all are normal, otherwise Levene (Brown-Forsythe); for means the pooled t-test, the Welch t-test when Levene shows a variance difference, on the rank route Mann-Whitney U.",
+          "methodAlgoId": "Identifier of the Algorithm Lab page for the button next to the procedure name.",
+          "hint": "The note below the matrix as formatted text: “Bonferroni-corrected across m = … pairs” with m = k(k − 1)/2, for means extended by the remark that below the corrected p-value stands the confidence interval of the difference μ(row)−μ(column), on the rank route the Hodges-Lehmann interval of the shift.",
+          "headers": "The column headers of the matrix: the group names, that is, the column names from the data collection.",
+          "rows": "The rows of the matrix, one per group.",
+          "lettersJoined": "The grouping letters of all groups in column order as formatted text, joined by commas; the same letters as in the group overview."
+        },
+        "PairwiseRow": {
+          "head": "The row header: the group name, that is, the column name from the data collection.",
+          "cells": "The cells of the row, one per group; only the upper triangle is filled, the diagonal and the cells below show “—”."
+        },
+        "PairwiseCell": {
+          "cls": "Display class of the interface; colours the cell as not significant or significant, empty on the diagonal and below.",
+          "title": "Tooltip of the cell as formatted text with the raw p-value, the corrected p-value and the verdict; empty in empty cells.",
+          "text": "The Bonferroni-corrected p-value as formatted text: p · m, at most 1, with m = k(k − 1)/2 pairs. From α upwards the pair counts as not significantly different, below as significant. “—” in empty cells.",
+          "ci": "The confidence interval at level 1 − α/m as formatted text: for means the t interval of the difference μ(row) − μ(column), by Welch for unequal variances, on the rank route the Hodges-Lehmann interval of the shift. Empty for variance tests and in empty cells.",
+          "key": "Identifier of the cell from row and column number, counted from 0; for display only."
+        }
       },
       "sectionCategory": "Test Category",
       "catMean": "Means",
