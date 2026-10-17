@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { collectAgentData, renderAgentRegistryModule, collectDomDetours,
          readAgentReadTypedef } from './agent-data.mjs';
-import { lookup, helpExists, STRUCTURE_JARGON } from './agent-report.mjs';
+import { lookup, helpExists, STRUCTURE_JARGON, typedefHelpSuffixes } from './agent-report.mjs';
 import ts from 'typescript';
 
 /**
@@ -1251,7 +1251,10 @@ function helpKeysInTemplates(appDir, moduleId) {
   for (const file of readdirSync(dir)) {
     if (!file.endsWith('.html')) continue;
     const html = readFileSync(join(dir, file), 'utf8');
-    for (const m of html.matchAll(/data-help-key="([^"]+)"/g)) keys.push([file, m[1]]);
+    // Nur das wörtliche Merkmal: `:data-help-key="col.help"` ist ein
+    // Alpine-Ausdruck, kein Schlüssel (msa-typ1, Statistiktabelle) — deren
+    // Ziele sind Typedef-Sätze und stehen schon im Typedef-Tor.
+    for (const m of html.matchAll(/(?<![:\w-])data-help-key="([^"]+)"/g)) keys.push([file, m[1]]);
   }
   return keys;
 }
@@ -1278,11 +1281,7 @@ test('i18n-Tor: jede Aktion, jeder Parameter und jedes Feld eines freigegebenen 
             missing.push(`${lang}: modules.${id}.actions.${action}.params.${param.name}`);
           }
         }
-        for (const key of Object.keys(def.keys ?? {})) {
-          if (!helpExists(tree, id, `actions.${action}.keys.${key}`)) {
-            missing.push(`${lang}: modules.${id}.actions.${action}.keys.${key}`);
-          }
-        }
+
       }
     }
     for (const field of Object.keys(entry.fields)) {
@@ -1290,6 +1289,11 @@ test('i18n-Tor: jede Aktion, jeder Parameter und jedes Feld eines freigegebenen 
         if (!helpExists(tree, id, `fields.${field}.help`)) {
           missing.push(`${lang}: modules.${id}.fields.${field}.help`);
         }
+      }
+    }
+    for (const suffix of typedefHelpSuffixes(entry)) {
+      for (const [lang, tree] of Object.entries(trees)) {
+        if (!helpExists(tree, id, suffix)) missing.push(`${lang}: modules.${id}.${suffix}`);
       }
     }
   }
@@ -2909,4 +2913,98 @@ const PARAM_KEYS =`).replace('{keyof Params}', '{keyof Params2}');
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
   assert.deepEqual(Object.keys(modules.foo.actions.setParam.keys), ['name', 'k1', 'n']);
+});
+
+/* ── Ausgaben: eine Lesefläche, deren Feldtyp eine Typedef der Moduldatei ist ──
+   `@property {Result|null} result` in `AgentRead` macht die Kennzahlen des
+   Ergebnisses einzeln beschreibbar: der Generator legt `keys` (je Property
+   Typ und Prosa) und `keysOf` (der Typedef-Name, aus dem der i18n-Schlüssel
+   `types.<Typedef>.<property>` entsteht) an das Feld — verschachtelt, wo eine
+   Property selbst eine Typedef ist, auch als Liste (`Detail[]`). */
+
+const RESULT_VM = `/**
+ * Foo module.
+ * @agent
+ */
+import { createModule } from '../../core/template-module.js';
+
+/**
+ * @typedef {object} BiasTest
+ * @property {number|null} p der p-Wert
+ */
+
+/**
+ * @typedef {object} Detail
+ * @property {number} value der Messwert
+ */
+
+/**
+ * @typedef {object} Result
+ * @property {number|null} Cg die Fähigkeit
+ * @property {'pass'|'fail'} overall das Urteil
+ * @property {BiasTest} biasTest der Test
+ * @property {Detail[]} details die Einzelwerte
+ */
+
+/**
+ * @typedef {object} AgentRead
+ * @property {Result|null} result das Ergebnis
+ * @property {Unknown[]} things etwas ohne Typedef
+ * @property {string} name der Name
+ */
+export default createModule({
+  config: { id: 'foo' },
+  data(module, _t) {
+    return {
+      /**
+       * Lesen.
+       * @agent
+       * @returns {AgentRead} alles
+       */
+      read() { return {}; },
+      /**
+       * @agent
+       * @param {string} text der Text
+       * @returns {void}
+       */
+      setName(text) { this.model.name = text; },
+    };
+  },
+});`;
+
+function resultModules() {
+  return collectAgentData(fixture({ foo: { 'foo.js': RESULT_VM } })).modules;
+}
+
+test('Ausgaben: ein Feld vom Typ einer Typedef trägt keys und keysOf, verschachtelt', () => {
+  const { foo } = resultModules();
+  const result = foo.fields.result;
+  assert.equal(result.type, 'Result|null');
+  assert.equal(result.keysOf, 'Result');
+  assert.deepEqual(Object.keys(result.keys), ['Cg', 'overall', 'biasTest', 'details']);
+  assert.deepEqual(result.keys.Cg, { type: 'number|null', help: 'die Fähigkeit' });
+  assert.equal(result.keys.biasTest.keysOf, 'BiasTest');
+  assert.deepEqual(result.keys.biasTest.keys, { p: { type: 'number|null', help: 'der p-Wert' } });
+  assert.equal(result.keys.details.keysOf, 'Detail');
+  assert.deepEqual(Object.keys(result.keys.details.keys), ['value']);
+});
+
+test('Ausgaben: ein Typname ohne Typedef in der Moduldatei bleibt ohne keys und ohne Befund', () => {
+  const { foo } = resultModules();
+  assert.equal('keys' in foo.fields.things, false);
+  assert.equal('keys' in foo.fields.name, false);
+  assert.deepEqual(foo.reported, []);
+});
+
+test('Ausgaben: die Schlüsselfläche eines generischen Setters nennt ihre Typedef (keysOf)', () => {
+  const { foo } = keyedModules();
+  assert.equal(foo.actions.setParam.keysOf, 'Params');
+});
+
+test('Ausgaben: eine Typedef, die sich selbst enthält, bricht die Auflösung nicht', () => {
+  const vm = RESULT_VM.replace(' * @property {number|null} p der p-Wert', ' * @property {number|null} p der p-Wert\n * @property {BiasTest} again zyklisch');
+  const { modules } = collectAgentData(fixture({ foo: { 'foo.js': vm } }));
+  const again = modules.foo.fields.result.keys.biasTest.keys.again;
+  assert.equal(again.type, 'BiasTest');
+  assert.equal('keys' in again, false, 'eine zweite Ebene derselben Typedef wird nicht aufgelöst');
 });

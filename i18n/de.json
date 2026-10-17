@@ -2640,15 +2640,6 @@
           "params": {
             "key": "Welcher Parameter; jeder Schlüssel ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
             "value": "Der Wert als Text, zum Beispiel '10' oder '0.5'. Der zulässige Bereich steht je Schlüssel unter keys; bei den freien Textfeldern leert '' das Feld."
-          },
-          "keys": {
-            "name": "Bezeichnung des geprüften Merkmals, zum Beispiel „Durchmesser Welle A“. Sie erscheint im Ergebnis und hat auf die Rechnung keinen Einfluss.",
-            "ref": "Der bekannte Sollwert des Referenzteils (Normal). Alle Messungen werden mit ihm verglichen; die Abweichung ihres Mittelwerts davon ist der Bias.",
-            "unit": "Maßeinheit der Messwerte, zum Beispiel mm. Sie dient nur der Beschriftung.",
-            "lsl": "Untere Toleranzgrenze des Merkmals. Mit beiden Grenzen ergibt sich die Toleranz T = OSG − USG, auf der Cg und Cgk beruhen. Bleibt eine Grenze leer, wird nur der Bias geprüft.",
-            "usl": "Obere Toleranzgrenze des Merkmals. Mit beiden Grenzen ergibt sich die Toleranz T = OSG − USG, auf der Cg und Cgk beruhen. Bleibt eine Grenze leer, wird nur der Bias geprüft.",
-            "k1": "Anteil der Toleranz, den die Streubreite des Messsystems ausschöpfen darf: 0,2 (20 %, üblich), 0,15 oder 0,1. Ein kleinerer Wert ist strenger.",
-            "k2": "Wie viele Standardabweichungen die Streubreite umfasst: 3 steht für 6·s (üblich), 4 für 8·s, 6 für 12·s. Ein größerer Wert ist strenger."
           }
         },
         "setColumn": {
@@ -2663,12 +2654,72 @@
         "clearResults": { "help": "Verwirft das Ergebnis; die Eingaben bleiben." }
       },
       "fields": {
-        "params": { "help": "Die eingegebenen Parameter, Werte als Text; die Schlüssel beschreibt setParam unter keys." },
+        "params": { "help": "Die eingegebenen Parameter, Werte als Text; jeder ist unter keys einzeln beschrieben." },
         "columnRef": { "help": "Die gewählte Messwertspalte als { instanceId, sheetId, columnId }, oder null." },
         "activeParams": { "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt." },
         "activeColumnSlots": { "help": "Die Slots, die setColumn im aktuellen Zustand annimmt." },
         "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'." },
-        "result": { "help": "Das gerechnete Ergebnis mit Cg, Cgk, Bias und den Einzelwerten, oder null, solange die Eingaben unvollständig sind." }
+        "result": { "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; null, solange die Eingaben unvollständig sind." }
+      },
+      "types": {
+        "Params": {
+          "name": "Bezeichnung des geprüften Merkmals, zum Beispiel „Durchmesser Welle A“. Sie erscheint im Ergebnis und hat auf die Rechnung keinen Einfluss.",
+          "ref": "Der bekannte Sollwert des Referenzteils (Normal). Alle Messungen werden mit ihm verglichen; die Abweichung ihres Mittelwerts davon ist der Bias.",
+          "unit": "Maßeinheit der Messwerte, zum Beispiel mm. Sie dient nur der Beschriftung.",
+          "lsl": "Untere Toleranzgrenze des Merkmals. Mit beiden Grenzen ergibt sich die Toleranz T = OSG − USG, auf der Cg und Cgk beruhen. Bleibt eine Grenze leer, wird nur der Bias geprüft.",
+          "usl": "Obere Toleranzgrenze des Merkmals. Mit beiden Grenzen ergibt sich die Toleranz T = OSG − USG, auf der Cg und Cgk beruhen. Bleibt eine Grenze leer, wird nur der Bias geprüft.",
+          "k1": "Anteil der Toleranz, den die Streubreite des Messsystems ausschöpfen darf: 0,2 (20 %, üblich), 0,15 oder 0,1. Ein kleinerer Wert ist strenger.",
+          "k2": "Wie viele Standardabweichungen die Streubreite umfasst: 3 steht für 6·s (üblich), 4 für 8·s, 6 für 12·s. Ein größerer Wert ist strenger."
+        },
+        "Result": {
+          "mode": "Toleranzart der Studie: zweiseitig, wenn untere und obere Toleranzgrenze gesetzt sind, sonst einseitig. Einseitig wird nur der Bias bewertet, Cg und Cgk entfallen.",
+          "n": "Anzahl der ausgewerteten Messwerte. Gefordert sind mindestens 25, empfohlen 50.",
+          "xbar": "Mittelwert aller Wiederholmessungen am Referenzteil.",
+          "sg": "Standardabweichung der Wiederholmessungen (Stichprobe, n − 1). Sie misst die Wiederholbarkeit des Messsystems.",
+          "xmin": "Kleinster Messwert.",
+          "xmax": "Größter Messwert.",
+          "range": "Spannweite: größter minus kleinster Messwert.",
+          "bias": "Systematische Abweichung: Mittelwert minus Referenzwert. Positiv heißt, das Messsystem misst im Mittel zu hoch.",
+          "biasTest": "t-Test, ob sich der Bias signifikant von 0 unterscheidet.",
+          "resolution": "Kleinster Schritt zwischen den Messwerten, aus den Daten erkannt; 0, wenn er sich nicht bestimmen lässt.",
+          "upperThreshold": "Obere Ausreißergrenze: Mittelwert plus 3 Standardabweichungen.",
+          "lowerThreshold": "Untere Ausreißergrenze: Mittelwert minus 3 Standardabweichungen.",
+          "details": "Je Messwert ein Eintrag in Messreihenfolge, mit Abweichungen und Ausreißermarke.",
+          "noSpread": "Wahr, wenn alle Messwerte gleich sind. Dann lassen sich Cg und Cgk nicht berechnen.",
+          "params": "Die Parameter, mit denen gerechnet wurde, als Zahlen.",
+          "T": "Toleranz: obere minus untere Toleranzgrenze. Nur bei zweiseitiger Toleranz, sonst leer.",
+          "biasPercent": "Bias in Prozent der Toleranz, mit Vorzeichen.",
+          "Cg": "Fähigkeitsindex aus der Streuung allein: Cg = (k₁ · T) / (2 · k₂ · sg). Ab 1,33 gilt das Messsystem als fähig.",
+          "Cgk": "Fähigkeitsindex mit Bias: Cgk = (k₁ · T / 2 − |Bias|) / (k₂ · sg). Ab 1,33 gilt das Messsystem als fähig.",
+          "cgStatus": "Urteil zu Cg: fähig ab 1,33, bedingt fähig von 1,00 bis unter 1,33, nicht fähig darunter. Leer, wenn Cg nicht berechenbar ist.",
+          "cgkStatus": "Urteil zu Cgk, mit denselben Grenzen wie bei Cg.",
+          "overall": "Gesamturteil: fähig, wenn Cg und Cgk fähig sind; nicht fähig, wenn einer von beiden nicht fähig ist; sonst bedingt fähig. Ohne Urteil bei einseitiger Toleranz oder fehlender Streuung.",
+          "tolUsage": "Anteil der Toleranz, den die Streubreite des Messsystems belegt: 2 · k₂ · sg / T in Prozent.",
+          "varEv": "%Var(EV): Streuungsanteil des Messsystems an der Toleranz, 100 · k₁ / Cg. Derselbe Wert wie die Toleranzausnutzung.",
+          "varEvBias": "%Var(EV+Bias): wie %Var(EV), aber mit Bias gerechnet, 100 · k₁ / Cgk. Leer, wenn Cgk nicht positiv ist.",
+          "resPercent": "Auflösung in Prozent der Toleranz. Üblich gefordert sind höchstens 5 %.",
+          "zoneHi": "Obere Grenze der Zone Referenzwert ± k₁ · T / 2, die der Verlaufsplot einzeichnet.",
+          "zoneLo": "Untere Grenze der Zone Referenzwert ± k₁ · T / 2, die der Verlaufsplot einzeichnet."
+        },
+        "BiasTest": {
+          "t": "Prüfgröße des t-Tests: Bias geteilt durch sg / √n.",
+          "df": "Freiheitsgrade des t-Tests, n − 1.",
+          "p": "Zweiseitiger p-Wert. Unter 0,05 gilt der Bias als signifikant."
+        },
+        "Detail": {
+          "index": "Laufende Nummer des Messwerts, ab 1.",
+          "value": "Der Messwert.",
+          "deviation": "Abweichung des Messwerts vom Referenzwert.",
+          "devFromMean": "Betrag der Abweichung des Messwerts vom Mittelwert.",
+          "isOutlier": "Wahr, wenn der Messwert außerhalb von Mittelwert ± 3 Standardabweichungen liegt."
+        },
+        "ResultParams": {
+          "ref": "Referenzwert, mit dem gerechnet wurde.",
+          "lsl": "Untere Toleranzgrenze, mit der gerechnet wurde; leer bei einseitiger Toleranz ohne untere Grenze.",
+          "usl": "Obere Toleranzgrenze, mit der gerechnet wurde; leer bei einseitiger Toleranz ohne obere Grenze.",
+          "k1": "Anteil der Toleranz, mit dem gerechnet wurde.",
+          "k2": "Streuungsfaktor, mit dem gerechnet wurde."
+        }
       },
       "sectionParams": "Parameter",
       "sectionValues": "Messwerte eingeben",

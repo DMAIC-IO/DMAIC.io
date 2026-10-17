@@ -90,6 +90,29 @@ export function helpExists(tree, moduleId, suffix) {
 }
 
 /**
+ * Die i18n-Suffixe aller erklärten Typedef-Properties eines Registry-Eintrags
+ * — Setter-Schlüssel (`actions.<a>.keys`) und Kennzahlen von Lesefeldern
+ * (`fields.<f>.keys`), verschachtelt. Jede Property genau einmal: eine
+ * Typedef an zwei Stellen hat EINEN Satz (`types.<Typedef>.<property>`).
+ *
+ * @param {{ actions?: Record<string, object>, fields?: Record<string, object> }} entry
+ * @returns {string[]} sortiert, z. B. `types.Result.Cg`
+ */
+export function typedefHelpSuffixes(entry) {
+  const out = new Set();
+  const walk = (node) => {
+    if (!node?.keys || !node.keysOf) return;
+    for (const [key, child] of Object.entries(node.keys)) {
+      out.add(`types.${node.keysOf}.${key}`);
+      walk(child);
+    }
+  };
+  for (const action of Object.values(entry.actions ?? {})) walk(action);
+  for (const field of Object.values(entry.fields ?? {})) walk(field);
+  return [...out].sort();
+}
+
+/**
  * Abdeckung der Kontexthilfen über die FREIGEGEBENEN Module.
  *
  * Spec §8, Regel 2: eine fehlende Kontexthilfe ist eine ausgewiesene Lücke
@@ -169,13 +192,12 @@ export function countHelpCoverage(appDir, modules) {
       for (const param of action.params ?? []) {
         check('params', helpKeys(id, `actions.${name}.params.${param.name}`));
       }
-      for (const key of Object.keys(action.keys ?? {})) {
-        check('keys', helpKeys(id, `actions.${name}.keys.${key}`));
-      }
+
     }
     for (const name of Object.keys(entry.fields ?? {})) {
       check('fields', helpKeys(id, `fields.${name}.help`));
     }
+    for (const suffix of typedefHelpSuffixes(entry)) check('keys', helpKeys(id, suffix));
   }
   return out;
 }

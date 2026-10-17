@@ -3,7 +3,7 @@
     <div class="dmike-split__section-title" x-text="t('sectionParams')"></div>
 
     <div class="field-group">
-      <label data-help-key="modules.msa-typ1.actions.setParam.keys.name" x-text="t('featureName')"></label>
+      <label data-help-key="modules.msa-typ1.types.Params.name" x-text="t('featureName')"></label>
       <input type="text" class="field" data-ref="inp-name"
              :placeholder="t('featureNamePh')"
              :value="model.params.name" @input="setParam('name', $event.target.value)">
@@ -11,13 +11,13 @@
 
     <div class="msa-typ1__row">
       <div class="field-group">
-        <label data-help-key="modules.msa-typ1.actions.setParam.keys.ref" x-text="t('refValue')"></label>
+        <label data-help-key="modules.msa-typ1.types.Params.ref" x-text="t('refValue')"></label>
         <input type="text" class="field field--num" data-ref="inp-ref"
                placeholder="50.000" inputmode="decimal"
                :value="model.params.ref" @input="setParam('ref', $event.target.value)" @change="runAnalysis()">
       </div>
       <div class="field-group">
-        <label data-help-key="modules.msa-typ1.actions.setParam.keys.unit" x-text="t('unit')"></label>
+        <label data-help-key="modules.msa-typ1.types.Params.unit" x-text="t('unit')"></label>
         <input type="text" class="field" data-ref="inp-unit"
                placeholder="mm"
                :value="model.params.unit" @input="setParam('unit', $event.target.value)">
@@ -26,13 +26,13 @@
 
     <div class="msa-typ1__row">
       <div class="field-group">
-        <label data-help-key="modules.msa-typ1.actions.setParam.keys.lsl" x-text="t('lsl')"></label>
+        <label data-help-key="modules.msa-typ1.types.Params.lsl" x-text="t('lsl')"></label>
         <input type="text" class="field field--num" data-ref="inp-lsl"
                placeholder="49.950" inputmode="decimal"
                :value="model.params.lsl" @input="setParam('lsl', $event.target.value)" @change="runAnalysis()">
       </div>
       <div class="field-group">
-        <label data-help-key="modules.msa-typ1.actions.setParam.keys.usl" x-text="t('usl')"></label>
+        <label data-help-key="modules.msa-typ1.types.Params.usl" x-text="t('usl')"></label>
         <input type="text" class="field field--num" data-ref="inp-usl"
                placeholder="50.050" inputmode="decimal"
                :value="model.params.usl" @input="setParam('usl', $event.target.value)" @change="runAnalysis()">
@@ -41,7 +41,7 @@
 
     <div class="msa-typ1__row">
       <div class="field-group">
-        <label data-help-key="modules.msa-typ1.actions.setParam.keys.k1" x-text="t('k1Label')"></label>
+        <label data-help-key="modules.msa-typ1.types.Params.k1" x-text="t('k1Label')"></label>
         <select class="field" data-ref="inp-k1" :value="model.params.k1" @input="setParam('k1', $event.target.value)" @change="runAnalysis()">
           <template x-for="o in k1Options()" :key="o.value">
             <option :value="o.value" :selected="o.value === model.params.k1" x-text="o.label"></option>
@@ -49,7 +49,7 @@
         </select>
       </div>
       <div class="field-group">
-        <label data-help-key="modules.msa-typ1.actions.setParam.keys.k2" x-text="t('k2Label')"></label>
+        <label data-help-key="modules.msa-typ1.types.Params.k2" x-text="t('k2Label')"></label>
         <select class="field" data-ref="inp-k2" :value="model.params.k2" @input="setParam('k2', $event.target.value)" @change="runAnalysis()">
           <template x-for="o in k2Options()" :key="o.value">
             <option :value="o.value" :selected="o.value === model.params.k2" x-text="o.label"></option>
@@ -74,7 +74,7 @@
         <div>
           <!-- Status bar (generisches dmike-infobox aus css/components.css). -->
           <div class="dmike-infobox" :class="kpiModClass(result.overall)">
-            <span class="dmike-infobox__label" x-text="statusLabel(result)"></span>
+            <span class="dmike-infobox__label" data-help-key="modules.msa-typ1.types.Result.overall" x-text="statusLabel(result)"></span>
             <span class="dmike-infobox__detail">— <span x-text="featureName()"></span> — n = <span x-text="result.n"></span></span>
           </div>
 
@@ -82,7 +82,7 @@
           <div class="dmike-kpi-strip">
             <template x-if="isTwoSided()">
               <div class="dmike-kpi" :class="kpiModClass(result.cgStatus)">
-                <div class="dmike-kpi-label">Cg (<span x-text="t('repeatability')"></span>)
+                <div class="dmike-kpi-label" data-help-key="modules.msa-typ1.types.Result.Cg">Cg (<span x-text="t('repeatability')"></span>)
                   <button class="msa-typ1__algo-link" data-algo-id="cg" title="Algorithm Lab" @click="algoNavigate('cg', $event)"><span class="icon icon--sm icon--text" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
                 </div>
                 <div class="dmike-kpi-value" x-text="fmtOpt(result.Cg)"></div>
@@ -91,7 +91,7 @@
             </template>
             <template x-if="isTwoSided()">
               <div class="dmike-kpi" :class="kpiModClass(result.cgkStatus)">
-                <div class="dmike-kpi-label">Cgk (<span x-text="t('withBias')"></span>)
+                <div class="dmike-kpi-label" data-help-key="modules.msa-typ1.types.Result.Cgk">Cgk (<span x-text="t('withBias')"></span>)
                   <button class="msa-typ1__algo-link" data-algo-id="cgk" title="Algorithm Lab" @click="algoNavigate('cgk', $event)"><span class="icon icon--sm icon--text" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
                 </div>
                 <div class="dmike-kpi-value" x-text="fmtOpt(result.Cgk)"></div>
@@ -99,18 +99,21 @@
               </div>
             </template>
             <div class="dmike-kpi">
-              <div class="dmike-kpi-label" x-text="t('biasLabel')"></div>
+              <div class="dmike-kpi-label" data-help-key="modules.msa-typ1.types.Result.bias" x-text="t('biasLabel')"></div>
               <div class="dmike-kpi-value" x-text="fmt(result.bias)"></div>
-              <div class="dmike-kpi-sub" x-text="biasTestText()"></div>
+              <div class="dmike-kpi-sub" data-help-key="modules.msa-typ1.types.Result.biasTest" x-text="biasTestText()"></div>
               <template x-if="isTwoSided()">
-                <div class="dmike-kpi-sub"><span x-text="fmt(result.biasPercent)"></span> % <span x-text="t('ofTolerance')"></span> · <span x-text="model.params.unit"></span></div>
+                <div class="dmike-kpi-sub" data-help-key="modules.msa-typ1.types.Result.biasPercent"><span x-text="fmt(result.biasPercent)"></span> % <span x-text="t('ofTolerance')"></span> · <span x-text="model.params.unit"></span></div>
               </template>
             </div>
             <div class="dmike-kpi">
-              <div class="dmike-kpi-label" x-text="t('spreadSg')"></div>
+              <div class="dmike-kpi-label" data-help-key="modules.msa-typ1.types.Result.sg" x-text="t('spreadSg')"></div>
               <div class="dmike-kpi-value" x-text="fmt(result.sg)"></div>
               <template x-if="isTwoSided()">
-                <div class="dmike-kpi-sub"><span x-text="t('varEv')"></span>: <span x-text="fmtOpt(result.varEv, 2)"></span> % · <span x-text="t('varEvBias')"></span>: <span x-text="fmtOpt(result.varEvBias, 2)"></span> %</div>
+                <div>
+                  <div class="dmike-kpi-sub" data-help-key="modules.msa-typ1.types.Result.varEv"><span x-text="t('varEv')"></span>: <span x-text="fmtOpt(result.varEv, 2)"></span> %</div>
+                  <div class="dmike-kpi-sub" data-help-key="modules.msa-typ1.types.Result.varEvBias"><span x-text="t('varEvBias')"></span>: <span x-text="fmtOpt(result.varEvBias, 2)"></span> %</div>
+                </div>
               </template>
             </div>
           </div>
@@ -120,7 +123,7 @@
           <div class="msa-typ1__stats-panel">
             <table class="dmike-table msa-typ1__stats-table">
               <thead><tr>
-                <template x-for="col in statCols()"><th :key="col.label" x-text="col.label"></th></template>
+                <template x-for="col in statCols()"><th :key="col.label"><span :data-help-key="col.help" x-text="col.label"></span></th></template>
               </tr></thead>
               <tbody><tr>
                 <template x-for="col in statCols()"><td :key="col.label" x-text="col.value"></td></template>

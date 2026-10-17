@@ -1773,6 +1773,27 @@ button.context-help-anchor > .context-help__btn {
   margin-left: -0.4em;
 }
 
+/* Anker IN einer Tabellenkopfzelle (Kennzahlen einer Statistiktabelle,
+   msa-typ1). Der Anker ist ein Span um den Text, nicht die Zelle: an der
+   Zelle läge der Kreis jenseits ihrer rechten Kante und damit vor dem Text
+   der NÄCHSTEN Spalte. Vertikal mittig statt auf der Oberkante, denn die
+   Tabelle steht in einem waagrecht scrollenden Panel (`overflow-x: auto`
+   clippt auch senkrecht) — oben wäre der Kreis angeschnitten. */
+th .context-help-anchor > .context-help__btn {
+  top: 50%;
+}
+
+/* KPI-Karten zentrieren Beschriftung und Unterzeile als volle Blöcke. Als
+   Anker müssen sie schrumpfbreit sein, sonst sitzt der Kreis in der
+   Kartenecke statt neben dem Text — dieselbe Regel wie bei den Labels oben.
+   `margin-inline: auto` hält den Text zentriert. */
+.dmike-kpi-label.context-help-anchor,
+.dmike-kpi-sub.context-help-anchor {
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+}
+
 body.dmike-context-help-armed .context-help__btn {
   visibility: visible;
   pointer-events: auto;

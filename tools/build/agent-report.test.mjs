@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { countHelpCoverage, lookup, helpExists, helpKeys, STRUCTURE_JARGON } from './agent-report.mjs';
+import { countHelpCoverage, lookup, helpExists, helpKeys, STRUCTURE_JARGON, typedefHelpSuffixes } from './agent-report.mjs';
 
 /** Ein Minimal-App-Verzeichnis mit nur den i18n-Dateien. */
 function i18nFixture(de, en = de) {
@@ -247,21 +247,41 @@ test('countHelpCoverage: missingKeys zählt Schlüssel, missing zählt Sprachfä
     ['modules.foo.actions.read.help', 'modules.foo.whenToUse']);
 });
 
-test('countHelpCoverage zählt die Schlüssel eines generischen Setters als eigene Zeile', () => {
+test('countHelpCoverage zählt jede Typedef-Property einmal je Modul, verschachtelt', () => {
+  // `Params` hängt am Setter UND am Lesefeld — ein Satz, also einmal gezählt.
+  const params = { alpha: { type: 'string' }, k1: { type: 'string' } };
   const modules = {
     foo: {
       available: true,
-      actions: { setParam: { params: [], keys: { alpha: {}, k1: {} } } },
-      fields: {},
+      actions: { setParam: { params: [], keysOf: 'Params', keys: params } },
+      fields: {
+        params: { keysOf: 'Params', keys: params },
+        result: { keysOf: 'Result', keys: {
+          Cg: { type: 'number' },
+          biasTest: { type: 'BiasTest', keysOf: 'BiasTest', keys: { p: { type: 'number' } } },
+        } },
+      },
     },
   };
   const tree = { modules: { foo: {
     whenToUse: 'w',
-    actions: { setParam: { help: 's', keys: { alpha: 'Das Niveau.' } } },
+    actions: { setParam: { help: 's' } },
+    fields: { params: { help: 'p' }, result: { help: 'r' } },
+    types: { Params: { alpha: 'Das Niveau.' }, Result: { Cg: 'Die Fähigkeit.', biasTest: 'Der Test.' } },
   } } };
   const out = countHelpCoverage(i18nFixture(tree), modules);
-  assert.deepEqual(out.keys, { total: 1 + 1, covered: 1 });
-  assert.ok(out.missingKeys.includes('modules.foo.actions.setParam.keys.k1'));
+  assert.deepEqual(out.keys, { total: 5, covered: 3 });
+  assert.deepEqual(out.missingKeys.filter(k => k.includes('.types.')).sort(),
+    ['modules.foo.types.BiasTest.p', 'modules.foo.types.Params.k1']);
+});
+
+test('typedefHelpSuffixes: jede Typedef-Property eines Eintrags genau einmal', () => {
+  const entry = {
+    actions: { setParam: { keysOf: 'Params', keys: { a: {} } } },
+    fields: { params: { keysOf: 'Params', keys: { a: {} } },
+      result: { keysOf: 'Result', keys: { t: { keysOf: 'T', keys: { x: {} } } } } },
+  };
+  assert.deepEqual(typedefHelpSuffixes(entry), ['types.Params.a', 'types.Result.t', 'types.T.x']);
 });
 
 test('STRUCTURE_JARGON: fängt Strukturschreibweise, lässt Fachsprache durch', () => {

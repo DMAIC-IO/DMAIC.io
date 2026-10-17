@@ -5205,6 +5205,7 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Einen Parameter setzen.",
+        "keysOf": "Params",
         "keys": {
           "name": {
             "type": "string",
@@ -5272,10 +5273,41 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "params": {
-        "type": "object",
-        "help": "the entered parameters (name, ref, unit, lsl, usl, k1, k2), values as text as entered",
+        "type": "Params",
+        "help": "the entered parameters, values as text as entered",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Params",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "Bezeichnung des Merkmals"
+          },
+          "ref": {
+            "type": "string",
+            "help": "Referenzwert des Normals"
+          },
+          "unit": {
+            "type": "string",
+            "help": "Maßeinheit"
+          },
+          "lsl": {
+            "type": "string",
+            "help": "untere Toleranzgrenze, leer für einseitig"
+          },
+          "usl": {
+            "type": "string",
+            "help": "obere Toleranzgrenze, leer für einseitig"
+          },
+          "k1": {
+            "type": "'0.2'|'0.15'|'0.1'",
+            "help": "Anteil der Toleranz"
+          },
+          "k2": {
+            "type": "'3'|'4'|'6'",
+            "help": "Streuungsfaktor"
+          }
+        }
       },
       "columnRef": {
         "type": "object|null",
@@ -5302,10 +5334,186 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
+        "type": "Result|null",
         "help": "the computed result, or null while the inputs are incomplete",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "mode": {
+            "type": "'two-sided'|'one-sided'",
+            "help": "Toleranzart"
+          },
+          "n": {
+            "type": "number",
+            "help": "Anzahl der Messwerte"
+          },
+          "xbar": {
+            "type": "number",
+            "help": "Mittelwert"
+          },
+          "sg": {
+            "type": "number",
+            "help": "Standardabweichung"
+          },
+          "xmin": {
+            "type": "number",
+            "help": "kleinster Messwert"
+          },
+          "xmax": {
+            "type": "number",
+            "help": "größter Messwert"
+          },
+          "range": {
+            "type": "number",
+            "help": "Spannweite"
+          },
+          "bias": {
+            "type": "number",
+            "help": "Mittelwert minus Referenzwert"
+          },
+          "biasTest": {
+            "type": "BiasTest",
+            "help": "t-Test auf Bias",
+            "keysOf": "BiasTest",
+            "keys": {
+              "t": {
+                "type": "number|null",
+                "help": "Prüfgröße"
+              },
+              "df": {
+                "type": "number",
+                "help": "Freiheitsgrade"
+              },
+              "p": {
+                "type": "number|null",
+                "help": "p-Wert"
+              }
+            }
+          },
+          "resolution": {
+            "type": "number",
+            "help": "erkannte Auflösung, 0 wenn unbestimmbar"
+          },
+          "upperThreshold": {
+            "type": "number",
+            "help": "Mittelwert + 3·sg"
+          },
+          "lowerThreshold": {
+            "type": "number",
+            "help": "Mittelwert − 3·sg"
+          },
+          "details": {
+            "type": "Detail[]",
+            "help": "je Messwert",
+            "keysOf": "Detail",
+            "keys": {
+              "index": {
+                "type": "number",
+                "help": "laufende Nummer ab 1"
+              },
+              "value": {
+                "type": "number",
+                "help": "Messwert"
+              },
+              "deviation": {
+                "type": "number",
+                "help": "Abweichung vom Referenzwert"
+              },
+              "devFromMean": {
+                "type": "number",
+                "help": "Betrag der Abweichung vom Mittelwert"
+              },
+              "isOutlier": {
+                "type": "boolean",
+                "help": "außerhalb Mittelwert ± 3·sg"
+              }
+            }
+          },
+          "noSpread": {
+            "type": "boolean",
+            "help": "alle Werte identisch"
+          },
+          "params": {
+            "type": "ResultParams",
+            "help": "die gerechneten Parameter als Zahlen",
+            "keysOf": "ResultParams",
+            "keys": {
+              "ref": {
+                "type": "number",
+                "help": "Referenzwert"
+              },
+              "lsl": {
+                "type": "number|null",
+                "help": "untere Toleranzgrenze"
+              },
+              "usl": {
+                "type": "number|null",
+                "help": "obere Toleranzgrenze"
+              },
+              "k1": {
+                "type": "number",
+                "help": "Anteil der Toleranz"
+              },
+              "k2": {
+                "type": "number",
+                "help": "Streuungsfaktor"
+              }
+            }
+          },
+          "T": {
+            "type": "number|null",
+            "help": "Toleranz"
+          },
+          "biasPercent": {
+            "type": "number|null",
+            "help": "Bias in % der Toleranz"
+          },
+          "Cg": {
+            "type": "number|null",
+            "help": "Fähigkeitsindex"
+          },
+          "Cgk": {
+            "type": "number|null",
+            "help": "Fähigkeitsindex mit Bias"
+          },
+          "cgStatus": {
+            "type": "'pass'|'warn'|'fail'|null",
+            "help": "Urteil zu Cg"
+          },
+          "cgkStatus": {
+            "type": "'pass'|'warn'|'fail'|null",
+            "help": "Urteil zu Cgk"
+          },
+          "overall": {
+            "type": "'pass'|'warn'|'fail'|'none'",
+            "help": "Gesamturteil"
+          },
+          "tolUsage": {
+            "type": "number|null",
+            "help": "Toleranzausnutzung in %"
+          },
+          "varEv": {
+            "type": "number|null",
+            "help": "%Var(EV), gleich tolUsage"
+          },
+          "varEvBias": {
+            "type": "number|null",
+            "help": "%Var(EV+Bias)"
+          },
+          "resPercent": {
+            "type": "number|null",
+            "help": "Auflösung in % der Toleranz"
+          },
+          "zoneHi": {
+            "type": "number|null",
+            "help": "obere Grenze der k₁·T-Zone"
+          },
+          "zoneLo": {
+            "type": "number|null",
+            "help": "untere Grenze der k₁·T-Zone"
+          }
+        }
       }
     }
   },

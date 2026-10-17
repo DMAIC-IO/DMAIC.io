@@ -2636,15 +2636,6 @@
           "params": {
             "key": "Which parameter; each key is described individually under keys. Any other value is an error.",
             "value": "The value as text, for example '10' or '0.5'. The allowed range per key is given under keys; for the free text fields '' clears the field."
-          },
-          "keys": {
-            "name": "Name of the characteristic under study, for example “Shaft A diameter”. It appears in the result and does not affect the calculation.",
-            "ref": "The known reference value of the master part. Every measurement is compared with it; the deviation of their mean from it is the bias.",
-            "unit": "Unit of the measured values, for example mm. It is only used for labelling.",
-            "lsl": "Lower tolerance limit of the characteristic. Both limits give the tolerance T = USL − LSL on which Cg and Cgk are based. If one limit is left empty, only the bias is tested.",
-            "usl": "Upper tolerance limit of the characteristic. Both limits give the tolerance T = USL − LSL on which Cg and Cgk are based. If one limit is left empty, only the bias is tested.",
-            "k1": "Share of the tolerance the gage spread may use: 0.2 (20 %, common), 0.15 or 0.1. A smaller value is stricter.",
-            "k2": "How many standard deviations the spread covers: 3 stands for 6·s (common), 4 for 8·s, 6 for 12·s. A larger value is stricter."
           }
         },
         "setColumn": {
@@ -2659,12 +2650,72 @@
         "clearResults": { "help": "Discards the result; the inputs stay." }
       },
       "fields": {
-        "params": { "help": "The entered parameters, values as text; setParam describes the keys under keys." },
+        "params": { "help": "The entered parameters, values as text; each is described individually under keys." },
         "columnRef": { "help": "The chosen measurement column as { instanceId, sheetId, columnId }, or null." },
         "activeParams": { "help": "The keys setParam accepts in the current state." },
         "activeColumnSlots": { "help": "The slots setColumn accepts in the current state." },
         "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; key is 'instanceId|sheetId|columnId'." },
-        "result": { "help": "The computed result with Cg, Cgk, bias and the individual values, or null while the inputs are incomplete." }
+        "result": { "help": "The computed result, each figure described individually under keys; null while the inputs are incomplete." }
+      },
+      "types": {
+        "Params": {
+          "name": "Name of the characteristic under study, for example “Shaft A diameter”. It appears in the result and does not affect the calculation.",
+          "ref": "The known reference value of the master part. Every measurement is compared with it; the deviation of their mean from it is the bias.",
+          "unit": "Unit of the measured values, for example mm. It is only used for labelling.",
+          "lsl": "Lower tolerance limit of the characteristic. Both limits give the tolerance T = USL − LSL on which Cg and Cgk are based. If one limit is left empty, only the bias is tested.",
+          "usl": "Upper tolerance limit of the characteristic. Both limits give the tolerance T = USL − LSL on which Cg and Cgk are based. If one limit is left empty, only the bias is tested.",
+          "k1": "Share of the tolerance the gage spread may use: 0.2 (20 %, common), 0.15 or 0.1. A smaller value is stricter.",
+          "k2": "How many standard deviations the spread covers: 3 stands for 6·s (common), 4 for 8·s, 6 for 12·s. A larger value is stricter."
+        },
+        "Result": {
+          "mode": "Tolerance type of the study: two-sided when both the lower and upper limit are set, otherwise one-sided. One-sided only the bias is assessed; Cg and Cgk are omitted.",
+          "n": "Number of evaluated measurements. At least 25 are required, 50 are recommended.",
+          "xbar": "Mean of all repeated measurements of the master part.",
+          "sg": "Standard deviation of the repeated measurements (sample, n − 1). It measures the repeatability of the gage.",
+          "xmin": "Smallest measurement.",
+          "xmax": "Largest measurement.",
+          "range": "Range: largest minus smallest measurement.",
+          "bias": "Systematic deviation: mean minus reference value. Positive means the gage reads high on average.",
+          "biasTest": "t-test whether the bias differs significantly from zero.",
+          "resolution": "Smallest step between the measurements, detected from the data; 0 if it cannot be determined.",
+          "upperThreshold": "Upper outlier limit: mean plus 3 standard deviations.",
+          "lowerThreshold": "Lower outlier limit: mean minus 3 standard deviations.",
+          "details": "One entry per measurement in measuring order, with deviations and an outlier flag.",
+          "noSpread": "True when all measurements are equal. Cg and Cgk cannot be computed then.",
+          "params": "The parameters the calculation used, as numbers.",
+          "T": "Tolerance: upper minus lower limit. Only for a two-sided tolerance, otherwise empty.",
+          "biasPercent": "Bias as a percentage of the tolerance, with sign.",
+          "Cg": "Capability index from the spread alone: Cg = (k₁ · T) / (2 · k₂ · sg). From 1.33 the gage counts as capable.",
+          "Cgk": "Capability index including bias: Cgk = (k₁ · T / 2 − |bias|) / (k₂ · sg). From 1.33 the gage counts as capable.",
+          "cgStatus": "Verdict on Cg: capable from 1.33, conditionally capable from 1.00 to below 1.33, not capable below. Empty when Cg cannot be computed.",
+          "cgkStatus": "Verdict on Cgk, with the same limits as for Cg.",
+          "overall": "Overall verdict: capable when Cg and Cgk are capable; not capable when either is not capable; otherwise conditionally capable. No verdict for a one-sided tolerance or without spread.",
+          "tolUsage": "Share of the tolerance taken up by the gage spread: 2 · k₂ · sg / T as a percentage.",
+          "varEv": "%Var(EV): gage spread as a share of the tolerance, 100 · k₁ / Cg. The same value as the tolerance usage.",
+          "varEvBias": "%Var(EV+bias): like %Var(EV) but computed with bias, 100 · k₁ / Cgk. Empty when Cgk is not positive.",
+          "resPercent": "Resolution as a percentage of the tolerance. At most 5 % is the usual requirement.",
+          "zoneHi": "Upper limit of the zone reference value ± k₁ · T / 2 drawn in the run chart.",
+          "zoneLo": "Lower limit of the zone reference value ± k₁ · T / 2 drawn in the run chart."
+        },
+        "BiasTest": {
+          "t": "Test statistic of the t-test: bias divided by sg / √n.",
+          "df": "Degrees of freedom of the t-test, n − 1.",
+          "p": "Two-sided p-value. Below 0.05 the bias counts as significant."
+        },
+        "Detail": {
+          "index": "Running number of the measurement, from 1.",
+          "value": "The measurement.",
+          "deviation": "Deviation of the measurement from the reference value.",
+          "devFromMean": "Absolute deviation of the measurement from the mean.",
+          "isOutlier": "True when the measurement lies outside mean ± 3 standard deviations."
+        },
+        "ResultParams": {
+          "ref": "Reference value the calculation used.",
+          "lsl": "Lower tolerance limit the calculation used; empty for a one-sided tolerance without a lower limit.",
+          "usl": "Upper tolerance limit the calculation used; empty for a one-sided tolerance without an upper limit.",
+          "k1": "Share of the tolerance the calculation used.",
+          "k2": "Spread factor the calculation used."
+        }
       },
       "sectionParams": "Parameters",
       "sectionValues": "Enter Measurements",

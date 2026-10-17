@@ -43,8 +43,9 @@ function fmtP(p) {
 /**
  * Die Schlüsselfläche von `setParam`: je Parameter der Wertebereich. Der
  * Build prüft sie gegen `PARAM_KEYS` und `PARAM_CHECKS`; die Sätze je
- * Schlüssel stehen in i18n unter `actions.setParam.keys.<schlüssel>` und
- * erscheinen in der Oberfläche am Label (Alt-Taste).
+ * Schlüssel stehen in i18n unter `types.Params.<schlüssel>` und erscheinen
+ * in der Oberfläche am Label (Alt-Taste). Dieselbe Typedef beschreibt das
+ * Lesefeld `params`.
  *
  * @typedef {object} Params
  * @property {string} name  Bezeichnung des Merkmals
@@ -58,6 +59,9 @@ function fmtP(p) {
 
 /** Die sieben Parameter, die `setParam` annimmt (Reihenfolge wie im Model). */
 const PARAM_KEYS = ['name', 'ref', 'unit', 'lsl', 'usl', 'k1', 'k2'];
+
+/** Präfix der Kontexthilfe je Kennzahl der Statistiktabelle (`types.<Typedef>.<property>`). */
+const HELP = 'modules.msa-typ1.types.';
 
 /** Die Werte der beiden Auswahllisten (k₁ Anteil der Toleranz, k₂ Streuungsfaktor). */
 const K1_OPTIONS = ['0.2', '0.15', '0.1'];
@@ -84,6 +88,69 @@ const SLOT_FILTERS = { value: { types: ['numeric'] } };
 const COLUMN_SINKS = { value: (m, ref) => { m.columnRef = ref; } };
 
 /**
+ * Das gerechnete Ergebnis (`analyze()` aus `engines/msa-typ1-engine.js`),
+ * wie `read().result` es liefert. Je Kennzahl ein Satz unter
+ * `types.Result.<kennzahl>` — derselbe, den die Oberfläche an der Kennzahl
+ * zeigt (Alt-Taste). Die Schlüsselmenge prüft der Rauchtest gegen die
+ * Laufzeit (`agent-smoke.spec.js`).
+ *
+ * @typedef {object} Result
+ * @property {'two-sided'|'one-sided'} mode  Toleranzart
+ * @property {number} n  Anzahl der Messwerte
+ * @property {number} xbar  Mittelwert
+ * @property {number} sg  Standardabweichung
+ * @property {number} xmin  kleinster Messwert
+ * @property {number} xmax  größter Messwert
+ * @property {number} range  Spannweite
+ * @property {number} bias  Mittelwert minus Referenzwert
+ * @property {BiasTest} biasTest  t-Test auf Bias
+ * @property {number} resolution  erkannte Auflösung, 0 wenn unbestimmbar
+ * @property {number} upperThreshold  Mittelwert + 3·sg
+ * @property {number} lowerThreshold  Mittelwert − 3·sg
+ * @property {Detail[]} details  je Messwert
+ * @property {boolean} noSpread  alle Werte identisch
+ * @property {ResultParams} params  die gerechneten Parameter als Zahlen
+ * @property {number|null} T  Toleranz
+ * @property {number|null} biasPercent  Bias in % der Toleranz
+ * @property {number|null} Cg  Fähigkeitsindex
+ * @property {number|null} Cgk  Fähigkeitsindex mit Bias
+ * @property {'pass'|'warn'|'fail'|null} cgStatus  Urteil zu Cg
+ * @property {'pass'|'warn'|'fail'|null} cgkStatus  Urteil zu Cgk
+ * @property {'pass'|'warn'|'fail'|'none'} overall  Gesamturteil
+ * @property {number|null} tolUsage  Toleranzausnutzung in %
+ * @property {number|null} varEv  %Var(EV), gleich tolUsage
+ * @property {number|null} varEvBias  %Var(EV+Bias)
+ * @property {number|null} resPercent  Auflösung in % der Toleranz
+ * @property {number|null} zoneHi  obere Grenze der k₁·T-Zone
+ * @property {number|null} zoneLo  untere Grenze der k₁·T-Zone
+ */
+
+/**
+ * @typedef {object} BiasTest
+ * @property {number|null} t  Prüfgröße
+ * @property {number} df  Freiheitsgrade
+ * @property {number|null} p  p-Wert
+ */
+
+/**
+ * @typedef {object} Detail
+ * @property {number} index  laufende Nummer ab 1
+ * @property {number} value  Messwert
+ * @property {number} deviation  Abweichung vom Referenzwert
+ * @property {number} devFromMean  Betrag der Abweichung vom Mittelwert
+ * @property {boolean} isOutlier  außerhalb Mittelwert ± 3·sg
+ */
+
+/**
+ * @typedef {object} ResultParams
+ * @property {number} ref  Referenzwert
+ * @property {number|null} lsl  untere Toleranzgrenze
+ * @property {number|null} usl  obere Toleranzgrenze
+ * @property {number} k1  Anteil der Toleranz
+ * @property {number} k2  Streuungsfaktor
+ */
+
+/**
  * Die Agenten-Lesefläche von MSA Typ 1.
  *
  * Nicht die persistierte Form: das Model hält NUR die Eingaben, das Ergebnis
@@ -93,12 +160,12 @@ const COLUMN_SINKS = { value: (m, ref) => { m.columnRef = ref; } };
  * Beispiel-Buchführung (`exampleWorksheetId`).
  *
  * @typedef {object} AgentRead
- * @property {object} params  the entered parameters (name, ref, unit, lsl, usl, k1, k2), values as text as entered
+ * @property {Params} params  the entered parameters, values as text as entered
  * @property {object|null} columnRef  the chosen measurement column, `{ instanceId, sheetId, columnId }`, or null
  * @property {string[]} activeParams  the keys `setParam` accepts in the current state
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
- * @property {object|null} result  the computed result, or null while the inputs are incomplete
+ * @property {Result|null} result  the computed result, or null while the inputs are incomplete
  */
 const mod = createModule({
   config: {
@@ -244,16 +311,16 @@ const mod = createModule({
         if (!r) return [];
         const u = this.model.params.unit || '';
         return [
-          { label: _t('statN'), value: String(r.n) },
-          { label: _t('statMean'), value: `${fmt(r.xbar)} ${u}` },
-          { label: _t('statStddev'), value: `${fmt(r.sg)} ${u}` },
-          { label: _t('statMin'), value: `${fmt(r.xmin)} ${u}` },
-          { label: _t('statMax'), value: `${fmt(r.xmax)} ${u}` },
-          { label: _t('statRange'), value: `${fmt(r.range)} ${u}` },
-          { label: _t('statRef'), value: `${fmt(r.params.ref)} ${u}` },
-          { label: _t('statTol'), value: `${fmtOpt(r.T)} ${u}` },
-          { label: _t('statResolution'), value: r.resolution > 0 ? (r.resPercent == null ? `${fmt(r.resolution)} ${u}` : `${fmt(r.resolution)} ${u} (${fmt(r.resPercent)} % T)`) : '–' },
-          { label: 'k₁ / k₂', value: `${r.params.k1} / ${r.params.k2}` },
+          { label: _t('statN'), help: `${HELP}Result.n`, value: String(r.n) },
+          { label: _t('statMean'), help: `${HELP}Result.xbar`, value: `${fmt(r.xbar)} ${u}` },
+          { label: _t('statStddev'), help: `${HELP}Result.sg`, value: `${fmt(r.sg)} ${u}` },
+          { label: _t('statMin'), help: `${HELP}Result.xmin`, value: `${fmt(r.xmin)} ${u}` },
+          { label: _t('statMax'), help: `${HELP}Result.xmax`, value: `${fmt(r.xmax)} ${u}` },
+          { label: _t('statRange'), help: `${HELP}Result.range`, value: `${fmt(r.range)} ${u}` },
+          { label: _t('statRef'), help: `${HELP}ResultParams.ref`, value: `${fmt(r.params.ref)} ${u}` },
+          { label: _t('statTol'), help: `${HELP}Result.T`, value: `${fmtOpt(r.T)} ${u}` },
+          { label: _t('statResolution'), help: `${HELP}Result.resolution`, value: r.resolution > 0 ? (r.resPercent == null ? `${fmt(r.resolution)} ${u}` : `${fmt(r.resolution)} ${u} (${fmt(r.resPercent)} % T)`) : '–' },
+          { label: 'k₁ / k₂', help: null, value: `${r.params.k1} / ${r.params.k2}` },
         ];
       },
 

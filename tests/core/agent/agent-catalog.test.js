@@ -294,12 +294,13 @@ suite('agent catalog — module.describe', () => {
         params: [{ name: 'key', type: "'alpha'|'k1'", optional: false, help: 'welcher' },
                  { name: 'value', type: 'string', optional: false, help: 'der Wert' }],
         returns: 'void', help: 'Setzt einen Parameter.',
+        keysOf: 'Params',
         keys: { alpha: { type: 'string', help: 'JSDoc alpha' }, k1: { type: "'0.2'|'0.1'", help: 'JSDoc k1' } },
       },
     } } };
-    const table = { ...I18N_TABLE, 'modules.worksheet.actions.setParam.keys.alpha': 'Das Signifikanzniveau.' };
+    const table = { ...I18N_TABLE, 'modules.worksheet.types.Params.alpha': 'Das Signifikanzniveau.' };
     const i18n = { ...I18N,
-      exists: (key) => I18N.exists(key) || key === 'modules.worksheet.actions.setParam.keys.alpha',
+      exists: (key) => I18N.exists(key) || key === 'modules.worksheet.types.Params.alpha',
       t: (key, params) => (key in table ? table[key] : I18N.t(key, params)) };
     const out = await describeModule({ ...deps, registry, i18n }, 'worksheet');
     const action = out.actions.find(a => a.name === 'setParam');
@@ -309,6 +310,36 @@ suite('agent catalog — module.describe', () => {
     ]);
     assertEqual('keys' in out.actions.find(a => a.name === 'importCsv'), false,
       'eine Aktion ohne Schlüsselfläche trägt kein keys-Feld');
+  });
+
+  test('ein Ergebnisfeld beschreibt jede Kennzahl, verschachtelte Typedefs eingeschlossen', async () => {
+    // Derselbe Satz je Typedef-Property (`types.<Typedef>.<property>`), egal
+    // ob die Typedef an einem Setter oder an einem Lesefeld hängt.
+    const registry = { ...REGISTRY, worksheet: { ...REGISTRY.worksheet, fields: {
+      ...REGISTRY.worksheet.fields,
+      result: {
+        type: 'Result|null', help: 'das Ergebnis', bulk: false, derived: true, keysOf: 'Result',
+        keys: {
+          Cg: { type: 'number|null', help: 'JSDoc Cg' },
+          biasTest: { type: 'BiasTest', help: 'JSDoc Test', keysOf: 'BiasTest',
+            keys: { p: { type: 'number|null', help: 'JSDoc p' } } },
+        },
+      },
+    } } };
+    const table = { ...I18N_TABLE,
+      'modules.worksheet.types.Result.Cg': 'Die Fähigkeit des Messsystems.',
+      'modules.worksheet.types.BiasTest.p': 'Der p-Wert des Bias-Tests.' };
+    const i18n = { ...I18N,
+      exists: (key) => I18N.exists(key) || key.startsWith('modules.worksheet.types.') && key in table,
+      t: (key, params) => (key in table ? table[key] : I18N.t(key, params)) };
+    const out = await describeModule({ ...deps, registry, i18n }, 'worksheet');
+    const result = out.fields.find(f => f.name === 'result');
+    assertDeepEqual(result.keys, [
+      { name: 'Cg', type: 'number|null', help: 'Die Fähigkeit des Messsystems.' },
+      { name: 'biasTest', type: 'BiasTest', help: 'JSDoc Test',
+        keys: [{ name: 'p', type: 'number|null', help: 'Der p-Wert des Bias-Tests.' }] },
+    ]);
+    assertEqual('keys' in out.fields.find(f => f.name === 'rows'), false);
   });
 
   test('i18n context help wins over the JSDoc prose for fields', async () => {

@@ -108,6 +108,11 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   // Parallelquelle, die Spec §8 vermeidet. Ohne Deklaration bleibt alles
   // wie bisher (Model-Felder, driftfrei per Konstruktion).
   const declared = readAgentReadTypedef(sf);
+  // Ausgaben: ein erklärtes Feld vom Typ einer Typedef der Datei
+  // (`{Result|null} result`) bekommt deren Schlüssel — siehe `typedefKeys`.
+  if (declared) {
+    for (const field of Object.values(declared)) Object.assign(field, nestedKeys(sf, field.type, new Set()));
+  }
   const model = declared ? { fields: declared, violations: [] } : readModelFields(resolver, sf);
 
   // Die Gegenprobe gilt nur für die ABGELEITETE Lesefläche. Eine erklärte
@@ -388,6 +393,59 @@ function findTypedefLiteral(sf, name) {
   return found;
 }
 
+/**
+ * Die Properties einer Typedef der Moduldatei als beschreibbare Schlüssel:
+ * je Property Typ und JSDoc-Prosa. Ist eine Property selbst vom Typ einer
+ * Typedef der Datei (auch als Liste oder mit `|null`), kommen deren
+ * Schlüssel verschachtelt dazu (`keysOf`, `keys`). Eine Typedef, die auf dem
+ * Pfad schon offen ist, wird nicht erneut aufgelöst — kein Zyklus.
+ *
+ * @param {ts.SourceFile} sf
+ * @param {string} name  der Typedef-Name
+ * @param {Set<string>} [open]  die auf dem Pfad offenen Typedefs
+ * @returns {Record<string, { type: string, help: string, keysOf?: string, keys?: object }>|null}
+ *   null, wenn die Typedef in der Datei fehlt
+ */
+function typedefKeys(sf, name, open = new Set()) {
+  const literal = findTypedefLiteral(sf, name);
+  if (!literal) return null;
+  const inner = new Set([...open, name]);
+  const keys = {};
+  for (const property of literal.jsDocPropertyTags ?? []) {
+    const prop = property.name?.getText(sf);
+    if (!prop) continue;
+    const type = property.typeExpression?.type?.getText(sf) ?? 'any';
+    keys[prop] = { type, help: cleanComment(property.comment), ...nestedKeys(sf, type, inner) };
+  }
+  return keys;
+}
+
+/**
+ * `keysOf`/`keys` für einen Typ, der eine Typedef der Datei nennt — sonst `{}`.
+ * @param {ts.SourceFile} sf
+ * @param {string} type
+ * @param {Set<string>} open
+ * @returns {{ keysOf?: string, keys?: object }}
+ */
+function nestedKeys(sf, type, open) {
+  const ref = typeRefName(type);
+  if (!ref || open.has(ref)) return {};
+  const keys = typedefKeys(sf, ref, open);
+  return keys ? { keysOf: ref, keys } : {};
+}
+
+/**
+ * Der Typedef-Name in `T`, `T|null`, `T[]` oder `T[]|null` — sonst null.
+ * @param {string} type
+ * @returns {string|null}
+ */
+function typeRefName(type) {
+  const parts = type.split('|').map(p => p.trim()).filter(p => p !== 'null' && p !== 'undefined');
+  if (parts.length !== 1) return null;
+  const m = /^([A-Za-z_$][\w$]*)(\[\])?$/.exec(parts[0]);
+  return m ? m[1] : null;
+}
+
 /** `keyof <Typedef>` als Typ eines Aktionsparameters. */
 const KEYOF_RE = /^keyof\s+([A-Za-z_$][\w$]*)$/;
 
@@ -399,7 +457,7 @@ const KEYOF_RE = /^keyof\s+([A-Za-z_$][\w$]*)$/;
  * je Schlüssel ein Typ (der Wertebereich von `value`) und ein Satz. Daraus
  * werden
  *   • `keys` an der Aktion (Typ + JSDoc-Prosa je Schlüssel; die Laufzeit
- *     legt den i18n-Satz `actions.<aktion>.keys.<schlüssel>` darüber),
+ *     legt den i18n-Satz `types.<Typedef>.<schlüssel>` darüber),
  *   • der Typ des Schlüsselparameters als Vereinigung der Schlüssel — der
  *     Agent sieht die konkrete Menge, das Modul schreibt sie nur einmal.
  *
@@ -425,17 +483,8 @@ const KEYOF_RE = /^keyof\s+([A-Za-z_$][\w$]*)$/;
  * @returns {{ keys: Record<string, { type: string, help: string }>|null, violations: string[] }}
  */
 function readKeySurface(fn, action, keyParam, typedefName, sf) {
-  const literal = findTypedefLiteral(sf, typedefName);
-  if (!literal) return { keys: null, violations: [`unresolved_key_typedef:${action}:${typedefName}`] };
-  const keys = {};
-  for (const property of literal.jsDocPropertyTags ?? []) {
-    const name = property.name?.getText(sf);
-    if (!name) continue;
-    keys[name] = {
-      type: property.typeExpression?.type?.getText(sf) ?? 'any',
-      help: cleanComment(property.comment),
-    };
-  }
+  const keys = typedefKeys(sf, typedefName);
+  if (!keys) return { keys: null, violations: [`unresolved_key_typedef:${action}:${typedefName}`] };
 
   const violations = [];
   const runtime = requireEnumKeySets(fn.body, new Set([keyParam]), sf).get(keyParam);
@@ -610,6 +659,7 @@ function readViewmodel(sf, resolver, appDir) {
 
     // Generischer Setter mit erklärter Schlüsselfläche (`keyof <Typedef>`).
     let keys = null;
+    let keysOf = null;
     for (const param of params) {
       const keyof = KEYOF_RE.exec(param.type);
       if (!keyof) continue;
@@ -617,6 +667,7 @@ function readViewmodel(sf, resolver, appDir) {
       for (const v of surface.violations) violations.push(`${v}${from}`);
       if (surface.keys) {
         keys = surface.keys;
+        keysOf = keyof[1];
         param.type = Object.keys(keys).map(k => `'${k}'`).join('|');
       }
     }
@@ -628,7 +679,7 @@ function readViewmodel(sf, resolver, appDir) {
       params,
       returns: returnTag?.typeExpression?.type?.getText() ?? 'void',
       help: cleanComment(descriptionOf(member)),
-      ...(keys ? { keys } : {}),
+      ...(keys ? { keysOf, keys } : {}),
     };
 
     // Nur der `@agent`-Zweig zählt als Schreibweg der Fläche (Task 1b): eine

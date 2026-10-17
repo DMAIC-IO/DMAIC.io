@@ -237,16 +237,8 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
         help: contextHelp(i18n, moduleId, `actions.${name}.params.${p.name}`, p.help),
       })),
       // Nur an einem generischen Setter mit erklärter Schlüsselfläche
-      // (`@param {keyof Params} key`): je Schlüssel Typ und Satz. Derselbe
-      // Satz steht in der Oberfläche am Label (`data-help-key` auf
-      // `…actions.<name>.keys.<schlüssel>`).
-      ...(action.keys ? {
-        keys: Object.entries(action.keys).map(([key, k]) => ({
-          name: key,
-          type: k.type,
-          help: contextHelp(i18n, moduleId, `actions.${name}.keys.${key}`, k.help),
-        })),
-      } : {}),
+      // (`@param {keyof Params} key`): je Schlüssel Typ und Satz.
+      ...describeKeys(i18n, moduleId, action),
     })),
     fields: Object.entries(entry.fields).map(([name, field]) => ({
       name,
@@ -259,9 +251,37 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
       // Durchreichen erzeugt der Extraktor die Marke und niemand sieht sie.
       derived: field.derived === true,
       help: contextHelp(i18n, moduleId, `fields.${name}.help`, field.help),
+      // Nur an einem Feld vom Typ einer Typedef (`{Result|null} result`):
+      // je Kennzahl Typ und Satz, verschachtelt.
+      ...describeKeys(i18n, moduleId, field),
     })),
     sections: sectionList,
     prose,
+  };
+}
+
+/**
+ * Die erklärten Schlüssel einer Typedef (Setter-Schlüssel oder Kennzahlen
+ * eines Ergebnisses) als `{ keys: [{ name, type, help, keys? }] }`, oder `{}`.
+ *
+ * Der Satz kommt aus `modules.<id>.types.<Typedef>.<property>` — EIN Satz je
+ * Typedef-Property, egal wo die Typedef hängt. Derselbe Schlüssel steht in
+ * der Oberfläche als `data-help-key` am Label bzw. an der Kennzahl.
+ *
+ * @param {object} i18n
+ * @param {string} moduleId
+ * @param {{ keysOf?: string, keys?: Record<string, object> }} node
+ * @returns {{ keys?: object[] }}
+ */
+function describeKeys(i18n, moduleId, node) {
+  if (!node.keys || !node.keysOf) return {};
+  return {
+    keys: Object.entries(node.keys).map(([key, k]) => ({
+      name: key,
+      type: k.type,
+      help: contextHelp(i18n, moduleId, `types.${node.keysOf}.${key}`, k.help),
+      ...describeKeys(i18n, moduleId, k),
+    })),
   };
 }
 
