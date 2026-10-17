@@ -21,9 +21,25 @@
 
 .tfa__row {
   display: grid;
-  grid-template-columns: minmax(160px, 2fr) minmax(160px, 3fr) 180px auto;
+  grid-template-columns: minmax(160px, 2fr) minmax(120px, 2fr) 140px 180px auto;
   gap: var(--spacing-s);
   align-items: center;
+}
+
+.tfa__cost-field {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.tfa__cost-field .field {
+  min-width: 0;
+  flex: 1;
+  text-align: right;
+}
+
+.tfa__cost-unit {
+  color: var(--color-text-secondary);
 }
 
 .tfa__add {

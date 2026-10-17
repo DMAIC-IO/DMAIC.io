@@ -21,6 +21,16 @@
                 @input="setName(c, $event)" @keydown.enter.prevent="addComponent(kind)" @blur="discardIfEmpty(c)">
               <input class="field tfa__note" type="text" data-role="component-note"
                 :value="c.note" :placeholder="t('notePlaceholder')" @input="setNote(c, $event)">
+              <span class="tfa__cost">
+                <template x-if="c.kind === 'system'">
+                  <span class="tfa__cost-field">
+                    <input class="field" type="number" min="0" step="any" data-role="component-cost"
+                      :value="costValue(c)" :placeholder="t('costPlaceholder')" :aria-label="t('costPlaceholder')"
+                      @change="setCost(c, $event)">
+                    <span class="tfa__cost-unit" x-text="t('costUnit')"></span>
+                  </span>
+                </template>
+              </span>
               <select class="field tfa__kind" data-role="component-kind" @change="changeKind(c, $event)">
                 <option value="target" :selected="c.kind === 'target'" x-text="t('kind.target')"></option>
                 <option value="system" :selected="c.kind === 'system'" x-text="t('kind.system')"></option>

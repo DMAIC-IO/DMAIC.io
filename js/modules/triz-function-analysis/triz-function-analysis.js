@@ -64,6 +64,11 @@ export default createModule({
       },
       setName(c, ev) { c.name = ev.target.value; },
       setNote(c, ev) { c.note = ev.target.value; },
+      /** Store a cost typed into a system row; an invalid entry snaps back to the stored value. */
+      setCost(c, ev) {
+        if (!this.model.setCost(c.id, ev.target.value)) ev.target.value = this.costValue(c);
+      },
+      costValue(c) { return c.cost ?? ''; },
       changeKind(c, ev) {
         const demoted = this.model.setKind(c.id, ev.target.value);
         if (demoted) notify(_t('targetDemoted', { name: label(demoted) }));

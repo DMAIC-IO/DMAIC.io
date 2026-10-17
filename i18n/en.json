@@ -6329,6 +6329,8 @@
       "kind": { "target": "Target", "system": "System component", "supersystem": "Supersystem" },
       "namePlaceholder": "Name",
       "notePlaceholder": "Note",
+      "costPlaceholder": "Cost",
+      "costUnit": "€",
       "addComponent": "Add",
       "removeComponent": "Delete component",
       "unnamed": "(unnamed)",

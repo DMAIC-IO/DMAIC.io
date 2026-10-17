@@ -6329,6 +6329,8 @@
       "kind": { "target": "Zielobjekt", "system": "Systemkomponente", "supersystem": "Supersystem" },
       "namePlaceholder": "Name",
       "notePlaceholder": "Notiz",
+      "costPlaceholder": "Kosten",
+      "costUnit": "€",
       "addComponent": "Hinzufügen",
       "removeComponent": "Komponente löschen",
       "unnamed": "(ohne Namen)",
