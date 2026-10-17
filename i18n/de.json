@@ -7858,6 +7858,38 @@
       }
     },
     "attribute-control-chart": {
+      "whenToUse": "Gezählte Daten in einer Regelkarte überwachen: p und np für fehlerhafte Einheiten, c und u für Fehler, mit Regeln nach Nelson auf den gezeichneten Punkten.",
+      "actions": {
+        "read": { "help": "Kartentyp, gewählte Spalten, Einstellungen, Grenzen, Regelverletzungen und je Punkt Wert, n und Grenzen lesen." },
+        "setColumn": {
+          "help": "Eine Spalte einem Slot zuweisen und neu rechnen.",
+          "params": {
+            "slot": "'defects' — fehlerhafte Einheiten (p, np) bzw. Fehler (c, u) je Stichprobe (Pflicht); 'size' — der Stichprobenumfang je Stichprobe, nur bei p und u.",
+            "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null zum Leeren (in jedem Kartentyp erlaubt)."
+          }
+        },
+        "setParam": {
+          "help": "Eine Analyseoption setzen und neu rechnen.",
+          "params": {
+            "key": "'chartTypeId', 'baselineCount', 'enabledRules' immer; 'constantN' nur bei der np-Karte.",
+            "value": "chartTypeId 'p', 'np', 'c' oder 'u'; constantN eine ganze Zahl ab 1; baselineCount eine ganze Zahl ab 1, oder null für alle Punkte; enabledRules eine Liste von Regel-Ids aus 1, 2, 3, 5, 6."
+          }
+        },
+        "runAnalysis": { "help": "Mit den aktuellen Spaltenwerten neu rechnen, etwa nachdem sich die Daten geändert haben." }
+      },
+      "fields": {
+        "chartTypeId": { "help": "'p', 'np', 'c' oder 'u'." },
+        "defectsRef": { "help": "Die Spalte der fehlerhaften Einheiten bzw. Fehler (Slot 'defects'), oder null." },
+        "sizeRef": { "help": "Die Spalte des Stichprobenumfangs (Slot 'size', bei p und u), oder null." },
+        "constantN": { "help": "Der konstante Stichprobenumfang der np-Karte." },
+        "baselineCount": { "help": "Länge der Phase I, oder null für alle Punkte." },
+        "enabledRules": { "help": "Die geprüften Regel-Ids, sortiert." },
+        "activeColumnSlots": { "help": "Die Slots, die setColumn für den aktuellen Kartentyp annimmt." },
+        "activeParams": { "help": "Die Schlüssel, die setParam für den aktuellen Kartentyp annimmt." },
+        "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
+        "result": { "help": "{ chartType, statistic, valid, cl, ucl, lcl, sigma, variableLimits, violations: [{ index, ruleId }], signals }; ucl, lcl und sigma sind null, wenn die Grenzen je Punkt wechseln; signals die verletzenden Indizes ohne Doppelte; null ohne die nötigen Spalten oder bei weniger als 2 verwertbaren Punkten." },
+        "points": { "help": "Je gezeichnetem Punkt eine Zeile: { value, n, ucl, lcl, signal }; n ist bei der c-Karte null. read({ fields: ['points'] }) liefert sie vollständig." }
+      },
       "name": "Regelkarte (attributiv)",
       "description": "SPC-Karten für Zähldaten: p, np, c, u",
       "sectionChartType": "Kartentyp",

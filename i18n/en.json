@@ -7934,6 +7934,38 @@
       }
     },
     "attribute-control-chart": {
+      "whenToUse": "Control-chart counted data: p and np for defectives, c and u for defects, with Nelson-type rules on the plotted points.",
+      "actions": {
+        "read": { "help": "Read the chart type, chosen columns, settings, limits, rule violations and per point the value, n and limits." },
+        "setColumn": {
+          "help": "Assign a column to a slot and recompute.",
+          "params": {
+            "slot": "'defects' — defectives (p, np) or defects (c, u) per sample (required); 'size' — the sample size per sample, only for p and u.",
+            "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null to clear the slot (allowed in any chart type)."
+          }
+        },
+        "setParam": {
+          "help": "Set an analysis option and recompute.",
+          "params": {
+            "key": "'chartTypeId', 'baselineCount', 'enabledRules' always; 'constantN' only for the np chart.",
+            "value": "chartTypeId 'p', 'np', 'c' or 'u'; constantN a whole number of at least 1; baselineCount a whole number of at least 1, or null for all points; enabledRules a list of rule ids from 1, 2, 3, 5, 6."
+          }
+        },
+        "runAnalysis": { "help": "Recompute with the current column values, for example after the data changed." }
+      },
+      "fields": {
+        "chartTypeId": { "help": "'p', 'np', 'c' or 'u'." },
+        "defectsRef": { "help": "The defectives or defects column (slot 'defects'), or null." },
+        "sizeRef": { "help": "The sample size column (slot 'size', used by p and u), or null." },
+        "constantN": { "help": "The constant sample size of the np chart." },
+        "baselineCount": { "help": "Phase I length, or null for all points." },
+        "enabledRules": { "help": "The rule ids checked, sorted." },
+        "activeColumnSlots": { "help": "The slots setColumn accepts for the current chart type." },
+        "activeParams": { "help": "The keys setParam accepts for the current chart type." },
+        "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
+        "result": { "help": "{ chartType, statistic, valid, cl, ucl, lcl, sigma, variableLimits, violations: [{ index, ruleId }], signals }; ucl, lcl and sigma are null when the limits vary per point; signals the distinct violating indices; null without the needed columns or with fewer than 2 usable points." },
+        "points": { "help": "One row per plotted point: { value, n, ucl, lcl, signal }; n is null for the c chart. read({ fields: ['points'] }) returns them in full." }
+      },
       "name": "Control Chart (Attribute)",
       "description": "SPC charts for count data: p, np, c, u",
       "sectionChartType": "Chart Type",

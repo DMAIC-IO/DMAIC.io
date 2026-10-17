@@ -278,74 +278,132 @@ export const AGENT_REGISTRY = {
     }
   },
   "attribute-control-chart": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:requiresSampleSize",
-      "unmarked_method:requiresConstantN",
-      "unmarked_method:nelsonRuleShort",
-      "unmarked_method:nelsonRuleDesc",
-      "unmarked_method:fmtCL",
-      "unmarked_method:uclMeanStr",
-      "unmarked_method:lclMeanStr",
-      "unmarked_method:limitsLabel",
-      "unmarked_method:violationCount",
-      "unmarked_method:validCount",
-      "unmarked_method:chartTitle",
-      "unmarked_method:isStable",
-      "unmarked_method:badgeText",
-      "unmarked_method:badgeIcon",
-      "unmarked_method:violationRows",
-      "unmarked_method:violationsHeader",
-      "unmarked_method:chartTypeChanged",
-      "unmarked_method:constantNChanged",
-      "unmarked_method:baselineCountChanged",
-      "unmarked_method:toggleNelson",
-      "unmarked_method:toggleRule",
-      "unmarked_method:scheduleAutoRun",
-      "unmarked_method:runAnalysis",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unreachable_write:chartTypeId",
-      "unreachable_write:constantN"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields: ['points']` liefert die Punkte vollständig, `rows` schneidet sie zu"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'defects'|'size'",
+            "optional": false,
+            "help": "der Slot; read().activeColumnSlots nennt die für den Kartentyp gültigen"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren (auch in einem gerade inaktiven Slot)"
+          }
+        ],
+        "returns": "Promise<void>",
+        "help": "Eine Spalte einem Slot zuweisen und neu rechnen."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'chartTypeId'|'constantN'|'baselineCount'|'enabledRules'",
+            "optional": false,
+            "help": "welche Option; read().activeParams nennt die gültigen"
+          },
+          {
+            "name": "value",
+            "type": "any",
+            "optional": false,
+            "help": "chartTypeId 'p'|'np'|'c'|'u'; constantN eine ganze Zahl ≥ 1; baselineCount eine ganze Zahl ≥ 1 oder null; enabledRules eine Liste von Regel-Ids"
+          }
+        ],
+        "returns": "Promise<void>",
+        "help": "Eine Analyseoption setzen und neu rechnen."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "void",
+        "help": "Mit den aktuellen Eingaben und Spaltenwerten neu rechnen."
+      }
+    },
     "fields": {
       "chartTypeId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string",
+        "help": "`'p'`, `'np'`, `'c'` or `'u'`",
+        "bulk": false,
+        "derived": true
       },
       "defectsRef": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the defects or defectives column (slot `defects`), `{ instanceId, sheetId, columnId }`, or null",
+        "bulk": false,
+        "derived": true
       },
       "sizeRef": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object|null",
+        "help": "the sample size column (slot `size`, used by p and u), or null",
+        "bulk": false,
+        "derived": true
       },
       "constantN": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "the constant sample size of the np chart",
+        "bulk": false,
+        "derived": true
       },
       "baselineCount": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number|null",
+        "help": "Phase I length, or null for all points",
+        "bulk": false,
+        "derived": true
       },
       "enabledRules": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number[]",
+        "help": "the rule ids checked, sorted",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts for the current chart type",
+        "bulk": false,
+        "derived": true
+      },
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts for the current chart type",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "`{ chartType, statistic, valid, cl, ucl, lcl, sigma, variableLimits, violations: [{ index, ruleId }], signals }` — ucl/lcl/sigma are null when the limits vary per point (see points); signals the distinct violating indices; null without the needed columns or with fewer than 2 usable points",
+        "bulk": false,
+        "derived": true
+      },
+      "points": {
+        "type": "object[]",
+        "help": "one row per plotted point: `{ value, n, ucl, lcl, signal }` (n null for the c chart)",
+        "bulk": true,
+        "bulkKind": "table",
+        "derived": true
       }
     }
   },
@@ -11530,4 +11588,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":66};
+export const AGENT_COVERAGE = {"total":76,"available":67};
