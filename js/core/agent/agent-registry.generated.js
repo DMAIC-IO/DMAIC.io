@@ -3309,17 +3309,56 @@ export const AGENT_REGISTRY = {
             "name": "key",
             "type": "'refValue'|'partsPerRow'|'connectWithin'|'showOperatorMean'|'gageInfo.name'|'gageInfo.date'|'gageInfo.reporter'|'gageInfo.tolerance'|'gageInfo.misc'",
             "optional": false,
-            "help": "welche Option"
+            "help": "welcher Parameter"
           },
           {
             "name": "value",
-            "type": "any",
+            "type": "string|number|boolean",
             "optional": false,
-            "help": "Typ und Bereich je Schlüssel siehe Hilfe"
+            "help": "der Wert; Wertebereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "Promise<void>",
-        "help": "Eine Option setzen; alles außer der Kopfzeile rechnet neu."
+        "help": "Eine Option setzen; alles außer der Kopfzeile rechnet neu.",
+        "keysOf": "Params",
+        "keys": {
+          "refValue": {
+            "type": "string",
+            "help": "Bezugslinie, leer für das Gesamtmittel"
+          },
+          "partsPerRow": {
+            "type": "number",
+            "help": "Teile je Streifen"
+          },
+          "connectWithin": {
+            "type": "boolean",
+            "help": "Punkte je Teil verbinden"
+          },
+          "showOperatorMean": {
+            "type": "boolean",
+            "help": "Prüfermittel zeigen"
+          },
+          "gageInfo.name": {
+            "type": "string",
+            "help": "Messmittel"
+          },
+          "gageInfo.date": {
+            "type": "string",
+            "help": "Datum"
+          },
+          "gageInfo.reporter": {
+            "type": "string",
+            "help": "Bearbeiter"
+          },
+          "gageInfo.tolerance": {
+            "type": "string",
+            "help": "Toleranz"
+          },
+          "gageInfo.misc": {
+            "type": "string",
+            "help": "Sonstiges"
+          }
+        }
       },
       "runAnalysis": {
         "params": [],
@@ -3389,10 +3428,76 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
-        "help": "`{ n, droppedRows, partCount, operatorCount, operators, hasOperators, grandMean, refValue, yMin, yMax, warnings, cellMeans: [{ part, operator, mean }] }` — warnings are codes (e.g. 'unbalanced'); null without part and measurement column or without usable rows",
+        "type": "Result|null",
+        "help": "the computed result, or null without part and measurement column or usable rows",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "n": {
+            "type": "number",
+            "help": "Messwerte"
+          },
+          "droppedRows": {
+            "type": "number",
+            "help": "verworfene Zeilen"
+          },
+          "partCount": {
+            "type": "number",
+            "help": "Teile"
+          },
+          "operatorCount": {
+            "type": "number",
+            "help": "Prüfer"
+          },
+          "operators": {
+            "type": "string[]",
+            "help": "Prüfer in Reihenfolge"
+          },
+          "hasOperators": {
+            "type": "boolean",
+            "help": "Prüferspalte gesetzt"
+          },
+          "grandMean": {
+            "type": "number|null",
+            "help": "Gesamtmittel"
+          },
+          "refValue": {
+            "type": "number|null",
+            "help": "Bezugslinie"
+          },
+          "yMin": {
+            "type": "number|null",
+            "help": "kleinster Messwert"
+          },
+          "yMax": {
+            "type": "number|null",
+            "help": "größter Messwert"
+          },
+          "warnings": {
+            "type": "string[]",
+            "help": "Hinweise"
+          },
+          "cellMeans": {
+            "type": "CellMean[]",
+            "help": "Mittelwert je Teil und Prüfer",
+            "keysOf": "CellMean",
+            "keys": {
+              "part": {
+                "type": "string",
+                "help": "Teil"
+              },
+              "operator": {
+                "type": "string",
+                "help": "Prüfer"
+              },
+              "mean": {
+                "type": "number|null",
+                "help": "Mittelwert"
+              }
+            }
+          }
+        }
       },
       "points": {
         "type": "object[]",

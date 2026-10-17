@@ -91,6 +91,49 @@ function setAtPath(obj, key, value) {
 }
 
 /**
+ * Die Schlüsselfläche von `setParam`. Die Kopfzeilenfelder tragen den Punkt
+ * im Schlüssel (im Model unter `gageInfo`). Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>` (Punkt = Verschachtelung in i18n), dieselben
+ * am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {string} refValue  Bezugslinie, leer für das Gesamtmittel
+ * @property {number} partsPerRow  Teile je Streifen
+ * @property {boolean} connectWithin  Punkte je Teil verbinden
+ * @property {boolean} showOperatorMean  Prüfermittel zeigen
+ * @property {string} gageInfo.name  Messmittel
+ * @property {string} gageInfo.date  Datum
+ * @property {string} gageInfo.reporter  Bearbeiter
+ * @property {string} gageInfo.tolerance  Toleranz
+ * @property {string} gageInfo.misc  Sonstiges
+ */
+
+/**
+ * Das gerechnete Ergebnis (`_agentResult()`), wie `read().result` es liefert.
+ *
+ * @typedef {object} Result
+ * @property {number} n  Messwerte
+ * @property {number} droppedRows  verworfene Zeilen
+ * @property {number} partCount  Teile
+ * @property {number} operatorCount  Prüfer
+ * @property {string[]} operators  Prüfer in Reihenfolge
+ * @property {boolean} hasOperators  Prüferspalte gesetzt
+ * @property {number|null} grandMean  Gesamtmittel
+ * @property {number|null} refValue  Bezugslinie
+ * @property {number|null} yMin  kleinster Messwert
+ * @property {number|null} yMax  größter Messwert
+ * @property {string[]} warnings  Hinweise
+ * @property {CellMean[]} cellMeans  Mittelwert je Teil und Prüfer
+ */
+
+/**
+ * @typedef {object} CellMean
+ * @property {string} part  Teil
+ * @property {string} operator  Prüfer
+ * @property {number|null} mean  Mittelwert
+ */
+
+/**
  * Die Agenten-Lesefläche des Messverlaufsdiagramms (Gage Run Chart).
  *
  * Eingaben (drei Spalten, Bezugswert, Anordnung, zwei Schalter, die
@@ -109,7 +152,7 @@ function setAtPath(obj, key, value) {
  * @property {string[]} activeParams  the keys `setParam` accepts
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
  * @property {string} errorMsg  why nothing was computed, or ''
- * @property {object|null} result  `{ n, droppedRows, partCount, operatorCount, operators, hasOperators, grandMean, refValue, yMin, yMax, warnings, cellMeans: [{ part, operator, mean }] }` — warnings are codes (e.g. 'unbalanced'); null without part and measurement column or without usable rows
+ * @property {Result|null} result  the computed result, or null without part and measurement column or usable rows
  * @property {object[]} points  [bulk] one row per measurement in panel order: `{ part, operator, value }` (part and operator as text)
  */
 const mod = createModule({
@@ -208,8 +251,8 @@ const mod = createModule({
       /**
        * Eine Option setzen; alles außer der Kopfzeile rechnet neu.
        * @agent
-       * @param {'refValue'|'partsPerRow'|'connectWithin'|'showOperatorMean'|'gageInfo.name'|'gageInfo.date'|'gageInfo.reporter'|'gageInfo.tolerance'|'gageInfo.misc'} key welche Option
-       * @param {any} value Typ und Bereich je Schlüssel siehe Hilfe
+       * @param {keyof Params} key welcher Parameter
+       * @param {string|number|boolean} value der Wert; Wertebereich je Schlüssel siehe `Params`
        * @returns {Promise<void>}
        * @throws {Error} wenn `key` unbekannt ist oder `value` ungültig
        */

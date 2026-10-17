@@ -2570,8 +2570,8 @@
         "setParam": {
           "help": "Set an option. Everything except the header lines recomputes.",
           "params": {
-            "key": "'refValue', 'partsPerRow', 'connectWithin', 'showOperatorMean', or a header line 'gageInfo.name', 'gageInfo.date', 'gageInfo.reporter', 'gageInfo.tolerance', 'gageInfo.misc'.",
-            "value": "refValue text ('' uses the grand mean); partsPerRow a whole number from 1 to 20; connectWithin and showOperatorMean true or false; the header lines any text."
+            "key": "Which parameter; each key is described individually under keys. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys. An empty refValue uses the grand mean."
           }
         },
         "runAnalysis": { "help": "Recompute with the current column values, for example after the data changed." }
@@ -2587,8 +2587,42 @@
         "activeParams": { "help": "The keys setParam accepts." },
         "pickableColumns": { "help": "Per role the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
         "errorMsg": { "help": "Why nothing was computed, for example no usable rows; '' otherwise." },
-        "result": { "help": "{ n, droppedRows, partCount, operatorCount, operators, hasOperators, grandMean, refValue, yMin, yMax, warnings, cellMeans: [{ part, operator, mean }] }; warnings are codes such as 'unbalanced'; null without part and measurement column or without usable rows." },
+        "result": { "help": "The computed result, each figure described individually under keys; null without part and measurement column or without usable rows." },
         "points": { "help": "One row per measurement in panel order: { part, operator, value }. read({ fields: ['points'] }) returns them in full." }
+      },
+      "types": {
+        "Params": {
+          "refValue": "Position of the horizontal reference line in every strip, entered as a number with a decimal point. Empty or not readable as a number, the line sits at the grand mean of all measurements; a change recomputes.",
+          "partsPerRow": "How many parts stand side by side in one strip, a whole number from 1 to 20, default 7. More parts give further strips below, all with the same vertical axis.",
+          "connectWithin": "Whether the repeat measurements of one operator on a part are joined by a line in recording order. On by default; display only.",
+          "showOperatorMean": "Whether the mean of the repeat measurements per part and operator is drawn as a short tick. On by default; display only.",
+          "gageInfo": {
+            "name": "Name of the gage for the header above the chart. Free text with no effect on the computation; left empty, the line is omitted.",
+            "date": "Date of the study for the header, as free text in any format. No effect on the computation; left empty, the line is omitted.",
+            "reporter": "Who prepared the study, for the header. Free text with no effect on the computation; left empty, the line is omitted.",
+            "tolerance": "Tolerance of the feature for the header, as free text. It is only a label and enters no computation; left empty, the line is omitted.",
+            "misc": "Further notes for the header, as free text. No effect on the computation; left empty, the line is omitted."
+          }
+        },
+        "Result": {
+          "n": "Number of usable measurements: rows with a part label and a finite number in the measurement column. Each one is a point in the chart.",
+          "droppedRows": "Number of discarded rows: an empty part label or no finite number as the measurement, plus every row past the end of the shortest chosen column.",
+          "partCount": "Number of distinct parts with at least one usable measurement; one panel per part in the chart.",
+          "operatorCount": "Number of distinct operators in the operator column. 0 without an operator column. With one, an empty operator cell counts as an operator of its own without a name.",
+          "operators": "The operators in order of first appearance in the data. Without an operator column a single entry with an empty name.",
+          "hasOperators": "Whether an operator column is chosen. Without it all repeats of a part count as one series.",
+          "grandMean": "Arithmetic mean of all n usable measurements, equally weighted. It is the default for the reference line as long as no reference value of your own is entered.",
+          "refValue": "Where the reference line actually lies: the entered reference value if it reads as a number, the grand mean otherwise.",
+          "yMin": "Smallest usable measurement. It is the lower end of the vertical axis shared by all strips.",
+          "yMax": "Largest usable measurement. It is the upper end of the vertical axis shared by all strips.",
+          "warnings": "Codes about the data: \"unbalanced\" when not every combination of part and operator occurs or they do not all have the same number of measurements; \"droppedRows\" when at least one row was discarded. Empty when everything fits.",
+          "cellMeans": "One mean for each part and operator that occur together. Order as in the chart: parts sorted numerically when every label is a number, alphabetically otherwise; within them the operators in order of first appearance. Missing combinations have no entry."
+        },
+        "CellMean": {
+          "part": "The part label as it appears in the part column, as text.",
+          "operator": "The operator as it appears in the operator column, as text; empty without an operator column.",
+          "mean": "Arithmetic mean of this operator's repeat measurements on this part; in the chart the short tick when the operator mean is switched on."
+        }
       },
       "name": "Gage Run Chart",
       "description": "Plots every single measurement grouped by part and appraiser against a common reference line — reveals appraiser bias and unusual parts.",

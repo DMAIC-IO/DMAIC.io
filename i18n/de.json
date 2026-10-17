@@ -2574,8 +2574,8 @@
         "setParam": {
           "help": "Eine Option setzen. Alles außer der Kopfzeile rechnet neu.",
           "params": {
-            "key": "'refValue', 'partsPerRow', 'connectWithin', 'showOperatorMean' oder eine Kopfzeile 'gageInfo.name', 'gageInfo.date', 'gageInfo.reporter', 'gageInfo.tolerance', 'gageInfo.misc'.",
-            "value": "refValue ein Text ('' nimmt das Gesamtmittel); partsPerRow eine ganze Zahl von 1 bis 20; connectWithin und showOperatorMean true oder false; die Kopfzeilen beliebiger Text."
+            "key": "Welcher Parameter; jeder Schlüssel ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys. Ein leerer refValue nimmt das Gesamtmittel."
           }
         },
         "runAnalysis": { "help": "Mit den aktuellen Spaltenwerten neu rechnen, etwa nachdem sich die Daten geändert haben." }
@@ -2591,8 +2591,42 @@
         "activeParams": { "help": "Die Schlüssel, die setParam annimmt." },
         "pickableColumns": { "help": "Je Rolle die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
         "errorMsg": { "help": "Warum nichts gerechnet wurde, etwa ohne verwertbare Zeilen; sonst ''." },
-        "result": { "help": "{ n, droppedRows, partCount, operatorCount, operators, hasOperators, grandMean, refValue, yMin, yMax, warnings, cellMeans: [{ part, operator, mean }] }; warnings sind Codes wie 'unbalanced'; null ohne Teil- und Messwertspalte oder ohne verwertbare Zeilen." },
+        "result": { "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; null ohne Teil- und Messwertspalte oder ohne verwertbare Zeilen." },
         "points": { "help": "Je Messwert eine Zeile in Panel-Reihenfolge: { part, operator, value }. read({ fields: ['points'] }) liefert sie vollständig." }
+      },
+      "types": {
+        "Params": {
+          "refValue": "Lage der waagrechten Bezugslinie in allen Streifen, als Zahl mit Dezimalpunkt eingegeben. Leer oder nicht als Zahl lesbar, liegt die Linie auf dem Gesamtmittel aller Messwerte; eine Änderung rechnet neu.",
+          "partsPerRow": "Wie viele Teile nebeneinander in einem Streifen stehen, eine ganze Zahl von 1 bis 20, voreingestellt 7. Mehr Teile ergeben weitere Streifen untereinander, alle mit derselben senkrechten Achse.",
+          "connectWithin": "Ob die Wiederholmessungen eines Prüfers an einem Teil in Erfassungsreihenfolge mit einer Linie verbunden werden. Voreingestellt an; reine Darstellung.",
+          "showOperatorMean": "Ob je Teil und Prüfer der Mittelwert der Wiederholmessungen als kurze Marke gezeichnet wird. Voreingestellt an; reine Darstellung.",
+          "gageInfo": {
+            "name": "Name des Messmittels für die Kopfzeile über dem Diagramm. Freier Text ohne Einfluss auf die Rechnung; leer bleibt die Zeile weg.",
+            "date": "Datum der Untersuchung für die Kopfzeile, als freier Text in beliebiger Schreibweise. Kein Einfluss auf die Rechnung; leer bleibt die Zeile weg.",
+            "reporter": "Wer die Studie erstellt hat, für die Kopfzeile. Freier Text ohne Einfluss auf die Rechnung; leer bleibt die Zeile weg.",
+            "tolerance": "Toleranz des Merkmals für die Kopfzeile, als freier Text. Sie dient nur der Beschriftung und geht in keine Rechnung ein; leer bleibt die Zeile weg.",
+            "misc": "Weitere Angaben für die Kopfzeile, als freier Text. Kein Einfluss auf die Rechnung; leer bleibt die Zeile weg."
+          }
+        },
+        "Result": {
+          "n": "Zahl der verwertbaren Messwerte: Zeilen mit einer Teilbezeichnung und einem endlichen Zahlenwert in der Messwertspalte. Jeder davon ist ein Punkt im Diagramm.",
+          "droppedRows": "Zahl der verworfenen Zeilen: leere Teilbezeichnung oder kein endlicher Zahlenwert als Messwert, dazu jede Zeile hinter dem Ende der kürzesten gewählten Spalte.",
+          "partCount": "Zahl der verschiedenen Teile mit mindestens einem verwertbaren Messwert; je Teil ein Feld im Diagramm.",
+          "operatorCount": "Zahl der verschiedenen Prüfer in der Prüferspalte. Ohne Prüferspalte 0. Mit Prüferspalte zählt eine leere Prüferzelle als eigener, unbenannter Prüfer.",
+          "operators": "Die Prüfer in der Reihenfolge ihres ersten Auftretens in den Daten. Ohne Prüferspalte ein einziger Eintrag mit leerem Namen.",
+          "hasOperators": "Ob eine Prüferspalte gewählt ist. Ohne sie zählen alle Wiederholungen eines Teils als eine Reihe.",
+          "grandMean": "Arithmetisches Mittel aller n verwertbaren Messwerte, gleich gewichtet. Es ist die Vorgabe für die Bezugslinie, solange kein eigener Referenzwert eingegeben ist.",
+          "refValue": "Wo die Bezugslinie tatsächlich liegt: der eingegebene Referenzwert, wenn er sich als Zahl lesen lässt, sonst das Gesamtmittel.",
+          "yMin": "Kleinster verwertbarer Messwert. Er ist die Untergrenze der gemeinsamen senkrechten Achse aller Streifen.",
+          "yMax": "Größter verwertbarer Messwert. Er ist die Obergrenze der gemeinsamen senkrechten Achse aller Streifen.",
+          "warnings": "Hinweiscodes zur Datenlage: „unbalanced“, wenn nicht jede Kombination aus Teil und Prüfer vorkommt oder nicht alle gleich viele Messwerte haben; „droppedRows“, wenn mindestens eine Zeile verworfen wurde. Leer, wenn alles passt.",
+          "cellMeans": "Je Teil und Prüfer, die gemeinsam vorkommen, ein Mittelwert. Reihenfolge wie im Diagramm: Teile numerisch sortiert, wenn alle Bezeichnungen Zahlen sind, sonst alphabetisch; darin die Prüfer in der Reihenfolge ihres ersten Auftretens. Fehlende Kombinationen haben keinen Eintrag."
+        },
+        "CellMean": {
+          "part": "Die Teilbezeichnung, wie sie in der Teilspalte steht, als Text.",
+          "operator": "Der Prüfer, wie er in der Prüferspalte steht, als Text; ohne Prüferspalte leer.",
+          "mean": "Arithmetisches Mittel der Wiederholmessungen dieses Prüfers an diesem Teil; im Diagramm die kurze Marke, wenn der Prüfer-Mittelwert eingeschaltet ist."
+        }
       },
       "name": "Messverlaufsdiagramm",
       "description": "Zeigt jede Einzelmessung, gruppiert nach Prüfeinheit und Prüfer, gegen eine gemeinsame Referenzlinie — deckt Prüfer-Bias und auffällige Prüfeinheiten auf.",

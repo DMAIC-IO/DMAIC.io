@@ -4,43 +4,43 @@
     <div class="dmike-split__section-title" x-text="t('sectionColumns')"></div>
 
     <div class="field-group">
-      <label x-text="t('partColumn')"></label>
+      <label data-help-key="modules.gage-run-chart.actions.setColumn.help" x-text="t('partColumn')"></label>
       <div data-ref="col-part-wrap"></div>
     </div>
 
     <div class="field-group">
-      <label x-text="t('operatorColumn')"></label>
+      <label data-help-key="modules.gage-run-chart.actions.setColumn.help" x-text="t('operatorColumn')"></label>
       <div data-ref="col-operator-wrap"></div>
       <span class="gage-run-chart__hint" x-text="t('operatorHint')"></span>
     </div>
 
     <div class="field-group">
-      <label x-text="t('measurementColumn')"></label>
+      <label data-help-key="modules.gage-run-chart.actions.setColumn.help" x-text="t('measurementColumn')"></label>
       <div data-ref="col-measurement-wrap"></div>
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionSettings')"></div>
 
     <div class="field-group">
-      <label x-text="t('refValue')"></label>
+      <label data-help-key="modules.gage-run-chart.types.Params.refValue" x-text="t('refValue')"></label>
       <input type="text" class="field field--num" data-ref="inp-ref-value"
         inputmode="decimal" :value="model.refValue" @change="refValueChanged($event)">
       <span class="gage-run-chart__hint" x-text="t('refValueHint')"></span>
     </div>
 
     <div class="field-group">
-      <label x-text="t('partsPerRow')"></label>
+      <label data-help-key="modules.gage-run-chart.types.Params.partsPerRow" x-text="t('partsPerRow')"></label>
       <input type="number" class="field field--num" data-ref="inp-parts-per-row"
         min="1" max="20" :value="model.partsPerRow" @change="partsPerRowChanged($event)">
     </div>
 
     <div class="field-group">
-      <label class="gage-run-chart__check">
+      <label data-help-anchor="box" data-help-key="modules.gage-run-chart.types.Params.connectWithin" class="gage-run-chart__check">
         <input type="checkbox" data-ref="chk-connect"
           :checked="model.connectWithin" @change="setParam('connectWithin', $event.target.checked)">
         <span x-text="t('connectWithin')"></span>
       </label>
-      <label class="gage-run-chart__check">
+      <label data-help-anchor="box" data-help-key="modules.gage-run-chart.types.Params.showOperatorMean" class="gage-run-chart__check">
         <input type="checkbox" data-ref="chk-operator-mean"
           :checked="model.showOperatorMean" @change="setParam('showOperatorMean', $event.target.checked)">
         <span x-text="t('showOperatorMean')"></span>
@@ -50,23 +50,23 @@
     <div class="dmike-split__section-title" x-text="t('sectionGageInfo')"></div>
 
     <div class="field-group">
-      <label x-text="t('gageInfo_name')"></label>
+      <label data-help-key="modules.gage-run-chart.types.Params.gageInfo.name" x-text="t('gageInfo_name')"></label>
       <input type="text" class="field" data-ref="inp-gage-name" :value="model.gageInfo.name" @input="setParam('gageInfo.name', $event.target.value)">
     </div>
     <div class="field-group">
-      <label x-text="t('gageInfo_date')"></label>
+      <label data-help-key="modules.gage-run-chart.types.Params.gageInfo.date" x-text="t('gageInfo_date')"></label>
       <input type="text" class="field" data-ref="inp-gage-date" :value="model.gageInfo.date" @input="setParam('gageInfo.date', $event.target.value)">
     </div>
     <div class="field-group">
-      <label x-text="t('gageInfo_reporter')"></label>
+      <label data-help-key="modules.gage-run-chart.types.Params.gageInfo.reporter" x-text="t('gageInfo_reporter')"></label>
       <input type="text" class="field" data-ref="inp-gage-reporter" :value="model.gageInfo.reporter" @input="setParam('gageInfo.reporter', $event.target.value)">
     </div>
     <div class="field-group">
-      <label x-text="t('gageInfo_tolerance')"></label>
+      <label data-help-key="modules.gage-run-chart.types.Params.gageInfo.tolerance" x-text="t('gageInfo_tolerance')"></label>
       <input type="text" class="field" data-ref="inp-gage-tolerance" :value="model.gageInfo.tolerance" @input="setParam('gageInfo.tolerance', $event.target.value)">
     </div>
     <div class="field-group">
-      <label x-text="t('gageInfo_misc')"></label>
+      <label data-help-key="modules.gage-run-chart.types.Params.gageInfo.misc" x-text="t('gageInfo_misc')"></label>
       <input type="text" class="field" data-ref="inp-gage-misc" :value="model.gageInfo.misc" @input="setParam('gageInfo.misc', $event.target.value)">
     </div>
 
@@ -105,17 +105,17 @@
         <div class="dmike-kpi-strip" data-ref="stats-bar">
           <div class="dmike-kpi">
             <div class="dmike-kpi-value" x-text="result.n"></div>
-            <div class="dmike-kpi-label" x-text="t('statMeasurements')"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.gage-run-chart.types.Result.n" x-text="t('statMeasurements')"></div>
             <div class="dmike-kpi-sub" x-text="t('statParts', { count: result.partCount })"></div>
           </div>
           <div class="dmike-kpi">
             <div class="dmike-kpi-value" x-text="result.operatorCount"></div>
-            <div class="dmike-kpi-label" x-text="t('statOperators')"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.gage-run-chart.types.Result.operatorCount" x-text="t('statOperators')"></div>
             <div class="dmike-kpi-sub" x-text="t('statRows', { count: result.rows.length })"></div>
           </div>
           <div class="dmike-kpi">
             <div class="dmike-kpi-value" x-text="fmt(result.refValue)"></div>
-            <div class="dmike-kpi-label" x-text="refLabel()"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.gage-run-chart.types.Result.refValue" x-text="refLabel()"></div>
             <div class="dmike-kpi-sub" x-text="refSubText()"></div>
           </div>
         </div>
