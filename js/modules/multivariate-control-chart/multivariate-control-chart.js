@@ -39,6 +39,9 @@ import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/age
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { finiteOrNull, zipPoints } from '../../core/agent/agent-results.js';
 
+/** Präfix der i18n-Schlüssel der Typ-Sätze (Kachel-Anker). */
+const HELP = 'modules.multivariate-control-chart.types.';
+
 /** Die Mehrfachslots: genau einer, die Variablen. */
 const MULTI_SLOTS = ['variables'];
 
@@ -71,6 +74,29 @@ function setAtPath(obj, key, value) {
 }
 
 /**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {number} alpha  Fehlalarmrate der T²-Grenze
+ * @property {number} baselineCount  Zeilen der Phase I, leer für alle
+ */
+
+/**
+ * Das gerechnete Ergebnis (`_agentResult()`), wie `read().result` es liefert.
+ *
+ * @typedef {object} Result
+ * @property {number} n  vollständige Zeilen
+ * @property {number} p  Variablen
+ * @property {number} m  Zeilen der Phase I
+ * @property {number|null} cl  Mittellinie der T²-Karte
+ * @property {number|null} ucl  obere Eingriffsgrenze der T²-Karte
+ * @property {Array<number|null>} mean  Mittelwert je Variable, Phase I
+ * @property {Array<Array<number|null>>} covariance  Kovarianzmatrix, Phase I
+ * @property {number[]} signals  Zeilen über der Grenze
+ */
+
+/**
  * Die Agenten-Lesefläche der multivariaten Regelkarte (Hotelling T²).
  *
  * Eingaben (Variablen, α, Phase-I-Länge), die Mengen der Setter, das
@@ -86,7 +112,7 @@ function setAtPath(obj, key, value) {
  * @property {string[]} activeParams  the keys `setParam` accepts
  * @property {object} pickableColumns  per slot the columns `setColumns` accepts, each `{ key, name }`
  * @property {string} errorMsg  why nothing was computed (too few complete rows, computation error), or ''
- * @property {object|null} result  `{ n, p, m, cl, ucl, mean, covariance, signals }` — n complete rows, p variables, m Phase-I rows, mean and covariance from Phase I, signals the indices of rows above ucl; null with fewer than 2 variables or on error
+ * @property {Result|null} result  the computed result (see `Result`); signals are indices of the complete rows used, not worksheet rows; null with fewer than 2 variables, with no more complete rows than variables, or on error
  * @property {object[]} points  [bulk] one row per complete data row: `{ t2, signal }`
  */
 
@@ -194,8 +220,8 @@ const mod = createModule({
       /**
        * Eine Analyseoption setzen und neu rechnen.
        * @agent
-       * @param {'alpha'|'baselineCount'} key welche Option
-       * @param {any} value alpha eine Zahl mit 0 < alpha < 1; baselineCount eine ganze Zahl ≥ 1, oder null/'' für alle Zeilen
+       * @param {keyof Params} key welche Option
+       * @param {string|number|null} value der Wert; Bereich je Schlüssel siehe `Params`
        * @returns {Promise<void>}
        * @throws {Error} wenn `key` unbekannt ist oder `value` ungültig
        */
@@ -320,9 +346,9 @@ const mod = createModule({
         const fmt = (v) => Number.isFinite(v) ? v.toFixed(3) : '–';
         const cls = r.signals.length === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad';
         this.kpiCells = [
-          { value: fmt(r.ucl), label: 'UCL (T²)', labelHint: '', sub: `α = ${this.model.alpha}`, mod: '' },
-          { value: r.p, label: _t('statVariables'), labelHint: '', sub: _t('statBaseline', { m: r.m }), mod: '' },
-          { value: r.signals.length, label: _t('statSignals'), labelHint: '', sub: _t('statOf', { total }), mod: cls },
+          { value: fmt(r.ucl), label: 'UCL (T²)', labelHint: '', sub: `α = ${this.model.alpha}`, mod: '', help: `${HELP}Result.ucl` },
+          { value: r.p, label: _t('statVariables'), labelHint: '', sub: _t('statBaseline', { m: r.m }), mod: '', help: `${HELP}Result.p` },
+          { value: r.signals.length, label: _t('statSignals'), labelHint: '', sub: _t('statOf', { total }), mod: cls, help: `${HELP}Result.signals` },
         ];
       },
 

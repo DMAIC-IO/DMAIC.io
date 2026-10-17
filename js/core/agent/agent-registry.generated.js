@@ -8554,13 +8554,24 @@ export const AGENT_REGISTRY = {
           },
           {
             "name": "value",
-            "type": "any",
+            "type": "string|number|null",
             "optional": false,
-            "help": "alpha eine Zahl mit 0 < alpha < 1; baselineCount eine ganze Zahl ≥ 1, oder null/'' für alle Zeilen"
+            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "Promise<void>",
-        "help": "Eine Analyseoption setzen und neu rechnen."
+        "help": "Eine Analyseoption setzen und neu rechnen.",
+        "keysOf": "Params",
+        "keys": {
+          "alpha": {
+            "type": "number",
+            "help": "Fehlalarmrate der T²-Grenze"
+          },
+          "baselineCount": {
+            "type": "number",
+            "help": "Zeilen der Phase I, leer für alle"
+          }
+        }
       },
       "runAnalysis": {
         "params": [],
@@ -8612,10 +8623,45 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
-        "help": "`{ n, p, m, cl, ucl, mean, covariance, signals }` — n complete rows, p variables, m Phase-I rows, mean and covariance from Phase I, signals the indices of rows above ucl; null with fewer than 2 variables or on error",
+        "type": "Result|null",
+        "help": "the computed result (see `Result`); signals are indices of the complete rows used, not worksheet rows; null with fewer than 2 variables, with no more complete rows than variables, or on error",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "n": {
+            "type": "number",
+            "help": "vollständige Zeilen"
+          },
+          "p": {
+            "type": "number",
+            "help": "Variablen"
+          },
+          "m": {
+            "type": "number",
+            "help": "Zeilen der Phase I"
+          },
+          "cl": {
+            "type": "number|null",
+            "help": "Mittellinie der T²-Karte"
+          },
+          "ucl": {
+            "type": "number|null",
+            "help": "obere Eingriffsgrenze der T²-Karte"
+          },
+          "mean": {
+            "type": "Array<number|null>",
+            "help": "Mittelwert je Variable, Phase I"
+          },
+          "covariance": {
+            "type": "Array<Array<number|null>>",
+            "help": "Kovarianzmatrix, Phase I"
+          },
+          "signals": {
+            "type": "number[]",
+            "help": "Zeilen über der Grenze"
+          }
+        }
       },
       "points": {
         "type": "object[]",
@@ -12213,17 +12259,60 @@ export const AGENT_REGISTRY = {
             "name": "key",
             "type": "'chartTypeId'|'sigmaMethod'|'baselineCount'|'targetOverride'|'sigmaOverride'|'lambda'|'L'|'kSigma'|'hSigma'",
             "optional": false,
-            "help": "welche Option; read().activeParams nennt die für den aktuellen Kartentyp gültigen"
+            "help": "welche Option; die im Zustand zulässigen nennt `activeParams`"
           },
           {
             "name": "value",
-            "type": "any",
+            "type": "string|number|null",
             "optional": false,
-            "help": "Typ und Bereich je Schlüssel siehe Hilfe"
+            "help": "der Wert; Typ und Bereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "Promise<void>",
-        "help": "Eine Analyseoption setzen und neu rechnen."
+        "help": "Eine Analyseoption setzen und neu rechnen.",
+        "keysOf": "Params",
+        "keys": {
+          "chartTypeId": {
+            "type": "'ewma'|'cusum'",
+            "help": "Verfahren"
+          },
+          "sigmaMethod": {
+            "type": "'mr'|'sd'",
+            "help": "Schätzung der Streuung"
+          },
+          "baselineCount": {
+            "type": "number",
+            "help": "Werte der Phase I, leer für alle"
+          },
+          "targetOverride": {
+            "type": "number",
+            "help": "vorgegebenes Ziel, leer für das Mittel"
+          },
+          "sigmaOverride": {
+            "type": "number",
+            "help": "vorgegebene Streuung, leer für die Schätzung"
+          },
+          "lambda": {
+            "type": "number",
+            "help": "Gewicht λ, nur EWMA",
+            "optional": true
+          },
+          "L": {
+            "type": "number",
+            "help": "Grenzenbreite L, nur EWMA",
+            "optional": true
+          },
+          "kSigma": {
+            "type": "number",
+            "help": "Referenzwert k in σ, nur CUSUM",
+            "optional": true
+          },
+          "hSigma": {
+            "type": "number",
+            "help": "Entscheidungsgrenze h in σ, nur CUSUM",
+            "optional": true
+          }
+        }
       },
       "setColumn": {
         "params": [
@@ -12329,10 +12418,74 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
-        "help": "EWMA `{ chartType: 'ewma', n, target, sigma, lambda, L, cl, sigmaSteady, signals }`, CUSUM `{ chartType: 'cusum', n, target, sigma, k, h, signalsHigh, signalsLow }` — signals are point indices; null with fewer than 3 values or σ ≤ 0",
+        "type": "Result|null",
+        "help": "the computed result, shape depends on the chart type (see `Result`); point numbers count the used values, not the worksheet rows; null without a column, with fewer than 3 numbers or σ ≤ 0",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "chartType": {
+            "type": "'ewma'|'cusum'",
+            "help": "Verfahren"
+          },
+          "n": {
+            "type": "number",
+            "help": "verwertete Werte"
+          },
+          "target": {
+            "type": "number|null",
+            "help": "Ziel"
+          },
+          "sigma": {
+            "type": "number|null",
+            "help": "Streuung der Einzelwerte"
+          },
+          "lambda": {
+            "type": "number",
+            "help": "Gewicht λ, nur EWMA",
+            "optional": true
+          },
+          "L": {
+            "type": "number",
+            "help": "Grenzenbreite L, nur EWMA",
+            "optional": true
+          },
+          "cl": {
+            "type": "number|null",
+            "help": "Mittellinie, nur EWMA",
+            "optional": true
+          },
+          "sigmaSteady": {
+            "type": "number|null",
+            "help": "stationäre Streuung des EWMA",
+            "optional": true
+          },
+          "signals": {
+            "type": "number[]",
+            "help": "Signalpunkte, nur EWMA",
+            "optional": true
+          },
+          "k": {
+            "type": "number|null",
+            "help": "Referenzwert in Messeinheiten, nur CUSUM",
+            "optional": true
+          },
+          "h": {
+            "type": "number|null",
+            "help": "Entscheidungsgrenze in Messeinheiten, nur CUSUM",
+            "optional": true
+          },
+          "signalsHigh": {
+            "type": "number[]",
+            "help": "Signale nach oben, nur CUSUM",
+            "optional": true
+          },
+          "signalsLow": {
+            "type": "number[]",
+            "help": "Signale nach unten, nur CUSUM",
+            "optional": true
+          }
+        }
       },
       "points": {
         "type": "object[]",

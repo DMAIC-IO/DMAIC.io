@@ -8691,7 +8691,7 @@
       "actions": {
         "read": { "help": "Gewählte Spalte, alle Einstellungen, Ziel, σ, Grenzen, Signalpunkte und die gezeichneten Werte lesen." },
         "setColumn": {
-          "help": "Die Messreihe wählen und neu rechnen.",
+          "help": "Die Spalte einer Datensammlung, die diese Rolle liefert; nach einer Änderung wird neu gerechnet.",
           "params": {
             "slot": "'value' — die Messwerte in zeitlicher Reihenfolge (Pflicht, mindestens 3).",
             "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns.value, oder null zum Leeren."
@@ -8700,8 +8700,8 @@
         "setParam": {
           "help": "Eine Analyseoption setzen und neu rechnen.",
           "params": {
-            "key": "'chartTypeId', 'sigmaMethod', 'baselineCount', 'targetOverride', 'sigmaOverride' immer; 'lambda' und 'L' bei EWMA; 'kSigma' und 'hSigma' bei CUSUM.",
-            "value": "chartTypeId 'ewma' oder 'cusum'; sigmaMethod 'mr' oder 'sd'; baselineCount eine ganze Zahl ab 1, oder null für alle Werte; targetOverride eine beliebige Zahl, oder null für das Mittel der Phase I; sigmaOverride eine Zahl ab 0, oder null für die Schätzung; lambda größer als 0 und höchstens 1; L, kSigma, hSigma größer als 0."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys. Bei baselineCount, targetOverride und sigmaOverride leert null oder '' das Feld."
           }
         },
         "runAnalysis": { "help": "Mit den aktuellen Spaltenwerten neu rechnen, etwa nachdem sich die Daten geändert haben." }
@@ -8720,8 +8720,36 @@
         "activeColumnSlots": { "help": "Die Slots, die setColumn annimmt: value." },
         "activeParams": { "help": "Die Schlüssel, die setParam für den aktuellen Kartentyp annimmt." },
         "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
-        "result": { "help": "EWMA { chartType, n, target, sigma, lambda, L, cl, sigmaSteady, signals }; CUSUM { chartType, n, target, sigma, k, h, signalsHigh, signalsLow }; signals sind Punktindizes; null bei weniger als 3 Werten oder σ ≤ 0." },
+        "result": { "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; null ohne Spalte, mit weniger als 3 Zahlen oder ohne Streuung." },
         "points": { "help": "Je Wert eine Zeile — EWMA { ewma, ucl, lcl, signal }, CUSUM { cPlus, cMinus, signalHigh, signalLow }. read({ fields: ['points'] }) liefert sie vollständig." }
+      },
+      "types": {
+        "Params": {
+          "chartTypeId": "Das Verfahren der Karte: ewma (exponentiell gewichteter Mittelwert) glättet die Reihe und erkennt kleine, anhaltende Verschiebungen; cusum (kumulierte Summen, tabular) summiert die Abweichungen vom Ziel auf und ist sehr empfindlich für Verschiebungen um etwa 1σ. Das Verfahren bestimmt, welche Parameter es gibt: λ und L nur bei EWMA, k und h nur bei CUSUM. Nach einer Änderung wird neu gerechnet.",
+          "sigmaMethod": "Wie σ aus der Baseline geschätzt wird, solange keine Streuung σ > 0 vorgegeben ist: mr ist MR̄ / d₂ (mittlere gleitende Spannweite geteilt durch 1,128, robust gegen Ausreißer), sd die Stichproben-SD mit n − 1 im Nenner. Das Modul startet mit mr. Ist eine Streuung σ > 0 vorgegeben, bleibt die Wahl ohne Wirkung.",
+          "baselineCount": "Wie viele der ersten verwerteten Werte die Baseline (Phase I) bilden, aus der Ziel (Mittel) und σ geschätzt werden, soweit sie nicht vorgegeben sind. Leer (Anzeige „alle“) heißt alle Werte; eine größere Zahl, als Werte vorhanden sind, wirkt wie alle. Zulässig sind ganze Zahlen ab 1, das Eingabefeld erlaubt erst ab 2. Mit nur einem Wert lässt sich σ nicht schätzen: Dann gibt es kein Ergebnis, außer σ ist vorgegeben.",
+          "targetOverride": "Der Sollwert μ₀, auf den sich die Karte bezieht, statt des Mittels der Baseline. Jede Zahl ist zulässig; leer (Anzeige „auto“) heißt: Mittel der Baseline. Bei EWMA ist er Startwert z₀ und Mittellinie, bei CUSUM der Wert, von dem die Abweichungen aufsummiert werden. Nach einer Änderung wird neu gerechnet.",
+          "sigmaOverride": "Die vorgegebene Streuung σ der Einzelwerte statt der Schätzung aus der Baseline; eine Zahl ab 0. Verwendet wird nur ein Wert größer als 0: 0 wirkt wie leer (Anzeige „auto“), dann wird aus der Baseline geschätzt. Eine vorgegebene Streuung macht die Wahl der σ-Schätzmethode wirkungslos.",
+          "lambda": "Nur EWMA: das Gewicht λ (Glättung) des neuesten Werts, zᵢ = λ·xᵢ + (1 − λ)·zᵢ₋₁ mit z₀ = Sollwert μ₀. Größer als 0 und höchstens 1, das Eingabefeld erlaubt 0,05 bis 1. Kleineres λ glättet stärker und erkennt kleine Verschiebungen früher; λ = 1 ergibt eine Einzelwertkarte ohne Glättung. Vorbelegt 0,2. Bei CUSUM gibt es dieses Feld nicht.",
+          "L": "Nur EWMA: die Grenzbreite L in Vielfachen von σ. Im Punkt i liegen die Grenzen bei Ziel ± L·σ·√(λ/(2 − λ)·(1 − (1 − λ)^(2i))), i = 1, 2, …; sie weiten sich anfangs und nähern sich Ziel ± L·σ_z. Größer als 0, das Eingabefeld erlaubt 1 bis 5. Vorbelegt 3. Bei CUSUM gibt es dieses Feld nicht.",
+          "kSigma": "Nur CUSUM: der Referenzwert k (Toleranz) in Vielfachen von σ; in Einheiten der Messwerte ergibt sich daraus k · σ (siehe Ergebnis). Abweichungen vom Ziel bis k werden nicht aufsummiert: C⁺ = max(0, x − Ziel − k + C⁺ des Vorpunkts). Faustregel für eine Verschiebung um Δ·σ: k = Δ/2. Größer als 0, das Eingabefeld erlaubt 0,1 bis 2. Vorbelegt 0,5. Bei EWMA gibt es dieses Feld nicht.",
+          "hSigma": "Nur CUSUM: die Entscheidungsgrenze h in Vielfachen von σ; in Einheiten der Messwerte ergibt sich daraus h · σ (siehe Ergebnis). Ein Signal entsteht, sobald C⁺ oder C⁻ größer als h ist. Üblich sind 4 oder 5. Größer als 0, das Eingabefeld erlaubt 2 bis 10. Vorbelegt 4. Bei EWMA gibt es dieses Feld nicht."
+        },
+        "Result": {
+          "chartType": "Das Verfahren, mit dem gerechnet wurde: ewma oder cusum. Davon hängt ab, welche weiteren Kennzahlen es gibt.",
+          "n": "Anzahl der verwerteten Zahlen der Reihe; leere und nicht numerische Zellen sind schon aussortiert. Ein Ergebnis gibt es ab 3 Zahlen. Die Nummern der Signalpunkte zählen diese Zahlen ab 0, nicht die Zeilen des Arbeitsblatts. Die Unterzeile der Kachel Signale zeigt n als „von n Datenpunkten“.",
+          "target": "Das verwendete Ziel μ₀: der vorgegebene Sollwert, sonst das Mittel der Baseline (der ersten Baseline-Anzahl Werte). Kachel „μ₀ (Sollwert)“; ihre Unterzeile zeigt σ̂, die verwendete Streuung der Einzelwerte (Ergebnis σ), jeweils auf vier Nachkommastellen. Leer, wenn der Wert nicht endlich ist.",
+          "sigma": "Die verwendete Streuung σ der Einzelwerte: die vorgegebene, wenn sie größer als 0 ist, sonst aus der Baseline geschätzt (MR̄ / 1,128 oder Stichproben-SD mit n − 1, je nach σ-Schätzmethode). Sie steht als σ̂ in der Unterzeile der Kachel „μ₀ (Sollwert)“. Ein Ergebnis gibt es nur, wenn σ größer als 0 ist.",
+          "lambda": "Nur EWMA: das verwendete Gewicht λ. Es steht in der Unterzeile der Kachel „σ_z (Steady-State)“.",
+          "L": "Nur EWMA: die verwendete Grenzbreite L in Vielfachen von σ.",
+          "cl": "Nur EWMA: die Mittellinie der Karte; sie ist gleich dem Ziel μ₀, bei dem auch der EWMA-Wert z startet. Leer, wenn der Wert nicht endlich ist.",
+          "sigmaSteady": "Nur EWMA: die stationäre Streuung σ_z = σ·√(λ/(2 − λ)), der Grenzwert der Streuung des EWMA-Werts z bei langen Reihen; die Grenzen nähern sich Ziel ± L·σ_z. Kachel „σ_z (Steady-State)“; ihre Unterzeile zeigt das verwendete λ.",
+          "signals": "Nur EWMA: die Nummern der Punkte, deren EWMA-Wert z strikt außerhalb der Grenzen liegt (z oberhalb der oberen oder unterhalb der unteren Grenze). Die Nummern zählen die verwerteten Zahlen ab 0, nicht die Zeilen des Arbeitsblatts. Die Kachel „Signale“ zeigt ihre Anzahl; die Unterzeile nennt die Zahl der Datenpunkte.",
+          "k": "Nur CUSUM: der Referenzwert in Einheiten der Messwerte, k = (Feld k in σ) · σ, mit der verwendeten Streuung σ. Er steht in der Unterzeile der Kachel „h (Grenze)“. Leer, wenn der Wert nicht endlich ist.",
+          "h": "Nur CUSUM: die Entscheidungsgrenze in Einheiten der Messwerte, h = (Feld h in σ) · σ, mit der verwendeten Streuung σ. Ein Signal entsteht, sobald C⁺ oder C⁻ größer als h ist. Kachel „h (Grenze)“; ihre Unterzeile zeigt k in Einheiten der Messwerte. Leer, wenn der Wert nicht endlich ist.",
+          "signalsHigh": "Nur CUSUM: die Nummern der Punkte, an denen die obere Summe C⁺ = max(0, x − Ziel − k + C⁺ des Vorpunkts) größer als h ist, also Signale nach oben. Die Nummern zählen die verwerteten Zahlen ab 0, nicht die Zeilen des Arbeitsblatts. Die Kachel Signale zählt diese und die Signale nach unten zusammen.",
+          "signalsLow": "Nur CUSUM: die Nummern der Punkte, an denen die untere Summe C⁻ = max(0, Ziel − x − k + C⁻ des Vorpunkts) größer als h ist, also Signale nach unten. Die Nummern zählen die verwerteten Zahlen ab 0, nicht die Zeilen des Arbeitsblatts. Die Kachel Signale zählt diese und die Signale nach oben zusammen."
+        }
       }
     },
     "rare-event-chart": {
@@ -8845,7 +8873,7 @@
           "help": "Gewählte Variablen, α, Länge der Phase I, T²-Grenze, Mittelwert und Kovarianz, Signalzeilen und T² je Zeile lesen."
         },
         "setColumns": {
-          "help": "Die Variablen wählen und neu rechnen.",
+          "help": "Die Spalten einer Datensammlung, die gemeinsam überwacht werden; nach einer Änderung wird neu gerechnet.",
           "params": {
             "slot": "'variables' — die gemeinsam überwachten Zahlenmerkmale (für ein Ergebnis mindestens 2).",
             "refs": "Eine Liste von Spaltenbezügen { instanceId, sheetId, columnId } aus read().pickableColumns.variables; [] leert sie."
@@ -8854,8 +8882,8 @@
         "setParam": {
           "help": "Eine Analyseoption setzen und neu rechnen.",
           "params": {
-            "key": "'alpha' — Fehlalarmrate der T²-Grenze; 'baselineCount' — Zeilen, aus denen Mittelwert und Kovarianz geschätzt werden.",
-            "value": "alpha eine Zahl größer als 0 und kleiner als 1; baselineCount eine ganze Zahl ab 1, oder null bzw. '' für alle Zeilen (wirkt nur, wenn größer als die Zahl der Variablen)."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys. Bei baselineCount leert null oder '' das Feld."
           }
         },
         "runAnalysis": {
@@ -8885,10 +8913,26 @@
           "help": "Warum nichts gerechnet wurde, etwa zu wenige vollständige Zeilen; sonst ''."
         },
         "result": {
-          "help": "{ n, p, m, cl, ucl, mean, covariance, signals }; n vollständige Zeilen, p Variablen, m Zeilen der Phase I, Mittelwert und Kovarianz aus Phase I, signals die Indizes der Zeilen über ucl; null bei weniger als 2 Variablen oder bei einem Fehler."
+          "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; null mit weniger als 2 Variablen, mit höchstens so vielen vollständigen Zeilen wie Variablen oder wenn die Rechnung scheitert (dann steht der Grund in errorMsg)."
         },
         "points": {
           "help": "Je vollständiger Datenzeile eine Zeile: { t2, signal }. read({ fields: ['points'] }) liefert sie vollständig."
+        }
+      },
+      "types": {
+        "Params": {
+          "alpha": "Die Fehlalarmrate α der T²-Grenze: die Wahrscheinlichkeit, dass ein Punkt bei stabilem Prozess über der oberen Grenze UCL liegt. UCL = p(m + 1)(m − 1)/(m² − m·p) · F(1 − α; p, m − p) mit dem F-Quantil, p Variablen und m Zeilen der Baseline. Größer als 0 und kleiner als 1, das Eingabefeld erlaubt 0,0001 bis 0,5. Vorbelegt 0,0027 (3σ-Äquivalent). Ein kleineres α rückt UCL weiter nach oben. Nach einer Änderung wird neu gerechnet.",
+          "baselineCount": "Wie viele der ersten vollständigen Zeilen die Baseline (Phase I) bilden, aus der Mittelwert und Kovarianz geschätzt werden. Leer (Anzeige „alle“) heißt alle Zeilen. Der Wert wirkt nur, wenn er größer als die Zahl der Variablen p ist; ist er kleiner oder gleich p, werden still alle Zeilen genommen. Eine größere Zahl, als Zeilen vorhanden sind, wirkt wie alle. Zulässig sind ganze Zahlen ab 1, das Eingabefeld erlaubt erst ab 2."
+        },
+        "Result": {
+          "n": "Anzahl der vollständigen Zeilen, also der Zeilen, in denen jede gewählte Spalte eine Zahl hat; Zeilen mit leerer oder nicht numerischer Zelle sind aussortiert, bei Spalten verschiedener Länge zählt die kürzeste. Ein Ergebnis gibt es nur, wenn n größer als p ist. Die Nummern der Signalzeilen zählen diese Zeilen ab 0, nicht die Zeilen des Arbeitsblatts. Die Unterzeile der Kachel Signale zeigt n als „von n Datenpunkten“.",
+          "p": "Anzahl der gemeinsam überwachten Variablen (Spalten); ein Ergebnis gibt es ab 2. Kachel „Variablen (p)“; ihre Unterzeile zeigt die Zeilen der Baseline als „m = … Baseline“.",
+          "m": "Anzahl der Zeilen der Baseline (Phase I), aus denen Mittelwert und Kovarianz stammen: alle vollständigen Zeilen, oder die ersten Baseline-Anzahl Zeilen, wenn diese größer als p ist (höchstens n). m muss größer als p sein. Sie steht in der Unterzeile der Kachel „Variablen (p)“.",
+          "cl": "Die Mittellinie der T²-Karte, p(m − 1)/(m − p): der Erwartungswert von T² bei stabilem Prozess. Leer, wenn der Wert nicht endlich ist.",
+          "ucl": "Die obere Eingriffsgrenze der T²-Karte, UCL = p(m + 1)(m − 1)/(m² − m·p) · F(1 − α; p, m − p) mit dem F-Quantil. Kachel „UCL (T²)“ auf drei Nachkommastellen; ihre Unterzeile zeigt das eingestellte α. Ein Punkt gibt ein Signal, wenn sein T² größer als UCL ist. Leer, wenn der Wert nicht endlich ist.",
+          "mean": "Der Mittelwert x̄ jeder Variablen über die Zeilen der Baseline, in der Reihenfolge der gewählten Spalten. Ein Eintrag fehlt (leer), wenn sein Wert nicht endlich ist.",
+          "covariance": "Die Kovarianzmatrix S der Variablen aus der Baseline mit m − 1 im Nenner, p Zeilen mal p Spalten (Diagonale: Varianzen). T² verwendet ihre Inverse; ist S singulär, etwa bei Spalten, die einander exakt bestimmen, gibt es kein Ergebnis. Ein Eintrag fehlt (leer), wenn sein Wert nicht endlich ist.",
+          "signals": "Die Nummern der vollständigen Zeilen, deren T² größer als UCL ist, wobei T²ᵢ = (xᵢ − x̄)ᵀ S⁻¹ (xᵢ − x̄) den Abstand der Zeile i vom Mittelvektor der Baseline misst; geprüft werden alle vollständigen Zeilen, auch die der Baseline. Die Nummern zählen diese Zeilen ab 0, nicht die Zeilen des Arbeitsblatts. Die Kachel „Signale“ zeigt ihre Anzahl."
         }
       }
     },

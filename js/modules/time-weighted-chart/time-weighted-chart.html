@@ -3,7 +3,7 @@
 
     <div class="dmike-split__section-title" x-text="t('sectionChartType')"></div>
     <div class="field-group">
-      <label x-text="t('chartType')"></label>
+      <label data-help-key="modules.time-weighted-chart.types.Params.chartTypeId" x-text="t('chartType')"></label>
       <select class="field" data-ref="chart-type" :value="model.chartTypeId" @change="setParam('chartTypeId', $event.target.value)">
         <template x-for="o in chartTypeOptions()" :key="o.value">
           <option :value="o.value" :selected="o.value === model.chartTypeId" x-text="o.label"></option>
@@ -14,12 +14,12 @@
 
     <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
     <div class="field-group">
-      <label x-text="t('dataColumn')"></label>
+      <label data-help-key="modules.time-weighted-chart.actions.setColumn.help" x-text="t('dataColumn')"></label>
       <div data-ref="col-picker-wrap"></div>
     </div>
 
     <div class="field-group">
-      <label x-text="t('baselineCount')"></label>
+      <label data-help-key="modules.time-weighted-chart.types.Params.baselineCount" x-text="t('baselineCount')"></label>
       <input type="number" class="field field--num" data-ref="baseline-count"
         min="2" :placeholder="t('baselineAll')"
         :value="baselineCountValue()" @change="onBaselineCountChange($event)">
@@ -29,20 +29,20 @@
     <div class="dmike-split__section-title" x-text="t('sectionEstimation')"></div>
     <div class="twc__row-2">
       <div class="field-group">
-        <label x-text="t('targetOverride')"></label>
+        <label data-help-key="modules.time-weighted-chart.types.Params.targetOverride" x-text="t('targetOverride')"></label>
         <input type="number" class="field field--num" data-ref="target-override"
           step="any" :placeholder="t('targetAuto')"
           :value="targetOverrideValue()" @change="onTargetOverrideChange($event)">
       </div>
       <div class="field-group">
-        <label x-text="t('sigmaOverride')"></label>
+        <label data-help-key="modules.time-weighted-chart.types.Params.sigmaOverride" x-text="t('sigmaOverride')"></label>
         <input type="number" class="field field--num" data-ref="sigma-override"
           step="any" min="0" :placeholder="t('sigmaAuto')"
           :value="sigmaOverrideValue()" @change="onSigmaOverrideChange($event)">
       </div>
     </div>
     <div class="field-group">
-      <label x-text="t('sigmaMethod')"></label>
+      <label data-help-key="modules.time-weighted-chart.types.Params.sigmaMethod" x-text="t('sigmaMethod')"></label>
       <select class="field" data-ref="sigma-method" :value="model.sigmaMethod" @change="setParam('sigmaMethod', $event.target.value)">
         <template x-for="o in sigmaMethodOptions()" :key="o.value">
           <option :value="o.value" :selected="o.value === model.sigmaMethod" x-text="o.label"></option>
@@ -58,13 +58,13 @@
         <div class="twc__param-note" x-text="t('paramNote_ewma')"></div>
         <div class="twc__row-2">
           <div class="field-group">
-            <label x-text="t('lambda')"></label>
+            <label data-help-key="modules.time-weighted-chart.types.Params.lambda" x-text="t('lambda')"></label>
             <input type="number" class="field field--num" data-ref="lambda"
               :value="model.lambda" @change="onLambdaChange($event)"
               step="0.05" min="0.05" max="1">
           </div>
           <div class="field-group">
-            <label x-text="t('L')"></label>
+            <label data-help-key="modules.time-weighted-chart.types.Params.L" x-text="t('L')"></label>
             <input type="number" class="field field--num" data-ref="L"
               :value="model.L" @change="onLChange($event)"
               step="0.1" min="1" max="5">
@@ -78,13 +78,13 @@
         <div class="twc__param-note" x-text="t('paramNote_cusum')"></div>
         <div class="twc__row-2">
           <div class="field-group">
-            <label x-text="t('kSigma')"></label>
+            <label data-help-key="modules.time-weighted-chart.types.Params.kSigma" x-text="t('kSigma')"></label>
             <input type="number" class="field field--num" data-ref="kSigma"
               :value="model.kSigma" @change="onKSigmaChange($event)"
               step="0.1" min="0.1" max="2">
           </div>
           <div class="field-group">
-            <label x-text="t('hSigma')"></label>
+            <label data-help-key="modules.time-weighted-chart.types.Params.hSigma" x-text="t('hSigma')"></label>
             <input type="number" class="field field--num" data-ref="hSigma"
               :value="model.hSigma" @change="onHSigmaChange($event)"
               step="0.5" min="2" max="10">
@@ -102,7 +102,7 @@
           <template x-for="(c, i) in kpiCells" :key="i">
             <div class="dmike-kpi" :class="c.mod">
               <div class="dmike-kpi-value" x-text="c.value"></div>
-              <div class="dmike-kpi-label"><span x-text="c.label"></span><template x-if="c.labelHint"><span class="twc__hint" x-text="' (' + c.labelHint + ')'"></span></template></div>
+              <div class="dmike-kpi-label" :data-help-key="c.help"><span x-text="c.label"></span><template x-if="c.labelHint"><span class="twc__hint" x-text="' (' + c.labelHint + ')'"></span></template></div>
               <div class="dmike-kpi-sub" x-text="c.sub"></div>
             </div>
           </template>

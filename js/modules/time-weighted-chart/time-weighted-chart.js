@@ -54,6 +54,9 @@ function intOrNull(v) {
   return Number.isFinite(i) ? i : null;
 }
 
+/** Präfix der i18n-Schlüssel der Typ-Sätze (Kachel-Anker). */
+const HELP = 'modules.time-weighted-chart.types.';
+
 /** Die Spalten-Slots: genau einer, die Messreihe. */
 const COLUMN_SLOTS = ['value'];
 
@@ -95,6 +98,42 @@ function setAtPath(obj, key, value) {
 }
 
 /**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {'ewma'|'cusum'} chartTypeId  Verfahren
+ * @property {'mr'|'sd'} sigmaMethod  Schätzung der Streuung
+ * @property {number} baselineCount  Werte der Phase I, leer für alle
+ * @property {number} targetOverride  vorgegebenes Ziel, leer für das Mittel
+ * @property {number} sigmaOverride  vorgegebene Streuung, leer für die Schätzung
+ * @property {number} [lambda]  Gewicht λ, nur EWMA
+ * @property {number} [L]  Grenzenbreite L, nur EWMA
+ * @property {number} [kSigma]  Referenzwert k in σ, nur CUSUM
+ * @property {number} [hSigma]  Entscheidungsgrenze h in σ, nur CUSUM
+ */
+
+/**
+ * Das gerechnete Ergebnis (`_agentResult()`), wie `read().result` es liefert;
+ * die Schlüssel hängen vom Verfahren ab.
+ *
+ * @typedef {object} Result
+ * @property {'ewma'|'cusum'} chartType  Verfahren
+ * @property {number} n  verwertete Werte
+ * @property {number|null} target  Ziel
+ * @property {number|null} sigma  Streuung der Einzelwerte
+ * @property {number} [lambda]  Gewicht λ, nur EWMA
+ * @property {number} [L]  Grenzenbreite L, nur EWMA
+ * @property {number|null} [cl]  Mittellinie, nur EWMA
+ * @property {number|null} [sigmaSteady]  stationäre Streuung des EWMA
+ * @property {number[]} [signals]  Signalpunkte, nur EWMA
+ * @property {number|null} [k]  Referenzwert in Messeinheiten, nur CUSUM
+ * @property {number|null} [h]  Entscheidungsgrenze in Messeinheiten, nur CUSUM
+ * @property {number[]} [signalsHigh]  Signale nach oben, nur CUSUM
+ * @property {number[]} [signalsLow]  Signale nach unten, nur CUSUM
+ */
+
+/**
  * Die Agenten-Lesefläche der zeitgewichteten Karten (EWMA, CUSUM).
  *
  * Eingaben (Spalte, Kartentyp, Phase I, Ziel- und σ-Vorgabe, die Parameter
@@ -117,7 +156,7 @@ function setAtPath(obj, key, value) {
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
  * @property {string[]} activeParams  the keys `setParam` accepts for the current chart type
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
- * @property {object|null} result  EWMA `{ chartType: 'ewma', n, target, sigma, lambda, L, cl, sigmaSteady, signals }`, CUSUM `{ chartType: 'cusum', n, target, sigma, k, h, signalsHigh, signalsLow }` — signals are point indices; null with fewer than 3 values or σ ≤ 0
+ * @property {Result|null} result  the computed result, shape depends on the chart type (see `Result`); point numbers count the used values, not the worksheet rows; null without a column, with fewer than 3 numbers or σ ≤ 0
  * @property {object[]} points  [bulk] one row per value — EWMA `{ ewma, ucl, lcl, signal }`, CUSUM `{ cPlus, cMinus, signalHigh, signalLow }`
  */
 const mod = createModule({
@@ -220,9 +259,8 @@ const mod = createModule({
       /**
        * Eine Analyseoption setzen und neu rechnen.
        * @agent
-       * @param {'chartTypeId'|'sigmaMethod'|'baselineCount'|'targetOverride'|'sigmaOverride'|'lambda'|'L'|'kSigma'|'hSigma'} key
-       *   welche Option; read().activeParams nennt die für den aktuellen Kartentyp gültigen
-       * @param {any} value Typ und Bereich je Schlüssel siehe Hilfe
+       * @param {keyof Params} key welche Option; die im Zustand zulässigen nennt `activeParams`
+       * @param {string|number|null} value der Wert; Typ und Bereich je Schlüssel siehe `Params`
        * @returns {Promise<void>}
        * @throws {Error} wenn `key` unbekannt oder für diesen Kartentyp nicht aktiv ist oder `value` ungültig
        */
@@ -451,9 +489,9 @@ const mod = createModule({
         const cls = sigCount === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad';
 
         this.kpiCells = [
-          { value: fmt(target), label: _t('statTarget'), labelHint: '', sub: `σ̂ = ${fmt(sigma)}`, mod: '' },
-          { value: fmt(r.sigmaSteady), label: _t('statSigmaSteady'), labelHint: '', sub: `λ = ${this.model.lambda}`, mod: '' },
-          { value: sigCount, label: _t('statSignals'), labelHint: '', sub: _t('statOf', { total }), mod: cls },
+          { value: fmt(target), label: _t('statTarget'), labelHint: '', sub: `σ̂ = ${fmt(sigma)}`, mod: '', help: `${HELP}Result.target` },
+          { value: fmt(r.sigmaSteady), label: _t('statSigmaSteady'), labelHint: '', sub: `λ = ${this.model.lambda}`, mod: '', help: `${HELP}Result.sigmaSteady` },
+          { value: sigCount, label: _t('statSignals'), labelHint: '', sub: _t('statOf', { total }), mod: cls, help: `${HELP}Result.signals` },
         ];
       },
 
@@ -463,9 +501,9 @@ const mod = createModule({
         const cls = sigCount === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad';
 
         this.kpiCells = [
-          { value: fmt(target), label: _t('statTarget'), labelHint: '', sub: `σ̂ = ${fmt(sigma)}`, mod: '' },
-          { value: fmt(r.h), label: _t('statHLimit'), labelHint: '', sub: `k = ${fmt(r.k)}`, mod: '' },
-          { value: sigCount, label: _t('statSignals'), labelHint: '', sub: _t('statOf', { total }), mod: cls },
+          { value: fmt(target), label: _t('statTarget'), labelHint: '', sub: `σ̂ = ${fmt(sigma)}`, mod: '', help: `${HELP}Result.target` },
+          { value: fmt(r.h), label: _t('statHLimit'), labelHint: '', sub: `k = ${fmt(r.k)}`, mod: '', help: `${HELP}Result.h` },
+          { value: sigCount, label: _t('statSignals'), labelHint: '', sub: _t('statOf', { total }), mod: cls, help: `${HELP}Result.signalsHigh` },
         ];
       },
 

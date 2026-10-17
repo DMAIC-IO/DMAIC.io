@@ -8493,7 +8493,7 @@
       "actions": {
         "read": { "help": "Read the chosen column, all settings, target, σ, limits, signal points and the plotted values." },
         "setColumn": {
-          "help": "Choose the measured column and recompute.",
+          "help": "The data collection column that supplies this role; after a change the analysis is recomputed.",
           "params": {
             "slot": "'value' — the measured values in time order (required, at least 3).",
             "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns.value, or null to clear it."
@@ -8502,8 +8502,8 @@
         "setParam": {
           "help": "Set an analysis option and recompute.",
           "params": {
-            "key": "'chartTypeId', 'sigmaMethod', 'baselineCount', 'targetOverride', 'sigmaOverride' always; 'lambda' and 'L' for EWMA; 'kSigma' and 'hSigma' for CUSUM.",
-            "value": "chartTypeId 'ewma' or 'cusum'; sigmaMethod 'mr' or 'sd'; baselineCount a whole number of at least 1, or null for all values; targetOverride any number, or null for the Phase I mean; sigmaOverride a number of at least 0, or null for the estimate; lambda greater than 0 and at most 1; L, kSigma, hSigma greater than 0."
+            "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys. For baselineCount, targetOverride and sigmaOverride, null or '' clears the field."
           }
         },
         "runAnalysis": { "help": "Recompute with the current column values, for example after the data changed." }
@@ -8522,8 +8522,36 @@
         "activeColumnSlots": { "help": "The slots setColumn accepts: value." },
         "activeParams": { "help": "The keys setParam accepts for the current chart type." },
         "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
-        "result": { "help": "EWMA { chartType, n, target, sigma, lambda, L, cl, sigmaSteady, signals }; CUSUM { chartType, n, target, sigma, k, h, signalsHigh, signalsLow }; signals are point indices; null with fewer than 3 values or σ ≤ 0." },
+        "result": { "help": "The computed result, each figure described individually under keys; null without a column, with fewer than 3 numbers or without spread." },
         "points": { "help": "One row per value — EWMA { ewma, ucl, lcl, signal }, CUSUM { cPlus, cMinus, signalHigh, signalLow }. read({ fields: ['points'] }) returns them in full." }
+      },
+      "types": {
+        "Params": {
+          "chartTypeId": "The chart procedure: ewma (exponentially weighted moving average) smooths the series and detects small persistent shifts; cusum (cumulative sums, tabular) accumulates deviations from the target and is very sensitive to shifts of about 1σ. The procedure decides which parameters exist: λ and L only for EWMA, k and h only for CUSUM. After a change the analysis is recomputed.",
+          "sigmaMethod": "How σ is estimated from the baseline as long as no spread σ > 0 is given: mr is MR̄ / d₂ (average moving range divided by 1.128, robust against outliers), sd the sample SD with n − 1 in the denominator. The module starts with mr. If a spread σ > 0 is given, the choice has no effect.",
+          "baselineCount": "How many of the first used values form the baseline (Phase I) from which target (mean) and σ are estimated, unless they are given. Empty (shown as “all”) means all values; a number larger than the number of values acts like all. Whole numbers from 1 are allowed, the input field only allows 2 and up. With a single value σ cannot be estimated: there is then no result unless σ is given.",
+          "targetOverride": "The target μ₀ the chart refers to, instead of the baseline mean. Any number is allowed; empty (shown as “auto”) means the baseline mean. For EWMA it is the start value z₀ and the center line, for CUSUM the value from which deviations are accumulated. After a change the analysis is recomputed.",
+          "sigmaOverride": "The given spread σ of the individual values instead of the estimate from the baseline; a number from 0. Only a value greater than 0 is used: 0 acts like empty (shown as “auto”), and σ is then estimated from the baseline. A given spread makes the choice of the σ estimation method irrelevant.",
+          "lambda": "EWMA only: the weight λ (smoothing) of the newest value, zᵢ = λ·xᵢ + (1 − λ)·zᵢ₋₁ with z₀ = target μ₀. Greater than 0 and at most 1; the input field allows 0.05 to 1. A smaller λ smooths more and detects small shifts earlier; λ = 1 gives an individuals chart without smoothing. Preset 0.2. CUSUM has no such field.",
+          "L": "EWMA only: the limit width L in multiples of σ. At point i the limits are target ± L·σ·√(λ/(2 − λ)·(1 − (1 − λ)^(2i))), i = 1, 2, …; they widen at first and approach target ± L·σ_z. Greater than 0; the input field allows 1 to 5. Preset 3. CUSUM has no such field.",
+          "kSigma": "CUSUM only: the reference value k (allowance) in multiples of σ; in units of the measured values this gives k · σ (see the result). Deviations from the target up to k are not accumulated: C⁺ = max(0, x − target − k + previous C⁺). Rule of thumb for a shift of Δ·σ: k = Δ/2. Greater than 0; the input field allows 0.1 to 2. Preset 0.5. EWMA has no such field.",
+          "hSigma": "CUSUM only: the decision interval h in multiples of σ; in units of the measured values this gives h · σ (see the result). A signal arises as soon as C⁺ or C⁻ is greater than h. 4 or 5 are common. Greater than 0; the input field allows 2 to 10. Preset 4. EWMA has no such field."
+        },
+        "Result": {
+          "chartType": "The procedure that was used: ewma or cusum. It decides which further figures exist.",
+          "n": "Number of used numbers in the series; empty and non-numeric cells are already removed. A result exists from 3 numbers on. The numbers of the signal points count these numbers from 0, not the worksheet rows. The sub-line of the Signals tile shows n as “of n data points”.",
+          "target": "The target μ₀ that was used: the given target, otherwise the baseline mean (of the first baseline count values). Tile “μ₀ (target)”; its sub-line shows σ̂, the spread of the individual values that was used (result σ), both with four decimals. Missing when the value is not finite.",
+          "sigma": "The spread σ of the individual values that was used: the given one if it is greater than 0, otherwise estimated from the baseline (MR̄ / 1.128 or sample SD with n − 1, depending on the σ estimation method). It appears as σ̂ in the sub-line of the tile “μ₀ (target)”. A result exists only if σ is greater than 0.",
+          "lambda": "EWMA only: the weight λ that was used. It appears in the sub-line of the tile “σ_z (steady state)”.",
+          "L": "EWMA only: the limit width L in multiples of σ that was used.",
+          "cl": "EWMA only: the center line of the chart; it equals the target μ₀, where the EWMA value z also starts. Missing when the value is not finite.",
+          "sigmaSteady": "EWMA only: the steady-state spread σ_z = σ·√(λ/(2 − λ)), the limit of the spread of the EWMA value z for long series; the limits approach target ± L·σ_z. Tile “σ_z (steady state)”; its sub-line shows the λ that was used.",
+          "signals": "EWMA only: the numbers of the points whose EWMA value z lies strictly outside the limits (z above the upper or below the lower limit). The numbers count the used numbers from 0, not the worksheet rows. The tile “Signals” shows their count; the sub-line gives the number of data points.",
+          "k": "CUSUM only: the reference value in units of the measured values, k = (field k in σ) · σ, with the spread σ that was used. It appears in the sub-line of the tile “h (limit)”. Missing when the value is not finite.",
+          "h": "CUSUM only: the decision interval in units of the measured values, h = (field h in σ) · σ, with the spread σ that was used. A signal arises as soon as C⁺ or C⁻ is greater than h. Tile “h (limit)”; its sub-line shows k in units of the measured values. Missing when the value is not finite.",
+          "signalsHigh": "CUSUM only: the numbers of the points at which the upper sum C⁺ = max(0, x − target − k + previous C⁺) is greater than h, that is signals upward. The numbers count the used numbers from 0, not the worksheet rows. The signals tile counts these together with the downward signals.",
+          "signalsLow": "CUSUM only: the numbers of the points at which the lower sum C⁻ = max(0, target − x − k + previous C⁻) is greater than h, that is signals downward. The numbers count the used numbers from 0, not the worksheet rows. The signals tile counts these together with the upward signals."
+        }
       }
     },
     "run-chart": {
@@ -8841,7 +8869,7 @@
           "help": "Read the chosen variables, alpha, the Phase I length, the T² limit, mean and covariance, the signal rows and T² per row."
         },
         "setColumns": {
-          "help": "Choose the variables and recompute.",
+          "help": "The data collection columns that are monitored together; after a change the analysis is recomputed.",
           "params": {
             "slot": "'variables' — the numeric characteristics monitored together (at least 2 for a result).",
             "refs": "A list of column references { instanceId, sheetId, columnId } from read().pickableColumns.variables; [] clears it."
@@ -8850,8 +8878,8 @@
         "setParam": {
           "help": "Set an analysis option and recompute.",
           "params": {
-            "key": "'alpha' — false-alarm rate of the T² limit; 'baselineCount' — rows used to estimate mean and covariance.",
-            "value": "alpha a number greater than 0 and less than 1; baselineCount a whole number of at least 1, or null or '' for all rows (used only when greater than the number of variables)."
+            "key": "Which option; each is described individually under keys. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys. For baselineCount, null or '' clears the field."
           }
         },
         "runAnalysis": {
@@ -8881,10 +8909,26 @@
           "help": "Why nothing was computed, for example too few complete rows; '' otherwise."
         },
         "result": {
-          "help": "{ n, p, m, cl, ucl, mean, covariance, signals }; n complete rows, p variables, m Phase I rows, mean and covariance from Phase I, signals the indices of rows above ucl; null with fewer than 2 variables or on error."
+          "help": "The computed result, each figure described individually under keys; null with fewer than 2 variables, with no more complete rows than variables, or when the computation fails (errorMsg then gives the reason)."
         },
         "points": {
           "help": "One row per complete data row: { t2, signal }. read({ fields: ['points'] }) returns them in full."
+        }
+      },
+      "types": {
+        "Params": {
+          "alpha": "The false-alarm rate α of the T² limit: the probability that a point lies above the upper limit UCL while the process is stable. UCL = p(m + 1)(m − 1)/(m² − m·p) · F(1 − α; p, m − p) with the F quantile, p variables and m baseline rows. Greater than 0 and less than 1; the input field allows 0.0001 to 0.5. Preset 0.0027 (3σ equivalent). A smaller α moves UCL further up. After a change the analysis is recomputed.",
+          "baselineCount": "How many of the first complete rows form the baseline (Phase I) from which mean and covariance are estimated. Empty (shown as “all”) means all rows. The value takes effect only if it is greater than the number of variables p; if it is smaller than or equal to p, all rows are silently used. A number larger than the number of rows acts like all. Whole numbers from 1 are allowed, the input field only allows 2 and up."
+        },
+        "Result": {
+          "n": "Number of complete rows, that is rows in which every chosen column holds a number; rows with an empty or non-numeric cell are removed, and for columns of different length the shortest counts. A result exists only if n is greater than p. The numbers of the signal rows count these rows from 0, not the worksheet rows. The sub-line of the Signals tile shows n as “of n data points”.",
+          "p": "Number of variables (columns) monitored together; a result exists from 2 on. Tile “Variables (p)”; its sub-line shows the baseline rows as “m = … baseline”.",
+          "m": "Number of baseline (Phase I) rows that mean and covariance come from: all complete rows, or the first baseline count rows if that is greater than p (at most n). m must be greater than p. It appears in the sub-line of the tile “Variables (p)”.",
+          "cl": "The center line of the T² chart, p(m − 1)/(m − p): the expected value of T² for a stable process. Missing when the value is not finite.",
+          "ucl": "The upper control limit of the T² chart, UCL = p(m + 1)(m − 1)/(m² − m·p) · F(1 − α; p, m − p) with the F quantile. Tile “UCL (T²)” with three decimals; its sub-line shows the α that is set. A point signals when its T² is greater than UCL. Missing when the value is not finite.",
+          "mean": "The mean x̄ of each variable over the baseline rows, in the order of the chosen columns. An entry is missing (empty) when its value is not finite.",
+          "covariance": "The covariance matrix S of the variables from the baseline with m − 1 in the denominator, p rows by p columns (diagonal: variances). T² uses its inverse; if S is singular, for example with columns that determine each other exactly, there is no result. An entry is missing (empty) when its value is not finite.",
+          "signals": "The numbers of the complete rows whose T² is greater than UCL, where T²ᵢ = (xᵢ − x̄)ᵀ S⁻¹ (xᵢ − x̄) measures the distance of row i from the baseline mean vector; all complete rows are checked, including those of the baseline. The numbers count these rows from 0, not the worksheet rows. The tile “Signals” shows their count."
         }
       }
     },
