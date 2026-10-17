@@ -39,6 +39,9 @@ import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/age
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { finiteOrNull, zipPoints } from '../../core/agent/agent-results.js';
 
+/** Präfix der i18n-Schlüssel der Typ-Sätze (Kachel-Anker). */
+const HELP = 'modules.transformed-imr-chart.types.';
+
 /** Die Spalten-Slots: genau einer, die Messreihe. */
 const COLUMN_SLOTS = ['value'];
 
@@ -242,8 +245,8 @@ const mod = createModule({
       /**
        * Eine Analyseoption setzen und neu rechnen.
        * @agent
-       * @param {'lambdaMode'|'lambdaManual'} key welche Option; read().activeParams nennt die gerade gültigen
-       * @param {any} value lambdaMode `'auto'`|`'manual'`; lambdaManual eine endliche Zahl
+       * @param {keyof Params} key welche Option; die im Zustand zulässigen nennt `activeParams`
+       * @param {string|number} value der Wert; Bereich je Schlüssel siehe `Params`
        * @returns {Promise<void>}
        * @throws {Error} wenn `key` unbekannt oder gerade nicht aktiv ist oder `value` ungültig
        */
@@ -357,7 +360,6 @@ const mod = createModule({
       // span), so we keep one label string rather than splitting into labelHint.
 
       _renderStats(r, total) {
-        const HELP = 'modules.transformed-imr-chart.types.';
         const fmt = (v) => Number.isFinite(v) ? v.toFixed(3) : '–';
         const cls = r.signalsI.length === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad';
         this.kpiCells = [

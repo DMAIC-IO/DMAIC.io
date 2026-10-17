@@ -12318,17 +12318,29 @@ export const AGENT_REGISTRY = {
             "name": "key",
             "type": "'lambdaMode'|'lambdaManual'",
             "optional": false,
-            "help": "welche Option; read().activeParams nennt die gerade gültigen"
+            "help": "welche Option; die im Zustand zulässigen nennt `activeParams`"
           },
           {
             "name": "value",
-            "type": "any",
+            "type": "string|number",
             "optional": false,
-            "help": "lambdaMode `'auto'`|`'manual'`; lambdaManual eine endliche Zahl"
+            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "Promise<void>",
-        "help": "Eine Analyseoption setzen und neu rechnen."
+        "help": "Eine Analyseoption setzen und neu rechnen.",
+        "keysOf": "Params",
+        "keys": {
+          "lambdaMode": {
+            "type": "'auto'|'manual'",
+            "help": "λ schätzen oder vorgeben"
+          },
+          "lambdaManual": {
+            "type": "number",
+            "help": "vorgegebenes λ, nur im Modus manual",
+            "optional": true
+          }
+        }
       },
       "runAnalysis": {
         "params": [],

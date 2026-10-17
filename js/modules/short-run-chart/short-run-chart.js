@@ -36,6 +36,9 @@ import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js'
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { finiteOrNull, zipPoints } from '../../core/agent/agent-results.js';
 
+/** Präfix der i18n-Schlüssel der Typ-Sätze (Kachel-Anker). */
+const HELP = 'modules.short-run-chart.types.';
+
 /** Die Spalten-Slots in der Reihenfolge der Oberfläche: Messwerte, dann Teile/Gruppen. */
 const COLUMN_SLOTS = ['values', 'groups'];
 
@@ -276,7 +279,6 @@ const mod = createModule({
       // ── KPI strip (declarative — structured cells, RAW text; x-text escapes) ──
 
       _renderStats(r, total) {
-        const HELP = 'modules.short-run-chart.types.';
         const sigCount = r.signalsZ.length + r.signalsMR.length;
         const cls = sigCount === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad';
         const fmt = (v) => Number.isFinite(v) ? v.toFixed(3) : '–';
