@@ -39,6 +39,27 @@ const EDGE_SURVEY = {
   ],
 };
 
+// Hand-made definitions the editor cannot produce: conditions that reference
+// themselves or each other. Evaluation must terminate and treat the cycle as
+// not holding.
+const CYCLE_SURVEY = {
+  id: 'sv-cycle', version: 1, lang: 'de', title: 'C', intro: '', contact: '', anonymous: false,
+  sections: [
+    { id: 'sc', title: 'C', hint: '', when: null, questions: [
+      { id: 'c1', type: 'single', text: 'Selbst', hint: '', required: false, other: false,
+        when: [{ questionId: 'c1', optionIds: ['y1'] }], options: [{ id: 'y1', text: 'Ja' }] },
+      { id: 'c2', type: 'single', text: 'A', hint: '', required: false, other: false,
+        when: [{ questionId: 'c3', optionIds: ['y3'] }], options: [{ id: 'y2', text: 'Ja' }] },
+      { id: 'c3', type: 'single', text: 'B', hint: '', required: false, other: false,
+        when: [{ questionId: 'c2', optionIds: ['y2'] }], options: [{ id: 'y3', text: 'Ja' }] },
+    ] },
+    { id: 'sd', title: 'D', hint: '', when: [{ questionId: 'd1', optionIds: ['y4'] }], questions: [
+      { id: 'd1', type: 'single', text: 'In eigener Sektion', hint: '', required: false, other: false,
+        when: null, options: [{ id: 'y4', text: 'Ja' }] },
+    ] },
+  ],
+};
+
 /**
  * Shared case table: run against survey-conditions.js and the runner copy.
  * @type {Array<{name: string, survey: object, nodeId: string, answers: object, expected: boolean}>}
@@ -62,4 +83,8 @@ export const CONDITION_CASES = [
   { name: 'condition without option ids hides', survey: EDGE_SURVEY, nodeId: 'e3', answers: { e1: 'x1' }, expected: false },
   { name: 'empty condition list is visible', survey: EDGE_SURVEY, nodeId: 'e4', answers: {}, expected: true },
   { name: 'condition-free question in visible section', survey: EDGE_SURVEY, nodeId: 'e1', answers: {}, expected: true },
+  { name: 'self-referencing condition hides', survey: CYCLE_SURVEY, nodeId: 'c1', answers: { c1: 'y1' }, expected: false },
+  { name: 'two questions conditioned on each other hide', survey: CYCLE_SURVEY, nodeId: 'c2', answers: { c2: 'y2', c3: 'y3' }, expected: false },
+  { name: 'section conditioned on its own question hides', survey: CYCLE_SURVEY, nodeId: 'sd', answers: { d1: 'y4' }, expected: false },
+  { name: 'question in a self-conditioned section hides', survey: CYCLE_SURVEY, nodeId: 'd1', answers: { d1: 'y4' }, expected: false },
 ];

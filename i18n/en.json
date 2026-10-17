@@ -1515,6 +1515,7 @@
         "save": "Save answers",
         "reset": "Start over",
         "resetConfirm": "Delete all answers and start over?",
+        "draftOutdated": "This questionnaire has changed since you started filling it in. Your previous answers have been kept – please check them.",
         "missingOne": "Please answer 1 more required question.",
         "missingOther": "Please answer {count} more required questions.",
         "saved": "The file “{file}” has been saved. Please send it back to the contact person.",

@@ -55,8 +55,9 @@ input[type=text],textarea,select{font:inherit;padding:.35rem .5rem;border:1px so
 .sv-message{min-height:1.5rem}
 .sv-message--error{color:#cf222e}
 .sv-message--ok{color:#1a7f37}
+.sv-notice{background:#fff8c5;border:1px solid #d4a72c;border-radius:8px;padding:.75rem 1rem;margin:0 0 1rem}
 [hidden]{display:none!important}
-@media print{body{background:#fff}.sv-progress,.sv-actions,.sv-message{display:none}.sv-head,.sv-section{border:0;padding:0}.sv-q{break-inside:avoid}}
+@media print{body{background:#fff}.sv-progress,.sv-actions,.sv-message,.sv-notice{display:none}.sv-head,.sv-section{border:0;padding:0}.sv-q{break-inside:avoid}}
 `;
 
 /**
@@ -95,22 +96,27 @@ export function runSurvey(def, strings, opts) {
     return false;
   }
 
-  function holds(when, answers) {
+  function holds(when, answers, path) {
     if (!Array.isArray(when) || when.length === 0) return true;
     return when.some((c) => {
       const src = byId[c.questionId];
-      return Boolean(src) && isVisible(src, answers) && hasOption(answers[c.questionId], c.optionIds || []);
+      return Boolean(src) && visibleOnPath(src, answers, path) && hasOption(answers[c.questionId], c.optionIds || []);
     });
   }
 
-  function isVisible(node, answers) {
-    const a = answers || {};
-    if (!node) return false;
+  // A node met again on its own path (hand-edited cycle) counts as hidden.
+  function visibleOnPath(node, a, path) {
+    if (!node || path.indexOf(node.id) >= 0) return false;
+    const next = path.concat(node.id);
     if (!Array.isArray(node.questions)) {
       const sec = sectionOf[node.id];
-      if (sec && !holds(sec.when, a)) return false;
+      if (sec && !holds(sec.when, a, next)) return false;
     }
-    return holds(node.when, a);
+    return holds(node.when, a, next);
+  }
+
+  function isVisible(node, answers) {
+    return visibleOnPath(node, answers || {}, []);
   }
 
   const filled = (v) => typeof v === 'string' && v.trim() !== '';
@@ -390,6 +396,11 @@ export function runSurvey(def, strings, opts) {
   progress.appendChild(progressText);
   page.appendChild(progress);
 
+  // Shown when the restored draft was saved under another survey version.
+  const notice = el('p', 'sv-notice', S.draftOutdated);
+  notice.hidden = true;
+  page.appendChild(notice);
+
   const fields = {};
   const boxes = {};
   const sectionNodes = [];
@@ -522,6 +533,7 @@ export function runSurvey(def, strings, opts) {
     order.forEach((q) => boxes[q.id].box.classList.remove('sv-q--missing'));
     message.textContent = '';
     message.className = 'sv-message';
+    notice.hidden = true;
     refresh();
     store((s) => s.removeItem(draftKey));
   });
@@ -535,6 +547,7 @@ export function runSurvey(def, strings, opts) {
       const saved = JSON.parse(draft);
       if (saved && saved.answers && typeof saved.answers === 'object') {
         Object.keys(fields).forEach((id) => fields[id].write(saved.answers[id]));
+        notice.hidden = saved.version === def.version || Object.keys(saved.answers).length === 0;
       }
     } catch (_e) { /* broken draft: start empty */ }
   }

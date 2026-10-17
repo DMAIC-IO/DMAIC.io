@@ -61,14 +61,27 @@ export function sectionOfQuestion(survey, questionId) {
   return documentOrder(survey).find((e) => e.question.id === questionId)?.section || null;
 }
 
-function conditionsHold(when, answers, survey) {
+function conditionsHold(when, answers, survey, path) {
   if (!Array.isArray(when) || when.length === 0) return true;
   return when.some((c) => {
     const source = findQuestion(survey, c.questionId);
     return Boolean(source)
-      && isVisible(source, answers, survey)
+      && visibleOnPath(source, answers, survey, path)
       && answerHasOption(answers?.[c.questionId], c.optionIds || []);
   });
+}
+
+// `path` holds the ids already under evaluation. The editor rules out cycles,
+// but a hand-edited definition may contain one; a node met again on its own
+// path counts as hidden instead of recursing forever.
+function visibleOnPath(node, answers, survey, path) {
+  if (!node || path.includes(node.id)) return false;
+  const next = [...path, node.id];
+  if (!Array.isArray(node.questions)) {
+    const section = sectionOfQuestion(survey, node.id);
+    if (section && !conditionsHold(section.when, answers, survey, next)) return false;
+  }
+  return conditionsHold(node.when, answers, survey, next);
 }
 
 /**
@@ -78,12 +91,7 @@ function conditionsHold(when, answers, survey) {
  * @returns {boolean}
  */
 export function isVisible(node, answers, survey) {
-  if (!node) return false;
-  if (!Array.isArray(node.questions)) {
-    const section = sectionOfQuestion(survey, node.id);
-    if (section && !conditionsHold(section.when, answers, survey)) return false;
-  }
-  return conditionsHold(node.when, answers, survey);
+  return visibleOnPath(node, answers, survey, []);
 }
 
 /**

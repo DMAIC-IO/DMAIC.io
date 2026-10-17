@@ -1515,6 +1515,7 @@
         "save": "Antworten speichern",
         "reset": "Neu beginnen",
         "resetConfirm": "Alle Antworten löschen und neu beginnen?",
+        "draftOutdated": "Dieser Fragebogen wurde geändert, seit Sie mit dem Ausfüllen begonnen haben. Ihre bisherigen Antworten sind übernommen – bitte prüfen Sie sie.",
         "missingOne": "Bitte beantworten Sie noch 1 Pflichtfrage.",
         "missingOther": "Bitte beantworten Sie noch {count} Pflichtfragen.",
         "saved": "Die Datei „{file}“ wurde gespeichert. Bitte senden Sie sie an die Kontaktperson zurück.",
