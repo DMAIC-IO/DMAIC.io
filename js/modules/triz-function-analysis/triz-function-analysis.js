@@ -70,7 +70,10 @@ export default createModule({
       setNote(c, ev) { c.note = ev.target.value; },
       /** Store a cost typed into a system row; an invalid entry snaps back to the stored value. */
       setCost(c, ev) {
-        if (!this.model.setCost(c.id, ev.target.value)) ev.target.value = this.costValue(c);
+        // Unparsable text ('2e') reads as '' and would otherwise clear the cost.
+        if (ev.target.validity.badInput || !this.model.setCost(c.id, ev.target.value)) {
+          ev.target.value = this.costValue(c);
+        }
       },
       costValue(c) { return c.cost ?? ''; },
       changeKind(c, ev) {
@@ -177,7 +180,7 @@ export default createModule({
       // ── Value & cost ──
       /** Table rows of the system components, formatted for the UI language. */
       vcRows() {
-        const locale = module._context.language === 'en' ? 'en-US' : 'de-DE';
+        const locale = module._context.i18n.getLanguage() === 'en' ? 'en-US' : 'de-DE';
         const int = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
         const dec = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
         const eur = new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' });
@@ -233,7 +236,8 @@ export default createModule({
         const split = { value: VC_SPLIT, dash: 'dash', color: 'var(--color-text-secondary)' };
         cm.create(host, 'scatter', {
           title: '', xLabel: _t('vc.axisValue'), yLabel: _t('vc.axisCost'), showLegend: false,
-          xMin: 0, xMax: 10, yMin: 0, yMax: 10,
+          // Half a unit of margin keeps a point at 0 or 10 from being cut off.
+          xMin: -0.5, xMax: 10.5, yMin: -0.5, yMax: 10.5,
           refLines: [{ dir: 'v', ...split }, { dir: 'h', ...split }],
           series: [],
         }).then((chart) => {

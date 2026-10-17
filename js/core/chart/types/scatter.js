@@ -84,7 +84,7 @@ export default class ScatterChart extends ChartBase {
     this._renderConnectLines(plotGroup, series, xScale, yScale, false);
 
     // 4) Data markers
-    this._renderMarkers(plotGroup, series, xScale, yScale, markerR);
+    this._renderMarkers(plotGroup, series, xScale, yScale, markerR, plotArea);
 
     // 5) Foreground connecting lines (above markers)
     this._renderConnectLines(plotGroup, series, xScale, yScale, true);
@@ -217,10 +217,10 @@ export default class ScatterChart extends ChartBase {
   }
 
   /**
-   * Render data point markers.
+   * Render data point markers and their labels; plotArea places labels inside the plot.
    * @private
    */
-  _renderMarkers(plotGroup, series, xScale, yScale, markerR) {
+  _renderMarkers(plotGroup, series, xScale, yScale, markerR, plotArea) {
     series.forEach((s) => {
       if (s.visible === false) return;
       // Per-series markerSize overrides global
@@ -243,8 +243,11 @@ export default class ScatterChart extends ChartBase {
           resolveColor(s.color), strokeC, strokeW, {});
         const text = Array.isArray(s.labels) ? s.labels[i] : '';
         if (text) {
+          // Right half: label left of the marker so it stays inside the plot.
+          const left = cx > plotArea.x + plotArea.w / 2;
           svgEl('text', {
-            class: 'chart-point-label', x: cx + r + 4, y: cy, 'dominant-baseline': 'middle',
+            class: 'chart-point-label', x: left ? cx - r - 4 : cx + r + 4, y: cy,
+            'text-anchor': left ? 'end' : 'start', 'dominant-baseline': 'middle',
             'font-size': `${this.config.tickSize}px`, fill: resolveColor('var(--color-text-primary)'),
             'pointer-events': 'none',
           }, plotGroup).textContent = text;

@@ -28,6 +28,15 @@ suite('Scatter type — point labels', () => {
     host.remove();
   });
 
+  test('a label in the right half sits left of its marker', () => {
+    const { host, chart } = mount([{ name: 'S', x: [1, 9], y: [5, 5], labels: ['links', 'rechts'] }]);
+    const [lo, hi] = [...host.querySelectorAll('.chart-point-label')];
+    assertEqual(lo.getAttribute('text-anchor'), 'start');
+    assertEqual(hi.getAttribute('text-anchor'), 'end');
+    chart.destroy();
+    host.remove();
+  });
+
   test('a series without labels draws none', () => {
     const { host, chart } = mount([{ name: 'S', x: [1, 2], y: [3, 4] }]);
     assertEqual(host.querySelectorAll('.chart-point-label').length, 0);
