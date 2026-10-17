@@ -6,9 +6,10 @@
  * disadvantages).
  */
 
-import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertClose } from '../test-utils.js';
 import {
   State, KINDS, pairKey, orderedComponents, isComplete, rankOf, openPairs, disadvantages, functionPairs,
+  TABS, componentValue, valueCostRows,
 } from '../../js/modules/triz-function-analysis/triz-function-analysis-model.js';
 
 /** Toothbrush: target teeth, system bristles + handle, supersystem gums + paste. */
@@ -341,5 +342,85 @@ suite('triz-function-analysis — derived values', () => {
   test('pairKey matches sorted interactions', () => {
     const s = fixture();
     assertTrue(s.interactions.every((i) => pairKey(i.a, i.b) === `${i.a}|${i.b}`));
+  });
+});
+
+suite('triz-function-analysis — value & cost', () => {
+  const row = (s, id) => valueCostRows(s).find((r) => r.id === id);
+
+  test('a component scores 3/2/1 per useful function it carries, harmful 0', () => {
+    const s = fixture();
+    assertEqual(componentValue('b', s), 3);
+    assertEqual(componentValue('h', s), 1);
+    assertEqual(componentValue('t', s), 0);
+  });
+
+  test('rows list system components only, normalised to 10', () => {
+    const s = fixture();
+    s.setCost('b', 200);
+    s.setCost('h', 50);
+    assertDeepEqual(valueCostRows(s).map((r) => r.id), ['b', 'h']);
+    const b = row(s, 'b');
+    assertDeepEqual([b.name, b.value, b.normValue, b.cost, b.normCost], ['Borsten', 3, 10, 200, 10]);
+    const h = row(s, 'h');
+    assertEqual(h.value, 1);
+    assertClose(h.normValue, 10 / 3, 1e-9);
+    assertDeepEqual([h.cost, h.normCost], [50, 2.5]);
+  });
+
+  test('no functions and all-zero costs normalise to 0, not NaN', () => {
+    const s = fixture();
+    s.functions = [];
+    s.setCost('b', 0);
+    s.setCost('h', 0);
+    assertDeepEqual(valueCostRows(s).map((r) => [r.normValue, r.normCost]), [[0, 0], [0, 0]]);
+  });
+
+  test('a component without cost has null cost and is ignored for the maximum', () => {
+    const s = fixture();
+    s.setCost('h', 50);
+    assertDeepEqual([row(s, 'b').cost, row(s, 'b').normCost], [null, null]);
+    assertEqual(row(s, 'h').normCost, 10);
+  });
+
+  test('setCost stores numbers >= 0, empty as null, rejects the rest', () => {
+    const s = fixture();
+    assertTrue(s.setCost('b', '12.5'));
+    assertEqual(s.component('b').cost, 12.5);
+    s.setCost('b', 0);
+    assertEqual(s.component('b').cost, 0);
+    s.setCost('b', '');
+    assertEqual(s.component('b').cost, null);
+    s.setCost('b', 7);
+    assertEqual(s.setCost('b', -1), false);
+    assertEqual(s.setCost('b', 'abc'), false);
+    assertEqual(s.component('b').cost, 7);
+  });
+
+  test('a new component has no cost', () => {
+    const s = new State();
+    assertEqual(s.addComponent('system').component.cost, null);
+  });
+
+  test('fromJSON repairs cost and toJSON round-trips it', () => {
+    const comps = [-3, '5', NaN, undefined, 7].map((cost, i) => ({ id: `c${i}`, name: '', kind: 'system', note: '', cost }));
+    const s = State.fromJSON({ components: comps });
+    assertDeepEqual(s.components.map((c) => c.cost), [null, null, null, null, 7]);
+    assertEqual(State.fromJSON(s.toJSON()).component('c4').cost, 7);
+  });
+
+  test('the value & cost tab is a known tab', () => {
+    assertEqual(TABS[3], 'valueCost');
+    assertEqual(State.fromJSON({ activeTab: 'valueCost' }).activeTab, 'valueCost');
+  });
+
+  test('a system component turned supersystem keeps its cost but leaves the rows', () => {
+    const s = fixture();
+    s.setCost('h', 50);
+    s.setKind('h', 'supersystem');
+    assertEqual(s.component('h').cost, 50);
+    assertDeepEqual(valueCostRows(s).map((r) => r.id), ['b']);
+    s.setKind('h', 'system');
+    assertEqual(row(s, 'h').cost, 50);
   });
 });

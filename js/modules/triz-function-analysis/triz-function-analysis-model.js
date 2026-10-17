@@ -14,7 +14,7 @@ export const KINDS = ['target', 'system', 'supersystem'];
 export const GROUPS = ['supersystem', 'target', 'system'];
 export const TYPES = ['useful', 'harmful'];
 export const LEVELS = ['adequate', 'insufficient', 'excessive'];
-export const TABS = ['components', 'interactions', 'model'];
+export const TABS = ['components', 'interactions', 'model', 'valueCost'];
 
 /**
  * Key of an unordered pair.
@@ -69,6 +69,45 @@ export function rankOf(fn, components) {
   const obj = components.find((c) => c.id === fn.object);
   return obj ? RANK_BY_KIND[obj.kind] ?? null : null;
 }
+
+/** Points per useful function by rank, for the value & cost analysis. */
+export const SCORE_BY_RANK = { basic: 3, additional: 2, auxiliary: 1 };
+
+/**
+ * Function value of a component: the rank scores of the functions it carries
+ * (harmful and draft functions score 0).
+ * @param {string} id @param {{components: Object[], functions: Object[]}} state
+ * @returns {number}
+ */
+export function componentValue(id, state) {
+  return state.functions
+    .filter((f) => f.carrier === id)
+    .reduce((sum, f) => sum + (SCORE_BY_RANK[rankOf(f, state.components)] ?? 0), 0);
+}
+
+/**
+ * Value & cost rows of the system components, in entry order. Value and cost
+ * are normalised to 0…10 against the largest value / entered cost.
+ * @param {State} state
+ * @returns {Array<{id:string,name:string,value:number,normValue:number,cost:number|null,normCost:number|null}>}
+ */
+export function valueCostRows(state) {
+  const system = state.components.filter((c) => c.kind === 'system');
+  const values = system.map((c) => componentValue(c.id, state));
+  const maxValue = Math.max(0, ...values);
+  const maxCost = Math.max(0, ...system.map((c) => c.cost ?? 0));
+  return system.map((c, i) => ({
+    id: c.id,
+    name: c.name,
+    value: values[i],
+    normValue: maxValue > 0 ? values[i] / maxValue * 10 : 0,
+    cost: c.cost ?? null,
+    normCost: c.cost == null ? null : (maxCost > 0 ? c.cost / maxCost * 10 : 0),
+  }));
+}
+
+/** @param {*} v @returns {number|null} a finite number >= 0, else null */
+const costOrNull = (v) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : null);
 
 /**
  * Ticked pairs that no complete function uses (in either direction).
@@ -152,7 +191,7 @@ export class State {
         if (hasTarget) kind = 'system';
         hasTarget = true;
       }
-      s.components.push({ id: c.id, name: str(c.name), kind, note: str(c.note) });
+      s.components.push({ id: c.id, name: str(c.name), kind, note: str(c.note), cost: costOrNull(c.cost) });
     }
     const known = (id) => typeof id === 'string' && s.component(id) !== null;
 
@@ -201,7 +240,7 @@ export class State {
    * @returns {{component: Object, demoted: Object|null}}
    */
   addComponent(kind, name = '') {
-    const component = { id: uid(), name: String(name), kind: 'system', note: '' };
+    const component = { id: uid(), name: String(name), kind: 'system', note: '', cost: null };
     this.components.push(component);
     const demoted = kind === 'target' ? this.setKind(component.id, 'target')
       : (this.setKind(component.id, KINDS.includes(kind) ? kind : 'system'), null);
@@ -223,6 +262,22 @@ export class State {
     }
     c.kind = kind;
     return demoted;
+  }
+
+  /**
+   * Set a component's euro cost. Empty input clears it; anything that is not
+   * a number >= 0 is rejected and leaves the cost unchanged.
+   * @param {string} id @param {string|number|null} raw
+   * @returns {boolean} whether the cost was stored
+   */
+  setCost(id, raw) {
+    const c = this.component(id);
+    if (!c) return false;
+    if (raw === null || raw === '') { c.cost = null; return true; }
+    const cost = costOrNull(typeof raw === 'string' ? Number(raw) : raw);
+    if (cost === null) return false;
+    c.cost = cost;
+    return true;
   }
 
   /** @param {string} id @returns {number} functions using the component */
