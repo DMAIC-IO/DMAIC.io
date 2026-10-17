@@ -4,7 +4,7 @@
   <div class="attrtest__input dmike-split__input">
 
     <div class="dmike-split__section-title" x-text="t('sectionTest')"></div>
-    <div class="btn-group attrtest__toggle-row">
+    <div class="btn-group attrtest__toggle-row" data-help-key="modules.attribute-test.types.Params.testKind">
       <button class="btn--segment" data-kind="one" :class="isKind('one') ? 'btn--active' : ''"
         @click="setKind('one')" x-text="t('kindOne')"></button>
       <button class="btn--segment" data-kind="two" :class="isKind('two') ? 'btn--active' : ''"
@@ -14,7 +14,7 @@
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionInput')"></div>
-    <div class="btn-group attrtest__toggle-row">
+    <div class="btn-group attrtest__toggle-row" data-help-key="modules.attribute-test.types.Params.inputMode">
       <button class="btn--segment" data-mode="summary" :class="isMode('summary') ? 'btn--active' : ''"
         @click="setMode('summary')" x-text="t('modeSummary')"></button>
       <button class="btn--segment" data-mode="columns" :class="isMode('columns') ? 'btn--active' : ''"
@@ -24,9 +24,9 @@
     <!-- Summarized input -->
     <template x-if="isMode('summary') && isKind('one')">
       <div class="attrtest__grid">
-        <label class="field-group"><span x-text="t('events')"></span>
+        <label class="field-group" data-help-key="modules.attribute-test.types.Params.summary.x"><span x-text="t('events')"></span>
           <input type="text" inputmode="numeric" data-ref="x" :value="model.summary.x" @input="onTextInput('summary.x', $event)"></label>
-        <label class="field-group"><span x-text="t('trials')"></span>
+        <label class="field-group" data-help-key="modules.attribute-test.types.Params.summary.n"><span x-text="t('trials')"></span>
           <input type="text" inputmode="numeric" data-ref="n" :value="model.summary.n" @input="onTextInput('summary.n', $event)"></label>
       </div>
     </template>
@@ -34,8 +34,8 @@
     <template x-if="isMode('summary') && isKind('two')">
       <div class="attrtest__grid attrtest__grid--two">
         <span class="attrtest__grid-head"></span>
-        <span class="attrtest__grid-head" x-text="t('events')"></span>
-        <span class="attrtest__grid-head" x-text="t('trials')"></span>
+        <span class="attrtest__grid-head" data-help-key="modules.attribute-test.types.Params.summary.x1" x-text="t('events')"></span>
+        <span class="attrtest__grid-head" data-help-key="modules.attribute-test.types.Params.summary.n1" x-text="t('trials')"></span>
         <span x-text="t('sample1')"></span>
         <input type="text" inputmode="numeric" data-ref="x1" :value="model.summary.x1" @input="onTextInput('summary.x1', $event)">
         <input type="text" inputmode="numeric" data-ref="n1" :value="model.summary.n1" @input="onTextInput('summary.n1', $event)">
@@ -55,7 +55,7 @@
                 <th>
                   <input type="text" class="attrtest__name" :data-col-name="j" :value="colName(j)"
                     @input="setColName(j, $event)">
-                  <button class="btn--icon attrtest__remove" :title="t('removeCol')" :disabled="!canRemoveCol()" @click="onRemoveCol(j)">
+                  <button class="btn--icon attrtest__remove" data-help-key="modules.attribute-test.actions.removeCol.help" :title="t('removeCol')" :disabled="!canRemoveCol()" @click="onRemoveCol(j)">
                     <span class="icon icon--sm" data-icon="action.delete"></span>
                   </button>
                 </th>
@@ -68,7 +68,7 @@
                 <th>
                   <input type="text" class="attrtest__name" :data-row-name="i" :value="rowName(i)"
                     @input="setRowName(i, $event)">
-                  <button class="btn--icon attrtest__remove" :title="t('removeRow')" :disabled="!canRemoveRow()" @click="onRemoveRow(i)">
+                  <button class="btn--icon attrtest__remove" data-help-key="modules.attribute-test.actions.removeRow.help" :title="t('removeRow')" :disabled="!canRemoveRow()" @click="onRemoveRow(i)">
                     <span class="icon icon--sm" data-icon="action.delete"></span>
                   </button>
                 </th>
@@ -81,8 +81,8 @@
           </tbody>
         </table>
         <div class="attrtest__table-actions">
-          <button class="btn btn--secondary btn--sm" data-ref="add-row" @click="addRow()" x-text="t('addRow')"></button>
-          <button class="btn btn--secondary btn--sm" data-ref="add-col" @click="addCol()" x-text="t('addCol')"></button>
+          <button class="btn btn--secondary btn--sm" data-ref="add-row" data-help-key="modules.attribute-test.actions.addRow.help" @click="addRow()" x-text="t('addRow')"></button>
+          <button class="btn btn--secondary btn--sm" data-ref="add-col" data-help-key="modules.attribute-test.actions.addCol.help" @click="addCol()" x-text="t('addCol')"></button>
         </div>
       </div>
     </template>
@@ -90,31 +90,31 @@
     <!-- Column input -->
     <template x-if="isMode('columns') && !isKind('assoc')">
       <div class="field-group">
-        <label x-text="t('colResponse')"></label>
+        <label data-help-key="modules.attribute-test.actions.setColumn.help" x-text="t('colResponse')"></label>
         <div data-ref="picker-response-wrap"></div>
       </div>
     </template>
     <template x-if="isMode('columns') && isKind('two')">
       <div class="field-group">
-        <label x-text="t('colGroup')"></label>
+        <label data-help-key="modules.attribute-test.actions.setColumn.help" x-text="t('colGroup')"></label>
         <div data-ref="picker-group-wrap"></div>
       </div>
     </template>
     <template x-if="isMode('columns') && isKind('assoc')">
       <div class="attrtest__contents">
         <div class="field-group">
-          <label x-text="t('colRowVar')"></label>
+          <label data-help-key="modules.attribute-test.actions.setColumn.help" x-text="t('colRowVar')"></label>
           <div data-ref="picker-row-wrap"></div>
         </div>
         <div class="field-group">
-          <label x-text="t('colColVar')"></label>
+          <label data-help-key="modules.attribute-test.actions.setColumn.help" x-text="t('colColVar')"></label>
           <div data-ref="picker-col-wrap"></div>
         </div>
       </div>
     </template>
     <template x-if="showEvent()">
       <div class="field-group">
-        <label x-text="t('eventValue')"></label>
+        <label data-help-key="modules.attribute-test.types.Params.eventValue" x-text="t('eventValue')"></label>
         <!-- data-driven options: not bound via x-model (see .claude/alpine.md §3) -->
         <select data-ref="event" @change="onEventChange($event)">
           <template x-for="v in eventOptions" :key="v">
@@ -126,11 +126,11 @@
 
     <div class="dmike-split__section-title" x-text="t('sectionOptions')"></div>
     <template x-if="isKind('one')">
-      <label class="field-group"><span x-text="t('p0')"></span>
+      <label class="field-group" data-help-key="modules.attribute-test.types.Params.p0"><span x-text="t('p0')"></span>
         <input type="text" inputmode="decimal" data-ref="p0" :value="model.p0" @input="onTextInput('p0', $event)"></label>
     </template>
     <template x-if="showDirection()">
-      <label class="field-group"><span x-text="t('direction')"></span>
+      <label class="field-group" data-help-key="modules.attribute-test.types.Params.direction"><span x-text="t('direction')"></span>
         <select data-ref="direction" @change="onDirectionChange($event)">
           <template x-for="o in directionOptions()" :key="o.value">
             <option :value="o.value" :selected="isDirection(o.value)" x-text="o.label"></option>
@@ -138,10 +138,10 @@
         </select>
       </label>
     </template>
-    <label class="field-group"><span x-text="t('alpha')"></span>
+    <label class="field-group" data-help-key="modules.attribute-test.types.Params.alpha"><span x-text="t('alpha')"></span>
       <input type="text" inputmode="decimal" data-ref="alpha" :value="model.alpha" @change="onAlphaInput($event)"></label>
     <template x-if="isKind('two')">
-      <label class="attrtest__check">
+      <label class="attrtest__check" data-help-key="modules.attribute-test.types.Params.pooled" data-help-anchor="box">
         <input type="checkbox" data-ref="pooled" :checked="model.pooled" @change="onPooledChange($event)">
         <span x-text="t('pooled')"></span>
       </label>
@@ -167,14 +167,14 @@
           <tbody>
             <template x-for="s in stats()" :key="s.key">
               <tr :data-stat="s.key">
-                <th x-text="statLabel(s)"></th>
+                <th><span :data-help-key="statHelp(s)" x-text="statLabel(s)"></span></th>
                 <td class="attrtest__stat-value" x-text="s.value"></td>
               </tr>
             </template>
           </tbody>
         </table>
 
-        <div class="attrtest__decision" data-ref="decision" :class="decisionClass()">
+        <div class="attrtest__decision" data-ref="decision" data-help-key="modules.attribute-test.types.Result.decision" :class="decisionClass()">
           <span x-text="decisionText()"></span>
           <span class="attrtest__basis" x-text="basisText()"></span>
         </div>
@@ -185,7 +185,7 @@
 
         <template x-if="hasTable()">
           <div>
-            <div class="attrtest__legend" x-text="t('cellLegend')"></div>
+            <div class="attrtest__legend" data-help-key="modules.attribute-test.types.CrossCell.contrib" x-text="t('cellLegend')"></div>
             <table class="attrtest__result-table" data-ref="result-table">
               <thead>
                 <tr>

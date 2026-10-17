@@ -7060,12 +7060,12 @@
         "setParam": {
           "help": "Setzt einen Parameter; der Test rechnet danach neu. Ein Wechsel von testKind oder inputMode behält alle anderen Eingaben, beim Zurückwechseln geht also nichts verloren.",
           "params": {
-            "key": "Einer der Schlüssel aus activeParams: testKind, inputMode und alpha immer; summary.x und summary.n (ein Anteil), summary.x1, summary.n1, summary.x2 und summary.n2 (zwei Anteile) bei Eingabe als Zusammenfassung; eventValue bei Spalteneingabe mit einem oder zwei Anteilen; p0 bei einem Anteil; direction (beim Zusammenhangstest erst, wenn ein Ergebnis für eine 2 x 2-Tabelle vorliegt); pooled bei zwei Anteilen. Jeder andere Schlüssel ist ein Fehler.",
-            "value": "testKind: 'one', 'two' oder 'assoc'. inputMode: 'summary' oder 'columns'. alpha: Zahl größer 0 und kleiner 1, zum Beispiel 0.05. direction: 'two-sided', 'greater' oder 'less'. pooled: true oder false. p0 und die summary.*-Anzahlen: Text wie eingegeben, '' leert. eventValue: einer der Werte aus eventValueOptions. Ein Wert außerhalb von Bereich oder Liste ist ein Fehler."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys. summary-Werte und p0 als Text mit einer Zahl."
           }
         },
         "setColumn": {
-          "help": "Weist einer Rolle eine Spalte zu; der Test rechnet danach neu. null leert die Rolle. Bei Spalteneingabe und einem oder zwei Anteilen zählen Antwort (und bei zwei Anteilen die Gruppe); beim Zusammenhangstest Zeilen- und Spaltenmerkmal. Der Ereigniswert wird auf den letzten Wert der Antwortspalte gesetzt, wenn der bisherige dort nicht vorkommt.",
+          "help": "Die Spalte einer Datensammlung, die diese Rolle liefert; nach einer Änderung wird neu gerechnet. Kommt der bisherige Ereigniswert in der neuen Antwortspalte nicht vor, gilt ihr letzter Wert als Ereignis.",
           "params": {
             "slot": "Eine der Rollen aus activeColumnSlots: response, group, rowVar oder colVar.",
             "ref": "Der Bezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns für diese Rolle, oder null, um die Rolle zu leeren."
@@ -7156,10 +7156,90 @@
           "help": "Die Werte, die setParam für eventValue annimmt: die verschiedenen Werte der gewählten Antwortspalte; leer, solange es keine gibt."
         },
         "result": {
-          "help": "Der Testbericht: stats (Kennzahlen), notes, die Entscheidung gegen alpha und beim Zusammenhangstest die Kreuztabelle mit beobachteten und erwarteten Anzahlen. null, solange die Eingaben unvollständig oder ungültig sind."
+          "help": "Der Testbericht: Kennzahlen, Hinweise, Entscheidung und beim Zusammenhangstest die Kreuztabelle, jede Kennzahl unter keys einzeln beschrieben; null, solange die Eingaben unvollständig oder ungültig sind (der Grund steht in errorMsg)."
         },
         "errorMsg": {
           "help": "Der Grund, warum kein Ergebnis vorliegt: ein Eingabehinweis, solange Häufigkeiten oder Spalten fehlen, oder die Absage (zum Beispiel eine zu kleine Tabelle oder ein p0 außerhalb des Bereichs); eine leere Zeichenkette, solange ein Ergebnis vorliegt."
+        }
+      },
+      "types": {
+        "Params": {
+          "testKind": "Die Testart, gewählt im Abschnitt „Test“: „1 Anteil“ prüft einen Anteil gegen den hypothetischen Anteil p₀, „2 Anteile“ vergleicht die Anteile zweier Stichproben, „Chi-Quadrat-Assoziation“ prüft, ob zwei kategoriale Merkmale einer Kreuztabelle zusammenhängen. Vorgabe ist „2 Anteile“; ein Wechsel behält alle übrigen Eingaben.",
+          "inputMode": "Die Eingabeart im Abschnitt „Eingabe“: „Zusammengefasst“ nimmt Anzahlen von Hand (Ereignisse und Versuche bzw. die Kreuztabelle), „Spalten“ zählt sie aus Spalten einer Datensammlung. Vorgabe ist „Zusammengefasst“.",
+          "alpha": "Signifikanzniveau α, eine Zahl strikt zwischen 0 und 1, zum Beispiel 0,05. H₀ wird verworfen, wenn der maßgebliche p-Wert kleiner als α ist; zugleich legt α das Niveau des Konfidenzintervalls fest, 1 − α in Prozent, auf eine Nachkommastelle gerundet.",
+          "direction": "Die Alternativhypothese: „≠ zweiseitig“, „> größer“ oder „< kleiner“. Bei einem und zwei Anteilen bestimmt sie p-Werte und Konfidenzintervall; einseitig reicht das Intervall bis 0 bzw. 1 (ein Anteil) oder bis −1 bzw. 1 (Differenz). Beim Zusammenhangstest erscheint sie nur bei einer 2 × 2-Tafel und wirkt nur auf den Fisher-exakten Test, Pearson χ² bleibt zweiseitig.",
+          "p0": "Hypothetischer Anteil p₀ für den Test eines Anteils, als Zahl mit Punkt oder Komma, zum Beispiel 0,5 (Vorgabe). Er muss strikt zwischen 0 und 1 liegen, sonst gibt es kein Ergebnis.",
+          "pooled": "Gepoolte Schätzung von p für den z-Test zweier Anteile. Angekreuzt rechnet der Test den Standardfehler aus dem gemeinsamen Anteil p̄ = (x₁ + x₂)/(n₁ + n₂): SE = √(p̄(1 − p̄)(1/n₁ + 1/n₂)); sonst aus beiden Anteilen getrennt. Das Konfidenzintervall der Differenz bleibt immer ungepoolt. Vorgabe: nicht angekreuzt.",
+          "summary": {
+            "x": "Ereignisse beim Test eines Anteils: wie oft das betrachtete Ereignis eintrat, eine ganze Zahl ab 0, höchstens so groß wie die Versuche. Bleiben Ereignisse und Versuche leer, wird nicht gerechnet.",
+            "n": "Versuche (n) beim Test eines Anteils: die Zahl der Beobachtungen, eine ganze Zahl größer als 0. Der geschätzte Anteil ist p̂ = Ereignisse / n.",
+            "x1": "Ereignisse je Stichprobe beim Vergleich zweier Anteile, Zeile „Stichprobe 1“ und „Stichprobe 2“: wie oft das Ereignis in der jeweiligen Stichprobe eintrat, eine ganze Zahl ab 0, höchstens so groß wie deren Versuche.",
+            "n1": "Versuche (n) je Stichprobe beim Vergleich zweier Anteile, Zeile „Stichprobe 1“ und „Stichprobe 2“: die Zahl der Beobachtungen der jeweiligen Stichprobe, eine ganze Zahl größer als 0. Der Anteil der Stichprobe ist Ereignisse / n.",
+            "x2": "Ereignisse in Stichprobe 2 beim Vergleich zweier Anteile, eine ganze Zahl ab 0, höchstens so groß wie die Versuche von Stichprobe 2.",
+            "n2": "Versuche (n) in Stichprobe 2 beim Vergleich zweier Anteile, eine ganze Zahl größer als 0."
+          },
+          "eventValue": "Bei Spalteneingabe der Wert der Antwortspalte, der als Ereignis zählt („Ereignis =“). Die Antwortspalte braucht genau zwei verschiedene Werte; ohne Wahl gilt wie bei Minitab der letzte Wert in natürlicher Sortierung."
+        },
+        "Result": {
+          "kind": "Die Testart, für die der Bericht gerechnet wurde: ein Anteil, zwei Anteile oder Chi-Quadrat-Assoziation, wie im Abschnitt „Test“ gewählt.",
+          "stats": "Die Kennzahlzeilen der Tabelle unter „Ergebnisse“, je Testart andere: Anzahlen, Anteile, Konfidenzintervall, Prüfgröße und p-Werte; jede Zeile ist beim Überfahren ihrer Beschriftung einzeln erklärt.",
+          "notes": "Hinweise unter der Entscheidung: übersprungene Zeilen mit fehlenden Werten, die ungeeignete Normalapproximation (ein Anteil), der gepoolte z-Test (zwei Anteile), entfernte leere Zeilen oder Spalten und die Warnungen zu kleinen erwarteten Häufigkeiten (Zusammenhangstest).",
+          "decision": "Die Entscheidung gegen α: „H₀ verwerfen“, wenn der maßgebliche p-Wert kleiner als α ist, sonst „H₀ nicht verwerfen“. Maßgeblich ist beim Test eines Anteils der exakte Binomialtest, bei zwei Anteilen der p-Wert des z-Tests und beim Zusammenhangstest der p-Wert von Pearson χ² (immer zweiseitig). Die Grundlage steht neben der Entscheidung.",
+          "basisKey": "Kennung des Satzes, der die Grundlage der Entscheidung nennt: exakter Binomialtest, z-Test oder Pearson χ².",
+          "table": "Die Kreuztabelle des Zusammenhangstests mit beobachteten und erwarteten Anzahlen und dem Beitrag je Zelle zu χ²; bei einem und zwei Anteilen leer."
+        },
+        "Stat": {
+          "key": "Kennung der Kennzahlzeile, innerhalb einer Testart eindeutig; dieselbe Kennung kann je Testart Verschiedenes bedeuten.",
+          "labelKey": "Kennung des Beschriftungstextes der Zeile; beim Fisher-exakten Test einer 2 × 2-Tafel je Richtung eine eigene.",
+          "params": "Platzhalter der Beschriftung: das Konfidenzniveau in Prozent, der Gruppenname oder die Freiheitsgrade; fehlt bei Zeilen ohne Platzhalter.",
+          "value": "Der Wert als formatierter Text, wie in der Tabelle: vier Nachkommastellen, χ², G² und Yates mit drei, p-Werte unter 0,0001 als „< 0.0001“, Anzahlen als „x / n“, Konfidenzintervalle als Unter- und Obergrenze; Dezimalpunkt in beiden Sprachen, „–“ für einen nicht berechenbaren Wert."
+        },
+        "Note": {
+          "key": "Kennung des Hinweistextes, der unter der Entscheidung steht.",
+          "params": "Platzhalter des Hinweises: die Zahl übersprungener Zeilen, die Namen entfernter Zeilen oder Spalten oder der gerundete Prozentanteil der Zellen mit erwarteter Häufigkeit unter 5; fehlt bei Hinweisen ohne Platzhalter."
+        },
+        "CrossTable": {
+          "cols": "Die Spaltenstufen der Kreuztabelle; Spalten ohne Beobachtungen sind entfernt.",
+          "rows": "Die Zeilen der Kreuztabelle; Zeilen ohne Beobachtungen sind entfernt."
+        },
+        "CrossRow": {
+          "name": "Die Zeilenstufe, links in der Kreuztabelle.",
+          "cells": "Die Zellen der Zeile, je Spaltenstufe eine."
+        },
+        "CrossCell": {
+          "obs": "Beobachtete Anzahl der Zelle, die obere Zahl.",
+          "exp": "Erwartete Anzahl unter Unabhängigkeit: Zeilensumme · Spaltensumme / Gesamtzahl, mit zwei Nachkommastellen.",
+          "contrib": "Jede Zelle zeigt drei Zahlen: die beobachtete Anzahl o, die unter Unabhängigkeit erwartete Anzahl e = Zeilensumme · Spaltensumme / Gesamtzahl und den Beitrag (o − e)²/e zu Pearson χ². Große Beiträge zeigen, wo der Zusammenhang sitzt."
+        }
+      },
+      "stats": {
+        "one": {
+          "counts": "Ereignisse und Versuche der Stichprobe als „x / n“.",
+          "pHat": "Geschätzter Anteil p̂ = x / n.",
+          "ci": "Exaktes Konfidenzintervall nach Clopper-Pearson aus den Quantilen der Beta-Verteilung, Niveau 1 − α. Bei gerichteter Alternative einseitig, die offene Seite reicht bis 0 bzw. 1; bei x = 0 ist die Untergrenze 0, bei x = n die Obergrenze 1.",
+          "pExact": "p-Wert des exakten Binomialtests: bei „> größer“ P(X ≥ x), bei „< kleiner“ P(X ≤ x), zweiseitig das Doppelte der kleineren Seite, höchstens 1. Grundlage der Entscheidung: H₀ wird verworfen, wenn er kleiner als α ist.",
+          "z": "Prüfgröße der Normalapproximation z = (p̂ − p₀) / √(p₀(1 − p₀)/n).",
+          "pNormal": "p-Wert der Normalapproximation aus z in der gewählten Richtung, nur zur Information. Geeignet nur bei n·p₀ ≥ 5, n·(1 − p₀) ≥ 5 und 0 < x < n; sonst erscheint ein Hinweis, maßgeblich ist der exakte Test."
+        },
+        "two": {
+          "counts1": "Ereignisse und Versuche der ersten Gruppe als „x / n“; Gruppenname aus der Gruppenspalte, bei zusammengefasster Eingabe „1“.",
+          "counts2": "Ereignisse und Versuche der zweiten Gruppe als „x / n“; Gruppenname aus der Gruppenspalte, bei zusammengefasster Eingabe „2“.",
+          "p1": "Anteil der ersten Gruppe p₁ = x₁ / n₁.",
+          "p2": "Anteil der zweiten Gruppe p₂ = x₂ / n₂.",
+          "diff": "Differenz der Anteile p₁ − p₂.",
+          "ci": "Konfidenzintervall der Differenz nach Wald: p₁ − p₂ ± z₁₋α/₂ · SE mit Niveau 1 − α, der Standardfehler immer ungepoolt, auch wenn der Test gepoolt rechnet. Bei gerichteter Alternative einseitig mit −1 bzw. 1 als offener Grenze.",
+          "z": "Prüfgröße z = (p₁ − p₂) / SE; SE gepoolt oder getrennt, je nach Kästchen „Gepoolte Schätzung“. Ist SE gleich 0, steht „–“.",
+          "pValue": "p-Wert des z-Tests in der gewählten Richtung. Grundlage der Entscheidung: H₀ wird verworfen, wenn er kleiner als α ist.",
+          "pFisher": "p-Wert des Fisher-exakten Tests der 2 × 2-Tafel aus Ereignissen und Nicht-Ereignissen beider Gruppen, in der gewählten Richtung; zweiseitig die Summe aller Tafeln, die höchstens so wahrscheinlich sind wie die beobachtete. Nur zur Information."
+        },
+        "assoc": {
+          "pearson": "Pearson χ² = Σ (o − e)²/e über alle Zellen, mit FG = (Zeilen − 1)·(Spalten − 1). Unzuverlässig, wenn eine erwartete Häufigkeit unter 1 liegt oder mehr als 20 % unter 5; dann erscheint eine Warnung.",
+          "pPearson": "p-Wert von Pearson χ², immer zweiseitig. Grundlage der Entscheidung: H₀, die Unabhängigkeit, wird verworfen, wenn er kleiner als α ist.",
+          "lr": "Likelihood-Quotient G² = 2 · Σ o · ln(o/e) über die Zellen mit Beobachtungen, mit denselben FG wie Pearson χ².",
+          "pLR": "p-Wert des Likelihood-Quotienten G², nur zur Information.",
+          "yates": "χ² mit Yates-Korrektur, nur bei einer 2 × 2-Tafel: Σ max(0, |o − e| − 0,5)²/e.",
+          "pYates": "p-Wert des Yates-korrigierten χ² mit einem Freiheitsgrad, nur bei einer 2 × 2-Tafel.",
+          "pFisher": "p-Wert des Fisher-exakten Tests, nur bei einer 2 × 2-Tafel. Als einzige Kennzahl folgt er der gewählten Alternativhypothese; die Beschriftung nennt die Richtung."
         }
       }
     },

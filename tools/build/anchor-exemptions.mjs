@@ -59,4 +59,8 @@ export const ANCHOR_EXEMPTIONS = {
     { match: '<th :key="h" x-text="h">', reason: 'Kopf je Kriterium bzw. Gruppe (Name aus den Daten); der Satz steht an der Tabelle', count: 1 },
     { match: 'x-text="row.head"', reason: 'Kopf je Kriterium bzw. Gruppe (Name aus den Daten); der Satz steht an der Tabelle', count: 1 },
   ],
+  'attribute-test': [
+    { match: '<th x-text="c">', reason: 'Kopf je Kriterium bzw. Gruppe (Name aus den Daten); der Satz steht an der Tabelle', count: 1 },
+    { match: '<th x-text="row.name">', reason: 'Kopf je Kriterium bzw. Gruppe (Name aus den Daten); der Satz steht an der Tabelle', count: 1 },
+  ],
 };

@@ -104,6 +104,73 @@ const COLUMN_SINKS = {
 const DIRECTION_LABEL_KEYS = { 'two-sided': 'dirTwoSided', greater: 'dirGreater', less: 'dirLess' };
 
 /**
+ * Die Schlüsselfläche von `setParam`. Punkt im Schlüssel = Verschachtelung
+ * im Model (`summary.x`). Sätze je Schlüssel unter `types.Params.<schlüssel>`,
+ * dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {'one'|'two'|'assoc'} testKind  Testart
+ * @property {'summary'|'columns'} inputMode  Eingabeart
+ * @property {number} alpha  Signifikanzniveau
+ * @property {'two-sided'|'greater'|'less'} [direction]  Alternativhypothese
+ * @property {string} [p0]  Sollanteil, nur ein Anteil
+ * @property {boolean} [pooled]  gepoolter Standardfehler, nur zwei Anteile
+ * @property {string} [summary.x]  Ereignisse, ein Anteil
+ * @property {string} [summary.n]  Versuche, ein Anteil
+ * @property {string} [summary.x1]  Ereignisse Stichprobe 1
+ * @property {string} [summary.n1]  Versuche Stichprobe 1
+ * @property {string} [summary.x2]  Ereignisse Stichprobe 2
+ * @property {string} [summary.n2]  Versuche Stichprobe 2
+ * @property {string} [eventValue]  Wert, der als Ereignis zählt
+ */
+
+/**
+ * Das Ergebnis, wie `read().result` es liefert: ein Bericht. Die Werte der
+ * Kennzahlen sind formatierte Texte.
+ *
+ * @typedef {object} Result
+ * @property {'one'|'two'|'assoc'} kind  Testart
+ * @property {Stat[]} stats  Kennzahlen
+ * @property {Note[]} notes  Hinweise
+ * @property {'reject'|'keep'} decision  Entscheidung gegen α
+ * @property {string} basisKey  Grundlage der Entscheidung
+ * @property {CrossTable|null} table  Kreuztabelle, nur Zusammenhangstest
+ */
+
+/**
+ * @typedef {object} Stat
+ * @property {string} key  Kennung der Kennzahl
+ * @property {string} labelKey  Beschriftung
+ * @property {object} [params]  Platzhalter der Beschriftung
+ * @property {string} value  Wert
+ */
+
+/**
+ * @typedef {object} Note
+ * @property {string} key  Kennung des Hinweises
+ * @property {object} [params]  Platzhalter
+ */
+
+/**
+ * @typedef {object} CrossTable
+ * @property {string[]} cols  Spaltenstufen
+ * @property {CrossRow[]} rows  Zeilen
+ */
+
+/**
+ * @typedef {object} CrossRow
+ * @property {string} name  Zeilenstufe
+ * @property {CrossCell[]} cells  Zellen
+ */
+
+/**
+ * @typedef {object} CrossCell
+ * @property {string} obs  beobachtet
+ * @property {string} exp  erwartet
+ * @property {string} contrib  Beitrag zu χ²
+ */
+
+/**
  * Die Agenten-Lesefläche des Attribut-Tests.
  *
  * Nicht die persistierte Form: ohne die interne Beispiel-Buchführung
@@ -124,7 +191,7 @@ const DIRECTION_LABEL_KEYS = { 'two-sided': 'dirTwoSided', greater: 'dirGreater'
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
  * @property {string[]} eventValueOptions  the values `setParam('eventValue', …)` accepts
- * @property {object|null} result  the test report, or null while the inputs are incomplete or invalid
+ * @property {Result|null} result  the test report, or null while the inputs are incomplete or invalid
  * @property {string} errorMsg  the reason there is no result (input hint or refusal), or an empty string
  */
 
@@ -165,6 +232,17 @@ const mod = createModule({
       notes() { return this.hasResult() ? this.result.notes : []; },
       /** @noagent view transform */
       statLabel(s) { return _t(s.labelKey, s.params || {}); },
+      /**
+       * Hilfeschlüssel einer Kennzahlzeile: der Satz hängt an Testart und
+       * Kennzahl, weil gleiche Kennungen (ci, z, pFisher) je Test anderes
+       * bedeuten.
+       * @noagent view transform
+       * @param {{ key: string }} s
+       * @returns {string}
+       */
+      statHelp(s) {
+        return `modules.attribute-test.stats.${this.result?.kind}.${s.key}`;
+      },
       /** @noagent view transform */
       noteText(n) { return _t(n.key, n.params || {}); },
       /** @noagent view transform */
@@ -281,8 +359,8 @@ const mod = createModule({
       /**
        * Einen Parameter setzen; die Analyse läuft danach neu.
        * @agent
-       * @param {'testKind'|'inputMode'|'alpha'|'direction'|'p0'|'pooled'|'summary.x'|'summary.n'|'summary.x1'|'summary.n1'|'summary.x2'|'summary.n2'|'eventValue'} key welcher Parameter
-       * @param {string|number|boolean} value der Wert; Typ und Bereich je Schlüssel
+       * @param {keyof Params} key welcher Parameter; activeParams nennt die im Zustand gültigen
+       * @param {string|number|boolean} value der Wert; Typ und Bereich je Schlüssel siehe `Params`
        * @returns {void}
        * @throws {Error} wenn `key` kein Parameter dieses Moduls oder im Zustand nicht gültig ist oder `value` nicht zulässig
        */

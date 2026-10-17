@@ -7056,12 +7056,12 @@
         "setParam": {
           "help": "Sets one parameter; the test reruns. Switching testKind or inputMode keeps all other inputs, so switching back loses nothing.",
           "params": {
-            "key": "One of the keys in activeParams: testKind, inputMode and alpha always; summary.x and summary.n (one proportion), summary.x1, summary.n1, summary.x2 and summary.n2 (two proportions) with summarized input; eventValue with column input and one or two proportions; p0 with one proportion; direction (with the association test only once a result for a 2 x 2 table exists); pooled with two proportions. Any other key is an error.",
-            "value": "testKind: 'one', 'two' or 'assoc'. inputMode: 'summary' or 'columns'. alpha: number greater than 0 and less than 1, for example 0.05. direction: 'two-sided', 'greater' or 'less'. pooled: true or false. p0 and the summary.* counts: text as entered, '' clears it. eventValue: one of eventValueOptions. A value outside the range or the list is an error."
+            "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys. summary values and p0 as text containing a number."
           }
         },
         "setColumn": {
-          "help": "Assigns a column to a role; the test reruns. null clears the role. With column input and one or two proportions the response (and for two proportions the group) is used; for the association test the row and column variables. The event value is set to the last value of the response column when the current one does not occur in it.",
+          "help": "The data collection column that supplies this role; after a change the analysis is recomputed. If the current event value does not occur in the new response column, its last value counts as the event.",
           "params": {
             "slot": "One of the roles in activeColumnSlots: response, group, rowVar or colVar.",
             "ref": "The reference { instanceId, sheetId, columnId } of a column from pickableColumns for that role, or null to clear the role."
@@ -7152,10 +7152,90 @@
           "help": "The values setParam accepts for eventValue: the distinct values of the chosen response column; empty while there is none."
         },
         "result": {
-          "help": "The test report: stats (key figures), notes, the decision against alpha and, for the association test, the cross table with observed and expected counts. null while the inputs are incomplete or invalid."
+          "help": "The test report: figures, notes, decision and, for the association test, the cross table, each figure described individually under keys; null while the inputs are incomplete or invalid (errorMsg gives the reason)."
         },
         "errorMsg": {
           "help": "The reason there is no result: an input hint while counts or columns are missing, or the refusal (for example a table that is too small or a p0 outside the range); an empty string while a result exists."
+        }
+      },
+      "types": {
+        "Params": {
+          "testKind": "The test type, chosen in the “Test” section: “1 proportion” tests one proportion against the hypothesized proportion p₀, “2 proportions” compares the proportions of two samples, “Chi-square association” tests whether two categorical variables of a cross table are associated. Default is “2 proportions”; switching keeps all other inputs.",
+          "inputMode": "The input type in the “Input” section: “Summarized” takes counts entered by hand (events and trials, or the cross table), “Columns” counts them from columns of a data collection. Default is “Summarized”.",
+          "alpha": "Significance level α, a number strictly between 0 and 1, for example 0.05. H₀ is rejected when the deciding p-value is below α; α also sets the confidence level of the interval, 1 − α in percent, rounded to one decimal.",
+          "direction": "The alternative hypothesis: “≠ two-sided”, “> greater” or “< less”. For one and two proportions it sets the p-values and the confidence interval; one-sided, the interval extends to 0 or 1 (one proportion) or to −1 or 1 (difference). For the association test it appears only for a 2 × 2 table and affects only Fisher's exact test; Pearson χ² stays two-sided.",
+          "p0": "Hypothesized proportion p₀ for the one-proportion test, as a number with a point or comma, for example 0.5 (default). It must lie strictly between 0 and 1, otherwise there is no result.",
+          "pooled": "Pooled estimate of p for the z-test of two proportions. When checked, the test computes the standard error from the common proportion p̄ = (x₁ + x₂)/(n₁ + n₂): SE = √(p̄(1 − p̄)(1/n₁ + 1/n₂)); otherwise from both proportions separately. The confidence interval of the difference always stays unpooled. Default: unchecked.",
+          "summary": {
+            "x": "Events for the one-proportion test: how often the event of interest occurred, a whole number from 0, at most the number of trials. If events and trials are both empty, nothing is computed.",
+            "n": "Trials (n) for the one-proportion test: the number of observations, a whole number greater than 0. The estimated proportion is p̂ = events / n.",
+            "x1": "Events per sample when comparing two proportions, rows “Sample 1” and “Sample 2”: how often the event occurred in that sample, a whole number from 0, at most its number of trials.",
+            "n1": "Trials (n) per sample when comparing two proportions, rows “Sample 1” and “Sample 2”: the number of observations in that sample, a whole number greater than 0. The sample's proportion is events / n.",
+            "x2": "Events in sample 2 when comparing two proportions, a whole number from 0, at most the trials of sample 2.",
+            "n2": "Trials (n) in sample 2 when comparing two proportions, a whole number greater than 0."
+          },
+          "eventValue": "With column input, the value of the response column that counts as an event (“Event =”). The response column needs exactly two distinct values; without a choice, as in Minitab, the last value in natural sort order is used."
+        },
+        "Result": {
+          "kind": "The test type the report was computed for: one proportion, two proportions or chi-square association, as chosen in the “Test” section.",
+          "stats": "The figure rows of the table under “Results”, different for each test type: counts, proportions, confidence interval, test statistic and p-values; each row is explained individually when hovering its label.",
+          "notes": "Notes below the decision: skipped rows with missing values, the unsuitable normal approximation (one proportion), the pooled z-test (two proportions), removed empty rows or columns and the warnings about small expected counts (association test).",
+          "decision": "The decision against α: “Reject H₀” when the deciding p-value is below α, otherwise “Do not reject H₀”. The deciding test is the exact binomial test for one proportion, the z-test for two proportions and Pearson χ² (always two-sided) for the association test. The basis is shown next to the decision.",
+          "basisKey": "Identifier of the sentence naming the basis of the decision: exact binomial test, z-test or Pearson χ².",
+          "table": "The cross table of the association test with observed and expected counts and each cell's contribution to χ²; empty for one and two proportions."
+        },
+        "Stat": {
+          "key": "Identifier of the figure row, unique within one test type; the same identifier can mean different things in different test types.",
+          "labelKey": "Identifier of the row's label text; for Fisher's exact test of a 2 × 2 table there is one per direction.",
+          "params": "Placeholders of the label: the confidence level in percent, the group name or the degrees of freedom; missing for rows without placeholders.",
+          "value": "The value as formatted text, as in the table: four decimals, χ², G² and Yates with three, p-values below 0.0001 as “< 0.0001”, counts as “x / n”, confidence intervals as lower and upper bound; decimal point in both languages, “–” for a value that cannot be computed."
+        },
+        "Note": {
+          "key": "Identifier of the note text shown below the decision.",
+          "params": "Placeholders of the note: the number of skipped rows, the names of removed rows or columns, or the rounded percentage of cells with an expected count below 5; missing for notes without placeholders."
+        },
+        "CrossTable": {
+          "cols": "The column levels of the cross table; columns without observations are removed.",
+          "rows": "The rows of the cross table; rows without observations are removed."
+        },
+        "CrossRow": {
+          "name": "The row level, on the left of the cross table.",
+          "cells": "The cells of the row, one per column level."
+        },
+        "CrossCell": {
+          "obs": "Observed count of the cell, the top number.",
+          "exp": "Expected count under independence: row total · column total / grand total, with two decimals.",
+          "contrib": "Each cell shows three numbers: the observed count o, the count expected under independence e = row total · column total / grand total, and the contribution (o − e)²/e to Pearson χ². Large contributions show where the association lies."
+        }
+      },
+      "stats": {
+        "one": {
+          "counts": "Events and trials of the sample as “x / n”.",
+          "pHat": "Estimated proportion p̂ = x / n.",
+          "ci": "Exact Clopper-Pearson confidence interval from beta distribution quantiles, level 1 − α. One-sided for a directional alternative, the open side extending to 0 or 1; for x = 0 the lower bound is 0, for x = n the upper bound is 1.",
+          "pExact": "p-value of the exact binomial test: for “> greater” P(X ≥ x), for “< less” P(X ≤ x), two-sided twice the smaller tail, at most 1. Basis of the decision: H₀ is rejected when it is below α.",
+          "z": "Test statistic of the normal approximation z = (p̂ − p₀) / √(p₀(1 − p₀)/n).",
+          "pNormal": "p-value of the normal approximation from z in the chosen direction, for information only. Suitable only when n·p₀ ≥ 5, n·(1 − p₀) ≥ 5 and 0 < x < n; otherwise a note appears and the exact test applies."
+        },
+        "two": {
+          "counts1": "Events and trials of the first group as “x / n”; group name from the group column, “1” with summarized input.",
+          "counts2": "Events and trials of the second group as “x / n”; group name from the group column, “2” with summarized input.",
+          "p1": "Proportion of the first group p₁ = x₁ / n₁.",
+          "p2": "Proportion of the second group p₂ = x₂ / n₂.",
+          "diff": "Difference of the proportions p₁ − p₂.",
+          "ci": "Wald confidence interval of the difference: p₁ − p₂ ± z₁₋α/₂ · SE at level 1 − α, the standard error always unpooled, even when the test is pooled. One-sided for a directional alternative, with −1 or 1 as the open bound.",
+          "z": "Test statistic z = (p₁ − p₂) / SE; SE pooled or separate, depending on the “pooled estimate” checkbox. If SE is 0, “–” is shown.",
+          "pValue": "p-value of the z-test in the chosen direction. Basis of the decision: H₀ is rejected when it is below α.",
+          "pFisher": "p-value of Fisher's exact test of the 2 × 2 table of events and non-events in both groups, in the chosen direction; two-sided, the sum over all tables at most as likely as the observed one. For information only."
+        },
+        "assoc": {
+          "pearson": "Pearson χ² = Σ (o − e)²/e over all cells, with DF = (rows − 1)·(columns − 1). Unreliable when an expected count is below 1 or more than 20 % are below 5; a warning then appears.",
+          "pPearson": "p-value of Pearson χ², always two-sided. Basis of the decision: H₀, independence, is rejected when it is below α.",
+          "lr": "Likelihood ratio G² = 2 · Σ o · ln(o/e) over the cells with observations, with the same DF as Pearson χ².",
+          "pLR": "p-value of the likelihood ratio G², for information only.",
+          "yates": "χ² with Yates correction, only for a 2 × 2 table: Σ max(0, |o − e| − 0.5)²/e.",
+          "pYates": "p-value of the Yates-corrected χ² with one degree of freedom, only for a 2 × 2 table.",
+          "pFisher": "p-value of Fisher's exact test, only for a 2 × 2 table. It is the only figure that follows the chosen alternative hypothesis; the label names the direction."
         }
       }
     },

@@ -505,17 +505,82 @@ export const AGENT_REGISTRY = {
             "name": "key",
             "type": "'testKind'|'inputMode'|'alpha'|'direction'|'p0'|'pooled'|'summary.x'|'summary.n'|'summary.x1'|'summary.n1'|'summary.x2'|'summary.n2'|'eventValue'",
             "optional": false,
-            "help": "welcher Parameter"
+            "help": "welcher Parameter; activeParams nennt die im Zustand gültigen"
           },
           {
             "name": "value",
             "type": "string|number|boolean",
             "optional": false,
-            "help": "der Wert; Typ und Bereich je Schlüssel"
+            "help": "der Wert; Typ und Bereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "void",
-        "help": "Einen Parameter setzen; die Analyse läuft danach neu."
+        "help": "Einen Parameter setzen; die Analyse läuft danach neu.",
+        "keysOf": "Params",
+        "keys": {
+          "testKind": {
+            "type": "'one'|'two'|'assoc'",
+            "help": "Testart"
+          },
+          "inputMode": {
+            "type": "'summary'|'columns'",
+            "help": "Eingabeart"
+          },
+          "alpha": {
+            "type": "number",
+            "help": "Signifikanzniveau"
+          },
+          "direction": {
+            "type": "'two-sided'|'greater'|'less'",
+            "help": "Alternativhypothese",
+            "optional": true
+          },
+          "p0": {
+            "type": "string",
+            "help": "Sollanteil, nur ein Anteil",
+            "optional": true
+          },
+          "pooled": {
+            "type": "boolean",
+            "help": "gepoolter Standardfehler, nur zwei Anteile",
+            "optional": true
+          },
+          "summary.x": {
+            "type": "string",
+            "help": "Ereignisse, ein Anteil",
+            "optional": true
+          },
+          "summary.n": {
+            "type": "string",
+            "help": "Versuche, ein Anteil",
+            "optional": true
+          },
+          "summary.x1": {
+            "type": "string",
+            "help": "Ereignisse Stichprobe 1",
+            "optional": true
+          },
+          "summary.n1": {
+            "type": "string",
+            "help": "Versuche Stichprobe 1",
+            "optional": true
+          },
+          "summary.x2": {
+            "type": "string",
+            "help": "Ereignisse Stichprobe 2",
+            "optional": true
+          },
+          "summary.n2": {
+            "type": "string",
+            "help": "Versuche Stichprobe 2",
+            "optional": true
+          },
+          "eventValue": {
+            "type": "string",
+            "help": "Wert, der als Ereignis zählt",
+            "optional": true
+          }
+        }
       },
       "setColumn": {
         "params": [
@@ -715,10 +780,106 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
+        "type": "Result|null",
         "help": "the test report, or null while the inputs are incomplete or invalid",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "kind": {
+            "type": "'one'|'two'|'assoc'",
+            "help": "Testart"
+          },
+          "stats": {
+            "type": "Stat[]",
+            "help": "Kennzahlen",
+            "keysOf": "Stat",
+            "keys": {
+              "key": {
+                "type": "string",
+                "help": "Kennung der Kennzahl"
+              },
+              "labelKey": {
+                "type": "string",
+                "help": "Beschriftung"
+              },
+              "params": {
+                "type": "object",
+                "help": "Platzhalter der Beschriftung",
+                "optional": true
+              },
+              "value": {
+                "type": "string",
+                "help": "Wert"
+              }
+            }
+          },
+          "notes": {
+            "type": "Note[]",
+            "help": "Hinweise",
+            "keysOf": "Note",
+            "keys": {
+              "key": {
+                "type": "string",
+                "help": "Kennung des Hinweises"
+              },
+              "params": {
+                "type": "object",
+                "help": "Platzhalter",
+                "optional": true
+              }
+            }
+          },
+          "decision": {
+            "type": "'reject'|'keep'",
+            "help": "Entscheidung gegen α"
+          },
+          "basisKey": {
+            "type": "string",
+            "help": "Grundlage der Entscheidung"
+          },
+          "table": {
+            "type": "CrossTable|null",
+            "help": "Kreuztabelle, nur Zusammenhangstest",
+            "keysOf": "CrossTable",
+            "keys": {
+              "cols": {
+                "type": "string[]",
+                "help": "Spaltenstufen"
+              },
+              "rows": {
+                "type": "CrossRow[]",
+                "help": "Zeilen",
+                "keysOf": "CrossRow",
+                "keys": {
+                  "name": {
+                    "type": "string",
+                    "help": "Zeilenstufe"
+                  },
+                  "cells": {
+                    "type": "CrossCell[]",
+                    "help": "Zellen",
+                    "keysOf": "CrossCell",
+                    "keys": {
+                      "obs": {
+                        "type": "string",
+                        "help": "beobachtet"
+                      },
+                      "exp": {
+                        "type": "string",
+                        "help": "erwartet"
+                      },
+                      "contrib": {
+                        "type": "string",
+                        "help": "Beitrag zu χ²"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       "errorMsg": {
         "type": "string",
