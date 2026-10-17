@@ -293,7 +293,7 @@ const mod = createModule({
           await this.runAnalysis();
           return false;
         }
-        if (this.model.frozenLimits) return true;
+        if (this.model.frozenLimitsApply(State.parseStages(this.model.stagesText).length > 0)) return true;
         if (!this._lastResult || State.parseStages(this.model.stagesText).length > 0) return false;
         this.model.frozenLimits = this.model.buildFrozenLimits(this._lastResult);
         await this.runAnalysis();
