@@ -5,7 +5,7 @@
     "scipy": "1.18.0",
     "numpy": "2.5.1"
   },
-  "generated_at": "2026-10-17T17:29:41.766476+00:00",
+  "generated_at": "2026-10-17T17:34:38.922689+00:00",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -699,7 +699,7 @@
       },
       "expected": {
         "statistic": null,
-        "pValue": 0.05245413974611532,
+        "pValue": 0.052454312621913884,
         "variance1": 83985.45705995527,
         "variance2": 3862640.4780952376,
         "ratio": 0.02174301686533626,
