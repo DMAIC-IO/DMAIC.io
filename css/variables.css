@@ -49,6 +49,25 @@
   --border-width: 1px;
   --transition-speed: 200ms;
 
+  /* Layers (z-index), bottom to top. Every page-level z-index (50 and up)
+     uses one of these; below 50 orders siblings inside one component.
+     The order is guarded by tests/global/z-index-scale.spec.js. */
+  --z-raised: 50;
+  --z-menu: 60;
+  --z-sticky: 100;
+  --z-banner: calc(var(--z-sticky) + 1);
+  --z-action-menu: 150;
+  --z-dropdown: 200;
+  --z-drag: 999;
+  --z-popup: 1000;
+  --z-popout: 2000;
+  --z-grid-toast: 3000;
+  --z-loading: 9999;
+  --z-dialog: 10000;
+  --z-toast: calc(var(--z-dialog) + 1);
+  --z-color-picker: calc(var(--z-dialog) + 2);
+  --z-viewport-guard: 100000;
+
   /* Backgrounds */
   --color-bg-primary: #fff;
   --color-bg-secondary: #f5f5f7;

@@ -517,12 +517,12 @@ select.input {
   bottom: calc(var(--footer-height) + var(--spacing-md));
   right: var(--spacing-md);
 
-  /* Above every overlay, including the dialog overlay `.dialog` (10000): a toast is
+  /* Above every overlay, including the dialog overlay `.dialog` (--z-dialog): a toast is
      a transient notice that must stay readable while a dialog is up — dimmed
      out behind a backdrop it would expire unseen. The action modal still
      carries the outcome itself; the toast is the second channel, not the
      only one. */
-  z-index: 10001;
+  z-index: var(--z-toast);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
@@ -2076,10 +2076,10 @@ body.dmike-glossary-inline-off .glossary-term:focus-within {
 
 /* Dialog service (js/ui/dialog/) — the look comes from the dmike-chart-popout
    shell in chart.css. The compound selector outranks that rule even when
-   chart.css loads later: dialogs sit above #app-loading (9999) and below
-   toasts (10001), and use the theme overlay colour. */
+   chart.css loads later: dialogs sit above #app-loading (--z-loading) and
+   below toasts (--z-toast), and use the theme overlay colour. */
 .dmike-chart-popout-overlay.dialog {
-  z-index: 10000;
+  z-index: var(--z-dialog);
   background: var(--color-modal-overlay);
 }
 

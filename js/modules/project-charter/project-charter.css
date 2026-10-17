@@ -315,7 +315,7 @@
 
 .pc__org-node--drag {
   opacity: 0.8;
-  z-index: 999;
+  z-index: var(--z-drag);
 }
 
 /* Smooth transition for sibling nodes during reorder drag */
@@ -330,7 +330,7 @@
   background: var(--color-accent);
   border-radius: 1.5px;
   pointer-events: none;
-  z-index: 998;
+  z-index: calc(var(--z-drag) - 1);
   display: none;
   box-shadow: 0 0 6px var(--color-accent-light);
 }

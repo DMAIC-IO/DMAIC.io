@@ -51,7 +51,7 @@ body {
   font-weight: var(--font-weight-medium);
   border-bottom: 1px solid rgb(0 0 0 / 20%);
   user-select: none;
-  z-index: 101;
+  z-index: var(--z-banner);
 }
 
 .nightly-banner__badge {
@@ -80,9 +80,9 @@ html.is-nightly body {
   position: fixed;
   inset: 0;
 
-  /* Must stay above every dialog (10000), toast and colour-picker layer
-     (10002/10003): below the minimum viewport nothing else may show. */
-  z-index: 100000;
+  /* Top of the --z-* scale, above every dialog, toast and colour-picker
+     layer: below the minimum viewport nothing else may show. */
+  z-index: var(--z-viewport-guard);
   background: var(--color-bg-primary);
   align-items: center;
   justify-content: center;
@@ -107,7 +107,7 @@ html.is-nightly body {
   background: var(--color-header-bg);
   border-bottom: var(--border-width) solid var(--color-border-primary);
   box-shadow: var(--shadow-sm);
-  z-index: 100;
+  z-index: var(--z-sticky);
 }
 
 /* Markenzeichen im App-Kopf: Q-Marke als Bild plus Wortmarke „provement",
@@ -213,7 +213,7 @@ html.is-nightly body {
   border: var(--border-width) solid var(--color-border-primary);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-lg);
-  z-index: 200;
+  z-index: var(--z-dropdown);
   padding: var(--spacing-xs) 0;
 }
 
@@ -1033,7 +1033,7 @@ html.is-nightly body {
   border: var(--border-width) solid var(--color-border-primary);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-lg);
-  z-index: 200;
+  z-index: var(--z-dropdown);
   padding: var(--spacing-xs) 0;
   display: flex;
   flex-direction: column;
@@ -1091,7 +1091,7 @@ html.is-nightly body {
 /* ===== Dev Area ===== */
 .dev-area {
   grid-area: workspace;
-  z-index: 50;
+  z-index: var(--z-raised);
   display: flex;
   flex-direction: column;
   background: var(--color-bg-primary);
@@ -1112,7 +1112,7 @@ body.dev-area-open .dmaic-tiles {
 /* ===== Dashboard Area ===== */
 .dashboard-area {
   grid-area: workspace;
-  z-index: 50;
+  z-index: var(--z-raised);
   display: flex;
   flex-direction: column;
   background: var(--color-bg-primary);
@@ -2111,7 +2111,7 @@ body.dashboard-area-open #app-workspace {
 /* ===== Training Area ===== */
 .training-area {
   grid-area: workspace;
-  z-index: 50;
+  z-index: var(--z-raised);
   display: flex;
   flex-direction: column;
   background: var(--color-bg-primary);
@@ -2378,10 +2378,10 @@ body.training-area-open .dmaic-tiles {
   border-radius: var(--border-radius, 6px);
   box-shadow: var(--shadow-md);
 
-  /* Above any in-page floating chrome (e.g. .dmike-chart-modebar at z-index:
-     100) so a chart positioned high in a module body (no more in-content
+  /* Above any in-page floating chrome (e.g. .dmike-chart-modebar at
+     --z-sticky) so a chart positioned high in a module body (no more in-content
      header pushing it down) can never intercept clicks meant for this menu. */
-  z-index: 150;
+  z-index: var(--z-action-menu);
   min-width: 160px;
   padding: var(--spacing-xs) 0;
 }
