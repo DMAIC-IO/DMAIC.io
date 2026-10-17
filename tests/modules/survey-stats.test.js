@@ -249,7 +249,7 @@ suite('survey-stats — worksheetColumns', () => {
   test('column names in document order', () => {
     assertDeepEqual(cols().map((c) => c.name), [
       'Antwort-ID', 'Eingang', 'Empfänger', 'G', 'M: M1', 'M: M2', 'M: Sonstiges', 'C',
-      'R: R1', 'R: R2', 'K1 (F)', 'K1 (D)', 'K1 (W)', 'K1 (Kategorie)', 'T',
+      'R: R1', 'R: R2', 'K: K1 (F)', 'K: K1 (D)', 'K: K1 (W)', 'K: K1 (Kategorie)', 'T',
     ]);
   });
 
@@ -264,8 +264,8 @@ suite('survey-stats — worksheetColumns', () => {
     assertDeepEqual(v['M: Sonstiges'], [null, 'Fax']);
     assertDeepEqual(v.C, ['C1', null]);
     assertDeepEqual(v['R: R2'], [2, null]);
-    assertDeepEqual(v['K1 (W)'], [9, 7]);
-    assertDeepEqual(v['K1 (Kategorie)'], ['O', 'O']);
+    assertDeepEqual(v['K: K1 (W)'], [9, 7]);
+    assertDeepEqual(v['K: K1 (Kategorie)'], ['O', 'O']);
     assertDeepEqual(v.T, ['Faster', null]);
   });
 
@@ -273,9 +273,9 @@ suite('survey-stats — worksheetColumns', () => {
     const t = Object.fromEntries(cols().map((c) => [c.name, c.type]));
     assertEqual(t['M: M1'], 'numeric');
     assertEqual(t['R: R1'], 'numeric');
-    assertEqual(t['K1 (F)'], 'numeric');
+    assertEqual(t['K: K1 (F)'], 'numeric');
     assertEqual(t.G, 'text');
-    assertEqual(t['K1 (Kategorie)'], 'text');
+    assertEqual(t['K: K1 (Kategorie)'], 'text');
   });
 
   test('a question hidden for a response gives null, not 0', () => {
@@ -287,6 +287,15 @@ suite('survey-stats — worksheetColumns', () => {
     const names = cols({ ...SURVEY, anonymous: true }).map((c) => c.name);
     assertTrue(!names.includes('Empfänger'));
     assertEqual(names.length, 14);
+  });
+
+  test('two kano questions with the same row texts give distinct column names', () => {
+    const s = JSON.parse(JSON.stringify(SURVEY));
+    const kano = s.sections[0].questions.find((x) => x.type === 'kano');
+    s.sections[0].questions.push({ ...kano, id: 'k-2', text: 'K2' });
+    const names = worksheetColumns(s, two, [], STRINGS).map((c) => c.name);
+    assertEqual(new Set(names).size, names.length, 'no duplicate column names');
+    assertTrue(names.includes('K2: K1 (F)'));
   });
 
   test('empty question text falls back to "Frage <n>"', () => {

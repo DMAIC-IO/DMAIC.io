@@ -328,10 +328,10 @@ export function worksheetColumns(survey, responses, recipients, strings) {
     } else if (q.type === 'kano') {
       for (const row of q.rows) {
         const cell = (a) => a?.[row.id] || {};
-        col(`${row.text} (${strings.functional})`, 'numeric', ROLE.ORDINAL, (a) => cell(a).f ?? null);
-        col(`${row.text} (${strings.dysfunctional})`, 'numeric', ROLE.ORDINAL, (a) => cell(a).d ?? null);
-        if (q.importance) col(`${row.text} (${strings.importance})`, 'numeric', ROLE.ORDINAL, (a) => cell(a).w ?? null);
-        col(`${row.text} (${strings.category})`, 'text', ROLE.CATEGORICAL, (a) => {
+        col(`${label}: ${row.text} (${strings.functional})`, 'numeric', ROLE.ORDINAL, (a) => cell(a).f ?? null);
+        col(`${label}: ${row.text} (${strings.dysfunctional})`, 'numeric', ROLE.ORDINAL, (a) => cell(a).d ?? null);
+        if (q.importance) col(`${label}: ${row.text} (${strings.importance})`, 'numeric', ROLE.ORDINAL, (a) => cell(a).w ?? null);
+        col(`${label}: ${row.text} (${strings.category})`, 'text', ROLE.CATEGORICAL, (a) => {
           const { f, d } = cell(a);
           return Number.isInteger(f) && Number.isInteger(d) ? classify(f, d) : null;
         });

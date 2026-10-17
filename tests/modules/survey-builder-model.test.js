@@ -181,6 +181,27 @@ suite('survey-model — recipients and responses', () => {
     assertDeepEqual(s.answeredRecipientIds, []);
   });
 
+  test('deleteResponse removes only that response and only its VoC-tree marks', () => {
+    const s = new State();
+    for (const id of ['x', 'x1', 'y']) {
+      s.addResponse({ id, surveyVersion: 1, recipientId: null, submittedAt: 't', answers: {} });
+    }
+    s.markVocTaken(['x:q1', 'x:q2', 'x1:q1', 'y:q1']);
+    s.deleteResponse('x');
+    assertDeepEqual(s.responseIds(), ['x1', 'y']);
+    // 'x1' shares the prefix 'x' — its mark must survive.
+    assertDeepEqual([...s.transfers.vocTree.responseKeys].sort(), ['x1:q1', 'y:q1']);
+  });
+
+  test('deleteResponse with an unknown id changes nothing', () => {
+    const s = new State();
+    s.addResponse({ id: 'x', surveyVersion: 1, recipientId: null, submittedAt: 't', answers: {} });
+    s.markVocTaken(['x:q1']);
+    s.deleteResponse('ghost');
+    assertDeepEqual(s.responseIds(), ['x']);
+    assertDeepEqual(s.transfers.vocTree.responseKeys, ['x:q1']);
+  });
+
   test('recipientCounts', () => {
     const s = new State();
     const a = s.addRecipient();
