@@ -1497,109 +1497,192 @@ export const AGENT_REGISTRY = {
     }
   },
   "control-chart": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:showSubgroup",
-      "unmarked_method:subgroupMin",
-      "unmarked_method:subgroupMax",
-      "unmarked_method:chartTypeChanged",
-      "unmarked_method:subgroupSizeChanged",
-      "unmarked_method:baselineValue",
-      "unmarked_method:baselineChanged",
-      "unmarked_method:stagesChanged",
-      "unmarked_method:uslValue",
-      "unmarked_method:uslChanged",
-      "unmarked_method:lslValue",
-      "unmarked_method:lslChanged",
-      "unmarked_method:phase2BadgeText",
-      "unmarked_method:phase2BadgeClass",
-      "unmarked_method:phase2BadgeIcon",
-      "unmarked_method:phase2BtnText",
-      "unmarked_method:phase2BtnClass",
-      "unmarked_method:phase2Toggle",
-      "unmarked_method:toggleNelson",
-      "unmarked_method:nelsonPanelClass",
-      "unmarked_method:nelsonToggleClass",
-      "unmarked_method:rulesView",
-      "unmarked_method:isRuleEnabled",
-      "unmarked_method:toggleRule",
-      "unmarked_method:annTitle",
-      "unmarked_method:cancelLabel",
-      "unmarked_method:annRemoveStyle",
-      "unmarked_method:openAnnotation",
-      "unmarked_method:closeAnnotation",
-      "unmarked_method:annOverlayClick",
-      "unmarked_method:saveAnnotation",
-      "unmarked_method:removeAnnotation",
-      "unmarked_method:scheduleAnalysis",
-      "unmarked_method:runAnalysis",
-      "unmarked_method:violationsHeaderText",
-      "unmarked_method:vIdxLabel",
-      "unmarked_method:vRuleLabel",
-      "unmarked_method:openViolation",
-      "unmarked_method:onViolationKey",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unreachable_write:chartTypeId"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields: ['points']` liefert die Punkte vollständig, `rows` schneidet sie zu"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setColumn": {
+        "params": [
+          {
+            "name": "slot",
+            "type": "'value'",
+            "optional": false,
+            "help": "der Slot; dieses Modul führt nur `value`"
+          },
+          {
+            "name": "ref",
+            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
+            "optional": false,
+            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
+          }
+        ],
+        "returns": "Promise<boolean>",
+        "help": "Die Messreihe wählen und neu rechnen."
+      },
+      "setParam": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'chartTypeId'|'subgroupSize'|'baselineCount'|'stagesText'|'usl'|'lsl'|'enabledRules'",
+            "optional": false,
+            "help": "welche Option; read().activeParams nennt die für den Kartentyp gültigen"
+          },
+          {
+            "name": "value",
+            "type": "any",
+            "optional": false,
+            "help": "Typ und Bereich je Schlüssel siehe Hilfe"
+          }
+        ],
+        "returns": "Promise<void>",
+        "help": "Eine Analyseoption setzen und neu rechnen."
+      },
+      "setAnnotation": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "0-basierter Punkt der ersten Teilkarte (Untergruppe bei X̄-Karten)"
+          },
+          {
+            "name": "comment",
+            "type": "string",
+            "optional": false,
+            "help": "der Kommentar, '' für keinen"
+          },
+          {
+            "name": "excluded",
+            "type": "boolean",
+            "optional": false,
+            "help": "ob der Punkt aus der Grenzberechnung fällt"
+          }
+        ],
+        "returns": "Promise<void>",
+        "help": "Einen Punkt anmerken oder aus den Grenzen ausschließen; leerer Kommentar und excluded false entfernen die Anmerkung."
+      },
+      "setPhase2": {
+        "params": [
+          {
+            "name": "enabled",
+            "type": "boolean",
+            "optional": false,
+            "help": "true friert ein, false gibt frei"
+          }
+        ],
+        "returns": "Promise<boolean>",
+        "help": "Die Grenzen des aktuellen Ergebnisses für Phase II einfrieren oder freigeben."
+      },
+      "runAnalysis": {
+        "params": [],
+        "returns": "Promise<void>",
+        "help": "Mit den aktuellen Eingaben und Spaltenwerten neu rechnen."
+      }
+    },
     "fields": {
+      "columnRef": {
+        "type": "object|null",
+        "help": "the measured column (slot `value`), `{ instanceId, sheetId, columnId }`, or null",
+        "bulk": false,
+        "derived": true
+      },
       "chartTypeId": {
         "type": "string",
-        "help": "",
-        "bulk": false
+        "help": "`'i-mr'`, `'xbar-r'` or `'xbar-s'`",
+        "bulk": false,
+        "derived": true
       },
       "subgroupSize": {
         "type": "number",
-        "help": "",
-        "bulk": false
-      },
-      "columnRef": {
-        "type": "object|null",
-        "help": "worksheet column reference",
-        "bulk": false
+        "help": "values per subgroup (1 for I-MR; 2–10 X̄-R; 2–25 X̄-S)",
+        "bulk": false,
+        "derived": true
       },
       "baselineCount": {
         "type": "number|null",
-        "help": "baseline point count (null = all)",
-        "bulk": false
+        "help": "points used to compute the limits, or null for all",
+        "bulk": false,
+        "derived": true
       },
       "stagesText": {
         "type": "string",
-        "help": "user-typed stages spec (\"12, 25\")",
-        "bulk": false
+        "help": "the stage boundaries as entered (last point of each stage, e.g. \"12, 25\"), '' for none",
+        "bulk": false,
+        "derived": true
       },
       "usl": {
         "type": "number|null",
-        "help": "upper spec limit",
-        "bulk": false
+        "help": "upper specification limit, or null",
+        "bulk": false,
+        "derived": true
       },
       "lsl": {
         "type": "number|null",
-        "help": "lower spec limit",
-        "bulk": false
+        "help": "lower specification limit, or null",
+        "bulk": false,
+        "derived": true
       },
       "enabledRules": {
         "type": "number[]",
-        "help": "enabled Nelson rule ids",
-        "bulk": false
+        "help": "the Nelson rule ids checked, sorted when set",
+        "bulk": false,
+        "derived": true
       },
       "annotations": {
-        "type": "Object<number, {comment: string, excluded: boolean}>",
-        "help": "",
-        "bulk": false
+        "type": "object",
+        "help": "per point index `{ comment, excluded }`; an excluded point is left out of the limits",
+        "bulk": false,
+        "derived": true
       },
       "frozenLimits": {
         "type": "object|null",
-        "help": "frozen limits for Phase-II monitoring",
-        "bulk": false
+        "help": "the limits frozen for Phase II monitoring, or null",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
-        "type": "string|null",
-        "help": "worksheet provisioned by loadExample",
-        "bulk": false
+      "activeColumnSlots": {
+        "type": "string[]",
+        "help": "the slots `setColumn` accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "activeParams": {
+        "type": "string[]",
+        "help": "the keys `setParam` accepts for the current chart type",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object",
+        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "`{ chartType, subgroupSize, n, baselineEnd, stages, frozen, subcharts: { <id>: { cl, ucl, lcl, sigma } }, capability, violations: [{ index, ruleId }], signals }` — subchart ids i/mr, xbar/r or xbar/s; with stages the limits of the last stage (per point in points); capability `{ cp, cpu, cpl, cpk }` or null; signals the distinct violating indices of the first subchart; null with fewer than 2 values",
+        "bulk": false,
+        "derived": true
+      },
+      "points": {
+        "type": "object[]",
+        "help": "one row per plotted point (subgroup for X̄ charts): per subchart id its value and limits (`i`, `iCl`, `iUcl`, `iLcl`, `mr`, …) and `signal`",
+        "bulk": true,
+        "bulkKind": "table",
+        "derived": true
       }
     }
   },
@@ -11658,4 +11741,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":68};
+export const AGENT_COVERAGE = {"total":76,"available":69};

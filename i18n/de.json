@@ -7814,7 +7814,57 @@
       "statViolations": "Verletzungen",
       "statOf": "von {total} Datenpunkten",
       "violationsTitle": "Regelverletzungen ({count})",
-      "noViolations": "Keine Regelverletzungen — Prozess ist stabil."
+      "noViolations": "Keine Regelverletzungen — Prozess ist stabil.",
+      "whenToUse": "Einen Prozess über die Zeit mit Shewhart-Grenzen überwachen: I-MR für Einzelwerte, X̄-R oder X̄-S für Untergruppen, mit Nelson-Regeln, Stufen, Anmerkungen und eingefrorenen Grenzen für Phase II.",
+      "actions": {
+        "read": { "help": "Alle Eingaben, die Grenzen je Teilkarte, die Fähigkeit, Regelverletzungen und je Punkt Werte und Grenzen lesen." },
+        "setColumn": {
+          "help": "Die Messreihe wählen und neu rechnen. Gibt true zurück, wenn dabei eingefrorene Grenzen einer anderen Spalte verworfen wurden.",
+          "params": {
+            "slot": "'value' — die Messwerte in zeitlicher Reihenfolge (Pflicht, mindestens 2).",
+            "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns.value, oder null zum Leeren."
+          }
+        },
+        "setParam": {
+          "help": "Eine Analyseoption setzen und neu rechnen.",
+          "params": {
+            "key": "'chartTypeId', 'baselineCount', 'stagesText', 'usl', 'lsl', 'enabledRules' immer; 'subgroupSize' nur bei X̄-R und X̄-S.",
+            "value": "chartTypeId 'i-mr', 'xbar-r' oder 'xbar-s' (ein Wechsel hält die Untergruppengröße im neuen Bereich); subgroupSize eine ganze Zahl von 2 bis 10 (X̄-R) bzw. 2 bis 25 (X̄-S); baselineCount eine ganze Zahl ab 1, oder null für alle Punkte; stagesText der letzte Punkt jeder Stufe, etwa '12, 25', '' für keine; usl und lsl eine Zahl, oder null für keine; enabledRules eine Liste von Regel-Ids aus 1 bis 8."
+          }
+        },
+        "setAnnotation": {
+          "help": "Einen Punkt anmerken oder aus den Grenzen ausschließen und neu rechnen. Leerer Kommentar mit excluded false entfernt die Anmerkung.",
+          "params": {
+            "index": "Der 0-basierte Punkt der ersten Teilkarte (bei X̄-Karten die Untergruppe); er muss im aktuellen Ergebnis vorkommen.",
+            "comment": "Der Kommentar, '' für keinen.",
+            "excluded": "true nimmt den Punkt aus der Grenzberechnung."
+          }
+        },
+        "setPhase2": {
+          "help": "Die aktuellen Grenzen für die Überwachung in Phase II einfrieren oder freigeben. Gibt zurück, ob danach eingefrorene Grenzen gelten; ohne Ergebnis oder mit Stufen wird nichts eingefroren und die Antwort ist false.",
+          "params": {
+            "enabled": "true friert ein, false gibt frei."
+          }
+        },
+        "runAnalysis": { "help": "Mit den aktuellen Spaltenwerten neu rechnen, etwa nachdem sich die Daten geändert haben." }
+      },
+      "fields": {
+        "columnRef": { "help": "Die Messreihe (Slot 'value'), oder null." },
+        "chartTypeId": { "help": "'i-mr', 'xbar-r' oder 'xbar-s'." },
+        "subgroupSize": { "help": "Werte je Untergruppe: 1 bei I-MR, 2 bis 10 bei X̄-R, 2 bis 25 bei X̄-S." },
+        "baselineCount": { "help": "Punkte, aus denen die Grenzen gerechnet werden, oder null für alle." },
+        "stagesText": { "help": "Die Stufengrenzen wie eingegeben (letzter Punkt jeder Stufe), '' für keine." },
+        "usl": { "help": "Obere Spezifikationsgrenze, oder null." },
+        "lsl": { "help": "Untere Spezifikationsgrenze, oder null." },
+        "enabledRules": { "help": "Die geprüften Nelson-Regel-Ids." },
+        "annotations": { "help": "Je Punktindex { comment, excluded }; ein ausgeschlossener Punkt fällt aus den Grenzen." },
+        "frozenLimits": { "help": "Die für Phase II eingefrorenen Grenzen, oder null." },
+        "activeColumnSlots": { "help": "Die Slots, die setColumn annimmt: value." },
+        "activeParams": { "help": "Die Schlüssel, die setParam für den aktuellen Kartentyp annimmt." },
+        "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
+        "result": { "help": "{ chartType, subgroupSize, n, baselineEnd, stages, frozen, subcharts: { <id>: { cl, ucl, lcl, sigma } }, capability, violations: [{ index, ruleId }], signals }; Teilkarten-Ids i/mr, xbar/r oder xbar/s; mit Stufen die Grenzen der letzten Stufe; capability { cp, cpu, cpl, cpk } oder null; signals die verletzenden Indizes der ersten Teilkarte ohne Doppelte; null bei weniger als 2 Werten." },
+        "points": { "help": "Je gezeichnetem Punkt (bei X̄-Karten je Untergruppe) eine Zeile: je Teilkarten-Id Wert und Grenzen (i, iCl, iUcl, iLcl, mr, …) und signal. read({ fields: ['points'] }) liefert sie vollständig." }
+      }
     },
     "run-chart": {
       "name": "Run Chart",

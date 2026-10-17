@@ -7810,7 +7810,57 @@
       "statViolations": "Violations",
       "statOf": "of {total} data points",
       "violationsTitle": "Rule Violations ({count})",
-      "noViolations": "No rule violations — process is stable."
+      "noViolations": "No rule violations — process is stable.",
+      "whenToUse": "Monitor a process over time with Shewhart limits: I-MR for single values, X̄-R or X̄-S for subgroups, with Nelson rules, stages, annotations and frozen Phase II limits.",
+      "actions": {
+        "read": { "help": "Read all inputs, the limits per subchart, capability, rule violations and per point the values and limits." },
+        "setColumn": {
+          "help": "Choose the measured column and recompute. Returns true when frozen limits of another column were dropped.",
+          "params": {
+            "slot": "'value' — the measured values in time order (required, at least 2).",
+            "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns.value, or null to clear it."
+          }
+        },
+        "setParam": {
+          "help": "Set an analysis option and recompute.",
+          "params": {
+            "key": "'chartTypeId', 'baselineCount', 'stagesText', 'usl', 'lsl', 'enabledRules' always; 'subgroupSize' only for X̄-R and X̄-S.",
+            "value": "chartTypeId 'i-mr', 'xbar-r' or 'xbar-s' (changing it keeps the subgroup size within the new range); subgroupSize a whole number from 2 to 10 (X̄-R) or 2 to 25 (X̄-S); baselineCount a whole number of at least 1, or null for all points; stagesText the last point of each stage, e.g. '12, 25', '' for none; usl and lsl a number, or null for none; enabledRules a list of rule ids from 1 to 8."
+          }
+        },
+        "setAnnotation": {
+          "help": "Annotate a point or leave it out of the limits, and recompute. An empty comment with excluded false removes the annotation.",
+          "params": {
+            "index": "The 0-based point of the first subchart (the subgroup for X̄ charts); it must exist in the current result.",
+            "comment": "The comment, '' for none.",
+            "excluded": "true leaves the point out of the limit calculation."
+          }
+        },
+        "setPhase2": {
+          "help": "Freeze the current limits for Phase II monitoring, or release them. Returns whether frozen limits apply afterwards; without a result or with stages nothing is frozen and the answer is false.",
+          "params": {
+            "enabled": "true freezes, false releases."
+          }
+        },
+        "runAnalysis": { "help": "Recompute with the current column values, for example after the data changed." }
+      },
+      "fields": {
+        "columnRef": { "help": "The measured column (slot 'value'), or null." },
+        "chartTypeId": { "help": "'i-mr', 'xbar-r' or 'xbar-s'." },
+        "subgroupSize": { "help": "Values per subgroup: 1 for I-MR, 2 to 10 for X̄-R, 2 to 25 for X̄-S." },
+        "baselineCount": { "help": "Points used to compute the limits, or null for all." },
+        "stagesText": { "help": "The stage boundaries as entered (last point of each stage), '' for none." },
+        "usl": { "help": "Upper specification limit, or null." },
+        "lsl": { "help": "Lower specification limit, or null." },
+        "enabledRules": { "help": "The Nelson rule ids checked." },
+        "annotations": { "help": "Per point index { comment, excluded }; an excluded point is left out of the limits." },
+        "frozenLimits": { "help": "The limits frozen for Phase II, or null." },
+        "activeColumnSlots": { "help": "The slots setColumn accepts: value." },
+        "activeParams": { "help": "The keys setParam accepts for the current chart type." },
+        "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
+        "result": { "help": "{ chartType, subgroupSize, n, baselineEnd, stages, frozen, subcharts: { <id>: { cl, ucl, lcl, sigma } }, capability, violations: [{ index, ruleId }], signals }; subchart ids i/mr, xbar/r or xbar/s; with stages the limits of the last stage; capability { cp, cpu, cpl, cpk } or null; signals the distinct violating indices of the first subchart; null with fewer than 2 values." },
+        "points": { "help": "One row per plotted point (subgroup for X̄ charts): per subchart id its value and limits (i, iCl, iUcl, iLcl, mr, …) and signal. read({ fields: ['points'] }) returns them in full." }
+      }
     },
     "time-weighted-chart": {
       "name": "Control Chart (Time-Weighted)",
