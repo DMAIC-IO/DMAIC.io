@@ -66,7 +66,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Die Komponenten lassen sich verschieben; die Anordnung wird gespeichert. „Anordnung zurücksetzen“ stellt die automatische Startanordnung wieder her. Ein Klick auf eine Komponente oder eine Funktion hebt sie und die zugehörigen Pfeile hervor.',
+            content: 'Die Komponenten lassen sich verschieben, ebenso die Verben an den Pfeilen: Der Pfeil knickt dann am Verb. Die Anordnung wird gespeichert. „Anordnung zurücksetzen“ stellt die automatische Startanordnung wieder her und macht alle Pfeile wieder gerade. Ein Klick auf eine Komponente oder eine Funktion hebt sie und die zugehörigen Pfeile hervor.',
           },
         ],
       },
@@ -85,7 +85,7 @@ export default {
           },
           {
             type: 'paragraph',
-            content: 'Components can be dragged; the layout is saved. "Reset layout" restores the automatic start layout. Clicking a component or a function highlights it and the related arrows.',
+            content: 'Components can be dragged, and so can the verbs on the arrows: the arrow then bends at the verb. The layout is saved. "Reset layout" restores the automatic start layout and straightens all arrows. Clicking a component or a function highlights it and the related arrows.',
           },
         ],
       },

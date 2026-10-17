@@ -153,7 +153,7 @@
           <p class="tfa__hint" x-show="model.components.length === 0" x-text="t('diagramEmpty')"></p>
           <div class="tfa__stage">
             <div class="tfa__canvas" data-role="canvas" :style="canvasStyle()" x-effect="drawArrows()">
-              <div class="tfa__arrows" data-ref="arrows"></div>
+              <div class="tfa__arrows" data-ref="arrows" @pointerdown="startLabelDrag($event)"></div>
               <template x-for="c in model.components" :key="c.id">
                 <div class="tfa__node" :class="nodeClass(c)" data-role="node" :data-id="c.id"
                   :style="nodeStyle(c)" :title="c.name" @pointerdown="startDrag(c, $event)"><span class="tfa__node-text" x-text="c.name"></span></div>

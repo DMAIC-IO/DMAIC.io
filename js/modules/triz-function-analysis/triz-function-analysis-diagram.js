@@ -6,7 +6,7 @@
  * overlay; the export uses nodes and links together.
  */
 
-import { straightEndpoints } from '../../core/chart/types/node-diagram.js';
+import { straightEndpoints, viaEndpoints } from '../../core/chart/types/node-diagram.js';
 import { pairKey, isComplete } from './triz-function-analysis-model.js';
 
 export const NODE_W = 140;
@@ -83,7 +83,7 @@ const shorten = (s) => (s.length > EXPORT_NAME_MAX ? `${s.slice(0, EXPORT_NAME_M
 
 /**
  * node-diagram config for the function model.
- * @param {{components: Array, functions: Array, positions: Object}} state
+ * @param {{components: Array, functions: Array, positions: Object, labels?: Object}} state
  * @param {{selectedId?: string|null}} [opts]
  * @returns {{nodes: Array<Object>, links: Array<Object>}}
  */
@@ -111,9 +111,13 @@ export function buildFunctionDiagram(state, { selectedId = null } = {}) {
     const frameOffset = (group.indexOf(f) - (group.length - 1) / 2) * PARALLEL_GAP;
     // The frame runs from the lower to the higher id; links against it flip sides.
     const offset = f.carrier < f.object ? frameOffset : -frameOffset;
+    const via = state.labels?.[f.id];
+    const ends = via
+      ? { via: { x: via.x, y: via.y }, ...viaEndpoints(boxes.get(f.carrier), boxes.get(f.object), via) }
+      : straightEndpoints(boxes.get(f.carrier), boxes.get(f.object), offset);
     return {
       id: f.id, from: f.carrier, to: f.object, shape: 'straight', arrow: 'end', label: f.verb,
-      ...straightEndpoints(boxes.get(f.carrier), boxes.get(f.object), offset),
+      ...ends,
       ...linkStyle(f),
       highlight: selectedId != null && (selectedId === f.id || selectedId === f.carrier || selectedId === f.object),
     };

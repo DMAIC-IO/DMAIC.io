@@ -251,6 +251,14 @@ thead .tfa__mh {
   overflow: visible;
 }
 
+/* Verb labels are the only grabbable part of the overlay. */
+.tfa__arrows [data-part^="link-label"] {
+  pointer-events: auto;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
 .tfa__arrows path.tfa__arrow--hl {
   stroke: var(--color-accent);
   stroke-width: 3;

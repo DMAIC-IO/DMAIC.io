@@ -53,6 +53,19 @@ suite('triz-function-analysis — buildFunctionDiagram', () => {
     assertEqual(nodes[0].lines[0].text, 'A');
   });
 
+  test('a moved label bends the link: via the label point, clipped towards it', () => {
+    const s = pair([fnc('f', 'a', 'b'), fnc('g', 'a', 'b')]);
+    s.labels.f = { x: 180, y: 122 };
+    const { links } = buildFunctionDiagram(s);
+    const [f, g] = links;
+    assertDeepEqual(f.via, { x: 180, y: 122 });
+    // a: box 0..140 × 0..44, centre (70, 22) → exits through the bottom edge towards (180, 122)
+    assertDeepEqual([f.x1, f.y1], [94.2, 44]);
+    // b: ellipse at 220..360 × 0..44 → exits towards (180, 122) left of its centre (290, 22)
+    assertTrue(f.x2 < 290 && f.y2 > 22, 'object side clipped towards the label');
+    assertEqual(g.via, undefined, 'unmoved label stays a straight link');
+  });
+
   test('a link is clipped to both box borders and carries arrow + label', () => {
     const { links } = buildFunctionDiagram(pair([fnc('f', 'a', 'b')]));
     assertEqual(links.length, 1);

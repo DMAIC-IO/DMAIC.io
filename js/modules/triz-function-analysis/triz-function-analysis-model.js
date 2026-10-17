@@ -112,6 +112,8 @@ export class State {
   exclusions = [];
   functions = [];
   positions = {};
+  /** Dragged verb-label positions by function id; an arrow bends there. */
+  labels = {};
   activeTab = 'components';
 
   /** @returns {boolean} */
@@ -128,6 +130,7 @@ export class State {
       exclusions: this.exclusions.map((x) => ({ ...x })),
       functions: this.functions.map((f) => ({ ...f })),
       positions: Object.fromEntries(Object.entries(this.positions).map(([k, p]) => [k, { ...p }])),
+      labels: Object.fromEntries(Object.entries(this.labels).map(([k, p]) => [k, { ...p }])),
       activeTab: this.activeTab,
     };
   }
@@ -178,6 +181,11 @@ export class State {
         if (known(id) && isObj(p) && Number.isFinite(p.x) && Number.isFinite(p.y)) s.positions[id] = { x: p.x, y: p.y };
       }
     }
+    if (isObj(d.labels)) {
+      for (const [id, p] of Object.entries(d.labels)) {
+        if (s.fn(id) && isObj(p) && Number.isFinite(p.x) && Number.isFinite(p.y)) s.labels[id] = { x: p.x, y: p.y };
+      }
+    }
     s.activeTab = TABS.includes(d.activeTab) ? d.activeTab : 'components';
     return s;
   }
@@ -222,11 +230,12 @@ export class State {
     return this.functions.filter((f) => f.carrier === id || f.object === id).length;
   }
 
-  /** Remove a component with its interactions, exclusions, functions and stored position. @param {string} id */
+  /** Remove a component with its interactions, exclusions, functions and stored positions. @param {string} id */
   removeComponent(id) {
     this.components = this.components.filter((c) => c.id !== id);
     this.interactions = this.interactions.filter((i) => i.a !== id && i.b !== id);
     this.exclusions = this.exclusions.filter((x) => x.a !== id && x.b !== id);
+    for (const f of this.functions) if (f.carrier === id || f.object === id) delete this.labels[f.id];
     this.functions = this.functions.filter((f) => f.carrier !== id && f.object !== id);
     delete this.positions[id];
   }
@@ -323,6 +332,7 @@ export class State {
   /** @param {string} id */
   removeFunction(id) {
     this.functions = this.functions.filter((f) => f.id !== id);
+    delete this.labels[id];
   }
 
   /** Store a dragged position (rounded, clamped to ≥ 0). @param {string} id @param {number} x @param {number} y */
@@ -331,8 +341,16 @@ export class State {
     this.positions[id] = { x: Math.max(0, Math.round(x)), y: Math.max(0, Math.round(y)) };
   }
 
+  /** Store a dragged verb-label position (rounded, clamped to ≥ 0). @param {string} id @param {number} x @param {number} y */
+  moveLabel(id, x, y) {
+    if (!this.fn(id)) return;
+    this.labels[id] = { x: Math.max(0, Math.round(x)), y: Math.max(0, Math.round(y)) };
+  }
+
+  /** Back to the auto layout: boxes to their slots, arrows straight. */
   resetPositions() {
     this.positions = {};
+    this.labels = {};
   }
 
   /**

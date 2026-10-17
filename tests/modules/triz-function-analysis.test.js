@@ -28,6 +28,7 @@ function fixture() {
       { id: 'f3', carrier: 'h', verb: 'hält', object: 'b', parameter: '', type: 'useful', level: 'adequate', note: '' },
     ],
     positions: { b: { x: 10, y: 20 } },
+    labels: { f1: { x: 30, y: 40 } },
     activeTab: 'model',
   });
 }
@@ -37,6 +38,7 @@ suite('triz-function-analysis — state', () => {
     const s = new State();
     assertDeepEqual([s.components, s.interactions, s.functions], [[], [], []]);
     assertDeepEqual(s.positions, {});
+    assertDeepEqual(s.labels, {});
     assertEqual(s.activeTab, 'components');
     assertEqual(s.hasContent(), false);
     assertDeepEqual(KINDS, ['target', 'system', 'supersystem']);
@@ -65,6 +67,7 @@ suite('triz-function-analysis — state', () => {
         { carrier: 'x', object: 'y' },
       ],
       positions: { x: { x: 5, y: 6 }, gone: { x: 1, y: 1 }, y: { x: 'a', y: 2 } },
+      labels: { f2: { x: 7, y: 8 }, gone: { x: 1, y: 1 }, f3: { x: 1, y: null } },
       activeTab: 'nope',
     });
     assertDeepEqual(s.components.map((c) => [c.id, c.name, c.kind]),
@@ -76,6 +79,7 @@ suite('triz-function-analysis — state', () => {
       ['f3', 'y', 'x', 'useful', 'adequate'],
     ]);
     assertDeepEqual(s.positions, { x: { x: 5, y: 6 } });
+    assertDeepEqual(s.labels, { f2: { x: 7, y: 8 } });
     assertEqual(s.activeTab, 'components');
   });
 
@@ -117,7 +121,7 @@ suite('triz-function-analysis — components', () => {
     assertEqual(s.setKind('h', 'target'), null, 'already the target');
   });
 
-  test('removeComponent cascades to interactions, functions and positions', () => {
+  test('removeComponent cascades to interactions, functions, positions and labels', () => {
     const s = fixture();
     assertEqual(s.impactOf('b'), 3);
     s.removeComponent('b');
@@ -125,6 +129,7 @@ suite('triz-function-analysis — components', () => {
     assertDeepEqual(s.interactions, []);
     assertDeepEqual(s.functions, []);
     assertDeepEqual(s.positions, {});
+    assertDeepEqual(s.labels, {});
   });
 
   test('orderedComponents: target, system, supersystem in entry order', () => {
@@ -250,6 +255,7 @@ suite('triz-function-analysis — functions', () => {
     const s = fixture();
     s.removeFunction('f1');
     assertEqual(s.fn('f1'), null);
+    assertEqual(s.labels.f1, undefined, 'its label position goes too');
     assertDeepEqual(s.toggleInteraction('b', 't'), { ok: true });
   });
 
@@ -261,6 +267,15 @@ suite('triz-function-analysis — functions', () => {
     assertEqual(s.positions.gone, undefined);
     s.resetPositions();
     assertDeepEqual(s.positions, {});
+    assertDeepEqual(s.labels, {}, 'reset also straightens the arrows');
+  });
+
+  test('moveLabel rounds, clamps at 0 and ignores unknown functions', () => {
+    const s = fixture();
+    s.moveLabel('f2', 50.4, -3);
+    assertDeepEqual(s.labels.f2, { x: 50, y: 0 });
+    s.moveLabel('gone', 1, 1);
+    assertEqual(s.labels.gone, undefined);
   });
 
   test('discardIfEmpty removes only unused empty components', () => {

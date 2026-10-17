@@ -19,6 +19,8 @@ const arrowCharts = new WeakMap();
 const DRAG_THRESHOLD = 3;
 const CANVAS_PAD = 20;
 const CANVAS_MIN = { w: 480, h: 240 };
+/** Room right of / below a dragged verb label (its centre) so it stays on the canvas. */
+const LABEL_ROOM = 60;
 
 export default createModule({
   config: {
@@ -191,16 +193,16 @@ export default createModule({
       /**
        * Redraw the arrows. Called by x-effect (reads model + selection, writes
        * nothing reactive) and on every pointer move of a drag with the
-       * dragged box's live position as override.
-       * @param {{id:string,x:number,y:number}|null} [override]
+       * dragged box's or verb label's live position as override.
+       * @param {{positions?: Object, labels?: Object}} [override]
        */
-      drawArrows(override = null) {
-        const positions = override
-          ? { ...this.model.positions, [override.id]: { x: override.x, y: override.y } }
-          : this.model.positions;
-        const { nodes, links } = buildFunctionDiagram(
-          { components: this.model.components, functions: this.model.functions, positions },
-          { selectedId: this.selectedId });
+      drawArrows(override = {}) {
+        const { nodes, links } = buildFunctionDiagram({
+          components: this.model.components,
+          functions: this.model.functions,
+          positions: { ...this.model.positions, ...override.positions },
+          labels: { ...this.model.labels, ...override.labels },
+        }, { selectedId: this.selectedId });
         const chart = arrowCharts.get(this.$root);
         // Outlines come from the SVG (ellipse/hexagon), names from the draggable HTML boxes.
         const outlines = nodes.map((n) => ({ ...n, lines: [] }));
@@ -210,8 +212,9 @@ export default createModule({
       // ── Boxes ──
       canvasStyle() {
         const pos = Object.values(resolvePositions(this.model));
-        const w = Math.max(CANVAS_MIN.w, ...pos.map((p) => p.x + NODE_W + CANVAS_PAD));
-        const h = Math.max(CANVAS_MIN.h, ...pos.map((p) => p.y + NODE_H + CANVAS_PAD));
+        const labels = Object.values(this.model.labels);
+        const w = Math.max(CANVAS_MIN.w, ...pos.map((p) => p.x + NODE_W + CANVAS_PAD), ...labels.map((p) => p.x + LABEL_ROOM));
+        const h = Math.max(CANVAS_MIN.h, ...pos.map((p) => p.y + NODE_H + CANVAS_PAD), ...labels.map((p) => p.y + LABEL_ROOM));
         return `width:${w}px;height:${h}px`;
       },
       nodeStyle(c) {
@@ -236,7 +239,7 @@ export default createModule({
           el.style.left = `${x}px`;
           el.style.top = `${y}px`;
           el.classList.add('tfa__node--drag');
-          this.drawArrows({ id: c.id, x, y });
+          this.drawArrows({ positions: { [c.id]: { x, y } } });
         };
         const onUp = () => {
           window.removeEventListener('pointermove', onMove);
@@ -244,6 +247,37 @@ export default createModule({
           el.classList.remove('tfa__node--drag');
           if (moved) this.model.movePosition(c.id, x, y);
           else this.select(c.id);
+        };
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+      },
+      /**
+       * Drag a verb label (SVG overlay, delegated): the arrow bends at the
+       * label. A click without moving selects the function.
+       * @param {PointerEvent} ev
+       */
+      startLabelDrag(ev) {
+        if (ev.button !== 0) return;
+        const id = ev.target.closest?.('[data-part^="link-label"]')?.getAttribute('data-id');
+        const link = id && buildFunctionDiagram(this.model).links.find((l) => l.id === id);
+        if (!link) return;
+        ev.preventDefault();
+        const start = link.via ?? { x: (link.x1 + link.x2) / 2, y: (link.y1 + link.y2) / 2 };
+        const sx = ev.clientX, sy = ev.clientY;
+        let moved = false, x = start.x, y = start.y;
+        const onMove = (e) => {
+          const dx = e.clientX - sx, dy = e.clientY - sy;
+          if (!moved && Math.abs(dx) <= DRAG_THRESHOLD && Math.abs(dy) <= DRAG_THRESHOLD) return;
+          moved = true;
+          x = Math.max(0, start.x + dx);
+          y = Math.max(0, start.y + dy);
+          this.drawArrows({ labels: { [id]: { x, y } } });
+        };
+        const onUp = () => {
+          window.removeEventListener('pointermove', onMove);
+          window.removeEventListener('pointerup', onUp);
+          if (moved) this.model.moveLabel(id, x, y);
+          else this.select(id);
         };
         window.addEventListener('pointermove', onMove);
         window.addEventListener('pointerup', onUp);

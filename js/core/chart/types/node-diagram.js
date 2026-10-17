@@ -115,6 +115,34 @@ export function straightEndpoints(from, to, offset = 0) {
   return { x1: r2(a.x), y1: r2(a.y), x2: r2(b.x), y2: r2(b.y) };
 }
 
+/**
+ * Bent link between two nodes through a via point: each node is clipped
+ * along the ray from its centre towards the via point.
+ * @param {{x:number,y:number,w:number,h:number}} from
+ * @param {{x:number,y:number,w:number,h:number}} to
+ * @param {{x:number,y:number}} via
+ * @returns {{x1:number,y1:number,x2:number,y2:number}}
+ */
+export function viaEndpoints(from, to, via) {
+  const exit = (node) => {
+    const cx = node.x + node.w / 2, cy = node.y + node.h / 2;
+    const len = Math.hypot(via.x - cx, via.y - cy);
+    if (len === 0) return { x: cx, y: cy };
+    return shapeExit(cx, cy, (via.x - cx) / len, (via.y - cy) / len, node);
+  };
+  const a = exit(from), b = exit(to);
+  return { x1: r2(a.x), y1: r2(a.y), x2: r2(b.x), y2: r2(b.y) };
+}
+
+const hasVia = (link) => link.shape === 'straight' && Number.isFinite(link.via?.x) && Number.isFinite(link.via?.y);
+
+/** @param {Object} link @param {Object} p @returns {string} */
+function linkD(link, p) {
+  const wave = link.style === 'wave';
+  if (hasVia(link)) return viaPath(p, link.via, wave);
+  return wave ? wavePath(p) : linkPath(link.shape, p);
+}
+
 const BOLD_WIDTH = 3;
 const DASHED = '6 4';
 const LABEL = { h: 16, charW: 6.2, padX: 4, radius: 3 };
@@ -165,6 +193,7 @@ export function linkEndpoints(link, byId, elbowInset) {
   const from = byId.get(link.from);
   const to = byId.get(link.to);
   if (!from || !to) return null;
+  if (hasVia(link)) return viaEndpoints(from, to, link.via);
   if (link.shape === 'straight') return straightEndpoints(from, to, link.offset ?? 0);
   if (link.shape === 'elbow') {
     return { x1: to.x - elbowInset, y1: from.y + from.h, x2: to.x, y2: to.y + to.h / 2 };
@@ -183,6 +212,22 @@ export function linkPath(shape, p) {
   if (shape === 'elbow') return `M ${p.x1} ${p.y1} L ${p.x1} ${p.y2} L ${p.x2} ${p.y2}`;
   const mid = (p.y1 + p.y2) / 2;
   return `M ${p.x1} ${p.y1} C ${p.x1} ${mid}, ${p.x2} ${mid}, ${p.x2} ${p.y2}`;
+}
+
+/**
+ * SVG path data for a straight link bent at a via point; a wave keeps its
+ * straight end tail only on the second leg and stays one continuous path.
+ * @param {{x1:number,y1:number,x2:number,y2:number}} p
+ * @param {{x:number,y:number}} via
+ * @param {boolean} wave
+ * @returns {string}
+ */
+export function viaPath(p, via, wave) {
+  const v = { x: r2(via.x), y: r2(via.y) };
+  if (!wave) return `M ${p.x1} ${p.y1} L ${v.x} ${v.y} L ${p.x2} ${p.y2}`;
+  const first = wavePath({ x1: p.x1, y1: p.y1, x2: v.x, y2: v.y }, 3, 10, 2, 0);
+  const second = wavePath({ x1: v.x, y1: v.y, x2: p.x2, y2: p.y2 });
+  return `${first} ${second.replace(/^M/, 'L')}`;
 }
 
 /** @param {Object} config @returns {{byId: Map, ends: Array}} */
@@ -213,9 +258,13 @@ export function contentBox(config) {
     x1 = Math.min(x1, n.x); y1 = Math.min(y1, n.y);
     x2 = Math.max(x2, n.x + n.w); y2 = Math.max(y2, n.y + n.h);
   }
-  for (const { p } of resolveLinks(config).ends) {
+  for (const { link, p } of resolveLinks(config).ends) {
     x1 = Math.min(x1, p.x1, p.x2); y1 = Math.min(y1, p.y1, p.y2);
     x2 = Math.max(x2, p.x1, p.x2); y2 = Math.max(y2, p.y1, p.y2);
+    if (hasVia(link)) {
+      x1 = Math.min(x1, link.via.x); y1 = Math.min(y1, link.via.y);
+      x2 = Math.max(x2, link.via.x); y2 = Math.max(y2, link.via.y);
+    }
   }
   if (x1 === Infinity) return { x: 0, y: 0, w: 0, h: 0 };
   if (config.origin === 'zero') return { x: 0, y: 0, w: x2 + pad, h: y2 + pad };
@@ -290,7 +339,7 @@ export default class NodeDiagram extends ChartBase {
     const stroke = link.color ? resolveColor(link.color) : col.link;
     const attrs = {
       'data-part': 'link',
-      d: link.style === 'wave' ? wavePath(p) : linkPath(link.shape, p),
+      d: linkD(link, p),
       fill: 'none',
       stroke,
       'stroke-width': link.width ?? (link.style === 'bold' ? BOLD_WIDTH : LINK_DEFAULT_WIDTH),
@@ -319,18 +368,19 @@ export default class NodeDiagram extends ChartBase {
     return id;
   }
 
-  /** Verb label at the midpoint of the link's endpoints. @private */
+  /** Verb label on the via point, else at the midpoint of the link's endpoints. @private */
   _drawLabel(parent, link, p, col) {
     const text = String(link.label);
-    const mx = r2((p.x1 + p.x2) / 2), my = r2((p.y1 + p.y2) / 2);
+    const [mx, my] = hasVia(link) ? [r2(link.via.x), r2(link.via.y)] : [r2((p.x1 + p.x2) / 2), r2((p.y1 + p.y2) / 2)];
     const w = text.length * LABEL.charW + LABEL.padX * 2;
+    const id = link.id != null ? { 'data-id': link.id } : {};
     svgEl('rect', {
-      'data-part': 'link-label-bg',
+      'data-part': 'link-label-bg', ...id,
       x: r2(mx - w / 2), y: my - LABEL.h / 2, width: r2(w), height: LABEL.h, rx: LABEL.radius,
       fill: col.labelBg,
     }, parent);
     svgText(text, {
-      'data-part': 'link-label',
+      'data-part': 'link-label', ...id,
       x: mx, y: my + 4, 'text-anchor': 'middle', 'font-size': this.config.tickSize, fill: col.muted,
     }, parent);
   }
