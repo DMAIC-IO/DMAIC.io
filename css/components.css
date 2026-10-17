@@ -803,7 +803,12 @@ select.input {
 
 /* Global tab bar for switching between charts/views in modules.
    Use .dmike-tabs as container, .dmike-tab for each button,
-   .dmike-tab-content for panels, --active modifier to show. */
+   .dmike-tab-content for panels, --active modifier to show.
+   Markup: container `role="tablist" x-tablist`; each tab a
+   `<button type="button" role="tab" data-tab="…">` with `aria-selected`
+   and roving `tabindex` (0 on the active tab, -1 on the others).
+   x-tablist moves focus with ArrowLeft/ArrowRight/Home/End; Enter/Space
+   activate (manual activation). See docs/SPLIT-PANEL.md "Module Tabs". */
 
 .dmike-tabs {
   display: flex;
@@ -837,6 +842,11 @@ select.input {
 
 .dmike-tab:hover:not(.dmike-tab--active) {
   color: var(--color-text-secondary);
+}
+
+.dmike-tab:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-accent-light);
 }
 
 .dmike-tab-content {
