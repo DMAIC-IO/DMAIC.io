@@ -5,6 +5,7 @@ import { suite, test, assertEqual, assertTrue, afterEach } from '../test-utils.j
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { createDialogService, DIALOG_TEMPLATE } from '../../js/ui/dialog/dialog.js';
 import { inlineTileTemplate } from '../modules/tile-test-utils.js';
+import { openColorPicker } from '../../js/core/color-picker.js';
 
 const i18n = { t: (k) => k };
 const tick = () => Alpine.nextTick();
@@ -13,6 +14,9 @@ const top = () => dialogs().at(-1);
 // Dispatched on the body, which mirrors a real key press and lets the capture
 // listener on window run before bubble listeners.
 const escape = () => document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+// Fired on window itself (no capture/bubble path through the document) —
+// the listener sits on window, so it must react at the target phase too.
+const escapeOnWindow = () => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
 /** A real overlay click: press and release on the overlay itself. */
 const clickOverlay = (el) => {
   el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
@@ -50,6 +54,7 @@ suite('dialog service — confirm / alert / show', () => {
       () => top().querySelector('.dialog__cancel').click(),
       () => top().querySelector('.dialog__close').click(),
       () => escape(),
+      () => escapeOnWindow(),
       () => clickOverlay(top()),
     ]) {
       const p = d.confirm({ message: 'M' });
@@ -163,6 +168,39 @@ suite('dialog service — confirm / alert / show', () => {
       h.close();
     } finally {
       document.removeEventListener('keydown', own, true);
+    }
+  });
+
+  test('a colour picker opened over a dialog takes the first Escape, the dialog the second', async () => {
+    const d = await service();
+    const swatch = document.createElement('button');
+    const h = d.show({ title: 'F', content: swatch });
+    const picker = () => document.querySelector('.dmike-chart-ed-cp-overlay');
+    openColorPicker({ target: swatch }, 'rgba(0,0,0,1)', () => {});
+    try {
+      assertTrue(!!picker(), 'picker open');
+      escape();
+      assertTrue(!picker(), 'Escape closed the picker');
+      assertEqual(dialogs().length, 1, 'the dialog stays open');
+      escape();
+      assertEqual(dialogs().length, 0, 'the next Escape closes the dialog');
+    } finally {
+      document.querySelectorAll('.dmike-chart-ed-cp-overlay, .dmike-chart-ed-cp-popup').forEach((el) => el.remove());
+      h.close();
+    }
+  });
+
+  test('a colour picker without a dialog closes on Escape', async () => {
+    const swatch = document.createElement('button');
+    document.body.append(swatch);
+    openColorPicker({ target: swatch }, 'rgba(0,0,0,1)', () => {});
+    try {
+      escapeOnWindow();
+      assertTrue(!document.querySelector('.dmike-chart-ed-cp-overlay'), 'picker closed');
+      assertTrue(!document.querySelector('.dmike-chart-ed-cp-popup'), 'popup removed');
+    } finally {
+      document.querySelectorAll('.dmike-chart-ed-cp-overlay, .dmike-chart-ed-cp-popup').forEach((el) => el.remove());
+      swatch.remove();
     }
   });
 
