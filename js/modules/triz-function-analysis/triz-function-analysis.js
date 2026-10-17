@@ -1,14 +1,14 @@
 /**
  * D.Mike — TRIZ function analysis module.
  *
- * Three tabs: components, interaction matrix, function model. The diagram
+ * Four tabs: components, interaction matrix, function model, value & cost. The diagram
  * follows the org-chart pattern of project-charter: HTML boxes moved by the
  * module, a links-only node-diagram overlay for the arrows.
  */
 
 import { createModule } from '../../core/template-module.js';
 import {
-  State, KINDS, GROUPS, LEVELS, TABS, orderedComponents, openPairs, rankOf, disadvantages, functionPairs,
+  State, KINDS, GROUPS, LEVELS, TABS, orderedComponents, openPairs, rankOf, disadvantages, functionPairs, valueCostRows,
 } from './triz-function-analysis-model.js';
 import {
   NODE_W, NODE_H, resolvePositions, buildFunctionDiagram,
@@ -16,6 +16,10 @@ import {
 
 /** Arrow overlay chart per component root (not reactive, not persisted). */
 const arrowCharts = new WeakMap();
+/** Value & cost scatter per component root (not reactive, not persisted). */
+const valueCostCharts = new WeakMap();
+/** Crosshair at the middle of both normalised axes; top left = trimming candidates. */
+const VC_SPLIT = 5;
 const DRAG_THRESHOLD = 3;
 const CANVAS_PAD = 20;
 const CANVAS_MIN = { w: 480, h: 240 };
@@ -170,14 +174,75 @@ export default createModule({
       },
       paramText(d) { return d.parameter ? ` (${d.parameter})` : ''; },
 
-      // ── Lifecycle: arrow overlay ──
+      // ── Value & cost ──
+      /** Table rows of the system components, formatted for the UI language. */
+      vcRows() {
+        const locale = module._context.language === 'en' ? 'en-US' : 'de-DE';
+        const int = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
+        const dec = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+        const eur = new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' });
+        return valueCostRows(this.model).map((r) => ({
+          id: r.id,
+          name: label(r),
+          value: int.format(r.value),
+          normValue: dec.format(r.normValue),
+          cost: r.cost === null ? '–' : eur.format(r.cost),
+          normCost: r.normCost === null ? '–' : dec.format(r.normCost),
+        }));
+      },
+      /** @returns {string} hint shown instead of the plot, '' when there is something to plot */
+      valueCostEmpty() {
+        const rows = valueCostRows(this.model);
+        if (rows.length === 0) return _t('vc.emptyComponents');
+        return rows.some((r) => r.cost !== null) ? '' : _t('vc.emptyCosts');
+      },
+      /** Redraw the scatter; called by x-effect, reads the model and writes nothing reactive. */
+      drawValueCost() {
+        const rows = valueCostRows(this.model).filter((r) => r.cost !== null);
+        const chart = valueCostCharts.get(this.$root);
+        if (!chart) return;
+        module._context.chartManager.update(chart, {
+          xLabel: _t('vc.axisValue'),
+          yLabel: _t('vc.axisCost'),
+          series: [{
+            name: _t('vc.cost'),
+            x: rows.map((r) => r.normValue),
+            y: rows.map((r) => r.normCost),
+            labels: rows.map((r) => label(r)),
+          }],
+        });
+      },
+
+      // ── Lifecycle: arrow overlay and value & cost chart ──
       init() {
-        this.$nextTick(() => this._mountArrows());
+        this.$nextTick(() => { this._mountArrows(); this._mountValueCost(); });
       },
       destroy() {
         this._unmounted = true;
-        const chart = arrowCharts.get(this.$root);
-        if (chart) { module._context.chartManager.destroy(chart); arrowCharts.delete(this.$root); }
+        const cm = module._context.chartManager;
+        for (const charts of [arrowCharts, valueCostCharts]) {
+          const chart = charts.get(this.$root);
+          if (chart) { cm.destroy(chart); charts.delete(this.$root); }
+        }
+      },
+      _mountValueCost() {
+        const host = this.$root.querySelector('[data-ref="value-cost-chart"]');
+        if (!host) return;
+        const root = this.$root;
+        const cm = module._context.chartManager;
+        const split = { value: VC_SPLIT, dash: 'dash', color: 'var(--color-text-secondary)' };
+        cm.create(host, 'scatter', {
+          title: '', xLabel: _t('vc.axisValue'), yLabel: _t('vc.axisCost'), showLegend: false,
+          xMin: 0, xMax: 10, yMin: 0, yMax: 10,
+          refLines: [{ dir: 'v', ...split }, { dir: 'h', ...split }],
+          series: [],
+        }).then((chart) => {
+          if (!chart) return;
+          // Unmounted while the chart type was loading: do not keep an orphan.
+          if (this._unmounted || !root.isConnected) { cm.destroy(chart); return; }
+          valueCostCharts.set(root, chart);
+          this.drawValueCost();
+        });
       },
       _mountArrows() {
         const host = this.$root.querySelector('[data-ref="arrows"]');

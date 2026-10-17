@@ -196,5 +196,35 @@
         </template>
       </section>
     </div>
+
+    <!-- ── Tab: Value & Cost ── -->
+    <div class="dmike-tab-content tfa__vc" :class="contentClass('valueCost')"
+      data-tab-content="valueCost" x-show="model.activeTab === 'valueCost'">
+      <p class="tfa__hint" data-role="value-cost-empty" x-show="valueCostEmpty()" x-text="valueCostEmpty()"></p>
+      <!-- Stays in the DOM so the chart is created once -->
+      <div class="tfa__vc-chart" data-ref="value-cost-chart" x-show="!valueCostEmpty()" x-effect="drawValueCost()"></div>
+      <table class="tfa__vc-table" data-role="value-cost-table" x-show="vcRows().length > 0">
+        <thead>
+          <tr>
+            <th scope="col" x-text="t('vc.component')"></th>
+            <th scope="col" class="tfa__vc-num" x-text="t('vc.value')"></th>
+            <th scope="col" class="tfa__vc-num" x-text="t('vc.normValue')"></th>
+            <th scope="col" class="tfa__vc-num" x-text="t('vc.cost')"></th>
+            <th scope="col" class="tfa__vc-num" x-text="t('vc.normCost')"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <template x-for="r in vcRows()" :key="r.id">
+            <tr data-role="value-cost-row" :data-id="r.id">
+              <td x-text="r.name"></td>
+              <td class="tfa__vc-num" x-text="r.value"></td>
+              <td class="tfa__vc-num" x-text="r.normValue"></td>
+              <td class="tfa__vc-num" x-text="r.cost"></td>
+              <td class="tfa__vc-num" x-text="r.normCost"></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
   </div>
 </section>

@@ -90,6 +90,42 @@ export default {
         ],
       },
     },
+    valueCost: {
+      de: {
+        title: 'Wert & Kosten',
+        blocks: [
+          {
+            type: 'paragraph',
+            content: 'Im Reiter **Komponenten** bekommt jede Systemkomponente ein Feld für ihre Kosten in Euro. Zielobjekt und Supersystem gehören nicht zum System und haben keine Kosten. Der **Funktionswert** einer Komponente wird nicht eingegeben, sondern aus dem Funktionsmodell berechnet: Jede nützliche Funktion, die sie trägt, zählt nach ihrem Rang — Basisfunktion 3, Zusatzfunktion 2, Hilfsfunktion 1. Schädliche Funktionen und unvollständige Entwürfe zählen 0.',
+          },
+          {
+            type: 'list',
+            items: [
+              '**Normierung** — Wert und Kosten werden auf 0 bis 10 umgerechnet: Die Komponente mit dem höchsten Wert bzw. den höchsten Kosten erhält 10, die übrigen anteilig.',
+              '**Diagramm** — x = normierter Funktionswert, y = normierte Kosten. Komponenten ohne Kosten fehlen im Diagramm und zeigen in der Tabelle „–“.',
+              '**Quadranten** — die gestrichelten Linien bei 5 teilen das Diagramm. Oben links liegen Komponenten mit wenig Funktion und hohen Kosten: Sie sind die ersten Kandidaten für das **Trimmen**.',
+            ],
+          },
+        ],
+      },
+      en: {
+        title: 'Value & cost',
+        blocks: [
+          {
+            type: 'paragraph',
+            content: 'In the **Components** tab every system component gets a field for its cost in euros. The target and the supersystem are not part of the system and have no cost. A component’s **function value** is not entered but computed from the function model: every useful function it carries counts by its rank — basic function 3, additional function 2, auxiliary function 1. Harmful functions and incomplete drafts count 0.',
+          },
+          {
+            type: 'list',
+            items: [
+              '**Normalisation** — value and cost are scaled to 0 to 10: the component with the highest value or cost gets 10, the others proportionally.',
+              '**Plot** — x = normalised function value, y = normalised cost. Components without a cost are left out of the plot and show “–” in the table.',
+              '**Quadrants** — the dashed lines at 5 split the plot. The top left holds components with little function and high cost: they are the first candidates for **trimming**.',
+            ],
+          },
+        ],
+      },
+    },
     example: {
       de: {
         title: 'Beispiel: Zahnbürste',
