@@ -8,6 +8,7 @@
  *
  * Mean tests:
  *   - One-Sample t-Test          — μ against target value
+ *   - Paired t-Test              — μ_d of row-wise differences (pairDifferences)
  *   - Two-Sample t-Test (pooled) — μ₁ vs μ₂ with equal variances
  *   - Welch t-Test               — μ₁ vs μ₂ with unequal variances
  *   - Wilcoxon Signed-Rank Test  — nonparametric one-sample location
@@ -230,6 +231,58 @@ export function oneSampleTTest(data, mu0, direction = 'two-sided', alpha = 0.05)
     n,
     alpha,
     direction,
+  };
+}
+
+/** @param {*} v @returns {boolean} */
+function isFiniteNumber(v) {
+  return typeof v === 'number' && Number.isFinite(v);
+}
+
+/**
+ * Pair two raw columns row by row for a paired test.
+ * A row is dropped when either value is missing or not a finite number;
+ * rows beyond the shorter column count as dropped.
+ *
+ * @param {Array<*>} raw1 - Raw values of column 1 (may contain gaps)
+ * @param {Array<*>} raw2 - Raw values of column 2 (may contain gaps)
+ * @returns {{x1: number[], x2: number[], d: number[], dropped: number}} d = x1 − x2
+ */
+export function pairDifferences(raw1, raw2) {
+  const a = Array.isArray(raw1) ? raw1 : [];
+  const b = Array.isArray(raw2) ? raw2 : [];
+  const x1 = [], x2 = [], d = [];
+  const len = Math.min(a.length, b.length);
+  for (let i = 0; i < len; i++) {
+    if (isFiniteNumber(a[i]) && isFiniteNumber(b[i])) {
+      x1.push(a[i]); x2.push(b[i]); d.push(a[i] - b[i]);
+    }
+  }
+  return { x1, x2, d, dropped: Math.max(a.length, b.length) - d.length };
+}
+
+/**
+ * Paired t-test: one-sample t-test on the differences d = x1 − x2.
+ *
+ * @param {number[]} x1 - First measurement of each pair
+ * @param {number[]} x2 - Second measurement of each pair (same length)
+ * @param {number} [mu0=0] - Hypothesized mean difference μ_d₀
+ * @param {string} [direction='two-sided'] - 'two-sided' | 'greater' | 'less'
+ * @param {number} [alpha=0.05] - Significance level
+ * @returns {object} One-sample t result on d (mean, stddev, ci refer to d)
+ *   plus testName 'Paired t-Test', mean1, mean2, meanDiff, stddevDiff
+ */
+export function pairedTTest(x1, x2, mu0 = 0, direction = 'two-sided', alpha = 0.05) {
+  if (x1.length !== x2.length) throw new Error('Paired samples must have equal length');
+  const d = x1.map((v, i) => v - x2[i]);
+  const r = oneSampleTTest(d, mu0, direction, alpha);
+  return {
+    ...r,
+    testName: 'Paired t-Test',
+    mean1: mean(x1),
+    mean2: mean(x2),
+    meanDiff: r.mean,
+    stddevDiff: r.stddev,
   };
 }
 
