@@ -2,7 +2,8 @@
 /**
  * agent-report — Abdeckung der Agentenfläche als Zahl (Spec §9).
  *
- * „n von 72 Modulen agentenfähig, pro Release messbar." Berichtend: Exit
+ * „n von 72 Modulen agentenfähig, pro Release messbar" — dazu die Kontexthilfen
+ * und die Beschriftungen mit Anker (`anchor-coverage.mjs`). Berichtend: Exit
  * immer 0. Das Gate ist der Build (`npm run build:check`), der die generierte
  * Registry stale-prüft — nicht dieses Skript.
  *
@@ -13,6 +14,7 @@ import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { collectAgentData } from './agent-data.mjs';
+import { countAnchorCoverage } from './anchor-coverage.mjs';
 import { APP_DIR } from './build.mjs';
 
 const LANGS = ['de', 'en'];
@@ -238,11 +240,20 @@ function main() {
   console.log(`  Parameter: ${help.params.covered}/${help.params.total} (${pct(help.params)})`);
   console.log(`  Schlüssel: ${help.keys.covered}/${help.keys.total} (${pct(help.keys)})`);
   console.log(`  Felder:    ${help.fields.covered}/${help.fields.total} (${pct(help.fields)})`);
+  const anchors = countAnchorCoverage(APP_DIR, modules);
+  const exemptNote = anchors.exempt > 0 ? `, davon ${anchors.exempt} begründet ausgenommen` : '';
+  console.log(`  Beschriftungen mit Anker: ${anchors.covered}/${anchors.total} (${pct(anchors)})${exemptNote}`);
   if (help.missingKeys.length > 0 && !verbose) {
     console.log(`  ${help.missingKeys.length} Schlüssel mit Lücke `
       + `(${help.missing.length} Sprachfälle) — mit --verbose einzeln benannt.`);
   }
   if (verbose) for (const row of [...help.missing].sort()) console.log(`    fehlt — ${row}`);
+  if (verbose) {
+    for (const row of anchors.missing) console.log(`    ohne Anker — ${row}`);
+    for (const row of anchors.staleExemptions) console.log(`    Ausnahme ohne Treffer — ${row}`);
+  } else if (anchors.staleExemptions.length > 0) {
+    console.log(`  ${anchors.staleExemptions.length} Ausnahme(n) ohne Treffer — mit --verbose einzeln benannt.`);
+  }
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();
