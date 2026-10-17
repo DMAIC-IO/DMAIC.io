@@ -4,7 +4,7 @@
 
 import { suite, test, assertAlmostEqual, assertEqual } from '../test-utils.js';
 import { trimmedMean, bonettKurtosis, bonettRatioCI } from '../../js/engines/bonett-engine.js';
-import { bonettVarianceTest } from '../../js/engines/hypothesis-test-engine.js';
+import { bonettVarianceTest, bonettRatioTest } from '../../js/engines/hypothesis-test-engine.js';
 
 const Z975 = 1.959963984540054;
 
@@ -112,5 +112,29 @@ suite('Bonett — 1 variance edge cases', () => {
     const r = bonettVarianceTest(x, 4, 'less');
     assertEqual(r.ci[0], null);
     assertEqual(r.ciSigma[0], null);
+  });
+});
+
+const brData = await loadFixture('../fixtures/hypothesis/bonett-ratio.fixtures.json');
+runFixtureSuite('Bonett — 2 variances (fixture validation)', brData,
+  ({ data1, data2, direction, alpha }) => bonettRatioTest(data1, data2, direction, alpha));
+
+suite('Bonett — 2 variances edge cases', () => {
+  const a = [1.2, 3.4, 2.2, 9.8, 2.9, 3.1, 2.4, 4.7];
+  const b = [2.0, 2.4, 2.1, 2.9, 2.2, 2.6, 2.3, 2.5];
+  test('balanced: statistic T₂ and two-sided p = 2·min(one-sided)', () => {
+    const r2 = bonettRatioTest(a, b, 'two-sided');
+    const rg = bonettRatioTest(a, b, 'greater');
+    const rl = bonettRatioTest(a, b, 'less');
+    assertEqual(r2.statistic > 0, true);
+    assertAlmostEqual(r2.pValue, 2 * Math.min(rg.pValue, rl.pValue), { relative: 1e-12 });
+  });
+  test('unbalanced: no statistic, finite p', () => {
+    const r = bonettRatioTest(a, b.slice(0, 6));
+    assertEqual(r.statistic, null);
+    assertEqual(Number.isFinite(r.pValue), true);
+  });
+  test('"greater" leaves the upper CI end open', () => {
+    assertEqual(bonettRatioTest(a, b, 'greater').ci[1], null);
   });
 });

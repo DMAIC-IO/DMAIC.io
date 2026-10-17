@@ -163,6 +163,105 @@ function oneSampleAlphas(n, s2, kurt, sigma0Sq) {
   return lower ? [tail, 1 - tail] : [1 - tail, tail];
 }
 
+/** Sum of squared deviations from the plain mean. */
+function sumSquares(data) {
+  const m = mean(data);
+  return data.reduce((s, x) => s + (x - m) ** 2, 0);
+}
+
+/** Pooled kurtosis under ρ = 1 (equal variances), trimmed-mean fourth moments, plain-mean SS. */
+function pooledKurtosisAtOne(d1, d2) {
+  return (d1.length + d2.length) * (fourthMoment(d1) + fourthMoment(d2))
+    / ((sumSquares(d1) + sumSquares(d2)) ** 2);
+}
+
+/** Root of f on [a, b] where f(a)·f(b) <= 0; converges to the jump point if f jumps across 0. */
+function solveBracket(f, a, b) {
+  const fa = f(a);
+  if (fa === 0) return a;
+  if (f(b) === 0) return b;
+  return bisect(f, a, b);
+}
+
+/**
+ * One-sided p-values of the unbalanced ratio test by inverting the CI: the α at
+ * which the lower (ratio > 1) or upper (ratio < 1) hull bound reaches 1. The
+ * first bracket on the z grid is used; where the hull bound jumps across 1 (a
+ * root pair is born) the solver converges to the jump point, as in the Python reference.
+ * @returns {[number, number]} [α_L, α_U]
+ */
+function ratioAlphasUnbalanced(bounds, ratio, nMin) {
+  if (ratio === 1) return [0.5, 0.5];
+  const idx = ratio > 1 ? 0 : 1;
+  const cap = Math.min(Z_CAP, nMin * (1 - 1e-9));
+  const f = (z) => Math.log(bounds(z)[idx]);
+  const steps = 800, lo = 1e-6;
+  let tail = 0;
+  let a = lo, fa = f(a);
+  for (let i = 1; i <= steps; i++) {
+    const b = lo + (cap - lo) * i / steps, fb = f(b);
+    if (fa * fb <= 0) { tail = normalUpperTailPrecise(solveBracket(f, a, b)); break; }
+    a = b; fa = fb;
+  }
+  return ratio > 1 ? [tail, 1 - tail] : [1 - tail, tail];
+}
+
+/**
+ * Bonett test for the ratio of two variances (Banga & Fox 2013, Minitab
+ * "2 Variances"). Balanced designs report T₂ ~ χ²(1); unbalanced designs
+ * have no statistic and the p-value comes from inverting the CI.
+ *
+ * @param {number[]} data1 - First sample
+ * @param {number[]} data2 - Second sample
+ * @param {string} [direction='two-sided'] - 'two-sided' | 'greater' | 'less'
+ * @param {number} [alpha=0.05] - Significance level
+ * @returns {object} Test results; ci is for σ₁²/σ₂²
+ */
+export function bonettRatioTest(data1, data2, direction = 'two-sided', alpha = 0.05) {
+  const n1 = data1.length, n2 = data2.length;
+  if (n1 < 2 || n2 < 2) throw new Error('At least 2 data points required');
+  const var1 = variance(data1), var2 = variance(data2);
+  if (!(var1 > 0) || !(var2 > 0)) throw new Error('Sample has zero variance');
+
+  const summary = { n1, n2, var1, var2, kurt1: bonettKurtosis(data1), kurt2: bonettKurtosis(data2) };
+  const bounds = (z) => { const r = bonettRatioCI(summary, z); return [r.lower, r.upper]; };
+  const ratio = var1 / var2;
+
+  let statistic = null, aL, aU, pTwo;
+  if (n1 === n2) {
+    const g1 = (n1 - 3) / n1, g2 = (n2 - 3) / n2;
+    const gp = pooledKurtosisAtOne(data1, data2);
+    statistic = Math.log(ratio) ** 2 / ((gp - g1) / (n1 - 1) + (gp - g2) / (n2 - 1));
+    const zs = Math.sign(Math.log(ratio)) * Math.sqrt(statistic);
+    aL = normalUpperTailPrecise(zs);
+    aU = normalUpperTailPrecise(-zs);
+    pTwo = 2 * normalUpperTailPrecise(Math.sqrt(statistic)); // χ²(1) upper tail
+  } else {
+    [aL, aU] = ratioAlphasUnbalanced(bounds, ratio, Math.min(n1, n2));
+    pTwo = Math.min(1, 2 * Math.min(aL, aU));
+  }
+
+  const z = normalQuantilePrecise(direction === 'two-sided' ? 1 - alpha / 2 : 1 - alpha);
+  const [lo, hi] = bounds(z);
+  const ci = direction === 'two-sided' ? [lo, hi] : (direction === 'greater' ? [lo, null] : [null, hi]);
+  const pValue = direction === 'two-sided' ? pTwo : (direction === 'greater' ? aL : aU);
+
+  return {
+    testName: 'Bonett Ratio Test',
+    statistic,
+    pValue,
+    variance1: var1,
+    variance2: var2,
+    ratio,
+    ci,
+    reject: pValue < alpha,
+    n1,
+    n2,
+    alpha,
+    direction,
+  };
+}
+
 /**
  * Bonett test for one variance (Bonett 2006, Minitab "1 Variance").
  * No test statistic; the p-value comes from inverting the CI.

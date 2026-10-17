@@ -6,6 +6,7 @@
  *   - F-Test                     — two-sample variance equality
  *   - Levene Test (Brown-Forsythe) — robust two-sample variance equality
  *   - Bonett Variance Test (bonett-engine.js) — robust one-sample σ²
+ *   - Bonett Ratio Test (bonett-engine.js) — robust two-sample σ₁²/σ₂²
  *
  * Mean tests:
  *   - One-Sample t-Test          — μ against target value
@@ -31,7 +32,7 @@ import {
 
 import { mean, variance, stddev } from './stats-utils.js';
 
-export { bonettVarianceTest } from './bonett-engine.js';
+export { bonettVarianceTest, bonettRatioTest } from './bonett-engine.js';
 
 // ─── Descriptive Helpers ────────────────────────────────────
 
