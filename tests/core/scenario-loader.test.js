@@ -298,7 +298,7 @@ suite('loadScenario', () => {
       },
     };
     const moduleRegistry = {
-      get: (id) => ({ id, phase: 'define', cycles: {} }),
+      get: (id) => ({ id, phase: 'define', cycles: { dmaic: { phase: 'define' } } }),
       getActiveCycle: () => 'dmaic',
     };
     const events = [];

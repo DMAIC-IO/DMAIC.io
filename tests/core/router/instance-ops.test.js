@@ -48,7 +48,7 @@ suite('router/instance-ops', () => {
     const emitted = [];
     const eventBus = { emit: (ev, p) => emitted.push({ ev, p }) };
     const moduleRegistry = { getActiveCycle: () => 'dmaic' };
-    const def = { phase: 'measure', cycles: {} };
+    const def = { phase: 'measure', cycles: { dmaic: { phase: 'measure' } } };
 
     const id = createInstance(sm, moduleRegistry, eventBus, 'cpk', def);
 
@@ -60,5 +60,31 @@ suite('router/instance-ops', () => {
     assertEqual(emitted.length, 1);
     assertEqual(emitted[0].ev, 'module:added');
     assertEqual(emitted[0].p.instanceId, id);
+  });
+
+  test('createInstance: module without mapping for the active cycle lands in extras', () => {
+    // Mirrors moduleRegistry.getByCycleAndPhase('extras'): the tile menu offers
+    // the module under "extras", so the instance must live there too — not in
+    // the legacy def.phase, where the extras tile would never show it again.
+    const sm = fakeState({ improve: [], extras: [] });
+    const eventBus = { emit: () => {} };
+    const moduleRegistry = { getActiveCycle: () => 'dmaic' };
+    const def = { phase: 'improve', cycles: { eightd: { phase: 'corrective' } } };
+
+    const id = createInstance(sm, moduleRegistry, eventBus, 'triz-ifr', def);
+
+    assertEqual(sm.get('phases.improve').length, 0);
+    assertEqual(sm.get('phases.extras').length, 1);
+    assertEqual(sm.get('phases.extras')[0].instanceId, id);
+  });
+
+  test('createInstance: data modules land in data regardless of cycle', () => {
+    const sm = fakeState({ data: [] });
+    const eventBus = { emit: () => {} };
+    const moduleRegistry = { getActiveCycle: () => 'eightd' };
+
+    createInstance(sm, moduleRegistry, eventBus, 'histogram', { phase: 'data' });
+
+    assertEqual(sm.get('phases.data').length, 1);
   });
 });

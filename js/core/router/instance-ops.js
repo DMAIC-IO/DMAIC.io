@@ -37,7 +37,8 @@ export function findExistingInstance(stateManager, moduleId) {
 
 /**
  * Create a new instance of moduleId in the derived phase for the active
- * cycle, persist it, and emit `module:added`. Returns the new instanceId.
+ * cycle (`data`, the cycle mapping's phase, or `extras` when unmapped),
+ * persist it, and emit `module:added`. Returns the new instanceId.
  * @param {object} stateManager
  * @param {object} moduleRegistry
  * @param {object} eventBus
@@ -52,9 +53,12 @@ export function findExistingInstance(stateManager, moduleId) {
  */
 export function createInstance(stateManager, moduleRegistry, eventBus, moduleId, def, { silent = false } = {}) {
   const activeCycle = moduleRegistry.getActiveCycle();
+  // Same rule as moduleRegistry.getByCycleAndPhase: a module without a mapping
+  // for the active cycle belongs to `extras` — never fall back to def.phase, or
+  // the extras tile offers a module whose instance it can never show again.
   const targetPhase = def.phase === 'data'
     ? 'data'
-    : (def.cycles?.[activeCycle]?.phase || def.phase || 'extras');
+    : (def.cycles?.[activeCycle]?.phase || 'extras');
 
   const instanceId = uid();
   const phases = stateManager.get(`phases.${targetPhase}`) ?? [];

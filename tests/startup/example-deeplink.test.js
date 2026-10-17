@@ -34,7 +34,7 @@ function makeCtx(overrides = {}) {
     stateManager: makeStateManager(),
     eventBus: { emit: (ev, p) => emitted.push({ ev, p }), on() {}, off() {} },
     moduleRegistry: {
-      get: (id) => ({ id, phase: 'measure', cycles: {} }),
+      get: (id) => ({ id, phase: 'measure', cycles: { dmaic: { phase: 'measure' } } }),
       getActiveCycle: () => 'dmaic',
     },
     examplesRegistry: {
