@@ -2791,8 +2791,8 @@
         "setParam": {
           "help": "Sets one parameter of the study; the recalculation follows after a short pause.",
           "params": {
-            "key": "One of the keys in activeParams: lsl, usl, alpha, k, verdictBasis or sigmaHist. Any other value is an error.",
-            "value": "The value as text, for example '9.5' or '0.05'; the empty string clears the field. k takes '6' or '5.15', verdictBasis takes 'auto', 'tolerance' or 'studyVar'."
+            "key": "Which parameter; each key is described individually under keys. Any other value is an error.",
+            "value": "The value as text, for example '10' or '0.5'. The allowed range per key is given under keys; for the free text fields '' clears the field."
           }
         },
         "setColumn": {
@@ -2813,13 +2813,104 @@
         }
       },
       "fields": {
-        "params": { "help": "The entered parameters, values as text: lsl and usl (tolerance limits, empty for none), alpha (significance level), k (spread factor 6 or 5.15), verdictBasis (basis of the verdict) and sigmaHist (historical sigma, empty for none)." },
+        "params": { "help": "The entered parameters, values as text; each is described individually under keys." },
         "columnRefs": { "help": "The chosen columns per slot (part, operator, measurement) as { instanceId, sheetId, columnId }, or null." },
         "activeParams": { "help": "The keys setParam accepts in the current state." },
         "activeColumnSlots": { "help": "The slots setColumn accepts in the current state." },
         "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; key is 'instanceId|sheetId|columnId'." },
-        "result": { "help": "The computed Gage R&R result with ANOVA, variance components, %GRR and ndc, or null while the inputs are incomplete or invalid." },
+        "result": { "help": "The computed result, each figure described individually under keys; null while the inputs are incomplete or invalid." },
         "errorMsg": { "help": "The rejection of the last computation as text, empty if none." }
+      },
+      "types": {
+        "Params": {
+          "lsl": "Lower specification limit (LSL) as text, for example '24.9'. Together with the upper limit it gives the tolerance T = USL − LSL that %GRR (tolerance) refers to; empty means there is no lower limit.",
+          "usl": "Upper specification limit (USL) as text, for example '25.1'. Together with the lower limit it gives the tolerance T = USL − LSL that %GRR (tolerance) refers to; empty means there is no upper limit.",
+          "alpha": "Significance level α of the ANOVA as text, for example '0.05'; empty counts as 0.05. If the p-value of the part × operator interaction is below α, it stays a source of its own, otherwise it is pooled with repeatability.",
+          "k": "Spread factor k of the study variation k · σ: 6 covers 99.73 % of the values, 5.15 covers 99 % (AIAG, 3rd edition). It affects the study variation and %GRR (tolerance), not %GRR (study variation).",
+          "verdictBasis": "Basis of the %GRR verdict: automatic takes the tolerance when both limits are set, otherwise the study variation; tolerance takes the tolerance as long as both limits are set; study variation always relates the verdict to the total variation of the study.",
+          "sigmaHist": "Historical process standard deviation σ as text, optional and greater than 0. When set, the variance components table also gives each source's share of this process variation; empty means there is no process reference."
+        },
+        "Result": {
+          "mode": "Method of the study: type 2 (gage R&R) with parts, operators and replicates when an operator column is chosen; without an operator column type 3, which uses only parts and replicates and has no operator influence.",
+          "n": "Number of evaluated measurements: parts times operators times replicates, parts times replicates for type 3.",
+          "p": "Number of parts.",
+          "o": "Number of operators; 0 for type 3.",
+          "r": "Number of replicates per part and operator, per part for type 3.",
+          "partLabels": "The part names in the order of their first appearance.",
+          "operatorLabels": "The operator names in the order of their first appearance; empty for type 3.",
+          "grandMean": "Grand mean of all measurements.",
+          "anova": "Analysis of variance with the sources parts, operators, part × operator interaction, repeatability and total; per source the sum of squares, degrees of freedom, mean square, F value and p-value.",
+          "interactionSignificant": "True when the p-value of the part × operator interaction is below α: then an operator measures certain parts differently from the other operators. Always false for type 3.",
+          "interactionPooled": "True when the interaction is not significant and was therefore combined with repeatability into one error term (sums of squares and degrees of freedom added). False for type 3, which has no interaction.",
+          "alpha": "Significance level α used in the computation; 0.05 without input.",
+          "varComp": "Variance components from the ANOVA: repeatability (EV), reproducibility (AV) with its parts operator and interaction, measurement system (GRR), parts (PV) and total (TV); per component the variance, standard deviation, study variation and percentages.",
+          "ndc": "Number of distinct categories: ndc = 1.41 · σ parts / σ GRR, rounded down to a whole number. From 5 on, the resolution of the measurement system is sufficient for the part variation. 999 means the measurement system has no spread but the parts do; 0 when neither has spread.",
+          "verdictBasis": "Basis the verdict actually rests on: tolerance or study variation. With the automatic choice it is the tolerance when both limits are set, otherwise the study variation.",
+          "pctGRRVerdict": "The %GRR value the verdict rests on: %GRR (tolerance) or %GRR (study variation), depending on the effective basis.",
+          "grrStatus": "Verdict on the measurement system from %GRR on the effective basis: below 10 % acceptable, 10 % to below 30 % conditionally acceptable, 30 % or more not acceptable.",
+          "ndcStatus": "Verdict on ndc: sufficient from 5 on, insufficient below.",
+          "cellData": "The measurements per part and operator in measurement order, per part for type 3.",
+          "cellMeans": "Mean per part and operator, per part for type 3.",
+          "cellRanges": "Range per part and operator, largest minus smallest replicate, per part for type 3. They give the average range of the R chart.",
+          "partMeans": "Mean per part across all operators and replicates.",
+          "operatorMeans": "Mean per operator across all parts and replicates; empty for type 3.",
+          "controlChart": "Limits of the x̄-R chart; a subgroup is one part × operator cell, one part for type 3, with r replicates.",
+          "params": "The parameters used in the computation, as numbers.",
+          "warnings": "Notes on the study, for example when type 3 has only 2 replicates per part; at least 3 are recommended."
+        },
+        "Anova": {
+          "part": "Source parts: variation between the part means. Its F test checks whether the parts differ; the reference is the interaction when it is significant, otherwise repeatability.",
+          "operator": "Source operators: variation between the operator means, tested like the parts. Missing for type 3.",
+          "interact": "Source part × operator interaction, tested against repeatability. Missing when it was pooled, and for type 3.",
+          "equip": "Source repeatability: variation of the replicates within a cell, including the interaction when it was pooled. No F value and no p-value.",
+          "total": "Source total: variation of all measurements around the grand mean, with sum of squares and degrees of freedom only."
+        },
+        "AnovaRow": {
+          "ss": "Sum of squares SS: the sum of squared deviations attributed to this source.",
+          "df": "Degrees of freedom df: parts p − 1, operators o − 1, interaction (p − 1) · (o − 1), repeatability p · o · (r − 1) (p · (r − 1) for type 3), total n − 1. Pooling adds the degrees of freedom.",
+          "ms": "Mean square MS = SS / df. Missing for the total source.",
+          "f": "F value: the MS of the source divided by the MS it is tested against. Only for parts, operators and interaction.",
+          "pValue": "p-value of the F test. Below α the influence of the source counts as significant. Only for parts, operators and interaction."
+        },
+        "VarComp": {
+          "repeatability": "Repeatability (EV): the variation when the same operator measures the same part several times; σ² EV is the mean square of repeatability. %EV is its share of the study variation, 100 · σ EV / σ total.",
+          "reproducibility": "Reproducibility (AV): the variation between operators, σ² AV = σ² operator + σ² interaction; 0 for type 3. %AV is its share of the study variation, 100 · σ AV / σ total.",
+          "operator": "Operator share of reproducibility: σ² = (MS operators − MS reference) / (p · r), not below 0; the reference is the interaction or, when pooled, repeatability.",
+          "interact": "Interaction share of reproducibility: σ² = (MS interaction − MS repeatability) / r, not below 0; 0 when the interaction was pooled.",
+          "grr": "Measurement system (GRR): σ² GRR = σ² EV + σ² AV. %GRR (study variation) = 100 · σ GRR / σ total. Below 10 % the measurement system is acceptable, 10 % to below 30 % conditionally acceptable, 30 % or more not acceptable.",
+          "part": "Part variation (PV): σ² = (MS parts − MS reference) / (o · r), not below 0; divided by r for type 3.",
+          "total": "Total variation (TV): σ² total = σ² GRR + σ² parts."
+        },
+        "VarCompEntry": {
+          "variance": "Variance σ² of the component, estimated from the mean squares of the ANOVA.",
+          "sigma": "Standard deviation of the component, σ = √σ².",
+          "studyVar": "Study variation k · σ with the spread factor k (6 or 5.15).",
+          "pctContribution": "Share of the total variance: 100 · σ² / σ² total. GRR and parts add up to 100 %.",
+          "pctStudyVar": "Share of the study variation: 100 · σ / σ total. Because standard deviations do not add up, the shares do not sum to 100 %.",
+          "pctTolerance": "Share of the tolerance: 100 · k · σ / T with T = USL − LSL; empty unless both limits are set. For GRR: below 10 % acceptable, 10 % to below 30 % conditionally acceptable, 30 % or more not acceptable.",
+          "pctProcess": "Share of the historical process variation: 100 · σ / σ historical; empty without a historical process σ."
+        },
+        "ControlLimits": {
+          "xbarCL": "Center line of the x̄ chart: the grand mean.",
+          "xbarUCL": "Upper control limit of the x̄ chart: grand mean + A₂ · R̄.",
+          "xbarLCL": "Lower control limit of the x̄ chart: grand mean − A₂ · R̄.",
+          "rCL": "Center line of the R chart: the average range R̄.",
+          "rUCL": "Upper control limit of the R chart: D₄ · R̄.",
+          "rLCL": "Lower control limit of the R chart: D₃ · R̄.",
+          "rBar": "Average range R̄ over all part × operator cells, over all parts for type 3.",
+          "A2": "Chart factor A₂ for the subgroup size r, the number of replicates; with more than 6 replicates the factors for 6 apply.",
+          "D3": "Chart factor D₃ for the subgroup size r. For 2 to 6 replicates it is 0, so the lower limit of the R chart is 0.",
+          "D4": "Chart factor D₄ for the subgroup size r."
+        },
+        "ResultParams": {
+          "alpha": "Significance level α as a number; 0.05 without input.",
+          "studyVarMultiplier": "Spread factor k as a number, 6 or 5.15.",
+          "tolerance": "Tolerance T = USL − LSL; empty unless both limits are set.",
+          "lsl": "Lower specification limit as a number; without input not a valid number.",
+          "usl": "Upper specification limit as a number; without input not a valid number.",
+          "verdictBasis": "Chosen basis of the verdict, tolerance or study variation; missing with the automatic choice.",
+          "historicalSigma": "Historical process σ as a number; empty when none was given."
+        }
       },
       "typeLabelTyp2": "Type 2",
       "typeLabelTyp3": "Type 3",

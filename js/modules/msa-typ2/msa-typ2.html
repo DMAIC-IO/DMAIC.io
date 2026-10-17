@@ -3,18 +3,18 @@
     <div class="dmike-split__section-title" x-text="t('sectionColumns')"></div>
 
     <div class="field-group">
-      <label x-text="t('partColumn')"></label>
+      <label data-help-key="modules.msa-typ2.actions.setColumn.help" x-text="t('partColumn')"></label>
       <div data-ref="col-part-wrap"></div>
     </div>
 
     <div class="field-group">
-      <label x-text="t('operatorColumn')"></label>
+      <label data-help-key="modules.msa-typ2.actions.setColumn.help" x-text="t('operatorColumn')"></label>
       <div data-ref="col-operator-wrap"></div>
       <div class="msa-typ2__hint" x-text="t('operatorHint')"></div>
     </div>
 
     <div class="field-group">
-      <label x-text="t('measurementColumn')"></label>
+      <label data-help-key="modules.msa-typ2.actions.setColumn.help" x-text="t('measurementColumn')"></label>
       <div data-ref="col-measurement-wrap"></div>
     </div>
 
@@ -22,13 +22,13 @@
 
     <div class="msa-typ2__row">
       <div class="field-group">
-        <label x-text="t('lsl')"></label>
+        <label data-help-key="modules.msa-typ2.types.Params.lsl" x-text="t('lsl')"></label>
         <input type="text" class="field field--num" data-ref="inp-lsl"
                placeholder="24.900" inputmode="decimal"
                :value="model.params.lsl" @input="setParam('lsl', $event.target.value)" @change="runAnalysis()">
       </div>
       <div class="field-group">
-        <label x-text="t('usl')"></label>
+        <label data-help-key="modules.msa-typ2.types.Params.usl" x-text="t('usl')"></label>
         <input type="text" class="field field--num" data-ref="inp-usl"
                placeholder="25.100" inputmode="decimal"
                :value="model.params.usl" @input="setParam('usl', $event.target.value)" @change="runAnalysis()">
@@ -37,12 +37,12 @@
 
     <div class="msa-typ2__row">
       <div class="field-group">
-        <label x-text="t('alphaLabel')"></label>
+        <label data-help-key="modules.msa-typ2.types.Params.alpha" x-text="t('alphaLabel')"></label>
         <input type="text" class="field field--num" data-ref="inp-alpha" inputmode="decimal"
                :value="model.params.alpha" @input="setParam('alpha', $event.target.value)" @change="runAnalysis()">
       </div>
       <div class="field-group">
-        <label x-text="t('kLabel')"></label>
+        <label data-help-key="modules.msa-typ2.types.Params.k" x-text="t('kLabel')"></label>
         <select class="field" data-ref="inp-k" :value="model.params.k" @input="setParam('k', $event.target.value)" @change="runAnalysis()">
           <template x-for="o in kOptions()" :key="o.value">
             <option :value="o.value" :selected="o.value === model.params.k" x-text="o.label"></option>
@@ -53,7 +53,7 @@
 
     <div class="msa-typ2__row">
       <div class="field-group msa-typ2__field--wide">
-        <label x-text="t('verdictBasisLabel')"></label>
+        <label data-help-key="modules.msa-typ2.types.Params.verdictBasis" x-text="t('verdictBasisLabel')"></label>
         <select class="field" data-ref="inp-verdict-basis" :value="model.params.verdictBasis" @input="setParam('verdictBasis', $event.target.value)" @change="runAnalysis()">
           <template x-for="o in verdictBasisOptions()" :key="o.value">
             <option :value="o.value" :selected="o.value === model.params.verdictBasis" x-text="o.label"></option>
@@ -61,7 +61,7 @@
         </select>
       </div>
       <div class="field-group">
-        <label x-text="t('sigmaHistLabel')"></label>
+        <label data-help-key="modules.msa-typ2.types.Params.sigmaHist" x-text="t('sigmaHistLabel')"></label>
         <input type="text" class="field field--num" data-ref="inp-sigma-hist" inputmode="decimal"
                :value="model.params.sigmaHist" @input="setParam('sigmaHist', $event.target.value)" @change="runAnalysis()">
       </div>
@@ -84,14 +84,14 @@
                Infobox-Container erhalten (Modus-Pill Typ 2 vs. Typ 3). -->
           <div class="dmike-infobox" :class="kpiModClass(result.grrStatus)">
             <span class="msa-typ2__type-badge" :data-mode="result.mode" x-text="typeLabel(result.mode)"></span>
-            <span class="dmike-infobox__label" x-text="statusLabel(result.grrStatus)"></span>
+            <span class="dmike-infobox__label" data-help-key="modules.msa-typ2.types.Result.grrStatus" x-text="statusLabel(result.grrStatus)"></span>
             <span class="dmike-infobox__detail" x-text="statusDetail(result)"></span>
           </div>
 
           <!-- KPI strip -->
           <div class="dmike-kpi-strip">
             <div class="dmike-kpi" :class="grrKpiClass('studyVar')">
-              <div class="dmike-kpi-label">%GRR (<span x-text="t('studyVar')"></span>)
+              <div class="dmike-kpi-label" data-help-key="modules.msa-typ2.types.VarComp.grr">%GRR (<span x-text="t('studyVar')"></span>)
                 <button class="msa-typ2__algo-link" data-algo-id="grr" title="Algorithm Lab" @click="algoNavigate('grr', $event)"><span class="icon icon--sm icon--text" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
               </div>
               <div class="dmike-kpi-value"><span x-text="fmt(result.varComp.grr.pctStudyVar)"></span> %</div>
@@ -99,24 +99,24 @@
             </div>
             <template x-if="result.varComp.grr.pctTolerance != null">
               <div class="dmike-kpi" :class="grrKpiClass('tolerance')">
-                <div class="dmike-kpi-label">%GRR (<span x-text="t('tolerance')"></span>)</div>
+                <div class="dmike-kpi-label" data-help-key="modules.msa-typ2.types.VarCompEntry.pctTolerance">%GRR (<span x-text="t('tolerance')"></span>)</div>
                 <div class="dmike-kpi-value"><span x-text="fmt(result.varComp.grr.pctTolerance)"></span> %</div>
                 <div class="dmike-kpi-sub" x-text="grrKpiSub('tolerance')"></div>
               </div>
             </template>
             <div class="dmike-kpi" :class="kpiModClass(result.ndcStatus)">
-              <div class="dmike-kpi-label">ndc</div>
+              <div class="dmike-kpi-label" data-help-key="modules.msa-typ2.types.Result.ndc">ndc</div>
               <div class="dmike-kpi-value" x-text="result.ndc"></div>
               <div class="dmike-kpi-sub"><span x-text="t('threshold')"></span>: ≥ 5 · <span x-text="ndcBadge(result.ndcStatus)"></span></div>
             </div>
             <div class="dmike-kpi">
-              <div class="dmike-kpi-label">%EV (<span x-text="t('repeatability')"></span>)</div>
+              <div class="dmike-kpi-label" data-help-key="modules.msa-typ2.types.VarComp.repeatability">%EV (<span x-text="t('repeatability')"></span>)</div>
               <div class="dmike-kpi-value"><span x-text="fmt(result.varComp.repeatability.pctStudyVar)"></span> %</div>
               <div class="dmike-kpi-sub" x-text="t('ofStudyVar')"></div>
             </div>
             <template x-if="result.mode !== 'typ3'">
               <div class="dmike-kpi">
-                <div class="dmike-kpi-label">%AV (<span x-text="t('reproducibility')"></span>)</div>
+                <div class="dmike-kpi-label" data-help-key="modules.msa-typ2.types.VarComp.reproducibility">%AV (<span x-text="t('reproducibility')"></span>)</div>
                 <div class="dmike-kpi-value"><span x-text="fmt(result.varComp.reproducibility.pctStudyVar)"></span> %</div>
                 <div class="dmike-kpi-sub" x-text="t('ofStudyVar')"></div>
               </div>
@@ -128,8 +128,8 @@
           <div class="msa-typ2__stats-panel">
             <table class="dmike-table msa-typ2__stats-table">
               <thead><tr>
-                <th x-text="t('anovaSource')"></th>
-                <th>SS</th><th>df</th><th>MS</th><th>F</th><th>p</th>
+                <th><span data-help-key="modules.msa-typ2.types.Result.anova" x-text="t('anovaSource')"></span></th>
+                <th><span data-help-key="modules.msa-typ2.types.AnovaRow.ss">SS</span></th><th><span data-help-key="modules.msa-typ2.types.AnovaRow.df">df</span></th><th><span data-help-key="modules.msa-typ2.types.AnovaRow.ms">MS</span></th><th><span data-help-key="modules.msa-typ2.types.AnovaRow.f">F</span></th><th><span data-help-key="modules.msa-typ2.types.AnovaRow.pValue">p</span></th>
               </tr></thead>
               <tbody>
                 <template x-for="row in anovaRows()">
@@ -151,16 +151,16 @@
           <div class="msa-typ2__stats-panel">
             <table class="dmike-table msa-typ2__stats-table">
               <thead><tr>
-                <th x-text="t('anovaSource')"></th>
-                <th>σ²</th><th>σ</th>
-                <th x-text="t('studyVarK')"></th>
-                <th>%<span x-text="t('contribution')"></span></th>
-                <th>%<span x-text="t('studyVar')"></span></th>
+                <th><span data-help-key="modules.msa-typ2.types.Result.varComp" x-text="t('anovaSource')"></span></th>
+                <th><span data-help-key="modules.msa-typ2.types.VarCompEntry.variance">σ²</span></th><th><span data-help-key="modules.msa-typ2.types.VarCompEntry.sigma">σ</span></th>
+                <th><span data-help-key="modules.msa-typ2.types.VarCompEntry.studyVar" x-text="t('studyVarK')"></span></th>
+                <th><span data-help-key="modules.msa-typ2.types.VarCompEntry.pctContribution">%<span x-text="t('contribution')"></span></span></th>
+                <th><span data-help-key="modules.msa-typ2.types.VarCompEntry.pctStudyVar">%<span x-text="t('studyVar')"></span></span></th>
                 <template x-if="varCompHasTol()">
-                  <th>%<span x-text="t('tolerance')"></span></th>
+                  <th><span data-help-key="modules.msa-typ2.types.VarCompEntry.pctTolerance">%<span x-text="t('tolerance')"></span></span></th>
                 </template>
                 <template x-if="hasProcess()">
-                  <th>%<span x-text="t('process')"></span></th>
+                  <th><span data-help-key="modules.msa-typ2.types.VarCompEntry.pctProcess">%<span x-text="t('process')"></span></span></th>
                 </template>
               </tr></thead>
               <tbody>

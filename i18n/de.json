@@ -2795,8 +2795,8 @@
         "setParam": {
           "help": "Setzt einen Parameter der Studie; die Neuberechnung folgt nach kurzer Ruhezeit.",
           "params": {
-            "key": "Einer der Schlüssel aus activeParams: lsl, usl, alpha, k, verdictBasis oder sigmaHist. Jeder andere Wert ist ein Fehler.",
-            "value": "Der Wert als Text, zum Beispiel '9.5' oder '0.05'; die leere Zeichenkette leert das Feld. k nimmt '6' oder '5.15', verdictBasis nimmt 'auto', 'tolerance' oder 'studyVar'."
+            "key": "Welcher Parameter; jeder Schlüssel ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert als Text, zum Beispiel '10' oder '0.5'. Der zulässige Bereich steht je Schlüssel unter keys; bei den freien Textfeldern leert '' das Feld."
           }
         },
         "setColumn": {
@@ -2817,13 +2817,104 @@
         }
       },
       "fields": {
-        "params": { "help": "Die eingegebenen Parameter, Werte als Text: lsl und usl (Toleranzgrenzen, leer für fehlend), alpha (Signifikanzniveau), k (Streuungsfaktor 6 oder 5.15), verdictBasis (Bezug des Urteils) und sigmaHist (historische Streuung, leer für keine)." },
+        "params": { "help": "Die eingegebenen Parameter, Werte als Text; jeder ist unter keys einzeln beschrieben." },
         "columnRefs": { "help": "Die gewählten Spalten je Slot (part, operator, measurement) als { instanceId, sheetId, columnId }, oder null." },
         "activeParams": { "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt." },
         "activeColumnSlots": { "help": "Die Slots, die setColumn im aktuellen Zustand annimmt." },
         "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'." },
-        "result": { "help": "Das gerechnete Gage-R&R-Ergebnis mit ANOVA, Varianzkomponenten, %GRR und ndc, oder null, solange die Eingaben unvollständig oder ungültig sind." },
+        "result": { "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; null, solange die Eingaben unvollständig oder ungültig sind." },
         "errorMsg": { "help": "Die Absage der letzten Rechnung als Text, leer wenn keine." }
+      },
+      "types": {
+        "Params": {
+          "lsl": "Untere Toleranzgrenze (UGW) als Text, zum Beispiel '24.9'. Zusammen mit der oberen Grenze ergibt sie die Toleranz T = OGW − UGW, auf die sich %GRR (Toleranz) bezieht; leer heißt, es gibt keine untere Grenze.",
+          "usl": "Obere Toleranzgrenze (OGW) als Text, zum Beispiel '25.1'. Zusammen mit der unteren Grenze ergibt sie die Toleranz T = OGW − UGW, auf die sich %GRR (Toleranz) bezieht; leer heißt, es gibt keine obere Grenze.",
+          "alpha": "Signifikanzniveau α der ANOVA als Text, zum Beispiel '0.05'; leer gilt 0,05. Ist der p-Wert der Wechselwirkung Teil × Prüfer kleiner als α, bleibt sie eine eigene Quelle, sonst wird sie mit der Wiederholbarkeit gepoolt.",
+          "k": "Streuungsfaktor k der Studienstreuung k · σ: 6 deckt 99,73 % der Werte ab, 5,15 deckt 99 % ab (AIAG, 3. Auflage). Er wirkt auf die Studienstreuung und auf %GRR (Toleranz), nicht auf %GRR (Studienstreuung).",
+          "verdictBasis": "Bezug des Urteils über %GRR: automatisch nimmt die Toleranz, wenn beide Grenzen gesetzt sind, sonst die Studienstreuung; Toleranz nimmt die Toleranz, solange beide Grenzen gesetzt sind; Studienstreuung bezieht das Urteil immer auf die Gesamtstreuung der Studie.",
+          "sigmaHist": "Historische Prozessstreuung σ als Text, optional und größer als 0. Ist sie gesetzt, nennt die Tabelle der Varianzkomponenten je Quelle zusätzlich den Anteil an dieser Prozessstreuung; leer heißt, es gibt keinen Prozessbezug."
+        },
+        "Result": {
+          "mode": "Verfahren der Studie: Typ 2 (Gage R&R) mit Teilen, Prüfern und Wiederholungen, wenn eine Prüferspalte gewählt ist; ohne Prüferspalte Typ 3, bei dem nur Teile und Wiederholungen eingehen und der Prüfereinfluss entfällt.",
+          "n": "Anzahl der ausgewerteten Messwerte: Teile mal Prüfer mal Wiederholungen, bei Typ 3 Teile mal Wiederholungen.",
+          "p": "Anzahl der Teile.",
+          "o": "Anzahl der Prüfer; 0 bei Typ 3.",
+          "r": "Anzahl der Wiederholungen je Teil und Prüfer, bei Typ 3 je Teil.",
+          "partLabels": "Die Namen der Teile in der Reihenfolge ihres ersten Auftretens.",
+          "operatorLabels": "Die Namen der Prüfer in der Reihenfolge ihres ersten Auftretens; leer bei Typ 3.",
+          "grandMean": "Gesamtmittel aller Messwerte.",
+          "anova": "Varianzanalyse mit den Quellen Teile, Prüfer, Wechselwirkung Teil × Prüfer, Wiederholbarkeit und gesamt; je Quelle Quadratsumme, Freiheitsgrade, mittleres Quadrat, F-Wert und p-Wert.",
+          "interactionSignificant": "Wahr, wenn der p-Wert der Wechselwirkung Teil × Prüfer kleiner als α ist: dann misst ein Prüfer bestimmte Teile anders als die übrigen Prüfer. Bei Typ 3 immer falsch.",
+          "interactionPooled": "Wahr, wenn die Wechselwirkung nicht signifikant ist und darum mit der Wiederholbarkeit zu einem Fehlerterm zusammengefasst wurde (Quadratsummen und Freiheitsgrade addiert). Bei Typ 3 falsch, weil es keine Wechselwirkung gibt.",
+          "alpha": "Signifikanzniveau α, mit dem gerechnet wurde; ohne Eingabe 0,05.",
+          "varComp": "Varianzkomponenten aus der ANOVA: Wiederholbarkeit (EV), Reproduzierbarkeit (AV) mit ihren Teilen Prüfer und Wechselwirkung, Messsystem (GRR), Teile (PV) und gesamt (TV); je Komponente Varianz, Standardabweichung, Studienstreuung und Prozentanteile.",
+          "ndc": "Anzahl unterscheidbarer Kategorien: ndc = 1,41 · σ Teile / σ GRR, auf eine ganze Zahl abgerundet. Ab 5 reicht die Auflösung des Messsystems für die Teilestreuung aus. 999 heißt, das Messsystem streut nicht, die Teile aber schon; 0, wenn beides nicht streut.",
+          "verdictBasis": "Bezug, auf dem das Urteil tatsächlich beruht: Toleranz oder Studienstreuung. Bei der Wahl automatisch ist es die Toleranz, wenn beide Grenzen gesetzt sind, sonst die Studienstreuung.",
+          "pctGRRVerdict": "Der %GRR-Wert, auf dem das Urteil beruht: %GRR (Toleranz) oder %GRR (Studienstreuung), je nach wirksamem Bezug.",
+          "grrStatus": "Urteil über das Messsystem aus %GRR im wirksamen Bezug: unter 10 % akzeptabel, 10 % bis unter 30 % bedingt akzeptabel, ab 30 % nicht akzeptabel.",
+          "ndcStatus": "Urteil zu ndc: ausreichend ab 5, darunter nicht ausreichend.",
+          "cellData": "Die Messwerte je Teil und Prüfer in Messreihenfolge, bei Typ 3 je Teil.",
+          "cellMeans": "Mittelwert je Teil und Prüfer, bei Typ 3 je Teil.",
+          "cellRanges": "Spannweite je Teil und Prüfer, größter minus kleinster Wiederholwert, bei Typ 3 je Teil. Aus ihnen entsteht die mittlere Spannweite der R-Karte.",
+          "partMeans": "Mittelwert je Teil über alle Prüfer und Wiederholungen.",
+          "operatorMeans": "Mittelwert je Prüfer über alle Teile und Wiederholungen; leer bei Typ 3.",
+          "controlChart": "Grenzen der x̄-R-Karte; eine Untergruppe ist eine Zelle Teil × Prüfer, bei Typ 3 ein Teil, mit r Wiederholungen.",
+          "params": "Die Parameter, mit denen gerechnet wurde, als Zahlen.",
+          "warnings": "Hinweise zur Studie, etwa wenn bei Typ 3 nur 2 Wiederholungen je Teil vorliegen; empfohlen sind mindestens 3."
+        },
+        "Anova": {
+          "part": "Quelle Teile: Streuung zwischen den Teilmittelwerten. Ihr F-Test prüft, ob sich die Teile unterscheiden; Vergleichsgröße ist die Wechselwirkung, wenn sie signifikant ist, sonst die Wiederholbarkeit.",
+          "operator": "Quelle Prüfer: Streuung zwischen den Prüfermittelwerten, geprüft wie die Teile. Fehlt bei Typ 3.",
+          "interact": "Quelle Wechselwirkung Teil × Prüfer, geprüft gegen die Wiederholbarkeit. Fehlt, wenn sie gepoolt wurde, und bei Typ 3.",
+          "equip": "Quelle Wiederholbarkeit: Streuung der Wiederholmessungen innerhalb einer Zelle, bei gepoolter Wechselwirkung einschließlich dieser. Ohne F-Wert und p-Wert.",
+          "total": "Quelle gesamt: Streuung aller Messwerte um das Gesamtmittel, nur mit Quadratsumme und Freiheitsgraden."
+        },
+        "AnovaRow": {
+          "ss": "Quadratsumme SS: Summe der quadrierten Abweichungen, die dieser Quelle zugerechnet werden.",
+          "df": "Freiheitsgrade df: Teile p − 1, Prüfer o − 1, Wechselwirkung (p − 1) · (o − 1), Wiederholbarkeit p · o · (r − 1) (bei Typ 3 p · (r − 1)), gesamt n − 1. Beim Poolen addieren sich die Freiheitsgrade.",
+          "ms": "Mittleres Quadrat MS = SS / df. Fehlt bei der Quelle gesamt.",
+          "f": "F-Wert: MS der Quelle geteilt durch das MS, gegen das sie geprüft wird. Nur bei Teilen, Prüfern und Wechselwirkung.",
+          "pValue": "p-Wert des F-Tests. Unter α gilt der Einfluss der Quelle als signifikant. Nur bei Teilen, Prüfern und Wechselwirkung."
+        },
+        "VarComp": {
+          "repeatability": "Wiederholbarkeit (EV): Streuung, wenn derselbe Prüfer dasselbe Teil mehrfach misst; σ² EV ist das mittlere Quadrat der Wiederholbarkeit. %EV ist ihr Anteil an der Studienstreuung, 100 · σ EV / σ gesamt.",
+          "reproducibility": "Reproduzierbarkeit (AV): Streuung zwischen den Prüfern, σ² AV = σ² Prüfer + σ² Wechselwirkung; 0 bei Typ 3. %AV ist ihr Anteil an der Studienstreuung, 100 · σ AV / σ gesamt.",
+          "operator": "Prüferanteil der Reproduzierbarkeit: σ² = (MS Prüfer − MS Vergleichsgröße) / (p · r), nicht unter 0; Vergleichsgröße ist die Wechselwirkung oder, wenn gepoolt, die Wiederholbarkeit.",
+          "interact": "Wechselwirkungsanteil der Reproduzierbarkeit: σ² = (MS Wechselwirkung − MS Wiederholbarkeit) / r, nicht unter 0; 0, wenn die Wechselwirkung gepoolt wurde.",
+          "grr": "Messsystem (GRR): σ² GRR = σ² EV + σ² AV. %GRR (Studienstreuung) = 100 · σ GRR / σ gesamt. Unter 10 % ist das Messsystem akzeptabel, 10 % bis unter 30 % bedingt akzeptabel, ab 30 % nicht akzeptabel.",
+          "part": "Teilestreuung (PV): σ² = (MS Teile − MS Vergleichsgröße) / (o · r), nicht unter 0; bei Typ 3 geteilt durch r.",
+          "total": "Gesamtstreuung (TV): σ² gesamt = σ² GRR + σ² Teile."
+        },
+        "VarCompEntry": {
+          "variance": "Varianz σ² der Komponente, aus den mittleren Quadraten der ANOVA geschätzt.",
+          "sigma": "Standardabweichung der Komponente, σ = √σ².",
+          "studyVar": "Studienstreuung k · σ mit dem Streuungsfaktor k (6 oder 5,15).",
+          "pctContribution": "Anteil an der Gesamtvarianz: 100 · σ² / σ² gesamt. GRR und Teile ergeben zusammen 100 %.",
+          "pctStudyVar": "Anteil an der Studienstreuung: 100 · σ / σ gesamt. Weil sich Standardabweichungen nicht addieren, ergeben die Anteile zusammen nicht 100 %.",
+          "pctTolerance": "Anteil an der Toleranz: 100 · k · σ / T mit T = OGW − UGW; leer, wenn nicht beide Grenzen gesetzt sind. Für GRR gilt: unter 10 % akzeptabel, 10 % bis unter 30 % bedingt akzeptabel, ab 30 % nicht akzeptabel.",
+          "pctProcess": "Anteil an der historischen Prozessstreuung: 100 · σ / σ historisch; leer ohne historische Prozessstreuung."
+        },
+        "ControlLimits": {
+          "xbarCL": "Mittellinie der x̄-Karte: das Gesamtmittel.",
+          "xbarUCL": "Obere Eingriffsgrenze der x̄-Karte: Gesamtmittel + A₂ · R̄.",
+          "xbarLCL": "Untere Eingriffsgrenze der x̄-Karte: Gesamtmittel − A₂ · R̄.",
+          "rCL": "Mittellinie der R-Karte: die mittlere Spannweite R̄.",
+          "rUCL": "Obere Eingriffsgrenze der R-Karte: D₄ · R̄.",
+          "rLCL": "Untere Eingriffsgrenze der R-Karte: D₃ · R̄.",
+          "rBar": "Mittlere Spannweite R̄ über alle Zellen Teil × Prüfer, bei Typ 3 über alle Teile.",
+          "A2": "Kartenfaktor A₂ für die Untergruppengröße r, die Zahl der Wiederholungen; bei mehr als 6 Wiederholungen gelten die Faktoren für 6.",
+          "D3": "Kartenfaktor D₃ für die Untergruppengröße r. Für 2 bis 6 Wiederholungen ist er 0, die untere Grenze der R-Karte liegt dann bei 0.",
+          "D4": "Kartenfaktor D₄ für die Untergruppengröße r."
+        },
+        "ResultParams": {
+          "alpha": "Signifikanzniveau α als Zahl; ohne Eingabe 0,05.",
+          "studyVarMultiplier": "Streuungsfaktor k als Zahl, 6 oder 5,15.",
+          "tolerance": "Toleranz T = OGW − UGW; leer, wenn nicht beide Grenzen gesetzt sind.",
+          "lsl": "Untere Toleranzgrenze als Zahl; ohne Eingabe kein gültiger Zahlenwert.",
+          "usl": "Obere Toleranzgrenze als Zahl; ohne Eingabe kein gültiger Zahlenwert.",
+          "verdictBasis": "Gewählter Bezug des Urteils, Toleranz oder Studienstreuung; fehlt bei der Wahl automatisch.",
+          "historicalSigma": "Historische Prozessstreuung σ als Zahl; leer, wenn keine angegeben ist."
+        }
       },
       "typeLabelTyp2": "Typ 2",
       "typeLabelTyp3": "Typ 3",

@@ -63,6 +63,118 @@ const COLUMN_SINKS = {
 };
 
 /**
+ * Die Schlüsselfläche von `setParam`; dieselbe Typedef beschreibt das
+ * Lesefeld `params`. Sätze je Schlüssel unter `types.Params.<schlüssel>`.
+ *
+ * @typedef {object} Params
+ * @property {string} lsl  untere Toleranzgrenze, leer für fehlend
+ * @property {string} usl  obere Toleranzgrenze, leer für fehlend
+ * @property {string} alpha  Signifikanzniveau der ANOVA
+ * @property {'6'|'5.15'} k  Streuungsfaktor der Studienstreuung
+ * @property {'auto'|'tolerance'|'studyVar'} verdictBasis  Bezug des Urteils
+ * @property {string} sigmaHist  historische Prozessstreuung, leer für keine
+ */
+
+/**
+ * Das gerechnete Ergebnis (`analyze()` aus `engines/msa-typ2-engine.js`),
+ * wie `read().result` es liefert; ohne Prüferspalte die Typ-3-Form mit
+ * derselben Schlüsselmenge.
+ *
+ * @typedef {object} Result
+ * @property {'typ2'|'typ3'} mode  Verfahren
+ * @property {number} n  Messwerte
+ * @property {number} p  Teile
+ * @property {number} o  Prüfer
+ * @property {number} r  Wiederholungen
+ * @property {string[]} partLabels  Teile
+ * @property {string[]} operatorLabels  Prüfer
+ * @property {number} grandMean  Gesamtmittel
+ * @property {Anova} anova  ANOVA-Tabelle
+ * @property {boolean} interactionSignificant  Wechselwirkung signifikant
+ * @property {boolean} interactionPooled  Wechselwirkung gepoolt
+ * @property {number} alpha  Signifikanzniveau
+ * @property {VarComp} varComp  Varianzkomponenten
+ * @property {number} ndc  Anzahl unterscheidbarer Kategorien
+ * @property {'tolerance'|'studyVar'} verdictBasis  wirksamer Bezug des Urteils
+ * @property {number} pctGRRVerdict  %GRR, auf dem das Urteil beruht
+ * @property {'pass'|'warn'|'fail'} grrStatus  Urteil %GRR
+ * @property {'pass'|'fail'} ndcStatus  Urteil ndc
+ * @property {object} cellData  Messwerte je Teil (und Prüfer)
+ * @property {object} cellMeans  Mittelwerte je Teil (und Prüfer)
+ * @property {object} cellRanges  Spannweiten je Teil (und Prüfer)
+ * @property {Object<string, number>} partMeans  Mittelwert je Teil
+ * @property {Object<string, number>} operatorMeans  Mittelwert je Prüfer
+ * @property {ControlLimits} controlChart  Grenzen der x̄-R-Karte
+ * @property {ResultParams} params  gerechnete Parameter
+ * @property {string[]} warnings  Hinweise
+ */
+
+/**
+ * @typedef {object} Anova
+ * @property {AnovaRow} part  Teile
+ * @property {AnovaRow|null} operator  Prüfer, leer bei Typ 3
+ * @property {AnovaRow|null} interact  Wechselwirkung, leer wenn gepoolt
+ * @property {AnovaRow} equip  Wiederholbarkeit (Messgerät)
+ * @property {AnovaRow} total  gesamt
+ */
+
+/**
+ * @typedef {object} AnovaRow
+ * @property {number} ss  Quadratsumme
+ * @property {number} df  Freiheitsgrade
+ * @property {number} [ms]  mittleres Quadrat
+ * @property {number} [f]  F-Wert
+ * @property {number} [pValue]  p-Wert
+ */
+
+/**
+ * @typedef {object} VarComp
+ * @property {VarCompEntry} repeatability  Wiederholbarkeit (EV)
+ * @property {VarCompEntry} reproducibility  Reproduzierbarkeit (AV)
+ * @property {VarCompEntry} operator  Prüfer
+ * @property {VarCompEntry} interact  Teil × Prüfer
+ * @property {VarCompEntry} grr  Messsystem (GRR)
+ * @property {VarCompEntry} part  Teile (PV)
+ * @property {VarCompEntry} total  gesamt (TV)
+ */
+
+/**
+ * @typedef {object} VarCompEntry
+ * @property {number} variance  Varianz σ²
+ * @property {number} sigma  Standardabweichung σ
+ * @property {number} studyVar  Studienstreuung k·σ
+ * @property {number} pctContribution  % Beitrag
+ * @property {number} pctStudyVar  % Studienstreuung
+ * @property {number|null} pctTolerance  % Toleranz
+ * @property {number|null} pctProcess  % Prozessstreuung
+ */
+
+/**
+ * @typedef {object} ControlLimits
+ * @property {number} xbarCL  Mittellinie x̄
+ * @property {number} xbarUCL  obere Grenze x̄
+ * @property {number} xbarLCL  untere Grenze x̄
+ * @property {number} rCL  Mittellinie R
+ * @property {number} rUCL  obere Grenze R
+ * @property {number} rLCL  untere Grenze R
+ * @property {number} rBar  mittlere Spannweite
+ * @property {number} A2  Faktor A₂
+ * @property {number} D3  Faktor D₃
+ * @property {number} D4  Faktor D₄
+ */
+
+/**
+ * @typedef {object} ResultParams
+ * @property {number} alpha  Signifikanzniveau
+ * @property {number} studyVarMultiplier  Streuungsfaktor k
+ * @property {number|null} tolerance  Toleranz
+ * @property {number} lsl  untere Grenze, ohne Wert wenn leer
+ * @property {number} usl  obere Grenze, ohne Wert wenn leer
+ * @property {'tolerance'|'studyVar'} [verdictBasis]  gewählter Bezug, fehlt bei auto
+ * @property {number|null} historicalSigma  historische Streuung
+ */
+
+/**
  * Die Agenten-Lesefläche von MSA Typ 2.
  *
  * Nicht die persistierte Form: das Model hält NUR die Eingaben, das Ergebnis
@@ -72,12 +184,12 @@ const COLUMN_SINKS = {
  * Beispiel-Buchführung (`exampleWorksheetId`) und ohne die Streifendiagramme.
  *
  * @typedef {object} AgentRead
- * @property {object} params  the entered parameters (lsl, usl, alpha, k, verdictBasis, sigmaHist), values as text as entered
+ * @property {Params} params  the entered parameters, values as text as entered
  * @property {object} columnRefs  the chosen columns per slot (part, operator, measurement), each `{ instanceId, sheetId, columnId }` or null
  * @property {string[]} activeParams  the keys `setParam` accepts in the current state
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
- * @property {object|null} result  the computed Gage R&R result, or null while the inputs are incomplete or invalid
+ * @property {Result|null} result  the computed Gage R&R result, or null while the inputs are incomplete or invalid
  * @property {string} errorMsg  the rejection of the last computation, empty if none
  */
 const mod = createModule({
@@ -148,8 +260,8 @@ const mod = createModule({
       /**
        * Einen Parameter setzen.
        * @agent
-       * @param {'lsl'|'usl'|'alpha'|'k'|'verdictBasis'|'sigmaHist'} key welcher Parameter
-       * @param {string} value der Wert als Text, wie er eingegeben würde
+       * @param {keyof Params} key welcher Parameter
+       * @param {string} value der Wert als Text, wie er eingegeben würde; Wertebereich je Schlüssel siehe `Params`
        * @returns {void}
        * @throws {Error} wenn `key` kein Parameter dieses Moduls ist
        */

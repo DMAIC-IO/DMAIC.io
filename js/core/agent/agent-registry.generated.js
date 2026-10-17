@@ -5547,11 +5547,38 @@ export const AGENT_REGISTRY = {
             "name": "value",
             "type": "string",
             "optional": false,
-            "help": "der Wert als Text, wie er eingegeben würde"
+            "help": "der Wert als Text, wie er eingegeben würde; Wertebereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "void",
-        "help": "Einen Parameter setzen."
+        "help": "Einen Parameter setzen.",
+        "keysOf": "Params",
+        "keys": {
+          "lsl": {
+            "type": "string",
+            "help": "untere Toleranzgrenze, leer für fehlend"
+          },
+          "usl": {
+            "type": "string",
+            "help": "obere Toleranzgrenze, leer für fehlend"
+          },
+          "alpha": {
+            "type": "string",
+            "help": "Signifikanzniveau der ANOVA"
+          },
+          "k": {
+            "type": "'6'|'5.15'",
+            "help": "Streuungsfaktor der Studienstreuung"
+          },
+          "verdictBasis": {
+            "type": "'auto'|'tolerance'|'studyVar'",
+            "help": "Bezug des Urteils"
+          },
+          "sigmaHist": {
+            "type": "string",
+            "help": "historische Prozessstreuung, leer für keine"
+          }
+        }
       },
       "setColumn": {
         "params": [
@@ -5603,10 +5630,37 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "params": {
-        "type": "object",
-        "help": "the entered parameters (lsl, usl, alpha, k, verdictBasis, sigmaHist), values as text as entered",
+        "type": "Params",
+        "help": "the entered parameters, values as text as entered",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Params",
+        "keys": {
+          "lsl": {
+            "type": "string",
+            "help": "untere Toleranzgrenze, leer für fehlend"
+          },
+          "usl": {
+            "type": "string",
+            "help": "obere Toleranzgrenze, leer für fehlend"
+          },
+          "alpha": {
+            "type": "string",
+            "help": "Signifikanzniveau der ANOVA"
+          },
+          "k": {
+            "type": "'6'|'5.15'",
+            "help": "Streuungsfaktor der Studienstreuung"
+          },
+          "verdictBasis": {
+            "type": "'auto'|'tolerance'|'studyVar'",
+            "help": "Bezug des Urteils"
+          },
+          "sigmaHist": {
+            "type": "string",
+            "help": "historische Prozessstreuung, leer für keine"
+          }
+        }
       },
       "columnRefs": {
         "type": "object",
@@ -5633,10 +5687,593 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
+        "type": "Result|null",
         "help": "the computed Gage R&R result, or null while the inputs are incomplete or invalid",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "mode": {
+            "type": "'typ2'|'typ3'",
+            "help": "Verfahren"
+          },
+          "n": {
+            "type": "number",
+            "help": "Messwerte"
+          },
+          "p": {
+            "type": "number",
+            "help": "Teile"
+          },
+          "o": {
+            "type": "number",
+            "help": "Prüfer"
+          },
+          "r": {
+            "type": "number",
+            "help": "Wiederholungen"
+          },
+          "partLabels": {
+            "type": "string[]",
+            "help": "Teile"
+          },
+          "operatorLabels": {
+            "type": "string[]",
+            "help": "Prüfer"
+          },
+          "grandMean": {
+            "type": "number",
+            "help": "Gesamtmittel"
+          },
+          "anova": {
+            "type": "Anova",
+            "help": "ANOVA-Tabelle",
+            "keysOf": "Anova",
+            "keys": {
+              "part": {
+                "type": "AnovaRow",
+                "help": "Teile",
+                "keysOf": "AnovaRow",
+                "keys": {
+                  "ss": {
+                    "type": "number",
+                    "help": "Quadratsumme"
+                  },
+                  "df": {
+                    "type": "number",
+                    "help": "Freiheitsgrade"
+                  },
+                  "ms": {
+                    "type": "number",
+                    "help": "mittleres Quadrat",
+                    "optional": true
+                  },
+                  "f": {
+                    "type": "number",
+                    "help": "F-Wert",
+                    "optional": true
+                  },
+                  "pValue": {
+                    "type": "number",
+                    "help": "p-Wert",
+                    "optional": true
+                  }
+                }
+              },
+              "operator": {
+                "type": "AnovaRow|null",
+                "help": "Prüfer, leer bei Typ 3",
+                "keysOf": "AnovaRow",
+                "keys": {
+                  "ss": {
+                    "type": "number",
+                    "help": "Quadratsumme"
+                  },
+                  "df": {
+                    "type": "number",
+                    "help": "Freiheitsgrade"
+                  },
+                  "ms": {
+                    "type": "number",
+                    "help": "mittleres Quadrat",
+                    "optional": true
+                  },
+                  "f": {
+                    "type": "number",
+                    "help": "F-Wert",
+                    "optional": true
+                  },
+                  "pValue": {
+                    "type": "number",
+                    "help": "p-Wert",
+                    "optional": true
+                  }
+                }
+              },
+              "interact": {
+                "type": "AnovaRow|null",
+                "help": "Wechselwirkung, leer wenn gepoolt",
+                "keysOf": "AnovaRow",
+                "keys": {
+                  "ss": {
+                    "type": "number",
+                    "help": "Quadratsumme"
+                  },
+                  "df": {
+                    "type": "number",
+                    "help": "Freiheitsgrade"
+                  },
+                  "ms": {
+                    "type": "number",
+                    "help": "mittleres Quadrat",
+                    "optional": true
+                  },
+                  "f": {
+                    "type": "number",
+                    "help": "F-Wert",
+                    "optional": true
+                  },
+                  "pValue": {
+                    "type": "number",
+                    "help": "p-Wert",
+                    "optional": true
+                  }
+                }
+              },
+              "equip": {
+                "type": "AnovaRow",
+                "help": "Wiederholbarkeit (Messgerät)",
+                "keysOf": "AnovaRow",
+                "keys": {
+                  "ss": {
+                    "type": "number",
+                    "help": "Quadratsumme"
+                  },
+                  "df": {
+                    "type": "number",
+                    "help": "Freiheitsgrade"
+                  },
+                  "ms": {
+                    "type": "number",
+                    "help": "mittleres Quadrat",
+                    "optional": true
+                  },
+                  "f": {
+                    "type": "number",
+                    "help": "F-Wert",
+                    "optional": true
+                  },
+                  "pValue": {
+                    "type": "number",
+                    "help": "p-Wert",
+                    "optional": true
+                  }
+                }
+              },
+              "total": {
+                "type": "AnovaRow",
+                "help": "gesamt",
+                "keysOf": "AnovaRow",
+                "keys": {
+                  "ss": {
+                    "type": "number",
+                    "help": "Quadratsumme"
+                  },
+                  "df": {
+                    "type": "number",
+                    "help": "Freiheitsgrade"
+                  },
+                  "ms": {
+                    "type": "number",
+                    "help": "mittleres Quadrat",
+                    "optional": true
+                  },
+                  "f": {
+                    "type": "number",
+                    "help": "F-Wert",
+                    "optional": true
+                  },
+                  "pValue": {
+                    "type": "number",
+                    "help": "p-Wert",
+                    "optional": true
+                  }
+                }
+              }
+            }
+          },
+          "interactionSignificant": {
+            "type": "boolean",
+            "help": "Wechselwirkung signifikant"
+          },
+          "interactionPooled": {
+            "type": "boolean",
+            "help": "Wechselwirkung gepoolt"
+          },
+          "alpha": {
+            "type": "number",
+            "help": "Signifikanzniveau"
+          },
+          "varComp": {
+            "type": "VarComp",
+            "help": "Varianzkomponenten",
+            "keysOf": "VarComp",
+            "keys": {
+              "repeatability": {
+                "type": "VarCompEntry",
+                "help": "Wiederholbarkeit (EV)",
+                "keysOf": "VarCompEntry",
+                "keys": {
+                  "variance": {
+                    "type": "number",
+                    "help": "Varianz σ²"
+                  },
+                  "sigma": {
+                    "type": "number",
+                    "help": "Standardabweichung σ"
+                  },
+                  "studyVar": {
+                    "type": "number",
+                    "help": "Studienstreuung k·σ"
+                  },
+                  "pctContribution": {
+                    "type": "number",
+                    "help": "% Beitrag"
+                  },
+                  "pctStudyVar": {
+                    "type": "number",
+                    "help": "% Studienstreuung"
+                  },
+                  "pctTolerance": {
+                    "type": "number|null",
+                    "help": "% Toleranz"
+                  },
+                  "pctProcess": {
+                    "type": "number|null",
+                    "help": "% Prozessstreuung"
+                  }
+                }
+              },
+              "reproducibility": {
+                "type": "VarCompEntry",
+                "help": "Reproduzierbarkeit (AV)",
+                "keysOf": "VarCompEntry",
+                "keys": {
+                  "variance": {
+                    "type": "number",
+                    "help": "Varianz σ²"
+                  },
+                  "sigma": {
+                    "type": "number",
+                    "help": "Standardabweichung σ"
+                  },
+                  "studyVar": {
+                    "type": "number",
+                    "help": "Studienstreuung k·σ"
+                  },
+                  "pctContribution": {
+                    "type": "number",
+                    "help": "% Beitrag"
+                  },
+                  "pctStudyVar": {
+                    "type": "number",
+                    "help": "% Studienstreuung"
+                  },
+                  "pctTolerance": {
+                    "type": "number|null",
+                    "help": "% Toleranz"
+                  },
+                  "pctProcess": {
+                    "type": "number|null",
+                    "help": "% Prozessstreuung"
+                  }
+                }
+              },
+              "operator": {
+                "type": "VarCompEntry",
+                "help": "Prüfer",
+                "keysOf": "VarCompEntry",
+                "keys": {
+                  "variance": {
+                    "type": "number",
+                    "help": "Varianz σ²"
+                  },
+                  "sigma": {
+                    "type": "number",
+                    "help": "Standardabweichung σ"
+                  },
+                  "studyVar": {
+                    "type": "number",
+                    "help": "Studienstreuung k·σ"
+                  },
+                  "pctContribution": {
+                    "type": "number",
+                    "help": "% Beitrag"
+                  },
+                  "pctStudyVar": {
+                    "type": "number",
+                    "help": "% Studienstreuung"
+                  },
+                  "pctTolerance": {
+                    "type": "number|null",
+                    "help": "% Toleranz"
+                  },
+                  "pctProcess": {
+                    "type": "number|null",
+                    "help": "% Prozessstreuung"
+                  }
+                }
+              },
+              "interact": {
+                "type": "VarCompEntry",
+                "help": "Teil × Prüfer",
+                "keysOf": "VarCompEntry",
+                "keys": {
+                  "variance": {
+                    "type": "number",
+                    "help": "Varianz σ²"
+                  },
+                  "sigma": {
+                    "type": "number",
+                    "help": "Standardabweichung σ"
+                  },
+                  "studyVar": {
+                    "type": "number",
+                    "help": "Studienstreuung k·σ"
+                  },
+                  "pctContribution": {
+                    "type": "number",
+                    "help": "% Beitrag"
+                  },
+                  "pctStudyVar": {
+                    "type": "number",
+                    "help": "% Studienstreuung"
+                  },
+                  "pctTolerance": {
+                    "type": "number|null",
+                    "help": "% Toleranz"
+                  },
+                  "pctProcess": {
+                    "type": "number|null",
+                    "help": "% Prozessstreuung"
+                  }
+                }
+              },
+              "grr": {
+                "type": "VarCompEntry",
+                "help": "Messsystem (GRR)",
+                "keysOf": "VarCompEntry",
+                "keys": {
+                  "variance": {
+                    "type": "number",
+                    "help": "Varianz σ²"
+                  },
+                  "sigma": {
+                    "type": "number",
+                    "help": "Standardabweichung σ"
+                  },
+                  "studyVar": {
+                    "type": "number",
+                    "help": "Studienstreuung k·σ"
+                  },
+                  "pctContribution": {
+                    "type": "number",
+                    "help": "% Beitrag"
+                  },
+                  "pctStudyVar": {
+                    "type": "number",
+                    "help": "% Studienstreuung"
+                  },
+                  "pctTolerance": {
+                    "type": "number|null",
+                    "help": "% Toleranz"
+                  },
+                  "pctProcess": {
+                    "type": "number|null",
+                    "help": "% Prozessstreuung"
+                  }
+                }
+              },
+              "part": {
+                "type": "VarCompEntry",
+                "help": "Teile (PV)",
+                "keysOf": "VarCompEntry",
+                "keys": {
+                  "variance": {
+                    "type": "number",
+                    "help": "Varianz σ²"
+                  },
+                  "sigma": {
+                    "type": "number",
+                    "help": "Standardabweichung σ"
+                  },
+                  "studyVar": {
+                    "type": "number",
+                    "help": "Studienstreuung k·σ"
+                  },
+                  "pctContribution": {
+                    "type": "number",
+                    "help": "% Beitrag"
+                  },
+                  "pctStudyVar": {
+                    "type": "number",
+                    "help": "% Studienstreuung"
+                  },
+                  "pctTolerance": {
+                    "type": "number|null",
+                    "help": "% Toleranz"
+                  },
+                  "pctProcess": {
+                    "type": "number|null",
+                    "help": "% Prozessstreuung"
+                  }
+                }
+              },
+              "total": {
+                "type": "VarCompEntry",
+                "help": "gesamt (TV)",
+                "keysOf": "VarCompEntry",
+                "keys": {
+                  "variance": {
+                    "type": "number",
+                    "help": "Varianz σ²"
+                  },
+                  "sigma": {
+                    "type": "number",
+                    "help": "Standardabweichung σ"
+                  },
+                  "studyVar": {
+                    "type": "number",
+                    "help": "Studienstreuung k·σ"
+                  },
+                  "pctContribution": {
+                    "type": "number",
+                    "help": "% Beitrag"
+                  },
+                  "pctStudyVar": {
+                    "type": "number",
+                    "help": "% Studienstreuung"
+                  },
+                  "pctTolerance": {
+                    "type": "number|null",
+                    "help": "% Toleranz"
+                  },
+                  "pctProcess": {
+                    "type": "number|null",
+                    "help": "% Prozessstreuung"
+                  }
+                }
+              }
+            }
+          },
+          "ndc": {
+            "type": "number",
+            "help": "Anzahl unterscheidbarer Kategorien"
+          },
+          "verdictBasis": {
+            "type": "'tolerance'|'studyVar'",
+            "help": "wirksamer Bezug des Urteils"
+          },
+          "pctGRRVerdict": {
+            "type": "number",
+            "help": "%GRR, auf dem das Urteil beruht"
+          },
+          "grrStatus": {
+            "type": "'pass'|'warn'|'fail'",
+            "help": "Urteil %GRR"
+          },
+          "ndcStatus": {
+            "type": "'pass'|'fail'",
+            "help": "Urteil ndc"
+          },
+          "cellData": {
+            "type": "object",
+            "help": "Messwerte je Teil (und Prüfer)"
+          },
+          "cellMeans": {
+            "type": "object",
+            "help": "Mittelwerte je Teil (und Prüfer)"
+          },
+          "cellRanges": {
+            "type": "object",
+            "help": "Spannweiten je Teil (und Prüfer)"
+          },
+          "partMeans": {
+            "type": "Object<string, number>",
+            "help": "Mittelwert je Teil"
+          },
+          "operatorMeans": {
+            "type": "Object<string, number>",
+            "help": "Mittelwert je Prüfer"
+          },
+          "controlChart": {
+            "type": "ControlLimits",
+            "help": "Grenzen der x̄-R-Karte",
+            "keysOf": "ControlLimits",
+            "keys": {
+              "xbarCL": {
+                "type": "number",
+                "help": "Mittellinie x̄"
+              },
+              "xbarUCL": {
+                "type": "number",
+                "help": "obere Grenze x̄"
+              },
+              "xbarLCL": {
+                "type": "number",
+                "help": "untere Grenze x̄"
+              },
+              "rCL": {
+                "type": "number",
+                "help": "Mittellinie R"
+              },
+              "rUCL": {
+                "type": "number",
+                "help": "obere Grenze R"
+              },
+              "rLCL": {
+                "type": "number",
+                "help": "untere Grenze R"
+              },
+              "rBar": {
+                "type": "number",
+                "help": "mittlere Spannweite"
+              },
+              "A2": {
+                "type": "number",
+                "help": "Faktor A₂"
+              },
+              "D3": {
+                "type": "number",
+                "help": "Faktor D₃"
+              },
+              "D4": {
+                "type": "number",
+                "help": "Faktor D₄"
+              }
+            }
+          },
+          "params": {
+            "type": "ResultParams",
+            "help": "gerechnete Parameter",
+            "keysOf": "ResultParams",
+            "keys": {
+              "alpha": {
+                "type": "number",
+                "help": "Signifikanzniveau"
+              },
+              "studyVarMultiplier": {
+                "type": "number",
+                "help": "Streuungsfaktor k"
+              },
+              "tolerance": {
+                "type": "number|null",
+                "help": "Toleranz"
+              },
+              "lsl": {
+                "type": "number",
+                "help": "untere Grenze, ohne Wert wenn leer"
+              },
+              "usl": {
+                "type": "number",
+                "help": "obere Grenze, ohne Wert wenn leer"
+              },
+              "verdictBasis": {
+                "type": "'tolerance'|'studyVar'",
+                "help": "gewählter Bezug, fehlt bei auto",
+                "optional": true
+              },
+              "historicalSigma": {
+                "type": "number|null",
+                "help": "historische Streuung"
+              }
+            }
+          },
+          "warnings": {
+            "type": "string[]",
+            "help": "Hinweise"
+          }
+        }
       },
       "errorMsg": {
         "type": "string",
