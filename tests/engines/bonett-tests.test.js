@@ -108,6 +108,23 @@ suite('Bonett — 1 variance edge cases', () => {
     const r = bonettVarianceTest([1, 2, 4], 1);
     assertEqual(r.ci[0] > 0 && r.ci[1] > r.ci[0], true);
   });
+  test('sigma0Sq within 1e-12 of s² gives p close to 1, not 0', () => {
+    const s2 = bonettVarianceTest(x, 1).sampleVariance;
+    for (const f of [1 - 1e-12, 1 + 1e-12]) {
+      const r = bonettVarianceTest(x, s2 * f);
+      assertEqual(r.pValue > 0.99, true);
+      assertEqual(r.reject, false);
+    }
+  });
+  test('sigma0Sq = 1.04 against s² = 1.0400000000000005 gives p close to 1', () => {
+    const r = bonettVarianceTest([5.1, 5.3, 5.5, 5.7, 5.9, 7.9], 1.04);
+    assertEqual(r.pValue > 0.99, true);
+    assertEqual(r.reject, false);
+  });
+  test('n = 3 sample with sigma0Sq = 0.04 gives a sane p', () => {
+    const r = bonettVarianceTest([1.1, 1.3, 1.5], 0.04);
+    assertEqual(r.pValue > 0, true);
+  });
   test('one-sided "less" leaves the lower CI end open', () => {
     const r = bonettVarianceTest(x, 4, 'less');
     assertEqual(r.ci[0], null);
@@ -136,5 +153,20 @@ suite('Bonett — 2 variances edge cases', () => {
   });
   test('"greater" leaves the upper CI end open', () => {
     assertEqual(bonettRatioTest(a, b, 'greater').ci[1], null);
+  });
+  test('unbalanced ratio just below and just above 1 gives p close to 1', () => {
+    const b6 = b.slice(0, 6);
+    const v1 = bonettRatioTest(a, b6).variance1, v2 = bonettRatioTest(a, b6).variance2;
+    const scale = (f) => { const k = Math.sqrt(v2 / v1 * f); return a.map(t => t * k); };
+    for (const f of [1 - 2e-9, 1 + 2e-9]) {
+      const r = bonettRatioTest(scale(f), b6);
+      assertEqual(r.pValue > 0.99, true);
+      assertEqual(r.reject, false);
+    }
+  });
+  test('throws when a sample size does not exceed z', () => {
+    let msg = '';
+    try { bonettRatioTest([1, 2, 5, 9, 3, 4, 4, 6], [1, 3, 2.5], 'two-sided', 0.001); } catch (e) { msg = e.message; }
+    assertEqual(msg.includes('n > z'), true);
   });
 });

@@ -158,7 +158,10 @@ function oneSampleAlphas(n, s2, kurt, sigma0Sq) {
   const cap = Math.min(Z_CAP, n * (1 - 1e-9));
   const logSigma0 = Math.log(sigma0Sq);
   const f = (z) => oneSampleLogLimits(n, s2, kurt, z)[idx] - logSigma0;
-  const roots = gridRoots(f, 1e-9, cap, 4000);
+  // Scan from z = 0 (f(0) = log s² − log σ₀², c = 1) so a bound that already crosses
+  // σ₀² at the first grid point is still found.
+  if (f(0) === 0) return [0.5, 0.5];
+  const roots = gridRoots(f, 0, cap, 4000);
   const tail = roots.length ? normalUpperTailPrecise(roots[0]) : 0;
   return lower ? [tail, 1 - tail] : [1 - tail, tail];
 }
@@ -198,6 +201,11 @@ function ratioAlphasUnbalanced(bounds, ratio, nMin) {
   const steps = 800, lo = 1e-6;
   let tail = 0;
   let a = lo, fa = f(a);
+  // Already past the crossing at the first grid point: the crossing lies at z <= lo.
+  if (ratio > 1 ? fa < 0 : fa > 0) {
+    tail = normalUpperTailPrecise(lo);
+    return ratio > 1 ? [tail, 1 - tail] : [1 - tail, tail];
+  }
   for (let i = 1; i <= steps; i++) {
     const b = lo + (cap - lo) * i / steps, fb = f(b);
     if (fa * fb <= 0) { tail = normalUpperTailPrecise(solveBracket(f, a, b)); break; }
@@ -223,6 +231,9 @@ export function bonettRatioTest(data1, data2, direction = 'two-sided', alpha = 0
   const var1 = variance(data1), var2 = variance(data2);
   if (!(var1 > 0) || !(var2 > 0)) throw new Error('Sample has zero variance');
 
+  const zNeed = normalQuantilePrecise(direction === 'two-sided' ? 1 - alpha / 2 : 1 - alpha);
+  if (Math.min(n1, n2) <= zNeed) throw new Error('Bonett CI needs n > z');
+
   const summary = { n1, n2, var1, var2, kurt1: bonettKurtosis(data1), kurt2: bonettKurtosis(data2) };
   const bounds = (z) => { const r = bonettRatioCI(summary, z); return [r.lower, r.upper]; };
   const ratio = var1 / var2;
@@ -241,7 +252,7 @@ export function bonettRatioTest(data1, data2, direction = 'two-sided', alpha = 0
     pTwo = Math.min(1, 2 * Math.min(aL, aU));
   }
 
-  const z = normalQuantilePrecise(direction === 'two-sided' ? 1 - alpha / 2 : 1 - alpha);
+  const z = zNeed;
   const [lo, hi] = bounds(z);
   const ci = direction === 'two-sided' ? [lo, hi] : (direction === 'greater' ? [lo, null] : [null, hi]);
   const pValue = direction === 'two-sided' ? pTwo : (direction === 'greater' ? aL : aU);

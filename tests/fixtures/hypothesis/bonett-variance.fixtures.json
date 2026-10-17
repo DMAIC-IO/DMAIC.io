@@ -5,7 +5,7 @@
     "scipy": "1.18.0",
     "numpy": "2.5.1"
   },
-  "generated_at": "2026-10-17T17:34:38.074328+00:00",
+  "generated_at": "2026-10-17T21:34:35.317769+00:00",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -50,7 +50,7 @@
       },
       "expected": {
         "statistic": null,
-        "pValue": 0.39275683508597736,
+        "pValue": 0.3927568350859769,
         "sampleVariance": 4.804215144736843,
         "ci": [
           3.066261960083416,
@@ -161,7 +161,7 @@
       },
       "expected": {
         "statistic": null,
-        "pValue": 0.18473808791465907,
+        "pValue": 0.18473808791465873,
         "sampleVariance": 1.588676290000002,
         "ci": [
           1.0117320010067492,
@@ -209,7 +209,7 @@
       },
       "expected": {
         "statistic": null,
-        "pValue": 0.2460183279678263,
+        "pValue": 0.2460183279678264,
         "sampleVariance": 2.3394495026315796,
         "ci": [
           1.5750977507470374,
@@ -325,7 +325,7 @@
       },
       "expected": {
         "statistic": null,
-        "pValue": 0.037791634418431835,
+        "pValue": 0.037791634418431586,
         "sampleVariance": 111.97525490229886,
         "ci": [
           null,
@@ -358,7 +358,7 @@
       },
       "expected": {
         "statistic": null,
-        "pValue": 0.19280313789631442,
+        "pValue": 0.19280313789631454,
         "sampleVariance": 109.23328769999998,
         "ci": [
           16.44073424106666,
@@ -429,7 +429,7 @@
       },
       "expected": {
         "statistic": null,
-        "pValue": 0.6800759318164713,
+        "pValue": 0.6800759318164711,
         "sampleVariance": 2.5664550000000004,
         "ci": [
           0.9413684191992612,
@@ -474,7 +474,7 @@
       },
       "expected": {
         "statistic": null,
-        "pValue": 0.15114942395128117,
+        "pValue": 0.1511494239512814,
         "sampleVariance": 12.359376014705884,
         "ci": [
           5.287578685286643,
@@ -602,7 +602,7 @@
       },
       "expected": {
         "statistic": null,
-        "pValue": 0.3486332350713235,
+        "pValue": 0.3486332350713238,
         "sampleVariance": 6.814073188989901,
         "ci": [
           4.8230412095822315,
@@ -670,7 +670,7 @@
       },
       "expected": {
         "statistic": null,
-        "pValue": 0.1620715044027486,
+        "pValue": 0.16207150440274865,
         "sampleVariance": 1.2349466403846152,
         "ci": [
           null,

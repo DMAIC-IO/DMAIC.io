@@ -120,8 +120,8 @@
           "type": "number[]",
           "required": true,
           "description": {
-            "de": "Stichprobendaten (mindestens 3 Werte)",
-            "en": "Sample data (at least 3 values)"
+            "de": "Stichprobendaten (Engine: mindestens 2 Werte; Modul Hypothesentest: mindestens 3)",
+            "en": "Sample data (engine: at least 2 values; hypothesis-test module: at least 3)"
           }
         },
         {

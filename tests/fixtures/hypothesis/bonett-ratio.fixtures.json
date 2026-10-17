@@ -5,7 +5,7 @@
     "scipy": "1.18.0",
     "numpy": "2.5.1"
   },
-  "generated_at": "2026-10-17T17:34:38.922689+00:00",
+  "generated_at": "2026-10-17T21:34:39.300398+00:00",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -300,7 +300,7 @@
       },
       "expected": {
         "statistic": null,
-        "pValue": 0.5431301894567286,
+        "pValue": 0.5431301894567289,
         "variance1": 57.09549726666667,
         "variance2": 36.84982763678161,
         "ratio": 1.5494101581543591,
@@ -370,7 +370,7 @@
       },
       "expected": {
         "statistic": null,
-        "pValue": 0.02457445981094757,
+        "pValue": 0.024574459810947594,
         "variance1": 5.003877443678161,
         "variance2": 1.4814154242424242,
         "ratio": 3.3777678845466834,
@@ -440,7 +440,7 @@
       },
       "expected": {
         "statistic": null,
-        "pValue": 0.9754255401890525,
+        "pValue": 0.9754255401890524,
         "variance1": 5.003877443678161,
         "variance2": 1.4814154242424242,
         "ratio": 3.3777678845466834,
@@ -514,7 +514,7 @@
       },
       "expected": {
         "statistic": null,
-        "pValue": 0.251908239812206,
+        "pValue": 0.25190823981220634,
         "variance1": 13.782795512179487,
         "variance2": 3.107101066666666,
         "ratio": 4.4359018958356025,
@@ -699,7 +699,7 @@
       },
       "expected": {
         "statistic": null,
-        "pValue": 0.052454312621913884,
+        "pValue": 0.052454312621873264,
         "variance1": 83985.45705995527,
         "variance2": 3862640.4780952376,
         "ratio": 0.02174301686533626,

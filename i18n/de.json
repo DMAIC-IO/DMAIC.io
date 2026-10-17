@@ -4385,7 +4385,7 @@
       "secondaryNoteLevene": "Minitab zeigt bei zwei Varianzen Bonett und Levene. Levene ist zum Abgleich aufgeführt; er prüft nur zweiseitig und gibt kein Konfidenzintervall.",
       "twoSidedSuffix": "zweiseitig",
       "powerNormalApprox": "Berechnet unter Normalverteilungsannahme – nur Näherung.",
-      "testNotComputable": "Der Test ist für diese Daten nicht berechenbar (zu wenige Werte oder keine Streuung in einer Stichprobe).",
+      "testNotComputable": "Der Test ist für diese Daten nicht berechenbar (zu wenige Werte, keine Streuung oder ein unbeschränktes Konfidenzintervall).",
       "yes": "Ja",
       "no": "Nein",
       "sectionVarEquality": "Varianzgleichheit",
