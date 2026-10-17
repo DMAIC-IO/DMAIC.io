@@ -23,6 +23,7 @@ import {
   chiSquareVarianceTest, fTest, leveneTest,
   oneSampleTTest, twoSampleTTest, welchTTest,
   wilcoxonSignedRank, mannWhitneyU, hodgesLehmann,
+  bonettVarianceTest, bonettRatioTest,
   oneWayANOVA, leveneTestK, kruskalWallis, bartlettTest,
   powerChiSquare, powerFTest, powerOneSampleT, powerTwoSampleT,
   findRequiredN, pairDifferences, pairedTTest,
@@ -33,7 +34,7 @@ import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-pi
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 
 /** Mapping: test name → Algorithm Lab ID. */
-import { isNormalByAD, meanRoute, isConstant, ciContains } from './hypothesis-test-routing.js';
+import { isNormalByAD, meanRoute, varianceRoute, isConstant, ciContains } from './hypothesis-test-routing.js';
 
 const ALGO_LAB_IDS = {
   'Shapiro-Wilk': 'shapiro-wilk',
@@ -41,6 +42,8 @@ const ALGO_LAB_IDS = {
   'Chi-Square Variance Test': 'chi-square-variance',
   'F-Test': 'f-test',
   'Levene Test (Brown-Forsythe)': 'levene-test',
+  'Bonett Variance Test': 'bonett-variance',
+  'Bonett Ratio Test': 'bonett-ratio',
   'One-Sample t-Test': 'one-sample-t-test',
   'Two-Sample t-Test (pooled)': 'two-sample-t-test',
   'Welch t-Test': 'welch-t-test',
@@ -291,10 +294,17 @@ const mod = createModule({
         }
         const level = Math.round((1 - alpha) * 100);
         const isMeanDiff = !isVariance && isTwo && r.ci != null;
+        const fmtCi = (ci) => `[${fmt(ci[0])}, ${fmt(ci[1])}]`;
         if (r.ci) {
+          const isRatio = isVariance && isTwo && r.ratio != null;
           const ciLabel = isPaired ? _t('ciPairedDiffLabel', { level })
-            : (isMeanDiff ? _t('ciDiffLabel', { level }) : _t('ciLabel', { level }));
-          metrics.push({ label: ciLabel, value: `[${fmt(r.ci[0])}, ${fmt(r.ci[1])}]`, valueClass: 'hyptest__metric-value--sm', title: this._tip('KI') });
+            : isMeanDiff ? _t('ciDiffLabel', { level })
+            : isRatio ? _t('ciRatioLabel', { level })
+            : _t('ciLabel', { level });
+          metrics.push({ label: ciLabel, value: fmtCi(r.ci), valueClass: 'hyptest__metric-value--sm', title: this._tip('KI') });
+        }
+        if (r.ciSigma) {
+          metrics.push({ label: _t('ciSigmaLabel', { level }), value: fmtCi(r.ciSigma), valueClass: 'hyptest__metric-value--sm', title: this._tip('KI') });
         }
         if (r.hl) {
           const achieved = fmt(r.hl.achievedConfidence * 100, 1);
@@ -360,14 +370,16 @@ const mod = createModule({
 
       // ── Rank test shown next to a large-n parametric result ──
 
-      _secondaryResult(r, alpha) {
+      _secondaryResult(r, alpha, { note = _t('secondaryNote'), twoSided = false } = {}) {
         const pCls = r.pValue < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success';
+        const methodLabel = twoSided ? `${_t('testMethod')} (${_t('twoSidedSuffix')})` : _t('testMethod');
         return {
           metrics: [
-            { label: _t('testMethod'), value: r.testName, algoId: ALGO_LAB_IDS[r.testName] || '', valueClass: 'hyptest__metric-value--sm', title: this._tip(_t('testMethod')) },
+            { label: methodLabel, value: r.testName, algoId: ALGO_LAB_IDS[r.testName] || '', valueClass: 'hyptest__metric-value--sm', title: this._tip(_t('testMethod')) },
             { label: _t('statistic'), value: fmt(r.statistic), valueClass: '', title: this._tip(_t('statistic')) },
             { label: 'p', value: fmt(r.pValue), valueClass: pCls, title: this._tip('p') },
           ],
+          note,
         };
       },
 
@@ -441,6 +453,7 @@ const mod = createModule({
           goalPct,
           goalBoxClass: goalReached ? 'hyptest__decision--accept' : 'hyptest__decision--warn',
           requiredLine,
+          note: '',
           metrics: [
             { label: _t('currentPower'), value: `${(curPow * 100).toFixed(1)}%`, valueClass: goalReached ? 'hyptest__metric-value--success' : 'hyptest__metric-value--warning', title: this._tip(_t('currentPower')) },
             { label: 'n', value: `${n1}${d2 ? ` / ${  d2.length}` : ''}`, valueClass: '', title: this._tip('n') },
@@ -545,9 +558,13 @@ const mod = createModule({
         let algo;
         let meanFamily = null;
         if (this.model.category === 'variance') {
-          algo = this.model.testType === 'one'
-            ? { id: 'chi2', name: 'Chi-Square Variance Test' }
-            : (allNormal ? { id: 'ftest', name: 'F-Test' } : { id: 'levene', name: 'Levene Test (Brown-Forsythe)' });
+          const VARIANCE_ALGOS = {
+            chi2: { id: 'chi2', name: 'Chi-Square Variance Test' },
+            bonett1: { id: 'bonett1', name: 'Bonett Variance Test' },
+            ftest: { id: 'ftest', name: 'F-Test' },
+            bonett2: { id: 'bonett2', name: 'Bonett Ratio Test' },
+          };
+          algo = VARIANCE_ALGOS[varianceRoute(this.model.testType, allNormal)];
         } else if (this.model.testType === 'one') {
           meanFamily = meanRoute(n1Normal, [d1.length]);
           algo = meanFamily === 'rank'
@@ -577,14 +594,22 @@ const mod = createModule({
         // Run main test
         const dir = this.model.direction;
         let r;
-        if (algo.id === 'chi2') r = chiSquareVarianceTest(d1, target, dir, alpha);
-        else if (algo.id === 'ftest') r = fTest(d1, d2, dir, alpha);
-        else if (algo.id === 'levene') r = leveneTest(d1, d2, alpha);
-        else if (algo.id === 'ttest1') r = oneSampleTTest(d1, target, dir, alpha);
-        else if (algo.id === 'wilcoxon') r = wilcoxonSignedRank(d1, target, dir, alpha);
-        else if (algo.id === 'ttest2p') r = twoSampleTTest(d1, d2, dir, alpha);
-        else if (algo.id === 'welch') r = welchTTest(d1, d2, dir, alpha);
-        else if (algo.id === 'mannwhitney') r = mannWhitneyU(d1, d2, dir, alpha);
+        try {
+          if (algo.id === 'chi2') r = chiSquareVarianceTest(d1, target, dir, alpha);
+          else if (algo.id === 'ftest') r = fTest(d1, d2, dir, alpha);
+          else if (algo.id === 'bonett1') r = bonettVarianceTest(d1, target, dir, alpha);
+          else if (algo.id === 'bonett2') r = bonettRatioTest(d1, d2, dir, alpha);
+          else if (algo.id === 'ttest1') r = oneSampleTTest(d1, target, dir, alpha);
+          else if (algo.id === 'wilcoxon') r = wilcoxonSignedRank(d1, target, dir, alpha);
+          else if (algo.id === 'ttest2p') r = twoSampleTTest(d1, d2, dir, alpha);
+          else if (algo.id === 'welch') r = welchTTest(d1, d2, dir, alpha);
+          else if (algo.id === 'mannwhitney') r = mannWhitneyU(d1, d2, dir, alpha);
+        } catch {
+          // Bonett's CI is undefined for degenerate samples (no spread, tiny n)
+          this.result = null;
+          this.errorText = _t('testNotComputable');
+          return;
+        }
         // Shift estimate and CI for the rank test (two-sided, like the t CIs)
         if (algo.id === 'mannwhitney') r = { ...r, hl: hodgesLehmann(d1, d2, alpha) };
 
@@ -595,9 +620,19 @@ const mod = createModule({
             ? mannWhitneyU(d1, d2, dir, alpha)
             : wilcoxonSignedRank(d1, target, dir, alpha), alpha);
         }
+        // Two-sample Bonett: Levene alongside, as Minitab's "2 Variances" shows both
+        if (algo.id === 'bonett2') {
+          secondary = this._secondaryResult(leveneTest(d1, d2, alpha), alpha, {
+            note: _t('secondaryNoteLevene'),
+            twoSided: dir !== 'two-sided',
+          });
+        }
 
         const normCards = [this._normCard('S1', d1, sw1, ad1, n1Normal, alpha)];
         if (d2) normCards.push(this._normCard('S2', d2, sw2, ad2, n2Normal, alpha));
+
+        const power = this._powerInfo(d1, d2, target, alpha);
+        power.note = (algo.id === 'bonett1' || algo.id === 'bonett2') ? _t('powerNormalApprox') : '';
 
         this.result = {
           isK: false,
@@ -607,7 +642,7 @@ const mod = createModule({
           varEquality,
           main: this._mainResult(r, alpha, target),
           secondary,
-          power: this._powerInfo(d1, d2, target, alpha),
+          power,
           pairwise: null,
         };
       },

@@ -363,7 +363,7 @@
                     </div>
                   </template>
                 </div>
-                <div class="hyptest__decision hyptest__decision--warn" x-text="t('secondaryNote')"></div>
+                <div class="hyptest__decision hyptest__decision--warn" x-text="result.secondary.note"></div>
               </div>
             </div>
           </template>
@@ -385,6 +385,9 @@
                     </div>
                   </template>
                 </div>
+                <template x-if="result.power.note">
+                  <div class="hyptest__decision hyptest__decision--warn" x-text="result.power.note"></div>
+                </template>
               </div>
             </div>
           </template>
