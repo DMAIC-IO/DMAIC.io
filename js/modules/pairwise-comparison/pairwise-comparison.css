@@ -25,6 +25,16 @@
   border-bottom: var(--border-width) solid var(--color-border-primary);
 }
 
+/* Anker der Reiterleiste: schrumpfbreit, damit der Hilfekreis rechts neben
+   dem letzten Reiter sitzt; mittig, weil die Leiste oben am Modul anliegt. */
+.pairwise__tabs-group {
+  display: flex;
+}
+
+.pairwise__tabs-group.context-help-anchor > .context-help__btn {
+  top: 50%;
+}
+
 .pairwise__tab {
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);

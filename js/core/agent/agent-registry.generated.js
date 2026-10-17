@@ -9767,11 +9767,11 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+        "returns": "AgentRead",
+        "help": "Den Lesezustand liefern: Model-Form plus Auswertung."
       },
       "addCriterion": {
         "params": [
@@ -9852,27 +9852,68 @@ export const AGENT_REGISTRY = {
       "criteria": {
         "type": "string[]",
         "help": "die Kriterien in Eingabereihenfolge, adressiert über ihre Nummer ab 0; höchstens 15, mindestens 3 für einen Vergleich",
-        "bulk": false
+        "bulk": false,
+        "derived": true
       },
       "matrix": {
         "type": "number[][]",
         "help": "die Vergleichsmatrix, matrix[i][j] sagt, wie Kriterium i gegen Kriterium j abgeschnitten hat: 1 gewonnen, 0.5 unentschieden, 0 verloren. Leer, solange kein Vergleich läuft; die Diagonale ist ohne Bedeutung",
-        "bulk": false
+        "bulk": false,
+        "derived": true
       },
       "pairs": {
         "type": "[number, number][]",
         "help": "die gemischte Folge der zu entscheidenden Paare, je Eintrag die zwei Kriteriennummern. Leer, solange kein Vergleich läuft",
-        "bulk": false
+        "bulk": false,
+        "derived": true
       },
       "currentPair": {
         "type": "number",
         "help": "wie viele Paare schon entschieden sind — und damit der Index des nächsten in `pairs`; gleich der Länge von `pairs` heißt fertig",
-        "bulk": false
+        "bulk": false,
+        "derived": true
       },
       "viewPhase": {
         "type": "'input'|'compare'|'results'",
         "help": "der angezeigte Reiter: input (Kriterien erfassen), compare (Paare entscheiden) oder results (Rangfolge und Matrix). Persistiert, gehört also zum gespeicherten Projekt",
-        "bulk": false
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "Result|null",
+        "help": "Auswertung, leer bis alle Paare entschieden sind",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "scores": {
+            "type": "number[]",
+            "help": "Punkte je Kriterium, in Eingabereihenfolge"
+          },
+          "maxScore": {
+            "type": "number",
+            "help": "höchste Punktzahl"
+          },
+          "ranking": {
+            "type": "RankEntry[]",
+            "help": "Rangfolge, absteigend nach Punkten",
+            "keysOf": "RankEntry",
+            "keys": {
+              "name": {
+                "type": "string",
+                "help": "Kriterium"
+              },
+              "score": {
+                "type": "number",
+                "help": "Punkte"
+              },
+              "idx": {
+                "type": "number",
+                "help": "Nummer des Kriteriums ab 0"
+              }
+            }
+          }
+        }
       }
     }
   },

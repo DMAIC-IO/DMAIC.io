@@ -12,7 +12,8 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { finiteOrNull } from '../../core/agent/agent-results.js';
 import { requireEnum, requireIndex } from '../../core/agent/agent-argcheck.js';
 import {
   State, MAX_CRITERIA, MIN_CRITERIA, VIEW_PHASES,
@@ -32,6 +33,46 @@ function downloadFile(content, filename, type) {
   URL.revokeObjectURL(url);
 }
 
+/**
+ * Die Auswertung des Paarvergleichs, sobald alle Paare entschieden sind —
+ * dieselben Model-Getter, aus denen Rangliste und Summenspalte rendern.
+ *
+ * @typedef {object} Result
+ * @property {number[]} scores  Punkte je Kriterium, in Eingabereihenfolge
+ * @property {number} maxScore  höchste Punktzahl
+ * @property {RankEntry[]} ranking  Rangfolge, absteigend nach Punkten
+ */
+
+/**
+ * @typedef {object} RankEntry
+ * @property {string} name  Kriterium
+ * @property {number} score  Punkte
+ * @property {number} idx  Nummer des Kriteriums ab 0
+ */
+
+/**
+ * Was `read()` liefert: der persistierte Zustand und die Auswertung.
+ *
+ * @typedef {object} AgentRead
+ * @property {string[]} criteria  die Kriterien in Eingabereihenfolge,
+ *   adressiert über ihre Nummer ab 0; höchstens 15, mindestens 3 für einen
+ *   Vergleich
+ * @property {number[][]} matrix  die Vergleichsmatrix, matrix[i][j] sagt, wie
+ *   Kriterium i gegen Kriterium j abgeschnitten hat: 1 gewonnen, 0.5
+ *   unentschieden, 0 verloren. Leer, solange kein Vergleich läuft; die
+ *   Diagonale ist ohne Bedeutung
+ * @property {[number, number][]} pairs  die gemischte Folge der zu
+ *   entscheidenden Paare, je Eintrag die zwei Kriteriennummern. Leer, solange
+ *   kein Vergleich läuft
+ * @property {number} currentPair  wie viele Paare schon entschieden sind — und
+ *   damit der Index des nächsten in `pairs`; gleich der Länge von `pairs`
+ *   heißt fertig
+ * @property {'input'|'compare'|'results'} viewPhase  der angezeigte Reiter:
+ *   input (Kriterien erfassen), compare (Paare entscheiden) oder results
+ *   (Rangfolge und Matrix). Persistiert, gehört also zum gespeicherten Projekt
+ * @property {Result|null} result  Auswertung, leer bis alle Paare entschieden sind
+ */
+
 export default createModule({
   config: {
     id: 'pairwise-comparison',
@@ -44,7 +85,23 @@ export default createModule({
   Model: State,
   data(module, _t) {
     return {
-      ...agentReadMixin(module),
+      /**
+       * Den Lesezustand liefern: Model-Form plus Auswertung.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead}
+       */
+      read(options) {
+        const m = this.model;
+        const result = m.resultsReachable
+          ? {
+            scores: m.scores.map(finiteOrNull),
+            maxScore: finiteOrNull(m.maxScore),
+            ranking: m.ranked.map(r => ({ name: r.name, score: finiteOrNull(r.score), idx: r.idx })),
+          }
+          : null;
+        return readAgentState('pairwise-comparison', { ...m.toJSON(), result }, options);
+      },
 
       // ── transient UI state (not persisted) ──
       inputValue: '',

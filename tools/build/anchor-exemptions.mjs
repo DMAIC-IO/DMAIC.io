@@ -51,6 +51,10 @@ export const ANCHOR_EXEMPTIONS = {
     { match: 'glm__method-option', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },
     { match: 'x-text="term.label"', reason: 'je Prädiktor ein Eingabefeld; der Satz steht am Vorhersage-Knopf', count: 1 },
   ],
+  'pairwise-comparison': [
+    { match: 'class="pairwise__matrix-col-header" :key="j"', reason: 'Kopf je Kriterium bzw. Gruppe (Name aus den Daten); der Satz steht an der Tabelle', count: 1 },
+    { match: 'pairwise__matrix-row-label', reason: 'Kopf je Kriterium bzw. Gruppe (Name aus den Daten); der Satz steht an der Tabelle', count: 1 },
+  ],
   'hypothesis-test': [
     { match: '<th :key="h" x-text="h">', reason: 'Kopf je Kriterium bzw. Gruppe (Name aus den Daten); der Satz steht an der Tabelle', count: 1 },
     { match: 'x-text="row.head"', reason: 'Kopf je Kriterium bzw. Gruppe (Name aus den Daten); der Satz steht an der Tabelle', count: 1 },

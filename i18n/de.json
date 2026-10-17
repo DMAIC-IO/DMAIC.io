@@ -4499,19 +4499,19 @@
           }
         },
         "startComparison": {
-          "help": "Startet den Vergleich: baut die Matrix und die gemischte Paarfolge und wechselt in die Phase compare. Unter drei Kriterien liefert der Aufruf false — eine Absage, kein Fehler."
+          "help": "Startet den Vergleich: bildet alle Paare der Kriterien in gemischter Reihenfolge und wechselt auf den Reiter Vergleich. Unter drei Kriterien liefert der Aufruf false — eine Absage, kein Fehler."
         },
         "chooseLeft": {
-          "help": "Entscheidet das anstehende Paar für sein erstes Kriterium und rückt einen Schritt vor; nach dem letzten Paar wechselt die Phase auf results. Welches Paar anstehend ist, steht in pairs[currentPair]. Solange kein Vergleich läuft — vor startComparison oder nachdem alle Paare entschieden sind — liefert der Aufruf false; das ist eine Absage, kein Fehler."
+          "help": "Entscheidet das anstehende Paar für das linke Kriterium (Taste Pfeil links): es bekommt 1 Punkt, das andere 0. Danach kommt das nächste Paar; nach dem letzten wechselt die Ansicht auf den Reiter Ergebnis. Läuft kein Vergleich — vor dem Start oder wenn alle Paare entschieden sind —, liefert der Aufruf false; das ist eine Absage, kein Fehler."
         },
         "chooseRight": {
-          "help": "Entscheidet das anstehende Paar für sein zweites Kriterium und rückt einen Schritt vor; nach dem letzten Paar wechselt die Phase auf results. Solange kein Vergleich läuft — vor startComparison oder nachdem alle Paare entschieden sind — liefert der Aufruf false; das ist eine Absage, kein Fehler."
+          "help": "Entscheidet das anstehende Paar für das rechte Kriterium (Taste Pfeil rechts): es bekommt 1 Punkt, das andere 0. Danach kommt das nächste Paar; nach dem letzten wechselt die Ansicht auf den Reiter Ergebnis. Läuft kein Vergleich — vor dem Start oder wenn alle Paare entschieden sind —, liefert der Aufruf false; das ist eine Absage, kein Fehler."
         },
         "tieCurrent": {
-          "help": "Erklärt das anstehende Paar für unentschieden — beide Kriterien bekommen 0.5 — und rückt einen Schritt vor. Solange kein Vergleich läuft — vor startComparison oder nachdem alle Paare entschieden sind — liefert der Aufruf false; das ist eine Absage, kein Fehler."
+          "help": "Wertet das anstehende Paar als gleichwertig (Leertaste): beide Kriterien bekommen 0,5 Punkte. Danach kommt das nächste Paar. Läuft kein Vergleich — vor dem Start oder wenn alle Paare entschieden sind —, liefert der Aufruf false; das ist eine Absage, kein Fehler."
         },
         "setViewPhase": {
-          "help": "Setzt die angezeigte Arbeitsphase.",
+          "help": "Wechselt den angezeigten Reiter: Kriterien, Vergleich oder Ergebnis. Vergleich ist nur bei laufendem, Ergebnis nur bei abgeschlossenem Vergleich erreichbar.",
           "params": {
             "phase": "Die Arbeitsphase: input (Kriterien erfassen), compare (Paare entscheiden) oder results (Rangfolge und Matrix). Ein Wert daneben ist ein Fehler. compare braucht einen laufenden Vergleich, results einen abgeschlossenen — ist die Arbeitsphase nicht erreichbar, liefert der Aufruf false — eine Absage, kein Fehler."
           }
@@ -4539,6 +4539,19 @@
         },
         "viewPhase": {
           "help": "Die angezeigte Arbeitsphase: input (Kriterien erfassen), compare (Paare entscheiden) oder results (Rangfolge und Matrix). Ein persistierter Anzeigezustand — er gehört zum gespeicherten Projekt."
+        },
+        "result": { "help": "Die Auswertung: Punkte je Kriterium und Rangfolge, jede Kennzahl unter keys einzeln beschrieben; null, solange nicht alle Paare entschieden sind." }
+      },
+      "types": {
+        "Result": {
+          "scores": "Die Punkte je Kriterium, in der Reihenfolge der Kriterienliste — die Spalte Σ der Vergleichsmatrix. Jeder Vergleich bringt 1 Punkt für einen Sieg, 0,5 für gleichwertig und 0 für eine Niederlage; die Punkte sind die Summe einer Matrixzeile ohne die Diagonale. Bei n Kriterien sind höchstens n − 1 Punkte möglich, und alle Punkte zusammen ergeben n·(n − 1)/2, die Zahl der Paare.",
+          "maxScore": "Die höchste erreichte Punktzahl. Der längste Balken im Ranking gehört zu ihr; jeder andere Balken ist im Verhältnis seiner Punkte zu ihr kürzer.",
+          "ranking": "Das Ranking: alle Kriterien absteigend nach Punkten. Bei gleicher Punktzahl bleibt die Reihenfolge der Kriterienliste erhalten; Platz 1 bis 3 sind farbig hervorgehoben."
+        },
+        "RankEntry": {
+          "name": "Der Name des Kriteriums, wie er in der Kriterienliste steht.",
+          "score": "Die Punkte des Kriteriums: 1 je gewonnenem Vergleich, 0,5 je gleichwertigem, 0 je verlorenem. Das Ranking zeigt sie mit einer Nachkommastelle und einem Dezimalpunkt (3.5).",
+          "idx": "Die Nummer des Kriteriums in der Kriterienliste, von 0 an gezählt — dieselbe Nummer wie Zeile und Spalte der Vergleichsmatrix."
         }
       },
       "tabInput": "Kriterien",

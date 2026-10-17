@@ -1,6 +1,7 @@
 <section class="module-container pairwise" x-data="pairwiseComparison" @keydown.window="compareKey($event)">
   <div class="module-container__body">
     <div class="pairwise__tabs">
+      <div class="pairwise__tabs-group" data-help-key="modules.pairwise-comparison.actions.setViewPhase.help">
       <div class="pairwise__tab" data-tab="input" :class="tabClass(0)" @click="goToTab('input')">
         <span class="pairwise__tab-num">01</span><span x-text="t('tabInput')"></span>
       </div>
@@ -9,6 +10,7 @@
       </div>
       <div class="pairwise__tab" data-tab="results" :class="tabClass(2)" @click="goToTab('results')">
         <span class="pairwise__tab-num">03</span><span x-text="t('tabResults')"></span>
+      </div>
       </div>
     </div>
 
@@ -26,6 +28,7 @@
               :disabled="atMax()"
               @keydown.enter.prevent="addCriterionFromInput()">
             <button class="pairwise__btn pairwise__btn--accent" type="button"
+              data-help-key="modules.pairwise-comparison.actions.addCriterion.help"
               data-action="add" :disabled="atMax()" @click="addCriterionFromInput()"
               x-text="addBtnLabel()"></button>
           </div>
@@ -51,6 +54,7 @@
             <div class="pairwise__hint" x-text="maxReachedText()"></div>
           </template>
           <button class="pairwise__btn pairwise__btn--start" type="button"
+            data-help-key="modules.pairwise-comparison.actions.startComparison.help"
             data-action="start" :disabled="model.criteria.length < 3"
             @click="startComparison()">
             <span x-text="startLabel()"></span>
@@ -71,24 +75,24 @@
           <div class="pairwise__card">
             <div class="pairwise__vs-label" x-text="t('vsPrompt')"></div>
             <div class="pairwise__vs">
-              <button class="pairwise__vs-option" type="button" data-action="choose" @click="chooseLeft()">
+              <button class="pairwise__vs-option" type="button" data-action="choose" data-help-key="modules.pairwise-comparison.actions.chooseLeft.help" @click="chooseLeft()">
                 <span class="pairwise__vs-hotkey"><span class="icon icon--sm" data-icon="nav.arrow-left" aria-hidden="true"></span></span>
                 <span class="pairwise__vs-name" x-text="leftName()"></span>
               </button>
               <div class="pairwise__vs-divider">vs</div>
-              <button class="pairwise__vs-option" type="button" data-action="choose" @click="chooseRight()">
+              <button class="pairwise__vs-option" type="button" data-action="choose" data-help-key="modules.pairwise-comparison.actions.chooseRight.help" @click="chooseRight()">
                 <span class="pairwise__vs-hotkey"><span class="icon icon--sm" data-icon="nav.arrow-right" aria-hidden="true"></span></span>
                 <span class="pairwise__vs-name" x-text="rightName()"></span>
               </button>
             </div>
-            <button class="pairwise__vs-tie" type="button" data-action="tie" @click="tieCurrent()">
+            <button class="pairwise__vs-tie" type="button" data-action="tie" data-help-key="modules.pairwise-comparison.actions.tieCurrent.help" @click="tieCurrent()">
               <span class="pairwise__vs-hotkey">␣</span>
               <span x-text="tieLabel()"></span>
             </button>
           </div>
           <div class="pairwise__compare-actions">
             <button class="pairwise__btn pairwise__btn--outline" type="button"
-              data-action="back-to-input" @click="backToInput()">
+              data-action="back-to-input" data-help-key="modules.pairwise-comparison.actions.setViewPhase.help" @click="backToInput()">
               <span class="icon icon--sm icon--text" data-icon="nav.back" aria-hidden="true"></span><span x-text="backLabel()"></span>
             </button>
           </div>
@@ -105,7 +109,7 @@
             <div>
               <div class="pairwise__results-grid">
                 <div class="pairwise__results-col">
-                  <div class="pairwise__section-label" x-text="t('rankingLabel')"></div>
+                  <div class="pairwise__section-label"><span data-help-key="modules.pairwise-comparison.types.Result.ranking" x-text="t('rankingLabel')"></span></div>
                   <ol class="pairwise__rank-list">
                     <template x-for="(r, pos) in model.ranked">
                       <li class="pairwise__rank-item" :key="r.idx"
@@ -115,13 +119,13 @@
                         <span class="pairwise__rank-bar-wrap">
                           <span class="pairwise__rank-bar" :style="rankBarStyle(r.score)"></span>
                         </span>
-                        <span class="pairwise__rank-score" x-text="rankScore(r.score)"></span>
+                        <span class="pairwise__rank-score" data-help-key="modules.pairwise-comparison.types.RankEntry.score" x-text="rankScore(r.score)"></span>
                       </li>
                     </template>
                   </ol>
                 </div>
                 <div class="pairwise__results-col">
-                  <div class="pairwise__section-label" x-text="t('matrixLabel')"></div>
+                  <div class="pairwise__section-label"><span data-help-key="modules.pairwise-comparison.types.Result.scores" x-text="t('matrixLabel')"></span></div>
                   <div class="pairwise__matrix-wrap">
                     <table class="pairwise__matrix">
                       <thead>
@@ -133,7 +137,7 @@
                             </th>
                           </template>
                           <th class="pairwise__matrix-col-header pairwise__matrix-col-header--sum">
-                            <span class="pairwise__matrix-col-header-content">Σ</span>
+                            <span class="pairwise__matrix-col-header-content" data-help-key="modules.pairwise-comparison.types.Result.scores">Σ</span>
                           </th>
                         </tr>
                       </thead>

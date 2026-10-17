@@ -4495,19 +4495,19 @@
           }
         },
         "startComparison": {
-          "help": "Starts the comparison: builds the matrix and the shuffled pair order and switches to the compare phase. With fewer than three criteria the call returns false — a refusal, not an error."
+          "help": "Starts the comparison: forms every pair of the criteria in shuffled order and switches to the Comparison tab. With fewer than three criteria the call returns false — a refusal, not an error."
         },
         "chooseLeft": {
-          "help": "Decides the pending pair in favour of its first criterion and advances one step; after the last pair the phase switches to results. Which pair is pending is in pairs[currentPair]. While no comparison is running — before startComparison or after all pairs are decided — the call returns false; that is a refusal, not an error."
+          "help": "Decides the pending pair for the left criterion (left arrow key): it gets 1 point, the other 0. Then the next pair follows; after the last one the view switches to the Result tab. While no comparison is running — before the start or once all pairs are decided — the call returns false; that is a refusal, not an error."
         },
         "chooseRight": {
-          "help": "Decides the pending pair in favour of its second criterion and advances one step; after the last pair the phase switches to results. While no comparison is running — before startComparison or after all pairs are decided — the call returns false; that is a refusal, not an error."
+          "help": "Decides the pending pair for the right criterion (right arrow key): it gets 1 point, the other 0. Then the next pair follows; after the last one the view switches to the Result tab. While no comparison is running — before the start or once all pairs are decided — the call returns false; that is a refusal, not an error."
         },
         "tieCurrent": {
-          "help": "Declares the pending pair a tie — both criteria get 0.5 — and advances one step. While no comparison is running — before startComparison or after all pairs are decided — the call returns false; that is a refusal, not an error."
+          "help": "Rates the pending pair as equally important (space bar): both criteria get 0.5 points. Then the next pair follows. While no comparison is running — before the start or once all pairs are decided — the call returns false; that is a refusal, not an error."
         },
         "setViewPhase": {
-          "help": "Sets the displayed work phase.",
+          "help": "Switches the displayed tab: Criteria, Comparison or Result. Comparison is only reachable while a comparison is running, Result only once it is finished.",
           "params": {
             "phase": "The work phase: input (record criteria), compare (decide pairs) or results (ranking and matrix). Any other value is an error. compare needs a running comparison, results a finished one — if the work phase is not reachable the call returns false — a refusal, not an error."
           }
@@ -4535,6 +4535,19 @@
         },
         "viewPhase": {
           "help": "The displayed work phase: input (record criteria), compare (decide pairs) or results (ranking and matrix). A persisted display state — it belongs to the saved project."
+        },
+        "result": { "help": "The evaluation: points per criterion and ranking, each figure described individually under keys; null until all pairs are decided." }
+      },
+      "types": {
+        "Result": {
+          "scores": "The points per criterion, in the order of the criteria list — the Σ column of the comparison matrix. Each comparison gives 1 point for a win, 0.5 for equally important and 0 for a loss; the points are the sum of a matrix row without the diagonal. With n criteria at most n − 1 points are possible, and all points together add up to n·(n − 1)/2, the number of pairs.",
+          "maxScore": "The highest score reached. The longest bar in the ranking belongs to it; every other bar is shorter in proportion of its points to it.",
+          "ranking": "The ranking: all criteria in descending order of points. With equal points the order of the criteria list is kept; places 1 to 3 are highlighted in colour."
+        },
+        "RankEntry": {
+          "name": "The name of the criterion as it appears in the criteria list.",
+          "score": "The points of the criterion: 1 per comparison won, 0.5 per equally important one, 0 per comparison lost. The ranking shows them with one decimal place (3.5).",
+          "idx": "The number of the criterion in the criteria list, counted from 0 — the same number as the row and column of the comparison matrix."
         }
       },
       "tabInput": "Criteria",
