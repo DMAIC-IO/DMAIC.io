@@ -6061,17 +6061,51 @@ export const AGENT_REGISTRY = {
             "name": "key",
             "type": "'type'|'weights'|'layout'|'trials'|'ruleSet'|'alpha'|'positiveLevel'",
             "optional": false,
-            "help": "welcher Parameter; `weights` nur beim Typ ordinal, `trials` nur beim Layout wide, `positiveLevel` nur beim Typ binary mit erkannten Stufen"
+            "help": "welcher Parameter; die im Zustand zulässigen nennt `activeParams`"
           },
           {
             "name": "value",
             "type": "string",
             "optional": false,
-            "help": "der Wert als Text; `type`: binary, nominal oder ordinal, `weights`: linear oder quadratic, `layout`: long oder wide, `ruleSet`: aiag oder bosch, `alpha`: 0.01, 0.05 oder 0.10, `trials`: Anzahl als Text, `positiveLevel`: eine der erkannten Stufen (read().detectedLevels)"
+            "help": "der Wert als Text; Wertebereich je Schlüssel siehe `Params`, positiveLevel eine der Stufen aus `detectedLevels`"
           }
         ],
         "returns": "void",
-        "help": "Einen Parameter setzen. Ein neuer Merkmalstyp setzt die positive Stufe zurück."
+        "help": "Einen Parameter setzen. Ein neuer Merkmalstyp setzt die positive Stufe zurück.",
+        "keysOf": "Params",
+        "keys": {
+          "type": {
+            "type": "'binary'|'nominal'|'ordinal'",
+            "help": "Merkmalstyp"
+          },
+          "weights": {
+            "type": "'linear'|'quadratic'",
+            "help": "Gewichtung, nur ordinal",
+            "optional": true
+          },
+          "layout": {
+            "type": "'long'|'wide'",
+            "help": "Datenlayout"
+          },
+          "trials": {
+            "type": "string",
+            "help": "Versuche je Prüfer, nur breites Layout",
+            "optional": true
+          },
+          "ruleSet": {
+            "type": "'aiag'|'bosch'",
+            "help": "Urteilsregel"
+          },
+          "alpha": {
+            "type": "'0.01'|'0.05'|'0.10'",
+            "help": "Signifikanzniveau"
+          },
+          "positiveLevel": {
+            "type": "string",
+            "help": "positive Stufe, nur binär",
+            "optional": true
+          }
+        }
       },
       "setColumn": {
         "params": [
@@ -6145,10 +6179,697 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
-        "help": "the computed agreement result (verdict, kappa, effectiveness, tables), or null while the inputs are incomplete or invalid; problems are in `result.meta.errors`",
+        "type": "Result|null",
+        "help": "the computed result; null while no rows can be evaluated; with invalid inputs only meta, the reason under meta.errors",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "meta": {
+            "type": "Meta",
+            "help": "Rahmendaten, Warnungen, Fehler",
+            "keysOf": "Meta",
+            "keys": {
+              "type": {
+                "type": "'binary'|'nominal'|'ordinal'",
+                "help": "Merkmalstyp",
+                "optional": true
+              },
+              "levels": {
+                "type": "string[]",
+                "help": "Stufen",
+                "optional": true
+              },
+              "parts": {
+                "type": "number",
+                "help": "Anzahl Teile",
+                "optional": true
+              },
+              "appraisers": {
+                "type": "number",
+                "help": "Anzahl Prüfer",
+                "optional": true
+              },
+              "reps": {
+                "type": "number",
+                "help": "höchste Versuchszahl",
+                "optional": true
+              },
+              "referenceSource": {
+                "type": "'given'|'consensus'|'none'",
+                "help": "Herkunft der Referenz",
+                "optional": true
+              },
+              "ambiguousParts": {
+                "type": "string[]",
+                "help": "Teile ohne eindeutigen Konsens",
+                "optional": true
+              },
+              "warnings": {
+                "type": "Message[]",
+                "help": "Hinweise",
+                "keysOf": "Message",
+                "keys": {
+                  "code": {
+                    "type": "string",
+                    "help": "Kennung"
+                  },
+                  "params": {
+                    "type": "object",
+                    "help": "Werte im Text"
+                  }
+                }
+              },
+              "errors": {
+                "type": "Message[]",
+                "help": "Gründe ungültiger Eingaben",
+                "optional": true,
+                "keysOf": "Message",
+                "keys": {
+                  "code": {
+                    "type": "string",
+                    "help": "Kennung"
+                  },
+                  "params": {
+                    "type": "object",
+                    "help": "Werte im Text"
+                  }
+                }
+              }
+            }
+          },
+          "perAppraiser": {
+            "type": "Object<string, AppraiserStats>",
+            "help": "je Prüfer",
+            "optional": true,
+            "keysOf": "AppraiserStats",
+            "keys": {
+              "repeatability": {
+                "type": "Rate",
+                "help": "Übereinstimmung mit sich selbst",
+                "optional": true,
+                "keysOf": "Rate",
+                "keys": {
+                  "agree": {
+                    "type": "number",
+                    "help": "übereinstimmende Fälle"
+                  },
+                  "total": {
+                    "type": "number",
+                    "help": "Fälle"
+                  },
+                  "rate": {
+                    "type": "number",
+                    "help": "Anteil"
+                  },
+                  "ci95": {
+                    "type": "number[]",
+                    "help": "95-%-Intervall nach Wilson"
+                  }
+                }
+              },
+              "withinKappa": {
+                "type": "FleissKappa",
+                "help": "κ innerhalb des Prüfers",
+                "optional": true,
+                "keysOf": "FleissKappa",
+                "keys": {
+                  "kappa": {
+                    "type": "number",
+                    "help": "κ"
+                  },
+                  "se0": {
+                    "type": "number",
+                    "help": "Standardfehler unter der Nullhypothese"
+                  },
+                  "z": {
+                    "type": "number",
+                    "help": "Prüfgröße"
+                  },
+                  "p": {
+                    "type": "number",
+                    "help": "p-Wert"
+                  },
+                  "method": {
+                    "type": "string",
+                    "help": "Verfahren"
+                  }
+                }
+              },
+              "vsReference": {
+                "type": "VsReference",
+                "help": "gegen die Referenz",
+                "optional": true,
+                "keysOf": "VsReference",
+                "keys": {
+                  "effectiveness": {
+                    "type": "Rate",
+                    "help": "Effektivität",
+                    "optional": true,
+                    "keysOf": "Rate",
+                    "keys": {
+                      "agree": {
+                        "type": "number",
+                        "help": "übereinstimmende Fälle"
+                      },
+                      "total": {
+                        "type": "number",
+                        "help": "Fälle"
+                      },
+                      "rate": {
+                        "type": "number",
+                        "help": "Anteil"
+                      },
+                      "ci95": {
+                        "type": "number[]",
+                        "help": "95-%-Intervall nach Wilson"
+                      }
+                    }
+                  },
+                  "missRate": {
+                    "type": "ErrorRate",
+                    "help": "Schlupf",
+                    "optional": true,
+                    "keysOf": "ErrorRate",
+                    "keys": {
+                      "rate": {
+                        "type": "number",
+                        "help": "Anteil"
+                      },
+                      "ci95": {
+                        "type": "number[]",
+                        "help": "95-%-Intervall"
+                      },
+                      "n": {
+                        "type": "number",
+                        "help": "Fälle"
+                      }
+                    }
+                  },
+                  "falseAlarmRate": {
+                    "type": "ErrorRate",
+                    "help": "Fehlalarm",
+                    "optional": true,
+                    "keysOf": "ErrorRate",
+                    "keys": {
+                      "rate": {
+                        "type": "number",
+                        "help": "Anteil"
+                      },
+                      "ci95": {
+                        "type": "number[]",
+                        "help": "95-%-Intervall"
+                      },
+                      "n": {
+                        "type": "number",
+                        "help": "Fälle"
+                      }
+                    }
+                  },
+                  "biasRate": {
+                    "type": "BiasRate",
+                    "help": "Neigung",
+                    "optional": true,
+                    "keysOf": "BiasRate",
+                    "keys": {
+                      "value": {
+                        "type": "number",
+                        "help": "Verhältnis"
+                      }
+                    }
+                  },
+                  "kappa": {
+                    "type": "CohenKappa",
+                    "help": "Cohens κ gegen die Referenz",
+                    "optional": true,
+                    "keysOf": "CohenKappa",
+                    "keys": {
+                      "kappa": {
+                        "type": "number",
+                        "help": "κ"
+                      },
+                      "se": {
+                        "type": "number",
+                        "help": "Standardfehler"
+                      },
+                      "se0": {
+                        "type": "number",
+                        "help": "Standardfehler unter der Nullhypothese"
+                      },
+                      "z": {
+                        "type": "number",
+                        "help": "Prüfgröße"
+                      },
+                      "p": {
+                        "type": "number",
+                        "help": "p-Wert"
+                      },
+                      "ci95": {
+                        "type": "number[]",
+                        "help": "95-%-Intervall"
+                      },
+                      "method": {
+                        "type": "string",
+                        "help": "Verfahren"
+                      }
+                    }
+                  },
+                  "fleissKappa": {
+                    "type": "FleissKappa",
+                    "help": "Fleiss' κ mit der Referenz als Prüfer",
+                    "optional": true,
+                    "keysOf": "FleissKappa",
+                    "keys": {
+                      "kappa": {
+                        "type": "number",
+                        "help": "κ"
+                      },
+                      "se0": {
+                        "type": "number",
+                        "help": "Standardfehler unter der Nullhypothese"
+                      },
+                      "z": {
+                        "type": "number",
+                        "help": "Prüfgröße"
+                      },
+                      "p": {
+                        "type": "number",
+                        "help": "p-Wert"
+                      },
+                      "method": {
+                        "type": "string",
+                        "help": "Verfahren"
+                      }
+                    }
+                  }
+                }
+              },
+              "confusionMatrix": {
+                "type": "ConfusionMatrix",
+                "help": "Kreuztabelle gegen die Referenz",
+                "optional": true,
+                "keysOf": "ConfusionMatrix",
+                "keys": {
+                  "rows": {
+                    "type": "string[]",
+                    "help": "Zeilenstufen"
+                  },
+                  "cols": {
+                    "type": "string[]",
+                    "help": "Spaltenstufen"
+                  },
+                  "counts": {
+                    "type": "number[][]",
+                    "help": "Häufigkeiten"
+                  }
+                }
+              }
+            }
+          },
+          "betweenAppraisers": {
+            "type": "BetweenAppraisers",
+            "help": "Übereinstimmung der Prüfer untereinander",
+            "optional": true,
+            "keysOf": "BetweenAppraisers",
+            "keys": {
+              "pairwiseCohenKappa": {
+                "type": "Object<string, PairKappa>",
+                "help": "je Prüferpaar",
+                "keysOf": "PairKappa",
+                "keys": {
+                  "kappa": {
+                    "type": "number",
+                    "help": "κ"
+                  },
+                  "se": {
+                    "type": "number",
+                    "help": "Standardfehler"
+                  },
+                  "se0": {
+                    "type": "number",
+                    "help": "Standardfehler unter der Nullhypothese"
+                  },
+                  "z": {
+                    "type": "number",
+                    "help": "Prüfgröße"
+                  },
+                  "p": {
+                    "type": "number",
+                    "help": "p-Wert"
+                  },
+                  "ci95": {
+                    "type": "number[]",
+                    "help": "95-%-Intervall"
+                  },
+                  "method": {
+                    "type": "string",
+                    "help": "Verfahren"
+                  },
+                  "confusion": {
+                    "type": "ConfusionMatrix",
+                    "help": "Kreuztabelle des Paars",
+                    "keysOf": "ConfusionMatrix",
+                    "keys": {
+                      "rows": {
+                        "type": "string[]",
+                        "help": "Zeilenstufen"
+                      },
+                      "cols": {
+                        "type": "string[]",
+                        "help": "Spaltenstufen"
+                      },
+                      "counts": {
+                        "type": "number[][]",
+                        "help": "Häufigkeiten"
+                      }
+                    }
+                  }
+                }
+              },
+              "fleissKappa": {
+                "type": "FleissKappa",
+                "help": "alle Prüfer zusammen",
+                "keysOf": "FleissKappa",
+                "keys": {
+                  "kappa": {
+                    "type": "number",
+                    "help": "κ"
+                  },
+                  "se0": {
+                    "type": "number",
+                    "help": "Standardfehler unter der Nullhypothese"
+                  },
+                  "z": {
+                    "type": "number",
+                    "help": "Prüfgröße"
+                  },
+                  "p": {
+                    "type": "number",
+                    "help": "p-Wert"
+                  },
+                  "method": {
+                    "type": "string",
+                    "help": "Verfahren"
+                  }
+                }
+              }
+            }
+          },
+          "allVsReference": {
+            "type": "FleissKappa|null",
+            "help": "alle Prüfer gegen die Referenz",
+            "optional": true,
+            "keysOf": "FleissKappa",
+            "keys": {
+              "kappa": {
+                "type": "number",
+                "help": "κ"
+              },
+              "se0": {
+                "type": "number",
+                "help": "Standardfehler unter der Nullhypothese"
+              },
+              "z": {
+                "type": "number",
+                "help": "Prüfgröße"
+              },
+              "p": {
+                "type": "number",
+                "help": "p-Wert"
+              },
+              "method": {
+                "type": "string",
+                "help": "Verfahren"
+              }
+            }
+          },
+          "signalDetection": {
+            "type": "SignalDetection|null",
+            "help": "Signalentdeckung, nur binär mit Referenz",
+            "optional": true,
+            "keysOf": "SignalDetection",
+            "keys": {
+              "perAppraiser": {
+                "type": "Object<string, Detection>",
+                "help": "je Prüfer",
+                "keysOf": "Detection",
+                "keys": {
+                  "dPrime": {
+                    "type": "number",
+                    "help": "Trennschärfe d′"
+                  },
+                  "criterion": {
+                    "type": "number",
+                    "help": "Entscheidungsschwelle"
+                  },
+                  "hitRate": {
+                    "type": "number",
+                    "help": "Trefferquote"
+                  },
+                  "falseAlarmRate": {
+                    "type": "number",
+                    "help": "Fehlalarmquote"
+                  }
+                }
+              }
+            }
+          },
+          "perPart": {
+            "type": "PartRow[]",
+            "help": "je Teil, nach Problemgrad sortiert",
+            "optional": true,
+            "keysOf": "PartRow",
+            "keys": {
+              "part": {
+                "type": "string",
+                "help": "Teil"
+              },
+              "reference": {
+                "type": "string|null",
+                "help": "Referenzurteil"
+              },
+              "byAppraiser": {
+                "type": "Object<string, string[]>",
+                "help": "Urteile je Prüfer"
+              },
+              "vsRefErrors": {
+                "type": "number|null",
+                "help": "Abweichungen von der Referenz"
+              },
+              "mixedAppraisers": {
+                "type": "number",
+                "help": "Prüfer mit wechselndem Urteil"
+              },
+              "isDisputed": {
+                "type": "boolean",
+                "help": "strittig"
+              }
+            }
+          },
+          "disagreement": {
+            "type": "Object<string, Disagreement>",
+            "help": "Verwechslungen je Prüfer",
+            "optional": true,
+            "keysOf": "Disagreement",
+            "keys": {
+              "confusionPairs": {
+                "type": "ConfusionPair[]",
+                "help": "Verwechslungen",
+                "keysOf": "ConfusionPair",
+                "keys": {
+                  "from": {
+                    "type": "string",
+                    "help": "Referenzstufe"
+                  },
+                  "to": {
+                    "type": "string",
+                    "help": "vergebene Stufe"
+                  },
+                  "count": {
+                    "type": "number",
+                    "help": "Häufigkeit"
+                  },
+                  "parts": {
+                    "type": "string[]",
+                    "help": "betroffene Teile"
+                  }
+                }
+              },
+              "mixed": {
+                "type": "number",
+                "help": "Teile mit wechselndem Urteil"
+              },
+              "mixedParts": {
+                "type": "string[]",
+                "help": "diese Teile"
+              }
+            }
+          },
+          "overall": {
+            "type": "Overall",
+            "help": "Gesamtübereinstimmung",
+            "optional": true,
+            "keysOf": "Overall",
+            "keys": {
+              "betweenAppraisers": {
+                "type": "AgreementShare",
+                "help": "Übereinstimmung aller Prüfer",
+                "keysOf": "AgreementShare",
+                "keys": {
+                  "agree": {
+                    "type": "number",
+                    "help": "übereinstimmende Teile"
+                  },
+                  "n": {
+                    "type": "number",
+                    "help": "Teile"
+                  },
+                  "rate": {
+                    "type": "number",
+                    "help": "Anteil"
+                  },
+                  "ci95": {
+                    "type": "number[]",
+                    "help": "95-%-Intervall"
+                  }
+                }
+              },
+              "allVsReference": {
+                "type": "AgreementShare|null",
+                "help": "alle Prüfer und Referenz",
+                "keysOf": "AgreementShare",
+                "keys": {
+                  "agree": {
+                    "type": "number",
+                    "help": "übereinstimmende Teile"
+                  },
+                  "n": {
+                    "type": "number",
+                    "help": "Teile"
+                  },
+                  "rate": {
+                    "type": "number",
+                    "help": "Anteil"
+                  },
+                  "ci95": {
+                    "type": "number[]",
+                    "help": "95-%-Intervall"
+                  }
+                }
+              }
+            }
+          },
+          "verdict": {
+            "type": "Verdict",
+            "help": "Urteil",
+            "optional": true,
+            "keysOf": "Verdict",
+            "keys": {
+              "ruleSet": {
+                "type": "'aiag'|'bosch'",
+                "help": "Urteilsregel"
+              },
+              "level": {
+                "type": "'good'|'marginal'|'unacceptable'",
+                "help": "Urteil"
+              },
+              "driver": {
+                "type": "string|null",
+                "help": "ausschlaggebendes Kriterium"
+              },
+              "driverAppraiser": {
+                "type": "string|null",
+                "help": "ausschlaggebender Prüfer"
+              },
+              "referenceNote": {
+                "type": "'missFaNotRated'|null",
+                "help": "Hinweis zur Referenz"
+              },
+              "criteria": {
+                "type": "Criterion[]",
+                "help": "Kriterien des Urteils",
+                "keysOf": "Criterion",
+                "keys": {
+                  "id": {
+                    "type": "string",
+                    "help": "Kriterium"
+                  },
+                  "value": {
+                    "type": "number",
+                    "help": "Wert"
+                  },
+                  "level": {
+                    "type": "string",
+                    "help": "Urteil des Kriteriums"
+                  },
+                  "appraiser": {
+                    "type": "string|null",
+                    "help": "Prüfer, wenn je Prüfer"
+                  },
+                  "limits": {
+                    "type": "Limits",
+                    "help": "Grenzwerte",
+                    "keysOf": "Limits",
+                    "keys": {
+                      "good": {
+                        "type": "number",
+                        "help": "Grenze gut"
+                      },
+                      "marginal": {
+                        "type": "number",
+                        "help": "Grenze bedingt"
+                      }
+                    }
+                  },
+                  "direction": {
+                    "type": "'min'|'max'",
+                    "help": "Richtung"
+                  },
+                  "source": {
+                    "type": "string",
+                    "help": "Quelle des κ, nur Bosch",
+                    "optional": true
+                  }
+                }
+              }
+            }
+          },
+          "interpretation": {
+            "type": "Interpretation",
+            "help": "Deutung als Satz",
+            "optional": true,
+            "keysOf": "Interpretation",
+            "keys": {
+              "textKey": {
+                "type": "string",
+                "help": "Textschlüssel der Deutung"
+              },
+              "params": {
+                "type": "InterpretationParams",
+                "help": "Werte im Satz",
+                "keysOf": "InterpretationParams",
+                "keys": {
+                  "kappa": {
+                    "type": "string",
+                    "help": "κ als Text"
+                  },
+                  "minEff": {
+                    "type": "string",
+                    "help": "kleinste Effektivität als Text"
+                  },
+                  "driver": {
+                    "type": "string",
+                    "help": "Auslöser als Text"
+                  },
+                  "ruleSet": {
+                    "type": "string",
+                    "help": "Urteilsregel als Text"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   },

@@ -105,6 +105,234 @@ const COLUMN_SLOTS = ['part', 'appraiser', 'rating', 'reference', 'replicate'];
 const SLOT_FILTERS = { part: {}, appraiser: {}, rating: {}, reference: {}, replicate: {} };
 
 /**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {'binary'|'nominal'|'ordinal'} type  Merkmalstyp
+ * @property {'linear'|'quadratic'} [weights]  Gewichtung, nur ordinal
+ * @property {'long'|'wide'} layout  Datenlayout
+ * @property {string} [trials]  Versuche je Prüfer, nur breites Layout
+ * @property {'aiag'|'bosch'} ruleSet  Urteilsregel
+ * @property {'0.01'|'0.05'|'0.10'} alpha  Signifikanzniveau
+ * @property {string} [positiveLevel]  positive Stufe, nur binär
+ */
+
+/**
+ * Das gerechnete Ergebnis (`analyze()` aus `engines/msa-typ5-engine.js`),
+ * wie `read().result` es liefert. Bei ungültigen Eingaben steht nur `meta`
+ * da, mit dem Grund unter `meta.errors` — darum ist alles außer `meta`
+ * optional.
+ *
+ * @typedef {object} Result
+ * @property {Meta} meta  Rahmendaten, Warnungen, Fehler
+ * @property {Object<string, AppraiserStats>} [perAppraiser]  je Prüfer
+ * @property {BetweenAppraisers} [betweenAppraisers]  Übereinstimmung der Prüfer untereinander
+ * @property {FleissKappa|null} [allVsReference]  alle Prüfer gegen die Referenz
+ * @property {SignalDetection|null} [signalDetection]  Signalentdeckung, nur binär mit Referenz
+ * @property {PartRow[]} [perPart]  je Teil, nach Problemgrad sortiert
+ * @property {Object<string, Disagreement>} [disagreement]  Verwechslungen je Prüfer
+ * @property {Overall} [overall]  Gesamtübereinstimmung
+ * @property {Verdict} [verdict]  Urteil
+ * @property {Interpretation} [interpretation]  Deutung als Satz
+ */
+
+/**
+ * @typedef {object} Meta
+ * @property {'binary'|'nominal'|'ordinal'} [type]  Merkmalstyp
+ * @property {string[]} [levels]  Stufen
+ * @property {number} [parts]  Anzahl Teile
+ * @property {number} [appraisers]  Anzahl Prüfer
+ * @property {number} [reps]  höchste Versuchszahl
+ * @property {'given'|'consensus'|'none'} [referenceSource]  Herkunft der Referenz
+ * @property {string[]} [ambiguousParts]  Teile ohne eindeutigen Konsens
+ * @property {Message[]} warnings  Hinweise
+ * @property {Message[]} [errors]  Gründe ungültiger Eingaben
+ */
+
+/**
+ * @typedef {object} Message
+ * @property {string} code  Kennung
+ * @property {object} params  Werte im Text
+ */
+
+/**
+ * @typedef {object} AppraiserStats
+ * @property {Rate} [repeatability]  Übereinstimmung mit sich selbst
+ * @property {FleissKappa} [withinKappa]  κ innerhalb des Prüfers
+ * @property {VsReference} [vsReference]  gegen die Referenz
+ * @property {ConfusionMatrix} [confusionMatrix]  Kreuztabelle gegen die Referenz
+ */
+
+/**
+ * @typedef {object} Rate
+ * @property {number} agree  übereinstimmende Fälle
+ * @property {number} total  Fälle
+ * @property {number} rate  Anteil
+ * @property {number[]} ci95  95-%-Intervall nach Wilson
+ */
+
+/**
+ * @typedef {object} FleissKappa
+ * @property {number} kappa  κ
+ * @property {number} se0  Standardfehler unter der Nullhypothese
+ * @property {number} z  Prüfgröße
+ * @property {number} p  p-Wert
+ * @property {string} method  Verfahren
+ */
+
+/**
+ * @typedef {object} VsReference
+ * @property {Rate} [effectiveness]  Effektivität
+ * @property {ErrorRate} [missRate]  Schlupf
+ * @property {ErrorRate} [falseAlarmRate]  Fehlalarm
+ * @property {BiasRate} [biasRate]  Neigung
+ * @property {CohenKappa} [kappa]  Cohens κ gegen die Referenz
+ * @property {FleissKappa} [fleissKappa]  Fleiss' κ mit der Referenz als Prüfer
+ */
+
+/**
+ * @typedef {object} ErrorRate
+ * @property {number} rate  Anteil
+ * @property {number[]} ci95  95-%-Intervall
+ * @property {number} n  Fälle
+ */
+
+/**
+ * @typedef {object} BiasRate
+ * @property {number} value  Verhältnis
+ */
+
+/**
+ * @typedef {object} CohenKappa
+ * @property {number} kappa  κ
+ * @property {number} se  Standardfehler
+ * @property {number} se0  Standardfehler unter der Nullhypothese
+ * @property {number} z  Prüfgröße
+ * @property {number} p  p-Wert
+ * @property {number[]} ci95  95-%-Intervall
+ * @property {string} method  Verfahren
+ */
+
+/**
+ * @typedef {object} PairKappa
+ * @property {number} kappa  κ
+ * @property {number} se  Standardfehler
+ * @property {number} se0  Standardfehler unter der Nullhypothese
+ * @property {number} z  Prüfgröße
+ * @property {number} p  p-Wert
+ * @property {number[]} ci95  95-%-Intervall
+ * @property {string} method  Verfahren
+ * @property {ConfusionMatrix} confusion  Kreuztabelle des Paars
+ */
+
+/**
+ * @typedef {object} ConfusionMatrix
+ * @property {string[]} rows  Zeilenstufen
+ * @property {string[]} cols  Spaltenstufen
+ * @property {number[][]} counts  Häufigkeiten
+ */
+
+/**
+ * @typedef {object} BetweenAppraisers
+ * @property {Object<string, PairKappa>} pairwiseCohenKappa  je Prüferpaar
+ * @property {FleissKappa} fleissKappa  alle Prüfer zusammen
+ */
+
+/**
+ * @typedef {object} SignalDetection
+ * @property {Object<string, Detection>} perAppraiser  je Prüfer
+ */
+
+/**
+ * @typedef {object} Detection
+ * @property {number} dPrime  Trennschärfe d′
+ * @property {number} criterion  Entscheidungsschwelle
+ * @property {number} hitRate  Trefferquote
+ * @property {number} falseAlarmRate  Fehlalarmquote
+ */
+
+/**
+ * @typedef {object} PartRow
+ * @property {string} part  Teil
+ * @property {string|null} reference  Referenzurteil
+ * @property {Object<string, string[]>} byAppraiser  Urteile je Prüfer
+ * @property {number|null} vsRefErrors  Abweichungen von der Referenz
+ * @property {number} mixedAppraisers  Prüfer mit wechselndem Urteil
+ * @property {boolean} isDisputed  strittig
+ */
+
+/**
+ * @typedef {object} Disagreement
+ * @property {ConfusionPair[]} confusionPairs  Verwechslungen
+ * @property {number} mixed  Teile mit wechselndem Urteil
+ * @property {string[]} mixedParts  diese Teile
+ */
+
+/**
+ * @typedef {object} ConfusionPair
+ * @property {string} from  Referenzstufe
+ * @property {string} to  vergebene Stufe
+ * @property {number} count  Häufigkeit
+ * @property {string[]} parts  betroffene Teile
+ */
+
+/**
+ * @typedef {object} Overall
+ * @property {AgreementShare} betweenAppraisers  Übereinstimmung aller Prüfer
+ * @property {AgreementShare|null} allVsReference  alle Prüfer und Referenz
+ */
+
+/**
+ * @typedef {object} AgreementShare
+ * @property {number} agree  übereinstimmende Teile
+ * @property {number} n  Teile
+ * @property {number} rate  Anteil
+ * @property {number[]} ci95  95-%-Intervall
+ */
+
+/**
+ * @typedef {object} Verdict
+ * @property {'aiag'|'bosch'} ruleSet  Urteilsregel
+ * @property {'good'|'marginal'|'unacceptable'} level  Urteil
+ * @property {string|null} driver  ausschlaggebendes Kriterium
+ * @property {string|null} driverAppraiser  ausschlaggebender Prüfer
+ * @property {'missFaNotRated'|null} referenceNote  Hinweis zur Referenz
+ * @property {Criterion[]} criteria  Kriterien des Urteils
+ */
+
+/**
+ * @typedef {object} Criterion
+ * @property {string} id  Kriterium
+ * @property {number} value  Wert
+ * @property {string} level  Urteil des Kriteriums
+ * @property {string|null} appraiser  Prüfer, wenn je Prüfer
+ * @property {Limits} limits  Grenzwerte
+ * @property {'min'|'max'} direction  Richtung
+ * @property {string} [source]  Quelle des κ, nur Bosch
+ */
+
+/**
+ * @typedef {object} Limits
+ * @property {number} good  Grenze gut
+ * @property {number} marginal  Grenze bedingt
+ */
+
+/**
+ * @typedef {object} Interpretation
+ * @property {string} textKey  Textschlüssel der Deutung
+ * @property {InterpretationParams} params  Werte im Satz
+ */
+
+/**
+ * @typedef {object} InterpretationParams
+ * @property {string} kappa  κ als Text
+ * @property {string} minEff  kleinste Effektivität als Text
+ * @property {string} driver  Auslöser als Text
+ * @property {string} ruleSet  Urteilsregel als Text
+ */
+
+/**
  * Die Agenten-Lesefläche von MSA Typ 5.
  *
  * Nicht die persistierte Form: das Model hält NUR die Eingaben, das Ergebnis
@@ -120,7 +348,7 @@ const SLOT_FILTERS = { part: {}, appraiser: {}, rating: {}, reference: {}, repli
  * @property {string[]} activeParams  the keys `setParam` accepts in the current state (`weights` only for the ordinal type, `trials` only for the wide layout, `positiveLevel` only for the binary type with detected levels)
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state; the matrix slot `ratings` of the wide layout is not among them, so the module cannot be fully operated through the surface in the wide layout
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
- * @property {object|null} result  the computed agreement result (verdict, kappa, effectiveness, tables), or null while the inputs are incomplete or invalid; problems are in `result.meta.errors`
+ * @property {Result|null} result  the computed result; null while no rows can be evaluated; with invalid inputs only meta, the reason under meta.errors
  */
 const mod = createModule({
   config: {
@@ -191,9 +419,8 @@ const mod = createModule({
       /**
        * Einen Parameter setzen. Ein neuer Merkmalstyp setzt die positive Stufe zurück.
        * @agent
-       * @param {'type'|'weights'|'layout'|'trials'|'ruleSet'|'alpha'|'positiveLevel'} key
-       *   welcher Parameter; `weights` nur beim Typ ordinal, `trials` nur beim Layout wide, `positiveLevel` nur beim Typ binary mit erkannten Stufen
-       * @param {string} value der Wert als Text; `type`: binary, nominal oder ordinal, `weights`: linear oder quadratic, `layout`: long oder wide, `ruleSet`: aiag oder bosch, `alpha`: 0.01, 0.05 oder 0.10, `trials`: Anzahl als Text, `positiveLevel`: eine der erkannten Stufen (read().detectedLevels)
+       * @param {keyof Params} key welcher Parameter; die im Zustand zulässigen nennt `activeParams`
+       * @param {string} value der Wert als Text; Wertebereich je Schlüssel siehe `Params`, positiveLevel eine der Stufen aus `detectedLevels`
        * @returns {void}
        * @throws {Error} wenn `key` im aktuellen Zustand kein Parameter ist oder `value` nicht zulässig
        */

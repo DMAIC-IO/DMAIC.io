@@ -3099,8 +3099,8 @@
         "setParam": {
           "help": "Sets a parameter of the study; the recomputation follows after a short pause. A new feature type resets the positive level.",
           "params": {
-            "key": "One of the keys in activeParams: type, weights, layout, trials, ruleSet, alpha or positiveLevel. weights applies only for the ordinal type, trials only for the wide layout, positiveLevel only for the binary type with detected levels; any other value is an error.",
-            "value": "The value as text. type takes 'binary', 'nominal' or 'ordinal', weights 'linear' or 'quadratic', layout 'long' or 'wide', ruleSet 'aiag' or 'bosch', alpha '0.01', '0.05' or '0.10'; trials the number of trials per appraiser as text, for example '2'; positiveLevel one of the levels in detectedLevels."
+            "key": "Which parameter; each key is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
+            "value": "The value as text; the allowed range per key is given under keys. positiveLevel takes one of the levels from detectedLevels."
           }
         },
         "setColumn": {
@@ -3115,13 +3115,183 @@
         "clearResults": { "help": "Discards the result and the charts; the inputs stay." }
       },
       "fields": {
-        "params": { "help": "The entered parameters: type (feature type), positiveLevel (positive level of the binary view, null while undetermined; settable), weights (weighting for the ordinal type), alpha (significance level, as text), ordinalOrder (order of the levels, null while automatic; cannot be set through the surface), ruleSet (verdict rule), layout (long or wide) and trials (trials per appraiser in the wide layout, as text)." },
+        "params": { "help": "The entered parameters as setParam takes them and describes them under keys, plus ordinalOrder (order of the levels, null while automatic; not settable through the surface)." },
         "columns": { "help": "The chosen columns: part, appraiser, rating, reference and replicate each as { instanceId, sheetId, columnId } or null, plus ratings as the list of rating columns of the wide layout (not settable through the surface)." },
         "detectedLevels": { "help": "The rating levels found in the chosen rating column (or the columns of the wide layout); the values setParam accepts for positiveLevel. Empty while no rating column is chosen." },
         "activeParams": { "help": "The keys setParam accepts in the current state; weights is missing outside the ordinal type, trials outside the wide layout, positiveLevel outside the binary type or without detected levels." },
         "activeColumnSlots": { "help": "The slots setColumn accepts in the current state. In the wide layout appraiser, rating and replicate are missing, and the matrix slot ratings is not included: the wide layout cannot be fully operated through the surface." },
         "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; key is 'instanceId|sheetId|columnId'." },
-        "result": { "help": "The computed result with verdict, kappa values, effectiveness and the tables, or null while the inputs are incomplete or invalid." }
+        "result": { "help": "The computed result, each figure described individually under keys; null while no rows can be evaluated. With invalid inputs only meta is present, the reason under meta.errors." }
+      },
+      "types": {
+        "Params": {
+          "type": "Feature type of the ratings: binary (two levels, such as OK and NOK), nominal (several classes without order) or ordinal (ordered levels, such as a grading scale). It decides which figures arise: miss, false alarm and signal detection exist only for binary data, weighted κ only for ordinal data. A new type resets the positive level.",
+          "weights": "Weighting of κ for the ordinal type, so that a near miss counts less than a far one: linear w = 1 − |i − j| / (k − 1), quadratic w = 1 − ((i − j) / (k − 1))², with i, j the level positions and k the number of levels. The default is quadratic.",
+          "layout": "Data layout of the ratings: long with one row per rating (part, appraiser, rating, optionally reference and replicate) or wide with one column per appraiser and trial.",
+          "trials": "Number of trials per appraiser in the wide layout, as text, for example '2'. The columns are grouped in order: first all trials of appraiser 1, then appraiser 2; the number of columns must be divisible by the number of trials.",
+          "ruleSet": "Verdict rule. AIAG MSA (4th ed.) takes the worst of four criteria: Fleiss' κ (acceptable from 0.75, marginal from 0.40), lowest effectiveness (from 90 % or 80 %), highest miss rate (up to 2 % or 5 %) and highest false-alarm rate (up to 5 % or 10 %). Bosch booklet 10 rates the smallest available κ: acceptable from 0.9, marginal from 0.7.",
+          "alpha": "Significance level α. It sets the level of the confidence intervals (1 − α); the p-values of the κ tests are judged against it. The choices are 0.01, 0.05 (usual) and 0.10.",
+          "positiveLevel": "The level that counts as positive (OK) for binary data, one of the detected levels; without a choice the most frequent rating. The miss rate counts negative parts rated positive, the false-alarm rate positive parts rated negative; if the level is chosen wrongly, the two are swapped."
+        },
+        "Result": {
+          "meta": "Framework data of the study: feature type, levels, number of parts, appraisers and trials, origin of the reference, plus the notes and, with invalid inputs, the reasons why nothing was computed.",
+          "perAppraiser": "One entry per appraiser with their repeatability, the κ within their trials, the comparison with the reference and the cross table against the reference.",
+          "betweenAppraisers": "Agreement of the appraisers with each other: Cohen's κ per pair of appraisers and Fleiss' κ over all appraisers and trials together.",
+          "allVsReference": "Fleiss' κ over all ratings of all appraisers, the reference per part counted as one more rater (Bosch booklet 10). Missing without a reference.",
+          "signalDetection": "Signal detection per appraiser: sensitivity d′ and decision criterion. Only for binary data with a reference, otherwise empty.",
+          "perPart": "One row per part with reference, the ratings per appraiser and the deviations, sorted by severity: first by the number of deviations from the reference, then by the number of inconsistent appraisers.",
+          "disagreement": "Per appraiser their confusions (which reference level they rated as which other level) and the parts on which they contradicted themselves across trials.",
+          "overall": "Overall agreement across all appraisers per AIAG: all appraisers agree, and all agree and are also correct.",
+          "verdict": "Overall verdict acceptable, marginal or not acceptable. It follows the worst criterion of the chosen verdict rule; if no criterion can be rated, it is marginal.",
+          "interpretation": "The interpretation of the result as a sentence, depending on the verdict, with the figures filled in."
+        },
+        "Meta": {
+          "type": "Feature type the computation used: binary, nominal or ordinal.",
+          "levels": "The rating levels of the computation in their order: for binary data the positive level comes first, ordinal ascending (numbers by value), nominal alphabetical.",
+          "parts": "Number of distinct parts in the study.",
+          "appraisers": "Number of distinct appraisers in the study.",
+          "reps": "Highest number of ratings one appraiser gave for a single part, i.e. the largest number of trials.",
+          "referenceSource": "Origin of the reference: from the reference column, from the appraisers' consensus (without a reference column; binary and nominal by majority, ordinal by median) or none, if the chosen reference column holds no values. With a consensus, miss and false alarm are not rated.",
+          "ambiguousParts": "Parts for which the appraisers' consensus is not unique (a tie). They count neither towards effectiveness nor towards κ against the reference. Empty when the reference comes from a column.",
+          "warnings": "Notes on the data, for example unequal numbers of trials, a non-unique consensus or too few repeats. The computation runs anyway.",
+          "errors": "Reasons why nothing was computed, for example too few parts, appraisers or levels, or an unknown reference value. Present only with invalid inputs; everything else is then missing."
+        },
+        "Message": {
+          "code": "Identifier of the note or error; the matching text is in the translation.",
+          "params": "The values filled into the text, such as a count or the affected parts."
+        },
+        "AppraiserStats": {
+          "repeatability": "Agreement of the appraiser with themselves: share of parts with at least two trials that they rated the same in all trials. Missing when no part has two trials. The tile above shows the mean over all appraisers.",
+          "withinKappa": "Fleiss' κ within the appraiser: their trials are counted like different raters (Minitab “Within Appraisers”). Missing when no part has two trials. Under Bosch booklet 10 a candidate for the smallest κ.",
+          "vsReference": "Comparison of the appraiser's ratings with the reference: effectiveness, miss, false alarm, bias and κ. Missing without a reference.",
+          "confusionMatrix": "Cross table of the appraiser's ratings against the reference: rows are their rating, columns the reference, the diagonal the hits."
+        },
+        "Rate": {
+          "agree": "Number of agreeing cases, the numerator of the share.",
+          "total": "Number of all cases, the denominator of the share.",
+          "rate": "Share of agreeing cases: agreements divided by all cases, between 0 and 1.",
+          "ci95": "Wilson confidence interval of the share, as lower and upper bound, at level 1 − α (95 % for α = 0.05). It stays within 0 to 1 even for shares near 0 or 1."
+        },
+        "FleissKappa": {
+          "kappa": "Fleiss' κ = (P̄ − Pₑ) / (1 − Pₑ): the observed agreement P̄, corrected for the agreement Pₑ expected by chance. 1 means complete agreement, 0 no better than chance. AIAG: acceptable from 0.75, marginal from 0.40; Bosch booklet 10: acceptable from 0.9, marginal from 0.7.",
+          "se0": "Standard error of κ under the null hypothesis κ = 0 after Fleiss, Nee and Landis (1979); it serves the test only, not a confidence interval. Without a value for the Randolph method.",
+          "z": "Test statistic of the one-sided test of κ = 0: z = κ / SE₀. Without a value for the Randolph method.",
+          "p": "One-sided p-value against κ > 0: p = 1 − Φ(z). Below α the agreement is significantly better than chance. Without a value for the Randolph method.",
+          "method": "Method: fleiss-1971 when every part has the same number of ratings; otherwise randolph with free marginals (Pₑ = 1 / k for k levels). With randolph, z and p stay without a value."
+        },
+        "VsReference": {
+          "effectiveness": "Effectiveness: share of the appraiser's ratings that match the reference. AIAG: acceptable from 90 %, marginal from 80 %; the lowest value across appraisers is rated. The tile above shows the mean over all appraisers.",
+          "missRate": "Miss rate: share of ratings on parts with a negative reference (NOK) that the appraiser rated positive (OK). Binary only. AIAG: acceptable up to 2 %, marginal up to 5 %; the highest value is rated, and only with a reference from a column.",
+          "falseAlarmRate": "False-alarm rate: share of ratings on parts with a positive reference (OK) that the appraiser rated negative (NOK). Binary only. AIAG: acceptable up to 5 %, marginal up to 10 %; the highest value is rated, and only with a reference from a column.",
+          "biasRate": "Bias of the appraiser: miss rate minus false-alarm rate. Above 0 they judge too leniently, below 0 too strictly. Binary only.",
+          "kappa": "Cohen's κ between appraiser and reference, weighted for the ordinal type. The tile above shows the mean over all appraisers.",
+          "fleissKappa": "Fleiss' κ over the appraiser's trials with the reference as one more rater (Bosch booklet 10, procedure 7). Under Bosch a candidate for the smallest κ."
+        },
+        "ErrorRate": {
+          "rate": "Share of wrong ratings: errors divided by the cases in the denominator. With no cases it is 0 and does not count towards the verdict.",
+          "ci95": "Wilson confidence interval of the share, as lower and upper bound, at level 1 − α (95 % for α = 0.05).",
+          "n": "Number of cases in the denominator: for the miss rate the ratings on parts with a negative reference, for the false-alarm rate those on parts with a positive reference."
+        },
+        "BiasRate": {
+          "value": "Miss rate minus false-alarm rate. Positive means too lenient (bad parts slip through), negative too strict (good parts are rejected). Without a value when there are no negative or no positive reference parts."
+        },
+        "CohenKappa": {
+          "kappa": "Cohen's κ = (pₒ − pₑ) / (1 − pₑ) from the observed agreement pₒ and the chance agreement pₑ of the cross table. Weighted for the ordinal type, so that a near miss counts less than a far one. 1 means complete agreement, 0 no better than chance.",
+          "se": "Standard error of κ after Cohen (1960) for the confidence interval: SE = √(pₒ · (1 − pₒ) / (N · (1 − pₑ)²)), with N the number of rating pairs.",
+          "se0": "Standard error of κ under the null hypothesis κ = 0 after Fleiss, Cohen and Everitt (1969); it serves the test only.",
+          "z": "Test statistic of the one-sided test of κ = 0: z = κ / SE₀.",
+          "p": "One-sided p-value against κ > 0: p = 1 − Φ(z). Below α the agreement is significantly better than chance.",
+          "ci95": "Confidence interval of κ as lower and upper bound: κ ± z(1 − α/2) · SE, at level 1 − α (95 % for α = 0.05).",
+          "method": "Method: cohen unweighted for binary and nominal data, weighted-linear or weighted-quadratic for the ordinal type."
+        },
+        "PairKappa": {
+          "kappa": "Cohen's κ between the two appraisers of the pair: κ = (pₒ − pₑ) / (1 − pₑ), weighted for the ordinal type. 1 means complete agreement, 0 no better than chance.",
+          "se": "Standard error of κ after Cohen (1960) for the confidence interval: SE = √(pₒ · (1 − pₒ) / (N · (1 − pₑ)²)), with N the number of rating pairs.",
+          "se0": "Standard error of κ under the null hypothesis κ = 0 after Fleiss, Cohen and Everitt (1969); it serves the test only.",
+          "z": "Test statistic of the one-sided test of κ = 0: z = κ / SE₀.",
+          "p": "One-sided p-value against κ > 0: p = 1 − Φ(z). Below α the two appraisers agree significantly better than chance.",
+          "ci95": "Confidence interval of κ as lower and upper bound: κ ± z(1 − α/2) · SE, at level 1 − α (95 % for α = 0.05).",
+          "method": "Method: cohen unweighted for binary and nominal data, weighted-linear or weighted-quadratic for the ordinal type.",
+          "confusion": "Cross table of the pair: rows are the ratings of the first appraiser, columns those of the second. Per part, as many trials count as both have in common."
+        },
+        "ConfusionMatrix": {
+          "rows": "The levels of the rows, in the order of the level list.",
+          "cols": "The levels of the columns, the same as those of the rows.",
+          "counts": "The frequencies: row i, column j counts how often row level i met column level j. The diagonal holds the agreements."
+        },
+        "BetweenAppraisers": {
+          "pairwiseCohenKappa": "Cohen's κ per pair of appraisers; the entry is named after both appraisers, separated by a vertical bar.",
+          "fleissKappa": "Fleiss' κ over all appraisers and trials together. Under AIAG a criterion of the verdict: acceptable from 0.75, marginal from 0.40."
+        },
+        "SignalDetection": {
+          "perAppraiser": "Per appraiser their sensitivity, decision criterion, hit rate and false-alarm rate according to signal detection theory."
+        },
+        "Detection": {
+          "dPrime": "Sensitivity d′ = Φ⁻¹(hit rate) − Φ⁻¹(false-alarm rate): how well the appraiser tells positive from negative parts. 0 means guessing, the larger the better.",
+          "criterion": "Decision criterion c = −½ · (Φ⁻¹(hit rate) + Φ⁻¹(false-alarm rate)). Positive means reluctant with the positive rating, negative generous; 0 is neutral.",
+          "hitRate": "Hit rate: share of positive ratings on parts with a positive reference. At 0 % or 100 % corrected after Hautus (1995): (hits + 0.5) / (n + 1), so that d′ stays finite.",
+          "falseAlarmRate": "False-alarm rate of signal detection: share of positive ratings on parts with a negative reference; in substance the miss rate, not the false-alarm rate of the effectiveness table. At 0 % or 100 % likewise corrected after Hautus."
+        },
+        "PartRow": {
+          "part": "Identifier of the part.",
+          "reference": "Reference rating of the part; empty when none is known, also with a non-unique consensus.",
+          "byAppraiser": "Per appraiser their ratings of the part in the order of the trials.",
+          "vsRefErrors": "Number of individual ratings that deviate from the reference; so a consistently wrong appraiser weighs more than a one-off slip. Empty when the part has no reference.",
+          "mixedAppraisers": "Number of appraisers who did not rate the part consistently across their trials.",
+          "isDisputed": "True when at least one rating deviates from the reference or an appraiser rated the part inconsistently."
+        },
+        "Disagreement": {
+          "confusionPairs": "The appraiser's kinds of confusion: which reference level they rated as which other level, how often and on which parts. Parts without a reference do not count.",
+          "mixed": "Number of parts the appraiser did not rate consistently across their trials; this needs no reference.",
+          "mixedParts": "The parts behind this number."
+        },
+        "ConfusionPair": {
+          "from": "The level of the reference.",
+          "to": "The level the appraiser gave instead.",
+          "count": "How often this confusion occurred, counted in individual ratings.",
+          "parts": "The affected parts, each named once."
+        },
+        "Overall": {
+          "betweenAppraisers": "Share of parts on which all appraisers gave the same rating in all trials (AIAG “Between Appraisers”). Needs no reference.",
+          "allVsReference": "Share of parts on which all appraisers agree and also match the reference (AIAG “All Appraisers vs Standard”). Only parts with a reference are in the denominator; missing without a reference."
+        },
+        "AgreementShare": {
+          "agree": "Number of parts that meet the condition.",
+          "n": "Number of parts in the denominator.",
+          "rate": "Share: parts with agreement divided by the parts in the denominator, between 0 and 1.",
+          "ci95": "Wilson confidence interval of the share, as lower and upper bound, at level 1 − α (95 % for α = 0.05)."
+        },
+        "Verdict": {
+          "ruleSet": "The verdict rule applied: AIAG MSA (4th ed.) or Bosch booklet 10.",
+          "level": "The verdict: acceptable, marginal or not acceptable, after the worst criterion. If no criterion can be rated, it is marginal.",
+          "driver": "The criterion that decides the verdict: the first in table order at the worst level. Empty when no criterion can be rated.",
+          "driverAppraiser": "The appraiser the deciding criterion belongs to; empty for a criterion across all appraisers, such as the overall Fleiss' κ.",
+          "referenceNote": "Note for binary data with a reference from the consensus: miss and false alarm are then not rated, because an error all appraisers share stays invisible in the consensus. Otherwise empty.",
+          "criteria": "The criteria in table order, each with value, level and limits. AIAG: Fleiss' κ, lowest effectiveness, highest miss rate and highest false-alarm rate; Bosch booklet 10: the smallest κ."
+        },
+        "Criterion": {
+          "id": "Identifier of the criterion: fleissKappa, effectiveness, missRate or falseAlarmRate under AIAG, minKappa under Bosch booklet 10.",
+          "value": "The rated value; for per-appraiser criteria the extreme across all appraisers, i.e. the lowest effectiveness, the highest miss rate and the highest false-alarm rate.",
+          "level": "The level of this criterion: acceptable, marginal or not acceptable.",
+          "appraiser": "The appraiser with the extreme value, on a tie the first in alphabetical order; empty for the overall Fleiss' κ.",
+          "limits": "The limits of this criterion for acceptable and marginal.",
+          "direction": "Direction of the limits: min means higher is better, the value must reach the limit (κ, effectiveness); max means lower is better, the value must not exceed the limit (miss rate, false-alarm rate).",
+          "source": "Where the smallest κ under Bosch booklet 10 comes from: the overall Fleiss' κ, κ within one appraiser, κ of one appraiser with the reference, or all appraisers with the reference."
+        },
+        "Limits": {
+          "good": "Limit for acceptable: under AIAG 0.75 for κ, 0.90 for effectiveness, 0.02 for the miss rate and 0.05 for the false-alarm rate; under Bosch booklet 10 0.9 for κ.",
+          "marginal": "Limit for marginal: under AIAG 0.40 for κ, 0.80 for effectiveness, 0.05 for the miss rate and 0.10 for the false-alarm rate; under Bosch booklet 10 0.7 for κ. Beyond it the criterion is not acceptable."
+        },
+        "Interpretation": {
+          "textKey": "Translation key of the interpretation sentence, depending on the verdict.",
+          "params": "The values filled into the interpretation sentence."
+        },
+        "InterpretationParams": {
+          "kappa": "Fleiss' κ over all appraisers as text with three decimals; a dash when κ cannot be computed.",
+          "minEff": "The lowest effectiveness in percent as text with one decimal; a dash without a reference.",
+          "driver": "The identifier of the deciding criterion as text; empty when none can be rated.",
+          "ruleSet": "The verdict rule applied as an identifier, aiag or bosch."
+        }
       },
       "title": "MSA Type 5",
       "titleLong": "Attribute Measurement System Analysis",

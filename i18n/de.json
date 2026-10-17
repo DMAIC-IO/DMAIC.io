@@ -3103,8 +3103,8 @@
         "setParam": {
           "help": "Setzt einen Parameter der Studie; die Neuberechnung folgt nach kurzer Ruhezeit. Ein neuer Merkmalstyp setzt die positive Stufe zurück.",
           "params": {
-            "key": "Einer der Schlüssel aus activeParams: type, weights, layout, trials, ruleSet, alpha oder positiveLevel. weights gilt nur beim Typ ordinal, trials nur beim Layout wide, positiveLevel nur beim Typ binary mit erkannten Stufen; jeder andere Wert ist ein Fehler.",
-            "value": "Der Wert als Text. type nimmt 'binary', 'nominal' oder 'ordinal', weights 'linear' oder 'quadratic', layout 'long' oder 'wide', ruleSet 'aiag' oder 'bosch', alpha '0.01', '0.05' oder '0.10'; trials die Anzahl der Versuche je Prüfer als Text, zum Beispiel '2'; positiveLevel eine der Stufen aus detectedLevels."
+            "key": "Welcher Parameter; jeder Schlüssel ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert als Text; der zulässige Bereich steht je Schlüssel unter keys. positiveLevel nimmt eine der Stufen aus detectedLevels."
           }
         },
         "setColumn": {
@@ -3119,13 +3119,183 @@
         "clearResults": { "help": "Verwirft das Ergebnis und die Diagramme; die Eingaben bleiben." }
       },
       "fields": {
-        "params": { "help": "Die eingegebenen Parameter: type (Merkmalstyp), positiveLevel (positive Stufe der Binärdarstellung, null solange unbestimmt; setzbar), weights (Gewichtung beim Typ ordinal), alpha (Signifikanzniveau, als Text), ordinalOrder (Reihenfolge der Stufen, null solange automatisch; über die Fläche nicht setzbar), ruleSet (Urteilsregel), layout (long oder wide) und trials (Versuche je Prüfer im breiten Layout, als Text)." },
+        "params": { "help": "Die eingegebenen Parameter, wie setParam sie nimmt und dort unter keys beschreibt, dazu ordinalOrder (Reihenfolge der Stufen, null solange automatisch; über die Fläche nicht setzbar)." },
         "columns": { "help": "Die gewählten Spalten: part, appraiser, rating, reference und replicate je als { instanceId, sheetId, columnId } oder null, dazu ratings als Liste der Bewertungsspalten des breiten Layouts (über die Fläche nicht setzbar)." },
         "detectedLevels": { "help": "Die Bewertungsstufen, die in der gewählten Bewertungsspalte (oder den Spalten des breiten Layouts) vorkommen; die Werte, die setParam für positiveLevel annimmt. Leer, solange keine Bewertungsspalte gewählt ist." },
         "activeParams": { "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt; weights fehlt außerhalb des Typs ordinal, trials außerhalb des Layouts wide, positiveLevel außerhalb des Typs binary oder ohne erkannte Stufen." },
         "activeColumnSlots": { "help": "Die Slots, die setColumn im aktuellen Zustand annimmt. Im Layout wide fehlen appraiser, rating und replicate, und der Matrix-Slot ratings gehört nicht dazu: das breite Layout ist über die Fläche nicht vollständig bedienbar." },
         "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'." },
-        "result": { "help": "Das gerechnete Ergebnis mit Urteil, Kappa-Werten, Effektivität und den Tabellen, oder null, solange die Eingaben unvollständig oder ungültig sind." }
+        "result": { "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; null, solange keine Zeilen auswertbar sind. Bei ungültigen Eingaben steht nur meta da, der Grund unter meta.errors." }
+      },
+      "types": {
+        "Params": {
+          "type": "Merkmalstyp der Bewertungen: binär (zwei Stufen, etwa i.O. und n.i.O.), nominal (mehrere Klassen ohne Reihenfolge) oder ordinal (geordnete Stufen, etwa eine Notenskala). Er bestimmt, welche Kennzahlen entstehen: Schlupf, Fehlalarm und Signalentdeckung gibt es nur binär, gewichtetes κ nur ordinal. Ein neuer Typ setzt die positive Stufe zurück.",
+          "weights": "Gewichtung des κ beim Typ ordinal, damit knapp daneben weniger zählt als weit daneben: linear w = 1 − |i − j| / (k − 1), quadratisch w = 1 − ((i − j) / (k − 1))², mit i, j den Stufenplätzen und k der Stufenzahl. Voreingestellt ist quadratisch.",
+          "layout": "Datenlayout der Bewertungen: lang mit einer Zeile je Bewertung (Teil, Prüfer, Bewertung, wahlweise Referenz und Wiederholung) oder breit mit einer Spalte je Prüfer und Durchgang.",
+          "trials": "Anzahl der Durchgänge je Prüfer im breiten Layout, als Text, zum Beispiel '2'. Die Spalten werden der Reihe nach gruppiert: erst alle Durchgänge von Prüfer 1, dann Prüfer 2; die Spaltenzahl muss durch die Durchgangszahl teilbar sein.",
+          "ruleSet": "Urteilsregel. AIAG MSA (4. Aufl.) nimmt das schlechteste von vier Kriterien: Fleiss' κ (akzeptabel ab 0,75, grenzwertig ab 0,40), kleinste Effektivität (ab 90 % bzw. 80 %), größter Schlupf (bis 2 % bzw. 5 %) und größter Fehlalarm (bis 5 % bzw. 10 %). Bosch Heft 10 bewertet das kleinste verfügbare κ: akzeptabel ab 0,9, grenzwertig ab 0,7.",
+          "alpha": "Signifikanzniveau α. Es legt das Niveau der Konfidenzintervalle fest (1 − α); die p-Werte der κ-Tests misst man daran. Zur Wahl stehen 0,01, 0,05 (üblich) und 0,10.",
+          "positiveLevel": "Die Stufe, die bei binären Daten als positiv (i.O.) gilt, eine der erkannten Stufen; ohne Wahl die häufigste Bewertung. Schlupf zählt negative Teile, die als positiv bewertet wurden, Fehlalarm positive Teile, die als negativ bewertet wurden; ist die Stufe falsch gewählt, sind beide vertauscht."
+        },
+        "Result": {
+          "meta": "Rahmendaten der Studie: Merkmalstyp, Stufen, Zahl der Teile, Prüfer und Versuche, Herkunft der Referenz, dazu die Hinweise und bei ungültigen Eingaben die Gründe, warum nicht gerechnet wurde.",
+          "perAppraiser": "Je Prüfer ein Eintrag mit seiner Wiederholbarkeit, dem κ innerhalb seiner Versuche, dem Vergleich mit der Referenz und der Kreuztabelle gegen die Referenz.",
+          "betweenAppraisers": "Übereinstimmung der Prüfer untereinander: Cohens κ je Prüferpaar und Fleiss' κ über alle Prüfer und Versuche zusammen.",
+          "allVsReference": "Fleiss' κ über alle Bewertungen aller Prüfer, die Referenz je Teil als weiterer Bewerter gezählt (Bosch Heft 10). Fehlt ohne Referenz.",
+          "signalDetection": "Signalentdeckung je Prüfer: Trennschärfe d′ und Entscheidungsschwelle. Nur bei binären Daten mit Referenz, sonst leer.",
+          "perPart": "Je Teil eine Zeile mit Referenz, den Bewertungen je Prüfer und den Abweichungen, sortiert nach Problemgrad: erst nach der Zahl der Abweichungen von der Referenz, dann nach der Zahl der uneinheitlichen Prüfer.",
+          "disagreement": "Je Prüfer seine Verwechslungen (welche Referenzstufe er als welche andere bewertet hat) und die Teile, an denen er sich in seinen Versuchen widersprochen hat.",
+          "overall": "Gesamtübereinstimmung über alle Prüfer nach AIAG: alle Prüfer einig, und alle einig und zugleich richtig.",
+          "verdict": "Gesamturteil akzeptabel, grenzwertig oder nicht akzeptabel. Es folgt dem schlechtesten Kriterium der gewählten Urteilsregel; ist kein Kriterium bewertbar, lautet es grenzwertig.",
+          "interpretation": "Die Deutung des Ergebnisses als Satz, abhängig vom Urteil, mit den eingesetzten Kennzahlen."
+        },
+        "Meta": {
+          "type": "Merkmalstyp, mit dem gerechnet wurde: binär, nominal oder ordinal.",
+          "levels": "Die Bewertungsstufen der Rechnung in ihrer Reihenfolge: binär steht die positive Stufe vorn, ordinal aufsteigend (Zahlen nach Zahlenwert), nominal alphabetisch.",
+          "parts": "Anzahl der verschiedenen Teile in der Studie.",
+          "appraisers": "Anzahl der verschiedenen Prüfer in der Studie.",
+          "reps": "Höchste Zahl an Bewertungen, die ein Prüfer für ein einzelnes Teil abgegeben hat, also die größte Versuchszahl.",
+          "referenceSource": "Herkunft der Referenz: aus der Referenzspalte, aus dem Konsens der Prüfer (ohne Referenzspalte; binär und nominal per Mehrheit, ordinal per Median) oder keine, wenn die gewählte Referenzspalte keine Werte enthält. Bei Konsens werden Schlupf und Fehlalarm nicht bewertet.",
+          "ambiguousParts": "Teile, für die der Konsens der Prüfer nicht eindeutig ist (Gleichstand). Sie zählen weder zur Effektivität noch zum κ gegen die Referenz. Leer, wenn die Referenz aus einer Spalte kommt.",
+          "warnings": "Hinweise zur Datenlage, zum Beispiel ungleiche Versuchszahlen, ein nicht eindeutiger Konsens oder zu wenige Wiederholungen. Gerechnet wird trotzdem.",
+          "errors": "Gründe, warum nicht gerechnet wurde, zum Beispiel zu wenige Teile, Prüfer oder Stufen oder ein unbekannter Referenzwert. Steht nur bei ungültigen Eingaben da; dann fehlt alles übrige."
+        },
+        "Message": {
+          "code": "Kennung des Hinweises oder Fehlers; der zugehörige Text steht in der Übersetzung.",
+          "params": "Die Werte, die in den Text eingesetzt werden, etwa eine Anzahl oder die betroffenen Teile."
+        },
+        "AppraiserStats": {
+          "repeatability": "Übereinstimmung des Prüfers mit sich selbst: Anteil der Teile mit mindestens zwei Versuchen, die er in allen Versuchen gleich bewertet hat. Fehlt, wenn kein Teil zwei Versuche hat. Die Kachel darüber zeigt den Mittelwert über alle Prüfer.",
+          "withinKappa": "Fleiss' κ innerhalb des Prüfers: seine Versuche werden wie verschiedene Bewerter gezählt (Minitab „Innerhalb der Prüfer“). Fehlt, wenn kein Teil zwei Versuche hat. Unter Bosch Heft 10 ein Kandidat für das kleinste κ.",
+          "vsReference": "Vergleich der Bewertungen des Prüfers mit der Referenz: Effektivität, Schlupf, Fehlalarm, Neigung und κ. Fehlt ohne Referenz.",
+          "confusionMatrix": "Kreuztabelle der Bewertungen des Prüfers gegen die Referenz: Zeilen sind sein Urteil, Spalten die Referenz, die Diagonale die Treffer."
+        },
+        "Rate": {
+          "agree": "Zahl der übereinstimmenden Fälle, der Zähler des Anteils.",
+          "total": "Zahl aller Fälle, der Nenner des Anteils.",
+          "rate": "Anteil der übereinstimmenden Fälle: Übereinstimmungen geteilt durch alle Fälle, zwischen 0 und 1.",
+          "ci95": "Konfidenzintervall des Anteils nach Wilson, als untere und obere Grenze, zum Niveau 1 − α (bei α = 0,05 also 95 %). Es bleibt auch bei Anteilen nahe 0 oder 1 innerhalb von 0 bis 1."
+        },
+        "FleissKappa": {
+          "kappa": "Fleiss' κ = (P̄ − Pₑ) / (1 − Pₑ): die beobachtete Übereinstimmung P̄, bereinigt um die zufällig erwartete Pₑ. 1 heißt völlige Übereinstimmung, 0 nicht besser als Zufall. AIAG: akzeptabel ab 0,75, grenzwertig ab 0,40; Bosch Heft 10: akzeptabel ab 0,9, grenzwertig ab 0,7.",
+          "se0": "Standardfehler von κ unter der Nullhypothese κ = 0 nach Fleiss, Nee und Landis (1979); er dient nur dem Test, nicht einem Konfidenzintervall. Ohne Wert beim Verfahren nach Randolph.",
+          "z": "Prüfgröße des einseitigen Tests auf κ = 0: z = κ / SE₀. Ohne Wert beim Verfahren nach Randolph.",
+          "p": "Einseitiger p-Wert gegen κ > 0: p = 1 − Φ(z). Unter α ist die Übereinstimmung signifikant besser als Zufall. Ohne Wert beim Verfahren nach Randolph.",
+          "method": "Rechenweg: fleiss-1971, wenn jedes Teil gleich viele Bewertungen hat; sonst randolph mit freier Randverteilung (Pₑ = 1 / k bei k Stufen). Bei randolph bleiben z und p ohne Wert."
+        },
+        "VsReference": {
+          "effectiveness": "Effektivität: Anteil der Bewertungen des Prüfers, die mit der Referenz übereinstimmen. AIAG: akzeptabel ab 90 %, grenzwertig ab 80 %; bewertet wird der kleinste Wert über die Prüfer. Die Kachel darüber zeigt den Mittelwert über alle Prüfer.",
+          "missRate": "Schlupf (Miss-Rate): Anteil der Bewertungen an Teilen mit negativer Referenz (n.i.O.), die der Prüfer als positiv (i.O.) bewertet hat. Nur binär. AIAG: akzeptabel bis 2 %, grenzwertig bis 5 %; bewertet wird der größte Wert, und nur bei einer Referenz aus einer Spalte.",
+          "falseAlarmRate": "Fehlalarm: Anteil der Bewertungen an Teilen mit positiver Referenz (i.O.), die der Prüfer als negativ (n.i.O.) bewertet hat. Nur binär. AIAG: akzeptabel bis 5 %, grenzwertig bis 10 %; bewertet wird der größte Wert, und nur bei einer Referenz aus einer Spalte.",
+          "biasRate": "Neigung des Prüfers: Schlupf minus Fehlalarm. Über 0 urteilt er zu nachsichtig, unter 0 zu streng. Nur binär.",
+          "kappa": "Cohens κ zwischen Prüfer und Referenz, beim Typ ordinal gewichtet. Die Kachel darüber zeigt den Mittelwert über alle Prüfer.",
+          "fleissKappa": "Fleiss' κ über die Versuche des Prüfers mit der Referenz als weiterem Bewerter (Bosch Heft 10, Verfahren 7). Unter Bosch ein Kandidat für das kleinste κ."
+        },
+        "ErrorRate": {
+          "rate": "Anteil der Fehlbewertungen: Fehler geteilt durch die Fälle im Nenner. Gibt es keine Fälle, steht 0 da, und der Wert zählt nicht ins Urteil.",
+          "ci95": "Konfidenzintervall des Anteils nach Wilson, als untere und obere Grenze, zum Niveau 1 − α (bei α = 0,05 also 95 %).",
+          "n": "Zahl der Fälle im Nenner: beim Schlupf die Bewertungen an Teilen mit negativer Referenz, beim Fehlalarm die an Teilen mit positiver Referenz."
+        },
+        "BiasRate": {
+          "value": "Schlupf minus Fehlalarm. Positiv heißt zu nachsichtig (Schlechtteile rutschen durch), negativ zu streng (Gutteile werden verworfen). Ohne Wert, wenn es keine negativen oder keine positiven Referenzteile gibt."
+        },
+        "CohenKappa": {
+          "kappa": "Cohens κ = (pₒ − pₑ) / (1 − pₑ) aus der beobachteten Übereinstimmung pₒ und der zufällig erwarteten pₑ der Kreuztabelle. Beim Typ ordinal gewichtet, sodass knapp daneben weniger zählt als weit daneben. 1 heißt völlige Übereinstimmung, 0 nicht besser als Zufall.",
+          "se": "Standardfehler von κ nach Cohen (1960) für das Konfidenzintervall: SE = √(pₒ · (1 − pₒ) / (N · (1 − pₑ)²)), mit N der Zahl der Bewertungspaare.",
+          "se0": "Standardfehler von κ unter der Nullhypothese κ = 0 nach Fleiss, Cohen und Everitt (1969); er dient nur dem Test.",
+          "z": "Prüfgröße des einseitigen Tests auf κ = 0: z = κ / SE₀.",
+          "p": "Einseitiger p-Wert gegen κ > 0: p = 1 − Φ(z). Unter α ist die Übereinstimmung signifikant besser als Zufall.",
+          "ci95": "Konfidenzintervall von κ als untere und obere Grenze: κ ± z(1 − α/2) · SE, zum Niveau 1 − α (bei α = 0,05 also 95 %).",
+          "method": "Rechenweg: cohen ungewichtet bei binären und nominalen Daten, weighted-linear oder weighted-quadratic beim Typ ordinal."
+        },
+        "PairKappa": {
+          "kappa": "Cohens κ zwischen den beiden Prüfern des Paars: κ = (pₒ − pₑ) / (1 − pₑ), beim Typ ordinal gewichtet. 1 heißt völlige Übereinstimmung, 0 nicht besser als Zufall.",
+          "se": "Standardfehler von κ nach Cohen (1960) für das Konfidenzintervall: SE = √(pₒ · (1 − pₒ) / (N · (1 − pₑ)²)), mit N der Zahl der Bewertungspaare.",
+          "se0": "Standardfehler von κ unter der Nullhypothese κ = 0 nach Fleiss, Cohen und Everitt (1969); er dient nur dem Test.",
+          "z": "Prüfgröße des einseitigen Tests auf κ = 0: z = κ / SE₀.",
+          "p": "Einseitiger p-Wert gegen κ > 0: p = 1 − Φ(z). Unter α stimmen die beiden Prüfer signifikant besser als zufällig überein.",
+          "ci95": "Konfidenzintervall von κ als untere und obere Grenze: κ ± z(1 − α/2) · SE, zum Niveau 1 − α (bei α = 0,05 also 95 %).",
+          "method": "Rechenweg: cohen ungewichtet bei binären und nominalen Daten, weighted-linear oder weighted-quadratic beim Typ ordinal.",
+          "confusion": "Kreuztabelle des Paars: Zeilen sind die Urteile des ersten Prüfers, Spalten die des zweiten. Je Teil zählen so viele Versuche, wie beide gemeinsam haben."
+        },
+        "ConfusionMatrix": {
+          "rows": "Die Stufen der Zeilen, in der Reihenfolge der Stufenliste.",
+          "cols": "Die Stufen der Spalten, dieselben wie die der Zeilen.",
+          "counts": "Die Häufigkeiten: Zeile i, Spalte j zählt, wie oft Zeilenstufe i auf Spaltenstufe j traf. Die Diagonale sind die Übereinstimmungen."
+        },
+        "BetweenAppraisers": {
+          "pairwiseCohenKappa": "Cohens κ je Prüferpaar; der Eintrag ist nach beiden Prüfern benannt, getrennt durch einen senkrechten Strich.",
+          "fleissKappa": "Fleiss' κ über alle Prüfer und Versuche zusammen. Unter AIAG ein Kriterium des Urteils: akzeptabel ab 0,75, grenzwertig ab 0,40."
+        },
+        "SignalDetection": {
+          "perAppraiser": "Je Prüfer seine Trennschärfe, Entscheidungsschwelle, Trefferquote und Fehlalarmquote nach der Signalentdeckungstheorie."
+        },
+        "Detection": {
+          "dPrime": "Trennschärfe d′ = Φ⁻¹(Trefferquote) − Φ⁻¹(Fehlalarmquote): wie gut der Prüfer positive von negativen Teilen unterscheidet. 0 heißt Raten, je größer, desto besser.",
+          "criterion": "Entscheidungsschwelle c = −½ · (Φ⁻¹(Trefferquote) + Φ⁻¹(Fehlalarmquote)). Positiv heißt zurückhaltend mit dem positiven Urteil, negativ großzügig; 0 ist neutral.",
+          "hitRate": "Trefferquote: Anteil der positiven Urteile an Teilen mit positiver Referenz. Bei 0 % oder 100 % nach Hautus (1995) korrigiert: (Treffer + 0,5) / (n + 1), damit d′ endlich bleibt.",
+          "falseAlarmRate": "Fehlalarmquote der Signalentdeckung: Anteil der positiven Urteile an Teilen mit negativer Referenz; inhaltlich der Schlupf, nicht der Fehlalarm der Effektivitätstabelle. Bei 0 % oder 100 % ebenso nach Hautus korrigiert."
+        },
+        "PartRow": {
+          "part": "Kennung des Teils.",
+          "reference": "Referenzurteil des Teils; leer, wenn keins bekannt ist, auch bei nicht eindeutigem Konsens.",
+          "byAppraiser": "Je Prüfer seine Bewertungen des Teils in der Reihenfolge der Versuche.",
+          "vsRefErrors": "Zahl der einzelnen Bewertungen, die von der Referenz abweichen; so wiegt ein durchgehend falscher Prüfer schwerer als ein einmaliger Ausrutscher. Leer, wenn das Teil keine Referenz hat.",
+          "mixedAppraisers": "Zahl der Prüfer, die das Teil in ihren Versuchen nicht einheitlich bewertet haben.",
+          "isDisputed": "Wahr, wenn mindestens eine Bewertung von der Referenz abweicht oder ein Prüfer das Teil uneinheitlich bewertet hat."
+        },
+        "Disagreement": {
+          "confusionPairs": "Die Verwechslungsarten des Prüfers: welche Referenzstufe er als welche andere bewertet hat, wie oft und an welchen Teilen. Teile ohne Referenz zählen nicht mit.",
+          "mixed": "Zahl der Teile, die der Prüfer in seinen Versuchen nicht einheitlich bewertet hat; dafür braucht es keine Referenz.",
+          "mixedParts": "Die Teile hinter dieser Zahl."
+        },
+        "ConfusionPair": {
+          "from": "Die Stufe der Referenz.",
+          "to": "Die Stufe, die der Prüfer stattdessen vergeben hat.",
+          "count": "Wie oft diese Verwechslung vorkam, in einzelnen Bewertungen gezählt.",
+          "parts": "Die betroffenen Teile, jedes einmal genannt."
+        },
+        "Overall": {
+          "betweenAppraisers": "Anteil der Teile, an denen alle Prüfer in allen Versuchen dasselbe geurteilt haben (AIAG „Between Appraisers“). Braucht keine Referenz.",
+          "allVsReference": "Anteil der Teile, an denen alle Prüfer einig sind und zugleich mit der Referenz übereinstimmen (AIAG „All Appraisers vs Standard“). Im Nenner stehen nur Teile mit Referenz; fehlt ohne Referenz."
+        },
+        "AgreementShare": {
+          "agree": "Zahl der Teile, an denen die Bedingung erfüllt ist.",
+          "n": "Zahl der Teile im Nenner.",
+          "rate": "Anteil: Teile mit Übereinstimmung geteilt durch die Teile im Nenner, zwischen 0 und 1.",
+          "ci95": "Konfidenzintervall des Anteils nach Wilson, als untere und obere Grenze, zum Niveau 1 − α (bei α = 0,05 also 95 %)."
+        },
+        "Verdict": {
+          "ruleSet": "Die angewandte Urteilsregel: AIAG MSA (4. Aufl.) oder Bosch Heft 10.",
+          "level": "Das Urteil: akzeptabel, grenzwertig oder nicht akzeptabel, nach dem schlechtesten Kriterium. Ist kein Kriterium bewertbar, lautet es grenzwertig.",
+          "driver": "Das Kriterium, das das Urteil bestimmt: das erste in Tabellenreihenfolge auf der schlechtesten Stufe. Leer, wenn kein Kriterium bewertbar ist.",
+          "driverAppraiser": "Der Prüfer, an dem das ausschlaggebende Kriterium hängt; leer bei einem Kriterium über alle Prüfer, etwa Fleiss' κ gesamt.",
+          "referenceNote": "Hinweis bei binären Daten mit Referenz aus dem Konsens: Schlupf und Fehlalarm werden dann nicht bewertet, weil ein Fehler, den alle Prüfer teilen, im Konsens unsichtbar bleibt. Sonst leer.",
+          "criteria": "Die Kriterien in Tabellenreihenfolge, je mit Wert, Stufe und Grenzwerten. AIAG: Fleiss' κ, kleinste Effektivität, größter Schlupf und größter Fehlalarm; Bosch Heft 10: das kleinste κ."
+        },
+        "Criterion": {
+          "id": "Kennung des Kriteriums: fleissKappa, effectiveness, missRate oder falseAlarmRate unter AIAG, minKappa unter Bosch Heft 10.",
+          "value": "Der bewertete Wert; bei Kriterien je Prüfer der Extremwert über alle Prüfer, also die kleinste Effektivität, der größte Schlupf und der größte Fehlalarm.",
+          "level": "Die Stufe dieses Kriteriums: akzeptabel, grenzwertig oder nicht akzeptabel.",
+          "appraiser": "Der Prüfer mit dem Extremwert, bei Gleichstand der erste in alphabetischer Ordnung; leer bei Fleiss' κ gesamt.",
+          "limits": "Die Grenzwerte dieses Kriteriums für akzeptabel und grenzwertig.",
+          "direction": "Richtung der Grenzwerte: min heißt höher ist besser, der Wert muss die Grenze erreichen (κ, Effektivität); max heißt niedriger ist besser, der Wert darf die Grenze nicht überschreiten (Schlupf, Fehlalarm).",
+          "source": "Woher das kleinste κ unter Bosch Heft 10 stammt: Fleiss' κ gesamt, κ innerhalb eines Prüfers, κ eines Prüfers mit der Referenz oder alle Prüfer mit der Referenz."
+        },
+        "Limits": {
+          "good": "Grenze für akzeptabel: unter AIAG 0,75 für κ, 0,90 für die Effektivität, 0,02 für den Schlupf und 0,05 für den Fehlalarm; unter Bosch Heft 10 0,9 für κ.",
+          "marginal": "Grenze für grenzwertig: unter AIAG 0,40 für κ, 0,80 für die Effektivität, 0,05 für den Schlupf und 0,10 für den Fehlalarm; unter Bosch Heft 10 0,7 für κ. Jenseits davon ist das Kriterium nicht akzeptabel."
+        },
+        "Interpretation": {
+          "textKey": "Übersetzungsschlüssel des Deutungssatzes, je nach Urteil.",
+          "params": "Die Werte, die in den Deutungssatz eingesetzt werden."
+        },
+        "InterpretationParams": {
+          "kappa": "Fleiss' κ über alle Prüfer als Text mit drei Nachkommastellen; ein Gedankenstrich, wenn κ nicht berechenbar ist.",
+          "minEff": "Die kleinste Effektivität in Prozent als Text mit einer Nachkommastelle; ein Gedankenstrich ohne Referenz.",
+          "driver": "Die Kennung des ausschlaggebenden Kriteriums als Text; leer, wenn keins bewertbar ist.",
+          "ruleSet": "Die angewandte Urteilsregel als Kennung, aiag oder bosch."
+        }
       },
       "title": "MSA Typ 5",
       "titleLong": "Attributive Prüfmittel-Fähigkeit",
