@@ -5,6 +5,7 @@
  *   - Chi-Square Variance Test   — one-sample σ² test
  *   - F-Test                     — two-sample variance equality
  *   - Levene Test (Brown-Forsythe) — robust two-sample variance equality
+ *   - Bonett Variance Test (bonett-engine.js) — robust one-sample σ²
  *
  * Mean tests:
  *   - One-Sample t-Test          — μ against target value
@@ -29,6 +30,8 @@ import {
 } from './math-utils.js';
 
 import { mean, variance, stddev } from './stats-utils.js';
+
+export { bonettVarianceTest } from './bonett-engine.js';
 
 // ─── Descriptive Helpers ────────────────────────────────────
 

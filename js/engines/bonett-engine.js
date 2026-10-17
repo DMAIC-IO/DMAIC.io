@@ -9,7 +9,8 @@
  * checked against Minitab.
  */
 
-import { mean } from './stats-utils.js';
+import { mean, variance } from './stats-utils.js';
+import { normalUpperTailPrecise, normalQuantilePrecise } from './normal-precise.js';
 
 /** Bisection steps; 200 halvings reach double precision on any bracket used here. */
 const BISECT_STEPS = 200;
@@ -17,6 +18,8 @@ const BISECT_STEPS = 200;
 const GRID_STEPS = 6000;
 /** Golden-section iterations; the bracket shrinks by 0.618 per step (x tolerance far below 1e-14). */
 const GOLDEN_STEPS = 100;
+/** z beyond which 1 − Φ(z) underflows; a bound that is not crossed by here means p = 0. */
+const Z_CAP = 40;
 const INV_PHI = (Math.sqrt(5) - 1) / 2;
 
 /**
@@ -123,4 +126,80 @@ export function bonettRatioCI({ n1, n2, var1, var2, kurt1, kurt2 }, z) {
   if (roots.length < 2) throw new Error('Bonett ratio CI: confidence set is unbounded');
   const scale = c * var1 / var2;
   return { lower: scale * roots[0], upper: scale * roots[roots.length - 1], roots };
+}
+
+/**
+ * Log-domain CI limits of the one-sample test. The p-value search compares
+ * these with log(σ₀²) directly: exp of a large limit would overflow as z → n.
+ * @returns {[number, number]} [log lower, log upper]
+ */
+function oneSampleLogLimits(n, s2, kurt, z) {
+  const c = n / (n - z);
+  const se = c * Math.sqrt(Math.max(0, (kurt - (n - 3) / n) / (n - 1)));
+  const centre = Math.log(c * s2);
+  return [centre - z * se, centre + z * se];
+}
+
+function oneSampleLimits(n, s2, kurt, z) {
+  return oneSampleLogLimits(n, s2, kurt, z).map(Math.exp);
+}
+
+/**
+ * One-sided p-values by inverting the CI: the α at which the lower (upper)
+ * bound — computed with z_α — reaches σ₀². At z = 0 both bounds equal s²,
+ * so the side of s² that σ₀² lies on decides which bound is inverted.
+ * The first (smallest-z) crossing on the grid is used, as in the Python reference.
+ * @returns {[number, number]} [α_L (H₁: σ² > σ₀²), α_U (H₁: σ² < σ₀²)]
+ */
+function oneSampleAlphas(n, s2, kurt, sigma0Sq) {
+  if (sigma0Sq === s2) return [0.5, 0.5];
+  const lower = sigma0Sq < s2;
+  const idx = lower ? 0 : 1;
+  const cap = Math.min(Z_CAP, n * (1 - 1e-9));
+  const logSigma0 = Math.log(sigma0Sq);
+  const f = (z) => oneSampleLogLimits(n, s2, kurt, z)[idx] - logSigma0;
+  const roots = gridRoots(f, 1e-9, cap, 4000);
+  const tail = roots.length ? normalUpperTailPrecise(roots[0]) : 0;
+  return lower ? [tail, 1 - tail] : [1 - tail, tail];
+}
+
+/**
+ * Bonett test for one variance (Bonett 2006, Minitab "1 Variance").
+ * No test statistic; the p-value comes from inverting the CI.
+ *
+ * @param {number[]} data - Sample data
+ * @param {number} sigma0Sq - Hypothesized variance σ₀²
+ * @param {string} [direction='two-sided'] - 'two-sided' | 'greater' | 'less'
+ * @param {number} [alpha=0.05] - Significance level
+ * @returns {object} Test results; one-sided CIs have null on the open side
+ */
+export function bonettVarianceTest(data, sigma0Sq, direction = 'two-sided', alpha = 0.05) {
+  const n = data.length;
+  if (n < 2) throw new Error('At least 2 data points required');
+  if (!(sigma0Sq > 0)) throw new Error('Hypothesized variance must be > 0');
+  const s2 = variance(data);
+  if (!(s2 > 0)) throw new Error('Sample has zero variance');
+  const z = normalQuantilePrecise(direction === 'two-sided' ? 1 - alpha / 2 : 1 - alpha);
+  if (n <= z) throw new Error('Bonett CI needs n > z');
+
+  const kurt = bonettKurtosis(data);
+  const [aL, aU] = oneSampleAlphas(n, s2, kurt, sigma0Sq);
+  const [lo, hi] = oneSampleLimits(n, s2, kurt, z);
+  let pValue, ci;
+  if (direction === 'two-sided') { pValue = Math.min(1, 2 * Math.min(aL, aU)); ci = [lo, hi]; }
+  else if (direction === 'greater') { pValue = aL; ci = [lo, null]; }
+  else { pValue = aU; ci = [null, hi]; }
+
+  return {
+    testName: 'Bonett Variance Test',
+    statistic: null,
+    pValue,
+    sampleVariance: s2,
+    ci,
+    ciSigma: ci.map(v => (v === null ? null : Math.sqrt(v))),
+    reject: pValue < alpha,
+    n,
+    alpha,
+    direction,
+  };
 }

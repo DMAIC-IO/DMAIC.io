@@ -37,6 +37,30 @@ export function normalCdfPrecise(x) {
 }
 
 /**
+ * Upper tail Q(x) = 1 − Φ(x) with full relative precision in the far tail,
+ * where Φ(−x) from the Taylor series loses digits to cancellation against 0.5.
+ * For x > 3 a Laplace continued fraction (modified Lentz) is used.
+ * @param {number} x
+ * @returns {number} probability in [0, 1]; NaN for NaN input
+ */
+export function normalUpperTailPrecise(x) {
+  if (Number.isNaN(x)) return NaN;
+  if (x <= 3) return normalCdfPrecise(-x);
+  if (x > 40) return 0;
+  // Q(x) = φ(x) / (x + 1/(x + 2/(x + 3/(x + …))))
+  const tiny = 1e-300;
+  let f = x, c = x, d = 0;
+  for (let k = 1; k < 500; k++) {
+    d = x + k * d; d = d === 0 ? tiny : 1 / d;
+    c = x + k / c; if (c === 0) c = tiny;
+    const delta = c * d;
+    f *= delta;
+    if (Math.abs(delta - 1) < 1e-16) break;
+  }
+  return Math.exp(-0.5 * x * x - 0.91893853320467274178) / f;
+}
+
+/**
  * Standard normal quantile Φ⁻¹(p) (AS 241, as R qnorm).
  * @param {number} p
  * @returns {number} -Infinity for p = 0, Infinity for p = 1, NaN outside [0, 1]
