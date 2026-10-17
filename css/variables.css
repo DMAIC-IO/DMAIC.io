@@ -308,6 +308,7 @@
   --color-role-freeText-fg:    #f0a3b8;  /* rose, light + warm    */
   --color-role-freeText-bg:    #4a2030;
 
+  /* Function-analysis node kinds (TRIZ) */
   --color-node-supersystem-fill:   #4a2e16;
   --color-node-supersystem-stroke: #f0963c;
   --color-node-supersystem-text:   #ffc58c;
