@@ -3012,6 +3012,25 @@ test('Ausgaben: eine eckig geklammerte Property ist optional, die anderen tragen
   assert.equal('optional' in keys.Cg, false);
 });
 
+test('Ausgaben: eine Map Object<string, T> trägt keys und keysOf ihrer Werttypedef', () => {
+  const vm = RESULT_VM.replace(
+    ' * @property {Detail[]} details die Einzelwerte',
+    ' * @property {Detail[]} details die Einzelwerte\n'
+    + ' * @property {Object<string, Detail>} byName je Name ein Einzelwert\n'
+    + ' * @property {Object<string, Detail>|null} [byOther] je Name, manchmal leer\n'
+    + ' * @property {Object<string, number>} means je Name der Mittelwert',
+  );
+  const { modules } = collectAgentData(fixture({ foo: { 'foo.js': vm } }));
+  const keys = modules.foo.fields.result.keys;
+  assert.equal(keys.byName.type, 'Object<string, Detail>');
+  assert.equal(keys.byName.keysOf, 'Detail');
+  assert.deepEqual(Object.keys(keys.byName.keys), ['value']);
+  assert.equal(keys.byOther.keysOf, 'Detail');
+  assert.equal(keys.byOther.optional, true);
+  assert.equal('keys' in keys.means, false, 'eine Map über einen Grundtyp bleibt ohne keys');
+  assert.deepEqual(modules.foo.reported, []);
+});
+
 test('Ausgaben: eine Typedef, die sich selbst enthält, bricht die Auflösung nicht', () => {
   const vm = RESULT_VM.replace(' * @property {number|null} p der p-Wert', ' * @property {number|null} p der p-Wert\n * @property {BiasTest} again zyklisch');
   const { modules } = collectAgentData(fixture({ foo: { 'foo.js': vm } }));

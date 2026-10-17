@@ -443,13 +443,17 @@ function nestedKeys(sf, type, open) {
 }
 
 /**
- * Der Typedef-Name in `T`, `T|null`, `T[]` oder `T[]|null` — sonst null.
+ * Der Typedef-Name in `T`, `T|null`, `T[]`, `T[]|null` oder einer Map
+ * `Object<string, T>` (auch `|null`) — sonst null. Eine Map hat Schlüssel aus
+ * den Daten (je Prüfer, je Teil); erklärt wird die Form EINES Eintrags.
  * @param {string} type
  * @returns {string|null}
  */
 function typeRefName(type) {
   const parts = type.split('|').map(p => p.trim()).filter(p => p !== 'null' && p !== 'undefined');
   if (parts.length !== 1) return null;
+  const map = /^Object<\s*string\s*,\s*([A-Za-z_$][\w$]*)\s*>$/.exec(parts[0]);
+  if (map) return map[1];
   const m = /^([A-Za-z_$][\w$]*)(\[\])?$/.exec(parts[0]);
   return m ? m[1] : null;
 }
