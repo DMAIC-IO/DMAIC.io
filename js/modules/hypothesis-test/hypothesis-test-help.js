@@ -65,6 +65,11 @@ export default {
           },
           {
             type: 'definition',
+            term: 'Ein- und Zwei-Stichproben-Varianz',
+            content: 'Bei normalverteilten Daten (Anderson-Darling) rechnet das Modul den χ²-Test (eine {{term:varianz|Varianz}}) bzw. den F-Test (zwei Varianzen); beide sind dann exakt. Lehnt Anderson-Darling die Normalverteilung ab, wechselt das Modul auf das Verfahren nach Bonett – wie Minitab. χ² und F reagieren stark auf schiefe oder schwere Ränder: p-Wert und Konfidenzintervall stimmen dann nicht mehr. Bonett schätzt die Wölbung aus einem getrimmten Mittelwert und liefert ein Konfidenzintervall für σ² und σ bzw. für σ²₁/σ²₂, auch einseitig. Bei zwei Stichproben steht der Levene-Test (Brown-Forsythe) zum Abgleich daneben; er prüft nur zweiseitig. Die Power-Analyse auf diesen Wegen nimmt Normalverteilung an und ist nur eine Näherung.',
+          },
+          {
+            type: 'definition',
             term: 'k-Stichproben-Vergleich (Varianzen)',
             content: 'Für die Gleichheit von {{term:varianz|Varianzen}} über mehrere Gruppen stehen zwei Tests bereit: der {{term:varianzhomogenitaet|Bartlett-Test}} (parametrisch, sehr trennscharf bei Normalverteilung, aber empfindlich gegen Abweichungen davon) und der {{term:varianzhomogenitaet|Levene-Test}} (Brown-Forsythe-Variante, robust gegen Nicht-Normalität). Das Modul wählt automatisch je nach Normalverteilungsprüfung.',
           },
@@ -125,6 +130,11 @@ export default {
             type: 'definition',
             term: 'k-sample comparison (means)',
             content: 'For more than two groups, one-way {{term:anova|analysis of variance (One-Way ANOVA)}} is the appropriate procedure — it decomposes the total variation into between- and within-group components and compares them via an F-statistic. Whether data count as normal is decided by the Anderson-Darling test; Shapiro-Wilk is shown for information only. If data are non-normal and at least one group has fewer than 20 values, the module switches to the rank-based Kruskal-Wallis test (nonparametric counterpart of {{term:anova|ANOVA}}). With n ≥ 20 per group the ANOVA is robust and remains the main result; Kruskal-Wallis is then shown as a secondary result for cross-checking, because it tests a different hypothesis (a shift of the distribution rather than the means). Both are omnibus tests: they show that at least one mean differs without identifying which one — that requires follow-up post-hoc comparisons (e.g. Tukey HSD).',
+          },
+          {
+            type: 'definition',
+            term: 'One- and two-sample variance',
+            content: 'For normal data (Anderson-Darling) the module runs the χ² test (one {{term:varianz|variance}}) or the F-test (two variances); both are exact then. When Anderson-Darling rejects normality, the module switches to Bonett\'s method – as Minitab does. χ² and F react strongly to skewed or heavy-tailed data: the p-value and the confidence interval are no longer right. Bonett estimates the kurtosis from a trimmed mean and gives a confidence interval for σ² and σ, or for σ²₁/σ²₂, also one-sided. For two samples the Levene test (Brown-Forsythe) is shown as a cross-check; it is two-sided only. The power analysis on these routes assumes normality and is an approximation only.',
           },
           {
             type: 'definition',
