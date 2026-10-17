@@ -448,6 +448,13 @@ select.input {
 
 .field-group > .field-checks { margin-bottom: 0; }
 
+/* A checkbox row directly inside .field-group must not pick up the
+   .field-group > label caption style (medium weight, secondary colour). */
+.field-group > .field-check {
+  font-weight: normal;
+  color: var(--color-text-primary);
+}
+
 .field-checks > .field-check { align-items: flex-start; }
 
 .field-checks > .field-check > input[type="checkbox"] {
