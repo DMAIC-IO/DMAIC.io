@@ -3,7 +3,7 @@
 
     <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
     <div class="field-group">
-      <label x-text="t('dataColumn')"></label>
+      <label data-help-key="modules.transformed-imr-chart.actions.setColumn.help" x-text="t('dataColumn')"></label>
       <div data-ref="col-picker"></div>
       <span class="timr__hint" x-text="t('positiveHint')"></span>
     </div>
@@ -11,7 +11,7 @@
     <div class="dmike-split__section-title" x-text="t('sectionLambda')"></div>
     <div class="timr__lambda-row">
       <div class="field-group">
-        <label x-text="t('lambdaMode')"></label>
+        <label data-help-key="modules.transformed-imr-chart.types.Params.lambdaMode" x-text="t('lambdaMode')"></label>
         <select class="field" data-ref="lambda-mode" :value="model.lambdaMode" @change="setParam('lambdaMode', $event.target.value)">
           <template x-for="o in lambdaModeOptions()" :key="o.value">
             <option :value="o.value" :selected="o.value === model.lambdaMode" x-text="o.label"></option>
@@ -19,7 +19,7 @@
         </select>
       </div>
       <div class="field-group">
-        <label>λ</label>
+        <label data-help-key="modules.transformed-imr-chart.types.Params.lambdaManual">λ</label>
         <input type="number" class="field field--num" data-ref="lambda-manual"
           :value="model.lambdaManual"
           step="0.05" min="-3" max="3"
@@ -43,7 +43,7 @@
           <template x-for="(c, i) in kpiCells" :key="i">
             <div class="dmike-kpi" :class="c.mod">
               <div class="dmike-kpi-value" x-text="c.value"></div>
-              <div class="dmike-kpi-label"><span x-text="c.label"></span><template x-if="c.labelHint"><span class="timr__hint" x-text="' (' + c.labelHint + ')'"></span></template></div>
+              <div class="dmike-kpi-label" :data-help-key="c.help"><span x-text="c.label"></span><template x-if="c.labelHint"><span class="timr__hint" x-text="' (' + c.labelHint + ')'"></span></template></div>
               <div class="dmike-kpi-sub" x-text="c.sub"></div>
             </div>
           </template>
@@ -69,8 +69,8 @@
         <table class="timr__limits-table">
           <thead><tr>
             <th x-text="t('thLimit')"></th>
-            <th x-text="t('thTransformed')"></th>
-            <th x-text="t('thOriginal')"></th>
+            <th><span data-help-key="modules.transformed-imr-chart.types.Result.i" x-text="t('thTransformed')"></span></th>
+            <th><span data-help-key="modules.transformed-imr-chart.types.Result.iOriginal" x-text="t('thOriginal')"></span></th>
           </tr></thead>
           <tbody>
             <template x-for="(r, i) in limitRows" :key="i">

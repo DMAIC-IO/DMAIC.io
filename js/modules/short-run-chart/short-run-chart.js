@@ -53,6 +53,36 @@ const COLUMN_SINKS = {
 };
 
 /**
+ * Das gerechnete Ergebnis (`_agentResult()`), wie `read().result` es liefert.
+ * Die Indizes zählen die verwerteten Paare, nicht die Zeilen.
+ *
+ * @typedef {object} Result
+ * @property {number} n  verwertete Paare
+ * @property {number} skipped  Werte aus Gruppen ohne Streuung
+ * @property {GroupStats[]} groups  je Gruppe, in Reihenfolge des Auftretens
+ * @property {Limits} z  Grenzen der z-Karte
+ * @property {Limits} mr  Grenzen der MR-Karte der z-Werte
+ * @property {number[]} signalsZ  Signale der z-Karte
+ * @property {number[]} signalsMR  Signale der MR-Karte
+ */
+
+/**
+ * @typedef {object} GroupStats
+ * @property {string} group  Gruppe
+ * @property {number} count  Werte der Gruppe
+ * @property {number|null} mean  Mittelwert der Gruppe
+ * @property {number|null} sigma  geschätzte Streuung der Gruppe
+ * @property {number|null} mrBar  mittlere gleitende Spannweite der Gruppe
+ */
+
+/**
+ * @typedef {object} Limits
+ * @property {number|null} cl  Mittellinie
+ * @property {number|null} ucl  obere Eingriffsgrenze
+ * @property {number|null} lcl  untere Eingriffsgrenze
+ */
+
+/**
  * Die Agenten-Lesefläche der Kurzserien-Karte (Z-MR).
  *
  * Eingaben (Messwert- und Gruppenspalte), die Mengen von `setColumn`, das
@@ -66,7 +96,7 @@ const COLUMN_SINKS = {
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
  * @property {string} warningMsg  the notice about groups that were skipped, or ''
- * @property {object|null} result  `{ n, skipped, groups: [{ group, count, mean, sigma, mrBar }], z: { cl, ucl, lcl }, mr: { cl, ucl, lcl }, signalsZ, signalsMR }` — z per value standardised within its group; signals are point indices; null with fewer than 4 usable pairs
+ * @property {Result|null} result  das gerechnete Ergebnis; null bei weniger als 4 verwertbaren Paaren
  * @property {object[]} points  [bulk] one row per usable value: `{ z, mr, signalZ, signalMR }`
  */
 
@@ -246,13 +276,14 @@ const mod = createModule({
       // ── KPI strip (declarative — structured cells, RAW text; x-text escapes) ──
 
       _renderStats(r, total) {
+        const HELP = 'modules.short-run-chart.types.';
         const sigCount = r.signalsZ.length + r.signalsMR.length;
         const cls = sigCount === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad';
         const fmt = (v) => Number.isFinite(v) ? v.toFixed(3) : '–';
         this.kpiCells = [
-          { value: r.groups.length, label: _t('statGroups'), labelHint: '', sub: _t('statTotal', { total }), mod: '' },
-          { value: fmt(r.mrBarZ), label: 'MR̄ (z)', labelHint: '', sub: `UCL_MR ${fmt(r.uclMR)}`, mod: '' },
-          { value: sigCount, label: _t('statSignals'), labelHint: '', sub: _t('statOf', { total }), mod: cls },
+          { value: r.groups.length, label: _t('statGroups'), labelHint: '', sub: _t('statTotal', { total }), mod: '', help: `${HELP}Result.groups` },
+          { value: fmt(r.mrBarZ), label: 'MR̄ (z)', labelHint: '', sub: `UCL_MR ${fmt(r.uclMR)}`, mod: '', help: `${HELP}Result.mr` },
+          { value: sigCount, label: _t('statSignals'), labelHint: '', sub: _t('statOf', { total }), mod: cls, help: `${HELP}Result.signalsZ` },
         ];
       },
 

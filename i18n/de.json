@@ -8821,7 +8821,7 @@
       "actions": {
         "read": { "help": "Gewählte Spalten, Kennzahlen je Teil, Grenzen der Z- und MR-Karte, Signalpunkte sowie z und MR je Wert lesen." },
         "setColumn": {
-          "help": "Eine Spalte einem Slot zuweisen und neu rechnen. Der andere Slot behält seine Spalte.",
+          "help": "Die Spalte einer Datensammlung, die diese Rolle liefert; nach einer Änderung wird neu gerechnet.",
           "params": {
             "slot": "'values' — die Messwerte in zeitlicher Reihenfolge (Pflicht); 'groups' — Teil oder Gruppe je Wert, Zahl oder Text (Pflicht). Ein Ergebnis braucht mindestens 4 verwertbare Paare.",
             "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null zum Leeren."
@@ -8835,8 +8835,31 @@
         "activeColumnSlots": { "help": "Die Slots, die setColumn annimmt: values, groups." },
         "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
         "warningMsg": { "help": "Der Hinweis auf übersprungene Teile (zu wenige Werte, um ihre Streuung zu schätzen), oder ''." },
-        "result": { "help": "{ n, skipped, groups: [{ group, count, mean, sigma, mrBar }], z: { cl, ucl, lcl }, mr: { cl, ucl, lcl }, signalsZ, signalsMR }; signals sind Punktindizes; null bei weniger als 4 verwertbaren Paaren." },
+        "result": { "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; null ohne beide Spalten oder mit weniger als 4 verwertbaren Paaren aus Zahl und Gruppe." },
         "points": { "help": "Je verwertbarem Wert eine Zeile: { z, mr, signalZ, signalMR }. read({ fields: ['points'] }) liefert sie vollständig." }
+      },
+      "types": {
+        "Result": {
+          "n": "Anzahl der verwerteten Paare aus Messwert und Teil; Zeilen mit leerem oder nicht numerischem Messwert oder leerem Teil sind schon aussortiert. Ein Ergebnis gibt es ab 4 Paaren. Die Nummern der Signalpunkte zählen diese Paare ab 0, nicht die Zeilen des Arbeitsblatts.",
+          "skipped": "Anzahl der Messwerte, die nicht standardisiert werden konnten, weil ihr Teil keine Streuung hat (σ̂ = 0, auch bei einem einzigen Wert des Teils). Sie werden mit z = 0 gezeichnet; die Oberfläche warnt davor.",
+          "groups": "Die Kennzahlen je Teil, in der Reihenfolge, in der die Teile erstmals vorkommen; es ist die Tabelle unter den Karten. Die Kachel „Teile“ zeigt ihre Anzahl, die Unterzeile die Zahl der Messwerte.",
+          "z": "Die Grenzen der Z-Karte: Mittellinie 0, obere Grenze +3, untere −3. Jeder Wert wird innerhalb seines Teils zu z = (x − x̄)/σ̂ standardisiert, mit dem Mittel x̄ und der Streuung σ̂ des Teils; z ist dann bei stabilem Prozess annähernd standardnormalverteilt.",
+          "mr": "Die Grenzen der MR-Karte der z-Werte: Mittellinie MR̄ (Mittel der Beträge |zᵢ − zᵢ₋₁| aufeinanderfolgender Werte), obere Grenze 3,267 · MR̄, untere 0. Die Kachel „MR̄ (z)“ zeigt die Mittellinie, die Unterzeile die obere Grenze (UCL_MR).",
+          "signalsZ": "Nummern (gezählt ab 0 unter den verwerteten Paaren) der Punkte, deren z-Wert über +3 oder unter −3 liegt. Die Kachel „Signale“ zählt diese und die Signale der MR-Karte zusammen.",
+          "signalsMR": "Nummern (gezählt ab 0 unter den verwerteten Paaren, ab dem zweiten Punkt) der Punkte, deren gleitende Spannweite der z-Werte über der oberen Grenze der MR-Karte (UCL_MR) liegt."
+        },
+        "GroupStats": {
+          "group": "Das Teil oder die Gruppe, wie sie in der Teile-/Gruppen-Spalte stehen, als Text.",
+          "count": "Anzahl der Messwerte dieses Teils (n).",
+          "mean": "Mittelwert x̄ der Messwerte dieses Teils; er ist der Bezugspunkt der Standardisierung z = (x − x̄)/σ̂.",
+          "sigma": "Geschätzte Streuung σ̂ innerhalb des Teils: MR̄ des Teils / 1,128 (d₂ für Paare). Hat das Teil nur einen Wert, ist sie 0 und seine Werte werden mit z = 0 gezeichnet.",
+          "mrBar": "Mittel MR̄ der Beträge |xᵢ − xᵢ₋₁| aufeinanderfolgender Messwerte innerhalb dieses Teils, in Reihenfolge der Messung; aus ihr entsteht σ̂."
+        },
+        "Limits": {
+          "cl": "Mittellinie der Karte.",
+          "ucl": "Obere Eingriffsgrenze (UCL) der Karte.",
+          "lcl": "Untere Eingriffsgrenze (LCL) der Karte."
+        }
       },
       "name": "Regelkarte (Kurzläufer Z-MR)",
       "description": "Standardisierte I-MR über mehrere Teile mit unterschiedlichen Targets",
@@ -8890,7 +8913,7 @@
           "help": "Gewählte Spalte, λ-Einstellung, Grenzen auf beiden Skalen, Signalpunkte und die transformierten Werte lesen."
         },
         "setColumn": {
-          "help": "Die Messreihe wählen und neu rechnen.",
+          "help": "Die Spalte einer Datensammlung, die diese Rolle liefert; nach einer Änderung wird neu gerechnet.",
           "params": {
             "slot": "'value' — die Messwerte in zeitlicher Reihenfolge (Pflicht; mindestens 5, alle größer als 0).",
             "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns.value, oder null zum Leeren."
@@ -8899,8 +8922,8 @@
         "setParam": {
           "help": "Eine Analyseoption setzen und neu rechnen.",
           "params": {
-            "key": "'lambdaMode' — λ aus den Daten schätzen oder setzen; 'lambdaManual' — das zu verwendende λ, nur im Modus manual.",
-            "value": "lambdaMode 'auto' oder 'manual'; lambdaManual eine beliebige endliche Zahl (0 bedeutet die Log-Transformation)."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys."
           }
         },
         "runAnalysis": {
@@ -8930,10 +8953,36 @@
           "help": "Warum nichts gerechnet wurde, etwa wegen nicht positiver Werte; sonst ''."
         },
         "result": {
-          "help": "{ n, lambda, lambdaAuto, i: { cl, ucl, lcl, sigma }, mr: { cl, ucl, lcl }, iOriginal: { cl, ucl, lcl }, signals }; i und mr auf der transformierten Skala, iOriginal zurücktransformiert, signals die Indizes der Signalpunkte der I-Karte; null, solange nichts gerechnet ist."
+          "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; null ohne Spalte, mit weniger als 5 Zahlen, mit einem Wert kleiner oder gleich 0 oder wenn die Rechnung scheitert (dann steht der Grund in errorMsg)."
         },
         "points": {
           "help": "Je Wert eine Zeile: { transformed, signal }. read({ fields: ['points'] }) liefert sie vollständig."
+        }
+      },
+      "types": {
+        "Params": {
+          "lambdaMode": "Wie das λ der Box-Cox-Transformation zustande kommt: „auto (Anderson-Darling)“ schätzt es aus den Daten, „manuell“ nimmt das unter λ eingetragene. Beim Schätzen wird aus dem Raster von −3 bis 3 in Schritten von 0,05 das λ gewählt, bei dem die transformierten Werte die kleinste Anderson-Darling-Statistik haben (am nächsten an einer Normalverteilung), gerundet auf 0,01. Nach einer Änderung wird neu gerechnet.",
+          "lambdaManual": "Das λ der Box-Cox-Transformation y = (x^λ − 1)/λ, wie es im Modus „manuell“ verwendet wird; bei |λ| < 10⁻⁸ gilt die Log-Transformation y = ln x. Die Prüfung nimmt jede endliche Zahl, das Eingabefeld erlaubt −3 bis 3. Im Modus „auto (Anderson-Darling)“ ist das Feld gesperrt und zeigt nach jeder Rechnung das geschätzte λ; beim Wechsel auf „manuell“ ist das der Startwert."
+        },
+        "Result": {
+          "n": "Anzahl der verwerteten Zahlen der Reihe; leere und nicht numerische Zellen sind schon aussortiert. Ein Ergebnis gibt es ab 5 Zahlen, die alle größer als 0 sein müssen. Die Nummern der Signalpunkte zählen diese Zahlen ab 0, nicht die Zeilen des Arbeitsblatts.",
+          "lambda": "Das verwendete λ der Box-Cox-Transformation y = (x^λ − 1)/λ; bei |λ| < 10⁻⁸ ist es die Log-Transformation y = ln x. Im Modus „auto“ ist es das geschätzte λ (kleinste Anderson-Darling-Statistik im Raster von −3 bis 3, Schritt 0,05, gerundet auf 0,01), im Modus „manuell“ das eingetragene. Die Kachel zeigt es mit drei Nachkommastellen und dem Zusatz (auto) oder (manuell).",
+          "lambdaAuto": "Ob das λ aus den Daten geschätzt wurde (wahr) oder von Hand vorgegeben ist (falsch). Die Kachel zeigt es als Zusatz (auto) oder (manuell) hinter dem λ.",
+          "i": "Die Einzelwertkarte auf der transformierten Skala y: Mittellinie, obere und untere Eingriffsgrenze und Streuung σ̂. Das sind die Werte der Spalte „transformiert (y)“ in der Tabelle.",
+          "iOriginal": "Dieselben Grenzen der Einzelwertkarte, zurück auf die Originalskala gerechnet: x = (λ·y + 1)^(1/λ), bei der Log-Transformation x = e^y. Sie liegen nicht symmetrisch um die Mittellinie. Ein Wert fehlt (leer, in der Tabelle „–“), wenn λ·y + 1 ≤ 0 ist, die Rücktransformation dort also nicht definiert ist; das trifft typischerweise die untere Grenze bei λ > 0.",
+          "mr": "Die Karte der gleitenden Spannweiten der transformierten Werte: Mittellinie MR̄ (Mittel der Beträge |yᵢ − yᵢ₋₁| aufeinanderfolgender Werte), obere Eingriffsgrenze 3,267 · MR̄, untere 0. Es gibt sie nur auf der transformierten Skala.",
+          "signals": "Nummern (gezählt ab 0 unter den verwerteten Zahlen) der Punkte, deren transformierter Wert über der UCL oder unter der LCL der Einzelwertkarte liegt. Die Kachel „Signale“ zeigt ihre Anzahl."
+        },
+        "IndividualLimits": {
+          "cl": "Mittellinie der Einzelwertkarte auf der transformierten Skala: der Mittelwert ȳ aller transformierten Werte (Kachel CL (y)). Die Unterzeile der Kachel zeigt die Streuung σ̂.",
+          "ucl": "Obere Eingriffsgrenze (UCL) der Einzelwertkarte auf der transformierten Skala: Mittellinie + 3 · σ̂.",
+          "lcl": "Untere Eingriffsgrenze (LCL) der Einzelwertkarte auf der transformierten Skala: Mittellinie − 3 · σ̂.",
+          "sigma": "Geschätzte Streuung σ̂ der transformierten Werte: MR̄/1,128, mit dem Mittel MR̄ der gleitenden Spannweiten und dem Faktor d₂ = 1,128 für Paare. Die Unterzeile der Kachel CL (y) zeigt sie."
+        },
+        "Limits": {
+          "cl": "Mittellinie der Karte.",
+          "ucl": "Obere Eingriffsgrenze (UCL) der Karte.",
+          "lcl": "Untere Eingriffsgrenze (LCL) der Karte."
         }
       }
     },

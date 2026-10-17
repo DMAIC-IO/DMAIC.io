@@ -14,6 +14,9 @@
  * @type {Record<string, Array<{ match: string, reason: string, count?: number }>>}
  */
 export const ANCHOR_EXEMPTIONS = {
+  'transformed-imr-chart': [
+    { match: "t('thLimit')", reason: 'Spalte der Zeilennamen OEG, Mittellinie, UEG; die Sätze stehen an den beiden Wertspalten', count: 1 },
+  ],
   'msa-typ4': [
     { match: 'name="msa4-norm"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },
     { match: 'name="msa4-pv"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },

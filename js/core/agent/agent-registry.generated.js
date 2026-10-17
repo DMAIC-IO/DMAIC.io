@@ -11410,10 +11410,94 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
-        "help": "`{ n, skipped, groups: [{ group, count, mean, sigma, mrBar }], z: { cl, ucl, lcl }, mr: { cl, ucl, lcl }, signalsZ, signalsMR }` — z per value standardised within its group; signals are point indices; null with fewer than 4 usable pairs",
+        "type": "Result|null",
+        "help": "das gerechnete Ergebnis; null bei weniger als 4 verwertbaren Paaren",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "n": {
+            "type": "number",
+            "help": "verwertete Paare"
+          },
+          "skipped": {
+            "type": "number",
+            "help": "Werte aus Gruppen ohne Streuung"
+          },
+          "groups": {
+            "type": "GroupStats[]",
+            "help": "je Gruppe, in Reihenfolge des Auftretens",
+            "keysOf": "GroupStats",
+            "keys": {
+              "group": {
+                "type": "string",
+                "help": "Gruppe"
+              },
+              "count": {
+                "type": "number",
+                "help": "Werte der Gruppe"
+              },
+              "mean": {
+                "type": "number|null",
+                "help": "Mittelwert der Gruppe"
+              },
+              "sigma": {
+                "type": "number|null",
+                "help": "geschätzte Streuung der Gruppe"
+              },
+              "mrBar": {
+                "type": "number|null",
+                "help": "mittlere gleitende Spannweite der Gruppe"
+              }
+            }
+          },
+          "z": {
+            "type": "Limits",
+            "help": "Grenzen der z-Karte",
+            "keysOf": "Limits",
+            "keys": {
+              "cl": {
+                "type": "number|null",
+                "help": "Mittellinie"
+              },
+              "ucl": {
+                "type": "number|null",
+                "help": "obere Eingriffsgrenze"
+              },
+              "lcl": {
+                "type": "number|null",
+                "help": "untere Eingriffsgrenze"
+              }
+            }
+          },
+          "mr": {
+            "type": "Limits",
+            "help": "Grenzen der MR-Karte der z-Werte",
+            "keysOf": "Limits",
+            "keys": {
+              "cl": {
+                "type": "number|null",
+                "help": "Mittellinie"
+              },
+              "ucl": {
+                "type": "number|null",
+                "help": "obere Eingriffsgrenze"
+              },
+              "lcl": {
+                "type": "number|null",
+                "help": "untere Eingriffsgrenze"
+              }
+            }
+          },
+          "signalsZ": {
+            "type": "number[]",
+            "help": "Signale der z-Karte"
+          },
+          "signalsMR": {
+            "type": "number[]",
+            "help": "Signale der MR-Karte"
+          }
+        }
       },
       "points": {
         "type": "object[]",
@@ -12296,10 +12380,90 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
-        "help": "`{ n, lambda, lambdaAuto, i: { cl, ucl, lcl, sigma }, mr: { cl, ucl, lcl }, iOriginal: { cl, ucl, lcl }, signals }` — i and mr on the transformed scale, iOriginal back-transformed, signals the indices of I-chart signal points; null while nothing is computed",
+        "type": "Result|null",
+        "help": "das gerechnete Ergebnis; null, solange nichts gerechnet ist",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "n": {
+            "type": "number",
+            "help": "verwertete Werte"
+          },
+          "lambda": {
+            "type": "number|null",
+            "help": "verwendetes λ"
+          },
+          "lambdaAuto": {
+            "type": "boolean",
+            "help": "λ geschätzt"
+          },
+          "i": {
+            "type": "IndividualLimits",
+            "help": "Einzelwertkarte, transformiert",
+            "keysOf": "IndividualLimits",
+            "keys": {
+              "cl": {
+                "type": "number|null",
+                "help": "Mittellinie"
+              },
+              "ucl": {
+                "type": "number|null",
+                "help": "obere Eingriffsgrenze"
+              },
+              "lcl": {
+                "type": "number|null",
+                "help": "untere Eingriffsgrenze"
+              },
+              "sigma": {
+                "type": "number|null",
+                "help": "Streuung"
+              }
+            }
+          },
+          "mr": {
+            "type": "Limits",
+            "help": "Karte der gleitenden Spannweiten, transformiert",
+            "keysOf": "Limits",
+            "keys": {
+              "cl": {
+                "type": "number|null",
+                "help": "Mittellinie"
+              },
+              "ucl": {
+                "type": "number|null",
+                "help": "obere Eingriffsgrenze"
+              },
+              "lcl": {
+                "type": "number|null",
+                "help": "untere Eingriffsgrenze"
+              }
+            }
+          },
+          "iOriginal": {
+            "type": "Limits",
+            "help": "Einzelwertkarte, zurücktransformiert",
+            "keysOf": "Limits",
+            "keys": {
+              "cl": {
+                "type": "number|null",
+                "help": "Mittellinie"
+              },
+              "ucl": {
+                "type": "number|null",
+                "help": "obere Eingriffsgrenze"
+              },
+              "lcl": {
+                "type": "number|null",
+                "help": "untere Eingriffsgrenze"
+              }
+            }
+          },
+          "signals": {
+            "type": "number[]",
+            "help": "Signalpunkte der Einzelwertkarte"
+          }
+        }
       },
       "points": {
         "type": "object[]",

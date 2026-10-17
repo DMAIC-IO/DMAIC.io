@@ -4,12 +4,12 @@
     <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
 
     <div class="field-group">
-      <label x-text="t('valuesColumn')"></label>
+      <label data-help-key="modules.short-run-chart.actions.setColumn.help" x-text="t('valuesColumn')"></label>
       <div data-ref="val-picker"></div>
     </div>
 
     <div class="field-group">
-      <label x-text="t('groupsColumn')"></label>
+      <label data-help-key="modules.short-run-chart.actions.setColumn.help" x-text="t('groupsColumn')"></label>
       <div data-ref="grp-picker"></div>
       <span class="src__hint" x-text="t('groupsHint')"></span>
     </div>
@@ -28,7 +28,7 @@
           <template x-for="(c, i) in kpiCells" :key="i">
             <div class="dmike-kpi" :class="c.mod">
               <div class="dmike-kpi-value" x-text="c.value"></div>
-              <div class="dmike-kpi-label"><span x-text="c.label"></span><template x-if="c.labelHint"><span class="src__hint" x-text="' (' + c.labelHint + ')'"></span></template></div>
+              <div class="dmike-kpi-label" :data-help-key="c.help"><span x-text="c.label"></span><template x-if="c.labelHint"><span class="src__hint" x-text="' (' + c.labelHint + ')'"></span></template></div>
               <div class="dmike-kpi-sub" x-text="c.sub"></div>
             </div>
           </template>
@@ -53,11 +53,11 @@
       <template x-if="groupRows.length">
         <table class="src__groups-table">
           <thead><tr>
-            <th x-text="t('thGroup')"></th>
-            <th x-text="t('thCount')"></th>
-            <th x-text="t('thMean')"></th>
-            <th>σ̂</th>
-            <th>MR̄</th>
+            <th><span data-help-key="modules.short-run-chart.types.GroupStats.group" x-text="t('thGroup')"></span></th>
+            <th><span data-help-key="modules.short-run-chart.types.GroupStats.count" x-text="t('thCount')"></span></th>
+            <th><span data-help-key="modules.short-run-chart.types.GroupStats.mean" x-text="t('thMean')"></span></th>
+            <th><span data-help-key="modules.short-run-chart.types.GroupStats.sigma">σ̂</span></th>
+            <th><span data-help-key="modules.short-run-chart.types.GroupStats.mrBar">MR̄</span></th>
           </tr></thead>
           <tbody>
             <template x-for="(g, i) in groupRows" :key="i">

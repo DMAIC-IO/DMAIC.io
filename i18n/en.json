@@ -8817,7 +8817,7 @@
       "actions": {
         "read": { "help": "Read the chosen columns, the per-part statistics, the Z and MR limits, the signal points and z and MR per value." },
         "setColumn": {
-          "help": "Assign a column to a slot and recompute. The other slot keeps its column.",
+          "help": "The data collection column that supplies this role; after a change the analysis is recomputed.",
           "params": {
             "slot": "'values' — the measured values in time order (required); 'groups' — the part or group of each value, numbers or text (required). A result needs at least 4 usable pairs.",
             "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null to clear the slot."
@@ -8831,8 +8831,31 @@
         "activeColumnSlots": { "help": "The slots setColumn accepts: values, groups." },
         "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
         "warningMsg": { "help": "The notice about parts that were skipped (too few values to estimate their spread), or ''." },
-        "result": { "help": "{ n, skipped, groups: [{ group, count, mean, sigma, mrBar }], z: { cl, ucl, lcl }, mr: { cl, ucl, lcl }, signalsZ, signalsMR }; signals are point indices; null with fewer than 4 usable pairs." },
+        "result": { "help": "The computed result, each figure described individually under keys; null without both columns or with fewer than 4 usable pairs of number and group." },
         "points": { "help": "One row per usable value: { z, mr, signalZ, signalMR }. read({ fields: ['points'] }) returns them in full." }
+      },
+      "types": {
+        "Result": {
+          "n": "Number of usable pairs of measurement and part; rows with an empty or non-numeric measurement or an empty part are already removed. A result exists from 4 pairs on. The numbers of the signal points count these pairs from 0, not the worksheet rows.",
+          "skipped": "Number of measurements that could not be standardised because their part has no spread (σ̂ = 0, also when the part has a single value). They are drawn at z = 0; the interface warns about it.",
+          "groups": "The figures per part, in the order in which the parts first occur; this is the table below the charts. The “Parts” tile shows their count, its sub-line the number of measurements.",
+          "z": "The limits of the Z chart: centre line 0, upper limit +3, lower −3. Each value is standardised within its part to z = (x − x̄)/σ̂, with the mean x̄ and spread σ̂ of the part; for a stable process z is approximately standard normal.",
+          "mr": "The limits of the MR chart of the z values: centre line MR̄ (mean of the absolute differences |zᵢ − zᵢ₋₁| of consecutive values), upper limit 3.267 · MR̄, lower 0. The “MR̄ (z)” tile shows the centre line, its sub-line the upper limit (UCL_MR).",
+          "signalsZ": "Numbers (counted from 0 among the usable pairs) of the points whose z value lies above +3 or below −3. The “Signals” tile counts these together with the signals of the MR chart.",
+          "signalsMR": "Numbers (counted from 0 among the usable pairs, from the second point on) of the points whose moving range of the z values lies above the upper limit of the MR chart (UCL_MR)."
+        },
+        "GroupStats": {
+          "group": "The part or group as it appears in the part/group column, as text.",
+          "count": "Number of measurements of this part (n).",
+          "mean": "Mean x̄ of this part's measurements; it is the reference of the standardisation z = (x − x̄)/σ̂.",
+          "sigma": "Estimated spread σ̂ within the part: MR̄ of the part / 1.128 (d₂ for pairs). If the part has only one value it is 0 and its values are drawn at z = 0.",
+          "mrBar": "Mean MR̄ of the absolute differences |xᵢ − xᵢ₋₁| of consecutive measurements within this part, in measurement order; σ̂ is derived from it."
+        },
+        "Limits": {
+          "cl": "Centre line of the chart.",
+          "ucl": "Upper control limit (UCL) of the chart.",
+          "lcl": "Lower control limit (LCL) of the chart."
+        }
       },
       "name": "Control Chart (Short-Run Z-MR)",
       "description": "Standardised I-MR across parts with different targets",
@@ -8886,7 +8909,7 @@
           "help": "Read the chosen column, the λ settings, the limits on both scales, the signal points and the transformed values."
         },
         "setColumn": {
-          "help": "Choose the measured column and recompute.",
+          "help": "The data collection column that supplies this role; after a change the analysis is recomputed.",
           "params": {
             "slot": "'value' — the measured values in time order (required; at least 5, all greater than 0).",
             "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns.value, or null to clear it."
@@ -8895,8 +8918,8 @@
         "setParam": {
           "help": "Set an analysis option and recompute.",
           "params": {
-            "key": "'lambdaMode' — estimate λ from the data or set it; 'lambdaManual' — the λ to use, only in manual mode.",
-            "value": "lambdaMode 'auto' or 'manual'; lambdaManual any finite number (0 means the log transformation)."
+            "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys."
           }
         },
         "runAnalysis": {
@@ -8926,10 +8949,36 @@
           "help": "Why nothing was computed, for example values that are not positive; '' otherwise."
         },
         "result": {
-          "help": "{ n, lambda, lambdaAuto, i: { cl, ucl, lcl, sigma }, mr: { cl, ucl, lcl }, iOriginal: { cl, ucl, lcl }, signals }; i and mr on the transformed scale, iOriginal back-transformed, signals the indices of I-chart signal points; null while nothing is computed."
+          "help": "The computed result, each figure described individually under keys; null without a column, with fewer than 5 numbers, with a value less than or equal to 0, or when the computation fails (errorMsg then gives the reason)."
         },
         "points": {
           "help": "One row per value: { transformed, signal }. read({ fields: ['points'] }) returns them in full."
+        }
+      },
+      "types": {
+        "Params": {
+          "lambdaMode": "How the λ of the Box-Cox transformation is obtained: “auto (Anderson-Darling)” estimates it from the data, “manual” takes the value entered under λ. The estimate picks, from a grid from −3 to 3 in steps of 0.05, the λ at which the transformed values have the smallest Anderson-Darling statistic (closest to a normal distribution), rounded to 0.01. After a change the chart is recomputed.",
+          "lambdaManual": "The λ of the Box-Cox transformation y = (x^λ − 1)/λ as used in “manual” mode; for |λ| < 10⁻⁸ the log transformation y = ln x applies. The check accepts any finite number, the input field allows −3 to 3. In “auto (Anderson-Darling)” mode the field is disabled and shows the estimated λ after each computation; when switching to “manual” that is the starting value."
+        },
+        "Result": {
+          "n": "Number of usable numbers in the series; empty and non-numeric cells are already removed. A result exists from 5 numbers on, all of which must be greater than 0. The numbers of the signal points count these numbers from 0, not the worksheet rows.",
+          "lambda": "The λ used for the Box-Cox transformation y = (x^λ − 1)/λ; for |λ| < 10⁻⁸ it is the log transformation y = ln x. In “auto” mode it is the estimated λ (smallest Anderson-Darling statistic on the grid from −3 to 3, step 0.05, rounded to 0.01), in “manual” mode the entered one. The tile shows it with three decimals and the suffix (auto) or (manual).",
+          "lambdaAuto": "Whether λ was estimated from the data (true) or set by hand (false). The tile shows it as the suffix (auto) or (manual) after λ.",
+          "i": "The individuals chart on the transformed scale y: centre line, upper and lower control limit and spread σ̂. These are the values of the “transformed (y)” column in the table.",
+          "iOriginal": "The same limits of the individuals chart, converted back to the original scale: x = (λ·y + 1)^(1/λ), for the log transformation x = e^y. They are not symmetric around the centre line. A value is missing (empty, “–” in the table) when λ·y + 1 ≤ 0, so the back-transformation is undefined there; typically that hits the lower limit for λ > 0.",
+          "mr": "The moving range chart of the transformed values: centre line MR̄ (mean of the absolute differences |yᵢ − yᵢ₋₁| of consecutive values), upper control limit 3.267 · MR̄, lower 0. It exists on the transformed scale only.",
+          "signals": "Numbers (counted from 0 among the usable numbers) of the points whose transformed value lies above the UCL or below the LCL of the individuals chart. The “Signals” tile shows their count."
+        },
+        "IndividualLimits": {
+          "cl": "Centre line of the individuals chart on the transformed scale: the mean ȳ of all transformed values (tile CL (y)). The tile's sub-line shows the spread σ̂.",
+          "ucl": "Upper control limit (UCL) of the individuals chart on the transformed scale: centre line + 3 · σ̂.",
+          "lcl": "Lower control limit (LCL) of the individuals chart on the transformed scale: centre line − 3 · σ̂.",
+          "sigma": "Estimated spread σ̂ of the transformed values: MR̄/1.128, with the mean MR̄ of the moving ranges and the factor d₂ = 1.128 for pairs. The sub-line of the CL (y) tile shows it."
+        },
+        "Limits": {
+          "cl": "Centre line of the chart.",
+          "ucl": "Upper control limit (UCL) of the chart.",
+          "lcl": "Lower control limit (LCL) of the chart."
         }
       }
     },

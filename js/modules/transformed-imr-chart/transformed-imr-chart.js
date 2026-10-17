@@ -71,6 +71,44 @@ function setAtPath(obj, key, value) {
 }
 
 /**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {'auto'|'manual'} lambdaMode  λ schätzen oder vorgeben
+ * @property {number} [lambdaManual]  vorgegebenes λ, nur im Modus manual
+ */
+
+/**
+ * Das gerechnete Ergebnis (`_agentResult()`), wie `read().result` es liefert.
+ * Die Signalindizes zählen die verwerteten Zahlen, nicht die Zeilen.
+ *
+ * @typedef {object} Result
+ * @property {number} n  verwertete Werte
+ * @property {number|null} lambda  verwendetes λ
+ * @property {boolean} lambdaAuto  λ geschätzt
+ * @property {IndividualLimits} i  Einzelwertkarte, transformiert
+ * @property {Limits} mr  Karte der gleitenden Spannweiten, transformiert
+ * @property {Limits} iOriginal  Einzelwertkarte, zurücktransformiert
+ * @property {number[]} signals  Signalpunkte der Einzelwertkarte
+ */
+
+/**
+ * @typedef {object} IndividualLimits
+ * @property {number|null} cl  Mittellinie
+ * @property {number|null} ucl  obere Eingriffsgrenze
+ * @property {number|null} lcl  untere Eingriffsgrenze
+ * @property {number|null} sigma  Streuung
+ */
+
+/**
+ * @typedef {object} Limits
+ * @property {number|null} cl  Mittellinie
+ * @property {number|null} ucl  obere Eingriffsgrenze
+ * @property {number|null} lcl  untere Eingriffsgrenze
+ */
+
+/**
  * Die Agenten-Lesefläche der transformierten I-MR-Karte.
  *
  * Eingaben (Spalte, λ-Art, λ), die Mengen der Setter, das Ergebnis als
@@ -86,7 +124,7 @@ function setAtPath(obj, key, value) {
  * @property {string[]} activeParams  the keys `setParam` accepts in the current state (`lambdaManual` only in manual mode)
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
  * @property {string} errorMsg  why nothing was computed (non-positive values, computation error), or ''
- * @property {object|null} result  `{ n, lambda, lambdaAuto, i: { cl, ucl, lcl, sigma }, mr: { cl, ucl, lcl }, iOriginal: { cl, ucl, lcl }, signals }` — i and mr on the transformed scale, iOriginal back-transformed, signals the indices of I-chart signal points; null while nothing is computed
+ * @property {Result|null} result  das gerechnete Ergebnis; null, solange nichts gerechnet ist
  * @property {object[]} points  [bulk] one row per value: `{ transformed, signal }`
  */
 
@@ -319,12 +357,13 @@ const mod = createModule({
       // span), so we keep one label string rather than splitting into labelHint.
 
       _renderStats(r, total) {
+        const HELP = 'modules.transformed-imr-chart.types.';
         const fmt = (v) => Number.isFinite(v) ? v.toFixed(3) : '–';
         const cls = r.signalsI.length === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad';
         this.kpiCells = [
-          { value: fmt(r.lambda), label: `λ ${r.lambdaAuto ? _t('lambdaAutoTag') : _t('lambdaManualTag')}`, labelHint: '', sub: _t('boxCoxLabel'), mod: '' },
-          { value: fmt(r.iLimits.cl), label: 'CL (y)', labelHint: '', sub: `σ̂ = ${fmt(r.iLimits.sigma)}`, mod: '' },
-          { value: r.signalsI.length, label: _t('statSignals'), labelHint: '', sub: _t('statOf', { total }), mod: cls },
+          { value: fmt(r.lambda), label: `λ ${r.lambdaAuto ? _t('lambdaAutoTag') : _t('lambdaManualTag')}`, labelHint: '', sub: _t('boxCoxLabel'), mod: '', help: `${HELP}Result.lambda` },
+          { value: fmt(r.iLimits.cl), label: 'CL (y)', labelHint: '', sub: `σ̂ = ${fmt(r.iLimits.sigma)}`, mod: '', help: `${HELP}IndividualLimits.cl` },
+          { value: r.signalsI.length, label: _t('statSignals'), labelHint: '', sub: _t('statOf', { total }), mod: cls, help: `${HELP}Result.signals` },
         ];
       },
 
