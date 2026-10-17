@@ -3,7 +3,7 @@
     <div class="dmike-split__section-title" x-text="t('sections.feature')"></div>
 
     <fieldset class="msa-typ5__radios">
-      <legend x-text="t('labels.type')"></legend>
+      <legend data-help-key="modules.msa-typ5.types.Params.type" x-text="t('labels.type')"></legend>
       <template x-for="o in typeOptions()" :key="o">
         <label>
           <input type="radio" name="msa5-type" :value="o"
@@ -14,7 +14,7 @@
     </fieldset>
 
     <fieldset class="msa-typ5__radios" :class="weightsHiddenClass()">
-      <legend x-text="t('labels.weights')"></legend>
+      <legend data-help-key="modules.msa-typ5.types.Params.weights" x-text="t('labels.weights')"></legend>
       <template x-for="o in weightsOptions()" :key="o">
         <label>
           <input type="radio" name="msa5-weights" :value="o"
@@ -27,7 +27,7 @@
     <div class="dmike-split__section-title" x-text="t('sections.dataSource')"></div>
 
     <div class="field-group">
-      <label x-text="t('labels.layout')"></label>
+      <label data-help-key="modules.msa-typ5.types.Params.layout" x-text="t('labels.layout')"></label>
       <select class="field" data-ref="sel-layout"
               :value="model.params.layout" @input="setParam('layout', $event.target.value)" @change="runAnalysis()">
         <template x-for="o in layoutOptions()" :key="o">
@@ -36,15 +36,15 @@
       </select>
     </div>
     <div class="field-group">
-      <label x-text="t('labels.partColumn')"></label>
+      <label data-help-key="modules.msa-typ5.actions.setColumn.help" x-text="t('labels.partColumn')"></label>
       <div data-ref="col-part-wrap"></div>
     </div>
     <div class="field-group" x-show="model.params.layout !== 'wide'">
-      <label x-text="t('labels.appraiserColumn')"></label>
+      <label data-help-key="modules.msa-typ5.actions.setColumn.help" x-text="t('labels.appraiserColumn')"></label>
       <div data-ref="col-appraiser-wrap"></div>
     </div>
     <div class="field-group" x-show="model.params.layout !== 'wide'">
-      <label x-text="t('labels.ratingColumn')"></label>
+      <label data-help-key="modules.msa-typ5.actions.setColumn.help" x-text="t('labels.ratingColumn')"></label>
       <div data-ref="col-rating-wrap"></div>
     </div>
     <div class="field-group" x-show="model.params.layout === 'wide'">
@@ -53,16 +53,16 @@
       <div class="msa-typ5__levels-hint" x-text="t('wideHint')"></div>
     </div>
     <div class="field-group" x-show="model.params.layout === 'wide'">
-      <label for="msa5-trials" x-text="t('labels.trials')"></label>
+      <label data-help-key="modules.msa-typ5.types.Params.trials" for="msa5-trials" x-text="t('labels.trials')"></label>
       <input id="msa5-trials" class="field" type="number" min="1" step="1" data-ref="inp-trials"
              :value="model.params.trials" @input="setParam('trials', $event.target.value)" @change="runAnalysis()">
     </div>
     <div class="field-group">
-      <label x-text="t('labels.referenceColumn')"></label>
+      <label data-help-key="modules.msa-typ5.actions.setColumn.help" x-text="t('labels.referenceColumn')"></label>
       <div data-ref="col-reference-wrap"></div>
     </div>
     <div class="field-group" x-show="model.params.layout !== 'wide'">
-      <label x-text="t('labels.replicateColumn')"></label>
+      <label data-help-key="modules.msa-typ5.actions.setColumn.help" x-text="t('labels.replicateColumn')"></label>
       <div data-ref="col-replicate-wrap"></div>
     </div>
 
@@ -78,7 +78,7 @@
         <span class="msa-typ5__level msa-typ5__level--neg" title="n.i.O.">n.i.O. = <span x-text="binaryNegative()"></span></span>
       </template>
       <template x-if="model.params.type === 'binary' && detectedLevels().length">
-        <button type="button" class="dmike-btn dmike-btn--secondary msa-typ5__swap"
+        <button type="button" data-help-key="modules.msa-typ5.types.Params.positiveLevel" class="dmike-btn dmike-btn--secondary msa-typ5__swap"
                 data-ref="btn-swap" @click="swapPositive()"
                 x-text="t('labels.positiveSwap')"></button>
       </template>
@@ -98,7 +98,7 @@
     <div class="dmike-split__section-title" x-text="t('sections.evaluation')"></div>
 
     <div class="field-group">
-      <label x-text="t('labels.ruleSet')"></label>
+      <label data-help-key="modules.msa-typ5.types.Params.ruleSet" x-text="t('labels.ruleSet')"></label>
       <select class="field" data-ref="sel-ruleset"
               :value="model.params.ruleSet" @input="setParam('ruleSet', $event.target.value)" @change="runAnalysis()">
         <template x-for="o in ruleSetOptions()" :key="o">
@@ -108,7 +108,7 @@
     </div>
 
     <div class="field-group">
-      <label x-text="t('labels.alpha')"></label>
+      <label data-help-key="modules.msa-typ5.types.Params.alpha" x-text="t('labels.alpha')"></label>
       <select class="field" data-ref="sel-alpha"
               :value="model.params.alpha" @input="setParam('alpha', $event.target.value)" @change="runAnalysis()">
         <template x-for="a in alphaOptions()" :key="a">
@@ -118,7 +118,7 @@
     </div>
 
     <div class="field-group">
-      <label x-text="t('labels.referenceSource')"></label>
+      <label data-help-key="modules.msa-typ5.types.Meta.referenceSource" x-text="t('labels.referenceSource')"></label>
       <output class="msa-typ5__ref-source" data-ref="ref-source" x-text="referenceSourceLabel()"></output>
     </div>
   </div>
@@ -136,7 +136,7 @@
              Der `.msa-typ5__interp`-Slot ist typ5-spezifisch (volle Zeile,
              flex-basis: 100 %) und trägt den narrativen Interpretationstext. -->
         <div class="dmike-infobox" :class="verdictClass(result.verdict.level)">
-          <span class="dmike-infobox__label" x-text="verdictLabel(result.verdict.level)"></span>
+          <span data-help-key="modules.msa-typ5.types.Verdict.level" class="dmike-infobox__label" x-text="verdictLabel(result.verdict.level)"></span>
           <span class="dmike-infobox__detail" x-text="verdictSubline()"></span>
           <span class="msa-typ5__interp" x-text="interpretationText()"></span>
         </div>
@@ -149,30 +149,30 @@
         <!-- KPI-Strip -->
         <div class="dmike-kpi-strip">
           <div class="dmike-kpi" :class="fleissKappaClass()">
-            <div class="dmike-kpi-label" x-text="t('kpi.fleissKappa')"></div>
+            <div data-help-key="modules.msa-typ5.types.BetweenAppraisers.fleissKappa" class="dmike-kpi-label" x-text="t('kpi.fleissKappa')"></div>
             <div class="dmike-kpi-value" x-text="fmt(fleissKappa(), 3)"></div>
             <div class="dmike-kpi-sub" x-text="fleissMethod()"></div>
           </div>
           <div class="dmike-kpi">
-            <div class="dmike-kpi-label" x-text="t('kpi.repeatability')"></div>
+            <div data-help-key="modules.msa-typ5.types.AppraiserStats.repeatability" class="dmike-kpi-label" x-text="t('kpi.repeatability')"></div>
             <div class="dmike-kpi-value" x-text="fmtPct(meanRepeatability())"></div>
           </div>
           <div class="dmike-kpi">
-            <div class="dmike-kpi-label" x-text="t('kpi.effectiveness')"></div>
+            <div data-help-key="modules.msa-typ5.types.VsReference.effectiveness" class="dmike-kpi-label" x-text="t('kpi.effectiveness')"></div>
             <div class="dmike-kpi-value" x-text="fmtPct(meanEffectiveness())"></div>
           </div>
           <div class="dmike-kpi">
-            <div class="dmike-kpi-label" x-text="t('kpi.kappaVsRef')"></div>
+            <div :data-help-key="kappaVsRefHelp()" class="dmike-kpi-label" x-text="t('kpi.kappaVsRef')"></div>
             <div class="dmike-kpi-value" x-text="fmt(meanKappaVsRef(), 3)"></div>
           </div>
           <div class="dmike-kpi">
-            <div class="dmike-kpi-label" x-text="t('kpi.overallBetween')"></div>
+            <div data-help-key="modules.msa-typ5.types.Overall.betweenAppraisers" class="dmike-kpi-label" x-text="t('kpi.overallBetween')"></div>
             <div class="dmike-kpi-value" x-text="overallBetweenRate()"></div>
             <div class="dmike-kpi-sub" x-text="overallBetweenSub()"></div>
           </div>
           <template x-if="hasOverallVsRef()">
             <div class="dmike-kpi">
-              <div class="dmike-kpi-label" x-text="t('kpi.overallVsRef')"></div>
+              <div data-help-key="modules.msa-typ5.types.Overall.allVsReference" class="dmike-kpi-label" x-text="t('kpi.overallVsRef')"></div>
               <div class="dmike-kpi-value" x-text="overallVsRefRate()"></div>
               <div class="dmike-kpi-sub" x-text="overallVsRefSub()"></div>
             </div>
@@ -184,12 +184,12 @@
         <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('criteria.title')"></span></div>
         <table class="dmike-table msa-typ5__criteria" data-ref="verdict-criteria">
           <thead><tr>
-            <th x-text="t('criteria.criterion')"></th>
-            <th x-text="t('criteria.value')"></th>
-            <th x-text="t('criteria.appraiser')"></th>
-            <th x-text="t('criteria.limitGood')"></th>
-            <th x-text="t('criteria.limitMarginal')"></th>
-            <th x-text="t('criteria.status')"></th>
+            <th><span data-help-key="modules.msa-typ5.types.Criterion.id" x-text="t('criteria.criterion')"></span></th>
+            <th><span data-help-key="modules.msa-typ5.types.Criterion.value" x-text="t('criteria.value')"></span></th>
+            <th><span data-help-key="modules.msa-typ5.types.Criterion.appraiser" x-text="t('criteria.appraiser')"></span></th>
+            <th><span data-help-key="modules.msa-typ5.types.Limits.good" x-text="t('criteria.limitGood')"></span></th>
+            <th><span data-help-key="modules.msa-typ5.types.Limits.marginal" x-text="t('criteria.limitMarginal')"></span></th>
+            <th><span data-help-key="modules.msa-typ5.types.Criterion.level" x-text="t('criteria.status')"></span></th>
           </tr></thead>
           <tbody>
             <template x-for="row in criteriaRows()">
@@ -212,14 +212,14 @@
         <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('table.appraiser')"></span></div>
         <table class="dmike-table msa-typ5__table">
           <thead><tr>
-            <th x-text="t('table.appraiser')"></th>
-            <th x-text="t('table.repeatability')"></th>
-            <th x-text="t('table.effectiveness')"></th>
-            <th x-text="t('table.missRate')"></th>
-            <th x-text="t('table.falseAlarmRate')"></th>
-            <th x-text="t('table.biasRate')"></th>
-            <th x-text="t('table.withinKappa')"></th>
-            <th x-text="t('table.p')"></th>
+            <th><span data-help-key="modules.msa-typ5.types.Result.perAppraiser" x-text="t('table.appraiser')"></span></th>
+            <th><span data-help-key="modules.msa-typ5.types.AppraiserStats.repeatability" x-text="t('table.repeatability')"></span></th>
+            <th><span data-help-key="modules.msa-typ5.types.VsReference.effectiveness" x-text="t('table.effectiveness')"></span></th>
+            <th><span data-help-key="modules.msa-typ5.types.VsReference.missRate" x-text="t('table.missRate')"></span></th>
+            <th><span data-help-key="modules.msa-typ5.types.VsReference.falseAlarmRate" x-text="t('table.falseAlarmRate')"></span></th>
+            <th><span data-help-key="modules.msa-typ5.types.VsReference.biasRate" x-text="t('table.biasRate')"></span></th>
+            <th><span data-help-key="modules.msa-typ5.types.AppraiserStats.withinKappa" x-text="t('table.withinKappa')"></span></th>
+            <th><span data-help-key="modules.msa-typ5.types.FleissKappa.p" x-text="t('table.p')"></span></th>
           </tr></thead>
           <tbody>
             <template x-for="row in perAppraiserRows()">
@@ -241,11 +241,11 @@
         <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="pairTableTitle()"></span></div>
         <table class="dmike-table msa-typ5__table">
           <thead><tr>
-            <th x-text="t('table.pair')"></th>
-            <th x-text="t('table.cohenKappa')"></th>
-            <th x-text="t('table.ci95')"></th>
-            <th x-text="t('table.z')"></th>
-            <th x-text="t('table.p')"></th>
+            <th><span data-help-key="modules.msa-typ5.types.BetweenAppraisers.pairwiseCohenKappa" x-text="t('table.pair')"></span></th>
+            <th><span data-help-key="modules.msa-typ5.types.PairKappa.kappa" x-text="t('table.cohenKappa')"></span></th>
+            <th><span data-help-key="modules.msa-typ5.types.PairKappa.ci95" x-text="t('table.ci95')"></span></th>
+            <th><span data-help-key="modules.msa-typ5.types.PairKappa.z" x-text="t('table.z')"></span></th>
+            <th><span data-help-key="modules.msa-typ5.types.PairKappa.p" x-text="t('table.p')"></span></th>
             <th x-text="t('table.verdict')"></th>
           </tr></thead>
           <tbody>
@@ -268,11 +268,11 @@
             <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('table.vsReference')"></span></div>
             <table class="dmike-table msa-typ5__table">
               <thead><tr>
-                <th x-text="t('table.appraiser')"></th>
-                <th x-text="vsRefKappaHeader()"></th>
-                <th x-text="t('table.ci95')"></th>
-                <th x-text="t('table.z')"></th>
-                <th x-text="t('table.p')"></th>
+                <th><span data-help-key="modules.msa-typ5.types.AppraiserStats.vsReference" x-text="t('table.appraiser')"></span></th>
+                <th><span :data-help-key="kappaVsRefHelp()" x-text="vsRefKappaHeader()"></span></th>
+                <th><span data-help-key="modules.msa-typ5.types.CohenKappa.ci95" x-text="t('table.ci95')"></span></th>
+                <th><span data-help-key="modules.msa-typ5.types.CohenKappa.z" x-text="t('table.z')"></span></th>
+                <th><span data-help-key="modules.msa-typ5.types.CohenKappa.p" x-text="t('table.p')"></span></th>
                 <th x-text="t('table.verdict')"></th>
               </tr></thead>
               <tbody>
@@ -295,7 +295,7 @@
         <!-- Fehlerdetails, Teile-Sicht: welche Teile sind strittig.
              Die Engine liefert `perPart` bereits nach Problemgrad sortiert. -->
         <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('table.perPart')"></span></div>
-        <label class="msa-typ5__filter">
+        <label data-help-anchor="box" data-help-key="modules.msa-typ5.types.PartRow.isDisputed" class="msa-typ5__filter">
           <input type="checkbox" x-model="onlyDisputed">
           <span x-text="t('table.onlyDisputed')"></span>
         </label>
@@ -304,13 +304,13 @@
         </template>
         <table class="dmike-table msa-typ5__table msa-typ5__table--per-part">
           <thead><tr>
-            <th x-text="t('table.part')"></th>
-            <th x-text="t('table.reference')"></th>
+            <th><span data-help-key="modules.msa-typ5.types.PartRow.part" x-text="t('table.part')"></span></th>
+            <th><span data-help-key="modules.msa-typ5.types.PartRow.reference" x-text="t('table.reference')"></span></th>
             <template x-for="a in partAppraisers()">
               <th :key="a" x-text="a"></th>
             </template>
-            <th x-text="t('table.vsRefErrors')"></th>
-            <th x-text="t('table.mixedAppraisers')"></th>
+            <th><span data-help-key="modules.msa-typ5.types.PartRow.vsRefErrors" x-text="t('table.vsRefErrors')"></span></th>
+            <th><span data-help-key="modules.msa-typ5.types.PartRow.mixedAppraisers" x-text="t('table.mixedAppraisers')"></span></th>
           </tr></thead>
           <tbody>
             <template x-for="row in perPartRows()">
@@ -337,10 +337,10 @@
         <template x-if="disagreementRows().length">
           <table class="dmike-table msa-typ5__table msa-typ5__table--disagreement">
             <thead><tr>
-              <th x-text="t('table.appraiser')"></th>
-              <th x-text="t('table.kind')"></th>
-              <th x-text="t('table.count')"></th>
-              <th x-text="t('table.parts')"></th>
+              <th><span data-help-key="modules.msa-typ5.types.Result.disagreement" x-text="t('table.appraiser')"></span></th>
+              <th><span data-help-key="modules.msa-typ5.types.Disagreement.confusionPairs" x-text="t('table.kind')"></span></th>
+              <th><span data-help-key="modules.msa-typ5.types.ConfusionPair.count" x-text="t('table.count')"></span></th>
+              <th><span data-help-key="modules.msa-typ5.types.ConfusionPair.parts" x-text="t('table.parts')"></span></th>
             </tr></thead>
             <tbody>
               <template x-for="row in disagreementRows()">

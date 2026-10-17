@@ -811,6 +811,17 @@ const mod = createModule({
         });
       },
 
+      /**
+       * Hilfeschlüssel der κ-Spalte und -Kachel gegen die Referenz — sie
+       * zeigen unter Bosch Fleiss' κ, sonst Cohens κ.
+       * @noagent Anzeige
+       * @returns {string}
+       */
+      kappaVsRefHelp() {
+        const prop = this.model.params.ruleSet === 'bosch' ? 'fleissKappa' : 'kappa';
+        return `modules.msa-typ5.types.VsReference.${prop}`;
+      },
+
       /** @noagent view transform; Header of the κ column in the vs-reference table. */
       vsRefKappaHeader() {
         return _t(this.result?.verdict?.ruleSet === 'bosch' ? 'table.fleissKappa' : 'table.cohenKappa');
