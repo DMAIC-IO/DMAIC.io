@@ -34,13 +34,13 @@
         min="1" max="20" :value="model.partsPerRow" @change="partsPerRowChanged($event)">
     </div>
 
-    <div class="field-group">
-      <label class="gage-run-chart__check">
+    <div class="field-checks">
+      <label class="field-check">
         <input type="checkbox" data-ref="chk-connect"
           x-model="model.connectWithin" @change="optionToggled()">
         <span x-text="t('connectWithin')"></span>
       </label>
-      <label class="gage-run-chart__check">
+      <label class="field-check">
         <input type="checkbox" data-ref="chk-operator-mean"
           x-model="model.showOperatorMean" @change="optionToggled()">
         <span x-text="t('showOperatorMean')"></span>

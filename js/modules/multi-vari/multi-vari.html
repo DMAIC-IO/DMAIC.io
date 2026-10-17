@@ -66,23 +66,23 @@
 
     <div class="dmike-split__section-title" x-text="t('sectionDisplay')"></div>
 
-    <div class="field-group">
-      <label class="multi-vari__check">
+    <div class="field-checks">
+      <label class="field-check">
         <input type="checkbox" data-ref="chk-points"
                x-model="model.showPoints" @change="optionChanged()">
         <span x-text="t('showPoints')"></span>
       </label>
-      <label class="multi-vari__check">
+      <label class="field-check">
         <input type="checkbox" data-ref="chk-connect"
                x-model="model.connectMeans" @change="optionChanged()">
         <span x-text="t('connectMeans')"></span>
       </label>
-      <label class="multi-vari__check">
+      <label class="field-check">
         <input type="checkbox" data-ref="chk-group-mean"
                x-model="model.showGroupMean" @change="optionChanged()">
         <span x-text="t('showGroupMean')"></span>
       </label>
-      <label class="multi-vari__check">
+      <label class="field-check">
         <input type="checkbox" data-ref="chk-ref-line"
                x-model="model.showRefLine" @change="optionChanged()">
         <span x-text="t('showRefLine')"></span>

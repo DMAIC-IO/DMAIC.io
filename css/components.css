@@ -414,6 +414,48 @@ select.input {
   accent-color: var(--color-accent);
 }
 
+/* Checkbox row: label.field-check > input[type=checkbox] + span */
+.field-check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: normal;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.field-check input[type="checkbox"] {
+  flex-shrink: 0;
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
+/* Optional second line under the label text */
+.field-check__desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* Stacked list of checkbox rows (counterpart of .field-radios) */
+.field-checks {
+  display: flex;
+  flex-flow: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+  margin: 0 0 var(--spacing-sm);
+}
+
+.field-group > .field-checks { margin-bottom: 0; }
+
+.field-checks > .field-check { align-items: flex-start; }
+
+.field-checks > .field-check > input[type="checkbox"] {
+  margin-top: var(--spacing-2xs);
+}
+
+.field-checks--collapsed { display: none; }
+
 /* ── Field feedback: hint text under a field, error box in an input pane ── */
 .field-hint {
   font-size: var(--font-size-xs);

@@ -467,18 +467,20 @@
     <!-- Design parameters -->
     <div class="dmike-split__section-title" x-text="t('stepParameters')"></div>
     <div class="doe__param-group">
-      <label class="doe__check-row">
-        <input type="checkbox" class="doe__randomize-check" x-model="model.options.randomize" @change="randomizeChanged()" />
-        <span x-text="t('optRandomize')"></span>
-        <span class="doe__param-tooltip" :title="t('tipRandomize')">?</span>
-      </label>
-      <template x-if="showCenterPointsOption()">
-        <label class="doe__check-row">
-          <input type="checkbox" class="doe__center-check" x-model="model.options.centerPoints" @change="centerPointsChanged()" />
-          <span x-text="t('optCenterPoints')"></span>
-          <span class="doe__param-tooltip" :title="t('tipCenterPoints')">?</span>
+      <div class="field-checks">
+        <label class="field-check">
+          <input type="checkbox" class="doe__randomize-check" x-model="model.options.randomize" @change="randomizeChanged()" />
+          <span x-text="t('optRandomize')"></span>
+          <span class="doe__param-tooltip" :title="t('tipRandomize')">?</span>
         </label>
-      </template>
+        <template x-if="showCenterPointsOption()">
+          <label class="field-check">
+            <input type="checkbox" class="doe__center-check" x-model="model.options.centerPoints" @change="centerPointsChanged()" />
+            <span x-text="t('optCenterPoints')"></span>
+            <span class="doe__param-tooltip" :title="t('tipCenterPoints')">?</span>
+          </label>
+        </template>
+      </div>
       <div class="doe__replicates-row">
         <label class="doe__input-label" x-text="t('optReplicates')"></label>
         <input type="number" class="field doe__replicates-input" min="1" max="10"

@@ -3,13 +3,6 @@
    BEM: .gage-run-chart__ prefix
    ============================================================ */
 
-.gage-run-chart__check {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-weight: var(--font-weight-normal);
-}
-
 /* ── Gage information block (Minitab's report header) ── */
 
 .gage-run-chart__gage-info {

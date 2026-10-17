@@ -177,13 +177,6 @@
   border-color: var(--color-accent);
 }
 
-/* ─── σ within estimator (subgroup mode radios use .field-radios) ── */
-.pc__check {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
 .pc__span-2 {
   grid-column: span 2;
 }

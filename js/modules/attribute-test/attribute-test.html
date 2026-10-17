@@ -4,7 +4,7 @@
   <div class="attrtest__input dmike-split__input">
 
     <div class="dmike-split__section-title" x-text="t('sectionTest')"></div>
-    <div class="btn-group attrtest__toggle-row">
+    <div class="btn-group">
       <button class="btn--segment" data-kind="one" :class="isKind('one') ? 'btn--active' : ''"
         @click="setKind('one')" x-text="t('kindOne')"></button>
       <button class="btn--segment" data-kind="two" :class="isKind('two') ? 'btn--active' : ''"
@@ -14,7 +14,7 @@
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionInput')"></div>
-    <div class="btn-group attrtest__toggle-row">
+    <div class="btn-group">
       <button class="btn--segment" data-mode="summary" :class="isMode('summary') ? 'btn--active' : ''"
         @click="setMode('summary')" x-text="t('modeSummary')"></button>
       <button class="btn--segment" data-mode="columns" :class="isMode('columns') ? 'btn--active' : ''"
@@ -141,7 +141,7 @@
     <label class="field-group"><span x-text="t('alpha')"></span>
       <input type="text" inputmode="decimal" data-ref="alpha" :value="model.alpha" @change="onAlphaInput($event)"></label>
     <template x-if="isKind('two')">
-      <label class="attrtest__check">
+      <label class="field-check">
         <input type="checkbox" data-ref="pooled" x-model="model.pooled">
         <span x-text="t('pooled')"></span>
       </label>

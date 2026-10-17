@@ -24,13 +24,6 @@
   text-align: right;
 }
 
-.multi-vari__check {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  margin-bottom: var(--spacing-xs);
-}
-
 .multi-vari__warnings {
   margin-bottom: var(--spacing-sm);
 }

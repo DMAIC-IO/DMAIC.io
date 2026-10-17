@@ -109,7 +109,7 @@
       </template>
     </div>
     <template x-if="model.category === 'mean' && model.testType === 'two'">
-      <label class="hyptest__check">
+      <label class="field-check">
         <input type="checkbox" data-ref="equal-variances"
           x-model="model.equalVariances" @change="runAnalysis()">
         <span x-text="t('assumeEqualVariances')"></span>

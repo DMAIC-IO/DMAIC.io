@@ -226,18 +226,3 @@
   background: rgb(59 130 246 / 16%);
   color: var(--color-info);
 }
-
-/* ── Annotation dialog body ── */
-
-.control-chart__check {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-primary);
-}
-
-.control-chart__check input[type="checkbox"] {
-  accent-color: var(--color-accent);
-}

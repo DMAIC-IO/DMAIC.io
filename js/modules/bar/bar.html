@@ -12,7 +12,7 @@
         </select>
       </label>
 
-      <label class="bar-module__opt-row" x-show="!!model.gRef">
+      <label class="field-check" x-show="!!model.gRef">
         <input type="checkbox" data-action="set-stacked" x-model="model.chartConfig.stacked" @change="stackedChanged()">
         <span x-text="t('stacked')"></span>
       </label>
