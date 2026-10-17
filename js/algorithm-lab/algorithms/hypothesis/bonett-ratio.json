@@ -1,0 +1,361 @@
+{
+  "id": "bonett-ratio",
+  "name": {
+    "de": "Bonett-Test (2 Varianzen)",
+    "en": "Bonett test (2 variances)"
+  },
+  "category": "hypothesis",
+  "subcategory": "variance",
+  "status": "in-progress",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Vergleicht die Varianzen zweier Stichproben mit KI für das Verhältnis – auch bei nicht-normalverteilten Daten.",
+      "en": "Compares the variances of two samples with a CI for their ratio – also for non-normal data."
+    },
+    "long": {
+      "de": "Der Bonett-Test für zwei Varianzen ist die robuste Alternative zum F-Test. Er schätzt die Wölbung beider Stichproben aus getrimmten Mittelwerten, geht von einer gemeinsamen Kurtosis aus und liefert ein Konfidenzintervall für σ₁²/σ₂², auch einseitig. Das Intervall ergibt sich aus der Lösung einer Gleichung H(x) ≤ 0; bei unausgewogenen Designs wird eine Ausgleichskonstante c verwendet. Bei gleichem Stichprobenumfang gibt es eine Teststatistik T₂ (χ², 1 Freiheitsgrad), sonst folgt der p-Wert aus der Intervallinversion. D.Mike nutzt den Test, wenn Anderson-Darling die Normalverteilung ablehnt, und zeigt den Levene-Test (Brown-Forsythe) zum Abgleich.",
+      "en": "The Bonett test for two variances is the robust alternative to the F-test. It estimates the kurtosis of both samples from trimmed means, assumes a common kurtosis, and gives a confidence interval for σ₁²/σ₂², also one-sided. The interval comes from solving H(x) ≤ 0; unbalanced designs use an equalizer constant c. For equal sample sizes there is a test statistic T₂ (χ², 1 degree of freedom); otherwise the p-value follows from interval inversion. D.Mike uses the test when Anderson-Darling rejects normality and shows the Levene test (Brown-Forsythe) as a cross-check."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      {
+        "label": "γ̂_P",
+        "latex": "\\hat\\gamma_P(\\rho) = \\frac{(n_1+n_2)\\left[\\sum(Y_{1j}-m_1)^4 + \\rho^4\\sum(Y_{2j}-m_2)^4\\right]}{\\left[(n_1-1)S_1^2 + \\rho^2 (n_2-1) S_2^2\\right]^2}",
+        "description": {
+          "de": "Gepoolte Kurtosis mit getrimmten Mitteln m₁, m₂ (ρ = σ₁/σ₂)",
+          "en": "Pooled kurtosis with trimmed means m₁, m₂ (ρ = σ₁/σ₂)"
+        }
+      },
+      {
+        "label": "c",
+        "latex": "c = \\frac{n_1}{n_1-z}\\cdot\\frac{n_2-z}{n_2}",
+        "description": {
+          "de": "Ausgleichskonstante (1 bei gleichem Stichprobenumfang)",
+          "en": "Equalizer constant (1 for equal sample sizes)"
+        }
+      },
+      {
+        "label": "H",
+        "latex": "H(x) = (\\ln x)^2 - z^2\\, se^2(c\\,x)",
+        "description": {
+          "de": "Das KI für σ₁²/σ₂² ist c·ρ̂²·{x : H(x) ≤ 0}",
+          "en": "The CI for σ₁²/σ₂² is c·ρ̂²·{x : H(x) ≤ 0}"
+        }
+      },
+      {
+        "label": "se²",
+        "latex": "se^2(x) = A\\,\\frac{\\hat\\gamma_1 K^2/n_1 + \\hat\\gamma_2 x^2/n_2}{(K+x)^2} - B",
+        "description": {
+          "de": "Mit A = (n₁+n₂)(n₁+n₂−2)/((n₁−1)(n₂−1))",
+          "en": "With A = (n₁+n₂)(n₁+n₂−2)/((n₁−1)(n₂−1))"
+        }
+      },
+      {
+        "label": "B",
+        "latex": "B = \\frac{g_1}{n_1-1} + \\frac{g_2}{n_2-1},\\quad g_i = \\frac{n_i-3}{n_i}",
+        "description": {
+          "de": "Konstante B",
+          "en": "Constant B"
+        }
+      },
+      {
+        "label": "K",
+        "latex": "K = \\frac{n_1-1}{n_2-1}",
+        "description": {
+          "de": "Konstante K",
+          "en": "Constant K"
+        }
+      },
+      {
+        "label": "T₂",
+        "latex": "T_2 = \\frac{(\\ln\\hat\\rho^2 - \\ln\\rho_0^2)^2}{\\frac{\\hat\\gamma_P(\\rho_0)-g_1}{n_1-1} + \\frac{\\hat\\gamma_P(\\rho_0)-g_2}{n_2-1}}",
+        "description": {
+          "de": "Teststatistik bei gleichem Stichprobenumfang (ρ₀ = 1), χ² mit 1 Freiheitsgrad",
+          "en": "Test statistic for equal sample sizes (ρ₀ = 1), χ² with 1 degree of freedom"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Stetige (kontinuierliche) Daten",
+        "en": "Continuous data"
+      },
+      {
+        "de": "Beliebige Verteilung – keine Normalverteilung nötig",
+        "en": "Any distribution – normality is not required"
+      },
+      {
+        "de": "Die beiden Stichproben sind unabhängig voneinander",
+        "en": "The two samples are independent of each other"
+      },
+      {
+        "de": "Beide Verteilungen haben dieselbe Kurtosis (gemeinsame Wölbung)",
+        "en": "Both distributions share a common kurtosis"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Näherungsverfahren – bei kleinem n ist die Überdeckung nur ungefähr erreicht",
+        "en": "Approximate procedure – for small n the coverage is only approximate"
+      },
+      {
+        "de": "Für n ≤ z gibt es kein Konfidenzintervall",
+        "en": "No confidence interval exists for n ≤ z"
+      },
+      {
+        "de": "In extremen Designs kann die Konfidenzmenge aus zwei getrennten Intervallen bestehen; dann wird die Hülle angezeigt",
+        "en": "In extreme designs the confidence set can consist of two disjoint intervals; the hull is then shown"
+      }
+    ],
+    "references": [
+      {
+        "source": "Bonett, D. G. (2006), Approximate confidence interval for standard deviation of nonnormal distributions, Computational Statistics & Data Analysis, 50, 775–782"
+      },
+      {
+        "source": "Banga, S. J. & Fox, G. D. (2013), Bonett's Method, Minitab white paper"
+      },
+      {
+        "source": "Minitab Methods and Formulas, 2 Variances"
+      }
+    ],
+    "minitab_equivalent": "Stat > Basic Statistics > 2 Variances (Bonett)"
+  },
+  "source": {
+    "function_name": "bonettRatioTest",
+    "file_path": "js/engines/hypothesis-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "data1",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Erste Stichprobe (mindestens 2 Werte)",
+            "en": "First sample (at least 2 values)"
+          }
+        },
+        {
+          "name": "data2",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Zweite Stichprobe (mindestens 2 Werte)",
+            "en": "Second sample (at least 2 values)"
+          }
+        },
+        {
+          "name": "direction",
+          "type": "string",
+          "required": false,
+          "description": {
+            "de": "Testrichtung: 'two-sided', 'greater', 'less'",
+            "en": "Test direction: 'two-sided', 'greater', 'less'"
+          }
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "required": false,
+          "description": {
+            "de": "Signifikanzniveau (Standard: 0.05)",
+            "en": "Significance level (default: 0.05)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": {
+            "type": "number",
+            "description": {
+              "de": "Teststatistik T₂ (nur bei gleichem Stichprobenumfang, sonst null)",
+              "en": "Test statistic T₂ (equal sample sizes only, otherwise null)"
+            }
+          },
+          "pValue": {
+            "type": "number",
+            "description": {
+              "de": "p-Wert",
+              "en": "p-value"
+            }
+          },
+          "variance1": {
+            "type": "number",
+            "description": {
+              "de": "Varianz s₁² der ersten Stichprobe",
+              "en": "Variance s₁² of the first sample"
+            }
+          },
+          "variance2": {
+            "type": "number",
+            "description": {
+              "de": "Varianz s₂² der zweiten Stichprobe",
+              "en": "Variance s₂² of the second sample"
+            }
+          },
+          "ratio": {
+            "type": "number",
+            "description": {
+              "de": "Varianzverhältnis s₁²/s₂²",
+              "en": "Variance ratio s₁²/s₂²"
+            }
+          },
+          "ci": {
+            "type": "number[]",
+            "description": {
+              "de": "Konfidenzintervall für σ₁²/σ₂² (offene Seite: null)",
+              "en": "Confidence interval for σ₁²/σ₂² (open side: null)"
+            }
+          },
+          "reject": {
+            "type": "boolean",
+            "description": {
+              "de": "H₀ abgelehnt?",
+              "en": "Reject H₀?"
+            }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "data1",
+          "label": {
+            "de": "Stichprobe 1",
+            "en": "Sample 1"
+          },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Werte getrennt durch Komma, Leerzeichen oder Zeilenumbruch",
+            "en": "Values separated by commas, spaces, or newlines"
+          },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "data2",
+          "label": {
+            "de": "Stichprobe 2",
+            "en": "Sample 2"
+          },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Werte getrennt durch Komma, Leerzeichen oder Zeilenumbruch",
+            "en": "Values separated by commas, spaces, or newlines"
+          },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "direction",
+          "label": {
+            "de": "Testrichtung",
+            "en": "Test Direction"
+          },
+          "type": "select",
+          "options": [
+            {
+              "value": "two-sided",
+              "label": {
+                "de": "≠ Zweiseitig",
+                "en": "≠ Two-sided"
+              }
+            },
+            {
+              "value": "greater",
+              "label": {
+                "de": "> Größer",
+                "en": "> Greater"
+              }
+            },
+            {
+              "value": "less",
+              "label": {
+                "de": "< Kleiner",
+                "en": "< Less"
+              }
+            }
+          ],
+          "parse_as": "string",
+          "required": false
+        },
+        {
+          "name": "alpha",
+          "label": {
+            "de": "Signifikanzniveau α",
+            "en": "Significance Level α"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "0.05",
+            "en": "0.05"
+          },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": [
+        "statistic",
+        "pValue",
+        "variance1",
+        "variance2",
+        "ratio",
+        "ci",
+        "reject"
+      ],
+      "primary_field": "pValue",
+      "format": {
+        "statistic": {
+          "decimals": 6,
+          "label": "T₂"
+        },
+        "pValue": {
+          "decimals": 6,
+          "label": "p-Value"
+        },
+        "variance1": {
+          "decimals": 6,
+          "label": "s₁²"
+        },
+        "variance2": {
+          "decimals": 6,
+          "label": "s₂²"
+        },
+        "ratio": {
+          "decimals": 6,
+          "label": {
+            "de": "Verhältnis s₁²/s₂²",
+            "en": "Ratio s₁²/s₂²"
+          }
+        },
+        "reject": {
+          "decimals": 0,
+          "label": {
+            "de": "H₀ abgelehnt",
+            "en": "Reject H₀"
+          }
+        }
+      }
+    }
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-17",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: Bonett-Test für zwei Varianzen mit KI für σ₁²/σ₂² (noch nicht gegen Minitab validiert)",
+        "en": "Initial implementation: Bonett test for two variances with CI for σ₁²/σ₂² (not yet validated against Minitab)"
+      },
+      "breaking": false
+    }
+  ]
+}
