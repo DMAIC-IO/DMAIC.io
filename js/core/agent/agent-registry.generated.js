@@ -3855,11 +3855,31 @@ export const AGENT_REGISTRY = {
             "name": "value",
             "type": "string|number",
             "optional": false,
-            "help": "method: einer aus `methods`; confLevel, alpha: ein Anteil größer 0 und kleiner 1, das andere wird 1 minus diesem Wert; cutoff: eine Zahl von 0 bis 1"
+            "help": "der Wert, siehe `Params`"
           }
         ],
         "returns": "void",
-        "help": "Einen Parameter setzen. `method`, `confLevel` und `alpha` rechnen neu; `cutoff` rechnet nur die Klassifikationstafel neu."
+        "help": "Einen Parameter setzen. `method`, `confLevel` und `alpha` rechnen neu; `cutoff` rechnet nur die Klassifikationstafel neu.",
+        "keysOf": "Params",
+        "keys": {
+          "method": {
+            "type": "'auto'|'binomial'|'poisson'|'negbin'",
+            "help": "Verteilungsfamilie"
+          },
+          "confLevel": {
+            "type": "number",
+            "help": "Konfidenzniveau als Anteil"
+          },
+          "alpha": {
+            "type": "number",
+            "help": "Signifikanzniveau als Anteil"
+          },
+          "cutoff": {
+            "type": "number",
+            "help": "Klassifikationsschwelle, nur binomial",
+            "optional": true
+          }
+        }
       },
       "swapSuccess": {
         "params": [],
@@ -3974,16 +3994,244 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
+        "type": "Result|null",
         "help": "the fit as numbers, null without a shown result",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "family": {
+            "type": "Family",
+            "help": "Verteilung und Linkfunktion",
+            "keysOf": "Family",
+            "keys": {
+              "name": {
+                "type": "'binomial'|'poisson'|'negbin'",
+                "help": "Verteilungsfamilie"
+              },
+              "link": {
+                "type": "'logit'|'log'",
+                "help": "Linkfunktion"
+              },
+              "theta": {
+                "type": "number|null",
+                "help": "Formparameter, nur negbin"
+              }
+            }
+          },
+          "quasi": {
+            "type": "boolean",
+            "help": "Quasi-Poisson aktiv"
+          },
+          "autoReason": {
+            "type": "string|null",
+            "help": "Grund der automatischen Wahl"
+          },
+          "n": {
+            "type": "number|null",
+            "help": "verwertete Zeilen"
+          },
+          "iterations": {
+            "type": "number|null",
+            "help": "IRLS-Iterationen"
+          },
+          "aic": {
+            "type": "number|null",
+            "help": "Akaike-Informationskriterium"
+          },
+          "bic": {
+            "type": "number|null",
+            "help": "Bayes-Informationskriterium"
+          },
+          "deviance": {
+            "type": "number|null",
+            "help": "Residualdevianz"
+          },
+          "nullDeviance": {
+            "type": "number|null",
+            "help": "Nulldevianz"
+          },
+          "logLikelihood": {
+            "type": "number|null",
+            "help": "Log-Likelihood"
+          },
+          "pseudoR2": {
+            "type": "PseudoR2",
+            "help": "Pseudo-Bestimmtheitsmaße",
+            "keysOf": "PseudoR2",
+            "keys": {
+              "mcfadden": {
+                "type": "number|null",
+                "help": "McFadden"
+              },
+              "nagelkerke": {
+                "type": "number|null",
+                "help": "Nagelkerke"
+              },
+              "coxSnell": {
+                "type": "number|null",
+                "help": "Cox-Snell"
+              }
+            }
+          },
+          "coefficients": {
+            "type": "GlmCoefficient[]",
+            "help": "Koeffiziententabelle",
+            "keysOf": "GlmCoefficient",
+            "keys": {
+              "term": {
+                "type": "string",
+                "help": "Term"
+              },
+              "estimate": {
+                "type": "number|null",
+                "help": "Schätzwert"
+              },
+              "se": {
+                "type": "number|null",
+                "help": "Standardfehler"
+              },
+              "z": {
+                "type": "number|null",
+                "help": "Wald-z"
+              },
+              "p": {
+                "type": "number|null",
+                "help": "p-Wert"
+              },
+              "ciLower": {
+                "type": "number|null",
+                "help": "untere Konfidenzgrenze"
+              },
+              "ciUpper": {
+                "type": "number|null",
+                "help": "obere Konfidenzgrenze"
+              },
+              "ratio": {
+                "type": "Ratio|null",
+                "help": "Odds bzw. Rate Ratio",
+                "keysOf": "Ratio",
+                "keys": {
+                  "value": {
+                    "type": "number|null",
+                    "help": "Verhältnis"
+                  },
+                  "lower": {
+                    "type": "number|null",
+                    "help": "untere Grenze"
+                  },
+                  "upper": {
+                    "type": "number|null",
+                    "help": "obere Grenze"
+                  }
+                }
+              }
+            }
+          },
+          "auc": {
+            "type": "number|null",
+            "help": "Fläche unter der ROC-Kurve, nur binomial"
+          },
+          "hosmerLemeshow": {
+            "type": "HosmerLemeshow|null",
+            "help": "Anpassungstest, nur binomial",
+            "keysOf": "HosmerLemeshow",
+            "keys": {
+              "statistic": {
+                "type": "number|null",
+                "help": "χ²-Statistik"
+              },
+              "pValue": {
+                "type": "number|null",
+                "help": "p-Wert"
+              }
+            }
+          },
+          "overdispersionRatio": {
+            "type": "number|null",
+            "help": "Pearson-χ² je Freiheitsgrad, nur Poisson"
+          },
+          "overdispersion": {
+            "type": "Overdispersion|null",
+            "help": "Überdispersionsprüfung, nur Poisson",
+            "keysOf": "Overdispersion",
+            "keys": {
+              "pearsonChi2": {
+                "type": "number|null",
+                "help": "Pearson-χ²"
+              },
+              "df": {
+                "type": "number|null",
+                "help": "Freiheitsgrade"
+              },
+              "ratio": {
+                "type": "number|null",
+                "help": "χ² je Freiheitsgrad"
+              },
+              "overdispersed": {
+                "type": "boolean",
+                "help": "überdispers"
+              }
+            }
+          },
+          "vif": {
+            "type": "Array<number|null>|null",
+            "help": "Varianzinflationsfaktoren je Prädiktor"
+          },
+          "warnings": {
+            "type": "string[]",
+            "help": "Warnungen"
+          },
+          "equation": {
+            "type": "string|null",
+            "help": "Modellgleichung"
+          }
+        }
       },
       "classification": {
-        "type": "object|null",
+        "type": "Classification|null",
         "help": "confusion table and rates at `cutoff`, binomial only",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Classification",
+        "keys": {
+          "cutoff": {
+            "type": "number",
+            "help": "Schwelle"
+          },
+          "tp": {
+            "type": "number",
+            "help": "richtig positiv"
+          },
+          "fn": {
+            "type": "number",
+            "help": "falsch negativ"
+          },
+          "fp": {
+            "type": "number",
+            "help": "falsch positiv"
+          },
+          "tn": {
+            "type": "number",
+            "help": "richtig negativ"
+          },
+          "sensitivity": {
+            "type": "number|null",
+            "help": "Sensitivität"
+          },
+          "specificity": {
+            "type": "number|null",
+            "help": "Spezifität"
+          },
+          "accuracy": {
+            "type": "number|null",
+            "help": "Trefferquote"
+          },
+          "precision": {
+            "type": "number|null",
+            "help": "Präzision"
+          }
+        }
       },
       "errorMsg": {
         "type": "string",

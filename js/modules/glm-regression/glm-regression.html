@@ -4,12 +4,12 @@
     <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
 
     <div class="field-group">
-      <label x-text="t('selectColumns')"></label>
+      <label data-help-key="modules.glm-regression.actions.setColumns.help" x-text="t('selectColumns')"></label>
       <div data-ref="picker-cols"></div>
     </div>
 
     <div class="field-group">
-      <label x-text="t('columnY')"></label>
+      <label data-help-key="modules.glm-regression.actions.setColumn.help" x-text="t('columnY')"></label>
       <select class="field" data-ref="y-select" @change="onYChange($event)">
         <option value="" :selected="!model.yKey" x-text="t('selectYHint')"></option>
         <template x-for="opt in yOptions()" :key="opt.key">
@@ -19,7 +19,7 @@
     </div>
 
     <div class="field-group">
-      <label><span x-text="t('columnTrials')"></span> <span class="dmike-hint" x-text="t('columnTrialsHint')"></span></label>
+      <label data-help-key="modules.glm-regression.actions.setColumn.help"><span x-text="t('columnTrials')"></span> <span class="dmike-hint" x-text="t('columnTrialsHint')"></span></label>
       <select class="field" data-ref="trials-select" @change="onTrialsChange($event)">
         <option value="" :selected="!model.trialsKey" x-text="t('trialsNone')"></option>
         <template x-for="opt in trialsOptions()" :key="opt.key">
@@ -28,7 +28,7 @@
       </select>
     </div>
 
-    <div class="dmike-split__section-title" x-text="t('sectionMethod')"></div>
+    <div class="dmike-split__section-title"><span data-help-key="modules.glm-regression.types.Params.method" x-text="t('sectionMethod')"></span></div>
 
     <div class="glm__method-group" data-ref="method-group" @change="onMethodChange($event)">
       <template x-for="opt in methodOptions()" :key="opt.value">
@@ -45,12 +45,12 @@
 
     <div class="field-row">
       <div class="field-group field-group--grow">
-        <label><span x-text="t('confLevel')"></span> (%)</label>
+        <label data-help-key="modules.glm-regression.types.Params.confLevel"><span x-text="t('confLevel')"></span> (%)</label>
         <input type="text" class="field field--num" data-ref="conf-level" inputmode="decimal"
           :value="confDisplay()" placeholder="95" @change="onConfChange($event)">
       </div>
       <div class="field-group field-group--grow">
-        <label><span x-text="t('alphaRisk')"></span> (%)</label>
+        <label data-help-key="modules.glm-regression.types.Params.alpha"><span x-text="t('alphaRisk')"></span> (%)</label>
         <input type="text" class="field field--num" data-ref="alpha-level" inputmode="decimal"
           :value="alphaDisplay()" placeholder="5" @change="onAlphaChange($event)">
       </div>
@@ -81,7 +81,7 @@
             </template>
 
             <div class="glm__model-actions">
-              <button class="btn btn--primary" data-action="save-as-model" type="button"
+              <button class="btn btn--primary" data-action="save-as-model" type="button" data-help-key="modules.glm-regression.actions.saveAsModel.help"
                 :title="t('saveAsModelHint')" @click="saveAsModel()"
                 x-text="model.savedModelId ? t('updateModel') : t('saveAsModel')"></button>
               <span class="glm__model-status" data-ref="model-status"
@@ -92,11 +92,11 @@
             <div class="glm__quality-grid">
               <template x-for="item in result.summaryItems" :key="item.label">
                 <div class="glm__quality-item">
-                  <span class="glm__quality-label" x-text="item.label"></span>
+                  <span class="glm__quality-label" :data-help-key="item.help" x-text="item.label"></span>
                   <span class="glm__quality-value">
                     <span x-text="item.value"></span>
                     <template x-if="item.swap">
-                      <button class="btn btn--xs" data-action="swap-success" type="button"
+                      <button class="btn btn--xs" data-action="swap-success" type="button" data-help-key="modules.glm-regression.actions.swapSuccess.help"
                         :title="t('swapSuccessTitle')" @click="swapSuccess()"
                         x-text="item.swap"></button>
                     </template>
@@ -110,7 +110,7 @@
               <template x-for="kpi in result.kpis" :key="kpi.label">
                 <div class="dmike-kpi" :class="kpi.mod">
                   <div class="dmike-kpi-value" x-text="kpi.value"></div>
-                  <div class="dmike-kpi-label" x-text="kpi.label"></div>
+                  <div class="dmike-kpi-label" :data-help-key="kpi.help" x-text="kpi.label"></div>
                 </div>
               </template>
             </div>
@@ -119,25 +119,25 @@
             <div class="glm__quality-grid">
               <template x-for="item in result.qualityItems" :key="item.label">
                 <div class="glm__quality-item">
-                  <span class="glm__quality-label" x-text="item.label"></span>
+                  <span class="glm__quality-label" :data-help-key="item.help" x-text="item.label"></span>
                   <span class="glm__quality-value" x-text="item.value"></span>
                 </div>
               </template>
             </div>
 
-            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('equation')"></span></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.glm-regression.types.Result.equation" x-text="t('equation')"></span></div>
             <div class="glm__equation" x-text="result.equation"></div>
 
             <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('coefTable')"></span></div>
             <table class="glm__coef-table">
               <thead><tr>
-                <th x-text="t('term')"></th>
-                <th x-text="t('coefficient')"></th>
-                <th>SE</th>
-                <th>z</th>
-                <th x-text="t('pValue')"></th>
+                <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.term" x-text="t('term')"></span></th>
+                <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.estimate" x-text="t('coefficient')"></span></th>
+                <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.se">SE</span></th>
+                <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.z">z</span></th>
+                <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.p" x-text="t('pValue')"></span></th>
                 <template x-if="result.ratioHeader">
-                  <th x-text="result.ratioHeader"></th>
+                  <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.ratio" x-text="result.ratioHeader"></span></th>
                 </template>
                 <th></th>
               </tr></thead>
@@ -185,7 +185,7 @@
               <div>
                 <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span>VIF</span></div>
                 <table class="glm__coef-table">
-                  <thead><tr><th x-text="t('term')"></th><th>VIF</th><th></th></tr></thead>
+                  <thead><tr><th><span data-help-key="modules.glm-regression.types.GlmCoefficient.term" x-text="t('term')"></span></th><th><span data-help-key="modules.glm-regression.types.Result.vif">VIF</span></th><th></th></tr></thead>
                   <tbody>
                     <template x-for="row in result.vifRows" :key="row.term">
                       <tr>
@@ -208,7 +208,7 @@
                 <div class="glm__quality-grid">
                   <template x-for="item in result.overdispersion.items" :key="item.label">
                     <div class="glm__quality-item">
-                      <span class="glm__quality-label" x-text="item.label"></span>
+                      <span class="glm__quality-label" :data-help-key="item.help" x-text="item.label"></span>
                       <span class="glm__quality-value" x-text="item.value"></span>
                     </div>
                   </template>
@@ -234,7 +234,7 @@
               <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('classificationTitle')"></span></div>
 
               <div class="glm__cutoff-row">
-                <label x-text="t('cutoff')"></label>
+                <label data-help-key="modules.glm-regression.types.Params.cutoff" x-text="t('cutoff')"></label>
                 <input type="range" min="0" max="1" step="0.01" :value="model.cutoff"
                   data-ref="cutoff-slider" @input="onCutoff($event)">
                 <span class="glm__cutoff-value" data-ref="cutoff-display" x-text="cutoffDisplay()"></span>
@@ -242,18 +242,18 @@
 
               <table class="glm__class-table">
                 <thead>
-                  <tr><th></th><th><span x-text="t('predicted')"></span> 1</th><th><span x-text="t('predicted')"></span> 0</th></tr>
+                  <tr><th></th><th><span data-help-key="modules.glm-regression.types.Classification.cutoff"><span x-text="t('predicted')"></span> 1</span></th><th><span data-help-key="modules.glm-regression.types.Classification.cutoff"><span x-text="t('predicted')"></span> 0</span></th></tr>
                 </thead>
                 <tbody>
-                  <tr><th><span x-text="t('actual')"></span> 1</th><td class="glm__tp" x-text="classView().tp"></td><td class="glm__fn" x-text="classView().fn"></td></tr>
-                  <tr><th><span x-text="t('actual')"></span> 0</th><td class="glm__fp" x-text="classView().fp"></td><td class="glm__tn" x-text="classView().tn"></td></tr>
+                  <tr><th><span data-help-key="modules.glm-regression.types.Classification.sensitivity"><span x-text="t('actual')"></span> 1</span></th><td class="glm__tp" x-text="classView().tp"></td><td class="glm__fn" x-text="classView().fn"></td></tr>
+                  <tr><th><span data-help-key="modules.glm-regression.types.Classification.specificity"><span x-text="t('actual')"></span> 0</span></th><td class="glm__fp" x-text="classView().fp"></td><td class="glm__tn" x-text="classView().tn"></td></tr>
                 </tbody>
               </table>
 
               <div class="glm__quality-grid" data-ref="class-metrics">
                 <template x-for="item in classView().metrics" :key="item.label">
                   <div class="glm__quality-item">
-                    <span class="glm__quality-label" x-text="item.label"></span>
+                    <span class="glm__quality-label" :data-help-key="item.help" x-text="item.label"></span>
                     <span class="glm__quality-value" x-text="item.value"></span>
                   </div>
                 </template>
@@ -262,7 +262,7 @@
               <template x-if="result.aucText">
                 <div class="glm__quality-grid">
                   <div class="glm__quality-item">
-                    <span class="glm__quality-label">AUC</span>
+                    <span class="glm__quality-label" data-help-key="modules.glm-regression.types.Result.auc">AUC</span>
                     <span class="glm__quality-value" x-text="result.aucText"></span>
                   </div>
                 </div>
@@ -288,7 +288,7 @@
               </template>
             </div>
 
-            <button class="btn btn--xs" data-action="predict" type="button"
+            <button class="btn btn--xs" data-action="predict" type="button" data-help-key="modules.glm-regression.actions.predict.help"
               @click="runPrediction()" x-text="t('predictCalc')"></button>
             <div class="glm__predict-result" data-ref="predict-result"
               :style="(predictResult || predictError) ? '' : 'display:none'">

@@ -90,6 +90,8 @@ function eventsPerPredictor(y, weights, p) {
   return Math.min(events, total - events) / (p - 1);
 }
 
+/** Präfix der Kontexthilfe-Sätze (`types.<Typedef>.<schlüssel>`). */
+const HELP = 'modules.glm-regression.types.';
 /** Die Parameter, die `setParam` annimmt (flach am Model). */
 const PARAM_KEYS = ['method', 'confLevel', 'alpha', 'cutoff'];
 /** i18n-Schlüssel der Verfahrensnamen, je Wert aus METHODS. */
@@ -129,6 +131,118 @@ const COLUMN_SINKS = {
 function num(v) { return typeof v === 'number' && Number.isFinite(v) ? v : null; }
 
 /**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {'auto'|'binomial'|'poisson'|'negbin'} method  Verteilungsfamilie
+ * @property {number} confLevel  Konfidenzniveau als Anteil
+ * @property {number} alpha  Signifikanzniveau als Anteil
+ * @property {number} [cutoff]  Klassifikationsschwelle, nur binomial
+ */
+
+/**
+ * Das gerechnete Ergebnis (`_agentResult()`), wie `read().result` es liefert.
+ *
+ * @typedef {object} Result
+ * @property {Family} family  Verteilung und Linkfunktion
+ * @property {boolean} quasi  Quasi-Poisson aktiv
+ * @property {string|null} autoReason  Grund der automatischen Wahl
+ * @property {number|null} n  verwertete Zeilen
+ * @property {number|null} iterations  IRLS-Iterationen
+ * @property {number|null} aic  Akaike-Informationskriterium
+ * @property {number|null} bic  Bayes-Informationskriterium
+ * @property {number|null} deviance  Residualdevianz
+ * @property {number|null} nullDeviance  Nulldevianz
+ * @property {number|null} logLikelihood  Log-Likelihood
+ * @property {PseudoR2} pseudoR2  Pseudo-Bestimmtheitsmaße
+ * @property {GlmCoefficient[]} coefficients  Koeffiziententabelle
+ * @property {number|null} auc  Fläche unter der ROC-Kurve, nur binomial
+ * @property {HosmerLemeshow|null} hosmerLemeshow  Anpassungstest, nur binomial
+ * @property {number|null} overdispersionRatio  Pearson-χ² je Freiheitsgrad, nur Poisson
+ * @property {Overdispersion|null} overdispersion  Überdispersionsprüfung, nur Poisson
+ * @property {Array<number|null>|null} vif  Varianzinflationsfaktoren je Prädiktor
+ * @property {string[]} warnings  Warnungen
+ * @property {string|null} equation  Modellgleichung
+ */
+
+/**
+ * @typedef {object} Family
+ * @property {'binomial'|'poisson'|'negbin'} name  Verteilungsfamilie
+ * @property {'logit'|'log'} link  Linkfunktion
+ * @property {number|null} theta  Formparameter, nur negbin
+ */
+
+/**
+ * @typedef {object} PseudoR2
+ * @property {number|null} mcfadden  McFadden
+ * @property {number|null} nagelkerke  Nagelkerke
+ * @property {number|null} coxSnell  Cox-Snell
+ */
+
+/**
+ * @typedef {object} GlmCoefficient
+ * @property {string} term  Term
+ * @property {number|null} estimate  Schätzwert
+ * @property {number|null} se  Standardfehler
+ * @property {number|null} z  Wald-z
+ * @property {number|null} p  p-Wert
+ * @property {number|null} ciLower  untere Konfidenzgrenze
+ * @property {number|null} ciUpper  obere Konfidenzgrenze
+ * @property {Ratio|null} ratio  Odds bzw. Rate Ratio
+ */
+
+/**
+ * @typedef {object} Ratio
+ * @property {number|null} value  Verhältnis
+ * @property {number|null} lower  untere Grenze
+ * @property {number|null} upper  obere Grenze
+ */
+
+/**
+ * @typedef {object} HosmerLemeshow
+ * @property {number|null} statistic  χ²-Statistik
+ * @property {number|null} pValue  p-Wert
+ */
+
+/**
+ * @typedef {object} Overdispersion
+ * @property {number|null} pearsonChi2  Pearson-χ²
+ * @property {number|null} df  Freiheitsgrade
+ * @property {number|null} ratio  χ² je Freiheitsgrad
+ * @property {boolean} overdispersed  überdispers
+ */
+
+/**
+ * Die Konfusionstafel bei der gewählten Schwelle, nur bei binomialem Fit.
+ *
+ * @typedef {object} Classification
+ * @property {number} cutoff  Schwelle
+ * @property {number} tp  richtig positiv
+ * @property {number} fn  falsch negativ
+ * @property {number} fp  falsch positiv
+ * @property {number} tn  richtig negativ
+ * @property {number|null} sensitivity  Sensitivität
+ * @property {number|null} specificity  Spezifität
+ * @property {number|null} accuracy  Trefferquote
+ * @property {number|null} precision  Präzision
+ */
+
+/**
+ * Die Überdispersionsprüfung als Zahlen — dieselbe Quelle für die Lesefläche
+ * und den Anzeigeblock „Überdispersion“.
+ * @param {object|null|undefined} od `r._overdispersion` der Engine
+ * @returns {Overdispersion|null} null ohne Poisson-Prüfung
+ */
+function overdispersionOf(od) {
+  if (!od) return null;
+  return {
+    pearsonChi2: num(od.pearsonChi2), df: num(od.df), ratio: num(od.ratio),
+    overdispersed: Boolean(od.overdispersed),
+  };
+}
+
+/**
  * Die Agenten-Lesefläche der GLM-Regression.
  *
  * Ergebnis im Viewmodel (`_fit`) und verschlankt im Model; die Lesefläche
@@ -150,8 +264,8 @@ function num(v) { return typeof v === 'number' && Number.isFinite(v) ? v : null;
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
  * @property {string[]} activeMultiSlots  the slots `setColumns` accepts
  * @property {object} pickableColumns  per slot the columns `setColumn`/`setColumns` accept, each `{ key, name }`
- * @property {object|null} result  the fit as numbers, null without a shown result
- * @property {object|null} classification  confusion table and rates at `cutoff`, binomial only
+ * @property {Result|null} result  the fit as numbers, null without a shown result
+ * @property {Classification|null} classification  confusion table and rates at `cutoff`, binomial only
  * @property {string} errorMsg  the message the module shows, '' without error
  * @property {string[]} predictionTerms  the terms `predict` takes, in model order
  * @property {{ linear: number, response: number, ciLower: number|null, ciUpper: number|null }|null} prediction  the last prediction, null without one or without a shown result
@@ -266,8 +380,10 @@ const mod = createModule({
           auc: num(r._roc?.auc),
           hosmerLemeshow: r._hl ? { statistic: num(r._hl.statistic), pValue: num(r._hl.pValue) } : null,
           overdispersionRatio: num(r._overdispersion?.ratio),
+          overdispersion: overdispersionOf(r._overdispersion),
           vif: Array.isArray(r._vifs) ? r._vifs.map(num) : null,
           warnings: [...(this.result?.warnings ?? [])],
+          equation: this.buildEquation(r) ?? null,
         };
       },
 
@@ -350,9 +466,8 @@ const mod = createModule({
        * Einen Parameter setzen. `method`, `confLevel` und `alpha` rechnen neu;
        * `cutoff` rechnet nur die Klassifikationstafel neu.
        * @agent
-       * @param {'method'|'confLevel'|'alpha'|'cutoff'} key welcher Parameter; `activeParams` nennt die jetzt gültigen
-       * @param {string|number} value method: einer aus `methods`; confLevel, alpha: ein Anteil
-       *   größer 0 und kleiner 1, das andere wird 1 minus diesem Wert; cutoff: eine Zahl von 0 bis 1
+       * @param {keyof Params} key welcher Parameter; `activeParams` nennt die jetzt gültigen
+       * @param {string|number} value der Wert, siehe `Params`
        * @returns {void}
        * @throws {Error} wenn `key` jetzt nicht gilt oder `value` außerhalb seiner Menge liegt
        */
@@ -451,10 +566,10 @@ const mod = createModule({
         return {
           tp: ct.tp, fn: ct.fn, fp: ct.fp, tn: ct.tn,
           metrics: [
-            { label: _t('sensitivity'), value: fmt(ct.sensitivity, 4) },
-            { label: _t('specificity'), value: fmt(ct.specificity, 4) },
-            { label: _t('accuracy'), value: fmt(ct.accuracy, 4) },
-            { label: _t('precision'), value: fmt(ct.precision, 4) },
+            { label: _t('sensitivity'), value: fmt(ct.sensitivity, 4), help: `${HELP}Classification.sensitivity` },
+            { label: _t('specificity'), value: fmt(ct.specificity, 4), help: `${HELP}Classification.specificity` },
+            { label: _t('accuracy'), value: fmt(ct.accuracy, 4), help: `${HELP}Classification.accuracy` },
+            { label: _t('precision'), value: fmt(ct.precision, 4), help: `${HELP}Classification.precision` },
           ],
         };
       },
@@ -725,19 +840,20 @@ const mod = createModule({
 
         // Summary items (family / link / n / iters / theta / success-class)
         const summaryItems = [
-          { label: _t('family'), value: _t(`family_${  r.family.name}`) },
-          { label: _t('linkFunction'), value: r.family.link },
-          { label: 'n', value: String(r.n) },
-          { label: _t('iterations'), value: String(r.iterations) },
+          { label: _t('family'), value: _t(`family_${  r.family.name}`), help: `${HELP}Family.name` },
+          { label: _t('linkFunction'), value: r.family.link, help: `${HELP}Family.link` },
+          { label: 'n', value: String(r.n), help: `${HELP}Result.n` },
+          { label: _t('iterations'), value: String(r.iterations), help: `${HELP}Result.iterations` },
         ];
         if (r.family.theta != null) {
-          summaryItems.push({ label: `${THETA} (dispersion)`, value: fmt(r.family.theta, 3) });
+          summaryItems.push({ label: `${THETA} (dispersion)`, value: fmt(r.family.theta, 3), help: `${HELP}Family.theta` });
         }
         if (r._successClassInfo) {
           summaryItems.push({
             label: _t('successClass'),
             value: String(r._successClassInfo.success),
             swap: `${SWAP} ${String(r._successClassInfo.failure)}`,
+            help: 'modules.glm-regression.fields.successClass.help',
           });
         }
 
@@ -747,28 +863,29 @@ const mod = createModule({
         const mcfClass = mcfR2 >= 0.4 ? 'dmike-kpi--good' : mcfR2 >= 0.2 ? 'dmike-kpi--warn' : 'dmike-kpi--bad';
         const nagClass = nagR2 >= 0.8 ? 'dmike-kpi--good' : nagR2 >= 0.5 ? 'dmike-kpi--warn' : 'dmike-kpi--bad';
         const kpis = [
-          { value: fmt(mcfR2, 4), label: 'McFadden R²', mod: mcfClass },
-          { value: fmt(nagR2, 4), label: 'Nagelkerke R²', mod: nagClass },
-          { value: fmt(r.aic, 2), label: 'AIC', mod: '' },
-          { value: fmt(r.bic, 2), label: 'BIC', mod: '' },
+          { value: fmt(mcfR2, 4), label: 'McFadden R²', mod: mcfClass, help: `${HELP}PseudoR2.mcfadden` },
+          { value: fmt(nagR2, 4), label: 'Nagelkerke R²', mod: nagClass, help: `${HELP}PseudoR2.nagelkerke` },
+          { value: fmt(r.aic, 2), label: 'AIC', mod: '', help: `${HELP}Result.aic` },
+          { value: fmt(r.bic, 2), label: 'BIC', mod: '', help: `${HELP}Result.bic` },
         ];
         if (isBinomial && r._roc) {
           const aucClass = r._roc.auc >= 0.8 ? 'dmike-kpi--good' : r._roc.auc >= 0.6 ? 'dmike-kpi--warn' : 'dmike-kpi--bad';
-          kpis.push({ value: fmt(r._roc.auc, 4), label: 'AUC', mod: aucClass });
+          kpis.push({ value: fmt(r._roc.auc, 4), label: 'AUC', mod: aucClass, help: `${HELP}Result.auc` });
         }
 
         // Quality items
         const qualityItems = [
-          { label: _t('deviance'), value: fmt(r.deviance, 4) },
-          { label: _t('nullDeviance'), value: fmt(r.nullDeviance, 4) },
-          { label: _t('logLikelihood'), value: fmt(r.logLikelihood, 4) },
-          { label: 'Cox-Snell R²', value: fmt(r.pseudoR2.coxSnell, 4) },
+          { label: _t('deviance'), value: fmt(r.deviance, 4), help: `${HELP}Result.deviance` },
+          { label: _t('nullDeviance'), value: fmt(r.nullDeviance, 4), help: `${HELP}Result.nullDeviance` },
+          { label: _t('logLikelihood'), value: fmt(r.logLikelihood, 4), help: `${HELP}Result.logLikelihood` },
+          { label: 'Cox-Snell R²', value: fmt(r.pseudoR2.coxSnell, 4), help: `${HELP}PseudoR2.coxSnell` },
         ];
         if (isBinomial && r._hl) {
-          qualityItems.push({ label: _t('hosmerLemeshow'), value: `${CHI2} = ${fmt(r._hl.statistic, 3)}, p = ${fmtP(r._hl.pValue)}` });
+          qualityItems.push({ label: _t('hosmerLemeshow'), value: `${CHI2} = ${fmt(r._hl.statistic, 3)}, p = ${fmtP(r._hl.pValue)}`, help: `${HELP}Result.hosmerLemeshow` });
         }
-        if (r._overdispersion) {
-          qualityItems.push({ label: _t('overdispersionRatio'), value: fmt(r._overdispersion.ratio, 3) });
+        const od = overdispersionOf(r._overdispersion);
+        if (od) {
+          qualityItems.push({ label: _t('overdispersionRatio'), value: fmt(od.ratio, 3), help: `${HELP}Result.overdispersionRatio` });
         }
 
         // Coefficient table
@@ -808,13 +925,12 @@ const mod = createModule({
 
         // Overdispersion block
         let overdispersion = null;
-        if (r._overdispersion) {
-          const od = r._overdispersion;
+        if (od) {
           overdispersion = {
             items: [
-              { label: `Pearson ${CHI2}`, value: fmt(od.pearsonChi2, 3) },
-              { label: 'df', value: String(od.df) },
-              { label: `${CHI2}/df`, value: fmt(od.ratio, 3) },
+              { label: `Pearson ${CHI2}`, value: fmt(od.pearsonChi2, 3), help: `${HELP}Overdispersion.pearsonChi2` },
+              { label: 'df', value: String(od.df), help: `${HELP}Overdispersion.df` },
+              { label: `${CHI2}/df`, value: fmt(od.ratio, 3), help: `${HELP}Overdispersion.ratio` },
             ],
             hint: od.overdispersed ? _t('overdispersionHint') : null,
           };

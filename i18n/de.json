@@ -9628,14 +9628,14 @@
           "help": "Liefert die Eingaben (X, Y, Versuchszahl, Verfahren, Konfidenz, α, Schwelle), die Mengen, die die Aktionen jetzt annehmen, und den Fit als Zahlen in result (null ohne gezeigten Fit oder nach einem Fehlschlag; errorMsg nennt dann den Grund). Wird Y oder X geleert, bleibt das letzte Ergebnis in result stehen."
         },
         "setColumns": {
-          "help": "Ersetzt die Einflussgrößen X; die Reihenfolge bleibt, Doppelte zählen einmal, Textspalten werden kategoriale Prädiktoren. Steht Y unter den neuen X, wird yKey geleert. Rechnet neu, wenn X und Y gewählt sind.",
+          "help": "Die Spalten einer Datensammlung, die diese Rolle liefern; nach einer Änderung wird neu gerechnet. Die Reihenfolge bleibt erhalten, doppelt gewählte Spalten zählen einmal, Textspalten werden kategoriale Prädiktoren; ist die Zielgröße unter den neuen Einflussgrößen, wird sie geleert.",
           "params": {
             "slot": "Einer der Slots aus activeMultiSlots; dieses Modul führt nur 'x'.",
             "refs": "Liste von Spaltenbezügen { instanceId, sheetId, columnId } aus pickableColumns.x, in Reihenfolge; [] leert X."
           }
         },
         "setColumn": {
-          "help": "Setzt die Zielgröße (Slot 'y') oder die Spalte mit der Versuchszahl (Slot 'trials', gruppierte binomiale Daten; Y wird dann als Anteil gelesen), oder leert sie mit null. Y auf die Spalte der Versuchszahl leert trialsKey. Rechnet neu, wenn X und Y gewählt sind.",
+          "help": "Die Spalte einer Datensammlung, die diese Rolle liefert; nach einer Änderung wird neu gerechnet. Für gruppierte Daten liefert eine zweite Spalte die Zahl der Versuche; die Zielgröße wird dann als Anteil gelesen.",
           "params": {
             "slot": "Einer der Slots aus activeColumnSlots: 'y' oder 'trials'.",
             "ref": "Spaltenbezug { instanceId, sheetId, columnId } aus pickableColumns.y (die nicht als X gewählten Spalten) oder pickableColumns.trials (zusätzlich ohne Y), oder null zum Leeren."
@@ -9644,12 +9644,12 @@
         "setParam": {
           "help": "Setzt das Verfahren, das Konfidenzniveau, α oder die Klassifikationsschwelle. method, confLevel und alpha rechnen neu; cutoff rechnet nur classification neu.",
           "params": {
-            "key": "Einer von method, confLevel, alpha, cutoff; activeParams nennt die jetzt gültigen (cutoff nur bei binomialem Ergebnis).",
-            "value": "method: einer der Werte aus methods; confLevel, alpha: Anteil größer 0 und kleiner 1 (0.95, nicht 95), das jeweils andere wird zu 1 minus diesem Wert; cutoff: Zahl von 0 bis 1, nur bei binomialem Ergebnis."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys. confLevel und alpha als Anteil; das jeweils andere wird zu 1 minus diesem Wert."
           }
         },
         "swapSuccess": {
-          "help": "Tauscht bei binärer Zielgröße Erfolg und Misserfolg und rechnet neu; successClass zieht nach. Ohne binäres Ergebnis geschieht nichts."
+          "help": "Tauscht bei binärer Zielgröße, welche Stufe als Erfolg zählt, und rechnet neu; die Koeffizienten wechseln dabei das Vorzeichen, die Odds Ratios werden zu ihren Kehrwerten. Ohne binäres Ergebnis geschieht nichts."
         },
         "autoRun": {
           "help": "Rechnet, wenn X und Y gewählt sind; sonst geschieht nichts, und ein früheres Ergebnis bleibt stehen."
@@ -9658,10 +9658,10 @@
           "help": "Rechnet jetzt. Ohne X, ohne Y oder mit weniger als drei Zeilen wird das Ergebnis verworfen, und errorMsg nennt den Grund."
         },
         "saveAsModel": {
-          "help": "Speichert den gezeigten Fit in die Projektmodelle (neu oder als Aktualisierung des zuletzt gespeicherten) und gibt seine id zurück; savedModelId zieht nach. Gibt null ohne konvergierten Fit oder wenn die Zielgröße keine Werte hat."
+          "help": "Speichert die gezeigte Anpassung in die Projektmodelle, neu oder als Aktualisierung des zuletzt gespeicherten Modells, damit andere Werkzeuge sie nutzen können. Ohne konvergierte Anpassung oder ohne Werte der Zielgröße wird nichts gespeichert."
         },
         "predict": {
-          "help": "Gibt Zielgröße und Konfidenzgrenzen für die angegebenen Werte der Terme aus predictionTerms zurück (linear, response, ciLower, ciUpper; die Grenzen sind null, wenn der Fit sie nicht trägt) und füllt prediction. Gibt null zurück, wenn ein Term ohne Wert bleibt oder kein Ergebnis vorliegt; das ist keine Absage.",
+          "help": "Berechnet für die eingegebenen Werte der Terme die vorhergesagte Zielgröße mit Konfidenzgrenzen, als Wahrscheinlichkeit bei binomial und als erwartete Zahl bei Poisson und Negativ-Binomial. Die Grenzen fehlen, wenn die Anpassung sie nicht trägt; bleibt ein Term ohne Wert oder gibt es kein Ergebnis, gibt es keine Vorhersage.",
           "params": {
             "values": "Ein Objekt mit einer Zahl je Term aus predictionTerms; kategoriale Prädiktoren als 0/1 je Dummy-Term. Fehlende Terme lassen das Ergebnis null."
           }
@@ -9693,7 +9693,7 @@
           "help": "Klassifikationsschwelle eines binomialen Fits, von 0 bis 1."
         },
         "successClass": {
-          "help": "Bei binärer Zielgröße die als Erfolg gezählte Stufe und die andere, { success, failure }; sonst null."
+          "help": "Bei binärer Zielgröße die Stufe, die als Erfolg (1) gezählt wird, und die andere als Misserfolg; der Knopf daneben tauscht sie. Leer ohne binäre Zielgröße."
         },
         "activeParams": {
           "help": "Die Schlüssel, die setParam jetzt annimmt."
@@ -9708,10 +9708,10 @@
           "help": "Je Slot (x, y, trials) die Spalten, die setColumns/setColumn annehmen, je { key, name }."
         },
         "result": {
-          "help": "Der Fit als Zahlen: family, quasi, autoReason, n, iterations, aic, bic, deviance, nullDeviance, logLikelihood, pseudoR2, coefficients (mit Odds- bzw. Ratenverhältnis), auc, hosmerLemeshow, overdispersionRatio, vif, warnings; null ohne gezeigten Fit."
+          "help": "Das angepasste verallgemeinerte lineare Modell, jede Kennzahl unter keys einzeln beschrieben; null, ohne gezeigte Anpassung."
         },
         "classification": {
-          "help": "Bei binomialem Fit die Konfusionstafel (tp, fn, fp, tn) und die Raten zur Schwelle cutoff; sonst null."
+          "help": "Die Konfusionstafel bei der Schwelle, jede Kennzahl unter keys einzeln beschrieben; null, ohne binomiales Ergebnis."
         },
         "errorMsg": {
           "help": "Die Meldung des letzten Fehlschlags, '' ohne Fehler."
@@ -9724,6 +9724,81 @@
         },
         "prediction": {
           "help": "Die letzte Vorhersage als Zahlen (linear, response, ciLower, ciUpper), oder null ohne Vorhersage, nach neuem Fit oder ohne gezeigtes Ergebnis."
+        }
+      },
+      "types": {
+        "Params": {
+          "method": "Die Verteilungsfamilie, Abschnitt Verfahren: Auto-Erkennung, Binomial (logistische Regression mit Logit-Link), Poisson oder Negativ-Binomial (beide mit Log-Link). Die Auto-Erkennung wählt binomial bei genau zwei Ausprägungen der Zielgröße, bei ganzzahligen, nicht negativen Werten negativ-binomial, wenn Varianz/Mittelwert über 2 liegt, sonst Poisson; Anteile zwischen 0 und 1 rechnet sie binomial, braucht dafür aber eine Spalte mit der Zahl der Versuche. Eine Änderung rechnet neu.",
+          "confLevel": "Das Konfidenzniveau als Anteil zwischen 0 und 1, also 0,95 statt 95; das Eingabefeld zeigt es in Prozent. Es bestimmt die Konfidenzgrenzen der Koeffizienten, der Verhältnisse und der Vorhersage. Das Signifikanzniveau wird dabei zu 1 minus diesem Wert. Eine Änderung rechnet neu.",
+          "alpha": "Das Signifikanzniveau α als Anteil zwischen 0 und 1, also 0,05 statt 5; das Eingabefeld zeigt es in Prozent. Das Konfidenzniveau wird dabei zu 1 minus diesem Wert, die Konfidenzgrenzen ändern sich entsprechend. Eine Änderung rechnet neu.",
+          "cutoff": "Die Klassifikationsschwelle zwischen 0 und 1, voreingestellt 0,5, im Reiter ROC am Schieberegler: Eine Beobachtung gilt als vorhergesagt 1, wenn ihre geschätzte Wahrscheinlichkeit mindestens die Schwelle erreicht. Ein neuer Wert zählt nur die Konfusionstafel und ihre Raten neu, das Modell wird nicht neu angepasst. Nur bei binomialem Ergebnis wählbar."
+        },
+        "Result": {
+          "family": "Die tatsächlich angepasste Verteilungsfamilie mit Link-Funktion und, bei Negativ-Binomial, dem geschätzten θ; bei Auto-Erkennung die gewählte Familie.",
+          "quasi": "Ob Quasi-Poisson aktiv ist: Zeigt die Poisson-Anpassung χ²/df über 1,5, wird mit der Dispersion φ = Pearson-χ²/df neu gerechnet; die Koeffizienten bleiben, Standardfehler und Konfidenzintervalle werden um √φ vergrößert, und eine Warnung nennt φ.",
+          "autoReason": "Der Grund der automatischen Wahl als Kennung des Hinweistextes unter dem Verfahren: genau zwei Ausprägungen, Zähldaten, Zähldaten mit Überdispersion, Anteile ohne Versuchszahl oder nicht negative Werte als Rückfall. Leer, wenn das Verfahren fest gewählt ist.",
+          "n": "Zahl der verwerteten Zeilen, Zeile n: Zeilen mit endlichen Werten in Y, allen X und gegebenenfalls der Versuchszahl.",
+          "iterations": "Zahl der IRLS-Iterationen bis zur Konvergenz, Zeile IRLS-Iterationen; eine hohe Zahl deutet auf eine schwierige Anpassung, etwa Trennung.",
+          "aic": "Akaike-Informationskriterium, Kachel AIC: −2ℓ + 2k mit der Log-Likelihood ℓ und k Parametern (Koeffizienten, bei Negativ-Binomial zusätzlich θ). Kleiner ist besser; nur zum Vergleich von Modellen derselben Zielgröße.",
+          "bic": "Bayes-Informationskriterium, Kachel BIC: −2ℓ + ln(n) · k; bestraft zusätzliche Parameter stärker als AIC. Kleiner ist besser.",
+          "deviance": "Residual-Devianz: zweimal der Abstand der Log-Likelihood zum saturierten Modell. Im Vergleich mit der Null-Devianz zeigt sie, wie viel die Prädiktoren erklären.",
+          "nullDeviance": "Null-Devianz: die Devianz des Modells nur mit Achsenabschnitt, der Bezugspunkt für Residual-Devianz und Pseudo-R².",
+          "logLikelihood": "Die maximierte Log-Likelihood ℓ des Modells; Grundlage von AIC, BIC und den Pseudo-R².",
+          "pseudoR2": "Die drei Pseudo-Bestimmtheitsmaße McFadden, Nagelkerke und Cox-Snell, die die Log-Likelihood des Modells mit der des Modells nur mit Achsenabschnitt vergleichen.",
+          "coefficients": "Die Koeffiziententabelle, eine Zeile je Term, zuerst Intercept, dann die Prädiktoren; ein kategorialer Prädiktor bekommt je Stufe eine Dummy-Zeile.",
+          "auc": "Fläche unter der ROC-Kurve, Kachel AUC, zwischen 0 und 1: 0,5 entspricht Raten, 1 einer perfekten Trennung. Die Kachel ist ab 0,8 grün, ab 0,6 gelb, darunter rot. Nur bei binomialem Ergebnis, sonst leer.",
+          "hosmerLemeshow": "Hosmer-Lemeshow-Anpassungstest: die Beobachtungen werden nach geschätzter Wahrscheinlichkeit in 10 Gruppen geteilt (bei wenigen Daten weniger, mindestens 4) und beobachtete mit erwarteten Ereignissen per χ² mit Gruppen − 2 Freiheitsgraden verglichen; ein kleiner p-Wert spricht gegen die Anpassung. Bei weniger als 20 Beobachtungen (bei gruppierten Daten: Versuchen) wird der Test übersprungen und zeigt dann Statistik 0 und p = 1. Nur bei binomialem Ergebnis, sonst leer.",
+          "overdispersionRatio": "χ²/df (Überdispersion): Pearson-χ² geteilt durch n − p; derselbe Wert wie das Verhältnis der Überdispersionsprüfung. Über 1,5 gilt die Poisson-Anpassung als überdispers. Nur bei Poisson, sonst leer.",
+          "overdispersion": "Die Überdispersionsprüfung im Reiter Diagnose mit Pearson-χ², Freiheitsgraden und ihrem Verhältnis. Nur bei Poisson, sonst leer.",
+          "vif": "Varianzinflationsfaktoren der Prädiktoren, Tabelle VIF; der erste Wert gehört zum ersten Prädiktor nach dem Achsenabschnitt, also zur zweiten Zeile der Koeffiziententabelle. Über 5 wird die Zelle markiert, über 10 gewarnt. Nur ab zwei Prädiktorspalten, sonst leer; ein einzelner Wert ist leer, wenn er sich nicht rechnen lässt.",
+          "warnings": "Die Warnungen über der Ausgabe, etwa zu Trennung, wenigen Ereignissen, langsamer Konvergenz, Überdispersion oder Quasi-Poisson. Die Texte stehen in der Sprache der Oberfläche.",
+          "equation": "Die Modellgleichung als Text, wie sie unter Modellgleichung steht: logit(p) bei binomial, log(μ) bei Poisson und Negativ-Binomial, gleich der Summe aus Achsenabschnitt und Koeffizient mal Term, auf vier Nachkommastellen gerundet."
+        },
+        "Family": {
+          "name": "Die Verteilungsfamilie: binomial, poisson oder negbin; die Zeile Verteilungsfamilie zeigt den übersetzten Namen.",
+          "link": "Die Link-Funktion, die den Erwartungswert mit dem linearen Prädiktor verbindet: logit bei binomial, log bei Poisson und Negativ-Binomial.",
+          "theta": "Der geschätzte Formparameter θ, Zeile θ (dispersion), der Negativ-Binomial-Verteilung, Varianz = μ + μ²/θ; kleines θ heißt starke Überdispersion. Nur bei Negativ-Binomial, sonst leer."
+        },
+        "PseudoR2": {
+          "mcfadden": "McFadden-R², Kachel McFadden R²: 1 − ℓ/ℓ₀ mit der Log-Likelihood ℓ des Modells und ℓ₀ des Modells nur mit Achsenabschnitt. Die Kachel ist ab 0,4 grün, ab 0,2 gelb, darunter rot; Werte von 0,2 bis 0,4 gelten schon als gute Anpassung.",
+          "nagelkerke": "Nagelkerke-R², Kachel Nagelkerke R²: das Cox-Snell-R² geteilt durch seinen größtmöglichen Wert 1 − exp(2ℓ₀/n), damit es bis 1 reicht. Die Kachel ist ab 0,8 grün, ab 0,5 gelb, darunter rot.",
+          "coxSnell": "Cox-Snell-R²: 1 − exp(−2/n · (ℓ − ℓ₀)); erreicht auch bei perfekter Anpassung nicht immer 1."
+        },
+        "GlmCoefficient": {
+          "term": "Der Name des Terms: Intercept, ein Spaltenname oder bei kategorialen Prädiktoren ein Dummy-Term je Stufe.",
+          "estimate": "Der geschätzte Koeffizient b auf der Skala des Links (Logit bzw. Log). Die Spalte Koeffizient zeigt daneben das Konfidenzintervall von der unteren bis zur oberen Grenze.",
+          "se": "Standardfehler des Koeffizienten, Spalte SE, aus der Inversen der Fisher-Information; bei Quasi-Poisson um √φ vergrößert.",
+          "z": "Wald-z, Spalte z: Koeffizient geteilt durch seinen Standardfehler.",
+          "p": "Zweiseitiger p-Wert des Wald-Tests auf b = 0, 2 · (1 − Φ(|z|)); unter α gilt der Term als signifikant und wird hervorgehoben.",
+          "ciLower": "Untere Konfidenzgrenze b − z · SE, mit z als (1 + Konfidenzniveau)/2-Quantil der Normalverteilung.",
+          "ciUpper": "Obere Konfidenzgrenze b + z · SE, mit demselben z wie die untere Grenze.",
+          "ratio": "Das Verhältnis exp(b) mit Konfidenzgrenzen, Spalte OR bei binomial (Odds Ratio) oder RR bei Poisson und Negativ-Binomial (Rate Ratio): der Faktor, um den sich Chance bzw. Rate je Einheit des Prädiktors ändert. Leer beim Achsenabschnitt."
+        },
+        "Ratio": {
+          "value": "Das Verhältnis exp(b): Odds Ratio bei binomial, Rate Ratio bei Poisson und Negativ-Binomial; 1 heißt kein Einfluss.",
+          "lower": "Untere Grenze des Verhältnisses, exp der unteren Konfidenzgrenze des Koeffizienten.",
+          "upper": "Obere Grenze des Verhältnisses, exp der oberen Konfidenzgrenze des Koeffizienten."
+        },
+        "HosmerLemeshow": {
+          "statistic": "Die χ²-Statistik des Hosmer-Lemeshow-Tests, Summe über die Gruppen aus (beobachtet − erwartet)² geteilt durch die erwartete Varianz; 0, wenn der Test übersprungen wurde.",
+          "pValue": "p-Wert des Hosmer-Lemeshow-Tests aus der χ²-Verteilung mit Gruppen − 2 Freiheitsgraden; unter α spricht er gegen die Anpassung. 1, wenn der Test übersprungen wurde."
+        },
+        "Overdispersion": {
+          "pearsonChi2": "Pearson-χ²: die Summe der quadrierten Pearson-Residuen der Poisson-Anpassung, Zeile Pearson χ².",
+          "df": "Freiheitsgrade, Zeile df: n − p, Zahl der Beobachtungen minus Zahl der Koeffizienten.",
+          "ratio": "Das Verhältnis χ²/df; unter Poisson sollte es nahe 1 liegen.",
+          "overdispersed": "Ob Überdispersion erkannt ist: wahr bei χ²/df über 1,5; dann erscheint der Hinweis zur Negativ-Binomial-Regression und Quasi-Poisson wird aktiv. Über 3 gilt die Überdispersion in der Berechnung als schwer, das wird aber nicht gesondert angezeigt."
+        },
+        "Classification": {
+          "cutoff": "Die Schwelle der Konfusionstafel: vorhergesagt 1, wenn die geschätzte Wahrscheinlichkeit mindestens die Schwelle erreicht, sonst vorhergesagt 0.",
+          "tp": "Richtig positiv: tatsächlich 1 und vorhergesagt 1; bei gruppierten Daten zählen die Versuche.",
+          "fn": "Falsch negativ: tatsächlich 1, aber vorhergesagt 0; bei gruppierten Daten zählen die Versuche.",
+          "fp": "Falsch positiv: tatsächlich 0, aber vorhergesagt 1; bei gruppierten Daten zählen die Versuche.",
+          "tn": "Richtig negativ: tatsächlich 0 und vorhergesagt 0; bei gruppierten Daten zählen die Versuche.",
+          "sensitivity": "Sensitivität: richtig positiv / (richtig positiv + falsch negativ), der Anteil der tatsächlichen Einsen, die erkannt werden; 0, wenn es keine gibt.",
+          "specificity": "Spezifität: richtig negativ / (richtig negativ + falsch positiv), der Anteil der tatsächlichen Nullen, die erkannt werden; 0, wenn es keine gibt.",
+          "accuracy": "Genauigkeit: (richtig positiv + richtig negativ) / alle, der Anteil richtig klassifizierter Beobachtungen.",
+          "precision": "Präzision: richtig positiv / (richtig positiv + falsch positiv), der Anteil echter Einsen unter den als 1 vorhergesagten; 0, wenn nichts als 1 vorhergesagt ist."
         }
       },
       "name": "Regression (attributiv)",
