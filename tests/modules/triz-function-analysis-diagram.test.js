@@ -46,7 +46,10 @@ suite('triz-function-analysis — buildFunctionDiagram', () => {
   test('nodes have the fixed box size and kind styling', () => {
     const { nodes } = buildFunctionDiagram(pair([]));
     assertDeepEqual(nodes.map((n) => [n.id, n.x, n.y, n.w, n.h]), [['a', 0, 0, NODE_W, NODE_H], ['b', 220, 0, NODE_W, NODE_H]]);
-    assertEqual(nodes[1].stroke, 'var(--color-accent)', 'target has a strong border');
+    assertEqual(nodes[1].stroke, 'var(--color-node-target-stroke)', 'target has a strong border');
+    assertEqual(nodes[1].fill, 'var(--color-node-target-fill)', 'target is filled');
+    assertEqual(nodes[1].lines[0].color, 'var(--color-node-target-text)', 'target text colour');
+    assertEqual(nodes[0].lines[0].color, undefined, 'system keeps the default text colour');
     assertEqual(nodes[0].lines[0].text, 'A');
   });
 

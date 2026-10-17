@@ -119,6 +119,14 @@
   --color-role-freeText-fg:    #9d3866;  /* rose, desaturated      */
   --color-role-freeText-bg:    #fce7ef;  /* rose-100               */
 
+  /* Function-analysis node kinds (TRIZ): supersystem warm orange, target yellow. */
+  --color-node-supersystem-fill:   #fdecd8;
+  --color-node-supersystem-stroke: #f08a2c;
+  --color-node-supersystem-text:   #a3480c;
+  --color-node-target-fill:        #fdf4b8;
+  --color-node-target-stroke:      #e9c32e;
+  --color-node-target-text:        #7a5800;
+
   /* Shadows */
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 5%);
   --shadow-md: 0 2px 8px rgb(0 0 0 / 10%);
@@ -299,6 +307,13 @@
   --color-role-identifier-bg:  #334155;  /* slate-700             */
   --color-role-freeText-fg:    #f0a3b8;  /* rose, light + warm    */
   --color-role-freeText-bg:    #4a2030;
+
+  --color-node-supersystem-fill:   #4a2e16;
+  --color-node-supersystem-stroke: #f0963c;
+  --color-node-supersystem-text:   #ffc58c;
+  --color-node-target-fill:        #443d12;
+  --color-node-target-stroke:      #e6c93c;
+  --color-node-target-text:        #fce68a;
 
   /* Phase Colors (brighter for dark bg)
      DMAIC: blue (Data) → red → orange → yellow → lime → green

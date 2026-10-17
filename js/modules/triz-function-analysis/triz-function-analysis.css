@@ -288,9 +288,13 @@ thead .tfa__mh {
   padding: 0 var(--spacing-l);
 }
 
-.tfa__node--target {
+.tfa__node--target,
+.tfa__node--supersystem {
   font-weight: 600;
 }
+
+.tfa__node--target { color: var(--color-node-target-text); }
+.tfa__node--supersystem { color: var(--color-node-supersystem-text); }
 
 .tfa__arrows [data-part="node"].tfa__arrow--hl {
   stroke: var(--color-accent);

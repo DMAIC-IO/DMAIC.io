@@ -381,7 +381,7 @@ export default class NodeDiagram extends ChartBase {
         'data-part': 'line',
         x: centered ? node.x + node.w / 2 : node.x + m.padX, y: ty + m.lineHeight - 4,
         'font-size': line.size ?? (line.muted ? this.config.tickSize : this.config.labelSize),
-        fill: line.muted ? col.muted : col.text,
+        fill: line.color ? resolveColor(line.color) : line.muted ? col.muted : col.text,
       };
       if (centered) attrs['text-anchor'] = 'middle';
       if (line.weight != null) attrs['font-weight'] = line.weight;

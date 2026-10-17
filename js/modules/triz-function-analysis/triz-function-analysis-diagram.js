@@ -18,9 +18,19 @@ const PARALLEL_GAP = 14;
 const EXPORT_NAME_MAX = 20;
 
 const NODE_STYLE = {
-  target: { shape: 'ellipse', stroke: 'var(--color-accent)', strokeWidth: 2 },
+  target: {
+    shape: 'ellipse', fill: 'var(--color-node-target-fill)',
+    stroke: 'var(--color-node-target-stroke)', strokeWidth: 2,
+  },
   system: {},
-  supersystem: { shape: 'hexagon', fill: 'var(--color-bg-tertiary)', dash: '4 3' },
+  supersystem: {
+    shape: 'hexagon', fill: 'var(--color-node-supersystem-fill)',
+    stroke: 'var(--color-node-supersystem-stroke)', strokeWidth: 2,
+  },
+};
+const TEXT_COLOR = {
+  target: 'var(--color-node-target-text)',
+  supersystem: 'var(--color-node-supersystem-text)',
 };
 const LEVEL_STYLE = { adequate: 'solid', insufficient: 'dashed', excessive: 'bold' };
 
@@ -84,7 +94,7 @@ export function buildFunctionDiagram(state, { selectedId = null } = {}) {
   }]));
   const nodes = state.components.map((c) => ({
     id: c.id, ...boxes.get(c.id), ...NODE_STYLE[c.kind], padY: 14, align: 'center',
-    lines: [{ text: shorten(c.name), weight: c.kind === 'target' ? 600 : null }],
+    lines: [{ text: shorten(c.name), weight: c.kind === 'system' ? null : 600, color: TEXT_COLOR[c.kind] }],
     highlight: selectedId != null && selectedId === c.id,
   }));
 

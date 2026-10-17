@@ -172,6 +172,17 @@ suite('node-diagram — colours and text', () => {
     });
   });
 
+  test('line colour overrides the text and muted tokens', () => {
+    withTokens({ '--test-line-text': 'rgb(50, 60, 70)' }, () => {
+      const n = { ...A, lines: [{ text: 'a', color: 'var(--test-line-text)' }, { text: 'b', muted: true, color: '#00ff00' }] };
+      const { svg, done } = mount({ nodes: [n], links: [] });
+      const texts = Array.from(svg.querySelectorAll('text[data-part="line"]'));
+      assertEqual(texts[0].getAttribute('fill'), 'rgb(50, 60, 70)');
+      assertEqual(texts[1].getAttribute('fill'), '#00ff00');
+      done();
+    });
+  });
+
   test('line sizes default to labelSize / tickSize; explicit size and weight win', () => {
     const n = { ...A, lines: [{ text: 'a' }, { text: 'b', muted: true }, { text: 'c', size: 13, weight: 600 }] };
     const { svg, done } = mount({ nodes: [n], links: [], labelSize: 12, tickSize: 11 });
