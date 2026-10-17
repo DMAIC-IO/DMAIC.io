@@ -67,6 +67,9 @@ const BOOL_VALUES = [true, false];
 /** Die Leerform eines Zahlenfelds („alle Punkte" bzw. „keine Grenze"): `null` oder `''`. */
 const isEmptyForm = (v) => v === null || v === '';
 
+/** Präfix der Typedef-Sätze; die KPI-Kacheln tragen ihn als Hilfeanker. */
+const HELP = 'modules.control-chart.types.';
+
 /**
  * Je Option ihr Prüfer; er gibt den Wert in der Form des Models zurück.
  * `vm` ist das Viewmodel — die Grenzen der Untergruppengröße hängen am Kartentyp.
@@ -101,6 +104,79 @@ function setAtPath(obj, key, value) {
 }
 
 /**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {'i-mr'|'xbar-r'|'xbar-s'} chartTypeId  Kartentyp
+ * @property {number} [subgroupSize]  Werte je Untergruppe, nur bei X̄-Karten
+ * @property {number} baselineCount  Werte der Basis, leer für alle
+ * @property {string} stagesText  letzter Punkt jeder Stufe
+ * @property {number} usl  obere Spezifikationsgrenze, leer für keine
+ * @property {number} lsl  untere Spezifikationsgrenze, leer für keine
+ * @property {number[]} enabledRules  angehakte Nelson-Regeln 1–8
+ */
+
+/**
+ * Das gerechnete Ergebnis (`_agentResult()`), wie `read().result` es liefert.
+ * Die Teilkarten heißen je Kartentyp i/mr, xbar/r oder xbar/s.
+ *
+ * @typedef {object} Result
+ * @property {'i-mr'|'xbar-r'|'xbar-s'} chartType  Kartentyp
+ * @property {number} subgroupSize  Werte je Untergruppe
+ * @property {number} n  Punkte der ersten Teilkarte
+ * @property {number} baselineEnd  Einzelwerte der Basis
+ * @property {number[]} stages  Stufengrenzen
+ * @property {boolean} frozen  eingefrorene Grenzen gelten
+ * @property {Object<string, SubchartLimits>} subcharts  Grenzen je Teilkarte
+ * @property {Capability|null} capability  Prozessfähigkeit
+ * @property {Violation[]} violations  Regelverletzungen der ersten Teilkarte
+ * @property {number[]} signals  verletzende Punkte ohne Doppelte
+ */
+
+/**
+ * @typedef {object} SubchartLimits
+ * @property {number|null} cl  Mittellinie
+ * @property {number|null} ucl  obere Eingriffsgrenze
+ * @property {number|null} lcl  untere Eingriffsgrenze
+ * @property {number|null} sigma  Streuung der Punkte
+ */
+
+/**
+ * @typedef {object} Capability
+ * @property {number|null} [cp]  Cp, nur mit beiden Grenzen
+ * @property {number|null} [cpu]  Cpu, nur mit oberer Grenze
+ * @property {number|null} [cpl]  Cpl, nur mit unterer Grenze
+ * @property {number|null} cpk  Cpk
+ */
+
+/**
+ * @typedef {object} Violation
+ * @property {number} index  Punkt, ab 0
+ * @property {number} ruleId  Nelson-Regel
+ */
+
+/**
+ * @typedef {object} Annotation
+ * @property {string} comment  Kommentar zum Punkt
+ * @property {boolean} excluded  Punkt aus den Grenzen ausgeschlossen
+ */
+
+/**
+ * Die für Phase II eingefrorenen Grenzen (`buildFrozenLimits` in
+ * `control-chart-model.js`), Werte roh aus der Engine.
+ *
+ * @typedef {object} FrozenLimits
+ * @property {'i-mr'|'xbar-r'|'xbar-s'} chartTypeId  Kartentyp beim Einfrieren
+ * @property {number} subgroupSize  Untergruppengröße beim Einfrieren
+ * @property {object} columnRef  Spalte beim Einfrieren
+ * @property {number} baselineEnd  Einzelwerte der Basis
+ * @property {SubchartLimits} primary  Grenzen der ersten Teilkarte
+ * @property {SubchartLimits} secondary  Grenzen der zweiten Teilkarte
+ * @property {number[]} excludedIndices  ausgeschlossene Punkte
+ */
+
+/**
  * Die Agenten-Lesefläche der Regelkarte (I-MR, X̄-R, X̄-S).
  *
  * Alle persistierten Eingaben außer `exampleWorksheetId` (Spalte, Kartentyp,
@@ -118,12 +194,12 @@ function setAtPath(obj, key, value) {
  * @property {number|null} usl  upper specification limit, or null
  * @property {number|null} lsl  lower specification limit, or null
  * @property {number[]} enabledRules  the Nelson rule ids checked, sorted when set
- * @property {object} annotations  per point index `{ comment, excluded }`; an excluded point is left out of the limits
- * @property {object|null} frozenLimits  the limits frozen for Phase II monitoring, or null
+ * @property {Object<string, Annotation>} annotations  je Punktindex eine Anmerkung; ein ausgeschlossener Punkt fällt aus den Grenzen
+ * @property {FrozenLimits|null} frozenLimits  the limits frozen for Phase II monitoring, or null
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
  * @property {string[]} activeParams  the keys `setParam` accepts for the current chart type
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
- * @property {object|null} result  `{ chartType, subgroupSize, n, baselineEnd, stages, frozen, subcharts: { <id>: { cl, ucl, lcl, sigma } }, capability, violations: [{ index, ruleId }], signals }` — subchart ids i/mr, xbar/r or xbar/s; with stages the limits of the last stage (per point in points); capability `{ cp, cpu, cpl, cpk }` or null; signals the distinct violating indices of the first subchart; null with fewer than 2 values
+ * @property {Result|null} result  the computed result (see `Result`); with stages the limits of the last stage (per point in points); null without a column or with fewer than 2 numbers
  * @property {object[]} points  [bulk] one row per plotted point (subgroup for X̄ charts): per subchart id its value and limits (`i`, `iCl`, `iUcl`, `iLcl`, `mr`, …) and `signal`
  */
 const mod = createModule({
@@ -243,9 +319,8 @@ const mod = createModule({
       /**
        * Eine Analyseoption setzen und neu rechnen.
        * @agent
-       * @param {'chartTypeId'|'subgroupSize'|'baselineCount'|'stagesText'|'usl'|'lsl'|'enabledRules'} key
-       *   welche Option; read().activeParams nennt die für den Kartentyp gültigen
-       * @param {any} value Typ und Bereich je Schlüssel siehe Hilfe
+       * @param {keyof Params} key welche Option; die im Zustand zulässigen nennt `activeParams`
+       * @param {string|number|number[]|null} value der Wert; Typ und Bereich je Schlüssel siehe `Params`
        * @returns {Promise<void>}
        * @throws {Error} wenn `key` unbekannt oder gerade nicht aktiv ist oder `value` ungültig
        */
@@ -666,6 +741,7 @@ const mod = createModule({
           {
             value: fmt(last(data.cl)),
             label: _t('statCL'),
+            help: `${HELP}SubchartLimits.cl`,
             labelHint: stageCount > 1 ? _t('stageN', { n: stageCount }) : '',
             sub: `σ̂ = ${fmt(last(data.sigma))}`,
             mod: '',
@@ -673,6 +749,7 @@ const mod = createModule({
           {
             value: last(data.ucl).toFixed(3),
             label: 'UCL / LCL',
+            help: `${HELP}SubchartLimits.ucl`,
             labelHint: '',
             sub: last(data.lcl).toFixed(3),
             mod: '',
@@ -680,6 +757,7 @@ const mod = createModule({
           {
             value: vCount,
             label: _t('statViolations'),
+            help: `${HELP}Result.signals`,
             labelHint: '',
             sub: _t('statOf', { total }),
             mod: vCount === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad',
@@ -691,6 +769,7 @@ const mod = createModule({
           cells.push({
             value: capability.cpk.toFixed(3),
             label: 'Cpk',
+            help: `${HELP}Capability.cpk`,
             labelHint: '',
             sub: capability.cp ? `Cp = ${  capability.cp.toFixed(3)}` : '',
             mod: `dmike-kpi${cls}`,

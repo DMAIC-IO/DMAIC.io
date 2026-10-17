@@ -8351,7 +8351,7 @@
       "actions": {
         "read": { "help": "Alle Eingaben, die Grenzen je Teilkarte, die Fähigkeit, Regelverletzungen und je Punkt Werte und Grenzen lesen." },
         "setColumn": {
-          "help": "Die Messreihe wählen und neu rechnen. Gibt true zurück, wenn dabei eingefrorene Grenzen einer anderen Spalte verworfen wurden.",
+          "help": "Die Spalte einer Datensammlung mit den Messwerten; nach einer Änderung wird neu gerechnet. Eingefrorene Grenzen einer anderen Spalte werden dabei verworfen; die Antwort sagt, ob das geschah.",
           "params": {
             "slot": "'value' — die Messwerte in zeitlicher Reihenfolge (Pflicht, mindestens 2).",
             "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns.value, oder null zum Leeren."
@@ -8360,12 +8360,12 @@
         "setParam": {
           "help": "Eine Analyseoption setzen und neu rechnen.",
           "params": {
-            "key": "'chartTypeId', 'baselineCount', 'stagesText', 'usl', 'lsl', 'enabledRules' immer; 'subgroupSize' nur bei X̄-R und X̄-S.",
-            "value": "chartTypeId 'i-mr', 'xbar-r' oder 'xbar-s' (ein Wechsel hält die Untergruppengröße im neuen Bereich); subgroupSize eine ganze Zahl von 2 bis 10 (X̄-R) bzw. 2 bis 25 (X̄-S); baselineCount eine ganze Zahl ab 1, oder null für alle Punkte; stagesText der letzte Punkt jeder Stufe, etwa '12, 25', '' für keine; usl und lsl eine Zahl, oder null für keine; enabledRules eine Liste von Regel-Ids aus 1 bis 8."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys. Bei baselineCount, usl und lsl leert null oder '' das Feld."
           }
         },
         "setAnnotation": {
-          "help": "Einen Punkt anmerken oder aus den Grenzen ausschließen und neu rechnen. Leerer Kommentar mit excluded false entfernt die Anmerkung.",
+          "help": "Merkt einen Punkt mit einem Kommentar an oder schließt ihn aus der Berechnung der Grenzen aus; danach wird neu gerechnet. Ohne Kommentar und ohne Ausschluss wird die Anmerkung entfernt.",
           "params": {
             "index": "Der 0-basierte Punkt der ersten Teilkarte (bei X̄-Karten die Untergruppe); er muss im aktuellen Ergebnis vorkommen.",
             "comment": "Der Kommentar, '' für keinen.",
@@ -8373,7 +8373,7 @@
           }
         },
         "setPhase2": {
-          "help": "Die aktuellen Grenzen für die Überwachung in Phase II einfrieren oder freigeben. Gibt zurück, ob danach eingefrorene Grenzen gelten; ohne Ergebnis oder mit Stufen wird nichts eingefroren und die Antwort ist false.",
+          "help": "Friert die aktuellen Grenzen für die Überwachung in Phase II ein oder gibt sie wieder frei. Ohne Ergebnis oder mit Stufen wird nichts eingefroren; die Antwort sagt, ob danach eingefrorene Grenzen gelten.",
           "params": {
             "enabled": "true friert ein, false gibt frei."
           }
@@ -8389,13 +8389,65 @@
         "usl": { "help": "Obere Spezifikationsgrenze, oder null." },
         "lsl": { "help": "Untere Spezifikationsgrenze, oder null." },
         "enabledRules": { "help": "Die geprüften Nelson-Regel-Ids." },
-        "annotations": { "help": "Je Punktindex { comment, excluded }; ein ausgeschlossener Punkt fällt aus den Grenzen." },
-        "frozenLimits": { "help": "Die für Phase II eingefrorenen Grenzen, oder null." },
+        "annotations": { "help": "Je Punktindex eine Anmerkung, jede Angabe unter keys einzeln beschrieben; ein ausgeschlossener Punkt fällt aus den Grenzen." },
+        "frozenLimits": { "help": "Die für Phase II eingefrorenen Grenzen, oder null; jede Angabe unter keys einzeln beschrieben." },
         "activeColumnSlots": { "help": "Die Slots, die setColumn annimmt: value." },
         "activeParams": { "help": "Die Schlüssel, die setParam für den aktuellen Kartentyp annimmt." },
         "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
-        "result": { "help": "{ chartType, subgroupSize, n, baselineEnd, stages, frozen, subcharts: { <id>: { cl, ucl, lcl, sigma } }, capability, violations: [{ index, ruleId }], signals }; Teilkarten-Ids i/mr, xbar/r oder xbar/s; mit Stufen die Grenzen der letzten Stufe; capability { cp, cpu, cpl, cpk } oder null; signals die verletzenden Indizes der ersten Teilkarte ohne Doppelte; null bei weniger als 2 Werten." },
+        "result": { "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; null ohne Spalte oder mit weniger als 2 Zahlen." },
         "points": { "help": "Je gezeichnetem Punkt (bei X̄-Karten je Untergruppe) eine Zeile: je Teilkarten-Id Wert und Grenzen (i, iCl, iUcl, iLcl, mr, …) und signal. read({ fields: ['points'] }) liefert sie vollständig." }
+      },
+      "types": {
+        "Params": {
+          "chartTypeId": "Regelkartentyp: I-MR für Einzelwerte (Einzelwertkarte und Karte der gleitenden Spannweiten), X̄-R für Untergruppen (Mittelwert- und Spannweitenkarte) oder X̄-S für Untergruppen (Mittelwert- und Standardabweichungskarte). Ein Wechsel hält die Stichprobengröße im Bereich des neuen Typs; I-MR rechnet immer mit n = 1.",
+          "subgroupSize": "Stichprobengröße (n): Zahl der aufeinanderfolgenden Werte, die eine Untergruppe bilden, ganzzahlig von 2 bis 10 bei X̄-R und von 2 bis 25 bei X̄-S. Bei I-MR gibt es die Option nicht. Übrige Werte am Ende, die keine volle Untergruppe ergeben, bleiben unberücksichtigt.",
+          "baselineCount": "Baseline-Anzahl: aus wie vielen Einzelwerten vom Anfang der Reihe die Grenzen gerechnet werden, ganzzahlig ab 1; leer heißt alle Werte. Bei X̄-Karten wird auf ganze Untergruppen aufgerundet. Ausgeschlossene Punkte zählen nicht zur Baseline. Mit Stages wird die Angabe nicht verwendet, dann rechnet jede Stage aus allen ihren Werten. Das Eingabefeld beginnt bei 2, die Prüfung nimmt jede ganze Zahl ab 1.",
+          "stagesText": "Stage-Grenzen: die Nummer des letzten Einzelwerts jeder Stage, getrennt durch Komma, Semikolon oder Leerzeichen, etwa 12, 25. Es zählen nur ganze Zahlen größer als 0 und kleiner als die Zahl der Werte. Jede Stage bekommt eigene Grenzen und wird an ihnen gemessen. Liegt eine Grenze mitten in einer Untergruppe, zählt die Untergruppe zur vorigen Stage und es erscheint ein Hinweis. Leer heißt eine einzige Baseline; mit Stages lassen sich keine Grenzen für Phase II einfrieren.",
+          "usl": "OSG (USL): obere Spezifikationsgrenze der Einzelwerte, leer für keine. Sie wird als Linie in der Karte gezeigt und geht in Cp, Cpu und Cpk ein.",
+          "lsl": "USG (LSL): untere Spezifikationsgrenze der Einzelwerte, leer für keine. Sie wird als Linie in der Karte gezeigt und geht in Cp, Cpl und Cpk ein.",
+          "enabledRules": "Die angehakten Nelson Rules, Nummern 1 bis 8: 1 ein Punkt jenseits 3σ; 2 neun Punkte auf derselben Seite der Mittellinie; 3 sechs Punkte steigend oder fallend; 4 vierzehn Punkte abwechselnd auf und ab; 5 zwei von drei Punkten jenseits 2σ auf derselben Seite; 6 vier von fünf Punkten jenseits 1σ auf derselben Seite; 7 fünfzehn Punkte innerhalb 1σ; 8 acht Punkte jenseits 1σ auf beiden Seiten. Vorbelegt ist nur Regel 1, denn jede weitere Regel erhöht die Fehlalarmrate. Geprüft wird die Einzelwert- bzw. X̄-Karte; auf der MR-, R- oder S-Karte gelten nur die Regeln 1 bis 4."
+        },
+        "Result": {
+          "chartType": "Der Regelkartentyp, mit dem gerechnet wurde: I-MR, X̄-R oder X̄-S. Er bestimmt die Teilkarten: i und mr, xbar und r oder xbar und s.",
+          "subgroupSize": "Stichprobengröße (n), mit der gerechnet wurde; bei I-MR 1.",
+          "n": "Zahl der Punkte der ersten Teilkarte: bei I-MR die verwertbaren Zahlen der Spalte (leere und nicht numerische Zellen sind aussortiert), bei X̄-Karten die Zahl der Untergruppen.",
+          "baselineEnd": "Wie viele Einzelwerte, nicht Untergruppen, die Baseline umfasst: die Baseline-Anzahl, oder alle Werte, wenn sie leer ist oder Stages gesetzt sind.",
+          "stages": "Die verwendeten Stage-Grenzen als Nummern des letzten Einzelwerts jeder Stage, aufsteigend und ohne Doppelte; Grenzen außerhalb der Reihe sind weggelassen. Leer ohne Stages.",
+          "frozen": "Wahr, wenn eingefrorene Grenzen aus Phase II gelten: dafür müssen Kartentyp, Stichprobengröße und Spalte zum Zeitpunkt des Einfrierens passen, und es dürfen keine Stages gesetzt sein. Dann werden die Punkte an diesen Grenzen gemessen statt an neu gerechneten.",
+          "subcharts": "Die Grenzen je Teilkarte des Kartentyps: i und mr bei I-MR, xbar und r bei X̄-R, xbar und s bei X̄-S. Mit Stages stehen dort die Grenzen der letzten Stage, also des Prozesses, wie er jetzt läuft.",
+          "capability": "Die Prozessfähigkeit gegen OSG und USG, gerechnet aus dem Mittelwert und σ der Einzelwerte. Leer, wenn keine Spezifikationsgrenze gesetzt ist oder σ = 0. Welche Kennzahlen es gibt, hängt davon ab, welche Grenzen gesetzt sind.",
+          "violations": "Die Regelverletzungen der ersten Teilkarte (Einzelwert- bzw. X̄-Karte) nach den angehakten Nelson Rules, je Punkt und Regel einmal, nach Punkt sortiert. Die Prüfung der zweiten Teilkarte erscheint nur im Abzeichen der Karte.",
+          "signals": "Die Punkte der ersten Teilkarte mit mindestens einer Regelverletzung, jeder nur einmal, gezählt ab 0 über die gezeichneten Punkte (bei X̄-Karten die Untergruppen). Die Kachel Verletzungen zählt diese Punkte."
+        },
+        "SubchartLimits": {
+          "cl": "CL (Mittellinie) der Teilkarte: Mittelwert der Baseline-Punkte, also x̄ bei der Einzelwertkarte, x̄̄ bei der X̄-Karte und MR̄, R̄ oder S̄ bei der Streuungskarte. Die Kachel CL zeigt die Mittellinie der ersten Teilkarte, die Unterzeile σ̂; mit mehreren Stages die Werte der letzten Stage.",
+          "ucl": "UCL, obere Eingriffsgrenze der Teilkarte. I-MR: x̄ + 3 · MR̄/1,128, MR-Karte 3,267 · MR̄. X̄-R: x̄̄ + A₂ · R̄, R-Karte D₄ · R̄. X̄-S: x̄̄ + A₃ · S̄, S-Karte B₄ · S̄. Die Konstanten hängen von n ab. Die Kachel UCL / LCL zeigt UCL der ersten Teilkarte und darunter LCL.",
+          "lcl": "LCL, untere Eingriffsgrenze der Teilkarte. I-MR: x̄ − 3 · MR̄/1,128, MR-Karte 0. X̄-R: x̄̄ − A₂ · R̄, R-Karte D₃ · R̄. X̄-S: x̄̄ − A₃ · S̄, S-Karte B₃ · S̄. Die Konstanten hängen von n ab; D₃ und B₃ sind für kleine n gleich 0.",
+          "sigma": "σ̂, die geschätzte Streuung der Punkte dieser Teilkarte, ein Drittel des Abstands von der Mittellinie zur UCL. Einzelwertkarte MR̄/1,128; X̄-Karte R̄/(d₂ · √n) bzw. S̄/(c₄ · √n); Streuungskarte (UCL − CL)/3. Die Zonen der Nelson Rules (1σ, 2σ, 3σ) beziehen sich darauf."
+        },
+        "Capability": {
+          "cp": "Cp = (OSG − USG)/(6σ): wie oft die Streuung in die Toleranz passt, ohne Rücksicht auf die Lage. Nur mit beiden Spezifikationsgrenzen; die Kachel Cpk zeigt Cp in der Unterzeile.",
+          "cpu": "Cpu = (OSG − x̄)/(3σ): Abstand des Mittelwerts zur oberen Spezifikationsgrenze in drei σ. Nur mit OSG.",
+          "cpl": "Cpl = (x̄ − USG)/(3σ): Abstand des Mittelwerts zur unteren Spezifikationsgrenze in drei σ. Nur mit USG.",
+          "cpk": "Cpk, der kleinere von Cpu und Cpl, mit nur einer Grenze deren Wert. σ ist bei I-MR MR̄/1,128, bei X̄-Karten σ der Mittelwerte · √n; x̄ ist die Mittellinie der ersten Teilkarte, mit Stages der letzten Stage. Die Kachel ist ab 1,33 grün (fähig), ab 1,0 gelb (bedingt fähig), darunter rot."
+        },
+        "Violation": {
+          "index": "Der verletzende Punkt der ersten Teilkarte, gezählt ab 0 über die gezeichneten Punkte: bei I-MR die verwertbaren Zahlen ohne leere Zellen, bei X̄-Karten die Untergruppen.",
+          "ruleId": "Die Nummer der verletzten Nelson-Regel, 1 bis 8, in derselben Nummerierung wie die Auswahl der Nelson Rules."
+        },
+        "Annotation": {
+          "comment": "Kommentar / Ursache zum Punkt, etwa ein Werkzeugbruch in Schicht 3; leer für keinen. Der Punkt wird in der Karte markiert.",
+          "excluded": "Punkt aus Grenzen-Berechnung ausschließen: der Punkt bleibt in der Karte sichtbar, beeinflusst UCL und LCL aber nicht mehr. Danach wird neu gerechnet."
+        },
+        "FrozenLimits": {
+          "chartTypeId": "Der Regelkartentyp beim Einfrieren. Die eingefrorenen Grenzen gelten nur, solange derselbe Typ gewählt ist.",
+          "subgroupSize": "Die Stichprobengröße (n) beim Einfrieren. Die eingefrorenen Grenzen gelten nur bei derselben Stichprobengröße.",
+          "columnRef": "Die Messwerte-Spalte beim Einfrieren. Wird eine andere Spalte gewählt, werden die eingefrorenen Grenzen verworfen.",
+          "baselineEnd": "Wie viele Einzelwerte die Baseline beim Einfrieren umfasste.",
+          "primary": "Die eingefrorenen Grenzen der ersten Teilkarte (Einzelwert- bzw. X̄-Karte): Mittellinie, UCL, LCL und σ̂, unverändert aus der Berechnung beim Einfrieren.",
+          "secondary": "Die eingefrorenen Grenzen der zweiten Teilkarte (MR-, R- bzw. S-Karte): Mittellinie, UCL, LCL und σ̂, unverändert aus der Berechnung beim Einfrieren.",
+          "excludedIndices": "Die Punkte, die beim Einfrieren aus der Grenzen-Berechnung ausgeschlossen waren, gezählt ab 0."
+        }
       }
     },
     "run-chart": {

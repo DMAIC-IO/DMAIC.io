@@ -8347,7 +8347,7 @@
       "actions": {
         "read": { "help": "Read all inputs, the limits per subchart, capability, rule violations and per point the values and limits." },
         "setColumn": {
-          "help": "Choose the measured column and recompute. Returns true when frozen limits of another column were dropped.",
+          "help": "The data collection column with the measurements; after a change the analysis is recomputed. Frozen limits of a different column are discarded; the answer says whether that happened.",
           "params": {
             "slot": "'value' — the measured values in time order (required, at least 2).",
             "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns.value, or null to clear it."
@@ -8356,12 +8356,12 @@
         "setParam": {
           "help": "Set an analysis option and recompute.",
           "params": {
-            "key": "'chartTypeId', 'baselineCount', 'stagesText', 'usl', 'lsl', 'enabledRules' always; 'subgroupSize' only for X̄-R and X̄-S.",
-            "value": "chartTypeId 'i-mr', 'xbar-r' or 'xbar-s' (changing it keeps the subgroup size within the new range); subgroupSize a whole number from 2 to 10 (X̄-R) or 2 to 25 (X̄-S); baselineCount a whole number of at least 1, or null for all points; stagesText the last point of each stage, e.g. '12, 25', '' for none; usl and lsl a number, or null for none; enabledRules a list of rule ids from 1 to 8."
+            "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys. For baselineCount, usl and lsl, null or '' clears the field."
           }
         },
         "setAnnotation": {
-          "help": "Annotate a point or leave it out of the limits, and recompute. An empty comment with excluded false removes the annotation.",
+          "help": "Annotates a point with a comment or excludes it from the limit computation; the analysis is then recomputed. Without a comment and without exclusion the annotation is removed.",
           "params": {
             "index": "The 0-based point of the first subchart (the subgroup for X̄ charts); it must exist in the current result.",
             "comment": "The comment, '' for none.",
@@ -8369,7 +8369,7 @@
           }
         },
         "setPhase2": {
-          "help": "Freeze the current limits for Phase II monitoring, or release them. Returns whether frozen limits apply afterwards; without a result or with stages nothing is frozen and the answer is false.",
+          "help": "Freezes the current limits for Phase II monitoring or releases them again. Without a result or with stages nothing is frozen; the answer says whether frozen limits apply afterwards.",
           "params": {
             "enabled": "true freezes, false releases."
           }
@@ -8385,13 +8385,65 @@
         "usl": { "help": "Upper specification limit, or null." },
         "lsl": { "help": "Lower specification limit, or null." },
         "enabledRules": { "help": "The Nelson rule ids checked." },
-        "annotations": { "help": "Per point index { comment, excluded }; an excluded point is left out of the limits." },
-        "frozenLimits": { "help": "The limits frozen for Phase II, or null." },
+        "annotations": { "help": "One annotation per point index, each entry described individually under keys; an excluded point is left out of the limits." },
+        "frozenLimits": { "help": "The limits frozen for Phase II, or null; each entry described individually under keys." },
         "activeColumnSlots": { "help": "The slots setColumn accepts: value." },
         "activeParams": { "help": "The keys setParam accepts for the current chart type." },
         "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
-        "result": { "help": "{ chartType, subgroupSize, n, baselineEnd, stages, frozen, subcharts: { <id>: { cl, ucl, lcl, sigma } }, capability, violations: [{ index, ruleId }], signals }; subchart ids i/mr, xbar/r or xbar/s; with stages the limits of the last stage; capability { cp, cpu, cpl, cpk } or null; signals the distinct violating indices of the first subchart; null with fewer than 2 values." },
+        "result": { "help": "The computed result, each figure described individually under keys; null without a column or with fewer than 2 numbers." },
         "points": { "help": "One row per plotted point (subgroup for X̄ charts): per subchart id its value and limits (i, iCl, iUcl, iLcl, mr, …) and signal. read({ fields: ['points'] }) returns them in full." }
+      },
+      "types": {
+        "Params": {
+          "chartTypeId": "Control chart type: I-MR for individual values (individuals chart and moving range chart), X̄-R for subgroups (mean and range chart) or X̄-S for subgroups (mean and standard deviation chart). Switching keeps the subgroup size within the range of the new type; I-MR always computes with n = 1.",
+          "subgroupSize": "Subgroup size (n): the number of consecutive values that form one subgroup, a whole number from 2 to 10 for X̄-R and from 2 to 25 for X̄-S. Not available for I-MR. Leftover values at the end that do not fill a subgroup are ignored.",
+          "baselineCount": "Baseline count: how many individual values from the start of the series the limits are computed from, a whole number of at least 1; empty means all values. For X̄ charts it is rounded up to whole subgroups. Excluded points do not count towards the baseline. With stages it is not used; each stage then computes from all of its values. The input field starts at 2, the check accepts any whole number from 1.",
+          "stagesText": "Stage boundaries: the number of the last individual value of each stage, separated by comma, semicolon or space, e.g. 12, 25. Only whole numbers greater than 0 and less than the number of values count. Each stage gets its own limits and is judged by them. If a boundary falls inside a subgroup, that subgroup is counted in the earlier stage and a hint appears. Empty means a single baseline; with stages no limits can be frozen for Phase II.",
+          "usl": "USL: upper specification limit of the individual values, empty for none. It is shown as a line on the chart and enters Cp, Cpu and Cpk.",
+          "lsl": "LSL: lower specification limit of the individual values, empty for none. It is shown as a line on the chart and enters Cp, Cpl and Cpk.",
+          "enabledRules": "The checked Nelson Rules, numbers 1 to 8: 1 one point beyond 3σ; 2 nine points on the same side of the center line; 3 six points increasing or decreasing; 4 fourteen points alternating up and down; 5 two of three points beyond 2σ on the same side; 6 four of five points beyond 1σ on the same side; 7 fifteen points within 1σ; 8 eight points beyond 1σ on both sides. Only rule 1 is preset, because every further rule raises the false alarm rate. The individuals or X̄ chart is checked; on the MR, R or S chart only rules 1 to 4 apply."
+        },
+        "Result": {
+          "chartType": "The control chart type used: I-MR, X̄-R or X̄-S. It determines the subcharts: i and mr, xbar and r, or xbar and s.",
+          "subgroupSize": "The subgroup size (n) used; 1 for I-MR.",
+          "n": "Number of points of the first subchart: for I-MR the usable numbers of the column (empty and non-numeric cells are dropped), for X̄ charts the number of subgroups.",
+          "baselineEnd": "How many individual values, not subgroups, the baseline covers: the baseline count, or all values when it is empty or stages are set.",
+          "stages": "The stage boundaries used, as numbers of the last individual value of each stage, ascending and without duplicates; boundaries outside the series are dropped. Empty without stages.",
+          "frozen": "True when frozen Phase II limits apply: chart type, subgroup size and column must match the time of freezing, and no stages may be set. The points are then judged against these limits instead of recomputed ones.",
+          "subcharts": "The limits per subchart of the chart type: i and mr for I-MR, xbar and r for X̄-R, xbar and s for X̄-S. With stages they hold the limits of the last stage, i.e. the process as it runs now.",
+          "capability": "Process capability against USL and LSL, computed from the mean and σ of the individual values. Empty when no specification limit is set or σ = 0. Which figures exist depends on which limits are set.",
+          "violations": "The rule violations of the first subchart (individuals or X̄ chart) under the checked Nelson Rules, once per point and rule, sorted by point. The check of the second subchart only shows in the chart's badge.",
+          "signals": "The points of the first subchart with at least one rule violation, each only once, counted from 0 over the plotted points (subgroups for X̄ charts). The violations tile counts these points."
+        },
+        "SubchartLimits": {
+          "cl": "CL (Center Line) of the subchart: the mean of the baseline points, i.e. x̄ on the individuals chart, x̄̄ on the X̄ chart and MR̄, R̄ or S̄ on the dispersion chart. The CL tile shows the center line of the first subchart, its sub line σ̂; with several stages the values of the last stage.",
+          "ucl": "UCL, upper control limit of the subchart. I-MR: x̄ + 3 · MR̄/1.128, MR chart 3.267 · MR̄. X̄-R: x̄̄ + A₂ · R̄, R chart D₄ · R̄. X̄-S: x̄̄ + A₃ · S̄, S chart B₄ · S̄. The constants depend on n. The UCL / LCL tile shows the UCL of the first subchart with the LCL below.",
+          "lcl": "LCL, lower control limit of the subchart. I-MR: x̄ − 3 · MR̄/1.128, MR chart 0. X̄-R: x̄̄ − A₂ · R̄, R chart D₃ · R̄. X̄-S: x̄̄ − A₃ · S̄, S chart B₃ · S̄. The constants depend on n; D₃ and B₃ are 0 for small n.",
+          "sigma": "σ̂, the estimated spread of the points of this subchart, one third of the distance from the center line to the UCL. Individuals chart MR̄/1.128; X̄ chart R̄/(d₂ · √n) or S̄/(c₄ · √n); dispersion chart (UCL − CL)/3. The zones of the Nelson Rules (1σ, 2σ, 3σ) refer to it."
+        },
+        "Capability": {
+          "cp": "Cp = (USL − LSL)/(6σ): how often the spread fits into the tolerance, regardless of location. Only with both specification limits; the Cpk tile shows Cp in its sub line.",
+          "cpu": "Cpu = (USL − x̄)/(3σ): distance of the mean to the upper specification limit in units of three σ. Only with a USL.",
+          "cpl": "Cpl = (x̄ − LSL)/(3σ): distance of the mean to the lower specification limit in units of three σ. Only with an LSL.",
+          "cpk": "Cpk, the smaller of Cpu and Cpl, with only one limit its value. σ is MR̄/1.128 for I-MR and σ of the means · √n for X̄ charts; x̄ is the center line of the first subchart, with stages of the last stage. The tile is green (capable) from 1.33, yellow (conditionally capable) from 1.0, red below."
+        },
+        "Violation": {
+          "index": "The violating point of the first subchart, counted from 0 over the plotted points: for I-MR the usable numbers without empty cells, for X̄ charts the subgroups.",
+          "ruleId": "The number of the violated Nelson rule, 1 to 8, in the same numbering as the Nelson Rules selection."
+        },
+        "Annotation": {
+          "comment": "Comment / cause for the point, e.g. a tool break on shift 3; empty for none. The point is marked on the chart.",
+          "excluded": "Exclude point from limit computation: the point stays visible on the chart but no longer influences UCL and LCL. The analysis is then recomputed."
+        },
+        "FrozenLimits": {
+          "chartTypeId": "The control chart type at the time of freezing. The frozen limits only apply while the same type is selected.",
+          "subgroupSize": "The subgroup size (n) at the time of freezing. The frozen limits only apply with the same subgroup size.",
+          "columnRef": "The measurement column at the time of freezing. If a different column is chosen, the frozen limits are discarded.",
+          "baselineEnd": "How many individual values the baseline covered at the time of freezing.",
+          "primary": "The frozen limits of the first subchart (individuals or X̄ chart): center line, UCL, LCL and σ̂, unchanged from the computation at the time of freezing.",
+          "secondary": "The frozen limits of the second subchart (MR, R or S chart): center line, UCL, LCL and σ̂, unchanged from the computation at the time of freezing.",
+          "excludedIndices": "The points that were excluded from the limit computation at the time of freezing, counted from 0."
+        }
       }
     },
     "time-weighted-chart": {

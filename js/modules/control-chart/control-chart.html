@@ -3,7 +3,7 @@
 
     <div class="dmike-split__section-title" x-text="t('sectionChartType')"></div>
     <div class="field-group">
-      <label x-text="t('chartType')"></label>
+      <label data-help-key="modules.control-chart.types.Params.chartTypeId" x-text="t('chartType')"></label>
       <select class="field" data-ref="chart-type" :value="model.chartTypeId" @change="setParam('chartTypeId', $event.target.value)">
         <template x-for="o in chartTypeOptions()" :key="o.value">
           <option :value="o.value" :selected="o.value === model.chartTypeId" x-text="o.label"></option>
@@ -12,7 +12,7 @@
     </div>
 
     <div class="field-group" data-ref="subgroup-row" x-show="showSubgroup()">
-      <label x-text="t('subgroupSize')"></label>
+      <label data-help-key="modules.control-chart.types.Params.subgroupSize" x-text="t('subgroupSize')"></label>
       <input type="number" class="field field--num" data-ref="subgroup-size"
         :value="model.subgroupSize" :min="subgroupMin()" :max="subgroupMax()"
         @change="subgroupSizeChanged($event)">
@@ -20,12 +20,12 @@
 
     <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
     <div class="field-group">
-      <label x-text="t('dataColumn')"></label>
+      <label data-help-key="modules.control-chart.actions.setColumn.help" x-text="t('dataColumn')"></label>
       <div data-ref="col-picker-wrap"></div>
     </div>
 
     <div class="field-group">
-      <label x-text="t('baselineCount')"></label>
+      <label data-help-key="modules.control-chart.types.Params.baselineCount" x-text="t('baselineCount')"></label>
       <input type="number" class="field field--num" data-ref="baseline-count"
         :value="baselineValue()" min="2" :placeholder="t('baselineAll')"
         @change="baselineChanged($event)">
@@ -34,7 +34,7 @@
 
     <div class="dmike-split__section-title" x-text="t('sectionStages')"></div>
     <div class="field-group">
-      <label x-text="t('stagesLabel')"></label>
+      <label data-help-key="modules.control-chart.types.Params.stagesText" x-text="t('stagesLabel')"></label>
       <input type="text" class="field" data-ref="stages"
         :value="model.stagesText" :placeholder="t('stagesPlaceholder')"
         @change="stagesChanged($event)">
@@ -52,19 +52,19 @@
         </span>
       </div>
       <button type="button" class="btn btn--small" :class="phase2BtnClass()"
-        data-ref="phase2-toggle" @click="phase2Toggle()" x-text="phase2BtnText()"></button>
+        data-ref="phase2-toggle" data-help-key="modules.control-chart.actions.setPhase2.help" @click="phase2Toggle()" x-text="phase2BtnText()"></button>
       <span class="control-chart__hint" x-text="t('phase2Hint')"></span>
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionSpec')"></div>
     <div class="control-chart__spec-row">
       <div class="field-group">
-        <label x-text="t('lsl')"></label>
+        <label data-help-key="modules.control-chart.types.Params.lsl" x-text="t('lsl')"></label>
         <input type="number" class="field field--num" data-ref="lsl"
           :value="lslValue()" placeholder="—" @change="lslChanged($event)">
       </div>
       <div class="field-group">
-        <label x-text="t('usl')"></label>
+        <label data-help-key="modules.control-chart.types.Params.usl" x-text="t('usl')"></label>
         <input type="number" class="field field--num" data-ref="usl"
           :value="uslValue()" placeholder="—" @change="uslChanged($event)">
       </div>
@@ -73,7 +73,7 @@
 
     <div class="dmike-split__section-title control-chart__collapsible" data-ref="nelson-toggle"
       :class="nelsonToggleClass()" @click="toggleNelson()">
-      <span x-text="t('sectionNelson')"></span>
+      <span data-help-key="modules.control-chart.types.Params.enabledRules" x-text="t('sectionNelson')"></span>
       <span class="control-chart__chevron icon icon--sm" :data-icon="nelsonCollapsed ? 'nav.expand-right' : 'nav.expand-down'" aria-hidden="true"></span>
     </div>
     <div class="control-chart__nelson-panel" data-ref="nelson-panel" :class="nelsonPanelClass()">
@@ -99,7 +99,7 @@
           <template x-for="(c, i) in kpiCells" :key="i">
             <div class="dmike-kpi" :class="c.mod">
               <div class="dmike-kpi-value" x-text="c.value"></div>
-              <div class="dmike-kpi-label"><span x-text="c.label"></span><template x-if="c.labelHint"><span class="control-chart__hint" x-text="' (' + c.labelHint + ')'"></span></template></div>
+              <div class="dmike-kpi-label" :data-help-key="c.help"><span x-text="c.label"></span><template x-if="c.labelHint"><span class="control-chart__hint" x-text="' (' + c.labelHint + ')'"></span></template></div>
               <div class="dmike-kpi-sub" x-text="c.sub"></div>
             </div>
           </template>
@@ -161,12 +161,12 @@
         </div>
         <div class="dmike-chart-popout-body dmike-popout-body--column">
           <div class="field-group">
-            <label x-text="t('annotationComment')"></label>
+            <label data-help-key="modules.control-chart.types.Annotation.comment" x-text="t('annotationComment')"></label>
             <textarea class="field" data-ref="ann-comment" rows="3"
               :placeholder="t('annotationPlaceholder')" x-model="annComment"></textarea>
           </div>
           <div class="field-group">
-            <label class="control-chart__check">
+            <label class="control-chart__check" data-help-key="modules.control-chart.types.Annotation.excluded" data-help-anchor="box">
               <input type="checkbox" data-ref="ann-excluded" x-model="annExcluded">
               <span x-text="t('annotationExclude')"></span>
             </label>
@@ -176,7 +176,7 @@
             <button class="btn btn--secondary" type="button"
               :style="annRemoveStyle()" @click="removeAnnotation()" x-text="t('annotationRemove')"></button>
             <button class="btn btn--secondary" type="button" @click="closeAnnotation()" x-text="cancelLabel()"></button>
-            <button class="btn btn--primary" type="button" @click="saveAnnotation()" x-text="t('annotationSave')"></button>
+            <button class="btn btn--primary" type="button" data-help-key="modules.control-chart.actions.setAnnotation.help" @click="saveAnnotation()" x-text="t('annotationSave')"></button>
           </div>
         </div>
       </div>

@@ -1538,17 +1538,49 @@ export const AGENT_REGISTRY = {
             "name": "key",
             "type": "'chartTypeId'|'subgroupSize'|'baselineCount'|'stagesText'|'usl'|'lsl'|'enabledRules'",
             "optional": false,
-            "help": "welche Option; read().activeParams nennt die für den Kartentyp gültigen"
+            "help": "welche Option; die im Zustand zulässigen nennt `activeParams`"
           },
           {
             "name": "value",
-            "type": "any",
+            "type": "string|number|number[]|null",
             "optional": false,
-            "help": "Typ und Bereich je Schlüssel siehe Hilfe"
+            "help": "der Wert; Typ und Bereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "Promise<void>",
-        "help": "Eine Analyseoption setzen und neu rechnen."
+        "help": "Eine Analyseoption setzen und neu rechnen.",
+        "keysOf": "Params",
+        "keys": {
+          "chartTypeId": {
+            "type": "'i-mr'|'xbar-r'|'xbar-s'",
+            "help": "Kartentyp"
+          },
+          "subgroupSize": {
+            "type": "number",
+            "help": "Werte je Untergruppe, nur bei X̄-Karten",
+            "optional": true
+          },
+          "baselineCount": {
+            "type": "number",
+            "help": "Werte der Basis, leer für alle"
+          },
+          "stagesText": {
+            "type": "string",
+            "help": "letzter Punkt jeder Stufe"
+          },
+          "usl": {
+            "type": "number",
+            "help": "obere Spezifikationsgrenze, leer für keine"
+          },
+          "lsl": {
+            "type": "number",
+            "help": "untere Spezifikationsgrenze, leer für keine"
+          },
+          "enabledRules": {
+            "type": "number[]",
+            "help": "angehakte Nelson-Regeln 1–8"
+          }
+        }
       },
       "setAnnotation": {
         "params": [
@@ -1642,16 +1674,96 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "annotations": {
-        "type": "object",
-        "help": "per point index `{ comment, excluded }`; an excluded point is left out of the limits",
+        "type": "Object<string, Annotation>",
+        "help": "je Punktindex eine Anmerkung; ein ausgeschlossener Punkt fällt aus den Grenzen",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Annotation",
+        "keys": {
+          "comment": {
+            "type": "string",
+            "help": "Kommentar zum Punkt"
+          },
+          "excluded": {
+            "type": "boolean",
+            "help": "Punkt aus den Grenzen ausgeschlossen"
+          }
+        }
       },
       "frozenLimits": {
-        "type": "object|null",
+        "type": "FrozenLimits|null",
         "help": "the limits frozen for Phase II monitoring, or null",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "FrozenLimits",
+        "keys": {
+          "chartTypeId": {
+            "type": "'i-mr'|'xbar-r'|'xbar-s'",
+            "help": "Kartentyp beim Einfrieren"
+          },
+          "subgroupSize": {
+            "type": "number",
+            "help": "Untergruppengröße beim Einfrieren"
+          },
+          "columnRef": {
+            "type": "object",
+            "help": "Spalte beim Einfrieren"
+          },
+          "baselineEnd": {
+            "type": "number",
+            "help": "Einzelwerte der Basis"
+          },
+          "primary": {
+            "type": "SubchartLimits",
+            "help": "Grenzen der ersten Teilkarte",
+            "keysOf": "SubchartLimits",
+            "keys": {
+              "cl": {
+                "type": "number|null",
+                "help": "Mittellinie"
+              },
+              "ucl": {
+                "type": "number|null",
+                "help": "obere Eingriffsgrenze"
+              },
+              "lcl": {
+                "type": "number|null",
+                "help": "untere Eingriffsgrenze"
+              },
+              "sigma": {
+                "type": "number|null",
+                "help": "Streuung der Punkte"
+              }
+            }
+          },
+          "secondary": {
+            "type": "SubchartLimits",
+            "help": "Grenzen der zweiten Teilkarte",
+            "keysOf": "SubchartLimits",
+            "keys": {
+              "cl": {
+                "type": "number|null",
+                "help": "Mittellinie"
+              },
+              "ucl": {
+                "type": "number|null",
+                "help": "obere Eingriffsgrenze"
+              },
+              "lcl": {
+                "type": "number|null",
+                "help": "untere Eingriffsgrenze"
+              },
+              "sigma": {
+                "type": "number|null",
+                "help": "Streuung der Punkte"
+              }
+            }
+          },
+          "excludedIndices": {
+            "type": "number[]",
+            "help": "ausgeschlossene Punkte"
+          }
+        }
       },
       "activeColumnSlots": {
         "type": "string[]",
@@ -1672,10 +1784,105 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
-        "help": "`{ chartType, subgroupSize, n, baselineEnd, stages, frozen, subcharts: { <id>: { cl, ucl, lcl, sigma } }, capability, violations: [{ index, ruleId }], signals }` — subchart ids i/mr, xbar/r or xbar/s; with stages the limits of the last stage (per point in points); capability `{ cp, cpu, cpl, cpk }` or null; signals the distinct violating indices of the first subchart; null with fewer than 2 values",
+        "type": "Result|null",
+        "help": "the computed result (see `Result`); with stages the limits of the last stage (per point in points); null without a column or with fewer than 2 numbers",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "chartType": {
+            "type": "'i-mr'|'xbar-r'|'xbar-s'",
+            "help": "Kartentyp"
+          },
+          "subgroupSize": {
+            "type": "number",
+            "help": "Werte je Untergruppe"
+          },
+          "n": {
+            "type": "number",
+            "help": "Punkte der ersten Teilkarte"
+          },
+          "baselineEnd": {
+            "type": "number",
+            "help": "Einzelwerte der Basis"
+          },
+          "stages": {
+            "type": "number[]",
+            "help": "Stufengrenzen"
+          },
+          "frozen": {
+            "type": "boolean",
+            "help": "eingefrorene Grenzen gelten"
+          },
+          "subcharts": {
+            "type": "Object<string, SubchartLimits>",
+            "help": "Grenzen je Teilkarte",
+            "keysOf": "SubchartLimits",
+            "keys": {
+              "cl": {
+                "type": "number|null",
+                "help": "Mittellinie"
+              },
+              "ucl": {
+                "type": "number|null",
+                "help": "obere Eingriffsgrenze"
+              },
+              "lcl": {
+                "type": "number|null",
+                "help": "untere Eingriffsgrenze"
+              },
+              "sigma": {
+                "type": "number|null",
+                "help": "Streuung der Punkte"
+              }
+            }
+          },
+          "capability": {
+            "type": "Capability|null",
+            "help": "Prozessfähigkeit",
+            "keysOf": "Capability",
+            "keys": {
+              "cp": {
+                "type": "number|null",
+                "help": "Cp, nur mit beiden Grenzen",
+                "optional": true
+              },
+              "cpu": {
+                "type": "number|null",
+                "help": "Cpu, nur mit oberer Grenze",
+                "optional": true
+              },
+              "cpl": {
+                "type": "number|null",
+                "help": "Cpl, nur mit unterer Grenze",
+                "optional": true
+              },
+              "cpk": {
+                "type": "number|null",
+                "help": "Cpk"
+              }
+            }
+          },
+          "violations": {
+            "type": "Violation[]",
+            "help": "Regelverletzungen der ersten Teilkarte",
+            "keysOf": "Violation",
+            "keys": {
+              "index": {
+                "type": "number",
+                "help": "Punkt, ab 0"
+              },
+              "ruleId": {
+                "type": "number",
+                "help": "Nelson-Regel"
+              }
+            }
+          },
+          "signals": {
+            "type": "number[]",
+            "help": "verletzende Punkte ohne Doppelte"
+          }
+        }
       },
       "points": {
         "type": "object[]",

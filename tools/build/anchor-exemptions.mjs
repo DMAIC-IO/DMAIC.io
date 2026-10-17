@@ -14,6 +14,9 @@
  * @type {Record<string, Array<{ match: string, reason: string, count?: number }>>}
  */
 export const ANCHOR_EXEMPTIONS = {
+  'control-chart': [
+    { match: 'control-chart__nelson-rule', reason: 'je Regel ein Kästchen; der Satz zur Regelauswahl steht am Abschnittstitel', count: 1 },
+  ],
   'transformed-imr-chart': [
     { match: "t('thLimit')", reason: 'Spalte der Zeilennamen OEG, Mittellinie, UEG; die Sätze stehen an den beiden Wertspalten', count: 1 },
   ],
