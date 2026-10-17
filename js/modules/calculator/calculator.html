@@ -1,10 +1,16 @@
 <div class="module-calculator" x-data="calculator">
   <div class="module-calculator__wrap">
 
-    <div class="module-calculator__tabs">
-      <button class="module-calculator__tab" :class="model.mode === 'sci' ? 'module-calculator__tab--active' : ''" data-mode="sci" @click="switchMode('sci')" x-text="t('modeSci')"></button>
-      <button class="module-calculator__tab" :class="model.mode === 'stats' ? 'module-calculator__tab--active' : ''" data-mode="stats" @click="switchMode('stats')" x-text="t('modeStats')"></button>
-      <button class="module-calculator__tab" :class="model.mode === 'sixsigma' ? 'module-calculator__tab--active' : ''" data-mode="sixsigma" @click="switchMode('sixsigma')" x-text="t('modeSixSigma')"></button>
+    <div class="dmike-tabs" role="tablist" x-tablist>
+      <button class="dmike-tab" type="button" role="tab" data-tab="sci" :class="model.mode === 'sci' ? 'dmike-tab--active' : ''"
+              :aria-selected="model.mode === 'sci' ? 'true' : 'false'" :tabindex="model.mode === 'sci' ? 0 : -1"
+              @mousedown="preventFocus($event)" @click="switchMode('sci')" x-text="t('modeSci')"></button>
+      <button class="dmike-tab" type="button" role="tab" data-tab="stats" :class="model.mode === 'stats' ? 'dmike-tab--active' : ''"
+              :aria-selected="model.mode === 'stats' ? 'true' : 'false'" :tabindex="model.mode === 'stats' ? 0 : -1"
+              @mousedown="preventFocus($event)" @click="switchMode('stats')" x-text="t('modeStats')"></button>
+      <button class="dmike-tab" type="button" role="tab" data-tab="sixsigma" :class="model.mode === 'sixsigma' ? 'dmike-tab--active' : ''"
+              :aria-selected="model.mode === 'sixsigma' ? 'true' : 'false'" :tabindex="model.mode === 'sixsigma' ? 0 : -1"
+              @mousedown="preventFocus($event)" @click="switchMode('sixsigma')" x-text="t('modeSixSigma')"></button>
     </div>
 
     <div class="module-calculator__display">

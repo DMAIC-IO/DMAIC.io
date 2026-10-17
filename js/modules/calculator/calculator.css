@@ -22,44 +22,6 @@
   max-width: 520px;
 }
 
-/* ── Mode Tabs ── */
-.module-calculator__tabs {
-  display: flex;
-  gap: var(--spacing-2xs);
-  margin-bottom: var(--spacing-sm);
-  background: var(--color-bg-secondary);
-  border-radius: var(--border-radius);
-  padding: var(--spacing-xs);
-  border: var(--border-width) solid var(--color-border-secondary);
-}
-
-.module-calculator__tab {
-  flex: 1;
-  padding: var(--spacing-sm) var(--spacing-s);
-  text-align: center;
-  font-family: var(--font-family-mono);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--color-text-tertiary);
-  background: none;
-  border: none;
-  border-radius: var(--border-radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-speed);
-}
-
-.module-calculator__tab:hover {
-  color: var(--color-text-primary);
-}
-
-.module-calculator__tab--active {
-  background: var(--color-bg-tertiary);
-  color: var(--color-accent);
-  box-shadow: var(--shadow-sm);
-}
-
 /* ── Display ── */
 .module-calculator__display {
   background: var(--color-bg-secondary);

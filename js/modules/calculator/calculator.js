@@ -107,6 +107,8 @@ export default createModule({
       memRecall() {
         this.inputText(String(this.model.memory));
       },
+      /** Mouse clicks on a mode tab must not focus it — Enter stays a calculator key. */
+      preventFocus(e) { e.preventDefault(); },
       switchMode(m) {
         this.model.switchMode(m);
         this.exprText = '';
@@ -208,6 +210,9 @@ export default createModule({
       onKeydown(e) {
         // Don't capture when typing in spec-limit inputs
         if (e.target.tagName === 'INPUT') return;
+        // Enter on a focused mode tab activates that tab (native click). Mouse
+        // clicks never focus a tab (preventFocus), so only keyboard focus counts.
+        if (e.key === 'Enter' && e.target.closest?.('[role="tab"]')) return;
 
         if (e.key === 'Enter') {
           if (this.model.mode === 'stats') this.addData();
