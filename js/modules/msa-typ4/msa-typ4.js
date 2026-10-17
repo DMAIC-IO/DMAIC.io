@@ -82,6 +82,119 @@ const COLUMN_SINKS = {
 };
 
 /**
+ * Die Schlüsselfläche von `setParam`. Die Toleranzgrenzen tragen den Punkt
+ * im Schlüssel; im Model liegen sie unter `params.tolerance`. Sätze je
+ * Schlüssel unter `types.Params.<schlüssel>` (Punkt = Verschachtelung in
+ * i18n), dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {string} name  Bezeichnung des Merkmals
+ * @property {string} unit  Maßeinheit
+ * @property {'AIAG'|'VDA5'} norm  Bewertungsnorm
+ * @property {'tolerance'|'sixSigma'} pvMode  Bezugsgröße der Prozessstreuung
+ * @property {string} tolerance.LSL  untere Toleranzgrenze
+ * @property {string} tolerance.USL  obere Toleranzgrenze
+ * @property {string} [sigmaP]  Prozessstandardabweichung, nur im Modus sixSigma
+ * @property {'0.01'|'0.05'|'0.10'} alpha  Signifikanzniveau
+ */
+
+/**
+ * Das gerechnete Ergebnis (`analyze()` aus `engines/msa-typ4-engine.js`),
+ * wie `read().result` es liefert — ohne `regression.ciBand` (eine Funktion,
+ * fällt beim Klonen weg). Unendliche Werte kommen als leer an.
+ *
+ * @typedef {object} Result
+ * @property {boolean} ok  immer wahr, wenn ein Ergebnis da ist
+ * @property {ReferencePoint[]} perReference  je Referenzwert
+ * @property {Regression} regression  Gerade Bias über Referenzwert
+ * @property {Kpi} kpi  Kennzahlen beider Normen
+ * @property {ProcessVariation} pv  Bezugsgröße der Prozentwerte
+ * @property {Interpretation} interpretation  Deutung als Satz
+ */
+
+/**
+ * @typedef {object} ReferencePoint
+ * @property {number} xRef  Referenzwert
+ * @property {number} n  Wiederholungen
+ * @property {number} mean  Mittelwert
+ * @property {number} bias  Mittelwert minus Referenzwert
+ * @property {number} sd  Standardabweichung
+ * @property {number|null} tStat  Prüfgröße
+ * @property {number} pValue  p-Wert
+ * @property {number} percentBias  Bias in % der Bezugsgröße
+ * @property {'green'|'yellow'|'red'} verdict  Ampel
+ */
+
+/**
+ * @typedef {object} Regression
+ * @property {number} slope  Steigung
+ * @property {number} intercept  Achsenabschnitt
+ * @property {number} seSlope  Standardfehler der Steigung
+ * @property {number} seIntercept  Standardfehler des Achsenabschnitts
+ * @property {number} tSlope  Prüfgröße der Steigung
+ * @property {number} tIntercept  Prüfgröße des Achsenabschnitts
+ * @property {number} pSlope  p-Wert der Steigung
+ * @property {number} pIntercept  p-Wert des Achsenabschnitts
+ * @property {number} MSE  mittleres Fehlerquadrat
+ * @property {number} N  Anzahl Messwerte
+ * @property {number} dfResid  Freiheitsgrade der Residuen
+ * @property {number[]} ciSlope  Konfidenzintervall der Steigung
+ * @property {number[]} ciIntercept  Konfidenzintervall des Achsenabschnitts
+ */
+
+/**
+ * @typedef {object} Kpi
+ * @property {KpiAiag} aiag  Kennzahlen nach AIAG
+ * @property {KpiVda5} vda5  Kennzahlen nach VDA 5
+ */
+
+/**
+ * @typedef {object} KpiAiag
+ * @property {number} percentLinearity  %Linearität
+ * @property {number} maxPercentBias  größter %Bias
+ * @property {boolean} slopeSignificant  Steigung signifikant
+ * @property {boolean} interceptSignificant  Achsenabschnitt signifikant
+ * @property {Verdict} verdict  Urteil
+ */
+
+/**
+ * @typedef {object} KpiVda5
+ * @property {number} u_BI  Unsicherheit aus Bias und Linearität
+ * @property {number} U  erweiterte Unsicherheit
+ * @property {number|null} Q_MS_BI  Eignungskennwert
+ * @property {Verdict} verdict  Urteil
+ */
+
+/**
+ * @typedef {object} Verdict
+ * @property {'green'|'yellow'|'red'} color  Ampel
+ * @property {string} key  Textschlüssel des Urteils
+ */
+
+/**
+ * @typedef {object} ProcessVariation
+ * @property {'tolerance'|'sixSigma'} mode  Bezugsart
+ * @property {number} value  Bezugsgröße
+ * @property {'tolerance'|'sixSigma'} source  gleich mode
+ */
+
+/**
+ * @typedef {object} Interpretation
+ * @property {string} textKey  Textschlüssel der Deutung
+ * @property {InterpretationParams} params  Werte im Satz
+ */
+
+/**
+ * @typedef {object} InterpretationParams
+ * @property {string} [pctLin]  %Linearität, nur AIAG
+ * @property {string} [maxPctBias]  größter %Bias, nur AIAG
+ * @property {string} [qMsBi]  Eignungskennwert, nur VDA 5
+ */
+
+/** Präfix der Kontexthilfe je KPI-Kachel (`types.<Typedef>.<property>`). */
+const HELP = 'modules.msa-typ4.types.';
+
+/**
  * Die Agenten-Lesefläche von MSA Typ 4.
  *
  * Nicht die persistierte Form: das Model hält NUR die Eingaben, das Ergebnis
@@ -97,7 +210,7 @@ const COLUMN_SINKS = {
  * @property {string[]} activeParams  the keys `setParam` accepts in the current state (`sigmaP` only outside the tolerance mode)
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
- * @property {object|null} result  the computed linearity and bias result, or null while the inputs are incomplete or invalid
+ * @property {Result|null} result  the computed result, or null while the inputs are incomplete or invalid
  */
 const mod = createModule({
   config: {
@@ -157,9 +270,8 @@ const mod = createModule({
       /**
        * Einen Parameter setzen.
        * @agent
-       * @param {'name'|'unit'|'norm'|'pvMode'|'tolerance.LSL'|'tolerance.USL'|'sigmaP'|'alpha'} key
-       *   welcher Parameter; die beiden Toleranzgrenzen mit Punkt; `sigmaP` nur außerhalb des Toleranzmodus
-       * @param {string} value der Wert als Text, wie er eingegeben würde; `norm`: AIAG oder VDA5, `pvMode`: tolerance oder sixSigma, `alpha`: 0.01, 0.05 oder 0.10
+       * @param {keyof Params} key welcher Parameter; die im Zustand zulässigen nennt `activeParams`
+       * @param {string} value der Wert als Text, wie er eingegeben würde; Wertebereich je Schlüssel siehe `Params`
        * @returns {void}
        * @throws {Error} wenn `key` im aktuellen Zustand kein Parameter ist oder `value` nicht zulässig
        */
@@ -257,7 +369,7 @@ const mod = createModule({
        * Compose the KPI-strip tiles for the currently selected norm. Kept in a
        * single data-fn to avoid conditional-branch soup in the template.
        * @noagent view transform
-       * @returns {Array<{ key:string, mod:string, label:string, value:string, sub:string }>}
+       * @returns {Array<{ key:string, mod:string, help:string, label:string, value:string, sub:string }>}
        */
       kpiTiles() {
         const r = this.result;
@@ -268,9 +380,9 @@ const mod = createModule({
           const k = r.kpi.vda5;
           const mod = this.kpiModClass(k.verdict.color);
           tiles.push(
-            { key: 'uBi',   mod, label: _t('kpi.uBi'),   value: fmt(k.u_BI, 4), sub: '' },
-            { key: 'u',     mod, label: _t('kpi.u'),     value: fmt(k.U, 4),    sub: '' },
-            { key: 'qmsbi', mod, label: _t('kpi.qMsBi'), value: `${fmt(k.Q_MS_BI, 2)} %`, sub: _t(k.verdict.key) },
+            { key: 'uBi',   mod, help: `${HELP}KpiVda5.u_BI`, label: _t('kpi.uBi'),   value: fmt(k.u_BI, 4), sub: '' },
+            { key: 'u',     mod, help: `${HELP}KpiVda5.U`, label: _t('kpi.u'),     value: fmt(k.U, 4),    sub: '' },
+            { key: 'qmsbi', mod, help: `${HELP}KpiVda5.Q_MS_BI`, label: _t('kpi.qMsBi'), value: `${fmt(k.Q_MS_BI, 2)} %`, sub: _t(k.verdict.key) },
           );
         } else {
           const k = r.kpi.aiag;
@@ -278,14 +390,15 @@ const mod = createModule({
           const slopeMod = k.slopeSignificant ? 'dmike-kpi--bad' : 'dmike-kpi--good';
           const intMod   = k.interceptSignificant ? 'dmike-kpi--bad' : 'dmike-kpi--good';
           tiles.push(
-            { key: 'lin',   mod, label: _t('kpi.percentLinearity'), value: `${fmt(k.percentLinearity, 2)} %`, sub: _t(k.verdict.key) },
-            { key: 'slope', mod: slopeMod, label: _t('kpi.slope'),     value: fmt(r.regression.slope, 4),     sub: `p = ${fmtP(r.regression.pSlope)}` },
-            { key: 'int',   mod: intMod,   label: _t('kpi.intercept'), value: fmt(r.regression.intercept, 4), sub: `p = ${fmtP(r.regression.pIntercept)}` },
+            { key: 'lin',   mod, help: `${HELP}KpiAiag.percentLinearity`, label: _t('kpi.percentLinearity'), value: `${fmt(k.percentLinearity, 2)} %`, sub: _t(k.verdict.key) },
+            { key: 'slope', mod: slopeMod, help: `${HELP}Regression.slope`, label: _t('kpi.slope'),     value: fmt(r.regression.slope, 4),     sub: `p = ${fmtP(r.regression.pSlope)}` },
+            { key: 'int',   mod: intMod,   help: `${HELP}Regression.intercept`, label: _t('kpi.intercept'), value: fmt(r.regression.intercept, 4), sub: `p = ${fmtP(r.regression.pIntercept)}` },
           );
         }
         // %Bias-Peak wird aus dem AIAG-Block gelesen — auch im VDA-Modus sinnvoll.
         tiles.push({
           key: 'maxBias', mod: '',
+          help: `${HELP}KpiAiag.maxPercentBias`,
           label: _t('kpi.maxPercentBias'),
           value: `${fmt(r.kpi.aiag.maxPercentBias, 2)} %`,
           sub: '',

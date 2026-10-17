@@ -2917,8 +2917,8 @@
         "setParam": {
           "help": "Setzt einen Parameter der Linearitätsstudie; die Neuberechnung folgt nach kurzer Ruhezeit.",
           "params": {
-            "key": "Einer der Schlüssel aus activeParams: name, unit, norm, pvMode, tolerance.LSL, tolerance.USL, sigmaP oder alpha. Die Toleranzgrenzen tragen den Punkt im Schlüssel. sigmaP gilt nur, wenn pvMode nicht tolerance ist; jeder andere Wert ist ein Fehler.",
-            "value": "Der Wert als Text, zum Beispiel '9.80'; die leere Zeichenkette leert das Feld. norm nimmt 'AIAG' oder 'VDA5', pvMode nimmt 'tolerance' oder 'sixSigma', alpha nimmt '0.01', '0.05' oder '0.10'."
+            "key": "Welcher Parameter; jeder Schlüssel ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert als Text, zum Beispiel '10' oder '0.5'. Der zulässige Bereich steht je Schlüssel unter keys; bei den freien Textfeldern leert '' das Feld."
           }
         },
         "setColumn": {
@@ -2933,13 +2933,96 @@
         "clearResults": { "help": "Verwirft das Ergebnis und die Diagramme; die Eingaben bleiben." }
       },
       "fields": {
-        "params": { "help": "Die eingegebenen Parameter, Werte als Text: name und unit (Merkmal und Einheit), norm (AIAG oder VDA5), pvMode (Prozessstreuung aus der Toleranz oder aus sixSigma), tolerance mit LSL und USL (Toleranzgrenzen, leer für fehlend), sigmaP (Prozessstreuung, nur außerhalb des Toleranzmodus) und alpha (Signifikanzniveau)." },
+        "params": { "help": "Die eingegebenen Parameter, Werte als Text; die Toleranzgrenzen stehen verschachtelt unter tolerance mit LSL und USL. Jeder Parameter ist an setParam unter keys beschrieben." },
         "refColumn": { "help": "Die gewählte Referenzspalte als { instanceId, sheetId, columnId }, oder null." },
         "measColumn": { "help": "Die gewählte Messwertspalte als { instanceId, sheetId, columnId }, oder null." },
         "activeParams": { "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt; sigmaP fehlt im Toleranzmodus." },
         "activeColumnSlots": { "help": "Die Slots, die setColumn im aktuellen Zustand annimmt." },
         "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'." },
-        "result": { "help": "Das gerechnete Linearitätsergebnis mit Regression, Bias je Referenzpunkt und den Kennzahlen der gewählten Norm, oder null, solange die Eingaben unvollständig oder ungültig sind." }
+        "result": { "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; null, solange die Eingaben unvollständig oder ungültig sind." }
+      },
+      "types": {
+        "Params": {
+          "name": "Bezeichnung des untersuchten Merkmals, zum Beispiel „Schichtdicke“. Sie dient der Beschriftung und hat auf die Rechnung keinen Einfluss.",
+          "unit": "Maßeinheit der Referenz- und Messwerte, zum Beispiel mm. Sie dient nur der Beschriftung.",
+          "norm": "Bewertungsnorm: AIAG MSA bewertet %Linearität, größten %Bias und die Signifikanz von Steigung und Achsenabschnitt, VDA 5 bewertet den Eignungskennwert Q_MS_BI. Gerechnet werden beide; die Norm bestimmt Kacheln, Ampel und Deutung.",
+          "pvMode": "Bezugsgröße der Prozentwerte %Linearität und %Bias: die Toleranz T = OSG − USG oder die Prozessstreuung 6 · σP.",
+          "tolerance": {
+            "LSL": "Untere Toleranzgrenze (USG) des Merkmals. Mit der oberen ergibt sie die Toleranz T = OSG − USG. Im Toleranzmodus ist T die Bezugsgröße; nach VDA 5 geht T immer in Q_MS_BI ein, auch im Modus 6 · σP.",
+            "USL": "Obere Toleranzgrenze (OSG) des Merkmals. Mit der unteren ergibt sie die Toleranz T = OSG − USG. Im Toleranzmodus ist T die Bezugsgröße; nach VDA 5 geht T immer in Q_MS_BI ein, auch im Modus 6 · σP."
+          },
+          "sigmaP": "Standardabweichung des Prozesses σP. Nur im Modus 6 · σP gefragt; die Bezugsgröße ist dann 6 · σP.",
+          "alpha": "Signifikanzniveau der t-Tests je Referenzwert und für Steigung und Achsenabschnitt; es legt auch das Niveau der Konfidenzintervalle fest (1 − α). Zur Wahl stehen 0,01, 0,05 (üblich) und 0,10."
+        },
+        "Result": {
+          "ok": "Immer wahr: ein Ergebnis entsteht nur, wenn die Rechnung gelungen ist.",
+          "perReference": "Je Referenzwert ein Eintrag, aufsteigend sortiert, mit Mittelwert, Bias, t-Test und Ampel. Gefordert sind mindestens 5 verschiedene Referenzwerte mit je mindestens 3 Wiederholungen.",
+          "regression": "Ausgleichsgerade der Einzelabweichungen (Messwert minus Referenzwert) über dem Referenzwert, nach der Methode der kleinsten Quadrate. Eine Steigung ungleich 0 heißt, dass sich der Bias über den Messbereich ändert.",
+          "kpi": "Die Kennzahlen beider Normen, AIAG MSA und VDA 5; beide werden immer gerechnet.",
+          "pv": "Die Bezugsgröße, auf die sich %Linearität und %Bias beziehen.",
+          "interpretation": "Die Deutung des Ergebnisses als Satz, abhängig von Norm und Ampelfarbe, mit den eingesetzten Kennzahlen."
+        },
+        "ReferencePoint": {
+          "xRef": "Der Referenzwert (Sollwert des Normals), zu dem die Wiederholmessungen gehören.",
+          "n": "Anzahl der Wiederholmessungen an diesem Referenzwert, mindestens 3.",
+          "mean": "Mittelwert der Wiederholmessungen an diesem Referenzwert.",
+          "bias": "Systematische Abweichung an diesem Referenzwert: Mittelwert minus Referenzwert. Positiv heißt, es wird im Mittel zu hoch gemessen.",
+          "sd": "Standardabweichung der Wiederholmessungen an diesem Referenzwert (Stichprobe, n − 1).",
+          "tStat": "Prüfgröße des t-Tests auf Bias = 0: t = Bias / (s / √n). Leer, wenn alle Wiederholungen gleich sind und der Bias nicht 0 ist.",
+          "pValue": "Zweiseitiger p-Wert des t-Tests auf Bias = 0 mit n − 1 Freiheitsgraden. Unter α gilt der Bias als signifikant.",
+          "percentBias": "Betrag des Bias in Prozent der Bezugsgröße: %Bias = |Bias| · 100 / Bezugsgröße.",
+          "verdict": "Ampel je Referenzwert: grün, wenn der Bias nicht signifikant ist (p ≥ α); gelb, wenn er signifikant ist, aber höchstens 10 % der Bezugsgröße beträgt; sonst rot."
+        },
+        "Regression": {
+          "slope": "Steigung der Ausgleichsgeraden des Bias über dem Referenzwert: um so viel ändert sich der Bias je Einheit des Referenzwerts. Ideal ist 0; ist sie signifikant (p < α), ist das Messsystem nicht linear.",
+          "intercept": "Achsenabschnitt der Ausgleichsgeraden: der Bias, den die Gerade beim Referenzwert 0 hätte. Ideal ist 0; ist er signifikant (p < α), liegt ein konstanter Bias vor.",
+          "seSlope": "Standardfehler der Steigung: √(MSE / Sxx), wobei Sxx die Summe der quadrierten Abstände der Referenzwerte aller Einzelmessungen von ihrem Mittel ist.",
+          "seIntercept": "Standardfehler des Achsenabschnitts: √(MSE · (1 / N + x̄² / Sxx)), mit x̄ dem Mittel der Referenzwerte aller Einzelmessungen.",
+          "tSlope": "Prüfgröße für Steigung = 0: Steigung geteilt durch ihren Standardfehler.",
+          "tIntercept": "Prüfgröße für Achsenabschnitt = 0: Achsenabschnitt geteilt durch seinen Standardfehler.",
+          "pSlope": "Zweiseitiger p-Wert für Steigung = 0 mit N − 2 Freiheitsgraden. Unter α gilt die Steigung als signifikant.",
+          "pIntercept": "Zweiseitiger p-Wert für Achsenabschnitt = 0 mit N − 2 Freiheitsgraden. Unter α gilt der Achsenabschnitt als signifikant.",
+          "MSE": "Mittleres Fehlerquadrat: Summe der quadrierten Abstände der Einzelabweichungen von der Geraden, geteilt durch N − 2.",
+          "N": "Anzahl aller Einzelmessungen, die in die Regression eingehen.",
+          "dfResid": "Freiheitsgrade der Residuen: N − 2, mindestens 1.",
+          "ciSlope": "Konfidenzintervall der Steigung zum Niveau 1 − α, als untere und obere Grenze. Schließt es 0 ein, ist die Steigung nicht signifikant.",
+          "ciIntercept": "Konfidenzintervall des Achsenabschnitts zum Niveau 1 − α, als untere und obere Grenze. Schließt es 0 ein, ist der Achsenabschnitt nicht signifikant."
+        },
+        "Kpi": {
+          "aiag": "Kennzahlen und Urteil nach AIAG MSA.",
+          "vda5": "Kennzahlen und Urteil nach VDA 5."
+        },
+        "KpiAiag": {
+          "percentLinearity": "%Linearität: Änderung des Bias über den Messbereich in Prozent der Bezugsgröße, 100 · |Steigung| · (größter − kleinster Referenzwert) / Bezugsgröße. Der größere Wert aus %Linearität und größtem %Bias entscheidet: bis 5 % annehmbar, bis 10 % bedingt annehmbar, darüber nicht annehmbar.",
+          "maxPercentBias": "Größter %Bias über alle Referenzwerte: 100 · größter |Bias| / Bezugsgröße. Der größere Wert aus %Linearität und größtem %Bias entscheidet: bis 5 % annehmbar, bis 10 % bedingt annehmbar, darüber nicht annehmbar.",
+          "slopeSignificant": "Wahr, wenn die Steigung signifikant von 0 abweicht (p < α). Dann ist das Urteil nach AIAG rot.",
+          "interceptSignificant": "Wahr, wenn der Achsenabschnitt signifikant von 0 abweicht (p < α). Dann ist das Urteil nach AIAG rot.",
+          "verdict": "Urteil nach AIAG MSA: rot, wenn Steigung oder Achsenabschnitt signifikant sind oder der größere Wert aus %Linearität und größtem %Bias 10 % übersteigt; gelb, wenn er 5 % übersteigt; sonst grün."
+        },
+        "KpiVda5": {
+          "u_BI": "Standardunsicherheit aus Bias und Linearität: u_BI = √(größter |Bias|² + (Standardfehler der Steigung · Messbereich)²); der Messbereich ist größter minus kleinster Referenzwert.",
+          "U": "Erweiterte Unsicherheit aus Bias und Linearität: U = 2 · u_BI.",
+          "Q_MS_BI": "Eignungskennwert nach VDA 5: Q_MS_BI = U / T · 100 % mit der Toleranz T = OSG − USG, auch im Modus 6 · σP. Bis 15 % geeignet, bis 30 % bedingt geeignet, darüber nicht geeignet. Leer, wenn T nicht positiv ist.",
+          "verdict": "Urteil nach VDA 5: grün bis Q_MS_BI 15 %, gelb bis 30 %, darüber rot."
+        },
+        "Verdict": {
+          "color": "Ampelfarbe des Urteils: grün, gelb oder rot. Die Grenzen hängen von der Norm ab.",
+          "key": "Schlüssel des Urteilstexts in der Übersetzungsdatei, je Norm und Ampelfarbe."
+        },
+        "ProcessVariation": {
+          "mode": "Wie die Bezugsgröße bestimmt wurde: aus der Toleranz oder aus 6 · σP.",
+          "value": "Die Bezugsgröße: T = OSG − USG im Toleranzmodus, 6 · σP im Modus Prozessstreuung. Sie muss positiv sein, sonst wird nicht gerechnet.",
+          "source": "Herkunft der Bezugsgröße; stets gleich der Bezugsart."
+        },
+        "Interpretation": {
+          "textKey": "Schlüssel des Deutungssatzes in der Übersetzungsdatei, je Norm und Ampelfarbe.",
+          "params": "Die Kennzahlen, die der Deutungssatz einsetzt, als Text mit zwei Nachkommastellen."
+        },
+        "InterpretationParams": {
+          "pctLin": "%Linearität als Text mit zwei Nachkommastellen; nur nach AIAG MSA.",
+          "maxPctBias": "Größter %Bias als Text mit zwei Nachkommastellen; nur nach AIAG MSA.",
+          "qMsBi": "Q_MS_BI als Text mit zwei Nachkommastellen; nur nach VDA 5."
+        }
       },
       "title": "MSA Typ 4",
       "titleLong": "Linearität & Bias über den Messbereich",
@@ -3188,8 +3271,8 @@
         "setParam": {
           "help": "Setzt einen Parameter der Studie; die Neuberechnung folgt nach kurzer Ruhezeit.",
           "params": {
-            "key": "Einer der Schlüssel aus activeParams: measurementName, unit, chartType, limitsMode, baselineK, mu0, sigma0, enabledRules oder alpha. baselineK gilt nur bei limitsMode from-study, mu0 und sigma0 nur bei limitsMode given; jeder andere Schlüssel ist ein Fehler.",
-            "value": "Der Wert. measurementName und unit nehmen Text, chartType 'i-mr' oder 'xbar-r', limitsMode 'from-study' oder 'given', alpha '0.01', '0.05' oder '0.10'. baselineK (ganze Zahl ab 1), mu0 und sigma0 nehmen eine Zahl oder einen Zahlentext, zum Beispiel 10; null oder '' leert sie wieder (nicht gesetzt). enabledRules nimmt die Liste der angehakten Regel-Ids als Zahlen von 1 bis 8, zum Beispiel [1, 4]."
+            "key": "Welcher Parameter; jeder Schlüssel ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys. mu0 und sigma0 leert null oder ''."
           }
         },
         "setColumn": {
@@ -3204,15 +3287,109 @@
         "clearResults": { "help": "Verwirft das Ergebnis und die Diagramme; die Eingaben bleiben." }
       },
       "fields": {
-        "params": { "help": "Die eingegebenen Parameter: measurementName (Merkmalsname), unit (Einheit), chartType (i-mr oder xbar-r), limitsMode (from-study oder given), baselineK (Anzahl Basis-Untergruppen), mu0 und sigma0 (vorgegebene Grenzen, null solange nicht gesetzt), sourceTyp1InstanceId (übernommene Typ-1-Instanz, über die Fläche nicht setzbar), enabledRules (Liste der angehakten Regel-Ids als Zahlen) und alpha (Signifikanzniveau des Drift-Tests, als Text)." },
+        "params": { "help": "Die eingegebenen Parameter, wie setParam sie nimmt und dort unter keys beschreibt, dazu sourceTyp1InstanceId (übernommene Typ-1-Instanz, über die Fläche nicht setzbar)." },
         "columns": { "help": "Die gewählten Spalten: timestamp, value und subgroup je als { instanceId, sheetId, columnId } oder null." },
         "exampleWorksheetId": { "help": "Interne Buchführung: die Datensammlung, die ein geladenes Beispiel angelegt hat; null ohne Beispiel." },
         "activeParams": { "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt; baselineK fehlt bei limitsMode given, mu0 und sigma0 fehlen bei limitsMode from-study." },
         "activeColumnSlots": { "help": "Die Slots, die setColumn im aktuellen Zustand annimmt; subgroup fehlt außerhalb von chartType xbar-r." },
         "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'." },
-        "result": { "help": "Das gerechnete Ergebnis mit Urteil, Regelkarten-Reihen, Nelson-Verletzungen und Drift-Test, oder null, solange die Eingaben unvollständig oder ungültig sind." },
+        "result": { "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; null, solange die Eingaben unvollständig oder ungültig sind." },
         "errorMsg": { "help": "Der Fehlercode einer gescheiterten Rechnung, sonst null." }
       },
+      "types": {
+        "Params": {
+          "measurementName": "Bezeichnung des beobachteten Merkmals, zum Beispiel „Wellendurchmesser“. Sie dient der Beschriftung und hat auf die Rechnung keinen Einfluss.",
+          "unit": "Maßeinheit der Messwerte, zum Beispiel mm. Sie dient nur der Beschriftung.",
+          "chartType": "Kartentyp: I-MR für Einzelwerte mit gleitender Spannweite, mindestens 10 Werte; x̄-R für Mittelwerte von Untergruppen mit ihrer Spannweite, mindestens 5 Untergruppen gleicher Größe mit 2 bis 25 Werten. Für x̄-R ist eine Untergruppenspalte nötig.",
+          "limitsMode": "Herkunft der Eingriffsgrenzen: aus den Studiendaten, berechnet aus den ersten k Basis-Untergruppen, oder vorgegeben über Sollmittelwert µ₀ und Sollstreuung σ₀, etwa aus einer Typ-1-Studie.",
+          "baselineK": "Anzahl k der Basis-Untergruppen (bei I-MR der ersten Einzelwerte), aus denen Mittellinie und Eingriffsgrenzen berechnet werden. Erlaubt sind mindestens 5 und höchstens so viele, wie Daten vorliegen; unter 20 erscheint eine Warnung. Vorgabe ist 20.",
+          "mu0": "Vorgegebener Sollmittelwert µ₀; er ist die Mittellinie der Lagekarte. Nur bei vorgegebenen Grenzen.",
+          "sigma0": "Vorgegebene Sollstreuung σ₀ der Einzelwerte, größer als 0. Die Eingriffsgrenzen liegen bei µ₀ ± 3 · σ₀, bei x̄-R bei µ₀ ± 3 · σ₀ / √n. Nur bei vorgegebenen Grenzen.",
+          "enabledRules": "Die Nelson-Regeln 1 bis 8, nach denen die Punkte der Lagekarte geprüft werden. Vorgabe sind die Regeln 1 bis 6; ist keine angehakt, wird nicht geprüft.",
+          "alpha": "Signifikanzniveau des Drift-Tests: 0,01, 0,05 (üblich) oder 0,10. Ein Drift mit p < α macht das Urteil mindestens grenzwertig, einer mit p < α/10 instabil."
+        },
+        "Result": {
+          "meta": "Rahmendaten der Auswertung: Kartentyp, Herkunft der Grenzen, Umfang und Warnungen.",
+          "primary": "Die Lagekarte: Einzelwerte bei I-MR, Mittelwerte der Untergruppen bei x̄-R, mit Mittellinie, Eingriffsgrenzen und Regelverletzungen.",
+          "secondary": "Die Streuungskarte: gleitende Spannweiten bei I-MR, Spannweiten der Untergruppen bei x̄-R, mit Mittellinie und Eingriffsgrenzen.",
+          "drift": "Lineare Regression der Punkte der Lagekarte über der Zeit, mit t-Test, ob die Steigung von 0 abweicht.",
+          "ruleViolations": "Je Punkt der Lagekarte, der mindestens eine Nelson-Regel verletzt, ein Eintrag mit Zeitpunkt, Wert und verletzten Regeln, nach Punkt sortiert.",
+          "verdict": "Urteil zur Stabilität mit seinem Auslöser und den Grenzen, nach denen geurteilt wurde.",
+          "interpretation": "Die Deutung des Ergebnisses als Satz, abhängig von Urteil und Auslöser."
+        },
+        "Meta": {
+          "chartType": "Der gerechnete Kartentyp: I-MR oder x̄-R.",
+          "limitsMode": "Woher die Grenzen stammen: aus den Studiendaten oder vorgegeben.",
+          "n": "Untergruppengröße: 1 bei I-MR, bei x̄-R die Zahl der Werte je Untergruppe.",
+          "subgroupCount": "Anzahl der Punkte der Lagekarte: Einzelwerte bei I-MR, Untergruppen bei x̄-R.",
+          "pointCount": "Anzahl aller ausgewerteten Messwerte.",
+          "baselineK": "Die eingestellte Zahl k der Basis-Untergruppen; sie wirkt nur, wenn die Grenzen aus den Studiendaten stammen.",
+          "warnings": "Hinweise zur Belastbarkeit: weniger als 20 Basis-Untergruppen, nicht monoton steigende Zeitstempel oder eine Regelverletzung innerhalb der Basis, die die daraus berechneten Grenzen verfälschen kann."
+        },
+        "Warning": {
+          "code": "Kennung der Warnung: W_BASELINE_LT_20 (weniger als 20 Basis-Untergruppen), W_TIMESTAMPS_NON_MONOTONIC (Zeitstempel nicht monoton steigend) oder W_LIMITS_FROM_UNSTABLE_BASELINE (Regelverletzung innerhalb der Basis).",
+          "params": "Werte, die der Warnungstext einsetzt; nur bei zu kleiner Basis vorhanden, dann mit der Zahl k der Basis-Untergruppen."
+        },
+        "PrimaryChart": {
+          "series": "Die Punkte der Lagekarte in Zeitreihenfolge: die Einzelwerte bei I-MR, die Mittelwerte der Untergruppen bei x̄-R. Die Kachel Mittelwert zeigt den Mittelwert dieser Punkte.",
+          "cl": "Mittellinie der Lagekarte: Mittelwert der Basis bei Grenzen aus den Studiendaten, sonst der Sollmittelwert µ₀.",
+          "ucl": "Obere Eingriffsgrenze der Lagekarte: Mittellinie + 3 · σ.",
+          "lcl": "Untere Eingriffsgrenze der Lagekarte: Mittellinie − 3 · σ.",
+          "sigma": "Geschätzte Streuung der Punkte der Lagekarte. Aus den Studiendaten: bei I-MR mittlere gleitende Spannweite der Basis / d₂, bei x̄-R mittlere Spannweite der Basis / (d₂ · √n). Vorgegeben: σ₀, bei x̄-R σ₀ / √n.",
+          "label": "Kartenart: i für Einzelwerte, xbar für Mittelwerte der Untergruppen.",
+          "violations": "Je Punkt und verletzter Nelson-Regel ein Eintrag; ein Punkt, der mehrere Regeln verletzt, kommt mehrfach vor."
+        },
+        "Violation": {
+          "index": "Position des Punkts in der Lagekarte, ab 0 gezählt.",
+          "ruleId": "Nummer der verletzten Nelson-Regel, 1 bis 8."
+        },
+        "SecondaryChart": {
+          "series": "Die Spannweiten in Zeitreihenfolge: bei I-MR der Betrag der Differenz zweier aufeinanderfolgender Werte, wobei der erste Wert fehlt; bei x̄-R größter minus kleinster Wert je Untergruppe.",
+          "cl": "Mittellinie der Streuungskarte: mittlere Spannweite der Basis bei Grenzen aus den Studiendaten, sonst d₂ · σ₀.",
+          "ucl": "Obere Eingriffsgrenze der Streuungskarte: D₄ · Mittellinie.",
+          "lcl": "Untere Eingriffsgrenze der Streuungskarte: D₃ · Mittellinie; bei Untergruppen bis 6 Werten ist sie 0.",
+          "label": "Kartenart: MR für gleitende Spannweiten, R für Spannweiten der Untergruppen."
+        },
+        "Drift": {
+          "slope": "Steigung der Regressionsgeraden durch die Punkte der Lagekarte über der Zeit: Änderung je Punkt, wenn keine Zeitspalte gewählt ist, sonst je Einheit der Zeitstempel (bei Datumsangaben je Millisekunde). Ideal ist 0.",
+          "se": "Standardfehler der Steigung: Wurzel aus Residuenvarianz geteilt durch die Summe der quadrierten Abstände der Zeitpunkte von ihrem Mittel.",
+          "tStat": "Prüfgröße für Steigung = 0: Steigung geteilt durch ihren Standardfehler.",
+          "pValue": "Zweiseitiger p-Wert des Drift-Tests auf Steigung = 0. Unter α gilt der Drift als signifikant, unter α/10 als stark; ein starker Drift macht das Urteil instabil.",
+          "intercept": "Achsenabschnitt der Regressionsgeraden: ihr Wert beim Zeitpunkt 0.",
+          "df": "Freiheitsgrade des Drift-Tests: Anzahl der Punkte der Lagekarte minus 2.",
+          "ciSlope": "Konfidenzintervall der Steigung zum Niveau 1 − α, als untere und obere Grenze. Schließt es 0 ein, ist kein Drift nachweisbar.",
+          "slopeUnit": "Einheitenangabe der Steigung; derzeit immer Messeinheit je Punkt, auch wenn die Zeitachse aus Zeitstempeln stammt.",
+          "tScale": "Zeitachse der Regression: die Zeitstempel, wenn eine Zeitspalte gewählt ist, sonst die laufende Nummer der Punkte ab 1."
+        },
+        "RuleViolation": {
+          "primaryIndex": "Position des Punkts in der Lagekarte, ab 0 gezählt.",
+          "time": "Zeitpunkt des Punkts: der Zeitstempel aus der Zeitspalte, bei x̄-R der Mittelwert der Zeitstempel der Untergruppe (Datumsangaben in Millisekunden); ohne Zeitspalte die laufende Nummer ab 1.",
+          "value": "Wert des Punkts in der Lagekarte: Einzelwert bei I-MR, Mittelwert der Untergruppe bei x̄-R.",
+          "ruleIds": "Die Nummern der Nelson-Regeln, die dieser Punkt verletzt, aufsteigend."
+        },
+        "Verdict": {
+          "level": "Urteil zur Stabilität: stabil ohne Regelverletzung und ohne signifikanten Drift (p ≥ α); instabil ab 3 verletzten Punkten oder bei starkem Drift (p < α/10); dazwischen grenzwertig.",
+          "driver": "Auslöser des Urteils: keiner, Nelson-Verletzungen, Drift oder beides.",
+          "nelsonCount": "Anzahl der Punkte, die mindestens eine Nelson-Regel verletzen. Ab 3 lautet das Urteil instabil, ab 1 mindestens grenzwertig.",
+          "driftP": "p-Wert des Drift-Tests, derselbe wie in der Drift-Regression.",
+          "thresholds": "Die Grenzen, nach denen geurteilt wurde: instabil ab 3 verletzten Punkten oder bei starkem Drift mit p < α/10; signifikanter Drift bei p < α."
+        },
+        "Thresholds": {
+          "nelsonUnstable": "Anzahl verletzter Punkte, ab der das Urteil instabil lautet: 3.",
+          "driftStrong": "p-Grenze für starken Drift: α/10, bei α = 0,05 also 0,005. Darunter lautet das Urteil instabil.",
+          "alpha": "Signifikanzniveau des Drift-Tests als Zahl; darunter gilt ein Drift als signifikant."
+        },
+        "Interpretation": {
+          "textKey": "Schlüssel des Deutungssatzes in der Übersetzungsdatei, je Urteil und Auslöser.",
+          "params": "Die Werte, die der Deutungssatz einsetzt."
+        },
+        "InterpretationParams": {
+          "nelsonCount": "Anzahl der verletzten Punkte, wie beim Urteil.",
+          "driftP": "p-Wert des Drift-Tests als Text mit vier Nachkommastellen.",
+          "slope": "Steigung des Drifts als Text mit vier Nachkommastellen."
+        }
+      },
+      "warningTitle": "Warnung",
       "emptyHint": "Zeitstempel/Reihenfolge- und Messwert-Spalte wählen, um die Analyse zu starten.",
       "empty": "Zeitstempel/Reihenfolge- und Messwert-Spalte wählen, um die Analyse zu starten.",
       "sections": {

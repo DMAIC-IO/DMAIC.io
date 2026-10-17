@@ -6,13 +6,13 @@
     <!-- Merkmal -->
     <div class="field-row">
       <div class="field-group field-group--major">
-        <label x-text="t('input.measurementName')"></label>
+        <label data-help-key="modules.msa-typ6.types.Params.measurementName" x-text="t('input.measurementName')"></label>
         <input type="text" class="field" data-ref="inp-measurement-name"
                placeholder="z. B. Wellendurchmesser"
                :value="model.params.measurementName" @input="setParam('measurementName', $event.target.value)">
       </div>
       <div class="field-group field-group--minor">
-        <label x-text="t('input.unit')"></label>
+        <label data-help-key="modules.msa-typ6.types.Params.unit" x-text="t('input.unit')"></label>
         <input type="text" class="field" data-ref="inp-unit"
                placeholder="mm"
                :value="model.params.unit" @input="setParam('unit', $event.target.value)">
@@ -21,7 +21,7 @@
 
     <!-- Kartentyp -->
     <fieldset class="module-msa-typ6__radios">
-      <legend x-text="t('input.chartType')"></legend>
+      <legend data-help-key="modules.msa-typ6.types.Params.chartType" x-text="t('input.chartType')"></legend>
       <template x-for="o in chartTypeOptions()" :key="o">
         <label>
           <input type="radio" name="msa-typ6-chartType" :value="o"
@@ -35,16 +35,16 @@
     <div class="dmike-split__section-title" x-text="t('sections.dataSource')"></div>
 
     <div class="field-group">
-      <label x-text="t('input.timestampColumn')"></label>
+      <label data-help-key="modules.msa-typ6.actions.setColumn.help" x-text="t('input.timestampColumn')"></label>
       <div data-ref="col-picker-timestamp"></div>
     </div>
     <div class="field-group">
-      <label x-text="t('input.valueColumn')"></label>
+      <label data-help-key="modules.msa-typ6.actions.setColumn.help" x-text="t('input.valueColumn')"></label>
       <div data-ref="col-picker-value"></div>
     </div>
     <div class="field-group" data-ref="group-subgroup-picker"
          x-show="model.params.chartType === 'xbar-r'">
-      <label x-text="t('input.subgroupColumn')"></label>
+      <label data-help-key="modules.msa-typ6.actions.setColumn.help" x-text="t('input.subgroupColumn')"></label>
       <div data-ref="col-picker-subgroup"></div>
     </div>
 
@@ -52,7 +52,7 @@
     <div class="dmike-split__section-title" x-text="t('sections.limits')"></div>
 
     <fieldset class="module-msa-typ6__radios">
-      <legend x-text="t('input.limitsMode')"></legend>
+      <legend data-help-key="modules.msa-typ6.types.Params.limitsMode" x-text="t('input.limitsMode')"></legend>
       <template x-for="o in limitsModeOptions()" :key="o">
         <label>
           <input type="radio" name="msa-typ6-limitsMode" :value="o"
@@ -64,7 +64,7 @@
 
     <div class="field-group" data-ref="group-baseline-k"
          x-show="model.params.limitsMode === 'from-study'">
-      <label x-text="t('input.baselineK')"></label>
+      <label data-help-key="modules.msa-typ6.types.Params.baselineK" x-text="t('input.baselineK')"></label>
       <input type="number" class="field field--num" data-ref="inp-baseline-k"
              min="5" step="1"
              :value="model.params.baselineK" @change="onNumberInput('baselineK', $event.target.value)">
@@ -74,13 +74,13 @@
          x-show="model.params.limitsMode === 'given'">
       <div class="field-row">
         <div class="field-group">
-          <label x-text="t('input.mu0')"></label>
+          <label data-help-key="modules.msa-typ6.types.Params.mu0" x-text="t('input.mu0')"></label>
           <input type="number" class="field field--num" data-ref="inp-mu0"
                  step="any"
                  :value="model.params.mu0" @change="onNumberInput('mu0', $event.target.value)">
         </div>
         <div class="field-group">
-          <label x-text="t('input.sigma0')"></label>
+          <label data-help-key="modules.msa-typ6.types.Params.sigma0" x-text="t('input.sigma0')"></label>
           <input type="number" class="field field--num" data-ref="inp-sigma0"
                  min="0" step="any"
                  :value="model.params.sigma0" @change="onNumberInput('sigma0', $event.target.value)">
@@ -108,7 +108,7 @@
     </div>
 
     <!-- Nelson-Regeln -->
-    <div class="dmike-split__section-title"><span class="glossary-term" data-glossary-term="nelson-regeln"><span x-text="t('input.nelsonRules')"></span></span></div>
+    <div class="dmike-split__section-title"><span class="glossary-term" data-glossary-term="nelson-regeln"><span data-help-key="modules.msa-typ6.types.Params.enabledRules" x-text="t('input.nelsonRules')"></span></span></div>
     <div class="module-msa-typ6__nelson-list" data-ref="nelson-list">
       <template x-for="id in ruleIds()" :key="id">
         <label class="module-msa-typ6__nelson-rule">
@@ -120,7 +120,7 @@
 
     <!-- α für Drift-Test -->
     <div class="field-group">
-      <label x-text="t('input.alpha')"></label>
+      <label data-help-key="modules.msa-typ6.types.Params.alpha" x-text="t('input.alpha')"></label>
       <select class="field" data-ref="sel-alpha"
               :value="model.params.alpha" @input="setParam('alpha', $event.target.value)">
         <template x-for="a in alphaOptions()" :key="a">
@@ -144,7 +144,7 @@
              template-module.js zerstört + re-initialisiert den Alpine-Baum
              der Instanz komplett. -->
         <div class="dmike-infobox" :class="_verdictKpiClass(_lastResult.verdict.level)">
-          <span class="dmike-infobox__label" x-text="t('verdict.' + _lastResult.verdict.level)"></span>
+          <span class="dmike-infobox__label" data-help-key="modules.msa-typ6.types.Verdict.level" x-text="t('verdict.' + _lastResult.verdict.level)"></span>
           <span class="dmike-infobox__detail" x-text="t('driver.' + _lastResult.verdict.driver)"></span>
           <span class="module-msa-typ6__interpretation"
                 x-text="t(_lastResult.interpretation.textKey, _lastResult.interpretation.params)"></span>
@@ -153,7 +153,7 @@
         <!-- Warnungen aus meta.warnings — je Warnung ein .dmike-infobox--warn. -->
         <template x-for="w in _lastResult.meta.warnings" :key="w.code">
           <div class="dmike-infobox dmike-infobox--warn">
-            <span class="dmike-infobox__label">Warnung</span>
+            <span class="dmike-infobox__label" data-help-key="modules.msa-typ6.types.Meta.warnings" x-text="t('warningTitle')"></span>
             <span class="dmike-infobox__detail" x-text="t('warnings.' + w.code)"></span>
           </div>
         </template>
@@ -161,28 +161,28 @@
         <!-- KPI-Strip (Task 9) -->
         <div class="dmike-kpi-strip">
           <div class="dmike-kpi">
-            <div class="dmike-kpi-label" x-text="t('kpi.points')"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.msa-typ6.types.Meta.pointCount" x-text="t('kpi.points')"></div>
             <div class="dmike-kpi-value" x-text="_lastResult.meta.pointCount"></div>
           </div>
           <div class="dmike-kpi">
-            <div class="dmike-kpi-label" x-text="t('kpi.mean')"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.msa-typ6.types.PrimaryChart.series" x-text="t('kpi.mean')"></div>
             <div class="dmike-kpi-value" x-text="_fmt(_mean(_lastResult.primary.series), 3)"></div>
           </div>
           <div class="dmike-kpi">
-            <div class="dmike-kpi-label" x-text="t('kpi.sigma')"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.msa-typ6.types.PrimaryChart.sigma" x-text="t('kpi.sigma')"></div>
             <div class="dmike-kpi-value" x-text="_fmt(_lastResult.primary.sigma, 3)"></div>
           </div>
           <div class="dmike-kpi"
                :class="_lastResult.verdict.nelsonCount >= 3 ? 'dmike-kpi--bad' : (_lastResult.verdict.nelsonCount > 0 ? 'dmike-kpi--warn' : 'dmike-kpi--good')">
-            <div class="dmike-kpi-label" x-text="t('kpi.violations')"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.msa-typ6.types.Verdict.nelsonCount" x-text="t('kpi.violations')"></div>
             <div class="dmike-kpi-value" x-text="_lastResult.verdict.nelsonCount"></div>
           </div>
           <div class="dmike-kpi">
-            <div class="dmike-kpi-label" x-text="t('kpi.driftSlope')"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.msa-typ6.types.Drift.slope" x-text="t('kpi.driftSlope')"></div>
             <div class="dmike-kpi-value" x-text="_fmt(_lastResult.drift.slope, 4)"></div>
           </div>
           <div class="dmike-kpi">
-            <div class="dmike-kpi-label" x-text="t('kpi.driftP')"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.msa-typ6.types.Drift.pValue" x-text="t('kpi.driftP')"></div>
             <div class="dmike-kpi-value" x-text="_fmt(_lastResult.drift.pValue, 4)"></div>
           </div>
         </div>
@@ -204,9 +204,9 @@
         <table class="module-msa-typ6__violations" x-show="_lastResult.ruleViolations.length > 0">
           <thead>
             <tr>
-              <th x-text="t('violations.time')"></th>
-              <th x-text="t('violations.value')"></th>
-              <th x-text="t('violations.rules')"></th>
+              <th><span data-help-key="modules.msa-typ6.types.RuleViolation.time" x-text="t('violations.time')"></span></th>
+              <th><span data-help-key="modules.msa-typ6.types.RuleViolation.value" x-text="t('violations.value')"></span></th>
+              <th><span data-help-key="modules.msa-typ6.types.RuleViolation.ruleIds" x-text="t('violations.rules')"></span></th>
               <th x-text="t('violations.description')"></th>
             </tr>
           </thead>

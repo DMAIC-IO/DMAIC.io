@@ -2913,8 +2913,8 @@
         "setParam": {
           "help": "Sets a parameter of the linearity study; the recomputation follows after a short pause.",
           "params": {
-            "key": "One of the keys in activeParams: name, unit, norm, pvMode, tolerance.LSL, tolerance.USL, sigmaP or alpha. The tolerance limits carry the dot in the key. sigmaP applies only when pvMode is not tolerance; any other value is an error.",
-            "value": "The value as text, for example '9.80'; the empty string clears the field. norm takes 'AIAG' or 'VDA5', pvMode takes 'tolerance' or 'sixSigma', alpha takes '0.01', '0.05' or '0.10'."
+            "key": "Which parameter; each key is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
+            "value": "The value as text, for example '10' or '0.5'. The allowed range per key is given under keys; for the free text fields '' clears the field."
           }
         },
         "setColumn": {
@@ -2929,13 +2929,96 @@
         "clearResults": { "help": "Discards the result and the charts; the inputs stay." }
       },
       "fields": {
-        "params": { "help": "The entered parameters, values as text: name and unit (feature and unit), norm (AIAG or VDA5), pvMode (process variation from the tolerance or from sixSigma), tolerance with LSL and USL (tolerance limits, empty for missing), sigmaP (process variation, only outside the tolerance mode) and alpha (significance level)." },
+        "params": { "help": "The entered parameters, values as text; the tolerance limits are nested under tolerance with LSL and USL. Each parameter is described at setParam under keys." },
         "refColumn": { "help": "The chosen reference column as { instanceId, sheetId, columnId }, or null." },
         "measColumn": { "help": "The chosen measured column as { instanceId, sheetId, columnId }, or null." },
         "activeParams": { "help": "The keys setParam accepts in the current state; sigmaP is missing in the tolerance mode." },
         "activeColumnSlots": { "help": "The slots setColumn accepts in the current state." },
         "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; key is 'instanceId|sheetId|columnId'." },
-        "result": { "help": "The computed linearity result with regression, bias per reference point and the figures of the chosen norm, or null while the inputs are incomplete or invalid." }
+        "result": { "help": "The computed result, each figure described individually under keys; null while the inputs are incomplete or invalid." }
+      },
+      "types": {
+        "Params": {
+          "name": "Name of the studied feature, for example “coating thickness”. It labels the result and has no effect on the computation.",
+          "unit": "Unit of the reference and measured values, for example mm. It is only used for labels.",
+          "norm": "Assessment standard: AIAG MSA assesses %linearity, the largest %bias and the significance of slope and intercept; VDA 5 assesses the capability figure Q_MS_BI. Both are computed; the standard decides the tiles, the traffic light and the interpretation.",
+          "pvMode": "Reference quantity for the percentages %linearity and %bias: the tolerance T = USL − LSL or the process spread 6 · σP.",
+          "tolerance": {
+            "LSL": "Lower specification limit (LSL) of the feature. Together with the upper limit it gives the tolerance T = USL − LSL. In tolerance mode T is the reference quantity; under VDA 5, T always enters Q_MS_BI, also in 6 · σP mode.",
+            "USL": "Upper specification limit (USL) of the feature. Together with the lower limit it gives the tolerance T = USL − LSL. In tolerance mode T is the reference quantity; under VDA 5, T always enters Q_MS_BI, also in 6 · σP mode."
+          },
+          "sigmaP": "Process standard deviation σP. Only asked for in 6 · σP mode; the reference quantity is then 6 · σP.",
+          "alpha": "Significance level of the t-tests per reference value and for slope and intercept; it also sets the level of the confidence intervals (1 − α). The choices are 0.01, 0.05 (usual) and 0.10."
+        },
+        "Result": {
+          "ok": "Always true: a result exists only when the computation succeeded.",
+          "perReference": "One entry per reference value, sorted ascending, with mean, bias, t-test and traffic light. At least 5 distinct reference values with at least 3 repeats each are required.",
+          "regression": "Least-squares line of the individual deviations (measured minus reference value) over the reference value. A slope other than 0 means the bias changes over the measuring range.",
+          "kpi": "The figures of both standards, AIAG MSA and VDA 5; both are always computed.",
+          "pv": "The reference quantity that %linearity and %bias refer to.",
+          "interpretation": "The interpretation of the result as a sentence, depending on standard and traffic-light colour, with the figures filled in."
+        },
+        "ReferencePoint": {
+          "xRef": "The reference value (nominal value of the master part) the repeated measurements belong to.",
+          "n": "Number of repeated measurements at this reference value, at least 3.",
+          "mean": "Mean of the repeated measurements at this reference value.",
+          "bias": "Systematic deviation at this reference value: mean minus reference value. Positive means the system measures too high on average.",
+          "sd": "Standard deviation of the repeated measurements at this reference value (sample, n − 1).",
+          "tStat": "Test statistic of the t-test for bias = 0: t = bias / (s / √n). Empty when all repeats are equal and the bias is not 0.",
+          "pValue": "Two-sided p-value of the t-test for bias = 0 with n − 1 degrees of freedom. Below α the bias counts as significant.",
+          "percentBias": "Absolute bias in percent of the reference quantity: %bias = |bias| · 100 / reference quantity.",
+          "verdict": "Traffic light per reference value: green when the bias is not significant (p ≥ α); yellow when it is significant but at most 10 % of the reference quantity; red otherwise."
+        },
+        "Regression": {
+          "slope": "Slope of the fitted line of bias over reference value: how much the bias changes per unit of the reference value. Ideally 0; if it is significant (p < α), the measurement system is not linear.",
+          "intercept": "Intercept of the fitted line: the bias the line would have at reference value 0. Ideally 0; if it is significant (p < α), there is a constant bias.",
+          "seSlope": "Standard error of the slope: √(MSE / Sxx), where Sxx is the sum of squared distances of the reference values of all individual measurements from their mean.",
+          "seIntercept": "Standard error of the intercept: √(MSE · (1 / N + x̄² / Sxx)), with x̄ the mean of the reference values of all individual measurements.",
+          "tSlope": "Test statistic for slope = 0: the slope divided by its standard error.",
+          "tIntercept": "Test statistic for intercept = 0: the intercept divided by its standard error.",
+          "pSlope": "Two-sided p-value for slope = 0 with N − 2 degrees of freedom. Below α the slope counts as significant.",
+          "pIntercept": "Two-sided p-value for intercept = 0 with N − 2 degrees of freedom. Below α the intercept counts as significant.",
+          "MSE": "Mean squared error: sum of the squared distances of the individual deviations from the line, divided by N − 2.",
+          "N": "Number of all individual measurements that enter the regression.",
+          "dfResid": "Residual degrees of freedom: N − 2, at least 1.",
+          "ciSlope": "Confidence interval of the slope at level 1 − α, as lower and upper limit. If it contains 0, the slope is not significant.",
+          "ciIntercept": "Confidence interval of the intercept at level 1 − α, as lower and upper limit. If it contains 0, the intercept is not significant."
+        },
+        "Kpi": {
+          "aiag": "Figures and verdict according to AIAG MSA.",
+          "vda5": "Figures and verdict according to VDA 5."
+        },
+        "KpiAiag": {
+          "percentLinearity": "%Linearity: change of the bias over the measuring range in percent of the reference quantity, 100 · |slope| · (largest − smallest reference value) / reference quantity. The larger of %linearity and largest %bias decides: up to 5 % acceptable, up to 10 % conditionally acceptable, above that not acceptable.",
+          "maxPercentBias": "Largest %bias over all reference values: 100 · largest |bias| / reference quantity. The larger of %linearity and largest %bias decides: up to 5 % acceptable, up to 10 % conditionally acceptable, above that not acceptable.",
+          "slopeSignificant": "True when the slope differs significantly from 0 (p < α). The AIAG verdict is then red.",
+          "interceptSignificant": "True when the intercept differs significantly from 0 (p < α). The AIAG verdict is then red.",
+          "verdict": "Verdict according to AIAG MSA: red when slope or intercept is significant or the larger of %linearity and largest %bias exceeds 10 %; yellow when it exceeds 5 %; green otherwise."
+        },
+        "KpiVda5": {
+          "u_BI": "Standard uncertainty from bias and linearity: u_BI = √(largest |bias|² + (standard error of the slope · measuring range)²); the measuring range is the largest minus the smallest reference value.",
+          "U": "Expanded uncertainty from bias and linearity: U = 2 · u_BI.",
+          "Q_MS_BI": "Capability figure according to VDA 5: Q_MS_BI = U / T · 100 % with the tolerance T = USL − LSL, also in 6 · σP mode. Up to 15 % capable, up to 30 % conditionally capable, above that not capable. Empty when T is not positive.",
+          "verdict": "Verdict according to VDA 5: green up to Q_MS_BI 15 %, yellow up to 30 %, red above that."
+        },
+        "Verdict": {
+          "color": "Traffic-light colour of the verdict: green, yellow or red. The limits depend on the standard.",
+          "key": "Key of the verdict text in the translation file, per standard and traffic-light colour."
+        },
+        "ProcessVariation": {
+          "mode": "How the reference quantity was determined: from the tolerance or from 6 · σP.",
+          "value": "The reference quantity: T = USL − LSL in tolerance mode, 6 · σP in process spread mode. It must be positive, otherwise nothing is computed.",
+          "source": "Origin of the reference quantity; always the same as the mode."
+        },
+        "Interpretation": {
+          "textKey": "Key of the interpretation sentence in the translation file, per standard and traffic-light colour.",
+          "params": "The figures filled into the interpretation sentence, as text with two decimals."
+        },
+        "InterpretationParams": {
+          "pctLin": "%Linearity as text with two decimals; AIAG MSA only.",
+          "maxPctBias": "Largest %bias as text with two decimals; AIAG MSA only.",
+          "qMsBi": "Q_MS_BI as text with two decimals; VDA 5 only."
+        }
       },
       "title": "MSA Type 4",
       "titleLong": "Linearity & Bias Across the Measurement Range",
@@ -3184,8 +3267,8 @@
         "setParam": {
           "help": "Sets one parameter of the study; the analysis reruns after a short pause.",
           "params": {
-            "key": "One of the keys in activeParams: measurementName, unit, chartType, limitsMode, baselineK, mu0, sigma0, enabledRules or alpha. baselineK applies only with limitsMode from-study, mu0 and sigma0 only with limitsMode given; any other key is an error.",
-            "value": "The value. measurementName and unit take text, chartType 'i-mr' or 'xbar-r', limitsMode 'from-study' or 'given', alpha '0.01', '0.05' or '0.10'. baselineK (whole number from 1), mu0 and sigma0 take a number or numeric text, for example 10; null or an empty string clears them again (not set). enabledRules takes the list of ticked rule ids as numbers from 1 to 8, for example [1, 4]."
+            "key": "Which parameter; each key is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys. null or '' clears mu0 and sigma0."
           }
         },
         "setColumn": {
@@ -3200,15 +3283,109 @@
         "clearResults": { "help": "Discards the result and the charts; the inputs stay." }
       },
       "fields": {
-        "params": { "help": "The entered parameters: measurementName, unit, chartType (i-mr or xbar-r), limitsMode (from-study or given), baselineK (number of baseline subgroups), mu0 and sigma0 (given limits, null while unset), sourceTyp1InstanceId (adopted type 1 instance, not settable through the surface), enabledRules (list of ticked rule ids as numbers) and alpha (significance level of the drift test, as text)." },
+        "params": { "help": "The entered parameters as setParam takes them and describes them under keys, plus sourceTyp1InstanceId (the adopted type 1 instance, not settable through the surface)." },
         "columns": { "help": "The chosen columns: timestamp, value and subgroup, each as { instanceId, sheetId, columnId } or null." },
         "exampleWorksheetId": { "help": "Internal bookkeeping: the data collection a loaded example created; null without an example." },
         "activeParams": { "help": "The keys setParam accepts in the current state; baselineK is absent with limitsMode given, mu0 and sigma0 are absent with limitsMode from-study." },
         "activeColumnSlots": { "help": "The slots setColumn accepts in the current state; subgroup is absent unless chartType is xbar-r." },
         "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; key is 'instanceId|sheetId|columnId'." },
-        "result": { "help": "The computed result with verdict, control chart series, Nelson rule violations and drift test, or null while the inputs are incomplete or invalid." },
+        "result": { "help": "The computed result, each figure described individually under keys; null while the inputs are incomplete or invalid." },
         "errorMsg": { "help": "The error code of a failed analysis, otherwise null." }
       },
+      "types": {
+        "Params": {
+          "measurementName": "Name of the observed feature, for example “shaft diameter”. It labels the result and has no effect on the computation.",
+          "unit": "Unit of the measured values, for example mm. It is only used for labels.",
+          "chartType": "Chart type: I-MR for individual values with moving range, at least 10 values; x̄-R for subgroup means with their range, at least 5 subgroups of equal size with 2 to 25 values. x̄-R needs a subgroup column.",
+          "limitsMode": "Origin of the control limits: from the study data, computed from the first k baseline subgroups, or given as target mean µ₀ and target spread σ₀, for example from a type 1 study.",
+          "baselineK": "Number k of baseline subgroups (for I-MR, of the first individual values) from which the center line and control limits are computed. At least 5 and at most as many as the data hold are allowed; below 20 a warning appears. The default is 20.",
+          "mu0": "Given target mean µ₀; it is the center line of the location chart. Only with given limits.",
+          "sigma0": "Given target spread σ₀ of the individual values, greater than 0. The control limits lie at µ₀ ± 3 · σ₀, for x̄-R at µ₀ ± 3 · σ₀ / √n. Only with given limits.",
+          "enabledRules": "The Nelson rules 1 to 8 the points of the location chart are checked against. The default is rules 1 to 6; with none ticked, nothing is checked.",
+          "alpha": "Significance level of the drift test: 0.01, 0.05 (usual) or 0.10. A drift with p < α makes the verdict at least marginal, one with p < α/10 unstable."
+        },
+        "Result": {
+          "meta": "Frame data of the analysis: chart type, origin of the limits, size and warnings.",
+          "primary": "The location chart: individual values for I-MR, subgroup means for x̄-R, with center line, control limits and rule violations.",
+          "secondary": "The spread chart: moving ranges for I-MR, subgroup ranges for x̄-R, with center line and control limits.",
+          "drift": "Linear regression of the location chart points over time, with a t-test of whether the slope differs from 0.",
+          "ruleViolations": "One entry per location chart point that violates at least one Nelson rule, with time, value and violated rules, sorted by point.",
+          "verdict": "Stability verdict with its driver and the limits it was judged by.",
+          "interpretation": "The interpretation of the result as a sentence, depending on verdict and driver."
+        },
+        "Meta": {
+          "chartType": "The computed chart type: I-MR or x̄-R.",
+          "limitsMode": "Where the limits come from: the study data or given values.",
+          "n": "Subgroup size: 1 for I-MR, for x̄-R the number of values per subgroup.",
+          "subgroupCount": "Number of points on the location chart: individual values for I-MR, subgroups for x̄-R.",
+          "pointCount": "Number of all analysed measured values.",
+          "baselineK": "The set number k of baseline subgroups; it only takes effect when the limits come from the study data.",
+          "warnings": "Notes on reliability: fewer than 20 baseline subgroups, timestamps that do not increase monotonically, or a rule violation within the baseline that can distort the limits computed from it."
+        },
+        "Warning": {
+          "code": "Identifier of the warning: W_BASELINE_LT_20 (fewer than 20 baseline subgroups), W_TIMESTAMPS_NON_MONOTONIC (timestamps not monotonically increasing) or W_LIMITS_FROM_UNSTABLE_BASELINE (rule violation within the baseline).",
+          "params": "Values filled into the warning text; present only for a too small baseline, then with the number k of baseline subgroups."
+        },
+        "PrimaryChart": {
+          "series": "The points of the location chart in time order: the individual values for I-MR, the subgroup means for x̄-R. The mean tile shows the mean of these points.",
+          "cl": "Center line of the location chart: mean of the baseline when the limits come from the study data, otherwise the target mean µ₀.",
+          "ucl": "Upper control limit of the location chart: center line + 3 · σ.",
+          "lcl": "Lower control limit of the location chart: center line − 3 · σ.",
+          "sigma": "Estimated spread of the location chart points. From the study data: for I-MR the mean moving range of the baseline / d₂, for x̄-R the mean range of the baseline / (d₂ · √n). Given: σ₀, for x̄-R σ₀ / √n.",
+          "label": "Chart kind: i for individual values, xbar for subgroup means.",
+          "violations": "One entry per point and violated Nelson rule; a point that violates several rules appears several times."
+        },
+        "Violation": {
+          "index": "Position of the point on the location chart, counted from 0.",
+          "ruleId": "Number of the violated Nelson rule, 1 to 8."
+        },
+        "SecondaryChart": {
+          "series": "The ranges in time order: for I-MR the absolute difference of two consecutive values, with the first value missing; for x̄-R the largest minus the smallest value per subgroup.",
+          "cl": "Center line of the spread chart: mean range of the baseline when the limits come from the study data, otherwise d₂ · σ₀.",
+          "ucl": "Upper control limit of the spread chart: D₄ · center line.",
+          "lcl": "Lower control limit of the spread chart: D₃ · center line; for subgroups of up to 6 values it is 0.",
+          "label": "Chart kind: MR for moving ranges, R for subgroup ranges."
+        },
+        "Drift": {
+          "slope": "Slope of the regression line through the location chart points over time: change per point when no time column is chosen, otherwise per unit of the timestamps (per millisecond for dates). Ideally 0.",
+          "se": "Standard error of the slope: square root of the residual variance divided by the sum of squared distances of the time values from their mean.",
+          "tStat": "Test statistic for slope = 0: the slope divided by its standard error.",
+          "pValue": "Two-sided p-value of the drift test for slope = 0. Below α the drift counts as significant, below α/10 as strong; a strong drift makes the verdict unstable.",
+          "intercept": "Intercept of the regression line: its value at time 0.",
+          "df": "Degrees of freedom of the drift test: number of location chart points minus 2.",
+          "ciSlope": "Confidence interval of the slope at level 1 − α, as lower and upper limit. If it contains 0, no drift can be shown.",
+          "slopeUnit": "Unit label of the slope; currently always measurement unit per point, even when the time axis comes from timestamps.",
+          "tScale": "Time axis of the regression: the timestamps when a time column is chosen, otherwise the running number of the points from 1."
+        },
+        "RuleViolation": {
+          "primaryIndex": "Position of the point on the location chart, counted from 0.",
+          "time": "Time of the point: the timestamp from the time column, for x̄-R the mean of the subgroup's timestamps (dates in milliseconds); without a time column the running number from 1.",
+          "value": "Value of the point on the location chart: individual value for I-MR, subgroup mean for x̄-R.",
+          "ruleIds": "The numbers of the Nelson rules this point violates, ascending."
+        },
+        "Verdict": {
+          "level": "Stability verdict: stable without rule violations and without significant drift (p ≥ α); unstable from 3 violating points or with strong drift (p < α/10); marginal in between.",
+          "driver": "What drives the verdict: nothing, Nelson violations, drift or both.",
+          "nelsonCount": "Number of points that violate at least one Nelson rule. From 3 the verdict is unstable, from 1 at least marginal.",
+          "driftP": "p-value of the drift test, the same as in the drift regression.",
+          "thresholds": "The limits the verdict was judged by: unstable from 3 violating points or with strong drift at p < α/10; significant drift at p < α."
+        },
+        "Thresholds": {
+          "nelsonUnstable": "Number of violating points from which the verdict is unstable: 3.",
+          "driftStrong": "p limit for strong drift: α/10, so 0.005 at α = 0.05. Below it the verdict is unstable.",
+          "alpha": "Significance level of the drift test as a number; below it a drift counts as significant."
+        },
+        "Interpretation": {
+          "textKey": "Key of the interpretation sentence in the translation file, per verdict and driver.",
+          "params": "The values filled into the interpretation sentence."
+        },
+        "InterpretationParams": {
+          "nelsonCount": "Number of violating points, as in the verdict.",
+          "driftP": "p-value of the drift test as text with four decimals.",
+          "slope": "Slope of the drift as text with four decimals."
+        }
+      },
+      "warningTitle": "Warning",
       "emptyHint": "Select a timestamp/order and a value column to start the analysis.",
       "empty": "Select a timestamp/order and a value column to start the analysis.",
       "sections": {

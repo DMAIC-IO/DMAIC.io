@@ -132,6 +132,129 @@ const SLOT_FILTERS = {
 };
 
 /**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {string} measurementName  Bezeichnung des Merkmals
+ * @property {string} unit  Maßeinheit
+ * @property {'i-mr'|'xbar-r'} chartType  Kartentyp
+ * @property {'from-study'|'given'} limitsMode  Herkunft der Eingriffsgrenzen
+ * @property {number} [baselineK]  Basis-Untergruppen, nur bei from-study
+ * @property {number} [mu0]  vorgegebene Lage, nur bei given
+ * @property {number} [sigma0]  vorgegebene Streuung, nur bei given
+ * @property {number[]} enabledRules  angehakte Nelson-Regeln 1–8
+ * @property {'0.01'|'0.05'|'0.10'} alpha  Signifikanzniveau des Drift-Tests
+ */
+
+/**
+ * Das gerechnete Ergebnis (`analyze()` aus `engines/msa-typ6-engine.js`),
+ * wie `read().result` es liefert.
+ *
+ * @typedef {object} Result
+ * @property {Meta} meta  Rahmendaten und Warnungen
+ * @property {PrimaryChart} primary  Einzelwert- bzw. Mittelwertkarte
+ * @property {SecondaryChart} secondary  Spannweitenkarte
+ * @property {Drift} drift  Regression über die Zeit
+ * @property {RuleViolation[]} ruleViolations  je verletztem Punkt
+ * @property {Verdict} verdict  Urteil zur Stabilität
+ * @property {Interpretation} interpretation  Deutung als Satz
+ */
+
+/**
+ * @typedef {object} Meta
+ * @property {'i-mr'|'xbar-r'} chartType  Kartentyp
+ * @property {'from-study'|'given'} limitsMode  Herkunft der Grenzen
+ * @property {number} n  Untergruppengröße
+ * @property {number} subgroupCount  Anzahl Untergruppen
+ * @property {number} pointCount  Anzahl Messwerte
+ * @property {number} baselineK  Basis-Untergruppen
+ * @property {Warning[]} warnings  Hinweise zur Auswertung
+ */
+
+/**
+ * @typedef {object} Warning
+ * @property {string} code  Kennung der Warnung
+ * @property {object} [params]  Werte im Warnungstext
+ */
+
+/**
+ * @typedef {object} PrimaryChart
+ * @property {number[]} series  Punkte der Karte
+ * @property {number} cl  Mittellinie
+ * @property {number} ucl  obere Eingriffsgrenze
+ * @property {number} lcl  untere Eingriffsgrenze
+ * @property {number} sigma  Streuung der Punkte
+ * @property {'i'|'xbar'} label  Kartenart
+ * @property {Violation[]} violations  Regelverletzungen je Regel
+ */
+
+/**
+ * @typedef {object} Violation
+ * @property {number} index  Punkt, ab 0
+ * @property {number} ruleId  Nelson-Regel
+ */
+
+/**
+ * @typedef {object} SecondaryChart
+ * @property {Array<number|null>} series  Spannweiten
+ * @property {number} cl  Mittellinie
+ * @property {number} ucl  obere Eingriffsgrenze
+ * @property {number} lcl  untere Eingriffsgrenze
+ * @property {'MR'|'R'} label  Kartenart
+ */
+
+/**
+ * @typedef {object} Drift
+ * @property {number} slope  Steigung je Punkt
+ * @property {number} se  Standardfehler
+ * @property {number} tStat  Prüfgröße
+ * @property {number} pValue  p-Wert
+ * @property {number} intercept  Achsenabschnitt
+ * @property {number} df  Freiheitsgrade
+ * @property {number[]} ciSlope  Konfidenzintervall der Steigung
+ * @property {string} slopeUnit  Einheit der Steigung
+ * @property {'timestamp'|'index'} tScale  Zeitachse
+ */
+
+/**
+ * @typedef {object} RuleViolation
+ * @property {number} primaryIndex  Punkt, ab 0
+ * @property {number|string|null} time  Zeitpunkt oder laufende Nummer
+ * @property {number} value  Wert des Punkts
+ * @property {number[]} ruleIds  verletzte Regeln
+ */
+
+/**
+ * @typedef {object} Verdict
+ * @property {'stable'|'marginal'|'unstable'} level  Urteil
+ * @property {'none'|'nelson'|'drift'|'both'} driver  Auslöser
+ * @property {number} nelsonCount  verletzte Punkte
+ * @property {number} driftP  p-Wert des Drift-Tests
+ * @property {Thresholds} thresholds  Urteilsgrenzen
+ */
+
+/**
+ * @typedef {object} Thresholds
+ * @property {number} nelsonUnstable  Punkte ab instabil
+ * @property {number} driftStrong  p-Grenze starker Drift
+ * @property {number} alpha  Signifikanzniveau
+ */
+
+/**
+ * @typedef {object} Interpretation
+ * @property {string} textKey  Textschlüssel der Deutung
+ * @property {InterpretationParams} params  Werte im Satz
+ */
+
+/**
+ * @typedef {object} InterpretationParams
+ * @property {number} nelsonCount  verletzte Punkte
+ * @property {string} driftP  p-Wert als Text
+ * @property {string} slope  Steigung als Text
+ */
+
+/**
  * Die Agenten-Lesefläche von MSA Typ 6.
  *
  * Nicht die persistierte Form: das Model hält NUR die Eingaben, das Ergebnis
@@ -146,7 +269,7 @@ const SLOT_FILTERS = {
  * @property {string[]} activeParams  the keys `setParam` accepts in the current state (`baselineK` only for limitsMode from-study, `mu0` and `sigma0` only for limitsMode given)
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state (`subgroup` only for chartType xbar-r)
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
- * @property {object|null} result  the computed stability result (verdict, control chart series, Nelson rule violations, drift test), or null while the inputs are incomplete or invalid
+ * @property {Result|null} result  the computed result, or null while the inputs are incomplete or invalid
  * @property {string|null} errorMsg  the error code of a failed analysis, or null
  */
 
@@ -213,9 +336,8 @@ const mod = createModule({
       /**
        * Einen Parameter setzen; die Analyse folgt nach kurzer Ruhezeit.
        * @agent
-       * @param {'measurementName'|'unit'|'chartType'|'limitsMode'|'baselineK'|'mu0'|'sigma0'|'enabledRules'|'alpha'} key
-       *   welcher Parameter; `baselineK` nur bei limitsMode from-study, `mu0` und `sigma0` nur bei limitsMode given
-       * @param {string|number|number[]} value der Wert; Text für `measurementName` und `unit`, `chartType`: i-mr oder xbar-r, `limitsMode`: from-study oder given, `alpha`: 0.01, 0.05 oder 0.10; eine Zahl (oder Zahlentext) für `baselineK` (ganze Zahl ab 1), `mu0` und `sigma0` (null oder '' leert sie); `enabledRules`: die Liste der angehakten Regel-Ids (Zahlen 1 bis 8)
+       * @param {keyof Params} key welcher Parameter; die im Zustand zulässigen nennt `activeParams`
+       * @param {string|number|number[]|null} value der Wert; Wertebereich je Schlüssel siehe `Params`
        * @returns {void}
        * @throws {Error} wenn `key` im aktuellen Zustand kein Parameter ist oder `value` nicht zulässig
        */

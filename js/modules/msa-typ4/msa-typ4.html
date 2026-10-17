@@ -4,12 +4,12 @@
 
     <div class="field-row">
       <div class="field-group field-group--major">
-        <label x-text="t('labels.name')"></label>
+        <label data-help-key="modules.msa-typ4.types.Params.name" x-text="t('labels.name')"></label>
         <input type="text" class="field" data-ref="inp-name"
                :value="model.params.name" @input="setParam('name', $event.target.value)">
       </div>
       <div class="field-group field-group--minor">
-        <label x-text="t('labels.unit')"></label>
+        <label data-help-key="modules.msa-typ4.types.Params.unit" x-text="t('labels.unit')"></label>
         <input type="text" class="field" data-ref="inp-unit"
                placeholder="mm"
                :value="model.params.unit" @input="setParam('unit', $event.target.value)">
@@ -19,18 +19,18 @@
     <div class="dmike-split__section-title" x-text="t('sections.dataSource')"></div>
 
     <div class="field-group">
-      <label x-text="t('labels.referenceColumn')"></label>
+      <label data-help-key="modules.msa-typ4.actions.setColumn.help" x-text="t('labels.referenceColumn')"></label>
       <div data-ref="picker-ref"></div>
     </div>
     <div class="field-group">
-      <label x-text="t('labels.measuredColumn')"></label>
+      <label data-help-key="modules.msa-typ4.actions.setColumn.help" x-text="t('labels.measuredColumn')"></label>
       <div data-ref="picker-meas"></div>
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sections.evaluation')"></div>
 
     <fieldset class="msa-typ4__radios">
-      <legend x-text="t('labels.norm')"></legend>
+      <legend data-help-key="modules.msa-typ4.types.Params.norm" x-text="t('labels.norm')"></legend>
       <template x-for="o in normOptions()" :key="o.value">
         <label>
           <input type="radio" name="msa4-norm" :value="o.value"
@@ -41,7 +41,7 @@
     </fieldset>
 
     <fieldset class="msa-typ4__radios">
-      <legend x-text="t('labels.pvMode')"></legend>
+      <legend data-help-key="modules.msa-typ4.types.Params.pvMode" x-text="t('labels.pvMode')"></legend>
       <template x-for="o in pvOptions()" :key="o.value">
         <label>
           <input type="radio" name="msa4-pv" :value="o.value"
@@ -53,14 +53,14 @@
 
     <div class="field-row">
       <div class="field-group">
-        <label x-text="t('labels.lsl')"></label>
+        <label data-help-key="modules.msa-typ4.types.Params.tolerance.LSL" x-text="t('labels.lsl')"></label>
         <input type="text" class="field field--num" data-ref="inp-lsl" inputmode="decimal"
                placeholder="0.000"
                :value="model.params.tolerance.LSL"
                @input="setParam('tolerance.LSL', $event.target.value)" @change="runAnalysis()">
       </div>
       <div class="field-group">
-        <label x-text="t('labels.usl')"></label>
+        <label data-help-key="modules.msa-typ4.types.Params.tolerance.USL" x-text="t('labels.usl')"></label>
         <input type="text" class="field field--num" data-ref="inp-usl" inputmode="decimal"
                placeholder="0.000"
                :value="model.params.tolerance.USL"
@@ -70,14 +70,14 @@
 
     <div class="field-group" data-ref="group-sigma"
          :class="{ 'msa-typ4__field--hidden': isTolerance() }">
-      <label x-text="t('labels.sigmaP')"></label>
+      <label data-help-key="modules.msa-typ4.types.Params.sigmaP" x-text="t('labels.sigmaP')"></label>
       <input type="text" class="field field--num" data-ref="inp-sigma" inputmode="decimal"
              :value="model.params.sigmaP"
              @input="setParam('sigmaP', $event.target.value)" @change="runAnalysis()">
     </div>
 
     <div class="field-group">
-      <label x-text="t('labels.alpha')"></label>
+      <label data-help-key="modules.msa-typ4.types.Params.alpha" x-text="t('labels.alpha')"></label>
       <select class="field" data-ref="sel-alpha"
               :value="model.params.alpha" @input="setParam('alpha', $event.target.value)" @change="runAnalysis()">
         <template x-for="a in alphaOptions()" :key="a">
@@ -102,7 +102,7 @@
           <div class="dmike-kpi-strip">
             <template x-for="tile in kpiTiles()">
               <div class="dmike-kpi" :key="tile.key" :class="tile.mod">
-                <div class="dmike-kpi-label" x-text="tile.label"></div>
+                <div class="dmike-kpi-label" :data-help-key="tile.help" x-text="tile.label"></div>
                 <div class="dmike-kpi-value" x-text="tile.value"></div>
                 <template x-if="tile.sub">
                   <div class="dmike-kpi-sub" x-text="tile.sub"></div>
@@ -113,7 +113,7 @@
 
           <!-- Interpretation (generisches .dmike-infobox aus css/components.css) -->
           <div class="dmike-infobox" :class="kpiModClass(currentVerdictColor())">
-            <span class="dmike-infobox__detail" x-text="interpretationText()"></span>
+            <span class="dmike-infobox__detail" data-help-key="modules.msa-typ4.types.Result.interpretation" x-text="interpretationText()"></span>
           </div>
 
           <!-- Charts -->
@@ -136,13 +136,13 @@
           <table class="dmike-table msa-typ4__table">
             <thead>
               <tr>
-                <th x-text="t('table.reference')"></th>
-                <th x-text="t('table.n')"></th>
-                <th x-text="t('table.mean')"></th>
-                <th x-text="t('table.bias')"></th>
-                <th x-text="t('table.percentBias')"></th>
-                <th x-text="t('table.tStat')"></th>
-                <th x-text="t('table.pValue')"></th>
+                <th><span data-help-key="modules.msa-typ4.types.ReferencePoint.xRef" x-text="t('table.reference')"></span></th>
+                <th><span data-help-key="modules.msa-typ4.types.ReferencePoint.n" x-text="t('table.n')"></span></th>
+                <th><span data-help-key="modules.msa-typ4.types.ReferencePoint.mean" x-text="t('table.mean')"></span></th>
+                <th><span data-help-key="modules.msa-typ4.types.ReferencePoint.bias" x-text="t('table.bias')"></span></th>
+                <th><span data-help-key="modules.msa-typ4.types.ReferencePoint.percentBias" x-text="t('table.percentBias')"></span></th>
+                <th><span data-help-key="modules.msa-typ4.types.ReferencePoint.tStat" x-text="t('table.tStat')"></span></th>
+                <th><span data-help-key="modules.msa-typ4.types.ReferencePoint.pValue" x-text="t('table.pValue')"></span></th>
               </tr>
             </thead>
             <tbody>

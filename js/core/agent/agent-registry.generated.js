@@ -5670,17 +5670,53 @@ export const AGENT_REGISTRY = {
             "name": "key",
             "type": "'name'|'unit'|'norm'|'pvMode'|'tolerance.LSL'|'tolerance.USL'|'sigmaP'|'alpha'",
             "optional": false,
-            "help": "welcher Parameter; die beiden Toleranzgrenzen mit Punkt; `sigmaP` nur außerhalb des Toleranzmodus"
+            "help": "welcher Parameter; die im Zustand zulässigen nennt `activeParams`"
           },
           {
             "name": "value",
             "type": "string",
             "optional": false,
-            "help": "der Wert als Text, wie er eingegeben würde; `norm`: AIAG oder VDA5, `pvMode`: tolerance oder sixSigma, `alpha`: 0.01, 0.05 oder 0.10"
+            "help": "der Wert als Text, wie er eingegeben würde; Wertebereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "void",
-        "help": "Einen Parameter setzen."
+        "help": "Einen Parameter setzen.",
+        "keysOf": "Params",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "Bezeichnung des Merkmals"
+          },
+          "unit": {
+            "type": "string",
+            "help": "Maßeinheit"
+          },
+          "norm": {
+            "type": "'AIAG'|'VDA5'",
+            "help": "Bewertungsnorm"
+          },
+          "pvMode": {
+            "type": "'tolerance'|'sixSigma'",
+            "help": "Bezugsgröße der Prozessstreuung"
+          },
+          "tolerance.LSL": {
+            "type": "string",
+            "help": "untere Toleranzgrenze"
+          },
+          "tolerance.USL": {
+            "type": "string",
+            "help": "obere Toleranzgrenze"
+          },
+          "sigmaP": {
+            "type": "string",
+            "help": "Prozessstandardabweichung, nur im Modus sixSigma",
+            "optional": true
+          },
+          "alpha": {
+            "type": "'0.01'|'0.05'|'0.10'",
+            "help": "Signifikanzniveau"
+          }
+        }
       },
       "setColumn": {
         "params": [
@@ -5754,10 +5790,250 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
-        "help": "the computed linearity and bias result, or null while the inputs are incomplete or invalid",
+        "type": "Result|null",
+        "help": "the computed result, or null while the inputs are incomplete or invalid",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "ok": {
+            "type": "boolean",
+            "help": "immer wahr, wenn ein Ergebnis da ist"
+          },
+          "perReference": {
+            "type": "ReferencePoint[]",
+            "help": "je Referenzwert",
+            "keysOf": "ReferencePoint",
+            "keys": {
+              "xRef": {
+                "type": "number",
+                "help": "Referenzwert"
+              },
+              "n": {
+                "type": "number",
+                "help": "Wiederholungen"
+              },
+              "mean": {
+                "type": "number",
+                "help": "Mittelwert"
+              },
+              "bias": {
+                "type": "number",
+                "help": "Mittelwert minus Referenzwert"
+              },
+              "sd": {
+                "type": "number",
+                "help": "Standardabweichung"
+              },
+              "tStat": {
+                "type": "number|null",
+                "help": "Prüfgröße"
+              },
+              "pValue": {
+                "type": "number",
+                "help": "p-Wert"
+              },
+              "percentBias": {
+                "type": "number",
+                "help": "Bias in % der Bezugsgröße"
+              },
+              "verdict": {
+                "type": "'green'|'yellow'|'red'",
+                "help": "Ampel"
+              }
+            }
+          },
+          "regression": {
+            "type": "Regression",
+            "help": "Gerade Bias über Referenzwert",
+            "keysOf": "Regression",
+            "keys": {
+              "slope": {
+                "type": "number",
+                "help": "Steigung"
+              },
+              "intercept": {
+                "type": "number",
+                "help": "Achsenabschnitt"
+              },
+              "seSlope": {
+                "type": "number",
+                "help": "Standardfehler der Steigung"
+              },
+              "seIntercept": {
+                "type": "number",
+                "help": "Standardfehler des Achsenabschnitts"
+              },
+              "tSlope": {
+                "type": "number",
+                "help": "Prüfgröße der Steigung"
+              },
+              "tIntercept": {
+                "type": "number",
+                "help": "Prüfgröße des Achsenabschnitts"
+              },
+              "pSlope": {
+                "type": "number",
+                "help": "p-Wert der Steigung"
+              },
+              "pIntercept": {
+                "type": "number",
+                "help": "p-Wert des Achsenabschnitts"
+              },
+              "MSE": {
+                "type": "number",
+                "help": "mittleres Fehlerquadrat"
+              },
+              "N": {
+                "type": "number",
+                "help": "Anzahl Messwerte"
+              },
+              "dfResid": {
+                "type": "number",
+                "help": "Freiheitsgrade der Residuen"
+              },
+              "ciSlope": {
+                "type": "number[]",
+                "help": "Konfidenzintervall der Steigung"
+              },
+              "ciIntercept": {
+                "type": "number[]",
+                "help": "Konfidenzintervall des Achsenabschnitts"
+              }
+            }
+          },
+          "kpi": {
+            "type": "Kpi",
+            "help": "Kennzahlen beider Normen",
+            "keysOf": "Kpi",
+            "keys": {
+              "aiag": {
+                "type": "KpiAiag",
+                "help": "Kennzahlen nach AIAG",
+                "keysOf": "KpiAiag",
+                "keys": {
+                  "percentLinearity": {
+                    "type": "number",
+                    "help": "%Linearität"
+                  },
+                  "maxPercentBias": {
+                    "type": "number",
+                    "help": "größter %Bias"
+                  },
+                  "slopeSignificant": {
+                    "type": "boolean",
+                    "help": "Steigung signifikant"
+                  },
+                  "interceptSignificant": {
+                    "type": "boolean",
+                    "help": "Achsenabschnitt signifikant"
+                  },
+                  "verdict": {
+                    "type": "Verdict",
+                    "help": "Urteil",
+                    "keysOf": "Verdict",
+                    "keys": {
+                      "color": {
+                        "type": "'green'|'yellow'|'red'",
+                        "help": "Ampel"
+                      },
+                      "key": {
+                        "type": "string",
+                        "help": "Textschlüssel des Urteils"
+                      }
+                    }
+                  }
+                }
+              },
+              "vda5": {
+                "type": "KpiVda5",
+                "help": "Kennzahlen nach VDA 5",
+                "keysOf": "KpiVda5",
+                "keys": {
+                  "u_BI": {
+                    "type": "number",
+                    "help": "Unsicherheit aus Bias und Linearität"
+                  },
+                  "U": {
+                    "type": "number",
+                    "help": "erweiterte Unsicherheit"
+                  },
+                  "Q_MS_BI": {
+                    "type": "number|null",
+                    "help": "Eignungskennwert"
+                  },
+                  "verdict": {
+                    "type": "Verdict",
+                    "help": "Urteil",
+                    "keysOf": "Verdict",
+                    "keys": {
+                      "color": {
+                        "type": "'green'|'yellow'|'red'",
+                        "help": "Ampel"
+                      },
+                      "key": {
+                        "type": "string",
+                        "help": "Textschlüssel des Urteils"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "pv": {
+            "type": "ProcessVariation",
+            "help": "Bezugsgröße der Prozentwerte",
+            "keysOf": "ProcessVariation",
+            "keys": {
+              "mode": {
+                "type": "'tolerance'|'sixSigma'",
+                "help": "Bezugsart"
+              },
+              "value": {
+                "type": "number",
+                "help": "Bezugsgröße"
+              },
+              "source": {
+                "type": "'tolerance'|'sixSigma'",
+                "help": "gleich mode"
+              }
+            }
+          },
+          "interpretation": {
+            "type": "Interpretation",
+            "help": "Deutung als Satz",
+            "keysOf": "Interpretation",
+            "keys": {
+              "textKey": {
+                "type": "string",
+                "help": "Textschlüssel der Deutung"
+              },
+              "params": {
+                "type": "InterpretationParams",
+                "help": "Werte im Satz",
+                "keysOf": "InterpretationParams",
+                "keys": {
+                  "pctLin": {
+                    "type": "string",
+                    "help": "%Linearität, nur AIAG",
+                    "optional": true
+                  },
+                  "maxPctBias": {
+                    "type": "string",
+                    "help": "größter %Bias, nur AIAG",
+                    "optional": true
+                  },
+                  "qMsBi": {
+                    "type": "string",
+                    "help": "Eignungskennwert, nur VDA 5",
+                    "optional": true
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -5900,17 +6176,59 @@ export const AGENT_REGISTRY = {
             "name": "key",
             "type": "'measurementName'|'unit'|'chartType'|'limitsMode'|'baselineK'|'mu0'|'sigma0'|'enabledRules'|'alpha'",
             "optional": false,
-            "help": "welcher Parameter; `baselineK` nur bei limitsMode from-study, `mu0` und `sigma0` nur bei limitsMode given"
+            "help": "welcher Parameter; die im Zustand zulässigen nennt `activeParams`"
           },
           {
             "name": "value",
-            "type": "string|number|number[]",
+            "type": "string|number|number[]|null",
             "optional": false,
-            "help": "der Wert; Text für `measurementName` und `unit`, `chartType`: i-mr oder xbar-r, `limitsMode`: from-study oder given, `alpha`: 0.01, 0.05 oder 0.10; eine Zahl (oder Zahlentext) für `baselineK` (ganze Zahl ab 1), `mu0` und `sigma0` (null oder '' leert sie); `enabledRules`: die Liste der angehakten Regel-Ids (Zahlen 1 bis 8)"
+            "help": "der Wert; Wertebereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "void",
-        "help": "Einen Parameter setzen; die Analyse folgt nach kurzer Ruhezeit."
+        "help": "Einen Parameter setzen; die Analyse folgt nach kurzer Ruhezeit.",
+        "keysOf": "Params",
+        "keys": {
+          "measurementName": {
+            "type": "string",
+            "help": "Bezeichnung des Merkmals"
+          },
+          "unit": {
+            "type": "string",
+            "help": "Maßeinheit"
+          },
+          "chartType": {
+            "type": "'i-mr'|'xbar-r'",
+            "help": "Kartentyp"
+          },
+          "limitsMode": {
+            "type": "'from-study'|'given'",
+            "help": "Herkunft der Eingriffsgrenzen"
+          },
+          "baselineK": {
+            "type": "number",
+            "help": "Basis-Untergruppen, nur bei from-study",
+            "optional": true
+          },
+          "mu0": {
+            "type": "number",
+            "help": "vorgegebene Lage, nur bei given",
+            "optional": true
+          },
+          "sigma0": {
+            "type": "number",
+            "help": "vorgegebene Streuung, nur bei given",
+            "optional": true
+          },
+          "enabledRules": {
+            "type": "number[]",
+            "help": "angehakte Nelson-Regeln 1–8"
+          },
+          "alpha": {
+            "type": "'0.01'|'0.05'|'0.10'",
+            "help": "Signifikanzniveau des Drift-Tests"
+          }
+        }
       },
       "setColumn": {
         "params": [
@@ -5978,10 +6296,271 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
-        "help": "the computed stability result (verdict, control chart series, Nelson rule violations, drift test), or null while the inputs are incomplete or invalid",
+        "type": "Result|null",
+        "help": "the computed result, or null while the inputs are incomplete or invalid",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "meta": {
+            "type": "Meta",
+            "help": "Rahmendaten und Warnungen",
+            "keysOf": "Meta",
+            "keys": {
+              "chartType": {
+                "type": "'i-mr'|'xbar-r'",
+                "help": "Kartentyp"
+              },
+              "limitsMode": {
+                "type": "'from-study'|'given'",
+                "help": "Herkunft der Grenzen"
+              },
+              "n": {
+                "type": "number",
+                "help": "Untergruppengröße"
+              },
+              "subgroupCount": {
+                "type": "number",
+                "help": "Anzahl Untergruppen"
+              },
+              "pointCount": {
+                "type": "number",
+                "help": "Anzahl Messwerte"
+              },
+              "baselineK": {
+                "type": "number",
+                "help": "Basis-Untergruppen"
+              },
+              "warnings": {
+                "type": "Warning[]",
+                "help": "Hinweise zur Auswertung",
+                "keysOf": "Warning",
+                "keys": {
+                  "code": {
+                    "type": "string",
+                    "help": "Kennung der Warnung"
+                  },
+                  "params": {
+                    "type": "object",
+                    "help": "Werte im Warnungstext",
+                    "optional": true
+                  }
+                }
+              }
+            }
+          },
+          "primary": {
+            "type": "PrimaryChart",
+            "help": "Einzelwert- bzw. Mittelwertkarte",
+            "keysOf": "PrimaryChart",
+            "keys": {
+              "series": {
+                "type": "number[]",
+                "help": "Punkte der Karte"
+              },
+              "cl": {
+                "type": "number",
+                "help": "Mittellinie"
+              },
+              "ucl": {
+                "type": "number",
+                "help": "obere Eingriffsgrenze"
+              },
+              "lcl": {
+                "type": "number",
+                "help": "untere Eingriffsgrenze"
+              },
+              "sigma": {
+                "type": "number",
+                "help": "Streuung der Punkte"
+              },
+              "label": {
+                "type": "'i'|'xbar'",
+                "help": "Kartenart"
+              },
+              "violations": {
+                "type": "Violation[]",
+                "help": "Regelverletzungen je Regel",
+                "keysOf": "Violation",
+                "keys": {
+                  "index": {
+                    "type": "number",
+                    "help": "Punkt, ab 0"
+                  },
+                  "ruleId": {
+                    "type": "number",
+                    "help": "Nelson-Regel"
+                  }
+                }
+              }
+            }
+          },
+          "secondary": {
+            "type": "SecondaryChart",
+            "help": "Spannweitenkarte",
+            "keysOf": "SecondaryChart",
+            "keys": {
+              "series": {
+                "type": "Array<number|null>",
+                "help": "Spannweiten"
+              },
+              "cl": {
+                "type": "number",
+                "help": "Mittellinie"
+              },
+              "ucl": {
+                "type": "number",
+                "help": "obere Eingriffsgrenze"
+              },
+              "lcl": {
+                "type": "number",
+                "help": "untere Eingriffsgrenze"
+              },
+              "label": {
+                "type": "'MR'|'R'",
+                "help": "Kartenart"
+              }
+            }
+          },
+          "drift": {
+            "type": "Drift",
+            "help": "Regression über die Zeit",
+            "keysOf": "Drift",
+            "keys": {
+              "slope": {
+                "type": "number",
+                "help": "Steigung je Punkt"
+              },
+              "se": {
+                "type": "number",
+                "help": "Standardfehler"
+              },
+              "tStat": {
+                "type": "number",
+                "help": "Prüfgröße"
+              },
+              "pValue": {
+                "type": "number",
+                "help": "p-Wert"
+              },
+              "intercept": {
+                "type": "number",
+                "help": "Achsenabschnitt"
+              },
+              "df": {
+                "type": "number",
+                "help": "Freiheitsgrade"
+              },
+              "ciSlope": {
+                "type": "number[]",
+                "help": "Konfidenzintervall der Steigung"
+              },
+              "slopeUnit": {
+                "type": "string",
+                "help": "Einheit der Steigung"
+              },
+              "tScale": {
+                "type": "'timestamp'|'index'",
+                "help": "Zeitachse"
+              }
+            }
+          },
+          "ruleViolations": {
+            "type": "RuleViolation[]",
+            "help": "je verletztem Punkt",
+            "keysOf": "RuleViolation",
+            "keys": {
+              "primaryIndex": {
+                "type": "number",
+                "help": "Punkt, ab 0"
+              },
+              "time": {
+                "type": "number|string|null",
+                "help": "Zeitpunkt oder laufende Nummer"
+              },
+              "value": {
+                "type": "number",
+                "help": "Wert des Punkts"
+              },
+              "ruleIds": {
+                "type": "number[]",
+                "help": "verletzte Regeln"
+              }
+            }
+          },
+          "verdict": {
+            "type": "Verdict",
+            "help": "Urteil zur Stabilität",
+            "keysOf": "Verdict",
+            "keys": {
+              "level": {
+                "type": "'stable'|'marginal'|'unstable'",
+                "help": "Urteil"
+              },
+              "driver": {
+                "type": "'none'|'nelson'|'drift'|'both'",
+                "help": "Auslöser"
+              },
+              "nelsonCount": {
+                "type": "number",
+                "help": "verletzte Punkte"
+              },
+              "driftP": {
+                "type": "number",
+                "help": "p-Wert des Drift-Tests"
+              },
+              "thresholds": {
+                "type": "Thresholds",
+                "help": "Urteilsgrenzen",
+                "keysOf": "Thresholds",
+                "keys": {
+                  "nelsonUnstable": {
+                    "type": "number",
+                    "help": "Punkte ab instabil"
+                  },
+                  "driftStrong": {
+                    "type": "number",
+                    "help": "p-Grenze starker Drift"
+                  },
+                  "alpha": {
+                    "type": "number",
+                    "help": "Signifikanzniveau"
+                  }
+                }
+              }
+            }
+          },
+          "interpretation": {
+            "type": "Interpretation",
+            "help": "Deutung als Satz",
+            "keysOf": "Interpretation",
+            "keys": {
+              "textKey": {
+                "type": "string",
+                "help": "Textschlüssel der Deutung"
+              },
+              "params": {
+                "type": "InterpretationParams",
+                "help": "Werte im Satz",
+                "keysOf": "InterpretationParams",
+                "keys": {
+                  "nelsonCount": {
+                    "type": "number",
+                    "help": "verletzte Punkte"
+                  },
+                  "driftP": {
+                    "type": "string",
+                    "help": "p-Wert als Text"
+                  },
+                  "slope": {
+                    "type": "string",
+                    "help": "Steigung als Text"
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       "errorMsg": {
         "type": "string|null",
