@@ -100,6 +100,43 @@ suite('survey-link — kanoStateFromSurvey', () => {
     assertEqual(mine.respondents.length, 4);
   });
 
+  test('answers outside the Kano scales become null', () => {
+    const responses = [{
+      id: 'x', recipientId: null, viaRecipient: false,
+      answers: { kq: {
+        row1: { f: 0, d: 6, w: 10 },
+        row2: { f: '3', d: 2.5, w: -1 },
+      } },
+    }, {
+      id: 'y', recipientId: null, viaRecipient: false,
+      answers: { kq: { row1: { f: 5, d: 1, w: 1 }, row2: { f: 1, d: 5, w: 9 } } },
+    }];
+    const s = kanoStateFromSurvey(null, input({ responses }));
+    const [i1, i2] = s.items;
+    const [x, y] = s.respondents;
+    assertDeepEqual(s.answers[x.id][i1.id], { f: null, d: null, w: null });
+    assertDeepEqual(s.answers[x.id][i2.id], { f: null, d: null, w: null });
+    assertDeepEqual(s.answers[y.id][i1.id], { f: 5, d: 1, w: 1 }, 'scale bounds are valid');
+    assertDeepEqual(s.answers[y.id][i2.id], { f: 1, d: 5, w: 9 });
+  });
+
+  test('a new target takes importance from the question', () => {
+    const s = kanoStateFromSurvey(null, input({ question: { ...KANO_Q, importance: false } }));
+    assertEqual(s.options.importance, false);
+  });
+
+  test('an existing target keeps importance switched on', () => {
+    const first = kanoStateFromSurvey(null, input());
+    const again = kanoStateFromSurvey(first, input({ question: { ...KANO_Q, importance: false } }));
+    assertEqual(again.options.importance, true);
+  });
+
+  test('a question with importance switches it on in an existing target', () => {
+    const first = kanoStateFromSurvey(null, input({ question: { ...KANO_Q, importance: false } }));
+    const again = kanoStateFromSurvey(first, input());
+    assertEqual(again.options.importance, true);
+  });
+
   test('the target object is not mutated', () => {
     const first = kanoStateFromSurvey(null, input());
     const copy = JSON.stringify(first);

@@ -5,7 +5,7 @@
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
 import { runSurvey } from '../../js/modules/survey-builder/survey-runner.js';
-import { CONDITION_CASES } from '../../js/modules/survey-builder/survey-conditions.js';
+import { CONDITION_CASES } from './fixtures/survey-condition-cases.js';
 
 const SURVEY = CONDITION_CASES[0].survey;
 const STRINGS = {

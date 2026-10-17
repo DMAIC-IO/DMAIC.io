@@ -5,7 +5,8 @@
  * exported page rebuilds runSurvey from Function.prototype.toString(), so
  * this file imports nothing and runSurvey must not reference any identifier
  * outside its own body. The condition logic is a copy of
- * survey-conditions.js; CONDITION_CASES runs against both.
+ * survey-conditions.js; the case table in
+ * tests/modules/fixtures/survey-condition-cases.js runs against both.
  *
  * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md §5.2, §5.3
  */

@@ -65,6 +65,15 @@ export function listInstances(stateManager, moduleId) {
 }
 
 /**
+ * @param {*} v stored answer value
+ * @param {number} max top of the scale, which starts at 1
+ * @returns {number|null} v when it is an integer on the scale, else null
+ */
+function onScale(v, max) {
+  return Number.isInteger(v) && v >= 1 && v <= max ? v : null;
+}
+
+/**
  * Kano state after handing one kano question over (spec §8.1). Snapshot,
  * not a live link. Entries carry `origin`; a repeat hand-over replaces only
  * entries with the same origin and keeps manual ones with their answers.
@@ -108,7 +117,9 @@ export function kanoStateFromSurvey(target, input) {
     const byItem = {};
     for (const row of question.rows) {
       const a = resp.answers[question.id][row.id];
-      if (a && typeof a === 'object') byItem[itemIdByRow.get(row.id)] = { f: a.f ?? null, d: a.d ?? null, w: a.w ?? null };
+      if (a && typeof a === 'object') {
+        byItem[itemIdByRow.get(row.id)] = { f: onScale(a.f, 5), d: onScale(a.d, 5), w: onScale(a.w, 9) };
+      }
     }
     answers[respondents[i].id] = byItem;
   });
@@ -116,7 +127,8 @@ export function kanoStateFromSurvey(target, input) {
   const allRespondents = [...keptRespondents, ...respondents];
   return {
     source: base.source ? { instanceId: base.source.instanceId ?? null, level: base.source.level || 'need' } : { instanceId: null, level: 'need' },
-    options: { importance: Boolean(question.importance) },
+    // An existing target keeps importance on; the question may only switch it on.
+    options: { importance: Boolean(question.importance) || (base.options ? base.options.importance !== false : false) },
     items: [...keptItems, ...items],
     respondents: allRespondents,
     answers,

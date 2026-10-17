@@ -6,7 +6,8 @@
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { runSurvey, RUNNER_CSS } from '../../js/modules/survey-builder/survey-runner.js';
-import { CONDITION_CASES, documentOrder } from '../../js/modules/survey-builder/survey-conditions.js';
+import { documentOrder } from '../../js/modules/survey-builder/survey-conditions.js';
+import { CONDITION_CASES } from './fixtures/survey-condition-cases.js';
 
 const detached = new Function(`return (${runSurvey.toString()});`)();
 const logic = (survey) => detached(survey, {}, { logicOnly: true });

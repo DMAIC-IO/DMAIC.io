@@ -4,8 +4,9 @@
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import {
-  isVisible, availableSources, answerHasOption, documentOrder, CONDITION_CASES,
+  isVisible, availableSources, answerHasOption, documentOrder,
 } from '../../js/modules/survey-builder/survey-conditions.js';
+import { CONDITION_CASES } from './fixtures/survey-condition-cases.js';
 
 suite('survey-conditions — answerHasOption', () => {
   test('single answer string', () => assertEqual(answerHasOption('o1', ['o1']), true));
