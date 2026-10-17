@@ -61,6 +61,39 @@ function setAtPath(obj, key, value) {
 }
 
 /**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {'g'|'t'} chartTypeId  Kartentyp
+ */
+
+/**
+ * Das gerechnete Ergebnis (`_agentResult()`), wie `read().result` es liefert.
+ * Bei der t-Karte stehen cl, ucl und lcl auf der Originalskala, sigma auf
+ * der transformierten.
+ *
+ * @typedef {object} Result
+ * @property {'g'|'t'} chartType  Kartentyp
+ * @property {number} n  verwertete Werte
+ * @property {number|null} cl  Mittellinie, Originalskala
+ * @property {number|null} ucl  obere Eingriffsgrenze, Originalskala
+ * @property {number|null} lcl  untere Eingriffsgrenze, Originalskala
+ * @property {number|null} sigma  Streuung; bei t transformiert
+ * @property {boolean} transformed  gezeichnet auf transformierter Skala
+ * @property {PlottedLimits} plotted  Grenzen auf der gezeichneten Skala
+ * @property {number[]} signals  Punkte außerhalb der Grenzen
+ */
+
+/**
+ * @typedef {object} PlottedLimits
+ * @property {number|null} cl  Mittellinie
+ * @property {number|null} ucl  obere Eingriffsgrenze
+ * @property {number|null} lcl  untere Eingriffsgrenze
+ * @property {number|null} sigma  Streuung
+ */
+
+/**
  * Die Agenten-Lesefläche der Karte seltener Ereignisse.
  *
  * Eingaben (Kartentyp, Spalte), die Mengen der Setter und das gerechnete
@@ -73,7 +106,7 @@ function setAtPath(obj, key, value) {
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
  * @property {string[]} activeParams  the keys `setParam` accepts
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
- * @property {object|null} result  `{ chartType, n, cl, ucl, lcl, sigma, transformed, plotted: { cl, ucl, lcl, sigma }, signals }` — cl/ucl/lcl on the original scale, `plotted` on the plotted scale (transformed for the t chart), `signals` the indices of points outside the limits; null with fewer than 2 usable values
+ * @property {Result|null} result  the computed result, or null without column or with fewer than 2 usable values
  * @property {object[]} points  [bulk] one row per plotted point: `{ value, signal }`, value on the plotted scale, null where the t chart drops a non-positive value
  */
 
@@ -176,8 +209,8 @@ const mod = createModule({
       /**
        * Eine Analyseoption setzen und neu rechnen.
        * @agent
-       * @param {'chartTypeId'} key welche Option
-       * @param {'g'|'t'} value der Kartentyp
+       * @param {keyof Params} key welche Option
+       * @param {string} value der Wert; Bereich je Schlüssel siehe `Params`
        * @returns {Promise<void>}
        * @throws {Error} wenn `key` unbekannt ist oder `value` kein Kartentyp
        */

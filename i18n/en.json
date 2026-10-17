@@ -8507,7 +8507,7 @@
           "help": "Read the chosen column, alpha, the median, the run counts, the four test p-values and the plotted values."
         },
         "setColumn": {
-          "help": "Choose the measured column and recompute.",
+          "help": "The data collection column that supplies this role; after a change the analysis is recomputed.",
           "params": {
             "slot": "'value' — the measured values in time order (required, at least 3 numbers for a result).",
             "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns.value, or null to clear it."
@@ -8516,8 +8516,8 @@
         "setParam": {
           "help": "Set an analysis option and recompute.",
           "params": {
-            "key": "'alpha' — the significance level of the four runs tests.",
-            "value": "For alpha a number greater than 0 and less than 1; a test is flagged when its p-value is below it."
+            "key": "Which option; each is described individually under keys. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys."
           }
         },
         "runAnalysis": {
@@ -8541,10 +8541,29 @@
           "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId."
         },
         "result": {
-          "help": "{ n, median, runsAboutMedian, runsUpDown, flagged, tests: [{ id, p, observed, flagged }] }; test ids clustering, mixtures, trends, oscillation; observed is the run count the test is based on; null with fewer than 3 numbers."
+          "help": "The computed result, each figure described individually under keys; null without a column or with fewer than 3 numbers."
         },
         "points": {
           "help": "One row per plotted value in data order: { value }. read({ fields: ['points'] }) returns them in full."
+        }
+      },
+      "types": {
+        "Params": {
+          "alpha": "Significance level α of the four runs tests, greater than 0 and less than 1 (default 0.05). A test is flagged when its p-value is below α; the smaller α, the more rarely a test is flagged. The input field only allows 0.001 to 0.5, the check accepts any value between 0 and 1."
+        },
+        "Result": {
+          "n": "Number of usable numbers in the series; empty and non-numeric cells are already filtered out. A result exists from 3 numbers.",
+          "median": "Median of the series: the middle value of the numbers sorted ascending, for an even count the mean of the two middle ones. It is the center line of the run chart and splits the points into above and below. The tile subline shows n.",
+          "runsAboutMedian": "Runs about the median: number of uninterrupted sequences of points on the same side of the median; values exactly on the median count as “below”. For a random series 2·m₁·m₂/N + 1 runs are expected (m₁ points above, m₂ below, N all). Too few runs point to clustering, too many to mixtures. The tile subline also shows the runs up and down.",
+          "runsUpDown": "Runs up and down: number of uninterrupted sequences of rising or falling steps between consecutive points; ties are skipped. For a random series of n points (2n − 1)/3 runs are expected with variance (16n − 29)/90. Too few runs point to trends, too many to oscillation.",
+          "flagged": "Number of tests, 0 to 4, whose p-value is below α. 0 means: no sign of a non-random cause. From 1 there is a sign of clustering, mixtures, trends or oscillation. The tile subline shows α.",
+          "tests": "The four runs tests in fixed order: clustering, mixtures, trends, oscillation. Each entry has the test, its p-value, the number of counted runs and the verdict."
+        },
+        "RunTest": {
+          "id": "Which test: clustering (too few runs about the median), mixtures (too many runs about the median), trends (too few runs up and down), oscillation (too many runs up and down).",
+          "p": "p-value of the test from the normal approximation of the runs: z = (runs − expected)/√variance. Clustering and trends: Φ(z); mixtures and oscillation: 1 − Φ(z). With spread 0, p = 1. Empty when no p-value exists.",
+          "observed": "Number of counted runs the test is based on: for clustering and mixtures the runs about the median, for trends and oscillation the runs up and down.",
+          "flagged": "True when the p-value is below α; the test is then flagged."
         }
       }
     },
@@ -8655,7 +8674,7 @@
           "help": "Read the chart type, the chosen column, the limits, the signal points and the plotted values."
         },
         "setColumn": {
-          "help": "Choose the column of counts or times between events and recompute.",
+          "help": "The data collection column that supplies this role; after a change the analysis is recomputed.",
           "params": {
             "slot": "'value' — counts (g chart) or times (t chart) between events (required, at least 2 usable values).",
             "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns.value, or null to clear it."
@@ -8664,8 +8683,8 @@
         "setParam": {
           "help": "Set an analysis option and recompute.",
           "params": {
-            "key": "'chartTypeId' — which chart to draw.",
-            "value": "For chartTypeId 'g' (opportunities between events) or 't' (time between events; uses only positive values and plots them transformed)."
+            "key": "Which option; each is described individually under keys. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys."
           }
         },
         "runAnalysis": {
@@ -8689,10 +8708,32 @@
           "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId."
         },
         "result": {
-          "help": "{ chartType, n, cl, ucl, lcl, sigma, transformed, plotted: { cl, ucl, lcl, sigma }, signals }; cl/ucl/lcl on the original scale, plotted on the plotted scale, signals the indices of points outside the limits; null with fewer than 2 usable values."
+          "help": "The computed result, each figure described individually under keys; null without a column or with fewer than 2 usable values (the t chart counts only positive ones)."
         },
         "points": {
           "help": "One row per plotted point: { value, signal }; value on the plotted scale, null where the t chart drops a non-positive value. read({ fields: ['points'] }) returns them in full."
+        }
+      },
+      "types": {
+        "Params": {
+          "chartTypeId": "Chart type: g for the number of opportunities (for example days or cases) between rare events, t for the time between events (positive values only). The choice determines center line, limits and scale of the chart."
+        },
+        "Result": {
+          "chartType": "The computed chart type, g or t, as set in the selection.",
+          "n": "Number of usable values in the series; the t chart counts only values greater than 0. A result exists from 2 values. The subline of the signals tile names this number.",
+          "cl": "Center line (CL) on the original scale. g chart: mean ḡ of the series. t chart: mean ȳ of the transformed values y = t^(1/3.6), transformed back (ȳ^3.6). The tile subline shows σ̂, for the t chart on the transformed scale.",
+          "ucl": "Upper control limit (UCL) on the original scale. g chart: ḡ + 3σ with σ = √(ḡ(ḡ + 1)). t chart: ȳ + 3σ with σ = MR̄/1.128 on the transformed scale, transformed back (y^3.6). The tile subline shows the lower control limit (LCL).",
+          "lcl": "Lower control limit (LCL) on the original scale. g chart: max(0, ḡ − 3σ). t chart: ȳ − 3σ, capped at 0 and transformed back (y^3.6). The tile shows it as the subline next to UCL.",
+          "sigma": "Spread σ of the chart. g chart: √(ḡ(ḡ + 1)). t chart: MR̄/1.128, the mean moving range of the transformed values divided by 1.128, so on the transformed scale and not on the scale of center line and limits. The tile shows it as σ̂ next to the center line of the original scale.",
+          "transformed": "True for the t chart: it is drawn on the transformed scale y = t^(1/3.6). False for the g chart.",
+          "plotted": "Center line, limits and σ on the plotted scale. For the g chart these are the same values as above, for the t chart the transformed ones.",
+          "signals": "Positions (from 0) of the points strictly above the upper or below the lower limit of the plotted scale, counted in the series of usable numbers, not in the worksheet rows. The tile counts these points."
+        },
+        "PlottedLimits": {
+          "cl": "Center line on the plotted scale.",
+          "ucl": "Upper control limit on the plotted scale.",
+          "lcl": "Lower control limit on the plotted scale.",
+          "sigma": "Spread on the plotted scale; for the t chart the same transformed spread as above."
         }
       }
     },

@@ -64,6 +64,34 @@ function setAtPath(obj, key, value) {
 }
 
 /**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {number} alpha  Signifikanzniveau der vier Lauftests
+ */
+
+/**
+ * Das gerechnete Ergebnis (`_agentResult()`), wie `read().result` es liefert.
+ *
+ * @typedef {object} Result
+ * @property {number} n  verwertete Zahlen
+ * @property {number|null} median  Median der Reihe
+ * @property {number} runsAboutMedian  Läufe um den Median
+ * @property {number} runsUpDown  Läufe auf und ab
+ * @property {number} flagged  angeschlagene Tests, 0 bis 4
+ * @property {RunTest[]} tests  die vier Lauftests
+ */
+
+/**
+ * @typedef {object} RunTest
+ * @property {'clustering'|'mixtures'|'trends'|'oscillation'} id  welcher Test
+ * @property {number|null} p  p-Wert
+ * @property {number} observed  gezählte Läufe, auf denen der Test beruht
+ * @property {boolean} flagged  p kleiner als α
+ */
+
+/**
  * Die Agenten-Lesefläche der Verlaufskarte.
  *
  * Eingaben (Spalte, α), die Mengen, gegen die die Setter prüfen, und das
@@ -76,7 +104,7 @@ function setAtPath(obj, key, value) {
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
  * @property {string[]} activeParams  the keys `setParam` accepts
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
- * @property {object|null} result  `{ n, median, runsAboutMedian, runsUpDown, flagged, tests: [{ id, p, observed, flagged }] }` with test ids clustering, mixtures, trends, oscillation; null with fewer than 3 numeric values
+ * @property {Result|null} result  the computed result, or null without column or with fewer than 3 numbers
  * @property {object[]} points  [bulk] one row per plotted value in data order: `{ value }`
  */
 const mod = createModule({
@@ -188,8 +216,8 @@ const mod = createModule({
       /**
        * Eine Analyseoption setzen und neu rechnen.
        * @agent
-       * @param {'alpha'} key welche Option
-       * @param {number} value das Signifikanzniveau, 0 < alpha < 1
+       * @param {keyof Params} key welche Option
+       * @param {number} value der Wert; Bereich je Schlüssel siehe `Params`
        * @returns {Promise<void>}
        * @throws {Error} wenn `key` unbekannt ist oder `value` außerhalb von (0, 1)
        */

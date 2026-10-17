@@ -3,13 +3,13 @@
 
     <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
     <div class="field-group">
-      <label x-text="t('dataColumn')"></label>
+      <label data-help-key="modules.run-chart.actions.setColumn.help" x-text="t('dataColumn')"></label>
       <div data-ref="col-picker-wrap"></div>
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionSettings')"></div>
     <div class="field-group">
-      <label x-text="t('alpha')"></label>
+      <label data-help-key="modules.run-chart.types.Params.alpha" x-text="t('alpha')"></label>
       <input type="number" class="field field--num" data-ref="alpha"
         :value="model.alpha" @change="alphaChanged($event)"
         step="0.01" min="0.001" max="0.5">
@@ -24,17 +24,17 @@
         <div class="dmike-kpi-strip">
           <div class="dmike-kpi">
             <div class="dmike-kpi-value" x-text="fmt(result.median)"></div>
-            <div class="dmike-kpi-label" x-text="t('statMedian')"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.run-chart.types.Result.median" x-text="t('statMedian')"></div>
             <div class="dmike-kpi-sub" x-text="t('statN', { n: result.n })"></div>
           </div>
           <div class="dmike-kpi">
             <div class="dmike-kpi-value" x-text="result.runsAboutMedian"></div>
-            <div class="dmike-kpi-label" x-text="t('statRunsAbout')"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.run-chart.types.Result.runsAboutMedian" x-text="t('statRunsAbout')"></div>
             <div class="dmike-kpi-sub" x-text="t('statRunsUpDown', { count: result.runsUpDown })"></div>
           </div>
           <div class="dmike-kpi" :class="flaggedKpiClass()">
             <div class="dmike-kpi-value" x-text="result.flagged"></div>
-            <div class="dmike-kpi-label" x-text="t('statFlagged')"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.run-chart.types.Result.flagged" x-text="t('statFlagged')"></div>
             <div class="dmike-kpi-sub" x-text="t('statAlpha', { a: model.alpha })"></div>
           </div>
         </div>

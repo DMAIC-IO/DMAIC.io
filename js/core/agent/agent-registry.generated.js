@@ -10090,13 +10090,20 @@ export const AGENT_REGISTRY = {
           },
           {
             "name": "value",
-            "type": "'g'|'t'",
+            "type": "string",
             "optional": false,
-            "help": "der Kartentyp"
+            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "Promise<void>",
-        "help": "Eine Analyseoption setzen und neu rechnen."
+        "help": "Eine Analyseoption setzen und neu rechnen.",
+        "keysOf": "Params",
+        "keys": {
+          "chartTypeId": {
+            "type": "'g'|'t'",
+            "help": "Kartentyp"
+          }
+        }
       },
       "runAnalysis": {
         "params": [],
@@ -10136,10 +10143,68 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
-        "help": "`{ chartType, n, cl, ucl, lcl, sigma, transformed, plotted: { cl, ucl, lcl, sigma }, signals }` — cl/ucl/lcl on the original scale, `plotted` on the plotted scale (transformed for the t chart), `signals` the indices of points outside the limits; null with fewer than 2 usable values",
+        "type": "Result|null",
+        "help": "the computed result, or null without column or with fewer than 2 usable values",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "chartType": {
+            "type": "'g'|'t'",
+            "help": "Kartentyp"
+          },
+          "n": {
+            "type": "number",
+            "help": "verwertete Werte"
+          },
+          "cl": {
+            "type": "number|null",
+            "help": "Mittellinie, Originalskala"
+          },
+          "ucl": {
+            "type": "number|null",
+            "help": "obere Eingriffsgrenze, Originalskala"
+          },
+          "lcl": {
+            "type": "number|null",
+            "help": "untere Eingriffsgrenze, Originalskala"
+          },
+          "sigma": {
+            "type": "number|null",
+            "help": "Streuung; bei t transformiert"
+          },
+          "transformed": {
+            "type": "boolean",
+            "help": "gezeichnet auf transformierter Skala"
+          },
+          "plotted": {
+            "type": "PlottedLimits",
+            "help": "Grenzen auf der gezeichneten Skala",
+            "keysOf": "PlottedLimits",
+            "keys": {
+              "cl": {
+                "type": "number|null",
+                "help": "Mittellinie"
+              },
+              "ucl": {
+                "type": "number|null",
+                "help": "obere Eingriffsgrenze"
+              },
+              "lcl": {
+                "type": "number|null",
+                "help": "untere Eingriffsgrenze"
+              },
+              "sigma": {
+                "type": "number|null",
+                "help": "Streuung"
+              }
+            }
+          },
+          "signals": {
+            "type": "number[]",
+            "help": "Punkte außerhalb der Grenzen"
+          }
+        }
       },
       "points": {
         "type": "object[]",
@@ -11043,11 +11108,18 @@ export const AGENT_REGISTRY = {
             "name": "value",
             "type": "number",
             "optional": false,
-            "help": "das Signifikanzniveau, 0 < alpha < 1"
+            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "Promise<void>",
-        "help": "Eine Analyseoption setzen und neu rechnen."
+        "help": "Eine Analyseoption setzen und neu rechnen.",
+        "keysOf": "Params",
+        "keys": {
+          "alpha": {
+            "type": "number",
+            "help": "Signifikanzniveau der vier Lauftests"
+          }
+        }
       },
       "runAnalysis": {
         "params": [],
@@ -11087,10 +11159,56 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
-        "help": "`{ n, median, runsAboutMedian, runsUpDown, flagged, tests: [{ id, p, observed, flagged }] }` with test ids clustering, mixtures, trends, oscillation; null with fewer than 3 numeric values",
+        "type": "Result|null",
+        "help": "the computed result, or null without column or with fewer than 3 numbers",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "n": {
+            "type": "number",
+            "help": "verwertete Zahlen"
+          },
+          "median": {
+            "type": "number|null",
+            "help": "Median der Reihe"
+          },
+          "runsAboutMedian": {
+            "type": "number",
+            "help": "Läufe um den Median"
+          },
+          "runsUpDown": {
+            "type": "number",
+            "help": "Läufe auf und ab"
+          },
+          "flagged": {
+            "type": "number",
+            "help": "angeschlagene Tests, 0 bis 4"
+          },
+          "tests": {
+            "type": "RunTest[]",
+            "help": "die vier Lauftests",
+            "keysOf": "RunTest",
+            "keys": {
+              "id": {
+                "type": "'clustering'|'mixtures'|'trends'|'oscillation'",
+                "help": "welcher Test"
+              },
+              "p": {
+                "type": "number|null",
+                "help": "p-Wert"
+              },
+              "observed": {
+                "type": "number",
+                "help": "gezählte Läufe, auf denen der Test beruht"
+              },
+              "flagged": {
+                "type": "boolean",
+                "help": "p kleiner als α"
+              }
+            }
+          }
+        }
       },
       "points": {
         "type": "object[]",

@@ -8431,7 +8431,7 @@
           "help": "Die gewählte Spalte, α, den Median, die Anzahl der Läufe, die vier p-Werte der Tests und die gezeichneten Werte lesen."
         },
         "setColumn": {
-          "help": "Die Messreihe wählen und neu rechnen.",
+          "help": "Die Spalte einer Datensammlung, die diese Rolle liefert; nach einer Änderung wird neu gerechnet.",
           "params": {
             "slot": "'value' — die Messwerte in zeitlicher Reihenfolge (Pflicht, für ein Ergebnis mindestens 3 Zahlen).",
             "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns.value, oder null zum Leeren."
@@ -8440,8 +8440,8 @@
         "setParam": {
           "help": "Eine Analyseoption setzen und neu rechnen.",
           "params": {
-            "key": "'alpha' — das Signifikanzniveau der vier Lauftests.",
-            "value": "Für alpha eine Zahl größer als 0 und kleiner als 1; ein Test schlägt an, wenn sein p-Wert darunter liegt."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys."
           }
         },
         "runAnalysis": {
@@ -8465,10 +8465,29 @@
           "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId."
         },
         "result": {
-          "help": "{ n, median, runsAboutMedian, runsUpDown, flagged, tests: [{ id, p, observed, flagged }] }; Test-Ids clustering, mixtures, trends, oscillation; observed ist die Zahl der Läufe, auf der der Test beruht; null bei weniger als 3 Zahlen."
+          "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; null ohne Spalte oder mit weniger als 3 Zahlen."
         },
         "points": {
           "help": "Je gezeichnetem Wert eine Zeile in Datenreihenfolge: { value }. read({ fields: ['points'] }) liefert sie vollständig."
+        }
+      },
+      "types": {
+        "Params": {
+          "alpha": "Signifikanzniveau α der vier Lauftests, größer als 0 und kleiner als 1 (vorbelegt 0,05). Ein Test schlägt an, wenn sein p-Wert kleiner als α ist; je kleiner α, desto seltener schlägt ein Test an. Das Eingabefeld erlaubt nur 0,001 bis 0,5, die Prüfung nimmt jeden Wert zwischen 0 und 1."
+        },
+        "Result": {
+          "n": "Anzahl der verwertbaren Zahlen der Reihe; leere und nicht numerische Zellen sind schon aussortiert. Ab 3 Zahlen gibt es ein Ergebnis.",
+          "median": "Median der Reihe: der mittlere Wert der aufsteigend sortierten Zahlen, bei gerader Anzahl der Mittelwert der beiden mittleren. Er ist die Mittellinie des Verlaufsdiagramms und teilt die Punkte in oberhalb und unterhalb. Die Unterzeile der Kachel zeigt n.",
+          "runsAboutMedian": "Läufe um den Median: Anzahl der ununterbrochenen Folgen von Punkten auf derselben Seite des Medians; Werte genau auf dem Median zählen zu „unter“. Bei einer zufälligen Reihe erwartet man 2·m₁·m₂/N + 1 Läufe (m₁ Punkte darüber, m₂ darunter, N alle). Zu wenige Läufe deuten auf Clustering, zu viele auf Mischungen. Die Unterzeile der Kachel zeigt zusätzlich die Läufe auf und ab.",
+          "runsUpDown": "Läufe auf und ab: Anzahl der ununterbrochenen Folgen steigender oder fallender Schritte zwischen aufeinanderfolgenden Punkten; Gleichstände werden übersprungen. Bei einer zufälligen Reihe aus n Punkten erwartet man (2n − 1)/3 Läufe mit der Varianz (16n − 29)/90. Zu wenige Läufe deuten auf Trends, zu viele auf Oszillation.",
+          "flagged": "Anzahl der Tests von 0 bis 4, deren p-Wert kleiner als α ist. 0 heißt: kein Hinweis auf eine nicht zufällige Ursache. Ab 1 gibt es einen Hinweis auf Clustering, Mischungen, Trends oder Oszillation. Die Unterzeile der Kachel zeigt α.",
+          "tests": "Die vier Lauftests in fester Reihenfolge: Clustering, Mischungen, Trends, Oszillation. Je Test stehen Test, p-Wert, Zahl der gezählten Läufe und Urteil."
+        },
+        "RunTest": {
+          "id": "Welcher Test: clustering (zu wenige Läufe um den Median), mixtures (zu viele Läufe um den Median), trends (zu wenige Läufe auf und ab), oscillation (zu viele Läufe auf und ab).",
+          "p": "p-Wert des Tests aus der Normalnäherung der Läufe: z = (Läufe − Erwartung)/√Varianz. Clustering und Trends: Φ(z); Mischungen und Oszillation: 1 − Φ(z). Bei Streuung 0 ist p = 1. Leer, wenn kein p-Wert vorliegt.",
+          "observed": "Zahl der gezählten Läufe, auf denen der Test beruht: bei Clustering und Mischungen die Läufe um den Median, bei Trends und Oszillation die Läufe auf und ab.",
+          "flagged": "Wahr, wenn der p-Wert kleiner als α ist; der Test schlägt dann an."
         }
       }
     },
@@ -8659,7 +8678,7 @@
           "help": "Kartentyp, gewählte Spalte, Grenzen, Signalpunkte und die gezeichneten Werte lesen."
         },
         "setColumn": {
-          "help": "Die Spalte mit Anzahlen oder Zeiten zwischen Ereignissen wählen und neu rechnen.",
+          "help": "Die Spalte einer Datensammlung, die diese Rolle liefert; nach einer Änderung wird neu gerechnet.",
           "params": {
             "slot": "'value' — Anzahlen (g-Karte) oder Zeiten (t-Karte) zwischen Ereignissen (Pflicht, mindestens 2 verwertbare Werte).",
             "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns.value, oder null zum Leeren."
@@ -8668,8 +8687,8 @@
         "setParam": {
           "help": "Eine Analyseoption setzen und neu rechnen.",
           "params": {
-            "key": "'chartTypeId' — welche Karte gezeichnet wird.",
-            "value": "Für chartTypeId 'g' (Gelegenheiten zwischen Ereignissen) oder 't' (Zeit zwischen Ereignissen; nimmt nur positive Werte und zeichnet sie transformiert)."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys."
           }
         },
         "runAnalysis": {
@@ -8693,10 +8712,32 @@
           "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId."
         },
         "result": {
-          "help": "{ chartType, n, cl, ucl, lcl, sigma, transformed, plotted: { cl, ucl, lcl, sigma }, signals }; cl/ucl/lcl auf der Originalskala, plotted auf der gezeichneten Skala, signals die Indizes der Punkte außerhalb der Grenzen; null bei weniger als 2 verwertbaren Werten."
+          "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; null ohne Spalte oder mit weniger als 2 verwertbaren Werten (bei der t-Karte zählen nur positive)."
         },
         "points": {
           "help": "Je gezeichnetem Punkt eine Zeile: { value, signal }; value auf der gezeichneten Skala, null, wo die t-Karte einen nicht positiven Wert auslässt. read({ fields: ['points'] }) liefert sie vollständig."
+        }
+      },
+      "types": {
+        "Params": {
+          "chartTypeId": "Kartentyp: g für die Zahl der Gelegenheiten (zum Beispiel Tage oder Fälle) zwischen seltenen Ereignissen, t für die Zeit zwischen Ereignissen (nur positive Werte). Die Wahl bestimmt Mittellinie, Grenzen und Skala der Karte."
+        },
+        "Result": {
+          "chartType": "Der gerechnete Kartentyp, g oder t, wie bei der Auswahl gesetzt.",
+          "n": "Anzahl der verwertbaren Werte der Reihe; bei der t-Karte zählen nur Werte größer als 0. Ab 2 Werten gibt es ein Ergebnis. Die Unterzeile der Signalkachel nennt diese Zahl.",
+          "cl": "Mittellinie (CL) auf der Originalskala. g-Karte: Mittelwert ḡ der Reihe. t-Karte: Mittelwert ȳ der transformierten Werte y = t^(1/3,6), zurücktransformiert (ȳ^3,6). Die Unterzeile der Kachel zeigt σ̂, bei der t-Karte auf der transformierten Skala.",
+          "ucl": "Obere Eingriffsgrenze (UCL) auf der Originalskala. g-Karte: ḡ + 3σ mit σ = √(ḡ(ḡ + 1)). t-Karte: ȳ + 3σ mit σ = MR̄/1,128 auf der transformierten Skala, zurücktransformiert (y^3,6). Die Unterzeile der Kachel zeigt die untere Eingriffsgrenze (LCL).",
+          "lcl": "Untere Eingriffsgrenze (LCL) auf der Originalskala. g-Karte: max(0, ḡ − 3σ). t-Karte: ȳ − 3σ, bei 0 gekappt und zurücktransformiert (y^3,6). Die Kachel zeigt sie als Unterzeile neben UCL.",
+          "sigma": "Streuung σ der Karte. g-Karte: √(ḡ(ḡ + 1)). t-Karte: MR̄/1,128, die mittlere gleitende Spannweite der transformierten Werte geteilt durch 1,128, also auf der transformierten Skala und nicht auf der Skala von Mittellinie und Grenzen. Die Kachel zeigt es als σ̂ neben der Mittellinie der Originalskala.",
+          "transformed": "Wahr bei der t-Karte: sie wird auf der transformierten Skala y = t^(1/3,6) gezeichnet. Falsch bei der g-Karte.",
+          "plotted": "Mittellinie, Grenzen und σ auf der gezeichneten Skala. Bei der g-Karte stehen dieselben Werte wie oben, bei der t-Karte die transformierten.",
+          "signals": "Positionen (ab 0) der Punkte, die strikt über der oberen oder unter der unteren Grenze der gezeichneten Skala liegen, gezählt in der Reihe der verwerteten Zahlen, nicht in den Zeilen des Arbeitsblatts. Die Kachel zählt diese Punkte."
+        },
+        "PlottedLimits": {
+          "cl": "Mittellinie auf der gezeichneten Skala.",
+          "ucl": "Obere Eingriffsgrenze auf der gezeichneten Skala.",
+          "lcl": "Untere Eingriffsgrenze auf der gezeichneten Skala.",
+          "sigma": "Streuung auf der gezeichneten Skala; bei der t-Karte dieselbe transformierte Streuung wie oben."
         }
       }
     },

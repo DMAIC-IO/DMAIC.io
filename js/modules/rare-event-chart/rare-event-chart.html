@@ -3,7 +3,7 @@
 
     <div class="dmike-split__section-title" x-text="t('sectionChartType')"></div>
     <div class="field-group">
-      <label x-text="t('chartType')"></label>
+      <label data-help-key="modules.rare-event-chart.types.Params.chartTypeId" x-text="t('chartType')"></label>
       <select class="field" data-ref="chart-type" :value="model.chartTypeId" @change="setParam('chartTypeId', $event.target.value)">
         <template x-for="o in chartTypeOptions()" :key="o.value">
           <option :value="o.value" :selected="o.value === model.chartTypeId" x-text="o.label"></option>
@@ -14,7 +14,7 @@
 
     <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
     <div class="field-group">
-      <label x-text="t('dataColumn')"></label>
+      <label data-help-key="modules.rare-event-chart.actions.setColumn.help" x-text="t('dataColumn')"></label>
       <div data-ref="col-picker-wrap"></div>
       <span class="rec__hint" x-text="t('dataHint_' + model.chartTypeId)"></span>
     </div>
@@ -28,17 +28,17 @@
           <div class="dmike-kpi-strip">
             <div class="dmike-kpi">
               <div class="dmike-kpi-value" x-text="fmt(result.cl)"></div>
-              <div class="dmike-kpi-label" x-text="t('statCL')"></div>
+              <div class="dmike-kpi-label" data-help-key="modules.rare-event-chart.types.Result.cl" x-text="t('statCL')"></div>
               <div class="dmike-kpi-sub" x-text="'σ̂ = ' + fmt(result.sigma)"></div>
             </div>
             <div class="dmike-kpi">
               <div class="dmike-kpi-value" x-text="fmt(result.ucl)"></div>
-              <div class="dmike-kpi-label">UCL / LCL</div>
+              <div class="dmike-kpi-label" data-help-key="modules.rare-event-chart.types.Result.ucl">UCL / LCL</div>
               <div class="dmike-kpi-sub" x-text="fmt(result.lcl)"></div>
             </div>
             <div class="dmike-kpi" :class="signalsClass()">
               <div class="dmike-kpi-value" x-text="result.signals"></div>
-              <div class="dmike-kpi-label" x-text="t('statSignals')"></div>
+              <div class="dmike-kpi-label" data-help-key="modules.rare-event-chart.types.Result.signals" x-text="t('statSignals')"></div>
               <div class="dmike-kpi-sub" x-text="t('statOf', { total: result.n })"></div>
             </div>
           </div>
