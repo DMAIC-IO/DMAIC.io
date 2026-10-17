@@ -2561,7 +2561,7 @@
       "actions": {
         "read": { "help": "Read the chosen columns, all settings, the grand mean, the reference line, the mean per part and operator and every measurement." },
         "setColumn": {
-          "help": "Assign a column to a role and recompute. The other roles keep their columns.",
+          "help": "The data collection column that supplies this role; after a change the analysis is recomputed.",
           "params": {
             "slot": "'part' — the part of each measurement (required); 'operator' — the operator (optional; without it all repeats count as one operator); 'measurement' — the measured value, numeric or 0/1 (required).",
             "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns of that role, or null to clear it."
@@ -2830,7 +2830,7 @@
           }
         },
         "setColumn": {
-          "help": "Points one of the three slots at a column of a data collection; the recalculation follows after a short pause.",
+          "help": "The data collection column that supplies this role; after a change the analysis is recomputed.",
           "params": {
             "slot": "One of the slots in activeColumnSlots: part, operator (optional) or measurement (numeric).",
             "ref": "Column reference { instanceId, sheetId, columnId } of a column from pickableColumns, or null to clear."
@@ -2859,9 +2859,9 @@
         "Params": {
           "lsl": "Lower specification limit (LSL) as text, for example '24.9'. Together with the upper limit it gives the tolerance T = USL − LSL that %GRR (tolerance) refers to; empty means there is no lower limit.",
           "usl": "Upper specification limit (USL) as text, for example '25.1'. Together with the lower limit it gives the tolerance T = USL − LSL that %GRR (tolerance) refers to; empty means there is no upper limit.",
-          "alpha": "Significance level α of the ANOVA as text, for example '0.05'; empty counts as 0.05. If the p-value of the part × operator interaction is below α, it stays a source of its own, otherwise it is pooled with repeatability.",
+          "alpha": "Significance level α of the ANOVA as text, for example '0.05'; empty counts as 0.05. If the p-value of the part × operator interaction is below α, it stays a source of its own, otherwise it is pooled with repeatability. A newly added module pre-fills α from the global confidence level, so 0.05 at 95 %.",
           "k": "Spread factor k of the study variation k · σ: 6 covers 99.73 % of the values, 5.15 covers 99 % (AIAG, 3rd edition). It affects the study variation and %GRR (tolerance), not %GRR (study variation).",
-          "verdictBasis": "Basis of the %GRR verdict: automatic takes the tolerance when both limits are set, otherwise the study variation; tolerance takes the tolerance as long as both limits are set; study variation always relates the verdict to the total variation of the study.",
+          "verdictBasis": "Basis of the %GRR verdict: automatic takes the tolerance when both limits are set, otherwise the study variation; tolerance takes the tolerance as long as both limits are set and, without them, falls back to the study variation just like automatic; study variation always relates the verdict to the total variation of the study.",
           "sigmaHist": "Historical process standard deviation σ as text, optional and greater than 0. When set, the variance components table also gives each source's share of this process variation; empty means there is no process reference."
         },
         "Result": {
@@ -2876,7 +2876,7 @@
           "anova": "Analysis of variance with the sources parts, operators, part × operator interaction, repeatability and total; per source the sum of squares, degrees of freedom, mean square, F value and p-value.",
           "interactionSignificant": "True when the p-value of the part × operator interaction is below α: then an operator measures certain parts differently from the other operators. Always false for type 3.",
           "interactionPooled": "True when the interaction is not significant and was therefore combined with repeatability into one error term (sums of squares and degrees of freedom added). False for type 3, which has no interaction.",
-          "alpha": "Significance level α used in the computation; 0.05 without input.",
+          "alpha": "Significance level α used in the computation; 0.05 without input. A newly added module takes α from the global confidence level.",
           "varComp": "Variance components from the ANOVA: repeatability (EV), reproducibility (AV) with its parts operator and interaction, measurement system (GRR), parts (PV) and total (TV); per component the variance, standard deviation, study variation and percentages.",
           "ndc": "Number of distinct categories: ndc = 1.41 · σ parts / σ GRR, rounded down to a whole number. From 5 on, the resolution of the measurement system is sufficient for the part variation. 999 means the measurement system has no spread but the parts do; 0 when neither has spread.",
           "verdictBasis": "Basis the verdict actually rests on: tolerance or study variation. With the automatic choice it is the tolerance when both limits are set, otherwise the study variation.",
@@ -2894,8 +2894,8 @@
         },
         "Anova": {
           "part": "Source parts: variation between the part means. Its F test checks whether the parts differ; the reference is the interaction when it is significant, otherwise repeatability.",
-          "operator": "Source operators: variation between the operator means, tested like the parts. Missing for type 3.",
-          "interact": "Source part × operator interaction, tested against repeatability. Missing when it was pooled, and for type 3.",
+          "operator": "Source operators: variation between the operator means, tested like the parts. Empty for type 3.",
+          "interact": "Source part × operator interaction, tested against repeatability. Empty when it was pooled, and for type 3.",
           "equip": "Source repeatability: variation of the replicates within a cell, including the interaction when it was pooled. No F value and no p-value.",
           "total": "Source total: variation of all measurements around the grand mean, with sum of squares and degrees of freedom only."
         },
@@ -2911,7 +2911,7 @@
           "reproducibility": "Reproducibility (AV): the variation between operators, σ² AV = σ² operator + σ² interaction; 0 for type 3. %AV is its share of the study variation, 100 · σ AV / σ total.",
           "operator": "Operator share of reproducibility: σ² = (MS operators − MS reference) / (p · r), not below 0; the reference is the interaction or, when pooled, repeatability.",
           "interact": "Interaction share of reproducibility: σ² = (MS interaction − MS repeatability) / r, not below 0; 0 when the interaction was pooled.",
-          "grr": "Measurement system (GRR): σ² GRR = σ² EV + σ² AV. %GRR (study variation) = 100 · σ GRR / σ total. Below 10 % the measurement system is acceptable, 10 % to below 30 % conditionally acceptable, 30 % or more not acceptable.",
+          "grr": "Measurement system (GRR): σ² GRR = σ² EV + σ² AV. %GRR (study variation) = 100 · σ GRR / σ total. If the study variation is the effective basis of the verdict: below 10 % the measurement system is acceptable, 10 % to below 30 % conditionally acceptable, 30 % or more not acceptable.",
           "part": "Part variation (PV): σ² = (MS parts − MS reference) / (o · r), not below 0; divided by r for type 3.",
           "total": "Total variation (TV): σ² total = σ² GRR + σ² parts."
         },
@@ -2921,7 +2921,7 @@
           "studyVar": "Study variation k · σ with the spread factor k (6 or 5.15).",
           "pctContribution": "Share of the total variance: 100 · σ² / σ² total. GRR and parts add up to 100 %.",
           "pctStudyVar": "Share of the study variation: 100 · σ / σ total. Because standard deviations do not add up, the shares do not sum to 100 %.",
-          "pctTolerance": "Share of the tolerance: 100 · k · σ / T with T = USL − LSL; empty unless both limits are set. For GRR: below 10 % acceptable, 10 % to below 30 % conditionally acceptable, 30 % or more not acceptable.",
+          "pctTolerance": "Share of the tolerance: 100 · k · σ / T with T = USL − LSL; empty unless both limits are set. If the tolerance is the effective basis of the verdict, for GRR: below 10 % acceptable, 10 % to below 30 % conditionally acceptable, 30 % or more not acceptable.",
           "pctProcess": "Share of the historical process variation: 100 · σ / σ historical; empty without a historical process σ."
         },
         "ControlLimits": {
@@ -2933,7 +2933,7 @@
           "rLCL": "Lower control limit of the R chart: D₃ · R̄.",
           "rBar": "Average range R̄ over all part × operator cells, over all parts for type 3.",
           "A2": "Chart factor A₂ for the subgroup size r, the number of replicates; with more than 6 replicates the factors for 6 apply.",
-          "D3": "Chart factor D₃ for the subgroup size r. For 2 to 6 replicates it is 0, so the lower limit of the R chart is 0.",
+          "D3": "Chart factor D₃ for the subgroup size r. In this analysis it is always 0 (for 2 to 6 replicates, above that the factors for 6 apply), so the lower limit of the R chart is always 0.",
           "D4": "Chart factor D₄ for the subgroup size r."
         },
         "ResultParams": {
@@ -3043,7 +3043,7 @@
           }
         },
         "setColumn": {
-          "help": "Points one of the two slots at a column of a data collection; the recomputation follows after a short pause.",
+          "help": "The data collection column that supplies this role; after a change the analysis is recomputed.",
           "params": {
             "slot": "One of the slots in activeColumnSlots: reference (reference values, numeric) or measured (measured values, numeric).",
             "ref": "Column reference { instanceId, sheetId, columnId } of a column in pickableColumns, or null to clear."
@@ -3132,7 +3132,7 @@
         },
         "ProcessVariation": {
           "mode": "How the reference quantity was determined: from the tolerance or from 6 · σP.",
-          "value": "The reference quantity: T = USL − LSL in tolerance mode, 6 · σP in process spread mode. It must be positive, otherwise nothing is computed.",
+          "value": "The reference quantity: T = USL − LSL in tolerance mode, 6 · σP in 6 · σP mode. It must be positive, otherwise nothing is computed.",
           "source": "Origin of the reference quantity; always the same as the mode."
         },
         "Interpretation": {
@@ -3218,7 +3218,7 @@
       "whenToUse": "When an attribute measurement system (good/bad, classes, ordinal levels) is to be assessed: several appraisers rate parts, repeatedly, against an optional reference. The result is kappa agreement, effectiveness and a verdict by AIAG or Bosch rules — not for measured characteristics, which types 1 to 3 cover. Requires a data collection with a part, an appraiser and a rating column; the wide layout (one column per appraiser and trial) cannot be fully operated through the surface.",
       "actions": {
         "read": {
-          "help": "Returns the inputs, the selectable sets and the computed result. result is null while the inputs are incomplete or invalid; problems are then in result.meta.errors where a computation ran.",
+          "help": "Returns the inputs, the selectable sets and the computed result. result is null while no rows can be evaluated; with invalid inputs only meta is present, the reason under meta.errors.",
           "params": { "options": "Optional; this module holds no bulk data." }
         },
         "setParam": {
@@ -3229,9 +3229,9 @@
           }
         },
         "setColumn": {
-          "help": "Points one of the five slots at a column of a data collection; the recomputation follows after a short pause. The rating columns of the wide layout cannot be set.",
+          "help": "The data collection column that supplies this role; after a change the analysis is recomputed.",
           "params": {
-            "slot": "One of the slots in activeColumnSlots: part, appraiser, rating, reference or replicate. appraiser, rating and replicate apply only in the long layout.",
+            "slot": "One of the slots in activeColumnSlots: part, appraiser, rating, reference or replicate. appraiser, rating and replicate apply only in the long layout. The rating columns of the wide layout cannot be set.",
             "ref": "Column reference { instanceId, sheetId, columnId } of a column in pickableColumns, or null to clear."
           }
         },
@@ -3254,7 +3254,7 @@
           "weights": "Weighting of κ for the ordinal type, so that a near miss counts less than a far one: linear w = 1 − |i − j| / (k − 1), quadratic w = 1 − ((i − j) / (k − 1))², with i, j the level positions and k the number of levels. The default is quadratic.",
           "layout": "Data layout of the ratings: long with one row per rating (part, appraiser, rating, optionally reference and replicate) or wide with one column per appraiser and trial.",
           "trials": "Number of trials per appraiser in the wide layout, as text, for example '2'. The columns are grouped in order: first all trials of appraiser 1, then appraiser 2; the number of columns must be divisible by the number of trials.",
-          "ruleSet": "Verdict rule. AIAG MSA (4th ed.) takes the worst of four criteria: Fleiss' κ (acceptable from 0.75, marginal from 0.40), lowest effectiveness (from 90 % or 80 %), highest miss rate (up to 2 % or 5 %) and highest false-alarm rate (up to 5 % or 10 %). Bosch booklet 10 rates the smallest available κ: acceptable from 0.9, marginal from 0.7.",
+          "ruleSet": "Verdict rule. AIAG MSA (4th ed.) takes the worst of its criteria: Fleiss' κ (acceptable from 0.75, marginal from 0.40), lowest effectiveness (from 90 % or 80 %) and, only for binary data with a reference from a column, highest miss rate (up to 2 % or 5 %) and highest false-alarm rate (up to 5 % or 10 %). Bosch booklet 10 rates the smallest available κ: acceptable from 0.9, marginal from 0.7.",
           "alpha": "Significance level α. It sets the level of the confidence intervals (1 − α); the p-values of the κ tests are judged against it. The choices are 0.01, 0.05 (usual) and 0.10.",
           "positiveLevel": "The level that counts as positive (OK) for binary data, one of the detected levels; without a choice the most frequent rating. The miss rate counts negative parts rated positive, the false-alarm rate positive parts rated negative; if the level is chosen wrongly, the two are swapped."
         },
@@ -3310,7 +3310,7 @@
           "falseAlarmRate": "False-alarm rate: share of ratings on parts with a positive reference (OK) that the appraiser rated negative (NOK). Binary only. AIAG: acceptable up to 5 %, marginal up to 10 %; the highest value is rated, and only with a reference from a column.",
           "biasRate": "Bias of the appraiser: miss rate minus false-alarm rate. Above 0 they judge too leniently, below 0 too strictly. Binary only.",
           "kappa": "Cohen's κ between appraiser and reference, weighted for the ordinal type. The tile above shows the mean over all appraisers.",
-          "fleissKappa": "Fleiss' κ over the appraiser's trials with the reference as one more rater (Bosch booklet 10, procedure 7). Under Bosch a candidate for the smallest κ."
+          "fleissKappa": "Fleiss' κ over the appraiser's trials with the reference as one more rater (Bosch booklet 10, procedure 7). Under Bosch a candidate for the smallest κ; the tile above then shows the mean over all appraisers."
         },
         "ErrorRate": {
           "rate": "Share of wrong ratings: errors divided by the cases in the denominator. With no cases it is 0 and does not count towards the verdict.",
@@ -3326,7 +3326,7 @@
           "se0": "Standard error of κ under the null hypothesis κ = 0 after Fleiss, Cohen and Everitt (1969); it serves the test only.",
           "z": "Test statistic of the one-sided test of κ = 0: z = κ / SE₀.",
           "p": "One-sided p-value against κ > 0: p = 1 − Φ(z). Below α the agreement is significantly better than chance.",
-          "ci95": "Confidence interval of κ as lower and upper bound: κ ± z(1 − α/2) · SE, at level 1 − α (95 % for α = 0.05).",
+          "ci95": "Confidence interval of κ as lower and upper bound: κ ± z(1 − α/2) · SE, at level 1 − α (95 % for α = 0.05). Under Bosch booklet 10 the table against the reference shows Fleiss' κ, which has no interval; the column then stays without a value.",
           "method": "Method: cohen unweighted for binary and nominal data, weighted-linear or weighted-quadratic for the ordinal type."
         },
         "PairKappa": {
@@ -3398,7 +3398,7 @@
           "id": "Identifier of the criterion: fleissKappa, effectiveness, missRate or falseAlarmRate under AIAG, minKappa under Bosch booklet 10.",
           "value": "The rated value; for per-appraiser criteria the extreme across all appraisers, i.e. the lowest effectiveness, the highest miss rate and the highest false-alarm rate.",
           "level": "The level of this criterion: acceptable, marginal or not acceptable.",
-          "appraiser": "The appraiser with the extreme value, on a tie the first in alphabetical order; empty for the overall Fleiss' κ.",
+          "appraiser": "The appraiser with the extreme value, on a tie the first in alphabetical order; empty for the overall Fleiss' κ and, under Bosch, when the smallest κ comes from all appraisers with the reference.",
           "limits": "The limits of this criterion for acceptable and marginal.",
           "direction": "Direction of the limits: min means higher is better, the value must reach the limit (κ, effectiveness); max means lower is better, the value must not exceed the limit (miss rate, false-alarm rate).",
           "source": "Where the smallest κ under Bosch booklet 10 comes from: the overall Fleiss' κ, κ within one appraiser, κ of one appraiser with the reference, or all appraisers with the reference."
@@ -3567,7 +3567,7 @@
           }
         },
         "setColumn": {
-          "help": "Points one of the three slots at a column of a data collection; the analysis reruns after a short pause.",
+          "help": "The data collection column that supplies this role; after a change the analysis is recomputed.",
           "params": {
             "slot": "One of the slots in activeColumnSlots: timestamp (timestamp or order), value (measurement) or subgroup. subgroup applies only with chartType xbar-r.",
             "ref": "Column reference { instanceId, sheetId, columnId } of a column in pickableColumns, or null to clear."

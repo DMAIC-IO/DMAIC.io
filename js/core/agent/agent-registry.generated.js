@@ -7026,7 +7026,7 @@ export const AGENT_REGISTRY = {
                   },
                   "ci95": {
                     "type": "number[]",
-                    "help": "95-%-Intervall nach Wilson"
+                    "help": "Intervall nach Wilson zum Niveau 1 − α"
                   }
                 }
               },
@@ -7084,7 +7084,7 @@ export const AGENT_REGISTRY = {
                       },
                       "ci95": {
                         "type": "number[]",
-                        "help": "95-%-Intervall nach Wilson"
+                        "help": "Intervall nach Wilson zum Niveau 1 − α"
                       }
                     }
                   },
@@ -7100,7 +7100,7 @@ export const AGENT_REGISTRY = {
                       },
                       "ci95": {
                         "type": "number[]",
-                        "help": "95-%-Intervall"
+                        "help": "Intervall zum Niveau 1 − α"
                       },
                       "n": {
                         "type": "number",
@@ -7120,7 +7120,7 @@ export const AGENT_REGISTRY = {
                       },
                       "ci95": {
                         "type": "number[]",
-                        "help": "95-%-Intervall"
+                        "help": "Intervall zum Niveau 1 − α"
                       },
                       "n": {
                         "type": "number",
@@ -7136,7 +7136,7 @@ export const AGENT_REGISTRY = {
                     "keys": {
                       "value": {
                         "type": "number",
-                        "help": "Verhältnis"
+                        "help": "Differenz"
                       }
                     }
                   },
@@ -7168,7 +7168,7 @@ export const AGENT_REGISTRY = {
                       },
                       "ci95": {
                         "type": "number[]",
-                        "help": "95-%-Intervall"
+                        "help": "Intervall zum Niveau 1 − α"
                       },
                       "method": {
                         "type": "string",
@@ -7261,7 +7261,7 @@ export const AGENT_REGISTRY = {
                   },
                   "ci95": {
                     "type": "number[]",
-                    "help": "95-%-Intervall"
+                    "help": "Intervall zum Niveau 1 − α"
                   },
                   "method": {
                     "type": "string",
@@ -7472,7 +7472,7 @@ export const AGENT_REGISTRY = {
                   },
                   "ci95": {
                     "type": "number[]",
-                    "help": "95-%-Intervall"
+                    "help": "Intervall zum Niveau 1 − α"
                   }
                 }
               },
@@ -7495,7 +7495,7 @@ export const AGENT_REGISTRY = {
                   },
                   "ci95": {
                     "type": "number[]",
-                    "help": "95-%-Intervall"
+                    "help": "Intervall zum Niveau 1 − α"
                   }
                 }
               }

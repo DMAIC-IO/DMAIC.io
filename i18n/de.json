@@ -2565,7 +2565,7 @@
       "actions": {
         "read": { "help": "Gewählte Spalten, alle Einstellungen, Gesamtmittel, Bezugslinie, Mittel je Teil und Prüfer und jeden Messwert lesen." },
         "setColumn": {
-          "help": "Einer Rolle eine Spalte zuweisen und neu rechnen. Die übrigen Rollen behalten ihre Spalten.",
+          "help": "Die Spalte einer Datensammlung, die diese Rolle liefert; nach einer Änderung wird neu gerechnet.",
           "params": {
             "slot": "'part' — das Teil je Messwert (Pflicht); 'operator' — der Prüfer (optional; ohne ihn zählen alle Wiederholungen als ein Prüfer); 'measurement' — der Messwert, Zahl oder 0/1 (Pflicht).",
             "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieser Rolle, oder null zum Leeren."
@@ -2834,7 +2834,7 @@
           }
         },
         "setColumn": {
-          "help": "Verweist einen der drei Slots auf eine Spalte einer Datensammlung; die Neuberechnung folgt nach kurzer Ruhezeit.",
+          "help": "Die Spalte einer Datensammlung, die diese Rolle liefert; nach einer Änderung wird neu gerechnet.",
           "params": {
             "slot": "Einer der Slots aus activeColumnSlots: part (Teile), operator (Prüfer, optional) oder measurement (Messwerte, numerisch).",
             "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Leeren."
@@ -2861,11 +2861,11 @@
       },
       "types": {
         "Params": {
-          "lsl": "Untere Toleranzgrenze (UGW) als Text, zum Beispiel '24.9'. Zusammen mit der oberen Grenze ergibt sie die Toleranz T = OGW − UGW, auf die sich %GRR (Toleranz) bezieht; leer heißt, es gibt keine untere Grenze.",
-          "usl": "Obere Toleranzgrenze (OGW) als Text, zum Beispiel '25.1'. Zusammen mit der unteren Grenze ergibt sie die Toleranz T = OGW − UGW, auf die sich %GRR (Toleranz) bezieht; leer heißt, es gibt keine obere Grenze.",
-          "alpha": "Signifikanzniveau α der ANOVA als Text, zum Beispiel '0.05'; leer gilt 0,05. Ist der p-Wert der Wechselwirkung Teil × Prüfer kleiner als α, bleibt sie eine eigene Quelle, sonst wird sie mit der Wiederholbarkeit gepoolt.",
+          "lsl": "Untere Toleranzgrenze (USG) als Text, zum Beispiel '24.9'. Zusammen mit der oberen Grenze ergibt sie die Toleranz T = OSG − USG, auf die sich %GRR (Toleranz) bezieht; leer heißt, es gibt keine untere Grenze.",
+          "usl": "Obere Toleranzgrenze (OSG) als Text, zum Beispiel '25.1'. Zusammen mit der unteren Grenze ergibt sie die Toleranz T = OSG − USG, auf die sich %GRR (Toleranz) bezieht; leer heißt, es gibt keine obere Grenze.",
+          "alpha": "Signifikanzniveau α der ANOVA als Text, zum Beispiel '0.05'; leer gilt 0,05. Ist der p-Wert der Wechselwirkung Teil × Prüfer kleiner als α, bleibt sie eine eigene Quelle, sonst wird sie mit der Wiederholbarkeit gepoolt. Ein neu angelegtes Modul füllt α aus dem globalen Konfidenzniveau vor, bei 95 % also 0,05.",
           "k": "Streuungsfaktor k der Studienstreuung k · σ: 6 deckt 99,73 % der Werte ab, 5,15 deckt 99 % ab (AIAG, 3. Auflage). Er wirkt auf die Studienstreuung und auf %GRR (Toleranz), nicht auf %GRR (Studienstreuung).",
-          "verdictBasis": "Bezug des Urteils über %GRR: automatisch nimmt die Toleranz, wenn beide Grenzen gesetzt sind, sonst die Studienstreuung; Toleranz nimmt die Toleranz, solange beide Grenzen gesetzt sind; Studienstreuung bezieht das Urteil immer auf die Gesamtstreuung der Studie.",
+          "verdictBasis": "Bezug des Urteils über %GRR: automatisch nimmt die Toleranz, wenn beide Grenzen gesetzt sind, sonst die Studienstreuung; Toleranz nimmt die Toleranz, solange beide Grenzen gesetzt sind, und fällt ohne sie wie automatisch auf die Studienstreuung zurück; Studienstreuung bezieht das Urteil immer auf die Gesamtstreuung der Studie.",
           "sigmaHist": "Historische Prozessstreuung σ als Text, optional und größer als 0. Ist sie gesetzt, nennt die Tabelle der Varianzkomponenten je Quelle zusätzlich den Anteil an dieser Prozessstreuung; leer heißt, es gibt keinen Prozessbezug."
         },
         "Result": {
@@ -2880,7 +2880,7 @@
           "anova": "Varianzanalyse mit den Quellen Teile, Prüfer, Wechselwirkung Teil × Prüfer, Wiederholbarkeit und gesamt; je Quelle Quadratsumme, Freiheitsgrade, mittleres Quadrat, F-Wert und p-Wert.",
           "interactionSignificant": "Wahr, wenn der p-Wert der Wechselwirkung Teil × Prüfer kleiner als α ist: dann misst ein Prüfer bestimmte Teile anders als die übrigen Prüfer. Bei Typ 3 immer falsch.",
           "interactionPooled": "Wahr, wenn die Wechselwirkung nicht signifikant ist und darum mit der Wiederholbarkeit zu einem Fehlerterm zusammengefasst wurde (Quadratsummen und Freiheitsgrade addiert). Bei Typ 3 falsch, weil es keine Wechselwirkung gibt.",
-          "alpha": "Signifikanzniveau α, mit dem gerechnet wurde; ohne Eingabe 0,05.",
+          "alpha": "Signifikanzniveau α, mit dem gerechnet wurde; ohne Eingabe 0,05. Ein neu angelegtes Modul übernimmt α aus dem globalen Konfidenzniveau.",
           "varComp": "Varianzkomponenten aus der ANOVA: Wiederholbarkeit (EV), Reproduzierbarkeit (AV) mit ihren Teilen Prüfer und Wechselwirkung, Messsystem (GRR), Teile (PV) und gesamt (TV); je Komponente Varianz, Standardabweichung, Studienstreuung und Prozentanteile.",
           "ndc": "Anzahl unterscheidbarer Kategorien: ndc = 1,41 · σ Teile / σ GRR, auf eine ganze Zahl abgerundet. Ab 5 reicht die Auflösung des Messsystems für die Teilestreuung aus. 999 heißt, das Messsystem streut nicht, die Teile aber schon; 0, wenn beides nicht streut.",
           "verdictBasis": "Bezug, auf dem das Urteil tatsächlich beruht: Toleranz oder Studienstreuung. Bei der Wahl automatisch ist es die Toleranz, wenn beide Grenzen gesetzt sind, sonst die Studienstreuung.",
@@ -2898,8 +2898,8 @@
         },
         "Anova": {
           "part": "Quelle Teile: Streuung zwischen den Teilmittelwerten. Ihr F-Test prüft, ob sich die Teile unterscheiden; Vergleichsgröße ist die Wechselwirkung, wenn sie signifikant ist, sonst die Wiederholbarkeit.",
-          "operator": "Quelle Prüfer: Streuung zwischen den Prüfermittelwerten, geprüft wie die Teile. Fehlt bei Typ 3.",
-          "interact": "Quelle Wechselwirkung Teil × Prüfer, geprüft gegen die Wiederholbarkeit. Fehlt, wenn sie gepoolt wurde, und bei Typ 3.",
+          "operator": "Quelle Prüfer: Streuung zwischen den Prüfermittelwerten, geprüft wie die Teile. Leer bei Typ 3.",
+          "interact": "Quelle Wechselwirkung Teil × Prüfer, geprüft gegen die Wiederholbarkeit. Leer, wenn sie gepoolt wurde, und bei Typ 3.",
           "equip": "Quelle Wiederholbarkeit: Streuung der Wiederholmessungen innerhalb einer Zelle, bei gepoolter Wechselwirkung einschließlich dieser. Ohne F-Wert und p-Wert.",
           "total": "Quelle gesamt: Streuung aller Messwerte um das Gesamtmittel, nur mit Quadratsumme und Freiheitsgraden."
         },
@@ -2915,7 +2915,7 @@
           "reproducibility": "Reproduzierbarkeit (AV): Streuung zwischen den Prüfern, σ² AV = σ² Prüfer + σ² Wechselwirkung; 0 bei Typ 3. %AV ist ihr Anteil an der Studienstreuung, 100 · σ AV / σ gesamt.",
           "operator": "Prüferanteil der Reproduzierbarkeit: σ² = (MS Prüfer − MS Vergleichsgröße) / (p · r), nicht unter 0; Vergleichsgröße ist die Wechselwirkung oder, wenn gepoolt, die Wiederholbarkeit.",
           "interact": "Wechselwirkungsanteil der Reproduzierbarkeit: σ² = (MS Wechselwirkung − MS Wiederholbarkeit) / r, nicht unter 0; 0, wenn die Wechselwirkung gepoolt wurde.",
-          "grr": "Messsystem (GRR): σ² GRR = σ² EV + σ² AV. %GRR (Studienstreuung) = 100 · σ GRR / σ gesamt. Unter 10 % ist das Messsystem akzeptabel, 10 % bis unter 30 % bedingt akzeptabel, ab 30 % nicht akzeptabel.",
+          "grr": "Messsystem (GRR): σ² GRR = σ² EV + σ² AV. %GRR (Studienstreuung) = 100 · σ GRR / σ gesamt. Ist die Studienstreuung der wirksame Bezug des Urteils, gilt: unter 10 % ist das Messsystem akzeptabel, 10 % bis unter 30 % bedingt akzeptabel, ab 30 % nicht akzeptabel.",
           "part": "Teilestreuung (PV): σ² = (MS Teile − MS Vergleichsgröße) / (o · r), nicht unter 0; bei Typ 3 geteilt durch r.",
           "total": "Gesamtstreuung (TV): σ² gesamt = σ² GRR + σ² Teile."
         },
@@ -2925,7 +2925,7 @@
           "studyVar": "Studienstreuung k · σ mit dem Streuungsfaktor k (6 oder 5,15).",
           "pctContribution": "Anteil an der Gesamtvarianz: 100 · σ² / σ² gesamt. GRR und Teile ergeben zusammen 100 %.",
           "pctStudyVar": "Anteil an der Studienstreuung: 100 · σ / σ gesamt. Weil sich Standardabweichungen nicht addieren, ergeben die Anteile zusammen nicht 100 %.",
-          "pctTolerance": "Anteil an der Toleranz: 100 · k · σ / T mit T = OGW − UGW; leer, wenn nicht beide Grenzen gesetzt sind. Für GRR gilt: unter 10 % akzeptabel, 10 % bis unter 30 % bedingt akzeptabel, ab 30 % nicht akzeptabel.",
+          "pctTolerance": "Anteil an der Toleranz: 100 · k · σ / T mit T = OSG − USG; leer, wenn nicht beide Grenzen gesetzt sind. Ist die Toleranz der wirksame Bezug des Urteils, gilt für GRR: unter 10 % akzeptabel, 10 % bis unter 30 % bedingt akzeptabel, ab 30 % nicht akzeptabel.",
           "pctProcess": "Anteil an der historischen Prozessstreuung: 100 · σ / σ historisch; leer ohne historische Prozessstreuung."
         },
         "ControlLimits": {
@@ -2937,13 +2937,13 @@
           "rLCL": "Untere Eingriffsgrenze der R-Karte: D₃ · R̄.",
           "rBar": "Mittlere Spannweite R̄ über alle Zellen Teil × Prüfer, bei Typ 3 über alle Teile.",
           "A2": "Kartenfaktor A₂ für die Untergruppengröße r, die Zahl der Wiederholungen; bei mehr als 6 Wiederholungen gelten die Faktoren für 6.",
-          "D3": "Kartenfaktor D₃ für die Untergruppengröße r. Für 2 bis 6 Wiederholungen ist er 0, die untere Grenze der R-Karte liegt dann bei 0.",
+          "D3": "Kartenfaktor D₃ für die Untergruppengröße r. In dieser Auswertung ist er immer 0 (für 2 bis 6 Wiederholungen, darüber gelten die Faktoren für 6), die untere Grenze der R-Karte liegt also stets bei 0.",
           "D4": "Kartenfaktor D₄ für die Untergruppengröße r."
         },
         "ResultParams": {
           "alpha": "Signifikanzniveau α als Zahl; ohne Eingabe 0,05.",
           "studyVarMultiplier": "Streuungsfaktor k als Zahl, 6 oder 5,15.",
-          "tolerance": "Toleranz T = OGW − UGW; leer, wenn nicht beide Grenzen gesetzt sind.",
+          "tolerance": "Toleranz T = OSG − USG; leer, wenn nicht beide Grenzen gesetzt sind.",
           "lsl": "Untere Toleranzgrenze als Zahl; ohne Eingabe kein gültiger Zahlenwert.",
           "usl": "Obere Toleranzgrenze als Zahl; ohne Eingabe kein gültiger Zahlenwert.",
           "verdictBasis": "Gewählter Bezug des Urteils, Toleranz oder Studienstreuung; fehlt bei der Wahl automatisch.",
@@ -3047,7 +3047,7 @@
           }
         },
         "setColumn": {
-          "help": "Verweist einen der zwei Slots auf eine Spalte einer Datensammlung; die Neuberechnung folgt nach kurzer Ruhezeit.",
+          "help": "Die Spalte einer Datensammlung, die diese Rolle liefert; nach einer Änderung wird neu gerechnet.",
           "params": {
             "slot": "Einer der Slots aus activeColumnSlots: reference (Referenzwerte, numerisch) oder measured (Messwerte, numerisch).",
             "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Leeren."
@@ -3136,7 +3136,7 @@
         },
         "ProcessVariation": {
           "mode": "Wie die Bezugsgröße bestimmt wurde: aus der Toleranz oder aus 6 · σP.",
-          "value": "Die Bezugsgröße: T = OSG − USG im Toleranzmodus, 6 · σP im Modus Prozessstreuung. Sie muss positiv sein, sonst wird nicht gerechnet.",
+          "value": "Die Bezugsgröße: T = OSG − USG im Toleranzmodus, 6 · σP im Modus 6 · σP. Sie muss positiv sein, sonst wird nicht gerechnet.",
           "source": "Herkunft der Bezugsgröße; stets gleich der Bezugsart."
         },
         "Interpretation": {
@@ -3222,7 +3222,7 @@
       "whenToUse": "Wenn ein attributives Prüfmittel (gut/schlecht, Klassen, Ordnungsstufen) bewertet werden soll: mehrere Prüfer bewerten Teile, auch wiederholt, gegen einen optionalen Referenzwert. Ergebnis sind Kappa-Übereinstimmung, Effektivität und ein Urteil nach AIAG oder Bosch — nicht für messende Merkmale, dafür gelten die Typen 1 bis 3. Braucht eine Datensammlung mit Teile-, Prüfer- und Bewertungsspalte; das breite Layout (eine Spalte je Prüfer und Versuch) ist über die Fläche nicht vollständig bedienbar.",
       "actions": {
         "read": {
-          "help": "Liefert die Eingaben, die wählbaren Mengen und das gerechnete Ergebnis. result ist null, solange die Eingaben unvollständig oder ungültig sind; Probleme stehen dann in result.meta.errors, soweit eine Rechnung lief.",
+          "help": "Liefert die Eingaben, die wählbaren Mengen und das gerechnete Ergebnis. result ist null, solange keine Zeilen auswertbar sind; bei ungültigen Eingaben steht nur meta da, der Grund unter meta.errors.",
           "params": { "options": "Optional; dieses Modul führt keine Massendaten." }
         },
         "setParam": {
@@ -3233,9 +3233,9 @@
           }
         },
         "setColumn": {
-          "help": "Zeigt einen der fünf Slots auf eine Spalte einer Datensammlung; die Neuberechnung folgt nach kurzer Ruhezeit. Die Bewertungsspalten des breiten Layouts lassen sich nicht setzen.",
+          "help": "Die Spalte einer Datensammlung, die diese Rolle liefert; nach einer Änderung wird neu gerechnet.",
           "params": {
-            "slot": "Einer der Slots aus activeColumnSlots: part (Teil), appraiser (Prüfer), rating (Bewertung), reference (Referenz) oder replicate (Wiederholung). appraiser, rating und replicate gelten nur beim Layout long.",
+            "slot": "Einer der Slots aus activeColumnSlots: part (Teil), appraiser (Prüfer), rating (Bewertung), reference (Referenz) oder replicate (Wiederholung). appraiser, rating und replicate gelten nur beim Layout long. Die Bewertungsspalten des breiten Layouts lassen sich nicht setzen.",
             "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Leeren."
           }
         },
@@ -3258,7 +3258,7 @@
           "weights": "Gewichtung des κ beim Typ ordinal, damit knapp daneben weniger zählt als weit daneben: linear w = 1 − |i − j| / (k − 1), quadratisch w = 1 − ((i − j) / (k − 1))², mit i, j den Stufenplätzen und k der Stufenzahl. Voreingestellt ist quadratisch.",
           "layout": "Datenlayout der Bewertungen: lang mit einer Zeile je Bewertung (Teil, Prüfer, Bewertung, wahlweise Referenz und Wiederholung) oder breit mit einer Spalte je Prüfer und Durchgang.",
           "trials": "Anzahl der Durchgänge je Prüfer im breiten Layout, als Text, zum Beispiel '2'. Die Spalten werden der Reihe nach gruppiert: erst alle Durchgänge von Prüfer 1, dann Prüfer 2; die Spaltenzahl muss durch die Durchgangszahl teilbar sein.",
-          "ruleSet": "Urteilsregel. AIAG MSA (4. Aufl.) nimmt das schlechteste von vier Kriterien: Fleiss' κ (akzeptabel ab 0,75, grenzwertig ab 0,40), kleinste Effektivität (ab 90 % bzw. 80 %), größter Schlupf (bis 2 % bzw. 5 %) und größter Fehlalarm (bis 5 % bzw. 10 %). Bosch Heft 10 bewertet das kleinste verfügbare κ: akzeptabel ab 0,9, grenzwertig ab 0,7.",
+          "ruleSet": "Urteilsregel. AIAG MSA (4. Aufl.) nimmt das schlechteste ihrer Kriterien: Fleiss' κ (akzeptabel ab 0,75, grenzwertig ab 0,40), kleinste Effektivität (ab 90 % bzw. 80 %) und, nur bei binären Daten mit einer Referenz aus einer Spalte, größter Schlupf (bis 2 % bzw. 5 %) und größter Fehlalarm (bis 5 % bzw. 10 %). Bosch Heft 10 bewertet das kleinste verfügbare κ: akzeptabel ab 0,9, grenzwertig ab 0,7.",
           "alpha": "Signifikanzniveau α. Es legt das Niveau der Konfidenzintervalle fest (1 − α); die p-Werte der κ-Tests misst man daran. Zur Wahl stehen 0,01, 0,05 (üblich) und 0,10.",
           "positiveLevel": "Die Stufe, die bei binären Daten als positiv (i.O.) gilt, eine der erkannten Stufen; ohne Wahl die häufigste Bewertung. Schlupf zählt negative Teile, die als positiv bewertet wurden, Fehlalarm positive Teile, die als negativ bewertet wurden; ist die Stufe falsch gewählt, sind beide vertauscht."
         },
@@ -3314,7 +3314,7 @@
           "falseAlarmRate": "Fehlalarm: Anteil der Bewertungen an Teilen mit positiver Referenz (i.O.), die der Prüfer als negativ (n.i.O.) bewertet hat. Nur binär. AIAG: akzeptabel bis 5 %, grenzwertig bis 10 %; bewertet wird der größte Wert, und nur bei einer Referenz aus einer Spalte.",
           "biasRate": "Neigung des Prüfers: Schlupf minus Fehlalarm. Über 0 urteilt er zu nachsichtig, unter 0 zu streng. Nur binär.",
           "kappa": "Cohens κ zwischen Prüfer und Referenz, beim Typ ordinal gewichtet. Die Kachel darüber zeigt den Mittelwert über alle Prüfer.",
-          "fleissKappa": "Fleiss' κ über die Versuche des Prüfers mit der Referenz als weiterem Bewerter (Bosch Heft 10, Verfahren 7). Unter Bosch ein Kandidat für das kleinste κ."
+          "fleissKappa": "Fleiss' κ über die Versuche des Prüfers mit der Referenz als weiterem Bewerter (Bosch Heft 10, Verfahren 7). Unter Bosch ein Kandidat für das kleinste κ; die Kachel darüber zeigt dann den Mittelwert über alle Prüfer."
         },
         "ErrorRate": {
           "rate": "Anteil der Fehlbewertungen: Fehler geteilt durch die Fälle im Nenner. Gibt es keine Fälle, steht 0 da, und der Wert zählt nicht ins Urteil.",
@@ -3330,7 +3330,7 @@
           "se0": "Standardfehler von κ unter der Nullhypothese κ = 0 nach Fleiss, Cohen und Everitt (1969); er dient nur dem Test.",
           "z": "Prüfgröße des einseitigen Tests auf κ = 0: z = κ / SE₀.",
           "p": "Einseitiger p-Wert gegen κ > 0: p = 1 − Φ(z). Unter α ist die Übereinstimmung signifikant besser als Zufall.",
-          "ci95": "Konfidenzintervall von κ als untere und obere Grenze: κ ± z(1 − α/2) · SE, zum Niveau 1 − α (bei α = 0,05 also 95 %).",
+          "ci95": "Konfidenzintervall von κ als untere und obere Grenze: κ ± z(1 − α/2) · SE, zum Niveau 1 − α (bei α = 0,05 also 95 %). Unter Bosch Heft 10 zeigt die Tabelle gegen die Referenz Fleiss' κ, das kein Intervall hat; die Spalte bleibt dann ohne Wert.",
           "method": "Rechenweg: cohen ungewichtet bei binären und nominalen Daten, weighted-linear oder weighted-quadratic beim Typ ordinal."
         },
         "PairKappa": {
@@ -3402,7 +3402,7 @@
           "id": "Kennung des Kriteriums: fleissKappa, effectiveness, missRate oder falseAlarmRate unter AIAG, minKappa unter Bosch Heft 10.",
           "value": "Der bewertete Wert; bei Kriterien je Prüfer der Extremwert über alle Prüfer, also die kleinste Effektivität, der größte Schlupf und der größte Fehlalarm.",
           "level": "Die Stufe dieses Kriteriums: akzeptabel, grenzwertig oder nicht akzeptabel.",
-          "appraiser": "Der Prüfer mit dem Extremwert, bei Gleichstand der erste in alphabetischer Ordnung; leer bei Fleiss' κ gesamt.",
+          "appraiser": "Der Prüfer mit dem Extremwert, bei Gleichstand der erste in alphabetischer Ordnung; leer bei Fleiss' κ gesamt und unter Bosch, wenn das kleinste κ von allen Prüfern mit der Referenz stammt.",
           "limits": "Die Grenzwerte dieses Kriteriums für akzeptabel und grenzwertig.",
           "direction": "Richtung der Grenzwerte: min heißt höher ist besser, der Wert muss die Grenze erreichen (κ, Effektivität); max heißt niedriger ist besser, der Wert darf die Grenze nicht überschreiten (Schlupf, Fehlalarm).",
           "source": "Woher das kleinste κ unter Bosch Heft 10 stammt: Fleiss' κ gesamt, κ innerhalb eines Prüfers, κ eines Prüfers mit der Referenz oder alle Prüfer mit der Referenz."
@@ -3571,7 +3571,7 @@
           }
         },
         "setColumn": {
-          "help": "Zeigt einen der drei Slots auf eine Spalte einer Datensammlung; die Neuberechnung folgt nach kurzer Ruhezeit.",
+          "help": "Die Spalte einer Datensammlung, die diese Rolle liefert; nach einer Änderung wird neu gerechnet.",
           "params": {
             "slot": "Einer der Slots aus activeColumnSlots: timestamp (Zeitstempel oder Reihenfolge), value (Messwert) oder subgroup (Untergruppe). subgroup gilt nur bei chartType xbar-r.",
             "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Leeren."

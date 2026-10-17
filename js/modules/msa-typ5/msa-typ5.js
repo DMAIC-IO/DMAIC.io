@@ -169,7 +169,7 @@ const SLOT_FILTERS = { part: {}, appraiser: {}, rating: {}, reference: {}, repli
  * @property {number} agree  übereinstimmende Fälle
  * @property {number} total  Fälle
  * @property {number} rate  Anteil
- * @property {number[]} ci95  95-%-Intervall nach Wilson
+ * @property {number[]} ci95  Intervall nach Wilson zum Niveau 1 − α
  */
 
 /**
@@ -194,13 +194,13 @@ const SLOT_FILTERS = { part: {}, appraiser: {}, rating: {}, reference: {}, repli
 /**
  * @typedef {object} ErrorRate
  * @property {number} rate  Anteil
- * @property {number[]} ci95  95-%-Intervall
+ * @property {number[]} ci95  Intervall zum Niveau 1 − α
  * @property {number} n  Fälle
  */
 
 /**
  * @typedef {object} BiasRate
- * @property {number} value  Verhältnis
+ * @property {number} value  Differenz
  */
 
 /**
@@ -210,7 +210,7 @@ const SLOT_FILTERS = { part: {}, appraiser: {}, rating: {}, reference: {}, repli
  * @property {number} se0  Standardfehler unter der Nullhypothese
  * @property {number} z  Prüfgröße
  * @property {number} p  p-Wert
- * @property {number[]} ci95  95-%-Intervall
+ * @property {number[]} ci95  Intervall zum Niveau 1 − α
  * @property {string} method  Verfahren
  */
 
@@ -221,7 +221,7 @@ const SLOT_FILTERS = { part: {}, appraiser: {}, rating: {}, reference: {}, repli
  * @property {number} se0  Standardfehler unter der Nullhypothese
  * @property {number} z  Prüfgröße
  * @property {number} p  p-Wert
- * @property {number[]} ci95  95-%-Intervall
+ * @property {number[]} ci95  Intervall zum Niveau 1 − α
  * @property {string} method  Verfahren
  * @property {ConfusionMatrix} confusion  Kreuztabelle des Paars
  */
@@ -288,7 +288,7 @@ const SLOT_FILTERS = { part: {}, appraiser: {}, rating: {}, reference: {}, repli
  * @property {number} agree  übereinstimmende Teile
  * @property {number} n  Teile
  * @property {number} rate  Anteil
- * @property {number[]} ci95  95-%-Intervall
+ * @property {number[]} ci95  Intervall zum Niveau 1 − α
  */
 
 /**
@@ -818,8 +818,30 @@ const mod = createModule({
        * @returns {string}
        */
       kappaVsRefHelp() {
-        const prop = this.model.params.ruleSet === 'bosch' ? 'fleissKappa' : 'kappa';
+        const prop = this._vsRefRuleSet() === 'bosch' ? 'fleissKappa' : 'kappa';
         return `modules.msa-typ5.types.VsReference.${prop}`;
+      },
+
+      /**
+       * Hilfeschlüssel der Spalten Intervall, z und p der Tabelle gegen die
+       * Referenz. Unter Bosch zeigen z und p die Werte aus Fleiss' κ; das
+       * Intervall bleibt beim Satz zu Cohens κ, der den leeren Bosch-Fall nennt.
+       * @noagent Anzeige
+       * @param {'ci95'|'z'|'p'} prop Spalte
+       * @returns {string}
+       */
+      vsRefHelp(prop) {
+        const type = this._vsRefRuleSet() === 'bosch' && prop !== 'ci95' ? 'FleissKappa' : 'CohenKappa';
+        return `modules.msa-typ5.types.${type}.${prop}`;
+      },
+
+      /**
+       * Urteilsregel der angezeigten Tabelle gegen die Referenz: die des
+       * Ergebnisses, vor der ersten Rechnung die eingestellte.
+       * @returns {string}
+       */
+      _vsRefRuleSet() {
+        return this.result?.verdict?.ruleSet ?? this.model.params.ruleSet;
       },
 
       /** @noagent view transform; Header of the κ column in the vs-reference table. */
