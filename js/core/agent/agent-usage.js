@@ -35,6 +35,7 @@ export function buildUsage(i18n) {
     availability: i18n.t('agent.usage.availability'),
     limits:       i18n.t('agent.usage.limits'),
     viewSwitch:   i18n.t('agent.usage.viewSwitch'),
+    keysForm:     i18n.t('agent.usage.keysForm'),
     ops,
     errors: Object.values(ERRORS),
   };

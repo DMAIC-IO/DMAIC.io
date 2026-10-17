@@ -262,7 +262,10 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
 
 /**
  * Die erklärten Schlüssel einer Typedef (Setter-Schlüssel oder Kennzahlen
- * eines Ergebnisses) als `{ keys: [{ name, type, help, keys? }] }`, oder `{}`.
+ * eines Ergebnisses) als `{ keys: [{ name, type, help, keys }] }`. Ohne
+ * erklärte Struktur ist die Liste leer, nie abwesend: die Vertragsform
+ * (`OPS['module.describe'].result`) nennt `keys` an jeder Aktion, jedem Feld
+ * und jedem Schlüssel, und der Agent soll sich darauf verlassen können.
  *
  * Der Satz kommt aus `modules.<id>.types.<Typedef>.<property>` — EIN Satz je
  * Typedef-Property, egal wo die Typedef hängt. Derselbe Schlüssel steht in
@@ -271,10 +274,10 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
  * @param {object} i18n
  * @param {string} moduleId
  * @param {{ keysOf?: string, keys?: Record<string, object> }} node
- * @returns {{ keys?: object[] }}
+ * @returns {{ keys: object[] }}
  */
 function describeKeys(i18n, moduleId, node) {
-  if (!node.keys || !node.keysOf) return {};
+  if (!node.keys || !node.keysOf) return { keys: [] };
   return {
     keys: Object.entries(node.keys).map(([key, k]) => ({
       name: key,

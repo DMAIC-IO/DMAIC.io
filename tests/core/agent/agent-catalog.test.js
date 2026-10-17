@@ -7,6 +7,8 @@ import {
   buildCatalog, buildInstanceList, buildWorld, allowedPhasesFor, describeModule, isSingleton,
 } from '../../../js/core/agent/agent-catalog.js';
 import { buildUsage } from '../../../js/core/agent/agent-usage.js';
+import { OPS } from '../../../js/core/agent/agent-contract.js';
+import { pathExistsInShape } from '../../../js/core/agent/agent-shape.js';
 import { getAllPhaseIds } from '../../../js/core/cycles/cycles.js';
 
 const DEFS = [
@@ -41,6 +43,7 @@ const I18N_TABLE = {
   'agent.usage.availability': 'Module ohne Freigabe erscheinen mit available: false.',
   'agent.usage.limits': 'Du bekommst Zahlen, keine Bilder.',
   'agent.usage.viewSwitch': 'instance.call wechselt die Ansicht.',
+  'agent.usage.keysForm': 'keys beschreibt jeden Schlüssel einer Aktion oder eines Felds.',
   'modules.worksheet.actions.importCsv.help': 'Ersetzt den Inhalt des aktiven Blatts durch die übergebenen CSV-Daten.',
   'modules.worksheet.actions.importCsv.params.csv': 'Der vollständige CSV-Text, inklusive Kopfzeile, falls vorhanden.',
   'modules.worksheet.fields.rows.help': 'Die Datenzeilen des aktiven Blatts, in Spaltenreihenfolge.',
@@ -305,11 +308,13 @@ suite('agent catalog — module.describe', () => {
     const out = await describeModule({ ...deps, registry, i18n }, 'worksheet');
     const action = out.actions.find(a => a.name === 'setParam');
     assertDeepEqual(action.keys, [
-      { name: 'alpha', type: 'string', help: 'Das Signifikanzniveau.' },
-      { name: 'k1', type: "'0.2'|'0.1'", help: 'JSDoc k1' },
+      { name: 'alpha', type: 'string', help: 'Das Signifikanzniveau.', keys: [] },
+      { name: 'k1', type: "'0.2'|'0.1'", help: 'JSDoc k1', keys: [] },
     ]);
-    assertEqual('keys' in out.actions.find(a => a.name === 'importCsv'), false,
-      'eine Aktion ohne Schlüsselfläche trägt kein keys-Feld');
+    // Eine verlässliche Form statt „mal da, mal nicht": die Vertragsform
+    // (`OPS['module.describe'].result`) nennt `keys` an jeder Aktion.
+    assertDeepEqual(out.actions.find(a => a.name === 'importCsv').keys, [],
+      'eine Aktion ohne Schlüsselfläche trägt eine leere keys-Liste');
   });
 
   test('ein Ergebnisfeld beschreibt jede Kennzahl, verschachtelte Typedefs eingeschlossen', async () => {
@@ -335,11 +340,20 @@ suite('agent catalog — module.describe', () => {
     const out = await describeModule({ ...deps, registry, i18n }, 'worksheet');
     const result = out.fields.find(f => f.name === 'result');
     assertDeepEqual(result.keys, [
-      { name: 'Cg', type: 'number|null', help: 'Die Fähigkeit des Messsystems.' },
+      { name: 'Cg', type: 'number|null', help: 'Die Fähigkeit des Messsystems.', keys: [] },
       { name: 'biasTest', type: 'BiasTest', help: 'JSDoc Test',
-        keys: [{ name: 'p', type: 'number|null', help: 'Der p-Wert des Bias-Tests.' }] },
+        keys: [{ name: 'p', type: 'number|null', help: 'Der p-Wert des Bias-Tests.', keys: [] }] },
     ]);
-    assertEqual('keys' in out.fields.find(f => f.name === 'rows'), false);
+    assertDeepEqual(out.fields.find(f => f.name === 'rows').keys, []);
+  });
+
+  test('die Vertragsform von module.describe nennt keys an Aktionen, Feldern und Schlüsseln', () => {
+    // Der Agent liest diese Form beim ersten interact() — und der Prüfer
+    // lässt eine Referenz nur durch, wenn ihr Pfad in ihr steht.
+    const shape = OPS['module.describe'].result;
+    for (const path of ['actions.0.keys.0.help', 'fields.0.keys.0.type', 'fields.0.keys.0.keys']) {
+      assertEqual(pathExistsInShape(shape, path).ok, true, `${path} fehlt in der Vertragsform`);
+    }
   });
 
   test('i18n context help wins over the JSDoc prose for fields', async () => {
@@ -406,7 +420,7 @@ suite('agent usage contract', () => {
 
   test('carries the prose fields the agent needs, all non-empty', () => {
     const usage = buildUsage(I18N);
-    for (const key of ['intro', 'call', 'actionForm', 'refForm', 'nullableForm', 'batchForm', 'errorForm', 'availability', 'limits', 'viewSwitch']) {
+    for (const key of ['intro', 'call', 'actionForm', 'refForm', 'nullableForm', 'batchForm', 'errorForm', 'availability', 'limits', 'viewSwitch', 'keysForm']) {
       assertTrue(typeof usage[key] === 'string' && usage[key].length > 0, `usage.${key} missing`);
     }
   });

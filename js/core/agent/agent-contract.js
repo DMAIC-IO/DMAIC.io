@@ -89,6 +89,14 @@ function deepFreeze(obj) {
 }
 
 /**
+ * Ein erklärter Schlüssel in `module.describe`: ein Setter-Schlüssel
+ * (`setParam`) oder eine Kennzahl eines Lesefelds (`result.Cg`). `keys` ist
+ * die nächste Ebene (`biasTest.p`) und sonst leer; die Grammatik kennt keine
+ * Rekursion, darum `any` eine Ebene tiefer.
+ */
+const DESCRIBED_KEY = { name: 'string', type: 'string', help: 'string', keys: 'any' };
+
+/**
  * Der Aktionskatalog. `params` beschreibt Pflicht- und Kürformen,
  * `result` die deklarierte Ergebnisform (Shape-Grammatik oben).
  * Unbekannte Felder in einem Aktionsobjekt sind ein Fehler — deshalb ist
@@ -114,9 +122,10 @@ export const OPS = deepFreeze({
     result: {
       module: 'string', name: 'string', whenToUse: 'string', available: 'boolean', phase: 'string',
       actions: [{ name: 'string', help: 'string', returns: 'string',
-                  params: [{ name: 'string', type: 'string', optional: 'boolean', help: 'string' }] }],
+                  params: [{ name: 'string', type: 'string', optional: 'boolean', help: 'string' }],
+                  keys: [DESCRIBED_KEY] }],
       fields:  [{ name: 'string', type: 'string', help: 'string', bulk: 'boolean',
-                  derived: 'boolean' }],
+                  derived: 'boolean', keys: [DESCRIBED_KEY] }],
       sections: [{ id: 'string', title: 'string' }],
       prose: 'any',
     },
