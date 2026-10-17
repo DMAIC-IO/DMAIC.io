@@ -9395,7 +9395,7 @@
           "alpha": "Das Signifikanzniveau α als Anteil zwischen 0 und 1, also 0,05 statt 5; das Eingabefeld zeigt es in Prozent. Es ändert keine Zahl, nur die Färbung: Zeilen der ANOVA- und der Koeffiziententabelle mit p < α gelten als signifikant, die Kachel p-Wert (F) ist unter α grün und unter 2α gelb. Voreingestellt ist 1 − Konfidenzniveau des Projekts; danach ist es unabhängig vom Konfidenzniveau, beide werden getrennt gesetzt."
         },
         "Result": {
-          "type": "Die tatsächlich gerechnete Modellform: polynomial (Polynom), sobald mehrere X gewählt sind oder der Typ Polynom ist, sonst exponential, logarithmic oder power für das gerade gezeigte Einzel-X-Modell.",
+          "type": "Die tatsächlich gerechnete Modellform: polynomial beim Typ Polynom (mit einem oder mehreren X), sonst exponential, logarithmic oder power für das gerade gezeigte Einzel-X-Modell.",
           "equation": "Die Modellgleichung als Text, wie sie unter den Kennzahlen steht, mit auf vier Nachkommastellen gerundeten Koeffizienten.",
           "n": "Zahl der verwerteten Zeilen: Zeilen mit endlichen Werten in allen X und in Y; bei Exponentiell, Logarithmisch und Potenz nur die Zeilen, die die Bedingung der Modellform erfüllen (y > 0 beziehungsweise x > 0).",
           "R2": "Bestimmtheitsmaß R² = 1 − SSE/SST: der Anteil der Streuung von Y, den das Modell erklärt, von 0 bis 1. Die Kachel ist ab 0,8 grün und ab 0,5 gelb, darunter rot.",

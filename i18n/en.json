@@ -9391,7 +9391,7 @@
           "alpha": "The significance level α as a fraction between 0 and 1, so 0.05 instead of 5; the input field shows it in percent. It changes no number, only the colouring: rows of the ANOVA and coefficient tables with p < α count as significant, the p-value (F) tile is green below α and yellow below 2α. The default is 1 − the project confidence level; after that it is independent of the confidence level, the two are set separately."
         },
         "Result": {
-          "type": "The model form actually fitted: polynomial as soon as several X are chosen or the type is polynomial, otherwise exponential, logarithmic or power for the single-X model shown.",
+          "type": "The model form actually fitted: polynomial for the polynomial type (with one or several X), otherwise exponential, logarithmic or power for the single-X model shown.",
           "equation": "The model equation as text, as shown below the figures, with coefficients rounded to four decimals.",
           "n": "Number of rows used: rows with finite values in all X and in Y; for exponential, logarithmic and power only the rows that meet the condition of the model form (y > 0 or x > 0).",
           "R2": "Coefficient of determination R² = 1 − SSE/SST: the share of the variation in Y the model explains, from 0 to 1. The tile is green from 0.8 and yellow from 0.5, red below.",
