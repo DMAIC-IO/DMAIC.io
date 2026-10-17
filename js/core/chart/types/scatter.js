@@ -1,7 +1,7 @@
 /**
  * scatter.js — Scatter plot chart type for the D.Mike chart framework.
  * Supports: multiple series, 7 marker symbols, connecting lines,
- * error bars (X/Y), error bands, per-point tooltips.
+ * error bars (X/Y), error bands, per-point tooltips and text labels.
  */
 
 import ChartBase from '../chart-base.js';
@@ -241,6 +241,14 @@ export default class ScatterChart extends ChartBase {
         if (r <= 0) continue;
         drawMarker(plotGroup, sym, cx, cy, r,
           resolveColor(s.color), strokeC, strokeW, {});
+        const text = Array.isArray(s.labels) ? s.labels[i] : '';
+        if (text) {
+          svgEl('text', {
+            class: 'chart-point-label', x: cx + r + 4, y: cy, 'dominant-baseline': 'middle',
+            'font-size': `${this.config.tickSize}px`, fill: resolveColor('var(--color-text-primary)'),
+            'pointer-events': 'none',
+          }, plotGroup).textContent = text;
+        }
       }
     });
   }
@@ -298,7 +306,7 @@ export default class ScatterChart extends ChartBase {
     return results.map((pt) => {
       const s = series[pt.si];
       const children = [
-        h('b', { style: `color:${resolveColor(s.color)}` }, s.name || 'Series'),
+        h('b', { style: `color:${resolveColor(s.color)}` }, (Array.isArray(s.labels) && s.labels[pt.i]) || s.name || 'Series'),
         h('br'),
         `${xName}: ${formatNum(s.x[pt.i], null, this.locale)}`, h('br'),
         `${yName}: ${formatNum(s.y[pt.i], null, this.locale)}`,
