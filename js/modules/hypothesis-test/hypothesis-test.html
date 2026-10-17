@@ -347,7 +347,7 @@
           <!-- ── Section 3b: Rank test as secondary result (non-normal, n ≥ 20 per group) ── -->
           <template x-if="result.secondary">
             <div class="hyptest__contents">
-              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionSecondary')"></span></div>
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="result.secondary.title"></span></div>
               <div class="hyptest__result-card" data-ref="secondary-result">
                 <div class="hyptest__metrics">
                   <template x-for="m in result.secondary.metrics">

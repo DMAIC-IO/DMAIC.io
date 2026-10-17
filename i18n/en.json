@@ -4378,6 +4378,7 @@
       "assumeEqualVariances": "Assume equal variances (pooled t-test)",
       "varDiffLabel": "Significant variance difference (Levene)",
       "sectionSecondary": "Rank-based comparison test",
+      "sectionSecondaryLevene": "Levene test (cross-check)",
       "secondaryNote": "The data are not normally distributed, but every group has n ≥ 20. The parametric test is then robust and remains the main result. The rank test checks a different hypothesis (a shift of the distribution rather than the means) and serves as a cross-check.",
       "ciSigmaLabel": "{level}% CI for σ",
       "ciRatioLabel": "{level}% CI for σ²₁/σ²₂",

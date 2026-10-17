@@ -4378,6 +4378,7 @@
       "assumeEqualVariances": "Gleiche Varianzen annehmen (gepoolter t-Test)",
       "varDiffLabel": "Signifikanter Varianzunterschied (Levene)",
       "sectionSecondary": "Rangbasierter Vergleichstest",
+      "sectionSecondaryLevene": "Levene-Test (Abgleich)",
       "secondaryNote": "Die Daten sind nicht normalverteilt, aber jede Gruppe hat n ≥ 20. Dann ist der parametrische Test robust und bleibt das Hauptergebnis. Der Rangtest prüft eine andere Hypothese (Verschiebung der Verteilung statt Mittelwerte) und dient zum Abgleich.",
       "ciSigmaLabel": "{level} % KI für σ",
       "ciRatioLabel": "{level} % KI für σ²₁/σ²₂",

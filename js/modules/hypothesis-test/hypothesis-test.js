@@ -295,6 +295,9 @@ const mod = createModule({
         const level = Math.round((1 - alpha) * 100);
         const isMeanDiff = !isVariance && isTwo && r.ci != null;
         const fmtCi = (ci) => `[${fmt(ci[0])}, ${fmt(ci[1])}]`;
+        if (isVariance && isTwo && r.ratio != null) {
+          metrics.push({ label: _t('varianceRatio'), value: fmt(r.ratio), valueClass: '', title: this._tip(_t('varianceRatio')) });
+        }
         if (r.ci) {
           const isRatio = isVariance && isTwo && r.ratio != null;
           const ciLabel = isPaired ? _t('ciPairedDiffLabel', { level })
@@ -370,15 +373,16 @@ const mod = createModule({
 
       // ── Rank test shown next to a large-n parametric result ──
 
-      _secondaryResult(r, alpha, { note = _t('secondaryNote'), twoSided = false } = {}) {
+      _secondaryResult(r, alpha, { title = _t('sectionSecondary'), note = _t('secondaryNote'), showTwoSidedSuffix = false } = {}) {
         const pCls = r.pValue < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success';
-        const methodLabel = twoSided ? `${_t('testMethod')} (${_t('twoSidedSuffix')})` : _t('testMethod');
+        const methodLabel = showTwoSidedSuffix ? `${_t('testMethod')} (${_t('twoSidedSuffix')})` : _t('testMethod');
         return {
           metrics: [
             { label: methodLabel, value: r.testName, algoId: ALGO_LAB_IDS[r.testName] || '', valueClass: 'hyptest__metric-value--sm', title: this._tip(_t('testMethod')) },
             { label: _t('statistic'), value: fmt(r.statistic), valueClass: '', title: this._tip(_t('statistic')) },
             { label: 'p', value: fmt(r.pValue), valueClass: pCls, title: this._tip('p') },
           ],
+          title,
           note,
         };
       },
@@ -604,8 +608,9 @@ const mod = createModule({
           else if (algo.id === 'ttest2p') r = twoSampleTTest(d1, d2, dir, alpha);
           else if (algo.id === 'welch') r = welchTTest(d1, d2, dir, alpha);
           else if (algo.id === 'mannwhitney') r = mannWhitneyU(d1, d2, dir, alpha);
-        } catch {
+        } catch (err) {
           // Bonett's CI is undefined for degenerate samples (no spread, tiny n)
+          console.error('[hypothesis-test] test computation failed:', err);
           this.result = null;
           this.errorText = _t('testNotComputable');
           return;
@@ -623,8 +628,9 @@ const mod = createModule({
         // Two-sample Bonett: Levene alongside, as Minitab's "2 Variances" shows both
         if (algo.id === 'bonett2') {
           secondary = this._secondaryResult(leveneTest(d1, d2, alpha), alpha, {
+            title: _t('sectionSecondaryLevene'),
             note: _t('secondaryNoteLevene'),
-            twoSided: dir !== 'two-sided',
+            showTwoSidedSuffix: dir !== 'two-sided',
           });
         }
 
