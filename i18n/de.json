@@ -7257,7 +7257,7 @@
           "valueClass": "Darstellungsklasse der Oberfläche; färbt den p-Wert rot bei p < α und grün sonst, setzt Testverfahren und Intervalle kleiner und färbt die Power nach erreichtem Ziel. Fehlt in den Normalitätskarten.",
           "title": "Tooltip der Kennzahl als formatierter Text, eine kurze Erklärung; beim p-Wert ggf. mit der Berechnungsart, exakt oder per Normalapproximation. Kann leer sein.",
           "algoId": "Kennung der Seite im Algorithm Lab, nur am Testverfahren und am Hodges-Lehmann-Schätzer; leerer Text, wenn es keine Seite gibt.",
-          "ci": "Nur in den Normalitätskarten: das Konfidenzintervall zum Niveau 1 − α als formatierter Text, das t-Intervall von μ bei x̄, das χ²-Intervall von σ² bei s², dessen Wurzeln bei s. Leer bei n und wenn n < 2 oder keine Streuung vorliegt."
+          "ci": "Nur in den Normalitätskarten: das Konfidenzintervall zum Niveau 1 − α als formatierter Text, das t-Intervall von μ bei x̄, das χ²-Intervall von σ² bei s², dessen Wurzeln bei s. Fehlt bei n; leer, wenn das Intervall nicht berechenbar ist, also bei n < 2 oder wenn s bzw. s² nicht größer als 0 ist."
         },
         "VarEquality": {
           "varsEqual": "Wahr, wenn die Varianzen als gleich gelten: bei zwei Stichproben die Annahme aus dem Kästchen „Gleiche Varianzen annehmen“, bei k Stichproben ein nicht signifikanter Levene-Test, p ≥ α.",
@@ -7317,7 +7317,7 @@
           "cells": "Die Zellen der Zeile, eine je Gruppe; gefüllt ist nur das obere Dreieck, die Diagonale und die Zellen darunter zeigen „—“."
         },
         "PairwiseCell": {
-          "cls": "Darstellungsklasse der Oberfläche; färbt die Zelle als nicht signifikant oder signifikant, leer auf der Diagonale und darunter.",
+          "cls": "Darstellungsklasse der Oberfläche; färbt die gefüllten Zellen als nicht signifikant oder signifikant und markiert die Zellen auf der Diagonale und darunter als leer.",
           "title": "Tooltip der Zelle als formatierter Text mit dem rohen p-Wert, dem korrigierten p-Wert und dem Urteil; leer in leeren Zellen.",
           "text": "Der Bonferroni-korrigierte p-Wert als formatierter Text: p · m, höchstens 1, mit m = k(k − 1)/2 Paaren. Ab α gilt das Paar als nicht signifikant unterschiedlich, darunter als signifikant. „—“ in leeren Zellen.",
           "ci": "Das Konfidenzintervall zum Niveau 1 − α/m als formatierter Text: bei Mittelwerten das t-Intervall der Differenz μ(Zeile) − μ(Spalte), nach Welch bei ungleichen Varianzen, auf dem Rangweg das Hodges-Lehmann-Intervall der Verschiebung. Leer bei Varianztests und in leeren Zellen.",

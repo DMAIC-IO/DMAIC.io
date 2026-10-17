@@ -7253,7 +7253,7 @@
           "valueClass": "Display class of the interface; colours the p-value red when p < α and green otherwise, sets test method and intervals in smaller type and colours power by whether the goal is achieved. Missing in the normality cards.",
           "title": "Tooltip of the figure as formatted text, a short explanation; for the p-value possibly with the way it was computed, exact or by normal approximation. May be empty.",
           "algoId": "Identifier of the Algorithm Lab page, only on the test method and on the Hodges-Lehmann estimate; empty text when there is no page.",
-          "ci": "Only in the normality cards: the confidence interval at level 1 − α as formatted text, the t interval of μ for x̄, the χ² interval of σ² for s², its square roots for s. Empty for n and when n < 2 or there is no spread."
+          "ci": "Only in the normality cards: the confidence interval at level 1 − α as formatted text, the t interval of μ for x̄, the χ² interval of σ² for s², its square roots for s. Missing for n; empty when the interval cannot be computed, that is, when n < 2 or s or s² is not greater than 0."
         },
         "VarEquality": {
           "varsEqual": "True when the variances count as equal: for two samples the assumption from the checkbox “Assume equal variances”, for k samples a non-significant Levene test, p ≥ α.",
@@ -7313,7 +7313,7 @@
           "cells": "The cells of the row, one per group; only the upper triangle is filled, the diagonal and the cells below show “—”."
         },
         "PairwiseCell": {
-          "cls": "Display class of the interface; colours the cell as not significant or significant, empty on the diagonal and below.",
+          "cls": "Display class of the interface; colours the filled cells as not significant or significant and marks the cells on the diagonal and below as empty.",
           "title": "Tooltip of the cell as formatted text with the raw p-value, the corrected p-value and the verdict; empty in empty cells.",
           "text": "The Bonferroni-corrected p-value as formatted text: p · m, at most 1, with m = k(k − 1)/2 pairs. From α upwards the pair counts as not significantly different, below as significant. “—” in empty cells.",
           "ci": "The confidence interval at level 1 − α/m as formatted text: for means the t interval of the difference μ(row) − μ(column), by Welch for unequal variances, on the rank route the Hodges-Lehmann interval of the shift. Empty for variance tests and in empty cells.",
