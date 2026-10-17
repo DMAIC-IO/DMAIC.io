@@ -100,6 +100,18 @@ export class State {
     if (cat === 'variance' && this.testType === 'paired') this.testType = 'two';
   }
 
+  /**
+   * Set the test type. targetValue holds μ₀ / σ²₀ for one sample but μ_d₀ for
+   * paired, so crossing into or out of paired clears it — a one-sample μ₀ of 100
+   * must not silently become the hypothesized difference.
+   * @param {'one'|'two'|'paired'|'k'} type
+   */
+  applyTestType(type) {
+    if (!TEST_TYPES.includes(type)) return;
+    if ((type === 'paired') !== (this.testType === 'paired')) this.targetValue = '';
+    this.testType = type;
+  }
+
   /** True when any column reference is selected (drives loadExample confirm). */
   hasContent() {
     return Boolean(this.colRef1 || this.colRef2 || (this.colRefsK && this.colRefsK.length));

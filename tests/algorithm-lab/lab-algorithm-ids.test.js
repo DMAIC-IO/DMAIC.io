@@ -44,4 +44,13 @@ suite('Algorithm Lab: Algorithmus-IDs sind reine Slugs', () => {
     assertEqual(missing.length, 0,
       `Im Index gelistet, aber nicht in ALGOS auflösbar: ${JSON.stringify(missing)}`);
   });
+
+  // The lab sidebar, search, lab test runner and handbook all read INDEX only —
+  // an algorithm JSON missing from index.json is invisible there.
+  test('jeder Algorithmus aus ALGOS steht im Index', () => {
+    const indexed = new Set((INDEX.algorithms || []).map(a => a.id));
+    const unlisted = Object.keys(ALGOS).filter(id => !indexed.has(id));
+    assertEqual(unlisted.length, 0,
+      `In ALGOS, aber nicht in index.json: ${JSON.stringify(unlisted)}`);
+  });
 });

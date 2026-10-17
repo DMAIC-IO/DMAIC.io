@@ -137,7 +137,7 @@ const mod = createModule({
         this.$nextTick(() => { this._remountPickers(); this.runAnalysis(); });
       },
       setTestType(type) {
-        this.model.testType = type;
+        this.model.applyTestType(type);
         this.$nextTick(() => { this._remountPickers(); this.runAnalysis(); });
       },
       onAlphaInput(event) {
