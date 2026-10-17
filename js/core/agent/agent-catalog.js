@@ -236,6 +236,17 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
         optional: p.optional,
         help: contextHelp(i18n, moduleId, `actions.${name}.params.${p.name}`, p.help),
       })),
+      // Nur an einem generischen Setter mit erklärter Schlüsselfläche
+      // (`@param {keyof Params} key`): je Schlüssel Typ und Satz. Derselbe
+      // Satz steht in der Oberfläche am Label (`data-help-key` auf
+      // `…actions.<name>.keys.<schlüssel>`).
+      ...(action.keys ? {
+        keys: Object.entries(action.keys).map(([key, k]) => ({
+          name: key,
+          type: k.type,
+          help: contextHelp(i18n, moduleId, `actions.${name}.keys.${key}`, k.help),
+        })),
+      } : {}),
     })),
     fields: Object.entries(entry.fields).map(([name, field]) => ({
       name,

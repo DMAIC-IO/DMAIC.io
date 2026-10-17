@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { countHelpCoverage, lookup, helpExists, helpKeys } from './agent-report.mjs';
+import { countHelpCoverage, lookup, helpExists, helpKeys, STRUCTURE_JARGON } from './agent-report.mjs';
 
 /** Ein Minimal-App-Verzeichnis mit nur den i18n-Dateien. */
 function i18nFixture(de, en = de) {
@@ -245,4 +245,32 @@ test('countHelpCoverage: missingKeys zählt Schlüssel, missing zählt Sprachfä
   assert.equal(out.missing.length, 3, 'zwei Sprachfälle für read.help, einer für whenToUse');
   assert.deepEqual(out.missingKeys.sort(),
     ['modules.foo.actions.read.help', 'modules.foo.whenToUse']);
+});
+
+test('countHelpCoverage zählt die Schlüssel eines generischen Setters als eigene Zeile', () => {
+  const modules = {
+    foo: {
+      available: true,
+      actions: { setParam: { params: [], keys: { alpha: {}, k1: {} } } },
+      fields: {},
+    },
+  };
+  const tree = { modules: { foo: {
+    whenToUse: 'w',
+    actions: { setParam: { help: 's', keys: { alpha: 'Das Niveau.' } } },
+  } } };
+  const out = countHelpCoverage(i18nFixture(tree), modules);
+  assert.deepEqual(out.keys, { total: 1 + 1, covered: 1 });
+  assert.ok(out.missingKeys.includes('modules.foo.actions.setParam.keys.k1'));
+});
+
+test('STRUCTURE_JARGON: fängt Strukturschreibweise, lässt Fachsprache durch', () => {
+  for (const bad of ['als { instanceId, sheetId, columnId }', 'oder null', 'die Schlüssel aus activeParams für setParam',
+    'ruft read() auf', 'Werte wie [1, 2]', 'der `value`-Slot', 'Spalte über columnId']) {
+    assert.ok(STRUCTURE_JARGON.test(bad), bad);
+  }
+  for (const good of ['Der Sollwert des Referenzteils.', 'Anteil der Toleranz (k₁), üblich 0,2.',
+    'Nullhypothese und nullbasierte Zählung', 'Untere Spezifikationsgrenze (USG/LSL).', 'Cg ≥ 1,33 gilt als fähig.']) {
+    assert.ok(!STRUCTURE_JARGON.test(good), good);
+  }
 });

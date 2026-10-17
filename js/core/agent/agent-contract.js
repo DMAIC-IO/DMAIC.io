@@ -154,7 +154,11 @@ export const OPS = deepFreeze({
  * @property {string[]} violations    harte Verstöße (leer, wenn available)
  * @property {string[]} reported      alle Befunde, auch die ohne Modul-Tag
  * @property {Record<string, { params: Array<{name:string,type:string,optional:boolean,help:string}>,
- *                             returns: string, help: string }>} actions
+ *                             returns: string, help: string,
+ *                             keys?: Record<string, { type: string, help: string }> }>} actions
+ *   `keys` steht NUR an einem generischen Setter, dessen Schlüsselparameter
+ *   `keyof <Typedef>` trägt: je Schlüssel der Wertetyp und die JSDoc-Prosa
+ *   (`tools/build/agent-data.mjs:readKeySurface`).
  * @property {Record<string, { type: string, help: string, bulk: boolean,
  *                             bulkKind?: 'table'|'tree', derived?: boolean }>} fields
  *   Die Lesefläche. Ohne `derived` aus den Model-Feldern abgeleitet (die

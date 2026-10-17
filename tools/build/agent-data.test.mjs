@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { collectAgentData, renderAgentRegistryModule, collectDomDetours,
          readAgentReadTypedef } from './agent-data.mjs';
-import { lookup, helpExists } from './agent-report.mjs';
+import { lookup, helpExists, STRUCTURE_JARGON } from './agent-report.mjs';
 import ts from 'typescript';
 
 /**
@@ -1278,6 +1278,11 @@ test('i18n-Tor: jede Aktion, jeder Parameter und jedes Feld eines freigegebenen 
             missing.push(`${lang}: modules.${id}.actions.${action}.params.${param.name}`);
           }
         }
+        for (const key of Object.keys(def.keys ?? {})) {
+          if (!helpExists(tree, id, `actions.${action}.keys.${key}`)) {
+            missing.push(`${lang}: modules.${id}.actions.${action}.keys.${key}`);
+          }
+        }
       }
     }
     for (const field of Object.keys(entry.fields)) {
@@ -1313,6 +1318,30 @@ test('i18n-Tor: jeder data-help-key einer freigegebenen Vorlage löst in BEIDEN 
   }
   assert.ok(checked >= 2, `zu wenige Anker geprüft (${checked})`);
   assert.deepEqual(broken, [], `nicht auflösbare data-help-key:\n${broken.join('\n')}`);
+});
+
+test('i18n-Tor: ein verankerter Satz (data-help-key) enthält keinen Strukturjargon', () => {
+  // Doppelnutzen: der Satz am Label ist derselbe, den der Agent liest. Wer
+  // Alt hält, prüft damit die Agentenbeschreibung — das geht nur, wenn sie
+  // für Menschen geschrieben ist. Die Struktur steht im JSDoc-Typ.
+  const appDir = join(import.meta.dirname, '..', '..');
+  const { modules } = collectAgentData(appDir);
+  const trees = {
+    de: JSON.parse(readFileSync(join(appDir, 'i18n', 'de.json'), 'utf8')),
+    en: JSON.parse(readFileSync(join(appDir, 'i18n', 'en.json'), 'utf8')),
+  };
+  const jargon = [];
+  for (const [id, entry] of Object.entries(modules)) {
+    if (entry.available !== true) continue;
+    for (const [file, key] of helpKeysInTemplates(appDir, id)) {
+      for (const [lang, tree] of Object.entries(trees)) {
+        const text = lookup(tree, key);
+        const hit = text && STRUCTURE_JARGON.exec(text);
+        if (hit) jargon.push(`${lang}: ${file} → ${key} („${hit[0]}")`);
+      }
+    }
+  }
+  assert.deepEqual(jargon, [], `Strukturjargon in verankerten Sätzen:\n${jargon.join('\n')}`);
 });
 
 /* Controller-Entscheid zu Review-Befund 2: das Tor darf NICHT den
@@ -2756,4 +2785,128 @@ test('unreachable_write: Wächter – ein konstanter Wert an der Model-Wurzel de
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.reported.filter(r => /:(alpha|power)$/.test(r)),
     ['unreachable_write:alpha', 'unreachable_write:power']);
+});
+
+/* ── Deklarierte Schlüssel eines generischen Setters (`keyof <Typedef>`) ──
+   `setParam(key, value)` bündelt viele Eingaben unter einer Aktion. Ohne
+   Deklaration standen Schlüsselmenge, Wertebereich und Beschreibung je
+   Schlüssel an drei Stellen (`PARAM_KEYS`, `PARAM_CHECKS`, Prosa), und nichts
+   verband sie. Mit `@param {keyof Params} key` liest der Generator die
+   Typedef `Params` als die Schlüsselfläche der Aktion und prüft sie gegen
+   die Laufzeitmengen. */
+
+/** Ein Modul mit generischem Setter; `typedef`, `keys`, `checks` ersetzbar. */
+function keyedVm({
+  typedef = ` * @typedef {object} Params
+ * @property {string} name der Name des Merkmals
+ * @property {'0.2'|'0.15'} k1 der Anteil der Toleranz
+ * @property {number} n die Anzahl`,
+  keys = "['name', 'k1', 'n']",
+  checks = `{
+  name: (v) => requireText('value', v),
+  k1: (v) => requireEnum('value', v, K1_OPTIONS),
+  n: (v) => requireNumber('value', v),
+}`,
+  keyParamType = 'keyof Params',
+} = {}) {
+  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * Einen Parameter setzen.
+       * @agent
+       * @param {${keyParamType}} key welcher Parameter
+       * @param {string} value der Wert
+       * @returns {void}
+       */
+      setParam(key, value) {
+        requireEnum('key', key, PARAM_KEYS);
+        this.model.params[key] = PARAM_CHECKS[key](value);
+      },`).replace('export default createModule', `/**
+${typedef}
+ */
+export default createModule`);
+  return `const PARAM_KEYS = ${keys};
+const K1_OPTIONS = ['0.2', '0.15'];
+const PARAM_CHECKS = ${checks};
+${vm}`;
+}
+
+const KEYED_MODEL = `export class State {
+  /** @type {object} die Parameter */
+  params = { name: '', k1: '0.2', n: 0 };
+  toJSON() { return { params: { ...this.params } }; }
+}`;
+
+function keyedModules(opts) {
+  const root = fixture({ foo: { 'foo.js': keyedVm(opts), 'foo-model.js': KEYED_MODEL } });
+  return collectAgentData(root).modules;
+}
+
+test('Schlüsselfläche: keyof Params liefert je Schlüssel Typ und Prosa an der Aktion', () => {
+  const { foo } = keyedModules();
+  assert.deepEqual(foo.reported, []);
+  assert.deepEqual(foo.actions.setParam.keys, {
+    name: { type: 'string', help: 'der Name des Merkmals' },
+    k1: { type: "'0.2'|'0.15'", help: 'der Anteil der Toleranz' },
+    n: { type: 'number', help: 'die Anzahl' },
+  });
+});
+
+test('Schlüsselfläche: der Schlüsselparameter trägt in der Registry die Vereinigung der Schlüssel', () => {
+  const { foo } = keyedModules();
+  const key = foo.actions.setParam.params.find(p => p.name === 'key');
+  assert.equal(key.type, "'name'|'k1'|'n'");
+});
+
+test('Schlüsselfläche: eine Aktion ohne keyof trägt kein keys-Feld', () => {
+  const { foo } = keyedModules();
+  assert.equal('keys' in foo.actions.setProblem, false);
+});
+
+test('Schlüsselfläche: eine nicht auffindbare Typedef ist ein Verstoß', () => {
+  const { foo } = keyedModules({ keyParamType: 'keyof Missing' });
+  assert.deepEqual(foo.reported, ['unresolved_key_typedef:setParam:Missing']);
+});
+
+test('Schlüsselfläche: weicht PARAM_KEYS von der Typedef ab, wird jeder abweichende Schlüssel gemeldet', () => {
+  const { foo } = keyedModules({ keys: "['name', 'k1', 'extra']" });
+  assert.deepEqual(foo.reported, ['key_set_mismatch:setParam:extra', 'key_set_mismatch:setParam:n']);
+});
+
+test('Schlüsselfläche: ohne auflösbare Laufzeitmenge ist die Schlüsselmenge ungeprüft — ein Verstoß', () => {
+  const vm = keyedVm().replace("requireEnum('key', key, PARAM_KEYS);", "requireEnum('key', key, this.activeParams());");
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': KEYED_MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.ok(modules.foo.reported.includes('unverified_key_set:setParam'), modules.foo.reported.join(', '));
+});
+
+test('Schlüsselfläche: ein Wertebereich, der nicht zur Prüfung passt, ist ein Verstoß', () => {
+  const { foo } = keyedModules({ typedef: ` * @typedef {object} Params
+ * @property {string} name der Name
+ * @property {'0.2'|'0.1'} k1 der Anteil
+ * @property {string} n die Anzahl` });
+  assert.deepEqual(foo.reported, ['key_value_mismatch:setParam:k1', 'key_value_mismatch:setParam:n']);
+});
+
+test('Schlüsselfläche: eine eigene Prüffunktion ist ein blinder Fleck, kein Verstoß', () => {
+  const { foo } = keyedModules({ checks: `{
+  name: (v) => requireText('value', v),
+  k1: (v) => requireEnum('value', v, K1_OPTIONS),
+  n: (v) => customCheck(v),
+}` });
+  assert.deepEqual(foo.reported, []);
+});
+
+test('Schlüsselfläche: die Typedef wird auch gefunden, wenn vor derselben Anweisung noch ein JSDoc-Block folgt', () => {
+  const vm = keyedVm().replace('const PARAM_KEYS =', `/**
+ * @typedef {object} Params2
+ * @property {string} name der Name des Merkmals
+ * @property {'0.2'|'0.15'} k1 der Anteil der Toleranz
+ * @property {number} n die Anzahl
+ */
+
+/** Die Schlüssel. */
+const PARAM_KEYS =`).replace('{keyof Params}', '{keyof Params2}');
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': KEYED_MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, []);
+  assert.deepEqual(Object.keys(modules.foo.actions.setParam.keys), ['name', 'k1', 'n']);
 });

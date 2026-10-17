@@ -3,7 +3,7 @@
     <div class="dmike-split__section-title" x-text="t('sectionParams')"></div>
 
     <div class="field-group">
-      <label x-text="t('featureName')"></label>
+      <label data-help-key="modules.msa-typ1.actions.setParam.keys.name" x-text="t('featureName')"></label>
       <input type="text" class="field" data-ref="inp-name"
              :placeholder="t('featureNamePh')"
              :value="model.params.name" @input="setParam('name', $event.target.value)">
@@ -11,13 +11,13 @@
 
     <div class="msa-typ1__row">
       <div class="field-group">
-        <label x-text="t('refValue')"></label>
+        <label data-help-key="modules.msa-typ1.actions.setParam.keys.ref" x-text="t('refValue')"></label>
         <input type="text" class="field field--num" data-ref="inp-ref"
                placeholder="50.000" inputmode="decimal"
                :value="model.params.ref" @input="setParam('ref', $event.target.value)" @change="runAnalysis()">
       </div>
       <div class="field-group">
-        <label x-text="t('unit')"></label>
+        <label data-help-key="modules.msa-typ1.actions.setParam.keys.unit" x-text="t('unit')"></label>
         <input type="text" class="field" data-ref="inp-unit"
                placeholder="mm"
                :value="model.params.unit" @input="setParam('unit', $event.target.value)">
@@ -26,13 +26,13 @@
 
     <div class="msa-typ1__row">
       <div class="field-group">
-        <label x-text="t('lsl')"></label>
+        <label data-help-key="modules.msa-typ1.actions.setParam.keys.lsl" x-text="t('lsl')"></label>
         <input type="text" class="field field--num" data-ref="inp-lsl"
                placeholder="49.950" inputmode="decimal"
                :value="model.params.lsl" @input="setParam('lsl', $event.target.value)" @change="runAnalysis()">
       </div>
       <div class="field-group">
-        <label x-text="t('usl')"></label>
+        <label data-help-key="modules.msa-typ1.actions.setParam.keys.usl" x-text="t('usl')"></label>
         <input type="text" class="field field--num" data-ref="inp-usl"
                placeholder="50.050" inputmode="decimal"
                :value="model.params.usl" @input="setParam('usl', $event.target.value)" @change="runAnalysis()">
@@ -41,7 +41,7 @@
 
     <div class="msa-typ1__row">
       <div class="field-group">
-        <label x-text="t('k1Label')"></label>
+        <label data-help-key="modules.msa-typ1.actions.setParam.keys.k1" x-text="t('k1Label')"></label>
         <select class="field" data-ref="inp-k1" :value="model.params.k1" @input="setParam('k1', $event.target.value)" @change="runAnalysis()">
           <template x-for="o in k1Options()" :key="o.value">
             <option :value="o.value" :selected="o.value === model.params.k1" x-text="o.label"></option>
@@ -49,7 +49,7 @@
         </select>
       </div>
       <div class="field-group">
-        <label x-text="t('k2Label')"></label>
+        <label data-help-key="modules.msa-typ1.actions.setParam.keys.k2" x-text="t('k2Label')"></label>
         <select class="field" data-ref="inp-k2" :value="model.params.k2" @input="setParam('k2', $event.target.value)" @change="runAnalysis()">
           <template x-for="o in k2Options()" :key="o.value">
             <option :value="o.value" :selected="o.value === model.params.k2" x-text="o.label"></option>
@@ -61,7 +61,7 @@
     <div class="dmike-split__section-title" x-text="t('sectionValues')"></div>
 
     <div class="field-group">
-      <label x-text="t('columnSelectLabel')"></label>
+      <label data-help-key="modules.msa-typ1.actions.setColumn.help" x-text="t('columnSelectLabel')"></label>
       <div data-ref="col-picker-wrap"></div>
     </div>
 

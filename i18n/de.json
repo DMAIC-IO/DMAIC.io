@@ -2638,12 +2638,21 @@
         "setParam": {
           "help": "Setzt einen Parameter der Studie; die Neuberechnung folgt nach kurzer Ruhezeit.",
           "params": {
-            "key": "Einer der Schlüssel aus activeParams: name, ref, unit, lsl, usl, k1 oder k2. Jeder andere Wert ist ein Fehler.",
-            "value": "Der Wert als Text, zum Beispiel '10' oder '0.5'; die leere Zeichenkette leert das Feld. k1 nimmt '0.2', '0.15' oder '0.1', k2 nimmt '3', '4' oder '6'."
+            "key": "Welcher Parameter; jeder Schlüssel ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert als Text, zum Beispiel '10' oder '0.5'. Der zulässige Bereich steht je Schlüssel unter keys; bei den freien Textfeldern leert '' das Feld."
+          },
+          "keys": {
+            "name": "Bezeichnung des geprüften Merkmals, zum Beispiel „Durchmesser Welle A“. Sie erscheint im Ergebnis und hat auf die Rechnung keinen Einfluss.",
+            "ref": "Der bekannte Sollwert des Referenzteils (Normal). Alle Messungen werden mit ihm verglichen; die Abweichung ihres Mittelwerts davon ist der Bias.",
+            "unit": "Maßeinheit der Messwerte, zum Beispiel mm. Sie dient nur der Beschriftung.",
+            "lsl": "Untere Toleranzgrenze des Merkmals. Mit beiden Grenzen ergibt sich die Toleranz T = OSG − USG, auf der Cg und Cgk beruhen. Bleibt eine Grenze leer, wird nur der Bias geprüft.",
+            "usl": "Obere Toleranzgrenze des Merkmals. Mit beiden Grenzen ergibt sich die Toleranz T = OSG − USG, auf der Cg und Cgk beruhen. Bleibt eine Grenze leer, wird nur der Bias geprüft.",
+            "k1": "Anteil der Toleranz, den die Streubreite des Messsystems ausschöpfen darf: 0,2 (20 %, üblich), 0,15 oder 0,1. Ein kleinerer Wert ist strenger.",
+            "k2": "Wie viele Standardabweichungen die Streubreite umfasst: 3 steht für 6·s (üblich), 4 für 8·s, 6 für 12·s. Ein größerer Wert ist strenger."
           }
         },
         "setColumn": {
-          "help": "Verweist die Messwertreihe auf eine numerische Spalte einer Datensammlung; die Neuberechnung folgt nach kurzer Ruhezeit.",
+          "help": "Wählt die Spalte einer Datensammlung mit den Wiederholmessungen am Referenzteil (mindestens 25, empfohlen 50 Werte). Gerechnet wird nach kurzer Pause.",
           "params": {
             "slot": "Einer der Slots aus activeColumnSlots; dieses Modul führt nur 'value'.",
             "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Leeren."
@@ -2654,7 +2663,7 @@
         "clearResults": { "help": "Verwirft das Ergebnis; die Eingaben bleiben." }
       },
       "fields": {
-        "params": { "help": "Die eingegebenen Parameter, Werte als Text: name (Merkmal), ref (Referenzwert), unit (Einheit), lsl und usl (Toleranzgrenzen, leer für einseitig), k1 (Anteil der Toleranz) und k2 (Streuungsfaktor)." },
+        "params": { "help": "Die eingegebenen Parameter, Werte als Text; die Schlüssel beschreibt setParam unter keys." },
         "columnRef": { "help": "Die gewählte Messwertspalte als { instanceId, sheetId, columnId }, oder null." },
         "activeParams": { "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt." },
         "activeColumnSlots": { "help": "Die Slots, die setColumn im aktuellen Zustand annimmt." },

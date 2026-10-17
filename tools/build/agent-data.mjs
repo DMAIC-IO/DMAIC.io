@@ -330,6 +330,39 @@ const BULK_RE = /^\[bulk(?::([a-z]+))?\]/;
  * @returns {Record<string, { type: string, help: string, bulk: boolean, derived: true }>|null}
  */
 export function readAgentReadTypedef(sf) {
+  const literal = findTypedefLiteral(sf, AGENT_READ_TYPEDEF);
+  if (!literal) return null;
+  const found = {};
+  for (const property of literal.jsDocPropertyTags ?? []) {
+    const name = property.name?.getText(sf);
+    if (!name || name.startsWith('_')) continue;
+    const raw = cleanComment(property.comment);
+    const bulkMatch = BULK_RE.exec(raw);
+    found[name] = {
+      type: property.typeExpression?.type?.getText(sf) ?? 'any',
+      help: bulkMatch ? raw.slice(bulkMatch[0].length).trim() : raw,
+      bulk: bulkMatch !== null,
+      // Nur AN einem Massenfeld, nicht als `undefined` an jedem Feld: so
+      // bleibt die erzeugte Registry dort unverändert, wo nichts zu sagen
+      // ist — und die `deepEqual`-Fälle über die Feldform bleiben wahr.
+      ...(bulkMatch ? { bulkKind: bulkMatch[1] ?? 'table' } : {}),
+      derived: true,
+    };
+  }
+  return found;
+}
+
+/**
+ * Das Typliteral der Typedef `name`, oder null.
+ *
+ * Der Block MUSS an einer Anweisung hängen — siehe `readAgentReadTypedef`.
+ * Gibt es mehrere gleichnamige, gewinnt die letzte (wie bisher).
+ *
+ * @param {ts.SourceFile} sf
+ * @param {string} name
+ * @returns {ts.JSDocTypeLiteral|null}
+ */
+function findTypedefLiteral(sf, name) {
   let found = null;
   const walk = (node) => {
     // Der Compiler hängt einen freistehenden Kommentar am Dateiende an das
@@ -338,33 +371,166 @@ export function readAgentReadTypedef(sf) {
     // `EndOfFileToken` hat ohnehin keine Kinder, der Ausschluss kostet also
     // nichts am eigentlichen Baum.
     if (node.kind === ts.SyntaxKind.EndOfFileToken) return;
-    for (const tag of ts.getJSDocTags(node)) {
-      if (!ts.isJSDocTypedefTag(tag)) continue;
-      if (tag.name?.text !== AGENT_READ_TYPEDEF) continue;
-      const literal = tag.typeExpression;
-      if (!literal || !ts.isJSDocTypeLiteral(literal)) continue;
-      found = {};
-      for (const property of literal.jsDocPropertyTags ?? []) {
-        const name = property.name?.getText(sf);
-        if (!name || name.startsWith('_')) continue;
-        const raw = cleanComment(property.comment);
-        const bulkMatch = BULK_RE.exec(raw);
-        found[name] = {
-          type: property.typeExpression?.type?.getText(sf) ?? 'any',
-          help: bulkMatch ? raw.slice(bulkMatch[0].length).trim() : raw,
-          bulk: bulkMatch !== null,
-          // Nur AN einem Massenfeld, nicht als `undefined` an jedem Feld: so
-          // bleibt die erzeugte Registry dort unverändert, wo nichts zu sagen
-          // ist — und die `deepEqual`-Fälle über die Feldform bleiben wahr.
-          ...(bulkMatch ? { bulkKind: bulkMatch[1] ?? 'table' } : {}),
-          derived: true,
-        };
+    // ALLE an der Anweisung hängenden Blöcke, nicht `ts.getJSDocTags`: das
+    // liefert nur die Tags des letzten Blocks, und eine Typedef steht gern
+    // über dem Kurzkommentar der Konstante, an der sie hängt.
+    for (const doc of node.jsDoc ?? []) {
+      for (const tag of doc.tags ?? []) {
+        if (!ts.isJSDocTypedefTag(tag)) continue;
+        if (tag.name?.text !== name) continue;
+        const literal = tag.typeExpression;
+        if (literal && ts.isJSDocTypeLiteral(literal)) found = literal;
       }
     }
     ts.forEachChild(node, walk);
   };
   walk(sf);
   return found;
+}
+
+/** `keyof <Typedef>` als Typ eines Aktionsparameters. */
+const KEYOF_RE = /^keyof\s+([A-Za-z_$][\w$]*)$/;
+
+/**
+ * Die Schlüsselfläche eines generischen Setters.
+ *
+ * `setParam(key, value)` bündelt viele Eingaben unter einer Aktion. Mit
+ * `@param {keyof Params} key` erklärt das Modul die Schlüssel als Typedef:
+ * je Schlüssel ein Typ (der Wertebereich von `value`) und ein Satz. Daraus
+ * werden
+ *   • `keys` an der Aktion (Typ + JSDoc-Prosa je Schlüssel; die Laufzeit
+ *     legt den i18n-Satz `actions.<aktion>.keys.<schlüssel>` darüber),
+ *   • der Typ des Schlüsselparameters als Vereinigung der Schlüssel — der
+ *     Agent sieht die konkrete Menge, das Modul schreibt sie nur einmal.
+ *
+ * Geprüft wird gegen die Laufzeit, damit Deklaration und Code nicht
+ * auseinanderlaufen:
+ *   • `key_set_mismatch:<aktion>:<schlüssel>` — die per
+ *     `requireEnum('…', key, <MENGE>)` geprüfte Menge weicht ab, je
+ *     abweichendem Schlüssel ein Befund;
+ *   • `unverified_key_set:<aktion>` — keine geprüfte Menge ist auflösbar
+ *     (nur `this.activeParams()` o. ä.): fail closed;
+ *   • `key_value_mismatch:<aktion>:<schlüssel>` — die Prüfung aus der
+ *     Prüftabelle (`PARAM_CHECKS[key](value)`) passt nicht zum Typ:
+ *     `requireText` ↔ `string`, `requireNumber` ↔ `number`,
+ *     `requireEnum(…, MENGE)` ↔ dieselbe Literalvereinigung. Eine eigene
+ *     Prüffunktion oder eine nicht auflösbare Tabelle bleibt ungeprüft
+ *     (blinder Fleck, kein Befund).
+ *
+ * @param {ts.SignatureDeclaration} fn  die Aktion
+ * @param {string} action  ihr Name
+ * @param {string} keyParam  der Parameter mit `keyof …`
+ * @param {string} typedefName
+ * @param {ts.SourceFile} sf
+ * @returns {{ keys: Record<string, { type: string, help: string }>|null, violations: string[] }}
+ */
+function readKeySurface(fn, action, keyParam, typedefName, sf) {
+  const literal = findTypedefLiteral(sf, typedefName);
+  if (!literal) return { keys: null, violations: [`unresolved_key_typedef:${action}:${typedefName}`] };
+  const keys = {};
+  for (const property of literal.jsDocPropertyTags ?? []) {
+    const name = property.name?.getText(sf);
+    if (!name) continue;
+    keys[name] = {
+      type: property.typeExpression?.type?.getText(sf) ?? 'any',
+      help: cleanComment(property.comment),
+    };
+  }
+
+  const violations = [];
+  const runtime = requireEnumKeySets(fn.body, new Set([keyParam]), sf).get(keyParam);
+  if (!runtime) {
+    violations.push(`unverified_key_set:${action}`);
+  } else {
+    const declared = Object.keys(keys);
+    const differing = [
+      ...runtime.filter(k => !declared.includes(k)),
+      ...declared.filter(k => !runtime.includes(k)),
+    ].sort();
+    for (const k of differing) violations.push(`key_set_mismatch:${action}:${k}`);
+  }
+
+  const checks = checkTableOf(fn.body, keyParam, sf);
+  for (const [name, { type }] of Object.entries(keys)) {
+    const check = checks?.get(name);
+    if (!check) continue;
+    if (!checkMatchesType(check, type, sf)) violations.push(`key_value_mismatch:${action}:${name}`);
+  }
+  return { keys, violations };
+}
+
+/**
+ * Die Prüftabelle eines generischen Setters: der Aufruf `<TABELLE>[key](…)`
+ * im Methodenkörper, `<TABELLE>` als Objektliteral im Modul. Je Schlüssel
+ * die Prüffunktion (Pfeil- oder Funktionsausdruck), oder null.
+ * @param {ts.Block|undefined} body
+ * @param {string} keyParam
+ * @param {ts.SourceFile} sf
+ * @returns {Map<string, ts.Node>|null}
+ */
+function checkTableOf(body, keyParam, sf) {
+  let table = null;
+  forEachCall(body, call => {
+    if (table) return;
+    const callee = call.expression;
+    if (!ts.isElementAccessExpression(callee)) return;
+    if (!ts.isIdentifier(callee.expression)) return;
+    if (!ts.isIdentifier(callee.argumentExpression) || callee.argumentExpression.text !== keyParam) return;
+    const decl = findLocalDeclaration(callee.expression.text, sf);
+    if (!decl || !ts.isVariableDeclaration(decl) || !decl.initializer) return;
+    if (!ts.isObjectLiteralExpression(decl.initializer)) return;
+    table = new Map();
+    for (const prop of decl.initializer.properties) {
+      if (!ts.isPropertyAssignment(prop)) continue;
+      const name = ts.isStringLiteralLike(prop.name) ? prop.name.text : prop.name.getText(sf);
+      table.set(name, prop.initializer);
+    }
+  });
+  return table;
+}
+
+/**
+ * Passt die Prüffunktion zum deklarierten Typ? Unbekannte Prüfungen gelten
+ * als passend — siehe `readKeySurface`.
+ * @param {ts.Node} check
+ * @param {string} type
+ * @param {ts.SourceFile} sf
+ * @returns {boolean}
+ */
+function checkMatchesType(check, type, sf) {
+  let verdict = true;
+  let seen = false;
+  forEachCall(check, call => {
+    if (seen || !ts.isIdentifier(call.expression)) return;
+    const name = call.expression.text;
+    if (name === 'requireText') { seen = true; verdict = type === 'string'; }
+    else if (name === 'requireNumber') { seen = true; verdict = type === 'number'; }
+    else if (name === 'requireEnum') {
+      seen = true;
+      const allowed = call.arguments[2] && resolveStringArray(call.arguments[2], sf);
+      if (!allowed) return;                     // nicht auflösbar: ungeprüft
+      const literals = literalUnion(type);
+      verdict = literals !== null && sameSet(literals, allowed);
+    }
+  });
+  return verdict;
+}
+
+/** `'a'|'b'` → `['a', 'b']`; null, sobald ein Glied kein Zeichenkettenliteral ist. */
+function literalUnion(type) {
+  const parts = type.split('|').map(p => p.trim());
+  const out = [];
+  for (const part of parts) {
+    const m = /^'([^']*)'$|^"([^"]*)"$/.exec(part);
+    if (!m) return null;
+    out.push(m[1] ?? m[2]);
+  }
+  return out;
+}
+
+/** @returns {boolean} gleiche Elemente, Reihenfolge egal */
+function sameSet(a, b) {
+  return a.length === b.length && a.every(x => b.includes(x));
 }
 
 /**
@@ -442,6 +608,19 @@ function readViewmodel(sf, resolver, appDir) {
       });
     }
 
+    // Generischer Setter mit erklärter Schlüsselfläche (`keyof <Typedef>`).
+    let keys = null;
+    for (const param of params) {
+      const keyof = KEYOF_RE.exec(param.type);
+      if (!keyof) continue;
+      const surface = readKeySurface(fn, name, param.name, keyof[1], sf);
+      for (const v of surface.violations) violations.push(`${v}${from}`);
+      if (surface.keys) {
+        keys = surface.keys;
+        param.type = Object.keys(keys).map(k => `'${k}'`).join('|');
+      }
+    }
+
     const returnTag = ts.getJSDocReturnTag(fn);
     if (!returnTag || !returnTag.typeExpression) { violations.push(`missing_returns:${name}${from}`); }
 
@@ -449,6 +628,7 @@ function readViewmodel(sf, resolver, appDir) {
       params,
       returns: returnTag?.typeExpression?.type?.getText() ?? 'void',
       help: cleanComment(descriptionOf(member)),
+      ...(keys ? { keys } : {}),
     };
 
     // Nur der `@agent`-Zweig zählt als Schreibweg der Fläche (Task 1b): eine

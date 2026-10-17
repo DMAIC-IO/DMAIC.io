@@ -2634,12 +2634,21 @@
         "setParam": {
           "help": "Sets one parameter of the study; the recalculation follows after a short pause.",
           "params": {
-            "key": "One of the keys in activeParams: name, ref, unit, lsl, usl, k1 or k2. Any other value is an error.",
-            "value": "The value as text, for example '10' or '0.5'; the empty string clears the field. k1 takes '0.2', '0.15' or '0.1', k2 takes '3', '4' or '6'."
+            "key": "Which parameter; each key is described individually under keys. Any other value is an error.",
+            "value": "The value as text, for example '10' or '0.5'. The allowed range per key is given under keys; for the free text fields '' clears the field."
+          },
+          "keys": {
+            "name": "Name of the characteristic under study, for example “Shaft A diameter”. It appears in the result and does not affect the calculation.",
+            "ref": "The known reference value of the master part. Every measurement is compared with it; the deviation of their mean from it is the bias.",
+            "unit": "Unit of the measured values, for example mm. It is only used for labelling.",
+            "lsl": "Lower tolerance limit of the characteristic. Both limits give the tolerance T = USL − LSL on which Cg and Cgk are based. If one limit is left empty, only the bias is tested.",
+            "usl": "Upper tolerance limit of the characteristic. Both limits give the tolerance T = USL − LSL on which Cg and Cgk are based. If one limit is left empty, only the bias is tested.",
+            "k1": "Share of the tolerance the gage spread may use: 0.2 (20 %, common), 0.15 or 0.1. A smaller value is stricter.",
+            "k2": "How many standard deviations the spread covers: 3 stands for 6·s (common), 4 for 8·s, 6 for 12·s. A larger value is stricter."
           }
         },
         "setColumn": {
-          "help": "Points the measurement series at a numeric column of a data collection; the recalculation follows after a short pause.",
+          "help": "Picks the data collection column holding the repeated measurements of the master part (at least 25, 50 recommended). The calculation follows after a short pause.",
           "params": {
             "slot": "One of the slots in activeColumnSlots; this module only has 'value'.",
             "ref": "Column reference { instanceId, sheetId, columnId } of a column from pickableColumns, or null to clear."
@@ -2650,7 +2659,7 @@
         "clearResults": { "help": "Discards the result; the inputs stay." }
       },
       "fields": {
-        "params": { "help": "The entered parameters, values as text: name (feature), ref (reference value), unit, lsl and usl (tolerance limits, empty for one-sided), k1 (share of the tolerance) and k2 (spread factor)." },
+        "params": { "help": "The entered parameters, values as text; setParam describes the keys under keys." },
         "columnRef": { "help": "The chosen measurement column as { instanceId, sheetId, columnId }, or null." },
         "activeParams": { "help": "The keys setParam accepts in the current state." },
         "activeColumnSlots": { "help": "The slots setColumn accepts in the current state." },

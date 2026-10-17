@@ -284,6 +284,33 @@ suite('agent catalog — module.describe', () => {
     assertEqual(modelDerived.fields.find(f => f.name === 'problem').derived, false);
   });
 
+  test('ein generischer Setter beschreibt jeden Schlüssel einzeln — i18n vor JSDoc', async () => {
+    // `setParam(key, value)` bündelt viele Eingaben. Die Registry trägt die
+    // erklärte Schlüsselfläche (`keys`), und describe gibt je Schlüssel Typ
+    // und Satz heraus — derselbe Satz, den die Oberfläche am Label zeigt.
+    const registry = { ...REGISTRY, worksheet: { ...REGISTRY.worksheet, actions: {
+      ...REGISTRY.worksheet.actions,
+      setParam: {
+        params: [{ name: 'key', type: "'alpha'|'k1'", optional: false, help: 'welcher' },
+                 { name: 'value', type: 'string', optional: false, help: 'der Wert' }],
+        returns: 'void', help: 'Setzt einen Parameter.',
+        keys: { alpha: { type: 'string', help: 'JSDoc alpha' }, k1: { type: "'0.2'|'0.1'", help: 'JSDoc k1' } },
+      },
+    } } };
+    const table = { ...I18N_TABLE, 'modules.worksheet.actions.setParam.keys.alpha': 'Das Signifikanzniveau.' };
+    const i18n = { ...I18N,
+      exists: (key) => I18N.exists(key) || key === 'modules.worksheet.actions.setParam.keys.alpha',
+      t: (key, params) => (key in table ? table[key] : I18N.t(key, params)) };
+    const out = await describeModule({ ...deps, registry, i18n }, 'worksheet');
+    const action = out.actions.find(a => a.name === 'setParam');
+    assertDeepEqual(action.keys, [
+      { name: 'alpha', type: 'string', help: 'Das Signifikanzniveau.' },
+      { name: 'k1', type: "'0.2'|'0.1'", help: 'JSDoc k1' },
+    ]);
+    assertEqual('keys' in out.actions.find(a => a.name === 'importCsv'), false,
+      'eine Aktion ohne Schlüsselfläche trägt kein keys-Feld');
+  });
+
   test('i18n context help wins over the JSDoc prose for fields', async () => {
     const out = await describeModule(deps, 'worksheet');
     assertEqual(out.fields.find(f => f.name === 'rows').help,

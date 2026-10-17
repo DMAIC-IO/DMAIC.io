@@ -5200,11 +5200,41 @@ export const AGENT_REGISTRY = {
             "name": "value",
             "type": "string",
             "optional": false,
-            "help": "der Wert als Text, wie er eingegeben würde"
+            "help": "der Wert als Text, wie er eingegeben würde; Wertebereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "void",
-        "help": "Einen Parameter setzen."
+        "help": "Einen Parameter setzen.",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "Bezeichnung des Merkmals"
+          },
+          "ref": {
+            "type": "string",
+            "help": "Referenzwert des Normals"
+          },
+          "unit": {
+            "type": "string",
+            "help": "Maßeinheit"
+          },
+          "lsl": {
+            "type": "string",
+            "help": "untere Toleranzgrenze, leer für einseitig"
+          },
+          "usl": {
+            "type": "string",
+            "help": "obere Toleranzgrenze, leer für einseitig"
+          },
+          "k1": {
+            "type": "'0.2'|'0.15'|'0.1'",
+            "help": "Anteil der Toleranz"
+          },
+          "k2": {
+            "type": "'3'|'4'|'6'",
+            "help": "Streuungsfaktor"
+          }
+        }
       },
       "setColumn": {
         "params": [

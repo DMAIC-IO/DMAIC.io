@@ -40,6 +40,22 @@ function fmtP(p) {
   return p < 0.001 ? '< 0.001' : `= ${p.toFixed(3)}`;
 }
 
+/**
+ * Die Schlüsselfläche von `setParam`: je Parameter der Wertebereich. Der
+ * Build prüft sie gegen `PARAM_KEYS` und `PARAM_CHECKS`; die Sätze je
+ * Schlüssel stehen in i18n unter `actions.setParam.keys.<schlüssel>` und
+ * erscheinen in der Oberfläche am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {string} name  Bezeichnung des Merkmals
+ * @property {string} ref  Referenzwert des Normals
+ * @property {string} unit  Maßeinheit
+ * @property {string} lsl  untere Toleranzgrenze, leer für einseitig
+ * @property {string} usl  obere Toleranzgrenze, leer für einseitig
+ * @property {'0.2'|'0.15'|'0.1'} k1  Anteil der Toleranz
+ * @property {'3'|'4'|'6'} k2  Streuungsfaktor
+ */
+
 /** Die sieben Parameter, die `setParam` annimmt (Reihenfolge wie im Model). */
 const PARAM_KEYS = ['name', 'ref', 'unit', 'lsl', 'usl', 'k1', 'k2'];
 
@@ -147,8 +163,8 @@ const mod = createModule({
       /**
        * Einen Parameter setzen.
        * @agent
-       * @param {'name'|'ref'|'unit'|'lsl'|'usl'|'k1'|'k2'} key welcher Parameter
-       * @param {string} value der Wert als Text, wie er eingegeben würde
+       * @param {keyof Params} key welcher Parameter
+       * @param {string} value der Wert als Text, wie er eingegeben würde; Wertebereich je Schlüssel siehe `Params`
        * @returns {void}
        * @throws {Error} wenn `key` kein Parameter dieses Moduls ist
        */

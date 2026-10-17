@@ -45,6 +45,19 @@ export function lookup(tree, key) {
 }
 
 /**
+ * Strukturjargon in einem Hilfesatz: Objekt-/Listenschreibweise, `null`,
+ * Backticks, Methodennamen (`setParam`, `read()`) und die Bezeichner eines
+ * Spaltenbezugs.
+ *
+ * Ein Satz, auf den ein `data-help-key` der Oberfläche zeigt, liest auch ein
+ * Mensch (Alt-Taste) — und die Struktur steht für den Agenten ohnehin im
+ * JSDoc-Typ daneben (`type` in `module.describe`). Für einen verankerten Satz
+ * ist dieser Jargon deshalb ein Befund; für einen unverankerten (abgeleitete
+ * Felder wie `activeParams`, `read`) bleibt er erlaubt.
+ */
+export const STRUCTURE_JARGON = /[{}[\]`]|\bnull\b|\b(?:set|get|add|remove|read|run|clear|schedule|select|toggle)[A-Z]\w*|\w+\(\)|\b(?:instanceId|columnId|sheetId)\b/;
+
+/**
  * Die Kandidatenschlüssel eines Hilfetextes, in Auflösungsreihenfolge.
  *
  * EINE Schablone, mit `shared` als Ersatz-Modulkennung: der geteilte
@@ -105,6 +118,7 @@ export function helpExists(tree, moduleId, suffix) {
  * @param {string} appDir  Wurzel von app/dev
  * @param {Record<string, object>} modules  die Registry-Einträge
  * @returns {{ actions: {total:number,covered:number}, params: {total:number,covered:number},
+ *             keys: {total:number,covered:number},
  *             fields: {total:number,covered:number}, whenToUse: {total:number,covered:number},
  *             missing: string[], missingKeys: string[] }}
  *   `missing` nennt jede Lücke JE SPRACHE (ein überall fehlender Schlüssel
@@ -121,6 +135,7 @@ export function countHelpCoverage(appDir, modules) {
   const out = {
     actions: { total: 0, covered: 0 },
     params: { total: 0, covered: 0 },
+    keys: { total: 0, covered: 0 },
     fields: { total: 0, covered: 0 },
     whenToUse: { total: 0, covered: 0 },
     missing: [],
@@ -153,6 +168,9 @@ export function countHelpCoverage(appDir, modules) {
       check('actions', helpKeys(id, `actions.${name}.help`));
       for (const param of action.params ?? []) {
         check('params', helpKeys(id, `actions.${name}.params.${param.name}`));
+      }
+      for (const key of Object.keys(action.keys ?? {})) {
+        check('keys', helpKeys(id, `actions.${name}.keys.${key}`));
       }
     }
     for (const name of Object.keys(entry.fields ?? {})) {
@@ -196,6 +214,7 @@ function main() {
   console.log(`  whenToUse: ${help.whenToUse.covered}/${help.whenToUse.total} (${pct(help.whenToUse)})`);
   console.log(`  Aktionen:  ${help.actions.covered}/${help.actions.total} (${pct(help.actions)})`);
   console.log(`  Parameter: ${help.params.covered}/${help.params.total} (${pct(help.params)})`);
+  console.log(`  Schlüssel: ${help.keys.covered}/${help.keys.total} (${pct(help.keys)})`);
   console.log(`  Felder:    ${help.fields.covered}/${help.fields.total} (${pct(help.fields)})`);
   if (help.missingKeys.length > 0 && !verbose) {
     console.log(`  ${help.missingKeys.length} Schlüssel mit Lücke `
