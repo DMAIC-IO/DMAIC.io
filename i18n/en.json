@@ -8397,7 +8397,7 @@
         "Params": {
           "chartTypeId": "Control chart type: I-MR for individual values (individuals chart and moving range chart), X̄-R for subgroups (mean and range chart) or X̄-S for subgroups (mean and standard deviation chart). Switching keeps the subgroup size within the range of the new type; I-MR always computes with n = 1.",
           "subgroupSize": "Subgroup size (n): the number of consecutive values that form one subgroup, a whole number from 2 to 10 for X̄-R and from 2 to 25 for X̄-S. Not available for I-MR. Leftover values at the end that do not fill a subgroup are ignored.",
-          "baselineCount": "Baseline count: how many individual values from the start of the series the limits are computed from, a whole number of at least 1; empty means all values. For X̄ charts it is rounded up to whole subgroups. Excluded points do not count towards the baseline. With stages it is not used; each stage then computes from all of its values. The input field starts at 2, the check accepts any whole number from 1.",
+          "baselineCount": "Baseline count: how many individual values from the start of the series the limits are computed from, a whole number of at least 1; empty means all values. For X̄ charts it is rounded up to whole subgroups. Excluded points within it do not enter the limits; the baseline does not get longer because of them. When frozen limits apply, the value takes effect only after unfreezing. With stages it is not used; each stage then computes from all of its values. The input field starts at 2, the check accepts any whole number from 1.",
           "stagesText": "Stage boundaries: the number of the last individual value of each stage, separated by comma, semicolon or space, e.g. 12, 25. Only whole numbers greater than 0 and less than the number of values count. Each stage gets its own limits and is judged by them. If a boundary falls inside a subgroup, that subgroup is counted in the earlier stage and a hint appears. Empty means a single baseline; with stages no limits can be frozen for Phase II.",
           "usl": "USL: upper specification limit of the individual values, empty for none. It is shown as a line on the chart and enters Cp, Cpu and Cpk.",
           "lsl": "LSL: lower specification limit of the individual values, empty for none. It is shown as a line on the chart and enters Cp, Cpl and Cpk.",
@@ -8411,21 +8411,21 @@
           "stages": "The stage boundaries used, as numbers of the last individual value of each stage, ascending and without duplicates; boundaries outside the series are dropped. Empty without stages.",
           "frozen": "True when frozen Phase II limits apply: chart type, subgroup size and column must match the time of freezing, and no stages may be set. The points are then judged against these limits instead of recomputed ones.",
           "subcharts": "The limits per subchart of the chart type: i and mr for I-MR, xbar and r for X̄-R, xbar and s for X̄-S. With stages they hold the limits of the last stage, i.e. the process as it runs now.",
-          "capability": "Process capability against USL and LSL, computed from the mean and σ of the individual values. Empty when no specification limit is set or σ = 0. Which figures exist depends on which limits are set.",
+          "capability": "Process capability against USL and LSL, computed from the center line CL and σ̂ of the first subchart, converted to individual values for X̄ charts; with stages from the last stage, with frozen limits from the frozen values. Empty when no specification limit is set or σ = 0. Which figures exist depends on which limits are set.",
           "violations": "The rule violations of the first subchart (individuals or X̄ chart) under the checked Nelson Rules, once per point and rule, sorted by point. The check of the second subchart only shows in the chart's badge.",
           "signals": "The points of the first subchart with at least one rule violation, each only once, counted from 0 over the plotted points (subgroups for X̄ charts). The violations tile counts these points."
         },
         "SubchartLimits": {
-          "cl": "CL (Center Line) of the subchart: the mean of the baseline points, i.e. x̄ on the individuals chart, x̄̄ on the X̄ chart and MR̄, R̄ or S̄ on the dispersion chart. The CL tile shows the center line of the first subchart, its sub line σ̂; with several stages the values of the last stage.",
-          "ucl": "UCL, upper control limit of the subchart. I-MR: x̄ + 3 · MR̄/1.128, MR chart 3.267 · MR̄. X̄-R: x̄̄ + A₂ · R̄, R chart D₄ · R̄. X̄-S: x̄̄ + A₃ · S̄, S chart B₄ · S̄. The constants depend on n. The UCL / LCL tile shows the UCL of the first subchart with the LCL below.",
-          "lcl": "LCL, lower control limit of the subchart. I-MR: x̄ − 3 · MR̄/1.128, MR chart 0. X̄-R: x̄̄ − A₂ · R̄, R chart D₃ · R̄. X̄-S: x̄̄ − A₃ · S̄, S chart B₃ · S̄. The constants depend on n; D₃ and B₃ are 0 for small n.",
-          "sigma": "σ̂, the estimated spread of the points of this subchart, one third of the distance from the center line to the UCL. Individuals chart MR̄/1.128; X̄ chart R̄/(d₂ · √n) or S̄/(c₄ · √n); dispersion chart (UCL − CL)/3. The zones of the Nelson Rules (1σ, 2σ, 3σ) refer to it."
+          "cl": "CL (Center Line) of the subchart: the mean of the baseline points without excluded points, i.e. x̄ on the individuals chart, x̄̄ on the X̄ chart and MR̄, R̄ or S̄ on the dispersion chart. When frozen limits apply (Phase II), CL, UCL, LCL and σ̂ are the values computed at freezing, not those of the current baseline. The CL tile shows the center line of the first subchart, its sub-line σ̂; with several stages the values of the last stage.",
+          "ucl": "UCL, upper control limit of the subchart. I-MR: x̄ + 3 · MR̄/1.128, MR chart 3.267 · MR̄. X̄-R: x̄̄ + A₂ · R̄, R chart D₄ · R̄. X̄-S: x̄̄ + A₃ · S̄, S chart B₄ · S̄. The constants depend on n. With frozen limits the value computed at freezing applies. The UCL / LCL tile shows the UCL of the first subchart with the LCL below.",
+          "lcl": "LCL, lower control limit of the subchart. I-MR: x̄ − 3 · MR̄/1.128, MR chart 0. X̄-R: x̄̄ − A₂ · R̄, R chart D₃ · R̄. X̄-S: x̄̄ − A₃ · S̄, S chart B₃ · S̄. The constants depend on n; D₃ and B₃ are 0 for small n. With frozen limits the value computed at freezing applies.",
+          "sigma": "σ̂, the estimated spread of the points of this subchart, one third of the distance from the center line to the UCL. Individuals chart MR̄/1.128; X̄ chart R̄/(d₂ · √n) or S̄/(c₄ · √n); dispersion chart (UCL − CL)/3. The zones of the Nelson Rules (1σ, 2σ, 3σ) refer to it. With frozen limits the value computed at freezing applies."
         },
         "Capability": {
-          "cp": "Cp = (USL − LSL)/(6σ): how often the spread fits into the tolerance, regardless of location. Only with both specification limits; the Cpk tile shows Cp in its sub line.",
+          "cp": "Cp = (USL − LSL)/(6σ): how often the spread fits into the tolerance, regardless of location. Only with both specification limits; the Cpk tile shows Cp in its sub-line.",
           "cpu": "Cpu = (USL − x̄)/(3σ): distance of the mean to the upper specification limit in units of three σ. Only with a USL.",
           "cpl": "Cpl = (x̄ − LSL)/(3σ): distance of the mean to the lower specification limit in units of three σ. Only with an LSL.",
-          "cpk": "Cpk, the smaller of Cpu and Cpl, with only one limit its value. σ is MR̄/1.128 for I-MR and σ of the means · √n for X̄ charts; x̄ is the center line of the first subchart, with stages of the last stage. The tile is green (capable) from 1.33, yellow (conditionally capable) from 1.0, red below."
+          "cpk": "Cpk, the smaller of Cpu and Cpl, with only one limit its value. σ is MR̄/1.128 for I-MR and σ of the means · √n for X̄ charts; x̄ is the center line of the first subchart, with stages of the last stage; with frozen limits x̄ and σ come from the frozen values. The tile is green (capable) from 1.33, yellow (conditionally capable) from 1.0, red below."
         },
         "Violation": {
           "index": "The violating point of the first subchart, counted from 0 over the plotted points: for I-MR the usable numbers without empty cells, for X̄ charts the subgroups.",
@@ -8633,15 +8633,15 @@
         },
         "Result": {
           "n": "Number of usable numbers in the series; empty and non-numeric cells are already filtered out. A result exists from 3 numbers.",
-          "median": "Median of the series: the middle value of the numbers sorted ascending, for an even count the mean of the two middle ones. It is the center line of the run chart and splits the points into above and below. The tile subline shows n.",
-          "runsAboutMedian": "Runs about the median: number of uninterrupted sequences of points on the same side of the median; values exactly on the median count as “below”. For a random series 2·m₁·m₂/N + 1 runs are expected (m₁ points above, m₂ below, N all). Too few runs point to clustering, too many to mixtures. The tile subline also shows the runs up and down.",
-          "runsUpDown": "Runs up and down: number of uninterrupted sequences of rising or falling steps between consecutive points; ties are skipped. For a random series of n points (2n − 1)/3 runs are expected with variance (16n − 29)/90. Too few runs point to trends, too many to oscillation.",
-          "flagged": "Number of tests, 0 to 4, whose p-value is below α. 0 means: no sign of a non-random cause. From 1 there is a sign of clustering, mixtures, trends or oscillation. The tile subline shows α.",
+          "median": "Median of the series: the middle value of the numbers sorted ascending, for an even count the mean of the two middle ones. It is the center line of the run chart and splits the points into above and below. The tile sub-line shows n.",
+          "runsAboutMedian": "Runs about the median: number of uninterrupted sequences of points on the same side of the median; values exactly on the median count as “below”. For a random series 2·m₁·m₂/N + 1 runs are expected (m₁ points above, m₂ below, N all). Too few runs point to clustering, too many to mixtures. The tile sub-line also shows the runs up and down.",
+          "runsUpDown": "Runs up and down: number of uninterrupted sequences of rising or falling steps between consecutive points; ties are skipped. With n as the number of steps without a tie plus 1, a random series is expected to have (2n − 1)/3 runs with variance (16n − 29)/90. Too few runs point to trends, too many to oscillation.",
+          "flagged": "Number of tests, 0 to 4, whose p-value is below α. 0 means: no sign of a non-random cause. From 1 there is a sign of clustering, mixtures, trends or oscillation. The tile sub-line shows α.",
           "tests": "The four runs tests in fixed order: clustering, mixtures, trends, oscillation. Each entry has the test, its p-value, the number of counted runs and the verdict."
         },
         "RunTest": {
           "id": "Which test: clustering (too few runs about the median), mixtures (too many runs about the median), trends (too few runs up and down), oscillation (too many runs up and down).",
-          "p": "p-value of the test from the normal approximation of the runs: z = (runs − expected)/√variance. Clustering and trends: Φ(z); mixtures and oscillation: 1 − Φ(z). With spread 0, p = 1. Empty when no p-value exists.",
+          "p": "p-value of the test from the normal approximation of the runs: z = (runs − expected)/√variance. Clustering and trends: Φ(z); mixtures and oscillation: 1 − Φ(z). With spread 0, p = 1.",
           "observed": "Number of counted runs the test is based on: for clustering and mixtures the runs about the median, for trends and oscillation the runs up and down.",
           "flagged": "True when the p-value is below α; the test is then flagged."
         }
@@ -8692,7 +8692,7 @@
           "statistic": "The plotted quantity: proportion (p chart), count (np and c chart) or rate (defects per unit, u chart).",
           "valid": "The number of usable points. For np and c these are the numbers in the defects column (empty and non-numeric cells are dropped); for p and u the rows where the defect count and the sample size are numbers and the size is greater than 0. The Violations tile shows it as the total.",
           "cl": "The center line, computed from the baseline: for p the fraction p̄ = sum of defects / sum of sizes, for np n · p̄, for c the mean c̄ of the counts, for u ū = sum of defects / sum of sizes. The CL (Center Line) tile shows it with four decimals.",
-          "ucl": "The upper control limit UCL = center line + 3σ, with σ = √(p̄ · (1 − p̄) / n) for p, √(n · p̄ · (1 − p̄)) for np, √c̄ for c and √(ū / n) for u. It applies to all points alike and is a number only then. If the limits vary per point (p and u with unequal sample sizes) it is empty, as are LCL and σ; the limits per point are in the bulk field points. The UCL / LCL tile then shows, under the label UCL̄ / LCL̄, the mean of the per-point limits, not this empty value.",
+          "ucl": "The upper control limit UCL = center line + 3σ, with σ = √(p̄ · (1 − p̄) / n) for p, √(n · p̄ · (1 − p̄)) for np, √c̄ for c and √(ū / n) for u. It applies to all points alike and is a number only then. If the limits vary per point (p and u with unequal sample sizes) it is empty, as are LCL and σ; the limits per point are given with the individual points. The UCL / LCL tile then shows, under the label UCL̄ / LCL̄, the mean of the per-point limits, not this empty value.",
           "lcl": "The lower control limit LCL = center line − 3σ, floored at 0 because counted values are not negative; σ as for the upper limit. Empty when the limits vary per point.",
           "sigma": "The spread σ used for the limits and for rules 5 and 6 (formula per chart type under the upper limit). Empty when the limits vary per point.",
           "variableLimits": "True when the limits differ per point: this happens for p and u as soon as the sample sizes are not all equal. UCL, LCL and σ are then empty, and rules 5 and 6 are not checked.",
@@ -8824,10 +8824,10 @@
         },
         "Result": {
           "chartType": "The computed chart type, g or t, as set in the selection.",
-          "n": "Number of usable values in the series; the t chart counts only values greater than 0. A result exists from 2 values. The subline of the signals tile names this number.",
-          "cl": "Center line (CL) on the original scale. g chart: mean ḡ of the series. t chart: mean ȳ of the transformed values y = t^(1/3.6), transformed back (ȳ^3.6). The tile subline shows σ̂, for the t chart on the transformed scale.",
-          "ucl": "Upper control limit (UCL) on the original scale. g chart: ḡ + 3σ with σ = √(ḡ(ḡ + 1)). t chart: ȳ + 3σ with σ = MR̄/1.128 on the transformed scale, transformed back (y^3.6). The tile subline shows the lower control limit (LCL).",
-          "lcl": "Lower control limit (LCL) on the original scale. g chart: max(0, ḡ − 3σ). t chart: ȳ − 3σ, capped at 0 and transformed back (y^3.6). The tile shows it as the subline next to UCL.",
+          "n": "Number of usable values in the series; the t chart counts only values greater than 0. A result exists from 2 values. The sub-line of the signals tile names this number.",
+          "cl": "Center line (CL) on the original scale. g chart: mean ḡ of the series. t chart: mean ȳ of the transformed values y = t^(1/3.6), transformed back (ȳ^3.6). The tile sub-line shows σ̂, for the t chart on the transformed scale.",
+          "ucl": "Upper control limit (UCL) on the original scale. g chart: ḡ + 3σ with σ = √(ḡ(ḡ + 1)). t chart: ȳ + 3σ with σ = MR̄/1.128 on the transformed scale, transformed back (y^3.6). The tile sub-line shows the lower control limit (LCL).",
+          "lcl": "Lower control limit (LCL) on the original scale. g chart: max(0, ḡ − 3σ). t chart: ȳ − 3σ, capped at 0 and transformed back (y^3.6). The tile shows it as the sub-line next to UCL.",
           "sigma": "Spread σ of the chart. g chart: √(ḡ(ḡ + 1)). t chart: MR̄/1.128, the mean moving range of the transformed values divided by 1.128, so on the transformed scale and not on the scale of center line and limits. The tile shows it as σ̂ next to the center line of the original scale.",
           "transformed": "True for the t chart: it is drawn on the transformed scale y = t^(1/3.6). False for the g chart.",
           "plotted": "Center line, limits and σ on the plotted scale. For the g chart these are the same values as above, for the t chart the transformed ones.",
@@ -8917,7 +8917,7 @@
       },
       "types": {
         "Params": {
-          "alpha": "The false-alarm rate α of the T² limit: the probability that a point lies above the upper limit UCL while the process is stable. UCL = p(m + 1)(m − 1)/(m² − m·p) · F(1 − α; p, m − p) with the F quantile, p variables and m baseline rows. Greater than 0 and less than 1; the input field allows 0.0001 to 0.5. Preset 0.0027 (3σ equivalent). A smaller α moves UCL further up. After a change the analysis is recomputed.",
+          "alpha": "The false-alarm rate α of the T² limit: the probability that a new point after the baseline lies above the upper limit UCL while the process is stable and the data are normally distributed. For the baseline rows themselves, which are checked as well, this rate does not hold exactly. UCL = p(m + 1)(m − 1)/(m² − m·p) · F(1 − α; p, m − p) with the F quantile, p variables and m baseline rows. Greater than 0 and less than 1; the input field allows 0.0001 to 0.5. Preset 0.0027 (3σ equivalent). A smaller α moves UCL further up. After a change the analysis is recomputed.",
           "baselineCount": "How many of the first complete rows form the baseline (Phase I) from which mean and covariance are estimated. Empty (shown as “all”) means all rows. The value takes effect only if it is greater than the number of variables p; if it is smaller than or equal to p, all rows are silently used. A number larger than the number of rows acts like all. Whole numbers from 1 are allowed, the input field only allows 2 and up."
         },
         "Result": {
@@ -8959,8 +8959,8 @@
           "n": "Number of usable pairs of measurement and part; rows with an empty or non-numeric measurement or an empty part are already removed. A result exists from 4 pairs on. The numbers of the signal points count these pairs from 0, not the worksheet rows.",
           "skipped": "Number of measurements that could not be standardised because their part has no spread (σ̂ = 0, also when the part has a single value). They are drawn at z = 0; the interface warns about it.",
           "groups": "The figures per part, in the order in which the parts first occur; this is the table below the charts. The “Parts” tile shows their count, its sub-line the number of measurements.",
-          "z": "The limits of the Z chart: centre line 0, upper limit +3, lower −3. Each value is standardised within its part to z = (x − x̄)/σ̂, with the mean x̄ and spread σ̂ of the part; for a stable process z is approximately standard normal.",
-          "mr": "The limits of the MR chart of the z values: centre line MR̄ (mean of the absolute differences |zᵢ − zᵢ₋₁| of consecutive values), upper limit 3.267 · MR̄, lower 0. The “MR̄ (z)” tile shows the centre line, its sub-line the upper limit (UCL_MR).",
+          "z": "The limits of the Z chart: center line 0, upper limit +3, lower −3. Each value is standardised within its part to z = (x − x̄)/σ̂, with the mean x̄ and spread σ̂ of the part; for a stable process z is approximately standard normal.",
+          "mr": "The limits of the MR chart of the z values: center line MR̄ (mean of the absolute differences |zᵢ − zᵢ₋₁| of consecutive values), upper limit 3.267 · MR̄, lower 0. The “MR̄ (z)” tile shows the center line, its sub-line the upper limit (UCL_MR).",
           "signalsZ": "Numbers (counted from 0 among the usable pairs) of the points whose z value lies above +3 or below −3. The “Signals” tile counts these together with the signals of the MR chart.",
           "signalsMR": "Numbers (counted from 0 among the usable pairs, from the second point on) of the points whose moving range of the z values lies above the upper limit of the MR chart (UCL_MR)."
         },
@@ -8968,11 +8968,11 @@
           "group": "The part or group as it appears in the part/group column, as text.",
           "count": "Number of measurements of this part (n).",
           "mean": "Mean x̄ of this part's measurements; it is the reference of the standardisation z = (x − x̄)/σ̂.",
-          "sigma": "Estimated spread σ̂ within the part: MR̄ of the part / 1.128 (d₂ for pairs). If the part has only one value it is 0 and its values are drawn at z = 0.",
+          "sigma": "Estimated spread σ̂ within the part: MR̄ of the part / 1.128 (d₂ for pairs). If the part has only one value or all its values are equal it is 0 and its values are drawn at z = 0.",
           "mrBar": "Mean MR̄ of the absolute differences |xᵢ − xᵢ₋₁| of consecutive measurements within this part, in measurement order; σ̂ is derived from it."
         },
         "Limits": {
-          "cl": "Centre line of the chart.",
+          "cl": "Center line of the chart.",
           "ucl": "Upper control limit (UCL) of the chart.",
           "lcl": "Lower control limit (LCL) of the chart."
         }
@@ -9084,19 +9084,19 @@
           "n": "Number of usable numbers in the series; empty and non-numeric cells are already removed. A result exists from 5 numbers on, all of which must be greater than 0. The numbers of the signal points count these numbers from 0, not the worksheet rows.",
           "lambda": "The λ used for the Box-Cox transformation y = (x^λ − 1)/λ; for |λ| < 10⁻⁸ it is the log transformation y = ln x. In “auto” mode it is the estimated λ (smallest Anderson-Darling statistic on the grid from −3 to 3, step 0.05, rounded to 0.01), in “manual” mode the entered one. The tile shows it with three decimals and the suffix (auto) or (manual).",
           "lambdaAuto": "Whether λ was estimated from the data (true) or set by hand (false). The tile shows it as the suffix (auto) or (manual) after λ.",
-          "i": "The individuals chart on the transformed scale y: centre line, upper and lower control limit and spread σ̂. These are the values of the “transformed (y)” column in the table.",
-          "iOriginal": "The same limits of the individuals chart, converted back to the original scale: x = (λ·y + 1)^(1/λ), for the log transformation x = e^y. They are not symmetric around the centre line. A value is missing (empty, “–” in the table) when λ·y + 1 ≤ 0, so the back-transformation is undefined there; typically that hits the lower limit for λ > 0.",
-          "mr": "The moving range chart of the transformed values: centre line MR̄ (mean of the absolute differences |yᵢ − yᵢ₋₁| of consecutive values), upper control limit 3.267 · MR̄, lower 0. It exists on the transformed scale only.",
+          "i": "The individuals chart on the transformed scale y: center line, upper and lower control limit and spread σ̂. These are the values of the “transformed (y)” column in the table.",
+          "iOriginal": "The same limits of the individuals chart, converted back to the original scale: x = (λ·y + 1)^(1/λ), for the log transformation x = e^y. They are not symmetric around the center line. A value is missing (empty, “–” in the table) when λ·y + 1 ≤ 0, so the back-transformation is undefined there; typically that hits the lower limit for λ > 0.",
+          "mr": "The moving range chart of the transformed values: center line MR̄ (mean of the absolute differences |yᵢ − yᵢ₋₁| of consecutive values), upper control limit 3.267 · MR̄, lower 0. It exists on the transformed scale only.",
           "signals": "Numbers (counted from 0 among the usable numbers) of the points whose transformed value lies above the UCL or below the LCL of the individuals chart. The “Signals” tile shows their count."
         },
         "IndividualLimits": {
-          "cl": "Centre line of the individuals chart on the transformed scale: the mean ȳ of all transformed values (tile CL (y)). The tile's sub-line shows the spread σ̂.",
-          "ucl": "Upper control limit (UCL) of the individuals chart on the transformed scale: centre line + 3 · σ̂.",
-          "lcl": "Lower control limit (LCL) of the individuals chart on the transformed scale: centre line − 3 · σ̂.",
+          "cl": "Center line of the individuals chart on the transformed scale: the mean ȳ of all transformed values (tile CL (y)). The tile's sub-line shows the spread σ̂.",
+          "ucl": "Upper control limit (UCL) of the individuals chart on the transformed scale: center line + 3 · σ̂.",
+          "lcl": "Lower control limit (LCL) of the individuals chart on the transformed scale: center line − 3 · σ̂.",
           "sigma": "Estimated spread σ̂ of the transformed values: MR̄/1.128, with the mean MR̄ of the moving ranges and the factor d₂ = 1.128 for pairs. The sub-line of the CL (y) tile shows it."
         },
         "Limits": {
-          "cl": "Centre line of the chart.",
+          "cl": "Center line of the chart.",
           "ucl": "Upper control limit (UCL) of the chart.",
           "lcl": "Lower control limit (LCL) of the chart."
         }

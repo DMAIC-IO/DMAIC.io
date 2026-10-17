@@ -8401,7 +8401,7 @@
         "Params": {
           "chartTypeId": "Regelkartentyp: I-MR für Einzelwerte (Einzelwertkarte und Karte der gleitenden Spannweiten), X̄-R für Untergruppen (Mittelwert- und Spannweitenkarte) oder X̄-S für Untergruppen (Mittelwert- und Standardabweichungskarte). Ein Wechsel hält die Stichprobengröße im Bereich des neuen Typs; I-MR rechnet immer mit n = 1.",
           "subgroupSize": "Stichprobengröße (n): Zahl der aufeinanderfolgenden Werte, die eine Untergruppe bilden, ganzzahlig von 2 bis 10 bei X̄-R und von 2 bis 25 bei X̄-S. Bei I-MR gibt es die Option nicht. Übrige Werte am Ende, die keine volle Untergruppe ergeben, bleiben unberücksichtigt.",
-          "baselineCount": "Baseline-Anzahl: aus wie vielen Einzelwerten vom Anfang der Reihe die Grenzen gerechnet werden, ganzzahlig ab 1; leer heißt alle Werte. Bei X̄-Karten wird auf ganze Untergruppen aufgerundet. Ausgeschlossene Punkte zählen nicht zur Baseline. Mit Stages wird die Angabe nicht verwendet, dann rechnet jede Stage aus allen ihren Werten. Das Eingabefeld beginnt bei 2, die Prüfung nimmt jede ganze Zahl ab 1.",
+          "baselineCount": "Baseline-Anzahl: aus wie vielen Einzelwerten vom Anfang der Reihe die Grenzen gerechnet werden, ganzzahlig ab 1; leer heißt alle Werte. Bei X̄-Karten wird auf ganze Untergruppen aufgerundet. Ausgeschlossene Punkte darin gehen nicht in die Grenzen ein, die Baseline wird dadurch nicht länger. Gelten eingefrorene Grenzen, wirkt die Angabe erst nach dem Aufheben. Mit Stages wird die Angabe nicht verwendet, dann rechnet jede Stage aus allen ihren Werten. Das Eingabefeld beginnt bei 2, die Prüfung nimmt jede ganze Zahl ab 1.",
           "stagesText": "Stage-Grenzen: die Nummer des letzten Einzelwerts jeder Stage, getrennt durch Komma, Semikolon oder Leerzeichen, etwa 12, 25. Es zählen nur ganze Zahlen größer als 0 und kleiner als die Zahl der Werte. Jede Stage bekommt eigene Grenzen und wird an ihnen gemessen. Liegt eine Grenze mitten in einer Untergruppe, zählt die Untergruppe zur vorigen Stage und es erscheint ein Hinweis. Leer heißt eine einzige Baseline; mit Stages lassen sich keine Grenzen für Phase II einfrieren.",
           "usl": "OSG (USL): obere Spezifikationsgrenze der Einzelwerte, leer für keine. Sie wird als Linie in der Karte gezeigt und geht in Cp, Cpu und Cpk ein.",
           "lsl": "USG (LSL): untere Spezifikationsgrenze der Einzelwerte, leer für keine. Sie wird als Linie in der Karte gezeigt und geht in Cp, Cpl und Cpk ein.",
@@ -8415,21 +8415,21 @@
           "stages": "Die verwendeten Stage-Grenzen als Nummern des letzten Einzelwerts jeder Stage, aufsteigend und ohne Doppelte; Grenzen außerhalb der Reihe sind weggelassen. Leer ohne Stages.",
           "frozen": "Wahr, wenn eingefrorene Grenzen aus Phase II gelten: dafür müssen Kartentyp, Stichprobengröße und Spalte zum Zeitpunkt des Einfrierens passen, und es dürfen keine Stages gesetzt sein. Dann werden die Punkte an diesen Grenzen gemessen statt an neu gerechneten.",
           "subcharts": "Die Grenzen je Teilkarte des Kartentyps: i und mr bei I-MR, xbar und r bei X̄-R, xbar und s bei X̄-S. Mit Stages stehen dort die Grenzen der letzten Stage, also des Prozesses, wie er jetzt läuft.",
-          "capability": "Die Prozessfähigkeit gegen OSG und USG, gerechnet aus dem Mittelwert und σ der Einzelwerte. Leer, wenn keine Spezifikationsgrenze gesetzt ist oder σ = 0. Welche Kennzahlen es gibt, hängt davon ab, welche Grenzen gesetzt sind.",
+          "capability": "Die Prozessfähigkeit gegen OSG und USG, gerechnet aus der Mittellinie CL und σ̂ der ersten Teilkarte, bei X̄-Karten auf die Einzelwerte umgerechnet; mit Stages aus der letzten Stage, mit eingefrorenen Grenzen aus den eingefrorenen Werten. Leer, wenn keine Spezifikationsgrenze gesetzt ist oder σ = 0. Welche Kennzahlen es gibt, hängt davon ab, welche Grenzen gesetzt sind.",
           "violations": "Die Regelverletzungen der ersten Teilkarte (Einzelwert- bzw. X̄-Karte) nach den angehakten Nelson Rules, je Punkt und Regel einmal, nach Punkt sortiert. Die Prüfung der zweiten Teilkarte erscheint nur im Abzeichen der Karte.",
           "signals": "Die Punkte der ersten Teilkarte mit mindestens einer Regelverletzung, jeder nur einmal, gezählt ab 0 über die gezeichneten Punkte (bei X̄-Karten die Untergruppen). Die Kachel Verletzungen zählt diese Punkte."
         },
         "SubchartLimits": {
-          "cl": "CL (Mittellinie) der Teilkarte: Mittelwert der Baseline-Punkte, also x̄ bei der Einzelwertkarte, x̄̄ bei der X̄-Karte und MR̄, R̄ oder S̄ bei der Streuungskarte. Die Kachel CL zeigt die Mittellinie der ersten Teilkarte, die Unterzeile σ̂; mit mehreren Stages die Werte der letzten Stage.",
-          "ucl": "UCL, obere Eingriffsgrenze der Teilkarte. I-MR: x̄ + 3 · MR̄/1,128, MR-Karte 3,267 · MR̄. X̄-R: x̄̄ + A₂ · R̄, R-Karte D₄ · R̄. X̄-S: x̄̄ + A₃ · S̄, S-Karte B₄ · S̄. Die Konstanten hängen von n ab. Die Kachel UCL / LCL zeigt UCL der ersten Teilkarte und darunter LCL.",
-          "lcl": "LCL, untere Eingriffsgrenze der Teilkarte. I-MR: x̄ − 3 · MR̄/1,128, MR-Karte 0. X̄-R: x̄̄ − A₂ · R̄, R-Karte D₃ · R̄. X̄-S: x̄̄ − A₃ · S̄, S-Karte B₃ · S̄. Die Konstanten hängen von n ab; D₃ und B₃ sind für kleine n gleich 0.",
-          "sigma": "σ̂, die geschätzte Streuung der Punkte dieser Teilkarte, ein Drittel des Abstands von der Mittellinie zur UCL. Einzelwertkarte MR̄/1,128; X̄-Karte R̄/(d₂ · √n) bzw. S̄/(c₄ · √n); Streuungskarte (UCL − CL)/3. Die Zonen der Nelson Rules (1σ, 2σ, 3σ) beziehen sich darauf."
+          "cl": "CL (Mittellinie) der Teilkarte: Mittelwert der Baseline-Punkte ohne ausgeschlossene Punkte, also x̄ bei der Einzelwertkarte, x̄̄ bei der X̄-Karte und MR̄, R̄ oder S̄ bei der Streuungskarte. Gelten eingefrorene Grenzen (Phase II), sind CL, UCL, LCL und σ̂ die beim Einfrieren gerechneten Werte, nicht die der aktuellen Baseline. Die Kachel CL zeigt die Mittellinie der ersten Teilkarte, die Unterzeile σ̂; mit mehreren Stages die Werte der letzten Stage.",
+          "ucl": "UCL, obere Eingriffsgrenze der Teilkarte. I-MR: x̄ + 3 · MR̄/1,128, MR-Karte 3,267 · MR̄. X̄-R: x̄̄ + A₂ · R̄, R-Karte D₄ · R̄. X̄-S: x̄̄ + A₃ · S̄, S-Karte B₄ · S̄. Die Konstanten hängen von n ab. Mit eingefrorenen Grenzen gilt der beim Einfrieren gerechnete Wert. Die Kachel UCL / LCL zeigt UCL der ersten Teilkarte und darunter LCL.",
+          "lcl": "LCL, untere Eingriffsgrenze der Teilkarte. I-MR: x̄ − 3 · MR̄/1,128, MR-Karte 0. X̄-R: x̄̄ − A₂ · R̄, R-Karte D₃ · R̄. X̄-S: x̄̄ − A₃ · S̄, S-Karte B₃ · S̄. Die Konstanten hängen von n ab; D₃ und B₃ sind für kleine n gleich 0. Mit eingefrorenen Grenzen gilt der beim Einfrieren gerechnete Wert.",
+          "sigma": "σ̂, die geschätzte Streuung der Punkte dieser Teilkarte, ein Drittel des Abstands von der Mittellinie zur UCL. Einzelwertkarte MR̄/1,128; X̄-Karte R̄/(d₂ · √n) bzw. S̄/(c₄ · √n); Streuungskarte (UCL − CL)/3. Die Zonen der Nelson Rules (1σ, 2σ, 3σ) beziehen sich darauf. Mit eingefrorenen Grenzen gilt der beim Einfrieren gerechnete Wert."
         },
         "Capability": {
           "cp": "Cp = (OSG − USG)/(6σ): wie oft die Streuung in die Toleranz passt, ohne Rücksicht auf die Lage. Nur mit beiden Spezifikationsgrenzen; die Kachel Cpk zeigt Cp in der Unterzeile.",
           "cpu": "Cpu = (OSG − x̄)/(3σ): Abstand des Mittelwerts zur oberen Spezifikationsgrenze in drei σ. Nur mit OSG.",
           "cpl": "Cpl = (x̄ − USG)/(3σ): Abstand des Mittelwerts zur unteren Spezifikationsgrenze in drei σ. Nur mit USG.",
-          "cpk": "Cpk, der kleinere von Cpu und Cpl, mit nur einer Grenze deren Wert. σ ist bei I-MR MR̄/1,128, bei X̄-Karten σ der Mittelwerte · √n; x̄ ist die Mittellinie der ersten Teilkarte, mit Stages der letzten Stage. Die Kachel ist ab 1,33 grün (fähig), ab 1,0 gelb (bedingt fähig), darunter rot."
+          "cpk": "Cpk, der kleinere von Cpu und Cpl, mit nur einer Grenze deren Wert. σ ist bei I-MR MR̄/1,128, bei X̄-Karten σ der Mittelwerte · √n; x̄ ist die Mittellinie der ersten Teilkarte, mit Stages der letzten Stage; mit eingefrorenen Grenzen stammen x̄ und σ aus den eingefrorenen Werten. Die Kachel ist ab 1,33 grün (fähig), ab 1,0 gelb (bedingt fähig), darunter rot."
         },
         "Violation": {
           "index": "Der verletzende Punkt der ersten Teilkarte, gezählt ab 0 über die gezeichneten Punkte: bei I-MR die verwertbaren Zahlen ohne leere Zellen, bei X̄-Karten die Untergruppen.",
@@ -8480,7 +8480,7 @@
       "whenToUse": "Eine Reihe über die Zeit auf nicht zufällige Muster prüfen — Häufung, Mischung, Trend, Oszillation —, bevor Eingriffsgrenzen gebildet werden.",
       "actions": {
         "read": {
-          "help": "Die gewählte Spalte, α, den Median, die Anzahl der Läufe, die vier p-Werte der Tests und die gezeichneten Werte lesen."
+          "help": "Die gewählte Spalte, α, den Median, die Anzahl der Runs, die vier p-Werte der Tests und die gezeichneten Werte lesen."
         },
         "setColumn": {
           "help": "Die Spalte einer Datensammlung, die diese Rolle liefert; nach einer Änderung wird neu gerechnet.",
@@ -8531,13 +8531,13 @@
           "n": "Anzahl der verwertbaren Zahlen der Reihe; leere und nicht numerische Zellen sind schon aussortiert. Ab 3 Zahlen gibt es ein Ergebnis.",
           "median": "Median der Reihe: der mittlere Wert der aufsteigend sortierten Zahlen, bei gerader Anzahl der Mittelwert der beiden mittleren. Er ist die Mittellinie des Verlaufsdiagramms und teilt die Punkte in oberhalb und unterhalb. Die Unterzeile der Kachel zeigt n.",
           "runsAboutMedian": "Runs um den Median: Anzahl der ununterbrochenen Folgen von Punkten auf derselben Seite des Medians; Werte genau auf dem Median zählen zu „unter“. Bei einer zufälligen Reihe erwartet man 2·m₁·m₂/N + 1 Runs (m₁ Punkte darüber, m₂ darunter, N alle). Zu wenige Runs deuten auf Clustering, zu viele auf Mischungen. Die Unterzeile der Kachel („Runs ↑/↓“) zeigt zusätzlich die Runs auf und ab.",
-          "runsUpDown": "Runs ↑/↓: Anzahl der ununterbrochenen Folgen steigender oder fallender Schritte zwischen aufeinanderfolgenden Punkten; Gleichstände werden übersprungen. Bei einer zufälligen Reihe aus n Punkten erwartet man (2n − 1)/3 Runs mit der Varianz (16n − 29)/90. Zu wenige Runs deuten auf Trends, zu viele auf Oszillation.",
+          "runsUpDown": "Runs ↑/↓: Anzahl der ununterbrochenen Folgen steigender oder fallender Schritte zwischen aufeinanderfolgenden Punkten; Gleichstände werden übersprungen. Mit n als Zahl der Schritte ohne Gleichstand plus 1 erwartet man bei einer zufälligen Reihe (2n − 1)/3 Runs mit der Varianz (16n − 29)/90. Zu wenige Runs deuten auf Trends, zu viele auf Oszillation.",
           "flagged": "Anzahl der Tests von 0 bis 4, deren p-Wert kleiner als α ist. 0 heißt: kein Hinweis auf eine nicht zufällige Ursache. Ab 1 gibt es einen Hinweis auf Clustering, Mischungen, Trends oder Oszillation. Die Unterzeile der Kachel zeigt α.",
           "tests": "Die vier Lauftests in fester Reihenfolge: Clustering, Mischungen, Trends, Oszillation. Je Test stehen Test, p-Wert, Zahl der gezählten Runs und Urteil."
         },
         "RunTest": {
           "id": "Welcher Test: clustering (zu wenige Runs um den Median), mixtures (zu viele Runs um den Median), trends (zu wenige Runs ↑/↓), oscillation (zu viele Runs ↑/↓).",
-          "p": "p-Wert des Tests aus der Normalnäherung der Runs: z = (Runs − Erwartung)/√Varianz. Clustering und Trends: Φ(z); Mischungen und Oszillation: 1 − Φ(z). Bei Streuung 0 ist p = 1. Leer, wenn kein p-Wert vorliegt.",
+          "p": "p-Wert des Tests aus der Normalnäherung der Runs: z = (Runs − Erwartung)/√Varianz. Clustering und Trends: Φ(z); Mischungen und Oszillation: 1 − Φ(z). Bei Streuung 0 ist p = 1.",
           "observed": "Zahl der gezählten Runs, auf denen der Test beruht: bei Clustering und Mischungen die Runs um den Median, bei Trends und Oszillation die Runs ↑/↓.",
           "flagged": "Wahr, wenn der p-Wert kleiner als α ist; der Test schlägt dann an."
         }
@@ -8588,7 +8588,7 @@
           "statistic": "Die gezeichnete Größe: proportion (Anteil, p-Karte), count (Anzahl, np- und c-Karte) oder rate (Fehler je Einheit, u-Karte).",
           "valid": "Die Zahl der verwerteten Punkte. Bei np und c sind es die Zahlen der Fehlerspalte (leere und nicht numerische Zellen sind aussortiert), bei p und u die Zeilen, in denen Fehlerzahl und Stichprobenumfang Zahlen sind und der Umfang größer als 0 ist. Die Kachel Verletzungen nennt sie als Gesamtzahl.",
           "cl": "Die Mittellinie, aus der Baseline gerechnet: bei p der Anteil p̄ = Summe der Fehler / Summe der Umfänge, bei np n · p̄, bei c der Mittelwert c̄ der Fehlerzahlen, bei u ū = Summe der Fehler / Summe der Umfänge. Die Kachel CL (Mittellinie) zeigt sie mit vier Nachkommastellen.",
-          "ucl": "Die obere Eingriffsgrenze UCL = Mittellinie + 3σ, mit σ = √(p̄ · (1 − p̄) / n) bei p, √(n · p̄ · (1 − p̄)) bei np, √c̄ bei c und √(ū / n) bei u. Sie gilt für alle Punkte gleich und ist nur dann eine Zahl. Wechseln die Grenzen je Punkt (p und u mit ungleichen Stichprobenumfängen), ist sie leer, ebenso LCL und σ; die Grenzen je Punkt stehen im Massenfeld points. Die Kachel UCL / LCL zeigt dann unter der Beschriftung UCL̄ / LCL̄ das Mittel der Grenzen je Punkt, nicht diesen leeren Wert.",
+          "ucl": "Die obere Eingriffsgrenze UCL = Mittellinie + 3σ, mit σ = √(p̄ · (1 − p̄) / n) bei p, √(n · p̄ · (1 − p̄)) bei np, √c̄ bei c und √(ū / n) bei u. Sie gilt für alle Punkte gleich und ist nur dann eine Zahl. Wechseln die Grenzen je Punkt (p und u mit ungleichen Stichprobenumfängen), ist sie leer, ebenso LCL und σ; die Grenzen je Punkt stehen bei den einzelnen Punkten. Die Kachel UCL / LCL zeigt dann unter der Beschriftung UCL̄ / LCL̄ das Mittel der Grenzen je Punkt, nicht diesen leeren Wert.",
           "lcl": "Die untere Eingriffsgrenze LCL = Mittellinie − 3σ, nach unten bei 0 begrenzt, weil gezählte Werte nicht negativ sind; σ wie bei der oberen Grenze. Leer, wenn die Grenzen je Punkt wechseln.",
           "sigma": "Die Streuung σ, die für die Grenzen und die Regeln 5 und 6 verwendet wird (Formel je Kartentyp bei der oberen Grenze). Leer, wenn die Grenzen je Punkt wechseln.",
           "variableLimits": "Wahr, wenn die Grenzen je Punkt verschieden sind: das gibt es bei p und u, sobald die Stichprobenumfänge nicht alle gleich sind. Dann sind UCL, LCL und σ leer, und die Regeln 5 und 6 werden nicht geprüft.",
@@ -8738,7 +8738,7 @@
         "Result": {
           "chartType": "Das Verfahren, mit dem gerechnet wurde: ewma oder cusum. Davon hängt ab, welche weiteren Kennzahlen es gibt.",
           "n": "Anzahl der verwerteten Zahlen der Reihe; leere und nicht numerische Zellen sind schon aussortiert. Ein Ergebnis gibt es ab 3 Zahlen. Die Nummern der Signalpunkte zählen diese Zahlen ab 0, nicht die Zeilen des Arbeitsblatts. Die Unterzeile der Kachel Signale zeigt n als „von n Datenpunkten“.",
-          "target": "Das verwendete Ziel μ₀: der vorgegebene Sollwert, sonst das Mittel der Baseline (der ersten Baseline-Anzahl Werte). Kachel „μ₀ (Sollwert)“; ihre Unterzeile zeigt σ̂, die verwendete Streuung der Einzelwerte (Ergebnis σ), jeweils auf vier Nachkommastellen. Leer, wenn der Wert nicht endlich ist.",
+          "target": "Das verwendete Ziel μ₀: der vorgegebene Sollwert, sonst das Mittel der Baseline (der ersten Werte bis zur Baseline-Anzahl). Kachel „μ₀ (Sollwert)“; ihre Unterzeile zeigt σ̂, die verwendete Streuung der Einzelwerte (Ergebnis σ), jeweils auf vier Nachkommastellen. Leer, wenn der Wert nicht endlich ist.",
           "sigma": "Die verwendete Streuung σ der Einzelwerte: die vorgegebene, wenn sie größer als 0 ist, sonst aus der Baseline geschätzt (MR̄ / 1,128 oder Stichproben-SD mit n − 1, je nach σ-Schätzmethode). Sie steht als σ̂ in der Unterzeile der Kachel „μ₀ (Sollwert)“. Ein Ergebnis gibt es nur, wenn σ größer als 0 ist.",
           "lambda": "Nur EWMA: das verwendete Gewicht λ. Es steht in der Unterzeile der Kachel „σ_z (Steady-State)“.",
           "L": "Nur EWMA: die verwendete Grenzbreite L in Vielfachen von σ.",
@@ -8921,13 +8921,13 @@
       },
       "types": {
         "Params": {
-          "alpha": "Die Fehlalarmrate α der T²-Grenze: die Wahrscheinlichkeit, dass ein Punkt bei stabilem Prozess über der oberen Grenze UCL liegt. UCL = p(m + 1)(m − 1)/(m² − m·p) · F(1 − α; p, m − p) mit dem F-Quantil, p Variablen und m Zeilen der Baseline. Größer als 0 und kleiner als 1, das Eingabefeld erlaubt 0,0001 bis 0,5. Vorbelegt 0,0027 (3σ-Äquivalent). Ein kleineres α rückt UCL weiter nach oben. Nach einer Änderung wird neu gerechnet.",
+          "alpha": "Die Fehlalarmrate α der T²-Grenze: die Wahrscheinlichkeit, dass ein neuer Punkt nach der Baseline bei stabilem Prozess und normalverteilten Daten über der oberen Grenze UCL liegt. Für die Zeilen der Baseline selbst, die ebenso geprüft werden, gilt diese Rate nicht genau. UCL = p(m + 1)(m − 1)/(m² − m·p) · F(1 − α; p, m − p) mit dem F-Quantil, p Variablen und m Zeilen der Baseline. Größer als 0 und kleiner als 1, das Eingabefeld erlaubt 0,0001 bis 0,5. Vorbelegt 0,0027 (3σ-Äquivalent). Ein kleineres α rückt UCL weiter nach oben. Nach einer Änderung wird neu gerechnet.",
           "baselineCount": "Wie viele der ersten vollständigen Zeilen die Baseline (Phase I) bilden, aus der Mittelwert und Kovarianz geschätzt werden. Leer (Anzeige „alle“) heißt alle Zeilen. Der Wert wirkt nur, wenn er größer als die Zahl der Variablen p ist; ist er kleiner oder gleich p, werden still alle Zeilen genommen. Eine größere Zahl, als Zeilen vorhanden sind, wirkt wie alle. Zulässig sind ganze Zahlen ab 1, das Eingabefeld erlaubt erst ab 2."
         },
         "Result": {
           "n": "Anzahl der vollständigen Zeilen, also der Zeilen, in denen jede gewählte Spalte eine Zahl hat; Zeilen mit leerer oder nicht numerischer Zelle sind aussortiert, bei Spalten verschiedener Länge zählt die kürzeste. Ein Ergebnis gibt es nur, wenn n größer als p ist. Die Nummern der Signalzeilen zählen diese Zeilen ab 0, nicht die Zeilen des Arbeitsblatts. Die Unterzeile der Kachel Signale zeigt n als „von n Datenpunkten“.",
           "p": "Anzahl der gemeinsam überwachten Variablen (Spalten); ein Ergebnis gibt es ab 2. Kachel „Variablen (p)“; ihre Unterzeile zeigt die Zeilen der Baseline als „m = … Baseline“.",
-          "m": "Anzahl der Zeilen der Baseline (Phase I), aus denen Mittelwert und Kovarianz stammen: alle vollständigen Zeilen, oder die ersten Baseline-Anzahl Zeilen, wenn diese größer als p ist (höchstens n). m muss größer als p sein. Sie steht in der Unterzeile der Kachel „Variablen (p)“.",
+          "m": "Anzahl der Zeilen der Baseline (Phase I), aus denen Mittelwert und Kovarianz stammen: alle vollständigen Zeilen, oder die ersten Zeilen bis zur Baseline-Anzahl, wenn diese größer als p ist (höchstens n). m muss größer als p sein. Sie steht in der Unterzeile der Kachel „Variablen (p)“.",
           "cl": "Die Mittellinie der T²-Karte, p(m − 1)/(m − p), als Bezugshöhe für die T²-Werte; sie ist eine Richtgröße der Karte, kein exakter Erwartungswert von T². Leer, wenn der Wert nicht endlich ist.",
           "ucl": "Die obere Eingriffsgrenze der T²-Karte, UCL = p(m + 1)(m − 1)/(m² − m·p) · F(1 − α; p, m − p) mit dem F-Quantil. Kachel „UCL (T²)“ auf drei Nachkommastellen; ihre Unterzeile zeigt das eingestellte α. Ein Punkt gibt ein Signal, wenn sein T² größer als UCL ist. Leer, wenn der Wert nicht endlich ist.",
           "mean": "Der Mittelwert x̄ jeder Variablen über die Zeilen der Baseline, in der Reihenfolge der gewählten Spalten. Ein Eintrag fehlt (leer), wenn sein Wert nicht endlich ist.",
@@ -8972,7 +8972,7 @@
           "group": "Das Teil oder die Gruppe, wie sie in der Teile-/Gruppen-Spalte stehen, als Text.",
           "count": "Anzahl der Messwerte dieses Teils (n).",
           "mean": "Mittelwert x̄ der Messwerte dieses Teils; er ist der Bezugspunkt der Standardisierung z = (x − x̄)/σ̂.",
-          "sigma": "Geschätzte Streuung σ̂ innerhalb des Teils: MR̄ des Teils / 1,128 (d₂ für Paare). Hat das Teil nur einen Wert, ist sie 0 und seine Werte werden mit z = 0 gezeichnet.",
+          "sigma": "Geschätzte Streuung σ̂ innerhalb des Teils: MR̄ des Teils / 1,128 (d₂ für Paare). Hat das Teil nur einen Wert oder sind alle seine Werte gleich, ist sie 0 und seine Werte werden mit z = 0 gezeichnet.",
           "mrBar": "Mittel MR̄ der Beträge |xᵢ − xᵢ₋₁| aufeinanderfolgender Messwerte innerhalb dieses Teils, in Reihenfolge der Messung; aus ihr entsteht σ̂."
         },
         "Limits": {
