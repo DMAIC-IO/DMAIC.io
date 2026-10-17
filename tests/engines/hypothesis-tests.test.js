@@ -6,7 +6,7 @@
 import { suite, test, assertAlmostEqual, assertEqual } from '../test-utils.js';
 import {
   chiSquareVarianceTest, fTest, leveneTest,
-  oneSampleTTest, twoSampleTTest, welchTTest,
+  oneSampleTTest, pairedTTest, twoSampleTTest, welchTTest,
   wilcoxonSignedRank, mannWhitneyU, hodgesLehmann,
   powerOneSampleT, powerTwoSampleT, findRequiredN,
 } from '../../js/engines/hypothesis-test-engine.js';
@@ -102,6 +102,27 @@ suite('Hypothesis — One-Sample t-Test (fixture validation)', () => {
         const { data, mu0, direction, alpha } = tc.inputs;
         const result = oneSampleTTest(data, mu0, direction, alpha);
         assertFields(result, tc.expected, getTol(tc, os1Data.tolerances), tc.id);
+      });
+    }
+  }
+});
+
+// ─── Paired t-Test ─────────────────────────────────────────────
+
+const pairedData = await loadFixture('../fixtures/hypothesis/paired-t-test.fixtures.json');
+
+suite('Hypothesis — Paired t-Test (fixture validation)', () => {
+  for (const tc of pairedData.test_cases) {
+    if (tc.expected && Object.keys(tc.expected).length > 0) {
+      test(`${tc.id}: ${tc.description}`, () => {
+        const { data1, data2, mu0, direction, alpha } = tc.inputs;
+        const result = pairedTTest(data1, data2, mu0, direction, alpha);
+        const tol = getTol(tc, pairedData.tolerances);
+        assertFields(result, tc.expected, tol, tc.id);
+        if (tc.expected.ci) {
+          assertAlmostEqual(result.ci[0], tc.expected.ci[0], tol, `${tc.id}: ci lower`);
+          assertAlmostEqual(result.ci[1], tc.expected.ci[1], tol, `${tc.id}: ci upper`);
+        }
       });
     }
   }

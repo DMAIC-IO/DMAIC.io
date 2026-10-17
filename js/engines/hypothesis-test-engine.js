@@ -262,25 +262,25 @@ export function pairDifferences(raw1, raw2) {
 }
 
 /**
- * Paired t-test: one-sample t-test on the differences d = x1 − x2.
+ * Paired t-test: one-sample t-test on the differences d = data1 − data2.
  *
- * @param {number[]} x1 - First measurement of each pair
- * @param {number[]} x2 - Second measurement of each pair (same length)
+ * @param {number[]} data1 - First measurement of each pair
+ * @param {number[]} data2 - Second measurement of each pair (same length)
  * @param {number} [mu0=0] - Hypothesized mean difference μ_d₀
  * @param {string} [direction='two-sided'] - 'two-sided' | 'greater' | 'less'
  * @param {number} [alpha=0.05] - Significance level
  * @returns {object} One-sample t result on d (mean, stddev, ci refer to d)
  *   plus testName 'Paired t-Test', mean1, mean2, meanDiff, stddevDiff
  */
-export function pairedTTest(x1, x2, mu0 = 0, direction = 'two-sided', alpha = 0.05) {
-  if (x1.length !== x2.length) throw new Error('Paired samples must have equal length');
-  const d = x1.map((v, i) => v - x2[i]);
+export function pairedTTest(data1, data2, mu0 = 0, direction = 'two-sided', alpha = 0.05) {
+  if (data1.length !== data2.length) throw new Error('Paired samples must have equal length');
+  const d = data1.map((v, i) => v - data2[i]);
   const r = oneSampleTTest(d, mu0, direction, alpha);
   return {
     ...r,
     testName: 'Paired t-Test',
-    mean1: mean(x1),
-    mean2: mean(x2),
+    mean1: mean(data1),
+    mean2: mean(data2),
     meanDiff: r.mean,
     stddevDiff: r.stddev,
   };

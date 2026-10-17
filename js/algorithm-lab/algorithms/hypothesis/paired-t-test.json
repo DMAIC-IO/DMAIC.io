@@ -1,0 +1,360 @@
+{
+  "id": "paired-t-test",
+  "name": {
+    "de": "Gepaarter {{term:t-test|t-Test}}",
+    "en": "Paired t-Test"
+  },
+  "category": "hypothesis",
+  "subcategory": "mean",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Prüft, ob die mittlere Differenz gepaarter Messungen einem hypothetischen Wert entspricht.",
+      "en": "Tests whether the mean difference of paired measurements equals a hypothesized value."
+    },
+    "long": {
+      "de": "Der gepaarte t-Test vergleicht zwei Messungen an denselben Einheiten (z. B. vorher/nachher oder zwei Messsysteme am selben Teil). Er bildet je Paar die Differenz d = x₁ − x₂ und führt auf diesen Differenzen einen Ein-Stichproben-t-Test gegen μ_d₀ durch (meist 0). Weil jede Einheit ihre eigene Kontrolle ist, fällt die Streuung zwischen den Einheiten heraus – der Test ist bei gepaarten Daten deutlich trennschärfer als der Zwei-Stichproben-t-Test. Voraussetzung: Die Differenzen sind annähernd normalverteilt; sonst ist der Wilcoxon-Vorzeichen-Rang-Test auf den Differenzen die Alternative.",
+      "en": "The paired t-test compares two measurements on the same units (e.g. before/after, or two measurement systems on the same part). It forms the difference d = x₁ − x₂ for each pair and runs a one-sample t-test on these differences against μ_d₀ (usually 0). Because every unit is its own control, the between-unit variation drops out – on paired data the test is considerably more powerful than the two-sample t-test. Requirement: the differences are approximately normal; otherwise the Wilcoxon signed-rank test on the differences is the alternative."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      {
+        "label": "d",
+        "latex": "d_i = x_{1i} - x_{2i}",
+        "description": {
+          "de": "Differenz je Paar",
+          "en": "Difference per pair"
+        }
+      },
+      {
+        "label": "t",
+        "latex": "t = \\frac{\\bar{d} - \\mu_{d,0}}{s_d / \\sqrt{n}}",
+        "description": {
+          "de": "Teststatistik mit n − 1 Freiheitsgraden (n = Anzahl Paare)",
+          "en": "Test statistic with n − 1 degrees of freedom (n = number of pairs)"
+        }
+      },
+      {
+        "label": "H₀",
+        "latex": "H_0: \\mu_d = \\mu_{d,0}",
+        "description": {
+          "de": "Nullhypothese: mittlere Differenz entspricht dem hypothetischen Wert",
+          "en": "Null hypothesis: the mean difference equals the hypothesized value"
+        }
+      },
+      {
+        "label": "KI",
+        "latex": "\\bar{d} \\pm t_{1-\\alpha/2,\\,n-1} \\cdot \\frac{s_d}{\\sqrt{n}}",
+        "description": {
+          "de": "Konfidenzintervall für die mittlere Differenz",
+          "en": "Confidence interval for the mean difference"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Die beiden Werte eines Paares gehören zur selben Einheit",
+        "en": "Both values of a pair belong to the same unit"
+      },
+      {
+        "de": "Die Differenzen sind annähernd normalverteilt (oder n ausreichend groß, CLT)",
+        "en": "The differences are approximately normally distributed (or n sufficiently large, CLT)"
+      },
+      {
+        "de": "Die Paare sind voneinander unabhängig",
+        "en": "The pairs are independent of each other"
+      },
+      {
+        "de": "Stetige (kontinuierliche) Daten",
+        "en": "Continuous data"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Gepaart wird zeilenweise – eine verschobene Zeile paart unbemerkt falsche Werte",
+        "en": "Pairing is by row – a shifted row silently pairs the wrong values"
+      },
+      {
+        "de": "Empfindlich gegenüber Ausreißern in den Differenzen",
+        "en": "Sensitive to outliers in the differences"
+      }
+    ],
+    "references": [
+      {
+        "source": "Student (W. S. Gosset) (1908), The probable error of a mean, Biometrika, 6(1), 1–25"
+      },
+      {
+        "source": "Montgomery, D. C. & Runger, G. C. (2018), Applied Statistics and Probability for Engineers, 7th Ed., Section 10.4"
+      }
+    ],
+    "minitab_equivalent": "Stat > Basic Statistics > Paired t"
+  },
+  "source": {
+    "function_name": "pairedTTest",
+    "file_path": "js/engines/hypothesis-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "data1",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Erste Messung je Paar (vorher)",
+            "en": "First measurement of each pair (before)"
+          }
+        },
+        {
+          "name": "data2",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Zweite Messung je Paar (nachher), gleiche Länge",
+            "en": "Second measurement of each pair (after), same length"
+          }
+        },
+        {
+          "name": "mu0",
+          "type": "number",
+          "required": false,
+          "description": {
+            "de": "Hypothetische Differenz μ_d₀ (Standard: 0)",
+            "en": "Hypothesized difference μ_d₀ (default: 0)"
+          }
+        },
+        {
+          "name": "direction",
+          "type": "string",
+          "required": false,
+          "description": {
+            "de": "Testrichtung: 'two-sided', 'greater', 'less'",
+            "en": "Test direction: 'two-sided', 'greater', 'less'"
+          }
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "required": false,
+          "description": {
+            "de": "Signifikanzniveau (Standard: 0.05)",
+            "en": "Significance level (default: 0.05)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": {
+            "type": "number",
+            "description": {
+              "de": "t-Teststatistik",
+              "en": "t test statistic"
+            }
+          },
+          "pValue": {
+            "type": "number",
+            "description": {
+              "de": "p-Wert",
+              "en": "p-value"
+            }
+          },
+          "df": {
+            "type": "number",
+            "description": {
+              "de": "Freiheitsgrade (Paare − 1)",
+              "en": "Degrees of freedom (pairs − 1)"
+            }
+          },
+          "mean": {
+            "type": "number",
+            "description": {
+              "de": "Mittlere Differenz d̄",
+              "en": "Mean difference d̄"
+            }
+          },
+          "reject": {
+            "type": "boolean",
+            "description": {
+              "de": "H₀ abgelehnt?",
+              "en": "Reject H₀?"
+            }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "data1",
+          "label": {
+            "de": "Messung 1 (vorher)",
+            "en": "Measurement 1 (before)"
+          },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Werte getrennt durch Komma, Leerzeichen oder Zeilenumbruch",
+            "en": "Values separated by commas, spaces, or newlines"
+          },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "data2",
+          "label": {
+            "de": "Messung 2 (nachher)",
+            "en": "Measurement 2 (after)"
+          },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Gleich viele Werte, in derselben Reihenfolge",
+            "en": "Same number of values, in the same order"
+          },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "mu0",
+          "label": {
+            "de": "Hypothetische Differenz μ_d₀",
+            "en": "Hypothesized difference μ_d₀"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "0",
+            "en": "0"
+          },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "direction",
+          "label": {
+            "de": "Testrichtung",
+            "en": "Test Direction"
+          },
+          "type": "select",
+          "options": [
+            {
+              "value": "two-sided",
+              "label": {
+                "de": "≠ Zweiseitig",
+                "en": "≠ Two-sided"
+              }
+            },
+            {
+              "value": "greater",
+              "label": {
+                "de": "> Größer",
+                "en": "> Greater"
+              }
+            },
+            {
+              "value": "less",
+              "label": {
+                "de": "< Kleiner",
+                "en": "< Less"
+              }
+            }
+          ],
+          "parse_as": "string",
+          "required": false
+        },
+        {
+          "name": "alpha",
+          "label": {
+            "de": "Signifikanzniveau α",
+            "en": "Significance Level α"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "0.05",
+            "en": "0.05"
+          },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": [
+        "statistic",
+        "pValue",
+        "df",
+        "mean1",
+        "mean2",
+        "mean",
+        "stddev",
+        "se",
+        "ci",
+        "reject"
+      ],
+      "primary_field": "statistic",
+      "format": {
+        "statistic": {
+          "decimals": 6,
+          "label": "t"
+        },
+        "pValue": {
+          "decimals": 6,
+          "label": "p-Value"
+        },
+        "df": {
+          "decimals": 0,
+          "label": "df"
+        },
+        "mean1": {
+          "decimals": 6,
+          "label": "x̄₁"
+        },
+        "mean2": {
+          "decimals": 6,
+          "label": "x̄₂"
+        },
+        "mean": {
+          "decimals": 6,
+          "label": {
+            "de": "Mittlere Differenz (d̄)",
+            "en": "Mean difference (d̄)"
+          }
+        },
+        "stddev": {
+          "decimals": 6,
+          "label": {
+            "de": "Std.abw. der Differenzen (s_d)",
+            "en": "Std dev of differences (s_d)"
+          }
+        },
+        "se": {
+          "decimals": 6,
+          "label": {
+            "de": "Standardfehler",
+            "en": "Standard Error"
+          }
+        },
+        "reject": {
+          "decimals": 0,
+          "label": {
+            "de": "H₀ abgelehnt",
+            "en": "Reject H₀"
+          }
+        }
+      }
+    }
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-17",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: t-Test auf den paarweisen Differenzen mit KI und Entscheidung",
+        "en": "Initial implementation: t-test on the pairwise differences with CI and decision"
+      },
+      "breaking": false
+    }
+  ]
+}
