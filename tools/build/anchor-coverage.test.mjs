@@ -22,6 +22,26 @@ test('scanCaptions: Label, KPI-Beschriftung und Kopfzelle, je mit und ohne Anker
   ]);
 });
 
+test('scanCaptions: Ausschnitt mit Inhalt und Zeilennummer unterscheidet gleiche öffnende Tags', () => {
+  const html = '<table>\n  <th>n</th>\n  <th>\n    MW\n  </th>\n</table>';
+  assert.deepEqual(scanCaptions(html).map(c => [c.snippet, c.line]), [
+    ['<th>n</th>', 2], ['<th>MW</th>', 3],
+  ]);
+});
+
+test('scanCaptions: langer Inhalt wird gekappt', () => {
+  const [c] = scanCaptions(`<label>${'x'.repeat(300)}</label>`);
+  assert.equal(c.snippet.length, 120);
+  assert.ok(c.snippet.endsWith('…'));
+});
+
+test('scanCaptions: KPI-Beschriftung mit Anker im Inhalt zählt als verankert', () => {
+  const html = '<div class="dmike-kpi-label"><span data-help-key="k">X</span></div>';
+  assert.deepEqual(scanCaptions(html).map(c => [c.kind, c.anchored, c.snippet]), [
+    ['kpi', true, '<div class="dmike-kpi-label"><span data-help-key="k">X</span></div>'],
+  ]);
+});
+
 test('scanCaptions: ein Label, das nur sein Kontrollkästchen umschließt und keinen Text hat, zählt nicht', () => {
   assert.deepEqual(scanCaptions('<label><input type="checkbox"></label>'), []);
 });
@@ -47,7 +67,7 @@ test('countAnchorCoverage: nur freigegebene Module, Ausnahmen zählen mit Grund 
   assert.equal(out.covered, 2);
   assert.equal(out.exempt, 1);
   assert.equal(out.missing.length, 1);
-  assert.match(out.missing[0], /^foo: foo\.html: <label x-text="t\('b'\)">/);
+  assert.equal(out.missing[0], 'foo: foo.html:1: <label x-text="t(\'b\')"></label>');
   assert.deepEqual(out.staleExemptions, []);
 });
 
@@ -62,4 +82,30 @@ test('countAnchorCoverage: eine Ausnahme ohne Grund ist ein Fehler', () => {
   const dir = appWith({ foo: '<label>A</label>' });
   assert.throws(() => countAnchorCoverage(dir, { foo: { available: true } },
     { foo: [{ match: 'label', reason: '' }] }), /Grund/);
+});
+
+test('countAnchorCoverage: Ausnahme auf Inhalt trifft nur die gemeinte Kopfzelle', () => {
+  const dir = appWith({ foo: '<th>n</th><th>MW</th>' });
+  const out = countAnchorCoverage(dir, { foo: { available: true } },
+    { foo: [{ match: '<th>n</th>', reason: 'Stichprobenumfang je Zeile' }] });
+  assert.equal(out.exempt, 1);
+  assert.deepEqual(out.missing, ['foo: foo.html:1: <th>MW</th>']);
+});
+
+test('countAnchorCoverage: count meldet abweichende Trefferzahl, passende nicht', () => {
+  const dir = appWith({ foo: '<th>n</th><th>n</th><th>s</th>' });
+  const out = countAnchorCoverage(dir, { foo: { available: true } }, {
+    foo: [
+      { match: '<th>n</th>', reason: 'je Zeile', count: 3 },
+      { match: '<th>s</th>', reason: 'je Zeile', count: 1 },
+    ],
+  });
+  assert.deepEqual(out.exemptionCountMismatches, ['foo: <th>n</th>: erwartet 3, gefunden 2']);
+  assert.deepEqual(out.staleExemptions, []);
+});
+
+test('countAnchorCoverage: freigegebenes Modul ohne Ordner wird übersprungen', () => {
+  const dir = appWith({ foo: '<label>A</label>' });
+  const out = countAnchorCoverage(dir, { foo: { available: true }, ghost: { available: true } }, {});
+  assert.equal(out.total, 1);
 });

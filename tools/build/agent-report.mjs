@@ -254,6 +254,7 @@ function main() {
   } else if (anchors.staleExemptions.length > 0) {
     console.log(`  ${anchors.staleExemptions.length} Ausnahme(n) ohne Treffer — mit --verbose einzeln benannt.`);
   }
+  for (const row of anchors.exemptionCountMismatches) console.log(`    Ausnahme mit falscher Trefferzahl — ${row}`);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();
