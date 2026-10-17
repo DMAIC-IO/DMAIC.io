@@ -13,6 +13,13 @@
    the parent flow (margins collapse exactly as the legacy flat markup did). */
 .hyptest__contents { display: contents; }
 
+/* Four test types (means: one, two, paired, k) do not fit one row of the input
+   panel without wrapping their labels — lay them out as a 2×2 grid instead. */
+.hyptest__toggle-row--grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
 /* `display: contents` does NOT change :first-child matching — a section title
    that is the wrapper's first DOM child loses the global
    `.dmike-split__output-section:not(:first-child)` top margin. These conditional

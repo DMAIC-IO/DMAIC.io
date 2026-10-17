@@ -14,13 +14,19 @@
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionTestType')"></div>
-    <div class="btn-group hyptest__toggle-row">
+    <div class="btn-group hyptest__toggle-row"
+      :class="model.category === 'mean' ? 'hyptest__toggle-row--grid' : ''">
       <button class="btn--segment hyptest__toggle-btn" data-type="one"
         :class="model.testType === 'one' ? 'btn--active' : ''"
         @click="setTestType('one')" x-text="t('oneSample')"></button>
       <button class="btn--segment hyptest__toggle-btn" data-type="two"
         :class="model.testType === 'two' ? 'btn--active' : ''"
         @click="setTestType('two')" x-text="t('twoSample')"></button>
+      <template x-if="model.category === 'mean'">
+        <button class="btn--segment hyptest__toggle-btn" data-type="paired"
+          :class="model.testType === 'paired' ? 'btn--active' : ''"
+          @click="setTestType('paired')" x-text="t('pairedSample')"></button>
+      </template>
       <button class="btn--segment hyptest__toggle-btn" data-type="k"
         :class="model.testType === 'k' ? 'btn--active' : ''"
         @click="setTestType('k')" x-text="t('kSample')"></button>
@@ -38,14 +44,17 @@
     <template x-if="model.testType !== 'k'">
       <div class="hyptest__contents">
         <div class="field-group">
-          <label x-text="t('sample1Column')"></label>
+          <label x-text="model.testType === 'paired' ? t('pairedColumn1') : t('sample1Column')"></label>
           <div data-ref="picker1-wrap"></div>
         </div>
-        <template x-if="model.testType === 'two'">
+        <template x-if="model.testType === 'two' || model.testType === 'paired'">
           <div class="field-group">
-            <label x-text="t('sample2Column')"></label>
+            <label x-text="model.testType === 'paired' ? t('pairedColumn2') : t('sample2Column')"></label>
             <div data-ref="picker2-wrap"></div>
           </div>
+        </template>
+        <template x-if="model.testType === 'paired'">
+          <p class="field-hint" x-text="t('pairedDiffHint')"></p>
         </template>
       </div>
     </template>
@@ -80,6 +89,18 @@
               x-model="model.targetValue" :placeholder="t('targetMeanPh')" @input="runAnalysis()">
           </div>
         </template>
+      </div>
+    </template>
+
+    <!-- Target (paired: hypothesized mean difference) -->
+    <template x-if="model.testType === 'paired'">
+      <div class="hyptest__contents">
+        <div class="dmike-split__section-title" x-text="t('targetDiff')"></div>
+        <div class="field-group">
+          <label>μ_d₀</label>
+          <input type="number" data-ref="target" class="field field--num"
+            x-model="model.targetValue" :placeholder="t('targetDiffPh')" @input="runAnalysis()">
+        </div>
       </div>
     </template>
 
@@ -127,7 +148,7 @@
       </div>
     </div>
 
-    <div class="field-error" data-ref="error-box"></div>
+    <div class="field-error" data-ref="error-box" x-text="errorText"></div>
   </div>
 
   <!-- ─── Output (right) ───────────────────────────────────────── -->
@@ -143,6 +164,11 @@
         <div>
           <!-- ── Section 1: Normality ── -->
           <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionNormality')"></span></div>
+          <!-- After the title: a leading <template> would cost the title its :first-child margin rule -->
+          <template x-if="result.pairInfo && result.pairInfo.dropped > 0">
+            <p class="field-hint field-hint--warn" data-ref="paired-note"
+              x-text="t('pairedDropped', { n: result.pairInfo.n, k: result.pairInfo.dropped })"></p>
+          </template>
 
           <!-- k-sample: grid of per-group cards; otherwise stacked S1/S2 cards -->
           <div :class="result.isK ? 'hyptest__norm-grid' : 'hyptest__contents'">

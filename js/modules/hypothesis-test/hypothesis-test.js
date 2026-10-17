@@ -25,7 +25,7 @@ import {
   wilcoxonSignedRank, mannWhitneyU, hodgesLehmann,
   oneWayANOVA, leveneTestK, kruskalWallis, bartlettTest,
   powerChiSquare, powerFTest, powerOneSampleT, powerTwoSampleT,
-  findRequiredN,
+  findRequiredN, pairDifferences, pairedTTest,
 } from '../../engines/hypothesis-test-engine.js';
 import { shapiroWilk, andersonDarling, descriptiveStats } from '../../engines/normality-test-engine.js';
 import { tInv, chi2Inv } from '../../engines/math-utils.js';
@@ -44,6 +44,7 @@ const ALGO_LAB_IDS = {
   'One-Sample t-Test': 'one-sample-t-test',
   'Two-Sample t-Test (pooled)': 'two-sample-t-test',
   'Welch t-Test': 'welch-t-test',
+  'Paired t-Test': 'paired-t-test',
   'Wilcoxon Signed-Rank Test': 'wilcoxon-signed-rank',
   'Mann-Whitney U Test': 'mann-whitney-u',
   'One-Way ANOVA': 'one-way-anova',
@@ -70,6 +71,7 @@ const mod = createModule({
     return {
       // ── Transient view state (not persisted) ────────────────────
       result: null,
+      errorText: '',
       _picker1: null,
       _picker2: null,
       _pickerK: null,
@@ -98,6 +100,7 @@ const mod = createModule({
             ? 'H₀: μ₁ = μ₂ = … = μₖ'
             : 'H₀: σ²₁ = σ²₂ = … = σ²ₖ';
         }
+        if (this.model.testType === 'paired') return `H₀: μ_d ${s0} μ_d₀`;
         if (!isMean) {
           return isTwo
             ? `H₀: σ²₁ ${s0} σ²₂`
@@ -116,6 +119,7 @@ const mod = createModule({
         if (isK) {
           return isMean ? `H₁: ${_t('kSampleH1')}` : `H₁: ${_t('kSampleVarH1')}`;
         }
+        if (this.model.testType === 'paired') return `H₁: μ_d ${s1} μ_d₀`;
         if (!isMean) {
           return isTwo
             ? `H₁: σ²₁ ${s1} σ²₂`
@@ -129,7 +133,7 @@ const mod = createModule({
       // ── Input handlers ─────────────────────────────────────────
 
       setCategory(cat) {
-        this.model.category = cat;
+        this.model.applyCategory(cat);
         this.$nextTick(() => { this._remountPickers(); this.runAnalysis(); });
       },
       setTestType(type) {
@@ -213,7 +217,9 @@ const mod = createModule({
           's²₂': _t('tipVariance2'),
           's²ₚ': _t('tipPooledVar'),
           'α': _t('tipAlpha'),
+          'd̄': _t('tipMeanDiff'),
           "Cohen's d": _t('tipCohensD'),
+          "Cohen's d_z": _t('tipCohensD'),
         };
         return map[label] || '';
       },
@@ -261,10 +267,14 @@ const mod = createModule({
         const s1 = this._sym1();
         const isVariance = this.model.category === 'variance';
         const isTwo = this.model.testType === 'two';
+        const isPaired = this.model.testType === 'paired';
         let h0, h1;
         if (isVariance) {
           h0 = isTwo ? `σ²₁ ${s0} σ²₂` : `σ² ${s0} ${fmt(target)}`;
           h1 = isTwo ? `σ²₁ ${s1} σ²₂` : `σ² ${s1} ${fmt(target)}`;
+        } else if (isPaired) {
+          h0 = `μ_d ${s0} ${fmt(target)}`;
+          h1 = `μ_d ${s1} ${fmt(target)}`;
         } else {
           h0 = isTwo ? `μ₁ ${s0} μ₂` : `μ ${s0} ${fmt(target)}`;
           h1 = isTwo ? `μ₁ ${s1} μ₂` : `μ ${s1} ${fmt(target)}`;
@@ -282,7 +292,9 @@ const mod = createModule({
         const level = Math.round((1 - alpha) * 100);
         const isMeanDiff = !isVariance && isTwo && r.ci != null;
         if (r.ci) {
-          metrics.push({ label: isMeanDiff ? _t('ciDiffLabel', { level }) : _t('ciLabel', { level }), value: `[${fmt(r.ci[0])}, ${fmt(r.ci[1])}]`, valueClass: 'hyptest__metric-value--sm', title: this._tip('KI') });
+          const ciLabel = isPaired ? _t('ciPairedDiffLabel', { level })
+            : (isMeanDiff ? _t('ciDiffLabel', { level }) : _t('ciLabel', { level }));
+          metrics.push({ label: ciLabel, value: `[${fmt(r.ci[0])}, ${fmt(r.ci[1])}]`, valueClass: 'hyptest__metric-value--sm', title: this._tip('KI') });
         }
         if (r.hl) {
           const achieved = fmt(r.hl.achievedConfidence * 100, 1);
@@ -295,10 +307,14 @@ const mod = createModule({
             title: _t('ciShiftTip', { level, achieved, method: methodText }),
           });
         }
-        if (r.mean != null) {
+        if (r.meanDiff != null) {
+          metrics.push({ label: 'x̄₁', value: fmt(r.mean1), valueClass: '', title: this._tip('x̄₁') });
+          metrics.push({ label: 'x̄₂', value: fmt(r.mean2), valueClass: '', title: this._tip('x̄₂') });
+          metrics.push({ label: 'd̄', value: fmt(r.meanDiff), valueClass: '', title: this._tip('d̄') });
+        } else if (r.mean != null) {
           metrics.push({ label: 'x̄', value: fmt(r.mean), valueClass: '', title: this._tip('x̄') });
         }
-        if (r.mean1 != null) {
+        if (r.meanDiff == null && r.mean1 != null) {
           metrics.push({ label: 'x̄₁', value: fmt(r.mean1), valueClass: '', title: this._tip('x̄₁') });
           metrics.push({ label: 'x̄₂', value: fmt(r.mean2), valueClass: '', title: this._tip('x̄₂') });
         }
@@ -318,7 +334,9 @@ const mod = createModule({
           : `${_t('notSignificant')}: ${_t('h0NotRejected')}`;
 
         let ciNote = '';
-        if (isMeanDiff && !r.reject) {
+        if (isPaired && r.ci && !r.reject) {
+          ciNote = _t('ciPairedDiffNote', { lo: fmt(r.ci[0]), hi: fmt(r.ci[1]) });
+        } else if (isMeanDiff && !r.reject) {
           ciNote = _t('ciDiffNote', { lo: fmt(r.ci[0]), hi: fmt(r.ci[1]) });
         } else if (r.hl) {
           const parts = [];
@@ -395,11 +413,11 @@ const mod = createModule({
           }
         } else {
           const sigma = ds(d1).stdDev;
-          if (this.model.testType === 'one') {
+          if (this.model.testType === 'one' || this.model.testType === 'paired') {
             const delta = Math.abs(ds(d1).mean - target);
             curEff = sigma > 0 ? delta / sigma : 0;
             curPow = powerOneSampleT(n1, delta, sigma, alpha, dir);
-            effLabel = "Cohen's d";
+            effLabel = this.model.testType === 'paired' ? "Cohen's d_z" : "Cohen's d";
             nForGoal = findRequiredN(goal, n => powerOneSampleT(n, delta, sigma, alpha, dir));
           } else {
             const delta = Math.abs(ds(d1).mean - ds(d2).mean);
@@ -433,8 +451,61 @@ const mod = createModule({
       // ── Analysis controller ────────────────────────────────────
 
       runAnalysis() {
+        this.errorText = '';
         if (this.model.testType === 'k') return this._runAnalysisK();
+        if (this.model.testType === 'paired') return this._runAnalysisPaired();
         return this._runAnalysisOneTwo();
+      },
+
+      _runAnalysisPaired() {
+        const alpha = this.model.alpha;
+        if (!this._picker1?.value || !this._picker2?.value) { this.result = null; return; }
+        const sm = module._context.stateManager;
+        const { x1, x2, d, dropped } = pairDifferences(
+          getColumnValues(sm, this._picker1.value),
+          getColumnValues(sm, this._picker2.value));
+        if (d.length < 3) { this.result = null; return; }
+        const target = this.model.resolveTarget();
+        if (target == null) { this.result = null; return; }
+        // Identical columns (or a constant shift) leave no variation to test
+        if (d.every(v => v === d[0])) {
+          this.result = null;
+          this.errorText = _t('pairedNoVariation');
+          return;
+        }
+
+        const sw = shapiroWilk(d), ad = andersonDarling(d);
+        const dNormal = isNormalByAD(ad, alpha);
+        const family = meanRoute(dNormal, [d.length]);
+        const dir = this.model.direction;
+        const means = { mean1: descriptiveStats(x1).mean, mean2: descriptiveStats(x2).mean };
+
+        let r, algoName;
+        if (family === 'rank') {
+          algoName = 'Wilcoxon Signed-Rank Test';
+          r = { ...wilcoxonSignedRank(d, target, dir, alpha), ...means, meanDiff: descriptiveStats(d).mean };
+        } else {
+          algoName = 'Paired t-Test';
+          r = pairedTTest(x1, x2, target, dir, alpha);
+        }
+
+        let secondary = null;
+        if (family === 'parametric-large-n') {
+          secondary = this._secondaryResult(wilcoxonSignedRank(d, target, dir, alpha), alpha);
+        }
+
+        this.result = {
+          isK: false,
+          allNormal: dNormal,
+          normCards: [this._normCard(_t('differences'), d, sw, ad, dNormal, alpha)],
+          route: { name: algoName, algoId: ALGO_LAB_IDS[algoName] || '' },
+          varEquality: null,
+          main: this._mainResult(r, alpha, target),
+          secondary,
+          power: this._powerInfo(d, null, target, alpha),
+          pairwise: null,
+          pairInfo: { n: d.length, dropped },
+        };
       },
 
       _runAnalysisOneTwo() {

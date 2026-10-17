@@ -34,6 +34,13 @@ suite('Hypothesis — pairDifferences', () => {
     assertEqual(p.dropped, 2);
   });
 
+  test('rows blank in both columns do not count as dropped', () => {
+    // Worksheet columns carry trailing empty rows beyond the data
+    const p = pairDifferences([1, 2, 3, null, '', null], [1, 2, null, null, '', undefined]);
+    assertEqual(p.d.length, 2);
+    assertEqual(p.dropped, 1);
+  });
+
   test('handles empty or missing input', () => {
     const p = pairDifferences(undefined, [1, 2]);
     assertEqual(p.d.length, 0);

@@ -55,6 +55,11 @@ export default {
           },
           {
             type: 'definition',
+            term: 'Gepaarter Vergleich (Mittelwerte)',
+            content: 'Gepaart sind zwei Messungen an derselben Einheit – vorher/nachher oder zwei Messsysteme am selben Teil. Das Modul bildet je Zeile die Differenz d = Spalte 1 − Spalte 2 und prüft, ob deren Mittelwert μ_d einem hypothetischen Wert μ_d₀ entspricht (meist 0). Zeilen mit nur einem Wert fallen weg; der Hinweis über der Auswertung nennt, wie viele. Die Normalität wird an den Differenzen geprüft, nicht an den Spalten. Sind die Differenzen normalverteilt, läuft der gepaarte {{term:t-test|t-Test}}; sonst bei weniger als 20 Paaren der Wilcoxon-Vorzeichen-Rang-Test auf den Differenzen, ab 20 Paaren wird er zusätzlich gezeigt. Weil jede Einheit ihre eigene Kontrolle ist, ist der gepaarte Test bei solchen Daten deutlich trennschärfer als der Zwei-Stichproben-Vergleich.',
+          },
+          {
+            type: 'definition',
             term: 'k-Stichproben-Vergleich (Mittelwerte)',
             content: 'Bei mehr als zwei Gruppen ist die einfaktorielle {{term:anova|Varianzanalyse (One-Way ANOVA)}} das passende Verfahren — sie zerlegt die Gesamtvariation in Anteile zwischen und innerhalb der Gruppen und vergleicht diese über eine F-Statistik. Ob Daten als normalverteilt gelten, entscheidet der Anderson-Darling-Test; Shapiro-Wilk wird nur zur Information angezeigt. Sind Daten nicht normalverteilt und hat mindestens eine Gruppe weniger als 20 Werte, wechselt das Modul auf den Kruskal-Wallis-Test (rangbasiert; nichtparametrisches Pendant zur {{term:anova|ANOVA}}). Ab n ≥ 20 je Gruppe ist die ANOVA robust und bleibt das Hauptergebnis; Kruskal-Wallis erscheint dann als Zweitergebnis zum Abgleich, denn er prüft eine andere Hypothese (Verschiebung der Verteilung statt Mittelwerte). Beide Tests sind Omnibus-Tests: sie zeigen, dass mindestens ein Mittelwert abweicht, ohne zu sagen welcher — dafür sind anschließende Post-Hoc-Vergleiche (z. B. Tukey HSD) nötig.',
           },
@@ -110,6 +115,11 @@ export default {
             type: 'definition',
             term: 'Two-sample comparison (means)',
             content: 'For two means the module runs the Welch t-test by default. It does not assume equal {{term:varianz|variances}} and loses hardly any power when the variances are in fact equal. A variance pretest that switches between the pooled t-test and Welch distorts the α risk, so the module does not use one. The pooled t-test is available only via the option “Assume equal variances”, when equal spread is justified by the subject matter (e.g. same process, same measurement system). For non-normal data (Anderson-Darling) with fewer than 20 values in a group the module runs Mann-Whitney; with n ≥ 20 per group the t-test is kept and Mann-Whitney is shown as a secondary result. For Mann-Whitney the module shows the Hodges-Lehmann estimate η̂₁−η₂, the median of all pairwise differences, with a confidence interval and the achieved confidence. It estimates the location shift between the groups, not the difference of the medians – the two coincide only when the distributions have the same shape. The p-value is exact for n < 50 per group without ties, otherwise a normal approximation with tie and continuity correction.',
+          },
+          {
+            type: 'definition',
+            term: 'Paired comparison (means)',
+            content: 'Paired means two measurements on the same unit – before/after, or two measurement systems on the same part. The module forms the row-wise difference d = column 1 − column 2 and tests whether its mean μ_d equals a hypothesized value μ_d₀ (usually 0). Rows with only one value are dropped; the note above the results says how many. Normality is checked on the differences, not on the columns. If the differences are normal the paired {{term:t-test|t-test}} runs; otherwise, with fewer than 20 pairs, the Wilcoxon signed-rank test on the differences, and from 20 pairs on it is shown alongside. Because every unit is its own control, the paired test is clearly more powerful on such data than the two-sample comparison.',
           },
           {
             type: 'definition',

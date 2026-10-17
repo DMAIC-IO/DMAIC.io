@@ -239,10 +239,16 @@ function isFiniteNumber(v) {
   return typeof v === 'number' && Number.isFinite(v);
 }
 
+/** @param {*} v @returns {boolean} true for an empty cell (null, undefined, blank string) */
+function isBlank(v) {
+  return v == null || (typeof v === 'string' && v.trim() === '');
+}
+
 /**
  * Pair two raw columns row by row for a paired test.
  * A row is dropped when either value is missing or not a finite number;
- * rows beyond the shorter column count as dropped.
+ * rows beyond the shorter column count as dropped. Rows blank in both
+ * columns (e.g. the empty tail of a worksheet) are not rows and do not count.
  *
  * @param {Array<*>} raw1 - Raw values of column 1 (may contain gaps)
  * @param {Array<*>} raw2 - Raw values of column 2 (may contain gaps)
@@ -252,13 +258,16 @@ export function pairDifferences(raw1, raw2) {
   const a = Array.isArray(raw1) ? raw1 : [];
   const b = Array.isArray(raw2) ? raw2 : [];
   const x1 = [], x2 = [], d = [];
-  const len = Math.min(a.length, b.length);
+  let dropped = 0;
+  const len = Math.max(a.length, b.length);
   for (let i = 0; i < len; i++) {
     if (isFiniteNumber(a[i]) && isFiniteNumber(b[i])) {
       x1.push(a[i]); x2.push(b[i]); d.push(a[i] - b[i]);
+    } else if (!(isBlank(a[i]) && isBlank(b[i]))) {
+      dropped++;
     }
   }
-  return { x1, x2, d, dropped: Math.max(a.length, b.length) - d.length };
+  return { x1, x2, d, dropped };
 }
 
 /**
