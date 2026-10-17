@@ -8437,7 +8437,7 @@
         },
         "Annotation": {
           "comment": "Kommentar / Ursache zum Punkt, etwa ein Werkzeugbruch in Schicht 3; leer für keinen. Der Punkt wird in der Karte markiert.",
-          "excluded": "Punkt aus Grenzen-Berechnung ausschließen: der Punkt bleibt in der Karte sichtbar, beeinflusst UCL und LCL aber nicht mehr. Danach wird neu gerechnet."
+          "excluded": "Punkt aus Grenzen-Berechnung ausschließen: der Punkt bleibt in der Karte sichtbar, beeinflusst UCL und LCL aber nicht mehr. Danach wird neu gerechnet. Gilt nicht mit Stages und nicht bei eingefrorenen Grenzen."
         },
         "FrozenLimits": {
           "chartTypeId": "Der Regelkartentyp beim Einfrieren. Die eingefrorenen Grenzen gelten nur, solange derselbe Typ gewählt ist.",

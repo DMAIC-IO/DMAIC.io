@@ -8433,7 +8433,7 @@
         },
         "Annotation": {
           "comment": "Comment / cause for the point, e.g. a tool break on shift 3; empty for none. The point is marked on the chart.",
-          "excluded": "Exclude point from limit computation: the point stays visible on the chart but no longer influences UCL and LCL. The analysis is then recomputed."
+          "excluded": "Exclude point from limit computation: the point stays visible on the chart but no longer influences UCL and LCL. The analysis is then recomputed. Does not apply with stages or when frozen limits are in effect."
         },
         "FrozenLimits": {
           "chartTypeId": "The control chart type at the time of freezing. The frozen limits only apply while the same type is selected.",
