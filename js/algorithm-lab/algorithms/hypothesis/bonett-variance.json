@@ -112,7 +112,7 @@
   },
   "source": {
     "function_name": "bonettVarianceTest",
-    "file_path": "js/engines/hypothesis-test-engine.js",
+    "file_path": "js/engines/bonett-engine.js",
     "signature": {
       "parameters": [
         {

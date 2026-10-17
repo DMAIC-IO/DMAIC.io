@@ -21,6 +21,14 @@
   "documentation": {
     "formulas": [
       {
+        "label": "γ̂_i",
+        "latex": "\\hat\\gamma_i = \\frac{n_i \\sum_j (Y_{ij}-m_i)^4}{\\left((n_i-1)\\,S_i^2\\right)^2}",
+        "description": {
+          "de": "Kurtosis der Stichprobe i mit getrimmtem Mittelwert m_i (Trimmanteil 1/(2√(n_i−4)), bei n_i ≤ 5 arithmetisches Mittel)",
+          "en": "Kurtosis of sample i with trimmed mean m_i (trim proportion 1/(2√(n_i−4)), arithmetic mean for n_i ≤ 5)"
+        }
+      },
+      {
         "label": "γ̂_P",
         "latex": "\\hat\\gamma_P(\\rho) = \\frac{(n_1+n_2)\\left[\\sum(Y_{1j}-m_1)^4 + \\rho^4\\sum(Y_{2j}-m_2)^4\\right]}{\\left[(n_1-1)S_1^2 + \\rho^2 (n_2-1) S_2^2\\right]^2}",
         "description": {
@@ -32,16 +40,16 @@
         "label": "c",
         "latex": "c = \\frac{n_1}{n_1-z}\\cdot\\frac{n_2-z}{n_2}",
         "description": {
-          "de": "Ausgleichskonstante (1 bei gleichem Stichprobenumfang)",
-          "en": "Equalizer constant (1 for equal sample sizes)"
+          "de": "Ausgleichskonstante mit z = Normalquantil z_{α/2} (einseitig z_α); 1 bei gleichem Stichprobenumfang",
+          "en": "Equalizer constant with z = normal quantile z_{α/2} (z_α one-sided); 1 for equal sample sizes"
         }
       },
       {
         "label": "H",
         "latex": "H(x) = (\\ln x)^2 - z^2\\, se^2(c\\,x)",
         "description": {
-          "de": "Das KI für σ₁²/σ₂² ist c·ρ̂²·{x : H(x) ≤ 0}",
-          "en": "The CI for σ₁²/σ₂² is c·ρ̂²·{x : H(x) ≤ 0}"
+          "de": "Mit ρ̂ = S₁/S₂ und z = z_{α/2} (einseitig z_α) ist das KI für σ₁²/σ₂² gleich c·ρ̂²·{x : H(x) ≤ 0}",
+          "en": "With ρ̂ = S₁/S₂ and z = z_{α/2} (z_α one-sided) the CI for σ₁²/σ₂² is c·ρ̂²·{x : H(x) ≤ 0}"
         }
       },
       {
@@ -74,6 +82,14 @@
         "description": {
           "de": "Teststatistik bei gleichem Stichprobenumfang (ρ₀ = 1), χ² mit 1 Freiheitsgrad",
           "en": "Test statistic for equal sample sizes (ρ₀ = 1), χ² with 1 degree of freedom"
+        }
+      },
+      {
+        "label": "z",
+        "latex": "z = \\operatorname{sign}(\\ln\\hat\\rho^2)\\,\\sqrt{T_2}",
+        "description": {
+          "de": "Einseitig bei gleichem Stichprobenumfang: vorzeichenbehaftete Wurzel; „größer“ → P(Z > z), „kleiner“ → P(Z < z)",
+          "en": "One-sided for equal sample sizes: signed root; “greater” → P(Z > z), “less” → P(Z < z)"
         }
       }
     ],
@@ -124,7 +140,7 @@
   },
   "source": {
     "function_name": "bonettRatioTest",
-    "file_path": "js/engines/hypothesis-test-engine.js",
+    "file_path": "js/engines/bonett-engine.js",
     "signature": {
       "parameters": [
         {
