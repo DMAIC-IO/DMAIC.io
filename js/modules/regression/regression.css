@@ -9,55 +9,6 @@
 
 /* Fields use global .field / .field-group (components.css) */
 
-/* Toggle switch */
-.reg__toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-xs) 0;
-}
-
-.reg__toggle-row label {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-}
-
-.reg__toggle {
-  position: relative;
-  width: 36px;
-  height: 20px;
-  background: var(--color-bg-primary);
-  border: var(--border-width) solid var(--color-border-secondary);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
-
-.reg__toggle::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 14px;
-  height: 14px;
-  background: var(--color-text-tertiary);
-  border-radius: 50%;
-  transition: all 0.2s;
-}
-
-.reg__toggle--active {
-  background: var(--color-accent-dim, rgb(74 144 217 / 12%));
-  border-color: var(--color-accent);
-}
-
-.reg__toggle--active::after {
-  left: 18px;
-  background: var(--color-accent);
-}
-
 /* Degree disabled hint */
 .reg__degree-hint {
   display: none;

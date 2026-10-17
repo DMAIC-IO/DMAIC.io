@@ -212,22 +212,6 @@
   font-size: var(--font-size-xs);
 }
 
-/* ─── Toggle switch (shared with reg module) ──────────────────── */
-
-.glm__toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-xs) 0;
-}
-
-.glm__toggle-row label {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-}
-
 /* ─── Save-as-Model action (transfer to Response Optimizer) ───── */
 
 .glm__model-actions {

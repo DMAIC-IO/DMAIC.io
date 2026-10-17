@@ -69,16 +69,15 @@
       </div>
     </div>
 
-    <div class="reg__toggle-row">
-      <label x-text="t('showCI')"></label>
-      <button class="reg__toggle" :class="model.showCI ? 'reg__toggle--active' : ''"
-        data-action="toggle-ci" type="button" @click="toggleCI()"></button>
-    </div>
-
-    <div class="reg__toggle-row">
-      <label x-text="t('showPI')"></label>
-      <button class="reg__toggle" :class="model.showPI ? 'reg__toggle--active' : ''"
-        data-action="toggle-pi" type="button" @click="togglePI()"></button>
+    <div class="field-checks">
+      <label class="field-check">
+        <input type="checkbox" data-action="toggle-ci" :checked="model.showCI" @change="toggleCI()">
+        <span x-text="t('showCI')"></span>
+      </label>
+      <label class="field-check">
+        <input type="checkbox" data-action="toggle-pi" :checked="model.showPI" @change="togglePI()">
+        <span x-text="t('showPI')"></span>
+      </label>
     </div>
 
     <div class="field-error" data-ref="error-box" :style="errorText() ? 'display:block' : 'display:none'" x-text="errorText()"></div>
