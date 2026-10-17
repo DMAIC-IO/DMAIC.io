@@ -168,7 +168,7 @@ const mod = createModule({
       nelsonCollapsed: false,
       toggleNelson() { this.nelsonCollapsed = !this.nelsonCollapsed; },
       nelsonPanelClass() {
-        return this.nelsonCollapsed ? 'control-chart__nelson-panel--collapsed' : '';
+        return this.nelsonCollapsed ? 'field-checks--collapsed' : '';
       },
       nelsonToggleClass() {
         return this.nelsonCollapsed ? 'control-chart__collapsible--collapsed' : '';

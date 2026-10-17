@@ -76,14 +76,14 @@
       <span x-text="t('sectionNelson')"></span>
       <span class="control-chart__chevron icon icon--sm" :data-icon="nelsonCollapsed ? 'nav.expand-right' : 'nav.expand-down'" aria-hidden="true"></span>
     </div>
-    <div class="control-chart__nelson-panel" data-ref="nelson-panel" :class="nelsonPanelClass()">
+    <div class="field-checks" data-ref="nelson-panel" :class="nelsonPanelClass()">
       <template x-for="rule in rulesView()">
-        <label class="control-chart__nelson-rule" :key="rule.id">
+        <label class="field-check" :key="rule.id">
           <input type="checkbox" :data-rule="rule.id" :checked="isRuleEnabled(rule.id)"
             @change="toggleRule(rule.id, $event)">
           <span>
             <strong x-text="rule.short"></strong><br>
-            <span class="control-chart__nelson-desc" x-text="rule.desc"></span>
+            <span class="field-check__desc" x-text="rule.desc"></span>
           </span>
         </label>
       </template>

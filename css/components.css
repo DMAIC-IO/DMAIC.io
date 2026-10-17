@@ -456,6 +456,8 @@ select.input {
 
 .field-checks--collapsed { display: none; }
 
+.field-check strong { font-weight: var(--font-weight-medium); }
+
 /* ── Field feedback: hint text under a field, error box in an input pane ── */
 .field-hint {
   font-size: var(--font-size-xs);

@@ -17,30 +17,6 @@
   color: var(--color-text-secondary);
 }
 
-/* ─── Nelson-Regel-Checkbox-Liste ────────────────────────────── */
-.module-msa-typ6__nelson-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-.module-msa-typ6__nelson-rule {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-xs);
-  cursor: pointer;
-  font-size: 0.9em;
-}
-
-.module-msa-typ6__nelson-rule input[type="checkbox"] {
-  margin-top: var(--spacing-2xs);
-}
-
-.module-msa-typ6__nelson-desc {
-  font-size: 0.85em;
-  color: var(--color-text-secondary);
-}
-
 /* ─── Verdikt-Header + Warnungen migriert → generisches .dmike-infobox
        (css/components.css). Alle __verdict- und __warn-Regeln entfernt
        (Nutzer-Wunsch 2026-07-17). */

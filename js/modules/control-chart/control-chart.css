@@ -29,43 +29,6 @@
   color: var(--color-text-tertiary);
 }
 
-.control-chart__nelson-panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  margin-bottom: var(--spacing-sm);
-}
-
-.control-chart__nelson-panel--collapsed {
-  display: none;
-}
-
-.control-chart__nelson-rule {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-xs);
-  cursor: pointer;
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
-  text-transform: none;
-  letter-spacing: normal;
-}
-
-.control-chart__nelson-rule input[type="checkbox"] {
-  margin-top: var(--spacing-2xs);
-  accent-color: var(--color-accent);
-}
-
-.control-chart__nelson-rule strong {
-  color: var(--color-text-primary);
-  font-weight: var(--font-weight-medium);
-}
-
-.control-chart__nelson-desc {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
-}
-
 /* ── Chart Sections ── */
 
 .control-chart__chart-section {
