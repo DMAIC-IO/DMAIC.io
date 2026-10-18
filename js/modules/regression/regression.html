@@ -265,7 +265,7 @@
                 </template>
                 <template x-if="coefView().hasDetails">
                   <th>
-                    <span data-help-key="modules.regression.types.Coefficient.pval"><span x-text="t('pValue')"></span>
+                    <span class="context-help-anchor--overlay" data-help-key="modules.regression.types.Coefficient.pval"><span x-text="t('pValue')"></span>
                     <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-coefficients')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></span>
                     <button class="reg__sort-btn" :class="model.coefSortByP ? 'reg__sort-btn--active' : ''"
                       data-action="sort-coef-p" :title="t('sortByPValue')" @click="toggleSort()"><span class="icon icon--sm" data-icon="action.sort" aria-hidden="true"></span></button>

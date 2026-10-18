@@ -1798,7 +1798,13 @@ th .context-help-anchor > .context-help__btn {
   background: var(--color-bg-secondary);
 }
 
-[class*="__opt-row"] > span.context-help-anchor > .context-help__btn {
+/* `.context-help-anchor--overlay` ist dasselbe Muster als Klasse für jeden
+   Anker, dessen rechter Nachbar keinen Platz für den Kreis lässt (kleine
+   Glyphe, Knopf, Rand): der Kreis liegt auf dem Ankerende statt daneben.
+   Abstände am Nachbarn wären die falsche Abhilfe — sie verschieben das
+   Layout auch ohne Alt. */
+[class*="__opt-row"] > span.context-help-anchor > .context-help__btn,
+.context-help-anchor.context-help-anchor--overlay > .context-help__btn {
   top: 50%;
   margin-left: -1em;
   border-radius: 50%;
