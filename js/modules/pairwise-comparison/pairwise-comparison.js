@@ -51,13 +51,17 @@ export default createModule({
       contentClass() { return `pairwise__content--${  this.model.viewPhase}`; },
       tabClass(i) {
         const active = ['input', 'compare', 'results'].indexOf(this.model.viewPhase);
-        const cls = [];
-        if (i === active) cls.push('pairwise__tab--active');
-        else if (i < active) cls.push('pairwise__tab--done');
-        if (i === 1 && !this.model.compareReachable) cls.push('pairwise__tab--disabled');
-        if (i === 2 && !this.model.resultsReachable) cls.push('pairwise__tab--disabled');
-        return cls.join(' ');
+        if (i === active) return 'dmike-tab--active';
+        return i < active ? 'dmike-tab--done' : '';
       },
+      /** @returns {boolean} true while the step at index i cannot be reached yet. */
+      isTabLocked(i) {
+        if (i === 1) return !this.model.compareReachable;
+        if (i === 2) return !this.model.resultsReachable;
+        return false;
+      },
+      /** Keeps a mouse click from focusing a tab, so the compare-step arrow keys keep voting. */
+      preventFocus(e) { e.preventDefault(); },
       goToTab(name) {
         if (name === 'input') this.model.viewPhase = 'input';
         else if (name === 'compare' && this.model.compareReachable) this.model.viewPhase = 'compare';

@@ -840,8 +840,30 @@ select.input {
   color: var(--color-text-primary);
 }
 
-.dmike-tab:hover:not(.dmike-tab--active) {
+.dmike-tab:hover:not(.dmike-tab--active):not(:disabled) {
   color: var(--color-text-secondary);
+}
+
+/* Wizard steps: a numbered tab, a completed step, a step not reachable yet. */
+.dmike-tab:has(.dmike-tab__num) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+}
+
+.dmike-tab__num {
+  font-weight: var(--font-weight-semibold);
+  opacity: 0.7;
+}
+
+.dmike-tab--done {
+  color: var(--color-text-secondary);
+}
+
+.dmike-tab:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 .dmike-tab:focus-visible {
