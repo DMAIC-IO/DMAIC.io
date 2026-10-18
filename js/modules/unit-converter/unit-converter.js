@@ -72,6 +72,20 @@ function getTzOffset(tz, date) {
 }
 
 /**
+ * @typedef {object} ConversionResult
+ * @property {number|null} value  das umgerechnete Ergebnis als Zahl, ungerundet; leer, wenn keine Zahl eingegeben oder die Umrechnung undefiniert ist
+ * @property {string} text  das Ergebnis, wie die Seite es zeigt (gerundet, mit Dezimalkomma bzw. -punkt); ein Strich ohne Eingabe, „undefiniert“ bei undefinierter Umrechnung
+ * @property {string} formula  die Umrechnungsformel, wie die Seite sie zeigt, z. B. „1 bar = 100000 Pa“; ein Strich ohne Eingabe
+ */
+
+/**
+ * @typedef {object} TimezoneResult
+ * @property {string} text  die umgerechnete Uhrzeit in der Zielzeitzone, wie die Seite sie zeigt; ein Strich, solange Zeit oder Datum fehlen
+ * @property {string} dateText  das Datum der umgerechneten Uhrzeit mit Wochentag, wie die Seite es zeigt; leer, solange Zeit oder Datum fehlen
+ * @property {number|null} diffHours  der Zeitunterschied der Zielzeitzone zur Ausgangszeitzone in Stunden (positiv = Ziel liegt später, Bruchteile bei halben Stunden); leer, solange Zeit oder Datum fehlen
+ */
+
+/**
  * @typedef {object} AgentRead
  * @property {string} activeCat  key of the active quantity category
  * @property {string} fromUnit  key of the unit converted from
@@ -83,6 +97,8 @@ function getTzOffset(tz, date) {
  * @property {string} tzDate  the conversion date as YYYY-MM-DD, empty if unset
  * @property {string[]} unitKeys  the unit keys `setFromUnit` accepts in the active category
  * @property {string[]} toUnitKeys  the unit keys `setToUnit` accepts for the current source unit
+ * @property {ConversionResult} result  das umgerechnete Ergebnis der Einheitenumrechnung
+ * @property {TimezoneResult} timezone  das Ergebnis der Zeitzonenumrechnung
  */
 export default createModule({
   config: {
@@ -106,10 +122,14 @@ export default createModule({
        * @returns {AgentRead} Einstellungen und die wählbaren Einheiten
        */
       read(options) {
+        // eslint-disable-next-line no-unused-vars -- diffText gehört nur zur Anzeige
+        const { diffText, ...timezone } = this.tzComparison();
         return readAgentState('unit-converter', {
           ...this.model.toJSON(),
           unitKeys: Object.keys(this.model.unitKeys()),
           toUnitKeys: this.model.toUnitKeys(),
+          result: this.conversion(),
+          timezone,
         }, options);
       },
 
@@ -194,22 +214,33 @@ export default createModule({
       fmt: (n) => formatNumber(n),
       /** @noagent view transform: eine Zahl oder der Gedankenstrich für „kein Wert". */
       fmtResult: (n) => (n === null ? '—' : formatNumber(n)),
-      /** @noagent view transform: das umgerechnete Ergebnis in Anzeigeform. */
-      resultText() {
+      /**
+       * @noagent view transform: die Umrechnung als Zahl und in Anzeigeform;
+       * Anzeige und Lesefläche stammen aus dieser einen Rechnung.
+       * @returns {ConversionResult}
+       */
+      conversion() {
         const num = this.model.parsedInput();
-        if (isNaN(num)) return '—';
+        if (isNaN(num)) return { value: null, text: '—', formula: '—' };
         const r = this.model.result();
-        return r === null ? _t('undefined') : formatNumber(r);
-      },
-      /** @noagent view transform: die Umrechnungsformel in Anzeigeform. */
-      formulaText() {
-        const num = this.model.parsedInput();
-        if (isNaN(num)) return '—';
         const v = this.model.formulaValue();
         const from = this.model.fromUnit;
         const to = this.model.toUnit;
-        if (v === null) return `${_t('logConversion')  } (${  from  } → ${  to  })`;
-        return `1 ${  from  } = ${  formatNumber(v)  } ${  to}`;
+        return {
+          value: r,
+          text: r === null ? _t('undefined') : formatNumber(r),
+          formula: v === null
+            ? `${_t('logConversion')  } (${  from  } → ${  to  })`
+            : `1 ${  from  } = ${  formatNumber(v)  } ${  to}`,
+        };
+      },
+      /** @noagent view transform: das umgerechnete Ergebnis in Anzeigeform. */
+      resultText() {
+        return this.conversion().text;
+      },
+      /** @noagent view transform: die Umrechnungsformel in Anzeigeform. */
+      formulaText() {
+        return this.conversion().formula;
       },
       /** @noagent view transform: die Zeilen der Schnellübersicht. */
       refRows() {
@@ -303,36 +334,44 @@ export default createModule({
         return { utc: new Date(tempDate.getTime() - fromOffset * 60000), fromOffset, fromTz };
       },
 
-      /** @noagent view transform: die umgerechnete Uhrzeit in Anzeigeform. */
-      tzResultText() {
+      /**
+       * @noagent view transform: der Zeitzonenvergleich als Zahl und in
+       * Anzeigeform; Anzeige und Lesefläche stammen aus dieser einen Rechnung.
+       * @returns {TimezoneResult & {diffText: string}}
+       */
+      tzComparison() {
         const ctx = this._utcFromInput();
         const toTz = TIMEZONES[this.model.tzTo]?.tz;
-        if (!ctx || !toTz) return '—';
+        if (!ctx || !toTz) return { text: '—', dateText: '', diffHours: null, diffText: '—' };
         const time = new Intl.DateTimeFormat(lang(), {
           timeZone: toTz, hour: '2-digit', minute: '2-digit', hour12: false,
         }).format(ctx.utc);
-        return time + (isDe() ? ' Uhr' : '');
-      },
-      /** @noagent view transform: das Datum der umgerechneten Uhrzeit. */
-      tzResultDateText() {
-        const ctx = this._utcFromInput();
-        const toTz = TIMEZONES[this.model.tzTo]?.tz;
-        if (!ctx || !toTz) return '';
-        return new Intl.DateTimeFormat(lang(), {
+        const dateText = new Intl.DateTimeFormat(lang(), {
           timeZone: toTz, weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit',
         }).format(ctx.utc);
-      },
-      /** @noagent view transform: der Zeitunterschied beider Zeitzonen. */
-      tzDiffText() {
-        const ctx = this._utcFromInput();
-        const toTz = TIMEZONES[this.model.tzTo]?.tz;
-        if (!ctx || !toTz) return '—';
         const toOffset = getTzOffset(toTz, ctx.utc);
         const diff = toOffset - ctx.fromOffset;
         const sign = diff >= 0 ? '+' : '';
         const diffH = Math.trunc(diff / 60);
         const diffM = Math.abs(diff % 60);
-        return `${sign}${diffH}h${diffM ? ` ${diffM}min` : ''} (${getTzAbbr(ctx.fromTz, ctx.utc)} → ${getTzAbbr(toTz, ctx.utc)})`;
+        return {
+          text: time + (isDe() ? ' Uhr' : ''),
+          dateText,
+          diffHours: diff / 60,
+          diffText: `${sign}${diffH}h${diffM ? ` ${diffM}min` : ''} (${getTzAbbr(ctx.fromTz, ctx.utc)} → ${getTzAbbr(toTz, ctx.utc)})`,
+        };
+      },
+      /** @noagent view transform: die umgerechnete Uhrzeit in Anzeigeform. */
+      tzResultText() {
+        return this.tzComparison().text;
+      },
+      /** @noagent view transform: das Datum der umgerechneten Uhrzeit. */
+      tzResultDateText() {
+        return this.tzComparison().dateText;
+      },
+      /** @noagent view transform: der Zeitunterschied beider Zeitzonen. */
+      tzDiffText() {
+        return this.tzComparison().diffText;
       },
 
       /**

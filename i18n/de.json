@@ -11833,10 +11833,10 @@
           "help": "Eingang: die Einheit, aus der umgerechnet wird; darunter steht der Wert, der umgerechnet wird. Der Agent liest hier den Einheitenschlüssel der aktiven Größenart."
         },
         "toUnit": {
-          "help": "Ausgang: die Einheit, in die umgerechnet wird; darunter steht das Ergebnis, das in keinem Lesefeld erscheint. Der Agent liest hier den Einheitenschlüssel der aktiven Größenart."
+          "help": "Ausgang: die Einheit, in die umgerechnet wird; darunter steht das Ergebnis, das der Agent unter result liest. Der Agent liest hier den Einheitenschlüssel der aktiven Größenart."
         },
         "inputVal": {
-          "help": "Der eingegebene Wert als Text; ein Komma gilt als Dezimaltrennzeichen. Leer heißt: nichts eingegeben. Das umgerechnete Ergebnis ist gerechnet und steht in keinem Feld."
+          "help": "Der eingegebene Wert als Text; ein Komma gilt als Dezimaltrennzeichen. Leer heißt: nichts eingegeben. Das umgerechnete Ergebnis steht unter result."
         },
         "tzFrom": {
           "help": "Von Zeitzone: die Ausgangszeitzone, deren Uhrzeit und Datum darunter eingegeben werden. Der Agent liest hier die Position in der Zeitzonenliste; 0 ist UTC, 1 Berlin."
@@ -11849,6 +11849,24 @@
         },
         "tzDate": {
           "help": "Das Datum der Umrechnung als YYYY-MM-DD; leer heißt nicht gesetzt."
+        },
+        "result": {
+          "help": "Das Ergebnis der Einheitenumrechnung, jede Angabe unter keys einzeln beschrieben. Es steht unter dem Ausgang und ändert sich mit Eingabe und Einheiten."
+        },
+        "timezone": {
+          "help": "Das Ergebnis der Zeitzonenumrechnung, jede Angabe unter keys einzeln beschrieben. Solange Uhrzeit oder Datum fehlen, ist es leer."
+        }
+      },
+      "types": {
+        "ConversionResult": {
+          "value": "Das umgerechnete Ergebnis als Zahl, ungerundet, so wie die Rechnung es liefert. Leer, wenn keine Zahl eingegeben ist oder die Umrechnung für diesen Wert nicht definiert ist.",
+          "text": "Das Ergebnis, wie es unter dem Ausgang steht: gerundet und mit Dezimalkomma. Ein Strich, solange nichts eingegeben ist; „undefiniert“, wenn die Umrechnung für den Wert nicht definiert ist.",
+          "formula": "Die Umrechnungsformel, wie sie unter „Formel“ steht, zum Beispiel „1 bar = 100000 Pa“, also der Wert einer Einheit des Eingangs in der Einheit des Ausgangs. Bei logarithmischen Größen steht „logarithmische Umrechnung“ mit beiden Einheiten; ein Strich, solange nichts eingegeben ist."
+        },
+        "TimezoneResult": {
+          "text": "Die umgerechnete Uhrzeit in der Zielzeitzone, wie sie unter „Nach Zeitzone“ steht, zum Beispiel „08:45 Uhr“. Ein Strich, solange Uhrzeit oder Datum fehlen.",
+          "dateText": "Das Datum der umgerechneten Uhrzeit mit Wochentag, wie es unter der Uhrzeit steht; es kann vom Datum der Eingabe abweichen, wenn die Umrechnung über Mitternacht geht. Leer, solange Uhrzeit oder Datum fehlen.",
+          "diffHours": "Der Zeitunterschied der Zielzeitzone zur Ausgangszeitzone in Stunden, wie bei „Differenz“ angezeigt: positiv, wenn die Zielzeitzone später liegt, mit Bruchteilen bei halben Stunden (5,5 für fünfeinhalb Stunden). Er berücksichtigt Sommerzeit zum eingegebenen Datum. Leer, solange Uhrzeit oder Datum fehlen."
         }
       }
     },

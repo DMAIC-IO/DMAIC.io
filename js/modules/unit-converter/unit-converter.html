@@ -53,12 +53,12 @@
               <option :key="uk" :value="uk" :selected="model.toUnit === uk" x-text="unitLabel(uk)"></option>
             </template>
           </select>
-          <div class="module-unit-converter__result" data-ref="resultVal" x-text="resultText()"></div>
+          <div class="module-unit-converter__result" data-ref="resultVal" data-help-key="modules.unit-converter.types.ConversionResult.text" x-text="resultText()"></div>
         </div>
       </div>
       <div class="module-unit-converter__formula">
         <span class="module-unit-converter__formula-label" x-text="t('formula')"></span>
-        <span data-ref="formulaText" x-text="formulaText()"></span>
+        <span data-ref="formulaText" data-help-key="modules.unit-converter.types.ConversionResult.formula" x-text="formulaText()"></span>
       </div>
     </div>
   </div>
@@ -121,13 +121,13 @@
                 <option :key="i" :value="i" :selected="model.tzTo === i" x-text="tzLabel(z)"></option>
               </template>
             </select>
-            <div class="module-unit-converter__tz-result" data-ref="tzResult" x-text="tzResultText()"></div>
-            <div class="module-unit-converter__tz-result-date" data-ref="tzResultDate" x-text="tzResultDateText()"></div>
+            <div class="module-unit-converter__tz-result" data-ref="tzResult" data-help-key="modules.unit-converter.types.TimezoneResult.text" x-text="tzResultText()"></div>
+            <div class="module-unit-converter__tz-result-date" data-ref="tzResultDate" data-help-key="modules.unit-converter.types.TimezoneResult.dateText" x-text="tzResultDateText()"></div>
           </div>
         </div>
         <div class="module-unit-converter__formula">
           <span class="module-unit-converter__formula-label" x-text="t('difference')"></span>
-          <span data-ref="tzDiff" x-text="tzDiffText()"></span>
+          <span data-ref="tzDiff" data-help-key="modules.unit-converter.types.TimezoneResult.diffHours" x-text="tzDiffText()"></span>
         </div>
         <button class="module-unit-converter__tz-now-btn" type="button" data-action="tz-now" data-help-key="modules.unit-converter.actions.tzSetNow.help" @click="tzSetNow()">
           <span class="icon icon--sm icon--text" data-icon="status.time" aria-hidden="true"></span>

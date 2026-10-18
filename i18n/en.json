@@ -11829,10 +11829,10 @@
           "help": "From: the unit converted from; the value to convert is entered below it. The agent reads the unit key of the active category here."
         },
         "toUnit": {
-          "help": "To: the unit converted to; the result, which appears in no read field, is shown below it. The agent reads the unit key of the active category here."
+          "help": "To: the unit converted to; the result is shown below it and the agent reads it under result. The agent reads the unit key of the active category here."
         },
         "inputVal": {
-          "help": "The entered value as text; a comma counts as the decimal separator. Empty means nothing entered. The converted result is computed and lives in no field."
+          "help": "The entered value as text; a comma counts as the decimal separator. Empty means nothing entered. The converted result is read under result."
         },
         "tzFrom": {
           "help": "From Timezone: the source time zone, whose time and date are entered below it. The agent reads the position in the time-zone list here; 0 is UTC, 1 Berlin."
@@ -11845,6 +11845,24 @@
         },
         "tzDate": {
           "help": "The date of the conversion as YYYY-MM-DD; empty means not set."
+        },
+        "result": {
+          "help": "The result of the unit conversion, each entry described individually under keys. It is shown below the To unit and changes with the input and the units."
+        },
+        "timezone": {
+          "help": "The result of the time-zone conversion, each entry described individually under keys. While the time or the date is missing, it is empty."
+        }
+      },
+      "types": {
+        "ConversionResult": {
+          "value": "The converted result as a number, unrounded, as the calculation returns it. Empty when no number is entered or the conversion is not defined for this value.",
+          "text": "The result as shown below the To unit: rounded and with a decimal point. A dash while nothing is entered; \"undefined\" when the conversion is not defined for the value.",
+          "formula": "The conversion formula as shown under \"Formula\", for example \"1 bar = 100000 Pa\", that is the value of one From unit in the To unit. For logarithmic quantities it reads \"logarithmic conversion\" with both units; a dash while nothing is entered."
+        },
+        "TimezoneResult": {
+          "text": "The converted time in the target time zone as shown under \"To Timezone\", for example \"08:45\". A dash while the time or the date is missing.",
+          "dateText": "The date of the converted time with the weekday, as shown below the time; it can differ from the entered date when the conversion crosses midnight. Empty while the time or the date is missing.",
+          "diffHours": "The time difference of the target zone from the source zone in hours, as shown under \"Difference\": positive when the target zone is later, with fractions for half hours (5.5 for five and a half hours). It accounts for daylight saving at the entered date. Empty while the time or the date is missing."
         }
       }
     },

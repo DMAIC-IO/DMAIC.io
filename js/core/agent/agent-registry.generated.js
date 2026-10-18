@@ -18262,6 +18262,48 @@ export const AGENT_REGISTRY = {
         "help": "the unit keys `setToUnit` accepts for the current source unit",
         "bulk": false,
         "derived": true
+      },
+      "result": {
+        "type": "ConversionResult",
+        "help": "das umgerechnete Ergebnis der Einheitenumrechnung",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "ConversionResult",
+        "keys": {
+          "value": {
+            "type": "number|null",
+            "help": "das umgerechnete Ergebnis als Zahl, ungerundet; leer, wenn keine Zahl eingegeben oder die Umrechnung undefiniert ist"
+          },
+          "text": {
+            "type": "string",
+            "help": "das Ergebnis, wie die Seite es zeigt (gerundet, mit Dezimalkomma bzw. -punkt); ein Strich ohne Eingabe, „undefiniert“ bei undefinierter Umrechnung"
+          },
+          "formula": {
+            "type": "string",
+            "help": "die Umrechnungsformel, wie die Seite sie zeigt, z. B. „1 bar = 100000 Pa“; ein Strich ohne Eingabe"
+          }
+        }
+      },
+      "timezone": {
+        "type": "TimezoneResult",
+        "help": "das Ergebnis der Zeitzonenumrechnung",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "TimezoneResult",
+        "keys": {
+          "text": {
+            "type": "string",
+            "help": "die umgerechnete Uhrzeit in der Zielzeitzone, wie die Seite sie zeigt; ein Strich, solange Zeit oder Datum fehlen"
+          },
+          "dateText": {
+            "type": "string",
+            "help": "das Datum der umgerechneten Uhrzeit mit Wochentag, wie die Seite es zeigt; leer, solange Zeit oder Datum fehlen"
+          },
+          "diffHours": {
+            "type": "number|null",
+            "help": "der Zeitunterschied der Zielzeitzone zur Ausgangszeitzone in Stunden (positiv = Ziel liegt später, Bruchteile bei halben Stunden); leer, solange Zeit oder Datum fehlen"
+          }
+        }
       }
     }
   },
