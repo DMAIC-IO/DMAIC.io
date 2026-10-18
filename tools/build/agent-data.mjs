@@ -399,6 +399,8 @@ function findTypedefLiteral(sf, name) {
  * Typedef der Datei (auch als Liste oder mit `|null`), kommen deren
  * Schlüssel verschachtelt dazu (`keysOf`, `keys`). Eine Typedef, die auf dem
  * Pfad schon offen ist, wird nicht erneut aufgelöst — kein Zyklus.
+ * Gerufen für die Viewmodel-Datei (`AgentRead`, `keyof`) und für die
+ * Model-Datei (Felder einer Model-Klasse, `classFields`).
  *
  * @param {ts.SourceFile} sf
  * @param {string} name  der Typedef-Name
@@ -1755,7 +1757,11 @@ function classFields(resolver, node, sf, violations, path, depth) {
       }
     }
   }
-  for (const [name, field] of ownFields(node)) fields[name] = field;
+  // Ein Feld vom Typ einer Typedef DIESER Datei (`@type {LessonEntry[]}`)
+  // bekommt deren Schlüssel wie ein erklärtes `AgentRead`-Feld — ein Satz je
+  // Eigenschaft für Agent und Formularbeschriftung. Gesucht wird in der
+  // Datei der Klasse, die das Feld deklariert (bei Vererbung die Basis).
+  for (const [name, field] of ownFields(node)) fields[name] = { ...field, ...nestedKeys(sf, field.type, new Set()) };
   path.delete(self);
   return fields;
 }

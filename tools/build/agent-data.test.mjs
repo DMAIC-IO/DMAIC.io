@@ -3093,3 +3093,43 @@ test('Ausgaben: eine Typedef, die sich selbst enthält, bricht die Auflösung ni
   assert.equal(again.type, 'BiasTest');
   assert.equal('keys' in again, false, 'eine zweite Ebene derselben Typedef wird nicht aufgelöst');
 });
+
+const RECORD_MODEL = `/**
+ * Eine Zeile, wie toJSON() sie liefert.
+ * @typedef {object} Entry
+ * @property {string} id  die Kennung
+ * @property {Note[]} notes  die Notizen
+ */
+
+/**
+ * @typedef {object} Note
+ * @property {string} text  der Text
+ */
+export class State {
+  /**
+   * @type {Entry[]} die Zeilen
+   * @agentBulk
+   */
+  entries = [];
+  /** @type {Unknown[]} ohne Typedef */
+  others = [];
+  toJSON() { return { entries: this.entries, others: this.others }; }
+}`;
+
+test('Ausgaben: ein Model-Feld vom Typ einer Typedef der Model-Datei trägt keys und keysOf', () => {
+  const { modules } = collectAgentData(fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': RECORD_MODEL } }));
+  const entries = modules.foo.fields.entries;
+  assert.equal(entries.type, 'Entry[]');
+  assert.equal(entries.bulk, true);
+  assert.equal(entries.keysOf, 'Entry');
+  assert.deepEqual(Object.keys(entries.keys), ['id', 'notes']);
+  assert.deepEqual(entries.keys.id, { type: 'string', help: 'die Kennung' });
+  assert.equal(entries.keys.notes.keysOf, 'Note');
+  assert.deepEqual(Object.keys(entries.keys.notes.keys), ['text']);
+});
+
+test('Ausgaben: ein Model-Feld ohne passende Typedef bleibt ohne keys', () => {
+  const { modules } = collectAgentData(fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': RECORD_MODEL } }));
+  assert.equal('keys' in modules.foo.fields.others, false);
+  assert.deepEqual(modules.foo.fields.entries.help, 'die Zeilen');
+});
