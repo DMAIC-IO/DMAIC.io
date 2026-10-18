@@ -102,7 +102,7 @@ const ITEM_FIELDS = ['id', 'nodeId', 'label', 'path', 'missing'];
  * @property {number} items  Zahl der Merkmale
  * @property {number} respondents  Zahl der Befragten
  * @property {number} completeness  Anteil klassifizierter Antworten, 0–1
- * @property {number} qShare  Anteil fragwürdiger Antworten, 0–1
+ * @property {number} qShare  Anteil widersprüchlicher Antworten, 0–1
  */
 
 /**

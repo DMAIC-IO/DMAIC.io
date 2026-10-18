@@ -1336,8 +1336,8 @@
           "role": "The role or organization of the stakeholder, up to 200 characters, for example department head or supplier.",
           "power": "The stakeholder's power over the project, an integer from 1 (low) to 5 (high); 3 when not given. Together with interest it decides the quadrant of the power-interest matrix: 4 and above counts as high.",
           "interest": "The stakeholder's interest in the project, an integer from 1 (low) to 5 (high); 3 when not given. Together with power it decides the quadrant of the power-interest matrix: 4 and above counts as high; high on both gives Manage Closely, only power high Keep Satisfied, only interest high Keep Informed, otherwise Monitor.",
-          "support": "The stakeholder's attitude to the project: supporter (Supporter), neutral (Neutral, the default) or critic (Critic). A critic with high power and high interest triggers the warning about critics among the key stakeholders. A value from an import or an older project may differ; it is kept unchanged, coloured like a critic and shown without translation, but does not count toward the warning.",
-          "category": "The category of the stakeholder: intern (Internal, the default), extern (External), kunde (Customer), lieferant (Supplier) or behoerde (Authority). A value from an import or an older project may differ; it is kept unchanged and shown without translation.",
+          "support": "The stakeholder's attitude to the project: supporter (Supporter), neutral (Neutral, the default) or critic (Critic). A critic with high power and high interest triggers the warning about critics among the key stakeholders. A value from an import or an older project may differ; it is kept unchanged until the entry is saved in the form (the form resets it to Neutral). In the matrix it is coloured like a critic, the table shows it without translation; it does not count toward the warning.",
+          "category": "The category of the stakeholder: intern (Internal, the default), extern (External), kunde (Customer), lieferant (Supplier) or behoerde (Authority). A value from an import or an older project may differ; it is kept unchanged and shown without translation until the entry is saved in the form (the form resets it to Internal).",
           "notes": "The stakeholder's expectations and concerns as free text, up to 500 characters."
         }
       },
@@ -1451,7 +1451,7 @@
             "vocId": "The id of the statement. An unknown id is an error.",
             "needId": "The id of the need. An unknown id is an error.",
             "text": "The wording of the driver. Empty wording adds nothing and returns null; a missing argument is an error.",
-            "type": "The driver kind: ctq for quality, ctd for delivery, ctc for cost — what is decisive to the customer about quality, delivery or cost (Critical to Quality, Delivery, Cost). Any other value is an error."
+            "type": "The driver's type: ctq for quality, ctd for delivery, ctc for cost — what is decisive to the customer about quality, delivery or cost (Critical to Quality, Delivery, Cost). Any other value is an error."
           }
         },
         "updateDriver": {
@@ -1461,7 +1461,7 @@
             "needId": "The id of the need. An unknown id is an error.",
             "drvId": "The id of the driver as read() lists it under vocs[].needs[].drivers. An unknown id is an error.",
             "text": "The new wording. Empty wording changes nothing and returns false; a missing argument is an error.",
-            "type": "The driver kind: ctq for quality, ctd for delivery, ctc for cost. Any other value is an error."
+            "type": "The driver's type: ctq for quality, ctd for delivery, ctc for cost — what is decisive to the customer about quality, delivery or cost (Critical to Quality, Delivery, Cost). Any other value is an error."
           }
         },
         "deleteDriver": {
@@ -1728,7 +1728,7 @@
       },
       "types": {
         "AnswerField": {
-          "f": "The functional question: how would you feel if the feature is present? Five levels: 1 I would be very happy, 2 I expect it, 3 I am indifferent to it, 4 I could accept it, 5 I would dislike it a lot; empty means unanswered. Together with the dysfunctional answer it gives the category of this answer by Kano's evaluation table: happy when present and annoyed when absent is a performance feature; happy when present and neutral when absent is an attractive feature; neutral when present and annoyed when absent is a must-be feature; neutral both ways is indifferent. A pair is questionable only for 1 and 1 or 5 and 5; reverse is any combination in which the absence is rated better than the presence. If either answer is missing, the pair is not classified.",
+          "f": "The functional question: how would you feel if the feature is present? Five levels: 1 I would be very happy, 2 I expect it, 3 I am indifferent to it, 4 I could accept it, 5 I would dislike it a lot; empty means unanswered. Together with the dysfunctional answer it gives the category of this answer by Kano's evaluation table: happy when present and annoyed when absent is a performance feature; happy when present and neutral when absent is an attractive feature; neutral when present and annoyed when absent is a must-be feature; neutral both ways is indifferent. A pair is questionable only for 1 and 1 or 5 and 5. It is reverse when the absence would make you very happy (1) while the presence is only expected, neutral or acceptable (2 to 4), or when the presence would annoy you a lot (5) but the absence would not (1 to 4); other pairs such as 3 and 2 are indifferent. If either answer is missing, the pair is not classified.",
           "d": "The dysfunctional question: how would you feel if the feature is absent? The same five levels as the functional question: 1 I would be very happy, 2 I expect it, 3 I am indifferent to it, 4 I could accept it, 5 I would dislike it a lot; empty means unanswered. Only the pair of functional and dysfunctional answer gives the category by Kano's evaluation table; if either is missing, the pair is not classified.",
           "w": "How important the feature is to the respondent, from 1 not at all important to 9 extremely important; empty means unanswered. It is only captured and evaluated when the option \"Capture importance\" is on; it then sets the order within a category and the bubble size in the chart."
         },
@@ -1756,7 +1756,7 @@
           "O": "Performance: presence pleases, absence annoys; the better fulfilled, the more satisfied. The number of respondents who classify the feature this way.",
           "A": "Attractive: presence delights, absence is neutral and not missed. The number of respondents who classify the feature this way.",
           "I": "Indifferent: presence and absence are both neutral, the feature hardly affects satisfaction. The number of respondents who classify the feature this way.",
-          "R": "Reverse: the answers run against the expected direction, absence is rated better than presence. The number of respondents who classify the feature this way.",
+          "R": "Reverse: the answers run against the expected direction, namely when the absence would make you very happy (1) while the presence is only expected, neutral or acceptable (2 to 4), or when the presence would annoy you a lot (5) but the absence would not (1 to 4). The number of respondents who classify the feature this way.",
           "Q": "Questionable: both answers are equally extreme (1 and 1 or 5 and 5) and contradict each other, the question was probably misunderstood. The number of respondents who classify the feature this way."
         },
         "KanoTotals": {
@@ -2062,7 +2062,7 @@
           }
         },
         "setLoopTarget": {
-          "help": "Sets a loop's target step (which earlier step it loops back to). If the step carries no loop, or the chosen target step does not come before this step in the chain, nothing happens.",
+          "help": "Sets a loop's target step (which earlier step it loops back to). Without a target step the loop's target is cleared. If the step carries no loop, or the chosen target step does not come before this step in the chain, nothing happens.",
           "params": {
             "stepId": "The step's id. An unknown id is an error.",
             "targetStepId": "The id of an existing step, or null/an empty string to clear the target. An unknown id is an error; a known id that does not lie BEFORE stepId in the chain returns false."

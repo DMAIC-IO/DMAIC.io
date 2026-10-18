@@ -7166,7 +7166,7 @@ export const AGENT_REGISTRY = {
               },
               "qShare": {
                 "type": "number",
-                "help": "Anteil fragwürdiger Antworten, 0–1"
+                "help": "Anteil widersprüchlicher Antworten, 0–1"
               }
             }
           }

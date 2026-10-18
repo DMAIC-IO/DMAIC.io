@@ -1336,8 +1336,8 @@
           "role": "Die Rolle oder Organisation des Beteiligten, bis zu 200 Zeichen, zum Beispiel Fachbereichsleiter oder Lieferant.",
           "power": "Der Einfluss des Beteiligten auf das Projekt, eine ganze Zahl von 1 (gering) bis 5 (hoch); ohne Angabe 3. Zusammen mit dem Interesse bestimmt er den Quadranten der Einfluss-Interesse-Matrix: ab 4 gilt der Einfluss als hoch.",
           "interest": "Das Interesse des Beteiligten am Projekt, eine ganze Zahl von 1 (gering) bis 5 (hoch); ohne Angabe 3. Zusammen mit dem Einfluss bestimmt es den Quadranten der Einfluss-Interesse-Matrix: ab 4 gilt das Interesse als hoch, hoch und hoch ergibt Eng managen, nur Einfluss hoch Zufriedenstellen, nur Interesse hoch Informieren, sonst Beobachten.",
-          "support": "Die Einstellung des Beteiligten zum Projekt: supporter (Unterstützer), neutral (Neutral, die Vorgabe) oder critic (Kritiker). Ein Kritiker mit hohem Einfluss und hohem Interesse löst die Warnung unter den Schlüssel-Stakeholdern aus. Aus einem Import oder einem älteren Projekt können auch andere Werte stammen; sie bleiben unverändert stehen, werden wie ein Kritiker gefärbt und ohne Übersetzung angezeigt, zählen aber nicht für die Warnung.",
-          "category": "Die Kategorie des Beteiligten: intern (Intern, die Vorgabe), extern (Extern), kunde (Kunde), lieferant (Lieferant) oder behoerde (Behörde). Aus einem Import oder einem älteren Projekt können auch andere Werte stammen; sie bleiben unverändert stehen und werden ohne Übersetzung angezeigt.",
+          "support": "Die Einstellung des Beteiligten zum Projekt: supporter (Unterstützer), neutral (Neutral, die Vorgabe) oder critic (Kritiker). Ein Kritiker mit hohem Einfluss und hohem Interesse löst die Warnung unter den Schlüssel-Stakeholdern aus. Aus einem Import oder einem älteren Projekt können auch andere Werte stammen; sie bleiben unverändert stehen, solange der Eintrag nicht im Formular gespeichert wird (das Formular setzt sie auf Neutral zurück). In der Matrix werden sie wie ein Kritiker gefärbt, die Tabelle zeigt sie ohne Übersetzung an; für die Warnung zählen sie nicht.",
+          "category": "Die Kategorie des Beteiligten: intern (Intern, die Vorgabe), extern (Extern), kunde (Kunde), lieferant (Lieferant) oder behoerde (Behörde). Aus einem Import oder einem älteren Projekt können auch andere Werte stammen; sie bleiben unverändert stehen und werden ohne Übersetzung angezeigt, bis der Eintrag im Formular gespeichert wird (das Formular setzt sie auf Intern zurück).",
           "notes": "Erwartungen und Bedenken des Beteiligten in freiem Text, bis zu 500 Zeichen."
         }
       },
@@ -1451,7 +1451,7 @@
             "vocId": "Die id der Kundenstimme. Eine unbekannte id ist ein Fehler.",
             "needId": "Die id des Bedürfnisses. Eine unbekannte id ist ein Fehler.",
             "text": "Der Wortlaut des Treibers. Ein leerer Wortlaut legt nichts an und liefert null zurück; ein fehlendes Argument ist ein Fehler.",
-            "type": "Die Treiberart: ctq für Qualität, ctd für Lieferung, ctc für Kosten — also das, was dem Kunden an Qualität, Lieferung oder Kosten entscheidend ist (Critical to Quality, Delivery, Cost). Jeder andere Wert ist ein Fehler."
+            "type": "Der Typ des Treibers: ctq für Qualität, ctd für Lieferung, ctc für Kosten — also das, was dem Kunden an Qualität, Lieferung oder Kosten entscheidend ist (Critical to Quality, Delivery, Cost). Jeder andere Wert ist ein Fehler."
           }
         },
         "updateDriver": {
@@ -1461,7 +1461,7 @@
             "needId": "Die id des Bedürfnisses. Eine unbekannte id ist ein Fehler.",
             "drvId": "Die id des Treibers, wie read() sie unter vocs[].needs[].drivers führt. Eine unbekannte id ist ein Fehler.",
             "text": "Der neue Wortlaut. Ein leerer Wortlaut ändert nichts und liefert false zurück; ein fehlendes Argument ist ein Fehler.",
-            "type": "Die Treiberart: ctq für Qualität, ctd für Liefertreue, ctc für Kosten. Jeder andere Wert ist ein Fehler."
+            "type": "Der Typ des Treibers: ctq für Qualität, ctd für Lieferung, ctc für Kosten — also das, was dem Kunden an Qualität, Lieferung oder Kosten entscheidend ist (Critical to Quality, Delivery, Cost). Jeder andere Wert ist ein Fehler."
           }
         },
         "deleteDriver": {
@@ -1728,7 +1728,7 @@
       },
       "types": {
         "AnswerField": {
-          "f": "Die funktionale Frage: Wie fänden Sie es, wenn das Merkmal vorhanden ist? Fünf Stufen: 1 würde mich sehr freuen, 2 setze ich voraus, 3 ist mir egal, 4 könnte ich in Kauf nehmen, 5 würde mich sehr stören; leer heißt unbeantwortet. Zusammen mit der dysfunktionalen Antwort ergibt sie nach der Auswertungstabelle von Kano die Kategorie dieser Antwort: Freut mich bei Vorhandensein und stört bei Fehlen, ist es ein Leistungsmerkmal; freut mich bei Vorhandensein und ist bei Fehlen mittelmäßig, ein Begeisterungsmerkmal; ist bei Vorhandensein mittelmäßig und stört bei Fehlen, ein Basismerkmal; sind beide Antworten mittelmäßig, ist es indifferent. Widersprüchlich ist ein Paar nur bei 1 und 1 oder 5 und 5, umgekehrt zählt jede Kombination, bei der das Fehlen besser bewertet wird als das Vorhandensein. Fehlt eine der beiden Antworten, wird das Paar nicht klassifiziert.",
+          "f": "Die funktionale Frage: Wie fänden Sie es, wenn das Merkmal vorhanden ist? Fünf Stufen: 1 würde mich sehr freuen, 2 setze ich voraus, 3 ist mir egal, 4 könnte ich in Kauf nehmen, 5 würde mich sehr stören; leer heißt unbeantwortet. Zusammen mit der dysfunktionalen Antwort ergibt sie nach der Auswertungstabelle von Kano die Kategorie dieser Antwort: Freut mich bei Vorhandensein und stört bei Fehlen, ist es ein Leistungsmerkmal; freut mich bei Vorhandensein und ist bei Fehlen mittelmäßig, ein Begeisterungsmerkmal; ist bei Vorhandensein mittelmäßig und stört bei Fehlen, ein Basismerkmal; sind beide Antworten mittelmäßig, ist es indifferent. Widersprüchlich ist ein Paar nur bei 1 und 1 oder 5 und 5. Umgekehrt ist es, wenn das Fehlen sehr freut (1), das Vorhandensein aber nur vorausgesetzt, egal oder hinnehmbar ist (2 bis 4), oder wenn das Vorhandensein sehr stört (5), das Fehlen aber nicht (1 bis 4); andere Paare wie 3 und 2 sind indifferent. Fehlt eine der beiden Antworten, wird das Paar nicht klassifiziert.",
           "d": "Die dysfunktionale Frage: Wie fänden Sie es, wenn das Merkmal fehlt? Dieselben fünf Stufen wie bei der funktionalen Frage: 1 würde mich sehr freuen, 2 setze ich voraus, 3 ist mir egal, 4 könnte ich in Kauf nehmen, 5 würde mich sehr stören; leer heißt unbeantwortet. Erst das Paar aus funktionaler und dysfunktionaler Antwort ergibt nach der Auswertungstabelle von Kano die Kategorie; fehlt eine der beiden, wird das Paar nicht klassifiziert.",
           "w": "Die Wichtigkeit des Merkmals für die Befragte, von 1 völlig unwichtig bis 9 außerordentlich wichtig; leer heißt unbeantwortet. Sie wird nur erfasst und ausgewertet, wenn die Option „Wichtigkeit erfassen“ eingeschaltet ist; sie bestimmt dann die Reihenfolge innerhalb einer Kategorie und die Blasengröße im Diagramm."
         },
@@ -1756,7 +1756,7 @@
           "O": "Leistungsmerkmal: Das Vorhandensein freut, das Fehlen stört; je besser erfüllt, desto zufriedener. Die Zahl der Befragten, die das Merkmal so einordnen.",
           "A": "Begeisterungsmerkmal: Das Vorhandensein freut sehr, das Fehlen ist mittelmäßig und wird nicht vermisst. Die Zahl der Befragten, die das Merkmal so einordnen.",
           "I": "Indifferent: Vorhandensein wie Fehlen sind mittelmäßig, das Merkmal beeinflusst die Zufriedenheit kaum. Die Zahl der Befragten, die das Merkmal so einordnen.",
-          "R": "Umgekehrt: Die Antworten widersprechen der Richtung, das Fehlen wird besser bewertet als das Vorhandensein. Die Zahl der Befragten, die das Merkmal so einordnen.",
+          "R": "Umgekehrt: Die Antworten widersprechen der Richtung, nämlich wenn das Fehlen sehr freut (1), das Vorhandensein aber nur vorausgesetzt, egal oder hinnehmbar ist (2 bis 4), oder wenn das Vorhandensein sehr stört (5), das Fehlen aber nicht (1 bis 4). Die Zahl der Befragten, die das Merkmal so einordnen.",
           "Q": "Widersprüchlich: Beide Antworten sind gleich extrem (1 und 1 oder 5 und 5) und widersprechen sich, die Frage wurde vermutlich missverstanden. Die Zahl der Befragten, die das Merkmal so einordnen."
         },
         "KanoTotals": {
@@ -2062,7 +2062,7 @@
           }
         },
         "setLoopTarget": {
-          "help": "Setzt den Zielschritt eines Loops (zu welchem früheren Schritt er zurückführt). Trägt der Schritt keinen Loop, oder liegt der gewählte Zielschritt nicht vor diesem Schritt in der Kette, passiert nichts.",
+          "help": "Setzt den Zielschritt eines Loops (zu welchem früheren Schritt er zurückführt). Ohne Zielschritt wird das Ziel des Loops gelöscht. Trägt der Schritt keinen Loop, oder liegt der gewählte Zielschritt nicht vor diesem Schritt in der Kette, passiert nichts.",
           "params": {
             "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
             "targetStepId": "Die id eines vorhandenen Schritts, oder null/leerer String, um das Ziel zu löschen. Eine unbekannte id ist ein Fehler; eine bekannte id, die nicht VOR stepId in der Kette liegt, liefert false."

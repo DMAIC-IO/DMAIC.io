@@ -40,7 +40,7 @@ import { State, VALID_TYPES } from './voc-ctx-tree-model.js';
 import { buildTreeDiagram } from './voc-ctx-tree-diagram.js';
 
 /** CSS custom-property map for the node colours. */
-const COLOR_PROP = {
+export const COLOR_PROP = {
   voc:  '--color-vct-voc',
   need: '--color-vct-need',
   ctq:  '--color-vct-ctq',
