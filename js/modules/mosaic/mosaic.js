@@ -59,6 +59,9 @@ const COLUMN_SLOTS = ['x', 'g'];
  * @typedef {object} MosaicStats
  * @property {string[]} categories  Kategorien der X-Achse
  * @property {MosaicGroup[]} groups  je Gruppe die Häufigkeiten
+ * @property {number[]} rowTotals  Summe je Kategorie, in der Reihenfolge der Kategorien
+ * @property {number[]} colTotals  Summe je Gruppe, in der Reihenfolge der Gruppen
+ * @property {number} total  Gesamtsumme aller Häufigkeiten
  */
 
 /**
@@ -81,6 +84,28 @@ const COLUMN_SLOTS = ['x', 'g'];
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
  * @property {MosaicStats|null} stats  the cross table, each figure described under keys; null while a required slot is empty
  */
+
+/**
+ * Summe je Kategorie, je Gruppe und insgesamt. Eine Quelle für die Tabelle
+ * und für `read().stats` (E8).
+ *
+ * @param {Array<{values: number[]}>} groups  je Gruppe die Häufigkeit je Kategorie
+ * @param {number} categoryCount  Zahl der Kategorien
+ * @returns {{rowTotals: number[], colTotals: number[], total: number}}
+ */
+function totalsOf(groups, categoryCount) {
+  const rowTotals = Array.from({ length: categoryCount }, () => 0);
+  const colTotals = groups.map((g) => {
+    let sum = 0;
+    for (let ci = 0; ci < categoryCount; ci++) {
+      const v = g.values[ci] || 0;
+      sum += v;
+      rowTotals[ci] += v;
+    }
+    return sum;
+  });
+  return { rowTotals, colTotals, total: colTotals.reduce((a, b) => a + b, 0) };
+}
 
 const mod = createModule({
   config: {
@@ -190,7 +215,11 @@ const mod = createModule({
       _agentStats() {
         const d = this.model.buildChartData((ref) => this._getColumnValues(ref));
         if (!d.categories.length || !d.groups.length) return null;
-        return { categories: [...d.categories], groups: d.groups.map(g => ({ name: g.name, counts: [...g.values] })) };
+        return {
+          categories: [...d.categories],
+          groups: d.groups.map(g => ({ name: g.name, counts: [...g.values] })),
+          ...totalsOf(d.groups, d.categories.length),
+        };
       },
 
       // ── Transient view state (not persisted) ──────────────────
@@ -272,28 +301,14 @@ const mod = createModule({
         this.statsTotalHeader = _t('statTotal');
         this.statsTotalLabel = _t('statTotal');
 
-        const colTotals = this._groups.map(() => 0);
-        let grandTotal = 0;
-        const rows = [];
-        for (let ci = 0; ci < this._categories.length; ci++) {
-          let rowTotal = 0;
-          const cellTexts = [];
-          for (let gi = 0; gi < this._groups.length; gi++) {
-            const v = this._groups[gi].values[ci] || 0;
-            cellTexts.push(formatNum(v));
-            rowTotal += v;
-            colTotals[gi] += v;
-          }
-          grandTotal += rowTotal;
-          rows.push({
-            label: this._categories[ci],
-            cells: cellTexts,
-            total: formatNum(rowTotal),
-          });
-        }
-        this.statsRows = rows;
-        this.statsColTotals = colTotals.map((tv) => formatNum(tv));
-        this.statsGrandTotal = formatNum(grandTotal);
+        const sums = totalsOf(this._groups, this._categories.length);
+        this.statsRows = this._categories.map((label, ci) => ({
+          label,
+          cells: this._groups.map((g) => formatNum(g.values[ci] || 0)),
+          total: formatNum(sums.rowTotals[ci]),
+        }));
+        this.statsColTotals = sums.colTotals.map((tv) => formatNum(tv));
+        this.statsGrandTotal = formatNum(sums.total);
         this.statsShow = true;
       },
 

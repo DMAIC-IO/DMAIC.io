@@ -5735,6 +5735,18 @@ export const AGENT_REGISTRY = {
           "cells": {
             "type": "Array<Array<number|null>>",
             "help": "Wert je Zeile und Spalte"
+          },
+          "rowTotals": {
+            "type": "Array<number|null>|null",
+            "help": "Summe je Zeile, in der Reihenfolge der Zeilen; null im Mittelwertmodus"
+          },
+          "colTotals": {
+            "type": "Array<number|null>|null",
+            "help": "Summe je Spalte, in der Reihenfolge der Spalten; null im Mittelwertmodus"
+          },
+          "total": {
+            "type": "number|null",
+            "help": "Gesamtsumme aller Zellen; null im Mittelwertmodus"
           }
         }
       }
@@ -8070,6 +8082,18 @@ export const AGENT_REGISTRY = {
                 "help": "Häufigkeit je X-Kategorie"
               }
             }
+          },
+          "rowTotals": {
+            "type": "number[]",
+            "help": "Summe je Kategorie, in der Reihenfolge der Kategorien"
+          },
+          "colTotals": {
+            "type": "number[]",
+            "help": "Summe je Gruppe, in der Reihenfolge der Gruppen"
+          },
+          "total": {
+            "type": "number",
+            "help": "Gesamtsumme aller Häufigkeiten"
           }
         }
       }

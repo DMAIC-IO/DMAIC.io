@@ -6193,11 +6193,14 @@
       "types": {
         "MosaicStats": {
           "categories": "The categories of the X column, one column per category; the table shows them as rows. The corner of the table shows “X column \\ G column”, that is the name of the X column, then that of the G column.",
-          "groups": "Per group the counts over all categories; the table shows each group as a column with the colour of its segment."
+          "groups": "Per group the counts over all categories; the table shows each group as a column with the colour of its segment.",
+          "rowTotals": "The total per category over all groups, in category order; the table shows it in the last column.",
+          "colTotals": "The total per group over all categories, in group order; the table shows it in the last row.",
+          "total": "The grand total of all counts, that is the number of rows; the table shows it at the bottom right under the “Total” header."
         },
         "MosaicGroup": {
           "name": "The name of the group, a value of the G column; the table shows it as column header next to the colour swatch of the segment.",
-          "counts": "The number of rows with this group and this X category, in category order. The table also shows the total per category, the total per group and the grand total; they are not in this field."
+          "counts": "The number of rows with this group and this X category, in category order."
         }
       },
       "sectionData": "Data Source",
@@ -6247,7 +6250,10 @@
         "HeatmapStats": {
           "xCategories": "The categories of the X column; they form the columns of the grid, the table shows them as column headers.",
           "yCategories": "The categories of the G column; they form the rows of the grid. The corner of the table shows “G column \\ X column”: the name of the G column, then that of the X column; to its right the categories of the X column stand as column headers.",
-          "cells": "The value per cell, ordered by row first, then by column, following the two category lists. Without a value column it is the number of rows with that combination, otherwise the mean or the sum of the value column. A combination without rows is empty; the table shows a dash there. For count and sum the table also shows row and column totals and the grand total, for the mean it does not; these totals are not in this field."
+          "cells": "The value per cell, ordered by row first, then by column, following the two category lists. Without a value column it is the number of rows with that combination, otherwise the mean or the sum of the value column. A combination without rows is empty; the table shows a dash there.",
+          "rowTotals": "The total per row, in row order; empty cells do not count. The table shows it in the last column. For the mean there are no totals, then the field is empty.",
+          "colTotals": "The total per column, in column order; empty cells do not count. The table shows it in the last row. For the mean there are no totals, then the field is empty.",
+          "total": "The grand total of all cells; the table shows it at the bottom right under the “Total” header. For the mean there are no totals, then the field is empty."
         }
       },
       "sectionData": "Data Source",

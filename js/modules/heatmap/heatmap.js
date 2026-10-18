@@ -90,6 +90,9 @@ function setAtPath(obj, key, value) {
  * @property {string[]} xCategories  Spalten des Rasters
  * @property {string[]} yCategories  Zeilen des Rasters
  * @property {Array<Array<number|null>>} cells  Wert je Zeile und Spalte
+ * @property {Array<number|null>|null} rowTotals  Summe je Zeile, in der Reihenfolge der Zeilen; null im Mittelwertmodus
+ * @property {Array<number|null>|null} colTotals  Summe je Spalte, in der Reihenfolge der Spalten; null im Mittelwertmodus
+ * @property {number|null} total  Gesamtsumme aller Zellen; null im Mittelwertmodus
  */
 
 /**
@@ -111,6 +114,28 @@ function setAtPath(obj, key, value) {
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
  * @property {HeatmapStats|null} stats  the heatmap grid, each figure described under keys; null while a required slot is empty
  */
+
+/**
+ * Zeilen-, Spalten- und Gesamtsumme eines Rasters; leere Zellen zählen nicht.
+ * Eine Quelle für die Tabelle und für `read().stats` (E8).
+ *
+ * @param {Array<Array<number|null>>} cells  Wert je Zeile und Spalte
+ * @returns {{rowTotals: number[], colTotals: number[], total: number}}
+ */
+function totalsOf(cells) {
+  const colTotals = (cells[0] || []).map(() => 0);
+  const rowTotals = cells.map((row) => {
+    let sum = 0;
+    row.forEach((v, xi) => {
+      if (Number.isFinite(v)) {
+        sum += v;
+        colTotals[xi] += v;
+      }
+    });
+    return sum;
+  });
+  return { rowTotals, colTotals, total: rowTotals.reduce((a, b) => a + b, 0) };
+}
 
 const mod = createModule({
   config: {
@@ -253,10 +278,17 @@ const mod = createModule({
       _agentStats() {
         const d = this.model.buildChartData((ref) => this._getColumnValues(ref), this.model.chartConfig.aggregation);
         if (!d.xCategories.length || !d.yCategories.length) return null;
+        const cells = d.cells.map(row => row.map(v => (Number.isFinite(v) ? v : null)));
+        const cfg = this.model.chartConfig;
+        const additive = !this.model.vRef || cfg.aggregation === 'sum';
+        const sums = additive ? totalsOf(cells) : null;
         return {
           xCategories: [...d.xCategories],
           yCategories: [...d.yCategories],
-          cells: d.cells.map(row => row.map(v => (Number.isFinite(v) ? v : null))),
+          cells,
+          rowTotals: sums ? sums.rowTotals : null,
+          colTotals: sums ? sums.colTotals : null,
+          total: sums ? sums.total : null,
         };
       },
 
@@ -370,34 +402,21 @@ const mod = createModule({
         this.statsTotalLabel = _t('statTotal');
         this.statsShowTotals = showTotals;
 
-        const colTotals = this._xCategories.map(() => 0);
-        let grandTotal = 0;
+        const sums = showTotals ? totalsOf(this._cells) : null;
         const rows = [];
         for (let yi = 0; yi < this._yCategories.length; yi++) {
-          const cellTexts = [];
-          let rowTotal = 0;
-          for (let xi = 0; xi < this._xCategories.length; xi++) {
-            const v = this._cells[yi][xi];
-            if (Number.isFinite(v)) {
-              cellTexts.push(formatNum(v, decimals));
-              if (showTotals) {
-                rowTotal += v;
-                colTotals[xi] += v;
-              }
-            } else {
-              cellTexts.push('—');
-            }
-          }
-          if (showTotals) grandTotal += rowTotal;
           rows.push({
             label: this._yCategories[yi],
-            cells: cellTexts,
-            total: showTotals ? formatNum(rowTotal, totalDecimals) : '',
+            cells: this._xCategories.map((_, xi) => {
+              const v = this._cells[yi][xi];
+              return Number.isFinite(v) ? formatNum(v, decimals) : '—';
+            }),
+            total: sums ? formatNum(sums.rowTotals[yi], totalDecimals) : '',
           });
         }
         this.statsRows = rows;
-        this.statsColTotals = showTotals ? colTotals.map((c) => formatNum(c, totalDecimals)) : [];
-        this.statsGrandTotal = showTotals ? formatNum(grandTotal, totalDecimals) : '';
+        this.statsColTotals = sums ? sums.colTotals.map((c) => formatNum(c, totalDecimals)) : [];
+        this.statsGrandTotal = sums ? formatNum(sums.total, totalDecimals) : '';
         this.statsShow = true;
       },
 

@@ -20,7 +20,7 @@
                 <template x-for="(h, hi) in statsHeaders" :key="hi">
                   <th><span class="mosaic-module__stats-color" :style="'background:' + h.color"></span><span x-text="' ' + h.name"></span></th>
                 </template>
-                <th><span data-help-key="modules.mosaic.types.MosaicGroup.counts" x-text="statsTotalHeader"></span></th>
+                <th><span data-help-key="modules.mosaic.types.MosaicStats.total" x-text="statsTotalHeader"></span></th>
               </tr></thead>
               <tbody>
                 <template x-for="(r, i) in statsRows" :key="i">

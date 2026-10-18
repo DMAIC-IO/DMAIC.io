@@ -6197,11 +6197,14 @@
       "types": {
         "MosaicStats": {
           "categories": "Die Kategorien der X-Spalte, eine Spalte je Kategorie; die Tabelle zeigt sie als Zeilen. Die Ecke der Tabelle zeigt „X-Spalte \\ G-Spalte“, also den Namen der X-Spalte, dann den der G-Spalte.",
-          "groups": "Je Gruppe die Häufigkeiten über alle Kategorien; die Tabelle zeigt jede Gruppe als Spalte mit der Farbe ihres Segments."
+          "groups": "Je Gruppe die Häufigkeiten über alle Kategorien; die Tabelle zeigt jede Gruppe als Spalte mit der Farbe ihres Segments.",
+          "rowTotals": "Die Summe je Kategorie über alle Gruppen, in der Reihenfolge der Kategorien; die Tabelle zeigt sie in der letzten Spalte.",
+          "colTotals": "Die Summe je Gruppe über alle Kategorien, in der Reihenfolge der Gruppen; die Tabelle zeigt sie in der letzten Zeile.",
+          "total": "Die Gesamtsumme aller Häufigkeiten, also die Zahl der Zeilen; die Tabelle zeigt sie unten rechts unter dem Kopf „Gesamt“."
         },
         "MosaicGroup": {
           "name": "Der Name der Gruppe, ein Wert der G-Spalte; die Tabelle zeigt ihn als Spaltenkopf neben dem Farbfeld des Segments.",
-          "counts": "Die Zahl der Zeilen mit dieser Gruppe und dieser X-Kategorie, in der Reihenfolge der Kategorien. Die Tabelle zeigt zusätzlich die Summe je Kategorie, die Summe je Gruppe und die Gesamtsumme; sie stehen nicht in diesem Feld."
+          "counts": "Die Zahl der Zeilen mit dieser Gruppe und dieser X-Kategorie, in der Reihenfolge der Kategorien."
         }
       },
       "sectionData": "Datenquelle",
@@ -6251,7 +6254,10 @@
         "HeatmapStats": {
           "xCategories": "Die Kategorien der X-Spalte; sie bilden die Spalten des Rasters, die Tabelle zeigt sie als Spaltenköpfe.",
           "yCategories": "Die Kategorien der G-Spalte; sie bilden die Zeilen des Rasters. Die Ecke der Tabelle zeigt „G-Spalte \\ X-Spalte“, also den Namen der G-Spalte, dann den der X-Spalte; rechts daneben stehen die Kategorien der X-Spalte als Spaltenköpfe.",
-          "cells": "Der Wert je Zelle, erst nach Zeile, dann nach Spalte geordnet, in der Reihenfolge der beiden Kategorienlisten. Ohne Wertespalte ist es die Anzahl der Zeilen mit dieser Kombination, sonst der Mittelwert oder die Summe der Wertespalte. Eine Kombination ohne Zeilen ist leer; die Tabelle zeigt dort einen Strich. Bei Häufigkeit und Summe zeigt die Tabelle zusätzlich Zeilen- und Spaltensummen und die Gesamtsumme, beim Mittelwert nicht; diese Summen stehen nicht in diesem Feld."
+          "cells": "Der Wert je Zelle, erst nach Zeile, dann nach Spalte geordnet, in der Reihenfolge der beiden Kategorienlisten. Ohne Wertespalte ist es die Anzahl der Zeilen mit dieser Kombination, sonst der Mittelwert oder die Summe der Wertespalte. Eine Kombination ohne Zeilen ist leer; die Tabelle zeigt dort einen Strich.",
+          "rowTotals": "Die Summe je Zeile, in der Reihenfolge der Zeilen; leere Zellen zählen nicht. Die Tabelle zeigt sie in der letzten Spalte. Beim Mittelwert gibt es keine Summen, dann ist das Feld leer.",
+          "colTotals": "Die Summe je Spalte, in der Reihenfolge der Spalten; leere Zellen zählen nicht. Die Tabelle zeigt sie in der letzten Zeile. Beim Mittelwert gibt es keine Summen, dann ist das Feld leer.",
+          "total": "Die Gesamtsumme aller Zellen; die Tabelle zeigt sie unten rechts unter dem Kopf „Gesamt“. Beim Mittelwert gibt es keine Summen, dann ist das Feld leer."
         }
       },
       "sectionData": "Datenquelle",
