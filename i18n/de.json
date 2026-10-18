@@ -4353,7 +4353,10 @@
       "formulasTitle": "Berechnungsformeln & Interpretation",
       "interpPass": "Prozess fähig — Streuung und Zentrierung innerhalb der Toleranz.",
       "interpWarn": "Bedingt fähig — Maßnahmen zur Verbesserung empfohlen.",
-      "interpFail": "Nicht fähig — Prozessverbesserung erforderlich."
+      "interpFail": "Nicht fähig — Prozessverbesserung erforderlich.",
+      "interpGood": "Cpk ≥ {limit}",
+      "interpOk": "{low} ≤ Cpk < {limit}",
+      "interpPoor": "Cpk < {low}"
     },
     "ishikawa": {
       "name": "Ishikawa 6M",
@@ -8473,6 +8476,7 @@
       "greater": "Größer",
       "less": "Kleiner",
       "targetPower": "Ziel-Power",
+      "cohensD": "Cohen's d",
       "calculate": "Berechnen",
       "hypothesizedStd": "Soll-Standardabw.",
       "expectedStd": "Erw. Standardabw.",
@@ -10896,7 +10900,12 @@
       "model": "Modell",
       "prediction": "Vorhersage",
       "tipD": "Composite Desirability D — geometrisches Mittel aller individuellen Wunschbarkeiten",
-      "defaultName": "Optimierung"
+      "defaultName": "Optimierung",
+      "kind": "Ziel",
+      "compositeD": "D",
+      "individualD": "d",
+      "axisX": "X",
+      "axisY": "Y"
     },
     "glm-regression": {
       "thetaDispersion": "θ (Dispersion)",

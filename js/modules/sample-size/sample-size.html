@@ -133,7 +133,7 @@
           <div class="dmike-split__output-section smpsize__output-section">
             <span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span>
             <span x-text="t('sectionCurve')"></span>
-            <button class="smpsize__algo-link" :data-algo-id="curveAlgoId" title="Algorithm Lab" @click="openAlgoLab($event)"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
+            <button class="smpsize__algo-link" :data-algo-id="curveAlgoId" :title="t('common.algoLabTitle')" @click="openAlgoLab($event)"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
           </div>
           <div data-ref="power-chart" style="height:320px"></div>
         </div>

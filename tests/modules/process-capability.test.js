@@ -426,9 +426,9 @@ suite('Process Capability analysis — formatHint and refLines', () => {
   });
 
   test('specRefLines: LSL/USL in error colour, target in success colour, only when set', () => {
-    const lines = specRefLines({ hasLsl: true, lsl: 9.5, hasUsl: false, usl: null, targetVal: 10 });
+    const lines = specRefLines({ hasLsl: true, lsl: 9.5, hasUsl: false, usl: null, targetVal: 10 }, (key) => key);
     assertDeepEqual(lines.map(l => [l.label, l.value, l.color]), [
-      ['LSL', 9.5, 'var(--color-error)'], ['Target', 10, 'var(--color-success)'],
+      ['common.sym.lsl', 9.5, 'var(--color-error)'], ['common.sym.target', 10, 'var(--color-success)'],
     ]);
   });
 });

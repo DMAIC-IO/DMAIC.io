@@ -210,6 +210,8 @@ const mod = createModule({
   Model: State,
 
   data(module, _t) {
+    /** Capability limit as locale-formatted text (decimal comma in German). */
+    const limitText = (v) => v.toLocaleString(module._context.i18n.getLanguage(), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     return {
       // ── Transient view state (not persisted) ──────────────────
       result: null,
@@ -371,6 +373,14 @@ const mod = createModule({
 
       // ── View transformations ──────────────────────────────────
 
+      /** @noagent view transform; Cpk threshold 1.33 as localised text. */
+      cpkLimit() { return limitText(1.33); },
+      /** @noagent view transform; interpretation tag "capable" with localised threshold. */
+      interpGoodText() { return _t('interpGood', { limit: limitText(1.33) }); },
+      /** @noagent view transform; interpretation tag "conditionally capable" with localised thresholds. */
+      interpOkText() { return _t('interpOk', { low: limitText(1), limit: limitText(1.33) }); },
+      /** @noagent view transform; interpretation tag "not capable" with localised threshold. */
+      interpPoorText() { return _t('interpPoor', { low: limitText(1) }); },
       /** @noagent view transform */
       statusLabel: (s) => _t({ pass: 'statusPass', fail: 'statusFail', warn: 'statusWarn' }[s] || 'statusWarn'),
       /** @noagent view transform */
@@ -401,7 +411,7 @@ const mod = createModule({
             mod: this.kpiModClass(r.cpStatus),
             label: `Cp (${_t('potential')})`,
             value: fmt(r.Cp),
-            sub: `${_t('threshold')}: ≥ 1.33 · ${this.badgeLabel(r.cpStatus)}${r.CpCI ? ` · ${this.ciLabel(r.CpCI)}` : ''}`,
+            sub: `${_t('threshold')}: ≥ ${this.cpkLimit()} · ${this.badgeLabel(r.cpStatus)}${r.CpCI ? ` · ${this.ciLabel(r.CpCI)}` : ''}`,
           });
         }
         cells.push({
@@ -410,7 +420,7 @@ const mod = createModule({
           mod: this.kpiModClass(r.cpkStatus),
           label: `Cpk (${_t('actual')})`,
           value: fmt(r.Cpk),
-          sub: `${_t('threshold')}: ≥ 1.33 · ${this.badgeLabel(r.cpkStatus)}${r.CpkCI ? ` · ${this.ciLabel(r.CpkCI)}` : ''}`,
+          sub: `${_t('threshold')}: ≥ ${this.cpkLimit()} · ${this.badgeLabel(r.cpkStatus)}${r.CpkCI ? ` · ${this.ciLabel(r.CpkCI)}` : ''}`,
         });
         if (r.CPL != null) {
           cells.push({
@@ -557,8 +567,8 @@ const mod = createModule({
           { label: _t('statStddevS'), help: HELP + 'Result.s', value: `${fmt(r.s)} ${unit}` },
           { label: _t('statMin'), help: HELP + 'Result.xmin', value: `${fmt(r.xmin)} ${unit}` },
           { label: _t('statMax'), help: HELP + 'Result.xmax', value: `${fmt(r.xmax)} ${unit}` },
-          r.hasLsl ? { label: 'LSL', help: HELP + 'Result.lsl', value: `${fmt(r.lsl)} ${unit}` } : null,
-          r.hasUsl ? { label: 'USL', help: HELP + 'Result.usl', value: `${fmt(r.usl)} ${unit}` } : null,
+          r.hasLsl ? { label: _t('common.sym.lsl'), help: HELP + 'Result.lsl', value: `${fmt(r.lsl)} ${unit}` } : null,
+          r.hasUsl ? { label: _t('common.sym.usl'), help: HELP + 'Result.usl', value: `${fmt(r.usl)} ${unit}` } : null,
           r.T != null ? { label: _t('statTol'), help: HELP + 'Result.T', value: `${fmt(r.T)} ${unit}` } : null,
           r.targetVal != null ? { label: _t('statTarget'), help: HELP + 'Result.targetVal', value: `${fmt(r.targetVal)} ${unit}` } : null,
         ].filter(Boolean);
@@ -642,7 +652,7 @@ const mod = createModule({
         const values = this._values || [];
         if (values.length === 0) return;
 
-        const refLines = specRefLines(r);
+        const refLines = specRefLines(r, _t);
 
         const chart = await module._context.chartManager.create(el, 'histogram', {
           data: values,

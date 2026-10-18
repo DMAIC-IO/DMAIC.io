@@ -1085,7 +1085,7 @@ suite('dashboard tiles: process-capability', () => {
       assertEqual(cfg[k], false, k);
     }
     assertEqual(cfg.showNormalCurve, true);
-    assertDeepEqual(cfg.refLines.map(l => l.label), ['LSL', 'USL', 'Target']);
+    assertDeepEqual(cfg.refLines.map(l => l.label), ['common.sym.lsl', 'common.sym.usl', 'common.sym.target']);
     assertEqual(cfg.data.length, CAP_VALUES.length);
     host.remove();
   });
@@ -1175,7 +1175,7 @@ suite('dashboard tiles: process-capability', () => {
     assertEqual(vm.stats[1].value, '10');
     assertEqual(vm.chart.data.length, CAP_VALUES.length);
     assertEqual(vm.chart.binMethod, 'sturges');
-    assertDeepEqual(vm.chart.refLines.map(l => l.label), ['LSL', 'USL', 'Target']);
+    assertDeepEqual(vm.chart.refLines.map(l => l.label), ['common.sym.lsl', 'common.sym.usl', 'common.sym.target']);
   });
 
   test('viewModel: empty and no-data states, showChart off', () => {

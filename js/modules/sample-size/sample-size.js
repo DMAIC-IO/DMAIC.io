@@ -408,7 +408,7 @@ export default createModule({
           const delta = parseFloat(this.model.delta);
           const sigma = parseFloat(this.model.sigma);
           if (isNaN(delta) || delta <= 0 || isNaN(sigma) || sigma <= 0) { this._hideResults(resEl, phEl); return; }
-          effLabel = "Cohen's d";
+          effLabel = _t('cohensD');
           effValue = delta / sigma;
 
           if (isTwo) {

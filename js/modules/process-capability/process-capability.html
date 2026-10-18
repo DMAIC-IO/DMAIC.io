@@ -228,9 +228,9 @@
             <p><strong x-text="zBenchLine()"></strong></p>
             <p x-text="t('zBenchNote')"></p>
             <div style="height:12px"></div>
-            <p><span class="pc__tag pc__tag--pass">Cpk ≥ 1.33</span> <span x-text="t('interpPass')"></span></p>
-            <p><span class="pc__tag pc__tag--warn">1.00 ≤ Cpk &lt; 1.33</span> <span x-text="t('interpWarn')"></span></p>
-            <p><span class="pc__tag pc__tag--fail">Cpk &lt; 1.00</span> <span x-text="t('interpFail')"></span></p>
+            <p><span class="pc__tag pc__tag--pass" x-text="interpGoodText()"></span> <span x-text="t('interpPass')"></span></p>
+            <p><span class="pc__tag pc__tag--warn" x-text="interpOkText()"></span> <span x-text="t('interpWarn')"></span></p>
+            <p><span class="pc__tag pc__tag--fail" x-text="interpPoorText()"></span> <span x-text="t('interpFail')"></span></p>
           </div>
         </div>
       </template>

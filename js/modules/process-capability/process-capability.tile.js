@@ -98,7 +98,7 @@ export default {
           showNormalCurve: true,
           barColor: 'var(--color-accent)',
           normalCurveColor: 'var(--color-info)',
-          refLines: specRefLines(r),
+          refLines: specRefLines(r, (key) => i18n.t(key)),
           xLabel: i18n.t('modules.histogram.xLabel'),
           yLabel: i18n.t('modules.histogram.yLabel'),
           showTitle: false, showXLabel: false, showYLabel: false,

@@ -139,13 +139,14 @@ export function formatHint(hint, t) {
 /**
  * Vertical reference lines for the spec limits and the target.
  * @param {{hasLsl: boolean, lsl: number, hasUsl: boolean, usl: number, targetVal: number|null}} r
+ * @param {(key: string) => string} t - translator for global keys (common.sym.*)
  * @returns {object[]} histogram refLines
  */
-export function specRefLines(r) {
+export function specRefLines(r, t) {
   const line = (value, label, color) => ({ dir: 'v', value, label, color, dash: 'dash', width: 1.5, showLabel: true });
   const out = [];
-  if (r.hasLsl) out.push(line(r.lsl, 'LSL', 'var(--color-error)'));
-  if (r.hasUsl) out.push(line(r.usl, 'USL', 'var(--color-error)'));
-  if (r.targetVal != null) out.push(line(r.targetVal, 'Target', 'var(--color-success)'));
+  if (r.hasLsl) out.push(line(r.lsl, t('common.sym.lsl'), 'var(--color-error)'));
+  if (r.hasUsl) out.push(line(r.usl, t('common.sym.usl'), 'var(--color-error)'));
+  if (r.targetVal != null) out.push(line(r.targetVal, t('common.sym.target'), 'var(--color-success)'));
   return out;
 }

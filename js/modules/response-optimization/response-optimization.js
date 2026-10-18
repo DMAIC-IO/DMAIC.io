@@ -165,12 +165,12 @@ function buildContourSVGData(surface, opts) {
     legendSegs,
     legendTicks,
     marker,
-    xLabel: { x: margin.left + plotW / 2, y: H - 4, text: opts.xLabel ?? 'X' },
+    xLabel: { x: margin.left + plotW / 2, y: H - 4, text: opts.xLabel ?? '' },
     yLabel: {
       x: 14,
       y: margin.top + plotH / 2,
       transform: `rotate(-90, 14, ${  margin.top + plotH / 2  })`,
-      text: opts.yLabel ?? 'Y',
+      text: opts.yLabel ?? '',
     },
   };
 }
@@ -538,8 +538,8 @@ export default createModule({
         };
 
         this.contourSVG = buildContourSVGData(surface, {
-          xLabel: xId,
-          yLabel: yId,
+          xLabel: xId ?? _t('axisX'),
+          yLabel: yId ?? _t('axisY'),
           xOptVal,
           yOptVal,
         });
@@ -574,7 +574,7 @@ export default createModule({
       /** @noagent view transform; Formatted R² text. */
       r2Text(m) {
         const v = m.rSqAdj;
-        return `R²adj ${  v != null ? v.toFixed(3) : '—'}`;
+        return `${_t('common.sym.r2adj')} ${  v != null ? v.toFixed(3) : '—'}`;
       },
 
       /** @noagent view transform; Diagnostic "blocked" label. */

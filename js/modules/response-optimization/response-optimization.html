@@ -31,14 +31,17 @@
                 </label>
 
                 <!-- Spec editor: only visible when selected -->
-                <div class="ro__spec" x-show="isSelected(m.id)" data-help-key="modules.response-optimization.types.Spec.kind">
-                  <select class="field ro__spec-kind"
-                          data-action="kind"
-                          @change="setSpecKind(m.id, $event)">
-                    <template x-for="o in kindOptions()" :key="o.value">
-                      <option :value="o.value" :selected="isKind(m.id, o.value)" x-text="o.label"></option>
-                    </template>
-                  </select>
+                <div class="ro__spec" x-show="isSelected(m.id)">
+                  <label data-help-key="modules.response-optimization.types.Spec.kind">
+                    <span x-text="t('kind')"></span>
+                    <select class="field ro__spec-kind"
+                            data-action="kind"
+                            @change="setSpecKind(m.id, $event)">
+                      <template x-for="o in kindOptions()" :key="o.value">
+                        <option :value="o.value" :selected="isKind(m.id, o.value)" x-text="o.label"></option>
+                      </template>
+                    </select>
+                  </label>
 
                   <label data-help-key="modules.response-optimization.types.Spec.lower">
                     <span x-text="t('lower')"></span>
@@ -117,7 +120,7 @@
               <div class="dmike-kpi-strip">
                 <div :class="dClass()" :title="t('tipD')">
                   <div class="dmike-kpi-value" x-text="dValue()"></div>
-                  <div class="dmike-kpi-label" data-help-key="modules.response-optimization.types.Result.D">D</div>
+                  <div class="dmike-kpi-label" data-help-key="modules.response-optimization.types.Result.D" x-text="t('compositeD')"></div>
                 </div>
               </div>
 
@@ -147,7 +150,7 @@
                   <tr>
                     <th><span data-help-key="modules.response-optimization.types.Result.modelNames" x-text="t('model')"></span></th>
                     <th><span data-help-key="modules.response-optimization.types.Result.yPredictions" x-text="t('prediction')"></span></th>
-                    <th><span data-help-key="modules.response-optimization.types.Result.dPerResponse">d</span></th>
+                    <th><span data-help-key="modules.response-optimization.types.Result.dPerResponse" x-text="t('individualD')"></span></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -173,7 +176,7 @@
                     <template x-if="contourData.showAxisControls">
                       <div style="display:contents">
                         <label class="ro__contour-fix">
-                          <span>X</span>
+                          <span x-text="t('axisX')"></span>
                           <select class="field" data-action="contour-axis" data-axis="x"
                                   @change="setContourAxis('x', $event)">
                             <template x-for="p in contourData.continuousFactors">
@@ -182,7 +185,7 @@
                           </select>
                         </label>
                         <label class="ro__contour-fix">
-                          <span>Y</span>
+                          <span x-text="t('axisY')"></span>
                           <select class="field" data-action="contour-axis" data-axis="y"
                                   @change="setContourAxis('y', $event)">
                             <template x-for="p in contourData.continuousFactors">

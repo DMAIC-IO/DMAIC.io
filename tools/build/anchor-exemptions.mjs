@@ -115,8 +115,8 @@ export const ANCHOR_EXEMPTIONS = {
     { match: "t('ppmColKind')", reason: 'Spalte der Zeilennamen; die Sätze stehen an den Wertspalten', count: 1 },
   ],
   'response-optimization': [
-    { match: 'data-axis="x"', reason: 'Anzeigeschalter ohne Agentenbezug', count: 1 },
-    { match: 'data-axis="y"', reason: 'Anzeigeschalter ohne Agentenbezug', count: 1 },
+    { match: "t('axisX')", reason: 'Anzeigeschalter ohne Agentenbezug', count: 1 },
+    { match: "t('axisY')", reason: 'Anzeigeschalter ohne Agentenbezug', count: 1 },
     { match: ':key="fix.id" class="ro__contour-fix"', reason: 'Anzeigeschalter ohne Agentenbezug', count: 1 },
   ],
   'process-map': [
