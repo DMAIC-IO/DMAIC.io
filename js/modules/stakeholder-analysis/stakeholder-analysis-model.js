@@ -30,8 +30,8 @@ function clampLevel(v) {
  * @property {string} role  Rolle bzw. Funktion
  * @property {number} power  Macht, 1–5
  * @property {number} interest  Interesse, 1–5
- * @property {'supporter'|'neutral'|'critic'} support  Haltung zum Projekt
- * @property {'intern'|'extern'|'kunde'|'lieferant'|'behoerde'} category  Kategorie
+ * @property {'supporter'|'neutral'|'critic'} support  Haltung zum Projekt (aus Importen auch andere Werte)
+ * @property {'intern'|'extern'|'kunde'|'lieferant'|'behoerde'} category  Kategorie (aus Importen auch andere Werte)
  * @property {string} notes  Notizen
  */
 

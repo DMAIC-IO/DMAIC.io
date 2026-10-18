@@ -16010,11 +16010,11 @@ export const AGENT_REGISTRY = {
           },
           "support": {
             "type": "'supporter'|'neutral'|'critic'",
-            "help": "Haltung zum Projekt"
+            "help": "Haltung zum Projekt (aus Importen auch andere Werte)"
           },
           "category": {
             "type": "'intern'|'extern'|'kunde'|'lieferant'|'behoerde'",
-            "help": "Kategorie"
+            "help": "Kategorie (aus Importen auch andere Werte)"
           },
           "notes": {
             "type": "string",

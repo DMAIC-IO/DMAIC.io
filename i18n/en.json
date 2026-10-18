@@ -1336,8 +1336,8 @@
           "role": "The role or organization of the stakeholder, up to 200 characters, for example department head or supplier.",
           "power": "The stakeholder's power over the project, an integer from 1 (low) to 5 (high); 3 when not given. Together with interest it decides the quadrant of the power-interest matrix: 4 and above counts as high.",
           "interest": "The stakeholder's interest in the project, an integer from 1 (low) to 5 (high); 3 when not given. Together with power it decides the quadrant of the power-interest matrix: 4 and above counts as high; high on both gives Manage Closely, only power high Keep Satisfied, only interest high Keep Informed, otherwise Monitor.",
-          "support": "The stakeholder's attitude to the project: supporter (Supporter), neutral (Neutral, the default) or critic (Critic). A critic with high power and high interest triggers the warning about critics among the key stakeholders.",
-          "category": "The category of the stakeholder: intern (Internal, the default), extern (External), kunde (Customer), lieferant (Supplier) or behoerde (Authority).",
+          "support": "The stakeholder's attitude to the project: supporter (Supporter), neutral (Neutral, the default) or critic (Critic). A critic with high power and high interest triggers the warning about critics among the key stakeholders. A value from an import or an older project may differ; it is kept unchanged, coloured like a critic and shown without translation, but does not count toward the warning.",
+          "category": "The category of the stakeholder: intern (Internal, the default), extern (External), kunde (Customer), lieferant (Supplier) or behoerde (Authority). A value from an import or an older project may differ; it is kept unchanged and shown without translation.",
           "notes": "The stakeholder's expectations and concerns as free text, up to 500 characters."
         }
       },

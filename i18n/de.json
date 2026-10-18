@@ -1336,8 +1336,8 @@
           "role": "Die Rolle oder Organisation des Beteiligten, bis zu 200 Zeichen, zum Beispiel Fachbereichsleiter oder Lieferant.",
           "power": "Der Einfluss des Beteiligten auf das Projekt, eine ganze Zahl von 1 (gering) bis 5 (hoch); ohne Angabe 3. Zusammen mit dem Interesse bestimmt er den Quadranten der Einfluss-Interesse-Matrix: ab 4 gilt der Einfluss als hoch.",
           "interest": "Das Interesse des Beteiligten am Projekt, eine ganze Zahl von 1 (gering) bis 5 (hoch); ohne Angabe 3. Zusammen mit dem Einfluss bestimmt es den Quadranten der Einfluss-Interesse-Matrix: ab 4 gilt das Interesse als hoch, hoch und hoch ergibt Eng managen, nur Einfluss hoch Zufriedenstellen, nur Interesse hoch Informieren, sonst Beobachten.",
-          "support": "Die Einstellung des Beteiligten zum Projekt: supporter (Unterstützer), neutral (Neutral, die Vorgabe) oder critic (Kritiker). Ein Kritiker mit hohem Einfluss und hohem Interesse löst die Warnung unter den Schlüssel-Stakeholdern aus.",
-          "category": "Die Kategorie des Beteiligten: intern (Intern, die Vorgabe), extern (Extern), kunde (Kunde), lieferant (Lieferant) oder behoerde (Behörde).",
+          "support": "Die Einstellung des Beteiligten zum Projekt: supporter (Unterstützer), neutral (Neutral, die Vorgabe) oder critic (Kritiker). Ein Kritiker mit hohem Einfluss und hohem Interesse löst die Warnung unter den Schlüssel-Stakeholdern aus. Aus einem Import oder einem älteren Projekt können auch andere Werte stammen; sie bleiben unverändert stehen, werden wie ein Kritiker gefärbt und ohne Übersetzung angezeigt, zählen aber nicht für die Warnung.",
+          "category": "Die Kategorie des Beteiligten: intern (Intern, die Vorgabe), extern (Extern), kunde (Kunde), lieferant (Lieferant) oder behoerde (Behörde). Aus einem Import oder einem älteren Projekt können auch andere Werte stammen; sie bleiben unverändert stehen und werden ohne Übersetzung angezeigt.",
           "notes": "Erwartungen und Bedenken des Beteiligten in freiem Text, bis zu 500 Zeichen."
         }
       },
