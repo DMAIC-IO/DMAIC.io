@@ -16,9 +16,9 @@
             <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('statsTitle')"></span></div>
             <table class="dmike-table pie-chart__stats-table">
               <thead><tr>
-                <th x-text="t('statName')"></th>
-                <th x-text="t('statValue')"></th>
-                <th x-text="t('statPercent')"></th>
+                <th><span data-help-key="modules.pie-chart.types.Slice.name" x-text="t('statName')"></span></th>
+                <th><span data-help-key="modules.pie-chart.types.Slice.value" x-text="t('statValue')"></span></th>
+                <th><span data-help-key="modules.pie-chart.types.Slice.share" x-text="t('statPercent')"></span></th>
               </tr></thead>
               <tbody>
                 <template x-for="(r, i) in statsRows" :key="i">

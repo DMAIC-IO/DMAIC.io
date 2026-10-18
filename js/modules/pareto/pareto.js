@@ -77,6 +77,29 @@ function setAtPath(obj, key, value) {
 }
 
 /**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {'sum'|'mean'} [aggregation]  Zusammenfassung je Kategorie, nur mit Wertespalte
+ */
+
+/**
+ * Die geordnete Tabelle (`_agentStats()`), wie `read().stats` sie liefert.
+ *
+ * @typedef {object} ParetoStats
+ * @property {ParetoRow[]} rows  Kategorien absteigend nach Wert
+ * @property {number} total  Summe aller Werte
+ */
+
+/**
+ * @typedef {object} ParetoRow
+ * @property {string} name  Kategorie
+ * @property {number} value  Wert der Kategorie
+ * @property {number} cumPct  kumulierter Anteil in Prozent
+ */
+
+/**
  * Die Agenten-Lesefläche des Pareto-Diagramms.
  *
  * Drei Spaltenbezüge und die Aggregation sind der Zustand; die Aggregation
@@ -93,7 +116,7 @@ function setAtPath(obj, key, value) {
  * @property {string[]} activeParams  the options `setParam` accepts in the current state
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
- * @property {object|null} stats  the ranked table: `{ rows: [{ name, value, cumPct }], total }`, rows sorted by value descending, cumPct 0…100, or null while nothing is plotted
+ * @property {ParetoStats|null} stats  the ranked table, each figure described under keys; null while nothing is plotted
  */
 
 const mod = createModule({
@@ -118,9 +141,9 @@ const mod = createModule({
           const ctx = module._context;
           const i18n = ctx.i18n;
           const SLOT_LABELS = {
-            x: { label: 'X', title: i18n.t('modules.pareto.slotX') },
-            y: { label: 'Y', title: i18n.t('modules.pareto.slotY') },
-            g: { label: 'G', title: i18n.t('modules.pareto.slotG') },
+            x: { label: 'X', title: i18n.t('modules.pareto.slotX'), helpKey: 'modules.pareto.fields.xRef.help' },
+            y: { label: 'Y', title: i18n.t('modules.pareto.slotY'), helpKey: 'modules.pareto.fields.yRef.help' },
+            g: { label: 'G', title: i18n.t('modules.pareto.slotG'), helpKey: 'modules.pareto.fields.gRef.help' },
           };
           this._picker = new DatasetPicker(wrap, ctx, {
             slots: DATASET_SLOTS.map(s => ({ ...s, ...SLOT_LABELS[s.key] })),
@@ -206,8 +229,8 @@ const mod = createModule({
       /**
        * Eine Analyseoption setzen.
        * @agent
-       * @param {'aggregation'} key welche Option; read().activeParams nennt die im aktuellen Zustand gültigen
-       * @param {'sum'|'mean'} value Summe oder Mittelwert der Wertespalte je Kategorie
+       * @param {keyof Params} key welche Option; die im Zustand zulässigen nennt `activeParams`
+       * @param {'sum'|'mean'} value der Wert; Bereich je Schlüssel siehe `Params`
        * @returns {void}
        * @throws {Error} wenn `key` unbekannt oder ohne Wertespalte nicht aktiv ist oder `value` ungültig
        */

@@ -5839,11 +5839,22 @@
         }
       },
       "fields": {
-        "valueRef": { "help": "The value column (slot 'value'), or null." },
-        "labelRef": { "help": "The label column (slot 'label'), or null." },
+        "valueRef": { "help": "The value column (slot value); the slices are made from it. Required, empty until one is chosen." },
+        "labelRef": { "help": "The label column (slot label), optional. With it the values are summed per label; without it each distinct value becomes a slice, counted by frequency. Empty until one is chosen." },
         "activeColumnSlots": { "help": "The slots setColumn accepts: value, label." },
         "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
-        "stats": { "help": "the slice table: { slices: [{ name, value, share }], total }; share is a fraction 0…1; null while nothing is plotted." }
+        "stats": { "help": "The slice table, each figure described individually under keys; null while nothing is plotted." }
+      },
+      "types": {
+        "PieStats": {
+          "slices": "The slices in table order (order of first appearance).",
+          "total": "The sum of all slice values, negative ones count as 0; the basis of the shares."
+        },
+        "Slice": {
+          "name": "The name of the slice: with a label column the label, without one the value itself.",
+          "value": "The value of the slice: with a label column the sum of the values of that label (non-numeric or negative values are dropped), without one the frequency of the value.",
+          "share": "The share of the slice in the sum of all slices, as a fraction from 0 to 1; the table shows it as a percentage."
+        }
       },
       "sectionData": "Data Source",
       "tooltipValue": "Value",
@@ -5928,21 +5939,35 @@
         "setParam": {
           "help": "Set an analysis option. read().activeParams names the options valid right now.",
           "params": {
-            "key": "'aggregation' — active only with a value column; 'stacked' — active only with a group column.",
-            "value": "For 'aggregation': 'mean' or 'sum' of the values per bar. For 'stacked': true stacks the groups, false places them side by side."
+            "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys."
           }
         }
       },
       "fields": {
-        "xRef": { "help": "The category column (slot 'x'), or null." },
-        "yRef": { "help": "The value column (slot 'y'), or null." },
-        "gRef": { "help": "The group column (slot 'g'), or null." },
+        "xRef": { "help": "The category column (slot x); its values become the bars. Required, empty until one is chosen." },
+        "yRef": { "help": "The value column (slot y), numeric and optional; without it each bar counts the rows of its category. Empty until one is chosen." },
+        "gRef": { "help": "The group column (slot g), optional; it splits each category into groups. Empty until one is chosen." },
         "aggregation": { "help": "How values are combined per bar: mean or sum." },
         "stacked": { "help": "Whether the groups are stacked." },
         "activeParams": { "help": "The options setParam accepts in the current state." },
         "activeColumnSlots": { "help": "The slots setColumn accepts: x, y, g." },
         "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
-        "stats": { "help": "The bar values: { categories, groups: [{ name, values }] }; values per category — a count, mean or sum; null while nothing is plotted." }
+        "stats": { "help": "The bar values, each figure described individually under keys; null while nothing is plotted." }
+      },
+      "types": {
+        "Params": {
+          "aggregation": "How the value column is combined per bar: as mean or as sum. Without a value column each bar counts the rows of its category, and this option does not exist.",
+          "stacked": "Whether the groups of a bar are stacked on top of each other (on) or placed side by side (off). The option exists only with a group column."
+        },
+        "BarStats": {
+          "categories": "The categories of the X column in bar order; the table shows them in the Category column.",
+          "groups": "Per group the values of all categories. Without a group column there is exactly one group, named after the value column, or after the category column without one."
+        },
+        "BarGroup": {
+          "name": "The name of the group; the table shows it in the Group column, which appears only with a group column.",
+          "values": "The value per category in category order: without a value column the number of rows, otherwise the mean or sum of the value column. If the group has no rows in a category, it shows 0 there. The table column changes its header with the aggregation (Count, Mean, Sum)."
+        }
       }
     },
     "pareto": {
@@ -5961,20 +5986,34 @@
         "setParam": {
           "help": "Set an analysis option. read().activeParams names the options valid right now.",
           "params": {
-            "key": "'aggregation' — active only while a value column is chosen.",
-            "value": "For 'aggregation': 'sum' or 'mean' of the values per category."
+            "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys."
           }
         }
       },
       "fields": {
-        "xRef": { "help": "The category column (slot 'x'), or null." },
-        "yRef": { "help": "The value column (slot 'y'), or null." },
-        "gRef": { "help": "The stacking column (slot 'g'), or null." },
+        "xRef": { "help": "The category column (slot x); its values become the ranked bars. Required, empty until one is chosen." },
+        "yRef": { "help": "The value column (slot y), numeric and optional; without it each bar counts the rows of its category. Empty until one is chosen." },
+        "gRef": { "help": "The stacking column (slot g), optional; it stacks each bar by its values. Empty until one is chosen." },
         "aggregation": { "help": "How values are combined per category: sum or mean." },
         "activeParams": { "help": "The options setParam accepts in the current state." },
         "activeColumnSlots": { "help": "The slots setColumn accepts: x, y, g." },
         "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
-        "stats": { "help": "The ranked table: { rows: [{ name, value, cumPct }], total }; rows sorted by value descending, cumPct 0…100; null while nothing is plotted." }
+        "stats": { "help": "The ranked Pareto table, each figure described individually under keys; null while nothing is plotted." }
+      },
+      "types": {
+        "Params": {
+          "aggregation": "How the value column is combined per category: as sum or as mean. Without a value column each category counts its rows, and this option does not exist."
+        },
+        "ParetoStats": {
+          "rows": "The categories in descending order of value, as the table shows them. With a stacking column the value is the sum over all stacks. The chart's collective category Other is not listed here; the table lists every category individually.",
+          "total": "The sum of all values, negative ones count as 0; the basis of the cumulative share."
+        },
+        "ParetoRow": {
+          "name": "The category.",
+          "value": "The value of the category: without a value column the number of rows, otherwise the sum or mean of the value column. The table column changes its header with the aggregation (Count, Sum, Mean).",
+          "cumPct": "The cumulative share up to and including this row of the sum of all values, in percent from 0 to 100; the table shows it with a percent sign."
+        }
       },
       "sectionData": "Data Source",
       "slotX": "Category column (X axis)",

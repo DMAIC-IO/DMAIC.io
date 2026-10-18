@@ -53,6 +53,21 @@ const DATASET_SLOTS = [
 const COLUMN_SLOTS = ['value', 'label'];
 
 /**
+ * Die Segmenttabelle (`_agentStats()`), wie `read().stats` sie liefert.
+ *
+ * @typedef {object} PieStats
+ * @property {Slice[]} slices  Segmente
+ * @property {number} total  Summe aller Segmente
+ */
+
+/**
+ * @typedef {object} Slice
+ * @property {string} name  Segmentname
+ * @property {number} value  Wert des Segments
+ * @property {number} share  Anteil an der Summe, 0 bis 1
+ */
+
+/**
  * Die Agenten-Lesefläche des Kreisdiagramms.
  *
  * Die zwei Spaltenbezüge sind der Zustand, den ein Agent setzen kann; dazu
@@ -65,7 +80,7 @@ const COLUMN_SLOTS = ['value', 'label'];
  * @property {object|null} labelRef  the label column (slot `label`), or null — without it slices count distinct values
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
- * @property {object|null} stats  the slice table: `{ slices: [{ name, value, share }], total }` (share 0…1), or null while nothing is plotted
+ * @property {PieStats|null} stats  the slice table, each figure described under keys; null while nothing is plotted
  */
 
 const mod = createModule({
@@ -90,8 +105,8 @@ const mod = createModule({
           const ctx = module._context;
           const i18n = ctx.i18n;
           const SLOT_LABELS = {
-            value: { label: 'V', title: i18n.t('ui.datasetPicker.slotV') },
-            label: { label: 'G', title: i18n.t('ui.datasetPicker.slotG') },
+            value: { label: 'V', title: i18n.t('ui.datasetPicker.slotV'), helpKey: 'modules.pie-chart.fields.valueRef.help' },
+            label: { label: 'G', title: i18n.t('ui.datasetPicker.slotG'), helpKey: 'modules.pie-chart.fields.labelRef.help' },
           };
           this._picker = new DatasetPicker(wrap, ctx, {
             slots: DATASET_SLOTS.map(s => ({ ...s, ...SLOT_LABELS[s.key] })),

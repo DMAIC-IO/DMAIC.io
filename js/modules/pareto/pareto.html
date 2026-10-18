@@ -6,7 +6,7 @@
     <div class="pareto-module__options" data-ref="options-wrap">
       <template x-if="hasYRef">
         <label class="pareto-module__opt-row">
-          <span x-text="t('aggregation')"></span>
+          <span data-help-key="modules.pareto.types.Params.aggregation" x-text="t('aggregation')"></span>
           <select data-action="set-agg" :value="model.chartConfig.aggregation" @change="setParam('aggregation', $event.target.value)">
             <template x-for="o in aggregationOptions()" :key="o.value">
               <option :value="o.value" :selected="o.value === model.chartConfig.aggregation" x-text="o.label"></option>
@@ -29,9 +29,9 @@
             <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('statsTitle')"></span></div>
             <table class="dmike-table pareto-module__stats-table">
               <thead><tr>
-                <th x-text="t('statCategory')"></th>
-                <th x-text="statsValueHeader"></th>
-                <th x-text="t('statCumPct')"></th>
+                <th><span data-help-key="modules.pareto.types.ParetoRow.name" x-text="t('statCategory')"></span></th>
+                <th><span data-help-key="modules.pareto.types.ParetoRow.value" x-text="statsValueHeader"></span></th>
+                <th><span data-help-key="modules.pareto.types.ParetoRow.cumPct" x-text="t('statCumPct')"></span></th>
               </tr></thead>
               <tbody>
                 <template x-for="(r, i) in statsRows" :key="i">

@@ -82,6 +82,29 @@ function setAtPath(obj, key, value) {
 }
 
 /**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {'mean'|'sum'} [aggregation]  Zusammenfassung je Balken, nur mit Wertespalte
+ * @property {boolean} [stacked]  Gruppen gestapelt, nur mit Gruppenspalte
+ */
+
+/**
+ * Die Balkenwerte (`_agentStats()`), wie `read().stats` sie liefert.
+ *
+ * @typedef {object} BarStats
+ * @property {string[]} categories  Kategorien der X-Spalte in Balkenreihenfolge
+ * @property {BarGroup[]} groups  je Gruppe die Werte, ohne Gruppenspalte eine
+ */
+
+/**
+ * @typedef {object} BarGroup
+ * @property {string} name  Gruppenname
+ * @property {number[]} values  Wert je Kategorie
+ */
+
+/**
  * Die Agenten-Lesefläche des Balkendiagramms.
  *
  * Drei Spaltenbezüge, Aggregation und Stapeln sind der Zustand. Die zwei
@@ -99,7 +122,7 @@ function setAtPath(obj, key, value) {
  * @property {string[]} activeParams  the options `setParam` accepts in the current state
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
- * @property {object|null} stats  the bar values: `{ categories, groups: [{ name, values }] }`, values per category (count, mean or sum), or null while nothing is plotted
+ * @property {BarStats|null} stats  the bar values, each figure described under keys; null while nothing is plotted
  */
 
 const mod = createModule({
@@ -124,9 +147,9 @@ const mod = createModule({
           const ctx = module._context;
           const i18n = ctx.i18n;
           const SLOT_LABELS = {
-            x: { label: 'X', title: i18n.t('modules.bar.slotX') },
-            y: { label: 'Y', title: i18n.t('modules.bar.slotY') },
-            g: { label: 'G', title: i18n.t('modules.bar.slotG') },
+            x: { label: 'X', title: i18n.t('modules.bar.slotX'), helpKey: 'modules.bar.fields.xRef.help' },
+            y: { label: 'Y', title: i18n.t('modules.bar.slotY'), helpKey: 'modules.bar.fields.yRef.help' },
+            g: { label: 'G', title: i18n.t('modules.bar.slotG'), helpKey: 'modules.bar.fields.gRef.help' },
           };
           this._picker = new DatasetPicker(wrap, ctx, {
             slots: DATASET_SLOTS.map(s => ({ ...s, ...SLOT_LABELS[s.key] })),
@@ -255,8 +278,8 @@ const mod = createModule({
       /**
        * Eine Analyseoption setzen.
        * @agent
-       * @param {'aggregation'|'stacked'} key welche Option; read().activeParams nennt die im aktuellen Zustand gültigen
-       * @param {'mean'|'sum'|boolean} value für `aggregation` 'mean' oder 'sum', für `stacked` true oder false
+       * @param {keyof Params} key welche Option; die im Zustand zulässigen nennt `activeParams`
+       * @param {'mean'|'sum'|boolean} value der Wert; Bereich je Schlüssel siehe `Params`
        * @returns {void}
        * @throws {Error} wenn `key` unbekannt oder gerade nicht aktiv ist oder `value` ungültig
        */

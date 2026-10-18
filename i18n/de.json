@@ -5843,11 +5843,22 @@
         }
       },
       "fields": {
-        "valueRef": { "help": "Die Wertespalte (Slot 'value'), oder null." },
-        "labelRef": { "help": "Die Beschriftungsspalte (Slot 'label'), oder null." },
+        "valueRef": { "help": "Die Wertespalte (Slot value); aus ihr werden die Segmente. Pflicht, leer, solange keine gewählt ist." },
+        "labelRef": { "help": "Die Beschriftungsspalte (Slot label), optional. Mit ihr werden die Werte je Beschriftung summiert, ohne sie wird jeder verschiedene Wert ein Segment, gezählt nach Häufigkeit. Leer, solange keine gewählt ist." },
         "activeColumnSlots": { "help": "Die Slots, die setColumn annimmt: value, label." },
         "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
-        "stats": { "help": "die Segmenttabelle: { slices: [{ name, value, share }], total }; share ist ein Anteil 0…1; null, solange nichts gezeichnet ist." }
+        "stats": { "help": "Die Segmenttabelle, jede Kennzahl unter keys einzeln beschrieben; null, solange nichts gezeichnet ist." }
+      },
+      "types": {
+        "PieStats": {
+          "slices": "Die Segmente in der Reihenfolge der Tabelle (Reihenfolge des ersten Auftretens).",
+          "total": "Die Summe aller Segmentwerte, negative zählen als 0; Grundlage der Anteile."
+        },
+        "Slice": {
+          "name": "Der Name des Segments: mit Beschriftungsspalte die Beschriftung, ohne sie der Wert selbst.",
+          "value": "Der Wert des Segments: mit Beschriftungsspalte die Summe der Werte dieser Beschriftung (nicht numerische oder negative Werte entfallen), ohne sie die Häufigkeit des Werts.",
+          "share": "Der Anteil des Segments an der Summe aller Segmente, als Bruchzahl von 0 bis 1; die Tabelle zeigt ihn in Prozent."
+        }
       },
       "sectionData": "Datenquelle",
       "tooltipValue": "Wert",
@@ -5932,21 +5943,35 @@
         "setParam": {
           "help": "Eine Analyseoption setzen. read().activeParams nennt die gerade gültigen Optionen.",
           "params": {
-            "key": "'aggregation' — nur mit Wertespalte aktiv; 'stacked' — nur mit Gruppenspalte aktiv.",
-            "value": "Für 'aggregation': 'mean' (Mittelwert) oder 'sum' (Summe) der Werte je Balken. Für 'stacked': true stapelt die Gruppen, false stellt sie nebeneinander."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys."
           }
         }
       },
       "fields": {
-        "xRef": { "help": "Die Kategorienspalte (Slot 'x'), oder null." },
-        "yRef": { "help": "Die Wertespalte (Slot 'y'), oder null." },
-        "gRef": { "help": "Die Gruppenspalte (Slot 'g'), oder null." },
+        "xRef": { "help": "Die Kategorienspalte (Slot x); ihre Werte werden die Balken. Pflicht, leer, solange keine gewählt ist." },
+        "yRef": { "help": "Die Wertespalte (Slot y), numerisch und optional; ohne sie zählt jeder Balken die Zeilen seiner Kategorie. Leer, solange keine gewählt ist." },
+        "gRef": { "help": "Die Gruppenspalte (Slot g), optional; sie teilt jede Kategorie in Gruppen. Leer, solange keine gewählt ist." },
         "aggregation": { "help": "Wie die Werte je Balken zusammengefasst werden: mean oder sum." },
         "stacked": { "help": "Ob die Gruppen gestapelt werden." },
         "activeParams": { "help": "Die Optionen, die setParam im aktuellen Zustand annimmt." },
         "activeColumnSlots": { "help": "Die Slots, die setColumn annimmt: x, y, g." },
         "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
-        "stats": { "help": "Die Balkenwerte: { categories, groups: [{ name, values }] }; Werte je Kategorie — Anzahl, Mittel oder Summe; null, solange nichts gezeichnet ist." }
+        "stats": { "help": "Die Balkenwerte, jede Kennzahl unter keys einzeln beschrieben; null, solange nichts gezeichnet ist." }
+      },
+      "types": {
+        "Params": {
+          "aggregation": "Wie die Werte der Wertespalte je Balken zusammengefasst werden: als Mittelwert oder als Summe. Ohne Wertespalte zählt jeder Balken die Zeilen seiner Kategorie, dann gibt es diese Option nicht.",
+          "stacked": "Ob die Gruppen eines Balkens übereinander gestapelt (an) oder nebeneinander gestellt werden (aus). Die Option gibt es nur mit Gruppenspalte."
+        },
+        "BarStats": {
+          "categories": "Die Kategorien der X-Spalte in der Reihenfolge der Balken; die Tabelle zeigt sie in der Spalte Kategorie.",
+          "groups": "Je Gruppe die Werte aller Kategorien. Ohne Gruppenspalte gibt es genau eine Gruppe, benannt nach der Wertespalte, ohne sie nach der Kategorienspalte."
+        },
+        "BarGroup": {
+          "name": "Der Name der Gruppe; die Tabelle zeigt ihn in der Spalte Gruppe, die nur mit Gruppenspalte erscheint.",
+          "values": "Der Wert je Kategorie in der Reihenfolge der Kategorien: ohne Wertespalte die Anzahl der Zeilen, sonst Mittelwert oder Summe der Wertespalte. Hat die Gruppe in einer Kategorie keine Zeilen, steht dort 0. Die Tabellenspalte wechselt ihren Kopf mit der Aggregation (Häufigkeit, Mittelwert, Summe)."
+        }
       }
     },
     "pareto": {
@@ -5965,20 +5990,34 @@
         "setParam": {
           "help": "Eine Analyseoption setzen. read().activeParams nennt die gerade gültigen Optionen.",
           "params": {
-            "key": "'aggregation' — nur aktiv, solange eine Wertespalte gewählt ist.",
-            "value": "Für 'aggregation': 'sum' (Summe) oder 'mean' (Mittelwert) der Werte je Kategorie."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys."
           }
         }
       },
       "fields": {
-        "xRef": { "help": "Die Kategorienspalte (Slot 'x'), oder null." },
-        "yRef": { "help": "Die Wertespalte (Slot 'y'), oder null." },
-        "gRef": { "help": "Die Stapelspalte (Slot 'g'), oder null." },
+        "xRef": { "help": "Die Kategorienspalte (Slot x); ihre Werte werden die geordneten Balken. Pflicht, leer, solange keine gewählt ist." },
+        "yRef": { "help": "Die Wertespalte (Slot y), numerisch und optional; ohne sie zählt jeder Balken die Zeilen seiner Kategorie. Leer, solange keine gewählt ist." },
+        "gRef": { "help": "Die Stapelspalte (Slot g), optional; sie stapelt jeden Balken nach ihren Werten. Leer, solange keine gewählt ist." },
         "aggregation": { "help": "Wie die Werte je Kategorie zusammengefasst werden: sum oder mean." },
         "activeParams": { "help": "Die Optionen, die setParam im aktuellen Zustand annimmt." },
         "activeColumnSlots": { "help": "Die Slots, die setColumn annimmt: x, y, g." },
         "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
-        "stats": { "help": "Die geordnete Tabelle: { rows: [{ name, value, cumPct }], total }; Zeilen absteigend nach Wert, cumPct 0…100; null, solange nichts gezeichnet ist." }
+        "stats": { "help": "Die geordnete Pareto-Tabelle, jede Kennzahl unter keys einzeln beschrieben; null, solange nichts gezeichnet ist." }
+      },
+      "types": {
+        "Params": {
+          "aggregation": "Wie die Werte der Wertespalte je Kategorie zusammengefasst werden: als Summe oder als Mittelwert. Ohne Wertespalte zählt jede Kategorie ihre Zeilen, dann gibt es diese Option nicht."
+        },
+        "ParetoStats": {
+          "rows": "Die Kategorien absteigend nach Wert, so wie die Tabelle sie zeigt. Mit Stapelspalte ist der Wert die Summe über alle Stapel. Die Sammelkategorie Sonstige des Diagramms steht hier nicht, die Tabelle führt jede Kategorie einzeln.",
+          "total": "Die Summe aller Werte, negative zählen als 0; Grundlage des kumulierten Anteils."
+        },
+        "ParetoRow": {
+          "name": "Die Kategorie.",
+          "value": "Der Wert der Kategorie: ohne Wertespalte die Anzahl der Zeilen, sonst Summe oder Mittelwert der Wertespalte. Die Tabellenspalte wechselt ihren Kopf mit der Aggregation (Häufigkeit, Summe, Mittelwert).",
+          "cumPct": "Der kumulierte Anteil bis einschließlich dieser Zeile an der Summe aller Werte, in Prozent von 0 bis 100; die Tabelle zeigt ihn mit Prozentzeichen."
+        }
       },
       "sectionData": "Datenquelle",
       "slotX": "Kategorie-Spalte (X-Achse)",

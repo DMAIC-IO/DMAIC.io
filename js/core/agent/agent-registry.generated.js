@@ -931,17 +931,30 @@ export const AGENT_REGISTRY = {
             "name": "key",
             "type": "'aggregation'|'stacked'",
             "optional": false,
-            "help": "welche Option; read().activeParams nennt die im aktuellen Zustand gültigen"
+            "help": "welche Option; die im Zustand zulässigen nennt `activeParams`"
           },
           {
             "name": "value",
             "type": "'mean'|'sum'|boolean",
             "optional": false,
-            "help": "für `aggregation` 'mean' oder 'sum', für `stacked` true oder false"
+            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "void",
-        "help": "Eine Analyseoption setzen."
+        "help": "Eine Analyseoption setzen.",
+        "keysOf": "Params",
+        "keys": {
+          "aggregation": {
+            "type": "'mean'|'sum'",
+            "help": "Zusammenfassung je Balken, nur mit Wertespalte",
+            "optional": true
+          },
+          "stacked": {
+            "type": "boolean",
+            "help": "Gruppen gestapelt, nur mit Gruppenspalte",
+            "optional": true
+          }
+        }
       }
     },
     "fields": {
@@ -994,10 +1007,32 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "stats": {
-        "type": "object|null",
-        "help": "the bar values: `{ categories, groups: [{ name, values }] }`, values per category (count, mean or sum), or null while nothing is plotted",
+        "type": "BarStats|null",
+        "help": "the bar values, each figure described under keys; null while nothing is plotted",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "BarStats",
+        "keys": {
+          "categories": {
+            "type": "string[]",
+            "help": "Kategorien der X-Spalte in Balkenreihenfolge"
+          },
+          "groups": {
+            "type": "BarGroup[]",
+            "help": "je Gruppe die Werte, ohne Gruppenspalte eine",
+            "keysOf": "BarGroup",
+            "keys": {
+              "name": {
+                "type": "string",
+                "help": "Gruppenname"
+              },
+              "values": {
+                "type": "number[]",
+                "help": "Wert je Kategorie"
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -11082,17 +11117,25 @@ export const AGENT_REGISTRY = {
             "name": "key",
             "type": "'aggregation'",
             "optional": false,
-            "help": "welche Option; read().activeParams nennt die im aktuellen Zustand gültigen"
+            "help": "welche Option; die im Zustand zulässigen nennt `activeParams`"
           },
           {
             "name": "value",
             "type": "'sum'|'mean'",
             "optional": false,
-            "help": "Summe oder Mittelwert der Wertespalte je Kategorie"
+            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "void",
-        "help": "Eine Analyseoption setzen."
+        "help": "Eine Analyseoption setzen.",
+        "keysOf": "Params",
+        "keys": {
+          "aggregation": {
+            "type": "'sum'|'mean'",
+            "help": "Zusammenfassung je Kategorie, nur mit Wertespalte",
+            "optional": true
+          }
+        }
       }
     },
     "fields": {
@@ -11139,10 +11182,36 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "stats": {
-        "type": "object|null",
-        "help": "the ranked table: `{ rows: [{ name, value, cumPct }], total }`, rows sorted by value descending, cumPct 0…100, or null while nothing is plotted",
+        "type": "ParetoStats|null",
+        "help": "the ranked table, each figure described under keys; null while nothing is plotted",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "ParetoStats",
+        "keys": {
+          "rows": {
+            "type": "ParetoRow[]",
+            "help": "Kategorien absteigend nach Wert",
+            "keysOf": "ParetoRow",
+            "keys": {
+              "name": {
+                "type": "string",
+                "help": "Kategorie"
+              },
+              "value": {
+                "type": "number",
+                "help": "Wert der Kategorie"
+              },
+              "cumPct": {
+                "type": "number",
+                "help": "kumulierter Anteil in Prozent"
+              }
+            }
+          },
+          "total": {
+            "type": "number",
+            "help": "Summe aller Werte"
+          }
+        }
       }
     }
   },
@@ -11209,10 +11278,36 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "stats": {
-        "type": "object|null",
-        "help": "the slice table: `{ slices: [{ name, value, share }], total }` (share 0…1), or null while nothing is plotted",
+        "type": "PieStats|null",
+        "help": "the slice table, each figure described under keys; null while nothing is plotted",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "PieStats",
+        "keys": {
+          "slices": {
+            "type": "Slice[]",
+            "help": "Segmente",
+            "keysOf": "Slice",
+            "keys": {
+              "name": {
+                "type": "string",
+                "help": "Segmentname"
+              },
+              "value": {
+                "type": "number",
+                "help": "Wert des Segments"
+              },
+              "share": {
+                "type": "number",
+                "help": "Anteil an der Summe, 0 bis 1"
+              }
+            }
+          },
+          "total": {
+            "type": "number",
+            "help": "Summe aller Segmente"
+          }
+        }
       }
     }
   },
