@@ -25,7 +25,7 @@ export const ANCHOR_EXEMPTIONS = {
     { match: "<th x-text=\"t('tzTime')\"", reason: 'Weltuhr, aus Zeitzone und Uhrzeit abgeleitet; nicht Teil der Lesefläche', count: 1 },
   ],
   'doe-advisor': [
-    { match: "t('col.", reason: 'Nachschlagetabelle mit festem Inhalt (Versuchsplankatalog, Phasenleitfaden); nicht Teil der Lesefläche', count: 8 },
+    { match: "t('col.", reason: 'Nachschlagetabelle mit festem Inhalt (Übersicht der Versuchspläne, Phasenleitfaden); nicht Teil der Lesefläche', count: 8 },
     { match: 'doe-advisor__row-name', reason: 'Zeilenkopf je Versuchsplan (Name aus dem Katalog)', count: 1 },
     { match: 'phasePhase(id)', reason: 'Zeilenkopf je Phase des Leitfadens', count: 1 },
     { match: "t('ccd.col.", reason: 'Nachschlagetabelle mit festem Inhalt (CCD-Vergleich); nicht Teil der Lesefläche', count: 3 },

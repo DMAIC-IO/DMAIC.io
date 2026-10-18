@@ -6534,7 +6534,7 @@
       "dispersionPreferInteraction": "Wechselwirkungseffekt — Stufenkombination im Konturplot ablesen"
     },
     "doe-advisor": {
-      "whenToUse": "Wenn für ein Verbesserungsvorhaben erst noch die Frage zu klären ist, WELCHER Versuchsplan passt — Screening, Wechselwirkungen, Optimierung, Robustheit oder Mischung —, oder wenn der Katalog der Pläne und der Vergleich der zentral zusammengesetzten Pläne gebraucht wird; nicht für das Planen oder Auswerten eines konkreten Versuchs, dafür sind der Versuchsplaner und die Auswertung da.",
+      "whenToUse": "Wenn für ein Verbesserungsvorhaben erst noch die Frage zu klären ist, WELCHER Versuchsplan passt — Screening, Wechselwirkungen, Optimierung, Robustheit oder Mischung —, oder wenn der Übersicht der Versuchspläne und der Vergleich der zentral zusammengesetzten Pläne gebraucht wird; nicht für das Planen oder Auswerten eines konkreten Versuchs, dafür sind der Versuchsplaner und die Auswertung da.",
       "actions": {
         "read": {
           "help": "Liefert den Zustand des Beraters und die Antwortmöglichkeiten der offenen Frage.",
@@ -6543,7 +6543,7 @@
         "switchTab": {
           "help": "Wechselt den angezeigten Bereich: Übersicht der Versuchspläne, geführter Berater oder CCD-Vergleich der zentral zusammengesetzten Pläne.",
           "params": {
-            "tab": "overview zeigt den Versuchsplankatalog, wizard den geführten Berater, ccd den Vergleich der zentral zusammengesetzten Pläne. Jeder andere Wert ist ein Fehler."
+            "tab": "overview zeigt die Übersicht der Versuchspläne, wizard den geführten Berater, ccd den Vergleich der zentral zusammengesetzten Pläne. Jeder andere Wert ist ein Fehler."
           }
         },
         "answer": {
@@ -6564,7 +6564,7 @@
           "help": "Die Antwortmöglichkeiten der offenen Frage — genau die Werte, die answer(opt) annimmt. Leer, sobald der Berater auf seiner Empfehlung steht."
         },
         "tab": {
-          "help": "Der angezeigte Bereich: overview der Versuchsplankatalog, wizard der geführte Berater, ccd der Vergleich der zentral zusammengesetzten Pläne."
+          "help": "Der angezeigte Bereich: overview die Übersicht der Versuchspläne, wizard der geführte Berater, ccd der Vergleich der zentral zusammengesetzten Pläne."
         },
         "currentStep": {
           "help": "Die id der offenen Frage — phase, goal, screening-curvature, factor-count, factor-levels, robustness-type, limits oder corners —, oder result:<schlüssel>, sobald eine Empfehlung steht; result:none heißt, dass in dieser Phase noch kein Versuchsplan ansteht. Die Frage selbst und die Empfehlung sind übersetzte Texte und stehen in keinem Feld."
@@ -8503,7 +8503,7 @@
       "types": {
         "Params": {
           "csvOptions": {
-            "preset": "Das Exportprofil, also ein Satz Vorgaben für den CSV-Export einer Messsoftware. Generisch lässt alles auf den Vorgaben (automatisches Trennzeichen, UTF-8, Kopfzeile, keine übersprungenen Zeilen). Zeiss CALYPSO nimmt Semikolon, Windows-1252 und überspringt 4 Zeilen, Hexagon PC-DMIS Komma, UTF-8 und 4 Zeilen, Mitutoyo MeasurLink Komma, UTF-8 und keine Zeilen; alle drei lesen die erste verbleibende Zeile als Kopfzeile. Ein Profil setzt Trennzeichen, Zeichensatz, übersprungene Zeilen und Kopfzeile auf einmal; die Einzeloptionen lassen sich danach noch ändern.",
+            "preset": "Das Exportprofil, also ein Satz Vorgaben für den CSV-Export einer Messsoftware. Generisch lässt alles auf den Vorgaben (automatisches Trennzeichen, UTF-8, Spaltenüberschriften, keine übersprungenen Zeilen). Zeiss CALYPSO nimmt Semikolon, Windows-1252 und überspringt 4 Zeilen, Hexagon PC-DMIS Komma, UTF-8 und 4 Zeilen, Mitutoyo MeasurLink Komma, UTF-8 und keine Zeilen; alle drei lesen die erste verbleibende Zeile als Zeile mit den Spaltenüberschriften. Ein Profil setzt Trennzeichen, Zeichensatz, übersprungene Zeilen und Spaltenüberschriften auf einmal; die Einzeloptionen lassen sich danach noch ändern.",
             "delimiter": "Das Zeichen, das die Spalten trennt: automatisch (wird aus dem Inhalt erkannt), Komma, Semikolon, Tabulator oder Senkrechtstrich.",
             "encoding": "Der Zeichensatz der Datei: UTF-8, Windows-1252 (Excel) oder Latin-1 (ISO-8859-1); er entscheidet, ob Umlaute richtig erscheinen. Bei eingefügtem Text entfällt die Option, weil der Text schon als Zeichen vorliegt; das Feld ist dann ausgeblendet.",
             "hasHeader": "Ob die erste Zeile (nach den übersprungenen) die Spaltenüberschriften enthält. Ohne Spaltenüberschriften zählt sie als Messwerte, und die Spalten heißen C1, C2 und so weiter.",
@@ -8657,7 +8657,7 @@
         "attributes": { "help": "Die Kategorien der attributiven Verteilung, je mit id, Name und Gewicht." },
         "attrCount": { "help": "Umfang der Stichprobe bei der attributiven Verteilung." },
         "attrSeed": { "help": "Startwert des Zufallsgenerators bei der attributiven Verteilung." },
-        "generated": { "help": "Zusammenfassung der erzeugten Werte, jede Angabe unter keys einzeln beschrieben; null, solange keine Werte erzeugt sind." },
+        "generated": { "help": "Zusammenfassung der erzeugten Werte, jede Angabe unter keys einzeln beschrieben; null, solange keine Werte erzeugt sind. Die Karten zeigen die Kennzahlen mit vier Nachkommastellen, Beträge ab 10⁶ oder unter 0,001 in Exponentialschreibweise." },
         "targetColumns": { "help": "Die Ziele, die toWorksheet annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'. Je Blatt mit einer leeren Spalte stehen dort seine leeren Spalten und danach ein Eintrag mit columnId '__new__' (name ist der Blattname), der eine neue Spalte anhängt. Ein Ziel null legt einen neuen Worksheet an." },
         "errorMsg": { "help": "Die Meldung, wenn die Verteilung keine Werte erzeugen konnte, sonst leer." }
       },
@@ -8674,13 +8674,13 @@
         },
         "Generated": {
           "n": "n: die Zahl der erzeugten Werte, gleich der eingestellten Anzahl (n).",
-          "mean": "Mittelwert x̄ = Σx / n, die Summe der erzeugten Werte geteilt durch ihre Anzahl. Die Karte zeigt vier Nachkommastellen, sehr große oder sehr kleine Werte in Exponentialschreibweise. Nur bei stetigen und diskreten Verteilungen.",
-          "sd": "Std.Abw. s = √(Σ(x − x̄)² / (n − 1)), die Stichproben-Streuung der erzeugten Werte mit dem Nenner n − 1. Die Karte zeigt vier Nachkommastellen, sehr große oder sehr kleine Werte in Exponentialschreibweise. Nur bei stetigen und diskreten Verteilungen.",
-          "median": "Median: der mittlere Wert der aufsteigend sortierten erzeugten Werte, bei gerader Anzahl der Mittelwert der beiden mittleren. Die Karte zeigt vier Nachkommastellen, sehr große oder sehr kleine Werte in Exponentialschreibweise. Nur bei stetigen und diskreten Verteilungen.",
-          "min": "Min: der kleinste der erzeugten Werte. Die Karte zeigt vier Nachkommastellen, sehr große oder sehr kleine Werte in Exponentialschreibweise. Nur bei stetigen und diskreten Verteilungen.",
-          "max": "Max: der größte der erzeugten Werte. Die Karte zeigt vier Nachkommastellen, sehr große oder sehr kleine Werte in Exponentialschreibweise. Nur bei stetigen und diskreten Verteilungen.",
-          "skewness": "Schiefe g₁ = m₃ / m₂^1,5 mit den zentrierten Momenten m₂ = Σ(x − x̄)² / n und m₃ = Σ(x − x̄)³ / n (Nenner n, nicht korrigiert). Positiv: der lange Ausläufer liegt rechts, negativ: links; 0 bei symmetrischen Werten. Die Karte zeigt vier Nachkommastellen, sehr große oder sehr kleine Werte in Exponentialschreibweise. Nur bei stetigen und diskreten Verteilungen.",
-          "kurtosis": "Kurtosis als Exzess: m₄ / m₂² − 3 mit m₂ = Σ(x − x̄)² / n und m₄ = Σ(x − x̄)⁴ / n (Nenner n, nicht korrigiert). 0 entspricht der Normalverteilung, positiv heißt spitzer mit schweren Rändern, negativ flacher. Die Karte zeigt vier Nachkommastellen, sehr große oder sehr kleine Werte in Exponentialschreibweise. Nur bei stetigen und diskreten Verteilungen.",
+          "mean": "Mittelwert x̄ = Σx / n, die Summe der erzeugten Werte geteilt durch ihre Anzahl. Nur bei stetigen und diskreten Verteilungen.",
+          "sd": "Std.Abw. s = √(Σ(x − x̄)² / (n − 1)), die Stichproben-Streuung der erzeugten Werte mit dem Nenner n − 1. Bei nur einem gezogenen Wert nicht definiert: das Ergebnis ist dann leer. Nur bei stetigen und diskreten Verteilungen.",
+          "median": "Median: der mittlere Wert der aufsteigend sortierten erzeugten Werte, bei gerader Anzahl der Mittelwert der beiden mittleren. Nur bei stetigen und diskreten Verteilungen.",
+          "min": "Min: der kleinste der erzeugten Werte. Nur bei stetigen und diskreten Verteilungen.",
+          "max": "Max: der größte der erzeugten Werte. Nur bei stetigen und diskreten Verteilungen.",
+          "skewness": "Schiefe g₁ = m₃ / m₂^1,5 mit den zentrierten Momenten m₂ = Σ(x − x̄)² / n und m₃ = Σ(x − x̄)³ / n (Nenner n, nicht korrigiert). Positiv: der lange Ausläufer liegt rechts, negativ: links; 0 bei symmetrischen Werten. Nur bei stetigen und diskreten Verteilungen.",
+          "kurtosis": "Kurtosis als Exzess: m₄ / m₂² − 3 mit m₂ = Σ(x − x̄)² / n und m₄ = Σ(x − x̄)⁴ / n (Nenner n, nicht korrigiert). 0 entspricht der Normalverteilung, positiv heißt spitzer mit schweren Rändern, negativ flacher. Nur bei stetigen und diskreten Verteilungen.",
           "frequency": "Die Häufigkeit je Kategorie, absteigend nach Anzahl sortiert; jeder Eintrag nennt Name und Anzahl. Die Karte „Kategorien“ zählt die Einträge, die Karte „Häufigstes“ nennt den ersten. Nur bei der attributiven Verteilung."
         },
         "FrequencyRow": {
