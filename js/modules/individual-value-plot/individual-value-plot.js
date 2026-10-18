@@ -88,7 +88,7 @@ function setAtPath(obj, key, value) {
 
 /**
  * @typedef {object} Stats
- * @property {number|null} n  Anzahl Werte
+ * @property {number} n  Anzahl Werte
  * @property {number} mean  Mittelwert
  * @property {number|null} stddev  Standardabweichung
  * @property {number|null} variance  Varianz

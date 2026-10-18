@@ -6765,7 +6765,7 @@ export const AGENT_REGISTRY = {
             "keysOf": "Stats",
             "keys": {
               "n": {
-                "type": "number|null",
+                "type": "number",
                 "help": "Anzahl Werte"
               },
               "mean": {

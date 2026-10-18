@@ -246,7 +246,7 @@ export function renderStatsTable(container, seriesStats, options = {}) {
     if (s.stats) {
       cols.forEach(c => {
         const val = s.stats[c.key];
-        const valStr = c.key === 'n' ? String(val) : (val != null ? val.toFixed(4) : '–');
+        const valStr = c.key === 'n' ? String(val) : (Number.isFinite(val) ? val.toFixed(4) : '–');
         // `data-stat` benennt die Wertzelle eindeutig, damit sie sich von
         // außen adressieren und annotieren lässt, ohne an `:nth-of-type` zu
         // hängen — sonst verschiebt jede neue Spalte das Ziel. Der

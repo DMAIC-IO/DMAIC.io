@@ -87,3 +87,14 @@ suite('Stats panel — Kontexthilfe-Anker im Kopf', () => {
     assertEqual(anchor?.querySelector('.glossary-term')?.getAttribute('data-glossary-term'), 'mittelwert');
   });
 });
+
+suite('Stats panel — nicht definierte Kennzahlen', () => {
+  test('stddev NaN (n = 1) erscheint als Strich, nicht als NaN', () => {
+    const host = document.createElement('div');
+    renderStatsTable(host, computeSeriesStats([
+      { name: 'Eins', values: [5], color: '#f00', visible: true },
+    ]), { confLevel: 95 });
+    assertEqual(host.querySelector('td[data-stat="stddev"]').textContent, '–', 'stddev');
+    assertEqual(host.querySelector('td[data-stat="variance"]').textContent, '–', 'variance');
+  });
+});

@@ -1009,13 +1009,13 @@
         "SeriesStats": {
           "name": "Name of the series, as in the Series column and the legend: the column name, or the group value when grouped.",
           "stats": "The figures of this series, each described individually. Empty for a series without values; the table then shows dashes.",
-          "ci": "The confidence intervals of this series at the chosen level, for mean, spread and variance. The table shows them after the value, as lower and upper bound. Empty if the series has fewer than two values or no spread."
+          "ci": "The confidence intervals of this series at the chosen level, for mean, spread and variance. The table shows them after the value, as lower and upper bound. Empty if the series has fewer than two values or no spread. The table rounds the bounds to four decimals, magnitudes below 0.001 or from 10⁶ up to four significant digits."
         },
         "Stats": {
           "n": "Number of values in the series (N); the table shows it as a whole number.",
           "mean": "Mean x̄ = Σx / n, the sum of all values divided by their count. The table rounds to four decimals.",
-          "stddev": "Standard deviation s = √(Σ(x − x̄)² / (n − 1)), the sample spread with denominator n − 1 (column StdDev). The table rounds to four decimals. With only one value it is undefined: the table shows NaN, and in the agent result the value is empty.",
-          "variance": "Variance s² = Σ(x − x̄)² / (n − 1), the square of the standard deviation, with denominator n − 1. The table rounds to four decimals. With only one value it is undefined: the table shows NaN, and in the agent result the value is empty.",
+          "stddev": "Standard deviation s = √(Σ(x − x̄)² / (n − 1)), the sample spread with denominator n − 1 (column StdDev). The table rounds to four decimals. With only one value it is undefined: the table shows a dash, and in the agent result the value is empty.",
+          "variance": "Variance s² = Σ(x − x̄)² / (n − 1), the square of the standard deviation, with denominator n − 1. The table rounds to four decimals. With only one value it is undefined: the table shows a dash, and in the agent result the value is empty.",
           "seMean": "Standard error of the mean, s / √n. The table does not show it; it is what sets the width of the confidence interval for the mean. With only one value it is undefined; in the agent result the value is empty.",
           "median": "Median: the middle of the values sorted ascending, for an even count the mean of the two middle ones. The table rounds to four decimals.",
           "min": "Smallest value of the series. The table rounds to four decimals.",
