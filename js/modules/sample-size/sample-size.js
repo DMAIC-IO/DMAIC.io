@@ -84,6 +84,39 @@ const DIRECTION_LABEL_METHODS = {
   less: 'directionLessLabel',
 };
 
+/** Präfix der Hilfeschlüssel, die die Kennzahlkacheln tragen. */
+const HELP = 'modules.sample-size.types.';
+
+/**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {'variance'|'mean'} category  Varianz oder Mittelwert
+ * @property {'one'|'two'} testType  eine oder zwei Stichproben
+ * @property {'two-sided'|'greater'|'less'} direction  Alternativhypothese
+ * @property {number} alpha  Signifikanzniveau
+ * @property {number} power  Ziel-Teststärke
+ * @property {string} [sigma0]  Standardabweichung unter H₀
+ * @property {string} [sigmaAlt]  erwartete Standardabweichung
+ * @property {string} [ratio]  Varianzverhältnis
+ * @property {string} [delta]  Mittelwertdifferenz
+ * @property {string} [sigma]  Standardabweichung
+ */
+
+/**
+ * Der benötigte Stichprobenumfang (`_calculate()`), wie `read().result` ihn liefert.
+ *
+ * @typedef {object} Result
+ * @property {number} nRequired  Umfang je Gruppe
+ * @property {number} totalN  Gesamtumfang
+ * @property {number} alpha  Signifikanzniveau
+ * @property {number} power  Ziel-Teststärke
+ * @property {string} effectLabel  Name der Effektgröße
+ * @property {number} effectValue  Effektgröße
+ * @property {'chi-square-variance'|'f-test'|'one-sample-t-test'|'two-sample-t-test'} algoId  Verfahren
+ */
+
 /**
  * Die Agenten-Lesefläche von Sample Size.
  *
@@ -103,7 +136,7 @@ const DIRECTION_LABEL_METHODS = {
  * @property {string} delta  mean difference Δ, as entered (mean tests)
  * @property {string} sigma  standard deviation σ, as entered (mean tests)
  * @property {string[]} activeParams  the keys `setParam` accepts in the current state
- * @property {object|null} result  the required sample size with key figures, or null while the inputs are incomplete or not positive numbers
+ * @property {Result|null} result  the required sample size with key figures, or null while the inputs are incomplete or not positive numbers
  */
 export default createModule({
   config: {
@@ -309,7 +342,7 @@ export default createModule({
       /**
        * Einen Eingabewert setzen; die Berechnung läuft danach neu.
        * @agent
-       * @param {'category'|'testType'|'direction'|'alpha'|'power'|'sigma0'|'sigmaAlt'|'ratio'|'delta'|'sigma'} key welcher Parameter
+       * @param {keyof Params} key welcher Parameter; die im aktuellen Zustand zulässigen nennt activeParams
        * @param {string|number} value der neue Wert; Auswahlfelder nehmen einen Eintrag der Liste, alpha und power eine Zahl im Bereich, die übrigen einen Text
        * @returns {void}
        * @throws {Error} wenn `key` im aktuellen Zustand nicht gilt oder `value` nicht zulässig ist
@@ -475,13 +508,13 @@ export default createModule({
 
         // KPI strip cells (same order + formatting as the legacy markup).
         const cells = [
-          { value: String(nLabel), label: _t('requiredN') + perGroupSuffix, mod: 'dmike-kpi--good' },
-          { value: `${powerPct  }%`, label: _t('targetPower'), mod: '' },
-          { value: String(alpha), label: 'α', mod: '' },
-          { value: fmt(effValue, 3), label: effLabel, mod: '' },
+          { value: String(nLabel), label: _t('requiredN') + perGroupSuffix, mod: 'dmike-kpi--good', help: `${HELP}Result.nRequired` },
+          { value: `${powerPct  }%`, label: _t('targetPower'), mod: '', help: `${HELP}Result.power` },
+          { value: String(alpha), label: 'α', mod: '', help: `${HELP}Result.alpha` },
+          { value: fmt(effValue, 3), label: effLabel, mod: '', help: `${HELP}Result.effectValue` },
         ];
         if (isTwo) {
-          cells.push({ value: nOverflow ? '> 10.000' : String(nRequired * 2), label: _t('totalN'), mod: '' });
+          cells.push({ value: nOverflow ? '> 10.000' : String(nRequired * 2), label: _t('totalN'), mod: '', help: `${HELP}Result.totalN` });
         }
         this.kpiCells = cells;
 

@@ -13794,7 +13794,7 @@ export const AGENT_REGISTRY = {
             "name": "key",
             "type": "'category'|'testType'|'direction'|'alpha'|'power'|'sigma0'|'sigmaAlt'|'ratio'|'delta'|'sigma'",
             "optional": false,
-            "help": "welcher Parameter"
+            "help": "welcher Parameter; die im aktuellen Zustand zulässigen nennt activeParams"
           },
           {
             "name": "value",
@@ -13804,7 +13804,55 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Einen Eingabewert setzen; die Berechnung läuft danach neu."
+        "help": "Einen Eingabewert setzen; die Berechnung läuft danach neu.",
+        "keysOf": "Params",
+        "keys": {
+          "category": {
+            "type": "'variance'|'mean'",
+            "help": "Varianz oder Mittelwert"
+          },
+          "testType": {
+            "type": "'one'|'two'",
+            "help": "eine oder zwei Stichproben"
+          },
+          "direction": {
+            "type": "'two-sided'|'greater'|'less'",
+            "help": "Alternativhypothese"
+          },
+          "alpha": {
+            "type": "number",
+            "help": "Signifikanzniveau"
+          },
+          "power": {
+            "type": "number",
+            "help": "Ziel-Teststärke"
+          },
+          "sigma0": {
+            "type": "string",
+            "help": "Standardabweichung unter H₀",
+            "optional": true
+          },
+          "sigmaAlt": {
+            "type": "string",
+            "help": "erwartete Standardabweichung",
+            "optional": true
+          },
+          "ratio": {
+            "type": "string",
+            "help": "Varianzverhältnis",
+            "optional": true
+          },
+          "delta": {
+            "type": "string",
+            "help": "Mittelwertdifferenz",
+            "optional": true
+          },
+          "sigma": {
+            "type": "string",
+            "help": "Standardabweichung",
+            "optional": true
+          }
+        }
       },
       "runAnalysis": {
         "params": [],
@@ -13880,10 +13928,41 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
+        "type": "Result|null",
         "help": "the required sample size with key figures, or null while the inputs are incomplete or not positive numbers",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "nRequired": {
+            "type": "number",
+            "help": "Umfang je Gruppe"
+          },
+          "totalN": {
+            "type": "number",
+            "help": "Gesamtumfang"
+          },
+          "alpha": {
+            "type": "number",
+            "help": "Signifikanzniveau"
+          },
+          "power": {
+            "type": "number",
+            "help": "Ziel-Teststärke"
+          },
+          "effectLabel": {
+            "type": "string",
+            "help": "Name der Effektgröße"
+          },
+          "effectValue": {
+            "type": "number",
+            "help": "Effektgröße"
+          },
+          "algoId": {
+            "type": "'chi-square-variance'|'f-test'|'one-sample-t-test'|'two-sample-t-test'",
+            "help": "Verfahren"
+          }
+        }
       }
     }
   },

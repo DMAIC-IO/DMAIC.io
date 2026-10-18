@@ -7949,8 +7949,8 @@
         "setParam": {
           "help": "Setzt eine Eingabe; die Berechnung läuft danach neu.",
           "params": {
-            "key": "Einer der Schlüssel aus activeParams. Welche von sigma0, sigmaAlt, ratio, delta und sigma gelten, hängt von category und testType ab; jeder andere Schlüssel ist ein Fehler.",
-            "value": "category: 'variance' oder 'mean'. testType: 'one' oder 'two'. direction: 'two-sided', 'greater' oder 'less'. alpha: eine Zahl von 0.0001 bis 0.5. power: eine Zahl von 0.5 bis 0.9999 (Werte außerhalb sind ein Fehler, sie werden nicht geklemmt). sigma0, sigmaAlt, ratio, delta, sigma: ein Text wie '2.5', '' leert den Wert."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys. sigma0, sigmaAlt, ratio, delta, sigma als Text mit einer Zahl, '' leert den Wert."
           }
         },
         "runAnalysis": { "help": "Berechnet den erforderlichen Stichprobenumfang aus den aktuellen Eingaben. Bei unvollständigen Eingaben oder Werten, die keine positiven Zahlen sind, bleibt result null." }
@@ -7967,7 +7967,30 @@
         "delta": { "help": "Nachzuweisende Mittelwertdifferenz Δ wie eingegeben; gilt für Mittelwerttests." },
         "sigma": { "help": "Standardabweichung σ wie eingegeben; gilt für Mittelwerttests." },
         "activeParams": { "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt." },
-        "result": { "help": "Der erforderliche Stichprobenumfang { nRequired, totalN, alpha, power, effectLabel, effectValue, algoId } oder null, solange die Eingaben unvollständig sind oder keine positiven Zahlen ergeben. nRequired gilt je Gruppe; totalN ist bei Zwei-Stichproben-Tests nRequired mal zwei, sonst gleich nRequired; nRequired ist bei 5000 gedeckelt." }
+        "result": { "help": "Der benötigte Stichprobenumfang, jede Kennzahl unter keys einzeln beschrieben; null, solange eine Effektangabe fehlt oder nicht positiv ist." }
+      },
+      "types": {
+        "Params": {
+          "category": "Die Testkategorie, Knöpfe „σ² Varianzen“ und „μ Mittelwerte“: Varianzen (variance) planen einen Test auf die Streuung, Mittelwerte (mean) einen t-Test auf die Lage. Die Wahl bestimmt, welche Effektangaben gelten.",
+          "testType": "Der Testtyp, Knöpfe „1-Stichprobe“ und „2-Stichproben“: one vergleicht eine Stichprobe mit einem Sollwert, two zwei gleich große Gruppen miteinander. Bei zwei Stichproben gilt der berechnete Umfang je Gruppe.",
+          "direction": "Die Testrichtung, Feld „Testrichtung“: zweiseitig (two-sided) weist jede Abweichung nach, größer (greater) oder kleiner (less) nur eine in diese Richtung. Ein einseitiger Test braucht bei gleichem Effekt weniger Beobachtungen.",
+          "alpha": "Das Signifikanzniveau α, die tolerierte Wahrscheinlichkeit, einen Effekt zu melden, den es nicht gibt; eine Zahl von 0,0001 bis 0,5. Vorbelegt aus der Konfidenz in den Einstellungen (95 % ergibt 0,05). Kleineres α verlangt mehr Beobachtungen.",
+          "power": "Die Ziel-Power 1 − β, Beschriftung „Ziel-Power (1 − β)“: die Wahrscheinlichkeit, einen vorhandenen Effekt der angegebenen Größe auch nachzuweisen; eine Zahl von 0,5 bis 0,9999, vorbelegt aus den Einstellungen (üblich 0,8). Höhere Power verlangt mehr Beobachtungen.",
+          "sigma0": "Die Soll-Standardabweichung σ₀, Beschriftung „Soll-Standardabw. (σ₀)“: die Streuung, die unter der Nullhypothese gilt, als Text mit einer positiven Zahl. Nur bei Varianzen mit einer Stichprobe; der Effekt ist das Verhältnis σ₁² / σ₀².",
+          "sigmaAlt": "Die erwartete Standardabweichung σ₁, Beschriftung „Erw. Standardabw. (σ₁)“: die Streuung, deren Abweichung von σ₀ der Test erkennen soll, als Text mit einer positiven Zahl. Nur bei Varianzen mit einer Stichprobe; je näher σ₁ an σ₀ liegt, desto mehr Beobachtungen braucht es.",
+          "ratio": "Das Varianzverhältnis σ²₁ / σ²₂, Beschriftung „Varianzverhältnis (σ²₁ / σ²₂)“: um welchen Faktor sich die Varianzen der beiden Gruppen unterscheiden sollen, als Text mit einer positiven Zahl. Nur bei Varianzen mit zwei Stichproben; ein Verhältnis nahe 1 verlangt sehr viele Beobachtungen.",
+          "delta": "Die nachzuweisende Mittelwertdifferenz Δ, Beschriftung „Differenz (Δ)“, als Text mit einer positiven Zahl in der Einheit der Messwerte: bei einer Stichprobe der Abstand zum Sollwert, bei zwei der Abstand der Gruppenmittel. Nur bei Mittelwerten; mit σ ergibt sie die Effektgröße Cohen's d = Δ / σ.",
+          "sigma": "Die Standardabweichung σ der Messwerte, Beschriftung „Standardabw. (σ)“, als Text mit einer positiven Zahl; bei zwei Stichproben gilt sie für beide Gruppen. Nur bei Mittelwerten; größeres σ macht dieselbe Differenz schwerer nachweisbar."
+        },
+        "Result": {
+          "nRequired": "Der erforderliche Stichprobenumfang n, Kachel „Erforderliches n“ (bei zwei Stichproben „je Gruppe“): das kleinste n ab 4, mit dem die Power die Ziel-Power erreicht. Gesucht wird bis 5000; reicht auch das nicht, steht hier 5000 und die Kachel zeigt „> 5.000“ — der Effekt ist dann kaum nachweisbar.",
+          "totalN": "Der Gesamtumfang, Kachel „Gesamt-n“: bei zwei Stichproben n je Gruppe mal zwei, bei einer Stichprobe gleich n. Die Kachel erscheint nur bei zwei Stichproben; am Deckel zeigt sie „> 10.000“.",
+          "alpha": "Das Signifikanzniveau α, mit dem gerechnet wurde, Kachel „α“; gleich der Eingabe.",
+          "power": "Die Ziel-Power 1 − β, mit der gerechnet wurde, als Anteil; die Kachel „Ziel-Power“ zeigt sie in Prozent, auf ganze Zahlen gerundet. Der Umfang n erreicht mindestens diese Power, außer er steht am Deckel 5000.",
+          "effectLabel": "Der Name der Effektgröße, wie ihn die Kachel zeigt: „Varianzverhältnis“ bei Varianztests, „Cohen's d“ bei Mittelwerttests.",
+          "effectValue": "Die Effektgröße, die der Test erkennen soll; die Kachel zeigt sie mit drei Nachkommastellen. Varianzen, eine Stichprobe: σ₁² / σ₀². Varianzen, zwei Stichproben: das eingegebene Verhältnis σ²₁ / σ²₂. Mittelwerte: Cohen's d = Δ / σ.",
+          "algoId": "Das Verfahren, dessen Power gerechnet wurde; die Oberfläche verlinkt damit das Algorithm Lab. chi-square-variance: χ²-Test einer Varianz mit n − 1 Freiheitsgraden. f-test: F-Test zweier Varianzen mit je n − 1 Freiheitsgraden. one-sample-t-test: t-Test mit Nichtzentralität Δ · √n / σ und n − 1 Freiheitsgraden. two-sample-t-test: t-Test mit Nichtzentralität Δ / (σ · √(2/n)) und 2n − 2 Freiheitsgraden."
+        }
       },
       "placeholderText": "Parameter links eingeben und Berechnung starten.",
       "sectionCategory": "Testkategorie",
