@@ -51,10 +51,9 @@
         <template x-for="r in model.respondents">
           <span class="kano__tab-wrap dmike-del-btn-host" :key="r.id">
             <button class="dmike-tab" type="button" :data-respondent-id="r.id"
-                    data-help-key="modules.kano.actions.selectRespondent.help"
-                    :class="tabClass(r.id)" x-text="r.name" x-show="!isRenaming(r.id)"
+                    :class="tabClass(r.id)" x-show="!isRenaming(r.id)"
                     :title="respondentRenameTitle(r.name)"
-                    @click="selectRespondent(r.id)" @dblclick="startRename(r.id)"></button>
+                    @click="selectRespondent(r.id)" @dblclick="startRename(r.id)"><span data-help-key="modules.kano.actions.selectRespondent.help" x-text="r.name"></span></button>
             <template x-if="isRenaming(r.id)">
               <input class="field kano__tab-rename-input" data-ref="tabRenameInput"
                      x-model="renameValue"

@@ -93,8 +93,8 @@ const ITEM_FIELDS = ['id', 'nodeId', 'label', 'path', 'missing'];
  * @property {number} O  Leistung
  * @property {number} A  Begeisterung
  * @property {number} I  indifferent
- * @property {number} R  Rückweisung
- * @property {number} Q  fragwürdig
+ * @property {number} R  umgekehrt
+ * @property {number} Q  widersprüchlich
  */
 
 /**

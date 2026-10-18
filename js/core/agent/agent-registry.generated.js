@@ -7069,11 +7069,11 @@ export const AGENT_REGISTRY = {
                   },
                   "R": {
                     "type": "number",
-                    "help": "Rückweisung"
+                    "help": "umgekehrt"
                   },
                   "Q": {
                     "type": "number",
-                    "help": "fragwürdig"
+                    "help": "widersprüchlich"
                   }
                 }
               },
