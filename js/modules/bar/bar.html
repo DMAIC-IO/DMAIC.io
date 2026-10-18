@@ -50,7 +50,7 @@
                 </template>
                 <template x-if="statsShowTotal">
                   <tr style="font-weight:600;border-top:2px solid var(--color-border-primary)">
-                    <td x-text="statsTotalLabel"></td>
+                    <td><span x-text="statsTotalLabel" data-help-key="modules.bar.types.BarStats.total"></span></td>
                     <template x-if="statsShowGroupCol">
                       <td></td>
                     </template>

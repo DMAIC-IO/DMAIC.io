@@ -1031,6 +1031,10 @@ export const AGENT_REGISTRY = {
                 "help": "Wert je Kategorie"
               }
             }
+          },
+          "total": {
+            "type": "number|null",
+            "help": "Summe aller Werte, nur bei Häufigkeiten (ohne Wertespalte); sonst leer"
           }
         }
       }

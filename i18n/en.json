@@ -6095,7 +6095,8 @@
         },
         "BarStats": {
           "categories": "The categories of the X column in bar order; the table shows them in the Category column.",
-          "groups": "Per group the values of all categories. Without a group column there is exactly one group, named after the value column, or after the category column without one."
+          "groups": "Per group the values of all categories. Without a group column there is exactly one group, named after the value column, or after the category column without one.",
+          "total": "The sum of all values; the table shows it in the last row. It exists only for frequencies, that is without a value column; with a value column the field is empty."
         },
         "BarGroup": {
           "name": "The name of the group; the table shows it in the Group column, which appears only with a group column.",

@@ -6099,7 +6099,8 @@
         },
         "BarStats": {
           "categories": "Die Kategorien der X-Spalte in der Reihenfolge der Balken; die Tabelle zeigt sie in der Spalte Kategorie.",
-          "groups": "Je Gruppe die Werte aller Kategorien. Ohne Gruppenspalte gibt es genau eine Gruppe, benannt nach der Wertespalte, ohne sie nach der Kategorienspalte."
+          "groups": "Je Gruppe die Werte aller Kategorien. Ohne Gruppenspalte gibt es genau eine Gruppe, benannt nach der Wertespalte, ohne sie nach der Kategorienspalte.",
+          "total": "Die Summe aller Werte; die Tabelle zeigt sie in der letzten Zeile. Sie gibt es nur bei Häufigkeiten, also ohne Wertespalte; mit Wertespalte ist das Feld leer."
         },
         "BarGroup": {
           "name": "Der Name der Gruppe; die Tabelle zeigt ihn in der Spalte Gruppe, die nur mit Gruppenspalte erscheint.",

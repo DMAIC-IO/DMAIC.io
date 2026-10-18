@@ -91,11 +91,24 @@ function setAtPath(obj, key, value) {
  */
 
 /**
+ * Summe aller Balkenwerte — die Summenzeile der Tabelle und `stats.total`.
+ *
+ * @param {Array<{values: number[]}>} groups
+ * @returns {number}
+ */
+function frequencyTotal(groups) {
+  let total = 0;
+  for (const g of groups) for (const v of g.values) total += v || 0;
+  return total;
+}
+
+/**
  * Die Balkenwerte (`_agentStats()`), wie `read().stats` sie liefert.
  *
  * @typedef {object} BarStats
  * @property {string[]} categories  Kategorien der X-Spalte in Balkenreihenfolge
  * @property {BarGroup[]} groups  je Gruppe die Werte, ohne Gruppenspalte eine
+ * @property {number|null} total  Summe aller Werte, nur bei Häufigkeiten (ohne Wertespalte); sonst leer
  */
 
 /**
@@ -320,7 +333,11 @@ const mod = createModule({
       _agentStats() {
         const d = this._chartData();
         if (!d.categories.length || !d.groups.length) return null;
-        return { categories: [...d.categories], groups: d.groups.map(g => ({ name: g.name, values: [...g.values] })) };
+        return {
+          categories: [...d.categories],
+          groups: d.groups.map(g => ({ name: g.name, values: [...g.values] })),
+          total: this.model.yRef ? null : frequencyTotal(d.groups),
+        };
       },
 
       // ── Plot (controller — needs context + live worksheet data) ──
@@ -386,11 +403,10 @@ const mod = createModule({
         // Number formatting matches the legacy string output (formatNum). The
         // per-row color swatch is decomposed into a structured 'color' field.
         const rows = [];
-        let total = 0;
+        const total = frequencyTotal(this._groups);
         for (const g of this._groups) {
           for (let ci = 0; ci < this._categories.length; ci++) {
             const v = g.values[ci] || 0;
-            if (isFreq) total += v;
             rows.push({
               color: g.color,
               name: this._categories[ci],
@@ -401,7 +417,7 @@ const mod = createModule({
         }
         this.statsRows = rows;
         this.statsTotalLabel = _t('statTotal');
-        this.statsTotal = formatNum(total);
+        this.statsTotal = formatNum(total);   // dieselbe Summe wie stats.total (E8)
         this.statsShowTotal = isFreq;
         this.statsShow = true;
       },
