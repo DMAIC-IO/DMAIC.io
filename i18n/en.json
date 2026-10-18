@@ -9025,8 +9025,8 @@
           "yMax": "The upper end of the Y axis. The surface is drawn and sampled over the range from Y min to Y max. It is not checked that Y max is greater than Y min."
         },
         "Surface": {
-          "zMin": "The smallest value of the surface. The surface is evaluated on a grid of grid resolution × grid resolution points (default 100 × 100) over the axis range; the \"Z Min\" card shows the value and below it the x and y where it lies.",
-          "zMax": "The largest value of the surface on the same grid; the \"Z Max\" card shows the value and below it the x and y where it lies.",
+          "zMin": "The smallest value of the surface. The surface is evaluated on a grid of grid resolution × grid resolution points (default 100 × 100) over the axis range; the \"Z Min\" card shows the value.",
+          "zMax": "The largest value of the surface on the same grid; the \"Z Max\" card shows the value.",
           "range": "The range of the surface, largest minus smallest value (Z max − Z min); the card shows it as Z range.",
           "optimum": "The highest point of the grid. The \"Optimum (Max)\" card shows its value and below it its x and y; with equally high points the first in grid order counts."
         },
