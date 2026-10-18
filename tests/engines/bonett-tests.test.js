@@ -9,8 +9,13 @@ import { bonettVarianceTest, bonettRatioTest } from '../../js/engines/hypothesis
 const Z975 = 1.959963984540054;
 
 suite('Bonett — helpers', () => {
-  test('trimmedMean trims floor(n·p) values per tail', () => {
+  test('trimmedMean trims n·p values per tail', () => {
     assertAlmostEqual(trimmedMean([1, 2, 3, 4, 5, 6, 7, 8, 9, 100], 1 / (2 * Math.sqrt(6))), 5.5, 1e-12);
+  });
+  test('trimmedMean trims the fractional part of n·p proportionally (Minitab)', () => {
+    // n·p = 2.5: drop 2 values per tail, weight the next ones (4 and 128) by 0.5
+    // → (0.5·4 + 8 + 16 + 32 + 64 + 0.5·128) / 5 = 37.2 (floor would give 42)
+    assertAlmostEqual(trimmedMean([1, 2, 4, 8, 16, 32, 64, 128, 256, 1000], 0.25), 37.2, 1e-12);
   });
   test('bonettKurtosis uses the plain mean for n <= 5', () => {
     const x = [1, 2, 4, 7, 11], m = 5;
@@ -97,8 +102,8 @@ suite('Bonett — 1 variance edge cases', () => {
   test('p is finite and tiny for a hypothesized variance far below s²', () => {
     const r = bonettVarianceTest(x, 1e-6 * bonettVarianceTest(x, 1).sampleVariance);
     assertEqual(Number.isFinite(r.pValue), true);
-    // Python reference: 2 * 7.4389669648871e-10 (never exactly 0 for this sample)
-    assertAlmostEqual(r.pValue, 1.4877933929774e-9, { relative: 1e-6 });
+    // Python reference: 2 * 7.483600078454663e-10 (never exactly 0 for this sample)
+    assertAlmostEqual(r.pValue, 1.4967200156909e-9, { relative: 1e-6 });
   });
   test('p is finite for a hypothesized variance far above s²', () => {
     const r = bonettVarianceTest(x, 1e6 * bonettVarianceTest(x, 1).sampleVariance);
