@@ -1783,7 +1783,8 @@ button.context-help-anchor > .context-help__btn {
    `right: 2px` überdeckte der Kreis das „n“ von „Senden“; erst die Kante
    bei `right: 0` lässt den Text frei. Kein Abstand am Knopf, absolut
    positioniert: kein Layouteinfluss. */
-button.dmike-btn-run.context-help-anchor > .context-help__btn {
+button.dmike-btn-run.context-help-anchor > .context-help__btn,
+button.btn--primary.context-help-anchor > .context-help__btn {
   top: 50%;
   left: auto;
   right: 0;

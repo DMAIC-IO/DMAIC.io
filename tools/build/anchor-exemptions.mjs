@@ -173,9 +173,6 @@ export const ANCHOR_EXEMPTIONS = {
   'dmaic-calendar': [
     { match: "t('endTime')", reason: 'nur im Dialog; das Ende wird mit dem Beginn zur Dauer verrechnet, die Dauer ist erklärt', count: 1 },
   ],
-  todo: [
-    { match: 'todo__col-cal', reason: 'Kalenderspalte, nur Symbol ohne Beschriftungstext; Follow-up', count: 1 },
-  ],
   makigami: [
     { match: "t('colCode')", reason: 'Einstellungen, Eingabetabelle der Verschwendungsarten', count: 1 },
     { match: "t('colLabel')", reason: 'Einstellungen, Eingabetabellen (Verschwendungsarten, Zeiteinheiten)', count: 2 },

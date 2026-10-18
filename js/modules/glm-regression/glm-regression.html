@@ -19,7 +19,7 @@
     </div>
 
     <div class="field-group">
-      <label data-help-key="modules.glm-regression.actions.setColumn.help"><span x-text="t('columnTrials')"></span> <span class="dmike-hint" x-text="t('columnTrialsHint')"></span></label>
+      <label><span data-help-key="modules.glm-regression.actions.setColumn.help" x-text="t('columnTrials')"></span> <span class="dmike-hint" x-text="t('columnTrialsHint')"></span></label>
       <select class="field" data-ref="trials-select" @change="onTrialsChange($event)">
         <option value="" :selected="!model.trialsKey" x-text="t('trialsNone')"></option>
         <template x-for="opt in trialsOptions()" :key="opt.key">

@@ -33,6 +33,7 @@
   "action.undo": "lucide:undo-2",
   "action.redo": "lucide:redo-2",
   "action.copy": "lucide:copy",
+  "action.calendar": "lucide:calendar",
   "action.theme-light": "lucide:sun",
   "action.theme-dark": "lucide:moon",
   "nav.menu": "lucide:menu",

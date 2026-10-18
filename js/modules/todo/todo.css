@@ -161,9 +161,9 @@
   font-size: 14px;
   padding: var(--spacing-2xs) var(--spacing-xs);
   border-radius: var(--border-radius-sm);
+  color: inherit;
   opacity: 0.3;
   transition: opacity 0.15s;
-  filter: grayscale(1);
 }
 
 .todo__table tr:hover .todo__cal-btn {
@@ -176,7 +176,7 @@
 
 .todo__cal-btn--active {
   opacity: 1 !important;
-  filter: none;
+  color: var(--color-accent);
 }
 
 /* ─── Delete button ───────────────────────────────────── */

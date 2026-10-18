@@ -198,8 +198,8 @@
 
           <!-- Routing trail -->
           <div class="hyptest__route-card">
-            <div class="hyptest__route-title" x-text="t('algoRouting')"></div>
-            <div class="hyptest__route-trail" data-help-key="modules.hypothesis-test.types.Result.route">
+            <div class="hyptest__route-title"><span data-help-key="modules.hypothesis-test.types.Result.route" x-text="t('algoRouting')"></span></div>
+            <div class="hyptest__route-trail">
               <span class="hyptest__trail-dot" :class="result.allNormal ? 'hyptest__trail-dot--pass' : 'hyptest__trail-dot--fail'"></span>
               <span><span x-text="t('normalLabel')"></span>: <strong x-text="result.allNormal ? t('yes') : t('no')"></strong></span>
               <template x-if="result.varEquality">

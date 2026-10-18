@@ -5,7 +5,7 @@
         <thead>
           <!-- Weight row -->
           <tr class="ce-matrix__weight-row">
-            <th class="ce-matrix__weight-label"><span data-help-key="modules.ce-matrix.fields.weights.help" x-text="t('weight')"></span></th>
+            <th class="ce-matrix__weight-label"><span class="context-help-anchor--overlay" data-help-key="modules.ce-matrix.fields.weights.help" x-text="t('weight')"></span></th>
             <template x-for="(out, c) in model.outputs">
               <th class="ce-matrix__weight-cell" :key="'w-' + c">
                 <select class="field field--xs ce-matrix__weight-select" :data-col="c"
@@ -92,7 +92,7 @@
 
     <div class="ce-matrix__legend">
       <label class="ce-matrix__scale">
-        <span data-help-key="modules.ce-matrix.actions.setScale.help" x-text="t('scaleLabel')"></span>
+        <span class="context-help-anchor--overlay" data-help-key="modules.ce-matrix.actions.setScale.help" x-text="t('scaleLabel')"></span>
         <select class="field field--xs ce-matrix__scale-select" @change="scaleChanged($event)">
           <template x-for="id in scaleIds">
             <option :key="id" :value="id" :selected="id === model.scale" x-text="t('scale_' + id)"></option>

@@ -91,8 +91,8 @@
       </template>
     </div>
 
-    <div class="dmike-split__section-title reg__predict-title" data-ref="predict-title" data-help-key="modules.regression.actions.predict.help"
-      :style="result ? '' : 'display:none'" x-text="t('prediction')"></div>
+    <div class="dmike-split__section-title reg__predict-title" data-ref="predict-title"
+      :style="result ? '' : 'display:none'"><span data-help-key="modules.regression.actions.predict.help" x-text="t('prediction')"></span></div>
     <div class="reg__predict" data-ref="predict-section" :style="result ? '' : 'display:none'">
       <div data-ref="predict-inputs">
         <template x-for="field in predictForm()" :key="field.id">

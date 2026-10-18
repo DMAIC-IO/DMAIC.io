@@ -187,7 +187,8 @@
                   <!-- Gap n — the rail behind the last card, same drag-only
                        rule. -->
                   <template x-if="showEndRail(idx)">
-                    <div class="af__connector af__connector--end fc-connector fc-connector--rail fc-connector--end fc-connector--header-aligned"
+                    <div class="af__connector af__connector--end fc-connector fc-connector--rail
+                                fc-connector--end fc-connector--header-aligned"
                          :class="gapClassAfter(idx)" :data-gap="idx + 1"
                          @dragover="gapDragOverAfter(idx, $event)"
                          @dragleave="gapDragLeaveAfter(idx, $event)"
@@ -214,7 +215,7 @@
               <span class="af__band-exit-arrow">&#9673;</span>
               <span class="af__band-exit-target" x-text="exitPickLabel(marker.band)"></span>
             </button>
-            <button class="af__band-exit-clear" data-help-key="modules.activity-flowchart.actions.clearExit.help"
+            <button class="af__band-exit-clear"
                     @click.stop="clearExit(marker.band.id)"
                     :title="t('clearRejoin')">&#10005;</button>
           </div>
@@ -238,12 +239,18 @@
                @dragleave="bandDragLeave(band.id, $event)"
                @drop.stop="dropOnBand(band.id, $event)">
                 <div class="af__band-add">
-                  <button data-add="activity" data-help-key="modules.activity-flowchart.actions.addActivityToBand.help" @click="addActivityToBand(band.id)"
+                  <button class="context-help-anchor--overlay"
+                          data-add="activity"
+                          data-help-key="modules.activity-flowchart.actions.addActivityToBand.help"
+                          @click="addActivityToBand(band.id)"
                           :title="t('addStepToBand')">
                     <span class="icon" data-icon="action.add" aria-hidden="true"></span>
                     <span x-text="t('addStep')"></span>
                   </button>
-                  <button data-add="decision" data-help-key="modules.activity-flowchart.actions.addDecisionToBand.help" @click="addDecisionToBand(band.id)"
+                  <button class="context-help-anchor--overlay"
+                          data-add="decision"
+                          data-help-key="modules.activity-flowchart.actions.addDecisionToBand.help"
+                          @click="addDecisionToBand(band.id)"
                           :title="t('addDecisionToBand')">
                     <span class="icon" data-icon="action.branch" aria-hidden="true"></span>
                     <span x-text="t('addDecision')"></span>
