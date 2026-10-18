@@ -299,10 +299,9 @@ const mod = createModule({
           metrics.push({ label: _t('varianceRatio'), value: fmt(r.ratio), valueClass: '', title: this._tip(_t('varianceRatio')) });
         }
         if (r.ci) {
-          const isRatio = isVariance && isTwo && r.ratio != null;
           const ciLabel = isPaired ? _t('ciPairedDiffLabel', { level })
             : isMeanDiff ? _t('ciDiffLabel', { level })
-            : isRatio ? _t('ciRatioLabel', { level })
+            : isVariance && isTwo ? _t('ciRatioLabel', { level })
             : _t('ciLabel', { level });
           metrics.push({ label: ciLabel, value: fmtCi(r.ci), valueClass: 'hyptest__metric-value--sm', title: this._tip('KI') });
         }

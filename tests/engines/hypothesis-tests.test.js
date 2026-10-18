@@ -73,6 +73,14 @@ suite('Hypothesis — F-Test (fixture validation)', () => {
       });
     }
   }
+
+  test('reports the variance ratio s²₁/s²₂ as point estimate', () => {
+    const result = fTest([1, 2, 4, 7, 11], [3, 4, 5, 6, 8], 'two-sided', 0.05);
+    const expected = result.variance1 / result.variance2;
+    if (!(Math.abs(result.ratio - expected) <= 1e-12)) {
+      throw new Error(`ratio: expected ${expected}, got ${result.ratio}`);
+    }
+  });
 });
 
 // ─── Levene Test ───────────────────────────────────────────────

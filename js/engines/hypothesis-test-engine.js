@@ -132,6 +132,7 @@ export function fTest(data1, data2, direction = 'two-sided', alpha = 0.05) {
     pValue: Math.min(1, pValue),
     variance1: s1,
     variance2: s2,
+    ratio: F,
     criticalLower: cL,
     criticalUpper: cU,
     ci: [ciLower, ciUpper],
