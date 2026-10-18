@@ -1014,9 +1014,9 @@
         "Stats": {
           "n": "Anzahl der Werte der Reihe (N); die Tabelle zeigt sie als ganze Zahl.",
           "mean": "Mittelwert x̄ = Σx / n, die Summe aller Werte geteilt durch ihre Anzahl. Die Tabelle rundet auf vier Nachkommastellen.",
-          "stddev": "Standardabweichung s = √(Σ(x − x̄)² / (n − 1)), die Stichproben-Streuung mit dem Nenner n − 1 (Spalte „StdAbw“). Die Tabelle rundet auf vier Nachkommastellen.",
-          "variance": "Varianz s² = Σ(x − x̄)² / (n − 1), das Quadrat der Standardabweichung, mit dem Nenner n − 1. Die Tabelle rundet auf vier Nachkommastellen.",
-          "seMean": "Standardfehler des Mittelwerts, s / √n. Die Tabelle zeigt ihn nicht; er steckt in der Breite des Konfidenzintervalls für den Mittelwert.",
+          "stddev": "Standardabweichung s = √(Σ(x − x̄)² / (n − 1)), die Stichproben-Streuung mit dem Nenner n − 1 (Spalte „StdAbw“). Die Tabelle rundet auf vier Nachkommastellen. Bei nur einem Wert nicht definiert: die Tabelle zeigt NaN, im Agentenergebnis steht NaN oder ein leerer Wert.",
+          "variance": "Varianz s² = Σ(x − x̄)² / (n − 1), das Quadrat der Standardabweichung, mit dem Nenner n − 1. Die Tabelle rundet auf vier Nachkommastellen. Bei nur einem Wert nicht definiert: die Tabelle zeigt NaN, im Agentenergebnis steht NaN oder ein leerer Wert.",
+          "seMean": "Standardfehler des Mittelwerts, s / √n. Die Tabelle zeigt ihn nicht; er steckt in der Breite des Konfidenzintervalls für den Mittelwert. Bei nur einem Wert nicht definiert: die Tabelle zeigt NaN, im Agentenergebnis steht NaN oder ein leerer Wert.",
           "median": "Median: der mittlere Wert der aufsteigend sortierten Werte, bei gerader Anzahl der Mittelwert der beiden mittleren. Die Tabelle rundet auf vier Nachkommastellen.",
           "min": "Kleinster Wert der Reihe. Die Tabelle rundet auf vier Nachkommastellen.",
           "max": "Größter Wert der Reihe. Die Tabelle rundet auf vier Nachkommastellen.",
@@ -5525,7 +5525,7 @@
       },
       "types": {
         "Params": {
-          "binMode": "Wie die Klassen (die Balken) gebildet werden: automatisch oder mit fester Breite. Automatisch gilt die Regel nach Sturges: bei n Werten aufgerundet log₂(n) + 1 Klassen, mindestens 3. Bei fester Breite gilt die Klassenbreite; ist sie leer, wird die Breite automatisch bestimmt.",
+          "binMode": "Wie die Klassen (die Balken) gebildet werden: automatisch oder mit fester Breite. Automatisch: Breite = Spannweite aller sichtbaren Werte geteilt durch ⌈log₂ n⌉ + 1 Klassen (mindestens 3, Sturges), auf einen runden Wert gerundet; n zählt die Werte aller sichtbaren Reihen. Fest: es gilt die eingestellte Klassenbreite; ist sie leer, wird die Breite automatisch bestimmt.",
           "binWidth": "Die feste Breite jeder Klasse, eine Zahl größer 0 in den Einheiten der Werte. Leer heißt automatische Breite. Die Option lässt sich nur bei fester Breite wählen.",
           "confLevel": "Das Konfidenzniveau in Prozent, größer 0 und kleiner 100 (zum Beispiel 95). Es bestimmt die Konfidenzintervalle in der Statistiktabelle."
         },
@@ -5885,7 +5885,7 @@
           "total": "Die Summe aller Segmentwerte, negative zählen als 0; Grundlage der Anteile."
         },
         "Slice": {
-          "name": "Der Name des Segments: mit Beschriftungsspalte die Beschriftung, ohne sie der Wert selbst.",
+          "name": "Die Kategorie, also der Name des Segments: mit Beschriftungsspalte die Beschriftung, ohne sie der Wert selbst.",
           "value": "Der Wert des Segments: mit Beschriftungsspalte die Summe der Werte dieser Beschriftung (nicht numerische oder negative Werte entfallen), ohne sie die Häufigkeit des Werts.",
           "share": "Der Anteil des Segments an der Summe aller Segmente, als Bruchzahl von 0 bis 1; die Tabelle zeigt ihn in Prozent."
         }
@@ -6045,7 +6045,7 @@
         },
         "ParetoRow": {
           "name": "Die Kategorie.",
-          "value": "Der Wert der Kategorie: ohne Wertespalte die Anzahl der Zeilen, sonst Summe oder Mittelwert der Wertespalte. Die Tabellenspalte wechselt ihren Kopf mit der Aggregation (Häufigkeit, Summe, Mittelwert).",
+          "value": "Der Wert der Kategorie: ohne Wertespalte die Anzahl der Zeilen, sonst Summe oder Mittelwert der Wertespalte; mit Stapelspalte die Summe der Stapelwerte. Die Tabellenspalte wechselt ihren Kopf mit der Aggregation (Häufigkeit, Summe, Mittelwert).",
           "cumPct": "Der kumulierte Anteil bis einschließlich dieser Zeile an der Summe aller Werte, in Prozent von 0 bis 100; die Tabelle zeigt ihn mit Prozentzeichen."
         }
       },

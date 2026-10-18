@@ -21,7 +21,7 @@ export const ANCHOR_EXEMPTIONS = {
     { match: '<th x-text="h">', reason: 'Kopf je Kategorie (Name aus den Daten); der Satz steht an der Ecke der Tabelle', count: 1 },
   ],
   mosaic: [
-    { match: 'mosaic-module__stats-color', reason: 'Kopf je Gruppe (Name aus den Daten); der Satz steht an der Summenspalte', count: 1 },
+    { match: 'mosaic-module__stats-color', reason: 'Kopf je Gruppe (Name aus den Daten); die Tabelle ist an der Ecke (Kategorien) und am Summenkopf (Zählwerte je Gruppe) verankert', count: 1 },
   ],
   'attribute-control-chart': [
     { match: 'attr-cc__nelson-rule', reason: 'je Regel ein Kästchen; der Satz zur Regelauswahl steht am Abschnittstitel', count: 1 },

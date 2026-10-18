@@ -43,7 +43,7 @@ function percentile(sorted, p) {
 }
 
 /**
- * Format CI bound: 4 significant digits, scientific notation for very small values.
+ * Format CI bound: fixed 4 decimals; 4 significant digits (toPrecision) only for |v| < 0.001 or ≥ 1e6.
  * @param {number} v
  * @returns {string}
  */
