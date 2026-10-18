@@ -1530,6 +1530,81 @@
       ]
     },
     {
+      "id": "hypothesis-1-stichprobe-fuellmenge",
+      "type": "project",
+      "title": {
+        "de": "Füllmenge gegen Sollwert (Einstichproben-t-Test)",
+        "en": "Fill weight against target (one-sample t-test)"
+      },
+      "description": {
+        "de": "25 Füllmengen (g) einer Abfüllanlage, normalverteilt, gegen den Sollwert 50 g; der Mittelwert liegt bei 50,01 g. Lernziel: Einstichproben-t-Test mit Normalitätsprüfung, Ergebnis nicht signifikant (p ≈ 0,96).",
+        "en": "25 fill weights (g) from a filling line, normally distributed, tested against the 50 g target; the mean is 50.01 g. Goal: one-sample t-test with normality check, result not significant (p ≈ 0.96)."
+      },
+      "source": "Qprovement synthetisch, Python random, Seed=1311",
+      "license": "public-domain",
+      "file": "projects/hypothesis-1-stichprobe-fuellmenge.json",
+      "format": "json",
+      "modules": [
+        "hypothesis-test"
+      ],
+      "tags": [
+        "hypothesis",
+        "t-test",
+        "one-sample",
+        "normal"
+      ]
+    },
+    {
+      "id": "hypothesis-2-stichproben-rang",
+      "type": "project",
+      "title": {
+        "de": "Bearbeitungszeit alt vs. neu (Rangweg, Mann-Whitney)",
+        "en": "Processing time old vs. new (rank path, Mann-Whitney)"
+      },
+      "description": {
+        "de": "Je 12 rechtsschiefe Bearbeitungszeiten (min) für das alte und das neue Verfahren; die Normalität wird für beide Stichproben verworfen. Lernziel: bei kleinen, nicht normalen Stichproben wählt das Modul den Mann-Whitney-U-Test (p ≈ 0,02).",
+        "en": "12 right-skewed processing times (min) each for the old and the new procedure; normality is rejected for both samples. Goal: with small non-normal samples the module picks the Mann-Whitney U test (p ≈ 0.02)."
+      },
+      "source": "Qprovement synthetisch, Python random, Seed=1312",
+      "license": "public-domain",
+      "file": "projects/hypothesis-2-stichproben-rang.json",
+      "format": "json",
+      "modules": [
+        "hypothesis-test"
+      ],
+      "tags": [
+        "hypothesis",
+        "rank",
+        "mann-whitney",
+        "non-normal"
+      ]
+    },
+    {
+      "id": "hypothesis-2-stichproben-grosse-n",
+      "type": "project",
+      "title": {
+        "de": "Wartezeit zweier Filialen (großer Stichprobenumfang)",
+        "en": "Waiting time of two branches (large samples)"
+      },
+      "description": {
+        "de": "Je 40 rechtsschiefe Wartezeiten (min) aus zwei Filialen; die Normalität wird verworfen, aber n ≥ 20 je Gruppe. Lernziel: das Modul behält den Welch-t-Test (p ≈ 0,054) und zeigt den Mann-Whitney-Test (p ≈ 0,07) als Zweitergebnis.",
+        "en": "40 right-skewed waiting times (min) each from two branches; normality is rejected, but n ≥ 20 per group. Goal: the module keeps the Welch t-test (p ≈ 0.054) and shows the Mann-Whitney test (p ≈ 0.07) as a secondary result."
+      },
+      "source": "Qprovement synthetisch, Python random, Seed=1313",
+      "license": "public-domain",
+      "file": "projects/hypothesis-2-stichproben-grosse-n.json",
+      "format": "json",
+      "modules": [
+        "hypothesis-test"
+      ],
+      "tags": [
+        "hypothesis",
+        "t-test",
+        "large-n",
+        "non-normal"
+      ]
+    },
+    {
       "id": "attribute-scrap-before-after",
       "type": "project",
       "title": {
