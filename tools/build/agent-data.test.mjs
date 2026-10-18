@@ -1422,6 +1422,16 @@ export const BOUND_HELP_KEY_FAMILIES = [
     },
   },
   {
+    moduleId: 'outlier-test',
+    keys: async () => {
+      const { METRIC_KEYS, ESD_STEP_KEYS } = await import('../../js/modules/outlier-test/outlier-test-model.js');
+      return [
+        ...METRIC_KEYS.map((k) => `modules.outlier-test.types.MethodMetrics.${k}`),
+        ...ESD_STEP_KEYS.map((k) => `modules.outlier-test.types.EsdStep.${k}`),
+      ];
+    },
+  },
+  {
     moduleId: 'random-generator',
     keys: async () => {
       const { DISTRIBUTIONS } = await import('../../js/engines/random-variates-engine.js');

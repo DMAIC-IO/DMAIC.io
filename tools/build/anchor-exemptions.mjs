@@ -100,7 +100,7 @@ export const ANCHOR_EXEMPTIONS = {
   'outlier-test': [
     { match: 'outliertest__method', reason: 'je Verfahren ein Kästchen; der Satz steht am Abschnittstitel', count: 1 },
     { match: 'card.stepsHeader', reason: 'Markierungsspalte der ESD-Schritte (Haken oder Kreuz), keine eigene Kennzahl', count: 1 },
-    { match: `<th x-text="t('value')">`, reason: 'Wert der Zeile (ESD-Schritt bzw. Markierungstabelle); der Satz steht an der Markierung', count: 2 },
+    { match: `<th x-text="t('value')">`, reason: 'Wert der Zeile der Markierungstabelle; der Satz steht an der Markierung', count: 1 },
     { match: 'x-text="h.short"', reason: 'Kopf je Verfahren; der Satz steht am Abschnittstitel', count: 1 },
   ],
   'data-transformation': [

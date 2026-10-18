@@ -31,7 +31,7 @@ import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
-import { State, ALL_METHODS, VALID_SIDES } from './outlier-test-model.js';
+import { State, ALL_METHODS, VALID_SIDES, METRIC_KEYS } from './outlier-test-model.js';
 import {
   grubbsTest, dixonQTest, generalizedESD,
   tukeyIQR, hampelIdentifier, zScoreOutliers, modifiedZScore,
@@ -548,9 +548,10 @@ const mod = createModule({
           : 'outliertest__verdict--flag';
 
         const M = methodMetrics(id, r) || {};
-        const mc = (value, lbl, key, kpiClass = '', valueClass = '') => ({
-          value, label: lbl, help: key ? HELP + 'MethodMetrics.' + key : '', kpiClass, valueClass,
-        });
+        const mc = (value, lbl, key, kpiClass = '', valueClass = '') => {
+          if (key && !METRIC_KEYS.includes(key)) throw new Error(`METRIC_KEYS kennt „${key}“ nicht`);
+          return { value, label: lbl, help: key ? `${HELP}MethodMetrics.${key}` : '', kpiClass, valueClass };
+        };
         let metrics = [];
         let steps = [];
         let stepsHeader = '';

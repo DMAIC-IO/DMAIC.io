@@ -26,6 +26,15 @@ export const ALL_METHODS = [
 /** Zulässige Seiten der Tests (Grubbs, Dixon Q). */
 export const VALID_SIDES = ['two-sided', 'upper', 'lower'];
 
+/** Die Schlüssel von `MethodMetrics`; Karten und Hilfetor lesen dieselbe Liste. */
+export const METRIC_KEYS = Object.freeze([
+  'statistic', 'critical', 'pValue', 'mean', 'sd', 'detected', 'maxOutliers',
+  'q1', 'median', 'q3', 'iqr', 'fenceLower', 'fenceUpper', 'mad', 'madScaled', 'k', 'threshold',
+]);
+
+/** Die Schlüssel von `EsdStep`, die die Schrittetabelle als Spalten zeigt. */
+export const ESD_STEP_KEYS = Object.freeze(['i', 'value', 'R', 'lambda']);
+
 /**
  * Deserialize a column reference object.
  * @param {*} d
