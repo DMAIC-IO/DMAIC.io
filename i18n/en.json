@@ -1920,7 +1920,7 @@
       "whenToUse": "When an existing process needs documenting as a horizontal step chain with inputs, outputs, value-add classification and rework loops — not for a pure role or decision view, that is Deployment resp. Activity Flowchart.",
       "actions": {
         "addStep": {
-          "help": "Inserts a new, empty step at a gap in the chain and returns its id.",
+          "help": "Inserts a new, empty step at a gap in the chain; the agent gets the identifier of the new step back.",
           "params": {
             "atIndex": "The gap to insert at (0 = before the first step, up to the chain length = at the end). A value outside that range or a non-integer is an error."
           }
@@ -1932,7 +1932,7 @@
           }
         },
         "addIO": {
-          "help": "Appends an input or output to a step and returns its id.",
+          "help": "Appends an input or output to a step; the agent gets the identifier of the new entry back.",
           "params": {
             "stepId": "The step's id. An unknown id is an error.",
             "type": "'inputs' or 'outputs'. Any other value is an error."
@@ -1990,14 +1990,14 @@
           }
         },
         "setLoopCondition": {
-          "help": "Sets a loop's trigger condition. Returns false if the step carries no loop — nothing happens then.",
+          "help": "Sets a loop's trigger condition. If the step carries no loop, nothing happens.",
           "params": {
             "stepId": "The step's id. An unknown id is an error.",
             "text": "The new condition."
           }
         },
         "setLoopTarget": {
-          "help": "Sets a loop's target step (which earlier step it loops back to). Returns false if the step carries no loop, or if targetStepId is not a position BEFORE stepId in the chain — nothing happens then.",
+          "help": "Sets a loop's target step (which earlier step it loops back to). If the step carries no loop, or the chosen target step does not come before this step in the chain, nothing happens.",
           "params": {
             "stepId": "The step's id. An unknown id is an error.",
             "targetStepId": "The id of an existing step, or null/an empty string to clear the target. An unknown id is an error; a known id that does not lie BEFORE stepId in the chain returns false."
@@ -4930,13 +4930,13 @@
           }
         },
         "addActivityToBand": {
-          "help": "Appends an activity to the end of a band and returns its id.",
+          "help": "Appends an activity to the end of a band; the agent gets the identifier of the new activity back.",
           "params": {
             "bandId": "The id of an existing band ('main' or 'no:<id>'). An unknown band id is an error."
           }
         },
         "addDecisionToBand": {
-          "help": "Appends a decision to the end of a band and returns its id; the decision opens a band of its own below it.",
+          "help": "Appends a decision to the end of a band and opens a band of its own for it below; the agent gets the identifier of the new decision back.",
           "params": {
             "bandId": "The id of an existing band ('main' or 'no:<id>'). An unknown band id is an error."
           }

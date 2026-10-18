@@ -67,7 +67,7 @@
                 :placeholder="t('placeholder.' + col.key)"
                 :aria-label="t('placeholder.' + col.key)"
                 @keydown.enter="addOnEnter(col.key, $event)">
-              <button class="sipoc__add-btn" :data-col="col.key" :title="t('common.add')"
+              <button class="sipoc__add-btn" data-help-key="modules.sipoc.actions.addItem.help" :data-col="col.key" :title="t('common.add')"
                 @click="addOnClick(col.key, $event)">+</button>
             </div>
           </div>

@@ -41,7 +41,8 @@ export default createModule({
     version: '1.0.0',
     meta: import.meta,
     actions: [
-      { icon: 'action.add', title: 'addStep', variant: 'primary', onClick: (d) => d.addStep(d.model.steps.length) },
+      { icon: 'action.add', title: 'addStep', variant: 'primary', agentAction: 'addStep',
+        onClick: (d) => d.addStep(d.model.steps.length) },
       { icon: 'action.upload', title: 'importFromSipoc', onClick: (d) => d._openSipocImport() },
       { icon: 'action.download', title: 'export.label', children: [
         { icon: 'format.xlsx', title: 'export.xlsx', onClick: (d) => d._exportXLSX() },

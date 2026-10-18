@@ -19,7 +19,7 @@
                       <div class="pmap__io-label" data-action="add-io" :data-step-id="step.id" data-io-type="inputs"
                            @click="addIO(step.id, 'inputs')">
                         <span class="pmap__io-label-text pmap__io-label-text--input">
-                          <span class="pmap__io-dot pmap__io-dot--input"></span> <span x-text="ioLabelIn()"></span>
+                          <span class="pmap__io-dot pmap__io-dot--input"></span> <span data-help-key="modules.process-map.actions.addIO.help" x-text="ioLabelIn()"></span>
                         </span>
                       </div>
                       <div class="pmap__io-list">
@@ -140,7 +140,7 @@
                       <div class="pmap__io-label" data-action="add-io" :data-step-id="step.id" data-io-type="outputs"
                            @click="addIO(step.id, 'outputs')">
                         <span class="pmap__io-label-text pmap__io-label-text--output">
-                          <span class="pmap__io-dot pmap__io-dot--output"></span> <span x-text="ioLabelOut()"></span>
+                          <span class="pmap__io-dot pmap__io-dot--output"></span> <span data-help-key="modules.process-map.actions.addIO.help" x-text="ioLabelOut()"></span>
                         </span>
                       </div>
                       <div class="pmap__io-list">
@@ -205,13 +205,13 @@
                           </button>
                         </div>
                         <div class="pmap__loop-field">
-                          <label class="pmap__loop-field-label"><span class="icon icon--sm" data-icon="flow.decision" aria-hidden="true"></span> <span x-text="t('loopCondition')"></span></label>
+                          <label class="pmap__loop-field-label"><span class="icon icon--sm" data-icon="flow.decision" aria-hidden="true"></span> <span data-help-key="modules.process-map.actions.setLoopCondition.help" x-text="t('loopCondition')"></span></label>
                           <input class="field field--sm pmap__loop-condition" type="text" :value="loopConditionOf(row.stepId)"
                             :placeholder="t('loopConditionPlaceholder')"
                             :data-step-id="row.stepId" @input="setLoopCondition(row.stepId, $event.target.value)">
                         </div>
                         <div class="pmap__loop-field">
-                          <label class="pmap__loop-field-label" x-text="t('loopTarget')"></label>
+                          <label class="pmap__loop-field-label"><span data-help-key="modules.process-map.actions.setLoopTarget.help" x-text="t('loopTarget')"></span></label>
                           <select class="field field--sm pmap__loop-target-select" :data-step-id="row.stepId"
                             @change="setLoopTarget(row.stepId, $event.target.value)">
                             <option value="" x-text="t('loopSelectTarget')"></option>
