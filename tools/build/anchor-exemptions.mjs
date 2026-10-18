@@ -100,9 +100,9 @@ export const ANCHOR_EXEMPTIONS = {
   'outlier-test': [
     { match: 'outliertest__method', reason: 'je Verfahren ein Kästchen; der Satz steht am Abschnittstitel', count: 1 },
     { match: 'x-text="m.label"', reason: 'Kennzahlen je Verfahren mit eigener Bedeutung, nicht im Agentenergebnis (Follow-up)', count: 1 },
-    { match: '<th>i</th>', reason: 'Schritte des verallgemeinerten ESD, nicht im Agentenergebnis (Follow-up)', count: 1 },
-    { match: '<th>Rᵢ</th>', reason: 'Schritte des verallgemeinerten ESD, nicht im Agentenergebnis (Follow-up)', count: 1 },
-    { match: '<th>λᵢ</th>', reason: 'Schritte des verallgemeinerten ESD, nicht im Agentenergebnis (Follow-up)', count: 1 },
+    { match: `<th x-text="t('symStep')"></th>`, reason: 'Schritte des verallgemeinerten ESD, nicht im Agentenergebnis (Follow-up)', count: 1 },
+    { match: `<th x-text="t('symR')"></th>`, reason: 'Schritte des verallgemeinerten ESD, nicht im Agentenergebnis (Follow-up)', count: 1 },
+    { match: `<th x-text="t('symLambda')"></th>`, reason: 'Schritte des verallgemeinerten ESD, nicht im Agentenergebnis (Follow-up)', count: 1 },
     { match: 'card.stepsHeader', reason: 'Schritte des verallgemeinerten ESD, nicht im Agentenergebnis (Follow-up)', count: 1 },
     { match: `<th x-text="t('value')">`, reason: 'Wert der Zeile (ESD-Schritt bzw. Markierungstabelle); der Satz steht an der Markierung', count: 2 },
     { match: 'x-text="h.short"', reason: 'Kopf je Verfahren; der Satz steht am Abschnittstitel', count: 1 },
