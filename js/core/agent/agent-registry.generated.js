@@ -6934,17 +6934,32 @@ export const AGENT_REGISTRY = {
             "name": "field",
             "type": "'f'|'d'|'w'",
             "optional": false,
-            "help": "das Antwortfeld: `f` funktional, `d` dysfunktional, `w` Wichtigkeit"
+            "help": "welche Frage"
           },
           {
             "name": "value",
             "type": "number|null",
             "optional": false,
-            "help": "die Stufe — 1 bis 5 für `f` und `d`, 1 bis 9 für `w`; `null` heißt unbeantwortet"
+            "help": "der Wert; Bereich je Frage siehe `AnswerField`"
           }
         ],
         "returns": "void",
-        "help": "Setzt eine einzelne Antwort einer Befragten zu einem Merkmal."
+        "help": "Setzt eine einzelne Antwort einer Befragten zu einem Merkmal.",
+        "keysOf": "AnswerField",
+        "keys": {
+          "f": {
+            "type": "number|null",
+            "help": "funktionale Frage, 1–5"
+          },
+          "d": {
+            "type": "number|null",
+            "help": "dysfunktionale Frage, 1–5"
+          },
+          "w": {
+            "type": "number|null",
+            "help": "Wichtigkeit, 1–9"
+          }
+        }
       },
       "removeItem": {
         "params": [
@@ -7002,6 +7017,124 @@ export const AGENT_REGISTRY = {
         "help": "the VoC-CTx trees `setSourceTree` accepts",
         "bulk": false,
         "derived": true
+      },
+      "evaluation": {
+        "type": "KanoEvaluation",
+        "help": "the evaluation per item and in total, each item described under keys",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "KanoEvaluation",
+        "keys": {
+          "rows": {
+            "type": "KanoRow[]",
+            "help": "je Merkmal eine Zeile, nach Kategorie sortiert",
+            "keysOf": "KanoRow",
+            "keys": {
+              "itemId": {
+                "type": "string",
+                "help": "Merkmal"
+              },
+              "label": {
+                "type": "string",
+                "help": "Name des Merkmals"
+              },
+              "path": {
+                "type": "string",
+                "help": "Herkunft im Baum"
+              },
+              "missing": {
+                "type": "boolean",
+                "help": "im Quellbaum nicht mehr vorhanden"
+              },
+              "counts": {
+                "type": "KanoCounts",
+                "help": "Antworten je Kategorie",
+                "keysOf": "KanoCounts",
+                "keys": {
+                  "M": {
+                    "type": "number",
+                    "help": "Muss"
+                  },
+                  "O": {
+                    "type": "number",
+                    "help": "Leistung"
+                  },
+                  "A": {
+                    "type": "number",
+                    "help": "Begeisterung"
+                  },
+                  "I": {
+                    "type": "number",
+                    "help": "indifferent"
+                  },
+                  "R": {
+                    "type": "number",
+                    "help": "Rückweisung"
+                  },
+                  "Q": {
+                    "type": "number",
+                    "help": "fragwürdig"
+                  }
+                }
+              },
+              "n": {
+                "type": "number",
+                "help": "klassifizierte Antworten"
+              },
+              "unanswered": {
+                "type": "number",
+                "help": "nicht klassifizierbare Antworten"
+              },
+              "category": {
+                "type": "'M'|'O'|'A'|'I'|'R'|'Q'|null",
+                "help": "häufigste Kategorie"
+              },
+              "tie": {
+                "type": "boolean",
+                "help": "Gleichstand an der Spitze"
+              },
+              "cs": {
+                "type": "number|null",
+                "help": "Zufriedenheitskoeffizient (Better)"
+              },
+              "ds": {
+                "type": "number|null",
+                "help": "Unzufriedenheitskoeffizient (Worse)"
+              },
+              "importanceMean": {
+                "type": "number|null",
+                "help": "mittlere Wichtigkeit"
+              },
+              "importanceN": {
+                "type": "number",
+                "help": "Zahl der Wichtigkeitsangaben"
+              }
+            }
+          },
+          "totals": {
+            "type": "KanoTotals",
+            "help": "Kennzahlen über alle Merkmale",
+            "keysOf": "KanoTotals",
+            "keys": {
+              "items": {
+                "type": "number",
+                "help": "Zahl der Merkmale"
+              },
+              "respondents": {
+                "type": "number",
+                "help": "Zahl der Befragten"
+              },
+              "completeness": {
+                "type": "number",
+                "help": "Anteil klassifizierter Antworten, 0–1"
+              },
+              "qShare": {
+                "type": "number",
+                "help": "Anteil fragwürdiger Antworten, 0–1"
+              }
+            }
+          }
+        }
       }
     }
   },

@@ -1629,7 +1629,7 @@
           }
         },
         "applySync": {
-          "help": "Takes over the features of the configured level from the linked tree: new ones are added, renamed ones are updated, ones no longer in the tree are marked as missing. Nothing is ever deleted. Without a link there is nothing to take over and the return value is false."
+          "help": "Takes over the features of the configured level from the linked tree: new ones are added, renamed ones are updated, ones no longer in the tree are marked as missing. Nothing is ever deleted. Without a link there is nothing to take over, so nothing happens."
         },
         "setItems": {
           "help": "Replaces the list of features to be rated.",
@@ -1657,7 +1657,7 @@
           }
         },
         "selectRespondent": {
-          "help": "Selects the respondent whose answers the capture grid shows. Answer data stays untouched.",
+          "help": "Selects the respondent whose answers the capture grid shows. Answer data stays untouched. A click on the tab is enough; a double click renames the respondent.",
           "params": {
             "id": "The id of the respondent, or null for no selection. Any other value is an error."
           }
@@ -1667,8 +1667,8 @@
           "params": {
             "respondentId": "The id of the respondent. An unknown id is an error.",
             "itemId": "The id of the feature as read() lists it under items. An unknown id is an error.",
-            "field": "The answer field: f for the functional question (how would it be if the feature were there), d for the dysfunctional one (how would it be if it were missing), w for importance. Any other value is an error.",
-            "value": "The level: 1 to 5 for f and d (1 I would like it very much to 5 I would dislike it very much), 1 to 9 for w (1 not important at all to 9 extremely important). null means unanswered; any other value is an error."
+            "field": "Which field; each is described individually under keys. Any other value is an error.",
+            "value": "The value; type and allowed range per field are given under keys."
           }
         },
         "removeItem": {
@@ -1699,6 +1699,49 @@
         },
         "activeRespondentId": {
           "help": "The id of the respondent whose answers the capture grid shows; null means none is selected."
+        },
+        "evaluation": {
+          "help": "The evaluation per feature and overall, each entry described individually under keys."
+        }
+      },
+      "types": {
+        "AnswerField": {
+          "f": "The functional question: how would you feel if the feature is present? Five levels: 1 I would be very happy, 2 I expect it, 3 I am indifferent to it, 4 I could accept it, 5 I would dislike it a lot; empty means unanswered. Together with the dysfunctional answer it gives the category of this answer by Kano's evaluation table: happy when present and annoyed when absent is a performance feature; happy when present and neutral when absent is an attractive feature; neutral when present and annoyed when absent is a must-be feature; neutral both ways is indifferent. A pair is questionable only for 1 and 1 or 5 and 5; reverse is any combination in which the absence is rated better than the presence. If either answer is missing, the pair is not classified.",
+          "d": "The dysfunctional question: how would you feel if the feature is absent? The same five levels as the functional question: 1 I would be very happy, 2 I expect it, 3 I am indifferent to it, 4 I could accept it, 5 I would dislike it a lot; empty means unanswered. Only the pair of functional and dysfunctional answer gives the category by Kano's evaluation table; if either is missing, the pair is not classified.",
+          "w": "How important the feature is to the respondent, from 1 not at all important to 9 extremely important; empty means unanswered. It is only captured and evaluated when the option \"Capture importance\" is on; it then sets the order within a category and the bubble size in the chart."
+        },
+        "KanoEvaluation": {
+          "rows": "One row of the result table per feature. Sorted by category strength (must-be, performance, attractive, indifferent, reverse, questionable, features without a category last), within a category by mean importance descending, then by CS descending.",
+          "totals": "The figures across all features and respondents: number of features, number of respondents, completeness and Q share."
+        },
+        "KanoRow": {
+          "itemId": "The id of the feature, which the actions use to address it.",
+          "label": "The name of the feature as the result table shows it.",
+          "path": "Where the feature sits in the VoC→CTx tree, as a path from top to bottom.",
+          "missing": "Whether the feature no longer exists in the linked tree. Its answers are kept; the row is marked as missing.",
+          "counts": "How many respondents put the feature into which category; one number per category.",
+          "n": "The number of answers for this feature that could be classified, that is a pair of functional and dysfunctional answer. It is the sum of all six categories, including questionable and reverse.",
+          "unanswered": "The number of answers for this feature that could not be classified because the functional or the dysfunctional answer is missing. They count in no category.",
+          "category": "The most frequent category among the answers for this feature: must-be, performance, attractive, indifferent, reverse or questionable; empty if no answer could be classified. If two or more categories are equally frequent, the stronger one wins in the order must-be, performance, attractive, indifferent, reverse, questionable.",
+          "tie": "Whether two or more categories are equally frequent at the top. The stronger one by the category order then applies, and the result table marks the tie.",
+          "cs": "The satisfaction coefficient (Better): (attractive + performance) divided by (attractive + performance + must-be + indifferent), a value from 0 to 1. Near 1, fulfilling the feature raises satisfaction strongly. Reverse and questionable answers are not in the denominator; empty if no answer falls into these four categories.",
+          "ds": "The dissatisfaction coefficient (Worse): −(performance + must-be) divided by (attractive + performance + must-be + indifferent), a value from −1 to 0. Near −1, lacking the feature annoys strongly. Reverse and questionable answers are not in the denominator; empty if no answer falls into these four categories.",
+          "importanceMean": "The mean of the importance ratings from 1 to 9 for this feature. Empty if the option \"Capture importance\" is off or there is no rating.",
+          "importanceN": "The number of importance ratings the mean importance is built from; 0 without the option \"Capture importance\"."
+        },
+        "KanoCounts": {
+          "M": "Must-be: presence is expected or neutral, absence annoys strongly. The number of respondents who classify the feature this way.",
+          "O": "Performance: presence pleases, absence annoys; the better fulfilled, the more satisfied. The number of respondents who classify the feature this way.",
+          "A": "Attractive: presence delights, absence is neutral and not missed. The number of respondents who classify the feature this way.",
+          "I": "Indifferent: presence and absence are both neutral, the feature hardly affects satisfaction. The number of respondents who classify the feature this way.",
+          "R": "Reverse: the answers run against the expected direction, absence is rated better than presence. The number of respondents who classify the feature this way.",
+          "Q": "Questionable: both answers are equally extreme (1 and 1 or 5 and 5) and contradict each other, the question was probably misunderstood. The number of respondents who classify the feature this way."
+        },
+        "KanoTotals": {
+          "items": "The number of features being rated.",
+          "respondents": "The number of respondents.",
+          "completeness": "The share of classified answers among all possible ones: classified answers divided by (number of features times number of respondents), a value from 0 to 1; 0 if there are no features or respondents. The interface shows it as a percentage.",
+          "qShare": "The share of questionable answers among the classified ones: number of questionable answers divided by number of classified ones, a value from 0 to 1; 0 without classified answers. Above 10 %, the interface warns that the questions were probably misunderstood."
         }
       }
     },

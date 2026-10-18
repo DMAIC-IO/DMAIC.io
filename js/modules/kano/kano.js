@@ -53,6 +53,59 @@ const SCALE_9 = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const ITEM_FIELDS = ['id', 'nodeId', 'label', 'path', 'missing'];
 
 /**
+ * Die Schlüsselfläche von `setAnswer`: die drei Fragen je Merkmal.
+ *
+ * @typedef {object} AnswerField
+ * @property {number|null} f  funktionale Frage, 1–5
+ * @property {number|null} d  dysfunktionale Frage, 1–5
+ * @property {number|null} w  Wichtigkeit, 1–9
+ */
+
+/**
+ * Die Auswertung (`evaluate()` aus `kano-engine.js`), wie `read().evaluation`
+ * sie liefert.
+ *
+ * @typedef {object} KanoEvaluation
+ * @property {KanoRow[]} rows  je Merkmal eine Zeile, nach Kategorie sortiert
+ * @property {KanoTotals} totals  Kennzahlen über alle Merkmale
+ */
+
+/**
+ * @typedef {object} KanoRow
+ * @property {string} itemId  Merkmal
+ * @property {string} label  Name des Merkmals
+ * @property {string} path  Herkunft im Baum
+ * @property {boolean} missing  im Quellbaum nicht mehr vorhanden
+ * @property {KanoCounts} counts  Antworten je Kategorie
+ * @property {number} n  klassifizierte Antworten
+ * @property {number} unanswered  nicht klassifizierbare Antworten
+ * @property {'M'|'O'|'A'|'I'|'R'|'Q'|null} category  häufigste Kategorie
+ * @property {boolean} tie  Gleichstand an der Spitze
+ * @property {number|null} cs  Zufriedenheitskoeffizient (Better)
+ * @property {number|null} ds  Unzufriedenheitskoeffizient (Worse)
+ * @property {number|null} importanceMean  mittlere Wichtigkeit
+ * @property {number} importanceN  Zahl der Wichtigkeitsangaben
+ */
+
+/**
+ * @typedef {object} KanoCounts
+ * @property {number} M  Muss
+ * @property {number} O  Leistung
+ * @property {number} A  Begeisterung
+ * @property {number} I  indifferent
+ * @property {number} R  Rückweisung
+ * @property {number} Q  fragwürdig
+ */
+
+/**
+ * @typedef {object} KanoTotals
+ * @property {number} items  Zahl der Merkmale
+ * @property {number} respondents  Zahl der Befragten
+ * @property {number} completeness  Anteil klassifizierter Antworten, 0–1
+ * @property {number} qShare  Anteil fragwürdiger Antworten, 0–1
+ */
+
+/**
  * @typedef {object} AgentRead
  * @property {object} source  origin of the items: `{ instanceId, level }`
  * @property {object} options  the capture options (`importance`)
@@ -61,6 +114,7 @@ const ITEM_FIELDS = ['id', 'nodeId', 'label', 'path', 'missing'];
  * @property {object} answers  the answers by respondent and item
  * @property {string|null} activeRespondentId  id of the respondent shown in the capture grid
  * @property {Array<{instanceId: string, name: string}>} treeList  the VoC-CTx trees `setSourceTree` accepts
+ * @property {KanoEvaluation} evaluation  the evaluation per item and in total, each item described under keys
  */
 export default createModule({
   config: {
@@ -154,6 +208,7 @@ export default createModule({
         return readAgentState('kano', {
           ...this.model.toJSON(),
           treeList: this.treeList.map((tr) => ({ instanceId: tr.instanceId, name: this.treeLabel(tr) })),
+          evaluation: this.result(),
         }, options);
       },
       /** @type {Array<{instanceId: string, state: object|null}>} */
@@ -623,10 +678,8 @@ export default createModule({
        * @agent
        * @param {string} respondentId id der Befragten
        * @param {string} itemId id des Merkmals
-       * @param {'f'|'d'|'w'} field das Antwortfeld: `f` funktional, `d`
-       *   dysfunktional, `w` Wichtigkeit
-       * @param {number|null} value die Stufe — 1 bis 5 für `f` und `d`, 1 bis
-       *   9 für `w`; `null` heißt unbeantwortet
+       * @param {keyof AnswerField} field welche Frage
+       * @param {number|null} value der Wert; Bereich je Frage siehe `AnswerField`
        * @returns {void}
        * @throws {Error} wenn keine Befragte oder kein Merkmal diese id trägt,
        *   `field` keines der drei Antwortfelder ist oder `value` nicht auf der

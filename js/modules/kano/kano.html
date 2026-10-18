@@ -5,7 +5,7 @@
 
       <div class="dmike-infobox" x-show="hasNoTree()" x-text="t('sourceNone')"></div>
 
-      <label class="kano__label" x-text="t('sourceTree')"></label>
+      <label class="kano__label" data-help-key="modules.kano.actions.setSourceTree.help" x-text="t('sourceTree')"></label>
       <select class="field kano__tree-select" data-ref="treeSelect"
               @change="changeTree($event)">
         <option value="" :selected="!model.source.instanceId" x-text="t('sourceNoneOption')"></option>
@@ -15,7 +15,7 @@
         </template>
       </select>
 
-      <label class="kano__label" x-text="t('level')"></label>
+      <label class="kano__label" data-help-key="modules.kano.actions.setSourceLevel.help" x-text="t('level')"></label>
       <select class="field kano__level-select" data-ref="levelSelect"
               :value="model.source.level" @change="changeLevel($event)">
         <option value="need" x-text="t('levelNeed')"></option>
@@ -24,7 +24,7 @@
       </select>
 
       <div class="dmike-split__section-title" x-text="t('optionsTitle')"></div>
-      <label class="kano__check">
+      <label class="kano__check" data-help-anchor="box" data-help-key="modules.kano.actions.setImportance.help">
         <input type="checkbox" data-ref="importanceToggle"
                :checked="model.options.importance" @change="toggleImportance()" />
         <span x-text="t('optionImportance')"></span>
@@ -32,6 +32,7 @@
 
       <div class="dmike-split__section-title" x-text="t('syncTitle')"></div>
       <button class="btn btn--sm kano__sync-btn" type="button" data-ref="syncBtn"
+              data-help-key="modules.kano.actions.applySync.help"
               :disabled="!hasPending()" x-text="t('syncButton')" @click="applySync()"></button>
       <p class="kano__sync-status" data-ref="syncStatus" x-text="syncStatus()"></p>
       <div class="dmike-infobox dmike-infobox--info" data-ref="detachedInfo"
@@ -42,6 +43,7 @@
       <div class="dmike-split__output-section-header">
         <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('captureTitle')"></span></div>
         <button class="btn btn--sm" type="button" data-ref="addRespondent"
+                data-help-key="modules.kano.actions.addRespondent.help"
                 x-text="t('respondentAdd')" @click="addRespondent()"></button>
       </div>
 
@@ -49,6 +51,7 @@
         <template x-for="r in model.respondents">
           <span class="kano__tab-wrap dmike-del-btn-host" :key="r.id">
             <button class="dmike-tab" type="button" :data-respondent-id="r.id"
+                    data-help-key="modules.kano.actions.selectRespondent.help"
                     :class="tabClass(r.id)" x-text="r.name" x-show="!isRenaming(r.id)"
                     :title="respondentRenameTitle(r.name)"
                     @click="selectRespondent(r.id)" @dblclick="startRename(r.id)"></button>
@@ -72,10 +75,10 @@
       <table class="dmike-table kano__capture" data-ref="captureTable" x-show="canCapture()">
         <thead>
           <tr>
-            <th x-text="t('colItem')"></th>
-            <th x-text="t('colFunctional')"></th>
-            <th x-text="t('colDysfunctional')"></th>
-            <th x-show="model.options.importance" x-text="t('colImportance')"></th>
+            <th><span data-help-key="modules.kano.types.KanoRow.label" x-text="t('colItem')"></span></th>
+            <th><span data-help-key="modules.kano.types.AnswerField.f" x-text="t('colFunctional')"></span></th>
+            <th><span data-help-key="modules.kano.types.AnswerField.d" x-text="t('colDysfunctional')"></span></th>
+            <th x-show="model.options.importance"><span data-help-key="modules.kano.types.AnswerField.w" x-text="t('colImportance')"></span></th>
             <th></th>
           </tr>
         </thead>
@@ -141,19 +144,19 @@
       <div class="dmike-kpi-strip" data-ref="kpis">
         <div class="dmike-kpi">
           <div class="dmike-kpi-value" x-text="result().totals.items"></div>
-          <div class="dmike-kpi-label" x-text="t('kpiItems')"></div>
+          <div class="dmike-kpi-label" data-help-key="modules.kano.types.KanoTotals.items" x-text="t('kpiItems')"></div>
         </div>
         <div class="dmike-kpi">
           <div class="dmike-kpi-value" x-text="result().totals.respondents"></div>
-          <div class="dmike-kpi-label" x-text="t('kpiRespondents')"></div>
+          <div class="dmike-kpi-label" data-help-key="modules.kano.types.KanoTotals.respondents" x-text="t('kpiRespondents')"></div>
         </div>
         <div class="dmike-kpi">
           <div class="dmike-kpi-value" x-text="pct(result().totals.completeness)"></div>
-          <div class="dmike-kpi-label" x-text="t('kpiCompleteness')"></div>
+          <div class="dmike-kpi-label" data-help-key="modules.kano.types.KanoTotals.completeness" x-text="t('kpiCompleteness')"></div>
         </div>
         <div class="dmike-kpi">
           <div class="dmike-kpi-value" x-text="pct(result().totals.qShare)"></div>
-          <div class="dmike-kpi-label" x-text="t('kpiQShare')"></div>
+          <div class="dmike-kpi-label" data-help-key="modules.kano.types.KanoTotals.qShare" x-text="t('kpiQShare')"></div>
         </div>
       </div>
 
@@ -163,12 +166,12 @@
       <table class="dmike-table kano__result" data-ref="resultTable">
         <thead>
           <tr>
-            <th x-text="t('colItem')"></th>
-            <th>M</th><th>O</th><th>A</th><th>I</th><th>R</th><th>Q</th>
-            <th x-text="t('colCategory')"></th>
-            <th x-text="t('colCs')"></th>
-            <th x-text="t('colDs')"></th>
-            <th x-show="model.options.importance" x-text="t('colImportanceMean')"></th>
+            <th><span data-help-key="modules.kano.types.KanoRow.label" x-text="t('colItem')"></span></th>
+            <th><span data-help-key="modules.kano.types.KanoCounts.M">M</span></th><th><span data-help-key="modules.kano.types.KanoCounts.O">O</span></th><th><span data-help-key="modules.kano.types.KanoCounts.A">A</span></th><th><span data-help-key="modules.kano.types.KanoCounts.I">I</span></th><th><span data-help-key="modules.kano.types.KanoCounts.R">R</span></th><th><span data-help-key="modules.kano.types.KanoCounts.Q">Q</span></th>
+            <th><span data-help-key="modules.kano.types.KanoRow.category" x-text="t('colCategory')"></span></th>
+            <th><span data-help-key="modules.kano.types.KanoRow.cs" x-text="t('colCs')"></span></th>
+            <th><span data-help-key="modules.kano.types.KanoRow.ds" x-text="t('colDs')"></span></th>
+            <th x-show="model.options.importance"><span data-help-key="modules.kano.types.KanoRow.importanceMean" x-text="t('colImportanceMean')"></span></th>
           </tr>
         </thead>
         <tbody>

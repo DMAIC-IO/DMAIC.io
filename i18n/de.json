@@ -1629,7 +1629,7 @@
           }
         },
         "applySync": {
-          "help": "Übernimmt die Merkmale der eingestellten Ebene aus dem verknüpften Baum: neue kommen hinzu, umbenannte werden nachgezogen, im Baum nicht mehr vorhandene werden als fehlend markiert. Gelöscht wird nie. Ohne Verknüpfung ist nichts zu übernehmen und der Rückgabewert ist false."
+          "help": "Übernimmt die Merkmale der eingestellten Ebene aus dem verknüpften Baum: neue kommen hinzu, umbenannte werden nachgezogen, im Baum nicht mehr vorhandene werden als fehlend markiert. Gelöscht wird nie. Ohne Verknüpfung ist nichts zu übernehmen, dann passiert nichts."
         },
         "setItems": {
           "help": "Ersetzt die Liste der zu bewertenden Merkmale.",
@@ -1657,7 +1657,7 @@
           }
         },
         "selectRespondent": {
-          "help": "Wählt die Befragte aus, deren Antworten das Erfassungsraster zeigt. Antwortdaten bleiben unberührt.",
+          "help": "Wählt die Befragte aus, deren Antworten das Erfassungsraster zeigt. Antwortdaten bleiben unberührt. Am Reiter genügt ein Klick; ein Doppelklick benennt die Befragte um.",
           "params": {
             "id": "Die id der Befragten, oder null für keine Auswahl. Jeder andere Wert ist ein Fehler."
           }
@@ -1667,8 +1667,8 @@
           "params": {
             "respondentId": "Die id der Befragten. Eine unbekannte id ist ein Fehler.",
             "itemId": "Die id des Merkmals, wie read() sie unter items führt. Eine unbekannte id ist ein Fehler.",
-            "field": "Das Antwortfeld: f für die funktionale Frage (wie wäre es, wenn das Merkmal vorhanden ist), d für die dysfunktionale (wie wäre es, wenn es fehlt), w für die Wichtigkeit. Jeder andere Wert ist ein Fehler.",
-            "value": "Die Stufe: 1 bis 5 für f und d (1 würde mich sehr freuen bis 5 würde mich sehr stören), 1 bis 9 für w (1 völlig unwichtig bis 9 außerordentlich wichtig). null heißt unbeantwortet; jeder andere Wert ist ein Fehler."
+            "field": "Welches Feld; jedes ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Feld unter keys."
           }
         },
         "removeItem": {
@@ -1699,6 +1699,49 @@
         },
         "activeRespondentId": {
           "help": "Die id der Befragten, deren Antworten das Erfassungsraster zeigt; null heißt, keine ist ausgewählt."
+        },
+        "evaluation": {
+          "help": "Die Auswertung je Merkmal und insgesamt, jede Angabe unter keys einzeln beschrieben."
+        }
+      },
+      "types": {
+        "AnswerField": {
+          "f": "Die funktionale Frage: Wie fänden Sie es, wenn das Merkmal vorhanden ist? Fünf Stufen: 1 würde mich sehr freuen, 2 setze ich voraus, 3 ist mir egal, 4 könnte ich in Kauf nehmen, 5 würde mich sehr stören; leer heißt unbeantwortet. Zusammen mit der dysfunktionalen Antwort ergibt sie nach der Auswertungstabelle von Kano die Kategorie dieser Antwort: Freut mich bei Vorhandensein und stört bei Fehlen, ist es ein Leistungsmerkmal; freut mich bei Vorhandensein und ist bei Fehlen mittelmäßig, ein Begeisterungsmerkmal; ist bei Vorhandensein mittelmäßig und stört bei Fehlen, ein Basismerkmal; sind beide Antworten mittelmäßig, ist es indifferent. Widersprüchlich ist ein Paar nur bei 1 und 1 oder 5 und 5, umgekehrt zählt jede Kombination, bei der das Fehlen besser bewertet wird als das Vorhandensein. Fehlt eine der beiden Antworten, wird das Paar nicht klassifiziert.",
+          "d": "Die dysfunktionale Frage: Wie fänden Sie es, wenn das Merkmal fehlt? Dieselben fünf Stufen wie bei der funktionalen Frage: 1 würde mich sehr freuen, 2 setze ich voraus, 3 ist mir egal, 4 könnte ich in Kauf nehmen, 5 würde mich sehr stören; leer heißt unbeantwortet. Erst das Paar aus funktionaler und dysfunktionaler Antwort ergibt nach der Auswertungstabelle von Kano die Kategorie; fehlt eine der beiden, wird das Paar nicht klassifiziert.",
+          "w": "Die Wichtigkeit des Merkmals für die Befragte, von 1 völlig unwichtig bis 9 außerordentlich wichtig; leer heißt unbeantwortet. Sie wird nur erfasst und ausgewertet, wenn die Option „Wichtigkeit erfassen“ eingeschaltet ist; sie bestimmt dann die Reihenfolge innerhalb einer Kategorie und die Blasengröße im Diagramm."
+        },
+        "KanoEvaluation": {
+          "rows": "Je Merkmal eine Zeile der Ergebnistabelle. Sortiert wird nach der Stärke der Kategorie (Basis, Leistung, Begeisterung, indifferent, umgekehrt, widersprüchlich, Merkmale ohne Kategorie zuletzt), innerhalb einer Kategorie nach der mittleren Wichtigkeit absteigend, dann nach CS absteigend.",
+          "totals": "Die Kennzahlen über alle Merkmale und Befragten: Zahl der Merkmale, Zahl der Befragten, Vollständigkeit und Q-Anteil."
+        },
+        "KanoRow": {
+          "itemId": "Die id des Merkmals, mit der die Aktionen es ansprechen.",
+          "label": "Der Name des Merkmals, wie die Ergebnistabelle ihn zeigt.",
+          "path": "Wo das Merkmal im VoC→CTx-Baum steht, als Pfad von oben nach unten.",
+          "missing": "Ob das Merkmal im verknüpften Baum nicht mehr vorkommt. Seine Antworten bleiben erhalten, die Zeile ist als fehlend markiert.",
+          "counts": "Wie viele Befragte das Merkmal in welche Kategorie eingeordnet haben; je Kategorie eine Zahl.",
+          "n": "Die Zahl der Antworten dieses Merkmals, die sich klassifizieren ließen, also ein Paar aus funktionaler und dysfunktionaler Antwort. Sie ist die Summe aller sechs Kategorien, auch der widersprüchlichen und umgekehrten.",
+          "unanswered": "Die Zahl der Antworten dieses Merkmals, die sich nicht klassifizieren ließen, weil die funktionale oder die dysfunktionale Antwort fehlt. Sie zählen in keiner Kategorie.",
+          "category": "Die häufigste Kategorie unter den Antworten dieses Merkmals: Basismerkmal, Leistungsmerkmal, Begeisterungsmerkmal, indifferent, umgekehrt oder widersprüchlich; leer, wenn keine Antwort klassifiziert werden konnte. Sind zwei oder mehr Kategorien gleich häufig, gewinnt die stärkere in der Reihenfolge Basis, Leistung, Begeisterung, indifferent, umgekehrt, widersprüchlich.",
+          "tie": "Ob an der Spitze zwei oder mehr Kategorien gleich häufig sind. Dann gilt die stärkere nach der Reihenfolge der Kategorie, und die Ergebnistabelle markiert den Gleichstand.",
+          "cs": "Der Zufriedenheitskoeffizient (Better): (Begeisterung + Leistung) geteilt durch (Begeisterung + Leistung + Basis + indifferent), ein Wert von 0 bis 1. Nahe 1 steigert die Erfüllung des Merkmals die Zufriedenheit stark. Umgekehrte und widersprüchliche Antworten stehen nicht im Nenner; leer, wenn keine Antwort in diesen vier Kategorien liegt.",
+          "ds": "Der Unzufriedenheitskoeffizient (Worse): −(Leistung + Basis) geteilt durch (Begeisterung + Leistung + Basis + indifferent), ein Wert von −1 bis 0. Nahe −1 verärgert das Fehlen des Merkmals stark. Umgekehrte und widersprüchliche Antworten stehen nicht im Nenner; leer, wenn keine Antwort in diesen vier Kategorien liegt.",
+          "importanceMean": "Der Mittelwert der Wichtigkeitsangaben von 1 bis 9 für dieses Merkmal. Leer, wenn die Option „Wichtigkeit erfassen“ ausgeschaltet ist oder keine Angabe vorliegt.",
+          "importanceN": "Die Zahl der Wichtigkeitsangaben, aus denen die mittlere Wichtigkeit gebildet ist; 0 ohne die Option „Wichtigkeit erfassen“."
+        },
+        "KanoCounts": {
+          "M": "Basismerkmal: Das Vorhandensein wird vorausgesetzt oder ist mittelmäßig, das Fehlen stört sehr. Die Zahl der Befragten, die das Merkmal so einordnen.",
+          "O": "Leistungsmerkmal: Das Vorhandensein freut, das Fehlen stört; je besser erfüllt, desto zufriedener. Die Zahl der Befragten, die das Merkmal so einordnen.",
+          "A": "Begeisterungsmerkmal: Das Vorhandensein freut sehr, das Fehlen ist mittelmäßig und wird nicht vermisst. Die Zahl der Befragten, die das Merkmal so einordnen.",
+          "I": "Indifferent: Vorhandensein wie Fehlen sind mittelmäßig, das Merkmal beeinflusst die Zufriedenheit kaum. Die Zahl der Befragten, die das Merkmal so einordnen.",
+          "R": "Umgekehrt: Die Antworten widersprechen der Richtung, das Fehlen wird besser bewertet als das Vorhandensein. Die Zahl der Befragten, die das Merkmal so einordnen.",
+          "Q": "Widersprüchlich: Beide Antworten sind gleich extrem (1 und 1 oder 5 und 5) und widersprechen sich, die Frage wurde vermutlich missverstanden. Die Zahl der Befragten, die das Merkmal so einordnen."
+        },
+        "KanoTotals": {
+          "items": "Die Zahl der Merkmale, die bewertet werden.",
+          "respondents": "Die Zahl der Befragten.",
+          "completeness": "Der Anteil der klassifizierten Antworten an allen möglichen: klassifizierte Antworten geteilt durch (Zahl der Merkmale mal Zahl der Befragten), ein Wert von 0 bis 1; 0, wenn es keine Merkmale oder Befragten gibt. Die Oberfläche zeigt ihn in Prozent.",
+          "qShare": "Der Anteil widersprüchlicher Antworten an den klassifizierten: Zahl der widersprüchlichen Antworten geteilt durch Zahl der klassifizierten, ein Wert von 0 bis 1; 0 ohne klassifizierte Antworten. Liegt er über 10 %, warnt die Oberfläche, dass die Fragen vermutlich missverstanden wurden."
         }
       }
     },
