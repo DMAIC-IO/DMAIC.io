@@ -18,7 +18,7 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { listModels, getModel } from '../../core/models-store.js';
+import { listModels, getModel, saveModel } from '../../core/models-store.js';
 import {
   optimizeResponses, buildResponseSurface,
 } from '../../engines/response-optimization-engine.js';
@@ -315,6 +315,61 @@ function buildContourSVGElement(d) {
  * @property {string} errorMsg  why the last `runOptimize` computed nothing (the blocking reasons, no model selected, or the engine error), or an empty string; cleared again as soon as the model list, the selection or a specification changes
  */
 
+/**
+ * Optimiert die gewählten Modelle gemeinsam und legt das Ergebnis als
+ * projektweiten Datensatz unter `state.optimizations[id]` ab. Wirft, wenn die
+ * Engine scheitert (dann wird nichts geschrieben).
+ * @param {object} sm  der StateManager
+ * @param {{ models: object[], specs: Object<string, {kind:string,lower:number,upper:number,target:number,weight?:number}>, optId: string|null, name: string }} args
+ * @returns {{ id: string, result: object }} die Datensatz-id und das Ergebnis der Engine
+ */
+function optimizeAndStore(sm, { models, specs, optId, name }) {
+  const desirSpecs = models.map(m => {
+    const s = specs[m.id];
+    return {
+      kind:   s.kind,
+      lower:  s.lower,
+      upper:  s.upper,
+      target: s.target,
+      weight: s.weight ?? 1,
+    };
+  });
+
+  const factorBounds = models[0].factorSpec.map(f => [f.low ?? -1, f.high ?? 1]);
+  const factorNames  = models[0].factorSpec.map(f => f.name);
+
+  const result = optimizeResponses(models, desirSpecs, factorBounds, { nStarts: 8, seed: 42, maxIter: 400 });
+
+  // Persist result as a project-central optimisation record.
+  const id = optId ?? uid();
+  const all = sm.get('optimizations') ?? {};
+  sm.set('optimizations', {
+    ...all,
+    [id]: {
+      id,
+      name,
+      modelRefs: models.map(m => m.id),
+      desirability: desirSpecs.map((s, i) => ({ modelId: models[i].id, ...s })),
+      factorOverrides: [],
+      constraints: factorBounds.map((b, i) => ({ kind: 'box', factor: factorNames[i], low: b[0], high: b[1] })),
+      result: {
+        xOpt: result.xOpt,
+        yPredictions: result.yPredictions,
+        dPerResponse: result.dPerResponse,
+        D: result.D,
+        ciAtOpt: null,
+        paretoFront: null,
+        factorNames,
+        modelNames: models.map(m => m.name),
+        iter: result.iter,
+      },
+      createdAt: optId ? (all[optId]?.createdAt ?? new Date().toISOString()) : new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+  });
+  return { id, result };
+}
+
 export default createModule({
   config: {
     id: 'response-optimization',
@@ -325,6 +380,29 @@ export default createModule({
     meta: import.meta,
   },
   Model: State,
+
+  /**
+   * Das Beispiel bringt seine gespeicherten Modelle mit (`data.models`, die
+   * Datensatzform von `state.models`) und rechnet das Optimum beim Laden:
+   * Modelle ins Projekt, Optimierung unter `state.optimizations`, der
+   * Modulzustand verweist über `optId` darauf. Ohne `models` bleibt es beim
+   * leeren Zustand.
+   * @param {{ specs: object, optId: string|null, models?: object[] }} data
+   * @returns {{ specs: object, optId: string|null }} der zu setzende Modulzustand
+   */
+  beforeLoadExample(data) {
+    const { models = [], ...state } = data;
+    const sm = this._context.stateManager;
+    for (const record of models) saveModel(sm, record);
+    const selected = models.filter(m => state.specs?.[m.id]?.selected);
+    if (selected.length > 0) {
+      const { id } = optimizeAndStore(sm, {
+        models: selected, specs: state.specs, optId: state.optId ?? null, name: this._context.i18n.t('modules.response-optimization.defaultName'),
+      });
+      state.optId = id;
+    }
+    return state;
+  },
 
   data(module, _t) {
     /** Event bus unsubscribe functions. */
@@ -734,56 +812,17 @@ export default createModule({
         }
         this.errorMsg = '';
 
-        const desirSpecs = models.map(m => {
-          const s = this.model.specs[m.id];
-          return {
-            kind:   s.kind,
-            lower:  s.lower,
-            upper:  s.upper,
-            target: s.target,
-            weight: s.weight ?? 1,
-          };
-        });
-
-        const factorBounds = models[0].factorSpec.map(f => [f.low ?? -1, f.high ?? 1]);
-        const factorNames  = models[0].factorSpec.map(f => f.name);
-
-        let result;
+        let stored;
         try {
-          result = optimizeResponses(models, desirSpecs, factorBounds, { nStarts: 8, seed: 42, maxIter: 400 });
+          stored = optimizeAndStore(sm, {
+            models, specs: this.model.specs, optId: this.model.optId, name: _t('defaultName'),
+          });
         } catch (e) {
           this.errorMsg = e.message;
           module._context.notify(e.message, 'error');
           return;
         }
-
-        // Persist result as a project-central optimisation record.
-        const id = this.model.optId ?? uid();
-        const all = sm.get('optimizations') ?? {};
-        sm.set('optimizations', {
-          ...all,
-          [id]: {
-            id,
-            name: _t('defaultName'),
-            modelRefs: selectedIds,
-            desirability: desirSpecs.map((s, i) => ({ modelId: models[i].id, ...s })),
-            factorOverrides: [],
-            constraints: factorBounds.map((b, i) => ({ kind: 'box', factor: factorNames[i], low: b[0], high: b[1] })),
-            result: {
-              xOpt: result.xOpt,
-              yPredictions: result.yPredictions,
-              dPerResponse: result.dPerResponse,
-              D: result.D,
-              ciAtOpt: null,
-              paretoFront: null,
-              factorNames,
-              modelNames: models.map(m => m.name),
-              iter: result.iter,
-            },
-            createdAt: this.model.optId ? (all[this.model.optId]?.createdAt ?? new Date().toISOString()) : new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        });
+        const { id, result } = stored;
 
         this.model.optId = id;
 
