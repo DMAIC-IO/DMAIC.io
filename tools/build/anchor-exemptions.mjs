@@ -125,4 +125,18 @@ export const ANCHOR_EXEMPTIONS = {
   'opportunity-flowchart': [
     { match: 'class="of__import-option"', reason: 'Auswahlzeile je Quelle im Importdialog; keine Agentenaktion', count: 1 },
   ],
+  'triz-9-windows': [
+    { match: 'triz-9w__upload-btn', reason: 'Bild-Upload je Fenster (9×); Dateiwahl ohne Agentenweg', count: 1 },
+  ],
+  'triz-contradiction-matrix': [
+    { match: 'triz-cm__mx-corner', reason: 'Ecke der Nachschlagematrix (Pfeile); der Knopf darüber erklärt die Matrix', count: 1 },
+    { match: 'triz-cm__mx-col-head', reason: 'Kopf je Merkmal (39), feste Tabellendaten', count: 1 },
+    { match: 'triz-cm__mx-row-head', reason: 'Kopf je Merkmal (39), feste Tabellendaten', count: 1 },
+  ],
+  'triz-evolution-trends': [
+    { match: 'class="triz-evo__stage"', reason: 'Stufe je Trend (Optionsfeld je Stufe); der Trend selbst ist beschrieben', count: 1 },
+  ],
+  'triz-sufield': [
+    { match: 'triz-sf__standard-select', reason: 'Kästchen je Standardlösung (78), in aufklappbaren Klassen', count: 1 },
+  ],
 };

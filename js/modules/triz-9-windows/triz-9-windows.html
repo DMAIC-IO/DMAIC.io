@@ -1,7 +1,7 @@
 <section class="module-container triz-9w" x-data="triz9Windows">
   <div class="module-container__body triz-9w__body">
     <section class="triz-9w__topbar">
-      <label class="triz-9w__title-label" for="triz-9w-title" x-text="t('systemHeading')"></label>
+      <label data-help-key="modules.triz-9-windows.fields.systemTitle.help" class="triz-9w__title-label" for="triz-9w-title" x-text="t('systemHeading')"></label>
       <!-- zweiter Codeweg zu `model.systemTitle`; Sink: `setSystemTitle()` -->
       <input id="triz-9w-title" class="field triz-9w__title-input" type="text"
         data-role="system-title"
@@ -71,7 +71,7 @@
                   :alt="imageAlt(r, c)" data-action="enlarge"
                   :data-r="r" :data-c="c"
                   @click="enlarge(r, c)">
-                <button class="triz-9w__image-clear" type="button" data-action="clear-image"
+                <button data-help-key="modules.triz-9-windows.actions.clearImage.help" class="triz-9w__image-clear" type="button" data-action="clear-image"
                   :data-r="r" :data-c="c"
                   :title="t('clearImage')"
                   @click="clearImageClicked(r, c)">&times;</button>

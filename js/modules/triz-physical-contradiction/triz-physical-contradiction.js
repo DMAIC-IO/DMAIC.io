@@ -8,8 +8,21 @@
  */
 import { createModule } from '../../core/template-module.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
 import { State, PRINCIPLES } from './triz-physical-contradiction-model.js';
+
+/**
+ * Die Schlüsselfläche von `setPrincipleNote`: je Trennungsprinzip eine
+ * Notiz. Lokale Liste statt des importierten `PRINCIPLES`, damit der Build
+ * Typedef und Prüfung abgleichen kann; der Modelltest hält beide gleich.
+ *
+ * @typedef {object} PrincipleNotes
+ * @property {string} time  Notiz zur Separation in der Zeit
+ * @property {string} space  Notiz zur Separation im Raum
+ * @property {string} condition  Notiz zur Separation nach Bedingung
+ * @property {string} system  Notiz zur Separation zwischen Systemebenen
+ */
+export const PRINCIPLE_KEYS = ['time', 'space', 'condition', 'system'];
 
 const PRINCIPLE_NUM = { time: 1, space: 2, condition: 3, system: 4 };
 
@@ -159,14 +172,14 @@ export default createModule({
       /**
        * Setzt die Notiz zu einem der vier Trennungsprinzipien.
        * @agent
-       * @param {string} key Schlüssel des Trennungsprinzips
+       * @param {keyof PrincipleNotes} key welches Trennungsprinzip
        * @param {string} text die Notiz zu diesem Prinzip
        * @returns {void}
        * @throws {Error} wenn kein Trennungsprinzip diesen Schlüssel trägt
        *   oder `text` keine Zeichenkette ist
        */
       setPrincipleNote(key, text) {
-        requireKnownId('principleKey', key, PRINCIPLES);
+        requireEnum('key', key, PRINCIPLE_KEYS);
         this.model.principleNotes[key] = requireText('text', text);
       },
     };

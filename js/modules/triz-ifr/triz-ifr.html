@@ -5,7 +5,7 @@
       <h3 class="triz-ifr__section-title" x-text="t('taskHeading')"></h3>
 
       <div class="triz-ifr__field">
-        <label class="triz-ifr__label" for="triz-ifr-system" x-text="t('systemLabel')"></label>
+        <label data-help-key="modules.triz-ifr.fields.system.help" class="triz-ifr__label" for="triz-ifr-system" x-text="t('systemLabel')"></label>
         <!-- zweiter Codeweg zu `model.system`; Sink: `setSystem()` -->
         <input id="triz-ifr-system" class="field" type="text" data-role="system"
           x-model="model.system"
@@ -13,7 +13,7 @@
       </div>
 
       <div class="triz-ifr__field">
-        <label class="triz-ifr__label" for="triz-ifr-useful" x-text="t('usefulLabel')"></label>
+        <label data-help-key="modules.triz-ifr.fields.usefulFunction.help" class="triz-ifr__label" for="triz-ifr-useful" x-text="t('usefulLabel')"></label>
         <!-- zweiter Codeweg zu `model.usefulFunction`; Sink: `setUsefulFunction()` -->
         <input id="triz-ifr-useful" class="field" type="text" data-role="useful"
           x-model="model.usefulFunction"
@@ -21,7 +21,7 @@
       </div>
 
       <div class="triz-ifr__field">
-        <label class="triz-ifr__label" for="triz-ifr-harmful" x-text="t('harmfulLabel')"></label>
+        <label data-help-key="modules.triz-ifr.fields.harmfulEffect.help" class="triz-ifr__label" for="triz-ifr-harmful" x-text="t('harmfulLabel')"></label>
         <!-- zweiter Codeweg zu `model.harmfulEffect`; Sink: `setHarmfulEffect()` -->
         <input id="triz-ifr-harmful" class="field" type="text" data-role="harmful"
           x-model="model.harmfulEffect"

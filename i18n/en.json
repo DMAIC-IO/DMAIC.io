@@ -11486,7 +11486,7 @@
           }
         },
         "setShowMatrix": {
-          "help": "Determines whether the full 39×39 matrix is shown — absolutely, not by toggling.",
+          "help": "Shows the full 39×39 contradiction matrix or hides it. The value sets the state; it does not toggle.",
           "params": {
             "visible": "true shows the matrix, false hides it."
           }
@@ -11669,7 +11669,7 @@
         "setPrincipleNote": {
           "help": "Sets the note for one of the four separation principles.",
           "params": {
-            "key": "The separation principle: time, space, condition or system (system level). Any other value is an error.",
+            "key": "Which separation principle; each is described individually under keys. Any other value is an error.",
             "text": "The note for that principle; an empty text clears it."
           }
         },
@@ -11704,6 +11704,14 @@
         },
         "solutionNote": {
           "help": "The solution note for the chosen separation principle."
+        }
+      },
+      "types": {
+        "PrincipleNotes": {
+          "time": "Note on separation in time: the parameter takes different values at different times, for example a wing that is extended for take-off and retracted in cruise. It records how this fits the problem.",
+          "space": "Note on separation in space: the parameter takes different values at different places, for example a screw with a hard head and an elastic shaft. It records how this fits the problem.",
+          "condition": "Note on separation by condition: the parameter takes different values depending on load, temperature or speed, for example photochromic glasses that are dark in sunlight and clear in shade. It records how this fits the problem.",
+          "system": "Note on separation at the system level: the whole behaves differently from its parts, for example a bicycle chain that is flexible as a whole while its individual links are rigid. It records how this fits the problem."
         }
       },
       "subtitle": "State a parameter that must take two opposite values at the same time, then resolve the contradiction via time, space, condition or system level.",

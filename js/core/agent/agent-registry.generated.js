@@ -17309,9 +17309,9 @@ export const AGENT_REGISTRY = {
         "params": [
           {
             "name": "key",
-            "type": "string",
+            "type": "'time'|'space'|'condition'|'system'",
             "optional": false,
-            "help": "Schlüssel des Trennungsprinzips"
+            "help": "welches Trennungsprinzip"
           },
           {
             "name": "text",
@@ -17321,7 +17321,26 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Setzt die Notiz zu einem der vier Trennungsprinzipien."
+        "help": "Setzt die Notiz zu einem der vier Trennungsprinzipien.",
+        "keysOf": "PrincipleNotes",
+        "keys": {
+          "time": {
+            "type": "string",
+            "help": "Notiz zur Separation in der Zeit"
+          },
+          "space": {
+            "type": "string",
+            "help": "Notiz zur Separation im Raum"
+          },
+          "condition": {
+            "type": "string",
+            "help": "Notiz zur Separation nach Bedingung"
+          },
+          "system": {
+            "type": "string",
+            "help": "Notiz zur Separation zwischen Systemebenen"
+          }
+        }
       }
     },
     "fields": {

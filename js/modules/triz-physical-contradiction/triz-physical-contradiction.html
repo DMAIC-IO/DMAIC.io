@@ -4,7 +4,7 @@
       <h3 class="triz-pc__section-title" x-text="t('problemHeading')"></h3>
 
       <div class="triz-pc__field">
-        <label class="triz-pc__label" :for="paramId" x-text="t('parameterLabel')">
+        <label data-help-key="modules.triz-physical-contradiction.fields.parameter.help" class="triz-pc__label" :for="paramId" x-text="t('parameterLabel')">
         </label>
         <!-- zweiter Codeweg zu `model.parameter`; Sink: `setParameter()` -->
         <input class="field triz-pc__input" type="text" data-role="parameter"
@@ -15,7 +15,7 @@
 
       <div class="triz-pc__requirements">
         <div class="triz-pc__field triz-pc__field--a">
-          <label class="triz-pc__label triz-pc__label--a" :for="reqAId">
+          <label data-help-key="modules.triz-physical-contradiction.fields.requirementA.help" class="triz-pc__label triz-pc__label--a" :for="reqAId">
             <span class="triz-pc__dot triz-pc__dot--a"></span>
             <span x-text="t('requirementALabel')"></span>
           </label>
@@ -25,14 +25,14 @@
             x-model="model.requirementA"
             :placeholder="t('requirementAPlaceholder')">
         </div>
-        <button class="btn btn--sm triz-pc__swap-btn" type="button" data-action="swap"
+        <button data-help-key="modules.triz-physical-contradiction.actions.swap.help" class="btn btn--sm triz-pc__swap-btn" type="button" data-action="swap"
           :title="t('swap')"
           :aria-label="t('swap')"
           @click="swap($event)">
           <span class="icon icon--sm" data-icon="action.swap" aria-hidden="true"></span>
         </button>
         <div class="triz-pc__field triz-pc__field--b">
-          <label class="triz-pc__label triz-pc__label--b" :for="reqBId">
+          <label data-help-key="modules.triz-physical-contradiction.fields.requirementNotA.help" class="triz-pc__label triz-pc__label--b" :for="reqBId">
             <span class="triz-pc__dot triz-pc__dot--b"></span>
             <span x-text="t('requirementNotALabel')"></span>
           </label>
@@ -45,7 +45,7 @@
       </div>
 
       <div class="triz-pc__field">
-        <label class="triz-pc__label" :for="problemNoteId" x-text="t('problemNoteLabel')">
+        <label data-help-key="modules.triz-physical-contradiction.fields.problemNote.help" class="triz-pc__label" :for="problemNoteId" x-text="t('problemNoteLabel')">
         </label>
         <!-- zweiter Codeweg zu `model.problemNote`; Sink: `setProblemNote()` -->
         <textarea class="field triz-pc__textarea" rows="2" data-role="problem-note"
@@ -77,7 +77,7 @@
               :placeholder="t('principleNotePlaceholder')"
               @input="principleNoteChanged(key, $event)"
               :value="notes"></textarea>
-            <label class="triz-pc__principle-select">
+            <label data-help-anchor="box" data-help-key="modules.triz-physical-contradiction.actions.selectPrinciple.help" class="triz-pc__principle-select">
               <input type="radio"
                 :name="radioName"
                 :value="key"

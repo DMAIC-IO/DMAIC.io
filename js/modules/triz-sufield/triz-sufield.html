@@ -5,21 +5,21 @@
     <section class="triz-sf__model">
       <div class="triz-sf__inputs">
         <div class="triz-sf__field">
-          <label class="triz-sf__label" for="triz-sf-s1" x-text="t('s1Label')"></label>
+          <label data-help-key="modules.triz-sufield.fields.s1.help" class="triz-sf__label" for="triz-sf-s1" x-text="t('s1Label')"></label>
           <input id="triz-sf-s1" class="field" type="text" data-role="s1"
             :value="model.s1"
             :placeholder="t('s1Placeholder')"
             @input="s1Changed($event)">
         </div>
         <div class="triz-sf__field">
-          <label class="triz-sf__label" for="triz-sf-s2" x-text="t('s2Label')"></label>
+          <label data-help-key="modules.triz-sufield.fields.s2.help" class="triz-sf__label" for="triz-sf-s2" x-text="t('s2Label')"></label>
           <input id="triz-sf-s2" class="field" type="text" data-role="s2"
             :value="model.s2"
             :placeholder="t('s2Placeholder')"
             @input="s2Changed($event)">
         </div>
         <div class="triz-sf__field">
-          <label class="triz-sf__label" for="triz-sf-field" x-text="t('fieldLabel')"></label>
+          <label data-help-key="modules.triz-sufield.actions.setFieldType.help" class="triz-sf__label" for="triz-sf-field" x-text="t('fieldLabel')"></label>
           <select id="triz-sf-field" class="field" data-role="field"
             @change="fieldChanged($event)">
             <option value="" x-text="t('selectPlaceholder')"></option>
@@ -29,7 +29,7 @@
           </select>
         </div>
         <div class="triz-sf__field">
-          <label class="triz-sf__label" for="triz-sf-link" x-text="t('linkLabel')"></label>
+          <label data-help-key="modules.triz-sufield.actions.setLink.help" class="triz-sf__label" for="triz-sf-link" x-text="t('linkLabel')"></label>
           <select id="triz-sf-link" class="field" data-role="link"
             @change="linkChanged($event)">
             <option value="" x-text="t('selectPlaceholder')"></option>
@@ -101,13 +101,13 @@
 
     <!-- ── Filter ── -->
     <section class="triz-sf__filter">
-      <label class="triz-sf__filter-label">
+      <label data-help-anchor="box" data-help-key="modules.triz-sufield.actions.setFilterMode.help" class="triz-sf__filter-label">
         <input type="radio" name="triz-sf-filter" value="auto" data-role="filter"
           :checked="model.filterMode === 'auto' || model.filterMode === ''"
           @change="filterChanged($event)">
         <span x-text="t('filterAuto')"></span>
       </label>
-      <label class="triz-sf__filter-label">
+      <label data-help-anchor="box" data-help-key="modules.triz-sufield.actions.setFilterMode.help" class="triz-sf__filter-label">
         <input type="radio" name="triz-sf-filter" value="all" data-role="filter"
           :checked="model.filterMode === 'all'"
           @change="filterChanged($event)">

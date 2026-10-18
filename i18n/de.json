@@ -11490,7 +11490,7 @@
           }
         },
         "setShowMatrix": {
-          "help": "Legt fest, ob die vollständige 39×39-Matrix angezeigt wird — absolut, nicht umschaltend.",
+          "help": "Zeigt die vollständige 39×39-Widerspruchsmatrix an oder blendet sie aus. Der Wert setzt den Zustand fest, er schaltet nicht um.",
           "params": {
             "visible": "true zeigt die Matrix, false verbirgt sie."
           }
@@ -11673,7 +11673,7 @@
         "setPrincipleNote": {
           "help": "Setzt die Notiz zu einem der vier Trennungsprinzipien.",
           "params": {
-            "key": "Das Trennungsprinzip: time (Zeit), space (Raum), condition (Bedingung) oder system (Systemebene). Ein Wert daneben ist ein Fehler.",
+            "key": "Welches Trennungsprinzip; jedes ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
             "text": "Die Notiz zu diesem Prinzip; ein leerer Text löscht sie."
           }
         },
@@ -11708,6 +11708,14 @@
         },
         "solutionNote": {
           "help": "Die Lösungsnotiz zum gewählten Trennungsprinzip."
+        }
+      },
+      "types": {
+        "PrincipleNotes": {
+          "time": "Notiz zur Trennung in der Zeit: Der Parameter hat zu verschiedenen Zeitpunkten verschiedene Werte, etwa ein Tragflügel, der zum Start ausgefahren und im Reiseflug eingefahren ist. Hier steht, wie das auf dieses Problem passt.",
+          "space": "Notiz zur Trennung im Raum: Der Parameter hat an verschiedenen Stellen verschiedene Werte, etwa eine Schraube mit hartem Kopf und elastischem Schaft. Hier steht, wie das auf dieses Problem passt.",
+          "condition": "Notiz zur Trennung nach Bedingung: Der Parameter hat je nach Last, Temperatur oder Geschwindigkeit verschiedene Werte, etwa eine photochrome Brille, die im Sonnenlicht dunkel und im Schatten hell ist. Hier steht, wie das auf dieses Problem passt.",
+          "system": "Notiz zur Trennung in der Systemebene: Das Ganze verhält sich anders als seine Teile, etwa eine Fahrradkette, die als Ganzes flexibel ist, deren einzelne Glieder aber starr sind. Hier steht, wie das auf dieses Problem passt."
         }
       },
       "subtitle": "Formuliere einen Parameter, der gleichzeitig zwei entgegengesetzte Werte annehmen muss, und löse den Widerspruch über Zeit, Raum, Bedingung oder Systemebene.",

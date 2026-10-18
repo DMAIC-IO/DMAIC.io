@@ -1,7 +1,7 @@
 <section class="module-container triz-evo" x-data="trizEvolutionTrends">
   <div class="module-container__body triz-evo__body">
     <section class="triz-evo__topbar">
-      <label class="triz-evo__label" x-text="t('systemLabel')"></label>
+      <label data-help-key="modules.triz-evolution-trends.fields.system.help" class="triz-evo__label" x-text="t('systemLabel')"></label>
       <input class="field triz-evo__system-input" type="text" data-role="system"
         :value="model.system"
         :placeholder="t('systemPlaceholder')"
