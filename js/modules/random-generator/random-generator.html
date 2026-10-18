@@ -37,7 +37,7 @@
         <div class="rg-controls">
           <template x-for="p in distParams()" :key="p.id">
             <div class="field-group rg-control-group">
-              <label data-help-key="modules.random-generator.actions.setDistParam.help" x-text="paramLabel(p)"></label>
+              <label :data-help-key="'modules.random-generator.types.DistParams.' + model.currentDist + '.' + p.id" x-text="paramLabel(p)"></label>
               <input type="number" class="field field--num"
                      :id="'rg_param_' + p.id"
                      :min="paramMin(p)" :max="paramMax(p)"

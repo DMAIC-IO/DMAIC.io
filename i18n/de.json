@@ -8751,6 +8751,39 @@
           "weibull": {
             "alpha": "Form (α): die Form der Weibull-Verteilung; bei 1 entsteht die Exponentialverteilung, über 1 steigt die Ausfallrate mit der Zeit. Zulässig: Zahl ab 0,0001; Vorgabe 1,5.",
             "beta": "Skala (β): die Skala der Weibull-Verteilung (charakteristische Lebensdauer: 63,2 % der Werte liegen darunter). Zulässig: Zahl ab 0,0001; Vorgabe 1."
+          },
+          "bernoulli": {
+            "p": "Erfolgswahrsch. (p): die Wahrscheinlichkeit, dass ein Versuch gelingt und 1 ergibt; sonst entsteht 0. Zulässig: Zahl von 0 bis 1; Vorgabe 0,5."
+          },
+          "binomial": {
+            "n": "Versuche (n): wie oft der Versuch je erzeugtem Wert wiederholt wird; der Wert zählt die Erfolge. Zulässig: Zahl ab 1, üblich sind ganze Zahlen; Vorgabe 10.",
+            "p": "Erfolgswahrsch. (p): die Wahrscheinlichkeit, dass ein einzelner Versuch gelingt. Zulässig: Zahl von 0 bis 1; Vorgabe 0,5."
+          },
+          "geometric": {
+            "p": "Erfolgswahrsch. (p): die Wahrscheinlichkeit, dass ein einzelner Versuch gelingt; der Wert zählt die Fehlversuche vor dem ersten Erfolg. Zulässig: Zahl von 0,0001 bis 1; Vorgabe 0,3."
+          },
+          "negbinomial": {
+            "r": "Erfolge (r): wie viele Erfolge abgewartet werden; der Wert zählt die Fehlversuche bis dahin. Zulässig: Zahl ab 1, üblich sind ganze Zahlen; Vorgabe 5.",
+            "p": "Erfolgswahrsch. (p): die Wahrscheinlichkeit, dass ein einzelner Versuch gelingt. Zulässig: Zahl von 0,0001 bis 1; Vorgabe 0,5."
+          },
+          "hypergeometric": {
+            "N": "Populationsgröße (N): die Zahl aller Elemente, aus denen ohne Zurücklegen gezogen wird. Zulässig: Zahl ab 1, üblich sind ganze Zahlen; Vorgabe 100.",
+            "K": "Erfolgszust. (K): wie viele der N Elemente Erfolge sind; sie sollte höchstens so groß wie N sein. Zulässig: Zahl ab 0, üblich sind ganze Zahlen; Vorgabe 30.",
+            "n": "Stichprobe (n): wie viele Elemente je erzeugtem Wert gezogen werden; er sollte höchstens so groß wie N sein, der Wert zählt die Erfolge darin. Zulässig: Zahl ab 1, üblich sind ganze Zahlen; Vorgabe 10."
+          },
+          "integer": {
+            "a": "Minimum (a): die kleinste ganze Zahl, die vorkommen kann; sie sollte nicht größer als das Maximum sein. Zulässig: beliebige Zahl, Nachkommastellen werden abgerundet; Vorgabe 1.",
+            "b": "Maximum (b): die größte ganze Zahl, die vorkommen kann; sie sollte nicht kleiner als das Minimum sein. Zulässig: beliebige Zahl, Nachkommastellen werden abgerundet; Vorgabe 6."
+          },
+          "poisson": {
+            "lambda": "Rate (λ): die mittlere Zahl der Ereignisse je Einheit; sie ist zugleich Mittelwert und Varianz der Werte. Zulässig: Zahl ab 0,01; Vorgabe 5."
+          },
+          "mvnormal": {
+            "mu1": "Mittelwert μ₁: die Lage der ersten Komponente der zweidimensionalen Normalverteilung; sie bestimmt die erzeugten Werte. Zulässig: beliebige Zahl; Vorgabe 0.",
+            "mu2": "Mittelwert μ₂: die Lage der zweiten Komponente; die erzeugte Spalte enthält nur die erste Komponente, daher ändert μ₂ sie derzeit nicht. Zulässig: beliebige Zahl; Vorgabe 0.",
+            "sigma1": "Std.Abw. σ₁: die Streuung der ersten Komponente um ihren Mittelwert μ₁. Zulässig: Zahl ab 0,0001; Vorgabe 1.",
+            "sigma2": "Std.Abw. σ₂: die Streuung der zweiten Komponente um ihren Mittelwert μ₂; die erzeugte Spalte enthält nur die erste Komponente, daher ändert σ₂ sie derzeit nicht. Zulässig: Zahl ab 0,0001; Vorgabe 1.",
+            "rho": "Korrelation ρ: wie stark die beiden Komponenten zusammenhängen (-1 gegenläufig, 0 unabhängig, 1 gleichläufig); die erzeugte Spalte enthält nur die erste Komponente, daher ändert ρ sie derzeit nicht. Zulässig: Zahl von -0,999 bis 0,999; Vorgabe 0,5."
           }
         },
         "FrequencyRow": {

@@ -8747,6 +8747,39 @@
           "weibull": {
             "alpha": "Shape (α): the shape of the Weibull distribution; 1 gives the exponential distribution, above 1 the failure rate rises over time. Allowed: number from 0.0001; default 1.5.",
             "beta": "Scale (β): the scale of the Weibull distribution (characteristic life: 63.2 % of the values lie below it). Allowed: number from 0.0001; default 1."
+          },
+          "bernoulli": {
+            "p": "Success prob. (p): the probability that a trial succeeds and yields 1; otherwise 0 results. Allowed: number from 0 to 1; default 0.5."
+          },
+          "binomial": {
+            "n": "Trials (n): how often the trial is repeated for each generated value; the value counts the successes. Allowed: number from 1, whole numbers are usual; default 10.",
+            "p": "Success prob. (p): the probability that a single trial succeeds. Allowed: number from 0 to 1; default 0.5."
+          },
+          "geometric": {
+            "p": "Success prob. (p): the probability that a single trial succeeds; the value counts the failures before the first success. Allowed: number from 0.0001 to 1; default 0.3."
+          },
+          "negbinomial": {
+            "r": "Successes (r): how many successes are waited for; the value counts the failures up to then. Allowed: number from 1, whole numbers are usual; default 5.",
+            "p": "Success prob. (p): the probability that a single trial succeeds. Allowed: number from 0.0001 to 1; default 0.5."
+          },
+          "hypergeometric": {
+            "N": "Population size (N): the number of all elements drawn from without replacement. Allowed: number from 1, whole numbers are usual; default 100.",
+            "K": "Success states (K): how many of the N elements are successes; it should be at most as large as N. Allowed: number from 0, whole numbers are usual; default 30.",
+            "n": "Sample size (n): how many elements are drawn for each generated value; it should be at most as large as N, and the value counts the successes among them. Allowed: number from 1, whole numbers are usual; default 10."
+          },
+          "integer": {
+            "a": "Minimum (a): the smallest whole number that can occur; it should not be larger than the maximum. Allowed: any number, decimals are rounded down; default 1.",
+            "b": "Maximum (b): the largest whole number that can occur; it should not be smaller than the minimum. Allowed: any number, decimals are rounded down; default 6."
+          },
+          "poisson": {
+            "lambda": "Rate (λ): the mean number of events per unit; it is both the mean and the variance of the values. Allowed: number from 0.01; default 5."
+          },
+          "mvnormal": {
+            "mu1": "Mean μ₁: the location of the first component of the two-dimensional normal distribution; it determines the generated values. Allowed: any number; default 0.",
+            "mu2": "Mean μ₂: the location of the second component; the generated column holds only the first component, so μ₂ does not currently change it. Allowed: any number; default 0.",
+            "sigma1": "Std.Dev. σ₁: the spread of the first component around its mean μ₁. Allowed: number from 0.0001; default 1.",
+            "sigma2": "Std.Dev. σ₂: the spread of the second component around its mean μ₂; the generated column holds only the first component, so σ₂ does not currently change it. Allowed: number from 0.0001; default 1.",
+            "rho": "Correlation ρ: how strongly the two components are related (-1 opposite, 0 independent, 1 in step); the generated column holds only the first component, so ρ does not currently change it. Allowed: number from -0.999 to 0.999; default 0.5."
           }
         },
         "FrequencyRow": {
