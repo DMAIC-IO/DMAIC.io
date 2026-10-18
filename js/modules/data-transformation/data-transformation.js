@@ -41,6 +41,9 @@ import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examp
 const AUTORUN_DELAY = 80;
 const ALPHA = 0.05;
 
+/** Das Urteil der Normalitätsanzeige: normal, wenn p mindestens α ist. */
+const isNormal = (ad) => ad.pValue >= ALPHA;
+
 /** Alle Parameterschlüssel aller Transformationen; `activeParams` nennt die des aktuellen Zustands. */
 const PARAM_KEYS = ['lambda', 'gamma', 'delta', 'xi', 'lambdaJ'];
 const COLUMN_SLOTS = ['source'];
@@ -71,6 +74,8 @@ function paramRowsFor(tfId) {
  *
  * @typedef {object} Result
  * @property {number} n  Werte
+ * @property {string} transform  Transformation, mit der gerechnet wurde
+ * @property {object} params  Kopie der Parameter dieser Rechnung (je Transformation andere Schlüssel)
  * @property {Descriptives} original  Kennwerte vorher
  * @property {Descriptives} transformed  Kennwerte nachher
  */
@@ -84,7 +89,9 @@ function paramRowsFor(tfId) {
  * @property {number|null} kurtosis  Exzess-Wölbung
  * @property {number|null} min  Minimum
  * @property {number|null} max  Maximum
+ * @property {number|null} adStatAdj  korrigiertes A² (A²*) Anderson-Darling
  * @property {number|null} adPValue  p-Wert Anderson-Darling
+ * @property {boolean|null} normal  Urteil: normal, wenn der p-Wert mindestens α ist
  */
 
 /**
@@ -132,6 +139,7 @@ const mod = createModule({
       exportText: '',
       statRows: [],
       _norm: { orig: null, trans: null },
+      _computed: { transform: '', params: {} },
       _picker: null,
       _targetPicker: null,
       _charts: {},
@@ -257,19 +265,19 @@ const mod = createModule({
       normBadgeClass(slot) {
         const ad = this._norm[slot];
         if (!ad) return '';
-        return ad.pValue >= ALPHA ? 'dt-badge--pass' : 'dt-badge--fail';
+        return isNormal(ad) ? 'dt-badge--pass' : 'dt-badge--fail';
       },
       /** @noagent view transform */
       normBadgeIcon(slot) {
         const ad = this._norm[slot];
         if (!ad) return null;
-        return ad.pValue >= ALPHA ? 'status.ok' : 'status.error';
+        return isNormal(ad) ? 'status.ok' : 'status.error';
       },
       /** @noagent view transform */
       normBadgeText(slot) {
         const ad = this._norm[slot];
         if (!ad) return '';
-        return ad.pValue >= ALPHA ? _t('normal') : _t('notNormal');
+        return isNormal(ad) ? _t('normal') : _t('notNormal');
       },
       /** @noagent view transform */
       normAlpha: () => `α = ${ALPHA} | H₀: ${_t('h0Normal')}`,
@@ -354,6 +362,10 @@ const mod = createModule({
           return;
         }
 
+        this._computed = {
+          transform: this.model.currentTF,
+          params: Object.fromEntries(this.paramRows.map(p => [p.key, this.paramFn(p.key)])),
+        };
         this._renderResults();
       },
 
@@ -442,10 +454,14 @@ const mod = createModule({
           kurtosis: num(kurtosis(arr)),
           min: num(Math.min(...arr)),
           max: num(Math.max(...arr)),
+          adStatAdj: ad?.statisticAdj ?? null,
           adPValue: ad?.pValue ?? null,
+          normal: ad ? isNormal(ad) : null,
         });
         return {
           n: this.rawData.length,
+          transform: this._computed.transform,
+          params: { ...this._computed.params },
           original: describe(this.rawData, this._norm.orig),
           transformed: describe(this.transData, this._norm.trans),
         };

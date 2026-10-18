@@ -11641,6 +11641,8 @@
         },
         "Result": {
           "n": "Zahl der Werte, Zeile n der Deskriptiven Statistik: die endlichen Zahlen der Quellspalte; leere und nicht numerische Zellen zählen nicht. Mit weniger als 3 Werten gibt es kein Ergebnis. Die Transformation erhält die Zahl der Werte.",
+          "transform": "Die Transformation, mit der das Ergebnis gerechnet wurde, eine der Kennungen aus transforms. Sie stimmt mit currentTF überein, es sei denn, die Parameter oder die Wahl wurden seit der letzten Rechnung geändert und die Rechnung läuft noch.",
+          "params": "Eine Kopie der Parameter, mit denen das Ergebnis gerechnet wurde, je Schlüssel wie unter params beschrieben: lambda bei Box-Cox und Yeo-Johnson; gamma, delta, xi und lambdaJ bei Johnson SU und Johnson SB; ein leeres Objekt bei Logarithmus, Quadratwurzel, Kehrwert und Quadrat. Spätere Änderungen an den Eingaben verändern sie nicht.",
           "original": "Die Kennwerte der Quellspalte vor der Transformation, Spalte Original der Deskriptiven Statistik und Zeile Original des Normalitätstests.",
           "transformed": "Die Kennwerte der Reihe nach der Transformation mit den aktuellen Parametern, Spalte Transformiert der Deskriptiven Statistik und Zeile Transformiert des Normalitätstests."
         },
@@ -11652,7 +11654,9 @@
           "kurtosis": "Die Exzess-Wölbung der Stichprobe, Zeile Kurtosis (Exzess): n(n + 1)/((n − 1)(n − 2)(n − 3)) · Σ((x − x̄)/s)⁴ − 3(n − 1)²/((n − 2)(n − 3)); 0 entspricht der Normalverteilung. Leer bei genau 3 Werten oder wenn alle Werte gleich sind; die Tabelle zeigt dann einen Strich.",
           "min": "Der kleinste Wert der Reihe, Zeile Min.",
           "max": "Der größte Wert der Reihe, Zeile Max.",
-          "adPValue": "Der p-Wert des Anderson-Darling-Tests auf Normalverteilung, Abschnitt Normalitätstest (Anderson-Darling), angezeigt als p ≈ neben A². Das angezeigte A² ist bereits das korrigierte A²* = A²·(1 + 0,75/n + 2,25/n²); aus ihm folgt p nach D'Agostino und Stephens. Die Anzeige wertet mit α = 0,05: p ≥ 0,05 heißt Normal, p < 0,05 Nicht normal. Leer, wenn alle Werte gleich sind; dann fehlt auch das Urteil."
+          "adStatAdj": "Das korrigierte Anderson-Darling-A²* = A²·(1 + 0,75/n + 2,25/n²), in der Zeile des Normalitätstests angezeigt als A² = … mit 4 Nachkommastellen. Je größer der Wert, desto stärker weicht die Reihe von der Normalverteilung ab. Leer, wenn alle Werte gleich sind; dann fehlt auch das Urteil.",
+          "adPValue": "Der p-Wert des Anderson-Darling-Tests auf Normalverteilung, Abschnitt Normalitätstest (Anderson-Darling), angezeigt als p ≈ neben A². Das angezeigte A² ist bereits das korrigierte A²* = A²·(1 + 0,75/n + 2,25/n²); aus ihm folgt p nach D'Agostino und Stephens. Die Anzeige wertet mit α = 0,05: p ≥ 0,05 heißt Normal, p < 0,05 Nicht normal. Leer, wenn alle Werte gleich sind; dann fehlt auch das Urteil.",
+          "normal": "Das Urteil des Normalitätstests: wahr (Normal), wenn der p-Wert mindestens α = 0,05 beträgt, falsch (Nicht normal), wenn er darunter liegt. Es steht als Plakette hinter p ≈ in der Zeile des Normalitätstests. Leer, wenn alle Werte gleich sind."
         }
       },
       "name": "Datentransformation",

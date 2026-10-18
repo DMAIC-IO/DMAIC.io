@@ -3342,6 +3342,14 @@ export const AGENT_REGISTRY = {
             "type": "number",
             "help": "Werte"
           },
+          "transform": {
+            "type": "string",
+            "help": "Transformation, mit der gerechnet wurde"
+          },
+          "params": {
+            "type": "object",
+            "help": "Kopie der Parameter dieser Rechnung (je Transformation andere Schlüssel)"
+          },
           "original": {
             "type": "Descriptives",
             "help": "Kennwerte vorher",
@@ -3375,9 +3383,17 @@ export const AGENT_REGISTRY = {
                 "type": "number|null",
                 "help": "Maximum"
               },
+              "adStatAdj": {
+                "type": "number|null",
+                "help": "korrigiertes A² (A²*) Anderson-Darling"
+              },
               "adPValue": {
                 "type": "number|null",
                 "help": "p-Wert Anderson-Darling"
+              },
+              "normal": {
+                "type": "boolean|null",
+                "help": "Urteil: normal, wenn der p-Wert mindestens α ist"
               }
             }
           },
@@ -3414,9 +3430,17 @@ export const AGENT_REGISTRY = {
                 "type": "number|null",
                 "help": "Maximum"
               },
+              "adStatAdj": {
+                "type": "number|null",
+                "help": "korrigiertes A² (A²*) Anderson-Darling"
+              },
               "adPValue": {
                 "type": "number|null",
                 "help": "p-Wert Anderson-Darling"
+              },
+              "normal": {
+                "type": "boolean|null",
+                "help": "Urteil: normal, wenn der p-Wert mindestens α ist"
               }
             }
           }

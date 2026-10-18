@@ -11637,6 +11637,8 @@
         },
         "Result": {
           "n": "Number of values, row n of the Descriptive Statistics: the finite numbers of the source column; empty and non-numeric cells do not count. With fewer than 3 values there is no result. The transformation keeps the number of values.",
+          "transform": "The transformation the result was computed with, one of the ids in transforms. It equals currentTF unless the choice or the parameters changed since the last run and the run is still pending.",
+          "params": "A copy of the parameters the result was computed with, keyed as described under params: lambda for Box-Cox and Yeo-Johnson; gamma, delta, xi and lambdaJ for Johnson SU and Johnson SB; an empty object for Log, Square root, Inverse and Square. Later changes to the inputs do not alter it.",
           "original": "The statistics of the source column before the transformation, column Original of the Descriptive Statistics and row Original of the normality test.",
           "transformed": "The statistics of the series after the transformation with the current parameters, column Transformed of the Descriptive Statistics and row Transformed of the normality test."
         },
@@ -11648,7 +11650,9 @@
           "kurtosis": "The sample excess kurtosis, row Kurtosis (Excess): n(n + 1)/((n − 1)(n − 2)(n − 3)) · Σ((x − x̄)/s)⁴ − 3(n − 1)²/((n − 2)(n − 3)); 0 corresponds to the normal distribution. Empty with exactly 3 values or when all values are equal; the table then shows a dash.",
           "min": "The smallest value of the series, row Min.",
           "max": "The largest value of the series, row Max.",
-          "adPValue": "The p-value of the Anderson-Darling test for normality, section Normality Test (Anderson-Darling), shown as p ≈ next to A². The A² shown is already the corrected A²* = A²·(1 + 0.75/n + 2.25/n²); p follows from it after D'Agostino and Stephens. The display judges with α = 0.05: p ≥ 0.05 means Normal, p < 0.05 Not normal. Empty when all values are equal; the verdict is then missing as well."
+          "adStatAdj": "The corrected Anderson-Darling A²* = A²·(1 + 0.75/n + 2.25/n²), shown in the normality test row as A² = … with 4 decimals. The larger the value, the further the series departs from the normal distribution. Empty when all values are equal; the verdict is then missing as well.",
+          "adPValue": "The p-value of the Anderson-Darling test for normality, section Normality Test (Anderson-Darling), shown as p ≈ next to A². The A² shown is already the corrected A²* = A²·(1 + 0.75/n + 2.25/n²); p follows from it after D'Agostino and Stephens. The display judges with α = 0.05: p ≥ 0.05 means Normal, p < 0.05 Not normal. Empty when all values are equal; the verdict is then missing as well.",
+          "normal": "The verdict of the normality test: true (Normal) when the p-value is at least α = 0.05, false (Not normal) when it is below. It is the badge after p ≈ in the normality test row. Empty when all values are equal."
         }
       },
       "name": "Data Transformation",
