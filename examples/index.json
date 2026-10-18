@@ -384,8 +384,8 @@
         "en": "Bacterial Growth (exponential model)"
       },
       "description": {
-        "de": "30 Keimzählungen über 15 Stunden, die Keimzahl wächst um rund 22 % je Stunde. Das exponentielle Modell y = a·e^(bx) trifft den gekrümmten Verlauf, wo eine Gerade systematisch danebenliegt.",
-        "en": "30 germ counts over 15 hours, the count grows by about 22 % per hour. The exponential model y = a·e^(bx) captures the curved trend where a straight line misses systematically."
+        "de": "30 Keimzählungen über 15 Stunden, die Keimzahl wächst um rund 25 % je Stunde. Das exponentielle Modell y = a·e^(bx) trifft den gekrümmten Verlauf, wo eine Gerade systematisch danebenliegt.",
+        "en": "30 germ counts over 15 hours, the count grows by about 25 % per hour. The exponential model y = a·e^(bx) captures the curved trend where a straight line misses systematically."
       },
       "source": "Qprovement synthetisch, Python random, Seed=1301",
       "license": "public-domain",
@@ -456,8 +456,8 @@
         "en": "Yield from a Designed Experiment (DoE term preset)"
       },
       "description": {
-        "de": "Vollfaktorieller 2²-Versuch mit Temperatur und Druck, je dreimal wiederholt, Ausbeute als Response. Die Termvorgabe aus der Versuchsplanung (Haupteffekte und Wechselwirkung) wird beim ersten Lauf übernommen; ein Hinweis nennt vermengte oder gestrichene Terme.",
-        "en": "Full-factorial 2² experiment with temperature and pressure, replicated three times, yield as response. The term preset from the experiment planner (main effects and interaction) is applied on the first run; a note lists aliased or dropped terms."
+        "de": "Vollfaktorieller 2²-Versuch mit Temperatur und Druck, je dreimal wiederholt, Ausbeute als Response. Die Termvorgabe aus der Versuchsplanung (Haupteffekte und Wechselwirkung) wird beim ersten Lauf übernommen; bei vermengten Termen erschiene ein Hinweis.",
+        "en": "Full-factorial 2² experiment with temperature and pressure, replicated three times, yield as response. The term preset from the experiment planner (main effects and interaction) is applied on the first run; aliased terms would trigger a note."
       },
       "source": "Qprovement synthetisch, Python random, Seed=1304",
       "license": "public-domain",
