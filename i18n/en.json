@@ -5373,7 +5373,7 @@
       "whenToUse": "When two or more numeric variables may be related: computes the correlation of two columns (Pearson, Spearman and Kendall side by side, with confidence interval and diagnostics) or of three or more columns as a correlation matrix; each column needs at least 5 numeric values.",
       "actions": {
         "read": {
-          "help": "Returns the chosen columns, the parameters, the selectable columns, the mode and the result. result holds the analysis of exactly two columns, matrixResult the matrix of three or more; both are null otherwise. result is also null with two columns when the analysis failed (fewer than 4 paired values, a column without variance, or a column without usable values); errorMsg names the first two reasons.",
+          "help": "Returns the chosen columns, the parameters, the selectable columns, the mode and the result. result holds the analysis of exactly two columns, matrixResult the matrix of three or more; both are null otherwise. result is also null with two columns when the analysis failed (fewer than 4 paired values, which includes a column without usable values, or a column without variance); errorMsg then names the reason.",
           "params": {
             "options": "Optional; this module holds no bulk data."
           }
@@ -5434,7 +5434,7 @@
           "help": "The correlation matrix from three columns, each figure described individually under keys; null with fewer than three columns; cells that cannot be computed are null."
         },
         "errorMsg": {
-          "help": "The reason a two-column analysis gave no result (fewer than 4 paired values, or a column without variance), or an empty string. A column without usable values leaves result null without a message."
+          "help": "The reason a two-column analysis gave no result, or an empty string: “At least 4 paired values required (currently: 2).” with the actual number of pairs, so “(currently: 0)” for a column without usable values, or “Calculation not possible — variance = 0.” for a column without variance."
         }
       },
       "types": {
@@ -5502,8 +5502,8 @@
           "scores": "The points per coefficient the recommendation follows from."
         },
         "Reason": {
-          "ok": "True when the finding speaks for Pearson; the tooltip then shows a check mark, otherwise a warning sign.",
-          "key": "The identifier of the finding, pointing to an interface text: recNormal or recNotNormal, recNoOutliers or recOutliers, recLinear or recNonlinear, recLargeN or recSmallN, plus recLowMono when monotonicity is low.",
+          "ok": "True when the finding speaks for the recommended coefficient; the tooltip then shows a check mark, otherwise a warning sign. For recNormal, recNoOutliers and recLinear that means Pearson; for recLargeN it only says the sample is large enough (20 pairs or more).",
+          "key": "The identifier of the finding, pointing to an interface text: recNormal or recNotNormal, recNoOutliers or recOutliers, recLinear or recNonlinear (Pearson and Spearman differ by more than 0.1), recLargeN or recSmallN (fewer than 20 pairs), plus recLowMono when the monotonicity index is below 0.7.",
           "params": "The numbers inserted into the text: count (outliers), delta (gap between the absolute values of r and ρ, as text with three decimals), n (pairs) or pct (monotonicity in whole percent); missing for findings without a number."
         },
         "MethodScores": {
@@ -5513,7 +5513,7 @@
         },
         "MatrixResult": {
           "names": "The column names in selection order; they are the row and column headers of the correlation matrix, and each cell refers to two of them by position.",
-          "matrix": "The coefficients per method (Pearson r, Spearman ρ, Kendall τ-b) as a square table over all chosen columns; the correlation matrix shows the one chosen with the buttons. It is symmetric with 1 on the diagonal; a column pair with fewer than 4 paired values cannot be computed and stays empty. The filters do not change it.",
+          "matrix": "The coefficients per method (Pearson r, Spearman ρ, Kendall τ-b) as a square table over all chosen columns; the correlation matrix shows the one chosen with the buttons. It is symmetric with 1 on the diagonal; a column pair with fewer than 4 paired values or with a column without variance cannot be computed and stays empty. The filters do not change it.",
           "ciMatrix": "Per coefficient a square table of confidence intervals, each cell with lower and upper limit, computed as pairwise: Fisher z for Pearson, Bonett-Wright for Spearman, normal approximation for Kendall. The diagonal and cells that cannot be computed are empty.",
           "pMatrix": "Per coefficient a square table of two-sided p-values: Pearson and Spearman from t with n − 2 degrees of freedom, Kendall from z. The diagonal and cells that cannot be computed are empty.",
           "nMatrix": "The number of paired values per cell; on the diagonal the number of values in the column, 0 when two columns share no row.",
@@ -9118,7 +9118,7 @@
         },
         "DescStats": {
           "n": "Number of values, tile n: all numeric cells of the column; empty and non-numeric cells do not count.",
-          "mean": "Arithmetic mean x̄ = Σx/n, tile Mean. The tiles show four decimals; a non-finite value appears as a dash.",
+          "mean": "Arithmetic mean x̄ = Σx/n, tile Mean. The tiles show four decimals, in exponential format with four decimals from 1,000,000 up or below 0.0001 (except 0); a non-finite value appears as a dash.",
           "stdDev": "Sample standard deviation s = √(Σ(x − x̄)²/(n − 1)), tile Std Dev.",
           "median": "The middle value of the sorted data, for an even count the mean of the two middle ones; tile Median.",
           "skewness": "Adjusted sample skewness n/((n − 1)(n − 2)) · Σ((x − x̄)/s)³, tile Skewness: 0 for symmetric data, positive with a long right tail, negative with a long left tail.",
@@ -9129,7 +9129,7 @@
         "Fit": {
           "name": "The name of the distribution, column Distribution: Normal, Log-Normal, Weibull, Exponential, Gamma, Poisson or Binomial; next to it the tag continuous or discrete.",
           "type": "The family of the distribution: cont for continuous, disc for discrete; the interface shows it as the tag continuous or discrete next to the name. Continuous ones are assessed with the Kolmogorov-Smirnov test, discrete ones with the χ² goodness-of-fit test.",
-          "params": "The estimated parameters, each as symbol and value; the Parameters column shows them as symbol=value. Normal: μ = x̄ and σ = s of all values. Log-Normal: μ_log and σ_log, mean and standard deviation of the ln values. Exponential: λ = 1/x̄. Gamma: α = x̄²/s² and β = x̄/s² (method of moments). Weibull: shape k from the maximum-likelihood equation (Newton's method, start 1.2) and scale λ = (Σxᵏ/n)^(1/k). Log-Normal, Exponential, Gamma and Weibull use only the positive values and need at least 3 of them, Weibull at least 5. Poisson: λ = x̄; Binomial: n = largest value, p = x̄/n; both use only the non-negative integer values and need at least 3. If the values do not suffice, the distribution is missing. The goodness-of-fit test, by contrast, runs on all values of the column.",
+          "params": "The estimated parameters, each as symbol and value; the Parameters column shows them as symbol=value. Normal: μ = x̄ and σ = s of all values. Log-Normal: μ_log and σ_log, mean and standard deviation of the ln values. Exponential: λ = 1/x̄. Gamma: α = x̄²/s² and β = x̄/s² (method of moments). Weibull: shape k from the maximum-likelihood equation (Newton's method, start 1.2) and scale λ = (Σxᵏ/n)^(1/k). Log-Normal, Exponential, Gamma and Weibull use only the positive values and need at least 3 of them, Weibull at least 5. Poisson: λ = x̄; Binomial: n = largest value, p = x̄/n; both use only the non-negative integer values and need at least 3, Binomial additionally a largest value above 0. If the values do not suffice, the distribution is missing. The goodness-of-fit test, by contrast, runs on all values of the column.",
           "ks": "The Kolmogorov-Smirnov test, for continuous distributions only; for discrete ones it is missing and the χ² goodness-of-fit test takes its place. The Test column shows K-S or χ² respectively.",
           "chi2": "The χ² goodness-of-fit test, for discrete distributions only (Poisson, Binomial); for continuous ones it is missing and the Kolmogorov-Smirnov test takes its place. The Test column shows χ² for it.",
           "score": "The p-value of the goodness-of-fit test, for continuous distributions that of the Kolmogorov-Smirnov test, for discrete ones that of the χ² test; the ranking is sorted by it. The p-Value column shows it with four decimals (below 0.0001 as 0.0000), the Fit Quality column as a bar that is full from p = 0.2, with the verdict Good at p ≥ 0.1, Borderline at 0.05 ≤ p < 0.1 and Poor below. A large p-value only means that no deviation can be detected, not that the distribution is proven to fit."
@@ -9139,8 +9139,8 @@
           "p": "The p-value from the Kolmogorov distribution, approximated with z = (√n + 0.12 + 0.11/√n) · D (Stephens) and clamped to 0 to 1. The parameters come from the same data and the computation does not correct for that (no Lilliefors correction); the p-value therefore tends to be too large."
         },
         "ChiSquareTest": {
-          "chi2": "The χ² statistic Σ(O − E)²/E over the integer values k = 0 to largest value + 5, with observed frequency O and expected frequency E = n · P(k); values with E < 1 are dropped. The Statistic column shows it for discrete distributions.",
-          "df": "The degrees of freedom: number of values used with E ≥ 1 minus 2, at least 1.",
+          "chi2": "The χ² statistic Σ(O − E)²/E over the classes k = 0 to largest value + 5 (one class per whole number), with observed frequency O and expected frequency E = n · P(k); classes with E < 1 are dropped. The Statistic column shows it for discrete distributions.",
+          "df": "The degrees of freedom: number of classes with E ≥ 1 minus 2, at least 1. A class is each whole-number value k from 0 up to the largest value + 5.",
           "p": "The p-value 1 − F(χ²) of the χ² distribution with df degrees of freedom, clamped to 0 to 1."
         },
         "NormalityTest": {
@@ -9152,8 +9152,8 @@
           "K2": "The D'Agostino-Pearson statistic K², the sum of the squared z-values of skewness and kurtosis, p-value e^(−K²/2) from χ² with 2 degrees of freedom; only in the D'Agostino-Pearson entry and only from 20 values on, empty below.",
           "skewness": "The skewness as the test computes it; only for Jarque-Bera and D'Agostino-Pearson and only when the test was computed.",
           "exKurtosis": "The excess kurtosis as the test computes it (normal distribution 0); only for Jarque-Bera and D'Agostino-Pearson and only when the test was computed.",
-          "skewZ": "The z-value of skewness after D'Agostino (1970), only for D'Agostino-Pearson from 20 values on.",
-          "kurtZ": "The z-value of kurtosis after Anscombe and Glynn (1983), only for D'Agostino-Pearson from 20 values on.",
+          "skewZ": "The z-value of skewness after D'Agostino (1970), only for D'Agostino-Pearson from 20 values on. With fewer than 20 values the field is present but empty.",
+          "kurtZ": "The z-value of kurtosis after Anscombe and Glynn (1983), only for D'Agostino-Pearson from 20 values on. With fewer than 20 values the field is present but empty.",
           "tooSmall": "True when the test had too few values and was not computed: Jarque-Bera below 8, D'Agostino-Pearson below 20 values; the card then shows a notice instead of a verdict. Otherwise the entry is missing."
         }
       },
@@ -9287,8 +9287,8 @@
           "hampelK": "The threshold k of the Hampel identifier: a value is flagged when |x − median| / (1.4826·MAD) > k; 1.4826·MAD estimates σ under normality. Default is 3, allowed are 0.1 to 20.",
           "zThreshold": "The threshold of the Z-score rule: a value is flagged when |x − x̄| / s > threshold, i.e. when it lies more than that many standard deviations from the mean. Typical is 3; on small samples outliers mask each other because they shift x̄ and s themselves. Allowed are 0.1 to 10.",
           "modZThreshold": "The threshold of the modified Z-score after Iglewicz and Hoaglin: a value is flagged when |0.6745·(x − median) / MAD| > threshold. Median and MAD are robust against the outliers themselves. Typical is 3.5, allowed are 0.1 to 10.",
-          "esdMaxOutliers": "The maximum number k of outliers generalized ESD checks, a whole number from 1 to 50. Empty means automatic: ⌊n/4⌋, at least 1 and at most 10. The method removes, step by step, the value with the largest Rᵢ = |x − x̄| / s of the remaining data and compares it with the critical value λᵢ; outliers are the values up to the last step with Rᵢ > λᵢ.",
-          "enabled": "The methods that run, in fixed order: Grubbs' test (G = max|x − x̄| / s above the critical value, at most one outlier), Dixon Q test (gap ratio Q above the table value, at most one outlier, only for 3 to 30 values), generalized ESD (up to k outliers), Tukey IQR rule (outside the fences), Hampel identifier (robust distance to the median above k), Z-score (distance to x̄ in units of s above the threshold) and modified Z-score (robust z value above the threshold). Duplicate entries count once."
+          "esdMaxOutliers": "The maximum number k of outliers generalized ESD checks, a whole number from 1 to 50. Empty means automatic: ⌊n/4⌋, at least 1 and at most 10. The method removes, step by step, the value with the largest Rᵢ = |x − x̄| / s of the remaining data and compares it with the critical value λᵢ; outliers are the values up to the last step with Rᵢ > λᵢ. The steps stop early when fewer than 3 values are left or the remaining data have no spread (s = 0); then there are fewer than k steps.",
+          "enabled": "The methods that run, in fixed order: Grubbs' Test (G = max|x − x̄| / s above the critical value, at most one outlier), Dixon Q Test (gap ratio Q above the table value, at most one outlier, only for 3 to 30 values), Generalized ESD (up to k outliers), Tukey IQR Rule (outside the fences), Hampel Identifier (robust distance to the median above k), Z-Score (distance to x̄ in units of s above the threshold) and Modified Z-Score (robust z value above the threshold). Duplicate entries count once."
         },
         "Result": {
           "n": "The number of values used from the column; empty and non-numeric cells are skipped. The evaluation is missing while no column is chosen or it has fewer than 3 numbers.",
@@ -9297,8 +9297,8 @@
         },
         "MethodResult": {
           "id": "The method identifier: grubbs, dixon-q, generalized-esd, tukey-iqr, hampel, z-score or modified-z.",
-          "flagged": "The positions this method flagged, counted from 0 over the values used; Grubbs and Dixon Q flag at most one value. Empty when nothing stands out or the method is not applicable; without spread (MAD = 0 for Hampel and modified Z-score, s = 0 for Z-score) the method runs without error and flags nothing. The table “Flagged Points” has one column per method with a check mark.",
-          "error": "Empty when the method ran; otherwise the reason it is not applicable: min3 fewer than 3 values, min4 fewer than 4 values (generalized ESD, Tukey IQR rule), zeroVariance no spread (Grubbs: s = 0, Dixon Q: range 0), dixonRange Dixon Q only for 3 to 30 values. The interface shows “Method not applicable” with this code.",
+          "flagged": "The positions this method flagged, counted from 0 over the values used; Grubbs and Dixon Q flag at most one value. Empty when nothing stands out or the method is not applicable; without spread (MAD = 0 for Hampel and modified Z-score, s = 0 for Z-score) the method runs without error and flags nothing. The table “Flagged Points” appears only when at least one method flagged something; it has one column with a check mark for each method that ran without error.",
+          "error": "Empty when the method ran; otherwise the reason it is not applicable: min4 fewer than 4 values (generalized ESD, Tukey IQR rule), zeroVariance no spread (Grubbs: s = 0, Dixon Q: range 0), dixonRange Dixon Q only for 3 to 30 values. Fewer than 3 values do not occur here, because then the analysis does not run at all. The interface shows “Method not applicable” with the text belonging to this code.",
           "metrics": "The method's key figures, the same numbers as on its card under “Methods”; which keys are present depends on the method. The field is empty when the method is not applicable.",
           "steps": "The steps of generalized ESD in the order of the table on its card. For all other methods the field is empty."
         },
@@ -11632,10 +11632,10 @@
       "types": {
         "Params": {
           "lambda": "The exponent λ, label Lambda (λ), range −5 to 5. Box-Cox computes (x^λ − 1)/λ, and ln x at λ = 0, for values > 0 only; Yeo-Johnson computes ((x + 1)^λ − 1)/λ for x ≥ 0 (ln(x + 1) at λ = 0) and −((1 − x)^(2 − λ) − 1)/(2 − λ) for x < 0 (−ln(1 − x) at λ = 2). λ is estimated when Box-Cox or Yeo-Johnson is chosen and at least 3 values are present, and for every new column: the grid from −3 to 3 in steps of 0.05 is searched and the λ with the smallest corrected Anderson-Darling A² is chosen, rounded to 0.01. Before the first estimate Box-Cox uses λ = 0 and Yeo-Johnson λ = 1. If the column contains values ≤ 0, Box-Cox switches to Yeo-Johnson with a notice.",
-          "gamma": "The shift γ of the Johnson transformation, label γ, range −5 to 5, default 0. Johnson SU computes γ + δ·asinh((x − ξ)/λ), Johnson SB γ + δ·ln(z/(1 − z)) with z = (x − ξ)/λ. γ is not estimated but set by hand.",
-          "delta": "The shape factor δ of the Johnson transformation, label δ, range 0.1 to 10, default 1; it multiplies the asinh term (SU) or the ln term (SB) in γ + δ·asinh((x − ξ)/λ) or γ + δ·ln(z/(1 − z)). δ is not estimated but set by hand.",
-          "xi": "The location ξ of the Johnson transformation, label ξ, range −100 to 100, default 0; it is subtracted from every value before scaling, z = (x − ξ)/λ. For Johnson SB all values must lie between ξ and ξ + λ, otherwise the calculation fails. ξ is not estimated but set by hand.",
-          "lambdaJ": "The scale λ of the Johnson transformation, label λ, range 0.1 to 100, default 1; values are divided by it, z = (x − ξ)/λ. For Johnson SB, ξ + λ is the upper bound of the data. λ is not estimated but set by hand; not to be confused with the λ of Box-Cox and Yeo-Johnson."
+          "gamma": "The shift γ of the Johnson transformation, label γ, range −5 to 5, default 0. Johnson SU (unbounded) computes γ + δ·asinh((x − ξ)/λ), Johnson SB (bounded) γ + δ·ln(z/(1 − z)) with z = (x − ξ)/λ. γ is not estimated but set by hand.",
+          "delta": "The shape factor δ of the Johnson transformation, label δ, range 0.1 to 10, default 1; it multiplies the asinh term (SU, unbounded) or the ln term (SB, bounded) in γ + δ·asinh((x − ξ)/λ) or γ + δ·ln(z/(1 − z)). δ is not estimated but set by hand.",
+          "xi": "The location ξ of the Johnson transformation, label ξ, range −100 to 100, default 0; it is subtracted from every value before scaling, z = (x − ξ)/λ. Johnson SU (unbounded) accepts any values. For Johnson SB (bounded) all values must lie strictly between ξ and ξ + λ, a value exactly on a limit does not suffice; otherwise the calculation fails with “Johnson SB: data must lie within (ξ, ξ+λ)”. ξ is not estimated but set by hand.",
+          "lambdaJ": "The scale λ of the Johnson transformation, label λ, range 0.1 to 100, default 1; values are divided by it, z = (x − ξ)/λ. For Johnson SB (bounded), ξ + λ is the upper limit that no value may reach; Johnson SU (unbounded) has no limit. λ is not estimated but set by hand; not to be confused with the λ of Box-Cox and Yeo-Johnson."
         },
         "Result": {
           "n": "Number of values, row n of the Descriptive Statistics: the finite numbers of the source column; empty and non-numeric cells do not count. With fewer than 3 values there is no result. The transformation keeps the number of values.",

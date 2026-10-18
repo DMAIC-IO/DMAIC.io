@@ -5377,7 +5377,7 @@
       "whenToUse": "Wenn zwei oder mehr numerische Größen zusammenhängen könnten: berechnet die Korrelation zweier Spalten (Pearson, Spearman und Kendall nebeneinander, mit Konfidenzintervall und Diagnose) oder dreier und mehr Spalten als Korrelationsmatrix; jede Spalte braucht mindestens 5 numerische Werte.",
       "actions": {
         "read": {
-          "help": "Liefert die gewählten Spalten, die Parameter, die wählbaren Spalten, den Modus und das Ergebnis. result enthält die Auswertung genau zweier Spalten, matrixResult die Matrix aus drei und mehr; sonst sind beide null. result ist auch bei zwei Spalten null, wenn die Auswertung scheiterte (weniger als 4 gepaarte Werte, eine Spalte ohne Streuung oder eine Spalte ohne verwertbare Werte); errorMsg nennt die ersten beiden Gründe.",
+          "help": "Liefert die gewählten Spalten, die Parameter, die wählbaren Spalten, den Modus und das Ergebnis. result enthält die Auswertung genau zweier Spalten, matrixResult die Matrix aus drei und mehr; sonst sind beide null. result ist auch bei zwei Spalten null, wenn die Auswertung scheiterte (weniger als 4 gepaarte Werte, auch bei einer Spalte ohne verwertbare Werte, oder eine Spalte ohne Streuung); errorMsg nennt dann den Grund.",
           "params": {
             "options": "Optional; dieses Modul hält keine Massendaten."
           }
@@ -5438,7 +5438,7 @@
           "help": "Die Korrelationsmatrix ab drei Spalten, jede Kennzahl unter keys einzeln beschrieben; null, bei weniger als drei Spalten; nicht berechenbare Zellen sind null."
         },
         "errorMsg": {
-          "help": "Der Grund, warum eine Auswertung mit zwei Spalten kein Ergebnis hat (weniger als 4 gepaarte Werte oder eine Spalte ohne Streuung), oder ein leerer Text. Eine Spalte ohne verwertbare Werte lässt result ohne Meldung null."
+          "help": "Der Grund, warum eine Auswertung mit zwei Spalten kein Ergebnis hat, oder ein leerer Text: „Mindestens 4 Wertepaare benötigt (aktuell: 2).“ mit der tatsächlichen Paarzahl, bei einer Spalte ohne verwertbare Werte also „(aktuell: 0)“, oder „Berechnung nicht möglich — Varianz = 0.“ bei einer Spalte ohne Streuung."
         }
       },
       "types": {
@@ -5506,8 +5506,8 @@
           "scores": "Die Punkte je Koeffizient, aus denen die Empfehlung folgt."
         },
         "Reason": {
-          "ok": "Wahr, wenn der Befund für Pearson spricht; der Tooltip zeigt dann ein Häkchen, sonst ein Warnzeichen.",
-          "key": "Die Kennung des Befunds, die auf einen Text der Oberfläche zeigt: recNormal oder recNotNormal, recNoOutliers oder recOutliers, recLinear oder recNonlinear, recLargeN oder recSmallN, dazu recLowMono bei niedriger Monotonie.",
+          "ok": "Wahr, wenn der Befund für den empfohlenen Koeffizienten spricht; der Tooltip zeigt dann ein Häkchen, sonst ein Warnzeichen. Bei recNormal, recNoOutliers und recLinear heißt das Pearson, bei recLargeN nur, dass die Stichprobe groß genug ist (ab 20 Paaren).",
+          "key": "Die Kennung des Befunds, die auf einen Text der Oberfläche zeigt: recNormal oder recNotNormal, recNoOutliers oder recOutliers, recLinear oder recNonlinear (Pearson und Spearman weichen um mehr als 0,1 ab), recLargeN oder recSmallN (unter 20 Paaren), dazu recLowMono, wenn der Monotonie-Index unter 0,7 liegt.",
           "params": "Die Zahlen, die in den Text eingesetzt werden: count (Ausreißer), delta (Abstand der Beträge von r und ρ als Text mit drei Nachkommastellen), n (Paare) oder pct (Monotonie in ganzen Prozent); fehlt bei Befunden ohne Zahl."
         },
         "MethodScores": {
@@ -5517,7 +5517,7 @@
         },
         "MatrixResult": {
           "names": "Die Spaltennamen in Auswahlreihenfolge; sie sind die Zeilen- und Spaltenköpfe der Korrelationsmatrix, und jede Zelle bezieht sich über ihre Position auf zwei davon.",
-          "matrix": "Die Koeffizienten je Verfahren (Pearson r, Spearman ρ, Kendall τ-b) als quadratische Tabelle über alle gewählten Spalten; die Korrelationsmatrix zeigt das mit den Knöpfen gewählte. Sie ist symmetrisch, die Diagonale ist 1; ein Spaltenpaar mit weniger als 4 gepaarten Werten ist nicht berechenbar und bleibt leer. Die Filter ändern sie nicht.",
+          "matrix": "Die Koeffizienten je Verfahren (Pearson r, Spearman ρ, Kendall τ-b) als quadratische Tabelle über alle gewählten Spalten; die Korrelationsmatrix zeigt das mit den Knöpfen gewählte. Sie ist symmetrisch, die Diagonale ist 1; ein Spaltenpaar mit weniger als 4 gepaarten Werten oder mit einer Spalte ohne Streuung ist nicht berechenbar und bleibt leer. Die Filter ändern sie nicht.",
           "ciMatrix": "Je Koeffizient eine quadratische Tabelle der Konfidenzintervalle, je Zelle untere und obere Grenze, gerechnet wie paarweise: Fisher-z für Pearson, Bonett-Wright für Spearman, Normalapproximation für Kendall. Diagonale und nicht berechenbare Zellen sind leer.",
           "pMatrix": "Je Koeffizient eine quadratische Tabelle der zweiseitigen p-Werte: Pearson und Spearman aus t mit n − 2 Freiheitsgraden, Kendall aus z. Diagonale und nicht berechenbare Zellen sind leer.",
           "nMatrix": "Die Zahl der gepaarten Werte je Zelle; auf der Diagonale die Zahl der Werte der Spalte, 0, wenn zwei Spalten keine gemeinsame Zeile haben.",
@@ -9122,7 +9122,7 @@
         },
         "DescStats": {
           "n": "Zahl der Werte, Kachel n: alle numerischen Zellen der Spalte; leere und nicht numerische Zellen zählen nicht.",
-          "mean": "Arithmetischer Mittelwert x̄ = Σx/n, Kachel Mittelwert. Die Kacheln zeigen vier Nachkommastellen; ein nicht endlicher Wert erscheint als Strich.",
+          "mean": "Arithmetischer Mittelwert x̄ = Σx/n, Kachel Mittelwert. Die Kacheln zeigen vier Nachkommastellen, ab 1.000.000 oder unter 0,0001 (außer 0) im Exponentialformat mit vier Nachkommastellen; ein nicht endlicher Wert erscheint als Strich.",
           "stdDev": "Stichproben-Standardabweichung s = √(Σ(x − x̄)²/(n − 1)), Kachel Std.Abw.",
           "median": "Der mittlere Wert der sortierten Daten, bei gerader Anzahl das Mittel der beiden mittleren; Kachel Median.",
           "skewness": "Korrigierte Stichprobenschiefe n/((n − 1)(n − 2)) · Σ((x − x̄)/s)³, Kachel Schiefe: 0 bei symmetrischen Daten, positiv bei langem rechtem Ausläufer, negativ bei langem linkem.",
@@ -9133,7 +9133,7 @@
         "Fit": {
           "name": "Der Name der Verteilung, Spalte Verteilung: Normal, Log-Normal, Weibull, Exponential, Gamma, Poisson oder Binomial; daneben steht der Hinweis stetig oder diskret.",
           "type": "Die Familie der Verteilung: cont für stetig, disc für diskret; die Oberfläche zeigt sie als Hinweis stetig beziehungsweise diskret neben dem Namen. Stetige werden mit dem Kolmogorov-Smirnov-Test bewertet, diskrete mit dem χ²-Anpassungstest.",
-          "params": "Die geschätzten Parameter, je Parameter Symbol und Wert; die Spalte Parameter zeigt sie als Symbol=Wert. Normal: μ = x̄ und σ = s aller Werte. Log-Normal: μ_log und σ_log, Mittelwert und Standardabweichung der ln-Werte. Exponential: λ = 1/x̄. Gamma: α = x̄²/s² und β = x̄/s² (Momentenmethode). Weibull: Form k aus der Maximum-Likelihood-Gleichung (Newton-Verfahren, Start 1,2) und Skala λ = (Σxᵏ/n)^(1/k). Log-Normal, Exponential, Gamma und Weibull nutzen nur die positiven Werte und brauchen mindestens 3 davon, Weibull mindestens 5. Poisson: λ = x̄; Binomial: n = größter Wert, p = x̄/n; beide nutzen nur die nicht negativen ganzen Werte und brauchen mindestens 3. Reichen die Werte nicht, fehlt die Verteilung. Der Gütetest läuft dagegen auf allen Werten der Spalte.",
+          "params": "Die geschätzten Parameter, je Parameter Symbol und Wert; die Spalte Parameter zeigt sie als Symbol=Wert. Normal: μ = x̄ und σ = s aller Werte. Log-Normal: μ_log und σ_log, Mittelwert und Standardabweichung der ln-Werte. Exponential: λ = 1/x̄. Gamma: α = x̄²/s² und β = x̄/s² (Momentenmethode). Weibull: Form k aus der Maximum-Likelihood-Gleichung (Newton-Verfahren, Start 1,2) und Skala λ = (Σxᵏ/n)^(1/k). Log-Normal, Exponential, Gamma und Weibull nutzen nur die positiven Werte und brauchen mindestens 3 davon, Weibull mindestens 5. Poisson: λ = x̄; Binomial: n = größter Wert, p = x̄/n; beide nutzen nur die nicht negativen ganzen Werte und brauchen mindestens 3, Binomial zusätzlich einen größten Wert über 0. Reichen die Werte nicht, fehlt die Verteilung. Der Gütetest läuft dagegen auf allen Werten der Spalte.",
           "ks": "Der Kolmogorov-Smirnov-Test, nur bei stetigen Verteilungen; bei diskreten fehlt er, dort steht der χ²-Anpassungstest. Die Spalte Test zeigt K-S beziehungsweise χ².",
           "chi2": "Der χ²-Anpassungstest, nur bei diskreten Verteilungen (Poisson, Binomial); bei stetigen fehlt er, dort steht der Kolmogorov-Smirnov-Test. Die Spalte Test zeigt dafür χ².",
           "score": "Der p-Wert des Gütetests, bei stetigen Verteilungen der des Kolmogorov-Smirnov-Tests, bei diskreten der des χ²-Tests; nach ihm ist die Rangfolge sortiert. Die Spalte p-Wert zeigt ihn mit vier Nachkommastellen (unter 0,0001 als 0.0000), die Spalte Fit-Qualität als Balken, der ab p = 0,2 voll ist, mit dem Urteil Gut bei p ≥ 0,1, Grenzwertig bei 0,05 ≤ p < 0,1 und Schlecht darunter. Ein großer p-Wert heißt nur, dass keine Abweichung nachweisbar ist, nicht, dass die Verteilung bewiesen passt."
@@ -9143,8 +9143,8 @@
           "p": "Der p-Wert aus der Kolmogorov-Verteilung, mit z = (√n + 0,12 + 0,11/√n) · D genähert (Stephens) und auf 0 bis 1 begrenzt. Die Parameter stammen aus denselben Daten, und die Rechnung korrigiert das nicht (keine Lilliefors-Korrektur); der p-Wert fällt dadurch eher zu groß aus."
         },
         "ChiSquareTest": {
-          "chi2": "Die χ²-Statistik Σ(O − E)²/E über die ganzen Werte k = 0 bis größter Wert + 5, mit beobachteter Häufigkeit O und erwarteter Häufigkeit E = n · P(k); Werte mit E < 1 fallen weg. Die Spalte Statistik zeigt sie bei diskreten Verteilungen.",
-          "df": "Die Freiheitsgrade: Zahl der verwendeten Werte mit E ≥ 1 minus 2, mindestens 1.",
+          "chi2": "Die χ²-Statistik Σ(O − E)²/E über die Klassen k = 0 bis größter Wert + 5 (je ganzer Zahl eine Klasse), mit beobachteter Häufigkeit O und erwarteter Häufigkeit E = n · P(k); Klassen mit E < 1 fallen weg. Die Spalte Statistik zeigt sie bei diskreten Verteilungen.",
+          "df": "Die Freiheitsgrade: Zahl der Klassen mit E ≥ 1 minus 2, mindestens 1. Eine Klasse ist je ein ganzzahliger Wert k von 0 bis zum größten Wert + 5.",
           "p": "Der p-Wert 1 − F(χ²) der χ²-Verteilung mit df Freiheitsgraden, auf 0 bis 1 begrenzt."
         },
         "NormalityTest": {
@@ -9156,8 +9156,8 @@
           "K2": "Die D'Agostino-Pearson-Statistik K², die Summe der quadrierten z-Werte von Schiefe und Wölbung, p-Wert e^(−K²/2) aus χ² mit 2 Freiheitsgraden; nur im D'Agostino-Pearson-Eintrag und erst ab 20 Werten, darunter leer.",
           "skewness": "Die Schiefe, wie der Test sie rechnet; nur bei Jarque-Bera und D'Agostino-Pearson und nur, wenn der Test gerechnet wurde.",
           "exKurtosis": "Die Exzess-Kurtosis, wie der Test sie rechnet (Normalverteilung 0); nur bei Jarque-Bera und D'Agostino-Pearson und nur, wenn der Test gerechnet wurde.",
-          "skewZ": "Der z-Wert der Schiefe nach D'Agostino (1970), nur bei D'Agostino-Pearson ab 20 Werten.",
-          "kurtZ": "Der z-Wert der Wölbung nach Anscombe und Glynn (1983), nur bei D'Agostino-Pearson ab 20 Werten.",
+          "skewZ": "Der z-Wert der Schiefe nach D'Agostino (1970), nur bei D'Agostino-Pearson ab 20 Werten. Bei weniger als 20 Werten ist das Feld vorhanden, aber leer.",
+          "kurtZ": "Der z-Wert der Wölbung nach Anscombe und Glynn (1983), nur bei D'Agostino-Pearson ab 20 Werten. Bei weniger als 20 Werten ist das Feld vorhanden, aber leer.",
           "tooSmall": "Wahr, wenn der Test zu wenige Werte hatte und nicht gerechnet wurde: Jarque-Bera unter 8, D'Agostino-Pearson unter 20 Werten; die Karte zeigt dann einen Hinweis statt eines Urteils. Sonst fehlt der Eintrag."
         }
       },
@@ -9291,7 +9291,7 @@
           "hampelK": "Die Schwelle k des Hampel-Identifiers: markiert ist ein Wert, wenn |x − Median| / (1,4826·MAD) > k; 1,4826·MAD schätzt σ bei Normalverteilung. Standard ist 3, zulässig sind 0,1 bis 20.",
           "zThreshold": "Die Schwelle der Z-Score-Regel: markiert ist ein Wert, wenn |x − x̄| / s > Schwelle, also wenn er mehr als so viele Standardabweichungen vom Mittelwert entfernt liegt. Typisch ist 3; bei kleinem n verdecken Ausreißer sich gegenseitig, weil sie x̄ und s selbst verschieben. Zulässig sind 0,1 bis 10.",
           "modZThreshold": "Die Schwelle des Modified Z-Score nach Iglewicz und Hoaglin: markiert ist ein Wert, wenn |0,6745·(x − Median) / MAD| > Schwelle. Median und MAD sind robust gegen die Ausreißer selbst. Typisch ist 3,5, zulässig sind 0,1 bis 10.",
-          "esdMaxOutliers": "Die Höchstzahl k der Ausreißer, die Generalized ESD prüft, eine ganze Zahl von 1 bis 50. Leer heißt automatisch: ⌊n/4⌋, mindestens 1 und höchstens 10. Das Verfahren entfernt schrittweise den Wert mit dem größten Rᵢ = |x − x̄| / s der Restdaten und vergleicht mit dem kritischen Wert λᵢ; Ausreißer sind die Werte bis zum letzten Schritt mit Rᵢ > λᵢ.",
+          "esdMaxOutliers": "Die Höchstzahl k der Ausreißer, die Generalized ESD prüft, eine ganze Zahl von 1 bis 50. Leer heißt automatisch: ⌊n/4⌋, mindestens 1 und höchstens 10. Das Verfahren entfernt schrittweise den Wert mit dem größten Rᵢ = |x − x̄| / s der Restdaten und vergleicht mit dem kritischen Wert λᵢ; Ausreißer sind die Werte bis zum letzten Schritt mit Rᵢ > λᵢ. Die Schritte brechen früher ab, wenn weniger als 3 Werte übrig sind oder die Restdaten keine Streuung mehr haben (s = 0); dann gibt es weniger als k Schritte.",
           "enabled": "Die Verfahren, die laufen, in fester Reihenfolge: Grubbs-Test (G = max|x − x̄| / s über dem kritischen Wert, höchstens ein Ausreißer), Dixon Q-Test (Lückenquotient Q über dem Tabellenwert, höchstens ein Ausreißer, nur für 3 bis 30 Werte), Generalized ESD (bis zu k Ausreißer), Tukey IQR-Regel (außerhalb der Zäune), Hampel-Identifier (robuster Abstand zum Median über k), Z-Score (Abstand zu x̄ in s über der Schwelle) und Modified Z-Score (robuster z-Wert über der Schwelle). Doppelte Einträge zählen einmal."
         },
         "Result": {
@@ -9301,8 +9301,8 @@
         },
         "MethodResult": {
           "id": "Die Kennung des Verfahrens: grubbs, dixon-q, generalized-esd, tukey-iqr, hampel, z-score oder modified-z.",
-          "flagged": "Die Positionen, die dieses Verfahren markiert hat, ab 0 über die verwerteten Werte; Grubbs und Dixon Q markieren höchstens einen Wert. Leer, wenn nichts auffällt oder das Verfahren nicht anwendbar ist; ohne Streuung (MAD = 0 bei Hampel und Modified Z-Score, s = 0 beim Z-Score) läuft das Verfahren ohne Fehler und markiert nichts. In der Tabelle „Markierte Punkte“ steht je Verfahren eine Spalte mit einem Haken.",
-          "error": "Leer, wenn das Verfahren gelaufen ist; sonst der Grund, warum es nicht anwendbar ist: min3 weniger als 3 Werte, min4 weniger als 4 Werte (Generalized ESD, Tukey IQR-Regel), zeroVariance keine Streuung (Grubbs: s = 0, Dixon Q: Spannweite 0), dixonRange Dixon Q nur für 3 bis 30 Werte. Die Oberfläche zeigt „Verfahren nicht anwendbar“ mit dieser Kennung.",
+          "flagged": "Die Positionen, die dieses Verfahren markiert hat, ab 0 über die verwerteten Werte; Grubbs und Dixon Q markieren höchstens einen Wert. Leer, wenn nichts auffällt oder das Verfahren nicht anwendbar ist; ohne Streuung (MAD = 0 bei Hampel und Modified Z-Score, s = 0 beim Z-Score) läuft das Verfahren ohne Fehler und markiert nichts. Die Tabelle „Markierte Punkte“ erscheint nur, wenn mindestens ein Verfahren etwas markiert hat; sie hat je Verfahren, das fehlerfrei lief, eine Spalte mit einem Haken.",
+          "error": "Leer, wenn das Verfahren gelaufen ist; sonst der Grund, warum es nicht anwendbar ist: min4 weniger als 4 Werte (Generalized ESD, Tukey IQR-Regel), zeroVariance keine Streuung (Grubbs: s = 0, Dixon Q: Spannweite 0), dixonRange Dixon Q nur für 3 bis 30 Werte. Weniger als 3 Werte kommen hier nicht vor, denn dann läuft die Auswertung gar nicht erst. Die Oberfläche zeigt „Verfahren nicht anwendbar“ mit dem zugehörigen Text zu dieser Kennung.",
           "metrics": "Die Kennzahlen des Verfahrens, dieselben Zahlen wie auf seiner Karte unter „Verfahren“; welche Schlüssel da sind, hängt vom Verfahren ab. Das Feld ist leer, wenn das Verfahren nicht anwendbar ist.",
           "steps": "Die Schritte der Generalized ESD in der Reihenfolge der Tabelle auf ihrer Karte. Bei allen anderen Verfahren ist das Feld leer."
         },
@@ -11636,10 +11636,10 @@
       "types": {
         "Params": {
           "lambda": "Der Exponent λ, Beschriftung Lambda (λ), Bereich −5 bis 5. Box-Cox rechnet (x^λ − 1)/λ und bei λ = 0 ln x, nur für Werte > 0; Yeo-Johnson rechnet für x ≥ 0 ((x + 1)^λ − 1)/λ (bei λ = 0 ln(x + 1)) und für x < 0 −((1 − x)^(2 − λ) − 1)/(2 − λ) (bei λ = 2 −ln(1 − x)). λ wird geschätzt, wenn Box-Cox oder Yeo-Johnson gewählt wird und mindestens 3 Werte vorliegen, und bei jeder neuen Spalte: das Raster von −3 bis 3 in Schritten von 0,05 wird durchsucht, gewählt wird das λ mit dem kleinsten korrigierten Anderson-Darling-A², gerundet auf 0,01. Vor der ersten Schätzung gilt bei Box-Cox λ = 0, bei Yeo-Johnson λ = 1. Enthält die Spalte Werte ≤ 0, wechselt Box-Cox mit einem Hinweis auf Yeo-Johnson.",
-          "gamma": "Die Verschiebung γ der Johnson-Transformation, Beschriftung γ, Bereich −5 bis 5, voreingestellt 0. Johnson SU rechnet γ + δ·asinh((x − ξ)/λ), Johnson SB γ + δ·ln(z/(1 − z)) mit z = (x − ξ)/λ. γ wird nicht geschätzt, sondern von Hand gesetzt.",
-          "delta": "Der Formfaktor δ der Johnson-Transformation, Beschriftung δ, Bereich 0,1 bis 10, voreingestellt 1; er multipliziert den asinh- (SU) bzw. ln-Term (SB) in γ + δ·asinh((x − ξ)/λ) bzw. γ + δ·ln(z/(1 − z)). δ wird nicht geschätzt, sondern von Hand gesetzt.",
-          "xi": "Die Lage ξ der Johnson-Transformation, Beschriftung ξ, Bereich −100 bis 100, voreingestellt 0; sie wird vor der Skalierung von jedem Wert abgezogen, z = (x − ξ)/λ. Bei Johnson SB müssen alle Werte zwischen ξ und ξ + λ liegen, sonst scheitert die Rechnung. ξ wird nicht geschätzt, sondern von Hand gesetzt.",
-          "lambdaJ": "Die Skala λ der Johnson-Transformation, Beschriftung λ, Bereich 0,1 bis 100, voreingestellt 1; durch sie wird geteilt, z = (x − ξ)/λ. Bei Johnson SB ist ξ + λ die obere Grenze der Daten. λ wird nicht geschätzt, sondern von Hand gesetzt; nicht zu verwechseln mit dem λ von Box-Cox und Yeo-Johnson."
+          "gamma": "Die Verschiebung γ der Johnson-Transformation, Beschriftung γ, Bereich −5 bis 5, voreingestellt 0. Johnson SU (unbeschränkt) rechnet γ + δ·asinh((x − ξ)/λ), Johnson SB (beschränkt) γ + δ·ln(z/(1 − z)) mit z = (x − ξ)/λ. γ wird nicht geschätzt, sondern von Hand gesetzt.",
+          "delta": "Der Formfaktor δ der Johnson-Transformation, Beschriftung δ, Bereich 0,1 bis 10, voreingestellt 1; er multipliziert den asinh- (SU, unbeschränkt) bzw. ln-Term (SB, beschränkt) in γ + δ·asinh((x − ξ)/λ) bzw. γ + δ·ln(z/(1 − z)). δ wird nicht geschätzt, sondern von Hand gesetzt.",
+          "xi": "Die Lage ξ der Johnson-Transformation, Beschriftung ξ, Bereich −100 bis 100, voreingestellt 0; sie wird vor der Skalierung von jedem Wert abgezogen, z = (x − ξ)/λ. Johnson SU (unbeschränkt) nimmt beliebige Werte. Bei Johnson SB (beschränkt) müssen alle Werte echt zwischen ξ und ξ + λ liegen, ein Wert genau auf einer Grenze genügt nicht; sonst scheitert die Rechnung mit „Johnson SB: Daten müssen in (ξ, ξ+λ) liegen“. ξ wird nicht geschätzt, sondern von Hand gesetzt.",
+          "lambdaJ": "Die Skala λ der Johnson-Transformation, Beschriftung λ, Bereich 0,1 bis 100, voreingestellt 1; durch sie wird geteilt, z = (x − ξ)/λ. Bei Johnson SB (beschränkt) ist ξ + λ die obere Grenze, die kein Wert erreichen darf; Johnson SU (unbeschränkt) hat keine Grenze. λ wird nicht geschätzt, sondern von Hand gesetzt; nicht zu verwechseln mit dem λ von Box-Cox und Yeo-Johnson."
         },
         "Result": {
           "n": "Zahl der Werte, Zeile n der Deskriptiven Statistik: die endlichen Zahlen der Quellspalte; leere und nicht numerische Zellen zählen nicht. Mit weniger als 3 Werten gibt es kein Ergebnis. Die Transformation erhält die Zahl der Werte.",
