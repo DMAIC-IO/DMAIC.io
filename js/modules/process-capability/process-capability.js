@@ -38,6 +38,9 @@ import { fmt, fmtZ, fmtFraction } from './process-capability-format.js';
 /** Auto-run debounce (ms) — matches the legacy behaviour. */
 const AUTORUN_DELAY = 600;
 
+/** Präfix der Kontexthilfe-Sätze an Kennzahlen und Tabellenspalten. */
+const HELP = 'modules.process-capability.types.';
+
 /** n̄ with at most two decimals. */
 function fmtNBar(v) {
   return Number.isInteger(v) ? String(v) : v.toFixed(2);
@@ -97,6 +100,83 @@ const COLUMN_SINKS = {
 };
 
 /**
+ * Die Schlüsselfläche von `setParam`, zugleich die Form von `read().params`
+ * (dort als Text, `unbiased` als Wahrheitswert). Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {string} name  Merkmal
+ * @property {string} lsl  untere Spezifikationsgrenze
+ * @property {string} target  Sollwert
+ * @property {string} usl  obere Spezifikationsgrenze
+ * @property {string} unit  Einheit
+ * @property {string} confidence  Konfidenzniveau in Prozent
+ * @property {'size'|'column'} subgroupMode  Untergruppen nach Größe oder Spalte
+ * @property {number} [subgroupSize]  Untergruppengröße, nur Modus Größe
+ * @property {''|'pooled'|'rbar'|'sbar'|'averageMR'|'medianMR'|'sqrtMSSD'} withinMethod  Schätzer der Streuung innerhalb
+ * @property {number} [mrSpan]  Spannweite der gleitenden Spannweiten
+ * @property {boolean} [unbiased]  Korrekturfaktor anwenden
+ */
+
+/**
+ * Das Fähigkeitsergebnis (Engine `analyze`), wie `read().result` es liefert.
+ * Alle Schlüssel sind immer da; was für eine fehlende Grenze nicht gilt, ist leer.
+ *
+ * @typedef {object} Result
+ * @property {number} n  Zahl der Werte
+ * @property {number|null} xbar  Mittelwert
+ * @property {number|null} s  Gesamt-Standardabweichung (n − 1)
+ * @property {number|null} sigmaWithin  Streuung innerhalb (Schätzer)
+ * @property {number|null} sigmaOverall  Gesamtstreuung, gleich s
+ * @property {string} withinMethod  verwendeter Schätzer
+ * @property {number} withinDf  Freiheitsgrade des Schätzers
+ * @property {number} subgroupSize  Untergruppengröße (Modus Spalte: 1)
+ * @property {number|null} xmin  kleinster Wert
+ * @property {number|null} xmax  größter Wert
+ * @property {number} subgroupCount  Zahl der Untergruppen bzw. Werte
+ * @property {number} nBar  mittlere Untergruppengröße
+ * @property {boolean} unbiased  Korrekturfaktor angewandt
+ * @property {number} mrSpan  Spannweite der gleitenden Spannweiten
+ * @property {number|null} T  Toleranz OSG − USG
+ * @property {number|null} mid  Toleranzmitte
+ * @property {number|null} targetVal  Sollwert oder Toleranzmitte
+ * @property {boolean} hasLsl  untere Grenze gesetzt
+ * @property {boolean} hasUsl  obere Grenze gesetzt
+ * @property {boolean} twoSided  beide Grenzen gesetzt
+ * @property {number|null} lsl  untere Grenze
+ * @property {number|null} usl  obere Grenze
+ * @property {number|null} Cp  potenzielle Fähigkeit
+ * @property {number|null} CPU  Fähigkeit zur oberen Grenze
+ * @property {number|null} CPL  Fähigkeit zur unteren Grenze
+ * @property {number|null} Cpk  tatsächliche Fähigkeit
+ * @property {number|null} Pp  potenzielle Gesamtleistung
+ * @property {number|null} PPU  Gesamtleistung zur oberen Grenze
+ * @property {number|null} PPL  Gesamtleistung zur unteren Grenze
+ * @property {number|null} Ppk  tatsächliche Gesamtleistung
+ * @property {Array<number|null>|null} CpCI  Konfidenzintervall Cp
+ * @property {Array<number|null>|null} CpkCI  Konfidenzintervall Cpk
+ * @property {Array<number|null>|null} PpCI  Konfidenzintervall Pp
+ * @property {Array<number|null>|null} PpkCI  Konfidenzintervall Ppk
+ * @property {number} confidence  Konfidenzniveau als Anteil
+ * @property {number|null} ppmAboveUsl  erwartete PPM über OSG, gesamt
+ * @property {number|null} ppmBelowLsl  erwartete PPM unter USG, gesamt
+ * @property {number|null} ppmTotal  erwartete PPM gesamt
+ * @property {number|null} ppmWithinBelowLsl  erwartete PPM unter USG, innerhalb
+ * @property {number|null} ppmWithinAboveUsl  erwartete PPM über OSG, innerhalb
+ * @property {number|null} ppmWithinTotal  erwartete PPM innerhalb
+ * @property {number|null} ppmObservedBelowLsl  beobachtete PPM unter USG
+ * @property {number|null} ppmObservedAboveUsl  beobachtete PPM über OSG
+ * @property {number|null} ppmObservedTotal  beobachtete PPM gesamt
+ * @property {number|null} zBenchWithin  Z.bench innerhalb
+ * @property {number|null} zBenchOverall  Z.bench gesamt
+ * @property {number|null} sigmaLevel  Sigma-Niveau
+ * @property {number|null} sigmaLevelShifted  Sigma-Niveau mit 1,5-Verschiebung
+ * @property {'pass'|'warn'|'fail'} cpkStatus  Urteil zu Cpk
+ * @property {'pass'|'warn'|'fail'|null} cpStatus  Urteil zu Cp
+ * @property {'pass'|'warn'|'fail'} overall  Gesamturteil
+ */
+
+/**
  * Die Agenten-Lesefläche der Prozessfähigkeit.
  *
  * Nicht die persistierte Form: das Model hält die Eingaben, das Ergebnis und die
@@ -105,7 +185,7 @@ const COLUMN_SINKS = {
  * `setColumn` prüfen, der Schätzerhinweis und das Ergebnis.
  *
  * @typedef {object} AgentRead
- * @property {object} params  the entered parameters (name, lsl, target, usl, unit, confidence, subgroupMode, subgroupSize, withinMethod, mrSpan, unbiased); values as text as entered, unbiased as boolean
+ * @property {Params} params  the entered parameters; values as text as entered, unbiased as boolean
  * @property {object|null} columnRef  the chosen measurement column, `{ instanceId, sheetId, columnId }`, or null
  * @property {object|null} subgroupColumnRef  the chosen subgroup ID column, `{ instanceId, sheetId, columnId }`, or null
  * @property {number[]|null} embeddedValues  [bulk] the values of loaded example data that replace the measurement column, or null
@@ -115,7 +195,7 @@ const COLUMN_SINKS = {
  * @property {string[]} withinMethodOptions  the values `setParam('withinMethod', …)` accepts: '' (the default of the data) and the estimators that fit the data
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
- * @property {object|null} result  the computed capability result, or null while the inputs are incomplete
+ * @property {Result|null} result  the computed capability result, or null while the inputs are incomplete
  * @property {string} withinHint  the note on the estimator or the subgroup column, '' when there is none
  */
 const mod = createModule({
@@ -218,8 +298,8 @@ const mod = createModule({
       /**
        * Einen Parameter setzen.
        * @agent
-       * @param {'name'|'lsl'|'target'|'usl'|'unit'|'confidence'|'subgroupMode'|'subgroupSize'|'withinMethod'|'mrSpan'|'unbiased'} key welcher Parameter
-       * @param {string|number|boolean} value der Wert; Texte als Text, Ganzzahlen als Zahl oder Zahlentext, unbiased als Wahrheitswert
+       * @param {keyof Params} key welcher Parameter; die im aktuellen Zustand zulässigen nennt activeParams
+       * @param {string|number|boolean} value der Wert; Typ und Bereich je Schlüssel siehe `Params`
        * @returns {void}
        * @throws {Error} wenn `key` kein gerade geltender Parameter ist oder `value` nicht zulässig
        */
@@ -317,6 +397,7 @@ const mod = createModule({
         if (r.Cp != null) {
           cells.push({
             key: 'cp',
+            help: HELP + 'Result.Cp',
             mod: this.kpiModClass(r.cpStatus),
             label: `Cp (${_t('potential')})`,
             value: fmt(r.Cp),
@@ -325,6 +406,7 @@ const mod = createModule({
         }
         cells.push({
           key: 'cpk',
+            help: HELP + 'Result.Cpk',
           mod: this.kpiModClass(r.cpkStatus),
           label: `Cpk (${_t('actual')})`,
           value: fmt(r.Cpk),
@@ -333,6 +415,7 @@ const mod = createModule({
         if (r.CPL != null) {
           cells.push({
             key: 'cpl',
+            help: HELP + 'Result.CPL',
             mod: '',
             label: `CPL (${_t('lower')})`,
             value: fmt(r.CPL),
@@ -342,6 +425,7 @@ const mod = createModule({
         if (r.CPU != null) {
           cells.push({
             key: 'cpu',
+            help: HELP + 'Result.CPU',
             mod: '',
             label: `CPU (${_t('upper')})`,
             value: fmt(r.CPU),
@@ -359,6 +443,7 @@ const mod = createModule({
         if (r.Pp != null) {
           cells.push({
             key: 'pp',
+            help: HELP + 'Result.Pp',
             label: `Pp (${_t('overallPotential')})`,
             value: fmt(r.Pp),
             sub: `${_t('longTerm')}${r.PpCI ? ` · ${this.ciLabel(r.PpCI)}` : ''}`,
@@ -367,6 +452,7 @@ const mod = createModule({
         if (r.Ppk != null) {
           cells.push({
             key: 'ppk',
+            help: HELP + 'Result.Ppk',
             label: `Ppk (${_t('overallActual')})`,
             value: fmt(r.Ppk),
             sub: `${_t('longTerm')}${r.PpkCI ? ` · ${this.ciLabel(r.PpkCI)}` : ''}`,
@@ -374,12 +460,14 @@ const mod = createModule({
         }
         cells.push({
           key: 'ppm',
+            help: HELP + 'Result.ppmTotal',
           label: `PPM (${_t('defective')})`,
           value: fmt(r.ppmTotal),
           sub: `${_t('perMillion')} · ${_t('ppmObservedShort')} ${fmt(r.ppmObservedTotal, 0)} · ${_t('ppmWithinShort')} ${fmt(r.ppmWithinTotal, 0)}`,
         });
         cells.push({
           key: 'sigma',
+            help: HELP + 'Result.sigmaLevel',
           label: _t('sigmaLevel'),
           value: `${fmtZ(r.sigmaLevel)}σ`,
           sub: `${_t('zBenchOverall')} ${fmtZ(r.zBenchOverall, 2)} · ${_t('sixSigmaConvention')} ${fmtZ(r.sigmaLevelShifted, 2)}`,
@@ -463,16 +551,16 @@ const mod = createModule({
         if (!r) return [];
         const unit = this.model.params.unit || '';
         return [
-          { label: _t('statN'), value: String(r.n) },
-          { label: _t('statMean'), value: `${fmt(r.xbar)} ${unit}` },
-          { label: this.withinLabel(), value: `${fmt(r.sigmaWithin)} ${unit}` },
-          { label: _t('statStddevS'), value: `${fmt(r.s)} ${unit}` },
-          { label: _t('statMin'), value: `${fmt(r.xmin)} ${unit}` },
-          { label: _t('statMax'), value: `${fmt(r.xmax)} ${unit}` },
-          r.hasLsl ? { label: 'LSL', value: `${fmt(r.lsl)} ${unit}` } : null,
-          r.hasUsl ? { label: 'USL', value: `${fmt(r.usl)} ${unit}` } : null,
-          r.T != null ? { label: _t('statTol'), value: `${fmt(r.T)} ${unit}` } : null,
-          r.targetVal != null ? { label: _t('statTarget'), value: `${fmt(r.targetVal)} ${unit}` } : null,
+          { label: _t('statN'), help: HELP + 'Result.n', value: String(r.n) },
+          { label: _t('statMean'), help: HELP + 'Result.xbar', value: `${fmt(r.xbar)} ${unit}` },
+          { label: this.withinLabel(), help: HELP + 'Result.sigmaWithin', value: `${fmt(r.sigmaWithin)} ${unit}` },
+          { label: _t('statStddevS'), help: HELP + 'Result.s', value: `${fmt(r.s)} ${unit}` },
+          { label: _t('statMin'), help: HELP + 'Result.xmin', value: `${fmt(r.xmin)} ${unit}` },
+          { label: _t('statMax'), help: HELP + 'Result.xmax', value: `${fmt(r.xmax)} ${unit}` },
+          r.hasLsl ? { label: 'LSL', help: HELP + 'Result.lsl', value: `${fmt(r.lsl)} ${unit}` } : null,
+          r.hasUsl ? { label: 'USL', help: HELP + 'Result.usl', value: `${fmt(r.usl)} ${unit}` } : null,
+          r.T != null ? { label: _t('statTol'), help: HELP + 'Result.T', value: `${fmt(r.T)} ${unit}` } : null,
+          r.targetVal != null ? { label: _t('statTarget'), help: HELP + 'Result.targetVal', value: `${fmt(r.targetVal)} ${unit}` } : null,
         ].filter(Boolean);
       },
 

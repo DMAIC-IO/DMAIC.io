@@ -81,4 +81,8 @@ export const ANCHOR_EXEMPTIONS = {
   'data-transformation': [
     { match: "t('statistic')", reason: 'Spalte der Zeilennamen; die Sätze stehen an den Wertspalten', count: 1 },
   ],
+  'process-capability': [
+    { match: 'pc__mode-option', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },
+    { match: "t('ppmColKind')", reason: 'Spalte der Zeilennamen; die Sätze stehen an den Wertspalten', count: 1 },
+  ],
 };

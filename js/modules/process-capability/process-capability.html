@@ -4,7 +4,7 @@
     <div class="dmike-split__section-title" x-text="t('sectionParams')"></div>
 
     <div class="field-group">
-      <label x-text="t('featureName')"></label>
+      <label data-help-key="modules.process-capability.types.Params.name" x-text="t('featureName')"></label>
       <input type="text" class="field" data-ref="inp-name"
              :placeholder="t('featureNamePh')"
              :value="model.params.name" @input="setParam('name', $event.target.value)">
@@ -12,19 +12,19 @@
 
     <div class="pc__row-3">
       <div class="field-group">
-        <label x-text="t('lsl')"></label>
+        <label data-help-key="modules.process-capability.types.Params.lsl" x-text="t('lsl')"></label>
         <input type="text" class="field field--num" data-ref="inp-lsl"
                placeholder="49.800" inputmode="decimal"
                :value="model.params.lsl" @input="setParam('lsl', $event.target.value)" @change="runAnalysis()">
       </div>
       <div class="field-group">
-        <label x-text="t('target')"></label>
+        <label data-help-key="modules.process-capability.types.Params.target" x-text="t('target')"></label>
         <input type="text" class="field field--num" data-ref="inp-target"
                placeholder="50.000" inputmode="decimal"
                :value="model.params.target" @input="setParam('target', $event.target.value)" @change="runAnalysis()">
       </div>
       <div class="field-group">
-        <label x-text="t('usl')"></label>
+        <label data-help-key="modules.process-capability.types.Params.usl" x-text="t('usl')"></label>
         <input type="text" class="field field--num" data-ref="inp-usl"
                placeholder="50.200" inputmode="decimal"
                :value="model.params.usl" @input="setParam('usl', $event.target.value)" @change="runAnalysis()">
@@ -35,13 +35,13 @@
 
     <div class="pc__row-3">
       <div class="field-group">
-        <label x-text="t('unit')"></label>
+        <label data-help-key="modules.process-capability.types.Params.unit" x-text="t('unit')"></label>
         <input type="text" class="field" data-ref="inp-unit"
                placeholder="mm"
                :value="model.params.unit" @input="setParam('unit', $event.target.value)">
       </div>
       <div class="field-group">
-        <label><span x-text="t('confidenceLabel')"></span> (%)</label>
+        <label data-help-key="modules.process-capability.types.Params.confidence"><span x-text="t('confidenceLabel')"></span> (%)</label>
         <input type="text" class="field field--num" data-ref="inp-confidence"
                placeholder="95" inputmode="decimal"
                :value="model.params.confidence" @input="setParam('confidence', $event.target.value)" @change="runAnalysis()">
@@ -49,7 +49,7 @@
     </div>
 
     <div class="field-group">
-      <label x-text="t('subgroupModeLabel')"></label>
+      <label data-help-key="modules.process-capability.types.Params.subgroupMode" x-text="t('subgroupModeLabel')"></label>
       <div class="pc__mode">
         <template x-for="mode in subgroupModeOptions()" :key="mode.value">
           <label class="pc__mode-option">
@@ -65,7 +65,7 @@
     </div>
 
     <div class="field-group" x-show="showSubgroupSize()">
-      <label x-text="t('subgroupSizeLabel')"></label>
+      <label data-help-key="modules.process-capability.types.Params.subgroupSize" x-text="t('subgroupSizeLabel')"></label>
       <input type="text" class="field field--num" data-ref="inp-subgroup-size"
              placeholder="1" inputmode="numeric"
              :value="model.params.subgroupSize" @change="onWholeNumberInput('subgroupSize', $event)">
@@ -73,14 +73,14 @@
     </div>
 
     <div class="field-group" x-show="showSubgroupColumn()">
-      <label x-text="t('subgroupColumnLabel')"></label>
+      <label data-help-key="modules.process-capability.actions.setColumn.help" x-text="t('subgroupColumnLabel')"></label>
       <div class="pc__col-select-wrap" data-ref="subgroup-col-wrap"></div>
       <div class="pc__hint" x-text="t('subgroupColumnHint')"></div>
     </div>
 
     <div class="pc__row-3">
       <div class="field-group pc__span-2">
-        <label x-text="t('withinMethodLabel')"></label>
+        <label data-help-key="modules.process-capability.types.Params.withinMethod" x-text="t('withinMethodLabel')"></label>
         <select class="field" data-ref="inp-within-method" @change="setParam('withinMethod', $event.target.value)">
           <template x-for="key in methodKeys">
             <option :key="key" :value="key" :selected="key === activeMethod" x-text="methodName(key)"></option>
@@ -88,14 +88,14 @@
         </select>
       </div>
       <div class="field-group" x-show="showMrSpan()">
-        <label x-text="t('mrSpanLabel')"></label>
+        <label data-help-key="modules.process-capability.types.Params.mrSpan" x-text="t('mrSpanLabel')"></label>
         <input type="text" class="field field--num" data-ref="inp-mr-span"
                placeholder="2" inputmode="numeric"
                :value="model.params.mrSpan" @change="onWholeNumberInput('mrSpan', $event)">
       </div>
     </div>
 
-    <label class="pc__check" x-show="showUnbiased()">
+    <label class="pc__check" data-help-key="modules.process-capability.types.Params.unbiased" data-help-anchor="box" x-show="showUnbiased()">
       <input type="checkbox" data-ref="inp-unbiased"
              :checked="model.params.unbiased" @change="setParam('unbiased', $event.target.checked)">
       <span x-text="t('unbiasedLabel')"></span>
@@ -106,13 +106,13 @@
     <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
 
     <div class="field-group">
-      <label x-text="t('columnSelectLabel')"></label>
+      <label data-help-key="modules.process-capability.actions.setColumn.help" x-text="t('columnSelectLabel')"></label>
 
       <!-- Embedded example data: a "remove" pill instead of the column picker. -->
       <template x-if="model.embeddedValues">
         <div class="pc__embedded">
           <span class="pc__embedded-label" x-text="(model.embeddedLabel || t('exampleData')) + ' (n=' + model.embeddedValues.length + ')'"></span>
-          <button class="btn btn--sm btn--ghost" data-ref="btn-clear-embedded" type="button"
+          <button class="btn btn--sm btn--ghost" data-ref="btn-clear-embedded" type="button" data-help-key="modules.process-capability.actions.clearEmbedded.help"
                   :title="removeTitle()" @click="clearEmbedded()"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
         </div>
       </template>
@@ -146,7 +146,7 @@
       <template x-if="result">
         <div>
           <!-- Status bar -->
-          <div class="pc__status-bar" :class="'pc__status-bar--' + result.overall">
+          <div class="pc__status-bar" data-help-key="modules.process-capability.types.Result.overall" :class="'pc__status-bar--' + result.overall">
             <span class="pc__status-label" x-text="statusLabel(result.overall)"></span>
             <span class="pc__status-detail">— <span x-text="featureName()"></span> — n = <span x-text="result.n"></span></span>
           </div>
@@ -155,7 +155,7 @@
           <div class="dmike-kpi-strip" data-ref="kpi-main">
             <template x-for="kpi in mainKpis()">
               <div class="dmike-kpi" :key="kpi.key" :data-kpi="kpi.key" :class="kpi.mod">
-                <div class="dmike-kpi-label" x-text="kpi.label"></div>
+                <div class="dmike-kpi-label" :data-help-key="kpi.help" x-text="kpi.label"></div>
                 <div class="dmike-kpi-value" x-text="kpi.value"></div>
                 <div class="dmike-kpi-sub" x-text="kpi.sub"></div>
               </div>
@@ -166,7 +166,7 @@
           <div class="dmike-kpi-strip" data-ref="kpi-perf">
             <template x-for="kpi in perfKpis()">
               <div class="dmike-kpi" :key="kpi.key" :data-kpi="kpi.key">
-                <div class="dmike-kpi-label" x-text="kpi.label"></div>
+                <div class="dmike-kpi-label" :data-help-key="kpi.help" x-text="kpi.label"></div>
                 <div class="dmike-kpi-value" x-text="kpi.value"></div>
                 <div class="dmike-kpi-sub" x-text="kpi.sub"></div>
               </div>
@@ -178,7 +178,7 @@
           <div class="pc__stats-panel">
             <table class="dmike-table pc__stats-table">
               <thead><tr>
-                <template x-for="col in statCols()"><th :key="col.label" x-text="col.label"></th></template>
+                <template x-for="col in statCols()"><th :key="col.label"><span :data-help-key="col.help" x-text="col.label"></span></th></template>
               </tr></thead>
               <tbody><tr>
                 <template x-for="col in statCols()"><td :key="col.label" x-text="col.value"></td></template>
@@ -191,7 +191,7 @@
           <div class="pc__stats-panel">
             <table class="dmike-table pc__ppm-table">
               <thead><tr>
-                <th x-text="t('ppmColKind')"></th><th>&lt; LSL</th><th>&gt; USL</th><th x-text="t('ppmColTotal')"></th>
+                <th x-text="t('ppmColKind')"></th><th><span data-help-key="modules.process-capability.types.Result.ppmBelowLsl">&lt; LSL</span></th><th><span data-help-key="modules.process-capability.types.Result.ppmAboveUsl">&gt; USL</span></th><th><span data-help-key="modules.process-capability.types.Result.ppmTotal" x-text="t('ppmColTotal')"></span></th>
               </tr></thead>
               <tbody>
                 <template x-for="row in ppmRows()">

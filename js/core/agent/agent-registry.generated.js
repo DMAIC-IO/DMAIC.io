@@ -11059,17 +11059,67 @@ export const AGENT_REGISTRY = {
             "name": "key",
             "type": "'name'|'lsl'|'target'|'usl'|'unit'|'confidence'|'subgroupMode'|'subgroupSize'|'withinMethod'|'mrSpan'|'unbiased'",
             "optional": false,
-            "help": "welcher Parameter"
+            "help": "welcher Parameter; die im aktuellen Zustand zulässigen nennt activeParams"
           },
           {
             "name": "value",
             "type": "string|number|boolean",
             "optional": false,
-            "help": "der Wert; Texte als Text, Ganzzahlen als Zahl oder Zahlentext, unbiased als Wahrheitswert"
+            "help": "der Wert; Typ und Bereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "void",
-        "help": "Einen Parameter setzen."
+        "help": "Einen Parameter setzen.",
+        "keysOf": "Params",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "Merkmal"
+          },
+          "lsl": {
+            "type": "string",
+            "help": "untere Spezifikationsgrenze"
+          },
+          "target": {
+            "type": "string",
+            "help": "Sollwert"
+          },
+          "usl": {
+            "type": "string",
+            "help": "obere Spezifikationsgrenze"
+          },
+          "unit": {
+            "type": "string",
+            "help": "Einheit"
+          },
+          "confidence": {
+            "type": "string",
+            "help": "Konfidenzniveau in Prozent"
+          },
+          "subgroupMode": {
+            "type": "'size'|'column'",
+            "help": "Untergruppen nach Größe oder Spalte"
+          },
+          "subgroupSize": {
+            "type": "number",
+            "help": "Untergruppengröße, nur Modus Größe",
+            "optional": true
+          },
+          "withinMethod": {
+            "type": "''|'pooled'|'rbar'|'sbar'|'averageMR'|'medianMR'|'sqrtMSSD'",
+            "help": "Schätzer der Streuung innerhalb"
+          },
+          "mrSpan": {
+            "type": "number",
+            "help": "Spannweite der gleitenden Spannweiten",
+            "optional": true
+          },
+          "unbiased": {
+            "type": "boolean",
+            "help": "Korrekturfaktor anwenden",
+            "optional": true
+          }
+        }
       },
       "setColumn": {
         "params": [
@@ -11112,10 +11162,60 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "params": {
-        "type": "object",
-        "help": "the entered parameters (name, lsl, target, usl, unit, confidence, subgroupMode, subgroupSize, withinMethod, mrSpan, unbiased); values as text as entered, unbiased as boolean",
+        "type": "Params",
+        "help": "the entered parameters; values as text as entered, unbiased as boolean",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Params",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "Merkmal"
+          },
+          "lsl": {
+            "type": "string",
+            "help": "untere Spezifikationsgrenze"
+          },
+          "target": {
+            "type": "string",
+            "help": "Sollwert"
+          },
+          "usl": {
+            "type": "string",
+            "help": "obere Spezifikationsgrenze"
+          },
+          "unit": {
+            "type": "string",
+            "help": "Einheit"
+          },
+          "confidence": {
+            "type": "string",
+            "help": "Konfidenzniveau in Prozent"
+          },
+          "subgroupMode": {
+            "type": "'size'|'column'",
+            "help": "Untergruppen nach Größe oder Spalte"
+          },
+          "subgroupSize": {
+            "type": "number",
+            "help": "Untergruppengröße, nur Modus Größe",
+            "optional": true
+          },
+          "withinMethod": {
+            "type": "''|'pooled'|'rbar'|'sbar'|'averageMR'|'medianMR'|'sqrtMSSD'",
+            "help": "Schätzer der Streuung innerhalb"
+          },
+          "mrSpan": {
+            "type": "number",
+            "help": "Spannweite der gleitenden Spannweiten",
+            "optional": true
+          },
+          "unbiased": {
+            "type": "boolean",
+            "help": "Korrekturfaktor anwenden",
+            "optional": true
+          }
+        }
       },
       "columnRef": {
         "type": "object|null",
@@ -11173,10 +11273,217 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
+        "type": "Result|null",
         "help": "the computed capability result, or null while the inputs are incomplete",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "n": {
+            "type": "number",
+            "help": "Zahl der Werte"
+          },
+          "xbar": {
+            "type": "number|null",
+            "help": "Mittelwert"
+          },
+          "s": {
+            "type": "number|null",
+            "help": "Gesamt-Standardabweichung (n − 1)"
+          },
+          "sigmaWithin": {
+            "type": "number|null",
+            "help": "Streuung innerhalb (Schätzer)"
+          },
+          "sigmaOverall": {
+            "type": "number|null",
+            "help": "Gesamtstreuung, gleich s"
+          },
+          "withinMethod": {
+            "type": "string",
+            "help": "verwendeter Schätzer"
+          },
+          "withinDf": {
+            "type": "number",
+            "help": "Freiheitsgrade des Schätzers"
+          },
+          "subgroupSize": {
+            "type": "number",
+            "help": "Untergruppengröße (Modus Spalte: 1)"
+          },
+          "xmin": {
+            "type": "number|null",
+            "help": "kleinster Wert"
+          },
+          "xmax": {
+            "type": "number|null",
+            "help": "größter Wert"
+          },
+          "subgroupCount": {
+            "type": "number",
+            "help": "Zahl der Untergruppen bzw. Werte"
+          },
+          "nBar": {
+            "type": "number",
+            "help": "mittlere Untergruppengröße"
+          },
+          "unbiased": {
+            "type": "boolean",
+            "help": "Korrekturfaktor angewandt"
+          },
+          "mrSpan": {
+            "type": "number",
+            "help": "Spannweite der gleitenden Spannweiten"
+          },
+          "T": {
+            "type": "number|null",
+            "help": "Toleranz OSG − USG"
+          },
+          "mid": {
+            "type": "number|null",
+            "help": "Toleranzmitte"
+          },
+          "targetVal": {
+            "type": "number|null",
+            "help": "Sollwert oder Toleranzmitte"
+          },
+          "hasLsl": {
+            "type": "boolean",
+            "help": "untere Grenze gesetzt"
+          },
+          "hasUsl": {
+            "type": "boolean",
+            "help": "obere Grenze gesetzt"
+          },
+          "twoSided": {
+            "type": "boolean",
+            "help": "beide Grenzen gesetzt"
+          },
+          "lsl": {
+            "type": "number|null",
+            "help": "untere Grenze"
+          },
+          "usl": {
+            "type": "number|null",
+            "help": "obere Grenze"
+          },
+          "Cp": {
+            "type": "number|null",
+            "help": "potenzielle Fähigkeit"
+          },
+          "CPU": {
+            "type": "number|null",
+            "help": "Fähigkeit zur oberen Grenze"
+          },
+          "CPL": {
+            "type": "number|null",
+            "help": "Fähigkeit zur unteren Grenze"
+          },
+          "Cpk": {
+            "type": "number|null",
+            "help": "tatsächliche Fähigkeit"
+          },
+          "Pp": {
+            "type": "number|null",
+            "help": "potenzielle Gesamtleistung"
+          },
+          "PPU": {
+            "type": "number|null",
+            "help": "Gesamtleistung zur oberen Grenze"
+          },
+          "PPL": {
+            "type": "number|null",
+            "help": "Gesamtleistung zur unteren Grenze"
+          },
+          "Ppk": {
+            "type": "number|null",
+            "help": "tatsächliche Gesamtleistung"
+          },
+          "CpCI": {
+            "type": "Array<number|null>|null",
+            "help": "Konfidenzintervall Cp"
+          },
+          "CpkCI": {
+            "type": "Array<number|null>|null",
+            "help": "Konfidenzintervall Cpk"
+          },
+          "PpCI": {
+            "type": "Array<number|null>|null",
+            "help": "Konfidenzintervall Pp"
+          },
+          "PpkCI": {
+            "type": "Array<number|null>|null",
+            "help": "Konfidenzintervall Ppk"
+          },
+          "confidence": {
+            "type": "number",
+            "help": "Konfidenzniveau als Anteil"
+          },
+          "ppmAboveUsl": {
+            "type": "number|null",
+            "help": "erwartete PPM über OSG, gesamt"
+          },
+          "ppmBelowLsl": {
+            "type": "number|null",
+            "help": "erwartete PPM unter USG, gesamt"
+          },
+          "ppmTotal": {
+            "type": "number|null",
+            "help": "erwartete PPM gesamt"
+          },
+          "ppmWithinBelowLsl": {
+            "type": "number|null",
+            "help": "erwartete PPM unter USG, innerhalb"
+          },
+          "ppmWithinAboveUsl": {
+            "type": "number|null",
+            "help": "erwartete PPM über OSG, innerhalb"
+          },
+          "ppmWithinTotal": {
+            "type": "number|null",
+            "help": "erwartete PPM innerhalb"
+          },
+          "ppmObservedBelowLsl": {
+            "type": "number|null",
+            "help": "beobachtete PPM unter USG"
+          },
+          "ppmObservedAboveUsl": {
+            "type": "number|null",
+            "help": "beobachtete PPM über OSG"
+          },
+          "ppmObservedTotal": {
+            "type": "number|null",
+            "help": "beobachtete PPM gesamt"
+          },
+          "zBenchWithin": {
+            "type": "number|null",
+            "help": "Z.bench innerhalb"
+          },
+          "zBenchOverall": {
+            "type": "number|null",
+            "help": "Z.bench gesamt"
+          },
+          "sigmaLevel": {
+            "type": "number|null",
+            "help": "Sigma-Niveau"
+          },
+          "sigmaLevelShifted": {
+            "type": "number|null",
+            "help": "Sigma-Niveau mit 1,5-Verschiebung"
+          },
+          "cpkStatus": {
+            "type": "'pass'|'warn'|'fail'",
+            "help": "Urteil zu Cpk"
+          },
+          "cpStatus": {
+            "type": "'pass'|'warn'|'fail'|null",
+            "help": "Urteil zu Cp"
+          },
+          "overall": {
+            "type": "'pass'|'warn'|'fail'",
+            "help": "Gesamturteil"
+          }
+        }
       },
       "withinHint": {
         "type": "string",

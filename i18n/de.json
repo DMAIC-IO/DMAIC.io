@@ -3917,12 +3917,12 @@
         "setParam": {
           "help": "Setzt einen Parameter. Schätzer, Untergruppenmodus und -größe, gleitende Spannweite und Erwartungstreue rechnen sofort neu und können ändern, welche Parameter und Schätzer gelten; die übrigen Parameter rechnen nach einer kurzen Pause neu.",
           "params": {
-            "key": "Einer der Schlüssel aus activeParams: name, lsl, target, usl, unit, confidence, subgroupMode und withinMethod immer; subgroupSize nur, solange die Untergruppen eine feste Größe haben (mit Beispieldaten immer); mrSpan nur, solange der geltende Schätzer averageMR oder medianMR ist; unbiased nur bei pooled, sbar oder sqrtMSSD. Jeder andere Wert ist ein Fehler.",
-            "value": "name, unit: Text. lsl, target, usl: Text mit einer Zahl, '' für keine (wie eingegeben, ein Dezimalkomma wird angenommen). confidence: Text mit dem Prozentwert, zum Beispiel '95'; ein Wert außerhalb von 50 bis 99,99 wird beim Rechnen begrenzt. subgroupMode: 'size' (feste Untergruppengröße) oder 'column' (Untergruppen aus einer ID-Spalte; nur, solange keine Beispieldaten geladen sind, sonst ein Fehler). subgroupSize: ganze Zahl ab 1, Zahl oder Zahlentext. withinMethod: einer der Werte aus withinMethodOptions; '' nimmt den Standard der Daten. mrSpan: ganze Zahl von 2 bis 100. unbiased: true oder false. Ein Wert der falschen Art oder außerhalb der Liste ist ein Fehler."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys. lsl, target, usl als Text mit einer Zahl oder '' für keine Grenze; confidence in Prozent (50 bis 99,99)."
           }
         },
         "setColumn": {
-          "help": "Weist einem Slot eine Spalte zu oder leert ihn mit null; die Neuberechnung folgt sofort. Wer die Messwertspalte wählt, verwirft geladene Beispieldaten. Die Untergruppenspalte wird aus dem Blatt der Messwertspalte angeboten, ohne die Messwertspalte selbst.",
+          "help": "Die Spalte einer Datensammlung, die diese Rolle liefert; nach einer Änderung wird neu gerechnet. Wer die Messwertspalte wählt, verwirft geladene Beispieldaten; die Spalte mit Untergruppen-IDs wird aus dem Blatt der Messwertspalte angeboten, ohne die Messwertspalte selbst.",
           "params": {
             "slot": "Einer der Slots aus activeColumnSlots: 'value' (die Messwerte) immer, 'subgroup' (die Untergruppen-IDs) nur, solange die Untergruppen aus einer Spalte kommen und keine Beispieldaten geladen sind.",
             "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Leeren des Slots."
@@ -3943,7 +3943,7 @@
       },
       "fields": {
         "params": {
-          "help": "Die eingetragenen Werte: name (Merkmal), lsl, target und usl (Grenzen und Zielwert als Text, '' für keine), unit, confidence (Prozent als Text), subgroupMode ('size' oder 'column'), subgroupSize (Text), withinMethod (Schätzerschlüssel, '' für den Standard der Daten), mrSpan (Text) und unbiased (true oder false). 'column' lässt sich nur setzen, solange keine Beispieldaten geladen sind; mit Beispieldaten haben die Untergruppen immer die feste Größe."
+          "help": "Die Eingaben, je Schlüssel unter keys beschrieben; Zahlen stehen als Text."
         },
         "columnRef": {
           "help": "Die gewählte Messwertspalte als { instanceId, sheetId, columnId } oder null. Geladene Beispieldaten haben Vorrang vor ihr."
@@ -3973,10 +3973,78 @@
           "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; key ist 'instanceId|sheetId|columnId'. value nennt die numerischen Spalten, subgroup die übrigen Spalten des Blatts der Messwertspalte (leer ohne Messwertspalte)."
         },
         "result": {
-          "help": "Das gerechnete Fähigkeitsergebnis mit Cp, Cpk, Pp, Ppk, PPM, Sigma-Level, den Konfidenzintervallen und dem Status, oder null, solange die Eingaben unvollständig oder ungültig sind."
+          "help": "Das Fähigkeitsergebnis, jede Kennzahl unter keys einzeln beschrieben; null, solange die Eingaben unvollständig oder ungültig sind."
         },
         "withinHint": {
           "help": "Ein Hinweis zu Schätzer oder Untergruppenspalte: der gespeicherte Schätzer passt nicht zu den Daten und ein anderer wird benutzt, die Untergruppenspalte fehlt, oder der Schätzer lässt sich für diese Daten nicht berechnen. '' wenn nichts zu vermerken ist."
+        }
+      },
+      "types": {
+        "Params": {
+          "name": "Die Bezeichnung des Merkmals, Beschriftung „Bezeichnung / Merkmal“; freier Text. Er erscheint in der Statuszeile hinter dem Urteil und rechnet nicht mit.",
+          "lsl": "Die untere Spezifikationsgrenze, Beschriftung „USG (LSL)“, als Text mit einer Zahl; ein Dezimalkomma wird angenommen. Leer heißt: keine untere Grenze, dann fehlen CPL, PPL und alle Anteile unter USG. Mindestens eine der beiden Grenzen muss gesetzt sein, und OSG muss über USG liegen, sonst gibt es kein Ergebnis.",
+          "target": "Der Sollwert, Beschriftung „Sollwert“, als Text mit einer Zahl. Er rechnet in keinen Index ein; die Tabelle zeigt ihn, und fehlt er, steht dort bei zwei Grenzen die Toleranzmitte (OSG + USG)/2. Leer ist erlaubt.",
+          "usl": "Die obere Spezifikationsgrenze, Beschriftung „OSG (USL)“, als Text mit einer Zahl; ein Dezimalkomma wird angenommen. Leer heißt: keine obere Grenze, dann fehlen CPU, PPU und alle Anteile über OSG. Mindestens eine der beiden Grenzen muss gesetzt sein, und OSG muss über USG liegen, sonst gibt es kein Ergebnis.",
+          "unit": "Die Einheit der Messwerte, Beschriftung „Einheit“, voreingestellt mm. Sie steht hinter den Werten der Kenngrößentabelle und rechnet nicht mit.",
+          "confidence": "Das Konfidenzniveau der Intervalle in Prozent, Beschriftung „Konfidenz (KI) (%)“, voreingestellt 95. Ein Wert außerhalb von 50 bis 99,99 wird beim Rechnen auf diesen Bereich begrenzt; ein leerer oder unbrauchbarer Eintrag nimmt das Konfidenzniveau der Einstellungen.",
+          "subgroupMode": "Woher die Untergruppen kommen, Beschriftung „Untergruppen“: „Feste Größe“ teilt die Werte der Reihe nach in Gruppen gleicher Größe, „Spalte mit IDs“ gruppiert nach einer zweiten Spalte mit Untergruppen-IDs. „Spalte mit IDs“ ist nur wählbar, solange keine Beispieldaten geladen sind. Die Untergruppen bestimmen, welche Schätzer für σ innerhalb zur Wahl stehen.",
+          "subgroupSize": "Die feste Untergruppengröße, Beschriftung „Untergruppengröße“, ganze Zahl ab 1, voreingestellt 1. Bei 1 sind es Einzelwerte, und σ innerhalb kommt aus der gleitenden Spannweite; ab 2 gelten die Untergruppen-Schätzer. Nur im Modus „Feste Größe“ einstellbar.",
+          "withinMethod": "Der Schätzer für σ innerhalb, aus dem Cp, Cpk, CPL und CPU rechnen. Leer heißt automatische Wahl: bei Einzelwerten die mittlere gleitende Spannweite, bei Untergruppen die gepoolte Standardabweichung. Bei Einzelwerten stehen mittlere gleitende Spannweite, Median der gleitenden Spannweite und Wurzel aus MSSD zur Wahl, bei Untergruppen gepoolte Standardabweichung, R̄/d2 und S̄/c4. Passt ein gespeicherter Schätzer nicht zu den Daten, gilt der automatische, und ein Hinweis nennt das.",
+          "mrSpan": "Die Spannweite w der gleitenden Spannweiten, Beschriftung „MR-Spannweite w“, ganze Zahl von 2 bis 100, voreingestellt 2: jede Spannweite überdeckt w aufeinanderfolgende Werte. Gilt nur für mittlere gleitende Spannweite und Median der gleitenden Spannweite.",
+          "unbiased": "Ob die Biaskorrektur angewandt wird, Beschriftung „Biaskorrektur (c4 bzw. c4′) verwenden“, voreingestellt an: die Schätzung von σ innerhalb wird durch c4 bzw. c4′ geteilt, damit sie im Mittel nicht zu klein ausfällt. Gilt nur für gepoolte Standardabweichung, S̄/c4 und Wurzel aus MSSD."
+        },
+        "Result": {
+          "n": "Die Zahl der ausgewerteten Messwerte n, Beschriftung „Anzahl Messwerte n“; nur Zahlen zählen, leere und nicht numerische Zellen fallen weg. Es braucht mindestens 2.",
+          "xbar": "Der Mittelwert x̄ aller Messwerte, Beschriftung „Mittelwert x̄“. Er ist der Bezugspunkt für CPL, CPU, PPL und PPU.",
+          "s": "Die Gesamt-Standardabweichung s aller Messwerte mit Teiler n − 1, Beschriftung „Standardabweichung gesamt s (n−1)“. Aus ihr rechnen Pp, Ppk und die erwarteten Anteile gesamt.",
+          "sigmaWithin": "Die Streuung innerhalb σ innerhalb, die der gewählte Schätzer aus den Untergruppen bzw. den gleitenden Spannweiten schätzt, Beschriftung „Standardabweichung innerhalb“. Sie misst nur die kurzfristige Streuung; aus ihr rechnen Cp, Cpk, CPL, CPU und die erwarteten Anteile innerhalb.",
+          "sigmaOverall": "Die Gesamtstreuung, gleich s: die Standardabweichung aller Messwerte mit Teiler n − 1. Sie steht hier ein zweites Mal als Gegenstück zu σ innerhalb.",
+          "withinMethod": "Der Schätzer, der für σ innerhalb tatsächlich benutzt wurde: gepoolte Standardabweichung, R̄/d2, S̄/c4, mittlere gleitende Spannweite, Median der gleitenden Spannweite oder Wurzel aus MSSD. Bei automatischer Wahl oder einem nicht passenden gespeicherten Schätzer steht hier der automatische.",
+          "withinDf": "Die Freiheitsgrade ν des Schätzers für σ innerhalb, die das Konfidenzintervall von Cp und Cpk nutzt: gepoolt Σ(nᵢ − 1) über die Untergruppen mit mindestens 2 Werten, R̄/d2 0,9 · k · (n̄ − 1), S̄/c4 f(n̄) · k · (n̄ − 1) mit einem Tabellenfaktor f, die Schätzer über gleitende Spannweiten die Zahl der Spannweiten, Wurzel aus MSSD n − 1. Bei R̄/d2 und S̄/c4 kann ν gebrochen sein.",
+          "subgroupSize": "Die feste Untergruppengröße, mit der gerechnet wurde. Im Modus „Spalte mit IDs“ steht hier 1, obwohl die Untergruppen aus der Spalte kommen; ihre Zahl und mittlere Größe stehen bei der Untergruppenzahl und der mittleren Untergruppengröße.",
+          "xmin": "Der kleinste Messwert, Beschriftung „Minimum“.",
+          "xmax": "Der größte Messwert, Beschriftung „Maximum“.",
+          "subgroupCount": "Die Zahl k der Untergruppen mit mindestens 2 Werten, bei Einzelwerten die Zahl der Werte. Sie geht in die Freiheitsgrade des Schätzers ein.",
+          "nBar": "Die mittlere Größe n̄ der Untergruppen mit mindestens 2 Werten, bei Einzelwerten 1.",
+          "unbiased": "Ob die Biaskorrektur mit c4 bzw. c4′ eingeschaltet war. Der Wert steht auch dann hier, wenn der benutzte Schätzer ihn nicht verwendet.",
+          "mrSpan": "Die Spannweite w der gleitenden Spannweiten, mit der gerechnet wurde. Sie steht auch dann hier, wenn der benutzte Schätzer keine gleitenden Spannweiten nimmt.",
+          "T": "Die Toleranz T = OSG − USG, Beschriftung „Toleranz T (OSG − USG)“. Leer, wenn nur eine Grenze gesetzt ist; dann fehlen auch Cp und Pp.",
+          "mid": "Die Toleranzmitte (OSG + USG)/2; leer, wenn nur eine Grenze gesetzt ist.",
+          "targetVal": "Der Sollwert der Tabelle, Beschriftung „Sollwert“: der eingetragene Sollwert, sonst die Toleranzmitte. Leer bei nur einer Grenze ohne Sollwert. Er rechnet in keinen Index ein.",
+          "hasLsl": "Ob eine untere Spezifikationsgrenze USG gesetzt ist.",
+          "hasUsl": "Ob eine obere Spezifikationsgrenze OSG gesetzt ist.",
+          "twoSided": "Ob beide Grenzen gesetzt sind; nur dann gibt es Toleranz, Cp, Pp und deren Intervalle.",
+          "lsl": "Die untere Spezifikationsgrenze USG als Zahl, Beschriftung „LSL“ in der Kenngrößentabelle; leer ohne untere Grenze.",
+          "usl": "Die obere Spezifikationsgrenze OSG als Zahl, Beschriftung „USL“ in der Kenngrößentabelle; leer ohne obere Grenze.",
+          "Cp": "Die potenzielle Fähigkeit Cp = T / (6 · σ innerhalb), Kachel „Cp (Potenzial)“: wie oft die Prozessbreite in die Toleranz passt, ohne auf die Lage zu achten. Ab 1,33 fähig, ab 1,0 bedingt fähig, darunter nicht fähig. Leer, wenn nur eine Grenze gesetzt ist.",
+          "CPU": "Die Fähigkeit zur oberen Grenze CPU = (OSG − x̄) / (3 · σ innerhalb), Kachel „CPU (Obere)“. Leer ohne obere Grenze.",
+          "CPL": "Die Fähigkeit zur unteren Grenze CPL = (x̄ − USG) / (3 · σ innerhalb), Kachel „CPL (Untere)“. Leer ohne untere Grenze.",
+          "Cpk": "Die tatsächliche Fähigkeit Cpk, Kachel „Cpk (Tatsächlich)“: der kleinere Wert von CPU und CPL, bei nur einer Grenze deren Wert. Er berücksichtigt Streuung innerhalb und Lage. Ab 1,33 fähig, ab 1,0 bedingt fähig, darunter nicht fähig; dieses Urteil ist das Gesamturteil der Statuszeile.",
+          "Pp": "Die potenzielle Gesamtleistung Pp = T / (6 · s), Kachel „Pp (Gesamt-Potenzial)“: wie Cp, aber mit der Gesamt-Standardabweichung s, also mit der langfristigen Streuung. Leer, wenn nur eine Grenze gesetzt ist.",
+          "PPU": "Die Gesamtleistung zur oberen Grenze PPU = (OSG − x̄) / (3 · s). Leer ohne obere Grenze.",
+          "PPL": "Die Gesamtleistung zur unteren Grenze PPL = (x̄ − USG) / (3 · s). Leer ohne untere Grenze.",
+          "Ppk": "Die tatsächliche Gesamtleistung Ppk, Kachel „Ppk (Gesamt-Tatsächlich)“: der kleinere Wert von PPU und PPL, bei nur einer Grenze deren Wert. Wie Cpk, aber mit der Gesamt-Standardabweichung s.",
+          "CpCI": "Das Konfidenzintervall von Cp als Paar aus unterer und oberer Grenze, über die χ²-Verteilung mit ν Freiheitsgraden des Schätzers: Cp · √(χ²(α/2; ν)/ν) bis Cp · √(χ²(1 − α/2; ν)/ν). Die Kachel zeigt es hinter „KI“ mit dem Niveau in Prozent. Leer, wenn Cp fehlt oder der Schätzer keine Freiheitsgrade hat.",
+          "CpkCI": "Das Konfidenzintervall von Cpk als Paar aus unterer und oberer Grenze, nach Bissell als Normalnäherung: Cpk ± z · SE mit SE = √(1/(9n) + Cpk²/(2ν)), ν die Freiheitsgrade des Schätzers für σ innerhalb. Leer, wenn der Schätzer keine Freiheitsgrade hat.",
+          "PpCI": "Das Konfidenzintervall von Pp als Paar aus unterer und oberer Grenze, über die χ²-Verteilung mit n − 1 Freiheitsgraden. Leer, wenn Pp fehlt.",
+          "PpkCI": "Das Konfidenzintervall von Ppk als Paar aus unterer und oberer Grenze, nach Bissell als Normalnäherung mit n − 1 Freiheitsgraden: Ppk ± z · √(1/(9n) + Ppk²/(2(n − 1))).",
+          "confidence": "Das Konfidenzniveau der vier Intervalle als Anteil, zum Beispiel 0,95; die Eingabe steht in Prozent und wird auf 50 bis 99,99 % begrenzt. Die Kacheln zeigen es gerundet in Prozent.",
+          "ppmAboveUsl": "Der erwartete Anteil über OSG nach dem Modell gesamt, Normalverteilung mit x̄ und s, in PPM (Teile je Million), Spalte „> USL“ der Zeile „Erwartet gesamt“. Leer ohne obere Grenze.",
+          "ppmBelowLsl": "Der erwartete Anteil unter USG nach dem Modell gesamt, Normalverteilung mit x̄ und s, in PPM (Teile je Million), Spalte „< LSL“ der Zeile „Erwartet gesamt“. Leer ohne untere Grenze.",
+          "ppmTotal": "Der erwartete Anteil außerhalb beider Grenzen nach dem Modell gesamt, Normalverteilung mit x̄ und s, in PPM: Summe aus unter USG und über OSG. Kachel „PPM (Fehlerhaft)“ und Spalte „Gesamt“ der Zeile „Erwartet gesamt“; die Kachel nennt darunter die beobachtete und die erwartete Zahl innerhalb.",
+          "ppmWithinBelowLsl": "Der erwartete Anteil unter USG nach dem Modell innerhalb, Normalverteilung mit x̄ und σ innerhalb, in PPM; Zeile „Erwartet innerhalb“. Leer ohne untere Grenze.",
+          "ppmWithinAboveUsl": "Der erwartete Anteil über OSG nach dem Modell innerhalb, Normalverteilung mit x̄ und σ innerhalb, in PPM; Zeile „Erwartet innerhalb“. Leer ohne obere Grenze.",
+          "ppmWithinTotal": "Der erwartete Anteil außerhalb beider Grenzen nach dem Modell innerhalb, Normalverteilung mit x̄ und σ innerhalb, in PPM; Zeile „Erwartet innerhalb“ und Kachel „PPM (Fehlerhaft)“ als „erwartet innerhalb“.",
+          "ppmObservedBelowLsl": "Der beobachtete Anteil der Messwerte strikt unter USG, in PPM; Zeile „Beobachtet“. Leer ohne untere Grenze.",
+          "ppmObservedAboveUsl": "Der beobachtete Anteil der Messwerte strikt über OSG, in PPM; Zeile „Beobachtet“. Leer ohne obere Grenze.",
+          "ppmObservedTotal": "Der beobachtete Anteil der Messwerte außerhalb beider Grenzen, in PPM; Zeile „Beobachtet“ und Kachel „PPM (Fehlerhaft)“ als „beobachtet“. Ein Wert genau auf einer Grenze zählt als innerhalb.",
+          "zBenchWithin": "Z.bench innerhalb: das Normalverteilungs-Quantil des erwarteten Anteils außerhalb beider Grenzen nach dem Modell innerhalb, Z = −Φ⁻¹(p). Unendlich, wenn der Anteil 0 ist; nicht bestimmbar bei σ = 0 mit dem Mittelwert auf einer Grenze.",
+          "zBenchOverall": "Z.bench gesamt: das Normalverteilungs-Quantil des erwarteten Anteils außerhalb beider Grenzen nach dem Modell gesamt, Z = −Φ⁻¹(p). Die Sigma-Kachel nennt es als „Z.bench gesamt“.",
+          "sigmaLevel": "Das Sigma-Level, Kachel „Sigma-Level (Z.bench innerhalb)“: gleich Z.bench innerhalb, also das Normalverteilungs-Quantil des erwarteten Anteils außerhalb beider Grenzen mit σ innerhalb. Es zählt beide Grenzen und ist darum höchstens 3 · Cpk; bei nur einer Grenze sind beide gleich.",
+          "sigmaLevelShifted": "Das Sigma-Level nach Six-Sigma-Konvention: Z.bench gesamt + 1,5. Der Zuschlag von 1,5σ ist eine Konvention der Six-Sigma-Ausbildung, kein Messergebnis; die Sigma-Kachel nennt ihn als „Six-Sigma-Konvention (+1,5σ)“.",
+          "cpkStatus": "Das Urteil zu Cpk: bestanden ab 1,33, Warnung ab 1,0, sonst nicht bestanden. Es färbt die Cpk-Kachel und ist das Gesamturteil.",
+          "cpStatus": "Das Urteil zu Cp: bestanden ab 1,33, Warnung ab 1,0, sonst nicht bestanden. Es färbt die Cp-Kachel; leer, wenn Cp fehlt.",
+          "overall": "Das Gesamturteil der Statuszeile, gleich dem Urteil zu Cpk: „PROZESS FÄHIG“ ab Cpk 1,33, „BEDINGT FÄHIG“ ab 1,0, sonst „PROZESS NICHT FÄHIG“."
         }
       },
       "sectionParams": "Spezifikation",
