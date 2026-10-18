@@ -6534,7 +6534,7 @@
       "dispersionPreferInteraction": "Wechselwirkungseffekt — Stufenkombination im Konturplot ablesen"
     },
     "doe-advisor": {
-      "whenToUse": "Wenn für ein Verbesserungsvorhaben erst noch die Frage zu klären ist, WELCHER Versuchsplan passt — Screening, Wechselwirkungen, Optimierung, Robustheit oder Mischung —, oder wenn der Übersicht der Versuchspläne und der Vergleich der zentral zusammengesetzten Pläne gebraucht wird; nicht für das Planen oder Auswerten eines konkreten Versuchs, dafür sind der Versuchsplaner und die Auswertung da.",
+      "whenToUse": "Wenn für ein Verbesserungsvorhaben erst noch die Frage zu klären ist, WELCHER Versuchsplan passt — Screening, Wechselwirkungen, Optimierung, Robustheit oder Mischung —, oder wenn die Übersicht der Versuchspläne und der Vergleich der zentral zusammengesetzten Pläne gebraucht werden; nicht für das Planen oder Auswerten eines konkreten Versuchs, dafür sind der Versuchsplaner und die Auswertung da.",
       "actions": {
         "read": {
           "help": "Liefert den Zustand des Beraters und die Antwortmöglichkeiten der offenen Frage.",

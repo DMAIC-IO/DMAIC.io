@@ -163,8 +163,8 @@ export class State {
   _schema = { name: State.ID, version: State.VERSION };
 
   /**
-   * @type {'overview'|'wizard'|'ccd'} der angezeigte Bereich: overview der
-   *   Versuchsplankatalog, wizard der geführte Berater, ccd der Vergleich der
+   * @type {'overview'|'wizard'|'ccd'} der angezeigte Bereich: overview
+   *   die Übersicht der Versuchspläne, wizard der geführte Berater, ccd der Vergleich der
    *   zentral zusammengesetzten Pläne
    */
   tab = 'overview';
