@@ -24,6 +24,32 @@ export function fmtP(v) {
 const pct = (alpha) => Math.round((1 - alpha) * 1000) / 10;
 const ci = (lo, hi) => `[${fmt(lo)}, ${fmt(hi)}]`;
 
+/**
+ * Die Zeilenschlüssel der Statistiktabelle je Art des Tests. Die Vorlage
+ * hängt an jede Zeile den Hilfeschlüssel `modules.attribute-test.stats.<art>.<schlüssel>`
+ * erst zur Laufzeit an; das Tor in `agent-data.test.mjs` zählt ihn hier ab.
+ * Bei `assoc` erscheinen die drei Yates-/Fisher-Zeilen nur bei 2×2-Tabellen.
+ */
+export const STAT_ROWS = Object.freeze({
+  one: Object.freeze(['counts', 'pHat', 'ci', 'pExact', 'z', 'pNormal']),
+  two: Object.freeze(['counts1', 'counts2', 'p1', 'p2', 'diff', 'ci', 'z', 'pValue', 'pFisher']),
+  assoc: Object.freeze(['pearson', 'pPearson', 'lr', 'pLR', 'yates', 'pYates', 'pFisher']),
+});
+
+/**
+ * Eine Zeile der Statistiktabelle; der Schlüssel muss in `STAT_ROWS[kind]` stehen.
+ * @param {'one'|'two'|'assoc'} kind
+ * @param {string} key
+ * @param {string} labelKey
+ * @param {string} value
+ * @param {object} [params]
+ * @returns {{ key: string, labelKey: string, params?: object, value: string }}
+ */
+function statRow(kind, key, labelKey, value, params) {
+  if (!STAT_ROWS[kind].includes(key)) throw new Error(`STAT_ROWS.${kind} kennt „${key}“ nicht`);
+  return params ? { key, labelKey, params, value } : { key, labelKey, value };
+}
+
 function missingNote(norm, notes) {
   if (norm.missing > 0) notes.push({ key: 'noteMissing', params: { count: norm.missing } });
 }
@@ -36,12 +62,12 @@ function reportOne(state, norm) {
   return {
     kind: 'one',
     stats: [
-      { key: 'counts', labelKey: 'statCounts', value: `${norm.x} / ${norm.n}` },
-      { key: 'pHat', labelKey: 'statPHat', value: fmt(r.pHat) },
-      { key: 'ci', labelKey: 'statCi', params: { level: pct(state.alpha) }, value: ci(r.ciLower, r.ciUpper) },
-      { key: 'pExact', labelKey: 'statPExact', value: fmtP(r.pExact) },
-      { key: 'z', labelKey: 'statZ', value: fmt(r.z) },
-      { key: 'pNormal', labelKey: 'statPNormal', value: fmtP(r.pNormal) },
+      statRow('one', 'counts', 'statCounts', `${norm.x} / ${norm.n}`),
+      statRow('one', 'pHat', 'statPHat', fmt(r.pHat)),
+      statRow('one', 'ci', 'statCi', ci(r.ciLower, r.ciUpper), { level: pct(state.alpha) }),
+      statRow('one', 'pExact', 'statPExact', fmtP(r.pExact)),
+      statRow('one', 'z', 'statZ', fmt(r.z)),
+      statRow('one', 'pNormal', 'statPNormal', fmtP(r.pNormal)),
     ],
     notes,
     decision: r.reject ? 'reject' : 'keep',
@@ -59,15 +85,15 @@ function reportTwo(state, norm) {
   return {
     kind: 'two',
     stats: [
-      { key: 'counts1', labelKey: 'statCountsGroup', params: { group: g[0] }, value: `${norm.x1} / ${norm.n1}` },
-      { key: 'counts2', labelKey: 'statCountsGroup', params: { group: g[1] }, value: `${norm.x2} / ${norm.n2}` },
-      { key: 'p1', labelKey: 'statPGroup', params: { group: g[0] }, value: fmt(r.p1) },
-      { key: 'p2', labelKey: 'statPGroup', params: { group: g[1] }, value: fmt(r.p2) },
-      { key: 'diff', labelKey: 'statDiff', value: fmt(r.diff) },
-      { key: 'ci', labelKey: 'statCiDiff', params: { level: pct(state.alpha) }, value: ci(r.ciLower, r.ciUpper) },
-      { key: 'z', labelKey: 'statZ', value: fmt(r.z) },
-      { key: 'pValue', labelKey: 'statPValue', value: fmtP(r.pValue) },
-      { key: 'pFisher', labelKey: 'statPFisher', value: fmtP(r.pFisher) },
+      statRow('two', 'counts1', 'statCountsGroup', `${norm.x1} / ${norm.n1}`, { group: g[0] }),
+      statRow('two', 'counts2', 'statCountsGroup', `${norm.x2} / ${norm.n2}`, { group: g[1] }),
+      statRow('two', 'p1', 'statPGroup', fmt(r.p1), { group: g[0] }),
+      statRow('two', 'p2', 'statPGroup', fmt(r.p2), { group: g[1] }),
+      statRow('two', 'diff', 'statDiff', fmt(r.diff)),
+      statRow('two', 'ci', 'statCiDiff', ci(r.ciLower, r.ciUpper), { level: pct(state.alpha) }),
+      statRow('two', 'z', 'statZ', fmt(r.z)),
+      statRow('two', 'pValue', 'statPValue', fmtP(r.pValue)),
+      statRow('two', 'pFisher', 'statPFisher', fmtP(r.pFisher)),
     ],
     notes,
     decision: r.reject ? 'reject' : 'keep',
@@ -105,16 +131,16 @@ function reportAssoc(state, norm) {
   if (r.warnShareBelow5) notes.push({ key: 'warnShareBelow5', params: { share: Math.round(r.shareBelow5 * 100) } });
   missingNote(norm, notes);
   const stats = [
-    { key: 'pearson', labelKey: 'statPearson', params: { df: r.df }, value: fmt(r.pearson, 3) },
-    { key: 'pPearson', labelKey: 'statPValue', value: fmtP(r.pPearson) },
-    { key: 'lr', labelKey: 'statLr', params: { df: r.df }, value: fmt(r.lr, 3) },
-    { key: 'pLR', labelKey: 'statPLr', value: fmtP(r.pLR) },
+    statRow('assoc', 'pearson', 'statPearson', fmt(r.pearson, 3), { df: r.df }),
+    statRow('assoc', 'pPearson', 'statPValue', fmtP(r.pPearson)),
+    statRow('assoc', 'lr', 'statLr', fmt(r.lr, 3), { df: r.df }),
+    statRow('assoc', 'pLR', 'statPLr', fmtP(r.pLR)),
   ];
   if (r.yates != null) {
     stats.push(
-      { key: 'yates', labelKey: 'statYates', value: fmt(r.yates, 3) },
-      { key: 'pYates', labelKey: 'statPYates', value: fmtP(r.pYates) },
-      { key: 'pFisher', labelKey: fisherLabel(state.direction), value: fmtP(fisherP(state.direction, r)) },
+      statRow('assoc', 'yates', 'statYates', fmt(r.yates, 3)),
+      statRow('assoc', 'pYates', 'statPYates', fmtP(r.pYates)),
+      statRow('assoc', 'pFisher', fisherLabel(state.direction), fmtP(fisherP(state.direction, r))),
     );
   }
   return {

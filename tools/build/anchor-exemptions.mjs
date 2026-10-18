@@ -15,8 +15,14 @@
  */
 export const ANCHOR_EXEMPTIONS = {
   'unit-converter': [
-    { match: "t('ref", reason: 'Nachschlagetabelle mit festen Beispielwerten; nicht Teil der Lesefläche', count: 4 },
-    { match: "t('tz", reason: 'Weltuhr, aus Zeitzone und Uhrzeit abgeleitet; nicht Teil der Lesefläche', count: 4 },
+    { match: "<th x-text=\"t('refValue')\"", reason: 'Nachschlagetabelle mit festen Beispielwerten; nicht Teil der Lesefläche', count: 1 },
+    { match: "<th x-text=\"t('refFrom')\"", reason: 'Nachschlagetabelle mit festen Beispielwerten; nicht Teil der Lesefläche', count: 1 },
+    { match: "<th x-text=\"t('refResult')\"", reason: 'Nachschlagetabelle mit festen Beispielwerten; nicht Teil der Lesefläche', count: 1 },
+    { match: "<th x-text=\"t('refTo')\"", reason: 'Nachschlagetabelle mit festen Beispielwerten; nicht Teil der Lesefläche', count: 1 },
+    { match: "<th x-text=\"t('tzTimezone')\"", reason: 'Weltuhr, aus Zeitzone und Uhrzeit abgeleitet; nicht Teil der Lesefläche', count: 1 },
+    { match: "<th x-text=\"t('tzAbbr')\"", reason: 'Weltuhr, aus Zeitzone und Uhrzeit abgeleitet; nicht Teil der Lesefläche', count: 1 },
+    { match: "<th x-text=\"t('tzDate')\"", reason: 'Weltuhr, aus Zeitzone und Uhrzeit abgeleitet; nicht Teil der Lesefläche', count: 1 },
+    { match: "<th x-text=\"t('tzTime')\"", reason: 'Weltuhr, aus Zeitzone und Uhrzeit abgeleitet; nicht Teil der Lesefläche', count: 1 },
   ],
   'doe-advisor': [
     { match: "t('col.", reason: 'Nachschlagetabelle mit festem Inhalt (Versuchsplankatalog, Phasenleitfaden); nicht Teil der Lesefläche', count: 8 },
@@ -141,7 +147,7 @@ export const ANCHOR_EXEMPTIONS = {
     { match: 'triz-sf__filter-label', reason: 'Optionsfeld-Paar: nur das letzte trägt den Anker (ein Kreis je Gruppe)', count: 1 },
   ],
   fmea: [
-    { match: 'data-icon="action.confirm"', reason: 'Schmale Symbolspalte „Umgesetzt“; ein Kreis läge über dem Kopf „Maßnahme“', count: 1 },
+    { match: '<th style="width:28px"><span class="icon icon--sm" data-icon="action.confirm"', reason: 'Schmale Symbolspalte „Umgesetzt“; ein Kreis läge über dem Kopf „Maßnahme“', count: 1 },
     { match: "t('rating')", reason: 'Gruppentitel über S, O, D; jede der drei Beschriftungen ist einzeln erklärt', count: 1 },
     { match: "t('scaleValue')", reason: 'Bewertungsskala, Eingabetabelle der Skalentexte (Wert 1–10)', count: 4 },
     { match: "t('scaleMeaning')", reason: 'Bewertungsskala, Eingabetabelle der Skalentexte', count: 2 },

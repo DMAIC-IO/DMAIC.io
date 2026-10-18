@@ -1265,7 +1265,8 @@ function helpKeysInTemplates(appDir, moduleId) {
  * `addHelpKey`), Kacheln und Spalten (`help`). Nur Literale in einfachen
  * Anführungszeichen, die mit `modules.` beginnen — zusammengesetzte
  * Schlüssel (`${HELP}Result.R2`) zeigen auf Typedef-Sätze und stehen im
- * Typedef-Tor.
+ * Typedef-Tor. Ausgenommen sind Handbuchdateien (`*-help.js`, kein
+ * Kontexthilfe-Anker) und Kommentare (`helpKeysInScripts` entfernt sie vorher).
  */
 const LITERAL_HELP_KEY = /\b(?:helpKey|addHelpKey|help)\s*:\s*'(modules\.[^']+)'/g;
 
@@ -1277,8 +1278,9 @@ function helpKeysInScripts(appDir, moduleId) {
   const dir = join(appDir, 'js', 'modules', moduleId);
   const keys = [];
   for (const file of readdirSync(dir)) {
-    if (!file.endsWith('.js')) continue;
-    const js = readFileSync(join(dir, file), 'utf8');
+    if (!file.endsWith('.js') || file.endsWith('-help.js')) continue;
+    const js = readFileSync(join(dir, file), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
     for (const m of js.matchAll(LITERAL_HELP_KEY)) keys.push([file, m[1]]);
   }
   return keys;
@@ -1401,6 +1403,47 @@ test('i18n-Tor: ein verankerter Satz (Vorlage, Modul-JS, geteilter Baustein) ent
     }
   }
   assert.deepEqual(jargon, [], `Strukturjargon in verankerten Sätzen:\n${jargon.join('\n')}`);
+});
+
+/**
+ * Hilfeschlüssel, die eine Vorlage erst zur Laufzeit zusammensetzt
+ * (`:data-help-key="…"`) — für `helpKeysInTemplates` unsichtbar. Jede Familie
+ * zählt ihre Schlüssel aus der Quelle auf, die auch die Oberfläche benutzt.
+ *
+ * @type {Array<{ moduleId: string, keys: () => Promise<string[]> | string[] }>}
+ */
+export const BOUND_HELP_KEY_FAMILIES = [
+  {
+    moduleId: 'attribute-test',
+    keys: async () => {
+      const { STAT_ROWS } = await import('../../js/modules/attribute-test/attribute-test-report.js');
+      return Object.entries(STAT_ROWS).flatMap(([kind, rows]) =>
+        rows.map((key) => `modules.attribute-test.stats.${kind}.${key}`));
+    },
+  },
+];
+
+test('i18n-Tor: jeder zur Laufzeit gebundene Hilfeschlüssel löst in BEIDEN Sprachdateien auf und ist frei von Strukturjargon', async () => {
+  const appDir = join(import.meta.dirname, '..', '..');
+  const trees = {
+    de: JSON.parse(readFileSync(join(appDir, 'i18n', 'de.json'), 'utf8')),
+    en: JSON.parse(readFileSync(join(appDir, 'i18n', 'en.json'), 'utf8')),
+  };
+  const problems = [];
+  let checked = 0;
+  for (const { moduleId, keys } of BOUND_HELP_KEY_FAMILIES) {
+    for (const key of await keys()) {
+      checked += 1;
+      for (const [lang, tree] of Object.entries(trees)) {
+        const text = lookup(tree, key);
+        if (text === undefined) { problems.push(`${lang}: ${moduleId} → ${key} löst nicht auf`); continue; }
+        const hit = STRUCTURE_JARGON.exec(text);
+        if (hit) problems.push(`${lang}: ${moduleId} → ${key} enthält Strukturjargon („${hit[0]}")`);
+      }
+    }
+  }
+  assert.ok(checked > 0, 'keine gebundenen Hilfeschlüssel geprüft');
+  assert.deepEqual(problems, [], `gebundene Hilfeschlüssel:\n${problems.join('\n')}`);
 });
 
 /* Controller-Entscheid zu Review-Befund 2: das Tor darf NICHT den
