@@ -104,6 +104,9 @@ const CONTRAST_LABEL_KEYS = { difference: 'contrastDifference', ratio: 'contrast
 const DIRECTION_LABEL_KEYS = { 'two-sided': 'twoSided', greater: 'greater', less: 'less' };
 const CI_METHOD_LABEL_KEYS = { bca: 'ciBca', percentile: 'ciPercentile' };
 
+/** Präfix der Hilfeschlüssel für die Typen dieses Moduls (`resultHelp`). */
+const HELP = 'modules.resampling.types.';
+
 /**
  * Die Schlüsselfläche von `setParam`. Punkt im Schlüssel = Verschachtelung
  * im Model (`statParams.trim`). Sätze je Schlüssel unter
@@ -520,8 +523,8 @@ const mod = createModule({
        * @returns {string}
        */
       resultHelp(prop) {
-        if (this.view && this.view.isK) return `modules.resampling.types.KResult.${prop}`;
-        return `modules.resampling.types.${prop === 'estimate' ? 'Boot' : 'Perm'}.${prop}`;
+        if (this.view && this.view.isK) return `${HELP}KResult.${prop}`;
+        return `${HELP}${prop === 'estimate' ? 'Boot' : 'Perm'}.${prop}`;
       },
 
       /** @noagent view transform; Kernaussage als ein übersetzter Absatz */

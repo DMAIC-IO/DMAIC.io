@@ -3806,7 +3806,7 @@
             "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns.measurement, oder null zum Leeren."
           }
         },
-        "addFactor": { "help": "Hängt eine leere Faktorzeile ans Ende (innerste Schachtelungsstufe) und gibt ihre id zurück. Fehler, sobald vier Faktoren geführt werden." },
+        "addFactor": { "help": "Hängt eine leere Faktorzeile ans Ende (innerste Schachtelungsstufe). Bei vier Faktoren ist Schluss: eine fünfte Zeile lässt sich nicht anfügen." },
         "removeFactor": {
           "help": "Entfernt eine Faktorzeile; die Analyse läuft danach neu. Fehler, wenn nur noch zwei Zeilen bleiben.",
           "params": { "rowId": "Die id einer Zeile aus read().factors. Eine unbekannte id ist ein Fehler." }
@@ -3844,8 +3844,8 @@
       },
       "types": {
         "Params": {
-          "modelForm": "Die Modellform der Varianzzerlegung, Auswahl Modellform, Vorgabe Geschachtelt. Geschachtelt bildet die Terme A, B (in A), C (in A, B) …: jede Einflussgröße steckt in allen davor, die Reihenfolge der Faktorzeilen ist die Schachtelung. Gekreuzt bildet alle Haupteffekte und Wechselwirkungen (A, B, A × B …). Die Modellform bestimmt auch, welche Faktorkombinationen erwartet werden, und damit das Urteil, ob der Plan ausgewogen ist.",
-          "estimator": "Der Schätzer der Varianzkomponenten, Auswahl Schätzer, Vorgabe ANOVA (Henderson I). ANOVA löst die Gleichungen der erwarteten mittleren Quadratsummen in einem Schritt und setzt negative Schätzungen auf 0; REML schätzt iterativ (höchstens 100 Iterationen, Toleranz 10⁻⁸) und bleibt dabei nicht negativ, bei unausgewogenen Plänen die belastbarere Wahl. Bei mehr als 500 Messwerten fällt REML auf ANOVA zurück; welcher Schätzer tatsächlich gerechnet hat, steht bei den Varianzkomponenten.",
+          "modelForm": "Die Modellform der Varianzzerlegung, Auswahl Modellform, Vorgabe Geschachtelt. Geschachtelt bildet die Terme A, B (in A), C (in A, B) …: jede Einflussgröße steckt in allen davor, die Reihenfolge der Faktorzeilen ist die Schachtelung. Gekreuzt bildet alle Haupteffekte und Wechselwirkungen (A, B, A × B …). Die Modellform bestimmt auch, welche Faktorkombinationen erwartet werden, und damit, ob der Hinweis „Unbalancierter Versuchsplan“ erscheint.",
+          "estimator": "Der Schätzer der Varianzkomponenten, Auswahl Schätzer, Vorgabe ANOVA (Henderson I). ANOVA löst die Gleichungen der erwarteten mittleren Quadratsummen in einem Schritt und setzt negative Schätzungen auf 0; REML schätzt iterativ (höchstens 100 Iterationen, Toleranz 10⁻⁸) und bleibt dabei nicht negativ, bei unbalancierten Versuchsplänen die belastbarere Wahl. Bei mehr als 500 Messwerten fällt REML auf ANOVA zurück; welcher Schätzer tatsächlich gerechnet hat, steht bei den Varianzkomponenten.",
           "showPoints": "Anzeigeschalter Einzelmessungen zeigen, Vorgabe an: zeichnet jede Einzelmessung als Punkt in der Farbe ihrer Serie. Ändert nur das Diagramm, nicht das Ergebnis.",
           "connectMeans": "Anzeigeschalter Mittelwerte verbinden, Vorgabe an: verbindet in jedem Panel die Zellmittelwerte einer Serie über die Stufen der X-Achse durch eine Linie. Ändert nur das Diagramm, nicht das Ergebnis.",
           "showGroupMean": "Anzeigeschalter Gruppenmittel zeigen, Vorgabe an: markiert das Mittel jeder Gruppe auf der X-Achse, über alle Serien hinweg, mit einem kurzen waagrechten Strich. Ändert nur das Diagramm, nicht das Ergebnis.",
@@ -4115,8 +4115,8 @@
           "zBenchOverall": "Z.bench gesamt: das Normalverteilungs-Quantil des erwarteten Anteils außerhalb beider Grenzen nach dem Modell gesamt, Z = −Φ⁻¹(p). Die Sigma-Kachel nennt es als „Z.bench gesamt“.",
           "sigmaLevel": "Das Sigma-Level, Kachel „Sigma-Level (Z.bench innerhalb)“: gleich Z.bench innerhalb, also das Normalverteilungs-Quantil des erwarteten Anteils außerhalb beider Grenzen mit σ innerhalb. Es zählt beide Grenzen und ist darum höchstens 3 · Cpk; bei nur einer Grenze sind beide gleich.",
           "sigmaLevelShifted": "Das Sigma-Level nach Six-Sigma-Konvention: Z.bench gesamt + 1,5. Der Zuschlag von 1,5σ ist eine Konvention der Six-Sigma-Ausbildung, kein Messergebnis; die Sigma-Kachel nennt ihn als „Six-Sigma-Konvention (+1,5σ)“.",
-          "cpkStatus": "Das Urteil zu Cpk: bestanden ab 1,33, Warnung ab 1,0, sonst nicht bestanden. Es färbt die Cpk-Kachel und ist das Gesamturteil.",
-          "cpStatus": "Das Urteil zu Cp: bestanden ab 1,33, Warnung ab 1,0, sonst nicht bestanden. Es färbt die Cp-Kachel; leer, wenn Cp fehlt.",
+          "cpkStatus": "Das Urteil zu Cpk: „Fähig“ ab 1,33, „Bedingt“ ab 1,0, sonst „Nicht fähig“. Es färbt die Cpk-Kachel und ist das Gesamturteil.",
+          "cpStatus": "Das Urteil zu Cp: „Fähig“ ab 1,33, „Bedingt“ ab 1,0, sonst „Nicht fähig“. Es färbt die Cp-Kachel; leer, wenn Cp fehlt.",
           "overall": "Das Gesamturteil der Statuszeile, gleich dem Urteil zu Cpk: „PROZESS FÄHIG“ ab Cpk 1,33, „BEDINGT FÄHIG“ ab 1,0, sonst „PROZESS NICHT FÄHIG“."
         }
       },
@@ -4640,16 +4640,16 @@
           }
         },
         "startComparison": {
-          "help": "Startet den Vergleich: bildet alle Paare der Kriterien in gemischter Reihenfolge und wechselt auf den Reiter Vergleich. Unter drei Kriterien liefert der Aufruf false — eine Absage, kein Fehler."
+          "help": "Startet den Vergleich: bildet alle Paare der Kriterien in gemischter Reihenfolge und wechselt auf den Reiter Vergleich. Unter drei Kriterien startet kein Vergleich — das ist kein Fehler."
         },
         "chooseLeft": {
-          "help": "Entscheidet das anstehende Paar für das linke Kriterium (Taste Pfeil links): es bekommt 1 Punkt, das andere 0. Danach kommt das nächste Paar; nach dem letzten wechselt die Ansicht auf den Reiter Ergebnis. Läuft kein Vergleich — vor dem Start oder wenn alle Paare entschieden sind —, liefert der Aufruf false; das ist eine Absage, kein Fehler."
+          "help": "Entscheidet das anstehende Paar für das linke Kriterium (Taste Pfeil links): es bekommt 1 Punkt, das andere 0. Danach kommt das nächste Paar; nach dem letzten wechselt die Ansicht auf den Reiter Ergebnis. Läuft kein Vergleich — vor dem Start oder wenn alle Paare entschieden sind —, geschieht nichts; das ist kein Fehler."
         },
         "chooseRight": {
-          "help": "Entscheidet das anstehende Paar für das rechte Kriterium (Taste Pfeil rechts): es bekommt 1 Punkt, das andere 0. Danach kommt das nächste Paar; nach dem letzten wechselt die Ansicht auf den Reiter Ergebnis. Läuft kein Vergleich — vor dem Start oder wenn alle Paare entschieden sind —, liefert der Aufruf false; das ist eine Absage, kein Fehler."
+          "help": "Entscheidet das anstehende Paar für das rechte Kriterium (Taste Pfeil rechts): es bekommt 1 Punkt, das andere 0. Danach kommt das nächste Paar; nach dem letzten wechselt die Ansicht auf den Reiter Ergebnis. Läuft kein Vergleich — vor dem Start oder wenn alle Paare entschieden sind —, geschieht nichts; das ist kein Fehler."
         },
         "tieCurrent": {
-          "help": "Wertet das anstehende Paar als gleichwertig (Leertaste): beide Kriterien bekommen 0,5 Punkte. Danach kommt das nächste Paar. Läuft kein Vergleich — vor dem Start oder wenn alle Paare entschieden sind —, liefert der Aufruf false; das ist eine Absage, kein Fehler."
+          "help": "Wertet das anstehende Paar als gleichwertig (Leertaste): beide Kriterien bekommen 0,5 Punkte. Danach kommt das nächste Paar. Läuft kein Vergleich — vor dem Start oder wenn alle Paare entschieden sind —, geschieht nichts; das ist kein Fehler."
         },
         "setViewPhase": {
           "help": "Wechselt den angezeigten Reiter: Kriterien, Vergleich oder Ergebnis. Vergleich ist nur bei laufendem, Ergebnis nur bei abgeschlossenem Vergleich erreichbar.",
@@ -7417,7 +7417,7 @@
         },
         "Result": {
           "kind": "Die Testart, für die der Bericht gerechnet wurde: ein Anteil, zwei Anteile oder Chi-Quadrat-Assoziation, wie im Abschnitt „Test“ gewählt.",
-          "stats": "Die Kennzahlzeilen der Tabelle unter „Ergebnisse“, je Testart andere: Anzahlen, Anteile, Konfidenzintervall, Prüfgröße und p-Werte; jede Zeile ist beim Überfahren ihrer Beschriftung einzeln erklärt.",
+          "stats": "Die Kennzahlzeilen der Tabelle unter „Ergebnisse“, je Testart andere: Anzahlen, Anteile, Konfidenzintervall, Prüfgröße und p-Werte; jede Zeile ist einzeln erklärt: Alt halten und das Fragezeichen neben ihrer Beschriftung anklicken.",
           "notes": "Hinweise unter der Entscheidung: übersprungene Zeilen mit fehlenden Werten, die ungeeignete Normalapproximation (ein Anteil), der gepoolte z-Test (zwei Anteile), entfernte leere Zeilen oder Spalten und die Warnungen zu kleinen erwarteten Häufigkeiten (Zusammenhangstest).",
           "decision": "Die Entscheidung gegen α: „H₀ verwerfen“, wenn der maßgebliche p-Wert kleiner als α ist, sonst „H₀ nicht verwerfen“. Maßgeblich ist beim Test eines Anteils der exakte Binomialtest, bei zwei Anteilen der p-Wert des z-Tests und beim Zusammenhangstest der p-Wert von Pearson χ² (immer zweiseitig). Die Grundlage steht neben der Entscheidung.",
           "basisKey": "Kennung des Satzes, der die Grundlage der Entscheidung nennt: exakter Binomialtest, z-Test oder Pearson χ².",
@@ -9893,13 +9893,13 @@
           }
         },
         "importExperiment": {
-          "help": "Übernimmt die Faktoren und eine Antwort eines Versuchsplans als Einflussgrößen und Zielgröße und rechnet; activeImportSource nennt die Quelle. Ohne Auswahl wird die Quelle gelöst, die Spalten bleiben stehen.",
+          "help": "Übernimmt die Faktoren und eine Antwort eines Versuchsplans als Einflussgrößen und Zielgröße und rechnet; die Auswahl zeigt danach den übernommenen Versuchsplan. Mit „— Versuchsplan wählen —“ wird die Verbindung gelöst, die Spalten bleiben stehen.",
           "params": {
             "key": "Ein Schlüssel aus experimentImports, oder null."
           }
         },
         "setActiveX": {
-          "help": "Wählt bei Einzel-X-Modellen (Exponentiell, Logarithmisch, Potenz mit mehreren X) das Modell, dessen Ergebnis gezeigt wird; activeXKey zieht nach.",
+          "help": "Wählt bei Einzel-X-Modellen (Exponentiell, Logarithmisch, Potenz mit mehreren X) das Modell, dessen Ergebnis gezeigt wird; der Knopf des gewählten Modells ist hervorgehoben.",
           "params": {
             "key": "Ein Schlüssel aus perXKeys."
           }
@@ -9911,10 +9911,10 @@
           "help": "Rechnet das Modell mit den aktuellen Eingaben. Bei einem Fehlschlag ist result null und errorMsg nennt den Grund; bei Aliasing nennt terms die Terme, die setTerm dann ausschließen kann."
         },
         "saveAsModel": {
-          "help": "Speichert das Polynommodell (ein oder mehrere X) in die Projektmodelle, neu oder als Aktualisierung des zuletzt gespeicherten, und gibt dessen Kennung zurück; ohne speicherbares Modell bleibt die Rückgabe leer. savedModelId zieht nach."
+          "help": "Speichert das Polynommodell (ein oder mehrere X) in die Projektmodelle, neu oder als Aktualisierung des zuletzt gespeicherten; danach heißt der Knopf „Modell aktualisieren“, und daneben steht „Modell gespeichert“. Ohne speicherbares Modell wird nichts gespeichert."
         },
         "predict": {
-          "help": "Sagt die Zielgröße für die angegebenen Werte der Einflussgrößen vorher und füllt prediction; die Vorhersage bleibt leer, wenn ein Prädiktor ohne Wert bleibt oder kein Ergebnis vorliegt.",
+          "help": "Sagt die Zielgröße für die angegebenen Werte der Einflussgrößen vorher und zeigt sie unter „Prognose“; die Prognose bleibt leer, wenn ein Prädiktor ohne Wert bleibt oder kein Ergebnis vorliegt.",
           "params": {
             "values": "Ein Objekt mit je Prädiktor-id aus predictors einem Wert: eine Zahl, bei kategorialen Prädiktoren eine der Stufen. Fehlende Prädiktoren lassen das Ergebnis null."
           }
@@ -10177,7 +10177,7 @@
           }
         },
         "runOptimize": {
-          "help": "Optimiert die gewählten Modelle gemeinsam und speichert das Optimum im Projekt; zu lesen unter result. Ist canOptimize falsch (kein Modell gewählt, R²adj zu niedrig, signifikanter Anpassungsmangel oder unterschiedliche Faktoren der gewählten Modelle), wird nichts gerechnet, result bleibt, wie es war, und errorMsg nennt die Gründe. Scheitert die Engine, bleibt result ebenfalls unverändert und errorMsg enthält den Engine-Fehler. Nach einem erfolgreichen Lauf ist errorMsg leer."
+          "help": "Optimiert die gewählten Modelle gemeinsam und speichert das Optimum im Projekt; es erscheint unter „Ergebnis“. Ist Optimieren gesperrt (kein Modell gewählt, R²adj zu niedrig, signifikanter Anpassungsmangel oder unterschiedliche Faktoren der gewählten Modelle), wird nichts gerechnet, das bisherige Ergebnis bleibt stehen, und eine Meldung über dem Knopf nennt die Gründe. Scheitert die Berechnung, bleibt das Ergebnis ebenfalls unverändert, und die Meldung nennt den Fehler. Nach einem erfolgreichen Lauf verschwindet die Meldung."
         }
       },
       "fields": {
@@ -10194,7 +10194,7 @@
           "help": "Nur wahr, wenn mindestens ein Modell gewählt ist und diagnosticReasons leer ist; sonst rechnet runOptimize nichts."
         },
         "diagnosticReasons": {
-          "help": "Die Gründe, die das Optimieren sperren, als Texte: R²adj unter 0,5, signifikanter Anpassungsmangel (p unter 0,05) oder unterschiedliche Faktorstruktur der gewählten Modelle. Leer, wenn nichts sperrt, und auch leer, solange kein Modell gewählt ist (canOptimize ist dann falsch)."
+          "help": "Die Gründe, die das Optimieren sperren, als Texte: R²adj unter 0,5, signifikanter Anpassungsmangel (p unter 0,05) oder unterschiedliche Faktorstruktur der gewählten Modelle. Leer, wenn nichts sperrt, und auch leer, solange kein Modell gewählt ist (Optimieren ist dann trotzdem gesperrt)."
         },
         "result": {
           "help": "Das gespeicherte Optimum, jede Kennzahl unter keys einzeln beschrieben; null, solange nicht optimiert wurde oder der gespeicherte Datensatz fehlt."
@@ -10362,7 +10362,7 @@
           "method": "Die Verteilungsfamilie, Abschnitt Verfahren: Auto-Erkennung, Binomial (logistische Regression mit Logit-Link), Poisson oder Negativ-Binomial (beide mit Log-Link). Die Auto-Erkennung wählt binomial bei genau zwei Ausprägungen der Zielgröße, bei ganzzahligen, nicht negativen Werten negativ-binomial, wenn Varianz/Mittelwert über 2 liegt, sonst Poisson; Anteile zwischen 0 und 1 rechnet sie binomial, braucht dafür aber eine Spalte mit der Zahl der Versuche. Eine Änderung rechnet neu.",
           "confLevel": "Das Konfidenzniveau als Anteil zwischen 0 und 1, also 0,95 statt 95; das Eingabefeld zeigt es in Prozent. Es bestimmt die Konfidenzgrenzen der Koeffizienten, der Verhältnisse und der Vorhersage. Das Signifikanzniveau wird dabei zu 1 minus diesem Wert. Eine Änderung rechnet neu.",
           "alpha": "Das Signifikanzniveau α als Anteil zwischen 0 und 1, also 0,05 statt 5; das Eingabefeld zeigt es in Prozent. Das Konfidenzniveau wird dabei zu 1 minus diesem Wert, die Konfidenzgrenzen ändern sich entsprechend. Eine Änderung rechnet neu.",
-          "cutoff": "Die Klassifikationsschwelle zwischen 0 und 1, voreingestellt 0,5, im Reiter ROC am Schieberegler: Eine Beobachtung gilt als vorhergesagt 1, wenn ihre geschätzte Wahrscheinlichkeit mindestens die Schwelle erreicht. Ein neuer Wert zählt nur die Konfusionstafel und ihre Raten neu, das Modell wird nicht neu angepasst. Nur bei binomialem Ergebnis wählbar."
+          "cutoff": "Die Klassifikationsschwelle zwischen 0 und 1, voreingestellt 0,5, im Reiter ROC / Klassifikation am Schieberegler: Eine Beobachtung gilt als vorhergesagt 1, wenn ihre geschätzte Wahrscheinlichkeit mindestens die Schwelle erreicht. Ein neuer Wert zählt nur die Konfusionstafel und ihre Raten neu, das Modell wird nicht neu angepasst. Nur bei binomialem Ergebnis wählbar."
         },
         "Result": {
           "family": "Die tatsächlich angepasste Verteilungsfamilie mit Link-Funktion und, bei Negativ-Binomial, dem geschätzten θ; bei Auto-Erkennung die gewählte Familie.",
@@ -10380,7 +10380,7 @@
           "auc": "Fläche unter der ROC-Kurve, Kachel AUC, zwischen 0 und 1: 0,5 entspricht Raten, 1 einer perfekten Trennung. Die Kachel ist ab 0,8 grün, ab 0,6 gelb, darunter rot. Nur bei binomialem Ergebnis, sonst leer.",
           "hosmerLemeshow": "Hosmer-Lemeshow-Anpassungstest: die Beobachtungen werden nach geschätzter Wahrscheinlichkeit in 10 Gruppen geteilt (bei wenigen Daten weniger, mindestens 4) und beobachtete mit erwarteten Ereignissen per χ² mit Gruppen − 2 Freiheitsgraden verglichen; ein kleiner p-Wert spricht gegen die Anpassung. Bei weniger als 20 Beobachtungen (bei gruppierten Daten: Versuchen) wird der Test übersprungen und zeigt dann Statistik 0 und p = 1. Nur bei binomialem Ergebnis, sonst leer.",
           "overdispersionRatio": "χ²/df (Überdispersion): Pearson-χ² geteilt durch n − p; derselbe Wert wie das Verhältnis der Überdispersionsprüfung. Über 1,5 gilt die Poisson-Anpassung als überdispers. Nur bei Poisson, sonst leer.",
-          "overdispersion": "Die Überdispersionsprüfung im Reiter Diagnose mit Pearson-χ², Freiheitsgraden und ihrem Verhältnis. Nur bei Poisson, sonst leer.",
+          "overdispersion": "Die Überdispersionsprüfung im Reiter Diagnostik mit Pearson-χ², Freiheitsgraden und ihrem Verhältnis. Nur bei Poisson, sonst leer.",
           "vif": "Varianzinflationsfaktoren der Prädiktoren, Tabelle VIF; der erste Wert gehört zum ersten Prädiktor nach dem Achsenabschnitt, also zur zweiten Zeile der Koeffiziententabelle. Über 5 wird die Zelle markiert, über 10 gewarnt. Nur ab zwei Prädiktorspalten, sonst leer; ein einzelner Wert ist leer, wenn er sich nicht rechnen lässt.",
           "warnings": "Die Warnungen über der Ausgabe, etwa zu Trennung, wenigen Ereignissen, langsamer Konvergenz, Überdispersion oder Quasi-Poisson. Die Texte stehen in der Sprache der Oberfläche.",
           "equation": "Die Modellgleichung als Text, wie sie unter Modellgleichung steht: logit(p) bei binomial, log(μ) bei Poisson und Negativ-Binomial, gleich der Summe aus Achsenabschnitt und Koeffizient mal Term, auf vier Nachkommastellen gerundet."
@@ -10892,7 +10892,7 @@
           "kurtosis": "Die Exzess-Wölbung der Stichprobe, Zeile Kurtosis (Exzess): n(n + 1)/((n − 1)(n − 2)(n − 3)) · Σ((x − x̄)/s)⁴ − 3(n − 1)²/((n − 2)(n − 3)); 0 entspricht der Normalverteilung. Leer bei genau 3 Werten oder wenn alle Werte gleich sind; die Tabelle zeigt dann einen Strich.",
           "min": "Der kleinste Wert der Reihe, Zeile Min.",
           "max": "Der größte Wert der Reihe, Zeile Max.",
-          "adPValue": "Der p-Wert des Anderson-Darling-Tests auf Normalverteilung, Abschnitt Normalitätstest (Anderson-Darling), angezeigt als p ≈ neben A². Aus A² wird das korrigierte A²* = A²·(1 + 0,75/n + 2,25/n²) gebildet und daraus p nach D'Agostino und Stephens. Die Anzeige wertet mit α = 0,05: p ≥ 0,05 heißt Normal, p < 0,05 Nicht normal. Leer, wenn alle Werte gleich sind; dann fehlt auch das Urteil."
+          "adPValue": "Der p-Wert des Anderson-Darling-Tests auf Normalverteilung, Abschnitt Normalitätstest (Anderson-Darling), angezeigt als p ≈ neben A². Das angezeigte A² ist bereits das korrigierte A²* = A²·(1 + 0,75/n + 2,25/n²); aus ihm folgt p nach D'Agostino und Stephens. Die Anzeige wertet mit α = 0,05: p ≥ 0,05 heißt Normal, p < 0,05 Nicht normal. Leer, wenn alle Werte gleich sind; dann fehlt auch das Urteil."
         }
       },
       "name": "Datentransformation",

@@ -3802,7 +3802,7 @@
             "ref": "Column reference { instanceId, sheetId, columnId } of a column from pickableColumns.measurement, or null to clear."
           }
         },
-        "addFactor": { "help": "Appends an empty factor row at the end (innermost nesting level) and returns its id. An error once four factors exist." },
+        "addFactor": { "help": "Appends an empty factor row at the end (innermost nesting level). Four factors are the limit: a fifth row cannot be added." },
         "removeFactor": {
           "help": "Removes a factor row; the analysis reruns. An error when only two rows remain.",
           "params": { "rowId": "The id of a row from read().factors. An unknown id is an error." }
@@ -3840,7 +3840,7 @@
       },
       "types": {
         "Params": {
-          "modelForm": "The model form of the variance decomposition, selector Model form, default Nested. Nested builds the terms A, B (in A), C (in A, B) …: each factor sits inside all factors before it, the order of the factor rows is the nesting. Crossed builds all main effects and interactions (A, B, A × B …). The model form also decides which factor combinations are expected and therefore whether the design counts as balanced.",
+          "modelForm": "The model form of the variance decomposition, selector Model form, default Nested. Nested builds the terms A, B (in A), C (in A, B) …: each factor sits inside all factors before it, the order of the factor rows is the nesting. Crossed builds all main effects and interactions (A, B, A × B …). The model form also decides which factor combinations are expected and therefore whether the note “Unbalanced design” appears.",
           "estimator": "The estimator of the variance components, selector Estimator, default ANOVA (Henderson I). ANOVA solves the equations of the expected mean squares in one step and sets negative estimates to 0; REML estimates iteratively (at most 100 iterations, tolerance 10⁻⁸) and stays non-negative, the more dependable choice for unbalanced designs. With more than 500 measurements REML falls back to ANOVA; the estimator that actually ran is reported with the variance components.",
           "showPoints": "Display switch Show single measurements, default on: draws every single measurement as a point in the colour of its series. Changes only the chart, not the result.",
           "connectMeans": "Display switch Connect means, default on: in every panel, joins the cell means of a series across the X axis levels with a line. Changes only the chart, not the result.",
@@ -4111,8 +4111,8 @@
           "zBenchOverall": "Z.bench overall: the normal quantile of the expected fraction outside both limits under the overall model, Z = −Φ⁻¹(p). The sigma tile names it as “Z.bench overall”.",
           "sigmaLevel": "The sigma level, tile “Sigma level (Z.bench within)”: equal to Z.bench within, the normal quantile of the expected fraction outside both limits with σ within. It counts both limits and is therefore at most 3 · Cpk; with only one limit the two are equal.",
           "sigmaLevelShifted": "The sigma level by the Six Sigma convention: Z.bench overall + 1.5. The 1.5σ shift is a convention of Six Sigma training, not a measured result; the sigma tile names it as “Six Sigma convention (+1.5σ)”.",
-          "cpkStatus": "The verdict on Cpk: pass from 1.33, warning from 1.0, otherwise fail. It colours the Cpk tile and is the overall verdict.",
-          "cpStatus": "The verdict on Cp: pass from 1.33, warning from 1.0, otherwise fail. It colours the Cp tile; empty when Cp is missing.",
+          "cpkStatus": "The verdict on Cpk: “Capable” from 1.33, “Conditional” from 1.0, otherwise “Not capable”. It colours the Cpk tile and is the overall verdict.",
+          "cpStatus": "The verdict on Cp: “Capable” from 1.33, “Conditional” from 1.0, otherwise “Not capable”. It colours the Cp tile; empty when Cp is missing.",
           "overall": "The overall verdict of the status bar, equal to the verdict on Cpk: “PROCESS CAPABLE” from Cpk 1.33, “CONDITIONALLY CAPABLE” from 1.0, otherwise “PROCESS NOT CAPABLE”."
         }
       },
@@ -4636,16 +4636,16 @@
           }
         },
         "startComparison": {
-          "help": "Starts the comparison: forms every pair of the criteria in shuffled order and switches to the Comparison tab. With fewer than three criteria the call returns false — a refusal, not an error."
+          "help": "Starts the comparison: forms every pair of the criteria in shuffled order and switches to the Comparison tab. With fewer than three criteria no comparison starts — that is not an error."
         },
         "chooseLeft": {
-          "help": "Decides the pending pair for the left criterion (left arrow key): it gets 1 point, the other 0. Then the next pair follows; after the last one the view switches to the Result tab. While no comparison is running — before the start or once all pairs are decided — the call returns false; that is a refusal, not an error."
+          "help": "Decides the pending pair for the left criterion (left arrow key): it gets 1 point, the other 0. Then the next pair follows; after the last one the view switches to the Result tab. While no comparison is running — before the start or once all pairs are decided — nothing happens; that is not an error."
         },
         "chooseRight": {
-          "help": "Decides the pending pair for the right criterion (right arrow key): it gets 1 point, the other 0. Then the next pair follows; after the last one the view switches to the Result tab. While no comparison is running — before the start or once all pairs are decided — the call returns false; that is a refusal, not an error."
+          "help": "Decides the pending pair for the right criterion (right arrow key): it gets 1 point, the other 0. Then the next pair follows; after the last one the view switches to the Result tab. While no comparison is running — before the start or once all pairs are decided — nothing happens; that is not an error."
         },
         "tieCurrent": {
-          "help": "Rates the pending pair as equally important (space bar): both criteria get 0.5 points. Then the next pair follows. While no comparison is running — before the start or once all pairs are decided — the call returns false; that is a refusal, not an error."
+          "help": "Rates the pending pair as equally important (space bar): both criteria get 0.5 points. Then the next pair follows. While no comparison is running — before the start or once all pairs are decided — nothing happens; that is not an error."
         },
         "setViewPhase": {
           "help": "Switches the displayed tab: Criteria, Comparison or Result. Comparison is only reachable while a comparison is running, Result only once it is finished.",
@@ -7413,7 +7413,7 @@
         },
         "Result": {
           "kind": "The test type the report was computed for: one proportion, two proportions or chi-square association, as chosen in the “Test” section.",
-          "stats": "The figure rows of the table under “Results”, different for each test type: counts, proportions, confidence interval, test statistic and p-values; each row is explained individually when hovering its label.",
+          "stats": "The figure rows of the table under “Results”, different for each test type: counts, proportions, confidence interval, test statistic and p-values; each row is explained individually: hold Alt and click the question mark next to its label.",
           "notes": "Notes below the decision: skipped rows with missing values, the unsuitable normal approximation (one proportion), the pooled z-test (two proportions), removed empty rows or columns and the warnings about small expected counts (association test).",
           "decision": "The decision against α: “Reject H₀” when the deciding p-value is below α, otherwise “Do not reject H₀”. The deciding test is the exact binomial test for one proportion, the z-test for two proportions and Pearson χ² (always two-sided) for the association test. The basis is shown next to the decision.",
           "basisKey": "Identifier of the sentence naming the basis of the decision: exact binomial test, z-test or Pearson χ².",
@@ -9889,13 +9889,13 @@
           }
         },
         "importExperiment": {
-          "help": "Takes the factors and a response of an experimental design as predictors and response and fits; activeImportSource names the source. Without a choice the source is released and the columns stay.",
+          "help": "Takes the factors and a response of an experimental design as predictors and response and fits; the selector then shows the imported design. With “— Choose experiment —” the link is released and the columns stay.",
           "params": {
             "key": "A key from experimentImports, or null."
           }
         },
         "setActiveX": {
-          "help": "For single-X models (exponential, logarithmic, power with several X) chooses the model whose result is shown; activeXKey follows.",
+          "help": "For single-X models (exponential, logarithmic, power with several X) chooses the model whose result is shown; the button of the chosen model is highlighted.",
           "params": {
             "key": "A key from perXKeys."
           }
@@ -9907,10 +9907,10 @@
           "help": "Fits the model with the current inputs. On failure result is null and errorMsg names the reason; with aliasing, terms lists the terms setTerm can exclude."
         },
         "saveAsModel": {
-          "help": "Saves the polynomial model (one or several X) in the project models, new or as an update of the model saved last, and returns its identifier; without a model that can be saved the return stays empty. savedModelId follows."
+          "help": "Saves the polynomial model (one or several X) in the project models, new or as an update of the model saved last; the button then reads “Update model”, and “Model saved” appears next to it. Without a model that can be saved nothing is stored."
         },
         "predict": {
-          "help": "Predicts the response for the given values of the predictors and fills prediction; the prediction stays empty when a predictor is left without a value or there is no result.",
+          "help": "Predicts the response for the given values of the predictors and shows it under “Prediction”; the prediction stays empty when a predictor is left without a value or there is no result.",
           "params": {
             "values": "An object with one value per predictor id from predictors: a number, or one of the levels for categorical predictors. Missing predictors make the result null."
           }
@@ -10173,7 +10173,7 @@
           }
         },
         "runOptimize": {
-          "help": "Optimises the selected models together and stores the optimum in the project; read it from result. If canOptimize is false (no model selected, R²adj too low, significant lack of fit or different factors across the selected models) nothing is computed, result stays as it was and errorMsg names the reasons. If the engine fails, result stays as it was and errorMsg holds the engine error. After a successful run errorMsg is empty."
+          "help": "Optimises the selected models together and stores the optimum in the project; it appears under “Result”. If optimisation is blocked (no model selected, R²adj too low, significant lack of fit or different factors across the selected models) nothing is computed, the previous result stays and a message above the button names the reasons. If the computation fails, the result also stays as it was and the message names the error. After a successful run the message disappears."
         }
       },
       "fields": {
@@ -10190,7 +10190,7 @@
           "help": "True only if at least one model is selected and diagnosticReasons is empty; otherwise runOptimize computes nothing."
         },
         "diagnosticReasons": {
-          "help": "The reasons that block the optimisation, as texts: R²adj below 0.5, significant lack of fit (p below 0.05) or a different factor structure among the selected models. Empty when nothing blocks, and also empty while no model is selected (canOptimize is false then)."
+          "help": "The reasons that block the optimisation, as texts: R²adj below 0.5, significant lack of fit (p below 0.05) or a different factor structure among the selected models. Empty when nothing blocks, and also empty while no model is selected (optimisation is still blocked then)."
         },
         "result": {
           "help": "The stored optimum, each figure described individually under keys; null until an optimization has run or when the stored data set is missing."
@@ -10358,7 +10358,7 @@
           "method": "The distribution family, section Method: auto-detection, binomial (logistic regression with logit link), Poisson or negative binomial (both with log link). Auto-detection picks binomial when the response has exactly two levels; for non-negative integers negative binomial when variance/mean exceeds 2, otherwise Poisson; proportions between 0 and 1 are fitted binomially but need a column with the number of trials. A change recomputes.",
           "confLevel": "The confidence level as a fraction between 0 and 1, so 0.95 rather than 95; the input shows it in percent. It sets the confidence limits of the coefficients, the ratios and the prediction. The significance level becomes 1 minus this value. A change recomputes.",
           "alpha": "The significance level α as a fraction between 0 and 1, so 0.05 rather than 5; the input shows it in percent. The confidence level becomes 1 minus this value, and the confidence limits change accordingly. A change recomputes.",
-          "cutoff": "The classification cutoff between 0 and 1, default 0.5, set with the slider on the ROC tab: an observation counts as predicted 1 when its estimated probability reaches at least the cutoff. A new value only recounts the confusion table and its rates; the model is not refitted. Only available with a binomial result."
+          "cutoff": "The classification cutoff between 0 and 1, default 0.5, set with the slider on the ROC / Classification tab: an observation counts as predicted 1 when its estimated probability reaches at least the cutoff. A new value only recounts the confusion table and its rates; the model is not refitted. Only available with a binomial result."
         },
         "Result": {
           "family": "The family actually fitted, with link function and, for negative binomial, the estimated θ; with auto-detection the family it chose.",
@@ -10888,7 +10888,7 @@
           "kurtosis": "The sample excess kurtosis, row Kurtosis (Excess): n(n + 1)/((n − 1)(n − 2)(n − 3)) · Σ((x − x̄)/s)⁴ − 3(n − 1)²/((n − 2)(n − 3)); 0 corresponds to the normal distribution. Empty with exactly 3 values or when all values are equal; the table then shows a dash.",
           "min": "The smallest value of the series, row Min.",
           "max": "The largest value of the series, row Max.",
-          "adPValue": "The p-value of the Anderson-Darling test for normality, section Normality Test (Anderson-Darling), shown as p ≈ next to A². A² is corrected to A²* = A²·(1 + 0.75/n + 2.25/n²) and p follows from it after D'Agostino and Stephens. The display judges with α = 0.05: p ≥ 0.05 means Normal, p < 0.05 Not normal. Empty when all values are equal; the verdict is then missing as well."
+          "adPValue": "The p-value of the Anderson-Darling test for normality, section Normality Test (Anderson-Darling), shown as p ≈ next to A². The A² shown is already the corrected A²* = A²·(1 + 0.75/n + 2.25/n²); p follows from it after D'Agostino and Stephens. The display judges with α = 0.05: p ≥ 0.05 means Normal, p < 0.05 Not normal. Empty when all values are equal; the verdict is then missing as well."
         }
       },
       "name": "Data Transformation",
