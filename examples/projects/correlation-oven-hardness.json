@@ -1,0 +1,16 @@
+{
+  "colRefs": [
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-oven",
+      "columnId": "c-temp"
+    },
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-oven",
+      "columnId": "c-hardness"
+    }
+  ],
+  "matrixMethod": "pearson",
+  "sourceWorksheetFile": "worksheets/correlation-oven-hardness.json"
+}

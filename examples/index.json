@@ -497,6 +497,30 @@
       ]
     },
     {
+      "id": "correlation-oven-hardness",
+      "type": "project",
+      "title": {
+        "de": "Ofentemperatur und Härte (zwei Spalten)",
+        "en": "Oven temperature and hardness (two columns)"
+      },
+      "description": {
+        "de": "24 Aushärtungen bei Ofentemperaturen zwischen 160 und 200 °C mit der gemessenen Härte. Zeigt die paarweise Korrelation zweier Spalten: Pearson r = 0,82 (p < 0,001) mit Streudiagramm.",
+        "en": "24 curing runs at oven temperatures between 160 and 200 °C with the measured hardness. Shows the pairwise correlation of two columns: Pearson r = 0.82 (p < 0.001) with a scatter plot."
+      },
+      "source": "Qprovement synthetisch, Python random, Seed=1321",
+      "license": "public-domain",
+      "file": "projects/correlation-oven-hardness.json",
+      "format": "json",
+      "modules": [
+        "correlation"
+      ],
+      "tags": [
+        "correlation",
+        "pearson",
+        "scatter"
+      ]
+    },
+    {
       "id": "glm-logistic-yield",
       "type": "project",
       "title": {
@@ -1621,6 +1645,24 @@
       "format": "json",
       "modules": ["attribute-test"],
       "tags": ["attribute", "proportion", "fisher"]
+    },
+    {
+      "id": "attribute-reklamation-one",
+      "type": "project",
+      "title": {
+        "de": "Reklamationsquote gegen Zielwert (1 Anteil)",
+        "en": "Complaint rate against a target (1 proportion)"
+      },
+      "description": {
+        "de": "18 von 200 gelieferten Sendungen wurden beanstandet; der Zielwert liegt bei 5 %. Zeigt den Test auf einen Anteil gegen einen Sollwert (exakter Test, p = 0,024). Erfundenes Szenario.",
+        "en": "18 of 200 shipments were complained about; the target is 5 %. Shows the test of one proportion against a target value (exact test, p = 0.024). Invented scenario."
+      },
+      "source": "Qprovement synthetisch (feste Zahlen, kein Zufallsgenerator)",
+      "license": "public-domain",
+      "file": "projects/attribute-reklamation-one.json",
+      "format": "json",
+      "modules": ["attribute-test"],
+      "tags": ["attribute", "proportion", "binomial"]
     },
     {
       "id": "attribute-shift-pass-fail",
