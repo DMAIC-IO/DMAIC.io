@@ -31,6 +31,14 @@ function assertFields(result, expected, tol, id) {
       assertAlmostEqual(result[key], val, tol, `${id}: ${key} = ${result[key]}, expected ${val}`);
     } else if (typeof val === 'boolean' || typeof val === 'string') {
       assertEqual(result[key], val, `${id}: ${key} = ${result[key]}, expected ${val}`);
+    } else if (Array.isArray(val)) {
+      const got = result[key];
+      const msg = `${id}: ${key} = ${JSON.stringify(got)}, expected ${JSON.stringify(val)}`;
+      if (!Array.isArray(got) || got.length !== val.length) throw new Error(msg);
+      val.forEach((v, i) => {
+        if (v === null) assertEqual(got[i], null, msg);
+        else assertAlmostEqual(got[i], v, tol, msg);
+      });
     }
   }
 }

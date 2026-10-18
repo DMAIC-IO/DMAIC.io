@@ -48,7 +48,7 @@ function median(a) { const s = [...a].sort((x, y) => x - y), m = Math.floor(s.le
  * @param {number} sigma0Sq - Hypothesized variance σ₀²
  * @param {string} [direction='two-sided'] - 'two-sided' | 'greater' | 'less'
  * @param {number} [alpha=0.05] - Significance level
- * @returns {object} Test results
+ * @returns {object} Test results; ci is for σ², one-sided CIs have null on the open side
  */
 export function chiSquareVarianceTest(data, sigma0Sq, direction = 'two-sided', alpha = 0.05) {
   const n = data.length;
@@ -72,8 +72,9 @@ export function chiSquareVarianceTest(data, sigma0Sq, direction = 'two-sided', a
     cL = chi2Inv(alpha, df);
   }
 
-  const ciLower = df * s2 / chi2Inv(1 - alpha / 2, df);
-  const ciUpper = df * s2 / chi2Inv(alpha / 2, df);
+  const tail = direction === 'two-sided' ? alpha / 2 : alpha;
+  const ciLower = direction === 'less' ? null : df * s2 / chi2Inv(1 - tail, df);
+  const ciUpper = direction === 'greater' ? null : df * s2 / chi2Inv(tail, df);
 
   return {
     testName: 'Chi-Square Variance Test',
@@ -98,7 +99,7 @@ export function chiSquareVarianceTest(data, sigma0Sq, direction = 'two-sided', a
  * @param {number[]} data2 - Second sample
  * @param {string} [direction='two-sided'] - 'two-sided' | 'greater' | 'less'
  * @param {number} [alpha=0.05] - Significance level
- * @returns {object} Test results
+ * @returns {object} Test results; ci is for σ₁²/σ₂², one-sided CIs have null on the open side
  */
 export function fTest(data1, data2, direction = 'two-sided', alpha = 0.05) {
   const n1 = data1.length, n2 = data2.length;
@@ -121,8 +122,9 @@ export function fTest(data1, data2, direction = 'two-sided', alpha = 0.05) {
     cL = fInv(alpha, df1, df2);
   }
 
-  const ciLower = F / fInv(1 - alpha / 2, df1, df2);
-  const ciUpper = F / fInv(alpha / 2, df1, df2);
+  const tail = direction === 'two-sided' ? alpha / 2 : alpha;
+  const ciLower = direction === 'less' ? null : F / fInv(1 - tail, df1, df2);
+  const ciUpper = direction === 'greater' ? null : F / fInv(tail, df1, df2);
 
   return {
     testName: 'F-Test',

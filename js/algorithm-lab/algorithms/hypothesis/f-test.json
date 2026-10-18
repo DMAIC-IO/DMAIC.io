@@ -7,7 +7,7 @@
   "category": "hypothesis",
   "subcategory": "variance",
   "status": "validated",
-  "version": "1.0.0",
+  "version": "1.1.0",
 
   "description": {
     "short": {
@@ -36,6 +36,14 @@
         "description": {
           "de": "Nullhypothese: Die Populationsvarianzen sind gleich",
           "en": "Null hypothesis: The population variances are equal"
+        }
+      },
+      {
+        "label": "KI",
+        "latex": "\\left[\\frac{F}{F_{1-\\alpha/2}},\\; \\frac{F}{F_{\\alpha/2}}\\right]",
+        "description": {
+          "de": "Konfidenzintervall für σ₁²/σ₂² mit F-Quantilen zu (n₁−1, n₂−1) Freiheitsgraden; einseitig mit α statt α/2 und offenem Ende: [F/F₁₋α, ∞) bei σ₁² > σ₂², (0, F/Fα] bei σ₁² < σ₂²",
+          "en": "Confidence interval for σ₁²/σ₂² with F quantiles at (n₁−1, n₂−1) degrees of freedom; one-sided with α instead of α/2 and an open end: [F/F₁₋α, ∞) for σ₁² > σ₂², (0, F/Fα] for σ₁² < σ₂²"
         }
       }
     ],
@@ -156,6 +164,16 @@
   },
 
   "changelog": [
+    {
+      "version": "1.1.0",
+      "date": "2026-10-18",
+      "type": "fix",
+      "description": {
+        "de": "Einseitige Tests liefern ein einseitiges KI für σ₁²/σ₂² (Grenze mit α, offenes Ende leer) statt immer des zweiseitigen; neu ist das Feld ratio = s₁²/s₂².",
+        "en": "One-sided tests return a one-sided CI for σ₁²/σ₂² (bound at α, open end empty) instead of always the two-sided one; new field ratio = s₁²/s₂²."
+      },
+      "breaking": false
+    },
     {
       "version": "1.0.0",
       "date": "2026-03-31",
