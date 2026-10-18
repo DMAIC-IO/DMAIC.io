@@ -5513,7 +5513,7 @@
         },
         "MatrixResult": {
           "names": "The column names in selection order; they are the row and column headers of the correlation matrix, and each cell refers to two of them by position.",
-          "matrix": "The coefficients per method (Pearson r, Spearman ρ, Kendall τ-b) as a square table over all chosen columns; the correlation matrix shows the one chosen with the buttons. It is symmetric with 1 on the diagonal; a column pair with fewer than 4 paired values or with a column without variance cannot be computed and stays empty. The filters do not change it.",
+          "matrix": "The coefficients per method (Pearson r, Spearman ρ, Kendall τ-b) as a square table over all chosen columns; the correlation matrix shows the one chosen with the buttons. It is symmetric with 1 on the diagonal; a column pair with fewer than 4 paired values cannot be computed and stays empty for all three methods. If a column has no variance, Pearson and Spearman stay empty and Kendall τ-b gives 0. The filters do not change it.",
           "ciMatrix": "Per coefficient a square table of confidence intervals, each cell with lower and upper limit, computed as pairwise: Fisher z for Pearson, Bonett-Wright for Spearman, normal approximation for Kendall. The diagonal and cells that cannot be computed are empty.",
           "pMatrix": "Per coefficient a square table of two-sided p-values: Pearson and Spearman from t with n − 2 degrees of freedom, Kendall from z. The diagonal and cells that cannot be computed are empty.",
           "nMatrix": "The number of paired values per cell; on the diagonal the number of values in the column, 0 when two columns share no row.",

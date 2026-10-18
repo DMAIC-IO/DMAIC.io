@@ -5517,7 +5517,7 @@
         },
         "MatrixResult": {
           "names": "Die Spaltennamen in Auswahlreihenfolge; sie sind die Zeilen- und Spaltenköpfe der Korrelationsmatrix, und jede Zelle bezieht sich über ihre Position auf zwei davon.",
-          "matrix": "Die Koeffizienten je Verfahren (Pearson r, Spearman ρ, Kendall τ-b) als quadratische Tabelle über alle gewählten Spalten; die Korrelationsmatrix zeigt das mit den Knöpfen gewählte. Sie ist symmetrisch, die Diagonale ist 1; ein Spaltenpaar mit weniger als 4 gepaarten Werten oder mit einer Spalte ohne Streuung ist nicht berechenbar und bleibt leer. Die Filter ändern sie nicht.",
+          "matrix": "Die Koeffizienten je Verfahren (Pearson r, Spearman ρ, Kendall τ-b) als quadratische Tabelle über alle gewählten Spalten; die Korrelationsmatrix zeigt das mit den Knöpfen gewählte. Sie ist symmetrisch, die Diagonale ist 1; ein Spaltenpaar mit weniger als 4 gepaarten Werten ist nicht berechenbar und bleibt bei allen drei Verfahren leer. Hat eine Spalte keine Streuung, bleiben Pearson und Spearman leer, Kendall τ-b ergibt 0. Die Filter ändern sie nicht.",
           "ciMatrix": "Je Koeffizient eine quadratische Tabelle der Konfidenzintervalle, je Zelle untere und obere Grenze, gerechnet wie paarweise: Fisher-z für Pearson, Bonett-Wright für Spearman, Normalapproximation für Kendall. Diagonale und nicht berechenbare Zellen sind leer.",
           "pMatrix": "Je Koeffizient eine quadratische Tabelle der zweiseitigen p-Werte: Pearson und Spearman aus t mit n − 2 Freiheitsgraden, Kendall aus z. Diagonale und nicht berechenbare Zellen sind leer.",
           "nMatrix": "Die Zahl der gepaarten Werte je Zelle; auf der Diagonale die Zahl der Werte der Spalte, 0, wenn zwei Spalten keine gemeinsame Zeile haben.",
