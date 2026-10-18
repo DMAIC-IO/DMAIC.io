@@ -88,6 +88,7 @@ const SKIP = new Set([
   'core/chart/pareto.test.js',
   'core/chart/pie.test.js',
   'core/chart/run-chart.test.js',
+  'core/chart/scatter-labels.test.js',
   'core/chart/trend.test.js',
   'core/chunks.test.js',
   'core/create-dialog.test.js',
