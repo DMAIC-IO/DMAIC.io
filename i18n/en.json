@@ -11396,6 +11396,26 @@
         "usl": {
           "help": "The upper specification limit as text, exactly as entered; empty means not set."
         }
+      },
+      "types": {
+        "StatKey": {
+          "mean": "Mean x̄ key: the sum of all values in the statistics dataset divided by their count, x̄ = Σx/n.",
+          "median": "Median x̃ key: the middle value of the values sorted ascending; with an even count, the average of the two middle values.",
+          "mode": "Mode key: the value that occurs most often. On a tie all most frequent values appear, separated by commas. If every value occurs only once (also with a single value) there is no mode, and the display says so in a message.",
+          "range": "Range key: the largest value minus the smallest value of the dataset.",
+          "stdS": "s (sample) key: the sample standard deviation s = √(Σ(x − x̄)²/(n − 1)), divided by n − 1. Needs at least 2 values, otherwise the message “n ≥ 2 needed” appears.",
+          "stdP": "σ (population) key: the population standard deviation σ = √(Σ(x − x̄)²/n), divided by n instead of n − 1. With a single value it is 0.",
+          "varS": "s² variance key: the sample variance s² = Σ(x − x̄)²/(n − 1), the square of the sample standard deviation. Needs at least 2 values, otherwise the message “n ≥ 2 needed” appears.",
+          "varP": "σ² variance key: the population variance σ² = Σ(x − x̄)²/n, the square of the population standard deviation, divided by n instead of n − 1.",
+          "sum": "Σ sum key: the sum of all values in the dataset.",
+          "min": "Min key: the smallest value of the dataset.",
+          "max": "Max key: the largest value of the dataset.",
+          "count": "n count key: the number of values in the dataset, as the n line under the value list shows it.",
+          "q1": "Q1 key: the lower quartile, the 25 % quantile. The values are sorted and, at position (n − 1) · 0.25, linearly interpolated between the two neighbouring values; this is the same method as Excel (QUARTILE.INC).",
+          "q3": "Q3 key: the upper quartile, the 75 % quantile. The values are sorted and, at position (n − 1) · 0.75, linearly interpolated between the two neighbouring values; this is the same method as Excel (QUARTILE.INC).",
+          "iqr": "IQR key: the interquartile range, Q3 − Q1, using the linearly interpolated quartiles of the Q1 and Q3 keys.",
+          "skew": "Skewness key: the sample skewness n/((n − 1)(n − 2)) · Σ((x − x̄)/s)³ with the sample standard deviation s; 0 for symmetric data, positive for right-skewed. Needs at least 3 values, otherwise the message “n ≥ 3 needed” appears."
+        }
       }
     },
     "data-transformation": {

@@ -11400,6 +11400,26 @@
         "usl": {
           "help": "Die obere Spezifikationsgrenze als Text, so wie sie eingegeben wurde; leer heißt nicht gesetzt."
         }
+      },
+      "types": {
+        "StatKey": {
+          "mean": "Taste x̄ Mittelwert: die Summe aller Werte des Statistikdatensatzes geteilt durch ihre Anzahl, x̄ = Σx/n.",
+          "median": "Taste x̃ Median: der mittlere Wert der aufsteigend sortierten Werte; bei gerader Anzahl der Mittelwert der beiden mittleren.",
+          "mode": "Taste Modus: der Wert, der am häufigsten vorkommt. Bei Gleichstand erscheinen alle häufigsten Werte, durch Komma getrennt. Kommt jeder Wert nur einmal vor (auch bei nur einem Wert), gibt es keinen Modus, und die Anzeige sagt das in einer Meldung.",
+          "range": "Taste Spannweite: der größte Wert minus der kleinste Wert des Datensatzes.",
+          "stdS": "Taste s (Stichpr.): die Stichproben-Standardabweichung s = √(Σ(x − x̄)²/(n − 1)), geteilt durch n − 1. Braucht mindestens 2 Werte, sonst erscheint der Hinweis „n ≥ 2 nötig“.",
+          "stdP": "Taste σ (Popul.): die Standardabweichung der Grundgesamtheit σ = √(Σ(x − x̄)²/n), geteilt durch n statt n − 1. Mit nur einem Wert ist sie 0.",
+          "varS": "Taste s² Varianz: die Stichprobenvarianz s² = Σ(x − x̄)²/(n − 1), das Quadrat der Stichproben-Standardabweichung. Braucht mindestens 2 Werte, sonst erscheint der Hinweis „n ≥ 2 nötig“.",
+          "varP": "Taste σ² Varianz: die Varianz der Grundgesamtheit σ² = Σ(x − x̄)²/n, das Quadrat der Standardabweichung der Grundgesamtheit, geteilt durch n statt n − 1.",
+          "sum": "Taste Σ Summe: die Summe aller Werte des Datensatzes.",
+          "min": "Taste Min: der kleinste Wert des Datensatzes.",
+          "max": "Taste Max: der größte Wert des Datensatzes.",
+          "count": "Taste n Anzahl: die Zahl der Werte im Datensatz, so wie die Zeile n unter der Werteliste sie zeigt.",
+          "q1": "Taste Q1: das untere Quartil, das 25-%-Quantil. Die Werte werden sortiert, an der Stelle (n − 1) · 0,25 wird zwischen den beiden Nachbarwerten linear interpoliert; das ist dasselbe Verfahren wie bei Excel (QUARTIL.INKL).",
+          "q3": "Taste Q3: das obere Quartil, das 75-%-Quantil. Die Werte werden sortiert, an der Stelle (n − 1) · 0,75 wird zwischen den beiden Nachbarwerten linear interpoliert; das ist dasselbe Verfahren wie bei Excel (QUARTIL.INKL).",
+          "iqr": "Taste IQR: der Quartilsabstand, Q3 − Q1, mit den linear interpolierten Quartilen der Tasten Q1 und Q3.",
+          "skew": "Taste Schiefe: die Stichprobenschiefe n/((n − 1)(n − 2)) · Σ((x − x̄)/s)³ mit der Stichproben-Standardabweichung s; 0 bei symmetrischen Daten, positiv bei rechtsschiefen. Braucht mindestens 3 Werte, sonst erscheint der Hinweis „n ≥ 3 nötig“."
+        }
       }
     },
     "data-transformation": {

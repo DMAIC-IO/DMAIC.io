@@ -105,25 +105,25 @@
         <button class="module-calculator__key module-calculator__key--num" data-text="-" @click="inputText('-')">-</button>
         <button class="module-calculator__key module-calculator__key--danger" data-action="remove-last" data-help-key="modules.calculator.actions.removeLast.help" @click="removeLast()" x-text="t('removeLast')"></button>
 
-        <button class="module-calculator__key module-calculator__key--stat" data-stat="mean" @click="calcStat('mean')" x-text="'x̄ ' + t('statMean')"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-stat="median" @click="calcStat('median')" x-text="'x̃ ' + t('statMedian')"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-stat="mode" @click="calcStat('mode')" x-text="t('statMode')"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-stat="range" @click="calcStat('range')" x-text="t('statRange')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="mean" data-help-key="modules.calculator.types.StatKey.mean" @click="calcStat('mean')" x-text="'x̄ ' + t('statMean')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="median" data-help-key="modules.calculator.types.StatKey.median" @click="calcStat('median')" x-text="'x̃ ' + t('statMedian')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="mode" data-help-key="modules.calculator.types.StatKey.mode" @click="calcStat('mode')" x-text="t('statMode')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="range" data-help-key="modules.calculator.types.StatKey.range" @click="calcStat('range')" x-text="t('statRange')"></button>
 
-        <button class="module-calculator__key module-calculator__key--stat" data-stat="stdS" @click="calcStat('stdS')" x-text="'s (' + t('statSample') + ')'"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-stat="stdP" @click="calcStat('stdP')" x-text="'σ (' + t('statPopulation') + ')'"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-stat="varS" @click="calcStat('varS')" x-text="'s² ' + t('statVariance')"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-stat="varP" @click="calcStat('varP')" x-text="'σ² ' + t('statVariance')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="stdS" data-help-key="modules.calculator.types.StatKey.stdS" @click="calcStat('stdS')" x-text="'s (' + t('statSample') + ')'"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="stdP" data-help-key="modules.calculator.types.StatKey.stdP" @click="calcStat('stdP')" x-text="'σ (' + t('statPopulation') + ')'"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="varS" data-help-key="modules.calculator.types.StatKey.varS" @click="calcStat('varS')" x-text="'s² ' + t('statVariance')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="varP" data-help-key="modules.calculator.types.StatKey.varP" @click="calcStat('varP')" x-text="'σ² ' + t('statVariance')"></button>
 
-        <button class="module-calculator__key module-calculator__key--stat" data-stat="sum" @click="calcStat('sum')" x-text="'Σ ' + t('statSum')"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-stat="min" @click="calcStat('min')" x-text="t('keyMin')"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-stat="max" @click="calcStat('max')" x-text="t('keyMax')"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-stat="count" @click="calcStat('count')" x-text="'n ' + t('statCount')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="sum" data-help-key="modules.calculator.types.StatKey.sum" @click="calcStat('sum')" x-text="'Σ ' + t('statSum')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="min" data-help-key="modules.calculator.types.StatKey.min" @click="calcStat('min')" x-text="t('keyMin')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="max" data-help-key="modules.calculator.types.StatKey.max" @click="calcStat('max')" x-text="t('keyMax')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="count" data-help-key="modules.calculator.types.StatKey.count" @click="calcStat('count')" x-text="'n ' + t('statCount')"></button>
 
-        <button class="module-calculator__key module-calculator__key--stat" data-stat="q1" @click="calcStat('q1')" x-text="t('keyQ1')"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-stat="q3" @click="calcStat('q3')" x-text="t('keyQ3')"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-stat="iqr" @click="calcStat('iqr')" x-text="t('keyIqr')"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-stat="skew" @click="calcStat('skew')" x-text="t('statSkewness')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="q1" data-help-key="modules.calculator.types.StatKey.q1" @click="calcStat('q1')" x-text="t('keyQ1')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="q3" data-help-key="modules.calculator.types.StatKey.q3" @click="calcStat('q3')" x-text="t('keyQ3')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="iqr" data-help-key="modules.calculator.types.StatKey.iqr" @click="calcStat('iqr')" x-text="t('keyIqr')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="skew" data-help-key="modules.calculator.types.StatKey.skew" @click="calcStat('skew')" x-text="t('statSkewness')"></button>
       </div>
     </div>
 
