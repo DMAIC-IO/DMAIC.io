@@ -198,7 +198,7 @@
         <div class="rg-attr-freq" id="rg-attr-freq">
           <template x-if="freqRows().length">
             <div>
-              <div class="rg-freq-header" data-help-key="modules.random-generator.types.FrequencyRow.share" x-text="t('frequency')"></div>
+              <div class="rg-freq-header"><span data-help-key="modules.random-generator.types.FrequencyRow.share" x-text="t('frequency')"></span></div>
               <div class="rg-freq-list">
                 <template x-for="row in freqRows()" :key="row.name">
                   <div class="rg-freq-row">

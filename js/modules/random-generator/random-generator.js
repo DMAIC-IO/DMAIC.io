@@ -418,10 +418,10 @@ export default createModule({
       /** @noagent view transform; the agent reads a summary via read().generated */
       freqRows() {
         if (!this.genData.length || !this.isAttributive()) return [];
-        const sorted = frequency(this.genData);
+        const rows = frequencyShares(this.genData);
         const attrOrder = this.model.attributes.map(a => a.name);
-        const maxCount = sorted.length ? sorted[0][1] : 1;
-        return frequencyShares(this.genData).map(({ name, count, share }) => {
+        const maxCount = rows.length ? rows[0].count : 1;
+        return rows.map(({ name, count, share }) => {
           const idx = attrOrder.indexOf(name);
           const color = idx >= 0 ? this.attrColor(idx) : 'var(--color-text-tertiary)';
           return {
