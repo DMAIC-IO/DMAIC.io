@@ -78,7 +78,7 @@ const ITEM_FIELDS = ['id', 'nodeId', 'label', 'path', 'missing'];
  * @property {boolean} missing  im Quellbaum nicht mehr vorhanden
  * @property {KanoCounts} counts  Antworten je Kategorie
  * @property {number} n  klassifizierte Antworten
- * @property {number} unanswered  nicht klassifizierbare Antworten
+ * @property {number} unanswered  nicht klassifizierbare Antworten (fehlend oder außerhalb 1–5)
  * @property {'M'|'O'|'A'|'I'|'R'|'Q'|null} category  häufigste Kategorie
  * @property {boolean} tie  Gleichstand an der Spitze
  * @property {number|null} cs  Zufriedenheitskoeffizient (Better)

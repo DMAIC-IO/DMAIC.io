@@ -30,6 +30,7 @@
             <span class="five-why__tag" :data-level="clampLevel(n1)"
                   x-text="nodeTag(i1)"></span>
             <textarea class="five-why__answer" data-field="answer" :data-id="n1.id"
+                      :aria-label="answerPlaceholder(n1)"
                       :placeholder="answerPlaceholder(n1)"
                       x-model="n1.answer"
                       @input="autoGrow($event)" @focus="autoGrow($event)"></textarea>
@@ -59,6 +60,7 @@
                     <span class="five-why__tag" :data-level="clampLevel(n2)"
                           x-text="nodeTag(i1, i2)"></span>
                     <textarea class="five-why__answer" data-field="answer" :data-id="n2.id"
+                              :aria-label="answerPlaceholder(n2)"
                               :placeholder="answerPlaceholder(n2)"
                               x-model="n2.answer"
                               @input="autoGrow($event)" @focus="autoGrow($event)"></textarea>
@@ -88,6 +90,7 @@
                             <span class="five-why__tag" :data-level="clampLevel(n3)"
                                   x-text="nodeTag(i1, i2, i3)"></span>
                             <textarea class="five-why__answer" data-field="answer" :data-id="n3.id"
+                                      :aria-label="answerPlaceholder(n3)"
                                       :placeholder="answerPlaceholder(n3)"
                                       x-model="n3.answer"
                                       @input="autoGrow($event)" @focus="autoGrow($event)"></textarea>
@@ -117,6 +120,7 @@
                                     <span class="five-why__tag" :data-level="clampLevel(n4)"
                                           x-text="nodeTag(i1, i2, i3, i4)"></span>
                                     <textarea class="five-why__answer" data-field="answer" :data-id="n4.id"
+                                              :aria-label="answerPlaceholder(n4)"
                                               :placeholder="answerPlaceholder(n4)"
                                               x-model="n4.answer"
                                               @input="autoGrow($event)" @focus="autoGrow($event)"></textarea>
@@ -148,6 +152,7 @@
                                               <span x-text="nodeTag(i1, i2, i3, i4, i5)"></span>
                                             </span>
                                             <textarea class="five-why__answer" data-field="answer" :data-id="n5.id"
+                                                      :aria-label="answerPlaceholder(n5)"
                                                       :placeholder="answerPlaceholder(n5)"
                                                       x-model="n5.answer"
                                                       @input="autoGrow($event)" @focus="autoGrow($event)"></textarea>

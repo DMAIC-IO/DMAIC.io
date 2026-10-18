@@ -156,12 +156,12 @@ export const ANCHOR_EXEMPTIONS = {
     { match: "t('scaleRate')", reason: 'Bewertungsskala, Eingabetabelle der Skalentexte', count: 1 },
     { match: "t('scaleDetect')", reason: 'Bewertungsskala, Eingabetabelle der Skalentexte', count: 1 },
     { match: "t('apScaleCriterion')", reason: 'AP-Bewertungsskala, Eingabetabelle der Skalentexte', count: 1 },
-    { match: '<th>S</th>', reason: 'Kopf der festen AP-Nachschlagematrix (AIAG-VDA)', count: 1 },
-    { match: '<th>O</th>', reason: 'Kopf der festen AP-Nachschlagematrix (AIAG-VDA)', count: 1 },
-    { match: "'D ' + d", reason: 'Kopf je D-Stufe der festen AP-Nachschlagematrix', count: 1 },
+    { match: "t('abbrS')", reason: 'Kopf der festen AP-Nachschlagematrix (AIAG-VDA)', count: 1 },
+    { match: "t('abbrO')", reason: 'Kopf der festen AP-Nachschlagematrix (AIAG-VDA)', count: 1 },
+    { match: "t('abbrD') + ' ' + d", reason: 'Kopf je D-Stufe der festen AP-Nachschlagematrix', count: 1 },
   ],
   'stakeholder-analysis': [
-    { match: '<th>Quadrant</th>', reason: 'aus Macht und Interesse abgeleitet, nicht Teil der Lesefläche; beide Spalten davor sind erklärt', count: 1 },
+    { match: "t('colQuadrant')", reason: 'aus Macht und Interesse abgeleitet, nicht Teil der Lesefläche; beide Spalten davor sind erklärt', count: 1 },
   ],
   'raci-matrix': [
     { match: 'raci__th-stakeholder', reason: 'Kopf je Beteiligter (Name aus den Daten, umbenennbar)', count: 1 },

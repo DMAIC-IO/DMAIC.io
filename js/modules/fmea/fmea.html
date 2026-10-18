@@ -91,8 +91,8 @@
         <h3 x-text="t('apMatrixTitle')"></h3>
         <table class="dmike-table dmike-table--head-mono fmea__ap-matrix" data-ref="ap-matrix">
           <thead><tr>
-            <th>S</th><th>O</th>
-            <template x-for="d in apDBandLabels()" :key="d"><th x-text="'D ' + d"></th></template>
+            <th x-text="t('abbrS')"></th><th x-text="t('abbrO')"></th>
+            <template x-for="d in apDBandLabels()" :key="d"><th x-text="t('abbrD') + ' ' + d"></th></template>
           </tr></thead>
           <tbody>
             <template x-for="row in apMatrixRows()" :key="row.key">
@@ -227,7 +227,7 @@
               <div class="field-group">
                 <label x-text="t('rating')"></label>
                 <div class="fmea__sod-row">
-                  <div class="fmea__sod-group"><label :title="t('tipS')" data-help-key="modules.fmea.types.RiskField.sev">S</label>
+                  <div class="fmea__sod-group"><label :title="t('tipS')" data-help-key="modules.fmea.types.RiskField.sev" x-text="t('abbrS')"></label>
                     <select class="field" name="sev" :value="risk.sev" @change="setRiskValue(risk.id, 'sev', $event.target.value)">
                       <option value="">—</option>
                       <option value="1" :title="sevTitle(1)">1</option>
@@ -242,7 +242,7 @@
                       <option value="10" :title="sevTitle(10)">10</option>
                     </select>
                   </div>
-                  <div class="fmea__sod-group"><label :title="t('tipO')" data-help-key="modules.fmea.types.RiskField.occ">O</label>
+                  <div class="fmea__sod-group"><label :title="t('tipO')" data-help-key="modules.fmea.types.RiskField.occ" x-text="t('abbrO')"></label>
                     <select class="field" name="occ" :value="risk.occ" @change="setRiskValue(risk.id, 'occ', $event.target.value)">
                       <option value="">—</option>
                       <option value="1" :title="occTitle(1)">1</option>
@@ -257,7 +257,7 @@
                       <option value="10" :title="occTitle(10)">10</option>
                     </select>
                   </div>
-                  <div class="fmea__sod-group"><label :title="t('tipD')" data-help-key="modules.fmea.types.RiskField.det">D</label>
+                  <div class="fmea__sod-group"><label :title="t('tipD')" data-help-key="modules.fmea.types.RiskField.det" x-text="t('abbrD')"></label>
                     <select class="field" name="det" :value="risk.det" @change="setRiskValue(risk.id, 'det', $event.target.value)">
                       <option value="">—</option>
                       <option value="1" :title="detTitle(1)">1</option>
@@ -289,9 +289,9 @@
                   <th><span data-help-key="modules.fmea.types.ActionField.text" x-text="t('action')"></span></th>
                   <th style="width:110px"><span data-help-key="modules.fmea.types.ActionField.resp" x-text="t('responsible')"></span></th>
                   <th style="width:105px"><span data-help-key="modules.fmea.types.ActionField.date" x-text="t('dueDate')"></span></th>
-                  <th class="fmea__delta-cell" style="width:62px"><span data-help-key="modules.fmea.types.ActionField.deltaS">ΔS</span></th>
-                  <th class="fmea__delta-cell" style="width:62px"><span data-help-key="modules.fmea.types.ActionField.deltaO">ΔO</span></th>
-                  <th class="fmea__delta-cell" style="width:62px"><span data-help-key="modules.fmea.types.ActionField.deltaD">ΔD</span></th>
+                  <th class="fmea__delta-cell" style="width:62px"><span data-help-key="modules.fmea.types.ActionField.deltaS" x-text="t('abbrDeltaS')"></span></th>
+                  <th class="fmea__delta-cell" style="width:62px"><span data-help-key="modules.fmea.types.ActionField.deltaO" x-text="t('abbrDeltaO')"></span></th>
+                  <th class="fmea__delta-cell" style="width:62px"><span data-help-key="modules.fmea.types.ActionField.deltaD" x-text="t('abbrDeltaD')"></span></th>
                   <th style="width:28px"></th>
                 </tr></thead>
                 <tbody data-action-body>
@@ -301,7 +301,7 @@
                       <td><textarea class="field field--sm" name="actionText" :placeholder="t('actionPlaceholder')" :value="act.text" @input="setActionValue(risk.id, ai, 'text', $event.target.value)"></textarea></td>
                       <td><input class="field field--sm" type="text" name="actionResp" :placeholder="t('actionResp')" :value="act.resp" @input="setActionValue(risk.id, ai, 'resp', $event.target.value)"></td>
                       <td><input class="field field--sm" type="date" name="actionDate" :value="act.date" @change="setActionValue(risk.id, ai, 'date', $event.target.value)"></td>
-                      <td class="fmea__delta-cell"><select class="field field--sm" name="deltaS" title="ΔS" :value="act.deltaS" @change="setActionValue(risk.id, ai, 'deltaS', $event.target.value)">
+                      <td class="fmea__delta-cell"><select class="field field--sm" name="deltaS" :title="t('abbrDeltaS')" :value="act.deltaS" @change="setActionValue(risk.id, ai, 'deltaS', $event.target.value)">
                         <option value="0">0</option>
                         <option value="1">−1</option>
                         <option value="2">−2</option>
@@ -313,7 +313,7 @@
                         <option value="8">−8</option>
                         <option value="9">−9</option>
                       </select></td>
-                      <td class="fmea__delta-cell"><select class="field field--sm" name="deltaO" title="ΔO" :value="act.deltaO" @change="setActionValue(risk.id, ai, 'deltaO', $event.target.value)">
+                      <td class="fmea__delta-cell"><select class="field field--sm" name="deltaO" :title="t('abbrDeltaO')" :value="act.deltaO" @change="setActionValue(risk.id, ai, 'deltaO', $event.target.value)">
                         <option value="0">0</option>
                         <option value="1">−1</option>
                         <option value="2">−2</option>
@@ -325,7 +325,7 @@
                         <option value="8">−8</option>
                         <option value="9">−9</option>
                       </select></td>
-                      <td class="fmea__delta-cell"><select class="field field--sm" name="deltaD" title="ΔD" :value="act.deltaD" @change="setActionValue(risk.id, ai, 'deltaD', $event.target.value)">
+                      <td class="fmea__delta-cell"><select class="field field--sm" name="deltaD" :title="t('abbrDeltaD')" :value="act.deltaD" @change="setActionValue(risk.id, ai, 'deltaD', $event.target.value)">
                         <option value="0">0</option>
                         <option value="1">−1</option>
                         <option value="2">−2</option>

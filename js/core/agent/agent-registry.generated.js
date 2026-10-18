@@ -7119,7 +7119,7 @@ export const AGENT_REGISTRY = {
               },
               "unanswered": {
                 "type": "number",
-                "help": "nicht klassifizierbare Antworten"
+                "help": "nicht klassifizierbare Antworten (fehlend oder außerhalb 1–5)"
               },
               "category": {
                 "type": "'M'|'O'|'A'|'I'|'R'|'Q'|null",
@@ -17670,19 +17670,19 @@ export const AGENT_REGISTRY = {
         "keys": {
           "time": {
             "type": "string",
-            "help": "Notiz zur Separation in der Zeit"
+            "help": "Notiz zur Trennung in der Zeit"
           },
           "space": {
             "type": "string",
-            "help": "Notiz zur Separation im Raum"
+            "help": "Notiz zur Trennung im Raum"
           },
           "condition": {
             "type": "string",
-            "help": "Notiz zur Separation nach Bedingung"
+            "help": "Notiz zur Trennung nach Bedingung"
           },
           "system": {
             "type": "string",
-            "help": "Notiz zur Separation zwischen Systemebenen"
+            "help": "Notiz zur Trennung in der Systemebene"
           }
         }
       }

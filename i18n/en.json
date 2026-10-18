@@ -1245,6 +1245,7 @@
     "stakeholder-analysis": {
       "name": "Stakeholder Analysis",
       "description": "Identify, assess, and plan communication with project stakeholders",
+      "colQuadrant": "Quadrant",
       "addStakeholder": "Add Stakeholder",
       "editStakeholder": "Edit Stakeholder",
       "fieldName": "Name",
@@ -1336,8 +1337,8 @@
           "role": "The role or organization of the stakeholder, up to 200 characters, for example department head or supplier.",
           "power": "The stakeholder's power over the project, an integer from 1 (low) to 5 (high); 3 when not given. Together with interest it decides the quadrant of the power-interest matrix: 4 and above counts as high.",
           "interest": "The stakeholder's interest in the project, an integer from 1 (low) to 5 (high); 3 when not given. Together with power it decides the quadrant of the power-interest matrix: 4 and above counts as high; high on both gives Manage Closely, only power high Keep Satisfied, only interest high Keep Informed, otherwise Monitor.",
-          "support": "The stakeholder's attitude to the project: supporter (Supporter), neutral (Neutral, the default) or critic (Critic). A critic with high power and high interest triggers the warning about critics among the key stakeholders. A value from an import or an older project may differ; it is kept unchanged until the entry is saved in the form (the form resets it to Neutral). In the matrix it is coloured like a critic, the table shows it without translation; it does not count toward the warning.",
-          "category": "The category of the stakeholder: intern (Internal, the default), extern (External), kunde (Customer), lieferant (Supplier) or behoerde (Authority). A value from an import or an older project may differ; it is kept unchanged and shown without translation until the entry is saved in the form (the form resets it to Internal).",
+          "support": "The stakeholder's attitude to the project: supporter (Supporter), neutral (Neutral, the default) or critic (Critic). A critic with high power and high interest triggers the warning about critics among the key stakeholders. A value from an import or an older project may differ; the module takes it over as it is; whoever opens the entry in the form and saves it resets it to Neutral. In the matrix it is coloured like a critic, the table shows it without translation; it does not count toward the warning.",
+          "category": "The category of the stakeholder: intern (Internal, the default), extern (External), kunde (Customer), lieferant (Supplier) or behoerde (Authority). A value from an import or an older project may differ; the module takes it over as it is and shows it without translation; whoever opens the entry in the form and saves it resets it to Internal.",
           "notes": "The stakeholder's expectations and concerns as free text, up to 500 characters."
         }
       },
@@ -1552,6 +1553,12 @@
     "kano": {
       "name": "Kano Model",
       "description": "Classify and prioritize requirements from the VoC→CTx tree using the Kano method",
+      "codeM": "M",
+      "codeO": "O",
+      "codeA": "A",
+      "codeI": "I",
+      "codeR": "R",
+      "codeQ": "Q",
       "sourceTitle": "Source",
       "sourceTree": "VoC→CTx Tree",
       "sourceNone": "No VoC→CTx tree in this project yet. Create one first to pull in requirements.",
@@ -1743,7 +1750,7 @@
           "missing": "Whether the feature no longer exists in the linked tree. Its answers are kept; the row is marked as missing.",
           "counts": "How many respondents put the feature into which category; one number per category.",
           "n": "The number of answers for this feature that could be classified, that is a pair of functional and dysfunctional answer. It is the sum of all six categories, including questionable and reverse.",
-          "unanswered": "The number of answers for this feature that could not be classified because the functional or the dysfunctional answer is missing. They count in no category.",
+          "unanswered": "The number of answers for this feature that cannot be assigned to any category: because the functional or the dysfunctional answer is missing or because a value lies outside the scale of 1 to 5. They count in no category.",
           "category": "The most frequent category among the answers for this feature: must-be, performance, attractive, indifferent, reverse or questionable; empty if no answer could be classified. If two or more categories are equally frequent, the stronger one wins in the order must-be, performance, attractive, indifferent, reverse, questionable.",
           "tie": "Whether two or more categories are equally frequent at the top. The stronger one by the category order then applies, and the result table marks the tie.",
           "cs": "The satisfaction coefficient (Better): (attractive + performance) divided by (attractive + performance + must-be + indifferent), a value from 0 to 1. Near 1, fulfilling the feature raises satisfaction strongly. Reverse and questionable answers are not in the denominator; empty if no answer falls into these four categories.",
@@ -2065,7 +2072,7 @@
           "help": "Sets a loop's target step (which earlier step it loops back to). Without a target step the loop's target is cleared. If the step carries no loop, or the chosen target step does not come before this step in the chain, nothing happens.",
           "params": {
             "stepId": "The step's id. An unknown id is an error.",
-            "targetStepId": "The id of an existing step, or null/an empty string to clear the target. An unknown id is an error; a known id that does not lie BEFORE stepId in the chain returns false."
+            "targetStepId": "The id of an existing step. Leave empty (or null) to clear the loop's target. An unknown id is an error; a known id that does not lie before the step with the loop changes nothing (returns false)."
           }
         },
         "removeLoop": {
@@ -2547,6 +2554,7 @@
     "todo": {
       "name": "Todo",
       "description": "Task list with status, due date, and owner",
+      "filterHelp": "Narrows the list: by status, by responsible person and by search text in the task text and the owner. The filter does not change any task.",
       "addTodo": "Add Task",
       "filter": "Filter",
       "searchPlaceholder": "Search …",
@@ -6930,6 +6938,12 @@
     "fmea": {
       "name": "FMEA",
       "description": "Failure Mode and Effects Analysis with RPN calculation",
+      "abbrS": "S",
+      "abbrO": "O",
+      "abbrD": "D",
+      "abbrDeltaS": "ΔS",
+      "abbrDeltaO": "ΔO",
+      "abbrDeltaD": "ΔD",
       "addRisk": "Add Risk",
       "scales": "Scales",
       "scalesShow": "Show scales",
@@ -12032,7 +12046,7 @@
           }
         },
         "cycleStatus": {
-          "help": "Advances the fill level of a resource field by one step: unknown, unused, partial, full, back to unknown. For a specific value, setCellStatus is the direct route.",
+          "help": "Advances the fill level of a resource field by one step: unknown, unused, partial, full, back to unknown. For a specific value there is an action that sets the fill level directly.",
           "params": {
             "catKey": "The resource category: substance, field, space, time, info or function. Any other value is an error.",
             "lvlKey": "The system level: sub (subsystem), sys (system) or super (supersystem). Any other value is an error."

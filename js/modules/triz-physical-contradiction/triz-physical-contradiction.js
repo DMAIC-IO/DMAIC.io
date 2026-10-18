@@ -17,10 +17,10 @@ import { State, PRINCIPLES } from './triz-physical-contradiction-model.js';
  * Typedef und Prüfung abgleichen kann; der Modelltest hält beide gleich.
  *
  * @typedef {object} PrincipleNotes
- * @property {string} time  Notiz zur Separation in der Zeit
- * @property {string} space  Notiz zur Separation im Raum
- * @property {string} condition  Notiz zur Separation nach Bedingung
- * @property {string} system  Notiz zur Separation zwischen Systemebenen
+ * @property {string} time  Notiz zur Trennung in der Zeit
+ * @property {string} space  Notiz zur Trennung im Raum
+ * @property {string} condition  Notiz zur Trennung nach Bedingung
+ * @property {string} system  Notiz zur Trennung in der Systemebene
  */
 export const PRINCIPLE_KEYS = ['time', 'space', 'condition', 'system'];
 

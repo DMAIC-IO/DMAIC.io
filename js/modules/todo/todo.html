@@ -2,21 +2,21 @@
   <div class="todo__toolbar">
     <span class="todo__counter" x-text="filteredCount() + ' / ' + model.items.length"></span>
     <div class="todo__filter-group">
-      <span class="todo__filter-label" x-text="t('filter') + ':'"></span>
-      <select class="field todo__filter-select" data-filter="status" x-model="model.filterStatus">
+      <span class="todo__filter-label" data-help-key="modules.todo.filterHelp" x-text="t('filter') + ':'"></span>
+      <select class="field todo__filter-select" data-filter="status" :aria-label="t('colStatus')" x-model="model.filterStatus">
         <option value="all" x-text="t('allStatuses')"></option>
         <template x-for="s in statuses">
           <option :value="s" x-text="statusName(s)"></option>
         </template>
       </select>
-      <select class="field todo__filter-select" data-filter="owner" x-model="model.filterOwner">
+      <select class="field todo__filter-select" data-filter="owner" :aria-label="t('colOwner')" x-model="model.filterOwner">
         <option value="all" x-text="t('allOwners')"></option>
         <template x-for="o in owners()">
           <option :value="o" x-text="o"></option>
         </template>
       </select>
       <input type="text" class="field todo__search" data-filter="search"
-             x-model="model.search" :placeholder="t('searchPlaceholder')">
+             x-model="model.search" :aria-label="t('searchPlaceholder')" :placeholder="t('searchPlaceholder')">
     </div>
   </div>
 

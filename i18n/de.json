@@ -1245,6 +1245,7 @@
     "stakeholder-analysis": {
       "name": "Stakeholder-Analyse",
       "description": "Identifikation, Bewertung und Kommunikationsplanung für Stakeholder",
+      "colQuadrant": "Quadrant",
       "addStakeholder": "Stakeholder hinzufügen",
       "editStakeholder": "Stakeholder bearbeiten",
       "fieldName": "Name",
@@ -1336,8 +1337,8 @@
           "role": "Die Rolle oder Organisation des Beteiligten, bis zu 200 Zeichen, zum Beispiel Fachbereichsleiter oder Lieferant.",
           "power": "Der Einfluss des Beteiligten auf das Projekt, eine ganze Zahl von 1 (gering) bis 5 (hoch); ohne Angabe 3. Zusammen mit dem Interesse bestimmt er den Quadranten der Einfluss-Interesse-Matrix: ab 4 gilt der Einfluss als hoch.",
           "interest": "Das Interesse des Beteiligten am Projekt, eine ganze Zahl von 1 (gering) bis 5 (hoch); ohne Angabe 3. Zusammen mit dem Einfluss bestimmt es den Quadranten der Einfluss-Interesse-Matrix: ab 4 gilt das Interesse als hoch, hoch und hoch ergibt Eng managen, nur Einfluss hoch Zufriedenstellen, nur Interesse hoch Informieren, sonst Beobachten.",
-          "support": "Die Einstellung des Beteiligten zum Projekt: supporter (Unterstützer), neutral (Neutral, die Vorgabe) oder critic (Kritiker). Ein Kritiker mit hohem Einfluss und hohem Interesse löst die Warnung unter den Schlüssel-Stakeholdern aus. Aus einem Import oder einem älteren Projekt können auch andere Werte stammen; sie bleiben unverändert stehen, solange der Eintrag nicht im Formular gespeichert wird (das Formular setzt sie auf Neutral zurück). In der Matrix werden sie wie ein Kritiker gefärbt, die Tabelle zeigt sie ohne Übersetzung an; für die Warnung zählen sie nicht.",
-          "category": "Die Kategorie des Beteiligten: intern (Intern, die Vorgabe), extern (Extern), kunde (Kunde), lieferant (Lieferant) oder behoerde (Behörde). Aus einem Import oder einem älteren Projekt können auch andere Werte stammen; sie bleiben unverändert stehen und werden ohne Übersetzung angezeigt, bis der Eintrag im Formular gespeichert wird (das Formular setzt sie auf Intern zurück).",
+          "support": "Die Einstellung des Beteiligten zum Projekt: supporter (Unterstützer), neutral (Neutral, die Vorgabe) oder critic (Kritiker). Ein Kritiker mit hohem Einfluss und hohem Interesse löst die Warnung unter den Schlüssel-Stakeholdern aus. Aus einem Import oder einem älteren Projekt können auch andere Werte stammen; das Modul übernimmt sie, wie sie sind; wer den Eintrag im Formular öffnet und speichert, setzt sie auf Neutral. In der Matrix werden sie wie ein Kritiker gefärbt, die Tabelle zeigt sie ohne Übersetzung an; für die Warnung zählen sie nicht.",
+          "category": "Die Kategorie des Beteiligten: intern (Intern, die Vorgabe), extern (Extern), kunde (Kunde), lieferant (Lieferant) oder behoerde (Behörde). Aus einem Import oder einem älteren Projekt können auch andere Werte stammen; das Modul übernimmt sie, wie sie sind, und zeigt sie ohne Übersetzung an; wer den Eintrag im Formular öffnet und speichert, setzt sie auf Intern.",
           "notes": "Erwartungen und Bedenken des Beteiligten in freiem Text, bis zu 500 Zeichen."
         }
       },
@@ -1552,6 +1553,12 @@
     "kano": {
       "name": "Kano-Modell",
       "description": "Anforderungen aus dem VoC→CTx-Baum nach Kano klassifizieren und priorisieren",
+      "codeM": "M",
+      "codeO": "O",
+      "codeA": "A",
+      "codeI": "I",
+      "codeR": "R",
+      "codeQ": "Q",
       "sourceTitle": "Quelle",
       "sourceTree": "VoC→CTx-Baum",
       "sourceNone": "Kein VoC→CTx-Baum im Projekt. Lege zuerst einen an, um Anforderungen zu übernehmen.",
@@ -1743,7 +1750,7 @@
           "missing": "Ob das Merkmal im verknüpften Baum nicht mehr vorkommt. Seine Antworten bleiben erhalten, die Zeile ist als fehlend markiert.",
           "counts": "Wie viele Befragte das Merkmal in welche Kategorie eingeordnet haben; je Kategorie eine Zahl.",
           "n": "Die Zahl der Antworten dieses Merkmals, die sich klassifizieren ließen, also ein Paar aus funktionaler und dysfunktionaler Antwort. Sie ist die Summe aller sechs Kategorien, auch der widersprüchlichen und umgekehrten.",
-          "unanswered": "Die Zahl der Antworten dieses Merkmals, die sich nicht klassifizieren ließen, weil die funktionale oder die dysfunktionale Antwort fehlt. Sie zählen in keiner Kategorie.",
+          "unanswered": "Die Zahl der Antworten dieses Merkmals, die sich keiner Kategorie zuordnen lassen: weil die funktionale oder die dysfunktionale Antwort fehlt oder weil ein Wert außerhalb der Skala von 1 bis 5 liegt. Sie zählen in keiner Kategorie.",
           "category": "Die häufigste Kategorie unter den Antworten dieses Merkmals: Basismerkmal, Leistungsmerkmal, Begeisterungsmerkmal, indifferent, umgekehrt oder widersprüchlich; leer, wenn keine Antwort klassifiziert werden konnte. Sind zwei oder mehr Kategorien gleich häufig, gewinnt die stärkere in der Reihenfolge Basis, Leistung, Begeisterung, indifferent, umgekehrt, widersprüchlich.",
           "tie": "Ob an der Spitze zwei oder mehr Kategorien gleich häufig sind. Dann gilt die stärkere nach der Reihenfolge der Kategorie, und die Ergebnistabelle markiert den Gleichstand.",
           "cs": "Der Zufriedenheitskoeffizient (Better): (Begeisterung + Leistung) geteilt durch (Begeisterung + Leistung + Basis + indifferent), ein Wert von 0 bis 1. Nahe 1 steigert die Erfüllung des Merkmals die Zufriedenheit stark. Umgekehrte und widersprüchliche Antworten stehen nicht im Nenner; leer, wenn keine Antwort in diesen vier Kategorien liegt.",
@@ -2065,7 +2072,7 @@
           "help": "Setzt den Zielschritt eines Loops (zu welchem früheren Schritt er zurückführt). Ohne Zielschritt wird das Ziel des Loops gelöscht. Trägt der Schritt keinen Loop, oder liegt der gewählte Zielschritt nicht vor diesem Schritt in der Kette, passiert nichts.",
           "params": {
             "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
-            "targetStepId": "Die id eines vorhandenen Schritts, oder null/leerer String, um das Ziel zu löschen. Eine unbekannte id ist ein Fehler; eine bekannte id, die nicht VOR stepId in der Kette liegt, liefert false."
+            "targetStepId": "Die Kennung eines vorhandenen Schritts. Leer lassen (oder null) löscht das Ziel des Loops. Eine unbekannte Kennung ist ein Fehler; eine bekannte, die nicht vor dem Schritt mit dem Loop liegt, ändert nichts (Rückgabe false)."
           }
         },
         "removeLoop": {
@@ -2551,6 +2558,7 @@
     "todo": {
       "name": "Todo",
       "description": "Aufgabenliste mit Status, Zieldatum und Verantwortlichem",
+      "filterHelp": "Grenzt die Liste ein: nach Status, nach verantwortlicher Person und per Suchtext in Aufgabentext und Verantwortlichem. Der Filter ändert keine Aufgabe.",
       "addTodo": "Aufgabe hinzufügen",
       "filter": "Filter",
       "searchPlaceholder": "Suchen …",
@@ -6934,6 +6942,12 @@
     "fmea": {
       "name": "FMEA",
       "description": "Fehlermöglichkeits- und Einflussanalyse mit RPN-Berechnung",
+      "abbrS": "S",
+      "abbrO": "O",
+      "abbrD": "D",
+      "abbrDeltaS": "ΔS",
+      "abbrDeltaO": "ΔO",
+      "abbrDeltaD": "ΔD",
       "addRisk": "Risiko hinzufügen",
       "scales": "Skalen",
       "scalesShow": "Skalen anzeigen",
@@ -12036,7 +12050,7 @@
           }
         },
         "cycleStatus": {
-          "help": "Schaltet den Füllstand eines Ressourcenfeldes einen Schritt weiter: unknown, unused, partial, full, wieder unknown. Für einen bestimmten Wert ist setCellStatus der direkte Weg.",
+          "help": "Schaltet den Füllstand eines Ressourcenfeldes einen Schritt weiter: unknown, unused, partial, full, wieder unknown. Für einen bestimmten Wert gibt es die Aktion zum direkten Setzen des Füllstands.",
           "params": {
             "catKey": "Die Ressourcenkategorie: substance, field, space, time, info oder function. Ein Wert daneben ist ein Fehler.",
             "lvlKey": "Die Systemebene: sub (Subsystem), sys (System) oder super (Supersystem). Ein Wert daneben ist ein Fehler."

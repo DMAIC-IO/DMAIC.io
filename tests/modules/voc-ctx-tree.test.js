@@ -428,6 +428,7 @@ suite('VoC-CTx Model — default node colours are distinguishable', () => {
 
 suite('VoC-CTx — Schlüsselfläche', () => {
   test('COLOR_KEYS entspricht den Farbschlüsseln des Modells', () => {
+    // COLOR_PROP ist die maßgebliche Liste; DEFAULT_COLORS muss ihr nur folgen.
     assertEqual(JSON.stringify(COLOR_KEYS), JSON.stringify(Object.keys(DEFAULT_COLORS)));
     assertEqual(JSON.stringify(COLOR_KEYS), JSON.stringify(Object.keys(COLOR_PROP)));
   });

@@ -11,6 +11,7 @@
     <div class="raci__add-bar">
       <div class="raci__add-group">
         <input class="field raci__add-input" data-add="activity"
+               :aria-label="t('activityPlaceholder')"
                :placeholder="t('activityPlaceholder')" :maxlength="activityMaxlen"
                x-model="newActivity"
                @keydown.enter="addActivityFromInput()">
@@ -22,6 +23,7 @@
       </div>
       <div class="raci__add-group">
         <input class="field raci__add-input" data-add="stakeholder"
+               :aria-label="t('stakeholderPlaceholder')"
                :placeholder="t('stakeholderPlaceholder')" :maxlength="stakeholderMaxlen"
                x-model="newStakeholder"
                @keydown.enter="addStakeholderFromInput()">
@@ -49,6 +51,7 @@
                         x-text="sh"></span>
                   <template x-if="isRenaming('stakeholder', sIdx)">
                     <input class="field raci__rename-input"
+                           :aria-label="t('stakeholderPlaceholder')"
                            :maxlength="stakeholderMaxlen"
                            x-model="renameValue"
                            @keydown.enter.prevent="commitRename()"
@@ -83,6 +86,7 @@
                         x-text="act"></span>
                   <template x-if="isRenaming('activity', aIdx)">
                     <input class="field raci__rename-input"
+                           :aria-label="t('activityPlaceholder')"
                            :maxlength="activityMaxlen"
                            x-model="renameValue"
                            @keydown.enter.prevent="commitRename()"
