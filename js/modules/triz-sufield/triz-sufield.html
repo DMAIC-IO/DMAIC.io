@@ -85,9 +85,9 @@
     <section class="triz-sf__diagnosis">
       <div class="triz-sf__diagnosis-text">
         <strong x-text="t('diagnosisLabel')"></strong>:
-        <span x-text="situationLabel(diagSituation())"></span>
+        <span data-help-key="modules.triz-sufield.types.Diagnosis.situation" x-text="situationLabel(diagSituation())"></span>
         <span class="triz-sf__diagnosis-classes">
-          <span x-text="suggestedClassesLabel()"></span>
+          <span data-help-key="modules.triz-sufield.types.Diagnosis.suggestedClasses" x-text="suggestedClassesLabel()"></span>
           <template x-for="c in suggestedClassList()">
             <code :key="c" x-text="c"></code>
           </template>

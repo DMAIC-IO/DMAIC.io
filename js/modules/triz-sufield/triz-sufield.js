@@ -8,7 +8,7 @@
  *   kein Zustand.
  */
 import { createModule } from '../../core/template-module.js';
-import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
 import { State, diagnose, FIELDS, LINKS, FILTER_MODES } from './triz-sufield-model.js';
 
@@ -54,6 +54,28 @@ function el(tag, className, text) {
   return n;
 }
 
+/**
+ * Die Diagnose, wie `read().diagnosis` sie zeigt. Sätze je Eigenschaft unter
+ * `types.Diagnosis.<name>`.
+ *
+ * @typedef {object} Diagnosis
+ * @property {'partial'|'incomplete'|'complete-useful'|'complete-insufficient'|'complete-excessive'|'complete-harmful'} situation  Lage des Modells
+ * @property {number[]} suggestedClasses  empfohlene Standardklassen, 1 bis 5
+ */
+
+/**
+ * @typedef {object} AgentRead
+ * @property {string} s1  der Stoff S1
+ * @property {string} s2  der Stoff S2
+ * @property {string} field  Feldart, leer solange keine gewählt ist
+ * @property {string} link  Verknüpfung, leer solange keine gewählt ist
+ * @property {string} problemNote  Problemnotiz
+ * @property {Record<string, string>} notes  Notiz je vermerkter Standardlösung, adressiert über ihre id
+ * @property {Record<string, boolean>} selected  vorgemerkte Standardlösungen, adressiert über ihre id
+ * @property {string} filterMode  Listenfilter, auto oder all
+ * @property {number[]} expandedClasses  Nummern der aufgeklappten Standardklassen
+ * @property {Diagnosis} diagnosis  die aus den vier Werten abgeleitete Diagnose
+ */
 const base = createModule({
   config: {
     id: 'triz-sufield',
@@ -67,7 +89,19 @@ const base = createModule({
 
   data(module, _t) {
     return {
-      ...agentReadMixin(module),
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} das Stoff-Feld-Modell samt abgeleiteter Diagnose
+       */
+      read(options) {
+        const m = this.model;
+        return readAgentState('triz-sufield', {
+          ...m.toJSON(),
+          diagnosis: diagnose(m.s1, m.s2, m.field, m.link),
+        }, options);
+      },
 
       FIELDS: [...FIELDS],
       LINKS: [...LINKS],

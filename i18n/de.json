@@ -12514,6 +12514,15 @@
         },
         "expandedClasses": {
           "help": "Die Nummern der aufgeklappten Standardklassen, 1 bis 5. Ein persistierter Anzeigezustand — er gehört zum gespeicherten Projekt, nicht zur Analyse."
+        },
+        "diagnosis": {
+          "help": "Die aus S1, S2, Feldart und Verknüpfung abgeleitete Diagnose mit situation und suggestedClasses. Sie wird nicht gespeichert."
+        }
+      },
+      "types": {
+        "Diagnosis": {
+          "situation": "Die Lage des Modells, aus Stoffen, Feldart und Verknüpfung abgeleitet und nicht gespeichert: partial (S1 oder S2 fehlt), incomplete (kein Feld oder Verknüpfung fehlend), complete-useful (vollständig, Wirkung nützlich), complete-insufficient (vollständig, Wirkung unzureichend), complete-excessive (vollständig, Wirkung exzessiv), complete-harmful (vollständig, Wirkung schädlich). Die Zeile „Diagnose“ zeigt sie als Satz.",
+          "suggestedClasses": "Die Nummern der empfohlenen Standardklassen, 1 bis 5: 1 bei partial, incomplete und complete-harmful, 2 bei complete-insufficient, complete-excessive und complete-useful, dazu 3 bei nützlicher, 5 bei exzessiver und schädlicher Wirkung. Die Zeile „Diagnose“ zeigt sie unter „Empfohlene Klassen“."
         }
       },
       "subtitle": "Modelliere die Wechselwirkung als Substanz-Substanz-Feld-Dreieck und nutze die Diagnose, um die passenden Standardlösungen zu finden.",

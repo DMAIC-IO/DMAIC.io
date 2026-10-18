@@ -12510,6 +12510,15 @@
         },
         "expandedClasses": {
           "help": "The numbers of the expanded standard classes, 1 to 5. A persisted display state — it belongs to the saved project, not to the analysis."
+        },
+        "diagnosis": {
+          "help": "The diagnosis derived from S1, S2, field type and link, with situation and suggestedClasses. It is not stored."
+        }
+      },
+      "types": {
+        "Diagnosis": {
+          "situation": "The state of the model, derived from the substances, field type and link and not stored: partial (S1 or S2 missing), incomplete (no field or link missing), complete-useful (complete, useful action), complete-insufficient (complete, insufficient action), complete-excessive (complete, excessive action), complete-harmful (complete, harmful action). The “Diagnosis” line shows it as a sentence.",
+          "suggestedClasses": "The numbers of the suggested standard classes, 1 to 5: 1 for partial, incomplete and complete-harmful, 2 for complete-insufficient, complete-excessive and complete-useful, plus 3 for a useful action and 5 for an excessive or harmful one. The “Diagnosis” line shows them under “Suggested classes”."
         }
       },
       "subtitle": "Model the interaction as a substance-substance-field triangle and use the diagnosis to find the matching standard solutions.",

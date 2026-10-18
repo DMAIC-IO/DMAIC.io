@@ -17861,11 +17861,11 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "setClassExpanded": {
         "params": [
@@ -17997,48 +17997,74 @@ export const AGENT_REGISTRY = {
     "fields": {
       "s1": {
         "type": "string",
-        "help": "der Stoff S1 — der Stoff, der die Wirkung auslöst",
-        "bulk": false
+        "help": "der Stoff S1",
+        "bulk": false,
+        "derived": true
       },
       "s2": {
         "type": "string",
-        "help": "der Stoff S2 — der Stoff, auf den gewirkt wird",
-        "bulk": false
+        "help": "der Stoff S2",
+        "bulk": false,
+        "derived": true
       },
       "field": {
         "type": "string",
-        "help": "die Feldart zwischen den Stoffen: M, A, T, C, E oder Mg; leer, solange keine gewählt ist",
-        "bulk": false
+        "help": "Feldart, leer solange keine gewählt ist",
+        "bulk": false,
+        "derived": true
       },
       "link": {
         "type": "string",
-        "help": "die Verknüpfung: useful, insufficient, excessive, harmful oder missing; leer, solange keine gewählt ist",
-        "bulk": false
+        "help": "Verknüpfung, leer solange keine gewählt ist",
+        "bulk": false,
+        "derived": true
       },
       "problemNote": {
         "type": "string",
-        "help": "die Problemnotiz zum Stoff-Feld-Modell",
-        "bulk": false
+        "help": "Problemnotiz",
+        "bulk": false,
+        "derived": true
       },
       "notes": {
         "type": "Record<string, string>",
-        "help": "je vermerkter Standardlösung eine Notiz, adressiert über ihre id (zum Beispiel 2.2.5)",
-        "bulk": false
+        "help": "Notiz je vermerkter Standardlösung, adressiert über ihre id",
+        "bulk": false,
+        "derived": true
       },
       "selected": {
         "type": "Record<string, boolean>",
-        "help": "die vorgemerkten Standardlösungen, adressiert über ihre id; nur vorgemerkte stehen darin",
-        "bulk": false
+        "help": "vorgemerkte Standardlösungen, adressiert über ihre id",
+        "bulk": false,
+        "derived": true
       },
       "filterMode": {
         "type": "string",
-        "help": "der Listenfilter: auto zeigt nur die zur Diagnose passenden Klassen, all alle fünf",
-        "bulk": false
+        "help": "Listenfilter, auto oder all",
+        "bulk": false,
+        "derived": true
       },
       "expandedClasses": {
         "type": "number[]",
-        "help": "die Nummern der aufgeklappten Standardklassen (1 bis 5)",
-        "bulk": false
+        "help": "Nummern der aufgeklappten Standardklassen",
+        "bulk": false,
+        "derived": true
+      },
+      "diagnosis": {
+        "type": "Diagnosis",
+        "help": "die aus den vier Werten abgeleitete Diagnose",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "Diagnosis",
+        "keys": {
+          "situation": {
+            "type": "'partial'|'incomplete'|'complete-useful'|'complete-insufficient'|'complete-excessive'|'complete-harmful'",
+            "help": "Lage des Modells"
+          },
+          "suggestedClasses": {
+            "type": "number[]",
+            "help": "empfohlene Standardklassen, 1 bis 5"
+          }
+        }
       }
     }
   },
