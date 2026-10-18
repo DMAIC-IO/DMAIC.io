@@ -49,6 +49,17 @@ import {
 const AUTORUN_DELAY = 80;
 const DISPLAY_MAX = 2000;
 
+/**
+ * Häufigkeit je Kategorie samt Anteil (0–1); einzige Quelle für Anzeige
+ * (`pct`) und Lesefläche (`share`).
+ * @param {string[]} data  die erzeugten Werte
+ * @returns {{name: string, count: number, share: number}[]}  absteigend nach Anzahl
+ */
+function frequencyShares(data) {
+  const total = data.length;
+  return frequency(data).map(([name, count]) => ({ name, count, share: count / total }));
+}
+
 const PARAM_KEYS = ['count', 'seed', 'attrCount', 'attrSeed'];
 const ATTR_KEYS = ['name', 'weight'];
 const TARGET_FILTER = { maxCount: 0 };
@@ -119,6 +130,7 @@ function fmtStatNum(v) {
  * @typedef {object} FrequencyRow
  * @property {string} name  Kategorie
  * @property {number} count  Anzahl
+ * @property {number} share  Anteil an allen erzeugten Werten (0–1)
  */
 
 /**
@@ -228,7 +240,7 @@ export default createModule({
         if (this.isAttributive()) {
           return {
             n: this.genData.length,
-            frequency: frequency(this.genData).map(([name, count]) => ({ name, count })),
+            frequency: frequencyShares(this.genData),
           };
         }
         const ds = descriptiveStats(this.genData);
@@ -406,17 +418,16 @@ export default createModule({
       /** @noagent view transform; the agent reads a summary via read().generated */
       freqRows() {
         if (!this.genData.length || !this.isAttributive()) return [];
-        const total = this.genData.length;
         const sorted = frequency(this.genData);
         const attrOrder = this.model.attributes.map(a => a.name);
         const maxCount = sorted.length ? sorted[0][1] : 1;
-        return sorted.map(([name, count]) => {
+        return frequencyShares(this.genData).map(({ name, count, share }) => {
           const idx = attrOrder.indexOf(name);
           const color = idx >= 0 ? this.attrColor(idx) : 'var(--color-text-tertiary)';
           return {
             name,
             count,
-            pct: (count / total * 100).toFixed(1),
+            pct: (share * 100).toFixed(1),
             barW: (count / maxCount * 100).toFixed(1),
             color,
           };

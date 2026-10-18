@@ -13627,6 +13627,10 @@ export const AGENT_REGISTRY = {
               "count": {
                 "type": "number",
                 "help": "Anzahl"
+              },
+              "share": {
+                "type": "number",
+                "help": "Anteil an allen erzeugten Werten (0–1)"
               }
             }
           }

@@ -8784,7 +8784,8 @@
         },
         "FrequencyRow": {
           "name": "The name of the category.",
-          "count": "How often the category occurs among the generated values."
+          "count": "How often the category occurs among the generated values.",
+          "share": "The share of the category among all generated values, as a number from 0 to 1 (count divided by the number of values); the display shows it as a percentage."
         }
       },
       "errGenerate": "The values could not be generated: {message}",

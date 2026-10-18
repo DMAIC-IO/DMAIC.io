@@ -8788,7 +8788,8 @@
         },
         "FrequencyRow": {
           "name": "Der Name der Kategorie.",
-          "count": "Wie oft die Kategorie unter den erzeugten Werten vorkommt."
+          "count": "Wie oft die Kategorie unter den erzeugten Werten vorkommt.",
+          "share": "Der Anteil der Kategorie an allen erzeugten Werten, als Zahl von 0 bis 1 (Anzahl geteilt durch Zahl der Werte); die Anzeige zeigt ihn in Prozent."
         }
       },
       "errGenerate": "Die Werte konnten nicht erzeugt werden: {message}",
