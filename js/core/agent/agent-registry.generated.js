@@ -12319,6 +12319,12 @@ export const AGENT_REGISTRY = {
       }
     },
     "fields": {
+      "distribution": {
+        "type": "string",
+        "help": "die Verteilung, gegen die geprüft wird; immer 'normal'",
+        "bulk": false,
+        "derived": true
+      },
       "datasets": {
         "type": "Dataset[]",
         "help": "per data row its columns, each described under keys",
@@ -12437,6 +12443,21 @@ export const AGENT_REGISTRY = {
                 "type": "number[]",
                 "help": "Intervall der Standardabweichung",
                 "optional": true
+              }
+            }
+          },
+          "referenceLine": {
+            "type": "ReferenceLine|null",
+            "help": "die Referenzgerade der Reihe, leer bei weniger als zwei Werten",
+            "keysOf": "ReferenceLine",
+            "keys": {
+              "slope": {
+                "type": "number",
+                "help": "Steigung: z je Einheit des Messwerts"
+              },
+              "intercept": {
+                "type": "number",
+                "help": "Achsenabschnitt: z bei Messwert 0"
               }
             }
           }

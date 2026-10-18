@@ -757,6 +757,7 @@
   "chart": {
     "renderError": "Diagramm konnte nicht gezeichnet werden.",
     "exportError": "Das Bild konnte nicht exportiert werden.",
+    "fitSuffix": "— Fit",
     "pareto": {
       "other": "Sonstige"
     },
@@ -5783,6 +5784,9 @@
         }
       },
       "fields": {
+        "distribution": {
+          "help": "Die Verteilung, gegen die das Netz prüft. Sie ist fest die Normalverteilung und nicht einstellbar: Liegen die Punkte nahe an der gestrichelten Geraden, passt die Reihe zu einer Normalverteilung. Einen Test mit Prüfwert gibt es nicht."
+        },
         "datasets": {
           "help": "Je Datenreihe ihre Spalten, jede Spalte einer Reihe unter keys einzeln beschrieben."
         },
@@ -5797,6 +5801,13 @@
         }
       },
       "types": {
+        "SeriesStats": {
+          "referenceLine": "Die gestrichelte Gerade dieser Reihe, die in der Legende mit „— Fit“ steht. Sie läuft durch die Punkte beim ersten und beim dritten Quartil. Leer, solange die Reihe weniger als zwei Werte hat."
+        },
+        "ReferenceLine": {
+          "slope": "Die Steigung der Geraden: um wie viel das Normalquantil (die Hochachse, in der Beschriftung als Wahrscheinlichkeit in Prozent) pro Einheit Messwert (die Rechtsachse) steigt. Sie ist positiv und umso größer, je enger die Werte beieinander liegen; grob ist sie der Kehrwert der Streuung.",
+          "intercept": "Der Achsenabschnitt der Geraden: das Normalquantil bei Messwert 0. Zusammen mit der Steigung gilt Normalquantil = Steigung · Messwert + Achsenabschnitt; die Gerade schneidet die 50-Prozent-Linie dort, wo der Messwert gleich minus Achsenabschnitt durch Steigung ist, grob beim Mittelwert."
+        },
         "Dataset": {
           "valueRef": "Die Wertespalte der Reihe (Slot V), numerisch mit mindestens zwei Werten und Pflicht. Ohne sie bleibt die Reihe stehen, wird aber nicht gezeichnet. Leer, solange keine gewählt ist.",
           "groupRef": "Die Gruppenspalte der Reihe (Slot G), optional; sie teilt die Reihe in Serien, eine je Gruppenwert. Leer, solange keine gewählt ist."

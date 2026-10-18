@@ -35,6 +35,7 @@ import {
   getColumnValues, getColumnName,
 } from '../../ui/dataset-picker.js';
 import { computeSeriesStats, renderStatsTable } from '../../core/stats-panel.js';
+import { referenceLineOf } from '../../core/chart/types/probability-plot.js';
 import { CHART_COLORS } from '../../core/chart/chart-colors.js';
 import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
 
@@ -64,6 +65,16 @@ const COLUMN_SLOTS = ['value', 'group'];
  * @property {string} name  Name der Reihe
  * @property {Stats|null} stats  Kennzahlen, leer ohne Werte
  * @property {StatsCi} ci  Konfidenzintervalle
+ * @property {ReferenceLine|null} referenceLine  die Referenzgerade der Reihe, leer bei weniger als zwei Werten
+ */
+
+/**
+ * Die Referenzgerade durch Q1 und Q3 einer Reihe (`referenceLineOf`): auf
+ * der Rechtsachse der Messwert, auf der Hochachse das Normalquantil z.
+ *
+ * @typedef {object} ReferenceLine
+ * @property {number} slope  Steigung: z je Einheit des Messwerts
+ * @property {number} intercept  Achsenabschnitt: z bei Messwert 0
  */
 
 /**
@@ -101,6 +112,7 @@ const COLUMN_SLOTS = ['value', 'group'];
  * stehen in `stats` (E8).
  *
  * @typedef {object} AgentRead
+ * @property {string} distribution  die Verteilung, gegen die geprüft wird; immer 'normal'
  * @property {Dataset[]} datasets  per data row its columns, each described under keys
  * @property {string[]} activeColumnSlots  the slot keys a row of `setDatasets` may carry
  * @property {object} pickableColumns  per slot the columns `setDatasets` accepts, each `{ key, name }`
@@ -145,6 +157,7 @@ const mod = createModule({
       read(options) {
         return readAgentState('probability-plot', {
           datasets: this.model.datasets,
+          distribution: 'normal',
           activeColumnSlots: this.activeColumnSlots(),
           pickableColumns: this.pickableColumns(),
           stats: this._agentStats(),
@@ -191,8 +204,9 @@ const mod = createModule({
         let series;
         try { series = this._buildSeries(); } catch { return null; }
         if (!series.length) return null;
-        const result = computeSeriesStats(this._statsInput(series), this.model.confLevel / 100)
-          .map(({ name, stats, ci }) => ({ name, stats, ci }));
+        const input = this._statsInput(series).filter(s => s.visible !== false);
+        const result = computeSeriesStats(input, this.model.confLevel / 100)
+          .map(({ name, stats, ci }, i) => ({ name, stats, ci, referenceLine: referenceLineOf(input[i].values) }));
         return result.length ? result : null;
       },
 

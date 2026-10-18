@@ -757,6 +757,7 @@
   "chart": {
     "renderError": "The chart could not be drawn.",
     "exportError": "The image could not be exported.",
+    "fitSuffix": "— Fit",
     "pareto": {
       "other": "Other"
     },
@@ -5779,6 +5780,9 @@
         }
       },
       "fields": {
+        "distribution": {
+          "help": "The distribution the plot checks against. It is fixed to the normal distribution and cannot be changed: if the points lie close to the dashed line, the series fits a normal distribution. There is no goodness-of-fit test with a test value."
+        },
         "datasets": {
           "help": "Per data row its columns, each column of a row described individually under keys."
         },
@@ -5793,6 +5797,13 @@
         }
       },
       "types": {
+        "SeriesStats": {
+          "referenceLine": "The dashed line of this series, labelled “— Fit” in the legend. It passes through the points at the first and third quartile. Empty while the series has fewer than two values."
+        },
+        "ReferenceLine": {
+          "slope": "The slope of the line: how much the normal quantile (the vertical axis, labelled as a probability in percent) rises per unit of the measured value (the horizontal axis). It is positive and larger the more tightly the values are packed; roughly it is the inverse of the spread.",
+          "intercept": "The intercept of the line: the normal quantile at a measured value of 0. Together with the slope, normal quantile = slope · value + intercept; the line crosses the 50 percent level where the value equals minus intercept divided by slope, roughly at the mean."
+        },
         "Dataset": {
           "valueRef": "The value column of the row (slot V), numeric with at least two values, and required. Without it the row is kept but not plotted. Empty until one is chosen.",
           "groupRef": "The group column of the row (slot G), optional; it splits the row into series, one per group value. Empty until one is chosen."

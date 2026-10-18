@@ -90,6 +90,30 @@ function blomPositions(n) {
   return pos;
 }
 
+/**
+ * Die Referenzgerade eines Wahrscheinlichkeitsnetzes: durch die Punkte bei Q1 und
+ * Q3 der sortierten Werte, auf der Achse der Normalquantile (z) über dem
+ * Messwert: z = slope · wert + intercept. Die Zeichnung des Diagrammtyps und
+ * die Lesefläche des Moduls rechnen beide hiermit (eine Quelle).
+ *
+ * @param {number[]} values  die Werte einer Reihe, beliebig sortiert
+ * @returns {{slope: number, intercept: number}|null} null ohne mindestens
+ *   zwei Werte oder bei nicht endlicher Rechnung
+ */
+export function referenceLineOf(values) {
+  const sorted = [...values].sort((a, b) => a - b);
+  const n = sorted.length;
+  if (n < 2) return null;
+  const zScores = blomPositions(n).map(p => normalQuantile(p));
+  const q1i = Math.floor(n * 0.25);
+  const q3i = Math.floor(n * 0.75);
+  const z1 = zScores[q1i], z3 = zScores[q3i];
+  const v1 = sorted[q1i], v3 = sorted[q3i];
+  const slope = (z3 - z1) / (v3 - v1 || 1);
+  const intercept = z1 - slope * v1;
+  return Number.isFinite(slope) && Number.isFinite(intercept) ? { slope, intercept } : null;
+}
+
 /** Probability-axis tick percentages for a normal probability plot. */
 const PROB_TICKS = [1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 99];
 
@@ -251,12 +275,7 @@ export default class ProbabilityPlot extends ChartBase {
       const lineCol = resolveColor(lineColor);
 
       // ── Reference line (fit through Q1 and Q3) ──
-      const q1i = Math.floor(n * 0.25);
-      const q3i = Math.floor(n * 0.75);
-      const z1 = zScores[q1i], z3 = zScores[q3i];
-      const v1 = sorted[q1i], v3 = sorted[q3i];
-      const slope = (z3 - z1) / (v3 - v1 || 1);
-      const intercept = z1 - slope * v1;
+      const { slope, intercept } = referenceLineOf(s.values) ?? { slope: 0, intercept: 0 };
 
       const lineX0 = xExt.xMin - pad;
       const lineX1 = xExt.xMax + pad;
@@ -293,6 +312,11 @@ export default class ProbabilityPlot extends ChartBase {
 
   // ── Legend ─────────────────────────────────────────────────────
 
+  /** Translated legend suffix of the reference line ("— Fit"). @private */
+  _fitSuffix() {
+    return this.context?.i18n?.t('chart.fitSuffix') ?? '— Fit';
+  }
+
   /** @override */
   _getLegendItems() {
     const series = this._resolveSeries();
@@ -309,7 +333,7 @@ export default class ProbabilityPlot extends ChartBase {
         strokeWidth: s.markerStrokeWidth ?? this.config.markerStrokeWidth ?? 1,
         label: s.name || `Series ${i + 1}`,
       });
-      items.push({ type: 'line', color: lineColor, label: `${s.name || `Series ${i + 1}`} — Fit`, dash: '6,3' });
+      items.push({ type: 'line', color: lineColor, label: `${s.name || `Series ${i + 1}`} ${this._fitSuffix()}`, dash: '6,3' });
     }
     return items;
   }
@@ -350,7 +374,7 @@ export default class ProbabilityPlot extends ChartBase {
       // Fit-line descriptor
       descriptors.push({
         index: descriptors.length,
-        getName: () => `${s.name || `Series ${idx + 1}`} — Fit`,
+        getName: () => `${s.name || `Series ${idx + 1}`} ${this._fitSuffix()}`,
         setName: () => {},
         getColor: () => s.lineColor || s.color || fallbackFill,
         setColor: (c) => { s.lineColor = c; },
