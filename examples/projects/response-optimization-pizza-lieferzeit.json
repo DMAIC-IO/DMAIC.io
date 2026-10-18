@@ -3,9 +3,8 @@
     "model-pizza-lieferzeit": {
       "selected": true,
       "kind": "min",
-      "lower": 10,
+      "lower": 6.6,
       "upper": 30,
-      "target": 20,
       "weight": 1
     }
   },

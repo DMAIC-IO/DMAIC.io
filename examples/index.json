@@ -3116,8 +3116,8 @@
         "en": "Pizza Delivery Time — Optimum"
       },
       "description": {
-        "de": "Das gespeicherte Regressionsmodell der Pizza-Lieferzeit (Entfernung, Verkehrslevel; korrigiertes R² ≈ 0,91) liegt bereits im Projekt, die Lieferzeit soll minimal werden. Das Beispiel zeigt das gerechnete Optimum mit Desirability, vorhergesagter Lieferzeit und den Faktoreinstellungen am Optimum — bei einem linearen Modell liegt es an den Faktorgrenzen.",
-        "en": "The saved regression model of the pizza delivery time (distance, traffic level; adjusted R² ≈ 0.91) is already in the project, and the delivery time is to be minimised. The example shows the computed optimum with desirability, predicted delivery time and the factor settings at the optimum — for a linear model it lies at the factor bounds."
+        "de": "Das gespeicherte Regressionsmodell der Pizza-Lieferzeit (Entfernung, Verkehrslevel; korrigiertes R² ≈ 0,91) liegt bereits im Projekt, die Lieferzeit soll minimal werden. Das Beispiel zeigt das gerechnete Optimum mit Desirability, vorhergesagter Lieferzeit und den Faktoreinstellungen am Optimum — bei diesem linearen Modell liegt es in der Ecke kürzeste Entfernung, geringster Verkehr.",
+        "en": "The saved regression model of the pizza delivery time (distance, traffic level; adjusted R² ≈ 0.91) is already in the project, and the delivery time is to be minimised. The example shows the computed optimum with desirability, predicted delivery time and the factor settings at the optimum — for this linear model it lies in the corner of shortest distance and lowest traffic."
       },
       "source": "Aus dem Beispiel regression-pizza-delivery (Qprovement synthetisch, NumPy default_rng, Seed=2026), Modell gespeichert",
       "license": "public-domain",
