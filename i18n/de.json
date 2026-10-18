@@ -8473,7 +8473,7 @@
           }
         },
         "setDistParam": {
-          "help": "Setzt einen Parameter der gewählten stetigen oder diskreten Verteilung und erzeugt sofort neu. Werte außerhalb des Bereichs werden abgewiesen, nicht geklemmt.",
+          "help": "Setzt einen Parameter der gewählten Verteilung; die Formel über den Feldern zeigt, wo er eingeht, der zulässige Bereich steht unter dem Feld. Werte außerhalb des Bereichs werden abgewiesen, nicht geklemmt. Die Werte werden sofort neu erzeugt.",
           "params": {
             "id": "Einer der Parameter aus activeDistParams, zum Beispiel mu oder sigma. Welche gelten, hängt von der Verteilung ab.",
             "value": "Eine Zahl im Bereich min bis max aus activeDistParams; als Text angegebene Zahlen werden angenommen."
@@ -8482,12 +8482,12 @@
         "setParam": {
           "help": "Setzt Umfang oder Startwert und erzeugt sofort neu. Werte außerhalb des Bereichs werden abgewiesen, nicht geklemmt.",
           "params": {
-            "key": "Einer der Schlüssel aus activeParams: count und seed für eine stetige oder diskrete Verteilung, attrCount und attrSeed für die attributive. Jeder andere Wert ist ein Fehler.",
-            "value": "Eine ganze Zahl; als Text angegebene Zahlen werden angenommen. Umfang (count, attrCount) von 1 bis 100000, Startwert (seed, attrSeed) jede ganze Zahl außer 0."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys."
           }
         },
         "addAttribute": {
-          "help": "Legt eine Kategorie der attributiven Verteilung an (leerer Name, Gewicht 1) und erzeugt neu. Gibt die id der Kategorie zurück. Kategorien ohne Namen zählen beim Erzeugen nicht."
+          "help": "Legt ein Attribut (eine Kategorie) der attributiven Verteilung an, mit leerem Namen und Gewicht 1, und erzeugt neu. Gibt die id der Kategorie zurück. Kategorien ohne Namen werden beim Erzeugen übergangen."
         },
         "removeAttribute": {
           "help": "Entfernt eine Kategorie der attributiven Verteilung und erzeugt neu.",
@@ -8499,15 +8499,15 @@
           "help": "Setzt Name oder Gewicht einer Kategorie der attributiven Verteilung und erzeugt neu. Kategorien mit leerem Namen oder einem Gewicht von höchstens 0 werden beim Erzeugen übergangen.",
           "params": {
             "attrId": "Die id einer Kategorie aus attributes oder die von addAttribute.",
-            "key": "Entweder name oder weight; jeder andere Wert ist ein Fehler.",
-            "value": "Für name ein Text, auch leer; für weight eine Zahl ab 0, als Text angegebene Zahlen werden angenommen."
+            "key": "Welches Feld; jedes ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys."
           }
         },
         "generate": {
           "help": "Erzeugt die Werte mit den aktuellen Eingaben. Ohne gewählte Verteilung geschieht nichts; ein Fehler der Verteilung steht in errorMsg, keine Absage."
         },
         "toWorksheet": {
-          "help": "Sendet die erzeugten Werte an einen neuen Worksheet, in eine bestehende leere Spalte oder als neue Spalte an ein bestehendes Blatt und gibt den empfangenden Worksheet zurück. Ohne Werte wird nichts gesendet und null zurückgegeben.",
+          "help": "Sendet die erzeugten Werte an ein neues Worksheet, in eine bestehende leere Spalte oder als neue Spalte an ein bestehendes Blatt und gibt das empfangende Worksheet zurück. Gibt es keine Werte, wird nichts gesendet und es kommt kein Worksheet zurück.",
           "params": {
             "target": "null für einen neuen Worksheet, sonst ein Spaltenbezug { instanceId, sheetId, columnId } aus targetColumns; columnId '__new__' hängt eine neue Spalte an das Blatt an."
           }
@@ -8524,9 +8524,36 @@
         "attributes": { "help": "Die Kategorien der attributiven Verteilung, je mit id, Name und Gewicht." },
         "attrCount": { "help": "Umfang der Stichprobe bei der attributiven Verteilung." },
         "attrSeed": { "help": "Startwert des Zufallsgenerators bei der attributiven Verteilung." },
-        "generated": { "help": "Zusammenfassung der erzeugten Werte: n, Mittelwert, Standardabweichung, Minimum und Maximum bei stetigen und diskreten Verteilungen; n und die Häufigkeit je Kategorie bei der attributiven; null ohne Werte." },
+        "generated": { "help": "Zusammenfassung der erzeugten Werte, jede Angabe unter keys einzeln beschrieben; null, solange keine Werte erzeugt sind." },
         "targetColumns": { "help": "Die Ziele, die toWorksheet annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'. Je Blatt mit einer leeren Spalte stehen dort seine leeren Spalten und danach ein Eintrag mit columnId '__new__' (name ist der Blattname), der eine neue Spalte anhängt. Ein Ziel null legt einen neuen Worksheet an." },
         "errorMsg": { "help": "Die Meldung, wenn die Verteilung keine Werte erzeugen konnte, sonst leer." }
+      },
+      "types": {
+        "Params": {
+          "count": "Anzahl (n): der Stichprobenumfang bei einer stetigen oder diskreten Verteilung, eine ganze Zahl von 1 bis 100 000. Eine Änderung erzeugt die Werte sofort neu.",
+          "seed": "Seed: der Startwert des Zufallsgenerators bei einer stetigen oder diskreten Verteilung. Derselbe Seed ergibt dieselben Werte, die Stichprobe ist also reproduzierbar. Erlaubt ist jede ganze Zahl außer 0, weil 0 sonst still als 42 gälte. Eine Änderung erzeugt die Werte sofort neu.",
+          "attrCount": "Anzahl (n): der Stichprobenumfang bei der attributiven Verteilung, eine ganze Zahl von 1 bis 100 000. Eine Änderung erzeugt die Werte sofort neu.",
+          "attrSeed": "Seed: der Startwert des Zufallsgenerators bei der attributiven Verteilung. Derselbe Seed ergibt dieselben Werte, die Stichprobe ist also reproduzierbar. Erlaubt ist jede ganze Zahl außer 0, weil 0 sonst still als 42 gälte. Eine Änderung erzeugt die Werte sofort neu."
+        },
+        "AttributeFields": {
+          "name": "Attribut: der Name der Kategorie. Er darf leer sein; Kategorien ohne Namen werden beim Erzeugen übergangen.",
+          "weight": "Gewicht der Kategorie, eine Zahl ab 0. Der Anteil einer Kategorie ist ihr Gewicht geteilt durch die Summe aller Gewichte; die Spalte „Anteil“ zeigt ihn in Prozent. Eine Kategorie mit Gewicht 0 wird beim Erzeugen übergangen."
+        },
+        "Generated": {
+          "n": "n: die Zahl der erzeugten Werte, gleich der eingestellten Anzahl (n).",
+          "mean": "Mittelwert x̄ = Σx / n, die Summe der erzeugten Werte geteilt durch ihre Anzahl. Die Karte zeigt vier Nachkommastellen, sehr große oder sehr kleine Werte in Exponentialschreibweise. Nur bei stetigen und diskreten Verteilungen.",
+          "sd": "Std.Abw. s = √(Σ(x − x̄)² / (n − 1)), die Stichproben-Streuung der erzeugten Werte mit dem Nenner n − 1. Die Karte zeigt vier Nachkommastellen, sehr große oder sehr kleine Werte in Exponentialschreibweise. Nur bei stetigen und diskreten Verteilungen.",
+          "median": "Median: der mittlere Wert der aufsteigend sortierten erzeugten Werte, bei gerader Anzahl der Mittelwert der beiden mittleren. Die Karte zeigt vier Nachkommastellen, sehr große oder sehr kleine Werte in Exponentialschreibweise. Nur bei stetigen und diskreten Verteilungen.",
+          "min": "Min: der kleinste der erzeugten Werte. Die Karte zeigt vier Nachkommastellen, sehr große oder sehr kleine Werte in Exponentialschreibweise. Nur bei stetigen und diskreten Verteilungen.",
+          "max": "Max: der größte der erzeugten Werte. Die Karte zeigt vier Nachkommastellen, sehr große oder sehr kleine Werte in Exponentialschreibweise. Nur bei stetigen und diskreten Verteilungen.",
+          "skewness": "Schiefe g₁ = m₃ / m₂^1,5 mit den zentrierten Momenten m₂ = Σ(x − x̄)² / n und m₃ = Σ(x − x̄)³ / n (Nenner n, nicht korrigiert). Positiv: der lange Ausläufer liegt rechts, negativ: links; 0 bei symmetrischen Werten. Die Karte zeigt vier Nachkommastellen, sehr große oder sehr kleine Werte in Exponentialschreibweise. Nur bei stetigen und diskreten Verteilungen.",
+          "kurtosis": "Kurtosis als Exzess: m₄ / m₂² − 3 mit m₂ = Σ(x − x̄)² / n und m₄ = Σ(x − x̄)⁴ / n (Nenner n, nicht korrigiert). 0 entspricht der Normalverteilung, positiv heißt spitzer mit schweren Rändern, negativ flacher. Die Karte zeigt vier Nachkommastellen, sehr große oder sehr kleine Werte in Exponentialschreibweise. Nur bei stetigen und diskreten Verteilungen.",
+          "frequency": "Die Häufigkeit je Kategorie, absteigend nach Anzahl sortiert; jeder Eintrag nennt Name und Anzahl. Die Karte „Kategorien“ zählt die Einträge, die Karte „Häufigstes“ nennt den ersten. Nur bei der attributiven Verteilung."
+        },
+        "FrequencyRow": {
+          "name": "Der Name der Kategorie.",
+          "count": "Wie oft die Kategorie unter den erzeugten Werten vorkommt."
+        }
       },
       "errGenerate": "Die Werte konnten nicht erzeugt werden: {message}",
       "name": "Zufallszahlen-Generator",

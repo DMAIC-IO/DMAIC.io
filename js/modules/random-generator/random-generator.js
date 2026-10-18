@@ -79,6 +79,49 @@ function fmtStatNum(v) {
 }
 
 /**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {number} [count]  Stichprobenumfang, nur stetig/diskret
+ * @property {number} [seed]  Startwert, nur stetig/diskret
+ * @property {number} [attrCount]  Stichprobenumfang, nur attributiv
+ * @property {number} [attrSeed]  Startwert, nur attributiv
+ */
+
+/**
+ * Die Schlüsselfläche von `setAttribute`. Sätze unter
+ * `types.AttributeFields.<schlüssel>`, dieselben am Spaltenkopf.
+ *
+ * @typedef {object} AttributeFields
+ * @property {string} name  Name der Kategorie
+ * @property {number} weight  Gewicht der Kategorie
+ */
+
+/**
+ * Die Zusammenfassung der erzeugten Werte (`_agentGenerated()`), wie
+ * `read().generated` sie liefert. Stetig/diskret: n bis kurtosis;
+ * attributiv: n und frequency.
+ *
+ * @typedef {object} Generated
+ * @property {number} n  Zahl der erzeugten Werte
+ * @property {number} [mean]  Mittelwert
+ * @property {number} [sd]  Standardabweichung
+ * @property {number} [median]  Median
+ * @property {number} [min]  kleinster Wert
+ * @property {number} [max]  größter Wert
+ * @property {number} [skewness]  Schiefe
+ * @property {number} [kurtosis]  Kurtosis (Exzess)
+ * @property {FrequencyRow[]} [frequency]  Häufigkeit je Kategorie
+ */
+
+/**
+ * @typedef {object} FrequencyRow
+ * @property {string} name  Kategorie
+ * @property {number} count  Anzahl
+ */
+
+/**
  * Die Agenten-Lesefläche des Zufallsgenerators.
  *
  * Die Eingaben leben als Text im flüchtigen Zustand; persistiert sind die beim
@@ -97,7 +140,7 @@ function fmtStatNum(v) {
  * @property {Array<{ id: string, name: string, weight: number }>} attributes  the categories of the attributive distribution
  * @property {number} attrCount  sample size of the attributive distribution
  * @property {number} attrSeed  random seed of the attributive distribution
- * @property {object|null} generated  `{ n, mean, sd, min, max }` for numeric, `{ n, frequency: [{ name, count }] }` for attributive, null without values
+ * @property {Generated|null} generated  summary of the generated values, each item described under keys; null without values
  * @property {Array<{ key: string, name: string }>} targetColumns  the targets `toWorksheet` accepts: per sheet with an empty column its empty columns, then a `instanceId|sheetId|__new__` entry that appends a new column; null targets a new worksheet
  * @property {string} errorMsg  why the last generation failed, '' without error
  */
@@ -189,7 +232,10 @@ export default createModule({
           };
         }
         const ds = descriptiveStats(this.genData);
-        return { n: ds.n, mean: ds.mean, sd: ds.stdDev, min: ds.min, max: ds.max };
+        return {
+          n: ds.n, mean: ds.mean, sd: ds.stdDev, median: ds.median,
+          min: ds.min, max: ds.max, skewness: ds.skewness, kurtosis: ds.kurtosis,
+        };
       },
 
       /**
@@ -233,7 +279,7 @@ export default createModule({
       /**
        * Umfang oder Startwert setzen und sofort generieren.
        * @agent
-       * @param {'count'|'seed'|'attrCount'|'attrSeed'} key welcher Wert; `activeParams` nennt die gültigen
+       * @param {keyof Params} key welcher Wert; die zulässigen nennt `activeParams`
        * @param {number|string} value ganze Zahl; Umfang von 1 bis 100000, Startwert ungleich 0; Textzahlen werden angenommen
        * @returns {void}
        * @throws {Error} wenn `key` zur gewählten Verteilung nicht passt oder `value` außerhalb des Bereichs liegt
@@ -311,19 +357,19 @@ export default createModule({
 
       // ── Numeric stats KPIs ────────────────────────────────────
 
-      /** @noagent view transform; the agent reads a summary via read().generated */
+      /** @noagent view transform; je Karte `help` = Satz der Kennzahl in `read().generated` */
       statKpis() {
         if (!this.genData.length || this.isAttributive()) return [];
         const ds = descriptiveStats(this.genData);
         return [
-          { value: String(ds.n), label: 'n' },
-          { value: fmtStatNum(ds.mean), label: _t('statMean') },
-          { value: fmtStatNum(ds.stdDev), label: _t('statStd') },
-          { value: fmtStatNum(ds.median), label: _t('statMedian') },
-          { value: fmtStatNum(ds.min), label: 'Min' },
-          { value: fmtStatNum(ds.max), label: 'Max' },
-          { value: fmtStatNum(ds.skewness), label: _t('statSkewness') },
-          { value: fmtStatNum(ds.kurtosis), label: _t('statKurtosis') },
+          { value: String(ds.n), label: 'n', help: 'modules.random-generator.types.Generated.n' },
+          { value: fmtStatNum(ds.mean), label: _t('statMean'), help: 'modules.random-generator.types.Generated.mean' },
+          { value: fmtStatNum(ds.stdDev), label: _t('statStd'), help: 'modules.random-generator.types.Generated.sd' },
+          { value: fmtStatNum(ds.median), label: _t('statMedian'), help: 'modules.random-generator.types.Generated.median' },
+          { value: fmtStatNum(ds.min), label: 'Min', help: 'modules.random-generator.types.Generated.min' },
+          { value: fmtStatNum(ds.max), label: 'Max', help: 'modules.random-generator.types.Generated.max' },
+          { value: fmtStatNum(ds.skewness), label: _t('statSkewness'), help: 'modules.random-generator.types.Generated.skewness' },
+          { value: fmtStatNum(ds.kurtosis), label: _t('statKurtosis'), help: 'modules.random-generator.types.Generated.kurtosis' },
         ];
       },
 
@@ -343,15 +389,15 @@ export default createModule({
         });
       },
 
-      /** @noagent view transform; the agent reads a summary via read().generated */
+      /** @noagent view transform; je Karte `help` = Satz der Kennzahl in `read().generated` */
       attrKpis() {
         if (!this.genData.length || !this.isAttributive()) return [];
         const total = this.genData.length;
         const sorted = frequency(this.genData);
         return [
-          { value: String(total), label: 'n' },
-          { value: String(sorted.length), label: _t('catCount') },
-          { value: sorted[0] ? String(sorted[0][0]) : '—', label: _t('mostFrequent') },
+          { value: String(total), label: 'n', help: 'modules.random-generator.types.Generated.n' },
+          { value: String(sorted.length), label: _t('catCount'), help: 'modules.random-generator.types.Generated.frequency' },
+          { value: sorted[0] ? String(sorted[0][0]) : '—', label: _t('mostFrequent'), help: 'modules.random-generator.types.Generated.frequency' },
         ];
       },
 
@@ -413,7 +459,7 @@ export default createModule({
        * Name oder Gewicht einer Kategorie setzen und sofort generieren.
        * @agent
        * @param {string} attrId die id einer Kategorie aus `attributes`
-       * @param {'name'|'weight'} key welches Feld
+       * @param {keyof AttributeFields} key welches Feld
        * @param {string|number} value der Name (Text, leer erlaubt) oder das Gewicht (Zahl ab 0)
        * @returns {void}
        * @throws {Error} wenn `attrId` oder `key` unbekannt ist oder `value` nicht zum Feld passt

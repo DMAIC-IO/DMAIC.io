@@ -13087,7 +13087,7 @@ export const AGENT_REGISTRY = {
             "name": "key",
             "type": "'count'|'seed'|'attrCount'|'attrSeed'",
             "optional": false,
-            "help": "welcher Wert; `activeParams` nennt die gültigen"
+            "help": "welcher Wert; die zulässigen nennt `activeParams`"
           },
           {
             "name": "value",
@@ -13097,7 +13097,30 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Umfang oder Startwert setzen und sofort generieren."
+        "help": "Umfang oder Startwert setzen und sofort generieren.",
+        "keysOf": "Params",
+        "keys": {
+          "count": {
+            "type": "number",
+            "help": "Stichprobenumfang, nur stetig/diskret",
+            "optional": true
+          },
+          "seed": {
+            "type": "number",
+            "help": "Startwert, nur stetig/diskret",
+            "optional": true
+          },
+          "attrCount": {
+            "type": "number",
+            "help": "Stichprobenumfang, nur attributiv",
+            "optional": true
+          },
+          "attrSeed": {
+            "type": "number",
+            "help": "Startwert, nur attributiv",
+            "optional": true
+          }
+        }
       },
       "addAttribute": {
         "params": [],
@@ -13138,7 +13161,18 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Name oder Gewicht einer Kategorie setzen und sofort generieren."
+        "help": "Name oder Gewicht einer Kategorie setzen und sofort generieren.",
+        "keysOf": "AttributeFields",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "Name der Kategorie"
+          },
+          "weight": {
+            "type": "number",
+            "help": "Gewicht der Kategorie"
+          }
+        }
       },
       "generate": {
         "params": [],
@@ -13220,10 +13254,68 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "generated": {
-        "type": "object|null",
-        "help": "`{ n, mean, sd, min, max }` for numeric, `{ n, frequency: [{ name, count }] }` for attributive, null without values",
+        "type": "Generated|null",
+        "help": "summary of the generated values, each item described under keys; null without values",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Generated",
+        "keys": {
+          "n": {
+            "type": "number",
+            "help": "Zahl der erzeugten Werte"
+          },
+          "mean": {
+            "type": "number",
+            "help": "Mittelwert",
+            "optional": true
+          },
+          "sd": {
+            "type": "number",
+            "help": "Standardabweichung",
+            "optional": true
+          },
+          "median": {
+            "type": "number",
+            "help": "Median",
+            "optional": true
+          },
+          "min": {
+            "type": "number",
+            "help": "kleinster Wert",
+            "optional": true
+          },
+          "max": {
+            "type": "number",
+            "help": "größter Wert",
+            "optional": true
+          },
+          "skewness": {
+            "type": "number",
+            "help": "Schiefe",
+            "optional": true
+          },
+          "kurtosis": {
+            "type": "number",
+            "help": "Kurtosis (Exzess)",
+            "optional": true
+          },
+          "frequency": {
+            "type": "FrequencyRow[]",
+            "help": "Häufigkeit je Kategorie",
+            "optional": true,
+            "keysOf": "FrequencyRow",
+            "keys": {
+              "name": {
+                "type": "string",
+                "help": "Kategorie"
+              },
+              "count": {
+                "type": "number",
+                "help": "Anzahl"
+              }
+            }
+          }
+        }
       },
       "targetColumns": {
         "type": "Array<{ key: string, name: string }>",

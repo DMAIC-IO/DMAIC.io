@@ -8469,7 +8469,7 @@
           }
         },
         "setDistParam": {
-          "help": "Sets one parameter of the chosen continuous or discrete distribution and generates again at once. Values outside the range are rejected, not clamped.",
+          "help": "Sets one parameter of the chosen distribution; the formula above the fields shows where it enters, the allowed range is given below the field. Values outside the range are rejected, not clamped. The values are generated again at once.",
           "params": {
             "id": "One of the parameters in activeDistParams, for example mu or sigma. Which apply depends on the distribution.",
             "value": "A number within min to max from activeDistParams; numbers given as text are accepted."
@@ -8478,12 +8478,12 @@
         "setParam": {
           "help": "Sets the sample size or the seed and generates again at once. Values outside the range are rejected, not clamped.",
           "params": {
-            "key": "One of the keys in activeParams: count and seed for a continuous or discrete distribution, attrCount and attrSeed for the attributive one. Any other value is an error.",
-            "value": "A whole number; numbers given as text are accepted. Sample size (count, attrCount) from 1 to 100000, seed (seed, attrSeed) any whole number except 0."
+            "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys."
           }
         },
         "addAttribute": {
-          "help": "Adds a category to the attributive distribution (empty name, weight 1) and generates again. Returns the id of the category. Categories without a name are skipped when generating."
+          "help": "Adds an attribute (a category) to the attributive distribution, with an empty name and weight 1, and generates again. Returns the id of the category. Categories without a name are skipped when generating."
         },
         "removeAttribute": {
           "help": "Removes a category of the attributive distribution and generates again.",
@@ -8495,15 +8495,15 @@
           "help": "Sets the name or the weight of a category of the attributive distribution and generates again. Categories with an empty name or a weight of 0 or less are skipped when generating.",
           "params": {
             "attrId": "The id of a category from attributes, or the one addAttribute returned.",
-            "key": "Either name or weight; any other value is an error.",
-            "value": "For name a text, empty allowed; for weight a number of at least 0, numbers given as text are accepted."
+            "key": "Which field; each is described individually under keys. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys."
           }
         },
         "generate": {
           "help": "Generates the values with the current inputs. Without a chosen distribution nothing happens; a failure of the distribution is reported in errorMsg, not as a rejection."
         },
         "toWorksheet": {
-          "help": "Sends the generated values to a new worksheet, into an existing empty column or as a new column to an existing sheet and returns the receiving worksheet. Without values nothing is sent and null is returned.",
+          "help": "Sends the generated values to a new worksheet, into an existing empty column or as a new column to an existing sheet and returns the receiving worksheet. If there are no values, nothing is sent and no worksheet is returned.",
           "params": {
             "target": "null for a new worksheet, otherwise a column reference { instanceId, sheetId, columnId } from targetColumns; columnId '__new__' appends a new column to the sheet."
           }
@@ -8520,9 +8520,36 @@
         "attributes": { "help": "The categories of the attributive distribution, each with id, name and weight." },
         "attrCount": { "help": "Sample size of the attributive distribution." },
         "attrSeed": { "help": "Random seed of the attributive distribution." },
-        "generated": { "help": "Summary of the generated values: n, mean, standard deviation, minimum and maximum for continuous and discrete distributions; n and the frequency per category for the attributive one; null without values." },
+        "generated": { "help": "Summary of the generated values, each item described individually under keys; null while no values are generated." },
         "targetColumns": { "help": "The targets toWorksheet accepts, each { key, name }; key is 'instanceId|sheetId|columnId'. Per sheet with an empty column it lists its empty columns followed by an entry with columnId '__new__' (name is the sheet name) that appends a new column. A null target creates a new worksheet." },
         "errorMsg": { "help": "The message when the distribution could not produce values, otherwise empty." }
+      },
+      "types": {
+        "Params": {
+          "count": "Count (n): the sample size for a continuous or discrete distribution, a whole number from 1 to 100,000. A change generates the values again at once.",
+          "seed": "Seed: the starting value of the random generator for a continuous or discrete distribution. The same seed gives the same values, so the sample is reproducible. Any whole number except 0 is allowed, because 0 would silently count as 42. A change generates the values again at once.",
+          "attrCount": "Count (n): the sample size for the attributive distribution, a whole number from 1 to 100,000. A change generates the values again at once.",
+          "attrSeed": "Seed: the starting value of the random generator for the attributive distribution. The same seed gives the same values, so the sample is reproducible. Any whole number except 0 is allowed, because 0 would silently count as 42. A change generates the values again at once."
+        },
+        "AttributeFields": {
+          "name": "Attribute: the name of the category. It may be empty; categories without a name are skipped when generating.",
+          "weight": "Weight of the category, a number from 0. The share of a category is its weight divided by the sum of all weights; the column \"Share\" shows it in percent. A category with weight 0 is skipped when generating."
+        },
+        "Generated": {
+          "n": "n: the number of generated values, equal to the set count (n).",
+          "mean": "Mean x̄ = Σx / n, the sum of the generated values divided by their count. The card shows four decimals, very large or very small values in exponential notation. Only for continuous and discrete distributions.",
+          "sd": "Std.Dev. s = √(Σ(x − x̄)² / (n − 1)), the sample spread of the generated values with denominator n − 1. The card shows four decimals, very large or very small values in exponential notation. Only for continuous and discrete distributions.",
+          "median": "Median: the middle of the generated values sorted ascending, for an even count the mean of the two middle ones. The card shows four decimals, very large or very small values in exponential notation. Only for continuous and discrete distributions.",
+          "min": "Min: the smallest of the generated values. The card shows four decimals, very large or very small values in exponential notation. Only for continuous and discrete distributions.",
+          "max": "Max: the largest of the generated values. The card shows four decimals, very large or very small values in exponential notation. Only for continuous and discrete distributions.",
+          "skewness": "Skewness g₁ = m₃ / m₂^1.5 with the central moments m₂ = Σ(x − x̄)² / n and m₃ = Σ(x − x̄)³ / n (denominator n, not corrected). Positive: the long tail is on the right, negative: on the left; 0 for symmetric values. The card shows four decimals, very large or very small values in exponential notation. Only for continuous and discrete distributions.",
+          "kurtosis": "Kurtosis as excess: m₄ / m₂² − 3 with m₂ = Σ(x − x̄)² / n and m₄ = Σ(x − x̄)⁴ / n (denominator n, not corrected). 0 matches the normal distribution, positive means more peaked with heavy tails, negative flatter. The card shows four decimals, very large or very small values in exponential notation. Only for continuous and discrete distributions.",
+          "frequency": "The frequency per category, sorted descending by count; each entry gives name and count. The card \"Categories\" counts the entries, the card \"Most frequent\" names the first one. Only for the attributive distribution."
+        },
+        "FrequencyRow": {
+          "name": "The name of the category.",
+          "count": "How often the category occurs among the generated values."
+        }
       },
       "errGenerate": "The values could not be generated: {message}",
       "name": "Random Generator",
