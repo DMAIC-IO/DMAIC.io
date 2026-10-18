@@ -10555,15 +10555,15 @@
         "setParam": {
           "help": "Sets one parameter of the current transformation; the calculation follows after a short pause. Values outside the range are rejected, not clamped.",
           "params": {
-            "key": "One of the keys in activeParams: lambda, gamma, delta, xi or lambdaJ. Which apply depends on the transformation.",
-            "value": "A number within the range from activeParams; numbers given as text are accepted."
+            "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
+            "value": "A number within the range from activeParams; text containing a number is accepted."
           }
         },
         "runAnalysis": {
           "help": "Calculates the transformation with the current source and parameters. Fewer than three finite values leave result at null."
         },
         "toWorksheet": {
-          "help": "Sends the transformed series to a new worksheet, into an existing column (replacing its values) or as a new column to an existing sheet and returns the receiving worksheet. Without a result nothing is sent and null is returned.",
+          "help": "Sends the transformed series to a new worksheet, into an existing column (replacing its values) or as a new column to an existing sheet and returns the receiving worksheet. Without a result nothing is sent and nothing is returned.",
           "params": {
             "target": "null for a new worksheet, otherwise a column reference from targetColumns; columnId '__new__' appends a new column to the sheet."
           }
@@ -10580,7 +10580,7 @@
           "help": "The chosen source column as { instanceId, sheetId, columnId }, or null."
         },
         "params": {
-          "help": "The parameters of the current transformation as numbers, by key."
+          "help": "The parameters of the chosen transformation, each described under keys; empty for transformations without parameters."
         },
         "activeParams": {
           "help": "The keys setParam accepts in the current state, each with its range."
@@ -10595,10 +10595,34 @@
           "help": "The targets toWorksheet accepts, each { key, name }: per sheet its columns followed by an entry with columnId '__new__' (name is the sheet name) that appends a new column; a null target creates a new worksheet."
         },
         "result": {
-          "help": "Statistics (mean, spread, median, skewness, kurtosis, minimum, maximum) and Anderson-Darling p of the original and the transformed series, or null without a result."
+          "help": "Statistics before and after the transformation, each figure described individually under keys; null without a column, with fewer than 3 values or when the transformation fails on the data (errorMsg gives the reason)."
         },
         "errorMsg": {
           "help": "The message the module gives when the calculation fails, otherwise empty."
+        }
+      },
+      "types": {
+        "Params": {
+          "lambda": "The exponent λ, label Lambda (λ), range −5 to 5. Box-Cox computes (x^λ − 1)/λ, and ln x at λ = 0, for values > 0 only; Yeo-Johnson computes ((x + 1)^λ − 1)/λ for x ≥ 0 (ln(x + 1) at λ = 0) and −((1 − x)^(2 − λ) − 1)/(2 − λ) for x < 0 (−ln(1 − x) at λ = 2). λ is estimated when Box-Cox or Yeo-Johnson is chosen and at least 3 values are present, and for every new column: the grid from −3 to 3 in steps of 0.05 is searched and the λ with the smallest corrected Anderson-Darling A² is chosen, rounded to 0.01. Before the first estimate Box-Cox uses λ = 0 and Yeo-Johnson λ = 1. If the column contains values ≤ 0, Box-Cox switches to Yeo-Johnson with a notice.",
+          "gamma": "The shift γ of the Johnson transformation, label γ, range −5 to 5, default 0. Johnson SU computes γ + δ·asinh((x − ξ)/λ), Johnson SB γ + δ·ln(z/(1 − z)) with z = (x − ξ)/λ. γ is not estimated but set by hand.",
+          "delta": "The shape factor δ of the Johnson transformation, label δ, range 0.1 to 10, default 1; it multiplies the asinh term (SU) or the ln term (SB) in γ + δ·asinh((x − ξ)/λ) or γ + δ·ln(z/(1 − z)). δ is not estimated but set by hand.",
+          "xi": "The location ξ of the Johnson transformation, label ξ, range −100 to 100, default 0; it is subtracted from every value before scaling, z = (x − ξ)/λ. For Johnson SB all values must lie between ξ and ξ + λ, otherwise the calculation fails. ξ is not estimated but set by hand.",
+          "lambdaJ": "The scale λ of the Johnson transformation, label λ, range 0.1 to 100, default 1; values are divided by it, z = (x − ξ)/λ. For Johnson SB, ξ + λ is the upper bound of the data. λ is not estimated but set by hand; not to be confused with the λ of Box-Cox and Yeo-Johnson."
+        },
+        "Result": {
+          "n": "Number of values, row n of the Descriptive Statistics: the finite numbers of the source column; empty and non-numeric cells do not count. With fewer than 3 values there is no result. The transformation keeps the number of values.",
+          "original": "The statistics of the source column before the transformation, column Original of the Descriptive Statistics and row Original of the normality test.",
+          "transformed": "The statistics of the series after the transformation with the current parameters, column Transformed of the Descriptive Statistics and row Transformed of the normality test."
+        },
+        "Descriptives": {
+          "mean": "The arithmetic mean x̄ = Σx/n, row Mean; the table shows 4 decimal places.",
+          "std": "The sample standard deviation s = √(Σ(x − x̄)²/(n − 1)), row Std. Dev.; empty when it cannot be computed, the table then shows a dash.",
+          "median": "The median, the middle value of the sorted series or the mean of the two middle values for an even count, row Median.",
+          "skewness": "The sample skewness n/((n − 1)(n − 2)) · Σ((x − x̄)/s)³, row Skewness; 0 for symmetric data, positive for right-skewed data. Empty when all values are equal (s = 0).",
+          "kurtosis": "The sample excess kurtosis, row Kurtosis (Excess): n(n + 1)/((n − 1)(n − 2)(n − 3)) · Σ((x − x̄)/s)⁴ − 3(n − 1)²/((n − 2)(n − 3)); 0 corresponds to the normal distribution. Empty with exactly 3 values or when all values are equal; the table then shows a dash.",
+          "min": "The smallest value of the series, row Min.",
+          "max": "The largest value of the series, row Max.",
+          "adPValue": "The p-value of the Anderson-Darling test for normality, section Normality Test (Anderson-Darling), shown as p ≈ next to A². A² is corrected to A²* = A²·(1 + 0.75/n + 2.25/n²) and p follows from it after D'Agostino and Stephens. The display judges with α = 0.05: p ≥ 0.05 means Normal, p < 0.05 Not normal. Empty when all values are equal; the verdict is then missing as well."
         }
       },
       "name": "Data Transformation",

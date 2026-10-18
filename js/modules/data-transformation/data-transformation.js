@@ -54,6 +54,40 @@ function paramRowsFor(tfId) {
 }
 
 /**
+ * Die Schlüsselfläche von `setParam`; welche Schlüssel gelten, hängt von der
+ * Transformation ab (`activeParams`, mit Bereich). Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {number} [lambda]  λ, Box-Cox und Yeo-Johnson
+ * @property {number} [gamma]  γ, Johnson
+ * @property {number} [delta]  δ, Johnson
+ * @property {number} [xi]  ξ, Johnson
+ * @property {number} [lambdaJ]  λ, Johnson
+ */
+
+/**
+ * Das gerechnete Ergebnis (`_agentResult()`), wie `read().result` es liefert.
+ *
+ * @typedef {object} Result
+ * @property {number} n  Werte
+ * @property {Descriptives} original  Kennwerte vorher
+ * @property {Descriptives} transformed  Kennwerte nachher
+ */
+
+/**
+ * @typedef {object} Descriptives
+ * @property {number|null} mean  Mittelwert
+ * @property {number|null} std  Standardabweichung
+ * @property {number|null} median  Median
+ * @property {number|null} skewness  Schiefe
+ * @property {number|null} kurtosis  Exzess-Wölbung
+ * @property {number|null} min  Minimum
+ * @property {number|null} max  Maximum
+ * @property {number|null} adPValue  p-Wert Anderson-Darling
+ */
+
+/**
  * Die Agenten-Lesefläche von Datentransformation.
  *
  * Die Parameter leben nur flüchtig in `paramRows` und werden beim Wechsel der
@@ -65,12 +99,12 @@ function paramRowsFor(tfId) {
  * @property {string} currentTF  the selected transformation, one of `transforms`
  * @property {string[]} transforms  all transformation ids
  * @property {{ instanceId: string, sheetId: string, columnId: string }|null} columnRef  the source column
- * @property {Object<string, number>} params  the parameters of the current transformation by key
+ * @property {Params} params  the parameters of the current transformation by key
  * @property {Array<{ key: string, min: number, max: number }>} activeParams  the keys `setParam` accepts now, with their range
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
  * @property {Array<{ key: string, name: string }>} targetColumns  the targets `toWorksheet` accepts: per sheet its columns, then a `instanceId|sheetId|__new__` entry that appends a new column; null targets a new worksheet
- * @property {{ n: number, original: object, transformed: object }|null} result  descriptive statistics and Anderson-Darling p of both series, null without a result
+ * @property {Result|null} result  descriptive statistics and Anderson-Darling p of both series, null without a result
  * @property {string} errorMsg  the message the module shows, '' without error
  */
 const mod = createModule({
@@ -172,7 +206,7 @@ const mod = createModule({
       /**
        * Einen Parameter der aktuellen Transformation setzen; die Rechnung folgt verzögert.
        * @agent
-       * @param {'lambda'|'gamma'|'delta'|'xi'|'lambdaJ'} key welcher Parameter; `activeParams` nennt die gültigen
+       * @param {keyof Params} key welcher Parameter; `activeParams` nennt die im aktuellen Zustand gültigen
        * @param {number|string} value Zahl im Bereich aus `activeParams`; Textzahlen werden angenommen
        * @returns {void}
        * @throws {Error} wenn `key` zur aktuellen Transformation nicht passt oder `value` außerhalb des Bereichs liegt

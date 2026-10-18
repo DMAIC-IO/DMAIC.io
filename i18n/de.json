@@ -10559,15 +10559,15 @@
         "setParam": {
           "help": "Setzt einen Parameter der aktuellen Transformation; die Rechnung folgt nach kurzer Pause. Werte außerhalb des Bereichs werden abgewiesen, nicht begrenzt.",
           "params": {
-            "key": "Einer der Schlüssel aus activeParams: lambda, gamma, delta, xi oder lambdaJ. Welche gelten, hängt von der Transformation ab.",
-            "value": "Zahl im Bereich aus activeParams; Textzahlen werden angenommen."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Eine Zahl im Bereich aus activeParams; Text mit einer Zahl wird angenommen."
           }
         },
         "runAnalysis": {
           "help": "Rechnet die Transformation mit der aktuellen Quelle und den aktuellen Parametern. Weniger als drei endliche Werte lassen result auf null."
         },
         "toWorksheet": {
-          "help": "Sendet die transformierte Reihe an einen neuen Worksheet, in eine bestehende Spalte (deren Werte sie ersetzt) oder als neue Spalte an ein bestehendes Blatt und liefert den empfangenden Worksheet. Ohne Ergebnis wird nichts gesendet und null geliefert.",
+          "help": "Sendet die transformierte Reihe an einen neuen Worksheet, in eine bestehende Spalte (deren Werte sie ersetzt) oder als neue Spalte an ein bestehendes Blatt und liefert den empfangenden Worksheet. Ohne Ergebnis wird nichts gesendet und nichts geliefert.",
           "params": {
             "target": "null für einen neuen Worksheet, sonst ein Spaltenbezug aus targetColumns; columnId '__new__' hängt eine neue Spalte an das Blatt an."
           }
@@ -10584,7 +10584,7 @@
           "help": "Die gewählte Quellspalte als { instanceId, sheetId, columnId }, oder null."
         },
         "params": {
-          "help": "Die Parameter der aktuellen Transformation als Zahlen, nach Schlüssel."
+          "help": "Die Parameter der gewählten Transformation, je Schlüssel unter keys beschrieben; leer bei Transformationen ohne Parameter."
         },
         "activeParams": {
           "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt, jeweils mit Bereich."
@@ -10599,10 +10599,34 @@
           "help": "Die Ziele, die toWorksheet annimmt, jeweils { key, name }: je Blatt seine Spalten und danach ein Eintrag mit columnId '__new__' (name ist der Blattname), der eine neue Spalte anhängt; null als Ziel legt einen neuen Worksheet an."
         },
         "result": {
-          "help": "Kennwerte (Mittelwert, Streuung, Median, Schiefe, Wölbung, Minimum, Maximum) und Anderson-Darling-p der Original- und der transformierten Reihe, oder null ohne Ergebnis."
+          "help": "Kennwerte vor und nach der Transformation, jede Kennzahl unter keys einzeln beschrieben; null, ohne Spalte, mit weniger als 3 Werten oder wenn die Transformation an den Daten scheitert (der Grund steht in errorMsg)."
         },
         "errorMsg": {
           "help": "Die Meldung, die das Modul bei einer fehlgeschlagenen Rechnung nennt, sonst leer."
+        }
+      },
+      "types": {
+        "Params": {
+          "lambda": "Der Exponent λ, Beschriftung Lambda (λ), Bereich −5 bis 5. Box-Cox rechnet (x^λ − 1)/λ und bei λ = 0 ln x, nur für Werte > 0; Yeo-Johnson rechnet für x ≥ 0 ((x + 1)^λ − 1)/λ (bei λ = 0 ln(x + 1)) und für x < 0 −((1 − x)^(2 − λ) − 1)/(2 − λ) (bei λ = 2 −ln(1 − x)). λ wird geschätzt, wenn Box-Cox oder Yeo-Johnson gewählt wird und mindestens 3 Werte vorliegen, und bei jeder neuen Spalte: das Raster von −3 bis 3 in Schritten von 0,05 wird durchsucht, gewählt wird das λ mit dem kleinsten korrigierten Anderson-Darling-A², gerundet auf 0,01. Vor der ersten Schätzung gilt bei Box-Cox λ = 0, bei Yeo-Johnson λ = 1. Enthält die Spalte Werte ≤ 0, wechselt Box-Cox mit einem Hinweis auf Yeo-Johnson.",
+          "gamma": "Die Verschiebung γ der Johnson-Transformation, Beschriftung γ, Bereich −5 bis 5, voreingestellt 0. Johnson SU rechnet γ + δ·asinh((x − ξ)/λ), Johnson SB γ + δ·ln(z/(1 − z)) mit z = (x − ξ)/λ. γ wird nicht geschätzt, sondern von Hand gesetzt.",
+          "delta": "Der Formfaktor δ der Johnson-Transformation, Beschriftung δ, Bereich 0,1 bis 10, voreingestellt 1; er multipliziert den asinh- (SU) bzw. ln-Term (SB) in γ + δ·asinh((x − ξ)/λ) bzw. γ + δ·ln(z/(1 − z)). δ wird nicht geschätzt, sondern von Hand gesetzt.",
+          "xi": "Die Lage ξ der Johnson-Transformation, Beschriftung ξ, Bereich −100 bis 100, voreingestellt 0; sie wird vor der Skalierung von jedem Wert abgezogen, z = (x − ξ)/λ. Bei Johnson SB müssen alle Werte zwischen ξ und ξ + λ liegen, sonst scheitert die Rechnung. ξ wird nicht geschätzt, sondern von Hand gesetzt.",
+          "lambdaJ": "Die Skala λ der Johnson-Transformation, Beschriftung λ, Bereich 0,1 bis 100, voreingestellt 1; durch sie wird geteilt, z = (x − ξ)/λ. Bei Johnson SB ist ξ + λ die obere Grenze der Daten. λ wird nicht geschätzt, sondern von Hand gesetzt; nicht zu verwechseln mit dem λ von Box-Cox und Yeo-Johnson."
+        },
+        "Result": {
+          "n": "Zahl der Werte, Zeile n der Deskriptiven Statistik: die endlichen Zahlen der Quellspalte; leere und nicht numerische Zellen zählen nicht. Mit weniger als 3 Werten gibt es kein Ergebnis. Die Transformation erhält die Zahl der Werte.",
+          "original": "Die Kennwerte der Quellspalte vor der Transformation, Spalte Original der Deskriptiven Statistik und Zeile Original des Normalitätstests.",
+          "transformed": "Die Kennwerte der Reihe nach der Transformation mit den aktuellen Parametern, Spalte Transformiert der Deskriptiven Statistik und Zeile Transformiert des Normalitätstests."
+        },
+        "Descriptives": {
+          "mean": "Der arithmetische Mittelwert x̄ = Σx/n, Zeile Mittelwert; die Tabelle zeigt 4 Nachkommastellen.",
+          "std": "Die Stichproben-Standardabweichung s = √(Σ(x − x̄)²/(n − 1)), Zeile Std.-Abw.; leer, wenn sie nicht berechnet werden kann, die Tabelle zeigt dann einen Strich.",
+          "median": "Der Median, der mittlere Wert der sortierten Reihe bzw. der Mittelwert der beiden mittleren bei gerader Anzahl, Zeile Median.",
+          "skewness": "Die Stichprobenschiefe n/((n − 1)(n − 2)) · Σ((x − x̄)/s)³, Zeile Schiefe; 0 bei symmetrischen Daten, positiv bei rechtsschiefen. Leer, wenn alle Werte gleich sind (s = 0).",
+          "kurtosis": "Die Exzess-Wölbung der Stichprobe, Zeile Kurtosis (Exzess): n(n + 1)/((n − 1)(n − 2)(n − 3)) · Σ((x − x̄)/s)⁴ − 3(n − 1)²/((n − 2)(n − 3)); 0 entspricht der Normalverteilung. Leer bei genau 3 Werten oder wenn alle Werte gleich sind; die Tabelle zeigt dann einen Strich.",
+          "min": "Der kleinste Wert der Reihe, Zeile Min.",
+          "max": "Der größte Wert der Reihe, Zeile Max.",
+          "adPValue": "Der p-Wert des Anderson-Darling-Tests auf Normalverteilung, Abschnitt Normalitätstest (Anderson-Darling), angezeigt als p ≈ neben A². Aus A² wird das korrigierte A²* = A²·(1 + 0,75/n + 2,25/n²) gebildet und daraus p nach D'Agostino und Stephens. Die Anzeige wertet mit α = 0,05: p ≥ 0,05 heißt Normal, p < 0,05 Nicht normal. Leer, wenn alle Werte gleich sind; dann fehlt auch das Urteil."
         }
       },
       "name": "Datentransformation",

@@ -78,4 +78,7 @@ export const ANCHOR_EXEMPTIONS = {
     { match: `<th x-text="t('value')">`, reason: 'Wert der Zeile (ESD-Schritt bzw. Markierungstabelle); der Satz steht an der Markierung', count: 2 },
     { match: 'x-text="h.short"', reason: 'Kopf je Verfahren; der Satz steht am Abschnittstitel', count: 1 },
   ],
+  'data-transformation': [
+    { match: "t('statistic')", reason: 'Spalte der Zeilennamen; die Sätze stehen an den Wertspalten', count: 1 },
+  ],
 };

@@ -3,7 +3,7 @@
     <div class="dmike-split__section-title" x-text="t('selectColumn')"></div>
     <div id="dt-col-picker" data-ref="col-picker-wrap"></div>
 
-    <div class="dmike-split__section-title" x-text="t('selectTransform')"></div>
+    <div class="dmike-split__section-title"><span data-help-key="modules.data-transformation.actions.selectTF.help" x-text="t('selectTransform')"></span></div>
     <div class="dt-tf-grid" id="dt-tf-grid">
       <template x-for="tf in transforms" :key="tf.id">
         <div class="dt-tf-opt" :class="tfOptClass(tf.id)" :data-id="tf.id" @click="selectTF(tf.id)">
@@ -21,7 +21,7 @@
       <div class="dt-param-group" id="dt-param-group">
         <template x-for="p in paramRows" :key="p.key">
           <div class="dt-param">
-            <label class="dt-param__label" x-text="paramLabel(p.labelKey)"></label>
+            <label class="dt-param__label" :data-help-key="'modules.data-transformation.types.Params.' + p.key" x-text="paramLabel(p.labelKey)"></label>
             <input class="field field--num field--inline dt-param__number" type="number"
                    :data-param-key="p.key" :min="p.min" :max="p.max"
                    :value="p.val" @change="onParamInput(p.key, $event)">
@@ -66,8 +66,8 @@
         <table class="dmike-table dt-stats-table">
           <thead><tr>
             <th x-text="t('statistic')"></th>
-            <th x-text="t('original')"></th>
-            <th x-text="t('transformed')"></th>
+            <th><span data-help-key="modules.data-transformation.types.Result.original" x-text="t('original')"></span></th>
+            <th><span data-help-key="modules.data-transformation.types.Result.transformed" x-text="t('transformed')"></span></th>
           </tr></thead>
           <tbody id="dt-stats-body">
             <template x-for="row in statRows" :key="row.label">
@@ -80,7 +80,7 @@
           </tbody>
         </table>
 
-        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('normalityTest')"></span></div>
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.data-transformation.types.Descriptives.adPValue" x-text="t('normalityTest')"></span></div>
         <div class="dt-normality" id="dt-normality">
           <div class="dt-normality__row">
             <strong x-text="normLabel('original')"></strong>
@@ -108,7 +108,7 @@
             <span class="icon icon--sm" data-icon="action.download" aria-hidden="true"></span>
           </button>
           <span id="dt-target-wrap" data-ref="target-wrap"></span>
-          <button class="btn btn--secondary btn--sm" data-action="to-worksheet" @click="onToWorksheet()">
+          <button class="btn btn--secondary btn--sm" data-action="to-worksheet" data-help-key="modules.data-transformation.actions.toWorksheet.help" @click="onToWorksheet()">
             <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
             <span x-text="t('toWorksheet')"></span>
           </button>

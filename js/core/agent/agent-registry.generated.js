@@ -2790,7 +2790,7 @@ export const AGENT_REGISTRY = {
             "name": "key",
             "type": "'lambda'|'gamma'|'delta'|'xi'|'lambdaJ'",
             "optional": false,
-            "help": "welcher Parameter; `activeParams` nennt die gültigen"
+            "help": "welcher Parameter; `activeParams` nennt die im aktuellen Zustand gültigen"
           },
           {
             "name": "value",
@@ -2800,7 +2800,35 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Einen Parameter der aktuellen Transformation setzen; die Rechnung folgt verzögert."
+        "help": "Einen Parameter der aktuellen Transformation setzen; die Rechnung folgt verzögert.",
+        "keysOf": "Params",
+        "keys": {
+          "lambda": {
+            "type": "number",
+            "help": "λ, Box-Cox und Yeo-Johnson",
+            "optional": true
+          },
+          "gamma": {
+            "type": "number",
+            "help": "γ, Johnson",
+            "optional": true
+          },
+          "delta": {
+            "type": "number",
+            "help": "δ, Johnson",
+            "optional": true
+          },
+          "xi": {
+            "type": "number",
+            "help": "ξ, Johnson",
+            "optional": true
+          },
+          "lambdaJ": {
+            "type": "number",
+            "help": "λ, Johnson",
+            "optional": true
+          }
+        }
       },
       "selectTF": {
         "params": [
@@ -2852,10 +2880,38 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "params": {
-        "type": "Object<string, number>",
+        "type": "Params",
         "help": "the parameters of the current transformation by key",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Params",
+        "keys": {
+          "lambda": {
+            "type": "number",
+            "help": "λ, Box-Cox und Yeo-Johnson",
+            "optional": true
+          },
+          "gamma": {
+            "type": "number",
+            "help": "γ, Johnson",
+            "optional": true
+          },
+          "delta": {
+            "type": "number",
+            "help": "δ, Johnson",
+            "optional": true
+          },
+          "xi": {
+            "type": "number",
+            "help": "ξ, Johnson",
+            "optional": true
+          },
+          "lambdaJ": {
+            "type": "number",
+            "help": "λ, Johnson",
+            "optional": true
+          }
+        }
       },
       "activeParams": {
         "type": "Array<{ key: string, min: number, max: number }>",
@@ -2882,10 +2938,95 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "{ n: number, original: object, transformed: object }|null",
+        "type": "Result|null",
         "help": "descriptive statistics and Anderson-Darling p of both series, null without a result",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "n": {
+            "type": "number",
+            "help": "Werte"
+          },
+          "original": {
+            "type": "Descriptives",
+            "help": "Kennwerte vorher",
+            "keysOf": "Descriptives",
+            "keys": {
+              "mean": {
+                "type": "number|null",
+                "help": "Mittelwert"
+              },
+              "std": {
+                "type": "number|null",
+                "help": "Standardabweichung"
+              },
+              "median": {
+                "type": "number|null",
+                "help": "Median"
+              },
+              "skewness": {
+                "type": "number|null",
+                "help": "Schiefe"
+              },
+              "kurtosis": {
+                "type": "number|null",
+                "help": "Exzess-Wölbung"
+              },
+              "min": {
+                "type": "number|null",
+                "help": "Minimum"
+              },
+              "max": {
+                "type": "number|null",
+                "help": "Maximum"
+              },
+              "adPValue": {
+                "type": "number|null",
+                "help": "p-Wert Anderson-Darling"
+              }
+            }
+          },
+          "transformed": {
+            "type": "Descriptives",
+            "help": "Kennwerte nachher",
+            "keysOf": "Descriptives",
+            "keys": {
+              "mean": {
+                "type": "number|null",
+                "help": "Mittelwert"
+              },
+              "std": {
+                "type": "number|null",
+                "help": "Standardabweichung"
+              },
+              "median": {
+                "type": "number|null",
+                "help": "Median"
+              },
+              "skewness": {
+                "type": "number|null",
+                "help": "Schiefe"
+              },
+              "kurtosis": {
+                "type": "number|null",
+                "help": "Exzess-Wölbung"
+              },
+              "min": {
+                "type": "number|null",
+                "help": "Minimum"
+              },
+              "max": {
+                "type": "number|null",
+                "help": "Maximum"
+              },
+              "adPValue": {
+                "type": "number|null",
+                "help": "p-Wert Anderson-Darling"
+              }
+            }
+          }
+        }
       },
       "errorMsg": {
         "type": "string",
