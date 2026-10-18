@@ -377,6 +377,102 @@
       ]
     },
     {
+      "id": "regression-exponential",
+      "type": "project",
+      "title": {
+        "de": "Keimwachstum (exponentielles Modell)",
+        "en": "Bacterial Growth (exponential model)"
+      },
+      "description": {
+        "de": "30 Keimzählungen über 15 Stunden, die Keimzahl wächst um rund 22 % je Stunde. Das exponentielle Modell y = a·e^(bx) trifft den gekrümmten Verlauf, wo eine Gerade systematisch danebenliegt.",
+        "en": "30 germ counts over 15 hours, the count grows by about 22 % per hour. The exponential model y = a·e^(bx) captures the curved trend where a straight line misses systematically."
+      },
+      "source": "Qprovement synthetisch, Python random, Seed=1301",
+      "license": "public-domain",
+      "file": "projects/regression-exponential.json",
+      "format": "json",
+      "modules": [
+        "regression"
+      ],
+      "tags": [
+        "regression",
+        "exponential",
+        "nonlinear"
+      ]
+    },
+    {
+      "id": "regression-logarithmic",
+      "type": "project",
+      "title": {
+        "de": "Lernkurve (logarithmisches Modell)",
+        "en": "Learning Curve (logarithmic model)"
+      },
+      "description": {
+        "de": "30 Wiederholungen einer Montagetätigkeit mit der Stückzahl pro Stunde. Anfangs steigt die Leistung schnell, später flacht sie ab. Das logarithmische Modell y = a + b·ln(x) bildet diese Sättigung ab.",
+        "en": "30 repetitions of an assembly task with output per hour. Performance rises quickly at first and levels off later. The logarithmic model y = a + b·ln(x) describes this saturation."
+      },
+      "source": "Qprovement synthetisch, Python random, Seed=1302",
+      "license": "public-domain",
+      "file": "projects/regression-logarithmic.json",
+      "format": "json",
+      "modules": [
+        "regression"
+      ],
+      "tags": [
+        "regression",
+        "logarithmic",
+        "nonlinear"
+      ]
+    },
+    {
+      "id": "regression-power",
+      "type": "project",
+      "title": {
+        "de": "Druckverlust im Rohr (Potenzmodell)",
+        "en": "Pipe Pressure Drop (power model)"
+      },
+      "description": {
+        "de": "30 Messungen des Druckverlusts bei steigendem Durchfluss, Δp wächst etwa mit v^1,8. Das Potenzmodell y = a·x^b liefert den Exponenten direkt als Koeffizienten.",
+        "en": "30 measurements of pressure drop at rising flow, Δp grows roughly with v^1.8. The power model y = a·x^b returns the exponent directly as a coefficient."
+      },
+      "source": "Qprovement synthetisch, Python random, Seed=1303",
+      "license": "public-domain",
+      "file": "projects/regression-power.json",
+      "format": "json",
+      "modules": [
+        "regression"
+      ],
+      "tags": [
+        "regression",
+        "power",
+        "nonlinear"
+      ]
+    },
+    {
+      "id": "regression-doe-preset",
+      "type": "project",
+      "title": {
+        "de": "Ausbeute aus Versuchsplan (DoE-Termvorgabe)",
+        "en": "Yield from a Designed Experiment (DoE term preset)"
+      },
+      "description": {
+        "de": "Vollfaktorieller 2²-Versuch mit Temperatur und Druck, je dreimal wiederholt, Ausbeute als Response. Die Termvorgabe aus der Versuchsplanung (Haupteffekte und Wechselwirkung) wird beim ersten Lauf übernommen; ein Hinweis nennt vermengte oder gestrichene Terme.",
+        "en": "Full-factorial 2² experiment with temperature and pressure, replicated three times, yield as response. The term preset from the experiment planner (main effects and interaction) is applied on the first run; a note lists aliased or dropped terms."
+      },
+      "source": "Qprovement synthetisch, Python random, Seed=1304",
+      "license": "public-domain",
+      "file": "projects/regression-doe-preset.json",
+      "format": "json",
+      "modules": [
+        "regression"
+      ],
+      "tags": [
+        "regression",
+        "doe",
+        "interaction"
+      ]
+    },
+    {
       "id": "correlation-pizza-delivery",
       "type": "project",
       "title": {

@@ -1,0 +1,16 @@
+{
+  "colRefs": [
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-expo",
+      "columnId": "c-zeit"
+    }
+  ],
+  "yKey": "__source__|sheet-expo|c-keime",
+  "regType": "exponential",
+  "polyDegree": 1,
+  "showCI": true,
+  "activeTab": "scatter",
+  "excludedTerms": [],
+  "sourceWorksheetFile": "worksheets/regression-exponential.json"
+}

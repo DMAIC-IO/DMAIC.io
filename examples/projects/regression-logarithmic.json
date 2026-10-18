@@ -1,0 +1,16 @@
+{
+  "colRefs": [
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-log",
+      "columnId": "c-wdh"
+    }
+  ],
+  "yKey": "__source__|sheet-log|c-leist",
+  "regType": "logarithmic",
+  "polyDegree": 1,
+  "showCI": true,
+  "activeTab": "scatter",
+  "excludedTerms": [],
+  "sourceWorksheetFile": "worksheets/regression-logarithmic.json"
+}

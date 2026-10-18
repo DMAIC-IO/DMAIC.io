@@ -1,0 +1,26 @@
+{
+  "colRefs": [
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-doe",
+      "columnId": "c-temp"
+    },
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-doe",
+      "columnId": "c-druck"
+    }
+  ],
+  "yKey": "__source__|sheet-doe|c-ausb",
+  "regType": "polynomial",
+  "polyDegree": 1,
+  "showCI": true,
+  "activeTab": "scatter",
+  "excludedTerms": [],
+  "sourceWorksheetFile": "worksheets/regression-doe-preset.json",
+  "designTerms": [
+    "M0",
+    "M1",
+    "I0_1"
+  ]
+}

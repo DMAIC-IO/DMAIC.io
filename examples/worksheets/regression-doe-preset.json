@@ -1,0 +1,75 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-doe",
+      "name": "Versuchsplan",
+      "state": {
+        "columns": [
+          {
+            "id": "c-temp",
+            "name": "Temperatur (°C)",
+            "shortName": "T",
+            "type": "numeric",
+            "values": [
+              150,
+              150,
+              190,
+              190,
+              150,
+              150,
+              190,
+              190,
+              150,
+              150,
+              190,
+              190
+            ]
+          },
+          {
+            "id": "c-druck",
+            "name": "Druck (bar)",
+            "shortName": "p",
+            "type": "numeric",
+            "values": [
+              10,
+              20,
+              10,
+              20,
+              10,
+              20,
+              10,
+              20,
+              10,
+              20,
+              10,
+              20
+            ]
+          },
+          {
+            "id": "c-ausb",
+            "name": "Ausbeute (%)",
+            "shortName": "A",
+            "type": "numeric",
+            "values": [
+              54.8591,
+              60.039,
+              57.3898,
+              64.5018,
+              55.4472,
+              59.2476,
+              58.8343,
+              66.5825,
+              55.4988,
+              56.8335,
+              58.0345,
+              66.9711
+            ]
+          }
+        ],
+        "rowCount": 12
+      }
+    }
+  ],
+  "activeSheetId": "sheet-doe",
+  "sheetCounter": 1
+}
