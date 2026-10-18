@@ -8687,18 +8687,18 @@
           "normal": {
             "mu": "Mittelwert (μ): die Lage der Verteilung, um die die Werte streuen. Zulässig: beliebige Zahl; Vorgabe 0.",
             "sigma": "Std.-Abw. (σ): die Skala, die Streuung der Werte um die Lage. Zulässig: Zahl ab 0,0001; Vorgabe 1.",
-            "epsilon": "Schiefe (ε): die Asymmetrie: 0 erzeugt symmetrische Werte, positive Werte verschieben die Masse nach links und ziehen den rechten Rand lang, negative umgekehrt. Zulässig: beliebige Zahl; Vorgabe 0.",
+            "epsilon": "Schiefe (ε): die Asymmetrie: 0 erzeugt symmetrische Werte, positive Werte machen die Verteilung rechtsschief (langer rechter Rand), negative linksschief. Zulässig: beliebige Zahl; Vorgabe 0.",
             "delta": "Tailweight (δ): wie schwer die Ränder sind: 1 ergibt die Normalverteilung, Werte unter 1 machen die Ränder schwerer, Werte über 1 leichter. Zulässig: Zahl ab 0,01; Vorgabe 1."
           },
           "chisquare": {
-            "k": "Freiheitsgrade (k): sie bestimmen die Form der Chi-Quadrat-Verteilung; je größer, desto symmetrischer. Zulässig: ganze Zahl ab 1; Vorgabe 5."
+            "k": "Freiheitsgrade (k): sie bestimmen die Form der Chi-Quadrat-Verteilung; je größer, desto symmetrischer. Zulässig: Zahl ab 1, üblich sind ganze Zahlen; Vorgabe 5."
           },
           "f_dist": {
-            "d1": "Freiheitsgrade d₁: die Zahl der Freiheitsgrade im Zähler der F-Verteilung. Zulässig: ganze Zahl ab 1; Vorgabe 5.",
-            "d2": "Freiheitsgrade d₂: die Zahl der Freiheitsgrade im Nenner der F-Verteilung. Zulässig: ganze Zahl ab 1; Vorgabe 10."
+            "d1": "Freiheitsgrade d₁: die Zahl der Freiheitsgrade im Zähler der F-Verteilung. Zulässig: Zahl ab 1, üblich sind ganze Zahlen; Vorgabe 5.",
+            "d2": "Freiheitsgrade d₂: die Zahl der Freiheitsgrade im Nenner der F-Verteilung. Zulässig: Zahl ab 1, üblich sind ganze Zahlen; Vorgabe 10."
           },
           "t_dist": {
-            "nu": "Freiheitsgrade (ν): sie bestimmen die Form der t-Verteilung; je größer, desto näher liegt sie an der Normalverteilung. Zulässig: ganze Zahl ab 1; Vorgabe 10."
+            "nu": "Freiheitsgrade (ν): sie bestimmen die Form der t-Verteilung; je größer, desto näher liegt sie an der Normalverteilung. Zulässig: Zahl ab 1, üblich sind ganze Zahlen; Vorgabe 10."
           },
           "uniform": {
             "a": "Untergrenze (a): die untere Grenze, unter der keine Werte liegen. Zulässig: beliebige Zahl; Vorgabe 0.",

@@ -8683,18 +8683,18 @@
           "normal": {
             "mu": "Mean (μ): the location of the distribution, around which the values scatter. Allowed: any number; default 0.",
             "sigma": "Std. Dev. (σ): the scale, the spread of the values around the location. Allowed: number from 0.0001; default 1.",
-            "epsilon": "Skewness (ε): the asymmetry: 0 gives symmetric values, positive values move the mass to the left and stretch the right tail, negative values do the opposite. Allowed: any number; default 0.",
+            "epsilon": "Skewness (ε): the asymmetry: 0 gives symmetric values, positive values make the distribution right-skewed (long right tail), negative values left-skewed. Allowed: any number; default 0.",
             "delta": "Tailweight (δ): how heavy the tails are: 1 gives the normal distribution, values below 1 make the tails heavier, values above 1 lighter. Allowed: number from 0.01; default 1."
           },
           "chisquare": {
-            "k": "Degrees of freedom (k): they set the shape of the chi-square distribution; the larger, the more symmetric. Allowed: whole number from 1; default 5."
+            "k": "Degrees of freedom (k): they set the shape of the chi-square distribution; the larger, the more symmetric. Allowed: number from 1, whole numbers are usual; default 5."
           },
           "f_dist": {
-            "d1": "Degrees of freedom d₁: the number of degrees of freedom in the numerator of the F distribution. Allowed: whole number from 1; default 5.",
-            "d2": "Degrees of freedom d₂: the number of degrees of freedom in the denominator of the F distribution. Allowed: whole number from 1; default 10."
+            "d1": "Degrees of freedom d₁: the number of degrees of freedom in the numerator of the F distribution. Allowed: number from 1, whole numbers are usual; default 5.",
+            "d2": "Degrees of freedom d₂: the number of degrees of freedom in the denominator of the F distribution. Allowed: number from 1, whole numbers are usual; default 10."
           },
           "t_dist": {
-            "nu": "Degrees of freedom (ν): they set the shape of the t distribution; the larger, the closer it is to the normal distribution. Allowed: whole number from 1; default 10."
+            "nu": "Degrees of freedom (ν): they set the shape of the t distribution; the larger, the closer it is to the normal distribution. Allowed: number from 1, whole numbers are usual; default 10."
           },
           "uniform": {
             "a": "Lower bound (a): the lower bound, below which no values occur. Allowed: any number; default 0.",
