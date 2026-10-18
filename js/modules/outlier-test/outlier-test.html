@@ -170,7 +170,7 @@
                     <template x-for="(m, mi) in card.metrics" :key="mi">
                       <div class="dmike-kpi" :class="m.kpiClass">
                         <div class="dmike-kpi-value" :class="m.valueClass" x-text="m.value"></div>
-                        <div class="dmike-kpi-label" x-text="m.label"></div>
+                        <div class="dmike-kpi-label" :data-help-key="m.help || null" x-text="m.label"></div>
                       </div>
                     </template>
                   </div>
@@ -183,7 +183,7 @@
                   </template>
                   <template x-if="card.steps.length">
                     <table class="outliertest__steps">
-                      <thead><tr><th x-text="t('symStep')"></th><th x-text="t('value')"></th><th x-text="t('symR')"></th><th x-text="t('symLambda')"></th><th x-text="card.stepsHeader"></th></tr></thead>
+                      <thead><tr><th><span data-help-key="modules.outlier-test.types.EsdStep.i" x-text="t('symStep')"></span></th><th x-text="t('value')"></th><th><span data-help-key="modules.outlier-test.types.EsdStep.R" x-text="t('symR')"></span></th><th><span data-help-key="modules.outlier-test.types.EsdStep.lambda" x-text="t('symLambda')"></span></th><th x-text="card.stepsHeader"></th></tr></thead>
                       <tbody>
                         <template x-for="(st, si) in card.steps" :key="si">
                           <tr :class="st.rejectClass">

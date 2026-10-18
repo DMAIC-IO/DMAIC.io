@@ -11876,6 +11876,121 @@ export const AGENT_REGISTRY = {
               "error": {
                 "type": "string|null",
                 "help": "Fehlerkennung"
+              },
+              "metrics": {
+                "type": "MethodMetrics|null",
+                "help": "Kennzahlen der Karte; leer, wenn das Verfahren nicht anwendbar ist",
+                "keysOf": "MethodMetrics",
+                "keys": {
+                  "statistic": {
+                    "type": "number|null",
+                    "help": "Prüfgröße G (Grubbs) bzw. Q (Dixon Q)",
+                    "optional": true
+                  },
+                  "critical": {
+                    "type": "number|null",
+                    "help": "kritischer Wert zur Prüfgröße",
+                    "optional": true
+                  },
+                  "pValue": {
+                    "type": "number|null",
+                    "help": "p-Wert (nur Grubbs)",
+                    "optional": true
+                  },
+                  "mean": {
+                    "type": "number|null",
+                    "help": "Mittelwert (Grubbs, Z-Score)",
+                    "optional": true
+                  },
+                  "sd": {
+                    "type": "number|null",
+                    "help": "Standardabweichung (Grubbs, Z-Score)",
+                    "optional": true
+                  },
+                  "detected": {
+                    "type": "number|null",
+                    "help": "erkannte Ausreißer (Generalized ESD)",
+                    "optional": true
+                  },
+                  "maxOutliers": {
+                    "type": "number|null",
+                    "help": "geprüfte Höchstzahl (Generalized ESD)",
+                    "optional": true
+                  },
+                  "q1": {
+                    "type": "number|null",
+                    "help": "erstes Quartil (Tukey)",
+                    "optional": true
+                  },
+                  "median": {
+                    "type": "number|null",
+                    "help": "Median (Tukey, Hampel, Modified Z-Score)",
+                    "optional": true
+                  },
+                  "q3": {
+                    "type": "number|null",
+                    "help": "drittes Quartil (Tukey)",
+                    "optional": true
+                  },
+                  "iqr": {
+                    "type": "number|null",
+                    "help": "Quartilsabstand (Tukey)",
+                    "optional": true
+                  },
+                  "fenceLower": {
+                    "type": "number|null",
+                    "help": "untere Schranke (Tukey)",
+                    "optional": true
+                  },
+                  "fenceUpper": {
+                    "type": "number|null",
+                    "help": "obere Schranke (Tukey)",
+                    "optional": true
+                  },
+                  "mad": {
+                    "type": "number|null",
+                    "help": "MAD (Hampel, Modified Z-Score)",
+                    "optional": true
+                  },
+                  "madScaled": {
+                    "type": "number|null",
+                    "help": "1,4826·MAD (Hampel)",
+                    "optional": true
+                  },
+                  "k": {
+                    "type": "number|null",
+                    "help": "Schwelle k (Hampel)",
+                    "optional": true
+                  },
+                  "threshold": {
+                    "type": "number|null",
+                    "help": "Schwelle (Hampel, Z-Score, Modified Z-Score)",
+                    "optional": true
+                  }
+                }
+              },
+              "steps": {
+                "type": "EsdStep[]|null",
+                "help": "Schritte der Generalized ESD; nur dort, sonst leer",
+                "keysOf": "EsdStep",
+                "keys": {
+                  "i": {
+                    "type": "number",
+                    "help": "Nummer des Schritts ab 1"
+                  },
+                  "value": {
+                    "type": "number",
+                    "help": "der Wert, der in diesem Schritt geprüft wird"
+                  },
+                  "R": {
+                    "type": "number",
+                    "help": "Prüfgröße Rᵢ"
+                  },
+                  "lambda": {
+                    "type": "number",
+                    "help": "kritischer Wert λᵢ"
+                  }
+                }
               }
             }
           }

@@ -158,6 +158,37 @@ const COLUMN_SINKS = { value: (m, ref) => { m.colRef = ref; } };
 /** Beschriftungsschlüssel der Seitenauswahl. */
 const SIDE_LABEL_KEYS = { 'two-sided': 'sideTwo', upper: 'sideUpper', lower: 'sideLower' };
 
+/** Zahl oder leer: nicht endliche Werte (NaN, Infinity) werden zu null. */
+const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+
+/**
+ * Die Kennzahlen eines Verfahrens aus dem Rohergebnis der Engine — die eine
+ * Quelle für die Karte und die Lesefläche.
+ * @param {string} id Verfahren
+ * @param {object} r Rohergebnis des Verfahrens
+ * @returns {Object<string, number|null>|null} null für ein unbekanntes Verfahren
+ */
+function methodMetrics(id, r) {
+  switch (id) {
+    case 'grubbs':
+      return { statistic: num(r.statistic), critical: num(r.critical), pValue: num(r.pValue), mean: num(r.mean), sd: num(r.sd) };
+    case 'dixon-q':
+      return { statistic: num(r.statistic), critical: num(r.critical) };
+    case 'generalized-esd':
+      return { detected: num(r.detected), maxOutliers: num(r.parameters.maxOutliers) };
+    case 'tukey-iqr':
+      return { q1: num(r.q1), median: num(r.median), q3: num(r.q3), iqr: num(r.iqr), fenceLower: num(r.fenceLower), fenceUpper: num(r.fenceUpper) };
+    case 'hampel':
+      return { median: num(r.median), mad: num(r.mad), madScaled: num(r.madScaled), k: num(r.parameters.k), threshold: num(r.threshold) };
+    case 'z-score':
+      return { mean: num(r.mean), sd: num(r.sd), threshold: num(r.parameters.threshold) };
+    case 'modified-z':
+      return { median: num(r.median), mad: num(r.mad), threshold: num(r.parameters.threshold) };
+    default:
+      return null;
+  }
+}
+
 /** Präfix der Typedef-Sätze; die Kennzahlen der Übersicht hängen ihren Schlüssel an. */
 const HELP = 'modules.outlier-test.types.';
 
@@ -191,6 +222,42 @@ const HELP = 'modules.outlier-test.types.';
  * @property {string} id  Verfahren
  * @property {number[]} flagged  markierte Punkte
  * @property {string|null} error  Fehlerkennung
+ * @property {MethodMetrics|null} metrics  Kennzahlen der Karte; leer, wenn das Verfahren nicht anwendbar ist
+ * @property {EsdStep[]|null} steps  Schritte der Generalized ESD; nur dort, sonst leer
+ */
+
+/**
+ * Die Kennzahlen eines Verfahrens, dieselben Zahlen wie auf seiner Karte. Welche
+ * Schlüssel da sind, hängt vom Verfahren ab.
+ *
+ * @typedef {object} MethodMetrics
+ * @property {number|null} [statistic]  Prüfgröße G (Grubbs) bzw. Q (Dixon Q)
+ * @property {number|null} [critical]  kritischer Wert zur Prüfgröße
+ * @property {number|null} [pValue]  p-Wert (nur Grubbs)
+ * @property {number|null} [mean]  Mittelwert (Grubbs, Z-Score)
+ * @property {number|null} [sd]  Standardabweichung (Grubbs, Z-Score)
+ * @property {number|null} [detected]  erkannte Ausreißer (Generalized ESD)
+ * @property {number|null} [maxOutliers]  geprüfte Höchstzahl (Generalized ESD)
+ * @property {number|null} [q1]  erstes Quartil (Tukey)
+ * @property {number|null} [median]  Median (Tukey, Hampel, Modified Z-Score)
+ * @property {number|null} [q3]  drittes Quartil (Tukey)
+ * @property {number|null} [iqr]  Quartilsabstand (Tukey)
+ * @property {number|null} [fenceLower]  untere Schranke (Tukey)
+ * @property {number|null} [fenceUpper]  obere Schranke (Tukey)
+ * @property {number|null} [mad]  MAD (Hampel, Modified Z-Score)
+ * @property {number|null} [madScaled]  1,4826·MAD (Hampel)
+ * @property {number|null} [k]  Schwelle k (Hampel)
+ * @property {number|null} [threshold]  Schwelle (Hampel, Z-Score, Modified Z-Score)
+ */
+
+/**
+ * Ein Schritt der Generalized ESD.
+ *
+ * @typedef {object} EsdStep
+ * @property {number} i  Nummer des Schritts ab 1
+ * @property {number} value  der Wert, der in diesem Schritt geprüft wird
+ * @property {number} R  Prüfgröße Rᵢ
+ * @property {number} lambda  kritischer Wert λᵢ
  */
 
 /**
@@ -256,7 +323,7 @@ const mod = createModule({
       /**
        * The analysis outcome the agent reads; null while no column is chosen or it has fewer than 3 numeric values.
        * `flaggedIdxs` and each `flagged` are 0-based positions among the numeric values of the column (empty and non-numeric cells are skipped).
-       * @type {{n:number,flaggedIdxs:number[],methods:Array<{id:string,flagged:number[],error:string|null}>}|null}
+       * @type {{n:number,flaggedIdxs:number[],methods:Array<{id:string,flagged:number[],error:string|null,metrics:object|null,steps:object[]|null}>}|null}
        */
       result: null,
       /** Why drawing the chart failed; empty while there is no failure. */
@@ -419,7 +486,7 @@ const mod = createModule({
        * @param {number[]} data numeric values of the column
        * @param {object} results engine result per method id
        * @param {object} errs error message per method id
-       * @returns {{n:number,flaggedIdxs:number[],methods:Array<{id:string,flagged:number[],error:string|null}>}}
+       * @returns {{n:number,flaggedIdxs:number[],methods:Array<{id:string,flagged:number[],error:string|null,metrics:object|null,steps:object[]|null}>}}
        */
       _buildResult(data, results, errs) {
         const union = new Set();
@@ -429,7 +496,10 @@ const mod = createModule({
           const flagged = results[id] && results[id].outliers
             ? results[id].outliers.map((o) => o.index) : [];
           flagged.forEach((i) => union.add(i));
-          methods.push({ id, flagged, error: errs[id] || null });
+          const r = results[id];
+          const steps = id === 'generalized-esd' && r && Array.isArray(r.steps)
+            ? r.steps.map((s) => ({ i: s.i, value: s.value, R: s.R, lambda: s.lambda })) : null;
+          methods.push({ id, flagged, error: errs[id] || null, metrics: r ? methodMetrics(id, r) : null, steps });
         }
         return { n: data.length, flaggedIdxs: [...union].sort((a, b) => a - b), methods };
       },
@@ -477,7 +547,10 @@ const mod = createModule({
           ? 'outliertest__verdict--clean'
           : 'outliertest__verdict--flag';
 
-        const mc = (value, lbl, kpiClass = '', valueClass = '') => ({ value, label: lbl, kpiClass, valueClass });
+        const M = methodMetrics(id, r) || {};
+        const mc = (value, lbl, key, kpiClass = '', valueClass = '') => ({
+          value, label: lbl, help: key ? HELP + 'MethodMetrics.' + key : '', kpiClass, valueClass,
+        });
         let metrics = [];
         let steps = [];
         let stepsHeader = '';
@@ -486,23 +559,23 @@ const mod = createModule({
         if (id === 'grubbs') {
           const pBad = r.pValue < r.parameters.alpha;
           metrics = [
-            mc(fmt(r.statistic, 4), _t('symG')),
-            mc(fmt(r.critical, 4), _t('symGcrit')),
-            mc(fmt(r.pValue, 4), _t('common.sym.p'), pBad ? 'dmike-kpi--bad' : 'dmike-kpi--good'),
-            mc(fmt(r.mean, 4), _t('common.sym.xbar')),
-            mc(fmt(r.sd, 4), _t('symS')),
+            mc(fmt(M.statistic, 4), _t('symG'), 'statistic'),
+            mc(fmt(M.critical, 4), _t('symGcrit'), 'critical'),
+            mc(fmt(M.pValue, 4), _t('common.sym.p'), 'pValue', pBad ? 'dmike-kpi--bad' : 'dmike-kpi--good'),
+            mc(fmt(M.mean, 4), _t('common.sym.xbar'), 'mean'),
+            mc(fmt(M.sd, 4), _t('symS'), 'sd'),
           ];
         } else if (id === 'dixon-q') {
           metrics = [
-            mc(fmt(r.statistic, 4), _t('symQ')),
-            mc(fmt(r.critical, 4), _t('symQcrit')),
-            mc(r.parameters.variant, _t('variant'), '', 'dmike-kpi-value--sm'),
-            mc(r.side, _t('side'), '', 'dmike-kpi-value--sm'),
+            mc(fmt(M.statistic, 4), _t('symQ'), 'statistic'),
+            mc(fmt(M.critical, 4), _t('symQcrit'), 'critical'),
+            mc(r.parameters.variant, _t('variant'), '', '', 'dmike-kpi-value--sm'),
+            mc(r.side, _t('side'), '', '', 'dmike-kpi-value--sm'),
           ];
         } else if (id === 'generalized-esd') {
           metrics = [
-            mc(String(r.detected), _t('detected'), r.detected > 0 ? 'dmike-kpi--bad' : 'dmike-kpi--good'),
-            mc(String(r.parameters.maxOutliers), _t('esdMax')),
+            mc(String(M.detected), _t('detected'), 'detected', M.detected > 0 ? 'dmike-kpi--bad' : 'dmike-kpi--good'),
+            mc(String(M.maxOutliers), _t('esdMax'), 'maxOutliers'),
           ];
           stepsHeader = _t('stepsReject');
           steps = r.steps.map((s) => ({
@@ -515,34 +588,34 @@ const mod = createModule({
           }));
         } else if (id === 'tukey-iqr') {
           metrics = [
-            mc(fmt(r.q1, 4), _t('symQ1')),
-            mc(fmt(r.median, 4), _t('median')),
-            mc(fmt(r.q3, 4), _t('symQ3')),
-            mc(fmt(r.iqr, 4), _t('symIqr')),
-            mc(fmt(r.fenceLower, 4), _t('fenceLower')),
-            mc(fmt(r.fenceUpper, 4), _t('fenceUpper')),
+            mc(fmt(M.q1, 4), _t('symQ1'), 'q1'),
+            mc(fmt(M.median, 4), _t('median'), 'median'),
+            mc(fmt(M.q3, 4), _t('symQ3'), 'q3'),
+            mc(fmt(M.iqr, 4), _t('symIqr'), 'iqr'),
+            mc(fmt(M.fenceLower, 4), _t('fenceLower'), 'fenceLower'),
+            mc(fmt(M.fenceUpper, 4), _t('fenceUpper'), 'fenceUpper'),
           ];
         } else if (id === 'hampel') {
           metrics = [
-            mc(fmt(r.median, 4), _t('median')),
-            mc(fmt(r.mad, 4), _t('symMad')),
-            mc(fmt(r.madScaled, 4), _t('symMadScaled')),
-            mc(fmt(r.parameters.k, 2), _t('symK')),
-            mc(fmt(r.threshold, 4), _t('threshold')),
+            mc(fmt(M.median, 4), _t('median'), 'median'),
+            mc(fmt(M.mad, 4), _t('symMad'), 'mad'),
+            mc(fmt(M.madScaled, 4), _t('symMadScaled'), 'madScaled'),
+            mc(fmt(M.k, 2), _t('symK'), 'k'),
+            mc(fmt(M.threshold, 4), _t('threshold'), 'threshold'),
           ];
           if (r.degenerate) hint = _t('hintDegenerateMad');
         } else if (id === 'z-score') {
           metrics = [
-            mc(fmt(r.mean, 4), _t('common.sym.xbar')),
-            mc(fmt(r.sd, 4), _t('symS')),
-            mc(fmt(r.parameters.threshold, 2), _t('threshold')),
+            mc(fmt(M.mean, 4), _t('common.sym.xbar'), 'mean'),
+            mc(fmt(M.sd, 4), _t('symS'), 'sd'),
+            mc(fmt(M.threshold, 2), _t('threshold'), 'threshold'),
           ];
           if (r.degenerate) hint = _t('hintDegenerateSd');
         } else if (id === 'modified-z') {
           metrics = [
-            mc(fmt(r.median, 4), _t('median')),
-            mc(fmt(r.mad, 4), _t('symMad')),
-            mc(fmt(r.parameters.threshold, 2), _t('threshold')),
+            mc(fmt(M.median, 4), _t('median'), 'median'),
+            mc(fmt(M.mad, 4), _t('symMad'), 'mad'),
+            mc(fmt(M.threshold, 2), _t('threshold'), 'threshold'),
           ];
           if (r.degenerate) hint = _t('hintDegenerateMad');
         }

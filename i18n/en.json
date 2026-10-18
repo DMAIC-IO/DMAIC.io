@@ -9297,7 +9297,34 @@
         "MethodResult": {
           "id": "The method identifier: grubbs, dixon-q, generalized-esd, tukey-iqr, hampel, z-score or modified-z.",
           "flagged": "The positions this method flagged, counted from 0 over the values used; Grubbs and Dixon Q flag at most one value. Empty when nothing stands out or the method is not applicable; without spread (MAD = 0 for Hampel and modified Z-score, s = 0 for Z-score) the method runs without error and flags nothing. The table “Flagged Points” has one column per method with a check mark.",
-          "error": "Empty when the method ran; otherwise the reason it is not applicable: min3 fewer than 3 values, min4 fewer than 4 values (generalized ESD, Tukey IQR rule), zeroVariance no spread (Grubbs: s = 0, Dixon Q: range 0), dixonRange Dixon Q only for 3 to 30 values. The interface shows “Method not applicable” with this code."
+          "error": "Empty when the method ran; otherwise the reason it is not applicable: min3 fewer than 3 values, min4 fewer than 4 values (generalized ESD, Tukey IQR rule), zeroVariance no spread (Grubbs: s = 0, Dixon Q: range 0), dixonRange Dixon Q only for 3 to 30 values. The interface shows “Method not applicable” with this code.",
+          "metrics": "The method's key figures, the same numbers as on its card under “Methods”; which keys are present depends on the method. The field is empty when the method is not applicable.",
+          "steps": "The steps of generalized ESD in the order of the table on its card. For all other methods the field is empty."
+        },
+        "MethodMetrics": {
+          "statistic": "The test statistic, shown as “G” for Grubbs and “Q” for Dixon Q on the card: for Grubbs the largest distance of a value from the mean in standard deviations, for Dixon Q the gap ratio (distance to the neighbor divided by the range). A value above the critical value flags the extreme value.",
+          "critical": "The critical value for the test statistic, shown as “Gₜ” for Grubbs and “Qₜ” for Dixon Q; it depends on the number of values, α and the test side. If the statistic is above it, the extreme value counts as an outlier.",
+          "pValue": "The p-value of the Grubbs test. It exists for Grubbs only and belongs to the statistic G; if it is below α the extreme value is flagged and the tile turns red, otherwise green.",
+          "mean": "The mean x̄ of all values used; the basis of the distance for Grubbs and the Z-score. Outliers shift it themselves.",
+          "sd": "The standard deviation s of all values used; it measures the distance for Grubbs and the Z-score. For the Z-score, 0 means all values are equal and nothing is flagged.",
+          "detected": "The number of outliers generalized ESD found: the steps up to the last one in which Rᵢ is above λᵢ. Above 0 the tile turns red, at 0 green.",
+          "maxOutliers": "The maximum number of outliers generalized ESD tested, that is, its number of steps. Without a setting it is ⌊n/4⌋, at least 1 and at most 10.",
+          "q1": "The first quartile Q1 of the Tukey IQR rule: a quarter of the values lie below it.",
+          "median": "The median: the middle value of the sorted data. Tukey, Hampel and modified Z-score use it as a robust center that outliers hardly shift.",
+          "q3": "The third quartile Q3 of the Tukey IQR rule: a quarter of the values lie above it.",
+          "iqr": "The interquartile range IQR = Q3 − Q1 of the Tukey IQR rule; it sets how far the fences lie from the quartiles.",
+          "fenceLower": "The lower fence of the Tukey IQR rule, Q1 − k·IQR with the factor k as set. Values below it are flagged.",
+          "fenceUpper": "The upper fence of the Tukey IQR rule, Q3 + k·IQR with the factor k as set. Values above it are flagged.",
+          "mad": "The MAD, the median of the absolute deviations from the median, a robust measure of spread for Hampel and modified Z-score. If it is 0 the method runs without error and flags nothing.",
+          "madScaled": "The MAD multiplied by 1.4826 (card “1.4826·MAD”); for normal data this estimates the standard deviation. The Hampel identifier measures the distance to the median in this unit.",
+          "k": "The threshold k of the Hampel identifier, as set: a value is flagged if its distance from the median is more than k scaled MADs.",
+          "threshold": "The threshold of the method, as set. For the Hampel identifier it is the distance from the median above which a value is flagged (k times scaled MAD); for the Z-score and the modified Z-score it is the threshold on the z value."
+        },
+        "EsdStep": {
+          "i": "The step number from 1. Each step tests the most conspicuous value of the remaining data and then removes it.",
+          "value": "The value tested in this step: the one farthest from the mean of the remaining data.",
+          "R": "The statistic Rᵢ of this step: the distance of the value from the mean of the remaining data in standard deviations.",
+          "lambda": "The critical value λᵢ of this step. If Rᵢ is above it, the value counts as an outlier; the row is then marked with a cross."
         }
       },
       "sectionData": "Data Source",

@@ -9301,7 +9301,34 @@
         "MethodResult": {
           "id": "Die Kennung des Verfahrens: grubbs, dixon-q, generalized-esd, tukey-iqr, hampel, z-score oder modified-z.",
           "flagged": "Die Positionen, die dieses Verfahren markiert hat, ab 0 über die verwerteten Werte; Grubbs und Dixon Q markieren höchstens einen Wert. Leer, wenn nichts auffällt oder das Verfahren nicht anwendbar ist; ohne Streuung (MAD = 0 bei Hampel und Modified Z-Score, s = 0 beim Z-Score) läuft das Verfahren ohne Fehler und markiert nichts. In der Tabelle „Markierte Punkte“ steht je Verfahren eine Spalte mit einem Haken.",
-          "error": "Leer, wenn das Verfahren gelaufen ist; sonst der Grund, warum es nicht anwendbar ist: min3 weniger als 3 Werte, min4 weniger als 4 Werte (Generalized ESD, Tukey IQR-Regel), zeroVariance keine Streuung (Grubbs: s = 0, Dixon Q: Spannweite 0), dixonRange Dixon Q nur für 3 bis 30 Werte. Die Oberfläche zeigt „Verfahren nicht anwendbar“ mit dieser Kennung."
+          "error": "Leer, wenn das Verfahren gelaufen ist; sonst der Grund, warum es nicht anwendbar ist: min3 weniger als 3 Werte, min4 weniger als 4 Werte (Generalized ESD, Tukey IQR-Regel), zeroVariance keine Streuung (Grubbs: s = 0, Dixon Q: Spannweite 0), dixonRange Dixon Q nur für 3 bis 30 Werte. Die Oberfläche zeigt „Verfahren nicht anwendbar“ mit dieser Kennung.",
+          "metrics": "Die Kennzahlen des Verfahrens, dieselben Zahlen wie auf seiner Karte unter „Verfahren“; welche Schlüssel da sind, hängt vom Verfahren ab. Das Feld ist leer, wenn das Verfahren nicht anwendbar ist.",
+          "steps": "Die Schritte der Generalized ESD in der Reihenfolge der Tabelle auf ihrer Karte. Bei allen anderen Verfahren ist das Feld leer."
+        },
+        "MethodMetrics": {
+          "statistic": "Die Prüfgröße des Tests, auf der Karte „G“ bei Grubbs und „Q“ bei Dixon Q: bei Grubbs der größte Abstand eines Werts vom Mittelwert in Standardabweichungen, bei Dixon Q der Lückenquotient (Abstand zum Nachbarn geteilt durch die Spannweite). Ein Wert über dem kritischen Wert markiert den Extremwert.",
+          "critical": "Der kritische Wert zur Prüfgröße, auf der Karte „Gₜ“ bei Grubbs und „Qₜ“ bei Dixon Q; er hängt von der Zahl der Werte, α und der Testrichtung ab. Liegt die Prüfgröße darüber, gilt der Extremwert als Ausreißer.",
+          "pValue": "Der p-Wert des Grubbs-Tests. Er ist nur bei Grubbs da und gehört zur Prüfgröße G; liegt er unter α, ist der Extremwert markiert, und die Kachel färbt sich rot, sonst grün.",
+          "mean": "Der Mittelwert x̄ aller verwerteten Werte; Grundlage des Abstands bei Grubbs und beim Z-Score. Ausreißer verschieben ihn selbst.",
+          "sd": "Die Standardabweichung s aller verwerteten Werte; sie misst den Abstand bei Grubbs und beim Z-Score. Beim Z-Score bedeutet 0, dass alle Werte gleich sind und nichts markiert wird.",
+          "detected": "Die Zahl der Ausreißer, die die Generalized ESD erkannt hat: die Schritte bis zum letzten, in dem Rᵢ über λᵢ liegt. Über 0 färbt die Kachel sich rot, bei 0 grün.",
+          "maxOutliers": "Die Höchstzahl der Ausreißer, die die Generalized ESD geprüft hat, also die Zahl ihrer Schritte. Ohne eigene Vorgabe ist es ⌊n/4⌋, mindestens 1 und höchstens 10.",
+          "q1": "Das erste Quartil Q1 der Tukey-IQR-Regel: unterhalb liegt ein Viertel der Werte.",
+          "median": "Der Median: der mittlere Wert der sortierten Daten. Tukey, Hampel und Modified Z-Score nutzen ihn als robuste Mitte, die von Ausreißern kaum verschoben wird.",
+          "q3": "Das dritte Quartil Q3 der Tukey-IQR-Regel: oberhalb liegt ein Viertel der Werte.",
+          "iqr": "Der Quartilsabstand IQR = Q3 − Q1 der Tukey-IQR-Regel; er bestimmt, wie weit die Zäune von den Quartilen entfernt liegen.",
+          "fenceLower": "Die untere Schranke der Tukey-IQR-Regel, Q1 − k·IQR mit dem eingestellten Faktor k. Werte darunter sind markiert.",
+          "fenceUpper": "Die obere Schranke der Tukey-IQR-Regel, Q3 + k·IQR mit dem eingestellten Faktor k. Werte darüber sind markiert.",
+          "mad": "Die MAD, der Median der absoluten Abweichungen vom Median, ein robustes Streuungsmaß für Hampel und Modified Z-Score. Ist sie 0, läuft das Verfahren ohne Fehler und markiert nichts.",
+          "madScaled": "Die MAD mit 1,4826 multipliziert (Karte „1.4826·MAD“); bei Normalverteilung schätzt dieser Wert die Standardabweichung. Der Hampel-Identifier misst den Abstand zum Median in dieser Einheit.",
+          "k": "Die Schwelle k des Hampel-Identifiers, wie eingestellt: ein Wert ist markiert, wenn sein Abstand zum Median mehr als k skalierte MAD beträgt.",
+          "threshold": "Die Schwelle des Verfahrens, wie eingestellt. Beim Hampel-Identifier ist es der Abstand zum Median, ab dem ein Wert markiert wird (k mal skalierte MAD); beim Z-Score und beim Modified Z-Score die Schwelle für den z-Wert."
+        },
+        "EsdStep": {
+          "i": "Die Nummer des Schritts ab 1. In jedem Schritt wird der auffälligste Wert der Restdaten geprüft und danach entfernt.",
+          "value": "Der Wert, der in diesem Schritt geprüft wird: der mit dem größten Abstand vom Mittelwert der Restdaten.",
+          "R": "Die Prüfgröße Rᵢ dieses Schritts: der Abstand des Werts vom Mittelwert der Restdaten in Standardabweichungen.",
+          "lambda": "Der kritische Wert λᵢ dieses Schritts. Liegt Rᵢ darüber, zählt der Wert als Ausreißer; die Zeile ist dann mit einem Kreuz markiert."
         }
       },
       "sectionData": "Datenquelle",
