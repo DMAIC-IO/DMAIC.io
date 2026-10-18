@@ -11316,13 +11316,13 @@
         "calcStat": {
           "help": "Computes a statistic over the statistics data set and remembers it as the last result. If the data set is empty, too small or has no mode, the call returns null.",
           "params": {
-            "type": "The statistic: mean, median, mode, range, stdS and varS (sample standard deviation and variance), stdP and varP (population), sum, min, max, count, q1, q3, iqr or skew. Any other value is an error."
+            "type": "Which statistic; each is described individually under keys. Any other value is an error."
           }
         },
         "calcSS": {
           "help": "Computes a metric over the process data set and remembers it as the last result. Without enough values or without both spec limits the call returns null.",
           "params": {
-            "type": "The metric: cp, cpk, pp, ppk, sigma (sigma level), dpmo, yield, zscore, mean, std, ucl or lcl. Any other value is an error."
+            "type": "Which statistic; each is described individually under keys. Any other value is an error."
           }
         },
         "addData": {
@@ -11403,9 +11403,9 @@
           "median": "Median x̃ key: the middle value of the values sorted ascending; with an even count, the average of the two middle values.",
           "mode": "Mode key: the value that occurs most often. On a tie all most frequent values appear, separated by commas. If every value occurs only once (also with a single value) there is no mode, and the display says so in a message.",
           "range": "Range key: the largest value minus the smallest value of the dataset.",
-          "stdS": "s (sample) key: the sample standard deviation s = √(Σ(x − x̄)²/(n − 1)), divided by n − 1. Needs at least 2 values, otherwise the message “n ≥ 2 needed” appears.",
+          "stdS": "s (sample) key: the sample standard deviation s = √(Σ(x − x̄)²/(n − 1)), divided by n − 1. Needs at least 2 values, otherwise the message “n ≥ 2 required” appears.",
           "stdP": "σ (population) key: the population standard deviation σ = √(Σ(x − x̄)²/n), divided by n instead of n − 1. With a single value it is 0.",
-          "varS": "s² variance key: the sample variance s² = Σ(x − x̄)²/(n − 1), the square of the sample standard deviation. Needs at least 2 values, otherwise the message “n ≥ 2 needed” appears.",
+          "varS": "s² variance key: the sample variance s² = Σ(x − x̄)²/(n − 1), the square of the sample standard deviation. Needs at least 2 values, otherwise the message “n ≥ 2 required” appears.",
           "varP": "σ² variance key: the population variance σ² = Σ(x − x̄)²/n, the square of the population standard deviation, divided by n instead of n − 1.",
           "sum": "Σ sum key: the sum of all values in the dataset.",
           "min": "Min key: the smallest value of the dataset.",
@@ -11414,7 +11414,21 @@
           "q1": "Q1 key: the lower quartile, the 25 % quantile. The values are sorted and, at position (n − 1) · 0.25, linearly interpolated between the two neighbouring values; this is the same method as Excel (QUARTILE.INC).",
           "q3": "Q3 key: the upper quartile, the 75 % quantile. The values are sorted and, at position (n − 1) · 0.75, linearly interpolated between the two neighbouring values; this is the same method as Excel (QUARTILE.INC).",
           "iqr": "IQR key: the interquartile range, Q3 − Q1, using the linearly interpolated quartiles of the Q1 and Q3 keys.",
-          "skew": "Skewness key: the sample skewness n/((n − 1)(n − 2)) · Σ((x − x̄)/s)³ with the sample standard deviation s; 0 for symmetric data, positive for right-skewed. Needs at least 3 values, otherwise the message “n ≥ 3 needed” appears."
+          "skew": "Skewness key: the sample skewness n/((n − 1)(n − 2)) · Σ((x − x̄)/s)³ with the sample standard deviation s; 0 for symmetric data, positive for right-skewed. Needs at least 3 values, otherwise the message “n ≥ 3 required” appears."
+        },
+        "CapabilityKey": {
+          "cp": "Cp key: the process capability index Cp = (USL − LSL)/(6 · σ within), the tolerance width over six standard deviations. σ within is the average moving range of neighbouring values divided by 1.128, taken in entry order. Needs at least 2 values and both limits LSL and USL, otherwise “Data + LSL/USL required” appears. The target is not used.",
+          "cpk": "Cpk key: the centred capability index Cpk = min((USL − x̄)/(3σ), (x̄ − LSL)/(3σ)) with σ within (average moving range divided by 1.128, in entry order). It measures the distance from the mean to the nearer limit. Needs at least 2 values and both limits LSL and USL.",
+          "pp": "Pp key: the overall performance index Pp = (USL − LSL)/(6 · s), with the sample standard deviation s of all values (divided by n − 1), that is the overall spread rather than the within spread. Needs at least 2 values and both limits LSL and USL.",
+          "ppk": "Ppk key: the centred overall performance index Ppk = min((USL − x̄)/(3s), (x̄ − LSL)/(3s)) with the sample standard deviation s of all values (divided by n − 1). Needs at least 2 values and both limits LSL and USL.",
+          "sigma": "Sigma-Level key: the benchmark Z (Z.bench) = −Φ⁻¹(p), where p is the fraction outside the limits, both tails together, under a normal distribution with mean x̄ and σ within (average moving range divided by 1.128). No 1.5 σ shift is added. Needs at least 2 values and both limits LSL and USL.",
+          "dpmo": "DPMO key: defects per million opportunities, (P(X < LSL) + P(X > USL)) · 1,000,000, rounded to a whole number. The probabilities come from a normal distribution with mean x̄ and the sample standard deviation s of all values (overall spread). Needs at least 2 values and both limits LSL and USL.",
+          "yield": "Yield % key: the expected fraction within specification, P(LSL ≤ X ≤ USL) · 100 as a percentage with four decimals. The probability comes from a normal distribution with mean x̄ and the sample standard deviation s of all values (overall spread); it is 1 minus the defect fraction of the DPMO key. Needs at least 2 values and both limits LSL and USL.",
+          "zscore": "Z-Score key: −Φ⁻¹(defect fraction), the normal-distribution distance that matches the total fraction outside the limits (both tails together, as for DPMO, with mean x̄ and the sample standard deviation s of all values). No 1.5 σ shift is added. Needs at least 2 values and both limits LSL and USL.",
+          "mean": "x̄ Mean key: the mean of the process dataset, Σx/n. Needs at least 1 value, otherwise “Data required” appears.",
+          "std": "σ Std.Dev. key: the sample standard deviation s = √(Σ(x − x̄)²/(n − 1)) of the process dataset (overall spread, not the within spread). Needs at least 2 values, otherwise “n ≥ 2 required” appears.",
+          "ucl": "UCL key: the upper control limit x̄ + 3 · s with the sample standard deviation s of all values of the process dataset. Needs at least 2 values; the specification limits are not used.",
+          "lcl": "LCL key: the lower control limit x̄ − 3 · s with the sample standard deviation s of all values of the process dataset. Needs at least 2 values; the specification limits are not used."
         }
       }
     },

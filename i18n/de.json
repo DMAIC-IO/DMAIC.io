@@ -11320,13 +11320,13 @@
         "calcStat": {
           "help": "Rechnet einen Kennwert über den Statistikdatensatz und merkt ihn als letztes Ergebnis. Ist der Datensatz leer, zu klein oder ohne Modalwert, liefert der Aufruf null.",
           "params": {
-            "type": "Der Kennwert: mean (Mittelwert), median, mode (Modalwert), range (Spannweite), stdS und varS (Standardabweichung und Varianz der Stichprobe), stdP und varP (der Grundgesamtheit), sum, min, max, count, q1, q3, iqr oder skew (Schiefe). Jeder andere Wert ist ein Fehler."
+            "type": "Welcher Kennwert; jeder ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler."
           }
         },
         "calcSS": {
           "help": "Rechnet einen Kennwert über den Prozessdatensatz und merkt ihn als letztes Ergebnis. Fehlen Werte oder die Spezifikationsgrenzen, liefert der Aufruf null.",
           "params": {
-            "type": "Der Kennwert: cp, cpk, pp, ppk, sigma (Sigma-Niveau), dpmo, yield, zscore, mean, std, ucl oder lcl. Jeder andere Wert ist ein Fehler."
+            "type": "Welcher Kennwert; jeder ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler."
           }
         },
         "addData": {
@@ -11419,6 +11419,20 @@
           "q3": "Taste Q3: das obere Quartil, das 75-%-Quantil. Die Werte werden sortiert, an der Stelle (n − 1) · 0,75 wird zwischen den beiden Nachbarwerten linear interpoliert; das ist dasselbe Verfahren wie bei Excel (QUARTIL.INKL).",
           "iqr": "Taste IQR: der Quartilsabstand, Q3 − Q1, mit den linear interpolierten Quartilen der Tasten Q1 und Q3.",
           "skew": "Taste Schiefe: die Stichprobenschiefe n/((n − 1)(n − 2)) · Σ((x − x̄)/s)³ mit der Stichproben-Standardabweichung s; 0 bei symmetrischen Daten, positiv bei rechtsschiefen. Braucht mindestens 3 Werte, sonst erscheint der Hinweis „n ≥ 3 nötig“."
+        },
+        "CapabilityKey": {
+          "cp": "Taste Cp: der Prozessfähigkeitsindex Cp = (OSG − USG)/(6 · σ innerhalb), also Toleranzbreite durch sechs Standardabweichungen. σ innerhalb ist die mittlere Spannweite benachbarter Werte (Moving Range) geteilt durch 1,128, in der Eingabereihenfolge gerechnet. Braucht mindestens 2 Werte und beide Grenzen USG und OSG, sonst erscheint „Daten + USG/OSG nötig“. Der Zielwert geht nicht ein.",
+          "cpk": "Taste Cpk: der zentrierte Prozessfähigkeitsindex Cpk = min((OSG − x̄)/(3σ), (x̄ − USG)/(3σ)) mit σ innerhalb (mittlere Moving Range geteilt durch 1,128, in Eingabereihenfolge). Er misst den Abstand des Mittelwerts zur näheren Grenze. Braucht mindestens 2 Werte und beide Grenzen USG und OSG.",
+          "pp": "Taste Pp: der Gesamt-Leistungsindex Pp = (OSG − USG)/(6 · s), mit der Stichproben-Standardabweichung s aller Werte (geteilt durch n − 1), also der Gesamtstreuung statt der Streuung innerhalb. Braucht mindestens 2 Werte und beide Grenzen USG und OSG.",
+          "ppk": "Taste Ppk: der zentrierte Gesamt-Leistungsindex Ppk = min((OSG − x̄)/(3s), (x̄ − USG)/(3s)) mit der Stichproben-Standardabweichung s aller Werte (geteilt durch n − 1). Braucht mindestens 2 Werte und beide Grenzen USG und OSG.",
+          "sigma": "Taste Sigma-Level: das Benchmark-Z (Z.bench) = −Φ⁻¹(p), wobei p der Anteil außerhalb der Grenzen ist, beide Seiten zusammen, unter einer Normalverteilung mit Mittelwert x̄ und σ innerhalb (mittlere Moving Range geteilt durch 1,128). Es wird keine 1,5-σ-Verschiebung aufgeschlagen. Braucht mindestens 2 Werte und beide Grenzen USG und OSG.",
+          "dpmo": "Taste DPMO: Fehler je Million Möglichkeiten, (P(X < USG) + P(X > OSG)) · 1.000.000, gerundet auf eine ganze Zahl. Die Wahrscheinlichkeiten stammen aus einer Normalverteilung mit Mittelwert x̄ und der Stichproben-Standardabweichung s aller Werte (Gesamtstreuung). Braucht mindestens 2 Werte und beide Grenzen USG und OSG.",
+          "yield": "Taste Yield %: der erwartete Anteil gut, P(USG ≤ X ≤ OSG) · 100 in Prozent mit vier Nachkommastellen. Die Wahrscheinlichkeit stammt aus einer Normalverteilung mit Mittelwert x̄ und der Stichproben-Standardabweichung s aller Werte (Gesamtstreuung); sie ist 1 minus der Fehleranteil der Taste DPMO. Braucht mindestens 2 Werte und beide Grenzen USG und OSG.",
+          "zscore": "Taste Z-Score: −Φ⁻¹(Fehleranteil), also der Normalverteilungs-Abstand, der zum gesamten Fehleranteil außerhalb der Grenzen passt (beide Seiten zusammen, wie bei DPMO, mit Mittelwert x̄ und der Stichproben-Standardabweichung s aller Werte). Es wird keine 1,5-σ-Verschiebung aufgeschlagen. Braucht mindestens 2 Werte und beide Grenzen USG und OSG.",
+          "mean": "Taste x̄ Mittelwert: der Mittelwert des Prozessdatensatzes, Σx/n. Braucht mindestens 1 Wert, sonst erscheint „Daten nötig“.",
+          "std": "Taste σ Std.Abw.: die Stichproben-Standardabweichung s = √(Σ(x − x̄)²/(n − 1)) des Prozessdatensatzes (Gesamtstreuung, nicht die Streuung innerhalb). Braucht mindestens 2 Werte, sonst erscheint „n ≥ 2 nötig“.",
+          "ucl": "Taste UCL: die obere Kontrollgrenze x̄ + 3 · s mit der Stichproben-Standardabweichung s aller Werte des Prozessdatensatzes. Braucht mindestens 2 Werte; die Spezifikationsgrenzen gehen nicht ein.",
+          "lcl": "Taste LCL: die untere Kontrollgrenze x̄ − 3 · s mit der Stichproben-Standardabweichung s aller Werte des Prozessdatensatzes. Braucht mindestens 2 Werte; die Spezifikationsgrenzen gehen nicht ein."
         }
       }
     },

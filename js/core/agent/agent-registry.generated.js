@@ -1295,25 +1295,143 @@ export const AGENT_REGISTRY = {
         "params": [
           {
             "name": "type",
-            "type": "string",
+            "type": "'mean'|'median'|'mode'|'range'|'stdS'|'stdP'|'varS'|'varP'|'sum'|'min'|'max'|'count'|'q1'|'q3'|'iqr'|'skew'",
             "optional": false,
-            "help": "der Kennwert: mean, median, mode, range, stdS, stdP, varS, varP, sum, min, max, count, q1, q3, iqr oder skew. Jeder andere Wert ist ein Fehler."
+            "help": "der Kennwert; jeder ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler."
           }
         ],
         "returns": "string|null",
-        "help": "Rechnet einen Kennwert über den Statistikdatensatz und merkt ihn als letztes Ergebnis."
+        "help": "Rechnet einen Kennwert über den Statistikdatensatz und merkt ihn als letztes Ergebnis.",
+        "keysOf": "StatKey",
+        "keys": {
+          "mean": {
+            "type": "string",
+            "help": "Mittelwert"
+          },
+          "median": {
+            "type": "string",
+            "help": "Median"
+          },
+          "mode": {
+            "type": "string",
+            "help": "Modalwert"
+          },
+          "range": {
+            "type": "string",
+            "help": "Spannweite"
+          },
+          "stdS": {
+            "type": "string",
+            "help": "Standardabweichung der Stichprobe"
+          },
+          "stdP": {
+            "type": "string",
+            "help": "Standardabweichung der Grundgesamtheit"
+          },
+          "varS": {
+            "type": "string",
+            "help": "Varianz der Stichprobe"
+          },
+          "varP": {
+            "type": "string",
+            "help": "Varianz der Grundgesamtheit"
+          },
+          "sum": {
+            "type": "string",
+            "help": "Summe"
+          },
+          "min": {
+            "type": "string",
+            "help": "kleinster Wert"
+          },
+          "max": {
+            "type": "string",
+            "help": "größter Wert"
+          },
+          "count": {
+            "type": "string",
+            "help": "Anzahl der Werte"
+          },
+          "q1": {
+            "type": "string",
+            "help": "unteres Quartil"
+          },
+          "q3": {
+            "type": "string",
+            "help": "oberes Quartil"
+          },
+          "iqr": {
+            "type": "string",
+            "help": "Quartilsabstand"
+          },
+          "skew": {
+            "type": "string",
+            "help": "Schiefe der Stichprobe"
+          }
+        }
       },
       "calcSS": {
         "params": [
           {
             "name": "type",
-            "type": "string",
+            "type": "'cp'|'cpk'|'pp'|'ppk'|'sigma'|'dpmo'|'yield'|'zscore'|'mean'|'std'|'ucl'|'lcl'",
             "optional": false,
-            "help": "der Kennwert: cp, cpk, pp, ppk, sigma, dpmo, yield, zscore, mean, std, ucl oder lcl. Jeder andere Wert ist ein Fehler."
+            "help": "der Kennwert; jeder ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler."
           }
         ],
         "returns": "string|null",
-        "help": "Rechnet einen Kennwert über den Prozessdatensatz und merkt ihn als letztes Ergebnis."
+        "help": "Rechnet einen Kennwert über den Prozessdatensatz und merkt ihn als letztes Ergebnis.",
+        "keysOf": "CapabilityKey",
+        "keys": {
+          "cp": {
+            "type": "string",
+            "help": "Cp, mit σ innerhalb"
+          },
+          "cpk": {
+            "type": "string",
+            "help": "Cpk, mit σ innerhalb"
+          },
+          "pp": {
+            "type": "string",
+            "help": "Pp, mit Gesamtstreuung"
+          },
+          "ppk": {
+            "type": "string",
+            "help": "Ppk, mit Gesamtstreuung"
+          },
+          "sigma": {
+            "type": "string",
+            "help": "Sigma-Level (Z.bench), ohne 1,5-σ-Verschiebung"
+          },
+          "dpmo": {
+            "type": "string",
+            "help": "Fehler je Million"
+          },
+          "yield": {
+            "type": "string",
+            "help": "erwarteter Anteil gut in Prozent"
+          },
+          "zscore": {
+            "type": "string",
+            "help": "Z-Score zum Fehleranteil"
+          },
+          "mean": {
+            "type": "string",
+            "help": "Mittelwert"
+          },
+          "std": {
+            "type": "string",
+            "help": "Standardabweichung der Stichprobe"
+          },
+          "ucl": {
+            "type": "string",
+            "help": "obere Kontrollgrenze"
+          },
+          "lcl": {
+            "type": "string",
+            "help": "untere Kontrollgrenze"
+          }
+        }
       },
       "addData": {
         "params": [],

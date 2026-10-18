@@ -166,20 +166,20 @@
         <button class="module-calculator__key module-calculator__key--num" data-text="-" @click="inputText('-')">-</button>
         <button class="module-calculator__key module-calculator__key--danger" data-action="remove-last-ss" data-help-key="modules.calculator.actions.removeLastSS.help" @click="removeLastSS()" x-text="t('removeLast')"></button>
 
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="cp" @click="calcSS('cp')" x-text="t('keyCp')"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="cpk" @click="calcSS('cpk')" x-text="t('keyCpk')"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="pp" @click="calcSS('pp')" x-text="t('keyPp')"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="ppk" @click="calcSS('ppk')" x-text="t('keyPpk')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="cp" data-help-key="modules.calculator.types.CapabilityKey.cp" @click="calcSS('cp')" x-text="t('keyCp')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="cpk" data-help-key="modules.calculator.types.CapabilityKey.cpk" @click="calcSS('cpk')" x-text="t('keyCpk')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="pp" data-help-key="modules.calculator.types.CapabilityKey.pp" @click="calcSS('pp')" x-text="t('keyPp')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="ppk" data-help-key="modules.calculator.types.CapabilityKey.ppk" @click="calcSS('ppk')" x-text="t('keyPpk')"></button>
 
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="sigma" @click="calcSS('sigma')" x-text="t('keySigma')"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="dpmo" @click="calcSS('dpmo')" x-text="t('keyDpmo')"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="yield" @click="calcSS('yield')" x-text="t('keyYield')"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="zscore" @click="calcSS('zscore')" x-text="t('keyZscore')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="sigma" data-help-key="modules.calculator.types.CapabilityKey.sigma" @click="calcSS('sigma')" x-text="t('keySigma')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="dpmo" data-help-key="modules.calculator.types.CapabilityKey.dpmo" @click="calcSS('dpmo')" x-text="t('keyDpmo')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="yield" data-help-key="modules.calculator.types.CapabilityKey.yield" @click="calcSS('yield')" x-text="t('keyYield')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="zscore" data-help-key="modules.calculator.types.CapabilityKey.zscore" @click="calcSS('zscore')" x-text="t('keyZscore')"></button>
 
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="mean" @click="calcSS('mean')" x-text="'x̄ ' + t('statMean')"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="std" @click="calcSS('std')" x-text="'σ ' + t('statStdDev')"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="ucl" @click="calcSS('ucl')" x-text="t('keyUcl')"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="lcl" @click="calcSS('lcl')" x-text="t('keyLcl')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="mean" data-help-key="modules.calculator.types.CapabilityKey.mean" @click="calcSS('mean')" x-text="'x̄ ' + t('statMean')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="std" data-help-key="modules.calculator.types.CapabilityKey.std" @click="calcSS('std')" x-text="'σ ' + t('statStdDev')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="ucl" data-help-key="modules.calculator.types.CapabilityKey.ucl" @click="calcSS('ucl')" x-text="t('keyUcl')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="lcl" data-help-key="modules.calculator.types.CapabilityKey.lcl" @click="calcSS('lcl')" x-text="t('keyLcl')"></button>
       </div>
     </div>
 

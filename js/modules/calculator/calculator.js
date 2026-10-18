@@ -35,13 +35,53 @@ const FN_TOKENS = [
   'log(', 'ln(', 'sqrt(', 'cbrt(', 'exp(', 'fact(',
 ];
 
-/** Die Kennwerte des Statistikbereichs — die `data-stat`-Werte der Vorlage. */
+/**
+ * Die Kennwerte des Statistikbereichs, die `calcStat` rechnet — die `data-stat`-Werte der
+ * Vorlage. Sätze je Kennwert unter `types.StatKey.<kennwert>`, dieselben an den Tasten
+ * (Alt-Taste).
+ *
+ * @typedef {object} StatKey
+ * @property {string} mean  Mittelwert
+ * @property {string} median  Median
+ * @property {string} mode  Modalwert
+ * @property {string} range  Spannweite
+ * @property {string} stdS  Standardabweichung der Stichprobe
+ * @property {string} stdP  Standardabweichung der Grundgesamtheit
+ * @property {string} varS  Varianz der Stichprobe
+ * @property {string} varP  Varianz der Grundgesamtheit
+ * @property {string} sum  Summe
+ * @property {string} min  kleinster Wert
+ * @property {string} max  größter Wert
+ * @property {string} count  Anzahl der Werte
+ * @property {string} q1  unteres Quartil
+ * @property {string} q3  oberes Quartil
+ * @property {string} iqr  Quartilsabstand
+ * @property {string} skew  Schiefe der Stichprobe
+ */
 const STAT_TYPES = [
   'mean', 'median', 'mode', 'range', 'stdS', 'stdP', 'varS', 'varP',
   'sum', 'min', 'max', 'count', 'q1', 'q3', 'iqr', 'skew',
 ];
 
-/** Die Kennwerte des Prozessbereichs — die `data-ss`-Werte der Vorlage. */
+/**
+ * Die Kennwerte des Prozessbereichs, die `calcSS` rechnet — die `data-ss`-Werte der
+ * Vorlage. Sätze je Kennwert unter `types.CapabilityKey.<kennwert>`, dieselben an den Tasten
+ * (Alt-Taste).
+ *
+ * @typedef {object} CapabilityKey
+ * @property {string} cp  Cp, mit σ innerhalb
+ * @property {string} cpk  Cpk, mit σ innerhalb
+ * @property {string} pp  Pp, mit Gesamtstreuung
+ * @property {string} ppk  Ppk, mit Gesamtstreuung
+ * @property {string} sigma  Sigma-Level (Z.bench), ohne 1,5-σ-Verschiebung
+ * @property {string} dpmo  Fehler je Million
+ * @property {string} yield  erwarteter Anteil gut in Prozent
+ * @property {string} zscore  Z-Score zum Fehleranteil
+ * @property {string} mean  Mittelwert
+ * @property {string} std  Standardabweichung der Stichprobe
+ * @property {string} ucl  obere Kontrollgrenze
+ * @property {string} lcl  untere Kontrollgrenze
+ */
 const SS_TYPES = [
   'cp', 'cpk', 'pp', 'ppk', 'sigma', 'dpmo', 'yield', 'zscore',
   'mean', 'std', 'ucl', 'lcl',
@@ -330,9 +370,8 @@ export default createModule({
        * Rechnet einen Kennwert über den Statistikdatensatz und merkt ihn als
        * letztes Ergebnis.
        * @agent
-       * @param {string} type der Kennwert: mean, median, mode, range, stdS,
-       *   stdP, varS, varP, sum, min, max, count, q1, q3, iqr oder skew.
-       *   Jeder andere Wert ist ein Fehler.
+       * @param {keyof StatKey} type der Kennwert; jeder ist unter keys einzeln
+       *   beschrieben. Jeder andere Wert ist ein Fehler.
        * @returns {string|null} der Kennwert in Anzeigeform, oder null, wenn
        *   der Datensatz dafür zu klein ist oder keinen Modalwert hat
        * @throws {Error} wenn `type` keiner dieser Kennwerte ist
@@ -349,9 +388,8 @@ export default createModule({
        * Rechnet einen Kennwert über den Prozessdatensatz und merkt ihn als
        * letztes Ergebnis.
        * @agent
-       * @param {string} type der Kennwert: cp, cpk, pp, ppk, sigma, dpmo,
-       *   yield, zscore, mean, std, ucl oder lcl. Jeder andere Wert ist ein
-       *   Fehler.
+       * @param {keyof CapabilityKey} type der Kennwert; jeder ist unter keys
+       *   einzeln beschrieben. Jeder andere Wert ist ein Fehler.
        * @returns {string|null} der Kennwert in Anzeigeform, oder null, wenn
        *   der Datensatz zu klein ist oder die Spezifikationsgrenzen fehlen
        * @throws {Error} wenn `type` keiner dieser Kennwerte ist
