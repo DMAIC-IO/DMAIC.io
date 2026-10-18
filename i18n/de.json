@@ -8948,8 +8948,8 @@
         "setParam": {
           "help": "Eine Option der Antwortfläche setzen. read().activeParams nennt die gerade gültigen Optionen.",
           "params": {
-            "key": "'modelType', 'customFormula' (nur bei modelType 'custom' aktiv), 'xLabel', 'yLabel', 'zLabel', 'xMin', 'xMax', 'yMin', 'yMax'.",
-            "value": "Für 'modelType': 'quadratic', 'interaction' oder 'custom'. Für 'customFormula': eine Formel in x und y; eine ungültige Formel wird angenommen und in read().formulaError gemeldet. Für die Beschriftungen: beliebiger Text. Für die Bereiche: eine endliche Zahl."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys."
           }
         },
         "setCoefficient": {
@@ -8965,7 +8965,7 @@
           "help": "Die Modellform: quadratic, interaction oder custom."
         },
         "b": {
-          "help": "Die sechs Polynomkoeffizienten b0…b5."
+          "help": "Die sechs Koeffizienten β₀…β₅ des Modells, bei eigener Formel ohne Wirkung; die Reihenfolge der Felder ist β₀ bis β₅."
         },
         "customFormula": {
           "help": "Die eigene Formel in x und y, bei modelType custom."
@@ -8992,16 +8992,16 @@
           "help": "Obere Grenze des y-Bereichs."
         },
         "colRefX": {
-          "help": "Die x-Datenspalte (Slot 'x'), oder null."
+          "help": "Die Spalte der X-Werte (Slot x), optional: Messpunkte über der Fläche, sobald alle drei Slots gewählt sind. Leer, solange keine gewählt ist."
         },
         "colRefY": {
-          "help": "Die y-Datenspalte (Slot 'y'), oder null."
+          "help": "Die Spalte der Y-Werte (Slot y), optional: Messpunkte über der Fläche, sobald alle drei Slots gewählt sind. Leer, solange keine gewählt ist."
         },
         "colRefZ": {
-          "help": "Die Antwort-Datenspalte (Slot 'z'), oder null."
+          "help": "Die Spalte der gemessenen Antwort (Slot z), optional: Messpunkte über der Fläche, sobald alle drei Slots gewählt sind. Leer, solange keine gewählt ist."
         },
         "formulaError": {
-          "help": "{ code, token }, solange die eigene Formel ungültig ist, sonst null."
+          "help": "Die Absage zur eigenen Formel, jede Angabe unter keys einzeln beschrieben; null, solange die Formel gültig ist oder keine eigene Formel gilt."
         },
         "activeParams": {
           "help": "Die Optionen, die setParam im aktuellen Zustand annimmt."
@@ -9013,7 +9013,35 @@
           "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId."
         },
         "surface": {
-          "help": "Die ausgewertete Fläche über dem Achsenbereich: { zMin, zMax, range, optimum: { x, y, z } } — optimum ist der höchste Punkt; null, wenn das Modell nicht auswertbar ist."
+          "help": "Die ausgewertete Fläche über dem Achsenbereich, jede Kennzahl unter keys einzeln beschrieben; null, wenn das Modell nicht auswertbar ist."
+        }
+      },
+      "types": {
+        "Params": {
+          "modelType": "Die Form der Antwortfläche. Quadratisch und „Linear + Interaktion“ rechnen beide mit z = β₀ + β₁·x + β₂·y + β₃·x² + β₄·y² + β₅·x·y und allen sechs Koeffizienten; der Unterschied liegt nur in der Bezeichnung der Auswahl. Bei „Eigene Formel“ gilt statt der Koeffizienten die Formel in x und y.",
+          "customFormula": "Die eigene Formel für z in den Variablen x und y. Erlaubt sind Zahlen, die Operatoren + − * / ^ und **, Klammern, Konstanten wie PI und E sowie Funktionen wie sin, cos, tan, exp, sqrt, abs, log (Basis 10), ln (natürlich), min, max und pow; ein Math.-Präfix ist optional, Winkel zählen im Bogenmaß. Eine ungültige Formel wird angenommen und unter der Formel gemeldet. Das Feld gibt es nur bei eigener Formel.",
+          "xLabel": "Der Name des X-Faktors; er steht an der Achse und im Hinweis am Mauszeiger. In der Oberfläche setzt man ihn im Diagramm-Editor.",
+          "yLabel": "Der Name des Y-Faktors; er steht an der Achse und im Hinweis am Mauszeiger. In der Oberfläche setzt man ihn im Diagramm-Editor.",
+          "zLabel": "Der Name der Antwort (Z); er steht im Diagrammtitel und im Hinweis am Mauszeiger.",
+          "xMin": "Die untere Grenze der X-Achse. Über dem Bereich von X min bis X max wird die Fläche gezeichnet und abgetastet. Es wird nicht geprüft, dass X min kleiner als X max ist.",
+          "xMax": "Die obere Grenze der X-Achse. Über dem Bereich von X min bis X max wird die Fläche gezeichnet und abgetastet. Es wird nicht geprüft, dass X max größer als X min ist.",
+          "yMin": "Die untere Grenze der Y-Achse. Über dem Bereich von Y min bis Y max wird die Fläche gezeichnet und abgetastet. Es wird nicht geprüft, dass Y min kleiner als Y max ist.",
+          "yMax": "Die obere Grenze der Y-Achse. Über dem Bereich von Y min bis Y max wird die Fläche gezeichnet und abgetastet. Es wird nicht geprüft, dass Y max größer als Y min ist."
+        },
+        "Surface": {
+          "zMin": "Der kleinste Wert der Fläche. Die Fläche wird auf einem Raster von Rasterauflösung × Rasterauflösung Punkten (Vorgabe 100 × 100) über dem Achsenbereich ausgewertet; die Karte „Z Min“ zeigt den Wert und darunter, an welchem x und y er liegt.",
+          "zMax": "Der größte Wert der Fläche auf demselben Raster; die Karte „Z Max“ zeigt den Wert und darunter, an welchem x und y er liegt.",
+          "range": "Die Spannweite der Fläche, größter minus kleinster Wert (Z max − Z min); die Karte zeigt sie als Z-Spannweite.",
+          "optimum": "Der höchste Punkt des Rasters. Die Karte „Optimum (Max)“ zeigt seinen Wert und darunter sein x und y; bei gleich hohen Punkten zählt der erste in Rasterreihenfolge."
+        },
+        "SurfacePoint": {
+          "x": "Der X-Wert des Punkts auf dem Raster.",
+          "y": "Der Y-Wert des Punkts auf dem Raster.",
+          "z": "Der Wert der Fläche an diesem Punkt."
+        },
+        "FormulaError": {
+          "code": "Die Art des Fehlers: unerlaubtes Zeichen, ungültige Zahl, leere Formel, Syntaxfehler, überzählige Zeichen am Ende, unbekannte Variable (erlaubt sind nur x und y) oder unbekannte Funktion. Die Oberfläche zeigt dazu den übersetzten Text unter der Formel.",
+          "token": "Das beanstandete Zeichen, die ungültige Zahl, die unbekannte Variable oder Funktion; er steht im Text unter der Formel. Bei leerer Formel, Syntaxfehler und überzähligen Zeichen fehlt die Angabe."
         }
       }
     },

@@ -8944,8 +8944,8 @@
         "setParam": {
           "help": "Set an option of the response surface. read().activeParams names the options valid right now.",
           "params": {
-            "key": "'modelType', 'customFormula' (active only with modelType 'custom'), 'xLabel', 'yLabel', 'zLabel', 'xMin', 'xMax', 'yMin', 'yMax'.",
-            "value": "For 'modelType': 'quadratic', 'interaction' or 'custom'. For 'customFormula': a formula in x and y; an invalid formula is accepted and reported in read().formulaError. For the labels: any text. For the ranges: a finite number."
+            "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys."
           }
         },
         "setCoefficient": {
@@ -8961,7 +8961,7 @@
           "help": "The model form: quadratic, interaction or custom."
         },
         "b": {
-          "help": "The six polynomial coefficients b0…b5."
+          "help": "The six coefficients β₀…β₅ of the model, without effect with a custom formula; the fields run from β₀ to β₅."
         },
         "customFormula": {
           "help": "The own formula in x and y, used with modelType custom."
@@ -8988,16 +8988,16 @@
           "help": "Upper end of the y range."
         },
         "colRefX": {
-          "help": "The x data column (slot 'x'), or null."
+          "help": "The column of the X values (slot x), optional: measured points over the surface once all three slots are chosen. Empty while none is chosen."
         },
         "colRefY": {
-          "help": "The y data column (slot 'y'), or null."
+          "help": "The column of the Y values (slot y), optional: measured points over the surface once all three slots are chosen. Empty while none is chosen."
         },
         "colRefZ": {
-          "help": "The response data column (slot 'z'), or null."
+          "help": "The column of the measured response (slot z), optional: measured points over the surface once all three slots are chosen. Empty while none is chosen."
         },
         "formulaError": {
-          "help": "{ code, token } while the own formula is invalid, else null."
+          "help": "The rejection of the custom formula, each entry described individually under keys; null while the formula is valid or no custom formula is in use."
         },
         "activeParams": {
           "help": "The options setParam accepts in the current state."
@@ -9009,7 +9009,35 @@
           "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId."
         },
         "surface": {
-          "help": "The evaluated surface over the axis range: { zMin, zMax, range, optimum: { x, y, z } } — optimum is the highest point; null if the model cannot be evaluated."
+          "help": "The evaluated surface over the axis range, each figure described individually under keys; null if the model cannot be evaluated."
+        }
+      },
+      "types": {
+        "Params": {
+          "modelType": "The form of the response surface. Quadratic and \"Linear + interaction\" both compute z = β₀ + β₁·x + β₂·y + β₃·x² + β₄·y² + β₅·x·y with all six coefficients; the only difference is the name of the choice. With \"Custom formula\" the formula in x and y applies instead of the coefficients.",
+          "customFormula": "The own formula for z in the variables x and y. Allowed are numbers, the operators + − * / ^ and **, parentheses, constants such as PI and E, and functions such as sin, cos, tan, exp, sqrt, abs, log (base 10), ln (natural), min, max and pow; a Math. prefix is optional, angles are in radians. An invalid formula is accepted and reported below the formula. The field exists only with a custom formula.",
+          "xLabel": "The name of the X factor; it appears on the axis and in the hint at the pointer. In the interface it is set in the chart editor.",
+          "yLabel": "The name of the Y factor; it appears on the axis and in the hint at the pointer. In the interface it is set in the chart editor.",
+          "zLabel": "The name of the response (Z); it appears in the chart title and in the hint at the pointer.",
+          "xMin": "The lower end of the X axis. The surface is drawn and sampled over the range from X min to X max. It is not checked that X min is smaller than X max.",
+          "xMax": "The upper end of the X axis. The surface is drawn and sampled over the range from X min to X max. It is not checked that X max is greater than X min.",
+          "yMin": "The lower end of the Y axis. The surface is drawn and sampled over the range from Y min to Y max. It is not checked that Y min is smaller than Y max.",
+          "yMax": "The upper end of the Y axis. The surface is drawn and sampled over the range from Y min to Y max. It is not checked that Y max is greater than Y min."
+        },
+        "Surface": {
+          "zMin": "The smallest value of the surface. The surface is evaluated on a grid of grid resolution × grid resolution points (default 100 × 100) over the axis range; the \"Z Min\" card shows the value and below it the x and y where it lies.",
+          "zMax": "The largest value of the surface on the same grid; the \"Z Max\" card shows the value and below it the x and y where it lies.",
+          "range": "The range of the surface, largest minus smallest value (Z max − Z min); the card shows it as Z range.",
+          "optimum": "The highest point of the grid. The \"Optimum (Max)\" card shows its value and below it its x and y; with equally high points the first in grid order counts."
+        },
+        "SurfacePoint": {
+          "x": "The X value of the point on the grid.",
+          "y": "The Y value of the point on the grid.",
+          "z": "The value of the surface at this point."
+        },
+        "FormulaError": {
+          "code": "The kind of error: illegal character, invalid number, empty formula, syntax error, surplus characters at the end, unknown variable (only x and y are allowed) or unknown function. The interface shows the translated text for it below the formula.",
+          "token": "The offending character, the invalid number, or the unknown variable or function; it appears in the text below the formula. With an empty formula, a syntax error and surplus characters it is missing."
         }
       }
     },

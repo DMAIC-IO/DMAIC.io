@@ -1698,13 +1698,53 @@ export const AGENT_REGISTRY = {
           },
           {
             "name": "value",
-            "type": "any",
+            "type": "string|number",
             "optional": false,
-            "help": "`modelType`: 'quadratic', 'interaction' oder 'custom'; Formel und Beschriftungen: Text; Bereichsgrenzen: Zahl"
+            "help": "der Wert; Typ und Bereich je Schlüssel unter Params"
           }
         ],
         "returns": "void",
-        "help": "Eine Option der Antwortfläche setzen."
+        "help": "Eine Option der Antwortfläche setzen.",
+        "keysOf": "Params",
+        "keys": {
+          "modelType": {
+            "type": "'quadratic'|'interaction'|'custom'",
+            "help": "Modellform"
+          },
+          "customFormula": {
+            "type": "string",
+            "help": "eigene Formel in x und y, nur bei custom",
+            "optional": true
+          },
+          "xLabel": {
+            "type": "string",
+            "help": "Name des X-Faktors"
+          },
+          "yLabel": {
+            "type": "string",
+            "help": "Name des Y-Faktors"
+          },
+          "zLabel": {
+            "type": "string",
+            "help": "Name der Zielgröße"
+          },
+          "xMin": {
+            "type": "number",
+            "help": "untere Grenze von X"
+          },
+          "xMax": {
+            "type": "number",
+            "help": "obere Grenze von X"
+          },
+          "yMin": {
+            "type": "number",
+            "help": "untere Grenze von Y"
+          },
+          "yMax": {
+            "type": "number",
+            "help": "obere Grenze von Y"
+          }
+        }
       },
       "setCoefficient": {
         "params": [
@@ -1823,10 +1863,22 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "formulaError": {
-        "type": "object|null",
-        "help": "`{ code, token }` while the custom formula is invalid, else null",
+        "type": "FormulaError|null",
+        "help": "the rejection of the custom formula, described under keys; null while the formula is valid or no custom formula is in use",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "FormulaError",
+        "keys": {
+          "code": {
+            "type": "'UNEXPECTED_CHAR'|'INVALID_NUMBER'|'EMPTY'|'SYNTAX'|'TRAILING'|'UNKNOWN_IDENTIFIER'|'UNKNOWN_FUNCTION'",
+            "help": "Fehlerart"
+          },
+          "token": {
+            "type": "string",
+            "help": "das beanstandete Zeichen oder Wort, nur bei Zeichen, Zahl, Variable und Funktion",
+            "optional": true
+          }
+        }
       },
       "activeParams": {
         "type": "string[]",
@@ -1847,10 +1899,44 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "surface": {
-        "type": "object|null",
-        "help": "the evaluated surface over the axis range: `{ zMin, zMax, range, optimum: { x, y, z } }` (optimum = highest point), or null if the model cannot be evaluated",
+        "type": "Surface|null",
+        "help": "the evaluated surface over the axis range, each figure described under keys; null if the model cannot be evaluated",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Surface",
+        "keys": {
+          "zMin": {
+            "type": "number",
+            "help": "kleinster Wert auf dem Raster"
+          },
+          "zMax": {
+            "type": "number",
+            "help": "größter Wert auf dem Raster"
+          },
+          "range": {
+            "type": "number",
+            "help": "Spannweite zMax − zMin"
+          },
+          "optimum": {
+            "type": "SurfacePoint",
+            "help": "höchster Rasterpunkt",
+            "keysOf": "SurfacePoint",
+            "keys": {
+              "x": {
+                "type": "number",
+                "help": "X des Punkts"
+              },
+              "y": {
+                "type": "number",
+                "help": "Y des Punkts"
+              },
+              "z": {
+                "type": "number",
+                "help": "Wert der Fläche dort"
+              }
+            }
+          }
+        }
       }
     }
   },

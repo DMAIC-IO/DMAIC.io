@@ -93,6 +93,47 @@ function setAtPath(obj, key, value) {
 }
 
 /**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {'quadratic'|'interaction'|'custom'} modelType  Modellform
+ * @property {string} [customFormula]  eigene Formel in x und y, nur bei custom
+ * @property {string} xLabel  Name des X-Faktors
+ * @property {string} yLabel  Name des Y-Faktors
+ * @property {string} zLabel  Name der Zielgröße
+ * @property {number} xMin  untere Grenze von X
+ * @property {number} xMax  obere Grenze von X
+ * @property {number} yMin  untere Grenze von Y
+ * @property {number} yMax  obere Grenze von Y
+ */
+
+/**
+ * Die ausgewertete Fläche (`_agentSurface()`), wie `read().surface` sie liefert.
+ *
+ * @typedef {object} Surface
+ * @property {number} zMin  kleinster Wert auf dem Raster
+ * @property {number} zMax  größter Wert auf dem Raster
+ * @property {number} range  Spannweite zMax − zMin
+ * @property {SurfacePoint} optimum  höchster Rasterpunkt
+ */
+
+/**
+ * @typedef {object} SurfacePoint
+ * @property {number} x  X des Punkts
+ * @property {number} y  Y des Punkts
+ * @property {number} z  Wert der Fläche dort
+ */
+
+/**
+ * Die Absage zur eigenen Formel, wie die Oberfläche sie unter dem Feld zeigt.
+ *
+ * @typedef {object} FormulaError
+ * @property {'UNEXPECTED_CHAR'|'INVALID_NUMBER'|'EMPTY'|'SYNTAX'|'TRAILING'|'UNKNOWN_IDENTIFIER'|'UNKNOWN_FUNCTION'} code  Fehlerart
+ * @property {string} [token]  das beanstandete Zeichen oder Wort, nur bei Zeichen, Zahl, Variable und Funktion
+ */
+
+/**
  * Die Agenten-Lesefläche des Konturdiagramms.
  *
  * Modell (Form, Koeffizienten oder Formel), Achsenbereich, Beschriftungen und
@@ -118,11 +159,11 @@ function setAtPath(obj, key, value) {
  * @property {object|null} colRefX  the optional x data column (slot `x`), or null
  * @property {object|null} colRefY  the optional y data column (slot `y`), or null
  * @property {object|null} colRefZ  the optional response data column (slot `z`), or null
- * @property {object|null} formulaError  `{ code, token }` while the custom formula is invalid, else null
+ * @property {FormulaError|null} formulaError  the rejection of the custom formula, described under keys; null while the formula is valid or no custom formula is in use
  * @property {string[]} activeParams  the options `setParam` accepts in the current state
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
- * @property {object|null} surface  the evaluated surface over the axis range: `{ zMin, zMax, range, optimum: { x, y, z } }` (optimum = highest point), or null if the model cannot be evaluated
+ * @property {Surface|null} surface  the evaluated surface over the axis range, each figure described under keys; null if the model cannot be evaluated
  */
 const mod = createModule({
   config: {
@@ -223,9 +264,9 @@ const mod = createModule({
       /**
        * Eine Option der Antwortfläche setzen.
        * @agent
-       * @param {'modelType'|'customFormula'|'xLabel'|'yLabel'|'zLabel'|'xMin'|'xMax'|'yMin'|'yMax'} key
+       * @param {keyof Params} key
        *   welche Option; read().activeParams nennt die im aktuellen Zustand gültigen
-       * @param {any} value `modelType`: 'quadratic', 'interaction' oder 'custom'; Formel und Beschriftungen: Text; Bereichsgrenzen: Zahl
+       * @param {string|number} value der Wert; Typ und Bereich je Schlüssel unter Params
        * @returns {void}
        * @throws {Error} wenn `key` unbekannt oder gerade nicht aktiv ist oder `value` ungültig
        */
@@ -452,9 +493,9 @@ const mod = createModule({
 
         const i18n = module._context.i18n;
         const SLOT_LABELS = {
-          x: { label: 'X', title: i18n.t('ui.datasetPicker.slotX') },
-          y: { label: 'Y', title: i18n.t('ui.datasetPicker.slotY') },
-          z: { label: 'Z', title: i18n.t('ui.datasetPicker.slotZ') },
+          x: { label: 'X', title: i18n.t('ui.datasetPicker.slotX'), helpKey: 'modules.contour-plot.fields.colRefX.help' },
+          y: { label: 'Y', title: i18n.t('ui.datasetPicker.slotY'), helpKey: 'modules.contour-plot.fields.colRefY.help' },
+          z: { label: 'Z', title: i18n.t('ui.datasetPicker.slotZ'), helpKey: 'modules.contour-plot.fields.colRefZ.help' },
         };
         this._picker = new DatasetPicker(pickerWrap, module._context, {
           multi: false,

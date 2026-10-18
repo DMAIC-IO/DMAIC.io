@@ -72,6 +72,12 @@
   margin-bottom: var(--spacing-xs);
 }
 
+/* Kennzahlkarten: als Anker schrumpfbreit wie .dmike-kpi-label (components.css). */
+.contour__info-label.context-help-anchor {
+  width: fit-content;
+  max-width: 100%;
+}
+
 .contour__info-value {
   font-family: var(--font-family-mono);
   font-size: 18px;
