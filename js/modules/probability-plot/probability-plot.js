@@ -48,6 +48,49 @@ const DATASET_SLOTS = [
 const COLUMN_SLOTS = ['value', 'group'];
 
 /**
+ * Eine Datenreihe, wie `read().datasets` sie je Zeile des Pickers liefert.
+ * Sätze unter `types.Dataset.<slot>`, dieselben an den Slots „V“ und „G“.
+ *
+ * @typedef {object} Dataset
+ * @property {object|null} valueRef  Wertespalte (Slot value)
+ * @property {object|null} groupRef  Gruppenspalte (Slot group)
+ */
+
+/**
+ * Kennzahlen einer gezeichneten Reihe (`computeSeriesStats`). Sätze
+ * geteilt unter `modules.shared.types.SeriesStats.*`.
+ *
+ * @typedef {object} SeriesStats
+ * @property {string} name  Name der Reihe
+ * @property {Stats|null} stats  Kennzahlen, leer ohne Werte
+ * @property {StatsCi} ci  Konfidenzintervalle
+ */
+
+/**
+ * @typedef {object} Stats
+ * @property {number} n  Anzahl Werte
+ * @property {number} mean  Mittelwert
+ * @property {number} stddev  Standardabweichung
+ * @property {number} variance  Varianz
+ * @property {number} seMean  Standardfehler des Mittelwerts
+ * @property {number} median  Median
+ * @property {number} min  kleinster Wert
+ * @property {number} max  größter Wert
+ * @property {number} range  Spannweite
+ * @property {number} q1  erstes Quartil
+ * @property {number} q3  drittes Quartil
+ * @property {number} skewness  Schiefe
+ * @property {number} kurtosis  Kurtosis
+ */
+
+/**
+ * @typedef {object} StatsCi
+ * @property {number[]} [mean]  Intervall des Mittelwerts
+ * @property {number[]} [variance]  Intervall der Varianz
+ * @property {number[]} [stddev]  Intervall der Standardabweichung
+ */
+
+/**
  * Die Agenten-Lesefläche des Wahrscheinlichkeitsnetzes.
  *
  * Die Datenreihen sind der Zustand, im Model als `datasets` mit
@@ -58,10 +101,10 @@ const COLUMN_SLOTS = ['value', 'group'];
  * stehen in `stats` (E8).
  *
  * @typedef {object} AgentRead
- * @property {object[]} datasets  per data row `{ valueRef, groupRef }` — value column (slot `value`) and optional group column (slot `group`), each a column reference or null
+ * @property {Dataset[]} datasets  per data row its columns, each described under keys
  * @property {string[]} activeColumnSlots  the slot keys a row of `setDatasets` may carry
  * @property {object} pickableColumns  per slot the columns `setDatasets` accepts, each `{ key, name }`
- * @property {object[]|null} stats  per plotted series `{ name, stats, ci }` — stats `{ n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }`, ci `{ mean, variance, stddev }` as `[low, high]` at the confidence level — or null while nothing can be computed
+ * @property {SeriesStats[]|null} stats  per plotted series its statistics, each figure described under keys; null while nothing can be computed
  */
 
 const mod = createModule({
@@ -192,11 +235,12 @@ const mod = createModule({
         this._picker = null;
 
         const SLOT_LABELS = {
-          value: { label: 'V', title: module._context.i18n.t('ui.datasetPicker.slotV') },
-          group: { label: 'G', title: module._context.i18n.t('ui.datasetPicker.slotG') },
+          value: { label: 'V', title: module._context.i18n.t('ui.datasetPicker.slotV'), helpKey: 'modules.probability-plot.types.Dataset.valueRef' },
+          group: { label: 'G', title: module._context.i18n.t('ui.datasetPicker.slotG'), helpKey: 'modules.probability-plot.types.Dataset.groupRef' },
         };
         this._picker = new DatasetPicker(pickerWrap, module._context, {
           multi: true,
+          addHelpKey: 'modules.probability-plot.actions.setDatasets.help',
           colors: CHART_COLORS,
           slots: DATASET_SLOTS.map(s => ({ ...s, ...SLOT_LABELS[s.key] })),
           onChange: (rows) => this._applyDatasets(rows),

@@ -5563,18 +5563,18 @@
       "actions": {
         "read": { "help": "Read the data rows (value and group column per row) and the columns each slot accepts, and the figures shown next to the chart." },
         "setDatasets": {
-          "help": "Replace the whole list of data rows at once. A row without a value column is dropped.",
+          "help": "Set the data rows. A row consists of a value column and optionally a group column; the button \"Add dataset\" adds a row. A row without a value column is neither plotted nor kept. The agent replaces the whole list in one call.",
           "params": {
             "rows": "A list of rows, each { value, group }: 'value' — a numeric column (required for the row to count); 'group' — an optional column that splits the row into boxes. Each entry is a column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null. [] clears the list."
           }
         }
       },
       "fields": {
-        "seriesRefs": { "help": "Per data row its value column (slot 'value')." },
-        "groupRefs": { "help": "Per data row its group column (slot 'group'), or null; same order as seriesRefs." },
+        "seriesRefs": { "help": "Per data row its value column (slot V), numeric and required; a row without a value column is dropped. Empty until a row is chosen." },
+        "groupRefs": { "help": "Per data row its group column (slot G), optional; it splits the row into boxes, one per group value, in the same order as the value columns. Empty until one is chosen." },
         "activeColumnSlots": { "help": "The slot keys a row may carry: value, group." },
         "pickableColumns": { "help": "Per slot the columns setDatasets accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
-        "stats": { "help": "Per plotted series { name, stats, ci }: stats { n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }, ci { mean, variance, stddev } as [low, high]; null while nothing can be computed." }
+        "stats": { "help": "Per plotted series its statistics and confidence intervals, each figure described individually under keys; null while nothing can be computed." }
       },
       "sectionData": "Data Source",
       "datasets": "Data series",
@@ -5669,7 +5669,7 @@
           "help": "Read the data rows (value and group column per row) and the columns each slot accepts, and the figures shown next to the chart."
         },
         "setDatasets": {
-          "help": "Replace the whole list of data rows at once. Incomplete rows are kept but not plotted.",
+          "help": "Set the data rows. A row consists of a value column and optionally a group column; the button \"Add dataset\" adds a row. Incomplete rows are kept but not plotted. The agent replaces the whole list in one call.",
           "params": {
             "rows": "A list of rows, each { value, group }: 'value' — a numeric column with at least two values (required for the row to be plotted); 'group' — an optional column that splits the row into series. Each entry is a column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null. [] clears the list."
           }
@@ -5677,7 +5677,7 @@
       },
       "fields": {
         "datasets": {
-          "help": "Per data row { valueRef, groupRef }: valueRef from slot 'value', groupRef from slot 'group', each a column reference or null."
+          "help": "Per data row its columns, each column of a row described individually under keys."
         },
         "activeColumnSlots": {
           "help": "The slot keys a row may carry: value, group."
@@ -5686,7 +5686,13 @@
           "help": "Per slot the columns setDatasets accepts, each { key, name }; the key is instanceId|sheetId|columnId."
         },
         "stats": {
-          "help": "Per plotted series { name, stats, ci }: stats { n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }, ci { mean, variance, stddev } as [low, high]; null while nothing can be computed."
+          "help": "Per plotted series its statistics and confidence intervals, each figure described individually under keys; null while nothing can be computed."
+        }
+      },
+      "types": {
+        "Dataset": {
+          "valueRef": "The value column of the row (slot V), numeric with at least two values, and required. Without it the row is kept but not plotted. Empty until one is chosen.",
+          "groupRef": "The group column of the row (slot G), optional; it splits the row into series, one per group value. Empty until one is chosen."
         }
       },
       "sectionData": "Data Source",
@@ -5787,7 +5793,7 @@
           "help": "Read the data rows (x, y, group and size column per row) and the columns each slot accepts, and the figures shown next to the chart."
         },
         "setDatasets": {
-          "help": "Replace the whole list of data rows at once. Incomplete rows are kept but not plotted.",
+          "help": "Set the data rows. A row consists of an X and a Y column and optionally a group and a size column; the button \"Add dataset\" adds a row. Incomplete rows are kept but not plotted. The agent replaces the whole list in one call.",
           "params": {
             "rows": "A list of rows, each { x, y, group, size }: 'x' and 'y' — numeric columns (both required for the row to be plotted); 'group' — an optional column that colours the points; 'size' — an optional numeric column that turns points into bubbles. Each entry is a column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null. [] clears the list."
           }
@@ -5795,7 +5801,7 @@
       },
       "fields": {
         "datasets": {
-          "help": "Per data row { xRef, yRef, groupRef, sizeRef } from the slots x, y, group, size, each a column reference or null."
+          "help": "Per data row its columns, each column of a row described individually under keys."
         },
         "activeColumnSlots": {
           "help": "The slot keys a row may carry: x, y, group, size."
@@ -5804,7 +5810,15 @@
           "help": "Per slot the columns setDatasets accepts, each { key, name }; the key is instanceId|sheetId|columnId."
         },
         "stats": {
-          "help": "Per plotted series the statistics of its y values { name, stats, ci }: stats { n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }, ci { mean, variance, stddev } as [low, high]; null while nothing can be computed."
+          "help": "Per plotted series the statistics of its Y values and confidence intervals, each figure described individually under keys; null while nothing can be computed."
+        }
+      },
+      "types": {
+        "Dataset": {
+          "xRef": "The X column of the row (slot X), numeric and required. Without it the row is kept but not plotted. Empty until one is chosen.",
+          "yRef": "The Y column of the row (slot Y), numeric and required. Without it the row is kept but not plotted. Empty until one is chosen.",
+          "groupRef": "The group column of the row (slot G), optional; it colours the points by group value. Empty until one is chosen.",
+          "sizeRef": "The bubble size column (slot S), numeric and optional; it turns the points into bubbles whose diameter shows the value. Empty until one is chosen."
         }
       },
       "sectionData": "Data Source",

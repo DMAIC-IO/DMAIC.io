@@ -44,6 +44,40 @@ const DATASET_SLOTS = [
 const COLUMN_SLOTS = ['value', 'group'];
 
 /**
+ * Kennzahlen einer gezeichneten Reihe (`computeSeriesStats`). Sätze
+ * geteilt unter `modules.shared.types.SeriesStats.*`.
+ *
+ * @typedef {object} SeriesStats
+ * @property {string} name  Name der Reihe
+ * @property {Stats|null} stats  Kennzahlen, leer ohne Werte
+ * @property {StatsCi} ci  Konfidenzintervalle
+ */
+
+/**
+ * @typedef {object} Stats
+ * @property {number} n  Anzahl Werte
+ * @property {number} mean  Mittelwert
+ * @property {number} stddev  Standardabweichung
+ * @property {number} variance  Varianz
+ * @property {number} seMean  Standardfehler des Mittelwerts
+ * @property {number} median  Median
+ * @property {number} min  kleinster Wert
+ * @property {number} max  größter Wert
+ * @property {number} range  Spannweite
+ * @property {number} q1  erstes Quartil
+ * @property {number} q3  drittes Quartil
+ * @property {number} skewness  Schiefe
+ * @property {number} kurtosis  Kurtosis
+ */
+
+/**
+ * @typedef {object} StatsCi
+ * @property {number[]} [mean]  Intervall des Mittelwerts
+ * @property {number[]} [variance]  Intervall der Varianz
+ * @property {number[]} [stddev]  Intervall der Standardabweichung
+ */
+
+/**
  * Die Agenten-Lesefläche des Boxplots.
  *
  * Die Datenreihen sind der Zustand: je Reihe eine Wertespalte und eine
@@ -58,7 +92,7 @@ const COLUMN_SLOTS = ['value', 'group'];
  * @property {(object|null)[]} groupRefs  per data row its optional group column (slot `group`), or null
  * @property {string[]} activeColumnSlots  the slot keys a row of `setDatasets` may carry
  * @property {object} pickableColumns  per slot the columns `setDatasets` accepts, each `{ key, name }`
- * @property {object[]|null} stats  per plotted series `{ name, stats, ci }` — stats `{ n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }`, ci `{ mean, variance, stddev }` as `[low, high]` at the confidence level — or null while nothing can be computed
+ * @property {SeriesStats[]|null} stats  per plotted series its statistics, each figure described under keys; null while nothing can be computed
  */
 
 const mod = createModule({
@@ -359,12 +393,13 @@ const mod = createModule({
         if (!pickerWrap) return;
 
         const SLOT_LABELS = {
-          value: { label: 'V', title: module._context.i18n.t('ui.datasetPicker.slotV') },
-          group: { label: 'G', title: module._context.i18n.t('ui.datasetPicker.slotG') },
+          value: { label: 'V', title: module._context.i18n.t('ui.datasetPicker.slotV'), helpKey: 'modules.boxplot.fields.seriesRefs.help' },
+          group: { label: 'G', title: module._context.i18n.t('ui.datasetPicker.slotG'), helpKey: 'modules.boxplot.fields.groupRefs.help' },
         };
         this._picker?.destroy();
         this._picker = new DatasetPicker(pickerWrap, module._context, {
           multi: true,
+          addHelpKey: 'modules.boxplot.actions.setDatasets.help',
           colors: CHART_COLORS,
           slots: DATASET_SLOTS.map(s => ({ ...s, ...SLOT_LABELS[s.key] })),
           onChange: (rows) => this._applyDatasets(rows),

@@ -55,6 +55,51 @@ const DATASET_SLOTS = [
 const COLUMN_SLOTS = ['x', 'y', 'group', 'size'];
 
 /**
+ * Eine Datenreihe, wie `read().datasets` sie je Zeile des Pickers liefert.
+ * Sätze unter `types.Dataset.<slot>`, dieselben an den Slots „X“, „Y“, „G“, „S“.
+ *
+ * @typedef {object} Dataset
+ * @property {object|null} xRef  X-Spalte (Slot x)
+ * @property {object|null} yRef  Y-Spalte (Slot y)
+ * @property {object|null} groupRef  Gruppenspalte (Slot group)
+ * @property {object|null} sizeRef  Spalte der Blasengröße (Slot size)
+ */
+
+/**
+ * Kennzahlen einer gezeichneten Reihe (`computeSeriesStats`). Sätze
+ * geteilt unter `modules.shared.types.SeriesStats.*`.
+ *
+ * @typedef {object} SeriesStats
+ * @property {string} name  Name der Reihe
+ * @property {Stats|null} stats  Kennzahlen, leer ohne Werte
+ * @property {StatsCi} ci  Konfidenzintervalle
+ */
+
+/**
+ * @typedef {object} Stats
+ * @property {number} n  Anzahl Werte
+ * @property {number} mean  Mittelwert
+ * @property {number} stddev  Standardabweichung
+ * @property {number} variance  Varianz
+ * @property {number} seMean  Standardfehler des Mittelwerts
+ * @property {number} median  Median
+ * @property {number} min  kleinster Wert
+ * @property {number} max  größter Wert
+ * @property {number} range  Spannweite
+ * @property {number} q1  erstes Quartil
+ * @property {number} q3  drittes Quartil
+ * @property {number} skewness  Schiefe
+ * @property {number} kurtosis  Kurtosis
+ */
+
+/**
+ * @typedef {object} StatsCi
+ * @property {number[]} [mean]  Intervall des Mittelwerts
+ * @property {number[]} [variance]  Intervall der Varianz
+ * @property {number[]} [stddev]  Intervall der Standardabweichung
+ */
+
+/**
  * Die Agenten-Lesefläche des XY-Diagramms.
  *
  * Die Datenreihen sind der Zustand, im Model als `datasets` mit
@@ -65,10 +110,10 @@ const COLUMN_SLOTS = ['x', 'y', 'group', 'size'];
  * das Diagrammbild, `exampleWorksheetId`. Die Kennzahlen stehen in `stats` (E8).
  *
  * @typedef {object} AgentRead
- * @property {object[]} datasets  per data row `{ xRef, yRef, groupRef, sizeRef }` from the slots `x`, `y`, `group`, `size`, each a column reference or null
+ * @property {Dataset[]} datasets  per data row its columns, each described under keys
  * @property {string[]} activeColumnSlots  the slot keys a row of `setDatasets` may carry
  * @property {object} pickableColumns  per slot the columns `setDatasets` accepts, each `{ key, name }`
- * @property {object[]|null} stats  per plotted series `{ name, stats, ci }` — stats `{ n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }`, ci `{ mean, variance, stddev }` as `[low, high]` at the confidence level — or null while nothing can be computed
+ * @property {SeriesStats[]|null} stats  per plotted series its statistics, each figure described under keys; null while nothing can be computed
  */
 
 const mod = createModule({
@@ -197,13 +242,14 @@ const mod = createModule({
 
         const i18n = module._context.i18n;
         const SLOT_LABELS = {
-          x: { label: 'X', title: i18n.t('ui.datasetPicker.slotX') },
-          y: { label: 'Y', title: i18n.t('ui.datasetPicker.slotY') },
-          group: { label: 'G', title: i18n.t('ui.datasetPicker.slotG') },
-          size: { label: 'S', title: i18n.t('ui.datasetPicker.slotS') },
+          x: { label: 'X', title: i18n.t('ui.datasetPicker.slotX'), helpKey: 'modules.xy-plot.types.Dataset.xRef' },
+          y: { label: 'Y', title: i18n.t('ui.datasetPicker.slotY'), helpKey: 'modules.xy-plot.types.Dataset.yRef' },
+          group: { label: 'G', title: i18n.t('ui.datasetPicker.slotG'), helpKey: 'modules.xy-plot.types.Dataset.groupRef' },
+          size: { label: 'S', title: i18n.t('ui.datasetPicker.slotS'), helpKey: 'modules.xy-plot.types.Dataset.sizeRef' },
         };
         this._picker = new DatasetPicker(pickerWrap, module._context, {
           multi: true,
+          addHelpKey: 'modules.xy-plot.actions.setDatasets.help',
           colors: CHART_COLORS,
           slots: DATASET_SLOTS.map(s => ({ ...s, ...SLOT_LABELS[s.key] })),
           onChange: (rows) => this._applyDatasets(rows),

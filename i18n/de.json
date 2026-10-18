@@ -5567,18 +5567,18 @@
       "actions": {
         "read": { "help": "Die Datenreihen (Werte- und Gruppenspalte je Reihe) und die Spalten lesen, die jeder Slot annimmt, dazu die Kennzahlen neben dem Diagramm." },
         "setDatasets": {
-          "help": "Die ganze Liste der Datenreihen auf einmal ersetzen. Eine Reihe ohne Wertespalte entfällt.",
+          "help": "Die Datenreihen festlegen. Eine Reihe besteht aus einer Wertespalte und optional einer Gruppenspalte; der Knopf „Datensatz hinzufügen“ fügt eine Reihe hinzu. Eine Reihe ohne Wertespalte wird nicht gezeichnet und nicht gespeichert. Der Agent ersetzt mit einem Aufruf die ganze Liste.",
           "params": {
             "rows": "Eine Liste von Reihen, jeweils { value, group }: 'value' — eine numerische Spalte (Pflicht, damit die Reihe zählt); 'group' — eine optionale Spalte, die die Reihe in Boxen aufteilt. Jeder Eintrag ist ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null. [] leert die Liste."
           }
         }
       },
       "fields": {
-        "seriesRefs": { "help": "Je Datenreihe ihre Wertespalte (Slot 'value')." },
-        "groupRefs": { "help": "Je Datenreihe ihre Gruppenspalte (Slot 'group'), oder null; dieselbe Reihenfolge wie seriesRefs." },
+        "seriesRefs": { "help": "Je Datenreihe ihre Wertespalte (Slot V), numerisch und Pflicht; eine Reihe ohne Wertespalte entfällt. Leer, solange keine Reihe gewählt ist." },
+        "groupRefs": { "help": "Je Datenreihe ihre Gruppenspalte (Slot G), optional; sie teilt die Reihe in Boxen, eine je Gruppenwert, in derselben Reihenfolge wie die Wertespalten. Leer, solange keine gewählt ist." },
         "activeColumnSlots": { "help": "Die Slot-Schlüssel, die eine Reihe tragen darf: value, group." },
         "pickableColumns": { "help": "Je Slot die Spalten, die setDatasets annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
-        "stats": { "help": "Je gezeichneter Reihe { name, stats, ci }: stats { n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }, ci { mean, variance, stddev } als [unten, oben]; null, solange nichts gerechnet werden kann." }
+        "stats": { "help": "Je gezeichneter Reihe ihre Kennzahlen und Konfidenzintervalle, jede Kennzahl unter keys einzeln beschrieben; null, solange nichts gerechnet werden kann." }
       },
       "sectionData": "Datenquelle",
       "datasets": "Datenreihen",
@@ -5673,7 +5673,7 @@
           "help": "Die Datenreihen (Werte- und Gruppenspalte je Reihe) und die Spalten lesen, die jeder Slot annimmt, dazu die Kennzahlen neben dem Diagramm."
         },
         "setDatasets": {
-          "help": "Die ganze Liste der Datenreihen auf einmal ersetzen. Unvollständige Reihen bleiben stehen, werden aber nicht gezeichnet.",
+          "help": "Die Datenreihen festlegen. Eine Reihe besteht aus einer Wertespalte und optional einer Gruppenspalte; der Knopf „Datensatz hinzufügen“ fügt eine Reihe hinzu. Unvollständige Reihen bleiben stehen, werden aber nicht gezeichnet. Der Agent ersetzt mit einem Aufruf die ganze Liste.",
           "params": {
             "rows": "Eine Liste von Reihen, jeweils { value, group }: 'value' — eine numerische Spalte mit mindestens zwei Werten (Pflicht, damit die Reihe gezeichnet wird); 'group' — eine optionale Spalte, die die Reihe in Serien aufteilt. Jeder Eintrag ist ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null. [] leert die Liste."
           }
@@ -5681,7 +5681,7 @@
       },
       "fields": {
         "datasets": {
-          "help": "Je Datenreihe { valueRef, groupRef }: valueRef aus Slot 'value', groupRef aus Slot 'group', jeweils ein Spaltenbezug oder null."
+          "help": "Je Datenreihe ihre Spalten, jede Spalte einer Reihe unter keys einzeln beschrieben."
         },
         "activeColumnSlots": {
           "help": "Die Slot-Schlüssel, die eine Reihe tragen darf: value, group."
@@ -5690,7 +5690,13 @@
           "help": "Je Slot die Spalten, die setDatasets annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId."
         },
         "stats": {
-          "help": "Je gezeichneter Reihe { name, stats, ci }: stats { n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }, ci { mean, variance, stddev } als [unten, oben]; null, solange nichts gerechnet werden kann."
+          "help": "Je gezeichneter Reihe ihre Kennzahlen und Konfidenzintervalle, jede Kennzahl unter keys einzeln beschrieben; null, solange nichts gerechnet werden kann."
+        }
+      },
+      "types": {
+        "Dataset": {
+          "valueRef": "Die Wertespalte der Reihe (Slot V), numerisch mit mindestens zwei Werten und Pflicht. Ohne sie bleibt die Reihe stehen, wird aber nicht gezeichnet. Leer, solange keine gewählt ist.",
+          "groupRef": "Die Gruppenspalte der Reihe (Slot G), optional; sie teilt die Reihe in Serien, eine je Gruppenwert. Leer, solange keine gewählt ist."
         }
       },
       "sectionData": "Datenquelle",
@@ -5791,7 +5797,7 @@
           "help": "Die Datenreihen (X-, Y-, Gruppen- und Größenspalte je Reihe) und die Spalten lesen, die jeder Slot annimmt, dazu die Kennzahlen neben dem Diagramm."
         },
         "setDatasets": {
-          "help": "Die ganze Liste der Datenreihen auf einmal ersetzen. Unvollständige Reihen bleiben stehen, werden aber nicht gezeichnet.",
+          "help": "Die Datenreihen festlegen. Eine Reihe besteht aus einer X- und einer Y-Spalte sowie optional einer Gruppen- und einer Größenspalte; der Knopf „Datensatz hinzufügen“ fügt eine Reihe hinzu. Unvollständige Reihen bleiben stehen, werden aber nicht gezeichnet. Der Agent ersetzt mit einem Aufruf die ganze Liste.",
           "params": {
             "rows": "Eine Liste von Reihen, jeweils { x, y, group, size }: 'x' und 'y' — numerische Spalten (beide Pflicht, damit die Reihe gezeichnet wird); 'group' — eine optionale Spalte, die die Punkte einfärbt; 'size' — eine optionale numerische Spalte, die Punkte zu Blasen macht. Jeder Eintrag ist ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null. [] leert die Liste."
           }
@@ -5799,7 +5805,7 @@
       },
       "fields": {
         "datasets": {
-          "help": "Je Datenreihe { xRef, yRef, groupRef, sizeRef } aus den Slots x, y, group, size, jeweils ein Spaltenbezug oder null."
+          "help": "Je Datenreihe ihre Spalten, jede Spalte einer Reihe unter keys einzeln beschrieben."
         },
         "activeColumnSlots": {
           "help": "Die Slot-Schlüssel, die eine Reihe tragen darf: x, y, group, size."
@@ -5808,7 +5814,15 @@
           "help": "Je Slot die Spalten, die setDatasets annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId."
         },
         "stats": {
-          "help": "Je gezeichneter Reihe die Kennzahlen ihrer y-Werte { name, stats, ci }: stats { n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }, ci { mean, variance, stddev } als [unten, oben]; null, solange nichts gerechnet werden kann."
+          "help": "Je gezeichneter Reihe die Kennzahlen ihrer Y-Werte und Konfidenzintervalle, jede Kennzahl unter keys einzeln beschrieben; null, solange nichts gerechnet werden kann."
+        }
+      },
+      "types": {
+        "Dataset": {
+          "xRef": "Die X-Spalte der Reihe (Slot X), numerisch und Pflicht. Ohne sie bleibt die Reihe stehen, wird aber nicht gezeichnet. Leer, solange keine gewählt ist.",
+          "yRef": "Die Y-Spalte der Reihe (Slot Y), numerisch und Pflicht. Ohne sie bleibt die Reihe stehen, wird aber nicht gezeichnet. Leer, solange keine gewählt ist.",
+          "groupRef": "Die Gruppenspalte der Reihe (Slot G), optional; sie färbt die Punkte nach Gruppenwert ein. Leer, solange keine gewählt ist.",
+          "sizeRef": "Die Spalte der Blasengröße (Slot S), numerisch und optional; sie macht aus den Punkten Blasen, deren Durchmesser den Wert zeigt. Leer, solange keine gewählt ist."
         }
       },
       "sectionData": "Datenquelle",

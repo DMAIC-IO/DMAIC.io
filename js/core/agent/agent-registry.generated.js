@@ -1093,10 +1093,98 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "stats": {
-        "type": "object[]|null",
-        "help": "per plotted series `{ name, stats, ci }` — stats `{ n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }`, ci `{ mean, variance, stddev }` as `[low, high]` at the confidence level — or null while nothing can be computed",
+        "type": "SeriesStats[]|null",
+        "help": "per plotted series its statistics, each figure described under keys; null while nothing can be computed",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "SeriesStats",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "Name der Reihe"
+          },
+          "stats": {
+            "type": "Stats|null",
+            "help": "Kennzahlen, leer ohne Werte",
+            "keysOf": "Stats",
+            "keys": {
+              "n": {
+                "type": "number",
+                "help": "Anzahl Werte"
+              },
+              "mean": {
+                "type": "number",
+                "help": "Mittelwert"
+              },
+              "stddev": {
+                "type": "number",
+                "help": "Standardabweichung"
+              },
+              "variance": {
+                "type": "number",
+                "help": "Varianz"
+              },
+              "seMean": {
+                "type": "number",
+                "help": "Standardfehler des Mittelwerts"
+              },
+              "median": {
+                "type": "number",
+                "help": "Median"
+              },
+              "min": {
+                "type": "number",
+                "help": "kleinster Wert"
+              },
+              "max": {
+                "type": "number",
+                "help": "größter Wert"
+              },
+              "range": {
+                "type": "number",
+                "help": "Spannweite"
+              },
+              "q1": {
+                "type": "number",
+                "help": "erstes Quartil"
+              },
+              "q3": {
+                "type": "number",
+                "help": "drittes Quartil"
+              },
+              "skewness": {
+                "type": "number",
+                "help": "Schiefe"
+              },
+              "kurtosis": {
+                "type": "number",
+                "help": "Kurtosis"
+              }
+            }
+          },
+          "ci": {
+            "type": "StatsCi",
+            "help": "Konfidenzintervalle",
+            "keysOf": "StatsCi",
+            "keys": {
+              "mean": {
+                "type": "number[]",
+                "help": "Intervall des Mittelwerts",
+                "optional": true
+              },
+              "variance": {
+                "type": "number[]",
+                "help": "Intervall der Varianz",
+                "optional": true
+              },
+              "stddev": {
+                "type": "number[]",
+                "help": "Intervall der Standardabweichung",
+                "optional": true
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -11599,10 +11687,21 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "datasets": {
-        "type": "object[]",
-        "help": "per data row `{ valueRef, groupRef }` — value column (slot `value`) and optional group column (slot `group`), each a column reference or null",
+        "type": "Dataset[]",
+        "help": "per data row its columns, each described under keys",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Dataset",
+        "keys": {
+          "valueRef": {
+            "type": "object|null",
+            "help": "Wertespalte (Slot value)"
+          },
+          "groupRef": {
+            "type": "object|null",
+            "help": "Gruppenspalte (Slot group)"
+          }
+        }
       },
       "activeColumnSlots": {
         "type": "string[]",
@@ -11617,10 +11716,98 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "stats": {
-        "type": "object[]|null",
-        "help": "per plotted series `{ name, stats, ci }` — stats `{ n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }`, ci `{ mean, variance, stddev }` as `[low, high]` at the confidence level — or null while nothing can be computed",
+        "type": "SeriesStats[]|null",
+        "help": "per plotted series its statistics, each figure described under keys; null while nothing can be computed",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "SeriesStats",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "Name der Reihe"
+          },
+          "stats": {
+            "type": "Stats|null",
+            "help": "Kennzahlen, leer ohne Werte",
+            "keysOf": "Stats",
+            "keys": {
+              "n": {
+                "type": "number",
+                "help": "Anzahl Werte"
+              },
+              "mean": {
+                "type": "number",
+                "help": "Mittelwert"
+              },
+              "stddev": {
+                "type": "number",
+                "help": "Standardabweichung"
+              },
+              "variance": {
+                "type": "number",
+                "help": "Varianz"
+              },
+              "seMean": {
+                "type": "number",
+                "help": "Standardfehler des Mittelwerts"
+              },
+              "median": {
+                "type": "number",
+                "help": "Median"
+              },
+              "min": {
+                "type": "number",
+                "help": "kleinster Wert"
+              },
+              "max": {
+                "type": "number",
+                "help": "größter Wert"
+              },
+              "range": {
+                "type": "number",
+                "help": "Spannweite"
+              },
+              "q1": {
+                "type": "number",
+                "help": "erstes Quartil"
+              },
+              "q3": {
+                "type": "number",
+                "help": "drittes Quartil"
+              },
+              "skewness": {
+                "type": "number",
+                "help": "Schiefe"
+              },
+              "kurtosis": {
+                "type": "number",
+                "help": "Kurtosis"
+              }
+            }
+          },
+          "ci": {
+            "type": "StatsCi",
+            "help": "Konfidenzintervalle",
+            "keysOf": "StatsCi",
+            "keys": {
+              "mean": {
+                "type": "number[]",
+                "help": "Intervall des Mittelwerts",
+                "optional": true
+              },
+              "variance": {
+                "type": "number[]",
+                "help": "Intervall der Varianz",
+                "optional": true
+              },
+              "stddev": {
+                "type": "number[]",
+                "help": "Intervall der Standardabweichung",
+                "optional": true
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -18036,10 +18223,29 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "datasets": {
-        "type": "object[]",
-        "help": "per data row `{ xRef, yRef, groupRef, sizeRef }` from the slots `x`, `y`, `group`, `size`, each a column reference or null",
+        "type": "Dataset[]",
+        "help": "per data row its columns, each described under keys",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Dataset",
+        "keys": {
+          "xRef": {
+            "type": "object|null",
+            "help": "X-Spalte (Slot x)"
+          },
+          "yRef": {
+            "type": "object|null",
+            "help": "Y-Spalte (Slot y)"
+          },
+          "groupRef": {
+            "type": "object|null",
+            "help": "Gruppenspalte (Slot group)"
+          },
+          "sizeRef": {
+            "type": "object|null",
+            "help": "Spalte der Blasengröße (Slot size)"
+          }
+        }
       },
       "activeColumnSlots": {
         "type": "string[]",
@@ -18054,10 +18260,98 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "stats": {
-        "type": "object[]|null",
-        "help": "per plotted series `{ name, stats, ci }` — stats `{ n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }`, ci `{ mean, variance, stddev }` as `[low, high]` at the confidence level — or null while nothing can be computed",
+        "type": "SeriesStats[]|null",
+        "help": "per plotted series its statistics, each figure described under keys; null while nothing can be computed",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "SeriesStats",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "Name der Reihe"
+          },
+          "stats": {
+            "type": "Stats|null",
+            "help": "Kennzahlen, leer ohne Werte",
+            "keysOf": "Stats",
+            "keys": {
+              "n": {
+                "type": "number",
+                "help": "Anzahl Werte"
+              },
+              "mean": {
+                "type": "number",
+                "help": "Mittelwert"
+              },
+              "stddev": {
+                "type": "number",
+                "help": "Standardabweichung"
+              },
+              "variance": {
+                "type": "number",
+                "help": "Varianz"
+              },
+              "seMean": {
+                "type": "number",
+                "help": "Standardfehler des Mittelwerts"
+              },
+              "median": {
+                "type": "number",
+                "help": "Median"
+              },
+              "min": {
+                "type": "number",
+                "help": "kleinster Wert"
+              },
+              "max": {
+                "type": "number",
+                "help": "größter Wert"
+              },
+              "range": {
+                "type": "number",
+                "help": "Spannweite"
+              },
+              "q1": {
+                "type": "number",
+                "help": "erstes Quartil"
+              },
+              "q3": {
+                "type": "number",
+                "help": "drittes Quartil"
+              },
+              "skewness": {
+                "type": "number",
+                "help": "Schiefe"
+              },
+              "kurtosis": {
+                "type": "number",
+                "help": "Kurtosis"
+              }
+            }
+          },
+          "ci": {
+            "type": "StatsCi",
+            "help": "Konfidenzintervalle",
+            "keysOf": "StatsCi",
+            "keys": {
+              "mean": {
+                "type": "number[]",
+                "help": "Intervall des Mittelwerts",
+                "optional": true
+              },
+              "variance": {
+                "type": "number[]",
+                "help": "Intervall der Varianz",
+                "optional": true
+              },
+              "stddev": {
+                "type": "number[]",
+                "help": "Intervall der Standardabweichung",
+                "optional": true
+              }
+            }
+          }
+        }
       }
     }
   }
