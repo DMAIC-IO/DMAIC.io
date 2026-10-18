@@ -14,7 +14,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import { draggablePopout } from '../../ui/draggable-popout.js';
-import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
 import {
   Stakeholder, State, QUAD_ORDER, SUPPORT_VALUES, CATEGORY_VALUES, criticalCritics, isKeyCritic,
@@ -84,6 +84,28 @@ function initialsOf(name) {
   return String(name || '').split(/\s+/).map((w) => w[0] || '').join('').toUpperCase().slice(0, 2);
 }
 
+/**
+ * Ein Beteiligter, wie `read().stakeholders` ihn zeigt. Der Generator löst die
+ * Schlüssel einer Lesefläche nur aus Typedefs der Moduldatei auf; dieselbe
+ * Form steht deshalb auch in `stakeholder-analysis-model.js`. Sätze je
+ * Eigenschaft unter `types.StakeholderEntry.<name>`.
+ *
+ * @typedef {object} StakeholderEntry
+ * @property {string} id  Kennung
+ * @property {string} name  Name
+ * @property {string} role  Rolle bzw. Funktion
+ * @property {number} power  Macht, 1–5
+ * @property {number} interest  Interesse, 1–5
+ * @property {'supporter'|'neutral'|'critic'} support  Haltung zum Projekt (aus Importen auch andere Werte)
+ * @property {'intern'|'extern'|'kunde'|'lieferant'|'behoerde'} category  Kategorie (aus Importen auch andere Werte)
+ * @property {string} notes  Notizen
+ */
+
+/**
+ * @typedef {object} AgentRead
+ * @property {StakeholderEntry[]} stakeholders  [bulk] die Beteiligten in Anlegereihenfolge
+ * @property {Array<{id: string, quadrant: string}>} quadrants  [bulk] Quadrant je Eintrag
+ */
 export default createModule({
   config: {
     id: 'stakeholder-analysis',
@@ -100,7 +122,18 @@ export default createModule({
     // identically to before the migration).
     const _raw = (key) => module._context.i18n.t(`modules.stakeholder-analysis.${  key}`);
     return {
-      ...agentReadMixin(module),
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Beteiligte und ihr abgeleiteter Quadrant
+       */
+      read(options) {
+        return readAgentState('stakeholder-analysis', {
+          ...this.model.toJSON(),
+          quadrants: this.model.stakeholders.map((s) => ({ id: s.id, quadrant: s.quadrant })),
+        }, options);
+      },
 
       // ── Draggable popout shell (drag + position handlers) ──
       ...draggablePopout(),

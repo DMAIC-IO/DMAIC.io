@@ -1326,8 +1326,11 @@
         }
       },
       "fields": {
+        "quadrants": {
+          "help": "The priority quadrant of each stakeholder, as a pair of id and quadrant, in the order of stakeholders; derived from power and interest."
+        },
         "stakeholders": {
-          "help": "The stakeholders in the order they were added, each entry described individually under keys. The priority quadrant follows from power and interest and is not stored; from a project import support and category may also carry a value other than the ones the actions accept."
+          "help": "The stakeholders in the order they were added, each entry described individually under keys. The priority quadrant follows from power and interest and is not stored; the quadrant of each entry is listed under quadrants. From a project import support and category may also carry a value other than the ones the actions accept."
         }
       },
       "types": {
@@ -1340,6 +1343,9 @@
           "support": "The stakeholder's attitude to the project: supporter (Supporter), neutral (Neutral, the default) or critic (Critic). A critic with high power and high interest triggers the warning about critics among the key stakeholders. A value from an import or an older project may differ; the module takes it over as it is; whoever opens the entry in the form and saves it resets it to Neutral. In the matrix it is coloured like a critic, the table shows it without translation; it does not count toward the warning.",
           "category": "The category of the stakeholder: intern (Internal, the default), extern (External), kunde (Customer), lieferant (Supplier) or behoerde (Authority). A value from an import or an older project may differ; the module takes it over as it is and shows it without translation; whoever opens the entry in the form and saves it resets it to Internal.",
           "notes": "The stakeholder's expectations and concerns as free text, up to 500 characters."
+        },
+        "AgentRead": {
+          "quadrants": "The priority quadrant of each stakeholder, as a pair of id and quadrant. It follows from power and interest (a value of 4 or more counts as high) and is not stored: manage-closely (Manage Closely) for high power and high interest, keep-satisfied (Keep Satisfied) for high power and low interest, keep-informed (Keep Informed) for low power and high interest, monitor (Monitor) for both low. The Quadrant column of the overview shows it."
         }
       },
       "criticWarningLabel": "Critics among key stakeholders",

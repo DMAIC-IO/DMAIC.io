@@ -7,7 +7,7 @@
       "power": 5,
       "interest": 5,
       "support": "supporter",
-      "category": "Sponsor",
+      "category": "intern",
       "notes": "Treibt Projekt aktiv, finanziert Investitionen"
     },
     {
@@ -17,7 +17,7 @@
       "power": 4,
       "interest": 5,
       "support": "supporter",
-      "category": "Kernteam",
+      "category": "intern",
       "notes": "Operative Verantwortung, motiviert"
     },
     {
@@ -27,7 +27,7 @@
       "power": 3,
       "interest": 3,
       "support": "neutral",
-      "category": "Kernteam",
+      "category": "intern",
       "notes": "Skeptisch gegenüber Prozessänderungen in der Küche"
     },
     {
@@ -37,7 +37,7 @@
       "power": 2,
       "interest": 4,
       "support": "supporter",
-      "category": "Anwender",
+      "category": "intern",
       "notes": "Möchten besseres Routenplanungs-Tool"
     },
     {
@@ -47,7 +47,7 @@
       "power": 5,
       "interest": 4,
       "support": "neutral",
-      "category": "Extern",
+      "category": "extern",
       "notes": "Reklamationen steigend, Abwanderungsrisiko"
     },
     {
@@ -57,7 +57,7 @@
       "power": 4,
       "interest": 2,
       "support": "neutral",
-      "category": "Extern",
+      "category": "extern",
       "notes": "Schlechte Bewertungen schaden Reichweite"
     },
     {
@@ -66,8 +66,8 @@
       "role": "Controlling",
       "power": 2,
       "interest": 2,
-      "support": "resistor",
-      "category": "Intern",
+      "support": "critic",
+      "category": "intern",
       "notes": "Investitionen in Thermo-Boxen sind nicht eingeplant"
     }
   ]

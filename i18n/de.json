@@ -1326,8 +1326,11 @@
         }
       },
       "fields": {
+        "quadrants": {
+          "help": "Der Vorrangquadrant je Beteiligtem, als Paar aus id und quadrant, in der Reihenfolge von stakeholders; aus Einfluss und Interesse abgeleitet."
+        },
         "stakeholders": {
-          "help": "Die Beteiligten in Anlegereihenfolge, jede Angabe unter keys einzeln beschrieben. Der Vorrangquadrant folgt aus Einfluss und Interesse und wird nicht gespeichert; aus einem Projektimport können support und category auch einen anderen Wert tragen, als die Aktionen annehmen."
+          "help": "Die Beteiligten in Anlegereihenfolge, jede Angabe unter keys einzeln beschrieben. Der Vorrangquadrant folgt aus Einfluss und Interesse und wird nicht gespeichert; der Quadrant je Eintrag steht unter quadrants. Aus einem Projektimport können support und category auch einen anderen Wert tragen, als die Aktionen annehmen."
         }
       },
       "types": {
@@ -1340,6 +1343,9 @@
           "support": "Die Einstellung des Beteiligten zum Projekt: supporter (Unterstützer), neutral (Neutral, die Vorgabe) oder critic (Kritiker). Ein Kritiker mit hohem Einfluss und hohem Interesse löst die Warnung unter den Schlüssel-Stakeholdern aus. Aus einem Import oder einem älteren Projekt können auch andere Werte stammen; das Modul übernimmt sie, wie sie sind; wer den Eintrag im Formular öffnet und speichert, setzt sie auf Neutral. In der Matrix werden sie wie ein Kritiker gefärbt, die Tabelle zeigt sie ohne Übersetzung an; für die Warnung zählen sie nicht.",
           "category": "Die Kategorie des Beteiligten: intern (Intern, die Vorgabe), extern (Extern), kunde (Kunde), lieferant (Lieferant) oder behoerde (Behörde). Aus einem Import oder einem älteren Projekt können auch andere Werte stammen; das Modul übernimmt sie, wie sie sind, und zeigt sie ohne Übersetzung an; wer den Eintrag im Formular öffnet und speichert, setzt sie auf Intern.",
           "notes": "Erwartungen und Bedenken des Beteiligten in freiem Text, bis zu 500 Zeichen."
+        },
+        "AgentRead": {
+          "quadrants": "Der Vorrangquadrant je Beteiligtem, als Paar aus id und quadrant. Er folgt aus Einfluss und Interesse (ab 4 gilt ein Wert als hoch) und wird nicht gespeichert: manage-closely (Eng managen) bei hohem Einfluss und hohem Interesse, keep-satisfied (Zufriedenstellen) bei hohem Einfluss und geringem Interesse, keep-informed (Informieren) bei geringem Einfluss und hohem Interesse, monitor (Beobachten) bei beidem gering. Die Spalte „Quadrant“ der Übersicht zeigt ihn."
         }
       },
       "criticWarningLabel": "Kritiker unter den Schlüssel-Stakeholdern",

@@ -16035,11 +16035,11 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "addStakeholder": {
         "params": [
@@ -16087,9 +16087,10 @@ export const AGENT_REGISTRY = {
     "fields": {
       "stakeholders": {
         "type": "StakeholderEntry[]",
-        "help": "die Beteiligten in Anlegereihenfolge; je Beteiligter `id` (zum Ansprechen), `name`, `role`, `power` und `interest` als Stufe von 1 bis 5, `support` (`supporter`, `neutral` oder `critic`), `category` (`intern`, `extern`, `kunde`, `lieferant` oder `behoerde`) und `notes`. Aus `power` und `interest` leitet die Auswertung den Vorrangquadranten ab — er wird nicht gespeichert und steht deshalb in keinem Feld",
+        "help": "die Beteiligten in Anlegereihenfolge",
         "bulk": true,
         "bulkKind": "table",
+        "derived": true,
         "keysOf": "StakeholderEntry",
         "keys": {
           "id": {
@@ -16125,6 +16126,13 @@ export const AGENT_REGISTRY = {
             "help": "Notizen"
           }
         }
+      },
+      "quadrants": {
+        "type": "Array<{id: string, quadrant: string}>",
+        "help": "Quadrant je Eintrag",
+        "bulk": true,
+        "bulkKind": "table",
+        "derived": true
       }
     }
   },
