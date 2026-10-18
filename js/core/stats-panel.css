@@ -20,6 +20,19 @@ table.dmike-stats-table td:not(:first-child) {
   white-space: nowrap;
 }
 
+/* Kontexthilfe am Kopf der LETZTEN Spalte: der Kreis neben dem Text ragte
+   über die rechte Tabellenkante. Auch unsichtbar (visibility: hidden) zählt
+   er zum Überlauf, das Panel wurde dadurch um ~10px waagrecht scrollbar —
+   jedes Scrollen (Trackpad, scrollIntoView) schnitt dann links den ersten
+   Buchstaben „Datenreihe“ und das Farbkästchen ab. Nach R12 liegt der Kreis
+   hier auf dem Textende statt daneben (Muster `.context-help-anchor--overlay`
+   in components.css). */
+.dmike-stats-table th:last-child > .context-help-anchor > .context-help__btn {
+  margin-left: -1em;
+  border-radius: 50%;
+  background: var(--color-bg-secondary);
+}
+
 .dmike-stats-table td:first-child {
   display: flex;
   align-items: center;

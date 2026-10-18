@@ -33,6 +33,20 @@
   border: var(--border-width) solid var(--color-border-secondary);
 }
 
+/* Anker der Reiterleiste: ein Kreis für die ganze Gruppe statt je Reiter,
+   sonst läge jeder Kreis auf dem Nachbarreiter. Die Leiste ist so breit wie
+   der Rechner; der Kreis liegt deshalb innen am rechten Rand, über dem
+   Leerraum des letzten (zentriert beschrifteten) Reiters, mit eigenem
+   Hintergrund. Absolut positioniert: kein Layouteinfluss. */
+.module-calculator__tabs.context-help-anchor > .context-help__btn {
+  top: 50%;
+  left: auto;
+  right: var(--spacing-xs);
+  margin-left: 0;
+  border-radius: 50%;
+  background: var(--color-bg-secondary);
+}
+
 .module-calculator__tab {
   flex: 1;
   padding: var(--spacing-sm) var(--spacing-s);

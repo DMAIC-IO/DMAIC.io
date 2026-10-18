@@ -1773,6 +1773,21 @@ button.context-help-anchor > .context-help__btn {
   margin-left: -0.4em;
 }
 
+/* Gefüllter Ausführknopf am Zeilenende (`.dmike-btn-run`, etwa „Senden“ in
+   rest-api, „Berechnen“ in resampling). Jenseits der rechten Knopfkante
+   schneidet ihn das scrollende Panel ab; mit dem Versatz oben läge er auf
+   dem letzten Buchstaben. Der Kreis liegt deshalb im rechten Innenabstand
+   des Knopfs (16px je Seite), mit eigenem Hintergrund, damit er auf der
+   blauen Füllung lesbar bleibt. Absolut positioniert: kein Layouteinfluss. */
+button.dmike-btn-run.context-help-anchor > .context-help__btn {
+  top: 50%;
+  left: auto;
+  right: 2px;
+  margin-left: 0;
+  border-radius: 50%;
+  background: var(--color-bg-secondary);
+}
+
 /* Anker IN einer Tabellenkopfzelle (Kennzahlen einer Statistiktabelle,
    msa-typ1). Der Anker ist ein Span um den Text, nicht die Zelle: an der
    Zelle läge der Kreis jenseits ihrer rechten Kante und damit vor dem Text

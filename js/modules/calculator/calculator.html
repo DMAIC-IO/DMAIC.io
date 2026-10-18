@@ -1,10 +1,10 @@
 <div class="module-calculator" x-data="calculator">
   <div class="module-calculator__wrap">
 
-    <div class="module-calculator__tabs">
-      <button class="module-calculator__tab" :class="model.mode === 'sci' ? 'module-calculator__tab--active' : ''" data-mode="sci" data-help-key="modules.calculator.actions.switchMode.help" @click="switchMode('sci')" x-text="t('modeSci')"></button>
-      <button class="module-calculator__tab" :class="model.mode === 'stats' ? 'module-calculator__tab--active' : ''" data-mode="stats" data-help-key="modules.calculator.actions.switchMode.help" @click="switchMode('stats')" x-text="t('modeStats')"></button>
-      <button class="module-calculator__tab" :class="model.mode === 'sixsigma' ? 'module-calculator__tab--active' : ''" data-mode="sixsigma" data-help-key="modules.calculator.actions.switchMode.help" @click="switchMode('sixsigma')" x-text="t('modeSixSigma')"></button>
+    <div class="module-calculator__tabs" data-help-key="modules.calculator.actions.switchMode.help">
+      <button class="module-calculator__tab" :class="model.mode === 'sci' ? 'module-calculator__tab--active' : ''" data-mode="sci" @click="switchMode('sci')" x-text="t('modeSci')"></button>
+      <button class="module-calculator__tab" :class="model.mode === 'stats' ? 'module-calculator__tab--active' : ''" data-mode="stats" @click="switchMode('stats')" x-text="t('modeStats')"></button>
+      <button class="module-calculator__tab" :class="model.mode === 'sixsigma' ? 'module-calculator__tab--active' : ''" data-mode="sixsigma" @click="switchMode('sixsigma')" x-text="t('modeSixSigma')"></button>
     </div>
 
     <div class="module-calculator__display">

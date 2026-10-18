@@ -1,12 +1,12 @@
 <section class="module-container doe-advisor" x-data="doeAdvisor">
   <div class="module-container__body">
-    <div class="doe-advisor__tabs" role="tablist">
+    <div class="doe-advisor__tabs" role="tablist" data-help-key="modules.doe-advisor.actions.switchTab.help">
       <button class="doe-advisor__tab" :class="{ 'doe-advisor__tab--active': model.tab === 'overview' }"
-        data-tab="overview" data-help-key="modules.doe-advisor.actions.switchTab.help" type="button" @click="switchTab('overview')" x-text="t('tabOverview')"></button>
+        data-tab="overview" type="button" @click="switchTab('overview')" x-text="t('tabOverview')"></button>
       <button class="doe-advisor__tab" :class="{ 'doe-advisor__tab--active': model.tab === 'wizard' }"
-        data-tab="wizard" data-help-key="modules.doe-advisor.actions.switchTab.help" type="button" @click="switchTab('wizard')" x-text="t('tabWizard')"></button>
+        data-tab="wizard" type="button" @click="switchTab('wizard')" x-text="t('tabWizard')"></button>
       <button class="doe-advisor__tab" :class="{ 'doe-advisor__tab--active': model.tab === 'ccd' }"
-        data-tab="ccd" data-help-key="modules.doe-advisor.actions.switchTab.help" type="button" @click="switchTab('ccd')" x-text="t('tabCcd')"></button>
+        data-tab="ccd" type="button" @click="switchTab('ccd')" x-text="t('tabCcd')"></button>
     </div>
 
     <!-- ── Overview tab ── -->

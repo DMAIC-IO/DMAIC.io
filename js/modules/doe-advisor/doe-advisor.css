@@ -6,7 +6,16 @@
 .doe-advisor__tabs {
   display: flex;
   gap: var(--spacing-xs);
+  width: fit-content;
   margin-bottom: var(--spacing-md);
+}
+
+/* Anker der Reiterleiste (Vorbild pairwise-comparison): ein Kreis für die
+   ganze Gruppe statt je Reiter, sonst läge jeder Kreis auf dem Nachbarreiter.
+   Schrumpfbreit, damit er rechts neben dem letzten Reiter sitzt; mittig auf
+   der Reiterhöhe. */
+.doe-advisor__tabs.context-help-anchor > .context-help__btn {
+  top: 50%;
 }
 
 .doe-advisor__tab {
