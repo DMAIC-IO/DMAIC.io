@@ -8679,6 +8679,76 @@
           "kurtosis": "Kurtosis as excess: m₄ / m₂² − 3 with m₂ = Σ(x − x̄)² / n and m₄ = Σ(x − x̄)⁴ / n (denominator n, not corrected). 0 matches the normal distribution, positive means more peaked with heavy tails, negative flatter. Only for continuous and discrete distributions.",
           "frequency": "The frequency per category, sorted descending by count; each entry gives name and count. The card \"Categories\" counts the entries, the card \"Most frequent\" names the first one. Only for the attributive distribution."
         },
+        "DistParams": {
+          "normal": {
+            "mu": "Mean (μ): the location of the distribution, around which the values scatter. Allowed: any number; default 0.",
+            "sigma": "Std. Dev. (σ): the scale, the spread of the values around the location. Allowed: number from 0.0001; default 1.",
+            "epsilon": "Skewness (ε): the asymmetry: 0 gives symmetric values, positive values move the mass to the left and stretch the right tail, negative values do the opposite. Allowed: any number; default 0.",
+            "delta": "Tailweight (δ): how heavy the tails are: 1 gives the normal distribution, values below 1 make the tails heavier, values above 1 lighter. Allowed: number from 0.01; default 1."
+          },
+          "chisquare": {
+            "k": "Degrees of freedom (k): they set the shape of the chi-square distribution; the larger, the more symmetric. Allowed: whole number from 1; default 5."
+          },
+          "f_dist": {
+            "d1": "Degrees of freedom d₁: the number of degrees of freedom in the numerator of the F distribution. Allowed: whole number from 1; default 5.",
+            "d2": "Degrees of freedom d₂: the number of degrees of freedom in the denominator of the F distribution. Allowed: whole number from 1; default 10."
+          },
+          "t_dist": {
+            "nu": "Degrees of freedom (ν): they set the shape of the t distribution; the larger, the closer it is to the normal distribution. Allowed: whole number from 1; default 10."
+          },
+          "uniform": {
+            "a": "Lower bound (a): the lower bound, below which no values occur. Allowed: any number; default 0.",
+            "b": "Upper bound (b): the upper bound, above which no values occur; it should exceed the lower bound, otherwise the values lie reversed between b and a. Allowed: any number; default 1."
+          },
+          "beta": {
+            "alpha": "Shape α: the first shape of the beta distribution; together with β it decides whether the values between 0 and 1 lie more to the left or to the right. Allowed: number from 0.01; default 2.",
+            "beta": "Shape β: the second shape of the beta distribution; together with α it decides whether the values between 0 and 1 lie more to the left or to the right. Allowed: number from 0.01; default 5."
+          },
+          "cauchy": {
+            "x0": "Location (x₀): the location, the center of the Cauchy distribution (its median). Allowed: any number; default 0.",
+            "gamma": "Scale (γ): the scale, the width of the Cauchy distribution. Allowed: number from 0.0001; default 1."
+          },
+          "exponential": {
+            "lambda": "Rate (λ): the rate: how many events occur per unit; the mean of the values is 1/λ. Allowed: number from 0.0001; default 1."
+          },
+          "gamma_dist": {
+            "alpha": "Shape (α): the shape of the gamma distribution; 1 gives the exponential distribution, larger values make it more symmetric. Allowed: number from 0.01; default 2.",
+            "beta": "Scale (β): the scale of the gamma distribution, by which all values are stretched. Allowed: number from 0.0001; default 1."
+          },
+          "laplace": {
+            "mu": "Location (μ): the location, the center of the Laplace distribution. Allowed: any number; default 0.",
+            "b": "Scale (b): the scale, the width of the Laplace distribution. Allowed: number from 0.0001; default 1."
+          },
+          "gumbel_max": {
+            "mu": "Location (μ): the location of the Gumbel distribution for maxima (its mode). Allowed: any number; default 0.",
+            "beta": "Scale (β): the scale, the width of the Gumbel distribution for maxima. Allowed: number from 0.0001; default 1."
+          },
+          "logistic": {
+            "mu": "Location (μ): the location, the center of the logistic distribution. Allowed: any number; default 0.",
+            "s": "Scale (s): the scale, the width of the logistic distribution. Allowed: number from 0.0001; default 1."
+          },
+          "loglogistic": {
+            "alpha": "Scale (α): the scale of the log-logistic distribution, which is also its median. Allowed: number from 0.0001; default 1.",
+            "beta": "Shape (β): the shape of the log-logistic distribution; the larger, the more tightly the values lie around the scale. Allowed: number from 0.0001; default 1."
+          },
+          "lognormal": {
+            "mu": "Log-Mean (μ): the mean of the logarithms of the values (not of the values themselves). Allowed: any number; default 0.",
+            "sigma": "Log-Std.Dev. (σ): the standard deviation of the logarithms of the values (not of the values themselves). Allowed: number from 0.0001; default 1."
+          },
+          "gumbel_min": {
+            "mu": "Location (μ): the location of the Gumbel distribution for minima (its mode). Allowed: any number; default 0.",
+            "beta": "Scale (β): the scale, the width of the Gumbel distribution for minima. Allowed: number from 0.0001; default 1."
+          },
+          "triangular": {
+            "a": "Minimum (a): the minimum, the smallest possible value. Allowed: any number; default 0.",
+            "c": "Mode (c): the mode, the most frequent value; it should lie between the minimum and the maximum. Allowed: any number; default 0.5.",
+            "b": "Maximum (b): the maximum, the largest possible value; it should exceed the minimum. Allowed: any number; default 1."
+          },
+          "weibull": {
+            "alpha": "Shape (α): the shape of the Weibull distribution; 1 gives the exponential distribution, above 1 the failure rate rises over time. Allowed: number from 0.0001; default 1.5.",
+            "beta": "Scale (β): the scale of the Weibull distribution (characteristic life: 63.2 % of the values lie below it). Allowed: number from 0.0001; default 1."
+          }
+        },
         "FrequencyRow": {
           "name": "The name of the category.",
           "count": "How often the category occurs among the generated values."

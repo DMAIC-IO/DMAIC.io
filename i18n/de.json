@@ -8683,6 +8683,76 @@
           "kurtosis": "Kurtosis als Exzess: m₄ / m₂² − 3 mit m₂ = Σ(x − x̄)² / n und m₄ = Σ(x − x̄)⁴ / n (Nenner n, nicht korrigiert). 0 entspricht der Normalverteilung, positiv heißt spitzer mit schweren Rändern, negativ flacher. Nur bei stetigen und diskreten Verteilungen.",
           "frequency": "Die Häufigkeit je Kategorie, absteigend nach Anzahl sortiert; jeder Eintrag nennt Name und Anzahl. Die Karte „Kategorien“ zählt die Einträge, die Karte „Häufigstes“ nennt den ersten. Nur bei der attributiven Verteilung."
         },
+        "DistParams": {
+          "normal": {
+            "mu": "Mittelwert (μ): die Lage der Verteilung, um die die Werte streuen. Zulässig: beliebige Zahl; Vorgabe 0.",
+            "sigma": "Std.-Abw. (σ): die Skala, die Streuung der Werte um die Lage. Zulässig: Zahl ab 0,0001; Vorgabe 1.",
+            "epsilon": "Schiefe (ε): die Asymmetrie: 0 erzeugt symmetrische Werte, positive Werte verschieben die Masse nach links und ziehen den rechten Rand lang, negative umgekehrt. Zulässig: beliebige Zahl; Vorgabe 0.",
+            "delta": "Tailweight (δ): wie schwer die Ränder sind: 1 ergibt die Normalverteilung, Werte unter 1 machen die Ränder schwerer, Werte über 1 leichter. Zulässig: Zahl ab 0,01; Vorgabe 1."
+          },
+          "chisquare": {
+            "k": "Freiheitsgrade (k): sie bestimmen die Form der Chi-Quadrat-Verteilung; je größer, desto symmetrischer. Zulässig: ganze Zahl ab 1; Vorgabe 5."
+          },
+          "f_dist": {
+            "d1": "Freiheitsgrade d₁: die Zahl der Freiheitsgrade im Zähler der F-Verteilung. Zulässig: ganze Zahl ab 1; Vorgabe 5.",
+            "d2": "Freiheitsgrade d₂: die Zahl der Freiheitsgrade im Nenner der F-Verteilung. Zulässig: ganze Zahl ab 1; Vorgabe 10."
+          },
+          "t_dist": {
+            "nu": "Freiheitsgrade (ν): sie bestimmen die Form der t-Verteilung; je größer, desto näher liegt sie an der Normalverteilung. Zulässig: ganze Zahl ab 1; Vorgabe 10."
+          },
+          "uniform": {
+            "a": "Untergrenze (a): die untere Grenze, unter der keine Werte liegen. Zulässig: beliebige Zahl; Vorgabe 0.",
+            "b": "Obergrenze (b): die obere Grenze, über der keine Werte liegen; sie sollte größer als die Untergrenze sein, weil die Werte sonst umgekehrt zwischen b und a liegen. Zulässig: beliebige Zahl; Vorgabe 1."
+          },
+          "beta": {
+            "alpha": "Form α: die erste Form der Beta-Verteilung; sie bestimmt zusammen mit β, ob die Werte zwischen 0 und 1 eher links oder rechts liegen. Zulässig: Zahl ab 0,01; Vorgabe 2.",
+            "beta": "Form β: die zweite Form der Beta-Verteilung; sie bestimmt zusammen mit α, ob die Werte zwischen 0 und 1 eher links oder rechts liegen. Zulässig: Zahl ab 0,01; Vorgabe 5."
+          },
+          "cauchy": {
+            "x0": "Lage (x₀): die Lage, die Mitte der Cauchy-Verteilung (ihr Median). Zulässig: beliebige Zahl; Vorgabe 0.",
+            "gamma": "Skala (γ): die Skala, die Breite der Cauchy-Verteilung. Zulässig: Zahl ab 0,0001; Vorgabe 1."
+          },
+          "exponential": {
+            "lambda": "Rate (λ): die Rate: wie viele Ereignisse pro Einheit auftreten; der Mittelwert der Werte ist 1/λ. Zulässig: Zahl ab 0,0001; Vorgabe 1."
+          },
+          "gamma_dist": {
+            "alpha": "Form (α): die Form der Gamma-Verteilung; bei 1 entsteht die Exponentialverteilung, größere Werte machen sie symmetrischer. Zulässig: Zahl ab 0,01; Vorgabe 2.",
+            "beta": "Skala (β): die Skala der Gamma-Verteilung, mit der alle Werte gestreckt werden. Zulässig: Zahl ab 0,0001; Vorgabe 1."
+          },
+          "laplace": {
+            "mu": "Lage (μ): die Lage, die Mitte der Laplace-Verteilung. Zulässig: beliebige Zahl; Vorgabe 0.",
+            "b": "Skala (b): die Skala, die Breite der Laplace-Verteilung. Zulässig: Zahl ab 0,0001; Vorgabe 1."
+          },
+          "gumbel_max": {
+            "mu": "Lage (μ): die Lage der Gumbel-Verteilung für Maxima (ihr Modus). Zulässig: beliebige Zahl; Vorgabe 0.",
+            "beta": "Skala (β): die Skala, die Breite der Gumbel-Verteilung für Maxima. Zulässig: Zahl ab 0,0001; Vorgabe 1."
+          },
+          "logistic": {
+            "mu": "Lage (μ): die Lage, die Mitte der logistischen Verteilung. Zulässig: beliebige Zahl; Vorgabe 0.",
+            "s": "Skala (s): die Skala, die Breite der logistischen Verteilung. Zulässig: Zahl ab 0,0001; Vorgabe 1."
+          },
+          "loglogistic": {
+            "alpha": "Skala (α): die Skala der log-logistischen Verteilung; zugleich ihr Median. Zulässig: Zahl ab 0,0001; Vorgabe 1.",
+            "beta": "Form (β): die Form der log-logistischen Verteilung; je größer, desto enger liegen die Werte um die Skala. Zulässig: Zahl ab 0,0001; Vorgabe 1."
+          },
+          "lognormal": {
+            "mu": "Log-Mittelwert (μ): der Mittelwert der logarithmierten Werte (nicht der Werte selbst). Zulässig: beliebige Zahl; Vorgabe 0.",
+            "sigma": "Log-Std.Abw. (σ): die Standardabweichung der logarithmierten Werte (nicht der Werte selbst). Zulässig: Zahl ab 0,0001; Vorgabe 1."
+          },
+          "gumbel_min": {
+            "mu": "Lage (μ): die Lage der Gumbel-Verteilung für Minima (ihr Modus). Zulässig: beliebige Zahl; Vorgabe 0.",
+            "beta": "Skala (β): die Skala, die Breite der Gumbel-Verteilung für Minima. Zulässig: Zahl ab 0,0001; Vorgabe 1."
+          },
+          "triangular": {
+            "a": "Minimum (a): das Minimum, der kleinste mögliche Wert. Zulässig: beliebige Zahl; Vorgabe 0.",
+            "c": "Modus (c): der Modus, der häufigste Wert; er sollte zwischen Minimum und Maximum liegen. Zulässig: beliebige Zahl; Vorgabe 0,5.",
+            "b": "Maximum (b): das Maximum, der größte mögliche Wert; es sollte größer als das Minimum sein. Zulässig: beliebige Zahl; Vorgabe 1."
+          },
+          "weibull": {
+            "alpha": "Form (α): die Form der Weibull-Verteilung; bei 1 entsteht die Exponentialverteilung, über 1 steigt die Ausfallrate mit der Zeit. Zulässig: Zahl ab 0,0001; Vorgabe 1,5.",
+            "beta": "Skala (β): die Skala der Weibull-Verteilung (charakteristische Lebensdauer: 63,2 % der Werte liegen darunter). Zulässig: Zahl ab 0,0001; Vorgabe 1."
+          }
+        },
         "FrequencyRow": {
           "name": "Der Name der Kategorie.",
           "count": "Wie oft die Kategorie unter den erzeugten Werten vorkommt."
