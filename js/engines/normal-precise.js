@@ -32,7 +32,7 @@ export function normalCdfPrecise(x) {
     s = t + b;
   }
   // eslint-disable-next-line no-loss-of-precision -- ln(sqrt(2*pi)) as in Marsaglia (2004)
-  const p = 0.5 + s * Math.exp(-0.5 * q - 0.91893853320467274178);
+  const p = 0.5 + s * Math.exp(-0.5 * q - 0.9189385332046728);
   return Math.min(1, Math.max(0, p));
 }
 
@@ -57,7 +57,7 @@ export function normalUpperTailPrecise(x) {
     f *= delta;
     if (Math.abs(delta - 1) < 1e-16) break;
   }
-  return Math.exp(-0.5 * x * x - 0.91893853320467274178) / f;
+  return Math.exp(-0.5 * x * x - 0.9189385332046728) / f;
 }
 
 /**
