@@ -7325,7 +7325,7 @@
           "cause": "The potential cause of failure: why the failure mode occurs. It drives the occurrence rating. Free text.",
           "prevention": "The prevention control: what stops the cause from occurring in the first place. It feeds into the occurrence rating. Free text.",
           "control": "The detection control: what detects the failure or its cause before it reaches the customer. It feeds into the detection rating. Free text.",
-          "specialChar": "The special characteristic: CC for a critical, SC for a significant characteristic, empty for none. From a severity of 9 the card points out that it should be checked.",
+          "specialChar": "The special characteristic: CC for a critical, SC for a significant characteristic, empty for none. From a severity of 9 the card points out that it should be checked, while none is set.",
           "justification": "The justification why a risk with high action priority (H) gets no action. With the AP method the field appears while such a risk has neither an action text nor a justification, and stays visible once filled. Free text.",
           "sev": "The severity (S) of the failure for the customer, 1 to 10: 1 means no noticeable effect, 10 a safety hazard or regulatory violation; empty means not yet rated. Together with occurrence and detection it gives the priority: with the AP method through the AIAG-VDA handbook table (H, M or L), with RPN as the product severity × occurrence × detection.",
           "occ": "The occurrence (O), 1 to 10: 1 means the failure is unlikely, 10 that it occurs very frequently; empty means not yet rated. Together with severity and detection it gives the priority (AP table or RPN = severity × occurrence × detection).",

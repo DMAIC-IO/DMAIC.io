@@ -140,6 +140,7 @@ export const ANCHOR_EXEMPTIONS = {
     { match: 'triz-sf__standard-select', reason: 'Kästchen je Standardlösung (78), in aufklappbaren Klassen', count: 1 },
   ],
   fmea: [
+    { match: 'data-icon="action.confirm"', reason: 'Schmale Symbolspalte „Umgesetzt“; ein Kreis läge über dem Kopf „Maßnahme“', count: 1 },
     { match: "t('rating')", reason: 'Gruppentitel über S, O, D; jede der drei Beschriftungen ist einzeln erklärt', count: 1 },
     { match: "t('scaleValue')", reason: 'Bewertungsskala, Eingabetabelle der Skalentexte (Wert 1–10)', count: 4 },
     { match: "t('scaleMeaning')", reason: 'Bewertungsskala, Eingabetabelle der Skalentexte', count: 2 },
