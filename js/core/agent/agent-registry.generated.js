@@ -1621,6 +1621,12 @@ export const AGENT_REGISTRY = {
         "help": "the ratings `setScore` accepts on the active scale",
         "bulk": false,
         "derived": true
+      },
+      "rowSums": {
+        "type": "number[]",
+        "help": "Zeilensumme je Eingang, in der Reihenfolge von inputs",
+        "bulk": false,
+        "derived": true
       }
     }
   },

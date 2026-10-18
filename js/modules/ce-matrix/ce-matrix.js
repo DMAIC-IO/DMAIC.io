@@ -77,6 +77,7 @@ function textColorForValue(val, min, max) {
  * @property {number[]} weights  the customer importance per output, 1 to 10
  * @property {string} scale  id of the rating scale
  * @property {number[]} allowedScores  the ratings `setScore` accepts on the active scale
+ * @property {number[]} rowSums  Zeilensumme je Eingang, in der Reihenfolge von inputs
  */
 export default createModule({
   config: {
@@ -116,6 +117,7 @@ export default createModule({
         return readAgentState('ce-matrix', {
           ...this.model.toJSON(),
           allowedScores: this.model.allowedScores(),
+          rowSums: this.model.inputs.map((_, r) => this.model.rowSum(r)),
         }, options);
       },
 

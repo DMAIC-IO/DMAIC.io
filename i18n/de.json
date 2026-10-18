@@ -4926,6 +4926,14 @@
         },
         "weights": {
           "help": "Die Kundenwichtigkeit jeder Ergebnisgröße, 1 bis 10, in Spaltenreihenfolge; mit ihr gehen die Bewertungen in die Zeilensumme ein."
+        },
+        "rowSums": {
+          "help": "Die Zeilensumme je Eingang, in der Reihenfolge von inputs; jeder Wert ist die Summe aus Bewertung mal Gewicht über alle Ausgänge."
+        }
+      },
+      "types": {
+        "AgentRead": {
+          "rowSums": "Die Summe je Eingang: jede Bewertung mit dem Gewicht ihres Ausgangs multipliziert und addiert, in der Reihenfolge der Eingänge. Die Spalte „Σ Zeile“ zeigt sie; je höher, desto stärker wirkt der Eingang auf die gewichteten Ausgänge."
         }
       },
       "addInput": "Input",

@@ -4922,6 +4922,14 @@
         },
         "weights": {
           "help": "The customer importance of each output, 1 to 10, in column order; with it the ratings go into the row sum."
+        },
+        "rowSums": {
+          "help": "The row sum per input, in the order of inputs; each value is the sum of rating times weight over all outputs."
+        }
+      },
+      "types": {
+        "AgentRead": {
+          "rowSums": "The sum per input: each rating multiplied by the weight of its output and added up, in the order of the inputs. The “Σ Row” column shows it; the higher, the more strongly the input acts on the weighted outputs."
         }
       },
       "addInput": "Input",
