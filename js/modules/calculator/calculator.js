@@ -110,6 +110,8 @@ export default createModule({
       /** Mouse clicks on a mode tab must not focus it — Enter stays a calculator key. */
       preventFocus(e) { e.preventDefault(); },
       switchMode(m) {
+        // Re-activating the current mode (Space on its tab, a repeat click) keeps the input.
+        if (m === this.model.mode) return;
         this.model.switchMode(m);
         this.exprText = '';
         this._showResult('0');
@@ -210,9 +212,11 @@ export default createModule({
       onKeydown(e) {
         // Don't capture when typing in spec-limit inputs
         if (e.target.tagName === 'INPUT') return;
-        // Enter on a focused mode tab activates that tab (native click). Mouse
+        // Enter on a focused, inactive mode tab activates that tab (native
+        // click). On the active tab Enter stays the calculator's "=". Mouse
         // clicks never focus a tab (preventFocus), so only keyboard focus counts.
-        if (e.key === 'Enter' && e.target.closest?.('[role="tab"]')) return;
+        const tab = e.target.closest?.('[role="tab"]');
+        if (e.key === 'Enter' && tab && tab.getAttribute('aria-selected') !== 'true') return;
 
         if (e.key === 'Enter') {
           if (this.model.mode === 'stats') this.addData();
