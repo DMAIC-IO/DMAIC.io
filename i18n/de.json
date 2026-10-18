@@ -7731,7 +7731,7 @@
         },
         "Stat": {
           "key": "Kennung der Kennzahlzeile, innerhalb einer Testart eindeutig; dieselbe Kennung kann je Testart Verschiedenes bedeuten.",
-          "labelKey": "Kennung des Beschriftungstextes der Zeile; beim Fisher-exakten Test einer 2 × 2-Tafel je Richtung eine eigene.",
+          "labelKey": "Kennung des Beschriftungstextes der Zeile; beim Fisher-exakten Test einer 2 × 2-Tafel im Zusammenhangstest je Richtung eine eigene (beidseitig, einseitig größer, einseitig kleiner); beim Vergleich zweier Anteile trägt die Fisher-Zeile immer dieselbe Beschriftung ohne Richtung, auch bei einseitiger Alternative.",
           "params": "Platzhalter der Beschriftung: das Konfidenzniveau in Prozent, der Gruppenname oder die Freiheitsgrade; fehlt bei Zeilen ohne Platzhalter.",
           "value": "Der Wert als formatierter Text, wie in der Tabelle: vier Nachkommastellen, χ², G² und Yates mit drei, p-Werte unter 0,0001 als „< 0.0001“, Anzahlen als „x / n“, Konfidenzintervalle als Unter- und Obergrenze; Dezimalpunkt in beiden Sprachen, „–“ für einen nicht berechenbaren Wert."
         },
@@ -7769,7 +7769,7 @@
           "p2": "Anteil der zweiten Gruppe p₂ = x₂ / n₂.",
           "diff": "Differenz der Anteile p₁ − p₂.",
           "ci": "Konfidenzintervall der Differenz nach Wald: p₁ − p₂ ± z₁₋α/₂ · SE mit Niveau 1 − α, der Standardfehler immer ungepoolt, auch wenn der Test gepoolt rechnet. Bei gerichteter Alternative einseitig mit −1 bzw. 1 als offener Grenze.",
-          "z": "Prüfgröße z = (p₁ − p₂) / SE; SE gepoolt oder getrennt, je nach Kästchen „Gepoolte Schätzung“. Ist SE gleich 0, steht „–“.",
+          "z": "Prüfgröße z = (p₁ − p₂) / SE; SE gepoolt oder getrennt, je nach Kästchen „Gepoolte Schätzung von p für den Test“. Ist SE gleich 0, steht „–“.",
           "pValue": "p-Wert des z-Tests in der gewählten Richtung. Grundlage der Entscheidung: H₀ wird verworfen, wenn er kleiner als α ist.",
           "pFisher": "p-Wert des Fisher-exakten Tests der 2 × 2-Tafel aus Ereignissen und Nicht-Ereignissen beider Gruppen, in der gewählten Richtung; zweiseitig die Summe aller Tafeln, die höchstens so wahrscheinlich sind wie die beobachtete. Nur zur Information."
         },
@@ -7780,7 +7780,7 @@
           "pLR": "p-Wert des Likelihood-Quotienten G², nur zur Information.",
           "yates": "χ² mit Yates-Korrektur, nur bei einer 2 × 2-Tafel: Σ max(0, |o − e| − 0,5)²/e.",
           "pYates": "p-Wert des Yates-korrigierten χ² mit einem Freiheitsgrad, nur bei einer 2 × 2-Tafel.",
-          "pFisher": "p-Wert des Fisher-exakten Tests, nur bei einer 2 × 2-Tafel. Als einzige Kennzahl folgt er der gewählten Alternativhypothese; die Beschriftung nennt die Richtung."
+          "pFisher": "p-Wert des Fisher-exakten Tests, nur bei einer 2 × 2-Tafel. Als einzige Kennzahl folgt er der gewählten Alternativhypothese; bei einseitiger Alternative nennt die Beschriftung die Richtung."
         }
       }
     },
@@ -7877,7 +7877,7 @@
           "metrics": "Die Kennzahlen der Stichprobe als formatierte Texte: n, x̄, s und s². Zu x̄ gehört das t-Konfidenzintervall von μ, x̄ ± t(1 − α/2; n − 1) · s/√n, zu s² das χ²-Intervall von σ², (n − 1)s²/χ²(1 − α/2) bis (n − 1)s²/χ²(α/2), zu s dessen Wurzeln; alle zum Niveau 1 − α."
         },
         "NormRow": {
-          "name": "Name des Tests, „Shapiro-Wilk“ oder „Anderson-Darling“, Spalte „Test“.",
+          "name": "Name des Tests als angezeigter Text, „Shapiro-Wilk“ oder „Anderson-Darling“, Spalte „Test“.",
           "algoId": "Kennung der Seite im Algorithm Lab für den Knopf neben dem Testnamen.",
           "stat": "Die Teststatistik als formatierter Text mit vier Nachkommastellen: W bei Shapiro-Wilk, A² bei Anderson-Darling. Spalte „Statistik“.",
           "p": "Der p-Wert des Tests als formatierter Text mit vier Nachkommastellen, Spalte „p“.",
@@ -7887,7 +7887,7 @@
         },
         "Metric": {
           "label": "Beschriftung der Kennzahl als formatierter Text, so wie die Oberfläche sie zeigt, etwa „Testverfahren“, „Statistik“, „p“, „df“, „n“, „x̄“, „s²“ oder „95 % KI“; welche Kennzahlen erscheinen, wechselt mit Test und Weg.",
-          "value": "Der Wert als formatierter Text: Zahlen mit vier Nachkommastellen und Dezimalpunkt, Freiheitsgrade bei k-Tests als „df1 / df2“, die Power in Prozent, das Testverfahren als englischer Name, Intervalle als untere und obere Grenze; „–“ für einen nicht berechenbaren Wert.",
+          "value": "Der Wert als formatierter Text: Zahlen meist mit vier Nachkommastellen und Dezimalpunkt; davon weichen ab die Freiheitsgrade (ganzzahlig, bei k-Tests als „df1 / df2“, bei Welch mit einer Nachkommastelle), die Stichprobenumfänge n, k und N (ganzzahlig), die Effektstärke (drei Nachkommastellen), α (wie eingestellt) und die Power (Prozent mit einer Nachkommastelle); das Testverfahren als englischer Name, Intervalle als untere und obere Grenze; „–“ für einen nicht berechenbaren Wert.",
           "valueClass": "Darstellungsklasse der Oberfläche; färbt den p-Wert rot bei p < α und grün sonst, setzt Testverfahren und Intervalle kleiner und färbt die Power nach erreichtem Ziel. Fehlt in den Normalitätskarten.",
           "title": "Tooltip der Kennzahl als formatierter Text, eine kurze Erklärung; beim p-Wert ggf. mit der Berechnungsart, exakt oder per Normalapproximation. Kann leer sein.",
           "algoId": "Kennung der Seite im Algorithm Lab, nur am Testverfahren und am Hodges-Lehmann-Schätzer; leerer Text, wenn es keine Seite gibt.",
@@ -7923,7 +7923,7 @@
           "bold": "Ob die Zeile fett erscheint; nur die Zeile Gesamt."
         },
         "GroupRow": {
-          "name": "Name der Gruppe, der Spaltenname aus der Datensammlung. Spalte „Gruppe“.",
+          "name": "Name der Gruppe als angezeigter Text, der Spaltenname aus der Datensammlung. Spalte „Gruppe“.",
           "n": "Anzahl der Werte der Gruppe als formatierter Text, Spalte „n“.",
           "mean": "Mittelwert x̄ der Gruppe als formatierter Text mit vier Nachkommastellen, Spalte „x̄“.",
           "variance": "Stichprobenvarianz s² der Gruppe als formatierter Text mit vier Nachkommastellen, Spalte „s²“.",
@@ -7935,19 +7935,19 @@
         "PowerInfo": {
           "goalPct": "Das Power-Ziel in Prozent als formatierter Text, ganzzahlig und ohne Prozentzeichen; die Box zeigt es als „Power-Ziel: 80%“.",
           "goalBoxClass": "Darstellungsklasse der Oberfläche; färbt die Box grün, wenn die aktuelle Power das Ziel erreicht, sonst als Warnung.",
-          "requiredLine": "Die Zeile „Benötigtes n“ als formatierter Text, bei zwei Stichproben „je Gruppe“: das kleinste n zwischen 4 und 5000, bei dem die Power das Ziel erreicht; bei zwei Stichproben gleich große Gruppen. Wird das Ziel bis 5000 nicht erreicht, steht „> 5000“. Dahinter „Erreicht“ oder „Nicht erreicht“ für die aktuelle Power.",
+          "requiredLine": "Die Zeile „Benötigtes n“ als formatierter Text, bei zwei Stichproben „je Gruppe“: das kleinste n zwischen 4 und 5000, bei dem die Power das Ziel erreicht; bei zwei Stichproben gleich große Gruppen. Ab 5000, also wenn das Ziel bis dahin nicht erreicht wird, steht „> 5000“. Dahinter „Erreicht“ oder „Nicht erreicht“ für die aktuelle Power.",
           "metrics": "Die Kennzahlen als formatierte Texte: aktuelle Power in Prozent mit einer Nachkommastelle, n (bei zwei Stichproben n₁ / n₂), die Effektgröße und α. Die Effektgröße ist bei Varianzen das Varianz-Verhältnis s²/σ²₀ bzw. s²₁/s²₂, bei Mittelwerten Cohen's d = |x̄ − μ₀|/s bzw. |x̄₁ − x̄₂|/sₚ, mit drei Nachkommastellen."
         },
         "PairwiseSection": {
           "methodName": "Verfahren der Paarvergleiche als englischer Name, Beschriftung „Methode“, immer zweiseitig: bei Varianzen F-Test, wenn alle normal sind, sonst Levene (Brown-Forsythe); bei Mittelwerten der gepoolte t-Test, der Welch-t-Test, wenn Levene einen Varianzunterschied zeigt, auf dem Rangweg Mann-Whitney-U.",
           "methodAlgoId": "Kennung der Seite im Algorithm Lab für den Knopf neben dem Verfahrensnamen.",
           "hint": "Der Hinweis unter der Matrix als formatierter Text: „Bonferroni-korrigiert über m = … Paare“ mit m = k(k − 1)/2, bei Mittelwerten ergänzt darum, dass unter dem korrigierten p-Wert das Konfidenzintervall der Differenz μ(Zeile)−μ(Spalte) steht, auf dem Rangweg das Hodges-Lehmann-Intervall der Verschiebung.",
-          "headers": "Die Spaltenköpfe der Matrix: die Gruppennamen, also die Spaltennamen aus der Datensammlung.",
+          "headers": "Die Spaltenköpfe der Matrix als angezeigte Texte: die Gruppennamen, also die Spaltennamen aus der Datensammlung.",
           "rows": "Die Zeilen der Matrix, eine je Gruppe.",
           "lettersJoined": "Die Gruppierungsbuchstaben aller Gruppen in Spaltenreihenfolge als formatierter Text, mit Komma verbunden; dieselben Buchstaben wie in der Gruppenübersicht."
         },
         "PairwiseRow": {
-          "head": "Der Zeilenkopf: der Gruppenname, also der Spaltenname aus der Datensammlung.",
+          "head": "Der Zeilenkopf als angezeigter Text: der Gruppenname, also der Spaltenname aus der Datensammlung.",
           "cells": "Die Zellen der Zeile, eine je Gruppe; gefüllt ist nur das obere Dreieck, die Diagonale und die Zellen darunter zeigen „—“."
         },
         "PairwiseCell": {
@@ -10705,10 +10705,10 @@
           "pval": "Zweiseitiger p-Wert des t-Tests auf b = 0; unter α gilt der Term als signifikant und die Zeile wird hervorgehoben. Leer bei Exponentiell, Logarithmisch und Potenz.",
           "ciLow": "Untere Konfidenzgrenze b − t · Std.-Fehler, mit t als (1 + Konfidenzniveau)/2-Quantil der t-Verteilung mit den Freiheitsgraden der Residuen. Leer bei Exponentiell, Logarithmisch und Potenz.",
           "ciHigh": "Obere Konfidenzgrenze b + t · Std.-Fehler, mit demselben t wie die untere Grenze. Leer bei Exponentiell, Logarithmisch und Potenz.",
-          "vif": "Varianzinflationsfaktor 1/(1 − R²ⱼ), mit R²ⱼ aus der Regression des Prädiktors auf die übrigen stetigen Prädiktoren, die noch einen Term im Modell haben. Nur Haupteffekte stetiger Prädiktoren haben einen Wert, und nur bei mindestens zwei stetigen Prädiktoren; sonst leer. Über 5 wird die Zelle gelb, über 10 rot; weicht der Wert über alle gewählten Prädiktoren ab, steht er in Klammern daneben."
+          "vif": "Varianzinflationsfaktor 1/(1 − R²ⱼ), mit R²ⱼ aus der Regression des Prädiktors auf die übrigen stetigen Prädiktoren, die noch einen Term im Modell haben. Nur Haupteffekte stetiger Prädiktoren haben einen Wert, und nur bei mindestens zwei stetigen Prädiktoren; sonst leer. Hat von diesen nur ein Prädiktor noch einen Term im Modell, ist der Wert genau 1. Über 5 wird die Zelle gelb, über 10 rot; weicht der Wert über alle gewählten Prädiktoren ab, steht er in Klammern daneben."
         },
         "Anova": {
-          "regression": "Die Zeile Regression: die vom Modell erklärte Streuung SSR mit dem F-Test des Gesamtmodells; Freiheitsgrade gleich der Zahl der Koeffizienten ohne Achsenabschnitt.",
+          "regression": "Die Zeile Regression: die vom Modell erklärte Streuung SSR mit dem F-Test des Gesamtmodells; Freiheitsgrade gleich der Zahl der Koeffizienten, den konstanten Term nicht mitgezählt (bei Polynom und Logarithmisch der Achsenabschnitt, bei Exponentiell und Potenz der Vorfaktor a).",
           "terms": "Je Term eine eingerückte Zeile. Rechnet das Polynom mit Termblöcken, ist es die Typ-III-Zerlegung je Termblock: die Quadratsumme, die der Block zusätzlich zu allen anderen erklärt, mit dem F-Test des Blocks. Sonst eine Zeile je Koeffizient mit SS = t² · MSE und einem Freiheitsgrad. Bei Exponentiell, Logarithmisch und Potenz leer.",
           "error": "Die Zeile Residuen: die unerklärte Streuung SSE mit n − p Freiheitsgraden und MSE = SSE/(n − p).",
           "total": "Die Zeile Gesamt: die gesamte Streuung SST = Σ(yᵢ − ȳ)² mit n − 1 Freiheitsgraden, die Summe aus Regression und Residuen."
@@ -11056,7 +11056,7 @@
         "Result": {
           "family": "Die tatsächlich angepasste Verteilungsfamilie mit Link-Funktion und, bei Negativ-Binomial, dem geschätzten θ; bei Auto-Erkennung die gewählte Familie.",
           "quasi": "Ob Quasi-Poisson aktiv ist: Zeigt die Poisson-Anpassung χ²/df über 1,5, wird mit der Dispersion φ = Pearson-χ²/df neu gerechnet; die Koeffizienten bleiben, Standardfehler und Konfidenzintervalle werden um √φ vergrößert, und eine Warnung nennt φ.",
-          "autoReason": "Der Grund der automatischen Wahl als Kennung des Hinweistextes unter dem Verfahren: genau zwei Ausprägungen, Zähldaten, Zähldaten mit Überdispersion, Anteile ohne Versuchszahl oder nicht negative Werte als Rückfall. Leer, wenn das Verfahren fest gewählt ist.",
+          "autoReason": "Der Grund der automatischen Wahl. Er erscheint als Hinweis unter dem Verfahren, solange „Auto-Erkennung (empfohlen)“ gewählt ist; im Ergebnis steht die Kennung dieses Hinweistextes. Mögliche Gründe: genau zwei Ausprägungen, Zähldaten, Zähldaten mit Überdispersion, Anteile ohne Versuchszahl oder nicht negative Werte als Rückfall. Leer, wenn das Verfahren fest gewählt ist.",
           "n": "Zahl der verwerteten Zeilen, Zeile n: Zeilen mit endlichen Werten in Y, allen X und gegebenenfalls der Versuchszahl.",
           "iterations": "Zahl der IRLS-Iterationen bis zur Konvergenz, Zeile IRLS-Iterationen; eine hohe Zahl deutet auf eine schwierige Anpassung, etwa Trennung.",
           "aic": "Akaike-Informationskriterium, Kachel AIC: −2ℓ + 2k mit der Log-Likelihood ℓ und k Parametern (Koeffizienten, bei Negativ-Binomial zusätzlich θ). Kleiner ist besser; nur zum Vergleich von Modellen derselben Zielgröße.",

@@ -113,7 +113,7 @@ function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–';
 /**
  * Eine Kennzahl. In den Normalitätskarten fehlt `valueClass`, `ci` steht
  * nur dort (leer, wo kein Intervall berechenbar ist); `algoId` nur an der
- * Testmethode.
+ * Testmethode und am Hodges-Lehmann-Schätzer.
  *
  * @typedef {object} Metric
  * @property {string} label  Beschriftung

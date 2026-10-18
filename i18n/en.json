@@ -7727,7 +7727,7 @@
         },
         "Stat": {
           "key": "Identifier of the figure row, unique within one test type; the same identifier can mean different things in different test types.",
-          "labelKey": "Identifier of the row's label text; for Fisher's exact test of a 2 × 2 table there is one per direction.",
+          "labelKey": "Identifier of the row's label text; for Fisher's exact test of a 2 × 2 table in the association test there is one per direction (two-sided, one-sided greater, one-sided less); when comparing two proportions the Fisher row always carries the same label without a direction, even for a one-sided alternative.",
           "params": "Placeholders of the label: the confidence level in percent, the group name or the degrees of freedom; missing for rows without placeholders.",
           "value": "The value as formatted text, as in the table: four decimals, χ², G² and Yates with three, p-values below 0.0001 as “< 0.0001”, counts as “x / n”, confidence intervals as lower and upper bound; decimal point in both languages, “–” for a value that cannot be computed."
         },
@@ -7765,7 +7765,7 @@
           "p2": "Proportion of the second group p₂ = x₂ / n₂.",
           "diff": "Difference of the proportions p₁ − p₂.",
           "ci": "Wald confidence interval of the difference: p₁ − p₂ ± z₁₋α/₂ · SE at level 1 − α, the standard error always unpooled, even when the test is pooled. One-sided for a directional alternative, with −1 or 1 as the open bound.",
-          "z": "Test statistic z = (p₁ − p₂) / SE; SE pooled or separate, depending on the “pooled estimate” checkbox. If SE is 0, “–” is shown.",
+          "z": "Test statistic z = (p₁ − p₂) / SE; SE pooled or separate, depending on the “Use pooled estimate of p for the test” checkbox. If SE is 0, “–” is shown.",
           "pValue": "p-value of the z-test in the chosen direction. Basis of the decision: H₀ is rejected when it is below α.",
           "pFisher": "p-value of Fisher's exact test of the 2 × 2 table of events and non-events in both groups, in the chosen direction; two-sided, the sum over all tables at most as likely as the observed one. For information only."
         },
@@ -7776,7 +7776,7 @@
           "pLR": "p-value of the likelihood ratio G², for information only.",
           "yates": "χ² with Yates correction, only for a 2 × 2 table: Σ max(0, |o − e| − 0.5)²/e.",
           "pYates": "p-value of the Yates-corrected χ² with one degree of freedom, only for a 2 × 2 table.",
-          "pFisher": "p-value of Fisher's exact test, only for a 2 × 2 table. It is the only figure that follows the chosen alternative hypothesis; the label names the direction."
+          "pFisher": "p-value of Fisher's exact test, only for a 2 × 2 table. It is the only figure that follows the chosen alternative hypothesis; with a one-sided alternative the label names the direction."
         }
       }
     },
@@ -7873,7 +7873,7 @@
           "metrics": "The sample figures as formatted texts: n, x̄, s and s². x̄ carries the t confidence interval of μ, x̄ ± t(1 − α/2; n − 1) · s/√n, s² the χ² interval of σ², (n − 1)s²/χ²(1 − α/2) to (n − 1)s²/χ²(α/2), s its square roots; all at level 1 − α."
         },
         "NormRow": {
-          "name": "Name of the test, “Shapiro-Wilk” or “Anderson-Darling”, column “Test”.",
+          "name": "Name of the test as displayed text, “Shapiro-Wilk” or “Anderson-Darling”, column “Test”.",
           "algoId": "Identifier of the Algorithm Lab page for the button next to the test name.",
           "stat": "The test statistic as formatted text with four decimals: W for Shapiro-Wilk, A² for Anderson-Darling. Column “Statistic”.",
           "p": "The p-value of the test as formatted text with four decimals, column “p”.",
@@ -7883,7 +7883,7 @@
         },
         "Metric": {
           "label": "Label of the figure as formatted text, as the interface shows it, such as “Test Method”, “Statistic”, “p”, “df”, “n”, “x̄”, “s²” or “95% CI”; which figures appear changes with test and route.",
-          "value": "The value as formatted text: numbers with four decimals, degrees of freedom of k-sample tests as “df1 / df2”, power in percent, the test method as its English name, intervals as lower and upper bound; “–” for a value that cannot be computed.",
+          "value": "The value as formatted text: numbers mostly with four decimals; exceptions are the degrees of freedom (whole numbers, “df1 / df2” for k-sample tests, one decimal for Welch), the sample sizes n, k and N (whole numbers), the effect size (three decimals), α (as set) and the power (percent with one decimal); the test method as its English name, intervals as lower and upper bound; “–” for a value that cannot be computed.",
           "valueClass": "Display class of the interface; colours the p-value red when p < α and green otherwise, sets test method and intervals in smaller type and colours power by whether the goal is achieved. Missing in the normality cards.",
           "title": "Tooltip of the figure as formatted text, a short explanation; for the p-value possibly with the way it was computed, exact or by normal approximation. May be empty.",
           "algoId": "Identifier of the Algorithm Lab page, only on the test method and on the Hodges-Lehmann estimate; empty text when there is no page.",
@@ -7919,7 +7919,7 @@
           "bold": "Whether the row appears in bold; only the row Total."
         },
         "GroupRow": {
-          "name": "Name of the group, the column name from the data collection. Column “Group”.",
+          "name": "Name of the group as displayed text, the column name from the data collection. Column “Group”.",
           "n": "Number of values in the group as formatted text, column “n”.",
           "mean": "Mean x̄ of the group as formatted text with four decimals, column “x̄”.",
           "variance": "Sample variance s² of the group as formatted text with four decimals, column “s²”.",
@@ -7931,19 +7931,19 @@
         "PowerInfo": {
           "goalPct": "The power goal in percent as formatted text, a whole number without the percent sign; the box shows it as “Power Goal: 80%”.",
           "goalBoxClass": "Display class of the interface; colours the box green when the current power reaches the goal, otherwise as a warning.",
-          "requiredLine": "The line “Required n” as formatted text, “per group” for two samples: the smallest n between 4 and 5000 at which the power reaches the goal; for two samples with equally sized groups. If the goal is not reached up to 5000, it reads “> 5000”. After it “Achieved” or “Not achieved” for the current power.",
+          "requiredLine": "The line “Required n” as formatted text, “per group” for two samples: the smallest n between 4 and 5000 at which the power reaches the goal; for two samples with equally sized groups. From 5000 on, that is, if the goal is not reached by then, it reads “> 5000”. After it “Achieved” or “Not achieved” for the current power.",
           "metrics": "The figures as formatted texts: current power in percent with one decimal, n (n₁ / n₂ for two samples), the effect size and α. The effect size is the variance ratio s²/σ²₀ or s²₁/s²₂ for variances, Cohen's d = |x̄ − μ₀|/s or |x̄₁ − x̄₂|/sₚ for means, with three decimals."
         },
         "PairwiseSection": {
           "methodName": "Procedure of the pairwise comparisons as its English name, label “Method”, always two-sided: for variances the F-test when all are normal, otherwise Levene (Brown-Forsythe); for means the pooled t-test, the Welch t-test when Levene shows a variance difference, on the rank route Mann-Whitney U.",
           "methodAlgoId": "Identifier of the Algorithm Lab page for the button next to the procedure name.",
           "hint": "The note below the matrix as formatted text: “Bonferroni-corrected across m = … pairs” with m = k(k − 1)/2, for means extended by the remark that below the corrected p-value stands the confidence interval of the difference μ(row)−μ(column), on the rank route the Hodges-Lehmann interval of the shift.",
-          "headers": "The column headers of the matrix: the group names, that is, the column names from the data collection.",
+          "headers": "The column headers of the matrix as displayed texts: the group names, that is, the column names from the data collection.",
           "rows": "The rows of the matrix, one per group.",
           "lettersJoined": "The grouping letters of all groups in column order as formatted text, joined by commas; the same letters as in the group overview."
         },
         "PairwiseRow": {
-          "head": "The row header: the group name, that is, the column name from the data collection.",
+          "head": "The row header as displayed text: the group name, that is, the column name from the data collection.",
           "cells": "The cells of the row, one per group; only the upper triangle is filled, the diagonal and the cells below show “—”."
         },
         "PairwiseCell": {
@@ -10701,10 +10701,10 @@
           "pval": "Two-sided p-value of the t test of b = 0; below α the term counts as significant and the row is highlighted. Empty for exponential, logarithmic and power.",
           "ciLow": "Lower confidence limit b − t · Std. Error, with t the (1 + confidence level)/2 quantile of the t distribution with the degrees of freedom of the residuals. Empty for exponential, logarithmic and power.",
           "ciHigh": "Upper confidence limit b + t · Std. Error, with the same t as the lower limit. Empty for exponential, logarithmic and power.",
-          "vif": "Variance inflation factor 1/(1 − R²ⱼ), with R²ⱼ from regressing the predictor on the other continuous predictors that still have a term in the model. Only main effects of continuous predictors have a value, and only with at least two continuous predictors; otherwise empty. Above 5 the cell turns yellow, above 10 red; if the value over all chosen predictors differs, it is shown next to it in parentheses."
+          "vif": "Variance inflation factor 1/(1 − R²ⱼ), with R²ⱼ from regressing the predictor on the other continuous predictors that still have a term in the model. Only main effects of continuous predictors have a value, and only with at least two continuous predictors; otherwise empty. If only one of them still has a term in the model, the value is exactly 1. Above 5 the cell turns yellow, above 10 red; if the value over all chosen predictors differs, it is shown next to it in parentheses."
         },
         "Anova": {
-          "regression": "The Regression row: the variation SSR explained by the model, with the F test of the overall model; degrees of freedom equal to the number of coefficients without the intercept.",
+          "regression": "The Regression row: the variation SSR explained by the model, with the F test of the overall model; degrees of freedom equal to the number of coefficients, not counting the constant term (the intercept for polynomial and logarithmic, the prefactor a for exponential and power).",
           "terms": "One indented row per term. When the polynomial is fitted with term blocks, this is the Type III decomposition per term block: the sum of squares the block explains in addition to all others, with the F test of the block. Otherwise one row per coefficient with SS = t² · MSE and one degree of freedom. Empty for exponential, logarithmic and power.",
           "error": "The Residuals row: the unexplained variation SSE with n − p degrees of freedom and MSE = SSE/(n − p).",
           "total": "The Total row: the total variation SST = Σ(yᵢ − ȳ)² with n − 1 degrees of freedom, the sum of Regression and Residuals."
@@ -11052,7 +11052,7 @@
         "Result": {
           "family": "The family actually fitted, with link function and, for negative binomial, the estimated θ; with auto-detection the family it chose.",
           "quasi": "Whether quasi-Poisson is active: if the Poisson fit shows χ²/df above 1.5, it is refitted with the dispersion φ = Pearson χ²/df; the coefficients stay, standard errors and confidence intervals are widened by √φ, and a warning gives φ.",
-          "autoReason": "The reason for the automatic choice, as the key of the hint text below the method: exactly two levels, count data, overdispersed count data, proportions without trials, or non-negative values as the fallback. Empty when a method is chosen explicitly.",
+          "autoReason": "The reason for the automatic choice. It appears as a hint below the method while “Auto-Detect (recommended)” is chosen; the result holds the key of that hint text. Possible reasons: exactly two levels, count data, overdispersed count data, proportions without trials, or non-negative values as the fallback. Empty when a method is chosen explicitly.",
           "n": "Number of rows used, row n: rows with finite values in Y, all X and, where given, the trials.",
           "iterations": "Number of IRLS iterations until convergence, row IRLS Iterations; a high count points to a difficult fit such as separation.",
           "aic": "Akaike information criterion, tile AIC: −2ℓ + 2k with the log-likelihood ℓ and k parameters (coefficients, plus θ for negative binomial). Smaller is better; only for comparing models of the same response.",
