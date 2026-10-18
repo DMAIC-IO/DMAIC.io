@@ -7713,19 +7713,19 @@
         "setParam": {
           "help": "Setzt einen Parameter. Ein Wert außerhalb seines Bereichs wird angenommen; validationMsg nennt dann den Grund, und compute rechnet nicht. Ein Moduswechsel setzt eine Statistik, die der neue Modus nicht anbietet, auf 'mean' zurück.",
           "params": {
-            "key": "Einer der Schlüssel aus activeParams: mode, statisticId, B, seed, confidence und ciMethod immer; statParams.trim nur bei der Statistik 'trimmedMean'; statParams.p nur bei 'quantile'; statParams.lsl und statParams.usl nur bei 'ppk'; contrast nur im Modus 'two'; direction in den Modi 'two' und 'paired'; target im Modus 'one'. Jeder andere Wert ist ein Fehler.",
-            "value": "mode: 'one', 'two', 'paired' oder 'k'. statisticId: eine aus statisticOptions. statParams.trim und statParams.p: Zahl (trim ab 0 bis unter 0.5, p zwischen 0 und 1 ausschließlich). statParams.lsl, statParams.usl und target: Text mit einer Zahl, '' für keinen. B: ganze Zahl, gültig von 1000 bis 100000. seed: ganze Zahl, gültig von 0 bis 2147483647. confidence: Anteil, gültig zwischen 0 und 1 ausschließlich, zum Beispiel 0.95. contrast: 'difference' oder 'ratio'. direction: 'two-sided', 'greater' oder 'less'. ciMethod: 'bca' oder 'percentile'. Ein Wert der falschen Art oder außerhalb der Liste ist ein Fehler; eine Zahl außerhalb des genannten Bereichs wird angenommen und in validationMsg gemeldet."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys. Bereiche prüft erst das Rechnen; ein Verstoß steht dann in validationMsg."
           }
         },
         "setColumn": {
-          "help": "Weist einem Slot eine Stichprobenspalte zu oder leert ihn mit null. Im Modus 'one' ist colRef1 die Stichprobe, in 'two' die beiden Gruppen, in 'paired' die Paare (colRef1 zuerst, colRef2 danach).",
+          "help": "Die Spalte einer Datensammlung, die diese Rolle liefert; nach einer Änderung wird neu gerechnet. Bei 1 Stichprobe ist es die Stichprobe, bei 2 Stichproben je eine der beiden Gruppen, gepaart „Vorher (X)“ und „Nachher (Y)“.",
           "params": {
             "slot": "Einer der Slots aus activeColumnSlots: 'colRef1' in jedem Modus außer 'k', dazu 'colRef2' in den Modi 'two' und 'paired'.",
             "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Leeren des Slots."
           }
         },
         "setColumns": {
-          "help": "Ersetzt die Gruppenspalten des Modus 'k'; die Reihenfolge ist die der Gruppen. Doppelte Einträge zählen einmal. Zum Rechnen sind mindestens 3 Spalten nötig.",
+          "help": "Die Spalten einer Datensammlung, die diese Rolle liefern; nach einer Änderung wird neu gerechnet. Die Reihenfolge ist die der Gruppen, doppelte Spalten zählen einmal, und zum Rechnen sind mindestens 3 Spalten nötig.",
           "params": {
             "slot": "Einer der Slots aus activeMultiSlots; dieses Modul kennt nur 'colRefsK', und nur im Modus 'k'.",
             "refs": "Liste von Spaltenbezügen { instanceId, sheetId, columnId } von Spalten aus pickableColumns; [] leert die Auswahl."
@@ -7735,7 +7735,7 @@
           "help": "Zieht einen neuen Zufalls-Startwert zwischen 1 und 2147483647."
         },
         "compute": {
-          "help": "Rechnet das Resampling und kehrt nach dem letzten Durchlauf zurück; result enthält danach die neue Zusammenfassung. Es rechnet nicht, solange ein Lauf läuft oder validationMsg einen Grund nennt (ungültige Parameter, fehlende oder zu kurze Spalten, weniger als 3 Gruppen im Modus 'k', das Verhältnis mit Werten von null oder darunter); result bleibt dann, wie es war, und es gibt keinen Fehler. Ein fehlgeschlagener Lauf lässt result, wie es war, und nennt den Grund in errorMsg."
+          "help": "Rechnet das Resampling und kehrt nach dem letzten Durchlauf zurück; result enthält danach die neue Zusammenfassung. Es rechnet nicht, solange ein Lauf läuft oder validationMsg einen Grund nennt (ungültige Parameter, fehlende oder zu kurze Spalten, weniger als 3 Gruppen im Modus 'k', das Verhältnis mit Werten von 0 oder darunter); result bleibt dann, wie es war, und es gibt keinen Fehler. Ein fehlgeschlagener Lauf lässt result, wie es war, und nennt den Grund in errorMsg."
         },
         "cancel": {
           "help": "Bricht einen laufenden Lauf ab; result bleibt, wie es war, und errorMsg bleibt leer. Ohne Lauf geschieht nichts."
@@ -7800,16 +7800,97 @@
           "help": "true, solange ein Lauf läuft."
         },
         "stale": {
-          "help": "true, wenn ein Ergebnis vorliegt, das aus anderen Eingaben als den jetzigen berechnet wurde."
+          "help": "Wahr, wenn ein Ergebnis vorliegt, das aus anderen Eingaben als den jetzigen berechnet wurde; die Oberfläche zeigt dann den Hinweis „Ergebnis veraltet“."
         },
         "validationMsg": {
-          "help": "Der Grund, warum compute nicht rechnen würde (ungültiger Parameter, fehlende oder zu kurze Spalte, weniger als 3 Gruppen im Modus 'k', das Verhältnis mit Werten von null oder darunter), oder ein leerer Text. Ein laufender Lauf setzt ihn nicht."
+          "help": "Der Grund, warum compute nicht rechnen würde (ungültiger Parameter, fehlende oder zu kurze Spalte, weniger als 3 Gruppen im Modus 'k', das Verhältnis mit Werten von 0 oder darunter), oder ein leerer Text. Ein laufender Lauf setzt ihn nicht."
         },
         "errorMsg": {
           "help": "Der Grund, warum der letzte Lauf scheiterte, oder ein leerer Text; ein neuer und ein abgebrochener Lauf lassen ihn leer."
         },
         "result": {
-          "help": "Die Zusammenfassung des letzten fertigen Laufs: Schätzwert, Standardfehler, Verzerrung, Intervall, p-Wert, Gruppenergebnisse und Post-hoc-Vergleiche, wo sie gelten, und Histogramm-Klassen der gezogenen Verteilungen (keine einzelnen Ziehungen). null, bis ein Lauf fertig war."
+          "help": "Das zuletzt erfolgreich gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; null, bis zur ersten erfolgreichen Rechnung."
+        }
+      },
+      "types": {
+        "Params": {
+          "mode": "Der Aufbau, Knöpfe „1 Stichprobe“, „2 Stichproben“, „Gepaart“ und „k Stichproben“: eine Stichprobe allein (Bootstrap-Intervall, auf Wunsch gegen einen Sollwert), zwei unabhängige Stichproben (Bootstrap des Unterschieds und Permutationstest), gepaarte Werte (Bootstrap und Vorzeichenwechsel-Test auf die Differenzen d = x − y) oder mindestens drei Gruppen (globaler Permutationstest mit Paarvergleichen nach Holm). Ein Wechsel setzt eine Statistik, die der neue Aufbau nicht anbietet, auf den Mittelwert zurück. Ein anderer Wert ist sofort ein Fehler.",
+          "statisticId": "Die Statistik θ, Feld „Statistik“, die aus jeder Stichprobe berechnet wird: Mittelwert, Median, Standardabweichung und Varianz (beide mit n − 1), getrimmter Mittelwert, Quantil (Typ 7 wie in R), Variationskoeffizient s / x̄ und Ppk = min((OSG − x̄) / 3s, (x̄ − USG) / 3s). Gepaart stehen nur Mittelwert, Median und getrimmter Mittelwert zur Wahl, bei k Stichproben alle außer Ppk. Eine Statistik, die der Aufbau nicht anbietet, ist sofort ein Fehler. Vorbelegt ist der Mittelwert.",
+          "statParams": {
+            "trim": "Der Trimmanteil je Seite, Feld „Trimmanteil je Seite“, nur beim getrimmten Mittelwert: von jeder Seite der sortierten Werte werden ⌊n · Anteil⌋ Werte gestrichen, wie in R. Zulässig ist 0 bis unter 0,5, vorbelegt 0,1. Ein Wert außerhalb wird angenommen und erst beim Berechnen gemeldet; gerechnet wird dann nicht.",
+            "p": "Das Quantil p, Feld „Quantil p“, nur bei der Statistik Quantil: der Anteil der Werte unterhalb des geschätzten Quantils, berechnet nach Typ 7 wie in R. Zulässig ist 0 < p < 1, vorbelegt 0,95. Ein Wert außerhalb wird angenommen und erst beim Berechnen gemeldet; gerechnet wird dann nicht.",
+            "lsl": "Die untere Spezifikationsgrenze, Feld „Untere Toleranz (USG)“, nur bei Ppk: Text mit einer Zahl (Komma oder Punkt), leer heißt keine untere Grenze. Ppk braucht mindestens eine der beiden Grenzen, beide müssen lesbar sein, USG muss unter OSG liegen, und jede Stichprobe braucht mindestens 10 Werte. Ein Verstoß wird erst beim Berechnen gemeldet; gerechnet wird dann nicht.",
+            "usl": "Die obere Spezifikationsgrenze, Feld „Obere Toleranz (OSG)“, nur bei Ppk: Text mit einer Zahl (Komma oder Punkt), leer heißt keine obere Grenze. Ppk braucht mindestens eine der beiden Grenzen, beide müssen lesbar sein, OSG muss über USG liegen, und jede Stichprobe braucht mindestens 10 Werte. Ein Verstoß wird erst beim Berechnen gemeldet; gerechnet wird dann nicht."
+          },
+          "contrast": "Der Kontrast, Feld „Kontrast“, nur bei zwei Stichproben: „Differenz θ₁ − θ₂“ oder „Verhältnis θ₁ / θ₂“ der Statistik beider Gruppen; der Permutationstest prüft beim Verhältnis log θ₁ − log θ₂. Das Verhältnis braucht ausschließlich positive Werte und eine positive Statistik in beiden Gruppen; ein Verstoß wird erst beim Berechnen gemeldet. Vorbelegt ist die Differenz; ein anderer Wert ist sofort ein Fehler.",
+          "direction": "Die Alternativhypothese, Feld „Alternativhypothese“, bei zwei Stichproben und gepaart: „zweiseitig (≠)“ zählt Zuordnungen mit |T| ≥ |T₀|, „größer (>)“ solche mit T ≥ T₀, „kleiner (<)“ solche mit T ≤ T₀. Sie wirkt nur auf den p-Wert des Permutationstests, nicht auf das Bootstrap-Intervall. Vorbelegt ist zweiseitig; ein anderer Wert ist sofort ein Fehler.",
+          "target": "Der Sollwert H₀, Feld „Sollwert H₀“, nur bei einer Stichprobe: Text mit einer Zahl, leer heißt keine Prüfung. Mit Sollwert zeigt die Spalte „Entscheidung“ „H₀ ablehnen“, wenn er außerhalb des angezeigten Konfidenzintervalls der gewählten Intervallmethode liegt, sonst „H₀ beibehalten“; die Intervallgrenzen zählen zum Intervall. Ein nicht lesbarer Text wird erst beim Berechnen gemeldet. Der Sollwert geht nicht in den Fingerabdruck ein; ihn zu ändern macht das Ergebnis nicht veraltet.",
+          "B": "Die Zahl der Wiederholungen B, Feld „Wiederholungen B“: so viele Bootstrap-Ziehungen werden gerechnet, und so viele zufällige Zuordnungen nimmt der Permutationstest, wenn er nicht exakt aufzählt. Eine ganze Zahl von 1000 bis 100000, vorbelegt 10000; mehr Wiederholungen glätten das Ergebnis und kosten Zeit. Eine Kommazahl ist sofort ein Fehler, eine ganze Zahl außerhalb des Bereichs wird erst beim Berechnen gemeldet; gerechnet wird dann nicht.",
+          "seed": "Der Startwert des Zufallsgenerators, Feld „Startwert (Seed)“: gleiche Eingaben mit gleichem Startwert ergeben dasselbe Ergebnis. Eine ganze Zahl von 0 bis 2147483647, vorbelegt 42; „Neuen Startwert würfeln“ zieht einen zwischen 1 und 2147483647. Eine Kommazahl ist sofort ein Fehler, ein Wert außerhalb des Bereichs wird erst beim Berechnen gemeldet; gerechnet wird dann nicht.",
+          "confidence": "Das Konfidenzniveau, Feld „Konfidenzniveau“, als Anteil, zum Beispiel 0,95 für 95 %: die Überdeckung der Bootstrap-Intervalle; die Aussagezeile prüft p-Werte gegen α = 1 − Niveau. Zulässig ist 0 < Niveau < 1, vorbelegt 0,95; das Eingabefeld der Oberfläche erlaubt nur 0,5 bis 0,999. Ein Wert außerhalb wird angenommen und erst beim Berechnen gemeldet; gerechnet wird dann nicht.",
+          "ciMethod": "Die Intervallmethode, Feld „Intervallmethode“: „BCa“ (bias-korrigiert und beschleunigt) oder „Perzentil“. Gerechnet werden immer beide; die Wahl bestimmt nur, welches Intervall Tabellen, Diagramm und Entscheidung zeigen, und geht nicht in den Fingerabdruck ein. Vorbelegt ist BCa; ein anderer Wert ist sofort ein Fehler."
+        },
+        "Result": {
+          "inputsHash": "Der Fingerabdruck der Eingaben, acht Hexadezimalzeichen (FNV-1a) über Aufbau, Statistik und ihre Parameter, Kontrast (nur zwei Stichproben), Alternativhypothese (zwei Stichproben und gepaart), B, Startwert, Konfidenzniveau und die bereinigten Daten. Sollwert und Intervallmethode gehen nicht ein. Weicht der Fingerabdruck der aktuellen Eingaben ab, gilt das Ergebnis als veraltet.",
+          "mode": "Der Aufbau, mit dem gerechnet wurde (1 Stichprobe, 2 Stichproben, gepaart, k Stichproben), Stand zu Beginn der Rechnung. Er bestimmt, welche der Teile Bootstrap, Permutationstest und k-Auswertung gefüllt sind.",
+          "statisticId": "Die Statistik, mit der gerechnet wurde, Stand zu Beginn der Rechnung.",
+          "contrast": "Der Kontrast der Rechnung, Differenz oder Verhältnis. Er wird immer gespeichert, auch wenn der Aufbau ihn nicht nutzt; wirksam ist er nur bei zwei Stichproben.",
+          "direction": "Die Alternativhypothese der Rechnung, zweiseitig, größer oder kleiner. Sie wird immer gespeichert, auch wenn der Aufbau sie nicht nutzt; wirksam ist sie nur bei zwei Stichproben und gepaart.",
+          "confidence": "Das Konfidenzniveau der Rechnung als Anteil, zum Beispiel 0,95.",
+          "B": "Die Zahl der Wiederholungen der Rechnung.",
+          "seed": "Der Startwert der Rechnung; mit ihm und denselben Eingaben lässt sich das Ergebnis genau wiederholen.",
+          "labels": "Die Namen der Stichprobenspalten in ihrer Reihenfolge, „?“, wenn eine Spalte nicht mehr auffindbar ist. Bei k Stichproben füllen sie die Spalte „Gruppe“; die Spalte „Paar“ der Paarvergleiche setzt zwei davon zusammen.",
+          "n": "Die Zahl der ausgewerteten Werte je Stichprobe, Spalte „n“; Text und leere Zellen fallen weg. Gepaart zählen nur Zeilen, in denen beide Seiten eine Zahl haben, deshalb steht dort zweimal dieselbe Zahl.",
+          "boot": "Die Bootstrap-Auswertung bei einer, zwei und gepaarten Stichproben; leer bei k Stichproben.",
+          "perm": "Der Permutationstest bei zwei Stichproben und gepaart; leer bei einer und bei k Stichproben.",
+          "k": "Die Auswertung bei k Stichproben: globaler Permutationstest, Ergebnisse je Gruppe und Paarvergleiche; bei den anderen Aufbauten leer."
+        },
+        "Boot": {
+          "estimate": "Der Schätzwert θ̂ aus den Originaldaten, Spalte „Schätzwert θ̂“: bei einer Stichprobe θ(x), bei zwei Stichproben θ(x) − θ(y) oder θ(x) / θ(y) je nach Kontrast, gepaart θ(d) der Differenzen d = x − y. Das Diagramm „Bootstrap-Verteilung“ markiert ihn als Linie. Bei k Stichproben zeigt dieselbe Spalte die gepoolte Statistik.",
+          "se": "Der Bootstrap-Standardfehler, Spalte „Standardfehler“: die Standardabweichung (mit n − 1) der endlichen Bootstrap-Replikate. Leer, wenn weniger als 2 endliche Replikate vorliegen.",
+          "bias": "Die Verzerrung, Spalte „Verzerrung (Bias)“: Mittelwert der endlichen Replikate minus θ̂. Ein Wert nahe 0 heißt, dass die Statistik im Mittel trifft. Leer ohne endliches Replikat oder ohne endliches θ̂.",
+          "ci": "Die beiden Konfidenzintervalle des Schätzwerts, Perzentil und BCa. Die Spalte „Konfidenzintervall“ zeigt das der gewählten Intervallmethode als untere; obere Grenze, die Methode steht in Klammern in der Überschrift.",
+          "bins": "Das Histogramm der Bootstrap-Replikate für das Diagramm „Bootstrap-Verteilung“, 30 gleich breite Klassen; die einzelnen Replikate werden nicht gespeichert."
+        },
+        "Intervals": {
+          "percentile": "Das Perzentil-Intervall wie R boot.ci „perc“: untere und obere Grenze sind die Quantile (1 − Niveau)/2 und (1 + Niveau)/2 der Replikate. Leer bei weniger als 2 endlichen Replikaten oder wenn alle Replikate gleich sind.",
+          "bca": "Das BCa-Intervall (bias-korrigiert und beschleunigt) wie R boot.ci „bca“: die Perzentile werden mit z₀ aus dem Anteil der Replikate unter θ̂ und der Beschleunigung a aus Jackknife-Einflusswerten verschoben. Ist BCa nicht bestimmbar, steht hier das Perzentil-Intervall.",
+          "bcaFallback": "Wahr, wenn BCa nicht bestimmbar war und deshalb das Perzentil-Intervall übernommen wurde: weniger als 2 endliche Replikate, θ̂ nicht endlich, alle Replikate auf einer Seite von θ̂ (z₀ unendlich) oder eine nicht endliche Beschleunigung, etwa wenn die Replikate nicht streuen. Bei der Methode BCa erscheint dann der Hinweis „BCa nicht bestimmbar – Perzentil-Intervall angezeigt“; bei Gruppen und Paarvergleichen gilt der Rückfall ohne Hinweiszeile."
+        },
+        "Bin": {
+          "x0": "Die untere Grenze der Klasse. Die 30 Klassen sind gleich breit und reichen vom kleinsten bis zum größten endlichen Wert; sind alle Werte gleich, gibt es eine Klasse von Wert − 0,5 bis Wert + 0,5, ohne endliche Werte keine.",
+          "x1": "Die obere Grenze der Klasse; die letzte Klasse endet genau am größten Wert.",
+          "count": "Die Zahl der endlichen Werte in der Klasse."
+        },
+        "Perm": {
+          "observed": "Die beobachtete Prüfgröße T₀, Spalte „Beobachtetes T“: bei zwei Stichproben die Differenz θ(x) − θ(y), beim Kontrast Verhältnis log θ(x) − log θ(y); gepaart θ(d) der Differenzen. Das Diagramm „Permutationsverteilung“ markiert T₀, zweiseitig auch −T₀.",
+          "pValue": "Der p-Wert, Spalte „p-Wert“: der Anteil der Zuordnungen, deren T mindestens so extrem ist wie T₀ in Richtung der Alternativhypothese (zweiseitig |T| ≥ |T₀|, größer T ≥ T₀, kleiner T ≤ T₀). Exakt ist p = Treffer / Zahl der Zuordnungen, bei Monte Carlo p = (1 + Treffer) / (B + 1). Die Aussagezeile nennt den Unterschied signifikant, wenn p < α = 1 − Konfidenzniveau; Werte unter 0,0001 zeigt die Tabelle als „< 0.0001“.",
+          "exact": "Wahr, wenn alle Zuordnungen aufgezählt wurden: bei höchstens 20000 möglichen Zuordnungen (zwei Stichproben N! / (n₁! · n₂!), gepaart 2ⁿ Vorzeichen) rechnet das Modul exakt und ohne Zufall, sonst Monte Carlo mit B zufälligen Zuordnungen und p = (1 + Treffer) / (B + 1). Die Spalte „Permutationen“ zeigt „exakt“ oder „Monte Carlo“ vor der Zahl.",
+          "permutations": "Die Zahl der ausgewerteten Zuordnungen, Spalte „Permutationen“: exakt die Zahl aller Zuordnungen (höchstens 20000), sonst B; bei Monte Carlo gilt p = (1 + Treffer) / (B + 1), damit p nie 0 wird. Bei zwei Stichproben werden die gepoolten Werte neu auf die Gruppen verteilt, gepaart die Vorzeichen der Differenzen gewechselt.",
+          "bins": "Das Histogramm der Permutationsverteilung von T für das Diagramm „Permutationsverteilung“, 30 gleich breite Klassen."
+        },
+        "KResult": {
+          "estimate": "Die Statistik θ aller Werte zusammen (gepoolt); im Aufbau k Stichproben die Spalte „Schätzwert θ̂“ der Ergebnistabelle.",
+          "observed": "Die beobachtete Prüfgröße T₀ = Σ nᵢ · (θᵢ − θ)², Spalte „Beobachtetes T“: wie weit die Gruppenstatistiken θᵢ, gewichtet mit ihrem Umfang nᵢ, um die gepoolte Statistik θ streuen.",
+          "pValue": "Der p-Wert des globalen Tests, Spalte „p-Wert“: einseitig der Anteil der Zuordnungen mit T ≥ T₀; exakt p = Treffer / Zahl der Zuordnungen, bei Monte Carlo p = (1 + Treffer) / (B + 1). Liegt er unter α = 1 − Konfidenzniveau, weicht mindestens eine Gruppe ab.",
+          "exact": "Wahr, wenn alle Zuordnungen der gepoolten Werte auf die Gruppen aufgezählt wurden (N! / Π nᵢ! höchstens 20000); sonst Monte Carlo mit B Zuordnungen.",
+          "permutations": "Die Zahl der ausgewerteten Zuordnungen des globalen Tests, Spalte „Permutationen“: exakt alle (höchstens 20000), sonst B.",
+          "bins": "Das Histogramm der Permutationsverteilung von T für das Diagramm „Permutationsverteilung“, 30 gleich breite Klassen.",
+          "groups": "Das Ergebnis je Gruppe in der Reihenfolge der Spalten, Tabelle „Gruppen“.",
+          "posthoc": "Die Paarvergleiche aller k · (k − 1) / 2 Gruppenpaare, Tabelle „Paarvergleiche (Holm)“."
+        },
+        "KGroup": {
+          "estimate": "Die Statistik θ der Gruppe, Spalte „Schätzwert θ̂“ der Gruppentabelle.",
+          "ci": "Die beiden Bootstrap-Konfidenzintervalle der Gruppe aus B Ziehungen, Perzentil und BCa; die Spalte „Konfidenzintervall“ zeigt das der gewählten Intervallmethode."
+        },
+        "PostHoc": {
+          "i": "Die Position der ersten Gruppe des Paars in der Spaltenliste, ab 0 gezählt. Die Spalte „Paar“ zeigt beide Gruppennamen, durch einen Gedankenstrich getrennt.",
+          "j": "Die Position der zweiten Gruppe des Paars, ab 0 gezählt, immer größer als die der ersten.",
+          "contrast": "Die Differenz θᵢ − θⱼ der beiden Gruppenstatistiken; die Spalte „Schätzwert θ̂“ der Paarvergleiche zeigt sie. Paarvergleiche nutzen immer die Differenz.",
+          "ci": "Die beiden Bootstrap-Konfidenzintervalle der Differenz, Perzentil und BCa; die Spalte „Konfidenzintervall“ zeigt das der gewählten Intervallmethode. Enthält es die 0, ist kein Unterschied belegt.",
+          "pRaw": "Der unkorrigierte p-Wert des Paars, Spalte „p roh“: zweiseitiger Permutationstest nur dieser beiden Gruppen, exakt bei höchstens 20000 Zuordnungen, sonst Monte Carlo.",
+          "pHolm": "Der nach Holm korrigierte p-Wert, Spalte „p Holm“, wie R p.adjust „holm“: die m rohen p-Werte aufsteigend sortiert, der r-te mit (m − r + 1) multipliziert, monoton gemacht und auf höchstens 1 begrenzt. So bleibt das Risiko eines Fehlalarms über alle Paare zusammen bei α.",
+          "exact": "Wahr, wenn der Test des Paars alle Zuordnungen aufgezählt hat (höchstens 20000), sonst Monte Carlo; die Spalte „p-Wert-Methode“ zeigt „exakt“ oder „Monte Carlo“."
         }
       },
       "sectionMode": "Modus",

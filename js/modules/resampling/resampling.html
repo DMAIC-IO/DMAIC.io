@@ -4,7 +4,7 @@
   <div class="resampling__input dmike-split__input">
 
     <div class="dmike-split__section-title" x-text="t('sectionMode')"></div>
-    <div class="btn-group">
+    <div class="btn-group" data-help-key="modules.resampling.types.Params.mode">
       <button type="button" class="btn--segment" data-ref="mode-one" data-mode="one"
         :class="isMode('one') ? 'btn--active' : ''" @click="setMode('one')" x-text="t('modeOne')"></button>
       <button type="button" class="btn--segment" data-ref="mode-two" data-mode="two"
@@ -18,19 +18,19 @@
     <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
     <template x-if="isMode('k')">
       <div class="field-group">
-        <label x-text="t('kColumns')"></label>
+        <label data-help-key="modules.resampling.actions.setColumns.help" x-text="t('kColumns')"></label>
         <div data-ref="picker-k-wrap"></div>
       </div>
     </template>
     <template x-if="!isMode('k')">
       <div class="resampling__contents">
         <div class="field-group">
-          <label x-text="t(sampleLabelKey(1))"></label>
+          <label data-help-key="modules.resampling.actions.setColumn.help" x-text="t(sampleLabelKey(1))"></label>
           <div data-ref="picker1-wrap"></div>
         </div>
         <template x-if="!isMode('one')">
           <div class="field-group">
-            <label x-text="t(sampleLabelKey(2))"></label>
+            <label data-help-key="modules.resampling.actions.setColumn.help" x-text="t(sampleLabelKey(2))"></label>
             <div data-ref="picker2-wrap"></div>
           </div>
         </template>
@@ -39,7 +39,7 @@
 
     <div class="dmike-split__section-title" x-text="t('sectionStatistic')"></div>
     <div class="field-group">
-      <label x-text="t('statistic')"></label>
+      <label data-help-key="modules.resampling.types.Params.statisticId" x-text="t('statistic')"></label>
       <select class="field" data-ref="statistic" :value="model.statisticId" @change="onParamInput('statisticId', $event)">
         <template x-for="o in statisticChoices()" :key="o.value">
           <option :value="o.value" :selected="o.value === model.statisticId" x-text="o.label"></option>
@@ -47,25 +47,25 @@
       </select>
     </div>
     <div class="field-group" x-show="showTrim()">
-      <label x-text="t('trim')"></label>
+      <label data-help-key="modules.resampling.types.Params.statParams.trim" x-text="t('trim')"></label>
       <input type="number" class="field field--num" data-ref="trim" min="0" max="0.49" step="0.01" :value="model.statParams.trim" @change="onParamInput('statParams.trim', $event)">
     </div>
     <div class="field-group" x-show="showQuantileP()">
-      <label x-text="t('quantileP')"></label>
+      <label data-help-key="modules.resampling.types.Params.statParams.p" x-text="t('quantileP')"></label>
       <input type="number" class="field field--num" data-ref="quantile-p" min="0" max="1" step="0.01" :value="model.statParams.p" @change="onParamInput('statParams.p', $event)">
     </div>
     <div class="field-row" x-show="showLimits()">
       <div class="field-group">
-        <label x-text="t('lsl')"></label>
+        <label data-help-key="modules.resampling.types.Params.statParams.lsl" x-text="t('lsl')"></label>
         <input type="text" class="field field--num" data-ref="lsl" :value="model.statParams.lsl" @input="onParamInput('statParams.lsl', $event)">
       </div>
       <div class="field-group">
-        <label x-text="t('usl')"></label>
+        <label data-help-key="modules.resampling.types.Params.statParams.usl" x-text="t('usl')"></label>
         <input type="text" class="field field--num" data-ref="usl" :value="model.statParams.usl" @input="onParamInput('statParams.usl', $event)">
       </div>
     </div>
     <div class="field-group" x-show="showContrast()">
-      <label x-text="t('contrast')"></label>
+      <label data-help-key="modules.resampling.types.Params.contrast" x-text="t('contrast')"></label>
       <select class="field" data-ref="contrast" :value="model.contrast" @change="onParamInput('contrast', $event)">
         <template x-for="o in contrastChoices()" :key="o.value">
           <option :value="o.value" :selected="o.value === model.contrast" x-text="o.label"></option>
@@ -73,7 +73,7 @@
       </select>
     </div>
     <div class="field-group" x-show="showDirection()">
-      <label x-text="t('direction')"></label>
+      <label data-help-key="modules.resampling.types.Params.direction" x-text="t('direction')"></label>
       <select class="field" data-ref="direction" :value="model.direction" @change="onParamInput('direction', $event)">
         <template x-for="o in directionChoices()" :key="o.value">
           <option :value="o.value" :selected="o.value === model.direction" x-text="o.label"></option>
@@ -81,32 +81,32 @@
       </select>
     </div>
     <div class="field-group" x-show="showTarget()">
-      <label x-text="t('target')"></label>
+      <label data-help-key="modules.resampling.types.Params.target" x-text="t('target')"></label>
       <input type="text" class="field field--num" data-ref="target" :placeholder="t('targetPh')" :value="model.target" @input="onParamInput('target', $event)">
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionSettings')"></div>
     <div class="field-row">
       <div class="field-group">
-        <label x-text="t('B')"></label>
+        <label data-help-key="modules.resampling.types.Params.B" x-text="t('B')"></label>
         <input type="number" class="field field--num" data-ref="b" min="1000" max="100000" step="1000" :value="model.B" @change="onParamInput('B', $event)">
       </div>
       <div class="field-group">
-        <label x-text="t('confidence')"></label>
+        <label data-help-key="modules.resampling.types.Params.confidence" x-text="t('confidence')"></label>
         <input type="number" class="field field--num" data-ref="confidence" min="0.5" max="0.999" step="0.01" :value="model.confidence" @change="onParamInput('confidence', $event)">
       </div>
     </div>
     <div class="field-row">
       <div class="field-group">
-        <label x-text="t('seed')"></label>
+        <label data-help-key="modules.resampling.types.Params.seed" x-text="t('seed')"></label>
         <input type="number" class="field field--num" data-ref="seed" min="0" step="1" :value="model.seed" @change="onParamInput('seed', $event)">
       </div>
-      <button type="button" class="btn resampling__seed-roll" data-ref="seed-roll" :title="t('rollSeed')" :aria-label="t('rollSeed')" @click="rollSeed()">
+      <button type="button" class="btn resampling__seed-roll" data-ref="seed-roll" data-help-key="modules.resampling.actions.rollSeed.help" :title="t('rollSeed')" :aria-label="t('rollSeed')" @click="rollSeed()">
         <span class="icon" data-icon="action.roll-seed" aria-hidden="true"></span>
       </button>
     </div>
     <div class="field-group">
-      <label x-text="t('ciMethod')"></label>
+      <label data-help-key="modules.resampling.types.Params.ciMethod" x-text="t('ciMethod')"></label>
       <select class="field" data-ref="ci-method" :value="model.ciMethod" @change="onParamInput('ciMethod', $event)">
         <template x-for="o in ciMethodChoices()" :key="o.value">
           <option :value="o.value" :selected="o.value === model.ciMethod" x-text="o.label"></option>
@@ -114,15 +114,15 @@
       </select>
     </div>
 
-    <p class="resampling__validation" data-ref="validation" x-show="showValidation()" x-text="validationKey ? t(validationKey) : ''"></p>
+    <p class="resampling__validation" data-ref="validation" data-help-key="modules.resampling.fields.validationMsg.help" x-show="showValidation()" x-text="validationKey ? t(validationKey) : ''"></p>
 
-    <button type="button" class="dmike-btn-run" data-ref="compute" :disabled="!canCompute()" @click="compute()">
+    <button type="button" class="dmike-btn-run" data-ref="compute" data-help-key="modules.resampling.actions.compute.help" :disabled="!canCompute()" @click="compute()">
       <span class="icon icon--sm" data-icon="action.run" aria-hidden="true"></span>
       <span x-text="t('compute')"></span>
     </button>
     <div class="resampling__running" x-show="running">
       <progress class="resampling__progress" data-ref="progress" max="1" :value="progress"></progress>
-      <button type="button" class="btn" data-ref="cancel" @click="cancel()" x-text="t('cancel')"></button>
+      <button type="button" class="btn" data-ref="cancel" data-help-key="modules.resampling.actions.cancel.help" @click="cancel()" x-text="t('cancel')"></button>
     </div>
     <p class="resampling__error" data-ref="error" x-show="errorKey" x-text="errorKey ? t(errorKey) : ''"></p>
   </div>
@@ -135,7 +135,7 @@
       <p x-text="t('placeholderText')"></p>
     </div>
 
-    <p class="resampling__stale" data-ref="stale" x-show="view && stale" x-text="t('stale')"></p>
+    <p class="resampling__stale" data-ref="stale" data-help-key="modules.resampling.fields.stale.help" x-show="view && stale" x-text="t('stale')"></p>
 
     <template x-if="view">
       <div class="resampling__contents">
@@ -144,14 +144,14 @@
         <table class="dmike-table dmike-table--head-mono resampling__result-table" data-ref="result-table">
           <thead>
             <tr>
-              <th x-text="t('estimate')"></th>
-              <th x-show="view.hasBoot" x-text="t('se')"></th>
-              <th x-show="view.hasBoot" x-text="t('bias')"></th>
-              <th x-show="view.hasBoot" x-text="t('interval') + ' (' + t(model.ciMethod === 'bca' ? 'ciBca' : 'ciPercentile') + ')'"></th>
-              <th x-show="view.decisionKey" x-text="t('decision')"></th>
-              <th x-show="view.hasTest" x-text="t('observedT')"></th>
-              <th x-show="view.hasTest" x-text="t('pValue')"></th>
-              <th x-show="view.hasTest" x-text="t('permutations')"></th>
+              <th><span :data-help-key="resultHelp('estimate')" x-text="t('estimate')"></span></th>
+              <th x-show="view.hasBoot"><span data-help-key="modules.resampling.types.Boot.se" x-text="t('se')"></span></th>
+              <th x-show="view.hasBoot"><span data-help-key="modules.resampling.types.Boot.bias" x-text="t('bias')"></span></th>
+              <th x-show="view.hasBoot"><span data-help-key="modules.resampling.types.Boot.ci" x-text="t('interval') + ' (' + t(model.ciMethod === 'bca' ? 'ciBca' : 'ciPercentile') + ')'"></span></th>
+              <th x-show="view.decisionKey"><span data-help-key="modules.resampling.types.Params.target" x-text="t('decision')"></span></th>
+              <th x-show="view.hasTest"><span :data-help-key="resultHelp('observed')" x-text="t('observedT')"></span></th>
+              <th x-show="view.hasTest"><span :data-help-key="resultHelp('pValue')" x-text="t('pValue')"></span></th>
+              <th x-show="view.hasTest"><span :data-help-key="resultHelp('permutations')" x-text="t('permutations')"></span></th>
             </tr>
           </thead>
           <tbody>
@@ -167,7 +167,7 @@
             </tr>
           </tbody>
         </table>
-        <p class="resampling__note" data-ref="result-bca-fallback" x-show="view.bcaFallback" x-text="t('bcaFallback')"></p>
+        <p class="resampling__note" data-ref="result-bca-fallback" data-help-key="modules.resampling.types.Intervals.bcaFallback" x-show="view.bcaFallback" x-text="t('bcaFallback')"></p>
       </div>
     </template>
 
@@ -180,7 +180,7 @@
       <div class="resampling__contents">
         <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionGroups')"></span></div>
         <table class="resampling__table" data-ref="groups-table">
-          <thead><tr><th x-text="t('group')"></th><th>n</th><th x-text="t('estimate')"></th><th x-text="t('interval')"></th></tr></thead>
+          <thead><tr><th><span data-help-key="modules.resampling.types.Result.labels" x-text="t('group')"></span></th><th><span data-help-key="modules.resampling.types.Result.n">n</span></th><th><span data-help-key="modules.resampling.types.KGroup.estimate" x-text="t('estimate')"></span></th><th><span data-help-key="modules.resampling.types.KGroup.ci" x-text="t('interval')"></span></th></tr></thead>
           <tbody>
             <template x-for="(g, idx) in view.groups" :key="idx">
               <tr><td x-text="g.label"></td><td x-text="g.n"></td><td x-text="g.estimate"></td><td x-text="g.interval"></td></tr>
@@ -189,7 +189,7 @@
         </table>
         <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionPosthoc')"></span></div>
         <table class="resampling__table" data-ref="posthoc-table">
-          <thead><tr><th x-text="t('pair')"></th><th x-text="t('estimate')"></th><th x-text="t('interval')"></th><th x-text="t('pRaw')"></th><th x-text="t('pHolm')"></th><th x-text="t('pMethod')"></th></tr></thead>
+          <thead><tr><th><span data-help-key="modules.resampling.types.PostHoc.i" x-text="t('pair')"></span></th><th><span data-help-key="modules.resampling.types.PostHoc.contrast" x-text="t('estimate')"></span></th><th><span data-help-key="modules.resampling.types.PostHoc.ci" x-text="t('interval')"></span></th><th><span data-help-key="modules.resampling.types.PostHoc.pRaw" x-text="t('pRaw')"></span></th><th><span data-help-key="modules.resampling.types.PostHoc.pHolm" x-text="t('pHolm')"></span></th><th><span data-help-key="modules.resampling.types.PostHoc.exact" x-text="t('pMethod')"></span></th></tr></thead>
           <tbody>
             <template x-for="(h, idx) in view.posthoc" :key="idx">
               <tr><td x-text="h.pair"></td><td x-text="h.contrast"></td><td x-text="h.interval"></td><td x-text="h.pRaw"></td><td x-text="h.pHolm"></td><td x-text="t(h.methodKey)"></td></tr>

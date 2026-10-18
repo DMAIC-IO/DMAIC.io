@@ -105,6 +105,123 @@ const DIRECTION_LABEL_KEYS = { 'two-sided': 'twoSided', greater: 'greater', less
 const CI_METHOD_LABEL_KEYS = { bca: 'ciBca', percentile: 'ciPercentile' };
 
 /**
+ * Die Schlüsselfläche von `setParam`. Punkt im Schlüssel = Verschachtelung
+ * im Model (`statParams.trim`). Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {'one'|'two'|'paired'|'k'} mode  Aufbau
+ * @property {string} statisticId  Statistik
+ * @property {number} [statParams.trim]  Stutzungsanteil, nur getrimmter Mittelwert
+ * @property {number} [statParams.p]  Quantil, nur Quantil
+ * @property {string} [statParams.lsl]  untere Spezifikationsgrenze, nur Ppk
+ * @property {string} [statParams.usl]  obere Spezifikationsgrenze, nur Ppk
+ * @property {'difference'|'ratio'} [contrast]  Vergleich, nur zwei Stichproben
+ * @property {'two-sided'|'greater'|'less'} [direction]  Alternativhypothese, zwei und gepaart
+ * @property {string} [target]  Zielwert, nur eine Stichprobe
+ * @property {number} B  Zahl der Wiederholungen
+ * @property {number} seed  Startwert des Zufallsgenerators
+ * @property {number} confidence  Konfidenzniveau als Anteil
+ * @property {'bca'|'percentile'} ciMethod  Intervallverfahren
+ */
+
+/**
+ * Das zuletzt erfolgreich gerechnete Ergebnis, wie `read().result` es liefert.
+ * Welche Teile gefüllt sind, hängt vom Aufbau ab: one → boot; two und
+ * paired → boot und perm; k → k.
+ *
+ * @typedef {object} Result
+ * @property {string} inputsHash  Fingerabdruck der Eingaben
+ * @property {'one'|'two'|'paired'|'k'} mode  Aufbau
+ * @property {string} statisticId  Statistik
+ * @property {'difference'|'ratio'} contrast  Vergleich
+ * @property {'two-sided'|'greater'|'less'} direction  Alternativhypothese
+ * @property {number} confidence  Konfidenzniveau
+ * @property {number} B  Wiederholungen
+ * @property {number} seed  Startwert
+ * @property {string[]} labels  Stichproben
+ * @property {number[]} n  Werte je Stichprobe
+ * @property {Boot|null} boot  Bootstrap, nicht bei k
+ * @property {Perm|null} perm  Permutationstest, zwei und gepaart
+ * @property {KResult|null} k  k-Stichproben-Auswertung
+ */
+
+/**
+ * Bootstrap-Zusammenfassung (Aufbau one, two, paired).
+ *
+ * @typedef {object} Boot
+ * @property {number|null} estimate  Schätzwert
+ * @property {number|null} se  Bootstrap-Standardfehler
+ * @property {number|null} bias  Verzerrung
+ * @property {Intervals} ci  Konfidenzintervalle
+ * @property {Bin[]} bins  Histogramm der Replikate
+ */
+
+/**
+ * Beide Konfidenzintervalle eines Bootstraps.
+ *
+ * @typedef {object} Intervals
+ * @property {Array<number|null>|null} percentile  Perzentil-Intervall
+ * @property {Array<number|null>|null} bca  BCa-Intervall
+ * @property {boolean} bcaFallback  BCa auf Perzentil zurückgefallen
+ */
+
+/**
+ * Eine Histogrammklasse einer gezogenen Verteilung.
+ *
+ * @typedef {object} Bin
+ * @property {number} x0  Klassenbeginn
+ * @property {number} x1  Klassenende
+ * @property {number} count  Anzahl
+ */
+
+/**
+ * Permutationstest (Aufbau two, paired).
+ *
+ * @typedef {object} Perm
+ * @property {number|null} observed  beobachtete Statistik
+ * @property {number|null} pValue  p-Wert
+ * @property {boolean} exact  exakt aufgezählt
+ * @property {number} permutations  Zuordnungen bzw. Wiederholungen
+ * @property {Bin[]} bins  Histogramm der Permutationsverteilung
+ */
+
+/**
+ * k-Stichproben-Auswertung (Aufbau k).
+ *
+ * @typedef {object} KResult
+ * @property {number|null} estimate  Statistik der gepoolten Werte
+ * @property {number|null} observed  beobachtete Prüfgröße
+ * @property {number|null} pValue  p-Wert
+ * @property {boolean} exact  exakt aufgezählt
+ * @property {number} permutations  Zuordnungen bzw. Wiederholungen
+ * @property {Bin[]} bins  Histogramm der Permutationsverteilung
+ * @property {KGroup[]} groups  je Stichprobe
+ * @property {PostHoc[]} posthoc  Paarvergleiche
+ */
+
+/**
+ * Eine Stichprobe im Aufbau k.
+ *
+ * @typedef {object} KGroup
+ * @property {number|null} estimate  Schätzwert
+ * @property {Intervals} ci  Konfidenzintervalle
+ */
+
+/**
+ * Ein Paarvergleich im Aufbau k.
+ *
+ * @typedef {object} PostHoc
+ * @property {number} i  erste Stichprobe
+ * @property {number} j  zweite Stichprobe
+ * @property {number|null} contrast  Differenz
+ * @property {Intervals} ci  Konfidenzintervalle
+ * @property {number|null} pRaw  p-Wert unkorrigiert
+ * @property {number|null} pHolm  p-Wert nach Holm
+ * @property {boolean} exact  exakt aufgezählt
+ */
+
+/**
  * Die Agenten-Lesefläche von Resampling.
  *
  * Das Model hält die Eingaben und die verdichtete Ergebniszusammenfassung;
@@ -134,7 +251,7 @@ const CI_METHOD_LABEL_KEYS = { bca: 'ciBca', percentile: 'ciPercentile' };
  * @property {boolean} stale  true when a result exists that was computed from other inputs
  * @property {string} validationMsg  why `compute` would not run, or an empty string
  * @property {string} errorMsg  why the last run failed, or an empty string
- * @property {object|null} result  the summary of the last run (estimate, interval, p-value, histogram bins), or null
+ * @property {Result|null} result  the summary of the last run, or null until the first successful run
  */
 const mod = createModule({
   config: {
@@ -249,8 +366,8 @@ const mod = createModule({
        * deren Grund `validationMsg` nennt. Ein Moduswechsel setzt eine Statistik,
        * die der neue Modus nicht anbietet, auf den Mittelwert zurück.
        * @agent
-       * @param {'mode'|'statisticId'|'statParams.trim'|'statParams.p'|'statParams.lsl'|'statParams.usl'|'contrast'|'direction'|'target'|'B'|'seed'|'confidence'|'ciMethod'} key welcher Parameter
-       * @param {string|number} value der Wert; Zahlen als Zahl oder Zahlentext, Grenzen und Zielwert als Text
+       * @param {keyof Params} key welcher Parameter; die im aktuellen Zustand zulässigen nennt activeParams
+       * @param {string|number} value der Wert; Typ je Schlüssel siehe `Params`, Zahlen als Zahl oder Zahlentext, Grenzen und Zielwert als Text
        * @returns {void}
        * @throws {Error} wenn `key` im aktuellen Zustand nicht gilt oder `value` nicht zur Art des Parameters passt
        */
@@ -392,6 +509,19 @@ const mod = createModule({
         const opts = { ciMethod: this.model.ciMethod, target: this.model.target };
         this.view = resultView(this.model.result, opts);
         this.statement = statementParts(this.model.result, opts);
+      },
+
+      /**
+       * Hilfeschlüssel der Spalten Schätzwert, beobachtetes T, p-Wert und
+       * Permutationen der Ergebnistabelle — im Aufbau k zeigen sie Werte aus
+       * dem k-Ergebnis, sonst aus Bootstrap bzw. Permutationstest.
+       * @noagent Anzeige
+       * @param {'estimate'|'observed'|'pValue'|'permutations'} prop Spalte
+       * @returns {string}
+       */
+      resultHelp(prop) {
+        if (this.view && this.view.isK) return `modules.resampling.types.KResult.${prop}`;
+        return `modules.resampling.types.${prop === 'estimate' ? 'Boot' : 'Perm'}.${prop}`;
       },
 
       /** @noagent view transform; Kernaussage als ein übersetzter Absatz */

@@ -39,7 +39,7 @@ const RESAMPLING_I18N_KEYS = [
 ];
 
 /** Die Agententexte (eigener Schlüsselbaum, vom Agentenkatalog gelesen). */
-const AGENT_I18N_KEYS = ['whenToUse', 'actions', 'fields'];
+const AGENT_I18N_KEYS = ['whenToUse', 'actions', 'fields', 'types'];
 
 suite('resampling — registration', () => {
   test('manifest entry: statistics group, analyze (+ improve), same DMADV/8D phases as hypothesis-test', () => {
@@ -62,7 +62,7 @@ suite('resampling — registration', () => {
       for (const key of RESAMPLING_I18N_KEYS) {
         assertTrue(typeof dict[key] === 'string' && dict[key].trim() !== '', `${lang}: ${key}`);
       }
-      // whenToUse, actions und fields sind die Agententexte (Hilfen der Agentenfläche), keine Oberflächenschlüssel.
+      // whenToUse, actions, fields und types sind die Agententexte (Hilfen der Agentenfläche und Kontexthilfe), keine Oberflächenschlüssel.
       assertEqual(Object.keys(dict).filter((k) => !RESAMPLING_I18N_KEYS.includes(k) && !AGENT_I18N_KEYS.includes(k)).join(','), '', `${lang}: no unused keys`);
     }
   });

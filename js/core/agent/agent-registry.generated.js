@@ -13085,17 +13085,79 @@ export const AGENT_REGISTRY = {
             "name": "key",
             "type": "'mode'|'statisticId'|'statParams.trim'|'statParams.p'|'statParams.lsl'|'statParams.usl'|'contrast'|'direction'|'target'|'B'|'seed'|'confidence'|'ciMethod'",
             "optional": false,
-            "help": "welcher Parameter"
+            "help": "welcher Parameter; die im aktuellen Zustand zulässigen nennt activeParams"
           },
           {
             "name": "value",
             "type": "string|number",
             "optional": false,
-            "help": "der Wert; Zahlen als Zahl oder Zahlentext, Grenzen und Zielwert als Text"
+            "help": "der Wert; Typ je Schlüssel siehe `Params`, Zahlen als Zahl oder Zahlentext, Grenzen und Zielwert als Text"
           }
         ],
         "returns": "void",
-        "help": "Einen Parameter setzen; Gültigkeit und Bereiche prüft die Validierung, deren Grund `validationMsg` nennt. Ein Moduswechsel setzt eine Statistik, die der neue Modus nicht anbietet, auf den Mittelwert zurück."
+        "help": "Einen Parameter setzen; Gültigkeit und Bereiche prüft die Validierung, deren Grund `validationMsg` nennt. Ein Moduswechsel setzt eine Statistik, die der neue Modus nicht anbietet, auf den Mittelwert zurück.",
+        "keysOf": "Params",
+        "keys": {
+          "mode": {
+            "type": "'one'|'two'|'paired'|'k'",
+            "help": "Aufbau"
+          },
+          "statisticId": {
+            "type": "string",
+            "help": "Statistik"
+          },
+          "statParams.trim": {
+            "type": "number",
+            "help": "Stutzungsanteil, nur getrimmter Mittelwert",
+            "optional": true
+          },
+          "statParams.p": {
+            "type": "number",
+            "help": "Quantil, nur Quantil",
+            "optional": true
+          },
+          "statParams.lsl": {
+            "type": "string",
+            "help": "untere Spezifikationsgrenze, nur Ppk",
+            "optional": true
+          },
+          "statParams.usl": {
+            "type": "string",
+            "help": "obere Spezifikationsgrenze, nur Ppk",
+            "optional": true
+          },
+          "contrast": {
+            "type": "'difference'|'ratio'",
+            "help": "Vergleich, nur zwei Stichproben",
+            "optional": true
+          },
+          "direction": {
+            "type": "'two-sided'|'greater'|'less'",
+            "help": "Alternativhypothese, zwei und gepaart",
+            "optional": true
+          },
+          "target": {
+            "type": "string",
+            "help": "Zielwert, nur eine Stichprobe",
+            "optional": true
+          },
+          "B": {
+            "type": "number",
+            "help": "Zahl der Wiederholungen"
+          },
+          "seed": {
+            "type": "number",
+            "help": "Startwert des Zufallsgenerators"
+          },
+          "confidence": {
+            "type": "number",
+            "help": "Konfidenzniveau als Anteil"
+          },
+          "ciMethod": {
+            "type": "'bca'|'percentile'",
+            "help": "Intervallverfahren"
+          }
+        }
       },
       "setColumn": {
         "params": [
@@ -13283,10 +13345,278 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
-        "help": "the summary of the last run (estimate, interval, p-value, histogram bins), or null",
+        "type": "Result|null",
+        "help": "the summary of the last run, or null until the first successful run",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "inputsHash": {
+            "type": "string",
+            "help": "Fingerabdruck der Eingaben"
+          },
+          "mode": {
+            "type": "'one'|'two'|'paired'|'k'",
+            "help": "Aufbau"
+          },
+          "statisticId": {
+            "type": "string",
+            "help": "Statistik"
+          },
+          "contrast": {
+            "type": "'difference'|'ratio'",
+            "help": "Vergleich"
+          },
+          "direction": {
+            "type": "'two-sided'|'greater'|'less'",
+            "help": "Alternativhypothese"
+          },
+          "confidence": {
+            "type": "number",
+            "help": "Konfidenzniveau"
+          },
+          "B": {
+            "type": "number",
+            "help": "Wiederholungen"
+          },
+          "seed": {
+            "type": "number",
+            "help": "Startwert"
+          },
+          "labels": {
+            "type": "string[]",
+            "help": "Stichproben"
+          },
+          "n": {
+            "type": "number[]",
+            "help": "Werte je Stichprobe"
+          },
+          "boot": {
+            "type": "Boot|null",
+            "help": "Bootstrap, nicht bei k",
+            "keysOf": "Boot",
+            "keys": {
+              "estimate": {
+                "type": "number|null",
+                "help": "Schätzwert"
+              },
+              "se": {
+                "type": "number|null",
+                "help": "Bootstrap-Standardfehler"
+              },
+              "bias": {
+                "type": "number|null",
+                "help": "Verzerrung"
+              },
+              "ci": {
+                "type": "Intervals",
+                "help": "Konfidenzintervalle",
+                "keysOf": "Intervals",
+                "keys": {
+                  "percentile": {
+                    "type": "Array<number|null>|null",
+                    "help": "Perzentil-Intervall"
+                  },
+                  "bca": {
+                    "type": "Array<number|null>|null",
+                    "help": "BCa-Intervall"
+                  },
+                  "bcaFallback": {
+                    "type": "boolean",
+                    "help": "BCa auf Perzentil zurückgefallen"
+                  }
+                }
+              },
+              "bins": {
+                "type": "Bin[]",
+                "help": "Histogramm der Replikate",
+                "keysOf": "Bin",
+                "keys": {
+                  "x0": {
+                    "type": "number",
+                    "help": "Klassenbeginn"
+                  },
+                  "x1": {
+                    "type": "number",
+                    "help": "Klassenende"
+                  },
+                  "count": {
+                    "type": "number",
+                    "help": "Anzahl"
+                  }
+                }
+              }
+            }
+          },
+          "perm": {
+            "type": "Perm|null",
+            "help": "Permutationstest, zwei und gepaart",
+            "keysOf": "Perm",
+            "keys": {
+              "observed": {
+                "type": "number|null",
+                "help": "beobachtete Statistik"
+              },
+              "pValue": {
+                "type": "number|null",
+                "help": "p-Wert"
+              },
+              "exact": {
+                "type": "boolean",
+                "help": "exakt aufgezählt"
+              },
+              "permutations": {
+                "type": "number",
+                "help": "Zuordnungen bzw. Wiederholungen"
+              },
+              "bins": {
+                "type": "Bin[]",
+                "help": "Histogramm der Permutationsverteilung",
+                "keysOf": "Bin",
+                "keys": {
+                  "x0": {
+                    "type": "number",
+                    "help": "Klassenbeginn"
+                  },
+                  "x1": {
+                    "type": "number",
+                    "help": "Klassenende"
+                  },
+                  "count": {
+                    "type": "number",
+                    "help": "Anzahl"
+                  }
+                }
+              }
+            }
+          },
+          "k": {
+            "type": "KResult|null",
+            "help": "k-Stichproben-Auswertung",
+            "keysOf": "KResult",
+            "keys": {
+              "estimate": {
+                "type": "number|null",
+                "help": "Statistik der gepoolten Werte"
+              },
+              "observed": {
+                "type": "number|null",
+                "help": "beobachtete Prüfgröße"
+              },
+              "pValue": {
+                "type": "number|null",
+                "help": "p-Wert"
+              },
+              "exact": {
+                "type": "boolean",
+                "help": "exakt aufgezählt"
+              },
+              "permutations": {
+                "type": "number",
+                "help": "Zuordnungen bzw. Wiederholungen"
+              },
+              "bins": {
+                "type": "Bin[]",
+                "help": "Histogramm der Permutationsverteilung",
+                "keysOf": "Bin",
+                "keys": {
+                  "x0": {
+                    "type": "number",
+                    "help": "Klassenbeginn"
+                  },
+                  "x1": {
+                    "type": "number",
+                    "help": "Klassenende"
+                  },
+                  "count": {
+                    "type": "number",
+                    "help": "Anzahl"
+                  }
+                }
+              },
+              "groups": {
+                "type": "KGroup[]",
+                "help": "je Stichprobe",
+                "keysOf": "KGroup",
+                "keys": {
+                  "estimate": {
+                    "type": "number|null",
+                    "help": "Schätzwert"
+                  },
+                  "ci": {
+                    "type": "Intervals",
+                    "help": "Konfidenzintervalle",
+                    "keysOf": "Intervals",
+                    "keys": {
+                      "percentile": {
+                        "type": "Array<number|null>|null",
+                        "help": "Perzentil-Intervall"
+                      },
+                      "bca": {
+                        "type": "Array<number|null>|null",
+                        "help": "BCa-Intervall"
+                      },
+                      "bcaFallback": {
+                        "type": "boolean",
+                        "help": "BCa auf Perzentil zurückgefallen"
+                      }
+                    }
+                  }
+                }
+              },
+              "posthoc": {
+                "type": "PostHoc[]",
+                "help": "Paarvergleiche",
+                "keysOf": "PostHoc",
+                "keys": {
+                  "i": {
+                    "type": "number",
+                    "help": "erste Stichprobe"
+                  },
+                  "j": {
+                    "type": "number",
+                    "help": "zweite Stichprobe"
+                  },
+                  "contrast": {
+                    "type": "number|null",
+                    "help": "Differenz"
+                  },
+                  "ci": {
+                    "type": "Intervals",
+                    "help": "Konfidenzintervalle",
+                    "keysOf": "Intervals",
+                    "keys": {
+                      "percentile": {
+                        "type": "Array<number|null>|null",
+                        "help": "Perzentil-Intervall"
+                      },
+                      "bca": {
+                        "type": "Array<number|null>|null",
+                        "help": "BCa-Intervall"
+                      },
+                      "bcaFallback": {
+                        "type": "boolean",
+                        "help": "BCa auf Perzentil zurückgefallen"
+                      }
+                    }
+                  },
+                  "pRaw": {
+                    "type": "number|null",
+                    "help": "p-Wert unkorrigiert"
+                  },
+                  "pHolm": {
+                    "type": "number|null",
+                    "help": "p-Wert nach Holm"
+                  },
+                  "exact": {
+                    "type": "boolean",
+                    "help": "exakt aufgezählt"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   },

@@ -7709,19 +7709,19 @@
         "setParam": {
           "help": "Sets one parameter. A value outside its range is accepted; validationMsg then names the reason and compute does not run. Changing mode resets a statistic the new mode does not offer to 'mean'.",
           "params": {
-            "key": "One of the keys in activeParams: mode, statisticId, B, seed, confidence and ciMethod always; statParams.trim only for statistic 'trimmedMean'; statParams.p only for 'quantile'; statParams.lsl and statParams.usl only for 'ppk'; contrast only in mode 'two'; direction in modes 'two' and 'paired'; target in mode 'one'. Any other value is an error.",
-            "value": "mode: 'one', 'two', 'paired' or 'k'. statisticId: one of statisticOptions. statParams.trim and statParams.p: number (trim from 0 up to below 0.5, p between 0 and 1 exclusive). statParams.lsl, statParams.usl and target: text with a number, '' for none. B: integer, valid from 1000 to 100000. seed: integer, valid from 0 to 2147483647. confidence: fraction, valid between 0 and 1 exclusive, for example 0.95. contrast: 'difference' or 'ratio'. direction: 'two-sided', 'greater' or 'less'. ciMethod: 'bca' or 'percentile'. A value of the wrong kind or outside the list is an error; a number outside the stated range is accepted and reported in validationMsg."
+            "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys. Ranges are checked only when computing; a violation then appears in validationMsg."
           }
         },
         "setColumn": {
-          "help": "Assigns a sample column to a slot, or clears it with null. In mode 'one' the slot colRef1 is the sample; in 'two' the two groups; in 'paired' the pairs (colRef1 first, colRef2 second).",
+          "help": "The data collection column that supplies this role; after a change the analysis is recomputed. For 1 sample it is the sample, for 2 samples one of the two groups, paired “Before (X)” and “After (Y)”.",
           "params": {
             "slot": "One of the slots in activeColumnSlots: 'colRef1' in every mode except 'k', plus 'colRef2' in modes 'two' and 'paired'.",
             "ref": "Column reference { instanceId, sheetId, columnId } of a column from pickableColumns, or null to clear the slot."
           }
         },
         "setColumns": {
-          "help": "Replaces the group columns of mode 'k'; the order is the order of the groups. Duplicate entries count once. At least 3 columns are needed to compute.",
+          "help": "The data collection columns that supply this role; after a change the analysis is recomputed. The order is the order of the groups, duplicate columns count once, and at least 3 columns are needed to compute.",
           "params": {
             "slot": "One of the slots in activeMultiSlots; this module only has 'colRefsK', and only in mode 'k'.",
             "refs": "List of column references { instanceId, sheetId, columnId } of columns from pickableColumns; [] clears the selection."
@@ -7796,7 +7796,7 @@
           "help": "true while a run is in progress."
         },
         "stale": {
-          "help": "true when a result exists that was computed from other inputs than the current ones."
+          "help": "True when a result exists that was computed from inputs other than the current ones; the interface then shows the note “Result outdated”."
         },
         "validationMsg": {
           "help": "The reason compute would not run (invalid parameter, missing or too short column, fewer than 3 groups in mode 'k', the ratio contrast with values of zero or below), or an empty string. A running run does not set it."
@@ -7805,7 +7805,88 @@
           "help": "The reason the last run failed, or an empty string; a new run and a cancelled run leave it empty."
         },
         "result": {
-          "help": "The summary of the last completed run: estimate, standard error, bias, interval, p-value, per-group results and post-hoc comparisons where they apply, and histogram bins of the resampled distributions (no single replicates). null until a run has completed."
+          "help": "The most recent successfully computed result, each figure described individually under keys; null until the first successful computation."
+        }
+      },
+      "types": {
+        "Params": {
+          "mode": "The design, buttons “1 sample”, “2 samples”, “Paired” and “k samples”: one sample on its own (bootstrap interval, optionally against a target value), two independent samples (bootstrap of the difference and a permutation test), paired values (bootstrap and sign-flip test on the differences d = x − y) or at least three groups (global permutation test with pairwise comparisons after Holm). Switching resets a statistic the new design does not offer to the mean. Any other value is an error right away.",
+          "statisticId": "The statistic θ, field “Statistic”, computed from each sample: mean, median, standard deviation and variance (both with n − 1), trimmed mean, quantile (type 7 as in R), coefficient of variation s / x̄ and Ppk = min((USL − x̄) / 3s, (x̄ − LSL) / 3s). Paired offers only mean, median and trimmed mean, k samples all except Ppk. A statistic the design does not offer is an error right away. The default is the mean.",
+          "statParams": {
+            "trim": "The trim fraction per side, field “Trim fraction per side”, only for the trimmed mean: ⌊n · fraction⌋ values are dropped from each end of the sorted values, as in R. Allowed is 0 up to below 0.5, default 0.1. A value outside this range is accepted and reported only when computing; the analysis then does not run.",
+            "p": "The quantile p, field “Quantile p”, only for the quantile statistic: the share of values below the estimated quantile, computed with type 7 as in R. Allowed is 0 < p < 1, default 0.95. A value outside this range is accepted and reported only when computing; the analysis then does not run.",
+            "lsl": "The lower specification limit, field “Lower spec limit (LSL)”, only for Ppk: text with a number (comma or point), empty means no lower limit. Ppk needs at least one of the two limits, both must be readable, LSL must lie below USL, and each sample needs at least 10 values. A violation is reported only when computing; the analysis then does not run.",
+            "usl": "The upper specification limit, field “Upper spec limit (USL)”, only for Ppk: text with a number (comma or point), empty means no upper limit. Ppk needs at least one of the two limits, both must be readable, USL must lie above LSL, and each sample needs at least 10 values. A violation is reported only when computing; the analysis then does not run."
+          },
+          "contrast": "The contrast, field “Contrast”, only for two samples: “Difference θ₁ − θ₂” or “Ratio θ₁ / θ₂” of the statistic of both groups; for the ratio the permutation test checks log θ₁ − log θ₂. The ratio needs strictly positive values and a positive statistic in both groups; a violation is reported only when computing. The default is the difference; any other value is an error right away.",
+          "direction": "The alternative hypothesis, field “Alternative hypothesis”, for two samples and paired: “two-sided (≠)” counts assignments with |T| ≥ |T₀|, “greater (>)” those with T ≥ T₀, “less (<)” those with T ≤ T₀. It only affects the p-value of the permutation test, not the bootstrap interval. The default is two-sided; any other value is an error right away.",
+          "target": "The target value H₀, field “Target value H₀”, only for one sample: text with a number, empty means no test. With a target the column “Decision” shows “Reject H₀” when it lies outside the displayed confidence interval of the chosen interval method, otherwise “Retain H₀”; the interval limits belong to the interval. Unreadable text is reported only when computing. The target is not part of the fingerprint; changing it does not make the result outdated.",
+          "B": "The number of replications B, field “Replications B”: this many bootstrap resamples are drawn, and the permutation test uses this many random assignments when it does not enumerate exactly. An integer from 1000 to 100000, default 10000; more replications smooth the result and take longer. A non-integer is an error right away, an integer outside the range is reported only when computing; the analysis then does not run.",
+          "seed": "The seed of the random number generator, field “Seed”: the same inputs with the same seed give the same result. An integer from 0 to 2147483647, default 42; “Roll a new seed” draws one between 1 and 2147483647. A non-integer is an error right away, a value outside the range is reported only when computing; the analysis then does not run.",
+          "confidence": "The confidence level, field “Confidence level”, as a fraction, for example 0.95 for 95 %: the coverage of the bootstrap intervals; the statement line tests p-values against α = 1 − level. Allowed is 0 < level < 1, default 0.95; the input field of the interface only allows 0.5 to 0.999. A value outside this range is accepted and reported only when computing; the analysis then does not run.",
+          "ciMethod": "The interval method, field “Interval method”: “BCa” (bias-corrected and accelerated) or “Percentile”. Both are always computed; the choice only decides which interval the tables, chart and decision show, and it is not part of the fingerprint. The default is BCa; any other value is an error right away."
+        },
+        "Result": {
+          "inputsHash": "The fingerprint of the inputs, eight hexadecimal characters (FNV-1a) over design, statistic and its parameters, contrast (two samples only), alternative hypothesis (two samples and paired), B, seed, confidence level and the cleaned data. Target value and interval method are not included. If the fingerprint of the current inputs differs, the result counts as outdated.",
+          "mode": "The design the result was computed with (1 sample, 2 samples, paired, k samples), as of the start of the computation. It decides which of the parts bootstrap, permutation test and k-sample analysis are filled.",
+          "statisticId": "The statistic the result was computed with, as of the start of the computation.",
+          "contrast": "The contrast of the computation, difference or ratio. It is always stored, even when the design does not use it; it only takes effect for two samples.",
+          "direction": "The alternative hypothesis of the computation, two-sided, greater or less. It is always stored, even when the design does not use it; it only takes effect for two samples and paired.",
+          "confidence": "The confidence level of the computation as a fraction, for example 0.95.",
+          "B": "The number of replications of the computation.",
+          "seed": "The seed of the computation; with it and the same inputs the result can be reproduced exactly.",
+          "labels": "The names of the sample columns in their order, “?” when a column can no longer be found. For k samples they fill the column “Group”; the column “Pair” of the pairwise comparisons joins two of them.",
+          "n": "The number of evaluated values per sample, column “n”; text and empty cells are dropped. Paired counts only rows where both sides hold a number, so the same number appears twice.",
+          "boot": "The bootstrap analysis for one, two and paired samples; empty for k samples.",
+          "perm": "The permutation test for two samples and paired; empty for one and for k samples.",
+          "k": "The analysis for k samples: global permutation test, per-group results and pairwise comparisons; empty for the other designs."
+        },
+        "Boot": {
+          "estimate": "The estimate θ̂ from the original data, column “Estimate θ̂”: for one sample θ(x), for two samples θ(x) − θ(y) or θ(x) / θ(y) depending on the contrast, paired θ(d) of the differences d = x − y. The chart “Bootstrap distribution” marks it as a line. For k samples the same column shows the pooled statistic.",
+          "se": "The bootstrap standard error, column “Standard error”: the standard deviation (with n − 1) of the finite bootstrap replicates. Empty when fewer than 2 finite replicates exist.",
+          "bias": "The bias, column “Bias”: mean of the finite replicates minus θ̂. A value near 0 means the statistic hits on average. Empty without a finite replicate or without a finite θ̂.",
+          "ci": "Both confidence intervals of the estimate, percentile and BCa. The column “Confidence interval” shows the one of the chosen interval method as lower; upper limit, with the method in parentheses in the header.",
+          "bins": "The histogram of the bootstrap replicates for the chart “Bootstrap distribution”, 30 classes of equal width; single replicates are not stored."
+        },
+        "Intervals": {
+          "percentile": "The percentile interval as in R boot.ci “perc”: lower and upper limits are the quantiles (1 − level)/2 and (1 + level)/2 of the replicates. Empty with fewer than 2 finite replicates or when all replicates are equal.",
+          "bca": "The BCa interval (bias-corrected and accelerated) as in R boot.ci “bca”: the percentiles are shifted using z₀ from the share of replicates below θ̂ and the acceleration a from jackknife influence values. If BCa cannot be determined, this holds the percentile interval.",
+          "bcaFallback": "True when BCa could not be determined and the percentile interval was used instead: fewer than 2 finite replicates, θ̂ not finite, all replicates on one side of θ̂ (z₀ infinite) or a non-finite acceleration, for example when the replicates have no spread. With method BCa the note “BCa not available – percentile interval shown” appears; for groups and pairwise comparisons the fallback applies without a note."
+        },
+        "Bin": {
+          "x0": "The lower limit of the class. The 30 classes have equal width and span from the smallest to the largest finite value; if all values are equal there is one class from value − 0.5 to value + 0.5, without finite values none.",
+          "x1": "The upper limit of the class; the last class ends exactly at the largest value.",
+          "count": "The number of finite values in the class."
+        },
+        "Perm": {
+          "observed": "The observed test statistic T₀, column “Observed T”: for two samples the difference θ(x) − θ(y), for the ratio contrast log θ(x) − log θ(y); paired θ(d) of the differences. The chart “Permutation distribution” marks T₀, two-sided also −T₀.",
+          "pValue": "The p-value, column “p-value”: the share of assignments whose T is at least as extreme as T₀ in the direction of the alternative hypothesis (two-sided |T| ≥ |T₀|, greater T ≥ T₀, less T ≤ T₀). Exact means p = hits / number of assignments, Monte Carlo p = (1 + hits) / (B + 1). The statement line calls the difference significant when p < α = 1 − confidence level; the table shows values below 0.0001 as “< 0.0001”.",
+          "exact": "True when all assignments were enumerated: with at most 20000 possible assignments (two samples N! / (n₁! · n₂!), paired 2ⁿ signs) the module computes exactly and without randomness, otherwise Monte Carlo with B random assignments and p = (1 + hits) / (B + 1). The column “Permutations” shows “exact” or “Monte Carlo” before the number.",
+          "permutations": "The number of evaluated assignments, column “Permutations”: exactly the number of all assignments (at most 20000), otherwise B; for Monte Carlo p = (1 + hits) / (B + 1), so p never becomes 0. For two samples the pooled values are redistributed across the groups, paired the signs of the differences are flipped.",
+          "bins": "The histogram of the permutation distribution of T for the chart “Permutation distribution”, 30 classes of equal width."
+        },
+        "KResult": {
+          "estimate": "The statistic θ of all values together (pooled); in the design k samples the column “Estimate θ̂” of the result table.",
+          "observed": "The observed test statistic T₀ = Σ nᵢ · (θᵢ − θ)², column “Observed T”: how far the group statistics θᵢ, weighted by their size nᵢ, spread around the pooled statistic θ.",
+          "pValue": "The p-value of the global test, column “p-value”: one-sided, the share of assignments with T ≥ T₀; exact p = hits / number of assignments, Monte Carlo p = (1 + hits) / (B + 1). Below α = 1 − confidence level at least one group differs.",
+          "exact": "True when all assignments of the pooled values to the groups were enumerated (N! / Π nᵢ! at most 20000); otherwise Monte Carlo with B assignments.",
+          "permutations": "The number of evaluated assignments of the global test, column “Permutations”: all of them when exact (at most 20000), otherwise B.",
+          "bins": "The histogram of the permutation distribution of T for the chart “Permutation distribution”, 30 classes of equal width.",
+          "groups": "The result per group in the order of the columns, table “Groups”.",
+          "posthoc": "The pairwise comparisons of all k · (k − 1) / 2 group pairs, table “Pairwise comparisons (Holm)”."
+        },
+        "KGroup": {
+          "estimate": "The statistic θ of the group, column “Estimate θ̂” of the group table.",
+          "ci": "Both bootstrap confidence intervals of the group from B resamples, percentile and BCa; the column “Confidence interval” shows the one of the chosen interval method."
+        },
+        "PostHoc": {
+          "i": "The position of the first group of the pair in the column list, counted from 0. The column “Pair” shows both group names separated by a dash.",
+          "j": "The position of the second group of the pair, counted from 0, always greater than that of the first.",
+          "contrast": "The difference θᵢ − θⱼ of the two group statistics; the column “Estimate θ̂” of the pairwise comparisons shows it. Pairwise comparisons always use the difference.",
+          "ci": "Both bootstrap confidence intervals of the difference, percentile and BCa; the column “Confidence interval” shows the one of the chosen interval method. If it contains 0, no difference is shown.",
+          "pRaw": "The unadjusted p-value of the pair, column “p raw”: two-sided permutation test of just these two groups, exact with at most 20000 assignments, otherwise Monte Carlo.",
+          "pHolm": "The Holm-adjusted p-value, column “p Holm”, as R p.adjust “holm”: the m raw p-values sorted ascending, the r-th multiplied by (m − r + 1), made monotone and capped at 1. This keeps the risk of a false alarm across all pairs together at α.",
+          "exact": "True when the test of the pair enumerated all assignments (at most 20000), otherwise Monte Carlo; the column “p-value method” shows “exact” or “Monte Carlo”."
         }
       },
       "sectionMode": "Mode",
