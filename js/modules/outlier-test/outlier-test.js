@@ -73,6 +73,18 @@ const SHORT_LABEL_MAP = {
 };
 
 /** @param {number|null} v @param {number} d @returns {string} */
+/**
+ * Translated text for an engine error code; falls back to the code itself.
+ * @param {(key: string) => string} t
+ * @param {string} code
+ * @returns {string}
+ */
+function _errText(t, code) {
+  const key = `err_${code}`;
+  const text = t(key);
+  return text && text !== key ? text : code;
+}
+
 function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–'; }
 
 /** Zulässige Bereiche der Zahlenparameter (einzige Quelle für Setter und Oberfläche). */
@@ -474,16 +486,16 @@ const mod = createModule({
         if (id === 'grubbs') {
           const pBad = r.pValue < r.parameters.alpha;
           metrics = [
-            mc(fmt(r.statistic, 4), 'G'),
-            mc(fmt(r.critical, 4), 'Gₜ'),
-            mc(fmt(r.pValue, 4), 'p', pBad ? 'dmike-kpi--bad' : 'dmike-kpi--good'),
-            mc(fmt(r.mean, 4), 'x̄'),
-            mc(fmt(r.sd, 4), 's'),
+            mc(fmt(r.statistic, 4), _t('symG')),
+            mc(fmt(r.critical, 4), _t('symGcrit')),
+            mc(fmt(r.pValue, 4), _t('common.sym.p'), pBad ? 'dmike-kpi--bad' : 'dmike-kpi--good'),
+            mc(fmt(r.mean, 4), _t('common.sym.xbar')),
+            mc(fmt(r.sd, 4), _t('symS')),
           ];
         } else if (id === 'dixon-q') {
           metrics = [
-            mc(fmt(r.statistic, 4), 'Q'),
-            mc(fmt(r.critical, 4), 'Qₜ'),
+            mc(fmt(r.statistic, 4), _t('symQ')),
+            mc(fmt(r.critical, 4), _t('symQcrit')),
             mc(r.parameters.variant, _t('variant'), '', 'dmike-kpi-value--sm'),
             mc(r.side, _t('side'), '', 'dmike-kpi-value--sm'),
           ];
@@ -492,7 +504,7 @@ const mod = createModule({
             mc(String(r.detected), _t('detected'), r.detected > 0 ? 'dmike-kpi--bad' : 'dmike-kpi--good'),
             mc(String(r.parameters.maxOutliers), _t('esdMax')),
           ];
-          stepsHeader = 'Rᵢ > λᵢ';
+          stepsHeader = _t('stepsReject');
           steps = r.steps.map((s) => ({
             i: String(s.i),
             value: fmt(s.value, 4),
@@ -503,33 +515,33 @@ const mod = createModule({
           }));
         } else if (id === 'tukey-iqr') {
           metrics = [
-            mc(fmt(r.q1, 4), 'Q1'),
+            mc(fmt(r.q1, 4), _t('symQ1')),
             mc(fmt(r.median, 4), _t('median')),
-            mc(fmt(r.q3, 4), 'Q3'),
-            mc(fmt(r.iqr, 4), 'IQR'),
+            mc(fmt(r.q3, 4), _t('symQ3')),
+            mc(fmt(r.iqr, 4), _t('symIqr')),
             mc(fmt(r.fenceLower, 4), _t('fenceLower')),
             mc(fmt(r.fenceUpper, 4), _t('fenceUpper')),
           ];
         } else if (id === 'hampel') {
           metrics = [
             mc(fmt(r.median, 4), _t('median')),
-            mc(fmt(r.mad, 4), 'MAD'),
-            mc(fmt(r.madScaled, 4), '1.4826·MAD'),
-            mc(fmt(r.parameters.k, 2), 'k'),
+            mc(fmt(r.mad, 4), _t('symMad')),
+            mc(fmt(r.madScaled, 4), _t('symMadScaled')),
+            mc(fmt(r.parameters.k, 2), _t('symK')),
             mc(fmt(r.threshold, 4), _t('threshold')),
           ];
           if (r.degenerate) hint = _t('hintDegenerateMad');
         } else if (id === 'z-score') {
           metrics = [
-            mc(fmt(r.mean, 4), 'x̄'),
-            mc(fmt(r.sd, 4), 's'),
+            mc(fmt(r.mean, 4), _t('common.sym.xbar')),
+            mc(fmt(r.sd, 4), _t('symS')),
             mc(fmt(r.parameters.threshold, 2), _t('threshold')),
           ];
           if (r.degenerate) hint = _t('hintDegenerateSd');
         } else if (id === 'modified-z') {
           metrics = [
             mc(fmt(r.median, 4), _t('median')),
-            mc(fmt(r.mad, 4), 'MAD'),
+            mc(fmt(r.mad, 4), _t('symMad')),
             mc(fmt(r.parameters.threshold, 2), _t('threshold')),
           ];
           if (r.degenerate) hint = _t('hintDegenerateMad');
@@ -584,7 +596,7 @@ const mod = createModule({
           cardClass: 'outliertest__card--error',
           label: _t(`m${  key}`),
           algoId: ALGO_LAB_IDS[id] || '',
-          errorText: `${_t('errInapplicable')  }: ${  msg}`,
+          errorText: `${_t('errInapplicable')}: ${_errText(_t, msg)}`,
         };
       },
 
@@ -619,7 +631,7 @@ const mod = createModule({
 
         // ── Summary KPIs
         this.summaryKpis = [
-          { value: String(data.length), label: 'n', help: HELP + 'Result.n', kpiClass: '', valueClass: '' },
+          { value: String(data.length), label: _t('common.sym.n'), help: HELP + 'Result.n', kpiClass: '', valueClass: '' },
           { value: colName, label: _t('column'), help: 'modules.outlier-test.actions.setColumn.help', kpiClass: '', valueClass: 'dmike-kpi-value--sm' },
           { value: String(totalFlagged), label: _t('flaggedAny'), help: HELP + 'Result.flaggedIdxs', kpiClass: totalFlagged > 0 ? 'dmike-kpi--bad' : 'dmike-kpi--good', valueClass: '' },
           { value: String(Object.keys(results).length), label: _t('methodsRun'), help: HELP + 'Result.methods', kpiClass: '', valueClass: '' },
