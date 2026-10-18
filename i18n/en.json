@@ -1014,9 +1014,9 @@
         "Stats": {
           "n": "Number of values in the series (N); the table shows it as a whole number.",
           "mean": "Mean x̄ = Σx / n, the sum of all values divided by their count. The table rounds to four decimals.",
-          "stddev": "Standard deviation s = √(Σ(x − x̄)² / (n − 1)), the sample spread with denominator n − 1 (column StdDev). The table rounds to four decimals. With only one value it is undefined: the table shows NaN, and the agent result holds NaN or an empty value.",
-          "variance": "Variance s² = Σ(x − x̄)² / (n − 1), the square of the standard deviation, with denominator n − 1. The table rounds to four decimals. With only one value it is undefined: the table shows NaN, and the agent result holds NaN or an empty value.",
-          "seMean": "Standard error of the mean, s / √n. The table does not show it; it is what sets the width of the confidence interval for the mean. With only one value it is undefined: the table shows NaN, and the agent result holds NaN or an empty value.",
+          "stddev": "Standard deviation s = √(Σ(x − x̄)² / (n − 1)), the sample spread with denominator n − 1 (column StdDev). The table rounds to four decimals. With only one value it is undefined: the table shows NaN, and in the agent result the value is empty.",
+          "variance": "Variance s² = Σ(x − x̄)² / (n − 1), the square of the standard deviation, with denominator n − 1. The table rounds to four decimals. With only one value it is undefined: the table shows NaN, and in the agent result the value is empty.",
+          "seMean": "Standard error of the mean, s / √n. The table does not show it; it is what sets the width of the confidence interval for the mean. With only one value it is undefined; in the agent result the value is empty.",
           "median": "Median: the middle of the values sorted ascending, for an even count the mean of the two middle ones. The table rounds to four decimals.",
           "min": "Smallest value of the series. The table rounds to four decimals.",
           "max": "Largest value of the series. The table rounds to four decimals.",

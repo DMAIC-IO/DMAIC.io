@@ -1014,9 +1014,9 @@
         "Stats": {
           "n": "Anzahl der Werte der Reihe (N); die Tabelle zeigt sie als ganze Zahl.",
           "mean": "Mittelwert x̄ = Σx / n, die Summe aller Werte geteilt durch ihre Anzahl. Die Tabelle rundet auf vier Nachkommastellen.",
-          "stddev": "Standardabweichung s = √(Σ(x − x̄)² / (n − 1)), die Stichproben-Streuung mit dem Nenner n − 1 (Spalte „StdAbw“). Die Tabelle rundet auf vier Nachkommastellen. Bei nur einem Wert nicht definiert: die Tabelle zeigt NaN, im Agentenergebnis steht NaN oder ein leerer Wert.",
-          "variance": "Varianz s² = Σ(x − x̄)² / (n − 1), das Quadrat der Standardabweichung, mit dem Nenner n − 1. Die Tabelle rundet auf vier Nachkommastellen. Bei nur einem Wert nicht definiert: die Tabelle zeigt NaN, im Agentenergebnis steht NaN oder ein leerer Wert.",
-          "seMean": "Standardfehler des Mittelwerts, s / √n. Die Tabelle zeigt ihn nicht; er steckt in der Breite des Konfidenzintervalls für den Mittelwert. Bei nur einem Wert nicht definiert: die Tabelle zeigt NaN, im Agentenergebnis steht NaN oder ein leerer Wert.",
+          "stddev": "Standardabweichung s = √(Σ(x − x̄)² / (n − 1)), die Stichproben-Streuung mit dem Nenner n − 1 (Spalte „StdAbw“). Die Tabelle rundet auf vier Nachkommastellen. Bei nur einem Wert nicht definiert: die Tabelle zeigt NaN, im Agentenergebnis ist der Wert leer.",
+          "variance": "Varianz s² = Σ(x − x̄)² / (n − 1), das Quadrat der Standardabweichung, mit dem Nenner n − 1. Die Tabelle rundet auf vier Nachkommastellen. Bei nur einem Wert nicht definiert: die Tabelle zeigt NaN, im Agentenergebnis ist der Wert leer.",
+          "seMean": "Standardfehler des Mittelwerts, s / √n. Die Tabelle zeigt ihn nicht; er steckt in der Breite des Konfidenzintervalls für den Mittelwert. Bei nur einem Wert nicht definiert; im Agentenergebnis ist der Wert leer.",
           "median": "Median: der mittlere Wert der aufsteigend sortierten Werte, bei gerader Anzahl der Mittelwert der beiden mittleren. Die Tabelle rundet auf vier Nachkommastellen.",
           "min": "Kleinster Wert der Reihe. Die Tabelle rundet auf vier Nachkommastellen.",
           "max": "Größter Wert der Reihe. Die Tabelle rundet auf vier Nachkommastellen.",
