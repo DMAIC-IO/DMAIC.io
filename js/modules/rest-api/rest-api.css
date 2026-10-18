@@ -200,6 +200,17 @@
   white-space: nowrap;
 }
 
+/* Der Hilfekreis liegt sonst jenseits der rechten Knopfkante und wird vom
+   Detailpanel (overflow-y:auto) abgeschnitten. In den rechten Innenabstand
+   des Knopfs gelegt, verschiebt er weder das Layout noch den Text. */
+button.rest-api__send-btn.context-help-anchor > .context-help__btn {
+  top: 50%;
+  left: auto;
+  right: 2px;
+  margin-left: 0;
+  color: var(--color-text-inverse); /* der Knopf ist blau gefüllt */
+}
+
 /* Inputs use global .field class (components.css) */
 
 /* Sections */

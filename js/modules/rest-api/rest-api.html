@@ -5,7 +5,7 @@
       <div class="rest-api__sidebar-header">
         <span class="rest-api__sidebar-title" x-text="t('name')"></span>
         <span class="rest-api__count" x-text="model.endpoints.length"></span>
-        <button class="rest-api__add-btn" type="button" :title="t('addEndpoint')" @click="addEndpoint()">
+        <button class="rest-api__add-btn" data-help-key="modules.rest-api.actions.addEndpoint.help" type="button" :title="t('addEndpoint')" @click="addEndpoint()">
           <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
         </button>
       </div>
@@ -41,7 +41,7 @@
             <input class="field rest-api__url-input" data-field="url"
               @input="setParam('url', $event.target.value)"
               :value="model.activeEndpoint().url" placeholder="https://api.example.com/data">
-            <button class="rest-api__send-btn dmike-btn-run" data-action="send" @click="sendRequest()">
+            <button data-help-key="modules.rest-api.actions.sendRequest.help" class="rest-api__send-btn dmike-btn-run" data-action="send" @click="sendRequest()">
               <span class="icon icon--sm" data-icon="action.run" aria-hidden="true"></span>
               <span x-text="t('send')"></span>
             </button>
@@ -50,8 +50,8 @@
           <!-- Headers -->
           <div class="rest-api__section">
             <div class="rest-api__section-header">
-              <span class="rest-api__section-label" x-text="t('headers')"></span>
-              <button class="rest-api__add-header-btn" type="button" @click="addHeader()">
+              <span data-help-key="modules.rest-api.actions.setHeader.help" class="rest-api__section-label" x-text="t('headers')"></span>
+              <button data-help-key="modules.rest-api.actions.addHeader.help" class="rest-api__add-header-btn" type="button" @click="addHeader()">
                 <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
                 <span x-text="t('addHeader')"></span>
               </button>
@@ -71,14 +71,14 @@
           <div class="rest-api__section">
             <div class="rest-api__section-header">
               <span class="rest-api__section-label" x-text="t('columnMappings')"></span>
-              <button class="rest-api__add-mapping-btn" type="button" @click="addMapping()">
+              <button data-help-key="modules.rest-api.actions.addMapping.help" class="rest-api__add-mapping-btn" type="button" @click="addMapping()">
                 <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
                 <span x-text="t('addMapping')"></span>
               </button>
             </div>
             <div class="rest-api__write-mode">
               <template x-for="wm in writeModes()" :key="wm">
-                <label class="rest-api__write-mode-option">
+                <label data-help-anchor="box" data-help-key="modules.rest-api.types.Params.writeMode" class="rest-api__write-mode-option">
                   <input type="radio" :name="'writeMode-' + model.activeEndpoint().id" :value="wm"
                     :checked="model.activeEndpoint().writeMode === wm"
                     @change="setParam('writeMode', wm)">
@@ -111,13 +111,13 @@
                 x-text="scheduleBadgeText(isScheduleRunning(model.activeEndpoint()))"></span>
             </div>
             <div class="rest-api__schedule-controls">
-              <label class="rest-api__schedule-toggle">
+              <label data-help-anchor="box" data-help-key="modules.rest-api.actions.setSchedule.help" class="rest-api__schedule-toggle">
                 <input type="checkbox" data-action="schedule-toggle"
                   :checked="model.activeEndpoint().schedule.enabled" @change="toggleSchedule($event)">
                 <span x-text="t('scheduleEnabled')"></span>
               </label>
               <div class="rest-api__schedule-interval-group">
-                <span class="rest-api__schedule-interval-label" x-text="t('scheduleInterval') + ':'"></span>
+                <span data-help-key="modules.rest-api.types.Params.schedule.intervalValue" class="rest-api__schedule-interval-label" x-text="t('scheduleInterval') + ':'"></span>
                 <input type="number" class="field rest-api__schedule-interval-value"
                   data-action="schedule-value" min="1" max="999"
                   :value="model.activeEndpoint().schedule.intervalValue || 5"
@@ -148,7 +148,7 @@
           <!-- Response -->
           <div class="rest-api__section">
             <div class="rest-api__section-header">
-              <span class="rest-api__section-label" x-text="t('response')"></span>
+              <span data-help-key="modules.rest-api.fields.lastResponse.help" class="rest-api__section-label" x-text="t('response')"></span>
               <template x-if="lastResponse">
                 <span class="rest-api__status" :class="'rest-api__status--' + (lastResponse.ok ? 'ok' : 'err')"
                   x-text="lastResponse.status + ' ' + lastResponse.statusText"></span>

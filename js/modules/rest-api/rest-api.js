@@ -48,6 +48,19 @@ function setAtPath(obj, key, value) {
 }
 
 /**
+ * Die Schlüsselfläche von `setParam` — die Werte des aktiven Endpunkts.
+ * Der Zeitplan trägt den Punkt im Schlüssel; im Model liegt er unter
+ * `schedule`. Sätze je Schlüssel unter `types.Params.<schlüssel>` (Punkt =
+ * Verschachtelung in i18n), dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {string} url  Adresse der GET-Anfrage
+ * @property {'replace'|'append'|'prepend'} writeMode  wie zugeordnete Daten geschrieben werden
+ * @property {number} schedule.intervalValue  Abstand der automatischen Abfrage
+ * @property {'minutes'|'hours'} schedule.intervalUnit  Einheit des Abstands
+ */
+
+/**
  * Gelesen wird die persistierte Endpunktliste und die letzte Antwort des
  * aktiven Endpunkts. Die Mappings werden gespeichert, aber heute nirgends
  * angewendet (Roadmap) — die Lesefläche zeigt sie, wie die Oberfläche.
@@ -225,8 +238,8 @@ export default createModule({
       /**
        * URL, Schreibmodus oder Zeitplan des aktiven Endpunkts setzen.
        * @agent
-       * @param {'url'|'writeMode'|'schedule.intervalValue'|'schedule.intervalUnit'} key welcher Wert; `activeParams` nennt die gültigen
-       * @param {string|number} value Text für `url`; `replace`, `append` oder `prepend` für `writeMode`; ganze Zahl von 1 bis 999 für `schedule.intervalValue`; `minutes` oder `hours` für `schedule.intervalUnit`
+       * @param {keyof Params} key welcher Wert; `activeParams` nennt die gültigen
+       * @param {string|number} value der Wert; Bereich je Schlüssel siehe `Params`
        * @returns {void}
        * @throws {Error} wenn es keinen aktiven Endpunkt gibt, `key` unbekannt ist oder `value` nicht passt
        */

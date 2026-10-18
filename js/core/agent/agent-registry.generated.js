@@ -14894,11 +14894,30 @@ export const AGENT_REGISTRY = {
             "name": "value",
             "type": "string|number",
             "optional": false,
-            "help": "Text für `url`; `replace`, `append` oder `prepend` für `writeMode`; ganze Zahl von 1 bis 999 für `schedule.intervalValue`; `minutes` oder `hours` für `schedule.intervalUnit`"
+            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "void",
-        "help": "URL, Schreibmodus oder Zeitplan des aktiven Endpunkts setzen."
+        "help": "URL, Schreibmodus oder Zeitplan des aktiven Endpunkts setzen.",
+        "keysOf": "Params",
+        "keys": {
+          "url": {
+            "type": "string",
+            "help": "Adresse der GET-Anfrage"
+          },
+          "writeMode": {
+            "type": "'replace'|'append'|'prepend'",
+            "help": "wie zugeordnete Daten geschrieben werden"
+          },
+          "schedule.intervalValue": {
+            "type": "number",
+            "help": "Abstand der automatischen Abfrage"
+          },
+          "schedule.intervalUnit": {
+            "type": "'minutes'|'hours'",
+            "help": "Einheit des Abstands"
+          }
+        }
       },
       "addHeader": {
         "params": [],

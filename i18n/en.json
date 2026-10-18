@@ -9918,7 +9918,7 @@
           }
         },
         "addEndpoint": {
-          "help": "Creates a new endpoint and makes it the active one. Returns its id."
+          "help": "Creates a new endpoint and makes it the active one; its URL, headers and schedule can then be edited. The agent receives the id of the new endpoint."
         },
         "selectEndpoint": {
           "help": "Makes an endpoint the active one; the header, mapping, schedule and parameter actions edit it. Clears lastResponse.",
@@ -9942,15 +9942,15 @@
         "setParam": {
           "help": "Sets one parameter of the active endpoint. A changed schedule interval restarts a running schedule.",
           "params": {
-            "key": "One of the keys in activeParams: url, writeMode, schedule.intervalValue or schedule.intervalUnit. Any other value is an error.",
-            "value": "url takes text; writeMode takes replace, append or prepend; schedule.intervalValue takes a whole number from 1 to 999; schedule.intervalUnit takes minutes or hours."
+            "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys."
           }
         },
         "addHeader": {
-          "help": "Appends an empty request header to the active endpoint. Returns its index in endpoints[].headers."
+          "help": "Add header appends an empty header line to the active endpoint, which you then fill with a name and a value. The agent receives its position in the list of header lines."
         },
         "setHeader": {
-          "help": "Sets name and value of a request header of the active endpoint.",
+          "help": "Headers are extra header lines sent along with the request, for example an access key; each consists of a name and a value. Sets name and value of a header line of the active endpoint.",
           "params": {
             "index": "The index of a header in endpoints[].headers.",
             "key": "The header name; the empty string clears it.",
@@ -9964,7 +9964,7 @@
           }
         },
         "addMapping": {
-          "help": "Appends an empty mapping to the active endpoint. Mappings are stored but not applied yet. Returns its index in endpoints[].mappings."
+          "help": "Add mapping appends an empty mapping between a path in the response and a column to the active endpoint. Mappings are stored but not applied yet. The agent receives its position in the list of mappings."
         },
         "setMapping": {
           "help": "Sets path and target column of a mapping of the active endpoint. A column can belong to only one mapping per endpoint.",
@@ -9981,13 +9981,13 @@
           }
         },
         "setSchedule": {
-          "help": "Switches the schedule of the active endpoint on or off. It runs only while a URL is set.",
+          "help": "Automatic polling switches the schedule of the active endpoint on or off: when on, the module fetches the URL itself at the set interval. The schedule runs only while a URL is set.",
           "params": {
             "enabled": "true starts the regular requests, false stops them."
           }
         },
         "sendRequest": {
-          "help": "Performs a GET request to the set URL of the active endpoint and waits for the response. This sends a real request over the network and leaves the device. Returns the response, also stored in lastResponse; a network error becomes status 0. Returns null without an active endpoint or without a URL."
+          "help": "Send performs a GET request to the URL of the active endpoint and waits for the response, which then appears under Response. This sends a real request over the network and leaves the device. A network error shows as status 0. Without an active endpoint or without a URL nothing happens (without a URL the message \"Please enter a URL.\" appears)."
         }
       },
       "fields": {
@@ -10010,7 +10010,17 @@
           "help": "Whether a request is running."
         },
         "lastResponse": {
-          "help": "The last response of the active endpoint as { status, statusText, ok, body }, or null."
+          "help": "The last response of the active endpoint: status, status text and content; empty until a request has been sent. The agent receives status, statusText, ok (request succeeded) and body (content)."
+        }
+      },
+      "types": {
+        "Params": {
+          "url": "The address to which Send and the automatic polling send a GET request. Any text, not validated; if it is empty, Send shows the message \"Please enter a URL.\".",
+          "writeMode": "How the mapped data is to be written into the columns: replace (\"Clear columns before writing\"), append (\"Append data at the end\") or prepend (\"Insert data at the top\"). This applies to the column mappings, which are stored today but not yet applied — so the write mode has no effect yet.",
+          "schedule": {
+            "intervalValue": "The interval of the automatic polling (the gap between two fetches) as a whole number from 1 to 999, together with the unit next to it. Changing it while the schedule runs restarts the schedule; the field is disabled while automatic polling is off.",
+            "intervalUnit": "The unit of the interval: minutes or hours."
+          }
         }
       },
       "addEndpoint": "Add endpoint",

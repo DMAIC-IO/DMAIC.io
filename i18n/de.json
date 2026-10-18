@@ -9922,7 +9922,7 @@
           }
         },
         "addEndpoint": {
-          "help": "Legt einen neuen Endpunkt an und macht ihn zum aktiven. Gibt seine id zurück."
+          "help": "Legt einen neuen Endpunkt an und macht ihn zum aktiven; danach lassen sich seine URL, seine Headers und sein Zeitplan bearbeiten. Der Agent erhält die id des neuen Endpunkts."
         },
         "selectEndpoint": {
           "help": "Macht einen Endpunkt zum aktiven; die Aktionen für Header, Mappings, Zeitplan und Parameter bearbeiten ihn. Leert lastResponse.",
@@ -9946,15 +9946,15 @@
         "setParam": {
           "help": "Setzt einen Parameter des aktiven Endpunkts. Ein geändertes Zeitplan-Intervall startet einen laufenden Zeitplan neu.",
           "params": {
-            "key": "Einer der Schlüssel aus activeParams: url, writeMode, schedule.intervalValue oder schedule.intervalUnit. Jeder andere Wert ist ein Fehler.",
-            "value": "url nimmt Text; writeMode nimmt replace, append oder prepend; schedule.intervalValue nimmt eine ganze Zahl von 1 bis 999; schedule.intervalUnit nimmt minutes oder hours."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys."
           }
         },
         "addHeader": {
-          "help": "Hängt dem aktiven Endpunkt einen leeren Request-Header an. Gibt seinen Index in endpoints[].headers zurück."
+          "help": "Header hinzufügen hängt dem aktiven Endpunkt eine leere Kopfzeile an, die Sie danach mit Name und Wert füllen. Der Agent erhält ihre Nummer in der Liste der Kopfzeilen."
         },
         "setHeader": {
-          "help": "Setzt Name und Wert eines Request-Headers des aktiven Endpunkts.",
+          "help": "Headers sind zusätzliche Kopfzeilen, die mit der Anfrage mitgeschickt werden, etwa ein Zugangsschlüssel; jede besteht aus einem Namen und einem Wert. Setzt Name und Wert einer Kopfzeile des aktiven Endpunkts.",
           "params": {
             "index": "Der Index eines Headers in endpoints[].headers.",
             "key": "Der Name des Headers; der leere Text löscht ihn.",
@@ -9968,7 +9968,7 @@
           }
         },
         "addMapping": {
-          "help": "Hängt dem aktiven Endpunkt ein leeres Mapping an. Mappings werden gespeichert, aber noch nicht angewendet. Gibt seinen Index in endpoints[].mappings zurück."
+          "help": "Zuordnung hinzufügen hängt dem aktiven Endpunkt eine leere Zuordnung zwischen einem Pfad der Antwort und einer Spalte an. Zuordnungen werden gespeichert, aber noch nicht angewendet. Der Agent erhält ihre Nummer in der Liste der Zuordnungen."
         },
         "setMapping": {
           "help": "Setzt Pfad und Zielspalte eines Mappings des aktiven Endpunkts. Eine Spalte kann je Endpunkt nur zu einem Mapping gehören.",
@@ -9985,13 +9985,13 @@
           }
         },
         "setSchedule": {
-          "help": "Schaltet den Zeitplan des aktiven Endpunkts ein oder aus. Er läuft nur, solange eine URL gesetzt ist.",
+          "help": "Automatische Abfrage schaltet den Zeitplan des aktiven Endpunkts ein oder aus: Ist sie an, ruft das Modul die URL im eingestellten Intervall selbst ab. Der Zeitplan läuft nur, solange eine URL gesetzt ist.",
           "params": {
             "enabled": "true startet die regelmäßigen Abrufe, false stoppt sie."
           }
         },
         "sendRequest": {
-          "help": "Führt eine GET-Anfrage an die gesetzte URL des aktiven Endpunkts aus und wartet auf die Antwort. Die Anfrage geht tatsächlich über das Netz und verlässt das Gerät. Gibt die Antwort zurück, auch in lastResponse abgelegt; ein Netzfehler wird zu Status 0. Gibt null zurück ohne aktiven Endpunkt oder ohne URL."
+          "help": "Senden schickt eine GET-Anfrage an die URL des aktiven Endpunkts und wartet auf die Antwort, die danach unter Antwort steht. Die Anfrage geht tatsächlich über das Netz und verlässt das Gerät. Ein Netzfehler erscheint als Status 0. Ohne aktiven Endpunkt oder ohne URL passiert nichts (ohne URL erscheint die Meldung „Bitte eine URL eingeben.“)."
         }
       },
       "fields": {
@@ -10014,7 +10014,17 @@
           "help": "Ob gerade eine Anfrage läuft."
         },
         "lastResponse": {
-          "help": "Die letzte Antwort des aktiven Endpunkts als { status, statusText, ok, body }, oder null."
+          "help": "Die letzte Antwort des aktiven Endpunkts: Status, Statustext und Inhalt; leer, solange noch keine Anfrage gesendet wurde. Der Agent erhält status, statusText, ok (Anfrage erfolgreich) und body (Inhalt)."
+        }
+      },
+      "types": {
+        "Params": {
+          "url": "Die Adresse, an die Senden und die automatische Abfrage eine GET-Anfrage schicken. Beliebiger Text ohne Prüfung; ist sie leer, ergibt Senden die Meldung „Bitte eine URL eingeben.“.",
+          "writeMode": "Wie die zugeordneten Daten in die Spalten geschrieben werden sollen: replace („Spalten vor dem Schreiben leeren“), append („Daten unten anhängen“) oder prepend („Daten oben einfügen“). Das gilt für die Spaltenzuordnungen, die heute gespeichert, aber noch nicht angewendet werden — der Schreibmodus wirkt also noch nicht.",
+          "schedule": {
+            "intervalValue": "Das Intervall der automatischen Abfrage (der Abstand zwischen zwei Abrufen) als ganze Zahl von 1 bis 999, zusammen mit der Einheit daneben. Ändert man sie bei laufendem Zeitplan, startet er neu; das Feld ist gesperrt, solange die automatische Abfrage aus ist.",
+            "intervalUnit": "Die Einheit des Intervalls: minutes (Minuten) oder hours (Stunden)."
+          }
         }
       },
       "addEndpoint": "Endpunkt hinzufügen",
