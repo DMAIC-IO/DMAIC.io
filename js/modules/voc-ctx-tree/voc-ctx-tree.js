@@ -49,8 +49,21 @@ const COLOR_PROP = {
   req:  '--color-vct-req',
 };
 
-/** Die Farbschlüssel der Darstellung, in der Reihenfolge des Einstellbereichs. */
-const COLOR_KEYS = Object.keys(COLOR_PROP);
+/**
+ * Die Schlüsselfläche von `setNodeColor`: je Knotentyp eine Füllfarbe.
+ * Sätze je Typ unter `types.NodeColors.<typ>`.
+ *
+ * @typedef {object} NodeColors
+ * @property {string} voc  Kundenstimme
+ * @property {string} need  Bedürfnis
+ * @property {string} ctq  Treiber Qualität (CTQ)
+ * @property {string} ctd  Treiber Lieferung (CTD)
+ * @property {string} ctc  Treiber Kosten (CTC)
+ * @property {string} req  Anforderung
+ */
+// Muss die Schlüssel von COLOR_PROP tragen; als Literal, damit der Build die
+// Schlüsselfläche prüfen kann (der Modultest hält beide gleich).
+export const COLOR_KEYS = ['voc', 'need', 'ctq', 'ctd', 'ctc', 'req'];
 
 // Die Randstärke läuft von 0 bis 4 in Schritten von 0,5 — genau die Stufen des
 // Schiebereglers. `requireIndex` passt darauf nicht: es verlangt eine GANZE
@@ -821,8 +834,8 @@ export default createModule({
       /**
        * Setzt die Farbe einer Knotenart.
        * @agent
-       * @param {'voc'|'need'|'ctq'|'ctd'|'ctc'|'req'} key die Knotenart
-       * @param {string} color die Farbe als `rgb(r,g,b)` oder `rgba(r,g,b,a)`
+       * @param {keyof NodeColors} key welcher Knotentyp
+       * @param {string} color die Farbe als rgb(…) oder rgba(…)
        * @returns {void}
        * @throws {Error} wenn `key` keine der sechs Knotenarten oder `color`
        *   keine Farbe in dieser Schreibweise ist

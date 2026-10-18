@@ -3,7 +3,7 @@
   <!-- Left: VoC list -->
   <div class="vct__sidebar dmike-split__input">
    <div class="vct__sidebar-header">
-    <span class="vct__sidebar-title" x-text="t('name')"></span>
+    <span class="vct__sidebar-title" data-help-key="modules.voc-ctx-tree.actions.setActiveVoc.help" x-text="t('name')"></span>
     <div class="vct__sidebar-header-right">
      <span class="vct__counter" x-text="model.vocs.length"></span>
      <div class="dmike-chart-dropdown vct__export-wrap" x-show="model.vocs.length > 0"
@@ -199,7 +199,7 @@
       <!-- Driver type selector (driver only) -->
       <template x-if="modalKind === 'driver'">
        <div class="vct__form-group">
-        <label x-text="t('driverType')"></label>
+        <label data-help-key="modules.voc-ctx-tree.actions.addDriver.params.type" x-text="t('driverType')"></label>
         <div class="vct__type-selector" data-ref="typeSel">
          <button type="button" class="vct__type-option" :class="typeOptClass('ctq')" data-type="ctq"
                  @click="modalData.type = 'ctq'">
@@ -230,7 +230,7 @@
       <!-- Source (VoC only) -->
       <template x-if="modalKind === 'voc'">
        <div class="vct__form-group">
-        <label x-text="t('vocSource')"></label>
+        <label data-help-key="modules.voc-ctx-tree.actions.addVoc.params.source" x-text="t('vocSource')"></label>
         <input type="text" class="field" data-field="source" :placeholder="t('vocSourcePlaceholder')"
                maxlength="200" x-model="modalData.source">
        </div>
@@ -239,14 +239,14 @@
       <!-- Target + Measure (Requirement only) -->
       <template x-if="modalKind === 'req'">
        <div class="vct__form-group">
-        <label x-text="t('reqTarget')"></label>
+        <label data-help-key="modules.voc-ctx-tree.actions.addRequirement.params.target" x-text="t('reqTarget')"></label>
         <input type="text" class="field" data-field="target" :placeholder="t('reqTargetPlaceholder')"
                maxlength="200" x-model="modalData.target">
        </div>
       </template>
       <template x-if="modalKind === 'req'">
        <div class="vct__form-group">
-        <label x-text="t('reqMeasure')"></label>
+        <label data-help-key="modules.voc-ctx-tree.actions.addRequirement.params.measure" x-text="t('reqMeasure')"></label>
         <input type="text" class="field" data-field="measure" :placeholder="t('reqMeasurePlaceholder')"
                maxlength="200" x-model="modalData.measure">
        </div>

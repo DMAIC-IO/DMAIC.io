@@ -1400,7 +1400,7 @@
           "help": "Adds a voice-of-customer statement and selects it.",
           "params": {
             "text": "The wording of the statement. Empty wording adds nothing and returns null; a missing argument is an error.",
-            "source": "Where the statement came from, e.g. a survey or a complaint. An empty string means no source; a non-string is an error."
+            "source": "Where the statement came from, e.g. a survey, an interview or a complaint. Empty means no source; anything but text is an error."
           }
         },
         "updateVoc": {
@@ -1418,7 +1418,7 @@
           }
         },
         "setActiveVoc": {
-          "help": "Selects the voice-of-customer statement whose tree is shown.",
+          "help": "Selects the voice-of-customer statement whose tree is shown. In the list below, one click on a card is enough; with no selection the area stays empty.",
           "params": {
             "vocId": "The id of the statement, or null for no selection. Any other value is an error."
           }
@@ -1451,7 +1451,7 @@
             "vocId": "The id of the statement. An unknown id is an error.",
             "needId": "The id of the need. An unknown id is an error.",
             "text": "The wording of the driver. Empty wording adds nothing and returns null; a missing argument is an error.",
-            "type": "The driver kind: ctq for quality, ctd for delivery, ctc for cost. Any other value is an error."
+            "type": "The driver kind: ctq for quality, ctd for delivery, ctc for cost — what is decisive to the customer about quality, delivery or cost (Critical to Quality, Delivery, Cost). Any other value is an error."
           }
         },
         "updateDriver": {
@@ -1479,8 +1479,8 @@
             "needId": "The id of the need. An unknown id is an error.",
             "drvId": "The id of the driver. An unknown id is an error.",
             "text": "The wording of the requirement. Empty wording adds nothing and returns null; a missing argument is an error.",
-            "target": "The target value the requirement is checked against. An empty string means no target; a non-string is an error.",
-            "measure": "The measure used to check the target value. An empty string means no measure; a non-string is an error."
+            "target": "The target value the requirement is checked against, e.g. \"at most 24 hours\". Empty means no target; anything but text is an error.",
+            "measure": "The measure used to check the target value, e.g. \"lead time in hours\". Empty means no measure; anything but text is an error."
           }
         },
         "updateRequirement": {
@@ -1520,10 +1520,10 @@
           }
         },
         "setNodeColor": {
-          "help": "Sets the colour of one node kind.",
+          "help": "Sets the colour of one node type in the tree.",
           "params": {
-            "key": "The node kind: voc, need, ctq, ctd, ctc or req. Any other value is an error.",
-            "color": "The colour as rgb(r,g,b) or rgba(r,g,b,a). Any other notation is an error."
+            "key": "Which node type; each is described individually under keys. Any other value is an error.",
+            "color": "The colour; notation and default are given per node type under keys. Any other notation is an error."
           }
         }
       },
@@ -1536,6 +1536,16 @@
         },
         "styles": {
           "help": "The appearance of the tree: borderWidth as the node border width in pixels from 0 to 4 in steps of 0.5, and colors with one colour as rgba(r,g,b,a) under each of voc, need, ctq, ctd, ctc and req."
+        }
+      },
+      "types": {
+        "NodeColors": {
+          "voc": "Colour of the voice-of-customer statements (VoC) in the tree, written as rgb(r,g,b) or rgba(r,g,b,a) with an alpha value from 0 to 1, e.g. rgba(230,126,34,1). The default is a strong orange. Background, border and lines of the nodes are derived from this colour.",
+          "need": "Colour of the customer needs in the tree, written as rgb(r,g,b) or rgba(r,g,b,a) with an alpha value from 0 to 1, e.g. rgba(155,89,182,1). The default is a violet. Background, border and lines of the nodes are derived from this colour.",
+          "ctq": "Colour of the drivers of kind CTQ (Critical to Quality) in the tree, written as rgb(r,g,b) or rgba(r,g,b,a) with an alpha value from 0 to 1, e.g. rgba(39,174,96,1). The default is a green. Background, border and lines of the nodes are derived from this colour.",
+          "ctd": "Colour of the drivers of kind CTD (Critical to Delivery) in the tree, written as rgb(r,g,b) or rgba(r,g,b,a) with an alpha value from 0 to 1, e.g. rgba(41,128,185,1). The default is a blue. Background, border and lines of the nodes are derived from this colour.",
+          "ctc": "Colour of the drivers of kind CTC (Critical to Cost) in the tree, written as rgb(r,g,b) or rgba(r,g,b,a) with an alpha value from 0 to 1, e.g. rgba(231,76,139,1). The default is a pink. Background, border and lines of the nodes are derived from this colour.",
+          "req": "Colour of the requirements in the tree, written as rgb(r,g,b) or rgba(r,g,b,a) with an alpha value from 0 to 1, e.g. rgba(94,88,216,1). The default is a blue-violet. Background, border and lines of the nodes are derived from this colour."
         }
       }
     },
@@ -2563,28 +2573,28 @@
           "params": {}
         },
         "setTodoText": {
-          "help": "Sets the text of a task.",
+          "help": "Sets the text of a task, i.e. what has to be done. Each row has a text field for it. Clicking the column header sorts the list by it; a second click reverses the direction.",
           "params": {
             "itemId": "The id of the task as read() lists it under items. An unknown id is an error.",
             "text": "The new text. An empty string clears it; a missing argument is an error."
           }
         },
         "setTodoOwner": {
-          "help": "Sets the owner of a task.",
+          "help": "Sets the owner of a task as a freely typed name; empty means no owner. Clicking the column header sorts the list by it; a second click reverses the direction.",
           "params": {
             "itemId": "The id of the task as read() lists it under items. An unknown id is an error.",
             "owner": "The name of the owner. An empty string leaves the task without an owner; a missing argument is an error."
           }
         },
         "setTodoDue": {
-          "help": "Sets the due date of a task.",
+          "help": "Sets the due date of a task in the notation YYYY-MM-DD, e.g. 2026-11-30; empty clears it. Clicking the column header sorts the list by it; a second click reverses the direction.",
           "params": {
             "itemId": "The id of the task as read() lists it under items. An unknown id is an error.",
             "isoDate": "The due date written as YYYY-MM-DD. An empty string clears it; any other value is an error."
           }
         },
         "setTodoStatus": {
-          "help": "Sets the status of a task.",
+          "help": "Sets the status of a task: open, in progress, done or blocked. The checkbox at the start of the row sets it to done and back to open. Clicking the column header sorts the list by it; a second click reverses the direction.",
           "params": {
             "itemId": "The id of the task as read() lists it under items. An unknown id is an error.",
             "status": "One of the four values open, in-progress, done or blocked. Any other value is an error."
@@ -4548,11 +4558,11 @@
           }
         },
         "addRole": {
-          "help": "Adds a role without a name and returns its id.",
+          "help": "Adds a role without a name, in the matrix as a new row at the very bottom, and returns its id.",
           "params": {}
         },
         "addStep": {
-          "help": "Adds a process step without a title at the end of the chain and returns its id.",
+          "help": "Adds a process step without a title at the end of the chain, in the matrix as a new column on the far right, and returns its id.",
           "params": {}
         },
         "setRoleLabel": {
@@ -4570,28 +4580,28 @@
           }
         },
         "setStepDescription": {
-          "help": "Sets the description of what happens in a process step.",
+          "help": "Sets the description of what happens in a process step, i.e. what takes place in that step.",
           "params": {
             "stepId": "The id of the process step as read() lists it under steps. An unknown id is an error.",
             "text": "The description of the activity. An empty string clears it; a missing argument is an error."
           }
         },
         "setStepNotes": {
-          "help": "Sets the note of a process step.",
+          "help": "Sets the note of a process step, e.g. observations, hand-offs or bottlenecks; empty clears it.",
           "params": {
             "stepId": "The id of the process step as read() lists it under steps. An unknown id is an error.",
             "text": "The note on the step. An empty string clears it; a missing argument is an error."
           }
         },
         "setStepProcessTime": {
-          "help": "Sets the processing time of a process step — the time actually spent working on the case.",
+          "help": "Sets the processing time of a process step — the time actually spent working on the case. The duration is text made of a number and a unit, e.g. 4h 30min, 1d or 45min, and counts towards the processing total and the key figures. An unreadable text is stored and marked invalid, but does not count.",
           "params": {
             "stepId": "The id of the process step as read() lists it under steps. An unknown id is an error.",
             "text": "The duration as text made of a number and a unit, e.g. 30 min or 1 d 2 h; the units recognised are listed in timeUnits. An empty string clears the entry; an unreadable text is stored but does not count towards the key figures and returns false. A missing argument is an error."
           }
         },
         "setStepWaitTime": {
-          "help": "Sets the waiting time of a process step — the time the case lies idle.",
+          "help": "Sets the waiting time of a process step — the time the case lies idle. The duration is text made of a number and a unit, e.g. 4h 30min, 1d or 45min, and counts towards the waiting total and the key figures. An unreadable text is stored and marked invalid, but does not count.",
           "params": {
             "stepId": "The id of the process step as read() lists it under steps. An unknown id is an error.",
             "text": "The duration as text made of a number and a unit, e.g. 30 min or 1 d 2 h; the units recognised are listed in timeUnits. An empty string clears the entry; an unreadable text is stored but does not count towards the key figures and returns false. A missing argument is an error."
@@ -4605,7 +4615,7 @@
           }
         },
         "setParticipation": {
-          "help": "Decides whether a role takes part in a process step.",
+          "help": "Decides whether a role takes part in a process step. On the step card each role is a button that a click marks or releases; in the matrix a click on the cell of role and step toggles the same thing.",
           "params": {
             "stepId": "The id of the process step as read() lists it under steps. An unknown id is an error.",
             "roleId": "The id of the role as read() lists it under roles. An unknown id is an error.",
@@ -4613,7 +4623,7 @@
           }
         },
         "setMuda": {
-          "help": "Decides whether a waste category marks a process step.",
+          "help": "Decides whether a waste category (Muda) marks a process step. On the step card each category is a button that a click sets or releases. The eight classic categories (TIMWOODS+S) are preset; the settings let you adapt them.",
           "params": {
             "stepId": "The id of the process step as read() lists it under steps. An unknown id is an error.",
             "mudaId": "The id of the waste category as read() lists it under mudaCategories. An unknown id is an error.",
@@ -4696,7 +4706,7 @@
           "help": "The name of the process under study."
         },
         "roles": {
-          "help": "The roles involved, in display order. Per role: id (this is how the actions address it) and label (its name)."
+          "help": "The roles involved, in display order; in the matrix they are the rows, on each step card selectable buttons. Per role: id (this is how the actions address it) and label (its name)."
         },
         "steps": {
           "help": "The process steps in flow order. Per step: id (this is how the actions address it), title, description, notes, roleIds (the roles taking part), mudaIds (the waste categories assigned), processTime and waitTime as duration text plus expanded (whether the card is unfolded)."

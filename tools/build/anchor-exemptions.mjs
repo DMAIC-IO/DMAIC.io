@@ -166,4 +166,17 @@ export const ANCHOR_EXEMPTIONS = {
   'dmaic-calendar': [
     { match: "t('endTime')", reason: 'nur im Dialog; das Ende wird mit dem Beginn zur Dauer verrechnet, die Dauer ist erklärt', count: 1 },
   ],
+  todo: [
+    { match: 'todo__col-cal', reason: 'Kalenderspalte, nur Symbol ohne Beschriftungstext; Follow-up', count: 1 },
+  ],
+  makigami: [
+    { match: "t('colCode')", reason: 'Einstellungen, Eingabetabelle der Verschwendungsarten', count: 1 },
+    { match: "t('colLabel')", reason: 'Einstellungen, Eingabetabellen (Verschwendungsarten, Zeiteinheiten)', count: 2 },
+    { match: "t('colColor')", reason: 'Einstellungen, Eingabetabelle der Verschwendungsarten', count: 1 },
+    { match: "t('colFactor')", reason: 'Einstellungen, Eingabetabelle der Zeiteinheiten', count: 1 },
+    { match: 'makigami__matrix-step-head', reason: 'Kopf je Prozessschritt (Titel aus den Daten, editierbar)', count: 1 },
+  ],
+  'voc-ctx-tree': [
+    { match: 'textLabel()', reason: 'Beschriftung wechselt mit der Knotenart (Stimme, Bedürfnis, Treiber, Anforderung); der Text ist je Aktion beschrieben', count: 1 },
+  ],
 };

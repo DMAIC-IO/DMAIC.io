@@ -23,6 +23,7 @@
         <button
           class="makigami__head-delete makigami__head-delete--inline"
           data-action="close-settings"
+          data-help-key="modules.makigami.actions.setSettingsOpen.help"
           type="button"
           :aria-label="t('settingsClose')"
           @click="closeSettings()">
@@ -93,7 +94,7 @@
             </template>
           </tbody>
         </table>
-        <button class="btn btn--sm" data-action="add-muda" type="button" @click="addMudaCategory()">
+        <button class="btn btn--sm" data-help-key="modules.makigami.actions.addMudaCategory.help" data-action="add-muda" type="button" @click="addMudaCategory()">
           <span class="icon icon--sm icon--text" data-icon="action.add" aria-hidden="true"></span>
           <span x-text="t('settingsAddMuda')"></span>
         </button>
@@ -152,14 +153,14 @@
             </template>
           </tbody>
         </table>
-        <button class="btn btn--sm" data-action="add-unit" type="button" @click="addTimeUnit()">
+        <button class="btn btn--sm" data-help-key="modules.makigami.actions.addTimeUnit.help" data-action="add-unit" type="button" @click="addTimeUnit()">
           <span class="icon icon--sm icon--text" data-icon="action.add" aria-hidden="true"></span>
           <span x-text="t('settingsAddUnit')"></span>
         </button>
       </section>
 
       <div class="makigami__settings-footer">
-        <button class="btn btn--sm" data-action="reset-settings" type="button"
+        <button class="btn btn--sm" data-help-key="modules.makigami.actions.resetSettingsToDefaults.help" data-action="reset-settings" type="button"
           x-text="t('settingsReset')" @click="resetSettings()"></button>
       </div>
     </div>
@@ -176,7 +177,7 @@
               <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
               <span x-text="t('addRole')"></span>
             </button>
-            <button class="btn btn--primary" data-action="add-step" type="button" @click="addStep()">
+            <button class="btn btn--primary" data-help-key="modules.makigami.actions.addStep.help" data-action="add-step" type="button" @click="addStep()">
               <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
               <span x-text="t('addStep')"></span>
             </button>
@@ -191,7 +192,7 @@
             <thead>
               <tr>
                 <th class="makigami__matrix-corner" scope="col">
-                  <span x-text="t('rolesHeaderRows')"></span>
+                  <span data-help-key="modules.makigami.fields.roles.help" x-text="t('rolesHeaderRows')"></span>
                   <span class="icon icon--sm icon--text" data-icon="nav.arrow-down" aria-hidden="true"></span>
                   <span> / </span>
                   <span x-text="t('rolesHeaderCols')"></span>
@@ -233,7 +234,7 @@
                   </th>
                 </template>
                 <th class="makigami__matrix-add-col" scope="col">
-                  <button class="btn btn--sm btn--primary" data-action="add-step" type="button" @click="addStep()">
+                  <button class="btn btn--sm btn--primary" data-help-key="modules.makigami.actions.addStep.help" data-action="add-step" type="button" @click="addStep()">
                     <span class="icon icon--sm icon--text" data-icon="action.add" aria-hidden="true"></span>
                     <span x-text="t('addStep')"></span>
                   </button>
@@ -294,7 +295,7 @@
               </template>
               <tr class="makigami__matrix-add-row">
                 <th class="makigami__matrix-add-role" scope="row" :colspan="model.steps.length + 2">
-                  <button class="btn btn--sm btn--primary" data-action="add-role" type="button" @click="addRole()">
+                  <button class="btn btn--sm btn--primary" data-help-key="modules.makigami.actions.addRole.help" data-action="add-role" type="button" @click="addRole()">
                     <span class="icon icon--sm icon--text" data-icon="action.add" aria-hidden="true"></span>
                     <span x-text="t('addRole')"></span>
                   </button>
@@ -356,7 +357,7 @@
 
           <div class="makigami__card-body" x-show="cardExpanded(step)">
             <div class="makigami__field">
-              <label class="makigami__field-label" :for="'mk-desc-' + step.id" x-text="t('cardActivity')"></label>
+              <label class="makigami__field-label" data-help-key="modules.makigami.actions.setStepDescription.help" :for="'mk-desc-' + step.id" x-text="t('cardActivity')"></label>
               <textarea
                 :id="'mk-desc-' + step.id"
                 class="makigami__textarea"
@@ -369,7 +370,7 @@
             </div>
 
             <div class="makigami__field">
-              <label class="makigami__field-label" x-text="t('cardRoles')"></label>
+              <label class="makigami__field-label" data-help-key="modules.makigami.actions.setParticipation.help" x-text="t('cardRoles')"></label>
               <div class="makigami__chips">
                 <template x-if="model.roles.length === 0">
                   <span class="makigami__chip-empty" x-text="t('cardRolesNone')"></span>
@@ -394,7 +395,7 @@
 
             <div class="makigami__time-row">
               <div class="makigami__field">
-                <label class="makigami__field-label" :for="'mk-pt-' + step.id" x-text="t('cardProcessTime')"></label>
+                <label class="makigami__field-label" data-help-key="modules.makigami.actions.setStepProcessTime.help" :for="'mk-pt-' + step.id" x-text="t('cardProcessTime')"></label>
                 <input
                   :id="'mk-pt-' + step.id"
                   type="text"
@@ -410,7 +411,7 @@
                 <span class="makigami__field-error" x-show="!timeValid(step.processTime)" x-text="t('cardTimeInvalid')"></span>
               </div>
               <div class="makigami__field">
-                <label class="makigami__field-label" :for="'mk-wt-' + step.id" x-text="t('cardWaitTime')"></label>
+                <label class="makigami__field-label" data-help-key="modules.makigami.actions.setStepWaitTime.help" :for="'mk-wt-' + step.id" x-text="t('cardWaitTime')"></label>
                 <input
                   :id="'mk-wt-' + step.id"
                   type="text"
@@ -428,7 +429,7 @@
             </div>
 
             <div class="makigami__field">
-              <label class="makigami__field-label" x-text="t('cardMuda')"></label>
+              <label class="makigami__field-label" data-help-key="modules.makigami.actions.setMuda.help" x-text="t('cardMuda')"></label>
               <div class="makigami__chips makigami__chips--muda">
                 <template x-if="model.mudaCategories.length === 0">
                   <span class="makigami__chip-empty" x-text="t('cardMudaNone')"></span>
@@ -457,7 +458,7 @@
             </div>
 
             <div class="makigami__field">
-              <label class="makigami__field-label" :for="'mk-notes-' + step.id" x-text="t('cardNotes')"></label>
+              <label class="makigami__field-label" data-help-key="modules.makigami.actions.setStepNotes.help" :for="'mk-notes-' + step.id" x-text="t('cardNotes')"></label>
               <textarea
                 :id="'mk-notes-' + step.id"
                 class="makigami__textarea"

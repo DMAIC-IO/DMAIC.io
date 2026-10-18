@@ -1400,7 +1400,7 @@
           "help": "Legt eine Kundenstimme an und wählt sie aus.",
           "params": {
             "text": "Der Wortlaut der Kundenstimme. Ein leerer Wortlaut legt nichts an und liefert null zurück; ein fehlendes Argument ist ein Fehler.",
-            "source": "Woher die Kundenstimme stammt, etwa eine Befragung oder eine Beschwerde. Eine leere Zeichenkette heißt ohne Angabe; ein Nichttext ist ein Fehler."
+            "source": "Woher die Kundenstimme stammt, etwa eine Befragung, ein Interview oder eine Beschwerde. Leer heißt ohne Angabe; alles außer Text ist ein Fehler."
           }
         },
         "updateVoc": {
@@ -1418,7 +1418,7 @@
           }
         },
         "setActiveVoc": {
-          "help": "Wählt die Kundenstimme aus, deren Baum angezeigt wird.",
+          "help": "Wählt die Kundenstimme aus, deren Baum angezeigt wird. In der Liste darunter genügt ein Klick auf eine Karte; ohne Auswahl bleibt die Fläche leer.",
           "params": {
             "vocId": "Die id der Kundenstimme, oder null für keine Auswahl. Jeder andere Wert ist ein Fehler."
           }
@@ -1451,7 +1451,7 @@
             "vocId": "Die id der Kundenstimme. Eine unbekannte id ist ein Fehler.",
             "needId": "Die id des Bedürfnisses. Eine unbekannte id ist ein Fehler.",
             "text": "Der Wortlaut des Treibers. Ein leerer Wortlaut legt nichts an und liefert null zurück; ein fehlendes Argument ist ein Fehler.",
-            "type": "Die Treiberart: ctq für Qualität, ctd für Liefertreue, ctc für Kosten. Jeder andere Wert ist ein Fehler."
+            "type": "Die Treiberart: ctq für Qualität, ctd für Lieferung, ctc für Kosten — also das, was dem Kunden an Qualität, Lieferung oder Kosten entscheidend ist (Critical to Quality, Delivery, Cost). Jeder andere Wert ist ein Fehler."
           }
         },
         "updateDriver": {
@@ -1479,8 +1479,8 @@
             "needId": "Die id des Bedürfnisses. Eine unbekannte id ist ein Fehler.",
             "drvId": "Die id des Treibers. Eine unbekannte id ist ein Fehler.",
             "text": "Der Wortlaut der Anforderung. Ein leerer Wortlaut legt nichts an und liefert null zurück; ein fehlendes Argument ist ein Fehler.",
-            "target": "Der Zielwert, gegen den die Anforderung geprüft wird. Eine leere Zeichenkette heißt ohne Zielwert; ein Nichttext ist ein Fehler.",
-            "measure": "Die Messgröße, mit der der Zielwert gemessen wird. Eine leere Zeichenkette heißt ohne Messgröße; ein Nichttext ist ein Fehler."
+            "target": "Der Zielwert, gegen den die Anforderung geprüft wird, etwa „höchstens 24 Stunden“. Leer heißt ohne Zielwert; alles außer Text ist ein Fehler.",
+            "measure": "Die Messgröße, mit der der Zielwert gemessen wird, etwa „Durchlaufzeit in Stunden“. Leer heißt ohne Messgröße; alles außer Text ist ein Fehler."
           }
         },
         "updateRequirement": {
@@ -1520,10 +1520,10 @@
           }
         },
         "setNodeColor": {
-          "help": "Setzt die Farbe einer Knotenart.",
+          "help": "Setzt die Farbe eines Knotentyps im Baum.",
           "params": {
-            "key": "Die Knotenart: voc, need, ctq, ctd, ctc oder req. Jeder andere Wert ist ein Fehler.",
-            "color": "Die Farbe als rgb(r,g,b) oder rgba(r,g,b,a). Jede andere Schreibweise ist ein Fehler."
+            "key": "Welcher Knotentyp; jeder ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
+            "color": "Die Farbe; Schreibweise und Vorgabe stehen je Knotentyp unter keys. Jede andere Schreibweise ist ein Fehler."
           }
         }
       },
@@ -1536,6 +1536,16 @@
         },
         "styles": {
           "help": "Die Darstellung des Baums: borderWidth als Randstärke der Knoten in Pixeln von 0 bis 4 in Schritten von 0,5 und colors mit je einer Farbe als rgba(r,g,b,a) unter voc, need, ctq, ctd, ctc und req."
+        }
+      },
+      "types": {
+        "NodeColors": {
+          "voc": "Farbe der Kundenstimmen (VoC) im Baum, als rgb(r,g,b) oder rgba(r,g,b,a) mit einem Alphawert von 0 bis 1, etwa rgba(230,126,34,1). Vorgabe ist ein kräftiges Orange. Hintergrund, Rand und Linien der Knoten leiten sich aus dieser Farbe ab.",
+          "need": "Farbe der Kundenbedürfnisse im Baum, als rgb(r,g,b) oder rgba(r,g,b,a) mit einem Alphawert von 0 bis 1, etwa rgba(155,89,182,1). Vorgabe ist ein Violett. Hintergrund, Rand und Linien der Knoten leiten sich aus dieser Farbe ab.",
+          "ctq": "Farbe der Treiber der Art CTQ (Critical to Quality, Qualität) im Baum, als rgb(r,g,b) oder rgba(r,g,b,a) mit einem Alphawert von 0 bis 1, etwa rgba(39,174,96,1). Vorgabe ist ein Grün. Hintergrund, Rand und Linien der Knoten leiten sich aus dieser Farbe ab.",
+          "ctd": "Farbe der Treiber der Art CTD (Critical to Delivery, Lieferung) im Baum, als rgb(r,g,b) oder rgba(r,g,b,a) mit einem Alphawert von 0 bis 1, etwa rgba(41,128,185,1). Vorgabe ist ein Blau. Hintergrund, Rand und Linien der Knoten leiten sich aus dieser Farbe ab.",
+          "ctc": "Farbe der Treiber der Art CTC (Critical to Cost, Kosten) im Baum, als rgb(r,g,b) oder rgba(r,g,b,a) mit einem Alphawert von 0 bis 1, etwa rgba(231,76,139,1). Vorgabe ist ein Rosa. Hintergrund, Rand und Linien der Knoten leiten sich aus dieser Farbe ab.",
+          "req": "Farbe der Anforderungen im Baum, als rgb(r,g,b) oder rgba(r,g,b,a) mit einem Alphawert von 0 bis 1, etwa rgba(94,88,216,1). Vorgabe ist ein Blauviolett. Hintergrund, Rand und Linien der Knoten leiten sich aus dieser Farbe ab."
         }
       }
     },
@@ -2567,28 +2577,28 @@
           "params": {}
         },
         "setTodoText": {
-          "help": "Setzt den Text einer Aufgabe.",
+          "help": "Setzt den Text einer Aufgabe, also was zu tun ist. Jede Zeile hat dafür ein Textfeld. Ein Klick auf den Spaltenkopf sortiert die Liste danach, ein zweiter Klick dreht die Richtung.",
           "params": {
             "itemId": "Die id der Aufgabe, wie read() sie unter items führt. Eine unbekannte id ist ein Fehler.",
             "text": "Der neue Text. Eine leere Zeichenkette löscht ihn; ein fehlendes Argument ist ein Fehler."
           }
         },
         "setTodoOwner": {
-          "help": "Setzt den Verantwortlichen einer Aufgabe.",
+          "help": "Setzt den Verantwortlichen einer Aufgabe als frei eingegebenen Namen; leer heißt ohne Verantwortlichen. Ein Klick auf den Spaltenkopf sortiert die Liste danach, ein zweiter Klick dreht die Richtung.",
           "params": {
             "itemId": "Die id der Aufgabe, wie read() sie unter items führt. Eine unbekannte id ist ein Fehler.",
             "owner": "Der Name des Verantwortlichen. Eine leere Zeichenkette lässt die Aufgabe ohne Verantwortlichen; ein fehlendes Argument ist ein Fehler."
           }
         },
         "setTodoDue": {
-          "help": "Setzt das Zieldatum einer Aufgabe.",
+          "help": "Setzt das Zieldatum einer Aufgabe in der Schreibweise JJJJ-MM-TT, etwa 2026-11-30; leer löscht es. Ein Klick auf den Spaltenkopf sortiert die Liste danach, ein zweiter Klick dreht die Richtung.",
           "params": {
             "itemId": "Die id der Aufgabe, wie read() sie unter items führt. Eine unbekannte id ist ein Fehler.",
             "isoDate": "Das Zieldatum in der Schreibweise JJJJ-MM-TT. Eine leere Zeichenkette löscht es; jeder andere Wert ist ein Fehler."
           }
         },
         "setTodoStatus": {
-          "help": "Setzt den Status einer Aufgabe.",
+          "help": "Setzt den Status einer Aufgabe: offen, in Bearbeitung, erledigt oder blockiert. Das Kästchen am Zeilenanfang setzt sie auf erledigt und wieder auf offen. Ein Klick auf den Spaltenkopf sortiert die Liste danach, ein zweiter Klick dreht die Richtung.",
           "params": {
             "itemId": "Die id der Aufgabe, wie read() sie unter items führt. Eine unbekannte id ist ein Fehler.",
             "status": "Einer der vier Werte open (offen), in-progress (in Bearbeitung), done (erledigt) oder blocked (blockiert). Ein Wert daneben ist ein Fehler."
@@ -4552,11 +4562,11 @@
           }
         },
         "addRole": {
-          "help": "Legt eine Rolle ohne Namen an und liefert ihre id zurück.",
+          "help": "Legt eine Rolle ohne Namen an, in der Matrix als neue Zeile ganz unten, und liefert ihre id zurück.",
           "params": {}
         },
         "addStep": {
-          "help": "Legt einen Prozessschritt ohne Titel am Ende der Kette an und liefert seine id zurück.",
+          "help": "Legt einen Prozessschritt ohne Titel am Ende der Kette an, in der Matrix als neue Spalte ganz rechts, und liefert seine id zurück.",
           "params": {}
         },
         "setRoleLabel": {
@@ -4574,28 +4584,28 @@
           }
         },
         "setStepDescription": {
-          "help": "Setzt die Beschreibung der Tätigkeit eines Prozessschritts.",
+          "help": "Setzt die Beschreibung der Tätigkeit eines Prozessschritts, also was in diesem Schritt passiert.",
           "params": {
             "stepId": "Die id des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte id ist ein Fehler.",
             "text": "Die Beschreibung der Tätigkeit. Eine leere Zeichenkette löscht ihn; ein fehlendes Argument ist ein Fehler."
           }
         },
         "setStepNotes": {
-          "help": "Setzt die Notiz eines Prozessschritts.",
+          "help": "Setzt die Notiz eines Prozessschritts, etwa Auffälligkeiten, Übergaben oder Engpässe; leer löscht sie.",
           "params": {
             "stepId": "Die id des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte id ist ein Fehler.",
             "text": "Die Notiz zum Schritt. Eine leere Zeichenkette löscht ihn; ein fehlendes Argument ist ein Fehler."
           }
         },
         "setStepProcessTime": {
-          "help": "Setzt die Bearbeitungszeit eines Prozessschritts — die Zeit, in der am Vorgang gearbeitet wird.",
+          "help": "Setzt die Bearbeitungszeit eines Prozessschritts — die Zeit, in der am Vorgang gearbeitet wird. Die Dauer steht als Text aus Zahl und Einheit, etwa 4h 30min, 1d oder 45min, und geht in die Summe der Bearbeitung und in die Kennzahlen ein. Ein nicht lesbarer Text wird gespeichert und als ungültig markiert, zählt aber nicht mit.",
           "params": {
             "stepId": "Die id des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte id ist ein Fehler.",
             "text": "Die Dauer als Text aus Zahl und Einheit, etwa 30 min oder 1 d 2 h; die erkannten Einheiten stehen in timeUnits. Eine leere Zeichenkette löscht die Angabe; ein nicht lesbarer Text wird gespeichert, geht aber nicht in die Kennzahlen ein und liefert false zurück. Ein fehlendes Argument ist ein Fehler."
           }
         },
         "setStepWaitTime": {
-          "help": "Setzt die Wartezeit eines Prozessschritts — die Zeit, in der der Vorgang liegt.",
+          "help": "Setzt die Wartezeit eines Prozessschritts — die Zeit, in der der Vorgang liegt. Die Dauer steht als Text aus Zahl und Einheit, etwa 4h 30min, 1d oder 45min, und geht in die Summe der Wartezeit und in die Kennzahlen ein. Ein nicht lesbarer Text wird gespeichert und als ungültig markiert, zählt aber nicht mit.",
           "params": {
             "stepId": "Die id des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte id ist ein Fehler.",
             "text": "Die Dauer als Text aus Zahl und Einheit, etwa 30 min oder 1 d 2 h; die erkannten Einheiten stehen in timeUnits. Eine leere Zeichenkette löscht die Angabe; ein nicht lesbarer Text wird gespeichert, geht aber nicht in die Kennzahlen ein und liefert false zurück. Ein fehlendes Argument ist ein Fehler."
@@ -4609,7 +4619,7 @@
           }
         },
         "setParticipation": {
-          "help": "Bestimmt, ob eine Rolle an einem Prozessschritt mitwirkt.",
+          "help": "Bestimmt, ob eine Rolle an einem Prozessschritt mitwirkt. Auf der Schrittkarte ist jede Rolle eine Schaltfläche, die ein Klick markiert oder wieder löst; in der Matrix schaltet ein Klick auf die Zelle von Rolle und Schritt dasselbe um.",
           "params": {
             "stepId": "Die id des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte id ist ein Fehler.",
             "roleId": "Die id der Rolle, wie read() sie unter roles führt. Eine unbekannte id ist ein Fehler.",
@@ -4617,7 +4627,7 @@
           }
         },
         "setMuda": {
-          "help": "Bestimmt, ob eine Verschwendungsart einen Prozessschritt kennzeichnet.",
+          "help": "Bestimmt, ob eine Verschwendungsart (Muda) einen Prozessschritt kennzeichnet. Auf der Schrittkarte ist jede Art eine Schaltfläche, die ein Klick setzt oder wieder löst. Vorbelegt sind die acht klassischen Arten (TIMWOODS+S); in den Einstellungen lassen sie sich anpassen.",
           "params": {
             "stepId": "Die id des Prozessschritts, wie read() sie unter steps führt. Eine unbekannte id ist ein Fehler.",
             "mudaId": "Die id der Verschwendungsart, wie read() sie unter mudaCategories führt. Eine unbekannte id ist ein Fehler.",
@@ -4700,7 +4710,7 @@
           "help": "Der Name des betrachteten Prozesses."
         },
         "roles": {
-          "help": "Die beteiligten Rollen in Anzeigereihenfolge. Je Rolle: id (damit sprechen die Aktionen sie an) und label (ihr Name)."
+          "help": "Die beteiligten Rollen in Anzeigereihenfolge; in der Matrix stehen sie als Zeilen, auf jeder Schrittkarte als wählbare Schaltflächen. Je Rolle: id (damit sprechen die Aktionen sie an) und label (ihr Name)."
         },
         "steps": {
           "help": "Die Prozessschritte in Ablaufreihenfolge. Je Schritt: id (damit sprechen die Aktionen ihn an), title, description, notes, roleIds (die mitwirkenden Rollen), mudaIds (die zugeordneten Verschwendungsarten), processTime und waitTime als Dauertext sowie expanded (ob die Karte aufgeklappt ist)."

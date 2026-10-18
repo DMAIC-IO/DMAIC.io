@@ -18623,17 +18623,44 @@ export const AGENT_REGISTRY = {
             "name": "key",
             "type": "'voc'|'need'|'ctq'|'ctd'|'ctc'|'req'",
             "optional": false,
-            "help": "die Knotenart"
+            "help": "welcher Knotentyp"
           },
           {
             "name": "color",
             "type": "string",
             "optional": false,
-            "help": "die Farbe als `rgb(r,g,b)` oder `rgba(r,g,b,a)`"
+            "help": "die Farbe als rgb(…) oder rgba(…)"
           }
         ],
         "returns": "void",
-        "help": "Setzt die Farbe einer Knotenart."
+        "help": "Setzt die Farbe einer Knotenart.",
+        "keysOf": "NodeColors",
+        "keys": {
+          "voc": {
+            "type": "string",
+            "help": "Kundenstimme"
+          },
+          "need": {
+            "type": "string",
+            "help": "Bedürfnis"
+          },
+          "ctq": {
+            "type": "string",
+            "help": "Treiber Qualität (CTQ)"
+          },
+          "ctd": {
+            "type": "string",
+            "help": "Treiber Lieferung (CTD)"
+          },
+          "ctc": {
+            "type": "string",
+            "help": "Treiber Kosten (CTC)"
+          },
+          "req": {
+            "type": "string",
+            "help": "Anforderung"
+          }
+        }
       }
     },
     "fields": {

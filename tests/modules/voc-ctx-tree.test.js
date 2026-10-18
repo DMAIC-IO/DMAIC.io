@@ -10,6 +10,7 @@
 
 import { suite, test, assertEqual, assert } from '../test-utils.js';
 import { State, DEFAULT_COLORS } from '../../js/modules/voc-ctx-tree/voc-ctx-tree-model.js';
+import { COLOR_KEYS } from '../../js/modules/voc-ctx-tree/voc-ctx-tree.js';
 
 suite('VoC-CTx Model — defaults & serialization', () => {
   test('constructor: empty vocs, no active, default styles', () => {
@@ -422,5 +423,11 @@ suite('VoC-CTx Model — default node colours are distinguishable', () => {
         );
       }
     }
+  });
+});
+
+suite('VoC-CTx — Schlüsselfläche', () => {
+  test('COLOR_KEYS entspricht den Farbschlüsseln des Modells', () => {
+    assertEqual(JSON.stringify(COLOR_KEYS), JSON.stringify(Object.keys(DEFAULT_COLORS)));
   });
 });
