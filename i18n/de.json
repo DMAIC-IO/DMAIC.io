@@ -8321,32 +8321,32 @@
         "setParam": {
           "help": "Setzt eine Parser-Option und liest die Daten mit ihr neu ein. Werte außerhalb des Bereichs werden abgewiesen, nicht geklemmt.",
           "params": {
-            "key": "Einer der Schlüssel in activeParams: csvOptions.preset, csvOptions.delimiter, csvOptions.encoding, csvOptions.hasHeader, csvOptions.skipRows, xlsxOptions.hasHeader, aqdefOptions.encoding. Welche gelten, hängt vom Format ab; bei Text entfällt csvOptions.encoding.",
-            "value": "csvOptions.preset: eines der Profile generic, zeiss-calypso, hexagon-pcdmis, mitutoyo-measurlink (setzt auch Trennzeichen, Kodierung und übersprungene Zeilen des Profils). csvOptions.delimiter: auto, comma, semicolon, tab oder pipe. csvOptions.encoding und aqdefOptions.encoding: utf-8, windows-1252 oder iso-8859-1. csvOptions.hasHeader und xlsxOptions.hasHeader: true oder false. csvOptions.skipRows: eine ganze Zahl ab 0."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys."
           }
         },
         "selectSheet": {
-          "help": "Wählt das Blatt in sheets, das sendToWorksheet sendet; activeSheetIdx nennt es.",
+          "help": "Wählt das Blatt der Datei, dessen Spalten an das Worksheet gesendet werden; das gewählte ist hervorgehoben.",
           "params": {
             "index": "Die Nummer des Blatts in sheets, ab 0; jede andere Zahl ist ein Fehler."
           }
         },
         "sendToWorksheet": {
-          "help": "Sendet die Spalten des gewählten Blatts an einen neuen Worksheet und gibt dessen Instanz zurück. Ohne Daten oder ohne Spalten wird nichts gesendet und null zurückgegeben."
+          "help": "Sendet die Spalten des gewählten Blatts an ein neues Worksheet und gibt dessen Instanz zurück. Gibt es keine Daten oder keine Spalten, wird nichts gesendet und es kommt keine Instanz zurück."
         }
       },
       "fields": {
         "file": {
-          "help": "Die zuletzt eingelesene Quelle mit Name, Größe, Format und Herkunft (file oder text), oder null."
+          "help": "Die zuletzt eingelesene Quelle, jede Angabe unter keys einzeln beschrieben; null, solange nichts eingelesen ist."
         },
         "csvOptions": {
-          "help": "Die CSV-Optionen: preset, delimiter, encoding, hasHeader und skipRows."
+          "help": "Die CSV-Optionen; jede ist unter setParam als Schlüssel csvOptions.<name> beschrieben."
         },
         "xlsxOptions": {
-          "help": "Die XLSX-Optionen: hasHeader."
+          "help": "Die XLSX-Optionen; jede ist unter setParam als Schlüssel xlsxOptions.<name> beschrieben."
         },
         "aqdefOptions": {
-          "help": "Die AQDEF-Optionen: encoding."
+          "help": "Die AQDEF-Optionen; jede ist unter setParam als Schlüssel aqdefOptions.<name> beschrieben."
         },
         "activeParams": {
           "help": "Die Schlüssel, die setParam im aktuellen Format annimmt; ohne Quelle leer."
@@ -8365,6 +8365,29 @@
         },
         "errorMsg": {
           "help": "Die Meldung zum letzten Parse-Fehler, null ohne Fehler."
+        }
+      },
+      "types": {
+        "Params": {
+          "csvOptions": {
+            "preset": "Das Exportprofil, also ein Satz Vorgaben für den CSV-Export einer Messsoftware. Generisch lässt alles auf den Vorgaben (automatisches Trennzeichen, UTF-8, Kopfzeile, keine übersprungenen Zeilen). Zeiss CALYPSO nimmt Semikolon, Windows-1252 und überspringt 4 Zeilen, Hexagon PC-DMIS Komma, UTF-8 und 4 Zeilen, Mitutoyo MeasurLink Komma, UTF-8 und keine Zeilen; alle drei lesen die erste verbleibende Zeile als Kopfzeile. Ein Profil setzt Trennzeichen, Zeichensatz, übersprungene Zeilen und Kopfzeile auf einmal; die Einzeloptionen lassen sich danach noch ändern.",
+            "delimiter": "Das Zeichen, das die Spalten trennt: automatisch (wird aus dem Inhalt erkannt), Komma, Semikolon, Tabulator oder Senkrechtstrich.",
+            "encoding": "Der Zeichensatz der Datei: UTF-8, Windows-1252 (Excel) oder Latin-1 (ISO-8859-1); er entscheidet, ob Umlaute richtig erscheinen. Bei eingefügtem Text entfällt die Option, weil der Text schon als Zeichen vorliegt; das Feld ist dann ausgeblendet.",
+            "hasHeader": "Ob die erste Zeile (nach den übersprungenen) die Spaltennamen enthält. Ohne Kopfzeile zählt sie als Messwerte, und die Spalten heißen C1, C2 und so weiter.",
+            "skipRows": "Wie viele Zeilen am Dateianfang verworfen werden, bevor gelesen wird; eine ganze Zahl ab 0. Gedacht für Metadaten, die manche Messmaschinen vor die Tabelle schreiben."
+          },
+          "xlsxOptions": {
+            "hasHeader": "Ob die erste Zeile jedes Blatts die Spaltennamen enthält. Ohne Kopfzeile zählt sie als Messwerte, und die Spalten heißen C1, C2 und so weiter."
+          },
+          "aqdefOptions": {
+            "encoding": "Der Zeichensatz der Q-DAS-Datei. Vorgabe ist Windows-1252, weil Q-DAS-Dateien im DACH-Raum meist so gespeichert sind; zur Wahl stehen außerdem Latin-1 (ISO-8859-1) und UTF-8."
+          }
+        },
+        "ImportFile": {
+          "name": "Der Dateiname, bei eingefügtem Text der Name der Texteingabe.",
+          "size": "Die Größe, wie die Dateikarte sie zeigt, gerundet auf Byte (B), Kilobyte (KB) oder Megabyte (MB).",
+          "formatId": "Das erkannte Format, wie die Dateikarte es nennt, zum Beispiel CSV; fehlt, wenn das Format nicht erkannt wurde.",
+          "source": "Woher die Quelle stammt: aus einer gewählten oder abgelegten Datei oder aus eingefügtem Text."
         }
       },
       "name": "Datenimport",

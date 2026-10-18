@@ -14,6 +14,9 @@
  * @type {Record<string, Array<{ match: string, reason: string, count?: number }>>}
  */
 export const ANCHOR_EXEMPTIONS = {
+  'data-import': [
+    { match: 'data-import__col-name', reason: 'Kopf je Spalte (Name und Typ aus den Daten); die Spalten beschreibt der Agent unter sheets', count: 1 },
+  ],
   'contour-plot': [
     { match: 'betaLabel(', reason: 'je Koeffizient ein Feld; der Satz steht am Abschnittstitel', count: 6 },
   ],

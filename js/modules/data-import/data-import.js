@@ -119,13 +119,39 @@ function getAtPath(obj, key) {
 // ── Module ────────────────────────────────────────────────────────
 
 /**
+ * Die Schlüsselfläche von `setParam`. Die Optionen tragen den Punkt im
+ * Schlüssel; im Model liegen sie unter `csvOptions`, `xlsxOptions`,
+ * `aqdefOptions`. Sätze je Schlüssel unter `types.Params.<schlüssel>`
+ * (Punkt = Verschachtelung in i18n), dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {'generic'|'zeiss-calypso'|'hexagon-pcdmis'|'mitutoyo-measurlink'} [csvOptions.preset]  Exportprofil, nur CSV
+ * @property {'auto'|'comma'|'semicolon'|'tab'|'pipe'} [csvOptions.delimiter]  Trennzeichen, nur CSV
+ * @property {'utf-8'|'windows-1252'|'iso-8859-1'} [csvOptions.encoding]  Zeichenkodierung, nur CSV aus Datei
+ * @property {boolean} [csvOptions.hasHeader]  erste Zeile als Spaltennamen, nur CSV
+ * @property {number} [csvOptions.skipRows]  verworfene Zeilen am Anfang, nur CSV
+ * @property {boolean} [xlsxOptions.hasHeader]  erste Zeile als Spaltennamen, nur XLSX
+ * @property {'windows-1252'|'iso-8859-1'|'utf-8'} [aqdefOptions.encoding]  Zeichenkodierung, nur AQDEF
+ */
+
+/**
+ * Die zuletzt eingelesene Quelle, wie `read().file` sie liefert.
+ *
+ * @typedef {object} ImportFile
+ * @property {string} name  Dateiname bzw. Name der Texteingabe
+ * @property {number} size  Größe in Byte
+ * @property {string|null} formatId  erkanntes Format
+ * @property {'file'|'text'} source  Herkunft
+ */
+
+/**
  * Geparste Daten werden nicht persistiert — nach einem Neuladen ist `sheets`
  * leer, bis erneut importiert wird. Die Lesefläche nennt Blätter und Spalten,
  * nicht die Werte; die Werte liest ein Agent nach `sendToWorksheet` aus dem
  * Worksheet.
  *
  * @typedef {object} AgentRead
- * @property {{ name: string, size: number, formatId: string|null, source: 'file'|'text' }|null} file  what was imported last
+ * @property {ImportFile|null} file  what was imported last, each item described under keys; null before the first import
  * @property {object} csvOptions  `{ preset, delimiter, encoding, hasHeader, skipRows }`
  * @property {object} xlsxOptions  `{ hasHeader }`
  * @property {object} aqdefOptions  `{ encoding }`
@@ -439,8 +465,8 @@ export default createModule({
       /**
        * Eine Parser-Option setzen und die Daten neu einlesen.
        * @agent
-       * @param {string} key einer der Schlüssel aus activeParams
-       * @param {string|number|boolean} value der neue Wert; Art und Bereich hängen vom Schlüssel ab
+       * @param {keyof Params} key welche Option; die im aktuellen Format zulässigen nennt `activeParams`
+       * @param {string|number|boolean} value der Wert; Bereich je Schlüssel siehe `Params`
        * @returns {Promise<void>}
        * @throws {Error} wenn key im aktuellen Format nicht gilt oder value außerhalb des Bereichs liegt
        */

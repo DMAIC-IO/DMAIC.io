@@ -2862,19 +2862,57 @@ export const AGENT_REGISTRY = {
         "params": [
           {
             "name": "key",
-            "type": "string",
+            "type": "'csvOptions.preset'|'csvOptions.delimiter'|'csvOptions.encoding'|'csvOptions.hasHeader'|'csvOptions.skipRows'|'xlsxOptions.hasHeader'|'aqdefOptions.encoding'",
             "optional": false,
-            "help": "einer der Schlüssel aus activeParams"
+            "help": "welche Option; die im aktuellen Format zulässigen nennt `activeParams`"
           },
           {
             "name": "value",
             "type": "string|number|boolean",
             "optional": false,
-            "help": "der neue Wert; Art und Bereich hängen vom Schlüssel ab"
+            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "Promise<void>",
-        "help": "Eine Parser-Option setzen und die Daten neu einlesen."
+        "help": "Eine Parser-Option setzen und die Daten neu einlesen.",
+        "keysOf": "Params",
+        "keys": {
+          "csvOptions.preset": {
+            "type": "'generic'|'zeiss-calypso'|'hexagon-pcdmis'|'mitutoyo-measurlink'",
+            "help": "Exportprofil, nur CSV",
+            "optional": true
+          },
+          "csvOptions.delimiter": {
+            "type": "'auto'|'comma'|'semicolon'|'tab'|'pipe'",
+            "help": "Trennzeichen, nur CSV",
+            "optional": true
+          },
+          "csvOptions.encoding": {
+            "type": "'utf-8'|'windows-1252'|'iso-8859-1'",
+            "help": "Zeichenkodierung, nur CSV aus Datei",
+            "optional": true
+          },
+          "csvOptions.hasHeader": {
+            "type": "boolean",
+            "help": "erste Zeile als Spaltennamen, nur CSV",
+            "optional": true
+          },
+          "csvOptions.skipRows": {
+            "type": "number",
+            "help": "verworfene Zeilen am Anfang, nur CSV",
+            "optional": true
+          },
+          "xlsxOptions.hasHeader": {
+            "type": "boolean",
+            "help": "erste Zeile als Spaltennamen, nur XLSX",
+            "optional": true
+          },
+          "aqdefOptions.encoding": {
+            "type": "'windows-1252'|'iso-8859-1'|'utf-8'",
+            "help": "Zeichenkodierung, nur AQDEF",
+            "optional": true
+          }
+        }
       },
       "selectSheet": {
         "params": [
@@ -2896,10 +2934,29 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "file": {
-        "type": "{ name: string, size: number, formatId: string|null, source: 'file'|'text' }|null",
-        "help": "what was imported last",
+        "type": "ImportFile|null",
+        "help": "what was imported last, each item described under keys; null before the first import",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "ImportFile",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "Dateiname bzw. Name der Texteingabe"
+          },
+          "size": {
+            "type": "number",
+            "help": "Größe in Byte"
+          },
+          "formatId": {
+            "type": "string|null",
+            "help": "erkanntes Format"
+          },
+          "source": {
+            "type": "'file'|'text'",
+            "help": "Herkunft"
+          }
+        }
       },
       "csvOptions": {
         "type": "object",

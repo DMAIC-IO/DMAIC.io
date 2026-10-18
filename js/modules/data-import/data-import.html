@@ -30,15 +30,15 @@
       <div class="data-import__file-card">
         <div class="data-import__file-info">
           <div class="data-import__file-row">
-            <span class="data-import__file-label" x-text="t('fileName') + ':'"></span>
+            <span class="data-import__file-label" data-help-key="modules.data-import.types.ImportFile.name" x-text="t('fileName') + ':'"></span>
             <span class="data-import__file-value" x-text="fileName()"></span>
           </div>
           <div class="data-import__file-row">
-            <span class="data-import__file-label" x-text="t('fileType') + ':'"></span>
+            <span class="data-import__file-label" data-help-key="modules.data-import.types.ImportFile.formatId" x-text="t('fileType') + ':'"></span>
             <span class="data-import__file-value" x-text="formatLabel()"></span>
           </div>
           <div class="data-import__file-row">
-            <span class="data-import__file-label" x-text="t('fileSize') + ':'"></span>
+            <span class="data-import__file-label" data-help-key="modules.data-import.types.ImportFile.size" x-text="t('fileSize') + ':'"></span>
             <span class="data-import__file-value" x-text="fileSizeText()"></span>
           </div>
         </div>
@@ -52,7 +52,7 @@
       <template x-if="isCsv()">
         <div class="data-import__options">
           <label class="data-import__option">
-            <span class="data-import__option-label" x-text="t('csv_preset')"></span>
+            <span class="data-import__option-label" data-help-key="modules.data-import.types.Params.csvOptions.preset" x-text="t('csv_preset')"></span>
             <select data-csv-opt="preset" @change="onCsvOpt('preset', $event)">
               <template x-for="o in presetOptions()" :key="o.value">
                 <option :value="o.value" :selected="model.csvOptions.preset === o.value" x-text="o.label"></option>
@@ -60,7 +60,7 @@
             </select>
           </label>
           <label class="data-import__option">
-            <span class="data-import__option-label" x-text="t('delimiter')"></span>
+            <span class="data-import__option-label" data-help-key="modules.data-import.types.Params.csvOptions.delimiter" x-text="t('delimiter')"></span>
             <select data-csv-opt="delimiter" @change="onCsvOpt('delimiter', $event)">
               <template x-for="o in delimiterOptions()" :key="o.value">
                 <option :value="o.value" :selected="model.csvOptions.delimiter === o.value" x-text="o.label"></option>
@@ -68,7 +68,7 @@
             </select>
           </label>
           <label class="data-import__option" x-show="!isTextSource()">
-            <span class="data-import__option-label" x-text="t('encoding')"></span>
+            <span class="data-import__option-label" data-help-key="modules.data-import.types.Params.csvOptions.encoding" x-text="t('encoding')"></span>
             <select data-csv-opt="encoding" @change="onCsvOpt('encoding', $event)">
               <template x-for="o in csvEncodingOptions()" :key="o.value">
                 <option :value="o.value" :selected="model.csvOptions.encoding === o.value" x-text="o.label"></option>
@@ -76,11 +76,11 @@
             </select>
           </label>
           <label class="data-import__option">
-            <span class="data-import__option-label" x-text="t('csv_skipRows')"></span>
+            <span class="data-import__option-label" data-help-key="modules.data-import.types.Params.csvOptions.skipRows" x-text="t('csv_skipRows')"></span>
             <input type="number" min="0" step="1" data-csv-opt="skipRows" class="data-import__num-input"
               :value="model.csvOptions.skipRows" @change="onCsvOpt('skipRows', $event)">
           </label>
-          <label class="data-import__option data-import__option--check">
+          <label class="data-import__option data-import__option--check" data-help-anchor="box" data-help-key="modules.data-import.types.Params.csvOptions.hasHeader">
             <input type="checkbox" data-csv-opt="hasHeader"
               :checked="model.csvOptions.hasHeader" @change="onCsvOpt('hasHeader', $event)">
             <span class="data-import__option-label" x-text="t('useFirstRowAsHeader')"></span>
@@ -91,7 +91,7 @@
       <!-- XLSX options -->
       <template x-if="isXlsx()">
         <div class="data-import__options">
-          <label class="data-import__option data-import__option--check">
+          <label class="data-import__option data-import__option--check" data-help-anchor="box" data-help-key="modules.data-import.types.Params.xlsxOptions.hasHeader">
             <input type="checkbox" data-xlsx-opt="hasHeader"
               :checked="model.xlsxOptions.hasHeader" @change="onXlsxOpt('hasHeader', $event)">
             <span class="data-import__option-label" x-text="t('useFirstRowAsHeader')"></span>
@@ -103,7 +103,7 @@
       <template x-if="isAqdef()">
         <div class="data-import__options">
           <label class="data-import__option">
-            <span class="data-import__option-label" x-text="t('encoding')"></span>
+            <span class="data-import__option-label" data-help-key="modules.data-import.types.Params.aqdefOptions.encoding" x-text="t('encoding')"></span>
             <select data-aqdef-opt="encoding" @change="onAqdefOpt('encoding', $event)">
               <template x-for="o in aqdefEncodingOptions()" :key="o.value">
                 <option :value="o.value" :selected="model.aqdefOptions.encoding === o.value" x-text="o.label"></option>
@@ -137,7 +137,7 @@
           </div>
 
           <template x-if="hasMultipleSheets()">
-            <div class="data-import__sheet-tabs">
+            <div class="data-import__sheet-tabs" data-help-key="modules.data-import.actions.selectSheet.help">
               <template x-for="(tab, i) in sheetTabs" :key="i">
                 <button class="data-import__sheet-tab" type="button"
                   :class="sheetTabClass(i)" :data-sheet-idx="i" @click="selectSheet(i)">
@@ -184,6 +184,7 @@
 
           <div class="data-import__send-row">
             <button class="dmike-btn-run" data-action="send" type="button"
+              data-help-key="modules.data-import.actions.sendToWorksheet.help"
               @click="onSend()">
               <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
               <span x-text="t('sendToWorksheet')"></span>

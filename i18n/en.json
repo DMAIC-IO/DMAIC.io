@@ -8317,32 +8317,32 @@
         "setParam": {
           "help": "Sets a parser option and reads the data again with it. Values outside the range are rejected, not clamped.",
           "params": {
-            "key": "One of the keys in activeParams: csvOptions.preset, csvOptions.delimiter, csvOptions.encoding, csvOptions.hasHeader, csvOptions.skipRows, xlsxOptions.hasHeader, aqdefOptions.encoding. Which apply depends on the format; for text csvOptions.encoding does not apply.",
-            "value": "csvOptions.preset: one of the profiles generic, zeiss-calypso, hexagon-pcdmis, mitutoyo-measurlink (also sets the profile's delimiter, encoding and skipped rows). csvOptions.delimiter: auto, comma, semicolon, tab or pipe. csvOptions.encoding and aqdefOptions.encoding: utf-8, windows-1252 or iso-8859-1. csvOptions.hasHeader and xlsxOptions.hasHeader: true or false. csvOptions.skipRows: a whole number of at least 0."
+            "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys."
           }
         },
         "selectSheet": {
-          "help": "Chooses the sheet in sheets that sendToWorksheet sends; activeSheetIdx names it.",
+          "help": "Chooses the sheet of the file whose columns are sent to the worksheet; the chosen one is highlighted.",
           "params": {
             "index": "The number of the sheet in sheets, from 0; any other number is an error."
           }
         },
         "sendToWorksheet": {
-          "help": "Sends the columns of the chosen sheet to a new worksheet and returns its instance. Without data or without columns nothing is sent and null is returned."
+          "help": "Sends the columns of the chosen sheet to a new worksheet and returns its instance. If there is no data or no columns, nothing is sent and no instance comes back."
         }
       },
       "fields": {
         "file": {
-          "help": "The source imported last with name, size, format and origin (file or text), or null."
+          "help": "The source imported last, each item described individually under keys; null before anything is imported."
         },
         "csvOptions": {
-          "help": "The CSV options: preset, delimiter, encoding, hasHeader and skipRows."
+          "help": "The CSV options; each is described under setParam as the key csvOptions.<name>."
         },
         "xlsxOptions": {
-          "help": "The XLSX options: hasHeader."
+          "help": "The XLSX options; each is described under setParam as the key xlsxOptions.<name>."
         },
         "aqdefOptions": {
-          "help": "The AQDEF options: encoding."
+          "help": "The AQDEF options; each is described under setParam as the key aqdefOptions.<name>."
         },
         "activeParams": {
           "help": "The keys setParam accepts in the current format; empty without a source."
@@ -8361,6 +8361,29 @@
         },
         "errorMsg": {
           "help": "The message of the last parse failure, null without failure."
+        }
+      },
+      "types": {
+        "Params": {
+          "csvOptions": {
+            "preset": "The export profile, a set of defaults for the CSV export of a measuring software. Generic leaves everything at the defaults (automatic delimiter, UTF-8, header row, no skipped rows). Zeiss CALYPSO uses semicolon, Windows-1252 and skips 4 rows, Hexagon PC-DMIS comma, UTF-8 and 4 rows, Mitutoyo MeasurLink comma, UTF-8 and no rows; all three read the first remaining row as header. A profile sets delimiter, encoding, skipped rows and header row at once; the individual options can still be changed afterwards.",
+            "delimiter": "The character that separates the columns: automatic (detected from the content), comma, semicolon, tab or pipe.",
+            "encoding": "The encoding of the file: UTF-8, Windows-1252 (Excel) or Latin-1 (ISO-8859-1); it decides whether umlauts appear correctly. It does not apply to pasted text, which is already characters; the field is hidden then.",
+            "hasHeader": "Whether the first row (after the skipped ones) holds the column names. Without a header row it counts as data, and the columns are named C1, C2 and so on.",
+            "skipRows": "How many rows at the start of the file are discarded before reading; a whole number of at least 0. Meant for metadata that some measuring machines write above the table."
+          },
+          "xlsxOptions": {
+            "hasHeader": "Whether the first row of each sheet holds the column names. Without a header row it counts as data, and the columns are named C1, C2 and so on."
+          },
+          "aqdefOptions": {
+            "encoding": "The encoding of the Q-DAS file. The default is Windows-1252 because Q-DAS files in the DACH region are mostly saved that way; Latin-1 (ISO-8859-1) and UTF-8 are also available."
+          }
+        },
+        "ImportFile": {
+          "name": "The file name; for pasted text, the name of the text input.",
+          "size": "The size as the file card shows it, rounded to bytes (B), kilobytes (KB) or megabytes (MB).",
+          "formatId": "The detected format as the file card names it, for example CSV; missing if the format was not recognised.",
+          "source": "Where the source comes from: a chosen or dropped file, or pasted text."
         }
       },
       "name": "Data Import",
