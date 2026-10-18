@@ -3795,12 +3795,12 @@
         "setParam": {
           "help": "Setzt Modellform, Schätzer oder einen der vier Anzeigeschalter; die Analyse läuft danach neu. Die Anzeigeschalter ändern nur das Diagramm, nicht das Ergebnis.",
           "params": {
-            "key": "Einer der Schlüssel aus activeParams: modelForm, estimator, showPoints, connectMeans, showGroupMean, showRefLine. Jeder andere Wert ist ein Fehler.",
-            "value": "modelForm: 'nested' oder 'crossed'. estimator: 'anova' oder 'reml'. Die vier Anzeigeschalter: true oder false. Jeder andere Wert ist ein Fehler."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys."
           }
         },
         "setColumn": {
-          "help": "Richtet die Analyse auf die numerische Messwertspalte einer Datensammlung; die Analyse läuft danach neu. Die Faktorspalten setzt setFactorColumn je Zeile.",
+          "help": "Die Spalte einer Datensammlung, die diese Rolle liefert; nach einer Änderung wird neu gerechnet. Die Spalten der Einflussgrößen werden je Faktorzeile darunter gewählt.",
           "params": {
             "slot": "Einer der Slots aus activeColumnSlots; dieses Modul kennt nur 'measurement'.",
             "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns.measurement, oder null zum Leeren."
@@ -3839,8 +3839,81 @@
         "activeParams": { "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt." },
         "activeColumnSlots": { "help": "Die Slots, die setColumn im aktuellen Zustand annimmt." },
         "pickableColumns": { "help": "Je Slot (measurement, factor) die Spalten, die setColumn und setFactorColumn annehmen, je { key, name }; key ist 'instanceId|sheetId|columnId'." },
-        "result": { "help": "Die gestaffelten Gruppen, Gesamtmittelwert, Warnungen und Varianzkomponenten, oder null, solange keine Messwertspalte oder weniger als zwei Faktorspalten gewählt sind oder die Analyse scheiterte." },
+        "result": { "help": "Gruppen des Multi-Vari-Diagramms und Varianzkomponenten, jede Kennzahl unter keys einzeln beschrieben; null ohne Messwertspalte, mit weniger als zwei Faktoren oder ohne Daten; scheitert nur die Zerlegung, bleibt das Ergebnis mit leeren Varianzkomponenten und errorMsg nennt den Grund." },
         "errorMsg": { "help": "Der Grund, warum kein Ergebnis vorliegt (weniger als zwei Faktoren, keine verwertbaren Daten, ungültiger Versuchsplan) oder dass die Varianzzerlegung scheiterte; sonst ein leerer Text, auch solange die Messwertspalte fehlt." }
+      },
+      "types": {
+        "Params": {
+          "modelForm": "Die Modellform der Varianzzerlegung, Auswahl Modellform, Vorgabe Geschachtelt. Geschachtelt bildet die Terme A, B (in A), C (in A, B) …: jede Einflussgröße steckt in allen davor, die Reihenfolge der Faktorzeilen ist die Schachtelung. Gekreuzt bildet alle Haupteffekte und Wechselwirkungen (A, B, A × B …). Die Modellform bestimmt auch, welche Faktorkombinationen erwartet werden, und damit das Urteil, ob der Plan ausgewogen ist.",
+          "estimator": "Der Schätzer der Varianzkomponenten, Auswahl Schätzer, Vorgabe ANOVA (Henderson I). ANOVA löst die Gleichungen der erwarteten mittleren Quadratsummen in einem Schritt und setzt negative Schätzungen auf 0; REML schätzt iterativ (höchstens 100 Iterationen, Toleranz 10⁻⁸) und bleibt dabei nicht negativ, bei unausgewogenen Plänen die belastbarere Wahl. Bei mehr als 500 Messwerten fällt REML auf ANOVA zurück; welcher Schätzer tatsächlich gerechnet hat, steht bei den Varianzkomponenten.",
+          "showPoints": "Anzeigeschalter Einzelmessungen zeigen, Vorgabe an: zeichnet jede Einzelmessung als Punkt in der Farbe ihrer Serie. Ändert nur das Diagramm, nicht das Ergebnis.",
+          "connectMeans": "Anzeigeschalter Mittelwerte verbinden, Vorgabe an: verbindet in jedem Panel die Zellmittelwerte einer Serie über die Stufen der X-Achse durch eine Linie. Ändert nur das Diagramm, nicht das Ergebnis.",
+          "showGroupMean": "Anzeigeschalter Gruppenmittel zeigen, Vorgabe an: markiert das Mittel jeder Gruppe auf der X-Achse, über alle Serien hinweg, mit einem kurzen waagrechten Strich. Ändert nur das Diagramm, nicht das Ergebnis.",
+          "showRefLine": "Anzeigeschalter Gesamtmittel zeigen, Vorgabe an: zeichnet das Gesamtmittel aller verwerteten Messwerte als waagrechte Bezugslinie. Ändert nur das Diagramm, nicht das Ergebnis."
+        },
+        "Result": {
+          "strips": "Die Zeilen des Diagramms: eine je Stufe der vierten Einflussgröße (Panel-Zeile), bei weniger als vier Einflussgrößen genau eine.",
+          "seriesLevels": "Die Stufen der zweiten Einflussgröße (Serie), in der Reihenfolge der Legende; Zahlen werden numerisch geordnet (3, 4, 10).",
+          "factorNames": "Die Namen der belegten Einflussgrößen in Rollenreihenfolge: erste X-Achse, zweite Serie, dritte Panel-Spalte, vierte Panel-Zeile.",
+          "grandMean": "Das Gesamtmittel, Kachel Gesamtmittel: das arithmetische Mittel aller verwerteten Messwerte. Die Unterzeile der Kachel nennt die Spanne vom kleinsten bis zum größten Messwert.",
+          "n": "Zahl der verwerteten Messwerte, Kachel Messungen: Zeilen mit einem numerischen Messwert und einer belegten Stufe in jeder Einflussgröße. Die Unterzeile der Kachel nennt die Zahl der Einflussgrößen.",
+          "droppedRows": "Zahl der verworfenen Zeilen: leerer oder nicht numerischer Messwert oder eine leere Faktorstufe. Gezählt wird bis zur längsten gewählten Spalte.",
+          "warnings": "Die Warnungen beider Rechnungen als Kennungen, ohne Doppelte: unbalanced (ungleich besetzte Zellen), emptyCells (eine Faktorkombination fehlt), tooManyAxisLevels, tooManySeriesLevels, tooManyPanels (Darstellungsgrenze überschritten) sowie die Warnungen der Varianzzerlegung. Die Oberfläche zeigt darüber hinaus die Zahl der übersprungenen Zeilen, wenn welche verworfen wurden; diese Meldung steht nicht in der Liste.",
+          "yMin": "Der kleinste verwertete Messwert, untere Grenze der Spanne unter dem Gesamtmittel und der y-Achse.",
+          "yMax": "Der größte verwertete Messwert, obere Grenze der Spanne unter dem Gesamtmittel und der y-Achse.",
+          "balanced": "Ob der Plan ausgewogen ist: wahr, wenn alle besetzten Zellen gleich viele Messwerte haben und keine erwartete Faktorkombination fehlt; welche Kombinationen erwartet werden, hängt von der Modellform ab. Bei falsch zeigt die Oberfläche unter der Tabelle den Hinweis, dass REML die belastbarere Wahl ist.",
+          "panelCount": "Zahl der Panels: Stufen der Panel-Zeile mal Stufen der Panel-Spalte, je 1, wenn die Einflussgröße fehlt.",
+          "limits": "Die überschrittenen Darstellungsgrenzen, je eine Zeile: mehr als 30 Stufen auf der X-Achse, mehr als 12 Serienstufen oder mehr als 48 Panels; leer, wenn alles passt.",
+          "renderable": "Ob das Diagramm gezeichnet wird: wahr, wenn keine Darstellungsgrenze überschritten ist. Bei falsch nennt die Warnung die Spalte, die Tabelle der Varianzkomponenten bleibt gültig.",
+          "vc": "Die Varianzkomponenten, Tabelle unter dem Diagramm; leer, wenn die Zerlegung scheitert, etwa an einem nicht schätzbaren Plan. Dann nennt die Fehlermeldung den Grund."
+        },
+        "Strip": {
+          "idx": "Die laufende Nummer der Diagrammzeile, ab 0.",
+          "rowLevel": "Die Stufe der vierten Einflussgröße (Panel-Zeile) dieser Diagrammzeile; ein leerer Text bei weniger als vier Einflussgrößen.",
+          "panels": "Die Panels dieser Diagrammzeile, eines je Stufe der dritten Einflussgröße (Panel-Spalte), bei weniger als drei Einflussgrößen genau eines."
+        },
+        "Panel": {
+          "panelLevel": "Die Stufe der dritten Einflussgröße (Panel-Spalte) dieses Panels; ein leerer Text bei weniger als drei Einflussgrößen.",
+          "groups": "Die Gruppen auf der X-Achse, eine je Stufe der ersten Einflussgröße, auch leere, damit alle Panels dieselben X-Positionen haben."
+        },
+        "Group": {
+          "level": "Die Stufe der ersten Einflussgröße (X-Achse) dieser Gruppe.",
+          "mean": "Das Gruppenmittel: das Mittel aller Messwerte der Gruppe über alle Serien hinweg, im Diagramm als kurzer waagrechter Strich (Gruppenmittel zeigen); leer bei einer leeren Gruppe.",
+          "series": "Die besetzten Serien dieser Gruppe, eine je Stufe der zweiten Einflussgröße mit Messwerten; bei einer leeren Gruppe keine."
+        },
+        "Series": {
+          "level": "Die Stufe der zweiten Einflussgröße (Serie), zugleich Farbe und Legendeneintrag.",
+          "values": "Alle Einzelmessungen dieser Zelle in Datenreihenfolge, im Diagramm als Punkte (Einzelmessungen zeigen).",
+          "mean": "Das arithmetische Mittel der Zelle; Mittelwerte verbinden zieht die Linie durch diese Werte."
+        },
+        "Limit": {
+          "code": "Die überschrittene Grenze: tooManyAxisLevels (X-Achse), tooManySeriesLevels (Serie) oder tooManyPanels (Panels).",
+          "column": "Die verantwortliche Spalte; bei den Panels die Namen der dritten und vierten Einflussgröße, durch Komma getrennt.",
+          "count": "Die tatsächliche Zahl der Stufen bzw. Panels.",
+          "max": "Die erlaubte Zahl: 30 Stufen auf der X-Achse, 12 Serienstufen, 48 Panels."
+        },
+        "Vc": {
+          "modelForm": "Die Modellform, mit der zerlegt wurde, wie unter Modellform gewählt: geschachtelt oder gekreuzt.",
+          "estimator": "Der Schätzer, der tatsächlich gerechnet hat: bei REML und mehr als 500 Messwerten ANOVA, mit der Warnung rowCapExceeded.",
+          "balanced": "Ob der Plan aus Sicht der Varianzzerlegung ausgewogen ist: alle Zellen gleich groß und keine fehlende Kombination.",
+          "n": "Zahl der Messwerte in der Zerlegung, dieselben verwerteten Zeilen wie im Diagramm.",
+          "terms": "Die Zeilen der Tabelle in Modellreihenfolge, zuletzt der Rest (Wiederholung). Gibt es keine Wiederholungen, wird der feinste Term mit dem Rest zusammengelegt.",
+          "totalVariance": "Die Gesamtvarianz, Fußzeile Gesamt: die Summe aller Varianzkomponenten einschließlich des Rests.",
+          "converged": "Nur bei REML, sonst leer: wahr, wenn sich jede Komponente zuletzt relativ um weniger als 10⁻⁸ änderte, bevor 100 Iterationen erreicht waren; bei falsch die Warnung notConverged und die Komponenten sind Näherungswerte.",
+          "iterations": "Nur bei REML, sonst leer: die Zahl der Iterationen bis zur Konvergenz oder bis zur Grenze von 100; 0 bei konstantem Messwert.",
+          "warnings": "Die Warnungen der Varianzzerlegung als Kennungen: unbalanced (unausgewogen), noReplicates (keine Wiederholungen, feinster Term mit dem Rest zusammengelegt), rowCapExceeded (mehr als 500 Messwerte, auf ANOVA umgeschaltet), aliasedTerms (Term mit 0 Freiheitsgraden vor REML entfernt, als 0 ausgewiesen), notConverged (REML nicht konvergiert), negativeComponent (ANOVA-Schätzung negativ, auf 0 gesetzt)."
+        },
+        "VcTerm": {
+          "id": "Die Kennung des Terms mit Buchstaben je Einflussgröße: geschachtelt A, B(A), C(AB), D(ABC), gekreuzt A, B, A*B …, dazu Error für den Rest.",
+          "label": "Die Komponente, Spalte Komponente: der Term mit Spaltennamen, geschachtelt etwa „Nest (in Werkzeug)“, gekreuzt etwa „Schicht × Linie“; die letzte Zeile ist der Rest (Wiederholung), die Streuung zwischen Wiederholmessungen.",
+          "df": "Freiheitsgrade des Terms, Spalte FG, aus der ANOVA-Tabelle; nur bei ANOVA, bei REML leer (die Tabelle zeigt –).",
+          "ss": "Die Quadratsumme des Terms, Spalte SS, aus der ANOVA-Tabelle; nur bei ANOVA, bei REML leer (die Tabelle zeigt –).",
+          "ms": "Die mittlere Quadratsumme, Spalte MS: SS geteilt durch FG; nur bei ANOVA, bei REML leer (die Tabelle zeigt –).",
+          "variance": "Die geschätzte Varianzkomponente σ² des Terms, Spalte Varianz, nie negativ. ANOVA löst die Gleichungen der erwarteten mittleren Quadratsummen und setzt eine negative Lösung auf 0, REML schätzt die Komponenten iterativ und begrenzt sie ebenfalls auf mindestens 0.",
+          "sd": "Die Standardabweichung des Terms, Spalte Std.abw.: √σ², in der Einheit der Messwerte.",
+          "percent": "Der Anteil an der Gesamtvarianz, Spalte Anteil %: σ² des Terms geteilt durch die Gesamtvarianz mal 100, mit einer Nachkommastelle; 0, wenn die Gesamtvarianz 0 ist. Die Kachel Größter Anteil zeigt den größten Anteil, den Rest eingeschlossen, die Unterzeile nennt den Term.",
+          "clamped": "Ob die Schätzung auf 0 gesetzt wurde: wahr, wenn ANOVA eine negative Varianz lieferte; die Zeile trägt dann „auf 0 gesetzt“, und unter der Tabelle steht ein Hinweis. Bei REML immer falsch."
+        }
       },
       "sectionColumns": "Spalten",
       "sectionModel": "Modell",

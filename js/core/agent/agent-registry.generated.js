@@ -9880,11 +9880,38 @@ export const AGENT_REGISTRY = {
             "name": "value",
             "type": "string|boolean",
             "optional": false,
-            "help": "modelForm: `nested` oder `crossed`; estimator: `anova` oder `reml`; die vier Anzeigeschalter: `true` oder `false`"
+            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "void",
-        "help": "Einen Parameter setzen; die Analyse läuft danach neu."
+        "help": "Einen Parameter setzen; die Analyse läuft danach neu.",
+        "keysOf": "Params",
+        "keys": {
+          "modelForm": {
+            "type": "'nested'|'crossed'",
+            "help": "geschachtelt oder gekreuzt"
+          },
+          "estimator": {
+            "type": "'anova'|'reml'",
+            "help": "Schätzer der Varianzkomponenten"
+          },
+          "showPoints": {
+            "type": "boolean",
+            "help": "Einzelwerte zeigen"
+          },
+          "connectMeans": {
+            "type": "boolean",
+            "help": "Mittelwerte verbinden"
+          },
+          "showGroupMean": {
+            "type": "boolean",
+            "help": "Gruppenmittel zeigen"
+          },
+          "showRefLine": {
+            "type": "boolean",
+            "help": "Gesamtmittel als Linie"
+          }
+        }
       },
       "setColumn": {
         "params": [
@@ -10031,10 +10058,222 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
+        "type": "Result|null",
         "help": "the computed result, or null while measurement or two factor columns are missing or the analysis failed",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "strips": {
+            "type": "Strip[]",
+            "help": "Diagrammzeilen",
+            "keysOf": "Strip",
+            "keys": {
+              "idx": {
+                "type": "number",
+                "help": "Zeilennummer"
+              },
+              "rowLevel": {
+                "type": "string",
+                "help": "Stufe des Panelzeilenfaktors"
+              },
+              "panels": {
+                "type": "Panel[]",
+                "help": "Panels",
+                "keysOf": "Panel",
+                "keys": {
+                  "panelLevel": {
+                    "type": "string",
+                    "help": "Stufe des Panelspaltenfaktors"
+                  },
+                  "groups": {
+                    "type": "Group[]",
+                    "help": "Gruppen auf der X-Achse",
+                    "keysOf": "Group",
+                    "keys": {
+                      "level": {
+                        "type": "string",
+                        "help": "Stufe des X-Faktors"
+                      },
+                      "mean": {
+                        "type": "number|null",
+                        "help": "Gruppenmittel"
+                      },
+                      "series": {
+                        "type": "Series[]",
+                        "help": "Serien",
+                        "keysOf": "Series",
+                        "keys": {
+                          "level": {
+                            "type": "string",
+                            "help": "Stufe des Serienfaktors"
+                          },
+                          "values": {
+                            "type": "number[]",
+                            "help": "Messwerte"
+                          },
+                          "mean": {
+                            "type": "number",
+                            "help": "Mittelwert"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "seriesLevels": {
+            "type": "string[]",
+            "help": "Stufen des Serienfaktors"
+          },
+          "factorNames": {
+            "type": "string[]",
+            "help": "Faktoren in Rollenreihenfolge"
+          },
+          "grandMean": {
+            "type": "number",
+            "help": "Gesamtmittelwert"
+          },
+          "n": {
+            "type": "number",
+            "help": "verwertete Messwerte"
+          },
+          "droppedRows": {
+            "type": "number",
+            "help": "verworfene Zeilen"
+          },
+          "warnings": {
+            "type": "string[]",
+            "help": "Warnkennungen"
+          },
+          "yMin": {
+            "type": "number",
+            "help": "kleinster Wert"
+          },
+          "yMax": {
+            "type": "number",
+            "help": "größter Wert"
+          },
+          "balanced": {
+            "type": "boolean",
+            "help": "ausgewogener Plan"
+          },
+          "panelCount": {
+            "type": "number",
+            "help": "Panels"
+          },
+          "limits": {
+            "type": "Limit[]",
+            "help": "überschrittene Darstellungsgrenzen",
+            "keysOf": "Limit",
+            "keys": {
+              "code": {
+                "type": "string",
+                "help": "Grenze"
+              },
+              "column": {
+                "type": "string",
+                "help": "Spalte"
+              },
+              "count": {
+                "type": "number",
+                "help": "Stufen"
+              },
+              "max": {
+                "type": "number",
+                "help": "erlaubt"
+              }
+            }
+          },
+          "renderable": {
+            "type": "boolean",
+            "help": "darstellbar"
+          },
+          "vc": {
+            "type": "Vc|null",
+            "help": "Varianzkomponenten",
+            "keysOf": "Vc",
+            "keys": {
+              "modelForm": {
+                "type": "'nested'|'crossed'",
+                "help": "Modellform"
+              },
+              "estimator": {
+                "type": "'anova'|'reml'",
+                "help": "tatsächlicher Schätzer"
+              },
+              "balanced": {
+                "type": "boolean",
+                "help": "ausgewogen"
+              },
+              "n": {
+                "type": "number",
+                "help": "Messwerte"
+              },
+              "terms": {
+                "type": "VcTerm[]",
+                "help": "Terme",
+                "keysOf": "VcTerm",
+                "keys": {
+                  "id": {
+                    "type": "string",
+                    "help": "Kennung"
+                  },
+                  "label": {
+                    "type": "string",
+                    "help": "Term"
+                  },
+                  "df": {
+                    "type": "number|null",
+                    "help": "Freiheitsgrade, nur ANOVA"
+                  },
+                  "ss": {
+                    "type": "number|null",
+                    "help": "Quadratsumme, nur ANOVA"
+                  },
+                  "ms": {
+                    "type": "number|null",
+                    "help": "mittlere Quadratsumme, nur ANOVA"
+                  },
+                  "variance": {
+                    "type": "number",
+                    "help": "Varianzkomponente"
+                  },
+                  "sd": {
+                    "type": "number",
+                    "help": "Standardabweichung"
+                  },
+                  "percent": {
+                    "type": "number",
+                    "help": "Anteil an der Gesamtvarianz"
+                  },
+                  "clamped": {
+                    "type": "boolean",
+                    "help": "auf null gesetzt"
+                  }
+                }
+              },
+              "totalVariance": {
+                "type": "number",
+                "help": "Gesamtvarianz"
+              },
+              "converged": {
+                "type": "boolean|null",
+                "help": "konvergiert, nur REML"
+              },
+              "iterations": {
+                "type": "number|null",
+                "help": "Iterationen, nur REML"
+              },
+              "warnings": {
+                "type": "string[]",
+                "help": "Warnkennungen"
+              }
+            }
+          }
+        }
       },
       "errorMsg": {
         "type": "string",

@@ -91,6 +91,100 @@ const COLUMN_SINKS = { measurement: (m, ref) => { m.columnRefs.measurement = ref
 const FACTOR_FILTER = {};
 
 /**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {'nested'|'crossed'} modelForm  geschachtelt oder gekreuzt
+ * @property {'anova'|'reml'} estimator  Schätzer der Varianzkomponenten
+ * @property {boolean} showPoints  Einzelwerte zeigen
+ * @property {boolean} connectMeans  Mittelwerte verbinden
+ * @property {boolean} showGroupMean  Gruppenmittel zeigen
+ * @property {boolean} showRefLine  Gesamtmittel als Linie
+ */
+
+/**
+ * Das gerechnete Ergebnis, wie `read().result` es liefert.
+ *
+ * @typedef {object} Result
+ * @property {Strip[]} strips  Diagrammzeilen
+ * @property {string[]} seriesLevels  Stufen des Serienfaktors
+ * @property {string[]} factorNames  Faktoren in Rollenreihenfolge
+ * @property {number} grandMean  Gesamtmittelwert
+ * @property {number} n  verwertete Messwerte
+ * @property {number} droppedRows  verworfene Zeilen
+ * @property {string[]} warnings  Warnkennungen
+ * @property {number} yMin  kleinster Wert
+ * @property {number} yMax  größter Wert
+ * @property {boolean} balanced  ausgewogener Plan
+ * @property {number} panelCount  Panels
+ * @property {Limit[]} limits  überschrittene Darstellungsgrenzen
+ * @property {boolean} renderable  darstellbar
+ * @property {Vc|null} vc  Varianzkomponenten
+ */
+
+/**
+ * @typedef {object} Strip
+ * @property {number} idx  Zeilennummer
+ * @property {string} rowLevel  Stufe des Panelzeilenfaktors
+ * @property {Panel[]} panels  Panels
+ */
+
+/**
+ * @typedef {object} Panel
+ * @property {string} panelLevel  Stufe des Panelspaltenfaktors
+ * @property {Group[]} groups  Gruppen auf der X-Achse
+ */
+
+/**
+ * @typedef {object} Group
+ * @property {string} level  Stufe des X-Faktors
+ * @property {number|null} mean  Gruppenmittel
+ * @property {Series[]} series  Serien
+ */
+
+/**
+ * @typedef {object} Series
+ * @property {string} level  Stufe des Serienfaktors
+ * @property {number[]} values  Messwerte
+ * @property {number} mean  Mittelwert
+ */
+
+/**
+ * @typedef {object} Limit
+ * @property {string} code  Grenze
+ * @property {string} column  Spalte
+ * @property {number} count  Stufen
+ * @property {number} max  erlaubt
+ */
+
+/**
+ * @typedef {object} Vc
+ * @property {'nested'|'crossed'} modelForm  Modellform
+ * @property {'anova'|'reml'} estimator  tatsächlicher Schätzer
+ * @property {boolean} balanced  ausgewogen
+ * @property {number} n  Messwerte
+ * @property {VcTerm[]} terms  Terme
+ * @property {number} totalVariance  Gesamtvarianz
+ * @property {boolean|null} converged  konvergiert, nur REML
+ * @property {number|null} iterations  Iterationen, nur REML
+ * @property {string[]} warnings  Warnkennungen
+ */
+
+/**
+ * @typedef {object} VcTerm
+ * @property {string} id  Kennung
+ * @property {string} label  Term
+ * @property {number|null} df  Freiheitsgrade, nur ANOVA
+ * @property {number|null} ss  Quadratsumme, nur ANOVA
+ * @property {number|null} ms  mittlere Quadratsumme, nur ANOVA
+ * @property {number} variance  Varianzkomponente
+ * @property {number} sd  Standardabweichung
+ * @property {number} percent  Anteil an der Gesamtvarianz
+ * @property {boolean} clamped  auf null gesetzt
+ */
+
+/**
  * Die Agenten-Lesefläche von Multi-Vari.
  *
  * Nicht die persistierte Form: `toJSON()` führt die Faktorzeilen als
@@ -112,7 +206,7 @@ const FACTOR_FILTER = {};
  * @property {string[]} activeParams  the keys `setParam` accepts in the current state
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state
  * @property {object} pickableColumns  per slot (`measurement`, `factor`) the columns `setColumn` / `setFactorColumn` accept, each `{ key, name }`
- * @property {object|null} result  the computed result, or null while measurement or two factor columns are missing or the analysis failed
+ * @property {Result|null} result  the computed result, or null while measurement or two factor columns are missing or the analysis failed
  * @property {string} errorMsg  the reason the last analysis produced no result, or an empty string
  */
 
@@ -383,8 +477,8 @@ const mod = createModule({
       /**
        * Einen Parameter setzen; die Analyse läuft danach neu.
        * @agent
-       * @param {'modelForm'|'estimator'|'showPoints'|'connectMeans'|'showGroupMean'|'showRefLine'} key welcher Parameter
-       * @param {string|boolean} value modelForm: `nested` oder `crossed`; estimator: `anova` oder `reml`; die vier Anzeigeschalter: `true` oder `false`
+       * @param {keyof Params} key welcher Parameter
+       * @param {string|boolean} value der Wert; Bereich je Schlüssel siehe `Params`
        * @returns {void}
        * @throws {Error} wenn `key` kein Parameter dieses Moduls ist oder `value` nicht zulässig
        */

@@ -4,12 +4,12 @@
     <div class="dmike-split__section-title" x-text="t('sectionColumns')"></div>
 
     <div class="field-group">
-      <label x-text="t('measurementColumn')"></label>
+      <label data-help-key="modules.multi-vari.actions.setColumn.help" x-text="t('measurementColumn')"></label>
       <div data-ref="col-measurement-wrap"></div>
     </div>
 
     <div class="field-group">
-      <label x-text="t('factors')"></label>
+      <label data-help-key="modules.multi-vari.actions.setFactorColumn.help" x-text="t('factors')"></label>
       <!-- draggableRows addressiert Zeilen über `closest('tr')` und räumt den
            Zustand über `closest('table')` auf — die Faktorliste MUSS deshalb
            eine echte Tabelle sein. -->
@@ -28,6 +28,7 @@
               <td class="multi-vari__factor-picker" :data-factor-wrap="f.id"></td>
               <td class="multi-vari__factor-actions">
                 <button class="btn btn--icon btn--ghost" type="button"
+                        data-help-key="modules.multi-vari.actions.removeFactor.help"
                         :data-remove-factor="f.id" :aria-label="t('removeFactor')"
                         :disabled="!canRemoveFactor()"
                         @click="removeFactor(f.id)">
@@ -40,6 +41,7 @@
       </table>
       <span class="multi-vari__hint" x-text="t('factorsHint')"></span>
       <button class="btn btn--sm" type="button" data-ref="btn-add-factor"
+              data-help-key="modules.multi-vari.actions.addFactor.help"
               :disabled="!canAddFactor()" @click="addFactor()"
               x-text="t('addFactor')"></button>
     </div>
@@ -47,7 +49,7 @@
     <div class="dmike-split__section-title" x-text="t('sectionModel')"></div>
 
     <div class="field-group">
-      <label x-text="t('modelForm')"></label>
+      <label data-help-key="modules.multi-vari.types.Params.modelForm" x-text="t('modelForm')"></label>
       <select class="field" data-ref="sel-model-form"
               :value="model.modelForm" @change="setParam('modelForm', $event.target.value)">
         <template x-for="o in modelFormOptions()" :key="o.value">
@@ -57,7 +59,7 @@
     </div>
 
     <div class="field-group">
-      <label x-text="t('estimator')"></label>
+      <label data-help-key="modules.multi-vari.types.Params.estimator" x-text="t('estimator')"></label>
       <select class="field" data-ref="sel-estimator"
               :value="model.estimator" @change="setParam('estimator', $event.target.value)">
         <template x-for="o in estimatorOptions()" :key="o.value">
@@ -69,22 +71,22 @@
     <div class="dmike-split__section-title" x-text="t('sectionDisplay')"></div>
 
     <div class="field-group">
-      <label class="multi-vari__check">
+      <label class="multi-vari__check" data-help-key="modules.multi-vari.types.Params.showPoints" data-help-anchor="box">
         <input type="checkbox" data-ref="chk-points"
                :checked="model.showPoints" @change="setParam('showPoints', $event.target.checked)">
         <span x-text="t('showPoints')"></span>
       </label>
-      <label class="multi-vari__check">
+      <label class="multi-vari__check" data-help-key="modules.multi-vari.types.Params.connectMeans" data-help-anchor="box">
         <input type="checkbox" data-ref="chk-connect"
                :checked="model.connectMeans" @change="setParam('connectMeans', $event.target.checked)">
         <span x-text="t('connectMeans')"></span>
       </label>
-      <label class="multi-vari__check">
+      <label class="multi-vari__check" data-help-key="modules.multi-vari.types.Params.showGroupMean" data-help-anchor="box">
         <input type="checkbox" data-ref="chk-group-mean"
                :checked="model.showGroupMean" @change="setParam('showGroupMean', $event.target.checked)">
         <span x-text="t('showGroupMean')"></span>
       </label>
-      <label class="multi-vari__check">
+      <label class="multi-vari__check" data-help-key="modules.multi-vari.types.Params.showRefLine" data-help-anchor="box">
         <input type="checkbox" data-ref="chk-ref-line"
                :checked="model.showRefLine" @change="setParam('showRefLine', $event.target.checked)">
         <span x-text="t('showRefLine')"></span>
@@ -102,22 +104,22 @@
         <div class="dmike-kpi-strip" data-ref="stats-bar">
           <div class="dmike-kpi">
             <div class="dmike-kpi-value" x-text="result.n"></div>
-            <div class="dmike-kpi-label" x-text="t('statMeasurements')"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.multi-vari.types.Result.n" x-text="t('statMeasurements')"></div>
             <div class="dmike-kpi-sub" x-text="t('statFactors', { count: result.factorNames.length })"></div>
           </div>
           <div class="dmike-kpi">
             <div class="dmike-kpi-value" x-text="fmt(result.grandMean)"></div>
-            <div class="dmike-kpi-label" x-text="t('statGrandMean')"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.multi-vari.types.Result.grandMean" x-text="t('statGrandMean')"></div>
             <div class="dmike-kpi-sub" x-text="t('statSpan', { min: fmt(result.yMin), max: fmt(result.yMax) })"></div>
           </div>
           <div class="dmike-kpi" x-show="largestTerm()">
             <div class="dmike-kpi-value" x-text="largestPercent()"></div>
-            <div class="dmike-kpi-label" x-text="t('statLargest')"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.multi-vari.types.VcTerm.percent" x-text="t('statLargest')"></div>
             <div class="dmike-kpi-sub" x-text="largestTermLabel()"></div>
           </div>
         </div>
 
-        <div class="multi-vari__warnings" data-ref="warnings" x-show="hasWarnings()">
+        <div class="multi-vari__warnings" data-ref="warnings" data-help-key="modules.multi-vari.types.Result.warnings" x-show="hasWarnings()">
           <template x-for="code in warningCodes()">
             <div class="multi-vari__warning" :key="code" x-text="warningText(code)"></div>
           </template>
@@ -142,13 +144,13 @@
           <table class="dmike-table multi-vari__vc-table" data-ref="vc-table">
             <thead>
               <tr>
-                <th x-text="t('tableTerm')"></th>
-                <th class="num" x-text="t('tableDf')"></th>
-                <th class="num" x-text="t('tableSs')"></th>
-                <th class="num" x-text="t('tableMs')"></th>
-                <th class="num" x-text="t('tableVariance')"></th>
-                <th class="num" x-text="t('tableSd')"></th>
-                <th class="num" x-text="t('tablePercent')"></th>
+                <th><span data-help-key="modules.multi-vari.types.VcTerm.label" x-text="t('tableTerm')"></span></th>
+                <th class="num"><span data-help-key="modules.multi-vari.types.VcTerm.df" x-text="t('tableDf')"></span></th>
+                <th class="num"><span data-help-key="modules.multi-vari.types.VcTerm.ss" x-text="t('tableSs')"></span></th>
+                <th class="num"><span data-help-key="modules.multi-vari.types.VcTerm.ms" x-text="t('tableMs')"></span></th>
+                <th class="num"><span data-help-key="modules.multi-vari.types.VcTerm.variance" x-text="t('tableVariance')"></span></th>
+                <th class="num"><span data-help-key="modules.multi-vari.types.VcTerm.sd" x-text="t('tableSd')"></span></th>
+                <th class="num"><span data-help-key="modules.multi-vari.types.VcTerm.percent" x-text="t('tablePercent')"></span></th>
               </tr>
             </thead>
             <tbody>
