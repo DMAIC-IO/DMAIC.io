@@ -1071,7 +1071,7 @@
         "redo": { "help": "Restores a reverted change." },
         "addSheet": { "help": "Creates a new sheet, makes it active and returns its id." },
         "switchSheet": {
-          "help": "Switches to another sheet. The following read calls then refer to it.",
+          "help": "Switches to this sheet; the table and everything an agent reads afterwards refer to it. Double-click renames it.",
           "params": { "id": "The id of the sheet, as read().sheets[].id names it." }
         },
         "renameSheet": {
@@ -6434,7 +6434,7 @@
           "params": { "options": "Optional; this module holds no bulk data." }
         },
         "switchTab": {
-          "help": "Switches the displayed area.",
+          "help": "Switches the displayed area: the catalog of designs, the guided advisor or the comparison of central composite designs (CCD).",
           "params": {
             "tab": "overview shows the design catalogue, wizard the guided advisor, ccd the comparison of the central composite designs. Any other value is an error."
           }
@@ -6446,7 +6446,7 @@
           }
         },
         "back": {
-          "help": "Goes back one question and discards the answer that led away from it. If the advisor stands on the first question, it stays there and the call returns false."
+          "help": "Goes back one question and discards the answer that led away from it. If the advisor stands on the first question, nothing happens."
         },
         "restart": {
           "help": "Starts the advisor over: first question, no answers, no trail."
@@ -10907,13 +10907,13 @@
           "help": "Appends the memory value to the input line."
         },
         "switchMode": {
-          "help": "Switches the calculator area and clears the input line.",
+          "help": "Switches between the scientific calculator, statistics and process (Six Sigma) and clears the input line.",
           "params": {
             "m": "sci computes scientifically, stats evaluates the statistics data set, sixsigma the process data set. Any other value is an error."
           }
         },
         "calculate": {
-          "help": "Evaluates the input line and remembers the result. If it holds no computable expression, the last result stays and the call returns null."
+          "help": "Evaluates the input line and remembers the result. If it holds no computable expression, the last result stays."
         },
         "calcStat": {
           "help": "Computes a statistic over the statistics data set and remembers it as the last result. If the data set is empty, too small or has no mode, the call returns null.",
@@ -10928,7 +10928,7 @@
           }
         },
         "addData": {
-          "help": "Takes the input line as a value into the statistics data set. If it does not start with a number, the data set stays unchanged and the call returns null."
+          "help": "Takes the input line as a value into the statistics data set. If it does not start with a number, the data set stays unchanged."
         },
         "addDataValue": {
           "help": "Appends a number to the statistics data set and clears the input line.",
@@ -10943,7 +10943,7 @@
           "help": "Clears the statistics data set."
         },
         "addSSData": {
-          "help": "Takes the input line as a value into the process data set. If it does not start with a number, the data set stays unchanged and the call returns null."
+          "help": "Takes the input line as a value into the process data set. If it does not start with a number, the data set stays unchanged."
         },
         "addSSDataValue": {
           "help": "Appends a number to the process data set and clears the input line.",
@@ -10987,10 +10987,10 @@
           "help": "The angle unit of the trigonometric functions: DEG degrees, RAD radians."
         },
         "dataset": {
-          "help": "The values of the statistics area as numbers, in entry order."
+          "help": "The values of the statistics area in the order they were entered. They are filled via \"+ Value\"; the statistic keys (mean, standard deviation, etc.) calculate on them."
         },
         "ssDataset": {
-          "help": "The values of the process area as numbers, in entry order."
+          "help": "The values of the process area in the order they were entered. They are filled via \"+ Value\"; the process keys (sigma level, DPMO, etc.) calculate on them."
         },
         "lsl": {
           "help": "The lower specification limit as text, exactly as entered; empty means not set."
@@ -11426,7 +11426,7 @@
           "help": "Swaps the source and the target time zone."
         },
         "tzSetNow": {
-          "help": "Sets time and date to the current moment in the source time zone. If the source time zone is unknown, both stay as they are and the call returns false."
+          "help": "Sets time and date to the current moment in the source time zone. If the source time zone is unknown, both stay unchanged."
         }
       },
       "fields": {
@@ -11440,19 +11440,19 @@
           "help": "The key of the active quantity category, e.g. laenge (length) or masse (mass)."
         },
         "fromUnit": {
-          "help": "The key of the unit converted from."
+          "help": "The unit converted from; the value to convert is entered below it. For the agent the unit key of the active category."
         },
         "toUnit": {
-          "help": "The key of the unit converted to."
+          "help": "The unit converted to; the result, which appears in no read field, is shown below it. For the agent the unit key of the active category."
         },
         "inputVal": {
           "help": "The entered value as text; a comma counts as the decimal separator. Empty means nothing entered. The converted result is computed and lives in no field."
         },
         "tzFrom": {
-          "help": "The position of the source time zone in the time-zone list; 0 is UTC, 1 Berlin."
+          "help": "The source time zone, whose time and date are entered below it. For the agent the position in the time-zone list; 0 is UTC, 1 Berlin."
         },
         "tzTo": {
-          "help": "The position of the target time zone in the time-zone list; 0 is UTC, 1 Berlin."
+          "help": "The target time zone, in which the converted result appears below it. For the agent the position in the time-zone list; 0 is UTC, 1 Berlin."
         },
         "tzTime": {
           "help": "The time of the conversion as HH:MM; empty means not set."

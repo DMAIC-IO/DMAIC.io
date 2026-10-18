@@ -74,7 +74,7 @@
        @dblclick="onTabDblClick($event)">
     <template x-for="sheet in model.sheets" :key="sheet.id">
       <button class="sheet-tab" :class="sheet.id === model.activeSheetId ? 'active' : ''"
-              :data-sheet-id="sheet.id" @click="switchSheet(sheet.id)">
+              :data-sheet-id="sheet.id" data-help-key="modules.worksheet.actions.switchSheet.help" @click="switchSheet(sheet.id)">
         <template x-if="renamingId === sheet.id">
           <input class="sheet-tab__editor" :value="renameValue"
                  @input="renameValue = $event.target.value"

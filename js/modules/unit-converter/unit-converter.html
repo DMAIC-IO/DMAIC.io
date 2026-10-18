@@ -18,7 +18,7 @@
         <span class="icon" data-ref="catIcon" :data-icon="catIcon(model.activeCat)" aria-hidden="true"></span>
         <span data-ref="catTitle" x-text="catName(model.activeCat)"></span>
       </div>
-      <button class="module-unit-converter__swap-btn" type="button" data-action="swap" @click="swapUnits()">
+      <button class="module-unit-converter__swap-btn" type="button" data-action="swap" data-help-key="modules.unit-converter.actions.swapUnits.help" @click="swapUnits()">
         <span class="icon icon--sm" data-icon="action.swap" aria-hidden="true"></span>
         <span x-text="t('swap')"></span>
       </button>
@@ -26,7 +26,7 @@
     <div class="module-unit-converter__panel-body">
       <div class="module-unit-converter__fields">
         <div>
-          <label class="module-unit-converter__field-label" x-text="t('from')"></label>
+          <label class="module-unit-converter__field-label" data-help-key="modules.unit-converter.fields.fromUnit.help" x-text="t('from')"></label>
           <select class="field" data-ref="fromUnit" x-model="model.fromUnit" @change="onFromChange()">
             <template x-for="grp in fromGroups()">
               <optgroup :key="grp.key" :label="grp.label">
@@ -47,7 +47,7 @@
           <span class="icon" data-icon="action.send-to" aria-hidden="true"></span>
         </div>
         <div>
-          <label class="module-unit-converter__field-label" x-text="t('to')"></label>
+          <label class="module-unit-converter__field-label" data-help-key="modules.unit-converter.fields.toUnit.help" x-text="t('to')"></label>
           <select class="field" data-ref="toUnit" x-model="model.toUnit">
             <template x-for="uk in toUnitKeys()">
               <option :key="uk" :value="uk" :selected="model.toUnit === uk" x-text="unitLabel(uk)"></option>
@@ -92,7 +92,7 @@
         <div class="module-unit-converter__panel-title">
           <span class="icon" data-icon="unit.timezone" aria-hidden="true"></span> <span x-text="t('timezone')"></span>
         </div>
-        <button class="module-unit-converter__swap-btn" type="button" data-action="tz-swap" @click="swapTimezones()">
+        <button class="module-unit-converter__swap-btn" type="button" data-action="tz-swap" data-help-key="modules.unit-converter.actions.swapTimezones.help" @click="swapTimezones()">
           <span class="icon icon--sm" data-icon="action.swap" aria-hidden="true"></span>
           <span x-text="t('swap')"></span>
         </button>
@@ -100,7 +100,7 @@
       <div class="module-unit-converter__panel-body">
         <div class="module-unit-converter__fields">
           <div>
-            <label class="module-unit-converter__field-label" x-text="t('fromTimezone')"></label>
+            <label class="module-unit-converter__field-label" data-help-key="modules.unit-converter.fields.tzFrom.help" x-text="t('fromTimezone')"></label>
             <select class="field" data-ref="tzFrom" x-model.number="model.tzFrom">
               <template x-for="(z, i) in timezones">
                 <option :key="i" :value="i" :selected="model.tzFrom === i" x-text="tzLabel(z)"></option>
@@ -115,7 +115,7 @@
             <span class="icon" data-icon="action.send-to" aria-hidden="true"></span>
           </div>
           <div>
-            <label class="module-unit-converter__field-label" x-text="t('toTimezone')"></label>
+            <label class="module-unit-converter__field-label" data-help-key="modules.unit-converter.fields.tzTo.help" x-text="t('toTimezone')"></label>
             <select class="field" data-ref="tzTo" x-model.number="model.tzTo">
               <template x-for="(z, i) in timezones">
                 <option :key="i" :value="i" :selected="model.tzTo === i" x-text="tzLabel(z)"></option>
@@ -129,7 +129,7 @@
           <span class="module-unit-converter__formula-label" x-text="t('difference')"></span>
           <span data-ref="tzDiff" x-text="tzDiffText()"></span>
         </div>
-        <button class="module-unit-converter__tz-now-btn" type="button" data-action="tz-now" @click="tzSetNow()">
+        <button class="module-unit-converter__tz-now-btn" type="button" data-action="tz-now" data-help-key="modules.unit-converter.actions.tzSetNow.help" @click="tzSetNow()">
           <span class="icon icon--sm icon--text" data-icon="status.time" aria-hidden="true"></span>
           <span x-text="tzNowLabel()"></span>
         </button>

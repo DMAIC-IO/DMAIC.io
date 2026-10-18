@@ -2,9 +2,9 @@
   <div class="module-calculator__wrap">
 
     <div class="module-calculator__tabs">
-      <button class="module-calculator__tab" :class="model.mode === 'sci' ? 'module-calculator__tab--active' : ''" data-mode="sci" @click="switchMode('sci')" x-text="t('modeSci')"></button>
-      <button class="module-calculator__tab" :class="model.mode === 'stats' ? 'module-calculator__tab--active' : ''" data-mode="stats" @click="switchMode('stats')" x-text="t('modeStats')"></button>
-      <button class="module-calculator__tab" :class="model.mode === 'sixsigma' ? 'module-calculator__tab--active' : ''" data-mode="sixsigma" @click="switchMode('sixsigma')" x-text="t('modeSixSigma')"></button>
+      <button class="module-calculator__tab" :class="model.mode === 'sci' ? 'module-calculator__tab--active' : ''" data-mode="sci" data-help-key="modules.calculator.actions.switchMode.help" @click="switchMode('sci')" x-text="t('modeSci')"></button>
+      <button class="module-calculator__tab" :class="model.mode === 'stats' ? 'module-calculator__tab--active' : ''" data-mode="stats" data-help-key="modules.calculator.actions.switchMode.help" @click="switchMode('stats')" x-text="t('modeStats')"></button>
+      <button class="module-calculator__tab" :class="model.mode === 'sixsigma' ? 'module-calculator__tab--active' : ''" data-mode="sixsigma" data-help-key="modules.calculator.actions.switchMode.help" @click="switchMode('sixsigma')" x-text="t('modeSixSigma')"></button>
     </div>
 
     <div class="module-calculator__display">
@@ -42,27 +42,27 @@
 
         <button class="module-calculator__key module-calculator__key--fn" data-fn="(" @click="inputText('(')">(</button>
         <button class="module-calculator__key module-calculator__key--fn" data-fn=")" @click="inputText(')')">)</button>
-        <button class="module-calculator__key module-calculator__key--fn" data-action="toggle-angle" @click="toggleAngle()" x-text="t('degRad')"></button>
-        <button class="module-calculator__key module-calculator__key--fn" data-action="mem-store" @click="memStore()">MS</button>
-        <button class="module-calculator__key module-calculator__key--fn" data-action="mem-recall" @click="memRecall()">MR</button>
+        <button class="module-calculator__key module-calculator__key--fn" data-action="toggle-angle" data-help-key="modules.calculator.actions.setAngleMode.help" @click="toggleAngle()" x-text="t('degRad')"></button>
+        <button class="module-calculator__key module-calculator__key--fn" data-action="mem-store" data-help-key="modules.calculator.actions.memStore.help" @click="memStore()">MS</button>
+        <button class="module-calculator__key module-calculator__key--fn" data-action="mem-recall" data-help-key="modules.calculator.actions.memRecall.help" @click="memRecall()">MR</button>
 
         <button class="module-calculator__key module-calculator__key--num" data-text="7" @click="inputText('7')">7</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="8" @click="inputText('8')">8</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="9" @click="inputText('9')">9</button>
         <button class="module-calculator__key module-calculator__key--op" data-text="÷" @click="inputText('÷')">/</button>
-        <button class="module-calculator__key module-calculator__key--danger" data-action="clear" @click="clear()">AC</button>
+        <button class="module-calculator__key module-calculator__key--danger" data-action="clear" data-help-key="modules.calculator.actions.clear.help" @click="clear()">AC</button>
 
         <button class="module-calculator__key module-calculator__key--num" data-text="4" @click="inputText('4')">4</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="5" @click="inputText('5')">5</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="6" @click="inputText('6')">6</button>
         <button class="module-calculator__key module-calculator__key--op" data-text="×" @click="inputText('×')">×</button>
-        <button class="module-calculator__key module-calculator__key--danger" data-action="backspace" @click="backspace()">⌫</button>
+        <button class="module-calculator__key module-calculator__key--danger" data-action="backspace" data-help-key="modules.calculator.actions.backspace.help" @click="backspace()">⌫</button>
 
         <button class="module-calculator__key module-calculator__key--num" data-text="1" @click="inputText('1')">1</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="2" @click="inputText('2')">2</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="3" @click="inputText('3')">3</button>
         <button class="module-calculator__key module-calculator__key--op" data-text="-" @click="inputText('-')">−</button>
-        <button class="module-calculator__key module-calculator__key--act" data-action="calculate" @click="calculate()">=</button>
+        <button class="module-calculator__key module-calculator__key--act" data-action="calculate" data-help-key="modules.calculator.actions.calculate.help" @click="calculate()">=</button>
 
         <button class="module-calculator__key module-calculator__key--num module-calculator__key--wide" data-text="0" @click="inputText('0')">0</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="." @click="inputText('.')">.</button>
@@ -73,7 +73,7 @@
     <!-- STATISTICS -->
     <div data-panel="stats" :class="model.mode !== 'stats' ? 'module-calculator__panel--hidden' : ''">
       <div class="module-calculator__data-panel">
-        <label class="module-calculator__data-label" x-text="t('datasetLabel')"></label>
+        <label class="module-calculator__data-label" data-help-key="modules.calculator.fields.dataset.help" x-text="t('datasetLabel')"></label>
         <div class="module-calculator__data-display" data-ref="data-display">
           <template x-if="model.dataset.length === 0">
             <span class="module-calculator__val--empty" x-text="t('noData')"></span>
@@ -88,22 +88,22 @@
         <button class="module-calculator__key module-calculator__key--num" data-text="7" @click="inputText('7')">7</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="8" @click="inputText('8')">8</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="9" @click="inputText('9')">9</button>
-        <button class="module-calculator__key module-calculator__key--danger" data-action="backspace" @click="backspace()">⌫</button>
+        <button class="module-calculator__key module-calculator__key--danger" data-action="backspace" data-help-key="modules.calculator.actions.backspace.help" @click="backspace()">⌫</button>
 
         <button class="module-calculator__key module-calculator__key--num" data-text="4" @click="inputText('4')">4</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="5" @click="inputText('5')">5</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="6" @click="inputText('6')">6</button>
-        <button class="module-calculator__key module-calculator__key--act" data-action="add-data" @click="addData()" x-text="t('addValue')"></button>
+        <button class="module-calculator__key module-calculator__key--act" data-action="add-data" data-help-key="modules.calculator.actions.addData.help" @click="addData()" x-text="t('addValue')"></button>
 
         <button class="module-calculator__key module-calculator__key--num" data-text="1" @click="inputText('1')">1</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="2" @click="inputText('2')">2</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="3" @click="inputText('3')">3</button>
-        <button class="module-calculator__key module-calculator__key--danger" data-action="clear-data" @click="clearData()" x-text="t('clearData')"></button>
+        <button class="module-calculator__key module-calculator__key--danger" data-action="clear-data" data-help-key="modules.calculator.actions.clearData.help" @click="clearData()" x-text="t('clearData')"></button>
 
         <button class="module-calculator__key module-calculator__key--num" data-text="0" @click="inputText('0')">0</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="." @click="inputText('.')">.</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="-" @click="inputText('-')">-</button>
-        <button class="module-calculator__key module-calculator__key--danger" data-action="remove-last" @click="removeLast()" x-text="t('removeLast')"></button>
+        <button class="module-calculator__key module-calculator__key--danger" data-action="remove-last" data-help-key="modules.calculator.actions.removeLast.help" @click="removeLast()" x-text="t('removeLast')"></button>
 
         <button class="module-calculator__key module-calculator__key--stat" data-stat="mean" @click="calcStat('mean')" x-text="'x̄ ' + t('statMean')"></button>
         <button class="module-calculator__key module-calculator__key--stat" data-stat="median" @click="calcStat('median')" x-text="'x̃ ' + t('statMedian')"></button>
@@ -130,7 +130,7 @@
     <!-- SIX SIGMA -->
     <div data-panel="sixsigma" :class="model.mode !== 'sixsigma' ? 'module-calculator__panel--hidden' : ''">
       <div class="module-calculator__data-panel">
-        <label class="module-calculator__data-label" x-text="t('processDataLabel')"></label>
+        <label class="module-calculator__data-label" data-help-key="modules.calculator.fields.ssDataset.help" x-text="t('processDataLabel')"></label>
         <div class="module-calculator__data-display" data-ref="ss-data-display">
           <template x-if="model.ssDataset.length === 0">
             <span class="module-calculator__val--empty" x-text="t('noData')"></span>
@@ -149,22 +149,22 @@
         <button class="module-calculator__key module-calculator__key--num" data-text="7" @click="inputText('7')">7</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="8" @click="inputText('8')">8</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="9" @click="inputText('9')">9</button>
-        <button class="module-calculator__key module-calculator__key--danger" data-action="backspace" @click="backspace()">⌫</button>
+        <button class="module-calculator__key module-calculator__key--danger" data-action="backspace" data-help-key="modules.calculator.actions.backspace.help" @click="backspace()">⌫</button>
 
         <button class="module-calculator__key module-calculator__key--num" data-text="4" @click="inputText('4')">4</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="5" @click="inputText('5')">5</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="6" @click="inputText('6')">6</button>
-        <button class="module-calculator__key module-calculator__key--act" data-action="add-ss-data" @click="addSSData()" x-text="t('addValue')"></button>
+        <button class="module-calculator__key module-calculator__key--act" data-action="add-ss-data" data-help-key="modules.calculator.actions.addSSData.help" @click="addSSData()" x-text="t('addValue')"></button>
 
         <button class="module-calculator__key module-calculator__key--num" data-text="1" @click="inputText('1')">1</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="2" @click="inputText('2')">2</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="3" @click="inputText('3')">3</button>
-        <button class="module-calculator__key module-calculator__key--danger" data-action="clear-ss-data" @click="clearSSData()" x-text="t('clearData')"></button>
+        <button class="module-calculator__key module-calculator__key--danger" data-action="clear-ss-data" data-help-key="modules.calculator.actions.clearSSData.help" @click="clearSSData()" x-text="t('clearData')"></button>
 
         <button class="module-calculator__key module-calculator__key--num" data-text="0" @click="inputText('0')">0</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="." @click="inputText('.')">.</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="-" @click="inputText('-')">-</button>
-        <button class="module-calculator__key module-calculator__key--danger" data-action="remove-last-ss" @click="removeLastSS()" x-text="t('removeLast')"></button>
+        <button class="module-calculator__key module-calculator__key--danger" data-action="remove-last-ss" data-help-key="modules.calculator.actions.removeLastSS.help" @click="removeLastSS()" x-text="t('removeLast')"></button>
 
         <button class="module-calculator__key module-calculator__key--stat" data-ss="cp" @click="calcSS('cp')">Cp</button>
         <button class="module-calculator__key module-calculator__key--stat" data-ss="cpk" @click="calcSS('cpk')">Cpk</button>

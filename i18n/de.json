@@ -1071,7 +1071,7 @@
         "redo": { "help": "Stellt eine zurückgenommene Änderung wieder her." },
         "addSheet": { "help": "Legt ein neues Blatt an, macht es aktiv und gibt dessen id zurück." },
         "switchSheet": {
-          "help": "Wechselt zu einem anderen Blatt. Die folgenden Lesezugriffe beziehen sich dann darauf.",
+          "help": "Wechselt zu diesem Blatt; die Tabelle und alles, was ein Agent danach liest, beziehen sich auf es. Doppelklick benennt es um.",
           "params": { "id": "Die id des Blatts, wie read().sheets[].id sie nennt." }
         },
         "renameSheet": {
@@ -6438,7 +6438,7 @@
           "params": { "options": "Optional; dieses Modul führt keine Massendaten." }
         },
         "switchTab": {
-          "help": "Wechselt den angezeigten Bereich.",
+          "help": "Wechselt den angezeigten Bereich: Katalog der Versuchspläne, geführter Berater oder Vergleich der zentral zusammengesetzten Pläne (CCD).",
           "params": {
             "tab": "overview zeigt den Versuchsplankatalog, wizard den geführten Berater, ccd den Vergleich der zentral zusammengesetzten Pläne. Jeder andere Wert ist ein Fehler."
           }
@@ -6450,7 +6450,7 @@
           }
         },
         "back": {
-          "help": "Geht eine Frage zurück und verwirft die Antwort, die weggeführt hat. Steht der Berater auf der ersten Frage, bleibt er stehen und der Aufruf liefert false."
+          "help": "Geht eine Frage zurück und verwirft die Antwort, die weggeführt hat. Steht der Berater auf der ersten Frage, passiert nichts."
         },
         "restart": {
           "help": "Beginnt den Berater neu: erste Frage, keine Antworten, keine Spur."
@@ -10911,13 +10911,13 @@
           "help": "Hängt den Speicherwert an die Eingabezeile an."
         },
         "switchMode": {
-          "help": "Wechselt den Rechenbereich und leert die Eingabezeile.",
+          "help": "Wechselt zwischen wissenschaftlichem Rechner, Statistik und Prozess (Six Sigma) und leert dabei die Eingabezeile.",
           "params": {
             "m": "sci rechnet wissenschaftlich, stats wertet den Statistikdatensatz aus, sixsigma den Prozessdatensatz. Jeder andere Wert ist ein Fehler."
           }
         },
         "calculate": {
-          "help": "Rechnet die Eingabezeile aus und merkt das Ergebnis. Enthält sie keinen rechenbaren Ausdruck, bleibt das letzte Ergebnis stehen und der Aufruf liefert null."
+          "help": "Rechnet die Eingabezeile aus und merkt das Ergebnis. Enthält sie keinen rechenbaren Ausdruck, bleibt das letzte Ergebnis stehen."
         },
         "calcStat": {
           "help": "Rechnet einen Kennwert über den Statistikdatensatz und merkt ihn als letztes Ergebnis. Ist der Datensatz leer, zu klein oder ohne Modalwert, liefert der Aufruf null.",
@@ -10932,7 +10932,7 @@
           }
         },
         "addData": {
-          "help": "Übernimmt die Eingabezeile als Wert in den Statistikdatensatz. Beginnt sie mit keiner Zahl, bleibt der Datensatz unverändert und der Aufruf liefert null."
+          "help": "Übernimmt die Eingabezeile als Wert in den Statistikdatensatz. Beginnt sie nicht mit einer Zahl, bleibt der Datensatz unverändert."
         },
         "addDataValue": {
           "help": "Hängt eine Zahl an den Statistikdatensatz an und leert die Eingabezeile.",
@@ -10947,7 +10947,7 @@
           "help": "Leert den Statistikdatensatz."
         },
         "addSSData": {
-          "help": "Übernimmt die Eingabezeile als Wert in den Prozessdatensatz. Beginnt sie mit keiner Zahl, bleibt der Datensatz unverändert und der Aufruf liefert null."
+          "help": "Übernimmt die Eingabezeile als Wert in den Prozessdatensatz. Beginnt sie nicht mit einer Zahl, bleibt der Datensatz unverändert."
         },
         "addSSDataValue": {
           "help": "Hängt eine Zahl an den Prozessdatensatz an und leert die Eingabezeile.",
@@ -10991,10 +10991,10 @@
           "help": "Die Winkeleinheit der trigonometrischen Funktionen: DEG Grad, RAD Radiant."
         },
         "dataset": {
-          "help": "Die Werte des Statistikbereichs als Zahlen, in Eingabereihenfolge."
+          "help": "Die Werte des Statistikbereichs in der Reihenfolge, in der sie eingegeben wurden. Sie füllen sich über „+ Wert“; auf ihnen rechnen die Kennwert-Tasten (Mittelwert, Standardabweichung usw.)."
         },
         "ssDataset": {
-          "help": "Die Werte des Prozessbereichs als Zahlen, in Eingabereihenfolge."
+          "help": "Die Werte des Prozessbereichs in der Reihenfolge, in der sie eingegeben wurden. Sie füllen sich über „+ Wert“; auf ihnen rechnen die Prozess-Kennwerte (Sigma-Level, DPMO usw.)."
         },
         "lsl": {
           "help": "Die untere Spezifikationsgrenze als Text, so wie sie eingegeben wurde; leer heißt nicht gesetzt."
@@ -11430,7 +11430,7 @@
           "help": "Tauscht Ausgangs- und Zielzeitzone."
         },
         "tzSetNow": {
-          "help": "Setzt Uhrzeit und Datum auf das Jetzt der Ausgangszeitzone. Ist die Ausgangszeitzone unbekannt, bleibt beides stehen und der Aufruf liefert false."
+          "help": "Setzt Uhrzeit und Datum auf das Jetzt der Ausgangszeitzone. Ist die Ausgangszeitzone unbekannt, bleiben beide unverändert."
         }
       },
       "fields": {
@@ -11444,19 +11444,19 @@
           "help": "Der Schlüssel der aktiven Größenart, z. B. laenge oder masse."
         },
         "fromUnit": {
-          "help": "Der Schlüssel der Einheit, aus der umgerechnet wird."
+          "help": "Die Einheit, aus der umgerechnet wird; darunter steht der Wert, der umgerechnet wird. Für den Agenten der Einheitenschlüssel der aktiven Größenart."
         },
         "toUnit": {
-          "help": "Der Schlüssel der Einheit, in die umgerechnet wird."
+          "help": "Die Einheit, in die umgerechnet wird; darunter steht das Ergebnis, das in keinem Lesefeld erscheint. Für den Agenten der Einheitenschlüssel der aktiven Größenart."
         },
         "inputVal": {
           "help": "Der eingegebene Wert als Text; ein Komma gilt als Dezimaltrennzeichen. Leer heißt: nichts eingegeben. Das umgerechnete Ergebnis ist gerechnet und steht in keinem Feld."
         },
         "tzFrom": {
-          "help": "Die Position der Ausgangszeitzone in der Zeitzonenliste; 0 ist UTC, 1 Berlin."
+          "help": "Die Ausgangszeitzone, deren Uhrzeit und Datum darunter eingegeben werden. Für den Agenten die Position in der Zeitzonenliste; 0 ist UTC, 1 Berlin."
         },
         "tzTo": {
-          "help": "Die Position der Zielzeitzone in der Zeitzonenliste; 0 ist UTC, 1 Berlin."
+          "help": "Die Zielzeitzone, in der darunter das umgerechnete Ergebnis erscheint. Für den Agenten die Position in der Zeitzonenliste; 0 ist UTC, 1 Berlin."
         },
         "tzTime": {
           "help": "Die Uhrzeit der Umrechnung als HH:MM; leer heißt nicht gesetzt."

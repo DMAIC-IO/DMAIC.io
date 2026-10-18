@@ -14,6 +14,17 @@
  * @type {Record<string, Array<{ match: string, reason: string, count?: number }>>}
  */
 export const ANCHOR_EXEMPTIONS = {
+  'unit-converter': [
+    { match: "t('ref", reason: 'Nachschlagetabelle mit festen Beispielwerten; nicht Teil der Lesefläche', count: 4 },
+    { match: "t('tz", reason: 'Weltuhr, aus Zeitzone und Uhrzeit abgeleitet; nicht Teil der Lesefläche', count: 4 },
+  ],
+  'doe-advisor': [
+    { match: "t('col.", reason: 'Nachschlagetabelle mit festem Inhalt (Versuchsplankatalog, Phasenleitfaden); nicht Teil der Lesefläche', count: 8 },
+    { match: 'doe-advisor__row-name', reason: 'Zeilenkopf je Versuchsplan (Name aus dem Katalog)', count: 1 },
+    { match: 'phasePhase(id)', reason: 'Zeilenkopf je Phase des Leitfadens', count: 1 },
+    { match: "t('ccd.col.", reason: 'Nachschlagetabelle mit festem Inhalt (CCD-Vergleich); nicht Teil der Lesefläche', count: 3 },
+    { match: 'ccdLabel(id)', reason: 'Zeilenkopf je Eigenschaft des CCD-Vergleichs', count: 1 },
+  ],
   'data-import': [
     { match: 'data-import__col-name', reason: 'Kopf je Spalte (Name und Typ aus den Daten); die Spalten beschreibt der Agent unter sheets', count: 1 },
   ],
