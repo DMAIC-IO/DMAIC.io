@@ -6176,27 +6176,27 @@
     "mosaic": {
       "name": "Mosaikdiagramm",
       "description": "Visualisiert die gemeinsame Verteilung zweier kategorialer Variablen — Spaltenbreiten zeigen die Randhäufigkeit, Segmenthöhen die bedingten Anteile.",
-      "whenToUse": "Zeigen, wie zwei kategoriale Merkmale zusammenspielen: die Balkenbreite zeigt den Anteil jeder x-Kategorie, die Segmenthöhe den Anteil jeder Gruppe darin.",
+      "whenToUse": "Zeigen, wie zwei kategoriale Merkmale zusammenspielen: die Spaltenbreite zeigt den Anteil jeder x-Kategorie, die Segmenthöhe den Anteil jeder Gruppe darin.",
       "actions": {
         "read": { "help": "Die zwei gewählten Kategorienspalten lesen, die Spalten, die jeder Slot annimmt, und die Kennzahlen neben dem Diagramm." },
         "setColumn": {
           "help": "Eine Spalte einem Slot zuweisen. Der andere Slot behält seine Spalte.",
           "params": {
-            "slot": "'x' — Kategorien entlang der x-Achse; 'g' — Kategorien, die jeden Balken teilen. Beide sind für ein Diagramm Pflicht.",
+            "slot": "'x' — Kategorien entlang der x-Achse; 'g' — Kategorien, die jede Spalte teilen. Beide sind für ein Diagramm Pflicht.",
             "ref": "Ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null zum Leeren."
           }
         }
       },
       "fields": {
-        "xRef": { "help": "Die Kategorienspalte (Slot x); ihre Werte werden die Balken entlang der x-Achse. Pflicht, leer, solange keine gewählt ist." },
-        "gRef": { "help": "Die Gruppenspalte (Slot g); ihre Werte teilen jeden Balken in Segmente. Pflicht, leer, solange keine gewählt ist." },
+        "xRef": { "help": "Die Kategorienspalte (Slot x); ihre Werte werden die Spalten entlang der x-Achse. Pflicht, leer, solange keine gewählt ist." },
+        "gRef": { "help": "Die Gruppenspalte (Slot g); ihre Werte teilen jede Spalte in Segmente. Pflicht, leer, solange keine gewählt ist." },
         "activeColumnSlots": { "help": "Die Slots, die setColumn annimmt: x, g." },
         "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
         "stats": { "help": "Die Kreuztabelle, jede Kennzahl unter keys einzeln beschrieben; null, solange ein Pflicht-Slot leer ist." }
       },
       "types": {
         "MosaicStats": {
-          "categories": "Die Kategorien der X-Spalte, ein Balken je Kategorie; die Tabelle zeigt sie als Zeilen. Die Ecke der Tabelle zeigt „X-Spalte \\ G-Spalte“, also den Namen der X-Spalte, dann den der G-Spalte.",
+          "categories": "Die Kategorien der X-Spalte, eine Spalte je Kategorie; die Tabelle zeigt sie als Zeilen. Die Ecke der Tabelle zeigt „X-Spalte \\ G-Spalte“, also den Namen der X-Spalte, dann den der G-Spalte.",
           "groups": "Je Gruppe die Häufigkeiten über alle Kategorien; die Tabelle zeigt jede Gruppe als Spalte mit der Farbe ihres Segments."
         },
         "MosaicGroup": {
@@ -6250,7 +6250,7 @@
         },
         "HeatmapStats": {
           "xCategories": "Die Kategorien der X-Spalte; sie bilden die Spalten des Rasters, die Tabelle zeigt sie als Spaltenköpfe.",
-          "yCategories": "Die Kategorien der G-Spalte; sie bilden die Zeilen des Rasters. Die Ecke der Tabelle zeigt „Zeilenspalte \\ Spaltenspalte“, also den Namen der G-Spalte, dann den der X-Spalte.",
+          "yCategories": "Die Kategorien der G-Spalte; sie bilden die Zeilen des Rasters. Die Ecke der Tabelle zeigt „G-Spalte \\ X-Spalte“, also den Namen der G-Spalte, dann den der X-Spalte; rechts daneben stehen die Kategorien der X-Spalte als Spaltenköpfe.",
           "cells": "Der Wert je Zelle, erst nach Zeile, dann nach Spalte geordnet, in der Reihenfolge der beiden Kategorienlisten. Ohne Wertespalte ist es die Anzahl der Zeilen mit dieser Kombination, sonst der Mittelwert oder die Summe der Wertespalte. Eine Kombination ohne Zeilen ist leer; die Tabelle zeigt dort einen Strich. Bei Häufigkeit und Summe zeigt die Tabelle zusätzlich Zeilen- und Spaltensummen und die Gesamtsumme, beim Mittelwert nicht; diese Summen stehen nicht in diesem Feld."
         }
       },

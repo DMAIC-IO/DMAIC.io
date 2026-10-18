@@ -39,6 +39,7 @@ export const ANCHOR_EXEMPTIONS = {
   ],
   heatmap: [
     { match: '<th x-text="h">', reason: 'Kopf je Kategorie (Name aus den Daten); der Satz steht an der Ecke der Tabelle', count: 1 },
+    { match: '<th x-text="statsTotalHeader">', reason: 'Task 10 verankert die Summe', count: 1 },
   ],
   mosaic: [
     { match: 'mosaic-module__stats-color', reason: 'Kopf je Gruppe (Name aus den Daten); die Tabelle ist an der Ecke (Kategorien) und am Summenkopf (Zählwerte je Gruppe) verankert', count: 1 },

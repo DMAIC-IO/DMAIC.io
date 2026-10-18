@@ -6172,27 +6172,27 @@
     "mosaic": {
       "name": "Mosaic Plot",
       "description": "Visualises the joint distribution of two categorical variables — column widths show the marginal frequency, segment heights show the conditional shares.",
-      "whenToUse": "Compare how two categorical variables combine: bar widths show the share of each x category, segment heights the share of each group within it.",
+      "whenToUse": "Compare how two categorical variables combine: column widths show the share of each x category, segment heights the share of each group within it.",
       "actions": {
         "read": { "help": "Read the two chosen category columns and the columns each slot accepts, and the figures shown next to the chart." },
         "setColumn": {
           "help": "Assign a column to a slot. The other slot keeps its column.",
           "params": {
-            "slot": "'x' — categories along the x axis; 'g' — categories that split each bar. Both are required for a chart.",
+            "slot": "'x' — categories along the x axis; 'g' — categories that split each column. Both are required for a chart.",
             "ref": "A column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null to clear the slot."
           }
         }
       },
       "fields": {
-        "xRef": { "help": "The category column (slot x); its values become the bars along the x axis. Required, empty until one is chosen." },
-        "gRef": { "help": "The group column (slot g); its values split each bar into segments. Required, empty until one is chosen." },
+        "xRef": { "help": "The category column (slot x); its values become the columns along the x axis. Required, empty until one is chosen." },
+        "gRef": { "help": "The group column (slot g); its values split each column into segments. Required, empty until one is chosen." },
         "activeColumnSlots": { "help": "The slots setColumn accepts: x, g." },
         "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
         "stats": { "help": "The cross table, each figure described individually under keys; null while a required slot is empty." }
       },
       "types": {
         "MosaicStats": {
-          "categories": "The categories of the X column, one bar per category; the table shows them as rows. The corner of the table shows “X column \\ G column”, that is the name of the X column, then that of the G column.",
+          "categories": "The categories of the X column, one column per category; the table shows them as rows. The corner of the table shows “X column \\ G column”, that is the name of the X column, then that of the G column.",
           "groups": "Per group the counts over all categories; the table shows each group as a column with the colour of its segment."
         },
         "MosaicGroup": {
@@ -6246,7 +6246,7 @@
         },
         "HeatmapStats": {
           "xCategories": "The categories of the X column; they form the columns of the grid, the table shows them as column headers.",
-          "yCategories": "The categories of the G column; they form the rows of the grid. The corner of the table shows “row column \\ column column”, that is the name of the G column, then that of the X column.",
+          "yCategories": "The categories of the G column; they form the rows of the grid. The corner of the table shows “G column \\ X column”: the name of the G column, then that of the X column; to its right the categories of the X column stand as column headers.",
           "cells": "The value per cell, ordered by row first, then by column, following the two category lists. Without a value column it is the number of rows with that combination, otherwise the mean or the sum of the value column. A combination without rows is empty; the table shows a dash there. For count and sum the table also shows row and column totals and the grand total, for the mean it does not; these totals are not in this field."
         }
       },
