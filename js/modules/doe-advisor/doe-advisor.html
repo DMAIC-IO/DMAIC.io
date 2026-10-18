@@ -1,12 +1,15 @@
 <section class="module-container doe-advisor" x-data="doeAdvisor">
   <div class="module-container__body">
-    <div class="doe-advisor__tabs" role="tablist">
-      <button class="doe-advisor__tab" :class="{ 'doe-advisor__tab--active': model.tab === 'overview' }"
-        data-tab="overview" type="button" @click="switchTab('overview')" x-text="t('tabOverview')"></button>
-      <button class="doe-advisor__tab" :class="{ 'doe-advisor__tab--active': model.tab === 'wizard' }"
-        data-tab="wizard" type="button" @click="switchTab('wizard')" x-text="t('tabWizard')"></button>
-      <button class="doe-advisor__tab" :class="{ 'doe-advisor__tab--active': model.tab === 'ccd' }"
-        data-tab="ccd" type="button" @click="switchTab('ccd')" x-text="t('tabCcd')"></button>
+    <div class="dmike-tabs" role="tablist" x-tablist>
+      <button class="dmike-tab" type="button" role="tab" data-tab="overview" :class="model.tab === 'overview' ? 'dmike-tab--active' : ''"
+        :aria-selected="model.tab === 'overview' ? 'true' : 'false'" :tabindex="model.tab === 'overview' ? 0 : -1"
+        @click="switchTab('overview')" x-text="t('tabOverview')"></button>
+      <button class="dmike-tab" type="button" role="tab" data-tab="wizard" :class="model.tab === 'wizard' ? 'dmike-tab--active' : ''"
+        :aria-selected="model.tab === 'wizard' ? 'true' : 'false'" :tabindex="model.tab === 'wizard' ? 0 : -1"
+        @click="switchTab('wizard')" x-text="t('tabWizard')"></button>
+      <button class="dmike-tab" type="button" role="tab" data-tab="ccd" :class="model.tab === 'ccd' ? 'dmike-tab--active' : ''"
+        :aria-selected="model.tab === 'ccd' ? 'true' : 'false'" :tabindex="model.tab === 'ccd' ? 0 : -1"
+        @click="switchTab('ccd')" x-text="t('tabCcd')"></button>
     </div>
 
     <!-- ── Overview tab ── -->

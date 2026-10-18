@@ -487,7 +487,7 @@ const mod = createModule({
 
       // ── Tabs ──────────────────────────────────────────────────
 
-      tabClass(tab) { return this.activeTab === tab ? 'ishikawa__tab ishikawa__tab--active' : 'ishikawa__tab'; },
+      tabClass(tab) { return this.activeTab === tab ? 'dmike-tab--active' : ''; },
       setTab(tab) {
         if (tab === this.activeTab) return;
         this.activeTab = tab;
