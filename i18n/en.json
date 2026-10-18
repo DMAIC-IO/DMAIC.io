@@ -10168,8 +10168,8 @@
           "help": "Sets one target specification of a saved model: selected, kind (max, min, target), lower, upper, target or weight. Nothing is computed; canOptimize and diagnosticReasons update, the stored result stays until runOptimize runs. Refuses a modelId that is not in selectableModels, an unknown key and a value that does not fit the key.",
           "params": {
             "modelId": "The id of a model from selectableModels. Any other value is an error.",
-            "key": "One of selected, kind, lower, upper, target, weight. Any other value is an error.",
-            "value": "selected: true or false. kind: 'max', 'min' or 'target'. lower, upper, target: a finite number. weight: a number greater than 0. Any other value is an error."
+            "key": "Which option; each is described individually under keys. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys."
           }
         },
         "runOptimize": {
@@ -10178,7 +10178,7 @@
       },
       "fields": {
         "specs": {
-          "help": "Per model id the target specification { selected, kind, lower, upper, target, weight }; selected marks the models of the optimisation."
+          "help": "The settings per response, each described under keys."
         },
         "optId": {
           "help": "The id of the stored optimisation; null before the first successful runOptimize."
@@ -10193,10 +10193,31 @@
           "help": "The reasons that block the optimisation, as texts: R²adj below 0.5, significant lack of fit (p below 0.05) or a different factor structure among the selected models. Empty when nothing blocks, and also empty while no model is selected (canOptimize is false then)."
         },
         "result": {
-          "help": "The stored optimum { xOpt, yPredictions, dPerResponse, D, ciAtOpt, factorNames, modelNames, paretoFront, iter }; ciAtOpt and paretoFront are null. null while no optimisation has run and when the stored record is gone."
+          "help": "The stored optimum, each figure described individually under keys; null until an optimization has run or when the stored data set is missing."
         },
         "errorMsg": {
           "help": "Why the last runOptimize computed nothing: the blocking reasons joined by '; ', 'No model selected.' or the engine error. Empty before the first runOptimize and after a successful run; cleared again as soon as the model list, the selection or a target specification changes."
+        }
+      },
+      "types": {
+        "Spec": {
+          "selected": "Whether this model (this response) takes part in the optimisation; the checkbox in the model header. Only included models show their desirability function and contribute to the composite desirability D; initially none is included. Optimising is possible only when at least one model is included and no diagnosis blocks (R²adj below 0.5, significant lack of fit with p below 0.05, or different factors among the selected models).",
+          "kind": "The desirability function of the response: Maximise, Minimise or Target value, default Maximise. Maximise: d = 0 for y ≤ Lower, d = (y − Lower) / (Upper − Lower) in between, d = 1 for y ≥ Upper. Minimise mirrors it: d = 1 up to Lower, d = (Upper − y) / (Upper − Lower) in between, d = 0 from Upper on. Target value: d = 1 exactly at the target, falling linearly to 0 towards Lower and Upper, 0 at and beyond the limits. The shape is always linear (exponent 1). If Upper is not above Lower, d jumps straight between 0 and 1 for Maximise and Minimise.",
+          "lower": "The lower limit of the desirability function in the unit of the response: for Maximise d = 0 here, for Minimise d = 1, for Target value d = 0. The default is the smallest measured value in the model data (0 without data). A finite number; whether it lies below Upper is not checked.",
+          "upper": "The upper limit of the desirability function in the unit of the response: for Maximise d = 1 here, for Minimise d = 0, for Target value d = 0. The default is the largest measured value in the model data (1 without data). A finite number; whether it lies above Lower is not checked.",
+          "target": "The target at which the desirability function reaches d = 1. Effective only for the Target value function and shown only then; for Maximise and Minimise it stays stored but has no effect. The default is the midpoint between the smallest and largest measured value. A finite number; whether it lies between Lower and Upper is not checked.",
+          "weight": "The weight w of this response in the composite desirability D = (Π dᵢ^wᵢ)^(1/Σwᵢ): a response with weight 2 counts twice as much as one with weight 1. A number greater than 0, default 1."
+        },
+        "Result": {
+          "xOpt": "The factor settings of the optimum, one per factor in the order of the factor names: continuous factors as a number (column Value, four decimals), categorical ones as the level name. The search runs inside the box of factor limits of the first selected model (−1 to 1 if none are given) with Nelder-Mead from 8 random starting points (seed 42, at most 400 iterations per start); the start with the highest D wins. With categorical factors every level combination is searched this way on its own and the best one is taken.",
+          "yPredictions": "The predicted response values at the optimum, each computed from its model’s regression equation, in the order of the model names (column Prediction, four decimals).",
+          "dPerResponse": "The individual desirability d per response at the optimum, between 0 and 1: the model’s desirability function applied to its prediction (column d, three decimals). 1 means the specification is fully met, 0 means unacceptable.",
+          "D": "The composite desirability at the optimum, the weighted geometric mean of the individual desirabilities: D = (Π dᵢ^wᵢ)^(1/Σwᵢ) with the weights wᵢ. If any d is 0, D = 0. The tile shows D with three decimals, green from 0.8, yellow from 0.5, red below. D belongs to the last optimisation run: if a specification is changed afterwards, the result is current again only after optimising anew.",
+          "ciAtOpt": "Confidence interval of the predictions at the optimum; not computed yet and always empty.",
+          "paretoFront": "Pareto front of the responses; not computed yet and always empty.",
+          "factorNames": "The factor names from the first selected model, in the same order as the factor settings (column Factor).",
+          "modelNames": "The names of the included models (responses), in the same order as the predictions and individual desirabilities (column Model).",
+          "iter": "The number of Nelder-Mead iterations: without categorical factors those of the best of the 8 starts, with categorical factors the sum over all level combinations."
         }
       },
       "sectionModels": "Models and desirability functions",

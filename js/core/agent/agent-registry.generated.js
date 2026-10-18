@@ -13895,11 +13895,38 @@ export const AGENT_REGISTRY = {
             "name": "value",
             "type": "boolean|string|number",
             "optional": false,
-            "help": "selected: true oder false; kind: max, min oder target; sonst eine Zahl (weight größer 0)"
+            "help": "der Wert; Bereich je Schlüssel siehe `Spec`"
           }
         ],
         "returns": "void",
-        "help": "Eine Zielvorgabe eines gespeicherten Modells setzen."
+        "help": "Eine Zielvorgabe eines gespeicherten Modells setzen.",
+        "keysOf": "Spec",
+        "keys": {
+          "selected": {
+            "type": "boolean",
+            "help": "Zielgröße einbeziehen"
+          },
+          "kind": {
+            "type": "'max'|'min'|'target'",
+            "help": "maximieren, minimieren oder Ziel"
+          },
+          "lower": {
+            "type": "number",
+            "help": "untere Grenze"
+          },
+          "upper": {
+            "type": "number",
+            "help": "obere Grenze"
+          },
+          "target": {
+            "type": "number",
+            "help": "Zielwert, nur bei Ziel"
+          },
+          "weight": {
+            "type": "number",
+            "help": "Gewicht"
+          }
+        }
       },
       "runOptimize": {
         "params": [],
@@ -13909,10 +13936,37 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "specs": {
-        "type": "object",
-        "help": "per model id the target specification `{ selected, kind, lower, upper, target, weight }`; `selected` marks the models of the optimisation",
+        "type": "Object<string, Spec>",
+        "help": "per model id the target specification; `selected` marks the models of the optimisation",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Spec",
+        "keys": {
+          "selected": {
+            "type": "boolean",
+            "help": "Zielgröße einbeziehen"
+          },
+          "kind": {
+            "type": "'max'|'min'|'target'",
+            "help": "maximieren, minimieren oder Ziel"
+          },
+          "lower": {
+            "type": "number",
+            "help": "untere Grenze"
+          },
+          "upper": {
+            "type": "number",
+            "help": "obere Grenze"
+          },
+          "target": {
+            "type": "number",
+            "help": "Zielwert, nur bei Ziel"
+          },
+          "weight": {
+            "type": "number",
+            "help": "Gewicht"
+          }
+        }
       },
       "optId": {
         "type": "string|null",
@@ -13939,10 +13993,49 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
-        "help": "the stored optimum `{ xOpt, yPredictions, dPerResponse, D, ciAtOpt, factorNames, modelNames, paretoFront, iter }`, or null while no optimisation has run",
+        "type": "Result|null",
+        "help": "the stored optimum, or null while no optimisation has run",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "xOpt": {
+            "type": "Array<number|string>",
+            "help": "Faktoreinstellungen"
+          },
+          "yPredictions": {
+            "type": "number[]",
+            "help": "Vorhersagen je Zielgröße"
+          },
+          "dPerResponse": {
+            "type": "number[]",
+            "help": "Einzelwunschbarkeit je Zielgröße"
+          },
+          "D": {
+            "type": "number",
+            "help": "Gesamtwunschbarkeit"
+          },
+          "ciAtOpt": {
+            "type": "null",
+            "help": "noch nicht berechnet"
+          },
+          "paretoFront": {
+            "type": "null",
+            "help": "noch nicht berechnet"
+          },
+          "factorNames": {
+            "type": "string[]",
+            "help": "Faktoren"
+          },
+          "modelNames": {
+            "type": "string[]",
+            "help": "Zielgrößen"
+          },
+          "iter": {
+            "type": "number",
+            "help": "Iterationen"
+          }
+        }
       },
       "errorMsg": {
         "type": "string",

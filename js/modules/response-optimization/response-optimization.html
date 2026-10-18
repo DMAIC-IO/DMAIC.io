@@ -21,7 +21,7 @@
           <div class="ro__model-list">
             <template x-for="m in modelList">
               <div class="ro__model-row" :key="m.id" :data-model-id="m.id">
-                <label class="ro__model-head">
+                <label class="ro__model-head" data-help-key="modules.response-optimization.types.Spec.selected" data-help-anchor="box">
                   <input type="checkbox"
                          data-action="toggle-model"
                          :checked="isSelected(m.id)"
@@ -31,7 +31,7 @@
                 </label>
 
                 <!-- Spec editor: only visible when selected -->
-                <div class="ro__spec" x-show="isSelected(m.id)">
+                <div class="ro__spec" x-show="isSelected(m.id)" data-help-key="modules.response-optimization.types.Spec.kind">
                   <select class="field ro__spec-kind"
                           data-action="kind"
                           @change="setSpecKind(m.id, $event)">
@@ -40,7 +40,7 @@
                     </template>
                   </select>
 
-                  <label>
+                  <label data-help-key="modules.response-optimization.types.Spec.lower">
                     <span x-text="t('lower')"></span>
                     <input class="field field--num" type="number" step="any"
                            data-action="lower"
@@ -48,7 +48,7 @@
                            @change="setSpecNum(m.id, 'lower', $event)">
                   </label>
 
-                  <label x-show="isKind(m.id, 'target')">
+                  <label x-show="isKind(m.id, 'target')" data-help-key="modules.response-optimization.types.Spec.target">
                     <span x-text="t('target')"></span>
                     <input class="field field--num" type="number" step="any"
                            data-action="target"
@@ -56,7 +56,7 @@
                            @change="setSpecNum(m.id, 'target', $event)">
                   </label>
 
-                  <label>
+                  <label data-help-key="modules.response-optimization.types.Spec.upper">
                     <span x-text="t('upper')"></span>
                     <input class="field field--num" type="number" step="any"
                            data-action="upper"
@@ -64,7 +64,7 @@
                            @change="setSpecNum(m.id, 'upper', $event)">
                   </label>
 
-                  <label>
+                  <label data-help-key="modules.response-optimization.types.Spec.weight">
                     <span x-text="t('weight')"></span>
                     <input class="field field--num" type="number" step="any"
                            data-action="weight"
@@ -78,7 +78,7 @@
 
           <!-- Diagnostic block -->
           <template x-if="diagnosticReasons.length > 0">
-            <div class="ro__diagnostic">
+            <div class="ro__diagnostic" data-help-key="modules.response-optimization.fields.diagnosticReasons.help">
               <strong x-text="diagnosticBlockedLabel()"></strong>
               <ul>
                 <template x-for="reason in diagnosticReasons">
@@ -94,6 +94,7 @@
 
           <button class="btn btn--primary ro__optimize-btn"
                   data-action="optimize"
+                  data-help-key="modules.response-optimization.actions.runOptimize.help"
                   type="button"
                   :disabled="!canOptimize"
                   @click="runOptimize()">
@@ -116,7 +117,7 @@
               <div class="dmike-kpi-strip">
                 <div :class="dClass()" :title="t('tipD')">
                   <div class="dmike-kpi-value" x-text="dValue()"></div>
-                  <div class="dmike-kpi-label">D</div>
+                  <div class="dmike-kpi-label" data-help-key="modules.response-optimization.types.Result.D">D</div>
                 </div>
               </div>
 
@@ -125,8 +126,8 @@
               <table class="dmike-table">
                 <thead>
                   <tr>
-                    <th x-text="t('factor')"></th>
-                    <th x-text="t('value')"></th>
+                    <th><span data-help-key="modules.response-optimization.types.Result.factorNames" x-text="t('factor')"></span></th>
+                    <th><span data-help-key="modules.response-optimization.types.Result.xOpt" x-text="t('value')"></span></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -144,9 +145,9 @@
               <table class="dmike-table">
                 <thead>
                   <tr>
-                    <th x-text="t('model')"></th>
-                    <th x-text="t('prediction')"></th>
-                    <th>d</th>
+                    <th><span data-help-key="modules.response-optimization.types.Result.modelNames" x-text="t('model')"></span></th>
+                    <th><span data-help-key="modules.response-optimization.types.Result.yPredictions" x-text="t('prediction')"></span></th>
+                    <th><span data-help-key="modules.response-optimization.types.Result.dPerResponse">d</span></th>
                   </tr>
                 </thead>
                 <tbody>

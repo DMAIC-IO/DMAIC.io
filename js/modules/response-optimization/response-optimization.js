@@ -277,13 +277,41 @@ function buildContourSVGElement(d) {
 }
 
 /**
+ * Die Vorgaben je Zielgröße, Schlüsselfläche von `setSpec`. Sätze je
+ * Schlüssel unter `types.Spec.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Spec
+ * @property {boolean} selected  Zielgröße einbeziehen
+ * @property {'max'|'min'|'target'} kind  maximieren, minimieren oder Ziel
+ * @property {number} lower  untere Grenze
+ * @property {number} upper  obere Grenze
+ * @property {number} target  Zielwert, nur bei Ziel
+ * @property {number} weight  Gewicht
+ */
+
+/**
+ * Das gespeicherte Optimum, wie `read().result` es liefert.
+ *
+ * @typedef {object} Result
+ * @property {Array<number|string>} xOpt  Faktoreinstellungen
+ * @property {number[]} yPredictions  Vorhersagen je Zielgröße
+ * @property {number[]} dPerResponse  Einzelwunschbarkeit je Zielgröße
+ * @property {number} D  Gesamtwunschbarkeit
+ * @property {null} ciAtOpt  noch nicht berechnet
+ * @property {null} paretoFront  noch nicht berechnet
+ * @property {string[]} factorNames  Faktoren
+ * @property {string[]} modelNames  Zielgrößen
+ * @property {number} iter  Iterationen
+ */
+
+/**
  * @typedef {object} AgentRead
- * @property {object} specs  per model id the target specification `{ selected, kind, lower, upper, target, weight }`; `selected` marks the models of the optimisation
+ * @property {Object<string, Spec>} specs  per model id the target specification; `selected` marks the models of the optimisation
  * @property {string|null} optId  the id of the stored optimisation, or null before the first successful run
  * @property {Array<{ id: string, name: string }>} selectableModels  the saved models of the project as references (no coefficients); read a model in the regression module that created it
  * @property {boolean} canOptimize  whether `runOptimize` computes: at least one model selected and no diagnostic reason
  * @property {string[]} diagnosticReasons  the reasons that block the optimisation (low R², lack of fit, factor mismatch), or an empty list
- * @property {object|null} result  the stored optimum `{ xOpt, yPredictions, dPerResponse, D, ciAtOpt, factorNames, modelNames, paretoFront, iter }`, or null while no optimisation has run
+ * @property {Result|null} result  the stored optimum, or null while no optimisation has run
  * @property {string} errorMsg  why the last `runOptimize` computed nothing (the blocking reasons, no model selected, or the engine error), or an empty string; cleared again as soon as the model list, the selection or a specification changes
  */
 
@@ -627,8 +655,8 @@ export default createModule({
        * Eine Zielvorgabe eines gespeicherten Modells setzen.
        * @agent
        * @param {string} modelId id aus selectableModels
-       * @param {'selected'|'kind'|'lower'|'upper'|'target'|'weight'} key welche Vorgabe
-       * @param {boolean|string|number} value selected: true oder false; kind: max, min oder target; sonst eine Zahl (weight größer 0)
+       * @param {keyof Spec} key welche Vorgabe
+       * @param {boolean|string|number} value der Wert; Bereich je Schlüssel siehe `Spec`
        * @returns {void}
        * @throws {Error} wenn das Modell, der Schlüssel oder der Wert unzulässig ist
        */

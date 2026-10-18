@@ -10172,8 +10172,8 @@
           "help": "Setzt eine Zielvorgabe eines gespeicherten Modells: selected, kind (max, min, target), lower, upper, target oder weight. Es wird nichts gerechnet; canOptimize und diagnosticReasons werden aktualisiert, das gespeicherte Ergebnis bleibt bis zum nächsten runOptimize. Verweigert eine modelId, die nicht in selectableModels steht, einen unbekannten Schlüssel und einen Wert, der nicht zum Schlüssel passt.",
           "params": {
             "modelId": "Die id eines Modells aus selectableModels. Jeder andere Wert ist ein Fehler.",
-            "key": "Eines von selected, kind, lower, upper, target, weight. Jeder andere Wert ist ein Fehler.",
-            "value": "selected: true oder false. kind: 'max', 'min' oder 'target'. lower, upper, target: eine endliche Zahl. weight: eine Zahl größer 0. Jeder andere Wert ist ein Fehler."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys."
           }
         },
         "runOptimize": {
@@ -10182,7 +10182,7 @@
       },
       "fields": {
         "specs": {
-          "help": "Je Modell-id die Zielvorgabe { selected, kind, lower, upper, target, weight }; selected markiert die Modelle der Optimierung."
+          "help": "Die Vorgaben je Zielgröße, jede unter keys beschrieben."
         },
         "optId": {
           "help": "Die id der gespeicherten Optimierung; null vor dem ersten erfolgreichen runOptimize."
@@ -10197,10 +10197,31 @@
           "help": "Die Gründe, die das Optimieren sperren, als Texte: R²adj unter 0,5, signifikanter Anpassungsmangel (p unter 0,05) oder unterschiedliche Faktorstruktur der gewählten Modelle. Leer, wenn nichts sperrt, und auch leer, solange kein Modell gewählt ist (canOptimize ist dann falsch)."
         },
         "result": {
-          "help": "Das gespeicherte Optimum { xOpt, yPredictions, dPerResponse, D, ciAtOpt, factorNames, modelNames, paretoFront, iter }; ciAtOpt und paretoFront sind null. null, solange nicht optimiert wurde, und wenn der gespeicherte Datensatz fehlt."
+          "help": "Das gespeicherte Optimum, jede Kennzahl unter keys einzeln beschrieben; null, solange nicht optimiert wurde oder der gespeicherte Datensatz fehlt."
         },
         "errorMsg": {
           "help": "Warum das letzte runOptimize nichts gerechnet hat: die sperrenden Gründe, mit '; ' verbunden, 'Kein Modell ausgewählt.' oder der Engine-Fehler. Leer vor dem ersten runOptimize und nach einem erfolgreichen Lauf; wird wieder geleert, sobald sich die Modellliste, die Auswahl oder eine Zielvorgabe ändert."
+        }
+      },
+      "types": {
+        "Spec": {
+          "selected": "Ob dieses Modell (diese Zielgröße) in die Optimierung eingeht; das Kästchen im Modellkopf. Nur einbezogene Modelle zeigen ihre Wunschfunktion und tragen zur Gesamtwunschbarkeit D bei; anfangs ist keines einbezogen. Optimieren geht erst, wenn mindestens ein Modell einbezogen ist und keine Diagnose sperrt (R²adj unter 0,5, signifikanter Anpassungsmangel mit p unter 0,05 oder unterschiedliche Faktoren der gewählten Modelle).",
+          "kind": "Die Wunschfunktion der Zielgröße: Maximieren, Minimieren oder Zielwert, Vorgabe Maximieren. Maximieren: d = 0 für y ≤ Untergrenze, dazwischen d = (y − Untergrenze) / (Obergrenze − Untergrenze), d = 1 für y ≥ Obergrenze. Minimieren spiegelbildlich: d = 1 bis zur Untergrenze, dazwischen d = (Obergrenze − y) / (Obergrenze − Untergrenze), d = 0 ab der Obergrenze. Zielwert: d = 1 genau am Zielwert, zu Unter- und Obergrenze hin linear auf 0 fallend, an und außerhalb der Grenzen 0. Der Verlauf ist immer linear (Exponent 1). Liegt die Obergrenze nicht über der Untergrenze, springt d bei Maximieren und Minimieren direkt zwischen 0 und 1.",
+          "lower": "Die Untergrenze der Wunschfunktion in der Einheit der Zielgröße: bei Maximieren ist hier d = 0, bei Minimieren d = 1, beim Zielwert d = 0. Vorgabe ist der kleinste Messwert in den Daten des Modells (ohne Daten 0). Eine endliche Zahl; ob sie unter der Obergrenze liegt, wird nicht geprüft.",
+          "upper": "Die Obergrenze der Wunschfunktion in der Einheit der Zielgröße: bei Maximieren ist hier d = 1, bei Minimieren d = 0, beim Zielwert d = 0. Vorgabe ist der größte Messwert in den Daten des Modells (ohne Daten 1). Eine endliche Zahl; ob sie über der Untergrenze liegt, wird nicht geprüft.",
+          "target": "Der Zielwert, an dem die Wunschfunktion d = 1 erreicht. Wirkt nur bei der Wunschfunktion Zielwert und wird nur dann angezeigt; bei Maximieren und Minimieren bleibt er gespeichert, aber ohne Wirkung. Vorgabe ist die Mitte zwischen kleinstem und größtem Messwert. Eine endliche Zahl; ob sie zwischen Unter- und Obergrenze liegt, wird nicht geprüft.",
+          "weight": "Das Gewicht w dieser Zielgröße in der Gesamtwunschbarkeit D = (Π dᵢ^wᵢ)^(1/Σwᵢ): eine Zielgröße mit Gewicht 2 zählt doppelt so stark wie eine mit Gewicht 1. Eine Zahl größer 0, Vorgabe 1."
+        },
+        "Result": {
+          "xOpt": "Die Faktoreinstellungen des Optimums, eine je Faktor in der Reihenfolge der Faktornamen: stetige Faktoren als Zahl (Spalte Wert, vier Nachkommastellen), kategoriale als Name der Stufe. Gesucht wird in der Box der Faktorgrenzen des ersten gewählten Modells (ohne Angabe −1 bis 1) mit Nelder-Mead von 8 zufälligen Startpunkten (Startwert 42, höchstens 400 Iterationen je Start); der Start mit dem höchsten D gewinnt. Mit kategorialen Faktoren wird jede Stufenkombination einzeln so durchsucht und die beste genommen.",
+          "yPredictions": "Die vorhergesagten Werte der Zielgrößen am Optimum, je Modell aus seiner Regressionsgleichung gerechnet, in der Reihenfolge der Modellnamen (Spalte Vorhersage, vier Nachkommastellen).",
+          "dPerResponse": "Die Einzelwunschbarkeit d je Zielgröße am Optimum, zwischen 0 und 1: die Wunschfunktion des Modells, angewandt auf seine Vorhersage (Spalte d, drei Nachkommastellen). 1 heißt Vorgabe voll erfüllt, 0 heißt unannehmbar.",
+          "D": "Die Gesamtwunschbarkeit am Optimum, das gewichtete geometrische Mittel der Einzelwunschbarkeiten: D = (Π dᵢ^wᵢ)^(1/Σwᵢ) mit den Gewichten wᵢ. Ist ein d gleich 0, ist D = 0. Die Kachel zeigt D mit drei Nachkommastellen, grün ab 0,8, gelb ab 0,5, darunter rot. D gehört zum letzten Optimierungslauf: wird danach eine Vorgabe geändert, ist das Ergebnis erst nach erneutem Optimieren wieder aktuell.",
+          "ciAtOpt": "Vertrauensbereich der Vorhersagen am Optimum; wird noch nicht berechnet und ist immer leer.",
+          "paretoFront": "Pareto-Front der Zielgrößen; wird noch nicht berechnet und ist immer leer.",
+          "factorNames": "Die Namen der Faktoren aus dem ersten gewählten Modell, in derselben Reihenfolge wie die Faktoreinstellungen (Spalte Faktor).",
+          "modelNames": "Die Namen der einbezogenen Modelle (Zielgrößen), in derselben Reihenfolge wie Vorhersagen und Einzelwunschbarkeiten (Spalte Modell).",
+          "iter": "Die Zahl der Nelder-Mead-Iterationen: ohne kategoriale Faktoren die des besten der 8 Starts, mit kategorialen Faktoren die Summe über alle Stufenkombinationen."
         }
       },
       "sectionModels": "Modelle und Wunschfunktionen",
