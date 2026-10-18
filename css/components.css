@@ -1783,6 +1783,28 @@ th .context-help-anchor > .context-help__btn {
   top: 50%;
 }
 
+/* Anker NEBEN einem Eingabefeld: DatasetPicker-Slotbuchstabe (X, Y, G) und
+   der Text einer Optionszeile (`…__opt-row`, Label mit Select). Der Kreis
+   rechts vom Anker läge auf dem Select und verdeckte dessen ersten Buchstaben
+   beziehungsweise seine Kante; Platz zu reservieren würde das Layout ohne Alt
+   verschieben. Stattdessen liegt der Kreis auf dem Anker selbst (Buchstabe
+   beziehungsweise Textende) — solange Alt gehalten wird, überdeckt er ihn. */
+.ds-picker__slot-label.context-help-anchor > .context-help__btn {
+  top: 50%;
+  left: 50%;
+  margin-left: 0;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--color-bg-secondary);
+}
+
+[class*="__opt-row"] > span.context-help-anchor > .context-help__btn {
+  top: 50%;
+  margin-left: -1em;
+  border-radius: 50%;
+  background: var(--color-bg-secondary);
+}
+
 /* KPI-Karten zentrieren Beschriftung und Unterzeile als volle Blöcke. Als
    Anker müssen sie schrumpfbreit sein, sonst sitzt der Kreis in der
    Kartenecke statt neben dem Text — dieselbe Regel wie bei den Labels oben.
