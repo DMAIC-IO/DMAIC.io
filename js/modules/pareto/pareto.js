@@ -288,6 +288,7 @@ const mod = createModule({
       statsRows: [],
       statsValueHeader: '',
       statsTotal: '',
+      statsTotalPct: '',
       statsShow: false,
 
       // ── Aggregation options (declarative — shown when a Y column is picked) ──
@@ -389,6 +390,7 @@ const mod = createModule({
           cumPct: `${r.cumPct.toFixed(1)  }%`,
         }));
         this.statsTotal = formatNum(grandTotal);
+        this.statsTotalPct = `${(100).toFixed(1)}%`;
         this.statsShow = true;
       },
 

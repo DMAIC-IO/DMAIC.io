@@ -9328,6 +9328,12 @@
       "showLabels": "Linienbeschriftung",
       "showDataPoints": "Datenpunkte anzeigen",
       "sectionDataSource": "Datenquelle",
+      "axisXMin": "X min",
+      "axisXMax": "X max",
+      "axisYMin": "Y min",
+      "axisYMax": "Y max",
+      "cardZMin": "Z Min",
+      "cardZMax": "Z Max",
       "range": "Z-Spannweite",
       "optimum": "Optimum (Max)",
       "levels": "Konturstufen",
@@ -9435,9 +9441,9 @@
           "yMax": "Die obere Grenze der Y-Achse. Über dem Bereich von Y min bis Y max wird die Fläche gezeichnet und abgetastet. Es wird nicht geprüft, dass Y max größer als Y min ist."
         },
         "Surface": {
-          "zMin": "Der kleinste Wert der Fläche. Die Fläche wird auf einem Raster von Rasterauflösung × Rasterauflösung Punkten (Vorgabe 100 × 100) über dem Achsenbereich ausgewertet; die Karte „Z Min“ zeigt den Wert.",
+          "zMin": "Der kleinste Wert der Fläche. Die Fläche wird auf einem Raster aus 100 × 100 Punkten (Vorgabe; einstellbar im Diagrammeditor unter „Rasterauflösung“) über dem Achsenbereich ausgewertet; die Karte „Z Min“ zeigt den Wert.",
           "zMax": "Der größte Wert der Fläche auf demselben Raster; die Karte „Z Max“ zeigt den Wert.",
-          "range": "Die Spannweite der Fläche, größter minus kleinster Wert (Z max − Z min); die Karte zeigt sie als Z-Spannweite.",
+          "range": "Die Spannweite der Fläche, größter minus kleinster Wert (Z max − Z min); die Karte zeigt sie als Z-Spannweite und darunter die Zahl der Konturstufen.",
           "optimum": "Der höchste Punkt des Rasters. Die Karte „Optimum (Max)“ zeigt seinen Wert und darunter sein x und y; bei gleich hohen Punkten zählt der erste in Rasterreihenfolge."
         },
         "SurfacePoint": {

@@ -36,12 +36,12 @@
     <input type="hidden" data-ref="yLabel" :value="model.yLabel" @change="setParam('yLabel', $event.target.value)">
     <div class="dmike-split__section-title" x-text="t('sectionAxes')"></div>
     <div class="contour__row-2">
-      <div class="field-group contour__field-sm"><label data-help-key="modules.contour-plot.types.Params.xMin">X min</label><input type="number" class="field field--num" data-ref="xMin" :value="model.xMin" @change="onAxisInput('xMin', $event)"></div>
-      <div class="field-group contour__field-sm"><label data-help-key="modules.contour-plot.types.Params.xMax">X max</label><input type="number" class="field field--num" data-ref="xMax" :value="model.xMax" @change="onAxisInput('xMax', $event)"></div>
+      <div class="field-group contour__field-sm"><label data-help-key="modules.contour-plot.types.Params.xMin" x-text="t('axisXMin')"></label><input type="number" class="field field--num" data-ref="xMin" :value="model.xMin" @change="onAxisInput('xMin', $event)"></div>
+      <div class="field-group contour__field-sm"><label data-help-key="modules.contour-plot.types.Params.xMax" x-text="t('axisXMax')"></label><input type="number" class="field field--num" data-ref="xMax" :value="model.xMax" @change="onAxisInput('xMax', $event)"></div>
     </div>
     <div class="contour__row-2">
-      <div class="field-group contour__field-sm"><label data-help-key="modules.contour-plot.types.Params.yMin">Y min</label><input type="number" class="field field--num" data-ref="yMin" :value="model.yMin" @change="onAxisInput('yMin', $event)"></div>
-      <div class="field-group contour__field-sm"><label data-help-key="modules.contour-plot.types.Params.yMax">Y max</label><input type="number" class="field field--num" data-ref="yMax" :value="model.yMax" @change="onAxisInput('yMax', $event)"></div>
+      <div class="field-group contour__field-sm"><label data-help-key="modules.contour-plot.types.Params.yMin" x-text="t('axisYMin')"></label><input type="number" class="field field--num" data-ref="yMin" :value="model.yMin" @change="onAxisInput('yMin', $event)"></div>
+      <div class="field-group contour__field-sm"><label data-help-key="modules.contour-plot.types.Params.yMax" x-text="t('axisYMax')"></label><input type="number" class="field field--num" data-ref="yMax" :value="model.yMax" @change="onAxisInput('yMax', $event)"></div>
     </div>
     <div class="field-group"><label data-help-key="modules.contour-plot.types.Params.zLabel" x-text="t('zName')"></label><input type="text" class="field" data-ref="zLabel" :value="model.zLabel" @change="setParam('zLabel', $event.target.value)"></div>
 
@@ -51,8 +51,8 @@
 
   <main class="contour__output dmike-split__output">
     <div class="contour__info-row" data-ref="infoRow" style="display:none">
-      <div class="contour__info-card"><div class="contour__info-label" data-help-key="modules.contour-plot.types.Surface.zMin">Z Min</div><div class="contour__info-value" data-ref="infoZmin">–</div><div class="contour__info-sub" data-ref="infoZminPos"></div></div>
-      <div class="contour__info-card"><div class="contour__info-label" data-help-key="modules.contour-plot.types.Surface.zMax">Z Max</div><div class="contour__info-value" data-ref="infoZmax">–</div><div class="contour__info-sub" data-ref="infoZmaxPos"></div></div>
+      <div class="contour__info-card"><div class="contour__info-label" data-help-key="modules.contour-plot.types.Surface.zMin" x-text="t('cardZMin')"></div><div class="contour__info-value" data-ref="infoZmin">–</div></div>
+      <div class="contour__info-card"><div class="contour__info-label" data-help-key="modules.contour-plot.types.Surface.zMax" x-text="t('cardZMax')"></div><div class="contour__info-value" data-ref="infoZmax">–</div></div>
       <div class="contour__info-card"><div class="contour__info-label" data-help-key="modules.contour-plot.types.Surface.range" x-text="t('range')"></div><div class="contour__info-value" data-ref="infoRange">–</div><div class="contour__info-sub" data-ref="infoRangeSub"></div></div>
       <div class="contour__info-card"><div class="contour__info-label" data-help-key="modules.contour-plot.types.Surface.optimum" x-text="t('optimum')"></div><div class="contour__info-value contour__info-value--opt" data-ref="infoOpt">–</div><div class="contour__info-sub" data-ref="infoOptPos"></div></div>
     </div>

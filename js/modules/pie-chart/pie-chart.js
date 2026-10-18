@@ -201,6 +201,7 @@ const mod = createModule({
       /** @type {Array<{color:string, name:string, value:string, pct:string}>} */
       statsRows: [],
       statsTotal: '',
+      statsTotalPct: '',
       statsShow: false,
 
       // ── Column helpers ────────────────────────────────────────
@@ -261,6 +262,7 @@ const mod = createModule({
           pct: `${(slices[i].share * 100).toFixed(1)}%`,
         }));
         this.statsTotal = formatNum(total);
+        this.statsTotalPct = `${(100).toFixed(1)}%`;
         this.statsShow = true;
       },
 
