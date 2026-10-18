@@ -362,12 +362,12 @@ export default createModule({
         if (!this.genData.length || this.isAttributive()) return [];
         const ds = descriptiveStats(this.genData);
         return [
-          { value: String(ds.n), label: 'n', help: 'modules.random-generator.types.Generated.n' },
+          { value: String(ds.n), label: _t('statN'), help: 'modules.random-generator.types.Generated.n' },
           { value: fmtStatNum(ds.mean), label: _t('statMean'), help: 'modules.random-generator.types.Generated.mean' },
           { value: fmtStatNum(ds.stdDev), label: _t('statStd'), help: 'modules.random-generator.types.Generated.sd' },
           { value: fmtStatNum(ds.median), label: _t('statMedian'), help: 'modules.random-generator.types.Generated.median' },
-          { value: fmtStatNum(ds.min), label: 'Min', help: 'modules.random-generator.types.Generated.min' },
-          { value: fmtStatNum(ds.max), label: 'Max', help: 'modules.random-generator.types.Generated.max' },
+          { value: fmtStatNum(ds.min), label: _t('statMin'), help: 'modules.random-generator.types.Generated.min' },
+          { value: fmtStatNum(ds.max), label: _t('statMax'), help: 'modules.random-generator.types.Generated.max' },
           { value: fmtStatNum(ds.skewness), label: _t('statSkewness'), help: 'modules.random-generator.types.Generated.skewness' },
           { value: fmtStatNum(ds.kurtosis), label: _t('statKurtosis'), help: 'modules.random-generator.types.Generated.kurtosis' },
         ];
@@ -395,7 +395,7 @@ export default createModule({
         const total = this.genData.length;
         const sorted = frequency(this.genData);
         return [
-          { value: String(total), label: 'n', help: 'modules.random-generator.types.Generated.n' },
+          { value: String(total), label: _t('statN'), help: 'modules.random-generator.types.Generated.n' },
           { value: String(sorted.length), label: _t('catCount'), help: 'modules.random-generator.types.Generated.frequency' },
           { value: sorted[0] ? String(sorted[0][0]) : '—', label: _t('mostFrequent'), help: 'modules.random-generator.types.Generated.frequency' },
         ];

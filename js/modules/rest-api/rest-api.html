@@ -37,10 +37,10 @@
         <div class="rest-api__detail-inner">
           <!-- URL bar -->
           <div class="rest-api__url-bar">
-            <span class="rest-api__method-label">GET</span>
-            <input class="field rest-api__url-input" data-field="url"
+            <span class="rest-api__method-label" x-text="t('methodGet')"></span>
+            <input class="field rest-api__url-input" data-field="url" :aria-label="t('urlPlaceholder')"
               @input="setParam('url', $event.target.value)"
-              :value="model.activeEndpoint().url" placeholder="https://api.example.com/data">
+              :value="model.activeEndpoint().url" :placeholder="t('urlPlaceholder')">
             <button data-help-key="modules.rest-api.actions.sendRequest.help" class="rest-api__send-btn dmike-btn-run" data-action="send" @click="sendRequest()">
               <span class="icon icon--sm" data-icon="action.run" aria-hidden="true"></span>
               <span x-text="t('send')"></span>
@@ -59,9 +59,9 @@
             <div class="rest-api__headers-list" data-ref="headers">
               <template x-for="(h, i) in model.activeEndpoint().headers">
                 <div class="rest-api__header-row" :key="i" :data-idx="i">
-                  <input class="field rest-api__header-key" :value="h.key" @input="setHeader(i, $event.target.value, h.value)" placeholder="Key">
-                  <input class="field rest-api__header-val" :value="h.value" @input="setHeader(i, h.key, $event.target.value)" placeholder="Value">
-                  <button class="rest-api__header-del" :data-hdr-del="i" :title="t('delete')" @click="deleteHeader(i)">&times;</button>
+                  <input class="field rest-api__header-key" :value="h.key" @input="setHeader(i, $event.target.value, h.value)" :placeholder="t('headerKeyPlaceholder')" :aria-label="t('headerKeyPlaceholder')">
+                  <input class="field rest-api__header-val" :value="h.value" @input="setHeader(i, h.key, $event.target.value)" :placeholder="t('headerValuePlaceholder')" :aria-label="t('headerValuePlaceholder')">
+                  <button class="rest-api__header-del" :data-hdr-del="i" :title="t('delete')" :aria-label="t('delete')" @click="deleteHeader(i)">&times;</button>
                 </div>
               </template>
             </div>
@@ -90,10 +90,10 @@
               <template x-for="(m, i) in model.activeEndpoint().mappings">
                 <div class="rest-api__mapping-row" :key="i" :data-midx="i">
                   <input class="field rest-api__mapping-path" @input="onMappingPath(i, $event)" :value="m.jsonPath"
-                    :placeholder="t('jsonPathPlaceholder')">
+                    :placeholder="t('jsonPathPlaceholder')" :aria-label="t('jsonPathPlaceholder')">
                   <span class="rest-api__mapping-arrow">&rarr;</span>
                   <div class="rest-api__mapping-picker" :data-picker-idx="i"></div>
-                  <button class="rest-api__mapping-del" :data-map-del="i" :title="t('delete')" @click="deleteMapping(i)">&times;</button>
+                  <button class="rest-api__mapping-del" :data-map-del="i" :title="t('delete')" :aria-label="t('delete')" @click="deleteMapping(i)">&times;</button>
                 </div>
               </template>
             </div>

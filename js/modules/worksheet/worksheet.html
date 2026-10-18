@@ -30,7 +30,7 @@
             data-help-key="modules.worksheet.actions.importCsv.help"
             :title="t('importFile')" @click="triggerImport()">
       <span class="icon icon--sm" data-icon="action.upload" aria-hidden="true"></span>
-      Import
+      <span x-text="t('import')"></span>
     </button>
     <div class="toolbar__dropdown" data-action="export-dropdown">
       <button class="toolbar__btn" :title="t('export')" :aria-expanded="exportOpen ? 'true' : 'false'" @click="toggleExport($event)">
@@ -39,9 +39,9 @@
         <span class="icon icon--sm toolbar__chevron" data-icon="nav.expand-down" aria-hidden="true"></span>
       </button>
       <div class="toolbar__dropdown-menu" :class="exportOpen ? 'open' : ''">
-        <button class="toolbar__dropdown-item" data-action="export-xlsx" @click="exportAs('xlsx')">Excel (.xlsx)</button>
-        <button class="toolbar__dropdown-item" data-action="export-csv" @click="exportAs('csv')">CSV (.csv)</button>
-        <button class="toolbar__dropdown-item" data-action="export-json" @click="exportAs('json')">JSON (.json)</button>
+        <button class="toolbar__dropdown-item" data-action="export-xlsx" @click="exportAs('xlsx')" x-text="t('exportXlsx')"></button>
+        <button class="toolbar__dropdown-item" data-action="export-csv" @click="exportAs('csv')" x-text="t('exportCsv')"></button>
+        <button class="toolbar__dropdown-item" data-action="export-json" @click="exportAs('json')" x-text="t('exportJson')"></button>
       </div>
     </div>
     <div class="toolbar__sep"></div>

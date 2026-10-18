@@ -43,14 +43,14 @@
         <button class="module-calculator__key module-calculator__key--fn" data-fn="(" @click="inputText('(')">(</button>
         <button class="module-calculator__key module-calculator__key--fn" data-fn=")" @click="inputText(')')">)</button>
         <button class="module-calculator__key module-calculator__key--fn" data-action="toggle-angle" data-help-key="modules.calculator.actions.setAngleMode.help" @click="toggleAngle()" x-text="t('degRad')"></button>
-        <button class="module-calculator__key module-calculator__key--fn" data-action="mem-store" data-help-key="modules.calculator.actions.memStore.help" @click="memStore()">MS</button>
-        <button class="module-calculator__key module-calculator__key--fn" data-action="mem-recall" data-help-key="modules.calculator.actions.memRecall.help" @click="memRecall()">MR</button>
+        <button class="module-calculator__key module-calculator__key--fn" data-action="mem-store" data-help-key="modules.calculator.actions.memStore.help" @click="memStore()" x-text="t('keyMs')"></button>
+        <button class="module-calculator__key module-calculator__key--fn" data-action="mem-recall" data-help-key="modules.calculator.actions.memRecall.help" @click="memRecall()" x-text="t('keyMr')"></button>
 
         <button class="module-calculator__key module-calculator__key--num" data-text="7" @click="inputText('7')">7</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="8" @click="inputText('8')">8</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="9" @click="inputText('9')">9</button>
         <button class="module-calculator__key module-calculator__key--op" data-text="÷" @click="inputText('÷')">/</button>
-        <button class="module-calculator__key module-calculator__key--danger" data-action="clear" data-help-key="modules.calculator.actions.clear.help" @click="clear()">AC</button>
+        <button class="module-calculator__key module-calculator__key--danger" data-action="clear" data-help-key="modules.calculator.actions.clear.help" @click="clear()" x-text="t('keyAc')"></button>
 
         <button class="module-calculator__key module-calculator__key--num" data-text="4" @click="inputText('4')">4</button>
         <button class="module-calculator__key module-calculator__key--num" data-text="5" @click="inputText('5')">5</button>
@@ -116,13 +116,13 @@
         <button class="module-calculator__key module-calculator__key--stat" data-stat="varP" @click="calcStat('varP')" x-text="'σ² ' + t('statVariance')"></button>
 
         <button class="module-calculator__key module-calculator__key--stat" data-stat="sum" @click="calcStat('sum')" x-text="'Σ ' + t('statSum')"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-stat="min" @click="calcStat('min')">Min</button>
-        <button class="module-calculator__key module-calculator__key--stat" data-stat="max" @click="calcStat('max')">Max</button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="min" @click="calcStat('min')" x-text="t('keyMin')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="max" @click="calcStat('max')" x-text="t('keyMax')"></button>
         <button class="module-calculator__key module-calculator__key--stat" data-stat="count" @click="calcStat('count')" x-text="'n ' + t('statCount')"></button>
 
-        <button class="module-calculator__key module-calculator__key--stat" data-stat="q1" @click="calcStat('q1')">Q1</button>
-        <button class="module-calculator__key module-calculator__key--stat" data-stat="q3" @click="calcStat('q3')">Q3</button>
-        <button class="module-calculator__key module-calculator__key--stat" data-stat="iqr" @click="calcStat('iqr')">IQR</button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="q1" @click="calcStat('q1')" x-text="t('keyQ1')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="q3" @click="calcStat('q3')" x-text="t('keyQ3')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-stat="iqr" @click="calcStat('iqr')" x-text="t('keyIqr')"></button>
         <button class="module-calculator__key module-calculator__key--stat" data-stat="skew" @click="calcStat('skew')" x-text="t('statSkewness')"></button>
       </div>
     </div>
@@ -142,8 +142,8 @@
         <div class="module-calculator__data-count" data-ref="ss-data-count" x-text="'n = ' + model.ssDataset.length"></div>
       </div>
       <div class="module-calculator__cpk-inputs">
-        <input type="number" class="field field--num" data-ref="lsl" x-model="model.lsl" :placeholder="t('lslPlaceholder')">
-        <input type="number" class="field field--num" data-ref="usl" x-model="model.usl" :placeholder="t('uslPlaceholder')">
+        <input type="number" class="field field--num" data-ref="lsl" x-model="model.lsl" :placeholder="t('lslPlaceholder')" :aria-label="t('lslPlaceholder')">
+        <input type="number" class="field field--num" data-ref="usl" x-model="model.usl" :placeholder="t('uslPlaceholder')" :aria-label="t('uslPlaceholder')">
       </div>
       <div class="module-calculator__grid module-calculator__grid--4col">
         <button class="module-calculator__key module-calculator__key--num" data-text="7" @click="inputText('7')">7</button>
@@ -166,20 +166,20 @@
         <button class="module-calculator__key module-calculator__key--num" data-text="-" @click="inputText('-')">-</button>
         <button class="module-calculator__key module-calculator__key--danger" data-action="remove-last-ss" data-help-key="modules.calculator.actions.removeLastSS.help" @click="removeLastSS()" x-text="t('removeLast')"></button>
 
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="cp" @click="calcSS('cp')">Cp</button>
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="cpk" @click="calcSS('cpk')">Cpk</button>
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="pp" @click="calcSS('pp')">Pp</button>
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="ppk" @click="calcSS('ppk')">Ppk</button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="cp" @click="calcSS('cp')" x-text="t('keyCp')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="cpk" @click="calcSS('cpk')" x-text="t('keyCpk')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="pp" @click="calcSS('pp')" x-text="t('keyPp')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="ppk" @click="calcSS('ppk')" x-text="t('keyPpk')"></button>
 
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="sigma" @click="calcSS('sigma')">Sigma-Level</button>
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="dpmo" @click="calcSS('dpmo')">DPMO</button>
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="yield" @click="calcSS('yield')">Yield %</button>
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="zscore" @click="calcSS('zscore')">Z-Score</button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="sigma" @click="calcSS('sigma')" x-text="t('keySigma')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="dpmo" @click="calcSS('dpmo')" x-text="t('keyDpmo')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="yield" @click="calcSS('yield')" x-text="t('keyYield')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="zscore" @click="calcSS('zscore')" x-text="t('keyZscore')"></button>
 
         <button class="module-calculator__key module-calculator__key--stat" data-ss="mean" @click="calcSS('mean')" x-text="'x̄ ' + t('statMean')"></button>
         <button class="module-calculator__key module-calculator__key--stat" data-ss="std" @click="calcSS('std')" x-text="'σ ' + t('statStdDev')"></button>
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="ucl" @click="calcSS('ucl')">UCL</button>
-        <button class="module-calculator__key module-calculator__key--stat" data-ss="lcl" @click="calcSS('lcl')">LCL</button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="ucl" @click="calcSS('ucl')" x-text="t('keyUcl')"></button>
+        <button class="module-calculator__key module-calculator__key--stat" data-ss="lcl" @click="calcSS('lcl')" x-text="t('keyLcl')"></button>
       </div>
     </div>
 

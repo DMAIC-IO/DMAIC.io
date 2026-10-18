@@ -54,7 +54,7 @@
                    min="1" max="100000" :value="countInput" @change="onParamInput('count', $event)">
           </div>
           <div class="field-group rg-control-group">
-            <label data-help-key="modules.random-generator.types.Params.seed">Seed</label>
+            <label data-help-key="modules.random-generator.types.Params.seed" x-text="t('seed')"></label>
             <input type="number" class="field field--num" id="rg_seed"
                    :value="seedInput" @change="onParamInput('seed', $event)">
           </div>
@@ -162,7 +162,7 @@
                    :value="attrCountInput" @change="onParamInput('attrCount', $event)">
           </div>
           <div class="field-group rg-control-group">
-            <label data-help-key="modules.random-generator.types.Params.attrSeed">Seed</label>
+            <label data-help-key="modules.random-generator.types.Params.attrSeed" x-text="t('seed')"></label>
             <input type="number" id="rg_seed" :value="attrSeedInput" @change="onParamInput('attrSeed', $event)">
           </div>
         </div>
