@@ -6055,11 +6055,21 @@
         }
       },
       "fields": {
-        "xRef": { "help": "Die x-Kategorienspalte (Slot 'x'), oder null." },
-        "gRef": { "help": "Die Gruppenspalte (Slot 'g'), oder null." },
+        "xRef": { "help": "Die Kategorienspalte (Slot x); ihre Werte werden die Balken entlang der x-Achse. Pflicht, leer, solange keine gewählt ist." },
+        "gRef": { "help": "Die Gruppenspalte (Slot g); ihre Werte teilen jeden Balken in Segmente. Pflicht, leer, solange keine gewählt ist." },
         "activeColumnSlots": { "help": "Die Slots, die setColumn annimmt: x, g." },
         "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
-        "stats": { "help": "Die Kreuztabelle: { categories, groups: [{ name, counts }] }; Anzahlen je x-Kategorie; null, solange ein Slot leer ist." }
+        "stats": { "help": "Die Kreuztabelle, jede Kennzahl unter keys einzeln beschrieben; null, solange ein Pflicht-Slot leer ist." }
+      },
+      "types": {
+        "MosaicStats": {
+          "categories": "Die Kategorien der X-Spalte, ein Balken je Kategorie; die Tabelle zeigt sie als Zeilen. Die Ecke der Tabelle zeigt „X-Spalte \\ G-Spalte“, also den Namen der X-Spalte, dann den der G-Spalte.",
+          "groups": "Je Gruppe die Häufigkeiten über alle Kategorien; die Tabelle zeigt jede Gruppe als Spalte mit der Farbe ihres Segments."
+        },
+        "MosaicGroup": {
+          "name": "Der Name der Gruppe, ein Wert der G-Spalte; die Tabelle zeigt ihn als Spaltenkopf neben dem Farbfeld des Segments.",
+          "counts": "Die Zahl der Zeilen mit dieser Gruppe und dieser X-Kategorie, in der Reihenfolge der Kategorien. Die Tabelle zeigt zusätzlich die Summe je Kategorie, die Summe je Gruppe und die Gesamtsumme; sie stehen nicht in diesem Feld."
+        }
       },
       "sectionData": "Datenquelle",
       "slotX": "1. Kategorie (X — bestimmt Spaltenbreiten)",
@@ -6086,20 +6096,30 @@
         "setParam": {
           "help": "Eine Analyseoption setzen. read().activeParams nennt die gerade gültigen Optionen.",
           "params": {
-            "key": "'aggregation' — nur aktiv, solange eine Wertespalte gewählt ist.",
-            "value": "Für 'aggregation': 'mean' (Mittelwert) oder 'sum' (Summe) der Werte je Zelle."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys."
           }
         }
       },
       "fields": {
-        "xRef": { "help": "Die Kategorienspalte der Rasterspalten (Slot 'x'), oder null." },
-        "gRef": { "help": "Die Kategorienspalte der Rasterzeilen (Slot 'g'), oder null." },
-        "vRef": { "help": "Die Wertespalte (Slot 'v'), oder null." },
+        "xRef": { "help": "Die Kategorienspalte (Slot x); ihre Werte werden die Spalten des Rasters. Pflicht, leer, solange keine gewählt ist." },
+        "gRef": { "help": "Die Kategorienspalte (Slot g); ihre Werte werden die Zeilen des Rasters. Pflicht, leer, solange keine gewählt ist." },
+        "vRef": { "help": "Die Wertespalte (Slot v), numerisch und optional; ohne sie zählt jede Zelle die Zeilen ihrer Kombination. Leer, solange keine gewählt ist." },
         "aggregation": { "help": "Wie die Werte je Zelle zusammengefasst werden: mean oder sum." },
         "activeParams": { "help": "Die Optionen, die setParam im aktuellen Zustand annimmt." },
         "activeColumnSlots": { "help": "Die Slots, die setColumn annimmt: x, g, v." },
         "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." },
-        "stats": { "help": "Das Raster: { xCategories, yCategories, cells } mit cells[Zeile][Spalte] — Anzahl, Mittel oder Summe, null für eine leere Zelle; null, solange ein Slot leer ist." }
+        "stats": { "help": "Das Raster der Heatmap, jede Kennzahl unter keys einzeln beschrieben; null, solange ein Pflicht-Slot leer ist." }
+      },
+      "types": {
+        "Params": {
+          "aggregation": "Wie die Werte der Wertespalte je Zelle zusammengefasst werden: als Mittelwert oder als Summe. Ohne Wertespalte zählt jede Zelle die Zeilen ihrer Kombination, dann gibt es diese Option nicht."
+        },
+        "HeatmapStats": {
+          "xCategories": "Die Kategorien der X-Spalte; sie bilden die Spalten des Rasters, die Tabelle zeigt sie als Spaltenköpfe.",
+          "yCategories": "Die Kategorien der G-Spalte; sie bilden die Zeilen des Rasters. Die Ecke der Tabelle zeigt „Zeilenspalte \\ Spaltenspalte“, also den Namen der G-Spalte, dann den der X-Spalte.",
+          "cells": "Der Wert je Zelle, erst nach Zeile, dann nach Spalte geordnet, in der Reihenfolge der beiden Kategorienlisten. Ohne Wertespalte ist es die Anzahl der Zeilen mit dieser Kombination, sonst der Mittelwert oder die Summe der Wertespalte. Eine Kombination ohne Zeilen ist leer; die Tabelle zeigt dort einen Strich. Bei Häufigkeit und Summe zeigt die Tabelle zusätzlich Zeilen- und Spaltensummen und die Gesamtsumme, beim Mittelwert nicht; diese Summen stehen nicht in diesem Feld."
+        }
       },
       "sectionData": "Datenquelle",
       "slotX": "Spalten-Variable (X — kategorial)",

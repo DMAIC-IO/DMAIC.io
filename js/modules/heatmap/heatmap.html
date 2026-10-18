@@ -6,7 +6,7 @@
     <div class="heatmap-module__options" data-ref="options-wrap">
       <template x-if="hasVRef">
         <label class="heatmap-module__opt-row">
-          <span x-text="t('aggregation')"></span>
+          <span data-help-key="modules.heatmap.types.Params.aggregation" x-text="t('aggregation')"></span>
           <select data-action="set-agg" :value="model.chartConfig.aggregation" @change="setParam('aggregation', $event.target.value)">
             <template x-for="o in aggregationOptions()" :key="o.value">
               <option :value="o.value" :selected="o.value === model.chartConfig.aggregation" x-text="o.label"></option>
@@ -29,12 +29,12 @@
             <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('statsTitle')"></span></div>
             <table class="dmike-table heatmap-module__stats-table">
               <thead><tr>
-                <th x-text="statsCorner"></th>
+                <th><span data-help-key="modules.heatmap.types.HeatmapStats.yCategories" x-text="statsCorner"></span></th>
                 <template x-for="(h, hi) in statsHeaders" :key="hi">
                   <th x-text="h"></th>
                 </template>
                 <template x-if="statsShowTotals">
-                  <th x-text="statsTotalHeader"></th>
+                  <th><span data-help-key="modules.heatmap.types.HeatmapStats.cells" x-text="statsTotalHeader"></span></th>
                 </template>
               </tr></thead>
               <tbody>

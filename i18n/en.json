@@ -6051,11 +6051,21 @@
         }
       },
       "fields": {
-        "xRef": { "help": "The x category column (slot 'x'), or null." },
-        "gRef": { "help": "The group column (slot 'g'), or null." },
+        "xRef": { "help": "The category column (slot x); its values become the bars along the x axis. Required, empty until one is chosen." },
+        "gRef": { "help": "The group column (slot g); its values split each bar into segments. Required, empty until one is chosen." },
         "activeColumnSlots": { "help": "The slots setColumn accepts: x, g." },
         "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
-        "stats": { "help": "The cross table: { categories, groups: [{ name, counts }] }; counts per x category; null while a slot is empty." }
+        "stats": { "help": "The cross table, each figure described individually under keys; null while a required slot is empty." }
+      },
+      "types": {
+        "MosaicStats": {
+          "categories": "The categories of the X column, one bar per category; the table shows them as rows. The corner of the table shows “X column \\ G column”, that is the name of the X column, then that of the G column.",
+          "groups": "Per group the counts over all categories; the table shows each group as a column with the colour of its segment."
+        },
+        "MosaicGroup": {
+          "name": "The name of the group, a value of the G column; the table shows it as column header next to the colour swatch of the segment.",
+          "counts": "The number of rows with this group and this X category, in category order. The table also shows the total per category, the total per group and the grand total; they are not in this field."
+        }
       },
       "sectionData": "Data Source",
       "slotX": "1st category (X — sets column widths)",
@@ -6082,20 +6092,30 @@
         "setParam": {
           "help": "Set an analysis option. read().activeParams names the options valid right now.",
           "params": {
-            "key": "'aggregation' — active only while a value column is chosen.",
-            "value": "For 'aggregation': 'mean' or 'sum' of the values per cell."
+            "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys."
           }
         }
       },
       "fields": {
-        "xRef": { "help": "The category column that becomes the grid columns (slot 'x'), or null." },
-        "gRef": { "help": "The row category column (slot 'g'), or null." },
-        "vRef": { "help": "The value column (slot 'v'), or null." },
+        "xRef": { "help": "The category column (slot x); its values become the columns of the grid. Required, empty until one is chosen." },
+        "gRef": { "help": "The category column (slot g); its values become the rows of the grid. Required, empty until one is chosen." },
+        "vRef": { "help": "The value column (slot v), numeric and optional; without it each cell counts the rows of its combination. Empty until one is chosen." },
         "aggregation": { "help": "How values are combined per cell: mean or sum." },
         "activeParams": { "help": "The options setParam accepts in the current state." },
         "activeColumnSlots": { "help": "The slots setColumn accepts: x, g, v." },
         "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; the key is instanceId|sheetId|columnId." },
-        "stats": { "help": "The grid: { xCategories, yCategories, cells } with cells[row][column] — a count, mean or sum, null for an empty cell; null while a slot is empty." }
+        "stats": { "help": "The heatmap grid, each figure described individually under keys; null while a required slot is empty." }
+      },
+      "types": {
+        "Params": {
+          "aggregation": "How the value column is combined per cell: as mean or as sum. Without a value column each cell counts the rows of its combination, and this option does not exist."
+        },
+        "HeatmapStats": {
+          "xCategories": "The categories of the X column; they form the columns of the grid, the table shows them as column headers.",
+          "yCategories": "The categories of the G column; they form the rows of the grid. The corner of the table shows “row column \\ column column”, that is the name of the G column, then that of the X column.",
+          "cells": "The value per cell, ordered by row first, then by column, following the two category lists. Without a value column it is the number of rows with that combination, otherwise the mean or the sum of the value column. A combination without rows is empty; the table shows a dash there. For count and sum the table also shows row and column totals and the grand total, for the mean it does not; these totals are not in this field."
+        }
       },
       "sectionData": "Data Source",
       "slotX": "Column variable (X — categorical)",

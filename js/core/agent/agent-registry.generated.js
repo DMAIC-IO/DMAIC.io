@@ -5155,17 +5155,25 @@ export const AGENT_REGISTRY = {
             "name": "key",
             "type": "'aggregation'",
             "optional": false,
-            "help": "welche Option; read().activeParams nennt die im aktuellen Zustand gültigen"
+            "help": "welche Option; die im Zustand zulässigen nennt `activeParams`"
           },
           {
             "name": "value",
             "type": "'mean'|'sum'",
             "optional": false,
-            "help": "Mittelwert oder Summe der Wertespalte je Zelle"
+            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "void",
-        "help": "Eine Analyseoption setzen."
+        "help": "Eine Analyseoption setzen.",
+        "keysOf": "Params",
+        "keys": {
+          "aggregation": {
+            "type": "'mean'|'sum'",
+            "help": "Zusammenfassung je Zelle, nur mit Wertespalte",
+            "optional": true
+          }
+        }
       }
     },
     "fields": {
@@ -5212,10 +5220,25 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "stats": {
-        "type": "object|null",
-        "help": "the grid: `{ xCategories, yCategories, cells }` with `cells[row][column]` (count, mean or sum; null for an empty cell), or null while a slot is empty",
+        "type": "HeatmapStats|null",
+        "help": "the heatmap grid, each figure described under keys; null while a required slot is empty",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "HeatmapStats",
+        "keys": {
+          "xCategories": {
+            "type": "string[]",
+            "help": "Spalten des Rasters"
+          },
+          "yCategories": {
+            "type": "string[]",
+            "help": "Zeilen des Rasters"
+          },
+          "cells": {
+            "type": "Array<Array<number|null>>",
+            "help": "Wert je Zeile und Spalte"
+          }
+        }
       }
     }
   },
@@ -7120,10 +7143,32 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "stats": {
-        "type": "object|null",
-        "help": "the cross table: `{ categories, groups: [{ name, counts }] }`, counts per x category, or null while a slot is empty",
+        "type": "MosaicStats|null",
+        "help": "the cross table, each figure described under keys; null while a required slot is empty",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "MosaicStats",
+        "keys": {
+          "categories": {
+            "type": "string[]",
+            "help": "Kategorien der X-Achse"
+          },
+          "groups": {
+            "type": "MosaicGroup[]",
+            "help": "je Gruppe die Häufigkeiten",
+            "keysOf": "MosaicGroup",
+            "keys": {
+              "name": {
+                "type": "string",
+                "help": "Gruppe"
+              },
+              "counts": {
+                "type": "number[]",
+                "help": "Häufigkeit je X-Kategorie"
+              }
+            }
+          }
+        }
       }
     }
   },

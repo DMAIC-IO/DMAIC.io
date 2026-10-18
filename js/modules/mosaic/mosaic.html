@@ -16,11 +16,11 @@
             <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('statsTitle')"></span></div>
             <table class="dmike-table mosaic-module__stats-table">
               <thead><tr>
-                <th x-text="statsCorner"></th>
+                <th><span data-help-key="modules.mosaic.types.MosaicStats.categories" x-text="statsCorner"></span></th>
                 <template x-for="(h, hi) in statsHeaders" :key="hi">
                   <th><span class="mosaic-module__stats-color" :style="'background:' + h.color"></span><span x-text="' ' + h.name"></span></th>
                 </template>
-                <th x-text="statsTotalHeader"></th>
+                <th><span data-help-key="modules.mosaic.types.MosaicGroup.counts" x-text="statsTotalHeader"></span></th>
               </tr></thead>
               <tbody>
                 <template x-for="(r, i) in statsRows" :key="i">

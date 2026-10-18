@@ -76,6 +76,23 @@ function setAtPath(obj, key, value) {
 }
 
 /**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {'mean'|'sum'} [aggregation]  Zusammenfassung je Zelle, nur mit Wertespalte
+ */
+
+/**
+ * Das Raster (`_agentStats()`), wie `read().stats` es liefert.
+ *
+ * @typedef {object} HeatmapStats
+ * @property {string[]} xCategories  Spalten des Rasters
+ * @property {string[]} yCategories  Zeilen des Rasters
+ * @property {Array<Array<number|null>>} cells  Wert je Zeile und Spalte
+ */
+
+/**
  * Die Agenten-Lesefläche der Heatmap.
  *
  * Drei Spaltenbezüge und die Aggregation sind der Zustand. Die Aggregation
@@ -92,7 +109,7 @@ function setAtPath(obj, key, value) {
  * @property {string[]} activeParams  the options `setParam` accepts in the current state
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
- * @property {object|null} stats  the grid: `{ xCategories, yCategories, cells }` with `cells[row][column]` (count, mean or sum; null for an empty cell), or null while a slot is empty
+ * @property {HeatmapStats|null} stats  the heatmap grid, each figure described under keys; null while a required slot is empty
  */
 
 const mod = createModule({
@@ -117,9 +134,9 @@ const mod = createModule({
           const ctx = module._context;
           const i18n = ctx.i18n;
           const SLOT_LABELS = {
-            x: { label: 'X', title: i18n.t('modules.heatmap.slotX') },
-            g: { label: 'G', title: i18n.t('modules.heatmap.slotG') },
-            v: { label: 'V', title: i18n.t('modules.heatmap.slotV') },
+            x: { label: 'X', title: i18n.t('modules.heatmap.slotX'), helpKey: 'modules.heatmap.fields.xRef.help' },
+            g: { label: 'G', title: i18n.t('modules.heatmap.slotG'), helpKey: 'modules.heatmap.fields.gRef.help' },
+            v: { label: 'V', title: i18n.t('modules.heatmap.slotV'), helpKey: 'modules.heatmap.fields.vRef.help' },
           };
           this._picker = new DatasetPicker(wrap, ctx, {
             slots: DATASET_SLOTS.map(s => ({ ...s, ...SLOT_LABELS[s.key] })),
@@ -205,8 +222,8 @@ const mod = createModule({
       /**
        * Eine Analyseoption setzen.
        * @agent
-       * @param {'aggregation'} key welche Option; read().activeParams nennt die im aktuellen Zustand gültigen
-       * @param {'mean'|'sum'} value Mittelwert oder Summe der Wertespalte je Zelle
+       * @param {keyof Params} key welche Option; die im Zustand zulässigen nennt `activeParams`
+       * @param {'mean'|'sum'} value der Wert; Bereich je Schlüssel siehe `Params`
        * @returns {void}
        * @throws {Error} wenn `key` unbekannt oder ohne Wertespalte nicht aktiv ist oder `value` ungültig
        */

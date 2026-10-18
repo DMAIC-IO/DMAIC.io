@@ -54,6 +54,20 @@ const DATASET_SLOTS = [
 const COLUMN_SLOTS = ['x', 'g'];
 
 /**
+ * Die Kreuztabelle (`_agentStats()`), wie `read().stats` sie liefert.
+ *
+ * @typedef {object} MosaicStats
+ * @property {string[]} categories  Kategorien der X-Achse
+ * @property {MosaicGroup[]} groups  je Gruppe die Häufigkeiten
+ */
+
+/**
+ * @typedef {object} MosaicGroup
+ * @property {string} name  Gruppe
+ * @property {number[]} counts  Häufigkeit je X-Kategorie
+ */
+
+/**
  * Die Agenten-Lesefläche des Mosaikdiagramms.
  *
  * Die zwei Kategorienspalten sind der Zustand; dazu die Mengen, gegen die
@@ -65,7 +79,7 @@ const COLUMN_SLOTS = ['x', 'g'];
  * @property {object|null} gRef  the column whose categories split each bar (slot `g`), or null
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
- * @property {object|null} stats  the cross table: `{ categories, groups: [{ name, counts }] }`, counts per x category, or null while a slot is empty
+ * @property {MosaicStats|null} stats  the cross table, each figure described under keys; null while a required slot is empty
  */
 
 const mod = createModule({
@@ -90,8 +104,8 @@ const mod = createModule({
           const ctx = module._context;
           const i18n = ctx.i18n;
           const SLOT_LABELS = {
-            x: { label: 'X', title: i18n.t('modules.mosaic.slotX') },
-            g: { label: 'G', title: i18n.t('modules.mosaic.slotG') },
+            x: { label: 'X', title: i18n.t('modules.mosaic.slotX'), helpKey: 'modules.mosaic.fields.xRef.help' },
+            g: { label: 'G', title: i18n.t('modules.mosaic.slotG'), helpKey: 'modules.mosaic.fields.gRef.help' },
           };
           this._picker = new DatasetPicker(wrap, ctx, {
             slots: DATASET_SLOTS.map(s => ({ ...s, ...SLOT_LABELS[s.key] })),
