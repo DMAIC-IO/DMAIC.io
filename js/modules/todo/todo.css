@@ -158,7 +158,6 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 14px;
   padding: var(--spacing-2xs) var(--spacing-xs);
   border-radius: var(--border-radius-sm);
   color: inherit;

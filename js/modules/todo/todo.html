@@ -92,7 +92,7 @@
             <template x-if="hasCalendar">
               <td class="todo__col-cal">
                 <button class="todo__cal-btn" :class="{ 'todo__cal-btn--active': item.cal }"
-                        data-action="cal" :title="t('showInCalendar')"
+                        data-action="cal" :title="t('showInCalendar')" :aria-label="t('showInCalendar')"
                         @click="toggleCal(item)"><span class="icon icon--sm" data-icon="action.calendar" aria-hidden="true"></span></button>
               </td>
             </template>
