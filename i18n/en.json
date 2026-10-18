@@ -1069,7 +1069,7 @@
         },
         "undo": { "help": "Reverts the last change to the sheet." },
         "redo": { "help": "Restores a reverted change." },
-        "addSheet": { "help": "Creates a new sheet, makes it active and returns its id." },
+        "addSheet": { "help": "Creates a new sheet and makes it active. The agent receives its id." },
         "switchSheet": {
           "help": "Switches to this sheet; the table and everything an agent reads afterwards refer to it. Double-click renames it.",
           "params": { "id": "The id of the sheet, as read().sheets[].id names it." }
@@ -6434,7 +6434,7 @@
           "params": { "options": "Optional; this module holds no bulk data." }
         },
         "switchTab": {
-          "help": "Switches the displayed area: the catalog of designs, the guided advisor or the comparison of central composite designs (CCD).",
+          "help": "Switches the displayed area: Overview of the designs, the guided Advisor or the CCD comparison of central composite designs.",
           "params": {
             "tab": "overview shows the design catalogue, wizard the guided advisor, ccd the comparison of the central composite designs. Any other value is an error."
           }
@@ -8328,7 +8328,7 @@
           }
         },
         "sendToWorksheet": {
-          "help": "Sends the columns of the chosen sheet to a new worksheet and returns its instance. If there is no data or no columns, nothing is sent and no instance comes back."
+          "help": "Sends the columns of the chosen sheet to a new worksheet. If there is no data or no columns, nothing is sent. The agent receives the new worksheet; without data or columns it receives none."
         }
       },
       "fields": {
@@ -8369,11 +8369,11 @@
             "preset": "The export profile, a set of defaults for the CSV export of a measuring software. Generic leaves everything at the defaults (automatic delimiter, UTF-8, header row, no skipped rows). Zeiss CALYPSO uses semicolon, Windows-1252 and skips 4 rows, Hexagon PC-DMIS comma, UTF-8 and 4 rows, Mitutoyo MeasurLink comma, UTF-8 and no rows; all three read the first remaining row as header. A profile sets delimiter, encoding, skipped rows and header row at once; the individual options can still be changed afterwards.",
             "delimiter": "The character that separates the columns: automatic (detected from the content), comma, semicolon, tab or pipe.",
             "encoding": "The encoding of the file: UTF-8, Windows-1252 (Excel) or Latin-1 (ISO-8859-1); it decides whether umlauts appear correctly. It does not apply to pasted text, which is already characters; the field is hidden then.",
-            "hasHeader": "Whether the first row (after the skipped ones) holds the column names. Without a header row it counts as data, and the columns are named C1, C2 and so on.",
-            "skipRows": "How many rows at the start of the file are discarded before reading; a whole number of at least 0. Meant for metadata that some measuring machines write above the table."
+            "hasHeader": "Whether the first row (after the skipped ones) holds the column headers. Without column headers it counts as data, and the columns are named C1, C2 and so on.",
+            "skipRows": "Skip header rows: how many rows at the start of the file are discarded before reading; a whole number of at least 0. Meant for metadata that some measuring machines write above the table."
           },
           "xlsxOptions": {
-            "hasHeader": "Whether the first row of each sheet holds the column names. Without a header row it counts as data, and the columns are named C1, C2 and so on."
+            "hasHeader": "Whether the first row of each sheet holds the column headers. Without column headers it counts as data, and the columns are named C1, C2 and so on."
           },
           "aqdefOptions": {
             "encoding": "The encoding of the Q-DAS file. The default is Windows-1252 because Q-DAS files in the DACH region are mostly saved that way; Latin-1 (ISO-8859-1) and UTF-8 are also available."
@@ -8381,8 +8381,8 @@
         },
         "ImportFile": {
           "name": "The file name; for pasted text, the name of the text input.",
-          "size": "The size as the file card shows it, rounded to bytes (B), kilobytes (KB) or megabytes (MB).",
-          "formatId": "The detected format as the file card names it, for example CSV; missing if the format was not recognised.",
+          "size": "The size as the file card shows it: bytes as a whole number with B, kilobytes with one decimal and KB, megabytes with two decimals and MB.",
+          "formatId": "The detected format as the file card names it, for example Text file (CSV / TSV / TXT); missing if the format was not recognised.",
           "source": "Where the source comes from: a chosen or dropped file, or pasted text."
         }
       },
@@ -8483,7 +8483,7 @@
           }
         },
         "addAttribute": {
-          "help": "Adds an attribute (a category) to the attributive distribution, with an empty name and weight 1, and generates again. Returns the id of the category. Categories without a name are skipped when generating."
+          "help": "Adds an attribute (a category) to the attributive distribution, with an empty name and weight 1, and generates again. Categories without a name are skipped when generating. The agent receives the id of the category."
         },
         "removeAttribute": {
           "help": "Removes a category of the attributive distribution and generates again.",
@@ -8503,7 +8503,7 @@
           "help": "Generates the values with the current inputs. Without a chosen distribution nothing happens; a failure of the distribution is reported in errorMsg, not as a rejection."
         },
         "toWorksheet": {
-          "help": "Sends the generated values to a new worksheet, into an existing empty column or as a new column to an existing sheet and returns the receiving worksheet. If there are no values, nothing is sent and no worksheet is returned.",
+          "help": "Sends the generated values to a new worksheet, into an existing empty column or as a new column to an existing sheet. If there are no values, nothing is sent. The agent receives the receiving worksheet; without values it receives none.",
           "params": {
             "target": "null for a new worksheet, otherwise a column reference { instanceId, sheetId, columnId } from targetColumns; columnId '__new__' appends a new column to the sheet."
           }
@@ -9947,7 +9947,7 @@
           }
         },
         "addHeader": {
-          "help": "Add header appends an empty header line to the active endpoint, which you then fill with a name and a value. The agent receives its position in the list of header lines."
+          "help": "Add header appends an empty header line to the active endpoint, to be filled with a name and a value afterwards. The agent receives its position in the list of header lines."
         },
         "setHeader": {
           "help": "Headers are extra header lines sent along with the request, for example an access key; each consists of a name and a value. Sets name and value of a header line of the active endpoint.",
@@ -10010,7 +10010,7 @@
           "help": "Whether a request is running."
         },
         "lastResponse": {
-          "help": "The last response of the active endpoint: status, status text and content; empty until a request has been sent. The agent receives status, statusText, ok (request succeeded) and body (content)."
+          "help": "The last response of the active endpoint: status, status text and content; empty until a request has been sent. The agent receives the status, the status text, whether the request succeeded, and the content."
         }
       },
       "types": {
@@ -10889,7 +10889,7 @@
           "help": "Clears the input line and the last result."
         },
         "setAngleMode": {
-          "help": "Sets the angle unit of the trigonometric functions.",
+          "help": "The DEG/RAD key toggles the angle unit of the trigonometric functions between degrees and radians. The agent sets the unit directly: DEG calculates in degrees, RAD in radians.",
           "params": {
             "mode": "DEG computes in degrees, RAD in radians. Any other value is an error."
           }
@@ -10907,7 +10907,7 @@
           "help": "Appends the memory value to the input line."
         },
         "switchMode": {
-          "help": "Switches between the scientific calculator, statistics and process (Six Sigma) and clears the input line.",
+          "help": "Switches between the tabs Scientific, Statistics and 6 Sigma and clears the input line.",
           "params": {
             "m": "sci computes scientifically, stats evaluates the statistics data set, sixsigma the process data set. Any other value is an error."
           }
@@ -11440,19 +11440,19 @@
           "help": "The key of the active quantity category, e.g. laenge (length) or masse (mass)."
         },
         "fromUnit": {
-          "help": "The unit converted from; the value to convert is entered below it. For the agent the unit key of the active category."
+          "help": "From: the unit converted from; the value to convert is entered below it. The agent reads the unit key of the active category here."
         },
         "toUnit": {
-          "help": "The unit converted to; the result, which appears in no read field, is shown below it. For the agent the unit key of the active category."
+          "help": "To: the unit converted to; the result, which appears in no read field, is shown below it. The agent reads the unit key of the active category here."
         },
         "inputVal": {
           "help": "The entered value as text; a comma counts as the decimal separator. Empty means nothing entered. The converted result is computed and lives in no field."
         },
         "tzFrom": {
-          "help": "The source time zone, whose time and date are entered below it. For the agent the position in the time-zone list; 0 is UTC, 1 Berlin."
+          "help": "From Timezone: the source time zone, whose time and date are entered below it. The agent reads the position in the time-zone list here; 0 is UTC, 1 Berlin."
         },
         "tzTo": {
-          "help": "The target time zone, in which the converted result appears below it. For the agent the position in the time-zone list; 0 is UTC, 1 Berlin."
+          "help": "To Timezone: the target time zone, in which the converted result appears below it. The agent reads the position in the time-zone list here; 0 is UTC, 1 Berlin."
         },
         "tzTime": {
           "help": "The time of the conversion as HH:MM; empty means not set."

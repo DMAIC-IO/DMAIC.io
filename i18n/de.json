@@ -1069,7 +1069,7 @@
         },
         "undo": { "help": "Nimmt die letzte Änderung am Blatt zurück." },
         "redo": { "help": "Stellt eine zurückgenommene Änderung wieder her." },
-        "addSheet": { "help": "Legt ein neues Blatt an, macht es aktiv und gibt dessen id zurück." },
+        "addSheet": { "help": "Legt ein neues Blatt an und macht es aktiv. Der Agent erhält dessen id." },
         "switchSheet": {
           "help": "Wechselt zu diesem Blatt; die Tabelle und alles, was ein Agent danach liest, beziehen sich auf es. Doppelklick benennt es um.",
           "params": { "id": "Die id des Blatts, wie read().sheets[].id sie nennt." }
@@ -6438,7 +6438,7 @@
           "params": { "options": "Optional; dieses Modul führt keine Massendaten." }
         },
         "switchTab": {
-          "help": "Wechselt den angezeigten Bereich: Katalog der Versuchspläne, geführter Berater oder Vergleich der zentral zusammengesetzten Pläne (CCD).",
+          "help": "Wechselt den angezeigten Bereich: Übersicht der Versuchspläne, geführter Berater oder CCD-Vergleich der zentral zusammengesetzten Pläne.",
           "params": {
             "tab": "overview zeigt den Versuchsplankatalog, wizard den geführten Berater, ccd den Vergleich der zentral zusammengesetzten Pläne. Jeder andere Wert ist ein Fehler."
           }
@@ -8332,7 +8332,7 @@
           }
         },
         "sendToWorksheet": {
-          "help": "Sendet die Spalten des gewählten Blatts an ein neues Worksheet und gibt dessen Instanz zurück. Gibt es keine Daten oder keine Spalten, wird nichts gesendet und es kommt keine Instanz zurück."
+          "help": "Sendet die Spalten des gewählten Blatts an ein neues Worksheet. Gibt es keine Daten oder keine Spalten, wird nichts gesendet. Der Agent erhält das neue Worksheet; ohne Daten oder Spalten erhält er keines."
         }
       },
       "fields": {
@@ -8373,11 +8373,11 @@
             "preset": "Das Exportprofil, also ein Satz Vorgaben für den CSV-Export einer Messsoftware. Generisch lässt alles auf den Vorgaben (automatisches Trennzeichen, UTF-8, Kopfzeile, keine übersprungenen Zeilen). Zeiss CALYPSO nimmt Semikolon, Windows-1252 und überspringt 4 Zeilen, Hexagon PC-DMIS Komma, UTF-8 und 4 Zeilen, Mitutoyo MeasurLink Komma, UTF-8 und keine Zeilen; alle drei lesen die erste verbleibende Zeile als Kopfzeile. Ein Profil setzt Trennzeichen, Zeichensatz, übersprungene Zeilen und Kopfzeile auf einmal; die Einzeloptionen lassen sich danach noch ändern.",
             "delimiter": "Das Zeichen, das die Spalten trennt: automatisch (wird aus dem Inhalt erkannt), Komma, Semikolon, Tabulator oder Senkrechtstrich.",
             "encoding": "Der Zeichensatz der Datei: UTF-8, Windows-1252 (Excel) oder Latin-1 (ISO-8859-1); er entscheidet, ob Umlaute richtig erscheinen. Bei eingefügtem Text entfällt die Option, weil der Text schon als Zeichen vorliegt; das Feld ist dann ausgeblendet.",
-            "hasHeader": "Ob die erste Zeile (nach den übersprungenen) die Spaltennamen enthält. Ohne Kopfzeile zählt sie als Messwerte, und die Spalten heißen C1, C2 und so weiter.",
-            "skipRows": "Wie viele Zeilen am Dateianfang verworfen werden, bevor gelesen wird; eine ganze Zahl ab 0. Gedacht für Metadaten, die manche Messmaschinen vor die Tabelle schreiben."
+            "hasHeader": "Ob die erste Zeile (nach den übersprungenen) die Spaltenüberschriften enthält. Ohne Spaltenüberschriften zählt sie als Messwerte, und die Spalten heißen C1, C2 und so weiter.",
+            "skipRows": "Kopfzeilen überspringen: wie viele Zeilen am Dateianfang verworfen werden, bevor gelesen wird; eine ganze Zahl ab 0. Gedacht für Metadaten, die manche Messmaschinen vor die Tabelle schreiben."
           },
           "xlsxOptions": {
-            "hasHeader": "Ob die erste Zeile jedes Blatts die Spaltennamen enthält. Ohne Kopfzeile zählt sie als Messwerte, und die Spalten heißen C1, C2 und so weiter."
+            "hasHeader": "Ob die erste Zeile jedes Blatts die Spaltenüberschriften enthält. Ohne Spaltenüberschriften zählt sie als Messwerte, und die Spalten heißen C1, C2 und so weiter."
           },
           "aqdefOptions": {
             "encoding": "Der Zeichensatz der Q-DAS-Datei. Vorgabe ist Windows-1252, weil Q-DAS-Dateien im DACH-Raum meist so gespeichert sind; zur Wahl stehen außerdem Latin-1 (ISO-8859-1) und UTF-8."
@@ -8385,8 +8385,8 @@
         },
         "ImportFile": {
           "name": "Der Dateiname, bei eingefügtem Text der Name der Texteingabe.",
-          "size": "Die Größe, wie die Dateikarte sie zeigt, gerundet auf Byte (B), Kilobyte (KB) oder Megabyte (MB).",
-          "formatId": "Das erkannte Format, wie die Dateikarte es nennt, zum Beispiel CSV; fehlt, wenn das Format nicht erkannt wurde.",
+          "size": "Die Größe, wie die Dateikarte sie zeigt: Byte als ganze Zahl mit B, Kilobyte mit einer Nachkommastelle und KB, Megabyte mit zwei Nachkommastellen und MB.",
+          "formatId": "Das erkannte Format, wie die Dateikarte es nennt, zum Beispiel Textdatei (CSV / TSV / TXT); fehlt, wenn das Format nicht erkannt wurde.",
           "source": "Woher die Quelle stammt: aus einer gewählten oder abgelegten Datei oder aus eingefügtem Text."
         }
       },
@@ -8487,7 +8487,7 @@
           }
         },
         "addAttribute": {
-          "help": "Legt ein Attribut (eine Kategorie) der attributiven Verteilung an, mit leerem Namen und Gewicht 1, und erzeugt neu. Gibt die id der Kategorie zurück. Kategorien ohne Namen werden beim Erzeugen übergangen."
+          "help": "Legt ein Attribut (eine Kategorie) der attributiven Verteilung an, mit leerem Namen und Gewicht 1, und erzeugt neu. Kategorien ohne Namen werden beim Erzeugen übergangen. Der Agent erhält die id der Kategorie."
         },
         "removeAttribute": {
           "help": "Entfernt eine Kategorie der attributiven Verteilung und erzeugt neu.",
@@ -8507,7 +8507,7 @@
           "help": "Erzeugt die Werte mit den aktuellen Eingaben. Ohne gewählte Verteilung geschieht nichts; ein Fehler der Verteilung steht in errorMsg, keine Absage."
         },
         "toWorksheet": {
-          "help": "Sendet die erzeugten Werte an ein neues Worksheet, in eine bestehende leere Spalte oder als neue Spalte an ein bestehendes Blatt und gibt das empfangende Worksheet zurück. Gibt es keine Werte, wird nichts gesendet und es kommt kein Worksheet zurück.",
+          "help": "Sendet die erzeugten Werte an ein neues Arbeitsblatt, in eine bestehende leere Spalte oder als neue Spalte an ein bestehendes Blatt. Gibt es keine Werte, wird nichts gesendet. Der Agent erhält das empfangende Arbeitsblatt; ohne Werte erhält er keines.",
           "params": {
             "target": "null für einen neuen Worksheet, sonst ein Spaltenbezug { instanceId, sheetId, columnId } aus targetColumns; columnId '__new__' hängt eine neue Spalte an das Blatt an."
           }
@@ -9951,7 +9951,7 @@
           }
         },
         "addHeader": {
-          "help": "Header hinzufügen hängt dem aktiven Endpunkt eine leere Kopfzeile an, die Sie danach mit Name und Wert füllen. Der Agent erhält ihre Nummer in der Liste der Kopfzeilen."
+          "help": "Header hinzufügen hängt dem aktiven Endpunkt eine leere Kopfzeile an, die anschließend mit Name und Wert gefüllt wird. Der Agent erhält ihre Nummer in der Liste der Kopfzeilen."
         },
         "setHeader": {
           "help": "Headers sind zusätzliche Kopfzeilen, die mit der Anfrage mitgeschickt werden, etwa ein Zugangsschlüssel; jede besteht aus einem Namen und einem Wert. Setzt Name und Wert einer Kopfzeile des aktiven Endpunkts.",
@@ -10014,7 +10014,7 @@
           "help": "Ob gerade eine Anfrage läuft."
         },
         "lastResponse": {
-          "help": "Die letzte Antwort des aktiven Endpunkts: Status, Statustext und Inhalt; leer, solange noch keine Anfrage gesendet wurde. Der Agent erhält status, statusText, ok (Anfrage erfolgreich) und body (Inhalt)."
+          "help": "Die letzte Antwort des aktiven Endpunkts: Status, Statustext und Inhalt; leer, solange noch keine Anfrage gesendet wurde. Der Agent erhält den Status, den Statustext, die Angabe, ob die Anfrage erfolgreich war, und den Inhalt."
         }
       },
       "types": {
@@ -10893,7 +10893,7 @@
           "help": "Leert die Eingabezeile und das letzte Ergebnis."
         },
         "setAngleMode": {
-          "help": "Setzt die Winkeleinheit der trigonometrischen Funktionen.",
+          "help": "Die Taste DEG/RAD schaltet die Winkeleinheit der trigonometrischen Funktionen zwischen Grad und Radiant um. Der Agent legt die Einheit direkt fest: DEG rechnet in Grad, RAD in Radiant.",
           "params": {
             "mode": "DEG rechnet in Grad, RAD in Radiant. Jeder andere Wert ist ein Fehler."
           }
@@ -10911,7 +10911,7 @@
           "help": "Hängt den Speicherwert an die Eingabezeile an."
         },
         "switchMode": {
-          "help": "Wechselt zwischen wissenschaftlichem Rechner, Statistik und Prozess (Six Sigma) und leert dabei die Eingabezeile.",
+          "help": "Wechselt zwischen den Reitern Wissenschaftlich, Statistik und 6 Sigma und leert dabei die Eingabezeile.",
           "params": {
             "m": "sci rechnet wissenschaftlich, stats wertet den Statistikdatensatz aus, sixsigma den Prozessdatensatz. Jeder andere Wert ist ein Fehler."
           }
@@ -11444,19 +11444,19 @@
           "help": "Der Schlüssel der aktiven Größenart, z. B. laenge oder masse."
         },
         "fromUnit": {
-          "help": "Die Einheit, aus der umgerechnet wird; darunter steht der Wert, der umgerechnet wird. Für den Agenten der Einheitenschlüssel der aktiven Größenart."
+          "help": "Eingang: die Einheit, aus der umgerechnet wird; darunter steht der Wert, der umgerechnet wird. Der Agent liest hier den Einheitenschlüssel der aktiven Größenart."
         },
         "toUnit": {
-          "help": "Die Einheit, in die umgerechnet wird; darunter steht das Ergebnis, das in keinem Lesefeld erscheint. Für den Agenten der Einheitenschlüssel der aktiven Größenart."
+          "help": "Ausgang: die Einheit, in die umgerechnet wird; darunter steht das Ergebnis, das in keinem Lesefeld erscheint. Der Agent liest hier den Einheitenschlüssel der aktiven Größenart."
         },
         "inputVal": {
           "help": "Der eingegebene Wert als Text; ein Komma gilt als Dezimaltrennzeichen. Leer heißt: nichts eingegeben. Das umgerechnete Ergebnis ist gerechnet und steht in keinem Feld."
         },
         "tzFrom": {
-          "help": "Die Ausgangszeitzone, deren Uhrzeit und Datum darunter eingegeben werden. Für den Agenten die Position in der Zeitzonenliste; 0 ist UTC, 1 Berlin."
+          "help": "Von Zeitzone: die Ausgangszeitzone, deren Uhrzeit und Datum darunter eingegeben werden. Der Agent liest hier die Position in der Zeitzonenliste; 0 ist UTC, 1 Berlin."
         },
         "tzTo": {
-          "help": "Die Zielzeitzone, in der darunter das umgerechnete Ergebnis erscheint. Für den Agenten die Position in der Zeitzonenliste; 0 ist UTC, 1 Berlin."
+          "help": "Nach Zeitzone: die Zielzeitzone, in der darunter das umgerechnete Ergebnis erscheint. Der Agent liest hier die Position in der Zeitzonenliste; 0 ist UTC, 1 Berlin."
         },
         "tzTime": {
           "help": "Die Uhrzeit der Umrechnung als HH:MM; leer heißt nicht gesetzt."
