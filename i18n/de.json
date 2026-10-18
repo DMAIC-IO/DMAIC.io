@@ -7236,7 +7236,7 @@
       "whenToUse": "Wenn für einen Prozess oder eine Konstruktion systematisch erhoben werden soll, was fehlgehen kann, welche Folge das hat, wie oft es auftritt und wie sicher es entdeckt wird — bewertet nach Aufgabenpriorität (AIAG-VDA) oder Risikoprioritätszahl, mit Maßnahmen und deren Wirkung auf die Bewertung; nicht für das Sammeln möglicher Ursachen ohne Bewertung, dafür sind Ishikawa und die Ursache-Wirkungs-Matrix da.",
       "actions": {
         "setMethod": {
-          "help": "Setzt die Bewertungsmethode der FMEA.",
+          "help": "Wählt die Bewertungsmethode der FMEA: AP (Aufgabenpriorität nach AIAG-VDA) oder RPN (Risikoprioritätszahl = Bedeutung × Auftreten × Entdeckung).",
           "params": {
             "m": "Die Methode: ap bewertet nach Aufgabenpriorität (AIAG-VDA), rpn nach Risikoprioritätszahl (Bedeutung × Auftreten × Entdeckung). Jeder andere Wert ist ein Fehler."
           }
@@ -7273,8 +7273,8 @@
           "help": "Setzt ein Feld eines Risikos.",
           "params": {
             "riskId": "Die id des Risikos, wie read() sie unter risks führt. Eine unbekannte id ist ein Fehler.",
-            "field": "Das zu setzende Feld — step (der betrachtete Prozessschritt), failureMode (die Fehlerart), effect (die Folge), cause (die Ursache), prevention (die Vermeidungsmaßnahme), control (die Entdeckungsmaßnahme), specialChar (das besondere Merkmal: CC, SC oder leer), justification (warum ein Risiko mit hoher Aufgabenpriorität ohne Maßnahme bleibt), sev (die Bedeutung), occ (das Auftreten) und det (die Entdeckung). Jeder andere Feldname ist ein Fehler.",
-            "value": "Der neue Wert. Für sev, occ und det eine Zeichenkette von 1 bis 10, die leere Zeichenkette heißt unbewertet; für specialChar CC, SC oder die leere Zeichenkette; für alle übrigen Felder ein freier Text, dessen leere Zeichenkette ihn löscht. Ein Wert außerhalb dieser Mengen und ein fehlendes Argument sind Fehler."
+            "field": "Welches Feld; jedes ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Feld unter keys."
           }
         },
         "setRiskCollapsed": {
@@ -7285,7 +7285,7 @@
           }
         },
         "addRiskAction": {
-          "help": "Hängt einem Risiko eine leere Maßnahme an und gibt deren Position zurück.",
+          "help": "Hängt dem Risiko eine leere Maßnahme an; sie steht danach als letzte Zeile in der Maßnahmentabelle. Die Position der neuen Maßnahme, bei 0 beginnend, ist der Rückgabewert.",
           "params": {
             "riskId": "Die id des Risikos. Eine unbekannte id ist ein Fehler."
           }
@@ -7302,8 +7302,8 @@
           "params": {
             "riskId": "Die id des Risikos. Eine unbekannte id ist ein Fehler.",
             "actionIndex": "Die Position der Maßnahme in actions, bei 0 beginnend. Eine Position, an der das Risiko keine Maßnahme hat, ist ein Fehler.",
-            "field": "Das zu setzende Feld — text (die Maßnahme), resp (die Zuständige), date (das Fälligkeitsdatum), done (ob sie erledigt ist), deltaS, deltaO und deltaD (um wie viele Stufen sie Bedeutung, Auftreten und Entdeckung senkt). Jeder andere Feldname ist ein Fehler.",
-            "value": "Der neue Wert. Für done true oder false; für date ein Datum als JJJJ-MM-TT oder die leere Zeichenkette; für deltaS, deltaO und deltaD eine Zeichenkette von 0 bis 9; für text und resp ein freier Text, dessen leere Zeichenkette ihn löscht. Ein Wert außerhalb dieser Mengen und ein fehlendes Argument sind Fehler."
+            "field": "Welches Feld; jedes ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Feld unter keys."
           }
         }
       },
@@ -7319,6 +7319,30 @@
         },
         "fmeaType": {
           "help": "Die Art der FMEA: process für eine Prozess-FMEA, design für eine Konstruktions-FMEA. Sie wählt die Skalentexte der Aufgabenpriorität aus."
+        }
+      },
+      "types": {
+        "RiskField": {
+          "step": "Der Prozessschritt oder das Bauteil, das diese Risikokarte betrachtet; freier Text.",
+          "failureMode": "Der potenzielle Fehlermodus: auf welche Weise der Schritt oder das Bauteil seine Aufgabe verfehlen kann. Freier Text.",
+          "effect": "Die potenzielle Fehlerfolge: was der Kunde oder der nachfolgende Prozess vom Fehler merkt. Sie bestimmt die Bewertung der Bedeutung. Freier Text.",
+          "cause": "Die potenzielle Fehlerursache: warum der Fehlermodus auftritt. Sie bestimmt die Bewertung des Auftretens. Freier Text.",
+          "prevention": "Die Vermeidungsmaßnahme: was verhindert, dass die Ursache überhaupt auftritt. Sie fließt in die Bewertung des Auftretens ein. Freier Text.",
+          "control": "Die Entdeckungsmaßnahme: was den Fehler oder seine Ursache entdeckt, bevor er den Kunden erreicht. Sie fließt in die Bewertung der Entdeckung ein. Freier Text.",
+          "specialChar": "Das besondere Merkmal: CC für ein kritisches, SC für ein signifikantes Merkmal, leer für keines. Ab einer Bedeutung von 9 weist die Karte darauf hin, es zu prüfen.",
+          "justification": "Die Begründung, warum ein Risiko mit hoher Aufgabenpriorität (H) keine Maßnahme bekommt. Das Feld erscheint bei der Methode AP, solange ein solches Risiko weder einen Maßnahmentext noch eine Begründung hat, und bleibt sichtbar, sobald es gefüllt ist. Freier Text.",
+          "sev": "Die Bedeutung (S) des Fehlers für den Kunden, 1 bis 10: 1 heißt kein erkennbarer Effekt, 10 Sicherheitsgefährdung oder Gesetzesverstoß; leer heißt noch nicht bewertet. Zusammen mit Auftreten und Entdeckung ergibt sie die Priorität: bei der Methode AP über die Tabelle des AIAG-VDA-Handbuchs (H, M oder L), bei RPN als Produkt Bedeutung × Auftreten × Entdeckung.",
+          "occ": "Das Auftreten (O), 1 bis 10: 1 heißt, der Fehler ist unwahrscheinlich, 10 er tritt sehr häufig auf; leer heißt noch nicht bewertet. Zusammen mit Bedeutung und Entdeckung ergibt es die Priorität (AP-Tabelle bzw. RPN = Bedeutung × Auftreten × Entdeckung).",
+          "det": "Die Entdeckung (D), 1 bis 10: 1 heißt, der Fehler wird sicher entdeckt, 10 er wird fast nie entdeckt – eine hohe Zahl ist also schlecht; leer heißt noch nicht bewertet. Zusammen mit Bedeutung und Auftreten ergibt sie die Priorität (AP-Tabelle bzw. RPN = Bedeutung × Auftreten × Entdeckung)."
+        },
+        "ActionField": {
+          "text": "Die Maßnahme, die das Risiko senken soll; freier Text. Hat ein Risiko mit hoher Aufgabenpriorität keinen Maßnahmentext, braucht es eine Begründung.",
+          "resp": "Wer die Maßnahme verantwortet (Verantw.); freier Text.",
+          "date": "Das Zieldatum der Maßnahme als JJJJ-MM-TT; leer heißt kein Termin. Maßnahmen mit Datum bilden den Verlauf im Burndown.",
+          "done": "Ob die Maßnahme umgesetzt ist, ja oder nein. Im Burndown zählt sie erst dann zum tatsächlichen Verlauf.",
+          "deltaS": "Um wie viele Stufen, 0 bis 9, die Maßnahme die Bedeutung senken soll. Die Prognose des Risikos ist Bedeutung minus die Summe über alle seine Maßnahmen, mindestens 1.",
+          "deltaO": "Um wie viele Stufen, 0 bis 9, die Maßnahme das Auftreten senken soll. Die Prognose des Risikos ist Auftreten minus die Summe über alle seine Maßnahmen, mindestens 1.",
+          "deltaD": "Um wie viele Stufen, 0 bis 9, die Maßnahme die Entdeckungszahl senken soll, die Entdeckung also verbessert. Die Prognose des Risikos ist Entdeckung minus die Summe über alle seine Maßnahmen, mindestens 1."
         }
       }
     },

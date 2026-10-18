@@ -139,4 +139,17 @@ export const ANCHOR_EXEMPTIONS = {
   'triz-sufield': [
     { match: 'triz-sf__standard-select', reason: 'Kästchen je Standardlösung (78), in aufklappbaren Klassen', count: 1 },
   ],
+  fmea: [
+    { match: "t('rating')", reason: 'Gruppentitel über S, O, D; jede der drei Beschriftungen ist einzeln erklärt', count: 1 },
+    { match: "t('scaleValue')", reason: 'Bewertungsskala, Eingabetabelle der Skalentexte (Wert 1–10)', count: 4 },
+    { match: "t('scaleMeaning')", reason: 'Bewertungsskala, Eingabetabelle der Skalentexte', count: 2 },
+    { match: "t('scaleDescription')", reason: 'Bewertungsskala, Eingabetabelle der Skalentexte', count: 2 },
+    { match: "t('scaleProbability')", reason: 'Bewertungsskala, Eingabetabelle der Skalentexte', count: 1 },
+    { match: "t('scaleRate')", reason: 'Bewertungsskala, Eingabetabelle der Skalentexte', count: 1 },
+    { match: "t('scaleDetect')", reason: 'Bewertungsskala, Eingabetabelle der Skalentexte', count: 1 },
+    { match: "t('apScaleCriterion')", reason: 'AP-Bewertungsskala, Eingabetabelle der Skalentexte', count: 1 },
+    { match: '<th>S</th>', reason: 'Kopf der festen AP-Nachschlagematrix (AIAG-VDA)', count: 1 },
+    { match: '<th>O</th>', reason: 'Kopf der festen AP-Nachschlagematrix (AIAG-VDA)', count: 1 },
+    { match: "'D ' + d", reason: 'Kopf je D-Stufe der festen AP-Nachschlagematrix', count: 1 },
+  ],
 };

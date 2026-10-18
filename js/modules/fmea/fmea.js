@@ -67,6 +67,38 @@ const SOD_VALUES = ['', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
 const DELTA_VALUES = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
 /**
+ * Die Schlüsselfläche von `setRiskValue`: die Felder einer Risikozeile.
+ * Sätze je Feld unter `types.RiskField.<feld>`, dieselben an den
+ * Beschriftungen der Risikokarte (Alt-Taste).
+ *
+ * @typedef {object} RiskField
+ * @property {string} step  Prozessschritt bzw. Bauteil
+ * @property {string} failureMode  potenzieller Fehlermodus
+ * @property {string} effect  Fehlerfolge
+ * @property {string} cause  Fehlerursache
+ * @property {string} prevention  Vermeidungsmaßnahme
+ * @property {string} control  Entdeckungsmaßnahme
+ * @property {''|'CC'|'SC'} specialChar  besonderes Merkmal
+ * @property {string} justification  Begründung ohne Maßnahme
+ * @property {''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'} sev  Bedeutung S
+ * @property {''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'} occ  Auftreten O
+ * @property {''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'} det  Entdeckung D
+ */
+
+/**
+ * Die Schlüsselfläche von `setActionValue`: die Felder einer Maßnahme.
+ *
+ * @typedef {object} ActionField
+ * @property {string} text  die Maßnahme
+ * @property {string} resp  verantwortlich
+ * @property {string} date  Zieldatum (`JJJJ-MM-TT` oder leer)
+ * @property {boolean} done  umgesetzt
+ * @property {'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'} deltaS  erwartete Senkung von S
+ * @property {'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'} deltaO  erwartete Senkung von O
+ * @property {'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'} deltaD  erwartete Senkung von D
+ */
+
+/**
  * Alle Schlüssel, unter denen ein eigener Skalentext stehen darf: die 30
  * Schlüssel der RPN-Skalen plus die 120 der beiden AP-Skalen.
  * @returns {Set<string>}
@@ -416,9 +448,8 @@ const mod = createModule({
        * Setzt ein Feld eines Risikos.
        * @agent
        * @param {string} riskId id des Risikos
-       * @param {'step'|'failureMode'|'effect'|'cause'|'prevention'|'control'|'specialChar'|'justification'|'sev'|'occ'|'det'} field
-       *   das zu setzende Feld
-       * @param {string} value der neue Wert
+       * @param {keyof RiskField} field welches Feld der Risikozeile
+       * @param {string} value der Wert; Bereich je Feld siehe `RiskField`
        * @returns {void}
        * @throws {Error} wenn kein Risiko diese id trägt, `field` keines der
        *   elf Felder ist oder `value` nicht in die Wertemenge dieses Feldes
@@ -482,9 +513,8 @@ const mod = createModule({
        * @agent
        * @param {string} riskId id des Risikos
        * @param {number} actionIndex die Position der Maßnahme, bei 0 beginnend
-       * @param {'text'|'resp'|'date'|'done'|'deltaS'|'deltaO'|'deltaD'} field
-       *   das zu setzende Feld
-       * @param {string|boolean} value der neue Wert
+       * @param {keyof ActionField} field welches Feld der Maßnahme
+       * @param {string|boolean} value der Wert; Bereich je Feld siehe `ActionField`
        * @returns {void}
        * @throws {Error} wenn kein Risiko diese id trägt, das Risiko an dieser
        *   Position keine Maßnahme hat, `field` keines der sieben Felder ist

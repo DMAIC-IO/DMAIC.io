@@ -7232,7 +7232,7 @@
       "whenToUse": "When a process or a design should be surveyed systematically for what can go wrong, what effect it has, how often it occurs and how reliably it is detected — rated by action priority (AIAG-VDA) or risk priority number, with actions and their effect on the rating; not for collecting possible causes without rating them, that is what Ishikawa and the cause-and-effect matrix are for.",
       "actions": {
         "setMethod": {
-          "help": "Sets the rating method of the FMEA.",
+          "help": "Selects the rating method of the FMEA: AP (action priority per AIAG-VDA) or RPN (risk priority number = severity × occurrence × detection).",
           "params": {
             "m": "The method: ap rates by action priority (AIAG-VDA), rpn by risk priority number (severity × occurrence × detection). Any other value is an error."
           }
@@ -7269,8 +7269,8 @@
           "help": "Sets one field of a risk.",
           "params": {
             "riskId": "The id of the risk as read() lists it under risks. An unknown id is an error.",
-            "field": "The field to set — step (the process step under review), failureMode, effect, cause, prevention (the prevention control), control (the detection control), specialChar (the special characteristic: CC, SC or empty), justification (why a risk with high action priority has no action), sev (severity), occ (occurrence) and det (detection). Any other field name is an error.",
-            "value": "The new value. For sev, occ and det a string from 1 to 10, the empty string means unrated; for specialChar CC, SC or the empty string; for all other fields free text whose empty string clears it. A value outside these sets and a missing argument are errors."
+            "field": "Which field; each is described individually under keys. Any other value is an error.",
+            "value": "The value; type and allowed range per field are given under keys."
           }
         },
         "setRiskCollapsed": {
@@ -7281,7 +7281,7 @@
           }
         },
         "addRiskAction": {
-          "help": "Appends an empty action to a risk and returns its position.",
+          "help": "Appends an empty action to the risk; it then sits as the last row of the actions table. The position of the new action, starting at 0, is the return value.",
           "params": {
             "riskId": "The id of the risk. An unknown id is an error."
           }
@@ -7298,8 +7298,8 @@
           "params": {
             "riskId": "The id of the risk. An unknown id is an error.",
             "actionIndex": "The position of the action in actions, starting at 0. A position where the risk has no action is an error.",
-            "field": "The field to set — text (the action), resp (the person responsible), date (the due date), done (whether it is finished), deltaS, deltaO and deltaD (by how many levels it lowers severity, occurrence and detection). Any other field name is an error.",
-            "value": "The new value. For done true or false; for date a date as YYYY-MM-DD or the empty string; for deltaS, deltaO and deltaD a string from 0 to 9; for text and resp free text whose empty string clears it. A value outside these sets and a missing argument are errors."
+            "field": "Which field; each is described individually under keys. Any other value is an error.",
+            "value": "The value; type and allowed range per field are given under keys."
           }
         }
       },
@@ -7315,6 +7315,30 @@
         },
         "fmeaType": {
           "help": "The type of the FMEA: process for a process FMEA, design for a design FMEA. It selects the action-priority scale texts."
+        }
+      },
+      "types": {
+        "RiskField": {
+          "step": "The process step or component this risk card examines; free text.",
+          "failureMode": "The potential failure mode: the way in which the step or component can fail at its task. Free text.",
+          "effect": "The potential effect of failure: what the customer or the next process notices of the failure. It drives the severity rating. Free text.",
+          "cause": "The potential cause of failure: why the failure mode occurs. It drives the occurrence rating. Free text.",
+          "prevention": "The prevention control: what stops the cause from occurring in the first place. It feeds into the occurrence rating. Free text.",
+          "control": "The detection control: what detects the failure or its cause before it reaches the customer. It feeds into the detection rating. Free text.",
+          "specialChar": "The special characteristic: CC for a critical, SC for a significant characteristic, empty for none. From a severity of 9 the card points out that it should be checked.",
+          "justification": "The justification why a risk with high action priority (H) gets no action. With the AP method the field appears while such a risk has neither an action text nor a justification, and stays visible once filled. Free text.",
+          "sev": "The severity (S) of the failure for the customer, 1 to 10: 1 means no noticeable effect, 10 a safety hazard or regulatory violation; empty means not yet rated. Together with occurrence and detection it gives the priority: with the AP method through the AIAG-VDA handbook table (H, M or L), with RPN as the product severity × occurrence × detection.",
+          "occ": "The occurrence (O), 1 to 10: 1 means the failure is unlikely, 10 that it occurs very frequently; empty means not yet rated. Together with severity and detection it gives the priority (AP table or RPN = severity × occurrence × detection).",
+          "det": "The detection (D), 1 to 10: 1 means the failure is certain to be detected, 10 that it is almost never detected – so a high number is bad; empty means not yet rated. Together with severity and occurrence it gives the priority (AP table or RPN = severity × occurrence × detection)."
+        },
+        "ActionField": {
+          "text": "The action that is meant to reduce the risk; free text. A risk with high action priority and no action text needs a justification.",
+          "resp": "Who is responsible for the action (Resp.); free text.",
+          "date": "The due date of the action as YYYY-MM-DD; empty means no deadline. Actions with a date form the course in the burndown.",
+          "done": "Whether the action is implemented, yes or no. In the burndown it only then counts toward the actual course.",
+          "deltaS": "By how many levels, 0 to 9, the action is meant to lower the severity. The projection of the risk is severity minus the sum over all its actions, at least 1.",
+          "deltaO": "By how many levels, 0 to 9, the action is meant to lower the occurrence. The projection of the risk is occurrence minus the sum over all its actions, at least 1.",
+          "deltaD": "By how many levels, 0 to 9, the action is meant to lower the detection number, that is improve detection. The projection of the risk is detection minus the sum over all its actions, at least 1."
         }
       }
     },

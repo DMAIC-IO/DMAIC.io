@@ -4518,17 +4518,64 @@ export const AGENT_REGISTRY = {
             "name": "field",
             "type": "'step'|'failureMode'|'effect'|'cause'|'prevention'|'control'|'specialChar'|'justification'|'sev'|'occ'|'det'",
             "optional": false,
-            "help": "das zu setzende Feld"
+            "help": "welches Feld der Risikozeile"
           },
           {
             "name": "value",
             "type": "string",
             "optional": false,
-            "help": "der neue Wert"
+            "help": "der Wert; Bereich je Feld siehe `RiskField`"
           }
         ],
         "returns": "void",
-        "help": "Setzt ein Feld eines Risikos."
+        "help": "Setzt ein Feld eines Risikos.",
+        "keysOf": "RiskField",
+        "keys": {
+          "step": {
+            "type": "string",
+            "help": "Prozessschritt bzw. Bauteil"
+          },
+          "failureMode": {
+            "type": "string",
+            "help": "potenzieller Fehlermodus"
+          },
+          "effect": {
+            "type": "string",
+            "help": "Fehlerfolge"
+          },
+          "cause": {
+            "type": "string",
+            "help": "Fehlerursache"
+          },
+          "prevention": {
+            "type": "string",
+            "help": "Vermeidungsmaßnahme"
+          },
+          "control": {
+            "type": "string",
+            "help": "Entdeckungsmaßnahme"
+          },
+          "specialChar": {
+            "type": "''|'CC'|'SC'",
+            "help": "besonderes Merkmal"
+          },
+          "justification": {
+            "type": "string",
+            "help": "Begründung ohne Maßnahme"
+          },
+          "sev": {
+            "type": "''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'",
+            "help": "Bedeutung S"
+          },
+          "occ": {
+            "type": "''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'",
+            "help": "Auftreten O"
+          },
+          "det": {
+            "type": "''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'",
+            "help": "Entdeckung D"
+          }
+        }
       },
       "setRiskCollapsed": {
         "params": [
@@ -4596,17 +4643,48 @@ export const AGENT_REGISTRY = {
             "name": "field",
             "type": "'text'|'resp'|'date'|'done'|'deltaS'|'deltaO'|'deltaD'",
             "optional": false,
-            "help": "das zu setzende Feld"
+            "help": "welches Feld der Maßnahme"
           },
           {
             "name": "value",
             "type": "string|boolean",
             "optional": false,
-            "help": "der neue Wert"
+            "help": "der Wert; Bereich je Feld siehe `ActionField`"
           }
         ],
         "returns": "void",
-        "help": "Setzt ein Feld einer Maßnahme."
+        "help": "Setzt ein Feld einer Maßnahme.",
+        "keysOf": "ActionField",
+        "keys": {
+          "text": {
+            "type": "string",
+            "help": "die Maßnahme"
+          },
+          "resp": {
+            "type": "string",
+            "help": "verantwortlich"
+          },
+          "date": {
+            "type": "string",
+            "help": "Zieldatum (`JJJJ-MM-TT` oder leer)"
+          },
+          "done": {
+            "type": "boolean",
+            "help": "umgesetzt"
+          },
+          "deltaS": {
+            "type": "'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'",
+            "help": "erwartete Senkung von S"
+          },
+          "deltaO": {
+            "type": "'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'",
+            "help": "erwartete Senkung von O"
+          },
+          "deltaD": {
+            "type": "'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'",
+            "help": "erwartete Senkung von D"
+          }
+        }
       }
     },
     "fields": {

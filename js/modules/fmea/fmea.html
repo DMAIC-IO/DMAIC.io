@@ -4,7 +4,7 @@
     <!-- ── Scale reference (kept in DOM; visibility via --visible class) ── -->
     <div class="fmea__scale-ref" :class="scaleVisible ? 'fmea__scale-ref--visible' : ''" data-ref="scale-ref">
       <div class="fmea__scale-toolbar">
-        <button class="btn btn--sm btn--ghost" data-action="reset-scales" type="button" @click="resetScales()" x-text="t('resetScales')"></button>
+        <button class="btn btn--sm btn--ghost" data-help-key="modules.fmea.actions.resetScales.help" data-action="reset-scales" type="button" @click="resetScales()" x-text="t('resetScales')"></button>
       </div>
 
       <div data-ref="rpn-scales" x-show="!isAp()">
@@ -115,15 +115,15 @@
       <div class="fmea__settings-group">
         <span class="fmea__settings-label" x-text="t('methodLabel')"></span>
         <div class="btn-group" role="group" :aria-label="t('methodLabel')">
-          <button type="button" class="btn--segment" data-method="ap" :class="isAp() ? 'btn--active' : ''" :aria-pressed="isAp() ? 'true' : 'false'" @click="setMethod('ap')" x-text="t('methodAp')"></button>
-          <button type="button" class="btn--segment" data-method="rpn" :class="isAp() ? '' : 'btn--active'" :aria-pressed="isAp() ? 'false' : 'true'" @click="setMethod('rpn')" x-text="t('methodRpn')"></button>
+          <button type="button" class="btn--segment" data-help-key="modules.fmea.actions.setMethod.help" data-method="ap" :class="isAp() ? 'btn--active' : ''" :aria-pressed="isAp() ? 'true' : 'false'" @click="setMethod('ap')" x-text="t('methodAp')"></button>
+          <button type="button" class="btn--segment" data-help-key="modules.fmea.actions.setMethod.help" data-method="rpn" :class="isAp() ? '' : 'btn--active'" :aria-pressed="isAp() ? 'false' : 'true'" @click="setMethod('rpn')" x-text="t('methodRpn')"></button>
         </div>
       </div>
       <div class="fmea__settings-group" data-ref="fmea-type-switch" x-show="isAp()">
         <span class="fmea__settings-label" x-text="t('fmeaTypeLabel')"></span>
         <div class="btn-group" role="group" :aria-label="t('fmeaTypeLabel')">
-          <button type="button" class="btn--segment" data-fmea-type="process" :class="isDesign() ? '' : 'btn--active'" :aria-pressed="isDesign() ? 'false' : 'true'" @click="setFmeaType('process')" x-text="t('fmeaTypeProcess')"></button>
-          <button type="button" class="btn--segment" data-fmea-type="design" :class="isDesign() ? 'btn--active' : ''" :aria-pressed="isDesign() ? 'true' : 'false'" @click="setFmeaType('design')" x-text="t('fmeaTypeDesign')"></button>
+          <button type="button" class="btn--segment" data-help-key="modules.fmea.actions.setFmeaType.help" data-fmea-type="process" :class="isDesign() ? '' : 'btn--active'" :aria-pressed="isDesign() ? 'false' : 'true'" @click="setFmeaType('process')" x-text="t('fmeaTypeProcess')"></button>
+          <button type="button" class="btn--segment" data-help-key="modules.fmea.actions.setFmeaType.help" data-fmea-type="design" :class="isDesign() ? 'btn--active' : ''" :aria-pressed="isDesign() ? 'true' : 'false'" @click="setFmeaType('design')" x-text="t('fmeaTypeDesign')"></button>
         </div>
       </div>
     </div>
@@ -198,36 +198,36 @@
               <span class="fmea__rpn-arrow-sep icon icon--sm" data-icon="nav.arrow-right" aria-hidden="true"></span>
               <span class="fmea__rpn-badge fmea__rpn-badge--sm" :class="projBadgeClass(risk)" data-proj-rpn-badge x-text="projBadgeText(risk)"></span>
             </div>
-            <button class="fmea__risk-delete" data-action="del-risk" :data-risk-id="risk.id" :title="t('common.delete')" :aria-label="t('common.delete')" @click="deleteRisk(risk.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+            <button class="fmea__risk-delete" data-help-key="modules.fmea.actions.deleteRisk.help" data-action="del-risk" :data-risk-id="risk.id" :title="t('common.delete')" :aria-label="t('common.delete')" @click="deleteRisk(risk.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
           </div>
           <div class="fmea__risk-body">
             <div class="fmea__fields-row">
               <div class="field-group">
-                <label x-text="t('failureMode')"></label>
+                <label data-help-key="modules.fmea.types.RiskField.failureMode" x-text="t('failureMode')"></label>
                 <textarea class="field" name="failureMode" :placeholder="t('failureModePlaceholder')" :value="risk.failureMode" @input="setRiskValue(risk.id, 'failureMode', $event.target.value)"></textarea>
               </div>
               <div class="field-group">
-                <label x-text="t('effect')"></label>
+                <label data-help-key="modules.fmea.types.RiskField.effect" x-text="t('effect')"></label>
                 <textarea class="field" name="effect" :placeholder="t('effectPlaceholder')" :value="risk.effect" @input="setRiskValue(risk.id, 'effect', $event.target.value)"></textarea>
               </div>
               <div class="field-group">
-                <label x-text="t('cause')"></label>
+                <label data-help-key="modules.fmea.types.RiskField.cause" x-text="t('cause')"></label>
                 <textarea class="field" name="cause" :placeholder="t('causePlaceholder')" :value="risk.cause" @input="setRiskValue(risk.id, 'cause', $event.target.value)"></textarea>
               </div>
             </div>
             <div class="fmea__fields-row">
               <div class="field-group">
-                <label x-text="t('preventionControl')"></label>
+                <label data-help-key="modules.fmea.types.RiskField.prevention" x-text="t('preventionControl')"></label>
                 <textarea class="field" name="prevention" :placeholder="t('preventionPlaceholder')" :value="risk.prevention" @input="setRiskValue(risk.id, 'prevention', $event.target.value)"></textarea>
               </div>
               <div class="field-group">
-                <label x-text="t('currentControls')"></label>
+                <label data-help-key="modules.fmea.types.RiskField.control" x-text="t('currentControls')"></label>
                 <textarea class="field" name="control" :placeholder="t('controlPlaceholder')" :value="risk.control" @input="setRiskValue(risk.id, 'control', $event.target.value)"></textarea>
               </div>
               <div class="field-group">
                 <label x-text="t('rating')"></label>
                 <div class="fmea__sod-row">
-                  <div class="fmea__sod-group"><label :title="t('tipS')">S</label>
+                  <div class="fmea__sod-group"><label :title="t('tipS')" data-help-key="modules.fmea.types.RiskField.sev">S</label>
                     <select class="field" name="sev" :value="risk.sev" @change="setRiskValue(risk.id, 'sev', $event.target.value)">
                       <option value="">—</option>
                       <option value="1" :title="sevTitle(1)">1</option>
@@ -242,7 +242,7 @@
                       <option value="10" :title="sevTitle(10)">10</option>
                     </select>
                   </div>
-                  <div class="fmea__sod-group"><label :title="t('tipO')">O</label>
+                  <div class="fmea__sod-group"><label :title="t('tipO')" data-help-key="modules.fmea.types.RiskField.occ">O</label>
                     <select class="field" name="occ" :value="risk.occ" @change="setRiskValue(risk.id, 'occ', $event.target.value)">
                       <option value="">—</option>
                       <option value="1" :title="occTitle(1)">1</option>
@@ -257,7 +257,7 @@
                       <option value="10" :title="occTitle(10)">10</option>
                     </select>
                   </div>
-                  <div class="fmea__sod-group"><label :title="t('tipD')">D</label>
+                  <div class="fmea__sod-group"><label :title="t('tipD')" data-help-key="modules.fmea.types.RiskField.det">D</label>
                     <select class="field" name="det" :value="risk.det" @change="setRiskValue(risk.id, 'det', $event.target.value)">
                       <option value="">—</option>
                       <option value="1" :title="detTitle(1)">1</option>
@@ -276,7 +276,7 @@
               </div>
             </div>
             <div class="field-group fmea__justification" x-show="showJustification(risk)">
-              <label x-text="t('justification')"></label>
+              <label data-help-key="modules.fmea.types.RiskField.justification" x-text="t('justification')"></label>
               <textarea class="field" name="justification" :placeholder="t('justificationPlaceholder')" :value="risk.justification" @input="setRiskValue(risk.id, 'justification', $event.target.value)" :aria-required="showUnjustified(risk) ? 'true' : 'false'" :class="showUnjustified(risk) ? 'fmea__justification-input--required' : ''"></textarea>
             </div>
 
@@ -285,13 +285,13 @@
             <div class="fmea__actions-section">
               <table class="dmike-table fmea__action-table">
                 <thead><tr>
-                  <th style="width:28px"><span class="icon icon--sm" data-icon="action.confirm" aria-hidden="true"></span><span class="dmike-sr-only" x-text="t('done')"></span></th>
-                  <th x-text="t('action')"></th>
-                  <th style="width:110px" x-text="t('responsible')"></th>
-                  <th style="width:105px" x-text="t('dueDate')"></th>
-                  <th class="fmea__delta-cell" style="width:62px">ΔS</th>
-                  <th class="fmea__delta-cell" style="width:62px">ΔO</th>
-                  <th class="fmea__delta-cell" style="width:62px">ΔD</th>
+                  <th style="width:28px"><span data-help-key="modules.fmea.types.ActionField.done"><span class="icon icon--sm" data-icon="action.confirm" aria-hidden="true"></span></span><span class="dmike-sr-only" x-text="t('done')"></span></th>
+                  <th><span data-help-key="modules.fmea.types.ActionField.text" x-text="t('action')"></span></th>
+                  <th style="width:110px"><span data-help-key="modules.fmea.types.ActionField.resp" x-text="t('responsible')"></span></th>
+                  <th style="width:105px"><span data-help-key="modules.fmea.types.ActionField.date" x-text="t('dueDate')"></span></th>
+                  <th class="fmea__delta-cell" style="width:62px"><span data-help-key="modules.fmea.types.ActionField.deltaS">ΔS</span></th>
+                  <th class="fmea__delta-cell" style="width:62px"><span data-help-key="modules.fmea.types.ActionField.deltaO">ΔO</span></th>
+                  <th class="fmea__delta-cell" style="width:62px"><span data-help-key="modules.fmea.types.ActionField.deltaD">ΔD</span></th>
                   <th style="width:28px"></th>
                 </tr></thead>
                 <tbody data-action-body>
@@ -342,7 +342,7 @@
                   </template>
                 </tbody>
               </table>
-              <button class="fmea__add-action-btn" data-action="add-action" :data-risk-id="risk.id" @click="addAction(risk)">
+              <button class="fmea__add-action-btn" data-help-key="modules.fmea.actions.addRiskAction.help" data-action="add-action" :data-risk-id="risk.id" @click="addAction(risk)">
                 <span class="icon icon--sm icon--text" data-icon="action.add" aria-hidden="true"></span>
                 <span x-text="t('addAction')"></span>
               </button>
