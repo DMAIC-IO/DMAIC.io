@@ -180,7 +180,7 @@
       <div class="resampling__contents">
         <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionGroups')"></span></div>
         <table class="resampling__table" data-ref="groups-table">
-          <thead><tr><th><span data-help-key="modules.resampling.types.Result.labels" x-text="t('group')"></span></th><th><span data-help-key="modules.resampling.types.Result.n">n</span></th><th><span data-help-key="modules.resampling.types.KGroup.estimate" x-text="t('estimate')"></span></th><th><span data-help-key="modules.resampling.types.KGroup.ci" x-text="t('interval')"></span></th></tr></thead>
+          <thead><tr><th><span data-help-key="modules.resampling.types.Result.labels" x-text="t('group')"></span></th><th><span data-help-key="modules.resampling.types.Result.n" x-text="t('common.sym.n')"></span></th><th><span data-help-key="modules.resampling.types.KGroup.estimate" x-text="t('estimate')"></span></th><th><span data-help-key="modules.resampling.types.KGroup.ci" x-text="t('interval')"></span></th></tr></thead>
           <tbody>
             <template x-for="(g, idx) in view.groups" :key="idx">
               <tr><td x-text="g.label"></td><td x-text="g.n"></td><td x-text="g.estimate"></td><td x-text="g.interval"></td></tr>

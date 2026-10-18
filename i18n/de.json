@@ -5367,6 +5367,7 @@
       "exportImageComingSoon": "Bild-Export folgt in einer späteren Version."
     },
     "correlation": {
+      "pearsonR": "Pearson r",
       "name": "Korrelationsanalyse",
       "description": "Pearson-, Spearman- und Kendall-Korrelation zwischen Variablen",
       "whenToUse": "Wenn zwei oder mehr numerische Größen zusammenhängen könnten: berechnet die Korrelation zweier Spalten (Pearson, Spearman und Kendall nebeneinander, mit Konfidenzintervall und Diagnose) oder dreier und mehr Spalten als Korrelationsmatrix; jede Spalte braucht mindestens 5 numerische Werte.",
@@ -10882,6 +10883,12 @@
       "defaultName": "Optimierung"
     },
     "glm-regression": {
+      "thetaDispersion": "θ (Dispersion)",
+      "aic": "AIC",
+      "bic": "BIC",
+      "oddsRatioShort": "OR",
+      "rateRatioShort": "RR",
+      "symChi2": "χ²",
       "whenToUse": "Wenn eine Zielgröße attributiv ist — gut/schlecht, ja/nein, Anteile — oder eine Anzahl (Fehler, Reklamationen), und ihr Zusammenhang mit Einflussgrößen modelliert werden soll: binär-logistisch, Poisson oder negativ-binomial, auf Wunsch automatisch erkannt.",
       "actions": {
         "read": {

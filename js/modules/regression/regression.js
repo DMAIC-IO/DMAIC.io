@@ -763,7 +763,7 @@ const mod = createModule({
         const pClass = r.fPVal < alpha ? 'dmike-kpi--good' : r.fPVal < alpha * 2 ? 'dmike-kpi--warn' : 'dmike-kpi--bad';
 
         const kpis = [
-          { label: 'R²', value: fmt(r.R2), mod: r2class, tip: _t('tipR2'), help: `${HELP}Result.R2` },
+          { label: _t('common.sym.r2'), value: fmt(r.R2), mod: r2class, tip: _t('tipR2'), help: `${HELP}Result.R2` },
           { label: _t('adjR2'), value: fmt(r.adjR2), mod: r2class, tip: _t('tipAdjR2'), help: `${HELP}Result.adjR2` },
         ];
         if (r2pVal != null) kpis.push({ label: _t('predR2'), value: fmt(r2pVal), mod: r2pClass, tip: _t('tipPredR2'), help: `${HELP}Result.R2pred` });

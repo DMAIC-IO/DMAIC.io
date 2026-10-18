@@ -133,8 +133,8 @@
               <thead><tr>
                 <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.term" x-text="t('term')"></span></th>
                 <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.estimate" x-text="t('coefficient')"></span></th>
-                <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.se">SE</span></th>
-                <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.z">z</span></th>
+                <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.se" x-text="t('common.sym.se')"></span></th>
+                <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.z" x-text="t('common.sym.z')"></span></th>
                 <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.p" x-text="t('pValue')"></span></th>
                 <template x-if="result.ratioHeader">
                   <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.ratio" x-text="result.ratioHeader"></span></th>
@@ -183,9 +183,9 @@
 
             <template x-if="result.vifRows">
               <div>
-                <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span>VIF</span></div>
+                <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('common.sym.vif')"></span></div>
                 <table class="glm__coef-table">
-                  <thead><tr><th><span data-help-key="modules.glm-regression.types.GlmCoefficient.term" x-text="t('term')"></span></th><th><span data-help-key="modules.glm-regression.types.Result.vif">VIF</span></th><th></th></tr></thead>
+                  <thead><tr><th><span data-help-key="modules.glm-regression.types.GlmCoefficient.term" x-text="t('term')"></span></th><th><span data-help-key="modules.glm-regression.types.Result.vif" x-text="t('common.sym.vif')"></span></th><th></th></tr></thead>
                   <tbody>
                     <template x-for="row in result.vifRows" :key="row.term">
                       <tr>
@@ -262,7 +262,7 @@
               <template x-if="result.aucText">
                 <div class="glm__quality-grid">
                   <div class="glm__quality-item">
-                    <span class="glm__quality-label" data-help-key="modules.glm-regression.types.Result.auc">AUC</span>
+                    <span class="glm__quality-label" data-help-key="modules.glm-regression.types.Result.auc" x-text="t('common.sym.auc')"></span>
                     <span class="glm__quality-value" x-text="result.aucText"></span>
                   </div>
                 </div>

@@ -52,7 +52,10 @@ function fmtP(p) {
   return p < 0.0001 ? '< 0.0001' : p.toFixed(4);
 }
 
-const REC_NAMES = { pearson: 'Pearson r', spearman: `Spearman ${GLYPH_RHO}`, kendall: `Kendall ${GLYPH_TAU}` };
+/** Anzeigenamen der Korrelationsverfahren. */
+function recNames(_t) {
+  return { pearson: _t('pearsonR'), spearman: `Spearman ${GLYPH_RHO}`, kendall: `Kendall ${GLYPH_TAU}` };
+}
 
 /** Zulässige Bereiche der Zahlenparameter (einzige Quelle für Setter und Oberfläche). */
 const PARAM_RANGES = {
@@ -471,7 +474,7 @@ const mod = createModule({
         // template). Per reason: ok → criterion met, !ok → criterion
         // violated — reads as an assumption check, not a hard error, hence
         // status.ok/status.warning.
-        const lines = [{ iconName: null, text: `${_t('recommendation')}: ${REC_NAMES[recommendation.best]}` }];
+        const lines = [{ iconName: null, text: `${_t('recommendation')}: ${recNames(_t)[recommendation.best]}` }];
         for (const r of recommendation.reasons) {
           lines.push({ iconName: r.ok ? 'status.ok' : 'status.warning', text: _t(r.key, r.params) });
         }
@@ -493,10 +496,10 @@ const mod = createModule({
         };
 
         this.cards = [
-          makeCard('pearson', 'Pearson r', HELP + 'LinearStat.r', pearson.r, [
+          makeCard('pearson', _t('pearsonR'), HELP + 'LinearStat.r', pearson.r, [
             { label: _t('pValue'), help: HELP + 'LinearStat.p', value: fmtP(pearson.p) },
             { label: _t('tStat'), help: HELP + 'LinearStat.t', value: fmt(pearson.t) },
-            { label: 'R²', help: HELP + 'LinearStat.r2', value: `${fmt(pearson.r2)} (${(pearson.r2 * 100).toFixed(1)} %)` },
+            { label: _t('common.sym.r2'), help: HELP + 'LinearStat.r2', value: `${fmt(pearson.r2)} (${(pearson.r2 * 100).toFixed(1)} %)` },
           ], pearson.ci),
           makeCard('spearman', `Spearman ${GLYPH_RHO}`, HELP + 'LinearStat.r', spearman.r, [
             { label: _t('pValue'), help: HELP + 'LinearStat.p', value: fmtP(spearman.p) },
@@ -521,7 +524,7 @@ const mod = createModule({
           {
             title: _t('descriptiveStats'),
             rows: [
-              { label: 'n', help: HELP + 'PairResult.n', value: String(n) },
+              { label: _t('common.sym.n'), help: HELP + 'PairResult.n', value: String(n) },
               { label: _t('degreesOfFreedom'), help: HELP + 'PairResult.df', value: String(df) },
               { label: _t('meanX'), help: HELP + 'Descriptive.meanX', value: fmt(descriptive.meanX, 3) },
               { label: _t('meanY'), help: HELP + 'Descriptive.meanY', value: fmt(descriptive.meanY, 3) },
@@ -640,7 +643,7 @@ const mod = createModule({
 
       /** @noagent view transform; die Auswahl rendert aus METHODS */
       methodOptions() {
-        return METHODS.map(value => ({ value, label: REC_NAMES[value] }));
+        return METHODS.map(value => ({ value, label: recNames(_t)[value] }));
       },
 
       /**

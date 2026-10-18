@@ -47,7 +47,6 @@ import { saveModel, buildDataSnapshot, computeDataHash } from '../../core/models
 // literals — Alpine CSP would emit \u-escapes verbatim). ──────────────
 const EN_DASH = '–';     // –
 const SWAP = '↔';        // ↔
-const THETA = 'θ';       // θ
 const CHI2 = 'χ²';       // χ²
 
 /** @param {number} v @param {number} d */
@@ -842,11 +841,11 @@ const mod = createModule({
         const summaryItems = [
           { label: _t('family'), value: _t(`family_${  r.family.name}`), help: `${HELP}Family.name` },
           { label: _t('linkFunction'), value: r.family.link, help: `${HELP}Family.link` },
-          { label: 'n', value: String(r.n), help: `${HELP}Result.n` },
+          { label: _t('common.sym.n'), value: String(r.n), help: `${HELP}Result.n` },
           { label: _t('iterations'), value: String(r.iterations), help: `${HELP}Result.iterations` },
         ];
         if (r.family.theta != null) {
-          summaryItems.push({ label: `${THETA} (dispersion)`, value: fmt(r.family.theta, 3), help: `${HELP}Family.theta` });
+          summaryItems.push({ label: _t('thetaDispersion'), value: fmt(r.family.theta, 3), help: `${HELP}Family.theta` });
         }
         if (r._successClassInfo) {
           summaryItems.push({
@@ -863,14 +862,14 @@ const mod = createModule({
         const mcfClass = mcfR2 >= 0.4 ? 'dmike-kpi--good' : mcfR2 >= 0.2 ? 'dmike-kpi--warn' : 'dmike-kpi--bad';
         const nagClass = nagR2 >= 0.8 ? 'dmike-kpi--good' : nagR2 >= 0.5 ? 'dmike-kpi--warn' : 'dmike-kpi--bad';
         const kpis = [
-          { value: fmt(mcfR2, 4), label: 'McFadden R²', mod: mcfClass, help: `${HELP}PseudoR2.mcfadden` },
-          { value: fmt(nagR2, 4), label: 'Nagelkerke R²', mod: nagClass, help: `${HELP}PseudoR2.nagelkerke` },
-          { value: fmt(r.aic, 2), label: 'AIC', mod: '', help: `${HELP}Result.aic` },
-          { value: fmt(r.bic, 2), label: 'BIC', mod: '', help: `${HELP}Result.bic` },
+          { value: fmt(mcfR2, 4), label: `McFadden ${_t('common.sym.r2')}`, mod: mcfClass, help: `${HELP}PseudoR2.mcfadden` },
+          { value: fmt(nagR2, 4), label: `Nagelkerke ${_t('common.sym.r2')}`, mod: nagClass, help: `${HELP}PseudoR2.nagelkerke` },
+          { value: fmt(r.aic, 2), label: _t('aic'), mod: '', help: `${HELP}Result.aic` },
+          { value: fmt(r.bic, 2), label: _t('bic'), mod: '', help: `${HELP}Result.bic` },
         ];
         if (isBinomial && r._roc) {
           const aucClass = r._roc.auc >= 0.8 ? 'dmike-kpi--good' : r._roc.auc >= 0.6 ? 'dmike-kpi--warn' : 'dmike-kpi--bad';
-          kpis.push({ value: fmt(r._roc.auc, 4), label: 'AUC', mod: aucClass, help: `${HELP}Result.auc` });
+          kpis.push({ value: fmt(r._roc.auc, 4), label: _t('common.sym.auc'), mod: aucClass, help: `${HELP}Result.auc` });
         }
 
         // Quality items
@@ -878,7 +877,7 @@ const mod = createModule({
           { label: _t('deviance'), value: fmt(r.deviance, 4), help: `${HELP}Result.deviance` },
           { label: _t('nullDeviance'), value: fmt(r.nullDeviance, 4), help: `${HELP}Result.nullDeviance` },
           { label: _t('logLikelihood'), value: fmt(r.logLikelihood, 4), help: `${HELP}Result.logLikelihood` },
-          { label: 'Cox-Snell R²', value: fmt(r.pseudoR2.coxSnell, 4), help: `${HELP}PseudoR2.coxSnell` },
+          { label: `Cox-Snell ${_t('common.sym.r2')}`, value: fmt(r.pseudoR2.coxSnell, 4), help: `${HELP}PseudoR2.coxSnell` },
         ];
         if (isBinomial && r._hl) {
           qualityItems.push({ label: _t('hosmerLemeshow'), value: `${CHI2} = ${fmt(r._hl.statistic, 3)}, p = ${fmtP(r._hl.pValue)}`, help: `${HELP}Result.hosmerLemeshow` });
@@ -889,7 +888,7 @@ const mod = createModule({
         }
 
         // Coefficient table
-        const ratioHeader = isBinomial ? 'OR' : (isCount ? 'RR' : '');
+        const ratioHeader = isBinomial ? _t('oddsRatioShort') : (isCount ? _t('rateRatioShort') : '');
         const coefRows = [];
         for (let j = 0; j < r.terms.length; j++) {
           const sc = sigClass(r.pValues[j]);
@@ -928,9 +927,9 @@ const mod = createModule({
         if (od) {
           overdispersion = {
             items: [
-              { label: `Pearson ${CHI2}`, value: fmt(od.pearsonChi2, 3), help: `${HELP}Overdispersion.pearsonChi2` },
-              { label: 'df', value: String(od.df), help: `${HELP}Overdispersion.df` },
-              { label: `${CHI2}/df`, value: fmt(od.ratio, 3), help: `${HELP}Overdispersion.ratio` },
+              { label: `Pearson ${_t('symChi2')}`, value: fmt(od.pearsonChi2, 3), help: `${HELP}Overdispersion.pearsonChi2` },
+              { label: _t('common.sym.df'), value: String(od.df), help: `${HELP}Overdispersion.df` },
+              { label: `${_t('symChi2')}/${_t('common.sym.df')}`, value: fmt(od.ratio, 3), help: `${HELP}Overdispersion.ratio` },
             ],
             hint: od.overdispersed ? _t('overdispersionHint') : null,
           };
@@ -1238,7 +1237,7 @@ const mod = createModule({
         if (r.family.name !== 'binomial') return;
         const roc = computeROC(r.y, r.fittedValues, r.priorWeights ?? undefined);
         await this._mkScatter('[data-ref="chart-roc"]', gen, {
-          title: `${_t('rocCurve')} (AUC = ${roc.auc.toFixed(4)})`,
+          title: `${_t('rocCurve')} (${_t('common.sym.auc')} = ${roc.auc.toFixed(4)})`,
           xLabel: _t('falsePositiveRate'),
           yLabel: _t('truePositiveRate'),
           xMin: 0, xMax: 1, yMin: 0, yMax: 1,

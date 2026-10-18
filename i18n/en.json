@@ -5363,6 +5363,7 @@
       "exportImageComingSoon": "Image export lands in a later release."
     },
     "correlation": {
+      "pearsonR": "Pearson r",
       "name": "Correlation Analysis",
       "description": "Pearson, Spearman, and Kendall correlation between variables",
       "whenToUse": "When two or more numeric variables may be related: computes the correlation of two columns (Pearson, Spearman and Kendall side by side, with confidence interval and diagnostics) or of three or more columns as a correlation matrix; each column needs at least 5 numeric values.",
@@ -10878,6 +10879,12 @@
       "defaultName": "Optimisation"
     },
     "glm-regression": {
+      "thetaDispersion": "θ (dispersion)",
+      "aic": "AIC",
+      "bic": "BIC",
+      "oddsRatioShort": "OR",
+      "rateRatioShort": "RR",
+      "symChi2": "χ²",
       "whenToUse": "When a response is attributive — good/bad, yes/no, proportions — or a count (defects, complaints), and its relationship with predictors is to be modelled: binary logistic, Poisson or negative binomial, detected automatically on request.",
       "actions": {
         "read": {
