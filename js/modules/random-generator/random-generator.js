@@ -314,8 +314,6 @@ export default createModule({
       // ── View transformations ──────────────────────────────────
 
       /** @noagent view transform */
-      isEn() { return module._context.language === 'en'; },
-      /** @noagent view transform */
       distName(key) { return _t(DISTRIBUTIONS[key].nameKey); },
       /** @noagent view transform */
       distFormula(key) { return DISTRIBUTIONS[key].formula; },
@@ -323,9 +321,13 @@ export default createModule({
       distParams() { return DISTRIBUTIONS[this.model.currentDist]?.params || []; },
 
       /** @noagent view transform */
-      paramLabel(p) { return this.isEn() ? p.labelEn : p.label; },
+      paramLabel(p) { return _t(`dist.${this.model.currentDist}.${p.id}.label`); },
       /** @noagent view transform */
-      paramHint(p) { return this.isEn() ? (p.hintEn || '') : (p.hint || ''); },
+      paramHint(p) {
+        const key = `dist.${this.model.currentDist}.${p.id}.hint`;
+        const text = _t(key);
+        return text === key ? '' : text;
+      },
       /** @noagent view transform */
       paramMin(p) { return p.min !== undefined ? p.min : false; },
       /** @noagent view transform */

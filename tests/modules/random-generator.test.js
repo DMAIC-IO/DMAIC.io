@@ -69,12 +69,10 @@ suite('Random Generator — DISTRIBUTIONS registry', () => {
     }
   });
 
-  test('each param has id, label, labelEn, default', () => {
+  test('each param has id, default', () => {
     for (const [key, d] of Object.entries(DISTRIBUTIONS)) {
       for (const p of d.params) {
         if (!p.id) throw new Error(key + ' param missing id');
-        if (typeof p.label !== 'string') throw new Error(key + '.' + p.id + ' missing label');
-        if (typeof p.labelEn !== 'string') throw new Error(key + '.' + p.id + ' missing labelEn');
         if (!Number.isFinite(p.default)) throw new Error(key + '.' + p.id + ' default not finite');
       }
     }

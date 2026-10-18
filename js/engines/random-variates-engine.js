@@ -9,7 +9,7 @@
  *   - Numeric input helpers `resolveParams` / `clampCount`
  *
  * No DOM, no i18n (`_t`), no chartManager. The per-distribution `nameKey`,
- * `categoryKey`, `formula` and `label`/`hint` strings stored on the registry are
+ * `categoryKey` and `formula` strings stored on the registry are
  * raw DATA — they are resolved/translated by the consuming module's view layer,
  * never inside this engine.
  *
@@ -72,8 +72,8 @@ function betaVariate(rng, a, b) {
 // ═══════════════════════════════════════════════════════════════
 
 /**
- * @typedef {{ id: string, label: string, labelEn: string, default: number,
- *             min?: number, max?: number, step?: number, hint?: string, hintEn?: string }} DistParam
+ * @typedef {{ id: string, default: number,
+ *             min?: number, max?: number, step?: number }} DistParam
  * @typedef {{ nameKey: string, categoryKey: string, formula: string,
  *             params: DistParam[], generate: function, discrete?: boolean }} Distribution
  */
@@ -85,10 +85,10 @@ export const DISTRIBUTIONS = {
     nameKey: 'distNormal', categoryKey: 'catContinuous',
     formula: 'X ~ SinhArcSinh(μ, σ, ε, δ)',
     params: [
-      { id: 'mu', label: 'Mittelwert (μ)', labelEn: 'Mean (μ)', default: 0 },
-      { id: 'sigma', label: 'Std.-Abw. (σ)', labelEn: 'Std. Dev. (σ)', default: 1, min: 0.0001 },
-      { id: 'epsilon', label: 'Schiefe (ε)', labelEn: 'Skewness (ε)', default: 0, hint: '0 = symmetrisch', hintEn: '0 = symmetric' },
-      { id: 'delta', label: 'Tailweight (δ)', labelEn: 'Tailweight (δ)', default: 1, min: 0.01, hint: '1 = normal', hintEn: '1 = normal' },
+      { id: 'mu', default: 0 },
+      { id: 'sigma', default: 1, min: 0.0001 },
+      { id: 'epsilon', default: 0 },
+      { id: 'delta', default: 1, min: 0.01 },
     ],
     generate(rng, p) {
       const z = stdNormal(rng);
@@ -98,15 +98,15 @@ export const DISTRIBUTIONS = {
   chisquare: {
     nameKey: 'distChiSquare', categoryKey: 'catContinuous',
     formula: 'X ~ χ²(k)',
-    params: [{ id: 'k', label: 'Freiheitsgrade (k)', labelEn: 'Degrees of freedom (k)', default: 5, min: 1, step: 1 }],
+    params: [{ id: 'k', default: 5, min: 1, step: 1 }],
     generate(rng, p) { return gammaVariate(rng, p.k / 2, 2); },
   },
   f_dist: {
     nameKey: 'distF', categoryKey: 'catContinuous',
     formula: 'X ~ F(d₁, d₂)',
     params: [
-      { id: 'd1', label: 'Freiheitsgrade d₁', labelEn: 'Degrees of freedom d₁', default: 5, min: 1, step: 1 },
-      { id: 'd2', label: 'Freiheitsgrade d₂', labelEn: 'Degrees of freedom d₂', default: 10, min: 1, step: 1 },
+      { id: 'd1', default: 5, min: 1, step: 1 },
+      { id: 'd2', default: 10, min: 1, step: 1 },
     ],
     generate(rng, p) {
       const x1 = gammaVariate(rng, p.d1 / 2, 2);
@@ -117,7 +117,7 @@ export const DISTRIBUTIONS = {
   t_dist: {
     nameKey: 'distT', categoryKey: 'catContinuous',
     formula: 'X ~ t(ν)',
-    params: [{ id: 'nu', label: 'Freiheitsgrade (ν)', labelEn: 'Degrees of freedom (ν)', default: 10, min: 1, step: 1 }],
+    params: [{ id: 'nu', default: 10, min: 1, step: 1 }],
     generate(rng, p) {
       const z = stdNormal(rng);
       const chi = gammaVariate(rng, p.nu / 2, 2);
@@ -128,8 +128,8 @@ export const DISTRIBUTIONS = {
     nameKey: 'distUniform', categoryKey: 'catContinuous',
     formula: 'X ~ U(a, b)',
     params: [
-      { id: 'a', label: 'Untergrenze (a)', labelEn: 'Lower bound (a)', default: 0 },
-      { id: 'b', label: 'Obergrenze (b)', labelEn: 'Upper bound (b)', default: 1 },
+      { id: 'a', default: 0 },
+      { id: 'b', default: 1 },
     ],
     generate(rng, p) { return p.a + rng() * (p.b - p.a); },
   },
@@ -137,8 +137,8 @@ export const DISTRIBUTIONS = {
     nameKey: 'distBeta', categoryKey: 'catContinuous',
     formula: 'X ~ Beta(α, β)',
     params: [
-      { id: 'alpha', label: 'Form α', labelEn: 'Shape α', default: 2, min: 0.01 },
-      { id: 'beta', label: 'Form β', labelEn: 'Shape β', default: 5, min: 0.01 },
+      { id: 'alpha', default: 2, min: 0.01 },
+      { id: 'beta', default: 5, min: 0.01 },
     ],
     generate(rng, p) { return betaVariate(rng, p.alpha, p.beta); },
   },
@@ -146,23 +146,23 @@ export const DISTRIBUTIONS = {
     nameKey: 'distCauchy', categoryKey: 'catContinuous',
     formula: 'X ~ Cauchy(x₀, γ)',
     params: [
-      { id: 'x0', label: 'Lage (x₀)', labelEn: 'Location (x₀)', default: 0 },
-      { id: 'gamma', label: 'Skala (γ)', labelEn: 'Scale (γ)', default: 1, min: 0.0001 },
+      { id: 'x0', default: 0 },
+      { id: 'gamma', default: 1, min: 0.0001 },
     ],
     generate(rng, p) { return p.x0 + p.gamma * Math.tan(Math.PI * (rng() - 0.5)); },
   },
   exponential: {
     nameKey: 'distExponential', categoryKey: 'catContinuous',
     formula: 'X ~ Exp(λ)',
-    params: [{ id: 'lambda', label: 'Rate (λ)', labelEn: 'Rate (λ)', default: 1, min: 0.0001 }],
+    params: [{ id: 'lambda', default: 1, min: 0.0001 }],
     generate(rng, p) { return -Math.log(1 - rng()) / p.lambda; },
   },
   gamma_dist: {
     nameKey: 'distGamma', categoryKey: 'catContinuous',
     formula: 'X ~ Gamma(α, β)',
     params: [
-      { id: 'alpha', label: 'Form (α)', labelEn: 'Shape (α)', default: 2, min: 0.01 },
-      { id: 'beta', label: 'Skala (β)', labelEn: 'Scale (β)', default: 1, min: 0.0001 },
+      { id: 'alpha', default: 2, min: 0.01 },
+      { id: 'beta', default: 1, min: 0.0001 },
     ],
     generate(rng, p) { return gammaVariate(rng, p.alpha, p.beta); },
   },
@@ -170,8 +170,8 @@ export const DISTRIBUTIONS = {
     nameKey: 'distLaplace', categoryKey: 'catContinuous',
     formula: 'X ~ Laplace(μ, b)',
     params: [
-      { id: 'mu', label: 'Lage (μ)', labelEn: 'Location (μ)', default: 0 },
-      { id: 'b', label: 'Skala (b)', labelEn: 'Scale (b)', default: 1, min: 0.0001 },
+      { id: 'mu', default: 0 },
+      { id: 'b', default: 1, min: 0.0001 },
     ],
     generate(rng, p) {
       const u = rng() - 0.5;
@@ -182,8 +182,8 @@ export const DISTRIBUTIONS = {
     nameKey: 'distGumbelMax', categoryKey: 'catContinuous',
     formula: 'X ~ GumbelMax(μ, β)',
     params: [
-      { id: 'mu', label: 'Lage (μ)', labelEn: 'Location (μ)', default: 0 },
-      { id: 'beta', label: 'Skala (β)', labelEn: 'Scale (β)', default: 1, min: 0.0001 },
+      { id: 'mu', default: 0 },
+      { id: 'beta', default: 1, min: 0.0001 },
     ],
     generate(rng, p) { return p.mu - p.beta * Math.log(-Math.log(rng())); },
   },
@@ -191,8 +191,8 @@ export const DISTRIBUTIONS = {
     nameKey: 'distLogistic', categoryKey: 'catContinuous',
     formula: 'X ~ Logistic(μ, s)',
     params: [
-      { id: 'mu', label: 'Lage (μ)', labelEn: 'Location (μ)', default: 0 },
-      { id: 's', label: 'Skala (s)', labelEn: 'Scale (s)', default: 1, min: 0.0001 },
+      { id: 'mu', default: 0 },
+      { id: 's', default: 1, min: 0.0001 },
     ],
     generate(rng, p) { const u = rng(); return p.mu + p.s * Math.log(u / (1 - u)); },
   },
@@ -200,8 +200,8 @@ export const DISTRIBUTIONS = {
     nameKey: 'distLogLogistic', categoryKey: 'catContinuous',
     formula: 'X ~ LogLogistic(α, β)',
     params: [
-      { id: 'alpha', label: 'Skala (α)', labelEn: 'Scale (α)', default: 1, min: 0.0001 },
-      { id: 'beta', label: 'Form (β)', labelEn: 'Shape (β)', default: 1, min: 0.0001 },
+      { id: 'alpha', default: 1, min: 0.0001 },
+      { id: 'beta', default: 1, min: 0.0001 },
     ],
     generate(rng, p) {
       const u = rng();
@@ -212,8 +212,8 @@ export const DISTRIBUTIONS = {
     nameKey: 'distLogNormal', categoryKey: 'catContinuous',
     formula: 'X ~ LogN(μ, σ)',
     params: [
-      { id: 'mu', label: 'Log-Mittelwert (μ)', labelEn: 'Log-Mean (μ)', default: 0 },
-      { id: 'sigma', label: 'Log-Std.Abw. (σ)', labelEn: 'Log-Std.Dev. (σ)', default: 1, min: 0.0001 },
+      { id: 'mu', default: 0 },
+      { id: 'sigma', default: 1, min: 0.0001 },
     ],
     generate(rng, p) { return Math.exp(stdNormal(rng) * p.sigma + p.mu); },
   },
@@ -221,8 +221,8 @@ export const DISTRIBUTIONS = {
     nameKey: 'distGumbelMin', categoryKey: 'catContinuous',
     formula: 'X ~ GumbelMin(μ, β)',
     params: [
-      { id: 'mu', label: 'Lage (μ)', labelEn: 'Location (μ)', default: 0 },
-      { id: 'beta', label: 'Skala (β)', labelEn: 'Scale (β)', default: 1, min: 0.0001 },
+      { id: 'mu', default: 0 },
+      { id: 'beta', default: 1, min: 0.0001 },
     ],
     generate(rng, p) { return p.mu + p.beta * Math.log(-Math.log(1 - rng())); },
   },
@@ -230,9 +230,9 @@ export const DISTRIBUTIONS = {
     nameKey: 'distTriangular', categoryKey: 'catContinuous',
     formula: 'X ~ Tri(a, b, c)',
     params: [
-      { id: 'a', label: 'Minimum (a)', labelEn: 'Minimum (a)', default: 0 },
-      { id: 'c', label: 'Modus (c)', labelEn: 'Mode (c)', default: 0.5 },
-      { id: 'b', label: 'Maximum (b)', labelEn: 'Maximum (b)', default: 1 },
+      { id: 'a', default: 0 },
+      { id: 'c', default: 0.5 },
+      { id: 'b', default: 1 },
     ],
     generate(rng, p) {
       const u = rng();
@@ -245,8 +245,8 @@ export const DISTRIBUTIONS = {
     nameKey: 'distWeibull', categoryKey: 'catContinuous',
     formula: 'X ~ Weibull(α, β)',
     params: [
-      { id: 'alpha', label: 'Form (α)', labelEn: 'Shape (α)', default: 1.5, min: 0.0001 },
-      { id: 'beta', label: 'Skala (β)', labelEn: 'Scale (β)', default: 1, min: 0.0001 },
+      { id: 'alpha', default: 1.5, min: 0.0001 },
+      { id: 'beta', default: 1, min: 0.0001 },
     ],
     generate(rng, p) { return p.beta * Math.pow(-Math.log(1 - rng()), 1 / p.alpha); },
   },
@@ -255,7 +255,7 @@ export const DISTRIBUTIONS = {
   bernoulli: {
     nameKey: 'distBernoulli', categoryKey: 'catDiscrete',
     formula: 'X ~ Bernoulli(p)',
-    params: [{ id: 'p', label: 'Erfolgswahrsch. (p)', labelEn: 'Success prob. (p)', default: 0.5, min: 0, max: 1 }],
+    params: [{ id: 'p', default: 0.5, min: 0, max: 1 }],
     generate(rng, p) { return rng() < p.p ? 1 : 0; },
     discrete: true,
   },
@@ -263,8 +263,8 @@ export const DISTRIBUTIONS = {
     nameKey: 'distBinomial', categoryKey: 'catDiscrete',
     formula: 'X ~ Bin(n, p)',
     params: [
-      { id: 'n', label: 'Versuche (n)', labelEn: 'Trials (n)', default: 10, min: 1, step: 1 },
-      { id: 'p', label: 'Erfolgswahrsch. (p)', labelEn: 'Success prob. (p)', default: 0.5, min: 0, max: 1 },
+      { id: 'n', default: 10, min: 1, step: 1 },
+      { id: 'p', default: 0.5, min: 0, max: 1 },
     ],
     generate(rng, par) {
       let s = 0;
@@ -276,7 +276,7 @@ export const DISTRIBUTIONS = {
   geometric: {
     nameKey: 'distGeometric', categoryKey: 'catDiscrete',
     formula: 'X ~ Geo(p)',
-    params: [{ id: 'p', label: 'Erfolgswahrsch. (p)', labelEn: 'Success prob. (p)', default: 0.3, min: 0.0001, max: 1 }],
+    params: [{ id: 'p', default: 0.3, min: 0.0001, max: 1 }],
     generate(rng, par) { return Math.floor(Math.log(1 - rng()) / Math.log(1 - par.p)); },
     discrete: true,
   },
@@ -284,8 +284,8 @@ export const DISTRIBUTIONS = {
     nameKey: 'distNegBinomial', categoryKey: 'catDiscrete',
     formula: 'X ~ NB(r, p)',
     params: [
-      { id: 'r', label: 'Erfolge (r)', labelEn: 'Successes (r)', default: 5, min: 1, step: 1 },
-      { id: 'p', label: 'Erfolgswahrsch. (p)', labelEn: 'Success prob. (p)', default: 0.5, min: 0.0001, max: 1 },
+      { id: 'r', default: 5, min: 1, step: 1 },
+      { id: 'p', default: 0.5, min: 0.0001, max: 1 },
     ],
     generate(rng, par) {
       const g = gammaVariate(rng, par.r, (1 - par.p) / par.p);
@@ -300,9 +300,9 @@ export const DISTRIBUTIONS = {
     nameKey: 'distHypergeometric', categoryKey: 'catDiscrete',
     formula: 'X ~ HyperGeo(N, K, n)',
     params: [
-      { id: 'N', label: 'Populationsgröße (N)', labelEn: 'Population size (N)', default: 100, min: 1, step: 1 },
-      { id: 'K', label: 'Erfolgszust. (K)', labelEn: 'Success states (K)', default: 30, min: 0, step: 1 },
-      { id: 'n', label: 'Stichprobe (n)', labelEn: 'Sample size (n)', default: 10, min: 1, step: 1 },
+      { id: 'N', default: 100, min: 1, step: 1 },
+      { id: 'K', default: 30, min: 0, step: 1 },
+      { id: 'n', default: 10, min: 1, step: 1 },
     ],
     generate(rng, par) {
       const n = par.n;
@@ -319,8 +319,8 @@ export const DISTRIBUTIONS = {
     nameKey: 'distInteger', categoryKey: 'catDiscrete',
     formula: 'X ~ DU(a, b)',
     params: [
-      { id: 'a', label: 'Minimum (a)', labelEn: 'Minimum (a)', default: 1, step: 1 },
-      { id: 'b', label: 'Maximum (b)', labelEn: 'Maximum (b)', default: 6, step: 1 },
+      { id: 'a', default: 1, step: 1 },
+      { id: 'b', default: 6, step: 1 },
     ],
     generate(rng, p) { return Math.floor(rng() * (Math.floor(p.b) - Math.floor(p.a) + 1)) + Math.floor(p.a); },
     discrete: true,
@@ -328,7 +328,7 @@ export const DISTRIBUTIONS = {
   poisson: {
     nameKey: 'distPoisson', categoryKey: 'catDiscrete',
     formula: 'X ~ Poi(λ)',
-    params: [{ id: 'lambda', label: 'Rate (λ)', labelEn: 'Rate (λ)', default: 5, min: 0.01 }],
+    params: [{ id: 'lambda', default: 5, min: 0.01 }],
     generate(rng, par) {
       if (par.lambda < 30) {
         const L = Math.exp(-par.lambda);
@@ -344,11 +344,11 @@ export const DISTRIBUTIONS = {
     nameKey: 'distMvNormal', categoryKey: 'catContinuous',
     formula: 'X ~ N₂(μ, Σ)',
     params: [
-      { id: 'mu1', label: 'Mittelwert μ₁', labelEn: 'Mean μ₁', default: 0 },
-      { id: 'mu2', label: 'Mittelwert μ₂', labelEn: 'Mean μ₂', default: 0 },
-      { id: 'sigma1', label: 'Std.Abw. σ₁', labelEn: 'Std.Dev. σ₁', default: 1, min: 0.0001 },
-      { id: 'sigma2', label: 'Std.Abw. σ₂', labelEn: 'Std.Dev. σ₂', default: 1, min: 0.0001 },
-      { id: 'rho', label: 'Korrelation ρ', labelEn: 'Correlation ρ', default: 0.5, min: -0.999, max: 0.999 },
+      { id: 'mu1', default: 0 },
+      { id: 'mu2', default: 0 },
+      { id: 'sigma1', default: 1, min: 0.0001 },
+      { id: 'sigma2', default: 1, min: 0.0001 },
+      { id: 'rho', default: 0.5, min: -0.999, max: 0.999 },
     ],
     generate(rng, p) {
       const [z1] = normalPair(rng);

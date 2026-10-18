@@ -1421,6 +1421,14 @@ export const BOUND_HELP_KEY_FAMILIES = [
         rows.map((key) => `modules.attribute-test.stats.${kind}.${key}`));
     },
   },
+  {
+    moduleId: 'random-generator',
+    keys: async () => {
+      const { DISTRIBUTIONS } = await import('../../js/engines/random-variates-engine.js');
+      return Object.entries(DISTRIBUTIONS).flatMap(([dist, d]) =>
+        (d.params ?? []).map((p) => `modules.random-generator.dist.${dist}.${p.id}.label`));
+    },
+  },
 ];
 
 test('i18n-Tor: jeder zur Laufzeit gebundene Hilfeschlüssel löst in BEIDEN Sprachdateien auf und ist frei von Strukturjargon', async () => {

@@ -8719,6 +8719,109 @@
       "distHypergeometric": "Hypergeometrische Verteilung",
       "distInteger": "Ganze Zahlen (Gleichvert.)",
       "distPoisson": "Poisson-Verteilung",
+      "dist": {
+        "normal": {
+          "mu": { "label": "Mittelwert (μ)" },
+          "sigma": { "label": "Std.-Abw. (σ)" },
+          "epsilon": { "label": "Schiefe (ε)", "hint": "0 = symmetrisch" },
+          "delta": { "label": "Tailweight (δ)", "hint": "1 = normal" }
+        },
+        "chisquare": {
+          "k": { "label": "Freiheitsgrade (k)" }
+        },
+        "f_dist": {
+          "d1": { "label": "Freiheitsgrade d₁" },
+          "d2": { "label": "Freiheitsgrade d₂" }
+        },
+        "t_dist": {
+          "nu": { "label": "Freiheitsgrade (ν)" }
+        },
+        "uniform": {
+          "a": { "label": "Untergrenze (a)" },
+          "b": { "label": "Obergrenze (b)" }
+        },
+        "beta": {
+          "alpha": { "label": "Form α" },
+          "beta": { "label": "Form β" }
+        },
+        "cauchy": {
+          "x0": { "label": "Lage (x₀)" },
+          "gamma": { "label": "Skala (γ)" }
+        },
+        "exponential": {
+          "lambda": { "label": "Rate (λ)" }
+        },
+        "gamma_dist": {
+          "alpha": { "label": "Form (α)" },
+          "beta": { "label": "Skala (β)" }
+        },
+        "laplace": {
+          "mu": { "label": "Lage (μ)" },
+          "b": { "label": "Skala (b)" }
+        },
+        "gumbel_max": {
+          "mu": { "label": "Lage (μ)" },
+          "beta": { "label": "Skala (β)" }
+        },
+        "logistic": {
+          "mu": { "label": "Lage (μ)" },
+          "s": { "label": "Skala (s)" }
+        },
+        "loglogistic": {
+          "alpha": { "label": "Skala (α)" },
+          "beta": { "label": "Form (β)" }
+        },
+        "lognormal": {
+          "mu": { "label": "Log-Mittelwert (μ)" },
+          "sigma": { "label": "Log-Std.Abw. (σ)" }
+        },
+        "gumbel_min": {
+          "mu": { "label": "Lage (μ)" },
+          "beta": { "label": "Skala (β)" }
+        },
+        "triangular": {
+          "a": { "label": "Minimum (a)" },
+          "c": { "label": "Modus (c)" },
+          "b": { "label": "Maximum (b)" }
+        },
+        "weibull": {
+          "alpha": { "label": "Form (α)" },
+          "beta": { "label": "Skala (β)" }
+        },
+        "bernoulli": {
+          "p": { "label": "Erfolgswahrsch. (p)" }
+        },
+        "binomial": {
+          "n": { "label": "Versuche (n)" },
+          "p": { "label": "Erfolgswahrsch. (p)" }
+        },
+        "geometric": {
+          "p": { "label": "Erfolgswahrsch. (p)" }
+        },
+        "negbinomial": {
+          "r": { "label": "Erfolge (r)" },
+          "p": { "label": "Erfolgswahrsch. (p)" }
+        },
+        "hypergeometric": {
+          "N": { "label": "Populationsgröße (N)" },
+          "K": { "label": "Erfolgszust. (K)" },
+          "n": { "label": "Stichprobe (n)" }
+        },
+        "integer": {
+          "a": { "label": "Minimum (a)" },
+          "b": { "label": "Maximum (b)" }
+        },
+        "poisson": {
+          "lambda": { "label": "Rate (λ)" }
+        },
+        "mvnormal": {
+          "mu1": { "label": "Mittelwert μ₁" },
+          "mu2": { "label": "Mittelwert μ₂" },
+          "sigma1": { "label": "Std.Abw. σ₁" },
+          "sigma2": { "label": "Std.Abw. σ₂" },
+          "rho": { "label": "Korrelation ρ" }
+        }
+      },
       "count": "Anzahl (n)",
       "generate": "Generieren",
       "exportCSV": "CSV Export",
