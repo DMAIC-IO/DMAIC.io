@@ -59,3 +59,31 @@ suite('Stats panel — data-stat auf den Wertzellen', () => {
     assertEqual(host.querySelectorAll('td[data-stat="median"]').length, 1, 'median-Platzhalter');
   });
 });
+
+/**
+ * Kontexthilfe: jede Kennzahlspalte und die Reihenspalte tragen einen Anker
+ * auf den geteilten Satz — dieselben Sätze, die der Agent unter
+ * read().stats liest (modules.shared.types.*).
+ */
+suite('Stats panel — Kontexthilfe-Anker im Kopf', () => {
+  const series = [{ name: 'A', values: [1, 2, 3, 4], color: '#f00', visible: true }];
+
+  test('jede Kopfzelle hat genau einen Anker-Span mit dem geteilten Schlüssel', () => {
+    const host = document.createElement('div');
+    renderStatsTable(host, computeSeriesStats(series), { confLevel: 95 });
+    const ths = [...host.querySelectorAll('thead th')];
+    const keys = ths.map(th => th.querySelector(':scope > [data-help-key]')?.getAttribute('data-help-key'));
+    assertEqual(keys[0], 'modules.shared.types.SeriesStats.name', 'Reihenspalte');
+    const expected = ['n', 'mean', 'stddev', 'min', 'max', 'median', 'variance', 'range', 'skewness', 'kurtosis']
+      .map(k => `modules.shared.types.Stats.${k}`);
+    assertEqual(JSON.stringify(keys.slice(1)), JSON.stringify(expected), 'Kennzahlspalten');
+    for (const th of ths) assertEqual(th.hasAttribute('data-help-key'), false, 'Anker nie an der Zelle');
+  });
+
+  test('der Glossar-Span bleibt im Anker-Span erhalten', () => {
+    const host = document.createElement('div');
+    renderStatsTable(host, computeSeriesStats(series), { confLevel: 95, glossaryEnabled: true, glossaryIds: new Set(['mittelwert']) });
+    const anchor = host.querySelector('[data-help-key="modules.shared.types.Stats.mean"]');
+    assertEqual(anchor?.querySelector('.glossary-term')?.getAttribute('data-glossary-term'), 'mittelwert');
+  });
+});

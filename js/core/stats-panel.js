@@ -14,6 +14,11 @@
  *   ];
  *   const stats = computeSeriesStats(series);
  *   renderStatsTable(panelEl, stats, { confLevel: 95, i18n });
+ *
+ * Kontexthilfe: jede Kopfzelle trägt einen Span mit `data-help-key` auf
+ * `modules.shared.types.Stats.<key>` bzw. `SeriesStats.name` — dieselben
+ * Sätze, die der Agent unter `read().stats` liest, wenn das Modul seine
+ * Typedefs `SeriesStats`/`Stats`/`StatsCi` nennt.
  */
 
 import { descriptiveStats } from '../engines/normality-test-engine.js';
@@ -156,17 +161,20 @@ export function configureStatsPanel({ glossaryIds, glossaryEnabled } = {}) {
   if (glossaryEnabled !== undefined) _config.glossaryEnabled = Boolean(glossaryEnabled);
 }
 
+/** Kopf der Reihenspalte: Anker auf den geteilten Satz (siehe Kopfkommentar). */
+const SERIES_COLUMN = { help: 'modules.shared.types.SeriesStats.name' };
+
 const DEFAULT_COLUMNS = [
-  { key: 'n',        i18nKey: 'n',        ci: false },
-  { key: 'mean',     i18nKey: 'mean',     ci: true,  glossaryTerm: 'mittelwert' },
-  { key: 'stddev',   i18nKey: 'stddev',   ci: true,  glossaryTerm: 'standardabweichung' },
-  { key: 'min',      i18nKey: 'min',      ci: false },
-  { key: 'max',      i18nKey: 'max',      ci: false },
-  { key: 'median',   i18nKey: 'median',   ci: false, glossaryTerm: 'median' },
-  { key: 'variance', i18nKey: 'variance', ci: true,  glossaryTerm: 'varianz' },
-  { key: 'range',    i18nKey: 'range',    ci: false, glossaryTerm: 'spannweite' },
-  { key: 'skewness', i18nKey: 'skewness', ci: false, glossaryTerm: 'schiefe' },
-  { key: 'kurtosis', i18nKey: 'kurtosis', ci: false, glossaryTerm: 'kurtosis' },
+  { key: 'n',        i18nKey: 'n',        ci: false, help: 'modules.shared.types.Stats.n' },
+  { key: 'mean',     i18nKey: 'mean',     ci: true,  glossaryTerm: 'mittelwert', help: 'modules.shared.types.Stats.mean' },
+  { key: 'stddev',   i18nKey: 'stddev',   ci: true,  glossaryTerm: 'standardabweichung', help: 'modules.shared.types.Stats.stddev' },
+  { key: 'min',      i18nKey: 'min',      ci: false, help: 'modules.shared.types.Stats.min' },
+  { key: 'max',      i18nKey: 'max',      ci: false, help: 'modules.shared.types.Stats.max' },
+  { key: 'median',   i18nKey: 'median',   ci: false, glossaryTerm: 'median', help: 'modules.shared.types.Stats.median' },
+  { key: 'variance', i18nKey: 'variance', ci: true,  glossaryTerm: 'varianz', help: 'modules.shared.types.Stats.variance' },
+  { key: 'range',    i18nKey: 'range',    ci: false, glossaryTerm: 'spannweite', help: 'modules.shared.types.Stats.range' },
+  { key: 'skewness', i18nKey: 'skewness', ci: false, glossaryTerm: 'schiefe', help: 'modules.shared.types.Stats.skewness' },
+  { key: 'kurtosis', i18nKey: 'kurtosis', ci: false, glossaryTerm: 'kurtosis', help: 'modules.shared.types.Stats.kurtosis' },
 ];
 
 // ─── Rendering ──────────────────────────────────────────────
@@ -219,9 +227,11 @@ export function renderStatsTable(container, seriesStats, options = {}) {
     return h('span', { class: 'glossary-term', 'data-glossary-term': termId }, label);
   };
 
-  const headRow = h('tr', null, h('th', null, t('series')));
+  const headRow = h('tr', null,
+    h('th', null, h('span', { 'data-help-key': SERIES_COLUMN.help }, t('series'))));
   cols.forEach(c => {
-    headRow.append(h('th', null, wrapHeader(t(c.i18nKey), c.glossaryTerm)));
+    headRow.append(h('th', null,
+      h('span', { 'data-help-key': c.help || false }, wrapHeader(t(c.i18nKey), c.glossaryTerm))));
   });
 
   const body = h('tbody');

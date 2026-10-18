@@ -1005,6 +1005,33 @@
   },
   "modules": {
     "shared": {
+      "types": {
+        "SeriesStats": {
+          "name": "Name of the series, as in the Data series column and the legend: the column name, or the group value when grouped.",
+          "stats": "The figures of this series, each described individually. Empty for a series without values; the table then shows dashes.",
+          "ci": "The confidence intervals of this series at the chosen level, for mean, spread and variance. The table shows them after the value, as lower and upper bound. Empty if the series has fewer than two values or no spread."
+        },
+        "Stats": {
+          "n": "Number of values in the series (N); the table shows it as a whole number.",
+          "mean": "Mean x̄ = Σx / n, the sum of all values divided by their count. The table rounds to four decimals.",
+          "stddev": "Standard deviation s = √(Σ(x − x̄)² / (n − 1)), the sample spread with denominator n − 1 (column StdDev). The table rounds to four decimals.",
+          "variance": "Variance s² = Σ(x − x̄)² / (n − 1), the square of the standard deviation, with denominator n − 1. The table rounds to four decimals.",
+          "seMean": "Standard error of the mean, s / √n. The table does not show it; it is what sets the width of the confidence interval for the mean.",
+          "median": "Median: the middle of the values sorted ascending, for an even count the mean of the two middle ones. The table rounds to four decimals.",
+          "min": "Smallest value of the series. The table rounds to four decimals.",
+          "max": "Largest value of the series. The table rounds to four decimals.",
+          "range": "Range = largest minus smallest value. The table rounds to four decimals.",
+          "q1": "First quartile: the limit below which a quarter of the sorted values lie, with linear interpolation between neighbouring values. The table does not show it.",
+          "q3": "Third quartile: the limit below which three quarters of the sorted values lie, with linear interpolation between neighbouring values. The table does not show it.",
+          "skewness": "Skewness g₁ = m₃ / m₂^1.5 with the central moments m₂ = Σ(x − x̄)² / n and m₃ = Σ(x − x̄)³ / n (denominator n, not corrected). Positive: the long tail is on the right, negative: on the left; 0 for symmetric values and for a series without spread. The table rounds to four decimals.",
+          "kurtosis": "Kurtosis as excess: m₄ / m₂² − 3 with m₂ = Σ(x − x̄)² / n and m₄ = Σ(x − x̄)⁴ / n (denominator n, not corrected). 0 matches the normal distribution, positive means more peaked with heavy tails, negative flatter; 0 for a series without spread. The table rounds to four decimals."
+        },
+        "StatsCi": {
+          "mean": "Confidence interval for the mean: x̄ ± t · s / √n with the t quantile at n − 1 degrees of freedom. Missing for fewer than two values or without spread.",
+          "variance": "Confidence interval for the variance: from (n − 1)·s² / χ²(upper) to (n − 1)·s² / χ²(lower), with the χ² quantiles at n − 1 degrees of freedom. Missing for fewer than two values, without spread, or if a χ² quantile cannot be computed.",
+          "stddev": "Confidence interval for the standard deviation: the square roots of the variance interval's bounds. Missing for fewer than two values, without spread, or if a χ² quantile cannot be computed."
+        }
+      },
       "actions": {
         "read": {
           "help": "Returns the full read state of this instance. Without parameters bulk data stays out and appears as a scope descriptor, so it can be requested deliberately instead of transferring thousands of rows.",

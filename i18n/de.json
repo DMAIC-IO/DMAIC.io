@@ -1005,6 +1005,33 @@
   },
   "modules": {
     "shared": {
+      "types": {
+        "SeriesStats": {
+          "name": "Name der Reihe, wie in der Spalte „Datenreihe“ und in der Legende: der Spaltenname, bei Gruppierung der Gruppenwert.",
+          "stats": "Die Kennzahlen dieser Reihe, jede einzeln beschrieben. Leer bei einer Reihe ohne Werte; die Tabelle zeigt dann Striche.",
+          "ci": "Die Konfidenzintervalle dieser Reihe zum eingestellten Niveau, für Mittelwert, Streuung und Varianz. Die Tabelle zeigt sie hinter dem Wert, als untere und obere Grenze. Leer, wenn die Reihe weniger als zwei Werte oder keine Streuung hat."
+        },
+        "Stats": {
+          "n": "Anzahl der Werte der Reihe (N); die Tabelle zeigt sie als ganze Zahl.",
+          "mean": "Mittelwert x̄ = Σx / n, die Summe aller Werte geteilt durch ihre Anzahl. Die Tabelle rundet auf vier Nachkommastellen.",
+          "stddev": "Standardabweichung s = √(Σ(x − x̄)² / (n − 1)), die Stichproben-Streuung mit dem Nenner n − 1 (Spalte „StdAbw“). Die Tabelle rundet auf vier Nachkommastellen.",
+          "variance": "Varianz s² = Σ(x − x̄)² / (n − 1), das Quadrat der Standardabweichung, mit dem Nenner n − 1. Die Tabelle rundet auf vier Nachkommastellen.",
+          "seMean": "Standardfehler des Mittelwerts, s / √n. Die Tabelle zeigt ihn nicht; er steckt in der Breite des Konfidenzintervalls für den Mittelwert.",
+          "median": "Median: der mittlere Wert der aufsteigend sortierten Werte, bei gerader Anzahl der Mittelwert der beiden mittleren. Die Tabelle rundet auf vier Nachkommastellen.",
+          "min": "Kleinster Wert der Reihe. Die Tabelle rundet auf vier Nachkommastellen.",
+          "max": "Größter Wert der Reihe. Die Tabelle rundet auf vier Nachkommastellen.",
+          "range": "Spannweite = größter minus kleinster Wert. Die Tabelle rundet auf vier Nachkommastellen.",
+          "q1": "Erstes Quartil: die Grenze, unter der ein Viertel der sortierten Werte liegt, mit linearer Interpolation zwischen benachbarten Werten. Die Tabelle zeigt es nicht.",
+          "q3": "Drittes Quartil: die Grenze, unter der drei Viertel der sortierten Werte liegen, mit linearer Interpolation zwischen benachbarten Werten. Die Tabelle zeigt es nicht.",
+          "skewness": "Schiefe g₁ = m₃ / m₂^1,5 mit den zentrierten Momenten m₂ = Σ(x − x̄)² / n und m₃ = Σ(x − x̄)³ / n (Nenner n, nicht korrigiert). Positiv: der lange Ausläufer liegt rechts, negativ: links; 0 bei symmetrischen Werten und bei einer Reihe ohne Streuung. Die Tabelle rundet auf vier Nachkommastellen.",
+          "kurtosis": "Kurtosis als Exzess: m₄ / m₂² − 3 mit m₂ = Σ(x − x̄)² / n und m₄ = Σ(x − x̄)⁴ / n (Nenner n, nicht korrigiert). 0 entspricht der Normalverteilung, positiv heißt spitzer mit schweren Rändern, negativ flacher; 0 bei einer Reihe ohne Streuung. Die Tabelle rundet auf vier Nachkommastellen."
+        },
+        "StatsCi": {
+          "mean": "Konfidenzintervall für den Mittelwert: x̄ ± t · s / √n mit dem t-Quantil zu n − 1 Freiheitsgraden. Fehlt bei weniger als zwei Werten oder ohne Streuung.",
+          "variance": "Konfidenzintervall für die Varianz: von (n − 1)·s² / χ²(oben) bis (n − 1)·s² / χ²(unten), mit den χ²-Quantilen zu n − 1 Freiheitsgraden. Fehlt bei weniger als zwei Werten, ohne Streuung oder wenn ein χ²-Quantil nicht berechenbar ist.",
+          "stddev": "Konfidenzintervall für die Standardabweichung: die Wurzeln der Grenzen des Varianzintervalls. Fehlt bei weniger als zwei Werten, ohne Streuung oder wenn ein χ²-Quantil nicht berechenbar ist."
+        }
+      },
       "actions": {
         "read": {
           "help": "Liefert den vollständigen Lesezustand dieser Instanz. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor, damit gezielt nachgefragt werden kann statt tausende Zeilen zu übertragen.",

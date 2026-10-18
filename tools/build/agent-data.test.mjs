@@ -1259,6 +1259,48 @@ function helpKeysInTemplates(appDir, moduleId) {
   return keys;
 }
 
+/**
+ * Wörtliche Hilfeschlüssel, die ein Modul oder ein geteilter Baustein zur
+ * Laufzeit an ein Element hängt: DatasetPicker-Slots (`helpKey`,
+ * `addHelpKey`), Kacheln und Spalten (`help`). Nur Literale in einfachen
+ * Anführungszeichen, die mit `modules.` beginnen — zusammengesetzte
+ * Schlüssel (`${HELP}Result.R2`) zeigen auf Typedef-Sätze und stehen im
+ * Typedef-Tor.
+ */
+const LITERAL_HELP_KEY = /\b(?:helpKey|addHelpKey|help)\s*:\s*'(modules\.[^']+)'/g;
+
+/** Geteilte Bausteine, deren wörtliche Schlüssel für jedes Modul gelten. */
+const SHARED_ANCHOR_SOURCES = ['js/core/stats-panel.js'];
+
+/** Alle wörtlichen Hilfeschlüssel aus den Skripten eines Moduls. */
+function helpKeysInScripts(appDir, moduleId) {
+  const dir = join(appDir, 'js', 'modules', moduleId);
+  const keys = [];
+  for (const file of readdirSync(dir)) {
+    if (!file.endsWith('.js')) continue;
+    const js = readFileSync(join(dir, file), 'utf8');
+    for (const m of js.matchAll(LITERAL_HELP_KEY)) keys.push([file, m[1]]);
+  }
+  return keys;
+}
+
+/** Alle wörtlichen Hilfeschlüssel der geteilten Bausteine. */
+function helpKeysInSharedSources(appDir) {
+  const keys = [];
+  for (const rel of SHARED_ANCHOR_SOURCES) {
+    const js = readFileSync(join(appDir, rel), 'utf8');
+    for (const m of js.matchAll(LITERAL_HELP_KEY)) keys.push([rel, m[1]]);
+  }
+  return keys;
+}
+
+test('i18n-Tor: die geteilte Statistiktabelle liefert ihre Anker-Schlüssel an die Tore', () => {
+  const appDir = join(import.meta.dirname, '..', '..');
+  const keys = helpKeysInSharedSources(appDir).map(([, k]) => k);
+  assert.ok(keys.includes('modules.shared.types.Stats.mean'), keys.join(', '));
+  assert.ok(keys.includes('modules.shared.types.SeriesStats.name'), keys.join(', '));
+});
+
 test('i18n-Tor: jede Aktion, jeder Parameter und jedes Feld eines freigegebenen Moduls hat einen Schlüssel in BEIDEN Sprachdateien', () => {
   const appDir = join(import.meta.dirname, '..', '..');
   const { modules } = collectAgentData(appDir);
@@ -1300,7 +1342,7 @@ test('i18n-Tor: jede Aktion, jeder Parameter und jedes Feld eines freigegebenen 
   assert.deepEqual(missing, [], `fehlende i18n-Schlüssel:\n${missing.join('\n')}`);
 });
 
-test('i18n-Tor: jeder data-help-key einer freigegebenen Vorlage löst in BEIDEN Sprachdateien auf', () => {
+test('i18n-Tor: jeder Anker-Schlüssel (Vorlage, Modul-JS, geteilter Baustein) löst in BEIDEN Sprachdateien auf', () => {
   const appDir = join(import.meta.dirname, '..', '..');
   const { modules } = collectAgentData(appDir);
   const trees = {
@@ -1311,7 +1353,7 @@ test('i18n-Tor: jeder data-help-key einer freigegebenen Vorlage löst in BEIDEN 
   let checked = 0;
   for (const [id, entry] of Object.entries(modules)) {
     if (entry.available !== true) continue;
-    for (const [file, key] of helpKeysInTemplates(appDir, id)) {
+    for (const [file, key] of [...helpKeysInTemplates(appDir, id), ...helpKeysInScripts(appDir, id)]) {
       checked += 1;
       // `context-help.js` fragt NUR dieses Literal (`i18n.exists(key)`) und
       // kennt keinen geteilten Rückfall — ein Tippfehler heißt: kein Knopf.
@@ -1320,11 +1362,17 @@ test('i18n-Tor: jeder data-help-key einer freigegebenen Vorlage löst in BEIDEN 
       }
     }
   }
+  for (const [file, key] of helpKeysInSharedSources(appDir)) {
+    checked += 1;
+    for (const [lang, tree] of Object.entries(trees)) {
+      if (lookup(tree, key) === undefined) broken.push(`${lang}: ${file} → ${key}`);
+    }
+  }
   assert.ok(checked >= 2, `zu wenige Anker geprüft (${checked})`);
   assert.deepEqual(broken, [], `nicht auflösbare data-help-key:\n${broken.join('\n')}`);
 });
 
-test('i18n-Tor: ein verankerter Satz (data-help-key) enthält keinen Strukturjargon', () => {
+test('i18n-Tor: ein verankerter Satz (Vorlage, Modul-JS, geteilter Baustein) enthält keinen Strukturjargon', () => {
   // Doppelnutzen: der Satz am Label ist derselbe, den der Agent liest. Wer
   // Alt hält, prüft damit die Agentenbeschreibung — das geht nur, wenn sie
   // für Menschen geschrieben ist. Die Struktur steht im JSDoc-Typ.
@@ -1337,12 +1385,19 @@ test('i18n-Tor: ein verankerter Satz (data-help-key) enthält keinen Strukturjar
   const jargon = [];
   for (const [id, entry] of Object.entries(modules)) {
     if (entry.available !== true) continue;
-    for (const [file, key] of helpKeysInTemplates(appDir, id)) {
+    for (const [file, key] of [...helpKeysInTemplates(appDir, id), ...helpKeysInScripts(appDir, id)]) {
       for (const [lang, tree] of Object.entries(trees)) {
         const text = lookup(tree, key);
         const hit = text && STRUCTURE_JARGON.exec(text);
         if (hit) jargon.push(`${lang}: ${file} → ${key} („${hit[0]}")`);
       }
+    }
+  }
+  for (const [file, key] of helpKeysInSharedSources(appDir)) {
+    for (const [lang, tree] of Object.entries(trees)) {
+      const text = lookup(tree, key);
+      const hit = text && STRUCTURE_JARGON.exec(text);
+      if (hit) jargon.push(`${lang}: ${file} → ${key} („${hit[0]}")`);
     }
   }
   assert.deepEqual(jargon, [], `Strukturjargon in verankerten Sätzen:\n${jargon.join('\n')}`);
