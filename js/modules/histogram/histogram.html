@@ -7,7 +7,7 @@
     <div class="dmike-split__section-title" x-text="t('sectionBinning')"></div>
     <div class="histogram__options">
       <div class="field-group">
-        <label x-text="t('binMode')"></label>
+        <label data-help-key="modules.histogram.types.Params.binMode" x-text="t('binMode')"></label>
         <select class="field" data-ref="bin-mode" :value="model.binMode" @change="setParam('binMode', $event.target.value)">
           <template x-for="o in binModeOptions()" :key="o.value">
             <option :value="o.value" :selected="o.value === model.binMode" x-text="o.label"></option>
@@ -15,7 +15,7 @@
         </select>
       </div>
       <div class="field-group" data-ref="bin-width-row" x-show="isManualBins()">
-        <label x-text="t('binWidth')"></label>
+        <label data-help-key="modules.histogram.types.Params.binWidth" x-text="t('binWidth')"></label>
         <input type="number" class="field field--num" data-ref="bin-width" min="0.01"
                x-model="binWidthInput" :placeholder="t('binWidthAuto')" @change="binWidthChanged($event)">
       </div>
@@ -24,7 +24,7 @@
     <div class="dmike-split__section-title" x-text="t('sectionOptions')"></div>
     <div class="histogram__options">
       <div class="field-group">
-        <label x-text="t('confLevel')"></label>
+        <label data-help-key="modules.histogram.types.Params.confLevel" x-text="t('confLevel')"></label>
         <input type="number" class="field field--num" data-ref="conf-level" min="50" max="99.9"
                x-model="confLevelInput" @change="confLevelChanged($event)">
       </div>

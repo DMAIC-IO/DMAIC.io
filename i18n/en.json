@@ -5480,7 +5480,7 @@
           "help": "Read the data rows, the binning, the confidence level and the columns each slot accepts, and the figures shown next to the chart."
         },
         "setDatasets": {
-          "help": "Replace the whole list of data rows at once. Incomplete rows are kept but not plotted.",
+          "help": "Set the data rows. A row consists of a value column and optionally a group column; the button \"Add dataset\" adds a row. Incomplete rows are kept but not plotted. The agent replaces the whole list in one call.",
           "params": {
             "rows": "A list of rows, each { value, group }: 'value' — a numeric column (required for the row to be plotted); 'group' — an optional column that splits the row into series. Each entry is a column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null. [] clears the list."
           }
@@ -5488,14 +5488,14 @@
         "setParam": {
           "help": "Set an analysis option. read().activeParams names the options valid right now.",
           "params": {
-            "key": "'binMode' — automatic or fixed bins; 'binWidth' — active only with binMode 'manual'; 'confLevel' — the confidence level of the statistics.",
-            "value": "For 'binMode': 'auto' or 'manual' ('auto' also clears binWidth). For 'binWidth': a number greater than 0, or null for an automatic width. For 'confLevel': a number in percent, greater than 0 and less than 100."
+            "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys."
           }
         }
       },
       "fields": {
         "datasets": {
-          "help": "Per data row { valueRef, groupRef } from the slots value and group, each a column reference or null."
+          "help": "Per data row its columns, each column of a row described individually under keys."
         },
         "binMode": {
           "help": "How bins are formed: auto or manual."
@@ -5516,7 +5516,18 @@
           "help": "Per slot the columns setDatasets accepts, each { key, name }; the key is instanceId|sheetId|columnId."
         },
         "stats": {
-          "help": "Per plotted series { name, stats, ci }: stats { n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }, ci { mean, variance, stddev } as [low, high]; null while nothing can be computed."
+          "help": "Per plotted series its statistics and confidence intervals, each figure described individually under keys; null while nothing can be computed."
+        }
+      },
+      "types": {
+        "Params": {
+          "binMode": "How the bins (the bars) are formed: automatically or with a fixed width. Automatic follows Sturges' rule: for n values, log₂(n) + 1 bins rounded up, at least 3. With a fixed width the bin width applies; if it is empty, the width is determined automatically.",
+          "binWidth": "The fixed width of each bin, a number greater than 0 in the units of the values. Empty means automatic width. The option can only be chosen with a fixed width.",
+          "confLevel": "The confidence level in percent, greater than 0 and less than 100 (for example 95). It determines the confidence intervals in the statistics table."
+        },
+        "Dataset": {
+          "valueRef": "The value column of the row (slot V), numeric and required. Without it the row is kept but not plotted. Empty until one is chosen.",
+          "groupRef": "The group column of the row (slot G), optional; it splits the row into series, one per group value. Empty until one is chosen."
         }
       },
       "name": "Histogram",
@@ -5588,7 +5599,7 @@
           "help": "Read the data rows, the confidence level and the columns each slot accepts, and the figures shown next to the chart."
         },
         "setDatasets": {
-          "help": "Replace the whole list of data rows at once. A row without a value column is dropped.",
+          "help": "Set the data rows. A row consists of a value column and up to three group columns; the button \"Add dataset\" adds a row. A row without a value column is neither plotted nor kept. The agent replaces the whole list in one call.",
           "params": {
             "rows": "A list of rows, each { value, group, group2, group3 }: 'value' — a numeric column (required for the row to count); 'group', 'group2', 'group3' — up to three optional nested grouping columns. Each entry is a column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null. [] clears the list."
           }
@@ -5596,17 +5607,17 @@
         "setParam": {
           "help": "Set an analysis option.",
           "params": {
-            "key": "'confLevel' — the confidence level of the interval.",
-            "value": "For 'confLevel': a number in percent, greater than 0 and less than 100 (e.g. 95)."
+            "key": "Which option; each is described individually under keys. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys."
           }
         }
       },
       "fields": {
         "seriesRefs": {
-          "help": "Per data row its value column (slot 'value')."
+          "help": "Per data row its value column (slot V), numeric and required; a row without a value column is dropped. Empty until a row is chosen."
         },
         "groupRefs": {
-          "help": "Per data row its three group columns [group, group2, group3], each a column reference or null; same order as seriesRefs."
+          "help": "Per data row up to three groupings (slots G1, G2, G3), all optional and in this order: G1 splits the row into groups, G2 splits within G1, G3 within G2. Each is empty until one is chosen."
         },
         "confLevel": {
           "help": "The confidence level of the interval in percent."
@@ -5621,7 +5632,12 @@
           "help": "Per slot the columns setDatasets accepts, each { key, name }; the key is instanceId|sheetId|columnId."
         },
         "stats": {
-          "help": "Per plotted series { name, stats, ci }: stats { n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }, ci { mean, variance, stddev } as [low, high]; null while nothing can be computed."
+          "help": "Per plotted series its statistics and confidence intervals, each figure described individually under keys; null while nothing can be computed."
+        }
+      },
+      "types": {
+        "Params": {
+          "confLevel": "The confidence level in percent, greater than 0 and less than 100 (for example 95). It determines the confidence intervals in the statistics table."
         }
       },
       "name": "Individual Value Plot",

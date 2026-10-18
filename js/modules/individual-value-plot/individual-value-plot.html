@@ -7,7 +7,7 @@
     <div class="dmike-split__section-title" x-text="t('sectionOptions')"></div>
 
     <div class="field-group">
-      <label x-text="t('confLevel')"></label>
+      <label data-help-key="modules.individual-value-plot.types.Params.confLevel" x-text="t('confLevel')"></label>
       <input type="text" class="field field--num" data-ref="conf-level" inputmode="decimal"
              :value="confLevelDisplay()" placeholder="95" @change="confChanged($event)">
     </div>

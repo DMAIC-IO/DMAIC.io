@@ -69,6 +69,48 @@ function setAtPath(obj, key, value) {
 }
 
 /**
+ * Die Schlüsselfläche von `setParam`. Der Satz steht unter
+ * `types.Params.confLevel`, derselbe am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {number} confLevel  Konfidenzniveau in Prozent
+ */
+
+/**
+ * Kennzahlen einer gezeichneten Reihe (`computeSeriesStats`). Sätze
+ * geteilt unter `modules.shared.types.SeriesStats.*`.
+ *
+ * @typedef {object} SeriesStats
+ * @property {string} name  Name der Reihe
+ * @property {Stats|null} stats  Kennzahlen, leer ohne Werte
+ * @property {StatsCi} ci  Konfidenzintervalle
+ */
+
+/**
+ * @typedef {object} Stats
+ * @property {number|null} n  Anzahl Werte
+ * @property {number} mean  Mittelwert
+ * @property {number|null} stddev  Standardabweichung
+ * @property {number|null} variance  Varianz
+ * @property {number|null} seMean  Standardfehler des Mittelwerts
+ * @property {number} median  Median
+ * @property {number} min  kleinster Wert
+ * @property {number} max  größter Wert
+ * @property {number} range  Spannweite
+ * @property {number} q1  erstes Quartil
+ * @property {number} q3  drittes Quartil
+ * @property {number} skewness  Schiefe
+ * @property {number} kurtosis  Kurtosis
+ */
+
+/**
+ * @typedef {object} StatsCi
+ * @property {Array<number|null>} [mean]  Intervall des Mittelwerts
+ * @property {Array<number|null>} [variance]  Intervall der Varianz
+ * @property {Array<number|null>} [stddev]  Intervall der Standardabweichung
+ */
+
+/**
  * Die Agenten-Lesefläche des Einzelwertdiagramms.
  *
  * Die Datenreihen und das Konfidenzniveau der Mittelwertintervalle sind der
@@ -85,7 +127,7 @@ function setAtPath(obj, key, value) {
  * @property {string[]} activeParams  the options `setParam` accepts
  * @property {string[]} activeColumnSlots  the slot keys a row of `setDatasets` may carry
  * @property {object} pickableColumns  per slot the columns `setDatasets` accepts, each `{ key, name }`
- * @property {object[]|null} stats  per plotted series `{ name, stats, ci }` — stats `{ n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }`, ci `{ mean, variance, stddev }` as `[low, high]` at the confidence level — or null while nothing can be computed
+ * @property {SeriesStats[]|null} stats  per plotted series its statistics, each figure described under keys; null while nothing can be computed
  */
 
 const mod = createModule({
@@ -156,7 +198,7 @@ const mod = createModule({
       /**
        * Eine Analyseoption setzen.
        * @agent
-       * @param {'confLevel'} key welche Option
+       * @param {keyof Params} key welche Option
        * @param {number} value das Konfidenzniveau in Prozent, größer 0 und kleiner 100
        * @returns {void}
        * @throws {Error} wenn `key` unbekannt ist oder `value` außerhalb von (0, 100)
@@ -261,13 +303,14 @@ const mod = createModule({
 
         const ctx = module._context;
         const SLOT_LABELS = {
-          value: { label: 'V', title: ctx.i18n.t('ui.datasetPicker.slotV') },
-          group: { label: 'G1', title: ctx.i18n.t('ui.datasetPicker.slotG1') },
-          group2: { label: 'G2', title: ctx.i18n.t('ui.datasetPicker.slotG2') },
-          group3: { label: 'G3', title: ctx.i18n.t('ui.datasetPicker.slotG3') },
+          value: { label: 'V', title: ctx.i18n.t('ui.datasetPicker.slotV'), helpKey: 'modules.individual-value-plot.fields.seriesRefs.help' },
+          group: { label: 'G1', title: ctx.i18n.t('ui.datasetPicker.slotG1'), helpKey: 'modules.individual-value-plot.fields.groupRefs.help' },
+          group2: { label: 'G2', title: ctx.i18n.t('ui.datasetPicker.slotG2'), helpKey: 'modules.individual-value-plot.fields.groupRefs.help' },
+          group3: { label: 'G3', title: ctx.i18n.t('ui.datasetPicker.slotG3'), helpKey: 'modules.individual-value-plot.fields.groupRefs.help' },
         };
         this._picker = new DatasetPicker(wrap, ctx, {
           multi: true,
+          addHelpKey: 'modules.individual-value-plot.actions.setDatasets.help',
           colors: CHART_COLORS,
           slots: DATASET_SLOTS.map((s) => ({ ...s, ...SLOT_LABELS[s.key] })),
           onChange: (rows) => this._applyDatasets(rows),

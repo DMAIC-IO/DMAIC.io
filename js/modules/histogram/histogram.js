@@ -176,8 +176,8 @@ export function histogramData(module, _t) {
     /**
      * Eine Analyseoption setzen.
      * @agent
-     * @param {'binMode'|'binWidth'|'confLevel'} key welche Option; read().activeParams nennt die im aktuellen Zustand gültigen
-     * @param {any} value `binMode`: 'auto' oder 'manual'; `binWidth`: Zahl größer 0 oder null; `confLevel`: Zahl größer 0 und kleiner 100
+     * @param {keyof Params} key welche Option; read().activeParams nennt die im aktuellen Zustand gültigen
+     * @param {string|number|null} value `binMode`: 'auto' oder 'manual'; `binWidth`: Zahl größer 0 oder null; `confLevel`: Zahl größer 0 und kleiner 100
      * @returns {void}
      * @throws {Error} wenn `key` unbekannt oder gerade nicht aktiv ist oder `value` ungültig
      */
@@ -241,11 +241,12 @@ export function histogramData(module, _t) {
       if (this._picker) { this._picker.destroy(); this._picker = null; }
 
       const SLOT_LABELS = {
-        value: { label: 'V', title: module._context.i18n.t('ui.datasetPicker.slotV') },
-        group: { label: 'G', title: module._context.i18n.t('ui.datasetPicker.slotG') },
+        value: { label: 'V', title: module._context.i18n.t('ui.datasetPicker.slotV'), helpKey: 'modules.histogram.types.Dataset.valueRef' },
+        group: { label: 'G', title: module._context.i18n.t('ui.datasetPicker.slotG'), helpKey: 'modules.histogram.types.Dataset.groupRef' },
       };
       this._picker = new DatasetPicker(pickerWrap, module._context, {
         multi: true,
+        addHelpKey: 'modules.histogram.actions.setDatasets.help',
         colors: CHART_COLORS_RGBA,
         slots: DATASET_SLOTS.map(s => ({ ...s, ...SLOT_LABELS[s.key] })),
         onChange: (rows) => this._applyDatasets(rows),
@@ -519,6 +520,59 @@ export function histogramData(module, _t) {
 }
 
 /**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {'auto'|'manual'} binMode  Klassenbildung
+ * @property {number|null} [binWidth]  feste Klassenbreite, nur bei manual
+ * @property {number} confLevel  Konfidenzniveau in Prozent
+ */
+
+/**
+ * Eine Datenreihe, wie `read().datasets` sie je Zeile des Pickers liefert.
+ * Sätze unter `types.Dataset.<slot>`, dieselben an den Slots „V“ und „G“.
+ *
+ * @typedef {object} Dataset
+ * @property {object|null} valueRef  Wertespalte (Slot value)
+ * @property {object|null} groupRef  Gruppenspalte (Slot group)
+ */
+
+/**
+ * Kennzahlen einer gezeichneten Reihe (`computeSeriesStats`). Sätze
+ * geteilt unter `modules.shared.types.SeriesStats.*`.
+ *
+ * @typedef {object} SeriesStats
+ * @property {string} name  Name der Reihe
+ * @property {Stats|null} stats  Kennzahlen, leer ohne Werte
+ * @property {StatsCi} ci  Konfidenzintervalle
+ */
+
+/**
+ * @typedef {object} Stats
+ * @property {number} n  Anzahl Werte
+ * @property {number} mean  Mittelwert
+ * @property {number} stddev  Standardabweichung
+ * @property {number} variance  Varianz
+ * @property {number} seMean  Standardfehler des Mittelwerts
+ * @property {number} median  Median
+ * @property {number} min  kleinster Wert
+ * @property {number} max  größter Wert
+ * @property {number} range  Spannweite
+ * @property {number} q1  erstes Quartil
+ * @property {number} q3  drittes Quartil
+ * @property {number} skewness  Schiefe
+ * @property {number} kurtosis  Kurtosis
+ */
+
+/**
+ * @typedef {object} StatsCi
+ * @property {number[]} [mean]  Intervall des Mittelwerts
+ * @property {number[]} [variance]  Intervall der Varianz
+ * @property {number[]} [stddev]  Intervall der Standardabweichung
+ */
+
+/**
  * Die Agenten-Lesefläche des Histogramms.
  *
  * Datenreihen und die drei Analyseoptionen sind der Zustand, unter ihren
@@ -530,14 +584,14 @@ export function histogramData(module, _t) {
  * `stats` (E8).
  *
  * @typedef {object} AgentRead
- * @property {object[]} datasets  per data row `{ valueRef, groupRef }` from the slots `value` and `group`, each a column reference or null
+ * @property {Dataset[]} datasets  per data row its columns, each described under keys
  * @property {string} binMode  `auto` or `manual`
  * @property {number|null} binWidth  the fixed bin width with `binMode` `manual`, or null for an automatic width
  * @property {number} confLevel  the confidence level of the statistics in percent, between 0 and 100 (exclusive)
  * @property {string[]} activeParams  the options `setParam` accepts in the current state
  * @property {string[]} activeColumnSlots  the slot keys a row of `setDatasets` may carry
  * @property {object} pickableColumns  per slot the columns `setDatasets` accepts, each `{ key, name }`
- * @property {object[]|null} stats  per plotted series `{ name, stats, ci }` — stats `{ n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }`, ci `{ mean, variance, stddev }` as `[low, high]` at the confidence level — or null while nothing can be computed
+ * @property {SeriesStats[]|null} stats  per plotted series its statistics, each figure described under keys; null while nothing can be computed
  */
 
 const mod = createModule({

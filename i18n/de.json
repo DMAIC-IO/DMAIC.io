@@ -5484,7 +5484,7 @@
           "help": "Die Datenreihen, die Klassenbildung, das Konfidenzniveau und die Spalten lesen, die jeder Slot annimmt, dazu die Kennzahlen neben dem Diagramm."
         },
         "setDatasets": {
-          "help": "Die ganze Liste der Datenreihen auf einmal ersetzen. Unvollständige Reihen bleiben stehen, werden aber nicht gezeichnet.",
+          "help": "Die Datenreihen festlegen. Eine Reihe besteht aus einer Wertespalte und optional einer Gruppenspalte; der Knopf „Datensatz hinzufügen“ fügt eine Reihe hinzu. Unvollständige Reihen bleiben stehen, werden aber nicht gezeichnet. Der Agent ersetzt mit einem Aufruf die ganze Liste.",
           "params": {
             "rows": "Eine Liste von Reihen, jeweils { value, group }: 'value' — eine numerische Spalte (Pflicht, damit die Reihe gezeichnet wird); 'group' — eine optionale Spalte, die die Reihe in Serien aufteilt. Jeder Eintrag ist ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null. [] leert die Liste."
           }
@@ -5492,14 +5492,14 @@
         "setParam": {
           "help": "Eine Analyseoption setzen. read().activeParams nennt die gerade gültigen Optionen.",
           "params": {
-            "key": "'binMode' — automatische oder feste Klassen; 'binWidth' — nur bei binMode 'manual' aktiv; 'confLevel' — das Konfidenzniveau der Kennzahlen.",
-            "value": "Für 'binMode': 'auto' oder 'manual' ('auto' leert auch binWidth). Für 'binWidth': eine Zahl größer 0, oder null für eine automatische Breite. Für 'confLevel': eine Zahl in Prozent, größer 0 und kleiner 100."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys."
           }
         }
       },
       "fields": {
         "datasets": {
-          "help": "Je Datenreihe { valueRef, groupRef } aus den Slots value und group, jeweils ein Spaltenbezug oder null."
+          "help": "Je Datenreihe ihre Spalten, jede Spalte einer Reihe unter keys einzeln beschrieben."
         },
         "binMode": {
           "help": "Wie die Klassen gebildet werden: auto oder manual."
@@ -5520,7 +5520,18 @@
           "help": "Je Slot die Spalten, die setDatasets annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId."
         },
         "stats": {
-          "help": "Je gezeichneter Reihe { name, stats, ci }: stats { n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }, ci { mean, variance, stddev } als [unten, oben]; null, solange nichts gerechnet werden kann."
+          "help": "Je gezeichneter Reihe ihre Kennzahlen und Konfidenzintervalle, jede Kennzahl unter keys einzeln beschrieben; null, solange nichts gerechnet werden kann."
+        }
+      },
+      "types": {
+        "Params": {
+          "binMode": "Wie die Klassen (die Balken) gebildet werden: automatisch oder mit fester Breite. Automatisch gilt die Regel nach Sturges: bei n Werten aufgerundet log₂(n) + 1 Klassen, mindestens 3. Bei fester Breite gilt die Klassenbreite; ist sie leer, wird die Breite automatisch bestimmt.",
+          "binWidth": "Die feste Breite jeder Klasse, eine Zahl größer 0 in den Einheiten der Werte. Leer heißt automatische Breite. Die Option lässt sich nur bei fester Breite wählen.",
+          "confLevel": "Das Konfidenzniveau in Prozent, größer 0 und kleiner 100 (zum Beispiel 95). Es bestimmt die Konfidenzintervalle in der Statistiktabelle."
+        },
+        "Dataset": {
+          "valueRef": "Die Wertespalte der Reihe (Slot V), numerisch und Pflicht. Ohne sie bleibt die Reihe stehen, wird aber nicht gezeichnet. Leer, solange keine gewählt ist.",
+          "groupRef": "Die Gruppenspalte der Reihe (Slot G), optional; sie teilt die Reihe in Serien, eine je Gruppenwert. Leer, solange keine gewählt ist."
         }
       },
       "name": "Histogramm",
@@ -5592,7 +5603,7 @@
           "help": "Die Datenreihen, das Konfidenzniveau und die Spalten lesen, die jeder Slot annimmt, dazu die Kennzahlen neben dem Diagramm."
         },
         "setDatasets": {
-          "help": "Die ganze Liste der Datenreihen auf einmal ersetzen. Eine Reihe ohne Wertespalte entfällt.",
+          "help": "Die Datenreihen festlegen. Eine Reihe besteht aus einer Wertespalte und bis zu drei Gruppenspalten; der Knopf „Datensatz hinzufügen“ fügt eine Reihe hinzu. Eine Reihe ohne Wertespalte wird nicht gezeichnet und nicht gespeichert. Der Agent ersetzt mit einem Aufruf die ganze Liste.",
           "params": {
             "rows": "Eine Liste von Reihen, jeweils { value, group, group2, group3 }: 'value' — eine numerische Spalte (Pflicht, damit die Reihe zählt); 'group', 'group2', 'group3' — bis zu drei optionale, verschachtelte Gruppierungsspalten. Jeder Eintrag ist ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null. [] leert die Liste."
           }
@@ -5600,17 +5611,17 @@
         "setParam": {
           "help": "Eine Analyseoption setzen.",
           "params": {
-            "key": "'confLevel' — das Konfidenzniveau des Intervalls.",
-            "value": "Für 'confLevel': eine Zahl in Prozent, größer 0 und kleiner 100 (z. B. 95)."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys."
           }
         }
       },
       "fields": {
         "seriesRefs": {
-          "help": "Je Datenreihe ihre Wertespalte (Slot 'value')."
+          "help": "Je Datenreihe ihre Wertespalte (Slot V), numerisch und Pflicht; eine Reihe ohne Wertespalte entfällt. Leer, solange keine Reihe gewählt ist."
         },
         "groupRefs": {
-          "help": "Je Datenreihe ihre drei Gruppenspalten [group, group2, group3], jeweils ein Spaltenbezug oder null; dieselbe Reihenfolge wie seriesRefs."
+          "help": "Je Datenreihe bis zu drei Gruppierungen (Slots G1, G2, G3), alle optional und in dieser Reihenfolge: G1 teilt die Reihe in Gruppen, G2 teilt innerhalb von G1, G3 innerhalb von G2. Jede ist leer, solange keine gewählt ist."
         },
         "confLevel": {
           "help": "Das Konfidenzniveau des Intervalls in Prozent."
@@ -5625,7 +5636,12 @@
           "help": "Je Slot die Spalten, die setDatasets annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId."
         },
         "stats": {
-          "help": "Je gezeichneter Reihe { name, stats, ci }: stats { n, mean, stddev, variance, seMean, median, min, max, range, q1, q3, skewness, kurtosis }, ci { mean, variance, stddev } als [unten, oben]; null, solange nichts gerechnet werden kann."
+          "help": "Je gezeichneter Reihe ihre Kennzahlen und Konfidenzintervalle, jede Kennzahl unter keys einzeln beschrieben; null, solange nichts gerechnet werden kann."
+        }
+      },
+      "types": {
+        "Params": {
+          "confLevel": "Das Konfidenzniveau in Prozent, größer 0 und kleiner 100 (zum Beispiel 95). Es bestimmt die Konfidenzintervalle in der Statistiktabelle."
         }
       },
       "name": "Einzelwertdiagramm",
