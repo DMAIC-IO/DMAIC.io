@@ -20,7 +20,7 @@
           <div class="module-calendar__axis-label" x-text="t('time')"></div>
           <div class="module-calendar__axis-pair">
             <div class="module-calendar__axis-col">
-              <label x-text="t('from')"></label>
+              <label data-help-key="modules.dmaic-calendar.fields.axisFrom.help" x-text="t('from')"></label>
               <select class="field" data-ref="axisFrom" @change="axisFromChanged($event)">
                 <template x-for="h in hours24" :key="h">
                   <option :value="h" :selected="model.axisFrom === h" x-text="hourLabel(h)"></option>
@@ -28,7 +28,7 @@
               </select>
             </div>
             <div class="module-calendar__axis-col">
-              <label x-text="t('to')"></label>
+              <label data-help-key="modules.dmaic-calendar.fields.axisTo.help" x-text="t('to')"></label>
               <select class="field" data-ref="axisTo" @change="axisToChanged($event)">
                 <template x-for="h in hours24" :key="h">
                   <option :value="h" :selected="model.axisTo === h" x-text="hourLabel(h)"></option>
@@ -39,7 +39,7 @@
           <div class="module-calendar__axis-label" x-text="t('weekdays')"></div>
           <div class="module-calendar__axis-pair">
             <div class="module-calendar__axis-col">
-              <label x-text="t('from')"></label>
+              <label data-help-key="modules.dmaic-calendar.fields.dayFrom.help" x-text="t('from')"></label>
               <select class="field" data-ref="dayFrom" @change="dayFromChanged($event)">
                 <template x-for="(d, i) in allDayNames()" :key="i">
                   <option :value="i" :selected="model.dayFrom === i" x-text="d"></option>
@@ -47,7 +47,7 @@
               </select>
             </div>
             <div class="module-calendar__axis-col">
-              <label x-text="t('to')"></label>
+              <label data-help-key="modules.dmaic-calendar.fields.dayTo.help" x-text="t('to')"></label>
               <select class="field" data-ref="dayTo" @change="dayToChanged($event)">
                 <template x-for="(d, i) in allDayNames()" :key="i">
                   <option :value="i" :selected="model.dayTo === i" x-text="d"></option>
@@ -83,8 +83,8 @@
       <button class="module-calendar__nav-btn" data-ref="nextPeriod" @click="nextPeriod()">&#9654;</button>
       <div class="module-calendar__right">
         <div class="module-calendar__view-toggle" data-ref="viewToggle">
-          <button :class="viewBtnClass('month')" data-view="month" @click="setView('month')" x-text="t('month')"></button>
-          <button :class="viewBtnClass('week')" data-view="week" @click="setView('week')" x-text="t('week')"></button>
+          <button :class="viewBtnClass('month')" data-view="month" data-help-key="modules.dmaic-calendar.actions.setView.help" @click="setView('month')" x-text="t('month')"></button>
+          <button :class="viewBtnClass('week')" data-view="week" data-help-key="modules.dmaic-calendar.actions.setView.help" @click="setView('week')" x-text="t('week')"></button>
         </div>
         <button class="module-calendar__today-btn" data-ref="todayBtn" @click="goToday()" x-text="t('today')"></button>
       </div>
@@ -173,16 +173,16 @@
   <div class="module-calendar__modal-forms" hidden>
     <div class="module-calendar__event-form" x-ref="eventForm">
       <div class="field-group">
-        <label x-text="t('title')"></label>
+        <label data-help-key="modules.dmaic-calendar.types.CalendarEvent.title" x-text="t('title')"></label>
         <input type="text" class="field" data-ref="evTitle" x-model="form.title" :placeholder="t('titlePlaceholder')">
       </div>
       <div class="module-calendar__row-3">
         <div class="field-group">
-          <label x-text="t('date')"></label>
+          <label data-help-key="modules.dmaic-calendar.types.CalendarEvent.date" x-text="t('date')"></label>
           <input type="date" class="field" data-ref="evDate" x-model="form.date">
         </div>
         <div class="field-group">
-          <label x-text="t('startTime')"></label>
+          <label data-help-key="modules.dmaic-calendar.types.CalendarEvent.time" x-text="t('startTime')"></label>
           <input type="time" class="field" data-ref="evTime" x-model="form.time" value="09:00" step="300">
         </div>
         <div class="field-group">
@@ -191,11 +191,11 @@
         </div>
       </div>
       <div class="field-group">
-        <label x-text="t('duration')"></label>
+        <label data-help-key="modules.dmaic-calendar.types.CalendarEvent.duration" x-text="t('duration')"></label>
         <input type="text" class="field field--inline" data-ref="evDurationInfo" :value="durationLabel()" disabled>
       </div>
       <div class="field-group">
-        <label x-text="t('phase')"></label>
+        <label data-help-key="modules.dmaic-calendar.types.CalendarEvent.phase" x-text="t('phase')"></label>
         <div class="module-calendar__phase-select" data-ref="phaseSelect">
           <template x-for="p in phaseIds" :key="p">
             <span class="module-calendar__phase-chip" :data-phase="p"
@@ -205,7 +205,7 @@
         </div>
       </div>
       <div class="field-group">
-        <label x-text="t('description')"></label>
+        <label data-help-key="modules.dmaic-calendar.types.CalendarEvent.desc" x-text="t('description')"></label>
         <textarea class="field" data-ref="evDesc" x-model="form.desc" :placeholder="t('descPlaceholder')"></textarea>
       </div>
     </div>

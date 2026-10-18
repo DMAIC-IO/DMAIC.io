@@ -2475,7 +2475,7 @@
           }
         },
         "setView": {
-          "help": "Setzt die Kalenderansicht.",
+          "help": "Setzt die Kalenderansicht auf den Monat (month) oder die Woche (week).",
           "params": {
             "v": "Die Ansicht: month zeigt den Monat, week die Woche. Jeder andere Wert ist ein Fehler."
           }
@@ -2507,7 +2507,7 @@
       },
       "fields": {
         "events": {
-          "help": "Die Termine. Je Termin: id (damit sprechen die Aktionen ihn an), title (die Bezeichnung), date (der Tag als JJJJ-MM-TT), time (die Startzeit als HH:MM), duration (die Dauer in Minuten), desc (die Beschreibung) und phase (die Phase des aktiven Zyklus, nach der der Termin eingefärbt wird). Ein Termin, der aus einer Aufgabenliste gespiegelt wurde, trägt zusätzlich source mit dem Wert todo; er wird bei der nächsten Spiegelung ersetzt. Das Ende eines Termins ist aus Startzeit und Dauer gerechnet und steht in keinem Feld. Massendaten: ohne options.fields = ['events'] kommt nur der Umfang."
+          "help": "Die Termine, jede Angabe unter keys einzeln beschrieben. Das Ende eines Termins ist aus Startzeit und Dauer gerechnet und steht in keinem Feld. Massendaten: ohne options.fields = ['events'] kommt nur der Umfang."
         },
         "axisFrom": {
           "help": "Die erste angezeigte Stunde der Tagesachse, 0 bis 23. Sie begrenzt nur die Anzeige der Wochenansicht, nicht die Termine selbst."
@@ -2523,6 +2523,18 @@
         },
         "viewMode": {
           "help": "Die Kalenderansicht: month zeigt den Monat, week die Woche. Die Wahl wird gespeichert und übersteht einen Neustart."
+        }
+      },
+      "types": {
+        "CalendarEvent": {
+          "id": "Die Kennung des Termins; die vergibt die App beim Anlegen. Mit ihr sprechen Sie den Termin beim Ändern und Löschen an.",
+          "title": "Die Bezeichnung des Termins. Sie darf nicht leer sein; Leerzeichen am Rand werden entfernt.",
+          "date": "Der Tag des Termins als JJJJ-MM-TT, zum Beispiel 2026-03-14. Titel und Datum sind die Pflichtangaben.",
+          "time": "Der Beginn des Termins als HH:MM zwischen 00:00 und 23:59; ohne Angabe 09:00. Im Dialog springt das Feld in Schritten von 5 Minuten.",
+          "duration": "Die Dauer des Termins in ganzen Minuten, mindestens 5; ohne Angabe 60. Im Dialog wird sie als Ende minus Beginn berechnet und nur angezeigt.",
+          "desc": "Eine Beschreibung des Termins als freier Text; ohne Angabe leer.",
+          "phase": "Die Phase des Zyklus, nach der der Termin eingefärbt wird; es zählen die Phasen des aktiven Zyklus, ohne Angabe die erste. Kennt der aktive Zyklus die Phase eines Termins nicht, zeigt der Dialog die erste Phase, und Speichern schreibt sie fest.",
+          "source": "Woher der Termin stammt. Nur Termine, die aus der Aufgabenliste gemeldet wurden, tragen diese Angabe mit dem Wert todo; sie werden dort geändert und bei der nächsten Meldung ersetzt."
         }
       }
     },
@@ -10914,7 +10926,27 @@
       },
       "fields": {
         "lessons": {
-          "help": "Die erfassten Erfahrungen in Anlegereihenfolge. Je Erfahrung: id (damit sprechen die Aktionen sie an), title, category (success, problem oder improve), phase (eine Phase des aktiven Zyklus), impact (high, medium oder low), owner, description, rootCause, recommendation, actions (je Maßnahme text und done) sowie createdAt und updatedAt als Zeitstempel in Millisekunden."
+          "help": "Die erfassten Erfahrungen in Anlegereihenfolge, jede Angabe unter keys einzeln beschrieben."
+        }
+      },
+      "types": {
+        "LessonEntry": {
+          "id": "Die Kennung der Erfahrung; die vergibt die App beim Anlegen. Mit ihr sprechen Sie die Erfahrung beim Ändern und Löschen an.",
+          "title": "Der Titel der Erfahrung, er steht als Überschrift auf der Karte. Er ist die einzige Pflichtangabe; ohne Titel wird nichts gespeichert. Leerzeichen am Rand werden entfernt.",
+          "category": "Die Art der Erfahrung: Erfolg (success), Problem (problem) oder Verbesserung (improve); ohne Angabe Erfolg. Danach richten sich der Farbpunkt an der Karte und die Filter über der Liste. Ein Wert aus einem Import kann davon abweichen und bleibt erhalten.",
+          "phase": "Die Phase des Zyklus, zu der die Erfahrung gehört; es zählen die Phasen des aktiven Zyklus, ohne Angabe die letzte. Sie steht als Tag auf der Karte.",
+          "impact": "Die Auswirkung der Erfahrung auf das Projekt in drei Stufen: Hoch (high), Mittel (medium) oder Niedrig (low); ohne Angabe Mittel. Sie steht als Badge auf der Karte. Ein Wert aus einem Import kann davon abweichen und bleibt erhalten.",
+          "owner": "Wer für die Erfahrung verantwortlich ist, als freier Text. Darf leer bleiben.",
+          "description": "Was passiert ist, in eigenen Worten und als freier Text. Darf leer bleiben.",
+          "rootCause": "Warum es dazu kam: die Ursache hinter dem Erfolg oder dem Problem, als freier Text. Darf leer bleiben.",
+          "recommendation": "Was künftige Projekte tun oder lassen sollten, als freier Text. Darf leer bleiben.",
+          "actions": "Die Maßnahmen, die sich aus der Erfahrung ergeben, als Liste; jede hat einen Text und einen Haken für erledigt. Die offenen Maßnahmen aller Erfahrungen zählt die Kennzahl „Offene Actions“.",
+          "createdAt": "Wann die Erfahrung angelegt wurde, als Zeitstempel in Millisekunden; den setzt die App. Die Karten sind danach sortiert, die neueste zuerst.",
+          "updatedAt": "Wann die Erfahrung zuletzt geändert wurde, als Zeitstempel in Millisekunden; den setzt die App bei jeder Änderung, auch beim Abhaken einer Maßnahme."
+        },
+        "LessonAction": {
+          "text": "Der Text der Maßnahme.",
+          "done": "Ob die Maßnahme erledigt ist; auf der Karte hakt man sie ab."
         }
       }
     },

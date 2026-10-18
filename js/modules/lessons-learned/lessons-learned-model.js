@@ -3,6 +3,13 @@ import { uid as coreUid } from '../../core/uid.js';
 export const CATEGORIES = ['success', 'problem', 'improve'];
 export const IMPACTS = ['high', 'medium', 'low'];
 
+/**
+ * Eine Maßnahme einer Erfahrung, wie `toJSON()` sie liefert.
+ *
+ * @typedef {object} LessonAction
+ * @property {string} text  die Maßnahme
+ * @property {boolean} done  erledigt
+ */
 export class Action {
   text = ''
   done = false
@@ -21,6 +28,25 @@ export class Action {
   }
 }
 
+/**
+ * Eine Erfahrung, wie `toJSON()` sie liefert und `read().lessons` sie zeigt.
+ * Sätze je Eigenschaft unter `types.LessonEntry.<name>`, dieselben an den
+ * Formularbeschriftungen (Alt-Taste).
+ *
+ * @typedef {object} LessonEntry
+ * @property {string} id  Kennung
+ * @property {string} title  Titel
+ * @property {'success'|'problem'|'improve'} category  Kategorie
+ * @property {string} phase  Phase des Zyklus
+ * @property {'high'|'medium'|'low'} impact  Auswirkung
+ * @property {string} owner  verantwortlich
+ * @property {string} description  Beschreibung
+ * @property {string} rootCause  Ursache
+ * @property {string} recommendation  Empfehlung
+ * @property {LessonAction[]} actions  Maßnahmen
+ * @property {number} createdAt  angelegt, Zeitstempel in Millisekunden
+ * @property {number} updatedAt  zuletzt geändert, Zeitstempel in Millisekunden
+ */
 export class Lesson {
   id = ''
   title = ''
@@ -77,7 +103,7 @@ export class Lesson {
 
 export class State {
   /**
-   * @type {Lesson[]} die erfassten Erfahrungen in Anlegereihenfolge; je
+   * @type {LessonEntry[]} die erfassten Erfahrungen in Anlegereihenfolge; je
    *   Erfahrung `id` (zum Ansprechen), `title`, `category` (`success`,
    *   `problem` oder `improve`), `phase` (eine Phase des aktiven Zyklus),
    *   `impact` (`high`, `medium` oder `low`), `owner`, `description`,

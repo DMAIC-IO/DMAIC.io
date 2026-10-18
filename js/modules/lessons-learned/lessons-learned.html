@@ -68,9 +68,9 @@
             <div class="ll__card-content">
               <div class="ll__card-title-row">
                 <span class="ll__card-title" x-text="lesson.title"></span>
-                <span class="ll__phase-tag" :class="'ll__phase-tag--' + lesson.phase"
+                <span class="ll__phase-tag" data-help-key="modules.lessons-learned.types.LessonEntry.phase" :class="'ll__phase-tag--' + lesson.phase"
                   x-text="phaseLabel(lesson.phase)"></span>
-                <span class="ll__impact-badge" :class="'ll__impact-badge--' + lesson.impact"
+                <span class="ll__impact-badge" data-help-key="modules.lessons-learned.types.LessonEntry.impact" :class="'ll__impact-badge--' + lesson.impact"
                   x-text="impactLabel(lesson.impact)"></span>
               </div>
               <div class="ll__card-meta">
@@ -139,13 +139,13 @@
   <div class="ll__modal-forms" hidden>
     <div class="ll__form" x-ref="lessonForm">
       <div class="ll__form-group">
-        <label class="ll__form-label" x-text="t('fieldTitle')"></label>
+        <label class="ll__form-label" data-help-key="modules.lessons-learned.types.LessonEntry.title" x-text="t('fieldTitle')"></label>
         <input class="field ll__form-input" data-field="title" x-model="lessonDraft.title"
           :placeholder="t('fieldTitlePlaceholder')">
       </div>
       <div class="ll__form-row">
         <div class="ll__form-group">
-          <label class="ll__form-label" x-text="t('fieldCategory')"></label>
+          <label class="ll__form-label" data-help-key="modules.lessons-learned.types.LessonEntry.category" x-text="t('fieldCategory')"></label>
           <select class="field ll__form-select" data-field="category" x-model="lessonDraft.category">
             <template x-for="k in categoryOptions" :key="k">
               <option :value="k" x-text="t('cat_' + k)"></option>
@@ -153,7 +153,7 @@
           </select>
         </div>
         <div class="ll__form-group">
-          <label class="ll__form-label" x-text="t('fieldPhase')"></label>
+          <label class="ll__form-label" data-help-key="modules.lessons-learned.types.LessonEntry.phase" x-text="t('fieldPhase')"></label>
           <select class="field ll__form-select" data-field="phase" x-model="lessonDraft.phase">
             <template x-for="opt in phaseOptions()" :key="opt.value">
               <option :value="opt.value" x-text="opt.label"></option>
@@ -163,7 +163,7 @@
       </div>
       <div class="ll__form-row">
         <div class="ll__form-group">
-          <label class="ll__form-label" x-text="t('fieldImpact')"></label>
+          <label class="ll__form-label" data-help-key="modules.lessons-learned.types.LessonEntry.impact" x-text="t('fieldImpact')"></label>
           <select class="field ll__form-select" data-field="impact" x-model="lessonDraft.impact">
             <template x-for="k in impactOptions" :key="k">
               <option :value="k" x-text="t('impact_' + k)"></option>
@@ -171,28 +171,28 @@
           </select>
         </div>
         <div class="ll__form-group">
-          <label class="ll__form-label" x-text="t('fieldOwner')"></label>
+          <label class="ll__form-label" data-help-key="modules.lessons-learned.types.LessonEntry.owner" x-text="t('fieldOwner')"></label>
           <input class="field ll__form-input" data-field="owner" x-model="lessonDraft.owner"
             :placeholder="t('fieldOwnerPlaceholder')">
         </div>
       </div>
       <div class="ll__form-group">
-        <label class="ll__form-label" x-text="t('fieldDescription')"></label>
+        <label class="ll__form-label" data-help-key="modules.lessons-learned.types.LessonEntry.description" x-text="t('fieldDescription')"></label>
         <textarea class="field ll__form-textarea" data-field="description" x-model="lessonDraft.description"
           :placeholder="t('fieldDescriptionPlaceholder')"></textarea>
       </div>
       <div class="ll__form-group">
-        <label class="ll__form-label" x-text="t('fieldRootCause')"></label>
+        <label class="ll__form-label" data-help-key="modules.lessons-learned.types.LessonEntry.rootCause" x-text="t('fieldRootCause')"></label>
         <textarea class="ll__form-textarea ll__form-textarea--sm" data-field="rootCause" x-model="lessonDraft.rootCause"
           :placeholder="t('fieldRootCausePlaceholder')"></textarea>
       </div>
       <div class="ll__form-group">
-        <label class="ll__form-label" x-text="t('fieldRecommendation')"></label>
+        <label class="ll__form-label" data-help-key="modules.lessons-learned.types.LessonEntry.recommendation" x-text="t('fieldRecommendation')"></label>
         <textarea class="field ll__form-textarea" data-field="recommendation" x-model="lessonDraft.recommendation"
           :placeholder="t('fieldRecommendationPlaceholder')"></textarea>
       </div>
       <div class="ll__form-group">
-        <label class="ll__form-label" x-text="t('fieldActions')"></label>
+        <label class="ll__form-label" data-help-key="modules.lessons-learned.types.LessonEntry.actions" x-text="t('fieldActions')"></label>
         <div class="ll__action-input-row">
           <input class="field ll__form-input" data-ref="actionInput" x-model="draftActionInput"
             :placeholder="t('fieldActionPlaceholder')"

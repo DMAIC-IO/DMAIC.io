@@ -2471,7 +2471,7 @@
           }
         },
         "setView": {
-          "help": "Sets the calendar view.",
+          "help": "Sets the calendar view to the month (month) or the week (week).",
           "params": {
             "v": "The view: month shows the month, week the week. Any other value is an error."
           }
@@ -2503,7 +2503,7 @@
       },
       "fields": {
         "events": {
-          "help": "The appointments. Per appointment: id (what the actions address it by), title (the label), date (the day as YYYY-MM-DD), time (the start time as HH:MM), duration (the duration in minutes), desc (the description) and phase (the phase of the active cycle the appointment is coloured by). An appointment mirrored from a todo list also carries source with the value todo; it is replaced on the next mirroring. The end of an appointment is computed from start time and duration and is held in no field. Bulk data: without options.fields = ['events'] only the extent is delivered."
+          "help": "The appointments, each entry described individually under keys. The end of an appointment is computed from start time and duration and is held in no field. Bulk data: without options.fields = ['events'] only the extent is delivered."
         },
         "axisFrom": {
           "help": "The first hour shown on the day axis, 0 to 23. It only bounds the display of the week view, not the appointments themselves."
@@ -2519,6 +2519,18 @@
         },
         "viewMode": {
           "help": "The calendar view: month shows the month, week the week. The choice is persisted and survives a restart."
+        }
+      },
+      "types": {
+        "CalendarEvent": {
+          "id": "The identifier of the appointment; the app assigns it when the appointment is created. Use it to address the appointment when changing or deleting.",
+          "title": "The label of the appointment. It must not be empty; spaces at the edges are removed.",
+          "date": "The day of the appointment as YYYY-MM-DD, for example 2026-03-14. Title and date are the required entries.",
+          "time": "The start of the appointment as HH:MM between 00:00 and 23:59; 09:00 when not given. In the dialog the field moves in steps of 5 minutes.",
+          "duration": "The duration of the appointment in whole minutes, at least 5; 60 when not given. In the dialog it is calculated as end minus start and only displayed.",
+          "desc": "A description of the appointment as free text; empty when not given.",
+          "phase": "The phase of the cycle the appointment is coloured by; the phases of the active cycle count, the first one when not given. If the active cycle does not know the phase of an appointment, the dialog shows the first phase and saving writes it in.",
+          "source": "Where the appointment comes from. Only appointments reported from the task list carry this entry, with the value todo; they are changed there and replaced on the next report."
         }
       }
     },
@@ -10910,7 +10922,27 @@
       },
       "fields": {
         "lessons": {
-          "help": "The recorded lessons in the order they were added. Per lesson: id (this is how the actions address it), title, category (success, problem or improve), phase (a phase of the active cycle), impact (high, medium or low), owner, description, rootCause, recommendation, actions (per action text and done) plus createdAt and updatedAt as millisecond timestamps."
+          "help": "The recorded lessons in the order they were added, each entry described individually under keys."
+        }
+      },
+      "types": {
+        "LessonEntry": {
+          "id": "The identifier of the lesson; the app assigns it when the lesson is created. Use it to address the lesson when changing or deleting.",
+          "title": "The title of the lesson, shown as the heading on the card. It is the only required entry; without a title nothing is saved. Spaces at the edges are removed.",
+          "category": "The kind of lesson: Success (success), Problem (problem) or Improvement (improve); Success when not given. The coloured dot on the card and the filters above the list follow it. A value from an import can differ and is kept.",
+          "phase": "The phase of the cycle the lesson belongs to; the phases of the active cycle count, the last one when not given. It is shown as a tag on the card.",
+          "impact": "The effect of the lesson on the project in three levels: High (high), Medium (medium) or Low (low); Medium when not given. It is shown as a badge on the card. A value from an import can differ and is kept.",
+          "owner": "Who is responsible for the lesson, as free text. May stay empty.",
+          "description": "What happened, in your own words and as free text. May stay empty.",
+          "rootCause": "Why it happened: the cause behind the success or the problem, as free text. May stay empty.",
+          "recommendation": "What future projects should do or avoid, as free text. May stay empty.",
+          "actions": "The actions that follow from the lesson, as a list; each has a text and a tick for done. The open actions of all lessons are counted by the figure “Open Actions”.",
+          "createdAt": "When the lesson was created, as a timestamp in milliseconds; the app sets it. The cards are sorted by it, newest first.",
+          "updatedAt": "When the lesson was last changed, as a timestamp in milliseconds; the app sets it on every change, including ticking off an action."
+        },
+        "LessonAction": {
+          "text": "The text of the action.",
+          "done": "Whether the action is done; you tick it off on the card."
         }
       }
     },

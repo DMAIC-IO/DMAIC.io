@@ -73,9 +73,24 @@ function sanitizeEvent(e) {
   return ev;
 }
 
+/**
+ * Ein Termin, wie `toJSON()` ihn liefert und `read().events` ihn zeigt.
+ * Sätze je Eigenschaft unter `types.CalendarEvent.<name>`, dieselben an
+ * den Beschriftungen des Termindialogs (Alt-Taste).
+ *
+ * @typedef {object} CalendarEvent
+ * @property {string} id  Kennung
+ * @property {string} title  Titel
+ * @property {string} date  Datum, JJJJ-MM-TT
+ * @property {string} time  Beginn, HH:MM
+ * @property {number} duration  Dauer in Minuten
+ * @property {string} desc  Beschreibung
+ * @property {string} phase  Phase des Zyklus
+ * @property {'todo'} [source]  Herkunft, nur bei gemeldeten Aufgaben
+ */
 export class State {
   /**
-   * @type {Array<{id:string,title:string,date:string,time:string,duration:number,desc:string,phase:string,source?:string}>}
+   * @type {CalendarEvent[]}
    *   die Termine; je Termin `id` (zum Ansprechen), `title`, `date` als
    *   `JJJJ-MM-TT`, `time` als `HH:MM`, `duration` in Minuten, `desc` und
    *   `phase` (die Phase des aktiven Zyklus, nach der der Termin eingefärbt

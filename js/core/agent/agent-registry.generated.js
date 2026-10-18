@@ -3930,10 +3930,46 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "events": {
-        "type": "Array<{id:string,title:string,date:string,time:string,duration:number,desc:string,phase:string,source?:string}>",
+        "type": "CalendarEvent[]",
         "help": "die Termine; je Termin `id` (zum Ansprechen), `title`, `date` als `JJJJ-MM-TT`, `time` als `HH:MM`, `duration` in Minuten, `desc` und `phase` (die Phase des aktiven Zyklus, nach der der Termin eingefärbt wird). Ein Termin, der aus einer Aufgabenliste gespiegelt wurde, trägt zusätzlich `source: 'todo'`",
         "bulk": true,
-        "bulkKind": "table"
+        "bulkKind": "table",
+        "keysOf": "CalendarEvent",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": "Kennung"
+          },
+          "title": {
+            "type": "string",
+            "help": "Titel"
+          },
+          "date": {
+            "type": "string",
+            "help": "Datum, JJJJ-MM-TT"
+          },
+          "time": {
+            "type": "string",
+            "help": "Beginn, HH:MM"
+          },
+          "duration": {
+            "type": "number",
+            "help": "Dauer in Minuten"
+          },
+          "desc": {
+            "type": "string",
+            "help": "Beschreibung"
+          },
+          "phase": {
+            "type": "string",
+            "help": "Phase des Zyklus"
+          },
+          "source": {
+            "type": "'todo'",
+            "help": "Herkunft, nur bei gemeldeten Aufgaben",
+            "optional": true
+          }
+        }
       },
       "axisFrom": {
         "type": "number",
@@ -7261,10 +7297,72 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "lessons": {
-        "type": "Lesson[]",
+        "type": "LessonEntry[]",
         "help": "die erfassten Erfahrungen in Anlegereihenfolge; je Erfahrung `id` (zum Ansprechen), `title`, `category` (`success`, `problem` oder `improve`), `phase` (eine Phase des aktiven Zyklus), `impact` (`high`, `medium` oder `low`), `owner`, `description`, `rootCause`, `recommendation`, `actions` (je Maßnahme `text` und `done`) sowie `createdAt` und `updatedAt` als Zeitstempel in Millisekunden",
         "bulk": true,
-        "bulkKind": "table"
+        "bulkKind": "table",
+        "keysOf": "LessonEntry",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": "Kennung"
+          },
+          "title": {
+            "type": "string",
+            "help": "Titel"
+          },
+          "category": {
+            "type": "'success'|'problem'|'improve'",
+            "help": "Kategorie"
+          },
+          "phase": {
+            "type": "string",
+            "help": "Phase des Zyklus"
+          },
+          "impact": {
+            "type": "'high'|'medium'|'low'",
+            "help": "Auswirkung"
+          },
+          "owner": {
+            "type": "string",
+            "help": "verantwortlich"
+          },
+          "description": {
+            "type": "string",
+            "help": "Beschreibung"
+          },
+          "rootCause": {
+            "type": "string",
+            "help": "Ursache"
+          },
+          "recommendation": {
+            "type": "string",
+            "help": "Empfehlung"
+          },
+          "actions": {
+            "type": "LessonAction[]",
+            "help": "Maßnahmen",
+            "keysOf": "LessonAction",
+            "keys": {
+              "text": {
+                "type": "string",
+                "help": "die Maßnahme"
+              },
+              "done": {
+                "type": "boolean",
+                "help": "erledigt"
+              }
+            }
+          },
+          "createdAt": {
+            "type": "number",
+            "help": "angelegt, Zeitstempel in Millisekunden"
+          },
+          "updatedAt": {
+            "type": "number",
+            "help": "zuletzt geändert, Zeitstempel in Millisekunden"
+          }
+        }
       }
     }
   },
