@@ -2534,7 +2534,7 @@
           "duration": "Die Dauer des Termins in ganzen Minuten, mindestens 5; ohne Angabe 60. Im Dialog wird sie als Ende minus Beginn berechnet und nur angezeigt.",
           "desc": "Eine Beschreibung des Termins als freier Text; ohne Angabe leer.",
           "phase": "Die Phase des Zyklus, nach der der Termin eingefärbt wird; es zählen die Phasen des aktiven Zyklus, ohne Angabe die erste. Kennt der aktive Zyklus die Phase eines Termins nicht, zeigt der Dialog die erste Phase, und Speichern schreibt sie fest.",
-          "source": "Woher der Termin stammt. Nur Termine, die aus der Aufgabenliste gemeldet wurden, tragen diese Angabe mit dem Wert todo; sie werden dort geändert und bei der nächsten Meldung ersetzt."
+          "source": "Woher der Termin stammt. Nur Termine, die aus der Aufgabenliste gemeldet wurden, tragen diese Angabe mit dem Wert todo; Änderungen im Kalender gehen bei der nächsten Meldung aus der Aufgabenliste verloren; ändern Sie sie dort."
         }
       }
     },
@@ -10933,9 +10933,9 @@
         "LessonEntry": {
           "id": "Die Kennung der Erfahrung; die vergibt die App beim Anlegen. Mit ihr sprechen Sie die Erfahrung beim Ändern und Löschen an.",
           "title": "Der Titel der Erfahrung, er steht als Überschrift auf der Karte. Er ist die einzige Pflichtangabe; ohne Titel wird nichts gespeichert. Leerzeichen am Rand werden entfernt.",
-          "category": "Die Art der Erfahrung: Erfolg (success), Problem (problem) oder Verbesserung (improve); ohne Angabe Erfolg. Danach richten sich der Farbpunkt an der Karte und die Filter über der Liste. Ein Wert aus einem Import kann davon abweichen und bleibt erhalten.",
+          "category": "Die Art der Erfahrung: Erfolg (success), Problem (problem) oder Verbesserung (improve); ohne Angabe Erfolg. Danach richten sich der Farbpunkt an der Karte und die Filter über der Liste. Ein unbekannter Wert aus einem Import wird zu Erfolg.",
           "phase": "Die Phase des Zyklus, zu der die Erfahrung gehört; es zählen die Phasen des aktiven Zyklus, ohne Angabe die letzte. Sie steht als Tag auf der Karte.",
-          "impact": "Die Auswirkung der Erfahrung auf das Projekt in drei Stufen: Hoch (high), Mittel (medium) oder Niedrig (low); ohne Angabe Mittel. Sie steht als Badge auf der Karte. Ein Wert aus einem Import kann davon abweichen und bleibt erhalten.",
+          "impact": "Die Auswirkung der Erfahrung auf das Projekt in drei Stufen: Hoch (high), Mittel (medium) oder Niedrig (low); ohne Angabe Mittel. Sie steht als Badge auf der Karte. Ein unbekannter Wert aus einem Import wird zu Mittel.",
           "owner": "Wer für die Erfahrung verantwortlich ist, als freier Text. Darf leer bleiben.",
           "description": "Was passiert ist, in eigenen Worten und als freier Text. Darf leer bleiben.",
           "rootCause": "Warum es dazu kam: die Ursache hinter dem Erfolg oder dem Problem, als freier Text. Darf leer bleiben.",

@@ -2530,7 +2530,7 @@
           "duration": "The duration of the appointment in whole minutes, at least 5; 60 when not given. In the dialog it is calculated as end minus start and only displayed.",
           "desc": "A description of the appointment as free text; empty when not given.",
           "phase": "The phase of the cycle the appointment is coloured by; the phases of the active cycle count, the first one when not given. If the active cycle does not know the phase of an appointment, the dialog shows the first phase and saving writes it in.",
-          "source": "Where the appointment comes from. Only appointments reported from the task list carry this entry, with the value todo; they are changed there and replaced on the next report."
+          "source": "Where the appointment comes from. Only appointments reported from the task list carry this entry, with the value todo; changes made in the calendar are lost at the next report from the task list; change them there."
         }
       }
     },
@@ -10929,9 +10929,9 @@
         "LessonEntry": {
           "id": "The identifier of the lesson; the app assigns it when the lesson is created. Use it to address the lesson when changing or deleting.",
           "title": "The title of the lesson, shown as the heading on the card. It is the only required entry; without a title nothing is saved. Spaces at the edges are removed.",
-          "category": "The kind of lesson: Success (success), Problem (problem) or Improvement (improve); Success when not given. The coloured dot on the card and the filters above the list follow it. A value from an import can differ and is kept.",
+          "category": "The kind of lesson: Success (success), Problem (problem) or Improvement (improve); Success when not given. The coloured dot on the card and the filters above the list follow it. An unknown value from an import becomes Success.",
           "phase": "The phase of the cycle the lesson belongs to; the phases of the active cycle count, the last one when not given. It is shown as a tag on the card.",
-          "impact": "The effect of the lesson on the project in three levels: High (high), Medium (medium) or Low (low); Medium when not given. It is shown as a badge on the card. A value from an import can differ and is kept.",
+          "impact": "The effect of the lesson on the project in three levels: High (high), Medium (medium) or Low (low); Medium when not given. It is shown as a badge on the card. An unknown value from an import becomes Medium.",
           "owner": "Who is responsible for the lesson, as free text. May stay empty.",
           "description": "What happened, in your own words and as free text. May stay empty.",
           "rootCause": "Why it happened: the cause behind the success or the problem, as free text. May stay empty.",

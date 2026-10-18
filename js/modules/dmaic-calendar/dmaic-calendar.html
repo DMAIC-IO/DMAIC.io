@@ -83,7 +83,7 @@
       <button class="module-calendar__nav-btn" data-ref="nextPeriod" @click="nextPeriod()">&#9654;</button>
       <div class="module-calendar__right">
         <div class="module-calendar__view-toggle" data-ref="viewToggle">
-          <button :class="viewBtnClass('month')" data-view="month" data-help-key="modules.dmaic-calendar.actions.setView.help" @click="setView('month')" x-text="t('month')"></button>
+          <button :class="viewBtnClass('month')" data-view="month" @click="setView('month')" x-text="t('month')"></button>
           <button :class="viewBtnClass('week')" data-view="week" data-help-key="modules.dmaic-calendar.actions.setView.help" @click="setView('week')" x-text="t('week')"></button>
         </div>
         <button class="module-calendar__today-btn" data-ref="todayBtn" @click="goToday()" x-text="t('today')"></button>
