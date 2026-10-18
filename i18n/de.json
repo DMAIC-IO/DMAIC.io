@@ -5086,12 +5086,12 @@
         "setParam": {
           "help": "Setzt einen Parameter; die Analyse läuft neu (confidenceLevel) oder die Matrix wird neu aufgebaut (die übrigen Schlüssel).",
           "params": {
-            "key": "Einer der Schlüssel aus activeParams: confidenceLevel immer; matrixMethod, filterMinR und filterMaxP nur bei drei und mehr Spalten. Jeder andere Wert ist ein Fehler.",
-            "value": "confidenceLevel: Bruch von 0.5 bis 0.9999, zum Beispiel 0.95. matrixMethod: 'pearson', 'spearman' oder 'kendall'. filterMinR und filterMaxP: Zahl von 0 bis 1 oder null für keinen Filter. Ein Wert außerhalb des Bereichs oder der Liste ist ein Fehler."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys. Bei filterMinR und filterMaxP heißt null kein Filter."
           }
         },
         "setColumns": {
-          "help": "Ersetzt die Spaltenauswahl; die Analyse läuft neu. Die Reihenfolge zählt: die erste Spalte ist X, die zweite Y. Mit weniger als zwei Spalten werden die Ergebnisse verworfen. Doppelte Einträge zählen einmal.",
+          "help": "Die Spalten einer Datensammlung, die diese Rolle liefern; nach einer Änderung wird neu gerechnet. Die Reihenfolge zählt: die erste Spalte ist X, die zweite Y; mit weniger als zwei Spalten werden die Ergebnisse verworfen, doppelte Einträge zählen einmal.",
           "params": {
             "slot": "Einer der Slots aus activeMultiSlots; dieses Modul hat nur 'columns'.",
             "refs": "Liste von Spaltenbezügen { instanceId, sheetId, columnId } von Spalten aus pickableColumns in der gewünschten Reihenfolge; [] leert die Auswahl."
@@ -5133,13 +5133,107 @@
           "help": "'pairwise' bei zwei Spalten und einem Ergebnis ohne Fehler, 'matrix' bei drei und mehr Spalten, sobald die Matrix berechnet ist, sonst 'none'."
         },
         "result": {
-          "help": "Die paarweise Auswertung: Pearson-, Spearman- und Kendall-Koeffizient mit Konfidenzintervallen und p-Werten, eine Empfehlung, beschreibende Statistik, Diagnose, die gepaarten Werte und die Spaltennamen. null, solange nicht genau zwei Spalten gewählt sind und die Auswertung gelang: weniger als 4 gepaarte Werte, eine Spalte ohne Streuung oder eine Spalte ohne verwertbare Werte lassen es null."
+          "help": "Die paarweise Auswertung zweier Spalten, jede Kennzahl unter keys einzeln beschrieben; null, bei weniger oder mehr als zwei Spalten, mit weniger als 4 Paaren oder ohne Streuung."
         },
         "matrixResult": {
-          "help": "Die Korrelationsmatrix aus drei und mehr Spalten: names, die Matrizen je Verfahren (matrix, ciMatrix, pMatrix), nMatrix mit den Paarzahlen und pairs mit den gepaarten Werten; Paare mit weniger als 4 gepaarten Werten ergeben NaN (null in JSON). null, solange weniger als drei Spalten gewählt sind. Die Filter ändern sie nicht."
+          "help": "Die Korrelationsmatrix ab drei Spalten, jede Kennzahl unter keys einzeln beschrieben; null, bei weniger als drei Spalten; nicht berechenbare Zellen sind null."
         },
         "errorMsg": {
           "help": "Der Grund, warum eine Auswertung mit zwei Spalten kein Ergebnis hat (weniger als 4 gepaarte Werte oder eine Spalte ohne Streuung), oder ein leerer Text. Eine Spalte ohne verwertbare Werte lässt result ohne Meldung null."
+        }
+      },
+      "types": {
+        "Params": {
+          "confidenceLevel": "Das Konfidenzniveau als Anteil zwischen 0,5 und 0,9999, also 0,95 statt 95; das Eingabefeld Konfidenzniveau (%) zeigt und nimmt Prozent. Es bestimmt mit α = 1 − Niveau alle Konfidenzintervalle von Pearson, Spearman und Kendall, paarweise wie in der Matrix. Eine Änderung rechnet neu.",
+          "matrixMethod": "Welcher Koeffizient in der Korrelationsmatrix steht: Pearson, Spearman oder Kendall, gewählt über die Knöpfe über der Matrix. Nur ab drei Spalten wählbar. Die Wahl ändert nur die Anzeige; gerechnet wird die Matrix immer für alle drei Koeffizienten.",
+          "filterMinR": "Filter |r| ≥: die Matrix blendet Zellen aus, deren Koeffizient dem Betrag nach unter diesem Wert liegt; erlaubt sind 0 bis 1, leer heißt kein Filter. Ist ein Filter aktiv, fallen nicht berechenbare Zellen immer heraus. Wirkt nur auf die Anzeige der Matrix, nicht auf das Ergebnis.",
+          "filterMaxP": "Filter p ≤: die Matrix blendet Zellen aus, deren p-Wert über diesem Wert liegt oder fehlt; erlaubt sind 0 bis 1, leer heißt kein Filter. Wirkt nur auf die Anzeige der Matrix, nicht auf das Ergebnis."
+        },
+        "PairResult": {
+          "n": "Zahl der gepaarten Werte, Zeile n: die Zeilen, in denen beide Spalten eine Zahl haben. Unter 4 Paaren gibt es keine Auswertung.",
+          "df": "Freiheitsgrade n − 2, Zeile Freiheitsgrade (df); mit ihnen werden die t-Werte von Pearson und Spearman geprüft.",
+          "confidenceLevel": "Das Konfidenzniveau als Anteil, mit dem die Konfidenzintervalle gerechnet wurden, etwa 0,95.",
+          "pearson": "Der Pearson-Koeffizient r mit t-Wert, p-Wert, R² und Konfidenzintervall, Karte Pearson r; er misst den linearen Zusammenhang.",
+          "spearman": "Der Spearman-Koeffizient ρ mit t-Wert, p-Wert, ρ² und Konfidenzintervall, Karte Spearman ρ; er ist Pearsons r der Ränge und misst einen monotonen Zusammenhang.",
+          "kendall": "Kendalls τ mit z-Wert, p-Wert, konkordanten und diskordanten Paaren und Konfidenzintervall, Karte Kendall τ; es vergleicht gleich- und gegenläufige Wertepaare und fällt dem Betrag nach meist kleiner aus als r und ρ.",
+          "descriptive": "Mittelwerte, Standardabweichungen und Kovarianz der gepaarten Werte, Abschnitt Deskriptive Statistik.",
+          "diagnostics": "Die Prüfung der Voraussetzungen, Abschnitt Daten-Diagnostik: Normalität nach Jarque-Bera, Schiefe, Kurtosis, Monotonie-Index und Ausreißer; aus ihr entsteht die Empfehlung.",
+          "recommendation": "Der empfohlene Koeffizient mit Gründen und Punkten; die Oberfläche markiert seine Karte mit Empfohlen und listet die Gründe im Tooltip.",
+          "_x": "Die gepaarten Werte der ersten gewählten Spalte (X) in Zeilenreihenfolge; aus ihnen entsteht das Streudiagramm.",
+          "_y": "Die gepaarten Werte der zweiten gewählten Spalte (Y) in Zeilenreihenfolge; aus ihnen entsteht das Streudiagramm.",
+          "_nameX": "Der Name der ersten gewählten Spalte (X), wie ihn das Streudiagramm an der Achse trägt.",
+          "_nameY": "Der Name der zweiten gewählten Spalte (Y), wie ihn das Streudiagramm an der Achse trägt."
+        },
+        "LinearStat": {
+          "r": "Der Korrelationskoeffizient zwischen −1 und 1, Kartentitel Pearson r bzw. Spearman ρ: bei Pearson die Kovarianz geteilt durch das Produkt der Standardabweichungen, s_XY / (s_X · s_Y), bei Spearman derselbe Wert für die Ränge, gleiche Werte bekommen den mittleren Rang. Die Karte deutet den Betrag: ab 0,9 sehr stark, ab 0,7 stark, ab 0,5 mittel, ab 0,3 schwach, darunter sehr schwach, positiv oder negativ nach dem Vorzeichen. Ab 0,7 ist die Zahl grün (positiv) bzw. rot (negativ), ab 0,4 gelb.",
+          "t": "t-Wert r · √(df / (1 − r²)) mit df = n − 2, Zeile t-Statistik; bei Spearman mit ρ statt r. Bei einem Koeffizienten von genau ±1 ist er unbegrenzt.",
+          "p": "Zweiseitiger p-Wert des t-Tests auf keinen Zusammenhang (Koeffizient 0) mit n − 2 Freiheitsgraden, Zeile p-Wert; bei einem Koeffizienten von genau ±1 ist er 0. Ein kleiner p-Wert spricht dafür, dass der Zusammenhang nicht zufällig ist.",
+          "r2": "Das Quadrat des Koeffizienten, Zeile R² bei Pearson bzw. ρ² bei Spearman; die Zeile zeigt daneben den Wert in Prozent. Bei Pearson ist es der Anteil der Streuung von Y, den eine Gerade durch X erklärt.",
+          "ci": "Das Konfidenzintervall zum gewählten Niveau als untere und obere Grenze, Balken Konfidenzintervall unter der Karte. Gerechnet über die Fisher-z-Transformation: bei Pearson mit Standardfehler 1/√(n − 3), bei Spearman nach Bonett-Wright mit √((1 + r²/2)/(n − 3)), wie Minitab, danach zurücktransformiert. Bei einem Koeffizienten von genau ±1 sind beide Grenzen gleich dem Koeffizienten."
+        },
+        "KendallStat": {
+          "tau": "Kendalls τ-b zwischen −1 und 1, Kartentitel Kendall τ: (konkordante − diskordante Paare) / √((n₀ − Tₓ)(n₀ − Tᵧ)) mit n₀ = n(n − 1)/2 und Tₓ, Tᵧ den Paaren mit gleichem X- bzw. Y-Wert; 0, wenn der Nenner 0 ist. Die Karte deutet den Betrag mit denselben Stufen wie bei r: ab 0,9 sehr stark, ab 0,7 stark, ab 0,5 mittel, ab 0,3 schwach.",
+          "z": "z-Wert τ / √v mit v = 2(2n + 5)/(9n(n − 1)), Zeile z-Statistik; eine Normalapproximation ohne Korrektur für gleiche Werte.",
+          "p": "Zweiseitiger p-Wert aus z, 2 · (1 − Φ(|z|)), Zeile p-Wert; geprüft wird τ = 0.",
+          "concordant": "Zahl der gleichläufigen Wertepaare, Zeile Konkordante: Paare von Zeilen, in denen X und Y in dieselbe Richtung gehen. Paare mit gleichem X- oder Y-Wert zählen weder hier noch bei den Diskordanten.",
+          "discordant": "Zahl der gegenläufigen Wertepaare, Zeile Diskordante: Paare von Zeilen, in denen X steigt und Y fällt oder umgekehrt. Paare mit gleichem X- oder Y-Wert zählen weder hier noch bei den Konkordanten.",
+          "ci": "Das Konfidenzintervall τ ± z · √v zum gewählten Niveau, mit z dem Quantil 1 − α/2 der Normalverteilung, auf −1 bis 1 begrenzt; Balken Konfidenzintervall unter der Karte. Bei τ = ±1 sind beide Grenzen τ."
+        },
+        "Descriptive": {
+          "meanX": "Arithmetischer Mittelwert x̄ der gepaarten X-Werte, Zeile Mittelwert X, mit drei Nachkommastellen gezeigt.",
+          "meanY": "Arithmetischer Mittelwert ȳ der gepaarten Y-Werte, Zeile Mittelwert Y, mit drei Nachkommastellen gezeigt.",
+          "stdX": "Stichproben-Standardabweichung s der gepaarten X-Werte mit Teiler n − 1, Zeile Std.Abw. X.",
+          "stdY": "Stichproben-Standardabweichung s der gepaarten Y-Werte mit Teiler n − 1, Zeile Std.Abw. Y.",
+          "cov": "Stichproben-Kovarianz Σ(x − x̄)(y − ȳ)/(n − 1), Zeile Kovarianz; ihr Vorzeichen ist die Richtung des Zusammenhangs."
+        },
+        "Diagnostics": {
+          "normX": "Das Urteil zur Normalverteilung von X nach Jarque-Bera, Zeile Normalität X (JB): die Zeile zeigt ≈ normal oder ≠ normal mit dem JB-Wert, grün bei normal, sonst gelb.",
+          "normY": "Das Urteil zur Normalverteilung von Y nach Jarque-Bera, Zeile Normalität Y (JB): die Zeile zeigt ≈ normal oder ≠ normal mit dem JB-Wert, grün bei normal, sonst gelb.",
+          "skewX": "Stichprobenschiefe von X, n/((n − 1)(n − 2)) · Σ((x − x̄)/s)³, Zeile Schiefe X: 0 heißt symmetrisch, positiv ein längerer rechter Rand.",
+          "skewY": "Stichprobenschiefe von Y, n/((n − 1)(n − 2)) · Σ((y − ȳ)/s)³, Zeile Schiefe Y: 0 heißt symmetrisch, positiv ein längerer rechter Rand.",
+          "kurtX": "Exzess-Kurtosis von X nach der bereinigten Stichprobenformel, Zeile Kurtosis X: 0 wie die Normalverteilung, positiv spitzer mit schwereren Rändern, negativ flacher.",
+          "kurtY": "Exzess-Kurtosis von Y nach der bereinigten Stichprobenformel, Zeile Kurtosis Y: 0 wie die Normalverteilung, positiv spitzer mit schwereren Rändern, negativ flacher.",
+          "mono": "Monotonie-Index als Anteil, Zeile Monotonie-Index in Prozent: der Anteil der konkordanten unter allen Wertepaaren ohne gleiche Werte, 1, wenn es keine solchen Paare gibt. Grün ab 85 %, gelb ab 70 %, darunter rot; unter 0,7 verlieren Pearson und Spearman in der Empfehlung je einen Punkt.",
+          "outliers": "Zahl der Ausreißer, Zeile Ausreißer (IQR): gezählt werden die Residuen der Regressionsgeraden von Y auf X außerhalb von Q1 − 1,5 · IQR bis Q3 + 1,5 · IQR. Die Zeile zeigt bei 0 Keine in Grün, sonst die Zahl in Gelb."
+        },
+        "Normality": {
+          "normal": "Wahr, wenn der Jarque-Bera-Wert unter 5,99 liegt, der χ²-Grenze mit 2 Freiheitsgraden bei 5 %; dann gilt die Spalte als annähernd normalverteilt.",
+          "jb": "Jarque-Bera-Statistik JB = n/6 · (Schiefe² + Kurtosis²/4) mit der Exzess-Kurtosis; die Zeile zeigt sie mit zwei Nachkommastellen.",
+          "label": "Der Anzeigetext des Urteils, ≈ normal oder ≠ normal; er ist in beiden Sprachen gleich."
+        },
+        "Recommendation": {
+          "best": "Der Koeffizient mit den meisten Punkten: pearson, spearman oder kendall; bei Gleichstand geht Pearson vor Spearman vor Kendall. Seine Karte trägt das Zeichen Empfohlen.",
+          "reasons": "Die Gründe der Empfehlung in Prüfreihenfolge: Normalität, Ausreißer, Abstand zwischen Pearson und Spearman, Stichprobengröße und, falls niedrig, Monotonie. Jeder Grund zeigt über seine Kennung auf einen Text der Oberfläche, den der Tooltip der Empfehlung zeigt.",
+          "scores": "Die Punkte je Koeffizient, aus denen die Empfehlung folgt."
+        },
+        "Reason": {
+          "ok": "Wahr, wenn der Befund für Pearson spricht; der Tooltip zeigt dann ein Häkchen, sonst ein Warnzeichen.",
+          "key": "Die Kennung des Befunds, die auf einen Text der Oberfläche zeigt: recNormal oder recNotNormal, recNoOutliers oder recOutliers, recLinear oder recNonlinear, recLargeN oder recSmallN, dazu recLowMono bei niedriger Monotonie.",
+          "params": "Die Zahlen, die in den Text eingesetzt werden: count (Ausreißer), delta (Abstand der Beträge von r und ρ als Text mit drei Nachkommastellen), n (Paare) oder pct (Monotonie in ganzen Prozent); fehlt bei Befunden ohne Zahl."
+        },
+        "MethodScores": {
+          "pearson": "Punkte für Pearson, Start bei 0: +3, wenn X und Y beide normalverteilt sind; +1 ohne Ausreißer, −2 mit Ausreißern; +1, wenn sich die Beträge von r und ρ um höchstens 0,1 unterscheiden; −1 bei einem Monotonie-Index unter 0,7.",
+          "spearman": "Punkte für Spearman, Start bei 0: +2, wenn mindestens eine Spalte nicht normalverteilt ist; +2 mit Ausreißern; +2, wenn sich die Beträge von r und ρ um mehr als 0,1 unterscheiden; −1 bei einem Monotonie-Index unter 0,7.",
+          "kendall": "Punkte für Kendall, Start bei 0: +2, wenn mindestens eine Spalte nicht normalverteilt ist; +3 mit Ausreißern; +1, wenn sich die Beträge von r und ρ um mehr als 0,1 unterscheiden; +2 bei weniger als 20 Paaren."
+        },
+        "MatrixResult": {
+          "names": "Die Spaltennamen in Auswahlreihenfolge; sie sind die Zeilen- und Spaltenköpfe der Korrelationsmatrix, und jede Zelle bezieht sich über ihre Position auf zwei davon.",
+          "matrix": "Die Koeffizienten je Verfahren (Pearson r, Spearman ρ, Kendall τ-b) als quadratische Tabelle über alle gewählten Spalten; die Korrelationsmatrix zeigt das mit den Knöpfen gewählte. Sie ist symmetrisch, die Diagonale ist 1; ein Spaltenpaar mit weniger als 4 gepaarten Werten ist nicht berechenbar und bleibt leer. Die Filter ändern sie nicht.",
+          "ciMatrix": "Je Koeffizient eine quadratische Tabelle der Konfidenzintervalle, je Zelle untere und obere Grenze, gerechnet wie paarweise: Fisher-z für Pearson, Bonett-Wright für Spearman, Normalapproximation für Kendall. Diagonale und nicht berechenbare Zellen sind leer.",
+          "pMatrix": "Je Koeffizient eine quadratische Tabelle der zweiseitigen p-Werte: Pearson und Spearman aus t mit n − 2 Freiheitsgraden, Kendall aus z. Diagonale und nicht berechenbare Zellen sind leer.",
+          "nMatrix": "Die Zahl der gepaarten Werte je Zelle; auf der Diagonale die Zahl der Werte der Spalte, 0, wenn zwei Spalten keine gemeinsame Zeile haben.",
+          "pairs": "Je Spaltenpaar oberhalb der Diagonale mit mindestens 4 gepaarten Werten ein Eintrag mit den Rohwerten; aus ihnen entstehen die Streudiagramme."
+        },
+        "MatrixByMethod": {
+          "pearson": "Die Pearson-Koeffizienten r aller Spaltenpaare als quadratische Tabelle; Diagonale 1, nicht berechenbare Zellen leer.",
+          "spearman": "Die Spearman-Koeffizienten ρ aller Spaltenpaare als quadratische Tabelle; Diagonale 1, nicht berechenbare Zellen leer.",
+          "kendall": "Kendalls τ-b aller Spaltenpaare als quadratische Tabelle; Diagonale 1, nicht berechenbare Zellen leer."
+        },
+        "MatrixPair": {
+          "i": "Die Position der ersten Spalte in den Spaltennamen, gezählt ab 0; stets kleiner als die der zweiten.",
+          "j": "Die Position der zweiten Spalte in den Spaltennamen, gezählt ab 0.",
+          "x": "Die gepaarten Werte der ersten Spalte in Zeilenreihenfolge.",
+          "y": "Die gepaarten Werte der zweiten Spalte in Zeilenreihenfolge."
         }
       },
       "sectionData": "Datenquelle",

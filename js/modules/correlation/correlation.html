@@ -3,7 +3,7 @@
       <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
 
       <div class="field-group">
-        <label x-text="t('selectColumns')"></label>
+        <label data-help-key="modules.correlation.actions.setColumns.help" x-text="t('selectColumns')"></label>
         <div class="corr__col-list-wrap" data-ref="col-list">
 
           <template x-if="!model.hasWorksheet(sm())">
@@ -37,7 +37,7 @@
       </div>
 
       <div class="field-group">
-        <label x-text="t('confidenceLevel') + ' (%)'"></label>
+        <label data-help-key="modules.correlation.types.Params.confidenceLevel" x-text="t('confidenceLevel') + ' (%)'"></label>
         <input type="text" class="field field--num" data-ref="conf-input" inputmode="decimal"
           :value="confDisplay()" placeholder="95"
           @change="commitConf($event)" @keydown="confKeydown($event)">
@@ -67,7 +67,7 @@
                       </template>
                     </span>
                   </span>
-                  <div class="corr__card-header" :style="'color:' + card.color" x-text="card.label"></div>
+                  <div class="corr__card-header" :data-help-key="card.help" :style="'color:' + card.color" x-text="card.label"></div>
                   <div class="corr__card-body">
                     <div class="corr__big-r" :style="'color:' + card.color" x-text="card.rText"></div>
                     <div class="corr__interpret-tag"
@@ -75,7 +75,7 @@
                       x-text="card.interp"></div>
                     <template x-for="(srow, si) in card.stats">
                       <div class="corr__card-row" :key="si">
-                        <span x-text="srow.label"></span><span x-text="srow.value"></span>
+                        <span :data-help-key="srow.help" x-text="srow.label"></span><span x-text="srow.value"></span>
                       </div>
                     </template>
                     <div class="corr__ci-wrap">
@@ -104,7 +104,7 @@
                   <div class="corr__stats-title" x-text="grp.title"></div>
                   <template x-for="(row, ri) in grp.rows">
                     <div class="corr__stat-row" :key="ri">
-                      <span x-text="row.label"></span>
+                      <span :data-help-key="row.help" x-text="row.label"></span>
                       <span :style="row.style" x-text="row.value"></span>
                     </div>
                   </template>
@@ -117,9 +117,9 @@
         <!-- ── Matrix mode (3+ columns) ─────────────────────────── -->
         <template x-if="mode() === 'matrix'">
           <div>
-            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionMatrix')"></span></div>
+            <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.correlation.types.MatrixResult.matrix" x-text="t('sectionMatrix')"></span></div>
             <div class="corr__matrix-toolbar">
-              <div class="btn-group corr__matrix-toggle">
+              <div class="btn-group corr__matrix-toggle" data-help-key="modules.correlation.types.Params.matrixMethod">
                 <template x-for="opt in methodOptions()">
                   <button class="btn--segment corr__toggle-btn" :key="opt.value" :data-method="opt.value"
                     :class="model.matrixMethod === opt.value ? 'btn--active' : ''"
@@ -128,13 +128,13 @@
               </div>
               <div class="corr__filter-bar">
                 <span class="corr__filter-label" x-text="t('filter')"></span>
-                <label class="corr__filter-field">
+                <label class="corr__filter-field" data-help-key="modules.correlation.types.Params.filterMinR">
                   <span x-text="GLYPH_GE_R"></span>
                   <input type="number" class="corr__filter-input" data-ref="filter-min-r"
                     min="0" max="1" placeholder="–" :value="filterMinRDisplay()"
                     @change="applyFilterMinR($event)">
                 </label>
-                <label class="corr__filter-field">
+                <label class="corr__filter-field" data-help-key="modules.correlation.types.Params.filterMaxP">
                   <span x-text="GLYPH_LE_P"></span>
                   <input type="number" class="corr__filter-input" data-ref="filter-max-p"
                     min="0" max="1" placeholder="–" :value="filterMaxPDisplay()"

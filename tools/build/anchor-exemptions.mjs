@@ -63,4 +63,9 @@ export const ANCHOR_EXEMPTIONS = {
     { match: '<th x-text="c">', reason: 'Kopf je Kriterium bzw. Gruppe (Name aus den Daten); der Satz steht an der Tabelle', count: 1 },
     { match: '<th x-text="row.name">', reason: 'Kopf je Kriterium bzw. Gruppe (Name aus den Daten); der Satz steht an der Tabelle', count: 1 },
   ],
+  correlation: [
+    { match: 'corr__col-item', reason: 'je Spalte ein Kästchen; der Satz steht am Abschnittstitel', count: 1 },
+    { match: 'corr__matrix-header', reason: 'Kopf je Kriterium bzw. Gruppe (Name aus den Daten); der Satz steht an der Tabelle', count: 1 },
+    { match: 'corr__matrix-row-header', reason: 'Kopf je Kriterium bzw. Gruppe (Name aus den Daten); der Satz steht an der Tabelle', count: 1 },
+  ],
 };

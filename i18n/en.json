@@ -5082,12 +5082,12 @@
         "setParam": {
           "help": "Sets one parameter; the analysis reruns (confidenceLevel) or the matrix is rebuilt (the other keys).",
           "params": {
-            "key": "One of the keys in activeParams: confidenceLevel always; matrixMethod, filterMinR and filterMaxP only with three or more columns. Any other value is an error.",
-            "value": "confidenceLevel: fraction from 0.5 to 0.9999, for example 0.95. matrixMethod: 'pearson', 'spearman' or 'kendall'. filterMinR and filterMaxP: number from 0 to 1, or null for no filter. A value outside the range or the list is an error."
+            "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys. For filterMinR and filterMaxP null means no filter."
           }
         },
         "setColumns": {
-          "help": "Replaces the column selection; the analysis reruns. The order matters: the first column is X, the second Y. With fewer than two columns the results are discarded. Duplicate entries count once.",
+          "help": "The data collection columns that supply this role; after a change the analysis is recomputed. The order matters: the first column is X, the second Y; with fewer than two columns the results are discarded, and duplicate entries count once.",
           "params": {
             "slot": "One of the slots in activeMultiSlots; this module only has 'columns'.",
             "refs": "List of column references { instanceId, sheetId, columnId } of columns from pickableColumns, in the wanted order; [] clears the selection."
@@ -5129,13 +5129,107 @@
           "help": "'pairwise' with two columns and a result without error, 'matrix' with three or more columns once the matrix is computed, 'none' otherwise."
         },
         "result": {
-          "help": "The pairwise analysis: Pearson, Spearman and Kendall coefficients with confidence intervals and p-values, a recommendation, descriptive statistics, diagnostics, the paired values and the column names. null unless exactly two columns are chosen and the analysis succeeded: fewer than 4 paired values, a column without variance, or a column without usable values leave it null."
+          "help": "The pairwise evaluation of two columns, each figure described individually under keys; null with fewer or more than two columns, with fewer than 4 pairs or without spread."
         },
         "matrixResult": {
-          "help": "The correlation matrix of three or more columns: names, the matrices per method (matrix, ciMatrix, pMatrix), nMatrix with the pair counts and pairs with the paired values; pairs with fewer than 4 paired values give NaN (null in JSON). null while fewer than three columns are chosen. The filters do not change it."
+          "help": "The correlation matrix from three columns, each figure described individually under keys; null with fewer than three columns; cells that cannot be computed are null."
         },
         "errorMsg": {
           "help": "The reason a two-column analysis gave no result (fewer than 4 paired values, or a column without variance), or an empty string. A column without usable values leaves result null without a message."
+        }
+      },
+      "types": {
+        "Params": {
+          "confidenceLevel": "The confidence level as a fraction between 0.5 and 0.9999, so 0.95 rather than 95; the Confidence Level (%) input shows and takes percent. With α = 1 − level it sets every confidence interval of Pearson, Spearman and Kendall, pairwise as well as in the matrix. A change recomputes.",
+          "matrixMethod": "Which coefficient the correlation matrix shows: Pearson, Spearman or Kendall, chosen with the buttons above the matrix. Selectable only with three or more columns. The choice changes the display only; the matrix is always computed for all three coefficients.",
+          "filterMinR": "Filter |r| ≥: the matrix hides cells whose coefficient is below this value in absolute terms; 0 to 1 is allowed, empty means no filter. While a filter is active, cells that cannot be computed are always hidden. Affects only the matrix display, not the result.",
+          "filterMaxP": "Filter p ≤: the matrix hides cells whose p-value is above this value or missing; 0 to 1 is allowed, empty means no filter. Affects only the matrix display, not the result."
+        },
+        "PairResult": {
+          "n": "Number of paired values, row n: the rows in which both columns hold a number. Below 4 pairs there is no analysis.",
+          "df": "Degrees of freedom n − 2, row Degrees of Freedom (df); the t-values of Pearson and Spearman are tested with them.",
+          "confidenceLevel": "The confidence level as a fraction the confidence intervals were computed with, for example 0.95.",
+          "pearson": "The Pearson coefficient r with t-value, p-value, R² and confidence interval, card Pearson r; it measures the linear relationship.",
+          "spearman": "The Spearman coefficient ρ with t-value, p-value, ρ² and confidence interval, card Spearman ρ; it is Pearson's r of the ranks and measures a monotonic relationship.",
+          "kendall": "Kendall's τ with z-value, p-value, concordant and discordant pairs and confidence interval, card Kendall τ; it compares pairs of values moving the same and opposite ways and is usually smaller in absolute terms than r and ρ.",
+          "descriptive": "Means, standard deviations and covariance of the paired values, section Descriptive Statistics.",
+          "diagnostics": "The check of the assumptions, section Data Diagnostics: normality by Jarque-Bera, skewness, kurtosis, monotonicity index and outliers; the recommendation is built from it.",
+          "recommendation": "The recommended coefficient with reasons and points; the interface marks its card Recommended and lists the reasons in the tooltip.",
+          "_x": "The paired values of the first chosen column (X) in row order; the scatter plot is drawn from them.",
+          "_y": "The paired values of the second chosen column (Y) in row order; the scatter plot is drawn from them.",
+          "_nameX": "The name of the first chosen column (X), as the scatter plot shows it on the axis.",
+          "_nameY": "The name of the second chosen column (Y), as the scatter plot shows it on the axis."
+        },
+        "LinearStat": {
+          "r": "The correlation coefficient between −1 and 1, card title Pearson r or Spearman ρ: for Pearson the covariance divided by the product of the standard deviations, s_XY / (s_X · s_Y); for Spearman the same value for the ranks, tied values get the mean rank. The card interprets the absolute value: from 0.9 very strong, from 0.7 strong, from 0.5 moderate, from 0.3 weak, below that very weak, positive or negative by the sign. From 0.7 the number is green (positive) or red (negative), from 0.4 yellow.",
+          "t": "t-value r · √(df / (1 − r²)) with df = n − 2, row t-statistic; for Spearman with ρ in place of r. With a coefficient of exactly ±1 it is unbounded.",
+          "p": "Two-sided p-value of the t-test for no relationship (coefficient 0) with n − 2 degrees of freedom, row p-value; with a coefficient of exactly ±1 it is 0. A small p-value suggests the relationship is not due to chance.",
+          "r2": "The square of the coefficient, row R² for Pearson or ρ² for Spearman; the row also shows the value in percent. For Pearson it is the share of the spread of Y that a straight line in X explains.",
+          "ci": "The confidence interval at the chosen level as lower and upper limit, bar Confidence Interval below the card. Computed through the Fisher z-transformation: for Pearson with standard error 1/√(n − 3), for Spearman after Bonett-Wright with √((1 + r²/2)/(n − 3)), as in Minitab, then transformed back. With a coefficient of exactly ±1 both limits equal the coefficient."
+        },
+        "KendallStat": {
+          "tau": "Kendall's τ-b between −1 and 1, card title Kendall τ: (concordant − discordant pairs) / √((n₀ − Tₓ)(n₀ − Tᵧ)) with n₀ = n(n − 1)/2 and Tₓ, Tᵧ the pairs with equal X or Y values; 0 when the denominator is 0. The card interprets the absolute value with the same levels as r: from 0.9 very strong, from 0.7 strong, from 0.5 moderate, from 0.3 weak.",
+          "z": "z-value τ / √v with v = 2(2n + 5)/(9n(n − 1)), row z-statistic; a normal approximation without a correction for ties.",
+          "p": "Two-sided p-value from z, 2 · (1 − Φ(|z|)), row p-value; the test is for τ = 0.",
+          "concordant": "Number of pairs of values moving the same way, row Concordant: pairs of rows in which X and Y go in the same direction. Pairs with equal X or Y values count neither here nor as discordant.",
+          "discordant": "Number of pairs of values moving opposite ways, row Discordant: pairs of rows in which X rises while Y falls or the other way round. Pairs with equal X or Y values count neither here nor as concordant.",
+          "ci": "The confidence interval τ ± z · √v at the chosen level, with z the 1 − α/2 quantile of the normal distribution, limited to −1 to 1; bar Confidence Interval below the card. With τ = ±1 both limits are τ."
+        },
+        "Descriptive": {
+          "meanX": "Arithmetic mean x̄ of the paired X values, row Mean X, shown with three decimals.",
+          "meanY": "Arithmetic mean ȳ of the paired Y values, row Mean Y, shown with three decimals.",
+          "stdX": "Sample standard deviation s of the paired X values with divisor n − 1, row Std Dev X.",
+          "stdY": "Sample standard deviation s of the paired Y values with divisor n − 1, row Std Dev Y.",
+          "cov": "Sample covariance Σ(x − x̄)(y − ȳ)/(n − 1), row Covariance; its sign is the direction of the relationship."
+        },
+        "Diagnostics": {
+          "normX": "The verdict on normality of X by Jarque-Bera, row Normality X (JB): the row shows ≈ normal or ≠ normal with the JB value, green when normal, yellow otherwise.",
+          "normY": "The verdict on normality of Y by Jarque-Bera, row Normality Y (JB): the row shows ≈ normal or ≠ normal with the JB value, green when normal, yellow otherwise.",
+          "skewX": "Sample skewness of X, n/((n − 1)(n − 2)) · Σ((x − x̄)/s)³, row Skewness X: 0 means symmetric, positive a longer right tail.",
+          "skewY": "Sample skewness of Y, n/((n − 1)(n − 2)) · Σ((y − ȳ)/s)³, row Skewness Y: 0 means symmetric, positive a longer right tail.",
+          "kurtX": "Excess kurtosis of X by the adjusted sample formula, row Kurtosis X: 0 like the normal distribution, positive more peaked with heavier tails, negative flatter.",
+          "kurtY": "Excess kurtosis of Y by the adjusted sample formula, row Kurtosis Y: 0 like the normal distribution, positive more peaked with heavier tails, negative flatter.",
+          "mono": "Monotonicity index as a fraction, row Monotonicity Index in percent: the share of concordant among all pairs of values without ties, 1 when there are no such pairs. Green from 85 %, yellow from 70 %, red below; below 0.7 Pearson and Spearman each lose one point in the recommendation.",
+          "outliers": "Number of outliers, row Outliers (IQR): counted are the residuals of the regression line of Y on X outside Q1 − 1.5 · IQR to Q3 + 1.5 · IQR. The row shows None in green at 0, otherwise the count in yellow."
+        },
+        "Normality": {
+          "normal": "True when the Jarque-Bera value is below 5.99, the χ² limit with 2 degrees of freedom at 5 %; the column then counts as approximately normal.",
+          "jb": "Jarque-Bera statistic JB = n/6 · (skewness² + kurtosis²/4) with the excess kurtosis; the row shows it with two decimals.",
+          "label": "The display text of the verdict, ≈ normal or ≠ normal; it is the same in both languages."
+        },
+        "Recommendation": {
+          "best": "The coefficient with the most points: pearson, spearman or kendall; on a tie Pearson comes before Spearman before Kendall. Its card carries the Recommended badge.",
+          "reasons": "The reasons for the recommendation in checking order: normality, outliers, gap between Pearson and Spearman, sample size and, when low, monotonicity. Each reason points through its identifier to an interface text that the recommendation tooltip shows.",
+          "scores": "The points per coefficient the recommendation follows from."
+        },
+        "Reason": {
+          "ok": "True when the finding speaks for Pearson; the tooltip then shows a check mark, otherwise a warning sign.",
+          "key": "The identifier of the finding, pointing to an interface text: recNormal or recNotNormal, recNoOutliers or recOutliers, recLinear or recNonlinear, recLargeN or recSmallN, plus recLowMono when monotonicity is low.",
+          "params": "The numbers inserted into the text: count (outliers), delta (gap between the absolute values of r and ρ, as text with three decimals), n (pairs) or pct (monotonicity in whole percent); missing for findings without a number."
+        },
+        "MethodScores": {
+          "pearson": "Points for Pearson, starting at 0: +3 when X and Y are both normal; +1 without outliers, −2 with outliers; +1 when the absolute values of r and ρ differ by at most 0.1; −1 with a monotonicity index below 0.7.",
+          "spearman": "Points for Spearman, starting at 0: +2 when at least one column is not normal; +2 with outliers; +2 when the absolute values of r and ρ differ by more than 0.1; −1 with a monotonicity index below 0.7.",
+          "kendall": "Points for Kendall, starting at 0: +2 when at least one column is not normal; +3 with outliers; +1 when the absolute values of r and ρ differ by more than 0.1; +2 with fewer than 20 pairs."
+        },
+        "MatrixResult": {
+          "names": "The column names in selection order; they are the row and column headers of the correlation matrix, and each cell refers to two of them by position.",
+          "matrix": "The coefficients per method (Pearson r, Spearman ρ, Kendall τ-b) as a square table over all chosen columns; the correlation matrix shows the one chosen with the buttons. It is symmetric with 1 on the diagonal; a column pair with fewer than 4 paired values cannot be computed and stays empty. The filters do not change it.",
+          "ciMatrix": "Per coefficient a square table of confidence intervals, each cell with lower and upper limit, computed as pairwise: Fisher z for Pearson, Bonett-Wright for Spearman, normal approximation for Kendall. The diagonal and cells that cannot be computed are empty.",
+          "pMatrix": "Per coefficient a square table of two-sided p-values: Pearson and Spearman from t with n − 2 degrees of freedom, Kendall from z. The diagonal and cells that cannot be computed are empty.",
+          "nMatrix": "The number of paired values per cell; on the diagonal the number of values in the column, 0 when two columns share no row.",
+          "pairs": "For each column pair above the diagonal with at least 4 paired values one entry with the raw values; the scatter plots are drawn from them."
+        },
+        "MatrixByMethod": {
+          "pearson": "The Pearson coefficients r of all column pairs as a square table; 1 on the diagonal, cells that cannot be computed empty.",
+          "spearman": "The Spearman coefficients ρ of all column pairs as a square table; 1 on the diagonal, cells that cannot be computed empty.",
+          "kendall": "Kendall's τ-b of all column pairs as a square table; 1 on the diagonal, cells that cannot be computed empty."
+        },
+        "MatrixPair": {
+          "i": "The position of the first column in the column names, counted from 0; always smaller than that of the second.",
+          "j": "The position of the second column in the column names, counted from 0.",
+          "x": "The paired values of the first column in row order.",
+          "y": "The paired values of the second column in row order."
         }
       },
       "sectionData": "Data Source",

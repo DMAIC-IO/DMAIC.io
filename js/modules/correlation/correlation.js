@@ -98,6 +98,134 @@ const MULTI_SLOTS = ['columns'];
 /** Je Slot die eine Zuweisungsstelle seines Model-Feldes. */
 const MULTI_SINKS = { columns: (m, refs) => { m.colRefs = refs; } };
 
+/** Präfix der Typedef-Sätze; Kacheln und Kennzahlen hängen ihren Schlüssel an. */
+const HELP = 'modules.correlation.types.';
+
+/**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {number} confidenceLevel  Konfidenzniveau als Anteil
+ * @property {'pearson'|'spearman'|'kendall'} [matrixMethod]  Koeffizient der Matrix, nur ab drei Spalten
+ * @property {number} [filterMinR]  Mindestbetrag des Koeffizienten, nur Matrix
+ * @property {number} [filterMaxP]  Höchst-p-Wert, nur Matrix
+ */
+
+/**
+ * Das paarweise Ergebnis (genau zwei Spalten), wie `read().result` es liefert.
+ *
+ * @typedef {object} PairResult
+ * @property {number} n  Paare
+ * @property {number} df  Freiheitsgrade n − 2
+ * @property {number} confidenceLevel  Konfidenzniveau
+ * @property {LinearStat} pearson  Pearson
+ * @property {LinearStat} spearman  Spearman
+ * @property {KendallStat} kendall  Kendall
+ * @property {Descriptive} descriptive  Lage und Streuung
+ * @property {Diagnostics} diagnostics  Voraussetzungen
+ * @property {Recommendation} recommendation  empfohlener Koeffizient
+ * @property {number[]} _x  gepaarte Werte X
+ * @property {number[]} _y  gepaarte Werte Y
+ * @property {string} _nameX  Name X
+ * @property {string} _nameY  Name Y
+ */
+
+/**
+ * @typedef {object} LinearStat
+ * @property {number|null} r  Koeffizient
+ * @property {number|null} t  t-Wert
+ * @property {number|null} p  p-Wert
+ * @property {number|null} r2  Bestimmtheitsmaß
+ * @property {Array<number|null>} ci  Konfidenzintervall
+ */
+
+/**
+ * @typedef {object} KendallStat
+ * @property {number|null} tau  Kendalls τ
+ * @property {number|null} z  z-Wert
+ * @property {number|null} p  p-Wert
+ * @property {number} concordant  konkordante Paare
+ * @property {number} discordant  diskordante Paare
+ * @property {Array<number|null>} ci  Konfidenzintervall
+ */
+
+/**
+ * @typedef {object} Descriptive
+ * @property {number|null} meanX  Mittelwert X
+ * @property {number|null} meanY  Mittelwert Y
+ * @property {number|null} stdX  Standardabweichung X
+ * @property {number|null} stdY  Standardabweichung Y
+ * @property {number|null} cov  Kovarianz
+ */
+
+/**
+ * @typedef {object} Diagnostics
+ * @property {Normality} normX  Normalität X
+ * @property {Normality} normY  Normalität Y
+ * @property {number|null} skewX  Schiefe X
+ * @property {number|null} skewY  Schiefe Y
+ * @property {number|null} kurtX  Wölbung X
+ * @property {number|null} kurtY  Wölbung Y
+ * @property {number|null} mono  Monotonie-Index
+ * @property {number} outliers  Ausreißer
+ */
+
+/**
+ * @typedef {object} Normality
+ * @property {boolean} normal  normalverteilt
+ * @property {number|null} jb  Jarque-Bera
+ * @property {string} label  Urteil
+ */
+
+/**
+ * @typedef {object} Recommendation
+ * @property {'pearson'|'spearman'|'kendall'} best  empfohlen
+ * @property {Reason[]} reasons  Gründe
+ * @property {MethodScores} scores  Punkte je Koeffizient
+ */
+
+/**
+ * @typedef {object} Reason
+ * @property {boolean} ok  spricht für Pearson
+ * @property {string} key  Kennung des Grunds
+ * @property {object} [params]  Platzhalter
+ */
+
+/**
+ * @typedef {object} MethodScores
+ * @property {number} pearson  Pearson
+ * @property {number} spearman  Spearman
+ * @property {number} kendall  Kendall
+ */
+
+/**
+ * Die Korrelationsmatrix (drei und mehr Spalten).
+ *
+ * @typedef {object} MatrixResult
+ * @property {string[]} names  Spaltennamen
+ * @property {MatrixByMethod} matrix  Koeffizienten
+ * @property {object} ciMatrix  Konfidenzintervalle je Koeffizient
+ * @property {object} pMatrix  p-Werte je Koeffizient
+ * @property {Array<number[]>} nMatrix  Paare je Zelle
+ * @property {MatrixPair[]} pairs  Rohwerte je Spaltenpaar
+ */
+
+/**
+ * @typedef {object} MatrixByMethod
+ * @property {Array<Array<number|null>>} pearson  Pearson
+ * @property {Array<Array<number|null>>} spearman  Spearman
+ * @property {Array<Array<number|null>>} kendall  Kendall
+ */
+
+/**
+ * @typedef {object} MatrixPair
+ * @property {number} i  erste Spalte
+ * @property {number} j  zweite Spalte
+ * @property {number[]} x  Werte der ersten
+ * @property {number[]} y  Werte der zweiten
+ */
+
 /**
  * Die Agenten-Lesefläche von Correlation.
  *
@@ -115,8 +243,8 @@ const MULTI_SINKS = { columns: (m, refs) => { m.colRefs = refs; } };
  * @property {string[]} activeMultiSlots  the slots `setColumns` accepts in the current state
  * @property {object} pickableColumns  per slot the columns `setColumns` accepts, each `{ key, name }`
  * @property {'pairwise'|'matrix'|'none'} mode  'pairwise' with two columns, 'matrix' from three, 'none' otherwise or while no result exists
- * @property {object|null} result  the pairwise analysis (two columns) or null
- * @property {object|null} matrixResult  the correlation matrix (three or more columns) or null
+ * @property {PairResult|null} result  the pairwise analysis (two columns) or null
+ * @property {MatrixResult|null} matrixResult  the correlation matrix (three or more columns) or null
  * @property {string} errorMsg  why the analysis gave no result, or an empty string
  */
 
@@ -349,10 +477,10 @@ const mod = createModule({
         }
         this.recTooltipLines = lines;
 
-        const makeCard = (method, label, rVal, stats, ci) => {
+        const makeCard = (method, label, help, rVal, stats, ci) => {
           const color = corrColor(rVal);
           return {
-            method, label, color,
+            method, label, help, color,
             recClass: recommendation.best === method ? 'result-card--recommended' : '',
             rText: fmt(rVal),
             interp: interpretR(rVal),
@@ -365,21 +493,21 @@ const mod = createModule({
         };
 
         this.cards = [
-          makeCard('pearson', 'Pearson r', pearson.r, [
-            { label: _t('pValue'), value: fmtP(pearson.p) },
-            { label: _t('tStat'), value: fmt(pearson.t) },
-            { label: 'R²', value: `${fmt(pearson.r2)} (${(pearson.r2 * 100).toFixed(1)} %)` },
+          makeCard('pearson', 'Pearson r', HELP + 'LinearStat.r', pearson.r, [
+            { label: _t('pValue'), help: HELP + 'LinearStat.p', value: fmtP(pearson.p) },
+            { label: _t('tStat'), help: HELP + 'LinearStat.t', value: fmt(pearson.t) },
+            { label: 'R²', help: HELP + 'LinearStat.r2', value: `${fmt(pearson.r2)} (${(pearson.r2 * 100).toFixed(1)} %)` },
           ], pearson.ci),
-          makeCard('spearman', `Spearman ${GLYPH_RHO}`, spearman.r, [
-            { label: _t('pValue'), value: fmtP(spearman.p) },
-            { label: _t('tStat'), value: fmt(spearman.t) },
-            { label: `${GLYPH_RHO}²`, value: `${fmt(spearman.r2)} (${(spearman.r2 * 100).toFixed(1)} %)` },
+          makeCard('spearman', `Spearman ${GLYPH_RHO}`, HELP + 'LinearStat.r', spearman.r, [
+            { label: _t('pValue'), help: HELP + 'LinearStat.p', value: fmtP(spearman.p) },
+            { label: _t('tStat'), help: HELP + 'LinearStat.t', value: fmt(spearman.t) },
+            { label: `${GLYPH_RHO}²`, help: HELP + 'LinearStat.r2', value: `${fmt(spearman.r2)} (${(spearman.r2 * 100).toFixed(1)} %)` },
           ], spearman.ci),
-          makeCard('kendall', `Kendall ${GLYPH_TAU}`, kendall.tau, [
-            { label: _t('pValue'), value: fmtP(kendall.p) },
-            { label: _t('zStat'), value: fmt(kendall.z) },
-            { label: _t('concordant'), value: String(kendall.concordant) },
-            { label: _t('discordant'), value: String(kendall.discordant) },
+          makeCard('kendall', `Kendall ${GLYPH_TAU}`, HELP + 'KendallStat.tau', kendall.tau, [
+            { label: _t('pValue'), help: HELP + 'KendallStat.p', value: fmtP(kendall.p) },
+            { label: _t('zStat'), help: HELP + 'KendallStat.z', value: fmt(kendall.z) },
+            { label: _t('concordant'), help: HELP + 'KendallStat.concordant', value: String(kendall.concordant) },
+            { label: _t('discordant'), help: HELP + 'KendallStat.discordant', value: String(kendall.discordant) },
           ], kendall.ci),
         ];
 
@@ -393,26 +521,26 @@ const mod = createModule({
           {
             title: _t('descriptiveStats'),
             rows: [
-              { label: 'n', value: String(n) },
-              { label: _t('degreesOfFreedom'), value: String(df) },
-              { label: _t('meanX'), value: fmt(descriptive.meanX, 3) },
-              { label: _t('meanY'), value: fmt(descriptive.meanY, 3) },
-              { label: _t('stdDevX'), value: fmt(descriptive.stdX, 3) },
-              { label: _t('stdDevY'), value: fmt(descriptive.stdY, 3) },
-              { label: _t('covariance'), value: fmt(descriptive.cov, 3) },
+              { label: 'n', help: HELP + 'PairResult.n', value: String(n) },
+              { label: _t('degreesOfFreedom'), help: HELP + 'PairResult.df', value: String(df) },
+              { label: _t('meanX'), help: HELP + 'Descriptive.meanX', value: fmt(descriptive.meanX, 3) },
+              { label: _t('meanY'), help: HELP + 'Descriptive.meanY', value: fmt(descriptive.meanY, 3) },
+              { label: _t('stdDevX'), help: HELP + 'Descriptive.stdX', value: fmt(descriptive.stdX, 3) },
+              { label: _t('stdDevY'), help: HELP + 'Descriptive.stdY', value: fmt(descriptive.stdY, 3) },
+              { label: _t('covariance'), help: HELP + 'Descriptive.cov', value: fmt(descriptive.cov, 3) },
             ],
           },
           {
             title: _t('diagnostics'),
             rows: [
-              { label: _t('normalityX'), value: `${diagnostics.normX.label} (JB=${diagnostics.normX.jb.toFixed(2)})`, style: `color:${normXColor}` },
-              { label: _t('normalityY'), value: `${diagnostics.normY.label} (JB=${diagnostics.normY.jb.toFixed(2)})`, style: `color:${normYColor}` },
-              { label: _t('skewnessX'), value: fmt(diagnostics.skewX, 3) },
-              { label: _t('skewnessY'), value: fmt(diagnostics.skewY, 3) },
-              { label: _t('kurtosisX'), value: fmt(diagnostics.kurtX, 3) },
-              { label: _t('kurtosisY'), value: fmt(diagnostics.kurtY, 3) },
-              { label: _t('monotonicityIndex'), value: `${(diagnostics.mono * 100).toFixed(1)} %`, style: `color:${monoColor}` },
-              { label: _t('outliers'), value: diagnostics.outliers === 0 ? _t('none') : String(diagnostics.outliers), style: `color:${outlierColor}` },
+              { label: _t('normalityX'), help: HELP + 'Diagnostics.normX', value: `${diagnostics.normX.label} (JB=${diagnostics.normX.jb.toFixed(2)})`, style: `color:${normXColor}` },
+              { label: _t('normalityY'), help: HELP + 'Diagnostics.normY', value: `${diagnostics.normY.label} (JB=${diagnostics.normY.jb.toFixed(2)})`, style: `color:${normYColor}` },
+              { label: _t('skewnessX'), help: HELP + 'Diagnostics.skewX', value: fmt(diagnostics.skewX, 3) },
+              { label: _t('skewnessY'), help: HELP + 'Diagnostics.skewY', value: fmt(diagnostics.skewY, 3) },
+              { label: _t('kurtosisX'), help: HELP + 'Diagnostics.kurtX', value: fmt(diagnostics.kurtX, 3) },
+              { label: _t('kurtosisY'), help: HELP + 'Diagnostics.kurtY', value: fmt(diagnostics.kurtY, 3) },
+              { label: _t('monotonicityIndex'), help: HELP + 'Diagnostics.mono', value: `${(diagnostics.mono * 100).toFixed(1)} %`, style: `color:${monoColor}` },
+              { label: _t('outliers'), help: HELP + 'Diagnostics.outliers', value: diagnostics.outliers === 0 ? _t('none') : String(diagnostics.outliers), style: `color:${outlierColor}` },
             ],
           },
         ];
@@ -765,8 +893,8 @@ const mod = createModule({
        * Einen Parameter setzen; die Analyse läuft danach neu bzw. die Matrix
        * wird neu aufgebaut.
        * @agent
-       * @param {'confidenceLevel'|'matrixMethod'|'filterMinR'|'filterMaxP'} key welcher Parameter; die Matrixschlüssel gelten erst ab drei Spalten
-       * @param {number|string|null} value `confidenceLevel`: Bruch von 0.5 bis 0.9999; `matrixMethod`: `'pearson'`, `'spearman'` oder `'kendall'`; `filterMinR`/`filterMaxP`: Zahl von 0 bis 1 oder `null` ohne Filter
+       * @param {keyof Params} key welcher Parameter; die Matrixschlüssel gelten erst ab drei Spalten, die im Zustand zulässigen nennt `activeParams`
+       * @param {number|string|null} value der Wert; Bereich je Schlüssel siehe `Params`; `filterMinR`/`filterMaxP` nehmen `null` für keinen Filter
        * @returns {void}
        * @throws {Error} wenn `key` im aktuellen Zustand nicht gilt oder `value` nicht zulässig ist
        */

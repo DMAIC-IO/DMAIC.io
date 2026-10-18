@@ -2162,17 +2162,39 @@ export const AGENT_REGISTRY = {
             "name": "key",
             "type": "'confidenceLevel'|'matrixMethod'|'filterMinR'|'filterMaxP'",
             "optional": false,
-            "help": "welcher Parameter; die Matrixschlüssel gelten erst ab drei Spalten"
+            "help": "welcher Parameter; die Matrixschlüssel gelten erst ab drei Spalten, die im Zustand zulässigen nennt `activeParams`"
           },
           {
             "name": "value",
             "type": "number|string|null",
             "optional": false,
-            "help": "`confidenceLevel`: Bruch von 0.5 bis 0.9999; `matrixMethod`: `'pearson'`, `'spearman'` oder `'kendall'`; `filterMinR`/`filterMaxP`: Zahl von 0 bis 1 oder `null` ohne Filter"
+            "help": "der Wert; Bereich je Schlüssel siehe `Params`; `filterMinR`/`filterMaxP` nehmen `null` für keinen Filter"
           }
         ],
         "returns": "void",
-        "help": "Einen Parameter setzen; die Analyse läuft danach neu bzw. die Matrix wird neu aufgebaut."
+        "help": "Einen Parameter setzen; die Analyse läuft danach neu bzw. die Matrix wird neu aufgebaut.",
+        "keysOf": "Params",
+        "keys": {
+          "confidenceLevel": {
+            "type": "number",
+            "help": "Konfidenzniveau als Anteil"
+          },
+          "matrixMethod": {
+            "type": "'pearson'|'spearman'|'kendall'",
+            "help": "Koeffizient der Matrix, nur ab drei Spalten",
+            "optional": true
+          },
+          "filterMinR": {
+            "type": "number",
+            "help": "Mindestbetrag des Koeffizienten, nur Matrix",
+            "optional": true
+          },
+          "filterMaxP": {
+            "type": "number",
+            "help": "Höchst-p-Wert, nur Matrix",
+            "optional": true
+          }
+        }
       },
       "setColumns": {
         "params": [
@@ -2249,16 +2271,339 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
+        "type": "PairResult|null",
         "help": "the pairwise analysis (two columns) or null",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "PairResult",
+        "keys": {
+          "n": {
+            "type": "number",
+            "help": "Paare"
+          },
+          "df": {
+            "type": "number",
+            "help": "Freiheitsgrade n − 2"
+          },
+          "confidenceLevel": {
+            "type": "number",
+            "help": "Konfidenzniveau"
+          },
+          "pearson": {
+            "type": "LinearStat",
+            "help": "Pearson",
+            "keysOf": "LinearStat",
+            "keys": {
+              "r": {
+                "type": "number|null",
+                "help": "Koeffizient"
+              },
+              "t": {
+                "type": "number|null",
+                "help": "t-Wert"
+              },
+              "p": {
+                "type": "number|null",
+                "help": "p-Wert"
+              },
+              "r2": {
+                "type": "number|null",
+                "help": "Bestimmtheitsmaß"
+              },
+              "ci": {
+                "type": "Array<number|null>",
+                "help": "Konfidenzintervall"
+              }
+            }
+          },
+          "spearman": {
+            "type": "LinearStat",
+            "help": "Spearman",
+            "keysOf": "LinearStat",
+            "keys": {
+              "r": {
+                "type": "number|null",
+                "help": "Koeffizient"
+              },
+              "t": {
+                "type": "number|null",
+                "help": "t-Wert"
+              },
+              "p": {
+                "type": "number|null",
+                "help": "p-Wert"
+              },
+              "r2": {
+                "type": "number|null",
+                "help": "Bestimmtheitsmaß"
+              },
+              "ci": {
+                "type": "Array<number|null>",
+                "help": "Konfidenzintervall"
+              }
+            }
+          },
+          "kendall": {
+            "type": "KendallStat",
+            "help": "Kendall",
+            "keysOf": "KendallStat",
+            "keys": {
+              "tau": {
+                "type": "number|null",
+                "help": "Kendalls τ"
+              },
+              "z": {
+                "type": "number|null",
+                "help": "z-Wert"
+              },
+              "p": {
+                "type": "number|null",
+                "help": "p-Wert"
+              },
+              "concordant": {
+                "type": "number",
+                "help": "konkordante Paare"
+              },
+              "discordant": {
+                "type": "number",
+                "help": "diskordante Paare"
+              },
+              "ci": {
+                "type": "Array<number|null>",
+                "help": "Konfidenzintervall"
+              }
+            }
+          },
+          "descriptive": {
+            "type": "Descriptive",
+            "help": "Lage und Streuung",
+            "keysOf": "Descriptive",
+            "keys": {
+              "meanX": {
+                "type": "number|null",
+                "help": "Mittelwert X"
+              },
+              "meanY": {
+                "type": "number|null",
+                "help": "Mittelwert Y"
+              },
+              "stdX": {
+                "type": "number|null",
+                "help": "Standardabweichung X"
+              },
+              "stdY": {
+                "type": "number|null",
+                "help": "Standardabweichung Y"
+              },
+              "cov": {
+                "type": "number|null",
+                "help": "Kovarianz"
+              }
+            }
+          },
+          "diagnostics": {
+            "type": "Diagnostics",
+            "help": "Voraussetzungen",
+            "keysOf": "Diagnostics",
+            "keys": {
+              "normX": {
+                "type": "Normality",
+                "help": "Normalität X",
+                "keysOf": "Normality",
+                "keys": {
+                  "normal": {
+                    "type": "boolean",
+                    "help": "normalverteilt"
+                  },
+                  "jb": {
+                    "type": "number|null",
+                    "help": "Jarque-Bera"
+                  },
+                  "label": {
+                    "type": "string",
+                    "help": "Urteil"
+                  }
+                }
+              },
+              "normY": {
+                "type": "Normality",
+                "help": "Normalität Y",
+                "keysOf": "Normality",
+                "keys": {
+                  "normal": {
+                    "type": "boolean",
+                    "help": "normalverteilt"
+                  },
+                  "jb": {
+                    "type": "number|null",
+                    "help": "Jarque-Bera"
+                  },
+                  "label": {
+                    "type": "string",
+                    "help": "Urteil"
+                  }
+                }
+              },
+              "skewX": {
+                "type": "number|null",
+                "help": "Schiefe X"
+              },
+              "skewY": {
+                "type": "number|null",
+                "help": "Schiefe Y"
+              },
+              "kurtX": {
+                "type": "number|null",
+                "help": "Wölbung X"
+              },
+              "kurtY": {
+                "type": "number|null",
+                "help": "Wölbung Y"
+              },
+              "mono": {
+                "type": "number|null",
+                "help": "Monotonie-Index"
+              },
+              "outliers": {
+                "type": "number",
+                "help": "Ausreißer"
+              }
+            }
+          },
+          "recommendation": {
+            "type": "Recommendation",
+            "help": "empfohlener Koeffizient",
+            "keysOf": "Recommendation",
+            "keys": {
+              "best": {
+                "type": "'pearson'|'spearman'|'kendall'",
+                "help": "empfohlen"
+              },
+              "reasons": {
+                "type": "Reason[]",
+                "help": "Gründe",
+                "keysOf": "Reason",
+                "keys": {
+                  "ok": {
+                    "type": "boolean",
+                    "help": "spricht für Pearson"
+                  },
+                  "key": {
+                    "type": "string",
+                    "help": "Kennung des Grunds"
+                  },
+                  "params": {
+                    "type": "object",
+                    "help": "Platzhalter",
+                    "optional": true
+                  }
+                }
+              },
+              "scores": {
+                "type": "MethodScores",
+                "help": "Punkte je Koeffizient",
+                "keysOf": "MethodScores",
+                "keys": {
+                  "pearson": {
+                    "type": "number",
+                    "help": "Pearson"
+                  },
+                  "spearman": {
+                    "type": "number",
+                    "help": "Spearman"
+                  },
+                  "kendall": {
+                    "type": "number",
+                    "help": "Kendall"
+                  }
+                }
+              }
+            }
+          },
+          "_x": {
+            "type": "number[]",
+            "help": "gepaarte Werte X"
+          },
+          "_y": {
+            "type": "number[]",
+            "help": "gepaarte Werte Y"
+          },
+          "_nameX": {
+            "type": "string",
+            "help": "Name X"
+          },
+          "_nameY": {
+            "type": "string",
+            "help": "Name Y"
+          }
+        }
       },
       "matrixResult": {
-        "type": "object|null",
+        "type": "MatrixResult|null",
         "help": "the correlation matrix (three or more columns) or null",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "MatrixResult",
+        "keys": {
+          "names": {
+            "type": "string[]",
+            "help": "Spaltennamen"
+          },
+          "matrix": {
+            "type": "MatrixByMethod",
+            "help": "Koeffizienten",
+            "keysOf": "MatrixByMethod",
+            "keys": {
+              "pearson": {
+                "type": "Array<Array<number|null>>",
+                "help": "Pearson"
+              },
+              "spearman": {
+                "type": "Array<Array<number|null>>",
+                "help": "Spearman"
+              },
+              "kendall": {
+                "type": "Array<Array<number|null>>",
+                "help": "Kendall"
+              }
+            }
+          },
+          "ciMatrix": {
+            "type": "object",
+            "help": "Konfidenzintervalle je Koeffizient"
+          },
+          "pMatrix": {
+            "type": "object",
+            "help": "p-Werte je Koeffizient"
+          },
+          "nMatrix": {
+            "type": "Array<number[]>",
+            "help": "Paare je Zelle"
+          },
+          "pairs": {
+            "type": "MatrixPair[]",
+            "help": "Rohwerte je Spaltenpaar",
+            "keysOf": "MatrixPair",
+            "keys": {
+              "i": {
+                "type": "number",
+                "help": "erste Spalte"
+              },
+              "j": {
+                "type": "number",
+                "help": "zweite Spalte"
+              },
+              "x": {
+                "type": "number[]",
+                "help": "Werte der ersten"
+              },
+              "y": {
+                "type": "number[]",
+                "help": "Werte der zweiten"
+              }
+            }
+          }
+        }
       },
       "errorMsg": {
         "type": "string",
