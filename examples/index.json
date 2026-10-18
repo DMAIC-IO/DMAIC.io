@@ -1833,6 +1833,30 @@
       ]
     },
     {
+      "id": "pairwise-projektauswahl-abgeschlossen",
+      "type": "project",
+      "title": {
+        "de": "Projektauswahl-Kriterien, abgeschlossen",
+        "en": "Project selection criteria, completed"
+      },
+      "description": {
+        "de": "Fünf Kriterien der Projektauswahl im Pizza-Lieferprozess, alle zehn Paare sind entschieden (ein Gleichstand). Die Rangfolge steht im Reiter „Ergebnis“. Lernziel: Punkte und Rangfolge aus der Gewinn-Verlust-Matrix lesen.",
+        "en": "Five project-selection criteria for the pizza-delivery process, all ten pairs decided (one tie). The ranking is shown on the “Result” tab. Learning goal: read the scores and ranking from the win/loss matrix."
+      },
+      "source": "Qprovement synthetisch, Python random, Seed=1351 (Paarreihenfolge)",
+      "license": "public-domain",
+      "file": "projects/pairwise-projektauswahl-abgeschlossen.json",
+      "format": "json",
+      "modules": [
+        "pairwise-comparison"
+      ],
+      "tags": [
+        "pairwise",
+        "ahp",
+        "project-selection"
+      ]
+    },
+    {
       "id": "distfit-normal",
       "type": "project",
       "title": {
@@ -3714,6 +3738,24 @@
       "format": "json",
       "modules": ["multi-vari"],
       "tags": ["multi-vari", "varianzkomponenten", "gekreuzt", "unbalanciert"]
+    },
+    {
+      "id": "multi-vari-pressen",
+      "type": "project",
+      "title": {
+        "de": "Multi-Vari: Pressen, Darstellungsgrenze",
+        "en": "Multi-vari: presses, display limit"
+      },
+      "description": {
+        "de": "3 Schichten × 13 Pressen × 2 Messungen der Füllmasse. Mit 13 Pressen als zweitem Faktor überschreitet der Plan die Grenze von 12 Reihen: das Modul zeichnet das Diagramm nicht und nennt stattdessen die Spalte „Presse“. Lernziel: die Darstellungsgrenze erkennen; die Presse als ersten Faktor gesetzt, wird das Diagramm gezeichnet.",
+        "en": "3 shifts × 13 presses × 2 fill-weight measurements. With 13 presses as the second factor the design exceeds the limit of 12 series: the module does not draw the chart and names the “Presse” column instead. Learning goal: recognise the display limit; with the press set as the first factor the chart is drawn."
+      },
+      "source": "Qprovement synthetisch, Python random, Seed=1352",
+      "license": "public-domain",
+      "file": "projects/multi-vari-pressen.json",
+      "format": "json",
+      "modules": ["multi-vari"],
+      "tags": ["multi-vari", "darstellungsgrenze", "gekreuzt"]
     },
     {
       "id": "scenario-pizza-full",

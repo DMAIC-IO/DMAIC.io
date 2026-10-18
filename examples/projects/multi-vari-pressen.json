@@ -1,0 +1,28 @@
+{
+  "columnRefs": {
+    "measurement": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-multi-vari-pressen",
+      "columnId": "c-mass"
+    },
+    "factors": [
+      {
+        "instanceId": "__source__",
+        "sheetId": "sheet-multi-vari-pressen",
+        "columnId": "c-schicht"
+      },
+      {
+        "instanceId": "__source__",
+        "sheetId": "sheet-multi-vari-pressen",
+        "columnId": "c-presse"
+      }
+    ]
+  },
+  "modelForm": "crossed",
+  "estimator": "anova",
+  "showPoints": true,
+  "connectMeans": true,
+  "showGroupMean": true,
+  "showRefLine": true,
+  "sourceWorksheetFile": "worksheets/multi-vari-pressen.json"
+}
