@@ -8235,6 +8235,7 @@
           "se": "The bootstrap standard error, column “Standard error”: the standard deviation (with n − 1) of the finite bootstrap replicates. Empty when fewer than 2 finite replicates exist.",
           "bias": "The bias, column “Bias”: mean of the finite replicates minus θ̂. A value near 0 means the statistic hits on average. Empty without a finite replicate or without a finite θ̂.",
           "ci": "Both confidence intervals of the estimate, percentile and BCa. The column “Confidence interval” shows the one of the chosen interval method as lower; upper limit, with the method in parentheses in the header.",
+          "decision": "The verdict on the target value, column “Decision”: “reject” when the target lies outside the confidence interval of the chosen interval method (table: “Reject H₀”), “retain” when it lies inside (“Retain H₀”). Only in the one-sample setup with a target value, otherwise the field is empty; the read surface computes it with the interval method and target currently set.",
           "bins": "The histogram of the bootstrap replicates for the chart “Bootstrap distribution”, 30 classes of equal width; single replicates are not stored."
         },
         "Intervals": {
@@ -11065,7 +11066,8 @@
           "hosmerLemeshow": "Hosmer-Lemeshow goodness-of-fit test: the observations are split into 10 groups by estimated probability (fewer with little data, at least 4) and observed and expected events are compared by χ² with groups − 2 degrees of freedom; a small p-value speaks against the fit. With fewer than 20 observations (trials for grouped data) the test is skipped and then shows statistic 0 and p = 1. Only with a binomial result, otherwise empty.",
           "overdispersionRatio": "χ²/df (Overdispersion): Pearson χ² divided by n − p; the same value as the ratio of the overdispersion check. Above 1.5 the Poisson fit counts as overdispersed. Only for Poisson, otherwise empty.",
           "overdispersion": "The overdispersion check on the Diagnostics tab with Pearson χ², degrees of freedom and their ratio. Only for Poisson, otherwise empty.",
-          "vif": "Variance inflation factors of the predictors, table VIF; the first value belongs to the first predictor after the intercept, i.e. the second row of the coefficient table. Above 5 the cell is marked, above 10 a warning is shown. Only with two or more predictor columns, otherwise empty; a single value is empty when it cannot be computed.",
+          "vif": "Variance inflation factors of the predictors, table VIF, same order as vifTerms; the first value belongs to the first predictor after the intercept, i.e. the second row of the coefficient table. Above 5 the cell is marked, above 10 a warning is shown. Only with two or more predictor columns, otherwise empty; a single value is empty when it cannot be computed.",
+          "vifTerms": "The terms belonging to the values in vif, same order, column “Term” of the VIF table: the predictors after the intercept, i.e. the coefficient terms from the second row on. Empty when no VIF table appears.",
           "warnings": "The warnings above the output, for example on separation, few events, slow convergence, overdispersion or quasi-Poisson. The texts are in the language of the interface.",
           "equation": "The model equation as text, as shown under Model Equation: logit(p) for binomial, log(μ) for Poisson and negative binomial, equal to the intercept plus coefficient times term, rounded to four decimals."
         },

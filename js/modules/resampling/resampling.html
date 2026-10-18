@@ -160,7 +160,7 @@
               <td x-show="view.hasBoot" data-ref="result-se" x-text="view.se"></td>
               <td x-show="view.hasBoot" data-ref="result-bias" x-text="view.bias"></td>
               <td x-show="view.hasBoot" data-ref="result-interval" x-text="view.interval"></td>
-              <td x-show="view.decisionKey" data-ref="result-decision" x-text="view.decisionKey ? t(view.decisionKey) : ''"></td>
+              <td x-show="view.decisionKey" data-ref="result-decision" data-help-key="modules.resampling.types.Boot.decision" x-text="view.decisionKey ? t(view.decisionKey) : ''"></td>
               <td x-show="view.hasTest" data-ref="result-observed" x-text="view.test ? view.test.observed : ''"></td>
               <td x-show="view.hasTest" data-ref="result-pvalue" x-text="view.test ? view.test.pValue : ''"></td>
               <td x-show="view.hasTest" data-ref="result-method" x-text="view.test ? t(view.test.methodKey) + ' · ' + view.test.permutations : ''"></td>

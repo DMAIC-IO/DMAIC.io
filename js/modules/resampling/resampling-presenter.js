@@ -47,6 +47,20 @@ export function statisticKey(id) {
 const DECISION_KEYS = { reject: 'decisionReject', retain: 'decisionRetain' };
 
 /**
+ * Verdict of a one-sample bootstrap against the target — the single source
+ * for the decision cell and the agent read surface.
+ * @param {object|null} summary persisted `state.result`
+ * @param {{ciMethod: 'bca'|'percentile', target: string}} opts
+ * @returns {'reject'|'retain'|null} null without bootstrap, outside mode one or without a numeric target
+ */
+export function bootDecision(summary, { ciMethod, target }) {
+  if (!summary || !summary.boot || summary.mode !== 'one') return null;
+  const tgt = parseOptionalNumber(target);
+  if (!Number.isFinite(tgt)) return null;
+  return decision(pickCI(summary.boot.ci, ciMethod), tgt);
+}
+
+/**
  * Display data for the result panel.
  * @param {object|null} summary persisted `state.result`
  * @param {{ciMethod: 'bca'|'percentile', target: string}} opts
@@ -57,8 +71,7 @@ export function resultView(summary, { ciMethod, target }) {
   const boot = summary.boot;
   const test = summary.perm || summary.k;
   const interval = boot ? pickCI(boot.ci, ciMethod) : null;
-  const tgt = parseOptionalNumber(target);
-  const verdict = summary.mode === 'one' && Number.isFinite(tgt) ? decision(interval, tgt) : null;
+  const verdict = bootDecision(summary, { ciMethod, target });
   let estimate = null;
   if (boot) estimate = boot.estimate;
   else if (summary.k) estimate = summary.k.estimate;

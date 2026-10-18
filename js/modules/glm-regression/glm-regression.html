@@ -189,7 +189,7 @@
                   <tbody>
                     <template x-for="row in result.vifRows" :key="row.term">
                       <tr>
-                        <td x-text="row.term"></td>
+                        <td data-help-key="modules.glm-regression.types.Result.vifTerms" x-text="row.term"></td>
                         <td x-text="row.vif"></td>
                         <td :class="row.warnClass">
                           <span class="icon icon--sm icon--text" data-icon="status.warning" aria-hidden="true" x-show="row.warnIcon"></span>

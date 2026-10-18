@@ -29,7 +29,7 @@ import { State, MODES, CONTRASTS, DIRECTIONS, CI_METHODS, STATS_BY_MODE } from '
 import {
   readInputs, validateInputs, errorKeyForCode, buildJobs, computeInputsHash, summarize,
 } from './resampling-analysis.js';
-import { resultView, bootChartConfig, permChartConfig, statisticKey } from './resampling-presenter.js';
+import { resultView, bootDecision, bootChartConfig, permChartConfig, statisticKey } from './resampling-presenter.js';
 import { statementParts, renderStatement } from './resampling-statement.js';
 import { createInlineRunner } from '../../engines/resampling-runner.js';
 import { ColumnPicker, getColumnValues, getColumnName, refToKey, keyToRef } from '../../ui/column-picker.js';
@@ -157,6 +157,7 @@ const HELP = 'modules.resampling.types.';
  * @property {number|null} se  Bootstrap-Standardfehler
  * @property {number|null} bias  Verzerrung
  * @property {Intervals} ci  Konfidenzintervalle
+ * @property {'reject'|'retain'|null} decision  Urteil über den Zielwert, nur bei einer Stichprobe mit Zielwert
  * @property {Bin[]} bins  Histogramm der Replikate
  */
 
@@ -317,8 +318,11 @@ const mod = createModule({
        */
       read(options) {
         const { exampleWorksheetId: _book, ...state } = this.model.toJSON();
+        const r = state.result;
+        const verdict = bootDecision(r, { ciMethod: this.model.ciMethod, target: this.model.target });
         return readAgentState('resampling', {
           ...state,
+          result: r && r.boot ? { ...r, boot: { ...r.boot, decision: verdict } } : r,
           activeParams: this.activeParams(),
           statisticOptions: this.statisticOptions(),
           activeColumnSlots: this.activeColumnSlots(),

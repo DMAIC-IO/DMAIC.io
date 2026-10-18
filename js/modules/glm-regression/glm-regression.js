@@ -160,7 +160,8 @@ function num(v) { return typeof v === 'number' && Number.isFinite(v) ? v : null;
  * @property {HosmerLemeshow|null} hosmerLemeshow  Anpassungstest, nur binomial
  * @property {number|null} overdispersionRatio  Pearson-χ² je Freiheitsgrad, nur Poisson
  * @property {Overdispersion|null} overdispersion  Überdispersionsprüfung, nur Poisson
- * @property {Array<number|null>|null} vif  Varianzinflationsfaktoren je Prädiktor
+ * @property {Array<number|null>|null} vif  Varianzinflationsfaktoren je Prädiktor, Reihenfolge wie in vifTerms
+ * @property {string[]|null} vifTerms  Terme zu den Werten in vif, gleiche Reihenfolge
  * @property {string[]} warnings  Warnungen
  * @property {string|null} equation  Modellgleichung
  */
@@ -381,6 +382,7 @@ const mod = createModule({
           overdispersionRatio: num(r._overdispersion?.ratio),
           overdispersion: overdispersionOf(r._overdispersion),
           vif: Array.isArray(r._vifs) ? r._vifs.map(num) : null,
+          vifTerms: Array.isArray(r._vifs) ? r._vifs.map((_, j) => r.terms[j + 1]) : null,
           warnings: [...(this.result?.warnings ?? [])],
           equation: this.buildEquation(r) ?? null,
         };

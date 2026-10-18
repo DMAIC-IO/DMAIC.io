@@ -5556,7 +5556,11 @@ export const AGENT_REGISTRY = {
           },
           "vif": {
             "type": "Array<number|null>|null",
-            "help": "Varianzinflationsfaktoren je Prädiktor"
+            "help": "Varianzinflationsfaktoren je Prädiktor, Reihenfolge wie in vifTerms"
+          },
+          "vifTerms": {
+            "type": "string[]|null",
+            "help": "Terme zu den Werten in vif, gleiche Reihenfolge"
           },
           "warnings": {
             "type": "string[]",
@@ -15091,6 +15095,10 @@ export const AGENT_REGISTRY = {
                     "help": "BCa auf Perzentil zurückgefallen"
                   }
                 }
+              },
+              "decision": {
+                "type": "'reject'|'retain'|null",
+                "help": "Urteil über den Zielwert, nur bei einer Stichprobe mit Zielwert"
               },
               "bins": {
                 "type": "Bin[]",
