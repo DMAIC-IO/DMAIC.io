@@ -90,6 +90,78 @@ const DATA_TYPE_LABEL_KEYS = {
   discrete: 'dataTypeDisc',
 };
 
+/** Präfix der Kontexthilfe-Schlüssel für die in JS erzeugten Kacheln. */
+const HELP = 'modules.distribution-fit.types.';
+
+/**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {'auto'|'continuous'|'discrete'} dataType  Datentyp
+ */
+
+/**
+ * Das gerechnete Ergebnis, wie `read().result` es liefert. Die Dichte- und
+ * Verteilungsfunktionen der Engine fallen beim Lesen weg.
+ *
+ * @typedef {object} Result
+ * @property {DescStats} stats  Kennwerte der Daten
+ * @property {Fit[]} results  angepasste Verteilungen, beste zuerst
+ * @property {NormalityTest[]} normalityTests  Normalitätstests
+ * @property {'auto'|'continuous'|'discrete'} _dataType  Datentyp der Rechnung
+ */
+
+/**
+ * @typedef {object} DescStats
+ * @property {number} n  Anzahl
+ * @property {number|null} mean  Mittelwert
+ * @property {number|null} stdDev  Standardabweichung
+ * @property {number|null} median  Median
+ * @property {number|null} skewness  Schiefe
+ * @property {number|null} kurtosis  Exzess-Wölbung
+ * @property {number|null} min  Minimum
+ * @property {number|null} max  Maximum
+ */
+
+/**
+ * @typedef {object} Fit
+ * @property {string} name  Verteilung
+ * @property {'cont'|'disc'} type  stetig oder diskret
+ * @property {Object<string, number>} params  geschätzte Parameter
+ * @property {KsTest} [ks]  Kolmogorov-Smirnov, nur stetig
+ * @property {ChiSquareTest} [chi2]  χ²-Anpassungstest, nur diskret
+ * @property {number|null} score  p-Wert des Gütetests
+ */
+
+/**
+ * @typedef {object} KsTest
+ * @property {number|null} D  Statistik
+ * @property {number|null} p  p-Wert
+ */
+
+/**
+ * @typedef {object} ChiSquareTest
+ * @property {number|null} chi2  Statistik
+ * @property {number|null} df  Freiheitsgrade
+ * @property {number|null} p  p-Wert
+ */
+
+/**
+ * @typedef {object} NormalityTest
+ * @property {string} name  Test
+ * @property {number|null} p  p-Wert
+ * @property {number|null} [W]  Shapiro-Wilk
+ * @property {number|null} [A2]  Anderson-Darling, unkorrigiert
+ * @property {number|null} [JB]  Jarque-Bera
+ * @property {number|null} [K2]  D'Agostino-Pearson
+ * @property {number|null} [skewness]  Schiefe
+ * @property {number|null} [exKurtosis]  Exzess-Wölbung
+ * @property {number|null} [skewZ]  z der Schiefe
+ * @property {number|null} [kurtZ]  z der Wölbung
+ * @property {boolean} [tooSmall]  zu wenige Werte
+ */
+
 /**
  * Die Agenten-Lesefläche von Distribution Fit.
  *
@@ -103,7 +175,7 @@ const DATA_TYPE_LABEL_KEYS = {
  * @property {string[]} activeParams  the keys `setParam` accepts in the current state
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
- * @property {object|null} result  the ranking of the fitted distributions with key figures, or null
+ * @property {Result|null} result  the ranking of the fitted distributions with key figures, or null
  * @property {string} errorMsg  the reason no result exists (too few values, zero variance), or an empty string
  */
 const mod = createModule({
@@ -136,7 +208,7 @@ const mod = createModule({
       // ── Results panel (declarative — structured reactive data) ──
       /** Whether the results panel is shown. */
       panelShow: false,
-      /** @type {Array<{value:string, label:string}>} descriptive KPI cells. */
+      /** @type {Array<{value:string, label:string, help:string}>} descriptive KPI cells. */
       kpiCells: [],
       /** @type {Array} ranking-table rows (see _buildRankingRows). */
       rankRows: [],
@@ -196,8 +268,8 @@ const mod = createModule({
       /**
        * Den Datentyp setzen; die Analyse läuft danach neu.
        * @agent
-       * @param {'dataType'} key welcher Parameter
-       * @param {'auto'|'continuous'|'discrete'} value der Datentyp
+       * @param {keyof Params} key welcher Parameter
+       * @param {'auto'|'continuous'|'discrete'} value der Wert; Bedeutung je Schlüssel siehe `Params`
        * @returns {void}
        * @throws {Error} wenn `key` kein Parameter dieses Moduls ist oder `value` nicht zulässig
        */
@@ -326,14 +398,14 @@ const mod = createModule({
         const { stats, results, normalityTests } = result;
 
         this.kpiCells = [
-          { value: String(stats.n), label: 'n' },
-          { value: fmt(stats.mean), label: t('mean') },
-          { value: fmt(stats.stdDev), label: t('stdDev') },
-          { value: fmt(stats.median), label: t('median') },
-          { value: fmt(stats.skewness), label: t('skewness') },
-          { value: fmt(stats.kurtosis), label: t('kurtosisExcess') },
-          { value: fmt(stats.min), label: t('min') },
-          { value: fmt(stats.max), label: t('max') },
+          { value: String(stats.n), label: 'n', help: HELP + 'DescStats.n' },
+          { value: fmt(stats.mean), label: t('mean'), help: HELP + 'DescStats.mean' },
+          { value: fmt(stats.stdDev), label: t('stdDev'), help: HELP + 'DescStats.stdDev' },
+          { value: fmt(stats.median), label: t('median'), help: HELP + 'DescStats.median' },
+          { value: fmt(stats.skewness), label: t('skewness'), help: HELP + 'DescStats.skewness' },
+          { value: fmt(stats.kurtosis), label: t('kurtosisExcess'), help: HELP + 'DescStats.kurtosis' },
+          { value: fmt(stats.min), label: t('min'), help: HELP + 'DescStats.min' },
+          { value: fmt(stats.max), label: t('max'), help: HELP + 'DescStats.max' },
         ];
 
         this.rankRows = this._buildRankingRows(results, t);

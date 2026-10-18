@@ -3153,11 +3153,18 @@ export const AGENT_REGISTRY = {
             "name": "value",
             "type": "'auto'|'continuous'|'discrete'",
             "optional": false,
-            "help": "der Datentyp"
+            "help": "der Wert; Bedeutung je Schlüssel siehe `Params`"
           }
         ],
         "returns": "void",
-        "help": "Den Datentyp setzen; die Analyse läuft danach neu."
+        "help": "Den Datentyp setzen; die Analyse läuft danach neu.",
+        "keysOf": "Params",
+        "keys": {
+          "dataType": {
+            "type": "'auto'|'continuous'|'discrete'",
+            "help": "Datentyp"
+          }
+        }
       },
       "setColumn": {
         "params": [
@@ -3215,10 +3222,175 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
+        "type": "Result|null",
         "help": "the ranking of the fitted distributions with key figures, or null",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "stats": {
+            "type": "DescStats",
+            "help": "Kennwerte der Daten",
+            "keysOf": "DescStats",
+            "keys": {
+              "n": {
+                "type": "number",
+                "help": "Anzahl"
+              },
+              "mean": {
+                "type": "number|null",
+                "help": "Mittelwert"
+              },
+              "stdDev": {
+                "type": "number|null",
+                "help": "Standardabweichung"
+              },
+              "median": {
+                "type": "number|null",
+                "help": "Median"
+              },
+              "skewness": {
+                "type": "number|null",
+                "help": "Schiefe"
+              },
+              "kurtosis": {
+                "type": "number|null",
+                "help": "Exzess-Wölbung"
+              },
+              "min": {
+                "type": "number|null",
+                "help": "Minimum"
+              },
+              "max": {
+                "type": "number|null",
+                "help": "Maximum"
+              }
+            }
+          },
+          "results": {
+            "type": "Fit[]",
+            "help": "angepasste Verteilungen, beste zuerst",
+            "keysOf": "Fit",
+            "keys": {
+              "name": {
+                "type": "string",
+                "help": "Verteilung"
+              },
+              "type": {
+                "type": "'cont'|'disc'",
+                "help": "stetig oder diskret"
+              },
+              "params": {
+                "type": "Object<string, number>",
+                "help": "geschätzte Parameter"
+              },
+              "ks": {
+                "type": "KsTest",
+                "help": "Kolmogorov-Smirnov, nur stetig",
+                "optional": true,
+                "keysOf": "KsTest",
+                "keys": {
+                  "D": {
+                    "type": "number|null",
+                    "help": "Statistik"
+                  },
+                  "p": {
+                    "type": "number|null",
+                    "help": "p-Wert"
+                  }
+                }
+              },
+              "chi2": {
+                "type": "ChiSquareTest",
+                "help": "χ²-Anpassungstest, nur diskret",
+                "optional": true,
+                "keysOf": "ChiSquareTest",
+                "keys": {
+                  "chi2": {
+                    "type": "number|null",
+                    "help": "Statistik"
+                  },
+                  "df": {
+                    "type": "number|null",
+                    "help": "Freiheitsgrade"
+                  },
+                  "p": {
+                    "type": "number|null",
+                    "help": "p-Wert"
+                  }
+                }
+              },
+              "score": {
+                "type": "number|null",
+                "help": "p-Wert des Gütetests"
+              }
+            }
+          },
+          "normalityTests": {
+            "type": "NormalityTest[]",
+            "help": "Normalitätstests",
+            "keysOf": "NormalityTest",
+            "keys": {
+              "name": {
+                "type": "string",
+                "help": "Test"
+              },
+              "p": {
+                "type": "number|null",
+                "help": "p-Wert"
+              },
+              "W": {
+                "type": "number|null",
+                "help": "Shapiro-Wilk",
+                "optional": true
+              },
+              "A2": {
+                "type": "number|null",
+                "help": "Anderson-Darling, unkorrigiert",
+                "optional": true
+              },
+              "JB": {
+                "type": "number|null",
+                "help": "Jarque-Bera",
+                "optional": true
+              },
+              "K2": {
+                "type": "number|null",
+                "help": "D'Agostino-Pearson",
+                "optional": true
+              },
+              "skewness": {
+                "type": "number|null",
+                "help": "Schiefe",
+                "optional": true
+              },
+              "exKurtosis": {
+                "type": "number|null",
+                "help": "Exzess-Wölbung",
+                "optional": true
+              },
+              "skewZ": {
+                "type": "number|null",
+                "help": "z der Schiefe",
+                "optional": true
+              },
+              "kurtZ": {
+                "type": "number|null",
+                "help": "z der Wölbung",
+                "optional": true
+              },
+              "tooSmall": {
+                "type": "boolean",
+                "help": "zu wenige Werte",
+                "optional": true
+              }
+            }
+          },
+          "_dataType": {
+            "type": "'auto'|'continuous'|'discrete'",
+            "help": "Datentyp der Rechnung"
+          }
+        }
       },
       "errorMsg": {
         "type": "string",

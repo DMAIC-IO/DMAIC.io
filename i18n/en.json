@@ -8260,12 +8260,12 @@
         "setParam": {
           "help": "Sets the data type; the analysis reruns on the chosen column.",
           "params": {
-            "key": "One of the keys in activeParams; this module only has dataType. Any other value is an error.",
-            "value": "The data type: 'auto', 'continuous' or 'discrete'. Any other value is an error."
+            "key": "Which option; each is described individually under keys. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys."
           }
         },
         "setColumn": {
-          "help": "Points the analysis at a numeric column of a data collection; the analysis reruns.",
+          "help": "The data collection column that supplies this role; after a change the analysis is recomputed.",
           "params": {
             "slot": "One of the slots in activeColumnSlots; this module only has 'value'.",
             "ref": "Column reference { instanceId, sheetId, columnId } of a column from pickableColumns, or null to clear."
@@ -8279,8 +8279,59 @@
         "activeParams": { "help": "The keys setParam accepts in the current state." },
         "activeColumnSlots": { "help": "The slots setColumn accepts in the current state." },
         "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; key is 'instanceId|sheetId|columnId'." },
-        "result": { "help": "The ranking of the fitted distributions with key figures, or null while no analysis exists." },
+        "result": { "help": "The ranking of fitted distributions with statistics and normality tests, each figure described individually under keys; null without a column, with fewer than 5 values or without spread." },
         "errorMsg": { "help": "The reason no result exists (too few values, zero variance), or an empty string." }
+      },
+      "types": {
+        "Params": {
+          "dataType": "How the column is treated, label Data Type: Auto, Continuous or Discrete, default Auto. Continuous fits only the continuous distributions (Normal, Log-Normal, Weibull, Exponential, Gamma), Discrete only Poisson and Binomial. Auto takes both families when all values are integers, otherwise only the continuous ones. A change recomputes."
+        },
+        "Result": {
+          "stats": "The statistics of the data from the Descriptive Statistics section: count, location, spread and shape, computed on all numeric values of the column.",
+          "results": "The fitted distributions, sorted descending by the p-value of their goodness-of-fit test; the # column shows the rank, rank 1 carries the BEST FIT tag next to its name. The data type decides which distributions are fitted; a distribution with too few suitable values is missing from the list.",
+          "normalityTests": "The four normality tests Shapiro-Wilk, Anderson-Darling, Jarque-Bera and D'Agostino-Pearson on the same values, shown in the Normality Deep-Dive; a test that cannot be computed is missing. The overall verdict counts only computed tests and treats p ≥ 0.1 as passed and p < 0.05 as rejected.",
+          "_dataType": "The data type this computation ran with, Auto, Continuous or Discrete; a copy of the setting at the time of the computation."
+        },
+        "DescStats": {
+          "n": "Number of values, tile n: all numeric cells of the column; empty and non-numeric cells do not count.",
+          "mean": "Arithmetic mean x̄ = Σx/n, tile Mean. The tiles show four decimals; a non-finite value appears as a dash.",
+          "stdDev": "Sample standard deviation s = √(Σ(x − x̄)²/(n − 1)), tile Std Dev.",
+          "median": "The middle value of the sorted data, for an even count the mean of the two middle ones; tile Median.",
+          "skewness": "Adjusted sample skewness n/((n − 1)(n − 2)) · Σ((x − x̄)/s)³, tile Skewness: 0 for symmetric data, positive with a long right tail, negative with a long left tail.",
+          "kurtosis": "Excess kurtosis by the sample formula n(n + 1)/((n − 1)(n − 2)(n − 3)) · Σ((x − x̄)/s)⁴ − 3(n − 1)²/((n − 2)(n − 3)), tile Excess Kurtosis. The normal distribution has 0; positive means heavier tails, negative lighter ones.",
+          "min": "The smallest value of the column, tile Min.",
+          "max": "The largest value of the column, tile Max."
+        },
+        "Fit": {
+          "name": "The name of the distribution, column Distribution: Normal, Log-Normal, Weibull, Exponential, Gamma, Poisson or Binomial; next to it the tag continuous or discrete.",
+          "type": "The family of the distribution: cont for continuous, disc for discrete; the interface shows it as the tag continuous or discrete next to the name. Continuous ones are assessed with the Kolmogorov-Smirnov test, discrete ones with the χ² goodness-of-fit test.",
+          "params": "The estimated parameters, each as symbol and value; the Parameters column shows them as symbol=value. Normal: μ = x̄ and σ = s of all values. Log-Normal: μ_log and σ_log, mean and standard deviation of the ln values. Exponential: λ = 1/x̄. Gamma: α = x̄²/s² and β = x̄/s² (method of moments). Weibull: shape k from the maximum-likelihood equation (Newton's method, start 1.2) and scale λ = (Σxᵏ/n)^(1/k). Log-Normal, Exponential, Gamma and Weibull use only the positive values and need at least 3 of them, Weibull at least 5. Poisson: λ = x̄; Binomial: n = largest value, p = x̄/n; both use only the non-negative integer values and need at least 3. If the values do not suffice, the distribution is missing. The goodness-of-fit test, by contrast, runs on all values of the column.",
+          "ks": "The Kolmogorov-Smirnov test, for continuous distributions only; for discrete ones it is missing and the χ² goodness-of-fit test takes its place. The Test column shows K-S or χ² respectively.",
+          "chi2": "The χ² goodness-of-fit test, for discrete distributions only (Poisson, Binomial); for continuous ones it is missing and the Kolmogorov-Smirnov test takes its place. The Test column shows χ² for it.",
+          "score": "The p-value of the goodness-of-fit test, for continuous distributions that of the Kolmogorov-Smirnov test, for discrete ones that of the χ² test; the ranking is sorted by it. The p-Value column shows it with four decimals (below 0.0001 as 0.0000), the Fit Quality column as a bar that is full from p = 0.2, with the verdict Good at p ≥ 0.1, Borderline at 0.05 ≤ p < 0.1 and Poor below. A large p-value only means that no deviation can be detected, not that the distribution is proven to fit."
+        },
+        "KsTest": {
+          "D": "The Kolmogorov-Smirnov statistic D: the largest vertical distance between the empirical distribution function of the values and the fitted distribution function, from 0 to 1; smaller is better. The Statistic column shows D for continuous distributions and the χ² value of the goodness-of-fit test for discrete ones.",
+          "p": "The p-value from the Kolmogorov distribution, approximated with z = (√n + 0.12 + 0.11/√n) · D (Stephens) and clamped to 0 to 1. The parameters come from the same data and the computation does not correct for that (no Lilliefors correction); the p-value therefore tends to be too large."
+        },
+        "ChiSquareTest": {
+          "chi2": "The χ² statistic Σ(O − E)²/E over the integer values k = 0 to largest value + 5, with observed frequency O and expected frequency E = n · P(k); values with E < 1 are dropped. The Statistic column shows it for discrete distributions.",
+          "df": "The degrees of freedom: number of values used with E ≥ 1 minus 2, at least 1.",
+          "p": "The p-value 1 − F(χ²) of the χ² distribution with df degrees of freedom, clamped to 0 to 1."
+        },
+        "NormalityTest": {
+          "name": "The name of the test as the Normality Deep-Dive card shows it: Shapiro-Wilk, Anderson-Darling, Jarque-Bera or D'Agostino-Pearson.",
+          "p": "The p-value of the test against the null hypothesis of normality; empty when the test has too few values. The card's verdict is Passed at p ≥ 0.1, Borderline at 0.05 ≤ p < 0.1 and Rejected below.",
+          "W": "The Shapiro-Wilk statistic W (algorithm AS R94), only in the Shapiro-Wilk entry; values close to 1 indicate normality.",
+          "A2": "The Anderson-Darling statistic A², unadjusted, only in the Anderson-Darling entry. The p-value uses the adjusted A² · (1 + 0.75/n + 2.25/n²) after D'Agostino and Stephens.",
+          "JB": "The Jarque-Bera statistic n/6 · (S² + K²/4) from moment skewness S and excess K, p-value from χ² with 2 degrees of freedom; only in the Jarque-Bera entry and only from 8 values on, empty below.",
+          "K2": "The D'Agostino-Pearson statistic K², the sum of the squared z-values of skewness and kurtosis, p-value e^(−K²/2) from χ² with 2 degrees of freedom; only in the D'Agostino-Pearson entry and only from 20 values on, empty below.",
+          "skewness": "The skewness as the test computes it; only for Jarque-Bera and D'Agostino-Pearson and only when the test was computed.",
+          "exKurtosis": "The excess kurtosis as the test computes it (normal distribution 0); only for Jarque-Bera and D'Agostino-Pearson and only when the test was computed.",
+          "skewZ": "The z-value of skewness after D'Agostino (1970), only for D'Agostino-Pearson from 20 values on.",
+          "kurtZ": "The z-value of kurtosis after Anscombe and Glynn (1983), only for D'Agostino-Pearson from 20 values on.",
+          "tooSmall": "True when the test had too few values and was not computed: Jarque-Bera below 8, D'Agostino-Pearson below 20 values; the card then shows a notice instead of a verdict. Otherwise the entry is missing."
+        }
       },
       "sectionData": "Data Source",
       "sectionDescriptive": "Descriptive Statistics",

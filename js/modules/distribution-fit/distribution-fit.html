@@ -3,12 +3,12 @@
     <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
 
     <div class="field-group">
-      <label x-text="t('columnSelectLabel')"></label>
+      <label data-help-key="modules.distribution-fit.actions.setColumn.help" x-text="t('columnSelectLabel')"></label>
       <div data-ref="col-picker-wrap"></div>
     </div>
 
     <div class="field-group">
-      <label x-text="t('dataTypeLabel')"></label>
+      <label data-help-key="modules.distribution-fit.types.Params.dataType" x-text="t('dataTypeLabel')"></label>
       <div class="btn-group distfit__toggle-row">
         <template x-for="opt in dataTypeOptions()" :key="opt.value">
           <button class="btn--segment distfit__toggle-btn"
@@ -35,7 +35,7 @@
             <template x-for="(c, i) in kpiCells" :key="i">
               <div class="dmike-kpi">
                 <div class="dmike-kpi-value" x-text="c.value"></div>
-                <div class="dmike-kpi-label" x-text="c.label"></div>
+                <div class="dmike-kpi-label" :data-help-key="c.help" x-text="c.label"></div>
               </div>
             </template>
           </div>
@@ -47,13 +47,13 @@
           <div class="distfit__table-wrap">
             <table class="dmike-table">
               <thead><tr>
-                <th>#</th>
-                <th x-text="t('colDist')"></th>
-                <th x-text="t('colParams')"></th>
-                <th x-text="t('colTest')"></th>
-                <th x-text="t('colStat')"></th>
-                <th x-text="t('colP')"></th>
-                <th x-text="t('colFit')"></th>
+                <th><span data-help-key="modules.distribution-fit.types.Result.results">#</span></th>
+                <th><span data-help-key="modules.distribution-fit.types.Fit.name" x-text="t('colDist')"></span></th>
+                <th><span data-help-key="modules.distribution-fit.types.Fit.params" x-text="t('colParams')"></span></th>
+                <th><span data-help-key="modules.distribution-fit.types.Fit.ks" x-text="t('colTest')"></span></th>
+                <th><span data-help-key="modules.distribution-fit.types.KsTest.D" x-text="t('colStat')"></span></th>
+                <th><span data-help-key="modules.distribution-fit.types.Fit.score" x-text="t('colP')"></span></th>
+                <th><span data-help-key="modules.distribution-fit.types.Fit.score" x-text="t('colFit')"></span></th>
               </tr></thead>
               <tbody>
                 <template x-for="(r, i) in rankRows" :key="i">
