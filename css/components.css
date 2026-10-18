@@ -840,7 +840,7 @@ select.input {
   color: var(--color-text-primary);
 }
 
-.dmike-tab:hover:not(.dmike-tab--active):not(:disabled) {
+.dmike-tab:hover:not(.dmike-tab--active, :disabled) {
   color: var(--color-text-secondary);
 }
 
