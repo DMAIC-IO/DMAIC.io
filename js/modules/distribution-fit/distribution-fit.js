@@ -398,7 +398,7 @@ const mod = createModule({
         const { stats, results, normalityTests } = result;
 
         this.kpiCells = [
-          { value: String(stats.n), label: 'n', help: HELP + 'DescStats.n' },
+          { value: String(stats.n), label: t('common.sym.n'), help: HELP + 'DescStats.n' },
           { value: fmt(stats.mean), label: t('mean'), help: HELP + 'DescStats.mean' },
           { value: fmt(stats.stdDev), label: t('stdDev'), help: HELP + 'DescStats.stdDev' },
           { value: fmt(stats.median), label: t('median'), help: HELP + 'DescStats.median' },
@@ -440,7 +440,7 @@ const mod = createModule({
             typeTagClass: isD ? 'distfit__tag--disc' : 'distfit__tag--cont',
             isBest: i === 0,
             params,
-            testName: isD ? 'χ²' : 'K-S',
+            testName: isD ? t('symChi2') : t('symKs'),
             statVal: isD ? fmt(r.chi2.chi2) : fmt(r.ks.D),
             q,
             pS,
@@ -481,8 +481,8 @@ const mod = createModule({
             qL: t(`fit${  q.charAt(0).toUpperCase()  }${q.slice(1)}`),
             paramsLabel: t('colParams'),
             paramRows,
-            gofLabel: `${t('detailGofTest')  } (${  isD ? 'χ²' : 'K-S'  })`,
-            statRowLabel: `${t('nddStatistic')  } (${  isD ? 'χ²' : 'D'  })`,
+            gofLabel: `${t('detailGofTest')  } (${  isD ? t('symChi2') : t('symKs')  })`,
+            statRowLabel: `${t('nddStatistic')  } (${  isD ? t('symChi2') : t('symKsD')  })`,
             statVal: fmt(statVal),
             isDisc: isD,
             df: isD ? String(r.chi2.df) : '',

@@ -552,10 +552,10 @@ const mod = createModule({
             { name: 'Anderson-Darling', algoId: ALGO_LAB_IDS['Anderson-Darling'], stat: fmt(ad.statistic), p: fmt(ad.pValue), pClass: pCls(ad.pValue), decisionIcon: decisionIcon(ad.pValue), decisionText: decisionText(ad.pValue) },
           ],
           metrics: [
-            { label: 'n', value: String(n), title: this._tip('n') },
-            { label: 'x̄', value: fmt(mean), ci: ciMean ? ciFmt(ciMean) : null, title: this._tip('x̄') },
-            { label: 's', value: fmt(sd), ci: ciSd ? ciFmt(ciSd) : null, title: this._tip('s') },
-            { label: 's²', value: fmt(variance), ci: ciVar ? ciFmt(ciVar) : null, title: this._tip('s²') },
+            { label: _t('common.sym.n'), value: String(n), title: this._tip('n') },
+            { label: _t('common.sym.xbar'), value: fmt(mean), ci: ciMean ? ciFmt(ciMean) : null, title: this._tip('x̄') },
+            { label: _t('symS'), value: fmt(sd), ci: ciSd ? ciFmt(ciSd) : null, title: this._tip('s') },
+            { label: _t('common.sym.s2'), value: fmt(variance), ci: ciVar ? ciFmt(ciVar) : null, title: this._tip('s²') },
           ],
         };
       },
@@ -580,10 +580,10 @@ const mod = createModule({
         const metrics = [
           { label: _t('testMethod'), value: r.testName, algoId: ALGO_LAB_IDS[r.testName] || '', valueClass: 'hyptest__metric-value--sm', title: this._tip(_t('testMethod')) },
           { label: _t('statistic'), value: fmt(r.statistic), valueClass: '', title: this._tip(_t('statistic')) },
-          { label: 'p', value: fmt(r.pValue), valueClass: pCls, title: r.method ? `${this._tip('p')} (${r.method === 'exact' ? _t('pMethodExact') : _t('pMethodNormal')})` : this._tip('p') },
+          { label: _t('common.sym.p'), value: fmt(r.pValue), valueClass: pCls, title: r.method ? `${this._tip('p')} (${r.method === 'exact' ? _t('pMethodExact') : _t('pMethodNormal')})` : this._tip('p') },
         ];
         if (r.df != null) {
-          metrics.push({ label: 'df', value: (typeof r.df === 'number' && r.df % 1) ? fmt(r.df, 1) : String(r.df), valueClass: '', title: this._tip('df') });
+          metrics.push({ label: _t('common.sym.df'), value: (typeof r.df === 'number' && r.df % 1) ? fmt(r.df, 1) : String(r.df), valueClass: '', title: this._tip('df') });
         }
         const level = Math.round((1 - alpha) * 100);
         const isMeanDiff = !isVariance && isTwo && r.ci != null;
@@ -602,18 +602,18 @@ const mod = createModule({
           });
         }
         if (r.mean != null) {
-          metrics.push({ label: 'x̄', value: fmt(r.mean), valueClass: '', title: this._tip('x̄') });
+          metrics.push({ label: _t('common.sym.xbar'), value: fmt(r.mean), valueClass: '', title: this._tip('x̄') });
         }
         if (r.mean1 != null) {
-          metrics.push({ label: 'x̄₁', value: fmt(r.mean1), valueClass: '', title: this._tip('x̄₁') });
-          metrics.push({ label: 'x̄₂', value: fmt(r.mean2), valueClass: '', title: this._tip('x̄₂') });
+          metrics.push({ label: _t('symXbar1'), value: fmt(r.mean1), valueClass: '', title: this._tip('x̄₁') });
+          metrics.push({ label: _t('symXbar2'), value: fmt(r.mean2), valueClass: '', title: this._tip('x̄₂') });
         }
         if (r.sampleVariance != null) {
-          metrics.push({ label: 's²', value: fmt(r.sampleVariance), valueClass: '', title: this._tip('s²') });
+          metrics.push({ label: _t('common.sym.s2'), value: fmt(r.sampleVariance), valueClass: '', title: this._tip('s²') });
         }
         if (r.variance1 != null && !r.pooledVariance) {
-          metrics.push({ label: 's²₁', value: fmt(r.variance1), valueClass: '', title: this._tip('s²₁') });
-          metrics.push({ label: 's²₂', value: fmt(r.variance2), valueClass: '', title: this._tip('s²₂') });
+          metrics.push({ label: _t('symS21'), value: fmt(r.variance1), valueClass: '', title: this._tip('s²₁') });
+          metrics.push({ label: _t('symS22'), value: fmt(r.variance2), valueClass: '', title: this._tip('s²₂') });
         }
 
         const h0Tip = r.reject
@@ -652,7 +652,7 @@ const mod = createModule({
           metrics: [
             { label: _t('testMethod'), value: r.testName, algoId: ALGO_LAB_IDS[r.testName] || '', valueClass: 'hyptest__metric-value--sm', title: this._tip(_t('testMethod')) },
             { label: _t('statistic'), value: fmt(r.statistic), valueClass: '', title: this._tip(_t('statistic')) },
-            { label: 'p', value: fmt(r.pValue), valueClass: pCls, title: this._tip('p') },
+            { label: _t('common.sym.p'), value: fmt(r.pValue), valueClass: pCls, title: this._tip('p') },
           ],
         };
       },
@@ -666,12 +666,12 @@ const mod = createModule({
           { label: _t('statistic'), value: fmt(veResult.statistic), valueClass: '', title: this._tip(_t('statistic')) },
         ];
         if (withDf) {
-          metrics.push({ label: 'df', value: `${veResult.df1} / ${veResult.df2}`, valueClass: '', title: this._tip('df') });
+          metrics.push({ label: _t('common.sym.df'), value: `${veResult.df1} / ${veResult.df2}`, valueClass: '', title: this._tip('df') });
         }
-        metrics.push({ label: 'p', value: fmt(veResult.pValue), valueClass: pCls, title: this._tip('p') });
+        metrics.push({ label: _t('common.sym.p'), value: fmt(veResult.pValue), valueClass: pCls, title: this._tip('p') });
         if (!withDf) {
-          metrics.push({ label: 's²₁', value: fmt(veResult.variance1), valueClass: '', title: this._tip('s²₁') });
-          metrics.push({ label: 's²₂', value: fmt(veResult.variance2), valueClass: '', title: this._tip('s²₂') });
+          metrics.push({ label: _t('symS21'), value: fmt(veResult.variance1), valueClass: '', title: this._tip('s²₁') });
+          metrics.push({ label: _t('symS22'), value: fmt(veResult.variance2), valueClass: '', title: this._tip('s²₂') });
         }
         return { metrics, varsEqual };
       },
@@ -729,9 +729,9 @@ const mod = createModule({
           requiredLine,
           metrics: [
             { label: _t('currentPower'), value: `${(curPow * 100).toFixed(1)}%`, valueClass: goalReached ? 'hyptest__metric-value--success' : 'hyptest__metric-value--warning', title: this._tip(_t('currentPower')) },
-            { label: 'n', value: `${n1}${d2 ? ` / ${  d2.length}` : ''}`, valueClass: '', title: this._tip('n') },
+            { label: _t('common.sym.n'), value: `${n1}${d2 ? ` / ${  d2.length}` : ''}`, valueClass: '', title: this._tip('n') },
             { label: effLabel, value: fmt(curEff, 3), valueClass: '', title: this._tip(effLabel) },
-            { label: 'α', value: String(alpha), valueClass: '', title: this._tip('α') },
+            { label: _t('symAlpha'), value: String(alpha), valueClass: '', title: this._tip('α') },
           ],
         };
       },
@@ -912,12 +912,12 @@ const mod = createModule({
         const metrics = [
           { label: _t('testMethod'), value: r.testName, algoId: ALGO_LAB_IDS[r.testName] || '', valueClass: 'hyptest__metric-value--sm', title: this._tip(_t('testMethod')) },
           { label: _t('statistic'), value: fmt(r.statistic), valueClass: '', title: this._tip(_t('statistic')) },
-          { label: 'df', value: dfDisplay, valueClass: '', title: this._tip('df') },
-          { label: 'p', value: fmt(r.pValue), valueClass: pCls, title: this._tip('p') },
-          { label: 'k', value: String(r.k), valueClass: '', title: this._tip('k') },
+          { label: _t('common.sym.df'), value: dfDisplay, valueClass: '', title: this._tip('df') },
+          { label: _t('common.sym.p'), value: fmt(r.pValue), valueClass: pCls, title: this._tip('p') },
+          { label: _t('symK'), value: String(r.k), valueClass: '', title: this._tip('k') },
         ];
-        if (r.N != null) metrics.push({ label: 'N', value: String(r.N), valueClass: '', title: this._tip('N') });
-        if (r.pooledVariance != null) metrics.push({ label: 's²ₚ', value: fmt(r.pooledVariance), valueClass: '', title: this._tip('s²ₚ') });
+        if (r.N != null) metrics.push({ label: _t('symBigN'), value: String(r.N), valueClass: '', title: this._tip('N') });
+        if (r.pooledVariance != null) metrics.push({ label: _t('symS2p'), value: fmt(r.pooledVariance), valueClass: '', title: this._tip('s²ₚ') });
 
         let anovaRows = null;
         if (isAnova) {

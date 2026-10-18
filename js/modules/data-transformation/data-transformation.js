@@ -413,14 +413,14 @@ const mod = createModule({
         const raw = this.rawData;
         const trans = this.transData;
         this.statRows = [
-          { label: 'n', orig: String(raw.length), trans: String(trans.length) },
+          { label: _t('common.sym.n'), orig: String(raw.length), trans: String(trans.length) },
           { label: _t('statMean'), orig: fmt(mean(raw)), trans: fmt(mean(trans)) },
           { label: _t('statStd'), orig: fmt(std(raw)), trans: fmt(std(trans)) },
           { label: _t('statMedian'), orig: fmt(median(raw)), trans: fmt(median(trans)) },
           { label: _t('statSkewness'), orig: fmt(skewness(raw)), trans: fmt(skewness(trans)) },
           { label: _t('statKurtosis'), orig: fmt(kurtosis(raw)), trans: fmt(kurtosis(trans)) },
-          { label: 'Min', orig: fmt(Math.min(...raw)), trans: fmt(Math.min(...trans)) },
-          { label: 'Max', orig: fmt(Math.max(...raw)), trans: fmt(Math.max(...trans)) },
+          { label: _t('common.sym.min'), orig: fmt(Math.min(...raw)), trans: fmt(Math.min(...trans)) },
+          { label: _t('common.sym.max'), orig: fmt(Math.max(...raw)), trans: fmt(Math.max(...trans)) },
         ];
       },
 

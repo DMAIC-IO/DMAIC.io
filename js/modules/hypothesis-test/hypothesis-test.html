@@ -161,7 +161,7 @@
                 </div>
                 <table>
                   <thead><tr>
-                    <th><span data-help-key="modules.hypothesis-test.types.NormRow.name">Test</span></th><th><span data-help-key="modules.hypothesis-test.types.NormRow.stat" x-text="t('statistic')"></span></th><th><span data-help-key="modules.hypothesis-test.types.NormRow.p">p</span></th><th><span data-help-key="modules.hypothesis-test.types.NormRow.decisionText" x-text="t('decision')"></span></th>
+                    <th><span data-help-key="modules.hypothesis-test.types.NormRow.name" x-text="t('colTest')"></span></th><th><span data-help-key="modules.hypothesis-test.types.NormRow.stat" x-text="t('statistic')"></span></th><th><span data-help-key="modules.hypothesis-test.types.NormRow.p" x-text="t('common.sym.p')"></span></th><th><span data-help-key="modules.hypothesis-test.types.NormRow.decisionText" x-text="t('decision')"></span></th>
                   </tr></thead>
                   <tbody>
                     <template x-for="row in card.rows">
@@ -282,7 +282,7 @@
             <template x-if="result.main.anovaRows">
               <table>
                 <thead><tr>
-                  <th><span data-help-key="modules.hypothesis-test.types.AnovaRow.src" x-text="t('source')"></span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.ss">SS</span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.df">df</span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.ms">MS</span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.f">F</span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.p">p</span></th>
+                  <th><span data-help-key="modules.hypothesis-test.types.AnovaRow.src" x-text="t('source')"></span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.ss" x-text="t('common.sym.ss')"></span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.df" x-text="t('common.sym.df')"></span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.ms" x-text="t('common.sym.ms')"></span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.f" x-text="t('common.sym.f')"></span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.p" x-text="t('common.sym.p')"></span></th>
                 </tr></thead>
                 <tbody>
                   <template x-for="row in result.main.anovaRows">
@@ -303,7 +303,7 @@
             <template x-if="result.main.groupRows">
               <table>
                 <thead><tr>
-                  <th><span data-help-key="modules.hypothesis-test.types.GroupRow.name" x-text="t('group')"></span></th><th><span data-help-key="modules.hypothesis-test.types.GroupRow.n">n</span></th><th><span data-help-key="modules.hypothesis-test.types.GroupRow.mean">x̄</span></th><th><span data-help-key="modules.hypothesis-test.types.GroupRow.variance">s²</span></th>
+                  <th><span data-help-key="modules.hypothesis-test.types.GroupRow.name" x-text="t('group')"></span></th><th><span data-help-key="modules.hypothesis-test.types.GroupRow.n" x-text="t('common.sym.n')"></span></th><th><span data-help-key="modules.hypothesis-test.types.GroupRow.mean" x-text="t('common.sym.xbar')"></span></th><th><span data-help-key="modules.hypothesis-test.types.GroupRow.variance" x-text="t('common.sym.s2')"></span></th>
                   <template x-if="result.main.showCld">
                     <th :title="t('groupingHint')"><span data-help-key="modules.hypothesis-test.types.GroupRow.letters" x-text="t('groupingLabel')"></span></th>
                   </template>
