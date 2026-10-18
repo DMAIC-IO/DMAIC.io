@@ -146,6 +146,41 @@ const COLUMN_SINKS = { value: (m, ref) => { m.colRef = ref; } };
 /** Beschriftungsschlüssel der Seitenauswahl. */
 const SIDE_LABEL_KEYS = { 'two-sided': 'sideTwo', upper: 'sideUpper', lower: 'sideLower' };
 
+/** Präfix der Typedef-Sätze; die Kennzahlen der Übersicht hängen ihren Schlüssel an. */
+const HELP = 'modules.outlier-test.types.';
+
+/**
+ * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
+ * `types.Params.<schlüssel>`, dieselben am Label (Alt-Taste).
+ *
+ * @typedef {object} Params
+ * @property {number} alpha  Signifikanzniveau
+ * @property {'two-sided'|'upper'|'lower'} side  Richtung
+ * @property {number} tukeyFactor  Faktor der Tukey-Zäune
+ * @property {number} hampelK  Schwelle des Hampel-Filters
+ * @property {number} zThreshold  Schwelle des z-Werts
+ * @property {number} modZThreshold  Schwelle des modifizierten z-Werts
+ * @property {number} esdMaxOutliers  Höchstzahl beim verallgemeinerten ESD, leer für automatisch
+ * @property {string[]} enabled  aktive Verfahren
+ */
+
+/**
+ * Das gerechnete Ergebnis (`_buildResult()`), wie `read().result` es liefert.
+ * Die Indizes zählen die verwerteten Zahlen ab 0, nicht die Zeilen.
+ *
+ * @typedef {object} Result
+ * @property {number} n  verwertete Zahlen
+ * @property {number[]} flaggedIdxs  von mindestens einem Verfahren markiert
+ * @property {MethodResult[]} methods  je aktivem Verfahren
+ */
+
+/**
+ * @typedef {object} MethodResult
+ * @property {string} id  Verfahren
+ * @property {number[]} flagged  markierte Punkte
+ * @property {string|null} error  Fehlerkennung
+ */
+
 /**
  * Die Agenten-Lesefläche von Outlier Test.
  *
@@ -168,7 +203,7 @@ const SIDE_LABEL_KEYS = { 'two-sided': 'sideTwo', upper: 'sideUpper', lower: 'si
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state
  * @property {object} pickableColumns  per slot the columns `setColumn` accepts, each `{ key, name }`
  * @property {string[]} chartMethodOptions  the values `setChartMethod` accepts: `'all'` plus every method that flagged a value
- * @property {object|null} result  `{ n, flaggedIdxs, methods }` or null while no column is chosen or it has fewer than 3 numeric values
+ * @property {Result|null} result  the flagged points per method, or null while no column is chosen or it has fewer than 3 numeric values
  * @property {string} errorMsg  why drawing the chart failed, or an empty string
  */
 
@@ -194,7 +229,7 @@ const mod = createModule({
       // ── Results panel (declarative — structured reactive data) ──
       /** Whether the composite results panel is shown. */
       panelShow: false,
-      /** @type {Array<{value:string,label:string,kpiClass:string,valueClass:string}>} summary KPI cells. */
+      /** @type {Array<{value:string,label:string,help:string,kpiClass:string,valueClass:string}>} summary KPI cells. */
       summaryKpis: [],
       /** @type {Array<{val:string,label:string,active:boolean}>} chart-method segmented buttons. */
       chartSegs: [],
@@ -584,10 +619,10 @@ const mod = createModule({
 
         // ── Summary KPIs
         this.summaryKpis = [
-          { value: String(data.length), label: 'n', kpiClass: '', valueClass: '' },
-          { value: colName, label: _t('column'), kpiClass: '', valueClass: 'dmike-kpi-value--sm' },
-          { value: String(totalFlagged), label: _t('flaggedAny'), kpiClass: totalFlagged > 0 ? 'dmike-kpi--bad' : 'dmike-kpi--good', valueClass: '' },
-          { value: String(Object.keys(results).length), label: _t('methodsRun'), kpiClass: '', valueClass: '' },
+          { value: String(data.length), label: 'n', help: HELP + 'Result.n', kpiClass: '', valueClass: '' },
+          { value: colName, label: _t('column'), help: 'modules.outlier-test.actions.setColumn.help', kpiClass: '', valueClass: 'dmike-kpi-value--sm' },
+          { value: String(totalFlagged), label: _t('flaggedAny'), help: HELP + 'Result.flaggedIdxs', kpiClass: totalFlagged > 0 ? 'dmike-kpi--bad' : 'dmike-kpi--good', valueClass: '' },
+          { value: String(Object.keys(results).length), label: _t('methodsRun'), help: HELP + 'Result.methods', kpiClass: '', valueClass: '' },
         ];
 
         // ── Chart method selector
@@ -810,8 +845,8 @@ const mod = createModule({
       /**
        * Einen Parameter setzen; die Analyse läuft danach neu.
        * @agent
-       * @param {'alpha'|'side'|'tukeyFactor'|'hampelK'|'zThreshold'|'modZThreshold'|'esdMaxOutliers'|'enabled'} key welcher Parameter
-       * @param {number|string|string[]|null} value Zahl im Bereich des Parameters; `side`: `'two-sided'`, `'upper'` oder `'lower'`; `enabled`: Liste von Methoden-ids; `esdMaxOutliers`: ganze Zahl oder `null` für automatisch
+       * @param {keyof Params} key welcher Parameter
+       * @param {number|string|string[]|null} value der Wert; Bereich je Schlüssel siehe `Params`; `side`: `'two-sided'`, `'upper'` oder `'lower'`; `enabled`: Liste von Methoden-ids; `esdMaxOutliers`: ganze Zahl oder `null` für automatisch
        * @returns {void}
        * @throws {Error} wenn `key` kein Parameter dieses Moduls ist oder `value` nicht zulässig
        */

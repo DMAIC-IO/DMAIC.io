@@ -6,11 +6,11 @@
     <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
 
     <div class="field-group">
-      <label x-text="t('column')"></label>
+      <label data-help-key="modules.outlier-test.actions.setColumn.help" x-text="t('column')"></label>
       <div data-ref="picker-wrap"></div>
     </div>
 
-    <div class="dmike-split__section-title" x-text="t('sectionMethods')"></div>
+    <div class="dmike-split__section-title"><span data-help-key="modules.outlier-test.types.Params.enabled" x-text="t('sectionMethods')"></span></div>
 
     <div class="outliertest__methods">
       <template x-for="mid in allMethods">
@@ -28,7 +28,7 @@
 
     <div class="field-row">
       <div class="field-group field-group--major">
-        <label x-text="t('side')"></label>
+        <label data-help-key="modules.outlier-test.types.Params.side" x-text="t('side')"></label>
         <select data-ref="side" class="field" :value="model.side" @change="setParam('side', $event.target.value)">
           <template x-for="o in sideOptions()" :key="o.value">
             <option :value="o.value" :selected="o.value === model.side" x-text="o.label"></option>
@@ -36,7 +36,7 @@
         </select>
       </div>
       <div class="field-group field-group--minor">
-        <label>&#945;</label>
+        <label data-help-key="modules.outlier-test.types.Params.alpha">&#945;</label>
         <input type="number"
                data-ref="alpha"
                class="field field--num"
@@ -48,7 +48,7 @@
 
     <div class="field-row">
       <div class="field-group field-group--minor">
-        <label :title="t('tipTukeyFactor')" x-text="t('tukeyFactor')"></label>
+        <label data-help-key="modules.outlier-test.types.Params.tukeyFactor" :title="t('tipTukeyFactor')" x-text="t('tukeyFactor')"></label>
         <input type="number"
                data-ref="tukey-factor"
                class="field field--num"
@@ -57,7 +57,7 @@
                @input="paramChanged('tukey-factor', $event)">
       </div>
       <div class="field-group field-group--minor">
-        <label :title="t('tipHampelK')" x-text="t('hampelK')"></label>
+        <label data-help-key="modules.outlier-test.types.Params.hampelK" :title="t('tipHampelK')" x-text="t('hampelK')"></label>
         <input type="number"
                data-ref="hampel-k"
                class="field field--num"
@@ -69,7 +69,7 @@
 
     <div class="field-row">
       <div class="field-group field-group--minor">
-        <label :title="t('tipZThreshold')" x-text="t('zThreshold')"></label>
+        <label data-help-key="modules.outlier-test.types.Params.zThreshold" :title="t('tipZThreshold')" x-text="t('zThreshold')"></label>
         <input type="number"
                data-ref="z-threshold"
                class="field field--num"
@@ -78,7 +78,7 @@
                @input="paramChanged('z-threshold', $event)">
       </div>
       <div class="field-group field-group--minor">
-        <label :title="t('tipModZThreshold')" x-text="t('modZThreshold')"></label>
+        <label data-help-key="modules.outlier-test.types.Params.modZThreshold" :title="t('tipModZThreshold')" x-text="t('modZThreshold')"></label>
         <input type="number"
                data-ref="modz-threshold"
                class="field field--num"
@@ -89,7 +89,7 @@
     </div>
 
     <div class="field-group">
-      <label :title="t('tipEsdMax')" x-text="t('esdMax')"></label>
+      <label data-help-key="modules.outlier-test.types.Params.esdMaxOutliers" :title="t('tipEsdMax')" x-text="t('esdMax')"></label>
       <input type="number"
              data-ref="esd-max"
              class="field field--num"
@@ -120,14 +120,14 @@
             <template x-for="(c, i) in summaryKpis" :key="i">
               <div class="dmike-kpi" :class="c.kpiClass">
                 <div class="dmike-kpi-value" :class="c.valueClass" x-text="c.value"></div>
-                <div class="dmike-kpi-label" x-text="c.label"></div>
+                <div class="dmike-kpi-label" :data-help-key="c.help" x-text="c.label"></div>
               </div>
             </template>
           </div>
 
           <!-- ── Chart ── -->
           <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionChart')"></span></div>
-          <div class="outliertest__chart-method btn-group">
+          <div class="outliertest__chart-method btn-group" data-help-key="modules.outlier-test.actions.setChartMethod.help">
             <template x-for="(s, i) in chartSegs" :key="i">
               <button class="btn--segment outliertest__chart-method-btn"
                       :class="s.activeClass"
@@ -207,15 +207,15 @@
           <!-- ── Flagged-points table ── -->
           <template x-if="flaggedShow">
             <div class="outliertest__flagged-block">
-              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionFlagged')"></span></div>
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.outlier-test.types.MethodResult.flagged" x-text="t('sectionFlagged')"></span></div>
               <table class="outliertest__flagged">
                 <thead><tr>
-                  <th>#</th>
+                  <th><span data-help-key="modules.outlier-test.types.Result.flaggedIdxs">#</span></th>
                   <th x-text="t('value')"></th>
                   <template x-for="(h, hi) in flaggedHeaders" :key="hi">
                     <th :title="h.title" x-text="h.short"></th>
                   </template>
-                  <th>Σ</th>
+                  <th><span data-help-key="modules.outlier-test.types.Result.flaggedIdxs">Σ</span></th>
                 </tr></thead>
                 <tbody>
                   <template x-for="(row, ri) in flaggedRows" :key="ri">

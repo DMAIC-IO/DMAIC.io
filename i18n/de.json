@@ -8368,12 +8368,12 @@
         "setParam": {
           "help": "Setzt einen Parameter; die Analyse läuft danach auf der gewählten Spalte neu.",
           "params": {
-            "key": "Einer der Schlüssel aus activeParams: alpha, side, tukeyFactor, hampelK, zThreshold, modZThreshold, esdMaxOutliers oder enabled. Jeder andere Wert ist ein Fehler.",
-            "value": "alpha: Zahl von 0.0001 bis 0.5. side: 'two-sided', 'upper' oder 'lower'. tukeyFactor, zThreshold, modZThreshold: Zahl von 0.1 bis 10. hampelK: Zahl von 0.1 bis 20. esdMaxOutliers: ganze Zahl von 1 bis 50, oder null für automatisch. enabled: Liste von Methoden-ids (grubbs, dixon-q, generalized-esd, tukey-iqr, hampel, z-score, modified-z); Methoden außerhalb der Liste laufen nicht. Ein Wert außerhalb des Bereichs oder der Liste ist ein Fehler."
+            "key": "Welche Option; jede ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys. Bei esdMaxOutliers heißt null automatisch; enabled ist eine Liste von Methoden-ids."
           }
         },
         "setColumn": {
-          "help": "Richtet die Analyse auf eine numerische Spalte einer Datensammlung; die Analyse läuft danach neu.",
+          "help": "Die Spalte einer Datensammlung, die diese Rolle liefert; nach einer Änderung wird neu gerechnet. Leere und nichtnumerische Zellen werden übersprungen; mit weniger als 3 Zahlen bleibt die Auswertung leer.",
           "params": {
             "slot": "Einer der Slots aus activeColumnSlots; dieses Modul kennt nur 'value'.",
             "ref": "Spaltenbezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Leeren."
@@ -8381,7 +8381,7 @@
         },
         "runAnalysis": { "help": "Lässt alle aktivierten Verfahren auf der gewählten Spalte laufen. Ohne Spalte oder mit weniger als 3 numerischen Werten bleibt result null und es geschieht nichts weiter." },
         "setChartMethod": {
-          "help": "Wählt, welches Verfahren das Diagramm hervorhebt; 'all' hebt jeden Wert hervor, den irgendein Verfahren markiert hat.",
+          "help": "Wählt, welches Verfahren das Diagramm hervorhebt; „Vereinigung aller Methoden“ hebt jeden Wert hervor, den irgendein Verfahren markiert hat. Wählbar sind nur Verfahren, die im aktuellen Ergebnis etwas markiert haben.",
           "params": { "method": "Einer der Werte aus chartMethodOptions. Ein Verfahren, das im aktuellen Ergebnis nichts markiert hat, ist ein Fehler." }
         }
       },
@@ -8400,8 +8400,30 @@
         "activeColumnSlots": { "help": "Die Slots, die setColumn im aktuellen Zustand annimmt." },
         "pickableColumns": { "help": "Je Slot die Spalten, die setColumn annimmt, jeweils { key, name }; key ist 'instanceId|sheetId|columnId'." },
         "chartMethodOptions": { "help": "Die Werte, die setChartMethod annimmt: 'all' und jedes Verfahren, das im aktuellen Ergebnis mindestens einen Wert markiert hat." },
-        "result": { "help": "{ n, flaggedIdxs, methods }: n ist die Zahl der numerischen Werte, flaggedIdxs die sortierten 0-basierten Positionen, die mindestens ein Verfahren markiert hat (unter den numerischen Werten; leere und nichtnumerische Zellen werden übersprungen), methods je aktiviertem Verfahren ein { id, flagged, error } mit seinen eigenen markierten Positionen und, wenn das Verfahren auf die Daten nicht anwendbar ist, dem Grund in error. null, solange keine Spalte gewählt ist oder sie weniger als 3 numerische Werte hat." },
+        "result": { "help": "Die markierten Punkte je Verfahren, jede Kennzahl unter keys einzeln beschrieben; null, ohne Spalte oder mit weniger als 3 Zahlen." },
         "errorMsg": { "help": "Warum das Diagramm nicht gezeichnet werden konnte, oder ein leerer Text. Zu wenige Werte erzeugen keine Meldung; result ist dann null." }
+      },
+      "types": {
+        "Params": {
+          "alpha": "Das Signifikanzniveau α von Grubbs, Dixon Q und Generalized ESD; die übrigen vier Verfahren nutzen es nicht. Ein kleineres α verlangt einen deutlicheren Ausreißer, bevor er markiert wird. Zulässig sind 0,0001 bis 0,5; Dixon Q liest seine kritischen Werte aus einer Tabelle für 0,10, 0,05 und 0,01 und interpoliert dazwischen, außerhalb gilt der nächste Tabellenwert.",
+          "side": "Die Testrichtung von Grubbs und Dixon Q: „Zweiseitig“ prüft den extremsten Wert in beide Richtungen, „Nur oberer Ausreißer“ nur den größten, „Nur unterer Ausreißer“ nur den kleinsten Wert. Grubbs nimmt zweiseitig das t-Quantil zu α/(2n), einseitig zu α/n. Generalized ESD prüft immer zweiseitig, die übrigen Verfahren kennen keine Richtung.",
+          "tukeyFactor": "Der Faktor k der Tukey-IQR-Regel: markiert ist jeder Wert außerhalb der Zäune Q1 − k·IQR und Q3 + k·IQR, mit IQR = Q3 − Q1. 1,5 markiert potenzielle, 3,0 extreme Ausreißer. Zulässig sind 0,1 bis 10.",
+          "hampelK": "Die Schwelle k des Hampel-Identifiers: markiert ist ein Wert, wenn |x − Median| / (1,4826·MAD) > k; 1,4826·MAD schätzt σ bei Normalverteilung. Standard ist 3, zulässig sind 0,1 bis 20.",
+          "zThreshold": "Die Schwelle der Z-Score-Regel: markiert ist ein Wert, wenn |x − x̄| / s > Schwelle, also wenn er mehr als so viele Standardabweichungen vom Mittelwert entfernt liegt. Typisch ist 3; bei kleinem n verdecken Ausreißer sich gegenseitig, weil sie x̄ und s selbst verschieben. Zulässig sind 0,1 bis 10.",
+          "modZThreshold": "Die Schwelle des Modified Z-Score nach Iglewicz und Hoaglin: markiert ist ein Wert, wenn |0,6745·(x − Median) / MAD| > Schwelle. Median und MAD sind robust gegen die Ausreißer selbst. Typisch ist 3,5, zulässig sind 0,1 bis 10.",
+          "esdMaxOutliers": "Die Höchstzahl k der Ausreißer, die Generalized ESD prüft, eine ganze Zahl von 1 bis 50. Leer heißt automatisch: ⌊n/4⌋, mindestens 1 und höchstens 10. Das Verfahren entfernt schrittweise den Wert mit dem größten Rᵢ = |x − x̄| / s der Restdaten und vergleicht mit dem kritischen Wert λᵢ; Ausreißer sind die Werte bis zum letzten Schritt mit Rᵢ > λᵢ.",
+          "enabled": "Die Verfahren, die laufen, in fester Reihenfolge: Grubbs-Test (G = max|x − x̄| / s über dem kritischen Wert, höchstens ein Ausreißer), Dixon Q-Test (Lückenquotient Q über dem Tabellenwert, höchstens ein Ausreißer, nur für 3 bis 30 Werte), Generalized ESD (bis zu k Ausreißer), Tukey IQR-Regel (außerhalb der Zäune), Hampel-Identifier (robuster Abstand zum Median über k), Z-Score (Abstand zu x̄ in s über der Schwelle) und Modified Z-Score (robuster z-Wert über der Schwelle). Doppelte Einträge zählen einmal."
+        },
+        "Result": {
+          "n": "Die Zahl der verwerteten Werte der Spalte; leere und nichtnumerische Zellen werden übersprungen. Die Auswertung fehlt, solange keine Spalte gewählt ist oder sie weniger als 3 Zahlen hat.",
+          "flaggedIdxs": "Die Positionen, die mindestens ein Verfahren markiert hat, aufsteigend und ab 0 über die verwerteten Werte gezählt. Die Kachel „Markiert (mind. 1 Test)“ zeigt ihre Anzahl. Die Tabelle „Markierte Punkte“ zählt in der Spalte „#“ ab 1, also Position plus 1; die Spalte „Σ“ zeigt, wie viele Verfahren den Punkt markiert haben.",
+          "methods": "Je aktiviertem Verfahren ein Eintrag, in der Reihenfolge der Verfahrensliste, auch für Verfahren, die auf die Daten nicht anwendbar sind. Die Kachel „Aktive Verfahren“ zählt dagegen nur die Verfahren, die ohne Fehler gelaufen sind."
+        },
+        "MethodResult": {
+          "id": "Die Kennung des Verfahrens: grubbs, dixon-q, generalized-esd, tukey-iqr, hampel, z-score oder modified-z.",
+          "flagged": "Die Positionen, die dieses Verfahren markiert hat, ab 0 über die verwerteten Werte; Grubbs und Dixon Q markieren höchstens einen Wert. Leer, wenn nichts auffällt oder das Verfahren nicht anwendbar ist; ohne Streuung (MAD = 0 bei Hampel und Modified Z-Score, s = 0 beim Z-Score) läuft das Verfahren ohne Fehler und markiert nichts. In der Tabelle „Markierte Punkte“ steht je Verfahren eine Spalte mit einem Haken.",
+          "error": "Leer, wenn das Verfahren gelaufen ist; sonst der Grund, warum es nicht anwendbar ist: min3 weniger als 3 Werte, min4 weniger als 4 Werte (Generalized ESD, Tukey IQR-Regel), zeroVariance keine Streuung (Grubbs: s = 0, Dixon Q: Spannweite 0), dixonRange Dixon Q nur für 3 bis 30 Werte. Die Oberfläche zeigt „Verfahren nicht anwendbar“ mit dieser Kennung."
+        }
       },
       "sectionData": "Datenquelle",
       "column": "Spalte",

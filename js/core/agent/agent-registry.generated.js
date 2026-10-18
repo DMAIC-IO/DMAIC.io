@@ -10125,11 +10125,46 @@ export const AGENT_REGISTRY = {
             "name": "value",
             "type": "number|string|string[]|null",
             "optional": false,
-            "help": "Zahl im Bereich des Parameters; `side`: `'two-sided'`, `'upper'` oder `'lower'`; `enabled`: Liste von Methoden-ids; `esdMaxOutliers`: ganze Zahl oder `null` für automatisch"
+            "help": "der Wert; Bereich je Schlüssel siehe `Params`; `side`: `'two-sided'`, `'upper'` oder `'lower'`; `enabled`: Liste von Methoden-ids; `esdMaxOutliers`: ganze Zahl oder `null` für automatisch"
           }
         ],
         "returns": "void",
-        "help": "Einen Parameter setzen; die Analyse läuft danach neu."
+        "help": "Einen Parameter setzen; die Analyse läuft danach neu.",
+        "keysOf": "Params",
+        "keys": {
+          "alpha": {
+            "type": "number",
+            "help": "Signifikanzniveau"
+          },
+          "side": {
+            "type": "'two-sided'|'upper'|'lower'",
+            "help": "Richtung"
+          },
+          "tukeyFactor": {
+            "type": "number",
+            "help": "Faktor der Tukey-Zäune"
+          },
+          "hampelK": {
+            "type": "number",
+            "help": "Schwelle des Hampel-Filters"
+          },
+          "zThreshold": {
+            "type": "number",
+            "help": "Schwelle des z-Werts"
+          },
+          "modZThreshold": {
+            "type": "number",
+            "help": "Schwelle des modifizierten z-Werts"
+          },
+          "esdMaxOutliers": {
+            "type": "number",
+            "help": "Höchstzahl beim verallgemeinerten ESD, leer für automatisch"
+          },
+          "enabled": {
+            "type": "string[]",
+            "help": "aktive Verfahren"
+          }
+        }
       },
       "setColumn": {
         "params": [
@@ -10248,10 +10283,40 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "result": {
-        "type": "object|null",
-        "help": "`{ n, flaggedIdxs, methods }` or null while no column is chosen or it has fewer than 3 numeric values",
+        "type": "Result|null",
+        "help": "the flagged points per method, or null while no column is chosen or it has fewer than 3 numeric values",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Result",
+        "keys": {
+          "n": {
+            "type": "number",
+            "help": "verwertete Zahlen"
+          },
+          "flaggedIdxs": {
+            "type": "number[]",
+            "help": "von mindestens einem Verfahren markiert"
+          },
+          "methods": {
+            "type": "MethodResult[]",
+            "help": "je aktivem Verfahren",
+            "keysOf": "MethodResult",
+            "keys": {
+              "id": {
+                "type": "string",
+                "help": "Verfahren"
+              },
+              "flagged": {
+                "type": "number[]",
+                "help": "markierte Punkte"
+              },
+              "error": {
+                "type": "string|null",
+                "help": "Fehlerkennung"
+              }
+            }
+          }
+        }
       },
       "errorMsg": {
         "type": "string",

@@ -8364,12 +8364,12 @@
         "setParam": {
           "help": "Sets one parameter; the analysis reruns on the chosen column.",
           "params": {
-            "key": "One of the keys in activeParams: alpha, side, tukeyFactor, hampelK, zThreshold, modZThreshold, esdMaxOutliers or enabled. Any other value is an error.",
-            "value": "alpha: number from 0.0001 to 0.5. side: 'two-sided', 'upper' or 'lower'. tukeyFactor, zThreshold, modZThreshold: number from 0.1 to 10. hampelK: number from 0.1 to 20. esdMaxOutliers: whole number from 1 to 50, or null for automatic. enabled: list of method ids (grubbs, dixon-q, generalized-esd, tukey-iqr, hampel, z-score, modified-z); methods not in the list are not run. A value outside the range or the list is an error."
+            "key": "Which option; each is described individually under keys. Any other value is an error.",
+            "value": "The value; type and allowed range per key are given under keys. For esdMaxOutliers null means automatic; enabled is a list of method ids."
           }
         },
         "setColumn": {
-          "help": "Points the analysis at a numeric column of a data collection; the analysis reruns.",
+          "help": "The data collection column that supplies this role; after a change the analysis is recomputed. Empty and non-numeric cells are skipped; with fewer than 3 numbers the evaluation stays empty.",
           "params": {
             "slot": "One of the slots in activeColumnSlots; this module only has 'value'.",
             "ref": "Column reference { instanceId, sheetId, columnId } of a column from pickableColumns, or null to clear."
@@ -8377,7 +8377,7 @@
         },
         "runAnalysis": { "help": "Runs all enabled methods on the chosen column. Without a column or with fewer than 3 numeric values result stays null and nothing else happens." },
         "setChartMethod": {
-          "help": "Chooses which method the chart highlights; 'all' highlights every value any method flagged.",
+          "help": "Chooses which method the chart highlights; “Union of all methods” highlights every value any method flagged. Only methods that flagged something in the current result can be chosen.",
           "params": { "method": "One of the values in chartMethodOptions. A method that flagged nothing in the current result is an error." }
         }
       },
@@ -8396,8 +8396,30 @@
         "activeColumnSlots": { "help": "The slots setColumn accepts in the current state." },
         "pickableColumns": { "help": "Per slot the columns setColumn accepts, each { key, name }; key is 'instanceId|sheetId|columnId'." },
         "chartMethodOptions": { "help": "The values setChartMethod accepts: 'all' plus every method that flagged at least one value in the current result." },
-        "result": { "help": "{ n, flaggedIdxs, methods }: n is the number of numeric values, flaggedIdxs the sorted 0-based positions flagged by at least one method (among the numeric values; empty and non-numeric cells are skipped), methods one { id, flagged, error } per enabled method with its own flagged positions and, when the method is not applicable to the data, the reason in error. null while no column is chosen or it has fewer than 3 numeric values." },
+        "result": { "help": "The flagged points per method, each figure described individually under keys; null without a column or with fewer than 3 numbers." },
         "errorMsg": { "help": "Why drawing the chart failed, or an empty string. Too few values give no message; result is null then." }
+      },
+      "types": {
+        "Params": {
+          "alpha": "The significance level α of Grubbs, Dixon Q and generalized ESD; the other four methods do not use it. A smaller α requires a clearer outlier before it is flagged. Allowed are 0.0001 to 0.5; Dixon Q reads its critical values from a table for 0.10, 0.05 and 0.01 and interpolates in between, outside that range the nearest table value applies.",
+          "side": "The test side of Grubbs and Dixon Q: “Two-sided” tests the most extreme value in either direction, “Upper outlier only” only the largest, “Lower outlier only” only the smallest value. Grubbs uses the t quantile at α/(2n) two-sided and at α/n one-sided. Generalized ESD always tests two-sided, the other methods have no direction.",
+          "tukeyFactor": "The factor k of the Tukey IQR rule: every value outside the fences Q1 − k·IQR and Q3 + k·IQR is flagged, with IQR = Q3 − Q1. 1.5 marks potential, 3.0 extreme outliers. Allowed are 0.1 to 10.",
+          "hampelK": "The threshold k of the Hampel identifier: a value is flagged when |x − median| / (1.4826·MAD) > k; 1.4826·MAD estimates σ under normality. Default is 3, allowed are 0.1 to 20.",
+          "zThreshold": "The threshold of the Z-score rule: a value is flagged when |x − x̄| / s > threshold, i.e. when it lies more than that many standard deviations from the mean. Typical is 3; on small samples outliers mask each other because they shift x̄ and s themselves. Allowed are 0.1 to 10.",
+          "modZThreshold": "The threshold of the modified Z-score after Iglewicz and Hoaglin: a value is flagged when |0.6745·(x − median) / MAD| > threshold. Median and MAD are robust against the outliers themselves. Typical is 3.5, allowed are 0.1 to 10.",
+          "esdMaxOutliers": "The maximum number k of outliers generalized ESD checks, a whole number from 1 to 50. Empty means automatic: ⌊n/4⌋, at least 1 and at most 10. The method removes, step by step, the value with the largest Rᵢ = |x − x̄| / s of the remaining data and compares it with the critical value λᵢ; outliers are the values up to the last step with Rᵢ > λᵢ.",
+          "enabled": "The methods that run, in fixed order: Grubbs' test (G = max|x − x̄| / s above the critical value, at most one outlier), Dixon Q test (gap ratio Q above the table value, at most one outlier, only for 3 to 30 values), generalized ESD (up to k outliers), Tukey IQR rule (outside the fences), Hampel identifier (robust distance to the median above k), Z-score (distance to x̄ in units of s above the threshold) and modified Z-score (robust z value above the threshold). Duplicate entries count once."
+        },
+        "Result": {
+          "n": "The number of values used from the column; empty and non-numeric cells are skipped. The evaluation is missing while no column is chosen or it has fewer than 3 numbers.",
+          "flaggedIdxs": "The positions flagged by at least one method, ascending and counted from 0 over the values used. The tile “Flagged (any test)” shows how many there are. The table “Flagged Points” counts from 1 in column “#”, i.e. position plus 1; column “Σ” shows how many methods flagged the point.",
+          "methods": "One entry per enabled method, in the order of the method list, including methods that are not applicable to the data. The tile “Active methods”, by contrast, counts only the methods that ran without error."
+        },
+        "MethodResult": {
+          "id": "The method identifier: grubbs, dixon-q, generalized-esd, tukey-iqr, hampel, z-score or modified-z.",
+          "flagged": "The positions this method flagged, counted from 0 over the values used; Grubbs and Dixon Q flag at most one value. Empty when nothing stands out or the method is not applicable; without spread (MAD = 0 for Hampel and modified Z-score, s = 0 for Z-score) the method runs without error and flags nothing. The table “Flagged Points” has one column per method with a check mark.",
+          "error": "Empty when the method ran; otherwise the reason it is not applicable: min3 fewer than 3 values, min4 fewer than 4 values (generalized ESD, Tukey IQR rule), zeroVariance no spread (Grubbs: s = 0, Dixon Q: range 0), dixonRange Dixon Q only for 3 to 30 values. The interface shows “Method not applicable” with this code."
+        }
       },
       "sectionData": "Data Source",
       "column": "Column",
