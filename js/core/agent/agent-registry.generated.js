@@ -4087,6 +4087,35 @@ export const AGENT_REGISTRY = {
         "help": "the answer options the open question accepts; empty on a recommendation",
         "bulk": false,
         "derived": true
+      },
+      "recommendation": {
+        "type": "Recommendation|null",
+        "help": "der empfohlene Versuchsplan; leer, solange keine Empfehlung steht",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "Recommendation",
+        "keys": {
+          "designId": {
+            "type": "string",
+            "help": "der Schlüssel des empfohlenen Versuchsplans, z. B. `ccd-rotatable`"
+          },
+          "name": {
+            "type": "string",
+            "help": "die Bezeichnung des Versuchsplans, wie die Ergebniskarte sie zeigt"
+          },
+          "factors": {
+            "type": "string",
+            "help": "die Faktorenspanne, wie die Ergebniskarte sie zeigt"
+          },
+          "levels": {
+            "type": "string",
+            "help": "die Stufenangabe, wie die Ergebniskarte sie zeigt"
+          },
+          "effort": {
+            "type": "string",
+            "help": "die Aufwandsangabe, wie die Ergebniskarte sie zeigt"
+          }
+        }
       }
     }
   },

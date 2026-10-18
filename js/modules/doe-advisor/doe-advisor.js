@@ -29,12 +29,22 @@ import {
 const TABS = ['overview', 'wizard', 'ccd'];
 
 /**
+ * @typedef {object} Recommendation
+ * @property {string} designId  der Schlüssel des empfohlenen Versuchsplans, z. B. `ccd-rotatable`
+ * @property {string} name  die Bezeichnung des Versuchsplans, wie die Ergebniskarte sie zeigt
+ * @property {string} factors  die Faktorenspanne, wie die Ergebniskarte sie zeigt
+ * @property {string} levels  die Stufenangabe, wie die Ergebniskarte sie zeigt
+ * @property {string} effort  die Aufwandsangabe, wie die Ergebniskarte sie zeigt
+ */
+
+/**
  * @typedef {object} AgentRead
  * @property {'overview'|'wizard'|'ccd'} tab  the shown section
  * @property {string} currentStep  id of the open question, or `result:<key>` once a recommendation stands
  * @property {object} answers  the given answers, one per question
  * @property {string[]} history  ids of the answered questions, in answering order
  * @property {string[]} currentOptions  the answer options the open question accepts; empty on a recommendation
+ * @property {Recommendation|null} recommendation  der empfohlene Versuchsplan; leer, solange keine Empfehlung steht
  */
 export default createModule({
   config: {
@@ -59,6 +69,7 @@ export default createModule({
         return readAgentState('doe-advisor', {
           ...this.model.toJSON(),
           currentOptions: this.model.currentOptions,
+          recommendation: this.recommendation(),
         }, options);
       },
 
@@ -130,6 +141,22 @@ export default createModule({
       },
 
       // ─── Wizard: result card ────────────────────────────────
+      /**
+       * @noagent view transform: die Empfehlung in Anzeigeform, aus denselben
+       * Texten wie die Ergebniskarte; Anzeige und Lesefläche teilen sie.
+       * @returns {Recommendation|null} null, solange kein Versuchsplan empfohlen ist
+       */
+      recommendation() {
+        const designId = this.model.resultDesignId;
+        if (designId === null) return null;
+        return {
+          designId,
+          name: this.resultName(),
+          factors: this.resultFactors(),
+          levels: this.resultLevels(),
+          effort: this.resultEffort(),
+        };
+      },
       /** @noagent view transform: die Bezeichnung des empfohlenen Versuchsplans. */
       resultName() {
         return _t(`designs.${  this.model.resultDesignId  }.name`);

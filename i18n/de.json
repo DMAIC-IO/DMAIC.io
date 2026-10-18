@@ -6567,13 +6567,25 @@
           "help": "Der angezeigte Bereich: overview die Übersicht der Versuchspläne, wizard der geführte Berater, ccd der Vergleich der zentral zusammengesetzten Pläne."
         },
         "currentStep": {
-          "help": "Die id der offenen Frage — phase, goal, screening-curvature, factor-count, factor-levels, robustness-type, limits oder corners —, oder result:<schlüssel>, sobald eine Empfehlung steht; result:none heißt, dass in dieser Phase noch kein Versuchsplan ansteht. Die Frage selbst und die Empfehlung sind übersetzte Texte und stehen in keinem Feld."
+          "help": "Die id der offenen Frage — phase, goal, screening-curvature, factor-count, factor-levels, robustness-type, limits oder corners —, oder result:<schlüssel>, sobald eine Empfehlung steht; result:none heißt, dass in dieser Phase noch kein Versuchsplan ansteht. Die Frage selbst ist ein übersetzter Text und steht in keinem Feld; die Empfehlung steht unter recommendation."
         },
         "answers": {
           "help": "Die gegebenen Antworten, je Frage eine. Der Schlüssel ist phase, goal, screeningCurvature, factorCount, factorLevels, robustnessType, limits oder corners, der Wert die gewählte Antwortmöglichkeit."
         },
         "history": {
           "help": "Die ids der beantworteten Fragen in der Reihenfolge, in der sie beantwortet wurden; der letzte Eintrag ist der, zu dem back() zurückführt."
+        },
+        "recommendation": {
+          "help": "Der empfohlene Versuchsplan, jede Angabe unter keys einzeln beschrieben. Leer, solange der Berater noch eine Frage stellt oder in dieser Phase noch kein Versuchsplan ansteht."
+        }
+      },
+      "types": {
+        "Recommendation": {
+          "designId": "Der Schlüssel des empfohlenen Versuchsplans, zum Beispiel „ccd-rotatable“; derselbe, der in der Ergebniskarte als Versuchsplan hinterlegt ist.",
+          "name": "Die Bezeichnung des empfohlenen Versuchsplans als übersetzter Text, wie sie in der Überschrift der Ergebniskarte steht.",
+          "factors": "Die Faktorenspanne, für die der Versuchsplan taugt, als übersetzter Text, zum Beispiel „2–6“, wie sie in der Ergebniskarte unter „Faktoren“ steht.",
+          "levels": "Die Stufenangabe des Versuchsplans als übersetzter Text, zum Beispiel „5“ oder „3+ oder gemischt“, wie sie in der Ergebniskarte unter „Stufen“ steht.",
+          "effort": "Die Aufwandsangabe des Versuchsplans als übersetzter Text, zum Beispiel „2^k Versuche (z. B. 4 Faktoren = 16)“, wie sie in der Ergebniskarte unter „Aufwand“ steht."
         }
       },
       "name": "DoE-Berater",

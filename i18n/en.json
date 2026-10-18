@@ -6563,13 +6563,25 @@
           "help": "The displayed area: overview the Overview tab with all designs, wizard the guided advisor, ccd the comparison of the central composite designs."
         },
         "currentStep": {
-          "help": "The id of the open question — phase, goal, screening-curvature, factor-count, factor-levels, robustness-type, limits or corners — or result:<key> once a recommendation stands; result:none means no design of experiments is due in this phase yet. The question itself and the recommendation are translated texts and live in no field."
+          "help": "The id of the open question — phase, goal, screening-curvature, factor-count, factor-levels, robustness-type, limits or corners — or result:<key> once a recommendation stands; result:none means no design of experiments is due in this phase yet. The question itself is a translated text and lives in no field; the recommendation is under recommendation."
         },
         "answers": {
           "help": "The answers given, one per question. The key is phase, goal, screeningCurvature, factorCount, factorLevels, robustnessType, limits or corners, the value the chosen option."
         },
         "history": {
           "help": "The ids of the answered questions in the order they were answered; the last entry is the one back() returns to."
+        },
+        "recommendation": {
+          "help": "The recommended design, each entry described individually under keys. Empty while the advisor is still asking a question or no design is due in this phase yet."
+        }
+      },
+      "types": {
+        "Recommendation": {
+          "designId": "The key of the recommended design, for example \"ccd-rotatable\"; the same one the result card holds for the design.",
+          "name": "The name of the recommended design as a translated text, as it appears in the heading of the result card.",
+          "factors": "The range of factors the design suits, as a translated text, for example \"2–6\", as it appears in the result card under \"Factors\".",
+          "levels": "The level specification of the design as a translated text, for example \"5\" or \"3+ or mixed\", as it appears in the result card under \"Levels\".",
+          "effort": "The effort specification of the design as a translated text, for example \"2^k runs (e.g. 4 factors = 16)\", as it appears in the result card under \"Effort\"."
         }
       },
       "name": "DoE Advisor",

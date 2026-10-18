@@ -121,21 +121,21 @@
             <template x-if="model.resultDesignId !== null">
               <div class="doe-advisor__result" :data-design-id="model.resultDesignId">
                 <div class="doe-advisor__result-tag" x-text="t('wizardResultLabel')"></div>
-                <h4 class="doe-advisor__result-title" x-text="resultName()"></h4>
+                <h4 class="doe-advisor__result-title" data-help-key="modules.doe-advisor.types.Recommendation.name" x-text="resultName()"></h4>
                 <p class="doe-advisor__result-reasoning" x-text="resultReasoning()"></p>
 
                 <div class="doe-advisor__result-meta">
                   <div class="doe-advisor__result-meta-item">
                     <span class="doe-advisor__result-meta-label" x-text="t('col.factors')"></span>
-                    <span class="doe-advisor__result-meta-value" x-text="resultFactors()"></span>
+                    <span class="doe-advisor__result-meta-value" data-help-key="modules.doe-advisor.types.Recommendation.factors" x-text="resultFactors()"></span>
                   </div>
                   <div class="doe-advisor__result-meta-item">
                     <span class="doe-advisor__result-meta-label" x-text="t('col.levels')"></span>
-                    <span class="doe-advisor__result-meta-value" x-text="resultLevels()"></span>
+                    <span class="doe-advisor__result-meta-value" data-help-key="modules.doe-advisor.types.Recommendation.levels" x-text="resultLevels()"></span>
                   </div>
                   <div class="doe-advisor__result-meta-item">
                     <span class="doe-advisor__result-meta-label" x-text="t('col.effort')"></span>
-                    <span class="doe-advisor__result-meta-value" x-text="resultEffort()"></span>
+                    <span class="doe-advisor__result-meta-value" data-help-key="modules.doe-advisor.types.Recommendation.effort" x-text="resultEffort()"></span>
                   </div>
                 </div>
 
