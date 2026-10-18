@@ -12,6 +12,13 @@
   margin-top: var(--spacing-lg);
 }
 
+/* Die Labels füllen ihre halbe Spalte; der Kontexthilfe-Kreis hängt an der
+   rechten Labelkante und lag beim globalen 8-px-Abstand auf dem Label der
+   Nachbarspalte. Der breitere Abstand ist statisch, Alt löst kein Reflow aus. */
+.resampling__input .field-row {
+  gap: var(--spacing-l);
+}
+
 .resampling__seed-roll {
   align-self: flex-end;
 }

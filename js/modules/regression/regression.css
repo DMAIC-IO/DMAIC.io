@@ -280,6 +280,13 @@
   vertical-align: middle;
 }
 
+/* Der Sortierknopf steht hinter dem p-Wert-Anker, und der Hilfekreis hängt
+   an dessen rechter Kante — ohne Abstand läge er auf dem Sortierknopf. Der
+   Abstand ist statisch, Alt löst kein Reflow aus. */
+.context-help-anchor + .reg__sort-btn {
+  margin-left: 1.25em;
+}
+
 .reg__sort-btn:hover {
   opacity: 1;
   color: var(--color-accent);

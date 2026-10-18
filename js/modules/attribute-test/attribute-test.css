@@ -9,8 +9,15 @@
   gap: var(--spacing-xs) var(--spacing-sm);
   margin-bottom: var(--spacing-sm);
 }
-.attrtest__grid--two { grid-template-columns: auto 1fr 1fr; align-items: center; }
-.attrtest__grid-head { font-size: var(--font-size-xs); color: var(--color-text-secondary); }
+/* minmax(0, 1fr): ohne Untergrenze 0 setzt die Eigenbreite der Eingabefelder
+   die Spaltenbreite, und die zweite Spalte ragte über die Seitenleiste hinaus —
+   samt dem Hilfekreis an ihrem Kopf. */
+.attrtest__grid--two { grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr); align-items: center; }
+.attrtest__grid--two input { min-width: 0; width: 100%; box-sizing: border-box; }
+/* Schrumpfbreit statt zellbreit: die Köpfe sind Kontexthilfe-Anker, und der
+   Kreis hängt an der rechten Ankerkante — an einer gestreckten Zelle läge er
+   auf dem Nachbarkopf bzw. jenseits der Seitenleiste. */
+.attrtest__grid-head { font-size: var(--font-size-xs); color: var(--color-text-secondary); justify-self: start; }
 
 .attrtest__edit-table { border-collapse: collapse; margin-bottom: var(--spacing-xs); }
 

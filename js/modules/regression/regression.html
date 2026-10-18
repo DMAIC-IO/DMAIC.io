@@ -208,11 +208,11 @@
             <table class="reg__table">
               <thead><tr>
                 <th><span data-help-key="modules.regression.types.Result.anova" x-text="t('source')"></span></th>
-                <th><span data-help-key="modules.regression.types.AnovaRow.ss">SS</span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
-                <th><span data-help-key="modules.regression.types.AnovaRow.df">DF</span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
-                <th><span data-help-key="modules.regression.types.AnovaRow.ms">MS</span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
-                <th><span data-help-key="modules.regression.types.AnovaRow.f">F</span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
-                <th><span data-help-key="modules.regression.types.AnovaRow.p" x-text="t('pValue')"></span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
+                <th><span data-help-key="modules.regression.types.AnovaRow.ss">SS <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></span></th>
+                <th><span data-help-key="modules.regression.types.AnovaRow.df">DF <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></span></th>
+                <th><span data-help-key="modules.regression.types.AnovaRow.ms">MS <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></span></th>
+                <th><span data-help-key="modules.regression.types.AnovaRow.f">F <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></span></th>
+                <th><span data-help-key="modules.regression.types.AnovaRow.p"><span x-text="t('pValue')"></span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></span></th>
               </tr></thead>
               <tbody>
                 <tr :class="anova().regRowClass">
@@ -261,18 +261,18 @@
                   <th><span data-help-key="modules.regression.types.Coefficient.se" x-text="t('stdErrorCoef')"></span></th>
                 </template>
                 <template x-if="coefView().hasDetails">
-                  <th><span data-help-key="modules.regression.types.Coefficient.t" x-text="t('tValue')"></span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-coefficients')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
+                  <th><span data-help-key="modules.regression.types.Coefficient.t"><span x-text="t('tValue')"></span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-coefficients')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></span></th>
                 </template>
                 <template x-if="coefView().hasDetails">
                   <th>
-                    <span data-help-key="modules.regression.types.Coefficient.pval" x-text="t('pValue')"></span>
-                    <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-coefficients')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button>
+                    <span data-help-key="modules.regression.types.Coefficient.pval"><span x-text="t('pValue')"></span>
+                    <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-coefficients')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></span>
                     <button class="reg__sort-btn" :class="model.coefSortByP ? 'reg__sort-btn--active' : ''"
                       data-action="sort-coef-p" :title="t('sortByPValue')" @click="toggleSort()"><span class="icon icon--sm" data-icon="action.sort" aria-hidden="true"></span></button>
                   </th>
                 </template>
                 <template x-if="coefView().hasVIF">
-                  <th><span data-help-key="modules.regression.types.Coefficient.vif">VIF</span> <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('vif')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></th>
+                  <th><span data-help-key="modules.regression.types.Coefficient.vif">VIF <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('vif')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></span></th>
                 </template>
               </tr></thead>
               <tbody>
