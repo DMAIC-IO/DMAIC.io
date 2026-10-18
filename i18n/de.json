@@ -1326,7 +1326,19 @@
       },
       "fields": {
         "stakeholders": {
-          "help": "Die Beteiligten in Anlegereihenfolge. Je Beteiligter: id (damit sprechen die Aktionen ihn an), name, role, power und interest als Stufe von 1 bis 5, support (supporter, neutral oder critic), category (intern, extern, kunde, lieferant oder behoerde) und notes. Der Vorrangquadrant folgt aus power und interest (ab 4 gilt beides als hoch) und wird nicht gespeichert; aus einem Projektimport können support und category auch einen anderen Wert tragen, als die Aktionen annehmen."
+          "help": "Die Beteiligten in Anlegereihenfolge, jede Angabe unter keys einzeln beschrieben. Der Vorrangquadrant folgt aus Einfluss und Interesse und wird nicht gespeichert; aus einem Projektimport können support und category auch einen anderen Wert tragen, als die Aktionen annehmen."
+        }
+      },
+      "types": {
+        "StakeholderEntry": {
+          "id": "Die Kennung des Beteiligten; die vergibt die App beim Anlegen. Mit ihr sprechen Sie ihn beim Ändern und Entfernen an.",
+          "name": "Der Name des Beteiligten, bis zu 100 Zeichen. Er ist die einzige Pflichtangabe.",
+          "role": "Die Rolle oder Organisation des Beteiligten, bis zu 200 Zeichen, zum Beispiel Fachbereichsleiter oder Lieferant.",
+          "power": "Der Einfluss des Beteiligten auf das Projekt, eine ganze Zahl von 1 (gering) bis 5 (hoch); ohne Angabe 3. Zusammen mit dem Interesse bestimmt er den Quadranten der Einfluss-Interesse-Matrix: ab 4 gilt der Einfluss als hoch.",
+          "interest": "Das Interesse des Beteiligten am Projekt, eine ganze Zahl von 1 (gering) bis 5 (hoch); ohne Angabe 3. Zusammen mit dem Einfluss bestimmt es den Quadranten der Einfluss-Interesse-Matrix: ab 4 gilt das Interesse als hoch, hoch und hoch ergibt Eng managen, nur Einfluss hoch Zufriedenstellen, nur Interesse hoch Informieren, sonst Beobachten.",
+          "support": "Die Einstellung des Beteiligten zum Projekt: supporter (Unterstützer), neutral (Neutral, die Vorgabe) oder critic (Kritiker). Ein Kritiker mit hohem Einfluss und hohem Interesse löst die Warnung unter den Schlüssel-Stakeholdern aus.",
+          "category": "Die Kategorie des Beteiligten: intern (Intern, die Vorgabe), extern (Extern), kunde (Kunde), lieferant (Lieferant) oder behoerde (Behörde).",
+          "notes": "Erwartungen und Bedenken des Beteiligten in freiem Text, bis zu 500 Zeichen."
         }
       },
       "criticWarningLabel": "Kritiker unter den Schlüssel-Stakeholdern",
@@ -2171,13 +2183,13 @@
       "whenToUse": "Wenn für jede Aktivität eines Vorhabens festgehalten werden soll, wer sie ausführt (R), wer sie verantwortet (A), wer gefragt wird (C) und wer Bescheid bekommt (I) — die Prüfung meldet jede Zeile ohne R, ohne A oder mit mehr als einem A; nicht zur Beschreibung des Ablaufs selbst, dafür ist ein Flussdiagramm da.",
       "actions": {
         "addActivity": {
-          "help": "Hängt eine Aktivität (Zeile) an die Matrix an und liefert ihre Zeilennummer.",
+          "help": "Hängt eine Aktivität (Zeile) mit dem eingegebenen Namen an die Matrix an; ihre Zeilennummer, von 0 an gezählt, kommt als Antwort zurück.",
           "params": {
             "text": "Der Name der Aktivität; Leerzeichen am Rand fallen weg. Ein leerer Text legt nichts an und liefert -1 zurück — das ist eine Absage, kein Fehler."
           }
         },
         "addStakeholder": {
-          "help": "Hängt einen Beteiligten (Spalte) an die Matrix an und liefert seine Spaltennummer.",
+          "help": "Hängt einen Beteiligten (Spalte) mit dem eingegebenen Namen an die Matrix an; seine Spaltennummer, von 0 an gezählt, kommt als Antwort zurück.",
           "params": {
             "text": "Der Name des Beteiligten; Leerzeichen am Rand fallen weg. Ein leerer Text legt nichts an und liefert -1 zurück — das ist eine Absage, kein Fehler."
           }
@@ -2191,7 +2203,7 @@
           }
         },
         "cycleRole": {
-          "help": "Geht die Rolle einer Zelle einen Schritt weiter: ohne Rolle zu R, R zu A, A zu C, C zu I, I zurück zu ohne Rolle. Für einen gezielten Wert ist setRole der direkte Weg.",
+          "help": "Schaltet die Rolle einer Zelle einen Schritt weiter, wie ein Klick auf die Zelle: ohne Rolle zu R, R zu A, A zu C, C zu I, I zurück zu ohne Rolle. R heißt führt aus, A verantwortet, C wird gefragt, I bekommt Bescheid. Ein bestimmter Wert lässt sich auch direkt setzen.",
           "params": {
             "aIdx": "Die Zeilennummer der Aktivität, von 0 an gezählt. Eine Nummer, die keine Aktivität bezeichnet, ist ein Fehler.",
             "sIdx": "Die Spaltennummer des Beteiligten, von 0 an gezählt. Eine Nummer, die keinen Beteiligten bezeichnet, ist ein Fehler."
@@ -4883,7 +4895,7 @@
           "help": "Die aktive Bewertungsskala: 0-10, 0-1-3-9 oder 0-3-7-10."
         },
         "weights": {
-          "help": "Je Ergebnisgröße ihre Kundenwichtigkeit, eine ganze Zahl von 1 bis 10, in Spaltenreihenfolge."
+          "help": "Die Kundenwichtigkeit jeder Ergebnisgröße, 1 bis 10, in Spaltenreihenfolge; mit ihr gehen die Bewertungen in die Zeilensumme ein."
         }
       },
       "addInput": "Input",

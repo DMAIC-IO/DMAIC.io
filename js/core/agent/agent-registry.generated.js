@@ -15982,10 +15982,45 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "stakeholders": {
-        "type": "Stakeholder[]",
+        "type": "StakeholderEntry[]",
         "help": "die Beteiligten in Anlegereihenfolge; je Beteiligter `id` (zum Ansprechen), `name`, `role`, `power` und `interest` als Stufe von 1 bis 5, `support` (`supporter`, `neutral` oder `critic`), `category` (`intern`, `extern`, `kunde`, `lieferant` oder `behoerde`) und `notes`. Aus `power` und `interest` leitet die Auswertung den Vorrangquadranten ab — er wird nicht gespeichert und steht deshalb in keinem Feld",
         "bulk": true,
-        "bulkKind": "table"
+        "bulkKind": "table",
+        "keysOf": "StakeholderEntry",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": "Kennung"
+          },
+          "name": {
+            "type": "string",
+            "help": "Name"
+          },
+          "role": {
+            "type": "string",
+            "help": "Rolle bzw. Funktion"
+          },
+          "power": {
+            "type": "number",
+            "help": "Macht, 1–5"
+          },
+          "interest": {
+            "type": "number",
+            "help": "Interesse, 1–5"
+          },
+          "support": {
+            "type": "'supporter'|'neutral'|'critic'",
+            "help": "Haltung zum Projekt"
+          },
+          "category": {
+            "type": "'intern'|'extern'|'kunde'|'lieferant'|'behoerde'",
+            "help": "Kategorie"
+          },
+          "notes": {
+            "type": "string",
+            "help": "Notizen"
+          }
+        }
       }
     }
   },

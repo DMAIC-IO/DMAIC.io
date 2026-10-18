@@ -19,6 +19,22 @@ function clampLevel(v) {
   return Math.min(5, Math.max(1, n));
 }
 
+/**
+ * Ein Beteiligter, wie `toJSON()` ihn liefert und `read().stakeholders`
+ * ihn zeigt. Sätze je Eigenschaft unter `types.StakeholderEntry.<name>`,
+ * dieselben an den Beschriftungen von Tabelle und Formular (Alt-Taste).
+ *
+ * @typedef {object} StakeholderEntry
+ * @property {string} id  Kennung
+ * @property {string} name  Name
+ * @property {string} role  Rolle bzw. Funktion
+ * @property {number} power  Macht, 1–5
+ * @property {number} interest  Interesse, 1–5
+ * @property {'supporter'|'neutral'|'critic'} support  Haltung zum Projekt
+ * @property {'intern'|'extern'|'kunde'|'lieferant'|'behoerde'} category  Kategorie
+ * @property {string} notes  Notizen
+ */
+
 export class Stakeholder {
   id = '';
   name = '';
@@ -80,7 +96,7 @@ export class State {
 
   _schema = { name: State.ID, version: State.VERSION };
   /**
-   * @type {Stakeholder[]} die Beteiligten in Anlegereihenfolge; je Beteiligter
+   * @type {StakeholderEntry[]} die Beteiligten in Anlegereihenfolge; je Beteiligter
    *   `id` (zum Ansprechen), `name`, `role`, `power` und `interest` als Stufe
    *   von 1 bis 5, `support` (`supporter`, `neutral` oder `critic`),
    *   `category` (`intern`, `extern`, `kunde`, `lieferant` oder `behoerde`)

@@ -153,4 +153,14 @@ export const ANCHOR_EXEMPTIONS = {
     { match: '<th>O</th>', reason: 'Kopf der festen AP-Nachschlagematrix (AIAG-VDA)', count: 1 },
     { match: "'D ' + d", reason: 'Kopf je D-Stufe der festen AP-Nachschlagematrix', count: 1 },
   ],
+  'stakeholder-analysis': [
+    { match: '<th>Quadrant</th>', reason: 'aus Macht und Interesse abgeleitet, nicht Teil der Lesefläche; beide Spalten davor sind erklärt', count: 1 },
+  ],
+  'raci-matrix': [
+    { match: 'raci__th-stakeholder', reason: 'Kopf je Beteiligter (Name aus den Daten, umbenennbar)', count: 1 },
+  ],
+  'ce-matrix': [
+    { match: 'ce-matrix__weight-cell', reason: 'Gewichtsauswahl je Ergebnisgröße; die Zeile ist am Kopf „Wichtigkeit für Kunden“ erklärt', count: 1 },
+    { match: 'ce-matrix__total-label--vertical', reason: 'Zeilensumme, gerechnet und nicht Teil der Lesefläche', count: 1 },
+  ],
 };

@@ -152,11 +152,11 @@
             <table class="dmike-table">
               <thead>
                 <tr>
-                  <th x-text="t('fieldName')"></th>
-                  <th x-text="t('fieldRole')"></th>
-                  <th x-text="t('fieldPower')"></th>
-                  <th x-text="t('fieldInterest')"></th>
-                  <th x-text="t('fieldSupport')"></th>
+                  <th><span data-help-key="modules.stakeholder-analysis.types.StakeholderEntry.name" x-text="t('fieldName')"></span></th>
+                  <th><span data-help-key="modules.stakeholder-analysis.types.StakeholderEntry.role" x-text="t('fieldRole')"></span></th>
+                  <th><span data-help-key="modules.stakeholder-analysis.types.StakeholderEntry.power" x-text="t('fieldPower')"></span></th>
+                  <th><span data-help-key="modules.stakeholder-analysis.types.StakeholderEntry.interest" x-text="t('fieldInterest')"></span></th>
+                  <th><span data-help-key="modules.stakeholder-analysis.types.StakeholderEntry.support" x-text="t('fieldSupport')"></span></th>
                   <th>Quadrant</th>
                 </tr>
               </thead>
@@ -252,18 +252,18 @@
          <div class="sha__popout-form">
            <div class="sha__form-row">
              <div class="sha__form-group">
-               <label><span x-text="t('fieldName')"></span> *</label>
+               <label data-help-key="modules.stakeholder-analysis.types.StakeholderEntry.name"><span x-text="t('fieldName')"></span> *</label>
                <input type="text" class="field" data-field="name" x-model="modalData.name" maxlength="100" :placeholder="t('fieldName')">
              </div>
              <div class="sha__form-group">
-               <label x-text="t('fieldRole')"></label>
+               <label data-help-key="modules.stakeholder-analysis.types.StakeholderEntry.role" x-text="t('fieldRole')"></label>
                <input type="text" class="field" data-field="role" x-model="modalData.role" maxlength="200" :placeholder="t('fieldRole')">
              </div>
            </div>
 
            <div class="sha__slider-group">
              <div class="sha__slider-header">
-               <label x-text="t('fieldPower')"></label>
+               <label data-help-key="modules.stakeholder-analysis.types.StakeholderEntry.power" x-text="t('fieldPower')"></label>
                <span class="sha__slider-value" data-ref="vPower" x-text="modalData.power"></span>
              </div>
              <input type="range" class="dmike-slider" min="1" max="5" data-field="power" x-model="modalData.power">
@@ -271,7 +271,7 @@
 
            <div class="sha__slider-group">
              <div class="sha__slider-header">
-               <label x-text="t('fieldInterest')"></label>
+               <label data-help-key="modules.stakeholder-analysis.types.StakeholderEntry.interest" x-text="t('fieldInterest')"></label>
                <span class="sha__slider-value" data-ref="vInterest" x-text="modalData.interest"></span>
              </div>
              <input type="range" class="dmike-slider" min="1" max="5" data-field="interest" x-model="modalData.interest">
@@ -279,7 +279,7 @@
 
            <div class="sha__form-row">
              <div class="sha__form-group">
-               <label x-text="t('fieldSupport')"></label>
+               <label data-help-key="modules.stakeholder-analysis.types.StakeholderEntry.support" x-text="t('fieldSupport')"></label>
                <select class="field" data-field="support" x-model="modalData.support">
                  <option value="supporter" x-text="t('supportSupporter')"></option>
                  <option value="neutral" x-text="t('supportNeutral')"></option>
@@ -287,7 +287,7 @@
                </select>
              </div>
              <div class="sha__form-group">
-               <label x-text="t('fieldCategory')"></label>
+               <label data-help-key="modules.stakeholder-analysis.types.StakeholderEntry.category" x-text="t('fieldCategory')"></label>
                <select class="field" data-field="category" x-model="modalData.category">
                  <option value="intern" x-text="t('categoryIntern')"></option>
                  <option value="extern" x-text="t('categoryExtern')"></option>
@@ -299,7 +299,7 @@
            </div>
 
            <div class="sha__form-group">
-             <label x-text="t('notesLabel')"></label>
+             <label data-help-key="modules.stakeholder-analysis.types.StakeholderEntry.notes" x-text="t('notesLabel')"></label>
              <textarea class="field" data-field="notes" x-model="modalData.notes" maxlength="500" :placeholder="t('notesPlaceholder')"></textarea>
            </div>
          </div>

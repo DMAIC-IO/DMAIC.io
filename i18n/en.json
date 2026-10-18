@@ -1326,7 +1326,19 @@
       },
       "fields": {
         "stakeholders": {
-          "help": "The stakeholders in the order they were added. Per stakeholder: id (this is how the actions address them), name, role, power and interest as a level from 1 to 5, support (supporter, neutral or critic), category (intern, extern, kunde, lieferant or behoerde) and notes. The priority quadrant follows from power and interest (4 and above counts as high for both) and is not stored; from a project import support and category may also carry a value other than the ones the actions accept."
+          "help": "The stakeholders in the order they were added, each entry described individually under keys. The priority quadrant follows from power and interest and is not stored; from a project import support and category may also carry a value other than the ones the actions accept."
+        }
+      },
+      "types": {
+        "StakeholderEntry": {
+          "id": "The identifier of the stakeholder; the app assigns it when the stakeholder is created. Use it to address the stakeholder when changing or removing.",
+          "name": "The name of the stakeholder, up to 100 characters. It is the only required entry.",
+          "role": "The role or organization of the stakeholder, up to 200 characters, for example department head or supplier.",
+          "power": "The stakeholder's power over the project, an integer from 1 (low) to 5 (high); 3 when not given. Together with interest it decides the quadrant of the power-interest matrix: 4 and above counts as high.",
+          "interest": "The stakeholder's interest in the project, an integer from 1 (low) to 5 (high); 3 when not given. Together with power it decides the quadrant of the power-interest matrix: 4 and above counts as high; high on both gives Manage Closely, only power high Keep Satisfied, only interest high Keep Informed, otherwise Monitor.",
+          "support": "The stakeholder's attitude to the project: supporter (Supporter), neutral (Neutral, the default) or critic (Critic). A critic with high power and high interest triggers the warning about critics among the key stakeholders.",
+          "category": "The category of the stakeholder: intern (Internal, the default), extern (External), kunde (Customer), lieferant (Supplier) or behoerde (Authority).",
+          "notes": "The stakeholder's expectations and concerns as free text, up to 500 characters."
         }
       },
       "criticWarningLabel": "Critics among key stakeholders",
@@ -2171,13 +2183,13 @@
       "whenToUse": "When each activity of an undertaking needs a record of who does the work (R), who is accountable (A), who is consulted (C) and who is informed (I) — the check reports every row without an R, without an A or with more than one A; not for describing the flow itself, which is what a flowchart is for.",
       "actions": {
         "addActivity": {
-          "help": "Appends an activity (row) to the matrix and returns its row number.",
+          "help": "Appends an activity (row) with the entered name to the matrix; its row number, counted from 0, comes back as the answer.",
           "params": {
             "text": "The name of the activity; surrounding whitespace is dropped. An empty text adds nothing and returns -1 — that is a refusal, not an error."
           }
         },
         "addStakeholder": {
-          "help": "Appends a stakeholder (column) to the matrix and returns its column number.",
+          "help": "Appends a stakeholder (column) with the entered name to the matrix; its column number, counted from 0, comes back as the answer.",
           "params": {
             "text": "The name of the stakeholder; surrounding whitespace is dropped. An empty text adds nothing and returns -1 — that is a refusal, not an error."
           }
@@ -2191,7 +2203,7 @@
           }
         },
         "cycleRole": {
-          "help": "Advances the role of a cell by one step: no role to R, R to A, A to C, C to I, I back to no role. For a specific value setRole is the direct way.",
+          "help": "Advances the role of a cell by one step, like a click on the cell: no role to R, R to A, A to C, C to I, I back to no role. R means does the work, A is accountable, C is consulted, I is informed. A specific value can also be set directly.",
           "params": {
             "aIdx": "The row number of the activity, counted from 0. A number that names no activity is an error.",
             "sIdx": "The column number of the stakeholder, counted from 0. A number that names no stakeholder is an error."
@@ -4879,7 +4891,7 @@
           "help": "The active rating scale: 0-10, 0-1-3-9 or 0-3-7-10."
         },
         "weights": {
-          "help": "The customer importance of each output, an integer from 1 to 10, in column order."
+          "help": "The customer importance of each output, 1 to 10, in column order; with it the ratings go into the row sum."
         }
       },
       "addInput": "Input",

@@ -16,6 +16,7 @@
                @keydown.enter="addActivityFromInput()">
         <button class="btn btn--sm btn--primary raci__add-btn" type="button"
                 data-add-btn="activity"
+                data-help-key="modules.raci-matrix.actions.addActivity.help"
                 x-text="addLabel('addActivity')"
                 @click="addActivityFromInput()"></button>
       </div>
@@ -26,6 +27,7 @@
                @keydown.enter="addStakeholderFromInput()">
         <button class="btn btn--sm btn--primary raci__add-btn" type="button"
                 data-add-btn="stakeholder"
+                data-help-key="modules.raci-matrix.actions.addStakeholder.help"
                 x-text="addLabel('addStakeholder')"
                 @click="addStakeholderFromInput()"></button>
       </div>
@@ -36,7 +38,7 @@
         <table class="raci__table">
           <thead>
             <tr>
-              <th class="raci__th-corner" x-text="cornerLabel()"></th>
+              <th class="raci__th-corner"><span data-help-key="modules.raci-matrix.actions.cycleRole.help" x-text="cornerLabel()"></span></th>
               <template x-for="(sh, sIdx) in model.stakeholders">
                 <th class="raci__th-stakeholder dmike-del-btn-host" :key="'sh-' + sIdx">
                   <span class="raci__th-text"
