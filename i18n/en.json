@@ -739,6 +739,23 @@
     "back": "Back",
     "algoLabTitle": "Algorithm Lab",
     "error": "Error",
+    "nelson": {
+      "1": { "short": "1 point > 3σ", "desc": "One point beyond 3σ limits" },
+      "2": { "short": "9 same side", "desc": "9 consecutive points on the same side of the center line" },
+      "3": { "short": "6 increasing/decreasing", "desc": "6 consecutive increasing or decreasing points" },
+      "4": { "short": "14 alternating", "desc": "14 consecutive alternating up and down points" },
+      "5": { "short": "2/3 > 2σ", "desc": "2 of 3 consecutive points beyond 2σ (same side)" },
+      "6": { "short": "4/5 > 1σ", "desc": "4 of 5 consecutive points beyond 1σ (same side)" },
+      "7": { "short": "15 in Zone C", "desc": "15 consecutive points within 1σ on both sides" },
+      "8": { "short": "8 outside C", "desc": "8 consecutive points beyond 1σ on both sides" }
+    },
+    "nelsonAttr": {
+      "1": { "short": "1 point beyond limits", "desc": "One point outside the control limits" },
+      "2": { "short": "9 same side", "desc": "9 consecutive points on the same side of the center line" },
+      "3": { "short": "6 increasing/decreasing", "desc": "6 consecutive increasing or decreasing points" },
+      "5": { "short": "2/3 > 2σ", "desc": "2 of 3 consecutive points beyond 2σ (same side, constant σ only)" },
+      "6": { "short": "4/5 > 1σ", "desc": "4 of 5 consecutive points beyond 1σ (same side, constant σ only)" }
+    },
     "sym": {
       "n": "n",
       "df": "df",

@@ -332,13 +332,13 @@ const mod = createModule({
 
       /** @noagent view transform */
       nelsonRuleShort(rule) {
-        const lang = module._context.language || 'de';
-        return rule.short[lang] || rule.short.de;
+        void module._context.language; // reactive dependency for language switch
+        return module._context.i18n.t(`common.nelsonAttr.${rule.id}.short`);
       },
       /** @noagent view transform */
       nelsonRuleDesc(rule) {
-        const lang = module._context.language || 'de';
-        return rule.desc[lang] || rule.desc.de;
+        void module._context.language; // reactive dependency for language switch
+        return module._context.i18n.t(`common.nelsonAttr.${rule.id}.desc`);
       },
 
       // ── Stats KPI strip (derived from this.result) ────────────
@@ -402,13 +402,13 @@ const mod = createModule({
 
       /** @noagent view transform */
       violationRows() {
-        const lang = module._context.language || 'de';
+        void module._context.language; // reactive dependency for language switch
         return this._uniqueViolations().map(v => {
           const rule = ATTRIBUTE_NELSON_RULES.find(r => r.id === v.ruleId);
           return {
             index: v.index,
             ruleId: v.ruleId,
-            desc: rule ? (rule.short[lang] || rule.short.de) : '',
+            desc: rule ? module._context.i18n.t(`common.nelsonAttr.${rule.id}.short`) : '',
           };
         });
       },

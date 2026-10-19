@@ -739,6 +739,23 @@
     "back": "Zurück",
     "algoLabTitle": "Algorithm Lab",
     "error": "Fehler",
+    "nelson": {
+      "1": { "short": "1 Punkt > 3σ", "desc": "Ein Punkt außerhalb der 3σ-Grenzen" },
+      "2": { "short": "9 gleiche Seite", "desc": "9 aufeinanderfolgende Punkte auf derselben Seite der Mittellinie" },
+      "3": { "short": "6 steigend/fallend", "desc": "6 aufeinanderfolgende steigende oder fallende Punkte" },
+      "4": { "short": "14 alternierend", "desc": "14 aufeinanderfolgende alternierend steigende und fallende Punkte" },
+      "5": { "short": "2/3 > 2σ", "desc": "2 von 3 aufeinanderfolgenden Punkten jenseits 2σ (gleiche Seite)" },
+      "6": { "short": "4/5 > 1σ", "desc": "4 von 5 aufeinanderfolgenden Punkten jenseits 1σ (gleiche Seite)" },
+      "7": { "short": "15 in Zone C", "desc": "15 aufeinanderfolgende Punkte innerhalb 1σ beiderseits" },
+      "8": { "short": "8 außerhalb C", "desc": "8 aufeinanderfolgende Punkte jenseits 1σ auf beiden Seiten" }
+    },
+    "nelsonAttr": {
+      "1": { "short": "1 Punkt > UCL/LCL", "desc": "Ein Punkt außerhalb der Eingriffsgrenzen" },
+      "2": { "short": "9 gleiche Seite", "desc": "9 aufeinanderfolgende Punkte auf derselben Seite der Mittellinie" },
+      "3": { "short": "6 steigend/fallend", "desc": "6 aufeinanderfolgende steigende oder fallende Punkte" },
+      "5": { "short": "2/3 > 2σ", "desc": "2 von 3 aufeinanderfolgenden Punkten jenseits 2σ (gleiche Seite, nur konstantes σ)" },
+      "6": { "short": "4/5 > 1σ", "desc": "4 von 5 aufeinanderfolgenden Punkten jenseits 1σ (gleiche Seite, nur konstantes σ)" }
+    },
     "sym": {
       "n": "n",
       "df": "df",

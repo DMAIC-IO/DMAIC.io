@@ -234,13 +234,10 @@ export function computeU(counts, sizes, baselineEnd) {
 /**
  * Reduced set of Nelson rules applicable to attribute charts.
  * Rule 4 (alternating) is excluded — discrete counts produce frequent ties.
+ * Texts live in i18n under `common.nelsonAttr.<id>`.
  */
 export const ATTRIBUTE_NELSON_RULES = [
-  { id: 1, short: { de: '1 Punkt > UCL/LCL', en: '1 point beyond limits' }, desc: { de: 'Ein Punkt außerhalb der Eingriffsgrenzen', en: 'One point outside the control limits' } },
-  { id: 2, short: { de: '9 gleiche Seite',    en: '9 same side' },          desc: { de: '9 aufeinanderfolgende Punkte auf derselben Seite der Mittellinie', en: '9 consecutive points on the same side of the center line' } },
-  { id: 3, short: { de: '6 steigend/fallend', en: '6 increasing/decreasing'}, desc: { de: '6 aufeinanderfolgende steigende oder fallende Punkte', en: '6 consecutive increasing or decreasing points' } },
-  { id: 5, short: { de: '2/3 > 2σ',  en: '2/3 > 2σ' }, desc: { de: '2 von 3 aufeinanderfolgenden Punkten jenseits 2σ (gleiche Seite, nur konstantes σ)', en: '2 of 3 consecutive points beyond 2σ (same side, constant σ only)' } },
-  { id: 6, short: { de: '4/5 > 1σ',  en: '4/5 > 1σ' }, desc: { de: '4 von 5 aufeinanderfolgenden Punkten jenseits 1σ (gleiche Seite, nur konstantes σ)', en: '4 of 5 consecutive points beyond 1σ (same side, constant σ only)' } },
+  { id: 1 }, { id: 2 }, { id: 3 }, { id: 5 }, { id: 6 },
 ];
 
 /** Default enabled rules for attribute charts: test 1 only, as in Minitab (E-005). */

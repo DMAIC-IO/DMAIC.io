@@ -558,11 +558,12 @@ const mod = createModule({
        * @noagent view transform
        */
       rulesView() {
-        const lang = module._context.language || 'de';
+        void module._context.language; // reactive dependency for language switch
+        const t = (k) => module._context.i18n.t(k);
         return NELSON_RULES.map(r => ({
           id: r.id,
-          short: r.short[lang] || r.short.de,
-          desc: r.desc[lang] || r.desc.de,
+          short: t(`common.nelson.${r.id}.short`),
+          desc: t(`common.nelson.${r.id}.desc`),
         }));
       },
       /** @noagent view transform */
@@ -902,7 +903,7 @@ const mod = createModule({
         }
         this.noViolations = false;
 
-        const lang = module._context.language || 'de';
+        void module._context.language; // reactive dependency for language switch
         const unique = this._uniqueViolations(violations);
 
         this.violationRows = unique.map(v => {
@@ -911,7 +912,7 @@ const mod = createModule({
           return {
             index: v.index,
             ruleId: v.ruleId,
-            desc: rule ? (rule.short[lang] || rule.short.de) : '',
+            desc: rule ? module._context.i18n.t(`common.nelson.${rule.id}.short`) : '',
             hasAnn: Boolean(ann),
             annText: ann ? ((ann.comment || '') + (ann.excluded ? ' ⊘' : '')) : '',
             annExcluded: Boolean(ann && ann.excluded),
