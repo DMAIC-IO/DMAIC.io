@@ -1,0 +1,10 @@
+{
+  "chartTypeId": "np",
+  "constantN": 100,
+  "defectsRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-spc-attr-np",
+    "columnId": "c-defekte"
+  },
+  "sourceWorksheetFile": "worksheets/spc-attribute-np-defectives.json"
+}

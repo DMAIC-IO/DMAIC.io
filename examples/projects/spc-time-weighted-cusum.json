@@ -1,0 +1,12 @@
+{
+  "chartTypeId": "cusum",
+  "columnRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-spc-drift",
+    "columnId": "c-wert"
+  },
+  "baselineCount": 30,
+  "kSigma": 0.5,
+  "hSigma": 4,
+  "sourceWorksheetFile": "worksheets/spc-time-weighted-drift.json"
+}
