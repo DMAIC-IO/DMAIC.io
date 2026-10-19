@@ -739,6 +739,8 @@
     "back": "Zurück",
     "algoLabTitle": "Algorithm Lab",
     "error": "Fehler",
+    "ruleLabel": "Regel {n}",
+    "pointLabel": "#{n}",
     "nelson": {
       "1": { "short": "1 Punkt > 3σ", "desc": "Ein Punkt außerhalb der 3σ-Grenzen" },
       "2": { "short": "9 gleiche Seite", "desc": "9 aufeinanderfolgende Punkte auf derselben Seite der Mittellinie" },
@@ -9615,7 +9617,7 @@
       "annotationComment": "Kommentar / Ursache",
       "annotationPlaceholder": "z. B. „Werkzeugbruch in Schicht 3“",
       "annotationExclude": "Punkt aus Grenzen-Berechnung ausschließen",
-      "annotationExcludeHint": "Ausgeschlossene Punkte werden weiterhin in der Karte gezeigt, beeinflussen aber UCL/LCL nicht mehr.",
+      "annotationExcludeHint": "Ausgeschlossene Punkte werden weiterhin in der Karte gezeigt, beeinflussen aber UCL/LCL nicht mehr. Gilt nicht bei Stages und nicht bei eingefrorenen Grenzen.",
       "annotationSave": "Speichern",
       "annotationRemove": "Entfernen",
       "annotationAdd": "+ Annotation",

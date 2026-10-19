@@ -739,6 +739,8 @@
     "back": "Back",
     "algoLabTitle": "Algorithm Lab",
     "error": "Error",
+    "ruleLabel": "Rule {n}",
+    "pointLabel": "#{n}",
     "nelson": {
       "1": { "short": "1 point > 3σ", "desc": "One point beyond 3σ limits" },
       "2": { "short": "9 same side", "desc": "9 consecutive points on the same side of the center line" },
@@ -9611,7 +9613,7 @@
       "annotationComment": "Comment / cause",
       "annotationPlaceholder": "e.g. \"tool break on shift 3\"",
       "annotationExclude": "Exclude point from limit computation",
-      "annotationExcludeHint": "Excluded points stay on the chart but no longer influence UCL/LCL.",
+      "annotationExcludeHint": "Excluded points stay on the chart but no longer influence UCL/LCL. Does not apply with stages or frozen limits.",
       "annotationSave": "Save",
       "annotationRemove": "Remove",
       "annotationAdd": "+ Annotate",

@@ -413,6 +413,10 @@ const mod = createModule({
         });
       },
       /** @noagent view transform */
+      vIdxLabel(v) { void module._context.language; return module._context.i18n.t('common.pointLabel', { n: v.index + 1 }); },
+      /** @noagent view transform */
+      vRuleLabel(v) { void module._context.language; return module._context.i18n.t('common.ruleLabel', { n: v.ruleId }); },
+      /** @noagent view transform */
       violationsHeader() {
         const count = this.violationRows().length;
         return `⚑ ${  _t('violationsTitle', { count })}`; // ⚑

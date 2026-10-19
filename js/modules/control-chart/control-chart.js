@@ -177,6 +177,28 @@ function setAtPath(obj, key, value) {
  */
 
 /**
+ * Die eingefrorenen Grenzen für `read()`: je Teilkarte `{cl, ucl, lcl, sigma}`
+ * endlich oder null, alle übrigen Schlüssel unverändert kopiert.
+ *
+ * @param {object|null} fl die gespeicherten Grenzen
+ * @returns {object|null} Kopie oder null, wenn keine eingefroren sind
+ */
+function frozenLimitsOf(fl) {
+  if (!fl) return null;
+  const out = JSON.parse(JSON.stringify(fl));
+  for (const side of ['primary', 'secondary']) {
+    const L = fl[side];
+    if (!L) continue;
+    out[side] = {
+      ...out[side],
+      cl: finiteOrNull(L.cl), ucl: finiteOrNull(L.ucl),
+      lcl: finiteOrNull(L.lcl), sigma: finiteOrNull(L.sigma),
+    };
+  }
+  return out;
+}
+
+/**
  * Die Agenten-Lesefläche der Regelkarte (I-MR, X̄-R, X̄-S).
  *
  * Alle persistierten Eingaben außer `exampleWorksheetId` (Spalte, Kartentyp,
@@ -263,7 +285,7 @@ const mod = createModule({
           lsl: m.lsl,
           enabledRules: [...m.enabledRules],
           annotations: JSON.parse(JSON.stringify(m.annotations)),
-          frozenLimits: m.frozenLimits ? JSON.parse(JSON.stringify(m.frozenLimits)) : null,
+          frozenLimits: frozenLimitsOf(m.frozenLimits),
           activeColumnSlots: this.activeColumnSlots(),
           activeParams: this.activeParams(),
           pickableColumns: this.pickableColumns(),
@@ -925,9 +947,9 @@ const mod = createModule({
       /** @noagent view transform */
       violationsHeaderText() { return `⚑ ${  this.violationsTitle}`; }, // ⚑
       /** @noagent view transform */
-      vIdxLabel(r)  { return `#${  r.index + 1}`; },
+      vIdxLabel(r)  { void module._context.language; return module._context.i18n.t('common.pointLabel', { n: r.index + 1 }); },
       /** @noagent view transform */
-      vRuleLabel(r) { return `Rule ${  r.ruleId}`; },
+      vRuleLabel(r) { void module._context.language; return module._context.i18n.t('common.ruleLabel', { n: r.ruleId }); },
       /** @noagent view transform; Dialog- bzw. Klappzustand, kein Zustand der Rechnung */
       openViolation(r) { this.openAnnotation(r.index); },
       /** @noagent view transform; Dialog- bzw. Klappzustand, kein Zustand der Rechnung */

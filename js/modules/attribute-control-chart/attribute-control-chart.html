@@ -117,8 +117,8 @@
           <div class="attr-cc__violations-list">
             <template x-for="(v, i) in violationRows()" :key="i">
               <div class="attr-cc__violation-row">
-                <span class="attr-cc__v-idx" x-text="'#' + (v.index + 1)"></span>
-                <span class="attr-cc__v-rule" x-text="'Rule ' + v.ruleId"></span>
+                <span class="attr-cc__v-idx" x-text="vIdxLabel(v)"></span>
+                <span class="attr-cc__v-rule" x-text="vRuleLabel(v)"></span>
                 <span class="attr-cc__v-desc" x-text="v.desc"></span>
               </div>
             </template>
