@@ -272,7 +272,7 @@ thead .tfa__mh {
   pointer-events: auto;
   cursor: grab;
   user-select: none;
-  touch-action: none;
+  touch-action: none; /* stylelint-disable-line plugin/no-unsupported-browser-features -- no-op on desktop Safari (no touch input); keeps touchscreens from panning while dragging */
 }
 
 .tfa__arrows path.tfa__arrow--hl {
@@ -294,7 +294,7 @@ thead .tfa__mh {
   color: var(--color-text-primary);
   cursor: grab;
   user-select: none;
-  touch-action: none;
+  touch-action: none; /* stylelint-disable-line plugin/no-unsupported-browser-features -- no-op on desktop Safari (no touch input); keeps touchscreens from panning while dragging */
 }
 
 /* Ellipsis needs a block child — a flex container does not truncate its own text. */
@@ -358,7 +358,7 @@ thead .tfa__mh {
 
 .tfa__legend-line--wave {
   border-top: 0;
-  text-decoration: underline wavy var(--color-error);
+  text-decoration: underline wavy var(--color-error); /* stylelint-disable-line plugin/no-unsupported-browser-features -- wavy underline is supported everywhere; DB flags only text-decoration-skip */
 }
 
 .tfa__legend-line--wave::before {
