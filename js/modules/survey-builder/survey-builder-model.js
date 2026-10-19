@@ -41,6 +41,15 @@ function itemsKey(q) {
 }
 
 /**
+ * Plain deep copy — strips Alpine proxies before handing state to pure code.
+ * @param {*} value JSON-safe value
+ * @returns {*}
+ */
+export function plainCopy(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+/**
  * Whether a recipient counts as "sent". Answering proves receipt, so an
  * answerer counts as sent even without `sentAt`. Shared with the summary's
  * response rate.
