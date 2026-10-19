@@ -124,15 +124,15 @@ const COLUMN_SINKS = {
  *
  * @typedef {object} Result
  * @property {number} n  Zahl der Werte
- * @property {number|null} xbar  Mittelwert
- * @property {number|null} s  Gesamt-Standardabweichung (n − 1)
+ * @property {number} xbar  Mittelwert
+ * @property {number} s  Gesamt-Standardabweichung (n − 1)
  * @property {number|null} sigmaWithin  Streuung innerhalb (Schätzer)
  * @property {number|null} sigmaOverall  Gesamtstreuung, gleich s
  * @property {string} withinMethod  verwendeter Schätzer
  * @property {number} withinDf  Freiheitsgrade des Schätzers
  * @property {number} subgroupSize  Untergruppengröße (Modus Spalte: 1)
- * @property {number|null} xmin  kleinster Wert
- * @property {number|null} xmax  größter Wert
+ * @property {number} xmin  kleinster Wert
+ * @property {number} xmax  größter Wert
  * @property {number} subgroupCount  Zahl der Untergruppen bzw. Werte
  * @property {number} nBar  mittlere Untergruppengröße
  * @property {boolean} unbiased  Korrekturfaktor angewandt
@@ -470,14 +470,14 @@ const mod = createModule({
         }
         cells.push({
           key: 'ppm',
-            help: HELP + 'Result.ppmTotal',
+          help: HELP + 'Result.ppmTotal',
           label: `PPM (${_t('defective')})`,
           value: fmt(r.ppmTotal),
           sub: `${_t('perMillion')} · ${_t('ppmObservedShort')} ${fmt(r.ppmObservedTotal, 0)} · ${_t('ppmWithinShort')} ${fmt(r.ppmWithinTotal, 0)}`,
         });
         cells.push({
           key: 'sigma',
-            help: HELP + 'Result.sigmaLevel',
+          help: HELP + 'Result.sigmaLevel',
           label: _t('sigmaLevel'),
           value: `${fmtZ(r.sigmaLevel)}σ`,
           sub: `${_t('zBenchOverall')} ${fmtZ(r.zBenchOverall, 2)} · ${_t('sixSigmaConvention')} ${fmtZ(r.sigmaLevelShifted, 2)}`,

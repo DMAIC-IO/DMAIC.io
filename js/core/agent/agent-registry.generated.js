@@ -12857,11 +12857,11 @@ export const AGENT_REGISTRY = {
             "help": "Zahl der Werte"
           },
           "xbar": {
-            "type": "number|null",
+            "type": "number",
             "help": "Mittelwert"
           },
           "s": {
-            "type": "number|null",
+            "type": "number",
             "help": "Gesamt-Standardabweichung (n − 1)"
           },
           "sigmaWithin": {
@@ -12885,11 +12885,11 @@ export const AGENT_REGISTRY = {
             "help": "Untergruppengröße (Modus Spalte: 1)"
           },
           "xmin": {
-            "type": "number|null",
+            "type": "number",
             "help": "kleinster Wert"
           },
           "xmax": {
-            "type": "number|null",
+            "type": "number",
             "help": "größter Wert"
           },
           "subgroupCount": {

@@ -495,8 +495,9 @@ export default createModule({
         const alpha = this.model.alpha;
         const power = this.model.power;
         const powerPct = (power * 100).toFixed(0);
-        const nLabel = nRequired >= 5000 ? '> 5.000' : nRequired;
         const nOverflow = nRequired >= 5000;
+        const lang = module._context.i18n.getLanguage();
+        const nLabel = nOverflow ? `> ${(5000).toLocaleString(lang)}` : nRequired;
 
         const perGroupSuffix = isTwo ? ` (${  _t('perGroup')  })` : '';
 
@@ -514,7 +515,7 @@ export default createModule({
           { value: fmt(effValue, 3), label: effLabel, mod: '', help: `${HELP}Result.effectValue` },
         ];
         if (isTwo) {
-          cells.push({ value: nOverflow ? '> 10.000' : String(nRequired * 2), label: _t('totalN'), mod: '', help: `${HELP}Result.totalN` });
+          cells.push({ value: nOverflow ? `> ${(10000).toLocaleString(lang)}` : String(nRequired * 2), label: _t('totalN'), mod: '', help: `${HELP}Result.totalN` });
         }
         this.kpiCells = cells;
 
