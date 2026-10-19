@@ -5,7 +5,8 @@
  * „n von 72 Modulen agentenfähig, pro Release messbar" — dazu die Kontexthilfen
  * und die Beschriftungen mit Anker (`anchor-coverage.mjs`). Berichtend: Exit
  * immer 0. Das Gate ist der Build (`npm run build:check`), der die generierte
- * Registry stale-prüft — nicht dieses Skript.
+ * Registry stale-prüft, dazu `test:build` mit der Freigabeliste
+ * (`agent-release.test.mjs`) und der Anker-Abdeckung — nicht dieses Skript.
  *
  *   node tools/build/agent-report.mjs            # Abdeckung + Verstoßübersicht
  *   node tools/build/agent-report.mjs --verbose  # jeden Verstoß einzeln
@@ -15,6 +16,7 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { collectAgentData } from './agent-data.mjs';
 import { countAnchorCoverage } from './anchor-coverage.mjs';
+import { explainViolation } from './agent-release.mjs';
 import { APP_DIR } from './build.mjs';
 
 const LANGS = ['de', 'en'];
@@ -216,7 +218,7 @@ function main() {
     for (const code of entry.reported) {
       const kind = code.split(':')[0];
       if (!byCode.has(kind)) byCode.set(kind, []);
-      byCode.get(kind).push(`${id}: ${code}`);
+      byCode.get(kind).push(explainViolation(id, code));
     }
   }
 

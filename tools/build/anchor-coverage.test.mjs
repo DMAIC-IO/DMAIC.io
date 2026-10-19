@@ -4,6 +4,8 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { scanCaptions, countAnchorCoverage } from './anchor-coverage.mjs';
+import { collectAgentData } from './agent-data.mjs';
+import { APP_DIR } from './build.mjs';
 
 test('scanCaptions: Label, KPI-Beschriftung und Kopfzelle, je mit und ohne Anker', () => {
   const html = `
@@ -108,4 +110,15 @@ test('countAnchorCoverage: freigegebenes Modul ohne Ordner wird übersprungen', 
   const dir = appWith({ foo: '<label>A</label>' });
   const out = countAnchorCoverage(dir, { foo: { available: true }, ghost: { available: true } }, {});
   assert.equal(out.total, 1);
+});
+
+test('Anker-Abdeckung im echten Baum: jede Beschriftung verankert oder begründet ausgenommen', () => {
+  const { modules } = collectAgentData(APP_DIR);
+  const out = countAnchorCoverage(APP_DIR, modules);
+  const rows = [
+    ...out.missing.map(r => `ohne Anker — ${r} → data-help-key setzen oder begründete Ausnahme in anchor-exemptions.mjs`),
+    ...out.staleExemptions.map(r => `Ausnahme ohne Treffer — ${r} → match an das Markup anpassen oder Ausnahme streichen`),
+    ...out.exemptionCountMismatches.map(r => `Ausnahme mit falscher Trefferzahl — ${r} → count anpassen oder match enger fassen`),
+  ];
+  assert.deepEqual(rows, [], `\n  ${rows.join('\n  ')}`);
 });

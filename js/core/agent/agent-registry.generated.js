@@ -6188,7 +6188,7 @@ export const AGENT_REGISTRY = {
       },
       "targetValue": {
         "type": "string",
-        "help": "the hypothesised target as entered (σ²₀, σ₀ or μ₀)",
+        "help": "the hypothesised target as entered (σ²₀, σ₀, μ₀ or μ_d₀)",
         "bulk": false,
         "derived": true
       },

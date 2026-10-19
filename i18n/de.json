@@ -7866,7 +7866,7 @@
         "direction": { "help": "Richtung der Alternativhypothese: 'two-sided', 'greater' oder 'less'." },
         "alpha": { "help": "Signifikanzniveau, zum Beispiel 0.05." },
         "powerGoal": { "help": "Angestrebte Power, zum Beispiel 0.8." },
-        "targetValue": { "help": "Der eingegebene Zielwert der Einstichproben-Prüfung." },
+        "targetValue": { "help": "Der eingegebene Zielwert: bei einer Stichprobe μ₀ oder σ²₀, beim gepaarten Test die angenommene mittlere Differenz μ_d₀." },
         "targetType": { "help": "Ob der Streuungs-Zielwert als Varianz oder als Standardabweichung gilt." },
         "colRef1": { "help": "Spaltenbezug der ersten Stichprobe." },
         "colRef2": { "help": "Spaltenbezug der zweiten Stichprobe." },

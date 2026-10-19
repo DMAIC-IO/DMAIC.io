@@ -4,7 +4,9 @@
  * Zählt in den Vorlagen der freigegebenen Module jede sichtbare Beschriftung
  * — `<label>`, `.dmike-kpi-label`, `<th>` — und prüft, ob sie ein
  * Fragezeichen bekommt (`data-help-key` bzw. `:data-help-key` am Element
- * oder darin). Berichtend, kein Gate: `agent:report` gibt die Zeile aus.
+ * oder darin). `agent:report` gibt die Zeile aus; hart prüft sie der
+ * Test im echten Baum in `anchor-coverage.test.mjs` (keine Lücke, keine
+ * Ausnahme ohne oder mit falscher Trefferzahl).
  *
  * Statisch, also blind für Beschriftungen, die erst ein Baustein zur
  * Laufzeit erzeugt (`DatasetPicker`-Slots); die prüft der generische

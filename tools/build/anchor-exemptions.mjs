@@ -44,10 +44,10 @@ export const ANCHOR_EXEMPTIONS = {
     { match: 'mosaic-module__stats-color', reason: 'Kopf je Gruppe (Name aus den Daten); die Tabelle ist an der Ecke (Kategorien) und am Summenkopf (Summen) verankert', count: 1 },
   ],
   'attribute-control-chart': [
-    { match: 'attr-cc__nelson-rule', reason: 'je Regel ein Kästchen; der Satz zur Regelauswahl steht am Abschnittstitel', count: 1 },
+    { match: ':data-rule="rule.id"', reason: 'je Regel ein Kästchen; der Satz zur Regelauswahl steht am Abschnittstitel', count: 1 },
   ],
   'control-chart': [
-    { match: 'control-chart__nelson-rule', reason: 'je Regel ein Kästchen; der Satz zur Regelauswahl steht am Abschnittstitel', count: 1 },
+    { match: ':data-rule="rule.id"', reason: 'je Regel ein Kästchen; der Satz zur Regelauswahl steht am Abschnittstitel', count: 1 },
   ],
   'transformed-imr-chart': [
     { match: "t('thLimit')", reason: 'Spalte der Zeilennamen OEG, Mittellinie, UEG; die Sätze stehen an den beiden Wertspalten', count: 1 },
@@ -59,7 +59,7 @@ export const ANCHOR_EXEMPTIONS = {
   'msa-typ6': [
     { match: 'name="msa-typ6-chartType"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },
     { match: 'name="msa-typ6-limitsMode"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },
-    { match: 'module-msa-typ6__nelson-rule', reason: 'je Regel ein Kästchen; der Satz zur Regelauswahl steht am Abschnittstitel', count: 1 },
+    { match: ':checked="isRuleEnabled(id)"', reason: 'je Regel ein Kästchen; der Satz zur Regelauswahl steht am Abschnittstitel', count: 1 },
     { match: "t('input.sourceTyp1')", reason: 'Übernahme aus einer Typ-1-Instanz füllt μ₀ und σ₀; keine eigene Eingabe der Studie und über die Agentenfläche nicht setzbar', count: 1 },
     { match: "t('violations.description')", reason: 'Klartext der Regeln derselben Zeile; der Satz steht an der Spalte Regeln', count: 1 },
   ],
@@ -71,13 +71,13 @@ export const ANCHOR_EXEMPTIONS = {
     { match: ':key="a" x-text="a"', reason: 'eine Spalte je Prüfer, Kopf ist der Prüfername (Daten, keine Beschriftung)', count: 1 },
   ],
   regression: [
-    { match: "t('showCI')", reason: 'Anzeigeschalter ohne Agentenbezug', count: 1 },
-    { match: "t('showPI')", reason: 'Anzeigeschalter ohne Agentenbezug', count: 1 },
+    { match: 'data-action="toggle-ci"', reason: 'Anzeigeschalter ohne Agentenbezug', count: 1 },
+    { match: 'data-action="toggle-pi"', reason: 'Anzeigeschalter ohne Agentenbezug', count: 1 },
     { match: 'x-text="field.label"', reason: 'je Prädiktor ein Eingabefeld; der Satz steht am Abschnittstitel Vorhersage', count: 1 },
     { match: 'reg__ss-pie-item', reason: 'je Term ein Kästchen im Kreisdiagramm; Anzeigeschalter ohne Agentenbezug', count: 1 },
   ],
   'glm-regression': [
-    { match: 'glm__method-option', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },
+    { match: ':name="methodRadioName()"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },
     { match: 'x-text="term.label"', reason: 'je Prädiktor ein Eingabefeld; der Satz steht am Vorhersage-Knopf', count: 1 },
   ],
   'pairwise-comparison': [
@@ -107,7 +107,7 @@ export const ANCHOR_EXEMPTIONS = {
     { match: "t('statistic')", reason: 'Spalte der Zeilennamen; die Sätze stehen an den Wertspalten', count: 1 },
   ],
   'process-capability': [
-    { match: 'pc__mode-option', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },
+    { match: 'name="pc-subgroup-mode"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },
     { match: "t('ppmColKind')", reason: 'Spalte der Zeilennamen; die Sätze stehen an den Wertspalten', count: 1 },
   ],
   'response-optimization': [

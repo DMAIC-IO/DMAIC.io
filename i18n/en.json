@@ -7862,7 +7862,7 @@
         "direction": { "help": "Direction of the alternative hypothesis: 'two-sided', 'greater' or 'less'." },
         "alpha": { "help": "Significance level, for example 0.05." },
         "powerGoal": { "help": "Desired power, for example 0.8." },
-        "targetValue": { "help": "The entered target value of the one-sample test." },
+        "targetValue": { "help": "The entered target value: μ₀ or σ²₀ for one sample, the hypothesised mean difference μ_d₀ for the paired test." },
         "targetType": { "help": "Whether the spread target value counts as a variance or as a standard deviation." },
         "colRef1": { "help": "Column reference of the first sample." },
         "colRef2": { "help": "Column reference of the second sample." },

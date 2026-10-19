@@ -226,7 +226,7 @@ function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–';
  * @property {'two-sided'|'greater'|'less'} direction  the alternative hypothesis direction
  * @property {number|null} alpha  significance level, e.g. 0.05
  * @property {number|null} powerGoal  desired power, e.g. 0.8
- * @property {string} targetValue  the hypothesised target as entered (σ²₀, σ₀ or μ₀)
+ * @property {string} targetValue  the hypothesised target as entered (σ²₀, σ₀, μ₀ or μ_d₀)
  * @property {'variance'|'stddev'} targetType  how the one-sample variance target is entered
  * @property {object|null} colRef1  column reference of sample 1, `{ instanceId, sheetId, columnId }`
  * @property {object|null} colRef2  column reference of sample 2, same shape
