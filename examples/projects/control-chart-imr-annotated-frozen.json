@@ -1,0 +1,48 @@
+{
+  "chartTypeId": "i-mr",
+  "subgroupSize": 1,
+  "columnRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-imr-shift",
+    "columnId": "c-value"
+  },
+  "baselineCount": 29,
+  "stagesText": "",
+  "usl": null,
+  "lsl": null,
+  "enabledRules": [
+    1
+  ],
+  "annotations": {
+    "13": {
+      "comment": "Werkzeugwechsel / tool change",
+      "excluded": true
+    }
+  },
+  "frozenLimits": {
+    "chartTypeId": "i-mr",
+    "subgroupSize": 1,
+    "columnRef": {
+      "instanceId": "__source__",
+      "sheetId": "sheet-imr-shift",
+      "columnId": "c-value"
+    },
+    "baselineEnd": 29,
+    "primary": {
+      "cl": 9.974160714285713,
+      "ucl": 10.181934855038577,
+      "lcl": 9.766386573532849,
+      "sigma": 0.0692580469176214
+    },
+    "secondary": {
+      "cl": 0.07812307692307693,
+      "ucl": 0.25522809230769233,
+      "lcl": 0,
+      "sigma": 0.059035005128205136
+    },
+    "excludedIndices": [
+      13
+    ]
+  },
+  "sourceWorksheetFile": "worksheets/spc-imr-shift.json"
+}

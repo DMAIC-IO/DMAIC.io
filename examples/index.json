@@ -793,6 +793,30 @@
       ]
     },
     {
+      "id": "control-chart-imr-annotated-frozen",
+      "type": "project",
+      "title": {
+        "de": "I-MR-Karte mit Anmerkung und eingefrorenen Grenzen",
+        "en": "I-MR Chart with Annotation and Frozen Limits"
+      },
+      "description": {
+        "de": "Dieselben 50 Einzelmessungen wie bei der I-MR-Karte mit Shift; Messwert 14 (10,1725) ist als Werkzeugwechsel angemerkt und von der Grenzberechnung ausgeschlossen, die Grenzen aus den ersten 29 Werten sind für Phase II eingefroren (Regel 1). Zeigt, dass eingefrorene Grenzen die späteren Werte beurteilen: Neun Werte ab Messung 30 liegen über der oberen Eingriffsgrenze, ohne den Ausschluss wären es acht.",
+        "en": "The same 50 individual measurements as in the I-MR chart with shift; measurement 14 (10.1725) is annotated as a tool change and excluded from the limit calculation, and the limits from the first 29 values are frozen for Phase II (rule 1). Shows that frozen limits judge the later values: nine values from measurement 30 on lie above the upper control limit, without the exclusion there would be eight."
+      },
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=502 (Arbeitsblatt spc-imr-shift wiederverwendet)",
+      "license": "public-domain",
+      "file": "projects/control-chart-imr-annotated-frozen.json",
+      "format": "json",
+      "modules": [
+        "control-chart"
+      ],
+      "tags": [
+        "spc",
+        "control-chart",
+        "i-mr"
+      ]
+    },
+    {
       "id": "xy-plot-pizza-delivery",
       "type": "project",
       "title": {
