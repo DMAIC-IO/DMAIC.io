@@ -1276,8 +1276,8 @@
         "en": "np-Chart: constant sample size"
       },
       "description": {
-        "de": "30 Lose mit je 100 geprüften Teilen und etwa 4 % Fehlerhaften; in den Losen 24–26 steigt die Rate auf rund 16 %. Die np-Karte zeigt die Anzahl Fehlerhafter direkt und meldet die Lose 24 und 25 außerhalb der Obergrenze.",
-        "en": "30 lots of 100 inspected parts each with about 4 % defectives; in lots 24–26 the rate rises to about 16 %. The np chart plots the number of defectives directly and flags lots 24 and 25 above the upper limit."
+        "de": "30 Lose mit je 100 geprüften Teilen und etwa 4 % Fehlerhaften; in den Losen 24–26 steigt die Rate auf bis zu 16 %. Die np-Karte zeigt die Anzahl Fehlerhafter direkt und meldet die Lose 24 und 25 außerhalb der Obergrenze.",
+        "en": "30 lots of 100 inspected parts each with about 4 % defectives; in lots 24–26 the rate rises up to 16 %. The np chart plots the number of defectives directly and flags lots 24 and 25 above the upper limit."
       },
       "source": "Qprovement synthetisch, Python random.Random (stdlib, kein NumPy), Seed=1621; Rate in Los 24–26 gezielt auf 16 % angehoben",
       "license": "public-domain",
@@ -1497,8 +1497,8 @@
         "en": "CUSUM chart: small drift"
       },
       "description": {
-        "de": "Dieselben 60 Beobachtungen wie im EWMA-Beispiel: 30 Punkte bei μ=10, danach eine Verschiebung auf μ=10,1. Die CUSUM-Karte (k=0,5σ, h=4σ) summiert die kleinen Abweichungen und schlägt ab Punkt 37 an, obwohl kein Einzelwert die Shewhart-Grenzen verlässt.",
-        "en": "The same 60 observations as in the EWMA example: 30 points at μ=10, then a shift to μ=10.1. The CUSUM chart (k=0.5σ, h=4σ) accumulates the small deviations and signals from point 37, although no single value leaves the Shewhart limits."
+        "de": "Dieselben 60 Beobachtungen wie im EWMA-Beispiel: 30 Punkte bei μ=10, danach eine Verschiebung auf μ=10,1. Die CUSUM-Karte (k=0,5σ, h=4σ; Referenzphase: die ersten 30 Punkte) summiert die kleinen Abweichungen und schlägt ab Punkt 37 an, obwohl kein Einzelwert die Shewhart-Grenzen verlässt.",
+        "en": "The same 60 observations as in the EWMA example: 30 points at μ=10, then a shift to μ=10.1. The CUSUM chart (k=0.5σ, h=4σ; baseline: first 30 points) accumulates the small deviations and signals from point 37, although no single value leaves the Shewhart limits."
       },
       "source": "Qprovement synthetisch, NumPy default_rng, Seed=703 (Arbeitsblatt wie spc-time-weighted-ewma)",
       "license": "public-domain",
