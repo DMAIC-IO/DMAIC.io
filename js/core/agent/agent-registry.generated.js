@@ -6538,7 +6538,7 @@ export const AGENT_REGISTRY = {
           },
           "secondary": {
             "type": "SecondaryResult|null",
-            "help": "Vergleichstest, nur großer Stichprobenweg",
+            "help": "Vergleichstest, nur großer Stichprobenweg und Bonett bei zwei Varianzen",
             "keysOf": "SecondaryResult",
             "keys": {
               "metrics": {
@@ -6574,6 +6574,14 @@ export const AGENT_REGISTRY = {
                     "optional": true
                   }
                 }
+              },
+              "title": {
+                "type": "string",
+                "help": "Abschnittstitel"
+              },
+              "note": {
+                "type": "string",
+                "help": "Hinweis zum Vergleichstest"
               }
             }
           },
@@ -6627,6 +6635,10 @@ export const AGENT_REGISTRY = {
                     "optional": true
                   }
                 }
+              },
+              "note": {
+                "type": "string",
+                "help": "Hinweis zur Näherung, sonst leer"
               }
             }
           },

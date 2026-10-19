@@ -83,7 +83,7 @@ function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–';
  * @property {Route} route  gewähltes Verfahren
  * @property {VarEquality|null} varEquality  Varianzgleichheit
  * @property {MainResult} main  Haupttest
- * @property {SecondaryResult|null} secondary  Vergleichstest, nur großer Stichprobenweg
+ * @property {SecondaryResult|null} secondary  Vergleichstest, nur großer Stichprobenweg und Bonett bei zwei Varianzen
  * @property {PowerInfo|null} power  Teststärke, nicht bei k
  * @property {PairwiseSection|null} pairwise  Paarvergleiche, nur bei k ≥ 3
  */
@@ -175,6 +175,8 @@ function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–';
 /**
  * @typedef {object} SecondaryResult
  * @property {Metric[]} metrics  Testmethode, Statistik, p
+ * @property {string} title  Abschnittstitel
+ * @property {string} note  Hinweis zum Vergleichstest
  */
 
 /**
@@ -183,6 +185,7 @@ function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–';
  * @property {string} goalBoxClass  Darstellungsklasse
  * @property {string} requiredLine  benötigter Stichprobenumfang
  * @property {Metric[]} metrics  Power, n, Effekt, α
+ * @property {string} note  Hinweis zur Näherung, sonst leer
  */
 
 /**

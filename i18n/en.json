@@ -7947,13 +7947,16 @@
           "letters": "The grouping letters (Compact Letter Display) from the pairwise comparisons as formatted text, column “Group”: groups sharing a letter do not differ significantly, groups without a shared letter differ. Empty for two groups."
         },
         "SecondaryResult": {
-          "metrics": "The figures of the rank test as formatted texts: test method (Wilcoxon, Mann-Whitney U or Kruskal-Wallis), statistic and p."
+          "metrics": "The figures of the comparison test as formatted texts: test method (on the large-sample path Wilcoxon, Mann-Whitney U or Kruskal-Wallis, for the Bonett test on two variances Levene), statistic and p.",
+          "title": "The section title as displayed text: “Rank-based comparison test”, for the Bonett test on two variances “Levene test (cross-check)”.",
+          "note": "The note below the section title as displayed text: why the comparison test is shown next to the main test and what it checks differently."
         },
         "PowerInfo": {
           "goalPct": "The power goal in percent as formatted text, a whole number without the percent sign; the box shows it as “Power Goal: 80%”.",
           "goalBoxClass": "Display class of the interface; colours the box green when the current power reaches the goal, otherwise as a warning.",
           "requiredLine": "The line “Required n” as formatted text, “per group” for two samples: the smallest n between 4 and 5000 at which the power reaches the goal; for two samples with equally sized groups. From 5000 on, that is, if the goal is not reached by then, it reads “> 5000”. After it “Achieved” or “Not achieved” for the current power.",
-          "metrics": "The figures as formatted texts: current power in percent with one decimal, n (n₁ / n₂ for two samples), the effect size and α. The effect size is the variance ratio s²/σ²₀ or s²₁/s²₂ for variances, Cohen's d = |x̄ − μ₀|/s or |x̄₁ − x̄₂|/sₚ for means, with three decimals."
+          "metrics": "The figures as formatted texts: current power in percent with one decimal, n (n₁ / n₂ for two samples), the effect size and α. The effect size is the variance ratio s²/σ²₀ or s²₁/s²₂ for variances, Cohen's d = |x̄ − μ₀|/s or |x̄₁ − x̄₂|/sₚ for means, with three decimals.",
+          "note": "Note below the power as displayed text: for the Bonett test “Computed assuming normality — approximation only.”, because the power formula assumes normality; empty for every other method."
         },
         "PairwiseSection": {
           "methodName": "Procedure of the pairwise comparisons as its English name, label “Method”, always two-sided: for variances the F-test when all are normal, otherwise Levene (Brown-Forsythe); for means the pooled t-test, the Welch t-test when Levene shows a variance difference, on the rank route Mann-Whitney U.",

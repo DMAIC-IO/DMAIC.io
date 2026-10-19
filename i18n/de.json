@@ -7951,13 +7951,16 @@
           "letters": "Die Gruppierungsbuchstaben (Compact Letter Display) aus den paarweisen Vergleichen als formatierter Text, Spalte „Gruppe“: Gruppen mit gemeinsamem Buchstaben unterscheiden sich nicht signifikant, Gruppen ohne gemeinsamen Buchstaben unterscheiden sich. Leer bei zwei Gruppen."
         },
         "SecondaryResult": {
-          "metrics": "Die Kennzahlen des Rangtests als formatierte Texte: Testverfahren (Wilcoxon, Mann-Whitney-U oder Kruskal-Wallis), Statistik und p."
+          "metrics": "Die Kennzahlen des Vergleichstests als formatierte Texte: Testverfahren (auf dem großen Stichprobenweg Wilcoxon, Mann-Whitney-U oder Kruskal-Wallis, beim Bonett-Test für zwei Varianzen Levene), Statistik und p.",
+          "title": "Der Abschnittstitel als angezeigter Text: „Rangbasierter Vergleichstest“, beim Bonett-Test für zwei Varianzen „Levene-Test (Abgleich)“.",
+          "note": "Der Hinweis unter dem Abschnittstitel als angezeigter Text: warum der Vergleichstest neben dem Haupttest steht und was er anders prüft."
         },
         "PowerInfo": {
           "goalPct": "Das Power-Ziel in Prozent als formatierter Text, ganzzahlig und ohne Prozentzeichen; die Box zeigt es als „Power-Ziel: 80%“.",
           "goalBoxClass": "Darstellungsklasse der Oberfläche; färbt die Box grün, wenn die aktuelle Power das Ziel erreicht, sonst als Warnung.",
           "requiredLine": "Die Zeile „Benötigtes n“ als formatierter Text, bei zwei Stichproben „je Gruppe“: das kleinste n zwischen 4 und 5000, bei dem die Power das Ziel erreicht; bei zwei Stichproben gleich große Gruppen. Ab 5000, also wenn das Ziel bis dahin nicht erreicht wird, steht „> 5000“. Dahinter „Erreicht“ oder „Nicht erreicht“ für die aktuelle Power.",
-          "metrics": "Die Kennzahlen als formatierte Texte: aktuelle Power in Prozent mit einer Nachkommastelle, n (bei zwei Stichproben n₁ / n₂), die Effektgröße und α. Die Effektgröße ist bei Varianzen das Varianz-Verhältnis s²/σ²₀ bzw. s²₁/s²₂, bei Mittelwerten Cohen's d = |x̄ − μ₀|/s bzw. |x̄₁ − x̄₂|/sₚ, mit drei Nachkommastellen."
+          "metrics": "Die Kennzahlen als formatierte Texte: aktuelle Power in Prozent mit einer Nachkommastelle, n (bei zwei Stichproben n₁ / n₂), die Effektgröße und α. Die Effektgröße ist bei Varianzen das Varianz-Verhältnis s²/σ²₀ bzw. s²₁/s²₂, bei Mittelwerten Cohen's d = |x̄ − μ₀|/s bzw. |x̄₁ − x̄₂|/sₚ, mit drei Nachkommastellen.",
+          "note": "Hinweis unter der Power als angezeigter Text: beim Bonett-Test „Berechnet unter Normalverteilungsannahme – nur Näherung.“, weil die Power-Formel Normalverteilung voraussetzt; bei allen anderen Verfahren leer."
         },
         "PairwiseSection": {
           "methodName": "Verfahren der Paarvergleiche als englischer Name, Beschriftung „Methode“, immer zweiseitig: bei Varianzen F-Test, wenn alle normal sind, sonst Levene (Brown-Forsythe); bei Mittelwerten der gepoolte t-Test, der Welch-t-Test, wenn Levene einen Varianzunterschied zeigt, auf dem Rangweg Mann-Whitney-U.",
