@@ -1,0 +1,26 @@
+{
+  "chartTypeId": "xbar-r",
+  "subgroupSize": 5,
+  "columnRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-xbar-r",
+    "columnId": "c-diameter"
+  },
+  "baselineCount": null,
+  "stagesText": "",
+  "usl": 10.25,
+  "lsl": 9.75,
+  "enabledRules": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "annotations": {},
+  "frozenLimits": null,
+  "sourceWorksheetFile": "worksheets/spc-subgroups-stable.json"
+}

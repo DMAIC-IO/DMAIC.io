@@ -692,6 +692,55 @@
       ]
     },
     {
+      "id": "control-chart-xbar-s-stable",
+      "type": "project",
+      "title": {
+        "de": "Wellen-Durchmesser (X̄-S, stabil)",
+        "en": "Shaft Diameter (X̄-S, in control)"
+      },
+      "description": {
+        "de": "Dieselben 25 Untergruppen à 5 Messungen wie bei der X̄-R-Karte, hier mit der Standardabweichung s statt der Spannweite R als Streuungskarte; keine Nelson-Regel schlägt an. Zeigt, dass beide Kartentypen bei einem stabilen Prozess zu fast gleichen Grenzen führen.",
+        "en": "The same 25 subgroups of 5 measurements as in the X̄-R example, but with the standard deviation s instead of the range R as dispersion chart; no Nelson rule fires. Shows that both chart types give almost identical limits for a stable process."
+      },
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=501 (Arbeitsblatt spc-subgroups-stable wiederverwendet)",
+      "license": "public-domain",
+      "file": "projects/control-chart-xbar-s-stable.json",
+      "format": "json",
+      "modules": [
+        "control-chart"
+      ],
+      "tags": [
+        "spc",
+        "control-chart",
+        "xbar-s",
+        "stable"
+      ]
+    },
+    {
+      "id": "control-chart-capability",
+      "type": "project",
+      "title": {
+        "de": "Wellen-Durchmesser mit Spezifikationsgrenzen",
+        "en": "Shaft Diameter with Specification Limits"
+      },
+      "description": {
+        "de": "Stabile X̄-R-Karte der Wellen-Durchmesser mit den Spezifikationsgrenzen LSL = 9,75 mm und USL = 10,25 mm; die Prozessfähigkeit ergibt Cp ≈ 1,61 und Cpk ≈ 1,56. Zeigt, dass Cpk kleiner als Cp ist, weil der Mittelwert (9,991 mm) etwas unterhalb der Mitte liegt.",
+        "en": "Stable X̄-R chart of the shaft diameters with specification limits LSL = 9.75 mm and USL = 10.25 mm; process capability comes out at Cp ≈ 1.61 and Cpk ≈ 1.56. Shows that Cpk is smaller than Cp because the mean (9.991 mm) lies slightly below the center."
+      },
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=501 (Arbeitsblatt spc-subgroups-stable wiederverwendet)",
+      "license": "public-domain",
+      "file": "projects/control-chart-capability.json",
+      "format": "json",
+      "modules": [
+        "control-chart"
+      ],
+      "tags": [
+        "spc",
+        "control-chart",
+        "capability"
+      ]
+    },
+    {
       "id": "control-chart-imr-shift",
       "type": "project",
       "title": {
