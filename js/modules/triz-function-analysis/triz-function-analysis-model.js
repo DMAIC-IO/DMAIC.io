@@ -70,6 +70,34 @@ export function rankOf(fn, components) {
   return obj ? RANK_BY_KIND[obj.kind] ?? null : null;
 }
 
+/**
+ * Rank of every useful complete function, auxiliary ones with their level:
+ * Ax1 acts on a component that carries a basic or additional function, Axk on
+ * one that carries an Ax(k−1) function; the shortest way counts. Auxiliary
+ * functions without a way to a basic or additional function get level null.
+ * @param {{components: Object[], functions: Object[]}} state
+ * @returns {Map<string, {rank:'basic'|'additional'|'auxiliary', level:number|null}>}
+ */
+export function functionRanks(state) {
+  const ranked = state.functions
+    .map((f) => ({ f, rank: rankOf(f, state.components) }))
+    .filter((r) => r.rank);
+  // Breadth-first from the carriers of basic/additional functions (depth 0).
+  const depth = new Map();
+  let frontier = ranked.filter((r) => r.rank !== 'auxiliary').map((r) => r.f.carrier);
+  for (let d = 0; frontier.length; d++) {
+    const next = [];
+    for (const id of frontier) if (!depth.has(id)) depth.set(id, d);
+    for (const { f, rank } of ranked) {
+      if (rank === 'auxiliary' && depth.get(f.object) === d && !depth.has(f.carrier)) next.push(f.carrier);
+    }
+    frontier = next;
+  }
+  return new Map(ranked.map(({ f, rank }) => [f.id, {
+    rank, level: rank === 'auxiliary' && depth.has(f.object) ? depth.get(f.object) + 1 : null,
+  }]));
+}
+
 /** Points per useful function by rank, for the value & cost analysis. */
 export const SCORE_BY_RANK = { basic: 3, additional: 2, auxiliary: 1 };
 
@@ -154,6 +182,8 @@ export class State {
   /** Dragged verb-label positions by function id; an arrow bends there. */
   labels = {};
   activeTab = 'components';
+  /** Rank codes (B, Ad, Ax1…) next to the verbs in the function model. */
+  showRanks = false;
 
   /** @returns {boolean} */
   hasContent() {
@@ -171,6 +201,7 @@ export class State {
       positions: Object.fromEntries(Object.entries(this.positions).map(([k, p]) => [k, { ...p }])),
       labels: Object.fromEntries(Object.entries(this.labels).map(([k, p]) => [k, { ...p }])),
       activeTab: this.activeTab,
+      showRanks: this.showRanks,
     };
   }
 
@@ -226,6 +257,7 @@ export class State {
       }
     }
     s.activeTab = TABS.includes(d.activeTab) ? d.activeTab : 'components';
+    s.showRanks = d.showRanks === true;
     return s;
   }
 

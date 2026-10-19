@@ -32,7 +32,9 @@ const TEXT_COLOR = {
   target: 'var(--color-node-target-text)',
   supersystem: 'var(--color-node-supersystem-text)',
 };
-const LEVEL_STYLE = { adequate: 'solid', insufficient: 'dashed', excessive: 'bold' };
+/** Both deviations are dashed; the width tells insufficient (thin) from excessive (thick). */
+const LEVEL_STYLE = { adequate: 'solid', insufficient: 'dashed', excessive: 'dashed' };
+const LEVEL_WIDTH = { adequate: 2, insufficient: 1, excessive: 3 };
 
 /**
  * Deterministic start layout: system components in a grid (max. 3 columns)
@@ -73,10 +75,11 @@ export function resolvePositions(state) {
   return out;
 }
 
-/** @param {Object} fn @returns {{style: string, color?: string}} */
+/** @param {Object} fn @returns {{style: string, width?: number, color?: string}} */
 function linkStyle(fn) {
   if (fn.type === 'harmful') return { style: 'wave', color: 'var(--color-error)' };
-  return { style: LEVEL_STYLE[fn.level] ?? 'solid' };
+  const level = LEVEL_STYLE[fn.level] ? fn.level : 'adequate';
+  return { style: LEVEL_STYLE[level], width: LEVEL_WIDTH[level] };
 }
 
 const shorten = (s) => (s.length > EXPORT_NAME_MAX ? `${s.slice(0, EXPORT_NAME_MAX - 1)}…` : s);
@@ -84,10 +87,11 @@ const shorten = (s) => (s.length > EXPORT_NAME_MAX ? `${s.slice(0, EXPORT_NAME_M
 /**
  * node-diagram config for the function model.
  * @param {{components: Array, functions: Array, positions: Object, labels?: Object}} state
- * @param {{selectedId?: string|null}} [opts]
+ * @param {{selectedId?: string|null, rankLabels?: Map<string,string>}} [opts] - rankLabels:
+ *   rank code per function id, appended to the verb
  * @returns {{nodes: Array<Object>, links: Array<Object>}}
  */
-export function buildFunctionDiagram(state, { selectedId = null } = {}) {
+export function buildFunctionDiagram(state, { selectedId = null, rankLabels = null } = {}) {
   const pos = resolvePositions(state);
   const boxes = new Map(state.components.map((c) => [c.id, {
     x: pos[c.id].x, y: pos[c.id].y, w: NODE_W, h: NODE_H, shape: NODE_STYLE[c.kind].shape,
@@ -115,8 +119,10 @@ export function buildFunctionDiagram(state, { selectedId = null } = {}) {
     const ends = via
       ? { via: { x: via.x, y: via.y }, ...viaEndpoints(boxes.get(f.carrier), boxes.get(f.object), via) }
       : straightEndpoints(boxes.get(f.carrier), boxes.get(f.object), offset);
+    const rank = rankLabels?.get(f.id);
     return {
-      id: f.id, from: f.carrier, to: f.object, shape: 'straight', arrow: 'end', label: f.verb,
+      id: f.id, from: f.carrier, to: f.object, shape: 'straight', arrow: 'end',
+      label: rank ? [f.verb, rank].filter(Boolean).join(' · ') : f.verb,
       ...ends,
       ...linkStyle(f),
       highlight: selectedId != null && (selectedId === f.id || selectedId === f.carrier || selectedId === f.object),

@@ -160,6 +160,10 @@
               <span class="icon icon--sm" data-icon="action.download"></span>
               <span x-text="t('exportSvg')"></span>
             </button>
+            <label class="field-check tfa__toggle">
+              <input type="checkbox" data-role="show-ranks" :checked="model.showRanks" @change="setShowRanks($event)">
+              <span x-text="t('showRanks')"></span>
+            </label>
           </div>
           <p class="tfa__hint" x-show="model.components.length === 0" x-text="t('diagramEmpty')"></p>
           <div class="tfa__stage">

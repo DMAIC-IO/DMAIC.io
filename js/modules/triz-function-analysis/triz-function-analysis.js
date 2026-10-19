@@ -8,7 +8,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import {
-  State, KINDS, GROUPS, LEVELS, TABS, orderedComponents, openPairs, rankOf, disadvantages, functionPairs, valueCostRows,
+  State, KINDS, GROUPS, LEVELS, TABS, orderedComponents, openPairs, functionRanks, disadvantages, functionPairs, valueCostRows,
 } from './triz-function-analysis-model.js';
 import {
   NODE_W, NODE_H, resolvePositions, buildFunctionDiagram,
@@ -40,6 +40,8 @@ export default createModule({
   data(module, _t) {
     const notify = (msg) => module._context.notify?.(msg);
     const label = (c) => c.name.trim() || _t('unnamed');
+    /** B, Ad, Ax1…Axn; Ax without a way to a basic or additional function. */
+    const rankCode = (r) => _t(`rankCode.${r.rank}`, { level: r.level ?? '' });
 
     return {
       TABS,
@@ -153,8 +155,14 @@ export default createModule({
         if (this.selectedId === fn.id) this.selectedId = null;
       },
       rankLabel(fn) {
-        const r = rankOf(fn, this.model.components);
-        return r ? _t(`rank.${r}`) : '';
+        const r = functionRanks(this.model).get(fn.id);
+        return r ? `${_t(`rank.${r.rank}`)} (${rankCode(r)})` : '';
+      },
+      setShowRanks(ev) { this.model.showRanks = ev.target.checked; },
+      /** @returns {Map<string,string>|null} rank code per function id, null while switched off */
+      rankLabels() {
+        if (!this.model.showRanks) return null;
+        return new Map([...functionRanks(this.model)].map(([id, r]) => [id, rankCode(r)]));
       },
       fnClass(fn) {
         return [
@@ -276,7 +284,7 @@ export default createModule({
           functions: this.model.functions,
           positions: { ...this.model.positions, ...override.positions },
           labels: { ...this.model.labels, ...override.labels },
-        }, { selectedId: this.selectedId });
+        }, { selectedId: this.selectedId, rankLabels: this.rankLabels() });
         const chart = arrowCharts.get(this.$root);
         // Outlines come from the SVG (ellipse/hexagon), names from the draggable HTML boxes.
         const outlines = nodes.map((n) => ({ ...n, lines: [] }));
@@ -358,7 +366,7 @@ export default createModule({
       },
       resetLayout() { this.model.resetPositions(); },
       async exportDiagram(fmt) {
-        const { nodes, links } = buildFunctionDiagram(this.model);
+        const { nodes, links } = buildFunctionDiagram(this.model, { rankLabels: this.rankLabels() });
         await module._context.chartManager.exportOffscreen('node-diagram', { nodes, links, padding: 30 }, fmt, 'funktionsmodell');
       },
 

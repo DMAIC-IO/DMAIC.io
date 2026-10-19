@@ -9,7 +9,7 @@
 import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertClose } from '../test-utils.js';
 import {
   State, KINDS, pairKey, orderedComponents, isComplete, rankOf, openPairs, disadvantages, functionPairs,
-  TABS, componentValue, valueCostRows,
+  TABS, componentValue, valueCostRows, functionRanks,
 } from '../../js/modules/triz-function-analysis/triz-function-analysis-model.js';
 
 /** Toothbrush: target teeth, system bristles + handle, supersystem gums + paste. */
@@ -31,6 +31,7 @@ function fixture() {
     positions: { b: { x: 10, y: 20 } },
     labels: { f1: { x: 30, y: 40 } },
     activeTab: 'model',
+    showRanks: true,
   });
 }
 
@@ -41,6 +42,7 @@ suite('triz-function-analysis — state', () => {
     assertDeepEqual(s.positions, {});
     assertDeepEqual(s.labels, {});
     assertEqual(s.activeTab, 'components');
+    assertEqual(s.showRanks, false);
     assertEqual(s.hasContent(), false);
     assertDeepEqual(KINDS, ['target', 'system', 'supersystem']);
   });
@@ -49,6 +51,8 @@ suite('triz-function-analysis — state', () => {
     const json = JSON.parse(JSON.stringify(fixture().toJSON()));
     assertDeepEqual(State.fromJSON(json).toJSON(), json);
     assertEqual(json._schema.name, 'triz-function-analysis');
+    assertEqual(json.showRanks, true);
+    assertEqual(State.fromJSON({ showRanks: 'yes' }).showRanks, false, 'only true switches it on');
     assertEqual(fixture().hasContent(), true);
   });
 
@@ -306,6 +310,52 @@ suite('triz-function-analysis — derived values', () => {
     assertEqual(rankOf(s.fn('f3'), s.components), 'auxiliary');
     assertEqual(rankOf(s.addFunction('b', 'p'), s.components), 'additional');
     assertEqual(rankOf(s.addFunction('b', ''), s.components), null, 'draft');
+  });
+
+  test('functionRanks numbers auxiliary functions by their distance to a basic or additional function', () => {
+    // b removes plaque (B), c guides the paste (Ad); everything else holds something.
+    const s = State.fromJSON({
+      components: ['b', 'c', 'k', 'h', 'n', 'x', 'y'].map((id) => ({ id, kind: 'system' }))
+        .concat([{ id: 't', kind: 'target' }, { id: 'p', kind: 'supersystem' }]),
+      functions: [
+        { id: 'fb', carrier: 'b', object: 't', type: 'useful', level: 'insufficient' },
+        { id: 'fp', carrier: 'c', object: 'p', type: 'useful' },
+        { id: 'fk', carrier: 'k', object: 'b', type: 'useful' },
+        { id: 'fc', carrier: 'k', object: 'c', type: 'useful' },
+        { id: 'fh', carrier: 'h', object: 'k', type: 'useful' },
+        { id: 'fs', carrier: 'h', object: 'b', type: 'useful' },
+        { id: 'fn', carrier: 'n', object: 'h', type: 'useful' },
+        { id: 'fx', carrier: 'x', object: 'y', type: 'useful' },
+        { id: 'fy', carrier: 'y', object: 'x', type: 'useful' },
+        { id: 'fz', carrier: 'h', object: 'x', type: 'useful' },
+        { id: 'fharm', carrier: 'b', object: 'h', type: 'harmful' },
+        { id: 'fd', carrier: 'b', object: '', type: 'useful' },
+      ],
+    });
+    const r = functionRanks(s);
+    assertDeepEqual(r.get('fb'), { rank: 'basic', level: null });
+    assertDeepEqual(r.get('fp'), { rank: 'additional', level: null });
+    assertDeepEqual(r.get('fk'), { rank: 'auxiliary', level: 1 }, 'on a B carrier');
+    assertDeepEqual(r.get('fc'), { rank: 'auxiliary', level: 1 }, 'on an Ad carrier');
+    assertDeepEqual(r.get('fh'), { rank: 'auxiliary', level: 2 });
+    assertDeepEqual(r.get('fs'), { rank: 'auxiliary', level: 1 });
+    assertDeepEqual(r.get('fn'), { rank: 'auxiliary', level: 2 }, 'h carries Ax1 and Ax2: the shortest way counts');
+    assertDeepEqual(r.get('fx'), { rank: 'auxiliary', level: null }, 'a cycle without a way to B/Ad has no level');
+    assertDeepEqual(r.get('fy'), { rank: 'auxiliary', level: null });
+    assertDeepEqual(r.get('fz'), { rank: 'auxiliary', level: null });
+    assertEqual(r.has('fharm'), false, 'harmful');
+    assertEqual(r.has('fd'), false, 'draft');
+  });
+
+  test('functionRanks: a harmful function does not carry its carrier into the chain', () => {
+    const s = State.fromJSON({
+      components: [{ id: 't', kind: 'target' }, { id: 'a', kind: 'system' }, { id: 'b', kind: 'system' }],
+      functions: [
+        { id: 'f1', carrier: 'a', object: 't', type: 'harmful' },
+        { id: 'f2', carrier: 'b', object: 'a', type: 'useful' },
+      ],
+    });
+    assertDeepEqual(functionRanks(s).get('f2'), { rank: 'auxiliary', level: null });
   });
 
   test('openPairs lists ticked pairs without a function in either direction', () => {

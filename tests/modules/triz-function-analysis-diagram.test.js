@@ -66,6 +66,14 @@ suite('triz-function-analysis — buildFunctionDiagram', () => {
     assertEqual(g.via, undefined, 'unmoved label stays a straight link');
   });
 
+  test('rank labels are appended to the verb when given', () => {
+    const s = pair([fnc('f', 'a', 'b'), fnc('g', 'b', 'a', { verb: '' })]);
+    const plain = buildFunctionDiagram(s).links;
+    assertDeepEqual(plain.map((l) => l.label), ['f', '']);
+    const ranked = buildFunctionDiagram(s, { rankLabels: new Map([['f', 'B'], ['g', 'Ax1']]) }).links;
+    assertDeepEqual(ranked.map((l) => l.label), ['f · B', 'Ax1']);
+  });
+
   test('a link is clipped to both box borders and carries arrow + label', () => {
     const { links } = buildFunctionDiagram(pair([fnc('f', 'a', 'b')]));
     assertEqual(links.length, 1);
@@ -74,13 +82,23 @@ suite('triz-function-analysis — buildFunctionDiagram', () => {
     assertDeepEqual([l.id, l.shape, l.arrow, l.label, l.style], ['f', 'straight', 'end', 'f', 'solid']);
   });
 
-  test('notation: insufficient dashed, excessive bold, harmful wave in the error colour', () => {
+  test('notation: insufficient thin dashed, adequate 2 px, excessive thick dashed', () => {
+    const { links } = buildFunctionDiagram(pair([
+      fnc('i', 'a', 'b', { level: 'insufficient' }),
+      fnc('e', 'a', 'b', { level: 'excessive' }),
+      fnc('h', 'a', 'b', { type: 'harmful', level: null }),
+      fnc('n', 'a', 'b'),
+    ]));
+    assertDeepEqual(links.map((l) => l.width), [1, 3, undefined, 2], 'line width grows with the level');
+  });
+
+  test('notation: harmful is a wave in the error colour', () => {
     const { links } = buildFunctionDiagram(pair([
       fnc('i', 'a', 'b', { level: 'insufficient' }),
       fnc('e', 'a', 'b', { level: 'excessive' }),
       fnc('h', 'a', 'b', { type: 'harmful', level: null }),
     ]));
-    assertDeepEqual(links.map((l) => l.style), ['dashed', 'bold', 'wave']);
+    assertDeepEqual(links.map((l) => l.style), ['dashed', 'dashed', 'wave']);
     assertEqual(links[2].color, 'var(--color-error)');
     assertEqual(links[0].color, undefined);
   });
