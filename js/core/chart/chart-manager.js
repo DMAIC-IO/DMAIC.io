@@ -79,7 +79,7 @@ export default class ChartManager {
       const Ctor = await this._loadType(type);
       const context = {
         i18n: this._i18n,
-        language: this._i18n.language || 'de',
+        language: this._i18n.getLanguage?.() || 'de',
         theme: document.documentElement.getAttribute('data-theme') || 'light',
       };
       // Apply global font-size defaults from settings (user config overrides)
