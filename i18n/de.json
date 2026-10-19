@@ -4004,7 +4004,7 @@
           "grandMean": "Das Gesamtmittel, Kachel Gesamtmittel: das arithmetische Mittel aller verwerteten Messwerte. Die Unterzeile der Kachel nennt die Spanne vom kleinsten bis zum größten Messwert.",
           "n": "Zahl der verwerteten Messwerte, Kachel Messungen: Zeilen mit einem numerischen Messwert und einer belegten Stufe in jeder Einflussgröße. Die Unterzeile der Kachel nennt die Zahl der Einflussgrößen.",
           "droppedRows": "Zahl der verworfenen Zeilen: leerer oder nicht numerischer Messwert oder eine leere Faktorstufe. Gezählt wird bis zur längsten gewählten Spalte.",
-          "warnings": "Die Warnungen beider Rechnungen als Kennungen, ohne Doppelte: unbalanced (ungleich besetzte Zellen), emptyCells (eine Faktorkombination fehlt), tooManyAxisLevels, tooManySeriesLevels, tooManyPanels (Darstellungsgrenze überschritten) sowie die Warnungen der Varianzzerlegung. Die Oberfläche zeigt darüber hinaus die Zahl der übersprungenen Zeilen, wenn welche verworfen wurden; diese Meldung steht nicht in der Liste.",
+          "warnings": "Die Warnungen beider Rechnungen als Kennungen, ohne Doppelte: unbalanced (ungleich besetzte Zellen; auch bei einer fehlenden Faktorkombination, sofern die Varianzzerlegung gerechnet wurde), emptyCells (eine Faktorkombination fehlt), tooManyAxisLevels, tooManySeriesLevels, tooManyPanels (Darstellungsgrenze überschritten) sowie die Warnungen der Varianzzerlegung. Die Oberfläche zeigt darüber hinaus die Zahl der übersprungenen Zeilen, wenn welche verworfen wurden; diese Meldung steht nicht in der Liste.",
           "yMin": "Der kleinste verwertete Messwert, untere Grenze der Spanne unter dem Gesamtmittel und der y-Achse.",
           "yMax": "Der größte verwertete Messwert, obere Grenze der Spanne unter dem Gesamtmittel und der y-Achse.",
           "balanced": "Ob der Plan ausgewogen ist: wahr, wenn alle besetzten Zellen gleich viele Messwerte haben und keine erwartete Faktorkombination fehlt; welche Kombinationen erwartet werden, hängt von der Modellform ab. Bei falsch zeigt die Oberfläche unter der Tabelle den Hinweis, dass REML die belastbarere Wahl ist.",
@@ -4045,7 +4045,7 @@
           "n": "Zahl der Messwerte in der Zerlegung, dieselben verwerteten Zeilen wie im Diagramm.",
           "terms": "Die Zeilen der Tabelle in Modellreihenfolge, zuletzt der Rest (Wiederholung). Gibt es keine Wiederholungen, wird der feinste Term mit dem Rest zusammengelegt.",
           "totalVariance": "Die Gesamtvarianz, Fußzeile Gesamt: die Summe aller Varianzkomponenten einschließlich des Rests.",
-          "converged": "Nur bei REML, sonst leer: wahr, wenn sich jede Komponente zuletzt relativ um weniger als 10⁻⁸ änderte, bevor 100 Iterationen erreicht waren; bei falsch die Warnung notConverged und die Komponenten sind Näherungswerte.",
+          "converged": "Nur bei REML, sonst leer: wahr, wenn sich jede Komponente zuletzt relativ um weniger als 10⁻⁸ oder absolut um weniger als 10⁻⁸ mal die Summe der Komponenten änderte, bevor 100 Iterationen erreicht waren; bei falsch die Warnung notConverged und die Komponenten sind Näherungswerte.",
           "iterations": "Nur bei REML, sonst leer: die Zahl der Iterationen bis zur Konvergenz oder bis zur Grenze von 100; 0 bei konstantem Messwert.",
           "warnings": "Die Warnungen der Varianzzerlegung als Kennungen: unbalanced (unausgewogen), noReplicates (keine Wiederholungen, feinster Term mit dem Rest zusammengelegt), rowCapExceeded (mehr als 500 Messwerte, auf ANOVA umgeschaltet), aliasedTerms (Term mit 0 Freiheitsgraden vor REML entfernt, als 0 ausgewiesen), notConverged (REML nicht konvergiert), negativeComponent (ANOVA-Schätzung negativ, auf 0 gesetzt)."
         },
@@ -8495,7 +8495,7 @@
       "totalN": "Gesamt-n",
       "power": "Power",
       "resultSummary": "Mit n = {n} wird eine Power von {power} % bei α = {alpha} erreicht.",
-      "nOverflow": "Der erforderliche Stichprobenumfang übersteigt 5.000 — der Effekt ist bei diesen Parametern sehr schwer nachweisbar.",
+      "nOverflow": "Der erforderliche Stichprobenumfang erreicht oder übersteigt 5.000 — der Effekt ist bei diesen Parametern sehr schwer nachweisbar.",
       "sectionCurve": "Power-Kurve",
       "errRatio": "Bitte ein gültiges Varianzverhältnis > 0 eingeben.",
       "errSigma0": "Bitte eine gültige Soll-Standardabweichung > 0 eingeben.",
@@ -10884,10 +10884,10 @@
       "types": {
         "Spec": {
           "selected": "Ob dieses Modell (diese Zielgröße) in die Optimierung eingeht; das Kästchen im Modellkopf. Nur einbezogene Modelle zeigen ihre Wunschfunktion und tragen zur Gesamtwunschbarkeit D bei; anfangs ist keines einbezogen. Optimieren geht erst, wenn mindestens ein Modell einbezogen ist und keine Diagnose sperrt (R²adj unter 0,5, signifikanter Anpassungsmangel mit p unter 0,05 oder unterschiedliche Faktoren der gewählten Modelle).",
-          "kind": "Die Wunschfunktion der Zielgröße: Maximieren, Minimieren oder Zielwert, Vorgabe Maximieren. Maximieren: d = 0 für y ≤ Untergrenze, dazwischen d = (y − Untergrenze) / (Obergrenze − Untergrenze), d = 1 für y ≥ Obergrenze. Minimieren spiegelbildlich: d = 1 bis zur Untergrenze, dazwischen d = (Obergrenze − y) / (Obergrenze − Untergrenze), d = 0 ab der Obergrenze. Zielwert: d = 1 genau am Zielwert, zu Unter- und Obergrenze hin linear auf 0 fallend, an und außerhalb der Grenzen 0. Der Verlauf ist immer linear (Exponent 1). Liegt die Obergrenze nicht über der Untergrenze, springt d bei Maximieren und Minimieren direkt zwischen 0 und 1.",
+          "kind": "Die Wunschfunktion der Zielgröße: Maximieren, Minimieren oder Zielwert, Vorgabe Maximieren. Maximieren: d = 0 für y ≤ Untergrenze, dazwischen d = (y − Untergrenze) / (Obergrenze − Untergrenze), d = 1 für y ≥ Obergrenze. Minimieren spiegelbildlich: d = 1 bis zur Untergrenze, dazwischen d = (Obergrenze − y) / (Obergrenze − Untergrenze), d = 0 ab der Obergrenze. Zielwert: d = 1 genau am Zielwert, zu Unter- und Obergrenze hin linear auf 0 fallend, an und außerhalb der Grenzen 0. Der Verlauf ist immer linear (Exponent 1). Liegt die Obergrenze nicht über der Untergrenze, springt d bei Maximieren und Minimieren direkt zwischen 0 und 1; beim Zielwert ist d dann immer 0.",
           "lower": "Die Untergrenze der Wunschfunktion in der Einheit der Zielgröße: bei Maximieren ist hier d = 0, bei Minimieren d = 1, beim Zielwert d = 0. Vorgabe ist der kleinste Messwert in den Daten des Modells (ohne Daten 0). Eine endliche Zahl; ob sie unter der Obergrenze liegt, wird nicht geprüft.",
           "upper": "Die Obergrenze der Wunschfunktion in der Einheit der Zielgröße: bei Maximieren ist hier d = 1, bei Minimieren d = 0, beim Zielwert d = 0. Vorgabe ist der größte Messwert in den Daten des Modells (ohne Daten 1). Eine endliche Zahl; ob sie über der Untergrenze liegt, wird nicht geprüft.",
-          "target": "Der Zielwert, an dem die Wunschfunktion d = 1 erreicht. Wirkt nur bei der Wunschfunktion Zielwert und wird nur dann angezeigt; bei Maximieren und Minimieren bleibt er gespeichert, aber ohne Wirkung. Vorgabe ist die Mitte zwischen kleinstem und größtem Messwert. Eine endliche Zahl; ob sie zwischen Unter- und Obergrenze liegt, wird nicht geprüft.",
+          "target": "Der Zielwert, an dem die Wunschfunktion d = 1 erreicht. Wirkt nur bei der Wunschfunktion Zielwert und wird nur dann angezeigt; bei Maximieren und Minimieren bleibt er gespeichert, aber ohne Wirkung. Vorgabe ist die Mitte zwischen kleinstem und größtem Messwert, ohne Messwerte 0,5. Eine endliche Zahl; ob sie zwischen Unter- und Obergrenze liegt, wird nicht geprüft.",
           "weight": "Das Gewicht w dieser Zielgröße in der Gesamtwunschbarkeit D = (Π dᵢ^wᵢ)^(1/Σwᵢ): eine Zielgröße mit Gewicht 2 zählt doppelt so stark wie eine mit Gewicht 1. Eine Zahl größer 0, Vorgabe 1."
         },
         "Result": {

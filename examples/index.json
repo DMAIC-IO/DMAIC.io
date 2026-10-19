@@ -3140,8 +3140,8 @@
         "en": "Pizza Delivery Time — Optimum"
       },
       "description": {
-        "de": "Das gespeicherte Regressionsmodell der Pizza-Lieferzeit (Entfernung, Verkehrslevel; korrigiertes R² ≈ 0,91) liegt bereits im Projekt, die Lieferzeit soll minimal werden. Das Beispiel zeigt das gerechnete Optimum mit Desirability, vorhergesagter Lieferzeit und den Faktoreinstellungen am Optimum — bei diesem linearen Modell liegt es in der Ecke kürzeste Entfernung, geringster Verkehr.",
-        "en": "The saved regression model of the pizza delivery time (distance, traffic level; adjusted R² ≈ 0.91) is already in the project, and the delivery time is to be minimised. The example shows the computed optimum with desirability, predicted delivery time and the factor settings at the optimum — for this linear model it lies in the corner of shortest distance and lowest traffic."
+        "de": "Das gespeicherte Regressionsmodell der Pizza-Lieferzeit (Entfernung, Verkehrslevel; korrigiertes R² ≈ 0,91) liegt bereits im Projekt, die Lieferzeit soll minimal werden. Das Beispiel zeigt das gerechnete Optimum mit Desirability, vorhergesagter Lieferzeit und den Faktoreinstellungen am Optimum — bei diesem linearen Modell liegt es in der Ecke mit kürzester Entfernung und geringstem Verkehr.",
+        "en": "The saved regression model of the pizza delivery time (distance, traffic level; adjusted R² ≈ 0.91) is already in the project, and the delivery time is to be minimised. The example shows the computed optimum with desirability, predicted delivery time and the factor settings at the optimum — for this linear model it lies in the corner with the shortest distance and the lowest traffic."
       },
       "source": "Aus dem Beispiel regression-pizza-delivery (Qprovement synthetisch, NumPy default_rng, Seed=2026), Modell gespeichert",
       "license": "public-domain",
@@ -3747,8 +3747,8 @@
         "en": "Multi-vari: presses, display limit"
       },
       "description": {
-        "de": "3 Schichten × 13 Pressen × 2 Messungen der Füllmasse. Mit 13 Pressen als zweitem Faktor überschreitet der Plan die Grenze von 12 Reihen: das Modul zeichnet das Diagramm nicht und nennt stattdessen die Spalte „Presse“. Lernziel: die Darstellungsgrenze erkennen; die Presse als ersten Faktor gesetzt, wird das Diagramm gezeichnet.",
-        "en": "3 shifts × 13 presses × 2 fill-weight measurements. With 13 presses as the second factor the design exceeds the limit of 12 series: the module does not draw the chart and names the “Presse” column instead. Learning goal: recognise the display limit; with the press set as the first factor the chart is drawn."
+        "de": "3 Schichten × 13 Pressen × 2 Messungen der Füllmasse. Mit 13 Pressen als zweitem Faktor überschreitet der Plan die Grenze von 12 Serienstufen: das Modul zeichnet das Diagramm nicht und nennt stattdessen die Spalte „Presse“. Lernziel: die Darstellungsgrenze erkennen; die Presse als ersten Faktor gesetzt, wird das Diagramm gezeichnet.",
+        "en": "3 shifts × 13 presses × 2 fill-weight measurements. With 13 presses as the second factor the design exceeds the limit of 12 series levels: the module does not draw the chart and names the “Presse” column instead. Learning goal: recognise the display limit; with the press set as the first factor the chart is drawn."
       },
       "source": "Qprovement synthetisch, Python random, Seed=1352",
       "license": "public-domain",

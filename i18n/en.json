@@ -4000,7 +4000,7 @@
           "grandMean": "The grand mean, tile Grand mean: the arithmetic mean of all usable measurements. The tile subline gives the range from the smallest to the largest measurement.",
           "n": "Number of usable measurements, tile Measurements: rows with a numeric measurement and an assigned level in every factor. The tile subline gives the number of factors.",
           "droppedRows": "Number of discarded rows: empty or non-numeric measurement or an empty factor level. Rows are counted up to the longest chosen column.",
-          "warnings": "The warnings of both computations as codes, without duplicates: unbalanced (unequal cell sizes), emptyCells (a factor combination is missing), tooManyAxisLevels, tooManySeriesLevels, tooManyPanels (display limit exceeded) and the warnings of the variance decomposition. The interface additionally shows the number of skipped rows when rows were discarded; that message is not in the list.",
+          "warnings": "The warnings of both computations as codes, without duplicates: unbalanced (unequal cell sizes; also for a missing factor combination, provided the variance decomposition was computed), emptyCells (a factor combination is missing), tooManyAxisLevels, tooManySeriesLevels, tooManyPanels (display limit exceeded) and the warnings of the variance decomposition. The interface additionally shows the number of skipped rows when rows were discarded; that message is not in the list.",
           "yMin": "The smallest usable measurement, lower end of the range under the grand mean and of the y axis.",
           "yMax": "The largest usable measurement, upper end of the range under the grand mean and of the y axis.",
           "balanced": "Whether the design is balanced: true when all occupied cells hold the same number of measurements and no expected factor combination is missing; which combinations are expected depends on the model form. When false, the interface shows a note under the table that REML is the more dependable choice.",
@@ -4041,7 +4041,7 @@
           "n": "Number of measurements in the decomposition, the same usable rows as in the chart.",
           "terms": "The table rows in model order, the residual (repeat) last. Without replicates the finest term is merged into the residual.",
           "totalVariance": "The total variance, footer Total: the sum of all variance components including the residual.",
-          "converged": "REML only, empty otherwise: true when every component last changed by less than 10⁻⁸ relative before 100 iterations were reached; when false, the warning notConverged applies and the components are approximations.",
+          "converged": "REML only, empty otherwise: true when every component last changed by less than 10⁻⁸ relative or by less than 10⁻⁸ times the sum of the components in absolute terms before 100 iterations were reached; when false, the warning notConverged applies and the components are approximations.",
           "iterations": "REML only, empty otherwise: the number of iterations until convergence or up to the limit of 100; 0 for a constant measurement.",
           "warnings": "The warnings of the variance decomposition as codes: unbalanced, noReplicates (no replicates, finest term merged into the residual), rowCapExceeded (more than 500 measurements, switched to ANOVA), aliasedTerms (term with 0 degrees of freedom removed before REML, reported as 0), notConverged (REML did not converge), negativeComponent (negative ANOVA estimate set to 0)."
         },
@@ -8491,7 +8491,7 @@
       "totalN": "Total n",
       "power": "Power",
       "resultSummary": "With n = {n}, a power of {power}% is achieved at α = {alpha}.",
-      "nOverflow": "The required sample size exceeds 5,000 — the effect is very difficult to detect with these parameters.",
+      "nOverflow": "The required sample size reaches or exceeds 5,000 — the effect is very difficult to detect with these parameters.",
       "sectionCurve": "Power Curve",
       "errRatio": "Please enter a valid variance ratio > 0.",
       "errSigma0": "Please enter a valid hypothesized standard deviation > 0.",
@@ -10880,10 +10880,10 @@
       "types": {
         "Spec": {
           "selected": "Whether this model (this response) takes part in the optimisation; the checkbox in the model header. Only included models show their desirability function and contribute to the composite desirability D; initially none is included. Optimising is possible only when at least one model is included and no diagnosis blocks (R²adj below 0.5, significant lack of fit with p below 0.05, or different factors among the selected models).",
-          "kind": "The desirability function of the response: Maximise, Minimise or Target value, default Maximise. Maximise: d = 0 for y ≤ Lower, d = (y − Lower) / (Upper − Lower) in between, d = 1 for y ≥ Upper. Minimise mirrors it: d = 1 up to Lower, d = (Upper − y) / (Upper − Lower) in between, d = 0 from Upper on. Target value: d = 1 exactly at the target, falling linearly to 0 towards Lower and Upper, 0 at and beyond the limits. The shape is always linear (exponent 1). If Upper is not above Lower, d jumps straight between 0 and 1 for Maximise and Minimise.",
+          "kind": "The desirability function of the response: Maximise, Minimise or Target value, default Maximise. Maximise: d = 0 for y ≤ Lower, d = (y − Lower) / (Upper − Lower) in between, d = 1 for y ≥ Upper. Minimise mirrors it: d = 1 up to Lower, d = (Upper − y) / (Upper − Lower) in between, d = 0 from Upper on. Target value: d = 1 exactly at the target, falling linearly to 0 towards Lower and Upper, 0 at and beyond the limits. The shape is always linear (exponent 1). If Upper is not above Lower, d jumps straight between 0 and 1 for Maximise and Minimise; for Target value d is then always 0.",
           "lower": "The lower limit of the desirability function in the unit of the response: for Maximise d = 0 here, for Minimise d = 1, for Target value d = 0. The default is the smallest measured value in the model data (0 without data). A finite number; whether it lies below Upper is not checked.",
           "upper": "The upper limit of the desirability function in the unit of the response: for Maximise d = 1 here, for Minimise d = 0, for Target value d = 0. The default is the largest measured value in the model data (1 without data). A finite number; whether it lies above Lower is not checked.",
-          "target": "The target at which the desirability function reaches d = 1. Effective only for the Target value function and shown only then; for Maximise and Minimise it stays stored but has no effect. The default is the midpoint between the smallest and largest measured value. A finite number; whether it lies between Lower and Upper is not checked.",
+          "target": "The target at which the desirability function reaches d = 1. Effective only for the Target value function and shown only then; for Maximise and Minimise it stays stored but has no effect. The default is the midpoint between the smallest and largest measured value, 0.5 without measured values. A finite number; whether it lies between Lower and Upper is not checked.",
           "weight": "The weight w of this response in the composite desirability D = (Π dᵢ^wᵢ)^(1/Σwᵢ): a response with weight 2 counts twice as much as one with weight 1. A number greater than 0, default 1."
         },
         "Result": {

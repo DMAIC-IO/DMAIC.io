@@ -181,7 +181,7 @@ const FACTOR_FILTER = {};
  * @property {number} variance  Varianzkomponente
  * @property {number} sd  Standardabweichung
  * @property {number} percent  Anteil an der Gesamtvarianz
- * @property {boolean} clamped  auf null gesetzt
+ * @property {boolean} clamped  auf 0 gesetzt
  */
 
 /**

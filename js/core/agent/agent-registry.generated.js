@@ -11290,7 +11290,7 @@ export const AGENT_REGISTRY = {
                   },
                   "clamped": {
                     "type": "boolean",
-                    "help": "auf null gesetzt"
+                    "help": "auf 0 gesetzt"
                   }
                 }
               },
