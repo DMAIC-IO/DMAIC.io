@@ -1120,7 +1120,7 @@ const mod = createModule({
         return result === true;
       },
 
-      /** Keeps the role-confirm draft in step with its select (options differ per row, so no x-model). */
+      /** @noagent DOM event handler of the role-confirm dialog. Keeps the role-confirm draft in step with its select (options differ per row, so no x-model). */
       onRoleDraftChange(event, row) {
         row.role = event.target.value;
       },

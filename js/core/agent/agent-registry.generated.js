@@ -19129,13 +19129,9 @@ export const AGENT_REGISTRY = {
   },
   "worksheet": {
     "tagged": true,
-    "available": false,
-    "violations": [
-      "unmarked_method:onRoleDraftChange"
-    ],
-    "reported": [
-      "unmarked_method:onRoleDraftChange"
-    ],
+    "available": true,
+    "violations": [],
+    "reported": [],
     "actions": {
       "undo": {
         "params": [],
@@ -19451,4 +19447,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":68};
+export const AGENT_COVERAGE = {"total":76,"available":69};
