@@ -27,7 +27,7 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State } from './control-chart-model.js';
+import { State, rewriteSourceRefs } from './control-chart-model.js';
 import {
   ColumnPicker, getColumnValues, getColumnName, refToKey, keyToRef,
 } from '../../ui/column-picker.js';
@@ -1029,12 +1029,7 @@ mod.loadExample = function loadExample(payload) {
         columnRef: { instanceId: '__source__', sheetId: wsState.activeSheetId, columnId: 'c-0' },
       };
     },
-    rewriteRefs(data, instanceId) {
-      if (data.columnRef?.instanceId === '__source__') {
-        data.columnRef = { ...data.columnRef, instanceId };
-      }
-      return data;
-    },
+    rewriteRefs: rewriteSourceRefs,
   });
 };
 

@@ -1,5 +1,5 @@
 import { suite, test, assertEqual } from '../test-utils.js';
-import { State } from '../../js/modules/control-chart/control-chart-model.js';
+import { State, rewriteSourceRefs } from '../../js/modules/control-chart/control-chart-model.js';
 import { DEFAULT_ENABLED_RULES } from '../../js/engines/control-chart-engine.js';
 
 // ── Defaults ──────────────────────────────────────────────────
@@ -382,5 +382,24 @@ suite('Control Chart Model — misalignedStages', () => {
   });
   test('individuals (n = 1) never split a subgroup', () => {
     assertEqual(JSON.stringify(State.misalignedStages([7, 13], 1)), '[]');
+  });
+});
+
+// ── Example loading: __source__ placeholder ──────────────────
+
+suite('Control Chart Model — rewriteSourceRefs', () => {
+  const ref = { instanceId: '__source__', sheetId: 's', columnId: 'c' };
+
+  test('rewrites __source__ in columnRef and in frozenLimits.columnRef', () => {
+    const out = rewriteSourceRefs({ columnRef: ref, frozenLimits: { columnRef: { ...ref } } }, 'inst-1');
+    assertEqual(out.columnRef.instanceId, 'inst-1');
+    assertEqual(out.frozenLimits.columnRef.instanceId, 'inst-1');
+    assertEqual(out.frozenLimits.columnRef.columnId, 'c');
+  });
+
+  test('leaves null frozenLimits and foreign instance ids alone', () => {
+    const out = rewriteSourceRefs({ columnRef: { ...ref, instanceId: 'other' }, frozenLimits: null }, 'inst-1');
+    assertEqual(out.columnRef.instanceId, 'other');
+    assertEqual(out.frozenLimits, null);
   });
 });

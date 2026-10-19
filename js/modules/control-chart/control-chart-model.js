@@ -219,3 +219,22 @@ export class State {
     return s;
   }
 }
+
+/**
+ * Replace the `__source__` placeholder of an example payload with the id of
+ * the provisioned worksheet instance — in `columnRef` and in the column the
+ * frozen limits were computed from (`frozenLimits.columnRef`).
+ * @param {object} data example payload (mutated and returned)
+ * @param {string} instanceId id of the provisioned worksheet instance
+ * @returns {object} the same payload
+ */
+export function rewriteSourceRefs(data, instanceId) {
+  if (data.columnRef?.instanceId === '__source__') {
+    data.columnRef = { ...data.columnRef, instanceId };
+  }
+  const fl = data.frozenLimits;
+  if (fl?.columnRef?.instanceId === '__source__') {
+    data.frozenLimits = { ...fl, columnRef: { ...fl.columnRef, instanceId } };
+  }
+  return data;
+}
