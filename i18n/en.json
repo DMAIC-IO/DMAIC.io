@@ -4060,7 +4060,7 @@
           "n": "Number of measurements in the decomposition, the same usable rows as in the chart.",
           "terms": "The table rows in model order, the residual (repeat) last. Without replicates the finest term is merged into the residual.",
           "totalVariance": "The total variance, footer Total: the sum of all variance components including the residual.",
-          "converged": "REML only, empty otherwise: true when every component last changed by less than 10⁻⁸ relative or by less than 10⁻⁸ times the sum of the components in absolute terms before 100 iterations were reached; when false, the warning notConverged applies and the components are approximations.",
+          "converged": "REML only, empty otherwise: yes when every component last changed by less than 10⁻⁸ relative or by less than 10⁻⁸ times the sum of the components in absolute terms before 100 iterations were reached; no otherwise, and then the warning notConverged applies and the components are approximations.",
           "iterations": "REML only, empty otherwise: the number of iterations until convergence or up to the limit of 100; 0 for a constant measurement.",
           "warnings": "The warnings of the variance decomposition as codes: unbalanced, noReplicates (no replicates, finest term merged into the residual), rowCapExceeded (more than 500 measurements, switched to ANOVA), aliasedTerms (term with 0 degrees of freedom removed before REML, reported as 0), notConverged (REML did not converge), negativeComponent (negative ANOVA estimate set to 0)."
         },
@@ -11684,7 +11684,7 @@
           "max": "The largest value of the series, row Max.",
           "adStatAdj": "The corrected Anderson-Darling A²* = A²·(1 + 0.75/n + 2.25/n²), shown in the normality test row as A² = … with 4 decimals. The larger the value, the further the series departs from the normal distribution. Empty when all values are equal; the verdict is then missing as well.",
           "adPValue": "The p-value of the Anderson-Darling test for normality, section Normality Test (Anderson-Darling), shown as p ≈ next to A². The A² shown is already the corrected A²* = A²·(1 + 0.75/n + 2.25/n²); p follows from it after D'Agostino and Stephens. The display judges with α = 0.05: p ≥ 0.05 means Normal, p < 0.05 Not normal. Empty when all values are equal; the verdict is then missing as well.",
-          "normal": "The verdict of the normality test: true (Normal) when the p-value is at least α = 0.05, false (Not normal) when it is below. It is the badge after p ≈ in the normality test row. Empty when all values are equal."
+          "normal": "The verdict of the normality test: yes (Normal) when the p-value is at least α = 0.05, no (Not normal) when it is below. It is the badge after p ≈ in the normality test row. Empty when all values are equal."
         }
       },
       "name": "Data Transformation",

@@ -6,8 +6,8 @@
  * No DOM; translation happens in `renderStatement` through an injected `t`.
  */
 
-import { pickCI, decision, parseOptionalNumber } from './resampling-analysis.js';
-import { fmt, statisticKey } from './resampling-presenter.js';
+import { pickCI, parseOptionalNumber } from './resampling-analysis.js';
+import { fmt, statisticKey, bootDecision } from './resampling-presenter.js';
 
 /**
  * @typedef {{key: string, params: object}} StatementPart
@@ -64,7 +64,7 @@ function pairedParts(summary, interval, alpha, conf, stat) {
   return [head, size, intervalPart('stmtIntervalDiff', interval, conf)];
 }
 
-function oneParts(summary, interval, conf, stat, target) {
+function oneParts(summary, interval, conf, stat, target, ciMethod) {
   const est = summary.boot ? summary.boot.estimate : null;
   if (!Number.isFinite(est) || !interval) return [];
   const parts = [{
@@ -72,7 +72,7 @@ function oneParts(summary, interval, conf, stat, target) {
     params: { a: summary.labels[0], stat, est: fmt(est), lo: fmt(interval[0]), hi: fmt(interval[1]), conf },
   }];
   const tgt = parseOptionalNumber(target);
-  const result = Number.isFinite(tgt) ? decision(interval, tgt) : null;
+  const result = bootDecision(summary, { ciMethod, target });
   if (result) parts.push({ key: result === 'reject' ? 'stmtOneReject' : 'stmtOneRetain', params: { target: String(tgt) } });
   return parts;
 }
@@ -103,7 +103,7 @@ export function statementParts(summary, { ciMethod, target }) {
   if (summary.mode === 'two') parts = twoParts(summary, interval, alpha, conf, stat);
   else if (summary.mode === 'paired') parts = pairedParts(summary, interval, alpha, conf, stat);
   else if (summary.mode === 'k') parts = summary.k ? kParts(summary, alpha, stat) : [];
-  else parts = oneParts(summary, interval, conf, stat, target);
+  else parts = oneParts(summary, interval, conf, stat, target, ciMethod);
   return parts.filter(Boolean);
 }
 

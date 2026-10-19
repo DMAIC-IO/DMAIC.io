@@ -575,7 +575,7 @@ const mod = createModule({
           ];
         } else if (id === 'generalized-esd') {
           metrics = [
-            mc(String(M.detected), _t('detected'), 'detected', M.detected > 0 ? 'dmike-kpi--bad' : 'dmike-kpi--good'),
+            mc(fmt(M.detected, 0), _t('detected'), 'detected', M.detected > 0 ? 'dmike-kpi--bad' : 'dmike-kpi--good'),
             mc(String(M.maxOutliers), _t('esdMax'), 'maxOutliers'),
           ];
           stepsHeader = _t('stepsReject');

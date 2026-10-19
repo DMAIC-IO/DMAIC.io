@@ -454,8 +454,8 @@ const mod = createModule({
           kurtosis: num(kurtosis(arr)),
           min: num(Math.min(...arr)),
           max: num(Math.max(...arr)),
-          adStatAdj: ad?.statisticAdj ?? null,
-          adPValue: ad?.pValue ?? null,
+          adStatAdj: num(ad?.statisticAdj),
+          adPValue: num(ad?.pValue),
           normal: ad ? isNormal(ad) : null,
         });
         return {

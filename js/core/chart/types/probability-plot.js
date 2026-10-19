@@ -314,7 +314,7 @@ export default class ProbabilityPlot extends ChartBase {
 
   /** Translated legend suffix of the reference line ("— Fit"). @private */
   _fitSuffix() {
-    return this.context?.i18n?.t('chart.fitSuffix') ?? '— Fit';
+    return this.context?.i18n?.t('chart.fitSuffix') ?? 'chart.fitSuffix';
   }
 
   /** @override */

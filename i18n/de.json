@@ -4064,7 +4064,7 @@
           "n": "Zahl der Messwerte in der Zerlegung, dieselben verwerteten Zeilen wie im Diagramm.",
           "terms": "Die Zeilen der Tabelle in Modellreihenfolge, zuletzt der Rest (Wiederholung). Gibt es keine Wiederholungen, wird der feinste Term mit dem Rest zusammengelegt.",
           "totalVariance": "Die Gesamtvarianz, Fußzeile Gesamt: die Summe aller Varianzkomponenten einschließlich des Rests.",
-          "converged": "Nur bei REML, sonst leer: wahr, wenn sich jede Komponente zuletzt relativ um weniger als 10⁻⁸ oder absolut um weniger als 10⁻⁸ mal die Summe der Komponenten änderte, bevor 100 Iterationen erreicht waren; bei falsch die Warnung notConverged und die Komponenten sind Näherungswerte.",
+          "converged": "Nur bei REML, sonst leer: ja, wenn sich jede Komponente zuletzt relativ um weniger als 10⁻⁸ oder absolut um weniger als 10⁻⁸ mal die Summe der Komponenten änderte, bevor 100 Iterationen erreicht waren; sonst nein, und dann die Warnung notConverged und die Komponenten sind Näherungswerte.",
           "iterations": "Nur bei REML, sonst leer: die Zahl der Iterationen bis zur Konvergenz oder bis zur Grenze von 100; 0 bei konstantem Messwert.",
           "warnings": "Die Warnungen der Varianzzerlegung als Kennungen: unbalanced (unausgewogen), noReplicates (keine Wiederholungen, feinster Term mit dem Rest zusammengelegt), rowCapExceeded (mehr als 500 Messwerte, auf ANOVA umgeschaltet), aliasedTerms (Term mit 0 Freiheitsgraden vor REML entfernt, als 0 ausgewiesen), notConverged (REML nicht konvergiert), negativeComponent (ANOVA-Schätzung negativ, auf 0 gesetzt)."
         },
@@ -11688,7 +11688,7 @@
           "max": "Der größte Wert der Reihe, Zeile Max.",
           "adStatAdj": "Das korrigierte Anderson-Darling-A²* = A²·(1 + 0,75/n + 2,25/n²), in der Zeile des Normalitätstests angezeigt als A² = … mit 4 Nachkommastellen. Je größer der Wert, desto stärker weicht die Reihe von der Normalverteilung ab. Leer, wenn alle Werte gleich sind; dann fehlt auch das Urteil.",
           "adPValue": "Der p-Wert des Anderson-Darling-Tests auf Normalverteilung, Abschnitt Normalitätstest (Anderson-Darling), angezeigt als p ≈ neben A². Das angezeigte A² ist bereits das korrigierte A²* = A²·(1 + 0,75/n + 2,25/n²); aus ihm folgt p nach D'Agostino und Stephens. Die Anzeige wertet mit α = 0,05: p ≥ 0,05 heißt Normal, p < 0,05 Nicht normal. Leer, wenn alle Werte gleich sind; dann fehlt auch das Urteil.",
-          "normal": "Das Urteil des Normalitätstests: wahr (Normal), wenn der p-Wert mindestens α = 0,05 beträgt, falsch (Nicht normal), wenn er darunter liegt. Es steht als Plakette hinter p ≈ in der Zeile des Normalitätstests. Leer, wenn alle Werte gleich sind."
+          "normal": "Das Urteil des Normalitätstests: ja (Normal), wenn der p-Wert mindestens α = 0,05 beträgt, nein (Nicht normal), wenn er darunter liegt. Es steht als Plakette hinter p ≈ in der Zeile des Normalitätstests. Leer, wenn alle Werte gleich sind."
         }
       },
       "name": "Datentransformation",
