@@ -23,15 +23,32 @@ const Z_CAP = 40;
 const INV_PHI = (Math.sqrt(5) - 1) / 2;
 
 /**
- * Mean after trimming floor(n · proportion) values from each tail.
+ * Mean after trimming n · proportion values from each tail, the fractional part
+ * proportionally: for g = k + r the k outermost values per tail are dropped and
+ * the next value on each side keeps weight 1 − r. Matches Minitab's Bonett output;
+ * whole-value trimming (floor or round) does not.
  * @param {number[]} data
  * @param {number} proportion trim proportion per tail
  * @returns {number}
  */
 export function trimmedMean(data, proportion) {
   const s = [...data].sort((a, b) => a - b);
-  const k = Math.floor(s.length * proportion);
-  return mean(s.slice(k, s.length - k));
+  const n = s.length;
+  const g = n * proportion;
+  const k = Math.floor(g);
+  const w = s.map((_, i) => (i < k || i >= n - k ? 0 : 1));
+  const r = g - k;
+  if (r > 0) {
+    w[k] -= r;
+    w[n - k - 1] -= r;
+  }
+  let sum = 0;
+  let weight = 0;
+  for (let i = 0; i < n; i++) {
+    sum += w[i] * s[i];
+    weight += w[i];
+  }
+  return sum / weight;
 }
 
 function center(data) {
