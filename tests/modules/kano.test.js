@@ -66,6 +66,24 @@ suite('kano-model — Befragte', () => {
     assertEqual(s.respondents.length, 1);
     assertEqual(s.activeRespondentId, b);
   });
+
+  test('tabIndexOf: nur der aktive Reiter ist Tab-Stopp', () => {
+    const s = new State();
+    const a = s.addRespondent('A');
+    const b = s.addRespondent('B');
+    s.activeRespondentId = b;
+    assertEqual(s.tabIndexOf(a), -1);
+    assertEqual(s.tabIndexOf(b), 0);
+  });
+
+  test('tabIndexOf: ohne aktiven Reiter bleibt der erste erreichbar', () => {
+    const s = new State();
+    const a = s.addRespondent('A');
+    const b = s.addRespondent('B');
+    s.activeRespondentId = null;
+    assertEqual(s.tabIndexOf(a), 0);
+    assertEqual(s.tabIndexOf(b), -1);
+  });
 });
 
 suite('kano-model — Items und Antworten', () => {

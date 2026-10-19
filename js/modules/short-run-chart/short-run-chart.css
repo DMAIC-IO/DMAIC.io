@@ -3,13 +3,6 @@
    BEM: .src__ prefix
    ============================================================ */
 
-
-.src__hint {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
-  margin-top: var(--spacing-2xs);
-}
-
 .src__chart-section {
   background: var(--color-bg-secondary);
   border: var(--border-width) solid var(--color-border-secondary);
@@ -53,19 +46,12 @@
 }
 
 .src__groups-table {
-  width: 100%;
-  border-collapse: collapse;
   font-size: var(--font-size-xs);
   margin-top: var(--spacing-sm);
 }
 
 .src__groups-table th,
-.src__groups-table td {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  text-align: right;
-  border-bottom: var(--border-width) solid var(--color-border-secondary);
-}
-.src__groups-table th { color: var(--color-text-tertiary); font-weight: var(--font-weight-medium); }
+.src__groups-table td { text-align: right; }
 
 .src__groups-table td:first-child,
 .src__groups-table th:first-child { text-align: left; }

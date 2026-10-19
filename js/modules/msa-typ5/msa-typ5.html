@@ -2,7 +2,7 @@
   <div class="dmike-split__input">
     <div class="dmike-split__section-title" x-text="t('sections.feature')"></div>
 
-    <fieldset class="msa-typ5__radios">
+    <fieldset class="field-radios field-radios--inline">
       <legend data-help-key="modules.msa-typ5.types.Params.type" x-text="t('labels.type')"></legend>
       <template x-for="o in typeOptions()" :key="o">
         <label>
@@ -13,7 +13,7 @@
       </template>
     </fieldset>
 
-    <fieldset class="msa-typ5__radios" :class="weightsHiddenClass()">
+    <fieldset class="field-radios field-radios--inline" :class="weightsHiddenClass()">
       <legend data-help-key="modules.msa-typ5.types.Params.weights" x-text="t('labels.weights')"></legend>
       <template x-for="o in weightsOptions()" :key="o">
         <label>

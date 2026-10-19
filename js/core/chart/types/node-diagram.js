@@ -47,9 +47,57 @@ function rayExit(px, py, dx, dy, rect) {
 }
 
 /**
- * Straight link between two boxes: centre to centre, shifted perpendicular by
+ * Corners of a hexagon node: flat top and bottom, points left and right.
+ * @param {{x:number,y:number,w:number,h:number}} n
+ * @returns {Array<[number, number]>} clockwise in screen coordinates
+ */
+export function hexagonPoints(n) {
+  const i = Math.min(n.h / 2, n.w / 4);
+  const cy = n.y + n.h / 2;
+  return [[n.x + i, n.y], [n.x + n.w - i, n.y], [n.x + n.w, cy], [n.x + n.w - i, n.y + n.h], [n.x + i, n.y + n.h], [n.x, cy]];
+}
+
+/** Ray exit from an ellipse inscribed in the box; null when the ray misses. */
+function ellipseExit(px, py, dx, dy, box) {
+  const a = box.w / 2, b = box.h / 2;
+  const X = px - (box.x + a), Y = py - (box.y + b);
+  const A = (dx * dx) / (a * a) + (dy * dy) / (b * b);
+  const B = 2 * ((X * dx) / (a * a) + (Y * dy) / (b * b));
+  const C = (X * X) / (a * a) + (Y * Y) / (b * b) - 1;
+  const disc = B * B - 4 * A * C;
+  if (A === 0 || disc < 0) return null;
+  const t = Math.max(0, (-B + Math.sqrt(disc)) / (2 * A));
+  return { x: px + dx * t, y: py + dy * t };
+}
+
+/** Ray exit from a convex polygon (nearest edge hit ahead); null when the ray misses. */
+function polygonExit(px, py, dx, dy, pts) {
+  let best = Infinity;
+  for (let k = 0; k < pts.length; k++) {
+    const [qx, qy] = pts[k];
+    const [rx, ry] = pts[(k + 1) % pts.length];
+    const ex = rx - qx, ey = ry - qy;
+    const denom = dx * ey - dy * ex;
+    if (Math.abs(denom) < 1e-9) continue;
+    const t = ((qx - px) * ey - (qy - py) * ex) / denom;
+    const s = ((qx - px) * dy - (qy - py) * dx) / denom;
+    if (t >= 0 && s >= -1e-9 && s <= 1 + 1e-9) best = Math.min(best, t);
+  }
+  return Number.isFinite(best) ? { x: px + dx * best, y: py + dy * best } : null;
+}
+
+/** Ray exit from a node's outline (rect, ellipse or hexagon). */
+function shapeExit(px, py, dx, dy, node) {
+  let p = null;
+  if (node.shape === 'ellipse') p = ellipseExit(px, py, dx, dy, node);
+  else if (node.shape === 'hexagon') p = polygonExit(px, py, dx, dy, hexagonPoints(node));
+  return p ?? rayExit(px, py, dx, dy, node);
+}
+
+/**
+ * Straight link between two nodes: centre to centre, shifted perpendicular by
  * `offset` (positive = left of the direction of travel in screen coordinates),
- * clipped to both box borders.
+ * clipped to both node outlines (box, or `shape` ellipse / hexagon).
  * @param {{x:number,y:number,w:number,h:number}} from
  * @param {{x:number,y:number,w:number,h:number}} to
  * @param {number} [offset=0]
@@ -62,9 +110,37 @@ export function straightEndpoints(from, to, offset = 0) {
   if (len === 0) return { x1: r2(cx1), y1: r2(cy1), x2: r2(cx2), y2: r2(cy2) };
   const ux = (cx2 - cx1) / len, uy = (cy2 - cy1) / len;
   const nx = -uy * offset, ny = ux * offset;
-  const a = rayExit(cx1 + nx, cy1 + ny, ux, uy, from);
-  const b = rayExit(cx2 + nx, cy2 + ny, -ux, -uy, to);
+  const a = shapeExit(cx1 + nx, cy1 + ny, ux, uy, from);
+  const b = shapeExit(cx2 + nx, cy2 + ny, -ux, -uy, to);
   return { x1: r2(a.x), y1: r2(a.y), x2: r2(b.x), y2: r2(b.y) };
+}
+
+/**
+ * Bent link between two nodes through a via point: each node is clipped
+ * along the ray from its centre towards the via point.
+ * @param {{x:number,y:number,w:number,h:number}} from
+ * @param {{x:number,y:number,w:number,h:number}} to
+ * @param {{x:number,y:number}} via
+ * @returns {{x1:number,y1:number,x2:number,y2:number}}
+ */
+export function viaEndpoints(from, to, via) {
+  const exit = (node) => {
+    const cx = node.x + node.w / 2, cy = node.y + node.h / 2;
+    const len = Math.hypot(via.x - cx, via.y - cy);
+    if (len === 0) return { x: cx, y: cy };
+    return shapeExit(cx, cy, (via.x - cx) / len, (via.y - cy) / len, node);
+  };
+  const a = exit(from), b = exit(to);
+  return { x1: r2(a.x), y1: r2(a.y), x2: r2(b.x), y2: r2(b.y) };
+}
+
+const hasVia = (link) => link.shape === 'straight' && Number.isFinite(link.via?.x) && Number.isFinite(link.via?.y);
+
+/** @param {Object} link @param {Object} p @returns {string} */
+function linkD(link, p) {
+  const wave = link.style === 'wave';
+  if (hasVia(link)) return viaPath(p, link.via, wave);
+  return wave ? wavePath(p) : linkPath(link.shape, p);
 }
 
 const BOLD_WIDTH = 3;
@@ -117,6 +193,7 @@ export function linkEndpoints(link, byId, elbowInset) {
   const from = byId.get(link.from);
   const to = byId.get(link.to);
   if (!from || !to) return null;
+  if (hasVia(link)) return viaEndpoints(from, to, link.via);
   if (link.shape === 'straight') return straightEndpoints(from, to, link.offset ?? 0);
   if (link.shape === 'elbow') {
     return { x1: to.x - elbowInset, y1: from.y + from.h, x2: to.x, y2: to.y + to.h / 2 };
@@ -135,6 +212,22 @@ export function linkPath(shape, p) {
   if (shape === 'elbow') return `M ${p.x1} ${p.y1} L ${p.x1} ${p.y2} L ${p.x2} ${p.y2}`;
   const mid = (p.y1 + p.y2) / 2;
   return `M ${p.x1} ${p.y1} C ${p.x1} ${mid}, ${p.x2} ${mid}, ${p.x2} ${p.y2}`;
+}
+
+/**
+ * SVG path data for a straight link bent at a via point; a wave keeps its
+ * straight end tail only on the second leg and stays one continuous path.
+ * @param {{x1:number,y1:number,x2:number,y2:number}} p
+ * @param {{x:number,y:number}} via
+ * @param {boolean} wave
+ * @returns {string}
+ */
+export function viaPath(p, via, wave) {
+  const v = { x: r2(via.x), y: r2(via.y) };
+  if (!wave) return `M ${p.x1} ${p.y1} L ${v.x} ${v.y} L ${p.x2} ${p.y2}`;
+  const first = wavePath({ x1: p.x1, y1: p.y1, x2: v.x, y2: v.y }, 3, 10, 2, 0);
+  const second = wavePath({ x1: v.x, y1: v.y, x2: p.x2, y2: p.y2 });
+  return `${first} ${second.replace(/^M/, 'L')}`;
 }
 
 /** @param {Object} config @returns {{byId: Map, ends: Array}} */
@@ -165,9 +258,13 @@ export function contentBox(config) {
     x1 = Math.min(x1, n.x); y1 = Math.min(y1, n.y);
     x2 = Math.max(x2, n.x + n.w); y2 = Math.max(y2, n.y + n.h);
   }
-  for (const { p } of resolveLinks(config).ends) {
+  for (const { link, p } of resolveLinks(config).ends) {
     x1 = Math.min(x1, p.x1, p.x2); y1 = Math.min(y1, p.y1, p.y2);
     x2 = Math.max(x2, p.x1, p.x2); y2 = Math.max(y2, p.y1, p.y2);
+    if (hasVia(link)) {
+      x1 = Math.min(x1, link.via.x); y1 = Math.min(y1, link.via.y);
+      x2 = Math.max(x2, link.via.x); y2 = Math.max(y2, link.via.y);
+    }
   }
   if (x1 === Infinity) return { x: 0, y: 0, w: 0, h: 0 };
   if (config.origin === 'zero') return { x: 0, y: 0, w: x2 + pad, h: y2 + pad };
@@ -242,7 +339,7 @@ export default class NodeDiagram extends ChartBase {
     const stroke = link.color ? resolveColor(link.color) : col.link;
     const attrs = {
       'data-part': 'link',
-      d: link.style === 'wave' ? wavePath(p) : linkPath(link.shape, p),
+      d: linkD(link, p),
       fill: 'none',
       stroke,
       'stroke-width': link.width ?? (link.style === 'bold' ? BOLD_WIDTH : LINK_DEFAULT_WIDTH),
@@ -271,18 +368,19 @@ export default class NodeDiagram extends ChartBase {
     return id;
   }
 
-  /** Verb label at the midpoint of the link's endpoints. @private */
+  /** Verb label on the via point, else at the midpoint of the link's endpoints. @private */
   _drawLabel(parent, link, p, col) {
     const text = String(link.label);
-    const mx = r2((p.x1 + p.x2) / 2), my = r2((p.y1 + p.y2) / 2);
+    const [mx, my] = hasVia(link) ? [r2(link.via.x), r2(link.via.y)] : [r2((p.x1 + p.x2) / 2), r2((p.y1 + p.y2) / 2)];
     const w = text.length * LABEL.charW + LABEL.padX * 2;
+    const id = link.id != null ? { 'data-id': link.id } : {};
     svgEl('rect', {
-      'data-part': 'link-label-bg',
+      'data-part': 'link-label-bg', ...id,
       x: r2(mx - w / 2), y: my - LABEL.h / 2, width: r2(w), height: LABEL.h, rx: LABEL.radius,
       fill: col.labelBg,
     }, parent);
     svgText(text, {
-      'data-part': 'link-label',
+      'data-part': 'link-label', ...id,
       x: mx, y: my + 4, 'text-anchor': 'middle', 'font-size': this.config.tickSize, fill: col.muted,
     }, parent);
   }
@@ -290,15 +388,27 @@ export default class NodeDiagram extends ChartBase {
   /** @private */
   _drawNode(parent, node, col) {
     const m = { ...NODE_DEFAULTS, ...node };
-    const rect = {
+    const attrs = {
       'data-part': 'node',
-      x: node.x, y: node.y, width: node.w, height: node.h, rx: m.radius,
       fill: node.fill ? resolveColor(node.fill) : col.nodeFill,
       stroke: node.stroke ? resolveColor(node.stroke) : col.nodeStroke,
       'stroke-width': m.strokeWidth,
     };
-    if (node.dash && node.dash !== 'none') rect['stroke-dasharray'] = node.dash;
-    svgEl('rect', rect, parent);
+    if (node.dash && node.dash !== 'none') attrs['stroke-dasharray'] = node.dash;
+    let outline;
+    if (node.shape === 'ellipse') {
+      outline = svgEl('ellipse', {
+        ...attrs, cx: node.x + node.w / 2, cy: node.y + node.h / 2, rx: node.w / 2, ry: node.h / 2,
+      }, parent);
+    } else if (node.shape === 'hexagon') {
+      const points = hexagonPoints(node).map(([x, y]) => `${r2(x)},${r2(y)}`).join(' ');
+      outline = svgEl('polygon', { ...attrs, points }, parent);
+    } else {
+      outline = svgEl('rect', { ...attrs, x: node.x, y: node.y, width: node.w, height: node.h, rx: m.radius }, parent);
+    }
+    if (node.id != null) outline.setAttribute('data-id', node.id);
+    if (node.highlight && this.config.highlightClass) outline.classList.add(this.config.highlightClass);
+    const centered = node.align === 'center';
 
     let ty = node.y + m.padY;
     if (node.badge) {
@@ -319,10 +429,11 @@ export default class NodeDiagram extends ChartBase {
     for (const line of node.lines || []) {
       const attrs = {
         'data-part': 'line',
-        x: node.x + m.padX, y: ty + m.lineHeight - 4,
+        x: centered ? node.x + node.w / 2 : node.x + m.padX, y: ty + m.lineHeight - 4,
         'font-size': line.size ?? (line.muted ? this.config.tickSize : this.config.labelSize),
-        fill: line.muted ? col.muted : col.text,
+        fill: line.color ? resolveColor(line.color) : line.muted ? col.muted : col.text,
       };
+      if (centered) attrs['text-anchor'] = 'middle';
       if (line.weight != null) attrs['font-weight'] = line.weight;
       svgText(line.text, attrs, parent);
       ty += m.lineHeight;

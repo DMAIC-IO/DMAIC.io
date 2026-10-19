@@ -9,7 +9,8 @@
  * RPN, statistics, burndown series, CSV row matrix) lives in fmea-model.js and
  * is unit-tested. This file holds only view transformations (badge classes,
  * scale i18n text, '—' formatting), event handlers, and the imperative
- * burndown chart lifecycle (chartManager is not a pure-template concern).
+ * burndown chart lifecycle (chartManager is not a pure-template concern; the
+ * chart's holder is lent to the dialog service).
  *
  * @agent  Vollständig über das Viewmodel steuerbar: Bewertungsmethode und
  *   FMEA-Art, Risiken anlegen, bewerten und entfernen, jedes Feld eines
@@ -20,7 +21,6 @@
 
 import { createModule } from '../../core/template-module.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
-import { draggablePopout } from '../../ui/draggable-popout.js';
 import { isIsoDate } from '../../core/local-date.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
@@ -168,9 +168,9 @@ const mod = createModule({
     return {
       ...agentReadMixin(module),
       // ── Transient UI state (never persisted) ──────────────────
-      ...draggablePopout({ size: 'width:680px;height:auto;max-height:85vh;' }),
       scaleVisible: false,
-      burndownOpen: false,
+      /** @type {{close: Function, setTitle: Function}|null} open burndown dialog */
+      _burndownDialog: null,
       _chart: null,
       _renderGen: 0,
 
@@ -576,7 +576,10 @@ const mod = createModule({
       /**
        * @noagent öffnet das Burndown-Fenster der Oberfläche; ein Agent darf
        * keinen Dialog öffnen — er blockierte den Stapel (E3). Die Zahlen
-       * dahinter stehen über `read()` zur Verfügung.
+       * dahinter stehen über `read()` zur Verfügung. Öffnet den Burndown in
+       * einem breiten Dialog und hängt das Diagramm in den geliehenen Halter
+       * (x-ref="burndown"); Schließen des Dialogs zerstört es.
+       * @returns {Promise<void>} resolves once the chart is mounted
        */
       async showBurndown() {
         const bd = this.model.burndownSeries();
@@ -584,55 +587,48 @@ const mod = createModule({
           module._context.notify?.(_t('burndownNoData'));
           return;
         }
-        this.popoutResetPosition();
-        this.burndownOpen = true;
+        this._burndownDialog?.close();
+        this._burndownDialog = module._context.dialog.show({
+          title: _t('burndownTitle'),
+          size: 'wide',
+          content: this.$refs.burndown,
+          onClose: () => { this._destroyChart(); this._burndownDialog = null; },
+        });
+        const el = this.$refs.burndown.querySelector('[data-ref="burndown-chart"]');
+        this._destroyChart();
+        const gen = ++this._renderGen;
         const lang = module._context.language || 'de';
         const dateFmt = (ms) => new Date(ms).toLocaleDateString(
           lang === 'de' ? 'de-DE' : 'en-GB',
           { day: '2-digit', month: '2-digit', year: '2-digit' });
-
-        // Wait for the x-if popout to render, then mount the chart into its anchor.
-        this.$nextTick(async () => {
-          const el = module._container.querySelector('[data-ref="burndown-chart"]');
-          if (!el) return;
-          this._destroyChart();
-          const gen = ++this._renderGen;
-          const line = (name, x, y, color, dash) => ({
-            name, x, y, color, symbol: 'circle',
-            connectLine: { show: true, dash, width: dash === 'solid' ? 2.5 : 2, color },
-          });
-          const series = bd.kind === 'ap'
-            ? [
-              line(_t('burndownHPlan'), bd.planX, bd.planH, 'var(--color-warning)', 'dash'),
-              line(_t('burndownHActual'), bd.actX, bd.actH, 'var(--color-warning)', 'solid'),
-              line(_t('burndownHmPlan'), bd.planX, bd.planHM, 'var(--color-info)', 'dash'),
-              line(_t('burndownHmActual'), bd.actX, bd.actHM, 'var(--color-info)', 'solid'),
-            ]
-            : [
-              line(_t('burndownPlan'), bd.planX, bd.planY, 'var(--color-text-tertiary)', 'dash'),
-              line(_t('burndownActual'), bd.actX, bd.actY, 'var(--color-accent)', 'solid'),
-            ];
-          const chart = await module._context.chartManager.create(el, 'scatter', {
-            series,
-            title: _t('burndownTitle'),
-            yLabel: bd.kind === 'ap' ? _t('burndownRiskCount') : 'RPN',
-            yMin: 0,
-            showLegend: true,
-            xTickFormat: dateFmt,
-          });
-          if (gen !== this._renderGen || !this.burndownOpen) {
-            module._context.chartManager.destroy(chart);
-            return;
-          }
-          this._chart = chart;
+        const line = (name, x, y, color, dash) => ({
+          name, x, y, color, symbol: 'circle',
+          connectLine: { show: true, dash, width: dash === 'solid' ? 2.5 : 2, color },
         });
-      },
-
-      /** @noagent schließt das Burndown-Fenster der Oberfläche (E3). */
-      closeBurndown() {
-        this._destroyChart();
-        this.burndownOpen = false;
-        this.popoutResetPosition();
+        const series = bd.kind === 'ap'
+          ? [
+            line(_t('burndownHPlan'), bd.planX, bd.planH, 'var(--color-warning)', 'dash'),
+            line(_t('burndownHActual'), bd.actX, bd.actH, 'var(--color-warning)', 'solid'),
+            line(_t('burndownHmPlan'), bd.planX, bd.planHM, 'var(--color-info)', 'dash'),
+            line(_t('burndownHmActual'), bd.actX, bd.actHM, 'var(--color-info)', 'solid'),
+          ]
+          : [
+            line(_t('burndownPlan'), bd.planX, bd.planY, 'var(--color-text-tertiary)', 'dash'),
+            line(_t('burndownActual'), bd.actX, bd.actY, 'var(--color-accent)', 'solid'),
+          ];
+        const chart = await module._context.chartManager.create(el, 'scatter', {
+          series,
+          title: _t('burndownTitle'),
+          yLabel: bd.kind === 'ap' ? _t('burndownRiskCount') : 'RPN',
+          yMin: 0,
+          showLegend: true,
+          xTickFormat: dateFmt,
+        });
+        if (gen !== this._renderGen || this._burndownDialog === null) {
+          module._context.chartManager.destroy(chart);
+          return;
+        }
+        this._chart = chart;
       },
 
       _destroyChart() {
@@ -646,6 +642,7 @@ const mod = createModule({
 
       /** @noagent lifecycle, kein Zustandsweg. */
       destroy() {
+        this._burndownDialog?.close();
         this._destroyChart();
       },
     };

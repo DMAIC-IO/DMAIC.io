@@ -1,17 +1,21 @@
 <section class="module-container pairwise" x-data="pairwiseComparison" @keydown.window="compareKey($event)">
   <div class="module-container__body">
-    <div class="pairwise__tabs">
-      <div class="pairwise__tabs-group" data-help-key="modules.pairwise-comparison.actions.setViewPhase.help">
-      <div class="pairwise__tab" data-tab="input" :class="tabClass(0)" @click="goToTab('input')">
-        <span class="pairwise__tab-num">01</span><span x-text="t('tabInput')"></span>
-      </div>
-      <div class="pairwise__tab" data-tab="compare" :class="tabClass(1)" @click="goToTab('compare')">
-        <span class="pairwise__tab-num">02</span><span x-text="t('tabCompare')"></span>
-      </div>
-      <div class="pairwise__tab" data-tab="results" :class="tabClass(2)" @click="goToTab('results')">
-        <span class="pairwise__tab-num">03</span><span x-text="t('tabResults')"></span>
-      </div>
-      </div>
+    <div class="dmike-tabs" role="tablist" x-tablist data-help-key="modules.pairwise-comparison.actions.setViewPhase.help">
+      <button class="dmike-tab" type="button" role="tab" data-tab="input" :class="tabClass(0)" :disabled="isTabLocked(0)"
+        :aria-selected="model.viewPhase === 'input' ? 'true' : 'false'" :tabindex="model.viewPhase === 'input' ? 0 : -1"
+        @mousedown="preventFocus($event)" @click="goToTab('input')">
+        <span class="dmike-tab__num">01</span><span x-text="t('tabInput')"></span>
+      </button>
+      <button class="dmike-tab" type="button" role="tab" data-tab="compare" :class="tabClass(1)" :disabled="isTabLocked(1)"
+        :aria-selected="model.viewPhase === 'compare' ? 'true' : 'false'" :tabindex="model.viewPhase === 'compare' ? 0 : -1"
+        @mousedown="preventFocus($event)" @click="goToTab('compare')">
+        <span class="dmike-tab__num">02</span><span x-text="t('tabCompare')"></span>
+      </button>
+      <button class="dmike-tab" type="button" role="tab" data-tab="results" :class="tabClass(2)" :disabled="isTabLocked(2)"
+        :aria-selected="model.viewPhase === 'results' ? 'true' : 'false'" :tabindex="model.viewPhase === 'results' ? 0 : -1"
+        @mousedown="preventFocus($event)" @click="goToTab('results')">
+        <span class="dmike-tab__num">03</span><span x-text="t('tabResults')"></span>
+      </button>
     </div>
 
     <div class="pairwise__content" :class="contentClass()" data-ref="content">

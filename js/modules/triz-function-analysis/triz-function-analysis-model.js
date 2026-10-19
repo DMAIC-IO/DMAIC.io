@@ -1,8 +1,8 @@
 /**
  * D.Mike — TRIZ function analysis: data model.
  *
- * Components (exactly one target), unordered interaction pairs and directed
- * functions. Derived values (rank, open pairs, disadvantages) are pure
+ * Components (exactly one target), unordered interaction pairs, pairs
+ * explicitly excluded from interacting, and directed functions. Derived values (rank, open pairs, disadvantages) are pure
  * functions and never stored. See
  * docs/superpowers/specs/2026-10-15-triz-function-analysis-design.md.
  */
@@ -10,9 +10,11 @@
 import { uid } from '../../core/uid.js';
 
 export const KINDS = ['target', 'system', 'supersystem'];
+/** Display order of the component groups: supersystem, then the target, then the system. */
+export const GROUPS = ['supersystem', 'target', 'system'];
 export const TYPES = ['useful', 'harmful'];
 export const LEVELS = ['adequate', 'insufficient', 'excessive'];
-export const TABS = ['components', 'interactions', 'model'];
+export const TABS = ['components', 'interactions', 'model', 'valueCost'];
 
 /**
  * Key of an unordered pair.
@@ -21,6 +23,23 @@ export const TABS = ['components', 'interactions', 'model'];
  */
 export function pairKey(a, b) {
   return a < b ? `${a}|${b}` : `${b}|${a}`;
+}
+
+/**
+ * Functions grouped by their (undirected) pair, in order of first appearance.
+ * Incomplete functions each get a group of their own (key `draft|<id>`).
+ * @param {{functions: Object[]}} state
+ * @returns {Array<{key:string,a:string,b:string,complete:boolean,functions:Object[]}>}
+ */
+export function functionPairs(state) {
+  const groups = new Map();
+  for (const f of state.functions) {
+    const complete = isComplete(f);
+    const key = complete ? pairKey(f.carrier, f.object) : `draft|${f.id}`;
+    if (!groups.has(key)) groups.set(key, { key, a: f.carrier, b: f.object, complete, functions: [] });
+    groups.get(key).functions.push(f);
+  }
+  return [...groups.values()];
 }
 
 /**
@@ -50,6 +69,45 @@ export function rankOf(fn, components) {
   const obj = components.find((c) => c.id === fn.object);
   return obj ? RANK_BY_KIND[obj.kind] ?? null : null;
 }
+
+/** Points per useful function by rank, for the value & cost analysis. */
+export const SCORE_BY_RANK = { basic: 3, additional: 2, auxiliary: 1 };
+
+/**
+ * Function value of a component: the rank scores of the functions it carries
+ * (harmful and draft functions score 0).
+ * @param {string} id @param {{components: Object[], functions: Object[]}} state
+ * @returns {number}
+ */
+export function componentValue(id, state) {
+  return state.functions
+    .filter((f) => f.carrier === id)
+    .reduce((sum, f) => sum + (SCORE_BY_RANK[rankOf(f, state.components)] ?? 0), 0);
+}
+
+/**
+ * Value & cost rows of the system components, in entry order. Value and cost
+ * are normalised to 0…10 against the largest value / entered cost.
+ * @param {State} state
+ * @returns {Array<{id:string,name:string,value:number,normValue:number,cost:number|null,normCost:number|null}>}
+ */
+export function valueCostRows(state) {
+  const system = state.components.filter((c) => c.kind === 'system');
+  const values = system.map((c) => componentValue(c.id, state));
+  const maxValue = Math.max(0, ...values);
+  const maxCost = Math.max(0, ...system.map((c) => c.cost ?? 0));
+  return system.map((c, i) => ({
+    id: c.id,
+    name: c.name,
+    value: values[i],
+    normValue: maxValue > 0 ? values[i] / maxValue * 10 : 0,
+    cost: c.cost ?? null,
+    normCost: c.cost == null ? null : (maxCost > 0 ? c.cost / maxCost * 10 : 0),
+  }));
+}
+
+/** @param {*} v @returns {number|null} a finite number >= 0, else null */
+const costOrNull = (v) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : null);
 
 /**
  * Ticked pairs that no complete function uses (in either direction).
@@ -90,8 +148,11 @@ export class State {
   _schema = { name: State.ID, version: State.VERSION };
   components = [];
   interactions = [];
+  exclusions = [];
   functions = [];
   positions = {};
+  /** Dragged verb-label positions by function id; an arrow bends there. */
+  labels = {};
   activeTab = 'components';
 
   /** @returns {boolean} */
@@ -105,8 +166,10 @@ export class State {
       _schema: { ...this._schema },
       components: this.components.map((c) => ({ ...c })),
       interactions: this.interactions.map((i) => ({ ...i })),
+      exclusions: this.exclusions.map((x) => ({ ...x })),
       functions: this.functions.map((f) => ({ ...f })),
       positions: Object.fromEntries(Object.entries(this.positions).map(([k, p]) => [k, { ...p }])),
+      labels: Object.fromEntries(Object.entries(this.labels).map(([k, p]) => [k, { ...p }])),
       activeTab: this.activeTab,
     };
   }
@@ -128,12 +191,15 @@ export class State {
         if (hasTarget) kind = 'system';
         hasTarget = true;
       }
-      s.components.push({ id: c.id, name: str(c.name), kind, note: str(c.note) });
+      s.components.push({ id: c.id, name: str(c.name), kind, note: str(c.note), cost: costOrNull(c.cost) });
     }
     const known = (id) => typeof id === 'string' && s.component(id) !== null;
 
     for (const i of Array.isArray(d.interactions) ? d.interactions : []) {
       if (isObj(i) && known(i.a) && known(i.b)) s._tick(i.a, i.b);
+    }
+    for (const x of Array.isArray(d.exclusions) ? d.exclusions : []) {
+      if (isObj(x) && known(x.a) && known(x.b) && !s.hasInteraction(x.a, x.b)) s._exclude(x.a, x.b);
     }
 
     for (const f of Array.isArray(d.functions) ? d.functions : []) {
@@ -154,6 +220,11 @@ export class State {
         if (known(id) && isObj(p) && Number.isFinite(p.x) && Number.isFinite(p.y)) s.positions[id] = { x: p.x, y: p.y };
       }
     }
+    if (isObj(d.labels)) {
+      for (const [id, p] of Object.entries(d.labels)) {
+        if (s.fn(id) && isObj(p) && Number.isFinite(p.x) && Number.isFinite(p.y)) s.labels[id] = { x: p.x, y: p.y };
+      }
+    }
     s.activeTab = TABS.includes(d.activeTab) ? d.activeTab : 'components';
     return s;
   }
@@ -169,7 +240,7 @@ export class State {
    * @returns {{component: Object, demoted: Object|null}}
    */
   addComponent(kind, name = '') {
-    const component = { id: uid(), name: String(name), kind: 'system', note: '' };
+    const component = { id: uid(), name: String(name), kind: 'system', note: '', cost: null };
     this.components.push(component);
     const demoted = kind === 'target' ? this.setKind(component.id, 'target')
       : (this.setKind(component.id, KINDS.includes(kind) ? kind : 'system'), null);
@@ -193,15 +264,33 @@ export class State {
     return demoted;
   }
 
+  /**
+   * Set a component's euro cost. Empty input clears it; anything that is not
+   * a number >= 0 is rejected and leaves the cost unchanged.
+   * @param {string} id @param {string|number|null} raw
+   * @returns {boolean} whether the cost was stored
+   */
+  setCost(id, raw) {
+    const c = this.component(id);
+    if (!c) return false;
+    if (raw === null || raw === '') { c.cost = null; return true; }
+    const cost = costOrNull(typeof raw === 'string' ? Number(raw) : raw);
+    if (cost === null) return false;
+    c.cost = cost;
+    return true;
+  }
+
   /** @param {string} id @returns {number} functions using the component */
   impactOf(id) {
     return this.functions.filter((f) => f.carrier === id || f.object === id).length;
   }
 
-  /** Remove a component with its interactions, functions and stored position. @param {string} id */
+  /** Remove a component with its interactions, exclusions, functions and stored positions. @param {string} id */
   removeComponent(id) {
     this.components = this.components.filter((c) => c.id !== id);
     this.interactions = this.interactions.filter((i) => i.a !== id && i.b !== id);
+    this.exclusions = this.exclusions.filter((x) => x.a !== id && x.b !== id);
+    for (const f of this.functions) if (f.carrier === id || f.object === id) delete this.labels[f.id];
     this.functions = this.functions.filter((f) => f.carrier !== id && f.object !== id);
     delete this.positions[id];
   }
@@ -212,6 +301,18 @@ export class State {
     return this.interactions.some((i) => pairKey(i.a, i.b) === k);
   }
 
+  /** @param {string} a @param {string} b @returns {boolean} explicitly marked as not interacting */
+  isExcluded(a, b) {
+    const k = pairKey(a, b);
+    return this.exclusions.some((x) => pairKey(x.a, x.b) === k);
+  }
+
+  /** @param {string} a @param {string} b @returns {'none'|'ticked'|'excluded'} */
+  pairState(a, b) {
+    if (this.hasInteraction(a, b)) return 'ticked';
+    return this.isExcluded(a, b) ? 'excluded' : 'none';
+  }
+
   /** @param {string} a @param {string} b @returns {number} complete functions on the pair */
   usersOf(a, b) {
     const k = pairKey(a, b);
@@ -219,20 +320,26 @@ export class State {
   }
 
   /**
-   * Tick or untick a pair. Unticking is refused while functions use it.
+   * Cycle a pair: empty → ticked → excluded → empty. Leaving "ticked" is
+   * refused while functions use the pair.
    * @param {string} a @param {string} b
    * @returns {{ok: boolean, usedBy?: number}}
    */
   toggleInteraction(a, b) {
     if (!a || !b || a === b) return { ok: false, usedBy: 0 };
+    const k = pairKey(a, b);
+    if (this.isExcluded(a, b)) {
+      this.exclusions = this.exclusions.filter((x) => pairKey(x.a, x.b) !== k);
+      return { ok: true };
+    }
     if (!this.hasInteraction(a, b)) {
       this._tick(a, b);
       return { ok: true };
     }
     const usedBy = this.usersOf(a, b);
     if (usedBy) return { ok: false, usedBy };
-    const k = pairKey(a, b);
     this.interactions = this.interactions.filter((i) => pairKey(i.a, i.b) !== k);
+    this._exclude(a, b);
     return { ok: true };
   }
 
@@ -255,19 +362,6 @@ export class State {
     const f = this.fn(id);
     if (isComplete(f)) this._tick(f.carrier, f.object);
     return f;
-  }
-
-  /**
-   * @param {string} id @param {string} carrier @param {string} object
-   * @returns {boolean} false when carrier === object (nothing changes)
-   */
-  setEndpoints(id, carrier, object) {
-    const f = this.fn(id);
-    if (!f || (carrier && carrier === object)) return false;
-    f.carrier = carrier;
-    f.object = object;
-    if (isComplete(f)) this._tick(carrier, object);
-    return true;
   }
 
   /** @param {string} id */
@@ -293,6 +387,7 @@ export class State {
   /** @param {string} id */
   removeFunction(id) {
     this.functions = this.functions.filter((f) => f.id !== id);
+    delete this.labels[id];
   }
 
   /** Store a dragged position (rounded, clamped to ≥ 0). @param {string} id @param {number} x @param {number} y */
@@ -301,8 +396,16 @@ export class State {
     this.positions[id] = { x: Math.max(0, Math.round(x)), y: Math.max(0, Math.round(y)) };
   }
 
+  /** Store a dragged verb-label position (rounded, clamped to ≥ 0). @param {string} id @param {number} x @param {number} y */
+  moveLabel(id, x, y) {
+    if (!this.fn(id)) return;
+    this.labels[id] = { x: Math.max(0, Math.round(x)), y: Math.max(0, Math.round(y)) };
+  }
+
+  /** Back to the auto layout: boxes to their slots, arrows straight. */
   resetPositions() {
     this.positions = {};
+    this.labels = {};
   }
 
   /**
@@ -318,11 +421,18 @@ export class State {
     return true;
   }
 
-  /** Tick a pair (sorted, no duplicates, no self pairs). @private */
+  /** Tick a pair (sorted, no duplicates, no self pairs); lifts an exclusion. @private */
   _tick(a, b) {
     if (!a || !b || a === b) return;
     const k = pairKey(a, b);
+    this.exclusions = this.exclusions.filter((x) => pairKey(x.a, x.b) !== k);
     if (this.interactions.some((i) => pairKey(i.a, i.b) === k)) return;
     this.interactions.push(a < b ? { a, b } : { a: b, b: a });
+  }
+
+  /** Exclude a pair (sorted, no duplicates, no self pairs). @private */
+  _exclude(a, b) {
+    if (!a || !b || a === b || this.isExcluded(a, b)) return;
+    this.exclusions.push(a < b ? { a, b } : { a: b, b: a });
   }
 }

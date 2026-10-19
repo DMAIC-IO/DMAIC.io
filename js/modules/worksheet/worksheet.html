@@ -94,13 +94,26 @@
     <span class="sheet-tabs__status" data-ref="status-dims" x-text="statusDims()"></span>
   </div>
 
-  <!-- ═══ Formula editor overlay shell (declarative x-show) ═══
-       The body is built and wired imperatively by the FormulaEditor class
-       (formula parsing/preview/cell-commit + drag stay imperative); it is
-       injected into the [data-ref="fe-body"] anchor on init. -->
-  <div class="dmike-chart-popout-overlay" data-ref="fe-overlay" role="dialog" aria-modal="true"
-       x-show="feOpen" style="display:none">
-    <div data-ref="fe-body"></div>
+  <!-- Role confirmation and formula editor: hidden here, lent to the dialog service.
+       The formula editor body is built by FormulaEditor into fe-holder. -->
+  <div class="worksheet__modal-forms" hidden>
+    <div data-ref="fe-holder"></div>
+    <div class="worksheet-role-confirm" x-ref="roleConfirmForm">
+      <div class="dmike-popout-message" x-text="t('confirmRolesIntro')"></div>
+      <div class="worksheet-role-confirm__list">
+        <template x-for="row in roleDraft" :key="row.colId">
+          <div class="worksheet-role-confirm__row">
+            <div class="worksheet-role-confirm__name" x-text="row.name"></div>
+            <div class="worksheet-role-confirm__type" x-text="row.type"></div>
+            <select class="worksheet-role-confirm__select" @change="onRoleDraftChange($event, row)">
+              <template x-for="opt in row.options" :key="opt.value">
+                <option :value="opt.value" x-text="opt.label" :selected="opt.value === row.role"></option>
+              </template>
+            </select>
+          </div>
+        </template>
+      </div>
+    </div>
   </div>
 
   <!-- Hidden file input -->

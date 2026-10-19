@@ -33,9 +33,10 @@ import {
   chiSquareVarianceTest, fTest, leveneTest,
   oneSampleTTest, twoSampleTTest, welchTTest,
   wilcoxonSignedRank, mannWhitneyU, hodgesLehmann,
+  bonettVarianceTest, bonettRatioTest,
   oneWayANOVA, leveneTestK, kruskalWallis, bartlettTest,
   powerChiSquare, powerFTest, powerOneSampleT, powerTwoSampleT,
-  findRequiredN,
+  findRequiredN, pairDifferences, pairedTTest,
 } from '../../engines/hypothesis-test-engine.js';
 import { shapiroWilk, andersonDarling, descriptiveStats } from '../../engines/normality-test-engine.js';
 import { tInv, chi2Inv } from '../../engines/math-utils.js';
@@ -43,7 +44,7 @@ import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-pi
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 
 /** Mapping: test name → Algorithm Lab ID. */
-import { isNormalByAD, meanRoute } from './hypothesis-test-routing.js';
+import { isNormalByAD, meanRoute, varianceRoute, isConstant, ciContains } from './hypothesis-test-routing.js';
 
 const ALGO_LAB_IDS = {
   'Shapiro-Wilk': 'shapiro-wilk',
@@ -51,9 +52,12 @@ const ALGO_LAB_IDS = {
   'Chi-Square Variance Test': 'chi-square-variance',
   'F-Test': 'f-test',
   'Levene Test (Brown-Forsythe)': 'levene-test',
+  'Bonett Variance Test': 'bonett-variance',
+  'Bonett Ratio Test': 'bonett-ratio',
   'One-Sample t-Test': 'one-sample-t-test',
   'Two-Sample t-Test (pooled)': 'two-sample-t-test',
   'Welch t-Test': 'welch-t-test',
+  'Paired t-Test': 'paired-t-test',
   'Wilcoxon Signed-Rank Test': 'wilcoxon-signed-rank',
   'Mann-Whitney U Test': 'mann-whitney-u',
   'One-Way ANOVA': 'one-way-anova',
@@ -218,7 +222,7 @@ function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–';
  *
  * @typedef {object} AgentRead
  * @property {'variance'|'mean'} category  what is being tested: variance or mean
- * @property {'one'|'two'|'k'} testType  one sample, two samples, or k samples
+ * @property {'one'|'two'|'paired'|'k'} testType  one sample, two samples, paired samples, or k samples
  * @property {'two-sided'|'greater'|'less'} direction  the alternative hypothesis direction
  * @property {number|null} alpha  significance level, e.g. 0.05
  * @property {number|null} powerGoal  desired power, e.g. 0.8
@@ -245,6 +249,7 @@ const mod = createModule({
     return {
       // ── Transient view state (not persisted) ────────────────────
       result: null,
+      errorText: '',
       _picker1: null,
       _picker2: null,
       _pickerK: null,
@@ -274,6 +279,7 @@ const mod = createModule({
             ? 'H₀: μ₁ = μ₂ = … = μₖ'
             : 'H₀: σ²₁ = σ²₂ = … = σ²ₖ';
         }
+        if (this.model.testType === 'paired') return `H₀: μ_d ${s0} μ_d₀`;
         if (!isMean) {
           return isTwo
             ? `H₀: σ²₁ ${s0} σ²₂`
@@ -293,6 +299,7 @@ const mod = createModule({
         if (isK) {
           return isMean ? `H₁: ${_t('kSampleH1')}` : `H₁: ${_t('kSampleVarH1')}`;
         }
+        if (this.model.testType === 'paired') return `H₁: μ_d ${s1} μ_d₀`;
         if (!isMean) {
           return isTwo
             ? `H₁: σ²₁ ${s1} σ²₂`
@@ -314,19 +321,19 @@ const mod = createModule({
        */
       setCategory(cat) {
         requireEnum('category', cat, CATEGORIES);
-        this.model.category = cat;
+        this.model.applyCategory(cat);
         this.$nextTick(() => { this._remountPickers(); this.runAnalysis(); });
       },
       /**
        * Choose the sample layout.
        * @agent
-       * @param {'one'|'two'|'k'} type one sample, two samples, or k samples
+       * @param {'one'|'two'|'paired'|'k'} type one sample, two samples, paired samples, or k samples
        * @returns {void}
-       * @throws {Error} if `type` is not one of 'one', 'two', 'k'
+       * @throws {Error} if `type` is not one of 'one', 'two', 'paired', 'k'
        */
       setTestType(type) {
         requireEnum('testType', type, TEST_TYPES);
-        this.model.testType = type;
+        this.model.applyTestType(type);
         this.$nextTick(() => { this._remountPickers(); this.runAnalysis(); });
       },
       /**
@@ -519,7 +526,9 @@ const mod = createModule({
           's²₂': _t('tipVariance2'),
           's²ₚ': _t('tipPooledVar'),
           'α': _t('tipAlpha'),
+          'd̄': _t('tipMeanDiff'),
           "Cohen's d": _t('tipCohensD'),
+          "Cohen's d_z": _t('tipCohensD'),
         };
         return map[label] || '';
       },
@@ -567,10 +576,14 @@ const mod = createModule({
         const s1 = this._sym1();
         const isVariance = this.model.category === 'variance';
         const isTwo = this.model.testType === 'two';
+        const isPaired = this.model.testType === 'paired';
         let h0, h1;
         if (isVariance) {
           h0 = isTwo ? `σ²₁ ${s0} σ²₂` : `σ² ${s0} ${fmt(target)}`;
           h1 = isTwo ? `σ²₁ ${s1} σ²₂` : `σ² ${s1} ${fmt(target)}`;
+        } else if (isPaired) {
+          h0 = `μ_d ${s0} ${fmt(target)}`;
+          h1 = `μ_d ${s1} ${fmt(target)}`;
         } else {
           h0 = isTwo ? `μ₁ ${s0} μ₂` : `μ ${s0} ${fmt(target)}`;
           h1 = isTwo ? `μ₁ ${s1} μ₂` : `μ ${s1} ${fmt(target)}`;
@@ -587,8 +600,19 @@ const mod = createModule({
         }
         const level = Math.round((1 - alpha) * 100);
         const isMeanDiff = !isVariance && isTwo && r.ci != null;
+        const fmtCi = (ci) => `[${fmt(ci[0])}, ${fmt(ci[1])}]`;
+        if (isVariance && isTwo && r.ratio != null) {
+          metrics.push({ label: _t('varianceRatio'), value: fmt(r.ratio), valueClass: '', title: this._tip(_t('varianceRatio')) });
+        }
         if (r.ci) {
-          metrics.push({ label: isMeanDiff ? _t('ciDiffLabel', { level }) : _t('ciLabel', { level }), value: `[${fmt(r.ci[0])}, ${fmt(r.ci[1])}]`, valueClass: 'hyptest__metric-value--sm', title: this._tip('KI') });
+          const ciLabel = isPaired ? _t('ciPairedDiffLabel', { level })
+            : isMeanDiff ? _t('ciDiffLabel', { level })
+            : isVariance && isTwo ? _t('ciRatioLabel', { level })
+            : _t('ciLabel', { level });
+          metrics.push({ label: ciLabel, value: fmtCi(r.ci), valueClass: 'hyptest__metric-value--sm', title: this._tip('KI') });
+        }
+        if (r.ciSigma) {
+          metrics.push({ label: _t('ciSigmaLabel', { level }), value: fmtCi(r.ciSigma), valueClass: 'hyptest__metric-value--sm', title: this._tip('KI') });
         }
         if (r.hl) {
           const achieved = fmt(r.hl.achievedConfidence * 100, 1);
@@ -601,10 +625,14 @@ const mod = createModule({
             title: _t('ciShiftTip', { level, achieved, method: methodText }),
           });
         }
-        if (r.mean != null) {
+        if (r.meanDiff != null) {
+          metrics.push({ label: _t('symXbar1'), value: fmt(r.mean1), valueClass: '', title: this._tip('x̄₁') });
+          metrics.push({ label: _t('symXbar2'), value: fmt(r.mean2), valueClass: '', title: this._tip('x̄₂') });
+          metrics.push({ label: _t('symDbar'), value: fmt(r.meanDiff), valueClass: '', title: this._tip('d̄') });
+        } else if (r.mean != null) {
           metrics.push({ label: _t('common.sym.xbar'), value: fmt(r.mean), valueClass: '', title: this._tip('x̄') });
         }
-        if (r.mean1 != null) {
+        if (r.meanDiff == null && r.mean1 != null) {
           metrics.push({ label: _t('symXbar1'), value: fmt(r.mean1), valueClass: '', title: this._tip('x̄₁') });
           metrics.push({ label: _t('symXbar2'), value: fmt(r.mean2), valueClass: '', title: this._tip('x̄₂') });
         }
@@ -624,8 +652,12 @@ const mod = createModule({
           : `${_t('notSignificant')}: ${_t('h0NotRejected')}`;
 
         let ciNote = '';
-        if (isMeanDiff && !r.reject) {
-          ciNote = _t('ciDiffNote', { lo: fmt(r.ci[0]), hi: fmt(r.ci[1]) });
+        // A non-rejected one-sided test can leave the target outside the CI
+        const ciHoldsTarget = ciContains(r.ci, target ?? 0);
+        if (isPaired && r.ci && !r.reject) {
+          if (ciHoldsTarget) ciNote = _t('ciPairedDiffNote', { lo: fmt(r.ci[0]), hi: fmt(r.ci[1]) });
+        } else if (isMeanDiff && !r.reject) {
+          if (ciHoldsTarget) ciNote = _t('ciDiffNote', { lo: fmt(r.ci[0]), hi: fmt(r.ci[1]) });
         } else if (r.hl) {
           const parts = [];
           if (!r.reject) parts.push(_t('ciShiftNote', { lo: fmt(r.hl.lower), hi: fmt(r.hl.upper) }));
@@ -646,14 +678,17 @@ const mod = createModule({
 
       // ── Rank test shown next to a large-n parametric result ──
 
-      _secondaryResult(r, alpha) {
+      _secondaryResult(r, alpha, { title = _t('sectionSecondary'), note = _t('secondaryNote'), showTwoSidedSuffix = false } = {}) {
         const pCls = r.pValue < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success';
+        const methodLabel = showTwoSidedSuffix ? `${_t('testMethod')} (${_t('twoSidedSuffix')})` : _t('testMethod');
         return {
           metrics: [
-            { label: _t('testMethod'), value: r.testName, algoId: ALGO_LAB_IDS[r.testName] || '', valueClass: 'hyptest__metric-value--sm', title: this._tip(_t('testMethod')) },
+            { label: methodLabel, value: r.testName, algoId: ALGO_LAB_IDS[r.testName] || '', valueClass: 'hyptest__metric-value--sm', title: this._tip(_t('testMethod')) },
             { label: _t('statistic'), value: fmt(r.statistic), valueClass: '', title: this._tip(_t('statistic')) },
             { label: _t('common.sym.p'), value: fmt(r.pValue), valueClass: pCls, title: this._tip('p') },
           ],
+          title,
+          note,
         };
       },
 
@@ -701,11 +736,11 @@ const mod = createModule({
           }
         } else {
           const sigma = ds(d1).stdDev;
-          if (this.model.testType === 'one') {
+          if (this.model.testType === 'one' || this.model.testType === 'paired') {
             const delta = Math.abs(ds(d1).mean - target);
             curEff = sigma > 0 ? delta / sigma : 0;
             curPow = powerOneSampleT(n1, delta, sigma, alpha, dir);
-            effLabel = "Cohen's d";
+            effLabel = this.model.testType === 'paired' ? "Cohen's d_z" : "Cohen's d";
             nForGoal = findRequiredN(goal, n => powerOneSampleT(n, delta, sigma, alpha, dir));
           } else {
             const delta = Math.abs(ds(d1).mean - ds(d2).mean);
@@ -727,6 +762,7 @@ const mod = createModule({
           goalPct,
           goalBoxClass: goalReached ? 'hyptest__decision--accept' : 'hyptest__decision--warn',
           requiredLine,
+          note: '',
           metrics: [
             { label: _t('currentPower'), value: `${(curPow * 100).toFixed(1)}%`, valueClass: goalReached ? 'hyptest__metric-value--success' : 'hyptest__metric-value--warning', title: this._tip(_t('currentPower')) },
             { label: _t('common.sym.n'), value: `${n1}${d2 ? ` / ${  d2.length}` : ''}`, valueClass: '', title: this._tip('n') },
@@ -746,8 +782,65 @@ const mod = createModule({
        * @returns {void}
        */
       runAnalysis() {
+        this.errorText = '';
         if (this.model.testType === 'k') return this._runAnalysisK();
+        if (this.model.testType === 'paired') return this._runAnalysisPaired();
         return this._runAnalysisOneTwo();
+      },
+
+      _runAnalysisPaired() {
+        const alpha = this.model.alpha;
+        if (!this._picker1?.value || !this._picker2?.value) { this.result = null; return; }
+        const sm = module._context.stateManager;
+        const { x1, x2, d, dropped } = pairDifferences(
+          getColumnValues(sm, this._picker1.value),
+          getColumnValues(sm, this._picker2.value));
+        if (d.length < 3) {
+          this.result = null;
+          this.errorText = _t('pairedTooFew', { count: d.length, n: d.length });
+          return;
+        }
+        const target = this.model.resolveTarget();
+        if (target == null) { this.result = null; return; }
+        // Identical columns (or a constant shift) leave no variation to test
+        if (isConstant(d)) {
+          this.result = null;
+          this.errorText = _t('pairedNoVariation');
+          return;
+        }
+
+        const sw = shapiroWilk(d), ad = andersonDarling(d);
+        const dNormal = isNormalByAD(ad, alpha);
+        const family = meanRoute(dNormal, [d.length]);
+        const dir = this.model.direction;
+        const means = { mean1: descriptiveStats(x1).mean, mean2: descriptiveStats(x2).mean };
+
+        let r, algoName;
+        if (family === 'rank') {
+          algoName = 'Wilcoxon Signed-Rank Test';
+          r = { ...wilcoxonSignedRank(d, target, dir, alpha), ...means, meanDiff: descriptiveStats(d).mean };
+        } else {
+          algoName = 'Paired t-Test';
+          r = pairedTTest(x1, x2, target, dir, alpha);
+        }
+
+        let secondary = null;
+        if (family === 'parametric-large-n') {
+          secondary = this._secondaryResult(wilcoxonSignedRank(d, target, dir, alpha), alpha);
+        }
+
+        this.result = {
+          isK: false,
+          allNormal: dNormal,
+          normCards: [this._normCard(_t('differences'), d, sw, ad, dNormal, alpha)],
+          route: { name: algoName, algoId: ALGO_LAB_IDS[algoName] || '' },
+          varEquality: null,
+          main: this._mainResult(r, alpha, target),
+          secondary,
+          power: this._powerInfo(d, null, target, alpha),
+          pairwise: null,
+          pairInfo: { n: d.length, dropped },
+        };
       },
 
       _runAnalysisOneTwo() {
@@ -768,12 +861,20 @@ const mod = createModule({
         }
 
         // Normality
-        const sw1 = shapiroWilk(d1), ad1 = andersonDarling(d1);
-        const n1Normal = isNormalByAD(ad1, alpha);
-        let sw2 = null, ad2 = null, n2Normal = true;
-        if (d2) {
-          sw2 = shapiroWilk(d2); ad2 = andersonDarling(d2);
-          n2Normal = isNormalByAD(ad2, alpha);
+        // The normality engines throw on a constant sample (zero variance)
+        let sw1, ad1, n1Normal, sw2 = null, ad2 = null, n2Normal = true;
+        try {
+          sw1 = shapiroWilk(d1); ad1 = andersonDarling(d1);
+          n1Normal = isNormalByAD(ad1, alpha);
+          if (d2) {
+            sw2 = shapiroWilk(d2); ad2 = andersonDarling(d2);
+            n2Normal = isNormalByAD(ad2, alpha);
+          }
+        } catch (err) {
+          console.error('[hypothesis-test] normality check failed:', err);
+          this.result = null;
+          this.errorText = _t('testNotComputable');
+          return;
         }
         const allNormal = n1Normal && n2Normal;
 
@@ -781,9 +882,13 @@ const mod = createModule({
         let algo;
         let meanFamily = null;
         if (this.model.category === 'variance') {
-          algo = this.model.testType === 'one'
-            ? { id: 'chi2', name: 'Chi-Square Variance Test' }
-            : (allNormal ? { id: 'ftest', name: 'F-Test' } : { id: 'levene', name: 'Levene Test (Brown-Forsythe)' });
+          const VARIANCE_ALGOS = {
+            chi2: { id: 'chi2', name: 'Chi-Square Variance Test' },
+            bonett1: { id: 'bonett1', name: 'Bonett Variance Test' },
+            ftest: { id: 'ftest', name: 'F-Test' },
+            bonett2: { id: 'bonett2', name: 'Bonett Ratio Test' },
+          };
+          algo = VARIANCE_ALGOS[varianceRoute(this.model.testType, allNormal)];
         } else if (this.model.testType === 'one') {
           meanFamily = meanRoute(n1Normal, [d1.length]);
           algo = meanFamily === 'rank'
@@ -813,14 +918,23 @@ const mod = createModule({
         // Run main test
         const dir = this.model.direction;
         let r;
-        if (algo.id === 'chi2') r = chiSquareVarianceTest(d1, target, dir, alpha);
-        else if (algo.id === 'ftest') r = fTest(d1, d2, dir, alpha);
-        else if (algo.id === 'levene') r = leveneTest(d1, d2, alpha);
-        else if (algo.id === 'ttest1') r = oneSampleTTest(d1, target, dir, alpha);
-        else if (algo.id === 'wilcoxon') r = wilcoxonSignedRank(d1, target, dir, alpha);
-        else if (algo.id === 'ttest2p') r = twoSampleTTest(d1, d2, dir, alpha);
-        else if (algo.id === 'welch') r = welchTTest(d1, d2, dir, alpha);
-        else if (algo.id === 'mannwhitney') r = mannWhitneyU(d1, d2, dir, alpha);
+        try {
+          if (algo.id === 'chi2') r = chiSquareVarianceTest(d1, target, dir, alpha);
+          else if (algo.id === 'ftest') r = fTest(d1, d2, dir, alpha);
+          else if (algo.id === 'bonett1') r = bonettVarianceTest(d1, target, dir, alpha);
+          else if (algo.id === 'bonett2') r = bonettRatioTest(d1, d2, dir, alpha);
+          else if (algo.id === 'ttest1') r = oneSampleTTest(d1, target, dir, alpha);
+          else if (algo.id === 'wilcoxon') r = wilcoxonSignedRank(d1, target, dir, alpha);
+          else if (algo.id === 'ttest2p') r = twoSampleTTest(d1, d2, dir, alpha);
+          else if (algo.id === 'welch') r = welchTTest(d1, d2, dir, alpha);
+          else if (algo.id === 'mannwhitney') r = mannWhitneyU(d1, d2, dir, alpha);
+        } catch (err) {
+          // Bonett's CI is undefined for degenerate samples (no spread, tiny n)
+          console.error('[hypothesis-test] test computation failed:', err);
+          this.result = null;
+          this.errorText = _t('testNotComputable');
+          return;
+        }
         // Shift estimate and CI for the rank test (two-sided, like the t CIs)
         if (algo.id === 'mannwhitney') r = { ...r, hl: hodgesLehmann(d1, d2, alpha) };
 
@@ -831,9 +945,20 @@ const mod = createModule({
             ? mannWhitneyU(d1, d2, dir, alpha)
             : wilcoxonSignedRank(d1, target, dir, alpha), alpha);
         }
+        // Two-sample Bonett: Levene alongside, as Minitab's "2 Variances" shows both
+        if (algo.id === 'bonett2') {
+          secondary = this._secondaryResult(leveneTest(d1, d2, alpha), alpha, {
+            title: _t('sectionSecondaryLevene'),
+            note: _t('secondaryNoteLevene'),
+            showTwoSidedSuffix: dir !== 'two-sided',
+          });
+        }
 
         const normCards = [this._normCard('S1', d1, sw1, ad1, n1Normal, alpha)];
         if (d2) normCards.push(this._normCard('S2', d2, sw2, ad2, n2Normal, alpha));
+
+        const power = this._powerInfo(d1, d2, target, alpha);
+        power.note = (algo.id === 'bonett1' || algo.id === 'bonett2') ? _t('powerNormalApprox') : '';
 
         this.result = {
           isK: false,
@@ -843,7 +968,7 @@ const mod = createModule({
           varEquality,
           main: this._mainResult(r, alpha, target),
           secondary,
-          power: this._powerInfo(d1, d2, target, alpha),
+          power,
           pairwise: null,
         };
       },

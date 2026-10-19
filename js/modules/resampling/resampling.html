@@ -124,7 +124,7 @@
       <progress class="resampling__progress" data-ref="progress" max="1" :value="progress"></progress>
       <button type="button" class="btn" data-ref="cancel" data-help-key="modules.resampling.actions.cancel.help" @click="cancel()" x-text="t('cancel')"></button>
     </div>
-    <p class="resampling__error" data-ref="error" x-show="errorKey" x-text="errorKey ? t(errorKey) : ''"></p>
+    <p class="field-error" data-ref="error" x-show="errorKey" x-text="errorKey ? t(errorKey) : ''"></p>
   </div>
 
   <!-- ─── Output (right) ───────────────────────────────────────── -->

@@ -1345,6 +1345,7 @@ const mod = createModule({
         this._previewGrid = new DataGrid(slot, {
           toast: ctx().notify || (() => {}),
           t: (key) => ctx().i18n.t(key),
+          dialog: ctx().dialog,
           extraRowMenuItems: isOptimal
             ? (cell) => [{ label: _t('forbiddenContextAction'), action: () => self.forbidPreviewRow(cell.rowIdx) }]
             : undefined,

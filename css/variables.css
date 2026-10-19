@@ -49,6 +49,25 @@
   --border-width: 1px;
   --transition-speed: 200ms;
 
+  /* Layers (z-index), bottom to top. Every page-level z-index (50 and up)
+     uses one of these; below 50 orders siblings inside one component.
+     The order is guarded by tests/global/z-index-scale.spec.js. */
+  --z-raised: 50;
+  --z-menu: 60;
+  --z-sticky: 100;
+  --z-banner: calc(var(--z-sticky) + 1);
+  --z-action-menu: 150;
+  --z-dropdown: 200;
+  --z-drag: 999;
+  --z-popup: 1000;
+  --z-popout: 2000;
+  --z-grid-toast: 3000;
+  --z-loading: 9999;
+  --z-dialog: 10000;
+  --z-toast: calc(var(--z-dialog) + 1);
+  --z-color-picker: calc(var(--z-dialog) + 2);
+  --z-viewport-guard: 100000;
+
   /* Backgrounds */
   --color-bg-primary: #fff;
   --color-bg-secondary: #f5f5f7;
@@ -96,6 +115,7 @@
 
   /* Status */
   --color-success: #34c759;
+  --color-success-text: #2e7d32; /* readable as text on light backgrounds */
   --color-warning: #ff9500;
   --color-error: #ff3b30;
   --color-info: #007aff;
@@ -117,6 +137,14 @@
   --color-role-identifier-bg:  #cbd5e1;  /* slate-300              */
   --color-role-freeText-fg:    #9d3866;  /* rose, desaturated      */
   --color-role-freeText-bg:    #fce7ef;  /* rose-100               */
+
+  /* Function-analysis node kinds (TRIZ): supersystem warm orange, target yellow. */
+  --color-node-supersystem-fill:   #fdecd8;
+  --color-node-supersystem-stroke: #f08a2c;
+  --color-node-supersystem-text:   #a3480c;
+  --color-node-target-fill:        #fdf4b8;
+  --color-node-target-stroke:      #e9c32e;
+  --color-node-target-text:        #7a5800;
 
   /* Shadows */
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 5%);
@@ -291,6 +319,7 @@
   --color-accent: #4da3ff;
   --color-accent-hover: #6db5ff;
   --color-accent-light: #1a3a5c;
+  --color-success-text: #a5d6a7;
 
   /* Column-role palette (dark theme — brighter fg, low-luminance bg). */
   --color-role-continuous-fg:  #60a5fa;  /* blue-400  */
@@ -305,6 +334,14 @@
   --color-role-identifier-bg:  #334155;  /* slate-700             */
   --color-role-freeText-fg:    #f0a3b8;  /* rose, light + warm    */
   --color-role-freeText-bg:    #4a2030;
+
+  /* Function-analysis node kinds (TRIZ) */
+  --color-node-supersystem-fill:   #4a2e16;
+  --color-node-supersystem-stroke: #f0963c;
+  --color-node-supersystem-text:   #ffc58c;
+  --color-node-target-fill:        #443d12;
+  --color-node-target-stroke:      #e6c93c;
+  --color-node-target-text:        #fce68a;
 
   /* Phase Colors (brighter for dark bg)
      DMAIC: blue (Data) → red → orange → yellow → lime → green

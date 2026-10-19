@@ -107,39 +107,22 @@
   margin-bottom: var(--spacing-sm);
 }
 
-.pc__goals-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-sm);
-}
-
 .pc__goals-table th {
-  text-align: left;
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-bottom: 2px solid var(--color-border-primary);
   white-space: nowrap;
 }
 
 .pc__goals-table td {
-  padding: var(--spacing-xs) var(--spacing-xs);
-  border-bottom: var(--border-width) solid var(--color-border-secondary);
+  padding: var(--spacing-xs);
   vertical-align: top;
-}
-
-.pc__goal-row:hover td {
-  background: var(--color-bg-secondary);
 }
 
 /* Column widths */
 .pc__col-nr    { width: 28px; text-align: center; color: var(--color-text-tertiary); font-size: var(--font-size-xs); }
-tbody .pc__col-nr { cursor: grab; user-select: none; }
-tbody .pc__col-nr:active { cursor: grabbing; }
 
-.pc__goal-row--dragging td { opacity: 0.4; }
-.pc__goal-row--drop-before td { box-shadow: inset 0 2px 0 0 var(--color-accent, var(--color-info)); }
-.pc__goal-row--drop-after  td { box-shadow: inset 0 -2px 0 0 var(--color-accent, var(--color-info)); }
+/* Reorder grip — column, glyph, hover and drag states come from
+   .dmike-table--draggable in components.css. */
 
 /* Description is the only flexible column — fills the remaining space.
    All other columns shrink to their content via width:1%; the inputs
@@ -332,7 +315,7 @@ tbody .pc__col-nr:active { cursor: grabbing; }
 
 .pc__org-node--drag {
   opacity: 0.8;
-  z-index: 999;
+  z-index: var(--z-drag);
 }
 
 /* Smooth transition for sibling nodes during reorder drag */
@@ -347,7 +330,7 @@ tbody .pc__col-nr:active { cursor: grabbing; }
   background: var(--color-accent);
   border-radius: 1.5px;
   pointer-events: none;
-  z-index: 998;
+  z-index: calc(var(--z-drag) - 1);
   display: none;
   box-shadow: 0 0 6px var(--color-accent-light);
 }

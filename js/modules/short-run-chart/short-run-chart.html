@@ -11,7 +11,7 @@
     <div class="field-group">
       <label data-help-key="modules.short-run-chart.actions.setColumn.help" x-text="t('groupsColumn')"></label>
       <div data-ref="grp-picker"></div>
-      <span class="src__hint" x-text="t('groupsHint')"></span>
+      <span class="field-hint" x-text="t('groupsHint')"></span>
     </div>
 
   </div>
@@ -28,7 +28,7 @@
           <template x-for="(c, i) in kpiCells" :key="i">
             <div class="dmike-kpi" :class="c.mod">
               <div class="dmike-kpi-value" x-text="c.value"></div>
-              <div class="dmike-kpi-label" :data-help-key="c.help"><span x-text="c.label"></span><template x-if="c.labelHint"><span class="src__hint" x-text="' (' + c.labelHint + ')'"></span></template></div>
+              <div class="dmike-kpi-label" :data-help-key="c.help"><span x-text="c.label"></span><template x-if="c.labelHint"><span class="field-hint" x-text="' (' + c.labelHint + ')'"></span></template></div>
               <div class="dmike-kpi-sub" x-text="c.sub"></div>
             </div>
           </template>
@@ -51,7 +51,7 @@
     </div>
     <div data-ref="groups-wrap">
       <template x-if="groupRows.length">
-        <table class="src__groups-table">
+        <table class="dmike-table src__groups-table">
           <thead><tr>
             <th><span data-help-key="modules.short-run-chart.types.GroupStats.group" x-text="t('thGroup')"></span></th>
             <th><span data-help-key="modules.short-run-chart.types.GroupStats.count" x-text="t('thCount')"></span></th>

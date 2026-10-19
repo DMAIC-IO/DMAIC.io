@@ -99,7 +99,7 @@
              @input="paramChanged('esd-max', $event)">
     </div>
 
-    <div class="outliertest__error" data-ref="error-box" x-show="errorMsg" x-text="errorMsg"></div>
+    <div class="field-error" data-ref="error-box" x-show="errorMsg" x-text="errorMsg"></div>
 
   </div>
 
@@ -182,7 +182,7 @@
                     </div>
                   </template>
                   <template x-if="card.steps.length">
-                    <table class="outliertest__steps">
+                    <table class="dmike-table outliertest__steps">
                       <thead><tr><th><span data-help-key="modules.outlier-test.types.EsdStep.i" x-text="t('symStep')"></span></th><th><span data-help-key="modules.outlier-test.types.EsdStep.value" x-text="t('value')"></span></th><th><span data-help-key="modules.outlier-test.types.EsdStep.R" x-text="t('symR')"></span></th><th><span data-help-key="modules.outlier-test.types.EsdStep.lambda" x-text="t('symLambda')"></span></th><th x-text="card.stepsHeader"></th></tr></thead>
                       <tbody>
                         <template x-for="(st, si) in card.steps" :key="si">
@@ -197,7 +197,7 @@
                     </table>
                   </template>
                   <template x-if="card.hint">
-                    <div class="outliertest__hint" x-text="card.hint"></div>
+                    <div class="field-hint" x-text="card.hint"></div>
                   </template>
                 </div>
               </template>
@@ -208,7 +208,7 @@
           <template x-if="flaggedShow">
             <div class="outliertest__flagged-block">
               <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.outlier-test.types.MethodResult.flagged" x-text="t('sectionFlagged')"></span></div>
-              <table class="outliertest__flagged">
+              <table class="dmike-table outliertest__flagged">
                 <thead><tr>
                   <th><span data-help-key="modules.outlier-test.types.Result.flaggedIdxs">#</span></th>
                   <th x-text="t('value')"></th>

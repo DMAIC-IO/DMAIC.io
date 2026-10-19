@@ -16,10 +16,10 @@ export default createPage({
   button: '#footer-licenses',
   overlay: 'licenses',
   i18nKey: 'licenses',
-  data(context, t, page) {
+  dialog: { titleKey: 'title' },
+  data() {
     return {
       libs: LICENSES.map(l => ({ ...l, versionLabel: 'v' + l.version })),
-      close() { page.hide(); },
     };
   },
 });

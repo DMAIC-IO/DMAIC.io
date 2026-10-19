@@ -21,9 +21,25 @@
 
 .tfa__row {
   display: grid;
-  grid-template-columns: minmax(160px, 2fr) minmax(160px, 3fr) 180px auto;
+  grid-template-columns: minmax(160px, 2fr) minmax(120px, 2fr) 140px 180px auto;
   gap: var(--spacing-s);
   align-items: center;
+}
+
+.tfa__cost-field {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.tfa__cost-field .field {
+  min-width: 0;
+  flex: 1;
+  text-align: right;
+}
+
+.tfa__cost-unit {
+  color: var(--color-text-secondary);
 }
 
 .tfa__add {
@@ -82,6 +98,10 @@ thead .tfa__mh {
   cursor: pointer;
 }
 
+.tfa__cell-excluded {
+  color: var(--color-text-secondary);
+}
+
 .tfa__cell-btn:hover {
   background: var(--color-bg-secondary);
 }
@@ -107,12 +127,36 @@ thead .tfa__mh {
   border-color: var(--color-accent);
 }
 
-.tfa__fn {
+.tfa__pair {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
   padding: var(--spacing-s);
   margin-bottom: var(--spacing-s);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md, 6px);
+  background: var(--color-bg-secondary);
+}
+
+.tfa__pair-head {
+  display: flex;
+  gap: var(--spacing-s);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tfa__pair-name {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tfa__fn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-s);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--radius-md, 6px);
   background: var(--color-bg-primary);
@@ -129,7 +173,7 @@ thead .tfa__mh {
 
 .tfa__fn-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: var(--spacing-xs);
   align-items: center;
 }
@@ -189,6 +233,9 @@ thead .tfa__mh {
 .tfa__stage {
   overflow: auto;
   max-height: 560px;
+
+  /* Keeps nodes at (0, 0) off the frame; drag works on deltas, so no offset. */
+  padding: var(--spacing-m);
   border: 1px solid var(--color-border-primary);
   border-radius: var(--radius-md, 6px);
   background: var(--color-bg-primary);
@@ -220,6 +267,14 @@ thead .tfa__mh {
   overflow: visible;
 }
 
+/* Verb labels are the only grabbable part of the overlay. */
+.tfa__arrows [data-part^="link-label"] {
+  pointer-events: auto;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
 .tfa__arrows path.tfa__arrow--hl {
   stroke: var(--color-accent);
   stroke-width: 3;
@@ -232,9 +287,10 @@ thead .tfa__mh {
   align-items: center;
   justify-content: center;
   padding: 0 var(--spacing-sm);
-  border: 1px solid var(--color-border-secondary);
-  border-radius: var(--radius-md, 6px);
-  background: var(--color-bg-secondary);
+
+  /* Outline (box, ellipse, hexagon) and selection are drawn in the SVG layer below. */
+  border: 0;
+  background: transparent;
   color: var(--color-text-primary);
   cursor: grab;
   user-select: none;
@@ -250,18 +306,23 @@ thead .tfa__mh {
   pointer-events: none;
 }
 
-.tfa__node--target {
-  border: 2px solid var(--color-accent);
+/* Ellipse and hexagon are narrower at the sides — keep the name inside. */
+.tfa__node--target,
+.tfa__node--supersystem {
+  padding: 0 var(--spacing-l);
+}
+
+.tfa__node--target,
+.tfa__node--supersystem {
   font-weight: 600;
 }
 
-.tfa__node--supersystem {
-  border-style: dashed;
-  background: var(--color-bg-tertiary);
-}
+.tfa__node--target { color: var(--color-node-target-text); }
+.tfa__node--supersystem { color: var(--color-node-supersystem-text); }
 
-.tfa__node--selected {
-  box-shadow: 0 0 0 2px var(--color-accent);
+.tfa__arrows [data-part="node"].tfa__arrow--hl {
+  stroke: var(--color-accent);
+  stroke-width: 3;
 }
 
 .tfa__node--drag {
@@ -302,4 +363,33 @@ thead .tfa__mh {
 
 .tfa__legend-line--wave::before {
   content: "\00a0\00a0\00a0\00a0\00a0\00a0\00a0";
+}
+
+/* Value & cost */
+.tfa__vc-chart {
+  width: 100%;
+  max-width: 720px;
+  height: 420px;
+}
+
+.tfa__vc-table {
+  border-collapse: collapse;
+  margin-top: var(--spacing-m);
+}
+
+.tfa__vc-table th,
+.tfa__vc-table td {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border-secondary);
+  text-align: left;
+}
+
+.tfa__vc-table th {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.tfa__vc-table .tfa__vc-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }

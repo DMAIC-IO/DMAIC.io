@@ -9,6 +9,9 @@
  * Persistence shape is the legacy `getState()` plus `equalVariances`:
  *   { category, testType, direction, alpha, powerGoal, targetValue, targetType,
  *     colRef1, colRef2, colRefsK, exampleWorksheetId, equalVariances }
+ *
+ * testType 'paired' (means only) reuses colRef1/colRef2 for the two columns
+ * and targetValue for the hypothesized mean difference μ_d₀.
  */
 
 /** @typedef {{ instanceId: string, sheetId?: string, columnId: string }} ColumnRef */
@@ -21,8 +24,8 @@
    'greater'` als „less"). */
 /** @type {readonly ('variance'|'mean')[]} */
 export const CATEGORIES = Object.freeze(['variance', 'mean']);
-/** @type {readonly ('one'|'two'|'k')[]} */
-export const TEST_TYPES = Object.freeze(['one', 'two', 'k']);
+/** @type {readonly ('one'|'two'|'paired'|'k')[]} */
+export const TEST_TYPES = Object.freeze(['one', 'two', 'paired', 'k']);
 /** @type {readonly ('two-sided'|'greater'|'less')[]} */
 export const DIRECTIONS = Object.freeze(['two-sided', 'greater', 'less']);
 /** @type {readonly ('variance'|'stddev')[]} */
@@ -39,7 +42,7 @@ function refOrNull(r) {
 export class State {
   /** @type {'variance'|'mean'} */
   category = 'variance';
-  /** @type {'one'|'two'|'k'} */
+  /** @type {'one'|'two'|'paired'|'k'} */
   testType = 'one';
   /** @type {'two-sided'|'greater'|'less'} */
   direction = 'two-sided';
@@ -47,7 +50,7 @@ export class State {
   alpha = null;
   /** @type {number|null} desired power; null until seeded from settings. */
   powerGoal = null;
-  /** @type {string} raw target input (σ²/σ or μ), kept as string like the legacy. */
+  /** @type {string} raw target input (σ²/σ, μ or μ_d₀), kept as string like the legacy. */
   targetValue = '';
   /** @type {'variance'|'stddev'} how the one-sample variance target is entered. */
   targetType = 'variance';
@@ -69,11 +72,13 @@ export class State {
   /**
    * Resolve the one-sample target into an engine-ready value.
    * Variance: requires a positive number; `stddev` input is squared. Mean:
-   * any finite number. Returns `null` when the input is invalid (caller hides
-   * results — matches the legacy auto-analysis behaviour).
+   * any finite number. Paired: the hypothesized difference μ_d₀, empty → 0.
+   * Returns `null` when the input is invalid (caller hides results — matches
+   * the legacy auto-analysis behaviour).
    * @returns {number|null}
    */
   resolveTarget() {
+    if (this.testType === 'paired' && this.targetValue.trim() === '') return 0;
     const tv = parseFloat(this.targetValue);
     if (this.category === 'variance') {
       if (isNaN(tv) || tv <= 0) return null;
@@ -92,6 +97,29 @@ export class State {
     const n = parseFloat(v);
     if (isNaN(n)) return;
     this.powerGoal = Math.min(0.99, Math.max(0.5, n));
+  }
+
+  /**
+   * Set the category. There is no paired variance test, so a paired
+   * configuration falls back to two samples when switching to variance.
+   * @param {'variance'|'mean'} cat
+   */
+  applyCategory(cat) {
+    if (!CATEGORIES.includes(cat)) return;
+    this.category = cat;
+    if (cat === 'variance' && this.testType === 'paired') this.testType = 'two';
+  }
+
+  /**
+   * Set the test type. targetValue holds μ₀ / σ²₀ for one sample but μ_d₀ for
+   * paired, so crossing into or out of paired clears it — a one-sample μ₀ of 100
+   * must not silently become the hypothesized difference.
+   * @param {'one'|'two'|'paired'|'k'} type
+   */
+  applyTestType(type) {
+    if (!TEST_TYPES.includes(type)) return;
+    if ((type === 'paired') !== (this.testType === 'paired')) this.targetValue = '';
+    this.testType = type;
   }
 
   /** True when any column reference is selected (drives loadExample confirm). */
@@ -136,6 +164,7 @@ export class State {
     s.colRefsK = Array.isArray(d.colRefsK) ? d.colRefsK.map(refOrNull).filter(Boolean) : [];
     s.exampleWorksheetId = d.exampleWorksheetId != null ? d.exampleWorksheetId : null;
     if (typeof d.equalVariances === 'boolean') s.equalVariances = d.equalVariances;
+    if (s.category === 'variance' && s.testType === 'paired') s.testType = 'two';
     return s;
   }
 }

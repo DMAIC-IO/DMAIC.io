@@ -10,13 +10,6 @@
   color: var(--color-text-secondary);
 }
 
-.kano__check {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-size: var(--font-size-sm);
-}
-
 .kano__sync-status {
   margin-top: var(--spacing-xs);
   font-size: var(--font-size-sm);

@@ -325,8 +325,12 @@ export default createModule({
         this._syncDisplay();
         return this.model.expression;
       },
+      /** @noagent Mausklick auf einen Modusreiter darf ihn nicht fokussieren — Enter bleibt eine Rechnertaste. */
+      preventFocus(e) { e.preventDefault(); },
       /**
-       * Wechselt den Rechenbereich und leert die Eingabezeile.
+       * Wechselt den Rechenbereich und leert die Eingabezeile. Der schon
+       * aktive Bereich (Leertaste auf seinem Reiter, erneuter Klick) behält
+       * die Eingabe.
        * @agent
        * @param {'sci'|'stats'|'sixsigma'} m sci rechnet wissenschaftlich,
        *   stats wertet den Statistikdatensatz aus, sixsigma den
@@ -336,6 +340,7 @@ export default createModule({
        */
       switchMode(m) {
         requireEnum('m', m, MODES);
+        if (m === this.model.mode) return;
         this.model.switchMode(m);
         this.exprText = '';
         this._showResult('0');
@@ -561,6 +566,11 @@ export default createModule({
       onKeydown(e) {
         // Don't capture when typing in spec-limit inputs
         if (e.target.tagName === 'INPUT') return;
+        // Enter on a focused, inactive mode tab activates that tab (native
+        // click). On the active tab Enter stays the calculator's "=". Mouse
+        // clicks never focus a tab (preventFocus), so only keyboard focus counts.
+        const tab = e.target.closest?.('[role="tab"]');
+        if (e.key === 'Enter' && tab && tab.getAttribute('aria-selected') !== 'true') return;
 
         if (e.key === 'Enter') {
           if (this.model.mode === 'stats') this.addData();

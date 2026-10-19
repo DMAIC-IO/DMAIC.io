@@ -1,10 +1,18 @@
 <section class="module-container ishikawa" x-data="ishikawa">
   <div class="module-container__body">
-    <div class="ishikawa__tabs" role="tablist">
-      <button class="ishikawa__tab" :class="tabClass('problem')" role="tab" data-tab="problem" @click="changeRoute('problem')" x-text="t('tabProblem')"></button>
-      <button class="ishikawa__tab" :class="tabClass('facts')" role="tab" data-tab="facts" @click="changeRoute('facts')" x-text="t('tabFacts')"></button>
-      <button class="ishikawa__tab" :class="tabClass('hypotheses')" role="tab" data-tab="hypotheses" @click="changeRoute('hypotheses')" x-text="t('tabHypotheses')"></button>
-      <button class="ishikawa__tab" :class="tabClass('experiments')" role="tab" data-tab="experiments" @click="changeRoute('experiments')" x-text="t('tabExperiments')"></button>
+    <div class="dmike-tabs" role="tablist" x-tablist>
+      <button class="dmike-tab" type="button" role="tab" data-tab="problem" :class="tabClass('problem')"
+        :aria-selected="activeTab === 'problem' ? 'true' : 'false'" :tabindex="activeTab === 'problem' ? 0 : -1"
+        @click="changeRoute('problem')" x-text="t('tabProblem')"></button>
+      <button class="dmike-tab" type="button" role="tab" data-tab="facts" :class="tabClass('facts')"
+        :aria-selected="activeTab === 'facts' ? 'true' : 'false'" :tabindex="activeTab === 'facts' ? 0 : -1"
+        @click="changeRoute('facts')" x-text="t('tabFacts')"></button>
+      <button class="dmike-tab" type="button" role="tab" data-tab="hypotheses" :class="tabClass('hypotheses')"
+        :aria-selected="activeTab === 'hypotheses' ? 'true' : 'false'" :tabindex="activeTab === 'hypotheses' ? 0 : -1"
+        @click="changeRoute('hypotheses')" x-text="t('tabHypotheses')"></button>
+      <button class="dmike-tab" type="button" role="tab" data-tab="experiments" :class="tabClass('experiments')"
+        :aria-selected="activeTab === 'experiments' ? 'true' : 'false'" :tabindex="activeTab === 'experiments' ? 0 : -1"
+        @click="changeRoute('experiments')" x-text="t('tabExperiments')"></button>
     </div>
 
     <!-- ─── PROBLEM TAB ─────────────────────────────────────── -->

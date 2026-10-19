@@ -9,14 +9,14 @@
           <option :value="o.value" :selected="o.value === model.chartTypeId" x-text="o.label"></option>
         </template>
       </select>
-      <span class="rec__hint" x-text="t('typeHint_' + model.chartTypeId)"></span>
+      <span class="field-hint" x-text="t('typeHint_' + model.chartTypeId)"></span>
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
     <div class="field-group">
       <label data-help-key="modules.rare-event-chart.actions.setColumn.help" x-text="t('dataColumn')"></label>
       <div data-ref="col-picker-wrap"></div>
-      <span class="rec__hint" x-text="t('dataHint_' + model.chartTypeId)"></span>
+      <span class="field-hint" x-text="t('dataHint_' + model.chartTypeId)"></span>
     </div>
 
   </div>
@@ -42,7 +42,7 @@
               <div class="dmike-kpi-sub" x-text="t('statOf', { total: result.n })"></div>
             </div>
           </div>
-          <span class="rec__hint" x-show="result.transformedNote" x-text="t('originalScaleNote')"></span>
+          <span class="field-hint" x-show="result.transformedNote" x-text="t('originalScaleNote')"></span>
         </div>
       </template>
     </div>

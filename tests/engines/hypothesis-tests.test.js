@@ -6,7 +6,7 @@
 import { suite, test, assertAlmostEqual, assertEqual } from '../test-utils.js';
 import {
   chiSquareVarianceTest, fTest, leveneTest,
-  oneSampleTTest, twoSampleTTest, welchTTest,
+  oneSampleTTest, pairedTTest, twoSampleTTest, welchTTest,
   wilcoxonSignedRank, mannWhitneyU, hodgesLehmann,
   powerOneSampleT, powerTwoSampleT, findRequiredN,
 } from '../../js/engines/hypothesis-test-engine.js';
@@ -31,6 +31,14 @@ function assertFields(result, expected, tol, id) {
       assertAlmostEqual(result[key], val, tol, `${id}: ${key} = ${result[key]}, expected ${val}`);
     } else if (typeof val === 'boolean' || typeof val === 'string') {
       assertEqual(result[key], val, `${id}: ${key} = ${result[key]}, expected ${val}`);
+    } else if (Array.isArray(val)) {
+      const got = result[key];
+      const msg = `${id}: ${key} = ${JSON.stringify(got)}, expected ${JSON.stringify(val)}`;
+      if (!Array.isArray(got) || got.length !== val.length) throw new Error(msg);
+      val.forEach((v, i) => {
+        if (v === null) assertEqual(got[i], null, msg);
+        else assertAlmostEqual(got[i], v, tol, msg);
+      });
     }
   }
 }
@@ -73,6 +81,14 @@ suite('Hypothesis — F-Test (fixture validation)', () => {
       });
     }
   }
+
+  test('reports the variance ratio s²₁/s²₂ as point estimate', () => {
+    const result = fTest([1, 2, 4, 7, 11], [3, 4, 5, 6, 8], 'two-sided', 0.05);
+    const expected = result.variance1 / result.variance2;
+    if (!(Math.abs(result.ratio - expected) <= 1e-12)) {
+      throw new Error(`ratio: expected ${expected}, got ${result.ratio}`);
+    }
+  });
 });
 
 // ─── Levene Test ───────────────────────────────────────────────
@@ -102,6 +118,27 @@ suite('Hypothesis — One-Sample t-Test (fixture validation)', () => {
         const { data, mu0, direction, alpha } = tc.inputs;
         const result = oneSampleTTest(data, mu0, direction, alpha);
         assertFields(result, tc.expected, getTol(tc, os1Data.tolerances), tc.id);
+      });
+    }
+  }
+});
+
+// ─── Paired t-Test ─────────────────────────────────────────────
+
+const pairedData = await loadFixture('../fixtures/hypothesis/paired-t-test.fixtures.json');
+
+suite('Hypothesis — Paired t-Test (fixture validation)', () => {
+  for (const tc of pairedData.test_cases) {
+    if (tc.expected && Object.keys(tc.expected).length > 0) {
+      test(`${tc.id}: ${tc.description}`, () => {
+        const { data1, data2, mu0, direction, alpha } = tc.inputs;
+        const result = pairedTTest(data1, data2, mu0, direction, alpha);
+        const tol = getTol(tc, pairedData.tolerances);
+        assertFields(result, tc.expected, tol, tc.id);
+        if (tc.expected.ci) {
+          assertAlmostEqual(result.ci[0], tc.expected.ci[0], tol, `${tc.id}: ci lower`);
+          assertAlmostEqual(result.ci[1], tc.expected.ci[1], tol, `${tc.id}: ci upper`);
+        }
       });
     }
   }

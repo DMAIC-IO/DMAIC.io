@@ -179,85 +179,67 @@
   </div>
  </div>
 
- <!-- Add / Edit form popout (VoC / Need / Driver / Requirement) -->
- <template x-if="modalKind">
-  <div class="dmike-chart-popout-overlay"
-       @click.self="closeModal()"
-       @keydown.escape.window="closeModal()"
-       @keydown.window="commitKey($event)"
-       @mousemove.window="popoutDragMove($event)"
-       @mouseup.window="popoutDragEnd()">
-   <div class="dmike-chart-popout dmike-chart-popout--form" :style="popoutStyle()">
-    <div class="dmike-chart-popout-titlebar" @mousedown="popoutDragStart($event)">
-     <span x-text="modalTitle()"></span>
-     <button class="dmike-chart-popout-close" type="button" :aria-label="t('common.close')" @click="closeModal()">
-      <span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span>
-     </button>
-    </div>
-    <div class="dmike-chart-popout-body vct__popout-body">
-     <div>
-      <!-- Driver type selector (driver only) -->
-      <template x-if="modalKind === 'driver'">
-       <div class="vct__form-group">
-        <label data-help-key="modules.voc-ctx-tree.actions.addDriver.params.type" x-text="t('driverType')"></label>
-        <div class="vct__type-selector" data-ref="typeSel">
-         <button type="button" class="vct__type-option" :class="typeOptClass('ctq')" data-type="ctq"
-                 @click="modalData.type = 'ctq'">
-          <span class="vct__type-label">CTQ</span>
-          <span class="vct__type-desc">Quality</span>
-         </button>
-         <button type="button" class="vct__type-option" :class="typeOptClass('ctd')" data-type="ctd"
-                 @click="modalData.type = 'ctd'">
-          <span class="vct__type-label">CTD</span>
-          <span class="vct__type-desc">Delivery</span>
-         </button>
-         <button type="button" class="vct__type-option" :class="typeOptClass('ctc')" data-type="ctc"
-                 @click="modalData.type = 'ctc'">
-          <span class="vct__type-label">CTC</span>
-          <span class="vct__type-desc">Cost</span>
-         </button>
-        </div>
-       </div>
-      </template>
-
-      <!-- Main text field (all kinds) -->
-      <div class="vct__form-group">
-       <label x-text="textLabel()"></label>
-       <textarea class="field" data-field="text" data-ref="modalText" :placeholder="textPlaceholder()"
-                 :maxlength="textMaxLength()" x-model="modalData.text"></textarea>
+ <!-- Node form (VoC / Need / Driver / Requirement): hidden here, lent to
+      the dialog service by _openModal() -->
+ <div class="vct__modal-forms" hidden>
+  <div class="vct__form" x-ref="nodeForm" @keydown="commitKey($event)">
+   <div>
+    <!-- Driver type selector (driver only) -->
+    <template x-if="modalKind === 'driver'">
+     <div class="vct__form-group">
+      <label data-help-key="modules.voc-ctx-tree.actions.addDriver.params.type" x-text="t('driverType')"></label>
+      <div class="vct__type-selector" data-ref="typeSel">
+       <button type="button" class="vct__type-option" :class="typeOptClass('ctq')" data-type="ctq"
+               @click="modalData.type = 'ctq'">
+        <span class="vct__type-label">CTQ</span>
+        <span class="vct__type-desc">Quality</span>
+       </button>
+       <button type="button" class="vct__type-option" :class="typeOptClass('ctd')" data-type="ctd"
+               @click="modalData.type = 'ctd'">
+        <span class="vct__type-label">CTD</span>
+        <span class="vct__type-desc">Delivery</span>
+       </button>
+       <button type="button" class="vct__type-option" :class="typeOptClass('ctc')" data-type="ctc"
+               @click="modalData.type = 'ctc'">
+        <span class="vct__type-label">CTC</span>
+        <span class="vct__type-desc">Cost</span>
+       </button>
       </div>
-
-      <!-- Source (VoC only) -->
-      <template x-if="modalKind === 'voc'">
-       <div class="vct__form-group">
-        <label data-help-key="modules.voc-ctx-tree.actions.addVoc.params.source" x-text="t('vocSource')"></label>
-        <input type="text" class="field" data-field="source" :placeholder="t('vocSourcePlaceholder')"
-               maxlength="200" x-model="modalData.source">
-       </div>
-      </template>
-
-      <!-- Target + Measure (Requirement only) -->
-      <template x-if="modalKind === 'req'">
-       <div class="vct__form-group">
-        <label data-help-key="modules.voc-ctx-tree.actions.addRequirement.params.target" x-text="t('reqTarget')"></label>
-        <input type="text" class="field" data-field="target" :placeholder="t('reqTargetPlaceholder')"
-               maxlength="200" x-model="modalData.target">
-       </div>
-      </template>
-      <template x-if="modalKind === 'req'">
-       <div class="vct__form-group">
-        <label data-help-key="modules.voc-ctx-tree.actions.addRequirement.params.measure" x-text="t('reqMeasure')"></label>
-        <input type="text" class="field" data-field="measure" :placeholder="t('reqMeasurePlaceholder')"
-               maxlength="200" x-model="modalData.measure">
-       </div>
-      </template>
      </div>
+    </template>
+
+    <!-- Main text field (all kinds) -->
+    <div class="vct__form-group">
+     <label x-text="textLabel()"></label>
+     <textarea class="field" data-field="text" data-ref="modalText" :placeholder="textPlaceholder()"
+               :maxlength="textMaxLength()" x-model="modalData.text"></textarea>
     </div>
-    <div class="vct__popout-footer">
-     <button class="btn btn--secondary" type="button" @click="closeModal()" x-text="t('common.cancel')"></button>
-     <button class="btn btn--primary" type="button" @click="saveModal()" x-text="t('common.save')"></button>
-    </div>
+
+    <!-- Source (VoC only) -->
+    <template x-if="modalKind === 'voc'">
+     <div class="vct__form-group">
+      <label data-help-key="modules.voc-ctx-tree.actions.addVoc.params.source" x-text="t('vocSource')"></label>
+      <input type="text" class="field" data-field="source" :placeholder="t('vocSourcePlaceholder')"
+             maxlength="200" x-model="modalData.source">
+     </div>
+    </template>
+
+    <!-- Target + Measure (Requirement only) -->
+    <template x-if="modalKind === 'req'">
+     <div class="vct__form-group">
+      <label data-help-key="modules.voc-ctx-tree.actions.addRequirement.params.target" x-text="t('reqTarget')"></label>
+      <input type="text" class="field" data-field="target" :placeholder="t('reqTargetPlaceholder')"
+             maxlength="200" x-model="modalData.target">
+     </div>
+    </template>
+    <template x-if="modalKind === 'req'">
+     <div class="vct__form-group">
+      <label data-help-key="modules.voc-ctx-tree.actions.addRequirement.params.measure" x-text="t('reqMeasure')"></label>
+      <input type="text" class="field" data-field="measure" :placeholder="t('reqMeasurePlaceholder')"
+             maxlength="200" x-model="modalData.measure">
+     </div>
+    </template>
    </div>
   </div>
- </template>
+ </div>
 </div>

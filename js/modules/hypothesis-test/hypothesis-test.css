@@ -13,6 +13,13 @@
    the parent flow (margins collapse exactly as the legacy flat markup did). */
 .hyptest__contents { display: contents; }
 
+/* Four test types (means: one, two, paired, k) do not fit one row of the input
+   panel without wrapping their labels — lay them out as a 2×2 grid instead. */
+.hyptest__toggle-row--grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
 /* `display: contents` does NOT change :first-child matching — a section title
    that is the wrapper's first DOM child loses the global
    `.dmike-split__output-section:not(:first-child)` top margin. These conditional
@@ -72,15 +79,6 @@
 }
 
 /* Error */
-.hyptest__error {
-  display: none;
-  margin-top: var(--spacing-sm);
-  padding: var(--spacing-sm);
-  border-radius: var(--border-radius);
-  background: rgb(var(--color-error-rgb, 239, 68, 68), 0.1);
-  color: var(--color-error);
-  font-size: var(--font-size-xs);
-}
 
 /* ── Output: Result cards ────────────────────────────────── */
 
@@ -327,14 +325,6 @@
   border: var(--border-width) solid rgb(251 191 36 / 20%);
 }
 
-/* Table (aligned with global .stats-table pattern) */
-
-/* Table styling handled by global .dmike-split table rules in components.css.
-   Override only header alignment so th matches td (browsers center th by default). */
-.hyptest__result-card table th {
-  text-align: left;
-}
-
 /* Text colors */
 .hyptest__text-success { color: var(--color-success); font-weight: 600; }
 .hyptest__text-danger { color: var(--color-error); font-weight: 600; }
@@ -417,12 +407,5 @@
 .hyptest__placeholder p {
   font-size: var(--font-size-sm);
   max-width: 280px;
-}
-
-.hyptest__check {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-weight: var(--font-weight-normal);
 }
 

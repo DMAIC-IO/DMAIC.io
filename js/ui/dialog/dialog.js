@@ -11,7 +11,7 @@
 
 import Alpine from '@alpinejs/csp';
 import { cloneTemplate, stripBlankText } from '../../core/dom.js';
-import { draggablePopout } from '../draggable-popout.js';
+import { draggablePopout } from './draggable.js';
 import { buildDialogState } from './dialog-state.js';
 import { createProgress, STATUS_ICON, STATUS_LABEL } from './progress.js';
 
@@ -34,10 +34,18 @@ export function createDialogService({ i18n }) {
    * and stopImmediatePropagation keeps the Escape from closing that popout
    * too. A non-dismissible top dialog swallows the Escape as well: it is
    * modal, nothing behind it may react.
+   *
+   * Content that needs Escape for itself while a mode is active (the Settings
+   * shortcut capture) marks an element with `data-dialog-owns-escape`; while
+   * that mark is in the top dialog, Escape passes through untouched. The same
+   * mark on a body-level layer above all dialogs (the colour picker overlay)
+   * passes Escape through as well — that layer closes first.
    * @param {KeyboardEvent} e
    */
   function onKeydown(e) {
     if (e.key !== 'Escape' || e.isComposing || stack.length === 0) return;
+    if (stack[stack.length - 1].root.querySelector('[data-dialog-owns-escape]')) return;
+    if (document.querySelector('body > [data-dialog-owns-escape]')) return;
     e.stopImmediatePropagation();
     e.preventDefault();
     stack[stack.length - 1].dlg.dismiss();
@@ -183,15 +191,22 @@ export function createDialogService({ i18n }) {
   }
 
   /**
-   * Custom content without buttons.
-   * @param {{ title: string, content: Node, size?: string, dismissible?: boolean }} opts
-   * @returns {{ close: () => void }}
+   * Custom content without buttons. `onClose` runs exactly once, after the
+   * dialog is gone and borrowed content is back home — whichever way it
+   * closed (✕, Escape, overlay click or the handle's close()). An error
+   * thrown by onClose is not caught.
+   * @param {{ title: string, content: Node, size?: string, dismissible?: boolean,
+   *           onClose?: () => void }} opts
+   * @returns {{ close: () => void, setTitle: (text: string) => void }}
    */
   function show(opts) {
     let entry = null;
-    const close = () => { unmount(entry); };
+    const close = () => {
+      if (unmount(entry) && opts.onClose) opts.onClose();
+    };
     entry = mount('show', opts, { body: opts.content }, { confirm: close, cancel: close });
-    return { close };
+    const setTitle = (text) => { if (stack.includes(entry)) entry.dlg.title = text; };
+    return { close, setTitle };
   }
 
   /**

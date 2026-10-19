@@ -1,14 +1,14 @@
 /**
  * D.Mike — TRIZ function analysis module.
  *
- * Three tabs: components, interaction matrix, function model. The diagram
+ * Four tabs: components, interaction matrix, function model, value & cost. The diagram
  * follows the org-chart pattern of project-charter: HTML boxes moved by the
  * module, a links-only node-diagram overlay for the arrows.
  */
 
 import { createModule } from '../../core/template-module.js';
 import {
-  State, KINDS, LEVELS, TABS, orderedComponents, openPairs, rankOf, disadvantages,
+  State, KINDS, GROUPS, LEVELS, TABS, orderedComponents, openPairs, rankOf, disadvantages, functionPairs, valueCostRows,
 } from './triz-function-analysis-model.js';
 import {
   NODE_W, NODE_H, resolvePositions, buildFunctionDiagram,
@@ -16,9 +16,15 @@ import {
 
 /** Arrow overlay chart per component root (not reactive, not persisted). */
 const arrowCharts = new WeakMap();
+/** Value & cost scatter per component root (not reactive, not persisted). */
+const valueCostCharts = new WeakMap();
+/** Crosshair at the middle of both normalised axes; top left = trimming candidates. */
+const VC_SPLIT = 5;
 const DRAG_THRESHOLD = 3;
 const CANVAS_PAD = 20;
 const CANVAS_MIN = { w: 480, h: 240 };
+/** Room right of / below a dragged verb label (its centre) so it stays on the canvas. */
+const LABEL_ROOM = 60;
 
 export default createModule({
   config: {
@@ -38,6 +44,7 @@ export default createModule({
     return {
       TABS,
       KINDS,
+      GROUPS,
       LEVELS,
       selectedId: null,
 
@@ -61,6 +68,14 @@ export default createModule({
       },
       setName(c, ev) { c.name = ev.target.value; },
       setNote(c, ev) { c.note = ev.target.value; },
+      /** Store a cost typed into a system row; an invalid entry snaps back to the stored value. */
+      setCost(c, ev) {
+        // Unparsable text ('2e') reads as '' and would otherwise clear the cost.
+        if (ev.target.validity.badInput || !this.model.setCost(c.id, ev.target.value)) {
+          ev.target.value = this.costValue(c);
+        }
+      },
+      costValue(c) { return c.cost ?? ''; },
       changeKind(c, ev) {
         const demoted = this.model.setKind(c.id, ev.target.value);
         if (demoted) notify(_t('targetDemoted', { name: label(demoted) }));
@@ -87,7 +102,10 @@ export default createModule({
         return ci > ri ? 'tfa__cell' : 'tfa__cell tfa__cell--off';
       },
       isTicked(r, c) { return this.model.hasInteraction(r.id, c.id); },
+      isExcluded(r, c) { return this.model.isExcluded(r.id, c.id); },
+      cellState(r, c) { return this.model.pairState(r.id, c.id); },
       cellTitle(r, c) {
+        if (this.isExcluded(r, c)) return _t('pairExcluded');
         const n = this.model.usersOf(r.id, c.id);
         return n ? _t('pairLocked', { count: n }) : '';
       },
@@ -109,19 +127,22 @@ export default createModule({
         });
       },
       createFromPair(p) { this.selectedId = this.model.addFunction(p.a, p.b).id; },
-      addFunction() { this.selectedId = this.model.addFunction().id; },
-      setCarrier(fn, ev) {
-        if (!this.model.setEndpoints(fn.id, ev.target.value, fn.object)) {
-          ev.target.value = fn.carrier;
-          notify(_t('sameEndpoint'));
-        }
+      /** Function blocks, one per pair; a/b follow the matrix order so the header never flips. */
+      pairBlocks() {
+        const order = new Map(this.matrixComponents().map((c, i) => [c.id, i]));
+        return functionPairs(this.model).map((g) => {
+          const [a, b] = g.complete && order.get(g.b) < order.get(g.a) ? [g.b, g.a] : [g.a, g.b];
+          return { ...g, a, b, label: `${this.endName(a)} — ${this.endName(b)}` };
+        });
       },
-      setObject(fn, ev) {
-        if (!this.model.setEndpoints(fn.id, fn.carrier, ev.target.value)) {
-          ev.target.value = fn.object;
-          notify(_t('sameEndpoint'));
-        }
+      addOnPair(g) { this.selectedId = this.model.addFunction(g.a, g.b).id; },
+      endName(id) {
+        const c = this.model.component(id);
+        return c ? label(c) : '—';
       },
+      isForward(fn, g) { return fn.carrier === g.a; },
+      isBackward(fn, g) { return fn.carrier !== g.a; },
+      directionLabel(fn) { return `${this.endName(fn.carrier)} → ${this.endName(fn.object)}`; },
       setVerb(fn, ev) { fn.verb = ev.target.value; },
       setParameter(fn, ev) { fn.parameter = ev.target.value; },
       changeType(fn, ev) { this.model.setType(fn.id, ev.target.value); },
@@ -156,14 +177,76 @@ export default createModule({
       },
       paramText(d) { return d.parameter ? ` (${d.parameter})` : ''; },
 
-      // ── Lifecycle: arrow overlay ──
+      // ── Value & cost ──
+      /** Table rows of the system components, formatted for the UI language. */
+      vcRows() {
+        const locale = module._context.i18n.getLanguage() === 'en' ? 'en-US' : 'de-DE';
+        const int = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
+        const dec = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+        const eur = new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' });
+        return valueCostRows(this.model).map((r) => ({
+          id: r.id,
+          name: label(r),
+          value: int.format(r.value),
+          normValue: dec.format(r.normValue),
+          cost: r.cost === null ? '–' : eur.format(r.cost),
+          normCost: r.normCost === null ? '–' : dec.format(r.normCost),
+        }));
+      },
+      /** @returns {string} hint shown instead of the plot, '' when there is something to plot */
+      valueCostEmpty() {
+        const rows = valueCostRows(this.model);
+        if (rows.length === 0) return _t('vc.emptyComponents');
+        return rows.some((r) => r.cost !== null) ? '' : _t('vc.emptyCosts');
+      },
+      /** Redraw the scatter; called by x-effect, reads the model and writes nothing reactive. */
+      drawValueCost() {
+        const rows = valueCostRows(this.model).filter((r) => r.cost !== null);
+        const chart = valueCostCharts.get(this.$root);
+        if (!chart) return;
+        module._context.chartManager.update(chart, {
+          xLabel: _t('vc.axisValue'),
+          yLabel: _t('vc.axisCost'),
+          series: [{
+            name: _t('vc.cost'),
+            x: rows.map((r) => r.normValue),
+            y: rows.map((r) => r.normCost),
+            labels: rows.map((r) => label(r)),
+          }],
+        });
+      },
+
+      // ── Lifecycle: arrow overlay and value & cost chart ──
       init() {
-        this.$nextTick(() => this._mountArrows());
+        this.$nextTick(() => { this._mountArrows(); this._mountValueCost(); });
       },
       destroy() {
         this._unmounted = true;
-        const chart = arrowCharts.get(this.$root);
-        if (chart) { module._context.chartManager.destroy(chart); arrowCharts.delete(this.$root); }
+        const cm = module._context.chartManager;
+        for (const charts of [arrowCharts, valueCostCharts]) {
+          const chart = charts.get(this.$root);
+          if (chart) { cm.destroy(chart); charts.delete(this.$root); }
+        }
+      },
+      _mountValueCost() {
+        const host = this.$root.querySelector('[data-ref="value-cost-chart"]');
+        if (!host) return;
+        const root = this.$root;
+        const cm = module._context.chartManager;
+        const split = { value: VC_SPLIT, dash: 'dash', color: 'var(--color-text-secondary)' };
+        cm.create(host, 'scatter', {
+          title: '', xLabel: _t('vc.axisValue'), yLabel: _t('vc.axisCost'), showLegend: false,
+          // Half a unit of margin keeps a point at 0 or 10 from being cut off.
+          xMin: -0.5, xMax: 10.5, yMin: -0.5, yMax: 10.5,
+          refLines: [{ dir: 'v', ...split }, { dir: 'h', ...split }],
+          series: [],
+        }).then((chart) => {
+          if (!chart) return;
+          // Unmounted while the chart type was loading: do not keep an orphan.
+          if (this._unmounted || !root.isConnected) { cm.destroy(chart); return; }
+          valueCostCharts.set(root, chart);
+          this.drawValueCost();
+        });
       },
       _mountArrows() {
         const host = this.$root.querySelector('[data-ref="arrows"]');
@@ -184,25 +267,28 @@ export default createModule({
       /**
        * Redraw the arrows. Called by x-effect (reads model + selection, writes
        * nothing reactive) and on every pointer move of a drag with the
-       * dragged box's live position as override.
-       * @param {{id:string,x:number,y:number}|null} [override]
+       * dragged box's or verb label's live position as override.
+       * @param {{positions?: Object, labels?: Object}} [override]
        */
-      drawArrows(override = null) {
-        const positions = override
-          ? { ...this.model.positions, [override.id]: { x: override.x, y: override.y } }
-          : this.model.positions;
-        const { links } = buildFunctionDiagram(
-          { components: this.model.components, functions: this.model.functions, positions },
-          { selectedId: this.selectedId });
+      drawArrows(override = {}) {
+        const { nodes, links } = buildFunctionDiagram({
+          components: this.model.components,
+          functions: this.model.functions,
+          positions: { ...this.model.positions, ...override.positions },
+          labels: { ...this.model.labels, ...override.labels },
+        }, { selectedId: this.selectedId });
         const chart = arrowCharts.get(this.$root);
-        if (chart) module._context.chartManager.update(chart, { links });
+        // Outlines come from the SVG (ellipse/hexagon), names from the draggable HTML boxes.
+        const outlines = nodes.map((n) => ({ ...n, lines: [] }));
+        if (chart) module._context.chartManager.update(chart, { nodes: outlines, links });
       },
 
       // ── Boxes ──
       canvasStyle() {
         const pos = Object.values(resolvePositions(this.model));
-        const w = Math.max(CANVAS_MIN.w, ...pos.map((p) => p.x + NODE_W + CANVAS_PAD));
-        const h = Math.max(CANVAS_MIN.h, ...pos.map((p) => p.y + NODE_H + CANVAS_PAD));
+        const labels = Object.values(this.model.labels);
+        const w = Math.max(CANVAS_MIN.w, ...pos.map((p) => p.x + NODE_W + CANVAS_PAD), ...labels.map((p) => p.x + LABEL_ROOM));
+        const h = Math.max(CANVAS_MIN.h, ...pos.map((p) => p.y + NODE_H + CANVAS_PAD), ...labels.map((p) => p.y + LABEL_ROOM));
         return `width:${w}px;height:${h}px`;
       },
       nodeStyle(c) {
@@ -227,7 +313,7 @@ export default createModule({
           el.style.left = `${x}px`;
           el.style.top = `${y}px`;
           el.classList.add('tfa__node--drag');
-          this.drawArrows({ id: c.id, x, y });
+          this.drawArrows({ positions: { [c.id]: { x, y } } });
         };
         const onUp = () => {
           window.removeEventListener('pointermove', onMove);
@@ -235,6 +321,37 @@ export default createModule({
           el.classList.remove('tfa__node--drag');
           if (moved) this.model.movePosition(c.id, x, y);
           else this.select(c.id);
+        };
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+      },
+      /**
+       * Drag a verb label (SVG overlay, delegated): the arrow bends at the
+       * label. A click without moving selects the function.
+       * @param {PointerEvent} ev
+       */
+      startLabelDrag(ev) {
+        if (ev.button !== 0) return;
+        const id = ev.target.closest?.('[data-part^="link-label"]')?.getAttribute('data-id');
+        const link = id && buildFunctionDiagram(this.model).links.find((l) => l.id === id);
+        if (!link) return;
+        ev.preventDefault();
+        const start = link.via ?? { x: (link.x1 + link.x2) / 2, y: (link.y1 + link.y2) / 2 };
+        const sx = ev.clientX, sy = ev.clientY;
+        let moved = false, x = start.x, y = start.y;
+        const onMove = (e) => {
+          const dx = e.clientX - sx, dy = e.clientY - sy;
+          if (!moved && Math.abs(dx) <= DRAG_THRESHOLD && Math.abs(dy) <= DRAG_THRESHOLD) return;
+          moved = true;
+          x = Math.max(0, start.x + dx);
+          y = Math.max(0, start.y + dy);
+          this.drawArrows({ labels: { [id]: { x, y } } });
+        };
+        const onUp = () => {
+          window.removeEventListener('pointermove', onMove);
+          window.removeEventListener('pointerup', onUp);
+          if (moved) this.model.moveLabel(id, x, y);
+          else this.select(id);
         };
         window.addEventListener('pointermove', onMove);
         window.addEventListener('pointerup', onUp);

@@ -29,7 +29,7 @@
 
     <div class="dmike-split__section-title" x-text="t('sections.evaluation')"></div>
 
-    <fieldset class="msa-typ4__radios">
+    <fieldset class="field-radios field-radios--inline">
       <legend data-help-key="modules.msa-typ4.types.Params.norm" x-text="t('labels.norm')"></legend>
       <template x-for="o in normOptions()" :key="o.value">
         <label>
@@ -40,7 +40,7 @@
       </template>
     </fieldset>
 
-    <fieldset class="msa-typ4__radios">
+    <fieldset class="field-radios field-radios--inline">
       <legend data-help-key="modules.msa-typ4.types.Params.pvMode" x-text="t('labels.pvMode')"></legend>
       <template x-for="o in pvOptions()" :key="o.value">
         <label>
@@ -86,8 +86,7 @@
       </select>
     </div>
 
-    <div class="msa-typ4__error" data-ref="error-box"
-         :class="{ visible: errorMsg }" x-text="errorMsg"></div>
+    <div class="field-error" data-ref="error-box" x-text="errorMsg"></div>
   </div>
 
   <div class="dmike-split__output">

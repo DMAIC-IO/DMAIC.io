@@ -6,9 +6,10 @@
  * disadvantages).
  */
 
-import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertClose } from '../test-utils.js';
 import {
-  State, KINDS, pairKey, orderedComponents, isComplete, rankOf, openPairs, disadvantages,
+  State, KINDS, pairKey, orderedComponents, isComplete, rankOf, openPairs, disadvantages, functionPairs,
+  TABS, componentValue, valueCostRows,
 } from '../../js/modules/triz-function-analysis/triz-function-analysis-model.js';
 
 /** Toothbrush: target teeth, system bristles + handle, supersystem gums + paste. */
@@ -28,6 +29,7 @@ function fixture() {
       { id: 'f3', carrier: 'h', verb: 'hält', object: 'b', parameter: '', type: 'useful', level: 'adequate', note: '' },
     ],
     positions: { b: { x: 10, y: 20 } },
+    labels: { f1: { x: 30, y: 40 } },
     activeTab: 'model',
   });
 }
@@ -37,6 +39,7 @@ suite('triz-function-analysis — state', () => {
     const s = new State();
     assertDeepEqual([s.components, s.interactions, s.functions], [[], [], []]);
     assertDeepEqual(s.positions, {});
+    assertDeepEqual(s.labels, {});
     assertEqual(s.activeTab, 'components');
     assertEqual(s.hasContent(), false);
     assertDeepEqual(KINDS, ['target', 'system', 'supersystem']);
@@ -65,6 +68,7 @@ suite('triz-function-analysis — state', () => {
         { carrier: 'x', object: 'y' },
       ],
       positions: { x: { x: 5, y: 6 }, gone: { x: 1, y: 1 }, y: { x: 'a', y: 2 } },
+      labels: { f2: { x: 7, y: 8 }, gone: { x: 1, y: 1 }, f3: { x: 1, y: null } },
       activeTab: 'nope',
     });
     assertDeepEqual(s.components.map((c) => [c.id, c.name, c.kind]),
@@ -76,6 +80,7 @@ suite('triz-function-analysis — state', () => {
       ['f3', 'y', 'x', 'useful', 'adequate'],
     ]);
     assertDeepEqual(s.positions, { x: { x: 5, y: 6 } });
+    assertDeepEqual(s.labels, { f2: { x: 7, y: 8 } });
     assertEqual(s.activeTab, 'components');
   });
 
@@ -117,7 +122,7 @@ suite('triz-function-analysis — components', () => {
     assertEqual(s.setKind('h', 'target'), null, 'already the target');
   });
 
-  test('removeComponent cascades to interactions, functions and positions', () => {
+  test('removeComponent cascades to interactions, functions, positions and labels', () => {
     const s = fixture();
     assertEqual(s.impactOf('b'), 3);
     s.removeComponent('b');
@@ -125,6 +130,7 @@ suite('triz-function-analysis — components', () => {
     assertDeepEqual(s.interactions, []);
     assertDeepEqual(s.functions, []);
     assertDeepEqual(s.positions, {});
+    assertDeepEqual(s.labels, {});
   });
 
   test('orderedComponents: target, system, supersystem in entry order', () => {
@@ -136,18 +142,53 @@ suite('triz-function-analysis — components', () => {
 });
 
 suite('triz-function-analysis — interactions', () => {
-  test('toggleInteraction ticks and unticks an unused pair', () => {
+  test('toggleInteraction cycles an unused pair: empty → ticked → excluded → empty', () => {
     const s = fixture();
+    assertEqual(s.pairState('t', 'g'), 'none');
     assertDeepEqual(s.toggleInteraction('t', 'g'), { ok: true });
     assertTrue(s.hasInteraction('g', 't'));
+    assertEqual(s.pairState('g', 't'), 'ticked');
     assertDeepEqual(s.toggleInteraction('g', 't'), { ok: true });
     assertEqual(s.hasInteraction('t', 'g'), false);
+    assertTrue(s.isExcluded('t', 'g'));
+    assertEqual(s.pairState('t', 'g'), 'excluded');
+    assertDeepEqual(s.toggleInteraction('t', 'g'), { ok: true });
+    assertEqual(s.pairState('t', 'g'), 'none');
+    assertDeepEqual(s.exclusions, []);
   });
 
   test('a pair used by functions cannot be unticked', () => {
     const s = fixture();
     assertDeepEqual(s.toggleInteraction('t', 'b'), { ok: false, usedBy: 1 });
     assertTrue(s.hasInteraction('b', 't'));
+    assertEqual(s.isExcluded('b', 't'), false);
+  });
+
+  test('a function on an excluded pair ticks it again', () => {
+    const s = fixture();
+    s.toggleInteraction('t', 'g');
+    s.toggleInteraction('t', 'g');
+    s.addFunction('g', 't');
+    assertEqual(s.pairState('t', 'g'), 'ticked');
+    assertDeepEqual(s.exclusions, []);
+  });
+
+  test('exclusions survive a round trip and are repaired on load', () => {
+    const s = State.fromJSON({
+      components: [{ id: 'x', name: 'X', kind: 'target' }, { id: 'y', name: 'Y', kind: 'system' }, { id: 'z', name: 'Z', kind: 'system' }],
+      interactions: [{ a: 'x', b: 'y' }],
+      exclusions: [{ a: 'z', b: 'x' }, { a: 'x', b: 'z' }, { a: 'y', b: 'x' }, { a: 'z', b: 'z' }, { a: 'z', b: 'gone' }],
+    });
+    assertDeepEqual(s.exclusions, [{ a: 'x', b: 'z' }], 'sorted, deduplicated, ticked pairs win');
+    assertDeepEqual(State.fromJSON(s.toJSON()).exclusions, [{ a: 'x', b: 'z' }]);
+  });
+
+  test('removeComponent drops its exclusions', () => {
+    const s = fixture();
+    s.toggleInteraction('t', 'p');
+    s.toggleInteraction('t', 'p');
+    s.removeComponent('p');
+    assertDeepEqual(s.exclusions, []);
   });
 
   test('self pairs are refused', () => {
@@ -172,13 +213,15 @@ suite('triz-function-analysis — functions', () => {
     assertEqual(isComplete(s.functions[3]), false);
   });
 
-  test('setEndpoints refuses carrier === object and ticks the new pair', () => {
+  test('functionPairs groups both directions of a pair; drafts stay alone', () => {
     const s = fixture();
-    assertEqual(s.setEndpoints('f1', 'b', 'b'), false);
-    assertDeepEqual([s.fn('f1').carrier, s.fn('f1').object], ['b', 't']);
-    assertEqual(s.setEndpoints('f1', 'p', 't'), true);
-    assertTrue(s.hasInteraction('p', 't'));
-    assertTrue(s.hasInteraction('b', 't'), 'old pair stays ticked (now an open pair)');
+    s.addFunction('t', 'b');
+    s.addFunction('b', '');
+    const groups = functionPairs(s);
+    assertDeepEqual(groups.map((g) => g.functions.length), [2, 1, 1, 1]);
+    assertDeepEqual(groups.map((g) => g.complete), [true, true, true, false]);
+    assertEqual(groups[0].key, pairKey('b', 't'));
+    assertTrue(groups[3].key.startsWith('draft|'));
   });
 
   test('swapDirection exchanges carrier and object', () => {
@@ -213,6 +256,7 @@ suite('triz-function-analysis — functions', () => {
     const s = fixture();
     s.removeFunction('f1');
     assertEqual(s.fn('f1'), null);
+    assertEqual(s.labels.f1, undefined, 'its label position goes too');
     assertDeepEqual(s.toggleInteraction('b', 't'), { ok: true });
   });
 
@@ -224,6 +268,15 @@ suite('triz-function-analysis — functions', () => {
     assertEqual(s.positions.gone, undefined);
     s.resetPositions();
     assertDeepEqual(s.positions, {});
+    assertDeepEqual(s.labels, {}, 'reset also straightens the arrows');
+  });
+
+  test('moveLabel rounds, clamps at 0 and ignores unknown functions', () => {
+    const s = fixture();
+    s.moveLabel('f2', 50.4, -3);
+    assertDeepEqual(s.labels.f2, { x: 50, y: 0 });
+    s.moveLabel('gone', 1, 1);
+    assertEqual(s.labels.gone, undefined);
   });
 
   test('discardIfEmpty removes only unused empty components', () => {
@@ -289,5 +342,85 @@ suite('triz-function-analysis — derived values', () => {
   test('pairKey matches sorted interactions', () => {
     const s = fixture();
     assertTrue(s.interactions.every((i) => pairKey(i.a, i.b) === `${i.a}|${i.b}`));
+  });
+});
+
+suite('triz-function-analysis — value & cost', () => {
+  const row = (s, id) => valueCostRows(s).find((r) => r.id === id);
+
+  test('a component scores 3/2/1 per useful function it carries, harmful 0', () => {
+    const s = fixture();
+    assertEqual(componentValue('b', s), 3);
+    assertEqual(componentValue('h', s), 1);
+    assertEqual(componentValue('t', s), 0);
+  });
+
+  test('rows list system components only, normalised to 10', () => {
+    const s = fixture();
+    s.setCost('b', 200);
+    s.setCost('h', 50);
+    assertDeepEqual(valueCostRows(s).map((r) => r.id), ['b', 'h']);
+    const b = row(s, 'b');
+    assertDeepEqual([b.name, b.value, b.normValue, b.cost, b.normCost], ['Borsten', 3, 10, 200, 10]);
+    const h = row(s, 'h');
+    assertEqual(h.value, 1);
+    assertClose(h.normValue, 10 / 3, 1e-9);
+    assertDeepEqual([h.cost, h.normCost], [50, 2.5]);
+  });
+
+  test('no functions and all-zero costs normalise to 0, not NaN', () => {
+    const s = fixture();
+    s.functions = [];
+    s.setCost('b', 0);
+    s.setCost('h', 0);
+    assertDeepEqual(valueCostRows(s).map((r) => [r.normValue, r.normCost]), [[0, 0], [0, 0]]);
+  });
+
+  test('a component without cost has null cost and is ignored for the maximum', () => {
+    const s = fixture();
+    s.setCost('h', 50);
+    assertDeepEqual([row(s, 'b').cost, row(s, 'b').normCost], [null, null]);
+    assertEqual(row(s, 'h').normCost, 10);
+  });
+
+  test('setCost stores numbers >= 0, empty as null, rejects the rest', () => {
+    const s = fixture();
+    assertTrue(s.setCost('b', '12.5'));
+    assertEqual(s.component('b').cost, 12.5);
+    s.setCost('b', 0);
+    assertEqual(s.component('b').cost, 0);
+    s.setCost('b', '');
+    assertEqual(s.component('b').cost, null);
+    s.setCost('b', 7);
+    assertEqual(s.setCost('b', -1), false);
+    assertEqual(s.setCost('b', 'abc'), false);
+    assertEqual(s.component('b').cost, 7);
+  });
+
+  test('a new component has no cost', () => {
+    const s = new State();
+    assertEqual(s.addComponent('system').component.cost, null);
+  });
+
+  test('fromJSON repairs cost and toJSON round-trips it', () => {
+    const comps = [-3, '5', NaN, undefined, 7].map((cost, i) => ({ id: `c${i}`, name: '', kind: 'system', note: '', cost }));
+    const s = State.fromJSON({ components: comps });
+    assertDeepEqual(s.components.map((c) => c.cost), [null, null, null, null, 7]);
+    assertEqual(State.fromJSON(s.toJSON()).component('c4').cost, 7);
+  });
+
+  test('the value & cost tab is a known tab', () => {
+    assertEqual(TABS[3], 'valueCost');
+    assertEqual(State.fromJSON({ activeTab: 'valueCost' }).activeTab, 'valueCost');
+  });
+
+  test('a system component turned supersystem keeps its cost but leaves the rows', () => {
+    const s = fixture();
+    s.setCost('h', 50);
+    s.setKind('h', 'supersystem');
+    assertEqual(s.component('h').cost, 50);
+    assertDeepEqual(valueCostRows(s).map((r) => r.id), ['b']);
+    s.setKind('h', 'system');
+    assertEqual(row(s, 'h').cost, 50);
   });
 });

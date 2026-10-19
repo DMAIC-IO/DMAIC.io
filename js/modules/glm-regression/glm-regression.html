@@ -19,7 +19,7 @@
     </div>
 
     <div class="field-group">
-      <label><span data-help-key="modules.glm-regression.actions.setColumn.help" x-text="t('columnTrials')"></span> <span class="dmike-hint" x-text="t('columnTrialsHint')"></span></label>
+      <label><span data-help-key="modules.glm-regression.actions.setColumn.help" x-text="t('columnTrials')"></span> <span class="field-hint" x-text="t('columnTrialsHint')"></span></label>
       <select class="field" data-ref="trials-select" @change="onTrialsChange($event)">
         <option value="" :selected="!model.trialsKey" x-text="t('trialsNone')"></option>
         <template x-for="opt in trialsOptions()" :key="opt.key">
@@ -30,9 +30,9 @@
 
     <div class="dmike-split__section-title"><span data-help-key="modules.glm-regression.types.Params.method" x-text="t('sectionMethod')"></span></div>
 
-    <div class="glm__method-group" data-ref="method-group" @change="onMethodChange($event)">
+    <div class="field-radios" data-ref="method-group" @change="onMethodChange($event)">
       <template x-for="opt in methodOptions()" :key="opt.value">
-        <label class="glm__method-option">
+        <label>
           <input type="radio" :name="methodRadioName()" :value="opt.value" :checked="model.method === opt.value">
           <span x-text="opt.label"></span>
         </label>
@@ -56,7 +56,7 @@
       </div>
     </div>
 
-    <div class="glm__error" data-ref="error-box" :style="errorStyle()" x-text="errorText()"></div>
+    <div class="field-error" data-ref="error-box" :style="errorStyle()" x-text="errorText()"></div>
   </div>
 
   <!-- ─── Output (right) ───────────────────────────────────────── -->
@@ -65,9 +65,10 @@
       <template x-if="result">
         <div>
           <!-- Tabs -->
-          <div class="glm__tabs dmike-tabs">
+          <div class="glm__tabs dmike-tabs" role="tablist" x-tablist>
             <template x-for="tb in tabs()" :key="tb.id">
-              <button class="dmike-tab" :class="tb.id === model.activeTab ? 'dmike-tab--active' : ''"
+              <button class="dmike-tab" type="button" role="tab" :class="tb.id === model.activeTab ? 'dmike-tab--active' : ''"
+                :aria-selected="tb.id === model.activeTab ? 'true' : 'false'" :tabindex="tb.id === model.activeTab ? 0 : -1"
                 data-action="tab" :data-tab="tb.id" @click="changeRoute(tb.id)" x-text="tb.label"></button>
             </template>
           </div>
@@ -129,7 +130,7 @@
             <div class="glm__equation" x-text="result.equation"></div>
 
             <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('coefTable')"></span></div>
-            <table class="glm__coef-table">
+            <table class="dmike-table glm__coef-table">
               <thead><tr>
                 <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.term" x-text="t('term')"></span></th>
                 <th><span data-help-key="modules.glm-regression.types.GlmCoefficient.estimate" x-text="t('coefficient')"></span></th>
@@ -184,7 +185,7 @@
             <template x-if="result.vifRows">
               <div>
                 <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('common.sym.vif')"></span></div>
-                <table class="glm__coef-table">
+                <table class="dmike-table glm__coef-table">
                   <thead><tr><th><span data-help-key="modules.glm-regression.types.GlmCoefficient.term" x-text="t('term')"></span></th><th><span data-help-key="modules.glm-regression.types.Result.vif" x-text="t('common.sym.vif')"></span></th><th></th></tr></thead>
                   <tbody>
                     <template x-for="row in result.vifRows" :key="row.term">

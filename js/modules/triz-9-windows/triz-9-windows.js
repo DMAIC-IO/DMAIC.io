@@ -46,6 +46,8 @@ export default createModule({
       ...agentReadMixin(module),
 
       enlarged: null,
+      /** @type {{close: Function}|null} open enlarged-image dialog */
+      _enlargedDialog: null,
 
       /** @noagent view transform */
       colPlaceholder(c) {
@@ -93,7 +95,8 @@ export default createModule({
       /** @noagent view transform */
       enlargedImageSrc() {
         const e = this.enlarged;
-        return e ? this.model.rows[e.r].cells[e.c].image : null;
+        // The holder renders all the time, so no image means an empty src.
+        return e ? this.model.rows[e.r].cells[e.c].image || '' : '';
       },
 
       /** @noagent view transform */
@@ -211,15 +214,27 @@ export default createModule({
         this.model.rows[row].rowLabel.val = requireText('text', text);
       },
 
-      /** @noagent öffnet die Großansicht der Oberfläche, kein Zustandsweg */
+      /**
+       * @noagent öffnet die Großansicht der Oberfläche, kein Zustandsweg.
+       * Zeigt das Bild eines Feldes vergrößert in einem breiten Dialog
+       * (Halter x-ref="enlargedView").
+       * @param {number} r  row index
+       * @param {number} c  column index
+       */
       enlarge(r, c) {
+        this._enlargedDialog?.close();
         this.enlarged = { r, c };
+        this._enlargedDialog = module._context.dialog.show({
+          title: this.imageAlt(r, c),
+          size: 'wide',
+          content: this.$refs.enlargedView,
+          onClose: () => { this.enlarged = null; this._enlargedDialog = null; },
+        });
       },
 
-      /** @noagent schließt die Großansicht der Oberfläche, kein Zustandsweg */
-      closeEnlarged(event) {
-        if (event.target.classList.contains('triz-9w__overlay-img')) return;
-        this.enlarged = null;
+      /** @noagent lifecycle */
+      destroy() {
+        this._enlargedDialog?.close();
       },
     };
   },

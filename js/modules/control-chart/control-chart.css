@@ -7,16 +7,6 @@
 
 /* Fields use global .field / .field-group (components.css) */
 
-.control-chart__hint {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
-  margin-top: var(--spacing-2xs);
-}
-
-.control-chart__hint--warn {
-  color: var(--color-warning);
-}
-
 .control-chart__spec-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -38,45 +28,6 @@
   transition: transform 0.2s;
   color: var(--color-text-tertiary);
 }
-
-.control-chart__nelson-panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  margin-bottom: var(--spacing-sm);
-}
-
-.control-chart__nelson-panel--collapsed {
-  display: none;
-}
-
-.control-chart__nelson-rule {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-xs);
-  cursor: pointer;
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
-  text-transform: none;
-  letter-spacing: normal;
-}
-
-.control-chart__nelson-rule input[type="checkbox"] {
-  margin-top: var(--spacing-2xs);
-  accent-color: var(--color-accent);
-}
-
-.control-chart__nelson-rule strong {
-  color: var(--color-text-primary);
-  font-weight: var(--font-weight-medium);
-}
-
-.control-chart__nelson-desc {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
-}
-
-
 
 /* ── Chart Sections ── */
 
@@ -237,30 +188,4 @@
 .control-chart__phase2-badge--frozen {
   background: rgb(59 130 246 / 16%);
   color: var(--color-info);
-}
-
-/* ── Annotation dialog body ── */
-
-/* Der Popout-Körper hat keinen Innenabstand; ohne ihn klebten Textfeld und
-   Kästchen an den Dialogkanten, und die Kontexthilfe-Kreise (Alt) ragten über
-   den clippenden Körper hinaus. Abstand wie die Fußleiste. */
-.control-chart__ann-fields {
-  padding: var(--spacing-md) var(--spacing-lg);
-}
-
-.control-chart__check {
-  display: flex;
-
-  /* Schrumpfbreit: als Kasten-Anker trägt das Label den Hilfekreis an seiner
-     rechten Kante — die gehört ans Ende des Textes, nicht an den Dialogrand. */
-  width: fit-content;
-  align-items: center;
-  gap: var(--spacing-xs);
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-primary);
-}
-
-.control-chart__check input[type="checkbox"] {
-  accent-color: var(--color-accent);
 }

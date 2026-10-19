@@ -9,7 +9,7 @@
           <option :value="o.value" :selected="o.value === model.chartTypeId" x-text="o.label"></option>
         </template>
       </select>
-      <span class="attr-cc__hint" x-text="t('typeHint_' + model.chartTypeId)"></span>
+      <span class="field-hint" x-text="t('typeHint_' + model.chartTypeId)"></span>
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
@@ -22,7 +22,7 @@
     <div class="field-group" data-ref="size-row" x-show="requiresSampleSize()">
       <label data-help-key="modules.attribute-control-chart.actions.setColumn.help" x-text="t('sizeColumn')"></label>
       <div data-ref="size-picker"></div>
-      <span class="attr-cc__hint" x-text="t('sizeHint')"></span>
+      <span class="field-hint" x-text="t('sizeHint')"></span>
     </div>
 
     <div class="field-group" data-ref="constn-row" x-show="requiresConstantN()">
@@ -30,7 +30,7 @@
       <input type="number" class="field field--num" data-ref="constant-n"
         min="1" step="1"
         :value="model.constantN" @change="constantNChanged($event)">
-      <span class="attr-cc__hint" x-text="t('constantNHint')"></span>
+      <span class="field-hint" x-text="t('constantNHint')"></span>
     </div>
 
     <div class="field-group">
@@ -39,7 +39,7 @@
         min="2" :placeholder="t('baselineAll')"
         :value="model.baselineCount == null ? '' : model.baselineCount"
         @change="baselineCountChanged($event)">
-      <span class="attr-cc__hint" x-text="t('baselineHint')"></span>
+      <span class="field-hint" x-text="t('baselineHint')"></span>
     </div>
 
     <div class="dmike-split__section-title attr-cc__collapsible" data-ref="nelson-toggle"
@@ -48,16 +48,16 @@
       <span data-help-key="modules.attribute-control-chart.types.Params.enabledRules" x-text="t('sectionNelson')"></span>
       <span class="attr-cc__chevron icon icon--sm" :data-icon="nelsonCollapsed ? 'nav.expand-right' : 'nav.expand-down'" aria-hidden="true"></span>
     </div>
-    <div class="attr-cc__nelson-panel" data-ref="nelson-panel"
-      :class="nelsonCollapsed ? 'attr-cc__nelson-panel--collapsed' : ''">
+    <div class="field-checks" data-ref="nelson-panel"
+      :class="nelsonCollapsed ? 'field-checks--collapsed' : ''">
       <template x-for="rule in nelsonRules" :key="rule.id">
-        <label class="attr-cc__nelson-rule">
+        <label class="field-check">
           <input type="checkbox" :data-rule="rule.id"
             :checked="model.enabledRules.includes(rule.id)"
             @change="toggleRule(rule.id, $event)">
           <span>
             <strong x-text="nelsonRuleShort(rule)"></strong><br>
-            <span class="attr-cc__nelson-desc" x-text="nelsonRuleDesc(rule)"></span>
+            <span class="field-check__desc" x-text="nelsonRuleDesc(rule)"></span>
           </span>
         </label>
       </template>

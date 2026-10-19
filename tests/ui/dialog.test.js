@@ -5,6 +5,7 @@ import { suite, test, assertEqual, assertTrue, afterEach } from '../test-utils.j
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { createDialogService, DIALOG_TEMPLATE } from '../../js/ui/dialog/dialog.js';
 import { inlineTileTemplate } from '../modules/tile-test-utils.js';
+import { openColorPicker } from '../../js/core/color-picker.js';
 
 const i18n = { t: (k) => k };
 const tick = () => Alpine.nextTick();
@@ -13,6 +14,9 @@ const top = () => dialogs().at(-1);
 // Dispatched on the body, which mirrors a real key press and lets the capture
 // listener on window run before bubble listeners.
 const escape = () => document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+// Fired on window itself (no capture/bubble path through the document) —
+// the listener sits on window, so it must react at the target phase too.
+const escapeOnWindow = () => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
 /** A real overlay click: press and release on the overlay itself. */
 const clickOverlay = (el) => {
   el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
@@ -50,6 +54,7 @@ suite('dialog service — confirm / alert / show', () => {
       () => top().querySelector('.dialog__cancel').click(),
       () => top().querySelector('.dialog__close').click(),
       () => escape(),
+      () => escapeOnWindow(),
       () => clickOverlay(top()),
     ]) {
       const p = d.confirm({ message: 'M' });
@@ -107,6 +112,107 @@ suite('dialog service — confirm / alert / show', () => {
     clickOverlay(top());
     assertEqual(dialogs().length, 1, 'still open');
     h.close();
+  });
+
+  test('show onClose fires once for ✕, Escape, overlay and close()', async () => {
+    const d = await service();
+    const ways = {
+      x: () => top().querySelector('.dialog__close').click(),
+      escape: () => escape(),
+      overlay: () => clickOverlay(top()),
+      handle: (h) => h.close(),
+    };
+    for (const [name, closeIt] of Object.entries(ways)) {
+      let calls = 0;
+      const h = d.show({ title: name, content: document.createElement('div'), onClose: () => { calls += 1; } });
+      await tick();
+      closeIt(h);
+      h.close();                      // a second close is a no-op
+      assertEqual(dialogs().length, 0, `${name}: closed`);
+      assertEqual(calls, 1, `${name}: onClose once`);
+    }
+  });
+
+  test('show onClose runs after the borrowed node is home again', async () => {
+    const d = await service();
+    const home = document.createElement('div');
+    const content = document.createElement('p');
+    home.append(content);
+    document.body.append(home);
+    let parentAtClose = null;
+    const h = d.show({ title: 'B', content, onClose: () => { parentAtClose = content.parentNode; } });
+    assertEqual(content.parentNode.getAttribute('data-dialog-slot'), 'body');
+    h.close();
+    assertEqual(parentAtClose, home);
+    home.remove();
+  });
+
+  test('Escape is left to the content while it marks data-dialog-owns-escape', async () => {
+    // e.g. the Settings shortcut capture: Escape stops capturing, not the dialog.
+    const d = await service();
+    const content = document.createElement('div');
+    const widget = document.createElement('button');
+    widget.setAttribute('data-dialog-owns-escape', '');
+    content.append(widget);
+    let reached = 0;
+    const own = (e) => { if (e.key === 'Escape') reached += 1; };
+    document.addEventListener('keydown', own, true);
+    try {
+      const h = d.show({ title: 'K', content });
+      escape();
+      assertEqual(dialogs().length, 1, 'still open');
+      assertEqual(reached, 1, 'the content saw the Escape');
+      widget.removeAttribute('data-dialog-owns-escape');
+      escape();
+      assertEqual(dialogs().length, 0, 'closes once the mark is gone');
+      h.close();
+    } finally {
+      document.removeEventListener('keydown', own, true);
+    }
+  });
+
+  test('a colour picker opened over a dialog takes the first Escape, the dialog the second', async () => {
+    const d = await service();
+    const swatch = document.createElement('button');
+    const h = d.show({ title: 'F', content: swatch });
+    const picker = () => document.querySelector('.dmike-chart-ed-cp-overlay');
+    openColorPicker({ target: swatch }, 'rgba(0,0,0,1)', () => {});
+    try {
+      assertTrue(!!picker(), 'picker open');
+      escape();
+      assertTrue(!picker(), 'Escape closed the picker');
+      assertEqual(dialogs().length, 1, 'the dialog stays open');
+      escape();
+      assertEqual(dialogs().length, 0, 'the next Escape closes the dialog');
+    } finally {
+      document.querySelectorAll('.dmike-chart-ed-cp-overlay, .dmike-chart-ed-cp-popup').forEach((el) => el.remove());
+      h.close();
+    }
+  });
+
+  test('a colour picker without a dialog closes on Escape', async () => {
+    const swatch = document.createElement('button');
+    document.body.append(swatch);
+    openColorPicker({ target: swatch }, 'rgba(0,0,0,1)', () => {});
+    try {
+      escapeOnWindow();
+      assertTrue(!document.querySelector('.dmike-chart-ed-cp-overlay'), 'picker closed');
+      assertTrue(!document.querySelector('.dmike-chart-ed-cp-popup'), 'popup removed');
+    } finally {
+      document.querySelectorAll('.dmike-chart-ed-cp-overlay, .dmike-chart-ed-cp-popup').forEach((el) => el.remove());
+      swatch.remove();
+    }
+  });
+
+  test('show setTitle updates the title and is a no-op after close', async () => {
+    const d = await service();
+    const h = d.show({ title: 'Alt', content: document.createElement('div') });
+    h.setTitle('Neu');
+    await tick();
+    assertEqual(top().querySelector('.dialog__title').textContent, 'Neu');
+    h.close();
+    h.setTitle('Danach');             // must not throw
+    assertEqual(dialogs().length, 0);
   });
 
   test('Escape does not reach window listeners behind the dialog', async () => {

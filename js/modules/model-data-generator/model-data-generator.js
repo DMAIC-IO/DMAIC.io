@@ -138,6 +138,7 @@ export default createModule({
         this._grid = new DataGrid(wrap, {
           toast: ctx.notify || (() => {}),
           t: (key) => ctx.i18n.t(key),
+          dialog: ctx.dialog,
           openInWorksheet: (grid) => {
             const name = ctx.i18n.t('modules.model-data-generator.name') || 'Generated Data';
             openGridInWorksheet(grid, ctx, { sheetName: name, navigate: true });

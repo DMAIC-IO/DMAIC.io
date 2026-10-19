@@ -38,6 +38,7 @@ export function setCreatePageRouter(router) {
  * @param {(ctx:object, t:Function, page:object)=>object} [config.data]  Alpine data factory (optional for imperative-only pages)
  * @param {Object<string,(ctx:object)=>object>} [config.components]  extra Alpine.data components (name → factory(ctx)) registered before mount
  * @param {() => Promise<{components?: Object<string,(ctx:object)=>object>, mount?: Function, unmount?: Function}>} [config.load]  lazy page code (own chunk): components are registered and mount/unmount used before the template is hydrated
+ * @param {{titleKey: string, size?: string}} [config.dialog]  render inside a dialog of context.dialog: the template root is lent to dialog.show(); the container stays a hidden holder
  * @param {boolean} [config.ownsLangReactivity]  if true, skip createPage's destroy+init re-render on language:changed (the page's own Alpine components handle i18n reactivity in place, preserving their reactive state)
  */
 export function createPage(config) {
@@ -55,6 +56,37 @@ export function createPage(config) {
   let onKey = null;
   let onOverlay = null;
   let onLang = null;
+  let _t = null;
+  let _dialog = null;        // handle of the open dialog (config.dialog only)
+  let _silentClose = false;  // closing the dialog without closing the page
+
+  /** Lend the template root to a fresh dialog (config.dialog only). */
+  function openDialog() {
+    const root = containerEl.firstElementChild;
+    _dialog = ctx.dialog.show({
+      title: _t(config.dialog.titleKey),
+      size: config.dialog.size,
+      content: root,
+      onClose: () => {
+        _dialog = null;
+        if (_silentClose || !_open) return;
+        // ✕ / Escape / overlay: close the page the way the header button does.
+        if (!_router) { page.hide(); return; }
+        // A router busy applying another route ignores the navigation; the
+        // dialog is gone either way, so make sure the page is closed too
+        // (unless it was reopened meanwhile).
+        Promise.resolve(_router.navigateBackFromPage(config.id))
+          .finally(() => { if (_open && !_dialog) page.hide(); });
+      },
+    });
+  }
+
+  /** Close the dialog without closing the page (root goes back to the holder). */
+  function closeDialogSilently() {
+    if (!_dialog) return;
+    _silentClose = true;
+    try { _dialog.close(); } finally { _silentClose = false; }
+  }
 
   const page = {
     id: config.id,
@@ -67,7 +99,7 @@ export function createPage(config) {
       if (!containerEl) return; // no mount point (test/headless variance)
       buttonEl = config.button ? document.querySelector(config.button) : null;
 
-      const _t = config.i18nKey
+      _t = config.i18nKey
         ? context.i18n.tf(config.i18nKey)
         : (k, p) => context.i18n.t(k, p);
 
@@ -124,8 +156,11 @@ export function createPage(config) {
         // Re-render to pick up new translations. destroy+init re-runs the
         // Alpine data factory, so this resets page data state by design
         // (e.g. activeTab returns to its default).
+        const reopen = config.dialog && _dialog;
+        if (reopen) closeDialogSilently();
         Alpine.destroyTree(containerEl);
         Alpine.initTree(containerEl);
+        if (reopen) openDialog();
       };
       context.eventBus.on('language:changed', onLang);
     },
@@ -178,7 +213,8 @@ export function createPage(config) {
       // not at all when destroy() ran meanwhile.
       if (_open || !_mounted) return;
       _open = true;
-      containerEl.style.display = '';
+      if (config.dialog) openDialog();
+      else containerEl.style.display = '';
       if (config.bodyClass) document.body.classList.add(config.bodyClass);
       buttonEl?.classList.add('btn--active');
       if (config.overlay) ctx.eventBus.emit('overlay:opened', config.overlay);
@@ -188,7 +224,8 @@ export function createPage(config) {
     hide() {
       if (!_open) return;
       _open = false;
-      containerEl.style.display = 'none';
+      if (config.dialog) closeDialogSilently();
+      else containerEl.style.display = 'none';
       if (config.bodyClass) document.body.classList.remove(config.bodyClass);
       buttonEl?.classList.remove('btn--active');
       if (config.onHide) config.onHide(containerEl, ctx);
@@ -201,6 +238,7 @@ export function createPage(config) {
       if (onKey) document.removeEventListener('keydown', onKey);
       if (onOverlay && ctx) ctx.eventBus.off('overlay:opened', onOverlay);
       if (onLang && ctx) ctx.eventBus.off('language:changed', onLang);
+      closeDialogSilently();
       if (_mounted) {
         const unmount = _loaded?.unmount ?? config.unmount;
         if (unmount) unmount(containerEl, ctx, _mountHandle);

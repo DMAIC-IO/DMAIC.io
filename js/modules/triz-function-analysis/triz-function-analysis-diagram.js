@@ -6,7 +6,7 @@
  * overlay; the export uses nodes and links together.
  */
 
-import { straightEndpoints } from '../../core/chart/types/node-diagram.js';
+import { straightEndpoints, viaEndpoints } from '../../core/chart/types/node-diagram.js';
 import { pairKey, isComplete } from './triz-function-analysis-model.js';
 
 export const NODE_W = 140;
@@ -18,9 +18,19 @@ const PARALLEL_GAP = 14;
 const EXPORT_NAME_MAX = 20;
 
 const NODE_STYLE = {
-  target: { stroke: 'var(--color-accent)', strokeWidth: 2 },
+  target: {
+    shape: 'ellipse', fill: 'var(--color-node-target-fill)',
+    stroke: 'var(--color-node-target-stroke)', strokeWidth: 2,
+  },
   system: {},
-  supersystem: { fill: 'var(--color-bg-tertiary)', dash: '4 3' },
+  supersystem: {
+    shape: 'hexagon', fill: 'var(--color-node-supersystem-fill)',
+    stroke: 'var(--color-node-supersystem-stroke)', strokeWidth: 2,
+  },
+};
+const TEXT_COLOR = {
+  target: 'var(--color-node-target-text)',
+  supersystem: 'var(--color-node-supersystem-text)',
 };
 const LEVEL_STYLE = { adequate: 'solid', insufficient: 'dashed', excessive: 'bold' };
 
@@ -73,16 +83,19 @@ const shorten = (s) => (s.length > EXPORT_NAME_MAX ? `${s.slice(0, EXPORT_NAME_M
 
 /**
  * node-diagram config for the function model.
- * @param {{components: Array, functions: Array, positions: Object}} state
+ * @param {{components: Array, functions: Array, positions: Object, labels?: Object}} state
  * @param {{selectedId?: string|null}} [opts]
  * @returns {{nodes: Array<Object>, links: Array<Object>}}
  */
 export function buildFunctionDiagram(state, { selectedId = null } = {}) {
   const pos = resolvePositions(state);
-  const boxes = new Map(state.components.map((c) => [c.id, { x: pos[c.id].x, y: pos[c.id].y, w: NODE_W, h: NODE_H }]));
+  const boxes = new Map(state.components.map((c) => [c.id, {
+    x: pos[c.id].x, y: pos[c.id].y, w: NODE_W, h: NODE_H, shape: NODE_STYLE[c.kind].shape,
+  }]));
   const nodes = state.components.map((c) => ({
-    id: c.id, ...boxes.get(c.id), ...NODE_STYLE[c.kind], padY: 14,
-    lines: [{ text: shorten(c.name), weight: c.kind === 'target' ? 600 : null }],
+    id: c.id, ...boxes.get(c.id), ...NODE_STYLE[c.kind], padY: 14, align: 'center',
+    lines: [{ text: shorten(c.name), weight: c.kind === 'system' ? null : 600, color: TEXT_COLOR[c.kind] }],
+    highlight: selectedId != null && selectedId === c.id,
   }));
 
   const complete = state.functions.filter((f) => isComplete(f) && boxes.has(f.carrier) && boxes.has(f.object));
@@ -98,9 +111,13 @@ export function buildFunctionDiagram(state, { selectedId = null } = {}) {
     const frameOffset = (group.indexOf(f) - (group.length - 1) / 2) * PARALLEL_GAP;
     // The frame runs from the lower to the higher id; links against it flip sides.
     const offset = f.carrier < f.object ? frameOffset : -frameOffset;
+    const via = state.labels?.[f.id];
+    const ends = via
+      ? { via: { x: via.x, y: via.y }, ...viaEndpoints(boxes.get(f.carrier), boxes.get(f.object), via) }
+      : straightEndpoints(boxes.get(f.carrier), boxes.get(f.object), offset);
     return {
       id: f.id, from: f.carrier, to: f.object, shape: 'straight', arrow: 'end', label: f.verb,
-      ...straightEndpoints(boxes.get(f.carrier), boxes.get(f.object), offset),
+      ...ends,
       ...linkStyle(f),
       highlight: selectedId != null && (selectedId === f.id || selectedId === f.carrier || selectedId === f.object),
     };

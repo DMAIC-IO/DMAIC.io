@@ -10,7 +10,7 @@
     <div class="field-group">
       <label data-help-key="modules.msa-typ2.actions.setColumn.help" x-text="t('operatorColumn')"></label>
       <div data-ref="col-operator-wrap"></div>
-      <div class="msa-typ2__hint" x-text="t('operatorHint')"></div>
+      <div class="field-hint" x-text="t('operatorHint')"></div>
     </div>
 
     <div class="field-group">
@@ -20,14 +20,14 @@
 
     <div class="dmike-split__section-title" x-text="t('sectionParams')"></div>
 
-    <div class="msa-typ2__row">
-      <div class="field-group">
+    <div class="field-row">
+      <div class="field-group field-group--grow">
         <label data-help-key="modules.msa-typ2.types.Params.lsl" x-text="t('lsl')"></label>
         <input type="text" class="field field--num" data-ref="inp-lsl"
                placeholder="24.900" inputmode="decimal"
                :value="model.params.lsl" @input="setParam('lsl', $event.target.value)" @change="runAnalysis()">
       </div>
-      <div class="field-group">
+      <div class="field-group field-group--grow">
         <label data-help-key="modules.msa-typ2.types.Params.usl" x-text="t('usl')"></label>
         <input type="text" class="field field--num" data-ref="inp-usl"
                placeholder="25.100" inputmode="decimal"
@@ -35,13 +35,13 @@
       </div>
     </div>
 
-    <div class="msa-typ2__row">
-      <div class="field-group">
+    <div class="field-row">
+      <div class="field-group field-group--grow">
         <label data-help-key="modules.msa-typ2.types.Params.alpha" x-text="t('alphaLabel')"></label>
         <input type="text" class="field field--num" data-ref="inp-alpha" inputmode="decimal"
                :value="model.params.alpha" @input="setParam('alpha', $event.target.value)" @change="runAnalysis()">
       </div>
-      <div class="field-group">
+      <div class="field-group field-group--grow">
         <label data-help-key="modules.msa-typ2.types.Params.k" x-text="t('kLabel')"></label>
         <select class="field" data-ref="inp-k" :value="model.params.k" @input="setParam('k', $event.target.value)" @change="runAnalysis()">
           <template x-for="o in kOptions()" :key="o.value">
@@ -51,23 +51,21 @@
       </div>
     </div>
 
-    <div class="msa-typ2__row">
-      <div class="field-group msa-typ2__field--wide">
-        <label data-help-key="modules.msa-typ2.types.Params.verdictBasis" x-text="t('verdictBasisLabel')"></label>
-        <select class="field" data-ref="inp-verdict-basis" :value="model.params.verdictBasis" @input="setParam('verdictBasis', $event.target.value)" @change="runAnalysis()">
-          <template x-for="o in verdictBasisOptions()" :key="o.value">
-            <option :value="o.value" :selected="o.value === model.params.verdictBasis" x-text="o.label"></option>
-          </template>
-        </select>
-      </div>
-      <div class="field-group">
-        <label data-help-key="modules.msa-typ2.types.Params.sigmaHist" x-text="t('sigmaHistLabel')"></label>
-        <input type="text" class="field field--num" data-ref="inp-sigma-hist" inputmode="decimal"
-               :value="model.params.sigmaHist" @input="setParam('sigmaHist', $event.target.value)" @change="runAnalysis()">
-      </div>
+    <div class="field-group">
+      <label data-help-key="modules.msa-typ2.types.Params.verdictBasis" x-text="t('verdictBasisLabel')"></label>
+      <select class="field" data-ref="inp-verdict-basis" :value="model.params.verdictBasis" @input="setParam('verdictBasis', $event.target.value)" @change="runAnalysis()">
+        <template x-for="o in verdictBasisOptions()" :key="o.value">
+          <option :value="o.value" :selected="o.value === model.params.verdictBasis" x-text="o.label"></option>
+        </template>
+      </select>
+    </div>
+    <div class="field-group">
+      <label data-help-key="modules.msa-typ2.types.Params.sigmaHist" x-text="t('sigmaHistLabel')"></label>
+      <input type="text" class="field field--num" data-ref="inp-sigma-hist" inputmode="decimal"
+             :value="model.params.sigmaHist" @input="setParam('sigmaHist', $event.target.value)" @change="runAnalysis()">
     </div>
 
-    <div class="msa-typ2__error" data-ref="error-box" :class="{ visible: errorMsg }" x-text="errorMsg"></div>
+    <div class="field-error" data-ref="error-box" x-text="errorMsg"></div>
   </div>
 
   <div class="dmike-split__output">

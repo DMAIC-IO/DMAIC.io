@@ -11,6 +11,7 @@
  *   robust (central limit theorem) and is kept; the rank test is then shown
  *   as a secondary result, because it tests a different hypothesis
  *   (distribution shift instead of means).
+ * - Variance (one/two samples): χ² / F under normality, Bonett otherwise.
  */
 
 /** Per-group sample size from which the parametric mean test is kept. */
@@ -34,4 +35,46 @@ export function isNormalByAD(ad, alpha) {
 export function meanRoute(allNormal, sizes) {
   if (allNormal) return 'parametric';
   return sizes.every(n => n >= LARGE_SAMPLE_N) ? 'parametric-large-n' : 'rank';
+}
+
+/**
+ * Pick the test for a one- or two-sample variance question. χ² and F are
+ * exact under normality but badly non-robust otherwise; Bonett's method
+ * (Minitab's default) replaces them when AD rejects normality (C1-012).
+ * @param {'one'|'two'} testType
+ * @param {boolean} allNormal every sample passed the normality check
+ * @returns {'chi2'|'bonett1'|'ftest'|'bonett2'}
+ */
+export function varianceRoute(testType, allNormal) {
+  if (testType === 'one') return allNormal ? 'chi2' : 'bonett1';
+  return allNormal ? 'ftest' : 'bonett2';
+}
+
+/** Relative spread below which values count as one value (rounding noise). */
+const CONSTANT_REL_TOL = 1e-10;
+
+/**
+ * Whether values are equal up to floating-point noise. A hand-typed constant
+ * shift (5.4 − 5.1, 10.3 − 10, …) differs in the last bits of the double;
+ * an exact comparison would let it through and yield t ≈ 10¹⁴, p = 0.
+ * @param {number[]} values
+ * @returns {boolean} true when the spread is negligible against the magnitude
+ */
+export function isConstant(values) {
+  const min = Math.min(...values), max = Math.max(...values);
+  const scale = Math.max(Math.abs(min), Math.abs(max));
+  return max - min <= CONSTANT_REL_TOL * scale;
+}
+
+/**
+ * Whether a confidence interval contains the hypothesized value. The "no
+ * significant difference — values between lo and hi are consistent" note is
+ * only true then; after a non-rejected one-sided test the two-sided CI can
+ * lie entirely on the other side of the target.
+ * @param {[number, number]|null} ci
+ * @param {number} target
+ * @returns {boolean}
+ */
+export function ciContains(ci, target) {
+  return Array.isArray(ci) && ci[0] <= target && target <= ci[1];
 }

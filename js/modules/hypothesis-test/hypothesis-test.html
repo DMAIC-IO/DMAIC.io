@@ -14,13 +14,19 @@
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionTestType')"></div>
-    <div class="btn-group hyptest__toggle-row" data-help-key="modules.hypothesis-test.actions.setTestType.help">
+    <div class="btn-group hyptest__toggle-row" data-help-key="modules.hypothesis-test.actions.setTestType.help"
+      :class="model.category === 'mean' ? 'hyptest__toggle-row--grid' : ''">
       <button class="btn--segment hyptest__toggle-btn" data-type="one"
         :class="model.testType === 'one' ? 'btn--active' : ''"
         @click="setTestType('one')" x-text="t('oneSample')"></button>
       <button class="btn--segment hyptest__toggle-btn" data-type="two"
         :class="model.testType === 'two' ? 'btn--active' : ''"
         @click="setTestType('two')" x-text="t('twoSample')"></button>
+      <template x-if="model.category === 'mean'">
+        <button class="btn--segment hyptest__toggle-btn" data-type="paired"
+          :class="model.testType === 'paired' ? 'btn--active' : ''"
+          @click="setTestType('paired')" x-text="t('pairedSample')"></button>
+      </template>
       <button class="btn--segment hyptest__toggle-btn" data-type="k"
         :class="model.testType === 'k' ? 'btn--active' : ''"
         @click="setTestType('k')" x-text="t('kSample')"></button>
@@ -40,15 +46,18 @@
       <div class="hyptest__contents">
         <div class="field-group">
           <label data-help-key="modules.hypothesis-test.actions.setColumn1.help"
-                 x-text="t('sample1Column')"></label>
+                 x-text="model.testType === 'paired' ? t('pairedColumn1') : t('sample1Column')"></label>
           <div data-ref="picker1-wrap"></div>
         </div>
-        <template x-if="model.testType === 'two'">
+        <template x-if="model.testType === 'two' || model.testType === 'paired'">
           <div class="field-group">
             <label data-help-key="modules.hypothesis-test.actions.setColumn2.help"
-                   x-text="t('sample2Column')"></label>
+                   x-text="model.testType === 'paired' ? t('pairedColumn2') : t('sample2Column')"></label>
             <div data-ref="picker2-wrap"></div>
           </div>
+        </template>
+        <template x-if="model.testType === 'paired'">
+          <p class="field-hint" x-text="t('pairedDiffHint')"></p>
         </template>
       </div>
     </template>
@@ -87,6 +96,18 @@
       </div>
     </template>
 
+    <!-- Target (paired: hypothesized mean difference) -->
+    <template x-if="model.testType === 'paired'">
+      <div class="hyptest__contents">
+        <div class="dmike-split__section-title" x-text="t('targetDiff')"></div>
+        <div class="field-group">
+          <label>μ_d₀</label>
+          <input type="number" data-ref="target" class="field field--num"
+            x-model="model.targetValue" :placeholder="t('targetDiffPh')" @input="runAnalysis()">
+        </div>
+      </div>
+    </template>
+
     <div class="dmike-split__section-title" x-text="t('sectionHypothesis')"></div>
     <div class="field-row">
       <template x-if="model.testType !== 'k'">
@@ -115,7 +136,7 @@
       </template>
     </div>
     <template x-if="model.category === 'mean' && model.testType === 'two'">
-      <label class="hyptest__check" data-help-anchor="box"
+      <label class="field-check" data-help-anchor="box"
              data-help-key="modules.hypothesis-test.fields.equalVariances.help">
         <input type="checkbox" data-ref="equal-variances"
           x-model="model.equalVariances" @change="runAnalysis()">
@@ -134,7 +155,7 @@
       </div>
     </div>
 
-    <div class="hyptest__error" data-ref="error-box"></div>
+    <div class="field-error" data-ref="error-box" x-text="errorText"></div>
   </div>
 
   <!-- ─── Output (right) ───────────────────────────────────────── -->
@@ -150,6 +171,11 @@
         <div>
           <!-- ── Section 1: Normality ── -->
           <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionNormality')"></span></div>
+          <!-- After the title: a leading <template> would cost the title its :first-child margin rule -->
+          <template x-if="result.pairInfo && result.pairInfo.dropped > 0">
+            <p class="field-hint field-hint--warn" data-ref="paired-note"
+              x-text="t('pairedDropped', { count: result.pairInfo.dropped, n: result.pairInfo.n, k: result.pairInfo.dropped })"></p>
+          </template>
 
           <!-- k-sample: grid of per-group cards; otherwise stacked S1/S2 cards -->
           <div :class="result.isK ? 'hyptest__norm-grid' : 'hyptest__contents'">
@@ -159,7 +185,7 @@
                   <span x-text="card.label"></span>
                   <span class="hyptest__badge" :class="card.badgeClass" x-text="card.badgeText"></span>
                 </div>
-                <table>
+                <table class="dmike-table">
                   <thead><tr>
                     <th><span data-help-key="modules.hypothesis-test.types.NormRow.name" x-text="t('colTest')"></span></th><th><span data-help-key="modules.hypothesis-test.types.NormRow.stat" x-text="t('statistic')"></span></th><th><span data-help-key="modules.hypothesis-test.types.NormRow.p" x-text="t('common.sym.p')"></span></th><th><span data-help-key="modules.hypothesis-test.types.NormRow.decisionText" x-text="t('decision')"></span></th>
                   </tr></thead>
@@ -280,7 +306,7 @@
 
             <!-- ANOVA table (k-sample mean, ANOVA route) -->
             <template x-if="result.main.anovaRows">
-              <table>
+              <table class="dmike-table">
                 <thead><tr>
                   <th><span data-help-key="modules.hypothesis-test.types.AnovaRow.src" x-text="t('source')"></span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.ss" x-text="t('common.sym.ss')"></span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.df" x-text="t('common.sym.df')"></span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.ms" x-text="t('common.sym.ms')"></span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.f" x-text="t('common.sym.f')"></span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.p" x-text="t('common.sym.p')"></span></th>
                 </tr></thead>
@@ -301,7 +327,7 @@
 
             <!-- Group summary table (k-sample) -->
             <template x-if="result.main.groupRows">
-              <table>
+              <table class="dmike-table">
                 <thead><tr>
                   <th><span data-help-key="modules.hypothesis-test.types.GroupRow.name" x-text="t('group')"></span></th><th><span data-help-key="modules.hypothesis-test.types.GroupRow.n" x-text="t('common.sym.n')"></span></th><th><span data-help-key="modules.hypothesis-test.types.GroupRow.mean" x-text="t('common.sym.xbar')"></span></th><th><span data-help-key="modules.hypothesis-test.types.GroupRow.variance" x-text="t('common.sym.s2')"></span></th>
                   <template x-if="result.main.showCld">
@@ -328,7 +354,7 @@
           <!-- ── Section 3b: Rank test as secondary result (non-normal, n ≥ 20 per group) ── -->
           <template x-if="result.secondary">
             <div class="hyptest__contents">
-              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionSecondary')"></span></div>
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="result.secondary.title"></span></div>
               <div class="hyptest__result-card" data-ref="secondary-result">
                 <div class="hyptest__metrics">
                   <template x-for="m in result.secondary.metrics">
@@ -344,7 +370,7 @@
                     </div>
                   </template>
                 </div>
-                <div class="hyptest__decision hyptest__decision--warn" x-text="t('secondaryNote')"></div>
+                <div class="hyptest__decision hyptest__decision--warn" x-text="result.secondary.note"></div>
               </div>
             </div>
           </template>
@@ -366,6 +392,9 @@
                     </div>
                   </template>
                 </div>
+                <template x-if="result.power.note">
+                  <div class="hyptest__decision hyptest__decision--warn hyptest__power-note" data-ref="power-note" x-text="result.power.note"></div>
+                </template>
               </div>
             </div>
           </template>
@@ -385,7 +414,7 @@
                   </strong>
                   · <span x-text="result.pairwise.hint"></span>
                 </div>
-                <table class="hyptest__pairwise">
+                <table class="dmike-table hyptest__pairwise">
                   <thead><tr>
                     <th></th>
                     <template x-for="h in result.pairwise.headers"><th :key="h" x-text="h"></th></template>

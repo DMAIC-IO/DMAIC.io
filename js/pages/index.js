@@ -17,14 +17,14 @@ import licensesPage     from './licenses/licenses.js';
  *
  * @param {object} kernel - bootKernel() services container.
  * @param {object} deps
- * @param {object} deps.dialog - Dialog service (needed by cyclePage and dashboardPage).
+ * @param {object} deps.dialog - Dialog service (needed by settings, licenses, cycle and dashboard pages).
  * @param {Map<string, object>} deps.actionVerbs - Verb registry (needed by
  *   the settings page's action-URL list, task 12).
  * @param {function} deps.notify - Toast helper (settings' copy-URL feedback).
  */
 export async function initPages(kernel, { dialog, actionVerbs, notify }) {
-  await settingsPage.init({ ...kernel, actionVerbs, notify });
-  await licensesPage.init(kernel);
+  await settingsPage.init({ ...kernel, dialog, actionVerbs, notify });
+  await licensesPage.init({ ...kernel, dialog });
   await algorithmLabPage.init(kernel);
   kernel.eventBus.on('lab:navigate', async (p) => {
     await algorithmLabPage.show();

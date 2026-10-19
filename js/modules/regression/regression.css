@@ -9,55 +9,6 @@
 
 /* Fields use global .field / .field-group (components.css) */
 
-/* Toggle switch */
-.reg__toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-xs) 0;
-}
-
-.reg__toggle-row label {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-}
-
-.reg__toggle {
-  position: relative;
-  width: 36px;
-  height: 20px;
-  background: var(--color-bg-primary);
-  border: var(--border-width) solid var(--color-border-secondary);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
-
-.reg__toggle::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 14px;
-  height: 14px;
-  background: var(--color-text-tertiary);
-  border-radius: 50%;
-  transition: all 0.2s;
-}
-
-.reg__toggle--active {
-  background: var(--color-accent-dim, rgb(74 144 217 / 12%));
-  border-color: var(--color-accent);
-}
-
-.reg__toggle--active::after {
-  left: 18px;
-  background: var(--color-accent);
-}
-
 /* Degree disabled hint */
 .reg__degree-hint {
   display: none;
@@ -68,15 +19,6 @@
 }
 
 /* Error box */
-.reg__error {
-  display: none;
-  padding: var(--spacing-sm) var(--spacing-m);
-  font-size: var(--font-size-xs);
-  color: var(--color-error);
-  background: var(--color-error-bg, rgb(239 68 68 / 8%));
-  border: var(--border-width) solid var(--color-error);
-  border-radius: var(--border-radius);
-}
 
 /* Design-term notice (DOE hand-off) */
 .reg__notice {
@@ -142,7 +84,7 @@
   margin-bottom: var(--spacing-md);
 }
 
-/* Tables — base inherited from global .dmike-split table rule */
+/* Tables — base from .dmike-table (components.css) */
 .reg__table-wrap {
   margin-bottom: var(--spacing-md);
 }
@@ -177,20 +119,17 @@
   font-weight: var(--font-weight-medium);
 }
 
-.reg__td--sig {
-  color: #2e7d32;
+/* Scoped to .reg__table so they outrank `.reg__table td` (0,1,1). */
+.reg__table .reg__td--sig {
+  color: var(--color-success-text);
   font-weight: var(--font-weight-semibold);
 }
 
-[data-theme="dark"] .reg__td--sig {
-  color: #a5d6a7;
-}
-
-.reg__td--not-sig {
+.reg__table .reg__td--not-sig {
   color: var(--color-error);
 }
 
-.reg__td--vif-warn {
+.reg__table .reg__td--vif-warn {
   color: var(--color-warning);
   font-weight: var(--font-weight-medium);
 }
@@ -342,7 +281,6 @@
   grid-template-columns: 1fr 1fr;
   gap: var(--spacing-xs) var(--spacing-sm);
 }
-
 
 .reg__predict-result {
   margin-top: var(--spacing-sm);

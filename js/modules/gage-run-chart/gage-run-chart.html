@@ -11,7 +11,7 @@
     <div class="field-group">
       <label data-help-key="modules.gage-run-chart.actions.setColumn.help" x-text="t('operatorColumn')"></label>
       <div data-ref="col-operator-wrap"></div>
-      <span class="gage-run-chart__hint" x-text="t('operatorHint')"></span>
+      <span class="field-hint" x-text="t('operatorHint')"></span>
     </div>
 
     <div class="field-group">
@@ -25,7 +25,7 @@
       <label data-help-key="modules.gage-run-chart.types.Params.refValue" x-text="t('refValue')"></label>
       <input type="text" class="field field--num" data-ref="inp-ref-value"
         inputmode="decimal" :value="model.refValue" @change="refValueChanged($event)">
-      <span class="gage-run-chart__hint" x-text="t('refValueHint')"></span>
+      <span class="field-hint" x-text="t('refValueHint')"></span>
     </div>
 
     <div class="field-group">
@@ -34,13 +34,13 @@
         min="1" max="20" :value="model.partsPerRow" @change="partsPerRowChanged($event)">
     </div>
 
-    <div class="field-group">
-      <label data-help-anchor="box" data-help-key="modules.gage-run-chart.types.Params.connectWithin" class="gage-run-chart__check">
+    <div class="field-checks">
+      <label data-help-anchor="box" data-help-key="modules.gage-run-chart.types.Params.connectWithin" class="field-check">
         <input type="checkbox" data-ref="chk-connect"
           :checked="model.connectWithin" @change="setParam('connectWithin', $event.target.checked)">
         <span x-text="t('connectWithin')"></span>
       </label>
-      <label data-help-anchor="box" data-help-key="modules.gage-run-chart.types.Params.showOperatorMean" class="gage-run-chart__check">
+      <label data-help-anchor="box" data-help-key="modules.gage-run-chart.types.Params.showOperatorMean" class="field-check">
         <input type="checkbox" data-ref="chk-operator-mean"
           :checked="model.showOperatorMean" @change="setParam('showOperatorMean', $event.target.checked)">
         <span x-text="t('showOperatorMean')"></span>
@@ -70,8 +70,7 @@
       <input type="text" class="field" data-ref="inp-gage-misc" :value="model.gageInfo.misc" @input="setParam('gageInfo.misc', $event.target.value)">
     </div>
 
-    <div class="gage-run-chart__error" data-ref="error-box"
-      :class="{ visible: errorMsg }" x-text="errorMsg"></div>
+    <div class="field-error" data-ref="error-box" x-text="errorMsg"></div>
   </div>
 
   <div class="gage-run-chart__output dmike-split__output">

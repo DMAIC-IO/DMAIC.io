@@ -1,3 +1,11 @@
+# Nightly moved: nightly.dmaic.io → nightly.qprovement.com (path and query kept).
+# Host-bound, so it is a no-op on every other vhost this file is deployed to.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTP_HOST} ^nightly\.dmaic\.io$ [NC]
+  RewriteRule ^ https://nightly.qprovement.com%{REQUEST_URI} [R=301,L]
+</IfModule>
+
 # Security headers for D.Mike (OSS app).
 # The CSP mirrors the <meta http-equiv="Content-Security-Policy"> in index.html
 # but is delivered as a real HTTP header so header-only directives

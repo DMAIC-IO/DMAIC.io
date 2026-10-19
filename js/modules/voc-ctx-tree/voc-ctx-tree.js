@@ -7,11 +7,11 @@
  * the persisted state (vocs tree + activeVocId + appearance styles) plus all node
  * CRUD, sibling reorder, and export-row flattening. This data-fn owns the view
  * transforms (card/ node CSS classes, i18n badge/ count text), the add/edit/delete
- * form-popout handlers (declarative popout via the draggablePopout mixin), the
+ * form handlers (content lent to the dialog service), the
  * badge-handle drag reordering (transient state), the export dropdown + exporters,
  * and the imperative appearance settings panel (chart-editor building blocks).
  *
- * No HTML is built in JS for the module UI — the tree, cards, and form popout
+ * No HTML is built in JS for the module UI — the tree, cards, and node form
  * live in voc-ctx-tree.html. The settings panel is the documented imperative
  * exception (chart-editor widgets); the PNG/SVG export draws through the
  * `node-diagram` chart type.
@@ -33,7 +33,6 @@ import {
 } from '../../core/chart/chart-editor.js';
 import { ensureXLSX, downloadBlob } from '../../core/export-utils.js';
 import { shortcutRegistry } from '../../core/shortcut-registry.js';
-import { draggablePopout } from '../../ui/draggable-popout.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
 import { State, VALID_TYPES } from './voc-ctx-tree-model.js';
@@ -109,10 +108,6 @@ export default createModule({
   data(module, _t) {
     return {
       ...agentReadMixin(module),
-      ...draggablePopout({
-        size: 'width:480px;height:auto;min-height:240px;max-height:80vh;',
-        initialPosition: 'left:calc(50% - 240px);top:calc(50% - 180px)',
-      }),
 
       // ── Transient UI state (never persisted) ──────────────────
       /** @type {string|null} export dropdown open flag */
@@ -123,6 +118,8 @@ export default createModule({
       modalData: { text: '', source: '', type: 'ctq', target: '', measure: '' },
       /** @type {object} context ids for the current edit (vocId/needId/drvId) + editId */
       modalCtx: {},
+      /** @type {{confirm: Function, cancel: Function}|null} open form dialog's api */
+      _formApi: null,
       /** @type {{kind:string, scope:object, id:string}|null} active drag source */
       _drag: null,
 
@@ -558,39 +555,55 @@ export default createModule({
       },
 
       // ── Modal open / save ─────────────────────────────────────
-      _openModal(kind, ctx, fields) {
+      /**
+       * Open the node form in a form dialog. The form lives hidden in the
+       * template (x-ref="nodeForm") and is borrowed by the dialog.
+       * @param {'voc'|'need'|'driver'|'req'} kind
+       * @param {object} ctx  context ids (vocId/needId/drvId) + editId
+       * @param {object} fields  initial field values
+       * @returns {Promise<void>} resolves once the dialog is closed
+       */
+      async _openModal(kind, ctx, fields) {
         this.modalCtx = ctx;
         this.modalData = { text: '', source: '', type: 'ctq', target: '', measure: '', ...fields };
-        this.popoutResetPosition();
         this.modalKind = kind;
-        this.$nextTick(() => {
-          const ta = this.$el.querySelector('[data-ref="modalText"]');
-          ta?.focus();
-        });
-      },
-      /** @noagent schließt den Formulardialog (E3). */
-      closeModal() {
-        this.modalKind = null;
-        this.popoutResetPosition();
+        await this.$nextTick(); // let the kind-specific fields render before lending
+        try {
+          await module._context.dialog.form({
+            title: this.modalTitle(),
+            content: this.$refs.nodeForm,
+            confirmLabel: module._context.i18n.t('common.save'),
+            cancelLabel: module._context.i18n.t('common.cancel'),
+            onMount: (body, api) => {
+              this._formApi = api;
+              body.querySelector('[data-ref="modalText"]')?.focus();
+            },
+            onConfirm: () => this.saveModal(),
+          });
+        } finally {
+          this._formApi = null;
+          this.modalKind = null;
+        }
       },
       /** @noagent DOM event handler: Strg+Enter schließt das Formular ab. */
       commitKey(event) {
-        if (shortcutRegistry.matches(event, 'vocCtxTree.commit')) {
+        if (this._formApi && shortcutRegistry.matches(event, 'vocCtxTree.commit')) {
           event.preventDefault();
-          this.saveModal();
+          this._formApi.confirm();
         }
       },
       /**
        * @noagent schließt den Formulardialog ab; ein Agent darf keinen Dialog
        * bedienen (E3). Geschrieben wird über `addVoc`/`updateVoc` und ihre
        * Geschwister — dieselben Senken wie die der Agentenfläche.
+       * @returns {boolean} false hält den Dialog offen (leerer Text)
        */
       saveModal() {
         const d = this.modalData;
         const text = (d.text || '').trim();
         if (!text) {
-          this.$el.querySelector('[data-ref="modalText"]')?.focus();
-          return; // empty text rejected — form stays open
+          this.$refs.nodeForm.querySelector('[data-ref="modalText"]')?.focus();
+          return false;
         }
         const ctx = this.modalCtx;
         const k = this.modalKind;
@@ -615,7 +628,7 @@ export default createModule({
           if (editing) this.updateRequirement(ctx.vocId, ctx.needId, ctx.drvId, ctx.editId, text, target, measure);
           else this.addRequirement(ctx.vocId, ctx.needId, ctx.drvId, text, target, measure);
         }
-        this.closeModal();
+        return true;
       },
       _editTargetExists(kind, ctx) {
         if (kind === 'voc') return this.model.vocs.some((v) => v.id === ctx.editId);
@@ -853,13 +866,18 @@ export default createModule({
         const root = this.$el.querySelector('.vct') || this.$el;
         if (!root) return;
         const s = this.model.styles;
+        // The node form is lent to the dialog service and leaves .vct while
+        // open, so it carries its own copy of the colour properties.
+        const targets = [root, this.$refs.nodeForm].filter(Boolean);
         for (const [key, prop] of Object.entries(COLOR_PROP)) {
           const c = parseRGBA(s.colors[key]);
-          root.style.setProperty(prop, rgbaStr({ ...c, a: 1 }));
-          root.style.setProperty(`${prop}-bg`, rgbaStr({ ...c, a: 0.06 }));
-          root.style.setProperty(`${prop}-border`, rgbaStr({ ...c, a: 0.20 }));
-          root.style.setProperty(`${prop}-badge-bg`, rgbaStr({ ...c, a: 0.12 }));
-          root.style.setProperty(`${prop}-line`, rgbaStr({ ...c, a: 0.25 }));
+          for (const el of targets) {
+            el.style.setProperty(prop, rgbaStr({ ...c, a: 1 }));
+            el.style.setProperty(`${prop}-bg`, rgbaStr({ ...c, a: 0.06 }));
+            el.style.setProperty(`${prop}-border`, rgbaStr({ ...c, a: 0.20 }));
+            el.style.setProperty(`${prop}-badge-bg`, rgbaStr({ ...c, a: 0.12 }));
+            el.style.setProperty(`${prop}-line`, rgbaStr({ ...c, a: 0.25 }));
+          }
         }
         root.querySelectorAll('.vct__node').forEach((node) => {
           node.style.borderWidth = `${s.borderWidth}px`;
@@ -932,6 +950,7 @@ export default createModule({
       },
       /** @noagent lifecycle, kein Zustandsweg. */
       destroy() {
+        this._formApi?.cancel();
         if (this._onMouseUp) {
           document.removeEventListener('mouseup', this._onMouseUp);
           this._onMouseUp = null;

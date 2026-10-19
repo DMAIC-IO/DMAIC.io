@@ -1,28 +1,11 @@
 /**
- * Alpine data-mixin for a draggable popout that lives **inside** a module's
- * Alpine template, reusing the dmike-chart-popout CSS shell.
+ * Drag behaviour of dialog windows (used only by dialog.js). Modules never
+ * import this — they lend content to the dialog service (`context.dialog`).
  *
- * Unlike the dialog service (js/ui/dialog/, driven via `context.dialog`),
- * this keeps the markup in the module's own template: the module renders the
- * overlay with `x-if`/`x-show` and binds the handlers below. Spread the
- * returned object into the module's `data()` return value.
- *
- * Template contract:
- * ```html
- * <div class="dmike-chart-popout-overlay"
- *      @click.self="popoutClose()"               <!-- supply your own close -->
- *      @keydown.escape.window="popoutClose()"
- *      @mousemove.window="popoutDragMove($event)"
- *      @mouseup.window="popoutDragEnd()">
- *   <div class="dmike-chart-popout" :style="popoutStyle()">
- *     <div class="dmike-chart-popout-titlebar" @mousedown="popoutDragStart($event)">…</div>
- *     …
- *   </div>
- * </div>
- * ```
- *
- * Call `popoutResetPosition()` whenever the popout is (re)opened so it returns
- * to its initial centred position.
+ * An Alpine data fragment spread into the dialog's reactive state: the shell
+ * template binds `popoutStyle()` on the window and `popoutDragStart` on the
+ * title bar (via titlePress), `popoutDragMove` / `popoutDragEnd` on the
+ * overlay's `@mousemove.window` / `@mouseup.window`.
  *
  * @param {object} [options]
  * @param {string} [options.size] - Fixed size CSS (width/height/max-height). Must end with ';'.

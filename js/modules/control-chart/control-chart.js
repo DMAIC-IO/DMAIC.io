@@ -244,8 +244,9 @@ const mod = createModule({
       _renderGen: 0,
       _picker: null,
       _lastResult: null,
+      /** @type {{cancel: Function}|null} api of the open annotation dialog */
+      _formApi: null,
       // Annotation dialog (transient UI)
-      annOpen: false,
       annIdx: -1,
       annComment: '',
       annExcluded: false,
@@ -568,7 +569,7 @@ const mod = createModule({
       toggleNelson() { this.nelsonCollapsed = !this.nelsonCollapsed; },
       /** @noagent view transform */
       nelsonPanelClass() {
-        return this.nelsonCollapsed ? 'control-chart__nelson-panel--collapsed' : '';
+        return this.nelsonCollapsed ? 'field-checks--collapsed' : '';
       },
       /** @noagent view transform */
       nelsonToggleClass() {
@@ -603,38 +604,41 @@ const mod = createModule({
         await this.setParam('enabledRules', e.target.checked ? [...rest, rid] : rest);
       },
 
-      // ── Annotation dialog (declarative) ───────────────────────
+      // ── Annotation dialog (form lent to the dialog service) ───
 
       /** @noagent view transform */
       annTitle() { return _t('annotationTitle', { idx: this.annIdx + 1 }); },
-      /** @noagent view transform */
-      cancelLabel() { return module._context.i18n.t('common.cancel'); },
-      /** @noagent view transform */
-      annRemoveStyle() {
-        // Object form so Alpine renders the canonical "visibility: hidden;"
-        // (with a space) — the POM checks getAttribute('style') for that exact
-        // substring. A bare string ('visibility:hidden') would fail the match.
-        return this.model.annotations[this.annIdx] ? {} : { visibility: 'hidden' };
-      },
-      /** @noagent view transform; Dialog- bzw. Klappzustand, kein Zustand der Rechnung */
-      openAnnotation(idx) {
-        const existing = this.model.annotations[idx] || { comment: '', excluded: false };
+      /**
+       * @noagent Dialogzustand, kein Zustand der Rechnung. Öffnet das
+       * Anmerkungsformular für einen Punkt in einem kompakten Formulardialog;
+       * der Löschknopf erscheint nur bei einer bestehenden Anmerkung.
+       * @param {number} idx  point index
+       * @returns {Promise<void>} resolves once the dialog is closed
+       */
+      async openAnnotation(idx) {
+        const existing = this.model.annotations[idx];
         this.annIdx = idx;
-        this.annComment = existing.comment || '';
-        this.annExcluded = Boolean(existing.excluded);
-        this.annOpen = true;
-        this.$nextTick(() => {
-          module._container.querySelector('[data-ref="ann-comment"]')?.focus();
-        });
-      },
-      /** @noagent view transform; Dialog- bzw. Klappzustand, kein Zustand der Rechnung */
-      closeAnnotation() {
-        this.annOpen = false;
-        this.annIdx = -1;
-      },
-      /** @noagent view transform; Dialog- bzw. Klappzustand, kein Zustand der Rechnung */
-      annOverlayClick(e) {
-        if (e.target.classList.contains('dmike-chart-popout-overlay')) this.closeAnnotation();
+        this.annComment = existing?.comment || '';
+        this.annExcluded = Boolean(existing?.excluded);
+        try {
+          await module._context.dialog.form({
+            title: this.annTitle(),
+            size: 'compact',
+            content: this.$refs.annForm,
+            confirmLabel: _t('annotationSave'),
+            cancelLabel: module._context.i18n.t('common.cancel'),
+            onMount: (body, api) => {
+              this._formApi = api;
+              body.querySelector('[data-ref="ann-comment"]')?.focus();
+            },
+            onConfirm: () => this.saveAnnotation(),
+            onDelete: existing ? () => this.removeAnnotation() : undefined,
+            deleteLabel: _t('annotationRemove'),
+          });
+        } finally {
+          this._formApi = null;
+          this.annIdx = -1;
+        }
       },
       /**
        * @noagent DOM event handler; the agent uses setAnnotation()
@@ -643,16 +647,13 @@ const mod = createModule({
         const idx = this.annIdx;
         const comment = this.annComment || '';
         const excluded = Boolean(this.annExcluded);
-        this.closeAnnotation();
         await this.setAnnotation(idx, comment, excluded);
       },
       /**
        * @noagent DOM event handler; the agent uses setAnnotation()
        */
       async removeAnnotation() {
-        const idx = this.annIdx;
-        this.closeAnnotation();
-        await this.setAnnotation(idx, '', false);
+        await this.setAnnotation(this.annIdx, '', false);
       },
 
       // ── Analysis (controller — needs context + live worksheet data) ──
@@ -1020,6 +1021,7 @@ const mod = createModule({
 
       /** @noagent lifecycle */
       destroy() {
+        this._formApi?.cancel();
         clearTimeout(this._debTimer);
         for (const unsub of this._unsubs) unsub();
         this._unsubs = [];

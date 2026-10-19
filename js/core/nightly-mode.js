@@ -2,7 +2,7 @@
  * D.Mike — Nightly Mode (nightly-mode.js)
  *
  * Detects whether the app is being served from the nightly subdomain
- * (`nightly.dmaic.io`) and, if so, renders a permanent banner at the top
+ * (`nightly.qprovement.com`) and, if so, renders a permanent banner at the top
  * plus a one-time acknowledgement modal explaining that data may break
  * across nightly updates.
  *

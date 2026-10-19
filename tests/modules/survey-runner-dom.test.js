@@ -5,14 +5,14 @@
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
 import { runSurvey } from '../../js/modules/survey-builder/survey-runner.js';
-import { CONDITION_CASES } from '../../js/modules/survey-builder/survey-conditions.js';
+import { CONDITION_CASES } from './fixtures/survey-condition-cases.js';
 
 const SURVEY = CONDITION_CASES[0].survey;
 const STRINGS = {
   progress: '{answered}/{total}', save: 'Speichern', reset: 'Neu', resetConfirm: 'Sicher?',
   missingOne: '{count} fehlt', missingOther: '{count} fehlen', saved: 'Gespeichert: {file}',
   fileAnswers: 'Antworten', other: 'Sonstiges', noAnswer: 'k. A.', untitled: 'Fragebogen',
-  contact: 'Kontakt: {contact}',
+  contact: 'Kontakt: {contact}', draftOutdated: 'Geändert – bitte prüfen',
 };
 const detached = new Function(`return (${runSurvey.toString()});`)();
 
@@ -26,10 +26,10 @@ function memoryStorage() {
   };
 }
 
-function mount(extra = {}) {
+function mount({ def = SURVEY, ...extra } = {}) {
   const root = document.createElement('div');
   const downloads = [];
-  detached(SURVEY, STRINGS, {
+  detached(def, STRINGS, {
     root,
     storage: memoryStorage(),
     download: (name, text) => downloads.push({ name, text }),
@@ -113,6 +113,30 @@ suite('survey-runner — DOM', () => {
     assertTrue(storage.has('dmike-survey:sv:r1'));
     const second = mount({ storage });
     assertEqual(q(second.root, 'q1').querySelector('input[value="g2"]').checked, true);
+  });
+
+  test('a draft of the same version shows no notice', () => {
+    const storage = memoryStorage();
+    pick(mount({ storage }).root, 'q1', 'g2');
+    assertEqual(mount({ storage }).root.querySelector('.sv-notice').hidden, true);
+  });
+
+  test('a draft of an older version is restored with a notice to check the answers', () => {
+    const storage = memoryStorage();
+    pick(mount({ storage }).root, 'q1', 'g2');
+    const { root } = mount({ storage, def: { ...SURVEY, version: 2 } });
+    assertEqual(q(root, 'q1').querySelector('input[value="g2"]').checked, true);
+    const notice = root.querySelector('.sv-notice');
+    assertEqual(notice.hidden, false);
+    assertEqual(notice.textContent, 'Geändert – bitte prüfen');
+  });
+
+  test('reset hides the outdated-draft notice', () => {
+    const storage = memoryStorage();
+    pick(mount({ storage }).root, 'q1', 'g2');
+    const { root } = mount({ storage, def: { ...SURVEY, version: 2 } });
+    root.querySelector('.sv-reset').click();
+    assertEqual(root.querySelector('.sv-notice').hidden, true);
   });
 
   test('storage that throws does not break the runner', () => {

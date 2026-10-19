@@ -7,7 +7,7 @@ import {
   buildSurveyHtml, surveyFileName, sanitizeFileNamePart, embedJson, runnerStrings,
 } from '../../js/modules/survey-builder/survey-export.js';
 import { runSurvey } from '../../js/modules/survey-builder/survey-runner.js';
-import { CONDITION_CASES } from '../../js/modules/survey-builder/survey-conditions.js';
+import { CONDITION_CASES } from './fixtures/survey-condition-cases.js';
 import { I18n } from '../../js/core/i18n.js';
 
 const STRINGS = { untitled: 'Fragebogen', noscript: 'JavaScript nötig', fileSurvey: 'Fragebogen' };

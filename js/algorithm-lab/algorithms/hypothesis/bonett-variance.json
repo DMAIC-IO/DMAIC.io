@@ -1,0 +1,328 @@
+{
+  "id": "bonett-variance",
+  "name": {
+    "de": "Bonett-Test (1 Varianz)",
+    "en": "Bonett test (1 variance)"
+  },
+  "category": "hypothesis",
+  "subcategory": "variance",
+  "status": "in-progress",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Prüft die Varianz einer Stichprobe gegen einen Sollwert – auch bei nicht-normalverteilten Daten.",
+      "en": "Tests the variance of one sample against a target value – also for non-normal data."
+    },
+    "long": {
+      "de": "Der Bonett-Test ist die robuste Alternative zum χ²-Varianztest. Er schätzt die Wölbung (Kurtosis) der Daten aus einem getrimmten Mittelwert und korrigiert damit den Standardfehler der logarithmierten Varianz. Das Konfidenzintervall für σ² (und σ) bleibt dadurch auch bei schiefen oder schwerrandigen Verteilungen näherungsweise gültig, wo der χ²-Test stark verfälscht ist. Der Test hat keine Teststatistik; der p-Wert ergibt sich durch Invertieren des Konfidenzintervalls. D.Mike nutzt ihn, wenn der Anderson-Darling-Test die Normalverteilung ablehnt – wie Minitab.",
+      "en": "The Bonett test is the robust alternative to the χ² variance test. It estimates the kurtosis of the data from a trimmed mean and uses it to correct the standard error of the log variance. The confidence interval for σ² (and σ) therefore stays approximately valid for skewed or heavy-tailed distributions, where the χ² test is badly distorted. The test has no test statistic; the p-value is obtained by inverting the confidence interval. D.Mike uses it when the Anderson-Darling test rejects normality – as Minitab does."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      {
+        "label": "c",
+        "latex": "c = \\frac{n}{n - z}",
+        "description": {
+          "de": "Korrekturfaktor für kleine Stichproben (z = Normalquantil z_{α/2}, einseitig z_α)",
+          "en": "Small-sample correction factor (z = normal quantile z_{α/2}, one-sided z_α)"
+        }
+      },
+      {
+        "label": "γ̂",
+        "latex": "\\hat\\gamma = \\frac{n\\sum(x_i-m)^4}{\\left(\\sum(x_i-\\bar x)^2\\right)^2}",
+        "description": {
+          "de": "Geschätzte Kurtosis mit getrimmtem Mittelwert m",
+          "en": "Estimated kurtosis with trimmed mean m"
+        }
+      },
+      {
+        "label": "trim",
+        "latex": "\\frac{1}{2\\sqrt{n-4}}",
+        "description": {
+          "de": "Trimmanteil je Seite für m (bei n ≤ 5: arithmetisches Mittel)",
+          "en": "Trim proportion per tail for m (for n ≤ 5: arithmetic mean)"
+        }
+      },
+      {
+        "label": "se",
+        "latex": "se = c\\sqrt{\\frac{\\hat\\gamma-(n-3)/n}{n-1}}",
+        "description": {
+          "de": "Standardfehler von ln(c·s²)",
+          "en": "Standard error of ln(c·s²)"
+        }
+      },
+      {
+        "label": "KI",
+        "latex": "\\exp\\!\\left(\\ln(c\\,s^2) \\pm z\\, se\\right)",
+        "description": {
+          "de": "Konfidenzintervall für σ²; Wurzel der Grenzen ergibt das KI für σ",
+          "en": "Confidence interval for σ²; the square roots of the limits give the CI for σ"
+        }
+      },
+      {
+        "label": "p",
+        "latex": "p = 2\\min(\\alpha_L,\\alpha_U)",
+        "description": {
+          "de": "p-Wert durch Invertieren des KI: α_L (α_U) ist das kleinste α, bei dem die untere (obere) Grenze σ₀² erreicht; einseitig α_L bzw. α_U",
+          "en": "p-value by CI inversion: α_L (α_U) is the smallest α at which the lower (upper) limit reaches σ₀²; one-sided α_L or α_U"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Stetige (kontinuierliche) Daten",
+        "en": "Continuous data"
+      },
+      {
+        "de": "Beliebige Verteilung – keine Normalverteilung nötig",
+        "en": "Any distribution – normality is not required"
+      },
+      {
+        "de": "Die Beobachtungen sind unabhängig",
+        "en": "The observations are independent"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Näherungsverfahren – bei kleinem n ist die Überdeckung nur ungefähr erreicht",
+        "en": "Approximate procedure – for small n the coverage is only approximate"
+      },
+      {
+        "de": "Für n ≤ z gibt es kein Konfidenzintervall",
+        "en": "No confidence interval exists for n ≤ z"
+      },
+      {
+        "de": "Keine Teststatistik; der p-Wert folgt aus der Intervallinversion",
+        "en": "No test statistic; the p-value follows from interval inversion"
+      }
+    ],
+    "references": [
+      {
+        "source": "Bonett, D. G. (2006), Approximate confidence interval for standard deviation of nonnormal distributions, Computational Statistics & Data Analysis, 50, 775–782"
+      },
+      {
+        "source": "Banga, S. J. & Fox, G. D. (2013), Bonett's Method, Minitab white paper"
+      },
+      {
+        "source": "Minitab Methods and Formulas, 1 Variance"
+      }
+    ],
+    "minitab_equivalent": "Stat > Basic Statistics > 1 Variance (Bonett)"
+  },
+  "source": {
+    "function_name": "bonettVarianceTest",
+    "file_path": "js/engines/bonett-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "data",
+          "type": "number[]",
+          "required": true,
+          "description": {
+            "de": "Stichprobendaten (Engine: mindestens 2 Werte; Modul Hypothesentest: mindestens 3)",
+            "en": "Sample data (engine: at least 2 values; hypothesis-test module: at least 3)"
+          }
+        },
+        {
+          "name": "sigma0Sq",
+          "type": "number",
+          "required": true,
+          "description": {
+            "de": "Hypothetische Varianz σ₀² (> 0)",
+            "en": "Hypothesized variance σ₀² (> 0)"
+          }
+        },
+        {
+          "name": "direction",
+          "type": "string",
+          "required": false,
+          "description": {
+            "de": "Testrichtung: 'two-sided', 'greater', 'less'",
+            "en": "Test direction: 'two-sided', 'greater', 'less'"
+          }
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "required": false,
+          "description": {
+            "de": "Signifikanzniveau (Standard: 0.05)",
+            "en": "Significance level (default: 0.05)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": {
+            "type": "null",
+            "description": {
+              "de": "Keine Teststatistik (immer null)",
+              "en": "No test statistic (always null)"
+            }
+          },
+          "pValue": {
+            "type": "number",
+            "description": {
+              "de": "p-Wert (aus der Intervallinversion)",
+              "en": "p-value (from interval inversion)"
+            }
+          },
+          "sampleVariance": {
+            "type": "number",
+            "description": {
+              "de": "Stichprobenvarianz s²",
+              "en": "Sample variance s²"
+            }
+          },
+          "ci": {
+            "type": "number[]",
+            "description": {
+              "de": "Konfidenzintervall für σ² (offene Seite: null)",
+              "en": "Confidence interval for σ² (open side: null)"
+            }
+          },
+          "ciSigma": {
+            "type": "number[]",
+            "description": {
+              "de": "Konfidenzintervall für σ",
+              "en": "Confidence interval for σ"
+            }
+          },
+          "reject": {
+            "type": "boolean",
+            "description": {
+              "de": "H₀ abgelehnt?",
+              "en": "Reject H₀?"
+            }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "data",
+          "label": {
+            "de": "Stichprobendaten",
+            "en": "Sample data"
+          },
+          "type": "textarea",
+          "placeholder": {
+            "de": "Werte getrennt durch Komma, Leerzeichen oder Zeilenumbruch",
+            "en": "Values separated by commas, spaces, or newlines"
+          },
+          "parse_as": "number_array",
+          "required": true
+        },
+        {
+          "name": "sigma0Sq",
+          "label": {
+            "de": "Hypothetische Varianz σ₀²",
+            "en": "Hypothesized variance σ₀²"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "1",
+            "en": "1"
+          },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "direction",
+          "label": {
+            "de": "Testrichtung",
+            "en": "Test Direction"
+          },
+          "type": "select",
+          "options": [
+            {
+              "value": "two-sided",
+              "label": {
+                "de": "≠ Zweiseitig",
+                "en": "≠ Two-sided"
+              }
+            },
+            {
+              "value": "greater",
+              "label": {
+                "de": "> Größer",
+                "en": "> Greater"
+              }
+            },
+            {
+              "value": "less",
+              "label": {
+                "de": "< Kleiner",
+                "en": "< Less"
+              }
+            }
+          ],
+          "parse_as": "string",
+          "required": false
+        },
+        {
+          "name": "alpha",
+          "label": {
+            "de": "Signifikanzniveau α",
+            "en": "Significance Level α"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "0.05",
+            "en": "0.05"
+          },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": [
+        "pValue",
+        "sampleVariance",
+        "ci",
+        "ciSigma",
+        "reject"
+      ],
+      "primary_field": "pValue",
+      "format": {
+        "pValue": {
+          "decimals": 6,
+          "label": "p-Value"
+        },
+        "sampleVariance": {
+          "decimals": 6,
+          "label": {
+            "de": "Stichprobenvarianz (s²)",
+            "en": "Sample variance (s²)"
+          }
+        },
+        "reject": {
+          "decimals": 0,
+          "label": {
+            "de": "H₀ abgelehnt",
+            "en": "Reject H₀"
+          }
+        }
+      }
+    }
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-17",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung: Bonett-Varianztest mit KI für σ² und σ, p-Wert durch Intervallinversion (noch nicht gegen Minitab validiert)",
+        "en": "Initial implementation: Bonett variance test with CI for σ² and σ, p-value by interval inversion (not yet validated against Minitab)"
+      },
+      "breaking": false
+    }
+  ]
+}

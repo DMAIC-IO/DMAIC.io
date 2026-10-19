@@ -1288,7 +1288,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Wechselt den Rechenbereich und leert die Eingabezeile."
+        "help": "Wechselt den Rechenbereich und leert die Eingabezeile. Der schon aktive Bereich (Leertaste auf seinem Reiter, erneuter Klick) behält die Eingabe."
       },
       "calculate": {
         "params": [],
@@ -6021,9 +6021,9 @@ export const AGENT_REGISTRY = {
         "params": [
           {
             "name": "type",
-            "type": "'one'|'two'|'k'",
+            "type": "'one'|'two'|'paired'|'k'",
             "optional": false,
-            "help": "one sample, two samples, or k samples"
+            "help": "one sample, two samples, paired samples, or k samples"
           }
         ],
         "returns": "void",
@@ -6163,8 +6163,8 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "testType": {
-        "type": "'one'|'two'|'k'",
-        "help": "one sample, two samples, or k samples",
+        "type": "'one'|'two'|'paired'|'k'",
+        "help": "one sample, two samples, paired samples, or k samples",
         "bulk": false,
         "derived": true
       },
@@ -13469,18 +13469,13 @@ export const AGENT_REGISTRY = {
       "unmarked_method:goalChanged",
       "unmarked_method:isConfirmingDelete",
       "unmarked_method:goalDeleteClick",
-      "unmarked_method:goalDragStart",
-      "unmarked_method:goalDragEnd",
-      "unmarked_method:goalDragOver",
-      "unmarked_method:goalDragLeave",
-      "unmarked_method:goalDrop",
       "unmarked_method:orgAddRoot",
       "unmarked_method:orgLayoutBtn",
       "unmarked_method:canUndo",
       "unmarked_method:orgUndo",
       "unmarked_method:nodeStylePickColor",
       "unreadable_state_key:orgChart",
-      "dom_detour:dataset.orgId@365"
+      "dom_detour:dataset.orgId@334"
     ],
     "actions": {},
     "fields": {
@@ -17708,6 +17703,8 @@ export const AGENT_REGISTRY = {
       "unmarked_method:addComponent",
       "unmarked_method:setName",
       "unmarked_method:setNote",
+      "unmarked_method:setCost",
+      "unmarked_method:costValue",
       "unmarked_method:changeKind",
       "unmarked_method:discardIfEmpty",
       "unmarked_method:removeComponent",
@@ -17715,14 +17712,19 @@ export const AGENT_REGISTRY = {
       "unmarked_method:headClass",
       "unmarked_method:cellClass",
       "unmarked_method:isTicked",
+      "unmarked_method:isExcluded",
+      "unmarked_method:cellState",
       "unmarked_method:cellTitle",
       "unmarked_method:toggleCell",
       "unmarked_method:matrixSummary",
       "unmarked_method:openPairChips",
       "unmarked_method:createFromPair",
-      "unmarked_method:addFunction",
-      "unmarked_method:setCarrier",
-      "unmarked_method:setObject",
+      "unmarked_method:pairBlocks",
+      "unmarked_method:addOnPair",
+      "unmarked_method:endName",
+      "unmarked_method:isForward",
+      "unmarked_method:isBackward",
+      "unmarked_method:directionLabel",
       "unmarked_method:setVerb",
       "unmarked_method:setParameter",
       "unmarked_method:changeType",
@@ -17733,6 +17735,9 @@ export const AGENT_REGISTRY = {
       "unmarked_method:fnClass",
       "unmarked_method:disadvantageGroups",
       "unmarked_method:paramText",
+      "unmarked_method:vcRows",
+      "unmarked_method:valueCostEmpty",
+      "unmarked_method:drawValueCost",
       "unmarked_method:init",
       "unmarked_method:destroy",
       "unmarked_method:drawArrows",
@@ -17740,6 +17745,7 @@ export const AGENT_REGISTRY = {
       "unmarked_method:nodeStyle",
       "unmarked_method:nodeClass",
       "unmarked_method:startDrag",
+      "unmarked_method:startLabelDrag",
       "unmarked_method:resetLayout",
       "unmarked_method:exportDiagram",
       "unmarked_method:select",
@@ -17757,12 +17763,22 @@ export const AGENT_REGISTRY = {
         "help": "",
         "bulk": false
       },
+      "exclusions": {
+        "type": "any",
+        "help": "",
+        "bulk": false
+      },
       "functions": {
         "type": "any",
         "help": "",
         "bulk": false
       },
       "positions": {
+        "type": "any",
+        "help": "",
+        "bulk": false
+      },
+      "labels": {
         "type": "any",
         "help": "",
         "bulk": false
@@ -19113,9 +19129,13 @@ export const AGENT_REGISTRY = {
   },
   "worksheet": {
     "tagged": true,
-    "available": true,
-    "violations": [],
-    "reported": [],
+    "available": false,
+    "violations": [
+      "unmarked_method:onRoleDraftChange"
+    ],
+    "reported": [
+      "unmarked_method:onRoleDraftChange"
+    ],
     "actions": {
       "undo": {
         "params": [],
@@ -19431,4 +19451,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":69};
+export const AGENT_COVERAGE = {"total":76,"available":68};

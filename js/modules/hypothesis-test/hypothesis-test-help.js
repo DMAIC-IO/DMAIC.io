@@ -55,8 +55,18 @@ export default {
           },
           {
             type: 'definition',
+            term: 'Gepaarter Vergleich (Mittelwerte)',
+            content: 'Gepaart sind zwei Messungen an derselben Einheit – vorher/nachher oder zwei Messsysteme am selben Teil. Das Modul bildet je Zeile die Differenz d = Spalte 1 − Spalte 2 und prüft, ob deren Mittelwert μ_d einem hypothetischen Wert μ_d₀ entspricht (meist 0). Zeilen mit nur einem Wert fallen weg; der Hinweis über der Auswertung nennt, wie viele. Die Normalität wird an den Differenzen geprüft, nicht an den Spalten. Sind die Differenzen normalverteilt, läuft der gepaarte {{term:t-test|t-Test}}; sonst bei weniger als 20 Paaren der Wilcoxon-Vorzeichen-Rang-Test auf den Differenzen, ab 20 Paaren wird er zusätzlich gezeigt. Weil jede Einheit ihre eigene Kontrolle ist, ist der gepaarte Test bei solchen Daten deutlich trennschärfer als der Zwei-Stichproben-Vergleich.',
+          },
+          {
+            type: 'definition',
             term: 'k-Stichproben-Vergleich (Mittelwerte)',
             content: 'Bei mehr als zwei Gruppen ist die einfaktorielle {{term:anova|Varianzanalyse (One-Way ANOVA)}} das passende Verfahren — sie zerlegt die Gesamtvariation in Anteile zwischen und innerhalb der Gruppen und vergleicht diese über eine F-Statistik. Ob Daten als normalverteilt gelten, entscheidet der Anderson-Darling-Test; Shapiro-Wilk wird nur zur Information angezeigt. Sind Daten nicht normalverteilt und hat mindestens eine Gruppe weniger als 20 Werte, wechselt das Modul auf den Kruskal-Wallis-Test (rangbasiert; nichtparametrisches Pendant zur {{term:anova|ANOVA}}). Ab n ≥ 20 je Gruppe ist die ANOVA robust und bleibt das Hauptergebnis; Kruskal-Wallis erscheint dann als Zweitergebnis zum Abgleich, denn er prüft eine andere Hypothese (Verschiebung der Verteilung statt Mittelwerte). Beide Tests sind Omnibus-Tests: sie zeigen, dass mindestens ein Mittelwert abweicht, ohne zu sagen welcher — dafür sind anschließende Post-Hoc-Vergleiche (z. B. Tukey HSD) nötig.',
+          },
+          {
+            type: 'definition',
+            term: 'Ein- und Zwei-Stichproben-Varianz',
+            content: 'Bei normalverteilten Daten (Anderson-Darling) rechnet das Modul den χ²-Test (eine {{term:varianz|Varianz}}) bzw. den F-Test (zwei Varianzen); beide sind dann exakt. Lehnt Anderson-Darling die Normalverteilung ab, wechselt das Modul auf das Verfahren nach Bonett – wie Minitab. χ² und F reagieren stark auf schiefe oder schwere Ränder: p-Wert und Konfidenzintervall stimmen dann nicht mehr. Bonett schätzt die Wölbung aus einem getrimmten Mittelwert und liefert ein Konfidenzintervall für σ² und σ bzw. für σ²₁/σ²₂, auch einseitig. Bei zwei Stichproben steht der Levene-Test (Brown-Forsythe) zum Abgleich daneben; er prüft nur zweiseitig. Die Power-Analyse auf diesen Wegen nimmt Normalverteilung an und ist nur eine Näherung.',
           },
           {
             type: 'definition',
@@ -113,8 +123,18 @@ export default {
           },
           {
             type: 'definition',
+            term: 'Paired comparison (means)',
+            content: 'Paired means two measurements on the same unit – before/after, or two measurement systems on the same part. The module forms the row-wise difference d = column 1 − column 2 and tests whether its mean μ_d equals a hypothesized value μ_d₀ (usually 0). Rows with only one value are dropped; the note above the results says how many. Normality is checked on the differences, not on the columns. If the differences are normal the paired {{term:t-test|t-test}} runs; otherwise, with fewer than 20 pairs, the Wilcoxon signed-rank test on the differences, and from 20 pairs on it is shown alongside. Because every unit is its own control, the paired test is clearly more powerful on such data than the two-sample comparison.',
+          },
+          {
+            type: 'definition',
             term: 'k-sample comparison (means)',
             content: 'For more than two groups, one-way {{term:anova|analysis of variance (One-Way ANOVA)}} is the appropriate procedure — it decomposes the total variation into between- and within-group components and compares them via an F-statistic. Whether data count as normal is decided by the Anderson-Darling test; Shapiro-Wilk is shown for information only. If data are non-normal and at least one group has fewer than 20 values, the module switches to the rank-based Kruskal-Wallis test (nonparametric counterpart of {{term:anova|ANOVA}}). With n ≥ 20 per group the ANOVA is robust and remains the main result; Kruskal-Wallis is then shown as a secondary result for cross-checking, because it tests a different hypothesis (a shift of the distribution rather than the means). Both are omnibus tests: they show that at least one mean differs without identifying which one — that requires follow-up post-hoc comparisons (e.g. Tukey HSD).',
+          },
+          {
+            type: 'definition',
+            term: 'One- and two-sample variance',
+            content: 'For normal data (Anderson-Darling) the module runs the χ² test (one {{term:varianz|variance}}) or the F-test (two variances); both are exact then. When Anderson-Darling rejects normality, the module switches to Bonett\'s method – as Minitab does. χ² and F react strongly to skewed or heavy-tailed data: the p-value and the confidence interval are no longer right. Bonett estimates the kurtosis from a trimmed mean and gives a confidence interval for σ² and σ, or for σ²₁/σ²₂, also one-sided. For two samples the Levene test (Brown-Forsythe) is shown as a cross-check; it is two-sided only. The power analysis on these routes assumes normality and is an approximation only.',
           },
           {
             type: 'definition',

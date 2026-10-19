@@ -31,7 +31,6 @@ Teil dieses Refactorings sind (der Diff ist rein additiv: `findCharter` + `dashb
 | Bereich | Tag | Begründung |
 |---------|-----|------------|
 | `sanitizeHtml(html)` (Z.57-58), `problemPaste(event)` (Z.227-234) | PRE/V8 | Bestehende Paste-/Sanitize-Helfer der Problem-Statement-Contenteditable. Feuern nur bei tatsächlichem Einfügen formatierten HTMLs; im headless-E2E nicht ausgelöst. |
-| Goal-Reorder-Drag-Handler (`goalDragStart`/`goalDragEnd`/`goalDragOver`/`goalDragLeave`/`goalDrop`, Z.333-376, inkl. `querySelectorAll('.pc__goal-row').forEach` Z.345) | PRE/V8 | Bestehende HTML5-Drag-Closures, feuern nur bei tatsächlicher Drag-Interaktion. |
 | Org-Chart-Drag/Layout-Helfer (`_orgHideDropIndicator`, Sibling-Reorder `forEach`/`some` Z.732-757, Insert-Gap-Berechnung Z.771-774, Descendant-Check Z.811-819) | PRE/V8/IG | Imperatives Org-Chart-Drag-/Layout-Geflecht, schon vor dieser Aufgabe unter Schwelle. |
 
 **Fazit:**

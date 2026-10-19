@@ -46,8 +46,24 @@ suite('triz-function-analysis — buildFunctionDiagram', () => {
   test('nodes have the fixed box size and kind styling', () => {
     const { nodes } = buildFunctionDiagram(pair([]));
     assertDeepEqual(nodes.map((n) => [n.id, n.x, n.y, n.w, n.h]), [['a', 0, 0, NODE_W, NODE_H], ['b', 220, 0, NODE_W, NODE_H]]);
-    assertEqual(nodes[1].stroke, 'var(--color-accent)', 'target has a strong border');
+    assertEqual(nodes[1].stroke, 'var(--color-node-target-stroke)', 'target has a strong border');
+    assertEqual(nodes[1].fill, 'var(--color-node-target-fill)', 'target is filled');
+    assertEqual(nodes[1].lines[0].color, 'var(--color-node-target-text)', 'target text colour');
+    assertEqual(nodes[0].lines[0].color, undefined, 'system keeps the default text colour');
     assertEqual(nodes[0].lines[0].text, 'A');
+  });
+
+  test('a moved label bends the link: via the label point, clipped towards it', () => {
+    const s = pair([fnc('f', 'a', 'b'), fnc('g', 'a', 'b')]);
+    s.labels.f = { x: 180, y: 122 };
+    const { links } = buildFunctionDiagram(s);
+    const [f, g] = links;
+    assertDeepEqual(f.via, { x: 180, y: 122 });
+    // a: box 0..140 × 0..44, centre (70, 22) → exits through the bottom edge towards (180, 122)
+    assertDeepEqual([f.x1, f.y1], [94.2, 44]);
+    // b: ellipse at 220..360 × 0..44 → exits towards (180, 122) left of its centre (290, 22)
+    assertTrue(f.x2 < 290 && f.y2 > 22, 'object side clipped towards the label');
+    assertEqual(g.via, undefined, 'unmoved label stays a straight link');
   });
 
   test('a link is clipped to both box borders and carries arrow + label', () => {
@@ -72,7 +88,8 @@ suite('triz-function-analysis — buildFunctionDiagram', () => {
   test('opposite links between the same pair are offset to different sides', () => {
     const { links } = buildFunctionDiagram(pair([fnc('f', 'a', 'b'), fnc('g', 'b', 'a')]));
     assertDeepEqual(links.map((l) => [l.y1, l.y2]), [[15, 15], [29, 29]]);
-    assertDeepEqual([links[1].x1, links[1].x2], [220, 140]);
+    // b is the target: its ellipse (rx 70, ry 22) is cut 7 px below the centre → 290 - 70·√(1 - (7/22)²)
+    assertDeepEqual([links[1].x1, links[1].x2], [223.64, 140]);
   });
 
   test('three parallel links get three distinct tracks', () => {

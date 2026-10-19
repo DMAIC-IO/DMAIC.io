@@ -20,7 +20,7 @@
     </div>
 
     <!-- Kartentyp -->
-    <fieldset class="module-msa-typ6__radios">
+    <fieldset class="field-radios field-radios--inline">
       <legend data-help-key="modules.msa-typ6.types.Params.chartType" x-text="t('input.chartType')"></legend>
       <template x-for="o in chartTypeOptions()" :key="o">
         <label>
@@ -51,7 +51,7 @@
     <!-- Grenzen-Modus -->
     <div class="dmike-split__section-title" x-text="t('sections.limits')"></div>
 
-    <fieldset class="module-msa-typ6__radios">
+    <fieldset class="field-radios field-radios--inline">
       <legend data-help-key="modules.msa-typ6.types.Params.limitsMode" x-text="t('input.limitsMode')"></legend>
       <template x-for="o in limitsModeOptions()" :key="o">
         <label>
@@ -109,11 +109,11 @@
 
     <!-- Nelson-Regeln -->
     <div class="dmike-split__section-title"><span class="glossary-term" data-glossary-term="nelson-regeln"><span data-help-key="modules.msa-typ6.types.Params.enabledRules" x-text="t('input.nelsonRules')"></span></span></div>
-    <div class="module-msa-typ6__nelson-list" data-ref="nelson-list">
+    <div class="field-checks module-msa-typ6__nelson-list" data-ref="nelson-list">
       <template x-for="id in ruleIds()" :key="id">
-        <label class="module-msa-typ6__nelson-rule">
+        <label class="field-check">
           <input type="checkbox" :value="id" :checked="isRuleEnabled(id)" @change="toggleRule(id)">
-          <span><span class="glossary-term" :data-glossary-term="'nelson-regel-' + id"><strong x-text="_ruleShort(id)"></strong></span><br><span class="module-msa-typ6__nelson-desc" x-text="_ruleDesc(id)"></span></span>
+          <span><span class="glossary-term" :data-glossary-term="'nelson-regel-' + id"><strong x-text="_ruleShort(id)"></strong></span><br><span class="field-check__desc" x-text="_ruleDesc(id)"></span></span>
         </label>
       </template>
     </div>
@@ -201,7 +201,7 @@
              (_highlight()). Siehe msa-typ6.js für die Begründung, warum das
              v1.0 kein Klick-zu-Chart-Punkt-Highlight einschließt. -->
         <div class="dmike-split__output-section module-msa-typ6__violations-section" x-show="_lastResult.ruleViolations.length > 0"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('violations.title')"></span></div>
-        <table class="module-msa-typ6__violations" x-show="_lastResult.ruleViolations.length > 0">
+        <table class="dmike-table module-msa-typ6__violations" x-show="_lastResult.ruleViolations.length > 0">
           <thead>
             <tr>
               <th><span data-help-key="modules.msa-typ6.types.RuleViolation.time" x-text="t('violations.time')"></span></th>

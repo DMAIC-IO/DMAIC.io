@@ -159,7 +159,7 @@
    user can change both dimensions in one interaction. */
 .attr-picker {
   position: fixed;
-  z-index: 1000;
+  z-index: var(--z-popup);
   padding: 0;
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border-primary);
@@ -621,7 +621,7 @@ th.col-locked--hard .col-lock-icon {
    ═══════════════════════════════════════════════════════════ */
 .context-menu {
   position: fixed;
-  z-index: 1000;
+  z-index: var(--z-popup);
   min-width: 200px;
   padding: var(--spacing-xs) 0;
   background: var(--color-bg-elevated);
@@ -673,75 +673,12 @@ th.col-locked--hard .col-lock-icon {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   COLUMN SCAN POPUP
+   COLUMN SCAN / COLUMN STATS (content of a dialog-service window)
    ═══════════════════════════════════════════════════════════ */
-.column-scan-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1100;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-  padding: var(--spacing-xl) var(--spacing-l);
-}
-
-.column-scan-overlay--modal {
-  justify-content: center;
-  align-items: center;
-  padding: 0;
-  background: rgb(0 0 0 / 35%);
-}
-
-.column-scan {
-  background: var(--color-bg-elevated);
-  border: 1px solid var(--color-border-primary);
-  border-radius: var(--border-radius-lg, 8px);
-  box-shadow: var(--datagrid-shadow-popup);
-  width: 380px;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.column-scan__header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--spacing-xs) var(--spacing-m);
-  padding: var(--spacing-m) var(--spacing-ml) var(--spacing-sm);
-  border-bottom: 1px solid var(--color-border-primary);
-  position: relative;
-}
-
-.column-scan__title {
-  font-weight: 600;
-  font-size: var(--font-size-base);
-  color: var(--color-text-primary);
-}
-
 .column-scan__subtitle {
   font-size: var(--font-size-sm);
   color: var(--color-text-tertiary);
-  width: 100%;
-}
-
-.column-scan__close {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  color: var(--color-text-tertiary);
-  padding: var(--spacing-2xs) var(--spacing-s);
-  border-radius: var(--border-radius);
-}
-
-.column-scan__close:hover {
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-primary);
+  padding: 0 var(--spacing-ml);
 }
 
 .column-scan__body {
@@ -1084,7 +1021,7 @@ th.col-locked--hard .col-lock-icon {
 .datagrid__dropzone {
   position: absolute;
   inset: 0;
-  z-index: 100;
+  z-index: var(--z-sticky);
   background: rgb(59 130 246 / 8%);
   border: 3px dashed var(--color-accent);
   border-radius: 8px;
@@ -1212,7 +1149,7 @@ td.datagrid__row-header:active {
   right: 0;
   height: 2px;
   background: var(--color-accent);
-  z-index: 50;
+  z-index: var(--z-raised);
   pointer-events: none;
   box-shadow: 0 0 6px rgb(59 130 246 / 50%);
 }
@@ -1223,7 +1160,7 @@ td.datagrid__row-header:active {
 
 .row-drag-ghost {
   position: fixed;
-  z-index: 100;
+  z-index: var(--z-sticky);
   padding: var(--spacing-xs) var(--spacing-m);
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-accent);
@@ -1245,7 +1182,7 @@ td.datagrid__row-header:active {
   top: 0;
   width: 2px;
   background: var(--color-accent);
-  z-index: 50;
+  z-index: var(--z-raised);
   pointer-events: none;
   box-shadow: 0 0 6px rgb(59 130 246 / 50%);
 }
@@ -1256,7 +1193,7 @@ td.datagrid__row-header:active {
 
 .col-drag-ghost {
   position: fixed;
-  z-index: 100;
+  z-index: var(--z-sticky);
   padding: var(--spacing-xs) var(--spacing-m);
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-accent);
@@ -1285,7 +1222,7 @@ td.datagrid__row-header:active {
   border-radius: var(--border-radius);
   font-size: var(--font-size-sm);
   font-weight: 500;
-  z-index: 3000;
+  z-index: var(--z-grid-toast);
   animation: datagrid-slideUp 200ms ease, datagrid-fadeOut 300ms 2s ease forwards;
   pointer-events: none;
 }
@@ -1297,32 +1234,11 @@ td.datagrid__row-header:active {
    FORMULA EDITOR POPUP
    ═══════════════════════════════════════════════════════════ */
 
-/* Outer shell uses the shared dmike-chart-popout — base styles handle
-   sizing (720px wide, content-driven height, max 90vh). Drag is wired
-   by FormulaEditor._initDrag(); cursor: move comes from the base
-   .dmike-chart-popout-titlebar rule. */
-.dmike-chart-popout--formula-editor .dmike-chart-popout-titlebar span {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  white-space: normal;
-  overflow: visible;
-}
-
-/* Small inline ƒ badge in the titlebar */
-.formula-editor__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  background: rgb(59 130 246 / 15%);
-  border-radius: var(--border-radius-sm);
-  color: var(--color-accent);
-  font-size: 12px;
-  font-weight: 700;
-  font-family: var(--font-family-mono);
-  flex-shrink: 0;
+/* The window, title bar and footer come from the dialog service; the
+   editor body stacks its sections in a column. */
+.formula-editor {
+  display: flex;
+  flex-direction: column;
 }
 
 /* Function chips */
@@ -1394,7 +1310,7 @@ td.datagrid__row-header:active {
 .fn-chip-group__menu {
   display: none;
   position: fixed;
-  z-index: 9999;
+  z-index: var(--z-loading);
   min-width: 180px;
   padding: var(--spacing-xs) 0;
   background: var(--color-bg-elevated);
@@ -1597,19 +1513,12 @@ td.datagrid__row-header:active {
   color: var(--color-text-secondary);
 }
 
-/* Cell reference in the titlebar — kept on the popout's titlebar span */
-.formula-editor__cell-ref {
-  font-family: var(--font-family-mono);
-  font-size: 11px;
-  color: var(--color-text-tertiary);
-}
-
 /* ═══════════════════════════════════════════════════════════
    COLUMN STATS POPUP
    ═══════════════════════════════════════════════════════════ */
 .column-stats-popup {
   position: fixed;
-  z-index: 1000;
+  z-index: var(--z-popup);
   min-width: 200px;
   padding: var(--spacing-sm) var(--spacing-m);
   background: var(--color-bg-elevated);

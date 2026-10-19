@@ -241,3 +241,75 @@ suite('Hypothesis Test Model — setPowerGoal clamp', () => {
     assertEqual(s.powerGoal, 0.8);
   });
 });
+
+suite('Hypothesis Test Model — paired test type', () => {
+  test('fromJSON accepts testType paired and round-trips', () => {
+    const s = State.fromJSON({ category: 'mean', testType: 'paired', targetValue: '0.5' });
+    assertEqual(s.testType, 'paired');
+    assertEqual(State.fromJSON(s.toJSON()).testType, 'paired');
+  });
+
+  test('resolveTarget defaults to 0 for paired with empty input', () => {
+    const s = State.fromJSON({ category: 'mean', testType: 'paired', targetValue: '' });
+    assertEqual(s.resolveTarget(), 0);
+  });
+
+  test('resolveTarget returns the hypothesized difference for paired', () => {
+    const s = State.fromJSON({ category: 'mean', testType: 'paired', targetValue: '-1.5' });
+    assertEqual(s.resolveTarget(), -1.5);
+  });
+
+  test('resolveTarget returns null for paired with invalid input', () => {
+    const s = State.fromJSON({ category: 'mean', testType: 'paired', targetValue: 'abc' });
+    assertEqual(s.resolveTarget(), null);
+  });
+
+  test('applyCategory variance falls back from paired to two', () => {
+    const s = State.fromJSON({ category: 'mean', testType: 'paired' });
+    s.applyCategory('variance');
+    assertEqual(s.category, 'variance');
+    assertEqual(s.testType, 'two');
+  });
+
+  test('applyCategory keeps other test types', () => {
+    const s = State.fromJSON({ category: 'mean', testType: 'k' });
+    s.applyCategory('variance');
+    assertEqual(s.testType, 'k');
+    s.applyCategory('mean');
+    assertEqual(s.category, 'mean');
+  });
+
+  test('applyTestType into paired clears a one-sample target', () => {
+    const s = State.fromJSON({ category: 'mean', testType: 'one', targetValue: '100' });
+    s.applyTestType('paired');
+    assertEqual(s.testType, 'paired');
+    assertEqual(s.targetValue, '');
+    assertEqual(s.resolveTarget(), 0);
+  });
+
+  test('applyTestType out of paired clears the hypothesized difference', () => {
+    const s = State.fromJSON({ category: 'mean', testType: 'paired', targetValue: '2' });
+    s.applyTestType('one');
+    assertEqual(s.testType, 'one');
+    assertEqual(s.targetValue, '');
+  });
+
+  test('applyTestType between non-paired types keeps the target', () => {
+    const s = State.fromJSON({ category: 'mean', testType: 'one', targetValue: '100' });
+    s.applyTestType('two');
+    s.applyTestType('one');
+    assertEqual(s.targetValue, '100');
+  });
+
+  test('applyTestType ignores unknown types', () => {
+    const s = State.fromJSON({ category: 'mean', testType: 'one', targetValue: '100' });
+    s.applyTestType('bogus');
+    assertEqual(s.testType, 'one');
+    assertEqual(s.targetValue, '100');
+  });
+
+  test('fromJSON drops paired for category variance', () => {
+    const s = State.fromJSON({ category: 'variance', testType: 'paired' });
+    assertEqual(s.testType, 'two');
+  });
+});

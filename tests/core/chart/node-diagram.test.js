@@ -7,7 +7,7 @@
  */
 
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
-import NodeDiagram, { contentBox, linkEndpoints, linkPath, straightEndpoints, wavePath } from '../../../js/core/chart/types/node-diagram.js';
+import NodeDiagram, { contentBox, linkEndpoints, linkPath, straightEndpoints, viaEndpoints, wavePath } from '../../../js/core/chart/types/node-diagram.js';
 import ChartManager from '../../../js/core/chart/chart-manager.js';
 
 const A = { id: 'a', x: 40, y: 30, w: 100, h: 50, lines: [{ text: 'Alpha' }] };
@@ -172,6 +172,17 @@ suite('node-diagram — colours and text', () => {
     });
   });
 
+  test('line colour overrides the text and muted tokens', () => {
+    withTokens({ '--test-line-text': 'rgb(50, 60, 70)' }, () => {
+      const n = { ...A, lines: [{ text: 'a', color: 'var(--test-line-text)' }, { text: 'b', muted: true, color: '#00ff00' }] };
+      const { svg, done } = mount({ nodes: [n], links: [] });
+      const texts = Array.from(svg.querySelectorAll('text[data-part="line"]'));
+      assertEqual(texts[0].getAttribute('fill'), 'rgb(50, 60, 70)');
+      assertEqual(texts[1].getAttribute('fill'), '#00ff00');
+      done();
+    });
+  });
+
   test('line sizes default to labelSize / tickSize; explicit size and weight win', () => {
     const n = { ...A, lines: [{ text: 'a' }, { text: 'b', muted: true }, { text: 'c', size: 13, weight: 600 }] };
     const { svg, done } = mount({ nodes: [n], links: [], labelSize: 12, tickSize: 11 });
@@ -263,6 +274,44 @@ suite('node-diagram — lifecycle', () => {
 const P = { id: 'p', x: 0, y: 0, w: 100, h: 40 };
 const Q = { id: 'q', x: 200, y: 0, w: 100, h: 40 };
 const R = { id: 'r', x: 200, y: 200, w: 100, h: 40 };
+
+suite('node-diagram — node shapes', () => {
+  const E = { ...P, shape: 'ellipse' };
+  const H = { ...P, shape: 'hexagon' };
+  const near = (a, b) => Math.abs(a - b) < 0.02;
+
+  test('a straight link leaves an ellipse on its outline, not the bounding box', () => {
+    const p = straightEndpoints(E, R);
+    assertTrue(near(p.x1, 68.57) && near(p.y1, 38.57), `got ${p.x1}, ${p.y1}`);
+    assertDeepEqual([p.x2, p.y2], [230, 200]);
+  });
+
+  test('a straight link leaves a hexagon on its slanted edge', () => {
+    assertDeepEqual(straightEndpoints(H, Q), { x1: 100, y1: 20, x2: 200, y2: 20 });
+    const p = straightEndpoints(H, Q, 10);
+    assertDeepEqual([p.x1, p.y1], [90, 30]);
+  });
+
+  test('ellipse and hexagon nodes render as <ellipse> and a six-point <polygon>', () => {
+    const { svg, done } = mount({ nodes: [{ ...A, shape: 'ellipse' }, { ...B, shape: 'hexagon' }], links: [] });
+    const ell = svg.querySelector('ellipse[data-part="node"]');
+    assertDeepEqual(['cx', 'cy', 'rx', 'ry'].map((k) => Number(ell.getAttribute(k))), [90, 55, 50, 25]);
+    const poly = svg.querySelector('polygon[data-part="node"]');
+    assertEqual(poly.getAttribute('points').trim().split(/\s+/).length, 6);
+    assertEqual(svg.querySelectorAll('rect[data-part="node"]').length, 0);
+    done();
+  });
+
+  test('align: center centres the lines; highlight adds the highlight class to the node', () => {
+    const n = { ...A, align: 'center', highlight: true };
+    const { svg, done } = mount({ nodes: [n], links: [], highlightClass: 'hl' });
+    const line = svg.querySelector('text[data-part="line"]');
+    assertEqual(line.getAttribute('text-anchor'), 'middle');
+    assertEqual(Number(line.getAttribute('x')), 90);
+    assertTrue(svg.querySelector('[data-part="node"]').classList.contains('hl'));
+    done();
+  });
+});
 
 suite('node-diagram — straight links', () => {
   test('straightEndpoints clips a horizontal link to both borders', () => {
@@ -399,6 +448,55 @@ suite('node-diagram — link decorations', () => {
   test('link.id is written as data-id', () => {
     const { svg, done } = mount({ nodes: [P, Q], links: [{ id: 'f1', from: 'p', to: 'q', shape: 'straight' }] });
     assertEqual(paths(svg)[0].getAttribute('data-id'), 'f1');
+    assertEqual(svg.querySelectorAll('[data-id="f1"]').length, 1, 'no label, no label data-id');
     done();
+  });
+
+  test('label background and text carry the link id', () => {
+    const { svg, done } = mount({ nodes: [P, Q], links: [{ id: 'f1', from: 'p', to: 'q', shape: 'straight', label: 'hält' }] });
+    assertEqual(svg.querySelector('[data-part="link-label-bg"]').getAttribute('data-id'), 'f1');
+    assertEqual(svg.querySelector('[data-part="link-label"]').getAttribute('data-id'), 'f1');
+    done();
+  });
+});
+
+suite('node-diagram — bent links (via)', () => {
+  const VIA = { x: 150, y: 100 };
+
+  test('viaEndpoints clips each node towards the via point', () => {
+    // P centre (50, 20) → (150, 100): leaves through the bottom edge y = 40 at x = 75
+    // Q centre (250, 20) → (150, 100): leaves through the bottom edge y = 40 at x = 225
+    assertDeepEqual(viaEndpoints(P, Q, VIA), { x1: 75, y1: 40, x2: 225, y2: 40 });
+  });
+
+  test('linkEndpoints uses the via point for straight links', () => {
+    const byId = new Map([[P.id, P], [Q.id, Q]]);
+    assertDeepEqual(linkEndpoints({ from: 'p', to: 'q', shape: 'straight', offset: 10, via: VIA }, byId, 18),
+      { x1: 75, y1: 40, x2: 225, y2: 40 });
+  });
+
+  test('a bent link runs through the via point, the label sits on it', () => {
+    const { svg, done } = mount({ nodes: [P, Q], links: [{ from: 'p', to: 'q', shape: 'straight', via: VIA, label: 'hält', arrow: 'end' }] });
+    assertEqual(paths(svg)[0].getAttribute('d'), 'M 75 40 L 150 100 L 225 40');
+    const text = svg.querySelector('[data-part="link-label"]');
+    assertEqual(text.getAttribute('x'), '150');
+    assertEqual(text.getAttribute('y'), '104');
+    done();
+  });
+
+  test('a bent wave starts, kinks and ends on the points and keeps its end tail', () => {
+    const { svg, done } = mount({ nodes: [P, Q], links: [{ from: 'p', to: 'q', shape: 'straight', via: VIA, style: 'wave' }] });
+    const d = paths(svg)[0].getAttribute('d');
+    assertEqual((d.match(/M/g) || []).length, 1, 'one continuous path');
+    const pts = points(d);
+    assertDeepEqual(pts[0], [75, 40]);
+    assertTrue(pts.some(([x, y]) => x === 150 && y === 100), 'passes the via point');
+    assertDeepEqual(pts[pts.length - 1], [225, 40]);
+    done();
+  });
+
+  test('contentBox grows to include the via point', () => {
+    const box = contentBox({ nodes: [P, Q], links: [{ from: 'p', to: 'q', shape: 'straight', via: { x: 150, y: 300 } }], padding: 0, origin: 'zero' });
+    assertEqual(box.h, 300);
   });
 });

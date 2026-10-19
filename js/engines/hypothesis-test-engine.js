@@ -5,9 +5,12 @@
  *   - Chi-Square Variance Test   — one-sample σ² test
  *   - F-Test                     — two-sample variance equality
  *   - Levene Test (Brown-Forsythe) — robust two-sample variance equality
+ *   - Bonett Variance Test (bonett-engine.js) — robust one-sample σ²
+ *   - Bonett Ratio Test (bonett-engine.js) — robust two-sample σ₁²/σ₂²
  *
  * Mean tests:
  *   - One-Sample t-Test          — μ against target value
+ *   - Paired t-Test              — μ_d of row-wise differences (pairDifferences)
  *   - Two-Sample t-Test (pooled) — μ₁ vs μ₂ with equal variances
  *   - Welch t-Test               — μ₁ vs μ₂ with unequal variances
  *   - Wilcoxon Signed-Rank Test  — nonparametric one-sample location
@@ -29,6 +32,8 @@ import {
 
 import { mean, variance, stddev } from './stats-utils.js';
 
+export { bonettVarianceTest, bonettRatioTest } from './bonett-engine.js';
+
 // ─── Descriptive Helpers ────────────────────────────────────
 
 function median(a) { const s = [...a].sort((x, y) => x - y), m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; }
@@ -43,7 +48,7 @@ function median(a) { const s = [...a].sort((x, y) => x - y), m = Math.floor(s.le
  * @param {number} sigma0Sq - Hypothesized variance σ₀²
  * @param {string} [direction='two-sided'] - 'two-sided' | 'greater' | 'less'
  * @param {number} [alpha=0.05] - Significance level
- * @returns {object} Test results
+ * @returns {object} Test results; ci is for σ², one-sided CIs have null on the open side
  */
 export function chiSquareVarianceTest(data, sigma0Sq, direction = 'two-sided', alpha = 0.05) {
   const n = data.length;
@@ -67,8 +72,9 @@ export function chiSquareVarianceTest(data, sigma0Sq, direction = 'two-sided', a
     cL = chi2Inv(alpha, df);
   }
 
-  const ciLower = df * s2 / chi2Inv(1 - alpha / 2, df);
-  const ciUpper = df * s2 / chi2Inv(alpha / 2, df);
+  const tail = direction === 'two-sided' ? alpha / 2 : alpha;
+  const ciLower = direction === 'less' ? null : df * s2 / chi2Inv(1 - tail, df);
+  const ciUpper = direction === 'greater' ? null : df * s2 / chi2Inv(tail, df);
 
   return {
     testName: 'Chi-Square Variance Test',
@@ -93,7 +99,7 @@ export function chiSquareVarianceTest(data, sigma0Sq, direction = 'two-sided', a
  * @param {number[]} data2 - Second sample
  * @param {string} [direction='two-sided'] - 'two-sided' | 'greater' | 'less'
  * @param {number} [alpha=0.05] - Significance level
- * @returns {object} Test results
+ * @returns {object} Test results; ci is for σ₁²/σ₂², one-sided CIs have null on the open side
  */
 export function fTest(data1, data2, direction = 'two-sided', alpha = 0.05) {
   const n1 = data1.length, n2 = data2.length;
@@ -116,8 +122,9 @@ export function fTest(data1, data2, direction = 'two-sided', alpha = 0.05) {
     cL = fInv(alpha, df1, df2);
   }
 
-  const ciLower = F / fInv(1 - alpha / 2, df1, df2);
-  const ciUpper = F / fInv(alpha / 2, df1, df2);
+  const tail = direction === 'two-sided' ? alpha / 2 : alpha;
+  const ciLower = direction === 'less' ? null : F / fInv(1 - tail, df1, df2);
+  const ciUpper = direction === 'greater' ? null : F / fInv(tail, df1, df2);
 
   return {
     testName: 'F-Test',
@@ -127,6 +134,7 @@ export function fTest(data1, data2, direction = 'two-sided', alpha = 0.05) {
     pValue: Math.min(1, pValue),
     variance1: s1,
     variance2: s2,
+    ratio: F,
     criticalLower: cL,
     criticalUpper: cU,
     ci: [ciLower, ciUpper],
@@ -230,6 +238,67 @@ export function oneSampleTTest(data, mu0, direction = 'two-sided', alpha = 0.05)
     n,
     alpha,
     direction,
+  };
+}
+
+/** @param {*} v @returns {boolean} */
+function isFiniteNumber(v) {
+  return typeof v === 'number' && Number.isFinite(v);
+}
+
+/** @param {*} v @returns {boolean} true for an empty cell (null, undefined, blank string) */
+function isBlank(v) {
+  return v == null || (typeof v === 'string' && v.trim() === '');
+}
+
+/**
+ * Pair two raw columns row by row for a paired test.
+ * A row is dropped when either value is missing or not a finite number;
+ * rows beyond the shorter column count as dropped. Rows blank in both
+ * columns (e.g. the empty tail of a worksheet) are not rows and do not count.
+ *
+ * @param {Array<*>} raw1 - Raw values of column 1 (may contain gaps)
+ * @param {Array<*>} raw2 - Raw values of column 2 (may contain gaps)
+ * @returns {{x1: number[], x2: number[], d: number[], dropped: number}} d = x1 − x2
+ */
+export function pairDifferences(raw1, raw2) {
+  const a = Array.isArray(raw1) ? raw1 : [];
+  const b = Array.isArray(raw2) ? raw2 : [];
+  const x1 = [], x2 = [], d = [];
+  let dropped = 0;
+  const len = Math.max(a.length, b.length);
+  for (let i = 0; i < len; i++) {
+    if (isFiniteNumber(a[i]) && isFiniteNumber(b[i])) {
+      x1.push(a[i]); x2.push(b[i]); d.push(a[i] - b[i]);
+    } else if (!(isBlank(a[i]) && isBlank(b[i]))) {
+      dropped++;
+    }
+  }
+  return { x1, x2, d, dropped };
+}
+
+/**
+ * Paired t-test: one-sample t-test on the differences d = data1 − data2.
+ *
+ * @param {number[]} data1 - First measurement of each pair
+ * @param {number[]} data2 - Second measurement of each pair (same length)
+ * @param {number} [mu0=0] - Hypothesized mean difference μ_d₀
+ * @param {string} [direction='two-sided'] - 'two-sided' | 'greater' | 'less'
+ * @param {number} [alpha=0.05] - Significance level
+ * @returns {object} One-sample t result on d (mean, stddev, ci refer to d)
+ *   plus testName 'Paired t-Test', mean1, mean2, meanDiff, stddevDiff
+ */
+export function pairedTTest(data1, data2, mu0 = 0, direction = 'two-sided', alpha = 0.05) {
+  if (data1.length !== data2.length) throw new Error('Paired samples must have equal length');
+  const d = data1.map((v, i) => v - data2[i]);
+  const r = oneSampleTTest(d, mu0, direction, alpha);
+  return {
+    ...r,
+    testName: 'Paired t-Test',
+    mean1: mean(data1),
+    mean2: mean(data2),
+    meanDiff: r.mean,
+    stddevDiff: r.stddev,
   };
 }
 

@@ -2,7 +2,7 @@
  * Alpine data-mixin for HTML5 drag-and-drop **reordering** of items that live
  * inside one or more grouped lists rendered by a module's Alpine template.
  *
- * Like draggable-popout.js, the markup stays in the template: the module binds
+ * The markup stays in the module's template: the module binds
  * the handlers below on its draggable rows (`@dragstart`/`@dragend`) and on each
  * list container (`@dragover`/`@dragleave`/`@drop`). The mixin owns only the
  * transient drag state (which item is being dragged, which group is the current

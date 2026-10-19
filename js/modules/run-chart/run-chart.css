@@ -3,13 +3,6 @@
    BEM: .run-chart__ prefix
    ============================================================ */
 
-
-.run-chart__hint {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
-  margin-top: var(--spacing-2xs);
-}
-
 /* ── Chart section ── */
 
 .run-chart__chart-section {

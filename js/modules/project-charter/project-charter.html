@@ -37,9 +37,10 @@
 
       <template x-if="model.goals.length > 0">
         <div class="pc__goals-table-wrap" @focusin="goalFieldFocus()">
-          <table class="pc__goals-table">
+          <table class="dmike-table dmike-table--draggable pc__goals-table">
             <thead>
               <tr>
+                <th class="dmike-table__grip-col"></th>
                 <th class="pc__col-nr" aria-label="Reihenfolge">#</th>
                 <th class="pc__col-description" x-text="t('goalDescription')"></th>
                 <th class="pc__col-date" x-text="t('goalTargetDate')"></th>
@@ -52,13 +53,17 @@
             <tbody>
               <template x-for="(goal, gi) in model.goals">
                 <tr class="pc__goal-row" :key="goal.id" :data-id="goal.id"
-                  @dragover="goalDragOver(goal.id, $event)"
-                  @dragleave="goalDragLeave(goal.id, $event)"
-                  @drop="goalDrop(goal.id, $event)">
-                  <td class="pc__col-nr" draggable="true"
-                    @dragstart="goalDragStart(goal.id, $event)"
-                    @dragend="goalDragEnd($event)"
-                    x-text="gi + 1"></td>
+                  @dragstart="dragStart('goals', goal.id, $event)"
+                  @dragend="dragEnd($event)"
+                  @dragover="dragOver('goals', goal.id, $event)"
+                  @drop="dragDrop('goals', goal.id, $event)">
+                  <td class="dmike-table__grip-col">
+                    <button class="dmike-table__grip" type="button"
+                            :aria-label="t('common.reorder')"
+                            @mousedown="dragArm($event)"
+                            @keydown="dragKey('goals', goal.id, $event)"></button>
+                  </td>
+                  <td class="pc__col-nr" x-text="gi + 1"></td>
                   <td class="pc__col-description">
                     <textarea
                       class="field field--sm field--ghost pc__cell-input pc__cell-textarea"

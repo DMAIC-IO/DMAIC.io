@@ -1,11 +1,11 @@
 {
   "algorithm_id": "chi-square-variance",
   "generated_with": {
-    "python": "3.10.12",
-    "scipy": "1.15.3",
-    "numpy": "2.2.6"
+    "python": "3.14.4",
+    "scipy": "1.18.0",
+    "numpy": "2.5.1"
   },
-  "generated_at": "2026-04-11T12:37:18.783632+00:00",
+  "generated_at": "2026-10-18T11:41:16.122974+00:00",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -154,8 +154,8 @@
         "df": 11,
         "sampleVariance": 36.18181818181818,
         "ci": [
-          18.1568935024126,
-          104.30457506381995
+          20.228575202065894,
+          null
         ],
         "reject": true
       }
@@ -188,8 +188,8 @@
         "df": 9,
         "sampleVariance": 0.0066666666666666185,
         "ci": [
-          0.003154115144289572,
-          0.02221901692346085
+          0.003546313577695972,
+          null
         ],
         "reject": false
       }
@@ -224,8 +224,8 @@
         "df": 11,
         "sampleVariance": 7.272727272726964e-05,
         "ci": [
-          3.649626834655644e-05,
-          0.00020965743731420205
+          null,
+          0.0001748705326597713
         ],
         "reject": true
       }
@@ -258,8 +258,8 @@
         "df": 9,
         "sampleVariance": 42.22222222222222,
         "ci": [
-          19.976062580500766,
-          140.72044051525307
+          null,
+          114.28183581568882
         ],
         "reject": false
       }

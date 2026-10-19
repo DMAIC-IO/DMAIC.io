@@ -68,19 +68,18 @@
       </div>
     </div>
 
-    <div class="reg__toggle-row">
-      <label x-text="t('showCI')"></label>
-      <button class="reg__toggle" :class="model.showCI ? 'reg__toggle--active' : ''"
-        data-action="toggle-ci" type="button" @click="toggleCI()"></button>
+    <div class="field-checks">
+      <label class="field-check">
+        <input type="checkbox" data-action="toggle-ci" :checked="model.showCI" @change="toggleCI()">
+        <span x-text="t('showCI')"></span>
+      </label>
+      <label class="field-check">
+        <input type="checkbox" data-action="toggle-pi" :checked="model.showPI" @change="togglePI()">
+        <span x-text="t('showPI')"></span>
+      </label>
     </div>
 
-    <div class="reg__toggle-row">
-      <label x-text="t('showPI')"></label>
-      <button class="reg__toggle" :class="model.showPI ? 'reg__toggle--active' : ''"
-        data-action="toggle-pi" type="button" @click="togglePI()"></button>
-    </div>
-
-    <div class="reg__error" data-ref="error-box" :style="errorText() ? 'display:block' : 'display:none'" x-text="errorText()"></div>
+    <div class="field-error" data-ref="error-box" :style="errorText() ? 'display:block' : 'display:none'" x-text="errorText()"></div>
     <div class="reg__aliased" data-ref="aliased-list" :style="aliasedRows().length ? '' : 'display:none'">
       <template x-for="row in aliasedRows()" :key="row.term">
         <div class="reg__aliased-row">
@@ -168,9 +167,10 @@
                createModule's onRouteChanged wiring calls onRouteChanged(sub) →
                model.activeTab → each panel's x-show="tb.id === model.activeTab" reacts.
                An empty sub-path falls back to the persisted/default activeTab. -->
-          <div class="dmike-tabs" data-ref="tabs">
+          <div class="dmike-tabs" data-ref="tabs" role="tablist" x-tablist>
             <template x-for="tb in result.tabs" :key="tb.id">
-              <button class="dmike-tab" :class="tb.id === model.activeTab ? 'dmike-tab--active' : ''"
+              <button class="dmike-tab" type="button" role="tab" :class="tb.id === model.activeTab ? 'dmike-tab--active' : ''"
+                :aria-selected="tb.id === model.activeTab ? 'true' : 'false'" :tabindex="tb.id === model.activeTab ? 0 : -1"
                 :data-tab="tb.id" @click="changeRoute(tb.id)" x-text="tb.label"></button>
             </template>
           </div>
@@ -205,7 +205,7 @@
           <!-- ANOVA table -->
           <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('anovaTable')"></span></div>
           <div class="reg__table-wrap">
-            <table class="reg__table">
+            <table class="dmike-table reg__table">
               <thead><tr>
                 <th><span data-help-key="modules.regression.types.Result.anova" x-text="t('source')"></span></th>
                 <th><span data-help-key="modules.regression.types.AnovaRow.ss">SS <button class="reg__algo-link" :title="t('algoLabTitle')" @click="algoNavigate('regression-anova')"><span class="icon icon--sm" data-icon="nav.algorithm-lab" aria-hidden="true"></span></button></span></th>
@@ -250,7 +250,7 @@
           <!-- Coefficient table -->
           <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('coefTable')"></span></div>
           <div class="reg__table-wrap">
-            <table class="reg__table" data-ref="coef-table">
+            <table class="dmike-table reg__table" data-ref="coef-table">
               <thead><tr>
                 <template x-if="coefView().canExclude">
                   <th class="reg__th--cb"></th>

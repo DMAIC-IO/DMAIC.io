@@ -2,21 +2,14 @@
   <div class="dmike-split__input">
     <div class="dmike-split__section-title" x-text="t('sectionParams')"></div>
 
-    <div class="field-group">
-      <label data-help-key="modules.msa-typ1.types.Params.name" x-text="t('featureName')"></label>
-      <input type="text" class="field" data-ref="inp-name"
-             :placeholder="t('featureNamePh')"
-             :value="model.params.name" @input="setParam('name', $event.target.value)">
-    </div>
-
-    <div class="msa-typ1__row">
-      <div class="field-group">
-        <label data-help-key="modules.msa-typ1.types.Params.ref" x-text="t('refValue')"></label>
-        <input type="text" class="field field--num" data-ref="inp-ref"
-               placeholder="50.000" inputmode="decimal"
-               :value="model.params.ref" @input="setParam('ref', $event.target.value)" @change="runAnalysis()">
+    <div class="field-row">
+      <div class="field-group field-group--major">
+        <label data-help-key="modules.msa-typ1.types.Params.name" x-text="t('featureName')"></label>
+        <input type="text" class="field" data-ref="inp-name"
+               :placeholder="t('featureNamePh')"
+               :value="model.params.name" @input="setParam('name', $event.target.value)">
       </div>
-      <div class="field-group">
+      <div class="field-group field-group--minor">
         <label data-help-key="modules.msa-typ1.types.Params.unit" x-text="t('unit')"></label>
         <input type="text" class="field" data-ref="inp-unit"
                placeholder="mm"
@@ -24,14 +17,21 @@
       </div>
     </div>
 
-    <div class="msa-typ1__row">
-      <div class="field-group">
+    <div class="field-group">
+      <label data-help-key="modules.msa-typ1.types.Params.ref" x-text="t('refValue')"></label>
+      <input type="text" class="field field--num" data-ref="inp-ref"
+             placeholder="50.000" inputmode="decimal"
+             :value="model.params.ref" @input="setParam('ref', $event.target.value)" @change="runAnalysis()">
+    </div>
+
+    <div class="field-row">
+      <div class="field-group field-group--grow">
         <label data-help-key="modules.msa-typ1.types.Params.lsl" x-text="t('lsl')"></label>
         <input type="text" class="field field--num" data-ref="inp-lsl"
                placeholder="49.950" inputmode="decimal"
                :value="model.params.lsl" @input="setParam('lsl', $event.target.value)" @change="runAnalysis()">
       </div>
-      <div class="field-group">
+      <div class="field-group field-group--grow">
         <label data-help-key="modules.msa-typ1.types.Params.usl" x-text="t('usl')"></label>
         <input type="text" class="field field--num" data-ref="inp-usl"
                placeholder="50.050" inputmode="decimal"
@@ -39,8 +39,8 @@
       </div>
     </div>
 
-    <div class="msa-typ1__row">
-      <div class="field-group">
+    <div class="field-row">
+      <div class="field-group field-group--grow">
         <label data-help-key="modules.msa-typ1.types.Params.k1" x-text="t('k1Label')"></label>
         <select class="field" data-ref="inp-k1" :value="model.params.k1" @input="setParam('k1', $event.target.value)" @change="runAnalysis()">
           <template x-for="o in k1Options()" :key="o.value">
@@ -48,7 +48,7 @@
           </template>
         </select>
       </div>
-      <div class="field-group">
+      <div class="field-group field-group--grow">
         <label data-help-key="modules.msa-typ1.types.Params.k2" x-text="t('k2Label')"></label>
         <select class="field" data-ref="inp-k2" :value="model.params.k2" @input="setParam('k2', $event.target.value)" @change="runAnalysis()">
           <template x-for="o in k2Options()" :key="o.value">
@@ -65,7 +65,7 @@
       <div data-ref="col-picker-wrap"></div>
     </div>
 
-    <div class="msa-typ1__error" data-ref="error-box" :class="{ visible: errorMsg }" x-text="errorMsg"></div>
+    <div class="field-error" data-ref="error-box" x-text="errorMsg"></div>
   </div>
 
   <div class="dmike-split__output">

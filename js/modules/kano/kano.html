@@ -24,7 +24,7 @@
       </select>
 
       <div class="dmike-split__section-title" x-text="t('optionsTitle')"></div>
-      <label class="kano__check" data-help-anchor="box" data-help-key="modules.kano.actions.setImportance.help">
+      <label class="field-check" data-help-anchor="box" data-help-key="modules.kano.actions.setImportance.help">
         <input type="checkbox" data-ref="importanceToggle"
                :checked="model.options.importance" @change="toggleImportance()" />
         <span x-text="t('optionImportance')"></span>
@@ -47,10 +47,11 @@
                 x-text="t('respondentAdd')" @click="addRespondent()"></button>
       </div>
 
-      <div class="dmike-tabs" data-ref="respondentTabs">
+      <div class="dmike-tabs" data-ref="respondentTabs" role="tablist" x-tablist>
         <template x-for="r in model.respondents">
           <span class="kano__tab-wrap dmike-del-btn-host" :key="r.id">
-            <button class="dmike-tab" type="button" :data-respondent-id="r.id"
+            <button class="dmike-tab" type="button" role="tab" :data-tab="r.id" :data-respondent-id="r.id"
+                    :aria-selected="respondentSelected(r.id)" :tabindex="respondentTabIndex(r.id)"
                     :class="tabClass(r.id)" x-show="!isRenaming(r.id)"
                     :title="respondentRenameTitle(r.name)"
                     @click="selectRespondent(r.id)" @dblclick="startRename(r.id)"><span data-help-key="modules.kano.actions.selectRespondent.help" x-text="r.name"></span></button>

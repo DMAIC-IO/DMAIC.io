@@ -92,4 +92,14 @@ suite('router/instance-ops', () => {
 
     assertEqual((state.get('phases.measure') ?? []).length, 1);
   });
+
+  test('createInstance: data modules land in data regardless of cycle', () => {
+    const sm = fakeState({ data: [] });
+    const eventBus = { emit: () => {} };
+    const moduleRegistry = { getActiveCycle: () => 'eightd' };
+
+    createInstance(sm, moduleRegistry, eventBus, 'histogram', { phase: 'data' });
+
+    assertEqual(sm.get('phases.data').length, 1);
+  });
 });

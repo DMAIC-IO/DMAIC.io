@@ -13,13 +13,13 @@
         </select>
       </label>
 
-      <label class="bar-module__opt-row" x-show="hasGroupColumn()" data-help-anchor="box" data-help-key="modules.bar.types.Params.stacked">
+      <label class="field-check" x-show="hasGroupColumn()" data-help-anchor="box" data-help-key="modules.bar.types.Params.stacked">
         <input type="checkbox" data-action="set-stacked" :checked="model.chartConfig.stacked" @change="setParam('stacked', $event.target.checked)">
         <span x-text="t('stacked')"></span>
       </label>
     </div>
 
-    <div class="bar-module__error" data-ref="error-box"></div>
+    <div class="field-error" data-ref="error-box"></div>
   </div>
 
   <div class="bar-module__output dmike-split__output">

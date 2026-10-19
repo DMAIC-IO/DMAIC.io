@@ -39,7 +39,7 @@
           </template>
         </tbody>
       </table>
-      <span class="multi-vari__hint" x-text="t('factorsHint')"></span>
+      <span class="field-hint" x-text="t('factorsHint')"></span>
       <button class="btn btn--sm" type="button" data-ref="btn-add-factor"
               data-help-key="modules.multi-vari.actions.addFactor.help"
               :disabled="!canAddFactor()" @click="addFactor()"
@@ -70,31 +70,30 @@
 
     <div class="dmike-split__section-title" x-text="t('sectionDisplay')"></div>
 
-    <div class="field-group">
-      <label class="multi-vari__check" data-help-key="modules.multi-vari.types.Params.showPoints" data-help-anchor="box">
+    <div class="field-checks">
+      <label class="field-check" data-help-key="modules.multi-vari.types.Params.showPoints" data-help-anchor="box">
         <input type="checkbox" data-ref="chk-points"
                :checked="model.showPoints" @change="setParam('showPoints', $event.target.checked)">
         <span x-text="t('showPoints')"></span>
       </label>
-      <label class="multi-vari__check" data-help-key="modules.multi-vari.types.Params.connectMeans" data-help-anchor="box">
+      <label class="field-check" data-help-key="modules.multi-vari.types.Params.connectMeans" data-help-anchor="box">
         <input type="checkbox" data-ref="chk-connect"
                :checked="model.connectMeans" @change="setParam('connectMeans', $event.target.checked)">
         <span x-text="t('connectMeans')"></span>
       </label>
-      <label class="multi-vari__check" data-help-key="modules.multi-vari.types.Params.showGroupMean" data-help-anchor="box">
+      <label class="field-check" data-help-key="modules.multi-vari.types.Params.showGroupMean" data-help-anchor="box">
         <input type="checkbox" data-ref="chk-group-mean"
                :checked="model.showGroupMean" @change="setParam('showGroupMean', $event.target.checked)">
         <span x-text="t('showGroupMean')"></span>
       </label>
-      <label class="multi-vari__check" data-help-key="modules.multi-vari.types.Params.showRefLine" data-help-anchor="box">
+      <label class="field-check" data-help-key="modules.multi-vari.types.Params.showRefLine" data-help-anchor="box">
         <input type="checkbox" data-ref="chk-ref-line"
                :checked="model.showRefLine" @change="setParam('showRefLine', $event.target.checked)">
         <span x-text="t('showRefLine')"></span>
       </label>
     </div>
 
-    <div class="multi-vari__error" data-ref="error-box"
-         :class="{ visible: errorMsg }" x-text="errorMsg"></div>
+    <div class="field-error" data-ref="error-box" x-text="errorMsg"></div>
   </div>
 
   <div class="multi-vari__output dmike-split__output">

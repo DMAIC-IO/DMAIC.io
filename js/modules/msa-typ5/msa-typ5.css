@@ -16,29 +16,6 @@
   align-items: start;
 }
 
-/* Radios group */
-.msa-typ5__radios {
-  display: flex;
-  gap: var(--spacing-md);
-  flex-wrap: wrap;
-  border: none;
-  padding: 0;
-  margin: 0;
-}
-
-.msa-typ5__radios legend {
-  font-size: 0.85em;
-  color: var(--color-text-secondary);
-  margin-bottom: var(--spacing-xs);
-  padding: 0;
-}
-
-.msa-typ5__radios label {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  cursor: pointer;
-}
 .msa-typ5__hidden { display: none; }
 
 /* Level-Detection chips */

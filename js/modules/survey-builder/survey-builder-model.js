@@ -484,11 +484,17 @@ export class State {
   }
 
   /**
-   * Removes a response and its VoC-tree transfer marks.
+   * Removes a response and its VoC-tree transfer marks. A recipient whose last
+   * response goes falls back from 'answered'; anonymous responses carry no
+   * recipient id, so their recipient keeps the status.
    * @param {string} id response id
    */
   deleteResponse(id) {
+    const recipientId = this.responses.find((r) => r.id === id)?.recipientId;
     this.responses = this.responses.filter((r) => r.id !== id);
+    if (recipientId && !this.responses.some((r) => r.recipientId === recipientId)) {
+      this.answeredRecipientIds = this.answeredRecipientIds.filter((x) => x !== recipientId);
+    }
     this.transfers.vocTree.responseKeys = this.transfers.vocTree.responseKeys.filter((k) => !k.startsWith(`${id}:`));
   }
 

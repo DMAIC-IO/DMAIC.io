@@ -11,19 +11,11 @@
 
 /* Fields use global .field / .field-group (components.css) */
 
-.pc__hint {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
-  margin-top: var(--spacing-xs);
-}
-
 .pc__row-3 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: var(--spacing-m);
 }
-
-
 
 /* ─── Embedded Example Data ──────────────────────────────── */
 .pc__embedded {
@@ -44,20 +36,6 @@
 }
 
 /* ─── Error Box ──────────────────────────────────────────── */
-.pc__error {
-  display: none;
-  margin-top: var(--spacing-m);
-  padding: var(--spacing-sm) var(--spacing-m);
-  background: rgb(255 59 48 / 8%);
-  border: 1px solid rgb(255 59 48 / 25%);
-  border-radius: var(--border-radius);
-  font-size: var(--font-size-sm);
-  color: var(--color-error);
-}
-
-.pc__error.visible {
-  display: block;
-}
 
 /* ─── Status Bar ─────────────────────────────────────────── */
 .pc__status-bar {
@@ -199,24 +177,7 @@
   border-color: var(--color-accent);
 }
 
-/* ─── Subgroup mode / σ within estimator ─────────────────── */
-.pc__mode {
-  display: flex;
-  gap: var(--spacing-md);
-}
-
-.pc__mode-option,
-.pc__check {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
 .pc__span-2 {
   grid-column: span 2;
-}
-
-.pc__hint--warn {
-  color: var(--color-warning);
 }
 

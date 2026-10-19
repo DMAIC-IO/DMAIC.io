@@ -1,6 +1,5 @@
 /* D.Mike — Attribute Test Module */
 
-.attrtest__toggle-row { margin-bottom: var(--spacing-sm); }
 .attrtest__contents { display: contents; }
 
 .attrtest__grid {
@@ -27,8 +26,6 @@
 .attrtest__count { width: 6em; font-family: var(--font-family-mono); text-align: right; }
 .attrtest__remove { color: var(--color-text-tertiary); }
 .attrtest__table-actions { display: flex; gap: var(--spacing-xs); margin-bottom: var(--spacing-sm); }
-
-.attrtest__check { display: flex; align-items: center; gap: var(--spacing-xs); }
 
 .attrtest__hypotheses {
   margin-top: var(--spacing-sm);

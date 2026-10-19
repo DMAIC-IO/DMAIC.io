@@ -1,5 +1,5 @@
 import { suite, test, assertEqual } from '../test-utils.js';
-import { draggablePopout } from '../../js/ui/draggable-popout.js';
+import { draggablePopout } from '../../js/ui/dialog/draggable.js';
 
 // Bind mixin methods to a plain object (stand-in for the Alpine component proxy).
 function mount(options) {

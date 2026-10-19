@@ -31,7 +31,7 @@
       </div>
     </div>
 
-    <div class="pc__hint" x-text="t('specHint')"></div>
+    <div class="field-hint" x-text="t('specHint')"></div>
 
     <div class="pc__row-3">
       <div class="field-group">
@@ -50,9 +50,9 @@
 
     <div class="field-group">
       <label data-help-key="modules.process-capability.types.Params.subgroupMode" x-text="t('subgroupModeLabel')"></label>
-      <div class="pc__mode">
+      <div class="field-radios field-radios--inline">
         <template x-for="mode in subgroupModeOptions()" :key="mode.value">
-          <label class="pc__mode-option">
+          <label>
             <input type="radio" name="pc-subgroup-mode"
                    :value="mode.value" :data-ref="'inp-subgroup-mode-' + mode.value"
                    :checked="model.params.subgroupMode === mode.value"
@@ -69,13 +69,13 @@
       <input type="text" class="field field--num" data-ref="inp-subgroup-size"
              placeholder="1" inputmode="numeric"
              :value="model.params.subgroupSize" @change="onWholeNumberInput('subgroupSize', $event)">
-      <div class="pc__hint" x-text="model.embeddedValues ? t('subgroupEmbeddedHint') : t('subgroupHint')"></div>
+      <div class="field-hint" x-text="model.embeddedValues ? t('subgroupEmbeddedHint') : t('subgroupHint')"></div>
     </div>
 
     <div class="field-group" x-show="showSubgroupColumn()">
       <label data-help-key="modules.process-capability.actions.setColumn.help" x-text="t('subgroupColumnLabel')"></label>
       <div class="pc__col-select-wrap" data-ref="subgroup-col-wrap"></div>
-      <div class="pc__hint" x-text="t('subgroupColumnHint')"></div>
+      <div class="field-hint" x-text="t('subgroupColumnHint')"></div>
     </div>
 
     <div class="pc__row-3">
@@ -95,13 +95,13 @@
       </div>
     </div>
 
-    <label class="pc__check" data-help-key="modules.process-capability.types.Params.unbiased" data-help-anchor="box" x-show="showUnbiased()">
+    <label class="field-check" data-help-key="modules.process-capability.types.Params.unbiased" data-help-anchor="box" x-show="showUnbiased()">
       <input type="checkbox" data-ref="inp-unbiased"
              :checked="model.params.unbiased" @change="setParam('unbiased', $event.target.checked)">
       <span x-text="t('unbiasedLabel')"></span>
     </label>
 
-    <div class="pc__hint pc__hint--warn" data-ref="within-hint" x-show="withinHint" x-text="withinHint"></div>
+    <div class="field-hint field-hint--warn" data-ref="within-hint" x-show="withinHint" x-text="withinHint"></div>
 
     <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
 
@@ -138,7 +138,7 @@
            x-show="!model.embeddedValues && _colState === 'ok'"></div>
     </div>
 
-    <div class="pc__error" data-ref="error-box"></div>
+    <div class="field-error" data-ref="error-box"></div>
   </div>
 
   <div class="module-process-capability__output dmike-split__output">

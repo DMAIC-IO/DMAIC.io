@@ -70,14 +70,15 @@
             <template x-for="(act, aIdx) in model.activities">
               <tr :key="'row-' + aIdx"
                   :class="rowWarnClass(aIdx)"
-                  draggable="true" :data-drag-a="aIdx"
-                  @dragstart="dragStart(aIdx, $event)"
+                  @dragstart="dragStart('activities', aIdx, $event)"
                   @dragend="dragEnd($event)"
-                  @dragover="dragOver(aIdx, $event)"
-                  @dragleave="dragLeave($event)"
-                  @drop="drop(aIdx, $event)">
+                  @dragover="dragOver('activities', aIdx, $event)"
+                  @drop="dragDrop('activities', aIdx, $event)">
                 <td class="raci__activity-cell dmike-del-btn-host">
-                  <span class="raci__drag-handle" :title="t('dragHint')"><span class="icon icon--sm" data-icon="action.drag-handle" aria-hidden="true"></span></span>
+                  <button class="dmike-table__grip raci__grip" type="button"
+                          :title="t('dragHint')" :aria-label="t('common.reorder')"
+                          @mousedown="dragArm($event)"
+                          @keydown="dragKey('activities', aIdx, $event)"></button>
                   <span class="raci__activity-text"
                         x-show="!isRenaming('activity', aIdx)"
                         :title="renameTitle(act)"

@@ -13,7 +13,6 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { draggablePopout } from '../../ui/draggable-popout.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
 import {
@@ -135,12 +134,10 @@ export default createModule({
         }, options);
       },
 
-      // ── Draggable popout shell (drag + position handlers) ──
-      ...draggablePopout(),
-
-      // ── Transient modal state (NOT persisted) ──
-      modalOpen: false,
+      // ── Transient form state (NOT persisted) ──
       modalEditId: null,
+      /** @type {{cancel: Function}|null} api of the open form dialog */
+      _formApi: null,
       modalData: { name: '', role: '', power: 3, interest: 3, support: 'neutral', category: 'intern', notes: '' },
 
       // ── View transforms: avatars / initials ──
@@ -233,7 +230,7 @@ export default createModule({
         return `${this.quadLabel(sh.quadrant)  } · ${  this.catLabel(sh.category)}`;
       },
 
-      // ── Modal ──
+      // ── Add/edit form (lent to the dialog service) ──
       /** @noagent view transform: die Überschrift des Formulars. */
       modalTitle() {
         return this.modalEditId ? this.t('editStakeholder') : this.t('addStakeholder');
@@ -241,6 +238,8 @@ export default createModule({
       /**
        * @noagent öffnet den Formulardialog und füllt seinen Entwurf; ein
        * Agent darf keinen Dialog öffnen — er blockierte den Stapel (E3).
+       * Das Formular liegt verborgen in der Vorlage (x-ref="stakeholderForm")
+       * und wird vom Dialog geliehen.
        *
        * Haltung und Kategorie werden auf die Formularwerte normalisiert: das
        * Model bewahrt beide als freien Text, weil importierte Projekte und
@@ -248,8 +247,10 @@ export default createModule({
        * Auswahlliste kennt sie aber nicht und `updateStakeholder` lehnt sie
        * ab. Ohne die Normalisierung zeigte das Formular „Supporter" und
        * schickte beim Speichern weiter `resistor` an die Senke.
+       * @param {Stakeholder|null} existing  stakeholder to edit, or null to add
+       * @returns {Promise<void>} resolves once the dialog is closed
        */
-      openModal(existing) {
+      async openModal(existing) {
         this.modalEditId = existing ? existing.id : null;
         const src = existing || { name: '', role: '', power: 3, interest: 3, support: 'neutral', category: 'intern', notes: '' };
         this.modalData = {
@@ -259,19 +260,32 @@ export default createModule({
           category: CATEGORY_VALUES.includes(src.category) ? src.category : 'intern',
           notes: src.notes,
         };
-        this.popoutResetPosition();
-        this.modalOpen = true;
-      },
-      /** @noagent schließt den Formulardialog. */
-      closeModal() {
-        this.modalOpen = false;
-        this.popoutResetPosition();
+        try {
+          await module._context.dialog.form({
+            title: this.modalTitle(),
+            content: this.$refs.stakeholderForm,
+            confirmLabel: this.t('common.save'),
+            cancelLabel: this.t('common.cancel'),
+            onMount: (body, api) => {
+              this._formApi = api;
+              body.querySelector('[data-field="name"]')?.focus();
+            },
+            onConfirm: (body) => {
+              if (this.saveModal()) return true;
+              body.querySelector('[data-field="name"]')?.focus();
+              return false;
+            },
+          });
+        } finally {
+          this._formApi = null;
+        }
       },
       /**
        * @noagent schließt den Formulardialog ab. Die Schieberegler liefern
        * ihre Stufen als Zeichenkette, deshalb das `parseInt` hier; geschrieben
        * wird über `addStakeholder` bzw. `updateStakeholder`, dieselben Senken
        * wie die der Agentenfläche.
+       * @returns {boolean} false hält den Dialog offen (leerer Name)
        */
       saveModal() {
         const d = this.modalData;
@@ -286,13 +300,11 @@ export default createModule({
         };
         const known = this.modalEditId
           && this.model.stakeholders.some((s) => s.id === this.modalEditId);
-        const written = known
-          ? this.updateStakeholder(this.modalEditId, data)
-          : this.addStakeholder(data) !== null;
         // Ein leerer Name ist die fachliche Absage beider Senken; das Formular
         // bleibt dann offen, damit der Nutzer ihn nachtragen kann.
-        if (!written) return;
-        this.closeModal();
+        return known
+          ? this.updateStakeholder(this.modalEditId, data)
+          : this.addStakeholder(data) !== null;
       },
 
       /**
@@ -410,6 +422,10 @@ export default createModule({
         if (data.interest !== undefined) requireEnum('interest', data.interest, LEVELS);
         if (data.support !== undefined) requireEnum('support', data.support, SUPPORT_VALUES);
         if (data.category !== undefined) requireEnum('category', data.category, CATEGORY_VALUES);
+      },
+      /** @noagent lifecycle */
+      destroy() {
+        this._formApi?.cancel();
       },
     };
   },

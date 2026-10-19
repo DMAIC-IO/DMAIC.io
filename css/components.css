@@ -369,6 +369,128 @@ select.input {
   margin-bottom: 0;
 }
 
+/* ── Radio group: stacked by default, --inline puts options side by side.
+      Markup: .field-radios > label > input[type=radio] + span.
+      A <fieldset> carries its caption as <legend>; inside a .field-group
+      the group's own label serves as caption instead. ── */
+.field-radios {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+  border: none;
+  padding: 0;
+  margin: 0 0 var(--spacing-sm);
+}
+
+.field-group > .field-radios {
+  margin-bottom: 0;
+}
+
+.field-radios--inline {
+  flex-flow: row wrap;
+  column-gap: var(--spacing-md);
+}
+
+.field-radios > legend {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
+  padding: 0;
+}
+
+.field-radios > label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  cursor: pointer;
+}
+
+.field-radios input[type="radio"] {
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
+/* Checkbox row: label.field-check > input[type=checkbox] + span */
+.field-check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.field-check input[type="checkbox"] {
+  flex-shrink: 0;
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
+/* Optional second line under the label text */
+.field-check__desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* Stacked list of checkbox rows (counterpart of .field-radios) */
+.field-checks {
+  display: flex;
+  flex-flow: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+  margin: 0 0 var(--spacing-sm);
+}
+
+.field-group > .field-checks { margin-bottom: 0; }
+
+/* A checkbox row directly inside .field-group must not pick up the
+   .field-group > label caption style (medium weight, secondary colour). */
+.field-group > .field-check {
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-primary);
+}
+
+.field-checks > .field-check { align-items: flex-start; }
+
+.field-checks > .field-check > input[type="checkbox"] {
+  margin-top: var(--spacing-2xs);
+}
+
+.field-checks--collapsed { display: none; }
+
+.field-check strong { font-weight: var(--font-weight-medium); }
+
+/* ── Field feedback: hint text under a field, error box in an input pane ── */
+.field-hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: var(--spacing-2xs);
+}
+
+.field-hint--warn {
+  color: var(--color-warning);
+}
+
+/* Hidden while empty, so modules only fill or clear the text */
+.field-error {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 8%, transparent);
+  border: var(--border-width) solid color-mix(in srgb, var(--color-error) 20%, transparent);
+  border-radius: var(--border-radius);
+}
+
+.field-error:empty {
+  display: none;
+}
+
 /* ===== Badges ===== */
 .badge {
   display: inline-flex;
@@ -395,12 +517,12 @@ select.input {
   bottom: calc(var(--footer-height) + var(--spacing-md));
   right: var(--spacing-md);
 
-  /* Above every overlay, including the dialog overlay `.dialog` (10000): a toast is
+  /* Above every overlay, including the dialog overlay `.dialog` (--z-dialog): a toast is
      a transient notice that must stay readable while a dialog is up — dimmed
      out behind a backdrop it would expire unseen. The action modal still
      carries the outcome itself; the toast is the second channel, not the
      only one. */
-  z-index: 10001;
+  z-index: var(--z-toast);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
@@ -482,11 +604,18 @@ select.input {
 
 /* Global table style for all module tables outside of DataGrid.
    Applied via .dmike-table class or automatically to any <table>
-   inside .dmike-split that is not a datagrid. */
+   inside .dmike-split that is not a datagrid.
+
+   The .dmike-split fallback skips .dmike-table on purpose: its :not() list
+   lifts it to (0,2,x), which would silently beat every module override
+   such as `.foo__table th` (0,1,1). An explicit .dmike-table stays at
+   (0,1,x), so module rules loaded later win. Matrix-style tables with a
+   complete style of their own (all-side borders, centred cells) belong in
+   the :not() list, too. */
 
 .dmike-table,
 .stats-table,
-.dmike-split table:not(.datagrid__table, .corr__matrix-table, .doe__preview-table) {
+.dmike-split table:not(.dmike-table, .datagrid__table, .corr__matrix-table, .doe__preview-table, .glm__class-table) {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--font-size-sm);
@@ -495,7 +624,7 @@ select.input {
 
 .dmike-table th,
 .stats-table th,
-.dmike-split table:not(.datagrid__table, .corr__matrix-table, .doe__preview-table) th {
+.dmike-split table:not(.dmike-table, .datagrid__table, .corr__matrix-table, .doe__preview-table, .glm__class-table) th {
   padding: var(--spacing-xs) var(--spacing-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-tertiary);
@@ -514,20 +643,20 @@ select.input {
 
 .dmike-table td,
 .stats-table td,
-.dmike-split table:not(.datagrid__table, .corr__matrix-table, .doe__preview-table) td {
+.dmike-split table:not(.dmike-table, .datagrid__table, .corr__matrix-table, .doe__preview-table, .glm__class-table) td {
   padding: var(--spacing-xs) var(--spacing-sm);
   border-bottom: var(--border-width) solid var(--color-border-secondary);
 }
 
 .dmike-table tr:last-child td,
 .stats-table tr:last-child td,
-.dmike-split table:not(.datagrid__table, .corr__matrix-table, .doe__preview-table) tr:last-child td {
+.dmike-split table:not(.dmike-table, .datagrid__table, .corr__matrix-table, .doe__preview-table, .glm__class-table) tr:last-child td {
   border-bottom: none;
 }
 
 .dmike-table tr:hover td,
 .stats-table tr:hover td,
-.dmike-split table:not(.datagrid__table, .corr__matrix-table, .doe__preview-table) tr:hover td {
+.dmike-split table:not(.dmike-table, .datagrid__table, .corr__matrix-table, .doe__preview-table, .glm__class-table) tr:hover td {
   background: var(--color-bg-secondary);
 }
 
@@ -674,7 +803,12 @@ select.input {
 
 /* Global tab bar for switching between charts/views in modules.
    Use .dmike-tabs as container, .dmike-tab for each button,
-   .dmike-tab-content for panels, --active modifier to show. */
+   .dmike-tab-content for panels, --active modifier to show.
+   Markup: container `role="tablist" x-tablist`; each tab a
+   `<button type="button" role="tab" data-tab="…">` with `aria-selected`
+   and roving `tabindex` (0 on the active tab, -1 on the others).
+   x-tablist moves focus with ArrowLeft/ArrowRight/Home/End; Enter/Space
+   activate (manual activation). See docs/SPLIT-PANEL.md "Module Tabs". */
 
 .dmike-tabs {
   display: flex;
@@ -706,8 +840,49 @@ select.input {
   color: var(--color-text-primary);
 }
 
-.dmike-tab:hover:not(.dmike-tab--active) {
+.dmike-tab:hover:not(.dmike-tab--active, :disabled) {
   color: var(--color-text-secondary);
+}
+
+/* Wizard steps: a numbered tab, a completed step, a step not reachable yet. */
+.dmike-tab:has(.dmike-tab__num) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+}
+
+.dmike-tab__num {
+  font-weight: var(--font-weight-semibold);
+  opacity: 0.7;
+}
+
+.dmike-tab--done {
+  color: var(--color-text-secondary);
+}
+
+.dmike-tab:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.dmike-tab:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-accent-light);
+}
+
+/* Kontexthilfe-Anker an der Reiterleiste: ein Kreis für die ganze Gruppe
+   statt je Reiter, sonst läge jeder Kreis auf dem Nachbarreiter. Die Leiste
+   ist so breit wie ihr Modul; der Kreis liegt deshalb innen am rechten Rand,
+   über dem Leerraum des letzten (zentriert beschrifteten) Reiters, mit
+   eigenem Hintergrund. Absolut positioniert: kein Layouteinfluss. */
+.dmike-tabs.context-help-anchor > .context-help__btn {
+  top: 50%;
+  left: auto;
+  right: var(--spacing-xs);
+  margin-left: 0;
+  border-radius: 50%;
+  background: var(--color-bg-primary);
 }
 
 .dmike-tab-content {
@@ -940,23 +1115,9 @@ select.input {
 }
 
 /* ===== Settings Panel =====
-   Hosted inside the global dmike-chart-popout shell (see js/core/chart/chart.css).
-   The popout provides the overlay, frame, titlebar, drag, and close affordances;
-   the rules below only describe the inner layout (tabs + scrolling content). */
-
-/* The settings template mounts an inner wrapper inside #settings-overlay so its
-   @click.self (outside-click close) covers the whole dimmed backdrop. */
-.dmike-chart-popout-overlay-inner {
-  position: absolute;
-  inset: 0;
-}
-
-#settings-panel.dmike-chart-popout {
-  width: 480px;
-  max-height: 80vh;
-  left: calc(50% - 240px);
-  top: 10vh;
-}
+   Shown in a dialog of the dialog service (createPage `dialog` option). The
+   dialog provides overlay, frame, title bar, drag and close; the rules below
+   only describe the inner layout (tabs + content). */
 
 .settings-panel__layout {
   display: flex;
@@ -969,6 +1130,12 @@ select.input {
   border-bottom: var(--border-width) solid var(--color-border-secondary);
   padding: 0 var(--spacing-lg);
   flex-shrink: 0;
+
+  /* The dialog panel scrolls as a whole; keep the tabs pinned at its top. */
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-bg-primary);
 }
 
 .settings-tab {
@@ -995,8 +1162,6 @@ select.input {
 
 .settings-panel__body {
   padding: var(--spacing-lg);
-  overflow-y: auto;
-  flex: 1;
 }
 
 .settings-tab-content {
@@ -1930,20 +2095,11 @@ body.dmike-context-help-armed .context-help__btn {
 }
 
 /* ── Open-Source Licenses panel ─────────────────────────────────────────
-   Attribution overlay listing bundled third-party runtime libraries.
-   Hosted inside the global dmike-chart-popout shell (see chart.css); the
-   rules below cover the inner layout (subtitle, table, badges, links). */
-.dmike-chart-popout.licenses-panel {
-  width: 560px;
-  max-width: calc(100vw - 48px);
-  max-height: 80vh;
-  left: calc(50% - 280px);
-  top: 10vh;
-}
-
-.licenses-panel .dmike-chart-popout-body {
+   Attribution list of bundled third-party runtime libraries, shown in a
+   dialog of the dialog service; the rules below cover the inner layout
+   (subtitle, table, badges, links). */
+.licenses-panel {
   padding: var(--spacing-lg);
-  overflow-y: auto;
 }
 
 .licenses-panel__subtitle {
@@ -2149,10 +2305,10 @@ body.dmike-context-help-armed .context-help__btn {
 
 /* Dialog service (js/ui/dialog/) — the look comes from the dmike-chart-popout
    shell in chart.css. The compound selector outranks that rule even when
-   chart.css loads later: dialogs sit above #app-loading (9999) and below
-   toasts (10001), and use the theme overlay colour. */
+   chart.css loads later: dialogs sit above #app-loading (--z-loading) and
+   below toasts (--z-toast), and use the theme overlay colour. */
 .dmike-chart-popout-overlay.dialog {
-  z-index: 10000;
+  z-index: var(--z-dialog);
   background: var(--color-modal-overlay);
 }
 

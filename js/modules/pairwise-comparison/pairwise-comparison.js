@@ -123,13 +123,20 @@ export default createModule({
       /** @noagent view transform */
       tabClass(i) {
         const active = ['input', 'compare', 'results'].indexOf(this.model.viewPhase);
-        const cls = [];
-        if (i === active) cls.push('pairwise__tab--active');
-        else if (i < active) cls.push('pairwise__tab--done');
-        if (i === 1 && !this.model.compareReachable) cls.push('pairwise__tab--disabled');
-        if (i === 2 && !this.model.resultsReachable) cls.push('pairwise__tab--disabled');
-        return cls.join(' ');
+        if (i === active) return 'dmike-tab--active';
+        return i < active ? 'dmike-tab--done' : '';
       },
+      /**
+       * @noagent Sperrzustand eines Reiters für die Oberfläche.
+       * @returns {boolean} true, solange der Schritt mit Index i noch nicht erreichbar ist.
+       */
+      isTabLocked(i) {
+        if (i === 1) return !this.model.compareReachable;
+        if (i === 2) return !this.model.resultsReachable;
+        return false;
+      },
+      /** @noagent Mausklick fokussiert keinen Reiter, damit die Pfeiltasten im Vergleichsschritt weiter abstimmen. */
+      preventFocus(e) { e.preventDefault(); },
       /**
        * @noagent Reiterklick der Oberfläche; die Phase geht durch
        *   `setViewPhase`, das die Erreichbarkeit selbst prüft.

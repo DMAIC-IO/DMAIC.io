@@ -181,6 +181,55 @@ suite('survey-model — recipients and responses', () => {
     assertDeepEqual(s.answeredRecipientIds, []);
   });
 
+  test('deleteResponse removes only that response and only its VoC-tree marks', () => {
+    const s = new State();
+    for (const id of ['x', 'x1', 'y']) {
+      s.addResponse({ id, surveyVersion: 1, recipientId: null, submittedAt: 't', answers: {} });
+    }
+    s.markVocTaken(['x:q1', 'x:q2', 'x1:q1', 'y:q1']);
+    s.deleteResponse('x');
+    assertDeepEqual(s.responseIds(), ['x1', 'y']);
+    // 'x1' shares the prefix 'x' — its mark must survive.
+    assertDeepEqual([...s.transfers.vocTree.responseKeys].sort(), ['x1:q1', 'y:q1']);
+  });
+
+  test('deleteResponse with an unknown id changes nothing', () => {
+    const s = new State();
+    s.addResponse({ id: 'x', surveyVersion: 1, recipientId: null, submittedAt: 't', answers: {} });
+    s.markVocTaken(['x:q1']);
+    s.deleteResponse('ghost');
+    assertDeepEqual(s.responseIds(), ['x']);
+    assertDeepEqual(s.transfers.vocTree.responseKeys, ['x:q1']);
+  });
+
+  test('deleteResponse resets the recipient status when it was their only response', () => {
+    const s = new State();
+    const r = s.addRecipient();
+    s.markSent(r, 't');
+    s.addResponse({ id: 'x', surveyVersion: 1, recipientId: r, submittedAt: 'y', answers: {} });
+    s.deleteResponse('x');
+    assertEqual(s.recipientStatus(r), 'sent');
+    assertDeepEqual(s.recipientCounts(), { sent: 1, answered: 0, rate: 0 });
+  });
+
+  test('deleteResponse keeps the recipient answered while another response of theirs remains', () => {
+    const s = new State();
+    const r = s.addRecipient();
+    s.addResponse({ id: 'x', surveyVersion: 1, recipientId: r, submittedAt: 'y', answers: {} });
+    s.addResponse({ id: 'z', surveyVersion: 1, recipientId: r, submittedAt: 'y', answers: {} });
+    s.deleteResponse('x');
+    assertEqual(s.recipientStatus(r), 'answered');
+  });
+
+  test('deleteResponse in an anonymous survey cannot attribute the response and keeps the status', () => {
+    const s = new State();
+    s.survey.anonymous = true;
+    const r = s.addRecipient();
+    s.addResponse({ id: 'x', surveyVersion: 1, recipientId: r, submittedAt: 'y', answers: {} });
+    s.deleteResponse('x');
+    assertEqual(s.recipientStatus(r), 'answered');
+  });
+
   test('recipientCounts', () => {
     const s = new State();
     const a = s.addRecipient();

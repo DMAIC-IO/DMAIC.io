@@ -180,12 +180,29 @@ export function openColorPicker(e, currentColor, onChange) {
     onChange(str);
   });
 
+  /**
+   * Escape closes the picker, and only the picker. The overlay carries
+   * `data-dialog-owns-escape`, so a dialog underneath (form dialog with a
+   * colour swatch) leaves this Escape alone; stopImmediatePropagation keeps
+   * any later window listener from acting on it too.
+   * @param {KeyboardEvent} ev
+   */
+  const onKeydown = (ev) => {
+    if (ev.key !== 'Escape' || ev.isComposing) return;
+    ev.stopImmediatePropagation();
+    ev.preventDefault();
+    close();
+  };
+
   const close = () => {
+    window.removeEventListener('keydown', onKeydown, true);
     overlay.remove();
     popup.remove();
   };
 
+  overlay.setAttribute('data-dialog-owns-escape', '');
   overlay.addEventListener('click', close);
+  window.addEventListener('keydown', onKeydown, true);
   document.body.appendChild(overlay);
   document.body.appendChild(popup);
 

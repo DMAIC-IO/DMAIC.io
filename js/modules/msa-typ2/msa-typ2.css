@@ -15,35 +15,7 @@
 
 /* Fields use global .field / .field-group (components.css) */
 
-.msa-typ2__row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-sm);
-}
-
-/* Long option texts (verdict basis) need the full row instead of half */
-.msa-typ2__field--wide {
-  grid-column: 1 / -1;
-}
-
 /* ═══ ERROR BOX ═══ */
-
-.msa-typ2__error {
-  display: none;
-  margin-top: var(--spacing-md);
-  padding: var(--spacing-m) var(--spacing-m);
-  border-radius: var(--border-radius-sm);
-  background: rgb(var(--color-error-rgb, 250,82,82), 0.08);
-  border: 1px solid var(--color-error);
-  color: var(--color-error);
-  font-size: var(--font-size-sm);
-  line-height: 1.5;
-  animation: msaFadeIn 0.2s ease;
-}
-
-.msa-typ2__error.visible {
-  display: block;
-}
 
 @keyframes msaFadeIn {
   from { opacity: 0; transform: translateY(-4px); }
@@ -63,13 +35,6 @@
   font-size: var(--font-size-xs);
   letter-spacing: 0.05em;
   text-transform: uppercase;
-}
-
-.msa-typ2__hint {
-  margin-top: var(--spacing-xs);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-xs);
-  opacity: 0.85;
 }
 
 .msa-typ2__warning {

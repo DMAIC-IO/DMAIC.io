@@ -613,6 +613,12 @@ export default createModule({
         return id === this.model.activeRespondentId ? 'dmike-tab--active' : '';
       },
 
+      /** @noagent view transform: aria-selected des Reiters. */
+      respondentSelected(id) { return id === this.model.activeRespondentId ? 'true' : 'false'; },
+
+      /** @noagent view transform: roving tabindex des Reiters (siehe State#tabIndexOf). */
+      respondentTabIndex(id) { return this.model.tabIndexOf(id); },
+
       /** @noagent view transform. @returns {boolean} true, wenn der Reitername gerade bearbeitet wird */
       isRenaming(id) { return this.renamingRespondentId === id; },
 

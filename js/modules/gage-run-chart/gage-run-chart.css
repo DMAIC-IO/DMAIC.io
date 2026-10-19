@@ -3,32 +3,6 @@
    BEM: .gage-run-chart__ prefix
    ============================================================ */
 
-
-.gage-run-chart__hint {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
-  margin-top: var(--spacing-2xs);
-}
-
-.gage-run-chart__check {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-weight: var(--font-weight-normal);
-}
-
-.gage-run-chart__error {
-  display: none;
-  margin-top: var(--spacing-sm);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--border-radius);
-  background: var(--color-bg-secondary);
-  color: var(--color-error);
-  font-size: var(--font-size-sm);
-}
-
-.gage-run-chart__error.visible { display: block; }
-
 /* ── Gage information block (Minitab's report header) ── */
 
 .gage-run-chart__gage-info {

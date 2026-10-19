@@ -1,0 +1,749 @@
+{
+  "algorithm_id": "bonett-variance",
+  "generated_with": {
+    "python": "3.14.4",
+    "scipy": "1.18.0",
+    "numpy": "2.5.1"
+  },
+  "generated_at": "2026-10-17T21:34:35.317769+00:00",
+  "generator_script": "tools/fixture-generator/generate_fixtures.py",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-06,
+      "absolute": 1e-09
+    },
+    "overrides": {}
+  },
+  "test_cases": [
+    {
+      "id": "bv_v01",
+      "tier": "standard",
+      "description": "V01: normal, n = 20",
+      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "inputs": {
+        "data": [
+          8.42,
+          5.931,
+          11.207,
+          11.489,
+          9.381,
+          10.735,
+          13.421,
+          12.122,
+          11.415,
+          11.375,
+          8.273,
+          11.928,
+          6.703,
+          9.336,
+          9.125,
+          6.543,
+          9.779,
+          13.287,
+          9.32,
+          7.585
+        ],
+        "sigma0Sq": 4.0,
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected": {
+        "statistic": null,
+        "pValue": 0.3927568350859769,
+        "sampleVariance": 4.804215144736843,
+        "ci": [
+          3.066261960083416,
+          9.251684872239073
+        ],
+        "ciSigma": [
+          1.7510745158568826,
+          3.0416582438267246
+        ],
+        "reject": false,
+        "n": 20
+      }
+    },
+    {
+      "id": "bv_v02",
+      "tier": "standard",
+      "description": "V02: lognormal (skewed), n = 30",
+      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "inputs": {
+        "data": [
+          14.556,
+          36.641,
+          17.742,
+          5.23,
+          7.003,
+          16.765,
+          9.74,
+          20.452,
+          3.118,
+          35.529,
+          30.987,
+          4.194,
+          8.373,
+          6.962,
+          8.014,
+          18.176,
+          7.469,
+          5.866,
+          15.749,
+          23.25,
+          7.922,
+          12.413,
+          4.345,
+          19.109,
+          41.971,
+          15.096,
+          10.105,
+          3.01,
+          8.646,
+          2.972
+        ],
+        "sigma0Sq": 56.0,
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected": {
+        "statistic": null,
+        "pValue": 0.03340415480582251,
+        "sampleVariance": 111.97525490229886,
+        "ci": [
+          59.37287227399893,
+          241.73605783194589
+        ],
+        "ciSigma": [
+          7.705379437380026,
+          15.54786344910277
+        ],
+        "reject": true,
+        "n": 30
+      }
+    },
+    {
+      "id": "bv_v03",
+      "tier": "standard",
+      "description": "V03: t3 (heavy tails), n = 25",
+      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "inputs": {
+        "data": [
+          52.658,
+          49.114,
+          48.9,
+          52.57,
+          49.53,
+          52.281,
+          50.541,
+          49.422,
+          50.243,
+          49.692,
+          51.712,
+          49.884,
+          49.629,
+          49.854,
+          50.013,
+          50.523,
+          49.961,
+          48.377,
+          50.242,
+          48.669,
+          51.624,
+          52.601,
+          49.719,
+          49.416,
+          51.176
+        ],
+        "sigma0Sq": 2.383,
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected": {
+        "statistic": null,
+        "pValue": 0.18473808791465873,
+        "sampleVariance": 1.588676290000002,
+        "ci": [
+          1.0117320010067492,
+          2.937102150142635
+        ],
+        "ciSigma": [
+          1.0058488957128446,
+          1.71379758143797
+        ],
+        "reject": false,
+        "n": 25
+      }
+    },
+    {
+      "id": "bv_v04",
+      "tier": "standard",
+      "description": "V04: uniform (light tails), n = 20",
+      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "inputs": {
+        "data": [
+          22.031,
+          21.153,
+          18.297,
+          17.752,
+          19.25,
+          21.523,
+          21.411,
+          19.477,
+          20.87,
+          21.945,
+          17.398,
+          20.23,
+          21.535,
+          21.952,
+          18.315,
+          19.904,
+          19.197,
+          18.592,
+          21.79,
+          20.361
+        ],
+        "sigma0Sq": 1.872,
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected": {
+        "statistic": null,
+        "pValue": 0.2460183279678264,
+        "sampleVariance": 2.3394495026315796,
+        "ci": [
+          1.5750977507470374,
+          4.27075865959206
+        ],
+        "ciSigma": [
+          1.2550289840266786,
+          2.0665813943786633
+        ],
+        "reject": false,
+        "n": 20
+      }
+    },
+    {
+      "id": "bv_v05",
+      "tier": "standard",
+      "description": "V05: V02 data, H1: sigma^2 > sigma0^2",
+      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "inputs": {
+        "data": [
+          14.556,
+          36.641,
+          17.742,
+          5.23,
+          7.003,
+          16.765,
+          9.74,
+          20.452,
+          3.118,
+          35.529,
+          30.987,
+          4.194,
+          8.373,
+          6.962,
+          8.014,
+          18.176,
+          7.469,
+          5.866,
+          15.749,
+          23.25,
+          7.922,
+          12.413,
+          4.345,
+          19.109,
+          41.971,
+          15.096,
+          10.105,
+          3.01,
+          8.646,
+          2.972
+        ],
+        "sigma0Sq": 56.0,
+        "direction": "greater",
+        "alpha": 0.05
+      },
+      "expected": {
+        "statistic": null,
+        "pValue": 0.016702077402911256,
+        "sampleVariance": 111.97525490229886,
+        "ci": [
+          66.15980460698985,
+          null
+        ],
+        "ciSigma": [
+          8.133867751997807,
+          null
+        ],
+        "reject": true,
+        "n": 30
+      }
+    },
+    {
+      "id": "bv_v06",
+      "tier": "standard",
+      "description": "V06: V02 data, H1: sigma^2 < sigma0^2",
+      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "inputs": {
+        "data": [
+          14.556,
+          36.641,
+          17.742,
+          5.23,
+          7.003,
+          16.765,
+          9.74,
+          20.452,
+          3.118,
+          35.529,
+          30.987,
+          4.194,
+          8.373,
+          6.962,
+          8.014,
+          18.176,
+          7.469,
+          5.866,
+          15.749,
+          23.25,
+          7.922,
+          12.413,
+          4.345,
+          19.109,
+          41.971,
+          15.096,
+          10.105,
+          3.01,
+          8.646,
+          2.972
+        ],
+        "sigma0Sq": 224.0,
+        "direction": "less",
+        "alpha": 0.05
+      },
+      "expected": {
+        "statistic": null,
+        "pValue": 0.037791634418431586,
+        "sampleVariance": 111.97525490229886,
+        "ci": [
+          null,
+          212.14296185053053
+        ],
+        "ciSigma": [
+          null,
+          14.56512828129332
+        ],
+        "reject": true,
+        "n": 30
+      }
+    },
+    {
+      "id": "bv_v07",
+      "tier": "standard",
+      "description": "V07: n = 5 (small-n mean rule)",
+      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "inputs": {
+        "data": [
+          12.558,
+          3.222,
+          9.739,
+          29.08,
+          4.057
+        ],
+        "sigma0Sq": 40.0,
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected": {
+        "statistic": null,
+        "pValue": 0.19280313789631454,
+        "sampleVariance": 109.23328769999998,
+        "ci": [
+          16.44073424106666,
+          1963.2307712236948
+        ],
+        "ciSigma": [
+          4.054717529134016,
+          44.30836006019287
+        ],
+        "reject": false,
+        "n": 5
+      }
+    },
+    {
+      "id": "bv_v08",
+      "tier": "standard",
+      "description": "V08: n = 6 (first trimmed size)",
+      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "inputs": {
+        "data": [
+          8.239,
+          3.988,
+          2.57,
+          8.371,
+          3.928,
+          1.529
+        ],
+        "sigma0Sq": 5.833,
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected": {
+        "statistic": null,
+        "pValue": 0.517327582994767,
+        "sampleVariance": 8.333145366666669,
+        "ci": [
+          1.8723384238166123,
+          81.80231479008539
+        ],
+        "ciSigma": [
+          1.3683341784142542,
+          9.044463211826637
+        ],
+        "reject": false,
+        "n": 6
+      }
+    },
+    {
+      "id": "bv_v09",
+      "tier": "standard",
+      "description": "V09: n = 9 (trim count depends on rounding)",
+      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "inputs": {
+        "data": [
+          0.581,
+          1.869,
+          2.719,
+          1.027,
+          2.078,
+          0.378,
+          0.208,
+          4.681,
+          4.006
+        ],
+        "sigma0Sq": 3.336,
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected": {
+        "statistic": null,
+        "pValue": 0.6800759318164711,
+        "sampleVariance": 2.5664550000000004,
+        "ci": [
+          0.9413684191992612,
+          11.435178283872364
+        ],
+        "ciSigma": [
+          0.9702414231516098,
+          3.3815940448067336
+        ],
+        "reject": false,
+        "n": 9
+      }
+    },
+    {
+      "id": "bv_v10",
+      "tier": "standard",
+      "description": "V10: n = 17 (trim count depends on rounding)",
+      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "inputs": {
+        "data": [
+          5.816,
+          5.425,
+          10.513,
+          4.906,
+          2.267,
+          4.972,
+          6.831,
+          10.321,
+          15.414,
+          2.218,
+          3.55,
+          4.545,
+          8.554,
+          4.485,
+          3.472,
+          4.373,
+          2.425
+        ],
+        "sigma0Sq": 7.416,
+        "direction": "greater",
+        "alpha": 0.05
+      },
+      "expected": {
+        "statistic": null,
+        "pValue": 0.1511494239512814,
+        "sampleVariance": 12.359376014705884,
+        "ci": [
+          5.287578685286643,
+          null
+        ],
+        "ciSigma": [
+          2.2994735669902022,
+          null
+        ],
+        "reject": false,
+        "n": 17
+      }
+    },
+    {
+      "id": "bv_v11",
+      "tier": "standard",
+      "description": "V11: t3, n = 100",
+      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "inputs": {
+        "data": [
+          98.907,
+          98.605,
+          100.724,
+          98.518,
+          98.236,
+          102.296,
+          91.698,
+          101.051,
+          98.475,
+          101.497,
+          100.236,
+          101.767,
+          95.816,
+          99.131,
+          100.765,
+          102.194,
+          102.535,
+          99.754,
+          99.274,
+          99.046,
+          101.006,
+          100.261,
+          98.854,
+          101.424,
+          99.251,
+          101.237,
+          99.039,
+          98.131,
+          99.182,
+          101.112,
+          99.497,
+          98.544,
+          101.74,
+          98.024,
+          102.779,
+          100.844,
+          102.793,
+          108.656,
+          100.151,
+          99.205,
+          102.995,
+          99.814,
+          98.732,
+          99.741,
+          99.302,
+          96.797,
+          101.274,
+          102.065,
+          98.509,
+          100.114,
+          103.832,
+          99.308,
+          101.986,
+          99.216,
+          100.432,
+          100.344,
+          100.353,
+          104.018,
+          96.509,
+          100.086,
+          98.805,
+          99.222,
+          101.438,
+          97.276,
+          103.106,
+          99.047,
+          95.978,
+          104.329,
+          104.573,
+          107.741,
+          105.525,
+          103.793,
+          100.081,
+          98.181,
+          100.475,
+          104.967,
+          101.241,
+          101.747,
+          103.808,
+          104.646,
+          105.44,
+          100.416,
+          104.718,
+          96.593,
+          97.528,
+          101.21,
+          105.469,
+          100.746,
+          98.676,
+          103.211,
+          101.373,
+          99.634,
+          100.939,
+          98.907,
+          100.902,
+          99.168,
+          97.184,
+          100.175,
+          102.963,
+          98.064
+        ],
+        "sigma0Sq": 8.177,
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected": {
+        "statistic": null,
+        "pValue": 0.3486332350713238,
+        "sampleVariance": 6.814073188989901,
+        "ci": [
+          4.8230412095822315,
+          10.015801088815369
+        ],
+        "ciSigma": [
+          2.1961423472949635,
+          3.164775045530941
+        ],
+        "reject": false,
+        "n": 100
+      }
+    },
+    {
+      "id": "bv_v12",
+      "tier": "standard",
+      "description": "V12: exponential, n = 40",
+      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "inputs": {
+        "data": [
+          0.169,
+          2.465,
+          0.612,
+          0.007,
+          0.183,
+          1.011,
+          1.965,
+          0.844,
+          0.412,
+          2.55,
+          0.007,
+          0.675,
+          0.587,
+          2.053,
+          0.666,
+          0.498,
+          1.514,
+          0.11,
+          0.56,
+          0.764,
+          2.66,
+          0.092,
+          0.183,
+          0.973,
+          0.805,
+          1.276,
+          2.738,
+          2.303,
+          0.47,
+          0.511,
+          0.045,
+          0.503,
+          0.273,
+          0.015,
+          1.744,
+          0.406,
+          1.552,
+          0.181,
+          2.201,
+          5.506
+        ],
+        "sigma0Sq": 1.976,
+        "direction": "less",
+        "alpha": 0.05
+      },
+      "expected": {
+        "statistic": null,
+        "pValue": 0.16207150440274865,
+        "sampleVariance": 1.2349466403846152,
+        "ci": [
+          null,
+          2.740907754350838
+        ],
+        "ciSigma": [
+          null,
+          1.655568710247581
+        ],
+        "reject": false,
+        "n": 40
+      }
+    },
+    {
+      "id": "bv_err_constant",
+      "tier": "edge",
+      "description": "Constant data — zero variance",
+      "inputs": {
+        "data": [
+          5.0,
+          5.0,
+          5.0,
+          5.0,
+          5.0,
+          5.0,
+          5.0,
+          5.0
+        ],
+        "sigma0Sq": 1.0,
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected_error": {
+        "type": "Error",
+        "message_contains": "zero variance"
+      }
+    },
+    {
+      "id": "bv_err_sigma0",
+      "tier": "edge",
+      "description": "sigma0Sq = 0",
+      "inputs": {
+        "data": [
+          1.0,
+          2.0,
+          4.0,
+          7.0
+        ],
+        "sigma0Sq": 0.0,
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected_error": {
+        "type": "Error",
+        "message_contains": "must be > 0"
+      }
+    },
+    {
+      "id": "bv_err_too_small",
+      "tier": "edge",
+      "description": "n = 1",
+      "inputs": {
+        "data": [
+          3.0
+        ],
+        "sigma0Sq": 1.0,
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected_error": {
+        "type": "Error",
+        "message_contains": "At least 2 data points"
+      }
+    }
+  ]
+}
