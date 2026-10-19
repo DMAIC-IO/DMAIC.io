@@ -53,8 +53,8 @@ suite('Multivariate Control Charts — Fehlercodes', () => {
     assertEqual(codeOf(() => computeHotellingT2(rows)), 'baselineTooSmall');
   });
   test('Fehlermeldung bleibt englisch', () => {
-    try { computeHotellingT2([[1, 5], [2, 5], [3, 5], [4, 5]]); } catch (e) {
-      assertEqual(e.message, 'invertMatrix: singular matrix');
-    }
+    let msg = null;
+    try { computeHotellingT2([[1, 5], [2, 5], [3, 5], [4, 5]]); } catch (e) { msg = e.message; }
+    assertEqual(msg, 'invertMatrix: singular matrix');
   });
 });
