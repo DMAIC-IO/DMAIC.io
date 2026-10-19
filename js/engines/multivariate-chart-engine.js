@@ -67,7 +67,7 @@ function invertMatrix(A) {
     for (let r = i + 1; r < n; r++) {
       if (Math.abs(M[r][i]) > Math.abs(M[pivot][i])) pivot = r;
     }
-    if (Math.abs(M[pivot][i]) < 1e-12) throw new Error('invertMatrix: singular matrix');
+    if (Math.abs(M[pivot][i]) < 1e-12) throw Object.assign(new Error('invertMatrix: singular matrix'), { code: 'singular' });
     if (pivot !== i) [M[i], M[pivot]] = [M[pivot], M[i]];
     const piv = M[i][i];
     for (let j = 0; j < 2 * n; j++) M[i][j] /= piv;
@@ -119,15 +119,15 @@ function quadForm(x, A) {
  */
 export function computeHotellingT2(data, options = {}) {
   if (!Array.isArray(data) || data.length < 2) {
-    throw new Error('computeHotellingT2: need at least 2 observations');
+    throw Object.assign(new Error('computeHotellingT2: need at least 2 observations'), { code: 'tooFewObservations' });
   }
   const p = data[0].length;
   if (!Number.isInteger(p) || p < 2) {
-    throw new Error('computeHotellingT2: need at least 2 variables');
+    throw Object.assign(new Error('computeHotellingT2: need at least 2 variables'), { code: 'tooFewVariables' });
   }
   for (const row of data) {
     if (!Array.isArray(row) || row.length !== p) {
-      throw new Error('computeHotellingT2: rows must all have the same length');
+      throw Object.assign(new Error('computeHotellingT2: rows must all have the same length'), { code: 'rowLengthMismatch' });
     }
   }
   const alpha = options.alpha ?? ALPHA_DEFAULT;
@@ -137,7 +137,7 @@ export function computeHotellingT2(data, options = {}) {
   const baseline = data.slice(0, blEnd);
   const m = baseline.length;
   if (m <= p) {
-    throw new Error('computeHotellingT2: baseline size m must exceed number of variables p');
+    throw Object.assign(new Error('computeHotellingT2: baseline size m must exceed number of variables p'), { code: 'baselineTooSmall' });
   }
 
   const { mean, cov } = covariance(baseline);

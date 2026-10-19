@@ -331,7 +331,7 @@ const mod = createModule({
               : undefined,
           });
         } catch (e) {
-          this._showError(_t('errCompute', { msg: e.message || String(e) }));
+          this._showError(this._computeErrorText(e));
           return;
         }
 
@@ -346,7 +346,7 @@ const mod = createModule({
         const fmt = (v) => Number.isFinite(v) ? v.toFixed(3) : '–';
         const cls = r.signals.length === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad';
         this.kpiCells = [
-          { value: fmt(r.ucl), label: 'UCL (T²)', labelHint: '', sub: `α = ${this.model.alpha}`, mod: '', help: `${HELP}Result.ucl` },
+          { value: fmt(r.ucl), label: _t('kpiUclT2'), labelHint: '', sub: `α = ${this.model.alpha}`, mod: '', help: `${HELP}Result.ucl` },
           { value: r.p, label: _t('statVariables'), labelHint: '', sub: _t('statBaseline', { m: r.m }), mod: '', help: `${HELP}Result.p` },
           { value: r.signals.length, label: _t('statSignals'), labelHint: '', sub: _t('statOf', { total }), mod: cls, help: `${HELP}Result.signals` },
         ];
@@ -382,7 +382,7 @@ const mod = createModule({
         const chart = await module._context.chartManager.create(host, 'control-chart', {
           title: '',
           xLabel: _t('xLabelSample'),
-          yLabel: 'T²',
+          yLabel: _t('yLabel_t2'),
           showLegend: false,
           showTitle: false,
           values: r.t2,
@@ -405,6 +405,17 @@ const mod = createModule({
       },
 
       // ── Error / clear helpers ─────────────────────────────────
+
+      /**
+       * Text for a failed computation: the translated message for the engine's
+       * error code, otherwise the generic computation-failed text.
+       * @param {Error & {code?: string}} e
+       * @returns {string}
+       */
+      _computeErrorText(e) {
+        if (e && ENGINE_ERROR_CODES.includes(e.code)) return _t(`err_${e.code}`);
+        return _t('errCompute', { msg: (e && e.message) || String(e) });
+      },
 
       _showError(msg) {
         this._lastRun = null;
@@ -445,5 +456,8 @@ mod.loadExample = function loadExample(payload) {
     rewriteRefs: rewriteRefArray('columnRefs'),
   });
 };
+
+/** Error codes the engine throws; each has an `err_<code>` i18n key. */
+const ENGINE_ERROR_CODES = ['singular', 'tooFewObservations', 'tooFewVariables', 'rowLengthMismatch', 'baselineTooSmall'];
 
 export default mod;

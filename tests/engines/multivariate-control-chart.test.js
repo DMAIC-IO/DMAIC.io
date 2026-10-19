@@ -4,7 +4,7 @@
  */
 
 import { suite, test, assertAlmostEqual, assertEqual } from '../test-utils.js';
-import { analyze } from '../../js/engines/multivariate-chart-engine.js';
+import { analyze, computeHotellingT2 } from '../../js/engines/multivariate-chart-engine.js';
 
 async function loadFixture(path) {
   const resp = await fetch(new URL(path, import.meta.url));
@@ -40,4 +40,21 @@ suite('Multivariate Control Charts — Hotelling T² (fixture validation)', () =
       }
     });
   }
+});
+
+suite('Multivariate Control Charts — Fehlercodes', () => {
+  const codeOf = (fn) => { try { fn(); return null; } catch (e) { return e.code; } };
+  test('konstante Spalte -> singular', () => {
+    const rows = [[1, 5], [2, 5], [3, 5], [4, 5], [5, 5]];
+    assertEqual(codeOf(() => computeHotellingT2(rows)), 'singular');
+  });
+  test('Basisphase zu klein -> baselineTooSmall', () => {
+    const rows = [[1, 2], [2, 1]];
+    assertEqual(codeOf(() => computeHotellingT2(rows)), 'baselineTooSmall');
+  });
+  test('Fehlermeldung bleibt englisch', () => {
+    try { computeHotellingT2([[1, 5], [2, 5], [3, 5], [4, 5]]); } catch (e) {
+      assertEqual(e.message, 'invertMatrix: singular matrix');
+    }
+  });
 });

@@ -9613,7 +9613,7 @@
       "annotationComment": "Comment / cause",
       "annotationPlaceholder": "e.g. \"tool break on shift 3\"",
       "annotationExclude": "Exclude point from limit computation",
-      "annotationExcludeHint": "Excluded points stay on the chart but no longer influence UCL/LCL. Does not apply with stages or frozen limits.",
+      "annotationExcludeHint": "Excluded points stay on the chart but no longer influence UCL/LCL. Does not apply with multiple stages or frozen limits.",
       "annotationSave": "Save",
       "annotationRemove": "Remove",
       "annotationAdd": "+ Annotate",
@@ -9726,7 +9726,7 @@
         },
         "Annotation": {
           "comment": "Comment / cause for the point, e.g. a tool break on shift 3; empty for none. The point is marked on the chart.",
-          "excluded": "Exclude point from limit computation: the point stays visible on the chart but no longer influences UCL and LCL. The analysis is then recomputed. Does not apply with stages or when frozen limits are in effect."
+          "excluded": "Exclude point from limit computation: the point stays visible on the chart but no longer influences UCL and LCL. The analysis is then recomputed. Does not apply with multiple stages or when frozen limits are in effect."
         },
         "FrozenLimits": {
           "chartTypeId": "The control chart type at the time of freezing. The frozen limits only apply while the same type is selected.",
@@ -9774,6 +9774,8 @@
       "chartTitle_cusum_plus": "CUSUM C⁺ — {col}",
       "chartTitle_cusum_minus": "CUSUM C⁻ — {col}",
       "yLabel_ewma": "EWMA z",
+      "yLabel_cusumHigh": "C⁺",
+      "yLabel_cusumLow": "C⁻",
       "xLabelSample": "Sample",
       "stable": "STABLE",
       "unstable": "{count} signals",
@@ -10156,6 +10158,13 @@
       "statOf": "of {total} data points",
       "errTooFewRows": "Too few complete rows — need at least p+1 = {p}+1 observations.",
       "errCompute": "Computation failed: {msg}",
+      "yLabel_t2": "T²",
+      "kpiUclT2": "UCL (T²)",
+      "err_singular": "The covariance matrix is singular: at least one variable is constant or can be computed from the others.",
+      "err_tooFewObservations": "At least 2 observations are required.",
+      "err_tooFewVariables": "At least 2 variables are required.",
+      "err_rowLengthMismatch": "All rows must have the same number of values.",
+      "err_baselineTooSmall": "The baseline phase needs more rows than variables.",
       "whenToUse": "Monitor several correlated characteristics together: Hotelling T² flags rows whose combination is unusual even when each value alone is in control.",
       "actions": {
         "read": {
@@ -10284,6 +10293,8 @@
       "statGroups": "Parts",
       "statTotal": "{total} values",
       "statSignals": "Signals",
+      "yLabel_z": "z",
+      "yLabel_mrZ": "MR (z)",
       "statOf": "of {total} data points",
       "thGroup": "Part",
       "thCount": "n",

@@ -305,8 +305,8 @@ const mod = createModule({
         const sm = module._context.stateManager;
         const colName = getColumnName(sm, this.model.valuesRef);
         const subcharts = [
-          { id: 'z',  values: r.z,  cl: r.clZ,    ucl: r.uclZ, lcl: r.lclZ, sigma: 1,        violations: r.signalsZ,  yLabel: 'z' },
-          { id: 'mr', values: r.mr, cl: r.mrBarZ, ucl: r.uclMR, lcl: r.lclMR, sigma: (r.uclMR - r.mrBarZ) / 3, violations: r.signalsMR, yLabel: 'MR (z)' },
+          { id: 'z',  values: r.z,  cl: r.clZ,    ucl: r.uclZ, lcl: r.lclZ, sigma: 1,        violations: r.signalsZ,  yLabel: _t('yLabel_z') },
+          { id: 'mr', values: r.mr, cl: r.mrBarZ, ucl: r.uclMR, lcl: r.lclMR, sigma: (r.uclMR - r.mrBarZ) / 3, violations: r.signalsMR, yLabel: _t('yLabel_mrZ') },
         ];
 
         const gen = ++this._renderGen;

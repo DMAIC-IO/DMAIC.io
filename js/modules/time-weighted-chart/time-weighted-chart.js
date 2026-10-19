@@ -565,11 +565,11 @@ const mod = createModule({
 
         const subcharts = [
           {
-            id: 'cusum_plus', titleKey: 'chartTitle_cusum_plus', yLabel: 'C⁺',
+            id: 'cusum_plus', titleKey: 'chartTitle_cusum_plus', yLabel: _t('yLabel_cusumHigh'),
             values: r.cPlus, violations: r.signalsHi,
           },
           {
-            id: 'cusum_minus', titleKey: 'chartTitle_cusum_minus', yLabel: 'C⁻',
+            id: 'cusum_minus', titleKey: 'chartTitle_cusum_minus', yLabel: _t('yLabel_cusumLow'),
             values: r.cMinus, violations: r.signalsLo,
           },
         ];
