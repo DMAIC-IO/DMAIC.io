@@ -1894,7 +1894,7 @@ label.context-help-anchor:not([data-help-anchor="box"]) {
      Ankers zu hängen hält die Glyphe in jeder Schriftgröße frei. Absolut
      positioniert, also ohne Einfluss auf das Layout. */
   left: 100%;
-  margin-left: 2px;
+  margin-left: var(--spacing-2xs);
   transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
@@ -2017,18 +2017,18 @@ body.dmike-context-help-armed .context-help__btn {
 }
 
 /* Durchsichtig, aber klickfangend: ein Klick daneben schließt das Fenster,
-   ohne die Oberfläche abzudunkeln. Über dem Modal (1000), damit auch
+   ohne die Oberfläche abzudunkeln. Über dem Dialog (--z-dialog), damit auch
    Dialog-Labels ein lesbares Fenster bekommen. */
 .context-help__backdrop {
   position: fixed;
   inset: 0;
-  z-index: 1200;
+  z-index: var(--z-context-help);
   background: transparent;
 }
 
 .context-help__panel {
   position: fixed;
-  z-index: 1201;
+  z-index: calc(var(--z-context-help) + 1);
   width: var(--context-help-panel-width);
   padding: var(--spacing-sm) var(--spacing-md);
   background: var(--context-help-panel-bg);

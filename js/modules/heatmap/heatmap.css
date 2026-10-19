@@ -42,6 +42,7 @@
 
 .heatmap-module__stats-panel {
   overflow-x: auto;
+
   /* Platz für das Fragezeichen am Abschnittstitel; der Außenabstand gleicht aus. */
   padding-top: var(--spacing-sm);
   margin-top: calc(var(--spacing-md) - var(--spacing-sm));

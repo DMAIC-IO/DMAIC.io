@@ -66,6 +66,7 @@
   --z-dialog: 10000;
   --z-toast: calc(var(--z-dialog) + 1);
   --z-color-picker: calc(var(--z-dialog) + 2);
+  --z-context-help: calc(var(--z-dialog) + 3);
   --z-viewport-guard: 100000;
 
   /* Backgrounds */
