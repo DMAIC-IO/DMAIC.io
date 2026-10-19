@@ -3001,6 +3001,69 @@ test('Schlüsselfläche: ohne auflösbare Laufzeitmenge ist die Schlüsselmenge 
   assert.ok(modules.foo.reported.includes('unverified_key_set:setParam'), modules.foo.reported.join(', '));
 });
 
+test('Schlüsselfläche: ein requireEnum über die Elemente einer Liste prüft nicht den ganzen Wert', () => {
+  // `enabled: string[]` wird elementweise gegen eine Menge geprüft. Das ist
+  // keine Aussage über den Typ des Werts selbst und darf nicht gegen die
+  // Typedef gehalten werden.
+  const { foo } = keyedModules({
+    typedef: ` * @typedef {object} Params
+ * @property {string} name der Name des Merkmals
+ * @property {'0.2'|'0.15'} k1 der Anteil der Toleranz
+ * @property {string[]} n die gewählten Anteile`,
+    checks: `{
+  name: (v) => requireText('value', v),
+  k1: (v) => requireEnum('value', v, K1_OPTIONS),
+  n: (v) => { for (const m of v) requireEnum('m', m, K1_OPTIONS); return v; },
+}`,
+  });
+  assert.deepEqual(foo.reported, []);
+});
+
+/** Der Viewmodel-Text mit `PARAM_KEYS` als benanntem Import statt lokaler Konstante. */
+function importedKeysVm(specifier, importName = 'PARAM_KEYS') {
+  const local = importName === 'PARAM_KEYS' ? 'PARAM_KEYS' : `${importName} as PARAM_KEYS`;
+  return `import { ${local} } from '${specifier}';\n${keyedVm().replace("const PARAM_KEYS = ['name', 'k1', 'n'];\n", '')}`;
+}
+
+test('Schlüsselfläche: eine importierte Laufzeitmenge wird über den Import aufgelöst', () => {
+  const root = fixture({ foo: {
+    'foo.js': importedKeysVm('./foo-keys.js'),
+    'foo-model.js': KEYED_MODEL,
+    'foo-keys.js': "export const PARAM_KEYS = ['name', 'k1', 'n'];\n",
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, []);
+});
+
+test('Schlüsselfläche: ein umbenannter Import zählt wie der Originalname', () => {
+  const root = fixture({ foo: {
+    'foo.js': importedKeysVm('./foo-keys.js', 'KEYS'),
+    'foo-model.js': KEYED_MODEL,
+    'foo-keys.js': "export const KEYS = ['name', 'k1', 'n'];\n",
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, []);
+});
+
+test('Schlüsselfläche: weicht die importierte Menge von der Typedef ab, wird jeder abweichende Schlüssel gemeldet', () => {
+  const root = fixture({ foo: {
+    'foo.js': importedKeysVm('./foo-keys.js'),
+    'foo-model.js': KEYED_MODEL,
+    'foo-keys.js': "export const PARAM_KEYS = ['name', 'k1', 'extra'];\n",
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['key_set_mismatch:setParam:extra', 'key_set_mismatch:setParam:n']);
+});
+
+test('Schlüsselfläche: ein Import aus einem Paket ist nicht auflösbar — die Menge bleibt ungeprüft', () => {
+  const root = fixture({ foo: {
+    'foo.js': importedKeysVm('some-package'),
+    'foo-model.js': KEYED_MODEL,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.ok(modules.foo.reported.includes('unverified_key_set:setParam'), modules.foo.reported.join(', '));
+});
+
 test('Schlüsselfläche: ein Wertebereich, der nicht zur Prüfung passt, ist ein Verstoß', () => {
   const { foo } = keyedModules({ typedef: ` * @typedef {object} Params
  * @property {string} name der Name

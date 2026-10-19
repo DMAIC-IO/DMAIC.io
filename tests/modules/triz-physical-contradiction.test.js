@@ -1,6 +1,5 @@
 import { suite, test, assertEqual } from '../test-utils.js';
-import { State, PRINCIPLES } from '../../js/modules/triz-physical-contradiction/triz-physical-contradiction-model.js';
-import { PRINCIPLE_KEYS } from '../../js/modules/triz-physical-contradiction/triz-physical-contradiction.js';
+import { State } from '../../js/modules/triz-physical-contradiction/triz-physical-contradiction-model.js';
 
 suite('TRIZ Physical Contradiction Model — State', () => {
   test('constructor sets default values', () => {
@@ -139,11 +138,5 @@ suite('TRIZ Physical Contradiction Model — State', () => {
     const s = new State();
     s.solutionNote = 'solution';
     assertEqual(s.hasContent(), true);
-  });
-});
-
-suite('TRIZ Physical Contradiction — Schlüsselfläche', () => {
-  test('PRINCIPLE_KEYS entspricht PRINCIPLES des Modells', () => {
-    assertEqual(JSON.stringify(PRINCIPLE_KEYS), JSON.stringify(PRINCIPLES));
   });
 });

@@ -35,18 +35,11 @@ import { ensureXLSX, downloadBlob } from '../../core/export-utils.js';
 import { shortcutRegistry } from '../../core/shortcut-registry.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
-import { State, VALID_TYPES } from './voc-ctx-tree-model.js';
+import { State, VALID_TYPES, COLOR_KEYS } from './voc-ctx-tree-model.js';
 import { buildTreeDiagram } from './voc-ctx-tree-diagram.js';
 
-/** CSS custom-property map for the node colours. */
-export const COLOR_PROP = {
-  voc:  '--color-vct-voc',
-  need: '--color-vct-need',
-  ctq:  '--color-vct-ctq',
-  ctd:  '--color-vct-ctd',
-  ctc:  '--color-vct-ctc',
-  req:  '--color-vct-req',
-};
+/** CSS custom-property map for the node colours, one per colour key. */
+const COLOR_PROP = Object.fromEntries(COLOR_KEYS.map((key) => [key, `--color-vct-${key}`]));
 
 /**
  * Die Schlüsselfläche von `setNodeColor`: je Knotentyp eine Füllfarbe.
@@ -60,9 +53,6 @@ export const COLOR_PROP = {
  * @property {string} ctc  Treiber Kosten (CTC)
  * @property {string} req  Anforderung
  */
-// Muss die Schlüssel von COLOR_PROP tragen; als Literal, damit der Build die
-// Schlüsselfläche prüfen kann (der Modultest hält beide gleich).
-export const COLOR_KEYS = ['voc', 'need', 'ctq', 'ctd', 'ctc', 'req'];
 
 // Die Randstärke läuft von 0 bis 4 in Schritten von 0,5 — genau die Stufen des
 // Schiebereglers. `requireIndex` passt darauf nicht: es verlangt eine GANZE

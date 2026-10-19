@@ -52,7 +52,7 @@
 import ts from 'typescript';
 import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { join, relative, sep, dirname } from 'node:path';
-import { createResolver, functionFromMember, isFunctionMember, isFunctionLike, findCreateModuleMember, memberName, findLocalDeclaration } from './agent-resolve.mjs';
+import { createResolver, functionFromMember, isFunctionMember, isFunctionLike, findCreateModuleMember, memberName, findLocalDeclaration, findImportSource, resolveSpecifier } from './agent-resolve.mjs';
 
 const MODULES_DIR = 'js/modules';
 
@@ -563,12 +563,20 @@ function checkTableOf(body, keyParam, sf) {
 function checkMatchesType(check, type, sf) {
   let verdict = true;
   let seen = false;
+  // Der Wert, den die Prüffunktion bekommt. Ein `requireEnum` auf etwas
+  // anderem (etwa je Element einer Liste: `for (const m of v)
+  // requireEnum('m', m, MENGE)`) sagt nichts über den Typ des Werts selbst.
+  const param = (ts.isArrowFunction(check) || ts.isFunctionExpression(check))
+    && check.parameters[0] && ts.isIdentifier(check.parameters[0].name)
+    ? check.parameters[0].name.text : null;
   forEachCall(check, call => {
     if (seen || !ts.isIdentifier(call.expression)) return;
     const name = call.expression.text;
     if (name === 'requireText') { seen = true; verdict = type === 'string'; }
     else if (name === 'requireNumber') { seen = true; verdict = type === 'number'; }
     else if (name === 'requireEnum') {
+      const subject = call.arguments[1];
+      if (param && !(subject && ts.isIdentifier(subject) && subject.text === param)) return;
       seen = true;
       const allowed = call.arguments[2] && resolveStringArray(call.arguments[2], sf);
       if (!allowed) return;                     // nicht auflösbar: ungeprüft
@@ -805,9 +813,13 @@ function requireEnumKeySets(body, ownParams, sf) {
 }
 
 /**
- * Die Zeichenketten eines Array-Literals — direkt (`['a', 'b']`) oder über
- * eine im Modul deklarierte Konstante (`PARAM_KEYS`). `null`, sobald ein
- * Element keine Zeichenkette ist oder die Konstante nicht auflösbar ist.
+ * Die Zeichenketten eines Array-Literals — direkt (`['a', 'b']`), über eine
+ * im Modul deklarierte Konstante (`PARAM_KEYS`) oder über eine Konstante, die
+ * per benanntem Import aus einer relativen Datei kommt (`import { PRINCIPLES }
+ * from './x-model.js'`). Der Import erlaubt, die Liste dort zu führen, wo sie
+ * fachlich hingehört, statt sie im Viewmodel als zweites Literal zu
+ * wiederholen. `null`, sobald ein Element keine Zeichenkette ist oder die
+ * Konstante nicht auflösbar ist (Paketimport, fehlende Datei).
  * @param {ts.Expression} expr
  * @param {ts.SourceFile} sf
  * @returns {string[]|null}
@@ -815,7 +827,7 @@ function requireEnumKeySets(body, ownParams, sf) {
 function resolveStringArray(expr, sf) {
   let literal = expr;
   if (ts.isIdentifier(expr)) {
-    const decl = findLocalDeclaration(expr.text, sf);
+    const decl = findStringArrayDeclaration(expr.text, sf);
     if (!decl || !ts.isVariableDeclaration(decl) || !decl.initializer) return null;
     literal = decl.initializer;
   }
@@ -826,6 +838,31 @@ function resolveStringArray(expr, sf) {
     keys.push(element.text);
   }
   return keys;
+}
+
+/**
+ * Die Deklaration eines Namens — in der Datei selbst, sonst eine Ebene über
+ * einen benannten relativen Import. Keine Kette: ein Re-Export im Ziel bleibt
+ * unauflösbar (fail closed).
+ * @param {string} name
+ * @param {ts.SourceFile} sf
+ * @returns {ts.Node|null}
+ */
+function findStringArrayDeclaration(name, sf) {
+  const local = findLocalDeclaration(name, sf);
+  if (local) return local;
+  const imported = findImportSource(name, sf);
+  const file = imported && resolveSpecifier(imported.specifier, sf.fileName);
+  if (!file) return null;
+  // Ohne Zwischenspeicher: `build --watch` läuft im selben Prozess weiter,
+  // ein Cache sähe eine geänderte Schlüsseldatei nicht.
+  let target;
+  try {
+    target = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+  } catch {
+    return null;
+  }
+  return findLocalDeclaration(imported.originalName, target);
 }
 
 /**

@@ -22,7 +22,6 @@ import { State, PRINCIPLES } from './triz-physical-contradiction-model.js';
  * @property {string} condition  Notiz zur Trennung nach Bedingung
  * @property {string} system  Notiz zur Trennung in der Systemebene
  */
-export const PRINCIPLE_KEYS = ['time', 'space', 'condition', 'system'];
 
 const PRINCIPLE_NUM = { time: 1, space: 2, condition: 3, system: 4 };
 
@@ -179,7 +178,7 @@ export default createModule({
        *   oder `text` keine Zeichenkette ist
        */
       setPrincipleNote(key, text) {
-        requireEnum('key', key, PRINCIPLE_KEYS);
+        requireEnum('key', key, PRINCIPLES);
         this.model.principleNotes[key] = requireText('text', text);
       },
     };

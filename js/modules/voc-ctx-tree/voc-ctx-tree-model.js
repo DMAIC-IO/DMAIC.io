@@ -18,6 +18,14 @@
 
 import { uid } from '../../core/uid.js';
 
+/**
+ * Die Knotentypen, die eine eigene Füllfarbe tragen (Schlüssel von
+ * `styles.colors`). Als Literal, damit der Build die Schlüsselfläche von
+ * `setNodeColor` gegen die Typedef `NodeColors` prüfen kann.
+ * @type {readonly string[]}
+ */
+export const COLOR_KEYS = ['voc', 'need', 'ctq', 'ctd', 'ctc', 'req'];
+
 /** Default node colours (rgba), mirrors the legacy DEFAULT_COLORS. */
 export const DEFAULT_COLORS = {
   voc:  'rgba(230,126,34,1)',
