@@ -68,6 +68,7 @@ globalThis.sessionStorage ??= new MemoryStorage();
 // Every entry must also be imported by tests/runner.html — checked below
 // (skip-list-check.mjs), since a file in SKIP alone would run nowhere.
 const SKIP = new Set([
+  'algorithm-lab/lab-inline.test.js',
   'algorithm-lab/lab-renderer.test.js',
   'core/chart/boxplot.test.js',
   'core/chart/chart-base-editor-change.test.js',
@@ -95,6 +96,7 @@ const SKIP = new Set([
   'core/create-page.test.js',
   'core/datagrid-header-xss.test.js',
   'core/datagrid-locked-columns.test.js',
+  'core/datagrid-readonly.test.js',
   'core/datagrid-roles-grid.test.js',
   'core/datagrid-dialogs.test.js',
   'core/context-language.test.js',
@@ -105,6 +107,7 @@ const SKIP = new Set([
   'core/icon.test.js',
   'core/markdown-parser.test.js',
   'core/notify.test.js',
+  'core/readonly-lock.test.js',
   'core/references-renderer-dom.test.js',
   'core/spacing-tokens.test.js',
   'core/stats-panel.test.js',
