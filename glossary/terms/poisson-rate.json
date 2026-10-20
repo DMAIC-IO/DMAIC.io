@@ -1,0 +1,95 @@
+{
+  "id": "poisson-rate",
+  "category": "hypothesis",
+  "title": {
+    "de": "Poisson-Rate (Fehler je Einheit)",
+    "en": "Poisson Rate (Defects per Unit)"
+  },
+  "short": {
+    "de": "Anzahl von Ereignissen je Beobachtungsmenge — etwa Fehler je m² oder Störungen je Betriebsstunde.",
+    "en": "Number of events per unit of exposure — e.g. defects per m² or breakdowns per operating hour."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Eine **Poisson-Rate** beschreibt, wie oft ein seltenes, unabhängiges Ereignis je **Beobachtungsmenge** (Exposure) $t$ auftritt. Gezählt werden $x$ Ereignisse in der Fläche, Zeit oder Stückzahl $t$; die geschätzte Rate ist"
+      },
+      {
+        "type": "formula",
+        "latex": "\\hat{\\lambda} = \\frac{x}{t}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Beobachtungsmenge** $t$ — Fläche, Länge, Zeit oder Anzahl Einheiten, in der gezählt wurde; sie muss nicht ganzzahlig sein",
+          "**Exakter Test** — beruht auf der Poisson-Verteilung; der zweiseitige $p$-Wert verdoppelt den kleineren einseitigen Wert (höchstens 1)",
+          "**Zwei Raten** — verglichen wird die Differenz $\\hat{\\lambda}_1 - \\hat{\\lambda}_2$ mit einem Normalapproximations-Test"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Anders als bei einem Anteil gibt es keine Obergrenze: Eine Einheit kann mehrere Fehler tragen. Ist jede Einheit nur gut oder schlecht, gehört die Frage zu den Anteilen, siehe {{term:p-wert|p-Wert}} und {{term:nullhypothese|Nullhypothese}} für die Entscheidungslogik."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **Poisson rate** describes how often a rare, independent event occurs per **unit of exposure** $t$. $x$ events are counted in the area, time or number of units $t$; the estimated rate is"
+      },
+      {
+        "type": "formula",
+        "latex": "\\hat{\\lambda} = \\frac{x}{t}"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**Exposure** $t$ — the area, length, time or number of units in which the events were counted; it need not be an integer",
+          "**Exact test** — based on the Poisson distribution; the two-sided $p$-value doubles the smaller one-sided value (capped at 1)",
+          "**Two rates** — the difference $\\hat{\\lambda}_1 - \\hat{\\lambda}_2$ is compared with a normal-approximation test"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Unlike a proportion there is no upper limit: one unit can carry several defects. If every unit is simply good or bad, the question belongs to proportions; see {{term:p-wert|p-value}} and {{term:nullhypothese|null hypothesis}} for the decision logic."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Fehlerrate",
+      "Defekte je Einheit",
+      "Ereignisrate",
+      "Poisson-Verteilung"
+    ],
+    "en": [
+      "defect rate",
+      "defects per unit",
+      "event rate",
+      "Poisson distribution"
+    ]
+  },
+  "seeAlso": [
+    "p-wert",
+    "nullhypothese",
+    "signifikanzniveau",
+    "poisson-regression"
+  ],
+  "modules": [
+    "attribute-test"
+  ],
+  "algoLab": [
+    "attribute/poisson-rate-one",
+    "attribute/poisson-rate-two"
+  ],
+  "sources": [
+    {
+      "label": "Garwood, F. — Fiducial Limits for the Poisson Distribution, Biometrika 28 (3/4), 1936",
+      "url": null
+    },
+    {
+      "label": "Montgomery, D. C. & Runger, G. C. — Applied Statistics and Probability for Engineers, 7th Edition",
+      "url": null
+    }
+  ]
+}

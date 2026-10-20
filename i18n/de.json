@@ -4235,7 +4235,7 @@
     },
     "attribute-test": {
       "name": "Attributtests",
-      "description": "Tests für Anteile und Häufigkeiten: 1 und 2 Anteile, Fisher-exakt, Chi-Quadrat-Assoziation",
+      "description": "Tests für Anteile, Raten und Häufigkeiten: 1 und 2 Anteile, Fisher-exakt, Chi-Quadrat-Assoziation, McNemar, Äquivalenz (TOST), 1 und 2 Poisson-Raten",
       "sectionTest": "Test",
       "kindOne": "1 Anteil",
       "kindTwo": "2 Anteile",

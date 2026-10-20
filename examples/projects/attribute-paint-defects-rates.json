@@ -1,0 +1,16 @@
+{
+  "testKind": "rate2",
+  "inputMode": "summary",
+  "direction": "two-sided",
+  "alpha": 0.05,
+  "p0": "0.5",
+  "pooled": false,
+  "ratePooled": false,
+  "summary": {
+    "x": "", "n": "", "x1": "54", "n1": "", "x2": "24", "n2": "",
+    "t": "", "t1": "120", "t2": "95", "lambda0": "", "diff0": "0",
+    "table": { "rows": ["A", "B"], "cols": ["X", "Y"], "counts": [["", ""], ["", ""]] }
+  },
+  "colRefs": { "response": null, "group": null, "rowVar": null, "colVar": null, "counts": null, "before": null, "after": null },
+  "eventValue": null
+}

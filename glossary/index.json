@@ -891,6 +891,21 @@
       "file": "terms/chi-quadrat-test.json"
     },
     {
+      "id": "poisson-rate",
+      "category": "hypothesis",
+      "file": "terms/poisson-rate.json"
+    },
+    {
+      "id": "mcnemar-test",
+      "category": "hypothesis",
+      "file": "terms/mcnemar-test.json"
+    },
+    {
+      "id": "aequivalenztest",
+      "category": "hypothesis",
+      "file": "terms/aequivalenztest.json"
+    },
+    {
       "id": "balkendiagramm",
       "category": "visualization",
       "file": "terms/balkendiagramm.json"

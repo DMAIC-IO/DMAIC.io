@@ -1,0 +1,100 @@
+{
+  "id": "mcnemar-test",
+  "category": "hypothesis",
+  "title": {
+    "de": "McNemar-Test",
+    "en": "McNemar Test"
+  },
+  "short": {
+    "de": "Vergleicht zwei Anteile an denselben Einheiten (gepaarte Ja/Nein-Daten) — nur die Einheiten mit geändertem Ergebnis zählen.",
+    "en": "Compares two proportions on the same units (paired yes/no data) — only units whose result changed count."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **McNemar-Test** prüft, ob sich der Anteil eines Ereignisses ändert, wenn **dieselben Einheiten** zweimal beurteilt werden, etwa vor und nach einer Maßnahme. Die Paare lassen sich in einer Vierfeldertafel zählen; nur die beiden Felder mit geändertem Ergebnis tragen Information:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "$b$ — Ereignis vorher, kein Ereignis nachher",
+          "$c$ — kein Ereignis vorher, Ereignis nachher",
+          "**$H_0$** — beide Richtungen sind gleich wahrscheinlich, also $b = c$ im Erwartungswert"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Der exakte Test betrachtet $b$ unter $b + c$ Wechseln als Binomialverteilung mit $p = 0{,}5$; die Näherung ist"
+      },
+      {
+        "type": "formula",
+        "latex": "\\chi^2 = \\frac{(b - c)^2}{b + c}"
+      },
+      {
+        "type": "note",
+        "text": "Ein Test für zwei unabhängige Anteile ist hier falsch, weil er die Paarung ignoriert und meist zu viel Streuung annimmt. Siehe auch {{term:chi-quadrat-test|Chi-Quadrat-Test}} und {{term:kontingenztafel|Kontingenztafel}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **McNemar test** checks whether the proportion of an event changes when the **same units** are judged twice, e.g. before and after a measure. The pairs can be counted in a 2×2 table; only the two cells with a changed result carry information:"
+      },
+      {
+        "type": "list",
+        "items": [
+          "$b$ — event before, no event after",
+          "$c$ — no event before, event after",
+          "**$H_0$** — both directions are equally likely, i.e. $b = c$ in expectation"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "The exact test treats $b$ among the $b + c$ changes as binomial with $p = 0.5$; the approximation is"
+      },
+      {
+        "type": "formula",
+        "latex": "\\chi^2 = \\frac{(b - c)^2}{b + c}"
+      },
+      {
+        "type": "note",
+        "text": "A test for two independent proportions is wrong here: it ignores the pairing and usually assumes too much variation. See also {{term:chi-quadrat-test|chi-square test}} and {{term:kontingenztafel|contingency table}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "McNemar",
+      "Test für gepaarte Anteile",
+      "Vorher-nachher-Test"
+    ],
+    "en": [
+      "McNemar's test",
+      "paired proportions test",
+      "before-after test"
+    ]
+  },
+  "seeAlso": [
+    "chi-quadrat-test",
+    "kontingenztafel",
+    "p-wert",
+    "nullhypothese"
+  ],
+  "modules": [
+    "attribute-test"
+  ],
+  "algoLab": [
+    "attribute/mcnemar"
+  ],
+  "sources": [
+    {
+      "label": "McNemar, Q. — Note on the Sampling Error of the Difference Between Correlated Proportions or Percentages, Psychometrika 12, 1947",
+      "url": null
+    },
+    {
+      "label": "Agresti, A. — Categorical Data Analysis, 3rd Edition, Wiley, 2013",
+      "url": null
+    }
+  ]
+}

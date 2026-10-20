@@ -1,0 +1,19 @@
+{
+  "testKind": "mcnemar",
+  "inputMode": "columns",
+  "direction": "two-sided",
+  "alpha": 0.05,
+  "p0": "0.5",
+  "pooled": false,
+  "summary": {
+    "x": "", "n": "", "x1": "", "n1": "", "x2": "", "n2": "",
+    "table": { "rows": ["A", "B"], "cols": ["X", "Y"], "counts": [["", ""], ["", ""]] }
+  },
+  "colRefs": {
+    "response": null, "group": null, "rowVar": null, "colVar": null, "counts": null,
+    "before": { "instanceId": "__source__", "sheetId": "sheet-before-after-paired", "columnId": "c-before" },
+    "after": { "instanceId": "__source__", "sheetId": "sheet-before-after-paired", "columnId": "c-after" }
+  },
+  "eventValue": "n.i.O.",
+  "sourceWorksheetFile": "worksheets/attribute-before-after-paired.json"
+}

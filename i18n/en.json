@@ -4235,7 +4235,7 @@
     },
     "attribute-test": {
       "name": "Attribute Tests",
-      "description": "Tests for proportions and counts: 1 and 2 proportions, Fisher's exact, chi-square association",
+      "description": "Tests for proportions, rates and counts: 1 and 2 proportions, Fisher's exact, chi-square association, McNemar, equivalence (TOST), 1 and 2 Poisson rates",
       "sectionTest": "Test",
       "kindOne": "1 proportion",
       "kindTwo": "2 proportions",
