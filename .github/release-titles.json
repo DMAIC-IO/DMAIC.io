@@ -66,5 +66,9 @@
   "1.3.2": {
     "de": "Zielerreichungsgrad als bearbeitbares Arbeitsblatt, erreichbar über „Daten bearbeiten“ auf der Zeitverlaufs-Kachel",
     "en": "Goal achievement as an editable worksheet, reachable via “Edit data” on the timeline tile"
+  },
+  "1.4.0": {
+    "de": "TRIZ-Funktionsanalyse, gepaarte Tests, Bonett-Varianztests, Welch-ANOVA mit Tukey und Games-Howell, Poisson-Raten, McNemar und Äquivalenztests",
+    "en": "TRIZ function analysis, paired tests, Bonett variance tests, Welch ANOVA with Tukey and Games-Howell, Poisson rates, McNemar and equivalence tests"
   }
 }

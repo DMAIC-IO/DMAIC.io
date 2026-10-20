@@ -3,4 +3,4 @@
  * Single source of truth for the version number.
  * All other parts of the application import from here.
  */
-export const VERSION = '1.3.2';
+export const VERSION = '1.4.0';
