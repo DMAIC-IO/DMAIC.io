@@ -420,6 +420,7 @@ suite('attribute-test report', () => {
     assertEqual(fmtRate(0), '0.0000');
     assertEqual(fmtRate(2e-7), '2.000e-7');
     assertEqual(fmtRate(-0.00123456), '-0.001235');
+    assertEqual(fmtRate(0.00456), '0.004560'); // [0.001, 0.01): mag -3 gives 6 decimals
     assertEqual(fmtRate(null), '–');
   });
   test('rate2: one-sided less CI shows −∞', () => {

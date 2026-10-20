@@ -395,8 +395,12 @@ export function onePoissonRateTest(x, t, lambda0, direction = 'two-sided', alpha
  * @param {boolean} [options.pooled=false] — pooled SE, only used when diff0 is 0
  * @param {number} [options.diff0=0] — tested difference of the rates
  * @returns {{ rate1: number, rate2: number, diff: number, ciLower: number, ciUpper: number,
- *   z: number|null, pValue: number, pExactCond: number|null, ratio: number|null,
- *   ratioLower: number|null, ratioUpper: number|null, reject: boolean }}
+ *   z: number|null, pValue: number|null, pExactCond: number|null, ratio: number|null,
+ *   ratioLower: number|null, ratioUpper: number|null, testable: boolean, reject: boolean }}
+ *   `testable` is false when the SE is 0 but the tested difference is not (x1 = x2 = 0 with
+ *   diff0 ≠ 0): then pValue is null and reject is false. z is null whenever SE is 0,
+ *   pExactCond is null unless diff0 = 0 and x1 + x2 > 0, ratio is null when x2 = 0, and the
+ *   ratio bounds are null when x1 + x2 = 0.
  */
 export function twoPoissonRateTest(x1, t1, x2, t2, { direction = 'two-sided', alpha = 0.05, pooled = false, diff0 = 0 } = {}) {
   const rate1 = x1 / t1;
