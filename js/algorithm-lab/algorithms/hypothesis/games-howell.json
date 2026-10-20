@@ -14,8 +14,8 @@
       "en": "All pairwise comparisons of the group means with simultaneous CIs without assuming equal variances."
     },
     "long": {
-      "de": "Der Games-Howell-Test (Games & Howell 1976) ist das Gegenstück zu Tukey HSD für ungleiche Varianzen und Gruppengrößen. Jedes Paar erhält einen eigenen Standardfehler aus den Einzelvarianzen und eigene Welch-Satterthwaite-Freiheitsgrade; adjustiert wird über die studentisierte Spannweite Q(k, ν). Qprovement verwendet Games-Howell nach der Welch-ANOVA (Standard für k Gruppen). Für k = 2 stimmt der Test mit dem Welch-t-Test überein, weil Q(2, ν) = √2·|T_ν|. Hinweis zur Validierung: Die Referenzwerte stammen aus einer unabhängigen Python-Implementierung der Formeln mit scipy.stats.studentized_range. Ein Lehrbuch-Tabellenwert oder ein Minitab-Lauf liegt nicht vor; geprüft wurde zusätzlich die k = 2-Reduktion auf den Welch-t-Test und ein Abgleich mit den auf einer Dokumentationsseite (metricgate.com) veröffentlichten p-Werten für PlantGrowth.",
-      "en": "The Games-Howell test (Games & Howell 1976) is the counterpart of Tukey HSD for unequal variances and group sizes. Each pair gets its own standard error from the individual variances and its own Welch-Satterthwaite degrees of freedom; the adjustment uses the studentized range Q(k, ν). Qprovement uses Games-Howell after Welch ANOVA (the default for k groups). For k = 2 the test equals the Welch t-test because Q(2, ν) = √2·|T_ν|. Validation note: the reference values come from an independent Python implementation of the formulas with scipy.stats.studentized_range. There is no textbook table value or Minitab run; additionally checked are the k = 2 reduction to the Welch t-test and agreement with the PlantGrowth p-values published on a documentation page (metricgate.com)."
+      "de": "Der Games-Howell-Test (Games & Howell 1976) ist das Gegenstück zu Tukey HSD für ungleiche Varianzen und Gruppengrößen. Jedes Paar erhält einen eigenen Standardfehler aus den Einzelvarianzen und eigene Welch-Satterthwaite-Freiheitsgrade; adjustiert wird über die studentisierte Spannweite Q(k, ν). Qprovement verwendet Games-Howell nach der Welch-ANOVA (Standard für k Gruppen). Für k = 2 stimmt der Test mit dem Welch-t-Test überein, weil Q(2, ν) = √2·|T_ν|. Hinweis zur Validierung: Die Referenzwerte stammen aus einer unabhängigen Python-Implementierung der Formeln mit scipy.stats.studentized_range. Ein Lehrbuch-Tabellenwert oder ein Minitab-Lauf liegt nicht vor; geprüft wurde zusätzlich die k = 2-Reduktion auf den Welch-t-Test und ein Abgleich mit veröffentlichten p-Werten für PlantGrowth (siehe Referenzen).",
+      "en": "The Games-Howell test (Games & Howell 1976) is the counterpart of Tukey HSD for unequal variances and group sizes. Each pair gets its own standard error from the individual variances and its own Welch-Satterthwaite degrees of freedom; the adjustment uses the studentized range Q(k, ν). Qprovement uses Games-Howell after Welch ANOVA (the default for k groups). For k = 2 the test equals the Welch t-test because Q(2, ν) = √2·|T_ν|. Validation note: the reference values come from an independent Python implementation of the formulas with scipy.stats.studentized_range. There is no textbook table value or Minitab run; additionally checked are the k = 2 reduction to the Welch t-test and agreement with published PlantGrowth p-values (see references)."
     }
   },
   "documentation": {
@@ -103,6 +103,9 @@
       },
       {
         "source": "Copenhaver, M. D. & Holland, B. S. (1988), Computation of the distribution of the maximum of normally distributed variables, J. Statist. Comput. Simul., 30, 1–15"
+      },
+      {
+        "source": "MetricGate documentation, Games-Howell test (PlantGrowth adjusted p-values used for a cross-check), https://metricgate.com/docs/games-howell-test/"
       },
       {
         "source": "scipy.stats.studentized_range (used by the independent reference implementation)"
