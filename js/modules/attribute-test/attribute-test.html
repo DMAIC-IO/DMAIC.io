@@ -86,9 +86,9 @@
     <template x-if="isMode('summary') && isKind('mcnemar')">
       <div class="attrtest__grid attrtest__grid--pairs" data-ref="pairs-grid">
         <input type="text" class="attrtest__name attrtest__pair-label" data-ref="label-before"
-          :placeholder="t('pairBefore')" x-model="model.summary.pairs.labels.before">
+          :placeholder="t('pairBefore')" :aria-label="t('pairBefore')" x-model="model.summary.pairs.labels.before">
         <input type="text" class="attrtest__name attrtest__pair-label attrtest__pair-label--after" data-ref="label-after"
-          :placeholder="t('pairAfter')" x-model="model.summary.pairs.labels.after">
+          :placeholder="t('pairAfter')" :aria-label="t('pairAfter')" x-model="model.summary.pairs.labels.after">
         <span></span>
         <span class="attrtest__grid-head" x-text="t('pairEvent')"></span>
         <span class="attrtest__grid-head" x-text="t('pairNoEvent')"></span>
@@ -232,14 +232,14 @@
             @click="setBoundsSymmetric(false)" x-text="t('boundsAsymmetric')"></button>
         </div>
         <template x-if="model.equiv.symmetric">
-          <label class="field-group"><span x-text="t('delta')"></span>
+          <label class="field-group"><span x-text="t(oneSample() ? 'deltaOne' : 'delta')"></span>
             <input type="text" inputmode="decimal" data-ref="delta" x-model="model.equiv.delta"></label>
         </template>
         <template x-if="!model.equiv.symmetric">
           <div class="attrtest__grid">
-            <label class="field-group"><span x-text="t('boundLower')"></span>
+            <label class="field-group"><span x-text="t(oneSample() ? 'boundLowerOne' : 'boundLower')"></span>
               <input type="text" inputmode="decimal" data-ref="lower" x-model="model.equiv.lower"></label>
-            <label class="field-group"><span x-text="t('boundUpper')"></span>
+            <label class="field-group"><span x-text="t(oneSample() ? 'boundUpperOne' : 'boundUpper')"></span>
               <input type="text" inputmode="decimal" data-ref="upper" x-model="model.equiv.upper"></label>
           </div>
         </template>

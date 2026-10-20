@@ -23,9 +23,25 @@ export function fmtP(v) {
   return v < 0.0001 ? '< 0.0001' : v.toFixed(4);
 }
 
+/**
+ * Rate-scale value: at least four decimals (as `fmt`), more for small values so
+ * that four significant digits survive; exponent notation below 1e-5.
+ * @param {number|null} v @returns {string}
+ */
+export function fmtRate(v) {
+  if (v == null || !Number.isFinite(v)) return '–';
+  if (v === 0) return v.toFixed(4);
+  const mag = Math.floor(Math.log10(Math.abs(v)));
+  if (mag < -5) return v.toExponential(3);
+  return v.toFixed(Math.max(4, 3 - mag));
+}
+
+/** Exposure or other free number: no floating-point noise (0.30000000000000004 → 0.3). */
+const fmtNum = v => String(Number(v.toPrecision(10)));
+
 const pct = (alpha) => Math.round((1 - alpha) * 1000) / 10;
-const bound = v => (v === Infinity ? '∞' : fmt(v));
-const ci = (lo, hi) => `[${bound(lo)}, ${bound(hi)}]`;
+const bound = (v, f) => (v === Infinity ? '∞' : v === -Infinity ? '−∞' : f(v));
+const ci = (lo, hi, f = fmt) => `[${bound(lo, f)}, ${bound(hi, f)}]`;
 
 /** Proportion as percentage points with two decimals (no "-0.00"). */
 function fmtPp(v) {
@@ -101,9 +117,9 @@ function reportRate1(state, norm) {
   return {
     kind: 'rate1',
     stats: [
-      { key: 'counts', labelKey: 'statRateCounts', value: `${norm.x} / ${norm.t}` },
-      { key: 'rate', labelKey: 'statRate', value: fmt(r.rate) },
-      { key: 'ci', labelKey: 'statCiRate', params: { level: pct(state.alpha) }, value: ci(r.ciLower, r.ciUpper) },
+      { key: 'counts', labelKey: 'statRateCounts', value: `${norm.x} / ${fmtNum(norm.t)}` },
+      { key: 'rate', labelKey: 'statRate', value: fmtRate(r.rate) },
+      { key: 'ci', labelKey: 'statCiRate', params: { level: pct(state.alpha) }, value: ci(r.ciLower, r.ciUpper, fmtRate) },
       { key: 'pExact', labelKey: 'statPExactPoisson', value: fmtP(r.pExact) },
       { key: 'z', labelKey: 'statZ', value: fmt(r.z) },
       { key: 'pNormal', labelKey: 'statPNormal', value: fmtP(r.pNormal) },
@@ -119,15 +135,16 @@ function reportRate2(state, norm) {
   const r = twoPoissonRateTest(norm.x1, norm.t1, norm.x2, norm.t2, {
     direction: state.direction, alpha: state.alpha, pooled: state.ratePooled, diff0: norm.diff0,
   });
+  if (!r.testable) return { error: 'noteRateNotTestable', hint: true };
   const notes = [];
   missingNote(norm, notes);
   const g = norm.groups || ['1', '2'];
   const level = pct(state.alpha);
   const stats = [
-    { key: 'rate1', labelKey: 'statRateGroup', params: { group: g[0] }, value: fmt(r.rate1) },
-    { key: 'rate2', labelKey: 'statRateGroup', params: { group: g[1] }, value: fmt(r.rate2) },
-    { key: 'diff', labelKey: 'statRateDiff', value: fmt(r.diff) },
-    { key: 'ci', labelKey: 'statCiRateDiff', params: { level }, value: ci(r.ciLower, r.ciUpper) },
+    { key: 'rate1', labelKey: 'statRateGroup', params: { group: g[0] }, value: fmtRate(r.rate1) },
+    { key: 'rate2', labelKey: 'statRateGroup', params: { group: g[1] }, value: fmtRate(r.rate2) },
+    { key: 'diff', labelKey: 'statRateDiff', value: fmtRate(r.diff) },
+    { key: 'ci', labelKey: 'statCiRateDiff', params: { level }, value: ci(r.ciLower, r.ciUpper, fmtRate) },
     { key: 'z', labelKey: 'statZ', value: fmt(r.z) },
     { key: 'pValue', labelKey: 'statPValue', value: fmtP(r.pValue) },
   ];
@@ -194,22 +211,32 @@ function reportEquiv(state, norm) {
   const lo = one ? clip(norm.p0 + norm.lower) : norm.lower;
   const up = one ? clip(norm.p0 + norm.upper) : norm.upper;
   const bounds = `[${fmtPp(lo)}; ${fmtPp(up)}]`;
+  // 1 sample: absolute proportions in %; 2 samples: a difference in percentage points.
+  const unit = one ? '%' : 'pp';
+  const g = norm.groups || ['1', '2'];
+  const counts = one
+    ? [{ key: 'counts', labelKey: 'statCounts', value: `${norm.x} / ${norm.n}` }]
+    : [
+      { key: 'counts1', labelKey: 'statCountsGroup', params: { group: g[0] }, value: `${norm.x1} / ${norm.n1}` },
+      { key: 'counts2', labelKey: 'statCountsGroup', params: { group: g[1] }, value: `${norm.x2} / ${norm.n2}` },
+    ];
   const notes = [{ key: 'noteEquivBoundsPractical' }];
   if (!r.equivalent) notes.push({ key: 'noteEquivCiOutside' });
   missingNote(norm, notes);
   return {
     kind: 'equiv',
     stats: [
+      ...counts,
       { key: 'estimate', labelKey: one ? 'statEquivEstimate1' : 'statEquivEstimate2', value: fmtPp(one ? r.pHat : r.diff) },
-      { key: 'ci', labelKey: 'statEquivCi', params: { level: pct(2 * state.alpha) }, value: `[${fmtPp(r.ciLower)}; ${fmtPp(r.ciUpper)}]` },
-      { key: 'bounds', labelKey: 'statEquivBounds', value: bounds },
+      { key: 'ci', labelKey: 'statEquivCi', params: { level: pct(2 * state.alpha), unit }, value: `[${fmtPp(r.ciLower)}; ${fmtPp(r.ciUpper)}]` },
+      { key: 'bounds', labelKey: 'statEquivBounds', params: { unit }, value: bounds },
       { key: 'pLower', labelKey: 'statPLower', value: fmtP(r.pLower) },
       { key: 'pUpper', labelKey: 'statPUpper', value: fmtP(r.pUpper) },
       { key: 'pValue', labelKey: 'statPTost', value: fmtP(r.pValue) },
     ],
     notes,
     decision: r.equivalent ? 'equivalent' : 'notEquivalent',
-    decisionParams: { lower: fmtPp(lo), upper: fmtPp(up), alpha: state.alpha },
+    decisionParams: { lower: fmtPp(lo), upper: fmtPp(up), unit, alpha: state.alpha },
     basisKey: 'basisTost',
     table: null,
   };

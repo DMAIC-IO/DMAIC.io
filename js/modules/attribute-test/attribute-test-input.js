@@ -133,8 +133,9 @@ function sumCounts(values) {
 }
 
 /**
- * Equivalence bounds in percentage points → proportions (differences).
- * @returns {{ lower: number, upper: number }|{ error: string }}
+ * Equivalence bounds in percentage points → proportions (differences; for one
+ * sample relative to p₀). Missing bounds are a hint, not an error.
+ * @returns {{ lower: number, upper: number }|{ error: string, hint?: true }}
  */
 function readBounds(state) {
   const e = state.equiv || {};
@@ -142,18 +143,18 @@ function readBounds(state) {
   let upper;
   if (e.symmetric !== false) {
     const d = parseProportion(e.delta);
-    if (d == null) return { error: 'errBoundsMissing' };
+    if (d == null) return { error: 'hintEnterBounds', hint: true };
     lower = -d / 100;
     upper = d / 100;
   } else {
     const lo = parseProportion(e.lower);
     const up = parseProportion(e.upper);
-    if (lo == null || up == null) return { error: 'errBoundsMissing' };
+    if (lo == null || up == null) return { error: 'hintEnterBounds', hint: true };
     lower = lo / 100;
     upper = up / 100;
   }
   if (lower >= upper) return { error: 'errBoundsOrder' };
-  if (!(lower < 0 && upper > 0)) return { error: 'errBoundsContain' };
+  if (!(lower < 0 && upper > 0)) return { error: e.samples === 1 ? 'errBoundsContainOne' : 'errBoundsContain' };
   return { lower, upper };
 }
 
@@ -161,7 +162,7 @@ function readBounds(state) {
 function toEquivalence(state, norm) {
   if (!norm.ok) return norm;
   const b = readBounds(state);
-  if (b.error) return fail(b.error);
+  if (b.error) return b.hint ? hint(b.error) : fail(b.error);
   const { kind, ok, ...rest } = norm;
   return { ok, kind: 'equiv', samples: kind === 'one' ? 1 : 2, ...rest, lower: b.lower, upper: b.upper };
 }

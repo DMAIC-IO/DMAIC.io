@@ -28,7 +28,7 @@ export default [
   {
     id: 'minitab-methods-poisson-rate',
     type: 'webpage',
-    title: 'Minitab Methods and Formulas: 1-Sample Poisson Rate, 2-Sample Poisson Rate',
+    title: 'Minitab Methods and Formulas: 1-Sample Poisson Rate',
     author: [{ literal: 'Minitab, LLC' }],
     URL: 'https://support.minitab.com/en-us/minitab/help-and-how-to/statistics/basic-statistics/how-to/1-sample-poisson-rate/methods-and-formulas/methods-and-formulas/',
     note: {

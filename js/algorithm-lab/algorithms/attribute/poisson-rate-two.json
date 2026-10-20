@@ -129,6 +129,7 @@
               "en": "Rate ratio"
             }
           },
+          "testable": { "type": "boolean", "description": { "de": "Test durchführbar? (nicht bei 0 Ereignissen in beiden Stichproben und Differenz 0 ≠ 0)", "en": "Test defined? (not with no events in both samples and a non-zero difference 0)" } },
           "reject": {
             "type": "boolean",
             "description": {

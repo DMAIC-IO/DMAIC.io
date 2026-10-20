@@ -2,8 +2,10 @@
  * D.Mike — Attribute Test Module — Model (attribute-test-model.js)
  *
  * Persistent configuration only. Summary inputs are kept as the raw strings
- * the user typed; the normalizer parses them. Both input modes are kept, so
- * switching modes or test kinds never loses data.
+ * the user typed; the normalizer parses them. Both input modes are kept. Kinds
+ * with their own fields (table, pairs, equivalence bounds) keep them across
+ * switches; kinds that share a field (x/n for one proportion and one rate, x1/x2
+ * for the two-sample tests, …) reuse its value by design.
  */
 
 /** @typedef {{ instanceId: string, sheetId?: string, columnId: string }} ColumnRef */

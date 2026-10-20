@@ -410,7 +410,11 @@ export function twoPoissonRateTest(x1, t1, x2, t2, { direction = 'two-sided', al
 
   let z = null;
   let pValue;
-  if (seTest > 0) {
+  // SE 0 with d ≠ 0 means x1 = x2 = 0 and diff0 ≠ 0: no information, so no test.
+  const testable = !(seTest === 0 && d !== 0);
+  if (!testable) {
+    pValue = null;
+  } else if (seTest > 0) {
     z = d / seTest;
     pValue = normalP(z, direction);
   } else if (d === 0) {
@@ -467,7 +471,8 @@ export function twoPoissonRateTest(x1, t1, x2, t2, { direction = 'two-sided', al
     ratio: x2 === 0 ? null : rate1 / rate2,
     ratioLower,
     ratioUpper,
-    reject: pValue < alpha,
+    testable,
+    reject: testable && pValue < alpha,
   };
 }
 

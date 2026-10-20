@@ -163,7 +163,7 @@ suite('attribute-test input — stale event value', () => {
 });
 
 import { State, TEST_KINDS } from '../../js/modules/attribute-test/attribute-test-model.js';
-import { buildReport, fmtP } from '../../js/modules/attribute-test/attribute-test-report.js';
+import { buildReport, fmtP, fmtRate } from '../../js/modules/attribute-test/attribute-test-report.js';
 
 suite('attribute-test column ref resolution', () => {
   const sm = { getModuleState: (id) => id === 'w' ? { sheets: [{ id: 's', state: { columns: [{ id: 'c1', values: ['a', 'b'] }] } }] } : null };
@@ -385,7 +385,7 @@ suite('attribute-test report', () => {
     assertEqual(r.stats.find(s => s.key === 'ci').params.level, 90);
     assertEqual(r.stats.find(s => s.key === 'estimate').value, '0.15');
     assertEqual(r.stats.find(s => s.key === 'bounds').value, '[-1.00; 1.00]');
-    assertDeepEqual(r.decisionParams, { lower: '-1.00', upper: '1.00', alpha: 0.05 });
+    assertDeepEqual(r.decisionParams, { lower: '-1.00', upper: '1.00', unit: 'pp', alpha: 0.05 });
     assertTrue(r.notes.some(n => n.key === 'noteEquivBoundsPractical'));
     assertTrue(!r.notes.some(n => n.key === 'noteEquivCiOutside'));
   });
@@ -394,6 +394,45 @@ suite('attribute-test report', () => {
     assertEqual(r.decision, 'notEquivalent');
     assertEqual(r.stats.find(s => s.key === 'bounds').value, '[4.00; 6.00]');
     assertTrue(r.notes.some(n => n.key === 'noteEquivCiOutside'));
+    assertEqual(r.decisionParams.unit, '%');
+    assertEqual(r.stats.find(s => s.key === 'estimate').value, '8.00');
+    assertDeepEqual(r.stats.find(s => s.key === 'counts'), { key: 'counts', labelKey: 'statCounts', value: '8 / 100' });
+  });
+  test('equiv 2 samples: group names and counts, unit pp', () => {
+    const r = buildReport(st(), { ok: true, kind: 'equiv', samples: 2, x1: 470, n1: 10000, x2: 455, n2: 10000, lower: -0.01, upper: 0.01, groups: ['Lieferant A', 'Lieferant B'] });
+    assertDeepEqual(r.stats.slice(0, 2), [
+      { key: 'counts1', labelKey: 'statCountsGroup', params: { group: 'Lieferant A' }, value: '470 / 10000' },
+      { key: 'counts2', labelKey: 'statCountsGroup', params: { group: 'Lieferant B' }, value: '455 / 10000' },
+    ]);
+    assertEqual(r.decisionParams.unit, 'pp');
+    assertEqual(r.stats.find(s => s.key === 'bounds').params.unit, 'pp');
+  });
+  test('rate1: small rate keeps four significant digits, exposure has no float noise', () => {
+    const r = buildReport(st(), { ok: true, kind: 'rate1', x: 2, t: 50000, lambda0: 0.0001, missing: 0 });
+    assertEqual(r.stats.find(s => s.key === 'rate').value, '0.00004000');
+    assertTrue(r.stats.find(s => s.key === 'ci').value.startsWith('[4.844e-6, 0.0001445]'));
+    const noisy = buildReport(st(), { ok: true, kind: 'rate1', x: 3, t: 0.1 * 3, lambda0: 1, missing: 0 });
+    assertEqual(noisy.stats.find(s => s.key === 'counts').value, '3 / 0.3');
+  });
+  test('fmtRate: decimals, exponent fallback, non-finite', () => {
+    assertEqual(fmtRate(37 / 120), '0.3083');
+    assertEqual(fmtRate(12.34567), '12.3457');
+    assertEqual(fmtRate(0), '0.0000');
+    assertEqual(fmtRate(2e-7), '2.000e-7');
+    assertEqual(fmtRate(-0.00123456), '-0.001235');
+    assertEqual(fmtRate(null), '–');
+  });
+  test('rate2: one-sided less CI shows −∞', () => {
+    const r = buildReport(st({ direction: 'less' }), { ok: true, kind: 'rate2', x1: 12, t1: 100, x2: 5, t2: 110, diff0: 0, groups: null, missing: 0 });
+    const v = r.stats.find(s => s.key === 'ci').value;
+    assertTrue(v.startsWith('[−∞,'), v);
+    assertTrue(r.stats.find(s => s.key === 'ratioCi').value.startsWith('[0'));
+  });
+  test('rate2: no events anywhere with a non-zero difference is a hint', () => {
+    const r = buildReport(st(), { ok: true, kind: 'rate2', x1: 0, t1: 10, x2: 0, t2: 12, diff0: 0.05, groups: null, missing: 0 });
+    assertDeepEqual(r, { error: 'noteRateNotTestable', hint: true });
+    const zero = buildReport(st(), { ok: true, kind: 'rate2', x1: 0, t1: 10, x2: 0, t2: 12, diff0: 0, groups: null, missing: 0 });
+    assertEqual(zero.kind, 'rate2');
   });
   test('i18n: every key used by buildReport exists in de and en', async () => {
     const reports = [
@@ -405,13 +444,15 @@ suite('attribute-test report', () => {
       buildReport(st(), { ok: true, kind: 'equiv', samples: 2, x1: 470, n1: 10000, x2: 455, n2: 10000, lower: -0.01, upper: 0.01, groups: null }),
       buildReport(st(), { ok: true, kind: 'equiv', samples: 1, x: 8, n: 100, p0: 0.05, lower: -0.01, upper: 0.01 }),
       buildReport(st(), { ok: true, kind: 'mcnemar', table: [[5, 0], [0, 5]], labels: {}, missing: 0 }),
+      buildReport(st(), { ok: true, kind: 'rate2', x1: 0, t1: 10, x2: 0, t2: 12, diff0: 0.05, groups: null, missing: 0 }),
       buildReport(st(), { ok: true, kind: 'equiv', samples: 2, x1: 0, n1: 5, x2: 0, n2: 5, lower: -0.01, upper: 0.01, groups: null }),
     ];
     const keys = new Set([
       'decisionReject', 'decisionKeep', 'decisionEquivalent', 'decisionNotEquivalent',
       'h0Rate1', 'h1Rate1', 'h0Rate2', 'h1Rate2', 'h0McNemar', 'h1McNemar', 'h0Equiv', 'h1Equiv',
       'errExposure', 'errLambda0', 'errDiff0', 'errPairsLength', 'errPairLevels',
-      'errBoundsMissing', 'errBoundsOrder', 'errBoundsContain',
+      'hintEnterBounds', 'errBoundsOrder', 'errBoundsContain', 'errBoundsContainOne',
+      'deltaOne', 'boundLowerOne', 'boundUpperOne',
     ]);
     for (const r of reports) {
       if (r.error) keys.add(r.error);
@@ -609,13 +650,21 @@ suite('attribute-test part 2 — equivalence', () => {
   test('bounds: asymmetric empty, order, containment', () => {
     const s = st({ testKind: 'equiv' }, { x1: '5', n1: '100', x2: '6', n2: '100' });
     s.equiv.symmetric = false;
-    assertEqual(normalizeSummary(s).error, 'errBoundsMissing');
+    assertDeepEqual(normalizeSummary(s), { ok: false, error: 'hintEnterBounds', hint: true });
     s.equiv.lower = '2'; s.equiv.upper = '1';
     assertEqual(normalizeSummary(s).error, 'errBoundsOrder');
     s.equiv.lower = '0,5'; s.equiv.upper = '1';
     assertEqual(normalizeSummary(s).error, 'errBoundsContain');
     s.equiv.lower = '-0,5';
     assertEqual(normalizeSummary(s).lower, -0.005);
+  });
+  test('bounds: missing is a hint, 1 sample containment error names p₀', () => {
+    const s = st({ testKind: 'equiv' }, { x1: '5', n1: '100', x2: '6', n2: '100' });
+    assertEqual(normalizeSummary(s).hint, true);
+    assertEqual(normalizeSummary(s).error, 'hintEnterBounds');
+    const one = st({ testKind: 'equiv', p0: '0,1' }, { x: '8', n: '100' });
+    one.equiv.samples = 1; one.equiv.symmetric = false; one.equiv.lower = '1'; one.equiv.upper = '2';
+    assertEqual(normalizeSummary(one).error, 'errBoundsContainOne');
   });
   test('1 sample: counts, p0 and bounds', () => {
     const s = st({ testKind: 'equiv', p0: '0,1' }, { x: '8', n: '100' });

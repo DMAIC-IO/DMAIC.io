@@ -77,6 +77,17 @@ suite('attribute-test-engine: open Poisson bounds', () => {
   });
 });
 
+suite('attribute-test-engine: degenerate 2-rate test', () => {
+  test('no events and a non-zero difference0 is not testable', () => {
+    const r = twoPoissonRateTest(0, 10, 0, 12, { diff0: 0.05 });
+    assertTrue(r.testable === false && r.z === null && r.pValue === null && r.reject === false, 'must be untestable');
+  });
+  test('no events with difference0 = 0 stays testable (p = 1)', () => {
+    const r = twoPoissonRateTest(0, 10, 0, 12);
+    assertTrue(r.testable === true && r.pValue === 1 && r.reject === false, 'p must be 1');
+  });
+});
+
 CASES.forEach(([id, run], k) => {
   const fx = FIXTURES[k];
   suite(`attribute-test-engine: ${id}`, () => {
