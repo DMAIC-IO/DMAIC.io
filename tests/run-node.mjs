@@ -122,6 +122,9 @@ const SKIP = new Set([
   'modules/activity-flowchart.test.js',
   'modules/dashboard-tiles.test.js',
   'modules/histogram-chart-config.test.js',
+  // Imports the module shell for viewData(), which pulls in Alpine CSP and
+  // touches MutationObserver on import.
+  'modules/hypothesis-test.test.js',
   'modules/ishikawa-cost.test.js',
   'modules/ishikawa-gantt.test.js',
   'modules/ishikawa-trend.test.js',
