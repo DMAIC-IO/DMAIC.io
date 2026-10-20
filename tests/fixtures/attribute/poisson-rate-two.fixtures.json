@@ -5,7 +5,7 @@
     "scipy": "1.18.0",
     "numpy": "2.5.1"
   },
-  "generated_at": "2026-10-20T06:16:27.525027+00:00",
+  "generated_at": "2026-10-20T07:46:57.072765+00:00",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -196,6 +196,31 @@
         "ratio": null,
         "ratioLower": null,
         "ratioUpper": null,
+        "reject": false
+      }
+    },
+    {
+      "id": "pr2_edge_both_zero_diff0",
+      "tier": "edge",
+      "description": "No events at all while testing a non-zero difference 0.05: SE is 0 and d is not, so the test is not defined (testable false, z and p null, no rejection)",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "x1": 0,
+        "t1": 10,
+        "x2": 0,
+        "t2": 12,
+        "direction": "two-sided",
+        "alpha": 0.05,
+        "pooled": false,
+        "diff0": 0.05
+      },
+      "expected": {
+        "rate1": 0.0,
+        "rate2": 0.0,
+        "diff": 0.0,
+        "z": null,
+        "pValue": null,
+        "testable": false,
         "reject": false
       }
     },
