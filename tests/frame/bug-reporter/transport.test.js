@@ -1,5 +1,5 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
-import { createHttpTransport, TransportError } from '../../../js/frame/bug-reporter/transport.js';
+import { createHttpTransport, TransportError, downloadFiles } from '../../../js/frame/bug-reporter/transport.js';
 
 const REPORT = {
   folder: '2026-10-08T143012-x',
@@ -61,6 +61,23 @@ suite('bug-reporter transport', () => {
     const e = await failure(createHttpTransport({ fetchImpl: async () => { throw new TypeError('Failed to fetch'); } }));
     assertEqual(e.rejected, false);
     assertEqual(e.status, 0);
+  });
+
+  test('downloadFiles clicks one anchor per file and removes it', () => {
+    const events = [];
+    const doc = {
+      body: { append: () => events.push('append') },
+      createElement: () => ({
+        click() { events.push(`click:${this.download}`); },
+        remove() { events.push('remove'); },
+      }),
+    };
+    const names = downloadFiles(REPORT, doc);
+    assertDeepEqual(names, [`${REPORT.folder}--report.md`, `${REPORT.folder}--report.json`]);
+    assertDeepEqual(events, [
+      'append', `click:${REPORT.folder}--report.md`, 'remove',
+      'append', `click:${REPORT.folder}--report.json`, 'remove',
+    ]);
   });
 
   test('201 without path is treated as failure', async () => {
