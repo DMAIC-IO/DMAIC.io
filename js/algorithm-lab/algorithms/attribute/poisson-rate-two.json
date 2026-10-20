@@ -77,53 +77,17 @@
     "minitab_equivalent": "Stat > Basic Statistics > 2-Sample Poisson Rate"
   },
   "source": {
-    "function_name": "twoPoissonRateTest",
-    "file_path": "js/engines/attribute-test-engine.js",
+    "function_name": "twoPoissonRateTestFlat",
+    "file_path": "js/algorithm-lab/wrappers/attribute-wrappers.js",
     "signature": {
       "parameters": [
         {
-          "name": "x1",
-          "type": "number",
-          "required": true,
-          "description": {
-            "de": "Ereignisse Stichprobe 1",
-            "en": "Events sample 1"
-          }
-        },
-        {
-          "name": "t1",
-          "type": "number",
-          "required": true,
-          "description": {
-            "de": "Beobachtungsumfang Stichprobe 1",
-            "en": "Exposure sample 1"
-          }
-        },
-        {
-          "name": "x2",
-          "type": "number",
-          "required": true,
-          "description": {
-            "de": "Ereignisse Stichprobe 2",
-            "en": "Events sample 2"
-          }
-        },
-        {
-          "name": "t2",
-          "type": "number",
-          "required": true,
-          "description": {
-            "de": "Beobachtungsumfang Stichprobe 2",
-            "en": "Exposure sample 2"
-          }
-        },
-        {
-          "name": "options",
+          "name": "inputs",
           "type": "object",
-          "required": false,
+          "required": true,
           "description": {
-            "de": "{ direction, alpha, pooled, diff0 }",
-            "en": "{ direction, alpha, pooled, diff0 }"
+            "de": "{ x1, t1, x2, t2, direction, alpha, pooled, diff0 }",
+            "en": "{ x1, t1, x2, t2, direction, alpha, pooled, diff0 }"
           }
         }
       ],
