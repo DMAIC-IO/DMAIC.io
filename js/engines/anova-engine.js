@@ -143,16 +143,18 @@ export function welchANOVA(groups, alpha = 0.05) {
  * @param {number[]} means
  * @param {(i: number, j: number) => {se: number, df: number}} pairSE
  * @param {number} alpha
+ * @param {(df: number) => number} critFor - studentized range critical value for a pair's df
+ *   (qtukey is expensive, so callers cache it)
  * @returns {object[]}
  */
-function pairwise(k, means, pairSE, alpha) {
+function pairwise(k, means, pairSE, alpha, critFor) {
   const comparisons = [];
   for (let i = 0; i < k - 1; i++) {
     for (let j = i + 1; j < k; j++) {
       const diff = means[i] - means[j];
       const { se, df } = pairSE(i, j);
       const q = Math.abs(diff) / se;
-      const crit = qtukey(1 - alpha, k, df);
+      const crit = critFor(df);
       comparisons.push({
         i, j, diff, se, q, df,
         pAdj: clamp01(1 - ptukey(q, k, df)),
@@ -179,11 +181,13 @@ export function tukeyHSD(groups, alpha = 0.05) {
   const df = N - k;
   const S = Math.sqrt(ssq.reduce((s, v) => s + v, 0) / df);
   if (!(S > 0)) throw new Error('Groups have zero variance: pooled variance is zero');
+  // df = N − k is the same for every pair: one qtukey call serves all pairs and qCrit
+  const qCrit = qtukey(1 - alpha, k, df);
   const comparisons = pairwise(k, means, (i, j) => ({
     se: S * Math.sqrt((1 / sizes[i] + 1 / sizes[j]) / 2),
     df,
-  }), alpha);
-  return { testName: 'Tukey HSD', comparisons, qCrit: qtukey(1 - alpha, k, df), df, alpha };
+  }), alpha, () => qCrit);
+  return { testName: 'Tukey HSD', comparisons, qCrit, df, alpha };
 }
 
 /**
@@ -200,9 +204,15 @@ export function gamesHowell(groups, alpha = 0.05) {
   const { sizes, means, variances } = groupStats(groups);
   assertNonZeroVariance(variances);
   const v = variances.map((s2, i) => s2 / sizes[i]);
+  // pairs with the same Welch df share one qtukey call (memoised within this call)
+  const critCache = new Map();
+  const critFor = (df) => {
+    if (!critCache.has(df)) critCache.set(df, qtukey(1 - alpha, k, df));
+    return critCache.get(df);
+  };
   const comparisons = pairwise(k, means, (i, j) => ({
     se: Math.sqrt((v[i] + v[j]) / 2),
     df: (v[i] + v[j]) ** 2 / (v[i] ** 2 / (sizes[i] - 1) + v[j] ** 2 / (sizes[j] - 1)),
-  }), alpha);
+  }), alpha, critFor);
   return { testName: 'Games-Howell', comparisons, alpha };
 }

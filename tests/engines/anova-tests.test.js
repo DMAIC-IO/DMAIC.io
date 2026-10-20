@@ -154,4 +154,16 @@ suite('One-way model summary', () => {
     assertEqual(err !== null, true);
     assertEqual(err.message.includes('zero variance'), true, err && err.message);
   });
+  test('tukeyHSD and gamesHowell on k = 10 groups stay fast (qtukey is not recomputed per pair)', () => {
+    // deterministic data: 10 groups, n = 5, the same integer pattern shifted by g
+    // (identical variances, so all Games-Howell pairs share one df)
+    const groups = Array.from({ length: 10 }, (_, g) => [0, 3, 1, 4, 2].map((x) => x + 2 * g));
+    for (const fn of [tukeyHSD, gamesHowell]) {
+      const t0 = performance.now();
+      const res = fn(groups);
+      const ms = performance.now() - t0;
+      assertEqual(res.comparisons.length, 45);
+      assertEqual(ms < 1500, true, `${fn.name} took ${ms.toFixed(0)} ms`);
+    }
+  });
 });
