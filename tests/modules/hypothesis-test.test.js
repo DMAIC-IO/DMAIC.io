@@ -340,7 +340,7 @@ function loadT() {
  * @param {number[][]} groups
  * @param {{equalVariances?: boolean, alpha?: number}} [opts]
  */
-async function runK(groups, { equalVariances = false, alpha = 0.05 } = {}) {
+async function runK(groups, { equalVariances = false, alpha = 0.05, prepare = null } = {}) {
   const t = await loadT();
   const view = viewData({ _context: {} }, t);
   const model = new State();
@@ -352,6 +352,7 @@ async function runK(groups, { equalVariances = false, alpha = 0.05 } = {}) {
   view._pickerK = { value: groups.map((_, i) => i) };
   view._valuesForRef = ref => groups[ref];
   view._refName = ref => `G${ref + 1}`;
+  prepare?.(view);
   view.runAnalysis();
   return { view, t };
 }
@@ -475,6 +476,15 @@ suite('Hypothesis Test View — k-group mean routes (C1-019, C1-020)', () => {
       assertEqual(ve.trailYes, eq);
       assertTrue(Array.isArray(ve.metrics) && ve.metrics.length > 0, 'Levene metrics kept');
     }
+  });
+
+  test('a failing post-hoc hides the pairwise section and keeps the omnibus result (R3)', async () => {
+    const { view } = await runK(NORMAL_GROUPS, {
+      prepare: (v) => { v._simultaneousPairwise = () => { throw new Error('post-hoc failed'); }; },
+    });
+    assertEqual(view.result.pairwise, null);
+    assertEqual(view.result.route.name, 'Welch ANOVA');
+    assertEqual(view.errorText, '');
   });
 
   test('k = 2: no pairwise section', async () => {
