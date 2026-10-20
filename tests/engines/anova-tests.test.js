@@ -139,6 +139,19 @@ suite('One-way model summary', () => {
       let err = null;
       try { fn([[1, 2, 3], [4]]); } catch (e) { err = e; }
       assertEqual(err !== null, true);
+      assertEqual(err.message, 'Each group needs at least 2 observations');
     }
+  });
+  test('tukeyHSD throws for a single-observation group', () => {
+    let err = null;
+    try { tukeyHSD([[1, 2, 3], [4]]); } catch (e) { err = e; }
+    assertEqual(err !== null, true);
+    assertEqual(err.message, 'Each group needs at least 2 observations');
+  });
+  test('tukeyHSD throws "zero variance" when every group is constant', () => {
+    let err = null;
+    try { tukeyHSD([[5, 5, 5], [7, 7, 7], [9, 9]]); } catch (e) { err = e; }
+    assertEqual(err !== null, true);
+    assertEqual(err.message.includes('zero variance'), true, err && err.message);
   });
 });

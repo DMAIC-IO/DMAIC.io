@@ -166,6 +166,7 @@ function pairwise(k, means, pairSE, alpha) {
 /**
  * Tukey HSD (Tukey-Kramer for unequal n): all pairwise mean differences with
  * simultaneous CIs and adjusted p-values, using the pooled SD and N−k df.
+ * Requires n_i ≥ 2 in every group and a non-zero pooled variance (throws otherwise).
  *
  * @param {number[][]} groups - k ≥ 2 samples
  * @param {number} [alpha=0.05]
@@ -177,6 +178,7 @@ export function tukeyHSD(groups, alpha = 0.05) {
   const { sizes, means, ssq, N } = groupStats(groups);
   const df = N - k;
   const S = Math.sqrt(ssq.reduce((s, v) => s + v, 0) / df);
+  if (!(S > 0)) throw new Error('Groups have zero variance: pooled variance is zero');
   const comparisons = pairwise(k, means, (i, j) => ({
     se: S * Math.sqrt((1 / sizes[i] + 1 / sizes[j]) / 2),
     df,
