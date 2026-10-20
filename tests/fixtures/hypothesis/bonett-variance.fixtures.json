@@ -5,7 +5,7 @@
     "scipy": "1.18.0",
     "numpy": "2.5.1"
   },
-  "generated_at": "2026-10-18T18:24:52.751187+00:00",
+  "generated_at": "2026-10-20T05:43:15.388209+00:00",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -20,7 +20,7 @@
       "id": "bv_v01",
       "tier": "standard",
       "description": "V01: normal, n = 20",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data": [
           8.42,
@@ -68,7 +68,7 @@
       "id": "bv_v02",
       "tier": "standard",
       "description": "V02: lognormal (skewed), n = 30",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data": [
           14.556,
@@ -126,7 +126,7 @@
       "id": "bv_v03",
       "tier": "standard",
       "description": "V03: t3 (heavy tails), n = 25",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data": [
           52.658,
@@ -179,7 +179,7 @@
       "id": "bv_v04",
       "tier": "standard",
       "description": "V04: uniform (light tails), n = 20",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data": [
           22.031,
@@ -227,7 +227,7 @@
       "id": "bv_v05",
       "tier": "standard",
       "description": "V05: V02 data, H1: sigma^2 > sigma0^2",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data": [
           14.556,
@@ -285,7 +285,7 @@
       "id": "bv_v06",
       "tier": "standard",
       "description": "V06: V02 data, H1: sigma^2 < sigma0^2",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data": [
           14.556,
@@ -343,7 +343,7 @@
       "id": "bv_v07",
       "tier": "standard",
       "description": "V07: n = 5 (small-n mean rule)",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data": [
           12.558,
@@ -376,7 +376,7 @@
       "id": "bv_v08",
       "tier": "standard",
       "description": "V08: n = 6 (first trimmed size)",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data": [
           8.239,
@@ -410,7 +410,7 @@
       "id": "bv_v09",
       "tier": "standard",
       "description": "V09: n = 9 (trim count depends on rounding)",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data": [
           0.581,
@@ -447,7 +447,7 @@
       "id": "bv_v10",
       "tier": "standard",
       "description": "V10: n = 17 (trim count depends on rounding)",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data": [
           5.816,
@@ -492,7 +492,7 @@
       "id": "bv_v11",
       "tier": "standard",
       "description": "V11: t3, n = 100",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data": [
           98.907,
@@ -620,7 +620,7 @@
       "id": "bv_v12",
       "tier": "standard",
       "description": "V12: exponential, n = 40",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data": [
           0.169,

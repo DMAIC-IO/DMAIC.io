@@ -123,8 +123,8 @@ function gridRoots(f, a, b, steps) {
 
 /**
  * CI for σ₁²/σ₂² from summary statistics (Banga & Fox 2013, p. 10). With
- * more than two roots of H the confidence set is not an interval; the hull
- * [smallest, largest] is reported.
+ * more than two roots of H the confidence set is not an interval; lower/upper
+ * are then the hull [smallest, largest] and callers check roots.length.
  * @param {{n1:number,n2:number,var1:number,var2:number,kurt1:number,kurt2:number}} s
  * @param {number} z normal quantile
  * @returns {{lower:number, upper:number, roots:number[]}} roots of H in x (before scaling by c·ρ̂²)
@@ -204,31 +204,38 @@ function solveBracket(f, a, b) {
 }
 
 /**
- * One-sided p-values of the unbalanced ratio test by inverting the CI: the α at
- * which the lower (ratio > 1) or upper (ratio < 1) hull bound reaches 1. The
- * first bracket on the z grid is used; where the hull bound jumps across 1 (a
- * root pair is born) the solver converges to the jump point, as in the Python reference.
+ * One-sided p-values of the unbalanced ratio test (Minitab 22.5.1): the tail
+ * Q(z*) at the smallest z* for which ρ = 1 enters the confidence set through
+ * its lower (α_L) or upper (α_U) end. At x = 1/(c·ρ̂²), the point that maps to
+ * ρ = 1, c·x = 1/ρ̂² does not depend on z, so se(c·x) is a constant s and the
+ * boundary is ln(c(z)·ρ̂²) ∓ z·s = 0. z runs over negative values too, so
+ * α_L + α_U need not be 1. A second root near z → min(n₁, n₂) is an artefact
+ * of c(z) → 0 and is ignored.
  * @returns {[number, number]} [α_L, α_U]
  */
-function ratioAlphasUnbalanced(bounds, ratio, nMin) {
-  if (ratio === 1) return [0.5, 0.5];
-  const idx = ratio > 1 ? 0 : 1;
-  const cap = Math.min(Z_CAP, nMin * (1 - 1e-9));
-  const f = (z) => Math.log(bounds(z)[idx]);
-  const steps = 800, lo = 1e-6;
-  let tail = 0;
-  let a = lo, fa = f(a);
-  // Already past the crossing at the first grid point: the crossing lies at z <= lo.
-  if (ratio > 1 ? fa < 0 : fa > 0) {
-    tail = normalUpperTailPrecise(lo);
-    return ratio > 1 ? [tail, 1 - tail] : [1 - tail, tail];
-  }
-  for (let i = 1; i <= steps; i++) {
-    const b = lo + (cap - lo) * i / steps, fb = f(b);
-    if (fa * fb <= 0) { tail = normalUpperTailPrecise(solveBracket(f, a, b)); break; }
-    a = b; fa = fb;
-  }
-  return ratio > 1 ? [tail, 1 - tail] : [1 - tail, tail];
+function ratioAlphasUnbalanced({ n1, n2, kurt1, kurt2 }, ratio) {
+  const A = (n1 + n2) * (n1 + n2 - 2) / ((n1 - 1) * (n2 - 1));
+  const B = (n1 - 3) / n1 / (n1 - 1) + (n2 - 3) / n2 / (n2 - 1);
+  const K = (n1 - 1) / (n2 - 1);
+  const y = 1 / ratio;
+  const s = Math.sqrt(Math.max(0, A * (kurt1 * K * K / n1 + kurt2 * y * y / n2) / ((K + y) ** 2) - B));
+  const cap = Math.min(n1, n2) * (1 - 1e-9);
+  const logCRatio = (z) => Math.log((n1 / (n1 - z)) * ((n2 - z) / n2) * ratio);
+  const tail = (f) => {
+    const steps = 1600, lo = -Z_CAP;
+    let a = lo, fa = f(a);
+    if (fa <= 0) return 1; // ρ = 1 lies inside the set even at the widest bound
+    for (let i = 1; i <= steps; i++) {
+      const b = lo + (cap - lo) * i / steps, fb = f(b);
+      if (fa * fb <= 0) return normalUpperTailPrecise(solveBracket(f, a, b));
+      a = b; fa = fb;
+    }
+    return 0;
+  };
+  return [
+    tail((z) => logCRatio(z) - z * s),
+    tail((z) => -(logCRatio(z) + z * s)),
+  ];
 }
 
 /**
@@ -240,7 +247,8 @@ function ratioAlphasUnbalanced(bounds, ratio, nMin) {
  * @param {number[]} data2 - Second sample
  * @param {string} [direction='two-sided'] - 'two-sided' | 'greater' | 'less'
  * @param {number} [alpha=0.05] - Significance level
- * @returns {object} Test results; ci is for σ₁²/σ₂²
+ * @returns {object} Test results; ci is for σ₁²/σ₂², [null, null] with
+ *   ciUndefined = true when the confidence set is not an interval
  */
 export function bonettRatioTest(data1, data2, direction = 'two-sided', alpha = 0.05) {
   const n1 = data1.length, n2 = data2.length;
@@ -252,7 +260,12 @@ export function bonettRatioTest(data1, data2, direction = 'two-sided', alpha = 0
   if (Math.min(n1, n2) <= zNeed) throw new Error('Bonett CI needs n > z');
 
   const summary = { n1, n2, var1, var2, kurt1: bonettKurtosis(data1), kurt2: bonettKurtosis(data2) };
-  const bounds = (z) => { const r = bonettRatioCI(summary, z); return [r.lower, r.upper]; };
+  // More than two roots of H: the confidence set falls apart into disjoint
+  // pieces. Minitab then reports no interval ("(*; *)"), so neither do we.
+  const bounds = (z) => {
+    const r = bonettRatioCI(summary, z);
+    return r.roots.length > 2 ? [null, null] : [r.lower, r.upper];
+  };
   const ratio = var1 / var2;
 
   let statistic = null, aL, aU, pTwo;
@@ -265,7 +278,7 @@ export function bonettRatioTest(data1, data2, direction = 'two-sided', alpha = 0
     aU = normalUpperTailPrecise(-zs);
     pTwo = 2 * normalUpperTailPrecise(Math.sqrt(statistic)); // χ²(1) upper tail
   } else {
-    [aL, aU] = ratioAlphasUnbalanced(bounds, ratio, Math.min(n1, n2));
+    [aL, aU] = ratioAlphasUnbalanced(summary, ratio);
     pTwo = Math.min(1, 2 * Math.min(aL, aU));
   }
 
@@ -282,6 +295,7 @@ export function bonettRatioTest(data1, data2, direction = 'two-sided', alpha = 0
     variance2: var2,
     ratio,
     ci,
+    ciUndefined: ci[0] === null && ci[1] === null,
     reject: pValue < alpha,
     n1,
     n2,
