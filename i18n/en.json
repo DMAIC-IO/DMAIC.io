@@ -748,6 +748,32 @@
       "ciTitle": "{n}% confidence interval"
     }
   },
+  "bugReport": {
+    "trigger": "Report a bug",
+    "optinTitle": "Report a bug",
+    "optinIntro": "What should be included? Description, app version, route and the latest console errors are always sent.",
+    "optinScreenshot": "Take a screenshot",
+    "optinProject": "Include project data",
+    "next": "Next",
+    "describeTitle": "Describe the bug",
+    "describeLabel": "What happened, and what did you expect?",
+    "describePlaceholder": "Description …",
+    "send": "Send",
+    "toolFrame": "Frame",
+    "toolCircle": "Circle",
+    "toolArrow": "Arrow",
+    "toolLine": "Freehand",
+    "toolTextbox": "Text box",
+    "undo": "Undo last",
+    "textboxPlaceholder": "Text …",
+    "captureUnsupported": "Screen capture is not available here — continuing without a screenshot.",
+    "captureDenied": "Sharing was declined — continuing without a screenshot.",
+    "captureFailed": "Capture failed — continuing without a screenshot.",
+    "sent": "Bug report saved: {path}",
+    "rejected": "Bug report rejected: {reason}",
+    "downloaded": "Receiver not reachable — files were downloaded. Target folder: {folder}",
+    "failed": "Could not create the bug report."
+  },
   "chart": {
     "renderError": "The chart could not be drawn.",
     "exportError": "The image could not be exported.",

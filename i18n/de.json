@@ -748,6 +748,32 @@
       "ciTitle": "{n}%-Konfidenzintervall"
     }
   },
+  "bugReport": {
+    "trigger": "Fehler melden",
+    "optinTitle": "Fehler melden",
+    "optinIntro": "Was soll mitgeschickt werden? Beschreibung, App-Version, Route und die letzten Konsolenfehler gehen immer mit.",
+    "optinScreenshot": "Screenshot aufnehmen",
+    "optinProject": "Projektdaten mitschicken",
+    "next": "Weiter",
+    "describeTitle": "Fehler beschreiben",
+    "describeLabel": "Was ist passiert, und was hätten Sie erwartet?",
+    "describePlaceholder": "Beschreibung …",
+    "send": "Senden",
+    "toolFrame": "Rahmen",
+    "toolCircle": "Kreis",
+    "toolArrow": "Pfeil",
+    "toolLine": "Freier Strich",
+    "toolTextbox": "Textbox",
+    "undo": "Letztes zurücknehmen",
+    "textboxPlaceholder": "Text …",
+    "captureUnsupported": "Bildschirmaufnahme ist hier nicht verfügbar — weiter ohne Screenshot.",
+    "captureDenied": "Freigabe abgelehnt — weiter ohne Screenshot.",
+    "captureFailed": "Aufnahme fehlgeschlagen — weiter ohne Screenshot.",
+    "sent": "Fehlerbericht gespeichert: {path}",
+    "rejected": "Fehlerbericht abgelehnt: {reason}",
+    "downloaded": "Empfänger nicht erreichbar — Dateien wurden heruntergeladen. Zielordner: {folder}",
+    "failed": "Fehlerbericht konnte nicht erstellt werden."
+  },
   "chart": {
     "renderError": "Diagramm konnte nicht gezeichnet werden.",
     "exportError": "Das Bild konnte nicht exportiert werden.",
