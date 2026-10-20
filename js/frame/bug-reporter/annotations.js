@@ -67,6 +67,8 @@ export function createAnnotationModel({ width, height }) {
       list.push(item);
       return { ...item };
     },
+    /** Drop the current draft without committing it. */
+    cancel() { draft = null; },
     draft() { return shape(); },
     items() { return list.map(i => structuredClone(i)); },
     /** @param {number} index @param {string} text */

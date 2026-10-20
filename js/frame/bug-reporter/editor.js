@@ -138,6 +138,7 @@ export function mountEditor(host, { blob, width, height, t }) {
   };
 
   canvas.addEventListener('pointerdown', ev => {
+    if (ev.button !== 0) return;
     commitPending();
     canvas.setPointerCapture(ev.pointerId);
     model.begin(tool, point(ev));
@@ -154,6 +155,15 @@ export function mountEditor(host, { blob, width, height, t }) {
     redraw();
     if (item?.type === 'textbox') openTextInput(item);
   });
+
+  // Cancelled or lost pointer: drop the draft instead of committing it.
+  const dropDraft = () => {
+    if (!model.draft()) return;
+    model.cancel();
+    redraw();
+  };
+  canvas.addEventListener('pointercancel', dropDraft);
+  canvas.addEventListener('lostpointercapture', dropDraft);
 
   toolButtons.forEach(btn => btn.addEventListener('click', () => {
     commitPending();

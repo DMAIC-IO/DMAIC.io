@@ -15,10 +15,18 @@ export class CaptureError extends Error {
   }
 }
 
-function waitFor(el, event) {
+/** Max wait for the first paintable frame before giving up. */
+export const FIRST_FRAME_TIMEOUT_MS = 3000;
+
+function waitFor(el, event, timeoutMs) {
   return new Promise((resolve, reject) => {
-    el.addEventListener(event, resolve, { once: true });
-    el.addEventListener('error', () => reject(new Error(`video ${event} failed`)), { once: true });
+    const timer = setTimeout(
+      () => reject(new CaptureError('failed', `video ${event} timed out`)), timeoutMs);
+    el.addEventListener(event, () => { clearTimeout(timer); resolve(); }, { once: true });
+    el.addEventListener('error', () => {
+      clearTimeout(timer);
+      reject(new Error(`video ${event} failed`));
+    }, { once: true });
   });
 }
 
@@ -28,10 +36,11 @@ function waitFor(el, event) {
  * the first paintable frame, which would yield a blank image.
  * @param {Navigator} [nav] seam for the environment's navigator
  * @param {Document} [doc] seam for the environment's document
+ * @param {number} [timeoutMs] max wait for the first frame
  * @returns {Promise<{blob: Blob, width: number, height: number}>}
  * @throws {CaptureError}
  */
-export async function captureScreen(nav = navigator, doc = document) {
+export async function captureScreen(nav = navigator, doc = document, timeoutMs = FIRST_FRAME_TIMEOUT_MS) {
   const getDisplayMedia = nav.mediaDevices?.getDisplayMedia?.bind(nav.mediaDevices);
   if (!getDisplayMedia) throw new CaptureError('unsupported');
 
@@ -48,7 +57,8 @@ export async function captureScreen(nav = navigator, doc = document) {
     video.muted = true;
     video.playsInline = true;
     video.srcObject = stream;
-    const ready = video.readyState >= 2 ? Promise.resolve() : waitFor(video, 'loadeddata');
+    const ready = video.readyState >= 2 ? Promise.resolve() : waitFor(video, 'loadeddata', timeoutMs);
+    ready.catch(() => {}); // a rejection after play() failed must not go unhandled
     await video.play();
     await ready;
     const width = video.videoWidth;

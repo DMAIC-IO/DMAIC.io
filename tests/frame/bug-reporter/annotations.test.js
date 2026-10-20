@@ -89,6 +89,15 @@ suite('bug-reporter annotations', () => {
     assertEqual(m.undo(), false);
   });
 
+  test('cancel drops the draft without committing', () => {
+    const m = model(1);
+    m.begin('frame', { x: 10, y: 10 });
+    m.move({ x: 300, y: 300 });
+    m.cancel();
+    assertEqual(m.draft(), null);
+    assertEqual(m.items().length, 0);
+  });
+
   test('toJSON carries image size', () => {
     const m = model(1);
     assertDeepEqual(m.toJSON(), { image: { width: 1920, height: 1080 }, items: [] });
