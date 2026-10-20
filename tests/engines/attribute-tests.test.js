@@ -6,6 +6,8 @@ import {
   fisherExact2x2,
   chiSquareAssociation,
   onePoissonRateTest,
+  poissonRateCI,
+  twoPoissonRateTest,
 } from '../../js/engines/attribute-test-engine.js';
 
 async function loadFixture(path) {
@@ -40,6 +42,7 @@ const CASES = [
   ['fisher-exact', (i) => fisherExact2x2(i.table, i.direction)],
   ['chi-square-association', (i) => chiSquareAssociation(i.table, i.alpha)],
   ['poisson-rate-one', (i) => onePoissonRateTest(i.x, i.t, i.lambda0, i.direction, i.alpha)],
+  ['poisson-rate-two', (i) => twoPoissonRateTest(i.x1, i.t1, i.x2, i.t2, { direction: i.direction, alpha: i.alpha, pooled: i.pooled, diff0: i.diff0 })],
 ];
 
 const FIXTURES = await Promise.all(
@@ -56,6 +59,15 @@ suite('attribute-test-engine: large support guard', () => {
   test('twoProportionTest handles very large samples', () => {
     const r = twoProportionTest(100000, 200000, 100000, 200000);
     assertTrue(Number.isFinite(r.pFisher) && r.pFisher >= 0 && r.pFisher <= 1, `pFisher: ${r.pFisher}`);
+  });
+});
+
+suite('attribute-test-engine: open Poisson bounds', () => {
+  test('one-sided bounds are open on the other side', () => {
+    assertTrue(poissonRateCI(18, 40, 0.95, 'greater').upper === Infinity, 'greater: upper must be Infinity');
+    assertTrue(poissonRateCI(4, 25.5, 0.95, 'less').lower === 0, 'less: lower must be 0');
+    assertTrue(twoPoissonRateTest(25, 50, 14, 52, { direction: 'greater' }).ciUpper === Infinity,
+      'two rates, greater: ciUpper must be Infinity');
   });
 });
 

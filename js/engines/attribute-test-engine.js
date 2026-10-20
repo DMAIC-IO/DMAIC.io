@@ -3,7 +3,7 @@
  *
  * Tests on counts: Clopper-Pearson interval, 1- and 2-proportion tests,
  * Fisher's exact test (2×2), the chi-square test of association (r×c) and
- * the 1-sample Poisson rate test.
+ * the 1- and 2-sample Poisson rate tests.
  * Pure functions, no DOM, no i18n. Inputs are assumed valid — the module's
  * normalizer (attribute-test-input.js) rejects nonsense before calling in.
  *
@@ -18,6 +18,10 @@
  *  - 1 Poisson rate: Garwood interval; exact test with the same central
  *    two-sided p as the 1-proportion test (not minlike). One-sided
  *    alternatives give a one-sided bound at the full confidence level.
+ *  - 2 Poisson rates: z for the rate difference (separate SE; pooled only
+ *    when pooled and the tested difference is 0), CI of the difference
+ *    always unpooled; conditional exact test x1 ~ Bin(x1 + x2, t1/(t1 + t2))
+ *    with the central two-sided p; rate-ratio CI from Clopper-Pearson.
  */
 
 import {
@@ -370,5 +374,92 @@ export function onePoissonRateTest(x, t, lambda0, direction = 'two-sided', alpha
     pNormal: normalP(z, direction),
     normalApproxOk: mu >= 5,
     reject: pExact < alpha,
+  };
+}
+
+/**
+ * 2-sample Poisson rate test: z test of the rate difference plus the
+ * conditional exact test (difference 0 only) and the rate ratio with its CI.
+ * @param {number} x1 @param {number} t1 — events and exposure (> 0) of sample 1
+ * @param {number} x2 @param {number} t2 — events and exposure (> 0) of sample 2
+ * @param {object} [options]
+ * @param {'two-sided'|'greater'|'less'} [options.direction='two-sided']
+ * @param {number} [options.alpha=0.05]
+ * @param {boolean} [options.pooled=false] — pooled SE, only used when diff0 is 0
+ * @param {number} [options.diff0=0] — tested difference of the rates
+ * @returns {{ rate1: number, rate2: number, diff: number, ciLower: number, ciUpper: number,
+ *   z: number|null, pValue: number, pExactCond: number|null, ratio: number|null,
+ *   ratioLower: number|null, ratioUpper: number|null, reject: boolean }}
+ */
+export function twoPoissonRateTest(x1, t1, x2, t2, { direction = 'two-sided', alpha = 0.05, pooled = false, diff0 = 0 } = {}) {
+  const rate1 = x1 / t1;
+  const rate2 = x2 / t2;
+  const diff = rate1 - rate2;
+  const se = Math.sqrt(x1 / (t1 * t1) + x2 / (t2 * t2));
+  const seTest = pooled && diff0 === 0
+    ? Math.sqrt(((x1 + x2) / (t1 + t2)) * (1 / t1 + 1 / t2))
+    : se;
+  const d = diff - diff0;
+
+  let z = null;
+  let pValue;
+  if (seTest > 0) {
+    z = d / seTest;
+    pValue = normalP(z, direction);
+  } else if (d === 0) {
+    pValue = 1;
+  } else if (direction === 'greater') {
+    pValue = d > 0 ? 0 : 1;
+  } else if (direction === 'less') {
+    pValue = d < 0 ? 0 : 1;
+  } else {
+    pValue = 0;
+  }
+
+  let ciLower;
+  let ciUpper;
+  if (direction === 'two-sided') {
+    const q = zQuantile(1 - alpha / 2);
+    ciLower = diff - q * se;
+    ciUpper = diff + q * se;
+  } else if (direction === 'greater') {
+    ciLower = diff - zQuantile(1 - alpha) * se;
+    ciUpper = Infinity;
+  } else {
+    ciLower = -Infinity;
+    ciUpper = diff + zQuantile(1 - alpha) * se;
+  }
+
+  const n = x1 + x2;
+  let pExactCond = null;
+  if (diff0 === 0 && n > 0) {
+    const prob = t1 / (t1 + t2);
+    if (direction === 'greater') pExactCond = binomGE(x1, n, prob);
+    else if (direction === 'less') pExactCond = binomLE(x1, n, prob);
+    else pExactCond = Math.min(1, 2 * Math.min(binomLE(x1, n, prob), binomGE(x1, n, prob)));
+  }
+
+  let ratioLower = null;
+  let ratioUpper = null;
+  if (n > 0) {
+    const odds = (pi) => (pi >= 1 ? Infinity : (pi / (1 - pi)) * (t2 / t1));
+    const cp = clopperPearsonCI(x1, n, 1 - alpha, direction);
+    ratioLower = odds(cp.lower);
+    ratioUpper = odds(cp.upper);
+  }
+
+  return {
+    rate1,
+    rate2,
+    diff,
+    ciLower,
+    ciUpper,
+    z,
+    pValue,
+    pExactCond,
+    ratio: x2 === 0 ? null : rate1 / rate2,
+    ratioLower,
+    ratioUpper,
+    reject: pValue < alpha,
   };
 }

@@ -45,6 +45,7 @@
     { "id": "fisher-exact", "path": "js/algorithm-lab/algorithms/attribute/fisher-exact.json" },
     { "id": "chi-square-association", "path": "js/algorithm-lab/algorithms/attribute/chi-square-association.json" },
     { "id": "poisson-rate-one", "path": "js/algorithm-lab/algorithms/attribute/poisson-rate-one.json" },
+    { "id": "poisson-rate-two", "path": "js/algorithm-lab/algorithms/attribute/poisson-rate-two.json" },
     { "id": "grubbs-test", "path": "js/algorithm-lab/algorithms/outliers/grubbs-test.json" },
     { "id": "dixon-q-test", "path": "js/algorithm-lab/algorithms/outliers/dixon-q-test.json" },
     { "id": "generalized-esd", "path": "js/algorithm-lab/algorithms/outliers/generalized-esd.json" },
