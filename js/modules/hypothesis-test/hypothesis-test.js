@@ -24,7 +24,7 @@ import {
   oneSampleTTest, twoSampleTTest, welchTTest,
   wilcoxonSignedRank, mannWhitneyU, hodgesLehmann,
   bonettVarianceTest, bonettRatioTest,
-  oneWayANOVA, leveneTestK, kruskalWallis, bartlettTest,
+  oneWayANOVA, welchANOVA, tukeyHSD, gamesHowell, leveneTestK, kruskalWallis, bartlettTest,
   powerChiSquare, powerFTest, powerOneSampleT, powerTwoSampleT,
   findRequiredN, pairDifferences, pairedTTest,
 } from '../../engines/hypothesis-test-engine.js';
@@ -34,7 +34,7 @@ import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-pi
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 
 /** Mapping: test name → Algorithm Lab ID. */
-import { isNormalByAD, meanRoute, varianceRoute, isConstant, ciContains } from './hypothesis-test-routing.js';
+import { isNormalByAD, meanRoute, kMeanRoute, varianceRoute, isConstant, ciContains } from './hypothesis-test-routing.js';
 
 const ALGO_LAB_IDS = {
   'Shapiro-Wilk': 'shapiro-wilk',
@@ -51,6 +51,9 @@ const ALGO_LAB_IDS = {
   'Wilcoxon Signed-Rank Test': 'wilcoxon-signed-rank',
   'Mann-Whitney U Test': 'mann-whitney-u',
   'One-Way ANOVA': 'one-way-anova',
+  'Welch ANOVA': 'welch-anova',
+  'Tukey HSD': 'tukey-hsd',
+  'Games-Howell': 'games-howell',
   'Kruskal-Wallis Test': 'kruskal-wallis',
   "Bartlett's Test": 'bartlett-test',
   'Hodges-Lehmann': 'hodges-lehmann',
@@ -59,7 +62,7 @@ const ALGO_LAB_IDS = {
 /** @param {number} v @param {number} [d] @returns {string} */
 function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–'; }
 
-const mod = createModule({
+const definition = {
   config: {
     id: 'hypothesis-test',
     engine: 'alpine',
@@ -223,6 +226,10 @@ const mod = createModule({
           'd̄': _t('tipMeanDiff'),
           "Cohen's d": _t('tipCohensD'),
           "Cohen's d_z": _t('tipCohensD'),
+          'S': _t('tipModelS'),
+          'R²': _t('tipR2'),
+          [_t('labelR2adj')]: _t('tipR2adj'),
+          [_t('labelR2pred')]: _t('tipR2pred'),
         };
         return map[label] || '';
       },
@@ -529,6 +536,7 @@ const mod = createModule({
           secondary,
           power: this._powerInfo(d, null, target, alpha),
           pairwise: null,
+          residualPlot: null,
           pairInfo: { n: d.length, dropped },
         };
       },
@@ -660,6 +668,7 @@ const mod = createModule({
           secondary,
           power,
           pairwise: null,
+          residualPlot: null,
         };
       },
 
@@ -671,37 +680,67 @@ const mod = createModule({
         const alpha = this.model.alpha;
         const isVariance = this.model.category === 'variance';
 
-        const sws = groups.map(g => shapiroWilk(g));
-        const ads = groups.map(g => andersonDarling(g));
-        const groupNormal = ads.map(ad => isNormalByAD(ad, alpha));
-        const allNormal = groupNormal.every(Boolean);
+        // The normality engines throw on a constant group; Welch ANOVA throws on
+        // a zero-variance group or n_i < 2 — shown as "not computable", as for
+        // one and two samples.
+        let sws, ads, groupNormal, allNormal;
+        let algo, r, varEquality = null, secondary = null, parametric, meanTest = null;
+        try {
+          sws = groups.map(g => shapiroWilk(g));
+          ads = groups.map(g => andersonDarling(g));
+          groupNormal = ads.map(ad => isNormalByAD(ad, alpha));
+          allNormal = groupNormal.every(Boolean);
+          parametric = allNormal;
 
-        let algo, r, varEquality = null, secondary = null, parametric = allNormal;
-        if (isVariance) {
-          if (allNormal) { algo = { name: "Bartlett's Test" }; r = bartlettTest(groups, alpha); }
-          else { algo = { name: 'Levene Test (Brown-Forsythe)' }; r = leveneTestK(groups, alpha); }
-        } else {
-          const lev = leveneTestK(groups, alpha);
-          const varsEqual = !lev.reject;
-          // The trail reports the Levene finding, not an assumption
-          varEquality = {
-            ...this._varEqualityCard(lev, varsEqual, alpha, true),
-            varsEqual, trailLabelKey: 'varDiffLabel', trailYes: !varsEqual,
-          };
-          const family = meanRoute(allNormal, groups.map(g => g.length));
-          parametric = family !== 'rank';
-          if (parametric) { algo = { name: 'One-Way ANOVA' }; r = oneWayANOVA(groups, alpha); }
-          else { algo = { name: 'Kruskal-Wallis Test' }; r = kruskalWallis(groups, alpha); }
-          if (family === 'parametric-large-n') secondary = this._secondaryResult(kruskalWallis(groups, alpha), alpha);
+          if (isVariance) {
+            if (allNormal) { algo = { name: "Bartlett's Test" }; r = bartlettTest(groups, alpha); }
+            else { algo = { name: 'Levene Test (Brown-Forsythe)' }; r = leveneTestK(groups, alpha); }
+          } else {
+            // Welch by default, Fisher only when the user assumes equal variances.
+            // Levene is shown for information; no variance pretest picks the
+            // route (C1-006, C1-019). The trail reports the assumption.
+            const equalVariances = this.model.equalVariances === true;
+            const lev = leveneTestK(groups, alpha);
+            varEquality = {
+              ...this._varEqualityCard(lev, !lev.reject, alpha, true),
+              trailLabelKey: 'varEqualLabel', trailYes: equalVariances,
+            };
+            const sizes = groups.map(g => g.length);
+            meanTest = kMeanRoute(allNormal, sizes, equalVariances);
+            parametric = meanTest !== 'kruskal';
+            if (meanTest === 'fisher') { algo = { name: 'One-Way ANOVA' }; r = oneWayANOVA(groups, alpha); }
+            else if (meanTest === 'welch') { algo = { name: 'Welch ANOVA' }; r = welchANOVA(groups, alpha); }
+            else { algo = { name: 'Kruskal-Wallis Test' }; r = kruskalWallis(groups, alpha); }
+            if (meanRoute(allNormal, sizes) === 'parametric-large-n') {
+              secondary = this._secondaryResult(kruskalWallis(groups, alpha), alpha);
+            }
+          }
+        } catch (err) {
+          console.error('[hypothesis-test] k-group test computation failed:', err);
+          this.result = null;
+          this.errorText = _t('testNotComputable');
+          return;
         }
 
-        const pairwise = groups.length >= 3
-          ? this._computePairwise(groups, alpha, isVariance, parametric, varEquality)
-          : null;
+        let pairwise = null;
+        if (groups.length >= 3) {
+          if (meanTest === 'fisher' || meanTest === 'welch') {
+            // A failing post-hoc hides the section; the omnibus result stays
+            try {
+              pairwise = this._simultaneousPairwise(groups, alpha, meanTest);
+            } catch (err) {
+              console.error('[hypothesis-test] pairwise comparisons failed:', err);
+              pairwise = null;
+            }
+          } else {
+            pairwise = this._computePairwise(groups, alpha, isVariance, parametric);
+          }
+        }
 
         const normCards = groups.map((g, i) =>
           this._normCard(this._refName(refs[i]), g, sws[i], ads[i], groupNormal[i], alpha));
 
+        const hasResiduals = meanTest === 'fisher' || meanTest === 'welch';
         this.result = {
           isK: true,
           allNormal,
@@ -712,6 +751,7 @@ const mod = createModule({
           secondary,
           power: null,
           pairwise: pairwise ? this._pairwiseSection(pairwise, refs, groups, alpha) : null,
+          residualPlot: hasResiduals ? { residuals: r.residuals, fitted: r.fitted } : null,
         };
       },
 
@@ -721,7 +761,9 @@ const mod = createModule({
         const has2Df = r.df1 != null && r.df2 != null;
         const h0 = isVariance ? 'σ²₁ = σ²₂ = … = σ²ₖ' : 'μ₁ = μ₂ = … = μₖ';
         const h1 = isVariance ? _t('kSampleVarH1') : _t('kSampleH1');
-        const dfDisplay = has2Df ? `${r.df1} / ${r.df2}` : String(r.df);
+        // Welch's df2 is fractional (Satterthwaite-type)
+        const df2Display = has2Df && r.testName === 'Welch ANOVA' ? fmt(r.df2, 2) : String(r.df2);
+        const dfDisplay = has2Df ? `${r.df1} / ${df2Display}` : String(r.df);
         const pCls = r.pValue < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success';
 
         const metrics = [
@@ -746,9 +788,11 @@ const mod = createModule({
 
         const letters = pairwise?.letters || [];
         const showCld = letters.length > 0;
+        const groupCIs = Array.isArray(r.groupCIs) ? r.groupCIs : null;
         const groupRows = groups.map((g, i) => {
           const ds = descriptiveStats(g);
-          return { name: this._refName(refs[i]), n: String(g.length), mean: fmt(ds.mean), variance: fmt(ds.variance), letters: letters[i] || '' };
+          const ci = groupCIs ? `[${fmt(groupCIs[i][0])}, ${fmt(groupCIs[i][1])}]` : '';
+          return { name: this._refName(refs[i]), n: String(g.length), mean: fmt(ds.mean), variance: fmt(ds.variance), ci, letters: letters[i] || '' };
         });
 
         return {
@@ -758,20 +802,58 @@ const mod = createModule({
           h0Tip: '', h1Tip: '',
           metrics,
           anovaRows,
+          modelSummary: r.S != null ? this._modelSummary(r) : null,
           groupRows,
+          showCi: groupCIs !== null,
+          ciHeader: _t('groupCi', { level: Math.round((1 - alpha) * 100) }),
           showCld,
         };
       },
 
-      // ── Pairwise post-hoc (Bonferroni + compact letter display) ──
+      /**
+       * Minitab-style model summary of the one-way fit (C1-020): S with four
+       * decimals, R² values as percentages with two, R²(adj) and R²(pred)
+       * clamped at 0 %; R²(pred) is undefined when a group has one value.
+       * @param {{S: number, R2: number, R2adj: number, R2pred: (number|null)}} r
+       * @returns {{label: string, value: string, title: string}[]}
+       */
+      _modelSummary(r) {
+        const pct = (v) => (v != null && isFinite(v) ? `${(Math.max(0, v) * 100).toFixed(2)} %` : '–');
+        const row = (label, value) => ({ label, value, title: this._tip(label) });
+        return [
+          row('S', fmt(r.S)),
+          row('R²', pct(r.R2)),
+          row(_t('labelR2adj'), pct(r.R2adj)),
+          row(_t('labelR2pred'), pct(r.R2pred)),
+        ];
+      },
 
-      _computePairwise(groups, alpha, isVariance, isNormal, varEquality) {
+      // ── Pairwise post-hoc ──
+
+      /**
+       * Simultaneous all-pairs comparisons for the parametric k-group routes:
+       * Tukey HSD with Fisher, Games-Howell with Welch. Throws when the
+       * engine does (zero variance, n_i < 2).
+       * @param {number[][]} groups
+       * @param {number} alpha
+       * @param {'fisher'|'welch'} meanTest
+       */
+      _simultaneousPairwise(groups, alpha, meanTest) {
+        const res = meanTest === 'fisher' ? tukeyHSD(groups, alpha) : gamesHowell(groups, alpha);
+        const comparisons = res.comparisons.map(c => ({
+          i: c.i, j: c.j, p: null, pAdj: c.pAdj, ci: c.ci, equal: c.pAdj >= alpha,
+        }));
+        const letters = this._compactLetterDisplay(groups.length, comparisons);
+        return { comparisons, letters, m: comparisons.length, methodName: res.testName, isRank: false, simultaneous: true };
+      },
+
+      /** Bonferroni pairwise tests: variance questions and the rank route. */
+      _computePairwise(groups, alpha, isVariance, isNormal) {
         const k = groups.length;
         const m = k * (k - 1) / 2;
-        const useWelch = !isVariance && isNormal && varEquality && !varEquality.varsEqual;
         const methodName = isVariance
           ? (isNormal ? 'F-Test' : 'Levene Test (Brown-Forsythe)')
-          : (isNormal ? (useWelch ? 'Welch t-Test' : 'Two-Sample t-Test (pooled)') : 'Mann-Whitney U Test');
+          : 'Mann-Whitney U Test';
 
         const comparisons = [];
         for (let i = 0; i < k; i++) {
@@ -779,19 +861,14 @@ const mod = createModule({
             let r;
             if (isVariance) {
               r = isNormal ? fTest(groups[i], groups[j], 'two-sided', alpha) : leveneTest(groups[i], groups[j], alpha);
-            } else if (isNormal) {
-              r = useWelch ? welchTTest(groups[i], groups[j], 'two-sided', alpha) : twoSampleTTest(groups[i], groups[j], 'two-sided', alpha);
             } else {
               r = mannWhitneyU(groups[i], groups[j], 'two-sided', alpha);
             }
             const p = r.pValue;
             const pAdj = Math.min(1, p * m);
-            // Bonferroni CI at alpha/m: t CI of mu_i - mu_j (normal path) or
-            // Hodges-Lehmann CI of the shift (rank path)
+            // Bonferroni Hodges-Lehmann CI of the shift at alpha/m (rank path)
             let ci = null;
-            if (!isVariance && isNormal) {
-              ci = (useWelch ? welchTTest : twoSampleTTest)(groups[i], groups[j], 'two-sided', alpha / m).ci;
-            } else if (!isVariance) {
+            if (!isVariance) {
               const hl = hodgesLehmann(groups[i], groups[j], alpha / m);
               ci = [hl.lower, hl.upper];
             }
@@ -799,7 +876,7 @@ const mod = createModule({
           }
         }
         const letters = this._compactLetterDisplay(k, comparisons);
-        return { comparisons, letters, m, methodName, isRank: !isVariance && !isNormal };
+        return { comparisons, letters, m, methodName, isRank: !isVariance, simultaneous: false };
       },
 
       _compactLetterDisplay(k, comparisons) {
@@ -839,8 +916,8 @@ const mod = createModule({
         return letters;
       },
 
-      _pairwiseSection(pairwise, refs, groups, _alpha) {
-        const { comparisons, m, methodName, letters, isRank } = pairwise;
+      _pairwiseSection(pairwise, refs, groups, alpha) {
+        const { comparisons, m, methodName, letters, isRank, simultaneous } = pairwise;
         const k = groups.length;
         const find = (i, j) => comparisons.find(c => (c.i === i && c.j === j) || (c.i === j && c.j === i));
         const headers = refs.map(ref => this._refName(ref));
@@ -853,19 +930,26 @@ const mod = createModule({
             } else {
               const c = find(i, j);
               const cls = c.equal ? 'hyptest__pairwise-equal' : 'hyptest__pairwise-diff';
-              const tip = `p=${fmt(c.p)}  ·  p_adj=${fmt(c.pAdj)}  ·  ${c.equal ? _t('pairwiseEqual') : _t('pairwiseDifferent')}`;
+              const verdict = c.equal ? _t('pairwiseEqual') : _t('pairwiseDifferent');
+              // Tukey / Games-Howell yield adjusted p-values only
+              const tip = c.p != null
+                ? `p=${fmt(c.p)}  ·  p_adj=${fmt(c.pAdj)}  ·  ${verdict}`
+                : `p_adj=${fmt(c.pAdj)}  ·  ${verdict}`;
               const ci = c.ci ? `[${fmt(c.ci[0])}, ${fmt(c.ci[1])}]` : '';
               cells.push({ cls, title: tip, text: fmt(c.pAdj), ci, key: `${i}-${j}` });
             }
           }
           rows.push({ head: this._refName(refs[i]), cells });
         }
+        const methodHint = simultaneous
+          ? _t('pairwiseSimultaneousHint', { level: Math.round((1 - alpha) * 100) })
+          : _t('pairwiseHint', { m });
         return {
           methodName,
           methodAlgoId: ALGO_LAB_IDS[methodName] || '',
           hint: comparisons.some(c => c.ci)
-            ? `${_t('pairwiseHint', { m })}; ${_t(isRank ? 'pairwiseShiftCiHint' : 'pairwiseCiHint')}`
-            : _t('pairwiseHint', { m }),
+            ? `${methodHint}; ${_t(isRank ? 'pairwiseShiftCiHint' : 'pairwiseCiHint')}`
+            : methodHint,
           headers,
           rows,
           lettersJoined: letters.join(', '),
@@ -948,7 +1032,16 @@ const mod = createModule({
       },
     };
   },
-});
+};
+
+const mod = createModule(definition);
+
+/**
+ * The view's data factory, exported so unit tests can drive the analysis
+ * without mounting the template (pickers and column lookups are stubbed).
+ * @type {(module: object, t: (key: string, params?: object) => string) => object}
+ */
+export const viewData = definition.data;
 
 /**
  * Custom loadExample: hypothesis-test catalog examples ship a full worksheet

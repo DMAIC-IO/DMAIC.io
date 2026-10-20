@@ -409,3 +409,20 @@
   max-width: 280px;
 }
 
+
+/* ── Model summary and group CIs (k-sample mean, C1-020) ── */
+
+.hyptest__model-summary {
+  margin-top: var(--spacing-sm);
+}
+
+.hyptest__model-summary-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+}
+
+.hyptest__group-ci {
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+}

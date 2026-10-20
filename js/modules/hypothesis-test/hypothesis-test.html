@@ -129,11 +129,11 @@
         </div>
       </template>
     </div>
-    <template x-if="model.category === 'mean' && model.testType === 'two'">
+    <template x-if="model.category === 'mean' && (model.testType === 'two' || model.testType === 'k')">
       <label class="field-check">
         <input type="checkbox" data-ref="equal-variances"
           x-model="model.equalVariances" @change="runAnalysis()">
-        <span x-text="t('assumeEqualVariances')"></span>
+        <span x-text="model.testType === 'k' ? t('assumeEqualVariancesK') : t('assumeEqualVariances')"></span>
       </label>
     </template>
 
@@ -224,7 +224,7 @@
               <template x-if="result.varEquality">
                 <span style="display:contents">
                   <span class="hyptest__trail-line"></span>
-                  <span class="hyptest__trail-dot" :class="result.varEquality.varsEqual ? 'hyptest__trail-dot--pass' : 'hyptest__trail-dot--fail'"></span>
+                  <span class="hyptest__trail-dot" :class="result.varEquality.trailYes ? 'hyptest__trail-dot--pass' : 'hyptest__trail-dot--fail'"></span>
                   <span><span x-text="t(result.varEquality.trailLabelKey)"></span>: <strong x-text="result.varEquality.trailYes ? t('yes') : t('no')"></strong></span>
                 </span>
               </template>
@@ -318,11 +318,29 @@
               </table>
             </template>
 
+            <!-- Model summary (k-sample mean, Fisher / Welch route) -->
+            <template x-if="result.main.modelSummary">
+              <div class="hyptest__model-summary" data-ref="model-summary">
+                <div class="hyptest__model-summary-title" x-text="t('modelSummary')"></div>
+                <div class="hyptest__metrics">
+                  <template x-for="m in result.main.modelSummary">
+                    <div class="hyptest__metric" :title="m.title" :key="m.label">
+                      <div class="hyptest__metric-label" x-text="m.label"></div>
+                      <div class="hyptest__metric-value" x-text="m.value"></div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </template>
+
             <!-- Group summary table (k-sample) -->
             <template x-if="result.main.groupRows">
               <table class="dmike-table">
                 <thead><tr>
                   <th x-text="t('group')"></th><th>n</th><th>x̄</th><th>s²</th>
+                  <template x-if="result.main.showCi">
+                    <th :title="t('tipGroupCi')" x-text="result.main.ciHeader"></th>
+                  </template>
                   <template x-if="result.main.showCld">
                     <th :title="t('groupingHint')" x-text="t('groupingLabel')"></th>
                   </template>
@@ -334,6 +352,9 @@
                       <td x-text="row.n"></td>
                       <td x-text="row.mean"></td>
                       <td x-text="row.variance"></td>
+                      <template x-if="result.main.showCi">
+                        <td class="hyptest__group-ci" x-text="row.ci"></td>
+                      </template>
                       <template x-if="result.main.showCld">
                         <td><strong class="hyptest__cld-letters" x-text="row.letters"></strong></td>
                       </template>
