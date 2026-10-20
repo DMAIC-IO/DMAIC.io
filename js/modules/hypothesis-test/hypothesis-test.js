@@ -303,7 +303,8 @@ const mod = createModule({
             : isMeanDiff ? _t('ciDiffLabel', { level })
             : isVariance && isTwo ? _t('ciRatioLabel', { level })
             : _t('ciLabel', { level });
-          metrics.push({ label: ciLabel, value: fmtCi(r.ci), valueClass: 'hyptest__metric-value--sm', title: this._tip('KI') });
+          // Bonett: a confidence set split into disjoint pieces has no interval (Minitab: "(*; *)")
+          metrics.push({ label: ciLabel, value: r.ciUndefined ? '–' : fmtCi(r.ci), valueClass: 'hyptest__metric-value--sm', title: this._tip('KI') });
         }
         if (r.ciSigma) {
           metrics.push({ label: _t('ciSigmaLabel', { level }), value: fmtCi(r.ciSigma), valueClass: 'hyptest__metric-value--sm', title: this._tip('KI') });
@@ -348,7 +349,9 @@ const mod = createModule({
         let ciNote = '';
         // A non-rejected one-sided test can leave the target outside the CI
         const ciHoldsTarget = ciContains(r.ci, target ?? 0);
-        if (isPaired && r.ci && !r.reject) {
+        if (r.ciUndefined) {
+          ciNote = _t('ciRatioUndefinedNote');
+        } else if (isPaired && r.ci && !r.reject) {
           if (ciHoldsTarget) ciNote = _t('ciPairedDiffNote', { lo: fmt(r.ci[0]), hi: fmt(r.ci[1]) });
         } else if (isMeanDiff && !r.reject) {
           if (ciHoldsTarget) ciNote = _t('ciDiffNote', { lo: fmt(r.ci[0]), hi: fmt(r.ci[1]) });
