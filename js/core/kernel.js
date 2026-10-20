@@ -20,6 +20,7 @@ import ChartManager       from './chart/chart-manager.js';
 import manifest           from '../modules/manifest.js';
 import { TipEngine }      from './tips/tip-engine.js';
 import { shortcutRegistry } from './shortcut-registry.js';
+import { installErrorLog } from './error-log.js';
 
 /**
  * Boot the UI-independent core services.
@@ -29,6 +30,8 @@ import { shortcutRegistry } from './shortcut-registry.js';
  * @returns {Promise<object>} services container
  */
 export async function bootKernel(adapter = new LocalAdapter()) {
+  // First, so errors thrown while booting reach the bug reporter.
+  installErrorLog();
   const eventBus     = new EventBus();
   const stateManager = new StateManager(eventBus, adapter);
   // Before anything can be edited: wait until the adapter can write
