@@ -6,6 +6,7 @@
 import { ensureKaTeX } from '../core/katex-loader.js';
 import { Prism } from '../core/vendor/prism.js';
 import { tokensToNodes } from './lab-renderer-tokens.js';
+import { labInlineNodes } from './lab-inline.js';
 
 // Re-export the pure token walker (lives in a Prism-free module so it stays
 // unit-testable unbundled — see lab-renderer-tokens.js).
@@ -48,7 +49,7 @@ export async function renderFormula(el, f, lang) {
   if (descText) {
     const desc = document.createElement('div');
     desc.className = 'lab__formula-description';
-    desc.textContent = descText;
+    desc.append(...labInlineNodes(descText));
     el.append(desc);
   }
 }
