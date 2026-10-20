@@ -1,8 +1,9 @@
 /**
  * D.Mike — Attribute Test Module (attribute-test.js)
  *
- * 1-proportion, 2-proportion and chi-square association tests on counts,
- * entered as summarized counts or taken from worksheet columns.
+ * 1/2-proportion, equivalence (TOST), McNemar, 1/2 Poisson-rate and chi-square
+ * association tests on counts, entered as summarized counts or taken from
+ * worksheet columns.
  * Pipeline: state → normalizer → engine (via report) → template.
  * @see docs/superpowers/specs/2026-10-10-attribute-tests-design.md
  */
@@ -21,6 +22,9 @@ const PICKERS = [
   { role: 'group', wrap: 'picker-group-wrap' },
   { role: 'rowVar', wrap: 'picker-row-wrap' },
   { role: 'colVar', wrap: 'picker-col-wrap' },
+  { role: 'counts', wrap: 'picker-counts-wrap' },
+  { role: 'before', wrap: 'picker-before-wrap' },
+  { role: 'after', wrap: 'picker-after-wrap' },
 ];
 
 const mod = createModule({
@@ -55,33 +59,57 @@ const mod = createModule({
       hasTable() { return this.hasResult() && !!this.result.table; },
       tableCols() { return this.hasTable() ? this.result.table.cols : []; },
       tableRows() { return this.hasTable() ? this.result.table.rows : []; },
+      actions() { return this.hasResult() ? (this.result.actions || []) : []; },
       decisionText() {
         if (!this.hasResult()) return '';
+        if (this.model.testKind === 'equiv') {
+          const d = this.result.decision === 'equivalent' ? 'decisionEquivalent' : 'decisionNotEquivalent';
+          return _t(d, { ...(this.result.decisionParams || {}), alpha: this.model.alpha });
+        }
         return _t(this.result.decision === 'reject' ? 'decisionReject' : 'decisionKeep',
           { alpha: this.model.alpha });
       },
       decisionClass() {
-        return this.hasResult() && this.result.decision === 'reject'
-          ? 'attrtest__decision--reject' : 'attrtest__decision--keep';
+        if (!this.hasResult()) return 'attrtest__decision--keep';
+        const d = this.result.decision;
+        if (d === 'notEquivalent') return '';
+        return d === 'reject' ? 'attrtest__decision--reject' : 'attrtest__decision--keep';
       },
       basisText() { return this.hasResult() ? _t(this.result.basisKey) : ''; },
       hypotheses() {
         const d = this.model.direction;
         const op = d === 'two-sided' ? '≠' : d === 'greater' ? '>' : '<';
-        if (this.model.testKind === 'one') return [_t('h0One'), _t('h1One', { op })];
-        if (this.model.testKind === 'two') return [_t('h0Two'), _t('h1Two', { op })];
+        const k = this.model.testKind;
+        if (k === 'one') return [_t('h0One'), _t('h1One', { op })];
+        if (k === 'two') return [_t('h0Two'), _t('h1Two', { op })];
+        if (k === 'rate1') return [_t('h0Rate1'), _t('h1Rate1', { op })];
+        if (k === 'rate2') return [_t('h0Rate2'), _t('h1Rate2', { op })];
+        if (k === 'mcnemar') return [_t('h0McNemar'), _t('h1McNemar', { op })];
+        if (k === 'equiv') return [_t('h0Equiv'), _t('h1Equiv')];
         return [_t('h0Assoc'), _t('h1Assoc')];
       },
       is2x2() {
         return this.hasTable() && this.tableCols().length === 2 && this.tableRows().length === 2;
       },
-      showDirection() { return !this.isKind('assoc') || this.is2x2(); },
+      showDirection() {
+        if (this.isKind('equiv')) return false;
+        return !this.isKind('assoc') || this.is2x2();
+      },
+      isSamples(n) { return this.model.equiv.samples === n; },
+      // Kinds that reuse the 1-/2-proportion inputs (equivalence follows its sample switch)
+      oneSample() { return this.isKind('one') || (this.isKind('equiv') && this.isSamples(1)); },
+      twoSample() { return this.isKind('two') || (this.isKind('equiv') && this.isSamples(2)); },
+      usesResponse() { return this.oneSample() || this.twoSample(); },
+      usesGroup() { return this.twoSample() || this.isKind('rate2'); },
+      usesCounts() { return this.isKind('rate1') || this.isKind('rate2'); },
+      usesExposurePerRow() { return this.usesCounts(); },
+      pairValue(i, j) { return this.model.summary.pairs.counts[i][j]; },
       cellValue(i, j) { return this.model.summary.table.counts[i][j]; },
       tableRowIdx() { return this.model.summary.table.rows.map((_, i) => i); },
       tableColIdx() { return this.model.summary.table.cols.map((_, j) => j); },
       rowName(i) { return this.model.summary.table.rows[i]; },
       colName(j) { return this.model.summary.table.cols[j]; },
-      showEvent() { return this.isMode('columns') && !this.isKind('assoc'); },
+      showEvent() { return this.isMode('columns') && (this.usesResponse() || this.isKind('mcnemar')); },
       isEvent(v) { return v === this.model.eventValue; },
 
       // ── Input handlers ─────────────────────────────────────────
@@ -91,6 +119,19 @@ const mod = createModule({
       },
       setMode(m) {
         this.model.inputMode = m;
+        this.$nextTick(() => { this._remountPickers(); this.runAnalysis(); });
+      },
+      setEquivSamples(n) { this.model.equiv.samples = n; this.$nextTick(() => this._remountPickers()); },
+      setBoundsSymmetric(on) { this.model.equiv.symmetric = on; },
+      setPair(i, j, event) { this.model.summary.pairs.counts[i][j] = event.target.value; },
+      /**
+       * Run a result action. `actionCheckEquivalence` carries the 2-proportion
+       * counts over to the equivalence test.
+       * @param {string} key
+       */
+      runAction(key) {
+        if (key !== 'actionCheckEquivalence') return;
+        this.model.switchToEquivalence();
         this.$nextTick(() => { this._remountPickers(); this.runAnalysis(); });
       },
       onAlphaInput(event) {
@@ -120,10 +161,17 @@ const mod = createModule({
             group: this._values(m.colRefs.group),
             rowVar: this._values(m.colRefs.rowVar),
             colVar: this._values(m.colRefs.colVar),
+            counts: this._values(m.colRefs.counts),
+            before: this._values(m.colRefs.before),
+            after: this._values(m.colRefs.after),
           };
-          this.eventOptions = cols.response ? distinctValues(cols.response) : [];
+          // McNemar's event candidates come from both paired columns together
+          const eventSource = m.testKind === 'mcnemar'
+            ? (cols.before && cols.after ? [...cols.before, ...cols.after] : null)
+            : cols.response;
+          this.eventOptions = eventSource ? distinctValues(eventSource) : [];
           if (this.eventOptions.length && !this.eventOptions.includes(m.eventValue)) {
-            m.eventValue = defaultEventValue(cols.response);
+            m.eventValue = defaultEventValue(eventSource);
           }
           this.result = buildReport(m, normalizeColumns(m, cols));
         } else {

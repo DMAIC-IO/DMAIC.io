@@ -76,3 +76,13 @@
 }
 .attrtest__exp { color: var(--color-text-secondary); font-size: var(--font-size-xs); }
 .attrtest__contrib { color: var(--color-text-tertiary); font-size: var(--font-size-xs); }
+
+.attrtest__group-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin: var(--spacing-xs) 0 var(--spacing-2xs);
+}
+.attrtest__grid--pairs { grid-template-columns: auto 1fr 1fr; align-items: center; }
+.attrtest__pair-label { width: 100%; min-width: 0; }
+.attrtest__pair-label--after { grid-column: span 2; }
+.attrtest__actions { display: flex; gap: var(--spacing-xs); margin-bottom: var(--spacing-sm); }
