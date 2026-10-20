@@ -1,0 +1,4080 @@
+{
+  "algorithm_id": "studentized-range",
+  "generated_with": {
+    "python": "3.14.4",
+    "scipy": "1.18.0",
+    "numpy": "2.5.1"
+  },
+  "generated_at": "2026-10-20T07:07:48.744990+00:00",
+  "generator_script": "tools/fixture-generator/generate_fixtures.py",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-07,
+      "absolute": 1e-10
+    },
+    "overrides": {}
+  },
+  "test_cases": [
+    {
+      "id": "ppf_k2_df1.5_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=1.5, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 2,
+        "df": 1.5
+      },
+      "expected": {
+        "quantile": 1.2340352062206628
+      }
+    },
+    {
+      "id": "cdf_k2_df1.5_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=2, df=1.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 1.234035,
+        "k": 2,
+        "df": 1.5
+      },
+      "expected": {
+        "cdf": 0.4999999405158692
+      }
+    },
+    {
+      "id": "ppf_k2_df1.5_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=1.5, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 2,
+        "df": 1.5
+      },
+      "expected": {
+        "quantile": 5.239916966825488
+      }
+    },
+    {
+      "id": "cdf_k2_df1.5_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=2, df=1.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 5.239917,
+        "k": 2,
+        "df": 1.5
+      },
+      "expected": {
+        "cdf": 0.9000000008821322
+      }
+    },
+    {
+      "id": "ppf_k2_df1.5_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=1.5, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 2,
+        "df": 1.5
+      },
+      "expected": {
+        "quantile": 8.508846562511758
+      }
+    },
+    {
+      "id": "cdf_k2_df1.5_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=2, df=1.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 8.508847,
+        "k": 2,
+        "df": 1.5
+      },
+      "expected": {
+        "cdf": 0.9500000037461229
+      }
+    },
+    {
+      "id": "ppf_k2_df1.5_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=1.5, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 2,
+        "df": 1.5
+      },
+      "expected": {
+        "quantile": 25.201724815252923
+      }
+    },
+    {
+      "id": "cdf_k2_df1.5_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=2, df=1.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 25.201725,
+        "k": 2,
+        "df": 1.5
+      },
+      "expected": {
+        "cdf": 0.9900000001095918
+      }
+    },
+    {
+      "id": "ppf_k2_df2_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=2, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 2,
+        "df": 2
+      },
+      "expected": {
+        "quantile": 1.1547005383792521
+      }
+    },
+    {
+      "id": "cdf_k2_df2_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=2, df=2",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 1.154701,
+        "k": 2,
+        "df": 2
+      },
+      "expected": {
+        "cdf": 0.5000001499157132
+      }
+    },
+    {
+      "id": "ppf_k2_df2_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=2, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 2,
+        "df": 2
+      },
+      "expected": {
+        "quantile": 4.12948320967011
+      }
+    },
+    {
+      "id": "cdf_k2_df2_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=2, df=2",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.129483,
+        "k": 2,
+        "df": 2
+      },
+      "expected": {
+        "cdf": 0.8999999913176566
+      }
+    },
+    {
+      "id": "ppf_k2_df2_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=2, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 2,
+        "df": 2
+      },
+      "expected": {
+        "quantile": 6.084869844593299
+      }
+    },
+    {
+      "id": "cdf_k2_df2_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=2, df=2",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 6.08487,
+        "k": 2,
+        "df": 2
+      },
+      "expected": {
+        "cdf": 0.950000002365629
+      }
+    },
+    {
+      "id": "ppf_k2_df2_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=2, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 2,
+        "df": 2
+      },
+      "expected": {
+        "quantile": 14.03584785916495
+      }
+    },
+    {
+      "id": "cdf_k2_df2_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=2, df=2",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 14.035848,
+        "k": 2,
+        "df": 2
+      },
+      "expected": {
+        "cdf": 0.9900000001976789
+      }
+    },
+    {
+      "id": "ppf_k2_df5_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=5, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 2,
+        "df": 5
+      },
+      "expected": {
+        "quantile": 1.027690390100656
+      }
+    },
+    {
+      "id": "cdf_k2_df5_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=2, df=5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 1.02769,
+        "k": 2,
+        "df": 5
+      },
+      "expected": {
+        "cdf": 0.49999984504196265
+      }
+    },
+    {
+      "id": "ppf_k2_df5_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=5, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 2,
+        "df": 5
+      },
+      "expected": {
+        "quantile": 2.849708738405404
+      }
+    },
+    {
+      "id": "cdf_k2_df5_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=2, df=5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 2.849709,
+        "k": 2,
+        "df": 5
+      },
+      "expected": {
+        "cdf": 0.900000023601663
+      }
+    },
+    {
+      "id": "ppf_k2_df5_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=5, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 2,
+        "df": 5
+      },
+      "expected": {
+        "quantile": 3.63535169514679
+      }
+    },
+    {
+      "id": "cdf_k2_df5_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=2, df=5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.635352,
+        "k": 2,
+        "df": 5
+      },
+      "expected": {
+        "cdf": 0.9500000130794539
+      }
+    },
+    {
+      "id": "ppf_k2_df5_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=5, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 2,
+        "df": 5
+      },
+      "expected": {
+        "quantile": 5.70231129277127
+      }
+    },
+    {
+      "id": "cdf_k2_df5_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=2, df=5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 5.702311,
+        "k": 2,
+        "df": 5
+      },
+      "expected": {
+        "cdf": 0.9899999979549247
+      }
+    },
+    {
+      "id": "ppf_k2_df10_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=10, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 2,
+        "df": 10
+      },
+      "expected": {
+        "quantile": 0.9896837082207423
+      }
+    },
+    {
+      "id": "cdf_k2_df10_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=2, df=10",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 0.989684,
+        "k": 2,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 0.5000001234339674
+      }
+    },
+    {
+      "id": "ppf_k2_df10_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=10, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 2,
+        "df": 10
+      },
+      "expected": {
+        "quantile": 2.5632071011542243
+      }
+    },
+    {
+      "id": "cdf_k2_df10_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=2, df=10",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 2.563207,
+        "k": 2,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 0.8999999883297998
+      }
+    },
+    {
+      "id": "ppf_k2_df10_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=10, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 2,
+        "df": 10
+      },
+      "expected": {
+        "quantile": 3.151064183329372
+      }
+    },
+    {
+      "id": "cdf_k2_df10_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=2, df=10",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.151064,
+        "k": 2,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 0.9499999890109759
+      }
+    },
+    {
+      "id": "ppf_k2_df10_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=10, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 2,
+        "df": 10
+      },
+      "expected": {
+        "quantile": 4.482028396473151
+      }
+    },
+    {
+      "id": "cdf_k2_df10_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=2, df=10",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.482028,
+        "k": 2,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 0.9899999952373263
+      }
+    },
+    {
+      "id": "ppf_k2_df30_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=30, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 2,
+        "df": 30
+      },
+      "expected": {
+        "quantile": 0.9655623612824126
+      }
+    },
+    {
+      "id": "cdf_k2_df30_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=2, df=30",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 0.965562,
+        "k": 2,
+        "df": 30
+      },
+      "expected": {
+        "cdf": 0.4999998408306979
+      }
+    },
+    {
+      "id": "ppf_k2_df30_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=30, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 2,
+        "df": 30
+      },
+      "expected": {
+        "quantile": 2.4002893647065298
+      }
+    },
+    {
+      "id": "cdf_k2_df30_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=2, df=30",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 2.400289,
+        "k": 2,
+        "df": 30
+      },
+      "expected": {
+        "cdf": 0.899999950734322
+      }
+    },
+    {
+      "id": "ppf_k2_df30_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=30, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 2,
+        "df": 30
+      },
+      "expected": {
+        "quantile": 2.8882094057621686
+      }
+    },
+    {
+      "id": "cdf_k2_df30_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=2, df=30",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 2.888209,
+        "k": 2,
+        "df": 30
+      },
+      "expected": {
+        "cdf": 0.9499999698152327
+      }
+    },
+    {
+      "id": "ppf_k2_df30_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=30, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 2,
+        "df": 30
+      },
+      "expected": {
+        "quantile": 3.88908114974157
+      }
+    },
+    {
+      "id": "cdf_k2_df30_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=2, df=30",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.889081,
+        "k": 2,
+        "df": 30
+      },
+      "expected": {
+        "cdf": 0.9899999974305616
+      }
+    },
+    {
+      "id": "ppf_k2_df120_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=120, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 2,
+        "df": 120
+      },
+      "expected": {
+        "quantile": 0.9567716544554687
+      }
+    },
+    {
+      "id": "cdf_k2_df120_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=2, df=120",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 0.956772,
+        "k": 2,
+        "df": 120
+      },
+      "expected": {
+        "cdf": 0.5000001545244059
+      }
+    },
+    {
+      "id": "ppf_k2_df120_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=120, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 2,
+        "df": 120
+      },
+      "expected": {
+        "quantile": 2.344272383548243
+      }
+    },
+    {
+      "id": "cdf_k2_df120_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=2, df=120",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 2.344272,
+        "k": 2,
+        "df": 120
+      },
+      "expected": {
+        "cdf": 0.8999999451123673
+      }
+    },
+    {
+      "id": "ppf_k2_df120_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=120, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 2,
+        "df": 120
+      },
+      "expected": {
+        "quantile": 2.8000444314226507
+      }
+    },
+    {
+      "id": "cdf_k2_df120_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=2, df=120",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 2.800044,
+        "k": 2,
+        "df": 120
+      },
+      "expected": {
+        "cdf": 0.9499999652617942
+      }
+    },
+    {
+      "id": "ppf_k2_df120_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=120, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 2,
+        "df": 120
+      },
+      "expected": {
+        "quantile": 3.701592481853129
+      }
+    },
+    {
+      "id": "cdf_k2_df120_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=2, df=120",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.701592,
+        "k": 2,
+        "df": 120
+      },
+      "expected": {
+        "cdf": 0.989999990567171
+      }
+    },
+    {
+      "id": "ppf_k2_dfInfinity_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=Infinity, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 2,
+        "df": "Infinity"
+      },
+      "expected": {
+        "quantile": 0.9538725524089398
+      }
+    },
+    {
+      "id": "cdf_k2_dfInfinity_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=2, df=Infinity",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 0.953873,
+        "k": 2,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 0.500000201149164
+      }
+    },
+    {
+      "id": "ppf_k2_dfInfinity_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=Infinity, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 2,
+        "df": "Infinity"
+      },
+      "expected": {
+        "quantile": 2.3261743073533485
+      }
+    },
+    {
+      "id": "cdf_k2_dfInfinity_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=2, df=Infinity",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 2.326174,
+        "k": 2,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 0.8999999551707171
+      }
+    },
+    {
+      "id": "ppf_k2_dfInfinity_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=Infinity, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 2,
+        "df": "Infinity"
+      },
+      "expected": {
+        "quantile": 2.7718076486993546
+      }
+    },
+    {
+      "id": "cdf_k2_dfInfinity_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=2, df=Infinity",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 2.771808,
+        "k": 2,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 0.9500000290363296
+      }
+    },
+    {
+      "id": "ppf_k2_dfInfinity_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=2, df=Infinity, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 2,
+        "df": "Infinity"
+      },
+      "expected": {
+        "quantile": 3.6427727354368935
+      }
+    },
+    {
+      "id": "cdf_k2_dfInfinity_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=2, df=Infinity",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.642773,
+        "k": 2,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 0.9900000054100933
+      }
+    },
+    {
+      "id": "cdf_k2_df10_q200",
+      "tier": "edge",
+      "description": "Far tail q=200, k=2, df=10: CDF = 1",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 200,
+        "k": 2,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 1.0
+      }
+    },
+    {
+      "id": "cdf_k2_dfInfinity_q200",
+      "tier": "edge",
+      "description": "Far tail q=200, k=2, df=Infinity: CDF = 1",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 200,
+        "k": 2,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 1.0
+      }
+    },
+    {
+      "id": "ppf_k3_df1.5_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=1.5, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 3,
+        "df": 1.5
+      },
+      "expected": {
+        "quantile": 2.037469980441187
+      }
+    },
+    {
+      "id": "cdf_k3_df1.5_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=3, df=1.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 2.03747,
+        "k": 3,
+        "df": 1.5
+      },
+      "expected": {
+        "cdf": 0.5000000043359378
+      }
+    },
+    {
+      "id": "ppf_k3_df1.5_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=1.5, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 3,
+        "df": 1.5
+      },
+      "expected": {
+        "quantile": 7.499099397084438
+      }
+    },
+    {
+      "id": "cdf_k3_df1.5_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=3, df=1.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 7.499099,
+        "k": 3,
+        "df": 1.5
+      },
+      "expected": {
+        "cdf": 0.8999999924280588
+      }
+    },
+    {
+      "id": "ppf_k3_df1.5_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=1.5, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 3,
+        "df": 1.5
+      },
+      "expected": {
+        "quantile": 12.078582695424386
+      }
+    },
+    {
+      "id": "cdf_k3_df1.5_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=3, df=1.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 12.078583,
+        "k": 3,
+        "df": 1.5
+      },
+      "expected": {
+        "cdf": 0.9500000018561728
+      }
+    },
+    {
+      "id": "ppf_k3_df1.5_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=1.5, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 3,
+        "df": 1.5
+      },
+      "expected": {
+        "quantile": 35.611167716447284
+      }
+    },
+    {
+      "id": "cdf_k3_df1.5_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=3, df=1.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 35.611168,
+        "k": 3,
+        "df": 1.5
+      },
+      "expected": {
+        "cdf": 0.9900000001191781
+      }
+    },
+    {
+      "id": "ppf_k3_df2_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=2, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 3,
+        "df": 2
+      },
+      "expected": {
+        "quantile": 1.908178518404062
+      }
+    },
+    {
+      "id": "cdf_k3_df2_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=3, df=2",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 1.908179,
+        "k": 3,
+        "df": 2
+      },
+      "expected": {
+        "cdf": 0.5000001259644004
+      }
+    },
+    {
+      "id": "ppf_k3_df2_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=2, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 3,
+        "df": 2
+      },
+      "expected": {
+        "quantile": 5.732648952563369
+      }
+    },
+    {
+      "id": "cdf_k3_df2_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=3, df=2",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 5.732649,
+        "k": 3,
+        "df": 2
+      },
+      "expected": {
+        "cdf": 0.9000000014885402
+      }
+    },
+    {
+      "id": "ppf_k3_df2_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=2, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 3,
+        "df": 2
+      },
+      "expected": {
+        "quantile": 8.330782645637031
+      }
+    },
+    {
+      "id": "cdf_k3_df2_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=3, df=2",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 8.330783,
+        "k": 3,
+        "df": 2
+      },
+      "expected": {
+        "cdf": 0.9500000040396542
+      }
+    },
+    {
+      "id": "ppf_k3_df2_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=2, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 3,
+        "df": 2
+      },
+      "expected": {
+        "quantile": 19.018935987312496
+      }
+    },
+    {
+      "id": "cdf_k3_df2_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=3, df=2",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 19.018936,
+        "k": 3,
+        "df": 2
+      },
+      "expected": {
+        "cdf": 0.9900000000132074
+      }
+    },
+    {
+      "id": "ppf_k3_df5_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=5, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 3,
+        "df": 5
+      },
+      "expected": {
+        "quantile": 1.7049510224674225
+      }
+    },
+    {
+      "id": "cdf_k3_df5_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=3, df=5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 1.704951,
+        "k": 3,
+        "df": 5
+      },
+      "expected": {
+        "cdf": 0.49999999204160595
+      }
+    },
+    {
+      "id": "ppf_k3_df5_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=5, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 3,
+        "df": 5
+      },
+      "expected": {
+        "quantile": 3.717111449623843
+      }
+    },
+    {
+      "id": "cdf_k3_df5_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=3, df=5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.717111,
+        "k": 3,
+        "df": 5
+      },
+      "expected": {
+        "cdf": 0.8999999637023703
+      }
+    },
+    {
+      "id": "ppf_k3_df5_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=5, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 3,
+        "df": 5
+      },
+      "expected": {
+        "quantile": 4.60172605436255
+      }
+    },
+    {
+      "id": "cdf_k3_df5_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=3, df=5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.601726,
+        "k": 3,
+        "df": 5
+      },
+      "expected": {
+        "cdf": 0.9499999979428211
+      }
+    },
+    {
+      "id": "ppf_k3_df5_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=5, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 3,
+        "df": 5
+      },
+      "expected": {
+        "quantile": 6.9757366312493385
+      }
+    },
+    {
+      "id": "cdf_k3_df5_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=3, df=5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 6.975737,
+        "k": 3,
+        "df": 5
+      },
+      "expected": {
+        "cdf": 0.9900000022207751
+      }
+    },
+    {
+      "id": "ppf_k3_df10_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=10, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 3,
+        "df": 10
+      },
+      "expected": {
+        "quantile": 1.6446888587137876
+      }
+    },
+    {
+      "id": "cdf_k3_df10_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=3, df=10",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 1.644689,
+        "k": 3,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 0.5000000554623976
+      }
+    },
+    {
+      "id": "ppf_k3_df10_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=10, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 3,
+        "df": 10
+      },
+      "expected": {
+        "quantile": 3.270308407950077
+      }
+    },
+    {
+      "id": "cdf_k3_df10_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=3, df=10",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.270308,
+        "k": 3,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 0.8999999541859929
+      }
+    },
+    {
+      "id": "ppf_k3_df10_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=10, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 3,
+        "df": 10
+      },
+      "expected": {
+        "quantile": 3.876776750013158
+      }
+    },
+    {
+      "id": "cdf_k3_df10_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=3, df=10",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.876777,
+        "k": 3,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 0.950000014459349
+      }
+    },
+    {
+      "id": "ppf_k3_df10_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=10, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 3,
+        "df": 10
+      },
+      "expected": {
+        "quantile": 5.270161537068713
+      }
+    },
+    {
+      "id": "cdf_k3_df10_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=3, df=10",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 5.270162,
+        "k": 3,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 0.9900000052626652
+      }
+    },
+    {
+      "id": "ppf_k3_df30_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=30, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 3,
+        "df": 30
+      },
+      "expected": {
+        "quantile": 1.606394454683414
+      }
+    },
+    {
+      "id": "cdf_k3_df30_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=3, df=30",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 1.606394,
+        "k": 3,
+        "df": 30
+      },
+      "expected": {
+        "cdf": 0.4999998087635156
+      }
+    },
+    {
+      "id": "ppf_k3_df30_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=30, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 3,
+        "df": 30
+      },
+      "expected": {
+        "quantile": 3.017233892894038
+      }
+    },
+    {
+      "id": "cdf_k3_df30_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=3, df=30",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.017234,
+        "k": 3,
+        "df": 30
+      },
+      "expected": {
+        "cdf": 0.900000015052082
+      }
+    },
+    {
+      "id": "ppf_k3_df30_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=30, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 3,
+        "df": 30
+      },
+      "expected": {
+        "quantile": 3.486420064705314
+      }
+    },
+    {
+      "id": "cdf_k3_df30_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=3, df=30",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.48642,
+        "k": 3,
+        "df": 30
+      },
+      "expected": {
+        "cdf": 0.9499999950002954
+      }
+    },
+    {
+      "id": "ppf_k3_df30_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=30, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 3,
+        "df": 30
+      },
+      "expected": {
+        "quantile": 4.45491505814546
+      }
+    },
+    {
+      "id": "cdf_k3_df30_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=3, df=30",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.454915,
+        "k": 3,
+        "df": 30
+      },
+      "expected": {
+        "cdf": 0.9899999989749647
+      }
+    },
+    {
+      "id": "ppf_k3_df120_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=120, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 3,
+        "df": 120
+      },
+      "expected": {
+        "quantile": 1.5924063036469325
+      }
+    },
+    {
+      "id": "cdf_k3_df120_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=3, df=120",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 1.592406,
+        "k": 3,
+        "df": 120
+      },
+      "expected": {
+        "cdf": 0.49999986892754833
+      }
+    },
+    {
+      "id": "ppf_k3_df120_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=120, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 3,
+        "df": 120
+      },
+      "expected": {
+        "quantile": 2.930409035965788
+      }
+    },
+    {
+      "id": "cdf_k3_df120_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=3, df=120",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 2.930409,
+        "k": 3,
+        "df": 120
+      },
+      "expected": {
+        "cdf": 0.8999999944975652
+      }
+    },
+    {
+      "id": "ppf_k3_df120_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=120, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 3,
+        "df": 120
+      },
+      "expected": {
+        "quantile": 3.3561383961509472
+      }
+    },
+    {
+      "id": "cdf_k3_df120_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=3, df=120",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.356138,
+        "k": 3,
+        "df": 120
+      },
+      "expected": {
+        "cdf": 0.9499999658347545
+      }
+    },
+    {
+      "id": "ppf_k3_df120_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=120, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 3,
+        "df": 120
+      },
+      "expected": {
+        "quantile": 4.1999440046163405
+      }
+    },
+    {
+      "id": "cdf_k3_df120_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=3, df=120",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.199944,
+        "k": 3,
+        "df": 120
+      },
+      "expected": {
+        "cdf": 0.989999999903813
+      }
+    },
+    {
+      "id": "ppf_k3_dfInfinity_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=Infinity, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 3,
+        "df": "Infinity"
+      },
+      "expected": {
+        "quantile": 1.5877877504463476
+      }
+    },
+    {
+      "id": "cdf_k3_dfInfinity_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=3, df=Infinity",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 1.587788,
+        "k": 3,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 0.5000001086606397
+      }
+    },
+    {
+      "id": "ppf_k3_dfInfinity_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=Infinity, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 3,
+        "df": "Infinity"
+      },
+      "expected": {
+        "quantile": 2.902380213428252
+      }
+    },
+    {
+      "id": "cdf_k3_dfInfinity_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=3, df=Infinity",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 2.90238,
+        "k": 3,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 0.8999999664066166
+      }
+    },
+    {
+      "id": "ppf_k3_dfInfinity_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=Infinity, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 3,
+        "df": "Infinity"
+      },
+      "expected": {
+        "quantile": 3.31449315539812
+      }
+    },
+    {
+      "id": "cdf_k3_dfInfinity_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=3, df=Infinity",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.314493,
+        "k": 3,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 0.949999986096062
+      }
+    },
+    {
+      "id": "ppf_k3_dfInfinity_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=3, df=Infinity, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 3,
+        "df": "Infinity"
+      },
+      "expected": {
+        "quantile": 4.120303206460116
+      }
+    },
+    {
+      "id": "cdf_k3_dfInfinity_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=3, df=Infinity",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.120303,
+        "k": 3,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 0.9899999954505088
+      }
+    },
+    {
+      "id": "cdf_k3_df10_q200",
+      "tier": "edge",
+      "description": "Far tail q=200, k=3, df=10: CDF = 1",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 200,
+        "k": 3,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 1.0
+      }
+    },
+    {
+      "id": "cdf_k3_dfInfinity_q200",
+      "tier": "edge",
+      "description": "Far tail q=200, k=3, df=Infinity: CDF = 1",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 200,
+        "k": 3,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 1.0
+      }
+    },
+    {
+      "id": "ppf_k5_df1.5_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=1.5, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 5,
+        "df": 1.5
+      },
+      "expected": {
+        "quantile": 2.8993032006699417
+      }
+    },
+    {
+      "id": "cdf_k5_df1.5_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=5, df=1.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 2.899303,
+        "k": 5,
+        "df": 1.5
+      },
+      "expected": {
+        "cdf": 0.49999996486811765
+      }
+    },
+    {
+      "id": "ppf_k5_df1.5_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=1.5, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 5,
+        "df": 1.5
+      },
+      "expected": {
+        "quantile": 10.045362467705207
+      }
+    },
+    {
+      "id": "cdf_k5_df1.5_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=5, df=1.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 10.045362,
+        "k": 5,
+        "df": 1.5
+      },
+      "expected": {
+        "cdf": 0.8999999932639886
+      }
+    },
+    {
+      "id": "ppf_k5_df1.5_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=1.5, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 5,
+        "df": 1.5
+      },
+      "expected": {
+        "quantile": 16.12162257163252
+      }
+    },
+    {
+      "id": "cdf_k5_df1.5_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=5, df=1.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 16.121623,
+        "k": 5,
+        "df": 1.5
+      },
+      "expected": {
+        "cdf": 0.950000001964876
+      }
+    },
+    {
+      "id": "ppf_k5_df1.5_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=1.5, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 5,
+        "df": 1.5
+      },
+      "expected": {
+        "quantile": 47.43465839878725
+      }
+    },
+    {
+      "id": "cdf_k5_df1.5_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=5, df=1.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 47.434658,
+        "k": 5,
+        "df": 1.5
+      },
+      "expected": {
+        "cdf": 0.9899999998741
+      }
+    },
+    {
+      "id": "ppf_k5_df2_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=2, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 5,
+        "df": 2
+      },
+      "expected": {
+        "quantile": 2.7130555591391934
+      }
+    },
+    {
+      "id": "cdf_k5_df2_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=5, df=2",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 2.713056,
+        "k": 5,
+        "df": 2
+      },
+      "expected": {
+        "cdf": 0.5000000945282169
+      }
+    },
+    {
+      "id": "ppf_k5_df2_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=2, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 5,
+        "df": 2
+      },
+      "expected": {
+        "quantile": 7.537531647541146
+      }
+    },
+    {
+      "id": "cdf_k5_df2_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=5, df=2",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 7.537532,
+        "k": 5,
+        "df": 2
+      },
+      "expected": {
+        "cdf": 0.9000000086250289
+      }
+    },
+    {
+      "id": "ppf_k5_df2_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=2, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 5,
+        "df": 2
+      },
+      "expected": {
+        "quantile": 10.881113542124094
+      }
+    },
+    {
+      "id": "cdf_k5_df2_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=5, df=2",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 10.881114,
+        "k": 5,
+        "df": 2
+      },
+      "expected": {
+        "cdf": 0.9500000040456491
+      }
+    },
+    {
+      "id": "ppf_k5_df2_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=2, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 5,
+        "df": 2
+      },
+      "expected": {
+        "quantile": 24.717186201322438
+      }
+    },
+    {
+      "id": "cdf_k5_df2_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=5, df=2",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 24.717186,
+        "k": 5,
+        "df": 2
+      },
+      "expected": {
+        "cdf": 0.9899999998383489
+      }
+    },
+    {
+      "id": "ppf_k5_df5_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=5, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 5,
+        "df": 5
+      },
+      "expected": {
+        "quantile": 2.4232018921141214
+      }
+    },
+    {
+      "id": "cdf_k5_df5_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=5, df=5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 2.423202,
+        "k": 5,
+        "df": 5
+      },
+      "expected": {
+        "cdf": 0.5000000349367558
+      }
+    },
+    {
+      "id": "ppf_k5_df5_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=5, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 5,
+        "df": 5
+      },
+      "expected": {
+        "quantile": 4.663827054132184
+      }
+    },
+    {
+      "id": "cdf_k5_df5_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=5, df=5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.663827,
+        "k": 5,
+        "df": 5
+      },
+      "expected": {
+        "cdf": 0.8999999961469102
+      }
+    },
+    {
+      "id": "ppf_k5_df5_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=5, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 5,
+        "df": 5
+      },
+      "expected": {
+        "quantile": 5.673124435463916
+      }
+    },
+    {
+      "id": "cdf_k5_df5_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=5, df=5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 5.673124,
+        "k": 5,
+        "df": 5
+      },
+      "expected": {
+        "cdf": 0.9499999856328951
+      }
+    },
+    {
+      "id": "ppf_k5_df5_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=5, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 5,
+        "df": 5
+      },
+      "expected": {
+        "quantile": 8.421490577747646
+      }
+    },
+    {
+      "id": "cdf_k5_df5_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=5, df=5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 8.421491,
+        "k": 5,
+        "df": 5
+      },
+      "expected": {
+        "cdf": 0.9900000021816854
+      }
+    },
+    {
+      "id": "ppf_k5_df10_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=10, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 5,
+        "df": 10
+      },
+      "expected": {
+        "quantile": 2.3378341569060423
+      }
+    },
+    {
+      "id": "cdf_k5_df10_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=5, df=10",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 2.337834,
+        "k": 5,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 0.4999999403104668
+      }
+    },
+    {
+      "id": "ppf_k5_df10_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=10, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 5,
+        "df": 10
+      },
+      "expected": {
+        "quantile": 4.018011272873531
+      }
+    },
+    {
+      "id": "cdf_k5_df10_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=5, df=10",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.018011,
+        "k": 5,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 0.899999970652879
+      }
+    },
+    {
+      "id": "ppf_k5_df10_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=10, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 5,
+        "df": 10
+      },
+      "expected": {
+        "quantile": 4.654292997854539
+      }
+    },
+    {
+      "id": "cdf_k5_df10_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=5, df=10",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.654293,
+        "k": 5,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 0.95000000011774
+      }
+    },
+    {
+      "id": "ppf_k5_df10_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=10, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 5,
+        "df": 10
+      },
+      "expected": {
+        "quantile": 6.13609331339544
+      }
+    },
+    {
+      "id": "cdf_k5_df10_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=5, df=10",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 6.136093,
+        "k": 5,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 0.9899999966758484
+      }
+    },
+    {
+      "id": "ppf_k5_df30_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=30, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 5,
+        "df": 30
+      },
+      "expected": {
+        "quantile": 2.283454258614808
+      }
+    },
+    {
+      "id": "cdf_k5_df30_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=5, df=30",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 2.283454,
+        "k": 5,
+        "df": 30
+      },
+      "expected": {
+        "cdf": 0.49999988920138694
+      }
+    },
+    {
+      "id": "ppf_k5_df30_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=30, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 5,
+        "df": 30
+      },
+      "expected": {
+        "quantile": 3.647891607281081
+      }
+    },
+    {
+      "id": "cdf_k5_df30_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=5, df=30",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.647892,
+        "k": 5,
+        "df": 30
+      },
+      "expected": {
+        "cdf": 0.9000000571450418
+      }
+    },
+    {
+      "id": "ppf_k5_df30_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=30, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 5,
+        "df": 30
+      },
+      "expected": {
+        "quantile": 4.102079019506423
+      }
+    },
+    {
+      "id": "cdf_k5_df30_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=5, df=30",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.102079,
+        "k": 5,
+        "df": 30
+      },
+      "expected": {
+        "cdf": 0.9499999984469548
+      }
+    },
+    {
+      "id": "ppf_k5_df30_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=30, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 5,
+        "df": 30
+      },
+      "expected": {
+        "quantile": 5.047605131904668
+      }
+    },
+    {
+      "id": "cdf_k5_df30_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=5, df=30",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 5.047605,
+        "k": 5,
+        "df": 30
+      },
+      "expected": {
+        "cdf": 0.989999997632405
+      }
+    },
+    {
+      "id": "ppf_k5_df120_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=120, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 5,
+        "df": 120
+      },
+      "expected": {
+        "quantile": 2.2634925165968633
+      }
+    },
+    {
+      "id": "cdf_k5_df120_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=5, df=120",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 2.263493,
+        "k": 5,
+        "df": 120
+      },
+      "expected": {
+        "cdf": 0.5000002172395374
+      }
+    },
+    {
+      "id": "ppf_k5_df120_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=120, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 5,
+        "df": 120
+      },
+      "expected": {
+        "quantile": 3.519788051657777
+      }
+    },
+    {
+      "id": "cdf_k5_df120_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=5, df=120",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.519788,
+        "k": 5,
+        "df": 120
+      },
+      "expected": {
+        "cdf": 0.899999991519541
+      }
+    },
+    {
+      "id": "ppf_k5_df120_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=120, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 5,
+        "df": 120
+      },
+      "expected": {
+        "quantile": 3.9169376908064124
+      }
+    },
+    {
+      "id": "cdf_k5_df120_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=5, df=120",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.916938,
+        "k": 5,
+        "df": 120
+      },
+      "expected": {
+        "cdf": 0.9500000285448252
+      }
+    },
+    {
+      "id": "ppf_k5_df120_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=120, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 5,
+        "df": 120
+      },
+      "expected": {
+        "quantile": 4.708500213720382
+      }
+    },
+    {
+      "id": "cdf_k5_df120_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=5, df=120",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.7085,
+        "k": 5,
+        "df": 120
+      },
+      "expected": {
+        "cdf": 0.9899999952752073
+      }
+    },
+    {
+      "id": "ppf_k5_dfInfinity_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=Infinity, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 5,
+        "df": "Infinity"
+      },
+      "expected": {
+        "quantile": 2.256882493026194
+      }
+    },
+    {
+      "id": "cdf_k5_dfInfinity_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=5, df=Infinity",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 2.256882,
+        "k": 5,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 0.49999977477509866
+      }
+    },
+    {
+      "id": "ppf_k5_dfInfinity_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=Infinity, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 5,
+        "df": "Infinity"
+      },
+      "expected": {
+        "quantile": 3.4782805507030683
+      }
+    },
+    {
+      "id": "cdf_k5_dfInfinity_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=5, df=Infinity",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.478281,
+        "k": 5,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 0.9000000768626791
+      }
+    },
+    {
+      "id": "ppf_k5_dfInfinity_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=Infinity, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 5,
+        "df": "Infinity"
+      },
+      "expected": {
+        "quantile": 3.8576555103786245
+      }
+    },
+    {
+      "id": "cdf_k5_dfInfinity_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=5, df=Infinity",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.857656,
+        "k": 5,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 0.9500000475421
+      }
+    },
+    {
+      "id": "ppf_k5_dfInfinity_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=5, df=Infinity, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 5,
+        "df": "Infinity"
+      },
+      "expected": {
+        "quantile": 4.602821042201571
+      }
+    },
+    {
+      "id": "cdf_k5_dfInfinity_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=5, df=Infinity",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.602821,
+        "k": 5,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 0.9899999989986259
+      }
+    },
+    {
+      "id": "cdf_k5_df10_q200",
+      "tier": "edge",
+      "description": "Far tail q=200, k=5, df=10: CDF = 1",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 200,
+        "k": 5,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 1.0
+      }
+    },
+    {
+      "id": "cdf_k5_dfInfinity_q200",
+      "tier": "edge",
+      "description": "Far tail q=200, k=5, df=Infinity: CDF = 1",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 200,
+        "k": 5,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 1.0
+      }
+    },
+    {
+      "id": "ppf_k10_df1.5_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=1.5, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 10,
+        "df": 1.5
+      },
+      "expected": {
+        "quantile": 3.8979768237419634
+      }
+    },
+    {
+      "id": "cdf_k10_df1.5_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=10, df=1.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.897977,
+        "k": 10,
+        "df": 1.5
+      },
+      "expected": {
+        "cdf": 0.5000000244155226
+      }
+    },
+    {
+      "id": "ppf_k10_df1.5_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=1.5, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 10,
+        "df": 1.5
+      },
+      "expected": {
+        "quantile": 13.10642072214279
+      }
+    },
+    {
+      "id": "cdf_k10_df1.5_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=10, df=1.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 13.106421,
+        "k": 10,
+        "df": 1.5
+      },
+      "expected": {
+        "cdf": 0.9000000030855936
+      }
+    },
+    {
+      "id": "ppf_k10_df1.5_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=1.5, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 10,
+        "df": 1.5
+      },
+      "expected": {
+        "quantile": 20.995598999811
+      }
+    },
+    {
+      "id": "cdf_k10_df1.5_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=10, df=1.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 20.995599,
+        "k": 10,
+        "df": 1.5
+      },
+      "expected": {
+        "cdf": 0.9500000000006672
+      }
+    },
+    {
+      "id": "ppf_k10_df1.5_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=1.5, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 10,
+        "df": 1.5
+      },
+      "expected": {
+        "quantile": 61.711021891473976
+      }
+    },
+    {
+      "id": "cdf_k10_df1.5_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=10, df=1.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 61.711022,
+        "k": 10,
+        "df": 1.5
+      },
+      "expected": {
+        "cdf": 0.9900000000263433
+      }
+    },
+    {
+      "id": "ppf_k10_df2_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=2, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 10,
+        "df": 2
+      },
+      "expected": {
+        "quantile": 3.645068075348884
+      }
+    },
+    {
+      "id": "cdf_k10_df2_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=10, df=2",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.645068,
+        "k": 10,
+        "df": 2
+      },
+      "expected": {
+        "cdf": 0.49999998688862485
+      }
+    },
+    {
+      "id": "ppf_k10_df2_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=2, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 10,
+        "df": 2
+      },
+      "expected": {
+        "quantile": 9.7249263351907
+      }
+    },
+    {
+      "id": "cdf_k10_df2_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=10, df=2",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 9.724926,
+        "k": 10,
+        "df": 2
+      },
+      "expected": {
+        "cdf": 0.8999999935544769
+      }
+    },
+    {
+      "id": "ppf_k10_df2_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=2, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 10,
+        "df": 2
+      },
+      "expected": {
+        "quantile": 13.98849114006153
+      }
+    },
+    {
+      "id": "cdf_k10_df2_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=10, df=2",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 13.988491,
+        "k": 10,
+        "df": 2
+      },
+      "expected": {
+        "cdf": 0.9499999990308704
+      }
+    },
+    {
+      "id": "ppf_k10_df2_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=2, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 10,
+        "df": 2
+      },
+      "expected": {
+        "quantile": 31.689352369386082
+      }
+    },
+    {
+      "id": "cdf_k10_df2_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=10, df=2",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 31.689352,
+        "k": 10,
+        "df": 2
+      },
+      "expected": {
+        "cdf": 0.9899999997683526
+      }
+    },
+    {
+      "id": "ppf_k10_df5_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=5, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 10,
+        "df": 5
+      },
+      "expected": {
+        "quantile": 3.252642573531458
+      }
+    },
+    {
+      "id": "cdf_k10_df5_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=10, df=5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.252643,
+        "k": 10,
+        "df": 5
+      },
+      "expected": {
+        "cdf": 0.5000001233705555
+      }
+    },
+    {
+      "id": "ppf_k10_df5_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=5, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 10,
+        "df": 5
+      },
+      "expected": {
+        "quantile": 5.815903080976361
+      }
+    },
+    {
+      "id": "cdf_k10_df5_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=10, df=5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 5.815903,
+        "k": 10,
+        "df": 5
+      },
+      "expected": {
+        "cdf": 0.8999999950424912
+      }
+    },
+    {
+      "id": "ppf_k10_df5_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=5, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 10,
+        "df": 5
+      },
+      "expected": {
+        "quantile": 6.99469776788819
+      }
+    },
+    {
+      "id": "cdf_k10_df5_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=10, df=5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 6.994698,
+        "k": 10,
+        "df": 5
+      },
+      "expected": {
+        "cdf": 0.9500000065310501
+      }
+    },
+    {
+      "id": "ppf_k10_df5_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=5, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 10,
+        "df": 5
+      },
+      "expected": {
+        "quantile": 10.239256028510363
+      }
+    },
+    {
+      "id": "cdf_k10_df5_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=10, df=5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 10.239256,
+        "k": 10,
+        "df": 5
+      },
+      "expected": {
+        "cdf": 0.9899999998758313
+      }
+    },
+    {
+      "id": "ppf_k10_df10_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=10, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 10,
+        "df": 10
+      },
+      "expected": {
+        "quantile": 3.136809726863247
+      }
+    },
+    {
+      "id": "cdf_k10_df10_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=10, df=10",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.13681,
+        "k": 10,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 0.5000000996718266
+      }
+    },
+    {
+      "id": "ppf_k10_df10_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=10, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 10,
+        "df": 10
+      },
+      "expected": {
+        "quantile": 4.913210851709467
+      }
+    },
+    {
+      "id": "cdf_k10_df10_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=10, df=10",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.913211,
+        "k": 10,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 0.9000000148765462
+      }
+    },
+    {
+      "id": "ppf_k10_df10_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=10, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 10,
+        "df": 10
+      },
+      "expected": {
+        "quantile": 5.598386466470146
+      }
+    },
+    {
+      "id": "cdf_k10_df10_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=10, df=10",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 5.598386,
+        "k": 10,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 0.9499999763266463
+      }
+    },
+    {
+      "id": "ppf_k10_df10_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=10, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 10,
+        "df": 10
+      },
+      "expected": {
+        "quantile": 7.213349202850769
+      }
+    },
+    {
+      "id": "cdf_k10_df10_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=10, df=10",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 7.213349,
+        "k": 10,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 0.9899999980389124
+      }
+    },
+    {
+      "id": "ppf_k10_df30_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=30, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 10,
+        "df": 30
+      },
+      "expected": {
+        "quantile": 3.0618962876791467
+      }
+    },
+    {
+      "id": "cdf_k10_df30_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=10, df=30",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.061896,
+        "k": 10,
+        "df": 30
+      },
+      "expected": {
+        "cdf": 0.49999987207626073
+      }
+    },
+    {
+      "id": "ppf_k10_df30_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=30, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 10,
+        "df": 30
+      },
+      "expected": {
+        "quantile": 4.380606527931503
+      }
+    },
+    {
+      "id": "cdf_k10_df30_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=10, df=30",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.380607,
+        "k": 10,
+        "df": 30
+      },
+      "expected": {
+        "cdf": 0.9000000705605427
+      }
+    },
+    {
+      "id": "ppf_k10_df30_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=30, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 10,
+        "df": 30
+      },
+      "expected": {
+        "quantile": 4.824141286183111
+      }
+    },
+    {
+      "id": "cdf_k10_df30_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=10, df=30",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.824141,
+        "k": 10,
+        "df": 30
+      },
+      "expected": {
+        "cdf": 0.949999976740551
+      }
+    },
+    {
+      "id": "ppf_k10_df30_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=30, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 10,
+        "df": 30
+      },
+      "expected": {
+        "quantile": 5.756254907238702
+      }
+    },
+    {
+      "id": "cdf_k10_df30_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=10, df=30",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 5.756255,
+        "k": 10,
+        "df": 30
+      },
+      "expected": {
+        "cdf": 0.9900000016787897
+      }
+    },
+    {
+      "id": "ppf_k10_df120_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=120, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 10,
+        "df": 120
+      },
+      "expected": {
+        "quantile": 3.0336991123905106
+      }
+    },
+    {
+      "id": "cdf_k10_df120_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=10, df=120",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.033699,
+        "k": 10,
+        "df": 120
+      },
+      "expected": {
+        "cdf": 0.4999999453362788
+      }
+    },
+    {
+      "id": "ppf_k10_df120_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=120, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 10,
+        "df": 120
+      },
+      "expected": {
+        "quantile": 4.1914021382612265
+      }
+    },
+    {
+      "id": "cdf_k10_df120_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=10, df=120",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.191402,
+        "k": 10,
+        "df": 120
+      },
+      "expected": {
+        "cdf": 0.8999999754538259
+      }
+    },
+    {
+      "id": "ppf_k10_df120_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=120, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 10,
+        "df": 120
+      },
+      "expected": {
+        "quantile": 4.559537994054182
+      }
+    },
+    {
+      "id": "cdf_k10_df120_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=10, df=120",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.559538,
+        "k": 10,
+        "df": 120
+      },
+      "expected": {
+        "cdf": 0.9500000005906677
+      }
+    },
+    {
+      "id": "ppf_k10_df120_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=120, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 10,
+        "df": 120
+      },
+      "expected": {
+        "quantile": 5.299213944944477
+      }
+    },
+    {
+      "id": "cdf_k10_df120_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=10, df=120",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 5.299214,
+        "k": 10,
+        "df": 120
+      },
+      "expected": {
+        "cdf": 0.9900000012952862
+      }
+    },
+    {
+      "id": "ppf_k10_dfInfinity_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=Infinity, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 10,
+        "df": "Infinity"
+      },
+      "expected": {
+        "quantile": 3.024201572972566
+      }
+    },
+    {
+      "id": "cdf_k10_dfInfinity_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=10, df=Infinity",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.024202,
+        "k": 10,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 0.500000214574237
+      }
+    },
+    {
+      "id": "ppf_k10_dfInfinity_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=Infinity, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 10,
+        "df": "Infinity"
+      },
+      "expected": {
+        "quantile": 4.129346398236874
+      }
+    },
+    {
+      "id": "cdf_k10_dfInfinity_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=10, df=Infinity",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.129346,
+        "k": 10,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 0.8999999248671359
+      }
+    },
+    {
+      "id": "ppf_k10_dfInfinity_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=Infinity, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 10,
+        "df": "Infinity"
+      },
+      "expected": {
+        "quantile": 4.474124221725904
+      }
+    },
+    {
+      "id": "cdf_k10_dfInfinity_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=10, df=Infinity",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.474124,
+        "k": 10,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 0.9499999763674588
+      }
+    },
+    {
+      "id": "ppf_k10_dfInfinity_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=10, df=Infinity, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 10,
+        "df": "Infinity"
+      },
+      "expected": {
+        "quantile": 5.156634960089617
+      }
+    },
+    {
+      "id": "cdf_k10_dfInfinity_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=10, df=Infinity",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 5.156635,
+        "k": 10,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 0.9900000010282328
+      }
+    },
+    {
+      "id": "cdf_k10_df10_q200",
+      "tier": "edge",
+      "description": "Far tail q=200, k=10, df=10: CDF = 1",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 200,
+        "k": 10,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 1.0
+      }
+    },
+    {
+      "id": "cdf_k10_dfInfinity_q200",
+      "tier": "edge",
+      "description": "Far tail q=200, k=10, df=Infinity: CDF = 1",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 200,
+        "k": 10,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 1.0
+      }
+    },
+    {
+      "id": "ppf_k20_df1.5_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=1.5, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 20,
+        "df": 1.5
+      },
+      "expected": {
+        "quantile": 4.7605791154692705
+      }
+    },
+    {
+      "id": "cdf_k20_df1.5_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=20, df=1.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.760579,
+        "k": 20,
+        "df": 1.5
+      },
+      "expected": {
+        "cdf": 0.49999998656199596
+      }
+    },
+    {
+      "id": "ppf_k20_df1.5_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=1.5, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 20,
+        "df": 1.5
+      },
+      "expected": {
+        "quantile": 15.813599566841367
+      }
+    },
+    {
+      "id": "cdf_k20_df1.5_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=20, df=1.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 15.8136,
+        "k": 20,
+        "df": 1.5
+      },
+      "expected": {
+        "cdf": 0.9000000039966345
+      }
+    },
+    {
+      "id": "ppf_k20_df1.5_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=1.5, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 20,
+        "df": 1.5
+      },
+      "expected": {
+        "quantile": 25.313116135022593
+      }
+    },
+    {
+      "id": "cdf_k20_df1.5_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=20, df=1.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 25.313116,
+        "k": 20,
+        "df": 1.5
+      },
+      "expected": {
+        "cdf": 0.9499999996042405
+      }
+    },
+    {
+      "id": "ppf_k20_df1.5_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=1.5, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 20,
+        "df": 1.5
+      },
+      "expected": {
+        "quantile": 74.3692234085935
+      }
+    },
+    {
+      "id": "cdf_k20_df1.5_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=20, df=1.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 74.369223,
+        "k": 20,
+        "df": 1.5
+      },
+      "expected": {
+        "cdf": 0.9899999999176915
+      }
+    },
+    {
+      "id": "ppf_k20_df2_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=2, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 20,
+        "df": 2
+      },
+      "expected": {
+        "quantile": 4.450582047457989
+      }
+    },
+    {
+      "id": "cdf_k20_df2_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=20, df=2",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.450582,
+        "k": 20,
+        "df": 2
+      },
+      "expected": {
+        "cdf": 0.4999999929787982
+      }
+    },
+    {
+      "id": "ppf_k20_df2_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=2, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 20,
+        "df": 2
+      },
+      "expected": {
+        "quantile": 11.675702330618025
+      }
+    },
+    {
+      "id": "cdf_k20_df2_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=20, df=2",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 11.675702,
+        "k": 20,
+        "df": 2
+      },
+      "expected": {
+        "cdf": 0.8999999946732192
+      }
+    },
+    {
+      "id": "ppf_k20_df2_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=2, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 20,
+        "df": 2
+      },
+      "expected": {
+        "quantile": 16.76878795105244
+      }
+    },
+    {
+      "id": "cdf_k20_df2_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=20, df=2",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 16.768788,
+        "k": 20,
+        "df": 2
+      },
+      "expected": {
+        "cdf": 0.950000000283347
+      }
+    },
+    {
+      "id": "ppf_k20_df2_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=2, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 20,
+        "df": 2
+      },
+      "expected": {
+        "quantile": 37.943462287636606
+      }
+    },
+    {
+      "id": "cdf_k20_df2_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=20, df=2",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 37.943462,
+        "k": 20,
+        "df": 2
+      },
+      "expected": {
+        "cdf": 0.9899999998492649
+      }
+    },
+    {
+      "id": "ppf_k20_df5_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=5, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 20,
+        "df": 5
+      },
+      "expected": {
+        "quantile": 3.970391888547097
+      }
+    },
+    {
+      "id": "cdf_k20_df5_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=20, df=5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.970392,
+        "k": 20,
+        "df": 5
+      },
+      "expected": {
+        "cdf": 0.500000028942269
+      }
+    },
+    {
+      "id": "ppf_k20_df5_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=5, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 20,
+        "df": 5
+      },
+      "expected": {
+        "quantile": 6.862768965299886
+      }
+    },
+    {
+      "id": "cdf_k20_df5_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=20, df=5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 6.862769,
+        "k": 20,
+        "df": 5
+      },
+      "expected": {
+        "cdf": 0.9000000018660012
+      }
+    },
+    {
+      "id": "ppf_k20_df5_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=5, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 20,
+        "df": 5
+      },
+      "expected": {
+        "quantile": 8.20803799664802
+      }
+    },
+    {
+      "id": "cdf_k20_df5_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=20, df=5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 8.208038,
+        "k": 20,
+        "df": 5
+      },
+      "expected": {
+        "cdf": 0.9500000000824732
+      }
+    },
+    {
+      "id": "ppf_k20_df5_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=5, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 20,
+        "df": 5
+      },
+      "expected": {
+        "quantile": 11.93177159253079
+      }
+    },
+    {
+      "id": "cdf_k20_df5_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=20, df=5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 11.931772,
+        "k": 20,
+        "df": 5
+      },
+      "expected": {
+        "cdf": 0.9900000015423087
+      }
+    },
+    {
+      "id": "ppf_k20_df10_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=10, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 20,
+        "df": 10
+      },
+      "expected": {
+        "quantile": 3.828557759892267
+      }
+    },
+    {
+      "id": "cdf_k20_df10_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=20, df=10",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.828558,
+        "k": 20,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 0.5000000829068801
+      }
+    },
+    {
+      "id": "ppf_k20_df10_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=10, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 20,
+        "df": 10
+      },
+      "expected": {
+        "quantile": 5.726270528743256
+      }
+    },
+    {
+      "id": "cdf_k20_df10_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=20, df=10",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 5.726271,
+        "k": 20,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 0.9000000438516637
+      }
+    },
+    {
+      "id": "ppf_k20_df10_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=10, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 20,
+        "df": 10
+      },
+      "expected": {
+        "quantile": 6.466985023715674
+      }
+    },
+    {
+      "id": "cdf_k20_df10_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=20, df=10",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 6.466985,
+        "k": 20,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 0.9499999988895038
+      }
+    },
+    {
+      "id": "ppf_k20_df10_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=10, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 20,
+        "df": 10
+      },
+      "expected": {
+        "quantile": 8.225639213744769
+      }
+    },
+    {
+      "id": "cdf_k20_df10_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=20, df=10",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 8.225639,
+        "k": 20,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 0.9899999981100464
+      }
+    },
+    {
+      "id": "ppf_k20_df30_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=30, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 20,
+        "df": 30
+      },
+      "expected": {
+        "quantile": 3.7353595043065537
+      }
+    },
+    {
+      "id": "cdf_k20_df30_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=20, df=30",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.73536,
+        "k": 20,
+        "df": 30
+      },
+      "expected": {
+        "cdf": 0.5000002252226653
+      }
+    },
+    {
+      "id": "ppf_k20_df30_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=30, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 20,
+        "df": 30
+      },
+      "expected": {
+        "quantile": 5.034163690077494
+      }
+    },
+    {
+      "id": "cdf_k20_df30_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=20, df=30",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 5.034164,
+        "k": 20,
+        "df": 30
+      },
+      "expected": {
+        "cdf": 0.9000000467175492
+      }
+    },
+    {
+      "id": "ppf_k20_df30_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=30, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 20,
+        "df": 30
+      },
+      "expected": {
+        "quantile": 5.474956973448657
+      }
+    },
+    {
+      "id": "cdf_k20_df30_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=20, df=30",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 5.474957,
+        "k": 20,
+        "df": 30
+      },
+      "expected": {
+        "cdf": 0.9500000021665794
+      }
+    },
+    {
+      "id": "ppf_k20_df30_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=30, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 20,
+        "df": 30
+      },
+      "expected": {
+        "quantile": 6.4073935281734995
+      }
+    },
+    {
+      "id": "cdf_k20_df30_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=20, df=30",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 6.407394,
+        "k": 20,
+        "df": 30
+      },
+      "expected": {
+        "cdf": 0.9900000085012475
+      }
+    },
+    {
+      "id": "ppf_k20_df120_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=120, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 20,
+        "df": 120
+      },
+      "expected": {
+        "quantile": 3.698753324687964
+      }
+    },
+    {
+      "id": "cdf_k20_df120_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=20, df=120",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.698753,
+        "k": 20,
+        "df": 120
+      },
+      "expected": {
+        "cdf": 0.49999982998147896
+      }
+    },
+    {
+      "id": "ppf_k20_df120_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=120, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 20,
+        "df": 120
+      },
+      "expected": {
+        "quantile": 4.779331805484269
+      }
+    },
+    {
+      "id": "cdf_k20_df120_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=20, df=120",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.779332,
+        "k": 20,
+        "df": 120
+      },
+      "expected": {
+        "cdf": 0.900000036762631
+      }
+    },
+    {
+      "id": "ppf_k20_df120_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=120, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 20,
+        "df": 120
+      },
+      "expected": {
+        "quantile": 5.125942774946927
+      }
+    },
+    {
+      "id": "cdf_k20_df120_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=20, df=120",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 5.125943,
+        "k": 20,
+        "df": 120
+      },
+      "expected": {
+        "cdf": 0.9500000236906361
+      }
+    },
+    {
+      "id": "ppf_k20_df120_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=120, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 20,
+        "df": 120
+      },
+      "expected": {
+        "quantile": 5.827184436011995
+      }
+    },
+    {
+      "id": "cdf_k20_df120_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=20, df=120",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 5.827184,
+        "k": 20,
+        "df": 120
+      },
+      "expected": {
+        "cdf": 0.9899999892277692
+      }
+    },
+    {
+      "id": "ppf_k20_dfInfinity_p0.5",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=Infinity, p=0.5",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.5,
+        "k": 20,
+        "df": "Infinity"
+      },
+      "expected": {
+        "quantile": 3.6859147719627656
+      }
+    },
+    {
+      "id": "cdf_k20_dfInfinity_p0.5",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.5 quantile, k=20, df=Infinity",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 3.685915,
+        "k": 20,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 0.5000001262436561
+      }
+    },
+    {
+      "id": "ppf_k20_dfInfinity_p0.9",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=Infinity, p=0.9",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.9,
+        "k": 20,
+        "df": "Infinity"
+      },
+      "expected": {
+        "quantile": 4.694104409490512
+      }
+    },
+    {
+      "id": "cdf_k20_dfInfinity_p0.9",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.9 quantile, k=20, df=Infinity",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 4.694104,
+        "k": 20,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 0.8999999159114843
+      }
+    },
+    {
+      "id": "ppf_k20_dfInfinity_p0.95",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=Infinity, p=0.95",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.95,
+        "k": 20,
+        "df": "Infinity"
+      },
+      "expected": {
+        "quantile": 5.0116887941184425
+      }
+    },
+    {
+      "id": "cdf_k20_dfInfinity_p0.95",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.95 quantile, k=20, df=Infinity",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 5.011689,
+        "k": 20,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 0.9500000237608325
+      }
+    },
+    {
+      "id": "ppf_k20_dfInfinity_p0.99",
+      "tier": "standard",
+      "description": "Quantile, k=20, df=Infinity, p=0.99",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "p": 0.99,
+        "k": 20,
+        "df": "Infinity"
+      },
+      "expected": {
+        "quantile": 5.64521469798585
+      }
+    },
+    {
+      "id": "cdf_k20_dfInfinity_p0.99",
+      "tier": "standard",
+      "description": "CDF at the rounded p=0.99 quantile, k=20, df=Infinity",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 5.645215,
+        "k": 20,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 0.9900000083412775
+      }
+    },
+    {
+      "id": "cdf_k20_df10_q200",
+      "tier": "edge",
+      "description": "Far tail q=200, k=20, df=10: CDF = 1",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 200,
+        "k": 20,
+        "df": 10
+      },
+      "expected": {
+        "cdf": 1.0
+      }
+    },
+    {
+      "id": "cdf_k20_dfInfinity_q200",
+      "tier": "edge",
+      "description": "Far tail q=200, k=20, df=Infinity: CDF = 1",
+      "reference": "scipy.stats.studentized_range",
+      "inputs": {
+        "q": 200,
+        "k": 20,
+        "df": "Infinity"
+      },
+      "expected": {
+        "cdf": 0.9999999999999998
+      }
+    }
+  ]
+}
