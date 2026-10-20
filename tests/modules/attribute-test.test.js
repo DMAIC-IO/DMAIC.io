@@ -314,6 +314,118 @@ suite('attribute-test report', () => {
     const r = buildReport(st(), { ok: true, kind: 'one', x: 3, n: 4, p0: 0.5, missing: 2 });
     assertDeepEqual(r.notes.find(n => n.key === 'noteMissing').params, { count: 2 });
   });
+  const twoNorm = (over = {}) => ({ ok: true, kind: 'two', x1: 30, n1: 400, x2: 18, n2: 380, groups: null, missing: 0, ...over });
+  test('two: p ≥ α shows the equivalence note and action, McNemar note always', () => {
+    const keep = buildReport(st({ pooled: true }), twoNorm());
+    assertTrue(keep.notes.some(n => n.key === 'noteNotEquivalentIsNotEqual'));
+    assertTrue(keep.notes.some(n => n.key === 'notePairedUseMcNemar'));
+    assertDeepEqual(keep.actions, [{ key: 'actionCheckEquivalence' }]);
+    const rej = buildReport(st(), twoNorm({ x1: 30, n1: 200, x2: 10, n2: 200 }));
+    assertEqual(rej.decision, 'reject');
+    assertTrue(!rej.notes.some(n => n.key === 'noteNotEquivalentIsNotEqual'));
+    assertTrue(rej.notes.some(n => n.key === 'notePairedUseMcNemar'));
+    assertTrue(rej.actions === undefined);
+  });
+  test('two: one-sided alternative never shows the equivalence note', () => {
+    const r = buildReport(st({ direction: 'greater', pooled: true }), twoNorm());
+    assertEqual(r.decision, 'keep');
+    assertTrue(!r.notes.some(n => n.key === 'noteNotEquivalentIsNotEqual'));
+    assertTrue(r.actions === undefined);
+    assertTrue(r.notes.some(n => n.key === 'notePairedUseMcNemar'));
+  });
+  test('rate1 zero events: CI lower 0, no NaN in any stat value', () => {
+    const r = buildReport(st(), { ok: true, kind: 'rate1', x: 0, t: 10, lambda0: 0.2, missing: 0 });
+    assertEqual(r.kind, 'rate1');
+    assertTrue(r.stats.find(s => s.key === 'ci').value.startsWith('[0.0000,'));
+    r.stats.forEach(s => assertTrue(!s.value.includes('NaN'), s.key + ': ' + s.value));
+    assertEqual(r.basisKey, 'basisExactPoisson');
+    assertTrue(r.notes.some(n => n.key === 'noteRateNormalApprox'));
+    assertDeepEqual(r.stats.map(s => s.key), ['counts', 'rate', 'ci', 'pExact', 'z', 'pNormal']);
+  });
+  test('rate1: large λ₀t has no normal-approximation note', () => {
+    const r = buildReport(st(), { ok: true, kind: 'rate1', x: 120, t: 100, lambda0: 1, missing: 0 });
+    assertTrue(!r.notes.some(n => n.key === 'noteRateNormalApprox'));
+  });
+  test('rate2: stats, conditional test only for diff0 = 0, one-sided CI shows ∞', () => {
+    const norm = { ok: true, kind: 'rate2', x1: 12, t1: 100, x2: 5, t2: 110, diff0: 0, groups: null, missing: 0 };
+    const r = buildReport(st(), norm);
+    assertEqual(r.basisKey, 'basisZRate');
+    assertTrue(['rate1', 'rate2', 'diff', 'ci', 'z', 'pValue', 'pExactCond', 'ratio', 'ratioCi']
+      .every(k => r.stats.some(s => s.key === k)));
+    const shifted = buildReport(st(), { ...norm, diff0: 0.02 });
+    assertTrue(!shifted.stats.some(s => s.key === 'pExactCond'));
+    const one = buildReport(st({ direction: 'greater' }), norm);
+    assertTrue(one.stats.find(s => s.key === 'ci').value.endsWith('∞]'));
+  });
+  test('mcnemar without discordant pairs is a hint', () => {
+    const r = buildReport(st(), { ok: true, kind: 'mcnemar', table: [[5, 0], [0, 5]], labels: { before: '', after: '' }, missing: 0 });
+    assertDeepEqual(r, { error: 'noteNoDiscordant', hint: true });
+  });
+  test('mcnemar: stats, small-discordant note, chi-square only two-sided', () => {
+    const norm = { ok: true, kind: 'mcnemar', table: [[20, 9], [3, 18]], labels: { before: '', after: '' }, missing: 1 };
+    const r = buildReport(st(), norm);
+    assertEqual(r.kind, 'mcnemar');
+    assertEqual(r.basisKey, 'basisExactMcNemar');
+    assertTrue(r.stats.some(s => s.key === 'pChi2Cc'));
+    assertTrue(r.notes.some(n => n.key === 'noteMissing'));
+    assertTrue(!r.notes.some(n => n.key === 'noteSmallDiscordant'));
+    const small = buildReport(st({ direction: 'greater' }), { ...norm, table: [[20, 4], [1, 18]] });
+    assertTrue(small.notes.some(n => n.key === 'noteSmallDiscordant'));
+    assertTrue(!small.stats.some(s => s.key === 'chi2'));
+  });
+  test('equiv 0 of 5 vs 0 of 5 is a hint, never equivalent', () => {
+    const r = buildReport(st(), { ok: true, kind: 'equiv', samples: 2, x1: 0, n1: 5, x2: 0, n2: 5, lower: -0.01, upper: 0.01, groups: null });
+    assertDeepEqual(r, { error: 'noteEquivDegenerate', hint: true });
+  });
+  test('equiv 2 samples passed: decision equivalent, CI label at 90 %', () => {
+    const r = buildReport(st(), { ok: true, kind: 'equiv', samples: 2, x1: 470, n1: 10000, x2: 455, n2: 10000, lower: -0.01, upper: 0.01, groups: null });
+    assertEqual(r.kind, 'equiv');
+    assertEqual(r.decision, 'equivalent');
+    assertEqual(r.basisKey, 'basisTost');
+    assertEqual(r.stats.find(s => s.key === 'ci').params.level, 90);
+    assertEqual(r.stats.find(s => s.key === 'estimate').value, '0.15');
+    assertEqual(r.stats.find(s => s.key === 'bounds').value, '[-1.00; 1.00]');
+    assertDeepEqual(r.decisionParams, { lower: '-1.00', upper: '1.00', alpha: 0.05 });
+    assertTrue(r.notes.some(n => n.key === 'noteEquivBoundsPractical'));
+    assertTrue(!r.notes.some(n => n.key === 'noteEquivCiOutside'));
+  });
+  test('equiv 1 sample: bounds are relative to p₀, failing test says not equivalent', () => {
+    const r = buildReport(st(), { ok: true, kind: 'equiv', samples: 1, x: 8, n: 100, p0: 0.05, lower: -0.01, upper: 0.01 });
+    assertEqual(r.decision, 'notEquivalent');
+    assertEqual(r.stats.find(s => s.key === 'bounds').value, '[4.00; 6.00]');
+    assertTrue(r.notes.some(n => n.key === 'noteEquivCiOutside'));
+  });
+  test('i18n: every key used by buildReport exists in de and en', async () => {
+    const reports = [
+      buildReport(st({ pooled: true }), twoNorm()),
+      buildReport(st(), { ok: true, kind: 'one', x: 0, n: 30, p0: 0.1, missing: 1 }),
+      buildReport(st(), { ok: true, kind: 'rate1', x: 0, t: 10, lambda0: 0.2, missing: 0 }),
+      buildReport(st(), { ok: true, kind: 'rate2', x1: 12, t1: 100, x2: 5, t2: 110, diff0: 0, groups: null, missing: 0 }),
+      buildReport(st(), { ok: true, kind: 'mcnemar', table: [[20, 4], [1, 18]], labels: { before: '', after: '' }, missing: 0 }),
+      buildReport(st(), { ok: true, kind: 'equiv', samples: 2, x1: 470, n1: 10000, x2: 455, n2: 10000, lower: -0.01, upper: 0.01, groups: null }),
+      buildReport(st(), { ok: true, kind: 'equiv', samples: 1, x: 8, n: 100, p0: 0.05, lower: -0.01, upper: 0.01 }),
+      buildReport(st(), { ok: true, kind: 'mcnemar', table: [[5, 0], [0, 5]], labels: {}, missing: 0 }),
+      buildReport(st(), { ok: true, kind: 'equiv', samples: 2, x1: 0, n1: 5, x2: 0, n2: 5, lower: -0.01, upper: 0.01, groups: null }),
+    ];
+    const keys = new Set([
+      'decisionReject', 'decisionKeep', 'decisionEquivalent', 'decisionNotEquivalent',
+      'h0Rate1', 'h1Rate1', 'h0Rate2', 'h1Rate2', 'h0McNemar', 'h1McNemar', 'h0Equiv', 'h1Equiv',
+      'errExposure', 'errLambda0', 'errDiff0', 'errPairsLength', 'errPairLevels',
+      'errBoundsMissing', 'errBoundsOrder', 'errBoundsContain',
+    ]);
+    for (const r of reports) {
+      if (r.error) keys.add(r.error);
+      if (r.basisKey) keys.add(r.basisKey);
+      (r.stats || []).forEach(s => keys.add(s.labelKey));
+      (r.notes || []).forEach(n => keys.add(n.key));
+      (r.actions || []).forEach(a => keys.add(a.key));
+    }
+    for (const lang of ['de', 'en']) {
+      const dict = (await (await fetch(new URL(`../../i18n/${lang}.json`, import.meta.url))).json()).modules['attribute-test'];
+      const missing = [...keys].filter(k => typeof dict[k] !== 'string' || dict[k] === '');
+      assertDeepEqual(missing, [], `${lang} is missing keys`);
+    }
+  });
   test('fmtP', () => {
     assertEqual(fmtP(0.00001), '< 0.0001');
     assertEqual(fmtP(0.5), '0.5000');
