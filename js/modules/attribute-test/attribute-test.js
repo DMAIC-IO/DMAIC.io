@@ -13,8 +13,9 @@ import { ColumnPicker } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 import { State } from './attribute-test-model.js';
 import {
-  normalizeSummary, normalizeColumns, distinctValues, defaultEventValue, columnValuesOrNull,
+  normalizeSummary, normalizeColumns, distinctValues, defaultEventValue, columnValuesOrNull, withColumnLabels,
 } from './attribute-test-input.js';
+import { resolveColumnRef } from '../../core/worksheet-columns.js';
 import { buildReport } from './attribute-test-report.js';
 
 const PICKERS = [
@@ -72,7 +73,7 @@ const mod = createModule({
       decisionClass() {
         if (!this.hasResult()) return 'attrtest__decision--keep';
         const d = this.result.decision;
-        if (d === 'notEquivalent') return '';
+        if (d === 'notEquivalent') return 'attrtest__decision--inconclusive';
         return d === 'reject' ? 'attrtest__decision--reject' : 'attrtest__decision--keep';
       },
       basisText() { return this.hasResult() ? _t(this.result.basisKey) : ''; },
@@ -84,9 +85,32 @@ const mod = createModule({
         if (k === 'two') return [_t('h0Two'), _t('h1Two', { op })];
         if (k === 'rate1') return [_t('h0Rate1'), _t('h1Rate1', { op })];
         if (k === 'rate2') return [_t('h0Rate2'), _t('h1Rate2', { op })];
-        if (k === 'mcnemar') return [_t('h0McNemar'), _t('h1McNemar', { op })];
+        if (k === 'mcnemar') {
+          const l = this._pairLabels();
+          if (!l.before && !l.after) return [_t('h0McNemar'), _t('h1McNemar', { op })];
+          const p = { before: l.before || _t('fallbackBefore'), after: l.after || _t('fallbackAfter'), op };
+          return [_t('h0McNemarLabeled', p), _t('h1McNemarLabeled', p)];
+        }
         if (k === 'equiv') return [_t('h0Equiv'), _t('h1Equiv')];
         return [_t('h0Assoc'), _t('h1Assoc')];
+      },
+      /** Labels shown for the McNemar table: explicit ones, else the picked column names. */
+      _pairLabels() {
+        const m = this.model;
+        const l = (m.summary.pairs && m.summary.pairs.labels) || {};
+        let before = String(l.before || '').trim();
+        let after = String(l.after || '').trim();
+        if (m.inputMode === 'columns') {
+          const n = this._columnNames();
+          before = before || n.before || '';
+          after = after || n.after || '';
+        }
+        return { before, after };
+      },
+      _columnNames() {
+        const sm = module._context.stateManager;
+        const name = (ref) => { const c = resolveColumnRef(sm, ref); return c ? String(c.name || '').trim() : ''; };
+        return { before: name(this.model.colRefs.before), after: name(this.model.colRefs.after) };
       },
       is2x2() {
         return this.hasTable() && this.tableCols().length === 2 && this.tableRows().length === 2;
@@ -173,7 +197,7 @@ const mod = createModule({
           if (this.eventOptions.length && !this.eventOptions.includes(m.eventValue)) {
             m.eventValue = defaultEventValue(eventSource);
           }
-          this.result = buildReport(m, normalizeColumns(m, cols));
+          this.result = buildReport(m, withColumnLabels(normalizeColumns(m, cols), this._columnNames()));
         } else {
           this.result = buildReport(m, normalizeSummary(m));
         }

@@ -137,6 +137,8 @@ function reportRate2(state, norm) {
   });
   if (!r.testable) return { error: 'noteRateNotTestable', hint: true };
   const notes = [];
+  // The pooled variance only exists for H₀: Δ = 0; with a shifted H₀ the setting has no effect.
+  if (state.ratePooled && norm.diff0 !== 0) notes.push({ key: 'noteRatePooledIgnored' });
   missingNote(norm, notes);
   const g = norm.groups || ['1', '2'];
   const level = pct(state.alpha);
@@ -171,10 +173,14 @@ function reportMcNemar(state, norm) {
   const notes = [];
   if (r.smallDiscordant) notes.push({ key: 'noteSmallDiscordant' });
   missingNote(norm, notes);
+  const lb = String((norm.labels && norm.labels.before) || '').trim();
+  const la = String((norm.labels && norm.labels.after) || '').trim();
   const stats = [
     { key: 'discordant', labelKey: 'statDiscordant', value: `${r.b} / ${r.c}` },
-    { key: 'pBefore', labelKey: 'statPBefore', value: fmt(r.pBefore) },
-    { key: 'pAfter', labelKey: 'statPAfter', value: fmt(r.pAfter) },
+    lb ? { key: 'pBefore', labelKey: 'statPBeforeLabeled', params: { label: lb }, value: fmt(r.pBefore) }
+      : { key: 'pBefore', labelKey: 'statPBefore', value: fmt(r.pBefore) },
+    la ? { key: 'pAfter', labelKey: 'statPAfterLabeled', params: { label: la }, value: fmt(r.pAfter) }
+      : { key: 'pAfter', labelKey: 'statPAfter', value: fmt(r.pAfter) },
     { key: 'diff', labelKey: 'statPairedDiff', value: fmt(r.diff) },
     { key: 'ci', labelKey: 'statCiPairedDiff', params: { level: pct(state.alpha) }, value: ci(r.ciLower, r.ciUpper) },
     { key: 'pExact', labelKey: 'statPExactMcNemar', value: fmtP(r.pExact) },

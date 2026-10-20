@@ -119,6 +119,19 @@ function readLabels(state) {
 }
 
 /**
+ * Column mode has no explicit McNemar labels: use the picked column names for
+ * every label that is still empty. Non-McNemar results pass through unchanged.
+ * @param {object} norm normalizer result
+ * @param {{ before?: string, after?: string }} names column names
+ * @returns {object}
+ */
+export function withColumnLabels(norm, names) {
+  if (!norm || norm.kind !== 'mcnemar') return norm;
+  const l = norm.labels || {};
+  return { ...norm, labels: { before: l.before || names.before || '', after: l.after || names.after || '' } };
+}
+
+/**
  * Sum already-filtered count values (callers drop blanks first).
  * @returns {{ x: number, rows: number }|{ error: string }}
  */

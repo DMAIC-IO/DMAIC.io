@@ -1,7 +1,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import {
   parseCount, parseProportion, distinctValues, defaultEventValue,
-  normalizeSummary, normalizeColumns, columnValuesOrNull, parsePositive,
+  normalizeSummary, normalizeColumns, columnValuesOrNull, parsePositive, withColumnLabels,
 } from '../../js/modules/attribute-test/attribute-test-input.js';
 
 const base = (over = {}) => ({
@@ -687,5 +687,49 @@ suite('attribute-test part 2 — equivalence', () => {
     const r1 = normalizeColumns(s, { ...noCols, response: ['a', 'b', 'b', 'a'] });
     assertEqual(r1.samples, 1);
     assertEqual(r1.x, 2);
+  });
+});
+
+suite('attribute-test follow-ups — pooled note, McNemar labels', () => {
+  const st = (over = {}) => ({ direction: 'two-sided', alpha: 0.05, pooled: false, ratePooled: false, ...over });
+  const rate2 = { ok: true, kind: 'rate2', x1: 12, t1: 100, x2: 5, t2: 110, diff0: 0, groups: null, missing: 0 };
+  const pair = (labels) => ({ ok: true, kind: 'mcnemar', table: [[20, 9], [3, 18]], labels, missing: 0 });
+  const stat = (r, key) => r.stats.find(s => s.key === key);
+
+  test('rate2: pooled note only when ratePooled and diff0 ≠ 0', () => {
+    const has = (r) => r.notes.some(n => n.key === 'noteRatePooledIgnored');
+    assertTrue(has(buildReport(st({ ratePooled: true }), { ...rate2, diff0: 0.02 })));
+    assertTrue(!has(buildReport(st({ ratePooled: true }), rate2)));
+    assertTrue(!has(buildReport(st({ ratePooled: false }), { ...rate2, diff0: 0.02 })));
+  });
+  test('mcnemar: empty labels keep the before/after keys', () => {
+    const r = buildReport(st(), pair({ before: '', after: '' }));
+    assertEqual(stat(r, 'pBefore').labelKey, 'statPBefore');
+    assertEqual(stat(r, 'pAfter').labelKey, 'statPAfter');
+  });
+  test('mcnemar: labels become key params', () => {
+    const r = buildReport(st(), pair({ before: 'Alt', after: ' Neu ' }));
+    assertEqual(stat(r, 'pBefore').labelKey, 'statPBeforeLabeled');
+    assertDeepEqual(stat(r, 'pBefore').params, { label: 'Alt' });
+    assertEqual(stat(r, 'pAfter').labelKey, 'statPAfterLabeled');
+    assertDeepEqual(stat(r, 'pAfter').params, { label: 'Neu' });
+  });
+  test('mcnemar: a label on one side only labels just that side', () => {
+    const r = buildReport(st(), pair({ before: 'Alt', after: '' }));
+    assertEqual(stat(r, 'pBefore').labelKey, 'statPBeforeLabeled');
+    assertEqual(stat(r, 'pAfter').labelKey, 'statPAfter');
+  });
+  test('withColumnLabels: column names fill empty labels, explicit labels win', () => {
+    const norm = pair({ before: '', after: 'X' });
+    assertDeepEqual(withColumnLabels(norm, { before: 'Col A', after: 'Col B' }).labels, { before: 'Col A', after: 'X' });
+    assertEqual(withColumnLabels({ error: 'e' }, { before: 'a', after: 'b' }).error, 'e');
+    assertDeepEqual(withColumnLabels(norm, {}).labels, { before: '', after: 'X' });
+  });
+  test('i18n: new keys exist in de and en', async () => {
+    const keys = ['noteRatePooledIgnored', 'statPBeforeLabeled', 'statPAfterLabeled', 'h0McNemarLabeled', 'h1McNemarLabeled', 'fallbackBefore', 'fallbackAfter'];
+    for (const lang of ['de', 'en']) {
+      const dict = (await (await fetch(new URL(`../../i18n/${lang}.json`, import.meta.url))).json()).modules['attribute-test'];
+      assertDeepEqual(keys.filter(k => typeof dict[k] !== 'string' || dict[k] === ''), [], `${lang} is missing keys`);
+    }
   });
 });
