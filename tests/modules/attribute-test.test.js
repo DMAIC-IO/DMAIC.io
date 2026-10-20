@@ -732,4 +732,17 @@ suite('attribute-test follow-ups — pooled note, McNemar labels', () => {
       assertDeepEqual(keys.filter(k => typeof dict[k] !== 'string' || dict[k] === ''), [], `${lang} is missing keys`);
     }
   });
+  test('i18n: labeled keys carry their placeholders in de and en', async () => {
+    const placeholders = {
+      statPBeforeLabeled: ['{label}'],
+      statPAfterLabeled: ['{label}'],
+      h0McNemarLabeled: ['{before}', '{after}'],
+      h1McNemarLabeled: ['{before}', '{after}', '{op}'],
+    };
+    for (const lang of ['de', 'en']) {
+      const dict = (await (await fetch(new URL(`../../i18n/${lang}.json`, import.meta.url))).json()).modules['attribute-test'];
+      const missing = Object.entries(placeholders).flatMap(([k, ps]) => ps.filter(p => !String(dict[k]).includes(p)).map(p => `${k} ${p}`));
+      assertDeepEqual(missing, [], `${lang} lacks placeholders`);
+    }
+  });
 });
