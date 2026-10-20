@@ -13,6 +13,7 @@ import { initFooter }          from './footer/footer.js';
 import { initDevTools }        from './dev-tools.js';
 import { updateReadOnlyMode, initCollapsibleSections } from './helpers.js';
 import { startGlossaryAugmenter } from '../core/glossary-inline.js';
+import { initBugReporter }     from './bug-reporter/bug-reporter.js';
 
 /**
  * Build the application chrome.
@@ -57,4 +58,5 @@ export function buildFrame(kernel, ui) {
   initDevTools(kernel, ui);
   updateReadOnlyMode(kernel.stateManager, kernel.i18n);
   initCollapsibleSections();
+  initBugReporter(kernel, ui);
 }

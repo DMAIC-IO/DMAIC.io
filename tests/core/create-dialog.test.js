@@ -84,6 +84,11 @@ suite('createDialog', () => {
     const node2 = document.querySelector('#app-dialogs .dlg');
     assertEqual(node1, node2, 'node reused across opens (borrow/restore)');
 
+    // opts.size reaches dialog.form(); without it the service keeps its default.
+    assertEqual(svc.calls[1].size, undefined, 'no size → service default');
+    await dlg.open(svc, { selected: 'wide' }, { size: 'wide' });
+    assertEqual(svc.calls[2].size, 'wide', 'opts.size forwarded to dialog.form()');
+
     // Cancel resolves null.
     svc.form = (o) => fakeDialog().form({ ...o, _cancel: true });
     const cancelled = await dlg.open(svc, { selected: 'ghi' });
