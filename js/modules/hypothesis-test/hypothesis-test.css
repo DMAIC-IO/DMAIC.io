@@ -426,3 +426,17 @@
   white-space: nowrap;
   color: var(--color-text-secondary);
 }
+
+
+/* ── Residual plots: four-in-one grid (one-way ANOVA, C1-020) ── */
+
+.hyptest__residuals {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-md);
+}
+
+.hyptest__residual-chart {
+  height: 280px;
+  min-width: 0;
+}

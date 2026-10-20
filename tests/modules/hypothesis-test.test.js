@@ -493,3 +493,77 @@ suite('Hypothesis Test View — k-group mean routes (C1-019, C1-020)', () => {
     assertEqual(view.result.pairwise, null);
   });
 });
+
+suite('Hypothesis Test View — residual plots (C1-020)', () => {
+  const REFS = ['chart-resid-fits', 'chart-resid-normal', 'chart-resid-hist', 'chart-resid-order'];
+
+  /** chartManager stub that records create calls and destroyed charts. */
+  function stubCharts() {
+    const calls = [];
+    const destroyed = [];
+    const chartManager = {
+      create: async (el, type, config) => {
+        const chart = { el, destroy: () => destroyed.push(chart) };
+        calls.push({ el, type, config, chart });
+        return chart;
+      },
+    };
+    const container = {
+      querySelector: (sel) => {
+        const m = /data-ref="([^"]+)"/.exec(sel);
+        return m && REFS.includes(m[1]) ? { ref: m[1], replaceChildren() {} } : null;
+      },
+    };
+    return { calls, destroyed, chartManager, container };
+  }
+
+  /** Runs the k-group analysis with the stub wired into the module object. */
+  async function runStubbed(groups, equalVariances, stub) {
+    const t = await loadT();
+    const module = { _context: { chartManager: stub.chartManager }, _container: stub.container };
+    const view = viewData(module, t);
+    const model = new State();
+    model.category = 'mean'; model.testType = 'k'; model.equalVariances = equalVariances; model.alpha = 0.05;
+    Object.assign(view, { model, t, $nextTick: fn => fn() });
+    view._pickerK = { value: groups.map((_, i) => i) };
+    view._valuesForRef = ref => groups[ref];
+    view._refName = ref => `G${ref + 1}`;
+    view.runAnalysis();
+    await view._residualRender;
+    return view;
+  }
+
+  for (const [label, eq] of [['Welch', false], ['Fisher', true]]) {
+    test(`${label} route renders the four residual charts`, async () => {
+      const stub = stubCharts();
+      const view = await runStubbed(NORMAL_GROUPS, eq, stub);
+      assertEqual(stub.calls.length, 4);
+      assertEqual(stub.calls.map(c => c.type).join(','), 'scatter,probability-plot,histogram,scatter');
+      assertEqual(stub.calls.map(c => c.el.ref).join(','), REFS.join(','));
+      assertTrue(stub.calls[2].config.showNormalCurve, 'histogram has normal curve');
+      assertEqual(stub.calls[0].config.series[0].x.length, 24);
+      assertEqual(view.result.residualPlot.residuals.length, 24);
+    });
+  }
+
+  test('re-running destroys the previous charts and renders anew (checkbox toggle)', async () => {
+    const stub = stubCharts();
+    const view = await runStubbed(NORMAL_GROUPS, false, stub);
+    view.model.equalVariances = true;
+    view.runAnalysis();
+    await view._residualRender;
+    assertEqual(stub.destroyed.length, 4);
+    assertEqual(stub.calls.length, 8);
+  });
+
+  test('Kruskal-Wallis route: no residual plot, old charts destroyed, nothing new rendered', async () => {
+    const stub = stubCharts();
+    const view = await runStubbed(NORMAL_GROUPS, true, stub);
+    view._valuesForRef = ref => SKEWED_GROUPS[ref];
+    view.runAnalysis();
+    await view._residualRender;
+    assertEqual(view.result.residualPlot, null);
+    assertEqual(stub.destroyed.length, 4);
+    assertEqual(stub.calls.length, 4);
+  });
+});

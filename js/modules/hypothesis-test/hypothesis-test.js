@@ -480,9 +480,105 @@ const definition = {
 
       runAnalysis() {
         this.errorText = '';
-        if (this.model.testType === 'k') return this._runAnalysisK();
-        if (this.model.testType === 'paired') return this._runAnalysisPaired();
-        return this._runAnalysisOneTwo();
+        if (this.model.testType === 'k') this._runAnalysisK();
+        else if (this.model.testType === 'paired') this._runAnalysisPaired();
+        else this._runAnalysisOneTwo();
+        this._renderResidualCharts();
+      },
+
+      // ── Residual plots (one-way ANOVA routes) ─────────────────
+
+      /** Destroys all residual chart instances created so far. */
+      _destroyResidualCharts() {
+        for (const ch of this._residualCharts || []) {
+          if (ch && typeof ch.destroy === 'function') { try { ch.destroy(); } catch { /* ignore */ } }
+        }
+        this._residualCharts = [];
+      },
+
+      /**
+       * Waits until an anchor element exists in the module container (the
+       * residual block lives in an x-if and appears one tick after the result).
+       * Resolves null when a newer render superseded this one or the anchor never came.
+       * @param {string} selector
+       * @param {number} gen - render generation the caller belongs to
+       * @param {number} [maxFrames]
+       * @returns {Promise<Element|null>}
+       */
+      _whenResidualAnchor(selector, gen, maxFrames = 30) {
+        return new Promise((resolve) => {
+          const tick = (left) => {
+            if (gen !== this._residualGen) { resolve(null); return; }
+            const el = module._container?.querySelector(selector);
+            if (el) { resolve(el); return; }
+            if (left <= 0) { resolve(null); return; }
+            requestAnimationFrame(() => tick(left - 1));
+          };
+          tick(maxFrames);
+        });
+      },
+
+      /**
+       * Destroys the previous residual charts and, when the current result
+       * carries residuals (Fisher / Welch route), renders the four-in-one block
+       * through chartManager. Residuals are standardized by their sample
+       * standard deviation, as in the regression module. Stores the pending
+       * promise in `_residualRender` so callers (and tests) can await it.
+       * @returns {Promise<void>}
+       */
+      _renderResidualCharts() {
+        this._residualGen = (this._residualGen || 0) + 1;
+        const gen = this._residualGen;
+        this._destroyResidualCharts();
+        const plot = this.result?.residualPlot;
+        const chartManager = module._context?.chartManager;
+        if (!plot || !chartManager) { this._residualRender = Promise.resolve(); return this._residualRender; }
+
+        const { residuals, fitted } = plot;
+        const n = residuals.length;
+        const mean = residuals.reduce((a, v) => a + v, 0) / n;
+        const sd = Math.sqrt(residuals.reduce((a, v) => a + (v - mean) ** 2, 0) / (n - 1));
+        const standardized = residuals.map(v => (sd > 0 ? (v - mean) / sd : 0));
+        const order = residuals.map((_, i) => i + 1);
+        const zeroLine = [{ dir: 'h', value: 0, dash: 'dash', width: 1, color: 'var(--color-error)', label: '0' }];
+        const dot = (color, x, y) => ({
+          name: _t('residuals'), color, markerSize: 4, strokeWidth: 0.75, symbol: 'circle', x, y,
+        });
+
+        const charts = [
+          ['chart-resid-fits', 'scatter', {
+            title: _t('residualsVsFitted'), xLabel: _t('fittedValues'), yLabel: _t('residuals'),
+            showLegend: false, refLines: zeroLine, series: [dot('var(--color-chart-3)', fitted, residuals)],
+          }],
+          ['chart-resid-normal', 'probability-plot', {
+            title: _t('residualsNormalPlot'), xLabel: _t('residuals'), yLabel: _t('residualsPercent'),
+            showLegend: false,
+            series: [{ name: _t('residuals'), values: standardized, color: 'var(--color-chart-5)' }],
+          }],
+          ['chart-resid-hist', 'histogram', {
+            title: _t('residualsHistogram'), xLabel: _t('residuals'), yLabel: _t('residualsFrequency'),
+            showLegend: false, showNormalCurve: true, data: residuals,
+          }],
+          ['chart-resid-order', 'scatter', {
+            title: _t('residualsVsOrder'), xLabel: _t('residualsVsOrderByGroup'), yLabel: _t('residuals'),
+            showLegend: false, refLines: zeroLine, series: [dot('var(--color-chart-4)', order, residuals)],
+          }],
+        ];
+
+        const render = async () => {
+          await new Promise(resolve => this.$nextTick(resolve));
+          await Promise.all(charts.map(async ([ref, type, config]) => {
+            const el = await this._whenResidualAnchor(`[data-ref="${ref}"]`, gen);
+            if (!el) return;
+            el.replaceChildren();
+            const chart = await chartManager.create(el, type, { editKey: `hyptest:${ref}`, ...config });
+            if (!chart) return;
+            if (gen !== this._residualGen) { try { chart.destroy(); } catch { /* ignore */ } return; }
+            this._residualCharts.push(chart);
+          }));
+        };
+        this._residualRender = render();
+        return this._residualRender;
       },
 
       _runAnalysisPaired() {
@@ -1028,6 +1124,8 @@ const definition = {
       destroy() {
         for (const unsub of this._unsubs) unsub();
         this._unsubs = [];
+        this._residualGen = (this._residualGen || 0) + 1;
+        this._destroyResidualCharts();
         this._disposePickers();
       },
     };

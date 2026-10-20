@@ -463,6 +463,19 @@
             </div>
           </template>
 
+          <!-- ── Section 6: Residual plots (Fisher / Welch ANOVA) ── -->
+          <template x-if="result.residualPlot">
+            <div class="hyptest__contents">
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionResiduals')"></span></div>
+              <div class="hyptest__residuals">
+                <div class="hyptest__residual-chart" data-ref="chart-resid-fits"></div>
+                <div class="hyptest__residual-chart" data-ref="chart-resid-normal"></div>
+                <div class="hyptest__residual-chart" data-ref="chart-resid-hist"></div>
+                <div class="hyptest__residual-chart" data-ref="chart-resid-order"></div>
+              </div>
+            </div>
+          </template>
+
         </div>
       </template>
     </div>
