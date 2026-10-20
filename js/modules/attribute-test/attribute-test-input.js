@@ -202,7 +202,7 @@ export function normalizeSummary(state) {
     const e2 = readExposure(s.t2);
     if (e1.error || e2.error) return fail('errExposure');
     const diff0 = readDiff0(s.diff0);
-    if (diff0 == null) return fail('errLambda0');
+    if (diff0 == null) return fail('errDiff0');
     return { ok: true, kind: 'rate2', x1, t1: e1.t, x2, t2: e2.t, diff0, groups: null, missing: 0 };
   }
   if (state.testKind === 'mcnemar') {
@@ -256,6 +256,7 @@ export function normalizeColumns(state, cols) {
     const perRow = parsePositive(state.exposurePerRow);
     if (perRow == null) return fail('errExposure');
     const present = cols.counts.filter(v => !isMissing(v));
+    if (present.length === 0) return fail('errExposure');
     const sum = sumCounts(present);
     if (sum.error) return fail(sum.error);
     const lambda0 = parsePositive(state.summary.lambda0);
@@ -288,7 +289,7 @@ export function normalizeColumns(state, cols) {
     const bad = sums.find(r => r.error);
     if (bad) return fail(bad.error);
     const diff0 = readDiff0(state.summary.diff0);
-    if (diff0 == null) return fail('errLambda0');
+    if (diff0 == null) return fail('errDiff0');
     return {
       ok: true, kind: 'rate2',
       x1: sums[0].x, t1: sums[0].rows * perRow, x2: sums[1].x, t2: sums[1].rows * perRow,
