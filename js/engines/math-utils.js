@@ -628,6 +628,7 @@ const SR_ALEGQ = [0.271524594117540948517805724560e-1, 0.62253523938647892862843
  * @returns {number}
  */
 function rangeProb(w, k) {
+  // R's eps/cut-offs: range bound 8, (2Φ(w/2)−1)^k dropped below e^(−50/k), terms dropped below e^(−30/(k−1)), z² > 60 skipped.
   const half = w * 0.5;
   if (half >= 8) return 1;
   let pr = 2 * pnormBoth(half)[0] - 1;
@@ -661,7 +662,9 @@ function rangeProb(w, k) {
  * Studentized range CDF P(Q ≤ q) for k means and df error degrees of freedom
  * (Tukey HSD, Games-Howell). After R's ptukey (Copenhaver & Holland 1988):
  * the range probability rangeProb(q·s, k) is averaged over s² ~ χ²_df / df,
- * and df > 25000 is treated as ∞.
+ * and df > 25000 is treated as ∞ for parity with R — this makes the CDF jump
+ * by ≈ 1e-5 at the cut-off (e.g. q = 3, k = 2: 0.966095 at df = 24999 vs.
+ * 0.966105 at df = 25001).
  *
  * Deviation from R: the outer integral runs over y = ln s² (16-point
  * Gauss-Legendre panels of width min(1, √(2/df)), marched out from the mode
@@ -670,18 +673,19 @@ function rangeProb(w, k) {
  * s^(df−2) endpoint singularity breaks the quadrature (R refuses df < 2).
  *
  * @param {number} q — Studentized range statistic
- * @param {number} k — Number of means (≥ 2)
+ * @param {number} k — Number of means (finite, ≥ 2)
  * @param {number} df — Error degrees of freedom (> 0, may be Infinity)
- * @returns {number} — 0 for q ≤ 0, NaN for invalid k or df
+ * @returns {number} — 0 for q ≤ 0, NaN for NaN q or invalid k or df
  */
 export function ptukey(q, k, df) {
-  if (Number.isNaN(q) || !(k >= 2) || !(df > 0)) return NaN;
+  if (Number.isNaN(q) || !Number.isFinite(k) || !(k >= 2) || !(df > 0)) return NaN;
   if (q <= 0) return 0;
   if (q === Infinity) return 1;
   if (df > 25000) return rangeProb(q, k);
   const f2 = df / 2;
   const c0 = f2 * Math.log(f2) - lnGamma(f2);
   const lnDens = (y) => c0 + f2 * (y - Math.exp(y));      // log density of y = ln s²
+  // Outer cut-offs (ours, not R's): nodes with log density < −40 skipped; stop right at −38 ≈ ln 3e-17, left at 1e-16·sum.
   const h = Math.min(1, Math.sqrt(2 / df));
   const panel = (y0) => {
     const mid = y0 + h / 2, hw = h / 2;
@@ -719,12 +723,13 @@ export function ptukey(q, k, df) {
  * @param {number} p — Probability (0 < p < 1)
  * @param {number} k — Number of means (≥ 2)
  * @param {number} df — Error degrees of freedom (> 0, may be Infinity)
- * @returns {number} — 0 for p ≤ 0, Infinity for p ≥ 1
+ * @returns {number} — 0 for p = 0, Infinity for p = 1; NaN for p outside
+ *   [0, 1], invalid k or df, or if Brent does not converge
  */
 export function qtukey(p, k, df) {
-  if (Number.isNaN(p) || !(k >= 2) || !(df > 0)) return NaN;
-  if (p <= 0) return 0;
-  if (p >= 1) return Infinity;
+  if (!(p >= 0 && p <= 1) || !Number.isFinite(k) || !(k >= 2) || !(df > 0)) return NaN;
+  if (p === 0) return 0;
+  if (p === 1) return Infinity;
   let a = 0, b = 1, fa = -p, fb = ptukey(b, k, df) - p;
   while (fb < 0) {
     a = b; fa = fb; b *= 2;
@@ -756,7 +761,7 @@ export function qtukey(p, k, df) {
     b += Math.abs(d) > tol ? d : (m > 0 ? tol : -tol);
     fb = ptukey(b, k, df) - p;
   }
-  return b;
+  return NaN;   // Brent did not converge in 200 iterations
 }
 
 /**

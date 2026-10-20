@@ -49,6 +49,20 @@ suite('Studentized range', () => {
   test('qtukey(0.999, 20, 2) is finite', () => {
     assertEqual(Number.isFinite(qtukey(0.999, 20, 2)), true);
   });
+  test('invalid k, df or NaN inputs give NaN', () => {
+    for (const fn of [ptukey, qtukey]) {
+      for (const args of [[0.5, 1, 10], [0.5, 1.5, 10], [0.5, Infinity, 10], [0.5, NaN, 10],
+        [0.5, 3, 0], [0.5, 3, -2], [0.5, 3, NaN], [NaN, 3, 10]]) {
+        assertEqual(Number.isNaN(fn(...args)), true, `${fn.name}(${args.join(', ')}) should be NaN`);
+      }
+    }
+  });
+  test('qtukey outside [0, 1] gives NaN, the ends give 0 and Infinity', () => {
+    assertEqual(Number.isNaN(qtukey(-0.1, 3, 10)), true);
+    assertEqual(Number.isNaN(qtukey(1.1, 3, 10)), true);
+    assertEqual(qtukey(0, 3, 10), 0);
+    assertEqual(qtukey(1, 3, 10), Infinity);
+  });
   test('ptukey(qtukey(0.95, 4, 12), 4, 12) round-trips to 0.95 within 1e-10', () => {
     assertAlmostEqual(ptukey(qtukey(0.95, 4, 12), 4, 12), 0.95, 1e-10);
   });
