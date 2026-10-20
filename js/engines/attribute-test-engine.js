@@ -2,7 +2,8 @@
  * D.Mike — Attribute test engine (attribute-test-engine.js)
  *
  * Tests on counts: Clopper-Pearson interval, 1- and 2-proportion tests,
- * Fisher's exact test (2×2) and the chi-square test of association (r×c).
+ * Fisher's exact test (2×2), the chi-square test of association (r×c) and
+ * the 1-sample Poisson rate test.
  * Pure functions, no DOM, no i18n. Inputs are assumed valid — the module's
  * normalizer (attribute-test-input.js) rejects nonsense before calling in.
  *
@@ -14,10 +15,13 @@
  *    the difference always unpooled; test difference fixed at 0.
  *  - Fisher two-sided: sum of all tables with P ≤ P_obs · (1 + 1e-7)
  *    (R and Minitab). Probabilities in log space via lnGamma.
+ *  - 1 Poisson rate: Garwood interval; exact test with the same central
+ *    two-sided p as the 1-proportion test (not minlike). One-sided
+ *    alternatives give a one-sided bound at the full confidence level.
  */
 
 import {
-  lnGamma, betaIncomplete, normalQuantile, chi2CDF, normalUpperTail,
+  lnGamma, gammainc, betaIncomplete, normalQuantile, chi2CDF, normalUpperTail,
 } from './math-utils.js';
 
 /** Relative tolerance for "as or less likely" in Fisher's two-sided test. */
@@ -31,6 +35,19 @@ function betaQuantile(p, a, b) {
     const mid = (lo + hi) / 2;
     if (mid === lo || mid === hi) break;
     if (betaIncomplete(mid, a, b) < p) lo = mid; else hi = mid;
+  }
+  return (lo + hi) / 2;
+}
+
+/** Quantile of Gamma(a, 1) by bisection on the regularized incomplete gamma. */
+function gammaQuantile(p, a) {
+  let lo = 0;
+  let hi = a + 10 * Math.sqrt(a) + 20;
+  while (gammainc(a, hi) < p) hi *= 2;
+  for (let i = 0; i < 200; i++) {
+    const mid = (lo + hi) / 2;
+    if (mid === lo || mid === hi) break;
+    if (gammainc(a, mid) < p) lo = mid; else hi = mid;
   }
   return (lo + hi) / 2;
 }
@@ -62,6 +79,18 @@ function binomGE(k, n, p) {
   if (k <= 0) return 1;
   if (k > n) return 0;
   return betaIncomplete(p, k, n - k + 1);
+}
+
+/** P(X ≤ k) for X ~ Poisson(mu). */
+function poissonLE(k, mu) {
+  if (k < 0) return 0;
+  return 1 - gammainc(k + 1, mu);
+}
+
+/** P(X ≥ k) for X ~ Poisson(mu). */
+function poissonGE(k, mu) {
+  if (k <= 0) return 1;
+  return gammainc(k, mu);
 }
 
 /** Natural log of the binomial coefficient C(n, k). */
@@ -293,5 +322,53 @@ export function chiSquareAssociation(table, alpha = 0.05) {
     fisherLess,
     fisherGreater,
     reject: pPearson < alpha,
+  };
+}
+
+/**
+ * Exact (Garwood) confidence interval for a Poisson rate x / t.
+ * One-sided alternatives give a one-sided bound; the open side is 0 or Infinity.
+ * @param {number} x — event count (≥ 0)
+ * @param {number} t — exposure (> 0)
+ * @param {number} [confidence=0.95]
+ * @param {'two-sided'|'greater'|'less'} [direction='two-sided']
+ * @returns {{ lower: number, upper: number }}
+ */
+export function poissonRateCI(x, t, confidence = 0.95, direction = 'two-sided') {
+  const tail = direction === 'two-sided' ? (1 - confidence) / 2 : 1 - confidence;
+  const lower = direction === 'less' || x === 0 ? 0 : gammaQuantile(tail, x) / t;
+  const upper = direction === 'greater' ? Infinity : gammaQuantile(1 - tail, x + 1) / t;
+  return { lower, upper };
+}
+
+/**
+ * 1-sample Poisson rate test: exact test plus normal approximation.
+ * @param {number} x — event count
+ * @param {number} t — exposure (> 0)
+ * @param {number} lambda0 — hypothesized rate per unit exposure (> 0)
+ * @param {'two-sided'|'greater'|'less'} [direction='two-sided']
+ * @param {number} [alpha=0.05]
+ * @returns {{ rate: number, ciLower: number, ciUpper: number, pExact: number,
+ *   z: number, pNormal: number, normalApproxOk: boolean, reject: boolean }}
+ */
+export function onePoissonRateTest(x, t, lambda0, direction = 'two-sided', alpha = 0.05) {
+  const mu = lambda0 * t;
+  const { lower, upper } = poissonRateCI(x, t, 1 - alpha, direction);
+  const le = poissonLE(x, mu);
+  const ge = poissonGE(x, mu);
+  let pExact;
+  if (direction === 'greater') pExact = ge;
+  else if (direction === 'less') pExact = le;
+  else pExact = Math.min(1, 2 * Math.min(le, ge));
+  const z = (x - mu) / Math.sqrt(mu);
+  return {
+    rate: x / t,
+    ciLower: lower,
+    ciUpper: upper,
+    pExact,
+    z,
+    pNormal: normalP(z, direction),
+    normalApproxOk: mu >= 5,
+    reject: pExact < alpha,
   };
 }

@@ -105,6 +105,9 @@ export function digamma(x) {
   return r;
 }
 
+/** Iteration cap for gammainc; the series needs ~8·√a terms near x ≈ a. */
+const GAMMAINC_MAX_ITER = 100000;
+
 // ─── Incomplete Gamma ───────────────────────────────────────
 
 /**
@@ -119,7 +122,7 @@ export function gammainc(a, x) {
   if (x < a + 1) {
     // Series expansion
     let s = 1 / a, t = 1 / a;
-    for (let n = 1; n < 300; n++) {
+    for (let n = 1; n < GAMMAINC_MAX_ITER; n++) {
       t *= x / (a + n);
       s += t;
       if (Math.abs(t) < Math.abs(s) * 1e-14) break;
@@ -130,7 +133,7 @@ export function gammainc(a, x) {
   let D = 1 / (x + 1 - a);
   if (Math.abs(D) < 1e-30) D = 1e-30;
   let C = 1e30, h = D;
-  for (let n = 1; n < 300; n++) {
+  for (let n = 1; n < GAMMAINC_MAX_ITER; n++) {
     const an = -n * (n - a), bn = x + 2 * n + 1 - a;
     D = bn + an * D; if (Math.abs(D) < 1e-30) D = 1e-30;
     C = bn + an / C; if (Math.abs(C) < 1e-30) C = 1e-30;

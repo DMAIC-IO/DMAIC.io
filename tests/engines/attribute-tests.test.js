@@ -5,6 +5,7 @@ import {
   twoProportionTest,
   fisherExact2x2,
   chiSquareAssociation,
+  onePoissonRateTest,
 } from '../../js/engines/attribute-test-engine.js';
 
 async function loadFixture(path) {
@@ -38,6 +39,7 @@ const CASES = [
   ['two-proportion', (i) => twoProportionTest(i.x1, i.n1, i.x2, i.n2, i.direction, i.alpha, i.pooled)],
   ['fisher-exact', (i) => fisherExact2x2(i.table, i.direction)],
   ['chi-square-association', (i) => chiSquareAssociation(i.table, i.alpha)],
+  ['poisson-rate-one', (i) => onePoissonRateTest(i.x, i.t, i.lambda0, i.direction, i.alpha)],
 ];
 
 const FIXTURES = await Promise.all(
