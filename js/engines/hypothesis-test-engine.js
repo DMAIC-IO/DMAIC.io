@@ -31,8 +31,10 @@ import {
 } from './math-utils.js';
 
 import { mean, variance, stddev } from './stats-utils.js';
+import { oneWayModelSummary } from './anova-engine.js';
 
 export { bonettVarianceTest, bonettRatioTest } from './bonett-engine.js';
+export { welchANOVA, tukeyHSD, gamesHowell } from './anova-engine.js';
 
 // ─── Descriptive Helpers ────────────────────────────────────
 
@@ -752,6 +754,7 @@ export function oneWayANOVA(groups, alpha = 0.05) {
     grandMean,
     k,
     N,
+    ...oneWayModelSummary(groups, alpha, true),
     reject: pValue < alpha,
     alpha,
   };
