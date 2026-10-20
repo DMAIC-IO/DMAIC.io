@@ -3,7 +3,8 @@
  *
  * Tests on counts: Clopper-Pearson interval, 1- and 2-proportion tests,
  * Fisher's exact test (2×2), the chi-square test of association (r×c) and
- * the 1- and 2-sample Poisson rate tests and McNemar's test.
+ * the 1- and 2-sample Poisson rate tests, McNemar's test and equivalence
+ * tests (TOST) for one and two proportions.
  * Pure functions, no DOM, no i18n. Inputs are assumed valid — the module's
  * normalizer (attribute-test-input.js) rejects nonsense before calling in.
  *
@@ -25,6 +26,9 @@
  *  - McNemar: exact binomial on the discordant pairs (central two-sided p),
  *    chi-square with and without continuity correction (two-sided only),
  *    Wald CI of the paired difference (after − before), open side −1 / 1.
+ *  - Equivalence (TOST): 1 proportion by two exact one-sided binomial tests
+ *    against p0 + limit, 2 proportions by two unpooled Wald z tests; p = the
+ *    larger of the two, CI at 1 − 2·alpha.
  */
 
 import {
@@ -536,5 +540,76 @@ export function mcNemarTest(table, direction = 'two-sided', alpha = 0.05) {
     testable,
     smallDiscordant: disc < 10,
     reject: testable && pExact < alpha,
+  };
+}
+
+/**
+ * Equivalence test for one proportion (TOST, exact binomial). The equivalence
+ * limits are differences from p0 with lower < 0 < upper. Each one-sided test
+ * rejects "p is outside the limit"; a limit at or beyond 0 / 1 cannot be
+ * crossed and gives a p-value of 0. The CI has level 1 − 2·alpha.
+ * @param {number} x — events
+ * @param {number} n — trials
+ * @param {number} p0 — reference proportion
+ * @param {number} lower — lower limit as a difference from p0 (negative)
+ * @param {number} upper — upper limit as a difference from p0 (positive)
+ * @param {number} [alpha=0.05]
+ * @returns {{ pHat: number, ciLower: number, ciUpper: number, pLower: number, pUpper: number,
+ *   pValue: number, equivalent: boolean }} — pValue = max(pLower, pUpper)
+ */
+export function equivalenceOneProportion(x, n, p0, lower, upper, alpha = 0.05) {
+  const ci = clopperPearsonCI(x, n, 1 - 2 * alpha);
+  const lowerLimit = p0 + lower;
+  const upperLimit = p0 + upper;
+  const pLower = lowerLimit <= 0 ? 0 : binomGE(x, n, lowerLimit);
+  const pUpper = upperLimit >= 1 ? 0 : binomLE(x, n, upperLimit);
+  const pValue = Math.max(pLower, pUpper);
+  return {
+    pHat: x / n,
+    ciLower: ci.lower,
+    ciUpper: ci.upper,
+    pLower,
+    pUpper,
+    pValue,
+    equivalent: pValue < alpha,
+  };
+}
+
+/**
+ * Equivalence test for two independent proportions (TOST, unpooled Wald z).
+ * The limits bound the difference p1 − p2 (lower < 0 < upper). The CI has
+ * level 1 − 2·alpha. Without variance (SE = 0) the test is not testable:
+ * z and p-values are null and equivalence is not shown.
+ * @param {number} x1
+ * @param {number} n1
+ * @param {number} x2
+ * @param {number} n2
+ * @param {number} lower — lower limit of p1 − p2 (negative)
+ * @param {number} upper — upper limit of p1 − p2 (positive)
+ * @param {number} [alpha=0.05]
+ * @returns {{ p1: number, p2: number, diff: number, ciLower: number, ciUpper: number,
+ *   zLower: number|null, zUpper: number|null, pLower: number|null, pUpper: number|null,
+ *   pValue: number|null, equivalent: boolean, testable: boolean }}
+ */
+export function equivalenceTwoProportions(x1, n1, x2, n2, lower, upper, alpha = 0.05) {
+  const p1 = x1 / n1;
+  const p2 = x2 / n2;
+  const diff = p1 - p2;
+  const se = Math.sqrt((p1 * (1 - p1)) / n1 + (p2 * (1 - p2)) / n2);
+  const q = zQuantile(1 - alpha);
+  const base = { p1, p2, diff, ciLower: diff - q * se, ciUpper: diff + q * se };
+  if (!(se > 0)) {
+    return {
+      ...base, zLower: null, zUpper: null, pLower: null, pUpper: null, pValue: null,
+      equivalent: false, testable: false,
+    };
+  }
+  const zLower = (diff - lower) / se;
+  const zUpper = (diff - upper) / se;
+  const pLower = normalUpperTail(zLower);
+  const pUpper = normalUpperTail(-zUpper);
+  const pValue = Math.max(pLower, pUpper);
+  return {
+    ...base, zLower, zUpper, pLower, pUpper, pValue, equivalent: pValue < alpha, testable: true,
   };
 }

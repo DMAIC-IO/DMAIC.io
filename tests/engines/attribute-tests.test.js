@@ -9,6 +9,8 @@ import {
   poissonRateCI,
   twoPoissonRateTest,
   mcNemarTest,
+  equivalenceOneProportion,
+  equivalenceTwoProportions,
 } from '../../js/engines/attribute-test-engine.js';
 
 async function loadFixture(path) {
@@ -45,6 +47,8 @@ const CASES = [
   ['poisson-rate-one', (i) => onePoissonRateTest(i.x, i.t, i.lambda0, i.direction, i.alpha)],
   ['poisson-rate-two', (i) => twoPoissonRateTest(i.x1, i.t1, i.x2, i.t2, { direction: i.direction, alpha: i.alpha, pooled: i.pooled, diff0: i.diff0 })],
   ['mcnemar', (i) => mcNemarTest(i.table, i.direction, i.alpha)],
+  ['equivalence-proportion-one', (i) => equivalenceOneProportion(i.x, i.n, i.p0, i.lower, i.upper, i.alpha)],
+  ['equivalence-proportion-two', (i) => equivalenceTwoProportions(i.x1, i.n1, i.x2, i.n2, i.lower, i.upper, i.alpha)],
 ];
 
 const FIXTURES = await Promise.all(
