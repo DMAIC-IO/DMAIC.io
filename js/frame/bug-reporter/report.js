@@ -121,6 +121,20 @@ export function buildReport(input) {
 
 const cell = v => String(v ?? '—').replace(/\|/g, '\\|').replace(/\n/g, ' ');
 
+/**
+ * Inline code span on one line: whitespace collapsed, backtick fence longer
+ * than any backtick run inside (CommonMark).
+ * @param {string} text
+ * @returns {string}
+ */
+function codeSpan(text) {
+  const flat = String(text ?? '').replace(/\s+/g, ' ').trim();
+  const longest = Math.max(0, ...(flat.match(/`+/g) || []).map(r => r.length));
+  const fence = '`'.repeat(longest + 1);
+  const pad = flat.startsWith('`') || flat.endsWith('`') ? ' ' : '';
+  return `${fence}${pad}${flat}${pad}${fence}`;
+}
+
 function describeItem(item) {
   if (item.type === 'arrow') return `(${item.x1}, ${item.y1}) → (${item.x2}, ${item.y2})`;
   if (item.type === 'line') return `${item.points.length} Punkte`;
@@ -149,7 +163,7 @@ export function reportMarkdown(report) {
   if (report.errors.length) {
     out.push(`## Fehler (letzte ${report.errors.length})`, '');
     report.errors.forEach((e, i) => {
-      out.push(`${i + 1}. \`${e.at.slice(0, 19)}\` **${e.kind}** — \`${e.message}\``);
+      out.push(`${i + 1}. \`${e.at.slice(0, 19)}\` **${e.kind}** — ${codeSpan(e.message)}`);
       if (e.stack) out.push('', '   ```', ...e.stack.split('\n').map(l => `   ${l}`), '   ```');
     });
     out.push('');

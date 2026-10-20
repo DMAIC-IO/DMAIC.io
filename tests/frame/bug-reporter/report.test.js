@@ -121,6 +121,26 @@ suite('bug-reporter report', () => {
     assertTrue(md.includes('- `screenshot.png`'));
   });
 
+  test('multi-line error message stays on one list line', () => {
+    const md = reportMarkdown(buildReport({
+      date: DATE, description: '', context: {}, notes: [],
+      errors: [{ at: '2026-10-08T14:29:58.000Z', kind: 'error', message: 'line one\n\n  line   two', stack: null }],
+    }));
+    assertTrue(md.includes('**error** — `line one line two`\n'));
+  });
+
+  test('error message with backticks gets a longer fence', () => {
+    const md = reportMarkdown(buildReport({
+      date: DATE, description: '', context: {}, notes: [],
+      errors: [
+        { at: '2026-10-08T14:29:58.000Z', kind: 'error', message: 'bad `x` value', stack: null },
+        { at: '2026-10-08T14:29:58.000Z', kind: 'error', message: '`edge`', stack: null },
+      ],
+    }));
+    assertTrue(md.includes('— ``bad `x` value``\n'));
+    assertTrue(md.includes('— `` `edge` ``\n'));
+  });
+
   test('markdown escapes pipes in context values', () => {
     const md = reportMarkdown(buildReport({
       date: DATE, description: '', context: { userAgent: 'a|b' }, errors: [], notes: [],
