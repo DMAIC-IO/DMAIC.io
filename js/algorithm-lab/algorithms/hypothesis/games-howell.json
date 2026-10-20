@@ -1,0 +1,246 @@
+{
+  "id": "games-howell",
+  "name": {
+    "de": "Games-Howell",
+    "en": "Games-Howell"
+  },
+  "category": "hypothesis",
+  "subcategory": "mean",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Alle Paarvergleiche der Gruppenmittel mit simultanen KIs ohne Annahme gleicher Varianzen.",
+      "en": "All pairwise comparisons of the group means with simultaneous CIs without assuming equal variances."
+    },
+    "long": {
+      "de": "Der Games-Howell-Test (Games & Howell 1976) ist das Gegenstück zu Tukey HSD für ungleiche Varianzen und Gruppengrößen. Jedes Paar erhält einen eigenen Standardfehler aus den Einzelvarianzen und eigene Welch-Satterthwaite-Freiheitsgrade; adjustiert wird über die studentisierte Spannweite Q(k, ν). Qprovement verwendet Games-Howell nach der Welch-ANOVA (Standard für k Gruppen). Für k = 2 stimmt der Test mit dem Welch-t-Test überein, weil Q(2, ν) = √2·|T_ν|. Hinweis zur Validierung: Die Referenzwerte stammen aus einer unabhängigen Python-Implementierung der Formeln mit scipy.stats.studentized_range. Ein Lehrbuch-Tabellenwert oder ein Minitab-Lauf liegt nicht vor; geprüft wurde zusätzlich die k = 2-Reduktion auf den Welch-t-Test und ein Abgleich mit den auf einer Dokumentationsseite (metricgate.com) veröffentlichten p-Werten für PlantGrowth.",
+      "en": "The Games-Howell test (Games & Howell 1976) is the counterpart of Tukey HSD for unequal variances and group sizes. Each pair gets its own standard error from the individual variances and its own Welch-Satterthwaite degrees of freedom; the adjustment uses the studentized range Q(k, ν). Qprovement uses Games-Howell after Welch ANOVA (the default for k groups). For k = 2 the test equals the Welch t-test because Q(2, ν) = √2·|T_ν|. Validation note: the reference values come from an independent Python implementation of the formulas with scipy.stats.studentized_range. There is no textbook table value or Minitab run; additionally checked are the k = 2 reduction to the Welch t-test and agreement with the PlantGrowth p-values published on a documentation page (metricgate.com)."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      {
+        "label": "d",
+        "latex": "d_{ij} = \\bar x_i - \\bar x_j",
+        "description": {
+          "de": "Mittelwertdifferenz des Paares (i, j)",
+          "en": "Mean difference of the pair (i, j)"
+        }
+      },
+      {
+        "label": "se",
+        "latex": "se_{ij} = \\sqrt{\\frac{1}{2}\\left(\\frac{s_i^2}{n_i} + \\frac{s_j^2}{n_j}\\right)}",
+        "description": {
+          "de": "Standardfehler aus den Einzelvarianzen des Paares",
+          "en": "Standard error from the pair's individual variances"
+        }
+      },
+      {
+        "label": "q",
+        "latex": "q_{ij} = \\frac{|d_{ij}|}{se_{ij}}",
+        "description": {
+          "de": "Teststatistik der studentisierten Spannweite",
+          "en": "Studentized range test statistic"
+        }
+      },
+      {
+        "label": "ν",
+        "latex": "\\nu_{ij} = \\frac{\\left(\\frac{s_i^2}{n_i} + \\frac{s_j^2}{n_j}\\right)^2}{\\frac{(s_i^2/n_i)^2}{n_i-1} + \\frac{(s_j^2/n_j)^2}{n_j-1}}",
+        "description": {
+          "de": "Welch-Satterthwaite-Freiheitsgrade je Paar",
+          "en": "Welch-Satterthwaite degrees of freedom per pair"
+        }
+      },
+      {
+        "label": "p_adj",
+        "latex": "p_{adj} = 1 - Q_{k,\\,\\nu}(q_{ij})",
+        "description": {
+          "de": "Adjustierter p-Wert aus der studentisierten Spannweite Q(k, ν) – gilt simultan für alle Paare",
+          "en": "Adjusted p-value from the studentized range Q(k, ν) – valid simultaneously for all pairs"
+        }
+      },
+      {
+        "label": "CI",
+        "latex": "d_{ij} \\pm q_{1-\\alpha,\\,k,\\,\\nu}\\; se_{ij}",
+        "description": {
+          "de": "Simultanes Konfidenzintervall für μ_i − μ_j (Familien-Konfidenz 1 − α)",
+          "en": "Simultaneous confidence interval for μ_i − μ_j (family confidence 1 − α)"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Beobachtungen sind unabhängig",
+        "en": "Observations are independent"
+      },
+      {
+        "de": "Daten in jeder Gruppe sind (näherungsweise) normalverteilt",
+        "en": "Data within each group are (approximately) normally distributed"
+      },
+      {
+        "de": "Gleiche Varianzen sind nicht nötig",
+        "en": "Equal variances are not required"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Bei sehr kleinen Gruppen (n_i < 5) kann das Verfahren liberal sein",
+        "en": "With very small groups (n_i < 5) the procedure can be liberal"
+      },
+      {
+        "de": "Jede Gruppe braucht mindestens 2 Werte und eine Varianz größer als 0",
+        "en": "Each group needs at least 2 values and a variance greater than 0"
+      },
+      {
+        "de": "Die Referenz ist eine unabhängige Implementierung der Formeln, kein Lehrbuch-Tabellenwert und kein Minitab-Lauf; zusätzlich geprüft sind die k = 2-Reduktion auf den Welch-t-Test und die auf einer Dokumentationsseite (metricgate.com) veröffentlichten PlantGrowth-p-Werte",
+        "en": "The reference is an independent implementation of the formulas, not a textbook table value or a Minitab run; additionally checked are the k = 2 reduction to the Welch t-test and the PlantGrowth p-values published on a documentation page (metricgate.com)"
+      }
+    ],
+    "references": [
+      {
+        "source": "Games, P. A. & Howell, J. F. (1976), Pairwise multiple comparison procedures with unequal n's and/or variances: a Monte Carlo study, Journal of Educational Statistics, 1, 113–125"
+      },
+      {
+        "source": "Copenhaver, M. D. & Holland, B. S. (1988), Computation of the distribution of the maximum of normally distributed variables, J. Statist. Comput. Simul., 30, 1–15"
+      },
+      {
+        "source": "scipy.stats.studentized_range (used by the independent reference implementation)"
+      },
+      {
+        "source": "Minitab Methods and Formulas, One-Way ANOVA – Games-Howell comparisons"
+      }
+    ],
+    "minitab_equivalent": "Stat > ANOVA > One-Way > Comparisons > Games-Howell"
+  },
+  "source": {
+    "function_name": "gamesHowell",
+    "file_path": "js/engines/hypothesis-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "groups",
+          "type": "number[][]",
+          "required": true,
+          "description": {
+            "de": "Array von k Stichproben (je mindestens 2 Werte)",
+            "en": "Array of k samples (at least 2 values each)"
+          }
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "required": false,
+          "description": {
+            "de": "Signifikanzniveau (Standard: 0.05)",
+            "en": "Significance level (default: 0.05)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "comparisons": {
+            "type": "object[]",
+            "description": {
+              "de": "Paarvergleiche (i, j, diff, se, q, df, pAdj, ci) in der Reihenfolge (0,1), (0,2), …",
+              "en": "Pairwise comparisons (i, j, diff, se, q, df, pAdj, ci) in the order (0,1), (0,2), …"
+            }
+          },
+          "alpha": {
+            "type": "number",
+            "description": {
+              "de": "Signifikanzniveau",
+              "en": "Significance level"
+            }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "groups",
+          "label": {
+            "de": "Gruppen (eine Zeile pro Gruppe)",
+            "en": "Groups (one line per group)"
+          },
+          "type": "textarea",
+          "placeholder": {
+            "de": "z.B.\n1.2, 1.5, 1.4\n2.1, 2.3, 2.0\n1.8, 1.9, 2.0",
+            "en": "e.g.\n1.2, 1.5, 1.4\n2.1, 2.3, 2.0\n1.8, 1.9, 2.0"
+          },
+          "parse_as": "number_array_2d",
+          "required": true
+        },
+        {
+          "name": "alpha",
+          "label": {
+            "de": "Signifikanzniveau α",
+            "en": "Significance Level α"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "0.05",
+            "en": "0.05"
+          },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": [
+        "comparisons.0.diff",
+        "comparisons.0.se",
+        "comparisons.0.q",
+        "comparisons.0.df",
+        "comparisons.0.pAdj"
+      ],
+      "primary_field": "comparisons.0.diff",
+      "format": {
+        "comparisons.0.diff": {
+          "decimals": 6,
+          "label": {
+            "de": "Differenz (0,1)",
+            "en": "Difference (0,1)"
+          }
+        },
+        "comparisons.0.se": {
+          "decimals": 6,
+          "label": {
+            "de": "Standardfehler (0,1)",
+            "en": "Standard error (0,1)"
+          }
+        },
+        "comparisons.0.q": {
+          "decimals": 6,
+          "label": "q (0,1)"
+        },
+        "comparisons.0.pAdj": {
+          "decimals": 6,
+          "label": "p adj. (0,1)"
+        },
+        "comparisons.0.df": {
+          "decimals": 4,
+          "label": "df (0,1)"
+        }
+      }
+    }
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung von Games-Howell; validiert gegen eine unabhängige Python-Implementierung (scipy.stats.studentized_range) mit 10 Fixture-Fällen",
+        "en": "Initial implementation of Games-Howell; validated against an independent Python implementation (scipy.stats.studentized_range) with 10 fixture cases"
+      },
+      "breaking": false
+    }
+  ]
+}

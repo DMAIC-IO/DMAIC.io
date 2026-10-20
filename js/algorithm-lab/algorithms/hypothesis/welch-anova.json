@@ -1,0 +1,341 @@
+{
+  "id": "welch-anova",
+  "name": {
+    "de": "Welch-ANOVA",
+    "en": "Welch ANOVA"
+  },
+  "category": "hypothesis",
+  "subcategory": "mean",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Vergleicht die Mittelwerte von k Stichproben ohne Annahme gleicher Varianzen.",
+      "en": "Compares the means of k samples without assuming equal variances."
+    },
+    "long": {
+      "de": "Die Welch-{{term:anova|ANOVA}} (Welch 1951) prüft, ob die Mittelwerte von k ≥ 2 unabhängigen, normalverteilten Gruppen gleich sind – ohne gleiche Varianzen vorauszusetzen. Jede Gruppe geht mit dem Gewicht w_i = n_i/s_i² ein; die Statistik F* wird mit einer Korrektur für die Gewichtsstreuung gebildet und gegen eine F-Verteilung mit nicht ganzzahligen Nenner-Freiheitsgraden df₂ verglichen. Für k = 2 ist F* = t² des Welch-t-Tests. Es gibt keine ANOVA-Tabelle. Qprovement verwendet die Welch-ANOVA für k Gruppen, solange „Gleiche Varianzen annehmen“ nicht angehakt ist, und zeigt dazu Games-Howell-Paarvergleiche. Gütemaße (S, R², R²(adj), R²(pred)) und Residuen beschreiben die Modellanpassung und sind dieselben wie bei der Fisher-ANOVA; die Gruppen-KIs verwenden die einzelnen Standardabweichungen.",
+      "en": "Welch {{term:anova|ANOVA}} (Welch 1951) tests whether the means of k ≥ 2 independent, normally distributed groups are equal – without assuming equal variances. Each group enters with the weight w_i = n_i/s_i²; the statistic F* carries a correction for the spread of the weights and is compared with an F distribution with non-integer denominator degrees of freedom df₂. For k = 2, F* = t² of the Welch t-test. There is no ANOVA table. Qprovement uses Welch ANOVA for k groups unless \"Assume equal variances\" is ticked, and shows Games-Howell pairwise comparisons with it. The fit measures (S, R², R²(adj), R²(pred)) and the residuals describe the model fit and are the same as for Fisher ANOVA; the group CIs use the individual standard deviations."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      {
+        "label": "w_i",
+        "latex": "w_i = \\frac{n_i}{s_i^2},\\quad W = \\sum_i w_i,\\quad \\bar x_w = \\frac{\\sum_i w_i \\bar x_i}{W}",
+        "description": {
+          "de": "Gewichte, Gewichtssumme und gewichtetes Gesamtmittel",
+          "en": "Weights, sum of weights and weighted grand mean"
+        }
+      },
+      {
+        "label": "A",
+        "latex": "A = \\frac{\\sum_i w_i (\\bar x_i - \\bar x_w)^2}{k-1}",
+        "description": {
+          "de": "Gewichtete Streuung der Gruppenmittel",
+          "en": "Weighted spread of the group means"
+        }
+      },
+      {
+        "label": "Λ",
+        "latex": "\\Lambda = \\sum_i \\frac{(1 - w_i/W)^2}{n_i - 1}",
+        "description": {
+          "de": "Korrekturterm für die Gewichte",
+          "en": "Correction term for the weights"
+        }
+      },
+      {
+        "label": "F*",
+        "latex": "F^* = \\frac{A}{1 + \\dfrac{2(k-2)\\,\\Lambda}{k^2-1}}",
+        "description": {
+          "de": "Welch-Teststatistik",
+          "en": "Welch test statistic"
+        }
+      },
+      {
+        "label": "df",
+        "latex": "df_1 = k-1,\\quad df_2 = \\frac{k^2-1}{3\\Lambda}",
+        "description": {
+          "de": "Freiheitsgrade; df₂ ist nicht ganzzahlig",
+          "en": "Degrees of freedom; df₂ is not an integer"
+        }
+      },
+      {
+        "label": "p",
+        "latex": "p = 1 - F_{df_1,\\,df_2}(F^*)",
+        "description": {
+          "de": "p-Wert aus der F-Verteilung",
+          "en": "p-value from the F distribution"
+        }
+      },
+      {
+        "label": "CI",
+        "latex": "\\bar x_i \\pm t_{1-\\alpha/2,\\,n_i-1}\\,\\frac{s_i}{\\sqrt{n_i}}",
+        "description": {
+          "de": "Gruppen-KI mit der Einzel-Standardabweichung der Gruppe",
+          "en": "Group CI with the group's own standard deviation"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Beobachtungen sind unabhängig",
+        "en": "Observations are independent"
+      },
+      {
+        "de": "Daten in jeder Gruppe sind (näherungsweise) normalverteilt",
+        "en": "Data within each group are (approximately) normally distributed"
+      },
+      {
+        "de": "Gleiche Varianzen sind nicht nötig",
+        "en": "Equal variances are not required"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Nur Omnibus-Test – sagt nicht, welche Gruppe abweicht (Games-Howell für Paarvergleiche)",
+        "en": "Omnibus test only – does not say which group differs (use Games-Howell for pairwise comparisons)"
+      },
+      {
+        "de": "Jede Gruppe braucht mindestens 2 Werte und eine Varianz größer als 0",
+        "en": "Each group needs at least 2 values and a variance greater than 0"
+      },
+      {
+        "de": "Bei sehr kleinen Gruppen (n_i = 2–3) ist die F-Näherung ungenau",
+        "en": "For very small groups (n_i = 2–3) the F approximation is inaccurate"
+      },
+      {
+        "de": "Referenzwerte stammen aus statsmodels (anova_oneway) und R (oneway.test), nicht aus einem Minitab-Lauf",
+        "en": "Reference values come from statsmodels (anova_oneway) and R (oneway.test), not from a Minitab run"
+      }
+    ],
+    "references": [
+      {
+        "source": "Welch, B. L. (1951), On the comparison of several mean values: an alternative approach, Biometrika, 38, 330–336"
+      },
+      {
+        "source": "statsmodels.stats.oneway.anova_oneway(use_var=\"unequal\")"
+      },
+      {
+        "source": "R: stats::oneway.test(var.equal = FALSE)"
+      },
+      {
+        "source": "Minitab Methods and Formulas, One-Way ANOVA"
+      }
+    ],
+    "minitab_equivalent": "Stat > ANOVA > One-Way (Assume equal variances unchecked)"
+  },
+  "source": {
+    "function_name": "welchANOVA",
+    "file_path": "js/engines/hypothesis-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "groups",
+          "type": "number[][]",
+          "required": true,
+          "description": {
+            "de": "Array von k Stichproben (je mindestens 2 Werte)",
+            "en": "Array of k samples (at least 2 values each)"
+          }
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "required": false,
+          "description": {
+            "de": "Signifikanzniveau (Standard: 0.05)",
+            "en": "Significance level (default: 0.05)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "statistic": {
+            "type": "number",
+            "description": {
+              "de": "Welch-Teststatistik F*",
+              "en": "Welch test statistic F*"
+            }
+          },
+          "pValue": {
+            "type": "number",
+            "description": {
+              "de": "p-Wert",
+              "en": "p-value"
+            }
+          },
+          "df1": {
+            "type": "number",
+            "description": {
+              "de": "Freiheitsgrade Zähler (k−1)",
+              "en": "Numerator degrees of freedom (k−1)"
+            }
+          },
+          "df2": {
+            "type": "number",
+            "description": {
+              "de": "Freiheitsgrade Nenner (nicht ganzzahlig)",
+              "en": "Denominator degrees of freedom (non-integer)"
+            }
+          },
+          "S": {
+            "type": "number",
+            "description": {
+              "de": "Wurzel aus dem mittleren Quadrat innerhalb",
+              "en": "Square root of the within mean square"
+            }
+          },
+          "R2": {
+            "type": "number",
+            "description": {
+              "de": "Bestimmtheitsmaß R²",
+              "en": "Coefficient of determination R²"
+            }
+          },
+          "R2adj": {
+            "type": "number",
+            "description": {
+              "de": "Adjustiertes R² (roh, kann negativ sein)",
+              "en": "Adjusted R² (raw, may be negative)"
+            }
+          },
+          "R2pred": {
+            "type": "number",
+            "description": {
+              "de": "Vorhersage-R² (roh, kann negativ sein; null bei Gruppen mit n = 1)",
+              "en": "Predicted R² (raw, may be negative; null if a group has n = 1)"
+            }
+          },
+          "groupCIs": {
+            "type": "number[][]",
+            "description": {
+              "de": "Gruppen-KIs mit Einzel-Standardabweichungen",
+              "en": "Group CIs with individual standard deviations"
+            }
+          },
+          "reject": {
+            "type": "boolean",
+            "description": {
+              "de": "H₀ abgelehnt?",
+              "en": "Reject H₀?"
+            }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "groups",
+          "label": {
+            "de": "Gruppen (eine Zeile pro Gruppe)",
+            "en": "Groups (one line per group)"
+          },
+          "type": "textarea",
+          "placeholder": {
+            "de": "z.B.\n1.2, 1.5, 1.4\n2.1, 2.3, 2.0\n1.8, 1.9, 2.0",
+            "en": "e.g.\n1.2, 1.5, 1.4\n2.1, 2.3, 2.0\n1.8, 1.9, 2.0"
+          },
+          "parse_as": "number_array_2d",
+          "required": true
+        },
+        {
+          "name": "alpha",
+          "label": {
+            "de": "Signifikanzniveau α",
+            "en": "Significance Level α"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "0.05",
+            "en": "0.05"
+          },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": [
+        "statistic",
+        "pValue",
+        "df1",
+        "df2",
+        "S",
+        "R2",
+        "R2adj",
+        "R2pred",
+        "k",
+        "N",
+        "reject"
+      ],
+      "primary_field": "statistic",
+      "format": {
+        "statistic": {
+          "decimals": 6,
+          "label": "F*"
+        },
+        "pValue": {
+          "decimals": 6,
+          "label": "p-Value"
+        },
+        "df1": {
+          "decimals": 0,
+          "label": "df₁"
+        },
+        "df2": {
+          "decimals": 4,
+          "label": "df₂"
+        },
+        "S": {
+          "decimals": 6,
+          "label": "S"
+        },
+        "R2": {
+          "decimals": 6,
+          "label": "R²"
+        },
+        "R2adj": {
+          "decimals": 6,
+          "label": "R²(adj)"
+        },
+        "R2pred": {
+          "decimals": 6,
+          "label": "R²(pred)"
+        },
+        "k": {
+          "decimals": 0,
+          "label": "k"
+        },
+        "N": {
+          "decimals": 0,
+          "label": "N"
+        },
+        "reject": {
+          "decimals": 0,
+          "label": {
+            "de": "H₀ abgelehnt",
+            "en": "Reject H₀"
+          }
+        }
+      }
+    }
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung der Welch-ANOVA; validiert gegen statsmodels (anova_oneway) mit 10 Fixture-Fällen",
+        "en": "Initial implementation of Welch ANOVA; validated against statsmodels (anova_oneway) with 10 fixture cases"
+      },
+      "breaking": false
+    }
+  ]
+}
