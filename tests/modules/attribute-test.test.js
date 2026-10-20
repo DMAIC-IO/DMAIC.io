@@ -1,7 +1,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import {
   parseCount, parseProportion, distinctValues, defaultEventValue,
-  normalizeSummary, normalizeColumns, columnValuesOrNull,
+  normalizeSummary, normalizeColumns, columnValuesOrNull, parsePositive,
 } from '../../js/modules/attribute-test/attribute-test-input.js';
 
 const base = (over = {}) => ({
@@ -162,7 +162,7 @@ suite('attribute-test input — stale event value', () => {
   });
 });
 
-import { State } from '../../js/modules/attribute-test/attribute-test-model.js';
+import { State, TEST_KINDS } from '../../js/modules/attribute-test/attribute-test-model.js';
 import { buildReport, fmtP } from '../../js/modules/attribute-test/attribute-test-report.js';
 
 suite('attribute-test column ref resolution', () => {
@@ -317,5 +317,203 @@ suite('attribute-test report', () => {
   test('fmtP', () => {
     assertEqual(fmtP(0.00001), '< 0.0001');
     assertEqual(fmtP(0.5), '0.5000');
+  });
+});
+
+const nonEmpty = { response: null, group: null, rowVar: null, colVar: null, counts: null, before: null, after: null };
+const st = (over = {}, summary = {}) => {
+  const s = new State();
+  Object.assign(s, over);
+  Object.assign(s.summary, summary);
+  return s;
+};
+
+suite('attribute-test part 2 — model', () => {
+  test('old part-1 state opens on its old kind', () => {
+    const s = State.fromJSON({ testKind: 'assoc', summary: { x1: '3' } });
+    assertEqual(s.testKind, 'assoc');
+    assertEqual(s.summary.x1, '3');
+    assertEqual(s.summary.t, '');
+    assertEqual(s.summary.diff0, '0');
+    assertEqual(s.equiv.samples, 2);
+    assertEqual(s.exposurePerRow, '1');
+    assertEqual(s.ratePooled, false);
+  });
+  test('switching between all seven kinds keeps every input', () => {
+    const s = new State();
+    s.summary.x = '1'; s.summary.t = '2'; s.summary.t1 = '3'; s.summary.t2 = '4'; s.summary.lambda0 = '5';
+    s.summary.diff0 = '6'; s.summary.pairs.counts[1][0] = '7'; s.summary.pairs.labels.before = 'vorher';
+    s.equiv.delta = '8'; s.equiv.lower = '9'; s.equiv.upper = '10'; s.exposurePerRow = '2,5';
+    s.colRefs.counts = { instanceId: 'w', columnId: 'c' };
+    let cur = s;
+    for (const k of TEST_KINDS) {
+      cur.testKind = k;
+      cur = State.fromJSON(JSON.parse(JSON.stringify(cur.toJSON())));
+    }
+    assertEqual(cur.testKind, 'assoc');
+    assertEqual(cur.summary.t, '2'); assertEqual(cur.summary.t1, '3'); assertEqual(cur.summary.t2, '4');
+    assertEqual(cur.summary.lambda0, '5'); assertEqual(cur.summary.diff0, '6');
+    assertEqual(cur.summary.pairs.counts[1][0], '7');
+    assertEqual(cur.summary.pairs.labels.before, 'vorher');
+    assertEqual(cur.equiv.delta, '8'); assertEqual(cur.equiv.lower, '9'); assertEqual(cur.equiv.upper, '10');
+    assertEqual(cur.exposurePerRow, '2,5');
+    assertDeepEqual(cur.colRefs.counts, { instanceId: 'w', columnId: 'c' });
+  });
+  test('garbage pairs and equiv fall back to defaults', () => {
+    const s = State.fromJSON({ summary: { pairs: { counts: [['1']] } }, equiv: { samples: 7, symmetric: 'x' } });
+    assertDeepEqual(s.summary.pairs.counts, [['', ''], ['', '']]);
+    assertEqual(s.equiv.samples, 2);
+    assertEqual(s.equiv.symmetric, true);
+  });
+  test('hasContent sees the new fields', () => {
+    assertEqual(new State().hasContent(), false);
+    for (const set of [s => { s.summary.t = '1'; }, s => { s.summary.pairs.counts[0][1] = '1'; },
+      s => { s.equiv.delta = '1'; }, s => { s.summary.diff0 = '2'; },
+      s => { s.colRefs.before = { instanceId: 'w', columnId: 'c' }; }]) {
+      const s = new State();
+      set(s);
+      assertEqual(s.hasContent(), true);
+    }
+  });
+  test('switchToEquivalence keeps the counts and the column refs', () => {
+    const s = new State();
+    s.equiv.samples = 1; s.equiv.delta = '2';
+    s.summary.x1 = '3'; s.summary.n1 = '10'; s.summary.x2 = '4'; s.summary.n2 = '12';
+    s.colRefs.response = { instanceId: 'w', columnId: 'r' };
+    s.colRefs.group = { instanceId: 'w', columnId: 'g' };
+    s.switchToEquivalence();
+    assertEqual(s.testKind, 'equiv');
+    assertEqual(s.equiv.samples, 2);
+    assertEqual(s.equiv.delta, '2');
+    assertEqual(s.summary.x1, '3'); assertEqual(s.summary.n2, '12');
+    assertEqual(s.colRefs.response.columnId, 'r');
+    assertEqual(s.colRefs.group.columnId, 'g');
+  });
+});
+
+suite('attribute-test part 2 — rates', () => {
+  test('parsePositive', () => {
+    assertEqual(parsePositive('12,5'), 12.5);
+    assertEqual(parsePositive('0'), null);
+    assertEqual(parsePositive('-1'), null);
+    assertEqual(parsePositive(''), null);
+  });
+  test('rate1: comma exposure parses, decimal event count is rejected', () => {
+    const ok = normalizeSummary(st({ testKind: 'rate1' }, { x: '37', t: '12,5', lambda0: '2' }));
+    assertDeepEqual(ok, { ok: true, kind: 'rate1', x: 37, t: 12.5, lambda0: 2, missing: 0 });
+    assertEqual(normalizeSummary(st({ testKind: 'rate1' }, { x: '3.5', t: '1', lambda0: '2' })).error, 'errCountInvalid');
+    assertEqual(normalizeSummary(st({ testKind: 'rate1' }, { x: '3', t: '0', lambda0: '2' })).error, 'errExposure');
+    assertEqual(normalizeSummary(st({ testKind: 'rate1' }, { x: '3', t: '1', lambda0: '0' })).error, 'errLambda0');
+    assertEqual(normalizeSummary(st({ testKind: 'rate1' })).hint, true);
+  });
+  test('rate1 columns: exposure = rows × exposurePerRow, blanks skipped', () => {
+    const s = st({ testKind: 'rate1', exposurePerRow: '2,5' }, { lambda0: '1' });
+    const r = normalizeColumns(s, { ...nonEmpty, counts: [2, '', 0, 3] });
+    assertDeepEqual(r, { ok: true, kind: 'rate1', x: 5, t: 7.5, lambda0: 1, missing: 1 });
+  });
+  test('rate1 columns: negative count and bad exposure', () => {
+    const s = st({ testKind: 'rate1' }, { lambda0: '1' });
+    assertEqual(normalizeColumns(s, { ...nonEmpty, counts: [2, -1] }).error, 'errCountInvalid');
+    s.exposurePerRow = '0';
+    assertEqual(normalizeColumns(s, { ...nonEmpty, counts: [2, 1] }).error, 'errExposure');
+    assertEqual(normalizeColumns(s, nonEmpty).hint, true);
+  });
+  test('rate2 summary', () => {
+    const s = st({ testKind: 'rate2' }, { x1: '10', t1: '2', x2: '4', t2: '3,5' });
+    assertDeepEqual(normalizeSummary(s),
+      { ok: true, kind: 'rate2', x1: 10, t1: 2, x2: 4, t2: 3.5, diff0: 0, groups: null, missing: 0 });
+    s.summary.t2 = '0';
+    assertEqual(normalizeSummary(s).error, 'errExposure');
+  });
+  test('rate2 columns: count column split by a two-level group', () => {
+    const s = st({ testKind: 'rate2', exposurePerRow: '2' });
+    const r = normalizeColumns(s, {
+      ...nonEmpty, counts: [1, 2, 3, '', 4], group: ['A', 'A', 'B', 'B', 'B'],
+    });
+    assertDeepEqual(r, { ok: true, kind: 'rate2', x1: 3, t1: 4, x2: 7, t2: 4, diff0: 0, groups: ['A', 'B'], missing: 1 });
+    assertEqual(normalizeColumns(s, { ...nonEmpty, counts: [1, 2, 3], group: ['A', 'B', 'C'] }).error, 'errGroupLevels');
+  });
+});
+
+suite('attribute-test part 2 — McNemar', () => {
+  test('summary: 2×2 pairs, blanks are an error once started', () => {
+    const s = st({ testKind: 'mcnemar' });
+    assertEqual(normalizeSummary(s).hint, true);
+    s.summary.pairs.counts = [['10', '5'], ['', '20']];
+    assertEqual(normalizeSummary(s).error, 'errCountInvalid');
+    s.summary.pairs.counts = [['10', '5'], ['2', '20']];
+    s.summary.pairs.labels.before = 'vorher';
+    assertDeepEqual(normalizeSummary(s), {
+      ok: true, kind: 'mcnemar', table: [[10, 5], [2, 20]], labels: { before: 'vorher', after: '' }, missing: 0,
+    });
+  });
+  test('columns: raw lengths differ → errPairsLength', () => {
+    const s = st({ testKind: 'mcnemar' });
+    const r = normalizeColumns(s, { ...nonEmpty, before: ['a', 'b', 'a'], after: ['a', 'b'] });
+    assertEqual(r.error, 'errPairsLength');
+  });
+  test('columns: trailing blanks are trimmed before comparing lengths', () => {
+    const s = st({ testKind: 'mcnemar', eventValue: 'a' });
+    const r = normalizeColumns(s, { ...nonEmpty, before: ['a', 'b', 'a', ''], after: ['a', 'b', 'b'] });
+    assertEqual(r.ok, true);
+    assertDeepEqual(r.table, [[1, 1], [0, 1]]);
+  });
+  test('columns: one column constant, union has two levels → ok', () => {
+    const s = st({ testKind: 'mcnemar', eventValue: 'i.O.' });
+    const r = normalizeColumns(s, {
+      ...nonEmpty,
+      before: ['n.i.O.', 'n.i.O.', 'n.i.O.', 'n.i.O.'],
+      after: ['i.O.', 'n.i.O.', '', 'i.O.'],
+    });
+    assertDeepEqual(r, {
+      ok: true, kind: 'mcnemar', table: [[0, 0], [2, 1]], labels: { before: '', after: '' }, missing: 1,
+    });
+  });
+  test('columns: union with three levels → errPairLevels', () => {
+    const s = st({ testKind: 'mcnemar' });
+    assertEqual(normalizeColumns(s, { ...nonEmpty, before: ['a', 'b'], after: ['c', 'a'] }).error, 'errPairLevels');
+  });
+});
+
+suite('attribute-test part 2 — equivalence', () => {
+  test('bounds: symmetric delta is ± in percentage points', () => {
+    const s = st({ testKind: 'equiv' }, { x1: '5', n1: '100', x2: '6', n2: '100' });
+    s.equiv.delta = '1';
+    assertDeepEqual(normalizeSummary(s), {
+      ok: true, kind: 'equiv', samples: 2, x1: 5, n1: 100, x2: 6, n2: 100, lower: -0.01, upper: 0.01,
+      groups: null, missing: 0,
+    });
+  });
+  test('bounds: asymmetric empty, order, containment', () => {
+    const s = st({ testKind: 'equiv' }, { x1: '5', n1: '100', x2: '6', n2: '100' });
+    s.equiv.symmetric = false;
+    assertEqual(normalizeSummary(s).error, 'errBoundsMissing');
+    s.equiv.lower = '2'; s.equiv.upper = '1';
+    assertEqual(normalizeSummary(s).error, 'errBoundsOrder');
+    s.equiv.lower = '0,5'; s.equiv.upper = '1';
+    assertEqual(normalizeSummary(s).error, 'errBoundsContain');
+    s.equiv.lower = '-0,5';
+    assertEqual(normalizeSummary(s).lower, -0.005);
+  });
+  test('1 sample: counts, p0 and bounds', () => {
+    const s = st({ testKind: 'equiv', p0: '0,1' }, { x: '8', n: '100' });
+    s.equiv.samples = 1; s.equiv.delta = '2';
+    assertDeepEqual(normalizeSummary(s),
+      { ok: true, kind: 'equiv', samples: 1, x: 8, n: 100, p0: 0.1, lower: -0.02, upper: 0.02, missing: 0 });
+    s.p0 = '1.5';
+    assertEqual(normalizeSummary(s).error, 'errP0Range');
+  });
+  test('columns reuse the 1/2 proportion rules', () => {
+    const s = st({ testKind: 'equiv', eventValue: 'b' });
+    s.equiv.delta = '10';
+    const r = normalizeColumns(s, { ...nonEmpty, response: ['a', 'b', 'b', 'a'], group: ['x', 'x', 'y', 'y'] });
+    assertDeepEqual(r, {
+      ok: true, kind: 'equiv', samples: 2, x1: 1, n1: 2, x2: 1, n2: 2, lower: -0.1, upper: 0.1,
+      groups: ['x', 'y'], missing: 0,
+    });
+    s.equiv.samples = 1;
+    const r1 = normalizeColumns(s, { ...nonEmpty, response: ['a', 'b', 'b', 'a'] });
+    assertEqual(r1.samples, 1);
+    assertEqual(r1.x, 2);
   });
 });
