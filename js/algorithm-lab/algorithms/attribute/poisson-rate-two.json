@@ -153,7 +153,7 @@
           "type": "number",
           "placeholder": {
             "de": "z.B. 37",
-            "en": "z.B. 37"
+            "en": "e.g. 37"
           },
           "parse_as": "number",
           "required": true
@@ -167,7 +167,7 @@
           "type": "number",
           "placeholder": {
             "de": "z.B. 120",
-            "en": "z.B. 120"
+            "en": "e.g. 120"
           },
           "parse_as": "number",
           "required": true
@@ -181,7 +181,7 @@
           "type": "number",
           "placeholder": {
             "de": "z.B. 20",
-            "en": "z.B. 20"
+            "en": "e.g. 20"
           },
           "parse_as": "number",
           "required": true
@@ -195,7 +195,7 @@
           "type": "number",
           "placeholder": {
             "de": "z.B. 110",
-            "en": "z.B. 110"
+            "en": "e.g. 110"
           },
           "parse_as": "number",
           "required": true

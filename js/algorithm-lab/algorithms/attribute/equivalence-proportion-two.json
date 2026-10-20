@@ -185,7 +185,7 @@
           "type": "number",
           "placeholder": {
             "de": "z.B. 120",
-            "en": "z.B. 120"
+            "en": "e.g. 120"
           },
           "parse_as": "number",
           "required": true
@@ -199,7 +199,7 @@
           "type": "number",
           "placeholder": {
             "de": "z.B. 2000",
-            "en": "z.B. 2000"
+            "en": "e.g. 2000"
           },
           "parse_as": "number",
           "required": true
@@ -213,7 +213,7 @@
           "type": "number",
           "placeholder": {
             "de": "z.B. 110",
-            "en": "z.B. 110"
+            "en": "e.g. 110"
           },
           "parse_as": "number",
           "required": true
@@ -227,7 +227,7 @@
           "type": "number",
           "placeholder": {
             "de": "z.B. 2100",
-            "en": "z.B. 2100"
+            "en": "e.g. 2100"
           },
           "parse_as": "number",
           "required": true
@@ -241,7 +241,7 @@
           "type": "number",
           "placeholder": {
             "de": "z.B. -0.01",
-            "en": "z.B. -0.01"
+            "en": "e.g. -0.01"
           },
           "parse_as": "number",
           "required": true
@@ -255,7 +255,7 @@
           "type": "number",
           "placeholder": {
             "de": "z.B. 0.02",
-            "en": "z.B. 0.02"
+            "en": "e.g. 0.02"
           },
           "parse_as": "number",
           "required": true
