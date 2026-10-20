@@ -9,7 +9,7 @@ import { ALGOS, FIXTURES } from '../../js/algorithm-lab/lab-data.generated.js';
 import { buildFunction, prepareInputs, mapArgs, getByPath, compare }
   from '../../js/algorithm-lab/lab-exec.js';
 
-const ALGO_IDS = ['poisson-rate-one', 'poisson-rate-two'];
+const ALGO_IDS = ['poisson-rate-one', 'poisson-rate-two', 'mcnemar'];
 
 suite('Algorithm Lab: attribute rate entries pass their fixtures via the lab path', () => {
   for (const id of ALGO_IDS) {

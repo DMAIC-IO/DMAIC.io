@@ -8,6 +8,7 @@ import {
   onePoissonRateTest,
   poissonRateCI,
   twoPoissonRateTest,
+  mcNemarTest,
 } from '../../js/engines/attribute-test-engine.js';
 
 async function loadFixture(path) {
@@ -43,6 +44,7 @@ const CASES = [
   ['chi-square-association', (i) => chiSquareAssociation(i.table, i.alpha)],
   ['poisson-rate-one', (i) => onePoissonRateTest(i.x, i.t, i.lambda0, i.direction, i.alpha)],
   ['poisson-rate-two', (i) => twoPoissonRateTest(i.x1, i.t1, i.x2, i.t2, { direction: i.direction, alpha: i.alpha, pooled: i.pooled, diff0: i.diff0 })],
+  ['mcnemar', (i) => mcNemarTest(i.table, i.direction, i.alpha)],
 ];
 
 const FIXTURES = await Promise.all(

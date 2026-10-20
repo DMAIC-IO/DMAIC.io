@@ -3,7 +3,7 @@
  *
  * Tests on counts: Clopper-Pearson interval, 1- and 2-proportion tests,
  * Fisher's exact test (2×2), the chi-square test of association (r×c) and
- * the 1- and 2-sample Poisson rate tests.
+ * the 1- and 2-sample Poisson rate tests and McNemar's test.
  * Pure functions, no DOM, no i18n. Inputs are assumed valid — the module's
  * normalizer (attribute-test-input.js) rejects nonsense before calling in.
  *
@@ -22,6 +22,9 @@
  *    when pooled and the tested difference is 0), CI of the difference
  *    always unpooled; conditional exact test x1 ~ Bin(x1 + x2, t1/(t1 + t2))
  *    with the central two-sided p; rate-ratio CI from Clopper-Pearson.
+ *  - McNemar: exact binomial on the discordant pairs (central two-sided p),
+ *    chi-square with and without continuity correction (two-sided only),
+ *    Wald CI of the paired difference (after − before), open side −1 / 1.
  */
 
 import {
@@ -461,5 +464,77 @@ export function twoPoissonRateTest(x1, t1, x2, t2, { direction = 'two-sided', al
     ratioLower,
     ratioUpper,
     reject: pValue < alpha,
+  };
+}
+
+/**
+ * McNemar's test for paired proportions from the full 2×2 table
+ * (rows: before event / no event, columns: after event / no event).
+ * Exact binomial test on the discordant pairs plus the chi-square test with
+ * and without continuity correction; Wald CI of the paired difference.
+ * @param {number[][]} table — [[a, b], [c, d]] with b = event → no event, c = no event → event
+ * @param {'two-sided'|'greater'|'less'} [direction='two-sided'] — "greater": after rate above before rate
+ * @param {number} [alpha=0.05]
+ * @returns {{ b: number, c: number, n: number, pBefore: number, pAfter: number, diff: number,
+ *   ciLower: number, ciUpper: number, pExact: number|null, chi2: number|null, pChi2: number|null,
+ *   chi2Cc: number|null, pChi2Cc: number|null, testable: boolean, smallDiscordant: boolean,
+ *   reject: boolean }} — chi-square p-values are null for one-sided directions; everything
+ *   test-related is null when there are no discordant pairs
+ */
+export function mcNemarTest(table, direction = 'two-sided', alpha = 0.05) {
+  const [[a, b], [c, d]] = table;
+  const n = a + b + c + d;
+  const disc = b + c;
+  const diff = (c - b) / n;
+  const se = Math.sqrt(Math.max(0, (disc - ((b - c) * (b - c)) / n) / (n * n)));
+  let ciLower;
+  let ciUpper;
+  if (direction === 'two-sided') {
+    const q = zQuantile(1 - alpha / 2);
+    ciLower = diff - q * se;
+    ciUpper = diff + q * se;
+  } else if (direction === 'greater') {
+    ciLower = diff - zQuantile(1 - alpha) * se;
+    ciUpper = 1;
+  } else {
+    ciLower = -1;
+    ciUpper = diff + zQuantile(1 - alpha) * se;
+  }
+
+  const testable = disc > 0;
+  let pExact = null;
+  let chi2 = null;
+  let pChi2 = null;
+  let chi2Cc = null;
+  let pChi2Cc = null;
+  if (testable) {
+    if (direction === 'greater') pExact = binomGE(c, disc, 0.5);
+    else if (direction === 'less') pExact = binomLE(c, disc, 0.5);
+    else pExact = Math.min(1, 2 * Math.min(binomLE(c, disc, 0.5), binomGE(c, disc, 0.5)));
+    chi2 = ((b - c) * (b - c)) / disc;
+    const corrected = Math.max(0, Math.abs(b - c) - 1);
+    chi2Cc = (corrected * corrected) / disc;
+    if (direction === 'two-sided') {
+      pChi2 = 1 - chi2CDF(chi2, 1);
+      pChi2Cc = 1 - chi2CDF(chi2Cc, 1);
+    }
+  }
+  return {
+    b,
+    c,
+    n,
+    pBefore: (a + b) / n,
+    pAfter: (a + c) / n,
+    diff,
+    ciLower,
+    ciUpper,
+    pExact,
+    chi2,
+    pChi2,
+    chi2Cc,
+    pChi2Cc,
+    testable,
+    smallDiscordant: disc < 10,
+    reject: testable && pExact < alpha,
   };
 }
