@@ -11,7 +11,7 @@ import { initModuleHelp }      from './header/module-help.js';
 import { initActionButtons }   from './header/action-buttons.js';
 import { initFooter }          from './footer/footer.js';
 import { initDevTools }        from './dev-tools.js';
-import { updateReadOnlyBanner, initCollapsibleSections } from './helpers.js';
+import { updateReadOnlyMode, initCollapsibleSections } from './helpers.js';
 import { startGlossaryAugmenter } from '../core/glossary-inline.js';
 
 /**
@@ -55,6 +55,6 @@ export function buildFrame(kernel, ui) {
   initActionButtons(kernel, ui);
   initFooter(kernel);
   initDevTools(kernel, ui);
-  updateReadOnlyBanner(kernel.stateManager, kernel.i18n);
+  updateReadOnlyMode(kernel.stateManager, kernel.i18n);
   initCollapsibleSections();
 }

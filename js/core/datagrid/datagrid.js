@@ -19,6 +19,7 @@ import {
 import { shortcutRegistry } from '../shortcut-registry.js';
 import { h } from '../dom.js';
 import { icon } from '../icon.js';
+import { isReadOnly } from '../readonly-lock.js';
 
 export { isFormula, evaluateFormula } from './datagrid-formula.js';
 import { ensureXLSX as _ensureXLSX } from '../export-utils.js';
@@ -230,6 +231,16 @@ export class DataGrid {
   _isColumnLocked(colOrId) {
     const col = typeof colOrId === 'string' ? this.getColumn(colOrId) : colOrId;
     return col?.meta?.lock || null;
+  }
+
+  /**
+   * True while the grid sits in a read-only (completed) project. The grid
+   * takes keys and paste from `document` and renders its context menu into
+   * `body`, so the module-area lock cannot reach it; edit paths check this.
+   * @returns {boolean}
+   */
+  _isReadOnly() {
+    return isReadOnly(this.container);
   }
 
   /** Build the tooltip text shown on the lock icon and on locked cells. */
@@ -1648,7 +1659,7 @@ export class DataGrid {
   // ─── Fill-handle drag (Excel-like) ──────────────────────────
 
   _onFillHandleMouseDown(e) {
-    if (!this.selection) return;
+    if (!this.selection || this._isReadOnly()) return;
     e.preventDefault();
     e.stopPropagation();
     const s = this.selection;
@@ -1963,6 +1974,7 @@ export class DataGrid {
 
   _startRowDrag(rowIdx, e) {
     this._rowDragPending = null;
+    if (this._isReadOnly()) return;
     const ghost = document.createElement('div');
     ghost.className = 'row-drag-ghost';
     ghost.textContent = `Row ${rowIdx + 1}`;
@@ -2032,6 +2044,7 @@ export class DataGrid {
 
   _startColDrag(colIdx, e) {
     this._colDragPending = null;
+    if (this._isReadOnly()) return;
     const col = this.columns[colIdx];
     if (!col) return;
 
@@ -2105,6 +2118,7 @@ export class DataGrid {
   }
 
   _onBodyDblClick(e) {
+    if (this._isReadOnly()) return;
     const cell = this._getCellFromEvent(e);
     if (!cell) return;
     const col = this.columns[cell.colIdx];
@@ -2123,7 +2137,7 @@ export class DataGrid {
   }
 
   _startHeaderEdit(colIdx, th) {
-    if (this._editingHeader) return;
+    if (this._editingHeader || this._isReadOnly()) return;
     const col = this.columns[colIdx];
     if (!col) return;
     if (col.meta?.lock) {
@@ -2233,10 +2247,10 @@ export class DataGrid {
     }
 
     if (shortcutRegistry.matches(e, 'datagrid.undo')) {
-      e.preventDefault(); this.undo(); return;
+      e.preventDefault(); if (!this._isReadOnly()) this.undo(); return;
     }
     if (shortcutRegistry.matches(e, 'datagrid.redo')) {
-      e.preventDefault(); this.redo(); return;
+      e.preventDefault(); if (!this._isReadOnly()) this.redo(); return;
     }
     if (shortcutRegistry.matches(e, 'datagrid.selectAll')) {
       e.preventDefault(); this.selectAll(); return;
@@ -2297,7 +2311,7 @@ export class DataGrid {
 
     if (e.key === 'Delete' || e.key === 'Backspace') {
       e.preventDefault();
-      this._clearSelection();
+      if (!this._isReadOnly()) this._clearSelection();
       return;
     }
 
@@ -2318,6 +2332,7 @@ export class DataGrid {
   // ═══════════════════════════════════════════════════════════
 
   _startEdit(colIdx, rowIdx, initialChar) {
+    if (this._isReadOnly()) return;
     if (colIdx < 0 || colIdx >= this.columns.length || rowIdx < 0 || rowIdx >= this.rowCount) return;
     const col = this.columns[colIdx];
     if (col.meta?.lock) {
@@ -2510,11 +2525,11 @@ export class DataGrid {
     e.preventDefault();
     const tsv = this.exportToTSV();
     e.clipboardData.setData('text/plain', tsv);
-    this._clearSelection();
+    if (!this._isReadOnly()) this._clearSelection();
   }
 
   _onPaste(e) {
-    if (this.editingCell) return;
+    if (this.editingCell || this._isReadOnly()) return;
     if (!this.container.contains(document.activeElement) && document.activeElement !== document.body) return;
     e.preventDefault();
     const text = e.clipboardData.getData('text/plain');
@@ -2534,6 +2549,13 @@ export class DataGrid {
     if (!col) return;
 
     const t = (k) => this._t(`ui.datagrid.${k}`);
+    if (this._isReadOnly()) {
+      this._showContextMenu(e.clientX, e.clientY, [
+        { label: t('columnStats'), action: () => this._showColumnStats(colIdx) },
+        { label: t('columnScan'), action: () => this._showColumnScan(colIdx) },
+      ]);
+      return;
+    }
     const isLocked = Boolean(col.meta?.lock);
     const isHardLocked = col.meta?.lock === 'hard';
     const items = [];
@@ -2558,6 +2580,8 @@ export class DataGrid {
 
   _onBodyContextMenu(e) {
     e.preventDefault();
+    // Every body-menu entry edits (insert, delete, clear, edit cell).
+    if (this._isReadOnly()) return;
     const t = (k) => this._t(`ui.datagrid.${k}`);
     if (e.target.classList.contains('datagrid__row-header')) {
       const rowIdx = parseInt(e.target.dataset.rowIdx);
@@ -2718,6 +2742,8 @@ export class DataGrid {
    */
   _showColumnAttrPicker(colIdx, anchorEl) {
     this._closeColumnAttrPicker();
+    // The picker changes type, role and format — all edits.
+    if (this._isReadOnly()) return;
     const col = this.columns[colIdx];
     if (!col) return;
 
@@ -3335,6 +3361,7 @@ export class DataGrid {
   // ═══════════════════════════════════════════════════════════
 
   _handleFileImport(file) {
+    if (this._isReadOnly()) return;
     const ext = file.name.split('.').pop().toLowerCase();
     if (ext === 'csv' || ext === 'tsv') {
       this._importCSV(file);
