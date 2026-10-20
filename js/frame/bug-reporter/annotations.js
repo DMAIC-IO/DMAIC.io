@@ -36,7 +36,11 @@ export function createAnnotationModel({ width, height }) {
 
   function bigEnough(item) {
     if (item.type === 'arrow') return Math.hypot(item.x2 - item.x1, item.y2 - item.y1) >= MIN_SIZE;
-    if (item.type === 'line') return item.points.length >= 2;
+    if (item.type === 'line') {
+      const xs = item.points.map(p => p[0]);
+      const ys = item.points.map(p => p[1]);
+      return Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) >= MIN_SIZE;
+    }
     return item.w >= MIN_SIZE && item.h >= MIN_SIZE;
   }
 

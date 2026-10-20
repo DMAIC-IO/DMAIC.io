@@ -50,6 +50,15 @@ suite('bug-reporter annotations', () => {
     assertEqual(m.items().length, 0);
   });
 
+  test('line that never leaves its start adds nothing', () => {
+    const m = model(1);
+    m.begin('line', { x: 100, y: 100 });
+    m.move({ x: 100, y: 100 });
+    m.move({ x: 101, y: 102 });
+    assertEqual(m.end(), null);
+    assertEqual(m.items().length, 0);
+  });
+
   test('clamps to image bounds', () => {
     const m = model(0.5);
     m.begin('frame', { x: -20, y: -20 });
