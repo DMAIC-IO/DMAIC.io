@@ -22,4 +22,15 @@ suite('bug-reporter capture', () => {
     assertEqual(err.reason, 'failed');
     assertEqual(stopped.length, 1);
   });
+
+  test('offers the app tab itself: Chrome hides the own tab unless asked', async () => {
+    const { nav, doc } = fakeEnv();
+    let options;
+    const share = nav.mediaDevices.getDisplayMedia;
+    nav.mediaDevices.getDisplayMedia = async (o) => { options = o; return share(); };
+    try { await captureScreen(nav, doc, 20); } catch { /* no frame in the fake */ }
+    assertEqual(options.selfBrowserSurface, 'include');
+    assertEqual(options.preferCurrentTab, true);
+    assertEqual(options.audio, false);
+  });
 });

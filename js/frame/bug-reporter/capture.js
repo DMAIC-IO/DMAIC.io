@@ -46,7 +46,11 @@ export async function captureScreen(nav = navigator, doc = document, timeoutMs =
 
   let stream;
   try {
-    stream = await getDisplayMedia({ video: true, audio: false });
+    // Chrome leaves the own tab out of the picker unless asked; the bug sits
+    // in this tab, so offer it first. Other browsers ignore both keys.
+    stream = await getDisplayMedia({
+      video: true, audio: false, preferCurrentTab: true, selfBrowserSurface: 'include',
+    });
   } catch (err) {
     const denied = err?.name === 'NotAllowedError' || err?.name === 'AbortError';
     throw new CaptureError(denied ? 'denied' : 'failed', err?.message);
