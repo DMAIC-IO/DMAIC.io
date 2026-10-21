@@ -94,6 +94,17 @@
    füllt der Body die Restfläche ohnehin von allein. */
 .module-container__body.dmike-split {
   min-height: 0;
+
+  /* Der Body ist der Scroll-Container: Läge das rechte Polster außen am
+     .module-container, säße die Scrollbar direkt an der Ausgabespalte und
+     schnitte sie optisch an. Das Polster wandert deshalb nach innen — die
+     Scrollbar sitzt am Modulrand, der Inhalt hält rechts denselben Abstand
+     wie links. */
+  padding-right: var(--spacing-m);
+}
+
+.module-container:has(> .module-container__body.dmike-split) {
+  padding-right: 0;
 }
 
 /* ===== Scroll-Besitz: Bauform "Wurzel direkt in .dmike-split" =====
