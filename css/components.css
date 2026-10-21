@@ -204,7 +204,7 @@
 
    Variants:
      .field--sm        tighter padding / xs font (table cells, toolbars)
-     .field--num       right-aligned, monospace digits
+     .field--num       right-aligned, equal-width digits
      .field--ghost     transparent until hover/focus (inline cell editing)
      .field--inline    inline-flex width, does not stretch to 100%
 
@@ -281,9 +281,8 @@ select.input {
   font-size: var(--font-size-xs);
 }
 
-/* ── Numeric: monospace digits, right-aligned ── */
+/* ── Numeric: right-aligned, equal-width digits in the UI font (same face as selects) ── */
 .field--num {
-  font-family: var(--font-family-mono);
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
