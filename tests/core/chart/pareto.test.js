@@ -72,3 +72,38 @@ suite('Pareto type — "other" bucket label', () => {
     unmount(m);
   });
 });
+
+suite('Pareto type — right axis mirrors the left axis', () => {
+  const setup = () => {
+    const m = mount({ items: flatItems().slice(0, 5), yLabel: 'Σ Zeile', rightYLabel: 'Kumulativ %' });
+    const texts = [...m.host.querySelectorAll('svg text')];
+    return {
+      m,
+      pa: m.chart._getPlotArea(),
+      leftTitle: texts.find(t => t.textContent === 'Σ Zeile'),
+      rightTitle: texts.find(t => t.textContent === 'Kumulativ %'),
+      leftTick: texts.find(t => t.classList.contains('tick-label') && t.getAttribute('text-anchor') === 'end'),
+      rightTick: texts.find(t => t.textContent === '100%'),
+    };
+  };
+
+  test('axis title is as far from the right edge as the left title from the left edge', () => {
+    const { m, pa, leftTitle, rightTitle } = setup();
+    assertEqual(pa.totalW - Number(rightTitle.getAttribute('x')), Number(leftTitle.getAttribute('x')));
+    unmount(m);
+  });
+
+  test('tick labels keep the same distance from the axis on both sides', () => {
+    const { m, pa, leftTick, rightTick } = setup();
+    assertEqual(Number(rightTick.getAttribute('x')) - (pa.x + pa.w), pa.x - Number(leftTick.getAttribute('x')));
+    unmount(m);
+  });
+
+  test('tick labels and titles use the same font on both sides', () => {
+    const { m, leftTitle, rightTitle, leftTick, rightTick } = setup();
+    assertEqual(rightTick.getAttribute('font-family'), leftTick.getAttribute('font-family'));
+    assertEqual(rightTick.getAttribute('font-size'), leftTick.getAttribute('font-size'));
+    assertEqual(rightTitle.getAttribute('font-size'), leftTitle.getAttribute('font-size'));
+    unmount(m);
+  });
+});
