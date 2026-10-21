@@ -53,13 +53,16 @@ export function lookup(tree, key) {
  * Backticks, Methodennamen (`setParam`, `read()`) und die Bezeichner eines
  * Spaltenbezugs.
  *
+ * `null` vor `deviance`, `hypothesis`, `model` ist Statistik-Fachsprache
+ * (null deviance) und kein Befund.
+ *
  * Ein Satz, auf den ein `data-help-key` der Oberfläche zeigt, liest auch ein
  * Mensch (Alt-Taste) — und die Struktur steht für den Agenten ohnehin im
  * JSDoc-Typ daneben (`type` in `module.describe`). Für einen verankerten Satz
  * ist dieser Jargon deshalb ein Befund; für einen unverankerten (abgeleitete
  * Felder wie `activeParams`, `read`) bleibt er erlaubt.
  */
-export const STRUCTURE_JARGON = /[{}[\]`]|\bnull\b|\b(?:set|get|add|remove|read|run|clear|schedule|select|toggle)[A-Z]\w*|\w+\(\)|\b(?:instanceId|columnId|sheetId)\b/;
+export const STRUCTURE_JARGON = /[{}[\]`]|\bnull\b(?!\s+(?:deviance|hypothesis|model)\b)|\b(?:set|get|add|remove|read|run|clear|schedule|select|toggle)[A-Z]\w*|\w+\(\)|\b(?:instanceId|columnId|sheetId)\b/;
 
 /**
  * Die Kandidatenschlüssel eines Hilfetextes, in Auflösungsreihenfolge.

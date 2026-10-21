@@ -31,11 +31,19 @@ export function helpKeysInTemplates(appDir, moduleId) {
  * Laufzeit an ein Element hängt: DatasetPicker-Slots (`helpKey`,
  * `addHelpKey`), Kacheln und Spalten (`help`). Nur Literale in einfachen
  * Anführungszeichen, die mit `modules.` beginnen — zusammengesetzte
- * Schlüssel (`${HELP}Result.R2`) zeigen auf Typedef-Sätze und stehen im
- * Typedef-Tor. Ausgenommen sind Handbuchdateien (`*-help.js`, kein
+ * Schlüssel werden aufgelöst, wenn das Präfix eine dateilokale Konstante ist
+ * (`const HELP = 'modules.…'`); andere Ausdrücke bleiben unsichtbar.
+ * Dazu kommen Leistenknöpfe mit `agentAction`. Ausgenommen sind Handbuchdateien (`*-help.js`, kein
  * Kontexthilfe-Anker) und Kommentare (`helpKeysInScripts` entfernt sie vorher).
  */
 export const LITERAL_HELP_KEY = /\b(?:helpKey|addHelpKey|help)\s*:\s*'(modules\.[^']+)'/g;
+
+/** Leistenknopf mit Agentenaktion: `workspace.js:describeAction` hängt `modules.<id>.actions.<name>.help` an. */
+const AGENT_ACTION = /\bagentAction\s*:\s*'(\w+)'/g;
+/** Dateilokale Präfix-Konstante, z. B. `const HELP = 'modules.foo.types.';`. */
+const HELP_PREFIX_CONST = /\bconst\s+(\w+)\s*=\s*'(modules\.[^']*)'/g;
+/** Zusammengesetzter Schlüssel aus Präfix-Konstante und Rest: `help: \`${HELP}Result.x\``. */
+const TEMPLATE_HELP_KEY = /\b(?:helpKey|addHelpKey|help)\s*:\s*`\$\{(\w+)\}([\w.-]+)`/g;
 
 /** Geteilte Bausteine, deren wörtliche Schlüssel für jedes Modul gelten. */
 export const SHARED_ANCHOR_SOURCES = ['js/core/stats-panel.js'];
@@ -49,6 +57,11 @@ export function helpKeysInScripts(appDir, moduleId) {
     const js = readFileSync(join(dir, file), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
     for (const m of js.matchAll(LITERAL_HELP_KEY)) keys.push([file, m[1]]);
+    for (const m of js.matchAll(AGENT_ACTION)) keys.push([file, `modules.${moduleId}.actions.${m[1]}.help`]);
+    const prefixes = new Map([...js.matchAll(HELP_PREFIX_CONST)].map(m => [m[1], m[2]]));
+    for (const m of js.matchAll(TEMPLATE_HELP_KEY)) {
+      if (prefixes.has(m[1])) keys.push([file, prefixes.get(m[1]) + m[2]]);
+    }
   }
   return keys;
 }
@@ -101,3 +114,24 @@ export const BOUND_HELP_KEY_FAMILIES = [
     },
   },
 ];
+
+/**
+ * Alle Hilfe-Anker eines Moduls: Vorlage, Modul-Skripte, geteilte Bausteine
+ * und die zur Laufzeit gebundenen Familien dieses Moduls.
+ *
+ * @param {string} appDir  Wurzel von app/dev
+ * @param {string} moduleId
+ * @param {typeof BOUND_HELP_KEY_FAMILIES} [families]  austauschbar für Tests
+ * @returns {Promise<Set<string>>}
+ */
+export async function anchorKeysOf(appDir, moduleId, families = BOUND_HELP_KEY_FAMILIES) {
+  const keys = new Set();
+  for (const [, key] of helpKeysInTemplates(appDir, moduleId)) keys.add(key);
+  for (const [, key] of helpKeysInScripts(appDir, moduleId)) keys.add(key);
+  for (const [, key] of helpKeysInSharedSources(appDir)) keys.add(key);
+  for (const family of families) {
+    if (family.moduleId !== moduleId) continue;
+    for (const key of await family.keys()) keys.add(key);
+  }
+  return keys;
+}

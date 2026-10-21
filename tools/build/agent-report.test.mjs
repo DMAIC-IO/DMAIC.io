@@ -286,11 +286,13 @@ test('typedefHelpSuffixes: jede Typedef-Property eines Eintrags genau einmal', (
 
 test('STRUCTURE_JARGON: fängt Strukturschreibweise, lässt Fachsprache durch', () => {
   for (const bad of ['als { instanceId, sheetId, columnId }', 'oder null', 'die Schlüssel aus activeParams für setParam',
-    'ruft read() auf', 'Werte wie [1, 2]', 'der `value`-Slot', 'Spalte über columnId']) {
+    'ruft read() auf', 'returns null when empty', 'Werte wie [1, 2]', 'der `value`-Slot', 'Spalte über columnId']) {
     assert.ok(STRUCTURE_JARGON.test(bad), bad);
   }
   for (const good of ['Der Sollwert des Referenzteils.', 'Anteil der Toleranz (k₁), üblich 0,2.',
-    'Nullhypothese und nullbasierte Zählung', 'Untere Spezifikationsgrenze (USG/LSL).', 'Cg ≥ 1,33 gilt als fähig.']) {
+    'Nullhypothese und nullbasierte Zählung', 'Untere Spezifikationsgrenze (USG/LSL).', 'Cg ≥ 1,33 gilt als fähig.',
+    'Compared with the null deviance it shows how much the predictors explain.',
+    'Under the null hypothesis the mean is zero.']) {
     assert.ok(!STRUCTURE_JARGON.test(good), good);
   }
 });
