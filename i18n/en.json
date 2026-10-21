@@ -13091,7 +13091,188 @@
       "legend": { "solid": "useful, adequate", "dashed": "insufficient", "bold": "excessive", "wave": "harmful" },
       "disadvantages": "Disadvantages",
       "noDisadvantages": "No disadvantages – all functions are useful and adequate.",
-      "disadvantage": { "harmful": "Harmful functions", "insufficient": "Insufficient functions", "excessive": "Excessive functions" }
+      "disadvantage": { "harmful": "Harmful functions", "insufficient": "Insufficient functions", "excessive": "Excessive functions" },
+      "whenToUse": "When a technical system is to be broken down component by component to find harmful, insufficient and excessive functions and to spot trimming candidates by value and cost — not for a contradiction that is already named; the contradiction matrix and the physical contradiction cover that.",
+      "actions": {
+        "read": {
+          "help": "Returns components, interaction pairs and functions together with the derived open pairs, function ranks, disadvantages and value-cost rows."
+        },
+        "setTab": {
+          "help": "Opens one of the four tabs.",
+          "params": {
+            "tab": "components, interactions, model or valueCost."
+          }
+        },
+        "addComponent": {
+          "help": "Adds a component. There is exactly one target; if one exists already, null is returned.",
+          "params": {
+            "kind": "target, system (system component) or supersystem (supersystem element).",
+            "name": "The name of the component, may be empty."
+          }
+        },
+        "setComponentName": {
+          "help": "Renames a component.",
+          "params": {
+            "componentId": "The id of the component from components.",
+            "name": "The new name."
+          }
+        },
+        "setComponentNote": {
+          "help": "Sets the note of a component.",
+          "params": {
+            "componentId": "The id of the component from components.",
+            "note": "The note; an empty text clears it."
+          }
+        },
+        "setComponentCost": {
+          "help": "Sets the cost of a component in euro for the value & cost analysis.",
+          "params": {
+            "componentId": "The id of the component from components.",
+            "cost": "The cost in euro, at least 0; null clears it."
+          }
+        },
+        "setComponentKind": {
+          "help": "Changes the kind of a component. If it becomes the target, the former target becomes a system component; its id is returned.",
+          "params": {
+            "componentId": "The id of the component from components.",
+            "kind": "target, system or supersystem."
+          }
+        },
+        "removeComponent": {
+          "help": "Deletes a component together with its interactions and functions.",
+          "params": {
+            "componentId": "The id of the component from components."
+          }
+        },
+        "setPairState": {
+          "help": "Sets whether two components interact. A ticked pair used by functions stays ticked; then false is returned.",
+          "params": {
+            "a": "The id of the first component.",
+            "b": "The id of the second component; the order does not matter.",
+            "state": "ticked (they interact), excluded (explicitly no interaction) or none (not assessed yet)."
+          }
+        },
+        "addFunction": {
+          "help": "Adds a function carrier → object, useful and adequate, without a verb yet. The pair gets ticked in the matrix.",
+          "params": {
+            "carrier": "The id of the component that performs the function.",
+            "object": "The id of the component it acts on."
+          }
+        },
+        "setFunctionVerb": {
+          "help": "Sets the verb of a function, e.g. \"removes\".",
+          "params": {
+            "functionId": "The id of the function from functions.",
+            "verb": "The verb."
+          }
+        },
+        "setFunctionParameter": {
+          "help": "Sets the parameter of the object the function changes, e.g. \"plaque\".",
+          "params": {
+            "functionId": "The id of the function from functions.",
+            "parameter": "The parameter; an empty text clears it."
+          }
+        },
+        "setFunctionType": {
+          "help": "Marks a function useful or harmful. Harmful clears the level, useful sets it to adequate.",
+          "params": {
+            "functionId": "The id of the function from functions.",
+            "type": "useful or harmful."
+          }
+        },
+        "setFunctionLevel": {
+          "help": "Sets how well a useful function is performed. For a harmful function, false is returned.",
+          "params": {
+            "functionId": "The id of the function from functions.",
+            "level": "adequate, insufficient or excessive."
+          }
+        },
+        "swapDirection": {
+          "help": "Swaps carrier and object of a function.",
+          "params": {
+            "functionId": "The id of the function from functions."
+          }
+        },
+        "removeFunction": {
+          "help": "Deletes a function.",
+          "params": {
+            "functionId": "The id of the function from functions."
+          }
+        },
+        "setShowRanks": {
+          "help": "Shows or hides the rank codes (B, Ad, A₁ …) next to the verbs in the function model.",
+          "params": {
+            "show": "true shows them, false hides them."
+          }
+        },
+        "moveComponent": {
+          "help": "Places the box of a component in the function model at a fixed spot.",
+          "params": {
+            "componentId": "The id of the component from components.",
+            "x": "Left edge in pixels, at least 0.",
+            "y": "Top edge in pixels, at least 0."
+          }
+        },
+        "moveLabel": {
+          "help": "Places the verb label of a function at a fixed spot; the arrow bends there.",
+          "params": {
+            "functionId": "The id of the function from functions.",
+            "x": "Label centre in pixels, at least 0.",
+            "y": "Label centre in pixels, at least 0."
+          }
+        },
+        "resetLayout": {
+          "help": "Puts every box back to its automatic slot and straightens every arrow."
+        }
+      },
+      "fields": {
+        "components": {
+          "help": "The components with id, name, kind (target, system, supersystem), note and cost in euro or null. There is at most one target."
+        },
+        "interactions": {
+          "help": "The ticked component pairs a, b (unordered): these components interact."
+        },
+        "exclusions": {
+          "help": "The pairs a, b explicitly marked as not interacting."
+        },
+        "functions": {
+          "help": "The directed functions with id, carrier, verb, object, parameter, type (useful, harmful), level (adequate, insufficient, excessive; null for harmful ones) and note."
+        },
+        "positions": {
+          "help": "Manually moved box positions x, y per component id; a missing id means the box sits in its automatic slot."
+        },
+        "labels": {
+          "help": "Manually moved arrow labels x, y per function id; the arrow bends there."
+        },
+        "activeTab": {
+          "help": "The open tab: components, interactions, model or valueCost."
+        },
+        "showRanks": {
+          "help": "Whether the function model shows the rank codes next to the verbs."
+        },
+        "openPairs": {
+          "help": "Ticked pairs a, b that no function uses yet — the next candidates for addFunction."
+        },
+        "ranks": {
+          "help": "Derived rank of every complete useful function: basic (acts on the target), additional (on a supersystem element) or auxiliary (on a system component), for auxiliary with level as the shortest distance to a basic or additional function."
+        },
+        "disadvantages": {
+          "help": "The functional disadvantages: every harmful, insufficient or excessive function with carrier and object names, verb, parameter and kind."
+        },
+        "valueCost": {
+          "help": "Function value and cost per system component, both normalised to 0 to 10. Top left in the chart (high cost, little value) are the trimming candidates."
+        }
+      },
+      "types": {
+        "ValueCostRow": {
+          "id": "The id of the system component.",
+          "name": "The name of the component.",
+          "value": "Function value: 3 per basic, 2 per additional and 1 per auxiliary function the component performs.",
+          "normValue": "The function value, normalised to 0 to 10 against the largest value.",
+          "cost": "The entered cost in euro, or empty.",
+          "normCost": "The cost, normalised to 0 to 10 against the highest cost, or empty."
+        }
+      }
     },
     "triz-sufield": {
       "name": "Substance-Field Analysis (TRIZ)",

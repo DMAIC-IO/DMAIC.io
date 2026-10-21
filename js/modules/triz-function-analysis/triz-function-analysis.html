@@ -19,32 +19,32 @@
             <div class="tfa__row" data-role="component" :data-id="c.id">
               <input class="field tfa__name" type="text" data-role="component-name"
                 :value="c.name" :placeholder="t('namePlaceholder')"
-                @input="setName(c, $event)" @keydown.enter.prevent="addComponent(kind)" @blur="discardIfEmpty(c)">
+                @input="setComponentName(c.id, $event.target.value)" @keydown.enter.prevent="newComponent(kind)" @blur="discardIfEmpty(c)">
               <input class="field tfa__note" type="text" data-role="component-note"
-                :value="c.note" :placeholder="t('notePlaceholder')" @input="setNote(c, $event)">
+                :value="c.note" :placeholder="t('notePlaceholder')" @input="setComponentNote(c.id, $event.target.value)">
               <span class="tfa__cost">
                 <template x-if="c.kind === 'system'">
                   <span class="tfa__cost-field">
                     <input class="field" type="number" min="0" step="any" data-role="component-cost"
                       :value="costValue(c)" :placeholder="t('costPlaceholder')" :aria-label="t('costPlaceholder')"
-                      @change="setCost(c, $event)">
+                      @change="costChanged(c, $event)">
                     <span class="tfa__cost-unit" x-text="t('costUnit')"></span>
                   </span>
                 </template>
               </span>
-              <select class="field tfa__kind" data-role="component-kind" @change="changeKind(c, $event)">
+              <select class="field tfa__kind" data-role="component-kind" @change="kindChanged(c, $event)">
                 <option value="target" :selected="c.kind === 'target'" x-text="t('kind.target')"></option>
                 <option value="system" :selected="c.kind === 'system'" x-text="t('kind.system')"></option>
                 <option value="supersystem" :selected="c.kind === 'supersystem'" x-text="t('kind.supersystem')"></option>
               </select>
               <button type="button" class="btn btn--sm" data-role="component-remove"
-                :title="t('removeComponent')" :aria-label="t('removeComponent')" @click="removeComponent(c)">
+                :title="t('removeComponent')" :aria-label="t('removeComponent')" @click="deleteComponent(c)">
                 <span class="icon icon--sm" data-icon="action.delete"></span>
               </button>
             </div>
           </template>
           <button type="button" class="btn btn--sm tfa__add" data-role="component-add" :data-kind="kind"
-            x-show="canAdd(kind)" @click="addComponent(kind)">
+            x-show="canAdd(kind)" @click="newComponent(kind)">
             <span class="icon icon--sm" data-icon="action.add"></span>
             <span x-text="t('addComponent')"></span>
           </button>
@@ -114,25 +114,25 @@
                 <article class="tfa__fn" :class="fnClass(fn)" data-role="function" :data-id="fn.id" @click="selectFunction(fn.id)">
                   <div class="tfa__fn-row">
                     <button type="button" class="btn btn--sm tfa__dir" data-role="fn-swap" :title="t('swapDirection')"
-                      :aria-label="directionLabel(fn)" @click.stop="swap(fn)">
+                      :aria-label="directionLabel(fn)" @click.stop="swapDirection(fn.id)">
                       <span class="icon icon--sm" data-icon="nav.arrow-right" x-show="isForward(fn, g)"></span>
                       <span class="icon icon--sm" data-icon="nav.arrow-left" x-show="isBackward(fn, g)"></span>
                     </button>
                     <input class="field" type="text" data-role="fn-verb" :aria-label="t('verb')"
-                      :placeholder="t('verbPlaceholder')" :value="fn.verb" @input="setVerb(fn, $event)">
+                      :placeholder="t('verbPlaceholder')" :value="fn.verb" @input="setFunctionVerb(fn.id, $event.target.value)">
                     <button type="button" class="btn btn--sm" data-role="fn-remove" :title="t('removeFunction')"
-                      :aria-label="t('removeFunction')" @click.stop="removeFunction(fn)">
+                      :aria-label="t('removeFunction')" @click.stop="removeFunction(fn.id)">
                       <span class="icon icon--sm" data-icon="action.delete"></span>
                     </button>
                   </div>
                   <div class="tfa__fn-row">
                     <input class="field" type="text" data-role="fn-parameter" :aria-label="t('parameter')"
-                      :placeholder="t('parameterPlaceholder')" :value="fn.parameter" @input="setParameter(fn, $event)">
-                    <select class="field" data-role="fn-type" @change="changeType(fn, $event)">
+                      :placeholder="t('parameterPlaceholder')" :value="fn.parameter" @input="setFunctionParameter(fn.id, $event.target.value)">
+                    <select class="field" data-role="fn-type" @change="setFunctionType(fn.id, $event.target.value)">
                       <option value="useful" :selected="fn.type === 'useful'" x-text="t('type.useful')"></option>
                       <option value="harmful" :selected="fn.type === 'harmful'" x-text="t('type.harmful')"></option>
                     </select>
-                    <select class="field" data-role="fn-level" x-show="fn.type === 'useful'" @change="changeLevel(fn, $event)">
+                    <select class="field" data-role="fn-level" x-show="fn.type === 'useful'" @change="setFunctionLevel(fn.id, $event.target.value)">
                       <option value="adequate" :selected="fn.level === 'adequate'" x-text="t('level.adequate')"></option>
                       <option value="insufficient" :selected="fn.level === 'insufficient'" x-text="t('level.insufficient')"></option>
                       <option value="excessive" :selected="fn.level === 'excessive'" x-text="t('level.excessive')"></option>
@@ -152,8 +152,8 @@
               <span class="icon icon--sm" data-icon="action.reset"></span>
               <span x-text="t('resetLayout')"></span>
             </button>
-            <label class="field-check tfa__toggle">
-              <input type="checkbox" data-role="show-ranks" :checked="model.showRanks" @change="setShowRanks($event)">
+            <label class="field-check tfa__toggle" data-help-anchor="box" data-help-key="modules.triz-function-analysis.actions.setShowRanks.help">
+              <input type="checkbox" data-role="show-ranks" :checked="model.showRanks" @change="setShowRanks($event.target.checked)">
               <span x-text="t('showRanks')"></span>
             </label>
           </div>
@@ -203,11 +203,11 @@
       <table class="tfa__vc-table" data-role="value-cost-table" x-show="vcRows().length > 0">
         <thead>
           <tr>
-            <th scope="col" x-text="t('vc.component')"></th>
-            <th scope="col" class="tfa__vc-num" x-text="t('vc.value')"></th>
-            <th scope="col" class="tfa__vc-num" x-text="t('vc.normValue')"></th>
-            <th scope="col" class="tfa__vc-num" x-text="t('vc.cost')"></th>
-            <th scope="col" class="tfa__vc-num" x-text="t('vc.normCost')"></th>
+            <th scope="col"><span class="context-help-anchor--overlay" data-help-key="modules.triz-function-analysis.types.ValueCostRow.name" x-text="t('vc.component')"></span></th>
+            <th scope="col" class="tfa__vc-num"><span class="context-help-anchor--overlay" data-help-key="modules.triz-function-analysis.types.ValueCostRow.value" x-text="t('vc.value')"></span></th>
+            <th scope="col" class="tfa__vc-num"><span class="context-help-anchor--overlay" data-help-key="modules.triz-function-analysis.types.ValueCostRow.normValue" x-text="t('vc.normValue')"></span></th>
+            <th scope="col" class="tfa__vc-num"><span class="context-help-anchor--overlay" data-help-key="modules.triz-function-analysis.types.ValueCostRow.cost" x-text="t('vc.cost')"></span></th>
+            <th scope="col" class="tfa__vc-num"><span class="context-help-anchor--overlay" data-help-key="modules.triz-function-analysis.types.ValueCostRow.normCost" x-text="t('vc.normCost')"></span></th>
           </tr>
         </thead>
         <tbody>

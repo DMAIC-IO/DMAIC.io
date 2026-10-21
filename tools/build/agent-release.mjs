@@ -24,7 +24,7 @@ export const RELEASED_MODULES = Object.freeze([
   'response-optimization', 'rest-api', 'run-chart', 'sample-size', 'short-run-chart',
   'sipoc', 'stakeholder-analysis', 'time-weighted-chart', 'todo',
   'transformed-imr-chart', 'triz-9-windows', 'triz-contradiction-matrix',
-  'triz-evolution-trends', 'triz-ifr', 'triz-physical-contradiction', 'triz-resources',
+  'triz-evolution-trends', 'triz-function-analysis', 'triz-ifr', 'triz-physical-contradiction', 'triz-resources',
   'triz-sufield', 'unit-converter', 'voc-ctx-tree', 'worksheet', 'xy-plot',
 ]);
 

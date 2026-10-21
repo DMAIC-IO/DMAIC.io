@@ -31,6 +31,10 @@ export const ANCHOR_EXEMPTIONS = {
     { match: "t('ccd.col.", reason: 'Nachschlagetabelle mit festem Inhalt (CCD-Vergleich); nicht Teil der Lesefläche', count: 3 },
     { match: 'ccdLabel(id)', reason: 'Zeilenkopf je Eigenschaft des CCD-Vergleichs', count: 1 },
   ],
+  'triz-function-analysis': [
+    { match: ':class="headClass(c)" x-text="c.name"', reason: 'Spaltenkopf je Komponente der Interaktionsmatrix (Name aus den Daten); die Paare beschreibt der Agent unter interactions', count: 1 },
+    { match: ':class="headClass(r)" x-text="r.name"', reason: 'Zeilenkopf je Komponente der Interaktionsmatrix (Name aus den Daten)', count: 1 },
+  ],
   'data-import': [
     { match: 'data-import__col-name', reason: 'Kopf je Spalte (Name und Typ aus den Daten); die Spalten beschreibt der Agent unter sheets', count: 1 },
   ],

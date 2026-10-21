@@ -17917,111 +17917,440 @@ export const AGENT_REGISTRY = {
     }
   },
   "triz-function-analysis": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:setTab",
-      "unmarked_method:tabLabel",
-      "unmarked_method:tabClass",
-      "unmarked_method:contentClass",
-      "unmarked_method:groupLabel",
-      "unmarked_method:componentsOf",
-      "unmarked_method:canAdd",
-      "unmarked_method:addComponent",
-      "unmarked_method:setName",
-      "unmarked_method:setNote",
-      "unmarked_method:setCost",
-      "unmarked_method:costValue",
-      "unmarked_method:changeKind",
-      "unmarked_method:discardIfEmpty",
-      "unmarked_method:removeComponent",
-      "unmarked_method:matrixComponents",
-      "unmarked_method:headClass",
-      "unmarked_method:cellClass",
-      "unmarked_method:isTicked",
-      "unmarked_method:isExcluded",
-      "unmarked_method:cellState",
-      "unmarked_method:cellTitle",
-      "unmarked_method:toggleCell",
-      "unmarked_method:matrixSummary",
-      "unmarked_method:openPairChips",
-      "unmarked_method:createFromPair",
-      "unmarked_method:pairBlocks",
-      "unmarked_method:addOnPair",
-      "unmarked_method:endName",
-      "unmarked_method:isForward",
-      "unmarked_method:isBackward",
-      "unmarked_method:directionLabel",
-      "unmarked_method:setVerb",
-      "unmarked_method:setParameter",
-      "unmarked_method:changeType",
-      "unmarked_method:changeLevel",
-      "unmarked_method:swap",
-      "unmarked_method:removeFunction",
-      "unmarked_method:rankLabel",
-      "unmarked_method:setShowRanks",
-      "unmarked_method:rankLabels",
-      "unmarked_method:fnClass",
-      "unmarked_method:disadvantageGroups",
-      "unmarked_method:paramText",
-      "unmarked_method:vcRows",
-      "unmarked_method:valueCostEmpty",
-      "unmarked_method:drawValueCost",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unmarked_method:drawArrows",
-      "unmarked_method:canvasStyle",
-      "unmarked_method:nodeStyle",
-      "unmarked_method:nodeClass",
-      "unmarked_method:startDrag",
-      "unmarked_method:startLabelDrag",
-      "unmarked_method:resetLayout",
-      "unmarked_method:exportDiagram",
-      "unmarked_method:select",
-      "unmarked_method:selectFunction"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setTab": {
+        "params": [
+          {
+            "name": "tab",
+            "type": "'components'|'interactions'|'model'|'valueCost'",
+            "optional": false,
+            "help": "the tab to open"
+          }
+        ],
+        "returns": "void",
+        "help": "Open a tab."
+      },
+      "addComponent": {
+        "params": [
+          {
+            "name": "kind",
+            "type": "'target'|'system'|'supersystem'",
+            "optional": false,
+            "help": "the kind of component"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "optional": true,
+            "help": "the name, empty by default"
+          }
+        ],
+        "returns": "string|null",
+        "help": "Append a component."
+      },
+      "setComponentName": {
+        "params": [
+          {
+            "name": "componentId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the component"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "the new name"
+          }
+        ],
+        "returns": "void",
+        "help": "Rename a component."
+      },
+      "setComponentNote": {
+        "params": [
+          {
+            "name": "componentId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the component"
+          },
+          {
+            "name": "note",
+            "type": "string",
+            "optional": false,
+            "help": "the note; \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the note of a component."
+      },
+      "setComponentCost": {
+        "params": [
+          {
+            "name": "componentId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the component"
+          },
+          {
+            "name": "cost",
+            "type": "number|null",
+            "optional": false,
+            "help": "the cost in euro, at least 0; null clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the euro cost of a component for the value & cost analysis."
+      },
+      "setComponentKind": {
+        "params": [
+          {
+            "name": "componentId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the component"
+          },
+          {
+            "name": "kind",
+            "type": "'target'|'system'|'supersystem'",
+            "optional": false,
+            "help": "the new kind"
+          }
+        ],
+        "returns": "string|null",
+        "help": "Change the kind of a component. Making it the target turns the former target into a system component."
+      },
+      "removeComponent": {
+        "params": [
+          {
+            "name": "componentId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the component"
+          }
+        ],
+        "returns": "void",
+        "help": "Remove a component together with its interactions and functions."
+      },
+      "setPairState": {
+        "params": [
+          {
+            "name": "a",
+            "type": "string",
+            "optional": false,
+            "help": "id of the first component"
+          },
+          {
+            "name": "b",
+            "type": "string",
+            "optional": false,
+            "help": "id of the second component (order does not matter)"
+          },
+          {
+            "name": "state",
+            "type": "'none'|'ticked'|'excluded'",
+            "optional": false,
+            "help": "'ticked' = they interact, 'excluded' = explicitly no interaction, 'none' = not assessed yet"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Set whether two components interact."
+      },
+      "addFunction": {
+        "params": [
+          {
+            "name": "carrier",
+            "type": "string",
+            "optional": false,
+            "help": "id of the component that performs the function"
+          },
+          {
+            "name": "object",
+            "type": "string",
+            "optional": false,
+            "help": "id of the component it acts on"
+          }
+        ],
+        "returns": "string",
+        "help": "Add a function carrier → object. Ticks the pair in the matrix."
+      },
+      "setFunctionVerb": {
+        "params": [
+          {
+            "name": "functionId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the function"
+          },
+          {
+            "name": "verb",
+            "type": "string",
+            "optional": false,
+            "help": "the verb"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the verb of a function, e.g. \"entfernt\"."
+      },
+      "setFunctionParameter": {
+        "params": [
+          {
+            "name": "functionId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the function"
+          },
+          {
+            "name": "parameter",
+            "type": "string",
+            "optional": false,
+            "help": "the parameter; \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the parameter of the object the function changes, e.g. \"Belag\"."
+      },
+      "setFunctionType": {
+        "params": [
+          {
+            "name": "functionId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the function"
+          },
+          {
+            "name": "type",
+            "type": "'useful'|'harmful'",
+            "optional": false,
+            "help": "the function type"
+          }
+        ],
+        "returns": "void",
+        "help": "Mark a function useful or harmful. Harmful clears the level, useful sets it back to 'adequate'."
+      },
+      "setFunctionLevel": {
+        "params": [
+          {
+            "name": "functionId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the function"
+          },
+          {
+            "name": "level",
+            "type": "'adequate'|'insufficient'|'excessive'",
+            "optional": false,
+            "help": "the level"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Set how well a useful function is performed."
+      },
+      "swapDirection": {
+        "params": [
+          {
+            "name": "functionId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the function"
+          }
+        ],
+        "returns": "void",
+        "help": "Swap carrier and object of a function."
+      },
+      "removeFunction": {
+        "params": [
+          {
+            "name": "functionId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the function"
+          }
+        ],
+        "returns": "void",
+        "help": "Remove a function."
+      },
+      "setShowRanks": {
+        "params": [
+          {
+            "name": "show",
+            "type": "boolean",
+            "optional": false,
+            "help": "true shows them"
+          }
+        ],
+        "returns": "void",
+        "help": "Show or hide the rank codes (B, Ad, A₁ …) next to the verbs in the diagram."
+      },
+      "moveComponent": {
+        "params": [
+          {
+            "name": "componentId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the component"
+          },
+          {
+            "name": "x",
+            "type": "number",
+            "optional": false,
+            "help": "left edge in pixels, at least 0"
+          },
+          {
+            "name": "y",
+            "type": "number",
+            "optional": false,
+            "help": "top edge in pixels, at least 0"
+          }
+        ],
+        "returns": "void",
+        "help": "Place the box of a component in the function model."
+      },
+      "moveLabel": {
+        "params": [
+          {
+            "name": "functionId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the function"
+          },
+          {
+            "name": "x",
+            "type": "number",
+            "optional": false,
+            "help": "label centre in pixels, at least 0"
+          },
+          {
+            "name": "y",
+            "type": "number",
+            "optional": false,
+            "help": "label centre in pixels, at least 0"
+          }
+        ],
+        "returns": "void",
+        "help": "Place the verb label of a function; the arrow bends there."
+      },
+      "resetLayout": {
+        "params": [],
+        "returns": "void",
+        "help": "Put every box back to its automatic slot and straighten every arrow."
+      }
+    },
     "fields": {
       "components": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "Array<{ id: string, name: string, kind: 'target'|'system'|'supersystem', note: string, cost: number|null }>",
+        "help": "the components; exactly one may be the target",
+        "bulk": false,
+        "derived": true
       },
       "interactions": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "Array<{ a: string, b: string }>",
+        "help": "the ticked component pairs (unordered)",
+        "bulk": false,
+        "derived": true
       },
       "exclusions": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "Array<{ a: string, b: string }>",
+        "help": "the pairs explicitly marked as not interacting",
+        "bulk": false,
+        "derived": true
       },
       "functions": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "Array<{ id: string, carrier: string, verb: string, object: string, parameter: string, type: 'useful'|'harmful', level: 'adequate'|'insufficient'|'excessive'|null, note: string }>",
+        "help": "the directed functions carrier → object",
+        "bulk": false,
+        "derived": true
       },
       "positions": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "Object<string, { x: number, y: number }>",
+        "help": "dragged box positions by component id",
+        "bulk": false,
+        "derived": true
       },
       "labels": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "Object<string, { x: number, y: number }>",
+        "help": "dragged verb-label positions by function id",
+        "bulk": false,
+        "derived": true
       },
       "activeTab": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "'components'|'interactions'|'model'|'valueCost'",
+        "help": "the open tab",
+        "bulk": false,
+        "derived": true
       },
       "showRanks": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "boolean",
+        "help": "whether the diagram shows rank codes",
+        "bulk": false,
+        "derived": true
+      },
+      "openPairs": {
+        "type": "Array<{ a: string, b: string }>",
+        "help": "ticked pairs no function uses yet",
+        "bulk": false,
+        "derived": true
+      },
+      "ranks": {
+        "type": "Array<{ functionId: string, rank: 'basic'|'additional'|'auxiliary', level: number|null }>",
+        "help": "derived rank of every useful complete function",
+        "bulk": false,
+        "derived": true
+      },
+      "disadvantages": {
+        "type": "Array<{ functionId: string, carrier: string, verb: string, object: string, parameter: string, kind: 'harmful'|'insufficient'|'excessive' }>",
+        "help": "harmful, insufficient and excessive functions",
+        "bulk": false,
+        "derived": true
+      },
+      "valueCost": {
+        "type": "ValueCostRow[]",
+        "help": "function value and cost of each system component",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "ValueCostRow",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": "id of the system component"
+          },
+          "name": {
+            "type": "string",
+            "help": "name of the component"
+          },
+          "value": {
+            "type": "number",
+            "help": "function value: 3 per basic, 2 per additional, 1 per auxiliary function it carries"
+          },
+          "normValue": {
+            "type": "number",
+            "help": "value normalised to 0…10 against the largest value"
+          },
+          "cost": {
+            "type": "number|null",
+            "help": "entered cost in euro, null when none"
+          },
+          "normCost": {
+            "type": "number|null",
+            "help": "cost normalised to 0…10 against the largest cost, null when none"
+          }
+        }
       }
     }
   },
@@ -19682,4 +20011,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":69};
+export const AGENT_COVERAGE = {"total":76,"available":70};
