@@ -1,6 +1,6 @@
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
 import {
-  slugify, folderName, collectContext, buildReport, reportMarkdown,
+  slugify, folderName, collectContext, buildReport, reportMarkdown, redactErrors,
 } from '../../../js/frame/bug-reporter/report.js';
 
 const DATE = new Date(2026, 9, 8, 14, 30, 12); // local time
@@ -105,7 +105,7 @@ suite('bug-reporter report', () => {
 
   test('markdown lists errors, notes and textbox texts', () => {
     const md = reportMarkdown(buildReport({
-      date: DATE, description: '', context: {}, notes: ['Aufnahme: abgelehnt'],
+      date: DATE, description: '', context: {}, notes: ['Aufnahme: abgelehnt'], fullErrors: true,
       errors: [{ at: '2026-10-08T14:29:58.000Z', kind: 'unhandledrejection', message: 'TypeError: x', stack: null }],
       screenshot: new Blob(['p']),
       annotations: { image: { width: 100, height: 100 }, items: [
@@ -123,7 +123,7 @@ suite('bug-reporter report', () => {
 
   test('multi-line error message stays on one list line', () => {
     const md = reportMarkdown(buildReport({
-      date: DATE, description: '', context: {}, notes: [],
+      date: DATE, description: '', context: {}, notes: [], fullErrors: true,
       errors: [{ at: '2026-10-08T14:29:58.000Z', kind: 'error', message: 'line one\n\n  line   two', stack: null }],
     }));
     assertTrue(md.includes('**error** — `line one line two`\n'));
@@ -131,7 +131,7 @@ suite('bug-reporter report', () => {
 
   test('error message with backticks gets a longer fence', () => {
     const md = reportMarkdown(buildReport({
-      date: DATE, description: '', context: {}, notes: [],
+      date: DATE, description: '', context: {}, notes: [], fullErrors: true,
       errors: [
         { at: '2026-10-08T14:29:58.000Z', kind: 'error', message: 'bad `x` value', stack: null },
         { at: '2026-10-08T14:29:58.000Z', kind: 'error', message: '`edge`', stack: null },
@@ -146,5 +146,64 @@ suite('bug-reporter report', () => {
       date: DATE, description: '', context: { userAgent: 'a|b' }, errors: [], notes: [],
     }));
     assertTrue(md.includes('| User-Agent | a\\|b |'));
+  });
+
+  test('redactErrors keeps time, kind, name and V8 frames only', () => {
+    const [e] = redactErrors([{
+      at: '2026-10-08T14:29:58.000Z', kind: 'error', name: 'TypeError',
+      message: 'Spalte „Kunde Müller“ fehlt',
+      stack: 'TypeError: Spalte „Kunde Müller“ fehlt\n  zweite Zeile mit Daten\n    at parse (http://h/js/a.js:3:9)\n    at http://h/js/b.js:7:1',
+    }]);
+    assertDeepEqual(e, {
+      at: '2026-10-08T14:29:58.000Z', kind: 'error', name: 'TypeError',
+      stack: '    at parse (http://h/js/a.js:3:9)\n    at http://h/js/b.js:7:1',
+    });
+  });
+
+  test('redactErrors keeps Firefox frames', () => {
+    const [e] = redactErrors([{
+      at: 'x', kind: 'console.error', name: null, message: 'secret',
+      stack: 'parse@http://h/js/a.js:3:9\n@http://h/js/b.js:7:1\nsecret line',
+    }]);
+    assertEqual(e.stack, 'parse@http://h/js/a.js:3:9\n@http://h/js/b.js:7:1');
+  });
+
+  test('redactErrors: no stack or no frames → stack null, missing name → null', () => {
+    const [a, b] = redactErrors([
+      { at: 'x', kind: 'error', message: 'm', stack: null },
+      { at: 'y', kind: 'error', message: 'm', stack: 'Error: only a message' },
+    ]);
+    assertEqual(a.stack, null);
+    assertEqual(a.name, null);
+    assertEqual(b.stack, null);
+  });
+
+  test('buildReport redacts errors by default and flags it in report.json', () => {
+    const r = buildReport({
+      date: DATE, description: '', context: {}, notes: [],
+      errors: [{ at: '2026-10-08T14:29:58.000Z', kind: 'console.error', name: null,
+        message: 'PROJEKTINHALT', stack: 'Error: PROJEKTINHALT\n    at f (http://h/a.js:1:1)' }],
+    });
+    for (const f of r.files) assertTrue(!f.data.includes('PROJEKTINHALT'), f.name);
+    assertEqual(JSON.parse(r.files[1].data).errorsRedacted, true);
+    assertTrue(r.files[0].data.includes('1. `2026-10-08T14:29:58` **console.error**\n'));
+    assertTrue(r.files[0].data.includes('at f (http://h/a.js:1:1)'));
+  });
+
+  test('buildReport with fullErrors keeps messages and flags errorsRedacted false', () => {
+    const r = buildReport({
+      date: DATE, description: '', context: {}, notes: [], fullErrors: true,
+      errors: [{ at: '2026-10-08T14:29:58.000Z', kind: 'error', name: 'TypeError', message: 'TypeError: x', stack: null }],
+    });
+    assertEqual(JSON.parse(r.files[1].data).errorsRedacted, false);
+    assertTrue(r.files[0].data.includes('**error** — `TypeError: x`'));
+  });
+
+  test('markdown shows the error name of a redacted entry', () => {
+    const md = reportMarkdown(buildReport({
+      date: DATE, description: '', context: {}, notes: [],
+      errors: [{ at: '2026-10-08T14:29:58.000Z', kind: 'unhandledrejection', name: 'RangeError', message: 'm', stack: null }],
+    }));
+    assertTrue(md.includes('**unhandledrejection** — RangeError\n'));
   });
 });

@@ -19,12 +19,27 @@ function stackOf(value) {
   return value instanceof Error && value.stack ? value.stack : null;
 }
 
+function nameOf(value) {
+  return value instanceof Error ? value.name : null;
+}
+
+/**
+ * Stack of whoever called console.error. Must be called directly from the
+ * wrapper: the V8 "Error" header, callSite's own frame and the wrapper's
+ * frame are dropped.
+ */
+function callSite() {
+  const lines = String(new Error().stack ?? '').split('\n');
+  if (lines.length && !/^\s+at\s|@/.test(lines[0])) lines.shift();
+  return lines.slice(2).join('\n') || null;
+}
+
 /**
  * Create an error log.
  * @param {{limit?: number, target?: EventTarget, consoleObj?: {error: Function},
  *          now?: () => Date}} [opts]
  * @returns {{install: () => void, uninstall: () => void,
- *            record: (kind: string, message: string, stack: string|null) => void,
+ *            record: (kind: string, message: string, stack: string|null, name?: string|null) => void,
  *            getEntries: () => object[]}}
  */
 export function createErrorLog(opts = {}) {
@@ -35,10 +50,11 @@ export function createErrorLog(opts = {}) {
   const entries = [];
   let originalError = null;
 
-  function record(kind, message, stack) {
+  function record(kind, message, stack, name = null) {
     entries.push({
       at: now().toISOString(),
       kind,
+      name: name ? String(name) : null,
       message: String(message ?? ''),
       stack: stack ? String(stack).slice(0, STACK_LIMIT) : null,
     });
@@ -46,11 +62,11 @@ export function createErrorLog(opts = {}) {
   }
 
   function onError(ev) {
-    record('error', ev.message || describe(ev.error), stackOf(ev.error));
+    record('error', ev.message || describe(ev.error), stackOf(ev.error), nameOf(ev.error));
   }
 
   function onRejection(ev) {
-    record('unhandledrejection', describe(ev.reason), stackOf(ev.reason));
+    record('unhandledrejection', describe(ev.reason), stackOf(ev.reason), nameOf(ev.reason));
   }
 
   return {
@@ -62,7 +78,8 @@ export function createErrorLog(opts = {}) {
       consoleObj.error = function (...args) {
         try {
           const err = args.find(a => a instanceof Error);
-          record('console.error', args.map(describe).join(' ').slice(0, MESSAGE_LIMIT), stackOf(err));
+          record('console.error', args.map(describe).join(' ').slice(0, MESSAGE_LIMIT),
+            err ? stackOf(err) : callSite(), nameOf(err));
         } catch { /* never break console.error */ }
         return original.apply(this, args);
       };

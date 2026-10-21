@@ -129,6 +129,7 @@ export function initBugReporter(kernel, ui, deps = {}) {
           dmaicTiles: ui.dmaicTiles, themeManager: kernel.themeManager, i18n },
         { location, innerWidth, innerHeight, navigator, now: new Date() }),
       errors: errorLog.getEntries(),
+      fullErrors: choice.errors,
       notes,
       screenshot: shot?.blob ?? null,
       annotations,

@@ -48,6 +48,22 @@ export function folderName(date, description) {
   return `${stamp(date)}-${slugify(description)}`;
 }
 
+// A stack line that is a frame, not message text: V8 `    at …`, Firefox `fn@url:line:col`.
+const FRAME = /^\s+at\s|^\S*@\S+:\d+:\d+$/;
+
+/**
+ * Strip everything a user could have put into error entries (spec addendum
+ * 2026-10-21): the message goes, of the stack only frame lines stay.
+ * @param {object[]} entries error-log entries
+ * @returns {Array<{at: string, kind: string, name: string|null, stack: string|null}>}
+ */
+export function redactErrors(entries) {
+  return entries.map(e => {
+    const frames = String(e.stack ?? '').split('\n').filter(l => FRAME.test(l));
+    return { at: e.at, kind: e.kind, name: e.name ?? null, stack: frames.join('\n') || null };
+  });
+}
+
 function safe(fn) {
   try { return fn() ?? null; } catch { return null; }
 }
@@ -78,15 +94,18 @@ export function collectContext(services, env) {
 
 /**
  * Assemble a report and the files to send.
+ * Errors are redacted unless `fullErrors` is true.
  * @param {{date: Date, description: string, context: object, errors: object[],
- *          notes: string[], screenshot?: Blob|null, annotations?: object|null,
- *          project?: string|null}} input
+ *          fullErrors?: boolean, notes: string[], screenshot?: Blob|null,
+ *          annotations?: object|null, project?: string|null}} input
  * @returns {{folder: string, description: string, context: object, errors: object[],
  *            notes: string[], annotations: object|null, attachments: string[],
  *            files: Array<{name: string, type: string, data: string|Blob}>}}
  */
 export function buildReport(input) {
-  const { date, description = '', context, errors, notes } = input;
+  const { date, description = '', context, notes } = input;
+  const errorsRedacted = input.fullErrors !== true;
+  const errors = errorsRedacted ? redactErrors(input.errors) : input.errors;
   const screenshot = input.screenshot ?? null;
   const annotations = screenshot && input.annotations?.items?.length ? input.annotations : null;
   const project = input.project ?? null;
@@ -108,7 +127,7 @@ export function buildReport(input) {
   report.attachments = extras.map(f => f.name);
 
   const json = JSON.stringify({
-    folder: report.folder, description, context, errors, notes, annotations,
+    folder: report.folder, description, context, errors, errorsRedacted, notes, annotations,
     attachments: report.attachments,
   }, null, 2);
   report.files = [
@@ -163,7 +182,8 @@ export function reportMarkdown(report) {
   if (report.errors.length) {
     out.push(`## Fehler (letzte ${report.errors.length})`, '');
     report.errors.forEach((e, i) => {
-      out.push(`${i + 1}. \`${e.at.slice(0, 19)}\` **${e.kind}** — ${codeSpan(e.message)}`);
+      const detail = 'message' in e ? ` — ${codeSpan(e.message)}` : e.name ? ` — ${e.name}` : '';
+      out.push(`${i + 1}. \`${e.at.slice(0, 19)}\` **${e.kind}**${detail}`);
       if (e.stack) out.push('', '   ```', ...e.stack.split('\n').map(l => `   ${l}`), '   ```');
     });
     out.push('');

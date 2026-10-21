@@ -753,9 +753,10 @@
   "bugReport": {
     "trigger": "Fehler melden",
     "optinTitle": "Fehler melden",
-    "optinIntro": "Was soll mitgeschickt werden? Beschreibung, App-Version, Route und die letzten Konsolenfehler gehen immer mit.",
+    "optinIntro": "Was soll mitgeschickt werden? Beschreibung, App-Version, Route sowie Ort und Typ der letzten Konsolenfehler gehen immer mit – ohne Meldungstext.",
     "optinScreenshot": "Screenshot aufnehmen",
     "optinProject": "Projektdaten mitschicken",
+    "optinErrors": "Fehlermeldungen im Wortlaut mitschicken (können Projektinhalte enthalten)",
     "next": "Weiter",
     "describeTitle": "Fehler beschreiben",
     "describeLabel": "Was ist passiert, und was hätten Sie erwartet?",

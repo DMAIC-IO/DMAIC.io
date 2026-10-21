@@ -753,9 +753,10 @@
   "bugReport": {
     "trigger": "Report a bug",
     "optinTitle": "Report a bug",
-    "optinIntro": "What should be included? Description, app version, route and the latest console errors are always sent.",
+    "optinIntro": "What should be included? Description, app version, route, plus location and type of the latest console errors, are always sent – without the message text.",
     "optinScreenshot": "Take a screenshot",
     "optinProject": "Include project data",
+    "optinErrors": "Include full error messages (may contain project content)",
     "next": "Next",
     "describeTitle": "Describe the bug",
     "describeLabel": "What happened, and what did you expect?",

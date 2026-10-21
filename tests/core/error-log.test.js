@@ -73,6 +73,29 @@ suite('error-log', () => {
     assertEqual(f.consoleObj.error, original);
   });
 
+  test('records the error name, null without an Error', () => {
+    const f = fakes();
+    const log = createErrorLog(f);
+    log.install();
+    const ev = new Event('unhandledrejection');
+    ev.reason = new RangeError('too far');
+    f.target.dispatchEvent(ev);
+    f.consoleObj.error('plain text');
+    const [rejection, plain] = log.getEntries();
+    assertEqual(rejection.name, 'RangeError');
+    assertEqual(plain.name, null);
+  });
+
+  test('console.error without an Error records the call site', () => {
+    const f = fakes();
+    const log = createErrorLog(f);
+    log.install();
+    f.consoleObj.error('no error object');
+    const { stack } = log.getEntries()[0];
+    assertTrue(typeof stack === 'string' && stack.includes('error-log.test.js'));
+    assertTrue(!stack.includes('no error object'));
+  });
+
   test('getEntries returns a copy', () => {
     const log = createErrorLog(fakes());
     log.record('error', 'a', null);
