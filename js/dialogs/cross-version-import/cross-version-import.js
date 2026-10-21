@@ -10,6 +10,9 @@ export function buildCrossVersionImportDialog(ctx) {
     titleKey: 'title',
     Model,
     ctx,
-    data: () => ({ currentVersion: VERSION }),
+    data: () => ({
+      currentVersion: VERSION,
+      currentMM: VERSION.split('.').slice(0, 2).join('.'),
+    }),
   });
 }

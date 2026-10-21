@@ -5,7 +5,7 @@
       <li>
         <label class="cv-import__item">
           <input type="radio" name="cv-version" :value="v.versionMM" x-model="model.selected">
-          <strong x-text="v.label"></strong>
+          <strong class="cv-import__transition" x-text="t('transition', { from: v.versionMM, to: currentMM })"></strong>
           <span x-text="' — ' + t('projectsCount', { count: v.projectCount })"></span>
         </label>
       </li>
