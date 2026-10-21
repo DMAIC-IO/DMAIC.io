@@ -6,7 +6,7 @@
     <div class="bar-module__options" data-ref="options-wrap" x-show="hasValueColumn() || hasGroupColumn()">
       <label class="bar-module__opt-row" x-show="hasValueColumn()">
         <span data-help-key="modules.bar.types.Params.aggregation" x-text="t('aggregation')"></span>
-        <select data-action="set-agg" :value="model.chartConfig.aggregation" @change="setParam('aggregation', $event.target.value)">
+        <select class="field" data-action="set-agg" :value="model.chartConfig.aggregation" @change="setParam('aggregation', $event.target.value)">
           <template x-for="o in aggregationOptions()" :key="o.value">
             <option :value="o.value" :selected="o.value === model.chartConfig.aggregation" x-text="o.label"></option>
           </template>
