@@ -95,7 +95,7 @@
 }
 
 .msa-typ2__stats-table td:first-child {
-  font-family: var(--font-family-base);
+  font-family: var(--font-family);
   color: var(--color-text-secondary);
 }
 

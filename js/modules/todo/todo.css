@@ -126,7 +126,7 @@
 }
 
 .todo__status--blocked {
-  background: var(--color-danger, #e74c3c);
+  background: var(--color-error);
   color: #fff;
   opacity: 0.85;
 }
@@ -139,7 +139,7 @@
 }
 
 .todo__row--overdue .todo__cell-due {
-  color: var(--color-danger, #e74c3c);
+  color: var(--color-error);
   font-weight: 600;
 }
 

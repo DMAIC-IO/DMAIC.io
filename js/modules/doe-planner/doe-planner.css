@@ -453,7 +453,7 @@
   font-size: var(--font-size-xs);
   padding: 1px var(--spacing-s);
   border-radius: var(--border-radius-sm);
-  background: var(--color-bg);
+  background: var(--color-bg-primary);
   border: 1px solid var(--color-border);
   white-space: nowrap;
 }
@@ -482,7 +482,7 @@
   font-size: var(--font-size-xs);
   padding: 1px var(--spacing-xs);
   border-radius: var(--border-radius-sm);
-  background: var(--color-bg);
+  background: var(--color-bg-primary);
 }
 
 /* Resolution legend */
@@ -626,7 +626,7 @@
 
 .doe__bb-warning {
   font-size: var(--font-size-sm);
-  color: var(--color-danger);
+  color: var(--color-error);
   font-style: italic;
 }
 
@@ -680,7 +680,7 @@
 
 .doe__taguchi-warning {
   font-size: var(--font-size-sm);
-  color: var(--color-danger);
+  color: var(--color-error);
   font-style: italic;
   padding: var(--spacing-sm);
 }
@@ -695,13 +695,13 @@
 
 .doe__optimal-hint {
   font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
+  color: var(--color-text-tertiary);
   margin-top: var(--spacing-2xs);
 }
 
 .doe__optimal-warning {
   font-size: var(--font-size-sm);
-  color: var(--color-danger);
+  color: var(--color-error);
   font-style: italic;
   padding: var(--spacing-sm) 0;
 }
@@ -722,7 +722,7 @@
 
 .doe__source-hint {
   font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
+  color: var(--color-text-tertiary);
   line-height: 1.4;
   margin-bottom: var(--spacing-sm);
 }
@@ -740,7 +740,7 @@
 
 .doe__source-mapping-error {
   font-size: var(--font-size-xs);
-  color: var(--color-danger);
+  color: var(--color-error);
   margin-top: var(--spacing-xs);
   font-style: italic;
 }
@@ -761,7 +761,7 @@
 
 .doe__term-list-hint {
   font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
+  color: var(--color-text-tertiary);
   line-height: 1.4;
   margin-bottom: var(--spacing-sm);
 }
@@ -793,7 +793,7 @@
 }
 
 .doe__term-group-header:hover {
-  background: var(--color-hover, var(--color-surface-alt));
+  background: var(--color-bg-tertiary);
 }
 
 .doe__term-group-arrow {
@@ -806,7 +806,7 @@
 }
 
 .doe__term-group-count {
-  color: var(--color-text-muted);
+  color: var(--color-text-tertiary);
   margin-left: auto;
   font-variant-numeric: tabular-nums;
 }
@@ -835,11 +835,11 @@
   padding: var(--spacing-2xs) var(--spacing-sm);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
-  background: var(--color-surface-alt, transparent);
+  background: var(--color-bg-secondary);
   font-size: var(--font-size-xs);
   cursor: pointer;
   user-select: none;
-  color: var(--color-text-muted);
+  color: var(--color-text-tertiary);
 }
 
 .doe__term-chip input[type="checkbox"] {
@@ -847,9 +847,9 @@
 }
 
 .doe__term-chip--on {
-  background: var(--color-surface);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  background: var(--color-bg-elevated);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
 .doe__term-chip--locked {
@@ -936,8 +936,8 @@
 }
 
 .doe__forbidden-remove-btn:hover {
-  color: var(--color-danger, var(--color-text-primary));
-  background: var(--color-bg-hover, transparent);
+  color: var(--color-error);
+  background: var(--color-bg-tertiary);
 }
 
 .doe__forbidden-add {
@@ -978,7 +978,7 @@
 
 .doe__term-matrix-hint {
   font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
+  color: var(--color-text-tertiary);
   line-height: 1.4;
   margin-bottom: var(--spacing-sm);
 }
@@ -1004,7 +1004,7 @@
 }
 
 .doe__term-diag {
-  color: var(--color-text-muted);
+  color: var(--color-text-tertiary);
 }
 
 .doe__term-blank {
@@ -1022,17 +1022,17 @@
 }
 
 .doe__term-cell--on {
-  color: var(--color-primary);
-  background: var(--color-surface);
+  color: var(--color-accent);
+  background: var(--color-bg-elevated);
 }
 
 .doe__term-cell--off {
-  color: var(--color-text-muted);
-  background: var(--color-surface-alt, transparent);
+  color: var(--color-text-tertiary);
+  background: var(--color-bg-secondary);
 }
 
 .doe__term-cell:hover {
-  background: var(--color-hover, var(--color-surface-alt));
+  background: var(--color-bg-tertiary);
 }
 
 /* ===== Parameters ===== */
@@ -1728,7 +1728,7 @@
 
 .doe__augment-hint {
   font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
+  color: var(--color-text-tertiary);
   line-height: 1.4;
   margin-bottom: var(--spacing-sm);
 }

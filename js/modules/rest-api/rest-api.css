@@ -142,7 +142,7 @@
 }
 
 .rest-api__item-del:hover {
-  color: var(--color-danger);
+  color: var(--color-error);
 }
 
 /* ── Method label ── */
@@ -256,7 +256,7 @@
 }
 
 .rest-api__header-del:hover {
-  color: var(--color-danger);
+  color: var(--color-error);
 }
 
 .rest-api__add-header-btn {
@@ -336,7 +336,7 @@
 }
 
 .rest-api__mapping-del:hover {
-  color: var(--color-danger);
+  color: var(--color-error);
 }
 
 .rest-api__add-mapping-btn {

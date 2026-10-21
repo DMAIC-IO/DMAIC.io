@@ -310,7 +310,7 @@ html.is-nightly body {
 }
 
 .app-header__project-action-btn--danger:hover {
-  color: var(--color-danger);
+  color: var(--color-error);
 }
 
 .app-header__project-separator {
@@ -329,7 +329,7 @@ html.is-nightly body {
   border-radius: 3px;
   flex-shrink: 0;
   text-transform: uppercase;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-family-mono);
 }
 
 /* Cycle picker (modal) — two-step flow: step 1 picks the cycle, step 2 the
@@ -416,7 +416,7 @@ html.is-nightly body {
 .cycle-picker__short {
   font-size: 11px;
   color: var(--color-text-secondary);
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-family-mono);
 }
 
 .cycle-picker__desc {

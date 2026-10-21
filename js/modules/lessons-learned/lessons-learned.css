@@ -46,7 +46,7 @@
 
 .ll__stat-icon--problem {
   background: var(--color-danger-bg, rgb(248 113 113 / 12%));
-  color: var(--color-danger, #f87171);
+  color: var(--color-error);
 }
 
 .ll__stat-icon--improve {
@@ -144,7 +144,7 @@
 }
 
 .ll__card-head:hover {
-  background: var(--color-bg-tertiary, var(--color-bg-hover));
+  background: var(--color-bg-tertiary);
 }
 
 .ll__cat-dot {
@@ -160,7 +160,7 @@
 }
 
 .ll__cat-dot--problem {
-  background: var(--color-danger, #f87171);
+  background: var(--color-error);
 }
 
 .ll__cat-dot--improve {
@@ -230,7 +230,7 @@
 
 .ll__impact-badge--high {
   background: var(--color-danger-bg, rgb(248 113 113 / 12%));
-  color: var(--color-danger, #f87171);
+  color: var(--color-error);
 }
 
 .ll__impact-badge--medium {
@@ -436,7 +436,7 @@
 }
 
 .ll__action-tag-remove:hover {
-  color: var(--color-danger, #f87171);
+  color: var(--color-error);
 }
 
 .ll__hidden {

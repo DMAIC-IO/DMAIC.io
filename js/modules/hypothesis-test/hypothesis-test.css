@@ -73,7 +73,7 @@
 }
 
 .hyptest__h-formula {
-  font-family: var(--font-mono);
+  font-family: var(--font-family-mono);
   font-size: var(--font-size-sm);
   font-weight: 500;
 }

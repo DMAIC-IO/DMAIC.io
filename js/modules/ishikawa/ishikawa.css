@@ -350,7 +350,7 @@
 }
 
 .ishikawa__expert-name-edit:focus {
-  border-color: var(--color-accent-primary);
+  border-color: var(--color-accent);
   background: var(--color-bg-primary);
 }
 
