@@ -81,6 +81,8 @@ function renderBlock(b, byId, t) {
       return h('h4', null, ...inline(b.content, byId, t));
     case 'list':
       return h('ul', null, ...(b.items || []).map(it => h('li', null, ...inline(it, byId, t))));
+    case 'steps':
+      return h('ol', null, ...(b.items || []).map(it => h('li', null, ...inline(it, byId, t))));
     case 'table': {
       const rows = b.rows || [];
       if (!rows.length) return null;

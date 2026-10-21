@@ -58,6 +58,16 @@ suite('help-renderer: renderModuleHelp()', () => {
     assertEqual(lis[1].textContent, 'two', 'li 1');
   });
 
+  test('steps → <ol><li> (items were silently dropped before)', () => {
+    const el = render({ sections: { s: { en: { blocks: [
+      { type: 'steps', items: ['open', '**run**'] },
+    ] } } } });
+    const lis = el.querySelectorAll('ol > li');
+    assertEqual(lis.length, 2, 'two li');
+    assertEqual(lis[0].textContent, 'open', 'li 0');
+    assertTrue(lis[1].querySelector('strong') != null, 'inline markdown in step');
+  });
+
   test('markdown enhancement: **bold** + $math$ render inside paragraph', () => {
     const el = render({ sections: { s: { en: { blocks: [
       { type: 'paragraph', content: 'a **b** $x$' },

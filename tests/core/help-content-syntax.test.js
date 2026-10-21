@@ -46,3 +46,31 @@ suite('Hilfetexte: unterstützte Auszeichnung', () => {
       + offenders.slice(0, 12).join('\n  '));
   });
 });
+
+/*
+ * js/core/help-renderer.js liest ausschließlich `sections.<id>.<lang>`.
+ * distribution-fit und contour-plot lagen im Altformat `{ de: {…}, en: {…} }`
+ * vor — die Dateien existierten, das Hilfe-Panel blieb trotzdem leer.
+ */
+suite('Hilfetexte: Format, das der Renderer liest', () => {
+  test('jedes Modul hat Abschnitte mit nicht-leeren DE- und EN-Blöcken', async () => {
+    const offenders = [];
+    for (const entry of MODULE_MANIFEST) {
+      let help;
+      try {
+        help = (await import(`../../js/modules/${entry.id}/${entry.id}-help.js`)).default;
+      } catch {
+        offenders.push(`${entry.id}: keine Hilfedatei`);
+        continue;
+      }
+      const sections = Object.entries(help?.sections ?? {});
+      if (!sections.length) { offenders.push(`${entry.id}: keine sections`); continue; }
+      for (const [key, section] of sections) {
+        for (const lang of ['de', 'en']) {
+          if (!section?.[lang]?.blocks?.length) offenders.push(`${entry.id}.${key}.${lang}: keine Blöcke`);
+        }
+      }
+    }
+    assertEqual(offenders.length, 0, `Hilfe fehlt oder ist unlesbar:\n  ${offenders.slice(0, 12).join('\n  ')}`);
+  });
+});
