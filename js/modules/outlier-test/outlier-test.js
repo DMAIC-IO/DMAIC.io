@@ -30,6 +30,7 @@
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { State, ALL_METHODS, VALID_SIDES, METRIC_KEYS } from './outlier-test-model.js';
 import {
@@ -133,18 +134,6 @@ const PARAM_CHECKS = {
     return ALL_METHODS.filter(m => v.includes(m));      // Reihenfolge der Konstante, ohne Doppelte
   },
 };
-
-/**
- * Setzt einen Wert unter einem Schlüssel in `obj`. Lokal geschrieben, weil der
- * Generator (agent-data) Importe nicht liest und die Schreibstelle im Modul
- * selbst sehen muss.
- * @param {object} obj Wurzel, deren Schlüssel beschrieben wird
- * @param {string} key Schlüssel
- * @param {any} value der abzulegende Wert
- */
-function setAtPath(obj, key, value) {
-  obj[key] = value;
-}
 
 /** Die Spalten-Slots dieses Moduls: genau einer, die Messwertspalte. */
 const COLUMN_SLOTS = ['value'];

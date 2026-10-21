@@ -23,6 +23,7 @@ import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import {
   requireEnum, requireNumber, requireText,
 } from '../../core/agent/agent-argcheck.js';
+import { setAtPath } from '../../core/agent/agent-path.js';
 import {
   State, VALID_CATEGORIES, VALID_TEST_TYPES, VALID_DIRECTIONS,
 } from './sample-size-model.js';
@@ -64,18 +65,6 @@ const PARAM_CHECKS = {
   delta: (v) => requireText('value', v),
   sigma: (v) => requireText('value', v),
 };
-
-/**
- * Setzt einen Wert unter einem Schlüssel in `obj`. Lokal geschrieben, weil der
- * Generator (agent-data) Importe nicht liest und die Schreibstelle im Modul
- * selbst sehen muss.
- * @param {object} obj Wurzel, deren Schlüssel beschrieben wird
- * @param {string} key Schlüssel
- * @param {any} value der abzulegende Wert
- */
-function setAtPath(obj, key, value) {
-  obj[key] = value;
-}
 
 /** Beschriftungsschlüssel der Richtungsauswahl. */
 const DIRECTION_LABEL_METHODS = {

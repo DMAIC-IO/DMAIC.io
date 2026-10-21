@@ -21,6 +21,7 @@ import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import {
   requireEnum, requireIndex, requireKnownId, requireNumber, requireText,
 } from '../../core/agent/agent-argcheck.js';
+import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { State, Endpoint, SCHEDULE_UNITS, WRITE_MODES } from './rest-api-model.js';
 import { ColumnPicker, refToKey, keyToRef } from '../../ui/column-picker.js';
@@ -33,19 +34,6 @@ const PARAM_CHECKS = {
   'schedule.intervalValue': (v) => requireNumber('value', v, { min: 1, max: 999, integer: true }),
   'schedule.intervalUnit': (v) => { requireEnum('value', v, SCHEDULE_UNITS); return v; },
 };
-
-/**
- * Einen Wert unter einem Punkt-Schlüssel (`'csvOptions.delimiter'`) in `obj` ablegen.
- * @param {object} obj Wurzel, deren Pfad beschrieben wird
- * @param {string} key Schlüssel, gegebenenfalls mit Punkt
- * @param {any} value der abzulegende Wert
- */
-function setAtPath(obj, key, value) {
-  const parts = key.split('.');
-  let cur = obj;
-  for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
-  cur[parts[parts.length - 1]] = value;
-}
 
 /**
  * Die Schlüsselfläche von `setParam` — die Werte des aktiven Endpunkts.

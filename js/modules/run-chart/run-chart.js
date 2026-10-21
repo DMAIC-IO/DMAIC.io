@@ -27,6 +27,7 @@ import { State } from './run-chart-model.js';
 import { ColumnPicker, getColumnValues, getColumnName, refToKey, keyToRef } from '../../ui/column-picker.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { finiteOrNull, zipPoints } from '../../core/agent/agent-results.js';
 import { computeRunChart } from '../../engines/run-chart-engine.js';
@@ -49,19 +50,6 @@ const PARAM_KEYS = ['alpha'];
 const PARAM_CHECKS = {
   alpha: (v) => requireNumber('value', v, { exclusiveMin: 0, exclusiveMax: 1 }),
 };
-
-/**
- * Einen Wert unter einem Punkt-Schlüssel in `obj` ablegen.
- * @param {object} obj Wurzel, deren Pfad beschrieben wird
- * @param {string} key Schlüssel, gegebenenfalls mit Punkt
- * @param {any} value der abzulegende Wert
- */
-function setAtPath(obj, key, value) {
-  const parts = key.split('.');
-  let cur = obj;
-  for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
-  cur[parts[parts.length - 1]] = value;
-}
 
 /**
  * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter

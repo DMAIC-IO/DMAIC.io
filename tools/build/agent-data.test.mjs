@@ -2887,6 +2887,46 @@ test('unreachable_write: eine Direktzuweisung an der Model-Wurzel deckt die gepr
   assert.deepEqual(modules.foo.reported.filter(r => /:(alpha|power)$/.test(r)), []);
 });
 
+test('unreachable_write: eine importierte Pfad-Hilfe deckt die geprüfte Menge ab', () => {
+  const root = fixture({ foo: {
+    'foo.js': `import { setAtPath } from './foo-path.js';\nconst KEYS = ['alpha', 'beta'];\n` + vmWithAgent(`/**
+       * @agent
+       * @param {string} key der Schlüssel
+       * @param {number} value der Wert
+       * @returns {void}
+       */
+      setParam(key, value) {
+        requireEnum('key', key, KEYS);
+        setAtPath(this.model.params, key, value);
+      },`),
+    'foo-path.js': 'export function setAtPath(obj, path, value) { obj[path] = value; }\n',
+    'foo-model.js': PARAMS_MODEL,
+    'foo.html': PARAMS_HTML,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, []);
+});
+
+test('unreachable_write: eine importierte Hilfe, die nur LIEST, deckt NICHTS ab', () => {
+  const root = fixture({ foo: {
+    'foo.js': `import { setAtPath } from './foo-path.js';\nconst KEYS = ['alpha', 'beta'];\n` + vmWithAgent(`/**
+       * @agent
+       * @param {string} key der Schlüssel
+       * @param {number} value der Wert
+       * @returns {void}
+       */
+      setParam(key, value) {
+        requireEnum('key', key, KEYS);
+        setAtPath(this.model.params, key, value);
+      },`),
+    'foo-path.js': 'export function setAtPath(obj, path, value) { report(obj[path], value); }\n',
+    'foo-model.js': PARAMS_MODEL,
+    'foo.html': PARAMS_HTML,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.notDeepEqual(modules.foo.reported, []);
+});
+
 test('unreachable_write: eine Pfad-Hilfe an der Model-Wurzel deckt Punkt-Schlüssel ab', () => {
   const root = flatRoot(`const PARAM_KEYS = ['alpha', 'statParams.trim'];
 function setAtPath(obj, path, value) { obj[path] = value; }

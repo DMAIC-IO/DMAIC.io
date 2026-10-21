@@ -827,7 +827,7 @@ function requireEnumKeySets(body, ownParams, sf) {
 function resolveStringArray(expr, sf) {
   let literal = expr;
   if (ts.isIdentifier(expr)) {
-    const decl = findStringArrayDeclaration(expr.text, sf);
+    const decl = findDeclarationViaImport(expr.text, sf);
     if (!decl || !ts.isVariableDeclaration(decl) || !decl.initializer) return null;
     literal = decl.initializer;
   }
@@ -848,7 +848,7 @@ function resolveStringArray(expr, sf) {
  * @param {ts.SourceFile} sf
  * @returns {ts.Node|null}
  */
-function findStringArrayDeclaration(name, sf) {
+function findDeclarationViaImport(name, sf) {
   const local = findLocalDeclaration(name, sf);
   if (local) return local;
   const imported = findImportSource(name, sf);
@@ -866,12 +866,14 @@ function findStringArrayDeclaration(name, sf) {
 }
 
 /**
- * Die Felder, die ein Aufruf einer LOKALEN Pfad-Hilfe abdeckt —
+ * Die Felder, die ein Aufruf einer Pfad-Hilfe abdeckt —
  * `setAtPath(this.model.params, key, value)` zählt wie
  * `this.model.params[key] = value`.
  *
  * Fünf Bedingungen, alle fünf notwendig (fail closed): die gerufene Funktion
- * ist im Modul als FUNKTION auflösbar (ein importierter oder unbekannter
+ * ist im Modul oder eine Ebene über einen benannten relativen Import als
+ * FUNKTION auflösbar (`findDeclarationViaImport` — so liegt die gemeinsame
+ * Hilfe in `core/agent/agent-path.js`; ein Paketimport oder unbekannter
  * Name deckt nichts ab, eine gleichnamige Klasse oder eine Konstante ohne
  * Funktionsinitialisierer ebenso nicht), sie WEIST in ihrem Körper
  * tatsächlich zu (`pathHelperAssigns` — Review-Fund: `logKeys(this.model.params, key)`
@@ -897,11 +899,11 @@ function findStringArrayDeclaration(name, sf) {
 function fieldsCoveredByPathHelper(call, sf, keySets, active) {
   if (keySets.size === 0) return [];
   if (!ts.isIdentifier(call.expression)) return [];
-  const decl = findLocalDeclaration(call.expression.text, sf);
-  // Fail closed: ohne Deklaration im Modul ist der Körper nicht lesbar.
+  const decl = findDeclarationViaImport(call.expression.text, sf);
+  // Fail closed: ohne auflösbare Deklaration ist der Körper nicht lesbar.
   if (!decl) return [];
   const helper = functionOfDeclaration(decl);
-  // Fail closed: `findLocalDeclaration` liefert auch Klassen und
+  // Fail closed: `findDeclarationViaImport` liefert auch Klassen und
   // Variablen — nur ein lesbarer Funktionskörper ist prüfbar.
   if (!helper || !pathHelperAssigns(helper)) return [];
   const [base, ...rest] = call.arguments;

@@ -30,6 +30,7 @@ import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-regi
 import { chartModuleLifecycle } from '../../core/chart/chart-module-base.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { finiteOrNull, zipPoints } from '../../core/agent/agent-results.js';
 
@@ -46,19 +47,6 @@ const PARAM_KEYS = ['chartTypeId'];
 const PARAM_CHECKS = {
   chartTypeId: (v) => { requireEnum('value', v, TYPES); return v; },
 };
-
-/**
- * Einen Wert unter einem Punkt-Schlüssel in `obj` ablegen.
- * @param {object} obj Wurzel, deren Pfad beschrieben wird
- * @param {string} key Schlüssel, gegebenenfalls mit Punkt
- * @param {any} value der abzulegende Wert
- */
-function setAtPath(obj, key, value) {
-  const parts = key.split('.');
-  let cur = obj;
-  for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
-  cur[parts[parts.length - 1]] = value;
-}
 
 /**
  * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter

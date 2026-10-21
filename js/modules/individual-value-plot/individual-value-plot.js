@@ -24,6 +24,7 @@
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireConfLevel } from '../../core/agent/agent-argcheck.js';
+import { setAtPath } from '../../core/agent/agent-path.js';
 import { datasetSlotColumns, requireDatasetRows } from '../../core/agent/agent-datasets.js';
 import { State } from './individual-value-plot-model.js';
 
@@ -54,19 +55,6 @@ const PARAM_KEYS = ['confLevel'];
 
 /** Je Option ihr Prüfer; gibt den Wert zurück, den das Model hält. */
 const PARAM_CHECKS = { confLevel: requireConfLevel };
-
-/**
- * Einen Wert unter einem Punkt-Schlüssel (`'statParams.trim'`) in `obj` ablegen.
- * @param {object} obj Wurzel, deren Pfad beschrieben wird
- * @param {string} key Schlüssel, gegebenenfalls mit Punkt
- * @param {any} value der abzulegende Wert
- */
-function setAtPath(obj, key, value) {
-  const parts = key.split('.');
-  let cur = obj;
-  for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
-  cur[parts[parts.length - 1]] = value;
-}
 
 /**
  * Die Schlüsselfläche von `setParam`. Der Satz steht unter

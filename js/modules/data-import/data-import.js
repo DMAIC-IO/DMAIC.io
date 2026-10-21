@@ -39,6 +39,7 @@ import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import {
   requireEnum, requireIndex, requireNumber, requireText,
 } from '../../core/agent/agent-argcheck.js';
+import { setAtPath } from '../../core/agent/agent-path.js';
 import {
   State, clampSkipRows, parseErrorMessage, TEXT_FORMATS, CSV_PRESETS, CSV_PRESET_IDS,
   CSV_DELIMITERS, CSV_ENCODINGS, AQDEF_ENCODINGS, OPTION_LABEL_KEYS,
@@ -92,19 +93,6 @@ const PARAM_CHECKS = {
   'xlsxOptions.hasHeader': (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
   'aqdefOptions.encoding': (v) => { requireEnum('value', v, AQDEF_ENCODINGS); return v; },
 };
-
-/**
- * Einen Wert unter einem Punkt-Schlüssel (`'csvOptions.delimiter'`) in `obj` ablegen.
- * @param {object} obj Wurzel, deren Pfad beschrieben wird
- * @param {string} key Schlüssel, gegebenenfalls mit Punkt
- * @param {any} value der abzulegende Wert
- */
-function setAtPath(obj, key, value) {
-  const parts = key.split('.');
-  let cur = obj;
-  for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
-  cur[parts[parts.length - 1]] = value;
-}
 
 /**
  * Einen Wert unter einem Punkt-Schlüssel aus `obj` lesen.

@@ -26,6 +26,7 @@
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { setAtPath } from '../../core/agent/agent-path.js';
 import { State, METHODS, parseConfPercent, formatConfPercent } from './correlation-model.js';
 import { isPickerFocused, refToKey, keyToRef } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
@@ -82,18 +83,6 @@ const PARAM_CHECKS = {
   filterMinR: (v) => (isEmptyForm(v) ? null : requireNumber('value', v, PARAM_RANGES.filterMinR)),
   filterMaxP: (v) => (isEmptyForm(v) ? null : requireNumber('value', v, PARAM_RANGES.filterMaxP)),
 };
-
-/**
- * Setzt einen Wert unter einem Schlüssel in `obj`. Lokal geschrieben, weil der
- * Generator (agent-data) Importe nicht liest und die Schreibstelle im Modul
- * selbst sehen muss.
- * @param {object} obj Wurzel, deren Schlüssel beschrieben wird
- * @param {string} key Schlüssel
- * @param {any} value der abzulegende Wert
- */
-function setAtPath(obj, key, value) {
-  obj[key] = value;
-}
 
 /** Die Mehrfachspalten dieses Moduls: genau eine Liste, die Auswahl. */
 const MULTI_SLOTS = ['columns'];

@@ -21,6 +21,7 @@ import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import {
   requireEnum, requireKnownId, requireIndex, requireNumber, requireText,
 } from '../../core/agent/agent-argcheck.js';
+import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { ColumnPicker, refToKey, keyToRef } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
@@ -92,21 +93,6 @@ const PARAM_CHECKS = {
   exposurePerRow: (v) => requireText('value', v),
   eventValue: (v) => v, // gegen eventValueOptions() geprüft, siehe setParam
 };
-
-/**
- * Einen Wert unter einem Punkt-Schlüssel (`'summary.x'`) in `obj` ablegen.
- * Lokal geschrieben, weil der Generator (agent-data) Importe nicht liest und
- * die Schreibstelle im Modul selbst sehen muss.
- * @param {object} obj Wurzel, deren Pfad beschrieben wird
- * @param {string} key Schlüssel, gegebenenfalls mit Punkt
- * @param {any} value der abzulegende Wert
- */
-function setAtPath(obj, key, value) {
-  const parts = key.split('.');
-  let cur = obj;
-  for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
-  cur[parts[parts.length - 1]] = value;
-}
 
 /** Die Spaltenrollen in der Reihenfolge der Oberfläche, oben nach unten. */
 const COLUMN_SLOTS = ['response', 'counts', 'before', 'after', 'group', 'rowVar', 'colVar'];

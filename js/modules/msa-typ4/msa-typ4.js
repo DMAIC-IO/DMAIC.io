@@ -25,6 +25,7 @@ import { toNum } from '../../core/chart/chart-data-prep.js';
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
+import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { State, NORM_OPTIONS, PV_OPTIONS, ALPHA_OPTIONS } from './msa-typ4-model.js';
 import { analyze } from '../../engines/msa-typ4-engine.js';
@@ -55,19 +56,6 @@ const PARAM_CHECKS = {
   sigmaP: (v) => requireText('value', v),
   alpha: (v) => requireEnum('value', v, ALPHA_OPTIONS),
 };
-
-/**
- * Einen Wert unter einem Punkt-Schlüssel (`'tolerance.LSL'`) in `obj` ablegen.
- * @param {object} obj Wurzel, deren Pfad beschrieben wird
- * @param {string} key Schlüssel, gegebenenfalls mit Punkt
- * @param {string} value der abzulegende Wert
- */
-function setAtPath(obj, key, value) {
-  const parts = key.split('.');
-  let cur = obj;
-  for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
-  cur[parts[parts.length - 1]] = value;
-}
 
 /** Die Spalten-Slots dieses Moduls: Referenz- und Messwertspalte. */
 const COLUMN_SLOTS = ['reference', 'measured'];

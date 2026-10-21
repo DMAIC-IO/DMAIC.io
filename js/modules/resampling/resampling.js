@@ -24,6 +24,7 @@
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireNumber, requireText } from '../../core/agent/agent-argcheck.js';
+import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { State, MODES, CONTRASTS, DIRECTIONS, CI_METHODS, STATS_BY_MODE } from './resampling-model.js';
 import {
@@ -61,20 +62,6 @@ const PARAM_CHECKS = {
   confidence: (v) => requireNumber('value', v),
   ciMethod: (v) => { requireEnum('value', v, CI_METHODS); return v; },
 };
-
-/**
- * Einen Wert unter einem Punkt-Schlüssel (`'statParams.trim'`) in `obj` ablegen.
- * Lokal geschrieben, weil der Generator (agent-data) Importe nicht liest.
- * @param {object} obj Wurzel, deren Pfad beschrieben wird
- * @param {string} key Schlüssel, gegebenenfalls mit Punkt
- * @param {any} value der abzulegende Wert
- */
-function setAtPath(obj, key, value) {
-  const parts = key.split('.');
-  let cur = obj;
-  for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
-  cur[parts[parts.length - 1]] = value;
-}
 
 /** Die Einzelspalten-Slots in der Reihenfolge der Oberfläche; die Namen sind die Model-Felder. */
 const COLUMN_SLOTS = ['colRef1', 'colRef2'];

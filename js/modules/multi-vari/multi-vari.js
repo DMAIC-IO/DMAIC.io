@@ -32,6 +32,7 @@
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { State, MODEL_FORMS, ESTIMATORS } from './multi-vari-model.js';
 import { ColumnPicker, getColumnValues, getColumnName, refToKey, keyToRef } from '../../ui/column-picker.js';
@@ -65,18 +66,6 @@ const PARAM_CHECKS = {
   showGroupMean: (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
   showRefLine: (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
 };
-
-/**
- * Setzt einen Wert unter einem Schlüssel in `obj`. Lokal geschrieben, weil der
- * Generator (agent-data) Importe nicht liest und die Schreibstelle im Modul
- * selbst sehen muss.
- * @param {object} obj Wurzel, deren Schlüssel beschrieben wird
- * @param {string} key Schlüssel
- * @param {any} value der abzulegende Wert
- */
-function setAtPath(obj, key, value) {
-  obj[key] = value;
-}
 
 /** Die Spalten-Slots dieses Moduls: genau einer, die Messwertspalte. */
 const COLUMN_SLOTS = ['measurement'];

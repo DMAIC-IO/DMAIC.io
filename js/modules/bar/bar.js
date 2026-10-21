@@ -42,6 +42,7 @@ import {
 } from '../../ui/dataset-picker.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { setAtPath } from '../../core/agent/agent-path.js';
 import { datasetSlotColumns } from '../../core/agent/agent-datasets.js';
 import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-registry.js';
 import { chartModuleLifecycle } from '../../core/chart/chart-module-base.js';
@@ -67,19 +68,6 @@ const PARAM_CHECKS = {
   aggregation: (v) => { requireEnum('value', v, AGGREGATIONS); return v; },
   stacked: (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
 };
-
-/**
- * Einen Wert unter einem Punkt-Schlüssel (`'statParams.trim'`) in `obj` ablegen.
- * @param {object} obj Wurzel, deren Pfad beschrieben wird
- * @param {string} key Schlüssel, gegebenenfalls mit Punkt
- * @param {any} value der abzulegende Wert
- */
-function setAtPath(obj, key, value) {
-  const parts = key.split('.');
-  let cur = obj;
-  for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
-  cur[parts[parts.length - 1]] = value;
-}
 
 /**
  * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
