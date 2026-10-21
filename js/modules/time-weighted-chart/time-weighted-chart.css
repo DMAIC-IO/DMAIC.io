@@ -3,14 +3,8 @@
    BEM: .twc__ prefix
    ============================================================ */
 
-.twc__row-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-sm);
-}
-
 /* Wrapper from the <template x-if> param block. `display: contents` lets its
-   children (param-note + row-2) participate directly in the .dmike-split__input
+   children (param-note + field grid) participate directly in the .dmike-split__input
    flex column, so the spacing matches the legacy flat layout exactly. */
 .twc__params { display: contents; }
 

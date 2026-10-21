@@ -26,7 +26,7 @@
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionEstimation')"></div>
-    <div class="twc__row-2">
+    <div class="field-grid field-grid--2">
       <div class="field-group">
         <label x-text="t('targetOverride')"></label>
         <input type="number" class="field field--num" data-ref="target-override"
@@ -54,7 +54,7 @@
     <template x-if="model.chartTypeId === 'ewma'">
       <div class="twc__params">
         <div class="twc__param-note" x-text="t('paramNote_ewma')"></div>
-        <div class="twc__row-2">
+        <div class="field-grid field-grid--2">
           <div class="field-group">
             <label x-text="t('lambda')"></label>
             <input type="number" class="field field--num" data-ref="lambda"
@@ -74,7 +74,7 @@
     <template x-if="model.chartTypeId === 'cusum'">
       <div class="twc__params">
         <div class="twc__param-note" x-text="t('paramNote_cusum')"></div>
-        <div class="twc__row-2">
+        <div class="field-grid field-grid--2">
           <div class="field-group">
             <label x-text="t('kSigma')"></label>
             <input type="number" class="field field--num" data-ref="kSigma"

@@ -171,7 +171,3 @@
   border-color: var(--color-accent);
 }
 
-.pc__span-2 {
-  grid-column: span 2;
-}
-

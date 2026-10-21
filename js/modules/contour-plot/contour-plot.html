@@ -13,7 +13,7 @@
 
     <div data-ref="coeffSection" x-show="model.modelType !== 'custom'">
       <label class="contour__coeff-label" x-text="t('coeffLabel')"></label>
-      <div class="contour__coeff-grid">
+      <div class="field-grid field-grid--2">
         <div class="field-group contour__field-sm"><label x-text="betaLabel(0)"></label><input type="number" class="field field--num" data-ref="b0" x-model.number="model.b[0]" @change="autoPlot()"></div>
         <div class="field-group contour__field-sm"><label x-text="betaLabel(1)"></label><input type="number" class="field field--num" data-ref="b1" x-model.number="model.b[1]" @change="autoPlot()"></div>
         <div class="field-group contour__field-sm"><label x-text="betaLabel(2)"></label><input type="number" class="field field--num" data-ref="b2" x-model.number="model.b[2]" @change="autoPlot()"></div>
@@ -35,11 +35,11 @@
     <input type="hidden" data-ref="xLabel" x-model="model.xLabel">
     <input type="hidden" data-ref="yLabel" x-model="model.yLabel">
     <div class="dmike-split__section-title" x-text="t('sectionAxes')"></div>
-    <div class="contour__row-2">
+    <div class="field-grid field-grid--2">
       <div class="field-group contour__field-sm"><label>X min</label><input type="number" class="field field--num" data-ref="xMin" x-model.number="model.xMin" @change="autoPlot()"></div>
       <div class="field-group contour__field-sm"><label>X max</label><input type="number" class="field field--num" data-ref="xMax" x-model.number="model.xMax" @change="autoPlot()"></div>
     </div>
-    <div class="contour__row-2">
+    <div class="field-grid field-grid--2">
       <div class="field-group contour__field-sm"><label>Y min</label><input type="number" class="field field--num" data-ref="yMin" x-model.number="model.yMin" @change="autoPlot()"></div>
       <div class="field-group contour__field-sm"><label>Y max</label><input type="number" class="field field--num" data-ref="yMax" x-model.number="model.yMax" @change="autoPlot()"></div>
     </div>

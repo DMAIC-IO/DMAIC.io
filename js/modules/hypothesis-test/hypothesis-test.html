@@ -83,10 +83,12 @@
         </template>
 
         <template x-if="model.category === 'mean'">
-          <div class="field-group">
-            <label>μ₀</label>
-            <input type="number" data-ref="target" class="field field--num"
-              x-model="model.targetValue" :placeholder="t('targetMeanPh')" @input="runAnalysis()">
+          <div class="field-grid field-grid--3">
+            <div class="field-group">
+              <label>μ₀</label>
+              <input type="number" data-ref="target" class="field field--num"
+                x-model="model.targetValue" :placeholder="t('targetMeanPh')" @input="runAnalysis()">
+            </div>
           </div>
         </template>
       </div>
@@ -96,10 +98,12 @@
     <template x-if="model.testType === 'paired'">
       <div class="hyptest__contents">
         <div class="dmike-split__section-title" x-text="t('targetDiff')"></div>
-        <div class="field-group">
-          <label>μ_d₀</label>
-          <input type="number" data-ref="target" class="field field--num"
-            x-model="model.targetValue" :placeholder="t('targetDiffPh')" @input="runAnalysis()">
+        <div class="field-grid field-grid--3">
+          <div class="field-group">
+            <label>μ_d₀</label>
+            <input type="number" data-ref="target" class="field field--num"
+              x-model="model.targetValue" :placeholder="t('targetDiffPh')" @input="runAnalysis()">
+          </div>
         </div>
       </div>
     </template>

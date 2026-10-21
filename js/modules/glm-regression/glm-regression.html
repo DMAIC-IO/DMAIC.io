@@ -53,13 +53,13 @@
 
     <div class="dmike-split__section-title" x-text="t('sectionSettings')"></div>
 
-    <div class="field-row">
-      <div class="field-group field-group--grow">
+    <div class="field-grid field-grid--2">
+      <div class="field-group">
         <label><span x-text="t('confLevel')"></span> (%)</label>
         <input type="text" class="field field--num" data-ref="conf-level" inputmode="decimal"
           :value="confDisplay()" placeholder="95" @change="onConfChange($event)">
       </div>
-      <div class="field-group field-group--grow">
+      <div class="field-group">
         <label><span x-text="t('alphaRisk')"></span> (%)</label>
         <input type="text" class="field field--num" data-ref="alpha-level" inputmode="decimal"
           :value="alphaDisplay()" placeholder="5" @change="onAlphaChange($event)">

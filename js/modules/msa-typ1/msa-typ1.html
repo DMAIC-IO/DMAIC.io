@@ -24,14 +24,14 @@
              x-model="model.params.ref" @input="scheduleAnalysis()" @change="runAnalysis()">
     </div>
 
-    <div class="field-row">
-      <div class="field-group field-group--grow">
+    <div class="field-grid field-grid--2">
+      <div class="field-group">
         <label x-text="t('lsl')"></label>
         <input type="text" class="field field--num" data-ref="inp-lsl"
                placeholder="49.950" inputmode="decimal"
                x-model="model.params.lsl" @input="scheduleAnalysis()" @change="runAnalysis()">
       </div>
-      <div class="field-group field-group--grow">
+      <div class="field-group">
         <label x-text="t('usl')"></label>
         <input type="text" class="field field--num" data-ref="inp-usl"
                placeholder="50.050" inputmode="decimal"
@@ -39,8 +39,8 @@
       </div>
     </div>
 
-    <div class="field-row">
-      <div class="field-group field-group--grow">
+    <div class="field-grid field-grid--2">
+      <div class="field-group">
         <label x-text="t('k1Label')"></label>
         <select class="field" data-ref="inp-k1" x-model="model.params.k1" @change="runAnalysis()">
           <option value="0.2">0.20 (20 %)</option>
@@ -48,7 +48,7 @@
           <option value="0.1">0.10 (10 %)</option>
         </select>
       </div>
-      <div class="field-group field-group--grow">
+      <div class="field-group">
         <label x-text="t('k2Label')"></label>
         <select class="field" data-ref="inp-k2" x-model="model.params.k2" @change="runAnalysis()">
           <option value="3" x-text="t('k2Opt3')"></option>
