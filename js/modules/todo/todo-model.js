@@ -52,6 +52,33 @@ export class State {
     return this.items.length > 0;
   }
 
+  /**
+   * Move an item before the target and switch the list to manual order.
+   * A sorted list is reordered by what the user sees, so `displayedIds`
+   * (the visible order) first becomes the stored order; items it lacks
+   * (filtered out) follow in their previous relative order.
+   * @param {string} sourceId
+   * @param {string} targetId
+   * @param {string[]} [displayedIds]
+   */
+  moveItem(sourceId, targetId, displayedIds) {
+    if (sourceId === targetId) return;
+    const byId = new Map(this.items.map(i => [i.id, i]));
+    if (!byId.has(sourceId) || !byId.has(targetId)) return;
+
+    if (displayedIds) {
+      const shown = displayedIds.filter(id => byId.has(id)).map(id => byId.get(id));
+      const shownSet = new Set(shown);
+      this.items = [...shown, ...this.items.filter(i => !shownSet.has(i))];
+    }
+
+    const moved = byId.get(sourceId);
+    const rest = this.items.filter(i => i !== moved);
+    rest.splice(rest.indexOf(byId.get(targetId)), 0, moved);
+    this.items = rest;
+    this.sortCol = 'manual';
+  }
+
   toJSON() {
     return {
       _schema: { ...this._schema },

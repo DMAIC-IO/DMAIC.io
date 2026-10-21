@@ -155,28 +155,32 @@
 /* ─── Calendar toggle ────────────────────────────────── */
 
 .todo__cal-btn {
+  display: inline-flex;
+  align-items: center;
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 14px;
   padding: var(--spacing-2xs) var(--spacing-xs);
   border-radius: var(--border-radius-sm);
-  opacity: 0.3;
-  transition: opacity 0.15s;
-  filter: grayscale(1);
+  color: var(--color-text-tertiary);
+  opacity: 0.4;
+  transition: opacity var(--transition-speed), color var(--transition-speed);
 }
 
 .todo__table tr:hover .todo__cal-btn {
-  opacity: 0.5;
+  opacity: 0.7;
 }
 
-.todo__cal-btn:hover {
-  opacity: 0.8 !important;
+/* Same specificity as the row-hover rule above, so an active toggle never
+   dims while its row is hovered. */
+.todo__table tr .todo__cal-btn:hover,
+.todo__table tr .todo__cal-btn--active,
+.todo__table tr:hover .todo__cal-btn--active {
+  opacity: 1;
 }
 
 .todo__cal-btn--active {
-  opacity: 1 !important;
-  filter: none;
+  color: var(--color-accent);
 }
 
 /* ─── Delete button ───────────────────────────────────── */

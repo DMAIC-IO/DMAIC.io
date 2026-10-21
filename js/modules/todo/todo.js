@@ -2,6 +2,7 @@ import { createModule } from '../../core/template-module.js';
 import { State, Item, STATUSES } from './todo-model.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
 import { todayISO } from '../../core/local-date.js';
+import { draggableRows } from '../../ui/draggable-list.js';
 
 export default createModule({
   config: {
@@ -27,6 +28,19 @@ export default createModule({
 
   data(module, _t) {
     return {
+      // Row reorder: grip, Alt+Arrow keys and drop = "insert before". The
+      // visible order becomes the stored one, so a sorted list stays put.
+      ...draggableRows({
+        onMove({ group, sourceId, targetId }) {
+          if (group !== 'todos') return;
+          this.model.moveItem(sourceId, targetId, this.filteredItems().map(i => i.id));
+        },
+        rowIds(group) {
+          return group === 'todos' ? this.filteredItems().map(i => i.id) : [];
+        },
+        t: (key, params) => module._context.i18n.t(key, params),
+      }),
+
       statuses: STATUSES,
 
       statusName: (s) => _t(`status_${  s}`),
@@ -136,6 +150,7 @@ export default createModule({
       },
 
       init() {
+        this.dragRowsInit();
         this.checkCalendar();
 
         this.$watch(
@@ -147,6 +162,10 @@ export default createModule({
 
         module._context.eventBus.on('module:added', () => this.checkCalendar());
         module._context.eventBus.on('module:removed', () => this.checkCalendar());
+      },
+
+      destroy() {
+        this.dragRowsDestroy();
       },
     };
   },
