@@ -3,7 +3,8 @@
  * agent-report — Abdeckung der Agentenfläche als Zahl (Spec §9).
  *
  * „n von 72 Modulen agentenfähig, pro Release messbar" — dazu die Kontexthilfen
- * und die Beschriftungen mit Anker (`anchor-coverage.mjs`). Berichtend: Exit
+ * die Beschriftungen mit Anker (`anchor-coverage.mjs`) und die Hilfetexte mit Anker
+ * (`help-anchor-coverage.mjs`). Berichtend: Exit
  * immer 0. Das Gate ist der Build (`npm run build:check`), der die generierte
  * Registry stale-prüft, dazu `test:build` mit der Freigabeliste
  * (`agent-release.test.mjs`) und der Anker-Abdeckung — nicht dieses Skript.
@@ -210,7 +211,7 @@ export function countHelpCoverage(appDir, modules) {
 }
 
 /** Der CLI-Teil. Berichtend: Exit immer 0. */
-function main() {
+async function main() {
   const verbose = process.argv.includes('--verbose');
   const { modules, coverage } = collectAgentData(APP_DIR);
 
@@ -248,6 +249,13 @@ function main() {
   const anchors = countAnchorCoverage(APP_DIR, modules);
   const exemptNote = anchors.exempt > 0 ? `, davon ${anchors.exempt} begründet ausgenommen` : '';
   console.log(`  Beschriftungen mit Anker: ${anchors.covered}/${anchors.total} (${pct(anchors)})${exemptNote}`);
+  // Dynamisch statt oben importiert: help-anchor-coverage.mjs braucht
+  // typedefHelpSuffixes aus dieser Datei — ein statischer Import in beide
+  // Richtungen wäre ein Zyklus.
+  const { countHelpAnchorCoverage } = await import('./help-anchor-coverage.mjs');
+  const helpAnchors = await countHelpAnchorCoverage(APP_DIR, modules);
+  const helpExempt = helpAnchors.exempt > 0 ? `, davon ${helpAnchors.exempt} begründet ausgenommen` : '';
+  console.log(`  Hilfetexte mit Anker: ${helpAnchors.covered}/${helpAnchors.total} (${pct(helpAnchors)})${helpExempt}`);
   if (help.missingKeys.length > 0 && !verbose) {
     console.log(`  ${help.missingKeys.length} Schlüssel mit Lücke `
       + `(${help.missing.length} Sprachfälle) — mit --verbose einzeln benannt.`);
@@ -260,6 +268,23 @@ function main() {
     console.log(`  ${anchors.staleExemptions.length} Ausnahme(n) ohne Treffer — mit --verbose einzeln benannt.`);
   }
   for (const row of anchors.exemptionCountMismatches) console.log(`    Ausnahme mit falscher Trefferzahl — ${row}`);
+
+  const gapModules = Object.entries(helpAnchors.perModule).filter(([, r]) => r.covered < r.total);
+  if (verbose) {
+    const share = ([, r]) => r.covered / r.total;
+    for (const [id, r] of gapModules.sort((a, b) => share(a) - share(b) || a[0].localeCompare(b[0]))) {
+      console.log(`    Hilfetexte je Modul — ${id}: ${r.covered}/${r.total}`);
+    }
+    for (const row of helpAnchors.missing) console.log(`    ohne Hilfe-Anker — ${row}`);
+    for (const row of helpAnchors.staleExemptions) console.log(`    Hilfe-Ausnahme ohne Treffer — ${row}`);
+  } else if (gapModules.length > 0 || helpAnchors.staleExemptions.length > 0) {
+    console.log(`  Hilfetexte ohne Anker: ${helpAnchors.missing.length} in ${gapModules.length} Modulen, `
+      + `${helpAnchors.staleExemptions.length} Hilfe-Ausnahme(n) ohne Treffer — mit --verbose einzeln benannt.`);
+  }
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  // Bewusst kein Top-Level-await: main() importiert help-anchor-coverage.mjs,
+  // das seinerseits diese Datei importiert — ein wartendes Modul wäre ein Deadlock.
+  main().catch((err) => { console.error(err); process.exitCode = 1; });
+}
