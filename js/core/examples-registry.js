@@ -214,15 +214,18 @@ export function removeProvisionedWorksheet(context, instanceId) {
  * eine andere Modul-Instanz (z. B. `voc-ctx-tree`) provisionieren müssen.
  *
  * @param {object} context Modul-Kontext (braucht stateManager + eventBus)
- * @param {{ moduleId: string, phase: string, state: object }} spec
+ * @param {{ moduleId: string, phase: string, state: object, customName?: string }} spec
+ *   `customName` wird als Reiter-Name gesetzt; ohne ihn zeigt der Reiter den Modulnamen.
  * @returns {string|null} Instanz-ID der neuen Instanz, null bei fehlenden Angaben
  */
-export function provisionInstance(context, { moduleId, phase, state }) {
+export function provisionInstance(context, { moduleId, phase, state, customName }) {
   if (!context?.stateManager || !moduleId || !phase) return null;
   const sm = context.stateManager;
   const instanceId = uid();
   const list = sm.get(`phases.${phase}`) ?? [];
-  list.push({ instanceId, moduleId, order: list.length, state: {} });
+  const record = { instanceId, moduleId, order: list.length, state: {} };
+  if (customName) record.customName = customName;
+  list.push(record);
   sm.set(`phases.${phase}`, list);
   sm.setModuleState(instanceId, state);
   context.eventBus?.emit?.('module:added', { moduleId, phase, instanceId, silent: true });
@@ -262,14 +265,38 @@ export function provisionWorksheet(context, wsState) {
   // ref's `sheetId` wins even if the current wsState implies a different one.
   if (key && pool?.has(key)) return pool.get(key);
 
+  // Without a name every example-provisioned tab reads "Datensammlung"; the
+  // active sheet's name tells them apart.
+  const sheetName = wsState.sheets.find(s => s.id === sheetId)?.name;
   const instanceId = provisionInstance(context, {
     moduleId: 'worksheet', phase: 'data', state: wsState,
+    customName: sheetName ? uniqueWorksheetTabName(context.stateManager, sheetName) : undefined,
   });
   if (!instanceId) return null;
 
   const ref = { instanceId, sheetId };
   if (key && pool) pool.set(key, ref);
   return ref;
+}
+
+/**
+ * Return `baseName`, or `baseName 2`, `baseName 3`, … — the first one no
+ * worksheet tab in the project carries yet.
+ * @param {object} stateManager
+ * @param {string} baseName
+ * @returns {string}
+ */
+function uniqueWorksheetTabName(stateManager, baseName) {
+  const taken = new Set();
+  for (const phase of Object.keys(stateManager.get('phases') || {})) {
+    for (const inst of stateManager.get(`phases.${phase}`) ?? []) {
+      if (inst?.moduleId === 'worksheet' && inst.customName) taken.add(inst.customName);
+    }
+  }
+  if (!taken.has(baseName)) return baseName;
+  let i = 2;
+  while (taken.has(`${baseName} ${i}`)) i++;
+  return `${baseName} ${i}`;
 }
 
 /**
