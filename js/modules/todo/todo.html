@@ -24,9 +24,10 @@
     <div class="todo__empty" x-show="model.items.length === 0" x-text="t('emptyState')"></div>
     <div class="todo__empty" x-show="model.items.length > 0 && filteredCount() === 0" x-text="t('noMatch')"></div>
 
-    <table class="dmike-table dmike-table--sticky todo__table" x-show="filteredCount() > 0">
+    <table class="dmike-table dmike-table--sticky dmike-table--draggable todo__table" x-show="filteredCount() > 0">
       <thead>
         <tr>
+          <th class="dmike-table__grip-col"></th>
           <th class="todo__col-check"></th>
           <th class="todo__col-text" data-sort="text" @click="sortBy('text')">
             <span class="context-help-anchor--overlay" data-help-key="modules.todo.actions.setTodoText.help" x-text="t('colText')"></span>
@@ -46,7 +47,7 @@
           </th>
           <template x-if="hasCalendar">
             <th class="todo__col-cal" :title="t('showInCalendar')">
-              <span data-help-key="modules.todo.actions.setTodoCalendar.help"><span class="icon icon--sm" data-icon="action.calendar" aria-hidden="true"></span><span class="dmike-sr-only" x-text="t('showInCalendar')"></span></span>
+              <span data-help-key="modules.todo.actions.setTodoCalendar.help"><span class="icon icon--sm" data-icon="module.dmaic-calendar" aria-hidden="true"></span><span class="dmike-sr-only" x-text="t('showInCalendar')"></span></span>
             </th>
           </template>
           <th class="todo__col-actions"></th>
@@ -54,7 +55,17 @@
       </thead>
       <tbody>
         <template x-for="item in filteredItems()" :key="item.id">
-          <tr class="todo__row dmike-del-btn-host" :class="rowClass(item)" :data-id="item.id">
+          <tr class="todo__row dmike-del-btn-host" :class="rowClass(item)" :data-id="item.id"
+              @dragstart="dragStart('todos', item.id, $event)"
+              @dragend="dragEnd($event)"
+              @dragover="dragOver('todos', item.id, $event)"
+              @drop="dragDrop('todos', item.id, $event)">
+            <td class="dmike-table__grip-col">
+              <button class="dmike-table__grip" type="button"
+                      :aria-label="t('common.reorder')"
+                      @mousedown="dragArm($event)"
+                      @keydown="dragKey('todos', item.id, $event)"></button>
+            </td>
             <td class="todo__col-check">
               <input type="checkbox" class="todo__check" data-action="toggle"
                      :checked="item.status === 'done'"
@@ -93,7 +104,8 @@
               <td class="todo__col-cal">
                 <button class="todo__cal-btn" :class="{ 'todo__cal-btn--active': item.cal }"
                         data-action="cal" :title="t('showInCalendar')" :aria-label="t('showInCalendar')"
-                        @click="toggleCal(item)"><span class="icon icon--sm" data-icon="action.calendar" aria-hidden="true"></span></button>
+                        :aria-pressed="item.cal ? 'true' : 'false'"
+                        @click="toggleCal(item)"><span class="icon icon--sm" data-icon="module.dmaic-calendar" aria-hidden="true"></span></button>
               </td>
             </template>
             <td>

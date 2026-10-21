@@ -12,6 +12,8 @@
  *   as a secondary result, because it tests a different hypothesis
  *   (distribution shift instead of means).
  * - Variance (one/two samples): χ² / F under normality, Bonett otherwise.
+ * - k group means: Fisher or Welch ANOVA on the parametric route, Kruskal-Wallis
+ *   on the rank route (kMeanRoute).
  */
 
 /** Per-group sample size from which the parametric mean test is kept. */
@@ -35,6 +37,21 @@ export function isNormalByAD(ad, alpha) {
 export function meanRoute(allNormal, sizes) {
   if (allNormal) return 'parametric';
   return sizes.every(n => n >= LARGE_SAMPLE_N) ? 'parametric-large-n' : 'rank';
+}
+
+/**
+ * Pick the test for a comparison of k group means: Welch ANOVA when the
+ * variances may differ, Fisher one-way ANOVA when they are equal, and
+ * Kruskal-Wallis where the rank route applies (see meanRoute).
+ * @param {boolean} allNormal every group passed the normality check
+ * @param {number[]} sizes sample size of each group
+ * @param {boolean} equalVariances whether the equal-variances option is set
+ * @returns {'fisher'|'welch'|'kruskal'}
+ */
+export function kMeanRoute(allNormal, sizes, equalVariances) {
+  return meanRoute(allNormal, sizes) === 'rank'
+    ? 'kruskal'
+    : (equalVariances ? 'fisher' : 'welch');
 }
 
 /**

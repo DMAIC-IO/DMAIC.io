@@ -9,7 +9,7 @@
  */
 
 import { DEFAULT_CYCLE } from '../../core/cycles/cycles.js';
-import { updateReadOnlyBanner } from '../helpers.js';
+import { updateReadOnlyMode } from '../helpers.js';
 import { rehydrateProject } from '../project-rehydrate.js';
 import { icon } from '../../core/icon.js';
 
@@ -139,7 +139,7 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
   // not just callers that happen to also call refresh() themselves.
   eventBus.on('project:rehydrated', () => {
     refresh();
-    updateReadOnlyBanner(stateManager, i18n);
+    updateReadOnlyMode(stateManager, i18n);
   });
 
   const refresh = () => {
@@ -292,7 +292,7 @@ export function initProjectSwitcher({ stateManager, eventBus, i18n }) {
         stateManager.setProjectStatus(p.id, newStatus);
         renderDropdown();
         if (p.id === activeId) {
-          updateReadOnlyBanner(stateManager, i18n);
+          updateReadOnlyMode(stateManager, i18n);
           refresh();
         }
       });

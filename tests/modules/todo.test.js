@@ -223,6 +223,63 @@ suite('Todo Model — State', () => {
   });
 });
 
+suite('Todo Model — State.moveItem (Bug 007)', () => {
+  const stateWith = (...ids) => {
+    const state = new State();
+    state.items = ids.map(id => Item.fromJSON({ id, text: id }));
+    return state;
+  };
+  const ids = (state) => state.items.map(i => i.id);
+
+  test('moves an item before the target (downwards)', () => {
+    const state = stateWith('a', 'b', 'c', 'd');
+    state.moveItem('a', 'c');
+    assertEqual(ids(state).join(), 'b,a,c,d');
+  });
+
+  test('moves an item before the target (upwards)', () => {
+    const state = stateWith('a', 'b', 'c', 'd');
+    state.moveItem('d', 'b');
+    assertEqual(ids(state).join(), 'a,d,b,c');
+  });
+
+  test('switches the list to manual order', () => {
+    const state = stateWith('a', 'b');
+    assertEqual(state.sortCol, 'due');
+    state.moveItem('b', 'a');
+    assertEqual(state.sortCol, 'manual');
+  });
+
+  test('takes over the displayed order before moving', () => {
+    const state = stateWith('a', 'b', 'c', 'd');
+    // Displayed (sorted) order differs from the stored one.
+    state.moveItem('a', 'b', ['c', 'b', 'd', 'a']);
+    assertEqual(ids(state).join(), 'c,a,b,d');
+  });
+
+  test('items missing from the displayed order (filtered out) keep their relative place at the end', () => {
+    const state = stateWith('a', 'b', 'c', 'd');
+    state.moveItem('d', 'c', ['d', 'c']);
+    assertEqual(ids(state).join(), 'd,c,a,b');
+  });
+
+  test('unknown ids or a self-move leave the order unchanged', () => {
+    const state = stateWith('a', 'b', 'c');
+    state.moveItem('x', 'a');
+    state.moveItem('a', 'x');
+    state.moveItem('b', 'b');
+    assertEqual(ids(state).join(), 'a,b,c');
+  });
+
+  test('manual order survives a JSON roundtrip', () => {
+    const state = stateWith('a', 'b', 'c');
+    state.moveItem('c', 'a');
+    const restored = State.fromJSON(state.toJSON());
+    assertEqual(ids(restored).join(), 'c,a,b');
+    assertEqual(restored.sortCol, 'manual');
+  });
+});
+
 suite('Todo Model — STATUSES', () => {
   test('STATUSES contains all valid statuses', () => {
     assertEqual(STATUSES.length, 4);

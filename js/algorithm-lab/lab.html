@@ -90,7 +90,7 @@
           <!-- Docs -->
           <div x-show="activeTab === 'docs'">
             <div class="lab__docs-section" x-show="docLong">
-              <p class="lab__docs-description" x-text="docLong"></p>
+              <p class="lab__docs-description" x-effect="renderInline($el, docLong)"></p>
             </div>
             <div class="lab__docs-section" x-show="formulas.length">
               <h3 x-text="t('lab.docs.formulas')"></h3>
@@ -103,13 +103,13 @@
             <div class="lab__docs-section" x-show="assumptions.length">
               <h3 x-text="t('lab.docs.assumptions')"></h3>
               <ul class="lab__docs-list">
-                <template x-for="(a, i) in assumptions" :key="i"><li x-text="loc(a)"></li></template>
+                <template x-for="(a, i) in assumptions" :key="i"><li x-effect="renderInline($el, a)"></li></template>
               </ul>
             </div>
             <div class="lab__docs-section" x-show="limitations.length">
               <h3 x-text="t('lab.docs.limitations')"></h3>
               <ul class="lab__docs-list">
-                <template x-for="(l, i) in limitations" :key="i"><li x-text="loc(l)"></li></template>
+                <template x-for="(l, i) in limitations" :key="i"><li x-effect="renderInline($el, l)"></li></template>
               </ul>
             </div>
             <div class="lab__docs-section" x-show="references.length">

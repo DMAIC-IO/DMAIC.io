@@ -1,0 +1,259 @@
+{
+  "algorithm_id": "poisson-rate-two",
+  "generated_with": {
+    "python": "3.14.4",
+    "scipy": "1.18.0",
+    "numpy": "2.5.1"
+  },
+  "generated_at": "2026-10-20T07:46:57.072765+00:00",
+  "generator_script": "tools/fixture-generator/generate_fixtures.py",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-09,
+      "absolute": 1e-12
+    },
+    "overrides": {
+      "stress_large_counts": {
+        "relative": 1e-06,
+        "absolute": 1e-10,
+        "reason": "Clopper-Pearson beta quantile round-off grows with ~2e5 events"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "pr2_standard_separate",
+      "tier": "standard",
+      "description": "37 events in 120 units vs 20 in 110, two-sided, separate SE; statsmodels.stats.rates.test_poisson_2indep(37, 120, 20, 110, compare='diff', method='wald'); the conditional exact p is the central one, not statsmodels' exact-cond (minlike)",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "x1": 37,
+        "t1": 120,
+        "x2": 20,
+        "t2": 110,
+        "direction": "two-sided",
+        "alpha": 0.05,
+        "pooled": false,
+        "diff0": 0
+      },
+      "expected": {
+        "rate1": 0.30833333333333335,
+        "rate2": 0.18181818181818182,
+        "diff": 0.12651515151515152,
+        "ciLower": -0.0008423521400542089,
+        "ciUpper": 0.2538726551703573,
+        "z": 1.9470006348400148,
+        "pValue": 0.05153465856077407,
+        "pExactCond": 0.07138691037666137,
+        "ratio": 1.6958333333333333,
+        "ratioLower": 0.9591094111462616,
+        "ratioUpper": 3.0837011256660496,
+        "reject": false
+      }
+    },
+    {
+      "id": "pr2_standard_pooled",
+      "tier": "standard",
+      "description": "Same data with pooled SE for the test of difference 0; statsmodels test_poisson_2indep(..., compare='diff', method='score')",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "x1": 37,
+        "t1": 120,
+        "x2": 20,
+        "t2": 110,
+        "direction": "two-sided",
+        "alpha": 0.05,
+        "pooled": true,
+        "diff0": 0
+      },
+      "expected": {
+        "rate1": 0.30833333333333335,
+        "rate2": 0.18181818181818182,
+        "diff": 0.12651515151515152,
+        "ciLower": -0.0008423521400542089,
+        "ciUpper": 0.2538726551703573,
+        "z": 1.925271924427241,
+        "pValue": 0.05419534810702657,
+        "pExactCond": 0.07138691037666137,
+        "ratio": 1.6958333333333333,
+        "ratioLower": 0.9591094111462616,
+        "ratioUpper": 3.0837011256660496,
+        "reject": false
+      }
+    },
+    {
+      "id": "pr2_standard_diff0",
+      "tier": "standard",
+      "description": "Test of a non-zero difference 0.05 (always separate SE, no conditional exact test: pExactCond is null)",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "x1": 30,
+        "t1": 100,
+        "x2": 12,
+        "t2": 80,
+        "direction": "two-sided",
+        "alpha": 0.05,
+        "pooled": false,
+        "diff0": 0.05
+      },
+      "expected": {
+        "rate1": 0.3,
+        "rate2": 0.15,
+        "diff": 0.15,
+        "ciLower": 0.013152962213704239,
+        "ciUpper": 0.2868470377862957,
+        "z": 1.4322297480788657,
+        "pValue": 0.15207808079297522,
+        "pExactCond": null,
+        "ratio": 2.0,
+        "ratioLower": 0.9943705080497222,
+        "ratioUpper": 4.28933478680621,
+        "reject": false
+      }
+    },
+    {
+      "id": "pr2_standard_greater",
+      "tier": "standard",
+      "description": "One-sided greater; the upper bounds of the difference and of the rate ratio are Infinity (not representable in JSON) and are not listed",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "x1": 25,
+        "t1": 50,
+        "x2": 14,
+        "t2": 52,
+        "direction": "greater",
+        "alpha": 0.05,
+        "pooled": false,
+        "diff0": 0
+      },
+      "expected": {
+        "rate1": 0.5,
+        "rate2": 0.2692307692307692,
+        "diff": 0.23076923076923078,
+        "ciLower": 0.028128105137326304,
+        "z": 1.873171623163388,
+        "pValue": 0.030522344752994604,
+        "pExactCond": 0.0418790780813675,
+        "ratio": 1.8571428571428572,
+        "ratioLower": 1.0273693582439658,
+        "reject": true
+      }
+    },
+    {
+      "id": "pr2_edge_x2_zero",
+      "tier": "edge",
+      "description": "No events in sample 2: rate ratio undefined (null), its upper bound is Infinity and not listed",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "x1": 5,
+        "t1": 10,
+        "x2": 0,
+        "t2": 10,
+        "direction": "two-sided",
+        "alpha": 0.05,
+        "pooled": false,
+        "diff0": 0
+      },
+      "expected": {
+        "rate1": 0.5,
+        "rate2": 0.0,
+        "diff": 0.5,
+        "ciLower": 0.06173872971170924,
+        "ciUpper": 0.9382612702882908,
+        "z": 2.23606797749979,
+        "pValue": 0.025347318677468252,
+        "pExactCond": 0.0625,
+        "ratio": null,
+        "ratioLower": 0.91635585731546,
+        "reject": true
+      }
+    },
+    {
+      "id": "pr2_edge_both_zero",
+      "tier": "edge",
+      "description": "No events at all: SE is 0, z is null and p is 1; conditional test and ratio are undefined",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "x1": 0,
+        "t1": 10,
+        "x2": 0,
+        "t2": 12,
+        "direction": "two-sided",
+        "alpha": 0.05,
+        "pooled": false,
+        "diff0": 0
+      },
+      "expected": {
+        "rate1": 0.0,
+        "rate2": 0.0,
+        "diff": 0.0,
+        "ciLower": 0.0,
+        "ciUpper": 0.0,
+        "z": null,
+        "pValue": 1.0,
+        "pExactCond": null,
+        "ratio": null,
+        "ratioLower": null,
+        "ratioUpper": null,
+        "reject": false
+      }
+    },
+    {
+      "id": "pr2_edge_both_zero_diff0",
+      "tier": "edge",
+      "description": "No events at all while testing a non-zero difference 0.05: SE is 0 and d is not, so the test is not defined (testable false, z and p null, no rejection)",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "x1": 0,
+        "t1": 10,
+        "x2": 0,
+        "t2": 12,
+        "direction": "two-sided",
+        "alpha": 0.05,
+        "pooled": false,
+        "diff0": 0.05
+      },
+      "expected": {
+        "rate1": 0.0,
+        "rate2": 0.0,
+        "diff": 0.0,
+        "z": null,
+        "pValue": null,
+        "testable": false,
+        "reject": false
+      }
+    },
+    {
+      "id": "pr2_stress_large",
+      "tier": "stress",
+      "tolerance_override": "stress_large_counts",
+      "description": "98000 vs 101000 events",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "x1": 98000,
+        "t1": 1000,
+        "x2": 101000,
+        "t2": 1000,
+        "direction": "two-sided",
+        "alpha": 0.05,
+        "pooled": false,
+        "diff0": 0
+      },
+      "expected": {
+        "rate1": 98.0,
+        "rate2": 101.0,
+        "diff": -3.0,
+        "ciLower": -3.874328488222894,
+        "ciUpper": -2.125671511777106,
+        "z": -6.725037594933305,
+        "pValue": 1.755471114780705e-11,
+        "pExactCond": 1.7811796441752117e-11,
+        "ratio": 0.9702970297029703,
+        "ratioLower": 0.9617973958382843,
+        "ratioUpper": 0.9788714945548013,
+        "reject": true
+      }
+    }
+  ]
+}

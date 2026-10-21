@@ -33,15 +33,15 @@
 
     <!-- Variance inputs: one-sample (sigma0 + sigmaAlt) -->
     <template x-if="isVar() && !isTwoSample()">
-      <div class="field-row">
-        <div class="field-group field-group--grow">
+      <div class="field-grid field-grid--2">
+        <div class="field-group">
           <label data-help-key="modules.sample-size.types.Params.sigma0" x-text="hypothesizedStdLabel()"></label>
           <input type="number" data-ref="sigma0" class="field field--num" min="0"
                  :value="model.sigma0"
                  :placeholder="t('sigma0Placeholder')"
                  @input="setParam('sigma0', $event.target.value)">
         </div>
-        <div class="field-group field-group--grow">
+        <div class="field-group">
           <label data-help-key="modules.sample-size.types.Params.sigmaAlt" x-text="expectedStdLabel()"></label>
           <input type="number" data-ref="sigma-alt" class="field field--num" min="0"
                  :value="model.sigmaAlt"

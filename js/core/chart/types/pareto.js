@@ -54,6 +54,11 @@ const PARETO_X_LABEL_OFFSET = 88;
 
 /** Font families (must match chart-base.js) */
 const FONT_MAIN = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
+const FONT_MONO = "'SF Mono', 'Cascadia Code', Consolas, 'Liberation Mono', monospace";
+
+/** Right %-axis mirrors the left axis of chart-base.js: tick gap and title inset from the edge */
+const TICK_LABEL_GAP = 10;
+const Y_TITLE_INSET = 18;
 
 export default class ParetoChart extends ChartBase {
   /**
@@ -393,22 +398,23 @@ export default class ParetoChart extends ChartBase {
           stroke: tickColor, 'stroke-width': 1,
         }, svg);
         svgText(`${pct  }%`, {
-          x: plotArea.x + plotArea.w + 8,
+          x: plotArea.x + plotArea.w + TICK_LABEL_GAP,
           y: y + 4,
           'text-anchor': 'start',
-          'font-size': '11px',
+          'font-size': `${cfg.tickSize}px`,
           fill: tickColor,
+          'font-family': FONT_MONO, class: 'tick-label',
         }, svg);
       });
 
       // Right Y-axis label (rotated)
-      const rLabelX = plotArea.x + plotArea.w + PARETO_MARGIN.right - 10;
+      const rLabelX = plotArea.totalW - Y_TITLE_INSET;
       const rLabelY = plotArea.y + plotArea.h / 2;
       svgText(cfg.rightYLabel || 'Kumulativ %', {
         x: rLabelX,
         y: rLabelY,
         'text-anchor': 'middle',
-        'font-size': '12px',
+        'font-size': `${cfg.labelSize}px`,
         'font-weight': '600',
         fill: textPrimary,
         'font-family': FONT_MAIN,

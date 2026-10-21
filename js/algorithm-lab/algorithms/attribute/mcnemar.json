@@ -1,0 +1,104 @@
+{
+  "id": "mcnemar",
+  "name": { "de": "McNemar-Test", "en": "McNemar's Test" },
+  "category": "attribute",
+  "subcategory": "paired",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Prüft gepaarte Anteile (vorher/nachher) anhand der diskordanten Paare – exakter Binomialtest, χ² mit und ohne Stetigkeitskorrektur, Konfidenzintervall der Differenz.",
+      "en": "Tests paired proportions (before/after) via the discordant pairs – exact binomial test, χ² with and without continuity correction, confidence interval of the difference."
+    },
+    "long": {
+      "de": "Tabelle [[a, b], [c, d]]: Zeilen = vorher (Ereignis, kein Ereignis), Spalten = nachher; b = Ereignis → kein Ereignis, c = kein Ereignis → Ereignis. Exakter Test: c ~ Bin(b + c, 0,5), zweiseitig zentral min(1, 2·min(P(X ≤ c), P(X ≥ c))). χ² = (b − c)²/(b + c), mit Korrektur (|b − c| − 1)²/(b + c), je 1 Freiheitsgrad (nur zweiseitig). Differenz = (c − b)/n mit Wald-Intervall, Var = ((b + c) − (b − c)²/n)/n². Ohne diskordante Paare ist der Test nicht durchführbar. Minitab-Abgleich des Differenz-Intervalls: Methods-and-Formulas-Seite nicht abrufbar – nicht verifiziert (Wald, keine Minitab-Referenz).",
+      "en": "Table [[a, b], [c, d]]: rows = before (event, no event), columns = after; b = event → no event, c = no event → event. Exact test: c ~ Bin(b + c, 0.5), two-sided central min(1, 2·min(P(X ≤ c), P(X ≥ c))). χ² = (b − c)²/(b + c), corrected (|b − c| − 1)²/(b + c), 1 degree of freedom each (two-sided only). Difference = (c − b)/n with Wald interval, Var = ((b + c) − (b − c)²/n)/n². Without discordant pairs the test is not testable. Minitab check of the difference interval: Methods and Formulas page could not be retrieved – unverified (CI: Wald, no Minitab reference)."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      { "label": "χ²", "latex": "\\chi^2 = \\frac{(b-c)^2}{b+c}", "description": { "de": "Ohne Korrektur", "en": "Uncorrected" } },
+      { "label": "χ² (cc)", "latex": "\\chi^2_{cc} = \\frac{(|b-c|-1)^2}{b+c}", "description": { "de": "Mit Stetigkeitskorrektur", "en": "With continuity correction" } },
+      { "label": "Δ", "latex": "\\hat\\Delta = \\frac{c-b}{n},\\quad \\widehat{\\mathrm{Var}} = \\frac{(b+c) - (b-c)^2/n}{n^2}", "description": { "de": "Differenz nachher − vorher, Wald", "en": "Difference after − before, Wald" } }
+    ],
+    "assumptions": [
+      { "de": "Gepaarte Beobachtungen, jedes Paar in genau einer Zelle", "en": "Paired observations, each pair in exactly one cell" }
+    ],
+    "limitations": [
+      { "de": "Nur diskordante Paare tragen zum Test bei; bei weniger als 10 ist die χ²-Näherung unzuverlässig, der exakte Test bevorzugt", "en": "Only discordant pairs inform the test; below 10 the χ² approximation is unreliable, prefer the exact test" },
+      { "de": "Differenz-KI: Wald, keine Minitab-Referenz", "en": "Difference CI: Wald, no Minitab reference" }
+    ],
+    "references": [
+      { "source": "statsmodels 0.14.6: statsmodels.stats.contingency_tables.mcnemar" }
+    ],
+    "minitab_equivalent": "Stat > Tables > McNemar's Test"
+  },
+  "source": {
+    "function_name": "mcNemarTest",
+    "file_path": "js/engines/attribute-test-engine.js",
+    "signature": {
+      "parameters": [
+        { "name": "table", "type": "number[][]", "required": true, "description": { "de": "2×2-Tabelle [[a, b], [c, d]] (vorher × nachher)", "en": "2×2 table [[a, b], [c, d]] (before × after)" } },
+        { "name": "direction", "type": "string", "required": false, "description": { "de": "two-sided, greater oder less (Standard two-sided)", "en": "two-sided, greater or less (default two-sided)" } },
+        { "name": "alpha", "type": "number", "required": false, "description": { "de": "Signifikanzniveau (Standard 0.05)", "en": "Significance level (default 0.05)" } }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "diff": { "type": "number", "description": { "de": "Differenz nachher − vorher", "en": "Difference after − before" } },
+          "pExact": { "type": "number", "description": { "de": "Exakter p-Wert", "en": "Exact p-value" } },
+          "chi2": { "type": "number", "description": { "de": "χ²", "en": "χ²" } },
+          "pChi2": { "type": "number", "description": { "de": "p-Wert (χ²)", "en": "p-value (χ²)" } },
+          "testable": { "type": "boolean", "description": { "de": "Diskordante Paare vorhanden?", "en": "Any discordant pairs?" } },
+          "reject": { "type": "boolean", "description": { "de": "H₀ verworfen?", "en": "Reject H₀?" } }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        { "name": "table", "label": { "de": "Tabelle (JSON)", "en": "Table (JSON)" }, "type": "textarea", "placeholder": { "de": "[[50, 12], [4, 34]]", "en": "[[50, 12], [4, 34]]" }, "parse_as": "json", "required": true },
+        {
+          "name": "direction",
+          "label": { "de": "Testrichtung", "en": "Test direction" },
+          "type": "select",
+          "options": [
+            { "value": "two-sided", "label": { "de": "≠ Zweiseitig", "en": "≠ Two-sided" } },
+            { "value": "greater", "label": { "de": "> Größer", "en": "> Greater" } },
+            { "value": "less", "label": { "de": "< Kleiner", "en": "< Less" } }
+          ],
+          "parse_as": "string",
+          "required": false
+        },
+        { "name": "alpha", "label": { "de": "Signifikanzniveau α", "en": "Significance level α" }, "type": "number", "placeholder": { "de": "0.05", "en": "0.05" }, "parse_as": "number", "required": false }
+      ]
+    },
+    "output_schema": {
+      "display_fields": ["b", "c", "n", "pBefore", "pAfter", "diff", "ciLower", "ciUpper", "pExact", "chi2", "pChi2", "chi2Cc", "pChi2Cc", "testable", "smallDiscordant", "reject"],
+      "primary_field": "pExact",
+      "format": {
+        "b": { "decimals": 0, "label": "b" },
+        "c": { "decimals": 0, "label": "c" },
+        "n": { "decimals": 0, "label": "n" },
+        "pBefore": { "decimals": 6, "label": { "de": "Anteil vorher", "en": "Proportion before" } },
+        "pAfter": { "decimals": 6, "label": { "de": "Anteil nachher", "en": "Proportion after" } },
+        "diff": { "decimals": 6, "label": { "de": "Differenz", "en": "Difference" } },
+        "ciLower": { "decimals": 6, "label": { "de": "KI unten", "en": "CI lower" } },
+        "ciUpper": { "decimals": 6, "label": { "de": "KI oben", "en": "CI upper" } },
+        "pExact": { "decimals": 6, "label": { "de": "p (exakt)", "en": "p (exact)" } },
+        "chi2": { "decimals": 4, "label": "χ²" },
+        "pChi2": { "decimals": 6, "label": "p (χ²)" },
+        "chi2Cc": { "decimals": 4, "label": "χ² (cc)" },
+        "pChi2Cc": { "decimals": 6, "label": "p (χ², cc)" },
+        "testable": { "decimals": 0, "label": { "de": "Durchführbar", "en": "Testable" } },
+        "smallDiscordant": { "decimals": 0, "label": { "de": "Wenige diskordante Paare", "en": "Few discordant pairs" } },
+        "reject": { "decimals": 0, "label": { "de": "H₀ abgelehnt", "en": "Reject H₀" } }
+      }
+    }
+  },
+  "changelog": [
+    { "version": "1.0.0", "date": "2026-10-20", "type": "initial", "description": { "de": "Erstimplementierung", "en": "Initial implementation" }, "breaking": false }
+  ]
+}

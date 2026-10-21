@@ -1,0 +1,94 @@
+{
+  "id": "aequivalenztest",
+  "category": "hypothesis",
+  "title": {
+    "de": "Äquivalenztest (TOST)",
+    "en": "Equivalence Test (TOST)"
+  },
+  "short": {
+    "de": "Weist nach, dass ein Unterschied innerhalb vorab festgelegter Grenzen liegt — Gleichwertigkeit ist hier die Alternativhypothese.",
+    "en": "Shows that a difference lies within bounds set in advance — equivalence is the alternative hypothesis here."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **Äquivalenztest** dreht die übliche Fragestellung um. Ein gewöhnlicher Test kann einen Unterschied nachweisen, aber nie Gleichheit; ein nicht signifikantes Ergebnis heißt nur „kein Unterschied nachgewiesen“. Der Äquivalenztest legt **Äquivalenzgrenzen** $[L; U]$ fest und prüft"
+      },
+      {
+        "type": "formula",
+        "latex": "H_0: \\Delta \\le L \\ \\text{oder} \\ \\Delta \\ge U \\qquad H_1: L < \\Delta < U"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**TOST** (two one-sided tests) — zwei einseitige Tests, je einer gegen jede Grenze; der größere der beiden $p$-Werte entscheidet",
+          "**Konfidenzbereich** — das $(1 - 2\\alpha)$-Intervall, bei $\\alpha = 0{,}05$ also 90 %; liegt es ganz innerhalb von $[L; U]$, ist der Test bestanden",
+          "**Grenzen** — eine fachliche Entscheidung (wie groß darf ein Unterschied sein, ohne dass er praktisch zählt?), keine statistische"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Nur ein bestandener Test erlaubt die Aussage „gleichwertig innerhalb der Grenzen“. Ein nicht bestandener heißt „Gleichwertigkeit nicht nachgewiesen“ — häufig, weil die Stichprobe zu klein ist. Siehe {{term:p-wert|p-Wert}}, {{term:nullhypothese|Nullhypothese}} und {{term:effektstaerke|Effektstärke}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "An **equivalence test** turns the usual question around. An ordinary test can show a difference but never equality; a non-significant result only means \"no difference shown\". The equivalence test sets **equivalence bounds** $[L; U]$ and tests"
+      },
+      {
+        "type": "formula",
+        "latex": "H_0: \\Delta \\le L \\ \\text{or} \\ \\Delta \\ge U \\qquad H_1: L < \\Delta < U"
+      },
+      {
+        "type": "list",
+        "items": [
+          "**TOST** (two one-sided tests) — two one-sided tests, one against each bound; the larger of the two $p$-values decides",
+          "**Confidence interval** — the $(1 - 2\\alpha)$ interval, i.e. 90 % at $\\alpha = 0.05$; if it lies entirely within $[L; U]$ the test is passed",
+          "**Bounds** — a practical decision (how large may a difference be before it matters?), not a statistical one"
+        ]
+      },
+      {
+        "type": "note",
+        "text": "Only a passed test allows the statement \"equivalent within the bounds\". A failed one means \"equivalence not shown\" — often because the sample is too small. See {{term:p-wert|p-value}}, {{term:nullhypothese|null hypothesis}} and {{term:effektstaerke|effect size}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "TOST",
+      "Äquivalenzgrenze",
+      "Gleichwertigkeitstest"
+    ],
+    "en": [
+      "TOST",
+      "equivalence bound",
+      "two one-sided tests",
+      "equivalence margin"
+    ]
+  },
+  "seeAlso": [
+    "p-wert",
+    "nullhypothese",
+    "effektstaerke",
+    "signifikanzniveau"
+  ],
+  "modules": [
+    "attribute-test"
+  ],
+  "algoLab": [
+    "attribute/equivalence-proportion-one",
+    "attribute/equivalence-proportion-two"
+  ],
+  "sources": [
+    {
+      "label": "Schuirmann, D. J. — A Comparison of the Two One-Sided Tests Procedure and the Power Approach, Journal of Pharmacokinetics and Biopharmaceutics 15, 1987",
+      "url": null
+    },
+    {
+      "label": "Lakens, D. — Equivalence Tests: A Practical Primer, Social Psychological and Personality Science 8 (4), 2017",
+      "url": null
+    }
+  ]
+}

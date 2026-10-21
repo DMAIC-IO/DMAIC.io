@@ -503,7 +503,7 @@ export const AGENT_REGISTRY = {
         "params": [
           {
             "name": "key",
-            "type": "'testKind'|'inputMode'|'alpha'|'direction'|'p0'|'pooled'|'summary.x'|'summary.n'|'summary.x1'|'summary.n1'|'summary.x2'|'summary.n2'|'eventValue'",
+            "type": "'testKind'|'inputMode'|'alpha'|'direction'|'p0'|'pooled'|'ratePooled'|'summary.x'|'summary.n'|'summary.x1'|'summary.n1'|'summary.x2'|'summary.n2'|'summary.t'|'summary.t1'|'summary.t2'|'summary.lambda0'|'summary.diff0'|'summary.pairs.labels.before'|'summary.pairs.labels.after'|'equiv.samples'|'equiv.symmetric'|'equiv.delta'|'equiv.lower'|'equiv.upper'|'exposurePerRow'|'eventValue'",
             "optional": false,
             "help": "welcher Parameter; activeParams nennt die im Zustand gültigen"
           },
@@ -519,7 +519,7 @@ export const AGENT_REGISTRY = {
         "keysOf": "Params",
         "keys": {
           "testKind": {
-            "type": "'one'|'two'|'assoc'",
+            "type": "'one'|'two'|'equiv'|'mcnemar'|'rate1'|'rate2'|'assoc'",
             "help": "Testart"
           },
           "inputMode": {
@@ -543,6 +543,11 @@ export const AGENT_REGISTRY = {
           "pooled": {
             "type": "boolean",
             "help": "gepoolter Standardfehler, nur zwei Anteile",
+            "optional": true
+          },
+          "ratePooled": {
+            "type": "boolean",
+            "help": "gemeinsame Rate, nur zwei Raten",
             "optional": true
           },
           "summary.x": {
@@ -575,6 +580,71 @@ export const AGENT_REGISTRY = {
             "help": "Versuche Stichprobe 2",
             "optional": true
           },
+          "summary.t": {
+            "type": "string",
+            "help": "Umfang, eine Rate",
+            "optional": true
+          },
+          "summary.t1": {
+            "type": "string",
+            "help": "Umfang Stichprobe 1, zwei Raten",
+            "optional": true
+          },
+          "summary.t2": {
+            "type": "string",
+            "help": "Umfang Stichprobe 2, zwei Raten",
+            "optional": true
+          },
+          "summary.lambda0": {
+            "type": "string",
+            "help": "hypothetische Rate, eine Rate",
+            "optional": true
+          },
+          "summary.diff0": {
+            "type": "string",
+            "help": "hypothetische Differenz, zwei Raten",
+            "optional": true
+          },
+          "summary.pairs.labels.before": {
+            "type": "string",
+            "help": "Bezeichnung vorher, McNemar",
+            "optional": true
+          },
+          "summary.pairs.labels.after": {
+            "type": "string",
+            "help": "Bezeichnung nachher, McNemar",
+            "optional": true
+          },
+          "equiv.samples": {
+            "type": "1|2",
+            "help": "Stichprobenzahl, Äquivalenz",
+            "optional": true
+          },
+          "equiv.symmetric": {
+            "type": "boolean",
+            "help": "symmetrische Grenzen, Äquivalenz",
+            "optional": true
+          },
+          "equiv.delta": {
+            "type": "string",
+            "help": "Grenze δ, symmetrisch",
+            "optional": true
+          },
+          "equiv.lower": {
+            "type": "string",
+            "help": "untere Grenze, asymmetrisch",
+            "optional": true
+          },
+          "equiv.upper": {
+            "type": "string",
+            "help": "obere Grenze, asymmetrisch",
+            "optional": true
+          },
+          "exposurePerRow": {
+            "type": "string",
+            "help": "Umfang je Zeile, Raten aus Spalten",
+            "optional": true
+          },
           "eventValue": {
             "type": "string",
             "help": "Wert, der als Ereignis zählt",
@@ -586,7 +656,7 @@ export const AGENT_REGISTRY = {
         "params": [
           {
             "name": "slot",
-            "type": "'response'|'group'|'rowVar'|'colVar'",
+            "type": "'response'|'counts'|'before'|'after'|'group'|'rowVar'|'colVar'",
             "optional": false,
             "help": "die Rolle; activeColumnSlots nennt die im Zustand gültigen"
           },
@@ -694,6 +764,35 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Eine Spalte der Kreuztabelle entfernen."
       },
+      "setPairCell": {
+        "params": [
+          {
+            "name": "row",
+            "type": "number",
+            "optional": false,
+            "help": "Zeile, 0 = Ereignis vorher, 1 = kein Ereignis vorher"
+          },
+          {
+            "name": "col",
+            "type": "number",
+            "optional": false,
+            "help": "Spalte, 0 = Ereignis nachher, 1 = kein Ereignis nachher"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "die Anzahl als Text, '' leert die Zelle"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Anzahl der McNemar-Vierfeldertafel setzen (Zusammenfassung). Zeile ist der Zustand vorher, Spalte der Zustand nachher; 0 heißt Ereignis, 1 kein Ereignis."
+      },
+      "checkEquivalence": {
+        "params": [],
+        "returns": "void",
+        "help": "Zum Äquivalenztest mit zwei Stichproben wechseln. Anzahlen und Spalten teilt er mit dem Test zweier Anteile, sie bleiben also stehen; die Äquivalenzgrenzen bleiben unverändert."
+      },
       "runAnalysis": {
         "params": [],
         "returns": "void",
@@ -702,7 +801,7 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "testKind": {
-        "type": "'one'|'two'|'assoc'",
+        "type": "'one'|'two'|'equiv'|'mcnemar'|'rate1'|'rate2'|'assoc'",
         "help": "the kind of test",
         "bulk": false,
         "derived": true
@@ -737,15 +836,33 @@ export const AGENT_REGISTRY = {
         "bulk": false,
         "derived": true
       },
+      "ratePooled": {
+        "type": "boolean",
+        "help": "pooled rate estimate for the 2-rate z statistic",
+        "bulk": false,
+        "derived": true
+      },
+      "equiv": {
+        "type": "object",
+        "help": "the equivalence settings `{ samples, symmetric, delta, lower, upper }`, bounds as entered",
+        "bulk": false,
+        "derived": true
+      },
+      "exposurePerRow": {
+        "type": "string",
+        "help": "the exposure per worksheet row for rates from columns, as entered",
+        "bulk": false,
+        "derived": true
+      },
       "summary": {
         "type": "object",
-        "help": "the summarized counts as entered: x, n, x1, n1, x2, n2 and the cross table `{ rows, cols, counts }`",
+        "help": "the summarized counts as entered: x, n, x1, n1, x2, n2, t, t1, t2, lambda0, diff0, the McNemar table `pairs` `{ labels, counts }` and the cross table `{ rows, cols, counts }`",
         "bulk": false,
         "derived": true
       },
       "colRefs": {
         "type": "object",
-        "help": "the chosen column per role (response, group, rowVar, colVar), each `{ instanceId, sheetId, columnId }` or null",
+        "help": "the chosen column per role (response, counts, before, after, group, rowVar, colVar), each `{ instanceId, sheetId, columnId }` or null",
         "bulk": false,
         "derived": true
       },
@@ -787,7 +904,7 @@ export const AGENT_REGISTRY = {
         "keysOf": "Result",
         "keys": {
           "kind": {
-            "type": "'one'|'two'|'assoc'",
+            "type": "'one'|'two'|'equiv'|'mcnemar'|'rate1'|'rate2'|'assoc'",
             "help": "Testart"
           },
           "stats": {
@@ -831,8 +948,13 @@ export const AGENT_REGISTRY = {
             }
           },
           "decision": {
-            "type": "'reject'|'keep'",
+            "type": "'reject'|'keep'|'equivalent'|'notEquivalent'",
             "help": "Entscheidung gegen α"
+          },
+          "decisionParams": {
+            "type": "object",
+            "help": "Platzhalter der Entscheidung, nur Äquivalenz",
+            "optional": true
           },
           "basisKey": {
             "type": "string",
@@ -876,6 +998,18 @@ export const AGENT_REGISTRY = {
                     }
                   }
                 }
+              }
+            }
+          },
+          "actions": {
+            "type": "Action[]",
+            "help": "angebotene Folgeschritte",
+            "optional": true,
+            "keysOf": "Action",
+            "keys": {
+              "key": {
+                "type": "string",
+                "help": "Kennung des Folgeschritts"
               }
             }
           }
@@ -6099,7 +6233,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Two-sample means: assume equal variances (pooled t) instead of Welch."
+        "help": "Two- and k-sample means: assume equal variances (pooled t, Fisher ANOVA with Tukey) instead of Welch."
       },
       "setColumn1": {
         "params": [
@@ -6218,7 +6352,7 @@ export const AGENT_REGISTRY = {
       },
       "equalVariances": {
         "type": "boolean",
-        "help": "two-sample means: assume equal variances (pooled t) instead of Welch",
+        "help": "two- and k-sample means: assume equal variances (pooled t, Fisher ANOVA) instead of Welch",
         "bulk": false,
         "derived": true
       },
@@ -6501,6 +6635,41 @@ export const AGENT_REGISTRY = {
                   }
                 }
               },
+              "modelSummary": {
+                "type": "Metric[]|null",
+                "help": "Modellzusammenfassung S, R², R²(kor), R²(prog), nur Fisher- und Welch-Weg",
+                "optional": true,
+                "keysOf": "Metric",
+                "keys": {
+                  "label": {
+                    "type": "string",
+                    "help": "Beschriftung"
+                  },
+                  "value": {
+                    "type": "string",
+                    "help": "Wert"
+                  },
+                  "valueClass": {
+                    "type": "string",
+                    "help": "Darstellungsklasse",
+                    "optional": true
+                  },
+                  "title": {
+                    "type": "string",
+                    "help": "Tooltip"
+                  },
+                  "algoId": {
+                    "type": "string",
+                    "help": "Kennung im Algorithm Lab",
+                    "optional": true
+                  },
+                  "ci": {
+                    "type": "string|null",
+                    "help": "Konfidenzintervall",
+                    "optional": true
+                  }
+                }
+              },
               "groupRows": {
                 "type": "GroupRow[]",
                 "help": "Gruppenübersicht, nur k",
@@ -6523,11 +6692,25 @@ export const AGENT_REGISTRY = {
                     "type": "string",
                     "help": "Varianz"
                   },
+                  "ci": {
+                    "type": "string",
+                    "help": "Konfidenzintervall des Mittelwerts"
+                  },
                   "letters": {
                     "type": "string",
                     "help": "Gruppierungsbuchstaben"
                   }
                 }
+              },
+              "showCi": {
+                "type": "boolean",
+                "help": "Konfidenzintervalle je Gruppe zeigen, nur k",
+                "optional": true
+              },
+              "ciHeader": {
+                "type": "string",
+                "help": "Spaltenkopf der Konfidenzintervalle, nur k",
+                "optional": true
               },
               "showCld": {
                 "type": "boolean",
@@ -6704,6 +6887,21 @@ export const AGENT_REGISTRY = {
               "lettersJoined": {
                 "type": "string",
                 "help": "Buchstaben je Gruppe"
+              }
+            }
+          },
+          "residualPlot": {
+            "type": "ResidualPlot|null",
+            "help": "Residuen der einfaktoriellen ANOVA, nur Fisher- und Welch-Weg",
+            "keysOf": "ResidualPlot",
+            "keys": {
+              "residuals": {
+                "type": "number[]",
+                "help": "Residuen je Beobachtung"
+              },
+              "fitted": {
+                "type": "number[]",
+                "help": "angepasste Werte je Beobachtung"
               }
             }
           }
@@ -16495,9 +16693,158 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
+      "unmarked_method:setHeaderFromEvent@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:addSection@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:updateSectionFromEvent@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:moveSectionUp@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:moveSectionDown@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:deleteSection@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:addQuestionFromEvent@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:moveQuestionUp@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:moveQuestionDown@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:deleteQuestion@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:selectQuestion@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:selectSection@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:selectedQuestion@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:selectedSection@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:hasSelectedQuestion@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:hasSelectedSection@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:hasNoSelection@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:questionClass@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:sectionClass@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:sectionField@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:updateSelectedSectionFromEvent@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:questionField@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:updateQuestionFromEvent@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:isSelectedType@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:changeTypeFromEvent@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:canBeRequired@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:flags@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:flagLabel@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:hasFlag@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:toggleFlag@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:itemKind@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:hasItems@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:items@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:itemsTitle@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:isMulti@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:itemGroup@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:addItem@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:updateItemFromEvent@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:moveItemUp@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:moveItemDown@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:deleteItem@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:condNodeId@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:hasCondNode@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:condSources@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:hasCondSources@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:addCondition@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:setCondSource@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:condOptions@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:condOptionChecked@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:toggleCondOption@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:removeCondition@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:sourceLabel@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:optionText@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:warnings@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:hasWarnings@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:schedulePreview@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:renderPreview@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:versionLine@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:exportGeneral@js/modules/survey-builder/survey-draft-controller.js",
+      "unmarked_method:hasRecipients@js/modules/survey-builder/survey-recipients-controller.js",
+      "unmarked_method:addRecipient@js/modules/survey-builder/survey-recipients-controller.js",
+      "unmarked_method:updateRecipientFromEvent@js/modules/survey-builder/survey-recipients-controller.js",
+      "unmarked_method:recipientName@js/modules/survey-builder/survey-recipients-controller.js",
+      "unmarked_method:deleteRecipient@js/modules/survey-builder/survey-recipients-controller.js",
+      "unmarked_method:recipientStatusLabel@js/modules/survey-builder/survey-recipients-controller.js",
+      "unmarked_method:isOutdated@js/modules/survey-builder/survey-recipients-controller.js",
+      "unmarked_method:outdatedHint@js/modules/survey-builder/survey-recipients-controller.js",
+      "unmarked_method:sentLabel@js/modules/survey-builder/survey-recipients-controller.js",
+      "unmarked_method:countsLine@js/modules/survey-builder/survey-recipients-controller.js",
+      "unmarked_method:exportForRecipient@js/modules/survey-builder/survey-recipients-controller.js",
+      "unmarked_method:openImport@js/modules/survey-builder/survey-import-controller.js",
+      "unmarked_method:importFromEvent@js/modules/survey-builder/survey-import-controller.js",
+      "unmarked_method:onDragOver@js/modules/survey-builder/survey-import-controller.js",
+      "unmarked_method:onDrop@js/modules/survey-builder/survey-import-controller.js",
+      "unmarked_method:importFiles@js/modules/survey-builder/survey-import-controller.js",
+      "unmarked_method:hasImportLog@js/modules/survey-builder/survey-import-controller.js",
+      "unmarked_method:importStatusLabel@js/modules/survey-builder/survey-import-controller.js",
+      "unmarked_method:importStatusClass@js/modules/survey-builder/survey-import-controller.js",
+      "unmarked_method:noteLine@js/modules/survey-builder/survey-import-controller.js",
+      "unmarked_method:hasResponses@js/modules/survey-builder/survey-import-controller.js",
+      "unmarked_method:responseRows@js/modules/survey-builder/survey-import-controller.js",
+      "unmarked_method:toggleResponse@js/modules/survey-builder/survey-import-controller.js",
+      "unmarked_method:isResponseOpen@js/modules/survey-builder/survey-import-controller.js",
+      "unmarked_method:responseDetails@js/modules/survey-builder/survey-import-controller.js",
+      "unmarked_method:catLabel@js/modules/survey-builder/survey-import-controller.js",
+      "unmarked_method:deleteResponse@js/modules/survey-builder/survey-import-controller.js",
+      "unmarked_method:filterOptions@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:filterValue@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:isFilterValue@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:setFilterFromEvent@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:filtered@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:nLine@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:blocks@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:isType@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:isChoice@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:chartKey@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:blockN@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:hasImportance@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:hasOther@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:otherShare@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:hasOtherTexts@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:distLabel@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:rateLine@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:hasWithoutRecipient@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:withoutRecipientLine@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:hasRateGroups@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:rateGroups@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:hasRanking@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:rankingRows@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:hasMoreRanking@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:toggleRanking@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:rankingToggleLabel@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:hasKanoOverview@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:kanoOverviewRows@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:freeTextLine@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:groupByOptions@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:isGroupBy@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:setGroupByFromEvent@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:hasComparison@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:groupsTitle@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:groupHeads@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:comparisonParts@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:cellClass@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:rowClass@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:canShowNames@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:isReportWithNames@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:setReportWithNamesFromEvent@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:exportReport@js/modules/survey-builder/survey-results-controller.js",
+      "unmarked_method:textAnswers@js/modules/survey-builder/survey-handover-controller.js",
+      "unmarked_method:otherAnswers@js/modules/survey-builder/survey-handover-controller.js",
+      "unmarked_method:hasTextAnswers@js/modules/survey-builder/survey-handover-controller.js",
+      "unmarked_method:hasName@js/modules/survey-builder/survey-handover-controller.js",
+      "unmarked_method:isVocSelected@js/modules/survey-builder/survey-handover-controller.js",
+      "unmarked_method:isVocTaken@js/modules/survey-builder/survey-handover-controller.js",
+      "unmarked_method:toggleVoc@js/modules/survey-builder/survey-handover-controller.js",
+      "unmarked_method:hasVocSelection@js/modules/survey-builder/survey-handover-controller.js",
+      "unmarked_method:takeToVocTree@js/modules/survey-builder/survey-handover-controller.js",
+      "unmarked_method:kanoTargetOptions@js/modules/survey-builder/survey-handover-controller.js",
+      "unmarked_method:kanoTargetValue@js/modules/survey-builder/survey-handover-controller.js",
+      "unmarked_method:isKanoTarget@js/modules/survey-builder/survey-handover-controller.js",
+      "unmarked_method:setKanoTargetFromEvent@js/modules/survey-builder/survey-handover-controller.js",
+      "unmarked_method:handOverToKano@js/modules/survey-builder/survey-handover-controller.js",
+      "unmarked_method:toWorksheet@js/modules/survey-builder/survey-handover-controller.js",
+      "unmarked_method:destroyCharts@js/modules/survey-builder/survey-charts-controller.js",
+      "unmarked_method:scheduleCharts@js/modules/survey-builder/survey-charts-controller.js",
+      "unmarked_method:questionChartJobs@js/modules/survey-builder/survey-charts-controller.js",
+      "unmarked_method:chartJobs@js/modules/survey-builder/survey-charts-controller.js",
+      "unmarked_method:summaryChartJobs@js/modules/survey-builder/survey-charts-controller.js",
+      "unmarked_method:groupChartJobs@js/modules/survey-builder/survey-charts-controller.js",
+      "unmarked_method:mountCharts@js/modules/survey-builder/survey-charts-controller.js",
       "unmarked_method:init",
       "unmarked_method:destroy",
-      "unmarked_method:destroyCharts",
       "unmarked_method:isTab",
       "unmarked_method:tabClass",
       "unmarked_method:setTab",
@@ -16506,158 +16853,9 @@ export const AGENT_REGISTRY = {
       "unmarked_method:sectionPlaceholder",
       "unmarked_method:hasCondition",
       "unmarked_method:reportRemoved",
-      "unmarked_method:setHeaderFromEvent",
-      "unmarked_method:addSection",
-      "unmarked_method:updateSectionFromEvent",
-      "unmarked_method:moveSectionUp",
-      "unmarked_method:moveSectionDown",
-      "unmarked_method:deleteSection",
-      "unmarked_method:addQuestionFromEvent",
-      "unmarked_method:moveQuestionUp",
-      "unmarked_method:moveQuestionDown",
-      "unmarked_method:deleteQuestion",
-      "unmarked_method:selectQuestion",
-      "unmarked_method:selectSection",
-      "unmarked_method:selectedQuestion",
-      "unmarked_method:selectedSection",
-      "unmarked_method:hasSelectedQuestion",
-      "unmarked_method:hasSelectedSection",
-      "unmarked_method:hasNoSelection",
-      "unmarked_method:questionClass",
-      "unmarked_method:sectionClass",
-      "unmarked_method:sectionField",
-      "unmarked_method:updateSelectedSectionFromEvent",
-      "unmarked_method:questionField",
-      "unmarked_method:updateQuestionFromEvent",
-      "unmarked_method:isSelectedType",
-      "unmarked_method:changeTypeFromEvent",
-      "unmarked_method:canBeRequired",
-      "unmarked_method:flags",
-      "unmarked_method:flagLabel",
-      "unmarked_method:hasFlag",
-      "unmarked_method:toggleFlag",
-      "unmarked_method:itemKind",
-      "unmarked_method:hasItems",
-      "unmarked_method:items",
-      "unmarked_method:itemsTitle",
-      "unmarked_method:isMulti",
-      "unmarked_method:itemGroup",
-      "unmarked_method:addItem",
-      "unmarked_method:updateItemFromEvent",
-      "unmarked_method:moveItemUp",
-      "unmarked_method:moveItemDown",
-      "unmarked_method:deleteItem",
-      "unmarked_method:condNodeId",
-      "unmarked_method:hasCondNode",
-      "unmarked_method:condSources",
-      "unmarked_method:hasCondSources",
-      "unmarked_method:addCondition",
-      "unmarked_method:setCondSource",
-      "unmarked_method:condOptions",
-      "unmarked_method:condOptionChecked",
-      "unmarked_method:toggleCondOption",
-      "unmarked_method:removeCondition",
-      "unmarked_method:sourceLabel",
-      "unmarked_method:optionText",
-      "unmarked_method:warnings",
-      "unmarked_method:hasWarnings",
-      "unmarked_method:schedulePreview",
-      "unmarked_method:renderPreview",
-      "unmarked_method:versionLine",
-      "unmarked_method:exportGeneral",
       "unmarked_method:formatDateTime",
       "unmarked_method:fmtPct",
-      "unmarked_method:fmtNum",
-      "unmarked_method:hasRecipients",
-      "unmarked_method:addRecipient",
-      "unmarked_method:updateRecipientFromEvent",
-      "unmarked_method:recipientName",
-      "unmarked_method:deleteRecipient",
-      "unmarked_method:recipientStatusLabel",
-      "unmarked_method:isOutdated",
-      "unmarked_method:outdatedHint",
-      "unmarked_method:sentLabel",
-      "unmarked_method:countsLine",
-      "unmarked_method:exportForRecipient",
-      "unmarked_method:openImport",
-      "unmarked_method:importFromEvent",
-      "unmarked_method:onDragOver",
-      "unmarked_method:onDrop",
-      "unmarked_method:importFiles",
-      "unmarked_method:hasImportLog",
-      "unmarked_method:importStatusLabel",
-      "unmarked_method:importStatusClass",
-      "unmarked_method:noteLine",
-      "unmarked_method:hasResponses",
-      "unmarked_method:responseRows",
-      "unmarked_method:toggleResponse",
-      "unmarked_method:isResponseOpen",
-      "unmarked_method:responseDetails",
-      "unmarked_method:catLabel",
-      "unmarked_method:deleteResponse",
-      "unmarked_method:filterOptions",
-      "unmarked_method:filterValue",
-      "unmarked_method:isFilterValue",
-      "unmarked_method:setFilterFromEvent",
-      "unmarked_method:filtered",
-      "unmarked_method:nLine",
-      "unmarked_method:blocks",
-      "unmarked_method:isType",
-      "unmarked_method:isChoice",
-      "unmarked_method:chartKey",
-      "unmarked_method:blockN",
-      "unmarked_method:hasImportance",
-      "unmarked_method:hasOther",
-      "unmarked_method:otherShare",
-      "unmarked_method:hasOtherTexts",
-      "unmarked_method:distLabel",
-      "unmarked_method:textAnswers",
-      "unmarked_method:otherAnswers",
-      "unmarked_method:hasTextAnswers",
-      "unmarked_method:hasName",
-      "unmarked_method:isVocSelected",
-      "unmarked_method:isVocTaken",
-      "unmarked_method:toggleVoc",
-      "unmarked_method:hasVocSelection",
-      "unmarked_method:takeToVocTree",
-      "unmarked_method:kanoTargetOptions",
-      "unmarked_method:kanoTargetValue",
-      "unmarked_method:isKanoTarget",
-      "unmarked_method:setKanoTargetFromEvent",
-      "unmarked_method:handOverToKano",
-      "unmarked_method:toWorksheet",
-      "unmarked_method:rateLine",
-      "unmarked_method:hasWithoutRecipient",
-      "unmarked_method:withoutRecipientLine",
-      "unmarked_method:hasRateGroups",
-      "unmarked_method:rateGroups",
-      "unmarked_method:hasRanking",
-      "unmarked_method:rankingRows",
-      "unmarked_method:hasMoreRanking",
-      "unmarked_method:toggleRanking",
-      "unmarked_method:rankingToggleLabel",
-      "unmarked_method:hasKanoOverview",
-      "unmarked_method:kanoOverviewRows",
-      "unmarked_method:freeTextLine",
-      "unmarked_method:groupByOptions",
-      "unmarked_method:isGroupBy",
-      "unmarked_method:setGroupByFromEvent",
-      "unmarked_method:hasComparison",
-      "unmarked_method:groupsTitle",
-      "unmarked_method:groupHeads",
-      "unmarked_method:comparisonParts",
-      "unmarked_method:cellClass",
-      "unmarked_method:rowClass",
-      "unmarked_method:canShowNames",
-      "unmarked_method:isReportWithNames",
-      "unmarked_method:setReportWithNamesFromEvent",
-      "unmarked_method:exportReport",
-      "unmarked_method:scheduleCharts",
-      "unmarked_method:questionChartJobs",
-      "unmarked_method:chartJobs",
-      "unmarked_method:summaryChartJobs",
-      "unmarked_method:groupChartJobs",
-      "unmarked_method:mountCharts"
+      "unmarked_method:fmtNum"
     ],
     "actions": {},
     "fields": {
@@ -17088,6 +17286,24 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Entfernt eine Aufgabe."
+      },
+      "moveTodo": {
+        "params": [
+          {
+            "name": "itemId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Aufgabe, die verschoben wird"
+          },
+          {
+            "name": "beforeId",
+            "type": "string",
+            "optional": false,
+            "help": "id der Aufgabe, vor die sie kommt"
+          }
+        ],
+        "returns": "void",
+        "help": "Verschiebt eine Aufgabe vor eine andere und stellt die Liste auf manuelle Reihenfolge. Ist die Liste sortiert, wird zuerst die sichtbare Reihenfolge zur gespeicherten; ausgefilterte Aufgaben folgen dahinter in ihrer bisherigen Reihenfolge."
       },
       "setFilterStatus": {
         "params": [
@@ -17744,6 +17960,8 @@ export const AGENT_REGISTRY = {
       "unmarked_method:swap",
       "unmarked_method:removeFunction",
       "unmarked_method:rankLabel",
+      "unmarked_method:setShowRanks",
+      "unmarked_method:rankLabels",
       "unmarked_method:fnClass",
       "unmarked_method:disadvantageGroups",
       "unmarked_method:paramText",
@@ -17796,6 +18014,11 @@ export const AGENT_REGISTRY = {
         "bulk": false
       },
       "activeTab": {
+        "type": "any",
+        "help": "",
+        "bulk": false
+      },
+      "showRanks": {
         "type": "any",
         "help": "",
         "bulk": false

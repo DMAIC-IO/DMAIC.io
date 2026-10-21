@@ -33,7 +33,7 @@ concurrency:
 jobs:
   nightly:
     name: rsync dev → nightly.qprovement.com
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # pinned: since ubuntu-latest began moving to 26.04 (2026-10-19), `playwright install --with-deps` fails on it
     environment: production
 
     env:

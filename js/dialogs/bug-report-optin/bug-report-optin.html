@@ -1,0 +1,15 @@
+<div class="bug-report bug-report--optin" x-data="bugReportOptin">
+  <p class="bug-report__intro" x-text="t('optinIntro')"></p>
+  <label class="bug-report__choice">
+    <input type="checkbox" name="bug-report-screenshot" x-model="model.screenshot">
+    <span x-text="t('optinScreenshot')"></span>
+  </label>
+  <label class="bug-report__choice">
+    <input type="checkbox" name="bug-report-project" x-model="model.project">
+    <span x-text="t('optinProject')"></span>
+  </label>
+  <label class="bug-report__choice">
+    <input type="checkbox" name="bug-report-errors" x-model="model.errors">
+    <span x-text="t('optinErrors')"></span>
+  </label>
+</div>

@@ -11,12 +11,6 @@
 
 /* Fields use global .field / .field-group (components.css) */
 
-.pc__row-3 {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: var(--spacing-m);
-}
-
 /* ─── Embedded Example Data ──────────────────────────────── */
 .pc__embedded {
   display: flex;
@@ -175,9 +169,5 @@
 
 .pc__col-select:focus {
   border-color: var(--color-accent);
-}
-
-.pc__span-2 {
-  grid-column: span 2;
 }
 

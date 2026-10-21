@@ -54,7 +54,7 @@
       <label data-help-key="modules.resampling.types.Params.statParams.p" x-text="t('quantileP')"></label>
       <input type="number" class="field field--num" data-ref="quantile-p" min="0" max="1" step="0.01" :value="model.statParams.p" @change="onParamInput('statParams.p', $event)">
     </div>
-    <div class="field-row" x-show="showLimits()">
+    <div class="field-grid field-grid--2" x-show="showLimits()">
       <div class="field-group">
         <label data-help-key="modules.resampling.types.Params.statParams.lsl" x-text="t('lsl')"></label>
         <input type="text" class="field field--num" data-ref="lsl" :value="model.statParams.lsl" @input="onParamInput('statParams.lsl', $event)">
@@ -86,7 +86,7 @@
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionSettings')"></div>
-    <div class="field-row">
+    <div class="field-grid field-grid--2">
       <div class="field-group">
         <label data-help-key="modules.resampling.types.Params.B" x-text="t('B')"></label>
         <input type="number" class="field field--num" data-ref="b" min="1000" max="100000" step="1000" :value="model.B" @change="onParamInput('B', $event)">

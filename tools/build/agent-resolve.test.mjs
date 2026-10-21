@@ -82,6 +82,22 @@ test('findCreateModuleMember / memberName / functionFromMember work together', (
   assert.equal(findCreateModuleMember(sf, 'nope'), null);
 });
 
+test('findCreateModuleMember: follows createModule(definition) to a const object literal in the file', () => {
+  // hypothesis-test: `const definition = { … }; const mod = createModule(definition);`
+  // (the definition is shared with unit tests via `definition.data`).
+  const sf = sourceOf('const definition = { config: {}, data(m) { return { a() {} }; } };\n'
+    + 'const mod = createModule(definition);');
+  const member = findCreateModuleMember(sf, 'data');
+  assert.equal(memberName(member), 'data');
+  assert.ok(functionFromMember(member));
+  assert.equal(findCreateModuleMember(sf, 'nope'), null);
+});
+
+test('findCreateModuleMember: an identifier that is no object literal resolves to nothing (fail closed)', () => {
+  const sf = sourceOf('const definition = build();\nconst mod = createModule(definition);');
+  assert.equal(findCreateModuleMember(sf, 'data'), null);
+});
+
 test('createResolver: parses each file exactly once', () => {
   const root = tree({ 'm.js': 'export const x = 1;' });
   const resolver = createResolver(root);

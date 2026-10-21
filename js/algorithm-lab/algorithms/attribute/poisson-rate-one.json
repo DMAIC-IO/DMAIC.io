@@ -1,0 +1,340 @@
+{
+  "id": "poisson-rate-one",
+  "name": {
+    "de": "Test auf eine Poisson-Rate",
+    "en": "1-Sample Poisson Rate Test"
+  },
+  "category": "attribute",
+  "subcategory": "rate",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Prüft, ob die Rate x/t einer Ereigniszählung einem hypothetischen Wert λ₀ entspricht – exakt und mit Normalapproximation.",
+      "en": "Tests whether the rate x/t of an event count equals a hypothesized λ₀ – exact and by normal approximation."
+    },
+    "long": {
+      "de": "Der exakte Test nutzt die Poisson-Verteilung mit Erwartungswert μ = λ₀·t und passt zum Garwood-Intervall: zweiseitig p = min(1, 2·min(P(X ≤ x), P(X ≥ x))). Die Normalapproximation z = (x − λ₀t)/√(λ₀t) wird zusätzlich gezeigt; sie ist nur verlässlich, wenn λ₀·t mindestens 5 ist.",
+      "en": "The exact test uses the Poisson distribution with mean μ = λ₀·t and matches the Garwood interval: two-sided p = min(1, 2·min(P(X ≤ x), P(X ≥ x))). The normal approximation z = (x − λ₀t)/√(λ₀t) is shown as well; it is reliable only when λ₀·t is at least 5."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      {
+        "label": "p (exakt / exact)",
+        "latex": "p = \\min\\left(1,\\; 2\\min\\{P(X\\le x),\\, P(X\\ge x)\\}\\right),\\; X\\sim\\mathrm{Poisson}(\\lambda_0 t)",
+        "description": {
+          "de": "Zweiseitiger exakter p-Wert",
+          "en": "Two-sided exact p-value"
+        }
+      },
+      {
+        "label": "z",
+        "latex": "z = \\frac{x - \\lambda_0 t}{\\sqrt{\\lambda_0 t}}",
+        "description": {
+          "de": "Normalapproximation",
+          "en": "Normal approximation"
+        }
+      },
+      {
+        "label": "Garwood",
+        "latex": "\\left[\\tfrac{\\chi^2_{\\alpha/2,\\,2x}}{2t},\\; \\tfrac{\\chi^2_{1-\\alpha/2,\\,2x+2}}{2t}\\right]",
+        "description": {
+          "de": "Exaktes Konfidenzintervall der Rate",
+          "en": "Exact confidence interval of the rate"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Unabhängige Ereignisse mit konstanter Rate über den Beobachtungsumfang",
+        "en": "Independent events at a constant rate over the exposure"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Zweiseitiger exakter p nach Verdopplungsregel, nicht minlike",
+        "en": "Two-sided exact p by the doubling rule, not minlike"
+      },
+      {
+        "de": "Normalapproximation unzuverlässig bei λ₀·t < 5",
+        "en": "Normal approximation unreliable for λ₀·t < 5"
+      }
+    ],
+    "references": [
+      {
+        "source": "Minitab Methods and Formulas: 1-Sample Poisson Rate"
+      }
+    ],
+    "minitab_equivalent": "Stat > Basic Statistics > 1-Sample Poisson Rate"
+  },
+  "source": {
+    "function_name": "onePoissonRateTest",
+    "file_path": "js/engines/attribute-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "x",
+          "type": "number",
+          "required": true,
+          "description": {
+            "de": "Anzahl Ereignisse",
+            "en": "Number of events"
+          }
+        },
+        {
+          "name": "t",
+          "type": "number",
+          "required": true,
+          "description": {
+            "de": "Beobachtungsumfang (Zeit, Fläche, Stückzahl)",
+            "en": "Exposure (time, area, units)"
+          }
+        },
+        {
+          "name": "lambda0",
+          "type": "number",
+          "required": true,
+          "description": {
+            "de": "Hypothetische Rate je Einheit",
+            "en": "Hypothesized rate per unit"
+          }
+        },
+        {
+          "name": "direction",
+          "type": "string",
+          "required": false,
+          "description": {
+            "de": "'two-sided', 'greater', 'less'",
+            "en": "'two-sided', 'greater', 'less'"
+          }
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "required": false,
+          "description": {
+            "de": "Signifikanzniveau (Standard 0.05)",
+            "en": "Significance level (default 0.05)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "rate": {
+            "type": "number",
+            "description": {
+              "de": "Rate x/t",
+              "en": "Rate x/t"
+            }
+          },
+          "pExact": {
+            "type": "number",
+            "description": {
+              "de": "Exakter p-Wert",
+              "en": "Exact p-value"
+            }
+          },
+          "z": {
+            "type": "number",
+            "description": {
+              "de": "z-Statistik",
+              "en": "z statistic"
+            }
+          },
+          "pNormal": {
+            "type": "number",
+            "description": {
+              "de": "p-Wert der Normalapproximation",
+              "en": "Normal-approximation p-value"
+            }
+          },
+          "reject": {
+            "type": "boolean",
+            "description": {
+              "de": "H₀ verworfen (exakter Test)?",
+              "en": "Reject H₀ (exact test)?"
+            }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "x",
+          "label": {
+            "de": "Ereignisse x",
+            "en": "Events x"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "z.B. 37",
+            "en": "e.g. 37"
+          },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "t",
+          "label": {
+            "de": "Beobachtungsumfang t",
+            "en": "Exposure t"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "z.B. 120",
+            "en": "e.g. 120"
+          },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "lambda0",
+          "label": {
+            "de": "λ₀",
+            "en": "λ₀"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "z.B. 0.25",
+            "en": "e.g. 0.25"
+          },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "direction",
+          "label": {
+            "de": "Testrichtung",
+            "en": "Test direction"
+          },
+          "type": "select",
+          "options": [
+            {
+              "value": "two-sided",
+              "label": {
+                "de": "≠ Zweiseitig",
+                "en": "≠ Two-sided"
+              }
+            },
+            {
+              "value": "greater",
+              "label": {
+                "de": "> Größer",
+                "en": "> Greater"
+              }
+            },
+            {
+              "value": "less",
+              "label": {
+                "de": "< Kleiner",
+                "en": "< Less"
+              }
+            }
+          ],
+          "parse_as": "string",
+          "required": false
+        },
+        {
+          "name": "alpha",
+          "label": {
+            "de": "Signifikanzniveau α",
+            "en": "Significance level α"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "0.05",
+            "en": "0.05"
+          },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": [
+        "rate",
+        "ciLower",
+        "ciUpper",
+        "pExact",
+        "z",
+        "pNormal",
+        "normalApproxOk",
+        "reject"
+      ],
+      "primary_field": "pExact",
+      "format": {
+        "ciLower": {
+          "decimals": 6,
+          "label": {
+            "de": "KI unten",
+            "en": "CI lower"
+          }
+        },
+        "ciUpper": {
+          "decimals": 6,
+          "label": {
+            "de": "KI oben",
+            "en": "CI upper"
+          }
+        },
+        "pExact": {
+          "decimals": 6,
+          "label": {
+            "de": "p (exakt)",
+            "en": "p (exact)"
+          }
+        },
+        "z": {
+          "decimals": 6,
+          "label": "z"
+        },
+        "pNormal": {
+          "decimals": 6,
+          "label": {
+            "de": "p (Normal)",
+            "en": "p (normal)"
+          }
+        },
+        "normalApproxOk": {
+          "decimals": 0,
+          "label": {
+            "de": "Normalapprox. geeignet",
+            "en": "Normal approx. OK"
+          }
+        },
+        "reject": {
+          "decimals": 0,
+          "label": {
+            "de": "H₀ abgelehnt",
+            "en": "Reject H₀"
+          }
+        },
+        "rate": {
+          "decimals": 6,
+          "label": {
+            "de": "Rate x/t",
+            "en": "Rate x/t"
+          }
+        }
+      }
+    }
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung",
+        "en": "Initial implementation"
+      },
+      "breaking": false
+    }
+  ]
+}

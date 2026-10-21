@@ -7,12 +7,6 @@
 
 /* Fields use global .field / .field-group (components.css) */
 
-.control-chart__spec-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-sm);
-}
-
 /* ── Nelson Rules ── */
 
 .control-chart__collapsible {

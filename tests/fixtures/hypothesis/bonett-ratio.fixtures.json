@@ -5,7 +5,7 @@
     "scipy": "1.18.0",
     "numpy": "2.5.1"
   },
-  "generated_at": "2026-10-18T18:24:53.606321+00:00",
+  "generated_at": "2026-10-20T05:43:16.235862+00:00",
   "generator_script": "tools/fixture-generator/generate_fixtures.py",
   "generator_version": "1.0.0",
   "tolerances": {
@@ -20,7 +20,7 @@
       "id": "br_r01",
       "tier": "standard",
       "description": "R01: balanced 20/20, lognormal",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data1": [
           31.816,
@@ -79,6 +79,7 @@
           1.0389619216365904,
           13.961566680183255
         ],
+        "ciUndefined": false,
         "reject": true,
         "n1": 20,
         "n2": 20
@@ -88,7 +89,7 @@
       "id": "br_r02",
       "tier": "standard",
       "description": "R02: balanced 25/25, t3, H1: ratio > 1",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data1": [
           8.933,
@@ -157,6 +158,7 @@
           0.849505119100546,
           null
         ],
+        "ciUndefined": false,
         "reject": false,
         "n1": 25,
         "n2": 25
@@ -166,7 +168,7 @@
       "id": "br_r03",
       "tier": "standard",
       "description": "R03: R02 data, H1: ratio < 1",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data1": [
           8.933,
@@ -235,6 +237,7 @@
           null,
           4.060259142151697
         ],
+        "ciUndefined": false,
         "reject": false,
         "n1": 25,
         "n2": 25
@@ -244,7 +247,7 @@
       "id": "br_r04",
       "tier": "standard",
       "description": "R04: unbalanced 15/30, lognormal",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data1": [
           6.475,
@@ -300,7 +303,7 @@
       },
       "expected": {
         "statistic": null,
-        "pValue": 0.5496800615581254,
+        "pValue": 0.5496800615582,
         "variance1": 57.09549726666667,
         "variance2": 36.84982763678161,
         "ratio": 1.5494101581543591,
@@ -308,6 +311,7 @@
           0.43774623669341906,
           16.507340690334697
         ],
+        "ciUndefined": false,
         "reject": false,
         "n1": 15,
         "n2": 30
@@ -317,7 +321,7 @@
       "id": "br_r05",
       "tier": "standard",
       "description": "R05: unbalanced 30/12, t3, H1: ratio > 1",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data1": [
           2.994,
@@ -370,7 +374,7 @@
       },
       "expected": {
         "statistic": null,
-        "pValue": 0.0246058006456581,
+        "pValue": 0.02460580064565973,
         "variance1": 5.003877443678161,
         "variance2": 1.4814154242424242,
         "ratio": 3.3777678845466834,
@@ -378,6 +382,7 @@
           1.2432375698973748,
           null
         ],
+        "ciUndefined": false,
         "reject": true,
         "n1": 30,
         "n2": 12
@@ -387,7 +392,7 @@
       "id": "br_r06",
       "tier": "standard",
       "description": "R06: R05 data, H1: ratio < 1",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data1": [
           2.994,
@@ -440,7 +445,7 @@
       },
       "expected": {
         "statistic": null,
-        "pValue": 0.9753941993543419,
+        "pValue": 0.9905699306073733,
         "variance1": 5.003877443678161,
         "variance2": 1.4814154242424242,
         "ratio": 3.3777678845466834,
@@ -448,6 +453,7 @@
           null,
           9.052650552159559
         ],
+        "ciUndefined": false,
         "reject": false,
         "n1": 30,
         "n2": 12
@@ -457,7 +463,7 @@
       "id": "br_r07",
       "tier": "standard",
       "description": "R07: strongly unbalanced 40/6",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data1": [
           0.588,
@@ -522,6 +528,7 @@
           0.31526506295789025,
           19.719393015399476
         ],
+        "ciUndefined": false,
         "reject": false,
         "n1": 40,
         "n2": 6
@@ -531,7 +538,7 @@
       "id": "br_r08",
       "tier": "standard",
       "description": "R08: extreme 150/7, near the four-root region",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data1": [
           1056.7,
@@ -699,15 +706,16 @@
       },
       "expected": {
         "statistic": null,
-        "pValue": 0.05270080693742109,
+        "pValue": 0.04376945115235325,
         "variance1": 83985.45705995527,
         "variance2": 3862640.4780952376,
         "ratio": 0.02174301686533626,
         "ci": [
-          0.004540153041720303,
-          3.2751755697235616
+          null,
+          null
         ],
-        "reject": false,
+        "ciUndefined": true,
+        "reject": true,
         "n1": 150,
         "n2": 7
       }
@@ -716,7 +724,7 @@
       "id": "br_r09",
       "tier": "standard",
       "description": "R09: balanced 6/6, small",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data1": [
           4.787,
@@ -747,6 +755,7 @@
           0.14947627479590544,
           38.19033329430193
         ],
+        "ciUndefined": false,
         "reject": false,
         "n1": 6,
         "n2": 6
@@ -756,7 +765,7 @@
       "id": "br_r10",
       "tier": "standard",
       "description": "R10: balanced 20/20, equal variance",
-      "reference": "Python reference (generators/bonett.py), checked against Minitab 1 Variance / 2 Variances",
+      "reference": "Python reference (generators/bonett.py), matches Minitab 22.5.1 at display precision",
       "inputs": {
         "data1": [
           0.239,
@@ -815,6 +824,7 @@
           0.3171860910469799,
           1.6589054897043296
         ],
+        "ciUndefined": false,
         "reject": false,
         "n1": 20,
         "n2": 20

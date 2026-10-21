@@ -1,6 +1,6 @@
 import { suite, test, assertEqual } from '../test-utils.js';
 import {
-  LARGE_SAMPLE_N, isNormalByAD, meanRoute, isConstant, ciContains, varianceRoute,
+  LARGE_SAMPLE_N, isNormalByAD, meanRoute, kMeanRoute, isConstant, ciContains, varianceRoute,
 } from '../../js/modules/hypothesis-test/hypothesis-test-routing.js';
 
 // C1-017: normality is judged by Anderson-Darling alone; for means the
@@ -34,6 +34,29 @@ suite('Hypothesis Test Routing — meanRoute', () => {
   test('parametric (large n) when non-normal but every group has n >= 20', () => {
     assertEqual(meanRoute(false, [20, 31]), 'parametric-large-n');
     assertEqual(meanRoute(false, [20]), 'parametric-large-n');
+  });
+});
+
+suite('Hypothesis Test Routing — kMeanRoute', () => {
+  test('all normal, equal small groups → welch when variances differ', () => {
+    assertEqual(kMeanRoute(true, [5, 5, 5], false), 'welch');
+  });
+
+  test('all normal, equal small groups → fisher when variances are equal', () => {
+    assertEqual(kMeanRoute(true, [5, 5, 5], true), 'fisher');
+  });
+
+  test('non-normal, all n >= 20 → welch when variances differ', () => {
+    assertEqual(kMeanRoute(false, [20, 25, 30], false), 'welch');
+  });
+
+  test('non-normal, all n >= 20 → fisher when variances are equal', () => {
+    assertEqual(kMeanRoute(false, [20, 25, 30], true), 'fisher');
+  });
+
+  test('non-normal with a group n < 20 → kruskal regardless of variances', () => {
+    assertEqual(kMeanRoute(false, [5, 25, 30], false), 'kruskal');
+    assertEqual(kMeanRoute(false, [5, 25, 30], true), 'kruskal');
   });
 });
 

@@ -1,0 +1,142 @@
+{
+  "algorithm_id": "equivalence-proportion-one",
+  "generated_with": {
+    "python": "3.14.4",
+    "scipy": "1.18.0",
+    "numpy": "2.5.1"
+  },
+  "generated_at": "2026-10-20T06:27:28.759506+00:00",
+  "generator_script": "tools/fixture-generator/generate_fixtures.py",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-09,
+      "absolute": 1e-12
+    },
+    "overrides": {
+      "stress_large_counts": {
+        "relative": 1e-06,
+        "absolute": 1e-10,
+        "reason": "incomplete-beta round-off in the binomial tails and CI bisection grows with n ~ 1e5"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "eq1_standard_equivalent",
+      "tier": "standard",
+      "description": "48 of 1000 against p0 0.05 with limits +-0.02; statsmodels.stats.proportion.binom_tost(48, 1000, 0.03, 0.07)[0] for pValue; equivalent",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "x": 48,
+        "n": 1000,
+        "p0": 0.05,
+        "lower": -0.02,
+        "upper": 0.02,
+        "alpha": 0.05
+      },
+      "expected": {
+        "pHat": 0.048,
+        "ciLower": 0.037385499557867484,
+        "ciUpper": 0.06065249047916688,
+        "pLower": 0.0012547010382089705,
+        "pUpper": 0.0026207285939222097,
+        "pValue": 0.0026207285939222097,
+        "equivalent": true
+      }
+    },
+    {
+      "id": "eq1_standard_not",
+      "tier": "standard",
+      "description": "3 of 200 against p0 0.0151 with asymmetric limits -0.015/+0.0149 (absolute 0.0001 to 0.03); statsmodels binom_tost(3, 200, 0.0001, 0.03)[0] for pValue; not equivalent",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "x": 3,
+        "n": 200,
+        "p0": 0.0151,
+        "lower": -0.015,
+        "upper": 0.0149,
+        "alpha": 0.05
+      },
+      "expected": {
+        "pHat": 0.015,
+        "ciLower": 0.00410061333506991,
+        "ciUpper": 0.03830970849856934,
+        "pLower": 1.294145833330484e-06,
+        "pUpper": 0.14715119408240107,
+        "pValue": 0.14715119408240107,
+        "equivalent": false
+      }
+    },
+    {
+      "id": "eq1_edge_zero_defects",
+      "tier": "edge",
+      "description": "No defects, lower limit below 0 (p0 + lower < 0): pLower is 0 by definition",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "x": 0,
+        "n": 300,
+        "p0": 0.005,
+        "lower": -0.01,
+        "upper": 0.01,
+        "alpha": 0.05
+      },
+      "expected": {
+        "pHat": 0.0,
+        "ciLower": 0.0,
+        "ciUpper": 0.009936081944457708,
+        "pLower": 0.0,
+        "pUpper": 0.01073665873541543,
+        "pValue": 0.01073665873541543,
+        "equivalent": true
+      }
+    },
+    {
+      "id": "eq1_edge_all",
+      "tier": "edge",
+      "description": "All items defective, upper limit above 1 (p0 + upper > 1): pUpper is 0 by definition",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "x": 50,
+        "n": 50,
+        "p0": 0.98,
+        "lower": -0.03,
+        "upper": 0.03,
+        "alpha": 0.05
+      },
+      "expected": {
+        "pHat": 1.0,
+        "ciLower": 0.9418449208830277,
+        "ciUpper": 1.0,
+        "pLower": 0.07694497527671318,
+        "pUpper": 0.0,
+        "pValue": 0.07694497527671318,
+        "equivalent": false
+      }
+    },
+    {
+      "id": "eq1_stress_large",
+      "tier": "stress",
+      "tolerance_override": "stress_large_counts",
+      "description": "Large counts (5000 of 100000)",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "x": 5000,
+        "n": 100000,
+        "p0": 0.05,
+        "lower": -0.002,
+        "upper": 0.002,
+        "alpha": 0.05
+      },
+      "expected": {
+        "pHat": 0.05,
+        "ciLower": 0.04887101837266375,
+        "ciUpper": 0.05114832194700964,
+        "pLower": 0.0016711411650915848,
+        "pUpper": 0.0021400477517274827,
+        "pValue": 0.0021400477517274827,
+        "equivalent": true
+      }
+    }
+  ]
+}

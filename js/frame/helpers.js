@@ -4,24 +4,29 @@
  */
 
 import { icon } from '../core/icon.js';
+import { setReadonlyLock } from '../core/readonly-lock.js';
 
 /**
- * Show or hide the read-only banner depending on the active project's status.
- * When the project is completed the app enters read-only mode (banner + body
- * class); otherwise the banner is hidden.
+ * Enter or leave read-only mode depending on the active project's status.
+ * A completed project gets the banner above the module area, the body class
+ * (which also frames the workspace) and a locked module area; otherwise all
+ * three are undone.
  *
  * @param {object} stateManager - Persistent state service.
  * @param {object} i18n - Translation helper.
  */
-export function updateReadOnlyBanner(stateManager, i18n) {
+export function updateReadOnlyMode(stateManager, i18n) {
   let banner = document.getElementById('readonly-banner');
+  const moduleArea = document.querySelector('.workspace__module-area');
   if (stateManager.isCompleted()) {
     if (!banner) {
       banner = document.createElement('div');
       banner.id = 'readonly-banner';
       banner.className = 'app-readonly-banner';
-      const workspace = document.getElementById('app-workspace');
-      workspace?.prepend(banner);
+      // .workspace__content stacks vertically; #app-workspace is a row
+      // (content | help panel) and would put the banner beside the modules.
+      const content = document.querySelector('.workspace__content');
+      content?.prepend(banner);
     }
     banner.replaceChildren(
       icon('action.lock', { size: 'sm', cls: 'icon--text' }),
@@ -29,9 +34,11 @@ export function updateReadOnlyBanner(stateManager, i18n) {
     );
     banner.style.display = '';
     document.body.classList.add('dmike--readonly');
+    setReadonlyLock(moduleArea, true);
   } else {
     if (banner) banner.style.display = 'none';
     document.body.classList.remove('dmike--readonly');
+    setReadonlyLock(moduleArea, false);
   }
 }
 

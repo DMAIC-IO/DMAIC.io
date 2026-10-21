@@ -1,0 +1,406 @@
+{
+  "id": "poisson-rate-two",
+  "name": {
+    "de": "Test auf zwei Poisson-Raten",
+    "en": "2-Sample Poisson Rate Test"
+  },
+  "category": "attribute",
+  "subcategory": "rate",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Vergleicht die Raten x₁/t₁ und x₂/t₂ zweier Ereigniszählungen – z-Test der Differenz, bedingter exakter Test und Ratenverhältnis.",
+      "en": "Compares the rates x₁/t₁ and x₂/t₂ of two event counts – z test of the difference, conditional exact test and rate ratio."
+    },
+    "long": {
+      "de": "Der z-Test der Differenz nutzt getrennte Standardfehler √(x₁/t₁² + x₂/t₂²); bei Differenz 0 ist optional ein gepoolter Standardfehler wählbar. Das Konfidenzintervall der Differenz ist immer ungepoolt. Der bedingte exakte Test (nur für Differenz 0) betrachtet x₁ | x₁+x₂ ~ Bin(x₁+x₂, t₁/(t₁+t₂)) mit zweiseitigem p = min(1, 2·min(P(X ≤ x₁), P(X ≥ x₁))); das Ratenverhältnis erhält sein Intervall aus dem Clopper-Pearson-Intervall von π über π → π/(1−π)·t₂/t₁. Minitab-Abgleich: Laut „Methods and Formulas“ (2-Sample Poisson Rate) ist der gepoolte Test bei Differenz 0 eine Option („option to use a pooled rate“) und Minitab nutzt dort ein exaktes Verfahren; welcher Test Standard ist, nennt die Seite nicht (die Formeln liegen als Bilder vor) – nicht verifiziert. Der Engine-Standard ist ungepoolt.",
+      "en": "The z test of the difference uses separate standard errors √(x₁/t₁² + x₂/t₂²); for difference 0 a pooled standard error can be chosen. The confidence interval of the difference is always unpooled. The conditional exact test (difference 0 only) uses x₁ | x₁+x₂ ~ Bin(x₁+x₂, t₁/(t₁+t₂)) with two-sided p = min(1, 2·min(P(X ≤ x₁), P(X ≥ x₁))); the rate ratio gets its interval from the Clopper-Pearson interval of π via π → π/(1−π)·t₂/t₁. Minitab check: per Methods and Formulas (2-Sample Poisson Rate) the pooled test for difference 0 is an option (\"option to use a pooled rate\") and Minitab uses an exact procedure there; the page does not state which test is the default (the formulas are images) – unverified. The engine default is unpooled."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      {
+        "label": "z",
+        "latex": "z = \\frac{(x_1/t_1 - x_2/t_2) - \\delta_0}{\\sqrt{x_1/t_1^2 + x_2/t_2^2}}",
+        "description": {
+          "de": "z-Statistik der Ratendifferenz (getrennter SE)",
+          "en": "z statistic of the rate difference (separate SE)"
+        }
+      },
+      {
+        "label": "z (pooled)",
+        "latex": "z = \\frac{x_1/t_1 - x_2/t_2}{\\sqrt{\\frac{x_1+x_2}{t_1+t_2}\\left(\\frac1{t_1}+\\frac1{t_2}\\right)}}",
+        "description": {
+          "de": "Gepoolter SE, nur für Differenz 0",
+          "en": "Pooled SE, difference 0 only"
+        }
+      },
+      {
+        "label": "p (exakt / exact)",
+        "latex": "X_1 \\mid x_1{+}x_2 \\sim \\mathrm{Bin}\\left(x_1{+}x_2,\\; \\tfrac{t_1}{t_1+t_2}\\right)",
+        "description": {
+          "de": "Bedingter exakter Test, zweiseitig zentral",
+          "en": "Conditional exact test, central two-sided"
+        }
+      },
+      {
+        "label": "ratio",
+        "latex": "\\frac{\\pi}{1-\\pi}\\cdot\\frac{t_2}{t_1}",
+        "description": {
+          "de": "Ratenverhältnis-Intervall aus Clopper-Pearson-π",
+          "en": "Rate-ratio interval from the Clopper-Pearson π"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Zwei unabhängige Stichproben, Ereignisse mit konstanter Rate",
+        "en": "Two independent samples, events at a constant rate"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Bedingter exakter Test nur für Differenz 0; zweiseitig zentral, nicht minlike",
+        "en": "Conditional exact test for difference 0 only; central two-sided, not minlike"
+      },
+      {
+        "de": "Differenz-KI ist eine Normalapproximation",
+        "en": "Difference CI is a normal approximation"
+      }
+    ],
+    "references": [
+      {
+        "source": "Minitab Methods and Formulas: 2-Sample Poisson Rate"
+      }
+    ],
+    "minitab_equivalent": "Stat > Basic Statistics > 2-Sample Poisson Rate"
+  },
+  "source": {
+    "function_name": "twoPoissonRateTestFlat",
+    "file_path": "js/algorithm-lab/wrappers/attribute-wrappers.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "inputs",
+          "type": "object",
+          "required": true,
+          "description": {
+            "de": "{ x1, t1, x2, t2, direction, alpha, pooled, diff0 }",
+            "en": "{ x1, t1, x2, t2, direction, alpha, pooled, diff0 }"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "diff": {
+            "type": "number",
+            "description": {
+              "de": "Differenz der Raten",
+              "en": "Rate difference"
+            }
+          },
+          "z": {
+            "type": "number",
+            "description": {
+              "de": "z-Statistik",
+              "en": "z statistic"
+            }
+          },
+          "pValue": {
+            "type": "number",
+            "description": {
+              "de": "p-Wert (z-Test)",
+              "en": "p-value (z test)"
+            }
+          },
+          "pExactCond": {
+            "type": "number",
+            "description": {
+              "de": "p-Wert des bedingten exakten Tests",
+              "en": "Conditional exact p-value"
+            }
+          },
+          "ratio": {
+            "type": "number",
+            "description": {
+              "de": "Ratenverhältnis",
+              "en": "Rate ratio"
+            }
+          },
+          "testable": { "type": "boolean", "description": { "de": "Test durchführbar? (nicht bei 0 Ereignissen in beiden Stichproben und Differenz 0 ≠ 0)", "en": "Test defined? (not with no events in both samples and a non-zero difference 0)" } },
+          "reject": {
+            "type": "boolean",
+            "description": {
+              "de": "H₀ verworfen?",
+              "en": "Reject H₀?"
+            }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "x1",
+          "label": {
+            "de": "Ereignisse x₁",
+            "en": "Events x₁"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "z.B. 37",
+            "en": "e.g. 37"
+          },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "t1",
+          "label": {
+            "de": "Umfang t₁",
+            "en": "Exposure t₁"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "z.B. 120",
+            "en": "e.g. 120"
+          },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "x2",
+          "label": {
+            "de": "Ereignisse x₂",
+            "en": "Events x₂"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "z.B. 20",
+            "en": "e.g. 20"
+          },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "t2",
+          "label": {
+            "de": "Umfang t₂",
+            "en": "Exposure t₂"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "z.B. 110",
+            "en": "e.g. 110"
+          },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "direction",
+          "label": {
+            "de": "Testrichtung",
+            "en": "Test direction"
+          },
+          "type": "select",
+          "options": [
+            {
+              "value": "two-sided",
+              "label": {
+                "de": "≠ Zweiseitig",
+                "en": "≠ Two-sided"
+              }
+            },
+            {
+              "value": "greater",
+              "label": {
+                "de": "> Größer",
+                "en": "> Greater"
+              }
+            },
+            {
+              "value": "less",
+              "label": {
+                "de": "< Kleiner",
+                "en": "< Less"
+              }
+            }
+          ],
+          "parse_as": "string",
+          "required": false
+        },
+        {
+          "name": "alpha",
+          "label": {
+            "de": "Signifikanzniveau α",
+            "en": "Significance level α"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "0.05",
+            "en": "0.05"
+          },
+          "parse_as": "number",
+          "required": false
+        },
+        {
+          "name": "pooled",
+          "label": {
+            "de": "Gepoolter SE (Differenz 0)",
+            "en": "Pooled SE (difference 0)"
+          },
+          "type": "select",
+          "options": [
+            {
+              "value": "false",
+              "label": {
+                "de": "Nein",
+                "en": "No"
+              }
+            },
+            {
+              "value": "true",
+              "label": {
+                "de": "Ja",
+                "en": "Yes"
+              }
+            }
+          ],
+          "parse_as": "json",
+          "required": false
+        },
+        {
+          "name": "diff0",
+          "label": {
+            "de": "Differenz δ₀",
+            "en": "Difference δ₀"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "0",
+            "en": "0"
+          },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": [
+        "rate1",
+        "rate2",
+        "diff",
+        "ciLower",
+        "ciUpper",
+        "z",
+        "pValue",
+        "pExactCond",
+        "ratio",
+        "ratioLower",
+        "ratioUpper",
+        "reject"
+      ],
+      "primary_field": "pValue",
+      "format": {
+        "rate1": {
+          "decimals": 6,
+          "label": {
+            "de": "Rate 1",
+            "en": "Rate 1"
+          }
+        },
+        "rate2": {
+          "decimals": 6,
+          "label": {
+            "de": "Rate 2",
+            "en": "Rate 2"
+          }
+        },
+        "diff": {
+          "decimals": 6,
+          "label": {
+            "de": "Differenz",
+            "en": "Difference"
+          }
+        },
+        "ciLower": {
+          "decimals": 6,
+          "label": {
+            "de": "KI unten",
+            "en": "CI lower"
+          }
+        },
+        "ciUpper": {
+          "decimals": 6,
+          "label": {
+            "de": "KI oben",
+            "en": "CI upper"
+          }
+        },
+        "z": {
+          "decimals": 6,
+          "label": "z"
+        },
+        "pValue": {
+          "decimals": 6,
+          "label": {
+            "de": "p-Wert",
+            "en": "p-value"
+          }
+        },
+        "pExactCond": {
+          "decimals": 6,
+          "label": {
+            "de": "p (bedingt exakt)",
+            "en": "p (conditional exact)"
+          }
+        },
+        "ratio": {
+          "decimals": 6,
+          "label": {
+            "de": "Verhältnis",
+            "en": "Ratio"
+          }
+        },
+        "ratioLower": {
+          "decimals": 6,
+          "label": {
+            "de": "Verhältnis KI unten",
+            "en": "Ratio CI lower"
+          }
+        },
+        "ratioUpper": {
+          "decimals": 6,
+          "label": {
+            "de": "Verhältnis KI oben",
+            "en": "Ratio CI upper"
+          }
+        },
+        "reject": {
+          "decimals": 0,
+          "label": {
+            "de": "H₀ abgelehnt",
+            "en": "Reject H₀"
+          }
+        }
+      }
+    }
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung",
+        "en": "Initial implementation"
+      },
+      "breaking": false
+    }
+  ]
+}

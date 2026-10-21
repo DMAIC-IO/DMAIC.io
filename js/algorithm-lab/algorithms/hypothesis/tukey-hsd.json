@@ -1,0 +1,272 @@
+{
+  "id": "tukey-hsd",
+  "name": {
+    "de": "Tukey HSD",
+    "en": "Tukey HSD"
+  },
+  "category": "hypothesis",
+  "subcategory": "mean",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Alle Paarvergleiche der Gruppenmittel mit simultanen Konfidenzintervallen (gleiche Varianzen).",
+      "en": "All pairwise comparisons of the group means with simultaneous confidence intervals (equal variances)."
+    },
+    "long": {
+      "de": "Der Tukey-HSD-Test (Tukey 1953; für ungleiche Gruppengrößen Tukey-Kramer, Kramer 1956) vergleicht alle Paare von Gruppenmitteln und hält dabei die Familien-Irrtumswahrscheinlichkeit ein. Er nutzt die gepoolte Standardabweichung S der Fisher-ANOVA mit N − k Freiheitsgraden und die Verteilung der studentisierten Spannweite. Ergebnis sind adjustierte p-Werte und simultane Konfidenzintervalle für μ_i − μ_j. Qprovement verwendet Tukey HSD nach der Fisher-ANOVA, wenn „Gleiche Varianzen annehmen“ angehakt ist. Verteilungsfunktion und Quantile der studentisierten Spannweite (ptukey, qtukey) folgen Copenhaver & Holland (1988) und sind gegen scipy.stats.studentized_range validiert.",
+      "en": "The Tukey HSD test (Tukey 1953; Tukey-Kramer for unequal group sizes, Kramer 1956) compares all pairs of group means while controlling the family-wise error rate. It uses the pooled standard deviation S of Fisher ANOVA with N − k degrees of freedom and the studentized range distribution. The result is adjusted p-values and simultaneous confidence intervals for μ_i − μ_j. Qprovement uses Tukey HSD after Fisher ANOVA when \"Assume equal variances\" is ticked. The distribution function and quantiles of the studentized range (ptukey, qtukey) follow Copenhaver & Holland (1988) and are validated against scipy.stats.studentized_range."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      {
+        "label": "d",
+        "latex": "d_{ij} = \\bar x_i - \\bar x_j",
+        "description": {
+          "de": "Mittelwertdifferenz des Paares (i, j)",
+          "en": "Mean difference of the pair (i, j)"
+        }
+      },
+      {
+        "label": "se",
+        "latex": "se_{ij} = S\\sqrt{\\frac{1}{2}\\left(\\frac{1}{n_i} + \\frac{1}{n_j}\\right)},\\quad S = \\sqrt{MS_W}",
+        "description": {
+          "de": "Standardfehler mit gepoolter Standardabweichung (Tukey-Kramer)",
+          "en": "Standard error with the pooled standard deviation (Tukey-Kramer)"
+        }
+      },
+      {
+        "label": "q",
+        "latex": "q_{ij} = \\frac{|d_{ij}|}{se_{ij}}",
+        "description": {
+          "de": "Teststatistik der studentisierten Spannweite",
+          "en": "Studentized range test statistic"
+        }
+      },
+      {
+        "label": "ν",
+        "latex": "\\nu = N - k",
+        "description": {
+          "de": "Freiheitsgrade der gepoolten Varianz",
+          "en": "Degrees of freedom of the pooled variance"
+        }
+      },
+      {
+        "label": "p_adj",
+        "latex": "p_{adj} = 1 - Q_{k,\\,\\nu}(q_{ij})",
+        "description": {
+          "de": "Adjustierter p-Wert aus der studentisierten Spannweite Q(k, ν) – gilt simultan für alle Paare",
+          "en": "Adjusted p-value from the studentized range Q(k, ν) – valid simultaneously for all pairs"
+        }
+      },
+      {
+        "label": "CI",
+        "latex": "d_{ij} \\pm q_{1-\\alpha,\\,k,\\,\\nu}\\; se_{ij}",
+        "description": {
+          "de": "Simultanes Konfidenzintervall für μ_i − μ_j (Familien-Konfidenz 1 − α)",
+          "en": "Simultaneous confidence interval for μ_i − μ_j (family confidence 1 − α)"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Beobachtungen sind unabhängig",
+        "en": "Observations are independent"
+      },
+      {
+        "de": "Daten in jeder Gruppe sind (näherungsweise) normalverteilt",
+        "en": "Data within each group are (approximately) normally distributed"
+      },
+      {
+        "de": "Varianzen aller Gruppen sind gleich",
+        "en": "Variances are equal across groups"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Bei ungleichen Varianzen ist die Familien-Konfidenz nicht eingehalten – dann Games-Howell verwenden",
+        "en": "With unequal variances the family confidence is not maintained – use Games-Howell instead"
+      },
+      {
+        "de": "Bei ungleichen Gruppengrößen ist das Verfahren (Tukey-Kramer) leicht konservativ",
+        "en": "With unequal group sizes the procedure (Tukey-Kramer) is slightly conservative"
+      },
+      {
+        "de": "Benötigt n_i ≥ 2 je Gruppe und eine gepoolte Varianz größer als 0",
+        "en": "Needs n_i ≥ 2 per group and a pooled variance greater than 0"
+      },
+      {
+        "de": "Referenzwerte stammen aus scipy.stats.tukey_hsd, nicht aus einem Minitab-Lauf",
+        "en": "Reference values come from scipy.stats.tukey_hsd, not from a Minitab run"
+      }
+    ],
+    "references": [
+      {
+        "source": "Tukey, J. W. (1953), The problem of multiple comparisons, unpublished manuscript, Princeton University"
+      },
+      {
+        "source": "Kramer, C. Y. (1956), Extension of multiple range tests to group means with unequal numbers of replications, Biometrics, 12, 307–310"
+      },
+      {
+        "source": "Copenhaver, M. D. & Holland, B. S. (1988), Computation of the distribution of the maximum of normally distributed variables, J. Statist. Comput. Simul., 30, 1–15"
+      },
+      {
+        "source": "scipy.stats.tukey_hsd, scipy.stats.studentized_range"
+      },
+      {
+        "source": "Minitab Methods and Formulas, One-Way ANOVA – Tukey comparisons"
+      }
+    ],
+    "minitab_equivalent": "Stat > ANOVA > One-Way > Comparisons > Tukey"
+  },
+  "source": {
+    "function_name": "tukeyHSD",
+    "file_path": "js/engines/hypothesis-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "groups",
+          "type": "number[][]",
+          "required": true,
+          "description": {
+            "de": "Array von k Stichproben (je mindestens 2 Werte)",
+            "en": "Array of k samples (at least 2 values each)"
+          }
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "required": false,
+          "description": {
+            "de": "Signifikanzniveau (Standard: 0.05)",
+            "en": "Significance level (default: 0.05)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "comparisons": {
+            "type": "object[]",
+            "description": {
+              "de": "Paarvergleiche (i, j, diff, se, q, df, pAdj, ci) in der Reihenfolge (0,1), (0,2), …",
+              "en": "Pairwise comparisons (i, j, diff, se, q, df, pAdj, ci) in the order (0,1), (0,2), …"
+            }
+          },
+          "qCrit": {
+            "type": "number",
+            "description": {
+              "de": "Kritischer Wert q(1−α; k, N−k) der studentisierten Spannweite",
+              "en": "Critical value q(1−α; k, N−k) of the studentized range"
+            }
+          },
+          "df": {
+            "type": "number",
+            "description": {
+              "de": "Freiheitsgrade N − k",
+              "en": "Degrees of freedom N − k"
+            }
+          },
+          "alpha": {
+            "type": "number",
+            "description": {
+              "de": "Signifikanzniveau",
+              "en": "Significance level"
+            }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "groups",
+          "label": {
+            "de": "Gruppen (eine Zeile pro Gruppe)",
+            "en": "Groups (one line per group)"
+          },
+          "type": "textarea",
+          "placeholder": {
+            "de": "z.B.\n1.2, 1.5, 1.4\n2.1, 2.3, 2.0\n1.8, 1.9, 2.0",
+            "en": "e.g.\n1.2, 1.5, 1.4\n2.1, 2.3, 2.0\n1.8, 1.9, 2.0"
+          },
+          "parse_as": "number_array_2d",
+          "required": true
+        },
+        {
+          "name": "alpha",
+          "label": {
+            "de": "Signifikanzniveau α",
+            "en": "Significance Level α"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "0.05",
+            "en": "0.05"
+          },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": [
+        "qCrit",
+        "df",
+        "comparisons.0.diff",
+        "comparisons.0.se",
+        "comparisons.0.q",
+        "comparisons.0.pAdj"
+      ],
+      "primary_field": "qCrit",
+      "format": {
+        "qCrit": {
+          "decimals": 6,
+          "label": "q crit"
+        },
+        "df": {
+          "decimals": 0,
+          "label": "df"
+        },
+        "comparisons.0.diff": {
+          "decimals": 6,
+          "label": {
+            "de": "Differenz (0,1)",
+            "en": "Difference (0,1)"
+          }
+        },
+        "comparisons.0.se": {
+          "decimals": 6,
+          "label": {
+            "de": "Standardfehler (0,1)",
+            "en": "Standard error (0,1)"
+          }
+        },
+        "comparisons.0.q": {
+          "decimals": 6,
+          "label": "q (0,1)"
+        },
+        "comparisons.0.pAdj": {
+          "decimals": 6,
+          "label": "p adj. (0,1)"
+        }
+      }
+    }
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung von Tukey HSD (Tukey-Kramer); validiert gegen scipy.stats.tukey_hsd mit 9 Fixture-Fällen",
+        "en": "Initial implementation of Tukey HSD (Tukey-Kramer); validated against scipy.stats.tukey_hsd with 9 fixture cases"
+      },
+      "breaking": false
+    }
+  ]
+}

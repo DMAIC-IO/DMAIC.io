@@ -34,6 +34,7 @@ Aktueller Stand:
 | v1.1.0_single_project.json      | 1        | 11              |
 | v1.2.0_single_project.json      | 1        | 11              |
 | v1.3.0_single_project.json      | 1        | 11              |
+| v1.4.0_single_project.json      | 1        | 11              |
 
 Die v0.3-Fixtures decken zusammen **alle produktiven Module** aus
 `js/modules/manifest.js` mindestens einmal ab. Wenn ein neues Modul hinzukommt,
@@ -72,6 +73,13 @@ der FMEA, Achsentitel-Bearbeitungen je Modulinstanz). Fehlende Felder in
 Migrationsschritt `1.2→1.3`. Die Fixture setzt `unbiased: false` und
 `mrSpan: '3'` in der Prozessfähigkeit, damit die neuen Felder in künftigen
 Migrationen mitlaufen.
+
+Die v1.4-Fixture zieht die 1.4-Linie nach. 1.4 bringt mit der
+TRIZ-Funktionsanalyse ein neues Modul und neue Testarten (gepaarte Tests,
+Bonett-Varianztests, Welch-ANOVA, Poisson-Raten, McNemar, Äquivalenz); der
+Modulzustand wächst nur additiv, fehlende Felder bekommen beim Laden ihren
+Standardwert. Deshalb gibt es keinen Migrationsschritt `1.3→1.4`, und die
+Fixture ist inhaltsgleich mit der v1.3-Fixture.
 
 ## Pflicht beim Release
 

@@ -100,7 +100,8 @@ export function createDialog(config) {
     /**
      * @param {object} dialog  dialog service (ui/dialog/dialog.js)
      * @param {object} init    per-open data fed to model.apply(init)
-     * @param {object} [opts]  { title, confirmLabel, cancelLabel, onConfirm, hideConfirm, onMount }
+     * @param {object} [opts]  { title, size, confirmLabel, cancelLabel, onConfirm, hideConfirm, onMount }
+     *   `size` is passed to dialog.form() ('compact' | 'default' | 'wide'); omitted → service default
      * @returns {Promise<any|null>}  model.result() on confirm, null on cancel
      * @throws propagates if `opts.onMount` throws while the dialog mounts; the
      *   dialog's own `_api` is always reset first, so `submit()`/`cancel()`
@@ -132,6 +133,7 @@ export function createDialog(config) {
         confirmed = await dialog.form({
           title,
           content: node,
+          size: opts.size,
           confirmLabel: opts.confirmLabel,
           cancelLabel: opts.cancelLabel,
           hideConfirm: opts.hideConfirm === true,

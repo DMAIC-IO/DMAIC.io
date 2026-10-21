@@ -10,7 +10,7 @@
              :value="model.params.name" @input="setParam('name', $event.target.value)">
     </div>
 
-    <div class="pc__row-3">
+    <div class="field-grid field-grid--3">
       <div class="field-group">
         <label data-help-key="modules.process-capability.types.Params.lsl" x-text="t('lsl')"></label>
         <input type="text" class="field field--num" data-ref="inp-lsl"
@@ -33,7 +33,7 @@
 
     <div class="field-hint" x-text="t('specHint')"></div>
 
-    <div class="pc__row-3">
+    <div class="field-grid field-grid--3">
       <div class="field-group">
         <label data-help-key="modules.process-capability.types.Params.unit" x-text="t('unit')"></label>
         <input type="text" class="field" data-ref="inp-unit"
@@ -78,8 +78,8 @@
       <div class="field-hint" x-text="t('subgroupColumnHint')"></div>
     </div>
 
-    <div class="pc__row-3">
-      <div class="field-group pc__span-2">
+    <div class="field-grid field-grid--3">
+      <div class="field-group field-group--span-2">
         <label data-help-key="modules.process-capability.types.Params.withinMethod" x-text="t('withinMethodLabel')"></label>
         <select class="field" data-ref="inp-within-method" @change="setParam('withinMethod', $event.target.value)">
           <template x-for="key in methodKeys">

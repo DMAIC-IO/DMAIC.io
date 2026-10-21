@@ -19,7 +19,7 @@ export default {
             items: [
               '**Komponenten** — ein Zielobjekt (worauf die Hauptfunktion wirkt), die Systemkomponenten und die Elemente des {{term:supersystem|Supersystems}}.',
               '**Interaktionen** — in der Matrix werden die Paare angekreuzt, die sich berühren oder beeinflussen. Jedes Kreuz ist ein Kandidat für mindestens eine Funktion. Ein zweiter Klick setzt ein „x“: Das Paar ist bewusst ausgeschlossen, ein dritter leert die Zelle wieder.',
-              '**Funktionsmodell** — jedes Paar hat einen eigenen Block, ein Klick auf ein offenes Paar legt ihn mit dem ersten Pfeil an. + legt einen weiteren Pfeil auf dem Paar an (etwa für die Gegenrichtung), der Pfeilknopf kehrt die Richtung um. Jede Funktion ist nützlich (ausreichend, unzureichend, übermäßig) oder schädlich. Der Rang ergibt sich aus dem Objekt: Wirkung auf das Zielobjekt = Basisfunktion, auf das Supersystem = Zusatzfunktion, auf eine Systemkomponente = Hilfsfunktion.',
+              '**Funktionsmodell** — jedes Paar hat einen eigenen Block, ein Klick auf ein offenes Paar legt ihn mit dem ersten Pfeil an. + legt einen weiteren Pfeil auf dem Paar an (etwa für die Gegenrichtung), der Pfeilknopf kehrt die Richtung um. Jede Funktion ist nützlich (ausreichend, unzureichend, übermäßig) oder schädlich. Der Rang ergibt sich aus dem Objekt: Wirkung auf das Zielobjekt = Basisfunktion, auf das Supersystem = Zusatzfunktion, auf eine Systemkomponente = Hilfsfunktion. Hilfsfunktionen sind nach ihrem Abstand gestuft: A₁ wirkt auf eine Komponente, die selbst eine Basis- oder Zusatzfunktion trägt, A₂ auf eine, die eine A₁-Funktion trägt, und so weiter; der kürzeste Weg zählt. Ohne Weg zu einer Basis- oder Zusatzfunktion steht nur „A“. **Funktionsränge anzeigen** schreibt die Kürzel B, Ad und A₁…Aₙ an die Pfeile, auch im Export.',
             ],
           },
           {
@@ -40,7 +40,7 @@ export default {
             items: [
               '**Components** — one target (what the main function acts on), the system components and the elements of the {{term:supersystem|supersystem}}.',
               '**Interactions** — tick the pairs in the matrix that touch or influence each other. Every tick is a candidate for at least one function. A second click sets an “x”: the pair is deliberately excluded; a third click clears the cell.',
-              '**Function model** — every pair has a block of its own; clicking an open pair creates it with its first arrow. + adds another arrow on the pair (e.g. for the opposite direction), the arrow button reverses the direction. Every function is useful (adequate, insufficient, excessive) or harmful. The rank follows from the object: acting on the target = basic function, on the supersystem = additional function, on a system component = auxiliary function.',
+              '**Function model** — every pair has a block of its own; clicking an open pair creates it with its first arrow. + adds another arrow on the pair (e.g. for the opposite direction), the arrow button reverses the direction. Every function is useful (adequate, insufficient, excessive) or harmful. The rank follows from the object: acting on the target = basic function, on the supersystem = additional function, on a system component = auxiliary function. Auxiliary functions are graded by their distance: A₁ acts on a component that carries a basic or additional function itself, A₂ on one that carries an A₁ function, and so on; the shortest way counts. Without a way to a basic or additional function it reads just “A”. **Show function ranks** writes the codes B, Ad and A₁…Aₙ on the arrows, also in the export.',
             ],
           },
           {
@@ -132,7 +132,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Zielobjekt ist der **Belag**. Die Borsten entfernen ihn (nützlich, aber **unzureichend** — die Zwischenräume werden kaum erreicht), die Zahnpasta löst ihn. Bürstenkopf, Griff und Hand halten bzw. führen — Hilfs- und Zusatzfunktionen. Bei zu hohem Druck **verletzen** die Borsten das Zahnfleisch, der Belag selbst **reizt** es (beides schädlich). Die Nachteilsliste nennt genau diese drei Punkte. In der Matrix ist jedes Paar entschieden: Haken für Paare, die zusammenwirken, „x“ für alle anderen. Das Beispiel lässt sich über die Beispielprojekte laden.',
+            content: 'Zielobjekt ist der **Belag**. Die Borsten entfernen ihn (nützlich, aber **unzureichend** — die Zwischenräume werden kaum erreicht), die Zahnpasta löst ihn. Bürstenkopf, Griff und Hand halten bzw. führen — Hilfs- und Zusatzfunktionen. Die Hand drückt den Griff zu stark (**übermäßig**); dann **verletzen** die Borsten das Zahnfleisch, der Belag selbst **reizt** es (beides schädlich). Die Nachteilsliste nennt genau diese vier Punkte. In der Matrix ist jedes Paar entschieden: Haken für Paare, die zusammenwirken, „x“ für alle anderen. Unter **Wert & Kosten** hat jede Systemkomponente ihre Herstellkosten je Stück: Borsten 0,06 €, Bürstenkopf 0,04 €, Griff 0,15 €. Der Griff trägt nur eine Hilfsfunktion, ist aber am teuersten — er liegt oben links und ist der erste Kandidat für das Trimmen. Das Beispiel lässt sich über die Beispielprojekte laden.',
           },
         ],
       },
@@ -141,7 +141,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The target is the **plaque**. The bristles remove it (useful but **insufficient** — the gaps are hardly reached), the toothpaste dissolves it. Brush head, handle and hand hold or guide — auxiliary and additional functions. With too much pressure the bristles **injure** the gums, and the plaque itself **irritates** them (both harmful). The disadvantage list names exactly these three points. Every pair in the matrix is decided: a tick for pairs that interact, an “x” for all others. The example can be loaded from the example projects.',
+            content: 'The target is the **plaque**. The bristles remove it (useful but **insufficient** — the gaps are hardly reached), the toothpaste dissolves it. Brush head, handle and hand hold or guide — auxiliary and additional functions. The hand presses the handle too hard (**excessive**); then the bristles **injure** the gums, and the plaque itself **irritates** them (both harmful). The disadvantage list names exactly these four points. Every pair in the matrix is decided: a tick for pairs that interact, an “x” for all others. Under **Value & cost** every system component has its manufacturing cost per piece: bristles €0.06, brush head €0.04, handle €0.15. The handle carries only an auxiliary function but costs the most — it sits top left and is the first candidate for trimming. The example can be loaded from the example projects.',
           },
         ],
       },

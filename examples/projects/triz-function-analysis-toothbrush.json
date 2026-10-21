@@ -2,9 +2,9 @@
   "_schema": { "name": "triz-function-analysis", "version": "1.0" },
   "components": [
     { "id": "c-belag", "name": "Belag", "kind": "target", "note": "Bakterieller Zahnbelag" },
-    { "id": "c-borsten", "name": "Borsten", "kind": "system", "note": "" },
-    { "id": "c-kopf", "name": "Bürstenkopf", "kind": "system", "note": "" },
-    { "id": "c-griff", "name": "Griff", "kind": "system", "note": "" },
+    { "id": "c-borsten", "name": "Borsten", "kind": "system", "note": "", "cost": 0.06 },
+    { "id": "c-kopf", "name": "Bürstenkopf", "kind": "system", "note": "", "cost": 0.04 },
+    { "id": "c-griff", "name": "Griff", "kind": "system", "note": "", "cost": 0.15 },
     { "id": "c-hand", "name": "Hand", "kind": "supersystem", "note": "" },
     { "id": "c-zahnfleisch", "name": "Zahnfleisch", "kind": "supersystem", "note": "" },
     { "id": "c-paste", "name": "Zahnpasta", "kind": "supersystem", "note": "" }
@@ -40,6 +40,7 @@
     { "id": "f-halten-b", "carrier": "c-kopf", "verb": "hält", "object": "c-borsten", "parameter": "", "type": "useful", "level": "adequate", "note": "" },
     { "id": "f-halten-k", "carrier": "c-griff", "verb": "hält", "object": "c-kopf", "parameter": "", "type": "useful", "level": "adequate", "note": "" },
     { "id": "f-fuehren", "carrier": "c-hand", "verb": "führt", "object": "c-griff", "parameter": "", "type": "useful", "level": "adequate", "note": "" },
+    { "id": "f-druecken", "carrier": "c-hand", "verb": "drückt", "object": "c-griff", "parameter": "Andruckkraft", "type": "useful", "level": "excessive", "note": "Zu hoher Andruck – Ursache der Zahnfleischverletzung" },
     { "id": "f-verletzen", "carrier": "c-borsten", "verb": "verletzen", "object": "c-zahnfleisch", "parameter": "", "type": "harmful", "level": null, "note": "Bei zu hohem Druck" },
     { "id": "f-halten-p", "carrier": "c-borsten", "verb": "halten", "object": "c-paste", "parameter": "", "type": "useful", "level": "adequate", "note": "" },
     { "id": "f-reizen", "carrier": "c-belag", "verb": "reizt", "object": "c-zahnfleisch", "parameter": "", "type": "harmful", "level": null, "note": "Entzündung am Zahnfleischrand" }

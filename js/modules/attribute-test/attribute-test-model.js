@@ -2,13 +2,15 @@
  * D.Mike — Attribute Test Module — Model (attribute-test-model.js)
  *
  * Persistent configuration only. Summary inputs are kept as the raw strings
- * the user typed; the normalizer parses them. Both input modes are kept, so
- * switching modes or test kinds never loses data.
+ * the user typed; the normalizer parses them. Both input modes are kept. Kinds
+ * with their own fields (table, pairs, equivalence bounds) keep them across
+ * switches; kinds that share a field (x/n for one proportion and one rate, x1/x2
+ * for the two-sample tests, …) reuse its value by design.
  */
 
 /** @typedef {{ instanceId: string, sheetId?: string, columnId: string }} ColumnRef */
 
-export const TEST_KINDS = ['one', 'two', 'assoc'];
+export const TEST_KINDS = ['one', 'two', 'equiv', 'mcnemar', 'rate1', 'rate2', 'assoc'];
 export const INPUT_MODES = ['summary', 'columns'];
 export const DIRECTIONS = ['two-sided', 'greater', 'less'];
 /** Mindestanzahl Zeilen und Spalten der Kreuztabelle. */
@@ -35,8 +37,28 @@ function sanitizeTable(t) {
   return { rows, cols, counts };
 }
 
+function defaultPairs() {
+  return { labels: { before: '', after: '' }, counts: [['', ''], ['', '']] };
+}
+
+function sanitizePairs(p) {
+  const out = defaultPairs();
+  if (!p || typeof p !== 'object') return out;
+  if (p.labels && typeof p.labels === 'object') {
+    out.labels = { before: str(p.labels.before), after: str(p.labels.after) };
+  }
+  const c = p.counts;
+  const valid = Array.isArray(c) && c.length === 2
+    && c.every(row => Array.isArray(row) && row.length === 2 && row.every(v => typeof v === 'string'));
+  if (valid) out.counts = c.map(row => [...row]);
+  return out;
+}
+
+const SUMMARY_KEYS = ['x', 'n', 'x1', 'n1', 'x2', 'n2', 't', 't1', 't2', 'lambda0'];
+const COL_REF_KEYS = ['response', 'group', 'rowVar', 'colVar', 'counts', 'before', 'after'];
+
 export class State {
-  /** @type {'one'|'two'|'assoc'} */
+  /** @type {'one'|'two'|'equiv'|'mcnemar'|'rate1'|'rate2'|'assoc'} */
   testKind = 'two';
   /** @type {'summary'|'columns'} */
   inputMode = 'summary';
@@ -48,9 +70,22 @@ export class State {
   p0 = '0.5';
   /** @type {boolean} pooled SE for the 2-proportion z statistic */
   pooled = false;
-  summary = { x: '', n: '', x1: '', n1: '', x2: '', n2: '', table: defaultTable() };
-  /** @type {{ response: ColumnRef|null, group: ColumnRef|null, rowVar: ColumnRef|null, colVar: ColumnRef|null }} */
-  colRefs = { response: null, group: null, rowVar: null, colVar: null };
+  /** @type {boolean} pooled estimate for the 2-rate z statistic (separate from `pooled`) */
+  ratePooled = false;
+  /** Equivalence settings; bounds are raw strings in percentage points. */
+  equiv = { samples: 2, symmetric: true, delta: '', lower: '', upper: '' };
+  /** @type {string} exposure per worksheet row in the rate column modes (raw input) */
+  exposurePerRow = '1';
+  summary = {
+    x: '', n: '', x1: '', n1: '', x2: '', n2: '',
+    t: '', t1: '', t2: '', lambda0: '', diff0: '0',
+    pairs: defaultPairs(),
+    table: defaultTable(),
+  };
+  /** @type {Record<'response'|'group'|'rowVar'|'colVar'|'counts'|'before'|'after', ColumnRef|null>} */
+  colRefs = {
+    response: null, group: null, rowVar: null, colVar: null, counts: null, before: null, after: null,
+  };
   /** @type {string|null} value of the response column that counts as event */
   eventValue = null;
   /** @type {string|null} worksheet provisioned by loadExample */
@@ -59,8 +94,11 @@ export class State {
   /** True when any input exists (drives the loadExample overwrite prompt). */
   hasContent() {
     const s = this.summary;
-    const anyCount = [s.x, s.n, s.x1, s.n1, s.x2, s.n2].some(v => String(v).trim() !== '')
-      || s.table.counts.some(row => row.some(v => String(v).trim() !== ''));
+    const filled = v => String(v).trim() !== '';
+    const anyCount = [...SUMMARY_KEYS.map(k => s[k]), this.equiv.delta, this.equiv.lower, this.equiv.upper].some(filled)
+      || (filled(s.diff0) && String(s.diff0).trim() !== '0')
+      || s.table.counts.some(row => row.some(filled))
+      || s.pairs.counts.some(row => row.some(filled));
     return anyCount || Object.values(this.colRefs).some(Boolean);
   }
 
@@ -93,6 +131,16 @@ export class State {
     for (const row of t.counts) row.splice(j, 1);
   }
 
+  /**
+   * Switch to the equivalence test with 2 samples. The counts and column
+   * refs are shared with the 2-proportion test, so nothing is copied; the
+   * bounds stay untouched.
+   */
+  switchToEquivalence() {
+    this.testKind = 'equiv';
+    this.equiv.samples = 2;
+  }
+
   toJSON() {
     const t = this.summary.table;
     return {
@@ -102,17 +150,19 @@ export class State {
       alpha: this.alpha,
       p0: this.p0,
       pooled: this.pooled,
+      ratePooled: this.ratePooled,
+      equiv: { ...this.equiv },
+      exposurePerRow: this.exposurePerRow,
       summary: {
-        x: this.summary.x, n: this.summary.n,
-        x1: this.summary.x1, n1: this.summary.n1, x2: this.summary.x2, n2: this.summary.n2,
+        ...Object.fromEntries(SUMMARY_KEYS.map(k => [k, this.summary[k]])),
+        diff0: this.summary.diff0,
+        pairs: {
+          labels: { ...this.summary.pairs.labels },
+          counts: this.summary.pairs.counts.map(r => [...r]),
+        },
         table: { rows: [...t.rows], cols: [...t.cols], counts: t.counts.map(r => [...r]) },
       },
-      colRefs: {
-        response: refOrNull(this.colRefs.response),
-        group: refOrNull(this.colRefs.group),
-        rowVar: refOrNull(this.colRefs.rowVar),
-        colVar: refOrNull(this.colRefs.colVar),
-      },
+      colRefs: Object.fromEntries(COL_REF_KEYS.map(k => [k, refOrNull(this.colRefs[k])])),
       eventValue: this.eventValue,
       exampleWorksheetId: this.exampleWorksheetId,
     };
@@ -132,10 +182,20 @@ export class State {
     s.p0 = str(d.p0, '0.5');
     if (typeof d.pooled === 'boolean') s.pooled = d.pooled;
     const sm = d.summary && typeof d.summary === 'object' ? d.summary : {};
-    for (const k of ['x', 'n', 'x1', 'n1', 'x2', 'n2']) s.summary[k] = str(sm[k]);
+    for (const k of SUMMARY_KEYS) s.summary[k] = str(sm[k]);
+    s.summary.diff0 = str(sm.diff0, '0');
+    s.summary.pairs = sanitizePairs(sm.pairs);
     s.summary.table = sanitizeTable(sm.table);
     const cr = d.colRefs && typeof d.colRefs === 'object' ? d.colRefs : {};
-    for (const k of ['response', 'group', 'rowVar', 'colVar']) s.colRefs[k] = refOrNull(cr[k]);
+    for (const k of COL_REF_KEYS) s.colRefs[k] = refOrNull(cr[k]);
+    if (typeof d.ratePooled === 'boolean') s.ratePooled = d.ratePooled;
+    s.exposurePerRow = str(d.exposurePerRow, '1');
+    const eq = d.equiv && typeof d.equiv === 'object' ? d.equiv : {};
+    s.equiv = {
+      samples: eq.samples === 1 ? 1 : 2,
+      symmetric: typeof eq.symmetric === 'boolean' ? eq.symmetric : true,
+      delta: str(eq.delta), lower: str(eq.lower), upper: str(eq.upper),
+    };
     s.eventValue = typeof d.eventValue === 'string' ? d.eventValue : null;
     s.exampleWorksheetId = d.exampleWorksheetId != null ? d.exampleWorksheetId : null;
     return s;

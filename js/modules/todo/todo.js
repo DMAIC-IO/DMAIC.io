@@ -10,7 +10,8 @@
  *
  * @agent  Vollständig über das Viewmodel steuerbar: Aufgaben anlegen, ihren
  *   Text, Verantwortlichen, Zieldatum, Status und die Kalendermarke setzen,
- *   Aufgaben entfernen, die drei Filter und die Sortierung setzen. Der
+ *   Aufgaben entfernen und umsortieren, die drei Filter und die Sortierung
+ *   setzen. Der
  *   Oberfläche bleiben die Maus- und Tastaturgestik der Tabelle; der Abgleich
  *   mit einem Kalendermodul läuft über den Ereignisbus und ist kein
  *   Schreibweg der Fläche.
@@ -22,6 +23,7 @@ import { resolveDateOffset } from '../../core/date-offset.js';
 import { todayISO, isIsoDate } from '../../core/local-date.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
+import { draggableRows } from '../../ui/draggable-list.js';
 
 export default createModule({
   config: {
@@ -51,6 +53,18 @@ export default createModule({
   data(module, _t) {
     return {
       ...agentReadMixin(module),
+      // Row reorder: grip, Alt+Arrow keys and drop = "insert before". The
+      // visible order becomes the stored one, so a sorted list stays put.
+      ...draggableRows({
+        onMove({ group, sourceId, targetId }) {
+          if (group !== 'todos') return;
+          this.moveTodo(sourceId, targetId);
+        },
+        rowIds(group) {
+          return group === 'todos' ? this.filteredItems().map(i => i.id) : [];
+        },
+        t: (key, params) => module._context.i18n.t(key, params),
+      }),
 
       statuses: STATUSES,
 
@@ -241,6 +255,24 @@ export default createModule({
       },
 
       /**
+       * Verschiebt eine Aufgabe vor eine andere und stellt die Liste auf
+       * manuelle Reihenfolge. Ist die Liste sortiert, wird zuerst die
+       * sichtbare Reihenfolge zur gespeicherten; ausgefilterte Aufgaben
+       * folgen dahinter in ihrer bisherigen Reihenfolge.
+       * @agent
+       * @param {string} itemId id der Aufgabe, die verschoben wird
+       * @param {string} beforeId id der Aufgabe, vor die sie kommt
+       * @returns {void}
+       * @throws {Error} wenn eine der beiden ids keine Aufgabe bezeichnet
+       */
+      moveTodo(itemId, beforeId) {
+        const ids = this.model.items.map(i => i.id);
+        requireKnownId('itemId', itemId, ids);
+        requireKnownId('beforeId', beforeId, ids);
+        this.model.moveItem(itemId, beforeId, this.filteredItems().map(i => i.id));
+      },
+
+      /**
        * Setzt den Statusfilter der Liste.
        * @agent
        * @param {'all'|'open'|'in-progress'|'done'|'blocked'} value `all` zeigt
@@ -361,6 +393,7 @@ export default createModule({
 
       /** @noagent lifecycle, kein Zustandsweg. */
       init() {
+        this.dragRowsInit();
         this.checkCalendar();
 
         this.$watch(
@@ -382,6 +415,11 @@ export default createModule({
        */
       _itemById(itemId) {
         return this.model.items.find(i => i.id === itemId);
+      },
+
+      /** @noagent lifecycle */
+      destroy() {
+        this.dragRowsDestroy();
       },
     };
   },

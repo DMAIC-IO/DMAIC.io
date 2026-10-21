@@ -1,15 +1,17 @@
 /**
  * D.Mike — Attribute Test Module (attribute-test.js)
  *
- * 1-proportion, 2-proportion and chi-square association tests on counts,
- * entered as summarized counts or taken from worksheet columns.
+ * 1/2-proportion, equivalence (TOST), McNemar, 1/2 Poisson-rate and chi-square
+ * association tests on counts, entered as summarized counts or taken from
+ * worksheet columns.
  * Pipeline: state → normalizer → engine (via report) → template.
  * @see docs/superpowers/specs/2026-10-10-attribute-tests-design.md
  *
  * @agent  Steuerbar über das Viewmodel: die Parameter (setParam), die vier
  *   Spaltenrollen (setColumn), die Kreuztabelle der Zusammenfassung
  *   (setTableCell, setTableRowName, setTableColName, addRow, addCol,
- *   removeRow, removeCol) und das Rechnen selbst. Gelesen wird über read()
+ *   removeRow, removeCol), die McNemar-Vierfeldertafel (setPairCell), der
+ *   Wechsel zum Äquivalenztest (checkEquivalence) und das Rechnen selbst. Gelesen wird über read()
  *   mit erklärter Lesefläche (AgentRead) — Konfiguration, die im Zustand
  *   gültigen Parameter und Rollen, wählbare Spalten und Ergebnis.
  */
@@ -24,8 +26,9 @@ import { ColumnPicker, refToKey, keyToRef } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 import { State, TEST_KINDS, INPUT_MODES, DIRECTIONS, MIN_DIM } from './attribute-test-model.js';
 import {
-  normalizeSummary, normalizeColumns, distinctValues, defaultEventValue, columnValuesOrNull,
+  normalizeSummary, normalizeColumns, distinctValues, defaultEventValue, columnValuesOrNull, withColumnLabels,
 } from './attribute-test-input.js';
+import { resolveColumnRef } from '../../core/worksheet-columns.js';
 import { buildReport } from './attribute-test-report.js';
 
 const PICKERS = [
@@ -33,14 +36,24 @@ const PICKERS = [
   { role: 'group', wrap: 'picker-group-wrap' },
   { role: 'rowVar', wrap: 'picker-row-wrap' },
   { role: 'colVar', wrap: 'picker-col-wrap' },
+  { role: 'counts', wrap: 'picker-counts-wrap' },
+  { role: 'before', wrap: 'picker-before-wrap' },
+  { role: 'after', wrap: 'picker-after-wrap' },
 ];
 
 /** Die zwei Werte eines Schalters; der Prüfer wandelt nie um (`Boolean('nein')` wäre `true`). */
 const BOOL_VALUES = [true, false];
 
 /** Die Parameter, die `setParam` annimmt (`summary.*` als Punkt-Schlüssel). */
-const PARAM_KEYS = ['testKind', 'inputMode', 'alpha', 'direction', 'p0', 'pooled',
-  'summary.x', 'summary.n', 'summary.x1', 'summary.n1', 'summary.x2', 'summary.n2', 'eventValue'];
+const PARAM_KEYS = ['testKind', 'inputMode', 'alpha', 'direction', 'p0', 'pooled', 'ratePooled',
+  'summary.x', 'summary.n', 'summary.x1', 'summary.n1', 'summary.x2', 'summary.n2',
+  'summary.t', 'summary.t1', 'summary.t2', 'summary.lambda0', 'summary.diff0',
+  'summary.pairs.labels.before', 'summary.pairs.labels.after',
+  'equiv.samples', 'equiv.symmetric', 'equiv.delta', 'equiv.lower', 'equiv.upper',
+  'exposurePerRow', 'eventValue'];
+
+/** Die Stichprobenzahl des Äquivalenztests. */
+const EQUIV_SAMPLES = [1, 2];
 
 /** Je Parameter sein Prüfer; gibt den normalisierten Wert zurück. */
 const PARAM_CHECKS = {
@@ -63,6 +76,20 @@ const PARAM_CHECKS = {
   'summary.n1': (v) => requireText('value', v),
   'summary.x2': (v) => requireText('value', v),
   'summary.n2': (v) => requireText('value', v),
+  ratePooled: (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
+  'summary.t': (v) => requireText('value', v),
+  'summary.t1': (v) => requireText('value', v),
+  'summary.t2': (v) => requireText('value', v),
+  'summary.lambda0': (v) => requireText('value', v),
+  'summary.diff0': (v) => requireText('value', v),
+  'summary.pairs.labels.before': (v) => requireText('value', v),
+  'summary.pairs.labels.after': (v) => requireText('value', v),
+  'equiv.samples': (v) => { requireEnum('value', v, EQUIV_SAMPLES); return v; },
+  'equiv.symmetric': (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
+  'equiv.delta': (v) => requireText('value', v),
+  'equiv.lower': (v) => requireText('value', v),
+  'equiv.upper': (v) => requireText('value', v),
+  exposurePerRow: (v) => requireText('value', v),
   eventValue: (v) => v, // gegen eventValueOptions() geprüft, siehe setParam
 };
 
@@ -82,11 +109,14 @@ function setAtPath(obj, key, value) {
 }
 
 /** Die Spaltenrollen in der Reihenfolge der Oberfläche, oben nach unten. */
-const COLUMN_SLOTS = ['response', 'group', 'rowVar', 'colVar'];
+const COLUMN_SLOTS = ['response', 'counts', 'before', 'after', 'group', 'rowVar', 'colVar'];
 
 /** Je Rolle die Optionen ihres Wählers (kein Typfilter, mindestens zwei Werte). */
 const SLOT_FILTERS = {
   response: { minCount: 2 },
+  counts: { minCount: 2 },
+  before: { minCount: 2 },
+  after: { minCount: 2 },
   group: { minCount: 2 },
   rowVar: { minCount: 2 },
   colVar: { minCount: 2 },
@@ -95,6 +125,9 @@ const SLOT_FILTERS = {
 /** Je Rolle die eine Zuweisungsstelle ihres Model-Feldes. */
 const COLUMN_SINKS = {
   response: (m, ref) => { m.colRefs.response = ref; },
+  counts: (m, ref) => { m.colRefs.counts = ref; },
+  before: (m, ref) => { m.colRefs.before = ref; },
+  after: (m, ref) => { m.colRefs.after = ref; },
   group: (m, ref) => { m.colRefs.group = ref; },
   rowVar: (m, ref) => { m.colRefs.rowVar = ref; },
   colVar: (m, ref) => { m.colRefs.colVar = ref; },
@@ -109,18 +142,32 @@ const DIRECTION_LABEL_KEYS = { 'two-sided': 'dirTwoSided', greater: 'dirGreater'
  * dieselben am Label (Alt-Taste).
  *
  * @typedef {object} Params
- * @property {'one'|'two'|'assoc'} testKind  Testart
+ * @property {'one'|'two'|'equiv'|'mcnemar'|'rate1'|'rate2'|'assoc'} testKind  Testart
  * @property {'summary'|'columns'} inputMode  Eingabeart
  * @property {number} alpha  Signifikanzniveau
  * @property {'two-sided'|'greater'|'less'} [direction]  Alternativhypothese
  * @property {string} [p0]  Sollanteil, nur ein Anteil
  * @property {boolean} [pooled]  gepoolter Standardfehler, nur zwei Anteile
+ * @property {boolean} [ratePooled]  gemeinsame Rate, nur zwei Raten
  * @property {string} [summary.x]  Ereignisse, ein Anteil
  * @property {string} [summary.n]  Versuche, ein Anteil
  * @property {string} [summary.x1]  Ereignisse Stichprobe 1
  * @property {string} [summary.n1]  Versuche Stichprobe 1
  * @property {string} [summary.x2]  Ereignisse Stichprobe 2
  * @property {string} [summary.n2]  Versuche Stichprobe 2
+ * @property {string} [summary.t]  Umfang, eine Rate
+ * @property {string} [summary.t1]  Umfang Stichprobe 1, zwei Raten
+ * @property {string} [summary.t2]  Umfang Stichprobe 2, zwei Raten
+ * @property {string} [summary.lambda0]  hypothetische Rate, eine Rate
+ * @property {string} [summary.diff0]  hypothetische Differenz, zwei Raten
+ * @property {string} [summary.pairs.labels.before]  Bezeichnung vorher, McNemar
+ * @property {string} [summary.pairs.labels.after]  Bezeichnung nachher, McNemar
+ * @property {1|2} [equiv.samples]  Stichprobenzahl, Äquivalenz
+ * @property {boolean} [equiv.symmetric]  symmetrische Grenzen, Äquivalenz
+ * @property {string} [equiv.delta]  Grenze δ, symmetrisch
+ * @property {string} [equiv.lower]  untere Grenze, asymmetrisch
+ * @property {string} [equiv.upper]  obere Grenze, asymmetrisch
+ * @property {string} [exposurePerRow]  Umfang je Zeile, Raten aus Spalten
  * @property {string} [eventValue]  Wert, der als Ereignis zählt
  */
 
@@ -129,12 +176,19 @@ const DIRECTION_LABEL_KEYS = { 'two-sided': 'dirTwoSided', greater: 'dirGreater'
  * Kennzahlen sind formatierte Texte.
  *
  * @typedef {object} Result
- * @property {'one'|'two'|'assoc'} kind  Testart
+ * @property {'one'|'two'|'equiv'|'mcnemar'|'rate1'|'rate2'|'assoc'} kind  Testart
  * @property {Stat[]} stats  Kennzahlen
  * @property {Note[]} notes  Hinweise
- * @property {'reject'|'keep'} decision  Entscheidung gegen α
+ * @property {'reject'|'keep'|'equivalent'|'notEquivalent'} decision  Entscheidung gegen α
+ * @property {object} [decisionParams]  Platzhalter der Entscheidung, nur Äquivalenz
  * @property {string} basisKey  Grundlage der Entscheidung
  * @property {CrossTable|null} table  Kreuztabelle, nur Zusammenhangstest
+ * @property {Action[]} [actions]  angebotene Folgeschritte
+ */
+
+/**
+ * @typedef {object} Action
+ * @property {string} key  Kennung des Folgeschritts
  */
 
 /**
@@ -178,14 +232,17 @@ const DIRECTION_LABEL_KEYS = { 'two-sided': 'dirTwoSided', greater: 'dirGreater'
  * transienten Ergebnis.
  *
  * @typedef {object} AgentRead
- * @property {'one'|'two'|'assoc'} testKind  the kind of test
+ * @property {'one'|'two'|'equiv'|'mcnemar'|'rate1'|'rate2'|'assoc'} testKind  the kind of test
  * @property {'summary'|'columns'} inputMode  where the counts come from
  * @property {'two-sided'|'greater'|'less'} direction  the alternative hypothesis
  * @property {number|null} alpha  the significance level
  * @property {string} p0  the hypothesized proportion as entered
  * @property {boolean} pooled  pooled standard error for the 2-proportion z statistic
- * @property {object} summary  the summarized counts as entered: x, n, x1, n1, x2, n2 and the cross table `{ rows, cols, counts }`
- * @property {object} colRefs  the chosen column per role (response, group, rowVar, colVar), each `{ instanceId, sheetId, columnId }` or null
+ * @property {boolean} ratePooled  pooled rate estimate for the 2-rate z statistic
+ * @property {object} equiv  the equivalence settings `{ samples, symmetric, delta, lower, upper }`, bounds as entered
+ * @property {string} exposurePerRow  the exposure per worksheet row for rates from columns, as entered
+ * @property {object} summary  the summarized counts as entered: x, n, x1, n1, x2, n2, t, t1, t2, lambda0, diff0, the McNemar table `pairs` `{ labels, counts }` and the cross table `{ rows, cols, counts }`
+ * @property {object} colRefs  the chosen column per role (response, counts, before, after, group, rowVar, colVar), each `{ instanceId, sheetId, columnId }` or null
  * @property {string|null} eventValue  the value of the response column that counts as event
  * @property {string[]} activeParams  the keys `setParam` accepts in the current state
  * @property {string[]} activeColumnSlots  the slots `setColumn` accepts in the current state
@@ -252,15 +309,23 @@ const mod = createModule({
       /** @noagent view transform */
       tableRows() { return this.hasTable() ? this.result.table.rows : []; },
       /** @noagent view transform */
+      actions() { return this.hasResult() ? (this.result.actions || []) : []; },
+      /** @noagent view transform */
       decisionText() {
         if (!this.hasResult()) return '';
+        if (this.model.testKind === 'equiv') {
+          const d = this.result.decision === 'equivalent' ? 'decisionEquivalent' : 'decisionNotEquivalent';
+          return _t(d, { ...(this.result.decisionParams || {}), alpha: this.model.alpha });
+        }
         return _t(this.result.decision === 'reject' ? 'decisionReject' : 'decisionKeep',
           { alpha: this.model.alpha });
       },
       /** @noagent view transform */
       decisionClass() {
-        return this.hasResult() && this.result.decision === 'reject'
-          ? 'attrtest__decision--reject' : 'attrtest__decision--keep';
+        if (!this.hasResult()) return 'attrtest__decision--keep';
+        const d = this.result.decision;
+        if (d === 'notEquivalent') return 'attrtest__decision--inconclusive';
+        return d === 'reject' ? 'attrtest__decision--reject' : 'attrtest__decision--keep';
       },
       /** @noagent view transform */
       basisText() { return this.hasResult() ? _t(this.result.basisKey) : ''; },
@@ -268,16 +333,65 @@ const mod = createModule({
       hypotheses() {
         const d = this.model.direction;
         const op = d === 'two-sided' ? '≠' : d === 'greater' ? '>' : '<';
-        if (this.model.testKind === 'one') return [_t('h0One'), _t('h1One', { op })];
-        if (this.model.testKind === 'two') return [_t('h0Two'), _t('h1Two', { op })];
+        const k = this.model.testKind;
+        if (k === 'one') return [_t('h0One'), _t('h1One', { op })];
+        if (k === 'two') return [_t('h0Two'), _t('h1Two', { op })];
+        if (k === 'rate1') return [_t('h0Rate1'), _t('h1Rate1', { op })];
+        if (k === 'rate2') return [_t('h0Rate2'), _t('h1Rate2', { op })];
+        if (k === 'mcnemar') {
+          const l = this._pairLabels();
+          if (!l.before && !l.after) return [_t('h0McNemar'), _t('h1McNemar', { op })];
+          const p = { before: l.before || _t('fallbackBefore'), after: l.after || _t('fallbackAfter'), op };
+          return [_t('h0McNemarLabeled', p), _t('h1McNemarLabeled', p)];
+        }
+        if (k === 'equiv') return [_t('h0Equiv'), _t('h1Equiv')];
         return [_t('h0Assoc'), _t('h1Assoc')];
+      },
+      /** @noagent view transform; labels shown for the McNemar table: explicit ones, else the picked column names */
+      _pairLabels() {
+        const m = this.model;
+        const l = (m.summary.pairs && m.summary.pairs.labels) || {};
+        let before = String(l.before || '').trim();
+        let after = String(l.after || '').trim();
+        if (m.inputMode === 'columns') {
+          const n = this._columnNames();
+          before = before || n.before || '';
+          after = after || n.after || '';
+        }
+        return { before, after };
+      },
+      /** @noagent view transform */
+      _columnNames() {
+        const sm = module._context.stateManager;
+        const name = (ref) => { const c = resolveColumnRef(sm, ref); return c ? String(c.name || '').trim() : ''; };
+        return { before: name(this.model.colRefs.before), after: name(this.model.colRefs.after) };
       },
       /** @noagent view transform */
       is2x2() {
         return this.hasTable() && this.tableCols().length === 2 && this.tableRows().length === 2;
       },
       /** @noagent view transform */
-      showDirection() { return !this.isKind('assoc') || this.is2x2(); },
+      showDirection() {
+        if (this.isKind('equiv')) return false;
+        return !this.isKind('assoc') || this.is2x2();
+      },
+      /** @noagent view transform */
+      isSamples(n) { return this.model.equiv.samples === n; },
+      // Kinds that reuse the 1-/2-proportion inputs (equivalence follows its sample switch)
+      /** @noagent view transform */
+      oneSample() { return this.isKind('one') || (this.isKind('equiv') && this.isSamples(1)); },
+      /** @noagent view transform */
+      twoSample() { return this.isKind('two') || (this.isKind('equiv') && this.isSamples(2)); },
+      /** @noagent view transform */
+      usesResponse() { return this.oneSample() || this.twoSample(); },
+      /** @noagent view transform */
+      usesGroup() { return this.twoSample() || this.isKind('rate2'); },
+      /** @noagent view transform */
+      usesCounts() { return this.isKind('rate1') || this.isKind('rate2'); },
+      /** @noagent view transform */
+      usesExposurePerRow() { return this.usesCounts(); },
+      /** @noagent view transform */
+      pairValue(i, j) { return this.model.summary.pairs.counts[i][j]; },
       /** @noagent view transform */
       cellValue(i, j) { return this.model.summary.table.counts[i][j]; },
       /** @noagent view transform */
@@ -289,7 +403,7 @@ const mod = createModule({
       /** @noagent view transform */
       colName(j) { return this.model.summary.table.cols[j]; },
       /** @noagent view transform */
-      showEvent() { return this.isMode('columns') && !this.isKind('assoc'); },
+      showEvent() { return this.isMode('columns') && (this.usesResponse() || this.isKind('mcnemar')); },
       /** @noagent view transform */
       isEvent(v) { return v === this.model.eventValue; },
 
@@ -320,10 +434,21 @@ const mod = createModule({
       activeParams() {
         const params = ['testKind', 'inputMode', 'alpha'];
         const summary = this.isMode('summary');
-        if (this.isKind('one')) {
+        if (this.isKind('equiv')) {
+          params.push('equiv.samples', 'equiv.symmetric',
+            ...(this.model.equiv.symmetric ? ['equiv.delta'] : ['equiv.lower', 'equiv.upper']));
+        }
+        if (this.oneSample()) {
           params.push(...(summary ? ['summary.x', 'summary.n'] : ['eventValue']), 'p0');
-        } else if (this.isKind('two')) {
+        } else if (this.twoSample()) {
           params.push(...(summary ? ['summary.x1', 'summary.n1', 'summary.x2', 'summary.n2'] : ['eventValue']));
+        } else if (this.isKind('mcnemar')) {
+          params.push(...(summary ? ['summary.pairs.labels.before', 'summary.pairs.labels.after'] : ['eventValue']));
+        } else if (this.isKind('rate1')) {
+          params.push(...(summary ? ['summary.x', 'summary.t'] : ['exposurePerRow']), 'summary.lambda0');
+        } else if (this.isKind('rate2')) {
+          params.push(...(summary ? ['summary.x1', 'summary.t1', 'summary.x2', 'summary.t2'] : ['exposurePerRow']),
+            'summary.diff0', 'ratePooled');
         }
         if (this.showDirection()) params.push('direction');
         if (this.isKind('two')) params.push('pooled');
@@ -333,9 +458,13 @@ const mod = createModule({
       /** @noagent derived set; der Agent liest sie über read().activeColumnSlots */
       activeColumnSlots() {
         if (!this.isMode('columns')) return [];
-        if (this.isKind('one')) return ['response'];
-        if (this.isKind('two')) return ['response', 'group'];
-        return ['rowVar', 'colVar'];
+        const slots = [];
+        if (this.usesResponse()) slots.push('response');
+        if (this.usesCounts()) slots.push('counts');
+        if (this.isKind('mcnemar')) slots.push('before', 'after');
+        if (this.usesGroup()) slots.push('group');
+        if (this.isKind('assoc')) slots.push('rowVar', 'colVar');
+        return slots;
       },
 
       /** @noagent derived set; der Agent liest sie über read().pickableColumns */
@@ -370,7 +499,7 @@ const mod = createModule({
         const clean = PARAM_CHECKS[key](value);
         if (key === 'eventValue') requireEnum('value', clean, this.eventValueOptions());
         setAtPath(this.model, key, clean);
-        if (key === 'testKind' || key === 'inputMode') {
+        if (key === 'testKind' || key === 'inputMode' || key === 'equiv.samples') {
           // Die Wähler hängen an Elementen, die der Wechsel neu aufbaut.
           this.$nextTick(() => { this._remountPickers(); this.runAnalysis(); });
         }
@@ -380,7 +509,7 @@ const mod = createModule({
       /**
        * Eine Spalte einer Rolle zuweisen; die Analyse läuft danach neu.
        * @agent
-       * @param {'response'|'group'|'rowVar'|'colVar'} slot die Rolle; activeColumnSlots nennt die im Zustand gültigen
+       * @param {'response'|'counts'|'before'|'after'|'group'|'rowVar'|'colVar'} slot die Rolle; activeColumnSlots nennt die im Zustand gültigen
        * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
        *   der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren
        * @returns {void}
@@ -500,6 +629,37 @@ const mod = createModule({
         this.runAnalysis();
       },
 
+      /**
+       * Eine Anzahl der McNemar-Vierfeldertafel setzen (Zusammenfassung).
+       * Zeile ist der Zustand vorher, Spalte der Zustand nachher; 0 heißt
+       * Ereignis, 1 kein Ereignis.
+       * @agent
+       * @param {number} row Zeile, 0 = Ereignis vorher, 1 = kein Ereignis vorher
+       * @param {number} col Spalte, 0 = Ereignis nachher, 1 = kein Ereignis nachher
+       * @param {string} value die Anzahl als Text, '' leert die Zelle
+       * @returns {void}
+       * @throws {Error} wenn ein Index nicht 0 oder 1 ist oder `value` kein Text ist
+       */
+      setPairCell(row, col, value) {
+        requireIndex('row', row, 1);
+        requireIndex('col', col, 1);
+        this.model.summary.pairs.counts[row][col] = requireText('value', value);
+        this.runAnalysis();
+      },
+
+      /**
+       * Zum Äquivalenztest mit zwei Stichproben wechseln. Anzahlen und
+       * Spalten teilt er mit dem Test zweier Anteile, sie bleiben also stehen;
+       * die Äquivalenzgrenzen bleiben unverändert.
+       * @agent
+       * @returns {void}
+       */
+      checkEquivalence() {
+        this.model.switchToEquivalence();
+        this.$nextTick(() => { this._remountPickers(); this.runAnalysis(); });
+        this.runAnalysis();
+      },
+
       // ── Input handlers (DOM) ───────────────────────────────────
 
       /** @noagent DOM event handler; the agent uses setParam() */
@@ -509,9 +669,26 @@ const mod = createModule({
       /** @noagent DOM event handler; the agent uses setParam() */
       onTextInput(key, event) { this.setParam(key, event.target.value); },
       /** @noagent DOM event handler; the agent uses setParam() */
+      onCheckChange(key, event) { this.setParam(key, event.target.checked); },
+      /** @noagent DOM event handler; the agent uses setParam() */
       onDirectionChange(event) { this.setParam('direction', event.target.value); },
       /** @noagent DOM event handler; the agent uses setParam() */
       onPooledChange(event) { this.setParam('pooled', event.target.checked); },
+      /** @noagent DOM event handler; the agent uses setParam() */
+      setEquivSamples(n) { this.setParam('equiv.samples', n); },
+      /** @noagent DOM event handler; the agent uses setParam() */
+      setBoundsSymmetric(on) { this.setParam('equiv.symmetric', on); },
+      /** @noagent DOM event handler; the agent uses setPairCell() */
+      setPair(i, j, event) { this.setPairCell(i, j, event.target.value); },
+      /**
+       * Eine Ergebnis-Aktion ausführen; `actionCheckEquivalence` wechselt zum
+       * Äquivalenztest.
+       * @noagent DOM event handler; the agent uses checkEquivalence()
+       * @param {string} key
+       */
+      runAction(key) {
+        if (key === 'actionCheckEquivalence') this.checkEquivalence();
+      },
       /**
        * Alpha-Feld: ein Komma gilt als Dezimaltrenner; bei einem unzulässigen
        * Wert springt das Feld auf den Wert des Models zurück.
@@ -564,12 +741,19 @@ const mod = createModule({
             group: this._values(m.colRefs.group),
             rowVar: this._values(m.colRefs.rowVar),
             colVar: this._values(m.colRefs.colVar),
+            counts: this._values(m.colRefs.counts),
+            before: this._values(m.colRefs.before),
+            after: this._values(m.colRefs.after),
           };
-          this.eventOptions = cols.response ? distinctValues(cols.response) : [];
+          // McNemar's event candidates come from both paired columns together
+          const eventSource = m.testKind === 'mcnemar'
+            ? (cols.before && cols.after ? [...cols.before, ...cols.after] : null)
+            : cols.response;
+          this.eventOptions = eventSource ? distinctValues(eventSource) : [];
           if (this.eventOptions.length && !this.eventOptions.includes(m.eventValue)) {
-            m.eventValue = defaultEventValue(cols.response);
+            m.eventValue = defaultEventValue(eventSource);
           }
-          this.result = buildReport(m, normalizeColumns(m, cols));
+          this.result = buildReport(m, withColumnLabels(normalizeColumns(m, cols), this._columnNames()));
         } else {
           this.result = buildReport(m, normalizeSummary(m));
         }

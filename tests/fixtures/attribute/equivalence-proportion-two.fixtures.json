@@ -1,0 +1,172 @@
+{
+  "algorithm_id": "equivalence-proportion-two",
+  "generated_with": {
+    "python": "3.14.4",
+    "scipy": "1.18.0",
+    "numpy": "2.5.1"
+  },
+  "generated_at": "2026-10-20T06:27:29.524919+00:00",
+  "generator_script": "tools/fixture-generator/generate_fixtures.py",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-09,
+      "absolute": 1e-12
+    },
+    "overrides": {
+      "stress_large_counts": {
+        "relative": 1e-06,
+        "absolute": 1e-10,
+        "reason": "normal-tail round-off for large z"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "eq2_standard_kw35_38",
+      "tier": "standard",
+      "description": "184/3902 vs 179/4023, limits +-0.01; statsmodels.stats.proportion.tost_proportions_2indep(184, 3902, 179, 4023, -0.01, 0.01, method='wald'); not equivalent (p 0.0592)",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "x1": 184,
+        "n1": 3902,
+        "x2": 179,
+        "n2": 4023,
+        "lower": -0.01,
+        "upper": 0.01,
+        "alpha": 0.05
+      },
+      "expected": {
+        "p1": 0.04715530497180933,
+        "p2": 0.04449415858811832,
+        "diff": 0.0026611463836910126,
+        "ciLower": -0.005068419851964371,
+        "ciUpper": 0.010390712619346397,
+        "zLower": 2.6942951151012267,
+        "zUpper": -1.5617098838959942,
+        "pLower": 0.003526883931995526,
+        "pUpper": 0.059178174653931485,
+        "pValue": 0.059178174653931485,
+        "equivalent": false,
+        "testable": true
+      }
+    },
+    {
+      "id": "eq2_standard_asym",
+      "tier": "standard",
+      "description": "120/2000 vs 110/2100, asymmetric limits -0.01/+0.02; tost_proportions_2indep(120, 2000, 110, 2100, -0.01, 0.02, method='wald'); equivalent",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "x1": 120,
+        "n1": 2000,
+        "x2": 110,
+        "n2": 2100,
+        "lower": -0.01,
+        "upper": 0.02,
+        "alpha": 0.05
+      },
+      "expected": {
+        "p1": 0.06,
+        "p2": 0.05238095238095238,
+        "diff": 0.007619047619047616,
+        "ciLower": -0.004223527973341693,
+        "ciUpper": 0.019461623211436924,
+        "zLower": 2.447166509812764,
+        "zUpper": -1.7196305204089701,
+        "pLower": 0.00719921516362462,
+        "pUpper": 0.04274981234707018,
+        "pValue": 0.04274981234707018,
+        "equivalent": true,
+        "testable": true
+      }
+    },
+    {
+      "id": "eq2_standard_equivalent",
+      "tier": "standard",
+      "description": "470/10000 vs 455/10000, limits +-0.01; tost_proportions_2indep(470, 10000, 455, 10000, -0.01, 0.01, method='wald')",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "x1": 470,
+        "n1": 10000,
+        "x2": 455,
+        "n2": 10000,
+        "lower": -0.01,
+        "upper": 0.01,
+        "alpha": 0.05
+      },
+      "expected": {
+        "p1": 0.047,
+        "p2": 0.0455,
+        "diff": 0.0015000000000000013,
+        "ciLower": -0.00338554063208861,
+        "ciUpper": 0.006385540632088613,
+        "zLower": 3.871796006710368,
+        "zUpper": -2.8617622658294017,
+        "pLower": 5.4018176566194645e-05,
+        "pUpper": 0.0021064639154608276,
+        "pValue": 0.0021064639154608276,
+        "equivalent": true,
+        "testable": true
+      }
+    },
+    {
+      "id": "eq2_edge_degenerate",
+      "tier": "edge",
+      "description": "No events in either sample: SE 0, not testable, z and p null, not equivalent",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "x1": 0,
+        "n1": 5,
+        "x2": 0,
+        "n2": 5,
+        "lower": -0.01,
+        "upper": 0.01,
+        "alpha": 0.05
+      },
+      "expected": {
+        "p1": 0.0,
+        "p2": 0.0,
+        "diff": 0.0,
+        "ciLower": 0.0,
+        "ciUpper": 0.0,
+        "zLower": null,
+        "zUpper": null,
+        "pLower": null,
+        "pUpper": null,
+        "pValue": null,
+        "equivalent": false,
+        "testable": false
+      }
+    },
+    {
+      "id": "eq2_stress_large",
+      "tier": "stress",
+      "tolerance_override": "stress_large_counts",
+      "description": "Large samples (5780/77762 vs 1650/23480)",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "x1": 5780,
+        "n1": 77762,
+        "x2": 1650,
+        "n2": 23480,
+        "lower": -0.01,
+        "upper": 0.01,
+        "alpha": 0.05
+      },
+      "expected": {
+        "p1": 0.07432936395668836,
+        "p2": 0.07027257240204429,
+        "diff": 0.004056791554644071,
+        "ciLower": 0.0009068381844582162,
+        "ciUpper": 0.0072067449248299255,
+        "zLower": 7.340224395319512,
+        "zUpper": -3.1034452952856033,
+        "pLower": 1.066180198380037e-13,
+        "pUpper": 0.0009564079704747203,
+        "pValue": 0.0009564079704747203,
+        "equivalent": true,
+        "testable": true
+      }
+    }
+  ]
+}

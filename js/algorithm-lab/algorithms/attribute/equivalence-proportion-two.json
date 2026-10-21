@@ -1,0 +1,395 @@
+{
+  "id": "equivalence-proportion-two",
+  "name": {
+    "de": "Äquivalenztest für zwei Anteile (TOST)",
+    "en": "Equivalence Test for Two Proportions (TOST)"
+  },
+  "category": "attribute",
+  "subcategory": "equivalence",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Prüft, ob die Differenz zweier unabhängiger Anteile innerhalb der Äquivalenzgrenzen liegt – zwei einseitige z-Tests (TOST, Wald).",
+      "en": "Tests whether the difference of two independent proportions lies within the equivalence limits – two one-sided z tests (TOST, Wald)."
+    },
+    "long": {
+      "de": "Differenz d = p̂₁ − p̂₂, SE ungepoolt = √(p̂₁(1−p̂₁)/n₁ + p̂₂(1−p̂₂)/n₂). z_unten = (d − untere Grenze)/SE mit p = P(Z ≥ z_unten); z_oben = (d − obere Grenze)/SE mit p = P(Z ≤ z_oben). Gesamt-p = Maximum beider; gleichwertig bei p < α. Das Konfidenzintervall hat das Niveau 1 − 2α. Ist SE = 0, ist der Test nicht durchführbar. Referenz: statsmodels tost_proportions_2indep(method='wald'); Minitab bietet Äquivalenztests nur für Mittelwerte.",
+      "en": "Difference d = p̂₁ − p̂₂, unpooled SE = √(p̂₁(1−p̂₁)/n₁ + p̂₂(1−p̂₂)/n₂). z_lower = (d − lower limit)/SE with p = P(Z ≥ z_lower); z_upper = (d − upper limit)/SE with p = P(Z ≤ z_upper). Overall p = the larger of both; equivalent if p < α. The confidence interval has level 1 − 2α. If SE = 0 the test is not testable. Reference: statsmodels tost_proportions_2indep(method='wald'); Minitab offers equivalence tests for means only."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      {
+        "label": "z lower",
+        "latex": "z_L = \\frac{\\hat d - \\delta_L}{SE},\\; p_L = P(Z \\ge z_L)",
+        "description": {
+          "de": "Untere einseitige Prüfung",
+          "en": "Lower one-sided test"
+        }
+      },
+      {
+        "label": "z upper",
+        "latex": "z_U = \\frac{\\hat d - \\delta_U}{SE},\\; p_U = P(Z \\le z_U)",
+        "description": {
+          "de": "Obere einseitige Prüfung",
+          "en": "Upper one-sided test"
+        }
+      },
+      {
+        "label": "p",
+        "latex": "p = \\max(p_L, p_U)",
+        "description": {
+          "de": "Gleichwertig bei p < α",
+          "en": "Equivalent if p < α"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Zwei unabhängige Stichproben; große Stichproben für die Normalapproximation",
+        "en": "Two independent samples; large samples for the normal approximation"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Äquivalenzgrenzen gelten als Differenz; nur ein bestandener TOST belegt Gleichwertigkeit, ein nicht bestandener belegt sie nicht.",
+        "en": "Equivalence limits are differences; only a passed TOST shows equivalence, a failed one does not."
+      },
+      {
+        "de": "Minitab bietet Äquivalenztests nur für Mittelwerte; Referenz statsmodels",
+        "en": "Minitab offers equivalence tests for means only; reference is statsmodels"
+      }
+    ],
+    "references": [
+      {
+        "source": "statsmodels 0.14.6: statsmodels.stats.proportion.tost_proportions_2indep (method='wald')"
+      }
+    ],
+    "minitab_equivalent": null
+  },
+  "source": {
+    "function_name": "equivalenceTwoProportions",
+    "file_path": "js/engines/attribute-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "x1",
+          "type": "number",
+          "required": true,
+          "description": {
+            "de": "Ereignisse Stichprobe 1",
+            "en": "Events in sample 1"
+          }
+        },
+        {
+          "name": "n1",
+          "type": "number",
+          "required": true,
+          "description": {
+            "de": "Umfang Stichprobe 1",
+            "en": "Size of sample 1"
+          }
+        },
+        {
+          "name": "x2",
+          "type": "number",
+          "required": true,
+          "description": {
+            "de": "Ereignisse Stichprobe 2",
+            "en": "Events in sample 2"
+          }
+        },
+        {
+          "name": "n2",
+          "type": "number",
+          "required": true,
+          "description": {
+            "de": "Umfang Stichprobe 2",
+            "en": "Size of sample 2"
+          }
+        },
+        {
+          "name": "lower",
+          "type": "number",
+          "required": true,
+          "description": {
+            "de": "Untere Grenze der Differenz p₁ − p₂ (negativ)",
+            "en": "Lower limit of p₁ − p₂ (negative)"
+          }
+        },
+        {
+          "name": "upper",
+          "type": "number",
+          "required": true,
+          "description": {
+            "de": "Obere Grenze der Differenz p₁ − p₂ (positiv)",
+            "en": "Upper limit of p₁ − p₂ (positive)"
+          }
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "required": false,
+          "description": {
+            "de": "Signifikanzniveau (Standard 0.05)",
+            "en": "Significance level (default 0.05)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "diff": {
+            "type": "number",
+            "description": {
+              "de": "Differenz p̂₁ − p̂₂",
+              "en": "Difference p̂₁ − p̂₂"
+            }
+          },
+          "pValue": {
+            "type": "number",
+            "description": {
+              "de": "p-Wert (Maximum beider Tests)",
+              "en": "p-value (larger of both tests)"
+            }
+          },
+          "equivalent": {
+            "type": "boolean",
+            "description": {
+              "de": "Gleichwertig?",
+              "en": "Equivalent?"
+            }
+          },
+          "testable": {
+            "type": "boolean",
+            "description": {
+              "de": "Durchführbar (SE > 0)?",
+              "en": "Testable (SE > 0)?"
+            }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "x1",
+          "label": {
+            "de": "Ereignisse x₁",
+            "en": "Events x₁"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "z.B. 120",
+            "en": "e.g. 120"
+          },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "n1",
+          "label": {
+            "de": "Umfang n₁",
+            "en": "Size n₁"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "z.B. 2000",
+            "en": "e.g. 2000"
+          },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "x2",
+          "label": {
+            "de": "Ereignisse x₂",
+            "en": "Events x₂"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "z.B. 110",
+            "en": "e.g. 110"
+          },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "n2",
+          "label": {
+            "de": "Umfang n₂",
+            "en": "Size n₂"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "z.B. 2100",
+            "en": "e.g. 2100"
+          },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "lower",
+          "label": {
+            "de": "Untere Grenze",
+            "en": "Lower limit"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "z.B. -0.01",
+            "en": "e.g. -0.01"
+          },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "upper",
+          "label": {
+            "de": "Obere Grenze",
+            "en": "Upper limit"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "z.B. 0.02",
+            "en": "e.g. 0.02"
+          },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "alpha",
+          "label": {
+            "de": "Signifikanzniveau α",
+            "en": "Significance level α"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "0.05",
+            "en": "0.05"
+          },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": [
+        "p1",
+        "p2",
+        "diff",
+        "ciLower",
+        "ciUpper",
+        "zLower",
+        "zUpper",
+        "pLower",
+        "pUpper",
+        "pValue",
+        "equivalent",
+        "testable"
+      ],
+      "primary_field": "pValue",
+      "format": {
+        "p1": {
+          "decimals": 6,
+          "label": {
+            "de": "Anteil 1",
+            "en": "Proportion 1"
+          }
+        },
+        "p2": {
+          "decimals": 6,
+          "label": {
+            "de": "Anteil 2",
+            "en": "Proportion 2"
+          }
+        },
+        "diff": {
+          "decimals": 6,
+          "label": {
+            "de": "Differenz",
+            "en": "Difference"
+          }
+        },
+        "ciLower": {
+          "decimals": 6,
+          "label": {
+            "de": "KI unten (1 − 2α)",
+            "en": "CI lower (1 − 2α)"
+          }
+        },
+        "ciUpper": {
+          "decimals": 6,
+          "label": {
+            "de": "KI oben (1 − 2α)",
+            "en": "CI upper (1 − 2α)"
+          }
+        },
+        "zLower": {
+          "decimals": 4,
+          "label": {
+            "de": "z (untere Grenze)",
+            "en": "z (lower limit)"
+          }
+        },
+        "zUpper": {
+          "decimals": 4,
+          "label": {
+            "de": "z (obere Grenze)",
+            "en": "z (upper limit)"
+          }
+        },
+        "pLower": {
+          "decimals": 6,
+          "label": {
+            "de": "p (untere Grenze)",
+            "en": "p (lower limit)"
+          }
+        },
+        "pUpper": {
+          "decimals": 6,
+          "label": {
+            "de": "p (obere Grenze)",
+            "en": "p (upper limit)"
+          }
+        },
+        "pValue": {
+          "decimals": 6,
+          "label": {
+            "de": "p-Wert",
+            "en": "p-value"
+          }
+        },
+        "equivalent": {
+          "decimals": 0,
+          "label": {
+            "de": "Gleichwertig",
+            "en": "Equivalent"
+          }
+        },
+        "testable": {
+          "decimals": 0,
+          "label": {
+            "de": "Durchführbar",
+            "en": "Testable"
+          }
+        }
+      }
+    }
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung",
+        "en": "Initial implementation"
+      },
+      "breaking": false
+    }
+  ]
+}

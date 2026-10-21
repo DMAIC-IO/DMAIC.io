@@ -1,5 +1,7 @@
-import { suite, test, assertEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import { State } from '../../js/modules/hypothesis-test/hypothesis-test-model.js';
+import { viewData } from '../../js/modules/hypothesis-test/hypothesis-test.js';
+import { I18n } from '../../js/core/i18n.js';
 
 suite('Hypothesis Test Model — State defaults', () => {
   test('constructor sets default values', () => {
@@ -311,5 +313,257 @@ suite('Hypothesis Test Model — paired test type', () => {
   test('fromJSON drops paired for category variance', () => {
     const s = State.fromJSON({ category: 'variance', testType: 'paired' });
     assertEqual(s.testType, 'two');
+  });
+});
+
+// ── k-group view (C1-019, C1-020) ────────────────────────────────────
+// The view's data object is driven without a DOM: the column picker and the
+// worksheet lookups are replaced by plain arrays.
+
+let tPromise = null;
+/** English module translator backed by the real en.json. */
+function loadT() {
+  if (!tPromise) {
+    tPromise = fetch(new URL('../../i18n/en.json', import.meta.url))
+      .then(r => r.json())
+      .then(json => {
+        const i18n = new I18n('en');
+        i18n._cache.set('en', json);
+        return i18n.tf('modules.hypothesis-test');
+      });
+  }
+  return tPromise;
+}
+
+/**
+ * Run the k-group analysis on plain arrays.
+ * @param {number[][]} groups
+ * @param {{equalVariances?: boolean, alpha?: number}} [opts]
+ */
+async function runK(groups, { equalVariances = false, alpha = 0.05, prepare = null } = {}) {
+  const t = await loadT();
+  const view = viewData({ _context: {} }, t);
+  const model = new State();
+  model.category = 'mean';
+  model.testType = 'k';
+  model.alpha = alpha;
+  model.equalVariances = equalVariances;
+  Object.assign(view, { model, t, $nextTick: fn => fn() });
+  view._pickerK = { value: groups.map((_, i) => i) };
+  view._valuesForRef = ref => groups[ref];
+  view._refName = ref => `G${ref + 1}`;
+  prepare?.(view);
+  view.runAnalysis();
+  return { view, t };
+}
+
+const SHAPE = [-1.5, -0.9, -0.4, -0.1, 0.1, 0.4, 0.9, 1.5];
+/** Three normal groups (AD p ≈ 0.99) with clearly different variances. */
+const NORMAL_GROUPS = [SHAPE.map(x => 10 + x), SHAPE.map(x => 12 + 2 * x), SHAPE.map(x => 15 + 0.5 * x)];
+/** Three right-skewed groups of n = 8 (AD rejects) → rank route. */
+const SKEWED_GROUPS = [
+  [1, 1.1, 1.2, 1.3, 1.4, 1.5, 9, 10],
+  [2, 2.1, 2.2, 2.3, 2.4, 2.5, 11, 12],
+  [3, 3.1, 3.2, 3.3, 3.4, 3.5, 13, 14],
+];
+
+async function bookGroups() {
+  const res = await fetch(new URL('../fixtures/hypothesis/one-way-anova.fixtures.json', import.meta.url));
+  const json = await res.json();
+  return json.test_cases.find(c => c.id === 'book_abb_4_7').inputs.groups;
+}
+
+const summaryValue = (main, label) => main.modelSummary.find(m => m.label === label)?.value;
+
+suite('Hypothesis Test View — k-group mean routes (C1-019, C1-020)', () => {
+  test('default (equal variances not assumed): Welch ANOVA with Games-Howell', async () => {
+    const { view } = await runK(NORMAL_GROUPS);
+    const r = view.result;
+    assertEqual(r.route.name, 'Welch ANOVA');
+    assertEqual(r.route.algoId, 'welch-anova');
+    assertEqual(r.main.anovaRows, null, 'Welch has no SS table');
+    assertEqual(r.pairwise.methodName, 'Games-Howell');
+    assertEqual(r.pairwise.methodAlgoId, 'games-howell');
+  });
+
+  test('Welch card shows df as df1 / df2 with df2 to 2 decimals', async () => {
+    const { view } = await runK(NORMAL_GROUPS);
+    const df = view.result.main.metrics.find(m => m.label === 'df').value;
+    assertEqual(df, '2 / 11.53');
+  });
+
+  test('equal variances assumed: Fisher ANOVA with SS table and Tukey HSD', async () => {
+    const { view } = await runK(NORMAL_GROUPS, { equalVariances: true });
+    const r = view.result;
+    assertEqual(r.route.name, 'One-Way ANOVA');
+    assertEqual(r.main.anovaRows.length, 3);
+    assertEqual(r.pairwise.methodName, 'Tukey HSD');
+    assertEqual(r.pairwise.methodAlgoId, 'tukey-hsd');
+  });
+
+  test('parametric pairwise hint names simultaneous CIs and the family confidence', async () => {
+    const { view, t } = await runK(NORMAL_GROUPS);
+    const hint = view.result.pairwise.hint;
+    assertTrue(hint.includes(t('pairwiseSimultaneousHint', { level: 95 })), hint);
+    assertTrue(!hint.includes('Bonferroni'), hint);
+  });
+
+  test('parametric pairwise cells come from Games-Howell pAdj and the simultaneous CI', async () => {
+    const { view } = await runK(NORMAL_GROUPS);
+    const row = view.result.pairwise.rows[0];
+    // G1 vs G2: p_adj ≈ 0.0585; G1 vs G3: μ1 − μ3 = −5, p_adj ≈ 2.5e-7
+    assertEqual(row.cells[1].text, '0.0585');
+    assertEqual(row.cells[2].text, '0.0000');
+    assertTrue(row.cells[2].ci.startsWith('[-'), row.cells[2].ci);
+  });
+
+  test('model summary for the book case (Abb. 4.7): S, R², R²adj, R²pred clamped at 0 %', async () => {
+    // α = 0.01: at 0.05 Anderson-Darling rejects group 1 (p ≈ 0.0145) and the
+    // rank route would apply. α does not enter S or the R² values.
+    const { view, t } = await runK(await bookGroups(), { equalVariances: true, alpha: 0.01 });
+    const main = view.result.main;
+    assertEqual(view.result.route.name, 'One-Way ANOVA');
+    assertEqual(summaryValue(main, 'S'), '2.0345');
+    assertEqual(summaryValue(main, 'R²'), '1.21 %');
+    assertEqual(summaryValue(main, t('labelR2adj')), '0.00 %');
+    assertEqual(summaryValue(main, t('labelR2pred')), '0.00 %');
+  });
+
+  test('Welch route shows the same model summary (pooled S)', async () => {
+    const { view } = await runK(await bookGroups(), { alpha: 0.01 });
+    assertEqual(view.result.route.name, 'Welch ANOVA');
+    assertEqual(summaryValue(view.result.main, 'S'), '2.0345');
+  });
+
+  test('group table carries the route CI and a header from α', async () => {
+    const { view, t } = await runK(NORMAL_GROUPS, { alpha: 0.1 });
+    const main = view.result.main;
+    assertEqual(main.ciHeader, t('groupCi', { level: 90 }));
+    assertTrue(/^\[\d+\.\d{4}, \d+\.\d{4}\]$/.test(main.groupRows[0].ci), main.groupRows[0].ci);
+  });
+
+  test('residual plot data on Welch and Fisher, null on the rank route', async () => {
+    const w = (await runK(NORMAL_GROUPS)).view.result;
+    assertEqual(w.residualPlot.residuals.length, 24);
+    assertEqual(w.residualPlot.fitted.length, 24);
+    const f = (await runK(NORMAL_GROUPS, { equalVariances: true })).view.result;
+    assertTrue(f.residualPlot !== null);
+    const k = (await runK(SKEWED_GROUPS)).view.result;
+    assertEqual(k.residualPlot, null);
+  });
+
+  test('Welch with a zero-variance group is not computable', async () => {
+    const groups = [NORMAL_GROUPS[0], NORMAL_GROUPS[1], [5, 5, 5, 5, 5]];
+    const { view, t } = await runK(groups);
+    assertEqual(view.result, null);
+    assertEqual(view.errorText, t('testNotComputable'));
+  });
+
+  test('non-normal small groups: Kruskal-Wallis with Bonferroni Mann-Whitney', async () => {
+    const { view, t } = await runK(SKEWED_GROUPS, { equalVariances: true });
+    const r = view.result;
+    assertEqual(r.route.name, 'Kruskal-Wallis Test');
+    assertEqual(r.pairwise.methodName, 'Mann-Whitney U Test');
+    assertTrue(r.pairwise.hint.includes(t('pairwiseHint', { m: 3 })), r.pairwise.hint);
+    assertEqual(r.main.modelSummary, null);
+  });
+
+  test('trail reports the equal-variances assumption, Levene stays as information', async () => {
+    for (const eq of [false, true]) {
+      const { view } = await runK(NORMAL_GROUPS, { equalVariances: eq });
+      const ve = view.result.varEquality;
+      assertEqual(ve.trailLabelKey, 'varEqualLabel');
+      assertEqual(ve.trailYes, eq);
+      assertTrue(Array.isArray(ve.metrics) && ve.metrics.length > 0, 'Levene metrics kept');
+    }
+  });
+
+  test('a failing post-hoc hides the pairwise section and keeps the omnibus result (R3)', async () => {
+    const { view } = await runK(NORMAL_GROUPS, {
+      prepare: (v) => { v._simultaneousPairwise = () => { throw new Error('post-hoc failed'); }; },
+    });
+    assertEqual(view.result.pairwise, null);
+    assertEqual(view.result.route.name, 'Welch ANOVA');
+    assertEqual(view.errorText, '');
+  });
+
+  test('k = 2: no pairwise section', async () => {
+    const { view } = await runK(NORMAL_GROUPS.slice(0, 2));
+    assertEqual(view.result.route.name, 'Welch ANOVA');
+    assertEqual(view.result.pairwise, null);
+  });
+});
+
+suite('Hypothesis Test View — residual plots (C1-020)', () => {
+  const REFS = ['chart-resid-fits', 'chart-resid-normal', 'chart-resid-hist', 'chart-resid-order'];
+
+  /** chartManager stub that records create calls and destroyed charts. */
+  function stubCharts() {
+    const calls = [];
+    const destroyed = [];
+    const chartManager = {
+      create: async (el, type, config) => {
+        const chart = { el, destroy: () => destroyed.push(chart) };
+        calls.push({ el, type, config, chart });
+        return chart;
+      },
+    };
+    const container = {
+      querySelector: (sel) => {
+        const m = /data-ref="([^"]+)"/.exec(sel);
+        return m && REFS.includes(m[1]) ? { ref: m[1], replaceChildren() {} } : null;
+      },
+    };
+    return { calls, destroyed, chartManager, container };
+  }
+
+  /** Runs the k-group analysis with the stub wired into the module object. */
+  async function runStubbed(groups, equalVariances, stub) {
+    const t = await loadT();
+    const module = { _context: { chartManager: stub.chartManager }, _container: stub.container };
+    const view = viewData(module, t);
+    const model = new State();
+    model.category = 'mean'; model.testType = 'k'; model.equalVariances = equalVariances; model.alpha = 0.05;
+    Object.assign(view, { model, t, $nextTick: fn => fn() });
+    view._pickerK = { value: groups.map((_, i) => i) };
+    view._valuesForRef = ref => groups[ref];
+    view._refName = ref => `G${ref + 1}`;
+    view.runAnalysis();
+    await view._residualRender;
+    return view;
+  }
+
+  for (const [label, eq] of [['Welch', false], ['Fisher', true]]) {
+    test(`${label} route renders the four residual charts`, async () => {
+      const stub = stubCharts();
+      const view = await runStubbed(NORMAL_GROUPS, eq, stub);
+      assertEqual(stub.calls.length, 4);
+      assertEqual(stub.calls.map(c => c.type).join(','), 'scatter,probability-plot,histogram,scatter');
+      assertEqual(stub.calls.map(c => c.el.ref).join(','), REFS.join(','));
+      assertTrue(stub.calls[2].config.showNormalCurve, 'histogram has normal curve');
+      assertEqual(stub.calls[0].config.series[0].x.length, 24);
+      assertEqual(view.result.residualPlot.residuals.length, 24);
+    });
+  }
+
+  test('re-running destroys the previous charts and renders anew (checkbox toggle)', async () => {
+    const stub = stubCharts();
+    const view = await runStubbed(NORMAL_GROUPS, false, stub);
+    view.model.equalVariances = true;
+    view.runAnalysis();
+    await view._residualRender;
+    assertEqual(stub.destroyed.length, 4);
+    assertEqual(stub.calls.length, 8);
+  });
+
+  test('Kruskal-Wallis route: no residual plot, old charts destroyed, nothing new rendered', async () => {
+    const stub = stubCharts();
+    const view = await runStubbed(NORMAL_GROUPS, true, stub);
+    view._valuesForRef = ref => SKEWED_GROUPS[ref];
+    view.runAnalysis();
+    await view._residualRender;
+    assertEqual(view.result.residualPlot, null);
+    assertEqual(stub.destroyed.length, 4);
+    assertEqual(stub.calls.length, 4);
   });
 });

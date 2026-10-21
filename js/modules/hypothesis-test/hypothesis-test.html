@@ -87,10 +87,12 @@
         </template>
 
         <template x-if="model.category === 'mean'">
-          <div class="field-group">
-            <label data-help-key="modules.hypothesis-test.fields.targetValue.help">μ₀</label>
-            <input type="number" data-ref="target" class="field field--num"
-              x-model="model.targetValue" :placeholder="t('targetMeanPh')" @input="runAnalysis()">
+          <div class="field-grid field-grid--3">
+            <div class="field-group">
+              <label data-help-key="modules.hypothesis-test.fields.targetValue.help">μ₀</label>
+              <input type="number" data-ref="target" class="field field--num"
+                x-model="model.targetValue" :placeholder="t('targetMeanPh')" @input="runAnalysis()">
+            </div>
           </div>
         </template>
       </div>
@@ -100,10 +102,12 @@
     <template x-if="model.testType === 'paired'">
       <div class="hyptest__contents">
         <div class="dmike-split__section-title" x-text="t('targetDiff')"></div>
-        <div class="field-group">
-          <label data-help-key="modules.hypothesis-test.fields.targetValue.help">μ_d₀</label>
-          <input type="number" data-ref="target" class="field field--num"
-            x-model="model.targetValue" :placeholder="t('targetDiffPh')" @input="runAnalysis()">
+        <div class="field-grid field-grid--3">
+          <div class="field-group">
+            <label data-help-key="modules.hypothesis-test.fields.targetValue.help">μ_d₀</label>
+            <input type="number" data-ref="target" class="field field--num"
+              x-model="model.targetValue" :placeholder="t('targetDiffPh')" @input="runAnalysis()">
+          </div>
         </div>
       </div>
     </template>
@@ -135,12 +139,12 @@
         </div>
       </template>
     </div>
-    <template x-if="model.category === 'mean' && model.testType === 'two'">
+    <template x-if="model.category === 'mean' && (model.testType === 'two' || model.testType === 'k')">
       <label class="field-check" data-help-anchor="box"
              data-help-key="modules.hypothesis-test.fields.equalVariances.help">
         <input type="checkbox" data-ref="equal-variances"
           x-model="model.equalVariances" @change="runAnalysis()">
-        <span x-text="t('assumeEqualVariances')"></span>
+        <span x-text="model.testType === 'k' ? t('assumeEqualVariancesK') : t('assumeEqualVariances')"></span>
       </label>
     </template>
 
@@ -231,7 +235,7 @@
               <template x-if="result.varEquality">
                 <span style="display:contents">
                   <span class="hyptest__trail-line"></span>
-                  <span class="hyptest__trail-dot" :class="result.varEquality.varsEqual ? 'hyptest__trail-dot--pass' : 'hyptest__trail-dot--fail'"></span>
+                  <span class="hyptest__trail-dot" :class="result.varEquality.trailYes ? 'hyptest__trail-dot--pass' : 'hyptest__trail-dot--fail'"></span>
                   <span><span x-text="t(result.varEquality.trailLabelKey)"></span>: <strong x-text="result.varEquality.trailYes ? t('yes') : t('no')"></strong></span>
                 </span>
               </template>
@@ -325,11 +329,29 @@
               </table>
             </template>
 
+            <!-- Model summary (k-sample mean, Fisher / Welch route) -->
+            <template x-if="result.main.modelSummary">
+              <div class="hyptest__model-summary" data-ref="model-summary">
+                <div class="hyptest__model-summary-title" x-text="t('modelSummary')"></div>
+                <div class="hyptest__metrics">
+                  <template x-for="m in result.main.modelSummary">
+                    <div class="hyptest__metric" :title="m.title" :key="m.label">
+                      <div class="hyptest__metric-label" x-text="m.label"></div>
+                      <div class="hyptest__metric-value" x-text="m.value"></div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </template>
+
             <!-- Group summary table (k-sample) -->
             <template x-if="result.main.groupRows">
               <table class="dmike-table">
                 <thead><tr>
                   <th><span data-help-key="modules.hypothesis-test.types.GroupRow.name" x-text="t('group')"></span></th><th><span data-help-key="modules.hypothesis-test.types.GroupRow.n" x-text="t('common.sym.n')"></span></th><th><span data-help-key="modules.hypothesis-test.types.GroupRow.mean" x-text="t('common.sym.xbar')"></span></th><th><span data-help-key="modules.hypothesis-test.types.GroupRow.variance" x-text="t('common.sym.s2')"></span></th>
+                  <template x-if="result.main.showCi">
+                    <th :title="t('tipGroupCi')"><span data-help-key="modules.hypothesis-test.types.GroupRow.ci" x-text="result.main.ciHeader"></span></th>
+                  </template>
                   <template x-if="result.main.showCld">
                     <th :title="t('groupingHint')"><span data-help-key="modules.hypothesis-test.types.GroupRow.letters" x-text="t('groupingLabel')"></span></th>
                   </template>
@@ -341,6 +363,9 @@
                       <td x-text="row.n"></td>
                       <td x-text="row.mean"></td>
                       <td x-text="row.variance"></td>
+                      <template x-if="result.main.showCi">
+                        <td class="hyptest__group-ci" x-text="row.ci"></td>
+                      </template>
                       <template x-if="result.main.showCld">
                         <td><strong class="hyptest__cld-letters" x-text="row.letters"></strong></td>
                       </template>
@@ -445,6 +470,19 @@
                   <span x-text="t('groupingHint')"></span> (<span x-text="t('groupingLabel')"></span>:
                   <strong x-text="result.pairwise.lettersJoined"></strong>)
                 </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- ── Section 6: Residual plots (Fisher / Welch ANOVA) ── -->
+          <template x-if="result.residualPlot">
+            <div class="hyptest__contents">
+              <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionResiduals')"></span></div>
+              <div class="hyptest__residuals">
+                <div class="hyptest__residual-chart" data-ref="chart-resid-fits"></div>
+                <div class="hyptest__residual-chart" data-ref="chart-resid-normal"></div>
+                <div class="hyptest__residual-chart" data-ref="chart-resid-hist"></div>
+                <div class="hyptest__residual-chart" data-ref="chart-resid-order"></div>
               </div>
             </div>
           </template>

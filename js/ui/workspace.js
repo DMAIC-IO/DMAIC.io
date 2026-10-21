@@ -771,6 +771,7 @@ export class Workspace {
   }
 
   _buildContext(instanceId, container) {
+    const i18n = this._i18n;
     return {
       instanceId,
       eventBus: this._eventBus,
@@ -781,7 +782,10 @@ export class Workspace {
       chartManager: this._context.chartManager?.forInstance?.(instanceId, container) ?? this._context.chartManager,
       examples: this._context.examples,
       theme: document.documentElement.dataset.theme || 'light',
-      language: this._i18n.getLanguage(),
+      // Getter, not a snapshot: modules keep this context across a language
+      // switch and re-render in onLanguageChange(), so they must read the
+      // language active now, or numbers and dates keep the old format.
+      get language() { return i18n.getLanguage(); },
     };
   }
 

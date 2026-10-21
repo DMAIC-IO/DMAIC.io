@@ -230,6 +230,8 @@ thead .tfa__mh {
   margin-bottom: var(--spacing-s);
 }
 
+.tfa__toggle { margin-left: var(--spacing-s); }
+
 .tfa__stage {
   overflow: auto;
   max-height: 560px;
@@ -353,8 +355,8 @@ thead .tfa__mh {
   border-top: 2px solid var(--color-border-primary);
 }
 
-.tfa__legend-line--dashed { border-top-style: dashed; }
-.tfa__legend-line--bold { border-top-width: 3px; }
+.tfa__legend-line--dashed { border-top: 1px dashed var(--color-border-primary); }
+.tfa__legend-line--bold { border-top: 3px dashed var(--color-border-primary); }
 
 .tfa__legend-line--wave {
   border-top: 0;

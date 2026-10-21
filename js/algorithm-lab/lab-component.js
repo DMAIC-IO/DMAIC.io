@@ -4,6 +4,7 @@
  * Try-It is a nested `labTryIt` component (see lab-tryit-component.js).
  */
 import { renderFormula, renderCode } from './lab-renderer.js';
+import { labInlineNodes } from './lab-inline.js';
 import { buildFunction, prepareInputs, mapArgs, checkExpected } from './lab-exec.js';
 import { stripTermTokens, stripRefTokens } from '../core/markdown-parser.js';
 import { SOURCES } from './lab-data.generated.js';
@@ -127,6 +128,8 @@ export function createLabComponent({ registry, i18n, eventBus }) {
     get minitab() { return this.selectedAlgo?.documentation?.minitab_equivalent || ''; },
     get changelog() { return this.selectedAlgo?.changelog || []; },
     renderFormula(el, f, lang) { return renderFormula(el, f, lang); },
+    /** Render a localized doc text with glossary links (x-effect target). */
+    renderInline(el, value) { el.replaceChildren(...labInlineNodes(this.loc(value))); },
     refLabel(ref) { return ref.source + (ref.chapter ? `, ${  ref.chapter}` : ''); },
 
     // ── Source ──

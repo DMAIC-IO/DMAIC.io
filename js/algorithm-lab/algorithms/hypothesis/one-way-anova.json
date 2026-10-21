@@ -7,19 +7,17 @@
   "category": "hypothesis",
   "subcategory": "mean",
   "status": "validated",
-  "version": "1.0.0",
-
+  "version": "1.1.0",
   "description": {
     "short": {
       "de": "Vergleicht die Mittelwerte von k unabhängigen, normalverteilten Stichproben.",
       "en": "Compares the means of k independent, normally distributed samples."
     },
     "long": {
-      "de": "Die einfaktorielle {{term:anova|Varianzanalyse}} (One-Way ANOVA) prüft, ob die Mittelwerte von k ≥ 2 unabhängigen Gruppen alle gleich sind. Die Gesamtstreuung SST wird in die durch die Gruppen erklärte Streuung SSB (Between) und die Reststreuung SSW (Within) zerlegt. Die F-Statistik vergleicht das mittlere Quadrat zwischen den Gruppen mit dem mittleren Quadrat innerhalb der Gruppen. Ein signifikanter F-Test (p < α) zeigt, dass mindestens ein Gruppenmittelwert vom Rest abweicht — er sagt aber nicht, welcher.",
-      "en": "One-way {{term:anova|analysis of variance}} (One-Way ANOVA) tests whether the means of k ≥ 2 independent groups are all equal. The total variation SST is decomposed into the between-group variation SSB and the within-group variation SSW. The F-statistic compares the mean square between groups to the mean square within groups. A significant F-test (p < α) indicates that at least one group mean differs from the others — but does not say which."
+      "de": "Die einfaktorielle {{term:anova|Varianzanalyse}} (One-Way ANOVA) prüft, ob die Mittelwerte von k ≥ 2 unabhängigen Gruppen alle gleich sind. Die Gesamtstreuung SST wird in die durch die Gruppen erklärte Streuung SSB (Between) und die Reststreuung SSW (Within) zerlegt. Die F-Statistik vergleicht das mittlere Quadrat zwischen den Gruppen mit dem mittleren Quadrat innerhalb der Gruppen. Ein signifikanter F-Test (p < α) zeigt, dass mindestens ein Gruppenmittelwert vom Rest abweicht — er sagt aber nicht, welcher. Zusätzlich liefert der Lauf das Modell-Summary S = √MS_W, R², R²(adj), R²(pred) (über PRESS) sowie Gruppen-KIs mit gepoolter Standardabweichung (N − k Freiheitsgrade); dazu Residuen und angepasste Werte für die Residuenplots. Qprovement nutzt die Fisher-ANOVA mit Tukey HSD, wenn „Gleiche Varianzen annehmen“ angehakt ist, sonst Welch-ANOVA.",
+      "en": "One-way {{term:anova|analysis of variance}} (One-Way ANOVA) tests whether the means of k ≥ 2 independent groups are all equal. The total variation SST is decomposed into the between-group variation SSB and the within-group variation SSW. The F-statistic compares the mean square between groups to the mean square within groups. A significant F-test (p < α) indicates that at least one group mean differs from the others — but does not say which. The run also returns the model summary S = √MS_W, R², R²(adj), R²(pred) (via PRESS) and group CIs with the pooled standard deviation (N − k degrees of freedom), plus residuals and fitted values for the residual plots. Qprovement uses Fisher ANOVA with Tukey HSD when \"Assume equal variances\" is ticked, otherwise Welch ANOVA."
     }
   },
-
   "documentation": {
     "formulas": [
       {
@@ -53,25 +51,82 @@
           "de": "Nullhypothese: Alle Gruppenmittelwerte sind gleich",
           "en": "Null hypothesis: All group means are equal"
         }
+      },
+      {
+        "label": "S",
+        "latex": "S = \\sqrt{MS_W}",
+        "description": {
+          "de": "Gepoolte Standardabweichung (Wurzel des mittleren Quadrats innerhalb)",
+          "en": "Pooled standard deviation (square root of the within mean square)"
+        }
+      },
+      {
+        "label": "R²",
+        "latex": "R^2 = \\frac{SS_B}{SS_T},\\quad R^2_{adj} = 1 - \\frac{MS_W}{SS_T/(N-1)}",
+        "description": {
+          "de": "Bestimmtheitsmaß und adjustiertes Bestimmtheitsmaß (roh, kann negativ sein; die Anzeige schneidet bei 0 % ab)",
+          "en": "Coefficient of determination and adjusted R² (raw, may be negative; the display clamps at 0 %)"
+        }
+      },
+      {
+        "label": "PRESS",
+        "latex": "PRESS = \\sum_i \\sum_j \\left(\\frac{n_i}{n_i-1}\\,(x_{ij} - \\bar x_i)\\right)^2,\\quad R^2_{pred} = 1 - \\frac{PRESS}{SS_T}",
+        "description": {
+          "de": "Leave-one-out-Residuen im Einweg-Modell; R²(pred) ist null, wenn eine Gruppe nur einen Wert hat",
+          "en": "Leave-one-out residuals in the one-way model; R²(pred) is null if a group has a single value"
+        }
+      },
+      {
+        "label": "CI",
+        "latex": "\\bar x_i \\pm t_{1-\\alpha/2,\\,N-k}\\,\\frac{S}{\\sqrt{n_i}}",
+        "description": {
+          "de": "Gruppen-KI mit gepoolter Standardabweichung",
+          "en": "Group CI with the pooled standard deviation"
+        }
       }
     ],
     "assumptions": [
-      { "de": "Beobachtungen sind unabhängig", "en": "Observations are independent" },
-      { "de": "Daten in jeder Gruppe sind normalverteilt", "en": "Data within each group are normally distributed" },
-      { "de": "Varianzen aller Gruppen sind gleich (Varianzhomogenität)", "en": "Variances are equal across groups (homogeneity of variance)" }
+      {
+        "de": "Beobachtungen sind unabhängig",
+        "en": "Observations are independent"
+      },
+      {
+        "de": "Daten in jeder Gruppe sind normalverteilt",
+        "en": "Data within each group are normally distributed"
+      },
+      {
+        "de": "Varianzen aller Gruppen sind gleich (Varianzhomogenität)",
+        "en": "Variances are equal across groups (homogeneity of variance)"
+      }
     ],
     "limitations": [
-      { "de": "Bei stark unterschiedlichen Varianzen Welch-ANOVA verwenden", "en": "Use Welch ANOVA for substantially unequal variances" },
-      { "de": "Bei nicht normalverteilten Daten Kruskal-Wallis verwenden", "en": "Use Kruskal-Wallis for non-normal data" },
-      { "de": "Nur omnibus-Test — sagt nicht welche Gruppe abweicht (Post-Hoc-Tests nötig)", "en": "Omnibus test only — does not identify which group differs (post-hoc tests required)" }
+      {
+        "de": "R²(adj) und R²(pred) werden roh (ggf. negativ) zurückgegeben; die Modulanzeige schneidet bei 0 % ab",
+        "en": "R²(adj) and R²(pred) are returned raw (possibly negative); the module display clamps them at 0 %"
+      },
+      {
+        "de": "Bei stark unterschiedlichen Varianzen Welch-ANOVA verwenden",
+        "en": "Use Welch ANOVA for substantially unequal variances"
+      },
+      {
+        "de": "Bei nicht normalverteilten Daten Kruskal-Wallis verwenden",
+        "en": "Use Kruskal-Wallis for non-normal data"
+      },
+      {
+        "de": "Nur omnibus-Test — sagt nicht welche Gruppe abweicht (Post-Hoc-Tests nötig)",
+        "en": "Omnibus test only — does not identify which group differs (post-hoc tests required)"
+      }
     ],
     "references": [
-      { "source": "Fisher, R. A. (1925), Statistical Methods for Research Workers" },
-      { "source": "NIST/SEMATECH e-Handbook of Statistical Methods, Section 7.4.3" }
+      {
+        "source": "Fisher, R. A. (1925), Statistical Methods for Research Workers"
+      },
+      {
+        "source": "NIST/SEMATECH e-Handbook of Statistical Methods, Section 7.4.3"
+      }
     ],
     "minitab_equivalent": "Stat > ANOVA > One-Way"
   },
-
   "source": {
     "function_name": "oneWayANOVA",
     "file_path": "js/engines/hypothesis-test-engine.js",
@@ -81,73 +136,246 @@
           "name": "groups",
           "type": "number[][]",
           "required": true,
-          "description": { "de": "Array von k Stichproben", "en": "Array of k samples" }
+          "description": {
+            "de": "Array von k Stichproben",
+            "en": "Array of k samples"
+          }
         },
         {
           "name": "alpha",
           "type": "number",
           "required": false,
-          "description": { "de": "Signifikanzniveau (Standard: 0.05)", "en": "Significance level (default: 0.05)" }
+          "description": {
+            "de": "Signifikanzniveau (Standard: 0.05)",
+            "en": "Significance level (default: 0.05)"
+          }
         }
       ],
       "returns": {
         "type": "object",
         "properties": {
-          "statistic": { "type": "number", "description": { "de": "F-Teststatistik", "en": "F test statistic" } },
-          "pValue": { "type": "number", "description": { "de": "p-Wert", "en": "p-value" } },
-          "df1": { "type": "number", "description": { "de": "Freiheitsgrade Zähler (k−1)", "en": "Numerator degrees of freedom (k−1)" } },
-          "df2": { "type": "number", "description": { "de": "Freiheitsgrade Nenner (N−k)", "en": "Denominator degrees of freedom (N−k)" } },
-          "SSB": { "type": "number", "description": { "de": "Streuung zwischen Gruppen", "en": "Between-group sum of squares" } },
-          "SSW": { "type": "number", "description": { "de": "Streuung innerhalb Gruppen", "en": "Within-group sum of squares" } },
-          "MSB": { "type": "number", "description": { "de": "Mittleres Quadrat zwischen Gruppen", "en": "Between-group mean square" } },
-          "MSW": { "type": "number", "description": { "de": "Mittleres Quadrat innerhalb Gruppen", "en": "Within-group mean square" } },
-          "reject": { "type": "boolean", "description": { "de": "H₀ abgelehnt?", "en": "Reject H₀?" } }
+          "statistic": {
+            "type": "number",
+            "description": {
+              "de": "F-Teststatistik",
+              "en": "F test statistic"
+            }
+          },
+          "pValue": {
+            "type": "number",
+            "description": {
+              "de": "p-Wert",
+              "en": "p-value"
+            }
+          },
+          "df1": {
+            "type": "number",
+            "description": {
+              "de": "Freiheitsgrade Zähler (k−1)",
+              "en": "Numerator degrees of freedom (k−1)"
+            }
+          },
+          "df2": {
+            "type": "number",
+            "description": {
+              "de": "Freiheitsgrade Nenner (N−k)",
+              "en": "Denominator degrees of freedom (N−k)"
+            }
+          },
+          "SSB": {
+            "type": "number",
+            "description": {
+              "de": "Streuung zwischen Gruppen",
+              "en": "Between-group sum of squares"
+            }
+          },
+          "SSW": {
+            "type": "number",
+            "description": {
+              "de": "Streuung innerhalb Gruppen",
+              "en": "Within-group sum of squares"
+            }
+          },
+          "MSB": {
+            "type": "number",
+            "description": {
+              "de": "Mittleres Quadrat zwischen Gruppen",
+              "en": "Between-group mean square"
+            }
+          },
+          "MSW": {
+            "type": "number",
+            "description": {
+              "de": "Mittleres Quadrat innerhalb Gruppen",
+              "en": "Within-group mean square"
+            }
+          },
+          "reject": {
+            "type": "boolean",
+            "description": {
+              "de": "H₀ abgelehnt?",
+              "en": "Reject H₀?"
+            }
+          },
+          "S": {
+            "type": "number",
+            "description": {
+              "de": "Gepoolte Standardabweichung √MS_W",
+              "en": "Pooled standard deviation √MS_W"
+            }
+          },
+          "R2": {
+            "type": "number",
+            "description": {
+              "de": "Bestimmtheitsmaß R² = SSB/SST",
+              "en": "Coefficient of determination R² = SSB/SST"
+            }
+          },
+          "R2adj": {
+            "type": "number",
+            "description": {
+              "de": "Adjustiertes R² (roh)",
+              "en": "Adjusted R² (raw)"
+            }
+          },
+          "R2pred": {
+            "type": "number",
+            "description": {
+              "de": "Vorhersage-R² über PRESS (roh; null bei Gruppen mit n = 1)",
+              "en": "Predicted R² via PRESS (raw; null if a group has n = 1)"
+            }
+          },
+          "groupCIs": {
+            "type": "number[][]",
+            "description": {
+              "de": "Gruppen-KIs mit gepoolter Standardabweichung",
+              "en": "Group CIs with the pooled standard deviation"
+            }
+          }
         }
       }
     },
     "code_snippet": null
   },
-
   "try_it": {
     "input_schema": {
       "fields": [
         {
           "name": "groups",
-          "label": { "de": "Gruppen (eine Zeile pro Gruppe)", "en": "Groups (one line per group)" },
+          "label": {
+            "de": "Gruppen (eine Zeile pro Gruppe)",
+            "en": "Groups (one line per group)"
+          },
           "type": "textarea",
-          "placeholder": { "de": "z.B.\n1.2, 1.5, 1.4\n2.1, 2.3, 2.0\n1.8, 1.9, 2.0", "en": "e.g.\n1.2, 1.5, 1.4\n2.1, 2.3, 2.0\n1.8, 1.9, 2.0" },
+          "placeholder": {
+            "de": "z.B.\n1.2, 1.5, 1.4\n2.1, 2.3, 2.0\n1.8, 1.9, 2.0",
+            "en": "e.g.\n1.2, 1.5, 1.4\n2.1, 2.3, 2.0\n1.8, 1.9, 2.0"
+          },
           "parse_as": "number_array_2d",
           "required": true
         },
         {
           "name": "alpha",
-          "label": { "de": "Signifikanzniveau α", "en": "Significance Level α" },
+          "label": {
+            "de": "Signifikanzniveau α",
+            "en": "Significance Level α"
+          },
           "type": "number",
-          "placeholder": { "de": "0.05", "en": "0.05" },
+          "placeholder": {
+            "de": "0.05",
+            "en": "0.05"
+          },
           "parse_as": "number",
           "required": false
         }
       ]
     },
     "output_schema": {
-      "display_fields": ["statistic", "pValue", "df1", "df2", "SSB", "SSW", "MSB", "MSW", "k", "N", "reject"],
+      "display_fields": [
+        "statistic",
+        "pValue",
+        "df1",
+        "df2",
+        "SSB",
+        "SSW",
+        "MSB",
+        "MSW",
+        "S",
+        "R2",
+        "R2adj",
+        "R2pred",
+        "k",
+        "N",
+        "reject"
+      ],
       "primary_field": "statistic",
       "format": {
-        "statistic": { "decimals": 6, "label": "F" },
-        "pValue": { "decimals": 6, "label": "p-Value" },
-        "df1": { "decimals": 0, "label": "df₁" },
-        "df2": { "decimals": 0, "label": "df₂" },
-        "SSB": { "decimals": 6, "label": "SSB" },
-        "SSW": { "decimals": 6, "label": "SSW" },
-        "MSB": { "decimals": 6, "label": "MSB" },
-        "MSW": { "decimals": 6, "label": "MSW" },
-        "k": { "decimals": 0, "label": "k" },
-        "N": { "decimals": 0, "label": "N" },
-        "reject": { "decimals": 0, "label": { "de": "H₀ abgelehnt", "en": "Reject H₀" } }
+        "statistic": {
+          "decimals": 6,
+          "label": "F"
+        },
+        "pValue": {
+          "decimals": 6,
+          "label": "p-Value"
+        },
+        "df1": {
+          "decimals": 0,
+          "label": "df₁"
+        },
+        "df2": {
+          "decimals": 0,
+          "label": "df₂"
+        },
+        "SSB": {
+          "decimals": 6,
+          "label": "SSB"
+        },
+        "SSW": {
+          "decimals": 6,
+          "label": "SSW"
+        },
+        "MSB": {
+          "decimals": 6,
+          "label": "MSB"
+        },
+        "MSW": {
+          "decimals": 6,
+          "label": "MSW"
+        },
+        "k": {
+          "decimals": 0,
+          "label": "k"
+        },
+        "N": {
+          "decimals": 0,
+          "label": "N"
+        },
+        "reject": {
+          "decimals": 0,
+          "label": {
+            "de": "H₀ abgelehnt",
+            "en": "Reject H₀"
+          }
+        },
+        "S": {
+          "decimals": 6,
+          "label": "S"
+        },
+        "R2": {
+          "decimals": 6,
+          "label": "R²"
+        },
+        "R2adj": {
+          "decimals": 6,
+          "label": "R²(adj)"
+        },
+        "R2pred": {
+          "decimals": 6,
+          "label": "R²(pred)"
+        }
       }
     }
   },
-
   "changelog": [
     {
       "version": "1.0.0",
@@ -156,6 +384,16 @@
       "description": {
         "de": "Erstimplementierung der einfaktoriellen Varianzanalyse mit ANOVA-Tabelle und F-Test",
         "en": "Initial implementation of one-way analysis of variance with ANOVA table and F-test"
+      },
+      "breaking": false
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-10-20",
+      "type": "feature",
+      "description": {
+        "de": "Modell-Summary S, R², R²(adj), R²(pred), Gruppen-KIs, Residuen und angepasste Werte ergänzt; 20 Fixture-Fälle",
+        "en": "Added model summary S, R², R²(adj), R²(pred), group CIs, residuals and fitted values; 20 fixture cases"
       },
       "breaking": false
     }

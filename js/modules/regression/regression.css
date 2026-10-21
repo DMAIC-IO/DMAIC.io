@@ -265,12 +265,6 @@
   border-color: var(--color-accent);
 }
 
-.reg__level-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-xs) var(--spacing-sm);
-}
-
 /* Prediction section */
 .reg__predict {
   margin-top: var(--spacing-sm);

@@ -2,7 +2,9 @@
  * D.Mike — Attribute test engine (attribute-test-engine.js)
  *
  * Tests on counts: Clopper-Pearson interval, 1- and 2-proportion tests,
- * Fisher's exact test (2×2) and the chi-square test of association (r×c).
+ * Fisher's exact test (2×2), the chi-square test of association (r×c) and
+ * the 1- and 2-sample Poisson rate tests, McNemar's test and equivalence
+ * tests (TOST) for one and two proportions.
  * Pure functions, no DOM, no i18n. Inputs are assumed valid — the module's
  * normalizer (attribute-test-input.js) rejects nonsense before calling in.
  *
@@ -14,10 +16,23 @@
  *    the difference always unpooled; test difference fixed at 0.
  *  - Fisher two-sided: sum of all tables with P ≤ P_obs · (1 + 1e-7)
  *    (R and Minitab). Probabilities in log space via lnGamma.
+ *  - 1 Poisson rate: Garwood interval; exact test with the same central
+ *    two-sided p as the 1-proportion test (not minlike). One-sided
+ *    alternatives give a one-sided bound at the full confidence level.
+ *  - 2 Poisson rates: z for the rate difference (separate SE; pooled only
+ *    when pooled and the tested difference is 0), CI of the difference
+ *    always unpooled; conditional exact test x1 ~ Bin(x1 + x2, t1/(t1 + t2))
+ *    with the central two-sided p; rate-ratio CI from Clopper-Pearson.
+ *  - McNemar: exact binomial on the discordant pairs (central two-sided p),
+ *    chi-square with and without continuity correction (two-sided only),
+ *    Wald CI of the paired difference (after − before), open side −1 / 1.
+ *  - Equivalence (TOST): 1 proportion by two exact one-sided binomial tests
+ *    against p0 + limit, 2 proportions by two unpooled Wald z tests; p = the
+ *    larger of the two, CI at 1 − 2·alpha.
  */
 
 import {
-  lnGamma, betaIncomplete, normalQuantile, chi2CDF, normalUpperTail,
+  lnGamma, gammainc, betaIncomplete, normalQuantile, chi2CDF, normalUpperTail,
 } from './math-utils.js';
 
 /** Relative tolerance for "as or less likely" in Fisher's two-sided test. */
@@ -31,6 +46,19 @@ function betaQuantile(p, a, b) {
     const mid = (lo + hi) / 2;
     if (mid === lo || mid === hi) break;
     if (betaIncomplete(mid, a, b) < p) lo = mid; else hi = mid;
+  }
+  return (lo + hi) / 2;
+}
+
+/** Quantile of Gamma(a, 1) by bisection on the regularized incomplete gamma. */
+function gammaQuantile(p, a) {
+  let lo = 0;
+  let hi = a + 10 * Math.sqrt(a) + 20;
+  while (gammainc(a, hi) < p) hi *= 2;
+  for (let i = 0; i < 200; i++) {
+    const mid = (lo + hi) / 2;
+    if (mid === lo || mid === hi) break;
+    if (gammainc(a, mid) < p) lo = mid; else hi = mid;
   }
   return (lo + hi) / 2;
 }
@@ -62,6 +90,18 @@ function binomGE(k, n, p) {
   if (k <= 0) return 1;
   if (k > n) return 0;
   return betaIncomplete(p, k, n - k + 1);
+}
+
+/** P(X ≤ k) for X ~ Poisson(mu). */
+function poissonLE(k, mu) {
+  if (k < 0) return 0;
+  return 1 - gammainc(k + 1, mu);
+}
+
+/** P(X ≥ k) for X ~ Poisson(mu). */
+function poissonGE(k, mu) {
+  if (k <= 0) return 1;
+  return gammainc(k, mu);
 }
 
 /** Natural log of the binomial coefficient C(n, k). */
@@ -293,5 +333,292 @@ export function chiSquareAssociation(table, alpha = 0.05) {
     fisherLess,
     fisherGreater,
     reject: pPearson < alpha,
+  };
+}
+
+/**
+ * Exact (Garwood) confidence interval for a Poisson rate x / t.
+ * One-sided alternatives give a one-sided bound; the open side is 0 or Infinity.
+ * @param {number} x — event count (≥ 0)
+ * @param {number} t — exposure (> 0)
+ * @param {number} [confidence=0.95]
+ * @param {'two-sided'|'greater'|'less'} [direction='two-sided']
+ * @returns {{ lower: number, upper: number }}
+ */
+export function poissonRateCI(x, t, confidence = 0.95, direction = 'two-sided') {
+  const tail = direction === 'two-sided' ? (1 - confidence) / 2 : 1 - confidence;
+  const lower = direction === 'less' || x === 0 ? 0 : gammaQuantile(tail, x) / t;
+  const upper = direction === 'greater' ? Infinity : gammaQuantile(1 - tail, x + 1) / t;
+  return { lower, upper };
+}
+
+/**
+ * 1-sample Poisson rate test: exact test plus normal approximation.
+ * @param {number} x — event count
+ * @param {number} t — exposure (> 0)
+ * @param {number} lambda0 — hypothesized rate per unit exposure (> 0)
+ * @param {'two-sided'|'greater'|'less'} [direction='two-sided']
+ * @param {number} [alpha=0.05]
+ * @returns {{ rate: number, ciLower: number, ciUpper: number, pExact: number,
+ *   z: number, pNormal: number, normalApproxOk: boolean, reject: boolean }}
+ */
+export function onePoissonRateTest(x, t, lambda0, direction = 'two-sided', alpha = 0.05) {
+  const mu = lambda0 * t;
+  const { lower, upper } = poissonRateCI(x, t, 1 - alpha, direction);
+  const le = poissonLE(x, mu);
+  const ge = poissonGE(x, mu);
+  let pExact;
+  if (direction === 'greater') pExact = ge;
+  else if (direction === 'less') pExact = le;
+  else pExact = Math.min(1, 2 * Math.min(le, ge));
+  const z = (x - mu) / Math.sqrt(mu);
+  return {
+    rate: x / t,
+    ciLower: lower,
+    ciUpper: upper,
+    pExact,
+    z,
+    pNormal: normalP(z, direction),
+    normalApproxOk: mu >= 5,
+    reject: pExact < alpha,
+  };
+}
+
+/**
+ * 2-sample Poisson rate test: z test of the rate difference plus the
+ * conditional exact test (difference 0 only) and the rate ratio with its CI.
+ * @param {number} x1 @param {number} t1 — events and exposure (> 0) of sample 1
+ * @param {number} x2 @param {number} t2 — events and exposure (> 0) of sample 2
+ * @param {object} [options]
+ * @param {'two-sided'|'greater'|'less'} [options.direction='two-sided']
+ * @param {number} [options.alpha=0.05]
+ * @param {boolean} [options.pooled=false] — pooled SE, only used when diff0 is 0
+ * @param {number} [options.diff0=0] — tested difference of the rates
+ * @returns {{ rate1: number, rate2: number, diff: number, ciLower: number, ciUpper: number,
+ *   z: number|null, pValue: number|null, pExactCond: number|null, ratio: number|null,
+ *   ratioLower: number|null, ratioUpper: number|null, testable: boolean, reject: boolean }}
+ *   `testable` is false when the SE is 0 but the tested difference is not (x1 = x2 = 0 with
+ *   diff0 ≠ 0): then pValue is null and reject is false. z is null whenever SE is 0,
+ *   pExactCond is null unless diff0 = 0 and x1 + x2 > 0, ratio is null when x2 = 0, and the
+ *   ratio bounds are null when x1 + x2 = 0.
+ */
+export function twoPoissonRateTest(x1, t1, x2, t2, { direction = 'two-sided', alpha = 0.05, pooled = false, diff0 = 0 } = {}) {
+  const rate1 = x1 / t1;
+  const rate2 = x2 / t2;
+  const diff = rate1 - rate2;
+  const se = Math.sqrt(x1 / (t1 * t1) + x2 / (t2 * t2));
+  const seTest = pooled && diff0 === 0
+    ? Math.sqrt(((x1 + x2) / (t1 + t2)) * (1 / t1 + 1 / t2))
+    : se;
+  const d = diff - diff0;
+
+  let z = null;
+  let pValue;
+  // SE 0 with d ≠ 0 means x1 = x2 = 0 and diff0 ≠ 0: no information, so no test.
+  const testable = !(seTest === 0 && d !== 0);
+  if (!testable) {
+    pValue = null;
+  } else if (seTest > 0) {
+    z = d / seTest;
+    pValue = normalP(z, direction);
+  } else if (d === 0) {
+    pValue = 1;
+  } else if (direction === 'greater') {
+    pValue = d > 0 ? 0 : 1;
+  } else if (direction === 'less') {
+    pValue = d < 0 ? 0 : 1;
+  } else {
+    pValue = 0;
+  }
+
+  let ciLower;
+  let ciUpper;
+  if (direction === 'two-sided') {
+    const q = zQuantile(1 - alpha / 2);
+    ciLower = diff - q * se;
+    ciUpper = diff + q * se;
+  } else if (direction === 'greater') {
+    ciLower = diff - zQuantile(1 - alpha) * se;
+    ciUpper = Infinity;
+  } else {
+    ciLower = -Infinity;
+    ciUpper = diff + zQuantile(1 - alpha) * se;
+  }
+
+  const n = x1 + x2;
+  let pExactCond = null;
+  if (diff0 === 0 && n > 0) {
+    const prob = t1 / (t1 + t2);
+    if (direction === 'greater') pExactCond = binomGE(x1, n, prob);
+    else if (direction === 'less') pExactCond = binomLE(x1, n, prob);
+    else pExactCond = Math.min(1, 2 * Math.min(binomLE(x1, n, prob), binomGE(x1, n, prob)));
+  }
+
+  let ratioLower = null;
+  let ratioUpper = null;
+  if (n > 0) {
+    const odds = (pi) => (pi >= 1 ? Infinity : (pi / (1 - pi)) * (t2 / t1));
+    const cp = clopperPearsonCI(x1, n, 1 - alpha, direction);
+    ratioLower = odds(cp.lower);
+    ratioUpper = odds(cp.upper);
+  }
+
+  return {
+    rate1,
+    rate2,
+    diff,
+    ciLower,
+    ciUpper,
+    z,
+    pValue,
+    pExactCond,
+    ratio: x2 === 0 ? null : rate1 / rate2,
+    ratioLower,
+    ratioUpper,
+    testable,
+    reject: testable && pValue < alpha,
+  };
+}
+
+/**
+ * McNemar's test for paired proportions from the full 2×2 table
+ * (rows: before event / no event, columns: after event / no event).
+ * Exact binomial test on the discordant pairs plus the chi-square test with
+ * and without continuity correction; Wald CI of the paired difference.
+ * @param {number[][]} table — [[a, b], [c, d]] with b = event → no event, c = no event → event
+ * @param {'two-sided'|'greater'|'less'} [direction='two-sided'] — "greater": after rate above before rate
+ * @param {number} [alpha=0.05]
+ * @returns {{ b: number, c: number, n: number, pBefore: number, pAfter: number, diff: number,
+ *   ciLower: number, ciUpper: number, pExact: number|null, chi2: number|null, pChi2: number|null,
+ *   chi2Cc: number|null, pChi2Cc: number|null, testable: boolean, smallDiscordant: boolean,
+ *   reject: boolean }} — chi-square p-values are null for one-sided directions; everything
+ *   test-related is null when there are no discordant pairs
+ */
+export function mcNemarTest(table, direction = 'two-sided', alpha = 0.05) {
+  const [[a, b], [c, d]] = table;
+  const n = a + b + c + d;
+  const disc = b + c;
+  const diff = (c - b) / n;
+  const se = Math.sqrt(Math.max(0, (disc - ((b - c) * (b - c)) / n) / (n * n)));
+  let ciLower;
+  let ciUpper;
+  if (direction === 'two-sided') {
+    const q = zQuantile(1 - alpha / 2);
+    ciLower = diff - q * se;
+    ciUpper = diff + q * se;
+  } else if (direction === 'greater') {
+    ciLower = diff - zQuantile(1 - alpha) * se;
+    ciUpper = 1;
+  } else {
+    ciLower = -1;
+    ciUpper = diff + zQuantile(1 - alpha) * se;
+  }
+
+  const testable = disc > 0;
+  let pExact = null;
+  let chi2 = null;
+  let pChi2 = null;
+  let chi2Cc = null;
+  let pChi2Cc = null;
+  if (testable) {
+    if (direction === 'greater') pExact = binomGE(c, disc, 0.5);
+    else if (direction === 'less') pExact = binomLE(c, disc, 0.5);
+    else pExact = Math.min(1, 2 * Math.min(binomLE(c, disc, 0.5), binomGE(c, disc, 0.5)));
+    chi2 = ((b - c) * (b - c)) / disc;
+    const corrected = Math.max(0, Math.abs(b - c) - 1);
+    chi2Cc = (corrected * corrected) / disc;
+    if (direction === 'two-sided') {
+      pChi2 = 1 - chi2CDF(chi2, 1);
+      pChi2Cc = 1 - chi2CDF(chi2Cc, 1);
+    }
+  }
+  return {
+    b,
+    c,
+    n,
+    pBefore: (a + b) / n,
+    pAfter: (a + c) / n,
+    diff,
+    ciLower,
+    ciUpper,
+    pExact,
+    chi2,
+    pChi2,
+    chi2Cc,
+    pChi2Cc,
+    testable,
+    smallDiscordant: disc < 10,
+    reject: testable && pExact < alpha,
+  };
+}
+
+/**
+ * Equivalence test for one proportion (TOST, exact binomial). The equivalence
+ * limits are differences from p0 with lower < 0 < upper. Each one-sided test
+ * rejects "p is outside the limit"; a limit at or beyond 0 / 1 cannot be
+ * crossed and gives a p-value of 0. The CI has level 1 − 2·alpha.
+ * @param {number} x — events
+ * @param {number} n — trials
+ * @param {number} p0 — reference proportion
+ * @param {number} lower — lower limit as a difference from p0 (negative)
+ * @param {number} upper — upper limit as a difference from p0 (positive)
+ * @param {number} [alpha=0.05]
+ * @returns {{ pHat: number, ciLower: number, ciUpper: number, pLower: number, pUpper: number,
+ *   pValue: number, equivalent: boolean }} — pValue = max(pLower, pUpper)
+ */
+export function equivalenceOneProportion(x, n, p0, lower, upper, alpha = 0.05) {
+  const ci = clopperPearsonCI(x, n, 1 - 2 * alpha);
+  const lowerLimit = p0 + lower;
+  const upperLimit = p0 + upper;
+  const pLower = lowerLimit <= 0 ? 0 : binomGE(x, n, lowerLimit);
+  const pUpper = upperLimit >= 1 ? 0 : binomLE(x, n, upperLimit);
+  const pValue = Math.max(pLower, pUpper);
+  return {
+    pHat: x / n,
+    ciLower: ci.lower,
+    ciUpper: ci.upper,
+    pLower,
+    pUpper,
+    pValue,
+    equivalent: pValue < alpha,
+  };
+}
+
+/**
+ * Equivalence test for two independent proportions (TOST, unpooled Wald z).
+ * The limits bound the difference p1 − p2 (lower < 0 < upper). The CI has
+ * level 1 − 2·alpha. Without variance (SE = 0) the test is not testable:
+ * z and p-values are null and equivalence is not shown.
+ * @param {number} x1
+ * @param {number} n1
+ * @param {number} x2
+ * @param {number} n2
+ * @param {number} lower — lower limit of p1 − p2 (negative)
+ * @param {number} upper — upper limit of p1 − p2 (positive)
+ * @param {number} [alpha=0.05]
+ * @returns {{ p1: number, p2: number, diff: number, ciLower: number, ciUpper: number,
+ *   zLower: number|null, zUpper: number|null, pLower: number|null, pUpper: number|null,
+ *   pValue: number|null, equivalent: boolean, testable: boolean }}
+ */
+export function equivalenceTwoProportions(x1, n1, x2, n2, lower, upper, alpha = 0.05) {
+  const p1 = x1 / n1;
+  const p2 = x2 / n2;
+  const diff = p1 - p2;
+  const se = Math.sqrt((p1 * (1 - p1)) / n1 + (p2 * (1 - p2)) / n2);
+  const q = zQuantile(1 - alpha);
+  const base = { p1, p2, diff, ciLower: diff - q * se, ciUpper: diff + q * se };
+  if (!(se > 0)) {
+    return {
+      ...base, zLower: null, zUpper: null, pLower: null, pUpper: null, pValue: null,
+      equivalent: false, testable: false,
+    };
+  }
+  const zLower = (diff - lower) / se;
+  const zUpper = (diff - upper) / se;
+  const pLower = normalUpperTail(zLower);
+  const pUpper = normalUpperTail(-zUpper);
+  const pValue = Math.max(pLower, pUpper);
+  return {
+    ...base, zLower, zUpper, pLower, pUpper, pValue, equivalent: pValue < alpha, testable: true,
   };
 }

@@ -236,6 +236,12 @@ export function createResolver(_appDir) {
 
 /**
  * Das Mitglied `<name>` des Objektarguments von `createModule({…})`.
+ *
+ * Das Argument darf auch ein Bezeichner sein, der auf ein `const`-
+ * Objektliteral der obersten Ebene derselben Datei zeigt
+ * (`const definition = {…}; createModule(definition)` — hypothesis-test
+ * teilt so `definition.data` mit seinen Unit-Tests). Alles andere bleibt
+ * unauflösbar (fail closed).
  * @returns {ts.ObjectLiteralElementLike|null}
  */
 export function findCreateModuleMember(sf, name) {
@@ -245,9 +251,9 @@ export function findCreateModuleMember(sf, name) {
     if (ts.isCallExpression(node)
         && ts.isIdentifier(node.expression)
         && node.expression.text === 'createModule'
-        && node.arguments[0]
-        && ts.isObjectLiteralExpression(node.arguments[0])) {
-      for (const property of node.arguments[0].properties) {
+        && node.arguments[0]) {
+      const literal = moduleDefinitionLiteral(sf, node.arguments[0]);
+      for (const property of literal?.properties ?? []) {
         if (memberName(property) === name) { found = property; break; }
       }
     }
@@ -255,6 +261,29 @@ export function findCreateModuleMember(sf, name) {
   };
   walk(sf);
   return found;
+}
+
+/**
+ * Das Objektliteral hinter dem Argument von `createModule`: das Literal
+ * selbst, oder das Literal einer `const`-Deklaration der obersten Ebene, auf
+ * die ein Bezeichner zeigt.
+ * @param {ts.SourceFile} sf
+ * @param {ts.Expression} arg
+ * @returns {ts.ObjectLiteralExpression|null}
+ */
+function moduleDefinitionLiteral(sf, arg) {
+  if (ts.isObjectLiteralExpression(arg)) return arg;
+  if (!ts.isIdentifier(arg)) return null;
+  for (const statement of sf.statements) {
+    if (!ts.isVariableStatement(statement)) continue;
+    if (!(statement.declarationList.flags & ts.NodeFlags.Const)) continue;
+    for (const decl of statement.declarationList.declarations) {
+      if (!ts.isIdentifier(decl.name) || decl.name.text !== arg.text) continue;
+      const init = decl.initializer;
+      return init && ts.isObjectLiteralExpression(init) ? init : null;
+    }
+  }
+  return null;
 }
 
 /**

@@ -1828,6 +1828,60 @@
       "tags": ["attribute", "chi-square", "contingency"]
     },
     {
+      "id": "attribute-paint-defects-rates",
+      "type": "project",
+      "title": {
+        "de": "Lackfehler je m² auf zwei Linien (2 Poisson-Raten)",
+        "en": "Paint defects per m² on two lines (2 Poisson rates)"
+      },
+      "description": {
+        "de": "54 Lackfehler auf 120 m² (Linie 1) gegen 24 Fehler auf 95 m² (Linie 2). Die Fläche ist die Beobachtungsmenge; verglichen werden Fehler je m². Erfundenes Szenario.",
+        "en": "54 paint defects on 120 m² (line 1) versus 24 defects on 95 m² (line 2). The area is the exposure; defects per m² are compared. Invented scenario."
+      },
+      "source": "Qprovement synthetisch",
+      "license": "public-domain",
+      "file": "projects/attribute-paint-defects-rates.json",
+      "format": "json",
+      "modules": ["attribute-test"],
+      "tags": ["attribute", "poisson", "rate"]
+    },
+    {
+      "id": "attribute-supplier-equivalence",
+      "type": "project",
+      "title": {
+        "de": "Lieferantenwechsel: gleichwertige Ausschussquote? (Äquivalenztest)",
+        "en": "Supplier change: equivalent defect rate? (equivalence test)"
+      },
+      "description": {
+        "de": "46 von 1200 Teilen n.i.O. beim alten, 41 von 1180 beim neuen Lieferanten, Grenze ±1 Prozentpunkt. Der 90-%-Bereich der Differenz liegt nicht ganz innerhalb der Grenzen – Gleichwertigkeit ist nicht nachgewiesen. Erfundenes Szenario.",
+        "en": "46 of 1200 parts failed with the old supplier, 41 of 1180 with the new one, bound ±1 percentage point. The 90 % interval of the difference does not lie entirely within the bounds – equivalence is not shown. Invented scenario."
+      },
+      "source": "Qprovement synthetisch",
+      "license": "public-domain",
+      "file": "projects/attribute-supplier-equivalence.json",
+      "format": "json",
+      "modules": ["attribute-test"],
+      "tags": ["attribute", "proportion", "equivalence", "tost"]
+    },
+    {
+      "id": "attribute-before-after-paired",
+      "type": "project",
+      "title": {
+        "de": "Dieselben Teile vorher und nachher (McNemar)",
+        "en": "The same parts before and after (McNemar)"
+      },
+      "description": {
+        "de": "150 Teile werden vor und nach einer Nacharbeit geprüft (i.O./n.i.O.). Gepaarte Daten: Es zählen nur die Teile, deren Ergebnis sich geändert hat. Erfundenes Szenario.",
+        "en": "150 parts are inspected before and after a rework (pass/fail). Paired data: only the parts whose result changed count. Invented scenario."
+      },
+      "source": "Qprovement synthetisch, NumPy default_rng, Seed=1020",
+      "license": "public-domain",
+      "file": "projects/attribute-before-after-paired.json",
+      "format": "json",
+      "modules": ["attribute-test"],
+      "tags": ["attribute", "mcnemar", "paired"]
+    },
+    {
       "id": "outlier-bolzen-grubbs",
       "type": "project",
       "title": {
@@ -2676,8 +2730,8 @@
         "en": "TRIZ function analysis: toothbrush"
       },
       "description": {
-        "de": "Funktionsmodell einer Handzahnbürste mit Zielobjekt Belag: eine unzureichende Reinigungsfunktion und zwei schädliche Wirkungen auf das Zahnfleisch.",
-        "en": "Function model of a manual toothbrush with plaque as target: an insufficient cleaning function and two harmful effects on the gums."
+        "de": "Funktionsmodell einer Handzahnbürste mit Zielobjekt Belag: eine unzureichende Reinigungsfunktion, ein übermäßiger Andruck und zwei schädliche Wirkungen auf das Zahnfleisch.",
+        "en": "Function model of a manual toothbrush with plaque as target: an insufficient cleaning function, excessive brushing pressure and two harmful effects on the gums."
       },
       "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",

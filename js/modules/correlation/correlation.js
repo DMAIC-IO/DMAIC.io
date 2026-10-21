@@ -721,8 +721,10 @@ const mod = createModule({
         const col = parseInt(cell.dataset.col, 10);
         if (row === col || cell.classList.contains('corr__matrix-cell--empty')) return;
         if (!this.filteredPairs.length) return;
-        const pairI = Math.max(row, col);
-        const pairJ = Math.min(row, col);
+        // The table shows the lower triangle (row > col), but the model's
+        // pairs — and thus the plot-card keys — are built with i < j.
+        const pairI = Math.min(row, col);
+        const pairJ = Math.max(row, col);
         const pairKey = `${pairI}-${pairJ}`;
         this.selectedPair = this.selectedPair === pairKey ? null : pairKey;
       },

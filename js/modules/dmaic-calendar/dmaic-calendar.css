@@ -616,12 +616,6 @@
    Overlay, modal shell + footer buttons come from ui/modal + components.css.
    Fields use global .field / .field-group. */
 
-.module-calendar__row-3 {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: var(--spacing-m);
-}
-
 .module-calendar__phase-select {
   display: flex;
   gap: var(--spacing-xs);

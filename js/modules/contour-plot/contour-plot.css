@@ -18,26 +18,10 @@
   font-weight: 500;
 }
 
-/* ── Coefficient Grid ── */
-.contour__coeff-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-xs);
-  margin-top: var(--spacing-xs);
-}
-
 .contour__field-sm label {
   font-size: 10px;
   color: var(--color-text-tertiary);
   margin-bottom: 1px;
-}
-
-/* ── 2-Column Row ── */
-.contour__row-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-xs);
-  margin-bottom: var(--spacing-xs);
 }
 
 /* Column selects: use global .ds-picker (dataset-picker.css) */

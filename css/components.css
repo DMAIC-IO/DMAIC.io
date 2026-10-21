@@ -369,6 +369,26 @@ select.input {
   margin-bottom: 0;
 }
 
+/* ── Field grid: fixed equal columns (2–4). Unlike .field-row, a cell keeps
+      its column width even when the grid holds fewer fields than columns,
+      so a lone input in .field-grid--3 takes one third of the panel.
+      .field-group--span-2 / --span-3 let one field cover several columns.
+        <div class="field-grid field-grid--3">
+          <div class="field-group">…</div>
+        </div> ── */
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--field-grid-columns, 2), minmax(0, 1fr));
+  gap: var(--spacing-m);
+}
+
+.field-grid--2 { --field-grid-columns: 2; }
+.field-grid--3 { --field-grid-columns: 3; }
+.field-grid--4 { --field-grid-columns: 4; }
+
+.field-grid > .field-group--span-2 { grid-column: span 2; }
+.field-grid > .field-group--span-3 { grid-column: span 3; }
+
 /* ── Radio group: stacked by default, --inline puts options side by side.
       Markup: .field-radios > label > input[type=radio] + span.
       A <fieldset> carries its caption as <legend>; inside a .field-group
@@ -1200,7 +1220,7 @@ select.input {
 .settings-hint {
   margin: var(--spacing-sm) 0 0 0;
   font-size: var(--font-size-xs);
-  color: var(--color-text-muted, var(--color-text-secondary));
+  color: var(--color-text-tertiary);
   line-height: 1.4;
 }
 
@@ -1336,7 +1356,7 @@ select.input {
 }
 
 .settings-shortcut-row--conflict {
-  border-color: var(--color-danger, #d93b3b);
+  border-color: var(--color-error);
   background: var(--color-danger-alpha, rgb(217 59 59 / 6%));
 }
 
@@ -1353,7 +1373,7 @@ select.input {
 }
 
 .settings-shortcut-key {
-  font-family: var(--font-mono, ui-monospace, Menlo, Consolas, monospace);
+  font-family: var(--font-family-mono);
   font-size: 12px;
   min-width: 90px;
   padding: var(--spacing-xs) var(--spacing-sm);
@@ -1394,7 +1414,7 @@ select.input {
   gap: var(--spacing-sm);
   margin-top: var(--spacing-s);
   font-size: 12px;
-  color: var(--color-danger, #d93b3b);
+  color: var(--color-error);
 }
 
 /* ── Global Slider ────────────────────────────────────────── */
@@ -2375,4 +2395,53 @@ body.dmike-context-help-armed .context-help__btn {
   flex-wrap: nowrap;
   align-items: center;
   gap: var(--dmike-space);
+}
+
+/* ── Bug reporter (frame/bug-reporter, dev hosts only) ─────────────────── */
+
+/* Sits just above the footer so it never covers #footer-last-saved. */
+.bug-reporter__trigger {
+  position: fixed;
+  left: var(--spacing-sm);
+  bottom: calc(var(--footer-height) + var(--spacing-xs));
+  z-index: var(--z-sticky);
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--color-border-primary);
+  border-radius: 50%;
+  background: var(--color-bg-elevated);
+  color: var(--color-text-secondary);
+  opacity: 0.45;
+  cursor: pointer;
+}
+
+.bug-reporter__trigger:hover,
+.bug-reporter__trigger:focus-visible { opacity: 1; color: var(--color-accent); }
+
+.bug-report { display: flex; flex-direction: column; gap: var(--spacing-sm); }
+.bug-report__choice { display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer; }
+.bug-report__description { width: 100%; box-sizing: border-box; resize: vertical; font: inherit; }
+
+/* The dialog window width comes from the dialog service (size 'wide' while a
+   screenshot is shown); the editor only fills the body it is given. */
+.bug-editor { display: flex; flex-direction: column; gap: var(--spacing-xs); }
+.bug-editor__tools { display: flex; gap: var(--spacing-xs); }
+.bug-editor__tool[aria-pressed="true"] { color: var(--color-accent); background: var(--color-accent-light); }
+.bug-editor__stage { position: relative; width: fit-content; max-width: 100%; line-height: 0; border: 1px solid var(--color-border-primary); }
+.bug-editor__image { display: block; max-width: 100%; max-height: 60vh; width: auto; height: auto; user-select: none; }
+.bug-editor__canvas { position: absolute; inset: 0 auto auto 0; cursor: crosshair; touch-action: none; } /* stylelint-disable-line plugin/no-unsupported-browser-features -- only matters on touch screens; browsers without it ignore the declaration */
+
+.bug-editor__textbox-input {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid var(--color-accent);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  font: inherit;
+  line-height: 1.3;
+  resize: none;
 }

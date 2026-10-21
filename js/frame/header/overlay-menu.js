@@ -18,7 +18,7 @@ import { isGlossaryInlineEnabled } from '../../core/glossary-inline.js';
  * @param {object} ui
  * @param {object} ui.helpPanel - Help panel instance.
  */
-export function initGlossaryInline(_services, { helpPanel }) {
+export function initGlossaryInline({ eventBus }, { helpPanel }) {
   // The standalone glossary catalog button has been removed — the glossary is
   // now a tab inside the module-help panel (help / examples / glossary), and
   // searching it surfaces the full catalog. This wiring is only the global
@@ -37,6 +37,9 @@ export function initGlossaryInline(_services, { helpPanel }) {
     const id = el.dataset.glossaryTerm;
     if (!id) return;
     e.preventDefault();
+    // Same exclusivity as the header glossary button: the help panel lives in
+    // #app-workspace, which an open Lab/Dashboard/Training overlay hides.
+    eventBus.emit('overlay:opened', 'help-panel');
     helpPanel.openGlossaryTerm(id);
   });
 }

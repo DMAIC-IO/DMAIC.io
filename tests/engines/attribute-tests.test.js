@@ -5,6 +5,12 @@ import {
   twoProportionTest,
   fisherExact2x2,
   chiSquareAssociation,
+  onePoissonRateTest,
+  poissonRateCI,
+  twoPoissonRateTest,
+  mcNemarTest,
+  equivalenceOneProportion,
+  equivalenceTwoProportions,
 } from '../../js/engines/attribute-test-engine.js';
 
 async function loadFixture(path) {
@@ -38,6 +44,11 @@ const CASES = [
   ['two-proportion', (i) => twoProportionTest(i.x1, i.n1, i.x2, i.n2, i.direction, i.alpha, i.pooled)],
   ['fisher-exact', (i) => fisherExact2x2(i.table, i.direction)],
   ['chi-square-association', (i) => chiSquareAssociation(i.table, i.alpha)],
+  ['poisson-rate-one', (i) => onePoissonRateTest(i.x, i.t, i.lambda0, i.direction, i.alpha)],
+  ['poisson-rate-two', (i) => twoPoissonRateTest(i.x1, i.t1, i.x2, i.t2, { direction: i.direction, alpha: i.alpha, pooled: i.pooled, diff0: i.diff0 })],
+  ['mcnemar', (i) => mcNemarTest(i.table, i.direction, i.alpha)],
+  ['equivalence-proportion-one', (i) => equivalenceOneProportion(i.x, i.n, i.p0, i.lower, i.upper, i.alpha)],
+  ['equivalence-proportion-two', (i) => equivalenceTwoProportions(i.x1, i.n1, i.x2, i.n2, i.lower, i.upper, i.alpha)],
 ];
 
 const FIXTURES = await Promise.all(
@@ -54,6 +65,26 @@ suite('attribute-test-engine: large support guard', () => {
   test('twoProportionTest handles very large samples', () => {
     const r = twoProportionTest(100000, 200000, 100000, 200000);
     assertTrue(Number.isFinite(r.pFisher) && r.pFisher >= 0 && r.pFisher <= 1, `pFisher: ${r.pFisher}`);
+  });
+});
+
+suite('attribute-test-engine: open Poisson bounds', () => {
+  test('one-sided bounds are open on the other side', () => {
+    assertTrue(poissonRateCI(18, 40, 0.95, 'greater').upper === Infinity, 'greater: upper must be Infinity');
+    assertTrue(poissonRateCI(4, 25.5, 0.95, 'less').lower === 0, 'less: lower must be 0');
+    assertTrue(twoPoissonRateTest(25, 50, 14, 52, { direction: 'greater' }).ciUpper === Infinity,
+      'two rates, greater: ciUpper must be Infinity');
+  });
+});
+
+suite('attribute-test-engine: degenerate 2-rate test', () => {
+  test('no events and a non-zero difference0 is not testable', () => {
+    const r = twoPoissonRateTest(0, 10, 0, 12, { diff0: 0.05 });
+    assertTrue(r.testable === false && r.z === null && r.pValue === null && r.reject === false, 'must be untestable');
+  });
+  test('no events with difference0 = 0 stays testable (p = 1)', () => {
+    const r = twoPoissonRateTest(0, 10, 0, 12);
+    assertTrue(r.testable === true && r.pValue === 1 && r.reject === false, 'p must be 1');
   });
 });
 

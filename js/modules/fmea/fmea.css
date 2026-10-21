@@ -294,12 +294,6 @@
   gap: var(--spacing-sm);
 }
 
-.fmea__fields-row {
-  display: grid;
-  gap: var(--spacing-sm);
-  grid-template-columns: 1fr 1fr 1fr;
-}
-
 /* Fields use global .field / .field-group (components.css) */
 
 /* ── SOD Row ── */

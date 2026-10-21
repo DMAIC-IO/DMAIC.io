@@ -24,14 +24,14 @@
              :value="model.params.ref" @input="setParam('ref', $event.target.value)" @change="runAnalysis()">
     </div>
 
-    <div class="field-row">
-      <div class="field-group field-group--grow">
+    <div class="field-grid field-grid--2">
+      <div class="field-group">
         <label data-help-key="modules.msa-typ1.types.Params.lsl" x-text="t('lsl')"></label>
         <input type="text" class="field field--num" data-ref="inp-lsl"
                placeholder="49.950" inputmode="decimal"
                :value="model.params.lsl" @input="setParam('lsl', $event.target.value)" @change="runAnalysis()">
       </div>
-      <div class="field-group field-group--grow">
+      <div class="field-group">
         <label data-help-key="modules.msa-typ1.types.Params.usl" x-text="t('usl')"></label>
         <input type="text" class="field field--num" data-ref="inp-usl"
                placeholder="50.050" inputmode="decimal"
@@ -39,8 +39,8 @@
       </div>
     </div>
 
-    <div class="field-row">
-      <div class="field-group field-group--grow">
+    <div class="field-grid field-grid--2">
+      <div class="field-group">
         <label data-help-key="modules.msa-typ1.types.Params.k1" x-text="t('k1Label')"></label>
         <select class="field" data-ref="inp-k1" :value="model.params.k1" @input="setParam('k1', $event.target.value)" @change="runAnalysis()">
           <template x-for="o in k1Options()" :key="o.value">
@@ -48,7 +48,7 @@
           </template>
         </select>
       </div>
-      <div class="field-group field-group--grow">
+      <div class="field-group">
         <label data-help-key="modules.msa-typ1.types.Params.k2" x-text="t('k2Label')"></label>
         <select class="field" data-ref="inp-k2" :value="model.params.k2" @input="setParam('k2', $event.target.value)" @change="runAnalysis()">
           <template x-for="o in k2Options()" :key="o.value">

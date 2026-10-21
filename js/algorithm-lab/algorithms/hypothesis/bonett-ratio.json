@@ -6,7 +6,7 @@
   },
   "category": "hypothesis",
   "subcategory": "variance",
-  "status": "in-progress",
+  "status": "validated",
   "version": "1.0.0",
   "description": {
     "short": {
@@ -14,8 +14,8 @@
       "en": "Compares the variances of two samples with a CI for their ratio – also for non-normal data."
     },
     "long": {
-      "de": "Der Bonett-Test für zwei Varianzen ist die robuste Alternative zum F-Test. Er schätzt die Wölbung beider Stichproben aus getrimmten Mittelwerten, geht von einer gemeinsamen Kurtosis aus und liefert ein Konfidenzintervall für σ₁²/σ₂², auch einseitig. Das Intervall ergibt sich aus der Lösung einer Gleichung H(x) ≤ 0; bei unausgewogenen Designs wird eine Ausgleichskonstante c verwendet. Bei gleichem Stichprobenumfang gibt es eine Teststatistik T₂ (χ², 1 Freiheitsgrad), sonst folgt der p-Wert aus der Intervallinversion. Qprovement nutzt den Test, wenn Anderson-Darling die Normalverteilung ablehnt, und zeigt den Levene-Test (Brown-Forsythe) zum Abgleich.",
-      "en": "The Bonett test for two variances is the robust alternative to the F-test. It estimates the kurtosis of both samples from trimmed means, assumes a common kurtosis, and gives a confidence interval for σ₁²/σ₂², also one-sided. The interval comes from solving H(x) ≤ 0; unbalanced designs use an equalizer constant c. For equal sample sizes there is a test statistic T₂ (χ², 1 degree of freedom); otherwise the p-value follows from interval inversion. Qprovement uses the test when Anderson-Darling rejects normality and shows the Levene test (Brown-Forsythe) as a cross-check."
+      "de": "Der Bonett-Test für zwei Varianzen ist die robuste Alternative zum F-Test. Er schätzt die Wölbung beider Stichproben aus getrimmten Mittelwerten, geht von einer gemeinsamen Kurtosis aus und liefert ein Konfidenzintervall für σ₁²/σ₂², auch einseitig. Das Intervall ergibt sich aus der Lösung einer Gleichung H(x) ≤ 0; bei unausgewogenen Designs wird eine Ausgleichskonstante c verwendet. Bei gleichem Stichprobenumfang gibt es eine Teststatistik T₂ (χ², 1 Freiheitsgrad), sonst folgt der p-Wert aus dem Niveau, ab dem σ₁²/σ₂² = 1 in der Konfidenzmenge liegt. Qprovement nutzt den Test, wenn Anderson-Darling die Normalverteilung ablehnt, und zeigt den Levene-Test (Brown-Forsythe) zum Abgleich.",
+      "en": "The Bonett test for two variances is the robust alternative to the F-test. It estimates the kurtosis of both samples from trimmed means, assumes a common kurtosis, and gives a confidence interval for σ₁²/σ₂², also one-sided. The interval comes from solving H(x) ≤ 0; unbalanced designs use an equalizer constant c. For equal sample sizes there is a test statistic T₂ (χ², 1 degree of freedom); otherwise the p-value is the level at which σ₁²/σ₂² = 1 enters the confidence set. Qprovement uses the test when Anderson-Darling rejects normality and shows the Levene test (Brown-Forsythe) as a cross-check."
     }
   },
   "documentation": {
@@ -121,8 +121,8 @@
         "en": "No confidence interval exists for n ≤ z"
       },
       {
-        "de": "In extremen Designs kann die Konfidenzmenge aus zwei getrennten Intervallen bestehen; dann wird die Hülle angezeigt",
-        "en": "In extreme designs the confidence set can consist of two disjoint intervals; the hull is then shown"
+        "de": "In extremen Designs kann die Konfidenzmenge aus zwei getrennten Intervallen bestehen; dann wird wie in Minitab kein Intervall angezeigt, der p-Wert bleibt gültig",
+        "en": "In extreme designs the confidence set can consist of two disjoint intervals; as in Minitab no interval is shown then, the p-value remains valid"
       }
     ],
     "references": [

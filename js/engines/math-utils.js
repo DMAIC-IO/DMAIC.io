@@ -105,6 +105,9 @@ export function digamma(x) {
   return r;
 }
 
+/** Iteration cap for gammainc; the series needs ~8·√a terms near x ≈ a. */
+const GAMMAINC_MAX_ITER = 100000;
+
 // ─── Incomplete Gamma ───────────────────────────────────────
 
 /**
@@ -119,7 +122,7 @@ export function gammainc(a, x) {
   if (x < a + 1) {
     // Series expansion
     let s = 1 / a, t = 1 / a;
-    for (let n = 1; n < 300; n++) {
+    for (let n = 1; n < GAMMAINC_MAX_ITER; n++) {
       t *= x / (a + n);
       s += t;
       if (Math.abs(t) < Math.abs(s) * 1e-14) break;
@@ -130,7 +133,7 @@ export function gammainc(a, x) {
   let D = 1 / (x + 1 - a);
   if (Math.abs(D) < 1e-30) D = 1e-30;
   let C = 1e30, h = D;
-  for (let n = 1; n < 300; n++) {
+  for (let n = 1; n < GAMMAINC_MAX_ITER; n++) {
     const an = -n * (n - a), bn = x + 2 * n + 1 - a;
     D = bn + an * D; if (Math.abs(D) < 1e-30) D = 1e-30;
     C = bn + an / C; if (Math.abs(C) < 1e-30) C = 1e-30;
@@ -538,6 +541,230 @@ export function noncentralTCDF(t, df, delta) {
   tnc += normalUpperTail(del);
   if (negdel) tnc = 1 - tnc;
   return Math.min(Math.max(tnc, 0), 1);
+}
+
+// ─── Studentized Range Distribution ─────────────────────────
+// Coefficients and Gauss-Legendre nodes below come from R's nmath pnorm.c /
+// ptukey.c; the literals are written as shortest round-trip doubles (the C
+// sources carry more digits than a double holds), so the values are unchanged.
+
+/**
+ * Standard normal tails [Φ(x), 1 − Φ(x)] to full double precision — Cody
+ * (1969), as in R's pnorm_both. The exported normalCDF (A&S 7.1.26, error
+ * ≈ 1.5e-7) is too coarse for the studentized range integrals.
+ * @param {number} x
+ * @returns {[number, number]} [lower tail, upper tail]
+ */
+function pnormBoth(x) {
+  const y = Math.abs(x);
+  if (y <= 0.67448975) {
+    const a = [2.2352520354606837, 161.02823106855587, 1067.6894854603709,
+      18154.98125334356, 0.06568233791820745];
+    const b = [47.202581904688245, 976.0985517377767, 10260.932208618979,
+      45507.78933502673];
+    let xnum = 0, xden = 0;
+    if (y > 1.1102230246251565e-16) {
+      const xsq = x * x;
+      xnum = a[4] * xsq; xden = xsq;
+      for (let i = 0; i < 3; i++) { xnum = (xnum + a[i]) * xsq; xden = (xden + b[i]) * xsq; }
+    }
+    const temp = x * (xnum + a[3]) / (xden + b[3]);
+    return [0.5 + temp, 0.5 - temp];
+  }
+  if (y >= 50) return x > 0 ? [1, 0] : [0, 1];
+  let temp;
+  if (y <= 5.656854249492381) {          // √32
+    const c = [0.39894151208813466, 8.883149794388377, 93.50665613217785,
+      597.2702763948002, 2494.5375852903726, 6848.190450536283,
+      11602.65143764735, 9842.714838383978, 1.0765576773720192e-8];
+    const d = [22.266688044328117, 235.387901782625, 1519.3775994075547,
+      6485.558298266761, 18615.571640885097, 34900.95272114598,
+      38912.00328609327, 19685.429676859992];
+    let xnum = c[8] * y, xden = y;
+    for (let i = 0; i < 7; i++) { xnum = (xnum + c[i]) * y; xden = (xden + d[i]) * y; }
+    temp = (xnum + c[7]) / (xden + d[7]);
+  } else {
+    const p = [0.215898534057957, 0.12740116116024736, 0.022235277870649807,
+      0.0014216191932278934, 2.9112874951168793e-5, 0.023073441764940174];
+    const q = [1.284260096144911, 0.4682382124808651, 0.06598813786892856,
+      0.0037823963320275824, 7.297515550839662e-5];
+    const xsq = 1 / (x * x);
+    let xnum = p[5] * xsq, xden = xsq;
+    for (let i = 0; i < 4; i++) { xnum = (xnum + p[i]) * xsq; xden = (xden + q[i]) * xsq; }
+    temp = xsq * (xnum + p[4]) / (xden + q[4]);
+    temp = (0.3989422804014327 - temp) / y;   // 1/√(2π)
+  }
+  // exp(−y²/2) split so that its leading factor is exact (Cody's do_del)
+  const ysq = Math.trunc(y * 16) / 16;
+  const del = (y - ysq) * (y + ysq);
+  const tail = Math.exp(-ysq * ysq * 0.5) * Math.exp(-del * 0.5) * temp;
+  return x > 0 ? [1 - tail, tail] : [tail, 1 - tail];
+}
+
+// 12-point Gauss-Legendre half nodes/weights (inner integral, R's wprob)
+const SR_XLEG = [0.9815606342467192, 0.9041172563704749,
+  0.7699026741943047, 0.5873179542866175,
+  0.3678314989981802, 0.1252334085114689];
+const SR_ALEG = [0.04717533638651183, 0.10693932599531843,
+  0.16007832854334622, 0.20316742672306592,
+  0.2334925365383548, 0.24914704581340277];
+// 16-point Gauss-Legendre half nodes/weights (outer integral, R's ptukey)
+const SR_XLEGQ = [0.9894009349916499, 0.9445750230732326,
+  0.8656312023878318, 0.755404408355003,
+  0.6178762444026438, 0.45801677765722737,
+  0.2816035507792589, 9.501250983763744e-2];
+const SR_ALEGQ = [2.7152459411754096e-2, 6.2253523938647894e-2,
+  9.515851168249279e-2, 0.12462897125553388,
+  0.14959598881657674, 0.16915651939500254,
+  0.18260341504492358, 0.1894506104550685];
+
+/**
+ * Range distribution of k standard normals, P(R ≤ w) — R's wprob (Copenhaver
+ * & Holland 1988), Hartley's form: (2Φ(w/2) − 1)^k + 2k ∫_{w/2}^{8} φ(z)
+ * (Φ(z) − Φ(z − w))^{k−1} dz by 12-point Gauss-Legendre on equal intervals.
+ *
+ * Deviation from R: 6 intervals for w ≤ 3 and 4 for w > 3 (R: 3 and 2).
+ * R's schedule loses up to ≈ 3.5e-8 relative at k = 20; the doubled schedule
+ * matches SciPy to ≈ 4e-13 over the fixture grid.
+ * @param {number} w — Range (> 0)
+ * @param {number} k — Number of means
+ * @returns {number}
+ */
+function rangeProb(w, k) {
+  // R's eps/cut-offs: range bound 8, (2Φ(w/2)−1)^k dropped below e^(−50/k), terms dropped below e^(−30/(k−1)), z² > 60 skipped.
+  const half = w * 0.5;
+  if (half >= 8) return 1;
+  let pr = 2 * pnormBoth(half)[0] - 1;
+  pr = pr >= Math.exp(-50 / k) ? pr ** k : 0;
+  const nInt = w > 3 ? 4 : 6;
+  const binc = (8 - half) / nInt;
+  const k1 = k - 1;
+  const minTerm = Math.exp(-30 / k1);
+  let lo = half, sum = 0;
+  for (let i = 0; i < nInt; i++, lo += binc) {
+    const mid = lo + 0.5 * binc, hw = 0.5 * binc;
+    let s = 0;
+    for (let jj = 0; jj < 12; jj++) {
+      const j = jj < 6 ? jj : 11 - jj;
+      const z = mid + hw * (jj < 6 ? -SR_XLEG[j] : SR_XLEG[j]);
+      if (z * z > 60) break;
+      // Φ(z) − Φ(z − w), from the upper tails when both are close to 1
+      const [lo1, up1] = pnormBoth(z);
+      const [lo2, up2] = pnormBoth(z - w);
+      const diff = z - w > 0 ? up2 - up1 : lo1 - lo2;
+      if (diff >= minTerm) s += SR_ALEG[j] * Math.exp(-0.5 * z * z) * diff ** k1;
+    }
+    sum += s * (2 * hw * k) / SQRT2PI;
+  }
+  pr += sum;
+  if (pr <= Math.exp(-30)) return 0;
+  return pr >= 1 ? 1 : pr;
+}
+
+/**
+ * Studentized range CDF P(Q ≤ q) for k means and df error degrees of freedom
+ * (Tukey HSD, Games-Howell). After R's ptukey (Copenhaver & Holland 1988):
+ * the range probability rangeProb(q·s, k) is averaged over s² ~ χ²_df / df,
+ * and df > 25000 is treated as ∞ for parity with R — this makes the CDF jump
+ * by ≈ 1e-5 at the cut-off (e.g. q = 3, k = 2: 0.966095 at df = 24999 vs.
+ * 0.966105 at df = 25001).
+ *
+ * Deviation from R: the outer integral runs over y = ln s² (16-point
+ * Gauss-Legendre panels of width min(1, √(2/df)), marched out from the mode
+ * y = 0 until the remaining mass is below 1e-16) instead of R's fixed
+ * schedule over 2s². This keeps the integrand smooth for df < 2, where R's
+ * s^(df−2) endpoint singularity breaks the quadrature (R refuses df < 2).
+ *
+ * @param {number} q — Studentized range statistic
+ * @param {number} k — Number of means (finite, ≥ 2)
+ * @param {number} df — Error degrees of freedom (> 0, may be Infinity)
+ * @returns {number} — 0 for q ≤ 0, NaN for NaN q or invalid k or df
+ */
+export function ptukey(q, k, df) {
+  if (Number.isNaN(q) || !Number.isFinite(k) || !(k >= 2) || !(df > 0)) return NaN;
+  if (q <= 0) return 0;
+  if (q === Infinity) return 1;
+  if (df > 25000) return rangeProb(q, k);
+  const f2 = df / 2;
+  const c0 = f2 * Math.log(f2) - lnGamma(f2);
+  const lnDens = (y) => c0 + f2 * (y - Math.exp(y));      // log density of y = ln s²
+  // Outer cut-offs (ours, not R's): nodes with log density < −40 skipped; stop right at −38 ≈ ln 3e-17, left at 1e-16·sum.
+  const h = Math.min(1, Math.sqrt(2 / df));
+  const panel = (y0) => {
+    const mid = y0 + h / 2, hw = h / 2;
+    let s = 0;
+    for (let j = 0; j < 8; j++) {
+      for (const y of [mid - hw * SR_XLEGQ[j], mid + hw * SR_XLEGQ[j]]) {
+        const ld = lnDens(y);
+        if (ld >= -40) s += SR_ALEGQ[j] * Math.exp(ld) * rangeProb(q * Math.exp(y / 2), k);
+      }
+    }
+    return s * hw;
+  };
+  let sum = 0;
+  // Right of the mode: remaining mass beyond y1 ≤ dens(y1) / (f2·(e^y1 − 1)).
+  for (let y0 = 0; ; y0 += h) {
+    sum += panel(y0);
+    const y1 = y0 + h;
+    if (lnDens(y1) - Math.log(f2 * (Math.exp(y1) - 1)) < -38) break;
+  }
+  // Left of the mode: the integrand falls monotonically; the remainder below y0
+  // is ≤ dens(y0) / (f2·(1 − e^y0)) · rangeProb at y0.
+  for (let y1 = 0; ; y1 -= h) {
+    const y0 = y1 - h;
+    sum += panel(y0);
+    const rest = Math.exp(lnDens(y0)) / (f2 * (1 - Math.exp(y0))) * rangeProb(q * Math.exp(y0 / 2), k);
+    if (rest <= 1e-16 * sum || rest < 1e-300) break;
+  }
+  return sum >= 1 ? 1 : sum;
+}
+
+/**
+ * Studentized range quantile: the q with ptukey(q, k, df) = p.
+ * Brackets by doubling from q = 1, then Brent-Dekker on ptukey − p until
+ * |Δp| ≤ 1e-12 (not R's secant with eps = 1e-4).
+ * @param {number} p — Probability (0 < p < 1)
+ * @param {number} k — Number of means (≥ 2)
+ * @param {number} df — Error degrees of freedom (> 0, may be Infinity)
+ * @returns {number} — 0 for p = 0, Infinity for p = 1; NaN for p outside
+ *   [0, 1], invalid k or df, or if Brent does not converge
+ */
+export function qtukey(p, k, df) {
+  if (!(p >= 0 && p <= 1) || !Number.isFinite(k) || !(k >= 2) || !(df > 0)) return NaN;
+  if (p === 0) return 0;
+  if (p === 1) return Infinity;
+  let a = 0, b = 1, fa = -p, fb = ptukey(b, k, df) - p;
+  while (fb < 0) {
+    a = b; fa = fb; b *= 2;
+    if (b > 1e12) return Infinity;
+    fb = ptukey(b, k, df) - p;
+  }
+  let c = a, fc = fa, d = b - a, e = d;
+  for (let it = 0; it < 200; it++) {
+    if (fb * fc > 0) { c = a; fc = fa; d = b - a; e = d; }
+    if (Math.abs(fc) < Math.abs(fb)) { a = b; b = c; c = a; fa = fb; fb = fc; fc = fa; }
+    const tol = 2 * Number.EPSILON * Math.abs(b) + 1e-15;
+    const m = 0.5 * (c - b);
+    if (Math.abs(fb) <= 1e-12 || Math.abs(m) <= tol) return b;
+    if (Math.abs(e) >= tol && Math.abs(fa) > Math.abs(fb)) {
+      // inverse quadratic interpolation, or secant when only two points differ
+      const s = fb / fa;
+      let pp, qq;
+      if (a === c) { pp = 2 * m * s; qq = 1 - s; }
+      else {
+        const r1 = fa / fc, r2 = fb / fc;
+        pp = s * (2 * m * r1 * (r1 - r2) - (b - a) * (r2 - 1));
+        qq = (r1 - 1) * (r2 - 1) * (s - 1);
+      }
+      if (pp > 0) qq = -qq; else pp = -pp;
+      if (2 * pp < Math.min(3 * m * qq - Math.abs(tol * qq), Math.abs(e * qq))) { e = d; d = pp / qq; }
+      else { d = m; e = m; }
+    } else { d = m; e = m; }
+    a = b; fa = fb;
+    b += Math.abs(d) > tol ? d : (m > 0 ? tol : -tol);
+    fb = ptukey(b, k, df) - p;
+  }
+  return NaN;   // Brent did not converge in 200 iterations
 }
 
 /**

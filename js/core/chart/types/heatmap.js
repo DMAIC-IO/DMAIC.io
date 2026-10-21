@@ -139,7 +139,7 @@ export default class HeatmapChart extends ChartBase {
     const hasRange = Number.isFinite(minV) && Number.isFinite(maxV);
     const span = hasRange ? (maxV - minV) : 0;
 
-    const missing = resolveColor('var(--color-background-secondary)');
+    const missing = resolveColor('var(--color-bg-secondary)');
     const scheme = this.config.colorScheme || 'viridis';
 
     this._cellRects = [];

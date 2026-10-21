@@ -4,11 +4,26 @@
   <div class="attrtest__input dmike-split__input">
 
     <div class="dmike-split__section-title" x-text="t('sectionTest')"></div>
+    <div class="attrtest__group-label" x-text="t('groupProportions')"></div>
     <div class="btn-group" data-help-key="modules.attribute-test.types.Params.testKind">
       <button class="btn--segment" data-kind="one" :class="isKind('one') ? 'btn--active' : ''"
         @click="setKind('one')" x-text="t('kindOne')"></button>
       <button class="btn--segment" data-kind="two" :class="isKind('two') ? 'btn--active' : ''"
         @click="setKind('two')" x-text="t('kindTwo')"></button>
+      <button class="btn--segment" data-kind="equiv" :class="isKind('equiv') ? 'btn--active' : ''"
+        @click="setKind('equiv')" x-text="t('kindEquiv')"></button>
+      <button class="btn--segment" data-kind="mcnemar" :class="isKind('mcnemar') ? 'btn--active' : ''"
+        @click="setKind('mcnemar')" x-text="t('kindMcNemar')"></button>
+    </div>
+    <div class="attrtest__group-label" x-text="t('groupRates')"></div>
+    <div class="btn-group" data-help-key="modules.attribute-test.types.Params.testKind">
+      <button class="btn--segment" data-kind="rate1" :class="isKind('rate1') ? 'btn--active' : ''"
+        @click="setKind('rate1')" x-text="t('kindRate1')"></button>
+      <button class="btn--segment" data-kind="rate2" :class="isKind('rate2') ? 'btn--active' : ''"
+        @click="setKind('rate2')" x-text="t('kindRate2')"></button>
+    </div>
+    <div class="attrtest__group-label" x-text="t('groupTables')"></div>
+    <div class="btn-group" data-help-key="modules.attribute-test.types.Params.testKind">
       <button class="btn--segment" data-kind="assoc" :class="isKind('assoc') ? 'btn--active' : ''"
         @click="setKind('assoc')" x-text="t('kindAssoc')"></button>
     </div>
@@ -22,7 +37,7 @@
     </div>
 
     <!-- Summarized input -->
-    <template x-if="isMode('summary') && isKind('one')">
+    <template x-if="isMode('summary') && oneSample()">
       <div class="attrtest__grid">
         <label class="field-group" data-help-key="modules.attribute-test.types.Params.summary.x"><span x-text="t('events')"></span>
           <input type="text" inputmode="numeric" data-ref="x" :value="model.summary.x" @input="onTextInput('summary.x', $event)"></label>
@@ -31,7 +46,7 @@
       </div>
     </template>
 
-    <template x-if="isMode('summary') && isKind('two')">
+    <template x-if="isMode('summary') && twoSample()">
       <div class="attrtest__grid attrtest__grid--two">
         <span class="attrtest__grid-head"></span>
         <span class="attrtest__grid-head" data-help-key="modules.attribute-test.types.Params.summary.x1" x-text="t('events')"></span>
@@ -42,6 +57,47 @@
         <span x-text="t('sample2')"></span>
         <input type="text" inputmode="numeric" data-ref="x2" :value="model.summary.x2" @input="onTextInput('summary.x2', $event)">
         <input type="text" inputmode="numeric" data-ref="n2" :value="model.summary.n2" @input="onTextInput('summary.n2', $event)">
+      </div>
+    </template>
+
+    <template x-if="isMode('summary') && isKind('rate1')">
+      <div class="attrtest__grid">
+        <label class="field-group" data-help-key="modules.attribute-test.types.Params.summary.x"><span x-text="t('events')"></span>
+          <input type="text" inputmode="numeric" data-ref="x" :value="model.summary.x" @input="onTextInput('summary.x', $event)"></label>
+        <label class="field-group" data-help-key="modules.attribute-test.types.Params.summary.t"><span x-text="t('exposure')"></span>
+          <input type="text" inputmode="decimal" data-ref="t" :value="model.summary.t" @input="onTextInput('summary.t', $event)"></label>
+      </div>
+    </template>
+
+    <template x-if="isMode('summary') && isKind('rate2')">
+      <div class="attrtest__grid attrtest__grid--two">
+        <span class="attrtest__grid-head"></span>
+        <span class="attrtest__grid-head" data-help-key="modules.attribute-test.types.Params.summary.x1" x-text="t('events')"></span>
+        <span class="attrtest__grid-head" data-help-key="modules.attribute-test.types.Params.summary.t1" x-text="t('exposure')"></span>
+        <span x-text="t('sample1')"></span>
+        <input type="text" inputmode="numeric" data-ref="x1" :value="model.summary.x1" @input="onTextInput('summary.x1', $event)">
+        <input type="text" inputmode="decimal" data-ref="t1" :value="model.summary.t1" @input="onTextInput('summary.t1', $event)">
+        <span x-text="t('sample2')"></span>
+        <input type="text" inputmode="numeric" data-ref="x2" :value="model.summary.x2" @input="onTextInput('summary.x2', $event)">
+        <input type="text" inputmode="decimal" data-ref="t2" :value="model.summary.t2" @input="onTextInput('summary.t2', $event)">
+      </div>
+    </template>
+
+    <template x-if="isMode('summary') && isKind('mcnemar')">
+      <div class="attrtest__grid attrtest__grid--pairs" data-ref="pairs-grid">
+        <input type="text" class="attrtest__name attrtest__pair-label" data-ref="label-before"
+          :placeholder="t('pairBefore')" :aria-label="t('pairBefore')" :value="model.summary.pairs.labels.before" @input="onTextInput('summary.pairs.labels.before', $event)">
+        <input type="text" class="attrtest__name attrtest__pair-label attrtest__pair-label--after" data-ref="label-after"
+          :placeholder="t('pairAfter')" :aria-label="t('pairAfter')" :value="model.summary.pairs.labels.after" @input="onTextInput('summary.pairs.labels.after', $event)">
+        <span></span>
+        <span class="attrtest__grid-head" data-help-key="modules.attribute-test.actions.setPairCell.params.col" x-text="t('pairEvent')"></span>
+        <span class="attrtest__grid-head" data-help-key="modules.attribute-test.actions.setPairCell.params.col" x-text="t('pairNoEvent')"></span>
+        <span class="attrtest__grid-head" data-help-key="modules.attribute-test.actions.setPairCell.params.row" x-text="t('pairEvent')"></span>
+        <input type="text" inputmode="numeric" class="attrtest__count" data-pair="0-0" :value="pairValue(0, 0)" @input="setPair(0, 0, $event)">
+        <input type="text" inputmode="numeric" class="attrtest__count" data-pair="0-1" :value="pairValue(0, 1)" @input="setPair(0, 1, $event)">
+        <span class="attrtest__grid-head" data-help-key="modules.attribute-test.actions.setPairCell.params.row" x-text="t('pairNoEvent')"></span>
+        <input type="text" inputmode="numeric" class="attrtest__count" data-pair="1-0" :value="pairValue(1, 0)" @input="setPair(1, 0, $event)">
+        <input type="text" inputmode="numeric" class="attrtest__count" data-pair="1-1" :value="pairValue(1, 1)" @input="setPair(1, 1, $event)">
       </div>
     </template>
 
@@ -88,13 +144,31 @@
     </template>
 
     <!-- Column input -->
-    <template x-if="isMode('columns') && !isKind('assoc')">
+    <template x-if="isMode('columns') && usesResponse()">
       <div class="field-group">
         <label data-help-key="modules.attribute-test.actions.setColumn.help" x-text="t('colResponse')"></label>
         <div data-ref="picker-response-wrap"></div>
       </div>
     </template>
-    <template x-if="isMode('columns') && isKind('two')">
+    <template x-if="isMode('columns') && usesCounts()">
+      <div class="field-group">
+        <label data-help-key="modules.attribute-test.actions.setColumn.help" x-text="t('colCounts')"></label>
+        <div data-ref="picker-counts-wrap"></div>
+      </div>
+    </template>
+    <template x-if="isMode('columns') && isKind('mcnemar')">
+      <div class="attrtest__contents">
+        <div class="field-group">
+          <label data-help-key="modules.attribute-test.actions.setColumn.help" x-text="t('colBefore')"></label>
+          <div data-ref="picker-before-wrap"></div>
+        </div>
+        <div class="field-group">
+          <label data-help-key="modules.attribute-test.actions.setColumn.help" x-text="t('colAfter')"></label>
+          <div data-ref="picker-after-wrap"></div>
+        </div>
+      </div>
+    </template>
+    <template x-if="isMode('columns') && usesGroup()">
       <div class="field-group">
         <label data-help-key="modules.attribute-test.actions.setColumn.help" x-text="t('colGroup')"></label>
         <div data-ref="picker-group-wrap"></div>
@@ -112,6 +186,10 @@
         </div>
       </div>
     </template>
+    <template x-if="isMode('columns') && usesExposurePerRow()">
+      <label class="field-group" data-help-key="modules.attribute-test.types.Params.exposurePerRow"><span x-text="t('exposurePerRow')"></span>
+        <input type="text" inputmode="decimal" data-ref="exposure-per-row" :value="model.exposurePerRow" @input="onTextInput('exposurePerRow', $event)"></label>
+    </template>
     <template x-if="showEvent()">
       <div class="field-group">
         <label data-help-key="modules.attribute-test.types.Params.eventValue" x-text="t('eventValue')"></label>
@@ -125,9 +203,47 @@
     </template>
 
     <div class="dmike-split__section-title" x-text="t('sectionOptions')"></div>
-    <template x-if="isKind('one')">
+    <template x-if="isKind('equiv')">
+      <div class="btn-group" data-ref="equiv-samples" data-help-key="modules.attribute-test.types.Params.equiv.samples">
+        <button class="btn--segment" data-samples="1" :class="isSamples(1) ? 'btn--active' : ''"
+          @click="setEquivSamples(1)" x-text="t('equivSamples1')"></button>
+        <button class="btn--segment" data-samples="2" :class="isSamples(2) ? 'btn--active' : ''"
+          @click="setEquivSamples(2)" x-text="t('equivSamples2')"></button>
+      </div>
+    </template>
+    <template x-if="oneSample()">
       <label class="field-group" data-help-key="modules.attribute-test.types.Params.p0"><span x-text="t('p0')"></span>
         <input type="text" inputmode="decimal" data-ref="p0" :value="model.p0" @input="onTextInput('p0', $event)"></label>
+    </template>
+    <template x-if="isKind('rate1')">
+      <label class="field-group" data-help-key="modules.attribute-test.types.Params.summary.lambda0"><span x-text="t('lambda0')"></span>
+        <input type="text" inputmode="decimal" data-ref="lambda0" :value="model.summary.lambda0" @input="onTextInput('summary.lambda0', $event)"></label>
+    </template>
+    <template x-if="isKind('rate2')">
+      <label class="field-group" data-help-key="modules.attribute-test.types.Params.summary.diff0"><span x-text="t('diff0')"></span>
+        <input type="text" inputmode="decimal" data-ref="diff0" :value="model.summary.diff0" @input="onTextInput('summary.diff0', $event)"></label>
+    </template>
+    <template x-if="isKind('equiv')">
+      <div class="attrtest__contents">
+        <div class="btn-group" data-ref="equiv-bounds" data-help-key="modules.attribute-test.types.Params.equiv.symmetric">
+          <button class="btn--segment" data-bounds="symmetric" :class="model.equiv.symmetric ? 'btn--active' : ''"
+            @click="setBoundsSymmetric(true)" x-text="t('boundsSymmetric')"></button>
+          <button class="btn--segment" data-bounds="asymmetric" :class="model.equiv.symmetric ? '' : 'btn--active'"
+            @click="setBoundsSymmetric(false)" x-text="t('boundsAsymmetric')"></button>
+        </div>
+        <template x-if="model.equiv.symmetric">
+          <label class="field-group" data-help-key="modules.attribute-test.types.Params.equiv.delta"><span x-text="t(oneSample() ? 'deltaOne' : 'delta')"></span>
+            <input type="text" inputmode="decimal" data-ref="delta" :value="model.equiv.delta" @input="onTextInput('equiv.delta', $event)"></label>
+        </template>
+        <template x-if="!model.equiv.symmetric">
+          <div class="attrtest__grid">
+            <label class="field-group" data-help-key="modules.attribute-test.types.Params.equiv.lower"><span x-text="t(oneSample() ? 'boundLowerOne' : 'boundLower')"></span>
+              <input type="text" inputmode="decimal" data-ref="lower" :value="model.equiv.lower" @input="onTextInput('equiv.lower', $event)"></label>
+            <label class="field-group" data-help-key="modules.attribute-test.types.Params.equiv.upper"><span x-text="t(oneSample() ? 'boundUpperOne' : 'boundUpper')"></span>
+              <input type="text" inputmode="decimal" data-ref="upper" :value="model.equiv.upper" @input="onTextInput('equiv.upper', $event)"></label>
+          </div>
+        </template>
+      </div>
     </template>
     <template x-if="showDirection()">
       <label class="field-group" data-help-key="modules.attribute-test.types.Params.direction"><span x-text="t('direction')"></span>
@@ -140,6 +256,12 @@
     </template>
     <label class="field-group" data-help-key="modules.attribute-test.types.Params.alpha"><span x-text="t('alpha')"></span>
       <input type="text" inputmode="decimal" data-ref="alpha" :value="model.alpha" @change="onAlphaInput($event)"></label>
+    <template x-if="isKind('rate2')">
+      <label class="field-check" data-help-key="modules.attribute-test.types.Params.ratePooled" data-help-anchor="box">
+        <input type="checkbox" data-ref="rate-pooled" :checked="model.ratePooled" @change="onCheckChange('ratePooled', $event)">
+        <span x-text="t('ratePooled')"></span>
+      </label>
+    </template>
     <template x-if="isKind('two')">
       <label class="field-check" data-help-key="modules.attribute-test.types.Params.pooled" data-help-anchor="box">
         <input type="checkbox" data-ref="pooled" :checked="model.pooled" @change="onPooledChange($event)">
@@ -182,6 +304,13 @@
         <template x-for="n in notes()" :key="n.key">
           <div class="attrtest__note" :data-note="n.key" x-text="noteText(n)"></div>
         </template>
+
+        <div class="attrtest__actions">
+          <template x-for="a in actions()" :key="a.key">
+            <button class="btn btn--secondary btn--sm" :data-action="a.key" data-help-key="modules.attribute-test.actions.checkEquivalence.help"
+              @click="runAction(a.key)" x-text="t(a.key)"></button>
+          </template>
+        </div>
 
         <template x-if="hasTable()">
           <div>

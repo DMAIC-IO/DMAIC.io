@@ -595,7 +595,7 @@
 .pairwise__matrix-cell--diag {
   background: var(--color-bg-tertiary);
   color: var(--color-text-tertiary);
-  font-weight: var(--font-weight-regular);
+  font-weight: var(--font-weight-normal);
 }
 
 .pairwise__matrix-cell--sum {

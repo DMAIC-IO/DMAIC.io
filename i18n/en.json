@@ -76,7 +76,9 @@
   "crossVersion": {
     "title": "Data from another version found",
     "intro": "Project data from a previous Qprovement version exists in this browser. Take it over into v{current}?",
-    "projectsCount": "{count} project(s)",
+    "transition": "v{from} → v{to}",
+    "projectsCount_one": "{count} project",
+    "projectsCount_other": "{count} projects",
     "note": "The data is migrated to the current version. The original data in the old version stays untouched.",
     "takeover": "Take over",
     "dismiss": "Don't take over",
@@ -795,6 +797,33 @@
       "ci": "CI",
       "ciTitle": "{n}% confidence interval"
     }
+  },
+  "bugReport": {
+    "trigger": "Report a bug",
+    "optinTitle": "Report a bug",
+    "optinIntro": "What should be included? Description, app version, route, plus location and type of the latest console errors, are always sent – without the message text.",
+    "optinScreenshot": "Take a screenshot",
+    "optinProject": "Include project data",
+    "optinErrors": "Include full error messages (may contain project content)",
+    "next": "Next",
+    "describeTitle": "Describe the bug",
+    "describeLabel": "What happened, and what did you expect?",
+    "describePlaceholder": "Description …",
+    "send": "Send",
+    "toolFrame": "Frame",
+    "toolCircle": "Circle",
+    "toolArrow": "Arrow",
+    "toolLine": "Freehand",
+    "toolTextbox": "Text box",
+    "undo": "Undo last",
+    "textboxPlaceholder": "Text …",
+    "captureUnsupported": "Screen capture is not available here — continuing without a screenshot.",
+    "captureDenied": "Sharing was declined — continuing without a screenshot.",
+    "captureFailed": "Capture failed — continuing without a screenshot.",
+    "sent": "Bug report saved: {path}",
+    "rejected": "Bug report rejected: {reason}",
+    "downloaded": "Receiver not reachable — files were downloaded. Target folder: {folder}",
+    "failed": "Could not create the bug report."
   },
   "chart": {
     "renderError": "The chart could not be drawn.",
@@ -2631,6 +2660,7 @@
       "noMatch": "No tasks match the current filter.",
       "whenToUse": "When the open tasks of a project need tracking with an owner, a due date and a status — not for scheduling in a calendar view and not for rating or selecting measures, which is what the calendar module and the rating matrices are for.",
       "actions": {
+        "moveTodo": {"help": "Moves a task before another and switches the list to manual order, like dragging the grip. If the list is sorted, the visible order first becomes the stored one; filtered-out tasks follow behind.", "params": {"itemId": "The id of the task to move. An unknown id is an error.", "beforeId": "The id of the task it goes before. An unknown id is an error; equal to itemId changes nothing."}},
         "addTodo": {
           "help": "Appends an empty task to the list and returns its id.",
           "params": {}
@@ -5567,7 +5597,7 @@
       "matrixMode": "{n} columns → correlation matrix",
       "noWorksheet": "Add a Worksheet module first to provide data.",
       "noNumericColumns": "No numeric columns found in any worksheet.",
-      "confidenceLevel": "Confidence Level",
+      "confidenceLevel": "Conf.",
       "confidenceInterval": "Confidence Interval",
       "ciShort": "CI",
       "placeholderText": "Select numeric columns — the correlation analysis runs automatically. 2 columns: detailed view. 3+: correlation matrix.",
@@ -7531,11 +7561,37 @@
     },
     "attribute-test": {
       "name": "Attribute Tests",
-      "description": "Tests for proportions and counts: 1 and 2 proportions, Fisher's exact, chi-square association",
+      "description": "Tests for proportions, rates and counts: 1 and 2 proportions, Fisher's exact, chi-square association, McNemar, equivalence (TOST), 1 and 2 Poisson rates",
       "sectionTest": "Test",
       "kindOne": "1 proportion",
       "kindTwo": "2 proportions",
       "kindAssoc": "Chi-square association",
+      "kindEquiv": "Equivalence (proportions)",
+      "kindMcNemar": "McNemar (paired)",
+      "kindRate1": "1 Poisson rate",
+      "kindRate2": "2 Poisson rates",
+      "groupProportions": "Proportions",
+      "groupRates": "Rates",
+      "groupTables": "Tables",
+      "exposure": "Exposure (t)",
+      "lambda0": "Hypothesized rate λ₀",
+      "diff0": "Hypothesized difference Δ₀",
+      "exposurePerRow": "Exposure per row",
+      "colCounts": "Counts column",
+      "colBefore": "Before column",
+      "colAfter": "After column",
+      "pairBefore": "Before",
+      "pairAfter": "After",
+      "pairEvent": "Event",
+      "pairNoEvent": "No event",
+      "equivSamples1": "1 sample",
+      "equivSamples2": "2 samples",
+      "boundsSymmetric": "Symmetric bounds (±δ)",
+      "boundsAsymmetric": "Separate bounds",
+      "delta": "Equivalence margin δ (pp)",
+      "boundLower": "Lower bound (pp)",
+      "boundUpper": "Upper bound (pp)",
+      "ratePooled": "Use pooled estimate of the rate for the test",
       "sectionInput": "Input",
       "modeSummary": "Summarized",
       "modeColumns": "Columns",
@@ -7607,8 +7663,80 @@
       "errResponseLevels": "The response column needs exactly 2 distinct values.",
       "errGroupLevels": "The group column needs exactly 2 levels.",
       "errTableTooSmall": "The table needs at least 2 × 2 cells with observations.",
-      "whenToUse": "When counts of events are compared: tests one proportion against a hypothesized value, two proportions against each other (z test and Fisher's exact test) or the association of two categorical variables (chi-square on a cross table). The counts are given as summarized numbers or taken from worksheet columns.",
+      "statRateCounts": "Events / exposure",
+      "statRate": "Rate λ̂ (events per unit)",
+      "statCiRate": "{level} % CI (exact, Garwood)",
+      "statPExactPoisson": "p-value (exact, Poisson)",
+      "statRateGroup": "Rate ({group})",
+      "statRateDiff": "Difference λ̂₁ − λ̂₂",
+      "statCiRateDiff": "{level} % CI for the difference (normal approximation)",
+      "statPExactCond": "p-value (exact, conditional)",
+      "statRateRatio": "Rate ratio λ̂₁ / λ̂₂",
+      "statCiRatio": "{level} % CI for the rate ratio (exact)",
+      "statDiscordant": "Discordant pairs (event → no event / no event → event)",
+      "statPBefore": "Proportion before",
+      "statPAfter": "Proportion after",
+      "statPairedDiff": "Difference after − before",
+      "statCiPairedDiff": "{level} % CI for the difference (Wald)",
+      "statPExactMcNemar": "p-value (exact, McNemar)",
+      "statChi2McNemar": "χ² (McNemar, without correction)",
+      "statPChi2": "p-value (χ²)",
+      "statChi2McNemarCc": "χ² (McNemar, with continuity correction)",
+      "statPChi2Cc": "p-value (χ², corrected)",
+      "statEquivEstimate1": "Proportion p̂ (%)",
+      "statEquivEstimate2": "Difference p̂₁ − p̂₂ (pp)",
+      "statEquivCi": "{level} % CI ({unit})",
+      "statEquivBounds": "Equivalence bounds ({unit})",
+      "statPLower": "p-value, lower bound",
+      "statPUpper": "p-value, upper bound",
+      "statPTost": "p-value (TOST, larger of the two)",
+      "decisionEquivalent": "Equivalent within [{lower}; {upper}] {unit} (α = {alpha}).",
+      "decisionNotEquivalent": "Equivalence not demonstrated (α = {alpha}).",
+      "basisExactPoisson": "Decision based on the exact Poisson test",
+      "basisZRate": "Decision based on the z-test for the rate difference",
+      "basisExactMcNemar": "Decision based on the exact McNemar test",
+      "basisTost": "Decision based on two one-sided tests (TOST) against the equivalence bounds",
+      "h0Rate1": "H₀: λ = λ₀",
+      "h1Rate1": "H₁: λ {op} λ₀",
+      "h0Rate2": "H₀: λ₁ − λ₂ = Δ₀",
+      "h1Rate2": "H₁: λ₁ − λ₂ {op} Δ₀",
+      "h0McNemar": "H₀: the proportion is the same before and after",
+      "h1McNemar": "H₁: proportion after {op} proportion before",
+      "h0McNemarLabeled": "H₀: the proportion is the same for {before} and {after}",
+      "h1McNemarLabeled": "H₁: proportion {after} {op} proportion {before}",
+      "fallbackBefore": "before",
+      "fallbackAfter": "after",
+      "statPBeforeLabeled": "Proportion {label}",
+      "statPAfterLabeled": "Proportion {label}",
+      "noteRatePooledIgnored": "With a hypothesized difference ≠ 0 the test runs without the pooled rate.",
+      "h0Equiv": "H₀: Δ ≤ lower bound or Δ ≥ upper bound (Δ = p₁ − p₂, or p − p₀ for one sample)",
+      "h1Equiv": "H₁: lower bound < Δ < upper bound",
+      "noteRateNormalApprox": "The normal approximation is not suitable here (λ₀·t < 5). Use the exact test.",
+      "noteNoDiscordant": "No discordant pairs – there is nothing to test.",
+      "noteSmallDiscordant": "Fewer than 10 discordant pairs – use the exact p-value, not the χ² approximation.",
+      "noteEquivDegenerate": "Both proportions are 0 (or both 1) – the normal approximation cannot be used, so there is no equivalence result.",
+      "noteNotEquivalentIsNotEqual": "No significant difference does not mean that the proportions are equivalent. Whether the difference is small enough is shown by the equivalence test.",
+      "actionCheckEquivalence": "Check with equivalence test",
+      "notePairedUseMcNemar": "Were the same units inspected before and after? Then McNemar's test is the right one.",
+      "noteEquivBoundsPractical": "The equivalence bounds are a practical decision, not a statistical one. Fix them before looking at the data.",
+      "noteEquivCiOutside": "The confidence interval does not lie entirely within the equivalence bounds.",
+      "errExposure": "Exposure must be a number greater than 0.",
+      "errLambda0": "The hypothesized rate λ₀ must be greater than 0.",
+      "errDiff0": "The hypothesized difference must be a number.",
+      "errPairsLength": "The before and after columns must have the same length.",
+      "errPairLevels": "Both columns together need exactly 2 distinct values.",
+      "hintEnterBounds": "Enter the equivalence bounds. They are a practical decision, not a statistical one: which difference would still count as equivalent in practice? Fix them before looking at the data.",
+      "errBoundsContainOne": "The bounds must enclose 0 (lower < 0 < upper); they apply relative to the target p₀.",
+      "deltaOne": "Equivalence margin δ (pp, relative to p₀)",
+      "boundLowerOne": "Lower bound (pp, relative to p₀)",
+      "boundUpperOne": "Upper bound (pp, relative to p₀)",
+      "noteRateNotTestable": "There are no events in either sample, yet the difference is to be tested against a value other than 0 – nothing can be tested.",
+      "errBoundsOrder": "The lower bound must be smaller than the upper bound.",
+      "errBoundsContain": "The bounds must enclose 0 (lower < 0 < upper).",
+      "whenToUse": "When counts of events are compared: tests one proportion against a hypothesized value, two proportions against each other (z test and Fisher's exact test), the equivalence of proportions (TOST), paired proportions before and after (McNemar), one or two Poisson rates (events per exposure) or the association of two categorical variables (chi-square on a cross table). The counts are given as summarized numbers or taken from worksheet columns.",
       "actions": {
+        "setPairCell": {"help": "Sets a count of the McNemar 2 × 2 table with summarized input: how many pairs were in the given state before and after.", "params": {"row": "State before: 0 = event, 1 = no event.", "col": "State after: 0 = event, 1 = no event.", "value": "The count as text, '' clears the cell."}},
+        "checkEquivalence": {"help": "Switches to the equivalence test with two samples, like the “Check with equivalence test” button below a non-significant two-proportion test. It shares counts and columns with the two-proportion test, so they stay; the equivalence bounds stay unchanged."},
         "read": {
           "help": "Returns the entered configuration, the keys and roles valid in the current state, the selectable columns, the selectable event values and the result. result is null while the inputs are incomplete or invalid; errorMsg then names the reason (an input hint or a refusal such as a too small table) and is empty while a result exists.",
           "params": {
@@ -7625,7 +7753,7 @@
         "setColumn": {
           "help": "The data collection column that supplies this role; after a change the analysis is recomputed. If the current event value does not occur in the new response column, its last value counts as the event.",
           "params": {
-            "slot": "One of the roles in activeColumnSlots: response, group, rowVar or colVar.",
+            "slot": "One of the roles in activeColumnSlots: response (response column), counts (counts for rates), before and after (McNemar), group, rowVar or colVar.",
             "ref": "The reference { instanceId, sheetId, columnId } of a column from pickableColumns for that role, or null to clear the role."
           }
         },
@@ -7674,8 +7802,11 @@
         }
       },
       "fields": {
+        "ratePooled": {"help": "For two rates: true uses the pooled rate for the z statistic, as long as the hypothesized difference is 0."},
+        "exposurePerRow": {"help": "The exposure per worksheet row for rates from columns, as entered; the total exposure is the number of rows times this value."},
+        "equiv": {"help": "The equivalence test settings: samples (1 or 2), symmetric (true for ±delta), delta, lower and upper as text in percentage points."},
         "testKind": {
-          "help": "The kind of test: 'one' (one proportion), 'two' (two proportions) or 'assoc' (association in a cross table)."
+          "help": "The kind of test: 'one' (one proportion), 'two' (two proportions), 'equiv' (equivalence of proportions), 'mcnemar' (paired proportions), 'rate1' (one Poisson rate), 'rate2' (two Poisson rates) or 'assoc' (association in a cross table)."
         },
         "inputMode": {
           "help": "Where the counts come from: 'summary' (entered numbers) or 'columns' (worksheet columns)."
@@ -7693,10 +7824,10 @@
           "help": "For two proportions: true uses the pooled standard error for the z statistic."
         },
         "summary": {
-          "help": "The summarized counts as entered: x and n (one proportion), x1, n1, x2 and n2 (two proportions) and table { rows, cols, counts } (association), all as text."
+          "help": "The summarized counts as entered: x and n (one proportion), x1, n1, x2 and n2 (two proportions), t, t1, t2, lambda0 and diff0 (rates), pairs { labels, counts } (McNemar) and table { rows, cols, counts } (association), all as text."
         },
         "colRefs": {
-          "help": "The chosen column per role: response, group, rowVar and colVar, each { instanceId, sheetId, columnId } or null."
+          "help": "The chosen column per role: response, counts, before, after, group, rowVar and colVar, each { instanceId, sheetId, columnId } or null."
         },
         "eventValue": {
           "help": "The value of the response column that counts as event, or null while there is none."
@@ -7705,13 +7836,13 @@
           "help": "The keys setParam accepts in the current state."
         },
         "activeColumnSlots": {
-          "help": "The roles setColumn accepts in the current state: none with summarized input, response (and group for two proportions) or rowVar and colVar for the association test with column input."
+          "help": "The roles setColumn accepts in the current state: none with summarized input; with column input response (proportions and equivalence, plus group for two samples), counts (rates, plus group for two rates), before and after (McNemar) or rowVar and colVar (association test)."
         },
         "pickableColumns": {
           "help": "Per role the columns setColumn accepts, each { key, name }; key is 'instanceId|sheetId|columnId'. Any column with at least 2 values."
         },
         "eventValueOptions": {
-          "help": "The values setParam accepts for eventValue: the distinct values of the chosen response column; empty while there is none."
+          "help": "The values setParam accepts for eventValue: the distinct values of the chosen response column, for McNemar of both paired columns together; empty while there is none."
         },
         "result": {
           "help": "The test report: figures, notes, decision and, for the association test, the cross table, each figure described individually under keys; null while the inputs are incomplete or invalid (errorMsg gives the reason)."
@@ -7721,14 +7852,24 @@
         }
       },
       "types": {
+        "Action": {"key": "Identifier of the offered next step; currently only “actionCheckEquivalence” (below a non-significant two-sided two-proportion test), run via checkEquivalence."},
         "Params": {
-          "testKind": "The test type, chosen in the “Test” section: “1 proportion” tests one proportion against the hypothesized proportion p₀, “2 proportions” compares the proportions of two samples, “Chi-square association” tests whether two categorical variables of a cross table are associated. Default is “2 proportions”; switching keeps all other inputs.",
+          "equiv": {"samples": "“1 sample” tests whether one proportion is equivalent to p₀; “2 samples” tests whether the difference of two proportions lies within the bounds. Default: 2 samples. The test shares its counts with the one- or two-proportion test.", "symmetric": "“Symmetric bounds (±δ)” uses one margin δ for both sides, “Separate bounds” a lower and an upper bound. Default: symmetric.", "delta": "Equivalence margin δ in percentage points, a number greater than 0: equivalent means the difference (p − p₀ for one sample) lies between −δ and +δ. The margin is a subject-matter decision, not a statistical one.", "lower": "Lower equivalence bound in percentage points, below 0; relative to p₀ for one sample. It must be below the upper bound.", "upper": "Upper equivalence bound in percentage points, above 0; relative to p₀ for one sample. It must be above the lower bound."},
+          "exposurePerRow": "“Exposure per row” for rates from columns: which exposure (time, area, units) belongs to one row of the counts column, a number greater than 0, default 1. The total exposure is the number of rows with a value times this exposure, per group for two rates.",
+          "ratePooled": "Pooled rate for the two-rate z-test. When checked, the test computes the standard error from the common rate (x₁ + x₂)/(t₁ + t₂); this applies only while the hypothesized difference Δ₀ is 0, otherwise a note appears and the test uses separate estimates. The confidence interval of the difference always stays unpooled. Default: unchecked.",
+          "testKind": "The test type, chosen in the “Test” section: “1 proportion” tests one proportion against the hypothesized proportion p₀, “2 proportions” compares the proportions of two samples, “Equivalence (proportions)” tests whether a proportion or a difference lies within subject-matter bounds, “McNemar (paired)” compares proportions of the same units before and after, “1 Poisson rate” and “2 Poisson rates” test events per exposure, “Chi-square association” tests whether two categorical variables of a cross table are associated. Default is “2 proportions”; switching keeps all other inputs.",
           "inputMode": "The input type in the “Input” section: “Summarized” takes counts entered by hand (events and trials, or the cross table), “Columns” counts them from columns of a data collection. Default is “Summarized”.",
           "alpha": "Significance level α, a number strictly between 0 and 1, for example 0.05. H₀ is rejected when the deciding p-value is below α; α also sets the confidence level of the interval, 1 − α in percent, rounded to one decimal.",
           "direction": "The alternative hypothesis: “≠ two-sided”, “> greater” or “< less”. For one and two proportions it sets the p-values and the confidence interval; one-sided, the interval extends to 0 or 1 (one proportion) or to −1 or 1 (difference). For the association test it appears only for a 2 × 2 table and affects only Fisher's exact test; Pearson χ² stays two-sided.",
           "p0": "Hypothesized proportion p₀ for the one-proportion test, as a number with a point or comma, for example 0.5 (default). It must lie strictly between 0 and 1, otherwise there is no result.",
           "pooled": "Pooled estimate of p for the z-test of two proportions. When checked, the test computes the standard error from the common proportion p̄ = (x₁ + x₂)/(n₁ + n₂): SE = √(p̄(1 − p̄)(1/n₁ + 1/n₂)); otherwise from both proportions separately. The confidence interval of the difference always stays unpooled. Default: unchecked.",
           "summary": {
+            "pairs": {"labels": {"before": "Label of the first time point of the McNemar table, such as “Before” or an inspector's name; shown in hypotheses and figures. Empty means “before”, with column input the column name.", "after": "Label of the second time point of the McNemar table, such as “After”; shown in hypotheses and figures. Empty means “after”, with column input the column name."}},
+            "diff0": "Hypothesized difference Δ₀ of the rates λ₁ − λ₂ when comparing two rates, default 0. Only at 0 are the conditional exact test and the pooled rate available.",
+            "lambda0": "Hypothesized rate λ₀ for the one-rate test, events per unit of exposure, a number greater than 0.",
+            "t2": "Exposure (t) of sample 2 when comparing two rates, a number greater than 0.",
+            "t1": "Exposure (t) per sample for comparing two rates, rows “Sample 1” and “Sample 2”, a number greater than 0. The sample's rate is events / t.",
+            "t": "Exposure (t) for the one-rate test: the amount of observation the events refer to (time, area, units), a number greater than 0. The rate is λ̂ = events / t.",
             "x": "Events for the one-proportion test: how often the event of interest occurred, a whole number from 0, at most the number of trials. If events and trials are both empty, nothing is computed.",
             "n": "Trials (n) for the one-proportion test: the number of observations, a whole number greater than 0. The estimated proportion is p̂ = events / n.",
             "x1": "Events per sample when comparing two proportions, rows “Sample 1” and “Sample 2”: how often the event occurred in that sample, a whole number from 0, at most its number of trials.",
@@ -7736,14 +7877,16 @@
             "x2": "Events in sample 2 when comparing two proportions, a whole number from 0, at most the trials of sample 2.",
             "n2": "Trials (n) in sample 2 when comparing two proportions, a whole number greater than 0."
           },
-          "eventValue": "With column input, the value of the response column that counts as an event (“Event =”). The response column needs exactly two distinct values; without a choice, as in Minitab, the last value in natural sort order is used."
+          "eventValue": "With column input, the value of the response column that counts as an event (“Event =”); for McNemar it applies to both paired columns. The response column needs exactly two distinct values; without a choice, as in Minitab, the last value in natural sort order is used."
         },
         "Result": {
-          "kind": "The test type the report was computed for: one proportion, two proportions or chi-square association, as chosen in the “Test” section.",
+          "decisionParams": "Placeholders of the equivalence decision: lower and upper bound (formatted), the unit (% for one sample, pp for two) and α. Equivalence test only.",
+          "actions": "The next steps below the result: for a non-significant two-sided two-proportion test the “Check with equivalence test” button, because no difference does not mean equivalent. Otherwise the field is missing.",
+          "kind": "The test type the report was computed for, as chosen in the “Test” section: one proportion, two proportions, equivalence, McNemar, one rate, two rates or chi-square association.",
           "stats": "The figure rows of the table under “Results”, different for each test type: counts, proportions, confidence interval, test statistic and p-values; each row is explained individually: hold Alt and click the question mark next to its label.",
           "notes": "Notes below the decision: skipped rows with missing values, the unsuitable normal approximation (one proportion), the pooled z-test (two proportions), removed empty rows or columns and the warnings about small expected counts (association test).",
-          "decision": "The decision against α: “Reject H₀” when the deciding p-value is below α, otherwise “Do not reject H₀”. The deciding test is the exact binomial test for one proportion, the z-test for two proportions and Pearson χ² (always two-sided) for the association test. The basis is shown next to the decision.",
-          "basisKey": "Identifier of the sentence naming the basis of the decision: exact binomial test, z-test or Pearson χ².",
+          "decision": "The decision against α: “Reject H₀” (reject) when the deciding p-value is below α, otherwise “Do not reject H₀” (keep); for the equivalence test “equivalent” or “not shown” (notEquivalent). The deciding test is the exact binomial test for one proportion, the z-test for two proportions, the exact Poisson test for one rate, the z-test of the difference for two rates, the exact test for McNemar, the TOST for equivalence and Pearson χ² (always two-sided) for the association test. The basis is shown next to the decision.",
+          "basisKey": "Identifier of the sentence naming the basis of the decision: exact binomial test, z-test, exact Poisson test, z-test of the rate difference, exact McNemar test, TOST or Pearson χ².",
           "table": "The cross table of the association test with observed and expected counts and each cell's contribution to χ²; empty for one and two proportions."
         },
         "Stat": {
@@ -7771,6 +7914,10 @@
         }
       },
       "stats": {
+        "equiv": {"counts": "Events and trials of the sample as “x / n”.", "counts1": "Events and trials of the first group as “x / n”.", "counts2": "Events and trials of the second group as “x / n”.", "estimate": "The estimate: for one sample the proportion p̂ in percent, for two the difference p̂₁ − p̂₂ in percentage points.", "ci": "Confidence interval at level 1 − 2α, as it belongs to two one-sided tests at level α. If it lies entirely within the bounds, the proportions are equivalent.", "bounds": "The equivalence bounds in the unit of the estimate; for one sample p₀ plus the bounds, clipped to 0 to 100 %.", "pLower": "p-value of the one-sided test against the lower bound.", "pUpper": "p-value of the one-sided test against the upper bound.", "pValue": "p-value of the TOST, the larger of the two one-sided p-values. Equivalent when it is below α."},
+        "mcnemar": {"discordant": "The discordant pairs as “b / c”: b changes from event to no event, c from no event to event. Only they contribute to the test.", "pBefore": "Proportion of pairs with the event at the first time point.", "pAfter": "Proportion of pairs with the event at the second time point.", "diff": "Difference of the proportions after − before.", "ci": "Wald confidence interval of the paired difference, level 1 − α; one-sided for a directional alternative with −1 or 1 as the open bound.", "pExact": "p-value of the exact McNemar test, the binomial test of c among b + c pairs with p = 0.5, in the chosen direction. Basis of the decision.", "chi2": "McNemar χ² = (b − c)² / (b + c) without continuity correction; two-sided only.", "pChi2": "p-value of McNemar χ² with one degree of freedom, for information only.", "chi2Cc": "McNemar χ² with continuity correction: (|b − c| − 1)² / (b + c); two-sided only.", "pChi2Cc": "p-value of the corrected χ², for information only."},
+        "rate2": {"rate1": "Rate of the first group λ̂₁ = x₁ / t₁; group name from the group column, “1” with summarized input.", "rate2": "Rate of the second group λ̂₂ = x₂ / t₂.", "diff": "Difference of the rates λ̂₁ − λ̂₂.", "ci": "Confidence interval of the difference from the normal approximation with separate standard error, level 1 − α, always unpooled.", "z": "Statistic z = (λ̂₁ − λ̂₂ − Δ₀) / SE; SE from the pooled rate when checked and Δ₀ = 0, otherwise separate.", "pValue": "p-value of the z-test in the chosen direction. Basis of the decision.", "pExactCond": "p-value of the conditional exact test: given the total x₁ + x₂, x₁ is binomial with p = t₁/(t₁ + t₂). Only for Δ₀ = 0 and at least one event, for information.", "ratio": "Rate ratio λ̂₁ / λ̂₂; missing when the second group has no event.", "ratioCi": "Exact confidence interval of the rate ratio from the Clopper-Pearson interval of the conditional binomial proportion, level 1 − α."},
+        "rate1": {"counts": "Events and exposure as “x / t”.", "rate": "Estimated rate λ̂ = x / t, events per unit of exposure.", "ci": "Exact Garwood confidence interval from chi-square quantiles, level 1 − α; one-sided for a directional alternative.", "pExact": "p-value of the exact Poisson test in the chosen direction, two-sided twice the smaller tail, at most 1. Basis of the decision.", "z": "Normal approximation statistic z = (x − λ₀·t) / √(λ₀·t).", "pNormal": "p-value of the normal approximation, for information only; suitable from λ₀·t ≥ 5, otherwise a note appears."},
         "one": {
           "counts": "Events and trials of the sample as “x / n”.",
           "pHat": "Estimated proportion p̂ = x / n.",
@@ -7840,8 +7987,8 @@
           "params": { "targetType": "'variance' or 'stddev'. Any other value is an error." }
         },
         "setEqualVariances": {
-          "help": "Two samples, location: assume equal variances and run the pooled t-test. Off is the default — Welch does not need that assumption.",
-          "params": { "flag": "true for the pooled t-test." }
+          "help": "Location with two or k samples: assume equal variances. With two samples this runs the pooled t-test, with k Fisher's one-way ANOVA with Tukey. Off is the default — the Welch t-test and Welch ANOVA with Games-Howell do not need that assumption.",
+          "params": { "flag": "true for the pooled t-test or Fisher's ANOVA." }
         },
         "setColumn1": {
           "help": "Points sample 1 at a column of a data collection.",
@@ -7867,11 +8014,13 @@
         "colRef1": { "help": "Column reference of the first sample." },
         "colRef2": { "help": "Column reference of the second sample." },
         "colRefsK": { "help": "The column references of the k-sample test." },
-        "equalVariances": { "help": "Whether two samples are compared with the pooled t-test instead of Welch." },
+        "equalVariances": { "help": "Whether equal variances are assumed: the pooled t-test instead of Welch with two samples, Fisher's ANOVA instead of Welch with k." },
         "result": { "help": "The result as a display model (formatted texts; labels in the interface language, numbers with a decimal point), each figure described individually under keys; null while the inputs are incomplete." }
       },
       "types": {
+        "ResidualPlot": {"residuals": "The residuals per observation, value minus group mean, in group order.", "fitted": "The fitted values per observation, the mean of its group."},
         "Result": {
+          "residualPlot": "The data of the four residual plots (residuals versus fits, probability plot, histogram, order) below the result. Only for k samples on the Fisher or Welch route, otherwise null.",
           "isK": "True for the test type “k Samples”, otherwise false. When true, the interface shows a normality card per group, the group overview and, where applicable, the pairwise comparisons, but no power analysis.",
           "allNormal": "True when every sample counts as normally distributed, that is, the Anderson-Darling test gives p ≥ α for each sample; Shapiro-Wilk is shown as well but does not decide. The interface shows this as the route step “Normality: Yes/No”.",
           "normCards": "The normality assessment, one card per sample: one or two for one- and two-sample tests, k for the test type “k Samples”.",
@@ -7917,6 +8066,9 @@
           "trailYes": "Whether the route step is answered with “Yes”: for two samples when equal variances are assumed; for k samples the other way round, when the Levene test shows a difference."
         },
         "MainResult": {
+          "modelSummary": "The model summary of the one-way ANOVA as in Minitab: S with four decimals, R², R²(adj) and R²(pred) in percent; R²(adj) and R²(pred) not below 0 %, R²(pred) “–” when a group has only one value. Only on the Fisher and Welch routes, otherwise null.",
+          "ciHeader": "Header of the confidence interval column as formatted text with the level in percent. k samples only.",
+          "showCi": "Whether the column with the per-group confidence intervals is shown; true on the Fisher and Welch routes. k samples only.",
           "h0": "The null hypothesis as formatted text with symbols, such as “μ₁ = μ₂ = … = μₖ” or “σ² ≤ 4.0000”; for one sample it contains the target value, and the sign follows the direction: two-sided =, greater ≤, less ≥.",
           "h1": "The alternative hypothesis as formatted text with ≠, > or <; for k samples “at least one μ differs” or “at least one variance differs”.",
           "ciNote": "A note on the interval as formatted text, missing for k samples. When two sample means show no significant difference it gives the range of the difference μ₁−μ₂ and says that equality is not shown by this; on the Mann-Whitney route it gives the shift η₁−η₂ or says that the samples are too small for level 1 − α. Otherwise empty.",
@@ -7940,6 +8092,7 @@
           "bold": "Whether the row appears in bold; only the row Total."
         },
         "GroupRow": {
+          "ci": "Confidence interval of the group mean as formatted text with lower and upper bound, level 1 − α; only on the Fisher and Welch routes, otherwise empty.",
           "name": "Name of the group as displayed text, the column name from the data collection. Column “Group”.",
           "n": "Number of values in the group as formatted text, column “n”.",
           "mean": "Mean x̄ of the group as formatted text with four decimals, column “x̄”.",
@@ -8050,12 +8203,12 @@
       "normalLabel": "Normality",
       "varEqualLabel": "Equal variances assumed",
       "assumeEqualVariances": "Assume equal variances (pooled t-test)",
-      "varDiffLabel": "Significant variance difference (Levene)",
       "sectionSecondary": "Rank-based comparison test",
       "sectionSecondaryLevene": "Levene test (cross-check)",
       "secondaryNote": "The data are not normally distributed, but every group has n ≥ 20. The parametric test is then robust and remains the main result. The rank test checks a different hypothesis (a shift of the distribution rather than the means) and serves as a cross-check.",
       "ciSigmaLabel": "{level}% CI for σ",
       "ciRatioLabel": "{level}% CI for σ²₁/σ²₂",
+      "ciRatioUndefinedNote": "The confidence interval cannot be reported: the confidence set for σ²₁/σ²₂ splits into separate pieces (very unequal sample sizes or kurtoses). The p-value remains valid.",
       "secondaryNoteLevene": "For two variances Minitab shows Bonett and Levene. Levene is listed as a cross-check; it is two-sided only and gives no confidence interval.",
       "twoSidedSuffix": "two-sided",
       "powerNormalApprox": "Computed assuming normality — approximation only.",
@@ -8124,6 +8277,27 @@
       "ciShiftTooSmall": "Samples too small for {level}% – achieved {achieved}%.",
       "ciShiftTip": "Hodges-Lehmann confidence interval of the location shift. Target {level}%, achieved {achieved}% ({method}).",
       "pairwiseShiftCiHint": "below p_adj the CI of the shift η(row)−η(column) (Hodges-Lehmann)",
+      "assumeEqualVariancesK": "Assume equal variances (Fisher ANOVA, Tukey)",
+      "modelSummary": "Model Summary",
+      "labelR2adj": "R² (adj)",
+      "labelR2pred": "R² (pred)",
+      "tipModelS": "S: standard deviation of the residuals (square root of MS within); in the units of the data",
+      "tipR2": "R²: share of the total variation explained by the group membership",
+      "tipR2adj": "R² (adj): R² adjusted for the number of groups; negative values are shown as 0 %",
+      "tipR2pred": "R² (pred): how well the model predicts new observations (from PRESS); negative values are shown as 0 %",
+      "groupCi": "{level} % CI",
+      "tipGroupCi": "Confidence interval of the group mean: from the pooled standard deviation (Fisher) or the group's own standard deviation (Welch)",
+      "pairwiseSimultaneousHint": "Simultaneous CIs, family confidence {level} %",
+      "sectionResiduals": "Residual Plots",
+      "residuals": "Residual",
+      "fittedValues": "Fitted value",
+      "residualsVsFitted": "Residuals vs. Fits",
+      "residualsNormalPlot": "Normal Probability Plot of Residuals",
+      "residualsHistogram": "Histogram of Residuals",
+      "residualsVsOrder": "Residuals vs. Order",
+      "residualsVsOrderByGroup": "Observation (by group)",
+      "residualsPercent": "Percent",
+      "residualsFrequency": "Frequency",
       "pMethodExact": "exact from the U distribution",
       "pMethodNormal": "normal approximation with tie and continuity correction",
       "pairwiseEqual": "not significant",
@@ -12907,12 +13081,12 @@
       "type": { "useful": "useful", "harmful": "harmful" },
       "level": { "adequate": "adequate", "insufficient": "insufficient", "excessive": "excessive" },
       "rank": { "basic": "Basic function", "additional": "Additional function", "auxiliary": "Auxiliary function" },
+      "rankCode": { "basic": "B", "additional": "Ad", "auxiliary": "A{level}" },
       "swapDirection": "Reverse direction",
       "addOnPair": "Add another arrow on this pair",
       "removeFunction": "Delete function",
       "resetLayout": "Reset layout",
-      "exportPng": "PNG",
-      "exportSvg": "SVG",
+      "showRanks": "Show function ranks",
       "diagramEmpty": "No components yet.",
       "legend": { "solid": "useful, adequate", "dashed": "insufficient", "bold": "excessive", "wave": "harmful" },
       "disadvantages": "Disadvantages",

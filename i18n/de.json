@@ -76,7 +76,9 @@
   "crossVersion": {
     "title": "Daten aus anderer Version gefunden",
     "intro": "In diesem Browser liegen Projektdaten aus einer früheren Qprovement-Version. Möchten Sie sie in v{current} übernehmen?",
-    "projectsCount": "{count} Projekt(e)",
+    "transition": "v{from} → v{to}",
+    "projectsCount_one": "{count} Projekt",
+    "projectsCount_other": "{count} Projekte",
     "note": "Die Daten werden auf die aktuelle Version migriert. Die Originaldaten in der alten Version bleiben unverändert.",
     "takeover": "Übernehmen",
     "dismiss": "Nicht übernehmen",
@@ -795,6 +797,33 @@
       "ci": "KI",
       "ciTitle": "{n}%-Konfidenzintervall"
     }
+  },
+  "bugReport": {
+    "trigger": "Fehler melden",
+    "optinTitle": "Fehler melden",
+    "optinIntro": "Was soll mitgeschickt werden? Beschreibung, App-Version, Route sowie Ort und Typ der letzten Konsolenfehler gehen immer mit – ohne Meldungstext.",
+    "optinScreenshot": "Screenshot aufnehmen",
+    "optinProject": "Projektdaten mitschicken",
+    "optinErrors": "Fehlermeldungen im Wortlaut mitschicken (können Projektinhalte enthalten)",
+    "next": "Weiter",
+    "describeTitle": "Fehler beschreiben",
+    "describeLabel": "Was ist passiert, und was hätten Sie erwartet?",
+    "describePlaceholder": "Beschreibung …",
+    "send": "Senden",
+    "toolFrame": "Rahmen",
+    "toolCircle": "Kreis",
+    "toolArrow": "Pfeil",
+    "toolLine": "Freier Strich",
+    "toolTextbox": "Textbox",
+    "undo": "Letztes zurücknehmen",
+    "textboxPlaceholder": "Text …",
+    "captureUnsupported": "Bildschirmaufnahme ist hier nicht verfügbar — weiter ohne Screenshot.",
+    "captureDenied": "Freigabe abgelehnt — weiter ohne Screenshot.",
+    "captureFailed": "Aufnahme fehlgeschlagen — weiter ohne Screenshot.",
+    "sent": "Fehlerbericht gespeichert: {path}",
+    "rejected": "Fehlerbericht abgelehnt: {reason}",
+    "downloaded": "Empfänger nicht erreichbar — Dateien wurden heruntergeladen. Zielordner: {folder}",
+    "failed": "Fehlerbericht konnte nicht erstellt werden."
   },
   "chart": {
     "renderError": "Diagramm konnte nicht gezeichnet werden.",
@@ -2635,6 +2664,7 @@
       "noMatch": "Keine Aufgaben gefunden.",
       "whenToUse": "Wenn offene Aufgaben eines Projekts mit Verantwortlichem, Zieldatum und Status verfolgt werden sollen — nicht für die Terminplanung in einer Kalenderansicht und nicht für die Bewertung oder Auswahl von Maßnahmen, dafür sind das Kalendermodul und die Bewertungsmatrizen da.",
       "actions": {
+        "moveTodo": {"help": "Verschiebt eine Aufgabe vor eine andere und stellt die Liste auf manuelle Reihenfolge, wie das Ziehen am Griff. Ist die Liste sortiert, wird zuerst die sichtbare Reihenfolge zur gespeicherten; ausgefilterte Aufgaben folgen dahinter.", "params": {"itemId": "Die id der Aufgabe, die verschoben wird. Eine unbekannte id ist ein Fehler.", "beforeId": "Die id der Aufgabe, vor die sie kommt. Eine unbekannte id ist ein Fehler; gleich itemId ändert nichts."}},
         "addTodo": {
           "help": "Legt eine leere Aufgabe am Ende der Liste an und liefert ihre id zurück.",
           "params": {}
@@ -5571,7 +5601,7 @@
       "matrixMode": "{n} Spalten → Korrelationsmatrix",
       "noWorksheet": "Zuerst ein Worksheet-Modul hinzufügen, um Daten bereitzustellen.",
       "noNumericColumns": "Keine numerischen Spalten in den Worksheets gefunden.",
-      "confidenceLevel": "Konfidenzniveau",
+      "confidenceLevel": "Konfidenz",
       "confidenceInterval": "Konfidenzintervall",
       "ciShort": "KI",
       "placeholderText": "Wählen Sie numerische Spalten aus — die Korrelationsanalyse läuft automatisch. Bei 2 Spalten: Detailansicht. Bei 3+: Korrelationsmatrix.",
@@ -7535,11 +7565,37 @@
     },
     "attribute-test": {
       "name": "Attributtests",
-      "description": "Tests für Anteile und Häufigkeiten: 1 und 2 Anteile, Fisher-exakt, Chi-Quadrat-Assoziation",
+      "description": "Tests für Anteile, Raten und Häufigkeiten: 1 und 2 Anteile, Fisher-exakt, Chi-Quadrat-Assoziation, McNemar, Äquivalenz (TOST), 1 und 2 Poisson-Raten",
       "sectionTest": "Test",
       "kindOne": "1 Anteil",
       "kindTwo": "2 Anteile",
       "kindAssoc": "Chi-Quadrat-Assoziation",
+      "kindEquiv": "Äquivalenz Anteile",
+      "kindMcNemar": "McNemar (gepaart)",
+      "kindRate1": "1 Poisson-Rate",
+      "kindRate2": "2 Poisson-Raten",
+      "groupProportions": "Anteile",
+      "groupRates": "Raten",
+      "groupTables": "Tabellen",
+      "exposure": "Umfang (t)",
+      "lambda0": "Hypothetische Rate λ₀",
+      "diff0": "Hypothetische Differenz Δ₀",
+      "exposurePerRow": "Umfang je Zeile",
+      "colCounts": "Spalte mit Anzahlen",
+      "colBefore": "Spalte Vorher",
+      "colAfter": "Spalte Nachher",
+      "pairBefore": "Vorher",
+      "pairAfter": "Nachher",
+      "pairEvent": "Ereignis",
+      "pairNoEvent": "Kein Ereignis",
+      "equivSamples1": "1 Stichprobe",
+      "equivSamples2": "2 Stichproben",
+      "boundsSymmetric": "Symmetrische Grenzen (±δ)",
+      "boundsAsymmetric": "Getrennte Grenzen",
+      "delta": "Äquivalenzgrenze δ (pp)",
+      "boundLower": "Untere Grenze (pp)",
+      "boundUpper": "Obere Grenze (pp)",
+      "ratePooled": "Gemeinsame Rate für den Test verwenden",
       "sectionInput": "Eingabe",
       "modeSummary": "Zusammengefasst",
       "modeColumns": "Spalten",
@@ -7611,8 +7667,80 @@
       "errResponseLevels": "Die Antwortspalte braucht genau 2 verschiedene Werte.",
       "errGroupLevels": "Die Gruppenspalte braucht genau 2 Stufen.",
       "errTableTooSmall": "Die Tabelle braucht mindestens 2 × 2 Zellen mit Beobachtungen.",
-      "whenToUse": "Wenn Häufigkeiten von Ereignissen verglichen werden: prüft einen Anteil gegen einen vermuteten Wert, zwei Anteile gegeneinander (z-Test und exakter Test nach Fisher) oder den Zusammenhang zweier kategorialer Merkmale (Chi-Quadrat auf einer Kreuztabelle). Die Häufigkeiten werden als Zusammenfassung angegeben oder aus Tabellenspalten gezählt.",
+      "statRateCounts": "Ereignisse / Umfang",
+      "statRate": "Rate λ̂ (Ereignisse je Einheit)",
+      "statCiRate": "{level} %-KI (exakt, Garwood)",
+      "statPExactPoisson": "p-Wert (exakt, Poisson)",
+      "statRateGroup": "Rate ({group})",
+      "statRateDiff": "Differenz λ̂₁ − λ̂₂",
+      "statCiRateDiff": "{level} %-KI der Differenz (Normalapproximation)",
+      "statPExactCond": "p-Wert (exakt, bedingt)",
+      "statRateRatio": "Ratenverhältnis λ̂₁ / λ̂₂",
+      "statCiRatio": "{level} %-KI des Ratenverhältnisses (exakt)",
+      "statDiscordant": "Abweichende Paare (Ereignis → kein Ereignis / kein Ereignis → Ereignis)",
+      "statPBefore": "Anteil vorher",
+      "statPAfter": "Anteil nachher",
+      "statPairedDiff": "Differenz nachher − vorher",
+      "statCiPairedDiff": "{level} %-KI der Differenz (Wald)",
+      "statPExactMcNemar": "p-Wert (exakt, McNemar)",
+      "statChi2McNemar": "χ² (McNemar, ohne Korrektur)",
+      "statPChi2": "p-Wert (χ²)",
+      "statChi2McNemarCc": "χ² (McNemar, mit Stetigkeitskorrektur)",
+      "statPChi2Cc": "p-Wert (χ², korrigiert)",
+      "statEquivEstimate1": "Anteil p̂ (%)",
+      "statEquivEstimate2": "Differenz p̂₁ − p̂₂ (pp)",
+      "statEquivCi": "{level} %-KI ({unit})",
+      "statEquivBounds": "Äquivalenzgrenzen ({unit})",
+      "statPLower": "p-Wert, untere Grenze",
+      "statPUpper": "p-Wert, obere Grenze",
+      "statPTost": "p-Wert (TOST, der größere von beiden)",
+      "decisionEquivalent": "Gleichwertig innerhalb [{lower}; {upper}] {unit} (α = {alpha}).",
+      "decisionNotEquivalent": "Gleichwertigkeit nicht nachgewiesen (α = {alpha}).",
+      "basisExactPoisson": "Entscheidung auf Basis des exakten Poisson-Tests",
+      "basisZRate": "Entscheidung auf Basis des z-Tests für die Ratendifferenz",
+      "basisExactMcNemar": "Entscheidung auf Basis des exakten McNemar-Tests",
+      "basisTost": "Entscheidung auf Basis zweier einseitiger Tests (TOST) gegen die Äquivalenzgrenzen",
+      "h0Rate1": "H₀: λ = λ₀",
+      "h1Rate1": "H₁: λ {op} λ₀",
+      "h0Rate2": "H₀: λ₁ − λ₂ = Δ₀",
+      "h1Rate2": "H₁: λ₁ − λ₂ {op} Δ₀",
+      "h0McNemar": "H₀: Der Anteil ist vorher und nachher gleich",
+      "h1McNemar": "H₁: Anteil nachher {op} Anteil vorher",
+      "h0McNemarLabeled": "H₀: Der Anteil ist {before} und {after} gleich",
+      "h1McNemarLabeled": "H₁: Anteil {after} {op} Anteil {before}",
+      "fallbackBefore": "vorher",
+      "fallbackAfter": "nachher",
+      "statPBeforeLabeled": "Anteil {label}",
+      "statPAfterLabeled": "Anteil {label}",
+      "noteRatePooledIgnored": "Bei einer hypothetischen Differenz ≠ 0 wird ohne gemeinsame Rate getestet.",
+      "h0Equiv": "H₀: Δ ≤ untere Grenze oder Δ ≥ obere Grenze (Δ = p₁ − p₂, bei einer Stichprobe p − p₀)",
+      "h1Equiv": "H₁: untere Grenze < Δ < obere Grenze",
+      "noteRateNormalApprox": "Die Normalapproximation ist hier nicht geeignet (λ₀·t < 5). Maßgeblich ist der exakte Test.",
+      "noteNoDiscordant": "Keine abweichenden Paare – es gibt nichts zu testen.",
+      "noteSmallDiscordant": "Weniger als 10 abweichende Paare – maßgeblich ist der exakte p-Wert, nicht die χ²-Näherung.",
+      "noteEquivDegenerate": "Beide Anteile sind 0 (oder beide 1) – die Normalapproximation ist nicht anwendbar, daher gibt es kein Äquivalenzergebnis.",
+      "noteNotEquivalentIsNotEqual": "Kein signifikanter Unterschied heißt nicht, dass die Anteile gleichwertig sind. Ob der Unterschied klein genug ist, zeigt der Äquivalenztest.",
+      "actionCheckEquivalence": "Mit Äquivalenztest prüfen",
+      "notePairedUseMcNemar": "Wurden dieselben Einheiten vorher und nachher geprüft? Dann ist McNemar der passende Test.",
+      "noteEquivBoundsPractical": "Die Äquivalenzgrenzen sind eine fachliche, keine statistische Entscheidung. Legen Sie sie fest, bevor Sie die Daten ansehen.",
+      "noteEquivCiOutside": "Das Konfidenzintervall liegt nicht vollständig innerhalb der Äquivalenzgrenzen.",
+      "errExposure": "Der Umfang muss eine Zahl größer als 0 sein.",
+      "errLambda0": "Die hypothetische Rate λ₀ muss größer als 0 sein.",
+      "errDiff0": "Die hypothetische Differenz muss eine Zahl sein.",
+      "errPairsLength": "Die Spalten für vorher und nachher müssen gleich lang sein.",
+      "errPairLevels": "Beide Spalten zusammen brauchen genau 2 verschiedene Werte.",
+      "hintEnterBounds": "Geben Sie die Äquivalenzgrenzen ein. Sie sind eine fachliche, keine statistische Entscheidung: Welcher Unterschied wäre in der Praxis noch gleichwertig? Legen Sie das fest, bevor Sie die Daten ansehen.",
+      "errBoundsContainOne": "Die Grenzen müssen die 0 einschließen (untere < 0 < obere); sie gelten relativ zum Sollwert p₀.",
+      "deltaOne": "Äquivalenzgrenze δ (pp, relativ zu p₀)",
+      "boundLowerOne": "Untere Grenze (pp, relativ zu p₀)",
+      "boundUpperOne": "Obere Grenze (pp, relativ zu p₀)",
+      "noteRateNotTestable": "In beiden Stichproben gibt es keine Ereignisse, die Differenz soll aber von 0 abweichen – daraus lässt sich nichts testen.",
+      "errBoundsOrder": "Die untere Grenze muss kleiner als die obere sein.",
+      "errBoundsContain": "Die Grenzen müssen die 0 einschließen (untere < 0 < obere).",
+      "whenToUse": "Wenn Häufigkeiten von Ereignissen verglichen werden: prüft einen Anteil gegen einen vermuteten Wert, zwei Anteile gegeneinander (z-Test und exakter Test nach Fisher), die Gleichwertigkeit von Anteilen (Äquivalenztest, TOST), gepaarte Anteile vorher und nachher (McNemar), eine oder zwei Poisson-Raten (Ereignisse je Umfang) oder den Zusammenhang zweier kategorialer Merkmale (Chi-Quadrat auf einer Kreuztabelle). Die Häufigkeiten werden als Zusammenfassung angegeben oder aus Tabellenspalten gezählt.",
       "actions": {
+        "setPairCell": {"help": "Setzt eine Anzahl der McNemar-Vierfeldertafel bei Eingabe als Zusammenfassung: wie viele Paare vorher und nachher im jeweiligen Zustand waren.", "params": {"row": "Zustand vorher: 0 = Ereignis, 1 = kein Ereignis.", "col": "Zustand nachher: 0 = Ereignis, 1 = kein Ereignis.", "value": "Die Anzahl als Text, '' leert die Zelle."}},
+        "checkEquivalence": {"help": "Wechselt zum Äquivalenztest mit zwei Stichproben, wie die Schaltfläche „Mit Äquivalenztest prüfen“ unter einem nicht signifikanten Test zweier Anteile. Anzahlen und Spalten teilt er mit dem Test zweier Anteile, sie bleiben stehen; die Äquivalenzgrenzen bleiben unverändert."},
         "read": {
           "help": "Liefert die eingegebene Konfiguration, die im Zustand gültigen Schlüssel und Rollen, die wählbaren Spalten, die wählbaren Ereigniswerte und das Ergebnis. result ist null, solange die Eingaben unvollständig oder ungültig sind; errorMsg nennt dann den Grund (einen Eingabehinweis oder eine Absage wie eine zu kleine Tabelle) und ist leer, solange ein Ergebnis vorliegt.",
           "params": {
@@ -7629,7 +7757,7 @@
         "setColumn": {
           "help": "Die Spalte einer Datensammlung, die diese Rolle liefert; nach einer Änderung wird neu gerechnet. Kommt der bisherige Ereigniswert in der neuen Antwortspalte nicht vor, gilt ihr letzter Wert als Ereignis.",
           "params": {
-            "slot": "Eine der Rollen aus activeColumnSlots: response, group, rowVar oder colVar.",
+            "slot": "Eine der Rollen aus activeColumnSlots: response (Antwortspalte), counts (Anzahlen bei Raten), before und after (McNemar), group, rowVar oder colVar.",
             "ref": "Der Bezug { instanceId, sheetId, columnId } einer Spalte aus pickableColumns für diese Rolle, oder null, um die Rolle zu leeren."
           }
         },
@@ -7678,8 +7806,11 @@
         }
       },
       "fields": {
+        "ratePooled": {"help": "Bei zwei Raten: true nimmt für die z-Statistik die gemeinsame Rate, solange die hypothetische Differenz 0 ist."},
+        "exposurePerRow": {"help": "Der Umfang je Tabellenzeile bei Raten aus Spalten, wie eingegeben; der Gesamtumfang ist die Zahl der Zeilen mal diesem Wert."},
+        "equiv": {"help": "Die Einstellungen des Äquivalenztests: samples (1 oder 2), symmetric (true für ±delta), delta, lower und upper als Text in Prozentpunkten."},
         "testKind": {
-          "help": "Die Testart: 'one' (ein Anteil), 'two' (zwei Anteile) oder 'assoc' (Zusammenhang in einer Kreuztabelle)."
+          "help": "Die Testart: 'one' (ein Anteil), 'two' (zwei Anteile), 'equiv' (Äquivalenz von Anteilen), 'mcnemar' (gepaarte Anteile), 'rate1' (eine Poisson-Rate), 'rate2' (zwei Poisson-Raten) oder 'assoc' (Zusammenhang in einer Kreuztabelle)."
         },
         "inputMode": {
           "help": "Woher die Häufigkeiten kommen: 'summary' (eingegebene Zahlen) oder 'columns' (Tabellenspalten)."
@@ -7697,10 +7828,10 @@
           "help": "Bei zwei Anteilen: true nimmt für die z-Statistik den gepoolten Standardfehler."
         },
         "summary": {
-          "help": "Die zusammengefassten Häufigkeiten wie eingegeben: x und n (ein Anteil), x1, n1, x2 und n2 (zwei Anteile) und table { rows, cols, counts } (Zusammenhang), alle als Text."
+          "help": "Die zusammengefassten Häufigkeiten wie eingegeben: x und n (ein Anteil), x1, n1, x2 und n2 (zwei Anteile), t, t1, t2, lambda0 und diff0 (Raten), pairs { labels, counts } (McNemar) und table { rows, cols, counts } (Zusammenhang), alle als Text."
         },
         "colRefs": {
-          "help": "Die gewählte Spalte je Rolle: response, group, rowVar und colVar, je { instanceId, sheetId, columnId } oder null."
+          "help": "Die gewählte Spalte je Rolle: response, counts, before, after, group, rowVar und colVar, je { instanceId, sheetId, columnId } oder null."
         },
         "eventValue": {
           "help": "Der Wert der Antwortspalte, der als Ereignis zählt, oder null, solange es keinen gibt."
@@ -7709,13 +7840,13 @@
           "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt."
         },
         "activeColumnSlots": {
-          "help": "Die Rollen, die setColumn im aktuellen Zustand annimmt: keine bei Eingabe als Zusammenfassung, response (bei zwei Anteilen auch group) oder rowVar und colVar beim Zusammenhangstest mit Spalteneingabe."
+          "help": "Die Rollen, die setColumn im aktuellen Zustand annimmt: keine bei Eingabe als Zusammenfassung; bei Spalteneingabe response (Anteile und Äquivalenz, bei zwei Stichproben auch group), counts (Raten, bei zwei Raten auch group), before und after (McNemar) oder rowVar und colVar (Zusammenhangstest)."
         },
         "pickableColumns": {
           "help": "Je Rolle die Spalten, die setColumn annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'. Jede Spalte mit mindestens 2 Werten."
         },
         "eventValueOptions": {
-          "help": "Die Werte, die setParam für eventValue annimmt: die verschiedenen Werte der gewählten Antwortspalte; leer, solange es keine gibt."
+          "help": "Die Werte, die setParam für eventValue annimmt: die verschiedenen Werte der gewählten Antwortspalte, bei McNemar beider gepaarter Spalten zusammen; leer, solange es keine gibt."
         },
         "result": {
           "help": "Der Testbericht: Kennzahlen, Hinweise, Entscheidung und beim Zusammenhangstest die Kreuztabelle, jede Kennzahl unter keys einzeln beschrieben; null, solange die Eingaben unvollständig oder ungültig sind (der Grund steht in errorMsg)."
@@ -7725,14 +7856,24 @@
         }
       },
       "types": {
+        "Action": {"key": "Kennung des angebotenen Folgeschritts; derzeit nur „actionCheckEquivalence“ (unter einem nicht signifikanten zweiseitigen Test zweier Anteile), über checkEquivalence auszuführen."},
         "Params": {
-          "testKind": "Die Testart, gewählt im Abschnitt „Test“: „1 Anteil“ prüft einen Anteil gegen den hypothetischen Anteil p₀, „2 Anteile“ vergleicht die Anteile zweier Stichproben, „Chi-Quadrat-Assoziation“ prüft, ob zwei kategoriale Merkmale einer Kreuztabelle zusammenhängen. Vorgabe ist „2 Anteile“; ein Wechsel behält alle übrigen Eingaben.",
+          "equiv": {"samples": "„1 Stichprobe“ prüft, ob ein Anteil gleichwertig zu p₀ ist; „2 Stichproben“ prüft, ob die Differenz zweier Anteile innerhalb der Grenzen liegt. Vorgabe: 2 Stichproben. Die Anzahlen teilt der Test mit dem Test eines bzw. zweier Anteile.", "symmetric": "„Symmetrische Grenzen (±δ)“ nimmt eine Grenze δ für beide Seiten, „Getrennte Grenzen“ eine untere und eine obere. Vorgabe: symmetrisch.", "delta": "Äquivalenzgrenze δ in Prozentpunkten, eine Zahl größer als 0: gleichwertig heißt, die Differenz (bei einer Stichprobe p − p₀) liegt zwischen −δ und +δ. Die Grenze ist eine fachliche Entscheidung, keine statistische.", "lower": "Untere Äquivalenzgrenze in Prozentpunkten, kleiner als 0; bei einer Stichprobe relativ zu p₀. Sie muss kleiner als die obere sein.", "upper": "Obere Äquivalenzgrenze in Prozentpunkten, größer als 0; bei einer Stichprobe relativ zu p₀. Sie muss größer als die untere sein."},
+          "exposurePerRow": "„Umfang je Zeile“ bei Raten aus Spalten: welcher Umfang (Zeit, Fläche, Stückzahl) zu einer Zeile der Anzahlspalte gehört, eine Zahl größer als 0, Vorgabe 1. Der Gesamtumfang ist die Zahl der Zeilen mit Wert mal diesem Umfang, bei zwei Raten je Gruppe.",
+          "ratePooled": "Gemeinsame Rate für den z-Test zweier Raten. Angekreuzt rechnet der Test den Standardfehler aus der gemeinsamen Rate (x₁ + x₂)/(t₁ + t₂); das gilt nur, solange die hypothetische Differenz Δ₀ gleich 0 ist, sonst erscheint ein Hinweis und es wird getrennt gerechnet. Das Konfidenzintervall der Differenz bleibt immer ungepoolt. Vorgabe: nicht angekreuzt.",
+          "testKind": "Die Testart, gewählt im Abschnitt „Test“: „1 Anteil“ prüft einen Anteil gegen den hypothetischen Anteil p₀, „2 Anteile“ vergleicht die Anteile zweier Stichproben, „Äquivalenz Anteile“ prüft, ob ein Anteil oder eine Differenz innerhalb fachlich gesetzter Grenzen liegt, „McNemar (gepaart)“ vergleicht Anteile derselben Einheiten vorher und nachher, „1 Poisson-Rate“ und „2 Poisson-Raten“ prüfen Ereignisse je Umfang, „Chi-Quadrat-Assoziation“ prüft, ob zwei kategoriale Merkmale einer Kreuztabelle zusammenhängen. Vorgabe ist „2 Anteile“; ein Wechsel behält alle übrigen Eingaben.",
           "inputMode": "Die Eingabeart im Abschnitt „Eingabe“: „Zusammengefasst“ nimmt Anzahlen von Hand (Ereignisse und Versuche bzw. die Kreuztabelle), „Spalten“ zählt sie aus Spalten einer Datensammlung. Vorgabe ist „Zusammengefasst“.",
           "alpha": "Signifikanzniveau α, eine Zahl strikt zwischen 0 und 1, zum Beispiel 0,05. H₀ wird verworfen, wenn der maßgebliche p-Wert kleiner als α ist; zugleich legt α das Niveau des Konfidenzintervalls fest, 1 − α in Prozent, auf eine Nachkommastelle gerundet.",
           "direction": "Die Alternativhypothese: „≠ zweiseitig“, „> größer“ oder „< kleiner“. Bei einem und zwei Anteilen bestimmt sie p-Werte und Konfidenzintervall; einseitig reicht das Intervall bis 0 bzw. 1 (ein Anteil) oder bis −1 bzw. 1 (Differenz). Beim Zusammenhangstest erscheint sie nur bei einer 2 × 2-Tafel und wirkt nur auf den Fisher-exakten Test, Pearson χ² bleibt zweiseitig.",
           "p0": "Hypothetischer Anteil p₀ für den Test eines Anteils, als Zahl mit Punkt oder Komma, zum Beispiel 0,5 (Vorgabe). Er muss strikt zwischen 0 und 1 liegen, sonst gibt es kein Ergebnis.",
           "pooled": "Gepoolte Schätzung von p für den z-Test zweier Anteile. Angekreuzt rechnet der Test den Standardfehler aus dem gemeinsamen Anteil p̄ = (x₁ + x₂)/(n₁ + n₂): SE = √(p̄(1 − p̄)(1/n₁ + 1/n₂)); sonst aus beiden Anteilen getrennt. Das Konfidenzintervall der Differenz bleibt immer ungepoolt. Vorgabe: nicht angekreuzt.",
           "summary": {
+            "pairs": {"labels": {"before": "Bezeichnung des ersten Zeitpunkts der McNemar-Tafel, etwa „Vorher“ oder ein Prüfername; erscheint in Hypothesen und Kennzahlen. Leer gilt „vorher“, bei Spalteneingabe der Spaltenname.", "after": "Bezeichnung des zweiten Zeitpunkts der McNemar-Tafel, etwa „Nachher“; erscheint in Hypothesen und Kennzahlen. Leer gilt „nachher“, bei Spalteneingabe der Spaltenname."}},
+            "diff0": "Hypothetische Differenz Δ₀ der Raten λ₁ − λ₂ beim Vergleich zweier Raten, Vorgabe 0. Nur bei 0 gibt es den bedingten exakten Test und die gemeinsame Rate.",
+            "lambda0": "Hypothetische Rate λ₀ beim Test einer Rate, Ereignisse je Einheit des Umfangs, eine Zahl größer als 0.",
+            "t2": "Umfang (t) der Stichprobe 2 beim Vergleich zweier Raten, eine Zahl größer als 0.",
+            "t1": "Umfang (t) je Stichprobe beim Vergleich zweier Raten, Zeile „Stichprobe 1“ und „Stichprobe 2“, eine Zahl größer als 0. Die Rate der Stichprobe ist Ereignisse / t.",
+            "t": "Umfang (t) beim Test einer Rate: die Beobachtungsmenge, auf die sich die Ereignisse beziehen (Zeit, Fläche, Stückzahl), eine Zahl größer als 0. Die Rate ist λ̂ = Ereignisse / t.",
             "x": "Ereignisse beim Test eines Anteils: wie oft das betrachtete Ereignis eintrat, eine ganze Zahl ab 0, höchstens so groß wie die Versuche. Bleiben Ereignisse und Versuche leer, wird nicht gerechnet.",
             "n": "Versuche (n) beim Test eines Anteils: die Zahl der Beobachtungen, eine ganze Zahl größer als 0. Der geschätzte Anteil ist p̂ = Ereignisse / n.",
             "x1": "Ereignisse je Stichprobe beim Vergleich zweier Anteile, Zeile „Stichprobe 1“ und „Stichprobe 2“: wie oft das Ereignis in der jeweiligen Stichprobe eintrat, eine ganze Zahl ab 0, höchstens so groß wie deren Versuche.",
@@ -7740,14 +7881,16 @@
             "x2": "Ereignisse in Stichprobe 2 beim Vergleich zweier Anteile, eine ganze Zahl ab 0, höchstens so groß wie die Versuche von Stichprobe 2.",
             "n2": "Versuche (n) in Stichprobe 2 beim Vergleich zweier Anteile, eine ganze Zahl größer als 0."
           },
-          "eventValue": "Bei Spalteneingabe der Wert der Antwortspalte, der als Ereignis zählt („Ereignis =“). Die Antwortspalte braucht genau zwei verschiedene Werte; ohne Wahl gilt wie bei Minitab der letzte Wert in natürlicher Sortierung."
+          "eventValue": "Bei Spalteneingabe der Wert der Antwortspalte, der als Ereignis zählt („Ereignis =“); bei McNemar gilt er für beide gepaarten Spalten. Die Antwortspalte braucht genau zwei verschiedene Werte; ohne Wahl gilt wie bei Minitab der letzte Wert in natürlicher Sortierung."
         },
         "Result": {
-          "kind": "Die Testart, für die der Bericht gerechnet wurde: ein Anteil, zwei Anteile oder Chi-Quadrat-Assoziation, wie im Abschnitt „Test“ gewählt.",
+          "decisionParams": "Platzhalter der Äquivalenz-Entscheidung: untere und obere Grenze (formatiert), die Einheit (% bei einer Stichprobe, pp bei zwei) und α. Nur beim Äquivalenztest.",
+          "actions": "Die Folgeschritte unter dem Ergebnis: beim nicht signifikanten zweiseitigen Test zweier Anteile die Schaltfläche „Mit Äquivalenztest prüfen“, denn kein Unterschied heißt nicht gleichwertig. Sonst fehlt das Feld.",
+          "kind": "Die Testart, für die der Bericht gerechnet wurde, wie im Abschnitt „Test“ gewählt: ein Anteil, zwei Anteile, Äquivalenz, McNemar, eine Rate, zwei Raten oder Chi-Quadrat-Assoziation.",
           "stats": "Die Kennzahlzeilen der Tabelle unter „Ergebnisse“, je Testart andere: Anzahlen, Anteile, Konfidenzintervall, Prüfgröße und p-Werte; jede Zeile ist einzeln erklärt: Alt halten und das Fragezeichen neben ihrer Beschriftung anklicken.",
           "notes": "Hinweise unter der Entscheidung: übersprungene Zeilen mit fehlenden Werten, die ungeeignete Normalapproximation (ein Anteil), der gepoolte z-Test (zwei Anteile), entfernte leere Zeilen oder Spalten und die Warnungen zu kleinen erwarteten Häufigkeiten (Zusammenhangstest).",
-          "decision": "Die Entscheidung gegen α: „H₀ verwerfen“, wenn der maßgebliche p-Wert kleiner als α ist, sonst „H₀ nicht verwerfen“. Maßgeblich ist beim Test eines Anteils der exakte Binomialtest, bei zwei Anteilen der p-Wert des z-Tests und beim Zusammenhangstest der p-Wert von Pearson χ² (immer zweiseitig). Die Grundlage steht neben der Entscheidung.",
-          "basisKey": "Kennung des Satzes, der die Grundlage der Entscheidung nennt: exakter Binomialtest, z-Test oder Pearson χ².",
+          "decision": "Die Entscheidung gegen α: „H₀ verwerfen“ (reject), wenn der maßgebliche p-Wert kleiner als α ist, sonst „H₀ nicht verwerfen“ (keep); beim Äquivalenztest „gleichwertig“ (equivalent) oder „nicht nachgewiesen“ (notEquivalent). Maßgeblich ist beim Test eines Anteils der exakte Binomialtest, bei zwei Anteilen der z-Test, bei einer Rate der exakte Poisson-Test, bei zwei Raten der z-Test der Differenz, bei McNemar der exakte Test, bei der Äquivalenz der TOST und beim Zusammenhangstest Pearson χ² (immer zweiseitig). Die Grundlage steht neben der Entscheidung.",
+          "basisKey": "Kennung des Satzes, der die Grundlage der Entscheidung nennt: exakter Binomialtest, z-Test, exakter Poisson-Test, z-Test der Ratendifferenz, exakter McNemar-Test, TOST oder Pearson χ².",
           "table": "Die Kreuztabelle des Zusammenhangstests mit beobachteten und erwarteten Anzahlen und dem Beitrag je Zelle zu χ²; bei einem und zwei Anteilen leer."
         },
         "Stat": {
@@ -7775,6 +7918,10 @@
         }
       },
       "stats": {
+        "equiv": {"counts": "Ereignisse und Versuche der Stichprobe als „x / n“.", "counts1": "Ereignisse und Versuche der ersten Gruppe als „x / n“.", "counts2": "Ereignisse und Versuche der zweiten Gruppe als „x / n“.", "estimate": "Der Schätzwert: bei einer Stichprobe der Anteil p̂ in Prozent, bei zwei die Differenz p̂₁ − p̂₂ in Prozentpunkten.", "ci": "Konfidenzintervall zum Niveau 1 − 2α, wie es zu zwei einseitigen Tests auf dem Niveau α gehört. Liegt es ganz innerhalb der Grenzen, sind die Anteile gleichwertig.", "bounds": "Die Äquivalenzgrenzen in der Einheit des Schätzwerts; bei einer Stichprobe p₀ plus die Grenzen, auf 0 bis 100 % begrenzt.", "pLower": "p-Wert des einseitigen Tests gegen die untere Grenze.", "pUpper": "p-Wert des einseitigen Tests gegen die obere Grenze.", "pValue": "p-Wert des TOST, der größere der beiden einseitigen p-Werte. Gleichwertig, wenn er kleiner als α ist."},
+        "mcnemar": {"discordant": "Die abweichenden Paare als „b / c“: b wechselt von Ereignis zu kein Ereignis, c von kein Ereignis zu Ereignis. Nur sie tragen zum Test bei.", "pBefore": "Anteil der Paare mit Ereignis zum ersten Zeitpunkt.", "pAfter": "Anteil der Paare mit Ereignis zum zweiten Zeitpunkt.", "diff": "Differenz der Anteile nachher − vorher.", "ci": "Wald-Konfidenzintervall der gepaarten Differenz, Niveau 1 − α; bei gerichteter Alternative einseitig mit −1 bzw. 1 als offener Grenze.", "pExact": "p-Wert des exakten McNemar-Tests, des Binomialtests von c unter b + c Paaren mit p = 0,5, in der gewählten Richtung. Grundlage der Entscheidung.", "chi2": "McNemar χ² = (b − c)² / (b + c) ohne Stetigkeitskorrektur; nur zweiseitig.", "pChi2": "p-Wert von McNemar χ² mit einem Freiheitsgrad, nur zur Information.", "chi2Cc": "McNemar χ² mit Stetigkeitskorrektur: (|b − c| − 1)² / (b + c); nur zweiseitig.", "pChi2Cc": "p-Wert des korrigierten χ², nur zur Information."},
+        "rate2": {"rate1": "Rate der ersten Gruppe λ̂₁ = x₁ / t₁; Gruppenname aus der Gruppenspalte, bei zusammengefasster Eingabe „1“.", "rate2": "Rate der zweiten Gruppe λ̂₂ = x₂ / t₂.", "diff": "Differenz der Raten λ̂₁ − λ̂₂.", "ci": "Konfidenzintervall der Differenz aus der Normalapproximation mit getrenntem Standardfehler, Niveau 1 − α, immer ungepoolt.", "z": "Prüfgröße z = (λ̂₁ − λ̂₂ − Δ₀) / SE; SE aus der gemeinsamen Rate, wenn angekreuzt und Δ₀ = 0, sonst getrennt.", "pValue": "p-Wert des z-Tests in der gewählten Richtung. Grundlage der Entscheidung.", "pExactCond": "p-Wert des bedingten exakten Tests: x₁ ist bei gegebener Summe x₁ + x₂ binomialverteilt mit p = t₁/(t₁ + t₂). Nur bei Δ₀ = 0 und mindestens einem Ereignis, zur Information.", "ratio": "Ratenverhältnis λ̂₁ / λ̂₂; fehlt, wenn die zweite Gruppe kein Ereignis hat.", "ratioCi": "Exaktes Konfidenzintervall des Ratenverhältnisses aus dem Clopper-Pearson-Intervall des bedingten Binomialanteils, Niveau 1 − α."},
+        "rate1": {"counts": "Ereignisse und Umfang als „x / t“.", "rate": "Geschätzte Rate λ̂ = x / t, Ereignisse je Einheit des Umfangs.", "ci": "Exaktes Konfidenzintervall nach Garwood aus den Quantilen der Chi-Quadrat-Verteilung, Niveau 1 − α; bei gerichteter Alternative einseitig.", "pExact": "p-Wert des exakten Poisson-Tests in der gewählten Richtung, zweiseitig das Doppelte der kleineren Seite, höchstens 1. Grundlage der Entscheidung.", "z": "Prüfgröße der Normalapproximation z = (x − λ₀·t) / √(λ₀·t).", "pNormal": "p-Wert der Normalapproximation, nur zur Information; geeignet erst ab λ₀·t ≥ 5, sonst erscheint ein Hinweis."},
         "one": {
           "counts": "Ereignisse und Versuche der Stichprobe als „x / n“.",
           "pHat": "Geschätzter Anteil p̂ = x / n.",
@@ -7844,8 +7991,8 @@
           "params": { "targetType": "'variance' oder 'stddev'. Jeder andere Wert ist ein Fehler." }
         },
         "setEqualVariances": {
-          "help": "Zwei Stichproben, Lage: gleiche Varianzen annehmen und den gepoolten t-Test rechnen. Aus ist die Vorgabe — Welch braucht diese Annahme nicht.",
-          "params": { "flag": "true für den gepoolten t-Test." }
+          "help": "Lage bei zwei oder k Stichproben: gleiche Varianzen annehmen. Bei zwei Stichproben rechnet das den gepoolten t-Test, bei k die einfaktorielle ANOVA nach Fisher mit Tukey. Aus ist die Vorgabe — Welch-t-Test und Welch-ANOVA mit Games-Howell brauchen diese Annahme nicht.",
+          "params": { "flag": "true für den gepoolten t-Test bzw. die ANOVA nach Fisher." }
         },
         "setColumn1": {
           "help": "Verweist Stichprobe 1 auf eine Spalte einer Datensammlung.",
@@ -7871,11 +8018,13 @@
         "colRef1": { "help": "Spaltenbezug der ersten Stichprobe." },
         "colRef2": { "help": "Spaltenbezug der zweiten Stichprobe." },
         "colRefsK": { "help": "Die Spaltenbezüge der k-Stichproben-Prüfung." },
-        "equalVariances": { "help": "Ob bei zwei Stichproben der gepoolte t-Test statt Welch gerechnet wird." },
+        "equalVariances": { "help": "Ob gleiche Varianzen angenommen werden: bei zwei Stichproben der gepoolte t-Test statt Welch, bei k die ANOVA nach Fisher statt Welch." },
         "result": { "help": "Das Ergebnis als Anzeigemodell (formatierte Texte; Beschriftungen in der Sprache der Oberfläche, Zahlen mit Dezimalpunkt), jede Kennzahl unter keys einzeln beschrieben; null, solange die Eingaben unvollständig sind." }
       },
       "types": {
+        "ResidualPlot": {"residuals": "Die Residuen je Beobachtung, Wert minus Gruppenmittelwert, in der Reihenfolge der Gruppen.", "fitted": "Die angepassten Werte je Beobachtung, der Mittelwert ihrer Gruppe."},
         "Result": {
+          "residualPlot": "Die Daten der vier Residuendiagramme (Residuen gegen Anpassung, Wahrscheinlichkeitsnetz, Histogramm, Reihenfolge) unter dem Ergebnis. Nur bei k Stichproben im Fisher- oder Welch-Weg, sonst null.",
           "isK": "Wahr beim Testtyp „k Stichproben“, sonst falsch. Bei wahr zeigt die Oberfläche je Gruppe eine Normalitätskarte, die Gruppenübersicht und gegebenenfalls die paarweisen Vergleiche, aber keine Power-Analyse.",
           "allNormal": "Wahr, wenn jede Stichprobe als normalverteilt gilt, also der Anderson-Darling-Test für jede Stichprobe p ≥ α liefert; Shapiro-Wilk wird mit angezeigt, entscheidet aber nicht. Die Oberfläche zeigt das als Wegschritt „Normalverteilung: Ja/Nein“.",
           "normCards": "Die Normalverteilungsprüfung, eine Karte je Stichprobe: eine oder zwei bei Ein- und Zwei-Stichproben, k beim Testtyp „k Stichproben“.",
@@ -7921,6 +8070,9 @@
           "trailYes": "Ob der Wegschritt mit „Ja“ beantwortet wird: bei zwei Stichproben, wenn die Varianzen als gleich angenommen sind; bei k Stichproben umgekehrt, wenn der Levene-Test einen Unterschied zeigt."
         },
         "MainResult": {
+          "modelSummary": "Die Modellzusammenfassung der einfaktoriellen ANOVA wie bei Minitab: S mit vier Nachkommastellen, R², R²(kor) und R²(prog) in Prozent; R²(kor) und R²(prog) nicht unter 0 %, R²(prog) „–“, wenn eine Gruppe nur einen Wert hat. Nur im Fisher- und Welch-Weg, sonst null.",
+          "ciHeader": "Spaltenkopf der Konfidenzintervalle als formatierter Text mit dem Niveau in Prozent. Nur bei k Stichproben.",
+          "showCi": "Ob die Spalte mit den Konfidenzintervallen je Gruppe gezeigt wird; wahr im Fisher- und Welch-Weg. Nur bei k Stichproben.",
           "h0": "Die Nullhypothese als formatierter Text mit Symbolen, etwa „μ₁ = μ₂ = … = μₖ“ oder „σ² ≤ 4.0000“; bei einer Stichprobe steht der Zielwert darin, das Zeichen folgt der Richtung: zweiseitig =, größer ≤, kleiner ≥.",
           "h1": "Die Alternativhypothese als formatierter Text mit ≠, > oder <; bei k Stichproben „mindestens ein μ unterscheidet sich“ bzw. „mindestens eine Varianz unterscheidet sich“.",
           "ciNote": "Ein Hinweis zum Intervall als formatierter Text, fehlt bei k Stichproben. Beim Mittelwertvergleich zweier Stichproben ohne Signifikanz nennt er den Bereich der Differenz μ₁−μ₂ und dass Gleichheit damit nicht gezeigt ist; im Mann-Whitney-Weg die Verschiebung η₁−η₂ oder dass die Stichproben für das Niveau 1 − α zu klein sind. Sonst leer.",
@@ -7944,6 +8096,7 @@
           "bold": "Ob die Zeile fett erscheint; nur die Zeile Gesamt."
         },
         "GroupRow": {
+          "ci": "Konfidenzintervall des Mittelwerts der Gruppe als formatierter Text mit Unter- und Obergrenze, Niveau 1 − α; nur im Fisher- und Welch-Weg, sonst leer.",
           "name": "Name der Gruppe als angezeigter Text, der Spaltenname aus der Datensammlung. Spalte „Gruppe“.",
           "n": "Anzahl der Werte der Gruppe als formatierter Text, Spalte „n“.",
           "mean": "Mittelwert x̄ der Gruppe als formatierter Text mit vier Nachkommastellen, Spalte „x̄“.",
@@ -8054,12 +8207,12 @@
       "normalLabel": "Normalverteilung",
       "varEqualLabel": "Gleiche Varianzen angenommen",
       "assumeEqualVariances": "Gleiche Varianzen annehmen (gepoolter t-Test)",
-      "varDiffLabel": "Signifikanter Varianzunterschied (Levene)",
       "sectionSecondary": "Rangbasierter Vergleichstest",
       "sectionSecondaryLevene": "Levene-Test (Abgleich)",
       "secondaryNote": "Die Daten sind nicht normalverteilt, aber jede Gruppe hat n ≥ 20. Dann ist der parametrische Test robust und bleibt das Hauptergebnis. Der Rangtest prüft eine andere Hypothese (Verschiebung der Verteilung statt Mittelwerte) und dient zum Abgleich.",
       "ciSigmaLabel": "{level} % KI für σ",
       "ciRatioLabel": "{level} % KI für σ²₁/σ²₂",
+      "ciRatioUndefinedNote": "Das Konfidenzintervall kann nicht angegeben werden: Die Konfidenzmenge für σ²₁/σ²₂ zerfällt in getrennte Teilbereiche (sehr ungleiche Stichprobenumfänge oder Wölbungen). Der p-Wert bleibt gültig.",
       "secondaryNoteLevene": "Minitab zeigt bei zwei Varianzen Bonett und Levene. Levene ist zum Abgleich aufgeführt; er prüft nur zweiseitig und gibt kein Konfidenzintervall.",
       "twoSidedSuffix": "zweiseitig",
       "powerNormalApprox": "Berechnet unter Normalverteilungsannahme – nur Näherung.",
@@ -8128,6 +8281,27 @@
       "ciShiftTooSmall": "Stichproben zu klein für {level} % – erreicht {achieved} %.",
       "ciShiftTip": "Hodges-Lehmann-Konfidenzintervall der Lageverschiebung. Ziel {level} %, erreicht {achieved} % ({method}).",
       "pairwiseShiftCiHint": "unter p_adj das KI der Verschiebung η(Zeile)−η(Spalte) (Hodges-Lehmann)",
+      "assumeEqualVariancesK": "Gleiche Varianzen annehmen (Fisher-ANOVA, Tukey)",
+      "modelSummary": "Modellzusammenfassung",
+      "labelR2adj": "R² (kor)",
+      "labelR2pred": "R² (prog)",
+      "tipModelS": "S: Standardabweichung der Residuen (Wurzel aus MS innerhalb); in den Einheiten der Messwerte",
+      "tipR2": "R²: Anteil der Gesamtvariation, den die Gruppenzugehörigkeit erklärt",
+      "tipR2adj": "R² (kor): R², korrigiert um die Anzahl der Gruppen; negative Werte werden als 0 % angezeigt",
+      "tipR2pred": "R² (prog): wie gut das Modell neue Beobachtungen vorhersagt (aus PRESS); negative Werte werden als 0 % angezeigt",
+      "groupCi": "{level} %-KI",
+      "tipGroupCi": "Konfidenzintervall des Gruppenmittelwerts: mit gepoolter Standardabweichung (Fisher) bzw. der eigenen Standardabweichung der Gruppe (Welch)",
+      "pairwiseSimultaneousHint": "Simultane KI, Familien-Konfidenz {level} %",
+      "sectionResiduals": "Residuenplots",
+      "residuals": "Residuum",
+      "fittedValues": "Angepasster Wert",
+      "residualsVsFitted": "Residuen vs. Anpassungen",
+      "residualsNormalPlot": "Wahrscheinlichkeitsnetz der Residuen",
+      "residualsHistogram": "Histogramm der Residuen",
+      "residualsVsOrder": "Residuen vs. Reihenfolge",
+      "residualsVsOrderByGroup": "Beobachtung (gruppenweise)",
+      "residualsPercent": "Prozent",
+      "residualsFrequency": "Häufigkeit",
       "pMethodExact": "exakt aus der U-Verteilung",
       "pMethodNormal": "Normalapproximation mit Bindungs- und Stetigkeitskorrektur",
       "pairwiseEqual": "nicht signifikant",
@@ -12911,12 +13085,12 @@
       "type": { "useful": "nützlich", "harmful": "schädlich" },
       "level": { "adequate": "ausreichend", "insufficient": "unzureichend", "excessive": "übermäßig" },
       "rank": { "basic": "Basisfunktion", "additional": "Zusatzfunktion", "auxiliary": "Hilfsfunktion" },
+      "rankCode": { "basic": "B", "additional": "Ad", "auxiliary": "A{level}" },
       "swapDirection": "Richtung umkehren",
       "addOnPair": "Weiteren Pfeil auf diesem Paar anlegen",
       "removeFunction": "Funktion löschen",
       "resetLayout": "Anordnung zurücksetzen",
-      "exportPng": "PNG",
-      "exportSvg": "SVG",
+      "showRanks": "Funktionsränge anzeigen",
       "diagramEmpty": "Noch keine Komponenten.",
       "legend": { "solid": "nützlich, ausreichend", "dashed": "unzureichend", "bold": "übermäßig", "wave": "schädlich" },
       "disadvantages": "Nachteile",

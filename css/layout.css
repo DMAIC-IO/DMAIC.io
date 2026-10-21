@@ -310,7 +310,7 @@ html.is-nightly body {
 }
 
 .app-header__project-action-btn--danger:hover {
-  color: var(--color-danger);
+  color: var(--color-error);
 }
 
 .app-header__project-separator {
@@ -329,7 +329,7 @@ html.is-nightly body {
   border-radius: 3px;
   flex-shrink: 0;
   text-transform: uppercase;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-family-mono);
 }
 
 /* Cycle picker (modal) — two-step flow: step 1 picks the cycle, step 2 the
@@ -416,7 +416,7 @@ html.is-nightly body {
 .cycle-picker__short {
   font-size: 11px;
   color: var(--color-text-secondary);
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-family-mono);
 }
 
 .cycle-picker__desc {
@@ -601,18 +601,19 @@ html.is-nightly body {
 
 /* ── Read-only banner ── */
 .app-readonly-banner {
-  background: var(--color-warning-bg, #fff3cd);
-  color: var(--color-warning-text, #856404);
+  background: var(--color-readonly-bg);
+  color: var(--color-readonly-text);
   padding: var(--spacing-xs) var(--spacing-md);
   font-size: var(--font-size-sm);
   text-align: center;
-  border-bottom: 1px solid var(--color-border-secondary);
+  border-bottom: 1px solid var(--color-readonly-frame);
   flex-shrink: 0;
 }
 
-[data-theme="dark"] .app-readonly-banner {
-  background: #3d3200;
-  color: #ffc107;
+/* Frame the whole workspace content (banner, tabs, modules) so the read-only
+   state stays visible however far a module is scrolled. */
+.dmike--readonly .workspace__content {
+  border: 2px solid var(--color-readonly-frame);
 }
 
 /* Readonly: nothing about the tab set may be changed, so the drag grip goes.

@@ -1,0 +1,255 @@
+{
+  "algorithm_id": "mcnemar",
+  "generated_with": {
+    "python": "3.14.4",
+    "scipy": "1.18.0",
+    "numpy": "2.5.1"
+  },
+  "generated_at": "2026-10-20T06:23:06.206627+00:00",
+  "generator_script": "tools/fixture-generator/generate_fixtures.py",
+  "generator_version": "1.0.0",
+  "tolerances": {
+    "default": {
+      "relative": 1e-09,
+      "absolute": 1e-12
+    },
+    "overrides": {
+      "stress_large_counts": {
+        "relative": 1e-06,
+        "absolute": 1e-10,
+        "reason": "incomplete-beta round-off in the binomial tails grows with ~1e4 discordant pairs"
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "id": "mn_standard_12_4",
+      "tier": "standard",
+      "description": "12 events lost vs 4 gained, two-sided; statsmodels.stats.contingency_tables.mcnemar(table, exact=True) for pExact (central two-sided), correction=False/True for the chi-square values; Wald CI of the paired difference computed by hand",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "table": [
+          [
+            50,
+            12
+          ],
+          [
+            4,
+            34
+          ]
+        ],
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected": {
+        "b": 12,
+        "c": 4,
+        "n": 100,
+        "pBefore": 0.62,
+        "pAfter": 0.54,
+        "diff": -0.08,
+        "ciLower": -0.15681458682168498,
+        "ciUpper": -0.0031854131783150413,
+        "pExact": 0.076812744140625,
+        "chi2": 4.0,
+        "pChi2": 0.04550026389635857,
+        "chi2Cc": 3.0625,
+        "pChi2Cc": 0.08011831372763421,
+        "testable": true,
+        "smallDiscordant": false,
+        "reject": false
+      }
+    },
+    {
+      "id": "mn_standard_greater",
+      "tier": "standard",
+      "description": "One-sided greater (rate after is higher than before); pExact = P(X >= c) with X ~ Bin(b + c, 0.5); chi-square p-values are null for one-sided directions; CI upper bound is 1",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "table": [
+          [
+            20,
+            3
+          ],
+          [
+            11,
+            66
+          ]
+        ],
+        "direction": "greater",
+        "alpha": 0.05
+      },
+      "expected": {
+        "b": 3,
+        "c": 11,
+        "n": 100,
+        "pBefore": 0.23,
+        "pAfter": 0.31,
+        "diff": 0.08,
+        "ciLower": 0.0198784060867356,
+        "ciUpper": 1.0,
+        "pExact": 0.0286865234375,
+        "chi2": 4.571428571428571,
+        "pChi2": null,
+        "chi2Cc": 3.5,
+        "pChi2Cc": null,
+        "testable": true,
+        "smallDiscordant": false,
+        "reject": true
+      }
+    },
+    {
+      "id": "mn_standard_less",
+      "tier": "standard",
+      "description": "Same table, one-sided less at alpha 0.1; CI lower bound is -1",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "table": [
+          [
+            20,
+            3
+          ],
+          [
+            11,
+            66
+          ]
+        ],
+        "direction": "less",
+        "alpha": 0.1
+      },
+      "expected": {
+        "b": 3,
+        "c": 11,
+        "n": 100,
+        "pBefore": 0.23,
+        "pAfter": 0.31,
+        "diff": 0.08,
+        "ciLower": -1.0,
+        "ciUpper": 0.12684241900927146,
+        "pExact": 0.9935302734375,
+        "chi2": 4.571428571428571,
+        "pChi2": null,
+        "chi2Cc": 3.5,
+        "pChi2Cc": null,
+        "testable": true,
+        "smallDiscordant": false,
+        "reject": false
+      }
+    },
+    {
+      "id": "mn_edge_no_discordant",
+      "tier": "edge",
+      "description": "No discordant pairs: not testable, all p-values and statistics null, diff 0, CI [0, 0]",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "table": [
+          [
+            40,
+            0
+          ],
+          [
+            0,
+            60
+          ]
+        ],
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected": {
+        "b": 0,
+        "c": 0,
+        "n": 100,
+        "pBefore": 0.4,
+        "pAfter": 0.4,
+        "diff": 0.0,
+        "ciLower": 0.0,
+        "ciUpper": 0.0,
+        "pExact": null,
+        "chi2": null,
+        "pChi2": null,
+        "chi2Cc": null,
+        "pChi2Cc": null,
+        "testable": false,
+        "smallDiscordant": true,
+        "reject": false
+      }
+    },
+    {
+      "id": "mn_edge_one_discordant",
+      "tier": "edge",
+      "description": "A single discordant pair: testable but smallDiscordant; exact p is 1 (central convention, capped)",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "table": [
+          [
+            10,
+            1
+          ],
+          [
+            0,
+            9
+          ]
+        ],
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected": {
+        "b": 1,
+        "c": 0,
+        "n": 20,
+        "pBefore": 0.55,
+        "pAfter": 0.5,
+        "diff": -0.05,
+        "ciLower": -0.1455168294027212,
+        "ciUpper": 0.04551682940272121,
+        "pExact": 1.0,
+        "chi2": 1.0,
+        "pChi2": 0.31731050786291115,
+        "chi2Cc": 0.0,
+        "pChi2Cc": 1.0,
+        "testable": true,
+        "smallDiscordant": true,
+        "reject": false
+      }
+    },
+    {
+      "id": "mn_stress_large",
+      "tier": "stress",
+      "tolerance_override": "stress_large_counts",
+      "description": "Large counts (b = 5200, c = 4800)",
+      "reference": "statsmodels 0.14.6 / SciPy 1.18",
+      "inputs": {
+        "table": [
+          [
+            40000,
+            5200
+          ],
+          [
+            4800,
+            50000
+          ]
+        ],
+        "direction": "two-sided",
+        "alpha": 0.05
+      },
+      "expected": {
+        "b": 5200,
+        "c": 4800,
+        "n": 100000,
+        "pBefore": 0.452,
+        "pAfter": 0.448,
+        "diff": -0.004,
+        "ciLower": -0.005959807181148904,
+        "ciUpper": -0.0020401928188510956,
+        "pExact": 6.593515598672343e-05,
+        "chi2": 16.0,
+        "pChi2": 6.334248366623988e-05,
+        "chi2Cc": 15.9201,
+        "pChi2Cc": 6.607329525880492e-05,
+        "testable": true,
+        "smallDiscordant": false,
+        "reject": true
+      }
+    }
+  ]
+}

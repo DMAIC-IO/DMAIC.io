@@ -1,0 +1,325 @@
+{
+  "id": "equivalence-proportion-one",
+  "name": {
+    "de": "Äquivalenztest für einen Anteil (TOST)",
+    "en": "Equivalence Test for One Proportion (TOST)"
+  },
+  "category": "attribute",
+  "subcategory": "equivalence",
+  "status": "validated",
+  "version": "1.0.0",
+  "description": {
+    "short": {
+      "de": "Prüft, ob ein Anteil x/n innerhalb der Äquivalenzgrenzen um p₀ liegt – zwei exakte einseitige Binomialtests (TOST).",
+      "en": "Tests whether a proportion x/n lies within the equivalence limits around p₀ – two exact one-sided binomial tests (TOST)."
+    },
+    "long": {
+      "de": "Grenzen sind Differenzen zu p₀ (untere < 0 < obere). Untere Nullhypothese p ≤ p₀ + untere Grenze: p = P(X ≥ x | p₀ + untere Grenze); obere Nullhypothese p ≥ p₀ + obere Grenze: p = P(X ≤ x | p₀ + obere Grenze). Liegt eine Grenze bei oder jenseits von 0 bzw. 1, ist der zugehörige p-Wert 0. Gesamt-p = Maximum beider; gleichwertig bei p < α. Das Konfidenzintervall (Clopper-Pearson) hat das Niveau 1 − 2α. Referenz: statsmodels binom_tost; Minitab bietet Äquivalenztests nur für Mittelwerte.",
+      "en": "Limits are differences from p₀ (lower < 0 < upper). Lower null hypothesis p ≤ p₀ + lower limit: p = P(X ≥ x | p₀ + lower limit); upper null hypothesis p ≥ p₀ + upper limit: p = P(X ≤ x | p₀ + upper limit). A limit at or beyond 0 or 1 gives a p-value of 0. Overall p = the larger of both; equivalent if p < α. The (Clopper-Pearson) confidence interval has level 1 − 2α. Reference: statsmodels binom_tost; Minitab offers equivalence tests for means only."
+    }
+  },
+  "documentation": {
+    "formulas": [
+      {
+        "label": "p lower",
+        "latex": "p_L = P(X \\ge x \\mid p_0 + \\delta_L),\\; X\\sim\\mathrm{Bin}(n, \\cdot)",
+        "description": {
+          "de": "Untere einseitige Prüfung",
+          "en": "Lower one-sided test"
+        }
+      },
+      {
+        "label": "p upper",
+        "latex": "p_U = P(X \\le x \\mid p_0 + \\delta_U)",
+        "description": {
+          "de": "Obere einseitige Prüfung",
+          "en": "Upper one-sided test"
+        }
+      },
+      {
+        "label": "p",
+        "latex": "p = \\max(p_L, p_U)",
+        "description": {
+          "de": "Gleichwertig bei p < α",
+          "en": "Equivalent if p < α"
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "de": "Unabhängige Bernoulli-Versuche mit konstanter Wahrscheinlichkeit",
+        "en": "Independent Bernoulli trials with constant probability"
+      }
+    ],
+    "limitations": [
+      {
+        "de": "Äquivalenzgrenzen gelten als Differenz; nur ein bestandener TOST belegt Gleichwertigkeit, ein nicht bestandener belegt sie nicht.",
+        "en": "Equivalence limits are differences; only a passed TOST shows equivalence, a failed one does not."
+      },
+      {
+        "de": "Minitab bietet Äquivalenztests nur für Mittelwerte; Referenz statsmodels",
+        "en": "Minitab offers equivalence tests for means only; reference is statsmodels"
+      }
+    ],
+    "references": [
+      {
+        "source": "statsmodels 0.14.6: statsmodels.stats.proportion.binom_tost"
+      }
+    ],
+    "minitab_equivalent": null
+  },
+  "source": {
+    "function_name": "equivalenceOneProportion",
+    "file_path": "js/engines/attribute-test-engine.js",
+    "signature": {
+      "parameters": [
+        {
+          "name": "x",
+          "type": "number",
+          "required": true,
+          "description": {
+            "de": "Anzahl Ereignisse",
+            "en": "Number of events"
+          }
+        },
+        {
+          "name": "n",
+          "type": "number",
+          "required": true,
+          "description": {
+            "de": "Anzahl Versuche",
+            "en": "Number of trials"
+          }
+        },
+        {
+          "name": "p0",
+          "type": "number",
+          "required": true,
+          "description": {
+            "de": "Referenzanteil p₀",
+            "en": "Reference proportion p₀"
+          }
+        },
+        {
+          "name": "lower",
+          "type": "number",
+          "required": true,
+          "description": {
+            "de": "Untere Grenze als Differenz zu p₀ (negativ)",
+            "en": "Lower limit as a difference from p₀ (negative)"
+          }
+        },
+        {
+          "name": "upper",
+          "type": "number",
+          "required": true,
+          "description": {
+            "de": "Obere Grenze als Differenz zu p₀ (positiv)",
+            "en": "Upper limit as a difference from p₀ (positive)"
+          }
+        },
+        {
+          "name": "alpha",
+          "type": "number",
+          "required": false,
+          "description": {
+            "de": "Signifikanzniveau (Standard 0.05)",
+            "en": "Significance level (default 0.05)"
+          }
+        }
+      ],
+      "returns": {
+        "type": "object",
+        "properties": {
+          "pHat": {
+            "type": "number",
+            "description": {
+              "de": "Anteil x/n",
+              "en": "Proportion x/n"
+            }
+          },
+          "pValue": {
+            "type": "number",
+            "description": {
+              "de": "p-Wert (Maximum beider Tests)",
+              "en": "p-value (larger of both tests)"
+            }
+          },
+          "equivalent": {
+            "type": "boolean",
+            "description": {
+              "de": "Gleichwertig?",
+              "en": "Equivalent?"
+            }
+          }
+        }
+      }
+    },
+    "code_snippet": null
+  },
+  "try_it": {
+    "input_schema": {
+      "fields": [
+        {
+          "name": "x",
+          "label": {
+            "de": "Ereignisse x",
+            "en": "Events x"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "z.B. 48",
+            "en": "e.g. 48"
+          },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "n",
+          "label": {
+            "de": "Versuche n",
+            "en": "Trials n"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "z.B. 1000",
+            "en": "e.g. 1000"
+          },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "p0",
+          "label": {
+            "de": "p₀",
+            "en": "p₀"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "z.B. 0.05",
+            "en": "e.g. 0.05"
+          },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "lower",
+          "label": {
+            "de": "Untere Grenze",
+            "en": "Lower limit"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "z.B. -0.02",
+            "en": "e.g. -0.02"
+          },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "upper",
+          "label": {
+            "de": "Obere Grenze",
+            "en": "Upper limit"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "z.B. 0.02",
+            "en": "e.g. 0.02"
+          },
+          "parse_as": "number",
+          "required": true
+        },
+        {
+          "name": "alpha",
+          "label": {
+            "de": "Signifikanzniveau α",
+            "en": "Significance level α"
+          },
+          "type": "number",
+          "placeholder": {
+            "de": "0.05",
+            "en": "0.05"
+          },
+          "parse_as": "number",
+          "required": false
+        }
+      ]
+    },
+    "output_schema": {
+      "display_fields": [
+        "pHat",
+        "ciLower",
+        "ciUpper",
+        "pLower",
+        "pUpper",
+        "pValue",
+        "equivalent"
+      ],
+      "primary_field": "pValue",
+      "format": {
+        "pHat": {
+          "decimals": 6,
+          "label": {
+            "de": "Anteil",
+            "en": "Proportion"
+          }
+        },
+        "ciLower": {
+          "decimals": 6,
+          "label": {
+            "de": "KI unten (1 − 2α)",
+            "en": "CI lower (1 − 2α)"
+          }
+        },
+        "ciUpper": {
+          "decimals": 6,
+          "label": {
+            "de": "KI oben (1 − 2α)",
+            "en": "CI upper (1 − 2α)"
+          }
+        },
+        "pLower": {
+          "decimals": 6,
+          "label": {
+            "de": "p (untere Grenze)",
+            "en": "p (lower limit)"
+          }
+        },
+        "pUpper": {
+          "decimals": 6,
+          "label": {
+            "de": "p (obere Grenze)",
+            "en": "p (upper limit)"
+          }
+        },
+        "pValue": {
+          "decimals": 6,
+          "label": {
+            "de": "p-Wert",
+            "en": "p-value"
+          }
+        },
+        "equivalent": {
+          "decimals": 0,
+          "label": {
+            "de": "Gleichwertig",
+            "en": "Equivalent"
+          }
+        }
+      }
+    }
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "type": "initial",
+      "description": {
+        "de": "Erstimplementierung",
+        "en": "Initial implementation"
+      },
+      "breaking": false
+    }
+  ]
+}
