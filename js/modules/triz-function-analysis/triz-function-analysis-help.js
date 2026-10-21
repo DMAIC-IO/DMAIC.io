@@ -132,7 +132,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'Zielobjekt ist der **Belag**. Die Borsten entfernen ihn (nützlich, aber **unzureichend** — die Zwischenräume werden kaum erreicht), die Zahnpasta löst ihn. Bürstenkopf, Griff und Hand halten bzw. führen — Hilfs- und Zusatzfunktionen. Bei zu hohem Druck **verletzen** die Borsten das Zahnfleisch, der Belag selbst **reizt** es (beides schädlich). Die Nachteilsliste nennt genau diese drei Punkte. In der Matrix ist jedes Paar entschieden: Haken für Paare, die zusammenwirken, „x“ für alle anderen. Das Beispiel lässt sich über die Beispielprojekte laden.',
+            content: 'Zielobjekt ist der **Belag**. Die Borsten entfernen ihn (nützlich, aber **unzureichend** — die Zwischenräume werden kaum erreicht), die Zahnpasta löst ihn. Bürstenkopf, Griff und Hand halten bzw. führen — Hilfs- und Zusatzfunktionen. Die Hand drückt den Griff zu stark (**übermäßig**); dann **verletzen** die Borsten das Zahnfleisch, der Belag selbst **reizt** es (beides schädlich). Die Nachteilsliste nennt genau diese vier Punkte. In der Matrix ist jedes Paar entschieden: Haken für Paare, die zusammenwirken, „x“ für alle anderen. Unter **Wert & Kosten** hat jede Systemkomponente ihre Herstellkosten je Stück: Borsten 0,06 €, Bürstenkopf 0,04 €, Griff 0,15 €. Der Griff trägt nur eine Hilfsfunktion, ist aber am teuersten — er liegt oben links und ist der erste Kandidat für das Trimmen. Das Beispiel lässt sich über die Beispielprojekte laden.',
           },
         ],
       },
@@ -141,7 +141,7 @@ export default {
         blocks: [
           {
             type: 'paragraph',
-            content: 'The target is the **plaque**. The bristles remove it (useful but **insufficient** — the gaps are hardly reached), the toothpaste dissolves it. Brush head, handle and hand hold or guide — auxiliary and additional functions. With too much pressure the bristles **injure** the gums, and the plaque itself **irritates** them (both harmful). The disadvantage list names exactly these three points. Every pair in the matrix is decided: a tick for pairs that interact, an “x” for all others. The example can be loaded from the example projects.',
+            content: 'The target is the **plaque**. The bristles remove it (useful but **insufficient** — the gaps are hardly reached), the toothpaste dissolves it. Brush head, handle and hand hold or guide — auxiliary and additional functions. The hand presses the handle too hard (**excessive**); then the bristles **injure** the gums, and the plaque itself **irritates** them (both harmful). The disadvantage list names exactly these four points. Every pair in the matrix is decided: a tick for pairs that interact, an “x” for all others. Under **Value & cost** every system component has its manufacturing cost per piece: bristles €0.06, brush head €0.04, handle €0.15. The handle carries only an auxiliary function but costs the most — it sits top left and is the first candidate for trimming. The example can be loaded from the example projects.',
           },
         ],
       },

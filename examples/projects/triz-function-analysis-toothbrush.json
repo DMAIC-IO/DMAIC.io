@@ -2,9 +2,9 @@
   "_schema": { "name": "triz-function-analysis", "version": "1.0" },
   "components": [
     { "id": "c-belag", "name": "Belag", "kind": "target", "note": "Bakterieller Zahnbelag" },
-    { "id": "c-borsten", "name": "Borsten", "kind": "system", "note": "" },
-    { "id": "c-kopf", "name": "Bürstenkopf", "kind": "system", "note": "" },
-    { "id": "c-griff", "name": "Griff", "kind": "system", "note": "" },
+    { "id": "c-borsten", "name": "Borsten", "kind": "system", "note": "", "cost": 0.06 },
+    { "id": "c-kopf", "name": "Bürstenkopf", "kind": "system", "note": "", "cost": 0.04 },
+    { "id": "c-griff", "name": "Griff", "kind": "system", "note": "", "cost": 0.15 },
     { "id": "c-hand", "name": "Hand", "kind": "supersystem", "note": "" },
     { "id": "c-zahnfleisch", "name": "Zahnfleisch", "kind": "supersystem", "note": "" },
     { "id": "c-paste", "name": "Zahnpasta", "kind": "supersystem", "note": "" }
