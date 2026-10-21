@@ -52,7 +52,7 @@ export function createHttpTransport(opts = {}) {
       } catch (err) {
         throw new TransportError(err?.message || 'network error', 0, false);
       }
-      let json = null;
+      let json;
       try { json = await res.json(); } catch { json = null; }
       if (res.status === 201 && typeof json?.path === 'string') return { path: json.path };
       const rejected = res.status >= 400 && res.status < 500 && typeof json?.error === 'string';
