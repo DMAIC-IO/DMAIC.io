@@ -2856,7 +2856,7 @@
       "matrixMode": "{n} Spalten → Korrelationsmatrix",
       "noWorksheet": "Zuerst ein Worksheet-Modul hinzufügen, um Daten bereitzustellen.",
       "noNumericColumns": "Keine numerischen Spalten in den Worksheets gefunden.",
-      "confidenceLevel": "Konfidenzniveau",
+      "confidenceLevel": "Konfidenz",
       "confidenceInterval": "Konfidenzintervall",
       "ciShort": "KI",
       "placeholderText": "Wählen Sie numerische Spalten aus — die Korrelationsanalyse läuft automatisch. Bei 2 Spalten: Detailansicht. Bei 3+: Korrelationsmatrix.",
