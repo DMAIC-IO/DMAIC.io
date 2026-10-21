@@ -70,5 +70,9 @@
   "1.4.0": {
     "de": "TRIZ-Funktionsanalyse, gepaarte Tests, Bonett-Varianztests, Welch-ANOVA mit Tukey und Games-Howell, Poisson-Raten, McNemar und Äquivalenztests",
     "en": "TRIZ function analysis, paired tests, Bonett variance tests, Welch ANOVA with Tukey and Games-Howell, Poisson rates, McNemar and equivalence tests"
+  },
+  "1.4.1": {
+    "de": "Fehlermelder mit Screenshot-Editor, ToDo-Reihenfolge per Drag & Drop und Korrekturen an Pareto- und Korrelationsdiagrammen",
+    "en": "Bug reporter with screenshot editor, drag-and-drop task order, and fixes to Pareto and correlation charts"
   }
 }
