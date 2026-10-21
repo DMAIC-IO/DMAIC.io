@@ -4,7 +4,7 @@
  * Gegenrichtung zu `anchor-coverage.mjs`: dort braucht jede Beschriftung ein
  * Fragezeichen, hier braucht jeder Aktions- und Feldtext eines freigegebenen
  * Moduls eine Stelle in der Oberfläche, an der ein Mensch ihn mit Alt
- * erreicht. Berichtend — `agent:report` gibt die Zeile aus, kein Test im
+ * (Fragezeichen) oder als Tooltip am Leistenknopf erreicht. Berichtend — `agent:report` gibt die Zeile aus, kein Test im
  * echten Baum prüft sie hart.
  *
  * Verankert ist ein Eintrag direkt (`modules.<id>.<s>.help` oder

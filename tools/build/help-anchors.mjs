@@ -31,10 +31,9 @@ export function helpKeysInTemplates(appDir, moduleId) {
  * Laufzeit an ein Element hängt: DatasetPicker-Slots (`helpKey`,
  * `addHelpKey`), Kacheln und Spalten (`help`). Nur Literale in einfachen
  * Anführungszeichen, die mit `modules.` beginnen — zusammengesetzte
- * Schlüssel werden aufgelöst, wenn das Präfix eine dateilokale Konstante ist
- * (`const HELP = 'modules.…'`); andere Ausdrücke bleiben unsichtbar.
- * Dazu kommen Leistenknöpfe mit `agentAction`. Ausgenommen sind Handbuchdateien (`*-help.js`, kein
- * Kontexthilfe-Anker) und Kommentare (`helpKeysInScripts` entfernt sie vorher).
+ * Schlüssel erfasst dieser Ausdruck nicht. Ausgenommen sind Handbuchdateien
+ * (`*-help.js`, kein Kontexthilfe-Anker) und Kommentare (`helpKeysInScripts`
+ * entfernt sie vorher).
  */
 export const LITERAL_HELP_KEY = /\b(?:helpKey|addHelpKey|help)\s*:\s*'(modules\.[^']+)'/g;
 
@@ -48,7 +47,13 @@ const TEMPLATE_HELP_KEY = /\b(?:helpKey|addHelpKey|help)\s*:\s*`\$\{(\w+)\}([\w.
 /** Geteilte Bausteine, deren wörtliche Schlüssel für jedes Modul gelten. */
 export const SHARED_ANCHOR_SOURCES = ['js/core/stats-panel.js'];
 
-/** Alle wörtlichen Hilfeschlüssel aus den Skripten eines Moduls. */
+/**
+ * Alle Hilfeschlüssel, die die Skripte eines Moduls statisch preisgeben:
+ * die Literale (`LITERAL_HELP_KEY`), Leistenknöpfe mit `agentAction` (als
+ * `modules.<id>.actions.<name>.help`) und zusammengesetzte Schlüssel
+ * `help: \`${HELP}…\``, sofern `HELP` eine dateilokale Konstante
+ * `const HELP = 'modules.…'` ist; andere Ausdrücke bleiben unsichtbar.
+ */
 export function helpKeysInScripts(appDir, moduleId) {
   const dir = join(appDir, 'js', 'modules', moduleId);
   const keys = [];
