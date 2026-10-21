@@ -237,7 +237,7 @@
  <!-- Add/edit form: hidden here, lent to the dialog service by openModal() -->
  <div class="sha__modal-forms" hidden>
    <div class="sha__form" x-ref="stakeholderForm">
-     <div class="sha__form-row">
+     <div class="field-grid field-grid--2">
        <div class="sha__form-group">
          <label><span x-text="t('fieldName')"></span> *</label>
          <input type="text" class="field" data-field="name" x-model="modalData.name" maxlength="100" :placeholder="t('fieldName')">
@@ -264,7 +264,7 @@
        <input type="range" class="dmike-slider" min="1" max="5" data-field="interest" x-model="modalData.interest">
      </div>
 
-     <div class="sha__form-row">
+     <div class="field-grid field-grid--2">
        <div class="sha__form-group">
          <label x-text="t('fieldSupport')"></label>
          <select class="field" data-field="support" x-model="modalData.support">

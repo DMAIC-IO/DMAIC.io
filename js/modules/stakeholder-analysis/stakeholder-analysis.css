@@ -546,12 +546,6 @@
   padding: var(--spacing-lg);
 }
 
-.sha__form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-sm);
-}
-
 .sha__form-group {
   margin-bottom: var(--spacing-md);
 }

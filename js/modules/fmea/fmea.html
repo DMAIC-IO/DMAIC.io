@@ -201,7 +201,7 @@
             <button class="fmea__risk-delete" data-action="del-risk" :data-risk-id="risk.id" :title="t('common.delete')" :aria-label="t('common.delete')" @click="deleteRisk(risk.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
           </div>
           <div class="fmea__risk-body">
-            <div class="fmea__fields-row">
+            <div class="field-grid field-grid--3">
               <div class="field-group">
                 <label x-text="t('failureMode')"></label>
                 <textarea class="field" name="failureMode" :placeholder="t('failureModePlaceholder')" x-model="risk.failureMode"></textarea>
@@ -215,7 +215,7 @@
                 <textarea class="field" name="cause" :placeholder="t('causePlaceholder')" x-model="risk.cause"></textarea>
               </div>
             </div>
-            <div class="fmea__fields-row">
+            <div class="field-grid field-grid--3">
               <div class="field-group">
                 <label x-text="t('preventionControl')"></label>
                 <textarea class="field" name="prevention" :placeholder="t('preventionPlaceholder')" x-model="risk.prevention"></textarea>
