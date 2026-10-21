@@ -40,6 +40,7 @@
     { "id": "f-halten-b", "carrier": "c-kopf", "verb": "hält", "object": "c-borsten", "parameter": "", "type": "useful", "level": "adequate", "note": "" },
     { "id": "f-halten-k", "carrier": "c-griff", "verb": "hält", "object": "c-kopf", "parameter": "", "type": "useful", "level": "adequate", "note": "" },
     { "id": "f-fuehren", "carrier": "c-hand", "verb": "führt", "object": "c-griff", "parameter": "", "type": "useful", "level": "adequate", "note": "" },
+    { "id": "f-druecken", "carrier": "c-hand", "verb": "drückt", "object": "c-griff", "parameter": "Andruckkraft", "type": "useful", "level": "excessive", "note": "Zu hoher Andruck – Ursache der Zahnfleischverletzung" },
     { "id": "f-verletzen", "carrier": "c-borsten", "verb": "verletzen", "object": "c-zahnfleisch", "parameter": "", "type": "harmful", "level": null, "note": "Bei zu hohem Druck" },
     { "id": "f-halten-p", "carrier": "c-borsten", "verb": "halten", "object": "c-paste", "parameter": "", "type": "useful", "level": "adequate", "note": "" },
     { "id": "f-reizen", "carrier": "c-belag", "verb": "reizt", "object": "c-zahnfleisch", "parameter": "", "type": "harmful", "level": null, "note": "Entzündung am Zahnfleischrand" }

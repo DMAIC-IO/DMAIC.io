@@ -26,6 +26,10 @@ const CANVAS_MIN = { w: 480, h: 240 };
 /** Room right of / below a dragged verb label (its centre) so it stays on the canvas. */
 const LABEL_ROOM = 60;
 
+const SUBSCRIPT_DIGITS = '₀₁₂₃₄₅₆₇₈₉';
+/** @param {number|string} n @returns {string} the digits of n as Unicode subscripts */
+const subscript = (n) => String(n).replace(/\d/g, (d) => SUBSCRIPT_DIGITS[d]);
+
 export default createModule({
   config: {
     id: 'triz-function-analysis',
@@ -34,14 +38,20 @@ export default createModule({
     icon: 'module.triz-function-analysis',
     version: '0.1.0',
     meta: import.meta,
+    actions: [
+      { icon: 'action.download', title: 'export.label', children: [
+        { icon: 'format.png', title: 'export.png', onClick: (d) => d.exportDiagram('png') },
+        { icon: 'format.svg', title: 'export.svg', onClick: (d) => d.exportDiagram('svg') },
+      ] },
+    ],
   },
   Model: State,
 
   data(module, _t) {
     const notify = (msg) => module._context.notify?.(msg);
     const label = (c) => c.name.trim() || _t('unnamed');
-    /** B, Ad, Ax1…Axn; Ax without a way to a basic or additional function. */
-    const rankCode = (r) => _t(`rankCode.${r.rank}`, { level: r.level ?? '' });
+    /** B, Ad, A₁…Aₙ (subscript level saves room on the arrows); A without a way to a basic or additional function. */
+    const rankCode = (r) => _t(`rankCode.${r.rank}`, { level: subscript(r.level ?? '') });
 
     return {
       TABS,
@@ -365,7 +375,9 @@ export default createModule({
         window.addEventListener('pointerup', onUp);
       },
       resetLayout() { this.model.resetPositions(); },
+      /** Export the function model offscreen (the canvas is HTML boxes); nothing without components. */
       async exportDiagram(fmt) {
+        if (this.model.components.length === 0) return;
         const { nodes, links } = buildFunctionDiagram(this.model, { rankLabels: this.rankLabels() });
         await module._context.chartManager.exportOffscreen('node-diagram', { nodes, links, padding: 30 }, fmt, 'funktionsmodell');
       },

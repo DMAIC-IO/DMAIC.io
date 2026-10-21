@@ -37,21 +37,53 @@ const LEVEL_STYLE = { adequate: 'solid', insufficient: 'dashed', excessive: 'das
 const LEVEL_WIDTH = { adequate: 2, insufficient: 1, excessive: 3 };
 
 /**
+ * Hops from the target to every component over the given pairs (BFS).
+ * @param {string|undefined} targetId
+ * @param {Array<{a:string,b:string}>} pairs
+ * @returns {Map<string, number>} unreachable components are missing
+ */
+function hopsFromTarget(targetId, pairs) {
+  const dist = new Map();
+  if (!targetId) return dist;
+  dist.set(targetId, 0);
+  const queue = [targetId];
+  while (queue.length) {
+    const id = queue.shift();
+    for (const { a, b } of pairs) {
+      const next = a === id ? b : b === id ? a : null;
+      if (next != null && !dist.has(next)) {
+        dist.set(next, dist.get(id) + 1);
+        queue.push(next);
+      }
+    }
+  }
+  return dist;
+}
+
+/**
  * Deterministic start layout: system components in a grid (max. 3 columns)
- * starting one row down, the target right of the grid and vertically centred,
- * supersystem elements alternating between a top and a bottom row.
+ * starting one row down and filled from the target side, the target right of
+ * the grid and vertically centred, supersystem elements alternating between
+ * a top and a bottom row. System components are ordered by their hops from
+ * the target, so a link to the target never runs through a chain of boxes.
  * @param {Array<Object>} components
+ * @param {Array<{a:string,b:string}>} [pairs] - interacting pairs (interactions, functions)
  * @returns {Object<string, {x:number,y:number}>}
  */
-export function autoLayout(components) {
-  const system = components.filter((c) => c.kind === 'system');
-  const supers = components.filter((c) => c.kind === 'supersystem');
+export function autoLayout(components, pairs = []) {
   const target = components.find((c) => c.kind === 'target');
+  const hops = hopsFromTarget(target?.id, pairs);
+  const rank = (c) => hops.get(c.id) ?? Infinity;
+  const system = components.filter((c) => c.kind === 'system')
+    .map((c, i) => ({ c, i }))
+    .sort((p, q) => rank(p.c) - rank(q.c) || p.i - q.i)
+    .map((p) => p.c);
+  const supers = components.filter((c) => c.kind === 'supersystem');
   const cols = Math.min(MAX_COLS, Math.max(1, system.length));
   const rows = Math.max(1, Math.ceil(system.length / cols));
   const out = {};
   system.forEach((c, i) => {
-    out[c.id] = { x: (i % cols) * STEP_X, y: STEP_Y + Math.floor(i / cols) * STEP_Y };
+    out[c.id] = { x: (cols - 1 - (i % cols)) * STEP_X, y: STEP_Y + Math.floor(i / cols) * STEP_Y };
   });
   if (target) out[target.id] = { x: cols * STEP_X, y: STEP_Y + ((rows - 1) * STEP_Y) / 2 };
   supers.forEach((c, j) => {
@@ -62,11 +94,15 @@ export function autoLayout(components) {
 
 /**
  * Position of every component: stored (dragged) position, else auto slot.
- * @param {{components: Array, positions: Object}} state
+ * @param {{components: Array, positions: Object, interactions?: Array, functions?: Array}} state
  * @returns {Object<string, {x:number,y:number}>}
  */
 export function resolvePositions(state) {
-  const auto = autoLayout(state.components);
+  const pairs = [
+    ...(state.interactions ?? []),
+    ...(state.functions ?? []).map((f) => ({ a: f.carrier, b: f.object })),
+  ];
+  const auto = autoLayout(state.components, pairs);
   const out = {};
   for (const c of state.components) {
     const p = state.positions[c.id] ?? auto[c.id];

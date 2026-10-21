@@ -152,14 +152,6 @@
               <span class="icon icon--sm" data-icon="action.reset"></span>
               <span x-text="t('resetLayout')"></span>
             </button>
-            <button type="button" class="btn btn--sm" data-role="export-png" @click="exportDiagram('png')">
-              <span class="icon icon--sm" data-icon="action.download"></span>
-              <span x-text="t('exportPng')"></span>
-            </button>
-            <button type="button" class="btn btn--sm" data-role="export-svg" @click="exportDiagram('svg')">
-              <span class="icon icon--sm" data-icon="action.download"></span>
-              <span x-text="t('exportSvg')"></span>
-            </button>
             <label class="field-check tfa__toggle">
               <input type="checkbox" data-role="show-ranks" :checked="model.showRanks" @change="setShowRanks($event)">
               <span x-text="t('showRanks')"></span>

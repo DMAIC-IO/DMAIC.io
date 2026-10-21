@@ -21,13 +21,22 @@ function pair(functions) {
 const fnc = (id, carrier, object, extra = {}) => ({ id, carrier, object, verb: id, type: 'useful', level: 'adequate', ...extra });
 
 suite('triz-function-analysis — autoLayout', () => {
-  test('target right, system grid (3 cols), supersystem top/bottom alternating', () => {
+  test('target right, system grid (3 cols) filled from the target side, supersystem top/bottom alternating', () => {
     const cs = [comp('t', 'target'), comp('s1', 'system'), comp('s2', 'system'), comp('s3', 'system'),
       comp('s4', 'system'), comp('u1', 'supersystem'), comp('u2', 'supersystem'), comp('u3', 'supersystem')];
     assertDeepEqual(autoLayout(cs), {
-      s1: { x: 0, y: 84 }, s2: { x: 220, y: 84 }, s3: { x: 440, y: 84 }, s4: { x: 0, y: 168 },
+      s1: { x: 440, y: 84 }, s2: { x: 220, y: 84 }, s3: { x: 0, y: 84 }, s4: { x: 440, y: 168 },
       t: { x: 660, y: 126 },
       u1: { x: 0, y: 0 }, u2: { x: 0, y: 252 }, u3: { x: 220, y: 0 },
+    });
+  });
+
+  test('system components closer to the target sit closer to it, so no link crosses a chain', () => {
+    // Chain a — b — c — t, entered near-first: c must still end up next to the target.
+    const cs = [comp('t', 'target'), comp('c', 'system'), comp('b', 'system'), comp('a', 'system')];
+    const pairs = [{ a: 'a', b: 'b' }, { a: 'b', b: 'c' }, { a: 'c', b: 't' }];
+    assertDeepEqual(autoLayout(cs, pairs), {
+      c: { x: 440, y: 84 }, b: { x: 220, y: 84 }, a: { x: 0, y: 84 }, t: { x: 660, y: 84 },
     });
   });
 
@@ -39,6 +48,15 @@ suite('triz-function-analysis — autoLayout', () => {
   test('resolvePositions: stored positions win, others get their auto slot', () => {
     const s = State.fromJSON({ components: [comp('t', 'target'), comp('s1', 'system')], positions: { t: { x: 5, y: 7 } } });
     assertDeepEqual(resolvePositions(s), { t: { x: 5, y: 7 }, s1: { x: 0, y: 84 } });
+  });
+
+  test('resolvePositions orders by interactions and functions', () => {
+    const s = State.fromJSON({
+      components: [comp('t', 'target'), comp('near', 'system'), comp('far', 'system')],
+      interactions: [{ a: 'far', b: 'near' }],
+      functions: [fnc('f', 'near', 't')],
+    });
+    assertDeepEqual(resolvePositions(s), { t: { x: 440, y: 84 }, near: { x: 220, y: 84 }, far: { x: 0, y: 84 } });
   });
 });
 
