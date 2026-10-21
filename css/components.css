@@ -369,6 +369,26 @@ select.input {
   margin-bottom: 0;
 }
 
+/* ── Field grid: fixed equal columns (2–4). Unlike .field-row, a cell keeps
+      its column width even when the grid holds fewer fields than columns,
+      so a lone input in .field-grid--3 takes one third of the panel.
+      .field-group--span-2 / --span-3 let one field cover several columns.
+        <div class="field-grid field-grid--3">
+          <div class="field-group">…</div>
+        </div> ── */
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--field-grid-columns, 2), minmax(0, 1fr));
+  gap: var(--spacing-m);
+}
+
+.field-grid--2 { --field-grid-columns: 2; }
+.field-grid--3 { --field-grid-columns: 3; }
+.field-grid--4 { --field-grid-columns: 4; }
+
+.field-grid > .field-group--span-2 { grid-column: span 2; }
+.field-grid > .field-group--span-3 { grid-column: span 3; }
+
 /* ── Radio group: stacked by default, --inline puts options side by side.
       Markup: .field-radios > label > input[type=radio] + span.
       A <fieldset> carries its caption as <legend>; inside a .field-group

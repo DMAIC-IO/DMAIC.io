@@ -10,7 +10,7 @@
              x-model="model.params.name" @input="scheduleAnalysis()">
     </div>
 
-    <div class="pc__row-3">
+    <div class="field-grid field-grid--3">
       <div class="field-group">
         <label x-text="t('lsl')"></label>
         <input type="text" class="field field--num" data-ref="inp-lsl"
@@ -33,7 +33,7 @@
 
     <div class="field-hint" x-text="t('specHint')"></div>
 
-    <div class="pc__row-3">
+    <div class="field-grid field-grid--3">
       <div class="field-group">
         <label x-text="t('unit')"></label>
         <input type="text" class="field" data-ref="inp-unit"
@@ -79,7 +79,7 @@
       <div class="field-hint" x-text="t('subgroupColumnHint')"></div>
     </div>
 
-    <div class="pc__row-3">
+    <div class="field-grid field-grid--3">
       <div class="field-group pc__span-2">
         <label x-text="t('withinMethodLabel')"></label>
         <select class="field" data-ref="inp-within-method" @change="setWithinMethod($event)">

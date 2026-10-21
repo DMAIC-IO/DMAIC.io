@@ -36,11 +36,13 @@
         <span :class="selectedInfoClass()" x-text="selectedInfoText()"></span>
       </div>
 
-      <div class="field-group">
-        <label x-text="t('confidenceLevel') + ' (%)'"></label>
-        <input type="text" class="field field--num" data-ref="conf-input" inputmode="decimal"
-          :value="confDisplay()" placeholder="95"
-          @change="commitConf($event)" @keydown="confKeydown($event)">
+      <div class="field-grid field-grid--3">
+        <div class="field-group">
+          <label x-text="t('confidenceLevel') + ' (%)'"></label>
+          <input type="text" class="field field--num" data-ref="conf-input" inputmode="decimal"
+            :value="confDisplay()" placeholder="95"
+            @change="commitConf($event)" @keydown="confKeydown($event)">
+        </div>
       </div>
 
       <div class="field-error" data-ref="error-box" :style="errorDisplay()"
