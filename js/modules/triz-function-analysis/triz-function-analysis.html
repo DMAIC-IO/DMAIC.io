@@ -12,6 +12,13 @@
     <!-- ── Tab: Components ── -->
     <div class="dmike-tab-content" :class="contentClass('components')"
       data-tab-content="components" x-show="model.activeTab === 'components'">
+      <div class="tfa__row tfa__row--head" x-show="model.components.length > 0">
+        <span class="context-help-anchor--overlay" data-help-key="modules.triz-function-analysis.actions.setComponentName.help" x-text="t('col.name')"></span>
+        <span class="context-help-anchor--overlay" data-help-key="modules.triz-function-analysis.actions.setComponentNote.help" x-text="t('col.note')"></span>
+        <span class="context-help-anchor--overlay" data-help-key="modules.triz-function-analysis.actions.setComponentCost.help" x-text="t('col.cost')"></span>
+        <span class="context-help-anchor--overlay" data-help-key="modules.triz-function-analysis.actions.setComponentKind.help" x-text="t('col.kind')"></span>
+        <span></span>
+      </div>
       <template x-for="kind in GROUPS" :key="kind">
         <section class="tfa__group" :data-group="kind">
           <h3 class="tfa__group-title" x-text="groupLabel(kind)"></h3>

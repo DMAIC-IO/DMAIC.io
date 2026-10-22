@@ -26,6 +26,13 @@
   align-items: center;
 }
 
+.tfa__row--head {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+}
+
 .tfa__cost-field {
   display: flex;
   align-items: center;

@@ -13046,6 +13046,7 @@
       "tab": { "components": "Komponenten", "interactions": "Interaktionen", "model": "Funktionsmodell", "valueCost": "Wert & Kosten" },
       "group": { "target": "Zielobjekt", "system": "Systemkomponenten", "supersystem": "Supersystem-Elemente" },
       "kind": { "target": "Zielobjekt", "system": "Systemkomponente", "supersystem": "Supersystem" },
+      "col": { "name": "Name", "note": "Notiz", "cost": "Kosten", "kind": "Art" },
       "namePlaceholder": "Name",
       "notePlaceholder": "Notiz",
       "costPlaceholder": "Kosten",
