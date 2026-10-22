@@ -184,7 +184,7 @@
       </div>
 
       <section class="tfa__disadvantages" data-role="disadvantages">
-        <h3 class="tfa__group-title" data-help-key="modules.triz-function-analysis.fields.disadvantages.help" x-text="t('disadvantages')"></h3>
+        <h3 class="tfa__group-title"><span data-help-key="modules.triz-function-analysis.fields.disadvantages.help" x-text="t('disadvantages')"></span></h3>
         <p class="tfa__hint" x-show="disadvantageGroups().length === 0" x-text="t('noDisadvantages')"></p>
         <template x-for="g in disadvantageGroups()" :key="g.kind">
           <div class="tfa__dis-group" :data-kind="g.kind">
