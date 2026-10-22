@@ -1,7 +1,7 @@
 <section class="module-container tfa" x-data="trizFunctionAnalysis">
   <div class="module-container__body tfa__body">
 
-    <div class="dmike-tabs tfa__tabs" role="tablist" x-tablist>
+    <div class="dmike-tabs tfa__tabs" role="tablist" x-tablist data-help-key="modules.triz-function-analysis.actions.setTab.help">
       <template x-for="tab in TABS" :key="tab">
         <button type="button" class="dmike-tab" role="tab" :class="tabClass(tab)"
           :aria-selected="tab === model.activeTab ? 'true' : 'false'" :tabindex="tab === model.activeTab ? 0 : -1"
@@ -43,7 +43,7 @@
               </button>
             </div>
           </template>
-          <button type="button" class="btn btn--sm tfa__add" data-role="component-add" :data-kind="kind"
+          <button type="button" class="btn btn--sm tfa__add" data-role="component-add" data-help-key="modules.triz-function-analysis.actions.addComponent.help" :data-kind="kind"
             x-show="canAdd(kind)" @click="newComponent(kind)">
             <span class="icon icon--sm" data-icon="action.add"></span>
             <span x-text="t('addComponent')"></span>
@@ -60,7 +60,7 @@
         <table class="tfa__matrix" data-role="matrix">
           <thead>
             <tr>
-              <th></th>
+              <th><span data-help-key="modules.triz-function-analysis.actions.setPairState.help" x-text="t('matrixCorner')"></span></th>
               <template x-for="c in matrixComponents()" :key="c.id">
                 <th scope="col" :class="headClass(c)" x-text="c.name"></th>
               </template>
@@ -84,7 +84,7 @@
             </template>
           </tbody>
         </table>
-        <p class="tfa__hint" data-role="matrix-summary" x-text="matrixSummary()"></p>
+        <p class="tfa__hint" data-role="matrix-summary" data-help-key="modules.triz-function-analysis.fields.interactions.help" x-text="matrixSummary()"></p>
       </div>
     </div>
     <!-- ── Tab: Function model ── -->
@@ -92,7 +92,7 @@
       data-tab-content="model" x-show="model.activeTab === 'model'">
       <div class="dmike-split dmike-split--input-lg tfa__split">
         <div class="dmike-split__input">
-          <div class="dmike-split__section-title" x-text="t('openPairs')"></div>
+          <div class="dmike-split__section-title"><span data-help-key="modules.triz-function-analysis.actions.addFunction.help" x-text="t('openPairs')"></span></div>
           <div class="tfa__chips">
             <template x-for="p in openPairChips()" :key="p.key">
               <button type="button" class="tfa__chip" data-role="open-pair" @click="createFromPair(p)" x-text="p.label"></button>
@@ -100,7 +100,7 @@
           </div>
           <p class="tfa__hint" x-show="openPairChips().length === 0" x-text="t('noOpenPairs')"></p>
 
-          <div class="dmike-split__section-title" x-text="t('functions')"></div>
+          <div class="dmike-split__section-title"><span data-help-key="modules.triz-function-analysis.fields.functions.help" x-text="t('functions')"></span></div>
           <template x-for="g in pairBlocks()" :key="g.key">
             <section class="tfa__pair" data-role="pair" :data-key="g.key">
               <header class="tfa__pair-head">
@@ -148,7 +148,7 @@
 
         <div class="dmike-split__output" data-role="diagram-pane">
           <div class="tfa__toolbar">
-            <button type="button" class="btn btn--sm" data-role="reset-layout" @click="resetLayout()">
+            <button type="button" class="btn btn--sm" data-role="reset-layout" data-help-key="modules.triz-function-analysis.actions.resetLayout.help" @click="resetLayout()">
               <span class="icon icon--sm" data-icon="action.reset"></span>
               <span x-text="t('resetLayout')"></span>
             </button>
@@ -177,7 +177,7 @@
       </div>
 
       <section class="tfa__disadvantages" data-role="disadvantages">
-        <h3 class="tfa__group-title" x-text="t('disadvantages')"></h3>
+        <h3 class="tfa__group-title" data-help-key="modules.triz-function-analysis.fields.disadvantages.help" x-text="t('disadvantages')"></h3>
         <p class="tfa__hint" x-show="disadvantageGroups().length === 0" x-text="t('noDisadvantages')"></p>
         <template x-for="g in disadvantageGroups()" :key="g.kind">
           <div class="tfa__dis-group" :data-kind="g.kind">

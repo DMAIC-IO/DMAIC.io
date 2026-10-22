@@ -13067,6 +13067,7 @@
       "confirmDelete": "„{name}“ löschen?",
       "confirmDeleteUsed": "„{name}“ löschen? {count} Funktion(en) hängen daran und werden mitgelöscht.",
       "targetDemoted": "„{name}“ ist jetzt Systemkomponente – es gibt nur ein Zielobjekt.",
+      "matrixCorner": "Interagiert mit",
       "matrixEmpty": "Lege im Reiter „Komponenten“ mindestens zwei Komponenten an.",
       "matrixSummary": "{count} Interaktionen, davon {open} ohne Funktion",
       "pairLocked": "Wird von {count} Funktion(en) genutzt – zuerst die Funktionen löschen.",

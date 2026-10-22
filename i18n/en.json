@@ -13063,6 +13063,7 @@
       "confirmDelete": "Delete \"{name}\"?",
       "confirmDeleteUsed": "Delete \"{name}\"? {count} function(s) use it and will be deleted too.",
       "targetDemoted": "\"{name}\" is now a system component – there is only one target.",
+      "matrixCorner": "Interacts with",
       "matrixEmpty": "Add at least two components on the \"Components\" tab.",
       "matrixSummary": "{count} interactions, {open} without a function",
       "pairLocked": "Used by {count} function(s) – delete those functions first.",
