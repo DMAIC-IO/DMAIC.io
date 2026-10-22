@@ -13108,7 +13108,7 @@
           }
         },
         "addComponent": {
-          "help": "Legt eine Komponente an. Es gibt genau ein Zielobjekt; ist schon eines da, kommt null zurück.",
+          "help": "Legt eine Komponente an. Es gibt genau ein Zielobjekt; ist schon eines da, wird keines angelegt.",
           "params": {
             "kind": "target (Zielobjekt), system (Systemkomponente) oder supersystem (Supersystem-Element).",
             "name": "Der Name der Komponente, leer erlaubt."
@@ -13240,7 +13240,7 @@
           "help": "Die Paare a, b, die ausdrücklich nicht interagieren."
         },
         "functions": {
-          "help": "Die gerichteten Funktionen mit id, carrier (Träger), verb, object, parameter, type (useful, harmful), level (adequate, insufficient, excessive; null bei schädlichen) und note."
+          "help": "Die gerichteten Funktionen mit id, carrier (Träger), verb, object, parameter, type (useful, harmful), level (adequate, insufficient, excessive; leer bei schädlichen) und note."
         },
         "positions": {
           "help": "Von Hand verschobene Kastenpositionen x, y je Komponenten-id; fehlt eine id, steht der Kasten auf seinem automatischen Platz."

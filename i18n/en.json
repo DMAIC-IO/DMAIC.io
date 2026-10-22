@@ -13104,7 +13104,7 @@
           }
         },
         "addComponent": {
-          "help": "Adds a component. There is exactly one target; if one exists already, null is returned.",
+          "help": "Adds a component. There is exactly one target; if one exists already, none is created.",
           "params": {
             "kind": "target, system (system component) or supersystem (supersystem element).",
             "name": "The name of the component, may be empty."
@@ -13236,7 +13236,7 @@
           "help": "The pairs a, b explicitly marked as not interacting."
         },
         "functions": {
-          "help": "The directed functions with id, carrier, verb, object, parameter, type (useful, harmful), level (adequate, insufficient, excessive; null for harmful ones) and note."
+          "help": "The directed functions with id, carrier, verb, object, parameter, type (useful, harmful), level (adequate, insufficient, excessive; empty for harmful ones) and note."
         },
         "positions": {
           "help": "Manually moved box positions x, y per component id; a missing id means the box sits in its automatic slot."
