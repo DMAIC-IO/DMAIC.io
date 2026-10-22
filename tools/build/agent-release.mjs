@@ -16,7 +16,7 @@ export const RELEASED_MODULES = Object.freeze([
   'data-import', 'data-transformation', 'deployment-flowchart', 'distribution-fit',
   'dmaic-calendar', 'doe-advisor', 'five-why', 'fmea', 'gage-run-chart',
   'glm-regression', 'heatmap', 'histogram', 'hypothesis-test', 'individual-value-plot',
-  'kano', 'lessons-learned', 'makigami', 'mosaic', 'msa-typ1', 'msa-typ2', 'msa-typ4',
+  'kano', 'lessons-learned', 'makigami', 'model-data-generator', 'mosaic', 'msa-typ1', 'msa-typ2', 'msa-typ4',
   'msa-typ5', 'msa-typ6', 'multi-vari', 'multivariate-control-chart',
   'opportunity-flowchart', 'outlier-test', 'pairwise-comparison', 'pareto',
   'pie-chart', 'probability-plot', 'process-capability', 'process-map', 'raci-matrix',
