@@ -9242,6 +9242,130 @@
       "mostFrequent": "Most frequent"
     },
     "model-data-generator": {
+      "whenToUse": "When synthetic data from a known regression model is needed — to practise DOE analysis and regression, or to test methods against a known “true” model — with factors, coefficients, noise and a seed for reproducible results.",
+      "actions": {
+        "read": {
+          "help": "Returns the factors and terms with their indices, the intercept, the response name, the sampling method, sample size, noise, seed and a summary of the generated values. generated is null until data exists; read the rows themselves from the worksheet after toWorksheet.",
+          "params": {
+            "options": "Optional; this module holds no bulk data."
+          }
+        },
+        "addFactor": {
+          "help": "Appends a factor with a default name and the range 0 to 100. The terms are rebuilt and all coefficients reset to 0, and a generated result is discarded. The agent receives the index of the new factor."
+        },
+        "removeFactor": {
+          "help": "Removes a factor. The terms are rebuilt and all coefficients reset to 0, and a generated result is discarded. The last factor stays: the action then returns false and changes nothing.",
+          "params": {
+            "index": "The index of a factor from factors; any other value is an error."
+          }
+        },
+        "setFactor": {
+          "help": "Sets the name or a range limit of a factor; a generated result is discarded. The coefficients are kept. Invalid values are rejected.",
+          "params": {
+            "index": "The index of a factor from factors; any other value is an error.",
+            "key": "Which field; each is described individually under keys. Any other value is an error.",
+            "value": "The value; type and permitted range are given per key under keys."
+          }
+        },
+        "setBeta": {
+          "help": "Sets the coefficient of a term. An already generated result stays until the next generate and then still shows the old values.",
+          "params": {
+            "index": "The index of a term from terms; any other value is an error.",
+            "value": "A finite number; numbers given as text are accepted."
+          }
+        },
+        "setIntercept": {
+          "help": "Sets the intercept β₀ of the model equation. An already generated result stays until the next generate.",
+          "params": {
+            "value": "A finite number; numbers given as text are accepted."
+          }
+        },
+        "setYName": {
+          "help": "Sets the name of the response Y; it appears in the equation, the table and the export. It must not be empty and must not name a factor, since the Y column would otherwise overwrite a factor column. An already generated result stays until the next generate.",
+          "params": {
+            "value": "The name as text, not empty and not a factor name."
+          }
+        },
+        "setSamplingMethod": {
+          "help": "Chooses the sampling method: random (Monte Carlo), Latin Hypercube (LHS) or full factorial. Takes effect on the next generate.",
+          "params": {
+            "value": "One of the methods in samplingMethods; any other value is an error."
+          }
+        },
+        "setSampleSize": {
+          "help": "Sets the number of rows. With the full factorial method it is only a guide for the number of levels per factor. Takes effect on the next generate. Values outside the range are rejected, not clamped.",
+          "params": {
+            "value": "An integer from 10 to 100000; numbers given as text are accepted."
+          }
+        },
+        "setNoiseStd": {
+          "help": "Sets the standard deviation σε of the normally distributed noise added to the modelled Y value. 0 produces values without noise. Takes effect on the next generate.",
+          "params": {
+            "value": "A number from 0; numbers given as text are accepted."
+          }
+        },
+        "setSeed": {
+          "help": "Sets the seed, the starting value of the random generator. The same seed with the same settings gives the same data. Takes effect on the next generate.",
+          "params": {
+            "value": "An integer; numbers given as text are accepted."
+          }
+        },
+        "generate": {
+          "help": "Generates the data with the current settings and shows it in the preview. The agent receives the summary of the Y values, the same as generated; it reads the rows from the worksheet after toWorksheet."
+        },
+        "toWorksheet": {
+          "help": "Opens the generated data in a new worksheet and switches to it. If no data exists yet, it generates first. The agent receives the id of the new worksheet."
+        }
+      },
+      "fields": {
+        "factors": {
+          "help": "The factors, each with index, name, min and max. The index addresses the factor in setFactor and removeFactor."
+        },
+        "terms": {
+          "help": "All terms of the model — main effects and interactions — each with index, label, order and beta, zeros included. The index addresses the term in setBeta. The list changes with the number of factors."
+        },
+        "intercept": {
+          "help": "The intercept β₀ of the model equation."
+        },
+        "yName": {
+          "help": "Name of the response Y, also the column name of the generated data."
+        },
+        "samplingMethod": {
+          "help": "The chosen sampling method, one of the methods in samplingMethods."
+        },
+        "samplingMethods": {
+          "help": "The methods setSamplingMethod accepts."
+        },
+        "sampleSize": {
+          "help": "The requested number of rows; with the full factorial method only a guide."
+        },
+        "noiseStd": {
+          "help": "Standard deviation σε of the noise added to the modelled Y value."
+        },
+        "seed": {
+          "help": "Seed, the starting value of the random generator; the same seed gives the same data."
+        },
+        "maxOrder": {
+          "help": "The highest interaction order among the terms. It is fixed and cannot be changed."
+        },
+        "generated": {
+          "help": "Summary of the generated Y values, each item described individually under keys; null until data exists. It is computed on generate. addFactor, removeFactor and setFactor discard it. The other setters — setBeta, setIntercept, setYName, setSamplingMethod, setSampleSize, setNoiseStd, setSeed — leave it in place until the next generate. The cards show the figures with four decimals, magnitudes from 10⁶ or below 0.001 in exponential notation."
+        }
+      },
+      "types": {
+        "FactorFields": {
+          "name": "Name of the factor, also the column name of the data. It must not be empty and must not equal another factor or the response Y.",
+          "min": "Lower limit of the factor range, a number. It must not exceed the upper limit.",
+          "max": "Upper limit of the factor range, a number. It must not be below the lower limit."
+        },
+        "Generated": {
+          "n": "N: the number of generated rows.",
+          "mean": "Mean of the generated Y values.",
+          "sd": "Standard deviation of the generated Y values.",
+          "min": "Min: the smallest generated Y value.",
+          "max": "Max: the largest generated Y value."
+        }
+      },
       "name": "Model Data Generator",
       "description": "Generate synthetic datasets from configurable regression models",
       "tabFactors": "Factors",
@@ -9280,6 +9404,7 @@
       "statsTitle": "Descriptive Statistics",
       "statMean": "Mean",
       "statStd": "Std.Dev.",
+      "statN": "N",
       "previewTitle": "Data Preview",
       "rows": "rows",
       "moreRows": "more rows (included in export)",

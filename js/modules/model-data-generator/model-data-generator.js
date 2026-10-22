@@ -368,11 +368,11 @@ export default createModule({
             ? v.toExponential(4)
             : v.toFixed(4);
         this.statKpis = [
-          { label: 'N', value: ds.n },
-          { label: _t('statMean'), value: fmt(ds.mean) },
-          { label: _t('statStd'), value: fmt(ds.stdDev) },
-          { label: 'Min', value: fmt(ds.min) },
-          { label: 'Max', value: fmt(ds.max) },
+          { label: _t('statN'), value: ds.n, help: 'modules.model-data-generator.types.Generated.n' },
+          { label: _t('statMean'), value: fmt(ds.mean), help: 'modules.model-data-generator.types.Generated.mean' },
+          { label: _t('statStd'), value: fmt(ds.stdDev), help: 'modules.model-data-generator.types.Generated.sd' },
+          { label: _t('min'), value: fmt(ds.min), help: 'modules.model-data-generator.types.Generated.min' },
+          { label: _t('max'), value: fmt(ds.max), help: 'modules.model-data-generator.types.Generated.max' },
         ];
       },
 
