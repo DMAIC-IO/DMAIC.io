@@ -4918,8 +4918,6 @@
       "legendTie": "Gleich",
       "legendLose": "Niederlage",
       "noResults": "Noch keine Ergebnisse — bitte zuerst Kriterien eingeben und Vergleich starten.",
-      "exportCSV": "CSV Export",
-      "exportJSON": "JSON Export",
       "copyResults": "Kopieren",
       "resetAll": "Neuer Vergleich",
       "resetConfirm": "Alle Kriterien und Bewertungen wirklich zurücksetzen?",

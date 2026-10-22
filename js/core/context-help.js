@@ -344,12 +344,23 @@ function handleMutations(records) {
 function wireGlobalHandlers() {
   // Alt halten „schärft" die Fläche. Der Zustand hängt an einer Körperklasse,
   // damit das Sichtbarmachen reines CSS ist und keine Reflow-Welle auslöst.
+  // `altAlone` merkt, ob seit dem Alt-Druck eine andere Taste kam: ein allein
+  // losgelassenes Alt setzt unter Windows den Fokus aufs Browsermenü, danach
+  // erreicht kein keydown mehr die Seite und die Fragezeichen kämen nur
+  // einmal. Alt+Taste bleibt unberührt — die gehört Browser oder Seite.
+  let altAlone = false;
   window.addEventListener('keydown', (event) => {
+    altAlone = event.key === 'Alt';
     if (event.key === 'Alt') document.body.classList.add(ARMED_CLASS);
     if (event.key === 'Escape') closeContextHelp();
   });
   const disarm = () => document.body.classList.remove(ARMED_CLASS);
-  window.addEventListener('keyup', (event) => { if (event.key === 'Alt') disarm(); });
+  window.addEventListener('keyup', (event) => {
+    if (event.key !== 'Alt') return;
+    if (altAlone) event.preventDefault();
+    altAlone = false;
+    disarm();
+  });
   // Ohne diese zwei verliert der Browser das keyup (Fensterwechsel per
   // Alt+Tab ist genau der Fall) und die Fragezeichen blieben stehen.
   window.addEventListener('blur', disarm);

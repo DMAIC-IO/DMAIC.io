@@ -20,12 +20,19 @@
    auf dem Nachbarkopf bzw. jenseits der Seitenleiste. */
 .attrtest__grid-head { font-size: var(--font-size-xs); color: var(--color-text-secondary); justify-self: start; }
 
+.attrtest__row-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
 .attrtest__edit-table { border-collapse: collapse; margin-bottom: var(--spacing-xs); }
 
 .attrtest__edit-table th,
 .attrtest__edit-table td { padding: var(--spacing-2xs); }
 .attrtest__name { width: 7em; }
-.attrtest__count { width: 6em; font-family: var(--font-family-mono); text-align: right; }
+.attrtest__count { width: 6em; }
 .attrtest__remove { color: var(--color-text-tertiary); }
 .attrtest__table-actions { display: flex; gap: var(--spacing-xs); margin-bottom: var(--spacing-sm); }
 
