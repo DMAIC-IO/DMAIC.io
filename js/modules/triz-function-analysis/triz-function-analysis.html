@@ -13,10 +13,10 @@
     <div class="dmike-tab-content" :class="contentClass('components')"
       data-tab-content="components" x-show="model.activeTab === 'components'">
       <div class="tfa__row tfa__row--head" x-show="model.components.length > 0">
-        <span class="context-help-anchor--overlay" data-help-key="modules.triz-function-analysis.actions.setComponentName.help" x-text="t('col.name')"></span>
-        <span class="context-help-anchor--overlay" data-help-key="modules.triz-function-analysis.actions.setComponentNote.help" x-text="t('col.note')"></span>
-        <span class="context-help-anchor--overlay" data-help-key="modules.triz-function-analysis.actions.setComponentCost.help" x-text="t('col.cost')"></span>
-        <span class="context-help-anchor--overlay" data-help-key="modules.triz-function-analysis.actions.setComponentKind.help" x-text="t('col.kind')"></span>
+        <span data-help-key="modules.triz-function-analysis.actions.setComponentName.help" x-text="t('col.name')"></span>
+        <span data-help-key="modules.triz-function-analysis.actions.setComponentNote.help" x-text="t('col.note')"></span>
+        <span data-help-key="modules.triz-function-analysis.actions.setComponentCost.help" x-text="t('col.cost')"></span>
+        <span data-help-key="modules.triz-function-analysis.actions.setComponentKind.help" x-text="t('col.kind')"></span>
         <span></span>
       </div>
       <template x-for="kind in GROUPS" :key="kind">
@@ -91,7 +91,7 @@
             </template>
           </tbody>
         </table>
-        <p class="tfa__hint" data-role="matrix-summary" data-help-key="modules.triz-function-analysis.fields.interactions.help" x-text="matrixSummary()"></p>
+        <p class="tfa__hint" data-role="matrix-summary"><span data-help-key="modules.triz-function-analysis.fields.interactions.help" x-text="matrixSummary()"></span></p>
       </div>
     </div>
     <!-- ── Tab: Function model ── -->
