@@ -395,7 +395,7 @@ export default createModule({
 
       // ── exports ──
       /**
-       * @noagent gibt eine Datei bzw. die Zwischenablage aus; ein Agent
+       * @noagent gibt eine Datei aus; ein Agent
        *   liest den Zustand über `read()`.
        */
       exportCSV() {
@@ -414,7 +414,7 @@ export default createModule({
         module._context.notify(_t('exportedCSV'));
       },
       /**
-       * @noagent gibt eine Datei bzw. die Zwischenablage aus; ein Agent
+       * @noagent gibt eine Datei aus; ein Agent
        *   liest den Zustand über `read()`.
        */
       exportJSON() {
@@ -434,29 +434,6 @@ export default createModule({
         };
         downloadFile(JSON.stringify(out, null, 2), 'pairwise-comparison.json', 'application/json');
         module._context.notify(_t('exportedJSON'));
-      },
-      /**
-       * @noagent gibt eine Datei bzw. die Zwischenablage aus; ein Agent
-       *   liest den Zustand über `read()`.
-       */
-      copyResults() {
-        const n = this.model.criteria.length;
-        if (n === 0) return;
-        const scores = this.model.scores;
-        const ranked = this.model.criteria
-          .map((name, i) => ({ name, score: scores[i] }))
-          .sort((a, b) => b.score - a.score);
-        const text = `${_t('copyHeader')  }\n${  ranked
-          .map((r, i) => `${i + 1}. ${r.name} (${r.score.toFixed(1)} ${_t('points')})`)
-          .join('\n')}`;
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(
-            () => module._context.notify(_t('copied')),
-            () => module._context.notify(_t('copyFailed')),
-          );
-        } else {
-          module._context.notify(_t('copyFailed'));
-        }
       },
     };
   },

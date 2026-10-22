@@ -4918,17 +4918,12 @@
       "legendTie": "Gleich",
       "legendLose": "Niederlage",
       "noResults": "Noch keine Ergebnisse — bitte zuerst Kriterien eingeben und Vergleich starten.",
-      "copyResults": "Kopieren",
       "resetAll": "Neuer Vergleich",
       "resetConfirm": "Alle Kriterien und Bewertungen wirklich zurücksetzen?",
       "resetDone": "Paarweiser Vergleich zurückgesetzt",
       "duplicateWarning": "Dieses Kriterium wurde bereits hinzugefügt.",
       "exportedCSV": "CSV exportiert",
       "exportedJSON": "JSON exportiert",
-      "copied": "In die Zwischenablage kopiert",
-      "copyFailed": "Kopieren fehlgeschlagen",
-      "copyHeader": "Paarweiser Vergleich — Ergebnis",
-      "points": "Punkte",
       "sum": "Summe"
     },
     "ce-matrix": {

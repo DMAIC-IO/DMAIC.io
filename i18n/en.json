@@ -4914,17 +4914,12 @@
       "legendTie": "Tie",
       "legendLose": "Loss",
       "noResults": "No results yet — please add criteria and run the comparison first.",
-      "copyResults": "Copy",
       "resetAll": "New comparison",
       "resetConfirm": "Really reset all criteria and ratings?",
       "resetDone": "Pairwise comparison reset",
       "duplicateWarning": "This criterion has already been added.",
       "exportedCSV": "CSV exported",
       "exportedJSON": "JSON exported",
-      "copied": "Copied to clipboard",
-      "copyFailed": "Copy failed",
-      "copyHeader": "Pairwise Comparison — Result",
-      "points": "points",
       "sum": "Sum"
     },
     "ce-matrix": {

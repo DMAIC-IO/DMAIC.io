@@ -634,13 +634,3 @@
 .pairwise__dot--win  { background: var(--color-success); }
 .pairwise__dot--tie  { background: var(--color-text-tertiary); }
 .pairwise__dot--lose { background: var(--color-warning); }
-
-/* ── Action row ── */
-.pairwise__actions {
-  display: flex;
-  gap: var(--spacing-sm);
-  flex-wrap: wrap;
-  margin-top: var(--spacing-xl);
-  padding-top: var(--spacing-md);
-  border-top: var(--border-width) solid var(--color-border-secondary);
-}
