@@ -94,6 +94,7 @@ export default createModule({
       generatedData: null,
       resultsVisible: false,
       statKpis: [],
+      generatedSummary: null,
       rowCountText: '',
       _grid: null,
 
@@ -332,11 +333,9 @@ export default createModule({
 
       // ── Internal helpers ──────────────────────────────────────
 
-      /** Zusammenfassung der erzeugten Y-Werte (Quelle auch der Kennzahlen-Leiste). */
+      /** Zusammenfassung der erzeugten Y-Werte, einmal in `_computeStats` berechnet. */
       _agentGenerated() {
-        if (!this.generatedData?.length) return null;
-        const ds = descriptiveStats(this.generatedData.map(r => r[this.model.yName]));
-        return { n: ds.n, mean: ds.mean, sd: ds.stdDev, min: ds.min, max: ds.max };
+        return this.generatedSummary ? { ...this.generatedSummary } : null;
       },
 
       /** Wirft, wenn `name` schon ein anderer Faktor (nicht `exceptIndex`) oder Y heißt. */
@@ -355,6 +354,7 @@ export default createModule({
 
       _resetResults() {
         this.generatedData = null;
+        this.generatedSummary = null;
         this.resultsVisible = false;
         this._destroyGrid();
       },
@@ -362,6 +362,7 @@ export default createModule({
       _computeStats(rows) {
         const yv = rows.map(r => r[this.model.yName]);
         const ds = descriptiveStats(yv);
+        this.generatedSummary = { n: ds.n, mean: ds.mean, sd: ds.stdDev, min: ds.min, max: ds.max };
         const fmt = v =>
           (Math.abs(v) >= 1e6 || (Math.abs(v) < 0.001 && v !== 0))
             ? v.toExponential(4)
