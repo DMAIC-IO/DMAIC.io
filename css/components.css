@@ -2059,6 +2059,11 @@ body.dmike-context-help-armed .context-help__btn {
   color: var(--color-text-primary);
 }
 
+/* Help texts may carry line breaks (lists in the DoE planner tips). */
+.context-help__panel-body {
+  white-space: pre-line;
+}
+
 .context-help__panel-title {
   font-weight: 600;
   margin-bottom: var(--spacing-xs);

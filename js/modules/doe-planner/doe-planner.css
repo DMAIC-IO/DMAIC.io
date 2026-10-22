@@ -1251,21 +1251,6 @@
   border-color: var(--color-accent);
 }
 
-.doe__eval-tooltip,
-.doe__param-tooltip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-tertiary);
-  font-size: 10px;
-  font-weight: var(--font-weight-semibold);
-  cursor: help;
-}
-
 .doe__eval-note {
   font-size: var(--font-size-sm);
   color: var(--color-text-tertiary);

@@ -863,14 +863,15 @@ const mod = createModule({
       effCards() {
         const eff = this._eff();
         if (!eff) return [];
-        const mk = (label, val, tip) => {
+        const mk = (label, val, tipKey) => {
           const cls = val >= 80 ? 'dmike-kpi--good' : val >= 50 ? 'dmike-kpi--warn' : 'dmike-kpi--bad';
-          return { label, value: `${Math.round(val)  }%`, tip, algoId: ALGO_ID_DEFF, cls, barWidth: Math.min(100, val) };
+          const helpKey = `modules.doe-planner.${tipKey}`;
+          return { label, value: `${Math.round(val)  }%`, helpKey, algoId: ALGO_ID_DEFF, cls, barWidth: Math.min(100, val) };
         };
         return [
-          mk(_t('dEff'), eff.dEfficiency, _t('tipDEff')),
-          mk(_t('aEff'), eff.aEfficiency, _t('tipAEff')),
-          mk(_t('gEff'), eff.gEfficiency, _t('tipGEff')),
+          mk(_t('dEff'), eff.dEfficiency, 'tipDEff'),
+          mk(_t('aEff'), eff.aEfficiency, 'tipAEff'),
+          mk(_t('gEff'), eff.gEfficiency, 'tipGEff'),
         ];
       },
       condNumValue() { const e = this._eff(); return e ? e.conditionNumber.toFixed(1) : ''; },
