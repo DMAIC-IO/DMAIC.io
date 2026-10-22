@@ -13138,7 +13138,7 @@
           }
         },
         "setComponentKind": {
-          "help": "Ändert die Art einer Komponente. Wird sie zum Zielobjekt, wird das bisherige Zielobjekt zur Systemkomponente; dessen id kommt zurück.",
+          "help": "Ändert die Art einer Komponente. Wird sie zum Zielobjekt, wird das bisherige Zielobjekt zur Systemkomponente.",
           "params": {
             "componentId": "Die id der Komponente aus components.",
             "kind": "target, system oder supersystem."
@@ -13151,7 +13151,7 @@
           }
         },
         "setPairState": {
-          "help": "Legt fest, ob zwei Komponenten interagieren. Ein angekreuztes Paar, das Funktionen nutzen, bleibt angekreuzt; dann kommt false zurück.",
+          "help": "Legt fest, ob zwei Komponenten interagieren. Ein angekreuztes Paar, das Funktionen nutzen, bleibt angekreuzt; die Änderung wird nicht übernommen.",
           "params": {
             "a": "Die id der ersten Komponente.",
             "b": "Die id der zweiten Komponente; die Reihenfolge spielt keine Rolle.",

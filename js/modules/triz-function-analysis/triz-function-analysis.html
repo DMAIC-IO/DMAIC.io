@@ -67,7 +67,7 @@
         <table class="tfa__matrix" data-role="matrix">
           <thead>
             <tr>
-              <th><span data-help-key="modules.triz-function-analysis.actions.setPairState.help" x-text="t('matrixCorner')"></span></th>
+              <th class="tfa__corner"><span data-help-key="modules.triz-function-analysis.actions.setPairState.help" x-text="t('matrixCorner')"></span></th>
               <template x-for="c in matrixComponents()" :key="c.id">
                 <th scope="col" :class="headClass(c)" x-text="c.name"></th>
               </template>

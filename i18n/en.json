@@ -13134,7 +13134,7 @@
           }
         },
         "setComponentKind": {
-          "help": "Changes the kind of a component. If it becomes the target, the former target becomes a system component; its id is returned.",
+          "help": "Changes the kind of a component. If it becomes the target, the former target becomes a system component.",
           "params": {
             "componentId": "The id of the component from components.",
             "kind": "target, system or supersystem."
@@ -13147,7 +13147,7 @@
           }
         },
         "setPairState": {
-          "help": "Sets whether two components interact. A ticked pair used by functions stays ticked; then false is returned.",
+          "help": "Sets whether two components interact. A ticked pair used by functions stays ticked; the change is not applied.",
           "params": {
             "a": "The id of the first component.",
             "b": "The id of the second component; the order does not matter.",

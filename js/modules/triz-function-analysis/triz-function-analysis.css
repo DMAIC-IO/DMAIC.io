@@ -15,7 +15,7 @@
 
 .tfa__group-title {
   margin: 0;
-  font-size: var(--font-size-sm, 0.875rem);
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
@@ -27,7 +27,7 @@
 }
 
 .tfa__row--head {
-  font-size: var(--font-size-sm, 0.875rem);
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   font-weight: 600;
   margin-bottom: var(--spacing-xs);
@@ -62,7 +62,11 @@
 /* Interaction matrix */
 .tfa__hint {
   color: var(--color-text-secondary);
-  font-size: var(--font-size-sm, 0.875rem);
+  font-size: var(--font-size-sm);
+}
+
+.tfa__hint[data-role="matrix-summary"] {
+  margin-top: var(--spacing-s);
 }
 
 .tfa__matrix-wrap {
@@ -71,6 +75,11 @@
 
 .tfa__matrix {
   border-collapse: collapse;
+}
+
+.tfa__corner {
+  /* Platz für den Hilfekreis rechts der Beschriftung, sonst landet er auf der ersten Spaltenüberschrift. */
+  padding-inline-end: var(--tfa-help-gutter, 1.5em);
 }
 
 .tfa__mh {
@@ -211,7 +220,7 @@ thead .tfa__mh {
 
 .tfa__dis-title {
   margin: var(--spacing-s) 0 var(--spacing-2xs);
-  font-size: var(--font-size-sm, 0.875rem);
+  font-size: var(--font-size-sm);
 }
 
 .tfa__dis-group[data-kind="harmful"] .tfa__dis-title { color: var(--color-error); }
@@ -353,7 +362,7 @@ thead .tfa__mh {
   padding: 0;
   list-style: none;
   color: var(--color-text-secondary);
-  font-size: var(--font-size-sm, 0.875rem);
+  font-size: var(--font-size-sm);
 }
 
 .tfa__legend li {
