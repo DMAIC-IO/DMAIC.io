@@ -9272,7 +9272,7 @@
           }
         },
         "setBeta": {
-          "help": "Setzt den Koeffizienten eines Terms. Ein schon erzeugtes Ergebnis bleibt bis zum nächsten generate stehen und zeigt dann noch die alten Werte.",
+          "help": "Setzt den Koeffizienten eines Terms. Ein schon erzeugtes Ergebnis bleibt bis zum nächsten generate stehen und behält bis dahin die alten Werte.",
           "params": {
             "index": "Der Index eines Terms aus terms; jeder andere Wert ist ein Fehler.",
             "value": "Eine endliche Zahl; als Text angegebene Zahlen werden angenommen."
@@ -9297,7 +9297,7 @@
           }
         },
         "setSampleSize": {
-          "help": "Setzt die Zahl der Zeilen. Beim vollfaktoriellen Verfahren ist sie nur ein Richtwert für die Stufenzahl je Faktor. Wirkt beim nächsten generate. Werte außerhalb des Bereichs werden abgewiesen, nicht geklemmt.",
+          "help": "Setzt die Zahl der Zeilen. Beim vollfaktoriellen Verfahren (full factorial) liegt die Stufenzahl fest (3 Stufen bis 4 Faktoren, sonst 2); die Zahl bestimmt nur, wie oft jede Stufenkombination wiederholt wird (n geteilt durch die Zahl der Kombinationen, gerundet, mindestens 1), die Zeilenzahl weicht daher meist von ihr ab. Wirkt beim nächsten generate. Werte außerhalb des Bereichs werden abgewiesen, nicht geklemmt.",
           "params": {
             "value": "Eine ganze Zahl von 10 bis 100000; als Text angegebene Zahlen werden angenommen."
           }
@@ -9341,7 +9341,7 @@
           "help": "Die Verfahren, die setSamplingMethod annimmt."
         },
         "sampleSize": {
-          "help": "Die gewünschte Zahl der Zeilen; beim vollfaktoriellen Verfahren nur ein Richtwert."
+          "help": "Die gewünschte Zahl der Zeilen; beim vollfaktoriellen Verfahren (full factorial) nur ein Richtwert für die Wiederholungen je Stufenkombination."
         },
         "noiseStd": {
           "help": "Standardabweichung σε des Rauschens, das auf den modellierten Y-Wert addiert wird."
@@ -9350,7 +9350,7 @@
           "help": "Seed, der Startwert des Zufallsgenerators; derselbe Seed ergibt dieselben Daten."
         },
         "maxOrder": {
-          "help": "Die höchste Ordnung der Wechselwirkungen unter den Termen. Sie ist fest und lässt sich nicht verstellen."
+          "help": "Die obere Grenze der Wechselwirkungsordnung unter den Termen; bei weniger Faktoren enden die Terme bei der Faktorzahl. Sie ist fest und lässt sich nicht verstellen."
         },
         "generated": {
           "help": "Zusammenfassung der erzeugten Y-Werte, jede Angabe unter keys einzeln beschrieben; null, solange keine Daten vorliegen. Sie wird bei generate berechnet. addFactor, removeFactor und setFactor verwerfen sie. Die übrigen Setter — setBeta, setIntercept, setYName, setSamplingMethod, setSampleSize, setNoiseStd, setSeed — lassen sie bis zum nächsten generate stehen. Die Karten zeigen die Kennzahlen mit vier Nachkommastellen, Beträge ab 10⁶ oder unter 0,001 in Exponentialschreibweise."

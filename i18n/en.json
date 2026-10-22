@@ -9268,7 +9268,7 @@
           }
         },
         "setBeta": {
-          "help": "Sets the coefficient of a term. An already generated result stays until the next generate and then still shows the old values.",
+          "help": "Sets the coefficient of a term. An already generated result stays until the next generate and keeps the old values until then.",
           "params": {
             "index": "The index of a term from terms; any other value is an error.",
             "value": "A finite number; numbers given as text are accepted."
@@ -9293,7 +9293,7 @@
           }
         },
         "setSampleSize": {
-          "help": "Sets the number of rows. With the full factorial method it is only a guide for the number of levels per factor. Takes effect on the next generate. Values outside the range are rejected, not clamped.",
+          "help": "Sets the number of rows. With the full factorial method the number of levels is fixed (3 levels up to 4 factors, otherwise 2); the number only sets how often each level combination is repeated (n divided by the number of combinations, rounded, at least 1), so the row count usually differs from it. Takes effect on the next generate. Values outside the range are rejected, not clamped.",
           "params": {
             "value": "An integer from 10 to 100000; numbers given as text are accepted."
           }
@@ -9337,7 +9337,7 @@
           "help": "The methods setSamplingMethod accepts."
         },
         "sampleSize": {
-          "help": "The requested number of rows; with the full factorial method only a guide."
+          "help": "The requested number of rows; with the full factorial method only a guide for the repetitions per level combination."
         },
         "noiseStd": {
           "help": "Standard deviation σε of the noise added to the modelled Y value."
@@ -9346,7 +9346,7 @@
           "help": "Seed, the starting value of the random generator; the same seed gives the same data."
         },
         "maxOrder": {
-          "help": "The highest interaction order among the terms. It is fixed and cannot be changed."
+          "help": "The upper limit of the interaction order among the terms; with fewer factors the terms stop at the factor count. It is fixed and cannot be changed."
         },
         "generated": {
           "help": "Summary of the generated Y values, each item described individually under keys; null until data exists. It is computed on generate. addFactor, removeFactor and setFactor discard it. The other setters — setBeta, setIntercept, setYName, setSamplingMethod, setSampleSize, setNoiseStd, setSeed — leave it in place until the next generate. The cards show the figures with four decimals, magnitudes from 10⁶ or below 0.001 in exponential notation."
