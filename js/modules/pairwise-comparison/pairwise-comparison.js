@@ -81,6 +81,12 @@ export default createModule({
     icon: 'module.pairwise-comparison',
     version: '1.0.0',
     meta: import.meta,
+    actions: [
+      { icon: 'action.download', title: 'export.label', children: [
+        { icon: 'format.csv',  title: 'export.csv',  onClick: (d) => d.exportCSV() },
+        { icon: 'format.json', title: 'export.json', onClick: (d) => d.exportJSON() },
+      ] },
+    ],
   },
   Model: State,
   data(module, _t) {
@@ -393,8 +399,8 @@ export default createModule({
        *   liest den Zustand über `read()`.
        */
       exportCSV() {
+        if (!this.model.resultsReachable) return;
         const n = this.model.criteria.length;
-        if (n === 0) return;
         const scores = this.model.scores;
         const esc = (s) => /[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
         let csv = 'sep=;\n';
@@ -412,8 +418,7 @@ export default createModule({
        *   liest den Zustand über `read()`.
        */
       exportJSON() {
-        const n = this.model.criteria.length;
-        if (n === 0) return;
+        if (!this.model.resultsReachable) return;
         const scores = this.model.scores;
         const ranked = this.model.criteria
           .map((name, i) => ({ name, score: scores[i], rank: 0 }))

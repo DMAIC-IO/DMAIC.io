@@ -4914,8 +4914,6 @@
       "legendTie": "Tie",
       "legendLose": "Loss",
       "noResults": "No results yet — please add criteria and run the comparison first.",
-      "exportCSV": "CSV export",
-      "exportJSON": "JSON export",
       "copyResults": "Copy",
       "resetAll": "New comparison",
       "resetConfirm": "Really reset all criteria and ratings?",
