@@ -33,6 +33,12 @@
   margin-bottom: var(--spacing-xs);
 }
 
+/* Schrumpfbreite Kopfzellen: der Hilfekreis sitzt sonst am Zellenende, also
+   direkt vor der Beschriftung der Nachbarspalte, und wirkt wie deren Anker. */
+.tfa__row--head > .context-help-anchor {
+  justify-self: start;
+}
+
 .tfa__cost-field {
   display: flex;
   align-items: center;
