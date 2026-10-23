@@ -202,7 +202,8 @@ export class Term {
   }
 }
 
-const SAMPLING_METHODS = ['random', 'lhs', 'fullfactorial'];
+/** The sampling methods `samplingMethod` accepts. */
+export const SAMPLING_METHODS = ['random', 'lhs', 'fullfactorial'];
 
 /** Default factor set — also used as the baseline for `hasContent()`. */
 function defaultFactors() {

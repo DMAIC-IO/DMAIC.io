@@ -5,9 +5,9 @@
       <aside class="dmike-split__input mdg-input">
         <div class="dmike-split__section-title" x-text="t('factorsTitle')"></div>
         <div class="mdg-factor-grid mdg-factor-grid--header">
-          <span class="mdg-label" x-text="t('factorName')"></span>
-          <span class="mdg-label">Min</span>
-          <span class="mdg-label">Max</span>
+          <span class="mdg-label" data-help-key="modules.model-data-generator.types.FactorFields.name" x-text="t('factorName')"></span>
+          <span class="mdg-label" data-help-key="modules.model-data-generator.types.FactorFields.min" x-text="t('min')"></span>
+          <span class="mdg-label" data-help-key="modules.model-data-generator.types.FactorFields.max" x-text="t('max')"></span>
           <span></span>
         </div>
 
@@ -23,6 +23,7 @@
               <span class="mdg-factor-action">
                 <template x-if="model.factors.length > 1">
                   <button class="btn btn--icon-sm btn--danger mdg-btn-remove" type="button"
+                    data-help-key="modules.model-data-generator.actions.removeFactor.help"
                     :data-idx="i" :title="t('remove')" @click="removeFactor(i)">×</button>
                 </template>
               </span>
@@ -31,17 +32,18 @@
         </div>
 
         <button class="btn btn--secondary mdg-btn-add" id="mdg-btn-add-factor"
+          data-help-key="modules.model-data-generator.actions.addFactor.help"
           type="button" @click="addFactor()">
           <span x-text="'+ ' + t('addFactor')"></span>
         </button>
 
-        <div class="dmike-split__section-title" x-text="t('outputTitle')"></div>
+        <div class="dmike-split__section-title" data-help-key="modules.model-data-generator.actions.setYName.help" x-text="t('outputTitle')"></div>
         <input class="field mdg-inp" type="text" id="mdg-y-name"
           x-model="model.yName" placeholder="Y">
 
         <div class="dmike-split__section-title" x-text="t('generateTitle')"></div>
         <div class="mdg-control-group">
-          <label class="mdg-label" x-text="t('samplingMethod')"></label>
+          <label class="mdg-label" data-help-key="modules.model-data-generator.actions.setSamplingMethod.help" x-text="t('samplingMethod')"></label>
           <select class="field mdg-inp mdg-select" id="mdg-sampling" x-model="model.samplingMethod">
             <option value="random" x-text="t('methodRandom')"></option>
             <option value="lhs" x-text="t('methodLHS')"></option>
@@ -50,23 +52,24 @@
         </div>
         <div class="mdg-triple-grid">
           <div class="mdg-control-group">
-            <label class="mdg-label" x-text="t('sampleSize')"></label>
+            <label class="mdg-label" data-help-key="modules.model-data-generator.actions.setSampleSize.help" x-text="t('sampleSize')"></label>
             <input class="field mdg-inp mdg-inp--center" type="number" id="mdg-sample-size"
               x-model.number="model.sampleSize" min="10" max="100000">
           </div>
           <div class="mdg-control-group">
-            <label class="mdg-label" x-text="t('noise') + ' (σε)'"></label>
+            <label class="mdg-label" data-help-key="modules.model-data-generator.actions.setNoiseStd.help" x-text="t('noise') + ' (σε)'"></label>
             <input class="field mdg-inp mdg-inp--center" type="number" id="mdg-noise"
               x-model.number="model.noiseStd" min="0">
           </div>
           <div class="mdg-control-group">
-            <label class="mdg-label">Seed</label>
+            <label class="mdg-label" data-help-key="modules.model-data-generator.actions.setSeed.help" x-text="t('seed')"></label>
             <input class="field mdg-inp mdg-inp--center" type="number" id="mdg-seed"
               x-model.number="model.seed">
           </div>
         </div>
 
-        <button class="dmike-btn-run" id="mdg-btn-generate-inline" type="button" @click="generate()">
+        <button class="dmike-btn-run" id="mdg-btn-generate-inline"
+          data-help-key="modules.model-data-generator.actions.generate.help" type="button" @click="generate()">
           <span x-text="'▶ ' + t('generate')"></span>
         </button>
       </aside>
@@ -87,7 +90,7 @@
 
         <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('coefficients')"></span></div>
 
-        <div class="mdg-group-label" x-text="t('intercept')"></div>
+        <div class="mdg-group-label" data-help-key="modules.model-data-generator.actions.setIntercept.help" x-text="t('intercept')"></div>
         <div class="mdg-beta-grid">
           <div class="mdg-beta-item">
             <span class="mdg-beta-name" x-text="t('intercept')"></span>
@@ -121,7 +124,7 @@
             <template x-for="kpi in statKpis">
               <div class="dmike-kpi" :key="kpi.label">
                 <div class="dmike-kpi-value" x-text="kpi.value"></div>
-                <div class="dmike-kpi-label" x-text="kpi.label"></div>
+                <div class="dmike-kpi-label" :data-help-key="kpi.help" x-text="kpi.label"></div>
               </div>
             </template>
           </div>

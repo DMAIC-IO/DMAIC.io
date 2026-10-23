@@ -9249,6 +9249,130 @@
       "mostFrequent": "Häufigstes"
     },
     "model-data-generator": {
+      "whenToUse": "Wenn synthetische Daten aus einem bekannten Regressionsmodell gebraucht werden — zum Üben von DOE-Auswertung und Regression, zum Testen von Methoden an einem bekannten „wahren“ Modell — mit Faktoren, Koeffizienten, Rauschen und Seed für reproduzierbare Ergebnisse.",
+      "actions": {
+        "read": {
+          "help": "Liefert Faktoren und Terme mit ihren Indizes, Achsenabschnitt, Zielgröße, Stichprobenverfahren, Umfang, Rauschen, Seed und eine Zusammenfassung der erzeugten Werte. generated ist null, solange keine Daten vorliegen; die Zeilen selbst liest man nach toWorksheet aus dem Worksheet.",
+          "params": {
+            "options": "Optional; dieses Modul führt keine Massendaten."
+          }
+        },
+        "addFactor": {
+          "help": "Hängt einen Faktor mit Standardnamen und dem Bereich 0 bis 100 an. Die Terme werden neu aufgebaut und alle Koeffizienten auf 0 zurückgesetzt, ein erzeugtes Ergebnis wird verworfen. Der Agent erhält den Index des neuen Faktors."
+        },
+        "removeFactor": {
+          "help": "Entfernt einen Faktor. Die Terme werden neu aufgebaut und alle Koeffizienten auf 0 zurückgesetzt, ein erzeugtes Ergebnis wird verworfen. Der letzte Faktor bleibt stehen: dann gibt die Aktion false zurück und ändert nichts.",
+          "params": {
+            "index": "Der Index eines Faktors aus factors; jeder andere Wert ist ein Fehler."
+          }
+        },
+        "setFactor": {
+          "help": "Setzt Name oder Bereichsgrenze eines Faktors; ein erzeugtes Ergebnis wird verworfen. Die Koeffizienten bleiben erhalten. Ungültige Werte werden abgewiesen.",
+          "params": {
+            "index": "Der Index eines Faktors aus factors; jeder andere Wert ist ein Fehler.",
+            "key": "Welches Feld; jedes ist unter keys einzeln beschrieben. Jeder andere Wert ist ein Fehler.",
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys."
+          }
+        },
+        "setBeta": {
+          "help": "Setzt den Koeffizienten eines Terms. Ein schon erzeugtes Ergebnis bleibt bis zum nächsten generate stehen und behält bis dahin die alten Werte.",
+          "params": {
+            "index": "Der Index eines Terms aus terms; jeder andere Wert ist ein Fehler.",
+            "value": "Eine endliche Zahl; als Text angegebene Zahlen werden angenommen."
+          }
+        },
+        "setIntercept": {
+          "help": "Setzt den Achsenabschnitt β₀ der Modellgleichung. Ein schon erzeugtes Ergebnis bleibt bis zum nächsten generate stehen.",
+          "params": {
+            "value": "Eine endliche Zahl; als Text angegebene Zahlen werden angenommen."
+          }
+        },
+        "setYName": {
+          "help": "Setzt den Namen der Zielgröße Y; er erscheint in Gleichung, Tabelle und Export. Er darf nicht leer sein und keinen Faktor benennen, weil die Y-Spalte sonst eine Faktorspalte überschriebe. Ein schon erzeugtes Ergebnis bleibt bis zum nächsten generate stehen.",
+          "params": {
+            "value": "Der Name als Text, nicht leer und kein Faktorname."
+          }
+        },
+        "setSamplingMethod": {
+          "help": "Wählt das Stichprobenverfahren: zufällig (Monte Carlo), Latin Hypercube (LHS) oder vollfaktoriell. Wirkt beim nächsten generate.",
+          "params": {
+            "value": "Eines der Verfahren aus samplingMethods; jeder andere Wert ist ein Fehler."
+          }
+        },
+        "setSampleSize": {
+          "help": "Setzt die Zahl der Zeilen. Beim vollfaktoriellen Verfahren (full factorial) liegt die Stufenzahl fest (3 Stufen bis 4 Faktoren, sonst 2); die Zahl bestimmt nur, wie oft jede Stufenkombination wiederholt wird (n geteilt durch die Zahl der Kombinationen, gerundet, mindestens 1), die Zeilenzahl weicht daher meist von ihr ab. Wirkt beim nächsten generate. Werte außerhalb des Bereichs werden abgewiesen, nicht geklemmt.",
+          "params": {
+            "value": "Eine ganze Zahl von 10 bis 100000; als Text angegebene Zahlen werden angenommen."
+          }
+        },
+        "setNoiseStd": {
+          "help": "Setzt die Standardabweichung σε des normalverteilten Rauschens, das auf den modellierten Y-Wert addiert wird. 0 erzeugt Werte ohne Rauschen. Wirkt beim nächsten generate.",
+          "params": {
+            "value": "Eine Zahl ab 0; als Text angegebene Zahlen werden angenommen."
+          }
+        },
+        "setSeed": {
+          "help": "Setzt den Seed, den Startwert des Zufallsgenerators. Derselbe Seed mit denselben Einstellungen ergibt dieselben Daten. Wirkt beim nächsten generate.",
+          "params": {
+            "value": "Eine ganze Zahl; als Text angegebene Zahlen werden angenommen."
+          }
+        },
+        "generate": {
+          "help": "Erzeugt die Daten mit den aktuellen Einstellungen und zeigt sie in der Vorschau. Der Agent erhält die Zusammenfassung der Y-Werte, dieselbe wie bei generated; die Zeilen liest er nach toWorksheet aus dem Worksheet."
+        },
+        "toWorksheet": {
+          "help": "Öffnet die erzeugten Daten in einem neuen Worksheet und wechselt dorthin. Liegen noch keine Daten vor, wird zuerst generiert. Der Agent erhält die id des neuen Worksheets."
+        }
+      },
+      "fields": {
+        "factors": {
+          "help": "Die Faktoren, je mit index, name, min und max. Der index adressiert den Faktor in setFactor und removeFactor."
+        },
+        "terms": {
+          "help": "Alle Terme des Modells — Haupteffekte und Wechselwirkungen — je mit index, label, order und beta, auch die Nullen. Der index adressiert den Term in setBeta. Die Liste ändert sich mit der Zahl der Faktoren."
+        },
+        "intercept": {
+          "help": "Der Achsenabschnitt β₀ der Modellgleichung."
+        },
+        "yName": {
+          "help": "Name der Zielgröße Y, zugleich Spaltenname der erzeugten Daten."
+        },
+        "samplingMethod": {
+          "help": "Das gewählte Stichprobenverfahren, eines der Verfahren aus samplingMethods."
+        },
+        "samplingMethods": {
+          "help": "Die Verfahren, die setSamplingMethod annimmt."
+        },
+        "sampleSize": {
+          "help": "Die gewünschte Zahl der Zeilen; beim vollfaktoriellen Verfahren (full factorial) nur ein Richtwert für die Wiederholungen je Stufenkombination."
+        },
+        "noiseStd": {
+          "help": "Standardabweichung σε des Rauschens, das auf den modellierten Y-Wert addiert wird."
+        },
+        "seed": {
+          "help": "Seed, der Startwert des Zufallsgenerators; derselbe Seed ergibt dieselben Daten."
+        },
+        "maxOrder": {
+          "help": "Die obere Grenze der Wechselwirkungsordnung unter den Termen; bei weniger Faktoren enden die Terme bei der Faktorzahl. Sie ist fest und lässt sich nicht verstellen."
+        },
+        "generated": {
+          "help": "Zusammenfassung der erzeugten Y-Werte, jede Angabe unter keys einzeln beschrieben; null, solange keine Daten vorliegen. Sie wird bei generate berechnet. addFactor, removeFactor und setFactor verwerfen sie. Die übrigen Setter — setBeta, setIntercept, setYName, setSamplingMethod, setSampleSize, setNoiseStd, setSeed — lassen sie bis zum nächsten generate stehen. Die Karten zeigen die Kennzahlen mit vier Nachkommastellen, Beträge ab 10⁶ oder unter 0,001 in Exponentialschreibweise."
+        }
+      },
+      "types": {
+        "FactorFields": {
+          "name": "Name des Faktors, zugleich Spaltenname der Daten. Er darf nicht leer sein und weder einem anderen Faktor noch der Zielgröße Y gleichen.",
+          "min": "Untere Grenze des Faktorbereichs, eine Zahl. Sie darf die obere Grenze nicht übersteigen.",
+          "max": "Obere Grenze des Faktorbereichs, eine Zahl. Sie darf nicht unter der unteren Grenze liegen."
+        },
+        "Generated": {
+          "n": "N: die Zahl der erzeugten Zeilen.",
+          "mean": "Mittelwert der erzeugten Y-Werte.",
+          "sd": "Standardabweichung der erzeugten Y-Werte.",
+          "min": "Min: der kleinste erzeugte Y-Wert.",
+          "max": "Max: der größte erzeugte Y-Wert."
+        }
+      },
       "name": "Modelldaten-Generator",
       "description": "Synthetische Datensätze aus konfigurierbaren Regressionsmodellen erzeugen",
       "tabFactors": "Faktoren",
@@ -9287,6 +9411,7 @@
       "statsTitle": "Deskriptive Statistik",
       "statMean": "Mittelwert",
       "statStd": "Std.Abw.",
+      "statN": "N",
       "previewTitle": "Datenvorschau",
       "rows": "Zeilen",
       "moreRows": "weitere Zeilen (im Export enthalten)",

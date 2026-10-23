@@ -8170,70 +8170,269 @@ export const AGENT_REGISTRY = {
     }
   },
   "model-data-generator": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:equationParts",
-      "unmarked_method:betaGroups",
-      "unmarked_method:addFactor",
-      "unmarked_method:removeFactor",
-      "unmarked_method:generate",
-      "unmarked_method:destroy",
-      "unreadable_state_key:betas",
-      "unreachable_write:yName",
-      "unreachable_write:samplingMethod",
-      "unreachable_write:sampleSize",
-      "unreachable_write:noiseStd",
-      "unreachable_write:seed",
-      "unreachable_write:intercept"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "addFactor": {
+        "params": [],
+        "returns": "number",
+        "help": "Einen Faktor mit Standardname und Bereich 0 bis 100 anhängen; ein erzeugtes Ergebnis und alle Koeffizienten werden zurückgesetzt."
+      },
+      "removeFactor": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "Index eines Faktors aus `factors`"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Einen Faktor entfernen; ein erzeugtes Ergebnis und alle Koeffizienten werden zurückgesetzt. Der letzte Faktor bleibt stehen."
+      },
+      "setFactor": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "Index eines Faktors aus `factors`"
+          },
+          {
+            "name": "key",
+            "type": "'name'|'min'|'max'",
+            "optional": false,
+            "help": "welches Feld"
+          },
+          {
+            "name": "value",
+            "type": "string|number",
+            "optional": false,
+            "help": "der Name (Text, nicht leer, kein anderer Faktor und nicht Y) oder die Grenze (Zahl, min ≤ max); Textzahlen werden angenommen"
+          }
+        ],
+        "returns": "void",
+        "help": "Name oder Bereichsgrenze eines Faktors setzen; ein erzeugtes Ergebnis wird verworfen.",
+        "keysOf": "FactorFields",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "Name des Faktors, zugleich Spaltenname der Daten"
+          },
+          "min": {
+            "type": "number",
+            "help": "untere Grenze des Faktorbereichs"
+          },
+          "max": {
+            "type": "number",
+            "help": "obere Grenze des Faktorbereichs"
+          }
+        }
+      },
+      "setBeta": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "Index eines Terms aus `terms`"
+          },
+          {
+            "name": "value",
+            "type": "number|string",
+            "optional": false,
+            "help": "endliche Zahl; Textzahlen werden angenommen"
+          }
+        ],
+        "returns": "void",
+        "help": "Den Koeffizienten eines Terms setzen."
+      },
+      "setIntercept": {
+        "params": [
+          {
+            "name": "value",
+            "type": "number|string",
+            "optional": false,
+            "help": "endliche Zahl; Textzahlen werden angenommen"
+          }
+        ],
+        "returns": "void",
+        "help": "Den Achsenabschnitt β₀ setzen."
+      },
+      "setYName": {
+        "params": [
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "Text, nicht leer und kein Faktorname"
+          }
+        ],
+        "returns": "void",
+        "help": "Den Namen der Y-Spalte setzen."
+      },
+      "setSamplingMethod": {
+        "params": [
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "eines der Verfahren aus `samplingMethods`"
+          }
+        ],
+        "returns": "void",
+        "help": "Das Stichprobenverfahren wählen."
+      },
+      "setSampleSize": {
+        "params": [
+          {
+            "name": "value",
+            "type": "number|string",
+            "optional": false,
+            "help": "ganze Zahl von 10 bis 100000; Textzahlen werden angenommen"
+          }
+        ],
+        "returns": "void",
+        "help": "Die Zahl der Zeilen setzen (beim Vollfaktorplan nur ein Richtwert)."
+      },
+      "setNoiseStd": {
+        "params": [
+          {
+            "name": "value",
+            "type": "number|string",
+            "optional": false,
+            "help": "Zahl ab 0; Textzahlen werden angenommen"
+          }
+        ],
+        "returns": "void",
+        "help": "Die Standardabweichung des Rauschens σε setzen."
+      },
+      "setSeed": {
+        "params": [
+          {
+            "name": "value",
+            "type": "number|string",
+            "optional": false,
+            "help": "ganze Zahl; Textzahlen werden angenommen"
+          }
+        ],
+        "returns": "void",
+        "help": "Den Startwert des Zufallsgenerators setzen."
+      },
+      "generate": {
+        "params": [],
+        "returns": "Generated",
+        "help": "Daten aus dem Modell erzeugen und in der Vorschau zeigen."
+      },
+      "toWorksheet": {
+        "params": [],
+        "returns": "Promise<string>",
+        "help": "Die erzeugten Daten in einem neuen Worksheet öffnen und dorthin wechseln. Ohne erzeugte Daten wird zuerst generiert."
+      }
+    },
     "fields": {
       "factors": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "maxOrder": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "intercept": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "yName": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "samplingMethod": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "sampleSize": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "noiseStd": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "seed": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "Array<{ index: number, name: string, min: number, max: number }>",
+        "help": "the factors; `index` addresses them in setFactor and removeFactor",
+        "bulk": false,
+        "derived": true
       },
       "terms": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "Array<{ index: number, label: string, order: number, beta: number }>",
+        "help": "all model terms with their coefficients; `index` addresses them in setBeta",
+        "bulk": false,
+        "derived": true
+      },
+      "intercept": {
+        "type": "number",
+        "help": "the intercept β₀",
+        "bulk": false,
+        "derived": true
+      },
+      "yName": {
+        "type": "string",
+        "help": "name of the response column",
+        "bulk": false,
+        "derived": true
+      },
+      "samplingMethod": {
+        "type": "string",
+        "help": "the sampling method, one of `samplingMethods`",
+        "bulk": false,
+        "derived": true
+      },
+      "samplingMethods": {
+        "type": "string[]",
+        "help": "the methods setSamplingMethod accepts",
+        "bulk": false,
+        "derived": true
+      },
+      "sampleSize": {
+        "type": "number",
+        "help": "requested number of rows",
+        "bulk": false,
+        "derived": true
+      },
+      "noiseStd": {
+        "type": "number",
+        "help": "standard deviation of the noise",
+        "bulk": false,
+        "derived": true
+      },
+      "seed": {
+        "type": "number",
+        "help": "random seed",
+        "bulk": false,
+        "derived": true
+      },
+      "maxOrder": {
+        "type": "number",
+        "help": "highest interaction order of the terms",
+        "bulk": false,
+        "derived": true
+      },
+      "generated": {
+        "type": "Generated|null",
+        "help": "summary of the generated Y values, each item described under keys; null without data",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "Generated",
+        "keys": {
+          "n": {
+            "type": "number",
+            "help": "Zahl der erzeugten Zeilen"
+          },
+          "mean": {
+            "type": "number",
+            "help": "Mittelwert von Y"
+          },
+          "sd": {
+            "type": "number",
+            "help": "Standardabweichung von Y"
+          },
+          "min": {
+            "type": "number",
+            "help": "kleinster Y-Wert"
+          },
+          "max": {
+            "type": "number",
+            "help": "größter Y-Wert"
+          }
+        }
       }
     }
   },
@@ -20011,4 +20210,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":70};
+export const AGENT_COVERAGE = {"total":76,"available":71};
