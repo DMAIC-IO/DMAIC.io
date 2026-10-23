@@ -177,9 +177,9 @@
       </div>
     </template>
 
-    <div class="dmike-split__output-section" x-show="view && view.hasBoot"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionBootChart')"></span></div>
+    <div class="dmike-split__output-section" x-show="view && view.hasBoot"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.resampling.types.Boot.bins" x-text="t('sectionBootChart')"></span></div>
     <div class="resampling__chart" data-ref="chart-boot" x-show="view && view.hasBoot"></div>
-    <div class="dmike-split__output-section" x-show="view && view.hasTest"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionPermChart')"></span></div>
+    <div class="dmike-split__output-section" x-show="view && view.hasTest"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span :data-help-key="resultHelp('bins')" x-text="t('sectionPermChart')"></span></div>
     <div class="resampling__chart" data-ref="chart-perm" x-show="view && view.hasTest"></div>
 
     <template x-if="view && view.isK">
