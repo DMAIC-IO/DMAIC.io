@@ -24,8 +24,8 @@
           </template>
         </div>
         <ul class="chart-suggestion__cards" data-ref="cards">
-          <template x-for="s in model.suggestions">
-            <li :key="s.type">
+          <template x-for="s in model.suggestions" :key="s.type">
+            <li>
               <button type="button" class="chart-suggestion__card" data-help-key="modules.chart-suggestion.actions.pickChart.help"
                       :class="cardClass(s)" :data-chart-type="s.type" @click="pickChart(s.type)">
                 <div class="chart-suggestion__card-thumb"
