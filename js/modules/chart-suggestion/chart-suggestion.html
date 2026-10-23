@@ -17,8 +17,8 @@
         <div class="dmike-split__section-title" data-help-key="modules.chart-suggestion.fields.suggestions.help" x-text="t('sectionSuggestions')"></div>
         <div class="chart-suggestion__selection-info" data-ref="selection-info" data-help-key="modules.chart-suggestion.fields.selection.help">
           <div class="chart-suggestion__selection-label" x-text="selectionLabel()"></div>
-          <template x-for="c in selectionColumns()">
-            <span class="chart-suggestion__col-chip" :key="c.id" :class="'col-role-' + c.role">
+          <template x-for="c in selectionColumns()" :key="c.id">
+            <span class="chart-suggestion__col-chip" :class="'col-role-' + c.role">
               <span x-text="c.name || '?'"></span> <em x-text="roleName(c.role)"></em>
             </span>
           </template>
