@@ -107,11 +107,32 @@ export function resultView(summary, { ciMethod, target }) {
 
 const copyBins = (bins) => bins.map((b) => ({ x0: b.x0, x1: b.x1, count: b.count }));
 
+/** Title key suffix per mode; mode two splits by contrast. */
+function titleVariant(summary) {
+  if (summary.mode === 'two') return summary.contrast === 'ratio' ? 'Ratio' : 'Diff';
+  return { one: 'One', paired: 'Paired', k: 'K' }[summary.mode];
+}
+
+/**
+ * Chart title naming what the histogram shows: statistic and compared samples.
+ * @param {string} prefix 'chartBootTitle' | 'chartPermTitle'
+ * @param {object} summary
+ * @param {(key: string, params?: object) => string} t
+ * @returns {string}
+ */
+function chartTitle(prefix, summary, t) {
+  const variant = titleVariant(summary);
+  if (variant === 'K') return t(`${prefix}K`, { groups: summary.labels.join(', ') });
+  const [a, b] = summary.labels;
+  const stat = t(statisticKey(summary.statisticId));
+  return t(`${prefix}${variant}`, variant === 'One' ? { stat, a } : { stat, a, b });
+}
+
 /**
  * Histogram config of the bootstrap distribution, or null without one.
  * @param {object|null} summary
  * @param {'bca'|'percentile'} ciMethod
- * @param {(key: string) => string} t
+ * @param {(key: string, params?: object) => string} t
  */
 export function bootChartConfig(summary, ciMethod, t) {
   if (!summary || !summary.boot || !summary.boot.bins.length) return null;
@@ -120,6 +141,7 @@ export function bootChartConfig(summary, ciMethod, t) {
   return {
     data: [],
     bins: copyBins(boot.bins),
+    title: chartTitle('chartBootTitle', summary, t),
     xLabel: t('chartBootX'),
     showLegend: false,
     refAreas: iv ? [{ dir: 'x', min: iv[0], max: iv[1], color: 'var(--color-accent-light)', label: t('ciLabel') }] : [],
@@ -133,7 +155,7 @@ export function bootChartConfig(summary, ciMethod, t) {
  * Histogram config of the permutation distribution (two, paired, k), or null.
  * Marks the observed statistic T, and −T for two-sided two-sample/paired tests.
  * @param {object|null} summary
- * @param {(key: string) => string} t
+ * @param {(key: string, params?: object) => string} t
  */
 export function permChartConfig(summary, t) {
   const part = summary ? (summary.perm || summary.k) : null;
@@ -148,6 +170,7 @@ export function permChartConfig(summary, t) {
   return {
     data: [],
     bins: copyBins(part.bins),
+    title: chartTitle('chartPermTitle', summary, t),
     xLabel: t('chartPermX'),
     showLegend: false,
     refAreas: [],

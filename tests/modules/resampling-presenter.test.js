@@ -128,6 +128,26 @@ suite('resampling-presenter — chart configs', () => {
     assertEqual(bootChartConfig(kSummary(), 'bca', t), null);
     assertEqual(bootChartConfig(null, 'bca', t), null);
   });
+  test('bootstrap chart title names the statistic and the compared samples', () => {
+    const tp = (k, p = {}) => `[${k}${Object.entries(p).map(([n, v]) => ` ${n}=${v}`).join('')}]`;
+    assertEqual(bootChartConfig(one(), 'bca', tp).title, '[chartBootTitleOne stat=[statMean] a=X]');
+    assertEqual(bootChartConfig(two({ statisticId: 'median' }), 'bca', tp).title,
+      '[chartBootTitleDiff stat=[statMedian] a=A b=B]');
+    assertEqual(bootChartConfig(two({ contrast: 'ratio' }), 'bca', tp).title,
+      '[chartBootTitleRatio stat=[statMean] a=A b=B]');
+    assertEqual(bootChartConfig(two({ mode: 'paired' }), 'bca', tp).title,
+      '[chartBootTitlePaired stat=[statMean] a=A b=B]');
+  });
+  test('permutation chart title names the statistic and how the data were reshuffled', () => {
+    const tp = (k, p = {}) => `[${k}${Object.entries(p).map(([n, v]) => ` ${n}=${v}`).join('')}]`;
+    assertEqual(permChartConfig(two({ statisticId: 'median' }), tp).title,
+      '[chartPermTitleDiff stat=[statMedian] a=A b=B]');
+    assertEqual(permChartConfig(two({ contrast: 'ratio' }), tp).title,
+      '[chartPermTitleRatio stat=[statMean] a=A b=B]');
+    assertEqual(permChartConfig(two({ mode: 'paired' }), tp).title,
+      '[chartPermTitlePaired stat=[statMean] a=A b=B]');
+    assertEqual(permChartConfig(kSummary(), tp).title, '[chartPermTitleK groups=A, B, C]');
+  });
   test('permutation chart: T, and −T when two-sided', () => {
     const cfg = permChartConfig(two(), t);
     assertDeepEqual(cfg.bins, BINS);
