@@ -37,9 +37,8 @@
           <span x-text="'+ ' + t('addFactor')"></span>
         </button>
 
-        <div class="dmike-split__section-title" x-text="t('outputTitle')"></div>
+        <div class="dmike-split__section-title" data-help-key="modules.model-data-generator.actions.setYName.help" x-text="t('outputTitle')"></div>
         <input class="field mdg-inp" type="text" id="mdg-y-name"
-          data-help-key="modules.model-data-generator.actions.setYName.help"
           x-model="model.yName" placeholder="Y">
 
         <div class="dmike-split__section-title" x-text="t('generateTitle')"></div>
@@ -94,7 +93,7 @@
         <div class="mdg-group-label" data-help-key="modules.model-data-generator.actions.setIntercept.help" x-text="t('intercept')"></div>
         <div class="mdg-beta-grid">
           <div class="mdg-beta-item">
-            <span class="mdg-beta-name" data-help-key="modules.model-data-generator.actions.setIntercept.help" x-text="t('intercept')"></span>
+            <span class="mdg-beta-name" x-text="t('intercept')"></span>
             <span class="mdg-beta-eq">β₀=</span>
             <input class="field mdg-inp mdg-beta-inp" type="number" id="mdg-intercept"
               x-model.number="model.intercept">
