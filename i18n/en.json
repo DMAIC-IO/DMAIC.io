@@ -5904,6 +5904,44 @@
       "selectionLabel": "Selection ({n} column(s))",
       "previewUnavailable": "Preview for \"{type}\" is not available yet.",
       "openInModule": "Open in module",
+      "whenToUse": "You have columns of a worksheet and need to know which chart fits their roles — a ranked list with a preview, from which the chosen chart opens as a module of its own.",
+      "actions": {
+        "read": { "help": "Read the selected columns with their roles, the ranked suggestions, the chosen chart and the target module." },
+        "setColumns": {
+          "help": "Take columns of a worksheet as the selection; the suggestions are re-ranked and the top one is chosen. Roles come from the worksheet. Returns the suggestion types in rank order.",
+          "params": { "refs": "A non-empty list of column references { instanceId, sheetId, columnId } from read().pickableColumns, all from the same sheet, each at most once." }
+        },
+        "pickChart": {
+          "help": "Choose one of the suggestions; the preview on the right shows the chart with the selected columns.",
+          "params": { "type": "The chart type, one of the values in read().suggestions[].type. Any other value is an error." }
+        },
+        "openInModule": { "help": "Create the chosen chart as a module of its own with the same columns. If the type exists only as a preview, nothing is created." }
+      },
+      "fields": {
+        "selection": { "help": "The selected columns with their roles and the sheet they come from. The values stay in the worksheet." },
+        "suggestions": { "help": "The charts that fit the roles, in rank order, each with title and note." },
+        "selectedChartType": { "help": "The chosen chart, shown in the preview on the right." },
+        "openTarget": { "help": "The module openInModule creates, or null when the chosen type exists only as a preview." },
+        "pickableColumns": { "help": "The columns setColumns accepts, each { key, name }; the key is instanceId|sheetId|columnId." }
+      },
+      "types": {
+        "Selection": {
+          "sourceInstanceId": "The worksheet instance the columns come from.",
+          "sourceSheetId": "The sheet of that worksheet.",
+          "columns": "The selected columns in selection order, each with id, name, role and confirmation."
+        },
+        "SelectedColumn": {
+          "id": "The column id in the sheet.",
+          "name": "The display name of the column.",
+          "role": "The role that drives the ranking: continuous, categorical, ordinal or date.",
+          "roleConfirmed": "true when the role was set or confirmed by hand in the worksheet; false for an automatically detected role."
+        },
+        "Suggestion": {
+          "type": "The chart type; the same value goes to pickChart.",
+          "title": "The title of the suggestion in the active language.",
+          "notes": "The note on the suggestion in the active language, or '' without one."
+        }
+      },
       "role": {
         "continuous": "continuous",
         "categorical": "categorical",

@@ -38,4 +38,8 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'fields.showRanks', reason: 'Zustand des Kontrollkästchens setShowRanks, das selbst verankert ist' },
     { name: 'fields.activeTab', reason: 'Zustand der Reiterleiste; setTab ist dort verankert' },
   ],
+  'chart-suggestion': [
+    { name: 'actions.setColumns', reason: 'die Auswahl kommt in der Oberfläche aus dem Worksheet („Diagramm vorschlagen“); das Modul hat kein eigenes Bedienelement dafür' },
+    { name: 'fields.openTarget', reason: 'abgeleitet aus dem gewählten Diagramm; sichtbar nur als Knopf „In Modul öffnen“, dessen Anker an openInModule hängt' },
+  ],
 };

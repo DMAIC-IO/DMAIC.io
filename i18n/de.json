@@ -5908,6 +5908,44 @@
       "selectionLabel": "Auswahl ({n} Spalte(n))",
       "previewUnavailable": "Für „{type}\" ist hier noch keine Vorschau verfügbar.",
       "openInModule": "Im eigenen Modul öffnen",
+      "whenToUse": "Spalten einer Datensammlung liegen vor und es ist offen, welches Diagramm zu ihren Rollen passt — eine Rangliste mit Vorschau, aus der das gewählte Diagramm als eigenes Modul geöffnet wird.",
+      "actions": {
+        "read": { "help": "Die gewählten Spalten mit Rolle, die Rangliste der Vorschläge, das gewählte Diagramm und das Zielmodul lesen." },
+        "setColumns": {
+          "help": "Spalten einer Datensammlung als Auswahl übernehmen; die Vorschläge werden neu geordnet und der Spitzenreiter gewählt. Die Rollen kommen aus der Datensammlung. Liefert die Typen der Vorschläge in Rangfolge.",
+          "params": { "refs": "Eine nicht leere Liste von Spaltenbezügen { instanceId, sheetId, columnId } aus read().pickableColumns, alle aus demselben Blatt, jede höchstens einmal." }
+        },
+        "pickChart": {
+          "help": "Einen der Vorschläge wählen; die Vorschau rechts zeigt das Diagramm mit den gewählten Spalten.",
+          "params": { "type": "Der Diagrammtyp, einer der Werte aus read().suggestions[].type. Jeder andere Wert ist ein Fehler." }
+        },
+        "openInModule": { "help": "Das gewählte Diagramm als eigenes Modul mit denselben Spalten anlegen. Gibt es den Typ nur als Vorschau, wird nichts angelegt." }
+      },
+      "fields": {
+        "selection": { "help": "Die gewählten Spalten mit ihrer Rolle und das Blatt, aus dem sie stammen. Die Werte bleiben in der Datensammlung." },
+        "suggestions": { "help": "Die zu den Rollen passenden Diagramme in Rangfolge, jeweils mit Titel und Hinweis." },
+        "selectedChartType": { "help": "Das gewählte Diagramm, dessen Vorschau rechts steht." },
+        "openTarget": { "help": "Das Modul, das openInModule anlegt, oder null, wenn der gewählte Typ nur als Vorschau existiert." },
+        "pickableColumns": { "help": "Die Spalten, die setColumns annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId." }
+      },
+      "types": {
+        "Selection": {
+          "sourceInstanceId": "Die Instanz der Datensammlung, aus der die Spalten stammen.",
+          "sourceSheetId": "Das Blatt dieser Datensammlung.",
+          "columns": "Die gewählten Spalten in Auswahlreihenfolge, jede mit id, Name, Rolle und Bestätigung."
+        },
+        "SelectedColumn": {
+          "id": "Die id der Spalte im Blatt.",
+          "name": "Der Anzeigename der Spalte.",
+          "role": "Die Rolle, die die Rangliste steuert: continuous (stetig), categorical (kategorial), ordinal oder date (Datum).",
+          "roleConfirmed": "true, wenn die Rolle in der Datensammlung von Hand gesetzt oder bestätigt ist; false bei einer automatisch erkannten Rolle."
+        },
+        "Suggestion": {
+          "type": "Der Diagrammtyp; derselbe Wert geht an pickChart.",
+          "title": "Der Titel des Vorschlags in der aktiven Sprache.",
+          "notes": "Der Hinweis zum Vorschlag in der aktiven Sprache, oder '' ohne Hinweis."
+        }
+      },
       "role": {
         "continuous": "stetig",
         "categorical": "kategorial",

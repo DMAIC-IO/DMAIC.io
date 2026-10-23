@@ -1887,48 +1887,132 @@ export const AGENT_REGISTRY = {
     }
   },
   "chart-suggestion": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:emptyText",
-      "unmarked_method:selectionColumns",
-      "unmarked_method:selectionLabel",
-      "unmarked_method:roleName",
-      "unmarked_method:chartTitle",
-      "unmarked_method:chartNotes",
-      "unmarked_method:cardClass",
-      "unmarked_method:openBtnVisible",
-      "unmarked_method:pickChart",
-      "unmarked_method:openInModule",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "dom_detour:dataset.matrixSize@238",
-      "dom_detour:dataset.matrixSize@308",
-      "dom_detour:dataset.matrixSize@424",
-      "dom_detour:dataset.matrixSize@533"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[] }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setColumns": {
+        "params": [
+          {
+            "name": "refs",
+            "type": "Array<{ instanceId: string, sheetId: string, columnId: string }>",
+            "optional": false,
+            "help": "nicht leere Liste wählbarer Spalten (`read().pickableColumns`), alle aus demselben Blatt, jede einmal"
+          }
+        ],
+        "returns": "string[]",
+        "help": "Spalten eines Blatts als Auswahl übernehmen; die Vorschläge werden neu geordnet und der Spitzenreiter gewählt. Die Rollen kommen aus dem Worksheet."
+      },
+      "pickChart": {
+        "params": [
+          {
+            "name": "type",
+            "type": "string",
+            "optional": false,
+            "help": "ein Wert aus `read().suggestions[].type`"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen der Vorschläge als Diagramm wählen und die Vorschau zeichnen. Ist der Typ schon gewählt, geschieht nichts."
+      },
+      "openInModule": {
+        "params": [],
+        "returns": "{ instanceId: string, moduleId: string }|null",
+        "help": "Das gewählte Diagramm als eigenes Modul mit denselben Spalten anlegen, in der Phase dieser Instanz."
+      }
+    },
     "fields": {
       "selection": {
-        "type": "{sourceInstanceId,sourceSheetId,ts,columns:Array}|null",
-        "help": "",
-        "bulk": false
+        "type": "Selection|null",
+        "help": "the selected columns and their source sheet, or null without a selection",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "Selection",
+        "keys": {
+          "sourceInstanceId": {
+            "type": "string",
+            "help": "worksheet instance the columns come from"
+          },
+          "sourceSheetId": {
+            "type": "string",
+            "help": "sheet of that worksheet"
+          },
+          "columns": {
+            "type": "SelectedColumn[]",
+            "help": "the selected columns in selection order",
+            "keysOf": "SelectedColumn",
+            "keys": {
+              "id": {
+                "type": "string",
+                "help": "column id in the sheet"
+              },
+              "name": {
+                "type": "string",
+                "help": "display name of the column"
+              },
+              "role": {
+                "type": "string",
+                "help": "role that drives the ranking: continuous, categorical, ordinal or date"
+              },
+              "roleConfirmed": {
+                "type": "boolean",
+                "help": "true when the role was set or confirmed by hand in the worksheet"
+              }
+            }
+          }
+        }
+      },
+      "suggestions": {
+        "type": "Suggestion[]",
+        "help": "the matching charts in rank order",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "Suggestion",
+        "keys": {
+          "type": {
+            "type": "string",
+            "help": "chart type, the value pickChart accepts"
+          },
+          "title": {
+            "type": "string",
+            "help": "translated title"
+          },
+          "notes": {
+            "type": "string",
+            "help": "translated note, or '' without one"
+          }
+        }
       },
       "selectedChartType": {
         "type": "string|null",
-        "help": "currently-picked chart type",
-        "bulk": false
+        "help": "the picked chart type, or null without suggestions",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
+      "openTarget": {
         "type": "string|null",
-        "help": "provisioned example worksheet instanceId",
-        "bulk": false
+        "help": "module id openInModule would create, or null for a preview-only type",
+        "bulk": false,
+        "derived": true
       },
-      "suggestions": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "pickableColumns": {
+        "type": "object[]",
+        "help": "the columns setColumns accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -20210,4 +20294,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":71};
+export const AGENT_COVERAGE = {"total":76,"available":72};

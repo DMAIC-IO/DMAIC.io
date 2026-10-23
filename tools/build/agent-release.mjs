@@ -12,7 +12,7 @@
 /** @type {readonly string[]} sortiert */
 export const RELEASED_MODULES = Object.freeze([
   'activity-flowchart', 'attribute-control-chart', 'attribute-test', 'bar', 'boxplot',
-  'calculator', 'ce-matrix', 'contour-plot', 'control-chart', 'correlation',
+  'calculator', 'ce-matrix', 'chart-suggestion', 'contour-plot', 'control-chart', 'correlation',
   'data-import', 'data-transformation', 'deployment-flowchart', 'distribution-fit',
   'dmaic-calendar', 'doe-advisor', 'five-why', 'fmea', 'gage-run-chart',
   'glm-regression', 'heatmap', 'histogram', 'hypothesis-test', 'individual-value-plot',
