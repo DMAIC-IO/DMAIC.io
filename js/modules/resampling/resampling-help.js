@@ -79,7 +79,7 @@ export default {
           {
             type: 'definition',
             term: 'Bootstrap',
-            content: 'Aus den n Werten werden B-mal n Werte mit Zurücklegen gezogen; jedes Mal wird die Kenngröße berechnet. Die Streuung dieser Replikate schätzt den Standardfehler, ihr Mittel minus θ̂ die {{term:bias|Verzerrung}}. Bei zwei Stichproben wird jede Gruppe für sich gezogen, bei gepaarten Daten die Differenzen {{ref:davison-hinkley-1997}}.',
+            content: 'Aus den n Werten werden B-mal n Werte mit Zurücklegen gezogen: Nach jedem Zug wird der gezogene Wert wieder in die Stichprobe zurückgelegt, kann also erneut gezogen werden. Eine Bootstrap-Stichprobe enthält deshalb manche Werte mehrfach und andere gar nicht — etwa aus 1, 2, 3, 4, 5 wird 2, 2, 4, 5, 5. Ohne Zurücklegen ergäbe sich bei n Zügen immer nur eine Umordnung derselben Werte und damit dieselbe Kenngröße. Für jede Bootstrap-Stichprobe wird die Kenngröße berechnet. Die Streuung dieser Replikate schätzt den Standardfehler, ihr Mittel minus θ̂ die {{term:bias|Verzerrung}}. Bei zwei Stichproben wird jede Gruppe für sich gezogen, bei gepaarten Daten die Differenzen {{ref:davison-hinkley-1997}}.',
           },
           {
             type: 'definition',
@@ -124,7 +124,7 @@ export default {
           {
             type: 'definition',
             term: 'Bootstrap',
-            content: 'B times, n values are drawn with replacement from the n observations and the statistic is computed each time. The spread of these replicates estimates the standard error, their mean minus θ̂ the {{term:bias|bias}}. With two samples each group is resampled on its own, with paired data the differences {{ref:davison-hinkley-1997}}.',
+            content: 'B times, n values are drawn with replacement from the n observations: after each draw the value is put back into the sample, so it can be drawn again. A bootstrap sample therefore contains some values several times and others not at all — from 1, 2, 3, 4, 5 you might get 2, 2, 4, 5, 5. Without replacement, n draws would only reorder the same values and always give the same statistic. The statistic is computed for each bootstrap sample. The spread of these replicates estimates the standard error, their mean minus θ̂ the {{term:bias|bias}}. With two samples each group is resampled on its own, with paired data the differences {{ref:davison-hinkley-1997}}.',
           },
           {
             type: 'definition',
