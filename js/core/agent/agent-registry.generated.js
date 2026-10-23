@@ -8436,6 +8436,272 @@ export const AGENT_REGISTRY = {
       }
     }
   },
+  "morphological-box": {
+    "tagged": true,
+    "available": true,
+    "violations": [],
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Return the full read state of this instance, including the counts and the per-concept checks."
+      },
+      "addParameter": {
+        "params": [],
+        "returns": "string",
+        "help": "Append a parameter (a row of the box) with one empty option."
+      },
+      "setParameterName": {
+        "params": [
+          {
+            "name": "parameterId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the parameter"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "the new name; the empty string clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the name of a parameter."
+      },
+      "removeParameter": {
+        "params": [
+          {
+            "name": "parameterId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the parameter"
+          }
+        ],
+        "returns": "void",
+        "help": "Remove a parameter with its options, their incompatibilities and the concept picks in it."
+      },
+      "addOption": {
+        "params": [
+          {
+            "name": "parameterId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the parameter"
+          }
+        ],
+        "returns": "string",
+        "help": "Append an empty option to a parameter."
+      },
+      "setOptionLabel": {
+        "params": [
+          {
+            "name": "optionId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the option"
+          },
+          {
+            "name": "label",
+            "type": "string",
+            "optional": false,
+            "help": "the new label; the empty string clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the label of an option."
+      },
+      "removeOption": {
+        "params": [
+          {
+            "name": "optionId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the option"
+          }
+        ],
+        "returns": "void",
+        "help": "Remove an option with its incompatibilities and the concept picks of it."
+      },
+      "setConflict": {
+        "params": [
+          {
+            "name": "optionA",
+            "type": "string",
+            "optional": false,
+            "help": "id of the first option"
+          },
+          {
+            "name": "optionB",
+            "type": "string",
+            "optional": false,
+            "help": "id of the second option, from another parameter"
+          },
+          {
+            "name": "incompatible",
+            "type": "boolean",
+            "optional": false,
+            "help": "true marks the pair, false clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Mark two options of different parameters as incompatible, or clear the mark."
+      },
+      "addConcept": {
+        "params": [],
+        "returns": "string",
+        "help": "Append an empty concept and make it the active one."
+      },
+      "setConceptName": {
+        "params": [
+          {
+            "name": "conceptId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the concept"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "the new name; the empty string clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the name of a concept."
+      },
+      "removeConcept": {
+        "params": [
+          {
+            "name": "conceptId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the concept"
+          }
+        ],
+        "returns": "void",
+        "help": "Remove a concept; if it was active, the first remaining one becomes active."
+      },
+      "setConceptPick": {
+        "params": [
+          {
+            "name": "conceptId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the concept"
+          },
+          {
+            "name": "parameterId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the parameter"
+          },
+          {
+            "name": "optionId",
+            "type": "string",
+            "optional": false,
+            "help": "id of one of the parameter's options; the empty string clears the pick"
+          }
+        ],
+        "returns": "void",
+        "help": "Pick the option of a parameter for a concept, or clear the pick."
+      },
+      "setActiveConcept": {
+        "params": [
+          {
+            "name": "conceptId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the concept"
+          }
+        ],
+        "returns": "void",
+        "help": "Choose the concept a click in the box edits."
+      },
+      "setView": {
+        "params": [
+          {
+            "name": "view",
+            "type": "'box'|'consistency'",
+            "optional": false,
+            "help": "the view to show"
+          }
+        ],
+        "returns": "void",
+        "help": "Switch between the box and the consistency matrix."
+      }
+    },
+    "fields": {
+      "parameters": {
+        "type": "object[]",
+        "help": "the parameters with their options, in box order",
+        "bulk": false,
+        "derived": true
+      },
+      "optionIds": {
+        "type": "string[]",
+        "help": "the ids of all options, in box order",
+        "bulk": false,
+        "derived": true
+      },
+      "conflicts": {
+        "type": "string[][]",
+        "help": "the incompatible option pairs",
+        "bulk": false,
+        "derived": true
+      },
+      "concepts": {
+        "type": "object[]",
+        "help": "the concepts with their picks",
+        "bulk": false,
+        "derived": true
+      },
+      "activeConceptId": {
+        "type": "string",
+        "help": "the concept a click in the box edits",
+        "bulk": false,
+        "derived": true
+      },
+      "view": {
+        "type": "string",
+        "help": "the visible view",
+        "bulk": false,
+        "derived": true
+      },
+      "combinationCount": {
+        "type": "number",
+        "help": "all combinations of one option per parameter",
+        "bulk": false,
+        "derived": true
+      },
+      "consistentCount": {
+        "type": "number",
+        "help": "combinations without an incompatible pair",
+        "bulk": false,
+        "derived": true
+      },
+      "consistentExact": {
+        "type": "boolean",
+        "help": "false when consistentCount is only a lower bound",
+        "bulk": false,
+        "derived": true
+      },
+      "conceptChecks": {
+        "type": "object[]",
+        "help": "per concept: id, complete, conflicts",
+        "bulk": false,
+        "derived": true
+      }
+    }
+  },
   "mosaic": {
     "tagged": true,
     "available": true,
@@ -20210,4 +20476,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":71};
+export const AGENT_COVERAGE = {"total":77,"available":72};

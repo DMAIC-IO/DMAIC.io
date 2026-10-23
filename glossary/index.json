@@ -826,6 +826,11 @@
       "file": "terms/ifr.json"
     },
     {
+      "id": "morphologischer-kasten",
+      "category": "methodology",
+      "file": "terms/morphologischer-kasten.json"
+    },
+    {
       "id": "idealitaet",
       "category": "triz",
       "file": "terms/idealitaet.json"

@@ -733,6 +733,17 @@ export default [
     },
   },
   {
+    id: 'morphological-box',
+    phase: 'improve',
+    group: 'solutions',
+    load: () => import('./morphological-box/morphological-box.js'),
+    cycles: {
+      dmaic:  { phase: 'improve' },
+      dmadv:  { phase: 'design' },
+      eightd: { phase: 'corrective' },
+    },
+  },
+  {
     id: 'triz-physical-contradiction',
     phase: 'improve',
     load: () => import('./triz-physical-contradiction/triz-physical-contradiction.js'),

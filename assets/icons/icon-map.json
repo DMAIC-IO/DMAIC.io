@@ -135,6 +135,7 @@
   "module.lessons-learned": "lucide:book-open",
   "module.makigami": "lucide:git-merge",
   "module.model-data-generator": "lucide:function-square",
+  "module.morphological-box": "lucide:grid-2x2-check",
   "module.mosaic": "lucide:chart-column",
   "module.msa-typ1": "lucide:target",
   "module.msa-typ2": "lucide:users",

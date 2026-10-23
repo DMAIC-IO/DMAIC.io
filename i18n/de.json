@@ -97,6 +97,7 @@
     "msa": "Messsystemanalyse",
     "capability": "Prozessfähigkeit",
     "charts": "Regelkarten",
+    "solutions": "Lösungen entwickeln",
     "plan": "Versuch planen",
     "evaluate": "Versuch auswerten",
     "optimize": "Optimieren",
@@ -6255,6 +6256,176 @@
       "statSum": "Summe",
       "statCumPct": "Kumuliert %",
       "statTotal": "Gesamt"
+    },
+    "morphological-box": {
+      "name": "Morphologischer Kasten",
+      "description": "Lösungskonzepte aus Parametern und Ausprägungen kombinieren, Unverträglichkeiten prüfen",
+      "whenToUse": "Wenn eine Lösung aus mehreren Teilfunktionen besteht und systematisch alternative Gesamtkonzepte kombiniert werden sollen — nicht zum Bewerten oder Auswählen der Konzepte, das gehört in die Lösungsauswahl.",
+      "addParameter": "Parameter hinzufügen",
+      "addConcept": "Konzept hinzufügen",
+      "kpiParameters": "Parameter",
+      "kpiCombinations": "Kombinationen",
+      "kpiConsistent": "Verträglich",
+      "kpiConcepts": "Konzepte",
+      "view_box": "Kasten",
+      "view_consistency": "Verträglichkeit",
+      "emptyState": "Noch keine Parameter. Legen Sie über „Parameter hinzufügen“ die erste Teilfunktion der Lösung an.",
+      "parameterName": "Parametername",
+      "parameterPlaceholder": "Parameter …",
+      "removeParameter": "Parameter entfernen",
+      "optionLabel": "Ausprägung",
+      "optionPlaceholder": "Ausprägung …",
+      "removeOption": "Ausprägung entfernen",
+      "addOption": "Ausprägung hinzufügen",
+      "pickHint": "Für das aktive Konzept wählen",
+      "conceptsTitle": "Konzepte",
+      "conceptsEmpty": "Noch keine Konzepte. „Konzept hinzufügen“ legt eines an; danach wählen Sie im Kasten je Parameter eine Ausprägung.",
+      "activeConcept": "Aktives Konzept",
+      "conceptName": "Konzeptname",
+      "conceptPlaceholder": "Konzept …",
+      "removeConcept": "Konzept entfernen",
+      "conceptComplete": "Vollständig",
+      "conceptIncomplete": "Unvollständig",
+      "conceptConflicts": "{n} unverträgliche Paare",
+      "unnamedOption": "(ohne Namen)",
+      "unnamedConcept": "(ohne Namen)",
+      "unnamedParameter": "(ohne Namen)",
+      "matrixHint": "Haken Sie Paare von Ausprägungen an, die nicht zusammen funktionieren. Ausprägungen desselben Parameters schließen sich ohnehin aus.",
+      "matrixCorner": "Unverträglich",
+      "pairLabel": "{a} und {b} unverträglich",
+      "actions": {
+        "read": {
+          "help": "Liefert Parameter, Ausprägungen, Unverträglichkeiten und Konzepte samt Kombinationszahlen und Konzeptprüfung.",
+          "params": {
+            "options": "Optional: fields wählt Felder aus, rows begrenzt Listen auf einen Bereich."
+          }
+        },
+        "addParameter": {
+          "help": "Hängt einen Parameter (eine Zeile des Kastens) mit einer leeren Ausprägung an und gibt seine id zurück."
+        },
+        "setParameterName": {
+          "help": "Setzt den Namen eines Parameters.",
+          "params": {
+            "parameterId": "Die id des Parameters. Eine unbekannte id ist ein Fehler.",
+            "name": "Der neue Name; die leere Zeichenkette leert ihn."
+          }
+        },
+        "removeParameter": {
+          "help": "Entfernt einen Parameter samt Ausprägungen, deren Unverträglichkeiten und den Konzeptwahlen darin.",
+          "params": {
+            "parameterId": "Die id des Parameters. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "addOption": {
+          "help": "Hängt an einen Parameter eine leere Ausprägung an und gibt ihre id zurück.",
+          "params": {
+            "parameterId": "Die id des Parameters. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "setOptionLabel": {
+          "help": "Setzt die Bezeichnung einer Ausprägung.",
+          "params": {
+            "optionId": "Die id der Ausprägung. Eine unbekannte id ist ein Fehler.",
+            "label": "Die neue Bezeichnung; die leere Zeichenkette leert sie."
+          }
+        },
+        "removeOption": {
+          "help": "Entfernt eine Ausprägung samt ihren Unverträglichkeiten und den Konzeptwahlen, die auf sie zeigen.",
+          "params": {
+            "optionId": "Die id der Ausprägung. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "setConflict": {
+          "help": "Markiert zwei Ausprägungen verschiedener Parameter als unverträglich oder hebt die Markierung auf.",
+          "params": {
+            "optionA": "Die id der ersten Ausprägung.",
+            "optionB": "Die id der zweiten Ausprägung, aus einem anderen Parameter. Zwei Ausprägungen desselben Parameters sind ein Fehler.",
+            "incompatible": "true markiert das Paar, false hebt die Markierung auf."
+          }
+        },
+        "addConcept": {
+          "help": "Hängt ein leeres Konzept an, macht es aktiv und gibt seine id zurück."
+        },
+        "setConceptName": {
+          "help": "Setzt den Namen eines Konzepts.",
+          "params": {
+            "conceptId": "Die id des Konzepts. Eine unbekannte id ist ein Fehler.",
+            "name": "Der neue Name; die leere Zeichenkette leert ihn."
+          }
+        },
+        "removeConcept": {
+          "help": "Entfernt ein Konzept; war es aktiv, wird das erste verbleibende aktiv.",
+          "params": {
+            "conceptId": "Die id des Konzepts. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "setConceptPick": {
+          "help": "Wählt für ein Konzept die Ausprägung eines Parameters oder hebt die Wahl auf.",
+          "params": {
+            "conceptId": "Die id des Konzepts.",
+            "parameterId": "Die id des Parameters.",
+            "optionId": "Die id einer Ausprägung dieses Parameters; die leere Zeichenkette hebt die Wahl auf. Eine Ausprägung eines anderen Parameters ist ein Fehler."
+          }
+        },
+        "setActiveConcept": {
+          "help": "Wählt das Konzept, das ein Klick im Kasten bearbeitet.",
+          "params": {
+            "conceptId": "Die id des Konzepts. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "setView": {
+          "help": "Schaltet zwischen Kasten und Verträglichkeitsmatrix um.",
+          "params": {
+            "view": "„box“ für den Kasten, „consistency“ für die Verträglichkeitsmatrix."
+          }
+        }
+      },
+      "fields": {
+        "parameters": {
+          "help": "Die Parameter in Kastenreihenfolge, jeder mit id, name und options (id, label)."
+        },
+        "optionIds": {
+          "help": "Die ids aller Ausprägungen in Kastenreihenfolge — die gültigen Werte für optionId, optionA und optionB."
+        },
+        "conflicts": {
+          "help": "Die unverträglichen Paare als sortierte Paare von Ausprägungs-ids."
+        },
+        "concepts": {
+          "help": "Die Konzepte, jedes mit id, name und picks (Parameter-id → Ausprägungs-id)."
+        },
+        "activeConceptId": {
+          "help": "Die id des Konzepts, das ein Klick im Kasten bearbeitet; leer, wenn es keines gibt."
+        },
+        "view": {
+          "help": "Die sichtbare Ansicht: box oder consistency."
+        },
+        "combinationCount": {
+          "help": "Alle Kombinationen aus je einer Ausprägung pro Parameter — das Produkt der Ausprägungszahlen."
+        },
+        "consistentCount": {
+          "help": "Die Kombinationen ohne unverträgliches Paar. Bei sehr großen Kästen nur eine Untergrenze, dann ist consistentExact false und die Anzeige lautet „≥ n“."
+        },
+        "consistentExact": {
+          "help": "false, wenn consistentCount nur eine Untergrenze ist, weil das Zählbudget erschöpft war."
+        },
+        "conceptChecks": {
+          "help": "Je Konzept: id, complete (jeder Parameter mit Ausprägungen ist gewählt) und conflicts (die unverträglichen Paare im Konzept)."
+        }
+      },
+      "types": {
+        "AgentRead": {
+          "parameters": "Die Parameter mit ihren Ausprägungen, in Kastenreihenfolge.",
+          "optionIds": "Die ids aller Ausprägungen in Kastenreihenfolge.",
+          "conflicts": "Die unverträglichen Paare von Ausprägungen.",
+          "concepts": "Die Konzepte mit ihren Wahlen.",
+          "activeConceptId": "Das Konzept, das ein Klick im Kasten bearbeitet.",
+          "view": "Die sichtbare Ansicht.",
+          "combinationCount": "Alle Kombinationen aus je einer Ausprägung pro Parameter.",
+          "consistentCount": "Die Kombinationen ohne unverträgliches Paar.",
+          "consistentExact": "false, wenn consistentCount nur eine Untergrenze ist.",
+          "conceptChecks": "Je Konzept: id, complete und conflicts."
+        }
+      }
     },
     "mosaic": {
       "name": "Mosaikdiagramm",
