@@ -26,7 +26,7 @@
         <ul class="chart-suggestion__cards" data-ref="cards">
           <template x-for="s in model.suggestions" :key="s.type">
             <li>
-              <button type="button" class="chart-suggestion__card" data-help-key="modules.chart-suggestion.actions.pickChart.help"
+              <button type="button" class="chart-suggestion__card context-help-anchor--overlay" data-help-key="modules.chart-suggestion.actions.pickChart.help"
                       :class="cardClass(s)" :data-chart-type="s.type" @click="pickChart(s.type)">
                 <div class="chart-suggestion__card-thumb"
                      :class="'chart-suggestion__card-thumb--' + s.type"
@@ -46,7 +46,7 @@
         <header class="chart-suggestion__preview-header">
           <span class="chart-suggestion__preview-title" data-ref="preview-title" data-help-key="modules.chart-suggestion.fields.selectedChartType.help"></span>
           <span class="chart-suggestion__preview-notes" data-ref="preview-notes"></span>
-          <button type="button" class="chart-suggestion__open-btn" data-ref="open-btn" data-help-key="modules.chart-suggestion.actions.openInModule.help"
+          <button type="button" class="chart-suggestion__open-btn context-help-anchor--overlay" data-ref="open-btn" data-help-key="modules.chart-suggestion.actions.openInModule.help"
                   data-action="open-in-module" x-show="openBtnVisible()" @click="openInModule()"
                   x-text="t('openInModule')"></button>
         </header>
