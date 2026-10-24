@@ -16,7 +16,7 @@
 import { createModule } from '../../core/template-module.js';
 import { State } from './survey-builder-model.js';
 import * as labels from './survey-labels.js';
-import { draftController } from './survey-draft-controller.js';
+import { DraftViewModel } from './viewmodel/draft.js';
 import { RecipientsViewModel } from './viewmodel/recipients.js';
 import { ResponsesViewModel } from './viewmodel/responses.js';
 import { resultsController } from './survey-results-controller.js';
@@ -57,7 +57,7 @@ export default createModule({
   data(module, _t) {
     const deps = { t: _t, context: module._context, container: () => module._container };
     return {
-      ...draftController(module, _t),
+      draft: new DraftViewModel(deps),
       recipients: new RecipientsViewModel(deps),
       responses: new ResponsesViewModel(deps),
       ...resultsController(module, _t),
@@ -77,10 +77,7 @@ export default createModule({
           nextTick: (callback) => this.$nextTick(callback),
         };
         for (const vm of this._subViewModels()) vm.attach(binding);
-        this.$watch(() => JSON.stringify(this.model.survey), () => this.schedulePreview());
         this.$watch(() => this._resultsSignature(), () => this.scheduleCharts());
-        this._loadCondDraft();
-        this.$nextTick(() => this.renderPreview());
         const eb = module._context.eventBus;
         const onTheme = () => this.scheduleCharts();
         eb.on('theme:changed', onTheme);
@@ -96,7 +93,6 @@ export default createModule({
       /** Alpine lifecycle hook: timers, subscriptions, charts. */
       destroy() {
         this._destroyed = true;
-        clearTimeout(this._previewTimer);
         (this._unsubs || []).forEach((off) => off());
         this._unsubs = [];
         this.destroyCharts();
@@ -104,7 +100,7 @@ export default createModule({
       },
 
       /** @returns {object[]} the sub-viewmodels, in attach order */
-      _subViewModels() { return [this.recipients, this.responses, this.handover]; },
+      _subViewModels() { return [this.draft, this.recipients, this.responses, this.handover]; },
 
       // ── Tabs ──────────────────────────────────────────────────
 
@@ -164,17 +160,6 @@ export default createModule({
 
       /** @param {{when: Array|null}} node @returns {boolean} whether the node has conditions */
       hasCondition(node) { return Array.isArray(node.when) && node.when.length > 0; },
-
-      /**
-       * Notify about conditions a structural change removed and re-read the
-       * condition draft (its node may have lost conditions).
-       * @param {{removedConditions: number}|undefined} result
-       */
-      reportRemoved(result) {
-        const count = result ? result.removedConditions : 0;
-        if (count > 0) module._context.notify(_t('conditionsRemoved', { count }), 'info');
-        this._loadCondDraft();
-      },
 
       /** @returns {'de-DE'|'en-US'} locale of the app language */
       _locale() { return labels.localeOf(module._context.i18n); },

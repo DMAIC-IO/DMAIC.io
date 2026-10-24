@@ -6,12 +6,11 @@
  */
 
 import { suite, test, assertTrue } from '../test-utils.js';
-import { draftController } from '../../js/modules/survey-builder/survey-draft-controller.js';
 import { resultsController } from '../../js/modules/survey-builder/survey-results-controller.js';
 import { chartsController } from '../../js/modules/survey-builder/survey-charts-controller.js';
 
 const CONTROLLERS = {
-  draftController, resultsController, chartsController,
+  resultsController, chartsController,
 };
 
 const module = { _context: {}, _container: null };
