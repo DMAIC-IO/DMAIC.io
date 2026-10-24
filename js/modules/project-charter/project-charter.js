@@ -21,7 +21,9 @@ import { createModebar } from '../../core/chart/modebar.js';
 import { DASH_MAP, buildOrgDiagram } from './project-charter-org-diagram.js';
 import { edSection, edInlineNum, edSelectRow, edColorPair, openColorPicker } from '../../core/chart/chart-editor.js';
 import { h } from '../../core/dom.js';
-import { markdownToFragment, domToMarkdown } from './project-charter-richtext.js';
+import { markdownToFragment, domToMarkdown, normalizeProblemStatement } from './project-charter-richtext.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId, requireText, requireNumber } from '../../core/agent/agent-argcheck.js';
 import { icon } from '../../core/icon.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
 import { uid } from '../../core/uid.js';
@@ -55,6 +57,112 @@ function prepareFragment(raw) {
 
 export { prepareFragment };
 
+/** Problem statement limit in plain-text characters (as charCountText counts). */
+const PROBLEM_MAX = 10000;
+
+const GOAL_FIELDS = ['description', 'targetDate', 'metric', 'targetValue', 'achievementLevel'];
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Je Zielfeld der Prüfer; er gibt den Wert in der Form des Models zurück. */
+const GOAL_CHECKS = {
+  description: (v) => requireText('value', v),
+  targetDate: (v) => {
+    requireText('value', v);
+    if (v !== '' && !ISO_DATE.test(v)) throw new Error(`invalid value ${JSON.stringify(v)}; allowed: "" or a date YYYY-MM-DD`);
+    return v;
+  },
+  metric: (v) => requireText('value', v),
+  targetValue: (v) => requireText('value', v),
+  achievementLevel: (v) => requireNumber('value', v, { min: 0, max: 100, integer: true }),
+};
+
+const NODE_STYLE_PARAM_KEYS = ['bg', 'borderColor', 'borderStyle', 'borderWidth'];
+const ORG_STYLE_PARAM_KEYS = ['nodeBg', 'nodeBorderColor', 'nodeBorderStyle', 'nodeBorderWidth', 'lineColor', 'lineStyle', 'lineWidth'];
+const NODE_BORDER_STYLES = ['', 'solid', 'dashed', 'dotted'];
+const LINE_STYLES = ['solid', 'dashed', 'dotted'];
+
+/** Je Knotenstil-Schlüssel der Prüfer. */
+const NODE_STYLE_CHECKS = {
+  bg: (v) => requireText('value', v),
+  borderColor: (v) => requireText('value', v),
+  borderStyle: (v) => requireEnum('value', v, NODE_BORDER_STYLES),
+  borderWidth: (v) => requireNumber('value', v, { min: 0, max: 8, integer: true }),
+};
+
+/** Je globalem Stilschlüssel der Prüfer. */
+const ORG_STYLE_CHECKS = {
+  nodeBg: (v) => requireText('value', v),
+  nodeBorderColor: (v) => requireText('value', v),
+  nodeBorderStyle: (v) => requireEnum('value', v, LINE_STYLES),
+  nodeBorderWidth: (v) => requireNumber('value', v, { min: 1, max: 8, integer: true }),
+  lineColor: (v) => requireText('value', v),
+  lineStyle: (v) => requireEnum('value', v, LINE_STYLES),
+  lineWidth: (v) => requireNumber('value', v, { min: 1, max: 8, integer: true }),
+};
+
+/**
+ * Die Schlüsselfläche von `setGoalField`. Sätze unter `types.GoalFields.<schlüssel>`.
+ * @typedef {object} GoalFields
+ * @property {string} description  what the goal is
+ * @property {string} targetDate  "" or YYYY-MM-DD
+ * @property {string} metric  how the goal is measured
+ * @property {string} targetValue  the value to reach
+ * @property {number} achievementLevel  goal achievement 0..100
+ */
+
+/**
+ * Die Schlüsselfläche von `setOrgNodeStyle`.
+ * @typedef {object} OrgNodeStyle
+ * @property {string} bg  background colour, "" inherits
+ * @property {string} borderColor  border colour, "" inherits
+ * @property {''|'solid'|'dashed'|'dotted'} borderStyle  border style, "" inherits
+ * @property {number} borderWidth  border width 0..8, 0 inherits
+ */
+
+/**
+ * Der globale Organigrammstil (`setOrgStyle`, `read().orgStyle`).
+ * @typedef {object} OrgStyle
+ * @property {string} nodeBg  node background, "" = theme
+ * @property {string} nodeBorderColor  node border colour, "" = theme
+ * @property {'solid'|'dashed'|'dotted'} nodeBorderStyle  node border style
+ * @property {number} nodeBorderWidth  node border width 1..8
+ * @property {string} lineColor  connector colour, "" = theme
+ * @property {'solid'|'dashed'|'dotted'} lineStyle  connector style
+ * @property {number} lineWidth  connector width 1..8
+ */
+
+/**
+ * @typedef {object} Goal
+ * @property {string} id  goal id
+ * @property {string} description  what the goal is
+ * @property {string} targetDate  "" or YYYY-MM-DD
+ * @property {string} metric  how the goal is measured
+ * @property {string} targetValue  the value to reach
+ * @property {number} achievementLevel  goal achievement 0..100
+ */
+
+/**
+ * @typedef {object} OrgNode
+ * @property {string} id  node id
+ * @property {string} title  position or unit
+ * @property {string} desc  subtitle, e.g. the person
+ * @property {string|null} pid  parent id, null for a root
+ * @property {string} [bg]  own background colour
+ * @property {string} [borderColor]  own border colour
+ * @property {string} [borderStyle]  own border style
+ * @property {number} [borderWidth]  own border width
+ */
+
+/**
+ * Die Agenten-Lesefläche: genau die persistierte Form (`toJSON()`), ohne die
+ * transienten Layoutfelder der Knoten.
+ * @typedef {object} AgentRead
+ * @property {string} problemStatement  the problem statement as Markdown
+ * @property {Goal[]} goals  the goals in display order
+ * @property {OrgNode[]} orgChart  the org chart, flat; sibling order = array order
+ * @property {OrgStyle} orgStyle  the global org chart style
+ */
+
 export default createModule({
   config: {
     id: 'project-charter',
@@ -80,8 +188,7 @@ export default createModule({
       ...draggableRows({
         onMove({ group, sourceId, targetId }) {
           if (group !== 'goals') return;
-          this._pushUndo();
-          this.model.reorderGoal(sourceId, targetId, false);
+          this.moveGoal(sourceId, targetId);
         },
         rowIds(group) {
           return group === 'goals' ? this.model.goals.map(g => g.id) : [];
@@ -115,6 +222,7 @@ export default createModule({
       },
 
       // ── Lifecycle: mount/dispose imperative org-chart widgets ─
+      /** @noagent lifecycle */
       init() {
         this._undoStack = [];
         this.dragRowsInit();
@@ -125,11 +233,7 @@ export default createModule({
           // Alpine root is torn down (the workspace re-persists live instances via
           // getState() on tab switch / re-add — matches legacy behaviour).
           if (module._tmpl) module._tmpl._state = this.model;
-          const editor = this.$root.querySelector('[data-ref="problemEditor"]');
-          if (editor) {
-            editor.replaceChildren(prepareFragment(this.model.problemStatement));
-            editor.classList.toggle('pc__problem-editor--empty', !editor.textContent.trim());
-          }
+          this._syncProblemEditor();
           this._orgMountLines();
           this._orgRender();
           this._orgInitModebar();
@@ -141,6 +245,7 @@ export default createModule({
         });
       },
 
+      /** @noagent lifecycle */
       destroy() {
         this._orgUnmounted = true;
         this.dragRowsDestroy();
@@ -152,11 +257,267 @@ export default createModule({
       },
 
       // ═══════════════════════════════════════════════════════
+      // AGENT SURFACE
+      // ═══════════════════════════════════════════════════════
+
+      /** @noagent internal: fill the contenteditable from the model (Alpine does not own it) */
+      _syncProblemEditor() {
+        const editor = this.$root.querySelector('[data-ref="problemEditor"]');
+        if (!editor) return;
+        editor.replaceChildren(prepareFragment(this.model.problemStatement));
+        editor.classList.toggle('pc__problem-editor--empty', !editor.textContent.trim());
+      },
+
+      /**
+       * Den vollständigen Zustand lesen: Problembeschreibung, Ziele, Organigramm, Stil.
+       * @agent
+       * @param {object} [options] `{ fields?: string[] }`
+       * @returns {AgentRead} die persistierte Form ohne Layoutfelder
+       */
+      read(options) {
+        const j = this.model.toJSON();
+        return readAgentState('project-charter', {
+          problemStatement: j.problemStatement,
+          goals: j.goals,
+          orgChart: this.orgChart(),
+          orgStyle: j.orgStyle,
+        }, options);
+      },
+
+      /** @noagent derived; der Agent liest es über read().orgChart */
+      orgChart() { return this.model.toJSON().orgChart; },
+
+      /**
+       * Die Problembeschreibung ersetzen.
+       * @agent
+       * @param {string} markdown die Beschreibung als Markdown (fett, kursiv, Listen), höchstens 10000 Zeichen Klartext
+       * @returns {void}
+       * @throws {Error} wenn `markdown` kein Text oder zu lang ist
+       */
+      setProblemStatement(markdown) {
+        requireText('markdown', markdown);
+        const clean = normalizeProblemStatement(markdown);
+        if (markdownToFragment(clean).textContent.length > PROBLEM_MAX) {
+          throw new Error(`invalid markdown (too long); allowed: at most ${PROBLEM_MAX} characters`);
+        }
+        this._pushUndo();
+        this.model.problemStatement = clean;
+        this._syncProblemEditor();
+      },
+
+      /** @param {string} title @param {string} desc */
+      _checkNodeText(title, desc) {
+        requireText('title', title);
+        requireText('desc', desc);
+        if (!title.trim() || title.length > 100) throw new Error(`invalid title ${JSON.stringify(title)}; allowed: 1 to 100 characters`);
+        if (desc.length > 300) throw new Error('invalid desc (too long); allowed: at most 300 characters');
+      },
+
+      /**
+       * Eine Position anlegen, als Wurzel oder unter einer bestehenden.
+       * @agent
+       * @param {string} title Bezeichnung der Position, 1 bis 100 Zeichen
+       * @param {string} desc Untertitel, z. B. die Person, höchstens 300 Zeichen; "" für keinen
+       * @param {string|null} parentId die id des übergeordneten Knotens aus read().orgChart, oder null für eine Wurzel
+       * @returns {string} die id des neuen Knotens
+       * @throws {Error} bei ungültigem Text oder unbekannter parentId
+       */
+      addOrgNode(title, desc, parentId) {
+        this._checkNodeText(title, desc);
+        if (parentId != null) requireKnownId('parentId', parentId, this.orgChart().map(n => n.id));
+        this._pushUndo();
+        const node = this.model.addOrgNode({ title: title.trim(), desc: desc.trim(), pid: parentId ?? null });
+        this._orgRefresh();
+        return node.id;
+      },
+
+      /**
+       * Titel und Untertitel einer Position ändern.
+       * @agent
+       * @param {string} id die id des Knotens aus read().orgChart
+       * @param {string} title Bezeichnung, 1 bis 100 Zeichen
+       * @param {string} desc Untertitel, höchstens 300 Zeichen; "" für keinen
+       * @returns {void}
+       * @throws {Error} bei unbekannter id oder ungültigem Text
+       */
+      updateOrgNode(id, title, desc) {
+        requireKnownId('node', id, this.orgChart().map(n => n.id));
+        this._checkNodeText(title, desc);
+        this._pushUndo();
+        this.model.updateOrgNode(id, { title: title.trim(), desc: desc.trim() });
+        this._orgRefresh();
+      },
+
+      /**
+       * Einen Stilwert einer einzelnen Position setzen.
+       * @agent
+       * @param {string} id die id des Knotens aus read().orgChart
+       * @param {keyof OrgNodeStyle} key welcher Stilwert
+       * @param {string|number} value der Wert; Form je Schlüssel siehe `OrgNodeStyle`
+       * @returns {void}
+       * @throws {Error} bei unbekannter id, unbekanntem Schlüssel oder ungültigem Wert
+       */
+      setOrgNodeStyle(id, key, value) {
+        requireKnownId('node', id, this.orgChart().map(n => n.id));
+        requireEnum('key', key, NODE_STYLE_PARAM_KEYS);
+        const v = NODE_STYLE_CHECKS[key](value);
+        this._pushUndo();
+        this.model.setOrgNodeStyle(id, key, v);
+        this._orgRefresh();
+      },
+
+      /**
+       * Eine Position samt allen untergeordneten löschen.
+       * @agent
+       * @param {string} id die id des Knotens aus read().orgChart
+       * @returns {number} Anzahl der gelöschten Knoten
+       * @throws {Error} bei unbekannter id
+       */
+      deleteOrgNode(id) {
+        requireKnownId('node', id, this.orgChart().map(n => n.id));
+        this._pushUndo();
+        const removed = this.model.deleteOrgNode(id);
+        if (this._orgSel && !this.model.orgNodes.some(n => n.id === this._orgSel)) this._orgSel = null;
+        this._orgRefresh();
+        return removed;
+      },
+
+      /**
+       * Eine Position umhängen und unter ihren neuen Geschwistern einordnen.
+       * @agent
+       * @param {string} id die id des Knotens aus read().orgChart
+       * @param {string|null} parentId der neue übergeordnete Knoten, oder null für eine Wurzel; nicht der Knoten selbst und keiner seiner untergeordneten
+       * @param {number|null} index Position unter den neuen Geschwistern (0 = zuerst), oder null für das Ende
+       * @returns {void}
+       * @throws {Error} bei unbekannter id, Zyklus oder index außerhalb
+       */
+      moveOrgNode(id, parentId, index) {
+        const ids = this.orgChart().map(n => n.id);
+        requireKnownId('node', id, ids);
+        if (parentId != null) {
+          requireKnownId('parentId', parentId, ids);
+          if (parentId === id || this.model.isOrgDescendant(parentId, id)) {
+            throw new Error(`invalid parentId ${JSON.stringify(parentId)}; allowed: not the node itself or one of its descendants`);
+          }
+        }
+        if (index != null) {
+          const n = this.model.orgSiblings(parentId ?? null).filter(s => s.id !== id).length;
+          requireNumber('index', index, { min: 0, max: n, integer: true });
+        }
+        this._pushUndo();
+        this.model.moveOrgNode(id, parentId ?? null, index == null ? null : Number(index));
+        this._orgRefresh();
+      },
+
+      /**
+       * Einen Wert des globalen Organigrammstils setzen.
+       * @agent
+       * @param {keyof OrgStyle} key welcher Stilwert
+       * @param {string|number} value der Wert; Form je Schlüssel siehe `OrgStyle`
+       * @returns {void}
+       * @throws {Error} bei unbekanntem Schlüssel oder ungültigem Wert
+       */
+      setOrgStyle(key, value) {
+        requireEnum('key', key, ORG_STYLE_PARAM_KEYS);
+        const v = ORG_STYLE_CHECKS[key](value);
+        this._pushUndo();
+        this.model.setOrgStyle(key, v);
+        this._orgApplyStyle();
+        this._orgDrawLines();
+        if (this._orgEditorOpen) this._orgBuildEditor();
+      },
+
+      /**
+       * Den letzten Schritt zurücknehmen (Problembeschreibung, Ziele, Organigramm).
+       * Leere Historie ist eine fachliche Absage, kein Fehler.
+       * @agent
+       * @returns {boolean} true, wenn ein Schritt zurückgenommen wurde; false bei leerer Historie
+       */
+      undo() {
+        if (!this._undoStack.length) return false;
+        this._undo();
+        return true;
+      },
+
+      /**
+       * Ein leeres Ziel ans Ende anhängen.
+       * @agent
+       * @returns {string} die id des neuen Ziels
+       */
+      addGoal() {
+        this._pushUndo();
+        const goal = this.model.addGoal();
+        this.$nextTick(() => {
+          const rows = this.$root.querySelectorAll('.pc__goal-row');
+          rows[rows.length - 1]?.querySelector('textarea[data-field="description"]')?.focus();
+        });
+        return goal.id;
+      },
+
+      /**
+       * Ein Feld eines Ziels setzen.
+       * @agent
+       * @param {string} id die id des Ziels aus read().goals
+       * @param {keyof GoalFields} key welches Feld
+       * @param {string|number} value der Wert; Form je Schlüssel siehe `GoalFields`
+       * @returns {void}
+       * @throws {Error} bei unbekannter id, unbekanntem Schlüssel oder ungültigem Wert
+       */
+      setGoalField(id, key, value) {
+        requireKnownId('goal', id, this.model.goals.map(g => g.id));
+        requireEnum('key', key, GOAL_FIELDS);
+        const v = GOAL_CHECKS[key](value);
+        this._pushUndo();
+        this.model.setGoalField(id, key, v);
+      },
+
+      /**
+       * Ein Ziel löschen.
+       * @agent
+       * @param {string} id die id des Ziels aus read().goals
+       * @returns {void}
+       * @throws {Error} bei unbekannter id
+       */
+      deleteGoal(id) {
+        requireKnownId('goal', id, this.model.goals.map(g => g.id));
+        this._pushUndo();
+        this.model.deleteGoal(id);
+        delete this._confirmingDelete[id];
+        this._confirmTick++;
+      },
+
+      /**
+       * Ein Ziel vor ein anderes schieben oder ans Ende.
+       * @agent
+       * @param {string} id die id des zu verschiebenden Ziels
+       * @param {string|null} beforeId die id des Ziels, vor das es kommt, oder null für das Ende
+       * @returns {void}
+       * @throws {Error} bei unbekannter id oder wenn beforeId gleich id ist
+       */
+      moveGoal(id, beforeId) {
+        const ids = this.model.goals.map(g => g.id);
+        requireKnownId('goal', id, ids);
+        if (beforeId != null) {
+          requireKnownId('goal', beforeId, ids);
+          if (beforeId === id) throw new Error(`invalid beforeId ${JSON.stringify(beforeId)}; allowed: another goal or null`);
+        }
+        this._pushUndo();
+        if (beforeId == null) {
+          const last = ids.filter(x => x !== id).pop();
+          if (last) this.model.reorderGoal(id, last, true);
+        } else {
+          this.model.reorderGoal(id, beforeId, false);
+        }
+      },
+
+      // ═══════════════════════════════════════════════════════
       // PROBLEM STATEMENT (contenteditable, rich-text)
       // ═══════════════════════════════════════════════════════
 
+      /** @noagent DOM event of the editor; the agent uses setProblemStatement */
       problemFocus() { this._editorUndoPushed = false; },
 
+      /** @noagent DOM event of the editor; the agent uses setProblemStatement */
       problemInput(event) {
         const editor = event.target;
         if (!this._editorUndoPushed) { this._pushUndo(); this._editorUndoPushed = true; }
@@ -164,17 +525,20 @@ export default createModule({
         editor.classList.toggle('pc__problem-editor--empty', !editor.textContent.trim());
       },
 
+      /** @noagent DOM event of the editor; the agent uses setProblemStatement */
       problemPaste(event) {
         event.preventDefault();
         const text = event.clipboardData.getData('text/plain');
         if (text) document.execCommand('insertText', false, text);
       },
 
+      /** @noagent DOM event of the editor; the agent uses setProblemStatement */
       fmtMouseDown(cmd, event) {
         event.preventDefault();
         document.execCommand(cmd, false, null);
       },
 
+      /** @noagent view derivation */
       charCountText() {
         const len = markdownToFragment(this.model.problemStatement).textContent.length;
         return _t('charCount', { current: len, max: 10000 });
@@ -184,10 +548,12 @@ export default createModule({
       // GOALS
       // ═══════════════════════════════════════════════════════
 
+      /** @noagent view derivation */
       zegClamped(level) {
         return Math.max(0, Math.min(100, parseInt(level, 10) || 0));
       },
 
+      /** @noagent view derivation */
       zegColor(level) {
         const zeg = this.zegClamped(level);
         return zeg === 100 ? 'var(--color-success)'
@@ -196,35 +562,30 @@ export default createModule({
           : 'var(--color-error)';
       },
 
+      /** @noagent view derivation */
       zegBarStyle(level) {
         return `width:${  this.zegClamped(level)  }%; background:${  this.zegColor(level)}`;
       },
 
+      /** @noagent view derivation */
       isDateInPast(date) {
         return Boolean(date) && new Date(date) < new Date(new Date().toDateString());
       },
 
+      /** @noagent DOM event */
       autoGrow(event) {
         const el = event.target;
         el.style.height = 'auto';
         el.style.height = `${el.scrollHeight  }px`;
       },
 
-      addGoal(_event) {
-        this._pushUndo();
-        this.model.addGoal();
-        this.$nextTick(() => {
-          const rows = this.$root.querySelectorAll('.pc__goal-row');
-          const last = rows[rows.length - 1];
-          last?.querySelector('textarea[data-field="description"]')?.focus();
-        });
-      },
-
       // Reset the per-edit undo guard whenever focus enters a goal field, so
       // each distinct edit (after a focus) pushes its own undo snapshot
       // (matches legacy per-input focus reset).
+      /** @noagent DOM event */
       goalFieldFocus() { this._fieldUndoPushed = false; },
 
+      /** @noagent DOM event after x-model; the agent uses setGoalField */
       goalChanged(id, field, event) {
         if (!this._fieldUndoPushed) { this._pushUndo(); this._fieldUndoPushed = true; }
         // x-model already wrote the raw string to the model; re-apply
@@ -233,17 +594,16 @@ export default createModule({
       },
 
       // delete (two-click confirm)
+      /** @noagent view derivation */
       isConfirmingDelete(id) {
         this._confirmTick; // reactive dependency
         return Boolean(this._confirmingDelete[id]);
       },
 
+      /** @noagent two-click confirmation; the agent uses deleteGoal */
       goalDeleteClick(id, event) {
         if (this._confirmingDelete[id]) {
-          this._pushUndo();
-          this.model.deleteGoal(id);
-          delete this._confirmingDelete[id];
-          this._confirmTick++;
+          this.deleteGoal(id);
         } else {
           this._confirmingDelete[id] = true;
           this._confirmTick++;
@@ -263,10 +623,12 @@ export default createModule({
       // ORG CHART — imperative canvas (pan/zoom/drag/layout)
       // ═══════════════════════════════════════════════════════
 
+      /** @noagent only opens the dialog; the agent uses addOrgNode */
       orgAddRoot() { this._orgOpenAdd(null); },
+      /** @noagent re-arrange and fit the view */
       orgLayoutBtn() { this._orgRefresh(); requestAnimationFrame(() => this._orgFit()); },
+      /** @noagent view derivation */
       canUndo() { this._confirmTick; return this._undoStack.length > 0; },
-      orgUndo() { this._undo(); },
 
       _orgEl(id) {
         return orgNodeEls.get(this.$root)?.get(id);
@@ -780,11 +1142,8 @@ export default createModule({
           onConfirm: (el) => {
             const title = this.nodeDraft.title.trim();
             if (!title) { el.querySelector('[data-field="title"]')?.focus(); return false; }
-            this._pushUndo();
-            const desc = this.nodeDraft.desc.trim();
-            const newNode = this.model.addOrgNode({ title, desc, pid: parentId ?? null });
-            this._orgRefresh();
-            this._orgSelect(newNode.id);
+            const newId = this.addOrgNode(title, this.nodeDraft.desc, parentId ?? null);
+            this._orgSelect(newId);
             requestAnimationFrame(() => this._orgFit());
             return true;
           },
@@ -793,6 +1152,7 @@ export default createModule({
 
       /** Open the colour picker for a node-style swatch, writing the chosen
        *  colour (and its display value) back into nodeStyleDraft. */
+      /** @noagent colour picker in the dialog */
       nodeStylePickColor(which, event) {
         const d = this.nodeStyleDraft;
         const cur = which === 'bg'
@@ -851,10 +1211,7 @@ export default createModule({
           danger: true,
         });
         if (!confirmed) return;
-        this._pushUndo();
-        this.model.deleteOrgNode(id);
-        if (this._orgSel === id) this._orgSel = null;
-        this._orgRefresh();
+        this.deleteOrgNode(id);
       },
 
       _orgToggleCollapse(id) {
@@ -995,12 +1352,10 @@ export default createModule({
         this._confirmTick++;
         // Re-sync contenteditable + org chart imperatively (synchronously, so
         // the node count reflects the undo immediately — matches legacy _render).
-        const editor = this.$root.querySelector('[data-ref="problemEditor"]');
-        if (editor) {
-          editor.replaceChildren(prepareFragment(this.model.problemStatement));
-          editor.classList.toggle('pc__problem-editor--empty', !editor.textContent.trim());
-        }
+        this._syncProblemEditor();
         this._orgRefresh();
+        this._orgApplyStyle();
+        if (this._orgEditorOpen) this._orgBuildEditor();
       },
     };
   },

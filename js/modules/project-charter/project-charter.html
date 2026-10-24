@@ -148,7 +148,7 @@
         </div>
       </template>
 
-      <button class="btn btn--secondary btn--sm pc__add-btn" type="button" @click="addGoal($event)"
+      <button class="btn btn--secondary btn--sm pc__add-btn" type="button" @click="addGoal()"
         x-text="'+ ' + t('addGoal')"></button>
     </section>
 
@@ -162,7 +162,7 @@
           @click="orgLayoutBtn()" x-text="t('orgLayout')"></button>
         <button class="btn btn--sm pc__org-undo-btn" type="button"
           :disabled="!canUndo()" :title="t('orgUndo')"
-          @click="orgUndo()" x-text="'↩ ' + t('orgUndo')"></button>
+          @click="undo()" x-text="'↩ ' + t('orgUndo')"></button>
       </div>
       <div class="pc__org-card" data-ref="orgCard">
         <div class="pc__org-wrap" data-ref="orgWrap">

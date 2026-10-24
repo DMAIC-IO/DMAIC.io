@@ -13944,52 +13944,417 @@ export const AGENT_REGISTRY = {
     "tagged": false,
     "available": false,
     "violations": [],
-    "reported": [
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unmarked_method:problemFocus",
-      "unmarked_method:problemInput",
-      "unmarked_method:problemPaste",
-      "unmarked_method:fmtMouseDown",
-      "unmarked_method:charCountText",
-      "unmarked_method:zegClamped",
-      "unmarked_method:zegColor",
-      "unmarked_method:zegBarStyle",
-      "unmarked_method:isDateInPast",
-      "unmarked_method:autoGrow",
-      "unmarked_method:addGoal",
-      "unmarked_method:goalFieldFocus",
-      "unmarked_method:goalChanged",
-      "unmarked_method:isConfirmingDelete",
-      "unmarked_method:goalDeleteClick",
-      "unmarked_method:orgAddRoot",
-      "unmarked_method:orgLayoutBtn",
-      "unmarked_method:canUndo",
-      "unmarked_method:orgUndo",
-      "unmarked_method:nodeStylePickColor",
-      "unreadable_state_key:orgChart"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[] }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Zustand lesen: Problembeschreibung, Ziele, Organigramm, Stil."
+      },
+      "setProblemStatement": {
+        "params": [
+          {
+            "name": "markdown",
+            "type": "string",
+            "optional": false,
+            "help": "die Beschreibung als Markdown (fett, kursiv, Listen), höchstens 10000 Zeichen Klartext"
+          }
+        ],
+        "returns": "void",
+        "help": "Die Problembeschreibung ersetzen."
+      },
+      "addOrgNode": {
+        "params": [
+          {
+            "name": "title",
+            "type": "string",
+            "optional": false,
+            "help": "Bezeichnung der Position, 1 bis 100 Zeichen"
+          },
+          {
+            "name": "desc",
+            "type": "string",
+            "optional": false,
+            "help": "Untertitel, z. B. die Person, höchstens 300 Zeichen; \"\" für keinen"
+          },
+          {
+            "name": "parentId",
+            "type": "string|null",
+            "optional": false,
+            "help": "die id des übergeordneten Knotens aus read().orgChart, oder null für eine Wurzel"
+          }
+        ],
+        "returns": "string",
+        "help": "Eine Position anlegen, als Wurzel oder unter einer bestehenden."
+      },
+      "updateOrgNode": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "die id des Knotens aus read().orgChart"
+          },
+          {
+            "name": "title",
+            "type": "string",
+            "optional": false,
+            "help": "Bezeichnung, 1 bis 100 Zeichen"
+          },
+          {
+            "name": "desc",
+            "type": "string",
+            "optional": false,
+            "help": "Untertitel, höchstens 300 Zeichen; \"\" für keinen"
+          }
+        ],
+        "returns": "void",
+        "help": "Titel und Untertitel einer Position ändern."
+      },
+      "setOrgNodeStyle": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "die id des Knotens aus read().orgChart"
+          },
+          {
+            "name": "key",
+            "type": "'bg'|'borderColor'|'borderStyle'|'borderWidth'",
+            "optional": false,
+            "help": "welcher Stilwert"
+          },
+          {
+            "name": "value",
+            "type": "string|number",
+            "optional": false,
+            "help": "der Wert; Form je Schlüssel siehe `OrgNodeStyle`"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Stilwert einer einzelnen Position setzen.",
+        "keysOf": "OrgNodeStyle",
+        "keys": {
+          "bg": {
+            "type": "string",
+            "help": "background colour, \"\" inherits"
+          },
+          "borderColor": {
+            "type": "string",
+            "help": "border colour, \"\" inherits"
+          },
+          "borderStyle": {
+            "type": "''|'solid'|'dashed'|'dotted'",
+            "help": "border style, \"\" inherits"
+          },
+          "borderWidth": {
+            "type": "number",
+            "help": "border width 0..8, 0 inherits"
+          }
+        }
+      },
+      "deleteOrgNode": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "die id des Knotens aus read().orgChart"
+          }
+        ],
+        "returns": "number",
+        "help": "Eine Position samt allen untergeordneten löschen."
+      },
+      "moveOrgNode": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "die id des Knotens aus read().orgChart"
+          },
+          {
+            "name": "parentId",
+            "type": "string|null",
+            "optional": false,
+            "help": "der neue übergeordnete Knoten, oder null für eine Wurzel; nicht der Knoten selbst und keiner seiner untergeordneten"
+          },
+          {
+            "name": "index",
+            "type": "number|null",
+            "optional": false,
+            "help": "Position unter den neuen Geschwistern (0 = zuerst), oder null für das Ende"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Position umhängen und unter ihren neuen Geschwistern einordnen."
+      },
+      "setOrgStyle": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'nodeBg'|'nodeBorderColor'|'nodeBorderStyle'|'nodeBorderWidth'|'lineColor'|'lineStyle'|'lineWidth'",
+            "optional": false,
+            "help": "welcher Stilwert"
+          },
+          {
+            "name": "value",
+            "type": "string|number",
+            "optional": false,
+            "help": "der Wert; Form je Schlüssel siehe `OrgStyle`"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Wert des globalen Organigrammstils setzen.",
+        "keysOf": "OrgStyle",
+        "keys": {
+          "nodeBg": {
+            "type": "string",
+            "help": "node background, \"\" = theme"
+          },
+          "nodeBorderColor": {
+            "type": "string",
+            "help": "node border colour, \"\" = theme"
+          },
+          "nodeBorderStyle": {
+            "type": "'solid'|'dashed'|'dotted'",
+            "help": "node border style"
+          },
+          "nodeBorderWidth": {
+            "type": "number",
+            "help": "node border width 1..8"
+          },
+          "lineColor": {
+            "type": "string",
+            "help": "connector colour, \"\" = theme"
+          },
+          "lineStyle": {
+            "type": "'solid'|'dashed'|'dotted'",
+            "help": "connector style"
+          },
+          "lineWidth": {
+            "type": "number",
+            "help": "connector width 1..8"
+          }
+        }
+      },
+      "undo": {
+        "params": [],
+        "returns": "boolean",
+        "help": "Den letzten Schritt zurücknehmen (Problembeschreibung, Ziele, Organigramm). Leere Historie ist eine fachliche Absage, kein Fehler."
+      },
+      "addGoal": {
+        "params": [],
+        "returns": "string",
+        "help": "Ein leeres Ziel ans Ende anhängen."
+      },
+      "setGoalField": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "die id des Ziels aus read().goals"
+          },
+          {
+            "name": "key",
+            "type": "'description'|'targetDate'|'metric'|'targetValue'|'achievementLevel'",
+            "optional": false,
+            "help": "welches Feld"
+          },
+          {
+            "name": "value",
+            "type": "string|number",
+            "optional": false,
+            "help": "der Wert; Form je Schlüssel siehe `GoalFields`"
+          }
+        ],
+        "returns": "void",
+        "help": "Ein Feld eines Ziels setzen.",
+        "keysOf": "GoalFields",
+        "keys": {
+          "description": {
+            "type": "string",
+            "help": "what the goal is"
+          },
+          "targetDate": {
+            "type": "string",
+            "help": "\"\" or YYYY-MM-DD"
+          },
+          "metric": {
+            "type": "string",
+            "help": "how the goal is measured"
+          },
+          "targetValue": {
+            "type": "string",
+            "help": "the value to reach"
+          },
+          "achievementLevel": {
+            "type": "number",
+            "help": "goal achievement 0..100"
+          }
+        }
+      },
+      "deleteGoal": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "die id des Ziels aus read().goals"
+          }
+        ],
+        "returns": "void",
+        "help": "Ein Ziel löschen."
+      },
+      "moveGoal": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "die id des zu verschiebenden Ziels"
+          },
+          {
+            "name": "beforeId",
+            "type": "string|null",
+            "optional": false,
+            "help": "die id des Ziels, vor das es kommt, oder null für das Ende"
+          }
+        ],
+        "returns": "void",
+        "help": "Ein Ziel vor ein anderes schieben oder ans Ende."
+      }
+    },
     "fields": {
       "problemStatement": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string",
+        "help": "the problem statement as Markdown",
+        "bulk": false,
+        "derived": true
       },
       "goals": {
-        "type": "Array<object>",
-        "help": "",
-        "bulk": false
+        "type": "Goal[]",
+        "help": "the goals in display order",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "Goal",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": "goal id"
+          },
+          "description": {
+            "type": "string",
+            "help": "what the goal is"
+          },
+          "targetDate": {
+            "type": "string",
+            "help": "\"\" or YYYY-MM-DD"
+          },
+          "metric": {
+            "type": "string",
+            "help": "how the goal is measured"
+          },
+          "targetValue": {
+            "type": "string",
+            "help": "the value to reach"
+          },
+          "achievementLevel": {
+            "type": "number",
+            "help": "goal achievement 0..100"
+          }
+        }
       },
-      "orgNodes": {
-        "type": "Array<object>",
-        "help": "flat org nodes",
-        "bulk": false
+      "orgChart": {
+        "type": "OrgNode[]",
+        "help": "the org chart, flat; sibling order = array order",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "OrgNode",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": "node id"
+          },
+          "title": {
+            "type": "string",
+            "help": "position or unit"
+          },
+          "desc": {
+            "type": "string",
+            "help": "subtitle, e.g. the person"
+          },
+          "pid": {
+            "type": "string|null",
+            "help": "parent id, null for a root"
+          },
+          "bg": {
+            "type": "string",
+            "help": "own background colour",
+            "optional": true
+          },
+          "borderColor": {
+            "type": "string",
+            "help": "own border colour",
+            "optional": true
+          },
+          "borderStyle": {
+            "type": "string",
+            "help": "own border style",
+            "optional": true
+          },
+          "borderWidth": {
+            "type": "number",
+            "help": "own border width",
+            "optional": true
+          }
+        }
       },
       "orgStyle": {
-        "type": "object",
-        "help": "global org chart style overrides",
-        "bulk": false
+        "type": "OrgStyle",
+        "help": "the global org chart style",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "OrgStyle",
+        "keys": {
+          "nodeBg": {
+            "type": "string",
+            "help": "node background, \"\" = theme"
+          },
+          "nodeBorderColor": {
+            "type": "string",
+            "help": "node border colour, \"\" = theme"
+          },
+          "nodeBorderStyle": {
+            "type": "'solid'|'dashed'|'dotted'",
+            "help": "node border style"
+          },
+          "nodeBorderWidth": {
+            "type": "number",
+            "help": "node border width 1..8"
+          },
+          "lineColor": {
+            "type": "string",
+            "help": "connector colour, \"\" = theme"
+          },
+          "lineStyle": {
+            "type": "'solid'|'dashed'|'dotted'",
+            "help": "connector style"
+          },
+          "lineWidth": {
+            "type": "number",
+            "help": "connector width 1..8"
+          }
+        }
       }
     }
   },
