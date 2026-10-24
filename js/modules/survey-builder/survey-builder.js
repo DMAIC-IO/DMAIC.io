@@ -17,7 +17,7 @@ import { createModule } from '../../core/template-module.js';
 import { State } from './survey-builder-model.js';
 import * as labels from './survey-labels.js';
 import { draftController } from './survey-draft-controller.js';
-import { recipientsController } from './survey-recipients-controller.js';
+import { RecipientsViewModel } from './viewmodel/recipients.js';
 import { importController } from './survey-import-controller.js';
 import { resultsController } from './survey-results-controller.js';
 import { handoverController } from './survey-handover-controller.js';
@@ -55,9 +55,10 @@ export default createModule({
    * @returns {object} Alpine component state and methods
    */
   data(module, _t) {
+    const deps = { t: _t, context: module._context, container: () => module._container };
     return {
       ...draftController(module, _t),
-      ...recipientsController(module, _t),
+      recipients: new RecipientsViewModel(deps),
       ...importController(module, _t),
       ...resultsController(module, _t),
       ...handoverController(module, _t),
@@ -70,6 +71,12 @@ export default createModule({
       /** Alpine lifecycle hook. */
       init() {
         this._unsubs = [];
+        const binding = {
+          model: this.model,
+          watch: (getter, callback) => this.$watch(getter, callback),
+          nextTick: (callback) => this.$nextTick(callback),
+        };
+        for (const vm of this._subViewModels()) vm.attach(binding);
         this.$watch(() => JSON.stringify(this.model.survey), () => this.schedulePreview());
         this.$watch(() => this._resultsSignature(), () => this.scheduleCharts());
         this._loadCondDraft();
@@ -93,7 +100,11 @@ export default createModule({
         (this._unsubs || []).forEach((off) => off());
         this._unsubs = [];
         this.destroyCharts();
+        for (const vm of this._subViewModels()) vm.detach();
       },
+
+      /** @returns {object[]} the sub-viewmodels, in attach order */
+      _subViewModels() { return [this.recipients]; },
 
       // ── Tabs ──────────────────────────────────────────────────
 

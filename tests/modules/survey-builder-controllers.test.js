@@ -7,14 +7,13 @@
 
 import { suite, test, assertTrue } from '../test-utils.js';
 import { draftController } from '../../js/modules/survey-builder/survey-draft-controller.js';
-import { recipientsController } from '../../js/modules/survey-builder/survey-recipients-controller.js';
 import { importController } from '../../js/modules/survey-builder/survey-import-controller.js';
 import { resultsController } from '../../js/modules/survey-builder/survey-results-controller.js';
 import { handoverController } from '../../js/modules/survey-builder/survey-handover-controller.js';
 import { chartsController } from '../../js/modules/survey-builder/survey-charts-controller.js';
 
 const CONTROLLERS = {
-  draftController, recipientsController, importController, resultsController, handoverController, chartsController,
+  draftController, importController, resultsController, handoverController, chartsController,
 };
 
 const module = { _context: {}, _container: null };
