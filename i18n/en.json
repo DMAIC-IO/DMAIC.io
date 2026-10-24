@@ -2021,15 +2021,15 @@
         "recipients": {
           "addRecipient": { "help": "Add an empty recipient. Each recipient gets their own questionnaire file, whose answers identify the recipient." },
           "setRecipientField": { "help": "Set a field of a recipient: name, organisation, group, e-mail or note.", "params": { "recipientId": "The recipient.", "key": "Which field.", "value": "The new text; empty clears it." } },
-          "deleteRecipient": { "help": "Delete a recipient, without asking. Their responses stay, without recipient.", "params": { "recipientId": "The recipient." } }
+          "deleteRecipient": { "help": "Delete a recipient, without asking. Their responses are kept, without a recipient.", "params": { "recipientId": "The recipient." } }
         },
         "responses": {
-          "importResponse": { "help": "Read in an answer file the questionnaire saved at the recipient's. Files of this questionnaire are taken in, also those of an older version; a file read before, one of another questionnaire or a broken one only shows in the log.", "params": { "json": "The content of the answer file as text.", "fileName": "The name shown in the log." } },
+          "importResponse": { "help": "Read in an answer file the questionnaire saved on the recipient's side. Files of this questionnaire are taken in, also those of an older version; a file read before, one of another questionnaire or a broken one only shows in the log.", "params": { "json": "The content of the answer file as text.", "fileName": "The name shown in the log." } },
           "deleteResponse": { "help": "Delete an imported response, without asking; its VoC take-over marks go with it.", "params": { "responseId": "The response." } }
         },
         "results": {
           "setFilter": { "help": "Narrow the evaluation to the responses that chose a given option in a single or multiple choice question. Without a filter all responses count.", "params": { "questionId": "The choice question; null together with optionId null lifts the filter.", "optionId": "One of its options; null lifts the filter." } },
-          "setGroupBy": { "help": "Set the evaluation side by side per option of a single choice question, for example per customer group. Groups with few responses are marked.", "params": { "questionId": "The single choice question; null switches the comparison off." } },
+          "setGroupBy": { "help": "Compare the evaluation across the options of a single choice question, for example by customer group. Groups with few responses are marked.", "params": { "questionId": "The single choice question; null switches the comparison off." } },
           "setReportWithNames": { "help": "Whether the exported report names who wrote the free texts. No effect for an anonymous questionnaire.", "params": { "on": "true names them, false does not." } }
         },
         "handover": {
@@ -2065,8 +2065,8 @@
           "text": "The question as respondents read it.",
           "hint": "An explanation below the question.",
           "required": "Required: without an answer the questionnaire cannot be completed.",
-          "other": "Also offers a free answer Other.",
-          "noAnswer": "Offers the answer no answer per row.",
+          "other": "Also offers a free-text \"Other\" answer.",
+          "noAnswer": "Offers a \"No answer\" choice per row.",
           "importance": "Also asks for the importance from 1 to 9 per row.",
           "multiline": "Multi-line answer field instead of a single line."
         },

@@ -158,7 +158,10 @@ export function createOps(deps) {
       // Öffnen (E3), eine bewusst nicht freigegebene Umschaltung, ein
       // Zurücksetzen von Einstellungen. Geprüft wird VOR `getViewmodel`:
       // ein abgewiesener Aufruf soll die Ansicht nicht erst öffnen.
-      const spec = entry.actions?.[action.method];
+      // Nur eigene Schlüssel: geerbte Namen wie `constructor` oder `valueOf`
+      // gehören nicht zum Katalog.
+      const spec = Object.hasOwn(entry.actions ?? {}, action.method)
+        ? entry.actions[action.method] : null;
       if (!spec) {
         // Dieselbe Fehlerform wie unten; `available` nennt aber die
         // KATALOG-Aktionen — was der Agent statt dessen rufen darf. Die

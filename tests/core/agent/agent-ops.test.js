@@ -130,6 +130,14 @@ suite('agent ops — Teil-Viewmodels (Spec 2026-10-24 E3)', () => {
     assertDeepEqual(out.available, ['draft.addQuestion', 'draft.questionClass']);
   });
 
+  test('inherited Object.prototype names are refused as unknown_method with the catalog actions', async () => {
+    for (const name of ['constructor', 'valueOf']) {
+      const out = await call({ model: {}, draft: new Draft() }, name);
+      assertEqual(out.error, 'unknown_method', name);
+      assertDeepEqual(out.available, ['draft.addQuestion', 'draft.gone', 'draft.inner.go', 'read'], name);
+    }
+  });
+
   test('only one level: draft.inner.go is not resolved', async () => {
     const out = await call({ model: {}, draft: new Draft() }, 'draft.inner.go');
     assertEqual(out.error, 'unknown_method');

@@ -2066,7 +2066,7 @@
           "hint": "Ein Erklärtext unter der Frage.",
           "required": "Pflichtfrage: ohne Antwort lässt sich der Fragebogen nicht abschließen.",
           "other": "Bietet zusätzlich eine freie Antwort Sonstige an.",
-          "noAnswer": "Bietet je Zeile die Antwort keine Angabe an.",
+          "noAnswer": "Bietet je Zeile die Antwort „keine Angabe“ an.",
           "importance": "Fragt je Zeile zusätzlich die Wichtigkeit von 1 bis 9 ab.",
           "multiline": "Mehrzeiliges Antwortfeld statt einer Zeile."
         },

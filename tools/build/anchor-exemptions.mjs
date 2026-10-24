@@ -135,7 +135,7 @@ export const ANCHOR_EXEMPTIONS = {
     { match: 'class="of__import-option"', reason: 'Auswahlzeile je Quelle im Importdialog; keine Agentenaktion', count: 1 },
   ],
   'survey-builder': [
-    { match: ':value="opt.id"', reason: 'Option einer Bedingungszeile; ihr Text ist die Option selbst, die Bedingungen sind am Abschnittstitel verankert', count: 1 },
+    { match: ':value="opt.id"', reason: 'Option einer Bedingungszeile; ihr Text ist die Option selbst, die Bedingungen sind am Titel der Bedingungen verankert', count: 1 },
     { match: '<th x-text="g.label">', reason: 'Spaltenkopf je Vergleichsgruppe, Text aus den Daten; die Gruppierung ist an ihrer Auswahl verankert', count: 1 },
   ],
   'triz-9-windows': [
