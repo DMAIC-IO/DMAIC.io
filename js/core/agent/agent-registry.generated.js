@@ -13967,8 +13967,7 @@ export const AGENT_REGISTRY = {
       "unmarked_method:canUndo",
       "unmarked_method:orgUndo",
       "unmarked_method:nodeStylePickColor",
-      "unreadable_state_key:orgChart",
-      "dom_detour:dataset.orgId@334"
+      "unreadable_state_key:orgChart"
     ],
     "actions": {},
     "fields": {

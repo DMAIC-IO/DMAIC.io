@@ -41,6 +41,13 @@ const UNDO_MAX = 50;
  */
 const orgLineCharts = new WeakMap();
 
+/**
+ * Rendered org node element per node id, per component root. Outside Alpine's
+ * reactive proxy, like orgLineCharts; replaces a data attribute on the node.
+ * @type {WeakMap<Element, Map<string, HTMLElement>>}
+ */
+const orgNodeEls = new WeakMap();
+
 /** Convert stored Markdown content to a DocumentFragment for the editor. */
 function prepareFragment(raw) {
   return markdownToFragment(raw);
@@ -139,6 +146,7 @@ export default createModule({
         this.dragRowsDestroy();
         const lines = orgLineCharts.get(this.$root);
         if (lines) { module._context.chartManager.destroy(lines); orgLineCharts.delete(this.$root); }
+        orgNodeEls.delete(this.$root);
         if (this._modebar) { this._modebar.destroy(); this._modebar = null; }
         if (this._orgResizeObs) { this._orgResizeObs.disconnect(); this._orgResizeObs = null; }
       },
@@ -260,12 +268,16 @@ export default createModule({
       canUndo() { this._confirmTick; return this._undoStack.length > 0; },
       orgUndo() { this._undo(); },
 
+      _orgEl(id) {
+        return orgNodeEls.get(this.$root)?.get(id);
+      },
+
       _orgChildren(pid) {
         return this.model.orgNodes.filter(n => n.pid === pid && !n._h);
       },
 
       _orgNodeHeight(id) {
-        const el = this.$root.querySelector(`[data-org-id="${  id  }"]`);
+        const el = this._orgEl(id);
         return el ? el.offsetHeight : 70;
       },
 
@@ -323,6 +335,8 @@ export default createModule({
       _orgRenderNodes() {
         const canvas = this.$root.querySelector('[data-ref="orgCanvas"]');        if (!canvas) return;
         canvas.querySelectorAll('.pc__org-node').forEach(e => e.remove());
+        const els = new Map();
+        orgNodeEls.set(this.$root, els);
 
         const visible = this.model.orgNodes.filter(n => !n._h);
         visible.forEach(n => {
@@ -331,7 +345,6 @@ export default createModule({
 
           const div = document.createElement('div');
           div.className = `pc__org-node${  isSel ? ' pc__org-node--sel' : ''}`;
-          div.dataset.orgId = n.id;
           div.style.left = `${n._x  }px`;
           div.style.top = `${n._y  }px`;
           div.style.width = `${NW  }px`;
@@ -382,6 +395,7 @@ export default createModule({
           });
 
           canvas.appendChild(div);
+          els.set(n.id, div);
         });
 
         const empty = this.$root.querySelector('[data-ref="orgEmpty"]');
@@ -390,7 +404,7 @@ export default createModule({
 
       _orgPosDom() {
         this.model.orgNodes.filter(n => !n._h).forEach(n => {
-          const el = this.$root.querySelector(`[data-org-id="${  n.id  }"]`);
+          const el = this._orgEl(n.id);
           if (el) { el.style.left = `${n._x  }px`; el.style.top = `${n._y  }px`; }
         });
       },
@@ -601,7 +615,7 @@ export default createModule({
           if (!undoPushed) { this._pushUndo(); undoPushed = true; }
           n._x = origX + dx;
           n._y = origY + dy;
-          const el = this.$root.querySelector(`[data-org-id="${  id  }"]`);
+          const el = this._orgEl(id);
           if (el) {
             el.style.left = `${n._x  }px`;
             el.style.top = `${n._y  }px`;
@@ -617,7 +631,7 @@ export default createModule({
         const onUp = () => {
           window.removeEventListener('pointermove', onMove);
           window.removeEventListener('pointerup', onUp);
-          const el = this.$root.querySelector(`[data-org-id="${  id  }"]`);
+          const el = this._orgEl(id);
           if (el) el.classList.remove('pc__org-node--drag');
           if (wrap) wrap.classList.remove('pc__org-wrap--reordering');
           this._orgHideDropIndicator();
@@ -689,7 +703,7 @@ export default createModule({
           gapX = (others[insertIdx - 1]._x + NW + others[insertIdx]._x) / 2;
         }
         const refNode = others[0];
-        const refEl = this.$root.querySelector(`[data-org-id="${  refNode.id  }"]`);
+        const refEl = this._orgEl(refNode.id);
         const nodeH = refEl ? refEl.offsetHeight : 70;
         indicator.style.left = `${gapX - 1  }px`;
         indicator.style.top = `${refNode._y  }px`;
@@ -714,34 +728,28 @@ export default createModule({
 
       _orgReparent(id) {
         const n = this.model.orgNodes.find(x => x.id === id);
-        const el = this.$root.querySelector(`[data-org-id="${  id  }"]`);
+        const el = this._orgEl(id);
         if (!n || !el) return;
         for (const o of this.model.orgNodes) {
           if (o.id === id || o._h || o.id === n.pid) continue;
-          if (this._orgIsDescendant(o.id, id)) continue;
-          const oe = this.$root.querySelector(`[data-org-id="${  o.id  }"]`);
+          if (this.model.isOrgDescendant(o.id, id)) continue;
+          const oe = this._orgEl(o.id);
           if (!oe) continue;
           if (n._x < o._x + NW && n._x + NW > o._x &&
               n._y < o._y + oe.offsetHeight && n._y + el.offsetHeight > o._y) {
-            n.pid = o.id;
+            this.model.moveOrgNode(id, o.id, null);
             return;
           }
         }
-      },
-
-      _orgIsDescendant(targetId, ancestorId) {
-        for (const c of this.model.orgNodes.filter(n => n.pid === ancestorId)) {
-          if (c.id === targetId || this._orgIsDescendant(targetId, c.id)) return true;
-        }
-        return false;
       },
 
       // ─── Select ─────────────────────────────────────────────
 
       _orgSelect(id) {
         this._orgSel = id;
-        this.$root.querySelectorAll('.pc__org-node').forEach(e =>
-          e.classList.toggle('pc__org-node--sel', e.dataset.orgId === id));
+        for (const [nid, el] of orgNodeEls.get(this.$root) || []) {
+          el.classList.toggle('pc__org-node--sel', nid === id);
+        }
         this._orgDrawLines();
       },
 
@@ -774,17 +782,7 @@ export default createModule({
             if (!title) { el.querySelector('[data-field="title"]')?.focus(); return false; }
             this._pushUndo();
             const desc = this.nodeDraft.desc.trim();
-            const newNode = {
-              id: uid(), title, desc,
-              pid: parentId ?? null,
-              bg: '', borderColor: '', borderStyle: '', borderWidth: 0,
-              _col: false, _h: false, _x: 0, _y: 0,
-            };
-            this.model.orgNodes.push(newNode);
-            if (parentId) {
-              const p = this.model.orgNodes.find(n => n.id === parentId);
-              if (p) p._col = false;
-            }
+            const newNode = this.model.addOrgNode({ title, desc, pid: parentId ?? null });
             this._orgRefresh();
             this._orgSelect(newNode.id);
             requestAnimationFrame(() => this._orgFit());
@@ -833,13 +831,11 @@ export default createModule({
             const title = d.title.trim();
             if (!title) return false;
             this._pushUndo();
-            n.title = title;
-            n.desc = d.desc.trim();
-            n.bg = d.bg || '';
-            n.borderColor = d.borderColor || '';
-            n.borderStyle = d.borderStyle || '';
-            const bw = parseInt(d.borderWidth, 10);
-            n.borderWidth = (bw && bw !== 1) ? Math.max(1, Math.min(8, bw)) : 0;
+            this.model.updateOrgNode(id, { title, desc: d.desc.trim() });
+            this.model.setOrgNodeStyle(id, 'bg', d.bg);
+            this.model.setOrgNodeStyle(id, 'borderColor', d.borderColor);
+            this.model.setOrgNodeStyle(id, 'borderStyle', d.borderStyle);
+            this.model.setOrgNodeStyle(id, 'borderWidth', d.borderWidth);
             this._orgRefresh();
             return true;
           },
@@ -856,14 +852,7 @@ export default createModule({
         });
         if (!confirmed) return;
         this._pushUndo();
-        const delRecursive = (pid) => {
-          this.model.orgNodes.filter(n => n.pid === pid).forEach(c => {
-            delRecursive(c.id);
-            this.model.orgNodes = this.model.orgNodes.filter(n => n.id !== c.id);
-          });
-        };
-        delRecursive(id);
-        this.model.orgNodes = this.model.orgNodes.filter(n => n.id !== id);
+        this.model.deleteOrgNode(id);
         if (this._orgSel === id) this._orgSel = null;
         this._orgRefresh();
       },
@@ -926,12 +915,9 @@ export default createModule({
         const t = (key) => _t(`editor.${  key}`);
         const style = this.model.orgStyle;
         let editorUndoPushed = false;
-        const apply = () => {
-          if (!editorUndoPushed) { this._pushUndo(); editorUndoPushed = true; }
-          this._orgApplyStyle();
-          // Touch the reactive model so $watch persists the orgStyle change.
-          this.model.orgStyle = { ...this.model.orgStyle };
-        };
+        const ensureUndo = () => { if (!editorUndoPushed) { this._pushUndo(); editorUndoPushed = true; } };
+        const apply = () => { this._orgApplyStyle(); this._orgDrawLines(); };
+        const set = (key) => (v) => { ensureUndo(); this.model.setOrgStyle(key, v); };
 
         const resolveColor = (value, cssProp) => {
           if (value) return value;
@@ -958,16 +944,16 @@ export default createModule({
         ];
 
         const nodeSec = edSection(t('nodeAppearance'));
-        nodeSec.appendChild(colorRow(t('bgColor'), style.nodeBg, '--color-bg-secondary', (v) => { style.nodeBg = v; }));
-        nodeSec.appendChild(colorRow(t('borderColor'), style.nodeBorderColor, '--color-border-secondary', (v) => { style.nodeBorderColor = v; }));
-        nodeSec.appendChild(edSelectRow(t('borderStyle'), styleOpts, style.nodeBorderStyle, (v) => { style.nodeBorderStyle = v; apply(); }));
-        nodeSec.appendChild(edInlineNum(t('borderWidth'), style.nodeBorderWidth, (v) => { style.nodeBorderWidth = Math.max(1, Math.min(8, v)); apply(); }, 1, 8, 1));
+        nodeSec.appendChild(colorRow(t('bgColor'), style.nodeBg, '--color-bg-secondary', set('nodeBg')));
+        nodeSec.appendChild(colorRow(t('borderColor'), style.nodeBorderColor, '--color-border-secondary', set('nodeBorderColor')));
+        nodeSec.appendChild(edSelectRow(t('borderStyle'), styleOpts, style.nodeBorderStyle, (v) => { set('nodeBorderStyle')(v); apply(); }));
+        nodeSec.appendChild(edInlineNum(t('borderWidth'), style.nodeBorderWidth, (v) => { set('nodeBorderWidth')(v); apply(); }, 1, 8, 1));
         inner.appendChild(nodeSec);
 
         const lineSec = edSection(t('connectorLines'));
-        lineSec.appendChild(colorRow(t('lineColor'), style.lineColor, '--color-border-secondary', (v) => { style.lineColor = v; }));
-        lineSec.appendChild(edSelectRow(t('lineStyle'), styleOpts, style.lineStyle, (v) => { style.lineStyle = v; apply(); }));
-        lineSec.appendChild(edInlineNum(t('lineWidth'), style.lineWidth, (v) => { style.lineWidth = Math.max(1, Math.min(8, v)); apply(); }, 1, 8, 1));
+        lineSec.appendChild(colorRow(t('lineColor'), style.lineColor, '--color-border-secondary', set('lineColor')));
+        lineSec.appendChild(edSelectRow(t('lineStyle'), styleOpts, style.lineStyle, (v) => { set('lineStyle')(v); apply(); }));
+        lineSec.appendChild(edInlineNum(t('lineWidth'), style.lineWidth, (v) => { set('lineWidth')(v); apply(); }, 1, 8, 1));
         inner.appendChild(lineSec);
       },
 
