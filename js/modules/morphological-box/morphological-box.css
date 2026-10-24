@@ -34,18 +34,25 @@
   display: flex;
   gap: var(--spacing-xs);
   font-weight: 600;
-  border-bottom: 2px solid var(--color-border-primary);
 }
 
+/* Heading cells take the look of the cells below them. */
 .morphological-box__head-param {
   flex: 0 0 180px;
   padding: var(--spacing-xs);
+  background: var(--color-bg-tertiary);
+  border-radius: var(--border-radius-sm);
 }
 
 .morphological-box__head-options {
   flex: 1;
+  /* Stop above the add-option button so only option columns are covered. */
+  margin-right: calc(22px + var(--spacing-xs));
   padding: var(--spacing-xs);
   text-align: center;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
 }
 
 .morphological-box__row {
