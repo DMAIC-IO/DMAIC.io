@@ -26,6 +26,14 @@ export const ORG_STYLE_DEFAULTS = {
   lineWidth: 2,
 };
 
+/** Per-node style keys (setOrgNodeStyle). */
+export const ORG_NODE_STYLE_KEYS = ['bg', 'borderColor', 'borderStyle', 'borderWidth'];
+
+/** Global org style keys (setOrgStyle). */
+export const ORG_STYLE_KEYS = Object.keys(ORG_STYLE_DEFAULTS);
+
+const clampWidth = (v) => Math.max(1, Math.min(8, parseInt(v, 10) || 1));
+
 /** Create a fresh org node with initialized transient layout fields. */
 function makeNode(d) {
   return {
@@ -126,6 +134,123 @@ export class State {
       if (after) targetIdx += 1;
       this.goals.splice(targetIdx, 0, moved);
     }
+  }
+
+  // ─── Org chart business logic ──────────────────────────────
+
+  /** Siblings under `pid` (null = roots), in array order. */
+  orgSiblings(pid) {
+    return this.orgNodes.filter(n => (n.pid ?? null) === (pid ?? null));
+  }
+
+  /** True if `targetId` lies in the subtree below `ancestorId`. */
+  isOrgDescendant(targetId, ancestorId) {
+    for (const c of this.orgNodes.filter(n => n.pid === ancestorId)) {
+      if (c.id === targetId || this.isOrgDescendant(targetId, c.id)) return true;
+    }
+    return false;
+  }
+
+  /**
+   * Append a node; a collapsed parent is expanded so the new node shows.
+   * @param {{ title: string, desc?: string, pid?: string|null }} d
+   * @returns {object} the new node
+   */
+  addOrgNode({ title, desc = '', pid = null }) {
+    const node = makeNode({ id: uid(), title, desc, pid });
+    this.orgNodes.push(node);
+    if (pid) {
+      const p = this.orgNodes.find(n => n.id === pid);
+      if (p) p._col = false;
+    }
+    return node;
+  }
+
+  /**
+   * @param {string} id
+   * @param {{ title: string, desc: string }} fields
+   * @returns {boolean} false for an unknown id
+   */
+  updateOrgNode(id, { title, desc }) {
+    const n = this.orgNodes.find(x => x.id === id);
+    if (!n) return false;
+    n.title = title;
+    n.desc = desc;
+    return true;
+  }
+
+  /**
+   * Per-node style; borderWidth 1 or invalid → 0 (inherits the global style),
+   * otherwise clamped to 1..8.
+   * @returns {boolean} false for an unknown id or key
+   */
+  setOrgNodeStyle(id, key, value) {
+    const n = this.orgNodes.find(x => x.id === id);
+    if (!n || !ORG_NODE_STYLE_KEYS.includes(key)) return false;
+    if (key === 'borderWidth') {
+      const bw = parseInt(value, 10);
+      n.borderWidth = (bw && bw !== 1) ? Math.max(1, Math.min(8, bw)) : 0;
+    } else {
+      n[key] = value || '';
+    }
+    return true;
+  }
+
+  /**
+   * Remove a node with its subtree.
+   * @returns {number} removed count (0 for an unknown id)
+   */
+  deleteOrgNode(id) {
+    if (!this.orgNodes.some(n => n.id === id)) return 0;
+    const doomed = new Set([id]);
+    let grew = true;
+    while (grew) {
+      grew = false;
+      for (const n of this.orgNodes) {
+        if (!doomed.has(n.id) && doomed.has(n.pid)) { doomed.add(n.id); grew = true; }
+      }
+    }
+    this.orgNodes = this.orgNodes.filter(n => !doomed.has(n.id));
+    return doomed.size;
+  }
+
+  /**
+   * Re-parent `id` under `pid` (null = root) at sibling position `index`
+   * (0..n; index >= sibling count or null = end).
+   * @returns {boolean} false for unknown ids or a cycle
+   */
+  moveOrgNode(id, pid, index) {
+    const node = this.orgNodes.find(n => n.id === id);
+    if (!node) return false;
+    if (pid != null) {
+      if (pid === id || !this.orgNodes.some(n => n.id === pid)) return false;
+      if (this.isOrgDescendant(pid, id)) return false;
+    }
+    const rest = this.orgNodes.filter(n => n.id !== id);
+    node.pid = pid ?? null;
+    const siblings = rest.filter(n => (n.pid ?? null) === node.pid);
+    const at = (index == null || index >= siblings.length) ? null : siblings[Math.max(0, index)];
+    if (at) {
+      rest.splice(rest.indexOf(at), 0, node);
+    } else if (siblings.length) {
+      rest.splice(rest.indexOf(siblings[siblings.length - 1]) + 1, 0, node);
+    } else {
+      rest.push(node);
+    }
+    this.orgNodes = rest;
+    return true;
+  }
+
+  /**
+   * Global org style; widths clamped to 1..8. Replaces the object so the
+   * reactive watcher persists the change.
+   * @returns {boolean} false for an unknown key
+   */
+  setOrgStyle(key, value) {
+    if (!ORG_STYLE_KEYS.includes(key)) return false;
+    const v = (key === 'nodeBorderWidth' || key === 'lineWidth') ? clampWidth(value) : value;
+    this.orgStyle = { ...this.orgStyle, [key]: v };
+    return true;
   }
 
   /**
