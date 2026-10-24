@@ -20,7 +20,7 @@ import { draftController } from './survey-draft-controller.js';
 import { RecipientsViewModel } from './viewmodel/recipients.js';
 import { ResponsesViewModel } from './viewmodel/responses.js';
 import { resultsController } from './survey-results-controller.js';
-import { handoverController } from './survey-handover-controller.js';
+import { HandoverViewModel } from './viewmodel/handover.js';
 import { chartsController } from './survey-charts-controller.js';
 import { uid } from '../../core/uid.js';
 
@@ -61,7 +61,7 @@ export default createModule({
       recipients: new RecipientsViewModel(deps),
       responses: new ResponsesViewModel(deps),
       ...resultsController(module, _t),
-      ...handoverController(module, _t),
+      handover: new HandoverViewModel(deps),
       ...chartsController(module, _t),
       _t,
       _unsubs: [],
@@ -77,9 +77,6 @@ export default createModule({
           nextTick: (callback) => this.$nextTick(callback),
         };
         for (const vm of this._subViewModels()) vm.attach(binding);
-        // Transitional (until the hand-over is a sub-viewmodel): a deleted
-        // response takes its ticked answers with it.
-        this.$watch(() => this.model.responseIds().join('\n'), () => this.pruneVocSelection());
         this.$watch(() => JSON.stringify(this.model.survey), () => this.schedulePreview());
         this.$watch(() => this._resultsSignature(), () => this.scheduleCharts());
         this._loadCondDraft();
@@ -88,7 +85,7 @@ export default createModule({
         const onTheme = () => this.scheduleCharts();
         eb.on('theme:changed', onTheme);
         this._unsubs.push(() => eb.off('theme:changed', onTheme));
-        const onInstances = () => { this.kanoRev++; };
+        const onInstances = () => this.handover.onInstancesChanged();
         for (const evt of ['module:added', 'module:removed']) {
           eb.on(evt, onInstances);
           this._unsubs.push(() => eb.off(evt, onInstances));
@@ -107,7 +104,7 @@ export default createModule({
       },
 
       /** @returns {object[]} the sub-viewmodels, in attach order */
-      _subViewModels() { return [this.recipients, this.responses]; },
+      _subViewModels() { return [this.recipients, this.responses, this.handover]; },
 
       // ── Tabs ──────────────────────────────────────────────────
 
@@ -190,20 +187,6 @@ export default createModule({
 
       /** @param {number|null} value @param {number} decimals @returns {string} localised number */
       fmtNum(value, decimals) { return labels.fmtNum(value, decimals, this._locale()); },
-
-      /**
-       * Phase this instance lives in — new kano / worksheet instances are
-       * created next to it (spec §6.2, §8.1).
-       * @returns {string}
-       */
-      _ownPhase() {
-        const phases = module._context.stateManager.get('phases') || {};
-        for (const phase of Object.keys(phases)) {
-          const list = phases[phase];
-          if (Array.isArray(list) && list.some((i) => i.instanceId === module._context.instanceId)) return phase;
-        }
-        return 'define';
-      },
     };
   },
 });

@@ -339,10 +339,10 @@
             </template>
           </select>
           <span class="survey-builder__counts" data-ref="nLine" x-text="nLine()"></span>
-          <button class="btn btn--sm" type="button" data-ref="takeToVoc" :disabled="!hasVocSelection()" @click="takeToVocTree()">
+          <button class="btn btn--sm" type="button" data-ref="takeToVoc" :disabled="!handover.hasVocSelection()" @click="handover.takeToVocTree()">
             <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span><span x-text="t('takeToVoc')"></span>
           </button>
-          <button class="btn btn--sm" type="button" data-ref="toWorksheet" @click="toWorksheet()">
+          <button class="btn btn--sm" type="button" data-ref="toWorksheet" @click="handover.toWorksheet()">
             <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span><span x-text="t('toWorksheet')"></span>
           </button>
         </div>
@@ -496,14 +496,14 @@
                   <div x-show="hasOtherTexts(b)">
                     <div class="survey-builder__subtitle" x-text="t('otherTitle')"></div>
                     <ul class="survey-builder__texts" data-ref="otherAnswers">
-                      <template x-for="a in otherAnswers(b)" :key="a.key">
+                      <template x-for="a in handover.otherAnswers(b)" :key="a.key">
                         <li class="survey-builder__answer">
                           <input type="checkbox" data-ref="vocCheck"
-                                 :checked="isVocSelected(a.key)" @change="toggleVoc(a.key)">
+                                 :checked="handover.isVocSelected(a.key)" @change="handover.toggleVoc(a.key)">
                           <span class="icon icon--sm survey-builder__taken" data-icon="status.ok" data-ref="vocTaken"
-                                x-show="isVocTaken(a.key)" :title="t('vocTakenMark')"></span>
+                                x-show="handover.isVocTaken(a.key)" :title="t('vocTakenMark')"></span>
                           <span data-ref="answerText" x-text="a.text"></span>
-                          <span class="survey-builder__hint" x-show="hasName(a)" x-text="a.name"></span>
+                          <span class="survey-builder__hint" x-show="handover.hasName(a)" x-text="a.name"></span>
                         </li>
                       </template>
                     </ul>
@@ -565,13 +565,13 @@
                   </table>
                   <div class="survey-builder__toolbar">
                     <label class="survey-builder__counts" x-text="t('kanoTarget')"></label>
-                    <select class="field" data-ref="kanoTarget" @change="setKanoTargetFromEvent(b.question.id, $event)">
-                      <option value="" :selected="isKanoTarget(b.question.id, '')" x-text="t('kanoNew')"></option>
-                      <template x-for="o in kanoTargetOptions()" :key="o.value">
-                        <option :value="o.value" :selected="isKanoTarget(b.question.id, o.value)" x-text="o.label"></option>
+                    <select class="field" data-ref="kanoTarget" @change="handover.setKanoTargetFromEvent(b.question.id, $event)">
+                      <option value="" :selected="handover.isKanoTarget(b.question.id, '')" x-text="t('kanoNew')"></option>
+                      <template x-for="o in handover.kanoTargetOptions()" :key="o.value">
+                        <option :value="o.value" :selected="handover.isKanoTarget(b.question.id, o.value)" x-text="o.label"></option>
                       </template>
                     </select>
-                    <button class="btn btn--sm" type="button" data-action="handOverKano" @click="handOverToKano(b.question.id)">
+                    <button class="btn btn--sm" type="button" data-action="handOverKano" @click="handover.handOverToKano(b.question.id)">
                       <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span><span x-text="t('handOverKano')"></span>
                     </button>
                   </div>
@@ -581,16 +581,16 @@
 
               <template x-if="isType(b, 'text')">
                 <div class="survey-builder__block-body">
-                  <p class="survey-builder__hint" x-show="!hasTextAnswers(b)" x-text="t('textEmpty')"></p>
+                  <p class="survey-builder__hint" x-show="!handover.hasTextAnswers(b)" x-text="t('textEmpty')"></p>
                   <ul class="survey-builder__texts" data-ref="answers">
-                    <template x-for="a in textAnswers(b)" :key="a.key">
+                    <template x-for="a in handover.textAnswers(b)" :key="a.key">
                       <li class="survey-builder__answer">
                         <input type="checkbox" data-ref="vocCheck"
-                               :checked="isVocSelected(a.key)" @change="toggleVoc(a.key)">
+                               :checked="handover.isVocSelected(a.key)" @change="handover.toggleVoc(a.key)">
                         <span class="icon icon--sm survey-builder__taken" data-icon="status.ok" data-ref="vocTaken"
-                              x-show="isVocTaken(a.key)" :title="t('vocTakenMark')"></span>
+                              x-show="handover.isVocTaken(a.key)" :title="t('vocTakenMark')"></span>
                         <span data-ref="answerText" x-text="a.text"></span>
-                        <span class="survey-builder__hint" x-show="hasName(a)" x-text="a.name"></span>
+                        <span class="survey-builder__hint" x-show="handover.hasName(a)" x-text="a.name"></span>
                       </li>
                     </template>
                   </ul>
