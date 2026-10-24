@@ -36,23 +36,23 @@
   font-weight: 600;
 }
 
-/* Heading cells take the look of the cells below them. */
+/* Heading cells share the cell shape but carry the accent to read as headings. */
+.morphological-box__head-param,
+.morphological-box__head-options {
+  padding: var(--spacing-xs);
+  text-align: center;
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--border-radius-sm);
+}
+
 .morphological-box__head-param {
   flex: 0 0 180px;
-  padding: var(--spacing-xs);
-  background: var(--color-bg-tertiary);
-  border-radius: var(--border-radius-sm);
 }
 
 .morphological-box__head-options {
   flex: 1;
-  /* Stop above the add-option button so only option columns are covered. */
-  margin-right: calc(22px + var(--spacing-xs));
-  padding: var(--spacing-xs);
-  text-align: center;
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border-secondary);
-  border-radius: var(--border-radius-sm);
 }
 
 .morphological-box__row {
