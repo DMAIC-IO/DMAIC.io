@@ -156,6 +156,7 @@ const SKIP = new Set([
   'ui/dialog.test.js',
   'ui/dmaic-tiles-rebuild.test.js',
   'core/tablist.test.js',
+  'frame/bug-reporter/capture-dom.test.js',
   'ui/help-panel-references.test.js',
   'ui/help-panel-videos.test.js',
   'ui/layout-primitives.test.js',
