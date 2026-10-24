@@ -243,9 +243,30 @@
   width: auto;
 }
 
-.morphological-box__matrix-col {
+/*
+ * The matrix borrows the box view's look: accent headings, a bold parameter
+ * column and framed option cells. Selectors repeat the table class so they
+ * outrank the generic .dmike-table rules.
+ */
+.morphological-box__matrix .morphological-box__matrix-corner,
+.morphological-box__matrix .morphological-box__matrix-colgroup,
+.morphological-box__matrix .morphological-box__matrix-col {
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  border: 1px solid var(--color-accent);
+  font-weight: 600;
+  text-align: center;
+}
+
+.morphological-box__matrix .morphological-box__matrix-corner {
+  vertical-align: bottom;
+}
+
+.morphological-box__matrix .morphological-box__matrix-col {
   vertical-align: bottom;
   white-space: nowrap;
+  font-weight: 400;
+  border-top-color: var(--color-text-inverse);
 }
 
 .morphological-box__matrix-col-text {
@@ -254,21 +275,41 @@
   transform: rotate(180deg);
 }
 
-.morphological-box__matrix-rowhead {
-  text-align: left;
+.morphological-box__matrix .morphological-box__matrix-param {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  font-weight: 600;
   white-space: nowrap;
+  vertical-align: middle;
+  border: 1px solid var(--color-border-secondary);
 }
 
-.morphological-box__matrix-param {
-  margin-right: var(--spacing-xs);
-  color: var(--color-text-tertiary);
+.morphological-box__matrix .morphological-box__matrix-rowhead {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
   font-weight: 400;
+  white-space: nowrap;
+  border: 1px solid var(--color-border-secondary);
 }
 
-.morphological-box__matrix-row--group > * {
+.morphological-box__matrix .morphological-box__matrix-cell {
+  text-align: center;
+  border: 1px solid var(--color-border-secondary);
+}
+
+.morphological-box__matrix .morphological-box__matrix-cell--void {
+  background: var(--color-bg-tertiary);
+}
+
+/* A new parameter opens with a heavier rule, like the gap between box rows. */
+.morphological-box__matrix .morphological-box__matrix-row--group > * {
   border-top: 2px solid var(--color-border-primary);
 }
 
-.morphological-box__matrix-cell {
-  text-align: center;
+.morphological-box__matrix .morphological-box__matrix-col--group {
+  border-left: 2px solid var(--color-border-primary);
+}
+
+.morphological-box__matrix .morphological-box__matrix-col.morphological-box__matrix-col--group {
+  border-left-color: var(--color-text-inverse);
 }

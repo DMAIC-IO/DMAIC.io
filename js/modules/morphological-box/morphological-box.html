@@ -120,26 +120,37 @@
     <table class="dmike-table morphological-box__matrix">
       <thead>
         <tr>
-          <th class="morphological-box__matrix-corner">
+          <th class="morphological-box__matrix-corner" colspan="2" rowspan="2">
             <span class="context-help-anchor--overlay" data-help-key="modules.morphological-box.actions.setConflict.help" x-text="t('matrixCorner')"></span>
           </th>
-          <template x-for="col in matrixOptions()" :key="col.id">
-            <th class="morphological-box__matrix-col" :title="parameterText(col.parameterId)">
+          <template x-for="p in matrixColParameters()" :key="p.id">
+            <th class="morphological-box__matrix-colgroup" :colspan="p.options.length" :data-col-parameter="p.id">
+              <span data-help-key="modules.morphological-box.actions.setParameterName.help" x-text="parameterText(p.id)"></span>
+            </th>
+          </template>
+        </tr>
+        <tr>
+          <template x-for="col in matrixCols()" :key="col.id">
+            <th class="morphological-box__matrix-col" :class="colGroupClass(col)" :title="parameterText(col.parameterId)">
               <span class="morphological-box__matrix-col-text" data-help-key="modules.morphological-box.actions.setOptionLabel.help" x-text="optionText(col.id)"></span>
             </th>
           </template>
         </tr>
       </thead>
       <tbody>
-        <template x-for="(row, ri) in matrixOptions()" :key="row.id">
+        <template x-for="(row, ri) in matrixRows()" :key="row.id">
           <tr :class="rowGroupClass(ri)" :data-row="row.id">
+            <template x-if="rowStartsGroup(ri)">
+              <th class="morphological-box__matrix-param" scope="rowgroup" :rowspan="rowGroupSize(row)" :data-row-parameter="row.parameterId">
+                <span data-help-key="modules.morphological-box.actions.setParameterName.help" x-text="parameterText(row.parameterId)"></span>
+              </th>
+            </template>
             <th class="morphological-box__matrix-rowhead" scope="row">
-              <span class="morphological-box__matrix-param" data-help-key="modules.morphological-box.actions.setParameterName.help" x-text="parameterText(row.parameterId)"></span>
-              <span x-text="optionText(row.id)"></span>
+              <span data-row-option data-help-key="modules.morphological-box.actions.setOptionLabel.help" x-text="optionText(row.id)"></span>
             </th>
-            <template x-for="(col, ci) in matrixOptions()" :key="col.id">
-              <td class="morphological-box__matrix-cell">
-                <template x-if="isPairCell(ri, ci, row, col)">
+            <template x-for="col in matrixCols()" :key="col.id">
+              <td class="morphological-box__matrix-cell" :class="cellClass(row, col)">
+                <template x-if="isPairCell(row, col)">
                   <input type="checkbox" class="morphological-box__matrix-check" :data-pair="row.id + '|' + col.id"
                          :checked="isConflictCell(row, col)" :aria-label="pairLabel(row, col)"
                          @change="setConflict(row.id, col.id, $event.target.checked)">

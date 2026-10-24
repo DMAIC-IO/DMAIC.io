@@ -187,14 +187,26 @@ export default createModule({
         return concept.id === this.model.activeConceptId ? 'morphological-box__concept--active' : '';
       },
 
-      /** @noagent view transform: every option with its parameter, for the consistency matrix. */
+      /** @noagent view transform: matrix rows — every option but those of the first parameter, which pairs with nothing above it. */
+      matrixRows() {
+        return this.matrixOptions().filter(o => o.parameterIndex > 0);
+      },
+
+      /** @noagent view transform: matrix columns — every option but those of the last parameter, which pairs with nothing below it. */
+      matrixCols() {
+        const last = this.model.parameters.length - 1;
+        return this.matrixOptions().filter(o => o.parameterIndex < last);
+      },
+
+      /** @noagent view transform: every option with its parameter and the parameter's position. */
       matrixOptions() {
-        return this.model.parameters.flatMap(p => p.options.map(o => ({ id: o.id, parameterId: p.id })));
+        return this.model.parameters.flatMap((p, parameterIndex) =>
+          p.options.map(o => ({ id: o.id, parameterId: p.id, parameterIndex })));
       },
 
       /** @noagent view transform: a matrix cell takes a checkbox (lower triangle, different parameters). */
-      isPairCell(rowIndex, colIndex, row, col) {
-        return colIndex < rowIndex && row.parameterId !== col.parameterId;
+      isPairCell(row, col) {
+        return col.parameterIndex < row.parameterIndex;
       },
 
       /** @noagent view transform: checked state of a matrix cell. */
@@ -207,10 +219,40 @@ export default createModule({
         return _t('pairLabel').replace('{a}', this.optionText(row.id)).replace('{b}', this.optionText(col.id));
       },
 
+      /** @noagent view transform: the parameters heading the matrix columns (all but the last). */
+      matrixColParameters() {
+        return this.model.parameters.slice(0, -1);
+      },
+
+      /** @noagent view transform: the matrix row is the first option of its parameter. */
+      rowStartsGroup(rowIndex) {
+        const rows = this.matrixRows();
+        return rowIndex === 0 || rows[rowIndex - 1].parameterId !== rows[rowIndex].parameterId;
+      },
+
+      /** @noagent view transform: number of matrix rows the parameter heading spans. */
+      rowGroupSize(row) {
+        return this.model.findParameter(row.parameterId)?.options.length || 1;
+      },
+
       /** @noagent view transform: the parameter of a matrix row starts a new group. */
       rowGroupClass(rowIndex) {
-        const opts = this.matrixOptions();
-        return rowIndex > 0 && opts[rowIndex - 1].parameterId !== opts[rowIndex].parameterId ? 'morphological-box__matrix-row--group' : '';
+        return rowIndex > 0 && this.rowStartsGroup(rowIndex) ? 'morphological-box__matrix-row--group' : '';
+      },
+
+      /** @noagent view transform: the matrix column is the first option of its parameter. */
+      colGroupClass(col) {
+        const cols = this.matrixCols();
+        const i = cols.findIndex(c => c.id === col.id);
+        return i > 0 && cols[i - 1].parameterId !== col.parameterId ? 'morphological-box__matrix-col--group' : '';
+      },
+
+      /** @noagent view transform: a matrix cell is a pair cell or an empty filler, and may open a column group. */
+      cellClass(row, col) {
+        return [
+          this.isPairCell(row, col) ? 'morphological-box__matrix-cell--pair' : 'morphological-box__matrix-cell--void',
+          this.colGroupClass(col),
+        ].filter(Boolean).join(' ');
       },
 
       /** @noagent view transform: the name of a parameter, or a placeholder for an empty one. */
