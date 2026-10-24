@@ -34,6 +34,13 @@ export const ORG_STYLE_KEYS = Object.keys(ORG_STYLE_DEFAULTS);
 
 const clampWidth = (v) => Math.max(1, Math.min(8, parseInt(v, 10) || 1));
 
+/**
+ * Per-node border style: 'solid' is stored as '' (inherit the org chart
+ * style), mirroring borderWidth 1 → 0 and the persisted form, which never
+ * carries 'solid'. Keeps the in-memory node equal to its reloaded form.
+ */
+const nodeBorderStyle = (v) => (v && v !== 'solid' ? v : '');
+
 /** Create a fresh org node with initialized transient layout fields. */
 function makeNode(d) {
   return {
@@ -43,7 +50,7 @@ function makeNode(d) {
     pid: d.pid ?? null,
     bg: d.bg || '',
     borderColor: d.borderColor || '',
-    borderStyle: d.borderStyle || '',
+    borderStyle: nodeBorderStyle(d.borderStyle),
     borderWidth: d.borderWidth || 0,
     _col: false,
     _h: false,
@@ -180,8 +187,8 @@ export class State {
   }
 
   /**
-   * Per-node style; borderWidth 1 or invalid → 0 (inherits the global style),
-   * otherwise clamped to 1..8.
+   * Per-node style; borderWidth 1 or invalid → 0 and borderStyle 'solid' → ''
+   * (both inherit the global style), borderWidth otherwise clamped to 1..8.
    * @returns {boolean} false for an unknown id or key
    */
   setOrgNodeStyle(id, key, value) {
@@ -190,6 +197,8 @@ export class State {
     if (key === 'borderWidth') {
       const bw = parseInt(value, 10);
       n.borderWidth = (bw && bw !== 1) ? Math.max(1, Math.min(8, bw)) : 0;
+    } else if (key === 'borderStyle') {
+      n.borderStyle = nodeBorderStyle(value);
     } else {
       n[key] = value || '';
     }

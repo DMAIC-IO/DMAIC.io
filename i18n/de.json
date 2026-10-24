@@ -1353,7 +1353,7 @@
           }
         },
         "addOrgNode": {
-          "help": "Eine Position im Organigramm anlegen, als oberste Ebene oder unter einer bestehenden Position. Liefert die id der neuen Position.",
+          "help": "Eine neue Position im Organigramm anlegen, als oberste Ebene oder unter einer bestehenden Position.",
           "params": {
             "title": "Bezeichnung der Position, 1 bis 100 Zeichen.",
             "desc": "Untertitel, zum Beispiel die Person; höchstens 300 Zeichen, \"\" für keinen.",
@@ -1369,7 +1369,7 @@
           }
         },
         "setOrgNodeStyle": {
-          "help": "Einen Stilwert einer einzelnen Position setzen; leer oder 0 übernimmt den Stil des ganzen Organigramms.",
+          "help": "Einen Stilwert einer einzelnen Position setzen; leer übernimmt den Stil des ganzen Organigramms, bei der Rahmenbreite auch 0 oder 1.",
           "params": {
             "id": "Die id der Position aus read().orgChart.",
             "key": "Welcher Stilwert: bg, borderColor, borderStyle oder borderWidth.",
@@ -1444,8 +1444,8 @@
         "OrgNodeStyle": {
           "bg": "Hintergrundfarbe dieser Position; leer übernimmt den Stil des Organigramms.",
           "borderColor": "Rahmenfarbe dieser Position; leer übernimmt den Stil des Organigramms.",
-          "borderStyle": "Rahmenstil dieser Position: durchgezogen, gestrichelt oder gepunktet; leer übernimmt den Stil des Organigramms.",
-          "borderWidth": "Rahmenbreite dieser Position von 1 bis 8; 0 übernimmt den Stil des Organigramms."
+          "borderStyle": "Rahmenstil dieser Position: gestrichelt oder gepunktet; leer, in der Auswahl durchgezogen, übernimmt den Stil des Organigramms.",
+          "borderWidth": "Rahmenbreite dieser Position von 2 bis 8; 0 oder 1 übernimmt den Stil des Organigramms."
         },
         "OrgStyle": {
           "nodeBg": "Hintergrundfarbe aller Positionen; \"\" folgt dem Farbschema.",

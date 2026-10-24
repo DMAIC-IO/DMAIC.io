@@ -84,13 +84,15 @@ const GOAL_CHECKS = {
 
 const NODE_STYLE_PARAM_KEYS = ['bg', 'borderColor', 'borderStyle', 'borderWidth'];
 const ORG_STYLE_PARAM_KEYS = ['nodeBg', 'nodeBorderColor', 'nodeBorderStyle', 'nodeBorderWidth', 'lineColor', 'lineStyle', 'lineWidth'];
-const NODE_BORDER_STYLES = ['', 'solid', 'dashed', 'dotted'];
+// Per node "" is drawn solid and inherits the org chart style; the model
+// stores an explicit 'solid' as "" too, so 'solid' is no own value here.
+const NODE_BORDER_STYLES = ['', 'dashed', 'dotted'];
 const LINE_STYLES = ['solid', 'dashed', 'dotted'];
 
-/** Je Knotenstil-Schlüssel der Prüfer. */
-/** Enum checker that returns the value (requireEnum itself returns void). */
+/** Aufzählungsprüfer, der den Wert zurückgibt (requireEnum selbst liefert nichts). */
 const enumValue = (allowed) => (v) => { requireEnum('value', v, allowed); return v; };
 
+/** Je Knotenstil-Schlüssel der Prüfer. */
 const NODE_STYLE_CHECKS = {
   bg: (v) => requireText('value', v),
   borderColor: (v) => requireText('value', v),
@@ -124,8 +126,8 @@ const ORG_STYLE_CHECKS = {
  * @typedef {object} OrgNodeStyle
  * @property {string} bg  background colour, "" inherits
  * @property {string} borderColor  border colour, "" inherits
- * @property {''|'solid'|'dashed'|'dotted'} borderStyle  border style, "" inherits
- * @property {number} borderWidth  border width 0..8, 0 inherits
+ * @property {''|'dashed'|'dotted'} borderStyle  border style, "" inherits (drawn solid by default)
+ * @property {number} borderWidth  border width 2..8, 0 or 1 inherits
  */
 
 /**
@@ -310,6 +312,7 @@ export default createModule({
           throw new Error(`invalid markdown (too long); allowed: at most ${PROBLEM_MAX} characters`);
         }
         this._pushUndo();
+        this._editorUndoPushed = false; // later typing gets its own undo step
         this.model.problemStatement = clean;
         this._syncProblemEditor();
       },
@@ -477,6 +480,7 @@ export default createModule({
         requireEnum('key', key, GOAL_FIELDS);
         const v = GOAL_CHECKS[key](value);
         this._pushUndo();
+        this._fieldUndoPushed = false; // later typing gets its own undo step
         this.model.setGoalField(id, key, v);
       },
 

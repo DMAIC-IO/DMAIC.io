@@ -296,6 +296,17 @@ suite('Project Charter Model — org style', () => {
     assertEqual(a.bg, '#ff0000');
     assertEqual(s.setOrgNodeStyle('nope', 'bg', '#000'), false);
   });
+  test('setOrgNodeStyle: durchgezogen erbt wie leer und bleibt nach dem Neuladen gleich', () => {
+    const { s, a } = orgFixture();
+    s.setOrgNodeStyle(a.id, 'borderStyle', 'dashed');
+    assertEqual(a.borderStyle, 'dashed');
+    s.setOrgNodeStyle(a.id, 'borderStyle', 'solid');
+    assertEqual(a.borderStyle, '');
+    const reloaded = State.fromJSON(s.toJSON()).orgNodes.find(n => n.id === a.id);
+    assertEqual(reloaded.borderStyle, a.borderStyle);
+    const imported = State.fromJSON({ orgChart: [{ id: 'x', title: 'X', pid: null, borderStyle: 'solid' }] });
+    assertEqual(imported.orgNodes[0].borderStyle, '');
+  });
   test('setOrgStyle setzt globale Werte und begrenzt Breiten auf 1..8', () => {
     const s = new State();
     s.setOrgStyle('lineStyle', 'dashed');

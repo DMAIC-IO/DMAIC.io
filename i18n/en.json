@@ -1353,7 +1353,7 @@
           }
         },
         "addOrgNode": {
-          "help": "Add a position to the org chart, at the top level or below an existing position. Returns the id of the new position.",
+          "help": "Add a new position to the org chart, at the top level or below an existing position.",
           "params": {
             "title": "Name of the position, 1 to 100 characters.",
             "desc": "Subtitle, for example the person; at most 300 characters, \"\" for none.",
@@ -1369,7 +1369,7 @@
           }
         },
         "setOrgNodeStyle": {
-          "help": "Set one style value of a single position; empty or 0 takes over the style of the whole org chart.",
+          "help": "Set one style value of a single position; empty takes over the style of the whole org chart, for the border width also 0 or 1.",
           "params": {
             "id": "The position id from read().orgChart.",
             "key": "Which style value: bg, borderColor, borderStyle or borderWidth.",
@@ -1444,8 +1444,8 @@
         "OrgNodeStyle": {
           "bg": "Background colour of this position; empty takes over the org chart style.",
           "borderColor": "Border colour of this position; empty takes over the org chart style.",
-          "borderStyle": "Border style of this position: solid, dashed or dotted; empty takes over the org chart style.",
-          "borderWidth": "Border width of this position from 1 to 8; 0 takes over the org chart style."
+          "borderStyle": "Border style of this position: dashed or dotted; empty, shown as solid in the list, takes over the org chart style.",
+          "borderWidth": "Border width of this position from 2 to 8; 0 or 1 takes over the org chart style."
         },
         "OrgStyle": {
           "nodeBg": "Background colour of all positions; \"\" follows the colour theme.",

@@ -14052,12 +14052,12 @@ export const AGENT_REGISTRY = {
             "help": "border colour, \"\" inherits"
           },
           "borderStyle": {
-            "type": "''|'solid'|'dashed'|'dotted'",
-            "help": "border style, \"\" inherits"
+            "type": "''|'dashed'|'dotted'",
+            "help": "border style, \"\" inherits (drawn solid by default)"
           },
           "borderWidth": {
             "type": "number",
-            "help": "border width 0..8, 0 inherits"
+            "help": "border width 2..8, 0 or 1 inherits"
           }
         }
       },
