@@ -816,6 +816,7 @@
     "toolArrow": "Pfeil",
     "toolLine": "Freier Strich",
     "toolTextbox": "Textbox",
+    "toolCrop": "Zuschneiden",
     "undo": "Letztes zurücknehmen",
     "textboxPlaceholder": "Text …",
     "captureUnsupported": "Bildschirmaufnahme ist hier nicht verfügbar — weiter ohne Screenshot.",

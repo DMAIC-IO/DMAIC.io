@@ -42,6 +42,7 @@
   "action.draw-arrow": "lucide:move-up-right",
   "action.draw-line": "lucide:pencil",
   "action.draw-textbox": "lucide:type",
+  "action.crop": "lucide:crop",
   "nav.menu": "lucide:menu",
   "nav.expand-down": "lucide:chevron-down",
   "nav.expand-right": "lucide:chevron-right",

@@ -816,6 +816,7 @@
     "toolArrow": "Arrow",
     "toolLine": "Freehand",
     "toolTextbox": "Text box",
+    "toolCrop": "Crop",
     "undo": "Undo last",
     "textboxPlaceholder": "Text …",
     "captureUnsupported": "Screen capture is not available here — continuing without a screenshot.",

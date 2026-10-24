@@ -83,3 +83,25 @@ export async function captureScreen(nav = navigator, doc = document, timeoutMs =
     stream.getTracks().forEach(t => t.stop());
   }
 }
+
+/**
+ * Cut a captured screenshot down to `rect`, again as PNG.
+ * @param {{blob: Blob, width: number, height: number}} shot
+ * @param {{x: number, y: number, w: number, h: number}} rect image px, inside the shot
+ * @param {Document} [doc] seam for the environment's document
+ * @returns {Promise<{blob: Blob, width: number, height: number}>}
+ */
+export async function cropImage(shot, rect, doc = document) {
+  const bitmap = await createImageBitmap(shot.blob);
+  try {
+    const canvas = doc.createElement('canvas');
+    canvas.width = rect.w;
+    canvas.height = rect.h;
+    canvas.getContext('2d').drawImage(bitmap, rect.x, rect.y, rect.w, rect.h, 0, 0, rect.w, rect.h);
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    if (!blob) throw new Error('canvas.toBlob returned null');
+    return { blob, width: rect.w, height: rect.h };
+  } finally {
+    bitmap.close();
+  }
+}

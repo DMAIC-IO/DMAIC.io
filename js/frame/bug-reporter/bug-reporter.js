@@ -13,7 +13,7 @@ import { buildBugReportOptInDialog } from '../../dialogs/bug-report-optin/bug-re
 import { buildBugReportDescribeDialog } from '../../dialogs/bug-report-describe/bug-report-describe.js';
 import { isReporterHost } from './host.js';
 import { buildReport, collectContext } from './report.js';
-import { captureScreen } from './capture.js';
+import { captureScreen, cropImage } from './capture.js';
 import { mountEditor } from './editor.js';
 import { createHttpTransport, downloadFiles } from './transport.js';
 
@@ -85,6 +85,7 @@ export function initBugReporter(kernel, ui, deps = {}) {
 
     let editor = null;
     let annotations = null;
+    let crop = null;
     let description;
     try {
       description = await describe.open(ui.dialog, { hasScreenshot: !!shot }, {
@@ -104,6 +105,7 @@ export function initBugReporter(kernel, ui, deps = {}) {
         onConfirm: () => {
           editor?.commitPending();
           annotations = editor ? editor.model.toJSON() : null;
+          crop = annotations?.crop ?? null;
           // createDialog.open() still resolves model.result() when the caller
           // owns onConfirm; returning undefined (not false) lets the dialog close.
           return undefined;
@@ -113,6 +115,16 @@ export function initBugReporter(kernel, ui, deps = {}) {
       editor?.destroy();
     }
     if (description === null) return;
+
+    if (crop) {
+      try { shot = await cropImage(shot, crop); } catch (err) {
+        // Never fall back to the whole image: the user cut that part away on
+        // purpose. The annotations refer to the crop, so they go too.
+        notes.push(note('Zuschneiden', 'fehlgeschlagen, Markierungen verworfen', err));
+        shot = null;
+        annotations = null;
+      }
+    }
 
     let project = null;
     if (choice.project) {
