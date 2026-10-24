@@ -13,12 +13,11 @@ import { parseResponse } from './survey-import.js';
 import { formatAnswer } from './survey-stats.js';
 import { plainCopy } from './survey-builder-model.js';
 import { uid } from '../../core/uid.js';
+import { catLabels } from './survey-labels.js';
 
 const IMPORT_LABELS = {
   ok: 'importOk', older: 'importOlder', duplicate: 'importDuplicate', foreign: 'importForeign', invalid: 'importInvalid',
 };
-
-const KANO_CATEGORIES = ['M', 'O', 'A', 'I', 'R', 'Q'];
 
 /**
  * @param {object} module the module instance (`_context`, `_container`)
@@ -172,18 +171,8 @@ export function importController(module, _t) {
      * @returns {{other: string, noAnswer: string, cat: object}} strings for formatAnswer
      */
     _answerStrings() {
-      return { other: _t('answerOther'), noAnswer: _t('answerNoAnswer'), cat: this._catLabels() };
+      return { other: _t('answerOther'), noAnswer: _t('answerNoAnswer'), cat: catLabels(module._context.i18n) };
     },
-
-    /** @returns {Object<string, string>} Kano category labels of the kano module */
-    _catLabels() {
-      const out = {};
-      for (const c of KANO_CATEGORIES) out[c] = module._context.i18n.t(`modules.kano.cat${c}`);
-      return out;
-    },
-
-    /** @param {string|null} code @returns {string} */
-    catLabel(code) { return code ? this._catLabels()[code] : '—'; },
 
     /**
      * Deletes a response after confirmation.

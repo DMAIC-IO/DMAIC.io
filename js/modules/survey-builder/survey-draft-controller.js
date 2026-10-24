@@ -426,9 +426,6 @@ export function draftController(module, _t) {
     /** @param {object} src source question @returns {string} its label */
     sourceLabel(src) { return this.questionLabel(src); },
 
-    /** @param {object} opt option @returns {string} its text or a placeholder */
-    optionText(opt) { return opt.text || _t('optionUntitled'); },
-
     // ── Warnings ──────────────────────────────────────────────
 
     /** @returns {Array<{key: string, text: string}>} never blocks the export */

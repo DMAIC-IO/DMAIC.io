@@ -15,7 +15,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import { State } from './survey-builder-model.js';
-import { documentOrder } from './survey-conditions.js';
+import * as labels from './survey-labels.js';
 import { draftController } from './survey-draft-controller.js';
 import { recipientsController } from './survey-recipients-controller.js';
 import { importController } from './survey-import-controller.js';
@@ -23,11 +23,6 @@ import { resultsController } from './survey-results-controller.js';
 import { handoverController } from './survey-handover-controller.js';
 import { chartsController } from './survey-charts-controller.js';
 import { uid } from '../../core/uid.js';
-
-const TYPE_LABELS = {
-  single: 'typeSingle', multi: 'typeMulti', rating: 'typeRating',
-  kano: 'typeKano', text: 'typeText', info: 'typeInfo',
-};
 
 export default createModule({
   config: {
@@ -129,24 +124,32 @@ export default createModule({
         this.destroyCharts();
       },
 
-      // ── Labels ────────────────────────────────────────────────
+      // ── Labels and formatting (pure functions in survey-labels.js) ──
 
       /** @param {string} type @returns {string} translated question type */
-      typeLabel(type) { return _t(TYPE_LABELS[type] || 'typeText'); },
+      typeLabel(type) { return labels.typeLabel(type, _t); },
 
       /**
        * Question text, or "Frage <n>" (position in document order) when empty.
        * @param {object} q
        * @returns {string}
        */
-      questionLabel(q) {
-        if (q.text && q.text.trim()) return q.text.trim();
-        const n = documentOrder(this.model.survey).findIndex((e) => e.question.id === q.id) + 1;
-        return _t('questionNumber', { n });
-      },
+      questionLabel(q) { return labels.questionLabel(this.model.survey, q, _t); },
 
       /** @param {number} index 0-based @returns {string} placeholder of an untitled section */
-      sectionPlaceholder(index) { return _t('sectionUntitled', { n: index + 1 }); },
+      sectionPlaceholder(index) { return labels.sectionPlaceholder(index, _t); },
+
+      /** @param {object} opt option @returns {string} its text or a placeholder */
+      optionText(opt) { return labels.optionText(opt, _t); },
+
+      /** @param {string|null} code @returns {string} Kano category label */
+      catLabel(code) { return labels.catLabel(code, module._context.i18n); },
+
+      /**
+       * @param {string|null} id recipient id
+       * @returns {string|null} trimmed name, null when unknown or unnamed
+       */
+      recipientName(id) { return labels.recipientName(this.model.recipients, id); },
 
       /** @param {{when: Array|null}} node @returns {boolean} whether the node has conditions */
       hasCondition(node) { return Array.isArray(node.when) && node.when.length > 0; },
@@ -162,41 +165,17 @@ export default createModule({
         this._loadCondDraft();
       },
 
-      // ── Formatting ────────────────────────────────────────────
-
       /** @returns {'de-DE'|'en-US'} locale of the app language */
-      _locale() { return module._context.i18n.getLanguage() === 'en' ? 'en-US' : 'de-DE'; },
+      _locale() { return labels.localeOf(module._context.i18n); },
 
-      /**
-       * @param {string|null} iso
-       * @returns {string} local date and time, '–' when empty
-       */
-      formatDateTime(iso) {
-        if (!iso) return '–';
-        const d = new Date(iso);
-        if (Number.isNaN(d.getTime())) return '–';
-        return d.toLocaleString(this._locale(), { dateStyle: 'short', timeStyle: 'short' });
-      },
+      /** @param {string|null} iso @returns {string} local date and time, '–' when empty */
+      formatDateTime(iso) { return labels.formatDateTime(iso, this._locale()); },
 
-      /**
-       * @param {number|null} share 0..1
-       * @returns {string} "42 %", '—' without a base
-       */
-      fmtPct(share) {
-        return share === null || share === undefined ? '—' : `${Math.round(share * 100)} %`;
-      },
+      /** @param {number|null} share 0..1 @returns {string} "42 %", '—' without a base */
+      fmtPct(share) { return labels.fmtPct(share); },
 
-      /**
-       * @param {number|null} value
-       * @param {number} decimals
-       * @returns {string} localised number, '—' when empty
-       */
-      fmtNum(value, decimals) {
-        if (value === null || value === undefined) return '—';
-        return Number(value).toLocaleString(this._locale(), {
-          minimumFractionDigits: decimals, maximumFractionDigits: decimals,
-        });
-      },
+      /** @param {number|null} value @param {number} decimals @returns {string} localised number */
+      fmtNum(value, decimals) { return labels.fmtNum(value, decimals, this._locale()); },
 
       /**
        * Phase this instance lives in — new kano / worksheet instances are

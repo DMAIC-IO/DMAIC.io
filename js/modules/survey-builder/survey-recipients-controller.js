@@ -40,15 +40,6 @@ export function recipientsController(module, _t) {
     },
 
     /**
-     * @param {string|null} id recipient id
-     * @returns {string|null} trimmed name, null when unknown or unnamed
-     */
-    recipientName(id) {
-      const r = id ? this.model.recipients.find((x) => x.id === id) : null;
-      return r && r.name.trim() ? r.name.trim() : null;
-    },
-
-    /**
      * Deletes a recipient. Asks first only when they already answered —
      * their response stays, without a recipient (State.deleteRecipient).
      * @param {string} id recipient id
