@@ -74,5 +74,9 @@
   "1.4.1": {
     "de": "Fehlermelder mit Screenshot-Editor, ToDo-Reihenfolge per Drag & Drop und Korrekturen an Pareto- und Korrelationsdiagrammen",
     "en": "Bug reporter with screenshot editor, drag-and-drop task order, and fixes to Pareto and correlation charts"
+  },
+  "1.5.0": {
+    "de": "Morphologischer Kasten, Kontexthilfe per Alt-Taste in allen Modulen, Paarvergleich-Export als CSV/JSON und neue Beispiele für Regelkarten, Hypothesentests und Regression",
+    "en": "Morphological box, Alt-key context help across all modules, pairwise comparison export as CSV/JSON, and new examples for control charts, hypothesis tests and regression"
   }
 }
