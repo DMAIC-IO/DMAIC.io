@@ -101,7 +101,7 @@ export function collectAgentData(appDir) {
 function buildEntry(resolver, appDir, viewmodelFile) {
   const sf = resolver.parse(viewmodelFile);
   const tagged = hasModuleTag(sf);
-  const { actions, violations, written, optionSources } = readViewmodel(sf, resolver, appDir);
+  const { actions, violations, written, optionSources, subViewModels } = readViewmodel(sf, resolver, appDir);
 
   // Deklarierte Lesefläche hat Vorrang und ERSETZT die Model-Ableitung —
   // nicht ergänzt sie: zwei Quellen für dieselbe Fläche wäre genau die
@@ -173,7 +173,9 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   const reported = [...violations, ...surface, ...model.violations,
     ...persistence.violations, ...unreadable,
     ...invalidBulkKinds(model.fields), ...collectDomDetours(sf),
-    ...unreachable, ...templateCalls, ...undeclaredOptions];
+    ...unreachable, ...templateCalls,
+    ...subViewModelModelBindings(dirname(viewmodelFile), subViewModels),
+    ...undeclaredOptions];
   // Verstöße zählen nur, wenn das Modul etwas behauptet (Spec §9).
   const effective = tagged ? reported : [];
   return {
@@ -621,25 +623,22 @@ function hasModuleTag(sf) {
  * @param {ts.SourceFile} sf  die Moduldatei
  * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
  * @param {string} appDir  Wurzel von app/dev, Bezugspunkt der Herkunftsangaben
- * @returns {{ actions: Record<string, object>, violations: string[], written: Set<string>, optionSources: Array<{ action: string, arg: string, field: string }> }}
+ * @returns {{ actions: Record<string, object>, violations: string[], written: Set<string>, optionSources: Array<{ action: string, arg: string, field: string }>, subViewModels: string[] }}
  */
 function readViewmodel(sf, resolver, appDir) {
-  const actions = {};
-  const violations = [];
-  const written = new Set();
-  const optionSources = [];
+  const out = { actions: {}, violations: [], written: new Set(), optionSources: [], subViewModels: [] };
   const literal = resolver.findDataReturnLiteral(sf);
   // Was der Generator NICHT sehen kann, muss er melden — sonst ginge ein
   // solches Modul mit gesetztem Modul-Tag und NULL Verstößen durch den Build
   // und würde `available: true`, obwohl keine einzige seiner Methoden
   // begutachtet wurde (Review-Befund I6/P1). Die Zusage aus Spec §9 („das
   // Modul-Tag ist maschinell nachgeprüft") wäre sonst eine leere Operation.
-  if (!literal) return { actions, violations: ['unresolvable_data_literal'], written, optionSources };
+  if (!literal) { out.violations.push('unresolvable_data_literal'); return out; }
 
   const { members, unresolved } = resolver.collectMembers(literal, sf);
   // Die unauflösbaren Spreads stehen VORAN: sie sind der Befund über die
   // Vollständigkeit der folgenden Liste, nicht ein Befund in ihr.
-  for (const expression of unresolved) violations.push(`unresolved_spread:${compact(expression)}`);
+  for (const expression of unresolved) out.violations.push(`unresolved_spread:${compact(expression)}`);
 
   // Einmal pro Modul aufgelöst, nicht pro Methode: dieselbe Model-Klasse,
   // die `readModelFields` für die Lesefläche auflöst, ist die Zielklasse
@@ -648,29 +647,56 @@ function readViewmodel(sf, resolver, appDir) {
   // `unresolvable_model_class`/`unresolved_model_class:<name>`, eine
   // Delegation zählt dann einfach nicht als Abdeckung (fail closed).
   const modelDecl = resolveModelClass(resolver, sf);
+  const ctx = { resolver, modelDecl, out };
 
   for (const [name, entry] of members) {
     if (name.startsWith('_')) continue;
     const member = entry.member;
+    // `name: new X(…)` mit importierter Klasse ist ein Teil-Viewmodel
+    // (Spec 2026-10-24 E3); `new Map()` und Fabrikaufrufe bleiben Daten.
+    const sub = ts.isPropertyAssignment(member) ? classOfNew(member.initializer, entry.sf, resolver) : null;
+    if (sub) {
+      if (!sub.decl) { out.violations.push(`unresolved_sub_viewmodel:${name}`); continue; }
+      out.subViewModels.push(name);
+      readSubViewModel(name, sub.decl, appDir, ctx);
+      continue;
+    }
     if (!isFunctionMember(member)) continue;         // Daten, keine Methode
     // Herkunft nur bei einem Mitglied aus einer ANDEREN Datei: bei einem
     // Mitglied der Moduldatei ist sie Rauschen, und die Codes der Tests 6–8
     // hängen an der kurzen Form.
-    const from = originSuffix(entry, sf, appDir);
+    inspectMethod(name, member, sf, originSuffix(entry, sf, appDir), ctx);
+  }
+  return out;
+}
 
-    const tags = ts.getJSDocTags(member).map(t => t.tagName.text);
+/**
+ * Prüft EIN Mitglied wie bisher die Schleife in `readViewmodel`: Marken,
+ * Parameter, Schlüsselfläche, Rückgabe, Schreibabdeckung, Wertemengen.
+ * `sf` ist die Datei, in der Typedefs und Prüfkonstanten eines
+ * `keyof`-Setters stehen — an der Wurzel die Moduldatei, im Teil-Viewmodel
+ * die Datei der Klasse.
+ * @param {string} name  Aktionsname (`addGoal` oder `draft.addQuestion`)
+ * @param {ts.Node} member  Literal-Mitglied oder Klassenmethode
+ * @param {ts.SourceFile} sf
+ * @param {string} from  Herkunftszusatz (`''` oder `@<pfad>`)
+ * @param {{ resolver: object, modelDecl: object|null, out: object }} ctx
+ */
+function inspectMethod(name, member, sf, from, ctx) {
+  const { out } = ctx;
+  const tags = ts.getJSDocTags(member).map(t => t.tagName.text);
     const isAgent = tags.includes(MARK_AGENT);
     const isNoAgent = tags.includes(MARK_NOAGENT);
 
-    if (!isAgent && !isNoAgent) { violations.push(`unmarked_method:${name}${from}`); continue; }
-    if (isNoAgent) continue;
+    if (!isAgent && !isNoAgent) { out.violations.push(`unmarked_method:${name}${from}`); return; }
+    if (isNoAgent) return;
 
     const fn = functionFromMember(member);
     const params = [];
     for (const parameter of fn.parameters) {
       const paramName = parameter.name.getText();
       const tag = ts.getJSDocParameterTags(parameter)[0];
-      if (!tag || !tag.typeExpression) { violations.push(`missing_param:${name}.${paramName}${from}`); continue; }
+      if (!tag || !tag.typeExpression) { out.violations.push(`missing_param:${name}.${paramName}${from}`); continue; }
       params.push({
         name: paramName,
         type: tag.typeExpression.type.getText(),
@@ -686,7 +712,7 @@ function readViewmodel(sf, resolver, appDir) {
       const keyof = KEYOF_RE.exec(param.type);
       if (!keyof) continue;
       const surface = readKeySurface(fn, name, param.name, keyof[1], sf);
-      for (const v of surface.violations) violations.push(`${v}${from}`);
+      for (const v of surface.violations) out.violations.push(`${v}${from}`);
       if (surface.keys) {
         keys = surface.keys;
         keysOf = keyof[1];
@@ -695,9 +721,9 @@ function readViewmodel(sf, resolver, appDir) {
     }
 
     const returnTag = ts.getJSDocReturnTag(fn);
-    if (!returnTag || !returnTag.typeExpression) { violations.push(`missing_returns:${name}${from}`); }
+    if (!returnTag || !returnTag.typeExpression) { out.violations.push(`missing_returns:${name}${from}`); }
 
-    actions[name] = {
+    out.actions[name] = {
       params,
       returns: returnTag?.typeExpression?.type?.getText() ?? 'void',
       help: cleanComment(descriptionOf(member)),
@@ -708,10 +734,118 @@ function readViewmodel(sf, resolver, appDir) {
     // `this.model.<feld> = …`-Zuweisung in einer `@noagent`-Methode deckt die
     // Vorlagenbindung NICHT ab — genau das ist der Unterschied zwischen
     // „ein Agent kann das Feld schreiben" und „irgendeine Methode tut es".
-    for (const field of writtenModelFields(fn, resolver, modelDecl)) written.add(field);
-    for (const source of stateOptionSources(fn.body)) optionSources.push({ action: name, ...source });
+    for (const field of writtenModelFields(fn, ctx.resolver, ctx.modelDecl)) out.written.add(field);
+    for (const source of stateOptionSources(fn.body)) out.optionSources.push({ action: name, ...source });
+}
+
+/** Abschnitte unter `actions.<name>` — als Methode eines Teil-Viewmodels kollidierten sie mit dem Hilfeschlüssel. */
+const RESERVED_HELP_SEGMENTS = new Set(['help', 'params']);
+
+/**
+ * Die Klasse hinter `new X(…)` — Grundlage der Teil-Viewmodel-Erkennung.
+ *
+ * `null`: kein `new`-Ausdruck, oder eine Klasse, die die Datei weder
+ * deklariert noch importiert (`new Map()`, `new Intl.Collator()`) — das
+ * bleibt Daten wie bisher. `{ decl: null }`: lokal deklariert oder
+ * importiert, aber nicht als Klasse OHNE `extends` auflösbar (fail closed:
+ * geerbte Methoden blieben sonst ungeprüft aufrufbar). Sonst `{ decl }`.
+ * @param {ts.Expression|undefined} expr
+ * @param {ts.SourceFile} sf  die Datei, in der der Ausdruck steht
+ * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
+ * @returns {{ decl: { node: ts.ClassDeclaration, sf: ts.SourceFile }|null }|null}
+ */
+function classOfNew(expr, sf, resolver) {
+  let node = expr;
+  while (node && ts.isParenthesizedExpression(node)) node = node.expression;
+  if (!node || !ts.isNewExpression(node)) return null;
+  let root = node.expression;
+  while (ts.isPropertyAccessExpression(root)) root = root.expression;
+  if (!ts.isIdentifier(root)) return null;
+  if (!findLocalDeclaration(root.text, sf) && !findImportSource(root.text, sf)) return null;
+  if (!ts.isIdentifier(node.expression)) return { decl: null };
+  const decl = resolver.findDeclaration(node.expression.text, sf);
+  if (!decl || !ts.isClassDeclaration(decl.node) || baseExpression(decl.node)) return { decl: null };
+  return { decl };
+}
+
+/**
+ * Die Methoden eines Teil-Viewmodels (Spec 2026-10-24 E3): dieselben
+ * Prüfungen wie an der Wurzel, Aktionsname `<teil>.<methode>`, Herkunft
+ * immer die Datei der Klasse. Genau eine Ebene: ein Teil-Viewmodel im
+ * Teil-Viewmodel ist ein Befund. Die Datei der Klasse wird zusätzlich auf
+ * DOM-Umwege geprüft — sonst wäre sie eine Blindstelle des Wächters.
+ * @param {string} subName  der Schlüssel im `data()`-Literal
+ * @param {{ node: ts.ClassDeclaration, sf: ts.SourceFile }} decl
+ * @param {string} appDir
+ * @param {{ resolver: object, modelDecl: object|null, out: object }} ctx
+ */
+function readSubViewModel(subName, decl, appDir, ctx) {
+  const { node, sf } = decl;
+  const file = relative(appDir, sf.fileName).split(sep).join('/');
+  const from = `@${file}`;
+  for (const code of collectDomDetours(sf)) ctx.out.violations.push(code.replace(/@(\d+)$/, `@${file}:$1`));
+  for (const member of node.members) {
+    if (ts.getCombinedModifierFlags(member) & ts.ModifierFlags.Static) continue;
+    for (const inner of fieldNews(member)) {
+      if (inner.name.startsWith('_')) continue;
+      if (classOfNew(inner.expr, sf, ctx.resolver)) ctx.out.violations.push(`nested_sub_viewmodel:${subName}.${inner.name}`);
+    }
+    if (!ts.isMethodDeclaration(member) || !member.body || !ts.isIdentifier(member.name)) continue;
+    const method = member.name.text;
+    if (method.startsWith('_')) continue;
+    if (RESERVED_HELP_SEGMENTS.has(method)) {
+      ctx.out.violations.push(`sub_viewmodel_key_collision:${subName}.${method}${from}`);
+      continue;
+    }
+    inspectMethod(`${subName}.${method}`, member, sf, from, ctx);
   }
-  return { actions, violations, written, optionSources };
+}
+
+/**
+ * Die Ausdrücke, die ein Klassenmitglied einem Feld zuweist: das Feld
+ * selbst (`inner = new X()`) und `this.<feld> = …` auf der obersten Ebene
+ * des Konstruktors oder einer Methode.
+ * @param {ts.ClassElement} member
+ * @returns {Array<{ name: string, expr: ts.Expression }>}
+ */
+function fieldNews(member) {
+  if (ts.isPropertyDeclaration(member) && member.initializer && ts.isIdentifier(member.name)) {
+    return [{ name: member.name.text, expr: member.initializer }];
+  }
+  const body = (ts.isConstructorDeclaration(member) || ts.isMethodDeclaration(member)) ? member.body : null;
+  if (!body) return [];
+  const out = [];
+  for (const statement of body.statements) {
+    if (!ts.isExpressionStatement(statement)) continue;
+    const e = statement.expression;
+    if (!ts.isBinaryExpression(e) || e.operatorToken.kind !== ts.SyntaxKind.EqualsToken) continue;
+    if (!ts.isPropertyAccessExpression(e.left) || e.left.expression.kind !== ts.SyntaxKind.ThisKeyword) continue;
+    out.push({ name: e.left.name.text, expr: e.right });
+  }
+  return out;
+}
+
+/**
+ * Bindungen der Vorlage an `<teil>.model.…` (Spec 2026-10-24 E3). Ins Model
+ * schreibt die Vorlage über `model.…` oder über eine Methode eines
+ * Teil-Viewmodels — sonst sähen `unreachable_write` und
+ * `template_model_call` den Schreibweg nicht.
+ * @param {string} moduleDir
+ * @param {string[]} subNames
+ * @returns {string[]} Codes `sub_viewmodel_model_binding:<teil>.model.<pfad>`, entdoppelt
+ */
+function subViewModelModelBindings(moduleDir, subNames) {
+  if (subNames.length === 0) return [];
+  const out = new Set();
+  for (const file of readdirSync(moduleDir)) {
+    if (!file.endsWith('.html')) continue;
+    const html = readFileSync(join(moduleDir, file), 'utf8');
+    for (const name of subNames) {
+      const re = new RegExp(`(?<![\\w$.])${name}\\.model\\.([A-Za-z_$][\\w$]*(?:\\.[A-Za-z_$][\\w$]*)*)`, 'g');
+      for (const m of html.matchAll(re)) out.add(`sub_viewmodel_model_binding:${name}.model.${m[1]}`);
+    }
+  }
+  return [...out];
 }
 
 /**
