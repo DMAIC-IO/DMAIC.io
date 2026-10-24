@@ -17339,8 +17339,452 @@ export const AGENT_REGISTRY = {
     "tagged": false,
     "available": false,
     "violations": [],
-    "reported": [],
+    "reported": [
+      "unmarked_method:recipients.attach@js/modules/survey-builder/viewmodel/recipients.js",
+      "unmarked_method:recipients.detach@js/modules/survey-builder/viewmodel/recipients.js",
+      "unmarked_method:recipients.hasRecipients@js/modules/survey-builder/viewmodel/recipients.js",
+      "unmarked_method:recipients.addRecipient@js/modules/survey-builder/viewmodel/recipients.js",
+      "unmarked_method:recipients.updateRecipientFromEvent@js/modules/survey-builder/viewmodel/recipients.js",
+      "unmarked_method:recipients.deleteRecipient@js/modules/survey-builder/viewmodel/recipients.js",
+      "unmarked_method:recipients.recipientStatusLabel@js/modules/survey-builder/viewmodel/recipients.js",
+      "unmarked_method:recipients.isOutdated@js/modules/survey-builder/viewmodel/recipients.js",
+      "unmarked_method:recipients.outdatedHint@js/modules/survey-builder/viewmodel/recipients.js",
+      "unmarked_method:recipients.sentLabel@js/modules/survey-builder/viewmodel/recipients.js",
+      "unmarked_method:recipients.countsLine@js/modules/survey-builder/viewmodel/recipients.js",
+      "unmarked_method:recipients.exportForRecipient@js/modules/survey-builder/viewmodel/recipients.js",
+      "unmarked_method:responses.attach@js/modules/survey-builder/viewmodel/responses.js",
+      "unmarked_method:responses.detach@js/modules/survey-builder/viewmodel/responses.js",
+      "unmarked_method:responses.openImport@js/modules/survey-builder/viewmodel/responses.js",
+      "unmarked_method:responses.importFromEvent@js/modules/survey-builder/viewmodel/responses.js",
+      "unmarked_method:responses.onDragOver@js/modules/survey-builder/viewmodel/responses.js",
+      "unmarked_method:responses.onDrop@js/modules/survey-builder/viewmodel/responses.js",
+      "unmarked_method:responses.importFiles@js/modules/survey-builder/viewmodel/responses.js",
+      "unmarked_method:responses.hasImportLog@js/modules/survey-builder/viewmodel/responses.js",
+      "unmarked_method:responses.importStatusLabel@js/modules/survey-builder/viewmodel/responses.js",
+      "unmarked_method:responses.importStatusClass@js/modules/survey-builder/viewmodel/responses.js",
+      "unmarked_method:responses.noteLine@js/modules/survey-builder/viewmodel/responses.js",
+      "unmarked_method:responses.hasResponses@js/modules/survey-builder/viewmodel/responses.js",
+      "unmarked_method:responses.responseRows@js/modules/survey-builder/viewmodel/responses.js",
+      "unmarked_method:responses.toggleResponse@js/modules/survey-builder/viewmodel/responses.js",
+      "unmarked_method:responses.isResponseOpen@js/modules/survey-builder/viewmodel/responses.js",
+      "unmarked_method:responses.responseDetails@js/modules/survey-builder/viewmodel/responses.js",
+      "unmarked_method:responses.deleteResponse@js/modules/survey-builder/viewmodel/responses.js",
+      "unmarked_method:results.attach@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.detach@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.scheduleCharts@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.filterOptions@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.filterValue@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.isFilterValue@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.setFilterFromEvent@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.filtered@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.nLine@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.blocks@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.isType@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.isChoice@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.chartKey@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.blockN@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.hasImportance@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.hasOther@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.otherShare@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.hasOtherTexts@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.distLabel@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.rateLine@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.hasWithoutRecipient@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.withoutRecipientLine@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.hasRateGroups@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.rateGroups@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.hasRanking@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.rankingRows@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.hasMoreRanking@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.toggleRanking@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.rankingToggleLabel@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.hasKanoOverview@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.kanoOverviewRows@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.freeTextLine@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.groupByOptions@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.isGroupBy@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.setGroupByFromEvent@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.hasComparison@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.groupsTitle@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.groupHeads@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.comparisonParts@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.cellClass@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.rowClass@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.canShowNames@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.isReportWithNames@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.setReportWithNamesFromEvent@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.exportReport@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.destroyCharts@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.questionChartJobs@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.chartJobs@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.summaryChartJobs@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.groupChartJobs@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:results.mountCharts@js/modules/survey-builder/viewmodel/results.js",
+      "unmarked_method:handover.attach@js/modules/survey-builder/viewmodel/handover.js",
+      "unmarked_method:handover.detach@js/modules/survey-builder/viewmodel/handover.js",
+      "unmarked_method:handover.onInstancesChanged@js/modules/survey-builder/viewmodel/handover.js",
+      "unmarked_method:handover.textAnswers@js/modules/survey-builder/viewmodel/handover.js",
+      "unmarked_method:handover.otherAnswers@js/modules/survey-builder/viewmodel/handover.js",
+      "unmarked_method:handover.hasTextAnswers@js/modules/survey-builder/viewmodel/handover.js",
+      "unmarked_method:handover.hasName@js/modules/survey-builder/viewmodel/handover.js",
+      "unmarked_method:handover.isVocSelected@js/modules/survey-builder/viewmodel/handover.js",
+      "unmarked_method:handover.isVocTaken@js/modules/survey-builder/viewmodel/handover.js",
+      "unmarked_method:handover.toggleVoc@js/modules/survey-builder/viewmodel/handover.js",
+      "unmarked_method:handover.hasVocSelection@js/modules/survey-builder/viewmodel/handover.js",
+      "unmarked_method:handover.takeToVocTree@js/modules/survey-builder/viewmodel/handover.js",
+      "unmarked_method:handover.kanoTargetOptions@js/modules/survey-builder/viewmodel/handover.js",
+      "unmarked_method:handover.kanoTargetValue@js/modules/survey-builder/viewmodel/handover.js",
+      "unmarked_method:handover.isKanoTarget@js/modules/survey-builder/viewmodel/handover.js",
+      "unmarked_method:handover.setKanoTargetFromEvent@js/modules/survey-builder/viewmodel/handover.js",
+      "unmarked_method:handover.handOverToKano@js/modules/survey-builder/viewmodel/handover.js",
+      "unmarked_method:handover.toWorksheet@js/modules/survey-builder/viewmodel/handover.js"
+    ],
     "actions": {
+      "draft.setHeader": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'title'|'intro'|'contact'|'lang'|'anonymous'",
+            "optional": false,
+            "help": "which header field"
+          },
+          {
+            "name": "value",
+            "type": "string|boolean",
+            "optional": false,
+            "help": "the new value; range per key see `SurveyHeader`"
+          }
+        ],
+        "returns": "void",
+        "help": "Set one header field of the questionnaire.",
+        "keysOf": "SurveyHeader",
+        "keys": {
+          "title": {
+            "type": "string",
+            "help": "title above the questionnaire"
+          },
+          "intro": {
+            "type": "string",
+            "help": "introduction below the title"
+          },
+          "contact": {
+            "type": "string",
+            "help": "whom respondents ask"
+          },
+          "lang": {
+            "type": "'de'|'en'",
+            "help": "language of the exported file"
+          },
+          "anonymous": {
+            "type": "boolean",
+            "help": "answers carry no recipient"
+          }
+        }
+      },
+      "draft.addSection": {
+        "params": [],
+        "returns": "string",
+        "help": "Append an empty section and select it."
+      },
+      "draft.setSectionField": {
+        "params": [
+          {
+            "name": "sectionId",
+            "type": "string",
+            "optional": false,
+            "help": "the section"
+          },
+          {
+            "name": "key",
+            "type": "'title'|'hint'",
+            "optional": false,
+            "help": "which text"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "the new text, \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the title or the hint of a section.",
+        "keysOf": "SectionFields",
+        "keys": {
+          "title": {
+            "type": "string",
+            "help": "heading of the section"
+          },
+          "hint": {
+            "type": "string",
+            "help": "explanation below the heading"
+          }
+        }
+      },
+      "draft.moveSection": {
+        "params": [
+          {
+            "name": "sectionId",
+            "type": "string",
+            "optional": false,
+            "help": "the section"
+          },
+          {
+            "name": "direction",
+            "type": "'up'|'down'",
+            "optional": false,
+            "help": "where to"
+          }
+        ],
+        "returns": "number",
+        "help": "Move a section one place up or down. Conditions that would then point at a later question are removed."
+      },
+      "draft.deleteSection": {
+        "params": [
+          {
+            "name": "sectionId",
+            "type": "string",
+            "optional": false,
+            "help": "the section"
+          }
+        ],
+        "returns": "number",
+        "help": "Delete a section with its questions, without asking. Conditions on its questions are removed."
+      },
+      "draft.addQuestion": {
+        "params": [
+          {
+            "name": "sectionId",
+            "type": "string",
+            "optional": false,
+            "help": "the section"
+          },
+          {
+            "name": "type",
+            "type": "'single'|'multi'|'rating'|'kano'|'text'|'info'",
+            "optional": false,
+            "help": "the question type"
+          }
+        ],
+        "returns": "string",
+        "help": "Append a question of a type to a section and select it."
+      },
+      "draft.moveQuestion": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string",
+            "optional": false,
+            "help": "the question"
+          },
+          {
+            "name": "direction",
+            "type": "'up'|'down'",
+            "optional": false,
+            "help": "where to"
+          }
+        ],
+        "returns": "number",
+        "help": "Move a question one place up or down; at a section boundary it moves into the neighbouring section. Conditions that would then point at a later question are removed."
+      },
+      "draft.deleteQuestion": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string",
+            "optional": false,
+            "help": "the question"
+          }
+        ],
+        "returns": "number",
+        "help": "Delete a question, without asking — also when imported responses answered it. Conditions that pointed at it are removed."
+      },
+      "draft.setQuestionField": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string",
+            "optional": false,
+            "help": "the question"
+          },
+          {
+            "name": "key",
+            "type": "'text'|'hint'|'required'|'other'|'noAnswer'|'importance'|'multiline'",
+            "optional": false,
+            "help": "which field"
+          },
+          {
+            "name": "value",
+            "type": "string|boolean",
+            "optional": false,
+            "help": "text for text and hint, true or false for the flags"
+          }
+        ],
+        "returns": "void",
+        "help": "Set a text or a flag of a question. Which flags a question has depends on its type, see `QuestionFields`.",
+        "keysOf": "QuestionFields",
+        "keys": {
+          "text": {
+            "type": "string",
+            "help": "the question"
+          },
+          "hint": {
+            "type": "string",
+            "help": "explanation below the question"
+          },
+          "required": {
+            "type": "boolean",
+            "help": "must be answered (not for info)"
+          },
+          "other": {
+            "type": "boolean",
+            "help": "offers a free \"other\" answer (single, multi)"
+          },
+          "noAnswer": {
+            "type": "boolean",
+            "help": "offers \"no answer\" per row (rating)"
+          },
+          "importance": {
+            "type": "boolean",
+            "help": "asks for an importance 1–9 per row (kano)"
+          },
+          "multiline": {
+            "type": "boolean",
+            "help": "multi-line answer field (text)"
+          }
+        }
+      },
+      "draft.changeQuestionType": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string",
+            "optional": false,
+            "help": "the question"
+          },
+          {
+            "name": "type",
+            "type": "'single'|'multi'|'rating'|'kano'|'text'|'info'",
+            "optional": false,
+            "help": "the new type"
+          }
+        ],
+        "returns": "number",
+        "help": "Change the type of a question, keeping text, hint, required and its conditions; options, rows and flags start empty. Conditions on its options are removed."
+      },
+      "draft.addItem": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string",
+            "optional": false,
+            "help": "the question"
+          }
+        ],
+        "returns": "string",
+        "help": "Append an empty option (single, multi) or row (rating, kano) to a question."
+      },
+      "draft.setItemField": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string",
+            "optional": false,
+            "help": "the question"
+          },
+          {
+            "name": "itemId",
+            "type": "string",
+            "optional": false,
+            "help": "the option or row"
+          },
+          {
+            "name": "key",
+            "type": "'text'|'group'",
+            "optional": false,
+            "help": "which field"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "the new text, \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the text of an option or row, or the display group of an option of a multiple choice question.",
+        "keysOf": "ItemFields",
+        "keys": {
+          "text": {
+            "type": "string",
+            "help": "the text of the option or row"
+          },
+          "group": {
+            "type": "string",
+            "help": "display group of an option (multi only)"
+          }
+        }
+      },
+      "draft.moveItem": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string",
+            "optional": false,
+            "help": "the question"
+          },
+          {
+            "name": "itemId",
+            "type": "string",
+            "optional": false,
+            "help": "the option or row"
+          },
+          {
+            "name": "direction",
+            "type": "'up'|'down'",
+            "optional": false,
+            "help": "where to"
+          }
+        ],
+        "returns": "void",
+        "help": "Move an option or row one place up or down within its question."
+      },
+      "draft.deleteItem": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string",
+            "optional": false,
+            "help": "the question"
+          },
+          {
+            "name": "itemId",
+            "type": "string",
+            "optional": false,
+            "help": "the option or row"
+          }
+        ],
+        "returns": "number",
+        "help": "Delete an option or row, without asking — also when imported responses chose it. Conditions on a deleted option are removed."
+      },
+      "draft.setConditions": {
+        "params": [
+          {
+            "name": "nodeId",
+            "type": "string",
+            "optional": false,
+            "help": "the section or question"
+          },
+          {
+            "name": "conditions",
+            "type": "Array<{questionId: string, optionIds: string[]}>",
+            "optional": false,
+            "help": "per condition an earlier single or multiple choice question and at least one of its options"
+          }
+        ],
+        "returns": "number",
+        "help": "Replace the conditions of a section or question. It is shown when at least one condition holds; a condition holds when one of its options was chosen. An empty list removes all conditions."
+      },
       "read": {
         "params": [
           {
