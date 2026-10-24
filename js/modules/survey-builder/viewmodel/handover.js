@@ -20,6 +20,7 @@ import { recipientName } from '../survey-labels.js';
 import { provisionInstance } from '../../../core/examples-registry.js';
 import { uniqueSheetName } from '../../../ui/column-picker.js';
 import { DEFAULT_CYCLE } from '../../../core/cycles/cycles.js';
+import { requireKnownId } from '../../../core/agent/agent-argcheck.js';
 
 /** Keys of `modules.survey-builder.ws.*`, the worksheet column labels. */
 const WS_KEYS = ['responseId', 'submittedAt', 'recipient', 'other', 'functional', 'dysfunctional', 'importance', 'category', 'question'];
@@ -43,6 +44,7 @@ export class HandoverViewModel {
   /**
    * Binds the component's model and keeps the VoC selection clean: a
    * deleted response takes its ticked answers with it.
+   * @noagent lifecycle
    * @param {{model: object, watch: function, nextTick: function}} binding
    */
   attach({ model, watch }) {
@@ -50,10 +52,16 @@ export class HandoverViewModel {
     watch(() => this.model.responseIds().join('\n'), () => this._pruneVocSelection());
   }
 
-  /** Nothing to release; Alpine drops the watch with the component. */
+  /**
+   * Nothing to release; Alpine drops the watch with the component.
+   * @noagent lifecycle
+   */
   detach() {}
 
-  /** The shell forwards module:added / module:removed — kano instances may have changed. */
+  /**
+   * The shell forwards module:added / module:removed — kano instances may have changed.
+   * @noagent lifecycle
+   */
   onInstancesChanged() { this._kanoRev++; }
 
   /** Drops ticked answers whose response no longer exists. */
@@ -79,6 +87,7 @@ export class HandoverViewModel {
   // Free texts → VoC tree (spec §8.2)
 
   /**
+   * @noagent view transform
    * @param {object} b block
    * @returns {Array<{key: string, text: string, name: string}>} non-empty answers of a text block
    */
@@ -89,6 +98,7 @@ export class HandoverViewModel {
   }
 
   /**
+   * @noagent view transform
    * @param {object} b choice block
    * @returns {Array<{key: string, text: string, name: string}>} "Sonstige" texts, transferable like free texts
    */
@@ -99,30 +109,35 @@ export class HandoverViewModel {
   }
 
   /**
+   * @noagent view transform
    * @param {object} b block
    * @returns {boolean}
    */
   hasTextAnswers(b) { return this.textAnswers(b).length > 0; }
 
   /**
+   * @noagent view transform
    * @param {{name: string}} a answer
    * @returns {boolean} whether the respondent may be named
    */
   hasName(a) { return !this.model.survey.anonymous && Boolean(a.name); }
 
   /**
+   * @noagent view transform
    * @param {string} key `<responseId>:<questionId>`
    * @returns {boolean}
    */
   isVocSelected(key) { return this.vocSelected.includes(key); }
 
   /**
+   * @noagent view transform
    * @param {string} key `<responseId>:<questionId>`
    * @returns {boolean} whether already taken to the VoC tree
    */
   isVocTaken(key) { return this.model.transfers.vocTree.responseKeys.includes(key); }
 
   /**
+   * @noagent UI selection
    * @param {string} key `<responseId>:<questionId>`
    */
   toggleVoc(key) {
@@ -132,6 +147,7 @@ export class HandoverViewModel {
   }
 
   /**
+   * @noagent view transform
    * @returns {boolean} whether any answer is ticked
    */
   hasVocSelection() { return this.vocSelected.length > 0; }
@@ -157,16 +173,22 @@ export class HandoverViewModel {
   }
 
   /**
-   * Adds the ticked answers as VoCs to the project's VoC tree, creating
-   * one in the cycle's tree phase when there is none. Answers already
-   * taken over stay selectable (spec 8.2), so re-selecting one adds it again.
+   * Add free-text and "other" answers as VoCs to the project's VoC tree;
+   * without a tree, one is created in the cycle's tree phase. An answer
+   * taken over before is added again.
+   * @agent
+   * @param {string[]} keys answer keys `<responseId>:<questionId>`, for an "other" text `<responseId>:<questionId>:other`
+   * @returns {number} how many answers were taken over, 0 if no tree could be created
+   * @throws {Error} if `keys` is empty or a key names no non-empty answer
    */
-  takeToVocTree() {
+  takeToVocTree(keys) {
+    const texts = this._openTexts();
+    if (!Array.isArray(keys) || keys.length === 0) {
+      throw new Error(`invalid keys ${JSON.stringify(keys)}; allowed: at least one answer key`);
+    }
+    keys.forEach((k, i) => requireKnownId(`keys[${i}]`, k, [...texts.keys()]));
     const ctx = this._context;
     const sm = ctx.stateManager;
-    const texts = this._openTexts();
-    const keys = this.vocSelected.filter((k) => texts.has(k));
-    if (keys.length === 0) return;
     const title = this.model.survey.title.trim() || this._t('report.untitled');
     const vocs = vocsFromAnswers(keys.map((k) => texts.get(k)), this._t('vocSource', { title }), this.model.survey.anonymous);
     const tree = listInstances(sm, 'voc-ctx-tree')[0];
@@ -175,16 +197,30 @@ export class HandoverViewModel {
       ctx.eventBus.emit('state:remote-changed', { instanceIds: [tree.instanceId], metaChanged: false });
     } else {
       const phase = treePhaseForCycle(sm.get('projectMeta.cycle') || DEFAULT_CYCLE);
-      if (!provisionInstance(ctx, { moduleId: 'voc-ctx-tree', phase, state: appendVocs(null, vocs) })) return;
+      if (!provisionInstance(ctx, { moduleId: 'voc-ctx-tree', phase, state: appendVocs(null, vocs) })) return 0;
     }
     this.model.markVocTaken(keys);
-    this.vocSelected = [];
     ctx.notify(this._t('vocTaken', { count: keys.length }), 'success');
+    return keys.length;
+  }
+
+  /**
+   * Take the ticked answers over and empty the selection after a take-over.
+   * @noagent template handler, see takeToVocTree
+   */
+  takeSelectedToVocTree() {
+    const texts = this._openTexts();
+    const keys = this.vocSelected.filter((k) => texts.has(k));
+    if (keys.length === 0) return;
+    if (this.takeToVocTree(keys) > 0) this.vocSelected = [];
   }
 
   // Kano hand-over (spec §8.1)
 
-  /** @returns {Array<{value: string, label: string}>} kano instances of the project */
+  /**
+   * @returns {Array<{value: string, label: string}>} kano instances of the project
+   * @noagent view transform
+   */
   kanoTargetOptions() {
     void this._kanoRev; // reactive dependency, see _kanoRev
     return listInstances(this._context.stateManager, 'kano')
@@ -193,6 +229,7 @@ export class HandoverViewModel {
 
   /**
    * Linked kano instance of a question, '' (= new) when none or deleted since.
+   * @noagent view transform
    * @param {string} questionId
    * @returns {string} instance id or ''
    */
@@ -202,33 +239,58 @@ export class HandoverViewModel {
   }
 
   /**
+   * @noagent view transform
    * @param {string} questionId
    * @param {string} value
    * @returns {boolean}
    */
   isKanoTarget(questionId, value) { return this.kanoTargetValue(questionId) === value; }
 
+  /** @returns {string[]} ids of the Kano questions */
+  _kanoQuestionIds() {
+    return documentOrder(this.model.survey).filter((e) => e.question.type === 'kano').map((e) => e.question.id);
+  }
+
+  /** @returns {string[]} ids of the project's kano instances */
+  _kanoInstanceIds() { return listInstances(this._context.stateManager, 'kano').map((inst) => inst.instanceId); }
+
   /**
-   * `@change` of the Kano target select.
-   * @param {string} questionId
-   * @param {Event} ev
+   * Choose the kano instance a Kano question is handed to; null means a new
+   * instance at the next hand-over.
+   * @agent
+   * @param {string} questionId the Kano question
+   * @param {string|null} instanceId a kano instance of the project, null for a new one
+   * @returns {void}
+   * @throws {Error} if the question is no Kano question or the instance is no kano instance of the project
    */
-  setKanoTargetFromEvent(questionId, ev) {
-    this.model.setKanoTarget(questionId, ev.target.value || null);
+  setKanoTarget(questionId, instanceId) {
+    requireKnownId('questionId', questionId, this._kanoQuestionIds());
+    if (instanceId !== null) requireKnownId('instanceId', instanceId, this._kanoInstanceIds());
+    this.model.setKanoTarget(questionId, instanceId);
   }
 
   /**
-   * Hands a Kano question (all responses, ignoring the filter) to the
-   * chosen kano instance, or to a new one next to this module. A repeat
-   * hand-over replaces only what came from this question.
+   * `@change` of the Kano target select.
+   * @noagent template handler, see setKanoTarget
    * @param {string} questionId
-   * @returns {void}
+   * @param {Event} ev
+   */
+  setKanoTargetFromEvent(questionId, ev) { this.setKanoTarget(questionId, ev.target.value || null); }
+
+  /**
+   * Hand a Kano question with all responses (ignoring the filter) to its
+   * chosen kano instance, or to a new one in this module's phase. A repeat
+   * hand-over replaces only what came from this question.
+   * @agent
+   * @param {string} questionId the Kano question
+   * @returns {string|null} id of the kano instance, null if none could be created
+   * @throws {Error} if the question is no Kano question
    */
   handOverToKano(questionId) {
+    requireKnownId('questionId', questionId, this._kanoQuestionIds());
     const ctx = this._context;
     const sm = ctx.stateManager;
     const question = findQuestion(this.model.survey, questionId);
-    if (!question) return;
     const targetId = this.kanoTargetValue(questionId);
     const target = targetId ? sm.getModuleState(targetId) : null;
     const state = kanoStateFromSurvey(target ? plainCopy(target) : null, {
@@ -245,16 +307,22 @@ export class HandoverViewModel {
       ctx.eventBus.emit('state:remote-changed', { instanceIds: [targetId], metaChanged: false });
     } else {
       instanceId = provisionInstance(ctx, { moduleId: 'kano', phase: this._ownPhase(), state });
-      if (!instanceId) return;
+      if (!instanceId) return null;
     }
     this._kanoRev++;
     this.model.setKanoTarget(questionId, instanceId);
     ctx.notify(this._t('kanoHandedOver'), 'success');
+    return instanceId;
   }
 
   // Worksheet (spec §6.2)
 
-  /** All responses as a new worksheet in this module's phase. */
+  /**
+   * Put all responses into a new worksheet in this module's phase, one row
+   * per response.
+   * @agent
+   * @returns {string|null} id of the new worksheet, null if none could be created
+   */
   toWorksheet() {
     const ctx = this._context;
     const sm = ctx.stateManager;
@@ -268,5 +336,6 @@ export class HandoverViewModel {
       moduleId: 'worksheet', phase: this._ownPhase(), state: buildWorksheetState(columns, name),
     });
     if (id) ctx.notify(this._t('worksheetCreated', { name }), 'success');
+    return id || null;
   }
 }

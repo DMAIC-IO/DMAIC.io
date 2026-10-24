@@ -19,9 +19,12 @@ import { reportStrings, buildReportHtml } from '../survey-report.js';
 import { plainCopy } from '../survey-builder-model.js';
 import { catLabel, fmtNum, fmtPct, localeOf, optionText, questionLabel } from '../survey-labels.js';
 import { downloadBlob } from '../../../core/export-utils.js';
+import { requireEnum, requireKnownId } from '../../../core/agent/agent-argcheck.js';
 
 /** "Top-Prioritäten" shows this many rows until expanded (survey-builder design §7.1). */
 const RANKING_TOP = 10;
+
+const BOOL_VALUES = [true, false];
 
 export class ResultsViewModel {
   /**
@@ -50,6 +53,7 @@ export class ResultsViewModel {
   /**
    * Binds the component's model; re-mounts the charts when the data, the
    * tab or the theme change.
+   * @noagent lifecycle
    * @param {{model: object, watch: function, nextTick: function}} binding
    */
   attach({ model, watch, nextTick }) {
@@ -66,7 +70,10 @@ export class ResultsViewModel {
     this.scheduleCharts();
   }
 
-  /** Unsubscribes and drops the charts. */
+  /**
+   * Unsubscribes and drops the charts.
+   * @noagent lifecycle
+   */
   detach() {
     this._destroyed = true;
     this._unsubs.forEach((off) => off());
@@ -92,7 +99,10 @@ export class ResultsViewModel {
     this.destroyCharts();
   }
 
-  /** Mounts the charts after the next render when the results tab is active. */
+  /**
+   * Mounts the charts after the next render when the results tab is active.
+   * @noagent chart rendering
+   */
   scheduleCharts() {
     if (!this._isResultsTab()) return;
     this._nextTick(() => this.mountCharts());
@@ -100,7 +110,10 @@ export class ResultsViewModel {
 
   // Filter
 
-  /** @returns {Array<{value: string, label: string}>} one entry per single/multi option */
+  /**
+   * @returns {Array<{value: string, label: string}>} one entry per single/multi option
+   * @noagent view transform
+   */
   filterOptions() {
     const out = [];
     for (const { question: q } of documentOrder(this.model.survey)) {
@@ -124,6 +137,7 @@ export class ResultsViewModel {
   }
 
   /**
+   * @noagent view transform
    * @returns {string} select value of the active filter, '' = none
    */
   filterValue() {
@@ -132,21 +146,51 @@ export class ResultsViewModel {
   }
 
   /**
+   * @noagent view transform
    * @param {string} value
    * @returns {boolean} whether it is the active filter value
    */
   isFilterValue(value) { return this.filterValue() === value; }
 
+  /** @returns {string[]} ids of the single and multiple choice questions */
+  _choiceQuestionIds() {
+    return documentOrder(this.model.survey)
+      .filter(({ question: q }) => q.type === 'single' || q.type === 'multi').map(({ question: q }) => q.id);
+  }
+
+  /** @returns {string[]} ids of the single choice questions */
+  _singleQuestionIds() {
+    return documentOrder(this.model.survey).filter(({ question: q }) => q.type === 'single').map(({ question: q }) => q.id);
+  }
+
   /**
-   * `@change` of the filter select.
+   * Narrow the evaluation to the responses that chose one option of a
+   * single or multiple choice question; null for both shows all responses.
+   * @agent
+   * @param {string|null} questionId the choice question, null for no filter
+   * @param {string|null} optionId one of its options, null for no filter
+   * @returns {void}
+   * @throws {Error} if the question is no choice question or the option does not belong to it
+   */
+  setFilter(questionId, optionId) {
+    if (questionId === null && optionId === null) { this.model.ui.filter = null; return; }
+    requireKnownId('questionId', questionId, this._choiceQuestionIds());
+    const q = findQuestion(this.model.survey, questionId);
+    requireKnownId('optionId', optionId, q.options.map((o) => o.id));
+    this.model.ui.filter = { questionId, optionId };
+  }
+
+  /**
+   * @noagent template handler, see setFilter
    * @param {Event} ev
    */
   setFilterFromEvent(ev) {
     const [questionId, optionId] = ev.target.value.split('|');
-    this.model.ui.filter = optionId ? { questionId, optionId } : null;
+    this.setFilter(optionId ? questionId : null, optionId || null);
   }
 
   /**
+   * @noagent view transform
    * @returns {object[]} responses under the active filter
    */
   filtered() {
@@ -154,13 +198,17 @@ export class ResultsViewModel {
   }
 
   /**
+   * @noagent view transform
    * @returns {string} "n = …" for the filtered responses
    */
   nLine() { return this._t('report.nResponses', { n: this.filtered().length }); }
 
   // Question blocks
 
-  /** @returns {Array<{key: string, question: object, title: string, stats: object}>} info excluded */
+  /**
+   * @returns {Array<{key: string, question: object, title: string, stats: object}>} info excluded
+   * @noagent view transform
+   */
   blocks() {
     const responses = this.filtered();
     const out = [];
@@ -172,6 +220,7 @@ export class ResultsViewModel {
   }
 
   /**
+   * @noagent view transform
    * @param {object} b block
    * @param {string} type
    * @returns {boolean}
@@ -179,12 +228,14 @@ export class ResultsViewModel {
   isType(b, type) { return b.stats.type === type; }
 
   /**
+   * @noagent view transform
    * @param {object} b block
    * @returns {boolean} single or multi
    */
   isChoice(b) { return b.stats.type === 'single' || b.stats.type === 'multi'; }
 
   /**
+   * @noagent view transform
    * @param {string} prefix
    * @param {string} id
    * @returns {string} value of a chart host's `data-chart`
@@ -192,36 +243,42 @@ export class ResultsViewModel {
   chartKey(prefix, id) { return `${prefix}:${id}`; }
 
   /**
+   * @noagent view transform
    * @param {object} b block
    * @returns {string} "n = …" of the block
    */
   blockN(b) { return this._t('report.nResponses', { n: b.stats.n }); }
 
   /**
+   * @noagent view transform
    * @param {object} b block
    * @returns {boolean} whether the Kano question asks for importance
    */
   hasImportance(b) { return Boolean(b.question.importance); }
 
   /**
+   * @noagent view transform
    * @param {object} b block
    * @returns {boolean} whether the question offers "other"
    */
   hasOther(b) { return b.question.other === true; }
 
   /**
+   * @noagent view transform
    * @param {object} b block
    * @returns {string} share of "other" answers
    */
   otherShare(b) { return fmtPct(b.stats.n ? b.stats.otherCount / b.stats.n : null); }
 
   /**
+   * @noagent view transform
    * @param {object} b block
    * @returns {boolean}
    */
   hasOtherTexts(b) { return b.stats.otherTexts.length > 0; }
 
   /**
+   * @noagent view transform
    * @param {{dist: number[]}} row
    * @returns {string} "0 · 1 · 2 · 0 · 0" (answers per scale point 1–5)
    */
@@ -241,22 +298,37 @@ export class ResultsViewModel {
     });
   }
 
-  /** @returns {string} "3 verschickt · 2 beantwortet (67 %)" */
+  /**
+   * @returns {string} "3 verschickt · 2 beantwortet (67 %)"
+   * @noagent view transform
+   */
   rateLine() {
     const r = this._rate();
     return this._t('report.rateLine', { sent: r.sent, answered: r.answered, rate: fmtPct(r.rate) });
   }
 
-  /** @returns {boolean} true when responses exist that no recipient owns */
+  /**
+   * @returns {boolean} true when responses exist that no recipient owns
+   * @noagent view transform
+   */
   hasWithoutRecipient() { return this._rate().withoutRecipient > 0; }
 
-  /** @returns {string} "2 Antworten ohne Empfänger" */
+  /**
+   * @returns {string} "2 Antworten ohne Empfänger"
+   * @noagent view transform
+   */
   withoutRecipientLine() { return this._t('report.withoutRecipient', { count: this._rate().withoutRecipient }); }
 
-  /** The group table only pays off with more than one group. @returns {boolean} */
+  /**
+   * The group table only pays off with more than one group. @returns {boolean}
+   * @noagent view transform
+   */
   hasRateGroups() { return this._rate().groups.length > 1; }
 
-  /** @returns {Array<{key: string, group: string, sent: number, answered: number, rate: string}>} */
+  /**
+   * @returns {Array<{key: string, group: string, sent: number, answered: number, rate: string}>}
+   * @noagent view transform
+   */
   rateGroups() {
     return this._rate().groups.map((g) => ({
       key: g.group || '__none',
@@ -270,10 +342,16 @@ export class ResultsViewModel {
   /** @returns {Array<object>} rating rows over the filtered responses, best first */
   _ranking() { return ratingRanking(this.model.survey, this.filtered()); }
 
-  /** @returns {boolean} true when there is at least one ranked rating row */
+  /**
+   * @returns {boolean} true when there is at least one ranked rating row
+   * @noagent view transform
+   */
   hasRanking() { return this._ranking().length > 0; }
 
-  /** @returns {Array<{key: string, text: string, n: number, mean: string, top: string}>} */
+  /**
+   * @returns {Array<{key: string, text: string, n: number, mean: string, top: string}>}
+   * @noagent view transform
+   */
   rankingRows() {
     const all = this._ranking();
     const shown = this.showAllRanking ? all : all.slice(0, RANKING_TOP);
@@ -283,13 +361,22 @@ export class ResultsViewModel {
     }));
   }
 
-  /** @returns {boolean} true when the ranking has more rows than RANKING_TOP */
+  /**
+   * @returns {boolean} true when the ranking has more rows than RANKING_TOP
+   * @noagent view transform
+   */
   hasMoreRanking() { return this._ranking().length > RANKING_TOP; }
 
-  /** Expands or collapses the ranking. */
+  /**
+   * Expands or collapses the ranking.
+   * @noagent session-only view state
+   */
   toggleRanking() { this.showAllRanking = !this.showAllRanking; }
 
-  /** @returns {string} label of the expand/collapse button */
+  /**
+   * @returns {string} label of the expand/collapse button
+   * @noagent view transform
+   */
   rankingToggleLabel() {
     return this.showAllRanking
       ? this._t('rankingTop', { count: RANKING_TOP })
@@ -299,10 +386,16 @@ export class ResultsViewModel {
   /** @returns {Array<object>} Kano rows over the filtered responses */
   _kanoOverview() { return kanoOverview(this.model.survey, this.filtered()); }
 
-  /** @returns {boolean} true when any Kano row exists */
+  /**
+   * @returns {boolean} true when any Kano row exists
+   * @noagent view transform
+   */
   hasKanoOverview() { return this._kanoOverview().length > 0; }
 
-  /** @returns {Array<{key: string, text: string, category: string, cs: string, ds: string}>} */
+  /**
+   * @returns {Array<{key: string, text: string, category: string, cs: string, ds: string}>}
+   * @noagent view transform
+   */
   kanoOverviewRows() {
     return this._kanoOverview().map((k) => ({
       key: `${k.questionId}:${k.rowId}`, text: k.text, category: catLabel(k.category, this._context.i18n),
@@ -312,6 +405,7 @@ export class ResultsViewModel {
 
   /**
    * "5 offene Antworten, 2 in den VoC-Baum übernommen" over the filtered responses.
+   * @noagent view transform
    * @returns {string}
    */
   freeTextLine() {
@@ -321,7 +415,10 @@ export class ResultsViewModel {
 
   // Group comparison (spec §7.2)
 
-  /** @returns {Array<{value: string, label: string}>} the `single` questions */
+  /**
+   * @returns {Array<{value: string, label: string}>} the `single` questions
+   * @noagent view transform
+   */
   groupByOptions() {
     return documentOrder(this.model.survey)
       .filter(({ question: q }) => q.type === 'single')
@@ -340,15 +437,30 @@ export class ResultsViewModel {
   }
 
   /**
+   * @noagent view transform
    * @param {string} value question id, '' for "none"
    * @returns {boolean} true when it is the selected grouping
    */
   isGroupBy(value) { return (this._activeGroupBy() || '') === value; }
 
   /**
+   * Compare the evaluation across the options of a single choice question;
+   * null switches the comparison off.
+   * @agent
+   * @param {string|null} questionId the single choice question, null for no grouping
+   * @returns {void}
+   * @throws {Error} if the question is no single choice question
+   */
+  setGroupBy(questionId) {
+    if (questionId !== null) requireKnownId('questionId', questionId, this._singleQuestionIds());
+    this.model.ui.groupBy = questionId;
+  }
+
+  /**
+   * @noagent template handler, see setGroupBy
    * @param {Event} ev change event of the grouping select
    */
-  setGroupByFromEvent(ev) { this.model.ui.groupBy = ev.target.value || null; }
+  setGroupByFromEvent(ev) { this.setGroupBy(ev.target.value || null); }
 
   /**
    * Filter first, then group (spec §7.2).
@@ -359,17 +471,26 @@ export class ResultsViewModel {
     return id ? groupComparison(this.model.survey, this.filtered(), id) : null;
   }
 
-  /** @returns {boolean} true when a comparison is shown */
+  /**
+   * @returns {boolean} true when a comparison is shown
+   * @noagent view transform
+   */
   hasComparison() { return this._comparison() !== null; }
 
-  /** @returns {string} heading of the comparison, '' without grouping */
+  /**
+   * @returns {string} heading of the comparison, '' without grouping
+   * @noagent view transform
+   */
   groupsTitle() {
     const id = this._activeGroupBy();
     if (!id) return '';
     return this._t('report.groupsTitle', { question: questionLabel(this.model.survey, findQuestion(this.model.survey, id), this._t) });
   }
 
-  /** @returns {Array<{id: string, label: string}>} "Handel (n = 3, wenig Antworten)" */
+  /**
+   * @returns {Array<{id: string, label: string}>} "Handel (n = 3, wenig Antworten)"
+   * @noagent view transform
+   */
   groupHeads() {
     const cmp = this._comparison();
     if (!cmp) return [];
@@ -382,6 +503,7 @@ export class ResultsViewModel {
   /**
    * The comparison of every question in one shape for the template:
    * rows with a label, a note and one cell per group.
+   * @noagent view transform
    * @returns {Array<{key: string, questionId: string, title: string, chart: boolean,
    *   rows: Array<{key: string, label: string, note: string, differs: boolean,
    *     cells: Array<{key: string, text: string, deviates: boolean}>}>}>}
@@ -421,12 +543,14 @@ export class ResultsViewModel {
   }
 
   /**
+   * @noagent view transform
    * @param {{deviates: boolean}} c comparison cell
    * @returns {object} class map for :class
    */
   cellClass(c) { return { 'survey-builder__cell--deviates': c.deviates }; }
 
   /**
+   * @noagent view transform
    * @param {{differs: boolean}} row comparison row
    * @returns {object} class map for :class
    */
@@ -434,19 +558,40 @@ export class ResultsViewModel {
 
   // Report (spec §7.3)
 
-  /** Names in the report only exist when the survey is not anonymous. @returns {boolean} */
+  /**
+   * Names in the report only exist when the survey is not anonymous. @returns {boolean}
+   * @noagent view transform
+   */
   canShowNames() { return !this.model.survey.anonymous; }
 
-  /** @returns {boolean} state of the "Freitexte mit Namen" switch */
+  /**
+   * @returns {boolean} state of the "Freitexte mit Namen" switch
+   * @noagent view transform
+   */
   isReportWithNames() { return this.model.ui.reportWithNames; }
 
   /**
+   * Whether the exported report names the respondents of free texts. Has no
+   * effect for an anonymous questionnaire.
+   * @agent
+   * @param {boolean} on true names them
+   * @returns {void}
+   * @throws {Error} if `on` is neither true nor false
+   */
+  setReportWithNames(on) {
+    requireEnum('on', on, BOOL_VALUES);
+    this.model.ui.reportWithNames = on;
+  }
+
+  /**
+   * @noagent template handler, see setReportWithNames
    * @param {Event} ev change event of the checkbox
    */
-  setReportWithNamesFromEvent(ev) { this.model.ui.reportWithNames = ev.target.checked; }
+  setReportWithNamesFromEvent(ev) { this.setReportWithNames(ev.target.checked); }
 
   /**
    * "Bericht exportieren": self-contained HTML with filter and grouping as shown.
+   * @noagent file download
    * @returns {Promise<void>}
    */
   async exportReport() {
@@ -485,7 +630,10 @@ export class ResultsViewModel {
       `${sanitizeFileNamePart(this._t('fileReport'))}_${sanitizeFileNamePart(title)}.html`,
     );
   }
-  /** Unmounts every chart of the results tab. */
+  /**
+   * Unmounts every chart of the results tab.
+   * @noagent chart rendering
+   */
   destroyCharts() {
     for (const c of this._charts) {
       try { this._context.chartManager.destroy(c); } catch { /* ignore */ }
@@ -501,7 +649,10 @@ export class ResultsViewModel {
     return JSON.stringify([this.model.survey, this.model.responseIds(), this.model.ui.filter, this.model.ui.groupBy]);
   }
 
-  /** Per-question charts: choice shares, rating means, Kano better/worse. */
+  /**
+   * Per-question charts: choice shares, rating means, Kano better/worse.
+   * @noagent chart rendering
+   */
   questionChartJobs() {
     const jobs = [];
     for (const b of this.blocks()) {
@@ -534,6 +685,7 @@ export class ResultsViewModel {
 
   /**
    * Summary scatter, group bars, then the per-question charts.
+   * @noagent chart rendering
    * @returns {Array<{key: string, type: string, config: object}>}
    */
   chartJobs() {
@@ -542,6 +694,7 @@ export class ResultsViewModel {
 
   /**
    * One Better/Worse scatter over all Kano rows of all Kano questions (spec §7.1).
+   * @noagent chart rendering
    * @returns {Array<{key: string, type: string, config: object}>}
    */
   summaryChartJobs() {
@@ -551,6 +704,7 @@ export class ResultsViewModel {
 
   /**
    * Grouped bars, share in % per group, for every choice question of the comparison.
+   * @noagent chart rendering
    * @returns {Array<{key: string, type: string, config: object}>}
    */
   groupChartJobs() {
@@ -620,7 +774,10 @@ export class ResultsViewModel {
     });
   }
 
-  /** Mounts every chart job into its `[data-chart]` host (gen guard as in kano.js). */
+  /**
+   * Mounts every chart job into its `[data-chart]` host (gen guard as in kano.js).
+   * @noagent chart rendering
+   */
   async mountCharts() {
     if (this._destroyed || !this._isResultsTab()) return;
     this._renderGen++;

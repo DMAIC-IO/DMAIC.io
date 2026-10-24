@@ -2,7 +2,7 @@
  * D.Mike — ResultsViewModel (viewmodel/results.js)
  * Spec: docs/superpowers/specs/2026-10-24-survey-builder-teil-viewmodels-design.md (E1, E2)
  */
-import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../test-utils.js';
 import { State } from '../../js/modules/survey-builder/survey-builder-model.js';
 import { ResultsViewModel } from '../../js/modules/survey-builder/viewmodel/results.js';
 import { t, fakeContext, attach } from './survey-vm-fakes.js';
@@ -75,5 +75,36 @@ suite('survey-vm results — evaluation', () => {
     const { vm, q } = setup();
     assertDeepEqual(vm.blocks().map((b) => b.title), ['Kundengruppe']);
     assertDeepEqual(vm.questionChartJobs().map((j) => [j.key, j.type]), [[`q:${q}`, 'bar']]);
+  });
+});
+
+suite('survey-vm results — agent surface', () => {
+  test('setFilter narrows to one option; null, null shows all; foreign ids are refused', () => {
+    const { vm, model, q, handel } = setup();
+    vm.setFilter(q, handel);
+    assertDeepEqual(model.ui.filter, { questionId: q, optionId: handel });
+    assertEqual(vm.filtered().length, 1);
+    vm.setFilter(null, null);
+    assertEqual(model.ui.filter, null);
+    assertThrows(() => vm.setFilter(q, 'x'), /unknown optionId "x"; available: /);
+    assertThrows(() => vm.setFilter('x', handel), /unknown questionId "x"; available: /);
+  });
+
+  test('setGroupBy accepts single choice questions and null', () => {
+    const { vm, model, q } = setup();
+    vm.setGroupBy(q);
+    assertEqual(model.ui.groupBy, q);
+    assertEqual(vm.hasComparison(), true);
+    vm.setGroupBy(null);
+    assertEqual(model.ui.groupBy, null);
+    const text = model.addQuestion(model.survey.sections[0].id, 'text');
+    assertThrows(() => vm.setGroupBy(text), /unknown questionId ".+"; available: /);
+  });
+
+  test('setReportWithNames takes only true or false', () => {
+    const { vm, model } = setup();
+    vm.setReportWithNames(true);
+    assertEqual(model.ui.reportWithNames, true);
+    assertThrows(() => vm.setReportWithNames('yes'), /invalid on "yes"; allowed: true, false/);
   });
 });

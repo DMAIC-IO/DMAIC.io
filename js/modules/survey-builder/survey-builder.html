@@ -339,7 +339,7 @@
             </template>
           </select>
           <span class="survey-builder__counts" data-ref="nLine" x-text="results.nLine()"></span>
-          <button class="btn btn--sm" type="button" data-ref="takeToVoc" :disabled="!handover.hasVocSelection()" @click="handover.takeToVocTree()">
+          <button class="btn btn--sm" type="button" data-ref="takeToVoc" :disabled="!handover.hasVocSelection()" @click="handover.takeSelectedToVocTree()">
             <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span><span x-text="t('takeToVoc')"></span>
           </button>
           <button class="btn btn--sm" type="button" data-ref="toWorksheet" @click="handover.toWorksheet()">

@@ -17339,77 +17339,7 @@ export const AGENT_REGISTRY = {
     "tagged": false,
     "available": false,
     "violations": [],
-    "reported": [
-      "unmarked_method:results.attach@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.detach@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.scheduleCharts@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.filterOptions@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.filterValue@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.isFilterValue@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.setFilterFromEvent@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.filtered@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.nLine@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.blocks@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.isType@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.isChoice@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.chartKey@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.blockN@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.hasImportance@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.hasOther@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.otherShare@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.hasOtherTexts@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.distLabel@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.rateLine@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.hasWithoutRecipient@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.withoutRecipientLine@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.hasRateGroups@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.rateGroups@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.hasRanking@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.rankingRows@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.hasMoreRanking@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.toggleRanking@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.rankingToggleLabel@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.hasKanoOverview@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.kanoOverviewRows@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.freeTextLine@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.groupByOptions@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.isGroupBy@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.setGroupByFromEvent@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.hasComparison@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.groupsTitle@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.groupHeads@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.comparisonParts@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.cellClass@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.rowClass@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.canShowNames@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.isReportWithNames@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.setReportWithNamesFromEvent@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.exportReport@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.destroyCharts@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.questionChartJobs@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.chartJobs@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.summaryChartJobs@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.groupChartJobs@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:results.mountCharts@js/modules/survey-builder/viewmodel/results.js",
-      "unmarked_method:handover.attach@js/modules/survey-builder/viewmodel/handover.js",
-      "unmarked_method:handover.detach@js/modules/survey-builder/viewmodel/handover.js",
-      "unmarked_method:handover.onInstancesChanged@js/modules/survey-builder/viewmodel/handover.js",
-      "unmarked_method:handover.textAnswers@js/modules/survey-builder/viewmodel/handover.js",
-      "unmarked_method:handover.otherAnswers@js/modules/survey-builder/viewmodel/handover.js",
-      "unmarked_method:handover.hasTextAnswers@js/modules/survey-builder/viewmodel/handover.js",
-      "unmarked_method:handover.hasName@js/modules/survey-builder/viewmodel/handover.js",
-      "unmarked_method:handover.isVocSelected@js/modules/survey-builder/viewmodel/handover.js",
-      "unmarked_method:handover.isVocTaken@js/modules/survey-builder/viewmodel/handover.js",
-      "unmarked_method:handover.toggleVoc@js/modules/survey-builder/viewmodel/handover.js",
-      "unmarked_method:handover.hasVocSelection@js/modules/survey-builder/viewmodel/handover.js",
-      "unmarked_method:handover.takeToVocTree@js/modules/survey-builder/viewmodel/handover.js",
-      "unmarked_method:handover.kanoTargetOptions@js/modules/survey-builder/viewmodel/handover.js",
-      "unmarked_method:handover.kanoTargetValue@js/modules/survey-builder/viewmodel/handover.js",
-      "unmarked_method:handover.isKanoTarget@js/modules/survey-builder/viewmodel/handover.js",
-      "unmarked_method:handover.setKanoTargetFromEvent@js/modules/survey-builder/viewmodel/handover.js",
-      "unmarked_method:handover.handOverToKano@js/modules/survey-builder/viewmodel/handover.js",
-      "unmarked_method:handover.toWorksheet@js/modules/survey-builder/viewmodel/handover.js"
-    ],
+    "reported": [],
     "actions": {
       "draft.setHeader": {
         "params": [
@@ -17849,6 +17779,95 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Delete an imported response, without asking."
+      },
+      "results.setFilter": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string|null",
+            "optional": false,
+            "help": "the choice question, null for no filter"
+          },
+          {
+            "name": "optionId",
+            "type": "string|null",
+            "optional": false,
+            "help": "one of its options, null for no filter"
+          }
+        ],
+        "returns": "void",
+        "help": "Narrow the evaluation to the responses that chose one option of a single or multiple choice question; null for both shows all responses."
+      },
+      "results.setGroupBy": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string|null",
+            "optional": false,
+            "help": "the single choice question, null for no grouping"
+          }
+        ],
+        "returns": "void",
+        "help": "Compare the evaluation across the options of a single choice question; null switches the comparison off."
+      },
+      "results.setReportWithNames": {
+        "params": [
+          {
+            "name": "on",
+            "type": "boolean",
+            "optional": false,
+            "help": "true names them"
+          }
+        ],
+        "returns": "void",
+        "help": "Whether the exported report names the respondents of free texts. Has no effect for an anonymous questionnaire."
+      },
+      "handover.takeToVocTree": {
+        "params": [
+          {
+            "name": "keys",
+            "type": "string[]",
+            "optional": false,
+            "help": "answer keys `<responseId>:<questionId>`, for an \"other\" text `<responseId>:<questionId>:other`"
+          }
+        ],
+        "returns": "number",
+        "help": "Add free-text and \"other\" answers as VoCs to the project's VoC tree; without a tree, one is created in the cycle's tree phase. An answer taken over before is added again."
+      },
+      "handover.setKanoTarget": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string",
+            "optional": false,
+            "help": "the Kano question"
+          },
+          {
+            "name": "instanceId",
+            "type": "string|null",
+            "optional": false,
+            "help": "a kano instance of the project, null for a new one"
+          }
+        ],
+        "returns": "void",
+        "help": "Choose the kano instance a Kano question is handed to; null means a new instance at the next hand-over."
+      },
+      "handover.handOverToKano": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string",
+            "optional": false,
+            "help": "the Kano question"
+          }
+        ],
+        "returns": "string|null",
+        "help": "Hand a Kano question with all responses (ignoring the filter) to its chosen kano instance, or to a new one in this module's phase. A repeat hand-over replaces only what came from this question."
+      },
+      "handover.toWorksheet": {
+        "params": [],
+        "returns": "string|null",
+        "help": "Put all responses into a new worksheet in this module's phase, one row per response."
       },
       "read": {
         "params": [
