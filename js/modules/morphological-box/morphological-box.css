@@ -297,6 +297,11 @@
   border: 1px solid var(--color-border-secondary);
 }
 
+/* .dmike-table drops the bottom rule of its last row; the framed matrix keeps it. */
+.morphological-box__matrix.dmike-table tbody tr:last-child > * {
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
 .morphological-box__matrix .morphological-box__matrix-cell--void {
   background: var(--color-bg-tertiary);
 }
