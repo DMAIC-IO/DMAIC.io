@@ -17336,8 +17336,8 @@ export const AGENT_REGISTRY = {
     }
   },
   "survey-builder": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -21047,4 +21047,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":73};
+export const AGENT_COVERAGE = {"total":76,"available":74};

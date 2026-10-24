@@ -14,6 +14,16 @@
  * binds them to the component's model in init() and forwards the instance
  * events to the hand-over.
  *
+ * @agent  Über die Teil-Viewmodels steuerbar: Kopf, Abschnitte, Fragen,
+ *   Optionen und Zeilen samt Bedingungen anlegen, ändern, verschieben und
+ *   löschen (draft.*); Empfänger pflegen (recipients.*); Antwortdateien
+ *   einlesen und löschen (responses.*); Filter, Gruppierung und Namen im
+ *   Bericht setzen (results.*); Freitexte an den VoC-Baum, Kano-Fragen an
+ *   Kano und alle Antworten an ein Worksheet übergeben (handover.*). Der
+ *   Oberfläche bleiben die Rückfragen vor dem Löschen, der Bedingungseditor
+ *   mit seinem Entwurf, der Dateiwähler und die drei Downloads (Fragebogen,
+ *   Empfängerdatei, Bericht).
+ *
  * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md,
  *       docs/superpowers/specs/2026-10-24-survey-builder-teil-viewmodels-design.md
  */

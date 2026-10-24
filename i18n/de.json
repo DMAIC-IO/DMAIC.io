@@ -1997,6 +1997,114 @@
       }
     },
     "survey-builder": {
+      "whenToUse": "Wenn Kunden oder Stakeholder schriftlich befragt werden sollen: Fragebogen entwerfen, je Empfänger als HTML-Datei verschicken, die Antwortdateien einlesen und auswerten — ohne Server, die Daten bleiben im Projekt.",
+      "actions": {
+        "read": { "help": "Fragebogen, Empfänger, eingelesene Antworten, Übergaben und den Stand der Oberfläche lesen." },
+        "setTab": { "help": "Einen Reiter öffnen: Entwurf, Empfänger oder Auswertung.", "params": { "tab": "draft, recipients oder results." } },
+        "draft": {
+          "setHeader": { "help": "Ein Feld im Kopf des Fragebogens setzen: Titel, Einleitung, Kontakt, Sprache der Datei oder anonym.", "params": { "key": "Welches Kopffeld.", "value": "Text für Titel, Einleitung und Kontakt; de oder en für die Sprache; true oder false für anonym." } },
+          "addSection": { "help": "Einen leeren Abschnitt ans Ende des Fragebogens anhängen. Fragen stehen immer in einem Abschnitt." },
+          "setSectionField": { "help": "Titel oder Hinweis eines Abschnitts setzen.", "params": { "sectionId": "Der Abschnitt.", "key": "Titel oder Hinweis.", "value": "Der neue Text; leer löscht ihn." } },
+          "moveSection": { "help": "Einen Abschnitt eine Stelle nach oben oder unten schieben. Bedingungen, die danach auf eine spätere Frage zeigten, entfallen; die Rückgabe zählt sie.", "params": { "sectionId": "Der Abschnitt.", "direction": "up oder down." } },
+          "deleteSection": { "help": "Einen Abschnitt samt seinen Fragen löschen, ohne Rückfrage. Bedingungen auf diese Fragen entfallen; die Rückgabe zählt sie.", "params": { "sectionId": "Der Abschnitt." } },
+          "addQuestion": { "help": "Eine Frage eines Typs an einen Abschnitt anhängen und auswählen.", "params": { "sectionId": "Der Abschnitt.", "type": "single (Einfachauswahl), multi (Mehrfachauswahl), rating (Bewertung 1–5), kano (Kano-Paar), text (Freitext) oder info (nur Text)." } },
+          "setQuestionField": { "help": "Text, Hinweis oder einen Schalter einer Frage setzen; welche Schalter es gibt, hängt vom Typ ab.", "params": { "questionId": "Die Frage.", "key": "Welches Feld.", "value": "Text für text und hint; true oder false für die Schalter." } },
+          "changeQuestionType": { "help": "Den Typ einer Frage ändern. Text, Hinweis, Pflicht und Bedingungen bleiben, Optionen, Zeilen und Schalter beginnen leer; Bedingungen auf ihre bisherigen Optionen entfallen.", "params": { "questionId": "Die Frage.", "type": "Der neue Typ, Werte wie bei addQuestion." } },
+          "moveQuestion": { "help": "Eine Frage eine Stelle nach oben oder unten schieben; an einer Abschnittsgrenze wechselt sie in den Nachbarabschnitt. Bedingungen, die danach auf eine spätere Frage zeigten, entfallen; die Rückgabe zählt sie.", "params": { "questionId": "Die Frage.", "direction": "up oder down." } },
+          "deleteQuestion": { "help": "Eine Frage löschen, ohne Rückfrage — auch wenn eingelesene Antworten sie beantwortet haben. Bedingungen auf sie entfallen; die Rückgabe zählt sie.", "params": { "questionId": "Die Frage." } },
+          "addItem": { "help": "Eine leere Option (Einfach- und Mehrfachauswahl) oder Zeile (Bewertung, Kano) an eine Frage anhängen.", "params": { "questionId": "Die Frage." } },
+          "setItemField": { "help": "Den Text einer Option oder Zeile setzen, bei Mehrfachauswahl auch die Anzeigegruppe einer Option.", "params": { "questionId": "Die Frage.", "itemId": "Die Option oder Zeile.", "key": "Text oder Gruppe.", "value": "Der neue Text; leer löscht ihn." } },
+          "moveItem": { "help": "Eine Option oder Zeile innerhalb ihrer Frage eine Stelle nach oben oder unten schieben.", "params": { "questionId": "Die Frage.", "itemId": "Die Option oder Zeile.", "direction": "up oder down." } },
+          "deleteItem": { "help": "Eine Option oder Zeile löschen, ohne Rückfrage. Bedingungen auf eine gelöschte Option entfallen; die Rückgabe zählt sie.", "params": { "questionId": "Die Frage.", "itemId": "Die Option oder Zeile." } },
+          "setConditions": { "help": "Bestimmt, wann ein Abschnitt oder eine Frage erscheint: sobald bei einer früheren Einfach- oder Mehrfachauswahl eine der genannten Optionen gewählt wurde. Jede Bedingung genügt für sich; ohne Bedingung erscheint er immer.", "params": { "nodeId": "Der Abschnitt oder die Frage.", "conditions": "Je Bedingung { questionId, optionIds }: eine frühere Einfach- oder Mehrfachauswahl und mindestens eine ihrer Optionen; [] entfernt alle Bedingungen." } }
+        },
+        "recipients": {
+          "addRecipient": { "help": "Einen leeren Empfänger anlegen. Je Empfänger entsteht eine eigene Fragebogendatei, an deren Antwort sich der Empfänger erkennen lässt." },
+          "setRecipientField": { "help": "Ein Feld eines Empfängers setzen: Name, Organisation, Gruppe, E-Mail oder Notiz.", "params": { "recipientId": "Der Empfänger.", "key": "Welches Feld.", "value": "Der neue Text; leer löscht ihn." } },
+          "deleteRecipient": { "help": "Einen Empfänger löschen, ohne Rückfrage. Seine Antworten bleiben, ohne Empfänger.", "params": { "recipientId": "Der Empfänger." } }
+        },
+        "responses": {
+          "importResponse": { "help": "Eine Antwortdatei einlesen, die der Fragebogen beim Empfänger gespeichert hat. Dateien dieses Fragebogens werden übernommen, auch die einer älteren Version; eine schon eingelesene, eine fremde oder eine kaputte Datei erscheint nur im Protokoll.", "params": { "json": "Der Inhalt der Antwortdatei als Text.", "fileName": "Der Name, der im Protokoll steht." } },
+          "deleteResponse": { "help": "Eine eingelesene Antwort löschen, ohne Rückfrage; ihre Markierungen der VoC-Übernahme entfallen mit.", "params": { "responseId": "Die Antwort." } }
+        },
+        "results": {
+          "setFilter": { "help": "Die Auswertung auf die Antworten beschränken, die bei einer Einfach- oder Mehrfachauswahl eine bestimmte Option gewählt haben. Ohne Filter zählen alle Antworten.", "params": { "questionId": "Die Auswahlfrage; null zusammen mit optionId null hebt den Filter auf.", "optionId": "Eine ihrer Optionen; null hebt den Filter auf." } },
+          "setGroupBy": { "help": "Die Auswertung nach den Optionen einer Einfachauswahl-Frage nebeneinanderstellen, etwa nach Kundengruppe. Gruppen mit wenigen Antworten werden markiert.", "params": { "questionId": "Die Einfachauswahl-Frage; null schaltet den Vergleich ab." } },
+          "setReportWithNames": { "help": "Ob der exportierte Bericht bei Freitexten nennt, wer sie geschrieben hat. Bei einem anonymen Fragebogen ohne Wirkung.", "params": { "on": "true nennt die Namen, false nicht." } }
+        },
+        "handover": {
+          "takeToVocTree": { "help": "Die angehakten Freitexte und Sonstige-Antworten als Kundenstimmen in den VoC-Baum des Projekts übernehmen; gibt es keinen, wird einer angelegt. Schon übernommene Antworten lassen sich erneut übernehmen.", "params": { "keys": "Antwortschlüssel <responseId>:<questionId>, bei einer Sonstige-Antwort mit dem Zusatz :other; die ids stehen in read().responses." } },
+          "setKanoTarget": { "help": "Wählen, an welche Kano-Instanz des Projekts eine Kano-Frage übergeben wird, oder eine neue.", "params": { "questionId": "Die Kano-Frage.", "instanceId": "Eine Kano-Instanz des Projekts; null legt bei der nächsten Übergabe eine neue an." } },
+          "handOverToKano": { "help": "Eine Kano-Frage mit allen Antworten, ohne Filter, an die gewählte Kano-Instanz übergeben oder an eine neue in dieser Phase. Eine wiederholte Übergabe ersetzt nur, was von dieser Frage kam.", "params": { "questionId": "Die Kano-Frage." } },
+          "toWorksheet": { "help": "Alle Antworten als neues Worksheet in dieser Phase anlegen, eine Zeile je Antwort." }
+        }
+      },
+      "fields": {
+        "survey": { "help": "Der Fragebogen: Kopf, Version, Abschnitte mit ihren Fragen, Optionen, Zeilen und Bedingungen." },
+        "recipients": { "help": "Die Empfänger mit Name, Organisation, Gruppe, E-Mail und Notiz, dazu wann und mit welcher Version sie ihre Datei bekommen haben." },
+        "responses": { "help": "Die eingelesenen Antworten: je Antwortdatei die Version, der Empfänger, falls bekannt und nicht anonym, der Zeitpunkt und die Antworten je Frage." },
+        "answeredRecipientIds": { "help": "Welche Empfänger schon geantwortet haben; daraus folgt der Status nicht verschickt, verschickt oder beantwortet." },
+        "transfers": { "help": "Was schon übergeben wurde: die in den VoC-Baum übernommenen Antworten und je Kano-Frage die Kano-Instanz, an die sie geht." },
+        "ui": { "help": "Stand der Oberfläche: offener Reiter, ausgewählte Frage, Filter, Gruppierung und ob der Bericht Namen nennt." },
+        "dirtyStructure": { "help": "Ob sich der Aufbau seit dem letzten Export geändert hat; ist der Fragebogen schon verschickt, erhöht der nächste Export dann die Version." },
+        "exportedOnce": { "help": "Ob der Fragebogen schon einmal exportiert wurde." }
+      },
+      "types": {
+        "SurveyHeader": {
+          "title": "Der Titel über dem Fragebogen.",
+          "intro": "Der Einleitungstext unter dem Titel.",
+          "contact": "An wen sich Befragte bei Fragen wenden.",
+          "lang": "Die Sprache der exportierten Datei: Deutsch oder Englisch.",
+          "anonymous": "Anonym: Antworten tragen keinen Empfänger, auch wenn die Datei für einen Empfänger erzeugt wurde."
+        },
+        "SectionFields": {
+          "title": "Die Überschrift des Abschnitts.",
+          "hint": "Ein Erklärtext unter der Überschrift."
+        },
+        "QuestionFields": {
+          "text": "Die Frage, wie die Befragten sie lesen.",
+          "hint": "Ein Erklärtext unter der Frage.",
+          "required": "Pflichtfrage: ohne Antwort lässt sich der Fragebogen nicht abschließen.",
+          "other": "Bietet zusätzlich eine freie Antwort Sonstige an.",
+          "noAnswer": "Bietet je Zeile die Antwort keine Angabe an.",
+          "importance": "Fragt je Zeile zusätzlich die Wichtigkeit von 1 bis 9 ab.",
+          "multiline": "Mehrzeiliges Antwortfeld statt einer Zeile."
+        },
+        "ItemFields": {
+          "text": "Der Text der Option oder Zeile.",
+          "group": "Die Anzeigegruppe einer Option bei Mehrfachauswahl; Optionen derselben Gruppe stehen zusammen."
+        },
+        "RecipientFields": {
+          "name": "Name der Person oder des Unternehmens.",
+          "organisation": "Organisation oder Abteilung.",
+          "group": "Die Gruppe, nach der die Rücklaufquote aufgeteilt wird.",
+          "email": "E-Mail-Adresse, um die Datei mit dem eigenen Mailprogramm zu verschicken.",
+          "note": "Eine freie Notiz."
+        }
+      },
+      "columns": {
+        "date": "Wann die Antwort abgeschickt wurde.",
+        "respondent": "Wer geantwortet hat: der Empfänger, anonym oder ohne Empfänger.",
+        "sentAt": "Wann die Datei für den Empfänger erzeugt wurde und mit welcher Version des Fragebogens.",
+        "group": "Die Empfängergruppe.",
+        "sent": "Wie viele Empfänger ihre Datei bekommen haben.",
+        "answered": "Wie viele davon geantwortet haben.",
+        "rate": "Rücklaufquote: beantwortet geteilt durch verschickt.",
+        "item": "Die bewertete Zeile.",
+        "n": "Wie viele Antworten in die Zeile eingehen.",
+        "mean": "Der Mittelwert der Bewertung von 1 bis 5.",
+        "top": "Anteil der Antworten mit 4 oder 5.",
+        "median": "Der Median der Bewertung.",
+        "dist": "Wie oft jede Stufe von 1 bis 5 gewählt wurde.",
+        "na": "Wie oft keine Angabe gewählt wurde.",
+        "category": "Die Kano-Kategorie der Zeile, aus den Antwortpaaren ermittelt.",
+        "better": "Zufriedenheitskoeffizient: wie stark das Merkmal begeistert, wenn es vorhanden ist, von 0 bis 1.",
+        "worse": "Unzufriedenheitskoeffizient: wie stark sein Fehlen stört; je größer der Betrag, desto stärker.",
+        "importance": "Die mittlere Wichtigkeit von 1 bis 9.",
+        "option": "Die Antwortoption.",
+        "count": "Wie oft sie gewählt wurde.",
+        "share": "Ihr Anteil an den Antworten auf die Frage."
+      },
       "name": "Fragebogen-Generator",
       "description": "VoC-Fragebogen erstellen, als HTML verschicken, Antworten einlesen und auswerten",
       "tabDraft": "Entwurf",

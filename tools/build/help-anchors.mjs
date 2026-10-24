@@ -135,6 +135,13 @@ export const BOUND_HELP_KEY_FAMILIES = [
         ]));
     },
   },
+  {
+    moduleId: 'survey-builder',
+    keys: async () => {
+      const { FLAG_KEYS } = await import('../../js/modules/survey-builder/viewmodel/draft.js');
+      return FLAG_KEYS.map((k) => `modules.survey-builder.types.QuestionFields.${k}`);
+    },
+  },
 ];
 
 /**

@@ -1997,6 +1997,114 @@
       }
     },
     "survey-builder": {
+      "whenToUse": "When customers or stakeholders are to be surveyed in writing: design the questionnaire, send it as an HTML file per recipient, read in the answer files and evaluate them — without a server, the data stays in the project.",
+      "actions": {
+        "read": { "help": "Read the questionnaire, recipients, imported responses, hand-overs and the state of the interface." },
+        "setTab": { "help": "Open a tab: draft, recipients or results.", "params": { "tab": "draft, recipients or results." } },
+        "draft": {
+          "setHeader": { "help": "Set a field in the header of the questionnaire: title, introduction, contact, language of the file or anonymous.", "params": { "key": "Which header field.", "value": "Text for title, introduction and contact; de or en for the language; true or false for anonymous." } },
+          "addSection": { "help": "Append an empty section to the end of the questionnaire. Questions always sit in a section." },
+          "setSectionField": { "help": "Set the title or the hint of a section.", "params": { "sectionId": "The section.", "key": "Title or hint.", "value": "The new text; empty clears it." } },
+          "moveSection": { "help": "Move a section one place up or down. Conditions that would then point at a later question are removed; the return value counts them.", "params": { "sectionId": "The section.", "direction": "up or down." } },
+          "deleteSection": { "help": "Delete a section with its questions, without asking. Conditions on these questions are removed; the return value counts them.", "params": { "sectionId": "The section." } },
+          "addQuestion": { "help": "Append a question of a type to a section and select it.", "params": { "sectionId": "The section.", "type": "single (single choice), multi (multiple choice), rating (rating 1–5), kano (Kano pair), text (free text) or info (text only)." } },
+          "setQuestionField": { "help": "Set the text, the hint or a switch of a question; which switches exist depends on the type.", "params": { "questionId": "The question.", "key": "Which field.", "value": "Text for text and hint; true or false for the switches." } },
+          "changeQuestionType": { "help": "Change the type of a question. Text, hint, required and conditions stay, options, rows and switches start empty; conditions on its previous options are removed.", "params": { "questionId": "The question.", "type": "The new type, values as for addQuestion." } },
+          "moveQuestion": { "help": "Move a question one place up or down; at a section boundary it moves into the neighbouring section. Conditions that would then point at a later question are removed; the return value counts them.", "params": { "questionId": "The question.", "direction": "up or down." } },
+          "deleteQuestion": { "help": "Delete a question, without asking — also when imported responses answered it. Conditions on it are removed; the return value counts them.", "params": { "questionId": "The question." } },
+          "addItem": { "help": "Append an empty option (single and multiple choice) or row (rating, Kano) to a question.", "params": { "questionId": "The question." } },
+          "setItemField": { "help": "Set the text of an option or row, for multiple choice also the display group of an option.", "params": { "questionId": "The question.", "itemId": "The option or row.", "key": "Text or group.", "value": "The new text; empty clears it." } },
+          "moveItem": { "help": "Move an option or row one place up or down within its question.", "params": { "questionId": "The question.", "itemId": "The option or row.", "direction": "up or down." } },
+          "deleteItem": { "help": "Delete an option or row, without asking. Conditions on a deleted option are removed; the return value counts them.", "params": { "questionId": "The question.", "itemId": "The option or row." } },
+          "setConditions": { "help": "Decides when a section or question appears: as soon as one of the named options was chosen in an earlier single or multiple choice question. Each condition suffices on its own; without a condition it always appears.", "params": { "nodeId": "The section or question.", "conditions": "Per condition { questionId, optionIds }: an earlier single or multiple choice question and at least one of its options; [] removes all conditions." } }
+        },
+        "recipients": {
+          "addRecipient": { "help": "Add an empty recipient. Each recipient gets their own questionnaire file, whose answers identify the recipient." },
+          "setRecipientField": { "help": "Set a field of a recipient: name, organisation, group, e-mail or note.", "params": { "recipientId": "The recipient.", "key": "Which field.", "value": "The new text; empty clears it." } },
+          "deleteRecipient": { "help": "Delete a recipient, without asking. Their responses stay, without recipient.", "params": { "recipientId": "The recipient." } }
+        },
+        "responses": {
+          "importResponse": { "help": "Read in an answer file the questionnaire saved at the recipient's. Files of this questionnaire are taken in, also those of an older version; a file read before, one of another questionnaire or a broken one only shows in the log.", "params": { "json": "The content of the answer file as text.", "fileName": "The name shown in the log." } },
+          "deleteResponse": { "help": "Delete an imported response, without asking; its VoC take-over marks go with it.", "params": { "responseId": "The response." } }
+        },
+        "results": {
+          "setFilter": { "help": "Narrow the evaluation to the responses that chose a given option in a single or multiple choice question. Without a filter all responses count.", "params": { "questionId": "The choice question; null together with optionId null lifts the filter.", "optionId": "One of its options; null lifts the filter." } },
+          "setGroupBy": { "help": "Set the evaluation side by side per option of a single choice question, for example per customer group. Groups with few responses are marked.", "params": { "questionId": "The single choice question; null switches the comparison off." } },
+          "setReportWithNames": { "help": "Whether the exported report names who wrote the free texts. No effect for an anonymous questionnaire.", "params": { "on": "true names them, false does not." } }
+        },
+        "handover": {
+          "takeToVocTree": { "help": "Take the ticked free texts and other-answers as voices of the customer into the project's VoC tree; if there is none, one is created. Answers taken over before can be taken over again.", "params": { "keys": "Answer keys <responseId>:<questionId>, for an other-answer with the suffix :other; the ids are in read().responses." } },
+          "setKanoTarget": { "help": "Choose which Kano instance of the project a Kano question is handed to, or a new one.", "params": { "questionId": "The Kano question.", "instanceId": "A Kano instance of the project; null creates a new one at the next hand-over." } },
+          "handOverToKano": { "help": "Hand a Kano question with all responses, without filter, to the chosen Kano instance or to a new one in this phase. A repeat hand-over replaces only what came from this question.", "params": { "questionId": "The Kano question." } },
+          "toWorksheet": { "help": "Create a new worksheet in this phase with all responses, one row per response." }
+        }
+      },
+      "fields": {
+        "survey": { "help": "The questionnaire: header, version, sections with their questions, options, rows and conditions." },
+        "recipients": { "help": "The recipients with name, organisation, group, e-mail and note, plus when and with which version they got their file." },
+        "responses": { "help": "The imported responses: per answer file the version, the recipient if known and not anonymous, the time and the answers per question." },
+        "answeredRecipientIds": { "help": "Which recipients have answered; this gives the status not sent, sent or answered." },
+        "transfers": { "help": "What was handed over: the answers taken into the VoC tree and per Kano question the Kano instance it goes to." },
+        "ui": { "help": "State of the interface: open tab, selected question, filter, grouping and whether the report names respondents." },
+        "dirtyStructure": { "help": "Whether the structure changed since the last export; once the questionnaire was sent, the next export then raises the version." },
+        "exportedOnce": { "help": "Whether the questionnaire was exported at least once." }
+      },
+      "types": {
+        "SurveyHeader": {
+          "title": "The title above the questionnaire.",
+          "intro": "The introduction below the title.",
+          "contact": "Whom respondents ask with questions.",
+          "lang": "The language of the exported file: German or English.",
+          "anonymous": "Anonymous: answers carry no recipient, even when the file was made for a recipient."
+        },
+        "SectionFields": {
+          "title": "The heading of the section.",
+          "hint": "An explanation below the heading."
+        },
+        "QuestionFields": {
+          "text": "The question as respondents read it.",
+          "hint": "An explanation below the question.",
+          "required": "Required: without an answer the questionnaire cannot be completed.",
+          "other": "Also offers a free answer Other.",
+          "noAnswer": "Offers the answer no answer per row.",
+          "importance": "Also asks for the importance from 1 to 9 per row.",
+          "multiline": "Multi-line answer field instead of a single line."
+        },
+        "ItemFields": {
+          "text": "The text of the option or row.",
+          "group": "The display group of an option in multiple choice; options of the same group stand together."
+        },
+        "RecipientFields": {
+          "name": "Name of the person or company.",
+          "organisation": "Organisation or department.",
+          "group": "The group the response rate is split by.",
+          "email": "E-mail address, to send the file with your own mail program.",
+          "note": "A free note."
+        }
+      },
+      "columns": {
+        "date": "When the response was sent.",
+        "respondent": "Who answered: the recipient, anonymous or without recipient.",
+        "sentAt": "When the file for the recipient was made and with which version of the questionnaire.",
+        "group": "The recipient group.",
+        "sent": "How many recipients got their file.",
+        "answered": "How many of them answered.",
+        "rate": "Response rate: answered divided by sent.",
+        "item": "The rated row.",
+        "n": "How many responses count for the row.",
+        "mean": "The mean rating from 1 to 5.",
+        "top": "Share of responses with 4 or 5.",
+        "median": "The median rating.",
+        "dist": "How often each level from 1 to 5 was chosen.",
+        "na": "How often no answer was chosen.",
+        "category": "The Kano category of the row, determined from the answer pairs.",
+        "better": "Satisfaction coefficient: how much the feature delights when present, from 0 to 1.",
+        "worse": "Dissatisfaction coefficient: how much its absence annoys; the larger the magnitude, the stronger.",
+        "importance": "The mean importance from 1 to 9.",
+        "option": "The answer option.",
+        "count": "How often it was chosen.",
+        "share": "Its share of the responses to the question."
+      },
       "name": "Survey builder",
       "description": "Create VoC questionnaires, send them as HTML, import and evaluate the answers",
       "tabDraft": "Draft",
