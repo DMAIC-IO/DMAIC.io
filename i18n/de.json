@@ -6271,7 +6271,7 @@
       "headingOptions": "Ausprägungen",
       "view_box": "Kasten",
       "view_consistency": "Verträglichkeit",
-      "emptyState": "Noch keine Parameter. Legen Sie über „Parameter hinzufügen“ die erste Teilfunktion der Lösung an.",
+      "emptyState": "Noch keine Parameter. Legen Sie über „+“ die erste Teilfunktion der Lösung an.",
       "parameterName": "Parametername",
       "parameterPlaceholder": "Parameter …",
       "removeParameter": "Parameter entfernen",

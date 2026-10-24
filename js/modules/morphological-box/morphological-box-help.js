@@ -33,7 +33,7 @@ export default {
         title: 'Beispiel',
         blocks: [
           { type: 'steps', items: [
-            'Legen Sie über „Parameter hinzufügen“ die Teilfunktionen der Lösung an und benennen Sie sie.',
+            'Legen Sie über „+“ unter dem Kasten die Teilfunktionen der Lösung an und benennen Sie sie.',
             'Tragen Sie je Parameter die Ausprägungen ein; „+“ am Zeilenende fügt eine weitere hinzu.',
             'Markieren Sie in der Ansicht „Verträglichkeit“ Paare, die nicht zusammenpassen.',
             'Legen Sie über „Konzept hinzufügen“ ein Konzept an und wählen Sie im Kasten je Parameter eine Ausprägung.',
@@ -45,7 +45,7 @@ export default {
         title: 'Example',
         blocks: [
           { type: 'steps', items: [
-            'Use "Add parameter" to create the sub-functions of the solution and name them.',
+            'Use "+" below the box to create the sub-functions of the solution and name them.',
             'Enter the options per parameter; "+" at the row end adds another one.',
             'In the "Consistency" view, mark the pairs that do not fit together.',
             'Use "Add concept" to create a concept and pick one option per parameter in the box.',

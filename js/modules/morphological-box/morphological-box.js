@@ -44,8 +44,7 @@ export default createModule({
     version: '1.0.0',
     meta: import.meta,
     actions: [
-      { icon: 'action.add', title: 'addParameter', variant: 'primary', agentAction: 'addParameter', onClick: (d) => d.addParameter() },
-      { icon: 'action.add', title: 'addConcept', agentAction: 'addConcept', onClick: (d) => d.addConcept() },
+      { icon: 'action.add', title: 'addConcept', variant: 'primary', agentAction: 'addConcept', onClick: (d) => d.addConcept() },
     ],
   },
   Model: State,

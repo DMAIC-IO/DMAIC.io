@@ -29,9 +29,9 @@
   <div class="morphological-box__empty" x-show="model.parameters.length === 0" x-text="t('emptyState')"></div>
 
   <!-- Box view: one row per parameter, one cell per option. -->
-  <div class="morphological-box__layout" x-show="model.view === 'box' && model.parameters.length > 0">
+  <div class="morphological-box__layout" x-show="model.view === 'box'">
     <div class="morphological-box__grid">
-      <div class="morphological-box__head">
+      <div class="morphological-box__head" x-show="model.parameters.length > 0">
         <div class="morphological-box__head-param" data-heading data-help-key="modules.morphological-box.fields.parameters.help" x-text="t('headingParameter')"></div>
         <div class="morphological-box__head-options" data-heading data-help-key="modules.morphological-box.actions.setOptionLabel.help" x-text="t('headingOptions')"></div>
       </div>
@@ -73,6 +73,13 @@
           </button>
         </div>
       </template>
+      <div class="morphological-box__add-row">
+        <button class="btn btn--icon-sm morphological-box__add-parameter" type="button" data-action="add-parameter" data-help-key="modules.morphological-box.actions.addParameter.help"
+                :title="t('addParameter')" @click="addParameter()">
+          <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
+          <span class="dmike-sr-only" x-text="t('addParameter')"></span>
+        </button>
+      </div>
     </div>
 
     <aside class="morphological-box__concepts">

@@ -38,7 +38,8 @@
 
 /* Heading cells share the cell shape but carry the accent to read as headings. */
 .morphological-box__head-param,
-.morphological-box__head-options {
+.morphological-box__head-options,
+.morphological-box__concepts-title {
   padding: var(--spacing-xs);
   text-align: center;
   background: var(--color-accent);
@@ -161,6 +162,12 @@
   align-self: center;
 }
 
+.morphological-box__add-row {
+  display: flex;
+  justify-content: center;
+  width: 180px;
+}
+
 /* ── Concept list ─────────────────────────────────────────── */
 
 .morphological-box__concepts {
@@ -173,6 +180,7 @@
 .morphological-box__concepts-title {
   margin: 0;
   font-size: var(--font-size-md);
+  font-weight: 600;
 }
 
 .morphological-box__concept {
