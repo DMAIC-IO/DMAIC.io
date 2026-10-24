@@ -20,11 +20,11 @@
   align-items: flex-start;
 }
 
+/* One track as wide as the longest row, so the heading spans all options. */
 .morphological-box__grid {
   flex: 1;
   min-width: 0;
   display: grid;
-  /* One track as wide as the longest row, so the heading spans all options. */
   grid-template-columns: max-content;
   gap: var(--spacing-xs);
   overflow-x: auto;
