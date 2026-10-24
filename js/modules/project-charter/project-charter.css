@@ -5,6 +5,12 @@
 
 /* ===== Sections ===== */
 
+/* Der Body scrollt (overflow: auto): das Fragezeichen der ersten Überschrift
+   ragt über deren Oberkante und würde dort abgeschnitten. */
+.pc > .module-container__body {
+  padding-top: var(--spacing-m);
+}
+
 /* Section labels use global .dmike-split__output-section */
 .pc__section {
   margin-bottom: var(--spacing-xl);
