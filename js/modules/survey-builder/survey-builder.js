@@ -6,11 +6,16 @@
  *
  * The model (survey-builder-model.js) owns the persisted state; the pure
  * modules next to it own conditions, export, import, statistics, report and
- * the hand-over to kano / voc-ctx-tree. The UI lives in one tab controller
- * per concern (survey-*-controller.js), spread into the data function below;
- * this file keeps config, lifecycle, tabs, labels and formatting.
+ * the hand-over to kano / voc-ctx-tree. The UI lives in five encapsulated
+ * sub-viewmodels under viewmodel/ (draft, recipients, responses, results,
+ * handover) that know neither each other nor this shell; the template
+ * addresses them by namespace (`draft.addSection()`). This file keeps
+ * config, tabs, lifecycle and the wiring: it creates the sub-viewmodels,
+ * binds them to the component's model in init() and forwards the instance
+ * events to the hand-over.
  *
- * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md
+ * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md,
+ *       docs/superpowers/specs/2026-10-24-survey-builder-teil-viewmodels-design.md
  */
 
 import { createModule } from '../../core/template-module.js';
@@ -19,9 +24,8 @@ import * as labels from './survey-labels.js';
 import { DraftViewModel } from './viewmodel/draft.js';
 import { RecipientsViewModel } from './viewmodel/recipients.js';
 import { ResponsesViewModel } from './viewmodel/responses.js';
-import { resultsController } from './survey-results-controller.js';
+import { ResultsViewModel } from './viewmodel/results.js';
 import { HandoverViewModel } from './viewmodel/handover.js';
-import { chartsController } from './survey-charts-controller.js';
 import { uid } from '../../core/uid.js';
 
 export default createModule({
@@ -60,15 +64,12 @@ export default createModule({
       draft: new DraftViewModel(deps),
       recipients: new RecipientsViewModel(deps),
       responses: new ResponsesViewModel(deps),
-      ...resultsController(module, _t),
+      results: new ResultsViewModel(deps),
       handover: new HandoverViewModel(deps),
-      ...chartsController(module, _t),
       _t,
       _unsubs: [],
-      /** true once destroy() ran — blocks mounts that come back later. */
-      _destroyed: false,
 
-      /** Alpine lifecycle hook. */
+      /** Alpine lifecycle hook: binds the sub-viewmodels to the component's model. */
       init() {
         this._unsubs = [];
         const binding = {
@@ -77,30 +78,24 @@ export default createModule({
           nextTick: (callback) => this.$nextTick(callback),
         };
         for (const vm of this._subViewModels()) vm.attach(binding);
-        this.$watch(() => this._resultsSignature(), () => this.scheduleCharts());
+        // The only wiring between the parts (spec E2): kano instances may have changed.
         const eb = module._context.eventBus;
-        const onTheme = () => this.scheduleCharts();
-        eb.on('theme:changed', onTheme);
-        this._unsubs.push(() => eb.off('theme:changed', onTheme));
         const onInstances = () => this.handover.onInstancesChanged();
         for (const evt of ['module:added', 'module:removed']) {
           eb.on(evt, onInstances);
           this._unsubs.push(() => eb.off(evt, onInstances));
         }
-        if (this.isTab('results')) this.scheduleCharts();
       },
 
-      /** Alpine lifecycle hook: timers, subscriptions, charts. */
+      /** Alpine lifecycle hook: subscriptions, then every sub-viewmodel. */
       destroy() {
-        this._destroyed = true;
         (this._unsubs || []).forEach((off) => off());
         this._unsubs = [];
-        this.destroyCharts();
         for (const vm of this._subViewModels()) vm.detach();
       },
 
       /** @returns {object[]} the sub-viewmodels, in attach order */
-      _subViewModels() { return [this.draft, this.recipients, this.responses, this.handover]; },
+      _subViewModels() { return [this.draft, this.recipients, this.responses, this.results, this.handover]; },
 
       // ── Tabs ──────────────────────────────────────────────────
 
@@ -117,30 +112,18 @@ export default createModule({
       tabClass(tab) { return { 'dmike-tab--active': this.isTab(tab) }; },
 
       /**
-       * Charts only live on the results tab: entering it mounts them,
-       * leaving it drops them (a hidden host has no size to draw into).
+       * Switches the tab; the results sub-viewmodel mounts or drops its
+       * charts on its own when the tab changes.
        * @param {'draft'|'recipients'|'results'} tab
        */
-      setTab(tab) {
-        this.model.ui.tab = tab;
-        if (tab === 'results') {
-          this.scheduleCharts();
-          return;
-        }
-        this._renderGen++;
-        this.destroyCharts();
-      },
+      setTab(tab) { this.model.ui.tab = tab; },
 
-      // ── Labels and formatting (pure functions in survey-labels.js) ──
+      // ── Template-wide labels (pure functions in survey-labels.js) ──
 
       /** @param {string} type @returns {string} translated question type */
       typeLabel(type) { return labels.typeLabel(type, _t); },
 
-      /**
-       * Question text, or "Frage <n>" (position in document order) when empty.
-       * @param {object} q
-       * @returns {string}
-       */
+      /** @param {object} q @returns {string} question text or "Frage <n>" */
       questionLabel(q) { return labels.questionLabel(this.model.survey, q, _t); },
 
       /** @param {number} index 0-based @returns {string} placeholder of an untitled section */
@@ -149,29 +132,17 @@ export default createModule({
       /** @param {object} opt option @returns {string} its text or a placeholder */
       optionText(opt) { return labels.optionText(opt, _t); },
 
-      /** @param {string|null} code @returns {string} Kano category label */
-      catLabel(code) { return labels.catLabel(code, module._context.i18n); },
-
-      /**
-       * @param {string|null} id recipient id
-       * @returns {string|null} trimmed name, null when unknown or unnamed
-       */
-      recipientName(id) { return labels.recipientName(this.model.recipients, id); },
-
       /** @param {{when: Array|null}} node @returns {boolean} whether the node has conditions */
       hasCondition(node) { return Array.isArray(node.when) && node.when.length > 0; },
 
-      /** @returns {'de-DE'|'en-US'} locale of the app language */
-      _locale() { return labels.localeOf(module._context.i18n); },
-
-      /** @param {string|null} iso @returns {string} local date and time, '–' when empty */
-      formatDateTime(iso) { return labels.formatDateTime(iso, this._locale()); },
+      /** @param {string|null} code @returns {string} Kano category label */
+      catLabel(code) { return labels.catLabel(code, module._context.i18n); },
 
       /** @param {number|null} share 0..1 @returns {string} "42 %", '—' without a base */
       fmtPct(share) { return labels.fmtPct(share); },
 
       /** @param {number|null} value @param {number} decimals @returns {string} localised number */
-      fmtNum(value, decimals) { return labels.fmtNum(value, decimals, this._locale()); },
+      fmtNum(value, decimals) { return labels.fmtNum(value, decimals, labels.localeOf(module._context.i18n)); },
     };
   },
 });
