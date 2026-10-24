@@ -27,6 +27,11 @@ import { ResponsesViewModel } from './viewmodel/responses.js';
 import { ResultsViewModel } from './viewmodel/results.js';
 import { HandoverViewModel } from './viewmodel/handover.js';
 import { uid } from '../../core/uid.js';
+import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum } from '../../core/agent/agent-argcheck.js';
+
+/** Tabs of the module (State.ui.tab). */
+const TABS = ['draft', 'recipients', 'results'];
 
 export default createModule({
   config: {
@@ -68,8 +73,9 @@ export default createModule({
       handover: new HandoverViewModel(deps),
       _t,
       _unsubs: [],
+      ...agentReadMixin(module),
 
-      /** Alpine lifecycle hook: binds the sub-viewmodels to the component's model. */
+      /** @noagent lifecycle — Alpine hook: binds the sub-viewmodels to the component's model. */
       init() {
         this._unsubs = [];
         const binding = {
@@ -87,7 +93,7 @@ export default createModule({
         }
       },
 
-      /** Alpine lifecycle hook: subscriptions, then every sub-viewmodel. */
+      /** @noagent lifecycle — Alpine hook: subscriptions, then every sub-viewmodel. */
       destroy() {
         (this._unsubs || []).forEach((off) => off());
         this._unsubs = [];
@@ -100,48 +106,55 @@ export default createModule({
       // ── Tabs ──────────────────────────────────────────────────
 
       /**
+       * @noagent view transform
        * @param {'draft'|'recipients'|'results'} tab
        * @returns {boolean} whether the tab is the active one
        */
       isTab(tab) { return this.model.ui.tab === tab; },
 
       /**
+       * @noagent view transform
        * @param {'draft'|'recipients'|'results'} tab
        * @returns {object} class map for the tab button
        */
       tabClass(tab) { return { 'dmike-tab--active': this.isTab(tab) }; },
 
       /**
-       * Switches the tab; the results sub-viewmodel mounts or drops its
-       * charts on its own when the tab changes.
-       * @param {'draft'|'recipients'|'results'} tab
+       * Open a tab. The results tab draws its charts when it opens.
+       * @agent
+       * @param {'draft'|'recipients'|'results'} tab the tab to open
+       * @returns {void}
+       * @throws {Error} if `tab` is not one of the three tabs
        */
-      setTab(tab) { this.model.ui.tab = tab; },
+      setTab(tab) {
+        requireEnum('tab', tab, TABS);
+        this.model.ui.tab = tab;
+      },
 
       // ── Template-wide labels (pure functions in survey-labels.js) ──
 
-      /** @param {string} type @returns {string} translated question type */
+      /** @noagent view transform @param {string} type @returns {string} translated question type */
       typeLabel(type) { return labels.typeLabel(type, _t); },
 
-      /** @param {object} q @returns {string} question text or "Frage <n>" */
+      /** @noagent view transform @param {object} q @returns {string} question text or "Frage <n>" */
       questionLabel(q) { return labels.questionLabel(this.model.survey, q, _t); },
 
-      /** @param {number} index 0-based @returns {string} placeholder of an untitled section */
+      /** @noagent view transform @param {number} index 0-based @returns {string} placeholder of an untitled section */
       sectionPlaceholder(index) { return labels.sectionPlaceholder(index, _t); },
 
-      /** @param {object} opt option @returns {string} its text or a placeholder */
+      /** @noagent view transform @param {object} opt option @returns {string} its text or a placeholder */
       optionText(opt) { return labels.optionText(opt, _t); },
 
-      /** @param {{when: Array|null}} node @returns {boolean} whether the node has conditions */
+      /** @noagent view transform @param {{when: Array|null}} node @returns {boolean} whether the node has conditions */
       hasCondition(node) { return Array.isArray(node.when) && node.when.length > 0; },
 
-      /** @param {string|null} code @returns {string} Kano category label */
+      /** @noagent view transform @param {string|null} code @returns {string} Kano category label */
       catLabel(code) { return labels.catLabel(code, module._context.i18n); },
 
-      /** @param {number|null} share 0..1 @returns {string} "42 %", '—' without a base */
+      /** @noagent view transform @param {number|null} share 0..1 @returns {string} "42 %", '—' without a base */
       fmtPct(share) { return labels.fmtPct(share); },
 
-      /** @param {number|null} value @param {number} decimals @returns {string} localised number */
+      /** @noagent view transform @param {number|null} value @param {number} decimals @returns {string} localised number */
       fmtNum(value, decimals) { return labels.fmtNum(value, decimals, labels.localeOf(module._context.i18n)); },
     };
   },

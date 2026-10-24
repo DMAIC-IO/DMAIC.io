@@ -17339,22 +17339,33 @@ export const AGENT_REGISTRY = {
     "tagged": false,
     "available": false,
     "violations": [],
-    "reported": [
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unmarked_method:isTab",
-      "unmarked_method:tabClass",
-      "unmarked_method:setTab",
-      "unmarked_method:typeLabel",
-      "unmarked_method:questionLabel",
-      "unmarked_method:sectionPlaceholder",
-      "unmarked_method:optionText",
-      "unmarked_method:hasCondition",
-      "unmarked_method:catLabel",
-      "unmarked_method:fmtPct",
-      "unmarked_method:fmtNum"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "setTab": {
+        "params": [
+          {
+            "name": "tab",
+            "type": "'draft'|'recipients'|'results'",
+            "optional": false,
+            "help": "the tab to open"
+          }
+        ],
+        "returns": "void",
+        "help": "Open a tab. The results tab draws its charts when it opens."
+      }
+    },
     "fields": {
       "survey": {
         "type": "any",
