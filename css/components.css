@@ -2336,6 +2336,13 @@ body.dmike-context-help-armed .context-help__btn {
   background: var(--color-modal-overlay);
 }
 
+/* Content dropped into the body slot gets the same inset as
+   .dmike-popout-message, so no caller has to bring its own. */
+.dialog__body { padding: var(--spacing-lg); }
+
+/* Settings run their tab bar edge to edge and pad tabs and body themselves. */
+.dialog__body:has(> .settings-panel__layout) { padding: 0; }
+
 .dialog__body:empty { display: none; }
 
 .dialog__footer-start:empty { display: none; }
