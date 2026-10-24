@@ -6281,7 +6281,7 @@
       "addOption": "Ausprägung hinzufügen",
       "pickHint": "Für das aktive Konzept wählen",
       "conceptsTitle": "Konzepte",
-      "conceptsEmpty": "Noch keine Konzepte. „Konzept hinzufügen“ legt eines an; danach wählen Sie im Kasten je Parameter eine Ausprägung.",
+      "conceptsEmpty": "Noch keine Konzepte. „+“ legt eines an; danach wählen Sie im Kasten je Parameter eine Ausprägung.",
       "activeConcept": "Aktives Konzept",
       "conceptName": "Konzeptname",
       "conceptPlaceholder": "Konzept …",

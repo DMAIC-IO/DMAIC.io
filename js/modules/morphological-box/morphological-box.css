@@ -168,6 +168,10 @@
   width: 180px;
 }
 
+.morphological-box__add-row--concept {
+  width: auto;
+}
+
 /* ── Concept list ─────────────────────────────────────────── */
 
 .morphological-box__concepts {

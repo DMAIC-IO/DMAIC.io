@@ -6277,7 +6277,7 @@
       "addOption": "Add option",
       "pickHint": "Pick for the active concept",
       "conceptsTitle": "Concepts",
-      "conceptsEmpty": "No concepts yet. \"Add concept\" creates one; then pick one option per parameter in the box.",
+      "conceptsEmpty": "No concepts yet. \"+\" creates one; then pick one option per parameter in the box.",
       "activeConcept": "Active concept",
       "conceptName": "Concept name",
       "conceptPlaceholder": "Concept …",

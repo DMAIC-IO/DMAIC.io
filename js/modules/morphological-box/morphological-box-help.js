@@ -36,7 +36,7 @@ export default {
             'Legen Sie über „+“ unter dem Kasten die Teilfunktionen der Lösung an und benennen Sie sie.',
             'Tragen Sie je Parameter die Ausprägungen ein; „+“ am Zeilenende fügt eine weitere hinzu.',
             'Markieren Sie in der Ansicht „Verträglichkeit“ Paare, die nicht zusammenpassen.',
-            'Legen Sie über „Konzept hinzufügen“ ein Konzept an und wählen Sie im Kasten je Parameter eine Ausprägung.',
+            'Legen Sie über „+“ unter der Konzeptliste ein Konzept an und wählen Sie im Kasten je Parameter eine Ausprägung.',
             'Prüfen Sie in der Konzeptliste, ob jedes Konzept vollständig und widerspruchsfrei ist.',
           ] },
         ]
@@ -48,7 +48,7 @@ export default {
             'Use "+" below the box to create the sub-functions of the solution and name them.',
             'Enter the options per parameter; "+" at the row end adds another one.',
             'In the "Consistency" view, mark the pairs that do not fit together.',
-            'Use "Add concept" to create a concept and pick one option per parameter in the box.',
+            'Use "+" below the concept list to create a concept and pick one option per parameter in the box.',
             'Check in the concept list whether each concept is complete and free of conflicts.',
           ] },
         ]

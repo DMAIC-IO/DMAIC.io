@@ -104,6 +104,13 @@
           </template>
         </div>
       </template>
+      <div class="morphological-box__add-row morphological-box__add-row--concept">
+        <button class="btn btn--icon-sm morphological-box__add-concept" type="button" data-action="add-concept" data-help-key="modules.morphological-box.actions.addConcept.help"
+                :title="t('addConcept')" @click="addConcept()">
+          <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
+          <span class="dmike-sr-only" x-text="t('addConcept')"></span>
+        </button>
+      </div>
     </aside>
   </div>
 

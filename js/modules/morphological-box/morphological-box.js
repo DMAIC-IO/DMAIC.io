@@ -43,9 +43,6 @@ export default createModule({
     icon: 'module.morphological-box',
     version: '1.0.0',
     meta: import.meta,
-    actions: [
-      { icon: 'action.add', title: 'addConcept', variant: 'primary', agentAction: 'addConcept', onClick: (d) => d.addConcept() },
-    ],
   },
   Model: State,
 
