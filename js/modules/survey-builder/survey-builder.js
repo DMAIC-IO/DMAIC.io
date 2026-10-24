@@ -18,7 +18,7 @@ import { State } from './survey-builder-model.js';
 import * as labels from './survey-labels.js';
 import { draftController } from './survey-draft-controller.js';
 import { RecipientsViewModel } from './viewmodel/recipients.js';
-import { importController } from './survey-import-controller.js';
+import { ResponsesViewModel } from './viewmodel/responses.js';
 import { resultsController } from './survey-results-controller.js';
 import { handoverController } from './survey-handover-controller.js';
 import { chartsController } from './survey-charts-controller.js';
@@ -59,7 +59,7 @@ export default createModule({
     return {
       ...draftController(module, _t),
       recipients: new RecipientsViewModel(deps),
-      ...importController(module, _t),
+      responses: new ResponsesViewModel(deps),
       ...resultsController(module, _t),
       ...handoverController(module, _t),
       ...chartsController(module, _t),
@@ -77,6 +77,9 @@ export default createModule({
           nextTick: (callback) => this.$nextTick(callback),
         };
         for (const vm of this._subViewModels()) vm.attach(binding);
+        // Transitional (until the hand-over is a sub-viewmodel): a deleted
+        // response takes its ticked answers with it.
+        this.$watch(() => this.model.responseIds().join('\n'), () => this.pruneVocSelection());
         this.$watch(() => JSON.stringify(this.model.survey), () => this.schedulePreview());
         this.$watch(() => this._resultsSignature(), () => this.scheduleCharts());
         this._loadCondDraft();
@@ -104,7 +107,7 @@ export default createModule({
       },
 
       /** @returns {object[]} the sub-viewmodels, in attach order */
-      _subViewModels() { return [this.recipients]; },
+      _subViewModels() { return [this.recipients, this.responses]; },
 
       // ── Tabs ──────────────────────────────────────────────────
 

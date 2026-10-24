@@ -267,30 +267,30 @@
     <section class="survey-builder__tab survey-builder__page" data-ref="resultsTab" x-show="isTab('results')">
       <div class="dmike-split__section-title" x-text="t('importAnswers')"></div>
       <div class="survey-builder__dropzone" data-ref="dropzone"
-           @dragover.prevent="onDragOver()" @drop.prevent="onDrop($event)">
-        <button class="btn btn--sm" type="button" data-ref="importButton" @click="openImport()">
+           @dragover.prevent="responses.onDragOver()" @drop.prevent="responses.onDrop($event)">
+        <button class="btn btn--sm" type="button" data-ref="importButton" @click="responses.openImport()">
           <span class="icon icon--sm" data-icon="action.upload" aria-hidden="true"></span><span x-text="t('importAnswers')"></span>
         </button>
         <span class="survey-builder__hint" x-text="t('importHint')"></span>
         <input type="file" hidden multiple accept=".json,application/json" data-ref="importInput"
-               @change="importFromEvent($event)">
+               @change="responses.importFromEvent($event)">
       </div>
-      <div x-show="hasImportLog()">
+      <div x-show="responses.hasImportLog()">
         <div class="survey-builder__subtitle" x-text="t('importLogTitle')"></div>
         <ul class="survey-builder__import-log" data-ref="importLog">
-          <template x-for="entry in importLog" :key="entry.key">
-            <li :class="importStatusClass(entry.status)">
+          <template x-for="entry in responses.importLog" :key="entry.key">
+            <li :class="responses.importStatusClass(entry.status)">
               <span class="survey-builder__file" data-ref="fileName" x-text="entry.name"></span>
-              <span data-ref="importStatus" x-text="importStatusLabel(entry.status)"></span>
-              <span class="survey-builder__hint" data-ref="importNotes" x-text="noteLine(entry)"></span>
+              <span data-ref="importStatus" x-text="responses.importStatusLabel(entry.status)"></span>
+              <span class="survey-builder__hint" data-ref="importNotes" x-text="responses.noteLine(entry)"></span>
             </li>
           </template>
         </ul>
       </div>
 
       <div class="dmike-split__section-title" x-text="t('responsesTitle')"></div>
-      <p class="survey-builder__hint" x-show="!hasResponses()" x-text="t('responsesEmpty')"></p>
-      <div class="dmike-table-wrap" x-show="hasResponses()">
+      <p class="survey-builder__hint" x-show="!responses.hasResponses()" x-text="t('responsesEmpty')"></p>
+      <div class="dmike-table-wrap" x-show="responses.hasResponses()">
         <table class="dmike-table survey-builder__responses" data-ref="responses">
           <thead>
             <tr>
@@ -299,22 +299,22 @@
               <th></th>
             </tr>
           </thead>
-          <template x-for="row in responseRows()" :key="row.id">
+          <template x-for="row in responses.responseRows()" :key="row.id">
             <tbody :data-response-id="row.id">
               <tr>
                 <td class="survey-builder__nowrap" data-ref="date" x-text="row.date"></td>
                 <td data-ref="who" x-text="row.who"></td>
                 <td class="survey-builder__nowrap">
                   <button class="btn btn--icon-sm" type="button" data-action="toggleResponse" :title="t('showDetails')"
-                          @click="toggleResponse(row.id)"><span class="icon icon--sm" data-icon="action.show" aria-hidden="true"></span></button>
+                          @click="responses.toggleResponse(row.id)"><span class="icon icon--sm" data-icon="action.show" aria-hidden="true"></span></button>
                   <button class="btn btn--icon-sm btn--danger" type="button" data-action="deleteResponse" :title="t('delete')"
-                          @click="deleteResponse(row.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                          @click="responses.deleteResponse(row.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                 </td>
               </tr>
-              <tr data-ref="details" x-show="isResponseOpen(row.id)">
+              <tr data-ref="details" x-show="responses.isResponseOpen(row.id)">
                 <td colspan="3">
                   <dl class="survey-builder__details">
-                    <template x-for="d in responseDetails(row.id)" :key="d.key">
+                    <template x-for="d in responses.responseDetails(row.id)" :key="d.key">
                       <div class="survey-builder__detail">
                         <dt x-text="d.question"></dt>
                         <dd x-text="d.answer"></dd>
@@ -328,7 +328,7 @@
         </table>
       </div>
 
-      <div data-ref="evaluation" x-show="hasResponses()">
+      <div data-ref="evaluation" x-show="responses.hasResponses()">
         <div class="dmike-split__section-title" x-text="t('evaluationTitle')"></div>
         <div class="survey-builder__toolbar">
           <label class="survey-builder__counts" x-text="t('filterLabel')"></label>

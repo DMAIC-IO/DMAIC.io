@@ -94,6 +94,16 @@ export function handoverController(module, _t) {
      */
     hasVocSelection() { return this.vocSelected.length > 0; },
 
+    /**
+     * Drops ticked answers whose response no longer exists. Until the
+     * hand-over is its own sub-viewmodel, the shell watches the response
+     * ids and calls this.
+     */
+    pruneVocSelection() {
+      const ids = new Set(this.model.responseIds());
+      this.vocSelected = this.vocSelected.filter((k) => ids.has(k.split(':')[0]));
+    },
+
     /** Every non-empty free-text and "Sonstige" answer of all responses (ignores the filter). */
     _openTexts() {
       const map = new Map();
