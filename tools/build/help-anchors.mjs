@@ -37,8 +37,8 @@ export function helpKeysInTemplates(appDir, moduleId) {
  */
 export const LITERAL_HELP_KEY = /\b(?:helpKey|addHelpKey|help)\s*:\s*'(modules\.[^']+)'/g;
 
-/** Leistenknopf mit Agentenaktion: `workspace.js:describeAction` hängt `modules.<id>.actions.<name>.help` an. */
-const AGENT_ACTION = /\bagentAction\s*:\s*'(\w+)'/g;
+/** Leistenknopf mit Agentenaktion: `workspace.js:describeAction` hängt `modules.<id>.actions.<name>.help` an; `<name>` darf ein Teil-Viewmodel tragen (`draft.addQuestion`). */
+const AGENT_ACTION = /\bagentAction\s*:\s*'([\w.]+)'/g;
 /** Dateilokale Präfix-Konstante, z. B. `const HELP = 'modules.foo.types.';`. */
 const HELP_PREFIX_CONST = /\bconst\s+(\w+)\s*=\s*'(modules\.[^']*)'/g;
 /** Zusammengesetzter Schlüssel aus Präfix-Konstante und Rest: `help: \`${HELP}Result.x\``. */
@@ -53,12 +53,12 @@ export const SHARED_ANCHOR_SOURCES = ['js/core/stats-panel.js'];
  * `modules.<id>.actions.<name>.help`) und zusammengesetzte Schlüssel
  * `help: \`${HELP}…\``, sofern `HELP` eine dateilokale Konstante
  * `const HELP = 'modules.…'` ist; andere Ausdrücke bleiben unsichtbar.
+ * Unterordner (`viewmodel/`) zählen mit.
  */
 export function helpKeysInScripts(appDir, moduleId) {
   const dir = join(appDir, 'js', 'modules', moduleId);
   const keys = [];
-  for (const file of readdirSync(dir)) {
-    if (!file.endsWith('.js') || file.endsWith('-help.js')) continue;
+  for (const file of scriptFiles(dir)) {
     const js = readFileSync(join(dir, file), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
     for (const m of js.matchAll(LITERAL_HELP_KEY)) keys.push([file, m[1]]);
@@ -69,6 +69,23 @@ export function helpKeysInScripts(appDir, moduleId) {
     }
   }
   return keys;
+}
+
+/**
+ * Die Skripte eines Modulordners samt Unterordnern (Teil-Viewmodels unter
+ * `viewmodel/`), relativ mit `/`, sortiert; ohne Handbuchdateien.
+ * @param {string} dir
+ * @param {string} [prefix]
+ * @returns {string[]}
+ */
+function scriptFiles(dir, prefix = '') {
+  const out = [];
+  for (const entry of readdirSync(join(dir, prefix), { withFileTypes: true })) {
+    const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
+    if (entry.isDirectory()) out.push(...scriptFiles(dir, rel));
+    else if (entry.name.endsWith('.js') && !entry.name.endsWith('-help.js')) out.push(rel);
+  }
+  return out.sort();
 }
 
 /** Alle wörtlichen Hilfeschlüssel der geteilten Bausteine. */

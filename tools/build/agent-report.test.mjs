@@ -296,3 +296,18 @@ test('STRUCTURE_JARGON: fängt Strukturschreibweise, lässt Fachsprache durch', 
     assert.ok(!STRUCTURE_JARGON.test(good), good);
   }
 });
+
+test('countHelpCoverage: eine Aktion eines Teil-Viewmodels liest ihren Satz aus dem verschachtelten Baum', () => {
+  const root = i18nFixture({
+    modules: { sb: {
+      whenToUse: 'wann',
+      actions: { draft: { addQuestion: { help: 'Frage anlegen', params: { text: 'Fragetext' } } } },
+    } },
+  });
+  const out = countHelpCoverage(root, {
+    sb: { available: true, actions: { 'draft.addQuestion': { params: [{ name: 'text' }] } }, fields: {} },
+  });
+  assert.deepEqual(out.actions, { total: 1, covered: 1 });
+  assert.deepEqual(out.params, { total: 1, covered: 1 });
+  assert.deepEqual(out.missing, []);
+});

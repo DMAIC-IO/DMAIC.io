@@ -50,3 +50,13 @@ test('anchorKeysOf: vereinigt Vorlage, Modul-JS, geteilten Baustein und die Fami
     'modules.foo.types.Bound.k', 'modules.shared.types.Stats.mean',
   ]);
 });
+
+test('helpKeysInScripts: agentAction mit Teil-Viewmodel und Schlüssel aus viewmodel/ werden gefunden', () => {
+  const root = fixture({ 'foo.js': "actions: [{ icon: 'action.add', agentAction: 'draft.addQuestion', onClick: (d) => d.draft.addQuestion() }]" });
+  mkdirSync(join(root, 'js', 'modules', 'foo', 'viewmodel'), { recursive: true });
+  writeFileSync(join(root, 'js', 'modules', 'foo', 'viewmodel', 'draft.js'), "const x = { helpKey: 'modules.foo.types.Fields.title' };");
+  assert.deepEqual(helpKeysInScripts(root, 'foo'), [
+    ['foo.js', 'modules.foo.actions.draft.addQuestion.help'],
+    ['viewmodel/draft.js', 'modules.foo.types.Fields.title'],
+  ]);
+});
