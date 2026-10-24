@@ -6267,6 +6267,8 @@
       "kpiCombinations": "Kombinationen",
       "kpiConsistent": "Verträglich",
       "kpiConcepts": "Konzepte",
+      "headingParameter": "Parameter",
+      "headingOptions": "Ausprägungen",
       "view_box": "Kasten",
       "view_consistency": "Verträglichkeit",
       "emptyState": "Noch keine Parameter. Legen Sie über „Parameter hinzufügen“ die erste Teilfunktion der Lösung an.",

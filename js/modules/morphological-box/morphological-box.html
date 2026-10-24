@@ -31,6 +31,10 @@
   <!-- Box view: one row per parameter, one cell per option. -->
   <div class="morphological-box__layout" x-show="model.view === 'box' && model.parameters.length > 0">
     <div class="morphological-box__grid">
+      <div class="morphological-box__head">
+        <div class="morphological-box__head-param" data-heading data-help-key="modules.morphological-box.fields.parameters.help" x-text="t('headingParameter')"></div>
+        <div class="morphological-box__head-options" data-heading data-help-key="modules.morphological-box.actions.setOptionLabel.help" x-text="t('headingOptions')"></div>
+      </div>
       <template x-for="p in model.parameters" :key="p.id">
         <div class="morphological-box__row dmike-del-btn-host" :data-parameter="p.id">
           <div class="morphological-box__param">

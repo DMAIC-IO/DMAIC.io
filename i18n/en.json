@@ -6263,6 +6263,8 @@
       "kpiCombinations": "Combinations",
       "kpiConsistent": "Consistent",
       "kpiConcepts": "Concepts",
+      "headingParameter": "Parameter",
+      "headingOptions": "Options",
       "view_box": "Box",
       "view_consistency": "Consistency",
       "emptyState": "No parameters yet. Use \"Add parameter\" to create the first sub-function of the solution.",

@@ -23,10 +23,29 @@
 .morphological-box__grid {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  /* One track as wide as the longest row, so the heading spans all options. */
+  grid-template-columns: max-content;
   gap: var(--spacing-xs);
   overflow-x: auto;
+}
+
+.morphological-box__head {
+  display: flex;
+  gap: var(--spacing-xs);
+  font-weight: 600;
+  border-bottom: 2px solid var(--color-border-primary);
+}
+
+.morphological-box__head-param {
+  flex: 0 0 180px;
+  padding: var(--spacing-xs);
+}
+
+.morphological-box__head-options {
+  flex: 1;
+  padding: var(--spacing-xs);
+  text-align: center;
 }
 
 .morphological-box__row {
