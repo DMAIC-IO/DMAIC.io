@@ -187,12 +187,12 @@
     <!-- Org-chart node add/edit -->
     <div x-ref="nodeForm">
       <div class="field-group">
-        <label data-help-key="modules.project-charter.actions.updateOrgNode.params.title" x-text="t('nodeTitle') + ' *'"></label>
+        <label class="pc__form-label" data-help-key="modules.project-charter.actions.updateOrgNode.params.title" x-text="t('nodeTitle') + ' *'"></label>
         <input type="text" class="field" data-field="title" :placeholder="t('nodeTitle')"
           maxlength="100" x-model="nodeDraft.title">
       </div>
       <div class="field-group">
-        <label data-help-key="modules.project-charter.actions.updateOrgNode.params.desc" x-text="t('nodeDescription')"></label>
+        <label class="pc__form-label" data-help-key="modules.project-charter.actions.updateOrgNode.params.desc" x-text="t('nodeDescription')"></label>
         <textarea class="field" data-field="desc" :placeholder="t('nodeDescription')"
           maxlength="300" x-model="nodeDraft.desc"></textarea>
       </div>
@@ -201,26 +201,26 @@
     <!-- Org-chart node style (edit) -->
     <div x-ref="nodeStyleForm">
       <div class="field-group">
-        <label data-help-key="modules.project-charter.actions.updateOrgNode.params.title" x-text="t('nodeTitle') + ' *'"></label>
+        <label class="pc__form-label" data-help-key="modules.project-charter.actions.updateOrgNode.params.title" x-text="t('nodeTitle') + ' *'"></label>
         <input type="text" class="field" data-field="title" maxlength="100" x-model="nodeStyleDraft.title">
       </div>
       <div class="field-group">
-        <label data-help-key="modules.project-charter.actions.updateOrgNode.params.desc" x-text="t('nodeDescription')"></label>
+        <label class="pc__form-label" data-help-key="modules.project-charter.actions.updateOrgNode.params.desc" x-text="t('nodeDescription')"></label>
         <textarea class="field" data-field="desc" maxlength="300" x-model="nodeStyleDraft.desc"></textarea>
       </div>
       <hr class="pc__org-form-sep">
       <div class="field-group field-group--inline">
-        <label data-help-key="modules.project-charter.types.OrgNodeStyle.bg" x-text="t('editor.bgColor')"></label>
+        <label class="pc__form-label" data-help-key="modules.project-charter.types.OrgNodeStyle.bg" x-text="t('editor.bgColor')"></label>
         <div class="dmike-chart-ed-color-swatch" data-field="bg-swatch"
           :style="'background:' + nodeStyleDraft.bgDisplay" @click="nodeStylePickColor('bg', $event)"></div>
       </div>
       <div class="field-group field-group--inline">
-        <label data-help-key="modules.project-charter.types.OrgNodeStyle.borderColor" x-text="t('editor.borderColor')"></label>
+        <label class="pc__form-label" data-help-key="modules.project-charter.types.OrgNodeStyle.borderColor" x-text="t('editor.borderColor')"></label>
         <div class="dmike-chart-ed-color-swatch" data-field="borderColor-swatch"
           :style="'background:' + nodeStyleDraft.borderColorDisplay" @click="nodeStylePickColor('borderColor', $event)"></div>
       </div>
       <div class="field-group field-group--inline">
-        <label data-help-key="modules.project-charter.types.OrgNodeStyle.borderStyle" x-text="t('editor.borderStyle')"></label>
+        <label class="pc__form-label" data-help-key="modules.project-charter.types.OrgNodeStyle.borderStyle" x-text="t('editor.borderStyle')"></label>
         <select class="field" data-field="borderStyle" x-model="nodeStyleDraft.borderStyle">
           <option value="" x-text="t('editor.solid')"></option>
           <option value="dashed" x-text="t('editor.dashed')"></option>
@@ -228,7 +228,7 @@
         </select>
       </div>
       <div class="field-group field-group--inline">
-        <label data-help-key="modules.project-charter.types.OrgNodeStyle.borderWidth" x-text="t('editor.borderWidth')"></label>
+        <label class="pc__form-label" data-help-key="modules.project-charter.types.OrgNodeStyle.borderWidth" x-text="t('editor.borderWidth')"></label>
         <input type="number" class="field field--num" data-field="borderWidth"
           min="1" max="8" x-model.number="nodeStyleDraft.borderWidth">
       </div>

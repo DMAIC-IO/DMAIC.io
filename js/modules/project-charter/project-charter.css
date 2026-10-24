@@ -510,3 +510,24 @@
   cursor: pointer;
   flex-shrink: 0;
 }
+
+/* Hilfe-Anker (Alt): absolut positioniert, daher ohne Layoutwirkung. */
+
+/* „+ Neu“: der Kreis sitzt an der rechten oberen Knopfecke, nicht auf dem
+   Label „Neu“. */
+button.pc__org-add-btn.btn--primary.context-help-anchor > .context-help__btn {
+  top: 0;
+  right: calc(-1 * var(--spacing-s));
+}
+
+/* Formularlabels im Dialog: der Kreis steht mittig neben dem Text statt auf
+   der Oberkante des Labels (dort würde ihn der Dialogkörper anschneiden). */
+.pc__form-label.context-help-anchor > .context-help__btn {
+  top: 50%;
+}
+
+/* „Zielwert“: zwischen Spaltenende und „ZEG“ bleiben nur wenige Pixel, der
+   Kreis rückt deshalb bis an den Text heran statt den Nachbarkopf zu berühren. */
+.pc__col-target .context-help-anchor > .context-help__btn {
+  margin-left: 0;
+}
