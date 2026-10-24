@@ -229,8 +229,8 @@
 
 /* ── Consistency matrix ───────────────────────────────────── */
 
-.morphological-box__matrix-wrap {
-  overflow: auto;
+.morphological-box__matrix-scroll {
+  overflow-x: auto;
 }
 
 .morphological-box__matrix-hint {
