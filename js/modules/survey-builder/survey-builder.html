@@ -35,7 +35,7 @@
           <span data-help-key="modules.survey-builder.types.SurveyHeader.anonymous" x-text="t('fieldAnonymous')"></span>
         </label>
 
-        <div class="dmike-split__section-title" data-help-key="modules.survey-builder.fields.survey.help" x-text="t('outlineTitle')"></div>
+        <div class="dmike-split__section-title"><span data-help-key="modules.survey-builder.fields.survey.help" x-text="t('outlineTitle')"></span></div>
         <div class="survey-builder__outline" data-ref="outline">
           <template x-for="(sec, si) in model.survey.sections" :key="sec.id">
             <div class="survey-builder__section" :data-section-id="sec.id" :class="draft.sectionClass(sec.id)">
@@ -127,7 +127,7 @@
             </template>
 
             <div class="survey-builder__items" data-ref="items" x-show="draft.hasItems()">
-              <div class="survey-builder__label" data-help-key="modules.survey-builder.types.ItemFields.text" x-text="draft.itemsTitle()"></div>
+              <div class="survey-builder__label"><span data-help-key="modules.survey-builder.types.ItemFields.text" x-text="draft.itemsTitle()"></span></div>
               <template x-for="item in draft.items()" :key="item.id">
                 <div class="survey-builder__item" :data-item-id="item.id">
                   <input class="field survey-builder__item-text" type="text" data-field="text"
@@ -151,7 +151,7 @@
         </template>
 
         <div class="survey-builder__conditions" data-ref="conditions" x-show="draft.hasCondNode()">
-          <div class="dmike-split__section-title" data-help-key="modules.survey-builder.actions.draft.setConditions.help" x-text="t('conditionsTitle')"></div>
+          <div class="dmike-split__section-title"><span data-help-key="modules.survey-builder.actions.draft.setConditions.help" x-text="t('conditionsTitle')"></span></div>
           <p class="survey-builder__hint" x-show="!draft.hasCondSources()" x-text="t('conditionsNone')"></p>
           <div x-show="draft.hasCondSources()">
             <p class="survey-builder__hint" x-text="t('conditionsHint')"></p>
@@ -207,7 +207,7 @@
     </section>
 
     <section class="survey-builder__tab survey-builder__page" data-ref="recipientsTab" x-show="isTab('recipients')">
-      <div class="dmike-split__section-title" data-help-key="modules.survey-builder.fields.recipients.help" x-text="t('recipientsTitle')"></div>
+      <div class="dmike-split__section-title"><span data-help-key="modules.survey-builder.fields.recipients.help" x-text="t('recipientsTitle')"></span></div>
       <div class="survey-builder__toolbar">
         <button class="btn btn--sm" type="button" data-ref="addRecipient" data-help-key="modules.survey-builder.actions.recipients.addRecipient.help" @click="recipients.addRecipient()">
           <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span><span x-text="t('addRecipient')"></span>
@@ -265,7 +265,7 @@
     </section>
 
     <section class="survey-builder__tab survey-builder__page" data-ref="resultsTab" x-show="isTab('results')">
-      <div class="dmike-split__section-title" data-help-key="modules.survey-builder.actions.responses.importResponse.help" x-text="t('importAnswers')"></div>
+      <div class="dmike-split__section-title"><span data-help-key="modules.survey-builder.actions.responses.importResponse.help" x-text="t('importAnswers')"></span></div>
       <div class="survey-builder__dropzone" data-ref="dropzone"
            @dragover.prevent="responses.onDragOver()" @drop.prevent="responses.onDrop($event)">
         <button class="btn btn--sm" type="button" data-ref="importButton" @click="responses.openImport()">
@@ -288,7 +288,7 @@
         </ul>
       </div>
 
-      <div class="dmike-split__section-title" data-help-key="modules.survey-builder.fields.responses.help" x-text="t('responsesTitle')"></div>
+      <div class="dmike-split__section-title"><span data-help-key="modules.survey-builder.fields.responses.help" x-text="t('responsesTitle')"></span></div>
       <p class="survey-builder__hint" x-show="!responses.hasResponses()" x-text="t('responsesEmpty')"></p>
       <div class="dmike-table-wrap" x-show="responses.hasResponses()">
         <table class="dmike-table survey-builder__responses" data-ref="responses">
