@@ -82,10 +82,13 @@ const NODE_BORDER_STYLES = ['', 'solid', 'dashed', 'dotted'];
 const LINE_STYLES = ['solid', 'dashed', 'dotted'];
 
 /** Je Knotenstil-Schlüssel der Prüfer. */
+/** Enum checker that returns the value (requireEnum itself returns void). */
+const enumValue = (allowed) => (v) => { requireEnum('value', v, allowed); return v; };
+
 const NODE_STYLE_CHECKS = {
   bg: (v) => requireText('value', v),
   borderColor: (v) => requireText('value', v),
-  borderStyle: (v) => requireEnum('value', v, NODE_BORDER_STYLES),
+  borderStyle: enumValue(NODE_BORDER_STYLES),
   borderWidth: (v) => requireNumber('value', v, { min: 0, max: 8, integer: true }),
 };
 
@@ -93,10 +96,10 @@ const NODE_STYLE_CHECKS = {
 const ORG_STYLE_CHECKS = {
   nodeBg: (v) => requireText('value', v),
   nodeBorderColor: (v) => requireText('value', v),
-  nodeBorderStyle: (v) => requireEnum('value', v, LINE_STYLES),
+  nodeBorderStyle: enumValue(LINE_STYLES),
   nodeBorderWidth: (v) => requireNumber('value', v, { min: 1, max: 8, integer: true }),
   lineColor: (v) => requireText('value', v),
-  lineStyle: (v) => requireEnum('value', v, LINE_STYLES),
+  lineStyle: enumValue(LINE_STYLES),
   lineWidth: (v) => requireNumber('value', v, { min: 1, max: 8, integer: true }),
 };
 
@@ -541,7 +544,7 @@ export default createModule({
       /** @noagent view derivation */
       charCountText() {
         const len = markdownToFragment(this.model.problemStatement).textContent.length;
-        return _t('charCount', { current: len, max: 10000 });
+        return _t('charCount', { current: len, max: PROBLEM_MAX });
       },
 
       // ═══════════════════════════════════════════════════════
@@ -1151,8 +1154,8 @@ export default createModule({
       },
 
       /** Open the colour picker for a node-style swatch, writing the chosen
-       *  colour (and its display value) back into nodeStyleDraft. */
-      /** @noagent colour picker in the dialog */
+       *  colour (and its display value) back into nodeStyleDraft.
+       *  @noagent colour picker in the dialog */
       nodeStylePickColor(which, event) {
         const d = this.nodeStyleDraft;
         const cur = which === 'bg'
