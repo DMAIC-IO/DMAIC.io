@@ -255,7 +255,7 @@
                     <span class="icon icon--sm" data-icon="action.download" aria-hidden="true"></span><span x-text="t('exportRecipient')"></span>
                   </button>
                   <button class="btn btn--icon-sm btn--danger" type="button" data-action="deleteRecipient" :title="t('delete')"
-                          @click="recipients.deleteRecipient(r.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                          @click="recipients.confirmDeleteRecipient(r.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                 </td>
               </tr>
             </template>
@@ -308,7 +308,7 @@
                   <button class="btn btn--icon-sm" type="button" data-action="toggleResponse" :title="t('showDetails')"
                           @click="responses.toggleResponse(row.id)"><span class="icon icon--sm" data-icon="action.show" aria-hidden="true"></span></button>
                   <button class="btn btn--icon-sm btn--danger" type="button" data-action="deleteResponse" :title="t('delete')"
-                          @click="responses.deleteResponse(row.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                          @click="responses.confirmDeleteResponse(row.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                 </td>
               </tr>
               <tr data-ref="details" x-show="responses.isResponseOpen(row.id)">

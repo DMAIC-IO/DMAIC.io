@@ -2,7 +2,7 @@
  * D.Mike — RecipientsViewModel (viewmodel/recipients.js)
  * Spec: docs/superpowers/specs/2026-10-24-survey-builder-teil-viewmodels-design.md (E1, E2)
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertThrows } from '../test-utils.js';
 import { State } from '../../js/modules/survey-builder/survey-builder-model.js';
 import { RecipientsViewModel } from '../../js/modules/survey-builder/viewmodel/recipients.js';
 import { t, fakeContext, attach } from './survey-vm-fakes.js';
@@ -68,7 +68,7 @@ suite('survey-vm recipients — delete', () => {
   test('a recipient without an answer goes without asking', async () => {
     const { ctx, vm, model } = setup();
     vm.addRecipient();
-    await vm.deleteRecipient(model.recipients[0].id);
+    await vm.confirmDeleteRecipient(model.recipients[0].id);
     assertEqual(model.recipients.length, 0);
     assertDeepEqual(ctx.confirms, []);
   });
@@ -79,11 +79,35 @@ suite('survey-vm recipients — delete', () => {
     const id = model.recipients[0].id;
     answer(model, id);
     ctx.confirmAnswer = false;
-    await vm.deleteRecipient(id);
+    await vm.confirmDeleteRecipient(id);
     assertEqual(model.recipients.length, 1);
     ctx.confirmAnswer = true;
-    await vm.deleteRecipient(id);
+    await vm.confirmDeleteRecipient(id);
     assertEqual(model.recipients.length, 0);
     assertEqual(ctx.confirms.length, 2);
+  });
+});
+
+suite('survey-vm recipients — agent surface', () => {
+  test('addRecipient returns the id; setRecipientField checks id, key and value', () => {
+    const { vm, model } = setup();
+    const id = vm.addRecipient();
+    assertEqual(model.recipients[0].id, id);
+    vm.setRecipientField(id, 'group', 'Handel');
+    assertEqual(model.recipients[0].group, 'Handel');
+    assertThrows(() => vm.setRecipientField('nope', 'name', 'x'), /unknown recipientId "nope"; available: /);
+    assertThrows(() => vm.setRecipientField(id, 'sentAt', 'x'), /invalid key "sentAt"; allowed: name, organisation, group, email, note/);
+    assertThrows(() => vm.setRecipientField(id, 'name', 3), /invalid value 3; allowed: any string/);
+  });
+
+  test('deleteRecipient never asks, also not for a recipient who answered', () => {
+    const { ctx, vm, model } = setup();
+    const id = vm.addRecipient();
+    answer(model, id);
+    vm.deleteRecipient(id);
+    assertEqual(model.recipients.length, 0);
+    assertEqual(ctx.confirms.length, 0);
+    assertEqual(model.responses[0].recipientId, null);
+    assertThrows(() => vm.deleteRecipient(id), /unknown recipientId/);
   });
 });

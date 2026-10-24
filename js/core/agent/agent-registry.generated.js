@@ -17340,35 +17340,6 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:recipients.attach@js/modules/survey-builder/viewmodel/recipients.js",
-      "unmarked_method:recipients.detach@js/modules/survey-builder/viewmodel/recipients.js",
-      "unmarked_method:recipients.hasRecipients@js/modules/survey-builder/viewmodel/recipients.js",
-      "unmarked_method:recipients.addRecipient@js/modules/survey-builder/viewmodel/recipients.js",
-      "unmarked_method:recipients.updateRecipientFromEvent@js/modules/survey-builder/viewmodel/recipients.js",
-      "unmarked_method:recipients.deleteRecipient@js/modules/survey-builder/viewmodel/recipients.js",
-      "unmarked_method:recipients.recipientStatusLabel@js/modules/survey-builder/viewmodel/recipients.js",
-      "unmarked_method:recipients.isOutdated@js/modules/survey-builder/viewmodel/recipients.js",
-      "unmarked_method:recipients.outdatedHint@js/modules/survey-builder/viewmodel/recipients.js",
-      "unmarked_method:recipients.sentLabel@js/modules/survey-builder/viewmodel/recipients.js",
-      "unmarked_method:recipients.countsLine@js/modules/survey-builder/viewmodel/recipients.js",
-      "unmarked_method:recipients.exportForRecipient@js/modules/survey-builder/viewmodel/recipients.js",
-      "unmarked_method:responses.attach@js/modules/survey-builder/viewmodel/responses.js",
-      "unmarked_method:responses.detach@js/modules/survey-builder/viewmodel/responses.js",
-      "unmarked_method:responses.openImport@js/modules/survey-builder/viewmodel/responses.js",
-      "unmarked_method:responses.importFromEvent@js/modules/survey-builder/viewmodel/responses.js",
-      "unmarked_method:responses.onDragOver@js/modules/survey-builder/viewmodel/responses.js",
-      "unmarked_method:responses.onDrop@js/modules/survey-builder/viewmodel/responses.js",
-      "unmarked_method:responses.importFiles@js/modules/survey-builder/viewmodel/responses.js",
-      "unmarked_method:responses.hasImportLog@js/modules/survey-builder/viewmodel/responses.js",
-      "unmarked_method:responses.importStatusLabel@js/modules/survey-builder/viewmodel/responses.js",
-      "unmarked_method:responses.importStatusClass@js/modules/survey-builder/viewmodel/responses.js",
-      "unmarked_method:responses.noteLine@js/modules/survey-builder/viewmodel/responses.js",
-      "unmarked_method:responses.hasResponses@js/modules/survey-builder/viewmodel/responses.js",
-      "unmarked_method:responses.responseRows@js/modules/survey-builder/viewmodel/responses.js",
-      "unmarked_method:responses.toggleResponse@js/modules/survey-builder/viewmodel/responses.js",
-      "unmarked_method:responses.isResponseOpen@js/modules/survey-builder/viewmodel/responses.js",
-      "unmarked_method:responses.responseDetails@js/modules/survey-builder/viewmodel/responses.js",
-      "unmarked_method:responses.deleteResponse@js/modules/survey-builder/viewmodel/responses.js",
       "unmarked_method:results.attach@js/modules/survey-builder/viewmodel/results.js",
       "unmarked_method:results.detach@js/modules/survey-builder/viewmodel/results.js",
       "unmarked_method:results.scheduleCharts@js/modules/survey-builder/viewmodel/results.js",
@@ -17784,6 +17755,100 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "number",
         "help": "Replace the conditions of a section or question. It is shown when at least one condition holds; a condition holds when one of its options was chosen. An empty list removes all conditions."
+      },
+      "recipients.addRecipient": {
+        "params": [],
+        "returns": "string",
+        "help": "Append an empty recipient."
+      },
+      "recipients.setRecipientField": {
+        "params": [
+          {
+            "name": "recipientId",
+            "type": "string",
+            "optional": false,
+            "help": "the recipient"
+          },
+          {
+            "name": "key",
+            "type": "'name'|'organisation'|'group'|'email'|'note'",
+            "optional": false,
+            "help": "which field"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "the new text, \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set one field of a recipient.",
+        "keysOf": "RecipientFields",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "name of the person or company"
+          },
+          "organisation": {
+            "type": "string",
+            "help": "organisation or department"
+          },
+          "group": {
+            "type": "string",
+            "help": "group for the response rate per group"
+          },
+          "email": {
+            "type": "string",
+            "help": "e-mail address, for sending the file yourself"
+          },
+          "note": {
+            "type": "string",
+            "help": "free note"
+          }
+        }
+      },
+      "recipients.deleteRecipient": {
+        "params": [
+          {
+            "name": "recipientId",
+            "type": "string",
+            "optional": false,
+            "help": "the recipient"
+          }
+        ],
+        "returns": "void",
+        "help": "Delete a recipient, without asking. Their responses stay, without recipient."
+      },
+      "responses.importResponse": {
+        "params": [
+          {
+            "name": "json",
+            "type": "string",
+            "optional": false,
+            "help": "the content of the answer file"
+          },
+          {
+            "name": "fileName",
+            "type": "string",
+            "optional": false,
+            "help": "the name shown in the import log"
+          }
+        ],
+        "returns": "'ok'|'older'|'duplicate'|'foreign'|'invalid'",
+        "help": "Read one answer file as the questionnaire saved it. Files of this questionnaire are taken in, also those of an older version; a file read before, one of another questionnaire, or a broken one is only logged."
+      },
+      "responses.deleteResponse": {
+        "params": [
+          {
+            "name": "responseId",
+            "type": "string",
+            "optional": false,
+            "help": "the response"
+          }
+        ],
+        "returns": "void",
+        "help": "Delete an imported response, without asking."
       },
       "read": {
         "params": [

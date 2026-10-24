@@ -2,7 +2,7 @@
  * D.Mike — ResponsesViewModel (viewmodel/responses.js)
  * Spec: docs/superpowers/specs/2026-10-24-survey-builder-teil-viewmodels-design.md (E1)
  */
-import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../test-utils.js';
 import { State } from '../../js/modules/survey-builder/survey-builder-model.js';
 import { ResponsesViewModel } from '../../js/modules/survey-builder/viewmodel/responses.js';
 import { t, fakeContext, attach } from './survey-vm-fakes.js';
@@ -56,7 +56,7 @@ suite('survey-vm responses — delete', () => {
     await vm.importFiles([file('a.json', answerJson(model, 'r1'))]);
     vm.toggleResponse('r1');
     assertEqual(vm.isResponseOpen('r1'), true);
-    await vm.deleteResponse('r1');
+    await vm.confirmDeleteResponse('r1');
     assertEqual(model.responses.length, 0);
     assertEqual(vm.openResponseId, null);
     assertEqual(ctx.confirms.length, 1);
@@ -67,7 +67,31 @@ suite('survey-vm responses — delete', () => {
     const { ctx, vm, model } = setup();
     await vm.importFiles([file('a.json', answerJson(model, 'r1'))]);
     ctx.confirmAnswer = false;
-    await vm.deleteResponse('r1');
+    await vm.confirmDeleteResponse('r1');
     assertEqual(model.responses.length, 1);
+  });
+});
+
+suite('survey-vm responses — agent surface', () => {
+  test('importResponse returns the status and writes the log line', () => {
+    const { vm, model, q } = setup();
+    assertEqual(vm.importResponse(answerJson(model, 'r1', { [q]: 'Mehr Tempo' }), 'a.json'), 'ok');
+    assertEqual(vm.importResponse(answerJson(model, 'r1'), 'kopie.json'), 'duplicate');
+    assertEqual(vm.importResponse('{"format":', 'x.json'), 'invalid');
+    assertEqual(model.responses.length, 1);
+    assertDeepEqual(vm.importLog.map((e) => [e.name, e.status]), [['a.json', 'ok'], ['kopie.json', 'duplicate'], ['x.json', 'invalid']]);
+    assertThrows(() => vm.importResponse({}, 'a.json'), /invalid json \{\}; allowed: any string/);
+    assertThrows(() => vm.importResponse('{}'), /invalid fileName undefined; allowed: any string/);
+  });
+
+  test('deleteResponse checks the id and never asks', () => {
+    const { ctx, vm, model } = setup();
+    vm.importResponse(answerJson(model, 'r1'), 'a.json');
+    vm.toggleResponse('r1');
+    vm.deleteResponse('r1');
+    assertEqual(model.responses.length, 0);
+    assertEqual(vm.openResponseId, null);
+    assertEqual(ctx.confirms.length, 0);
+    assertThrows(() => vm.deleteResponse('r1'), /unknown responseId "r1"; available: $/);
   });
 });
