@@ -184,13 +184,14 @@ export function createOps(deps) {
         return axiError(ERRORS.UNKNOWN_INSTANCE,
           t('agent.errors.viewmodelNotAlive', { instance: action.instance }), { available: [] });
       }
-      if (typeof viewmodel[action.method] !== 'function') {
+      const target = callTarget(viewmodel, action.method);
+      if (typeof target.object?.[target.name] !== 'function') {
         // Die Methodenliste der LEBENDEN Komponente, nicht die der Registry:
         // weicht sie ab, ist die generierte Registry stale, und genau das
         // soll der Agent sehen.
         return axiError(ERRORS.UNKNOWN_METHOD,
           t('agent.errors.unknownMethod', { module: found.module, method: action.method }),
-          { available: publicMethodsOf(viewmodel) });
+          { available: publicMethodsOf(viewmodel, subViewModelNames(entry)) });
       }
       const args = action.args ?? [];
       try {
@@ -202,7 +203,7 @@ export function createOps(deps) {
         // — ein Aufruf ohne Katalogeintrag ist oben schon abgewiesen, die
         // Prüfung läuft also nie mehr fail open.
         requireArity(action.method, args, spec.params ?? []);
-        const value = await viewmodel[action.method](...args);
+        const value = await target.object[target.name](...args);
         return { instanceId: action.instance, method: action.method, value: value ?? null };
       } catch (err) {
         return axiError(ERRORS.CALL_FAILED,
@@ -228,16 +229,59 @@ function unknownInstanceError(t, instances, instance) {
 }
 
 /**
- * Die aufrufbaren, nicht-privaten Methoden eines lebenden Viewmodels.
+ * Die aufrufbaren, nicht-privaten Methoden eines lebenden Viewmodels, dazu
+ * je Teil-Viewmodel dessen Methoden mit Präfix (`draft.addQuestion`).
  * Alpine-Interna (`$el`, `$watch`, …) und `_`-Präfixe bleiben draußen.
  * @param {object} viewmodel
+ * @param {string[]} [subNames]  die Teil-Viewmodels laut Katalog
  * @returns {string[]}
  */
-function publicMethodsOf(viewmodel) {
-  const out = [];
-  for (const key of Object.keys(viewmodel)) {
-    if (key.startsWith('_') || key.startsWith('$')) continue;
-    if (typeof viewmodel[key] === 'function') out.push(key);
+function publicMethodsOf(viewmodel, subNames = []) {
+  const out = methodNames(viewmodel, false);
+  for (const sub of subNames) {
+    const vm = viewmodel[sub];
+    if (vm && typeof vm === 'object') for (const key of methodNames(vm, true)) out.push(`${sub}.${key}`);
   }
   return out.sort();
+}
+
+/**
+ * @param {object} obj
+ * @param {boolean} withPrototype  Klassenmethoden liegen am Prototyp
+ * @returns {string[]} öffentliche Funktionsnamen
+ */
+function methodNames(obj, withPrototype) {
+  const keys = new Set(Object.keys(obj));
+  if (withPrototype) {
+    for (let p = Object.getPrototypeOf(obj); p && p !== Object.prototype; p = Object.getPrototypeOf(p)) {
+      for (const k of Object.getOwnPropertyNames(p)) if (k !== 'constructor') keys.add(k);
+    }
+  }
+  return [...keys].filter((k) => !k.startsWith('_') && !k.startsWith('$') && typeof obj[k] === 'function');
+}
+
+/**
+ * Das Objekt, an dem eine Aktion läuft: die Wurzel, oder bei
+ * `<teil>.<methode>` das Teil-Viewmodel `<teil>` — damit `this` in der
+ * Methode das Teil-Viewmodel ist (Spec 2026-10-24 E3). Genau eine Ebene:
+ * ein weiterer Punkt bleibt Teil des Methodennamens und trifft nichts.
+ * @param {object} viewmodel
+ * @param {string} method
+ * @returns {{ object: object|undefined, name: string }}
+ */
+function callTarget(viewmodel, method) {
+  const dot = method.indexOf('.');
+  if (dot < 0) return { object: viewmodel, name: method };
+  const sub = viewmodel[method.slice(0, dot)];
+  return { object: sub && typeof sub === 'object' ? sub : undefined, name: method.slice(dot + 1) };
+}
+
+/**
+ * Die Teil-Viewmodels eines Moduls, abgelesen an seinen Katalogaktionen.
+ * @param {{ actions?: Record<string, object> }} entry
+ * @returns {string[]}
+ */
+function subViewModelNames(entry) {
+  const names = Object.keys(entry.actions ?? {}).filter((k) => k.includes('.')).map((k) => k.slice(0, k.indexOf('.')));
+  return [...new Set(names)];
 }

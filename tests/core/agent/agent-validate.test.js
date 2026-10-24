@@ -257,6 +257,20 @@ suite('agent validate — Stufe 5: literale Bezeichner', () => {
     assertDeepEqual(r.cause.available, ['read', 'setSource', 'run']);
   });
 
+  test('a dotted method of a sub-viewmodel passes Stufe 5 when the catalog lists it', () => {
+    const base = makeWorld();
+    const world = makeWorld({
+      modules: new Map([...base.modules,
+        ['survey-builder', { available: true, methods: ['read', 'draft.addQuestion'], allowedPhases: ['define'] }]]),
+      instances: new Map([...base.instances, ['sb-1', { module: 'survey-builder', phase: 'define' }]]),
+    });
+    const ok = validateBatch([{ op: 'instance.call', instance: 'sb-1', method: 'draft.addQuestion', args: ['x'] }], world);
+    assertTrue(ok.ok, JSON.stringify(ok));
+    const r = validateBatch([{ op: 'instance.call', instance: 'sb-1', method: 'draft.nope' }], world);
+    assertEqual(r.cause.error, 'unknown_method');
+    assertDeepEqual(r.cause.available, ['read', 'draft.addQuestion']);
+  });
+
   test('method is NOT checked when the module identity only exists at runtime', () => {
     const r = validateBatch([
       { id: 'r1', op: 'project.read' },

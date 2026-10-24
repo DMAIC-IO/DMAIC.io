@@ -7,7 +7,7 @@
  * would be asserted nowhere and could be deleted without a single red test —
  * see Task 11 review item 2.
  */
-import { suite, test, assertEqual } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { createOps } from '../../../js/core/agent/agent-ops.js';
 
 const DEFS = [
@@ -78,5 +78,60 @@ suite('agent ops — runtime defence for a completed project (Ruling R7a)', () =
     const out = await ops['module.add']({ module: 'five-why' });
     assertEqual(out.error, undefined, JSON.stringify(out));
     assertEqual(out.module, 'five-why');
+  });
+});
+
+suite('agent ops — Teil-Viewmodels (Spec 2026-10-24 E3)', () => {
+  class Draft {
+    constructor() { this.calls = []; this.inner = { go() {} }; }
+    addQuestion(text) { this.calls.push(text); return this; }
+    questionClass() { return {}; }
+    _private() {}
+  }
+  const registry = {
+    'survey-builder': {
+      available: true, violations: [], fields: {},
+      actions: {
+        read: { params: [] },
+        'draft.addQuestion': { params: [{ name: 'text' }] },
+        'draft.gone': { params: [] },
+        'draft.inner.go': { params: [] },
+      },
+    },
+  };
+  function depsWith(viewmodel) {
+    const base = makeDeps({ completed: false });
+    const phases = { define: [{ instanceId: 'sb-1', moduleId: 'survey-builder', order: 0 }] };
+    return {
+      ...base,
+      registry,
+      stateManager: { get: (path) => (path === 'phases' ? phases : path.startsWith('phases.') ? phases[path.slice(7)] : undefined) },
+      host: { ...base.host, getViewmodel: async () => viewmodel },
+    };
+  }
+  const call = (vm, method, args = []) => createOps(depsWith(vm))['instance.call']({ instance: 'sb-1', method, args });
+
+  test('a dotted method runs on the sub-viewmodel, with this bound to it', async () => {
+    const vm = { model: {}, draft: new Draft() };
+    const out = await call(vm, 'draft.addQuestion', ['Q1']);
+    assertTrue(out.value === vm.draft, JSON.stringify(out));
+    assertDeepEqual(vm.draft.calls, ['Q1']);
+  });
+
+  test('a dotted name outside the catalog is refused with the catalog actions', async () => {
+    const out = await call({ model: {}, draft: new Draft() }, 'draft.questionClass');
+    assertEqual(out.error, 'unknown_method');
+    assertDeepEqual(out.available, ['draft.addQuestion', 'draft.gone', 'draft.inner.go', 'read']);
+  });
+
+  test('a catalog action the live sub-viewmodel lacks lists its prefixed methods', async () => {
+    const out = await call({ model: {}, draft: new Draft() }, 'draft.gone');
+    assertEqual(out.error, 'unknown_method');
+    assertDeepEqual(out.available, ['draft.addQuestion', 'draft.questionClass']);
+  });
+
+  test('only one level: draft.inner.go is not resolved', async () => {
+    const out = await call({ model: {}, draft: new Draft() }, 'draft.inner.go');
+    assertEqual(out.error, 'unknown_method');
   });
 });
