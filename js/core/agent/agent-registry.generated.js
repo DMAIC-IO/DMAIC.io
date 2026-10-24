@@ -13941,8 +13941,8 @@ export const AGENT_REGISTRY = {
     }
   },
   "project-charter": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -20658,4 +20658,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":72};
+export const AGENT_COVERAGE = {"total":76,"available":73};

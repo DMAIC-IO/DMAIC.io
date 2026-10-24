@@ -3,7 +3,7 @@
 
     <!-- Problem Statement -->
     <section class="pc__section">
-      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('problemStatement')"></span></div>
+      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.project-charter.fields.problemStatement.help" x-text="t('problemStatement')"></span></div>
       <div class="pc__problem-wrap">
         <div class="pc__problem-toolbar">
           <button class="pc__fmt-btn" data-cmd="bold" :title="t('fmtBold')" :aria-label="t('fmtBold')"
@@ -29,7 +29,7 @@
 
     <!-- Goals -->
     <section class="pc__section">
-      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('goals')"></span></div>
+      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.project-charter.fields.goals.help" x-text="t('goals')"></span></div>
 
       <template x-if="model.goals.length === 0">
         <p class="pc__no-goals" x-text="t('noGoals')"></p>
@@ -42,11 +42,11 @@
               <tr>
                 <th class="dmike-table__grip-col"></th>
                 <th class="pc__col-nr" aria-label="Reihenfolge">#</th>
-                <th class="pc__col-description" x-text="t('goalDescription')"></th>
-                <th class="pc__col-date" x-text="t('goalTargetDate')"></th>
-                <th class="pc__col-metric" x-text="t('goalMetric')"></th>
-                <th class="pc__col-target" x-text="t('goalTargetValue')"></th>
-                <th class="pc__col-zeg" :title="t('goalAchievementFull')" x-text="t('goalAchievement')"></th>
+                <th class="pc__col-description"><span data-help-key="modules.project-charter.types.GoalFields.description" x-text="t('goalDescription')"></span></th>
+                <th class="pc__col-date"><span data-help-key="modules.project-charter.types.GoalFields.targetDate" x-text="t('goalTargetDate')"></span></th>
+                <th class="pc__col-metric"><span data-help-key="modules.project-charter.types.GoalFields.metric" x-text="t('goalMetric')"></span></th>
+                <th class="pc__col-target"><span data-help-key="modules.project-charter.types.GoalFields.targetValue" x-text="t('goalTargetValue')"></span></th>
+                <th class="pc__col-zeg" :title="t('goalAchievementFull')" ><span data-help-key="modules.project-charter.types.GoalFields.achievementLevel" x-text="t('goalAchievement')"></span></th>
                 <th class="pc__col-del" :aria-label="t('deleteGoal')"></th>
               </tr>
             </thead>
@@ -148,21 +148,21 @@
         </div>
       </template>
 
-      <button class="btn btn--secondary btn--sm pc__add-btn" type="button" @click="addGoal()"
+      <button class="btn btn--secondary btn--sm pc__add-btn" type="button" @click="addGoal()" data-help-key="modules.project-charter.actions.addGoal.help"
         x-text="'+ ' + t('addGoal')"></button>
     </section>
 
     <!-- Org Chart -->
     <section class="pc__section pc__org-section">
-      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('orgChart')"></span></div>
+      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.project-charter.fields.orgChart.help" x-text="t('orgChart')"></span></div>
       <div class="pc__org-toolbar">
         <button class="btn btn--primary btn--sm pc__org-add-btn" type="button"
-          @click="orgAddRoot()" x-text="'+ ' + t('orgNew')"></button>
+          @click="orgAddRoot()" data-help-key="modules.project-charter.actions.addOrgNode.help" x-text="'+ ' + t('orgNew')"></button>
         <button class="btn btn--sm pc__org-layout-btn" type="button"
           @click="orgLayoutBtn()" x-text="t('orgLayout')"></button>
         <button class="btn btn--sm pc__org-undo-btn" type="button"
           :disabled="!canUndo()" :title="t('orgUndo')"
-          @click="undo()" x-text="'↩ ' + t('orgUndo')"></button>
+          @click="undo()" data-help-key="modules.project-charter.actions.undo.help" x-text="'↩ ' + t('orgUndo')"></button>
       </div>
       <div class="pc__org-card" data-ref="orgCard">
         <div class="pc__org-wrap" data-ref="orgWrap">
@@ -187,12 +187,12 @@
     <!-- Org-chart node add/edit -->
     <div x-ref="nodeForm">
       <div class="field-group">
-        <label x-text="t('nodeTitle') + ' *'"></label>
+        <label data-help-key="modules.project-charter.actions.updateOrgNode.params.title" x-text="t('nodeTitle') + ' *'"></label>
         <input type="text" class="field" data-field="title" :placeholder="t('nodeTitle')"
           maxlength="100" x-model="nodeDraft.title">
       </div>
       <div class="field-group">
-        <label x-text="t('nodeDescription')"></label>
+        <label data-help-key="modules.project-charter.actions.updateOrgNode.params.desc" x-text="t('nodeDescription')"></label>
         <textarea class="field" data-field="desc" :placeholder="t('nodeDescription')"
           maxlength="300" x-model="nodeDraft.desc"></textarea>
       </div>
@@ -201,26 +201,26 @@
     <!-- Org-chart node style (edit) -->
     <div x-ref="nodeStyleForm">
       <div class="field-group">
-        <label x-text="t('nodeTitle') + ' *'"></label>
+        <label data-help-key="modules.project-charter.actions.updateOrgNode.params.title" x-text="t('nodeTitle') + ' *'"></label>
         <input type="text" class="field" data-field="title" maxlength="100" x-model="nodeStyleDraft.title">
       </div>
       <div class="field-group">
-        <label x-text="t('nodeDescription')"></label>
+        <label data-help-key="modules.project-charter.actions.updateOrgNode.params.desc" x-text="t('nodeDescription')"></label>
         <textarea class="field" data-field="desc" maxlength="300" x-model="nodeStyleDraft.desc"></textarea>
       </div>
       <hr class="pc__org-form-sep">
       <div class="field-group field-group--inline">
-        <label x-text="t('editor.bgColor')"></label>
+        <label data-help-key="modules.project-charter.types.OrgNodeStyle.bg" x-text="t('editor.bgColor')"></label>
         <div class="dmike-chart-ed-color-swatch" data-field="bg-swatch"
           :style="'background:' + nodeStyleDraft.bgDisplay" @click="nodeStylePickColor('bg', $event)"></div>
       </div>
       <div class="field-group field-group--inline">
-        <label x-text="t('editor.borderColor')"></label>
+        <label data-help-key="modules.project-charter.types.OrgNodeStyle.borderColor" x-text="t('editor.borderColor')"></label>
         <div class="dmike-chart-ed-color-swatch" data-field="borderColor-swatch"
           :style="'background:' + nodeStyleDraft.borderColorDisplay" @click="nodeStylePickColor('borderColor', $event)"></div>
       </div>
       <div class="field-group field-group--inline">
-        <label x-text="t('editor.borderStyle')"></label>
+        <label data-help-key="modules.project-charter.types.OrgNodeStyle.borderStyle" x-text="t('editor.borderStyle')"></label>
         <select class="field" data-field="borderStyle" x-model="nodeStyleDraft.borderStyle">
           <option value="" x-text="t('editor.solid')"></option>
           <option value="dashed" x-text="t('editor.dashed')"></option>
@@ -228,7 +228,7 @@
         </select>
       </div>
       <div class="field-group field-group--inline">
-        <label x-text="t('editor.borderWidth')"></label>
+        <label data-help-key="modules.project-charter.types.OrgNodeStyle.borderWidth" x-text="t('editor.borderWidth')"></label>
         <input type="number" class="field field--num" data-field="borderWidth"
           min="1" max="8" x-model.number="nodeStyleDraft.borderWidth">
       </div>

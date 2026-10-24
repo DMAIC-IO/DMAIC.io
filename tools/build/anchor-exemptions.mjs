@@ -14,6 +14,9 @@
  * @type {Record<string, Array<{ match: string, reason: string, count?: number }>>}
  */
 export const ANCHOR_EXEMPTIONS = {
+  'project-charter': [
+    { match: 'aria-label="Reihenfolge">#</th>', reason: 'Spaltenkopf der laufenden Nummer, nur das Zeichen #; kein eigenes Feld', count: 1 },
+  ],
   'unit-converter': [
     { match: "<th x-text=\"t('refValue')\"", reason: 'Nachschlagetabelle mit festen Beispielwerten; nicht Teil der Lesefläche', count: 1 },
     { match: "<th x-text=\"t('refFrom')\"", reason: 'Nachschlagetabelle mit festen Beispielwerten; nicht Teil der Lesefläche', count: 1 },

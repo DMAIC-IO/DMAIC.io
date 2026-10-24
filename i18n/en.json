@@ -1316,6 +1316,146 @@
         "solid": "Solid",
         "dashed": "Dashed",
         "dotted": "Dotted"
+      },
+      "whenToUse": "At the start of a project, to record the problem, measurable goals and the project organisation — the basis every later phase refers to.",
+      "actions": {
+        "read": {
+          "help": "Read the problem statement, goals, org chart and its style."
+        },
+        "setProblemStatement": {
+          "help": "Replace the problem statement: what the problem is, since when, what its impact is, and what is out of scope.",
+          "params": {
+            "markdown": "The statement as Markdown; bold (**…**), italic (*…*) and lists are rendered. At most 10000 characters of plain text."
+          }
+        },
+        "addGoal": {
+          "help": "Add a new, empty project goal at the end of the list."
+        },
+        "setGoalField": {
+          "help": "Set one field of a project goal: description, target date, metric, target value or goal achievement. Returns nothing.",
+          "params": {
+            "id": "The goal id from read().goals.",
+            "key": "Which field: description, targetDate, metric, targetValue or achievementLevel.",
+            "value": "The value: text for description, metric and targetValue; \"\" or YYYY-MM-DD for targetDate; a whole number 0 to 100 for achievementLevel."
+          }
+        },
+        "deleteGoal": {
+          "help": "Delete a project goal without asking; can be undone.",
+          "params": {
+            "id": "The goal id from read().goals."
+          }
+        },
+        "moveGoal": {
+          "help": "Move a project goal in the list, before another one or to the end.",
+          "params": {
+            "id": "The id of the goal to move.",
+            "beforeId": "The id of the goal it goes before, or null for the end."
+          }
+        },
+        "addOrgNode": {
+          "help": "Add a position to the org chart, at the top level or below an existing position. Returns the id of the new position.",
+          "params": {
+            "title": "Name of the position, 1 to 100 characters.",
+            "desc": "Subtitle, for example the person; at most 300 characters, \"\" for none.",
+            "parentId": "The id of the parent position from read().orgChart, or null for the top level."
+          }
+        },
+        "updateOrgNode": {
+          "help": "Change the name and subtitle of a position.",
+          "params": {
+            "id": "The position id from read().orgChart.",
+            "title": "The name of the position, for example project lead or quality assurance.",
+            "desc": "The subtitle below the name, for example the name of the person."
+          }
+        },
+        "setOrgNodeStyle": {
+          "help": "Set one style value of a single position; empty or 0 takes over the style of the whole org chart.",
+          "params": {
+            "id": "The position id from read().orgChart.",
+            "key": "Which style value: bg, borderColor, borderStyle or borderWidth.",
+            "value": "The value, form per key see types.OrgNodeStyle."
+          }
+        },
+        "deleteOrgNode": {
+          "help": "Delete a position with all positions below it, without asking; can be undone. Returns the number of deleted positions.",
+          "params": {
+            "id": "The position id from read().orgChart."
+          }
+        },
+        "moveOrgNode": {
+          "help": "Place a position below another one and order it among its new siblings. The positions below it move along.",
+          "params": {
+            "id": "The position id from read().orgChart.",
+            "parentId": "The new parent position, or null for the top level; not the position itself and none below it.",
+            "index": "Place among the new siblings, 0 for first, or null for the end."
+          }
+        },
+        "setOrgStyle": {
+          "help": "Set one style value for the whole org chart: how positions or connector lines look.",
+          "params": {
+            "key": "Which style value, see types.OrgStyle.",
+            "value": "The value, form per key see types.OrgStyle."
+          }
+        },
+        "undo": {
+          "help": "Undo the last step on the problem statement, goals or org chart."
+        }
+      },
+      "fields": {
+        "problemStatement": {
+          "help": "What the problem is, since when, what its impact is, and what is out of scope."
+        },
+        "goals": {
+          "help": "The measurable project goals with target date, metric, target value and goal achievement."
+        },
+        "orgChart": {
+          "help": "The project organisation as a tree of positions; dragging reorders or re-parents."
+        },
+        "orgStyle": {
+          "help": "The style of the whole org chart: background, border and connector lines. Empty colours follow the colour theme."
+        }
+      },
+      "types": {
+        "Goal": {
+          "id": "The goal id.",
+          "description": "What the goal is.",
+          "targetDate": "When it should be reached, \"\" or YYYY-MM-DD.",
+          "metric": "How it is measured.",
+          "targetValue": "The value to reach.",
+          "achievementLevel": "Goal achievement from 0 to 100."
+        },
+        "GoalFields": {
+          "description": "What the goal is, in one sentence.",
+          "targetDate": "When the goal should be reached.",
+          "metric": "The metric the goal is measured by.",
+          "targetValue": "The value of the metric to reach.",
+          "achievementLevel": "Goal achievement: 0 means not started, 100 fully reached."
+        },
+        "OrgNode": {
+          "id": "The position id.",
+          "title": "The name of the position.",
+          "desc": "The subtitle, for example the person.",
+          "pid": "The id of the parent position, null for the top level.",
+          "bg": "Own background colour; absent when the org chart style applies.",
+          "borderColor": "Own border colour; absent when the org chart style applies.",
+          "borderStyle": "Own border style; absent when the org chart style applies.",
+          "borderWidth": "Own border width; absent when the org chart style applies."
+        },
+        "OrgNodeStyle": {
+          "bg": "Background colour of this position; empty takes over the org chart style.",
+          "borderColor": "Border colour of this position; empty takes over the org chart style.",
+          "borderStyle": "Border style of this position: solid, dashed or dotted; empty takes over the org chart style.",
+          "borderWidth": "Border width of this position from 1 to 8; 0 takes over the org chart style."
+        },
+        "OrgStyle": {
+          "nodeBg": "Background colour of all positions; \"\" follows the colour theme.",
+          "nodeBorderColor": "Border colour of all positions; \"\" follows the colour theme.",
+          "nodeBorderStyle": "Border style of all positions: solid, dashed or dotted.",
+          "nodeBorderWidth": "Border width of all positions, whole number 1 to 8.",
+          "lineColor": "Colour of the connector lines; \"\" follows the colour theme.",
+          "lineStyle": "Style of the connector lines: solid, dashed or dotted.",
+          "lineWidth": "Width of the connector lines, whole number 1 to 8."
+        }
       }
     },
     "stakeholder-analysis": {

@@ -13,6 +13,12 @@
  * data-fn init() and disposed in destroy() — see .claude/MODULES.md.
  *
  * Spec: docs/modules/PROJECT-CHARTER.md
+ *
+ * @agent  Steuerbar über das Viewmodel: Problembeschreibung
+ *   (setProblemStatement), Ziele (addGoal, setGoalField, deleteGoal,
+ *   moveGoal), Organigramm (addOrgNode, updateOrgNode, setOrgNodeStyle,
+ *   deleteOrgNode, moveOrgNode, setOrgStyle), Rückgängig (undo). Gelesen
+ *   wird über read() mit erklärter Lesefläche (AgentRead).
  */
 
 import { createModule } from '../../core/template-module.js';

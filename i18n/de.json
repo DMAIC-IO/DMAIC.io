@@ -1316,6 +1316,146 @@
         "solid": "Durchgezogen",
         "dashed": "Gestrichelt",
         "dotted": "Gepunktet"
+      },
+      "whenToUse": "Zu Beginn eines Projekts, um Problem, messbare Ziele und die Projektorganisation festzuhalten — die Grundlage, auf die sich alle späteren Phasen beziehen.",
+      "actions": {
+        "read": {
+          "help": "Problembeschreibung, Ziele, Organigramm und dessen Stil lesen."
+        },
+        "setProblemStatement": {
+          "help": "Die Problembeschreibung ersetzen: Was ist das Problem, seit wann, mit welchen Auswirkungen, und was gehört nicht zum Projekt.",
+          "params": {
+            "markdown": "Die Beschreibung als Markdown; fett (**…**), kursiv (*…*) und Listen werden dargestellt. Höchstens 10000 Zeichen Klartext."
+          }
+        },
+        "addGoal": {
+          "help": "Ein neues, leeres Projektziel am Ende der Liste anlegen."
+        },
+        "setGoalField": {
+          "help": "Ein Feld eines Projektziels setzen: Beschreibung, Zieldatum, Messgröße, Zielwert oder Zielerreichungsgrad. Liefert nichts zurück.",
+          "params": {
+            "id": "Die id des Ziels aus read().goals.",
+            "key": "Welches Feld: description, targetDate, metric, targetValue oder achievementLevel.",
+            "value": "Der Wert: Text für description, metric und targetValue; \"\" oder YYYY-MM-DD für targetDate; eine ganze Zahl 0 bis 100 für achievementLevel."
+          }
+        },
+        "deleteGoal": {
+          "help": "Ein Projektziel ohne Rückfrage löschen; rückgängig machbar.",
+          "params": {
+            "id": "Die id des Ziels aus read().goals."
+          }
+        },
+        "moveGoal": {
+          "help": "Ein Projektziel in der Liste verschieben, vor ein anderes oder ans Ende.",
+          "params": {
+            "id": "Die id des zu verschiebenden Ziels.",
+            "beforeId": "Die id des Ziels, vor das es kommt, oder null für das Ende."
+          }
+        },
+        "addOrgNode": {
+          "help": "Eine Position im Organigramm anlegen, als oberste Ebene oder unter einer bestehenden Position. Liefert die id der neuen Position.",
+          "params": {
+            "title": "Bezeichnung der Position, 1 bis 100 Zeichen.",
+            "desc": "Untertitel, zum Beispiel die Person; höchstens 300 Zeichen, \"\" für keinen.",
+            "parentId": "Die id der übergeordneten Position aus read().orgChart, oder null für die oberste Ebene."
+          }
+        },
+        "updateOrgNode": {
+          "help": "Bezeichnung und Untertitel einer Position ändern.",
+          "params": {
+            "id": "Die id der Position aus read().orgChart.",
+            "title": "Die Bezeichnung der Position, zum Beispiel Projektleitung oder Qualitätssicherung.",
+            "desc": "Der Untertitel unter der Bezeichnung, zum Beispiel der Name der Person."
+          }
+        },
+        "setOrgNodeStyle": {
+          "help": "Einen Stilwert einer einzelnen Position setzen; leer oder 0 übernimmt den Stil des ganzen Organigramms.",
+          "params": {
+            "id": "Die id der Position aus read().orgChart.",
+            "key": "Welcher Stilwert: bg, borderColor, borderStyle oder borderWidth.",
+            "value": "Der Wert, Form je Schlüssel siehe types.OrgNodeStyle."
+          }
+        },
+        "deleteOrgNode": {
+          "help": "Eine Position samt allen untergeordneten Positionen ohne Rückfrage löschen; rückgängig machbar. Liefert die Zahl der gelöschten Positionen.",
+          "params": {
+            "id": "Die id der Position aus read().orgChart."
+          }
+        },
+        "moveOrgNode": {
+          "help": "Eine Position unter eine andere hängen und unter ihren neuen Geschwistern einordnen. Die untergeordneten Positionen wandern mit.",
+          "params": {
+            "id": "Die id der Position aus read().orgChart.",
+            "parentId": "Die neue übergeordnete Position, oder null für die oberste Ebene; nicht die Position selbst und keine ihrer untergeordneten.",
+            "index": "Stelle unter den neuen Geschwistern, 0 für zuerst, oder null für das Ende."
+          }
+        },
+        "setOrgStyle": {
+          "help": "Einen Stilwert für das ganze Organigramm setzen: Darstellung der Positionen oder der Verbindungslinien.",
+          "params": {
+            "key": "Welcher Stilwert, siehe types.OrgStyle.",
+            "value": "Der Wert, Form je Schlüssel siehe types.OrgStyle."
+          }
+        },
+        "undo": {
+          "help": "Den letzten Schritt an Problembeschreibung, Zielen oder Organigramm zurücknehmen."
+        }
+      },
+      "fields": {
+        "problemStatement": {
+          "help": "Was ist das Problem, seit wann, welche Auswirkungen hat es, und was gehört nicht zum Projekt."
+        },
+        "goals": {
+          "help": "Die messbaren Projektziele mit Zieldatum, Messgröße, Zielwert und Zielerreichungsgrad."
+        },
+        "orgChart": {
+          "help": "Die Projektorganisation als Baum von Positionen; ziehen ordnet um oder hängt um."
+        },
+        "orgStyle": {
+          "help": "Der Stil des ganzen Organigramms: Hintergrund, Rahmen und Verbindungslinien. Leere Farben folgen dem Farbschema."
+        }
+      },
+      "types": {
+        "Goal": {
+          "id": "Die id des Ziels.",
+          "description": "Was das Ziel ist.",
+          "targetDate": "Bis wann es erreicht sein soll, \"\" oder YYYY-MM-DD.",
+          "metric": "Woran es gemessen wird.",
+          "targetValue": "Der Wert, der erreicht werden soll.",
+          "achievementLevel": "Zielerreichungsgrad (ZEG) von 0 bis 100."
+        },
+        "GoalFields": {
+          "description": "Was das Ziel ist, in einem Satz.",
+          "targetDate": "Bis wann das Ziel erreicht sein soll.",
+          "metric": "Die Messgröße, an der das Ziel gemessen wird.",
+          "targetValue": "Der Wert der Messgröße, der erreicht werden soll.",
+          "achievementLevel": "Zielerreichungsgrad: 0 heißt nicht begonnen, 100 vollständig erreicht."
+        },
+        "OrgNode": {
+          "id": "Die id der Position.",
+          "title": "Die Bezeichnung der Position.",
+          "desc": "Der Untertitel, zum Beispiel die Person.",
+          "pid": "Die id der übergeordneten Position, null für die oberste Ebene.",
+          "bg": "Eigene Hintergrundfarbe; fehlt, wenn der Stil des Organigramms gilt.",
+          "borderColor": "Eigene Rahmenfarbe; fehlt, wenn der Stil des Organigramms gilt.",
+          "borderStyle": "Eigener Rahmenstil; fehlt, wenn der Stil des Organigramms gilt.",
+          "borderWidth": "Eigene Rahmenbreite; fehlt, wenn der Stil des Organigramms gilt."
+        },
+        "OrgNodeStyle": {
+          "bg": "Hintergrundfarbe dieser Position; leer übernimmt den Stil des Organigramms.",
+          "borderColor": "Rahmenfarbe dieser Position; leer übernimmt den Stil des Organigramms.",
+          "borderStyle": "Rahmenstil dieser Position: durchgezogen, gestrichelt oder gepunktet; leer übernimmt den Stil des Organigramms.",
+          "borderWidth": "Rahmenbreite dieser Position von 1 bis 8; 0 übernimmt den Stil des Organigramms."
+        },
+        "OrgStyle": {
+          "nodeBg": "Hintergrundfarbe aller Positionen; \"\" folgt dem Farbschema.",
+          "nodeBorderColor": "Rahmenfarbe aller Positionen; \"\" folgt dem Farbschema.",
+          "nodeBorderStyle": "Rahmenstil aller Positionen: solid, dashed oder dotted.",
+          "nodeBorderWidth": "Rahmenbreite aller Positionen, ganze Zahl 1 bis 8.",
+          "lineColor": "Farbe der Verbindungslinien; \"\" folgt dem Farbschema.",
+          "lineStyle": "Stil der Verbindungslinien: solid, dashed oder dotted.",
+          "lineWidth": "Breite der Verbindungslinien, ganze Zahl 1 bis 8."
+        }
       }
     },
     "stakeholder-analysis": {

@@ -19,7 +19,7 @@ export const RELEASED_MODULES = Object.freeze([
   'kano', 'lessons-learned', 'makigami', 'model-data-generator', 'mosaic', 'msa-typ1', 'msa-typ2', 'msa-typ4',
   'msa-typ5', 'msa-typ6', 'multi-vari', 'multivariate-control-chart',
   'opportunity-flowchart', 'outlier-test', 'pairwise-comparison', 'pareto',
-  'pie-chart', 'probability-plot', 'process-capability', 'process-map', 'raci-matrix',
+  'pie-chart', 'probability-plot', 'process-capability', 'process-map', 'project-charter', 'raci-matrix',
   'random-generator', 'rare-event-chart', 'regression', 'resampling',
   'response-optimization', 'rest-api', 'run-chart', 'sample-size', 'short-run-chart',
   'sipoc', 'stakeholder-analysis', 'time-weighted-chart', 'todo',
