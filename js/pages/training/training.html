@@ -106,7 +106,7 @@
               <div class="training-sim__controls">
                 <label class="training-sim__field">
                   <span x-text="label('population')"></span>
-                  <select data-sim-population x-model="population" @change="changed()" :disabled="lockPopulation">
+                  <select data-sim-population x-model="population" @change="changed()">
                     <option value="normal" :hidden="popHidden('normal')" x-text="popLabel('normal')"></option>
                     <option value="uniform" :hidden="popHidden('uniform')" x-text="popLabel('uniform')"></option>
                     <option value="skewed" :hidden="popHidden('skewed')" x-text="popLabel('skewed')"></option>
@@ -115,13 +115,10 @@
                 </label>
                 <label class="training-sim__field">
                   <span x-text="label('sampleSize')"></span>
-                  <select data-sim-n x-model.number="n" @change="changed()" :disabled="lockN">
-                    <option value="1" :hidden="nHidden(1)">1</option>
-                    <option value="2" :hidden="nHidden(2)">2</option>
-                    <option value="5" :hidden="nHidden(5)">5</option>
-                    <option value="10" :hidden="nHidden(10)">10</option>
-                    <option value="30" :hidden="nHidden(30)">30</option>
-                    <option value="50" :hidden="nHidden(50)">50</option>
+                  <select data-sim-n @change="setN($event)">
+                    <template x-for="v in nOptions()" :key="v">
+                      <option :value="v" :selected="v === n" x-text="v"></option>
+                    </template>
                   </select>
                 </label>
                 <div class="btn-group">

@@ -200,6 +200,9 @@ const TABS = [
   { id: 'jmp',    labelKey: 'tabJmp' },
 ];
 
+/** Active tab, kept across the page re-creation of a language switch. */
+let lastTab = 'courses';
+
 export default createPage({
   id: 'training',
   templateUrl: new URL('js/pages/training/training.html', document.baseURI).href,
@@ -217,7 +220,7 @@ export default createPage({
     const moduleRegistry = context.moduleRegistry;
     return {
       ...lessonViewData(t, i18n, context.dialog),
-      activeTab: 'courses',
+      activeTab: lastTab,
       tabs: TABS.map(x => ({ id: x.id, label: t(x.labelKey) })),
       pageTitle: () => t('title'),
       pageSubtitle: () => t('subtitle'),
@@ -226,7 +229,7 @@ export default createPage({
           ? 'training-area__tab training-area__tab--active'
           : 'training-area__tab';
       },
-      selectTab(id) { this.activeTab = id; },
+      selectTab(id) { this.activeTab = id; lastTab = id; },
       tdClass(c) { return c.cls || ''; },
       thStyle(col) { return col.style || ''; },
       isType(b, type) { return b.type === type; },

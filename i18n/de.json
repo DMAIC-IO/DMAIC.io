@@ -350,11 +350,10 @@
         "seMeasured": "Gemessen",
         "theory": "Theorie σ/√n",
         "legendMu": "μ der Grundgesamtheit",
-        "legendXbar": "letzter Mittelwert x̄",
+        "legendXbar": "Mittelwert aller x̄",
         "legendTheory": "erwartete Verteilung",
         "mean": "Mittelwert",
         "spread": "Streuung",
-        "popCount": "Umfang",
         "seHint": "erwartet: {se}",
         "seChartHint": "Für jedes n, mit dem du gezogen hast, entsteht hier ein Punkt.",
         "pop": {

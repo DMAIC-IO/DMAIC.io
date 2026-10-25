@@ -19,8 +19,10 @@ import {
 /** Sample sizes offered when n is not locked and the block gives no `nChoices`. */
 export const N_CHOICES = [2, 5, 10, 30];
 
-/** Fixed seed: a lesson behaves the same on every run. */
-const SEED = 20261025;
+/** A fresh seed per mount: draws are never replayed into the stored per-n summaries. */
+function randomSeed() {
+  return crypto.getRandomValues(new Uint32Array(1))[0];
+}
 const POP_BINS = 50;
 const POP_DRAWS = 20000;
 const MAX_MEANS_BINS = 400;
@@ -47,7 +49,7 @@ const fmt = (v, digits = 2) => (Number.isFinite(v) ? v.toFixed(digits) : '–');
 export function samplingSimComponent(ctx) {
   const t = (key, vars) => ctx.i18n.t(`training.course.sim.${key}`, vars);
   // Generator, drawn means, chart handles and the page API stay outside Alpine's reactive proxy.
-  const rng = mulberry32(SEED);
+  let rng = mulberry32(randomSeed());
   let means = [];
   let root = null;
   let api = null;
@@ -93,6 +95,8 @@ export function samplingSimComponent(ctx) {
       root = el;
       api = lessonApi;
       const p = params || {};
+      // Tests inject a seed; the UI draws a fresh one per mount.
+      if (Number.isInteger(p.seed)) rng = mulberry32(p.seed);
       if (POPULATIONS[p.population]) this.population = p.population;
       if (Number.isInteger(p.n) && p.n > 0) this.n = p.n;
       this.lockPopulation = p.lockPopulation === true;
@@ -139,9 +143,16 @@ export function samplingSimComponent(ctx) {
     popLabel(id) { return t(`pop.${id}`); },
     /** A locked select offers only the fixed value. */
     popHidden(id) { return this.lockPopulation && id !== this.population; },
-    nHidden(v) {
-      if (this.lockN) return v !== this.n;
-      return !this.nChoices.includes(v) && v !== this.n;
+    /** Sample sizes of the n select: only the fixed value when locked, else the choices plus the start value. */
+    nOptions() {
+      if (this.lockN) return [this.n];
+      const all = this.nChoices.includes(this.n) ? this.nChoices : [...this.nChoices, this.n];
+      return [...all].sort((a, b) => a - b);
+    },
+    /** @param {Event} e change event of the n select */
+    setN(e) {
+      this.n = Number(e.target.value);
+      this.changed();
     },
     countText() { return t('count', { count: this.count }); },
     muText() { return fmt(POPULATIONS[this.population].mu); },

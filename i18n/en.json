@@ -350,11 +350,10 @@
         "seMeasured": "Measured",
         "theory": "Theory σ/√n",
         "legendMu": "population μ",
-        "legendXbar": "latest mean x̄",
+        "legendXbar": "mean of all x̄",
         "legendTheory": "expected distribution",
         "mean": "Mean",
         "spread": "Spread",
-        "popCount": "Size",
         "seHint": "expected: {se}",
         "seChartHint": "Each n you draw with adds a point here.",
         "pop": {

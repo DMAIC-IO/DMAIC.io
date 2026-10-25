@@ -42,6 +42,19 @@ suite('course widgets', () => {
     assertEqual(sim.popHidden('skewed'), false);
   });
 
+  test('sampling-distribution widget seeds per mount unless a seed is injected', () => {
+    const run = (params) => {
+      const sim = WIDGET_COMPONENTS['sampling-distribution'].factory({ i18n: { t: (k) => k } });
+      const got = [];
+      sim.setup({ dispatchEvent: () => {} }, params, { addResult: (p, n, s) => got.push(s.mean) });
+      sim.draw(1);
+      return got[0];
+    };
+    assertEqual(run({ seed: 42 }), run({ seed: 42 }), 'same injected seed, same draws');
+    assertTrue(run({ seed: 42 }) !== run({ seed: 43 }), 'different seeds differ');
+    assertTrue(run({}) !== run({}), 'default seeds are random per mount');
+  });
+
   test('sampling-distribution widget releases every chart it created', async () => {
     const live = new Set();
     const chartManager = {
