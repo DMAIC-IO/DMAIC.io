@@ -59,8 +59,7 @@
       <h3 class="triz-pc__section-title" x-text="t('separationHeading')"></h3>
       <p class="triz-pc__hint" x-text="t('separationHint')"></p>
       <div class="triz-pc__principles" role="radiogroup" :aria-label="t('separationHeading')">
-        <template x-for="(notes, key) in model.principleNotes"><article class="triz-pc__principle"
-            :key="key"
+        <template x-for="(notes, key) in model.principleNotes" :key="key"><article class="triz-pc__principle"
             :class="principleSelectedClass(key, model.selectedPrinciple)"
             :data-principle="key">
             <header class="triz-pc__principle-head">
