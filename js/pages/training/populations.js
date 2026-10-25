@@ -5,8 +5,12 @@
  * sampling-distribution widget needs. Pure logic, no DOM.
  */
 
-/** Standard normal variate via Box–Muller. */
-function normal(rng) {
+/**
+ * Standard normal variate via Box–Muller.
+ * @param {() => number} rng uniform generator on [0, 1)
+ * @returns {number}
+ */
+export function normal(rng) {
   const u = 1 - rng(); // (0, 1]
   const v = rng();
   return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
