@@ -7,6 +7,8 @@
 
 import { samplingSimComponent } from './sampling-distribution.js';
 import { valueSimComponent } from './value-distribution.js';
+import { sampleEstimateComponent } from './sample-estimate.js';
+import { varianceCheckComponent } from './variance-check.js';
 
 /**
  * Widget name -> Alpine component name and factory.
@@ -15,4 +17,6 @@ import { valueSimComponent } from './value-distribution.js';
 export const WIDGET_COMPONENTS = {
   'sampling-distribution': { component: 'trainingSamplingSim', factory: samplingSimComponent },
   'value-distribution': { component: 'trainingValueSim', factory: valueSimComponent },
+  'sample-estimate': { component: 'trainingSampleEstimate', factory: sampleEstimateComponent },
+  'variance-check': { component: 'trainingVarianceCheck', factory: varianceCheckComponent },
 };

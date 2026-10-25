@@ -169,3 +169,141 @@ suite('value-distribution widget', () => {
     assertEqual(sim.cell('fill-a', 'count'), '1000');
   });
 });
+
+/** Fake chart manager that tracks live charts. */
+const trackingChartManager = () => {
+  const live = new Set();
+  return {
+    live,
+    create: async () => { const c = {}; live.add(c); return c; },
+    update: () => {},
+    destroy: (c) => live.delete(c),
+  };
+};
+
+/** Fake widget root with lazily created chart containers. */
+const fakeRoot = () => {
+  const containers = {};
+  return { querySelector: (sel) => (containers[sel] || (containers[sel] = {})), dispatchEvent: () => {} };
+};
+
+suite('sample-estimate widget', () => {
+  const make = (ctx = {}) => WIDGET_COMPONENTS['sample-estimate'].factory({ i18n: { t: (k) => k }, ...ctx });
+  const mount = (params, ctx) => {
+    const sim = make(ctx);
+    const events = [];
+    sim.setup({ dispatchEvent: (e) => events.push(e) }, params, {});
+    return { sim, events };
+  };
+
+  test('estimate widget shows population values before the first sample', () => {
+    const { sim, events } = mount({ n: 10, showTruth: true });
+    assertEqual(sim.cell('mu'), '500.00');
+    assertEqual(sim.cell('sigma'), '2.00');
+    assertEqual(sim.cell('mean'), '–');
+    assertEqual(sim.cell('sd'), '–');
+    assertEqual(events[0].type, 'training-sim-progress');
+    assertDeepEqual(events[0].detail, { count: 0, perN: {} });
+  });
+
+  test('estimate widget draws samples of n', () => {
+    const { sim, events } = mount({ n: 10, seed: 1 });
+    sim.draw(5);
+    assertEqual(sim.samplesDrawn, 5);
+    assertEqual(sim.currentSample().length, 10);
+    assertTrue(sim.cell('mean') !== '–', 'x̄ shown');
+    assertTrue(sim.cell('sd') !== '–', 's shown');
+    assertDeepEqual(events[events.length - 1].detail, { count: 5, perN: {} });
+  });
+
+  test('history keeps the last five, newest first', () => {
+    const { sim } = mount({ n: 10, history: 5, seed: 2 });
+    for (let i = 0; i < 7; i++) sim.draw(1);
+    const rows = sim.historyRows();
+    assertEqual(rows.length, 5);
+    assertEqual(rows[0].mean, sim.cell('mean'), 'newest first');
+    assertEqual(mount({ n: 10, seed: 2 }).sim.historyRows().length, 0, 'no history by default');
+  });
+
+  test('estimate chart carries the true curve', () => {
+    const { sim } = mount({ n: 10, showTruth: true, seed: 3 });
+    sim.draw(1);
+    const cfg = sim.chartConfig();
+    assertEqual(cfg.normalCurves.length, 1);
+    assertEqual(cfg.normalCurves[0].mean, 500);
+    assertEqual(cfg.normalCurves[0].stdDev, 2);
+    assertEqual(cfg.bins[0].x0, 480);
+    assertEqual(cfg.bins[cfg.bins.length - 1].x1, 520);
+    assertEqual(cfg.bins.reduce((sum, b) => sum + b.count, 0), 10, 'bins hold the current sample');
+    assertTrue(cfg.refLines.some((l) => l.label === 'μ' && l.value === 500), 'μ line');
+    const plain = mount({ n: 10, seed: 3 }).sim;
+    plain.draw(1);
+    assertEqual(plain.chartConfig().normalCurves.length, 0);
+  });
+
+  test('estimate widget seeds per mount unless injected', () => {
+    const run = (params) => {
+      const { sim } = mount({ n: 10, ...params });
+      sim.draw(1);
+      return sim.cell('mean');
+    };
+    assertEqual(run({ seed: 42 }), run({ seed: 42 }), 'same injected seed, same values');
+    assertTrue(run({ seed: 42 }) !== run({ seed: 43 }), 'different seeds differ');
+    assertTrue(run({}) !== run({}), 'default seeds are random per mount');
+  });
+
+  test('estimate widget releases every chart it created', async () => {
+    const chartManager = trackingChartManager();
+    const sim = make({ chartManager });
+    await sim.setup(fakeRoot(), { n: 10, showTruth: true }, {});
+    assertEqual(chartManager.live.size, 1);
+    sim.draw(1);
+    sim.destroy();
+    assertEqual(chartManager.live.size, 0);
+  });
+});
+
+suite('variance-check widget', () => {
+  const make = (ctx = {}) => WIDGET_COMPONENTS['variance-check'].factory({ i18n: { t: (k) => k }, ...ctx });
+  const mount = (params, ctx) => {
+    const sim = make(ctx);
+    const events = [];
+    sim.setup({ dispatchEvent: (e) => events.push(e) }, params, {});
+    return { sim, events };
+  };
+
+  test('variance widget averages share their samples', () => {
+    const { sim, events } = mount({ n: 3, seed: 1 });
+    assertEqual(sim.cell('avgByN'), '–');
+    assertEqual(sim.cell('avgByNMinus1'), '–');
+    assertEqual(sim.cell('sigma2'), '4.00');
+    assertEqual(sim.cell('count'), '0');
+    assertDeepEqual(events[0].detail, { count: 0, perN: {} });
+    sim.draw(100);
+    const avg = sim.averages();
+    assertTrue(Math.abs(avg.byN / avg.byNMinus1 - 2 / 3) < 1e-9, `ratio ${avg.byN / avg.byNMinus1}`);
+    assertEqual(sim.cell('count'), '100');
+    assertEqual(sim.latest().length, 3);
+    assertDeepEqual(events[events.length - 1].detail, { count: 100, perN: {} });
+  });
+
+  test('variance widget seeds per mount unless injected', () => {
+    const run = (params) => {
+      const { sim } = mount({ n: 3, ...params });
+      sim.draw(10);
+      return sim.cell('avgByNMinus1');
+    };
+    assertEqual(run({ seed: 42 }), run({ seed: 42 }), 'same injected seed, same values');
+    assertTrue(run({ seed: 42 }) !== run({ seed: 43 }), 'different seeds differ');
+    assertTrue(run({}) !== run({}), 'default seeds are random per mount');
+  });
+
+  test('variance widget creates no chart', async () => {
+    const chartManager = trackingChartManager();
+    const sim = make({ chartManager });
+    await sim.setup(fakeRoot(), { n: 3 }, {});
+    sim.draw(10);
+    sim.destroy();
+    assertEqual(chartManager.live.size, 0);
+  });
+});

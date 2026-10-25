@@ -333,6 +333,30 @@
       "insightLockedEach": "Measure at least {k} values in every chart first – then this shows what you saw.",
       "quizCorrect": "Correct.",
       "quizWrong": "Not yet.",
+      "estimate": {
+        "drawOne": "Draw a sample",
+        "drawMany": "Draw {k} samples",
+        "population": "Population",
+        "sample": "Sample (n = {n})",
+        "mu": "Mean μ",
+        "sigma": "Standard deviation σ",
+        "mean": "Mean x̄",
+        "sd": "Standard deviation s",
+        "history": "Recent samples",
+        "truthNote": "In practice nobody sees the population's curve.",
+        "axis": { "g": "Filling weight in g", "min": "Waiting time in minutes" },
+        "density": "Density"
+      },
+      "variance": {
+        "draw": "Draw {k} samples",
+        "count": "Number of samples",
+        "latest": "Latest sample",
+        "byN": "Variance divided by n",
+        "byNMinus1": "Variance divided by n − 1",
+        "latestColumn": "latest sample",
+        "average": "Average over all samples",
+        "sigma2": "Population variance σ²"
+      },
       "values": {
         "measure": "Measure {k}",
         "count": "Number of values",
