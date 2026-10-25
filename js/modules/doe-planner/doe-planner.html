@@ -613,8 +613,8 @@
         <!-- Design preview (unbound + stale) -->
         <template x-if="runs.showPreview()">
           <div class="doe__preview-wrap">
-            <div class="doe__preview-label" data-help-key="modules.doe-planner.actions.runs.setRunValue.help" x-text="t('previewLabel')"></div>
-            <div class="doe__preview-hint" data-help-key="modules.doe-planner.fields.runs.help" x-text="t('previewHint')"></div>
+            <div class="doe__preview-label"><span data-help-key="modules.doe-planner.actions.runs.setRunValue.help" x-text="t('previewLabel')"></span></div>
+            <div class="doe__preview-hint"><span data-help-key="modules.doe-planner.fields.runs.help" x-text="t('previewHint')"></span></div>
             <template x-if="model.previewDirty">
               <div class="doe__preview-stale-note" x-text="t('previewStaleNote')"></div>
             </template>
