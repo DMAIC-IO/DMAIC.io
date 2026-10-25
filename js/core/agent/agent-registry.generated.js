@@ -7183,13 +7183,23 @@ export const AGENT_REGISTRY = {
     }
   },
   "ishikawa": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "no_read_action"
-    ],
+    "reported": [],
     "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
       "problem.setProblem": {
         "params": [
           {
@@ -7669,44 +7679,53 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "problem": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "the problem statement: what deviates, where, by how much",
         "bulk": false
       },
       "experts": {
         "type": "Array<{id:number,name:string,color:string}>",
-        "help": "",
+        "help": "the expert team; every member rates every cause 0..9",
         "bulk": false
       },
       "catLabels": {
         "type": "Object<string,string>",
-        "help": "",
+        "help": "own names of the six categories by key; a missing key shows the default name",
         "bulk": false
       },
       "rows": {
         "type": "Array<object>",
-        "help": "flat cause tree (rows carry parentId)",
-        "bulk": false
+        "help": "flat cause tree: each row has id, stableId (H-001 …), parentId (null for a main cause), name, category, description, status and ratings by expert id",
+        "bulk": true,
+        "bulkKind": "tree"
       },
       "snapshots": {
-        "type": "Array<object>",
-        "help": "",
-        "bulk": false
+        "type": "Array<{id:number,name:string,date:string,data:object}>",
+        "help": "saved states; data holds problem, experts and rows as they were and is omitted on read — snapshots.compareSnapshot gives the difference",
+        "bulk": true,
+        "bulkKind": "table",
+        "omit": [
+          "[].data"
+        ]
       },
       "experiments": {
         "type": "Array<object>",
-        "help": "",
+        "help": "experiments: id, title, description, responsible, status, startDate, endDate, costMoney, costHours, hypothesisIds",
         "bulk": false
       },
       "facts": {
         "type": "Array<object>",
-        "help": "",
+        "help": "facts: id, name, description, date, owner",
         "bulk": false
       },
       "images": {
         "type": "{inScope:Array<object>, outScope:Array<object>}",
-        "help": "",
-        "bulk": false
+        "help": "images per scope, each with id, caption and dataUrl; dataUrl is omitted on read",
+        "bulk": false,
+        "omit": [
+          "inScope[].dataUrl",
+          "outScope[].dataUrl"
+        ]
       }
     }
   },
@@ -21442,4 +21461,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":76,"available":74};
+export const AGENT_COVERAGE = {"total":76,"available":75};

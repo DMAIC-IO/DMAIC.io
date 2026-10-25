@@ -69,20 +69,36 @@ function moveBefore(list, dragId, targetId) {
 }
 
 export class State {
+  /** @type {string} the problem statement: what deviates, where, by how much */
   problem = '';
-  /** @type {Array<{id:number,name:string,color:string}>} */
+  /** @type {Array<{id:number,name:string,color:string}>} the expert team; every member rates every cause 0..9 */
   experts = [];
-  /** @type {Object<string,string>} */
+  /** @type {Object<string,string>} own names of the six categories by key; a missing key shows the default name */
   catLabels = {};
-  /** @type {Array<object>} flat cause tree (rows carry parentId) */
+  /**
+   * @type {Array<object>} flat cause tree: each row has id, stableId (H-001 …),
+   *   parentId (null for a main cause), name, category, description, status
+   *   and ratings by expert id
+   * @agentBulk tree
+   */
   rows = [];
-  /** @type {Array<object>} */
+  /**
+   * @type {Array<{id:number,name:string,date:string,data:object}>} saved
+   *   states; data holds problem, experts and rows as they were and is
+   *   omitted on read — snapshots.compareSnapshot gives the difference
+   * @agentBulk
+   * @agentOmit [].data
+   */
   snapshots = [];
-  /** @type {Array<object>} */
+  /** @type {Array<object>} experiments: id, title, description, responsible, status, startDate, endDate, costMoney, costHours, hypothesisIds */
   experiments = [];
-  /** @type {Array<object>} */
+  /** @type {Array<object>} facts: id, name, description, date, owner */
   facts = [];
-  /** @type {{inScope:Array<object>, outScope:Array<object>}} */
+  /**
+   * @type {{inScope:Array<object>, outScope:Array<object>}} images per
+   *   scope, each with id, caption and dataUrl; dataUrl is omitted on read
+   * @agentOmit inScope[].dataUrl outScope[].dataUrl
+   */
   images = { inScope: [], outScope: [] };
 
   // id counters (transient — recomputed from data on fromJSON)

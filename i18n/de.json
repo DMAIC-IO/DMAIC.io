@@ -4658,6 +4658,256 @@
       "interpPoor": "Cpk < {low}"
     },
     "ishikawa": {
+      "whenToUse": "Wenn mögliche Ursachen eines Problems gesammelt, nach 6M geordnet und vom Team bewertet werden sollen, um die wahrscheinlichsten mit Experimenten zu prüfen; Stände lassen sich als Snapshot festhalten und vergleichen. Für eine einzelne Ursachenkette per Warum-Fragen ist 5-Why da.",
+      "actions": {
+        "read": {
+          "help": "Problemaussage, Bilder, Expertenteam, Ursachenbaum mit Bewertungen, Snapshots, Experimente und Fakten lesen. Bilddaten und Snapshot-Inhalte stehen nur als Größe da."
+        },
+        "setTab": {
+          "help": "Einen Reiter öffnen: Problem, Fakten, Hypothesen oder Experimente.",
+          "params": {
+            "tab": "problem, facts, hypotheses oder experiments."
+          }
+        },
+        "problem": {
+          "setProblem": {
+            "help": "Die Problemaussage setzen: was wo in welchem Ausmaß abweicht.",
+            "params": {
+              "text": "Die Aussage; leer löscht sie."
+            }
+          }
+        },
+        "causes": {
+          "addExpert": {
+            "help": "Ein Mitglied ins Expertenteam aufnehmen. Jedes Mitglied bewertet jede Ursache von 0 bis 9.",
+            "params": {
+              "name": "Der Name; muss sich von den anderen unterscheiden, ohne Rücksicht auf Groß- und Kleinschreibung."
+            }
+          },
+          "renameExpert": {
+            "help": "Ein Mitglied des Expertenteams umbenennen; seine Bewertungen bleiben.",
+            "params": {
+              "expertId": "Das Mitglied.",
+              "name": "Der neue Name; muss sich von den anderen unterscheiden."
+            }
+          },
+          "removeExpert": {
+            "help": "Ein Mitglied aus dem Expertenteam entfernen, samt seinen Bewertungen.",
+            "params": {
+              "expertId": "Das Mitglied."
+            }
+          },
+          "addRow": {
+            "help": "Eine Hauptursache ans Ende des Ursachenbaums anhängen."
+          },
+          "addSubRow": {
+            "help": "Unter einer Ursache eine Unterursache anlegen; sie erbt deren Kategorie.",
+            "params": {
+              "parentId": "Die Ursache darüber."
+            }
+          },
+          "setRowField": {
+            "help": "Ein Feld einer Ursache setzen: Name, Kategorie, Beschreibung oder Status. Nur Hauptursachen tragen eine Kategorie.",
+            "params": {
+              "rowId": "Die Ursache.",
+              "key": "Welches Feld.",
+              "value": "Der neue Wert, je Feld wie beschrieben."
+            }
+          },
+          "deleteRow": {
+            "help": "Eine Ursache samt Unterursachen löschen, ohne Rückfrage. Verknüpfungen aus Experimenten entfallen.",
+            "params": {
+              "rowId": "Die Ursache."
+            }
+          },
+          "duplicateRow": {
+            "help": "Eine Ursache samt Unterursachen und Bewertungen kopieren; die Kopie steht direkt dahinter.",
+            "params": {
+              "rowId": "Die Ursache."
+            }
+          },
+          "moveRowBefore": {
+            "help": "Eine Ursache samt Unterursachen vor eine andere schieben; sie bekommt deren übergeordnete Ursache. Liegt das Ziel im verschobenen Teilbaum, bewegt sich nichts und die Rückgabe ist false.",
+            "params": {
+              "rowId": "Die zu verschiebende Ursache.",
+              "targetRowId": "Die Ursache, vor die sie kommt."
+            }
+          },
+          "setRating": {
+            "help": "Die Bewertung einer Ursache durch ein Mitglied setzen, von 0 (unwahrscheinlich) bis 9 (sehr wahrscheinlich). Mittelwert und Pareto folgen.",
+            "params": {
+              "rowId": "Die Ursache.",
+              "expertId": "Das Mitglied.",
+              "value": "Ganze Zahl von 0 bis 9; null löscht die Bewertung."
+            }
+          },
+          "setCategoryLabels": {
+            "help": "Den sechs Kategorien eigene Namen geben, etwa für 6P statt 6M. Nicht genannte Kategorien behalten ihren Namen.",
+            "params": {
+              "labels": "Neuer Name je Kategorie: man, machine, environment, material, measurement, method. Leer stellt den Standardnamen wieder her; zwei Kategorien dürfen nicht gleich heißen."
+            }
+          },
+          "setFilter": {
+            "help": "Nur die Ursachen einer Kategorie zeigen, oder alle.",
+            "params": {
+              "category": "all oder eine Kategorie: man, machine, environment, material, measurement, method."
+            }
+          },
+          "setParetoSource": {
+            "help": "Im Pareto die aktuellen Bewertungen oder die eines Snapshots zeigen.",
+            "params": {
+              "snapshotId": "Ein Snapshot; null zeigt den aktuellen Stand."
+            }
+          },
+          "exportCSV": {
+            "help": "Problemaussage, Ursachenbaum mit Bewertungen und Fakten als CSV herunterladen; die Rückgabe ist derselbe Text."
+          }
+        },
+        "snapshots": {
+          "saveSnapshot": {
+            "help": "Den aktuellen Stand von Problemaussage, Expertenteam und Ursachenbaum als Snapshot festhalten.",
+            "params": {
+              "name": "Der Name; leer ergibt Snapshot mit dem heutigen Datum."
+            }
+          },
+          "loadSnapshot": {
+            "help": "Einen Snapshot wiederherstellen, ohne Rückfrage: Problemaussage, Expertenteam und Ursachenbaum werden ersetzt.",
+            "params": {
+              "snapshotId": "Der Snapshot."
+            }
+          },
+          "deleteSnapshot": {
+            "help": "Einen Snapshot löschen, ohne Rückfrage.",
+            "params": {
+              "snapshotId": "Der Snapshot."
+            }
+          },
+          "compareSnapshot": {
+            "help": "Den aktuellen Stand mit einem Snapshot vergleichen. Die Tabelle markiert neue und geänderte Ursachen; die Rückgabe nennt neue, entfernte und geänderte Ursachen mit altem und neuem Mittelwert.",
+            "params": {
+              "snapshotId": "Der Snapshot."
+            }
+          },
+          "closeCompare": {
+            "help": "Den Vergleich mit einem Snapshot beenden."
+          }
+        },
+        "experiments": {
+          "addExperiment": {
+            "help": "Ein Experiment anlegen, das Ursachen prüft."
+          },
+          "setExperimentField": {
+            "help": "Ein Feld eines Experiments setzen: Titel, Beschreibung, Verantwortlich, Status, Start, Ende, Kosten in Euro oder Aufwand in Stunden.",
+            "params": {
+              "experimentId": "Das Experiment.",
+              "key": "Welches Feld.",
+              "value": "Der neue Wert, je Feld wie beschrieben."
+            }
+          },
+          "deleteExperiment": {
+            "help": "Ein Experiment löschen, ohne Rückfrage.",
+            "params": {
+              "experimentId": "Das Experiment."
+            }
+          },
+          "moveExperimentBefore": {
+            "help": "Ein Experiment vor ein anderes schieben.",
+            "params": {
+              "experimentId": "Das zu verschiebende Experiment.",
+              "targetExperimentId": "Das Experiment, vor das es kommt."
+            }
+          },
+          "setExperimentHypotheses": {
+            "help": "Festlegen, welche Ursachen ein Experiment prüft.",
+            "params": {
+              "experimentId": "Das Experiment.",
+              "hypothesisIds": "Die Kennung jeder Ursache, etwa H-001; eine leere Liste löst alle."
+            }
+          },
+          "addFact": {
+            "help": "Einen Fakt anlegen: eine gesicherte Beobachtung, die die Ursachensuche stützt."
+          },
+          "setFactField": {
+            "help": "Ein Feld eines Fakts setzen: Name, Beschreibung, Datum oder Verantwortlich.",
+            "params": {
+              "factId": "Der Fakt.",
+              "key": "Welches Feld.",
+              "value": "Der neue Text; das Datum als JJJJ-MM-TT oder leer."
+            }
+          },
+          "deleteFact": {
+            "help": "Einen Fakt löschen, ohne Rückfrage.",
+            "params": {
+              "factId": "Der Fakt."
+            }
+          },
+          "moveFactBefore": {
+            "help": "Einen Fakt vor einen anderen schieben.",
+            "params": {
+              "factId": "Der zu verschiebende Fakt.",
+              "targetFactId": "Der Fakt, vor den er kommt."
+            }
+          }
+        }
+      },
+      "fields": {
+        "problem": {
+          "help": "Die Problemaussage: was wo in welchem Ausmaß abweicht."
+        },
+        "images": {
+          "help": "Bilder zur Abgrenzung: was zum Problem gehört und was nicht, je mit Bildunterschrift. Die Bilddaten stehen nur als Größe da."
+        },
+        "experts": {
+          "help": "Das Expertenteam: jedes Mitglied bewertet jede Ursache von 0 bis 9."
+        },
+        "catLabels": {
+          "help": "Eigene Namen der sechs Kategorien; fehlt einer, gilt der Standardname."
+        },
+        "rows": {
+          "help": "Der Ursachenbaum: Haupt- und Unterursachen mit Kennung, Kategorie, Name, Beschreibung, Status und den Bewertungen je Mitglied des Expertenteams."
+        },
+        "snapshots": {
+          "help": "Festgehaltene Stände mit Name und Zeitpunkt. Ihr Inhalt steht nur als Größe da; was sich geändert hat, zeigt der Vergleich."
+        },
+        "experiments": {
+          "help": "Die Experimente mit Titel, Beschreibung, Verantwortlich, Status, Zeitraum, Kosten und den Ursachen, die sie prüfen."
+        },
+        "facts": {
+          "help": "Die Fakten: Beobachtungen mit Name, Beschreibung, Datum und wer sie gemeldet hat."
+        }
+      },
+      "types": {
+        "RowFields": {
+          "name": "Kurzname der Ursache.",
+          "category": "Die 6M-Kategorie einer Hauptursache; Unterursachen erben sie.",
+          "description": "Was die Ursache ist und warum sie vermutet wird.",
+          "status": "Wie weit die Prüfung ist: offen, in Prüfung, bestätigt oder verworfen."
+        },
+        "ExperimentFields": {
+          "title": "Kurztitel des Experiments.",
+          "description": "Was ausprobiert und wie das Ergebnis gemessen wird.",
+          "responsible": "Wer das Experiment durchführt.",
+          "status": "Wo das Experiment steht: geplant, läuft, abgeschlossen oder abgebrochen.",
+          "startDate": "Erster Tag des Experiments.",
+          "endDate": "Letzter Tag des Experiments.",
+          "costMoney": "Ausgegebenes Geld in Euro.",
+          "costHours": "Aufwand in Stunden."
+        },
+        "FactFields": {
+          "name": "Was beobachtet wurde.",
+          "description": "Einzelheiten und Quelle der Beobachtung.",
+          "date": "Wann es beobachtet wurde.",
+          "owner": "Wer die Beobachtung gemeldet hat."
+        }
+      },
+      "columns": {
+        "avgScore": "Mittelwert der Bewertungen aller Mitglieder des Expertenteams, von 0 bis 9; im Vergleich mit einem Snapshot steht die Änderung daneben."
+      },
+      "charts": {
+        "gantt": "Zeitplan der Experimente von Start bis Ende; die Linie markiert heute.",
+        "cost": "Kosten in Euro und Aufwand in Stunden aller Experimente, über die Zeit aufsummiert.",
+        "costRate": "Kosten in Euro und Aufwand in Stunden je Tag, über die Laufzeit der Experimente verteilt."
+      },
       "name": "Ishikawa 6M",
       "description": "Ursachenanalyse mit 6M-Kategorien und Expertenbewertung",
       "problemStatement": "Problemstellung / Effekt",

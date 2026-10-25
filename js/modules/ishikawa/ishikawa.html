@@ -19,7 +19,7 @@
     <template x-if="activeTab === 'problem'">
     <div class="ishikawa__problem-tab">
       <div class="ishikawa__problem-statement">
-        <label class="ishikawa__panel-label" x-text="t('problemStatement')"></label>
+        <label data-help-key="modules.ishikawa.fields.problem.help" class="ishikawa__panel-label" x-text="t('problemStatement')"></label>
         <textarea class="ishikawa__problem-textarea" data-ref="problemInput"
                   rows="3" :placeholder="t('problemPlaceholder')" x-model="model.problem"></textarea>
       </div>
@@ -28,7 +28,7 @@
         <div class="ishikawa__img-gallery" :class="'ishikawa__img-gallery--' + problem.galleryModifier(kind)">
           <div class="ishikawa__img-gallery-header">
             <div>
-              <label class="ishikawa__panel-label" x-text="problem.galleryLabel(kind)"></label>
+              <label data-help-key="modules.ishikawa.fields.images.help" class="ishikawa__panel-label" x-text="problem.galleryLabel(kind)"></label>
               <p class="ishikawa__img-hint" x-text="problem.galleryHint(kind)"></p>
             </div>
             <label class="btn btn--sm btn--primary ishikawa__img-upload-btn" :for="'ishikawa-img-upload-' + kind" x-text="'+ ' + t('uploadImages')"></label>
@@ -64,7 +64,7 @@
     <template x-if="activeTab === 'facts'">
     <div class="ishikawa__experiments">
       <div class="ishikawa__toolbar" style="margin-bottom:var(--spacing-sm)">
-        <button class="btn btn--sm btn--primary" data-ref="addFactBtn" @click="experiments.addFact()" x-text="'+ ' + t('fact')"></button>
+        <button data-help-key="modules.ishikawa.actions.experiments.addFact.help" class="btn btn--sm btn--primary" data-ref="addFactBtn" @click="experiments.addFact()" x-text="'+ ' + t('fact')"></button>
         <div class="ishikawa__toolbar-spacer"></div>
       </div>
       <template x-if="model.facts.length === 0">
@@ -80,10 +80,10 @@
               <tr>
                 <th class="dmike-table__grip-col"></th>
                 <th class="ishikawa__col-nr">#</th>
-                <th class="ishikawa__col-fact-name" x-text="t('factName')"></th>
-                <th class="ishikawa__col-desc" x-text="t('factDescription')"></th>
-                <th class="ishikawa__col-date" x-text="t('factDate')"></th>
-                <th class="ishikawa__col-resp" x-text="t('factOwner')"></th>
+                <th data-help-key="modules.ishikawa.types.FactFields.name" class="ishikawa__col-fact-name" x-text="t('factName')"></th>
+                <th data-help-key="modules.ishikawa.types.FactFields.description" class="ishikawa__col-desc" x-text="t('factDescription')"></th>
+                <th data-help-key="modules.ishikawa.types.FactFields.date" class="ishikawa__col-date" x-text="t('factDate')"></th>
+                <th data-help-key="modules.ishikawa.types.FactFields.owner" class="ishikawa__col-resp" x-text="t('factOwner')"></th>
                 <th class="ishikawa__col-actions"></th>
               </tr>
             </thead>
@@ -121,11 +121,11 @@
       <div class="ishikawa__experts-row">
         <div class="ishikawa__expert-panel">
           <div class="ishikawa__expert-header">
-            <label class="ishikawa__panel-label" style="margin:0" x-text="t('expertTeam')"></label>
+            <label data-help-key="modules.ishikawa.fields.experts.help" class="ishikawa__panel-label" style="margin:0" x-text="t('expertTeam')"></label>
             <div class="ishikawa__expert-add-form">
               <input type="text" class="field field--inline ishikawa__expert-name-input" data-ref="expertNameInput"
                      :placeholder="t('expertPlaceholder')" x-model="causes.expertDraft" @keydown.enter="causes.submitExpertDraft()" />
-              <button class="btn btn--sm btn--primary" data-ref="addExpertBtn" @click="causes.submitExpertDraft()" x-text="'+ ' + t('addExpert')"></button>
+              <button data-help-key="modules.ishikawa.actions.causes.addExpert.help" class="btn btn--sm btn--primary" data-ref="addExpertBtn" @click="causes.submitExpertDraft()" x-text="'+ ' + t('addExpert')"></button>
             </div>
           </div>
           <div class="ishikawa__expert-tags">
@@ -156,7 +156,7 @@
               <span class="ishikawa__diff-stat"><span class="ishikawa__diff-val ishikawa__diff-val--chg" x-text="causes.glyphChanged() + causes.diff().changed.length + ' ' + t('diffChanged')"></span></span>
               <span class="ishikawa__diff-stat" style="color:var(--color-text-tertiary)" x-text="snapshots.compareLabel()"></span>
             </div>
-            <button class="ishikawa__diff-close" data-ref="diffCloseBtn" @click="snapshots.closeCompare()">
+            <button data-help-key="modules.ishikawa.actions.snapshots.closeCompare.help" class="ishikawa__diff-close" data-ref="diffCloseBtn" @click="snapshots.closeCompare()">
               <span x-text="t('endCompare')"></span>
               <span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span>
             </button>
@@ -166,12 +166,12 @@
 
       <!-- Toolbar -->
       <div class="ishikawa__toolbar" style="margin-bottom:var(--spacing-sm)">
-        <button class="btn btn--sm btn--primary" data-ref="addRowBtn" @click="causes.addRowAndFocus()" x-text="'+ ' + t('hypothesis')"></button>
+        <button data-help-key="modules.ishikawa.actions.causes.addRow.help" class="btn btn--sm btn--primary" data-ref="addRowBtn" @click="causes.addRowAndFocus()" x-text="'+ ' + t('hypothesis')"></button>
         <button class="btn btn--sm" data-ref="expandAllBtn" @click="causes.expandAll()" x-text="t('expandAll')"></button>
         <button class="btn btn--sm" data-ref="collapseAllBtn" @click="causes.collapseAll()" x-text="t('collapseAll')"></button>
         <div class="ishikawa__toolbar-spacer"></div>
         <div class="ishikawa__filter-group">
-          <button class="ishikawa__filter-chip" :class="causes.activeFilter === 'all' ? 'ishikawa__filter-chip--active' : ''"
+          <button data-help-key="modules.ishikawa.actions.causes.setFilter.help" class="ishikawa__filter-chip" :class="causes.activeFilter === 'all' ? 'ishikawa__filter-chip--active' : ''"
                   data-filter="all" @click="causes.setFilter('all')">
             <span x-text="t('filterAll')"></span> <span class="ishikawa__filter-chip-count" x-text="'(' + model.rows.length + ')'"></span>
           </button>
@@ -181,7 +181,7 @@
               <span x-text="causes.catLabel(c.key)"></span> <span class="ishikawa__filter-chip-count" x-text="'(' + causes.catCount(c.key) + ')'"></span>
             </button>
           </template>
-          <button class="ishikawa__cat-rename-btn" data-ref="renameCatsBtn"
+          <button data-help-key="modules.ishikawa.actions.causes.setCategoryLabels.help" class="ishikawa__cat-rename-btn" data-ref="renameCatsBtn"
                   :title="t('renameCatsTitle')" :aria-label="t('renameCatsTitle')" @click="causes.openCatRename()">
             <span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span>
           </button>
@@ -195,9 +195,9 @@
             <tr>
               <th class="dmike-table__grip-col"></th>
               <th class="ishikawa__col-nr">#</th>
-              <th class="ishikawa__col-cat" x-text="t('category')"></th>
-              <th class="ishikawa__col-name" x-text="t('colName')"></th>
-              <th x-text="t('colDescription')"></th>
+              <th data-help-key="modules.ishikawa.types.RowFields.category" class="ishikawa__col-cat" x-text="t('category')"></th>
+              <th data-help-key="modules.ishikawa.types.RowFields.name" class="ishikawa__col-name" x-text="t('colName')"></th>
+              <th data-help-key="modules.ishikawa.types.RowFields.description" x-text="t('colDescription')"></th>
               <template x-for="e in model.experts" :key="e.id">
                 <th class="ishikawa__col-expert">
                   <div class="ishikawa__exp-col-head">
@@ -206,8 +206,8 @@
                   </div>
                 </th>
               </template>
-              <th class="ishikawa__col-score" x-text="t('avgScore')"></th>
-              <th class="ishikawa__col-status" x-text="t('statusHeader')"></th>
+              <th data-help-key="modules.ishikawa.columns.avgScore" class="ishikawa__col-score" x-text="t('avgScore')"></th>
+              <th data-help-key="modules.ishikawa.types.RowFields.status" class="ishikawa__col-status" x-text="t('statusHeader')"></th>
               <th class="ishikawa__col-actions"></th>
             </tr>
           </thead>
@@ -300,7 +300,7 @@
       <!-- Pareto -->
       <div class="ishikawa__pareto-panel">
         <div class="ishikawa__pareto-header">
-          <label class="ishikawa__panel-label" x-text="t('paretoTitle')"></label>
+          <label data-help-key="modules.ishikawa.actions.causes.setParetoSource.help" class="ishikawa__panel-label" x-text="t('paretoTitle')"></label>
           <select class="ishikawa__pareto-select" data-ref="paretoSelect" x-model="causes.paretoSource" @change="causes.renderPareto()">
             <option value="current" x-text="t('paretoCurrent')"></option>
             <template x-for="s in model.snapshots" :key="s.id"><option :value="'snap-' + s.id" x-text="s.name"></option></template>
@@ -318,7 +318,7 @@
       <!-- Summary -->
       <div class="ishikawa__summary-bar">
         <div class="ishikawa__summary-card">
-          <div class="ishikawa__s-label" x-text="t('hypotheses')"></div>
+          <div data-help-key="modules.ishikawa.fields.rows.help" class="ishikawa__s-label" x-text="t('hypotheses')"></div>
           <div class="ishikawa__s-value"><span x-text="model.rows.length"></span> <span style="font-size:var(--font-size-xs);font-weight:400;color:var(--color-text-tertiary)" x-text="causes.summaryBreakdown()"></span></div>
           <div class="ishikawa__cat-bar">
             <template x-for="c in causes.cats" :key="c.key">
@@ -334,12 +334,12 @@
 
       <!-- Snapshots -->
       <div class="ishikawa__snapshot-panel">
-        <label class="ishikawa__panel-label" x-text="t('snapshots')"></label>
+        <label data-help-key="modules.ishikawa.fields.snapshots.help" class="ishikawa__panel-label" x-text="t('snapshots')"></label>
         <div class="ishikawa__snapshot-inner">
           <div class="ishikawa__snapshot-save">
             <input type="text" class="field field--inline ishikawa__snapshot-name-input" data-ref="snapNameInput"
                    :placeholder="t('snapNamePlaceholder')" x-model="snapshots.snapDraft" @keydown.enter="snapshots.submitSnapDraft()" />
-            <button class="btn btn--sm btn--primary" data-ref="saveSnapBtn" @click="snapshots.submitSnapDraft()" x-text="t('saveSnapshot')"></button>
+            <button data-help-key="modules.ishikawa.actions.snapshots.saveSnapshot.help" class="btn btn--sm btn--primary" data-ref="saveSnapBtn" @click="snapshots.submitSnapDraft()" x-text="t('saveSnapshot')"></button>
             <button class="btn btn--sm" data-ref="trendBtn" @click="snapshots.toggleTrend()" x-text="t('trend')"></button>
           </div>
           <div class="ishikawa__snapshot-list">
@@ -380,7 +380,7 @@
     <template x-if="activeTab === 'experiments'">
     <div class="ishikawa__experiments">
       <div class="ishikawa__toolbar" style="margin-bottom:var(--spacing-sm)">
-        <button class="btn btn--sm btn--primary" data-ref="addExperimentBtn" @click="experiments.addExperiment()" x-text="'+ ' + t('experiment')"></button>
+        <button data-help-key="modules.ishikawa.actions.experiments.addExperiment.help" class="btn btn--sm btn--primary" data-ref="addExperimentBtn" @click="experiments.addExperiment()" x-text="'+ ' + t('experiment')"></button>
         <div class="ishikawa__toolbar-spacer"></div>
       </div>
       <template x-if="model.experiments.length === 0">
@@ -396,15 +396,15 @@
               <tr>
                 <th class="dmike-table__grip-col"></th>
                 <th class="ishikawa__col-nr">#</th>
-                <th class="ishikawa__col-exp-title" x-text="t('experimentTitle')"></th>
-                <th class="ishikawa__col-desc" x-text="t('experimentDescription')"></th>
-                <th class="ishikawa__col-resp" x-text="t('responsible')"></th>
-                <th class="ishikawa__col-exp-status" x-text="t('statusHeader')"></th>
-                <th class="ishikawa__col-date" x-text="t('startDate')"></th>
-                <th class="ishikawa__col-date" x-text="t('endDate')"></th>
-                <th class="ishikawa__col-money" x-text="t('costMoney')"></th>
-                <th class="ishikawa__col-hours" x-text="t('costHours')"></th>
-                <th class="ishikawa__col-hyp-link" x-text="t('linkedHypotheses')"></th>
+                <th data-help-key="modules.ishikawa.types.ExperimentFields.title" class="ishikawa__col-exp-title" x-text="t('experimentTitle')"></th>
+                <th data-help-key="modules.ishikawa.types.ExperimentFields.description" class="ishikawa__col-desc" x-text="t('experimentDescription')"></th>
+                <th data-help-key="modules.ishikawa.types.ExperimentFields.responsible" class="ishikawa__col-resp" x-text="t('responsible')"></th>
+                <th data-help-key="modules.ishikawa.types.ExperimentFields.status" class="ishikawa__col-exp-status" x-text="t('statusHeader')"></th>
+                <th data-help-key="modules.ishikawa.types.ExperimentFields.startDate" class="ishikawa__col-date" x-text="t('startDate')"></th>
+                <th data-help-key="modules.ishikawa.types.ExperimentFields.endDate" class="ishikawa__col-date" x-text="t('endDate')"></th>
+                <th data-help-key="modules.ishikawa.types.ExperimentFields.costMoney" class="ishikawa__col-money" x-text="t('costMoney')"></th>
+                <th data-help-key="modules.ishikawa.types.ExperimentFields.costHours" class="ishikawa__col-hours" x-text="t('costHours')"></th>
+                <th data-help-key="modules.ishikawa.actions.experiments.setExperimentHypotheses.help" class="ishikawa__col-hyp-link" x-text="t('linkedHypotheses')"></th>
                 <th class="ishikawa__col-actions"></th>
               </tr>
             </thead>
@@ -443,17 +443,17 @@
         </div>
       </template>
       <div class="ishikawa__gantt-panel">
-        <label class="ishikawa__panel-label" x-text="t('ganttTitle')"></label>
+        <label class="ishikawa__panel-label" data-help-key="modules.ishikawa.charts.gantt" x-text="t('ganttTitle')"></label>
         <template x-if="experiments.ganttEmptyMsg"><div class="ishikawa__gantt-empty" x-text="experiments.ganttEmptyMsg"></div></template>
         <div class="ishikawa__gantt-canvas" data-ref="ganttCanvas"></div>
       </div>
       <div class="ishikawa__gantt-panel">
-        <label class="ishikawa__panel-label" x-text="t('costChartTitle')"></label>
+        <label class="ishikawa__panel-label" data-help-key="modules.ishikawa.charts.cost" x-text="t('costChartTitle')"></label>
         <template x-if="experiments.costEmptyMsg"><div class="ishikawa__gantt-empty" x-text="experiments.costEmptyMsg"></div></template>
         <div class="ishikawa__gantt-canvas" data-ref="costChartCanvas"></div>
       </div>
       <div class="ishikawa__gantt-panel">
-        <label class="ishikawa__panel-label" x-text="t('costRateChartTitle')"></label>
+        <label class="ishikawa__panel-label" data-help-key="modules.ishikawa.charts.costRate" x-text="t('costRateChartTitle')"></label>
         <template x-if="experiments.costRateEmptyMsg"><div class="ishikawa__gantt-empty" x-text="experiments.costRateEmptyMsg"></div></template>
         <div class="ishikawa__gantt-canvas" data-ref="costRateChartCanvas"></div>
       </div>

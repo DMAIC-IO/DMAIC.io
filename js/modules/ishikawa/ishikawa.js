@@ -16,6 +16,15 @@
  * lightbox are Alpine templates in ishikawa.html (hidden home, `x-ref`),
  * lent to the shared dialog and returned on close.
  *
+ * @agent  Über die Teil-Viewmodels steuerbar: die Problemaussage setzen
+ *   (problem.*); Expertenteam, Ursachenbaum, Bewertungen, Kategorienamen,
+ *   Filter, Pareto-Quelle und CSV-Export (causes.*); Snapshots speichern,
+ *   laden, löschen und vergleichen (snapshots.*); Experimente und Fakten
+ *   anlegen, ändern, verschieben, löschen und Experimente mit Ursachen
+ *   verknüpfen (experiments.*). Der Oberfläche bleiben die Rückfragen vor
+ *   dem Löschen und Laden, die Bilder samt Lightbox, Einklappen, Trend und
+ *   die Chart-Editoren.
+ *
  * Spec: docs/superpowers/specs/2026-10-25-ishikawa-agent-release-design.md
  */
 
@@ -24,6 +33,7 @@ import { resolveDateOffset } from '../../core/date-offset.js';
 import { EventBus } from '../../core/event-bus.js';
 import { draggableRows } from '../../ui/draggable-list.js';
 import { requireEnum } from '../../core/agent/agent-argcheck.js';
+import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
 import { State } from './ishikawa-model.js';
 import { ProblemViewModel } from './viewmodel/problem.js';
 import { CausesViewModel } from './viewmodel/causes.js';
@@ -81,6 +91,7 @@ const mod = createModule({
     // never wraps it in a reactive proxy.
     let events = null;
     return {
+      ...agentReadMixin(module),
       problem: new ProblemViewModel(deps),
       causes: new CausesViewModel(deps),
       snapshots: new SnapshotsViewModel(deps),

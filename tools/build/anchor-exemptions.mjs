@@ -138,6 +138,12 @@ export const ANCHOR_EXEMPTIONS = {
     { match: ':value="opt.id"', reason: 'Option einer Bedingungszeile; ihr Text ist die Option selbst, die Bedingungen sind am Titel der Bedingungen verankert', count: 1 },
     { match: '<th x-text="g.label">', reason: 'Spaltenkopf je Vergleichsgruppe, Text aus den Daten; die Gruppierung ist an ihrer Auswahl verankert', count: 1 },
   ],
+  ishikawa: [
+    { match: 'ishikawa__img-upload-btn', reason: 'Dateiwahl für Bilder ohne Agentenweg; die Galerie ist an ihrer Überschrift verankert', count: 1 },
+    { match: 'class="ishikawa__hyp-pick-row"', reason: 'Auswahlzeile je Experiment bzw. Ursache in den Verknüpfungsformularen; die Verknüpfung ist an der Spalte Verknüpfte Hypothesen verankert', count: 2 },
+    { match: 'class="ishikawa__col-nr">#</th>', reason: 'Spaltenkopf der laufenden Nummer, nur das Zeichen #; kein eigenes Feld', count: 3 },
+    { match: 'ishikawa__exp-col-head', reason: 'Spaltenkopf je Mitglied des Expertenteams, Name aus den Daten; das Team ist an seiner Überschrift verankert', count: 1 },
+  ],
   'triz-9-windows': [
     { match: 'triz-9w__upload-btn', reason: 'Bild-Upload je Fenster (9×); Dateiwahl ohne Agentenweg', count: 1 },
   ],

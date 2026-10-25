@@ -4654,6 +4654,256 @@
       "interpPoor": "Cpk < {low}"
     },
     "ishikawa": {
+      "whenToUse": "When possible causes of a problem are to be collected, ordered by 6M and rated by the team, so that the most likely ones get tested with experiments; states can be kept as snapshots and compared. For a single chain of causes by asking why, use 5-Why.",
+      "actions": {
+        "read": {
+          "help": "Read the problem statement, images, expert team, cause tree with ratings, snapshots, experiments and facts. Image data and snapshot contents appear only as their size."
+        },
+        "setTab": {
+          "help": "Open a tab: problem, facts, hypotheses or experiments.",
+          "params": {
+            "tab": "problem, facts, hypotheses or experiments."
+          }
+        },
+        "problem": {
+          "setProblem": {
+            "help": "Set the problem statement: what deviates, where, by how much.",
+            "params": {
+              "text": "The statement; empty clears it."
+            }
+          }
+        },
+        "causes": {
+          "addExpert": {
+            "help": "Add a member to the expert team. Every member rates every cause from 0 to 9.",
+            "params": {
+              "name": "The name; must differ from the others, regardless of case."
+            }
+          },
+          "renameExpert": {
+            "help": "Rename a member of the expert team; their ratings stay.",
+            "params": {
+              "expertId": "The member.",
+              "name": "The new name; must differ from the others."
+            }
+          },
+          "removeExpert": {
+            "help": "Remove a member from the expert team, with their ratings.",
+            "params": {
+              "expertId": "The member."
+            }
+          },
+          "addRow": {
+            "help": "Append a main cause to the end of the cause tree."
+          },
+          "addSubRow": {
+            "help": "Add a sub-cause under a cause; it inherits that cause’s category.",
+            "params": {
+              "parentId": "The cause above it."
+            }
+          },
+          "setRowField": {
+            "help": "Set one field of a cause: name, category, description or status. Only main causes carry a category.",
+            "params": {
+              "rowId": "The cause.",
+              "key": "Which field.",
+              "value": "The new value, as described per field."
+            }
+          },
+          "deleteRow": {
+            "help": "Delete a cause with its sub-causes, without asking. Links from experiments go.",
+            "params": {
+              "rowId": "The cause."
+            }
+          },
+          "duplicateRow": {
+            "help": "Copy a cause with its sub-causes and ratings; the copy follows right after it.",
+            "params": {
+              "rowId": "The cause."
+            }
+          },
+          "moveRowBefore": {
+            "help": "Move a cause with its sub-causes before another; it takes that cause’s parent. If the target lies inside the moved subtree, nothing moves and the result is false.",
+            "params": {
+              "rowId": "The cause to move.",
+              "targetRowId": "The cause it goes before."
+            }
+          },
+          "setRating": {
+            "help": "Set one member’s rating of a cause, from 0 (unlikely) to 9 (very likely). The mean and the Pareto follow.",
+            "params": {
+              "rowId": "The cause.",
+              "expertId": "The member.",
+              "value": "A whole number from 0 to 9; null clears the rating."
+            }
+          },
+          "setCategoryLabels": {
+            "help": "Give the six categories own names, for example 6P instead of 6M. Categories not named keep theirs.",
+            "params": {
+              "labels": "New name per category: man, machine, environment, material, measurement, method. Empty restores the default name; two categories must not share a name."
+            }
+          },
+          "setFilter": {
+            "help": "Show only the causes of one category, or all.",
+            "params": {
+              "category": "all or a category: man, machine, environment, material, measurement, method."
+            }
+          },
+          "setParetoSource": {
+            "help": "Show the current ratings or those of a snapshot in the Pareto.",
+            "params": {
+              "snapshotId": "A snapshot; null shows the current state."
+            }
+          },
+          "exportCSV": {
+            "help": "Download the problem statement, cause tree with ratings and facts as CSV; the result is the same text."
+          }
+        },
+        "snapshots": {
+          "saveSnapshot": {
+            "help": "Keep the current problem statement, expert team and cause tree as a snapshot.",
+            "params": {
+              "name": "The name; empty gives Snapshot with today’s date."
+            }
+          },
+          "loadSnapshot": {
+            "help": "Restore a snapshot, without asking: problem statement, expert team and cause tree are replaced.",
+            "params": {
+              "snapshotId": "The snapshot."
+            }
+          },
+          "deleteSnapshot": {
+            "help": "Delete a snapshot, without asking.",
+            "params": {
+              "snapshotId": "The snapshot."
+            }
+          },
+          "compareSnapshot": {
+            "help": "Compare the current state with a snapshot. The table marks new and changed causes; the result lists new, removed and changed causes with old and new mean.",
+            "params": {
+              "snapshotId": "The snapshot."
+            }
+          },
+          "closeCompare": {
+            "help": "End the comparison with a snapshot."
+          }
+        },
+        "experiments": {
+          "addExperiment": {
+            "help": "Add an experiment that tests causes."
+          },
+          "setExperimentField": {
+            "help": "Set one field of an experiment: title, description, responsible, status, start, end, cost in euros or effort in hours.",
+            "params": {
+              "experimentId": "The experiment.",
+              "key": "Which field.",
+              "value": "The new value, as described per field."
+            }
+          },
+          "deleteExperiment": {
+            "help": "Delete an experiment, without asking.",
+            "params": {
+              "experimentId": "The experiment."
+            }
+          },
+          "moveExperimentBefore": {
+            "help": "Move an experiment before another.",
+            "params": {
+              "experimentId": "The experiment to move.",
+              "targetExperimentId": "The experiment it goes before."
+            }
+          },
+          "setExperimentHypotheses": {
+            "help": "Set which causes an experiment tests.",
+            "params": {
+              "experimentId": "The experiment.",
+              "hypothesisIds": "The identifier of each cause, such as H-001; an empty list unlinks all."
+            }
+          },
+          "addFact": {
+            "help": "Add a fact: an established observation that supports the search for causes."
+          },
+          "setFactField": {
+            "help": "Set one field of a fact: name, description, date or owner.",
+            "params": {
+              "factId": "The fact.",
+              "key": "Which field.",
+              "value": "The new text; the date as YYYY-MM-DD or empty."
+            }
+          },
+          "deleteFact": {
+            "help": "Delete a fact, without asking.",
+            "params": {
+              "factId": "The fact."
+            }
+          },
+          "moveFactBefore": {
+            "help": "Move a fact before another.",
+            "params": {
+              "factId": "The fact to move.",
+              "targetFactId": "The fact it goes before."
+            }
+          }
+        }
+      },
+      "fields": {
+        "problem": {
+          "help": "The problem statement: what deviates, where, by how much."
+        },
+        "images": {
+          "help": "Images that draw the line: what belongs to the problem and what does not, each with a caption. Image data appears only as its size."
+        },
+        "experts": {
+          "help": "The expert team: every member rates every cause from 0 to 9."
+        },
+        "catLabels": {
+          "help": "Own names of the six categories; where one is missing, the default name applies."
+        },
+        "rows": {
+          "help": "The cause tree: main and sub-causes with identifier, category, name, description, status and the ratings by each member of the expert team."
+        },
+        "snapshots": {
+          "help": "Kept states with name and time. Their contents appear only as their size; the comparison shows what changed."
+        },
+        "experiments": {
+          "help": "The experiments with title, description, responsible, status, period, cost and the causes they test."
+        },
+        "facts": {
+          "help": "The facts: observations with name, description, date and who reported them."
+        }
+      },
+      "types": {
+        "RowFields": {
+          "name": "Short name of the cause.",
+          "category": "The 6M category of a main cause; sub-causes inherit it.",
+          "description": "What the cause is and why it is suspected.",
+          "status": "How far the check has got: open, testing, confirmed or rejected."
+        },
+        "ExperimentFields": {
+          "title": "Short title of the experiment.",
+          "description": "What is tried and how the result is measured.",
+          "responsible": "Who runs the experiment.",
+          "status": "Where the experiment stands: planned, running, done or cancelled.",
+          "startDate": "First day of the experiment.",
+          "endDate": "Last day of the experiment.",
+          "costMoney": "Money spent, in euros.",
+          "costHours": "Effort, in hours."
+        },
+        "FactFields": {
+          "name": "What was observed.",
+          "description": "Details and source of the observation.",
+          "date": "When it was observed.",
+          "owner": "Who reported the observation."
+        }
+      },
+      "columns": {
+        "avgScore": "Mean of the ratings by all members of the expert team, from 0 to 9; when compared with a snapshot, the change stands next to it."
+      },
+      "charts": {
+        "gantt": "Schedule of the experiments from start to end; the line marks today.",
+        "cost": "Cost in euros and effort in hours of all experiments, summed up over time.",
+        "costRate": "Cost in euros and effort in hours per day, spread over the run time of the experiments."
+      },
       "name": "Ishikawa 6M",
       "description": "Root cause analysis with 6M categories and expert scoring",
       "problemStatement": "Problem Statement / Effect",
