@@ -310,6 +310,41 @@
   "training": {
     "title": "Training",
     "subtitle": "Onboarding for users switching from other tools",
+    "tabCourses": "Courses",
+    "course": {
+      "soon": "in preparation",
+      "new": "new",
+      "started": "started",
+      "done": "completed",
+      "prerequisite": "Prerequisite: {lessons}",
+      "stepOf": "Step {current} of {total}",
+      "prev": "Back",
+      "next": "Next",
+      "finish": "Finish lesson",
+      "back": "All courses",
+      "reset": "Reset lesson",
+      "resetConfirm": "Delete the progress of this lesson? Answered questions and unlocked insights will be lost.",
+      "insight": "Insight",
+      "insightLocked": "Draw a few samples first, ideally 100 at once – then this shows what you just saw.",
+      "insightLockedN": "First try at least {n} different values of n and draw at least 100 samples for each – then this shows what you saw.",
+      "insightLockedShapes": "First try at least {shapes} different populations, each with at least {n} values of n and at least 100 samples – then this shows what you saw.",
+      "quizCorrect": "Correct.",
+      "quizWrong": "Not yet.",
+      "sim": {
+        "population": "Population",
+        "sampleSize": "Sample size n",
+        "drawOne": "Draw 1 sample",
+        "draw100": "Draw 100 samples",
+        "draw1000": "Draw 1000 samples",
+        "count": "Samples drawn: {count}",
+        "pop": {
+          "normal": "Normal",
+          "uniform": "Uniform",
+          "skewed": "Skewed",
+          "bimodal": "Bimodal"
+        }
+      }
+    },
     "tabDmaic": "Understanding DMAIC",
     "tabDmadv": "Understanding DMADV",
     "tabEightd": "Understanding 8D",

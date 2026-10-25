@@ -1,7 +1,8 @@
 /**
  * D.Mike — Lesson "Sampling distribution & CLT" (sampling-distribution.js)
  *
- * STUB: two steps that exercise every block type. Replaced by the real
+ * STUB: two steps that exercise every block type. Each step's insight opens
+ * after 50 draws, so per-step gate counting is testable. Replaced by the real
  * lesson later. Browser-free: the static handbook imports this in Node.
  */
 
@@ -36,7 +37,7 @@ export default {
           { type: 'definition', term: 'Standardfehler', content: 'SE = σ / √n', glossary: 'standardfehler' },
           { type: 'table', headers: ['n', 'Streuung der Mittelwerte'], rows: [['2', 'größer'], ['30', 'kleiner']] },
           { type: 'note', content: 'Die Werte in der Tabelle sind nur eine Richtung, keine Messwerte.' },
-          { type: 'insight', id: 'bell-shape', revealAfterShapes: 2, revealAfterN: 3, paragraphs: [
+          { type: 'insight', id: 'bell-shape', revealAfter: 50, paragraphs: [
             'Mit wachsendem n werden die Mittelwerte glockenförmig.',
           ] },
           { type: 'quiz', id: 'q-bigger-n', question: 'Wie verändert ein größeres n die Breite der Mittelwerte?', options: [
@@ -76,7 +77,7 @@ export default {
           { type: 'definition', term: 'Standard error', content: 'SE = σ / √n', glossary: 'standardfehler' },
           { type: 'table', headers: ['n', 'Spread of the means'], rows: [['2', 'larger'], ['30', 'smaller']] },
           { type: 'note', content: 'The table values only indicate a direction; they are not measurements.' },
-          { type: 'insight', id: 'bell-shape', revealAfterShapes: 2, revealAfterN: 3, paragraphs: [
+          { type: 'insight', id: 'bell-shape', revealAfter: 50, paragraphs: [
             'As n grows, the means become bell-shaped.',
           ] },
           { type: 'quiz', id: 'q-bigger-n', question: 'How does a larger n change the width of the means?', options: [

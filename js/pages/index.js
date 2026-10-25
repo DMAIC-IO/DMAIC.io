@@ -30,7 +30,7 @@ export async function initPages(kernel, { dialog, actionVerbs, notify }) {
     await algorithmLabPage.show();
     algorithmLabPage.mountHandle()?.navigate(p.algoId, p.tab);
   });
-  await trainingPage.init(kernel);
+  await trainingPage.init({ ...kernel, dialog });
   await cyclePage.init({ ...kernel, dialog });
   await dashboardPage.init({ ...kernel, dialog });
 

@@ -310,6 +310,41 @@
   "training": {
     "title": "Schulungen",
     "subtitle": "Einstieg für Umsteiger und neue Nutzer",
+    "tabCourses": "Kurse",
+    "course": {
+      "soon": "in Vorbereitung",
+      "new": "neu",
+      "started": "begonnen",
+      "done": "abgeschlossen",
+      "prerequisite": "Voraussetzung: {lessons}",
+      "stepOf": "Schritt {current} von {total}",
+      "prev": "Zurück",
+      "next": "Weiter",
+      "finish": "Lektion abschließen",
+      "back": "Alle Kurse",
+      "reset": "Lektion zurücksetzen",
+      "resetConfirm": "Fortschritt dieser Lektion löschen? Beantwortete Fragen und freigeschaltete Erkenntnisse gehen verloren.",
+      "insight": "Erkenntnis",
+      "insightLocked": "Zieh erst ein paar Stichproben, am besten 100 auf einmal – dann steht hier, was du gerade gesehen hast.",
+      "insightLockedN": "Probiere erst mindestens {n} verschiedene Werte für n aus und ziehe jeweils mindestens 100 Stichproben – dann steht hier, was du gesehen hast.",
+      "insightLockedShapes": "Probiere erst mindestens {shapes} verschiedene Grundgesamtheiten aus, jeweils mit mindestens {n} Werten für n und mindestens 100 Stichproben – dann steht hier, was du gesehen hast.",
+      "quizCorrect": "Richtig.",
+      "quizWrong": "Noch nicht.",
+      "sim": {
+        "population": "Grundgesamtheit",
+        "sampleSize": "Stichprobenumfang n",
+        "drawOne": "1 Stichprobe ziehen",
+        "draw100": "100 Stichproben ziehen",
+        "draw1000": "1000 Stichproben ziehen",
+        "count": "Anzahl Stichproben: {count}",
+        "pop": {
+          "normal": "Normalverteilung",
+          "uniform": "Gleichverteilung",
+          "skewed": "Schiefe Verteilung",
+          "bimodal": "Zweigipflige Verteilung"
+        }
+      }
+    },
     "tabDmaic": "DMAIC verstehen",
     "tabDmadv": "DMADV verstehen",
     "tabEightd": "8D verstehen",

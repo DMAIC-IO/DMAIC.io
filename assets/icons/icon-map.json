@@ -67,6 +67,7 @@
   "status.time": "lucide:clock",
   "status.no-data": "lucide:clipboard-list",
   "status.help": "lucide:circle-question-mark",
+  "status.insight": "lucide:lightbulb",
   "severity.critical": "lucide:octagon-alert",
   "severity.high": "lucide:triangle-alert",
   "severity.medium": "lucide:circle-alert",
