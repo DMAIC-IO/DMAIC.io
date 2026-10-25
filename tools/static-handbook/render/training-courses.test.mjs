@@ -31,8 +31,8 @@ test('de page lists the six lesson titles in order', () => {
 
 test('unbuilt lessons carry the "in Vorbereitung" label, the built ones do not', () => {
   const page = renderTrainingCoursesPage({ lang: 'de', courses: COURSES });
-  assert.equal((page.html.match(/in Vorbereitung/g) || []).length, 4);
-  for (const id of ['variation', 'sampling-distribution']) {
+  assert.equal((page.html.match(/in Vorbereitung/g) || []).length, 3);
+  for (const id of ['variation', 'sampling', 'sampling-distribution']) {
     const built = page.html.match(new RegExp(`<li class="handbook-course__lesson"[^>]*data-lesson-id="${id}"[\\s\\S]*?<\\/li>`))[0];
     assert.doesNotMatch(built, /in Vorbereitung/);
   }

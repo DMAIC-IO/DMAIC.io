@@ -6,6 +6,7 @@
  */
 
 import variation from '../lessons/variation.js';
+import sampling from '../lessons/sampling.js';
 import samplingDistribution from '../lessons/sampling-distribution.js';
 
 export default {
@@ -31,6 +32,7 @@ export default {
       de: { title: 'Stichprobe und Grundgesamtheit', summary: 'Was wenige Messungen über alle möglichen Werte verraten.' },
       en: { title: 'Sample and population', summary: 'What a few measurements reveal about all possible values.' },
       prerequisites: ['variation'],
+      content: sampling,
     },
     {
       id: 'sampling-distribution',

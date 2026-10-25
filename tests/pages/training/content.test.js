@@ -233,4 +233,28 @@ suite('course content', () => {
     }
     assertDeepEqual(quizIds(lesson), ['q-reliable', 'q-sd-calc', 'q-two-thirds', 'q-wait-below']);
   });
+
+  test('lesson 2 follows the approved structure', () => {
+    const found = findLesson('sampling');
+    const lesson = found && found.lesson;
+    assertTrue(!!lesson, 'lesson 2 is built');
+    for (const lang of LANGS) {
+      const steps = lesson[lang].steps;
+      assertEqual(steps.length, 6, `${lang} step count`);
+      const banned = strings(lesson[lang])
+        .filter((x) => /Stichprobenverteilung|Standardfehler|sampling distribution|standard error|√n/i.test(x));
+      assertDeepEqual(banned, [], `${lang}: no lesson-3 wording`);
+      const definitions = blocksOf(lesson, lang).filter((b) => b.type === 'definition');
+      for (const id of ['grundgesamtheit', 'stichprobe', 'varianz']) {
+        assertTrue(definitions.some((b) => b.glossary === id), `${lang}: definition ${id}`);
+      }
+      assertTrue(definitions.some((b) => b.content.includes('μ = Σxᵢ / N')), `${lang}: μ formula`);
+      const check = steps[3].blocks.find((b) => b.type === 'simulation');
+      assertEqual(check.widget, 'variance-check', `${lang}: step 4 widget`);
+      assertEqual(check.params.n, 3, `${lang}: step 4 n`);
+      const insight = steps[3].blocks.find((b) => b.type === 'insight');
+      assertEqual(insight.revealAfterSamples, 1000, `${lang}: step 4 gate`);
+    }
+    assertDeepEqual(quizIds(lesson), ['q-fixed', 'q-estimate', 'q-symbol', 'q-n-minus-1']);
+  });
 });
