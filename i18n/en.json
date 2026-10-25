@@ -334,7 +334,6 @@
         "population": "Population",
         "sampleSize": "Sample size n",
         "drawOne": "Draw 1 sample",
-        "draw100": "Draw 100 samples",
         "draw1000": "Draw 1000 samples",
         "count": "Samples drawn: {count}",
         "value": "Value",

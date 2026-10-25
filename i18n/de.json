@@ -334,7 +334,6 @@
         "population": "Grundgesamtheit",
         "sampleSize": "Stichprobenumfang n",
         "drawOne": "1 Stichprobe ziehen",
-        "draw100": "100 Stichproben ziehen",
         "draw1000": "1000 Stichproben ziehen",
         "count": "Anzahl Stichproben: {count}",
         "value": "Wert",

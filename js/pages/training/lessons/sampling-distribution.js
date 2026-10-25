@@ -6,7 +6,7 @@
  * Browser-free: the static handbook imports this in Node.
  */
 
-const N_FROM_ONE = [1, 2, 5, 10, 30];
+const N_FROM_ONE = [1, 2, 5, 10, 30, 50];
 
 export default {
   id: 'sampling-distribution',

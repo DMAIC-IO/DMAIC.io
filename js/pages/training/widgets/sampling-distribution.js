@@ -17,7 +17,7 @@ import {
 } from '../populations.js';
 
 /** Sample sizes offered when n is not locked and the block gives no `nChoices`. */
-export const N_CHOICES = [2, 5, 10, 30];
+export const N_CHOICES = [2, 5, 10, 30, 50];
 
 /** A fresh seed per mount: draws are never replayed into the stored per-n summaries. */
 function randomSeed() {
