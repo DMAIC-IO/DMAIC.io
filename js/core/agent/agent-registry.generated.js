@@ -7187,59 +7187,7 @@ export const AGENT_REGISTRY = {
     "available": false,
     "violations": [],
     "reported": [
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unmarked_method:tabClass",
-      "unmarked_method:setTab",
-      "unmarked_method:onRouteChanged",
-      "unmarked_method:renderTabCharts",
-      "unmarked_method:glyphNdash",
-      "unmarked_method:glyphMinus",
-      "unmarked_method:glyphChanged",
-      "unmarked_method:toggleRowTitle",
-      "unmarked_method:glyphDupe",
-      "unmarked_method:catColor",
-      "unmarked_method:catLabel",
-      "unmarked_method:ini",
-      "unmarked_method:catCount",
-      "unmarked_method:catBarPct",
-      "unmarked_method:addExpert",
-      "unmarked_method:removeExpert",
-      "unmarked_method:expertEditKey",
-      "unmarked_method:commitExpertRename",
-      "unmarked_method:isCollapsed",
-      "unmarked_method:isHidden",
-      "unmarked_method:diff",
-      "unmarked_method:visibleRows",
-      "unmarked_method:rowClass",
-      "unmarked_method:emptyColspan",
-      "unmarked_method:emptyMessage",
-      "unmarked_method:isNameDup",
-      "unmarked_method:addRow",
-      "unmarked_method:addSub",
-      "unmarked_method:dupeRow",
-      "unmarked_method:deleteRow",
-      "unmarked_method:toggleRow",
-      "unmarked_method:expandAll",
-      "unmarked_method:collapseAll",
-      "unmarked_method:setFilter",
-      "unmarked_method:ratingVal",
-      "unmarked_method:ratingStyle",
-      "unmarked_method:ratingKeydown",
-      "unmarked_method:ratingChanged",
-      "unmarked_method:scoreCls",
-      "unmarked_method:scoreBarStyle",
-      "unmarked_method:deltaCls",
-      "unmarked_method:deltaText",
-      "unmarked_method:statusCss",
-      "unmarked_method:linkedExpCount",
-      "unmarked_method:linkExpTitle",
-      "unmarked_method:summaryBreakdown",
-      "unmarked_method:topScore",
-      "unmarked_method:confirmedCount",
-      "unmarked_method:openCatRename",
-      "unmarked_method:exportCSV",
-      "unmarked_method:renderPareto"
+      "no_read_action"
     ],
     "actions": {
       "problem.setProblem": {
@@ -7253,6 +7201,268 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Set the problem statement every cause refers to."
+      },
+      "causes.addExpert": {
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "the name; must differ from the others, case-insensitive"
+          }
+        ],
+        "returns": "number",
+        "help": "Add a member to the expert team. Every member rates every cause 0..9."
+      },
+      "causes.renameExpert": {
+        "params": [
+          {
+            "name": "expertId",
+            "type": "number",
+            "optional": false,
+            "help": "the expert"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "the new name; must differ from the others"
+          }
+        ],
+        "returns": "void",
+        "help": "Rename a member of the expert team; their ratings stay."
+      },
+      "causes.removeExpert": {
+        "params": [
+          {
+            "name": "expertId",
+            "type": "number",
+            "optional": false,
+            "help": "the expert"
+          }
+        ],
+        "returns": "void",
+        "help": "Remove a member from the expert team, with their ratings."
+      },
+      "causes.addRow": {
+        "params": [],
+        "returns": "number",
+        "help": "Add a main cause at the end of the tree."
+      },
+      "causes.addSubRow": {
+        "params": [
+          {
+            "name": "parentId",
+            "type": "number",
+            "optional": false,
+            "help": "the cause above it"
+          }
+        ],
+        "returns": "number",
+        "help": "Add a sub-cause under a cause; it inherits the category."
+      },
+      "causes.setRowField": {
+        "params": [
+          {
+            "name": "rowId",
+            "type": "number",
+            "optional": false,
+            "help": "the cause"
+          },
+          {
+            "name": "key",
+            "type": "'name'|'category'|'description'|'status'",
+            "optional": false,
+            "help": "which field"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "the new value"
+          }
+        ],
+        "returns": "void",
+        "help": "Set one field of a cause. Only main causes carry a category.",
+        "keysOf": "RowFields",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "short name of the cause"
+          },
+          "category": {
+            "type": "''|'man'|'machine'|'environment'|'material'|'measurement'|'method'",
+            "help": "6M category of a main cause, \"\" for none; sub-causes inherit it"
+          },
+          "description": {
+            "type": "string",
+            "help": "what the cause is and why it is suspected"
+          },
+          "status": {
+            "type": "'open'|'testing'|'confirmed'|'rejected'",
+            "help": "how far the check of the cause has got"
+          }
+        }
+      },
+      "causes.deleteRow": {
+        "params": [
+          {
+            "name": "rowId",
+            "type": "number",
+            "optional": false,
+            "help": "the cause"
+          }
+        ],
+        "returns": "void",
+        "help": "Delete a cause and its sub-causes, without asking. Links from experiments go."
+      },
+      "causes.duplicateRow": {
+        "params": [
+          {
+            "name": "rowId",
+            "type": "number",
+            "optional": false,
+            "help": "the cause"
+          }
+        ],
+        "returns": "void",
+        "help": "Copy a cause with its sub-causes and ratings, right after it."
+      },
+      "causes.moveRowBefore": {
+        "params": [
+          {
+            "name": "rowId",
+            "type": "number",
+            "optional": false,
+            "help": "the cause to move"
+          },
+          {
+            "name": "targetRowId",
+            "type": "number",
+            "optional": false,
+            "help": "the cause it goes before"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Move a cause with its sub-causes before another; it takes that cause's parent."
+      },
+      "causes.setFilter": {
+        "params": [
+          {
+            "name": "category",
+            "type": "'all'|'man'|'machine'|'environment'|'material'|'measurement'|'method'",
+            "optional": false,
+            "help": "the filter"
+          }
+        ],
+        "returns": "void",
+        "help": "Show only the causes of one category, or all."
+      },
+      "causes.setRating": {
+        "params": [
+          {
+            "name": "rowId",
+            "type": "number",
+            "optional": false,
+            "help": "the cause"
+          },
+          {
+            "name": "expertId",
+            "type": "number",
+            "optional": false,
+            "help": "the expert"
+          },
+          {
+            "name": "value",
+            "type": "number|null",
+            "optional": false,
+            "help": "a whole number 0..9; null clears the rating"
+          }
+        ],
+        "returns": "void",
+        "help": "Rate a cause by one expert, 0 (unlikely) to 9 (very likely)."
+      },
+      "causes.setCategoryLabels": {
+        "params": [
+          {
+            "name": "labels",
+            "type": "Object<string, string>",
+            "optional": false,
+            "help": "new name per category key (man, machine, environment, material, measurement, method); \"\" restores the default name"
+          }
+        ],
+        "returns": "void",
+        "help": "Give the six categories own names. Categories not named keep theirs."
+      },
+      "causes.exportCSV": {
+        "params": [],
+        "returns": "string",
+        "help": "Download problem statement, cause tree with ratings and facts as CSV."
+      },
+      "causes.setParetoSource": {
+        "params": [
+          {
+            "name": "snapshotId",
+            "type": "?number",
+            "optional": false,
+            "help": "a snapshot; null shows the current state"
+          }
+        ],
+        "returns": "void",
+        "help": "Show the current ratings or those of a snapshot in the Pareto chart."
+      },
+      "snapshots.saveSnapshot": {
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "the name; \"\" gives \"Snapshot <today>\""
+          }
+        ],
+        "returns": "number",
+        "help": "Save problem statement, experts and cause tree as a snapshot (newest first)."
+      },
+      "snapshots.loadSnapshot": {
+        "params": [
+          {
+            "name": "snapshotId",
+            "type": "number",
+            "optional": false,
+            "help": "the snapshot"
+          }
+        ],
+        "returns": "void",
+        "help": "Replace problem statement, experts and cause tree by a snapshot, without asking."
+      },
+      "snapshots.deleteSnapshot": {
+        "params": [
+          {
+            "name": "snapshotId",
+            "type": "number",
+            "optional": false,
+            "help": "the snapshot"
+          }
+        ],
+        "returns": "void",
+        "help": "Delete a snapshot, without asking. A comparison with it ends."
+      },
+      "snapshots.compareSnapshot": {
+        "params": [
+          {
+            "name": "snapshotId",
+            "type": "number",
+            "optional": false,
+            "help": "the snapshot"
+          }
+        ],
+        "returns": "{added: string[], removed: string[], changed: Array<{stableId: string, oldScore: number, newScore: number, delta: number}>}",
+        "help": "Compare the cause tree with a snapshot; the tree marks the differences until the comparison ends."
+      },
+      "snapshots.closeCompare": {
+        "params": [],
+        "returns": "void",
+        "help": "End the comparison with a snapshot."
       },
       "experiments.addExperiment": {
         "params": [],
@@ -7444,58 +7654,17 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Move a fact directly before another one."
       },
-      "snapshots.saveSnapshot": {
+      "setTab": {
         "params": [
           {
-            "name": "name",
-            "type": "string",
+            "name": "tab",
+            "type": "'problem'|'facts'|'hypotheses'|'experiments'",
             "optional": false,
-            "help": "the name; \"\" gives \"Snapshot <today>\""
-          }
-        ],
-        "returns": "number",
-        "help": "Save problem statement, experts and cause tree as a snapshot (newest first)."
-      },
-      "snapshots.loadSnapshot": {
-        "params": [
-          {
-            "name": "snapshotId",
-            "type": "number",
-            "optional": false,
-            "help": "the snapshot"
+            "help": "the tab to open"
           }
         ],
         "returns": "void",
-        "help": "Replace problem statement, experts and cause tree by a snapshot, without asking."
-      },
-      "snapshots.deleteSnapshot": {
-        "params": [
-          {
-            "name": "snapshotId",
-            "type": "number",
-            "optional": false,
-            "help": "the snapshot"
-          }
-        ],
-        "returns": "void",
-        "help": "Delete a snapshot, without asking. A comparison with it ends."
-      },
-      "snapshots.compareSnapshot": {
-        "params": [
-          {
-            "name": "snapshotId",
-            "type": "number",
-            "optional": false,
-            "help": "the snapshot"
-          }
-        ],
-        "returns": "{added: string[], removed: string[], changed: Array<{stableId: string, oldScore: number, newScore: number, delta: number}>}",
-        "help": "Compare the cause tree with a snapshot; the tree marks the differences until the comparison ends."
-      },
-      "snapshots.closeCompare": {
-        "params": [],
-        "returns": "void",
-        "help": "End the comparison with a snapshot."
+        "help": "Open a tab; the hypotheses and experiments tabs draw their charts."
       }
     },
     "fields": {

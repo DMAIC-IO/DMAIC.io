@@ -124,8 +124,8 @@
             <label class="ishikawa__panel-label" style="margin:0" x-text="t('expertTeam')"></label>
             <div class="ishikawa__expert-add-form">
               <input type="text" class="field field--inline ishikawa__expert-name-input" data-ref="expertNameInput"
-                     :placeholder="t('expertPlaceholder')" x-model="expertDraft" @keydown.enter="addExpert()" />
-              <button class="btn btn--sm btn--primary" data-ref="addExpertBtn" @click="addExpert()" x-text="'+ ' + t('addExpert')"></button>
+                     :placeholder="t('expertPlaceholder')" x-model="causes.expertDraft" @keydown.enter="causes.submitExpertDraft()" />
+              <button class="btn btn--sm btn--primary" data-ref="addExpertBtn" @click="causes.submitExpertDraft()" x-text="'+ ' + t('addExpert')"></button>
             </div>
           </div>
           <div class="ishikawa__expert-tags">
@@ -134,11 +134,11 @@
             </template>
             <template x-for="e in model.experts" :key="e.id">
               <span class="ishikawa__expert-tag">
-                <span class="ishikawa__expert-ini" :data-expert-ini-for="e.id" :style="'background:' + e.color" x-text="ini(e.name)"></span>
+                <span class="ishikawa__expert-ini" :data-expert-ini-for="e.id" :style="'background:' + e.color" x-text="causes.ini(e.name)"></span>
                 <input type="text" class="ishikawa__expert-name-edit" :data-expert-name-id="e.id"
                        :value="e.name" spellcheck="false"
-                       @keydown="expertEditKey(e.id, $event)" @blur="commitExpertRename(e.id, $event)" />
-                <button class="ishikawa__expert-rm" :data-expert-id="e.id" :title="t('common.remove')" @click="removeExpert(e.id)"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
+                       @keydown="causes.expertEditKey(e.id, $event)" @blur="causes.commitExpertRename(e.id, $event)" />
+                <button class="ishikawa__expert-rm" :data-expert-id="e.id" :title="t('common.remove')" @click="causes.removeExpert(e.id)"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
               </span>
             </template>
           </div>
@@ -146,14 +146,14 @@
       </div>
 
       <!-- Diff banner -->
-      <div class="ishikawa__diff-banner" :class="compareSnapId !== null ? 'ishikawa__diff-banner--visible' : ''" data-ref="diffBanner">
-        <template x-if="compareSnapId !== null && diff()">
+      <div class="ishikawa__diff-banner" :class="causes.compareSnapId !== null ? 'ishikawa__diff-banner--visible' : ''" data-ref="diffBanner">
+        <template x-if="causes.compareSnapId !== null && causes.diff()">
           <div style="display:contents">
             <div class="ishikawa__diff-title" x-text="t('compareWith')"></div>
             <div class="ishikawa__diff-stats">
-              <span class="ishikawa__diff-stat"><span class="ishikawa__diff-val ishikawa__diff-val--new" x-text="'+' + diff().added.length + ' ' + t('diffNew')"></span></span>
-              <span class="ishikawa__diff-stat"><span class="ishikawa__diff-val ishikawa__diff-val--del" x-text="glyphMinus() + diff().removed.length + ' ' + t('diffRemoved')"></span></span>
-              <span class="ishikawa__diff-stat"><span class="ishikawa__diff-val ishikawa__diff-val--chg" x-text="glyphChanged() + diff().changed.length + ' ' + t('diffChanged')"></span></span>
+              <span class="ishikawa__diff-stat"><span class="ishikawa__diff-val ishikawa__diff-val--new" x-text="'+' + causes.diff().added.length + ' ' + t('diffNew')"></span></span>
+              <span class="ishikawa__diff-stat"><span class="ishikawa__diff-val ishikawa__diff-val--del" x-text="causes.glyphMinus() + causes.diff().removed.length + ' ' + t('diffRemoved')"></span></span>
+              <span class="ishikawa__diff-stat"><span class="ishikawa__diff-val ishikawa__diff-val--chg" x-text="causes.glyphChanged() + causes.diff().changed.length + ' ' + t('diffChanged')"></span></span>
               <span class="ishikawa__diff-stat" style="color:var(--color-text-tertiary)" x-text="snapshots.compareLabel()"></span>
             </div>
             <button class="ishikawa__diff-close" data-ref="diffCloseBtn" @click="snapshots.closeCompare()">
@@ -166,23 +166,23 @@
 
       <!-- Toolbar -->
       <div class="ishikawa__toolbar" style="margin-bottom:var(--spacing-sm)">
-        <button class="btn btn--sm btn--primary" data-ref="addRowBtn" @click="addRow()" x-text="'+ ' + t('hypothesis')"></button>
-        <button class="btn btn--sm" data-ref="expandAllBtn" @click="expandAll()" x-text="t('expandAll')"></button>
-        <button class="btn btn--sm" data-ref="collapseAllBtn" @click="collapseAll()" x-text="t('collapseAll')"></button>
+        <button class="btn btn--sm btn--primary" data-ref="addRowBtn" @click="causes.addRowAndFocus()" x-text="'+ ' + t('hypothesis')"></button>
+        <button class="btn btn--sm" data-ref="expandAllBtn" @click="causes.expandAll()" x-text="t('expandAll')"></button>
+        <button class="btn btn--sm" data-ref="collapseAllBtn" @click="causes.collapseAll()" x-text="t('collapseAll')"></button>
         <div class="ishikawa__toolbar-spacer"></div>
         <div class="ishikawa__filter-group">
-          <button class="ishikawa__filter-chip" :class="activeFilter === 'all' ? 'ishikawa__filter-chip--active' : ''"
-                  data-filter="all" @click="setFilter('all')">
+          <button class="ishikawa__filter-chip" :class="causes.activeFilter === 'all' ? 'ishikawa__filter-chip--active' : ''"
+                  data-filter="all" @click="causes.setFilter('all')">
             <span x-text="t('filterAll')"></span> <span class="ishikawa__filter-chip-count" x-text="'(' + model.rows.length + ')'"></span>
           </button>
-          <template x-for="c in cats" :key="c.key">
-            <button class="ishikawa__filter-chip" :class="activeFilter === c.key ? 'ishikawa__filter-chip--active' : ''"
-                    :data-filter="c.key" :style="'border-left:3px solid ' + c.color" @click="setFilter(c.key)">
-              <span x-text="catLabel(c.key)"></span> <span class="ishikawa__filter-chip-count" x-text="'(' + catCount(c.key) + ')'"></span>
+          <template x-for="c in causes.cats" :key="c.key">
+            <button class="ishikawa__filter-chip" :class="causes.activeFilter === c.key ? 'ishikawa__filter-chip--active' : ''"
+                    :data-filter="c.key" :style="'border-left:3px solid ' + c.color" @click="causes.setFilter(c.key)">
+              <span x-text="causes.catLabel(c.key)"></span> <span class="ishikawa__filter-chip-count" x-text="'(' + causes.catCount(c.key) + ')'"></span>
             </button>
           </template>
           <button class="ishikawa__cat-rename-btn" data-ref="renameCatsBtn"
-                  :title="t('renameCatsTitle')" :aria-label="t('renameCatsTitle')" @click="openCatRename()">
+                  :title="t('renameCatsTitle')" :aria-label="t('renameCatsTitle')" @click="causes.openCatRename()">
             <span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span>
           </button>
         </div>
@@ -201,7 +201,7 @@
               <template x-for="e in model.experts" :key="e.id">
                 <th class="ishikawa__col-expert">
                   <div class="ishikawa__exp-col-head">
-                    <div class="ishikawa__exp-ini" :style="'background:' + e.color" x-text="ini(e.name)"></div>
+                    <div class="ishikawa__exp-ini" :style="'background:' + e.color" x-text="causes.ini(e.name)"></div>
                     <div class="ishikawa__exp-nm" :title="e.name" x-text="e.name"></div>
                   </div>
                 </th>
@@ -212,11 +212,11 @@
             </tr>
           </thead>
           <tbody>
-            <template x-if="visibleRows().length === 0">
-              <tr class="ishikawa__empty-row"><td :colspan="emptyColspan()" x-text="emptyMessage()"></td></tr>
+            <template x-if="causes.visibleRows().length === 0">
+              <tr class="ishikawa__empty-row"><td :colspan="causes.emptyColspan()" x-text="causes.emptyMessage()"></td></tr>
             </template>
-            <template x-for="vr in visibleRows()" :key="vr.row.id">
-              <tr :data-id="vr.row.id" :class="rowClass(vr)"
+            <template x-for="vr in causes.visibleRows()" :key="vr.row.id">
+              <tr :data-id="vr.row.id" :class="causes.rowClass(vr)"
                   @dragstart="dragStart('causes', vr.row.id, $event)" @dragend="dragEnd($event)"
                   @dragover="dragOver('causes', vr.row.id, $event)" @drop="dragDrop('causes', vr.row.id, $event)">
                 <td class="dmike-table__grip-col">
@@ -227,7 +227,7 @@
                 <td class="ishikawa__col-nr" :style="'--ishikawa-depth:' + vr.depth">
                   <div class="ishikawa__nr-cell">
                     <template x-if="vr.hasKids">
-                      <button class="btn btn--icon-sm ishikawa__toggle-btn" :data-toggle="vr.row.id" @click="toggleRow(vr.row.id)" :title="toggleRowTitle(vr)" :aria-label="toggleRowTitle(vr)"><span class="icon icon--sm" :data-icon="vr.collapsed ? 'nav.expand-right' : 'nav.expand-down'" aria-hidden="true"></span></button>
+                      <button class="btn btn--icon-sm ishikawa__toggle-btn" :data-toggle="vr.row.id" @click="causes.toggleRow(vr.row.id)" :title="causes.toggleRowTitle(vr)" :aria-label="causes.toggleRowTitle(vr)"><span class="icon icon--sm" :data-icon="vr.collapsed ? 'nav.expand-right' : 'nav.expand-down'" aria-hidden="true"></span></button>
                     </template>
                     <span class="ishikawa__nr-text" x-text="vr.num"></span>
                   </div>
@@ -242,11 +242,11 @@
                   <td>
                     <select class="field field--sm ishikawa__cat-select" :data-row-cat="vr.row.id" :style="'border-left:3px solid ' + vr.borderColor" x-model="vr.row.category">
                       <option value="" x-text="vr.defOpt" :selected="!vr.row.category"></option>
-                      <template x-for="c in cats" :key="c.key"><option :value="c.key" x-text="catLabel(c.key)" :selected="c.key === vr.row.category"></option></template>
+                      <template x-for="c in causes.cats" :key="c.key"><option :value="c.key" x-text="causes.catLabel(c.key)" :selected="c.key === vr.row.category"></option></template>
                     </select>
                   </td>
                 </template>
-                <td><input class="field field--sm field--ghost ishikawa__name-input" :class="isNameDup(vr.row) ? 'ishikawa__name-input--dup' : ''" type="text"
+                <td><input class="field field--sm field--ghost ishikawa__name-input" :class="causes.isNameDup(vr.row) ? 'ishikawa__name-input--dup' : ''" type="text"
                            :placeholder="t('namePlaceholder')" :data-row-name="vr.row.id" x-model="vr.row.name" /></td>
                 <td><div class="ishikawa__hypo-cell">
                   <input class="field field--sm field--ghost ishikawa__desc-input" type="text" :placeholder="vr.depth ? t('subCausePlaceholder') : t('causePlaceholder')" :data-row-desc="vr.row.id" x-model="vr.row.description" />
@@ -254,42 +254,42 @@
                 <template x-for="e in model.experts" :key="e.id">
                   <td class="ishikawa__col-expert">
                     <input type="number" class="field field--sm ishikawa__rating-input" min="0" max="9"
-                           :value="ratingVal(vr.row, e.id)" :placeholder="glyphNdash()" :style="ratingStyle(vr.row, e.id)"
+                           :value="causes.ratingVal(vr.row, e.id)" :placeholder="causes.glyphNdash()" :style="causes.ratingStyle(vr.row, e.id)"
                            :data-rating-row="vr.row.id" :data-rating-exp="e.id"
-                           @focus="$event.target.select()" @keydown="ratingKeydown($event)" @change="ratingChanged(vr.row.id, e.id, $event)" />
+                           @focus="$event.target.select()" @keydown="causes.ratingKeydown($event)" @change="causes.ratingChanged(vr.row.id, e.id, $event)" />
                   </td>
                 </template>
                 <td class="ishikawa__col-score">
                   <template x-if="vr.score === null">
-                    <span class="ishikawa__score-badge" x-text="glyphNdash()"></span>
+                    <span class="ishikawa__score-badge" x-text="causes.glyphNdash()"></span>
                   </template>
                   <template x-if="vr.score !== null">
                     <div class="ishikawa__score-bar-wrap">
-                      <span class="ishikawa__score-badge" :class="scoreCls(vr.score)" x-text="vr.score.toFixed(1)"></span>
-                      <div class="ishikawa__score-bar-track"><div class="ishikawa__score-bar-fill" :style="scoreBarStyle(vr.score)"></div></div>
+                      <span class="ishikawa__score-badge" :class="causes.scoreCls(vr.score)" x-text="vr.score.toFixed(1)"></span>
+                      <div class="ishikawa__score-bar-track"><div class="ishikawa__score-bar-fill" :style="causes.scoreBarStyle(vr.score)"></div></div>
                       <template x-if="vr.chg">
-                        <span class="ishikawa__score-delta" :class="deltaCls(vr.chg)" x-text="deltaText(vr.chg)"></span>
+                        <span class="ishikawa__score-delta" :class="causes.deltaCls(vr.chg)" x-text="causes.deltaText(vr.chg)"></span>
                       </template>
                     </div>
                   </template>
                 </td>
-                <td><select class="field field--sm ishikawa__status-select" :class="statusCss(vr.row.status)" :data-row-status="vr.row.id" x-model="vr.row.status">
+                <td><select class="field field--sm ishikawa__status-select" :class="causes.statusCss(vr.row.status)" :data-row-status="vr.row.id" x-model="vr.row.status">
                   <option value="open" x-text="t('status.open')"></option>
                   <option value="testing" x-text="t('status.testing')"></option>
                   <option value="confirmed" x-text="t('status.confirmed')"></option>
                   <option value="rejected" x-text="t('status.rejected')"></option>
                 </select></td>
                 <td><div class="ishikawa__row-actions">
-                  <button class="btn btn--icon-sm" :title="t('addSub')" :data-add-sub="vr.row.id" @click="addSub(vr.row.id)">+</button>
-                  <button class="btn btn--icon-sm" :title="t('duplicate')" :data-dupe="vr.row.id" @click="dupeRow(vr.row.id)" x-text="glyphDupe()"></button>
-                  <button class="btn btn--icon-sm" :class="linkedExpCount(vr.row) > 0 ? 'ishikawa__icon-btn--exp ishikawa__icon-btn--linked' : 'ishikawa__icon-btn--exp'"
-                          :title="linkExpTitle(vr.row)" :aria-label="linkExpTitle(vr.row)" :data-link-exp="vr.row.id" @click="experiments.openExpLink(vr.row.id)">
+                  <button class="btn btn--icon-sm" :title="t('addSub')" :data-add-sub="vr.row.id" @click="causes.addSubAndFocus(vr.row.id)">+</button>
+                  <button class="btn btn--icon-sm" :title="t('duplicate')" :data-dupe="vr.row.id" @click="causes.duplicateRow(vr.row.id)" x-text="causes.glyphDupe()"></button>
+                  <button class="btn btn--icon-sm" :class="causes.linkedExpCount(vr.row) > 0 ? 'ishikawa__icon-btn--exp ishikawa__icon-btn--linked' : 'ishikawa__icon-btn--exp'"
+                          :title="causes.linkExpTitle(vr.row)" :aria-label="causes.linkExpTitle(vr.row)" :data-link-exp="vr.row.id" @click="experiments.openExpLink(vr.row.id)">
                     <span class="icon icon--sm" data-icon="action.experiment" aria-hidden="true"></span>
-                    <template x-if="linkedExpCount(vr.row) > 0">
-                      <span class="ishikawa__exp-link-badge" x-text="linkedExpCount(vr.row)"></span>
+                    <template x-if="causes.linkedExpCount(vr.row) > 0">
+                      <span class="ishikawa__exp-link-badge" x-text="causes.linkedExpCount(vr.row)"></span>
                     </template>
                   </button>
-                  <button class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-del-row="vr.row.id" @click="deleteRow(vr.row.id)"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
+                  <button class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-del-row="vr.row.id" @click="causes.confirmDeleteRow(vr.row.id)"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
                 </div></td>
               </tr>
             </template>
@@ -301,13 +301,13 @@
       <div class="ishikawa__pareto-panel">
         <div class="ishikawa__pareto-header">
           <label class="ishikawa__panel-label" x-text="t('paretoTitle')"></label>
-          <select class="ishikawa__pareto-select" data-ref="paretoSelect" x-model="paretoSource" @change="renderPareto()">
+          <select class="ishikawa__pareto-select" data-ref="paretoSelect" x-model="causes.paretoSource" @change="causes.renderPareto()">
             <option value="current" x-text="t('paretoCurrent')"></option>
             <template x-for="s in model.snapshots" :key="s.id"><option :value="'snap-' + s.id" x-text="s.name"></option></template>
           </select>
         </div>
         <div class="ishikawa__pareto-body">
-          <template x-if="paretoEmptyMsg"><div class="ishikawa__trend-empty" x-text="paretoEmptyMsg"></div></template>
+          <template x-if="causes.paretoEmptyMsg"><div class="ishikawa__trend-empty" x-text="causes.paretoEmptyMsg"></div></template>
           <div class="ishikawa__pareto-canvas-wrap" data-ref="paretoContent"></div>
           <div class="ishikawa__pareto-editor" data-ref="paretoEditorPanel">
             <div class="ishikawa__pareto-editor-inner" data-ref="paretoEditorInner"></div>
@@ -319,16 +319,16 @@
       <div class="ishikawa__summary-bar">
         <div class="ishikawa__summary-card">
           <div class="ishikawa__s-label" x-text="t('hypotheses')"></div>
-          <div class="ishikawa__s-value"><span x-text="model.rows.length"></span> <span style="font-size:var(--font-size-xs);font-weight:400;color:var(--color-text-tertiary)" x-text="summaryBreakdown()"></span></div>
+          <div class="ishikawa__s-value"><span x-text="model.rows.length"></span> <span style="font-size:var(--font-size-xs);font-weight:400;color:var(--color-text-tertiary)" x-text="causes.summaryBreakdown()"></span></div>
           <div class="ishikawa__cat-bar">
-            <template x-for="c in cats" :key="c.key">
-              <template x-if="catBarPct(c.key) > 0"><div :style="'width:' + catBarPct(c.key) + '%;background:' + c.color"></div></template>
+            <template x-for="c in causes.cats" :key="c.key">
+              <template x-if="causes.catBarPct(c.key) > 0"><div :style="'width:' + causes.catBarPct(c.key) + '%;background:' + c.color"></div></template>
             </template>
           </div>
         </div>
         <div class="ishikawa__summary-card"><div class="ishikawa__s-label" x-text="t('expertTeam')"></div><div class="ishikawa__s-value" x-text="model.experts.length"></div></div>
-        <div class="ishikawa__summary-card"><div class="ishikawa__s-label" x-text="t('highestAvg')"></div><div class="ishikawa__s-value" style="color:var(--color-accent)" x-text="topScore()"></div></div>
-        <div class="ishikawa__summary-card"><div class="ishikawa__s-label" x-text="t('status.confirmed')"></div><div class="ishikawa__s-value" style="color:#16a34a" x-text="confirmedCount()"></div></div>
+        <div class="ishikawa__summary-card"><div class="ishikawa__s-label" x-text="t('highestAvg')"></div><div class="ishikawa__s-value" style="color:var(--color-accent)" x-text="causes.topScore()"></div></div>
+        <div class="ishikawa__summary-card"><div class="ishikawa__s-label" x-text="t('status.confirmed')"></div><div class="ishikawa__s-value" style="color:#16a34a" x-text="causes.confirmedCount()"></div></div>
         <div class="ishikawa__summary-card"><div class="ishikawa__s-label" x-text="t('snapshots')"></div><div class="ishikawa__s-value" x-text="model.snapshots.length"></div></div>
       </div>
 
@@ -475,7 +475,7 @@
     <!-- Category rename form -->
     <div class="ishikawa__cat-rename" x-ref="catRenameForm">
       <p class="ishikawa__cat-rename-hint" x-text="t('renameCatsHint')"></p>
-      <template x-for="c in catRenameDraft" :key="c.key">
+      <template x-for="c in causes.catRenameDraft" :key="c.key">
         <div class="ishikawa__cat-rename-row">
           <span class="ishikawa__cat-rename-swatch" :style="'background:' + c.color"></span>
           <span class="ishikawa__cat-rename-default" x-text="c.def"></span>
