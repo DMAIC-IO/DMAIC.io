@@ -48,6 +48,11 @@ function enoughNs(byN) {
  * @returns {boolean}
  */
 export function isGateOpen(block, counts) {
+  if (block.revealAfterValues != null && !(counts.count >= block.revealAfterValues)) return false;
+  if (block.revealAfterEach != null) {
+    const perProcess = Object.values(counts.perN || {});
+    if (!perProcess.length || perProcess.some((byN) => !((byN[1] || 0) >= block.revealAfterEach))) return false;
+  }
   if (block.revealAfter != null && !(counts.count >= block.revealAfter)) return false;
   if (block.revealAfterN != null) {
     const pops = Object.values(counts.perN || {}).filter((byN) => enoughNs(byN) >= block.revealAfterN);
@@ -63,6 +68,13 @@ export function isGateOpen(block, counts) {
  * @returns {{key: string, params: object}}
  */
 export function gateHint(block) {
+  // Value gates (lesson 1) speak of measured values, not samples.
+  if (block.revealAfterEach != null) {
+    return { key: 'course.insightLockedEach', params: { k: block.revealAfterEach } };
+  }
+  if (block.revealAfterValues != null) {
+    return { key: 'course.insightLockedValues', params: { k: block.revealAfterValues } };
+  }
   if (block.revealAfterShapes != null) {
     return {
       key: 'course.insightLockedShapes',

@@ -7,7 +7,7 @@ import { WIDGETS } from '../../../js/pages/training/widgets/index.js';
 import { GLOSSARY_TERMS } from '../../../js/core/glossary-data.generated.js';
 
 const LANGS = ['de', 'en'];
-const GATE_FIELDS = ['revealAfter', 'revealAfterN', 'revealAfterShapes'];
+const GATE_FIELDS = ['revealAfter', 'revealAfterN', 'revealAfterShapes', 'revealAfterValues', 'revealAfterEach'];
 
 /** All built lessons as {course, ref, lesson}. */
 function builtLessons() {
@@ -56,7 +56,7 @@ suite('course content', () => {
           assertEqual(b.id, e.id, `${lesson.id} step ${i} block ${j} id`);
           assertEqual(b.widget, e.widget, `${lesson.id} step ${i} block ${j} widget`);
           assertDeepEqual(b.params, e.params, `${lesson.id} step ${i} block ${j} params`);
-          for (const gate of ['revealAfter', 'revealAfterN', 'revealAfterShapes']) {
+          for (const gate of GATE_FIELDS) {
             assertEqual(b[gate], e[gate], `${lesson.id} step ${i} block ${j} ${gate}`);
           }
           // Stored quiz answers are option indices, so the correct position must match.

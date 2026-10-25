@@ -50,6 +50,24 @@ suite('gates', () => {
     assertEqual(isGateOpen(block, emptyStepCounts()), false);
   });
 
+  test('revealAfterValues counts values', () => {
+    const block = { revealAfterValues: 100 };
+    assertEqual(isGateOpen(block, counts(99)), false);
+    assertEqual(isGateOpen(block, counts(100)), true);
+  });
+
+  test('revealAfterEach needs every reported process', () => {
+    const block = { revealAfterEach: 100 };
+    assertEqual(isGateOpen(block, counts(150, { a: { 1: 150 }, b: { 1: 0 } })), false);
+    assertEqual(isGateOpen(block, counts(100, { a: { 1: 150 }, b: { 1: 100 } })), true);
+    assertEqual(isGateOpen(block, counts(500, {})), false);
+  });
+
+  test('hints for value gates', () => {
+    assertDeepEqual(gateHint({ revealAfterValues: 100 }), { key: 'course.insightLockedValues', params: { k: 100 } });
+    assertDeepEqual(gateHint({ revealAfterEach: 100 }), { key: 'course.insightLockedEach', params: { k: 100 } });
+  });
+
   test('mergeCounts keeps maxima', () => {
     const a = mergeCounts(emptyStepCounts(), { count: 80, perN: { skewed: { 2: 100, 5: 40 } } });
     const b = mergeCounts(a, { count: 60, perN: { skewed: { 2: 30, 5: 90 }, uniform: { 2: 10 } } });
