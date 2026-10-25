@@ -4491,27 +4491,6 @@ export const AGENT_REGISTRY = {
       "unmarked_method:fmt2",
       "unmarked_method:fmt4",
       "unmarked_method:fmt6",
-      "unmarked_method:save",
-      "unmarked_method:sourceRowCount",
-      "unmarked_method:isConfigValid",
-      "unmarked_method:worksheetStaleness",
-      "unmarked_method:staleness",
-      "unmarked_method:scheduleAutoGenerate",
-      "unmarked_method:tryAutoGenerate",
-      "unmarked_method:buildDesignFromSource",
-      "unmarked_method:forbidPreviewRow",
-      "unmarked_method:boundPct",
-      "unmarked_method:boundProgressText",
-      "unmarked_method:boundComplete",
-      "unmarked_method:showPreview",
-      "unmarked_method:removeOldWorksheet",
-      "unmarked_method:createOrRecreateDatasheet",
-      "unmarked_method:openLinkedWorksheet",
-      "unmarked_method:mountPreviewGrid",
-      "unmarked_method:destroyPreviewGrid",
-      "unmarked_method:capturePreviewEdits",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
       "unreadable_state_key:version"
     ],
     "actions": {
@@ -5001,6 +4980,47 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Show a phase: its plan, design and datasheet come back; the design is not regenerated."
+      },
+      "runs.createDatasheet": {
+        "params": [],
+        "returns": "string",
+        "help": "Create the datasheet of the design, with the preview's values; a datasheet created before is replaced. The planner opens it."
+      },
+      "runs.setRunValue": {
+        "params": [
+          {
+            "name": "run",
+            "type": "number",
+            "optional": false,
+            "help": "the run number (run order) from read().runs"
+          },
+          {
+            "name": "column",
+            "type": "string",
+            "optional": false,
+            "help": "a factor or response name as in read().runs"
+          },
+          {
+            "name": "value",
+            "type": "?number",
+            "optional": false,
+            "help": "the value; null reverts the cell"
+          }
+        ],
+        "returns": "void",
+        "help": "Set one value of the run table before a datasheet exists (or while it is outdated): a response result or an adjusted continuous factor setting. The preview grid follows; the value goes into the datasheet when it is created."
+      },
+      "setDoeName": {
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "the name; \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Name the plan (in project mode: the active phase)."
       }
     },
     "fields": {

@@ -1,25 +1,23 @@
 /**
  * D.Mike — DoE Planner Module (doe-planner.js)
  * Design of Experiments — split-panel layout with live auto-generation.
- * DMAIC phase: Improve. Migrated to createModule + Alpine CSP.
+ * DMAIC phase: Improve.
  *
- * The Model (doe-planner-model.js) holds the persistent state (version:3) and
- * pure logic (factor/response CRUD, cascading invalidation, designSignature,
- * active-term filtering). All design/analysis MATH stays in the engines
- * (doe-planner-engine.js, doe-terms.js) and the in-folder pure helpers
- * (doe-planner-analysis.js, doe-planner-worksheet.js, doe-planner-designs.js) —
- * nothing is reimplemented here. View transforms (i18n, CSS, formatting,
- * table view-models) live in the data-Fn; the markup is declarative in
- * doe-planner.html.
+ * The model (doe-planner-model.js) owns the persisted state and the pure
+ * logic: factor/response CRUD, EVOP phases, forbidden vertices, the
+ * design signature for worksheet staleness and the config/schedule
+ * signatures that drive the auto-generation. One pure module per design
+ * type lives under designs/; the run table (doe-planner-runtable.js) and
+ * the response state (doe-planner-responses.js) are pure too. The UI lives
+ * in seven encapsulated sub-viewmodels under viewmodel/ — factors, design,
+ * optimal, evaluation, analysis, evop, runs — that know neither each other
+ * nor this shell; the template addresses them by namespace
+ * (`factors.addFactor()`). They couple only through the model: this shell
+ * watches configSignature() (invalidate and regenerate) and
+ * scheduleSignature() (regenerate) and keeps lifecycle, bus subscriptions,
+ * the external revision counter, the auto-generation and read().
  *
- * The ONLY imperative widget is the preview DataGrid (mounted into the
- * [data-ref="preview-grid"] anchor, remounted on a cheap design signal,
- * disposed in destroy()). There are no chartManager charts in this module
- * (the evaluation is pure-HTML KPI cards/tables); onThemeChange is a CSS no-op.
- *
- * Engine sub-files are intentionally left in this folder (not relocated to
- * engines/): they are pure and imported as-is by the existing unit tests and
- * engines/doe-planner-engine.js — relocating would only churn imports.
+ * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md
  */
 
 import { createModule } from '../../core/template-module.js';
@@ -30,31 +28,27 @@ import { OptimalViewModel } from './viewmodel/optimal.js';
 import { EvaluationViewModel } from './viewmodel/evaluation.js';
 import { AnalysisViewModel } from './viewmodel/analysis.js';
 import { EvopViewModel } from './viewmodel/evop.js';
-import { codedToActualRows, buildRunTable, captureEdits, applyEdits } from './doe-planner-runtable.js';
-import { DataGrid } from '../../core/datagrid/datagrid.js';
+import { RunsViewModel } from './viewmodel/runs.js';
+import { codedToActualRows } from './doe-planner-runtable.js';
 import {
   generateDesign, minRunsForTerms,
   augmentOptimalDesign,
 } from '../../engines/doe-planner-engine.js';
 import { checkConfig } from './designs/index.js';
 import optimalType from './designs/optimal.js';
-import {
-  createDesignWorksheet, createExperimentRecord, removeExperimentRecord,
-  sourceRowCount, readSourceData,
-} from './doe-planner-worksheet.js';
-import { readResponses, staleness, boundPct, boundComplete } from './doe-planner-responses.js';
+import { sourceRowCount, readSourceData } from './doe-planner-worksheet.js';
 import {
   evaluateDesign,
 } from './doe-planner-analysis.js';
 import { provisionWorksheet } from '../../core/examples-registry.js';
-import { uid } from '../../core/uid.js';
+import { requireText } from '../../core/agent/agent-argcheck.js';
 
 // ─── Constants ─────────────────────────────────────────────────────
 
 const AUTO_GEN_DELAY = 600; // ms debounce for auto-generation
 
 /** Data keys of the sub-viewmodels, in attach order. */
-const SUB_VIEWMODELS = ['factors', 'design', 'optimal', 'evaluation', 'analysis', 'evop'];
+const SUB_VIEWMODELS = ['factors', 'design', 'optimal', 'evaluation', 'analysis', 'evop', 'runs'];
 
 const mod = createModule({
   config: {
@@ -93,12 +87,11 @@ const mod = createModule({
       evaluation: new EvaluationViewModel(deps),
       analysis: new AnalysisViewModel(deps),
       evop: new EvopViewModel(deps),
+      runs: new RunsViewModel(deps),
 
       // ── Transient UI state (never persisted) ──────────────────
-      _previewGrid: null,
       _autoGenTimer: null,
       _unsubs: [],
-      _renderGen: 0,
       // Reactive revision counter: bumped whenever EXTERNAL worksheet state
       // changes (the linked Datensammlung lives in another module's state, which
       // Alpine cannot track). Output readers touch it so the right panel
@@ -110,27 +103,34 @@ const mod = createModule({
       fmt4: (v) => Number(v).toFixed(4),
       fmt6: (v) => Number(v).toFixed(6),
 
+      /** @noagent persistence */
       save() { module._persist(this.model); },
+
+      /**
+       * Name the plan (in project mode: the active phase).
+       * @agent
+       * @param {string} name the name; "" clears it
+       * @returns {void}
+       * @throws {Error} if name is not a string
+       */
+      setDoeName(name) {
+        this.model.doeName = requireText('name', name);
+        this.save();
+      },
 
       // ── Context-dependent helpers (need stateManager) ─────────
 
-      sourceRowCount() { return sourceRowCount(ctx(), this.model.sourceWorksheet); },
-
-      /** Type-independent rules, then the design type's own (designs/). */
+      /**
+       * Type-independent rules, then the design type's own (designs/).
+       * @noagent view transform
+       */
       isConfigValid() {
-        return checkConfig(this.model, { sourceRowCount: this.sourceRowCount() }).ok;
+        return checkConfig(this.model, { sourceRowCount: sourceRowCount(ctx(), this.model.sourceWorksheet) }).ok;
       },
-
-      worksheetStaleness() {
-        // Touch the external-revision counter so Alpine re-evaluates the output
-        // regions when the linked worksheet (foreign state) changes.
-        void this._extRev;
-        return staleness(ctx(), this.model);
-      },
-      staleness() { return this.worksheetStaleness(); },
 
       // ── Auto-generation pipeline ──────────────────────────────
 
+      /** @noagent auto-generation */
       scheduleAutoGenerate() {
         if (this._autoGenTimer) clearTimeout(this._autoGenTimer);
         this._autoGenTimer = setTimeout(() => {
@@ -139,6 +139,7 @@ const mod = createModule({
         }, AUTO_GEN_DELAY);
       },
 
+      /** @noagent auto-generation */
       tryAutoGenerate() {
         const m = this.model;
         if (!this.isConfigValid()) {
@@ -216,6 +217,7 @@ const mod = createModule({
         };
       },
 
+      /** @noagent auto-generation */
       buildDesignFromSource(source) {
         const m = this.model;
         const factors = m.factors;
@@ -257,120 +259,12 @@ const mod = createModule({
         };
       },
 
-      forbidPreviewRow(rowIdx) {
-        const coded = this.model.design && this.model.design.codedMatrix ? this.model.design.codedMatrix[rowIdx] : null;
-        if (!Array.isArray(coded)) return;
-        if (!this.model.addForbiddenVertex([...coded])) return;
-        this.save();
-      },
-
-      // ── Output: bound state ───────────────────────────────────
-
-      _resp() { void this._extRev; return readResponses(ctx(), this.model); },
-      boundPct() { void this._extRev; return boundPct(ctx(), this.model); },
-      boundProgressText() {
-        const resp = this._resp();
-        if (!resp) return '';
-        return `${resp.filledCount} / ${resp.totalCount} ${_t('valuesFilled')} (${this.boundPct()}%)`;
-      },
-      boundComplete() { void this._extRev; return boundComplete(ctx(), this.model); },
-      showPreview() {
-        return this.staleness() !== 'bound' && Boolean(this.model.design && this.model.design.actualMatrix && this.model.design.actualMatrix.length);
-      },
-
-      // ── Datasheet create / recreate ───────────────────────────
-
-      removeOldWorksheet(ref) {
-        if (!ref) return;
-        if (ref.experimentId) removeExperimentRecord(ctx(), ref.experimentId);
-        const sm = ctx().stateManager;
-        const phases = sm.get('phases') || {};
-        for (const phaseId of Object.keys(phases)) {
-          const arr = sm.get(`phases.${phaseId}`) || [];
-          const next = arr.filter(i => i.instanceId !== ref.instanceId);
-          if (next.length !== arr.length) sm.set(`phases.${phaseId}`, next);
-        }
-        sm.removeModuleState(ref.instanceId);
-        ctx().eventBus.emit('module:removed', { moduleId: 'worksheet', instanceId: ref.instanceId });
-      },
-      createOrRecreateDatasheet() {
-        const m = this.model;
-        if (!m.design) return;
-        if (this._previewGrid) this.capturePreviewEdits();
-        applyEdits(this.model);
-        if (m.worksheetRef) { this.removeOldWorksheet(m.worksheetRef); m.worksheetRef = null; }
-
-        const expId = uid();
-        const ref = createDesignWorksheet(ctx(), m.design, m.factors, m.responses, m.doeName, 'improve', expId);
-        createExperimentRecord(ctx(), expId, m.design, m.factors, m.responses, m.doeName, ref, this.model.modelTerms());
-        ref.designSignature = m.designSignature();
-        m.worksheetRef = ref;
-        m.previewEdits = null;
-        m.previewDirty = false;
-        this.save();
-        ctx().eventBus.emit('module:activated', { instanceId: ref.instanceId });
-      },
-      openLinkedWorksheet() {
-        const ref = this.model.worksheetRef;
-        if (ref && ref.instanceId) ctx().eventBus.emit('module:activated', { instanceId: ref.instanceId });
-      },
-
-      // ── Preview DataGrid (imperative widget) ──────────────────
-
-      mountPreviewGrid() {
-        this.destroyPreviewGrid();
-        const root = module._container;
-        if (!root) return;
-        const slot = root.querySelector('[data-ref="preview-grid"]');
-        if (!slot) return;
-        const m = this.model;
-        if (!m.design || !m.design.actualMatrix || !m.design.actualMatrix.length) return;
-        const cols = buildRunTable(this.model, _t);
-        if (!cols.length) return;
-        const isOptimal = m.isOptimalType();
-        const self = this;
-        this._previewGrid = new DataGrid(slot, {
-          toast: ctx().notify || (() => {}),
-          t: (key) => ctx().i18n.t(key),
-          dialog: ctx().dialog,
-          extraRowMenuItems: isOptimal
-            ? (cell) => [{ label: _t('forbiddenContextAction'), action: () => self.forbidPreviewRow(cell.rowIdx) }]
-            : undefined,
-        });
-        this._previewGrid.setData(cols);
-        this._previewGrid.on('cell:changed', () => this.capturePreviewEdits());
-        this._previewGrid.on('data:pasted', () => this.capturePreviewEdits());
-      },
-      destroyPreviewGrid() {
-        if (this._previewGrid) { this._previewGrid.destroy && this._previewGrid.destroy(); this._previewGrid = null; }
-      },
-      capturePreviewEdits() {
-        if (!this._previewGrid) return;
-        const captured = captureEdits(this.model, this._previewGrid.getData());
-        if (!captured) return;
-        this.model.previewEdits = captured.edits;
-        this.model.previewDirty = captured.dirty;
-        this.save();
-      },
-
-      // ── Preview-grid remount signal ───────────────────────────
-      // Cheap string identity for whether/which preview grid should be shown.
-      // Watching this avoids re-running on every keystroke (deep toJSON).
-      _previewSignal() {
-        const m = this.model;
-        if (!this.showPreview()) return '';
-        const d = m.design;
-        const sig = d && d.actualMatrix ? `${d.designType}:${d.actualMatrix.length}:${m.factors.length}:${m.responses.length}` : '';
-        return sig;
-      },
-
       // ── Lifecycle (per Alpine component) ──────────────────────
 
+      /** @noagent lifecycle */
       init() {
-        this._previewGrid = null;
         this._autoGenTimer = null;
         this._unsubs = [];
-        this._renderGen = 0;
 
         // createModule spreads this data object into every Alpine build of the
         // component, and setState (example load) or a language change rebuilds
@@ -399,7 +293,7 @@ const mod = createModule({
             // Foreign worksheet state changed → force the reactive output to
             // recompute progress/dispersion (Alpine can't track foreign state).
             this._extRev++;
-            this.$nextTick(() => this.mountPreviewGrid());
+            this.$nextTick(() => this.runs.mountPreviewGrid());
           }
         };
         eb.on('worksheet:dataChanged', onWorksheetChanged);
@@ -413,14 +307,6 @@ const mod = createModule({
         };
         eb.on('module:activated', onActivated);
         this._unsubs.push(() => eb.off('module:activated', onActivated));
-
-        // Remount the preview grid whenever the preview region's identity changes.
-        this.$watch(() => this._previewSignal(), () => {
-          this.$nextTick(() => this.mountPreviewGrid());
-        });
-
-        // Mount the preview grid for the restored state (if visible).
-        this.$nextTick(() => this.mountPreviewGrid());
 
         // Auto-generation follows the model (spec 2026-10-25 E3): a change of
         // the config signature invalidates the design and schedules a new one,
@@ -450,11 +336,11 @@ const mod = createModule({
         }
       },
 
+      /** @noagent lifecycle */
       destroy() {
         for (const vm of this._subViewModels()) vm.detach();
         if (this._autoGenTimer) clearTimeout(this._autoGenTimer);
         this._autoGenTimer = null;
-        this.destroyPreviewGrid();
         for (const unsub of this._unsubs) unsub();
         this._unsubs = [];
       },

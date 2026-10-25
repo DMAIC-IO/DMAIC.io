@@ -85,7 +85,7 @@
     <div class="doe__name-bar">
       <label class="doe__name-label" x-text="model.projectMode ? t('phaseName') : t('doeName')"></label>
       <input type="text" class="field doe__name-input"
-             x-model="model.doeName" @change="save()"
+             x-model="model.doeName" @change="setDoeName(model.doeName)"
              :placeholder="t('doeNamePlaceholder')" />
     </div>
 
@@ -540,32 +540,32 @@
         </div>
 
         <!-- Stale state -->
-        <template x-if="staleness() === 'stale'">
+        <template x-if="runs.staleness() === 'stale'">
           <div class="doe__stale-banner">
             <div class="doe__stale-text" x-text="t('worksheetStaleWarning')"></div>
             <div class="doe__stale-actions">
-              <button class="btn btn--primary doe__datasheet-recreate-btn" type="button" @click="createOrRecreateDatasheet()" x-text="t('worksheetRecreate')"></button>
-              <button class="btn btn--secondary doe__open-old-worksheet-btn" type="button" @click="openLinkedWorksheet()" x-text="t('worksheetOpenOld')"></button>
+              <button class="btn btn--primary doe__datasheet-recreate-btn" type="button" @click="runs.createDatasheet()" x-text="t('worksheetRecreate')"></button>
+              <button class="btn btn--secondary doe__open-old-worksheet-btn" type="button" @click="runs.openLinkedWorksheet()" x-text="t('worksheetOpenOld')"></button>
             </div>
           </div>
         </template>
 
         <!-- Bound state -->
-        <template x-if="staleness() === 'bound'">
+        <template x-if="runs.staleness() === 'bound'">
           <div class="doe__bound-region">
             <div class="doe__results-status">
               <div class="doe__results-bar">
-                <div class="doe__results-bar-fill" :style="'width:' + boundPct() + '%'"></div>
+                <div class="doe__results-bar-fill" :style="'width:' + runs.boundPct() + '%'"></div>
               </div>
-              <span class="doe__results-text" x-text="boundProgressText()"></span>
+              <span class="doe__results-text" x-text="runs.boundProgressText()"></span>
             </div>
             <div class="doe__datasheet-link-row">
-              <button class="btn btn--secondary doe__open-worksheet-btn" type="button" @click="openLinkedWorksheet()">
+              <button class="btn btn--secondary doe__open-worksheet-btn" type="button" @click="runs.openLinkedWorksheet()">
                 <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
                 <span x-text="t('worksheetOpen')"></span>
               </button>
             </div>
-            <template x-if="boundComplete()">
+            <template x-if="runs.boundComplete()">
               <div class="doe__transfer-section">
                 <button class="btn btn--primary doe__transfer-regression-btn" type="button" @click="analysis.transferToRegression()">
                   <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
@@ -603,15 +603,15 @@
         </template>
 
         <!-- Unbound state -->
-        <template x-if="staleness() === 'unbound'">
+        <template x-if="runs.staleness() === 'unbound'">
           <div class="doe__datasheet-create-row">
-            <button class="btn btn--primary doe__datasheet-create-btn" type="button" @click="createOrRecreateDatasheet()" x-text="t('worksheetCreate')"></button>
+            <button class="btn btn--primary doe__datasheet-create-btn" type="button" @click="runs.createDatasheet()" x-text="t('worksheetCreate')"></button>
             <span class="doe__datasheet-create-hint" x-text="t('worksheetCreateHint')"></span>
           </div>
         </template>
 
         <!-- Design preview (unbound + stale) -->
-        <template x-if="showPreview()">
+        <template x-if="runs.showPreview()">
           <div class="doe__preview-wrap">
             <div class="doe__preview-label" x-text="t('previewLabel')"></div>
             <div class="doe__preview-hint" x-text="t('previewHint')"></div>
