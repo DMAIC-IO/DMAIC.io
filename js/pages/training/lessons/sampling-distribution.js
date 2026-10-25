@@ -36,7 +36,7 @@ export default {
       {
         title: 'Was passiert bei größerem n?',
         blocks: [
-          { type: 'paragraph', content: 'Jetzt darfst du die Zahl der Wartezeiten pro Stichprobe verändern – das ist der Stichprobenumfang n. Probiere verschiedene Werte aus und ziehe jeweils viele Stichproben. Achte auf zwei Dinge: die Form und die Breite der Verteilung rechts. Das Diagramm darunter hält für jedes n die Streuung der Mittelwerte fest.' },
+          { type: 'paragraph', content: 'Jetzt darfst du die Zahl der Wartezeiten pro Stichprobe verändern – das ist der Stichprobenumfang n. Probiere verschiedene Werte aus und ziehe jeweils viele Stichproben. Achte auf zwei Dinge: die Form und die Breite der Verteilung rechts. Die Diagramme darunter halten für jedes n den Mittelwert und die Streuung der Mittelwerte fest.' },
           { type: 'paragraph', content: 'Die Verteilung dieser Mittelwerte heißt {{term:stichprobenverteilung|Stichprobenverteilung}}.' },
           { type: 'simulation', widget: 'sampling-distribution', params: { population: 'skewed', n: 5, lockPopulation: true, lockN: false, showTheory: false, trackN: true } },
           { type: 'insight', id: 'larger-n', revealAfter: 100, revealAfterN: 3, paragraphs: [
@@ -53,7 +53,7 @@ export default {
           { type: 'simulation', widget: 'sampling-distribution', params: { population: 'bimodal', n: 1, lockPopulation: false, lockN: false, showTheory: false, trackN: true, nChoices: N_FROM_ONE } },
           { type: 'insight', id: 'clt', revealAfterShapes: 2, revealAfterN: 3, paragraphs: [
             'Egal wie die Einzelwerte verteilt sind: Die Mittelwerte werden mit wachsendem n immer glockenförmiger. Das ist der {{term:zentraler-grenzwertsatz|zentrale Grenzwertsatz}}.',
-            'Wie schnell das geht, hängt von der Form ab: Gleichverteilte Werte brauchen nur wenige, schiefe deutlich mehr.',
+            'Wie schnell das geht, hängt von der Form der Grundgesamtheit ab – vergleiche schief und gleichverteilt.',
           ] },
         ],
       },
@@ -69,18 +69,18 @@ export default {
       {
         title: 'Kurz geprüft',
         blocks: [
-          { type: 'quiz', id: 'q-se-quadruple', question: 'Du vervierfachst den Stichprobenumfang von n = 4 auf n = 16. Was passiert mit der Streuung der Stichprobenmittelwerte?', options: [
+          { type: 'quiz', id: 'q-se-quadruple', question: 'Statt 4 misst du jetzt 16 Kunden pro Stichprobe. Was passiert mit der Streuung der Mittelwerte?', options: [
             { text: 'Sie halbiert sich.', correct: true, feedback: 'Genau: √16 / √4 = 2. Für halbe Streuung brauchst du vierfachen Aufwand.' },
             { text: 'Sie viertelt sich.', correct: false, feedback: 'Nicht ganz – n steht unter der Wurzel. Viermal so viele Werte machen den Standardfehler nur halb so groß.' },
             { text: 'Sie bleibt gleich, nur die Form ändert sich.', correct: false, feedback: 'Die Form nähert sich der Glocke an, aber auch die Breite schrumpft – mit σ/√n.' },
           ] },
           { type: 'quiz', id: 'q-mean-location', question: 'Die Wartezeiten sind schief, ihr Mittelwert μ liegt bei 35 Minuten. Du ziehst 1000 Stichproben mit n = 30. Wo liegt der Mittelwert der 1000 Stichprobenmittelwerte?', options: [
-            { text: 'Bei etwa 35 Minuten – genau dort, wo μ liegt.', correct: true, feedback: 'Genau: Die Stichprobenmittelwerte streuen um μ, egal wie groß n ist. Mit wachsendem n wird nur ihre Streuung kleiner.' },
+            { text: 'Bei etwa 35 Minuten – genau dort, wo μ liegt.', correct: true, feedback: 'Genau: Die Stichprobenmittelwerte streuen um μ, egal wie groß n ist. Mit wachsendem n bleibt ihre Lage, ihre Streuung wird kleiner.' },
             { text: 'Deutlich darunter, weil die meisten Kunden kurz warten.', correct: false, feedback: 'Die vielen kurzen Wartezeiten sind in μ schon eingerechnet. Die Stichprobenmittelwerte treffen μ im Mittel genau – auch bei schiefen Daten.' },
             { text: 'Deutlich darüber, weil die langen Wartezeiten nach oben ziehen.', correct: false, feedback: 'Die langen Wartezeiten stecken bereits in μ. Im Mittel landen die Stichprobenmittelwerte genau bei μ.' },
           ] },
           { type: 'quiz', id: 'q-clt-forty', question: 'Die Wartezeiten sind deutlich schief. Du misst immer wieder je 40 Kunden und bildest den Mittelwert. Wie sind diese Mittelwerte verteilt?', options: [
-            { text: 'Annähernd glockenförmig.', correct: true, feedback: 'Richtig – das ist der zentrale Grenzwertsatz. Bei extremer Schiefe oder Ausreißern braucht es mehr Werte, und für die einzelnen Wartezeiten gilt das nicht: die bleiben schief.' },
+            { text: 'Annähernd glockenförmig.', correct: true, feedback: 'Richtig – das ist der zentrale Grenzwertsatz. Bei sehr schiefen Wartezeiten oder Ausreißern braucht es mehr Werte, und für die einzelnen Wartezeiten gilt das nicht: die bleiben schief.' },
             { text: 'Genauso schief wie die einzelnen Wartezeiten.', correct: false, feedback: 'Die einzelnen Wartezeiten bleiben schief, ihre Mittelwerte aber werden mit wachsendem n glockenförmig – das hast du in der Simulation gesehen.' },
           ] },
         ],
@@ -120,7 +120,7 @@ export default {
       {
         title: 'What happens with larger n?',
         blocks: [
-          { type: 'paragraph', content: 'Now you may change the number of waiting times per sample – the sample size n. Try different values and draw many samples each time. Watch two things: the shape and the width of the distribution on the right. The chart below records the spread of the means for every n.' },
+          { type: 'paragraph', content: 'Now you may change the number of waiting times per sample – the sample size n. Try different values and draw many samples each time. Watch two things: the shape and the width of the distribution on the right. The charts below record the mean and the spread of the means for every n.' },
           { type: 'paragraph', content: 'The distribution of these means is called the {{term:stichprobenverteilung|sampling distribution}}.' },
           { type: 'simulation', widget: 'sampling-distribution', params: { population: 'skewed', n: 5, lockPopulation: true, lockN: false, showTheory: false, trackN: true } },
           { type: 'insight', id: 'larger-n', revealAfter: 100, revealAfterN: 3, paragraphs: [
@@ -137,7 +137,7 @@ export default {
           { type: 'simulation', widget: 'sampling-distribution', params: { population: 'bimodal', n: 1, lockPopulation: false, lockN: false, showTheory: false, trackN: true, nChoices: N_FROM_ONE } },
           { type: 'insight', id: 'clt', revealAfterShapes: 2, revealAfterN: 3, paragraphs: [
             'No matter how the individual values are distributed: with growing n the means become more and more bell-shaped. That is the {{term:zentraler-grenzwertsatz|central limit theorem}}.',
-            'How fast this happens depends on the shape: uniform values need only a few, skewed ones considerably more.',
+            'How fast this happens depends on the shape of the population – compare skewed and uniform.',
           ] },
         ],
       },
@@ -153,18 +153,18 @@ export default {
       {
         title: 'Quick check',
         blocks: [
-          { type: 'quiz', id: 'q-se-quadruple', question: 'You quadruple the sample size from n = 4 to n = 16. What happens to the spread of the sample means?', options: [
+          { type: 'quiz', id: 'q-se-quadruple', question: 'Instead of 4 you now measure 16 customers per sample. What happens to the spread of the means?', options: [
             { text: 'It halves.', correct: true, feedback: 'Exactly: √16 / √4 = 2. Half the spread costs four times the effort.' },
             { text: 'It drops to a quarter.', correct: false, feedback: 'Not quite – n sits under the square root. Four times the values make the standard error only half as large.' },
             { text: 'It stays the same, only the shape changes.', correct: false, feedback: 'The shape approaches the bell, but the width shrinks too – with σ/√n.' },
           ] },
           { type: 'quiz', id: 'q-mean-location', question: 'The waiting times are skewed, their mean μ is 35 minutes. You draw 1000 samples with n = 30. Where does the mean of the 1000 sample means lie?', options: [
-            { text: 'At about 35 minutes – right where μ lies.', correct: true, feedback: 'Exactly: the sample means scatter around μ, whatever n is. With growing n only their spread shrinks.' },
+            { text: 'At about 35 minutes – right where μ lies.', correct: true, feedback: 'Exactly: the sample means scatter around μ, whatever n is. With growing n their location stays, their spread shrinks.' },
             { text: 'Clearly below, because most customers wait briefly.', correct: false, feedback: 'The many short waiting times are already part of μ. On average the sample means hit μ exactly – even for skewed data.' },
             { text: 'Clearly above, because the long waiting times pull it up.', correct: false, feedback: 'The long waiting times are already part of μ. On average the sample means land exactly at μ.' },
           ] },
           { type: 'quiz', id: 'q-clt-forty', question: 'The waiting times are clearly skewed. You repeatedly measure 40 customers and take the mean. How are these means distributed?', options: [
-            { text: 'Approximately bell-shaped.', correct: true, feedback: 'Right – that is the central limit theorem. Extreme skew or outliers need more values, and it does not hold for the individual waiting times: they stay skewed.' },
+            { text: 'Approximately bell-shaped.', correct: true, feedback: 'Right – that is the central limit theorem. Very skewed data or outliers need more values, and it does not hold for the individual waiting times: they stay skewed.' },
             { text: 'Just as skewed as the individual waiting times.', correct: false, feedback: 'The individual waiting times stay skewed, but their means become bell-shaped with growing n – you saw that in the simulation.' },
           ] },
         ],

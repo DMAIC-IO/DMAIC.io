@@ -166,6 +166,27 @@ suite('course content', () => {
     }
   });
 
+  test('lessons use only block types the lesson view renders', () => {
+    // Keep in sync with the isType(b, '…') branches of js/pages/training/training.html.
+    const rendered = new Set(['heading', 'paragraph', 'note', 'list', 'steps', 'definition', 'table', 'insight', 'simulation', 'quiz']);
+    for (const { lesson } of builtLessons()) {
+      for (const lang of LANGS) {
+        for (const b of blocksOf(lesson, lang)) {
+          assertTrue(rendered.has(b.type), `${lesson.id} ${lang}: block type "${b.type}" is not rendered`);
+        }
+      }
+    }
+  });
+
+  test('manifest title and summary equal the lesson own, per language', () => {
+    for (const { ref, lesson } of builtLessons()) {
+      for (const lang of LANGS) {
+        assertEqual(ref[lang].title, lesson[lang].title, `${ref.id} ${lang} title`);
+        assertEqual(ref[lang].summary, lesson[lang].summary, `${ref.id} ${lang} summary`);
+      }
+    }
+  });
+
   test('lesson 3 follows the approved structure', () => {
     const { lesson } = findLesson('sampling-distribution');
     for (const lang of LANGS) {
