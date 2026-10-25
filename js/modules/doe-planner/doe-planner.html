@@ -365,10 +365,10 @@
         <div class="dmike-split__section-title" x-text="t('optimalTitle')"></div>
         <div class="doe__optimal-info" x-text="t('optimalInfo_' + model.designType)"></div>
         <div class="field-group">
-          <label class="doe__input-label" x-text="optimalRunsLabel()"></label>
-          <input type="number" class="field doe__optimal-runs-input" :min="optimalMinNew()" max="200"
-                 :value="model.options.optimalRuns || optimalMinNew()" @change="optimalRunsChanged($event)" />
-          <span class="doe__optimal-hint" x-text="optimalRunsHint()"></span>
+          <label class="doe__input-label" x-text="optimal.optimalRunsLabel()"></label>
+          <input type="number" class="field doe__optimal-runs-input" :min="optimal.optimalMinNew()" max="200"
+                 :value="model.options.optimalRuns || optimal.optimalMinNew()" @change="optimal.optimalRunsChanged($event)" />
+          <span class="doe__optimal-hint" x-text="optimal.optimalRunsHint()"></span>
         </div>
 
         <!-- Term list -->
@@ -377,22 +377,22 @@
             <div class="doe__term-list-label" x-text="t('modelTerms')"></div>
             <div class="doe__term-list-hint" x-text="t('modelTermsHintHier')"></div>
             <div class="doe__term-list">
-              <template x-for="(g, gi) in termGroups()" :key="gi">
-                <div class="doe__term-group" :class="termGroupExpanded(gi, g) ? 'doe__term-group--open' : ''" :data-group-idx="gi">
-                  <button type="button" class="doe__term-group-header" :data-group-idx="gi" @click="toggleTermGroup(gi)">
-                    <span class="doe__term-group-arrow" x-text="termGroupExpanded(gi, g) ? '▾' : '▸'"></span>
-                    <span class="doe__term-group-title" x-text="termGroupTitle(g)"></span>
-                    <span class="doe__term-group-count" x-text="termGroupCount(g)"></span>
+              <template x-for="(g, gi) in optimal.termGroups()" :key="gi">
+                <div class="doe__term-group" :class="optimal.termGroupExpanded(gi, g) ? 'doe__term-group--open' : ''" :data-group-idx="gi">
+                  <button type="button" class="doe__term-group-header" :data-group-idx="gi" @click="optimal.toggleTermGroup(gi)">
+                    <span class="doe__term-group-arrow" x-text="optimal.termGroupExpanded(gi, g) ? '▾' : '▸'"></span>
+                    <span class="doe__term-group-title" x-text="optimal.termGroupTitle(g)"></span>
+                    <span class="doe__term-group-count" x-text="optimal.termGroupCount(g)"></span>
                   </button>
                   <div class="doe__term-group-body">
-                    <template x-if="termGroupExpanded(gi, g)">
+                    <template x-if="optimal.termGroupExpanded(gi, g)">
                       <div class="doe__term-group-items">
                         <template x-for="id in g.ids" :key="id">
-                          <label class="doe__term-chip" :class="termChipClass(g, id)">
+                          <label class="doe__term-chip" :class="optimal.termChipClass(g, id)">
                             <input type="checkbox" class="doe__term-check"
-                                   :data-term-id="id" :checked="termActive(id)"
-                                   :disabled="g.kind === 'main'" @change="toggleTerm(id, $event)" />
-                            <span x-text="termLabel(id)"></span>
+                                   :data-term-id="id" :checked="optimal.termActive(id)"
+                                   :disabled="g.kind === 'main'" @change="optimal.toggleTerm(id, $event)" />
+                            <span x-text="optimal.termLabel(id)"></span>
                           </label>
                         </template>
                       </div>
@@ -409,52 +409,52 @@
           <div class="doe__forbidden-title" x-text="t('forbiddenTitle')"></div>
           <div class="doe__forbidden-hint" x-text="t('forbiddenHint')"></div>
           <ul class="doe__forbidden-list">
-            <template x-if="forbiddenList().length === 0">
+            <template x-if="optimal.forbiddenList().length === 0">
               <li class="doe__forbidden-empty" x-text="t('forbiddenEmpty')"></li>
             </template>
-            <template x-for="(rule, ri) in forbiddenList()" :key="ri">
+            <template x-for="(rule, ri) in optimal.forbiddenList()" :key="ri">
               <li class="doe__forbidden-row" :data-rule-idx="ri">
-                <span class="doe__forbidden-rule" x-text="forbiddenRuleText(rule)"></span>
+                <span class="doe__forbidden-rule" x-text="optimal.forbiddenRuleText(rule)"></span>
                 <button type="button" class="doe__forbidden-remove-btn"
                         :data-rule-idx="ri" :title="t('forbiddenRemoveTitle')"
-                        @click="removeForbiddenRule(ri)">&#10005;</button>
+                        @click="optimal.removeForbiddenVertex(ri)">&#10005;</button>
               </li>
             </template>
           </ul>
           <div class="doe__forbidden-add" :data-factor-count="model.factors.length">
             <template x-for="(f, fi) in model.factors" :key="f.id">
               <label class="doe__forbidden-factor">
-                <span class="doe__forbidden-factor-name" x-text="factorDisplayName(f, fi)"></span>
+                <span class="doe__forbidden-factor-name" x-text="optimal.factorDisplayName(f, fi)"></span>
                 <select class="doe__forbidden-input" :data-factor-idx="fi">
                   <option value="" x-text="t('forbiddenAny')"></option>
                   <template x-for="(lv, li) in f.levels" :key="li">
-                    <option :value="forbiddenCoded(f, li)" x-text="lv"></option>
+                    <option :value="optimal.forbiddenCoded(f, li)" x-text="lv"></option>
                   </template>
                 </select>
               </label>
             </template>
             <button type="button" class="btn btn--secondary doe__forbidden-add-btn"
-                    @click="addForbiddenVertex()" x-text="t('forbiddenAddBtn')"></button>
+                    @click="optimal.addForbiddenFromInputs()" x-text="t('forbiddenAddBtn')"></button>
           </div>
         </div>
 
-        <template x-if="!optimalRunsValid()">
-          <div class="doe__optimal-warning" x-text="optimalTooFewText()"></div>
+        <template x-if="!optimal.optimalRunsValid()">
+          <div class="doe__optimal-warning" x-text="optimal.optimalTooFewText()"></div>
         </template>
 
         <!-- Source worksheet picker -->
         <div class="doe__source-section">
           <div class="doe__source-label" x-text="t('sourceTitle')"></div>
           <div class="doe__source-hint" x-text="t('sourceHint')"></div>
-          <select class="field doe__source-select" @change="sourceWorksheetChanged($event)">
+          <select class="field doe__source-select" @change="optimal.sourceWorksheetChanged($event)">
             <option value="" :selected="!model.sourceWorksheet" x-text="t('sourceNone')"></option>
-            <template x-for="(s, i) in sourceWorksheetOptions()" :key="s.key + ':' + i">
-              <option :value="s.key" :selected="s.key === sourceWorksheetKey()" x-text="s.label"></option>
+            <template x-for="(s, i) in optimal.sourceWorksheetOptions()" :key="s.key + ':' + i">
+              <option :value="s.key" :selected="s.key === optimal.sourceWorksheetKey()" x-text="s.label"></option>
             </template>
           </select>
-          <template x-if="sourceMappingStatus()">
-            <div :class="sourceMappingStatus().ok ? 'doe__source-mapping-ok' : 'doe__source-mapping-error'"
-                 x-text="sourceMappingStatus().text"></div>
+          <template x-if="optimal.sourceMappingStatus()">
+            <div :class="optimal.sourceMappingStatus().ok ? 'doe__source-mapping-ok' : 'doe__source-mapping-error'"
+                 x-text="optimal.sourceMappingStatus().text"></div>
           </template>
         </div>
       </div>
@@ -595,7 +595,7 @@
                   <label class="doe__input-label" for="doe-augment-runs" x-text="t('augmentLabel')"></label>
                   <input type="number" id="doe-augment-runs" class="field doe__augment-runs-input"
                          min="1" max="200" step="1" value="4" />
-                  <button class="btn btn--primary doe__augment-btn" type="button" @click="clickAugment()" x-text="t('augmentButton')"></button>
+                  <button class="btn btn--primary doe__augment-btn" type="button" @click="optimal.clickAugment()" x-text="t('augmentButton')"></button>
                 </div>
               </div>
             </template>

@@ -6,7 +6,7 @@ import { suite, test, assertDeepEqual } from '../test-utils.js';
 
 const DIR = 'js/modules/doe-planner/viewmodel/';
 /** Every sub-viewmodel file; grows with each one that lands. */
-const FILES = ['factors.js', 'design.js'];
+const FILES = ['factors.js', 'design.js', 'optimal.js'];
 
 const IMPORT = /^\s*import\s[^'"]*['"]([^'"]+)['"]/gm;
 const PRIVATE = /\bthis\.#|^\s*(?:static\s+)?#[A-Za-z_$][\w$]*\s*(?:=|\(|;)/;

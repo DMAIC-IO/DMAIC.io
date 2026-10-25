@@ -4491,7 +4491,6 @@ export const AGENT_REGISTRY = {
       "unmarked_method:fmt2",
       "unmarked_method:fmt4",
       "unmarked_method:fmt6",
-      "unmarked_method:factorDisplayName",
       "unmarked_method:save",
       "unmarked_method:sourceRowCount",
       "unmarked_method:isConfigValid",
@@ -4500,32 +4499,7 @@ export const AGENT_REGISTRY = {
       "unmarked_method:scheduleAutoGenerate",
       "unmarked_method:tryAutoGenerate",
       "unmarked_method:buildDesignFromSource",
-      "unmarked_method:optimalMinRuns",
-      "unmarked_method:optimalMinNew",
-      "unmarked_method:optimalRunsValid",
-      "unmarked_method:optimalRunsLabel",
-      "unmarked_method:optimalRunsHint",
-      "unmarked_method:optimalTooFewText",
-      "unmarked_method:optimalRunsChanged",
-      "unmarked_method:termGroups",
-      "unmarked_method:termActive",
-      "unmarked_method:termLabel",
-      "unmarked_method:termGroupExpanded",
-      "unmarked_method:termGroupTitle",
-      "unmarked_method:termGroupCount",
-      "unmarked_method:termChipClass",
-      "unmarked_method:toggleTerm",
-      "unmarked_method:toggleTermGroup",
-      "unmarked_method:forbiddenList",
-      "unmarked_method:forbiddenCoded",
-      "unmarked_method:forbiddenRuleText",
-      "unmarked_method:addForbiddenVertex",
-      "unmarked_method:removeForbiddenRule",
       "unmarked_method:forbidPreviewRow",
-      "unmarked_method:sourceWorksheetKey",
-      "unmarked_method:sourceWorksheetOptions",
-      "unmarked_method:sourceMappingStatus",
-      "unmarked_method:sourceWorksheetChanged",
       "unmarked_method:summaryRuns",
       "unmarked_method:summaryRes",
       "unmarked_method:summaryGeneratedRuns",
@@ -4567,8 +4541,6 @@ export const AGENT_REGISTRY = {
       "unmarked_method:removeOldWorksheet",
       "unmarked_method:createOrRecreateDatasheet",
       "unmarked_method:openLinkedWorksheet",
-      "unmarked_method:clickAugment",
-      "unmarked_method:augmentDesign",
       "unmarked_method:algoNavigate",
       "unmarked_method:transferToRegression",
       "unmarked_method:mountPreviewGrid",
@@ -4896,6 +4868,108 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Center points of the Box-Behnken design."
+      },
+      "optimal.setOptimalRuns": {
+        "params": [
+          {
+            "name": "n",
+            "type": "number",
+            "optional": false,
+            "help": "a whole number, at least what the active model terms need"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the number of new runs of the optimal design."
+      },
+      "optimal.setTerm": {
+        "params": [
+          {
+            "name": "termId",
+            "type": "string",
+            "optional": false,
+            "help": "M0 (main effect of factor A), Q0 (its square), I0_1 (interaction A·B), …"
+          },
+          {
+            "name": "on",
+            "type": "boolean",
+            "optional": false,
+            "help": ""
+          }
+        ],
+        "returns": "void",
+        "help": "Switch one model term. On takes its lower terms along, off its higher ones; main effects stay. Raises the runs to the new minimum."
+      },
+      "optimal.setTermGroup": {
+        "params": [
+          {
+            "name": "groupIdx",
+            "type": "number",
+            "optional": false,
+            "help": "the group; 0 holds the main effects"
+          },
+          {
+            "name": "on",
+            "type": "boolean",
+            "optional": false,
+            "help": ""
+          }
+        ],
+        "returns": "void",
+        "help": "Switch every term of a group: 1 = squares, 2 = two-factor interactions, … The main effects stay."
+      },
+      "optimal.addForbiddenVertex": {
+        "params": [
+          {
+            "name": "pattern",
+            "type": "Array<?number>",
+            "optional": false,
+            "help": "one coded level per factor (-1 = lowest, 1 = highest, in between for more levels), null for any level"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Forbid a combination of factor levels in the optimal design."
+      },
+      "optimal.removeForbiddenVertex": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "position in the list of forbidden combinations"
+          }
+        ],
+        "returns": "void",
+        "help": "Allow a forbidden combination again."
+      },
+      "optimal.setSourceWorksheet": {
+        "params": [
+          {
+            "name": "instanceId",
+            "type": "?string",
+            "optional": false,
+            "help": "the worksheet; null removes the source"
+          },
+          {
+            "name": "sheetId",
+            "type": "?string",
+            "optional": true,
+            "help": "the sheet of that worksheet"
+          }
+        ],
+        "returns": "void",
+        "help": "Build the optimal design on top of measured data from a project worksheet; columns are matched to factors and responses by name."
+      },
+      "optimal.augment": {
+        "params": [
+          {
+            "name": "n",
+            "type": "number",
+            "optional": false,
+            "help": "new runs, a whole number of at least 1"
+          }
+        ],
+        "returns": "number",
+        "help": "Add optimal runs to the linked datasheet; the existing runs and their values stay, the new rows are appended."
       },
       "completePhase": {
         "params": [

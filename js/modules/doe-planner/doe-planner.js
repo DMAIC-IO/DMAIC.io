@@ -26,6 +26,7 @@ import { createModule } from '../../core/template-module.js';
 import { State, letter, PHASE_DECISIONS } from './doe-planner-model.js';
 import { FactorsViewModel } from './viewmodel/factors.js';
 import { DesignViewModel } from './viewmodel/design.js';
+import { OptimalViewModel } from './viewmodel/optimal.js';
 import { codedToActualRows, buildRunTable, captureEdits, applyEdits } from './doe-planner-runtable.js';
 import { DataGrid } from '../../core/datagrid/datagrid.js';
 import {
@@ -33,14 +34,10 @@ import {
   augmentOptimalDesign,
 } from '../../engines/doe-planner-engine.js';
 import { designOf, checkConfig } from './designs/index.js';
-import optimal from './designs/optimal.js';
-import {
-  termDisplay, enumerateTerms, activateTerm, deactivateTerm, termSortKey,
-} from '../../engines/doe-terms.js';
+import optimalType from './designs/optimal.js';
 import {
   createDesignWorksheet, createExperimentRecord, removeExperimentRecord,
-  isWorksheetValid, appendDoERowsToWorksheet, sourceRowCount,
-  listProjectWorksheets, readSourceData,
+  isWorksheetValid, sourceRowCount, readSourceData,
 } from './doe-planner-worksheet.js';
 import { readResponses, staleness, boundPct, boundComplete } from './doe-planner-responses.js';
 import {
@@ -56,7 +53,7 @@ const ALGO_ID_DEFF = 'd-efficiency';
 const AUTO_GEN_DELAY = 600; // ms debounce for auto-generation
 
 /** Data keys of the sub-viewmodels, in attach order. */
-const SUB_VIEWMODELS = ['factors', 'design'];
+const SUB_VIEWMODELS = ['factors', 'design', 'optimal'];
 
 const mod = createModule({
   config: {
@@ -91,12 +88,12 @@ const mod = createModule({
       // sub-viewmodels from exactly this shape. init() replaces them.
       factors: new FactorsViewModel(deps),
       design: new DesignViewModel(deps),
+      optimal: new OptimalViewModel(deps),
 
       // ── Transient UI state (never persisted) ──────────────────
       _previewGrid: null,
       _autoGenTimer: null,
       _unsubs: [],
-      _termGroupExpanded: {},
       _renderGen: 0,
       // Reactive revision counter: bumped whenever EXTERNAL worksheet state
       // changes (the linked Datensammlung lives in another module's state, which
@@ -108,8 +105,6 @@ const mod = createModule({
       fmt2: (v) => Number(v).toFixed(2),
       fmt4: (v) => Number(v).toFixed(4),
       fmt6: (v) => Number(v).toFixed(6),
-
-      factorDisplayName: (f, fi) => (f.name && f.name.trim()) || letter(fi),
 
       save() { module._persist(this.model); },
 
@@ -242,7 +237,7 @@ const mod = createModule({
         }
 
         const total = M + addRuns;
-        const resLabel = optimal.resolution(m);
+        const resLabel = optimalType.resolution(m);
 
         return {
           codedMatrix: [...source.codedMatrix, ...newCoded],
@@ -258,169 +253,10 @@ const mod = createModule({
         };
       },
 
-      // ── Optimal options ───────────────────────────────────────
-
-      optimalMinRuns() { return optimal.minRuns(this.model); },
-      optimalMinNew() { return optimal.minNewRuns(this.model, { sourceRowCount: this.sourceRowCount() }); },
-      optimalRunsValid() { return (this.model.options.optimalRuns || 0) >= this.optimalMinNew(); },
-      optimalRunsLabel() {
-        return this.sourceRowCount() > 0 ? _t('optimalRunsNew') : _t('optimalRuns');
-      },
-      optimalRunsHint() {
-        const minNew = this.optimalMinNew();
-        const M = this.sourceRowCount();
-        return M > 0 ? _t('optimalMinRunsNew', { min: minNew, m: M }) : _t('optimalMinRuns', { min: minNew });
-      },
-      optimalTooFewText() {
-        const minNew = this.optimalMinNew();
-        const M = this.sourceRowCount();
-        return M > 0 ? _t('optimalTooFewRunsNew', { min: minNew, m: M }) : _t('optimalTooFewRuns', { min: minNew });
-      },
-      optimalRunsChanged(event) {
-        const minNew = this.optimalMinNew();
-        this.model.options.optimalRuns = Math.max(minNew, parseInt(event.target.value, 10) || minNew);
-        this.save();
-      },
-
-      // ── Term list ─────────────────────────────────────────────
-
-      termGroups() { return enumerateTerms(this.model.factors.length); },
-      _factorNames() {
-        return this.model.factors.map((f, i) => (f && f.name && f.name.trim()) || letter(i));
-      },
-      _activeSet() { return new Set(this.model.getActiveTerms()); },
-      termActive(id) { return this._activeSet().has(id); },
-      termLabel(id) { return termDisplay(id, this._factorNames()); },
-      termGroupExpanded(gi, g) {
-        const isHigh = g.kind === 'ix' && g.order >= 3;
-        const flag = this._termGroupExpanded[gi];
-        return flag === undefined ? !isHigh : flag;
-      },
-      termGroupTitle(g) {
-        if (g.kind === 'main') return _t('termGroupMain');
-        if (g.kind === 'quad') return _t('termGroupQuad');
-        return _t('termGroupNFI', { n: g.order });
-      },
-      termGroupCount(g) {
-        const set = this._activeSet();
-        const on = g.ids.filter(id => set.has(id)).length;
-        return `(${on}/${g.ids.length})`;
-      },
-      termChipClass(g, id) {
-        const on = this._activeSet().has(id) ? ' doe__term-chip--on' : '';
-        const locked = g.kind === 'main' ? ' doe__term-chip--locked' : '';
-        return (`doe__term-chip${  on  }${locked}`).trim();
-      },
-      toggleTerm(id, event) {
-        if (!id) return;
-        const m = this.model;
-        const active = new Set(m.getActiveTerms());
-        if (event.target.checked) activateTerm(active, id);
-        else deactivateTerm(active, id);
-        m.options.optimalActiveTerms = [...active].sort((a, b) => termSortKey(a).localeCompare(termSortKey(b)));
-        optimal.raiseRunsToMinimum(m, { sourceRowCount: this.sourceRowCount() });
-        this.save();
-      },
-      toggleTermGroup(gi) {
-        const groups = enumerateTerms(this.model.factors.length);
-        const g = groups[gi];
-        const isHigh = g && g.kind === 'ix' && g.order >= 3;
-        const current = this._termGroupExpanded[gi];
-        const cur = current === undefined ? !isHigh : current;
-        this._termGroupExpanded[gi] = !cur;
-      },
-
-      // ── Forbidden vertices ────────────────────────────────────
-
-      forbiddenList() {
-        return Array.isArray(this.model.options.forbiddenVertices) ? this.model.options.forbiddenVertices : [];
-      },
-      forbiddenCoded(f, li) {
-        const nLv = f.levels.length;
-        return nLv === 1 ? 0 : -1 + (2 * li) / (nLv - 1);
-      },
-      _codedToLabel(fi, coded) {
-        const f = this.model.factors[fi];
-        if (!f) return String(coded);
-        const nLv = f.levels.length;
-        if (nLv <= 1) return f.levels[0] ?? '';
-        const idx = Math.round((coded + 1) * (nLv - 1) / 2);
-        const clamped = Math.max(0, Math.min(nLv - 1, idx));
-        return f.levels[clamped] ?? String(coded);
-      },
-      forbiddenRuleText(pattern) {
-        return this.model.factors.map((f, fi) => {
-          const v = pattern ? pattern[fi] : null;
-          const name = (f.name || letter(fi));
-          const label = v == null ? _t('forbiddenAny') : this._codedToLabel(fi, v);
-          return `${name} = ${label}`;
-        }).join(' ∧ ');
-      },
-      addForbiddenVertex() {
-        const root = module._container;
-        if (!root) return;
-        const k = this.model.factors.length;
-        const pattern = new Array(k).fill(null);
-        let anyBound = false;
-        for (let fi = 0; fi < k; fi++) {
-          const sel = root.querySelector(`.doe__forbidden-input[data-factor-idx="${fi}"]`);
-          const raw = sel ? sel.value : '';
-          if (raw === '') continue;
-          const num = parseFloat(raw);
-          if (Number.isFinite(num)) { pattern[fi] = num; anyBound = true; }
-        }
-        if (!anyBound) { ctx().notify && ctx().notify(_t('forbiddenHint'), 'info'); return; }
-        if (!this.model.addForbiddenVertex(pattern)) return;
-        this.save();
-      },
-      removeForbiddenRule(idx) {
-        if (!this.model.removeForbiddenVertex(idx)) return;
-        this.save();
-      },
       forbidPreviewRow(rowIdx) {
         const coded = this.model.design && this.model.design.codedMatrix ? this.model.design.codedMatrix[rowIdx] : null;
         if (!Array.isArray(coded)) return;
         if (!this.model.addForbiddenVertex([...coded])) return;
-        this.save();
-      },
-
-      // ── Source worksheet picker ───────────────────────────────
-
-      sourceWorksheetKey() {
-        const s = this.model.sourceWorksheet;
-        return s ? `${s.instanceId}::${s.sheetId}` : '';
-      },
-      sourceWorksheetOptions() {
-        const sheets = listProjectWorksheets(ctx());
-        const own = this.model.worksheetRef ? this.model.worksheetRef.instanceId : null;
-        const ownSheet = this.model.worksheetRef ? this.model.worksheetRef.sheetId : null;
-        return sheets
-          .filter(s => !(s.instanceId === own && s.sheetId === ownSheet))
-          .map(s => ({ key: `${s.instanceId}::${s.sheetId}`, label: `${s.name} (${s.rowCount})` }));
-      },
-      sourceMappingStatus() {
-        const current = this.model.sourceWorksheet;
-        if (!current) return null;
-        const result = readSourceData(ctx(), current, this.model.factors, this.model.responses);
-        if (result.ok) {
-          let text = _t('sourceMappingOk', { rows: result.rowCount, responses: result.mappedResponseCount });
-          if (result.skippedRows) text += ` ${  _t('sourceSkipped', { n: result.skippedRows })}`;
-          return { ok: true, text };
-        }
-        const reason = result.missingFactors && result.missingFactors.length
-          ? _t('sourceMissingFactors', { names: result.missingFactors.join(', ') })
-          : _t('sourceMappingErrorGeneric');
-        return { ok: false, text: reason };
-      },
-      sourceWorksheetChanged(event) {
-        const v = event.target.value;
-        const m = this.model;
-        if (!v) m.sourceWorksheet = null;
-        else {
-          const [instanceId, sheetId] = v.split('::');
-          m.sourceWorksheet = { instanceId, sheetId };
-        }
-        if (m.isOptimalType()) optimal.raiseRunsToMinimum(m, { sourceRowCount: this.sourceRowCount() });
         this.save();
       },
 
@@ -700,54 +536,6 @@ const mod = createModule({
         if (ref && ref.instanceId) ctx().eventBus.emit('module:activated', { instanceId: ref.instanceId });
       },
 
-      // ── Augment ───────────────────────────────────────────────
-
-      clickAugment() {
-        const root = module._container;
-        const input = root ? root.querySelector('.doe__augment-runs-input') : null;
-        const n = parseInt(input ? input.value : '', 10);
-        if (!Number.isFinite(n) || n <= 0) { ctx().notify(_t('augmentInvalidCount'), 'error'); return; }
-        this.augmentDesign(n);
-      },
-      augmentDesign(addRuns) {
-        const m = this.model;
-        if (!m.design || !m.worksheetRef) return;
-        if (!isWorksheetValid(ctx(), m.worksheetRef)) return;
-        if (!m.isOptimalType()) return;
-        const n = Math.floor(addRuns);
-        if (!Number.isFinite(n) || n <= 0) return;
-        try {
-          const factors = m.factors;
-          const k = factors.length;
-          const lc = factors.map(f => f.levels.length);
-          const cf = factors.map(f => f.kind === 'categorical');
-          const terms = m.getActiveTerms();
-          const newCoded = augmentOptimalDesign(m.design.codedMatrix, k, n, m.designType, {
-            terms, levelCounts: lc, categoricalFlags: cf, seed: Date.now(),
-            forbiddenVertices: m.options.forbiddenVertices,
-          });
-          const newRows = codedToActualRows(newCoded, factors);
-          const oldN = m.design.codedMatrix.length;
-          const newRunOrders = Array.from({ length: n }, (_, i) => oldN + i + 1);
-          const newStdOrders = Array.from({ length: n }, (_, i) => oldN + i + 1);
-          m.design.codedMatrix = [...m.design.codedMatrix, ...newCoded];
-          m.design.actualMatrix = [...m.design.actualMatrix, ...newRows];
-          m.design.runOrder = [...(m.design.runOrder || []), ...newRunOrders];
-          m.design.stdOrder = [...(m.design.stdOrder || []), ...newStdOrders];
-          m.design.replicateIds = [...(m.design.replicateIds || []), ...new Array(n).fill(1)];
-          m.evaluation = evaluateDesign(m.design.codedMatrix, k, m.design.p, m.design.designType, 0.05, { terms: this.model.modelTerms() });
-          appendDoERowsToWorksheet(ctx(), m.worksheetRef, factors, newRows);
-          if (m.worksheetRef.experimentId) {
-            createExperimentRecord(ctx(), m.worksheetRef.experimentId, m.design, m.factors, m.responses, m.doeName, m.worksheetRef, this.model.modelTerms());
-          }
-          m.worksheetRef.designSignature = m.designSignature();
-          this.save();
-          ctx().notify(_t('augmentSuccess', { n }), 'success');
-        } catch (err) {
-          ctx().notify(err.message, 'error');
-        }
-      },
-
       // ── Transfer to Regression ────────────────────────────────
 
       algoNavigate(algoId, event) {
@@ -838,7 +626,6 @@ const mod = createModule({
         this._previewGrid = null;
         this._autoGenTimer = null;
         this._unsubs = [];
-        this._termGroupExpanded = {};
         this._renderGen = 0;
 
         // createModule spreads this data object into every Alpine build of the
