@@ -4,7 +4,8 @@
  * Processes of lesson 1 whose individual values the learner measures: two
  * filling machines and the counter's waiting times. Kept apart from
  * POPULATIONS so lesson 3's population select does not offer them.
- * Pure logic, no DOM.
+ * Lesson 2 draws whole samples of a process and compares two variance
+ * formulas. Pure logic, no DOM.
  */
 
 import { POPULATIONS, normal, meanSd } from './populations.js';
@@ -75,4 +76,30 @@ export function summarizeValues(values) {
       2: share((v) => Math.abs(v - mean) <= 2 * sd),
     },
   };
+}
+
+/**
+ * Draw one sample of n values from a process.
+ * @param {string} processId key of PROCESSES
+ * @param {number} n sample size
+ * @param {() => number} rng uniform generator
+ * @returns {number[]}
+ */
+export function drawSample(processId, n, rng) {
+  const process = PROCESSES[processId];
+  return Array.from({ length: n }, () => process.draw(rng));
+}
+
+/**
+ * Variance of a sample computed both ways: the sum of squared deviations from
+ * the sample mean divided by n and by n − 1. Both NaN below two values.
+ * @param {number[]} values
+ * @returns {{byN: number, byNMinus1: number}}
+ */
+export function sampleVariances(values) {
+  const n = values.length;
+  if (n < 2) return { byN: NaN, byNMinus1: NaN };
+  const mean = values.reduce((sum, v) => sum + v, 0) / n;
+  const squares = values.reduce((sum, v) => sum + (v - mean) ** 2, 0);
+  return { byN: squares / n, byNMinus1: squares / (n - 1) };
 }

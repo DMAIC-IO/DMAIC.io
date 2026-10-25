@@ -1,10 +1,11 @@
 /**
- * Processes of lesson 1: theory values, value summary, seeded shares.
+ * Processes of lessons 1 and 2: theory values, value summary, seeded shares,
+ * sample draws and variances.
  */
 import { suite, test, assertEqual, assertClose, assertTrue } from '../../test-utils.js';
 import { mulberry32 } from '../../../js/engines/random-variates-engine.js';
 import { POPULATIONS } from '../../../js/pages/training/populations.js';
-import { PROCESSES, summarizeValues } from '../../../js/pages/training/processes.js';
+import { PROCESSES, summarizeValues, drawSample, sampleVariances } from '../../../js/pages/training/processes.js';
 
 const draws = (id, count, seed) => {
   const rng = mulberry32(seed);
@@ -71,5 +72,34 @@ suite('processes', () => {
     const w = summarizeValues(draws('waiting', 100000, 1));
     assertTrue(Math.abs(w.belowMean - 0.632) < 0.01, `waiting below mean ${w.belowMean}`);
     assertTrue(Math.abs(w.within[1] - 0.865) < 0.01, `waiting within 1 ${w.within[1]}`);
+  });
+
+  test('sampleVariances on hand values', () => {
+    const v = sampleVariances([498, 500, 502]);
+    assertClose(v.byN, 8 / 3, 1e-12);
+    assertClose(v.byNMinus1, 4, 1e-12);
+    const one = sampleVariances([7]);
+    assertTrue(Number.isNaN(one.byN), 'byN NaN');
+    assertTrue(Number.isNaN(one.byNMinus1), 'byNMinus1 NaN');
+  });
+
+  test('drawSample draws n values of the process', () => {
+    const sample = drawSample('fill-a', 3, mulberry32(1));
+    assertEqual(sample.length, 3);
+    for (const x of sample) assertTrue(x > 480 && x < 520, `value ${x} on the axis`);
+  });
+
+  test('seeded running averages match theory', () => {
+    const rng = mulberry32(1);
+    let byN = 0;
+    let byNMinus1 = 0;
+    const samples = 20000;
+    for (let i = 0; i < samples; i++) {
+      const v = sampleVariances(drawSample('fill-a', 3, rng));
+      byN += v.byN;
+      byNMinus1 += v.byNMinus1;
+    }
+    assertTrue(Math.abs(byN / samples - 8 / 3) < 0.08, `average byN ${byN / samples}`);
+    assertTrue(Math.abs(byNMinus1 / samples - 4) < 0.12, `average byNMinus1 ${byNMinus1 / samples}`);
   });
 });
