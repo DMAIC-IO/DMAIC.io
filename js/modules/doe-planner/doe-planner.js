@@ -24,11 +24,12 @@
 
 import { createModule } from '../../core/template-module.js';
 import { State, letter } from './doe-planner-model.js';
+import { codedToActualRows, buildRunTable, captureEdits, applyEdits } from './doe-planner-runtable.js';
 import { DataGrid } from '../../core/datagrid/datagrid.js';
 import { PB_DESIGNS, ALL_RUNS, K_RANGE, BOX_BEHNKEN } from './doe-planner-designs.js';
 import {
   generateDesign, minRunsForTerms,
-  augmentOptimalDesign, formatValue, codedToActual,
+  augmentOptimalDesign,
 } from '../../engines/doe-planner-engine.js';
 import { DESIGNS, designOf, checkConfig } from './designs/index.js';
 import { hasMultiLevel } from './designs/check.js';
@@ -247,7 +248,7 @@ const mod = createModule({
             seed: Date.now(),
             forbiddenVertices: m.options.forbiddenVertices,
           });
-          newRows = this.codedToWorksheetRows(newCoded, factors);
+          newRows = codedToActualRows(newCoded, factors);
         }
 
         const total = M + addRuns;
@@ -265,29 +266,6 @@ const mod = createModule({
           sourceResponseSeeds: source.responseValues,
           sourceRowCount: M,
         };
-      },
-
-      codedToWorksheetRows(codedRows, factors) {
-        return codedRows.map(row => row.map((c, fi) => {
-          const f = factors[fi];
-          const nLv = f.levels.length;
-          if (f.kind === 'categorical') {
-            const idx = Math.round((c + 1) * (nLv - 1) / 2);
-            const clamped = Math.max(0, Math.min(nLv - 1, idx));
-            return f.levels[clamped] ?? '';
-          }
-          if (nLv <= 2) {
-            const lo = parseFloat(f.levels[0]) || -1;
-            const hi = parseFloat(f.levels[nLv - 1]) || 1;
-            return formatValue(codedToActual(c, lo, hi));
-          }
-          const idx = Math.round((c + 1) * (nLv - 1) / 2);
-          const clamped = Math.max(0, Math.min(nLv - 1, idx));
-          const val = parseFloat(f.levels[clamped]);
-          return isFinite(val)
-            ? formatValue(val)
-            : formatValue(codedToActual(c, parseFloat(f.levels[0]) || -1, parseFloat(f.levels[nLv - 1]) || 1));
-        }));
       },
 
       // ── Factor handlers ───────────────────────────────────────
@@ -1021,44 +999,11 @@ const mod = createModule({
         sm.removeModuleState(ref.instanceId);
         ctx().eventBus.emit('module:removed', { moduleId: 'worksheet', instanceId: ref.instanceId });
       },
-      applyPreviewEditsToDesign() {
-        const m = this.model;
-        const edits = m.previewEdits;
-        if (!edits || !m.design || !m.design.actualMatrix || !m.design.actualMatrix.length) return;
-        const nRuns = m.design.actualMatrix.length;
-        if (Array.isArray(edits.factors)) {
-          m.factors.forEach((f, fi) => {
-            if (f.kind === 'categorical') return;
-            const colEdits = edits.factors[fi];
-            if (!Array.isArray(colEdits)) return;
-            for (let i = 0; i < nRuns; i++) {
-              const v = colEdits[i];
-              if (v != null && Number.isFinite(v)) m.design.actualMatrix[i][fi] = v;
-            }
-          });
-        }
-        if (Array.isArray(edits.responses)) {
-          const seeds = Array.isArray(m.design.sourceResponseSeeds)
-            ? m.design.sourceResponseSeeds.map(col => Array.isArray(col) ? [...col] : new Array(nRuns).fill(null))
-            : m.responses.map(() => new Array(nRuns).fill(null));
-          let touched = false;
-          m.responses.forEach((_, ri) => {
-            while (seeds[ri].length < nRuns) seeds[ri].push(null);
-            const colEdits = edits.responses[ri];
-            if (!Array.isArray(colEdits)) return;
-            for (let i = 0; i < nRuns; i++) {
-              const v = colEdits[i];
-              if (v != null && Number.isFinite(v)) { seeds[ri][i] = v; touched = true; }
-            }
-          });
-          if (touched) { m.design.sourceResponseSeeds = seeds; m.design.sourceRowCount = nRuns; }
-        }
-      },
       createOrRecreateDatasheet() {
         const m = this.model;
         if (!m.design) return;
         if (this._previewGrid) this.capturePreviewEdits();
-        this.applyPreviewEditsToDesign();
+        applyEdits(this.model);
         if (m.worksheetRef) { this.removeOldWorksheet(m.worksheetRef); m.worksheetRef = null; }
 
         const expId = uid();
@@ -1102,7 +1047,7 @@ const mod = createModule({
             terms, levelCounts: lc, categoricalFlags: cf, seed: Date.now(),
             forbiddenVertices: m.options.forbiddenVertices,
           });
-          const newRows = this.codedToWorksheetRows(newCoded, factors);
+          const newRows = codedToActualRows(newCoded, factors);
           const oldN = m.design.codedMatrix.length;
           const newRunOrders = Array.from({ length: n }, (_, i) => oldN + i + 1);
           const newStdOrders = Array.from({ length: n }, (_, i) => oldN + i + 1);
@@ -1169,70 +1114,6 @@ const mod = createModule({
 
       // ── Preview DataGrid (imperative widget) ──────────────────
 
-      _buildPreviewColumns() {
-        const m = this.model;
-        const design = m.design;
-        if (!design || !design.actualMatrix || !design.actualMatrix.length) return [];
-        const nRuns = design.actualMatrix.length;
-        const order = design.runOrder || design.actualMatrix.map((_, i) => i + 1);
-        const stdOrder = design.stdOrder || design.actualMatrix.map((_, i) => i + 1);
-        const replicateIds = design.replicateIds || new Array(nRuns).fill(1);
-        const lockMeta = (reason) => ({ lock: 'hard', managedBy: 'doe-planner', reason });
-        const cols = [
-          { id: '__run', name: _t('colRunOrder'), type: 'numeric', values: [...order], format: { decimals: 0 }, meta: lockMeta('run-order') },
-          { id: '__std', name: _t('colStdOrder'), type: 'numeric', values: [...stdOrder], format: { decimals: 0 }, meta: lockMeta('group-id') },
-          { id: '__blk', name: _t('colBlock'), type: 'numeric', values: new Array(nRuns).fill(1), format: { decimals: 0 }, meta: lockMeta('block-column') },
-          { id: '__rep', name: _t('colReplicate'), type: 'numeric', values: [...replicateIds], format: { decimals: 0 }, meta: lockMeta('replicate-id') },
-        ];
-        const edits = m.previewEdits;
-        const factorEdits = edits && edits.factors ? edits.factors : null;
-        const responseEdits = edits && edits.responses ? edits.responses : null;
-        m.factors.forEach((f, fi) => {
-          const isCategorical = f.kind === 'categorical';
-          const baseValues = design.actualMatrix.map(row => row[fi]);
-          const values = baseValues.map((v, i) => {
-            if (!isCategorical && factorEdits && factorEdits[fi] && factorEdits[fi][i] != null) return factorEdits[fi][i];
-            return v;
-          });
-          cols.push({
-            id: `__f${fi}`,
-            name: f.name || `${_t('factor')} ${letter(fi)}`,
-            type: isCategorical ? 'text' : 'numeric',
-            unit: isCategorical ? '' : (f.unit || ''),
-            values,
-            format: isCategorical ? null : { decimals: 2 },
-            meta: isCategorical ? lockMeta('design-factor') : null,
-          });
-        });
-        const sourceSeeds = Array.isArray(design.sourceResponseSeeds) ? design.sourceResponseSeeds : null;
-        const seedRows = Number.isFinite(design.sourceRowCount) ? design.sourceRowCount : 0;
-        m.responses.forEach((r, ri) => {
-          const values = new Array(nRuns).fill(null);
-          if (sourceSeeds && sourceSeeds[ri] && seedRows > 0) {
-            const limit = Math.min(seedRows, sourceSeeds[ri].length, nRuns);
-            for (let i = 0; i < limit; i++) {
-              const v = sourceSeeds[ri][i];
-              if (v != null && Number.isFinite(v)) values[i] = v;
-            }
-          }
-          if (responseEdits && responseEdits[ri]) {
-            for (let i = 0; i < nRuns; i++) {
-              const v = responseEdits[ri][i];
-              if (v != null && Number.isFinite(v)) values[i] = v;
-            }
-          }
-          cols.push({
-            id: `__r${ri}`,
-            name: r.name || `Y${ri + 1}`,
-            type: 'numeric',
-            unit: r.unit || '',
-            values,
-            format: { decimals: 4 },
-            meta: null,
-          });
-        });
-        return cols;
-      },
       mountPreviewGrid() {
         this.destroyPreviewGrid();
         const root = module._container;
@@ -1241,7 +1122,7 @@ const mod = createModule({
         if (!slot) return;
         const m = this.model;
         if (!m.design || !m.design.actualMatrix || !m.design.actualMatrix.length) return;
-        const cols = this._buildPreviewColumns();
+        const cols = buildRunTable(this.model, _t);
         if (!cols.length) return;
         const isOptimal = m.isOptimalType();
         const self = this;
@@ -1261,39 +1142,11 @@ const mod = createModule({
         if (this._previewGrid) { this._previewGrid.destroy && this._previewGrid.destroy(); this._previewGrid = null; }
       },
       capturePreviewEdits() {
-        const m = this.model;
-        if (!this._previewGrid || !m.design) return;
-        const data = this._previewGrid.getData();
-        const nFactors = m.factors.length;
-        const nResp = m.responses.length;
-        const nRuns = m.design.actualMatrix.length;
-        const factorEdits = Array.from({ length: nFactors }, () => new Array(nRuns).fill(null));
-        const responseEdits = Array.from({ length: nResp }, () => new Array(nRuns).fill(null));
-        let dirty = false;
-        const FACTOR_OFFSET = 4;
-        for (let fi = 0; fi < nFactors; fi++) {
-          const col = data[FACTOR_OFFSET + fi];
-          if (!col) continue;
-          if (m.factors[fi].kind === 'categorical') continue;
-          for (let i = 0; i < nRuns; i++) {
-            const v = col.values[i];
-            const orig = m.design.actualMatrix[i][fi];
-            if (v != null && Number.isFinite(v)) {
-              factorEdits[fi][i] = v;
-              if (Math.abs(v - orig) > 1e-9) dirty = true;
-            }
-          }
-        }
-        for (let ri = 0; ri < nResp; ri++) {
-          const col = data[FACTOR_OFFSET + nFactors + ri];
-          if (!col) continue;
-          for (let i = 0; i < nRuns; i++) {
-            const v = col.values[i];
-            if (v != null && Number.isFinite(v)) responseEdits[ri][i] = v;
-          }
-        }
-        m.previewEdits = { factors: factorEdits, responses: responseEdits };
-        m.previewDirty = dirty;
+        if (!this._previewGrid) return;
+        const captured = captureEdits(this.model, this._previewGrid.getData());
+        if (!captured) return;
+        this.model.previewEdits = captured.edits;
+        this.model.previewDirty = captured.dirty;
         this.save();
       },
 
