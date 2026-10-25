@@ -1,8 +1,8 @@
 <div class="module-container raci" x-data="raciMatrix">
   <div class="module-container__body">
     <div class="raci__legend">
-      <template x-for="r in roles">
-        <span class="raci__legend-item" :key="r"
+      <template x-for="r in roles" :key="r">
+        <span class="raci__legend-item"
               :style="legendStyle(r)"
               x-text="legendLabel(r)"></span>
       </template>
@@ -41,8 +41,8 @@
           <thead>
             <tr>
               <th class="raci__th-corner"><span data-help-key="modules.raci-matrix.actions.cycleRole.help" x-text="cornerLabel()"></span></th>
-              <template x-for="(sh, sIdx) in model.stakeholders">
-                <th class="raci__th-stakeholder dmike-del-btn-host" :key="'sh-' + sIdx">
+              <template x-for="(sh, sIdx) in model.stakeholders" :key="'sh-' + sIdx">
+                <th class="raci__th-stakeholder dmike-del-btn-host">
                   <span class="raci__th-text"
                         x-show="!isRenaming('stakeholder', sIdx)"
                         :title="renameTitle(sh)"
@@ -67,8 +67,8 @@
             </tr>
           </thead>
           <tbody>
-            <template x-for="(act, aIdx) in model.activities">
-              <tr :key="'row-' + aIdx"
+            <template x-for="(act, aIdx) in model.activities" :key="'row-' + aIdx">
+              <tr
                   :class="rowWarnClass(aIdx)"
                   @dragstart="dragStart('activities', aIdx, $event)"
                   @dragend="dragEnd($event)"
@@ -103,8 +103,8 @@
                           :title="t('removeActivity')"
                           @click.stop="removeActivity(aIdx)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                 </td>
-                <template x-for="(sh, sIdx) in model.stakeholders">
-                  <td class="raci__cell" :key="'cell-' + aIdx + '-' + sIdx"
+                <template x-for="(sh, sIdx) in model.stakeholders" :key="'cell-' + aIdx + '-' + sIdx">
+                  <td class="raci__cell"
                       :data-a="aIdx" :data-s="sIdx"
                       :style="cellStyle(model.getRole(aIdx, sIdx))"
                       x-text="model.getRole(aIdx, sIdx)"
