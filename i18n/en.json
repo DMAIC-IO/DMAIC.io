@@ -7334,13 +7334,381 @@
       "decisionConfirm_repeat": "Repeat this phase? A new cycle with the same factor settings will be created.",
       "decisionConfirm_recenter": "Re-center? The best point becomes the new center. Factor levels will be adjusted automatically.",
       "decisionConfirm_stop": "Complete the project? No further phases will be created.",
+      "whenToUse": "When the effect of several factors on one or more responses is to be studied in a planned experiment: full or fractional factorial, Plackett-Burman, response surface (CCD, Box-Behnken), Taguchi or optimal (D, A, G), also as an EVOP project over several phases. Which design type fits is settled beforehand in the DoE advisor (doe-advisor).",
       "actions": {
-        "completePhase": {
-          "help": "Closes the active EVOP phase after a confirmation: the design and the response values are stored in the phase, then a new phase starts or the project ends, depending on the decision. Returns false when the confirmation is cancelled or the phase is already decided.",
+        "read": {
+          "help": "Read plan, factors, responses, validity, summary, evaluation, linked datasheet and EVOP project. The run table comes on request only: read({ fields: ['runs'] })."
+        },
+        "setDoeName": {
+          "help": "Name the plan, in EVOP project mode the active phase. The name becomes the datasheet title.",
           "params": {
-            "decision": "recenter (new phase around the best run, step sizes kept), repeat (new phase with the same factor levels) or stop (complete the project, no further phase). Any other value is an error."
+            "name": "The name; empty clears it."
+          }
+        },
+        "factors": {
+          "addFactor": {
+            "help": "Append an empty continuous factor with two empty levels. Returns its id, the factorId of the other factor actions. The plan is invalid until name and levels are set."
+          },
+          "removeFactor": {
+            "help": "Remove a factor; model terms with it go too.",
+            "params": {
+              "factorId": "The factor, id from read().factors."
+            }
+          },
+          "setFactorName": {
+            "help": "Name a factor. Names must differ; the name becomes a column of the run table and the datasheet.",
+            "params": {
+              "factorId": "The factor.",
+              "name": "The name; empty makes the plan invalid."
+            }
+          },
+          "setFactorUnit": {
+            "help": "Set a factor's unit.",
+            "params": {
+              "factorId": "The factor.",
+              "unit": "The unit, e.g. °C; empty for none."
+            }
+          },
+          "setFactorKind": {
+            "help": "Make a factor continuous (numbers as levels) or categorical (names as levels, no unit). Which design types are valid afterwards shows in read().valid and invalidReason.",
+            "params": {
+              "factorId": "The factor.",
+              "kind": "continuous or categorical."
+            }
+          },
+          "setLevel": {
+            "help": "Set one level of a factor. The first is the lowest, the last the highest level; for continuous factors a number as text.",
+            "params": {
+              "factorId": "The factor.",
+              "levelIdx": "The level, from 0.",
+              "value": "The value as text, e.g. \"20\" or \"Supplier A\"."
+            }
+          },
+          "insertLevel": {
+            "help": "Insert an empty level. More than two levels rule out the two-level design types (fractional factorial, Plackett-Burman, CCD).",
+            "params": {
+              "factorId": "The factor.",
+              "at": "The position, from 0; the levels behind move up."
+            }
+          },
+          "removeLevel": {
+            "help": "Remove a level; at least two stay.",
+            "params": {
+              "factorId": "The factor.",
+              "levelIdx": "The level, from 0."
+            }
+          },
+          "addResponse": {
+            "help": "Append an empty response. Returns its index (0 = Y1). The plan is invalid until it is named."
+          },
+          "removeResponse": {
+            "help": "Remove a response; at least one stays.",
+            "params": {
+              "index": "The response, 0 = Y1."
+            }
+          },
+          "setResponseName": {
+            "help": "Name a response; the name becomes a column of the run table and the datasheet.",
+            "params": {
+              "index": "The response, 0 = Y1.",
+              "name": "The name; empty makes the plan invalid."
+            }
+          },
+          "setResponseUnit": {
+            "help": "Set a response's unit. A linked datasheet becomes outdated.",
+            "params": {
+              "index": "The response, 0 = Y1.",
+              "unit": "The unit; empty for none."
+            }
+          }
+        },
+        "design": {
+          "selectDesignType": {
+            "help": "Choose the design type; the type's own selection (resolution, Plackett-Burman design, Taguchi array) starts over. Fractional factorial, Plackett-Burman and Taguchi need their selection before a design is built.",
+            "params": {
+              "type": "full (full factorial), frac (fractional factorial), pb (Plackett-Burman), ccd (central composite), bb (Box-Behnken), taguchi, dopt, aopt or gopt (D-, A-, G-optimal). Two-level types require exactly two levels per factor."
+            }
+          },
+          "applyRecommendation": {
+            "help": "Adopt the recommended design type: up to 4 two-level factors full factorial, up to 6 fractional factorial, from 7 Plackett-Burman; with multi-level factors Box-Behnken (3 to 7 factors), otherwise Taguchi. Returns the chosen type; without a recommendation the design type stays as it is."
+          },
+          "selectResolution": {
+            "help": "Choose the fractional factorial by factor count and run count; the resolution (III, IV, V …) follows from the table. Design type frac only.",
+            "params": {
+              "k": "The factor count; must equal the number of factors.",
+              "runs": "The run count: 4, 8, 16, 32, 64 or 128; not every combination exists."
+            }
+          },
+          "selectPB": {
+            "help": "Choose a Plackett-Burman design. Design type pb only.",
+            "params": {
+              "index": "The design, from 0, in table order."
+            }
+          },
+          "selectTaguchi": {
+            "help": "Choose an orthogonal Taguchi array. Design type taguchi only; the arrays that fit the factor count and levels are available.",
+            "params": {
+              "name": "The name, e.g. L4, L8 or L9."
+            }
+          },
+          "setRandomize": {
+            "help": "Shuffle the run order or keep the standard order.",
+            "params": {
+              "on": "true shuffles, false does not."
+            }
+          },
+          "setCenterPoints": {
+            "help": "Append three center points in the middle of the continuous factors; they reveal curvature. Only where the design type provides for them.",
+            "params": {
+              "on": "true appends them, false does not."
+            }
+          },
+          "setReplicates": {
+            "help": "How often each run is repeated. Replicates estimate the experimental error and enable the dispersion analysis.",
+            "params": {
+              "n": "Whole number from 1 to 10."
+            }
+          },
+          "setAlphaType": {
+            "help": "Choose the star point distance α of the central composite design.",
+            "params": {
+              "type": "rotatable (equal prediction quality in all directions), face-centered (α = 1, star points on the cube faces, three levels per factor) or spherical (α = √k)."
+            }
+          },
+          "setCcdCenterPoints": {
+            "help": "The number of center points in the central composite design.",
+            "params": {
+              "n": "Whole number from 1."
+            }
+          },
+          "setBbCenterPoints": {
+            "help": "The number of center points in the Box-Behnken design.",
+            "params": {
+              "n": "Whole number from 1."
+            }
+          }
+        },
+        "optimal": {
+          "setOptimalRuns": {
+            "help": "The run count of the optimal design; at least the number of model terms plus one. With a source worksheet only the new runs count.",
+            "params": {
+              "n": "Whole number from the minimum."
+            }
+          },
+          "setTerm": {
+            "help": "Switch a model term of the optimal design on or off. Switching on takes the contained main effects along, switching off the terms that contain it; main effects stay on.",
+            "params": {
+              "termId": "The term id: M0, M1 … main effects, Q0 … quadratic, I0_1 … interactions; the numbers are factor indices from 0.",
+              "on": "true switches on, false off."
+            }
+          },
+          "setTermGroup": {
+            "help": "Switch a whole term group on or off: 1 = quadratic terms, from 2 the interactions per order. The main effects (group 0) stay on.",
+            "params": {
+              "groupIdx": "The group, from 1.",
+              "on": "true switches on, false off."
+            }
+          },
+          "addForbiddenVertex": {
+            "help": "Forbid a factor combination in the optimal design, such as a corner the plant cannot run. Returns false when it is already forbidden.",
+            "params": {
+              "pattern": "One coded level per factor (-1 lowest, 1 highest, intermediate levels in between) or null for any level; at least one level is set."
+            }
+          },
+          "removeForbiddenVertex": {
+            "help": "Allow a forbidden combination again.",
+            "params": {
+              "index": "The rule, from 0, as in read().options.forbiddenVertices."
+            }
+          },
+          "setSourceWorksheet": {
+            "help": "Choose a project worksheet with runs already measured as the starting point; the optimal design adds new runs only. Columns are matched by factor and response names; the planner's own datasheet is no source.",
+            "params": {
+              "instanceId": "The worksheet instance; null removes the link.",
+              "sheetId": "The sheet of the instance; ignored with null."
+            }
+          },
+          "augment": {
+            "help": "Extend an optimal design with a linked datasheet by new runs; existing runs and values stay, the new rows are appended. Returns the run count afterwards.",
+            "params": {
+              "n": "How many runs to add, whole number from 1."
+            }
+          }
+        },
+        "analysis": {
+          "setAnalysisResponse": {
+            "help": "Choose the response the dispersion analysis evaluates and the regression handover passes on.",
+            "params": {
+              "index": "The response, 0 = Y1."
+            }
+          },
+          "transferToRegression": {
+            "help": "Hand the linked datasheet to a new regression in the planner's phase, with the plan's model terms and the chosen response. Returns the regression's instance id."
+          }
+        },
+        "evop": {
+          "setProjectMode": {
+            "help": "Switch the EVOP project mode on or off. The first switch-on starts phase 1 with the current plan.",
+            "params": {
+              "on": "true switches on, false off."
+            }
+          },
+          "setProjectName": {
+            "help": "Set the project name; new phases are then called “<project> - Phase n”.",
+            "params": {
+              "name": "The name; empty clears it."
+            }
+          },
+          "completePhase": {
+            "help": "Close the active phase without confirmation: the plan and the values of the first response are stored in the phase, then a new phase starts or the project ends, depending on the decision. Returns false when the active phase is already decided.",
+            "params": {
+              "decision": "recenter (new phase around the best run, step sizes kept), repeat (new phase with the same factor levels) or stop (complete the project, no further phase)."
+            }
+          },
+          "newPhase": {
+            "help": "Start a new phase with the current factor levels; only when the active phase is decided and the project not stopped. Returns the index of the new phase."
+          },
+          "viewPhase": {
+            "help": "Show a phase: its plan, design and datasheet come back without regenerating the design.",
+            "params": {
+              "idx": "The phase, 0 = phase 1."
+            }
+          }
+        },
+        "runs": {
+          "setRunValue": {
+            "help": "Set one value of the run table while no current datasheet is linked: a response result or an adjusted setting of a continuous factor. The value goes into the datasheet when it is created. With a current linked datasheet the values are entered there, in the datasheet's worksheet.",
+            "params": {
+              "run": "The run number from read().runs.",
+              "column": "A factor or response name as in read().runs; not a categorical factor.",
+              "value": "The number; null reverts the change."
+            }
+          },
+          "createDatasheet": {
+            "help": "Create the plan's datasheet with the preview's values; a datasheet created before is replaced, and the planner opens the new one. Returns the datasheet's instance id (a worksheet)."
           }
         }
+      },
+      "fields": {
+        "doeName": {
+          "help": "Name of the plan, in project mode of the active phase."
+        },
+        "designType": {
+          "help": "The chosen design type: full, frac, pb, ccd, bb, taguchi, dopt, aopt or gopt."
+        },
+        "factors": {
+          "help": "The factors in order, each with id, name, unit, kind and levels."
+        },
+        "responses": {
+          "help": "The responses in order, each with name and unit; the index is the position."
+        },
+        "options": {
+          "help": "The design options: random run order, center points, replicates, for the central composite design the star point distance and center points, for Box-Behnken the center points, for Taguchi the array, for the optimal design the run count, model terms and forbidden factor combinations."
+        },
+        "typeParams": {
+          "help": "The type's own selection: the resolution table cell for the fractional factorial, the design for Plackett-Burman."
+        },
+        "valid": {
+          "help": "Whether the configuration yields a design. A valid design is built by itself after about a second."
+        },
+        "invalidReason": {
+          "help": "Why no design is built yet: too few factors, duplicate factor names, an incomplete factor, no or an unnamed response, no design type, multi-level factors with a two-level design type, a missing selection of the design type or too few runs in the optimal design. A valid plan has no reason."
+        },
+        "summary": {
+          "help": "Planned runs including replicates, resolution and runs of the generated design."
+        },
+        "analysisResponseIdx": {
+          "help": "The response of the dispersion analysis and the regression handover, 0 = Y1."
+        },
+        "sourceWorksheet": {
+          "help": "The source worksheet of an optimal design with runs already measured, { instanceId, sheetId }, or null."
+        },
+        "runs": {
+          "help": "The run table in run order. Without a current datasheet the preview including the values entered there, with a linked datasheet the responses from it. Because of its size it comes on explicit request only."
+        },
+        "worksheet": {
+          "help": "The linked datasheet with its fill state, or null."
+        },
+        "evaluation": {
+          "help": "The evaluation of the generated design: efficiency, VIF, alias structure and power; null without a design."
+        },
+        "evop": {
+          "help": "The EVOP project with its phases; null outside project mode."
+        }
+      },
+      "types": {
+        "DoeFactor": {
+          "id": "Stable id of the factor, the factorId of the factor actions.",
+          "name": "The name, also a column of the run table.",
+          "unit": "The unit, empty for none.",
+          "kind": "continuous (numbers as levels) or categorical (names as levels).",
+          "levels": "The levels as typed, lowest first."
+        },
+        "DoeResponse": {
+          "name": "The name, also a column of the run table.",
+          "unit": "The unit, empty for none."
+        },
+        "DoeTypeParams": {
+          "selectedRes": "The chosen resolution table cell { k, runs, res, p } for the fractional factorial, otherwise null.",
+          "selectedPBIdx": "The chosen Plackett-Burman design as a table index, otherwise null."
+        },
+        "DoeSummary": {
+          "runs": "Planned runs including replicates; the number is missing while the design type gives none.",
+          "resolution": "The resolution: III, IV, V, Full, CCD and so on; empty without.",
+          "generatedRuns": "Runs of the generated design, 0 without a design."
+        },
+        "DoeRun": {
+          "run": "Run number in run order; the run of setRunValue.",
+          "std": "Standard order.",
+          "block": "Block.",
+          "replicate": "Replicate.",
+          "factors": "Setting per factor name.",
+          "responses": "Value per response name, null while empty."
+        },
+        "DoeWorksheet": {
+          "instanceId": "The linked datasheet, a worksheet of its own; the results are entered there, not in the planner.",
+          "sheetId": "The sheet.",
+          "stale": "The plan changed since the datasheet was created; the interface then offers “recreate”.",
+          "filled": "Filled response cells.",
+          "total": "All response cells."
+        },
+        "DoeEvaluation": {
+          "efficiency": "D-, A- and G-efficiency in percent, condition number and largest leverage.",
+          "vif": "Variance inflation factor per model term; 1 means independent, above 10 strongly confounded.",
+          "alias": "Generators and, per term, the terms it is confounded with; null without confounding.",
+          "power": "Power per effect size; null without error degrees of freedom."
+        },
+        "DoePhase": {
+          "cycleNumber": "Phase number from 1.",
+          "doeName": "Name of the phase.",
+          "decision": "recenter, repeat, stop or null while open.",
+          "completedAt": "Time of the decision (ISO), null while open.",
+          "yValues": "Values of the first response per run at closing, null without."
+        },
+        "DoeEvop": {
+          "projectMode": "Always true; outside project mode evop is null.",
+          "projectName": "The project name.",
+          "activePhaseIdx": "The phase shown, 0 = phase 1.",
+          "phases": "All phases in order.",
+          "summary": "Cumulative EVOP effects; they are missing until a phase with values is closed."
+        }
+      },
+      "columns": {
+        "term": "The model term: main effect, interaction (A*B) or quadratic term.",
+        "effect": "The effect: change of the response from the low to the high level.",
+        "aliasedWith": "The terms whose effect cannot be separated from this term.",
+        "evopErrorLimit": "Error limit from the spread across the phases; an effect beyond it counts as real.",
+        "evopSignificant": "Whether the effect exceeds the error limit.",
+        "effectSize": "The effect size in multiples of the standard deviation.",
+        "power": "The probability of detecting an effect of this size at α = 0.05.",
+        "dispersionPoint": "The design point: one factor combination with its replicates.",
+        "dispersionN": "Number of replicates at the design point.",
+        "dispersionMean": "Mean of the response at the design point.",
+        "dispersionS": "Standard deviation at the design point.",
+        "dispersionVar": "Variance at the design point.",
+        "dispersionLnVar": "Log variance, the response of the dispersion model.",
+        "coefficient": "The estimated coefficient in the coded model.",
+        "pValue": "The p-value; below 0.05 the term counts as significant."
       },
       "evopEffectTable": "EVOP Effect Table (cumulative)",
       "evopCycles": "{n} cycles",

@@ -2,7 +2,7 @@
   <div class="doe__input dmike-split__input">
 
     <!-- Project (EVOP) toggle -->
-    <label class="doe__project-toggle">
+    <label class="doe__project-toggle" data-help-key="modules.doe-planner.actions.evop.setProjectMode.help">
       <input type="checkbox" class="doe__project-check" x-model="model.projectMode" @change="evop.setProjectMode(model.projectMode)" />
       <span x-text="t('projectMode')"></span>
     </label>
@@ -11,7 +11,7 @@
     <template x-if="model.projectMode">
       <div class="doe__project-bar">
         <div class="doe__project-name-row">
-          <label class="doe__name-label" x-text="t('projectName')"></label>
+          <label class="doe__name-label" data-help-key="modules.doe-planner.actions.evop.setProjectName.help" x-text="t('projectName')"></label>
           <input type="text" class="field doe__project-name-input"
                  x-model="model.projectName" @change="evop.setProjectName(model.projectName)"
                  :placeholder="t('projectNamePlaceholder')" />
@@ -20,7 +20,7 @@
         <!-- Timeline -->
         <template x-if="model.projectPhases.length > 0">
           <div class="doe__timeline">
-            <h4 class="doe__timeline-title" x-text="t('phaseHistory')"></h4>
+            <h4 class="doe__timeline-title" data-help-key="modules.doe-planner.types.DoeEvop.phases" x-text="t('phaseHistory')"></h4>
             <div class="doe__timeline-track">
               <template x-for="(ph, idx) in model.projectPhases" :key="idx">
                 <button class="doe__timeline-item" :class="evop.timelineItemClass(idx)" :data-phase-idx="idx" type="button" @click="evop.viewPhase(idx)">
@@ -32,7 +32,7 @@
                 </button>
               </template>
               <template x-if="evop.canStartNewPhase()">
-                <button class="doe__timeline-item doe__timeline-item--new doe__new-phase-btn" type="button" @click="evop.newPhase()">
+                <button class="doe__timeline-item doe__timeline-item--new doe__new-phase-btn" data-help-key="modules.doe-planner.actions.evop.newPhase.help" type="button" @click="evop.newPhase()">
                   <span class="doe__timeline-num">+</span>
                   <span class="doe__timeline-label" x-text="t('newPhase')"></span>
                 </button>
@@ -44,7 +44,7 @@
         <!-- EVOP summary -->
         <template x-if="evop.evopSummary()">
           <div class="doe__evop-summary">
-            <h4 class="doe__evop-title" x-text="t('evopEffectTable')"></h4>
+            <h4 class="doe__evop-title" data-help-key="modules.doe-planner.types.DoeEvop.summary" x-text="t('evopEffectTable')"></h4>
             <div class="doe__evop-meta">
               <span x-text="t('evopCycles', { n: evop.evopSummary().cycleCount })"></span>
               <span x-text="t('evopTotalRuns', { n: evop.evopSummary().totalRuns })"></span>
@@ -52,10 +52,10 @@
             </div>
             <table class="doe__evop-table">
               <thead><tr>
-                <th x-text="t('term')"></th>
-                <th x-text="t('effect')"></th>
-                <th x-text="t('evopErrorLimit')"></th>
-                <th x-text="t('evopSignificant')"></th>
+                <th data-help-key="modules.doe-planner.columns.term" x-text="t('term')"></th>
+                <th data-help-key="modules.doe-planner.columns.effect" x-text="t('effect')"></th>
+                <th data-help-key="modules.doe-planner.columns.evopErrorLimit" x-text="t('evopErrorLimit')"></th>
+                <th data-help-key="modules.doe-planner.columns.evopSignificant" x-text="t('evopSignificant')"></th>
               </tr></thead>
               <tbody>
                 <template x-for="(e, ei) in evop.evopSummary().effects" :key="ei">
@@ -83,14 +83,14 @@
 
     <!-- Name bar -->
     <div class="doe__name-bar">
-      <label class="doe__name-label" x-text="model.projectMode ? t('phaseName') : t('doeName')"></label>
+      <label class="doe__name-label" data-help-key="modules.doe-planner.actions.setDoeName.help" x-text="model.projectMode ? t('phaseName') : t('doeName')"></label>
       <input type="text" class="field doe__name-input"
              x-model="model.doeName" @change="setDoeName(model.doeName)"
              :placeholder="t('doeNamePlaceholder')" />
     </div>
 
     <!-- ── Factors section ────────────────────────────────────── -->
-    <div class="dmike-split__section-title" x-text="t('stepFactors')"></div>
+    <div class="dmike-split__section-title" data-help-key="modules.doe-planner.fields.factors.help" x-text="t('stepFactors')"></div>
     <div class="doe__factors-list">
       <template x-for="(f, fi) in model.factors" :key="f.id">
         <div class="doe__factor-row" :data-factor-id="f.id" :data-factor-kind="factors.factorKind(f)">
@@ -140,10 +140,10 @@
         </div>
       </template>
     </div>
-    <button class="btn btn--sm doe__add-factor-btn" type="button" @click="factors.addFactor()"><span x-text="'+ ' + t('addFactor')"></span></button>
+    <button class="btn btn--sm doe__add-factor-btn" data-help-key="modules.doe-planner.actions.factors.addFactor.help" type="button" @click="factors.addFactor()"><span x-text="'+ ' + t('addFactor')"></span></button>
 
     <!-- ── Responses section ──────────────────────────────────── -->
-    <div class="dmike-split__section-title" x-text="t('stepResponses')"></div>
+    <div class="dmike-split__section-title" data-help-key="modules.doe-planner.fields.responses.help" x-text="t('stepResponses')"></div>
     <div class="doe__responses-list">
       <template x-for="(r, ri) in model.responses" :key="ri">
         <div class="doe__response-row" :data-response-idx="ri">
@@ -163,17 +163,17 @@
         </div>
       </template>
     </div>
-    <button class="btn btn--sm doe__add-response-btn" type="button" @click="factors.addResponse()"><span x-text="'+ ' + t('addResponse')"></span></button>
+    <button class="btn btn--sm doe__add-response-btn" data-help-key="modules.doe-planner.actions.factors.addResponse.help" type="button" @click="factors.addResponse()"><span x-text="'+ ' + t('addResponse')"></span></button>
 
     <!-- ── Design section ─────────────────────────────────────── -->
-    <div class="dmike-split__section-title" x-text="t('stepDesignType')"></div>
+    <div class="dmike-split__section-title" data-help-key="modules.doe-planner.actions.design.selectDesignType.help" x-text="t('stepDesignType')"></div>
 
     <!-- Recommendation -->
     <template x-if="design.recommendation()">
       <div class="doe__recommendation">
         <span class="doe__recommendation-icon">&#10024;</span>
         <span class="doe__recommendation-text" x-text="design.recommendationText()"></span>
-        <button class="doe__recommendation-btn" :data-rec-type="design.recommendation()" type="button"
+        <button class="doe__recommendation-btn" data-help-key="modules.doe-planner.actions.design.applyRecommendation.help" :data-rec-type="design.recommendation()" type="button"
                 @click="design.applyRecommendation()" x-text="t('design_' + design.recommendation())"></button>
       </div>
     </template>
@@ -206,7 +206,7 @@
     <!-- Resolution table (frac) -->
     <template x-if="model.designType === 'frac'">
       <div class="doe__sub-panel">
-        <div class="dmike-split__section-title" x-text="t('resTableTitle')"></div>
+        <div class="dmike-split__section-title" data-help-key="modules.doe-planner.actions.design.selectResolution.help" x-text="t('resTableTitle')"></div>
         <div class="doe__res-info" x-text="design.resInfoText()"></div>
         <div class="doe__res-table-wrap">
           <table class="doe__res-table">
@@ -265,7 +265,7 @@
             </template>
             <template x-if="design.resAliasDetail().aliases.length">
               <table class="doe__res-alias-table">
-                <thead><tr><th x-text="t('term')"></th><th x-text="t('aliasedWith')"></th></tr></thead>
+                <thead><tr><th data-help-key="modules.doe-planner.columns.term" x-text="t('term')"></th><th data-help-key="modules.doe-planner.columns.aliasedWith" x-text="t('aliasedWith')"></th></tr></thead>
                 <tbody>
                   <template x-for="(a, ai) in design.resAliasDetail().aliases" :key="ai">
                     <tr>
@@ -296,7 +296,7 @@
     <!-- PB table -->
     <template x-if="model.designType === 'pb'">
       <div class="doe__sub-panel">
-        <div class="dmike-split__section-title" x-text="t('pbTitle')"></div>
+        <div class="dmike-split__section-title" data-help-key="modules.doe-planner.actions.design.selectPB.help" x-text="t('pbTitle')"></div>
         <div class="doe__pb-info" x-text="design.pbInfoText()"></div>
         <table class="doe__pb-table">
           <thead><tr><th></th><th x-text="t('factors')"></th><th x-text="t('runs')"></th></tr></thead>
@@ -331,7 +331,7 @@
     <!-- Taguchi selector -->
     <template x-if="model.designType === 'taguchi'">
       <div class="doe__sub-panel">
-        <div class="dmike-split__section-title" x-text="t('taguchiTitle')"></div>
+        <div class="dmike-split__section-title" data-help-key="modules.doe-planner.actions.design.selectTaguchi.help" x-text="t('taguchiTitle')"></div>
         <div class="doe__taguchi-info" x-text="design.taguchiInfoText()"></div>
         <template x-if="design.taguchiCandidatesList().length > 0">
           <table class="doe__taguchi-table">
@@ -365,7 +365,7 @@
         <div class="dmike-split__section-title" x-text="t('optimalTitle')"></div>
         <div class="doe__optimal-info" x-text="t('optimalInfo_' + model.designType)"></div>
         <div class="field-group">
-          <label class="doe__input-label" x-text="optimal.optimalRunsLabel()"></label>
+          <label class="doe__input-label" data-help-key="modules.doe-planner.actions.optimal.setOptimalRuns.help" x-text="optimal.optimalRunsLabel()"></label>
           <input type="number" class="field doe__optimal-runs-input" :min="optimal.optimalMinNew()" max="200"
                  :value="model.options.optimalRuns || optimal.optimalMinNew()" @change="optimal.optimalRunsChanged($event)" />
           <span class="doe__optimal-hint" x-text="optimal.optimalRunsHint()"></span>
@@ -374,7 +374,7 @@
         <!-- Term list -->
         <template x-if="model.factors.length >= 1">
           <div class="doe__term-list-wrap">
-            <div class="doe__term-list-label" x-text="t('modelTerms')"></div>
+            <div class="doe__term-list-label" data-help-key="modules.doe-planner.actions.optimal.setTerm.help" x-text="t('modelTerms')"></div>
             <div class="doe__term-list-hint" x-text="t('modelTermsHintHier')"></div>
             <div class="doe__term-list">
               <template x-for="(g, gi) in optimal.termGroups()" :key="gi">
@@ -406,7 +406,7 @@
 
         <!-- Forbidden vertices -->
         <div class="doe__forbidden-block">
-          <div class="doe__forbidden-title" x-text="t('forbiddenTitle')"></div>
+          <div class="doe__forbidden-title" data-help-key="modules.doe-planner.actions.optimal.addForbiddenVertex.help" x-text="t('forbiddenTitle')"></div>
           <div class="doe__forbidden-hint" x-text="t('forbiddenHint')"></div>
           <ul class="doe__forbidden-list">
             <template x-if="optimal.forbiddenList().length === 0">
@@ -444,7 +444,7 @@
 
         <!-- Source worksheet picker -->
         <div class="doe__source-section">
-          <div class="doe__source-label" x-text="t('sourceTitle')"></div>
+          <div class="doe__source-label" data-help-key="modules.doe-planner.actions.optimal.setSourceWorksheet.help" x-text="t('sourceTitle')"></div>
           <div class="doe__source-hint" x-text="t('sourceHint')"></div>
           <select class="field doe__source-select" @change="optimal.sourceWorksheetChanged($event)">
             <option value="" :selected="!model.sourceWorksheet" x-text="t('sourceNone')"></option>
@@ -461,7 +461,7 @@
     </template>
 
     <!-- Design parameters -->
-    <div class="dmike-split__section-title" x-text="t('stepParameters')"></div>
+    <div class="dmike-split__section-title" data-help-key="modules.doe-planner.fields.options.help" x-text="t('stepParameters')"></div>
     <div class="doe__param-group">
       <div class="field-checks">
         <label class="field-check">
@@ -484,7 +484,7 @@
 
     <template x-if="model.designType === 'bb'">
       <div class="field-group">
-        <label class="doe__input-label" x-text="t('bbCenterPoints')"></label>
+        <label class="doe__input-label" data-help-key="modules.doe-planner.actions.design.setBbCenterPoints.help" x-text="t('bbCenterPoints')"></label>
         <input type="number" class="field doe__bb-cp-input" min="1" max="10"
                :value="model.options.bbCenterPoints" @change="design.bbCpChanged($event)" />
       </div>
@@ -493,7 +493,7 @@
     <template x-if="model.designType === 'ccd'">
       <div class="doe__ccd-params">
         <div class="field-group">
-          <label class="doe__input-label" x-text="t('alphaType')"></label>
+          <label class="doe__input-label" data-help-key="modules.doe-planner.actions.design.setAlphaType.help" x-text="t('alphaType')"></label>
           <select class="field doe__alpha-type-select" x-model="model.options.alphaType" @change="design.setAlphaType(model.options.alphaType)">
             <option value="rotatable" x-text="t('alphaRotatable')"></option>
             <option value="face-centered" x-text="t('alphaFaceCentered')"></option>
@@ -501,7 +501,7 @@
           </select>
         </div>
         <div class="field-group">
-          <label class="doe__input-label" x-text="t('ccdCenterPoints')"></label>
+          <label class="doe__input-label" data-help-key="modules.doe-planner.actions.design.setCcdCenterPoints.help" x-text="t('ccdCenterPoints')"></label>
           <input type="number" class="field doe__ccd-cp-input" min="1" max="10"
                  :value="model.options.ccdCenterPoints" @change="design.ccdCpChanged($event)" />
         </div>
@@ -511,14 +511,14 @@
     <!-- Design summary -->
     <div class="doe__summary-card">
       <div class="doe__summary-item"><span x-text="t('factors') + ': '"></span><strong x-text="model.factors.length"></strong></div>
-      <div class="doe__summary-item"><span x-text="t('runs') + ': '"></span><strong x-text="evaluation.summaryRuns()"></strong></div>
-      <div class="doe__summary-item"><span x-text="t('resolution') + ': '"></span><strong x-text="evaluation.summaryRes()"></strong></div>
+      <div class="doe__summary-item"><span data-help-key="modules.doe-planner.types.DoeSummary.runs" x-text="t('runs') + ': '"></span><strong x-text="evaluation.summaryRuns()"></strong></div>
+      <div class="doe__summary-item"><span data-help-key="modules.doe-planner.types.DoeSummary.resolution" x-text="t('resolution') + ': '"></span><strong x-text="evaluation.summaryRes()"></strong></div>
       <div class="doe__summary-item"><span x-text="t('responses') + ': '"></span><strong x-text="model.responses.length"></strong></div>
       <template x-if="model.design">
-        <div class="doe__summary-item"><span class="doe__generated-badge" x-text="'✓ ' + t('generated', { runs: evaluation.summaryGeneratedRuns() })"></span></div>
+        <div class="doe__summary-item"><span class="doe__generated-badge" data-help-key="modules.doe-planner.types.DoeSummary.generatedRuns" x-text="'✓ ' + t('generated', { runs: evaluation.summaryGeneratedRuns() })"></span></div>
       </template>
       <template x-if="!model.design">
-        <div class="doe__summary-item doe__summary-item--pending" x-text="evaluation.configValid() ? t('configReady') : t('configIncomplete')"></div>
+        <div class="doe__summary-item doe__summary-item--pending" data-help-key="modules.doe-planner.fields.valid.help" x-text="evaluation.configValid() ? t('configReady') : t('configIncomplete')"></div>
       </template>
     </div>
   </div>
@@ -529,7 +529,7 @@
     <!-- Placeholder when no design + invalid config -->
     <template x-if="!model.design && !evaluation.configValid()">
       <div class="doe__placeholder">
-        <p x-text="t('configureLeft')"></p>
+        <p data-help-key="modules.doe-planner.fields.invalidReason.help" x-text="t('configureLeft')"></p>
       </div>
     </template>
 
@@ -542,7 +542,7 @@
         <!-- Stale state -->
         <template x-if="runs.staleness() === 'stale'">
           <div class="doe__stale-banner">
-            <div class="doe__stale-text" x-text="t('worksheetStaleWarning')"></div>
+            <div class="doe__stale-text" data-help-key="modules.doe-planner.types.DoeWorksheet.stale" x-text="t('worksheetStaleWarning')"></div>
             <div class="doe__stale-actions">
               <button class="btn btn--primary doe__datasheet-recreate-btn" type="button" @click="runs.createDatasheet()" x-text="t('worksheetRecreate')"></button>
               <button class="btn btn--secondary doe__open-old-worksheet-btn" type="button" @click="runs.openLinkedWorksheet()" x-text="t('worksheetOpenOld')"></button>
@@ -557,17 +557,17 @@
               <div class="doe__results-bar">
                 <div class="doe__results-bar-fill" :style="'width:' + runs.boundPct() + '%'"></div>
               </div>
-              <span class="doe__results-text" x-text="runs.boundProgressText()"></span>
+              <span class="doe__results-text" data-help-key="modules.doe-planner.types.DoeWorksheet.filled" x-text="runs.boundProgressText()"></span>
             </div>
             <div class="doe__datasheet-link-row">
-              <button class="btn btn--secondary doe__open-worksheet-btn" type="button" @click="runs.openLinkedWorksheet()">
+              <button class="btn btn--secondary doe__open-worksheet-btn" data-help-key="modules.doe-planner.types.DoeWorksheet.instanceId" type="button" @click="runs.openLinkedWorksheet()">
                 <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
                 <span x-text="t('worksheetOpen')"></span>
               </button>
             </div>
             <template x-if="runs.boundComplete()">
               <div class="doe__transfer-section">
-                <button class="btn btn--primary doe__transfer-regression-btn" type="button" @click="analysis.transferToRegression()">
+                <button class="btn btn--primary doe__transfer-regression-btn" data-help-key="modules.doe-planner.actions.analysis.transferToRegression.help" type="button" @click="analysis.transferToRegression()">
                   <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
                   <span x-text="t('transferToRegression')"></span>
                 </button>
@@ -575,7 +575,7 @@
             </template>
             <template x-if="evop.showPhaseDecision()">
               <div class="doe__phase-decision">
-                <div class="doe__phase-decision-title" x-text="t('decisionTitle')"></div>
+                <div class="doe__phase-decision-title" data-help-key="modules.doe-planner.actions.evop.completePhase.help" x-text="t('decisionTitle')"></div>
                 <div class="doe__phase-decision-hint" x-text="t('decisionDesc')"></div>
                 <div class="doe__phase-decision-actions">
                   <button class="btn btn--primary doe__phase-decision-btn" type="button" data-decision="recenter"
@@ -592,7 +592,7 @@
                 <div class="doe__augment-title" x-text="t('augmentSectionTitle')"></div>
                 <div class="doe__augment-hint" x-text="t('augmentHint')"></div>
                 <div class="doe__augment-row">
-                  <label class="doe__input-label" for="doe-augment-runs" x-text="t('augmentLabel')"></label>
+                  <label class="doe__input-label" data-help-key="modules.doe-planner.actions.optimal.augment.help" for="doe-augment-runs" x-text="t('augmentLabel')"></label>
                   <input type="number" id="doe-augment-runs" class="field doe__augment-runs-input"
                          min="1" max="200" step="1" value="4" />
                   <button class="btn btn--primary doe__augment-btn" type="button" @click="optimal.clickAugment()" x-text="t('augmentButton')"></button>
@@ -605,7 +605,7 @@
         <!-- Unbound state -->
         <template x-if="runs.staleness() === 'unbound'">
           <div class="doe__datasheet-create-row">
-            <button class="btn btn--primary doe__datasheet-create-btn" type="button" @click="runs.createDatasheet()" x-text="t('worksheetCreate')"></button>
+            <button class="btn btn--primary doe__datasheet-create-btn" data-help-key="modules.doe-planner.actions.runs.createDatasheet.help" type="button" @click="runs.createDatasheet()" x-text="t('worksheetCreate')"></button>
             <span class="doe__datasheet-create-hint" x-text="t('worksheetCreateHint')"></span>
           </div>
         </template>
@@ -613,8 +613,8 @@
         <!-- Design preview (unbound + stale) -->
         <template x-if="runs.showPreview()">
           <div class="doe__preview-wrap">
-            <div class="doe__preview-label" x-text="t('previewLabel')"></div>
-            <div class="doe__preview-hint" x-text="t('previewHint')"></div>
+            <div class="doe__preview-label" data-help-key="modules.doe-planner.actions.runs.setRunValue.help" x-text="t('previewLabel')"></div>
+            <div class="doe__preview-hint" data-help-key="modules.doe-planner.fields.runs.help" x-text="t('previewHint')"></div>
             <template x-if="model.previewDirty">
               <div class="doe__preview-stale-note" x-text="t('previewStaleNote')"></div>
             </template>
@@ -632,7 +632,7 @@
               <div class="doe__eval-detail">
                 <!-- Efficiency -->
                 <div class="doe__eval-section">
-                  <h4 class="doe__eval-heading" x-text="t('efficiencyTitle')"></h4>
+                  <h4 class="doe__eval-heading" data-help-key="modules.doe-planner.types.DoeEvaluation.efficiency" x-text="t('efficiencyTitle')"></h4>
                   <div class="dmike-kpi-strip">
                     <template x-for="(c, ci) in evaluation.effCards()" :key="ci">
                       <div class="dmike-kpi" :class="c.cls">
@@ -707,7 +707,7 @@
                     </template>
                     <template x-if="evaluation.aliasRows().length">
                       <table class="doe__alias-table">
-                        <thead><tr><th x-text="t('term')"></th><th x-text="t('aliasedWith')"></th></tr></thead>
+                        <thead><tr><th data-help-key="modules.doe-planner.columns.term" x-text="t('term')"></th><th data-help-key="modules.doe-planner.columns.aliasedWith" x-text="t('aliasedWith')"></th></tr></thead>
                         <tbody>
                           <template x-for="(a, ai) in evaluation.aliasRows()" :key="ai">
                             <tr>
@@ -733,7 +733,7 @@
                     <p class="doe__eval-note" x-text="evaluation.powerDescText()"></p>
                     <p class="doe__eval-note" x-show="evaluation.powerSaturated()" x-text="t('powerSaturated')"></p>
                     <table class="doe__power-table">
-                      <thead><tr><th x-text="t('effectSize')"></th><th x-text="t('power')"></th><th></th></tr></thead>
+                      <thead><tr><th data-help-key="modules.doe-planner.columns.effectSize" x-text="t('effectSize')"></th><th data-help-key="modules.doe-planner.columns.power" x-text="t('power')"></th><th></th></tr></thead>
                       <tbody>
                         <template x-for="(row, pi) in evaluation.powerRows()" :key="pi">
                           <tr :class="evaluation.powerRating(row.power)">
@@ -771,12 +771,12 @@
                     <table class="doe__alias-table doe__dispersion-table">
                       <thead>
                         <tr>
-                          <th x-text="t('dispersionPoint')"></th>
-                          <th>n</th>
-                          <th x-text="t('dispersionMean')"></th>
-                          <th>s</th>
-                          <th>s&sup2;</th>
-                          <th>ln(s&sup2;)</th>
+                          <th data-help-key="modules.doe-planner.columns.dispersionPoint" x-text="t('dispersionPoint')"></th>
+                          <th data-help-key="modules.doe-planner.columns.dispersionN">n</th>
+                          <th data-help-key="modules.doe-planner.columns.dispersionMean" x-text="t('dispersionMean')"></th>
+                          <th data-help-key="modules.doe-planner.columns.dispersionS">s</th>
+                          <th data-help-key="modules.doe-planner.columns.dispersionVar">s&sup2;</th>
+                          <th data-help-key="modules.doe-planner.columns.dispersionLnVar">ln(s&sup2;)</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -808,10 +808,10 @@
                               <table class="doe__alias-table doe__dispersion-coef-table">
                                 <thead>
                                   <tr>
-                                    <th x-text="t('term')"></th>
-                                    <th x-text="t('coefficient')"></th>
-                                    <th x-text="t('effect')"></th>
-                                    <th>p</th>
+                                    <th data-help-key="modules.doe-planner.columns.term" x-text="t('term')"></th>
+                                    <th data-help-key="modules.doe-planner.columns.coefficient" x-text="t('coefficient')"></th>
+                                    <th data-help-key="modules.doe-planner.columns.effect" x-text="t('effect')"></th>
+                                    <th data-help-key="modules.doe-planner.columns.pValue">p</th>
                                   </tr>
                                 </thead>
                                 <tbody>

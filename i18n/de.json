@@ -7338,13 +7338,381 @@
       "decisionConfirm_repeat": "Phase wiederholen? Es wird ein neuer Zyklus mit den gleichen Faktoreinstellungen erstellt.",
       "decisionConfirm_recenter": "Re-zentrieren? Der beste Punkt wird zum neuen Mittelpunkt. Die Faktor-Stufen werden automatisch angepasst.",
       "decisionConfirm_stop": "Projekt abschließen? Es werden keine weiteren Phasen erstellt.",
+      "whenToUse": "Wenn der Einfluss mehrerer Faktoren auf eine oder mehrere Zielgrößen mit einem geplanten Versuch untersucht werden soll: vollfaktoriell, teilfaktoriell, Plackett-Burman, Wirkungsflächen (CCD, Box-Behnken), Taguchi oder optimal (D, A, G), auch als EVOP-Projekt über mehrere Phasen. Welcher Plantyp passt, klärt vorher der DoE-Berater (doe-advisor).",
       "actions": {
-        "completePhase": {
-          "help": "Schließt die aktive EVOP-Phase nach einer Rückfrage ab: Versuchsplan und Antwortwerte werden in der Phase gespeichert, danach beginnt je nach Entscheidung eine neue Phase oder das Projekt endet. Liefert false, wenn die Rückfrage abgebrochen wurde oder die Phase schon entschieden ist.",
+        "read": {
+          "help": "Plan, Faktoren, Zielgrößen, Gültigkeit, Zusammenfassung, Auswertung, verknüpftes Datenblatt und EVOP-Projekt lesen. Die Lauftabelle kommt nur auf Anforderung: read({ fields: ['runs'] })."
+        },
+        "setDoeName": {
+          "help": "Den Plan benennen, im EVOP-Projektmodus die aktive Phase. Der Name wird Titel des Datenblatts.",
           "params": {
-            "decision": "recenter (neue Phase um den besten Versuchspunkt, Schrittweiten bleiben), repeat (neue Phase mit denselben Faktorstufen) oder stop (Projekt abschließen, keine weitere Phase). Ein Wert daneben ist ein Fehler."
+            "name": "Der Name; leer löscht ihn."
+          }
+        },
+        "factors": {
+          "addFactor": {
+            "help": "Einen leeren stetigen Faktor mit zwei leeren Stufen anhängen. Liefert seine id, die factorId der übrigen Faktoraktionen. Bis Name und Stufen gesetzt sind, ist der Plan ungültig."
+          },
+          "removeFactor": {
+            "help": "Einen Faktor entfernen; Modellterme mit ihm entfallen.",
+            "params": {
+              "factorId": "Der Faktor, id aus read().factors."
+            }
+          },
+          "setFactorName": {
+            "help": "Einen Faktor benennen. Die Namen müssen sich unterscheiden; der Name wird Spalte der Lauftabelle und des Datenblatts.",
+            "params": {
+              "factorId": "Der Faktor.",
+              "name": "Der Name; leer macht den Plan ungültig."
+            }
+          },
+          "setFactorUnit": {
+            "help": "Die Einheit eines Faktors setzen.",
+            "params": {
+              "factorId": "Der Faktor.",
+              "unit": "Die Einheit, z. B. °C; leer ohne Einheit."
+            }
+          },
+          "setFactorKind": {
+            "help": "Einen Faktor stetig (Zahlen als Stufen) oder kategorial (Namen als Stufen, ohne Einheit) machen. Welche Plantypen danach gültig sind, zeigen read().valid und invalidReason.",
+            "params": {
+              "factorId": "Der Faktor.",
+              "kind": "continuous oder categorical."
+            }
+          },
+          "setLevel": {
+            "help": "Eine Stufe eines Faktors setzen. Die erste ist die niedrigste, die letzte die höchste Stufe; bei stetigen Faktoren eine Zahl als Text.",
+            "params": {
+              "factorId": "Der Faktor.",
+              "levelIdx": "Die Stufe, ab 0.",
+              "value": "Der Wert als Text, z. B. \"20\" oder \"Lieferant A\"."
+            }
+          },
+          "insertLevel": {
+            "help": "Eine leere Stufe einfügen. Mehr als zwei Stufen schließen die zweistufigen Plantypen aus (teilfaktoriell, Plackett-Burman, CCD).",
+            "params": {
+              "factorId": "Der Faktor.",
+              "at": "Die Position, ab 0; die Stufen dahinter rücken nach."
+            }
+          },
+          "removeLevel": {
+            "help": "Eine Stufe entfernen; zwei bleiben mindestens.",
+            "params": {
+              "factorId": "Der Faktor.",
+              "levelIdx": "Die Stufe, ab 0."
+            }
+          },
+          "addResponse": {
+            "help": "Eine leere Zielgröße anhängen. Liefert ihren Index (0 = Y1). Bis sie benannt ist, ist der Plan ungültig."
+          },
+          "removeResponse": {
+            "help": "Eine Zielgröße entfernen; eine bleibt mindestens.",
+            "params": {
+              "index": "Die Zielgröße, 0 = Y1."
+            }
+          },
+          "setResponseName": {
+            "help": "Eine Zielgröße benennen; der Name wird Spalte der Lauftabelle und des Datenblatts.",
+            "params": {
+              "index": "Die Zielgröße, 0 = Y1.",
+              "name": "Der Name; leer macht den Plan ungültig."
+            }
+          },
+          "setResponseUnit": {
+            "help": "Die Einheit einer Zielgröße setzen. Ein verknüpftes Datenblatt veraltet dadurch.",
+            "params": {
+              "index": "Die Zielgröße, 0 = Y1.",
+              "unit": "Die Einheit; leer ohne Einheit."
+            }
+          }
+        },
+        "design": {
+          "selectDesignType": {
+            "help": "Den Versuchsplantyp wählen; die typeigene Auswahl (Auflösung, Plackett-Burman-Plan, Taguchi-Array) beginnt neu. Teilfaktoriell, Plackett-Burman und Taguchi brauchen danach ihre Auswahl, bevor ein Plan entsteht.",
+            "params": {
+              "type": "full (vollfaktoriell), frac (teilfaktoriell), pb (Plackett-Burman), ccd (Central Composite), bb (Box-Behnken), taguchi, dopt, aopt oder gopt (D-, A-, G-optimal). Zweistufige Typen verlangen genau zwei Stufen je Faktor."
+            }
+          },
+          "applyRecommendation": {
+            "help": "Den empfohlenen Plantyp übernehmen: bis 4 zweistufige Faktoren vollfaktoriell, bis 6 teilfaktoriell, ab 7 Plackett-Burman; mit mehrstufigen Faktoren Box-Behnken (3 bis 7 Faktoren), sonst Taguchi. Liefert den gewählten Typ; ohne Empfehlung bleibt der Plantyp, wie er ist."
+          },
+          "selectResolution": {
+            "help": "Den teilfaktoriellen Plan über Faktorzahl und Laufzahl wählen; die Auflösung (III, IV, V …) folgt aus der Tabelle. Nur beim Plantyp frac.",
+            "params": {
+              "k": "Die Faktorzahl; muss der Zahl der Faktoren entsprechen.",
+              "runs": "Die Laufzahl: 4, 8, 16, 32, 64 oder 128; nicht jede Kombination gibt es."
+            }
+          },
+          "selectPB": {
+            "help": "Einen Plackett-Burman-Plan wählen. Nur beim Plantyp pb.",
+            "params": {
+              "index": "Der Plan, ab 0, in der Reihenfolge der Tabelle."
+            }
+          },
+          "selectTaguchi": {
+            "help": "Ein orthogonales Taguchi-Array wählen. Nur beim Plantyp taguchi; zur Wahl stehen die Arrays, die zu Faktorzahl und Stufen passen.",
+            "params": {
+              "name": "Der Name, z. B. L4, L8 oder L9."
+            }
+          },
+          "setRandomize": {
+            "help": "Die Laufreihenfolge zufällig mischen oder in Standardreihenfolge lassen.",
+            "params": {
+              "on": "true mischt, false nicht."
+            }
+          },
+          "setCenterPoints": {
+            "help": "Drei Zentralpunkte in der Mitte der stetigen Faktoren anhängen; sie zeigen Krümmung. Nur wo der Plantyp sie vorsieht.",
+            "params": {
+              "on": "true hängt sie an, false nicht."
+            }
+          },
+          "setReplicates": {
+            "help": "Wie oft jeder Lauf wiederholt wird. Wiederholungen schätzen die Versuchsstreuung und machen die Dispersionsanalyse möglich.",
+            "params": {
+              "n": "Ganze Zahl von 1 bis 10."
+            }
+          },
+          "setAlphaType": {
+            "help": "Den Sternpunktabstand α des Central-Composite-Plans wählen.",
+            "params": {
+              "type": "rotatable (gleiche Vorhersagegüte in alle Richtungen), face-centered (α = 1, Sternpunkte auf den Würfelflächen, drei Stufen je Faktor) oder spherical (α = √k)."
+            }
+          },
+          "setCcdCenterPoints": {
+            "help": "Die Zahl der Zentralpunkte im Central-Composite-Plan.",
+            "params": {
+              "n": "Ganze Zahl ab 1."
+            }
+          },
+          "setBbCenterPoints": {
+            "help": "Die Zahl der Zentralpunkte im Box-Behnken-Plan.",
+            "params": {
+              "n": "Ganze Zahl ab 1."
+            }
+          }
+        },
+        "optimal": {
+          "setOptimalRuns": {
+            "help": "Die Laufzahl des optimalen Plans; mindestens so viele, wie das Modell Terme hat, plus eins. Mit Quell-Worksheet zählen nur die neuen Läufe.",
+            "params": {
+              "n": "Ganze Zahl ab der Mindestzahl."
+            }
+          },
+          "setTerm": {
+            "help": "Einen Modellterm des optimalen Plans an- oder abschalten. Anschalten nimmt die enthaltenen Haupteffekte mit, abschalten die Terme, die ihn enthalten; Haupteffekte bleiben an.",
+            "params": {
+              "termId": "Die Term-id: M0, M1 … Haupteffekte, Q0 … quadratisch, I0_1 … Wechselwirkungen; die Zahlen sind Faktorindizes ab 0.",
+              "on": "true schaltet an, false ab."
+            }
+          },
+          "setTermGroup": {
+            "help": "Eine ganze Termgruppe an- oder abschalten: 1 = quadratische Terme, ab 2 die Wechselwirkungen je Ordnung. Die Haupteffekte (Gruppe 0) bleiben an.",
+            "params": {
+              "groupIdx": "Die Gruppe, ab 1.",
+              "on": "true schaltet an, false ab."
+            }
+          },
+          "addForbiddenVertex": {
+            "help": "Eine Faktorkombination im optimalen Plan verbieten, etwa eine Ecke, die die Anlage nicht fahren kann. Liefert false, wenn sie schon verboten ist.",
+            "params": {
+              "pattern": "Je Faktor eine codierte Stufe (-1 niedrigste, 1 höchste, Zwischenstufen dazwischen) oder null für jede Stufe; mindestens eine Stufe ist gesetzt."
+            }
+          },
+          "removeForbiddenVertex": {
+            "help": "Eine verbotene Kombination wieder erlauben.",
+            "params": {
+              "index": "Die Regel, ab 0, wie in read().options.forbiddenVertices."
+            }
+          },
+          "setSourceWorksheet": {
+            "help": "Ein Projekt-Worksheet mit schon gemessenen Läufen als Ausgangspunkt wählen; der optimale Plan ergänzt nur neue Läufe. Spalten werden über die Namen von Faktoren und Zielgrößen zugeordnet; das eigene Datenblatt des Planers ist keine Quelle.",
+            "params": {
+              "instanceId": "Die Worksheet-Instanz; null löst die Verbindung.",
+              "sheetId": "Das Blatt der Instanz; bei null ohne Bedeutung."
+            }
+          },
+          "augment": {
+            "help": "Einen optimalen Plan mit verknüpftem Datenblatt um neue Läufe erweitern; die bisherigen Läufe und Werte bleiben, die neuen Zeilen werden angehängt. Liefert die Laufzahl danach.",
+            "params": {
+              "n": "Wie viele Läufe dazukommen, ganze Zahl ab 1."
+            }
+          }
+        },
+        "analysis": {
+          "setAnalysisResponse": {
+            "help": "Die Zielgröße wählen, die die Dispersionsanalyse auswertet und die an die Regression übergeben wird.",
+            "params": {
+              "index": "Die Zielgröße, 0 = Y1."
+            }
+          },
+          "transferToRegression": {
+            "help": "Das verknüpfte Datenblatt an eine neue Regression in der Phase des Planers übergeben, mit den Modelltermen des Plans und der gewählten Zielgröße. Liefert die Instanz-id der Regression."
+          }
+        },
+        "evop": {
+          "setProjectMode": {
+            "help": "Den EVOP-Projektmodus an- oder ausschalten. Beim ersten Einschalten beginnt Phase 1 mit dem aktuellen Plan.",
+            "params": {
+              "on": "true schaltet an, false ab."
+            }
+          },
+          "setProjectName": {
+            "help": "Den Projektnamen setzen; neue Phasen heißen danach „<Projekt> - Phase n“.",
+            "params": {
+              "name": "Der Name; leer löscht ihn."
+            }
+          },
+          "completePhase": {
+            "help": "Die aktive Phase ohne Rückfrage abschließen: Plan und die Werte der ersten Zielgröße werden in der Phase gespeichert, danach beginnt je nach Entscheidung eine neue Phase oder das Projekt endet. Liefert false, wenn die aktive Phase schon entschieden ist.",
+            "params": {
+              "decision": "recenter (neue Phase um den besten Versuchspunkt, Schrittweiten bleiben), repeat (neue Phase mit denselben Faktorstufen) oder stop (Projekt abschließen, keine weitere Phase)."
+            }
+          },
+          "newPhase": {
+            "help": "Eine neue Phase mit den aktuellen Faktorstufen beginnen; nur wenn die aktive Phase entschieden und das Projekt nicht beendet ist. Liefert den Index der neuen Phase."
+          },
+          "viewPhase": {
+            "help": "Eine Phase zeigen: Plan, Versuchsplan und Datenblatt der Phase kommen zurück, ohne dass der Plan neu erzeugt wird.",
+            "params": {
+              "idx": "Die Phase, 0 = Phase 1."
+            }
+          }
+        },
+        "runs": {
+          "setRunValue": {
+            "help": "Einen Wert der Lauftabelle setzen, solange kein aktuelles Datenblatt verknüpft ist: ein Ergebnis einer Zielgröße oder eine angepasste Einstellung eines stetigen Faktors. Der Wert geht beim Erstellen ins Datenblatt. Ist ein aktuelles Datenblatt verknüpft, werden die Werte dort eingetragen, im Worksheet des Datenblatts.",
+            "params": {
+              "run": "Die Laufnummer aus read().runs.",
+              "column": "Ein Faktor- oder Zielgrößenname wie in read().runs; kategoriale Faktoren nicht.",
+              "value": "Die Zahl; null nimmt die Änderung zurück."
+            }
+          },
+          "createDatasheet": {
+            "help": "Das Datenblatt des Plans anlegen, mit den Werten der Vorschau; ein früher angelegtes wird ersetzt, und der Planer öffnet das neue. Liefert die Instanz-id des Datenblatts (ein Worksheet)."
           }
         }
+      },
+      "fields": {
+        "doeName": {
+          "help": "Name des Plans, im Projektmodus der aktiven Phase."
+        },
+        "designType": {
+          "help": "Der gewählte Plantyp: full, frac, pb, ccd, bb, taguchi, dopt, aopt oder gopt."
+        },
+        "factors": {
+          "help": "Die Faktoren in Reihenfolge, je id, Name, Einheit, Art und Stufen."
+        },
+        "responses": {
+          "help": "Die Zielgrößen in Reihenfolge, je Name und Einheit; der Index ist die Position."
+        },
+        "options": {
+          "help": "Die Planoptionen: zufällige Reihenfolge, Zentralpunkte, Wiederholungen, beim Central-Composite-Plan Sternpunktabstand und Zentralpunkte, beim Box-Behnken-Plan die Zentralpunkte, beim Taguchi-Plan das Array, beim optimalen Plan Laufzahl, Modellterme und verbotene Faktorkombinationen."
+        },
+        "typeParams": {
+          "help": "Die typeigene Auswahl: die Zelle der Auflösungstabelle beim teilfaktoriellen, der Plan beim Plackett-Burman-Plan."
+        },
+        "valid": {
+          "help": "Ob die Konfiguration einen Plan ergibt. Ein gültiger Plan entsteht nach etwa einer Sekunde von selbst."
+        },
+        "invalidReason": {
+          "help": "Warum noch kein Plan entsteht: zu wenige Faktoren, doppelte Faktornamen, ein unvollständiger Faktor, keine oder eine unbenannte Zielgröße, kein Plantyp, mehrstufige Faktoren bei einem zweistufigen Plantyp, eine fehlende typeigene Auswahl oder zu wenige Läufe im optimalen Plan. Bei einem gültigen Plan gibt es keinen Grund."
+        },
+        "summary": {
+          "help": "Geplante Läufe mit Wiederholungen, Auflösung und Läufe des erzeugten Plans."
+        },
+        "analysisResponseIdx": {
+          "help": "Die Zielgröße der Dispersionsanalyse und der Übergabe an die Regression, 0 = Y1."
+        },
+        "sourceWorksheet": {
+          "help": "Das Quell-Worksheet eines optimalen Plans mit schon gemessenen Läufen, { instanceId, sheetId }, oder null."
+        },
+        "runs": {
+          "help": "Die Lauftabelle in Laufreihenfolge. Ohne aktuelles Datenblatt die Vorschau samt den dort eingetragenen Werten, mit verknüpftem Datenblatt die Zielgrößen aus diesem. Wegen ihres Umfangs kommt sie nur auf ausdrückliche Anforderung."
+        },
+        "worksheet": {
+          "help": "Das verknüpfte Datenblatt mit Füllstand, oder null."
+        },
+        "evaluation": {
+          "help": "Die Bewertung des erzeugten Plans: Effizienz, VIF, Aliasstruktur und Trennschärfe; null ohne Plan."
+        },
+        "evop": {
+          "help": "Das EVOP-Projekt mit seinen Phasen; null außerhalb des Projektmodus."
+        }
+      },
+      "types": {
+        "DoeFactor": {
+          "id": "Feste id des Faktors, die factorId der Faktoraktionen.",
+          "name": "Der Name, zugleich Spalte der Lauftabelle.",
+          "unit": "Die Einheit, leer ohne.",
+          "kind": "continuous (Zahlen als Stufen) oder categorical (Namen als Stufen).",
+          "levels": "Die Stufen wie eingegeben, die niedrigste zuerst."
+        },
+        "DoeResponse": {
+          "name": "Der Name, zugleich Spalte der Lauftabelle.",
+          "unit": "Die Einheit, leer ohne."
+        },
+        "DoeTypeParams": {
+          "selectedRes": "Die gewählte Zelle der Auflösungstabelle { k, runs, res, p } beim teilfaktoriellen Plan, sonst null.",
+          "selectedPBIdx": "Der gewählte Plackett-Burman-Plan als Index der Tabelle, sonst null."
+        },
+        "DoeSummary": {
+          "runs": "Geplante Läufe mit Wiederholungen; die Zahl fehlt, solange der Plantyp keine liefert.",
+          "resolution": "Die Auflösung: III, IV, V, Full, CCD und so weiter; leer ohne.",
+          "generatedRuns": "Läufe des erzeugten Plans, 0 ohne Plan."
+        },
+        "DoeRun": {
+          "run": "Laufnummer in Laufreihenfolge; der run von setRunValue.",
+          "std": "Standardreihenfolge.",
+          "block": "Block.",
+          "replicate": "Wiederholung.",
+          "factors": "Einstellung je Faktorname.",
+          "responses": "Wert je Zielgrößenname, null solange leer."
+        },
+        "DoeWorksheet": {
+          "instanceId": "Das verknüpfte Datenblatt, ein eigenes Worksheet; die Ergebnisse werden dort eingetragen, nicht im Planer.",
+          "sheetId": "Das Blatt.",
+          "stale": "Der Plan hat sich seit dem Anlegen geändert; die Oberfläche bietet dann „neu erstellen“ an.",
+          "filled": "Gefüllte Zielgrößenzellen.",
+          "total": "Alle Zielgrößenzellen."
+        },
+        "DoeEvaluation": {
+          "efficiency": "D-, A- und G-Effizienz in Prozent, Konditionszahl und größte Hebelwirkung.",
+          "vif": "Varianzinflationsfaktor je Modellterm; 1 heißt unabhängig, über 10 stark vermengt.",
+          "alias": "Generatoren und je Term die Terme, mit denen er vermengt ist; null ohne Vermengung.",
+          "power": "Trennschärfe je Effektgröße; null ohne Freiheitsgrade für den Fehler."
+        },
+        "DoePhase": {
+          "cycleNumber": "Phasennummer ab 1.",
+          "doeName": "Name der Phase.",
+          "decision": "recenter, repeat, stop oder null, solange offen.",
+          "completedAt": "Zeitpunkt der Entscheidung (ISO), null solange offen.",
+          "yValues": "Werte der ersten Zielgröße je Lauf beim Abschluss, null ohne."
+        },
+        "DoeEvop": {
+          "projectMode": "Immer true; außerhalb des Projektmodus ist evop null.",
+          "projectName": "Der Projektname.",
+          "activePhaseIdx": "Die gezeigte Phase, 0 = Phase 1.",
+          "phases": "Alle Phasen in Reihenfolge.",
+          "summary": "Kumulierte EVOP-Effekte; sie fehlen, bis eine Phase mit Werten abgeschlossen ist."
+        }
+      },
+      "columns": {
+        "term": "Der Modellterm: Haupteffekt, Wechselwirkung (A*B) oder quadratischer Term.",
+        "effect": "Der Effekt: Änderung der Zielgröße von der niedrigen zur hohen Stufe.",
+        "aliasedWith": "Die Terme, deren Effekt sich von diesem Term nicht trennen lässt.",
+        "evopErrorLimit": "Fehlergrenze aus der Streuung der Phasen; ein Effekt jenseits davon gilt als echt.",
+        "evopSignificant": "Ob der Effekt die Fehlergrenze überschreitet.",
+        "effectSize": "Die Effektgröße in Vielfachen der Standardabweichung.",
+        "power": "Die Wahrscheinlichkeit, einen Effekt dieser Größe bei α = 0,05 zu erkennen.",
+        "dispersionPoint": "Der Versuchspunkt: eine Faktorkombination mit ihren Wiederholungen.",
+        "dispersionN": "Zahl der Wiederholungen am Versuchspunkt.",
+        "dispersionMean": "Mittelwert der Zielgröße am Versuchspunkt.",
+        "dispersionS": "Standardabweichung am Versuchspunkt.",
+        "dispersionVar": "Varianz am Versuchspunkt.",
+        "dispersionLnVar": "Logarithmierte Varianz, die Zielgröße des Streuungsmodells.",
+        "coefficient": "Der geschätzte Koeffizient im codierten Modell.",
+        "pValue": "Der p-Wert; unter 0,05 gilt der Term als signifikant."
       },
       "evopEffectTable": "EVOP-Effekttafel (kumulativ)",
       "evopCycles": "{n} Zyklen",
