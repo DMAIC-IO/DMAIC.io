@@ -174,8 +174,8 @@
 
     <!-- ── Risk list ── -->
     <div class="fmea__risk-list" data-ref="risk-list">
-      <template x-for="(risk, ri) in model.risks">
-        <div class="fmea__risk-card" :key="risk.id" :class="cardClass(risk)" :data-risk-id="risk.id" :data-rpn="risk.rpn()" :data-ap="risk.ap() || ''" :data-proj-rpn="risk.projRpn()">
+      <template x-for="(risk, ri) in model.risks" :key="risk.id">
+        <div class="fmea__risk-card" :class="cardClass(risk)" :data-risk-id="risk.id" :data-rpn="risk.rpn()" :data-ap="risk.ap() || ''" :data-proj-rpn="risk.projRpn()">
           <div class="fmea__risk-header">
             <span class="fmea__risk-number" data-action="toggle-collapse" :data-risk-id="risk.id" :title="t('collapseToggle')" @click="toggleCollapse(risk)">
               <span class="fmea__collapse-arrow icon icon--sm" :data-icon="risk.collapsed ? 'nav.expand-right' : 'nav.expand-down'" aria-hidden="true"></span> <span x-text="riskNum(ri)"></span>
@@ -295,8 +295,8 @@
                   <th style="width:28px"></th>
                 </tr></thead>
                 <tbody data-action-body>
-                  <template x-for="(act, ai) in risk.actions">
-                    <tr :key="act.id" :data-action-idx="ai">
+                  <template x-for="(act, ai) in risk.actions" :key="act.id">
+                    <tr :data-action-idx="ai">
                       <td style="text-align:center"><input type="checkbox" class="fmea__done-check" :checked="act.done" @change="setActionValue(risk.id, ai, 'done', $event.target.checked)"></td>
                       <td><textarea class="field field--sm" name="actionText" :placeholder="t('actionPlaceholder')" :value="act.text" @input="setActionValue(risk.id, ai, 'text', $event.target.value)"></textarea></td>
                       <td><input class="field field--sm" type="text" name="actionResp" :placeholder="t('actionResp')" :value="act.resp" @input="setActionValue(risk.id, ai, 'resp', $event.target.value)"></td>
