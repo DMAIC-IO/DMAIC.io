@@ -6745,6 +6745,14 @@
       "decisionConfirm_repeat": "Repeat this phase? A new cycle with the same factor settings will be created.",
       "decisionConfirm_recenter": "Re-center? The best point becomes the new center. Factor levels will be adjusted automatically.",
       "decisionConfirm_stop": "Complete the project? No further phases will be created.",
+      "actions": {
+        "completePhase": {
+          "help": "Closes the active EVOP phase after a confirmation: the design and the response values are stored in the phase, then a new phase starts or the project ends, depending on the decision. Returns false when the confirmation is cancelled or the phase is already decided.",
+          "params": {
+            "decision": "recenter (new phase around the best run, step sizes kept), repeat (new phase with the same factor levels) or stop (complete the project, no further phase). Any other value is an error."
+          }
+        }
+      },
       "evopEffectTable": "EVOP Effect Table (cumulative)",
       "evopCycles": "{n} cycles",
       "evopTotalRuns": "{n} total runs",

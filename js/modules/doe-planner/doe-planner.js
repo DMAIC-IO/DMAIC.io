@@ -62,6 +62,7 @@ const DESIGN_TYPES = [
 const ALGO_ID_DEFF = 'd-efficiency';
 const OPTIMAL = ['dopt', 'aopt', 'gopt'];
 const AUTO_GEN_DELAY = 600; // ms debounce for auto-generation
+const PHASE_DECISIONS = ['recenter', 'repeat', 'stop'];
 
 const letter = (i) => String.fromCharCode(65 + i);
 
@@ -1023,9 +1024,49 @@ const mod = createModule({
       },
       canStartNewPhase() {
         const m = this.model;
+        if (m.projectPhases.some(ph => ph.decision === 'stop')) return false;
         return m.activePhaseIdx === -1 || (m.projectPhases[m.activePhaseIdx] && m.projectPhases[m.activePhaseIdx].decision);
       },
       newPhase() { this.startNewPhase(false); this.save(); },
+      /**
+       * The "next step" block shows once the active, undecided phase has all responses.
+       * @noagent
+       */
+      showPhaseDecision() {
+        const m = this.model;
+        const ph = m.projectPhases[m.activePhaseIdx];
+        return Boolean(m.projectMode && ph && !ph.decision && this.staleness() === 'bound' && this.boundComplete());
+      },
+      /**
+       * Close the active EVOP phase after a confirm dialog: store its design and
+       * response values, then re-center or repeat in a new phase, or stop.
+       * @agent
+       * @param {'recenter'|'repeat'|'stop'} decision
+       * @returns {Promise<boolean>} true when the phase was closed, false when cancelled
+       */
+      async completePhase(decision) {
+        if (!PHASE_DECISIONS.includes(decision)) throw new Error(`unknown decision: ${decision}`);
+        const m = this.model;
+        const ph = m.projectPhases[m.activePhaseIdx];
+        if (!ph || ph.decision) return false;
+        const ok = await ctx().dialog.confirm({ message: _t(`decisionConfirm_${decision}`) });
+        if (!ok) return false;
+
+        ph.decision = decision;
+        ph.completedAt = new Date().toISOString();
+        ph.design = m.design ? JSON.parse(JSON.stringify(m.design)) : null;
+        ph.worksheetRef = m.worksheetRef ? { ...m.worksheetRef } : null;
+        ph.evaluation = m.evaluation ? JSON.parse(JSON.stringify(m.evaluation)) : null;
+        const resp = this._resp();
+        if (resp && resp.values && resp.values[0]) ph.yValues = [...resp.values[0]];
+
+        if (decision !== 'stop') {
+          this.startNewPhase(decision === 'recenter');
+          this.scheduleAutoGenerate();
+        }
+        this.save();
+        return true;
+      },
       startNewPhase(recenter) {
         const m = this.model;
         const prevPhase = m.projectPhases[m.activePhaseIdx];

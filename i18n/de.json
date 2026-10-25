@@ -6745,10 +6745,18 @@
       "decisionDesc": "Wie soll es nach dieser Auswertung weitergehen?",
       "decisionRepeat": "Wiederholen (mehr Daten)",
       "decisionRecenter": "Re-zentrieren (neuer Betriebspunkt)",
-      "decisionStop": "Abschliessen (Prozess stabil)",
+      "decisionStop": "Abschließen (Prozess stabil)",
       "decisionConfirm_repeat": "Phase wiederholen? Es wird ein neuer Zyklus mit den gleichen Faktoreinstellungen erstellt.",
       "decisionConfirm_recenter": "Re-zentrieren? Der beste Punkt wird zum neuen Mittelpunkt. Die Faktor-Stufen werden automatisch angepasst.",
-      "decisionConfirm_stop": "Projekt abschliessen? Es werden keine weiteren Phasen erstellt.",
+      "decisionConfirm_stop": "Projekt abschließen? Es werden keine weiteren Phasen erstellt.",
+      "actions": {
+        "completePhase": {
+          "help": "Schließt die aktive EVOP-Phase nach einer Rückfrage ab: Versuchsplan und Antwortwerte werden in der Phase gespeichert, danach beginnt je nach Entscheidung eine neue Phase oder das Projekt endet. Liefert false, wenn die Rückfrage abgebrochen wurde oder die Phase schon entschieden ist.",
+          "params": {
+            "decision": "recenter (neue Phase um den besten Versuchspunkt, Schrittweiten bleiben), repeat (neue Phase mit denselben Faktorstufen) oder stop (Projekt abschließen, keine weitere Phase). Ein Wert daneben ist ein Fehler."
+          }
+        }
+      },
       "evopEffectTable": "EVOP-Effekttafel (kumulativ)",
       "evopCycles": "{n} Zyklen",
       "evopTotalRuns": "{n} Runs gesamt",
@@ -6758,7 +6766,7 @@
       "evopBestPoint": "Bester Betriebspunkt",
       "evopRec_repeat": "Empfehlung: Zyklus wiederholen — noch keine signifikanten Effekte erkannt.",
       "evopRec_recenter": "Empfehlung: Re-zentrieren — signifikante Effekte erkannt. Den besten Punkt als neuen Mittelpunkt übernehmen.",
-      "evopRec_stop": "Empfehlung: Abschliessen — nach mehreren Zyklen keine signifikanten Effekte. Prozess ist stabil.",
+      "evopRec_stop": "Empfehlung: Abschließen — nach mehreren Zyklen keine signifikanten Effekte. Prozess ist stabil.",
       "configReady": "Konfiguration vollständig — Design wird generiert.",
       "configIncomplete": "Konfiguration unvollständig.",
       "configureLeft": "Konfiguriere Faktoren, Zielgrößen und Design-Typ im linken Bereich.",

@@ -4530,6 +4530,7 @@ export const AGENT_REGISTRY = {
       "unmarked_method:phaseDecIcon",
       "unmarked_method:canStartNewPhase",
       "unmarked_method:newPhase",
+      "unmarked_method:showPhaseDecision",
       "unmarked_method:startNewPhase",
       "unmarked_method:viewPhase",
       "unmarked_method:evopSummary",
@@ -4557,7 +4558,20 @@ export const AGENT_REGISTRY = {
       "unreachable_write:options.centerPoints",
       "unreachable_write:options.alphaType"
     ],
-    "actions": {},
+    "actions": {
+      "completePhase": {
+        "params": [
+          {
+            "name": "decision",
+            "type": "'recenter'|'repeat'|'stop'",
+            "optional": false,
+            "help": ""
+          }
+        ],
+        "returns": "Promise<boolean>",
+        "help": "Close the active EVOP phase after a confirm dialog: store its design and response values, then re-center or repeat in a new phase, or stop."
+      }
+    },
     "fields": {
       "doeName": {
         "type": "any",

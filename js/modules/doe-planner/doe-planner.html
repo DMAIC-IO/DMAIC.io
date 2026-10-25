@@ -577,6 +577,20 @@
                 </button>
               </div>
             </template>
+            <template x-if="showPhaseDecision()">
+              <div class="doe__phase-decision">
+                <div class="doe__phase-decision-title" x-text="t('decisionTitle')"></div>
+                <div class="doe__phase-decision-hint" x-text="t('decisionDesc')"></div>
+                <div class="doe__phase-decision-actions">
+                  <button class="btn btn--primary doe__phase-decision-btn" type="button" data-decision="recenter"
+                          @click="completePhase('recenter')" x-text="t('decisionRecenter')"></button>
+                  <button class="btn btn--secondary doe__phase-decision-btn" type="button" data-decision="repeat"
+                          @click="completePhase('repeat')" x-text="t('decisionRepeat')"></button>
+                  <button class="btn btn--secondary doe__phase-decision-btn" type="button" data-decision="stop"
+                          @click="completePhase('stop')" x-text="t('decisionStop')"></button>
+                </div>
+              </div>
+            </template>
             <template x-if="model.isOptimalType()">
               <div class="doe__augment-section">
                 <div class="doe__augment-title" x-text="t('augmentSectionTitle')"></div>
