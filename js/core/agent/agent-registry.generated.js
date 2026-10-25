@@ -7248,22 +7248,9 @@ export const AGENT_REGISTRY = {
       "unmarked_method:toggleTrend",
       "unmarked_method:closeTrend",
       "unmarked_method:openCatRename",
-      "unmarked_method:addExperiment",
-      "unmarked_method:deleteExperiment",
-      "unmarked_method:expLinkText",
-      "unmarked_method:expDatesChanged",
-      "unmarked_method:expStatusChanged",
-      "unmarked_method:expCostChanged",
-      "unmarked_method:addFact",
-      "unmarked_method:deleteFact",
-      "unmarked_method:ownerNames",
-      "unmarked_method:openExpLink",
-      "unmarked_method:openHypLink",
       "unmarked_method:exportCSV",
       "unmarked_method:renderPareto",
-      "unmarked_method:renderTrend",
-      "unmarked_method:renderGantt",
-      "unmarked_method:renderCostChart"
+      "unmarked_method:renderTrend"
     ],
     "actions": {
       "problem.setProblem": {
@@ -7277,6 +7264,196 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Set the problem statement every cause refers to."
+      },
+      "experiments.addExperiment": {
+        "params": [],
+        "returns": "number",
+        "help": "Add an empty experiment (status planned) at the end."
+      },
+      "experiments.setExperimentField": {
+        "params": [
+          {
+            "name": "experimentId",
+            "type": "number",
+            "optional": false,
+            "help": "the experiment"
+          },
+          {
+            "name": "key",
+            "type": "'title'|'description'|'responsible'|'status'|'startDate'|'endDate'|'costMoney'|'costHours'",
+            "optional": false,
+            "help": "which field"
+          },
+          {
+            "name": "value",
+            "type": "string|number|null",
+            "optional": false,
+            "help": "the new value, as described per field"
+          }
+        ],
+        "returns": "void",
+        "help": "Set one field of an experiment.",
+        "keysOf": "ExperimentFields",
+        "keys": {
+          "title": {
+            "type": "string",
+            "help": "short title of the experiment"
+          },
+          "description": {
+            "type": "string",
+            "help": "what is tried and how the result is measured"
+          },
+          "responsible": {
+            "type": "string",
+            "help": "who runs the experiment"
+          },
+          "status": {
+            "type": "'planned'|'running'|'done'|'cancelled'",
+            "help": "where the experiment stands"
+          },
+          "startDate": {
+            "type": "string",
+            "help": "first day as YYYY-MM-DD, \"\" for none"
+          },
+          "endDate": {
+            "type": "string",
+            "help": "last day as YYYY-MM-DD, \"\" for none"
+          },
+          "costMoney": {
+            "type": "number|null",
+            "help": "money spent in euros, null for none"
+          },
+          "costHours": {
+            "type": "number|null",
+            "help": "effort in hours, null for none"
+          }
+        }
+      },
+      "experiments.deleteExperiment": {
+        "params": [
+          {
+            "name": "experimentId",
+            "type": "number",
+            "optional": false,
+            "help": "the experiment"
+          }
+        ],
+        "returns": "void",
+        "help": "Delete an experiment, without asking."
+      },
+      "experiments.moveExperimentBefore": {
+        "params": [
+          {
+            "name": "experimentId",
+            "type": "number",
+            "optional": false,
+            "help": "the experiment to move"
+          },
+          {
+            "name": "targetExperimentId",
+            "type": "number",
+            "optional": false,
+            "help": "the experiment it goes before"
+          }
+        ],
+        "returns": "void",
+        "help": "Move an experiment directly before another one."
+      },
+      "experiments.setExperimentHypotheses": {
+        "params": [
+          {
+            "name": "experimentId",
+            "type": "number",
+            "optional": false,
+            "help": "the experiment"
+          },
+          {
+            "name": "hypothesisIds",
+            "type": "string[]",
+            "optional": false,
+            "help": "stableId of each cause (rows[].stableId, e.g. H-001); [] unlinks all"
+          }
+        ],
+        "returns": "void",
+        "help": "Set which causes an experiment checks."
+      },
+      "experiments.addFact": {
+        "params": [],
+        "returns": "number",
+        "help": "Add an empty fact dated today, at the end."
+      },
+      "experiments.setFactField": {
+        "params": [
+          {
+            "name": "factId",
+            "type": "number",
+            "optional": false,
+            "help": "the fact"
+          },
+          {
+            "name": "key",
+            "type": "'name'|'description'|'date'|'owner'",
+            "optional": false,
+            "help": "which field"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "the new text; for date YYYY-MM-DD or \"\""
+          }
+        ],
+        "returns": "void",
+        "help": "Set one field of a fact.",
+        "keysOf": "FactFields",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "what was observed"
+          },
+          "description": {
+            "type": "string",
+            "help": "details and source of the observation"
+          },
+          "date": {
+            "type": "string",
+            "help": "when it was observed, YYYY-MM-DD, \"\" for none"
+          },
+          "owner": {
+            "type": "string",
+            "help": "who reported it"
+          }
+        }
+      },
+      "experiments.deleteFact": {
+        "params": [
+          {
+            "name": "factId",
+            "type": "number",
+            "optional": false,
+            "help": "the fact"
+          }
+        ],
+        "returns": "void",
+        "help": "Delete a fact, without asking."
+      },
+      "experiments.moveFactBefore": {
+        "params": [
+          {
+            "name": "factId",
+            "type": "number",
+            "optional": false,
+            "help": "the fact to move"
+          },
+          {
+            "name": "targetFactId",
+            "type": "number",
+            "optional": false,
+            "help": "the fact it goes before"
+          }
+        ],
+        "returns": "void",
+        "help": "Move a fact directly before another one."
       }
     },
     "fields": {

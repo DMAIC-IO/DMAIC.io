@@ -7,8 +7,9 @@
  *
  * Migrated to createModule + Alpine CSP. All business logic (cause-tree ops,
  * scoring, snapshots/diff, CRUD, pareto data) lives in ishikawa-model.js and is
- * unit-tested. Pure chart configuration (Gantt, cost, trend, rating colour)
- * lives in ishikawa-charts.js. This file holds view transformations (i18n
+ * unit-tested. Facts, experiments, their link forms and the Gantt and cost
+ * charts live in viewmodel/experiments.js (spec 2026-10-25 E2). Pure chart
+ * configuration (Gantt, cost, trend, rating colour) lives in ishikawa-charts.js. This file holds view transformations (i18n
  * category labels, CSS classes, glyphs, '–' formatting), event handlers, and
  * the imperative chart widgets (Pareto, Gantt, dual-axis Cost and Trend via
  * chartManager — chart-tier, not pure-template concerns). The three form modals
@@ -24,9 +25,10 @@ import { EventBus } from '../../core/event-bus.js';
 import { draggableRows } from '../../ui/draggable-list.js';
 import { State, MAX_DEPTH_CLASS } from './ishikawa-model.js';
 import { ProblemViewModel } from './viewmodel/problem.js';
+import { ExperimentsViewModel } from './viewmodel/experiments.js';
 import { CATS, STATUS_CSS } from './ishikawa-constants.js';
 import * as labels from './ishikawa-labels.js';
-import { ratingBg, computeGanttConfig, computeCostConfig, computeTrendConfig } from './ishikawa-charts.js';
+import { ratingBg, computeTrendConfig } from './ishikawa-charts.js';
 
 const mod = createModule({
   config: {
@@ -67,6 +69,7 @@ const mod = createModule({
     let events = null;
     return {
       problem: new ProblemViewModel(deps),
+      experiments: new ExperimentsViewModel(deps),
       // Reorderable rows for all three tables (.dmike-table--draggable). The
       // mixin owns the drag plumbing and Alt+Arrow; the move semantics stay in
       // the model. `causes` is a tree, so keyboard movement there is confined
@@ -75,8 +78,8 @@ const mod = createModule({
       ...draggableRows({
         onMove({ group, sourceId, targetId }) {
           if (group === 'causes') this.model.moveRowBefore(sourceId, targetId);
-          else if (group === 'experiments') this.model.moveExperimentBefore(sourceId, targetId);
-          else if (group === 'facts') this.model.moveFactBefore(sourceId, targetId);
+          else if (group === 'experiments') this.experiments.moveExperimentBefore(sourceId, targetId);
+          else if (group === 'facts') this.experiments.moveFactBefore(sourceId, targetId);
         },
         rowIds(group, id) {
           if (group === 'experiments') return this.model.experiments.map(x => x.id);
@@ -101,9 +104,6 @@ const mod = createModule({
       hiddenLines: {},        // { [stableId]: true }
       paretoSource: 'current',
       _paretoChart: null,
-      _ganttChart: null,
-      _costCumChart: null,
-      _costRateChart: null,
       _trendChart: null,
       // Dedicated stale-guard for the trend chart. The trend (hypotheses tab)
       // can render concurrently with the pareto chart, and shares no lifecycle
@@ -111,22 +111,12 @@ const mod = createModule({
       // create() cannibalization.
       _trendGen: 0,
       _renderGen: 0,
-      // Per-mode stale-guard counters for the two cost-chart instances. Kept
-      // separate from `_renderGen` (gantt/pareto) because all three experiment-
-      // tab charts render concurrently — a shared counter would let one
-      // instance's async create() cannibalize another's freshly mounted chart.
-      _costGen: { cumulative: 0, rate: 0 },
       _activeColorPicker: null,
       paretoEmptyMsg: '',     // empty-state message for pareto chart (sibling anchor)
       trendEmptyMsg: '',      // empty-state message for trend chart (sibling anchor)
-      ganttEmptyMsg: '',      // empty-state message for gantt chart (sibling anchor)
-      costEmptyMsg: '',       // empty-state message for cumulative cost chart (sibling anchor)
-      costRateEmptyMsg: '',   // empty-state message for cost-rate chart (sibling anchor)
 
       // ── Modal-form drafts (bound to the borrowed in-template forms) ──
       catRenameDraft: [],     // [{ key, color, def, name }]
-      expLinkDraft: { hint: '', items: [] }, // link experiments → a hypothesis
-      hypLinkDraft: { items: [] },           // choose hypotheses → an experiment
 
       cats: CATS,
 
@@ -152,13 +142,11 @@ const mod = createModule({
         for (const vm of this._subViewModels()) vm.detach();
         events = null;
         this._destroyPareto();
-        this._destroyGantt();
-        this._destroyCostCharts();
         this._destroyTrend();
       },
 
       /** @returns {object[]} the sub-viewmodels, in attach order */
-      _subViewModels() { return [this.problem]; },
+      _subViewModels() { return [this.problem, this.experiments]; },
 
       // ── Tabs ──────────────────────────────────────────────────
 
@@ -179,9 +167,7 @@ const mod = createModule({
           this.renderPareto();
           if (this.trendVisible) this.renderTrend();
         } else if (this.activeTab === 'experiments') {
-          this.renderGantt();
-          this.renderCostChart('cumulative');
-          this.renderCostChart('rate');
+          this.experiments.render();
         }
       },
 
@@ -480,131 +466,6 @@ const mod = createModule({
         });
       },
 
-      // ── Experiments ───────────────────────────────────────────
-
-      addExperiment() { this.model.addExperiment(); this.$nextTick(() => this.renderTabCharts()); },
-      deleteExperiment: async function (id) {
-        const x = this.model.experiments.find(y => y.id === id);
-        if (!x) return;
-        const label = (x.title && x.title.trim()) || `#${this.model.experiments.indexOf(x) + 1}`;
-        const ok = await module._context.dialog.confirm({
-          message: _t('delExperimentConfirm', { name: label }),
-          title: i18n().t('common.delete'),
-          confirmLabel: i18n().t('common.delete'),
-          danger: true,
-        });
-        if (!ok) return;
-        this.model.removeExperiment(id);
-        this.$nextTick(() => this.renderTabCharts());
-      },
-      expLinkText(x) {
-        const n = (x.hypothesisIds || []).length;
-        return n > 0 ? `${n} ${_t('linked')}` : _t('chooseHypotheses');
-      },
-      expDatesChanged() { this.$nextTick(() => { this.renderGantt(); this.renderCostChart('cumulative'); this.renderCostChart('rate'); }); },
-      expStatusChanged() { this.$nextTick(() => this.renderGantt()); },
-      expCostChanged() {
-        // Normalize empty → null, numeric strings → number (legacy parity).
-        this.model.experiments.forEach(x => {
-          x.costMoney = this._normNum(x.costMoney);
-          x.costHours = this._normNum(x.costHours);
-        });
-        this.$nextTick(() => { this.renderCostChart('cumulative'); this.renderCostChart('rate'); });
-      },
-      _normNum(v) {
-        if (v === '' || v === null || v === undefined) return null;
-        const n = typeof v === 'number' ? v : parseFloat(String(v).trim().replace(',', '.'));
-        return isNaN(n) ? null : n;
-      },
-
-      // ── Facts ─────────────────────────────────────────────────
-
-      addFact() { this.model.addFact(); },
-      deleteFact: async function (id) {
-        const f = this.model.facts.find(x => x.id === id);
-        if (!f) return;
-        const label = (f.name && f.name.trim()) || `#${this.model.facts.indexOf(f) + 1}`;
-        const ok = await module._context.dialog.confirm({
-          message: _t('delFactConfirm', { name: label }),
-          title: i18n().t('common.delete'),
-          confirmLabel: i18n().t('common.delete'),
-          danger: true,
-        });
-        if (!ok) return;
-        this.model.removeFact(id);
-      },
-      ownerNames() { return this.model.experts.map(e => e.name).filter(Boolean); },
-
-      // ── Hypothesis / Experiment link modals ───────────────────
-
-      openExpLink(rowId) {
-        const row = this.model.rows.find(r => r.id === rowId);
-        if (!row || !row.stableId) return;
-        const sid = row.stableId;
-        this.expLinkDraft = {
-          hint: _t('chooseExperimentsHint', { name: this.model.dName(row) }),
-          items: this.model.experiments.map((x, idx) => {
-            const status = x.status || 'planned';
-            return {
-              xId: x.id,
-              num: idx + 1,
-              label: (x.title && x.title.trim()) || `${_t('experiment')} #${idx + 1}`,
-              dateRange: (x.startDate || x.endDate) ? `${x.startDate || '?'} → ${x.endDate || '?'}` : '',
-              status,
-              statusLabel: _t(`expStatus.${  status}`),
-              checked: Array.isArray(x.hypothesisIds) && x.hypothesisIds.includes(sid),
-            };
-          }),
-        };
-        module._context.dialog.form({
-          title: _t('linkExperimentsTitle'),
-          content: this.$refs.expLinkForm,
-          confirmLabel: i18n().t('common.save'),
-          onConfirm: () => {
-            this.expLinkDraft.items.forEach(it => {
-              const exp = this.model.experiments.find(x => x.id === it.xId);
-              if (!exp) return;
-              if (!Array.isArray(exp.hypothesisIds)) exp.hypothesisIds = [];
-              const has = exp.hypothesisIds.includes(sid);
-              if (it.checked && !has) exp.hypothesisIds.push(sid);
-              else if (!it.checked && has) exp.hypothesisIds = exp.hypothesisIds.filter(s => s !== sid);
-            });
-          },
-        });
-      },
-
-      openHypLink(expId) {
-        const experiment = this.model.experiments.find(x => x.id === expId);
-        if (!experiment) return;
-        const ord = this.model.ordered();
-        const nums = this.model.buildNums();
-        const linked = new Set(experiment.hypothesisIds || []);
-        this.hypLinkDraft = {
-          items: ord.map(r => {
-            const ec = this.model.effCat(r);
-            return {
-              stableId: r.stableId,
-              num: nums[r.id] || '',
-              cat: Boolean(ec),
-              catColor: ec ? this.catColor(ec) : '',
-              catLabel: ec ? this.catLabel(ec) : '',
-              name: this.model.dName(r),
-              checked: linked.has(r.stableId),
-            };
-          }),
-        };
-        module._context.dialog.form({
-          title: _t('chooseHypotheses'),
-          content: this.$refs.hypLinkForm,
-          confirmLabel: i18n().t('common.save'),
-          onConfirm: () => {
-            experiment.hypothesisIds = this.hypLinkDraft.items
-              .filter(it => it.checked)
-              .map(it => it.stableId);
-          },
-        });
-      },
-
       // ── CSV export ────────────────────────────────────────────
 
       exportCSV() {
@@ -837,81 +698,6 @@ const mod = createModule({
         this._trendChart = chart;
       },
 
-      // ── Gantt chart (chartManager) ────────────────────────────
-
-      _destroyGantt() {
-        if (this._ganttChart) {
-          try { module._context.chartManager.destroy(this._ganttChart); } catch { /* ignore */ }
-          this._ganttChart = null;
-        }
-      },
-      async renderGantt() {
-        const host = module._container.querySelector('[data-ref="ganttCanvas"]');
-        if (!host) return;
-        this._destroyGantt();
-        const lang = module._context.language || 'de';
-        const config = computeGanttConfig(this.model.experiments, {
-          now: Date.now(),
-          lang,
-        });
-        if (config.isEmpty) { host.style.height = ''; host.replaceChildren(); this.ganttEmptyMsg = _t('ganttNoData'); return; }
-        this.ganttEmptyMsg = '';
-        host.replaceChildren();
-        // The chart framework sizes its SVG to the host via a height:100% chain +
-        // ResizeObserver — the host MUST carry a definite height or the measured
-        // height has no stable basis and drifts on every re-render. Pin it to the
-        // gantt's content height (padT + rows·rowH + padB).
-        const gl = config.layout;
-        host.style.height = `${gl.padT + config.tasks.length * gl.rowH + gl.padB}px`;
-        const gen = ++this._renderGen;
-        const chart = await module._context.chartManager.create(host, 'gantt', {
-          ...config,
-          todayLabel: _t('today'),
-        });
-        if (gen !== this._renderGen) { module._context.chartManager.destroy(chart); return; }
-        this._ganttChart = chart;
-      },
-
-      // ── Cost chart (chartManager — dual-axis cumulative-cost type) ──
-
-      _destroyCostCharts() {
-        ['_costCumChart', '_costRateChart'].forEach((key) => {
-          if (this[key]) {
-            try { module._context.chartManager.destroy(this[key]); } catch { /* ignore */ }
-            this[key] = null;
-          }
-        });
-      },
-      async renderCostChart(mode = 'cumulative') {
-        const hostRef = mode === 'rate' ? 'costRateChartCanvas' : 'costChartCanvas';
-        const host = module._container.querySelector(`[data-ref="${hostRef}"]`);
-        if (!host) return;
-        const handleKey = mode === 'rate' ? '_costRateChart' : '_costCumChart';
-        const emptyField = mode === 'rate' ? 'costRateEmptyMsg' : 'costEmptyMsg';
-        // Tear down only this mode's prior instance.
-        if (this[handleKey]) {
-          try { module._context.chartManager.destroy(this[handleKey]); } catch { /* ignore */ }
-          this[handleKey] = null;
-        }
-        const lang = module._context.language || 'de';
-        const config = computeCostConfig(this.model.experiments, mode, { now: Date.now(), lang });
-        if (config.isEmpty) { host.style.height = ''; host.replaceChildren(); this[emptyField] = _t('costChartNoData'); return; }
-        this[emptyField] = '';
-        host.replaceChildren();
-        // Pin a definite host height (padT + innerH + padB) — see renderGantt for
-        // why the framework's height:100% chain needs a definite basis.
-        const cl = config.layout;
-        host.style.height = `${cl.padT + cl.innerH + cl.padB}px`;
-        const genKey = mode === 'rate' ? 'rate' : 'cumulative';
-        const gen = ++this._costGen[genKey];
-        const chart = await module._context.chartManager.create(host, 'cumulative-cost', {
-          ...config,
-          moneyLabel: _t('costMoney'),
-          hoursLabel: _t('costHours'),
-        });
-        if (gen !== this._costGen[genKey]) { module._context.chartManager.destroy(chart); return; }
-        this[handleKey] = chart;
-      },
     };
   },
 });
