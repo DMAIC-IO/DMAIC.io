@@ -20,6 +20,7 @@
 import { createModule } from '../../core/template-module.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
 import { h } from '../../core/dom.js';
+import { EventBus } from '../../core/event-bus.js';
 import { compressImageToBudget } from '../../core/image-upload.js';
 import { draggableRows } from '../../ui/draggable-list.js';
 import { State, MAX_DEPTH_CLASS } from './ishikawa-model.js';
@@ -59,6 +60,10 @@ const mod = createModule({
 
   data(module, _t) {
     const i18n = () => module._context.i18n;
+    // One bus per mount, never the global context.eventBus: two ishikawa
+    // tabs stay apart (spec E3). A closure, not a data field, so Alpine
+    // never wraps it in a reactive proxy.
+    let events = null;
     return {
       // Reorderable rows for all three tables (.dmike-table--draggable). The
       // mixin owns the drag plumbing and Alt+Arrow; the move semantics stay in
@@ -127,17 +132,31 @@ const mod = createModule({
 
       init() {
         this.dragRowsInit();
+        events = new EventBus();
+        const binding = {
+          model: this.model,
+          events,
+          watch: (getter, callback) => this.$watch(getter, callback),
+          nextTick: (callback) => this.$nextTick(callback),
+          ref: (name) => this.$refs[name] ?? null,
+        };
+        for (const vm of this._subViewModels()) vm.attach(binding);
         // Render the active tab's charts after first paint.
         this.$nextTick(() => this.renderTabCharts());
       },
 
       destroy() {
         this.dragRowsDestroy();
+        for (const vm of this._subViewModels()) vm.detach();
+        events = null;
         this._destroyPareto();
         this._destroyGantt();
         this._destroyCostCharts();
         this._destroyTrend();
       },
+
+      /** @returns {object[]} the sub-viewmodels, in attach order */
+      _subViewModels() { return []; },
 
       // ── Tabs ──────────────────────────────────────────────────
 
