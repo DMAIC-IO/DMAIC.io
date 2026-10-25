@@ -57,8 +57,8 @@
         <div class="run-chart__tests-panel">
           <div class="run-chart__tests-header" x-text="t('testsTitle')"></div>
           <div class="run-chart__tests-grid">
-            <template x-for="row in result.tests">
-              <div class="run-chart__test-row" :key="row.id">
+            <template x-for="row in result.tests" :key="row.id">
+              <div class="run-chart__test-row">
                 <div class="run-chart__test-name">
                   <strong x-text="testName(row.id)"></strong>
                   <span class="run-chart__test-desc" x-text="testDesc(row.id)"></span>
