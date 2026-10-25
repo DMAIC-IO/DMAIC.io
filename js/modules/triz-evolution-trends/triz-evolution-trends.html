@@ -8,8 +8,8 @@
         @input="setSystem($event.target.value)">
     </section>
 
-    <template x-for="(entry, trendId) in model.trends">
-      <section class="triz-evo__trend" :key="trendId" :class="qualClass(entry)">
+    <template x-for="(entry, trendId) in model.trends" :key="trendId">
+      <section class="triz-evo__trend" :class="qualClass(entry)">
         <header class="triz-evo__trend-head">
           <span class="triz-evo__trend-num" x-text="trendNumById(trendId)"></span>
           <h3 class="triz-evo__trend-title" x-text="trendName(trendId)"></h3>
@@ -18,8 +18,8 @@
 
         <template x-if="entry.hasStages"><div class="triz-evo__stages" role="radiogroup"
           :aria-label="trendName(trendId)">
-          <template x-for="s in entry.availableStages">
-            <label class="triz-evo__stage" :key="s" :class="selectedClass(entry,s)"
+          <template x-for="(s, i) in entry.availableStages" :key="s + ':' + i">
+            <label class="triz-evo__stage" :class="selectedClass(entry,s)"
               :data-trend="trendId" :data-idx="s">
               <input type="radio"
                 :name="radioName(trendId)"
