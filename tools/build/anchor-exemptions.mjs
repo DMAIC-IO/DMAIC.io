@@ -72,7 +72,7 @@ export const ANCHOR_EXEMPTIONS = {
     { match: 'name="msa5-weights"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },
     { match: "t('labels.ratingColumns')", reason: 'Matrix-Slot des breiten Layouts, über die Agentenfläche noch nicht setzbar (Roadmap: setRatingColumns); ohne Agentenaktion kein gemeinsamer Satz', count: 1 },
     { match: "t('table.verdict')", reason: 'Ampel aus κ nach den Richtwerten derselben Zeile, kein eigener Wert; der Satz steht an der κ-Spalte', count: 2 },
-    { match: ':key="a" x-text="a"', reason: 'eine Spalte je Prüfer, Kopf ist der Prüfername (Daten, keine Beschriftung)', count: 1 },
+    { match: '<th x-text="a">', reason: 'eine Spalte je Prüfer, Kopf ist der Prüfername (Daten, keine Beschriftung)', count: 1 },
   ],
   regression: [
     { match: 'data-action="toggle-ci"', reason: 'Anzeigeschalter ohne Agentenbezug', count: 1 },
@@ -85,11 +85,11 @@ export const ANCHOR_EXEMPTIONS = {
     { match: 'x-text="term.label"', reason: 'je Prädiktor ein Eingabefeld; der Satz steht am Vorhersage-Knopf', count: 1 },
   ],
   'pairwise-comparison': [
-    { match: 'class="pairwise__matrix-col-header" :key="j"', reason: 'Kopf je Kriterium bzw. Gruppe (Name aus den Daten); der Satz steht an der Tabelle', count: 1 },
+    { match: 'class="pairwise__matrix-col-header"', reason: 'Kopf je Kriterium bzw. Gruppe (Name aus den Daten); der Satz steht an der Tabelle', count: 1 },
     { match: 'pairwise__matrix-row-label', reason: 'Kopf je Kriterium bzw. Gruppe (Name aus den Daten); der Satz steht an der Tabelle', count: 1 },
   ],
   'hypothesis-test': [
-    { match: '<th :key="h" x-text="h">', reason: 'Kopf je Kriterium bzw. Gruppe (Name aus den Daten); der Satz steht an der Tabelle', count: 1 },
+    { match: '<th x-text="h">', reason: 'Kopf je Kriterium bzw. Gruppe (Name aus den Daten); der Satz steht an der Tabelle', count: 1 },
     { match: 'x-text="row.head"', reason: 'Kopf je Kriterium bzw. Gruppe (Name aus den Daten); der Satz steht an der Tabelle', count: 1 },
   ],
   'attribute-test': [
@@ -117,7 +117,7 @@ export const ANCHOR_EXEMPTIONS = {
   'response-optimization': [
     { match: "t('axisX')", reason: 'Anzeigeschalter ohne Agentenbezug', count: 1 },
     { match: "t('axisY')", reason: 'Anzeigeschalter ohne Agentenbezug', count: 1 },
-    { match: ':key="fix.id" class="ro__contour-fix"', reason: 'Anzeigeschalter ohne Agentenbezug', count: 1 },
+    { match: 'class="ro__contour-fix"><span x-text="fix.id">', reason: 'Anzeigeschalter ohne Agentenbezug', count: 1 },
   ],
   'process-map': [
     { match: 'class="pmap__sipoc-option"', reason: 'Auswahlzeile je SIPOC-Instanz im Importdialog; keine Agentenaktion', count: 1 },

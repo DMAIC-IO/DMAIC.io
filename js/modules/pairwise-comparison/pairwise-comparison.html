@@ -37,8 +37,8 @@
               x-text="addBtnLabel()"></button>
           </div>
           <div class="pairwise__chips">
-            <template x-for="(c, i) in model.criteria">
-              <span class="pairwise__chip" :key="c">
+            <template x-for="(c, i) in model.criteria" :key="c + ':' + i">
+              <span class="pairwise__chip">
                 <span class="pairwise__chip-num" x-text="chipNum(i)"></span>
                 <span class="pairwise__chip-label" x-text="c"></span>
                 <button class="pairwise__chip-remove" type="button"
@@ -115,8 +115,8 @@
                 <div class="pairwise__results-col">
                   <div class="pairwise__section-label"><span data-help-key="modules.pairwise-comparison.types.Result.ranking" x-text="t('rankingLabel')"></span></div>
                   <ol class="pairwise__rank-list">
-                    <template x-for="(r, pos) in model.ranked">
-                      <li class="pairwise__rank-item" :key="r.idx"
+                    <template x-for="(r, pos) in model.ranked" :key="r.idx">
+                      <li class="pairwise__rank-item"
                         :class="medalClass(pos)" :style="rankDelay(pos)">
                         <span class="pairwise__rank-pos" x-text="pos + 1"></span>
                         <span class="pairwise__rank-name" x-text="r.name"></span>
@@ -135,8 +135,8 @@
                       <thead>
                         <tr>
                           <th class="pairwise__matrix-corner"></th>
-                          <template x-for="(c, j) in model.criteria">
-                            <th class="pairwise__matrix-col-header" :key="j">
+                          <template x-for="(c, j) in model.criteria" :key="j">
+                            <th class="pairwise__matrix-col-header">
                               <span class="pairwise__matrix-col-header-content" x-text="c"></span>
                             </th>
                           </template>
@@ -146,11 +146,11 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <template x-for="(rowName, i) in model.criteria">
-                          <tr :key="i">
+                        <template x-for="(rowName, i) in model.criteria" :key="i">
+                          <tr>
                             <th class="pairwise__matrix-row-label" x-text="rowName"></th>
-                            <template x-for="(colName, j) in model.criteria">
-                              <td class="pairwise__matrix-cell" :key="j"
+                            <template x-for="(colName, j) in model.criteria" :key="j">
+                              <td class="pairwise__matrix-cell"
                                 :class="matrixCellClass(i, j)"
                                 :data-i="i" :data-j="j"
                                 :title="cellTitle(i, j)"

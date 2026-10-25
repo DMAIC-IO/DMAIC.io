@@ -83,8 +83,8 @@
                 x-text="t('labels.positiveSwap')"></button>
       </template>
       <template x-if="model.params.type !== 'binary' && detectedLevels().length">
-        <template x-for="lvl in detectedLevels()">
-          <span class="msa-typ5__level" :key="lvl" x-text="lvl"></span>
+        <template x-for="(lvl, i) in detectedLevels()" :key="lvl + ':' + i">
+          <span class="msa-typ5__level" x-text="lvl"></span>
         </template>
       </template>
       <template x-if="model.params.type === 'binary' && detectedLevels().length">
@@ -142,8 +142,8 @@
         </div>
 
         <!-- Warnungen -->
-        <template x-for="(w, wi) in warningEntries()">
-          <div class="msa-typ5__warn" :key="wi" x-text="w"></div>
+        <template x-for="(w, wi) in warningEntries()" :key="wi">
+          <div class="msa-typ5__warn" x-text="w"></div>
         </template>
 
         <!-- KPI-Strip -->
@@ -192,8 +192,8 @@
             <th><span data-help-key="modules.msa-typ5.types.Criterion.level" x-text="t('criteria.status')"></span></th>
           </tr></thead>
           <tbody>
-            <template x-for="row in criteriaRows()">
-              <tr :key="row.key" :class="row.rowClass">
+            <template x-for="row in criteriaRows()" :key="row.key">
+              <tr :class="row.rowClass">
                 <td x-text="row.label"></td>
                 <td x-text="row.value"></td>
                 <td x-text="row.appraiser"></td>
@@ -222,8 +222,8 @@
             <th><span data-help-key="modules.msa-typ5.types.FleissKappa.p" x-text="t('table.p')"></span></th>
           </tr></thead>
           <tbody>
-            <template x-for="row in perAppraiserRows()">
-              <tr :key="row.id">
+            <template x-for="row in perAppraiserRows()" :key="row.id">
+              <tr>
                 <td x-text="row.id"></td>
                 <td x-text="row.repeatability"></td>
                 <td x-text="row.effectiveness"></td>
@@ -249,8 +249,8 @@
             <th x-text="t('table.verdict')"></th>
           </tr></thead>
           <tbody>
-            <template x-for="row in pairRows()">
-              <tr :key="row.pair">
+            <template x-for="(row, i) in pairRows()" :key="row.pair + ':' + i">
+              <tr>
                 <td x-text="row.pairLabel"></td>
                 <td x-text="row.kappa"></td>
                 <td x-text="row.ci95"></td>
@@ -276,8 +276,8 @@
                 <th x-text="t('table.verdict')"></th>
               </tr></thead>
               <tbody>
-                <template x-for="row in vsRefRows()">
-                  <tr :key="row.id">
+                <template x-for="row in vsRefRows()" :key="row.id">
+                  <tr>
                     <td x-text="row.id"></td>
                     <td x-text="row.kappa"></td>
                     <td x-text="row.ci95"></td>
@@ -306,19 +306,19 @@
           <thead><tr>
             <th><span data-help-key="modules.msa-typ5.types.PartRow.part" x-text="t('table.part')"></span></th>
             <th><span data-help-key="modules.msa-typ5.types.PartRow.reference" x-text="t('table.reference')"></span></th>
-            <template x-for="a in partAppraisers()">
-              <th :key="a" x-text="a"></th>
+            <template x-for="(a, i) in partAppraisers()" :key="a + ':' + i">
+              <th x-text="a"></th>
             </template>
             <th><span data-help-key="modules.msa-typ5.types.PartRow.vsRefErrors" x-text="t('table.vsRefErrors')"></span></th>
             <th><span data-help-key="modules.msa-typ5.types.PartRow.mixedAppraisers" x-text="t('table.mixedAppraisers')"></span></th>
           </tr></thead>
           <tbody>
-            <template x-for="row in perPartRows()">
-              <tr :key="row.part" :class="row.rowClass">
+            <template x-for="(row, j) in perPartRows()" :key="row.part + ':' + j">
+              <tr :class="row.rowClass">
                 <td x-text="row.part"></td>
                 <td x-text="row.reference"></td>
-                <template x-for="c in row.ratings">
-                  <td :key="c.appraiser" :class="c.cellClass" x-text="c.text"></td>
+                <template x-for="(c, i) in row.ratings" :key="c.appraiser + ':' + i">
+                  <td :class="c.cellClass" x-text="c.text"></td>
                 </template>
                 <td x-text="row.vsRefErrors"></td>
                 <td x-text="row.mixedAppraisers"></td>
@@ -343,8 +343,8 @@
               <th><span data-help-key="modules.msa-typ5.types.ConfusionPair.parts" x-text="t('table.parts')"></span></th>
             </tr></thead>
             <tbody>
-              <template x-for="row in disagreementRows()">
-                <tr :key="row.key" :class="row.rowClass">
+              <template x-for="row in disagreementRows()" :key="row.key">
+                <tr :class="row.rowClass">
                   <td x-text="row.appraiser"></td>
                   <td x-text="row.kind"></td>
                   <td x-text="row.count"></td>
