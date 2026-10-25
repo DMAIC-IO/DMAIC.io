@@ -42,9 +42,10 @@ import {
 } from '../../engines/doe-terms.js';
 import {
   createDesignWorksheet, createExperimentRecord, removeExperimentRecord,
-  readResponsesFromWorksheet, isWorksheetValid, appendDoERowsToWorksheet,
+  isWorksheetValid, appendDoERowsToWorksheet, sourceRowCount,
   listProjectWorksheets, readSourceData,
 } from './doe-planner-worksheet.js';
+import { readResponses, staleness, boundPct, boundComplete } from './doe-planner-responses.js';
 import {
   evaluateDesign, computeEVOPEffects, recenteredFactors,
   computeDispersionAnalysis, powerDisplay,
@@ -126,13 +127,7 @@ const mod = createModule({
 
       // ── Context-dependent helpers (need stateManager) ─────────
 
-      sourceRowCount() {
-        const ref = this.model.sourceWorksheet;
-        if (!ref || !ref.instanceId) return 0;
-        const ws = ctx().stateManager.getModuleState(ref.instanceId);
-        const sheet = ws && ws.sheets ? ws.sheets.find(s => s.id === ref.sheetId) : null;
-        return (sheet && sheet.state && sheet.state.rowCount) || 0;
-      },
+      sourceRowCount() { return sourceRowCount(ctx(), this.model.sourceWorksheet); },
 
       /** Type-independent rules, then the design type's own (designs/). */
       isConfigValid() {
@@ -143,12 +138,7 @@ const mod = createModule({
         // Touch the external-revision counter so Alpine re-evaluates the output
         // regions when the linked worksheet (foreign state) changes.
         void this._extRev;
-        const m = this.model;
-        if (!m.worksheetRef || !isWorksheetValid(ctx(), m.worksheetRef)) return 'unbound';
-        const cur = m.designSignature();
-        const saved = m.worksheetRef.designSignature || null;
-        if (cur && saved && cur === saved) return 'bound';
-        return 'stale';
+        return staleness(ctx(), this.model);
       },
       staleness() { return this.worksheetStaleness(); },
 
@@ -678,20 +668,14 @@ const mod = createModule({
 
       // ── Output: bound state ───────────────────────────────────
 
-      _resp() { void this._extRev; return readResponsesFromWorksheet(ctx(), this.model.worksheetRef); },
-      boundPct() {
-        const resp = this._resp();
-        return resp && resp.totalCount > 0 ? Math.round(resp.filledCount / resp.totalCount * 100) : 0;
-      },
+      _resp() { void this._extRev; return readResponses(ctx(), this.model); },
+      boundPct() { void this._extRev; return boundPct(ctx(), this.model); },
       boundProgressText() {
         const resp = this._resp();
         if (!resp) return '';
         return `${resp.filledCount} / ${resp.totalCount} ${_t('valuesFilled')} (${this.boundPct()}%)`;
       },
-      boundComplete() {
-        const resp = this._resp();
-        return Boolean(resp && resp.complete);
-      },
+      boundComplete() { void this._extRev; return boundComplete(ctx(), this.model); },
       showPreview() {
         return this.staleness() !== 'bound' && Boolean(this.model.design && this.model.design.actualMatrix && this.model.design.actualMatrix.length);
       },

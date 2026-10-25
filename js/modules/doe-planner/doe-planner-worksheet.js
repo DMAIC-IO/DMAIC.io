@@ -497,6 +497,21 @@ export function isWorksheetValid(context, ref) {
   return ws.sheets.some(s => s.id === ref.sheetId);
 }
 
+/**
+ * Row count of a referenced worksheet sheet (source data of an augmented
+ * optimal design).
+ *
+ * @param {object} context - Module context (stateManager)
+ * @param {?{instanceId: string, sheetId: string}} ref - Source worksheet reference
+ * @returns {number} rows of the sheet, 0 when missing
+ */
+export function sourceRowCount(context, ref) {
+  if (!ref || !ref.instanceId) return 0;
+  const ws = context.stateManager.getModuleState(ref.instanceId);
+  const sheet = ws && ws.sheets ? ws.sheets.find((s) => s.id === ref.sheetId) : null;
+  return (sheet && sheet.state && sheet.state.rowCount) || 0;
+}
+
 // ─── Append Rows (Design Augmentation) ─────────────────────────────
 
 /**
