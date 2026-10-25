@@ -638,13 +638,14 @@ export function renderTrainingIndex({ lang, i18n: _i18n }) {
     const href = `./${topic}.html`;
     return `<a class="handbook-card" href="${escapeAttr(href)}"><div class="handbook-card__title">${escapeHtml(title)}</div><div class="handbook-card__desc">${escapeHtml(stripRefTokens(stripTermTokens(desc)))}</div></a>`;
   }).join('');
+  const coursesCard = `<a class="handbook-card" href="./courses.html"><div class="handbook-card__title">${escapeHtml(s.training.coursesTitle)}</div><div class="handbook-card__desc">${escapeHtml(s.training.coursesShort)}</div></a>`;
 
   const body = `
 <article class="handbook-article">
   <span class="handbook-article__tag">${escapeHtml(s.breadcrumbTraining)}</span>
   <h1>${escapeHtml(s.breadcrumbTraining)}</h1>
   <p class="handbook-article__lead">${escapeHtml(s.trainingIntro)}</p>
-  <div class="handbook-grid">${cards}</div>
+  <div class="handbook-grid">${coursesCard}${cards}</div>
 </article>`;
 
   const html = renderPage({
@@ -659,6 +660,67 @@ export function renderTrainingIndex({ lang, i18n: _i18n }) {
     ],
     bodyHtml: body,
     headingKey: s.breadcrumbTraining,
+  });
+
+  return { html, pathFromRoot, altPathFromRoot };
+}
+
+/**
+ * Course overview — /{lang}/training/courses.html. Lists each course with its
+ * lessons (title, one-line summary, "in preparation" when unbuilt). Lesson
+ * content is interactive and lives in the app, so there is one link into the
+ * app root (the app has no lesson URLs) and no step text here.
+ *
+ * @param {object} opts
+ * @param {'de'|'en'} opts.lang
+ * @param {object[]} opts.courses course registry (COURSES)
+ * @returns {{html: string, pathFromRoot: string, altPathFromRoot: string}}
+ */
+export function renderTrainingCoursesPage({ lang, courses }) {
+  const s = getStrings(lang);
+  const pathFromRoot = `/${lang}/training/courses.html`;
+  const altLang = lang === 'de' ? 'en' : 'de';
+  const altPathFromRoot = `/${altLang}/training/courses.html`;
+
+  const sections = courses.map((course) => {
+    const items = course.lessons.map((ref) => {
+      const text = ref[lang];
+      const label = ref.content
+        ? ''
+        : ` <span class="handbook-course__status">${escapeHtml(s.courseInPreparation)}</span>`;
+      return `<li class="handbook-course__lesson" data-lesson-id="${escapeAttr(ref.id)}"><strong>${escapeHtml(text.title)}</strong>${label}<br>${escapeHtml(text.summary)}</li>`;
+    }).join('\n');
+    return `<section class="handbook-course" data-course-id="${escapeAttr(course.id)}">
+  <h2>${escapeHtml(course[lang].title)}</h2>
+  <p>${escapeHtml(course[lang].summary)}</p>
+  <ol class="handbook-course__lessons">
+${items}
+  </ol>
+</section>`;
+  }).join('\n');
+
+  const body = `
+<article class="handbook-article">
+  <span class="handbook-article__tag">${escapeHtml(s.breadcrumbTraining)}</span>
+  <h1>${escapeHtml(s.training.coursesTitle)}</h1>
+  <p class="handbook-article__lead">${escapeHtml(s.courseOpenHint)}</p>
+  ${sections}
+  <p><a href="${escapeAttr(appRootFrom(pathFromRoot))}" class="handbook-cta__button">${escapeHtml(s.courseOpenInApp)}</a></p>
+</article>`;
+
+  const html = renderPage({
+    lang,
+    title: `${s.training.coursesTitle} — ${s.handbookTitle}`,
+    description: s.training.coursesShort,
+    pathFromRoot,
+    altPathFromRoot,
+    breadcrumbs: [
+      { label: s.handbookTitle, href: `/${lang}/` },
+      { label: s.breadcrumbTraining, href: `/${lang}/training/index.html` },
+      { label: s.training.coursesTitle },
+    ],
+    bodyHtml: body,
+    headingKey: s.training.coursesTitle,
   });
 
   return { html, pathFromRoot, altPathFromRoot };
