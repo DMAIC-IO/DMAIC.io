@@ -25,18 +25,14 @@
 import { createModule } from '../../core/template-module.js';
 import { State, letter, PHASE_DECISIONS } from './doe-planner-model.js';
 import { FactorsViewModel } from './viewmodel/factors.js';
+import { DesignViewModel } from './viewmodel/design.js';
 import { codedToActualRows, buildRunTable, captureEdits, applyEdits } from './doe-planner-runtable.js';
 import { DataGrid } from '../../core/datagrid/datagrid.js';
-import { PB_DESIGNS, ALL_RUNS, K_RANGE, BOX_BEHNKEN } from './doe-planner-designs.js';
 import {
   generateDesign, minRunsForTerms,
   augmentOptimalDesign,
 } from '../../engines/doe-planner-engine.js';
-import { DESIGNS, designOf, checkConfig } from './designs/index.js';
-import { hasMultiLevel } from './designs/check.js';
-import frac from './designs/frac.js';
-import bb from './designs/bb.js';
-import taguchi from './designs/taguchi.js';
+import { designOf, checkConfig } from './designs/index.js';
 import optimal from './designs/optimal.js';
 import {
   termDisplay, enumerateTerms, activateTerm, deactivateTerm, termSortKey,
@@ -56,23 +52,11 @@ import { uid } from '../../core/uid.js';
 
 // ─── Constants ─────────────────────────────────────────────────────
 
-const DESIGN_TYPES = [
-  { key: 'full',    formula: '2ᵏ' },
-  { key: 'frac',    formula: '2⁽ᵏ⁻ᵖ⁾' },
-  { key: 'pb',      formula: 'PB' },
-  { key: 'ccd',     formula: 'CCD' },
-  { key: 'bb',      formula: 'BB' },
-  { key: 'taguchi', formula: 'OA' },
-  { key: 'dopt',    formula: 'D-Opt' },
-  { key: 'aopt',    formula: 'A-Opt' },
-  { key: 'gopt',    formula: 'G-Opt' },
-];
-
 const ALGO_ID_DEFF = 'd-efficiency';
 const AUTO_GEN_DELAY = 600; // ms debounce for auto-generation
 
 /** Data keys of the sub-viewmodels, in attach order. */
-const SUB_VIEWMODELS = ['factors'];
+const SUB_VIEWMODELS = ['factors', 'design'];
 
 const mod = createModule({
   config: {
@@ -106,12 +90,7 @@ const mod = createModule({
       // `name: new X(deps)` literals: the agent generator reads the
       // sub-viewmodels from exactly this shape. init() replaces them.
       factors: new FactorsViewModel(deps),
-
-      // ── Static view data ──────────────────────────────────────
-      designTypes: DESIGN_TYPES,
-      kRange: K_RANGE,
-      allRuns: ALL_RUNS,
-      pbDesigns: PB_DESIGNS,
+      design: new DesignViewModel(deps),
 
       // ── Transient UI state (never persisted) ──────────────────
       _previewGrid: null,
@@ -279,117 +258,6 @@ const mod = createModule({
         };
       },
 
-      // ── Design-type selection ─────────────────────────────────
-
-      designOptDisabled(dt) {
-        return Boolean(DESIGNS[dt.key] && DESIGNS[dt.key].twoLevelOnly) && hasMultiLevel(this.model);
-      },
-      designOptClass(dt) {
-        const active = this.model.designType === dt.key ? 'doe__design-opt--active' : '';
-        const disabled = this.designOptDisabled(dt) ? 'doe__design-opt--disabled' : '';
-        return (`${active  } ${  disabled}`).trim();
-      },
-      designOptTip(dt) {
-        return this.designOptDisabled(dt) ? _t('tipTwoLevelOnly') : _t(`tip_${  dt.key}`);
-      },
-      fullIsProduct() {
-        return hasMultiLevel(this.model);
-      },
-      fullProductFormula() {
-        return this.model.factors.map(f => f.levels.length).join('×');
-      },
-
-      selectDesignType(type) {
-        const m = this.model;
-        if (this.designOptDisabled({ key: type })) return;
-        m.designType = type;
-        m.selectedRes = null;
-        m.selectedPBIdx = null;
-        if (m.isOptimalType() && !m.options.optimalRuns) {
-          m.options.optimalRuns = optimal.minNewRuns(m, { sourceRowCount: this.sourceRowCount() }) + 2;
-        }
-        this.save();
-      },
-
-      // ── Recommendation ────────────────────────────────────────
-
-      recommendation() {
-        const k = this.model.factors.length;
-        const has3 = this.model.factors.some(f => f.levels.length >= 3);
-        if (k <= 4 && !has3) return 'full';
-        if (k <= 6 && !has3) return 'frac';
-        if (k >= 7 && !has3) return 'pb';
-        if (k >= 3 && k <= 7 && has3) return 'bb';
-        if (has3) return 'taguchi';
-        return '';
-      },
-      recommendationText() {
-        const rec = this.recommendation();
-        const map = { full: 'recFull', frac: 'recFrac', pb: 'recPB', bb: 'recBB', taguchi: 'recTaguchi' };
-        return _t(map[rec] || 'recFull', { k: this.model.factors.length });
-      },
-      applyRecommendation() {
-        const rec = this.recommendation();
-        if (!rec) return;
-        this.model.designType = rec;
-        this.model.selectedRes = null;
-        this.model.selectedPBIdx = null;
-        this.save();
-      },
-
-      // ── Resolution table ──────────────────────────────────────
-
-      resCellClass(k, runs) { return frac.cellClass(k, runs, this.model); },
-      resCellData(k, runs, which) { return frac.cellData(k, runs, which, this.model); },
-      resCellLabel(k, runs) { return frac.cellLabel(k, runs, _t); },
-      resCellClick(k, runs) {
-        const d = frac.def(k, runs);
-        if (!d || k !== this.model.factors.length) return;
-        this.model.selectedRes = { k, runs, res: d.res, p: d.p };
-        this.save();
-      },
-      resInfoText() {
-        const s = this.model.selectedRes;
-        if (!s) return _t('resSelectPrompt');
-        return `${s.k} ${_t('factors')} · ${s.runs} Runs · ${_t('resolution')} ${s.res}`;
-      },
-      resAliasDetail() { return frac.aliasDetail(this.model); },
-
-      // ── PB ────────────────────────────────────────────────────
-
-      pbInfoText() {
-        return this.model.selectedPBIdx !== null
-          ? `${PB_DESIGNS[this.model.selectedPBIdx].label} ${_t('factors')}`
-          : _t('pbSelectPrompt');
-      },
-      selectPB(idx) {
-        this.model.selectedPBIdx = idx;
-        this.save();
-      },
-
-      // ── Box-Behnken ───────────────────────────────────────────
-
-      bbAvailable() { return bb.available(this.model); },
-      bbDetailText() {
-        const k = this.model.factors.length;
-        const pairs = BOX_BEHNKEN[k];
-        return _t('bbDetail', { k, pairs: pairs.length, runs: bb.runs(this.model) });
-      },
-      bbWarningText() {
-        return _t('bbNotAvailable', { k: this.model.factors.length, min: 3, max: 7 });
-      },
-
-      // ── Taguchi ───────────────────────────────────────────────
-
-      taguchiCandidatesList() { return taguchi.candidates(this.model); },
-      taguchiFirstLevels() { const lc = taguchi.levelCounts(this.model); return lc.length ? lc[0] : 0; },
-      taguchiInfoText() { return _t(taguchi.levelsKey(this.model)); },
-      taguchiSelected() { return taguchi.selected(this.model); },
-      selectTaguchi(name) {
-        this.model.options.taguchiArray = name;
-        this.save();
-      },
-
       // ── Optimal options ───────────────────────────────────────
 
       optimalMinRuns() { return optimal.minRuns(this.model); },
@@ -553,28 +421,6 @@ const mod = createModule({
           m.sourceWorksheet = { instanceId, sheetId };
         }
         if (m.isOptimalType()) optimal.raiseRunsToMinimum(m, { sourceRowCount: this.sourceRowCount() });
-        this.save();
-      },
-
-      // ── Design parameters ─────────────────────────────────────
-
-      showCenterPointsOption() {
-        const type = designOf(this.model);
-        return !type || type.centerPoints;
-      },
-      randomizeChanged() { this.save(); },
-      centerPointsChanged() { this.save(); },
-      replicatesChanged(event) {
-        this.model.options.replicates = Math.max(1, Math.min(10, parseInt(event.target.value, 10) || 1));
-        this.save();
-      },
-      alphaTypeChanged() { this.save(); },
-      ccdCpChanged(event) {
-        this.model.options.ccdCenterPoints = Math.max(1, parseInt(event.target.value, 10) || 3);
-        this.save();
-      },
-      bbCpChanged(event) {
-        this.model.options.bbCenterPoints = Math.max(1, parseInt(event.target.value, 10) || 3);
         this.save();
       },
 

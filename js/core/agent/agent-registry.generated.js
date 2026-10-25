@@ -4500,31 +4500,6 @@ export const AGENT_REGISTRY = {
       "unmarked_method:scheduleAutoGenerate",
       "unmarked_method:tryAutoGenerate",
       "unmarked_method:buildDesignFromSource",
-      "unmarked_method:designOptDisabled",
-      "unmarked_method:designOptClass",
-      "unmarked_method:designOptTip",
-      "unmarked_method:fullIsProduct",
-      "unmarked_method:fullProductFormula",
-      "unmarked_method:selectDesignType",
-      "unmarked_method:recommendation",
-      "unmarked_method:recommendationText",
-      "unmarked_method:applyRecommendation",
-      "unmarked_method:resCellClass",
-      "unmarked_method:resCellData",
-      "unmarked_method:resCellLabel",
-      "unmarked_method:resCellClick",
-      "unmarked_method:resInfoText",
-      "unmarked_method:resAliasDetail",
-      "unmarked_method:pbInfoText",
-      "unmarked_method:selectPB",
-      "unmarked_method:bbAvailable",
-      "unmarked_method:bbDetailText",
-      "unmarked_method:bbWarningText",
-      "unmarked_method:taguchiCandidatesList",
-      "unmarked_method:taguchiFirstLevels",
-      "unmarked_method:taguchiInfoText",
-      "unmarked_method:taguchiSelected",
-      "unmarked_method:selectTaguchi",
       "unmarked_method:optimalMinRuns",
       "unmarked_method:optimalMinNew",
       "unmarked_method:optimalRunsValid",
@@ -4551,13 +4526,6 @@ export const AGENT_REGISTRY = {
       "unmarked_method:sourceWorksheetOptions",
       "unmarked_method:sourceMappingStatus",
       "unmarked_method:sourceWorksheetChanged",
-      "unmarked_method:showCenterPointsOption",
-      "unmarked_method:randomizeChanged",
-      "unmarked_method:centerPointsChanged",
-      "unmarked_method:replicatesChanged",
-      "unmarked_method:alphaTypeChanged",
-      "unmarked_method:ccdCpChanged",
-      "unmarked_method:bbCpChanged",
       "unmarked_method:summaryRuns",
       "unmarked_method:summaryRes",
       "unmarked_method:summaryGeneratedRuns",
@@ -4611,10 +4579,7 @@ export const AGENT_REGISTRY = {
       "unreadable_state_key:version",
       "unreachable_write:projectMode",
       "unreachable_write:projectName",
-      "unreachable_write:doeName",
-      "unreachable_write:options.randomize",
-      "unreachable_write:options.centerPoints",
-      "unreachable_write:options.alphaType"
+      "unreachable_write:doeName"
     ],
     "actions": {
       "factors.addFactor": {
@@ -4800,6 +4765,137 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Set a response's unit."
+      },
+      "design.selectDesignType": {
+        "params": [
+          {
+            "name": "type",
+            "type": "'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt'",
+            "optional": false,
+            "help": ""
+          }
+        ],
+        "returns": "void",
+        "help": "Choose the design type. Fractional factorial and Plackett-Burman need two levels per factor; an optimal type gets a default run count."
+      },
+      "design.applyRecommendation": {
+        "params": [],
+        "returns": "?string",
+        "help": "Take the recommended design type for the current factors."
+      },
+      "design.selectResolution": {
+        "params": [
+          {
+            "name": "k",
+            "type": "number",
+            "optional": false,
+            "help": "the factor count; must equal the number of factors"
+          },
+          {
+            "name": "runs",
+            "type": "number",
+            "optional": false,
+            "help": "the run count of the fraction"
+          }
+        ],
+        "returns": "void",
+        "help": "Choose the fractional factorial by run count; the factor count is the current one."
+      },
+      "design.selectPB": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "row of the table, 0 = 2–7 factors"
+          }
+        ],
+        "returns": "void",
+        "help": "Choose a Plackett-Burman row by factor range."
+      },
+      "design.selectTaguchi": {
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "array name such as L4, L8 or L9"
+          }
+        ],
+        "returns": "void",
+        "help": "Choose the Taguchi orthogonal array; only arrays that fit the factors are offered."
+      },
+      "design.setRandomize": {
+        "params": [
+          {
+            "name": "on",
+            "type": "boolean",
+            "optional": false,
+            "help": "true randomises"
+          }
+        ],
+        "returns": "void",
+        "help": "Randomise the run order or keep the standard order."
+      },
+      "design.setCenterPoints": {
+        "params": [
+          {
+            "name": "on",
+            "type": "boolean",
+            "optional": false,
+            "help": ""
+          }
+        ],
+        "returns": "void",
+        "help": "Add three center points (full, fractional and Plackett-Burman designs)."
+      },
+      "design.setReplicates": {
+        "params": [
+          {
+            "name": "n",
+            "type": "number",
+            "optional": false,
+            "help": "replicates, a whole number from 1 to 10"
+          }
+        ],
+        "returns": "void",
+        "help": "Repeat every run."
+      },
+      "design.setAlphaType": {
+        "params": [
+          {
+            "name": "type",
+            "type": "'rotatable'|'face-centered'|'spherical'",
+            "optional": false,
+            "help": ""
+          }
+        ],
+        "returns": "void",
+        "help": "Choose the axial distance of the central composite design."
+      },
+      "design.setCcdCenterPoints": {
+        "params": [
+          {
+            "name": "n",
+            "type": "number",
+            "optional": false,
+            "help": "a whole number, at least 1"
+          }
+        ],
+        "returns": "void",
+        "help": "Center points of the central composite design."
+      },
+      "design.setBbCenterPoints": {
+        "params": [
+          {
+            "name": "n",
+            "type": "number",
+            "optional": false,
+            "help": "a whole number, at least 1"
+          }
+        ],
+        "returns": "void",
+        "help": "Center points of the Box-Behnken design."
       },
       "completePhase": {
         "params": [

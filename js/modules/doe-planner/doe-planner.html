@@ -169,29 +169,29 @@
     <div class="dmike-split__section-title" x-text="t('stepDesignType')"></div>
 
     <!-- Recommendation -->
-    <template x-if="recommendation()">
+    <template x-if="design.recommendation()">
       <div class="doe__recommendation">
         <span class="doe__recommendation-icon">&#10024;</span>
-        <span class="doe__recommendation-text" x-text="recommendationText()"></span>
-        <button class="doe__recommendation-btn" :data-rec-type="recommendation()" type="button"
-                @click="applyRecommendation()" x-text="t('design_' + recommendation())"></button>
+        <span class="doe__recommendation-text" x-text="design.recommendationText()"></span>
+        <button class="doe__recommendation-btn" :data-rec-type="design.recommendation()" type="button"
+                @click="design.applyRecommendation()" x-text="t('design_' + design.recommendation())"></button>
       </div>
     </template>
 
     <div class="doe__design-options">
-      <template x-for="dt in designTypes" :key="dt.key">
+      <template x-for="dt in design.designTypes" :key="dt.key">
         <button class="doe__design-opt"
-                :class="designOptClass(dt)" :data-type="dt.key" type="button"
-                :disabled="designOptDisabled(dt)" :title="designOptTip(dt)"
-                @click="selectDesignType(dt.key)">
+                :class="design.designOptClass(dt)" :data-type="dt.key" type="button"
+                :disabled="design.designOptDisabled(dt)" :title="design.designOptTip(dt)"
+                @click="design.selectDesignType(dt.key)">
           <span class="doe__design-opt-label" x-text="t('design_' + dt.key)"></span>
           <!-- Formula: full/frac carry HTML superscripts (cannot live in x-text);
                full also collapses to a "n×m×…" product for mixed-level factors. -->
-          <template x-if="dt.key === 'full' && !fullIsProduct()">
+          <template x-if="dt.key === 'full' && !design.fullIsProduct()">
             <span class="doe__design-opt-desc">2<sup>k</sup></span>
           </template>
-          <template x-if="dt.key === 'full' && fullIsProduct()">
-            <span class="doe__design-opt-desc" x-text="fullProductFormula()"></span>
+          <template x-if="dt.key === 'full' && design.fullIsProduct()">
+            <span class="doe__design-opt-desc" x-text="design.fullProductFormula()"></span>
           </template>
           <template x-if="dt.key === 'frac'">
             <span class="doe__design-opt-desc">2<sup>(k&minus;p)</sup></span>
@@ -207,35 +207,35 @@
     <template x-if="model.designType === 'frac'">
       <div class="doe__sub-panel">
         <div class="dmike-split__section-title" x-text="t('resTableTitle')"></div>
-        <div class="doe__res-info" x-text="resInfoText()"></div>
+        <div class="doe__res-info" x-text="design.resInfoText()"></div>
         <div class="doe__res-table-wrap">
           <table class="doe__res-table">
             <thead>
               <tr>
                 <th class="doe__res-corner" x-text="t('runs')"></th>
-                <th :colspan="kRange.length" style="text-align:center;letter-spacing:2px" x-text="t('factorsHeader')"></th>
+                <th :colspan="design.kRange.length" style="text-align:center;letter-spacing:2px" x-text="t('factorsHeader')"></th>
               </tr>
               <tr>
                 <th class="doe__res-corner"></th>
-                <template x-for="k in kRange" :key="k">
+                <template x-for="k in design.kRange" :key="k">
                   <th :class="k === model.factors.length ? 'doe__res-col--active' : 'doe__res-col--inactive'" x-text="k"></th>
                 </template>
               </tr>
             </thead>
             <tbody>
-              <template x-for="runs in allRuns" :key="runs">
+              <template x-for="nRuns in design.allRuns" :key="nRuns">
                 <tr>
-                  <td class="doe__res-run-label" x-text="runs"></td>
-                  <template x-for="k in kRange" :key="k">
+                  <td class="doe__res-run-label" x-text="nRuns"></td>
+                  <template x-for="k in design.kRange" :key="k">
                     <td>
                       <span class="doe__res-cell"
-                            :class="resCellClass(k, runs)"
-                            :data-k="resCellData(k, runs, 'k')"
-                            :data-runs="resCellData(k, runs, 'runs')"
-                            :data-res="resCellData(k, runs, 'res')"
-                            :data-p="resCellData(k, runs, 'p')"
-                            @click="resCellClick(k, runs)"
-                            x-text="resCellLabel(k, runs)"></span>
+                            :class="design.resCellClass(k, nRuns)"
+                            :data-k="design.resCellData(k, nRuns, 'k')"
+                            :data-runs="design.resCellData(k, nRuns, 'runs')"
+                            :data-res="design.resCellData(k, nRuns, 'res')"
+                            :data-p="design.resCellData(k, nRuns, 'p')"
+                            @click="design.resCellClick(k, nRuns)"
+                            x-text="design.resCellLabel(k, nRuns)"></span>
                     </td>
                   </template>
                 </tr>
@@ -244,30 +244,30 @@
           </table>
         </div>
         <!-- Alias detail -->
-        <template x-if="resAliasDetail()">
+        <template x-if="design.resAliasDetail()">
           <div class="doe__res-alias-detail">
             <span class="doe__res-alias-detail-title" x-text="t('aliasDetailTitle')"></span>
-            <template x-if="resAliasDetail().generators.length">
+            <template x-if="design.resAliasDetail().generators.length">
               <div class="doe__res-alias-section">
                 <span class="doe__res-alias-label" x-text="t('generators') + ':'"></span>
-                <template x-for="(g, gi) in resAliasDetail().generators" :key="gi">
+                <template x-for="(g, gi) in design.resAliasDetail().generators" :key="gi">
                   <code class="doe__res-alias-code" x-text="g"></code>
                 </template>
               </div>
             </template>
-            <template x-if="resAliasDetail().defining.length">
+            <template x-if="design.resAliasDetail().defining.length">
               <div class="doe__res-alias-section">
                 <span class="doe__res-alias-label" x-text="t('definingRelation') + ':'"></span>
-                <template x-for="(w, wi) in resAliasDetail().defining" :key="wi">
+                <template x-for="(w, wi) in design.resAliasDetail().defining" :key="wi">
                   <code class="doe__res-alias-code" x-text="w"></code>
                 </template>
               </div>
             </template>
-            <template x-if="resAliasDetail().aliases.length">
+            <template x-if="design.resAliasDetail().aliases.length">
               <table class="doe__res-alias-table">
                 <thead><tr><th x-text="t('term')"></th><th x-text="t('aliasedWith')"></th></tr></thead>
                 <tbody>
-                  <template x-for="(a, ai) in resAliasDetail().aliases" :key="ai">
+                  <template x-for="(a, ai) in design.resAliasDetail().aliases" :key="ai">
                     <tr>
                       <td><code x-text="a.term"></code></td>
                       <td x-text="a.aliasedWith"></td>
@@ -297,12 +297,12 @@
     <template x-if="model.designType === 'pb'">
       <div class="doe__sub-panel">
         <div class="dmike-split__section-title" x-text="t('pbTitle')"></div>
-        <div class="doe__pb-info" x-text="pbInfoText()"></div>
+        <div class="doe__pb-info" x-text="design.pbInfoText()"></div>
         <table class="doe__pb-table">
           <thead><tr><th></th><th x-text="t('factors')"></th><th x-text="t('runs')"></th></tr></thead>
           <tbody>
-            <template x-for="(d, di) in pbDesigns" :key="di">
-              <tr class="doe__pb-row" :class="model.selectedPBIdx === di ? 'doe__pb-row--selected' : ''" :data-idx="di" @click="selectPB(di)">
+            <template x-for="(d, di) in design.pbDesigns" :key="di">
+              <tr class="doe__pb-row" :class="model.selectedPBIdx === di ? 'doe__pb-row--selected' : ''" :data-idx="di" @click="design.selectPB(di)">
                 <td><span class="doe__pb-radio"></span></td>
                 <td x-text="d.label"></td>
                 <td x-text="d.runs"></td>
@@ -318,11 +318,11 @@
       <div class="doe__sub-panel">
         <div class="dmike-split__section-title" x-text="t('bbTitle')"></div>
         <div class="doe__bb-info-body">
-          <template x-if="bbAvailable()">
-            <p class="doe__bb-detail" x-text="bbDetailText()"></p>
+          <template x-if="design.bbAvailable()">
+            <p class="doe__bb-detail" x-text="design.bbDetailText()"></p>
           </template>
-          <template x-if="!bbAvailable()">
-            <p class="doe__bb-warning" x-text="bbWarningText()"></p>
+          <template x-if="!design.bbAvailable()">
+            <p class="doe__bb-warning" x-text="design.bbWarningText()"></p>
           </template>
         </div>
       </div>
@@ -332,8 +332,8 @@
     <template x-if="model.designType === 'taguchi'">
       <div class="doe__sub-panel">
         <div class="dmike-split__section-title" x-text="t('taguchiTitle')"></div>
-        <div class="doe__taguchi-info" x-text="taguchiInfoText()"></div>
-        <template x-if="taguchiCandidatesList().length > 0">
+        <div class="doe__taguchi-info" x-text="design.taguchiInfoText()"></div>
+        <template x-if="design.taguchiCandidatesList().length > 0">
           <table class="doe__taguchi-table">
             <thead><tr>
               <th></th>
@@ -342,8 +342,8 @@
               <th x-text="'max. ' + t('factors')"></th>
             </tr></thead>
             <tbody>
-              <template x-for="(oa, i) in taguchiCandidatesList()" :key="oa.name + ':' + i">
-                <tr class="doe__taguchi-row" :class="taguchiSelected() === oa.name ? 'doe__taguchi-row--selected' : ''" :data-oa="oa.name" @click="selectTaguchi(oa.name)">
+              <template x-for="(oa, i) in design.taguchiCandidatesList()" :key="oa.name + ':' + i">
+                <tr class="doe__taguchi-row" :class="design.taguchiSelected() === oa.name ? 'doe__taguchi-row--selected' : ''" :data-oa="oa.name" @click="design.selectTaguchi(oa.name)">
                   <td><span class="doe__taguchi-radio"></span></td>
                   <td><strong x-text="oa.name"></strong></td>
                   <td x-text="oa.runs"></td>
@@ -353,8 +353,8 @@
             </tbody>
           </table>
         </template>
-        <template x-if="taguchiCandidatesList().length === 0">
-          <p class="doe__taguchi-warning" x-text="t('taguchiNotAvailable', { k: model.factors.length, levels: taguchiFirstLevels() })"></p>
+        <template x-if="design.taguchiCandidatesList().length === 0">
+          <p class="doe__taguchi-warning" x-text="t('taguchiNotAvailable', { k: model.factors.length, levels: design.taguchiFirstLevels() })"></p>
         </template>
       </div>
     </template>
@@ -465,12 +465,12 @@
     <div class="doe__param-group">
       <div class="field-checks">
         <label class="field-check">
-          <input type="checkbox" class="doe__randomize-check" x-model="model.options.randomize" @change="randomizeChanged()" />
+          <input type="checkbox" class="doe__randomize-check" x-model="model.options.randomize" @change="design.setRandomize(model.options.randomize)" />
           <span data-help-key="modules.doe-planner.tipRandomize" x-text="t('optRandomize')"></span>
         </label>
-        <template x-if="showCenterPointsOption()">
+        <template x-if="design.showCenterPointsOption()">
           <label class="field-check">
-            <input type="checkbox" class="doe__center-check" x-model="model.options.centerPoints" @change="centerPointsChanged()" />
+            <input type="checkbox" class="doe__center-check" x-model="model.options.centerPoints" @change="design.setCenterPoints(model.options.centerPoints)" />
             <span data-help-key="modules.doe-planner.tipCenterPoints" x-text="t('optCenterPoints')"></span>
           </label>
         </template>
@@ -478,7 +478,7 @@
       <div class="doe__replicates-row">
         <label class="doe__input-label" data-help-key="modules.doe-planner.tipReplicates" x-text="t('optReplicates')"></label>
         <input type="number" class="field doe__replicates-input" min="1" max="10"
-               :value="model.options.replicates || 1" @change="replicatesChanged($event)" />
+               :value="model.options.replicates || 1" @change="design.replicatesChanged($event)" />
       </div>
     </div>
 
@@ -486,7 +486,7 @@
       <div class="field-group">
         <label class="doe__input-label" x-text="t('bbCenterPoints')"></label>
         <input type="number" class="field doe__bb-cp-input" min="1" max="10"
-               :value="model.options.bbCenterPoints" @change="bbCpChanged($event)" />
+               :value="model.options.bbCenterPoints" @change="design.bbCpChanged($event)" />
       </div>
     </template>
 
@@ -494,7 +494,7 @@
       <div class="doe__ccd-params">
         <div class="field-group">
           <label class="doe__input-label" x-text="t('alphaType')"></label>
-          <select class="field doe__alpha-type-select" x-model="model.options.alphaType" @change="alphaTypeChanged()">
+          <select class="field doe__alpha-type-select" x-model="model.options.alphaType" @change="design.setAlphaType(model.options.alphaType)">
             <option value="rotatable" x-text="t('alphaRotatable')"></option>
             <option value="face-centered" x-text="t('alphaFaceCentered')"></option>
             <option value="spherical" x-text="t('alphaSpherical')"></option>
@@ -503,7 +503,7 @@
         <div class="field-group">
           <label class="doe__input-label" x-text="t('ccdCenterPoints')"></label>
           <input type="number" class="field doe__ccd-cp-input" min="1" max="10"
-                 :value="model.options.ccdCenterPoints" @change="ccdCpChanged($event)" />
+                 :value="model.options.ccdCenterPoints" @change="design.ccdCpChanged($event)" />
         </div>
       </div>
     </template>
