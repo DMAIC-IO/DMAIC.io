@@ -213,4 +213,24 @@ suite('course content', () => {
       assertTrue(!strings(steps.slice(0, 4)).some((x) => /σ\s*\/\s*√n/.test(x)), 'sigma/sqrt(n) only from the standard error step on');
     }
   });
+
+  test('lesson 1 follows the approved structure', () => {
+    const found = findLesson('variation');
+    const lesson = found && found.lesson;
+    assertTrue(!!lesson, 'lesson 1 is built');
+    for (const lang of LANGS) {
+      const steps = lesson[lang].steps;
+      assertEqual(steps.length, 8, `${lang} step count`);
+      // Symbols case-sensitive: /σ/i would also match the Σ of x̄ = Σxᵢ / n.
+      const banned = strings(lesson[lang]).filter((x) => /Grundgesamtheit|Stichprobe|population|\bsamples?\b/i.test(x) || /[μσ]/.test(x));
+      assertDeepEqual(banned, [], `${lang}: no population/sample words or symbols`);
+      const glossaries = blocksOf(lesson, lang).filter((b) => b.type === 'definition').map((b) => b.glossary);
+      for (const id of ['mittelwert', 'spannweite', 'standardabweichung']) {
+        assertTrue(glossaries.includes(id), `${lang}: definition ${id}`);
+      }
+      const waiting = steps[5].blocks.find((b) => b.type === 'simulation');
+      assertDeepEqual(waiting.params.bands, [1], `${lang}: waiting times show only ± 1 s`);
+    }
+    assertDeepEqual(quizIds(lesson), ['q-reliable', 'q-sd-calc', 'q-two-thirds', 'q-wait-below']);
+  });
 });
