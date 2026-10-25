@@ -7237,20 +7237,9 @@ export const AGENT_REGISTRY = {
       "unmarked_method:summaryBreakdown",
       "unmarked_method:topScore",
       "unmarked_method:confirmedCount",
-      "unmarked_method:snapDate",
-      "unmarked_method:snapBadge",
-      "unmarked_method:compareLabel",
-      "unmarked_method:saveSnapshot",
-      "unmarked_method:deleteSnapshot",
-      "unmarked_method:snapClick",
-      "unmarked_method:loadSnapshot",
-      "unmarked_method:closeDiff",
-      "unmarked_method:toggleTrend",
-      "unmarked_method:closeTrend",
       "unmarked_method:openCatRename",
       "unmarked_method:exportCSV",
-      "unmarked_method:renderPareto",
-      "unmarked_method:renderTrend"
+      "unmarked_method:renderPareto"
     ],
     "actions": {
       "problem.setProblem": {
@@ -7454,6 +7443,59 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Move a fact directly before another one."
+      },
+      "snapshots.saveSnapshot": {
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "the name; \"\" gives \"Snapshot <today>\""
+          }
+        ],
+        "returns": "number",
+        "help": "Save problem statement, experts and cause tree as a snapshot (newest first)."
+      },
+      "snapshots.loadSnapshot": {
+        "params": [
+          {
+            "name": "snapshotId",
+            "type": "number",
+            "optional": false,
+            "help": "the snapshot"
+          }
+        ],
+        "returns": "void",
+        "help": "Replace problem statement, experts and cause tree by a snapshot, without asking."
+      },
+      "snapshots.deleteSnapshot": {
+        "params": [
+          {
+            "name": "snapshotId",
+            "type": "number",
+            "optional": false,
+            "help": "the snapshot"
+          }
+        ],
+        "returns": "void",
+        "help": "Delete a snapshot, without asking. A comparison with it ends."
+      },
+      "snapshots.compareSnapshot": {
+        "params": [
+          {
+            "name": "snapshotId",
+            "type": "number",
+            "optional": false,
+            "help": "the snapshot"
+          }
+        ],
+        "returns": "{added: string[], removed: string[], changed: Array<{stableId: string, oldScore: number, newScore: number, delta: number}>}",
+        "help": "Compare the cause tree with a snapshot; the tree marks the differences until the comparison ends."
+      },
+      "snapshots.closeCompare": {
+        "params": [],
+        "returns": "void",
+        "help": "End the comparison with a snapshot."
       }
     },
     "fields": {

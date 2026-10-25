@@ -6,7 +6,7 @@ import { suite, test, assertDeepEqual } from '../test-utils.js';
 
 const DIR = 'js/modules/ishikawa/viewmodel/';
 /** Every sub-viewmodel file; grows with each one that lands. */
-const FILES = ['problem.js', 'experiments.js'];
+const FILES = ['problem.js', 'experiments.js', 'snapshots.js'];
 
 const IMPORT = /^\s*import\s[^'"]*['"]([^'"]+)['"]/gm;
 const PRIVATE = /\bthis\.#|^\s*(?:static\s+)?#[A-Za-z_$][\w$]*\s*(?:=|\(|;)/;

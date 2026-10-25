@@ -154,9 +154,9 @@
               <span class="ishikawa__diff-stat"><span class="ishikawa__diff-val ishikawa__diff-val--new" x-text="'+' + diff().added.length + ' ' + t('diffNew')"></span></span>
               <span class="ishikawa__diff-stat"><span class="ishikawa__diff-val ishikawa__diff-val--del" x-text="glyphMinus() + diff().removed.length + ' ' + t('diffRemoved')"></span></span>
               <span class="ishikawa__diff-stat"><span class="ishikawa__diff-val ishikawa__diff-val--chg" x-text="glyphChanged() + diff().changed.length + ' ' + t('diffChanged')"></span></span>
-              <span class="ishikawa__diff-stat" style="color:var(--color-text-tertiary)" x-text="compareLabel()"></span>
+              <span class="ishikawa__diff-stat" style="color:var(--color-text-tertiary)" x-text="snapshots.compareLabel()"></span>
             </div>
-            <button class="ishikawa__diff-close" data-ref="diffCloseBtn" @click="closeDiff()">
+            <button class="ishikawa__diff-close" data-ref="diffCloseBtn" @click="snapshots.closeCompare()">
               <span x-text="t('endCompare')"></span>
               <span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span>
             </button>
@@ -338,9 +338,9 @@
         <div class="ishikawa__snapshot-inner">
           <div class="ishikawa__snapshot-save">
             <input type="text" class="field field--inline ishikawa__snapshot-name-input" data-ref="snapNameInput"
-                   :placeholder="t('snapNamePlaceholder')" x-model="snapDraft" @keydown.enter="saveSnapshot()" />
-            <button class="btn btn--sm btn--primary" data-ref="saveSnapBtn" @click="saveSnapshot()" x-text="t('saveSnapshot')"></button>
-            <button class="btn btn--sm" data-ref="trendBtn" @click="toggleTrend()" x-text="t('trend')"></button>
+                   :placeholder="t('snapNamePlaceholder')" x-model="snapshots.snapDraft" @keydown.enter="snapshots.submitSnapDraft()" />
+            <button class="btn btn--sm btn--primary" data-ref="saveSnapBtn" @click="snapshots.submitSnapDraft()" x-text="t('saveSnapshot')"></button>
+            <button class="btn btn--sm" data-ref="trendBtn" @click="snapshots.toggleTrend()" x-text="t('trend')"></button>
           </div>
           <div class="ishikawa__snapshot-list">
             <div class="ishikawa__snap-items">
@@ -348,13 +348,13 @@
                 <span class="ishikawa__no-items" x-text="t('noSnapshots')"></span>
               </template>
               <template x-for="s in model.snapshots" :key="s.id">
-                <div class="ishikawa__snap-item" :class="compareSnapId === s.id ? 'ishikawa__snap-item--active' : ''"
+                <div class="ishikawa__snap-item" :class="snapshots.compareSnapId === s.id ? 'ishikawa__snap-item--active' : ''"
                      :data-snap-id="s.id" :title="t('snapClickHint')"
-                     @click="snapClick(s.id, $event)" @dblclick="loadSnapshot(s.id)">
-                  <span class="ishikawa__snap-date" x-text="snapDate(s)"></span>
+                     @click="snapshots.snapClick(s.id, $event)" @dblclick="snapshots.confirmLoadSnapshot(s.id)">
+                  <span class="ishikawa__snap-date" x-text="snapshots.snapDate(s)"></span>
                   <span class="ishikawa__snap-name" x-text="s.name"></span>
-                  <span class="ishikawa__snap-badge" x-text="snapBadge(s)"></span>
-                  <button class="ishikawa__snap-del" :data-snap-del="s.id" :title="t('common.delete')" @click="deleteSnapshot(s.id, $event)"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
+                  <span class="ishikawa__snap-badge" x-text="snapshots.snapBadge(s)"></span>
+                  <button class="ishikawa__snap-del" :data-snap-del="s.id" :title="t('common.delete')" @click="snapshots.removeFromList(s.id, $event)"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
                 </div>
               </template>
             </div>
@@ -363,13 +363,13 @@
       </div>
 
       <!-- Trend panel -->
-      <div class="ishikawa__trend-panel" :class="trendVisible ? 'ishikawa__trend-panel--visible' : ''" data-ref="trendPanel">
+      <div class="ishikawa__trend-panel" :class="snapshots.trendVisible ? 'ishikawa__trend-panel--visible' : ''" data-ref="trendPanel">
         <div class="ishikawa__trend-inner">
           <div class="ishikawa__trend-header">
             <h3 x-text="t('trendTitle')"></h3>
-            <button class="ishikawa__trend-close" data-ref="trendCloseBtn" :title="t('common.close')" @click="closeTrend()"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
+            <button class="ishikawa__trend-close" data-ref="trendCloseBtn" :title="t('common.close')" @click="snapshots.closeTrend()"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
           </div>
-          <template x-if="trendEmptyMsg"><div class="ishikawa__trend-empty" x-text="trendEmptyMsg"></div></template>
+          <template x-if="snapshots.trendEmptyMsg"><div class="ishikawa__trend-empty" x-text="snapshots.trendEmptyMsg"></div></template>
           <div class="ishikawa__trend-body" data-ref="trendContent"></div>
         </div>
       </div>

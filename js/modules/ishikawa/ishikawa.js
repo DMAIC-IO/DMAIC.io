@@ -8,7 +8,8 @@
  * Migrated to createModule + Alpine CSP. All business logic (cause-tree ops,
  * scoring, snapshots/diff, CRUD, pareto data) lives in ishikawa-model.js and is
  * unit-tested. Facts, experiments, their link forms and the Gantt and cost
- * charts live in viewmodel/experiments.js (spec 2026-10-25 E2). Pure chart
+ * charts live in viewmodel/experiments.js (spec 2026-10-25 E2). Snapshots, the
+ * comparison and the trend chart live in viewmodel/snapshots.js. Pure chart
  * configuration (Gantt, cost, trend, rating colour) lives in ishikawa-charts.js. This file holds view transformations (i18n
  * category labels, CSS classes, glyphs, '–' formatting), event handlers, and
  * the imperative chart widgets (Pareto, Gantt, dual-axis Cost and Trend via
@@ -26,9 +27,10 @@ import { draggableRows } from '../../ui/draggable-list.js';
 import { State, MAX_DEPTH_CLASS } from './ishikawa-model.js';
 import { ProblemViewModel } from './viewmodel/problem.js';
 import { ExperimentsViewModel } from './viewmodel/experiments.js';
-import { CATS, STATUS_CSS } from './ishikawa-constants.js';
+import { SnapshotsViewModel } from './viewmodel/snapshots.js';
+import { CATS, STATUS_CSS, EVENTS } from './ishikawa-constants.js';
 import * as labels from './ishikawa-labels.js';
-import { ratingBg, computeTrendConfig } from './ishikawa-charts.js';
+import { ratingBg } from './ishikawa-charts.js';
 
 const mod = createModule({
   config: {
@@ -67,9 +69,13 @@ const mod = createModule({
     // tabs stay apart (spec E3). A closure, not a data field, so Alpine
     // never wraps it in a reactive proxy.
     let events = null;
+    // Transition until CausesViewModel (task 9): the root still holds the
+    // cause tree and listens to the snapshot events itself.
+    let rootOffs = [];
     return {
       problem: new ProblemViewModel(deps),
       experiments: new ExperimentsViewModel(deps),
+      snapshots: new SnapshotsViewModel(deps),
       // Reorderable rows for all three tables (.dmike-table--draggable). The
       // mixin owns the drag plumbing and Alt+Arrow; the move semantics stay in
       // the model. `causes` is a tree, so keyboard movement there is confined
@@ -96,24 +102,14 @@ const mod = createModule({
       // ── Transient UI state (never persisted) ──────────────────
       activeTab: 'problem',
       expertDraft: '',
-      snapDraft: '',
       collapsed: {},          // { [rowId]: true }
       activeFilter: 'all',
       compareSnapId: null,
-      trendVisible: false,
-      hiddenLines: {},        // { [stableId]: true }
       paretoSource: 'current',
       _paretoChart: null,
-      _trendChart: null,
-      // Dedicated stale-guard for the trend chart. The trend (hypotheses tab)
-      // can render concurrently with the pareto chart, and shares no lifecycle
-      // with the experiment-tab charts — its own counter avoids cross-chart
-      // create() cannibalization.
-      _trendGen: 0,
       _renderGen: 0,
       _activeColorPicker: null,
       paretoEmptyMsg: '',     // empty-state message for pareto chart (sibling anchor)
-      trendEmptyMsg: '',      // empty-state message for trend chart (sibling anchor)
 
       // ── Modal-form drafts (bound to the borrowed in-template forms) ──
       catRenameDraft: [],     // [{ key, color, def, name }]
@@ -133,20 +129,36 @@ const mod = createModule({
           ref: (name) => this.$refs[name] ?? null,
         };
         for (const vm of this._subViewModels()) vm.attach(binding);
+        const onCompared = ({ id }) => { this.compareSnapId = id; };
+        const onRemoved = ({ id }) => {
+          if (this.paretoSource === `snap-${id}`) this.paretoSource = 'current';
+          this.$nextTick(() => this.renderPareto());
+        };
+        const onLoaded = () => { this.collapsed = {}; this.$nextTick(() => this.renderPareto()); };
+        events.on(EVENTS.snapshotCompared, onCompared);
+        events.on(EVENTS.snapshotRemoved, onRemoved);
+        events.on(EVENTS.snapshotLoaded, onLoaded);
+        const bus = events;
+        rootOffs = [
+          () => bus.off(EVENTS.snapshotCompared, onCompared),
+          () => bus.off(EVENTS.snapshotRemoved, onRemoved),
+          () => bus.off(EVENTS.snapshotLoaded, onLoaded),
+        ];
         // Render the active tab's charts after first paint.
         this.$nextTick(() => this.renderTabCharts());
       },
 
       destroy() {
         this.dragRowsDestroy();
+        rootOffs.forEach((off) => off());
+        rootOffs = [];
         for (const vm of this._subViewModels()) vm.detach();
         events = null;
         this._destroyPareto();
-        this._destroyTrend();
       },
 
       /** @returns {object[]} the sub-viewmodels, in attach order */
-      _subViewModels() { return [this.problem, this.experiments]; },
+      _subViewModels() { return [this.problem, this.experiments, this.snapshots]; },
 
       // ── Tabs ──────────────────────────────────────────────────
 
@@ -165,7 +177,7 @@ const mod = createModule({
       renderTabCharts() {
         if (this.activeTab === 'hypotheses') {
           this.renderPareto();
-          if (this.trendVisible) this.renderTrend();
+          this.snapshots.render();
         } else if (this.activeTab === 'experiments') {
           this.experiments.render();
         }
@@ -347,7 +359,7 @@ const mod = createModule({
         $event.target.style.cssText = val !== '' ? ratingBg(val) : '';
         // Refresh derived chart panels without rebuilding the table.
         this.renderPareto();
-        if (this.trendVisible) this.renderTrend();
+        events?.emit(EVENTS.causesChanged);
       },
 
       // ── Score cell view helpers ───────────────────────────────
@@ -390,52 +402,6 @@ const mod = createModule({
         return scored.length ? scored[0].toFixed(1) : '–';
       },
       confirmedCount() { return this.model.rows.filter(r => r.status === 'confirmed').length; },
-
-      // ── Snapshots ─────────────────────────────────────────────
-
-      snapDate(s) {
-        const d = new Date(s.date);
-        return `${d.toLocaleDateString('de-DE')  } ${  d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}`;
-      },
-      snapBadge(s) { return `${(s.data.rows || []).length  } ${  _t('hyp')}`; },
-      compareLabel() {
-        const s = this.model.snapshots.find(x => x.id === this.compareSnapId);
-        return s ? `vs. „${s.name}“` : '';
-      },
-
-      saveSnapshot() {
-        const name = (this.snapDraft || '').trim() || (`Snapshot ${  new Date().toLocaleDateString('de-DE')}`);
-        this.model.saveSnapshot(name);
-        this.snapDraft = '';
-        this.$nextTick(() => this.renderTabCharts());
-      },
-      deleteSnapshot(id, $event) {
-        $event.stopPropagation();
-        this.model.removeSnapshot(id);
-        if (this.compareSnapId === id) this.compareSnapId = null;
-        if (this.paretoSource === `snap-${  id}`) this.paretoSource = 'current';
-        this.$nextTick(() => this.renderTabCharts());
-      },
-      snapClick(id, $event) {
-        if ($event.target.closest('.ishikawa__snap-del')) return;
-        this.compareSnapId = (this.compareSnapId === id) ? null : id;
-      },
-      async loadSnapshot(id) {
-        const confirmed = await module._context.dialog.confirm({ message: _t('loadSnapConfirm') });
-        if (!confirmed) return;
-        this.model.loadSnapshot(id);
-        this.collapsed = {};
-        this.$nextTick(() => this.renderTabCharts());
-      },
-      closeDiff() { this.compareSnapId = null; },
-
-      // ── Trend ─────────────────────────────────────────────────
-
-      toggleTrend() {
-        this.trendVisible = !this.trendVisible;
-        if (this.trendVisible) this.$nextTick(() => this.renderTrend());
-      },
-      closeTrend() { this.trendVisible = false; },
 
       // ── Category rename modal ─────────────────────────────────
 
@@ -650,52 +616,6 @@ const mod = createModule({
           dotSec.appendChild(edRangeRow(_t('paretoDotStrokeWidth'), cfg.cumDotStrokeWidth ?? 1.5, (v) => { cfg.cumDotStrokeWidth = v; rerender(); }, 0, 5, 0.5));
           inner.appendChild(dotSec);
         });
-      },
-
-      // ── Trend chart (chartManager — framework `trend` type) ───────
-
-      _destroyTrend() {
-        if (this._trendChart) {
-          try { module._context.chartManager.destroy(this._trendChart); } catch { /* ignore */ }
-          this._trendChart = null;
-        }
-      },
-      async renderTrend() {
-        const container = module._container.querySelector('[data-ref="trendContent"]');
-        if (!container) return;
-        this._destroyTrend();
-        // Note: trend axis dates are intentionally formatted by locale (de/en) —
-        // behaviour-preserving from the legacy canvas render.
-        const timeline = [...this.model.snapshots].reverse();
-        const currentState = {
-          name: _t('trendCurrent'),
-          date: new Date().toISOString(),
-          data: { problem: this.model.problem, experts: JSON.parse(JSON.stringify(this.model.experts)), rows: JSON.parse(JSON.stringify(this.model.rows)) },
-        };
-        const trendStates = [...timeline.map(s => ({ name: s.name, date: s.date, data: s.data })), currentState];
-        const lang = module._context.language || 'de';
-        const config = computeTrendConfig(trendStates, {
-          calcScore: (row, experts) => this.model.calcScoreFor(row, experts),
-          lang,
-        });
-        if (config.isEmpty) {
-          container.replaceChildren();
-          this.trendEmptyMsg = config.reason === 'noData' ? _t('trendNoData') : _t('trendMinSnaps');
-          return;
-        }
-        this.trendEmptyMsg = '';
-        // Re-apply any persisted per-series toggles (survive data-driven re-renders).
-        config.series.forEach(s => { if (this.hiddenLines[s.sid]) s.visible = false; });
-        container.replaceChildren();
-        const gen = ++this._trendGen;
-        const chart = await module._context.chartManager.create(container, 'trend', {
-          ...config,
-          onToggle: (sid, hidden) => {
-            if (hidden) this.hiddenLines[sid] = true; else delete this.hiddenLines[sid];
-          },
-        });
-        if (gen !== this._trendGen) { module._context.chartManager.destroy(chart); return; }
-        this._trendChart = chart;
       },
 
     };
