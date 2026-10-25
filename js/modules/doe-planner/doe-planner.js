@@ -92,6 +92,11 @@ const mod = createModule({
   data(module, _t) {
     const ctx = () => module._context;
 
+    // Signatures the auto-generation last acted on (spec 2026-10-25 E3). A
+    // closure, not a data field: Alpine never wraps it, and the watchers'
+    // callbacks compare against it synchronously.
+    const signatures = { config: '', schedule: '' };
+
     return {
       // ── Static view data ──────────────────────────────────────
       designTypes: DESIGN_TYPES,
@@ -202,9 +207,14 @@ const mod = createModule({
         }
       },
 
-      invalidateAndSchedule() {
-        this.model.invalidateDesign();
-        this.scheduleAutoGenerate();
+      /**
+       * Takes over the signatures of the current state, so the watchers do not
+       * treat a restored state (load, example, viewed phase) as an edit.
+       * @noagent lifecycle
+       */
+      adoptSignatures() {
+        signatures.config = this.model.configSignature();
+        signatures.schedule = this.model.scheduleSignature();
       },
 
       buildDesignFromSource(source) {
@@ -267,21 +277,17 @@ const mod = createModule({
       },
 
       factorNameChanged(_f) {
-        this.invalidateAndSchedule();
         this.save();
       },
       factorUnitChanged(_f) {
-        this.invalidateAndSchedule();
         this.save();
       },
       factorKindChanged(f) {
         f.kind = f.kind === 'categorical' ? 'categorical' : 'continuous';
         if (f.kind === 'categorical') f.unit = '';
-        this.invalidateAndSchedule();
         this.save();
       },
       levelChanged(_f) {
-        this.invalidateAndSchedule();
         this.save();
       },
       addFactor() {
@@ -293,26 +299,23 @@ const mod = createModule({
       },
       removeFactor(id) {
         this.model.removeFactor(id);
-        this.invalidateAndSchedule();
         this.save();
       },
       insertLevel(fId, at) {
         this.model.insertLevel(fId, at);
-        this.invalidateAndSchedule();
         this.save();
       },
       removeLevel(fId, li) {
         this.model.removeLevel(fId, li);
-        this.invalidateAndSchedule();
         this.save();
       },
 
       // ── Response handlers ─────────────────────────────────────
 
-      responseNameChanged(_idx) { this.save(); this.scheduleAutoGenerate(); },
-      responseUnitChanged(_idx) { this.invalidateAndSchedule(); this.save(); },
+      responseNameChanged(_idx) { this.save(); },
+      responseUnitChanged(_idx) { this.save(); },
       addResponse() { this.model.addResponse(); this.save(); },
-      removeResponse(idx) { this.model.removeResponse(idx); this.invalidateAndSchedule(); this.save(); },
+      removeResponse(idx) { this.model.removeResponse(idx); this.save(); },
 
       // ── Design-type selection ─────────────────────────────────
 
@@ -343,7 +346,6 @@ const mod = createModule({
         if (m.isOptimalType() && !m.options.optimalRuns) {
           m.options.optimalRuns = optimal.minNewRuns(m, { sourceRowCount: this.sourceRowCount() }) + 2;
         }
-        this.invalidateAndSchedule();
         this.save();
       },
 
@@ -370,7 +372,6 @@ const mod = createModule({
         this.model.designType = rec;
         this.model.selectedRes = null;
         this.model.selectedPBIdx = null;
-        this.invalidateAndSchedule();
         this.save();
       },
 
@@ -383,7 +384,6 @@ const mod = createModule({
         const d = frac.def(k, runs);
         if (!d || k !== this.model.factors.length) return;
         this.model.selectedRes = { k, runs, res: d.res, p: d.p };
-        this.invalidateAndSchedule();
         this.save();
       },
       resInfoText() {
@@ -402,7 +402,6 @@ const mod = createModule({
       },
       selectPB(idx) {
         this.model.selectedPBIdx = idx;
-        this.invalidateAndSchedule();
         this.save();
       },
 
@@ -426,7 +425,6 @@ const mod = createModule({
       taguchiSelected() { return taguchi.selected(this.model); },
       selectTaguchi(name) {
         this.model.options.taguchiArray = name;
-        this.invalidateAndSchedule();
         this.save();
       },
 
@@ -451,7 +449,6 @@ const mod = createModule({
       optimalRunsChanged(event) {
         const minNew = this.optimalMinNew();
         this.model.options.optimalRuns = Math.max(minNew, parseInt(event.target.value, 10) || minNew);
-        this.invalidateAndSchedule();
         this.save();
       },
 
@@ -492,7 +489,6 @@ const mod = createModule({
         else deactivateTerm(active, id);
         m.options.optimalActiveTerms = [...active].sort((a, b) => termSortKey(a).localeCompare(termSortKey(b)));
         optimal.raiseRunsToMinimum(m, { sourceRowCount: this.sourceRowCount() });
-        this.invalidateAndSchedule();
         this.save();
       },
       toggleTermGroup(gi) {
@@ -545,19 +541,16 @@ const mod = createModule({
         }
         if (!anyBound) { ctx().notify && ctx().notify(_t('forbiddenHint'), 'info'); return; }
         if (!this.model.addForbiddenVertex(pattern)) return;
-        this.invalidateAndSchedule();
         this.save();
       },
       removeForbiddenRule(idx) {
         if (!this.model.removeForbiddenVertex(idx)) return;
-        this.invalidateAndSchedule();
         this.save();
       },
       forbidPreviewRow(rowIdx) {
         const coded = this.model.design && this.model.design.codedMatrix ? this.model.design.codedMatrix[rowIdx] : null;
         if (!Array.isArray(coded)) return;
         if (!this.model.addForbiddenVertex([...coded])) return;
-        this.invalidateAndSchedule();
         this.save();
       },
 
@@ -598,7 +591,6 @@ const mod = createModule({
           m.sourceWorksheet = { instanceId, sheetId };
         }
         if (m.isOptimalType()) optimal.raiseRunsToMinimum(m, { sourceRowCount: this.sourceRowCount() });
-        this.invalidateAndSchedule();
         this.save();
       },
 
@@ -608,22 +600,19 @@ const mod = createModule({
         const type = designOf(this.model);
         return !type || type.centerPoints;
       },
-      randomizeChanged() { this.invalidateAndSchedule(); this.save(); },
-      centerPointsChanged() { this.invalidateAndSchedule(); this.save(); },
+      randomizeChanged() { this.save(); },
+      centerPointsChanged() { this.save(); },
       replicatesChanged(event) {
         this.model.options.replicates = Math.max(1, Math.min(10, parseInt(event.target.value, 10) || 1));
-        this.invalidateAndSchedule();
         this.save();
       },
-      alphaTypeChanged() { this.invalidateAndSchedule(); this.save(); },
+      alphaTypeChanged() { this.save(); },
       ccdCpChanged(event) {
         this.model.options.ccdCenterPoints = Math.max(1, parseInt(event.target.value, 10) || 3);
-        this.invalidateAndSchedule();
         this.save();
       },
       bbCpChanged(event) {
         this.model.options.bbCenterPoints = Math.max(1, parseInt(event.target.value, 10) || 3);
-        this.invalidateAndSchedule();
         this.save();
       },
 
@@ -847,7 +836,9 @@ const mod = createModule({
         return true;
       },
       viewPhase(idx) {
-        if (this.model.viewPhase(idx)) this.save();
+        if (!this.model.viewPhase(idx)) return;
+        this.adoptSignatures();
+        this.save();
       },
       evopSummary() {
         const cycles = this.model.evopCycles();
@@ -1083,6 +1074,24 @@ const mod = createModule({
 
         // Mount the preview grid for the restored state (if visible).
         this.$nextTick(() => this.mountPreviewGrid());
+
+        // Auto-generation follows the model (spec 2026-10-25 E3): a change of
+        // the config signature invalidates the design and schedules a new one,
+        // a change of the responses only schedules. The restored state counts
+        // as seen.
+        this.adoptSignatures();
+        this.$watch(() => this.model.configSignature(), (sig) => {
+          if (sig === signatures.config) return;
+          this.model.invalidateDesign();
+          signatures.config = this.model.configSignature();
+          this.scheduleAutoGenerate();
+          this.save();
+        });
+        this.$watch(() => this.model.scheduleSignature(), (sig) => {
+          if (sig === signatures.schedule) return;
+          signatures.schedule = sig;
+          this.scheduleAutoGenerate();
+        });
 
         // If config is valid but no design yet, kick off auto-generation.
         if (!this.model.design && this.isConfigValid()) {

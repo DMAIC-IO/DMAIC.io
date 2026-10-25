@@ -462,6 +462,42 @@ export class State {
     ].join('#');
   }
 
+  /**
+   * Identity of everything the design matrix depends on: factors, design
+   * type, type parameters, options and the source worksheet. A change
+   * invalidates the design and schedules a new one (spec 2026-10-25 E3).
+   * A freshly added, still blank factor does not count — adding one never
+   * invalidated the design. Not designSignature(): that one describes the
+   * generated design for the worksheet staleness.
+   * @returns {string}
+   */
+  configSignature() {
+    const blank = f => f.name.trim() === '' && f.unit === '' && f.kind === 'continuous'
+      && f.levels.length === 2 && f.levels.every(l => l === '');
+    const o = this.options;
+    return JSON.stringify({
+      factors: this.factors.filter(f => !blank(f)).map(f => [f.name, f.unit, f.kind, f.levels]),
+      designType: this.designType,
+      selectedRes: this.selectedRes ? [this.selectedRes.k, this.selectedRes.runs] : null,
+      selectedPBIdx: this.selectedPBIdx,
+      options: [o.randomize, o.centerPoints, o.replicates, o.alphaType, o.ccdCenterPoints, o.bbCenterPoints,
+        o.taguchiArray, o.optimalRuns, o.optimalActiveTerms, o.forbiddenVertices],
+      source: this.sourceWorksheet ? `${this.sourceWorksheet.instanceId}::${this.sourceWorksheet.sheetId}` : null,
+    });
+  }
+
+  /**
+   * Identity of the responses. They never change the matrix, so a change
+   * only schedules a regeneration (spec 2026-10-25 E3). Blank responses
+   * do not count.
+   * @returns {string}
+   */
+  scheduleSignature() {
+    return JSON.stringify(this.responses
+      .map((r, i) => (r.name || r.unit ? [i, r.name, r.unit] : null))
+      .filter(Boolean));
+  }
+
   isOptimalType() {
     return OPTIMAL_TYPES.includes(this.designType);
   }

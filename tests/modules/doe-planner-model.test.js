@@ -447,3 +447,92 @@ suite('DoE Planner Model — forbidden vertices and model terms', () => {
     assertTrue(terms.length >= 3);
   });
 });
+
+// ─── Auto-generation signatures (spec 2026-10-25 E3) ───────────────
+
+suite('DoE Planner Model — configSignature / scheduleSignature', () => {
+  function planned() {
+    const s = new State();
+    s.addFactor('Temp', 'C', ['20', '40']);
+    s.addFactor('Druck', 'bar', ['1', '5']);
+    s.addResponse();
+    s.responses[0].name = 'Yield';
+    return s;
+  }
+
+  test('a blank factor or response changes nothing', () => {
+    const s = planned();
+    const config = s.configSignature();
+    const schedule = s.scheduleSignature();
+    s.addFactor('', '');
+    s.addResponse();
+    assertEqual(s.configSignature(), config);
+    assertEqual(s.scheduleSignature(), schedule);
+  });
+
+  test('factor edits change the config signature', () => {
+    for (const edit of [
+      (s) => { s.factors[0].name = 'T'; },
+      (s) => { s.factors[0].unit = 'K'; },
+      (s) => { s.factors[0].kind = 'categorical'; },
+      (s) => { s.factors[0].levels[1] = '50'; },
+      (s) => { s.insertLevel(s.factors[0].id, 1); },
+      (s) => { s.removeFactor(s.factors[1].id); },
+    ]) {
+      const s = planned();
+      const before = s.configSignature();
+      edit(s);
+      assertTrue(s.configSignature() !== before);
+    }
+  });
+
+  test('type, type parameters, options and source change the config signature', () => {
+    for (const edit of [
+      (s) => { s.designType = 'ccd'; },
+      (s) => { s.selectedRes = { k: 2, runs: 4, res: 'Full', p: 0 }; },
+      (s) => { s.selectedPBIdx = 0; },
+      (s) => { s.options.randomize = false; },
+      (s) => { s.options.centerPoints = true; },
+      (s) => { s.options.replicates = 2; },
+      (s) => { s.options.alphaType = 'spherical'; },
+      (s) => { s.options.ccdCenterPoints = 5; },
+      (s) => { s.options.bbCenterPoints = 5; },
+      (s) => { s.options.taguchiArray = 'L4'; },
+      (s) => { s.options.optimalRuns = 9; },
+      (s) => { s.options.optimalActiveTerms = ['M0', 'M1']; },
+      (s) => { s.addForbiddenVertex([1, null]); },
+      (s) => { s.sourceWorksheet = { instanceId: 'ws', sheetId: 's' }; },
+    ]) {
+      const s = planned();
+      const before = s.configSignature();
+      edit(s);
+      assertTrue(s.configSignature() !== before);
+    }
+  });
+
+  test('responses change only the schedule signature', () => {
+    const s = planned();
+    const config = s.configSignature();
+    const schedule = s.scheduleSignature();
+    s.responses[0].name = 'Ausbeute';
+    assertTrue(s.scheduleSignature() !== schedule);
+    const named = s.scheduleSignature();
+    s.responses[0].unit = '%';
+    assertTrue(s.scheduleSignature() !== named);
+    assertEqual(s.configSignature(), config);
+  });
+
+  test('names, project fields, design and preview edits are in neither signature', () => {
+    const s = planned();
+    const config = s.configSignature();
+    const schedule = s.scheduleSignature();
+    s.doeName = 'Ofen';
+    s.projectName = 'Linie 3';
+    s.setProjectMode(true);
+    s.design = { designType: 'full', codedMatrix: [[-1, -1]] };
+    s.previewEdits = { factors: [], responses: [] };
+    s.analysisResponseIdx = 0;
+    assertEqual(s.configSignature(), config);
+    assertEqual(s.scheduleSignature(), schedule);
+  });
+});
