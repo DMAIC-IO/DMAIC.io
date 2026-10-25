@@ -54,7 +54,7 @@ function evopOf(m) {
       completedAt: ph.completedAt ?? null,
       yValues: clone(ph.yValues) ?? null,
     })),
-    summary: clone(m.evopSummary()),
+    summary: m.evopSummary(),
   };
 }
 
@@ -83,7 +83,7 @@ export function agentSnapshot(model, context) {
     summary: {
       runs: plannedRuns(m),
       resolution: type ? type.resolution(m) : '',
-      generatedRuns: m.design && m.design.runOrder ? m.design.runOrder.length : 0,
+      generatedRuns: m.design && m.design.actualMatrix ? m.design.actualMatrix.length : 0,
     },
     analysisResponseIdx: m.analysisResponseIdx,
     sourceWorksheet: clone(m.sourceWorksheet),

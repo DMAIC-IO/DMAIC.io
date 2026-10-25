@@ -112,4 +112,15 @@ suite('doe-planner read — evaluation and EVOP', () => {
     assertDeepEqual(Object.keys(r.evop.phases[0]).sort(), ['completedAt', 'cycleNumber', 'decision', 'doeName', 'yValues']);
     assertEqual(r.evop.summary, null);
   });
+
+  test('a closed phase gives the cumulative summary, errorLimit as computed', () => {
+    const s = withDesign(plannedState());
+    s.setProjectMode(true);
+    s.closeActivePhase('repeat', [10, 12, 11, 20]);
+    const sum = agentSnapshot(s, fakeContext()).evop.summary;
+    assertEqual(sum !== null, true);
+    assertEqual(sum.effects.length > 0, true);
+    assertEqual(sum.effects[0].errorLimit, s.evopSummary().effects[0].errorLimit);
+    assertEqual(Number.isFinite(sum.effects[0].errorLimit), true);
+  });
 });

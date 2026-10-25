@@ -5038,7 +5038,7 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "designType": {
-        "type": "'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt'",
+        "type": "''|'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt'",
         "help": "the design type",
         "bulk": false,
         "derived": true
@@ -5293,7 +5293,7 @@ export const AGENT_REGISTRY = {
           },
           "summary": {
             "type": "object|null",
-            "help": "cumulative EVOP effects, null before the first closed phase with values"
+            "help": "cumulative EVOP effects, null before the first closed phase with values; the errorLimit of an effect is Infinity (not null) without a variance estimate"
           }
         }
       }

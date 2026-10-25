@@ -131,13 +131,13 @@ const SUB_VIEWMODELS = ['factors', 'design', 'optimal', 'evaluation', 'analysis'
  * @property {string} projectName  the project name
  * @property {number} activePhaseIdx  the phase shown, 0 = phase 1
  * @property {DoePhase[]} phases  all phases in order
- * @property {object|null} summary  cumulative EVOP effects, null before the first closed phase with values
+ * @property {object|null} summary  cumulative EVOP effects, null before the first closed phase with values; the errorLimit of an effect is Infinity (not null) without a variance estimate
  */
 
 /**
  * @typedef {object} AgentRead
  * @property {string} doeName  name of the plan, in project mode of the active phase
- * @property {'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt'} designType  the design type
+ * @property {''|'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt'} designType  the design type
  * @property {DoeFactor[]} factors  the factors in order
  * @property {DoeResponse[]} responses  the responses in order, index = position
  * @property {object} options  randomize, centerPoints, replicates, alphaType, ccdCenterPoints, bbCenterPoints, taguchiArray, optimalRuns, optimalActiveTerms, forbiddenVertices
