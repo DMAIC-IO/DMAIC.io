@@ -16,10 +16,14 @@
 /**
  * @param {object} modelJson   `model.toJSON()` des Moduls
  * @param {Record<string, { type: string, help: string, bulk: boolean,
- *   bulkKind?: 'table'|'tree' }>} fieldSchema
+ *   bulkKind?: 'table'|'tree', omit?: string[] }>} fieldSchema
  *   der `fields`-Teil des Registry-Eintrags (siehe AgentModuleEntry).
  *   `bulkKind` sagt, welchen Umfangs-Deskriptor ein Massenfeld bekommt;
  *   fehlt es, gilt `'table'`.
+ *   `omit` nennt Teilwerte, die `read()` nie ausliefert (`inScope[].dataUrl`,
+ *   `[][].image`): jeder getroffene Wert außer `null`/`undefined` wird
+ *   `{ $omitted: true, bytes }`, nach der Massendaten-Behandlung — also auch
+ *   bei `options.fields` und `options.rows`.
  * @param {{ fields?: string[], rows?: { from: number, to: number } }} [options]
  * @returns {object} die Projektion; ein erklärtes Feld, das `modelJson` nicht
  *   führt, FEHLT darin (nicht `undefined`) — nur so fällt der
@@ -80,7 +84,7 @@ export function projectReadState(modelJson, fieldSchema, options = {}) {
     const value = source[name];
 
     if (!spec.bulk) {
-      out[name] = clone(value);
+      out[name] = omitPaths(clone(value), spec.omit);
       continue;
     }
 
@@ -99,13 +103,13 @@ export function projectReadState(modelJson, fieldSchema, options = {}) {
     }
 
     if (!range) {
-      out[name] = clone(rows);
+      out[name] = omitPaths(clone(rows), spec.omit);
       continue;
     }
 
     const from = clampIndex(range.from, rows.length);
     const to = clampIndex(range.to, rows.length);
-    out[name] = clone(rows.slice(from, to));
+    out[name] = omitPaths(clone(rows.slice(from, to)), spec.omit);
     out[`${name}$range`] = { from, to, rowCount: rows.length };
   }
 
@@ -228,6 +232,10 @@ function columnNames(source, name, soleTable) {
  * bekommt `nodeCount` der obersten Ebene und `depth: 1` — immer noch eine
  * wahre Aussage, nur eine gröbere.
  *
+ * Zweite Form: eine FLACHE Liste, deren Knoten alle `parentId` tragen und
+ * keiner `children` (`ishikawa.rows`). Dort kommt die Tiefe aus der
+ * Elternkette; sonst hieße jeder flache Baum `depth: 1`.
+ *
  * Ein `WeakSet` der besuchten Knoten, nicht eine Tiefenschranke: ein Zyklus
  * (`children`, das auf den eigenen Knoten zurückzeigt) ergab
  * `RangeError: Maximum call stack size exceeded` — ein Wurf aus einer
@@ -241,6 +249,7 @@ function columnNames(source, name, soleTable) {
  * @returns {{ nodeCount: number, depth: number }}
  */
 function treeExtent(nodes) {
+  if (isFlatTree(nodes)) return flatTreeExtent(nodes);
   let nodeCount = 0;
   let depth = 0;
   const seen = new WeakSet();
@@ -298,4 +307,106 @@ function clone(value) {
   try { return JSON.parse(JSON.stringify(value)); } catch (err) {
     return { $unserializable: true, reason: err?.message ?? String(err) };
   }
+}
+
+/**
+ * Ein Auslassungspfad als Segmentliste, oder `null`, wenn er die Grammatik
+ * verletzt. Segmente: ein Schlüssel oder `[]` (jedes Element eines Arrays);
+ * `[]` hängt ohne Punkt an, ein Schlüssel nach `[]` mit Punkt
+ * (`inScope[].dataUrl`, `[][].image`). Der Pfad endet mit einem Schlüssel —
+ * ein `[]` am Ende meinte jedes Element und damit das ganze Feld.
+ *
+ * Dieselbe Grammatik prüft der Generator und MELDET Verstöße
+ * (`invalid_omit_path:<feld>:<pfad>`, `tools/build/agent-data.mjs`); hier
+ * wird ein kaputter Pfad nur übergangen, denn diese Funktion wirft nicht.
+ *
+ * @param {unknown} path
+ * @returns {string[]|null}
+ */
+function omitTokens(path) {
+  if (typeof path !== 'string' || !OMIT_PATH.test(path)) return null;
+  const tokens = path.match(/\[\]|[A-Za-z_$][\w$]*/g);
+  return tokens[tokens.length - 1] === '[]' ? null : tokens;
+}
+
+/** Ein Auslassungspfad als Ganzes; siehe `omitTokens`. */
+const OMIT_PATH = /^(?:[A-Za-z_$][\w$]*|\[\])(?:\[\]|\.[A-Za-z_$][\w$]*)*$/;
+
+/**
+ * Ersetze in einem (bereits geklonten) Wert jeden Teilwert, den einer der
+ * Pfade trifft, durch `{ $omitted: true, bytes }`. `null` und `undefined`
+ * bleiben, damit „kein Bild“ von „Bild ausgelassen“ unterscheidbar bleibt.
+ * Ein Pfad, der nicht zur Form der Daten passt, trifft nichts.
+ *
+ * @param {any} value  ein Klon — wird an Ort und Stelle verändert
+ * @param {string[]|undefined} paths
+ * @returns {any} derselbe Wert
+ */
+function omitPaths(value, paths) {
+  if (!Array.isArray(paths) || paths.length === 0) return value;
+  for (const path of paths) {
+    const tokens = omitTokens(path);
+    if (tokens) omitAt(value, tokens, 0);
+  }
+  return value;
+}
+
+/** Ein Schritt von `omitPaths`. */
+function omitAt(node, tokens, i) {
+  if (node === null || typeof node !== 'object') return;
+  const token = tokens[i];
+  if (token === '[]') {
+    if (!Array.isArray(node)) return;
+    for (const item of node) omitAt(item, tokens, i + 1);
+    return;
+  }
+  if (Array.isArray(node) || !Object.prototype.hasOwnProperty.call(node, token)) return;
+  if (i < tokens.length - 1) {
+    omitAt(node[token], tokens, i + 1);
+    return;
+  }
+  const hit = node[token];
+  if (hit === null || hit === undefined) return;
+  node[token] = { $omitted: true, bytes: jsonLength(hit) };
+}
+
+/** Länge der JSON-Serialisierung; 0, wo es keine gibt. */
+function jsonLength(value) {
+  try { return JSON.stringify(value)?.length ?? 0; } catch { return 0; }
+}
+
+/**
+ * Eine flache Baumliste: nicht leer, jeder Knoten ein Objekt mit eigenem
+ * `parentId` und ohne `children`-Array.
+ * @param {any[]} nodes
+ * @returns {boolean}
+ */
+function isFlatTree(nodes) {
+  return Array.isArray(nodes) && nodes.length > 0 && nodes.every(n => n && typeof n === 'object'
+    && !Array.isArray(n.children) && Object.prototype.hasOwnProperty.call(n, 'parentId'));
+}
+
+/**
+ * Umfang einer flachen Baumliste: jeder Eintrag ein Knoten, Tiefe über die
+ * Elternkette. Ein unbekannter Elternteil zählt als Wurzel; ein Kreis endet
+ * am ersten schon besuchten Knoten.
+ * @param {object[]} nodes
+ * @returns {{ nodeCount: number, depth: number }}
+ */
+function flatTreeExtent(nodes) {
+  const byId = new Map(nodes.map(n => [n.id, n]));
+  const parentOf = (n) => (n.parentId === null || n.parentId === undefined ? undefined : byId.get(n.parentId));
+  let depth = 0;
+  for (const node of nodes) {
+    const seen = new Set([node]);
+    let level = 1;
+    let parent = parentOf(node);
+    while (parent && !seen.has(parent)) {
+      seen.add(parent);
+      level += 1;
+      parent = parentOf(parent);
+    }
+    depth = Math.max(depth, level);
+  }
+  return { nodeCount: nodes.length, depth };
 }

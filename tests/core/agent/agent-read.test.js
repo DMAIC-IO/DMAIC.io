@@ -418,3 +418,95 @@ suite('agent read projection', () => {
     assertEqual(typeof out.b.reason, 'string');
   });
 });
+
+suite('agent read projection — omit marks', () => {
+  const url = 'data:image/jpeg;base64,AAAA';
+
+  test('a key path inside an object field is replaced by size, the rest stays', () => {
+    const schema = { images: { type: 'object', help: '', bulk: false, omit: ['inScope[].dataUrl', 'outScope[].dataUrl'] } };
+    const source = { images: { inScope: [{ id: 1, dataUrl: url, caption: 'Ofen' }], outScope: [] } };
+
+    const out = projectReadState(source, schema, {});
+
+    assertDeepEqual(out.images.inScope[0], { id: 1, dataUrl: { $omitted: true, bytes: JSON.stringify(url).length }, caption: 'Ofen' });
+    assertDeepEqual(out.images.outScope, []);
+    assertEqual(source.images.inScope[0].dataUrl, url, 'the source is never touched');
+  });
+
+  test('null stays null, so "no image" differs from "image omitted"', () => {
+    const schema = { cells: { type: 'array', help: '', bulk: true, bulkKind: 'table', omit: ['[][].image'] } };
+    const source = { cells: [[{ text: 'a', image: null }, { text: 'b', image: url }]] };
+
+    const out = projectReadState(source, schema, { fields: ['cells'] });
+
+    assertEqual(out.cells[0][0].image, null);
+    assertDeepEqual(out.cells[0][1].image, { $omitted: true, bytes: JSON.stringify(url).length });
+    assertEqual(out.cells[0][1].text, 'b');
+  });
+
+  test('an unrequested bulk field stays a descriptor, nothing to omit', () => {
+    const schema = { snapshots: { type: 'object[]', help: '', bulk: true, omit: ['[].data'] } };
+    const out = projectReadState({ snapshots: [{ id: 1, data: { rows: [] } }] }, schema, {});
+    assertEqual(out.snapshots.$bulk, true);
+    assertEqual(out.snapshots.rowCount, 1);
+  });
+
+  test('omission applies after the range cut', () => {
+    const schema = { snapshots: { type: 'object[]', help: '', bulk: true, omit: ['[].data'] } };
+    const source = { snapshots: [{ id: 1, data: { rows: [1] } }, { id: 2, data: { rows: [2] } }] };
+
+    const out = projectReadState(source, schema, { fields: ['snapshots'], rows: { from: 1, to: 2 } });
+
+    assertEqual(out.snapshots.length, 1);
+    assertEqual(out.snapshots[0].id, 2);
+    assertDeepEqual(out.snapshots[0].data, { $omitted: true, bytes: JSON.stringify({ rows: [2] }).length });
+    assertDeepEqual(out.snapshots$range, { from: 1, to: 2, rowCount: 2 });
+  });
+
+  test('a path that does not fit the data leaves the value whole', () => {
+    const schema = { images: { type: 'object', help: '', bulk: false, omit: ['inScope.dataUrl'] } };
+    const source = { images: { inScope: [{ dataUrl: url }] } };
+    const out = projectReadState(source, schema, {});
+    assertEqual(out.images.inScope[0].dataUrl, url);
+  });
+
+  test('an invalid path is ignored at runtime (the build reports it)', () => {
+    const schema = { cells: { type: 'array', help: '', bulk: false, omit: ['', '[]', 'a..b', 'x[]'] } };
+    const out = projectReadState({ cells: [{ x: [1] }] }, schema, {});
+    assertDeepEqual(out.cells, [{ x: [1] }]);
+  });
+
+  test('a field without omit comes through unchanged', () => {
+    const schema = { images: { type: 'object', help: '', bulk: false } };
+    const out = projectReadState({ images: { inScope: [{ dataUrl: url }] } }, schema, {});
+    assertEqual(out.images.inScope[0].dataUrl, url);
+  });
+});
+
+suite('agent read projection — flat tree', () => {
+  const schema = { rows: { type: 'object[]', help: '', bulk: true, bulkKind: 'tree' } };
+
+  test('a flat list with parentId gets its depth from the parent chain', () => {
+    const rows = [
+      { id: 1, parentId: null },
+      { id: 2, parentId: 1 },
+      { id: 3, parentId: 2 },
+      { id: 4, parentId: null },
+    ];
+    const out = projectReadState({ rows }, schema, {});
+    assertEqual(out.rows.nodeCount, 4);
+    assertEqual(out.rows.depth, 3);
+  });
+
+  test('a parent cycle in a flat list ends, it does not loop', () => {
+    const rows = [{ id: 1, parentId: 2 }, { id: 2, parentId: 1 }];
+    const out = projectReadState({ rows }, schema, {});
+    assertEqual(out.rows.nodeCount, 2);
+    assertEqual(out.rows.depth, 2);
+  });
+
+  test('an unknown parent counts as a root', () => {
+    const out = projectReadState({ rows: [{ id: 1, parentId: 99 }] }, schema, {});
+    assertEqual(out.rows.depth, 1);
+  });
+});
