@@ -3373,6 +3373,7 @@ body.training-area-open .dmaic-tiles {
 }
 .training-lesson__definition strong { min-width: 160px; }
 .training-lesson__formula { font-size: var(--font-size-lg); overflow-x: auto; }
+.training-lesson__block li + li { margin-top: var(--spacing-sm); }
 
 .training-lesson__note {
   padding: var(--spacing-sm) var(--spacing-md);

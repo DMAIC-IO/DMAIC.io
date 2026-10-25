@@ -64,8 +64,8 @@ export default {
         blocks: [
           { type: 'paragraph', content: 'Die Standardabweichung s teilt durch n − 1, nicht durch n. Den Grund sieht man am besten an der Varianz. Für eine Stichprobe gibt es zwei Kandidaten:' },
           { type: 'list', items: [
-            'geteilt durch n: $\\frac{\\sum (x_i - \\bar{x})^2}{n}$',
-            'geteilt durch n − 1: $\\frac{\\sum (x_i - \\bar{x})^2}{n - 1} = s^2$',
+            'geteilt durch n: $\\dfrac{\\sum (x_i - \\bar{x})^2}{n}$',
+            'geteilt durch n − 1: $\\dfrac{\\sum (x_i - \\bar{x})^2}{n - 1} = s^2$',
           ] },
           { type: 'paragraph', content: 'Welcher trifft im Durchschnitt die Varianz der Grundgesamtheit, σ² = 4 g²? Zieh Stichproben aus nur drei Packungen – erst einzeln, dann sehr viele auf einmal – und vergleiche beide Durchschnitte mit der Zeile σ².' },
           { type: 'paragraph', content: 'Die beiden Durchschnitte liegen immer um denselben Faktor auseinander, denn sie stammen aus denselben Stichproben. Entscheidend ist, welcher von ihnen bei σ² landet.' },
@@ -164,8 +164,8 @@ export default {
         blocks: [
           { type: 'paragraph', content: 'The standard deviation s divides by n − 1, not by n. The reason is easiest to see in the variance. For a sample there are two candidates:' },
           { type: 'list', items: [
-            'divided by n: $\\frac{\\sum (x_i - \\bar{x})^2}{n}$',
-            'divided by n − 1: $\\frac{\\sum (x_i - \\bar{x})^2}{n - 1} = s^2$',
+            'divided by n: $\\dfrac{\\sum (x_i - \\bar{x})^2}{n}$',
+            'divided by n − 1: $\\dfrac{\\sum (x_i - \\bar{x})^2}{n - 1} = s^2$',
           ] },
           { type: 'paragraph', content: 'Which one hits the population variance σ² = 4 g² on average? Draw samples of only three packs – first one at a time, then very many at once – and compare both averages with the σ² row.' },
           { type: 'paragraph', content: 'The two averages always differ by the same factor, because they come from the same samples. What matters is which of them lands at σ².' },
