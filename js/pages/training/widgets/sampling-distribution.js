@@ -79,6 +79,7 @@ export function samplingSimComponent(ctx) {
     count: 0,
     perN: {},
     meansCount: 0,
+    meanText: '–',
     spreadText: '–',
     nPoints: 0,
     theoryMeans: false,
@@ -204,6 +205,7 @@ export function samplingSimComponent(ctx) {
     /** Update the numbers shown next to the charts and push fresh configs to the charts. */
     refresh() {
       this.meansCount = means.length;
+      this.meanText = means.length > 0 ? fmt(meanSd(means).mean) : '–';
       this.spreadText = means.length > 1 ? fmt(meanSd(means).sd) : '–';
       const meansCfg = this.meansConfig();
       this.theoryMeans = meansCfg.normalCurves.length > 0;

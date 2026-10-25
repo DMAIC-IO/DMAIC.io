@@ -144,6 +144,7 @@
                 <div class="training-sim__col">
                   <div class="training-sim__chart training-sim__chart--means"></div>
                   <table class="training-sim__stats">
+                    <tr><th x-text="label('mean')"></th><td data-sim-mean x-text="meanText"></td><td class="training-sim__sym">x̄</td></tr>
                     <tr><th x-text="label('spread')"></th><td data-sim-spread x-text="spreadText"></td><td class="training-sim__sym" x-text="seHint()"></td></tr>
                   </table>
                 </div>
