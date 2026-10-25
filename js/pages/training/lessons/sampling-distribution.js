@@ -79,9 +79,14 @@ export default {
             { text: 'Deutlich darunter, weil die meisten Kunden kurz warten.', correct: false, feedback: 'Die vielen kurzen Wartezeiten sind in μ schon eingerechnet. Die Stichprobenmittelwerte treffen μ im Mittel genau – auch bei schiefen Daten.' },
             { text: 'Deutlich darüber, weil die langen Wartezeiten nach oben ziehen.', correct: false, feedback: 'Die langen Wartezeiten stecken bereits in μ. Im Mittel landen die Stichprobenmittelwerte genau bei μ.' },
           ] },
-          { type: 'quiz', id: 'q-clt-forty', question: 'Die Wartezeiten sind deutlich schief. Du misst immer wieder je 40 Kunden und bildest den Mittelwert. Wie sind diese Mittelwerte verteilt?', options: [
-            { text: 'Annähernd glockenförmig.', correct: true, feedback: 'Richtig – das ist der zentrale Grenzwertsatz. Bei sehr schiefen Wartezeiten oder Ausreißern braucht es mehr Werte, und für die einzelnen Wartezeiten gilt das nicht: die bleiben schief.' },
+          { type: 'quiz', id: 'q-clt-forty', question: 'Die Wartezeiten sind deutlich schief. Du misst immer wieder je 40 Kunden und bildest den Mittelwert. Welche Form hat die Verteilung dieser Mittelwerte?', options: [
+            { text: 'Annähernd glockenförmig.', correct: true, feedback: 'Das ist der zentrale Grenzwertsatz. Bei sehr schiefen Wartezeiten oder Ausreißern braucht es mehr Werte, und für die einzelnen Wartezeiten gilt das nicht: die bleiben schief.' },
             { text: 'Genauso schief wie die einzelnen Wartezeiten.', correct: false, feedback: 'Die einzelnen Wartezeiten bleiben schief, ihre Mittelwerte aber werden mit wachsendem n glockenförmig – das hast du in der Simulation gesehen.' },
+          ] },
+          { type: 'quiz', id: 'q-clt-shapes', question: 'Drei Filialen: In der ersten sind die Wartezeiten gleichverteilt, in der zweiten schief, in der dritten zweigipflig. Du ziehst überall 1000 Stichproben mit n = 30. Welche Form haben die drei Verteilungen der Mittelwerte?', options: [
+            { text: 'Alle drei annähernd glockenförmig.', correct: true, feedback: 'Genau: Der zentrale Grenzwertsatz verlangt keine bestimmte Form der Einzelwerte. Die Ausgangsform bestimmt nur, wie groß n sein muss – bei n = 30 reicht es für alle drei.' },
+            { text: 'Jede behält ihre Form: gleichverteilt, schief, zweigipflig.', correct: false, feedback: 'Das gilt für die einzelnen Wartezeiten. Ihre Mittelwerte werden mit wachsendem n glockenförmig, ganz gleich, wie die Einzelwerte verteilt sind – das hast du beim Vergleich der Grundgesamtheiten gesehen.' },
+            { text: 'Zwei werden glockenförmig, die zweigipflige bleibt zweigipflig.', correct: false, feedback: 'Auch die zwei Gipfel verschwinden: Jede Stichprobe mischt Kunden aus beiden Gruppen, und die Mittelwerte sammeln sich in einer Glocke dazwischen.' },
           ] },
         ],
       },
@@ -163,9 +168,14 @@ export default {
             { text: 'Clearly below, because most customers wait briefly.', correct: false, feedback: 'The many short waiting times are already part of μ. On average the sample means hit μ exactly – even for skewed data.' },
             { text: 'Clearly above, because the long waiting times pull it up.', correct: false, feedback: 'The long waiting times are already part of μ. On average the sample means land exactly at μ.' },
           ] },
-          { type: 'quiz', id: 'q-clt-forty', question: 'The waiting times are clearly skewed. You repeatedly measure 40 customers and take the mean. How are these means distributed?', options: [
-            { text: 'Approximately bell-shaped.', correct: true, feedback: 'Right – that is the central limit theorem. Very skewed data or outliers need more values, and it does not hold for the individual waiting times: they stay skewed.' },
+          { type: 'quiz', id: 'q-clt-forty', question: 'The waiting times are clearly skewed. You repeatedly measure 40 customers and take the mean. What shape does the distribution of these means have?', options: [
+            { text: 'Approximately bell-shaped.', correct: true, feedback: 'That is the central limit theorem. Very skewed data or outliers need more values, and it does not hold for the individual waiting times: they stay skewed.' },
             { text: 'Just as skewed as the individual waiting times.', correct: false, feedback: 'The individual waiting times stay skewed, but their means become bell-shaped with growing n – you saw that in the simulation.' },
+          ] },
+          { type: 'quiz', id: 'q-clt-shapes', question: 'Three branches: in the first the waiting times are uniform, in the second skewed, in the third bimodal. In each you draw 1000 samples with n = 30. What shape do the three distributions of the means have?', options: [
+            { text: 'All three approximately bell-shaped.', correct: true, feedback: 'Exactly: the central limit theorem does not require any particular shape of the individual values. The starting shape only decides how large n must be – at n = 30 it is enough for all three.' },
+            { text: 'Each keeps its shape: uniform, skewed, bimodal.', correct: false, feedback: 'That holds for the individual waiting times. Their means become bell-shaped with growing n, however the individual values are distributed – you saw that when comparing the populations.' },
+            { text: 'Two become bell-shaped, the bimodal one stays bimodal.', correct: false, feedback: 'The two peaks disappear as well: every sample mixes customers from both groups, and the means gather in one bell between them.' },
           ] },
         ],
       },

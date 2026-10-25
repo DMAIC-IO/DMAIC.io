@@ -199,7 +199,7 @@ suite('course content', () => {
       const clt = blocksOf(lesson, lang).find((b) => b.type === 'insight' && b.id === 'clt');
       assertEqual(clt.revealAfterShapes, 2);
       assertEqual(clt.revealAfterN, 3);
-      assertEqual(quizIds(lesson).length, 3);
+      assertEqual(quizIds(lesson).length, 4);
       assertTrue(!strings(lesson[lang]).some((x) => /Prozessfähigkeit|process capability/i.test(x)), 'no capability mention');
       assertTrue(!strings(steps.slice(0, 4)).some((x) => /σ\s*\/\s*√n/.test(x)), 'sigma/sqrt(n) only from the standard error step on');
     }
