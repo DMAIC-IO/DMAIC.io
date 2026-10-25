@@ -567,7 +567,7 @@
             </div>
             <template x-if="boundComplete()">
               <div class="doe__transfer-section">
-                <button class="btn btn--primary doe__transfer-regression-btn" type="button" @click="transferToRegression()">
+                <button class="btn btn--primary doe__transfer-regression-btn" type="button" @click="analysis.transferToRegression()">
                   <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
                   <span x-text="t('transferToRegression')"></span>
                 </button>
@@ -752,7 +752,7 @@
         </template>
 
         <!-- Dispersion analysis -->
-        <template x-if="dispersion()">
+        <template x-if="analysis.dispersion()">
           <div class="doe__dispersion-region">
             <div class="dmike-split__output-section-header">
               <span class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('dispersionSection')"></span></span>
@@ -762,12 +762,12 @@
                 <h4 class="doe__eval-heading">
                   <span data-help-key="modules.doe-planner.tipDispersion" x-text="t('dispersionTitle')"></span>
                 </h4>
-                <template x-if="dispersion().noReplicates">
+                <template x-if="analysis.dispersion().noReplicates">
                   <p class="doe__eval-note" x-text="t('dispersionNoReplicates')"></p>
                 </template>
-                <template x-if="!dispersion().noReplicates">
+                <template x-if="!analysis.dispersion().noReplicates">
                   <div class="doe__dispersion-body">
-                    <p class="doe__eval-note" x-text="dispersionLeadText()"></p>
+                    <p class="doe__eval-note" x-text="analysis.dispersionLeadText()"></p>
                     <table class="doe__alias-table doe__dispersion-table">
                       <thead>
                         <tr>
@@ -780,7 +780,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <template x-for="(g, gi) in dispersion().groups" :key="gi">
+                        <template x-for="(g, gi) in analysis.dispersion().groups" :key="gi">
                           <tr>
                             <td x-text="g.point"></td>
                             <td x-text="g.n"></td>
@@ -792,11 +792,11 @@
                         </template>
                       </tbody>
                     </table>
-                    <template x-if="dispersion().zeroVarPoints > 0">
-                      <p class="doe__eval-note" x-text="t('dispersionZeroVar', { n: dispersion().zeroVarPoints })"></p>
+                    <template x-if="analysis.dispersion().zeroVarPoints > 0">
+                      <p class="doe__eval-note" x-text="t('dispersionZeroVar', { n: analysis.dispersion().zeroVarPoints })"></p>
                     </template>
                     <div class="doe__dispersion-models">
-                      <template x-for="(m, mi) in dispersionModels()" :key="mi">
+                      <template x-for="(m, mi) in analysis.dispersionModels()" :key="mi">
                         <div class="doe__dispersion-model">
                           <h5 class="doe__dispersion-model-title" x-text="m.title"></h5>
                           <template x-if="!m.fitted">
@@ -831,15 +831,15 @@
                       </template>
                     </div>
                     <!-- Conclusion -->
-                    <template x-if="dispersionConclusion()">
-                      <div class="doe__dispersion-conclusion" :class="dispersionConclusion().cls">
+                    <template x-if="analysis.dispersionConclusion()">
+                      <div class="doe__dispersion-conclusion" :class="analysis.dispersionConclusion().cls">
                         <strong x-text="t('dispersionConclusion') + ':'"></strong>
-                        <template x-if="dispersionConclusion().none">
+                        <template x-if="analysis.dispersionConclusion().none">
                           <span x-text="' ' + t('dispersionConclusionNone')"></span>
                         </template>
-                        <template x-if="!dispersionConclusion().none">
+                        <template x-if="!analysis.dispersionConclusion().none">
                           <ul>
-                            <template x-for="(item, ii) in dispersionConclusion().items" :key="ii">
+                            <template x-for="(item, ii) in analysis.dispersionConclusion().items" :key="ii">
                               <li x-text="item"></li>
                             </template>
                           </ul>

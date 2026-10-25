@@ -4504,10 +4504,6 @@ export const AGENT_REGISTRY = {
       "unmarked_method:boundProgressText",
       "unmarked_method:boundComplete",
       "unmarked_method:showPreview",
-      "unmarked_method:dispersion",
-      "unmarked_method:dispersionLeadText",
-      "unmarked_method:dispersionModels",
-      "unmarked_method:dispersionConclusion",
       "unmarked_method:projectModeChanged",
       "unmarked_method:timelineItemClass",
       "unmarked_method:phaseLabel",
@@ -4521,7 +4517,6 @@ export const AGENT_REGISTRY = {
       "unmarked_method:removeOldWorksheet",
       "unmarked_method:createOrRecreateDatasheet",
       "unmarked_method:openLinkedWorksheet",
-      "unmarked_method:transferToRegression",
       "unmarked_method:mountPreviewGrid",
       "unmarked_method:destroyPreviewGrid",
       "unmarked_method:capturePreviewEdits",
@@ -4949,6 +4944,23 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "number",
         "help": "Add optimal runs to the linked datasheet; the existing runs and their values stay, the new rows are appended."
+      },
+      "analysis.setAnalysisResponse": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "the response, 0 = Y1"
+          }
+        ],
+        "returns": "void",
+        "help": "Choose the response the dispersion analysis and the regression handover use."
+      },
+      "analysis.transferToRegression": {
+        "params": [],
+        "returns": "string",
+        "help": "Hand the linked datasheet to a new regression in the planner's phase, with the design's model terms."
       },
       "completePhase": {
         "params": [

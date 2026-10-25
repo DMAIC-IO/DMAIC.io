@@ -23,27 +23,27 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State, letter, PHASE_DECISIONS } from './doe-planner-model.js';
+import { State, PHASE_DECISIONS } from './doe-planner-model.js';
 import { FactorsViewModel } from './viewmodel/factors.js';
 import { DesignViewModel } from './viewmodel/design.js';
 import { OptimalViewModel } from './viewmodel/optimal.js';
 import { EvaluationViewModel } from './viewmodel/evaluation.js';
+import { AnalysisViewModel } from './viewmodel/analysis.js';
 import { codedToActualRows, buildRunTable, captureEdits, applyEdits } from './doe-planner-runtable.js';
 import { DataGrid } from '../../core/datagrid/datagrid.js';
 import {
   generateDesign, minRunsForTerms,
   augmentOptimalDesign,
 } from '../../engines/doe-planner-engine.js';
-import { designOf, checkConfig } from './designs/index.js';
+import { checkConfig } from './designs/index.js';
 import optimalType from './designs/optimal.js';
 import {
   createDesignWorksheet, createExperimentRecord, removeExperimentRecord,
-  isWorksheetValid, sourceRowCount, readSourceData,
+  sourceRowCount, readSourceData,
 } from './doe-planner-worksheet.js';
 import { readResponses, staleness, boundPct, boundComplete } from './doe-planner-responses.js';
 import {
   evaluateDesign, computeEVOPEffects,
-  computeDispersionAnalysis,
 } from './doe-planner-analysis.js';
 import { provisionWorksheet } from '../../core/examples-registry.js';
 import { uid } from '../../core/uid.js';
@@ -53,7 +53,7 @@ import { uid } from '../../core/uid.js';
 const AUTO_GEN_DELAY = 600; // ms debounce for auto-generation
 
 /** Data keys of the sub-viewmodels, in attach order. */
-const SUB_VIEWMODELS = ['factors', 'design', 'optimal', 'evaluation'];
+const SUB_VIEWMODELS = ['factors', 'design', 'optimal', 'evaluation', 'analysis'];
 
 const mod = createModule({
   config: {
@@ -90,6 +90,7 @@ const mod = createModule({
       design: new DesignViewModel(deps),
       optimal: new OptimalViewModel(deps),
       evaluation: new EvaluationViewModel(deps),
+      analysis: new AnalysisViewModel(deps),
 
       // ── Transient UI state (never persisted) ──────────────────
       _previewGrid: null,
@@ -275,73 +276,6 @@ const mod = createModule({
         return this.staleness() !== 'bound' && Boolean(this.model.design && this.model.design.actualMatrix && this.model.design.actualMatrix.length);
       },
 
-      // ── Dispersion analysis ───────────────────────────────────
-
-      dispersion() {
-        const m = this.model;
-        if (this.staleness() !== 'bound') return null;
-        const resp = this._resp();
-        if (!resp || !resp.complete) return null;
-        const type = designOf(m);
-        if (type && !type.dispersion) return null;
-        if (!m.design || !resp.values || !resp.values.length) return null;
-
-        const idx = Math.min(m.analysisResponseIdx, resp.values.length - 1);
-        const yRaw = resp.values[idx] || [];
-        const y = yRaw.map(v => (typeof v === 'number' && isFinite(v)) ? v : NaN);
-        const factorNames = m.factors.map((f, i) => f.name || letter(i));
-        const isOptimal = m.isOptimalType();
-        const result = computeDispersionAnalysis(m.design, y, factorNames, 0.05, {
-          terms: isOptimal ? m.getActiveTerms() : undefined,
-        });
-
-        if (!result.ok) {
-          if (result.reason === 'no-replicates' || result.reason === 'insufficient-data') {
-            if ((m.options.replicates || 1) < 2) return null;
-            return { noReplicates: true };
-          }
-          return null;
-        }
-        result._respName = m.responses[idx] && m.responses[idx].name ? m.responses[idx].name : `Y${  idx + 1}`;
-        return result;
-      },
-      dispersionLeadText() {
-        const r = this.dispersion();
-        if (!r || r.noReplicates) return '';
-        return _t('dispersionLead', {
-          response: r._respName,
-          min: r.minReplicates,
-          max: r.maxReplicates,
-          points: r.groups.length,
-        });
-      },
-      dispersionModels() {
-        const r = this.dispersion();
-        if (!r || r.noReplicates) return [];
-        const mk = (model, titleKey) => {
-          if (!model || !model.coefficients) return { title: _t(titleKey), fitted: false };
-          const rows = model.coefficients
-            .filter(c => c.term !== 'Intercept')
-            .map(c => ({ term: c.term, coefficient: c.coefficient, effect: c.effect, p: c.p, significant: c.significant }));
-          const r2Text = `R² = ${(model.rSquared * 100).toFixed(1)}%, R²adj = ${(model.rSquaredAdj * 100).toFixed(1)}%`;
-          return { title: _t(titleKey), fitted: true, rows, r2Text };
-        };
-        return [mk(r.meanModel, 'dispersionMeanModel'), mk(r.dispersionModel, 'dispersionLogVarModel')];
-      },
-      dispersionConclusion() {
-        const r = this.dispersion();
-        if (!r || r.noReplicates) return null;
-        if (!r.dispersionModel) return null;
-        if (r.significantDispersion.length === 0) return { none: true, cls: 'doe__dispersion-conclusion--none' };
-        const items = r.significantDispersion.map(d => {
-          if (d.prefer === 'low' || d.prefer === 'high') {
-            return `${d.term}: ${_t(`dispersionPrefer_${  d.prefer}`)} (β = ${d.coefficient.toFixed(3)}, p = ${d.p.toFixed(4)})`;
-          }
-          return `${d.term}: ${_t('dispersionPreferInteraction')} (β = ${d.coefficient.toFixed(3)}, p = ${d.p.toFixed(4)})`;
-        });
-        return { none: false, items, cls: '' };
-      },
-
       // ── EVOP / project mode ───────────────────────────────────
 
       projectModeChanged(event) {
@@ -453,37 +387,6 @@ const mod = createModule({
       openLinkedWorksheet() {
         const ref = this.model.worksheetRef;
         if (ref && ref.instanceId) ctx().eventBus.emit('module:activated', { instanceId: ref.instanceId });
-      },
-
-      // ── Transfer to Regression ────────────────────────────────
-
-      transferToRegression() {
-        const m = this.model;
-        const ref = m.worksheetRef;
-        if (!ref || !isWorksheetValid(ctx(), ref)) return;
-        const sm = ctx().stateManager;
-        const eventBus = ctx().eventBus;
-        const colRefs = ref.factorColumnIds.map(colId => ({ instanceId: ref.instanceId, sheetId: ref.sheetId, columnId: colId }));
-        const respColId = ref.responseColumnIds[m.analysisResponseIdx] || ref.responseColumnIds[0];
-        const yKey = `${ref.instanceId}|${ref.sheetId}|${respColId}`;
-        let phase = 'improve';
-        for (const p of Object.keys(sm.get('phases') || {})) {
-          const items = sm.get(`phases.${p}`) ?? [];
-          if (items.some(i => i.instanceId === ctx().instanceId)) { phase = p; break; }
-        }
-        const regInstanceId = uid();
-        const existing = sm.get(`phases.${phase}`) ?? [];
-        sm.set(`phases.${phase}`, [...existing, { instanceId: regInstanceId, moduleId: 'regression', order: existing.length, state: {} }]);
-        sm.setModuleState(regInstanceId, {
-          colRefs, yKey, regType: 'polynomial', polyDegree: 1,
-          designTerms: this.model.modelTerms(),
-          confLevel: (sm.get('settings.confidenceLevel') ?? 95) / 100,
-          alpha: Number(((100 - (sm.get('settings.confidenceLevel') ?? 95)) / 100).toFixed(4)),
-          showCI: true, result: null, perXResults: null, activeXKey: null,
-          activeTab: 'scatter', excludedTerms: [], coefSortByP: false,
-        });
-        eventBus.emit('module:added', { moduleId: 'regression', phase, instanceId: regInstanceId });
-        ctx().notify(_t('transferSuccess'));
       },
 
       // ── Preview DataGrid (imperative widget) ──────────────────
