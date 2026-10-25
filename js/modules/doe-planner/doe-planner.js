@@ -23,7 +23,7 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State, letter } from './doe-planner-model.js';
+import { State, letter, PHASE_DECISIONS } from './doe-planner-model.js';
 import { codedToActualRows, buildRunTable, captureEdits, applyEdits } from './doe-planner-runtable.js';
 import { DataGrid } from '../../core/datagrid/datagrid.js';
 import { PB_DESIGNS, ALL_RUNS, K_RANGE, BOX_BEHNKEN } from './doe-planner-designs.js';
@@ -38,7 +38,7 @@ import bb from './designs/bb.js';
 import taguchi from './designs/taguchi.js';
 import optimal from './designs/optimal.js';
 import {
-  termDisplay, enumerateTerms, activateTerm, deactivateTerm, termSortKey, designModelTerms,
+  termDisplay, enumerateTerms, activateTerm, deactivateTerm, termSortKey,
 } from '../../engines/doe-terms.js';
 import {
   createDesignWorksheet, createExperimentRecord, removeExperimentRecord,
@@ -47,7 +47,7 @@ import {
 } from './doe-planner-worksheet.js';
 import { readResponses, staleness, boundPct, boundComplete } from './doe-planner-responses.js';
 import {
-  evaluateDesign, computeEVOPEffects, recenteredFactors,
+  evaluateDesign, computeEVOPEffects,
   computeDispersionAnalysis, powerDisplay,
 } from './doe-planner-analysis.js';
 import { provisionWorksheet } from '../../core/examples-registry.js';
@@ -69,7 +69,6 @@ const DESIGN_TYPES = [
 
 const ALGO_ID_DEFF = 'd-efficiency';
 const AUTO_GEN_DELAY = 600; // ms debounce for auto-generation
-const PHASE_DECISIONS = ['recenter', 'repeat', 'stop'];
 
 const mod = createModule({
   config: {
@@ -187,7 +186,7 @@ const mod = createModule({
 
           m.evaluation = evaluateDesign(
             m.design.codedMatrix, m.factors.length, m.design.p, m.design.designType, 0.05,
-            { terms: this.modelTerms() },
+            { terms: m.modelTerms() },
           );
 
           // Adopt pre-feature worksheetRefs that lack a designSignature.
@@ -195,16 +194,7 @@ const mod = createModule({
             m.worksheetRef.designSignature = m.designSignature();
           }
 
-          // Sync to active project phase (EVOP).
-          if (m.projectMode && m.activePhaseIdx >= 0 && m.activePhaseIdx < m.projectPhases.length) {
-            const ph = m.projectPhases[m.activePhaseIdx];
-            ph.design = JSON.parse(JSON.stringify(m.design));
-            ph.worksheetRef = m.worksheetRef ? { ...m.worksheetRef } : null;
-            ph.evaluation = m.evaluation ? JSON.parse(JSON.stringify(m.evaluation)) : null;
-            ph.factors = JSON.parse(JSON.stringify(m.factors));
-            ph.responses = JSON.parse(JSON.stringify(m.responses));
-            ph.doeName = m.doeName;
-          }
+          m.syncActivePhase();
 
           this.save();
         } catch (err) {
@@ -554,31 +544,19 @@ const mod = createModule({
           if (Number.isFinite(num)) { pattern[fi] = num; anyBound = true; }
         }
         if (!anyBound) { ctx().notify && ctx().notify(_t('forbiddenHint'), 'info'); return; }
-        const list = Array.isArray(this.model.options.forbiddenVertices) ? [...this.model.options.forbiddenVertices] : [];
-        const eq = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
-        if (list.some(p => eq(p, pattern))) return;
-        list.push(pattern);
-        this.model.options.forbiddenVertices = list;
+        if (!this.model.addForbiddenVertex(pattern)) return;
         this.invalidateAndSchedule();
         this.save();
       },
       removeForbiddenRule(idx) {
-        const list = Array.isArray(this.model.options.forbiddenVertices) ? [...this.model.options.forbiddenVertices] : [];
-        if (idx < 0 || idx >= list.length) return;
-        list.splice(idx, 1);
-        this.model.options.forbiddenVertices = list;
+        if (!this.model.removeForbiddenVertex(idx)) return;
         this.invalidateAndSchedule();
         this.save();
       },
       forbidPreviewRow(rowIdx) {
         const coded = this.model.design && this.model.design.codedMatrix ? this.model.design.codedMatrix[rowIdx] : null;
         if (!Array.isArray(coded)) return;
-        const pattern = [...coded];
-        const list = Array.isArray(this.model.options.forbiddenVertices) ? [...this.model.options.forbiddenVertices] : [];
-        const eq = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
-        if (list.some(p => eq(p, pattern))) return;
-        list.push(pattern);
-        this.model.options.forbiddenVertices = list;
+        if (!this.model.addForbiddenVertex([...coded])) return;
         this.invalidateAndSchedule();
         this.save();
       },
@@ -815,21 +793,7 @@ const mod = createModule({
       // ── EVOP / project mode ───────────────────────────────────
 
       projectModeChanged(event) {
-        const m = this.model;
-        m.projectMode = event.target.checked;
-        if (m.projectMode && m.projectPhases.length === 0) {
-          m.projectPhases.push({
-            cycleNumber: 1,
-            doeName: m.doeName || `${m.projectName || 'Projekt'} - Phase 1`,
-            factors: JSON.parse(JSON.stringify(m.factors)),
-            responses: JSON.parse(JSON.stringify(m.responses)),
-            designType: m.designType,
-            options: { ...m.options },
-            design: null, worksheetRef: null, evaluation: null,
-            decision: null, completedAt: null,
-          });
-          m.activePhaseIdx = 0;
-        }
+        this.model.setProjectMode(event.target.checked);
         this.save();
       },
       timelineItemClass(idx) {
@@ -846,11 +810,9 @@ const mod = createModule({
           : ph.decision === 'stop' ? 'status.ok' : '';
       },
       canStartNewPhase() {
-        const m = this.model;
-        if (m.projectPhases.some(ph => ph.decision === 'stop')) return false;
-        return m.activePhaseIdx === -1 || (m.projectPhases[m.activePhaseIdx] && m.projectPhases[m.activePhaseIdx].decision);
+        return this.model.canStartNewPhase();
       },
-      newPhase() { this.startNewPhase(false); this.save(); },
+      newPhase() { this.model.startPhase({ recenter: false }); this.save(); },
       /**
        * The "next step" block shows once the active, undecided phase has all responses.
        * @noagent
@@ -875,86 +837,20 @@ const mod = createModule({
         const ok = await ctx().dialog.confirm({ message: _t(`decisionConfirm_${decision}`) });
         if (!ok) return false;
 
-        ph.decision = decision;
-        ph.completedAt = new Date().toISOString();
-        ph.design = m.design ? JSON.parse(JSON.stringify(m.design)) : null;
-        ph.worksheetRef = m.worksheetRef ? { ...m.worksheetRef } : null;
-        ph.evaluation = m.evaluation ? JSON.parse(JSON.stringify(m.evaluation)) : null;
         const resp = this._resp();
-        if (resp && resp.values && resp.values[0]) ph.yValues = [...resp.values[0]];
-
+        this.model.closeActivePhase(decision, resp && resp.values && resp.values[0] ? resp.values[0] : undefined);
         if (decision !== 'stop') {
-          this.startNewPhase(decision === 'recenter');
+          this.model.startPhase({ recenter: decision === 'recenter' });
           this.scheduleAutoGenerate();
         }
         this.save();
         return true;
       },
-      startNewPhase(recenter) {
-        const m = this.model;
-        const prevPhase = m.projectPhases[m.activePhaseIdx];
-        const newCycleNum = m.projectPhases.length + 1;
-        let newFactors;
-        if (recenter && prevPhase && prevPhase.yValues && m.design) {
-          const cycles = m.projectPhases
-            .filter(ph => ph.yValues && ph.design)
-            .map(ph => ({
-              cycleNumber: ph.cycleNumber,
-              codedMatrix: ph.design.codedMatrix,
-              y: ph.yValues || [],
-              factorNames: (ph.factors || []).map((f, i) => f.name || letter(i)),
-            }))
-            .filter(c => c.y.length > 0);
-          const evop = computeEVOPEffects(cycles);
-          newFactors = recenteredFactors(m.factors, evop.bestPointCoded);
-        } else {
-          newFactors = JSON.parse(JSON.stringify(m.factors));
-        }
-        m.doeName = `${m.projectName} - Phase ${newCycleNum}`;
-        m.factors = newFactors;
-        m.design = null;
-        m.worksheetRef = null;
-        m.evaluation = null;
-        m.projectPhases.push({
-          cycleNumber: newCycleNum,
-          doeName: m.doeName,
-          factors: JSON.parse(JSON.stringify(newFactors)),
-          responses: JSON.parse(JSON.stringify(m.responses)),
-          designType: m.designType,
-          options: { ...m.options },
-          design: null, worksheetRef: null, evaluation: null,
-          decision: null, completedAt: null,
-        });
-        m.activePhaseIdx = m.projectPhases.length - 1;
-      },
       viewPhase(idx) {
-        const m = this.model;
-        if (idx < 0 || idx >= m.projectPhases.length) return;
-        const ph = m.projectPhases[idx];
-        m.activePhaseIdx = idx;
-        m.doeName = ph.doeName || '';
-        m.factors = JSON.parse(JSON.stringify(ph.factors || []));
-        m.responses = JSON.parse(JSON.stringify(ph.responses || []));
-        m.designType = ph.designType || 'full';
-        m.options = { ...m.options, ...(ph.options || {}) };
-        m.design = ph.design ? JSON.parse(JSON.stringify(ph.design)) : null;
-        m.worksheetRef = ph.worksheetRef ? { ...ph.worksheetRef } : null;
-        m.evaluation = ph.evaluation ? JSON.parse(JSON.stringify(ph.evaluation)) : null;
-        this.save();
-      },
-      _evopCycles() {
-        return this.model.projectPhases
-          .filter(ph => ph.yValues && ph.design)
-          .map(ph => ({
-            cycleNumber: ph.cycleNumber,
-            codedMatrix: ph.design.codedMatrix,
-            y: ph.yValues || [],
-            factorNames: (ph.factors || []).map((f, i) => f.name || letter(i)),
-          }))
-          .filter(c => c.y.length > 0);
+        if (this.model.viewPhase(idx)) this.save();
       },
       evopSummary() {
-        const cycles = this._evopCycles();
+        const cycles = this.model.evopCycles();
         if (cycles.length === 0) return null;
         const evop = computeEVOPEffects(cycles);
         if (evop.effects.length === 0) return null;
@@ -992,7 +888,7 @@ const mod = createModule({
 
         const expId = uid();
         const ref = createDesignWorksheet(ctx(), m.design, m.factors, m.responses, m.doeName, 'improve', expId);
-        createExperimentRecord(ctx(), expId, m.design, m.factors, m.responses, m.doeName, ref, this.modelTerms());
+        createExperimentRecord(ctx(), expId, m.design, m.factors, m.responses, m.doeName, ref, this.model.modelTerms());
         ref.designSignature = m.designSignature();
         m.worksheetRef = ref;
         m.previewEdits = null;
@@ -1040,10 +936,10 @@ const mod = createModule({
           m.design.runOrder = [...(m.design.runOrder || []), ...newRunOrders];
           m.design.stdOrder = [...(m.design.stdOrder || []), ...newStdOrders];
           m.design.replicateIds = [...(m.design.replicateIds || []), ...new Array(n).fill(1)];
-          m.evaluation = evaluateDesign(m.design.codedMatrix, k, m.design.p, m.design.designType, 0.05, { terms: this.modelTerms() });
+          m.evaluation = evaluateDesign(m.design.codedMatrix, k, m.design.p, m.design.designType, 0.05, { terms: this.model.modelTerms() });
           appendDoERowsToWorksheet(ctx(), m.worksheetRef, factors, newRows);
           if (m.worksheetRef.experimentId) {
-            createExperimentRecord(ctx(), m.worksheetRef.experimentId, m.design, m.factors, m.responses, m.doeName, m.worksheetRef, this.modelTerms());
+            createExperimentRecord(ctx(), m.worksheetRef.experimentId, m.design, m.factors, m.responses, m.doeName, m.worksheetRef, this.model.modelTerms());
           }
           m.worksheetRef.designSignature = m.designSignature();
           this.save();
@@ -1058,14 +954,6 @@ const mod = createModule({
       algoNavigate(algoId, event) {
         if (event) event.stopPropagation();
         if (algoId && ctx().eventBus) ctx().eventBus.emit('lab:navigate', { algoId, tab: 'docs' });
-      },
-      /** Canonical model terms of the current design (see designModelTerms). */
-      modelTerms() {
-        const m = this.model;
-        return designModelTerms(m.design.codedMatrix, {
-          activeTerms: m.isOptimalType() ? m.getActiveTerms() : undefined,
-          categoricalFlags: m.factors.map(f => f.kind === 'categorical'),
-        });
       },
       transferToRegression() {
         const m = this.model;
@@ -1086,7 +974,7 @@ const mod = createModule({
         sm.set(`phases.${phase}`, [...existing, { instanceId: regInstanceId, moduleId: 'regression', order: existing.length, state: {} }]);
         sm.setModuleState(regInstanceId, {
           colRefs, yKey, regType: 'polynomial', polyDegree: 1,
-          designTerms: this.modelTerms(),
+          designTerms: this.model.modelTerms(),
           confLevel: (sm.get('settings.confidenceLevel') ?? 95) / 100,
           alpha: Number(((100 - (sm.get('settings.confidenceLevel') ?? 95)) / 100).toFixed(4)),
           showCI: true, result: null, perXResults: null, activeXKey: null,
