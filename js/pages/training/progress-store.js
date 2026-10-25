@@ -139,15 +139,14 @@ export function resetLesson(lessonId, storage = defaultStorage()) {
  * was answered correctly at least once.
  * @param {string} lessonId
  * @param {string[]} quizIds   Ids of all quizzes in the lesson.
- * @param {number} lastStep    Index of the last step.
+ * @param {number} _lastStep   Unused; the page sets `reachedLast` when the last step is shown.
  * @param {Storage} [storage]
  * @returns {'new'|'started'|'complete'}
  */
-export function lessonStatus(lessonId, quizIds, lastStep, storage = defaultStorage()) {
+export function lessonStatus(lessonId, quizIds, _lastStep, storage = defaultStorage()) {
   const p = loadLesson(lessonId, storage);
-  const atEnd = p.reachedLast || p.step >= lastStep;
   const allQuizzesPassed = quizIds.every((id) => p.quizzes[id]?.everCorrect === true);
-  if (atEnd && allQuizzesPassed && (p.reachedLast || p.step > 0)) return 'complete';
+  if (p.reachedLast && allQuizzesPassed) return 'complete';
   const touched = p.step > 0 || p.reachedLast || p.insights.length > 0 || Object.keys(p.quizzes).length > 0;
   return touched ? 'started' : 'new';
 }

@@ -118,8 +118,10 @@ suite('progress store', () => {
     assertEqual(lessonStatus('a', ['q1', 'q2'], 5, s), 'started');
   });
 
-  test('status: reaching the last step by index counts as reachedLast', () => {
+  test('status: step index alone is not completion, the reachedLast flag is', () => {
     const s = memoryStorage();
+    saveLesson('a', { ...emptyLesson(), step: 5 }, s);
+    assertEqual(lessonStatus('a', [], 5, s), 'started');
     saveLesson('a', { ...emptyLesson(), step: 5, reachedLast: true }, s);
     assertEqual(lessonStatus('a', [], 5, s), 'complete');
   });
