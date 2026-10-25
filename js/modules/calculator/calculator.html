@@ -84,8 +84,8 @@
           <template x-if="model.dataset.length === 0">
             <span class="module-calculator__val--empty" x-text="t('noData')"></span>
           </template>
-          <template x-for="(v, i) in model.dataset">
-            <span class="module-calculator__val" :key="i" x-text="v"></span>
+          <template x-for="(v, i) in model.dataset" :key="i">
+            <span class="module-calculator__val" x-text="v"></span>
           </template>
         </div>
         <div class="module-calculator__data-count" data-ref="data-count" x-text="'n = ' + model.dataset.length"></div>
@@ -141,8 +141,8 @@
           <template x-if="model.ssDataset.length === 0">
             <span class="module-calculator__val--empty" x-text="t('noData')"></span>
           </template>
-          <template x-for="(v, i) in model.ssDataset">
-            <span class="module-calculator__val" :key="i" x-text="v"></span>
+          <template x-for="(v, i) in model.ssDataset" :key="i">
+            <span class="module-calculator__val" x-text="v"></span>
           </template>
         </div>
         <div class="module-calculator__data-count" data-ref="ss-data-count" x-text="'n = ' + model.ssDataset.length"></div>
