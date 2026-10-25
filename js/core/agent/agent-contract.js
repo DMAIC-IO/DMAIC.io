@@ -182,7 +182,7 @@ export const OPS = deepFreeze({
  *   Schlüsselparameter `keyof <Typedef>` trägt: je Schlüssel der Wertetyp und
  *   die JSDoc-Prosa (`tools/build/agent-data.mjs:readKeySurface`).
  * @property {Record<string, { type: string, help: string, bulk: boolean,
- *                             bulkKind?: 'table'|'tree', derived?: boolean,
+ *                             bulkKind?: 'table'|'tree', omit?: string[], derived?: boolean,
  *                             keysOf?: string, keys?: Record<string, AgentTypedefKey> }>} fields
  *   Die Lesefläche. Ohne `derived` aus den Model-Feldern abgeleitet (die
  *   persistierte Form IST die Lesefläche, Spec §8); mit `derived: true` vom
@@ -195,4 +195,8 @@ export const OPS = deepFreeze({
  *   Art ist ein Verstoß des Moduls (`invalid_bulk_kind:<feld>:<wert>`,
  *   `tools/build/agent-data.mjs`) und das Modul damit nicht freigegeben. `describe()` gibt es nicht heraus — die Deskriptorform steht
  *   in der Antwort von `read()`, und `describe()` ist Vertragsfläche.
+ *   `omit` steht NUR an einem Feld mit Auslassung (`@agentOmit` am
+ *   Model-Feld, `[omit:…]` im Typedef) und nennt Pfade relativ zum Feld;
+ *   `read()` liefert dort `{ $omitted: true, bytes }` statt des Werts. Wie
+ *   `bulkKind` nicht in `describe()`.
  */

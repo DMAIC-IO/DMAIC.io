@@ -56,6 +56,8 @@ export const VIOLATION_REMEDIES = Object.freeze({
   unresolvable_tojson: 'toJSON() muss ein Objektliteral ohne Spread zurückgeben, oder @typedef AgentRead erklären',
   unreadable_state_key: 'Feldnamen zwischen toJSON() und Model-Deklaration angleichen oder das Feld annotieren',
   invalid_bulk_kind: 'Massendaten-Art auf table oder tree setzen',
+  invalid_omit_path: 'Auslassungspfad aus Schlüsseln und [] bilden, mit einem Schlüssel am Ende (inScope[].dataUrl, [][].image)',
+  omit_path_mismatch: 'Auslassungspfad an den erklärten Typ des Feldes angleichen',
   dom_detour: 'über das Model gehen, nicht am DOM vorbei (innerHTML/outerHTML/dataset)',
   unreachable_write: '@agent-Setter mit Parameter anlegen, der das Feld aus diesem Parameter zuweist',
   template_model_call: 'die Vorlage auf den Viewmodel-Sink umlegen',

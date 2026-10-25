@@ -62,6 +62,12 @@ export const MARK_NOAGENT = 'noagent';
 /** Marke an einem Model-Feld: Massendaten, aus `read()` ohne Parameter herausgehalten. */
 const MARK_BULK = 'agentBulk';
 /**
+ * Marke an einem Model-Feld: Teilwerte, die `read()` nie ausliefert
+ * (`@agentOmit inScope[].dataUrl outScope[].dataUrl`). Pfade durch
+ * Leerraum getrennt; Grammatik siehe `omitTokens`.
+ */
+const MARK_OMIT = 'agentOmit';
+/**
  * Die erlaubten Massendaten-Arten. Dieselbe Menge steht in
  * `js/core/agent/agent-read.js` (`BULK_KINDS`) und als Zusage im Typedef
  * `AgentModuleEntry` (`js/core/agent/agent-contract.js`). Zwei Deklarationen,
@@ -172,7 +178,7 @@ function buildEntry(resolver, appDir, viewmodelFile) {
 
   const reported = [...violations, ...surface, ...model.violations,
     ...persistence.violations, ...unreadable,
-    ...invalidBulkKinds(model.fields), ...collectDomDetours(sf),
+    ...invalidBulkKinds(model.fields), ...invalidOmitPaths(model.fields), ...collectDomDetours(sf),
     ...unreachable, ...templateCalls,
     ...subViewModelModelBindings(dirname(viewmodelFile), subViewModels),
     ...undeclaredOptions];
@@ -214,6 +220,112 @@ function invalidBulkKinds(fields) {
     if (!BULK_KINDS.includes(kind)) out.push(`invalid_bulk_kind:${name}:${kind}`);
   }
   return out;
+}
+
+/**
+ * Die Grammatik eines Auslassungspfades. Dieselbe steht in
+ * `js/core/agent/agent-read.js` (`OMIT_PATH`) — zwei Deklarationen, weil der
+ * Build nicht aus `js/` importiert. Die Laufzeit übergeht einen kaputten
+ * Pfad still; gemeldet wird er hier, beim Bauen, wo der Autor ihn beheben kann.
+ */
+const OMIT_PATH = /^(?:[A-Za-z_$][\w$]*|\[\])(?:\[\]|\.[A-Za-z_$][\w$]*)*$/;
+
+/**
+ * Ein Auslassungspfad als Segmentliste, oder `null` bei Verstoß: leer, gegen
+ * die Grammatik, oder mit `[]` am Ende (das meinte jedes Element, also das
+ * ganze Feld — dafür gibt es `@noagent`-Felder bzw. das `_`-Präfix).
+ * @param {string} path
+ * @returns {string[]|null}
+ */
+function omitTokens(path) {
+  if (!OMIT_PATH.test(path)) return null;
+  const tokens = path.match(/\[\]|[A-Za-z_$][\w$]*/g);
+  return tokens[tokens.length - 1] === '[]' ? null : tokens;
+}
+
+/**
+ * Auslassungspfade, die die Grammatik verletzen oder nicht zum erklärten
+ * Typ des Feldes passen.
+ * @param {Record<string, { type: string, omit?: string[] }>} fields
+ * @returns {string[]} Codes `invalid_omit_path:<feld>:<pfad>` und
+ *   `omit_path_mismatch:<feld>:<pfad>`; ein leerer Pfad steht als leerer Rest
+ */
+function invalidOmitPaths(fields) {
+  const out = [];
+  for (const [name, spec] of Object.entries(fields)) {
+    if (!spec.omit) continue;
+    if (spec.omit.length === 0) { out.push(`invalid_omit_path:${name}:`); continue; }
+    for (const path of spec.omit) {
+      const tokens = omitTokens(path);
+      if (!tokens) out.push(`invalid_omit_path:${name}:${path}`);
+      else if (!omitPathFitsType(spec.type, tokens)) out.push(`omit_path_mismatch:${name}:${path}`);
+    }
+  }
+  return out;
+}
+
+/**
+ * Passt ein Auslassungspfad zum erklärten Typ? Geprüft wird nur, was der
+ * Typtext statisch hergibt: Objektliterale (`{ a: T }`), Arrays (`T[]`,
+ * `Array<T>`), Vereinigungen mit `null`/`undefined` und Primitive. Ein Name
+ * (`object`, `any`, eine Typedef) oder eine echte Vereinigung beendet die
+ * Prüfung — dort ist der Pfad nicht widerlegbar und gilt als passend: ein
+ * falsch behaupteter Befund kostet mehr Vertrauen als ein zugegebenes
+ * Nichtwissen.
+ * @param {string} typeText  der JSDoc-Typ des Feldes
+ * @param {string[]} tokens
+ * @returns {boolean}
+ */
+function omitPathFitsType(typeText, tokens) {
+  const sf = ts.createSourceFile('omit.ts', `type T = ${typeText};`, ts.ScriptTarget.Latest, true);
+  const alias = sf.statements[0];
+  let node = alias && ts.isTypeAliasDeclaration(alias) ? alias.type : null;
+  for (const token of tokens) {
+    node = withoutNullish(node);
+    if (!node) return true;
+    const element = arrayElementType(node);
+    if (token === '[]') {
+      if (element) { node = element; continue; }
+      return !(ts.isTypeLiteralNode(node) || isPrimitiveType(node));
+    }
+    if (element || isPrimitiveType(node)) return false;
+    if (!ts.isTypeLiteralNode(node)) return true;
+    const member = node.members.find(m => ts.isPropertySignature(m) && m.name?.getText(sf) === token);
+    if (!member) return false;
+    node = member.type ?? null;
+  }
+  return true;
+}
+
+/** Klammern weg, `T|null|undefined` → `T`; eine echte Vereinigung → `null` (nicht auflösbar). */
+function withoutNullish(node) {
+  while (node && ts.isParenthesizedTypeNode(node)) node = node.type;
+  if (node && ts.isUnionTypeNode(node)) {
+    const rest = node.types.filter(t => !isNullishType(t));
+    return rest.length === 1 ? withoutNullish(rest[0]) : null;
+  }
+  return node;
+}
+
+/** @returns {boolean} `null` oder `undefined` als Typ */
+function isNullishType(node) {
+  return node.kind === ts.SyntaxKind.UndefinedKeyword || node.kind === ts.SyntaxKind.NullKeyword
+    || (ts.isLiteralTypeNode(node) && node.literal.kind === ts.SyntaxKind.NullKeyword);
+}
+
+/** @returns {ts.TypeNode|null} der Elementtyp von `T[]` bzw. `Array<T>` */
+function arrayElementType(node) {
+  if (ts.isArrayTypeNode(node)) return node.elementType;
+  if (ts.isTypeReferenceNode(node) && node.typeName.getText() === 'Array' && node.typeArguments?.length === 1) {
+    return node.typeArguments[0];
+  }
+  return null;
+}
+
+/** @returns {boolean} `string`, `number`, `boolean` oder ein Literaltyp */
+function isPrimitiveType(node) {
+  return node.kind === ts.SyntaxKind.StringKeyword || node.kind === ts.SyntaxKind.NumberKeyword
+    || node.kind === ts.SyntaxKind.BooleanKeyword || ts.isLiteralTypeNode(node);
 }
 
 /**
@@ -326,6 +438,32 @@ const AGENT_READ_TYPEDEF = 'AgentRead';
 const BULK_RE = /^\[bulk(?::([a-z]+))?\]/;
 
 /**
+ * Das Auslassungs-Sentinel: `[omit:[][].image]`, mehrere Pfade durch
+ * Leerraum getrennt. Der Inhalt darf `[]`-Paare enthalten, sonst keine
+ * Klammern. Steht wie `[bulk]` am Anfang des Property-Kommentars, in
+ * beliebiger Reihenfolge mit ihm.
+ */
+const OMIT_RE = /^\[omit:((?:[^[\]]|\[\])*)\]/;
+
+/**
+ * Die Sentinels am Anfang eines Property-Kommentars, und der Rest als Hilfe.
+ * @param {string} raw
+ * @returns {{ bulk: RegExpExecArray|null, omit: string[]|null, help: string }}
+ */
+function readSentinels(raw) {
+  let rest = raw;
+  let bulk = null;
+  let omit = null;
+  for (;;) {
+    const b = bulk === null ? BULK_RE.exec(rest) : null;
+    if (b) { bulk = b; rest = rest.slice(b[0].length).trimStart(); continue; }
+    const o = omit === null ? OMIT_RE.exec(rest) : null;
+    if (o) { omit = o[1].split(/\s+/).filter(Boolean); rest = rest.slice(o[0].length).trimStart(); continue; }
+    return { bulk, omit, help: rest.trim() };
+  }
+}
+
+/**
  * Die deklarierte Lesefläche eines Moduls, oder null.
  *
  * Der Block MUSS an einer Anweisung hängen (praktisch: unmittelbar über der
@@ -344,15 +482,16 @@ export function readAgentReadTypedef(sf) {
     const name = property.name?.getText(sf);
     if (!name || name.startsWith('_')) continue;
     const raw = cleanComment(property.comment);
-    const bulkMatch = BULK_RE.exec(raw);
+    const s = readSentinels(raw);
     found[name] = {
       type: property.typeExpression?.type?.getText(sf) ?? 'any',
-      help: bulkMatch ? raw.slice(bulkMatch[0].length).trim() : raw,
-      bulk: bulkMatch !== null,
+      help: s.help,
+      bulk: s.bulk !== null,
       // Nur AN einem Massenfeld, nicht als `undefined` an jedem Feld: so
       // bleibt die erzeugte Registry dort unverändert, wo nichts zu sagen
       // ist — und die `deepEqual`-Fälle über die Feldform bleiben wahr.
-      ...(bulkMatch ? { bulkKind: bulkMatch[1] ?? 'table' } : {}),
+      ...(s.bulk ? { bulkKind: s.bulk[1] ?? 'table' } : {}),
+      ...(s.omit ? { omit: s.omit } : {}),
       derived: true,
     };
   }
@@ -2019,11 +2158,12 @@ function assignedThisProperty(expression) {
  * Massenfeld zusätzlich `bulkKind` — an einem Feld steht KEINE Herkunft,
  * anders als an einem Verstoßcode: die Form ist Teil des Vertrags von
  * `read()`.
- * @returns {{ type: string, help: string, bulk: boolean, bulkKind?: string }}
+ * @returns {{ type: string, help: string, bulk: boolean, bulkKind?: string, omit?: string[] }}
  */
 function fieldFrom(tags, knownTypeTag) {
   const typeTag = knownTypeTag ?? tags.find(t => t.tagName.text === 'type');
   const bulkTag = tags.find(t => t.tagName.text === MARK_BULK);
+  const omitTag = tags.find(t => t.tagName.text === MARK_OMIT);
   return {
     type: typeTag?.typeExpression?.type?.getText() ?? 'any',
     help: cleanComment(typeTag?.comment),
@@ -2031,6 +2171,9 @@ function fieldFrom(tags, knownTypeTag) {
     // `@agentBulk tree` nennt die Art; `@agentBulk` ohne Zusatz heisst
     // `table`. An einem Nicht-Massenfeld steht der Schlüssel gar nicht.
     ...(bulkTag ? { bulkKind: cleanComment(bulkTag.comment) || 'table' } : {}),
+    // `@agentOmit a[].b c` → `['a[].b', 'c']`; ein leeres Tag ergibt `[]`
+    // und damit `invalid_omit_path:<feld>:`.
+    ...(omitTag ? { omit: cleanComment(omitTag.comment).split(/\s+/).filter(Boolean) } : {}),
   };
 }
 
