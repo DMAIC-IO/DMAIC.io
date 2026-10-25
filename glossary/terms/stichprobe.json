@@ -1,0 +1,73 @@
+{
+  "id": "stichprobe",
+  "category": "descriptive",
+  "title": {
+    "de": "Stichprobe",
+    "en": "Sample"
+  },
+  "short": {
+    "de": "Die n Werte, die tatsächlich gemessen werden — ein Ausschnitt der Grundgesamtheit.",
+    "en": "The n values actually measured — a cut-out of the population."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Eine **Stichprobe** besteht aus $n$ Werten, die zufällig aus der {{term:grundgesamtheit|Grundgesamtheit}} gezogen wurden, zum Beispiel $n = 30$ gemessene Wartezeiten. Der Stichprobenumfang $n$ legt fest, wie genau sich die Kenngrößen schätzen lassen."
+      },
+      {
+        "type": "formula",
+        "latex": "\\bar{x} = \\frac{1}{n} \\sum_{i=1}^{n} x_i"
+      },
+      {
+        "type": "paragraph",
+        "text": "Jede neue Stichprobe liefert einen anderen {{term:mittelwert|Mittelwert}} $\\bar{x}$. Wie diese Mittelwerte streuen, beschreibt die {{term:stichprobenverteilung|Stichprobenverteilung}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **sample** consists of $n$ values drawn at random from the {{term:grundgesamtheit|population}}, for example $n = 30$ measured waiting times. The sample size $n$ determines how precisely the parameters can be estimated."
+      },
+      {
+        "type": "formula",
+        "latex": "\\bar{x} = \\frac{1}{n} \\sum_{i=1}^{n} x_i"
+      },
+      {
+        "type": "paragraph",
+        "text": "Every new sample yields a different {{term:mittelwert|mean}} $\\bar{x}$. How these means vary is described by the {{term:stichprobenverteilung|sampling distribution}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Sample",
+      "Stichprobenumfang"
+    ],
+    "en": [
+      "sample",
+      "sample size"
+    ]
+  },
+  "seeAlso": [
+    "grundgesamtheit",
+    "stichprobenverteilung",
+    "standardfehler",
+    "mittelwert"
+  ],
+  "modules": [
+    "sample-size",
+    "hypothesis-test",
+    "control-chart"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D.C.: Introduction to Statistical Quality Control, 8th ed., Wiley, 2020 — Kap. 3 und 4",
+      "url": null
+    },
+    {
+      "label": "DIN ISO 3534-1: Statistik — Begriffe und Formelzeichen, Teil 1",
+      "url": null
+    }
+  ]
+}

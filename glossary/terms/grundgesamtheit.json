@@ -1,0 +1,73 @@
+{
+  "id": "grundgesamtheit",
+  "category": "descriptive",
+  "title": {
+    "de": "Grundgesamtheit",
+    "en": "Population"
+  },
+  "short": {
+    "de": "Alle Werte, die ein Prozess liefern kann — nur ein Teil davon wird gemessen.",
+    "en": "All values a process can deliver — only a part of them is ever measured."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Grundgesamtheit** umfasst alle Werte, die ein Prozess liefern kann, zum Beispiel alle Wartezeiten, die am Schalter überhaupt auftreten können. Ihre Kenngrößen — {{term:mittelwert|Mittelwert}} $\\mu$ und {{term:standardabweichung|Standardabweichung}} $\\sigma$ — sind meist unbekannt."
+      },
+      {
+        "type": "paragraph",
+        "text": "Gemessen wird immer nur eine {{term:stichprobe|Stichprobe}}. Aus ihr schätzt man die Kenngrößen der Grundgesamtheit."
+      },
+      {
+        "type": "note",
+        "text": "Die Grundgesamtheit kann schief sein, etwa bei Wartezeiten. Die Verteilung ihrer Stichprobenmittelwerte ist davon weitgehend unabhängig, siehe {{term:zentraler-grenzwertsatz|zentraler Grenzwertsatz}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **population** comprises all values a process can deliver, for example all waiting times that can occur at a counter. Its parameters — {{term:mittelwert|mean}} $\\mu$ and {{term:standardabweichung|standard deviation}} $\\sigma$ — are usually unknown."
+      },
+      {
+        "type": "paragraph",
+        "text": "Only a {{term:stichprobe|sample}} is ever measured. It is used to estimate the parameters of the population."
+      },
+      {
+        "type": "note",
+        "text": "The population may be skewed, as with waiting times. The distribution of its sample means is largely independent of that, see {{term:zentraler-grenzwertsatz|central limit theorem}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Population",
+      "Gesamtheit"
+    ],
+    "en": [
+      "population",
+      "universe"
+    ]
+  },
+  "seeAlso": [
+    "stichprobe",
+    "stichprobenverteilung",
+    "mittelwert",
+    "standardabweichung"
+  ],
+  "modules": [
+    "sample-size",
+    "hypothesis-test",
+    "process-capability"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D.C.: Introduction to Statistical Quality Control, 8th ed., Wiley, 2020 — Kap. 3 und 4",
+      "url": null
+    },
+    {
+      "label": "DIN ISO 3534-1: Statistik — Begriffe und Formelzeichen, Teil 1",
+      "url": null
+    }
+  ]
+}

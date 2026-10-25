@@ -1,0 +1,80 @@
+{
+  "id": "zentraler-grenzwertsatz",
+  "category": "hypothesis",
+  "title": {
+    "de": "Zentraler Grenzwertsatz",
+    "en": "Central limit theorem"
+  },
+  "short": {
+    "de": "Stichprobenmittelwerte werden mit wachsendem n glockenförmig, fast egal wie die Einzelwerte verteilt sind.",
+    "en": "Sample means become bell-shaped as n grows, almost regardless of how the individual values are distributed."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **zentrale Grenzwertsatz** besagt: Mittelwerte von $n$ unabhängigen Werten sind für wachsendes $n$ annähernd {{term:normalverteilung|normalverteilt}}, und zwar fast unabhängig von der Verteilung der Einzelwerte:"
+      },
+      {
+        "type": "formula",
+        "latex": "\\bar{x} \\;\\approx\\; N\\!\\left(\\mu,\\ \\frac{\\sigma^2}{n}\\right)"
+      },
+      {
+        "type": "paragraph",
+        "text": "Wie schnell das geht, hängt von der Form ab: Gleichverteilte Werte brauchen nur wenige Werte pro {{term:stichprobe|Stichprobe}}, schiefe deutlich mehr. Bei extremer Schiefe oder Ausreißern braucht es noch mehr."
+      },
+      {
+        "type": "note",
+        "text": "Der Satz gilt für die Mittelwerte, nicht für die Einzelwerte: Schiefe Wartezeiten bleiben schief. Er erklärt, warum Konfidenzintervalle, t-Test und x̄-Regelkarte auch bei nicht normalverteilten Daten funktionieren."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **central limit theorem** states: means of $n$ independent values become approximately {{term:normalverteilung|normally distributed}} as $n$ grows, almost regardless of the distribution of the individual values:"
+      },
+      {
+        "type": "formula",
+        "latex": "\\bar{x} \\;\\approx\\; N\\!\\left(\\mu,\\ \\frac{\\sigma^2}{n}\\right)"
+      },
+      {
+        "type": "paragraph",
+        "text": "How fast this happens depends on the shape: uniform values need only a few values per {{term:stichprobe|sample}}, skewed ones considerably more. With extreme skew or outliers it takes even more."
+      },
+      {
+        "type": "note",
+        "text": "The theorem holds for the means, not for the individual values: skewed waiting times stay skewed. It explains why confidence intervals, t-test and x̄ control chart also work with non-normal data."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Grenzwertsatz",
+      "ZGS"
+    ],
+    "en": [
+      "CLT"
+    ]
+  },
+  "seeAlso": [
+    "stichprobenverteilung",
+    "standardfehler",
+    "normalverteilung",
+    "stichprobe"
+  ],
+  "modules": [
+    "hypothesis-test",
+    "control-chart",
+    "sample-size"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D.C.: Introduction to Statistical Quality Control, 8th ed., Wiley, 2020 — Kap. 3 und 4",
+      "url": null
+    },
+    {
+      "label": "DIN ISO 3534-1: Statistik — Begriffe und Formelzeichen, Teil 1",
+      "url": null
+    }
+  ]
+}
