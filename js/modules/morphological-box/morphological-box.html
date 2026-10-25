@@ -1,0 +1,168 @@
+<section class="module-container morphological-box" x-data="morphologicalBox">
+  <div class="dmike-kpi-strip morphological-box__kpis">
+    <div class="dmike-kpi">
+      <div class="dmike-kpi-value" data-kpi="parameters" x-text="model.parameters.length"></div>
+      <div class="dmike-kpi-label" data-help-key="modules.morphological-box.fields.parameters.help" x-text="t('kpiParameters')"></div>
+    </div>
+    <div class="dmike-kpi">
+      <div class="dmike-kpi-value" data-kpi="combinations" x-text="formatCount(model.combinationCount())"></div>
+      <div class="dmike-kpi-label" data-help-key="modules.morphological-box.fields.combinationCount.help" x-text="t('kpiCombinations')"></div>
+    </div>
+    <div class="dmike-kpi" :class="consistentKpiClass()">
+      <div class="dmike-kpi-value" data-kpi="consistent" x-text="consistentText()"></div>
+      <div class="dmike-kpi-label" data-help-key="modules.morphological-box.fields.consistentCount.help" x-text="t('kpiConsistent')"></div>
+    </div>
+    <div class="dmike-kpi">
+      <div class="dmike-kpi-value" data-kpi="concepts" x-text="model.concepts.length"></div>
+      <div class="dmike-kpi-label" data-help-key="modules.morphological-box.fields.concepts.help" x-text="t('kpiConcepts')"></div>
+    </div>
+  </div>
+
+  <div class="dmike-tabs" role="tablist" x-tablist data-help-key="modules.morphological-box.actions.setView.help">
+    <template x-for="v in views" :key="v">
+      <button class="dmike-tab" type="button" role="tab" :data-tab="v" :class="tabClass(v)"
+              :aria-selected="tabSelected(v)" :tabindex="tabIndex(v)"
+              @click="setView(v)" x-text="t('view_' + v)"></button>
+    </template>
+  </div>
+
+  <div class="morphological-box__empty" x-show="model.parameters.length === 0" x-text="t('emptyState')"></div>
+
+  <!-- Box view: one row per parameter, one cell per option. -->
+  <div class="morphological-box__layout" x-show="model.view === 'box'">
+    <div class="morphological-box__grid">
+      <div class="morphological-box__head" x-show="model.parameters.length > 0">
+        <div class="morphological-box__head-param" data-heading data-help-key="modules.morphological-box.fields.parameters.help" x-text="t('headingParameter')"></div>
+        <div class="morphological-box__head-options" data-heading data-help-key="modules.morphological-box.actions.setOptionLabel.help" x-text="t('headingOptions')"></div>
+      </div>
+      <template x-for="p in model.parameters" :key="p.id">
+        <div class="morphological-box__row dmike-del-btn-host" :data-parameter="p.id">
+          <div class="morphological-box__param">
+            <input type="text" class="field field--sm field--ghost morphological-box__param-input"
+                   :data-parameter-name="p.id" :aria-label="t('parameterName')" :placeholder="t('parameterPlaceholder')"
+                   :value="p.name" @input="setParameterName(p.id, $event.target.value)">
+            <button class="dmike-del-btn morphological-box__param-delete" type="button" data-action="remove-parameter" data-help-key="modules.morphological-box.actions.removeParameter.help"
+                    :title="t('removeParameter')" @click="removeParameter(p.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+          </div>
+          <template x-for="o in p.options" :key="o.id">
+            <div class="morphological-box__option dmike-del-btn-host" :class="optionCellClass(p.id, o.id)" :data-option="o.id">
+              <input type="text" class="field field--sm field--ghost morphological-box__option-input"
+                     :data-option-label="o.id" :aria-label="t('optionLabel')" :placeholder="t('optionPlaceholder')"
+                     :value="o.label" @input="setOptionLabel(o.id, $event.target.value)">
+              <div class="morphological-box__option-foot">
+                <button class="morphological-box__pick" type="button" data-action="pick" data-help-key="modules.morphological-box.actions.setConceptPick.help"
+                        :disabled="pickDisabled()" :aria-pressed="pickPressed(p.id, o.id)"
+                        :title="t('pickHint')" @click="togglePick(p.id, o.id)">
+                  <span class="icon icon--sm" data-icon="action.confirm" aria-hidden="true"></span>
+                  <span class="dmike-sr-only" x-text="t('pickHint')"></span>
+                </button>
+                <span class="morphological-box__markers">
+                  <template x-for="m in markersFor(o.id)" :key="m.id">
+                    <span class="morphological-box__marker" :class="colorClass(m.index)" :title="conceptText(m)" data-marker></span>
+                  </template>
+                </span>
+                <button class="dmike-del-btn" type="button" data-action="remove-option" data-help-key="modules.morphological-box.actions.removeOption.help"
+                        :title="t('removeOption')" @click="removeOption(o.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+              </div>
+            </div>
+          </template>
+          <button class="btn btn--icon-sm morphological-box__add-option" type="button" data-action="add-option" data-help-key="modules.morphological-box.actions.addOption.help"
+                  :title="t('addOption')" @click="addOption(p.id)">
+            <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
+            <span class="dmike-sr-only" x-text="t('addOption')"></span>
+          </button>
+        </div>
+      </template>
+      <div class="morphological-box__add-row">
+        <button class="btn btn--icon-sm morphological-box__add-parameter" type="button" data-action="add-parameter" data-help-key="modules.morphological-box.actions.addParameter.help"
+                :title="t('addParameter')" @click="addParameter()">
+          <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
+          <span class="dmike-sr-only" x-text="t('addParameter')"></span>
+        </button>
+      </div>
+    </div>
+
+    <aside class="morphological-box__concepts">
+      <h3 class="morphological-box__concepts-title" data-help-key="modules.morphological-box.fields.concepts.help" x-text="t('conceptsTitle')"></h3>
+      <div class="morphological-box__concepts-empty" x-show="model.concepts.length === 0" x-text="t('conceptsEmpty')"></div>
+      <template x-for="(c, i) in model.concepts" :key="c.id">
+        <div class="morphological-box__concept dmike-del-btn-host" :class="conceptCardClass(c)" :data-concept="c.id">
+          <div class="morphological-box__concept-head">
+            <input type="radio" class="morphological-box__concept-active" :name="activeRadioName()"
+                   :checked="c.id === model.activeConceptId" data-help-key="modules.morphological-box.actions.setActiveConcept.help" :aria-label="t('activeConcept')"
+                   @change="setActiveConcept(c.id)">
+            <span class="morphological-box__marker" :class="colorClass(i)" aria-hidden="true"></span>
+            <input type="text" class="field field--sm field--ghost morphological-box__concept-input"
+                   :data-concept-name="c.id" data-help-key="modules.morphological-box.actions.setConceptName.help" :aria-label="t('conceptName')" :placeholder="t('conceptPlaceholder')"
+                   :value="c.name" @input="setConceptName(c.id, $event.target.value)">
+            <button class="dmike-del-btn" type="button" data-action="remove-concept" data-help-key="modules.morphological-box.actions.removeConcept.help"
+                    :title="t('removeConcept')" @click="removeConcept(c.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+          </div>
+          <div class="morphological-box__concept-status" :class="conceptStatusClass(c)" data-help-key="modules.morphological-box.fields.conceptChecks.help" data-concept-status x-text="conceptStatus(c)"></div>
+          <template x-for="text in conflictTexts(c)" :key="text">
+            <div class="morphological-box__concept-conflict" data-concept-conflict x-text="text"></div>
+          </template>
+        </div>
+      </template>
+      <div class="morphological-box__add-row morphological-box__add-row--concept">
+        <button class="btn btn--icon-sm morphological-box__add-concept" type="button" data-action="add-concept" data-help-key="modules.morphological-box.actions.addConcept.help"
+                :title="t('addConcept')" @click="addConcept()">
+          <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
+          <span class="dmike-sr-only" x-text="t('addConcept')"></span>
+        </button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Consistency view: lower-triangular option × option matrix. -->
+  <div class="morphological-box__matrix-wrap" x-show="model.view === 'consistency' && model.parameters.length > 0">
+    <p class="morphological-box__matrix-hint" data-help-key="modules.morphological-box.fields.conflicts.help" x-text="t('matrixHint')"></p>
+    <!-- Only the table scrolls: the hint's help button sits outside its box and must not widen a scroller. -->
+    <div class="morphological-box__matrix-scroll">
+      <table class="dmike-table morphological-box__matrix">
+        <thead>
+          <tr>
+            <th class="morphological-box__matrix-corner" colspan="2" rowspan="2">
+              <span class="context-help-anchor--overlay" data-help-key="modules.morphological-box.actions.setConflict.help" x-text="t('matrixCorner')"></span>
+            </th>
+            <template x-for="p in matrixColParameters()" :key="p.id">
+              <th class="morphological-box__matrix-colgroup" :colspan="p.options.length" :data-col-parameter="p.id">
+                <span data-help-key="modules.morphological-box.actions.setParameterName.help" x-text="parameterText(p.id)"></span>
+              </th>
+            </template>
+          </tr>
+          <tr>
+            <template x-for="col in matrixCols()" :key="col.id">
+              <th class="morphological-box__matrix-col" :class="colGroupClass(col)" :title="parameterText(col.parameterId)">
+                <span class="morphological-box__matrix-col-text" data-help-key="modules.morphological-box.actions.setOptionLabel.help" x-text="optionText(col.id)"></span>
+              </th>
+            </template>
+          </tr>
+        </thead>
+        <tbody>
+          <template x-for="(row, ri) in matrixRows()" :key="row.id">
+            <tr :class="rowGroupClass(ri)" :data-row="row.id">
+              <template x-if="rowStartsGroup(ri)">
+                <th class="morphological-box__matrix-param" scope="rowgroup" :rowspan="rowGroupSize(row)" :data-row-parameter="row.parameterId">
+                  <span data-help-key="modules.morphological-box.actions.setParameterName.help" x-text="parameterText(row.parameterId)"></span>
+                </th>
+              </template>
+              <th class="morphological-box__matrix-rowhead" scope="row">
+                <span data-row-option data-help-key="modules.morphological-box.actions.setOptionLabel.help" x-text="optionText(row.id)"></span>
+              </th>
+              <template x-for="col in matrixCols()" :key="col.id">
+                <td class="morphological-box__matrix-cell" :class="cellClass(row, col)">
+                  <template x-if="isPairCell(row, col)">
+                    <input type="checkbox" class="morphological-box__matrix-check" :data-pair="row.id + '|' + col.id"
+                           :checked="isConflictCell(row, col)" :aria-label="pairLabel(row, col)"
+                           @change="setConflict(row.id, col.id, $event.target.checked)">
+                  </template>
+                </td>
+              </template>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

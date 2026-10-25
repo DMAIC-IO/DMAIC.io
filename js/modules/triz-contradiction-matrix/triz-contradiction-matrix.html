@@ -15,8 +15,8 @@
         </label>
         <select class="field triz-cm__select" data-role="improving" @change="improvingChanged($event)">
           <option value="" x-text="t('selectPlaceholder')"></option>
-          <template x-for="p in params">
-            <option :key="p.id" :value="p.id" :selected="model.improving == p.id" x-text="optionText(p)"></option>
+          <template x-for="p in params" :key="p.id">
+            <option :value="p.id" :selected="model.improving == p.id" x-text="optionText(p)"></option>
           </template>
         </select>
         <template x-if="model.improving"><p class="triz-cm__param-desc" x-text="paramDesc(model.improving)"></p></template>
@@ -29,8 +29,8 @@
         </label>
         <select class="field triz-cm__select" data-role="worsening" @change="worseningChanged($event)">
           <option value="" x-text="t('selectPlaceholder')"></option>
-          <template x-for="p in params">
-            <option :key="p.id" :value="p.id" :selected="model.worsening == p.id" x-text="optionText(p)"></option>
+          <template x-for="p in params" :key="p.id">
+            <option :value="p.id" :selected="model.worsening == p.id" x-text="optionText(p)"></option>
           </template>
         </select>
         <template x-if="model.worsening"><p class="triz-cm__param-desc" x-text="paramDesc(model.worsening)"></p></template>
@@ -45,8 +45,8 @@
       <template x-if="model.showWarn"><p class="triz-cm__warn" x-text="t('warnSameParameter')"></p></template>
       <template x-if="model.showNoContradiction"><p class="triz-cm__hint" x-text="t('noContradiction')"></p></template>
       <ol class="triz-cm__principles" x-show="model.showPrinciples">
-        <template x-for="pr in model.principlesList">
-          <li class="triz-cm__principle" :key="pr.id">
+        <template x-for="pr in model.principlesList" :key="pr.id">
+          <li class="triz-cm__principle">
             <div class="triz-cm__principle-num" x-text="pr.id"></div>
             <div class="triz-cm__principle-body">
               <div class="triz-cm__principle-name" x-text="principleName(pr)"></div>
@@ -65,17 +65,17 @@
           <thead>
             <tr>
               <th class="triz-cm__mx-corner" :title="t('matrixCornerTip')">&uarr;/&darr;</th>
-              <template x-for="(colP, j) in params">
-                <th class="triz-cm__mx-col-head" :key="j" :class="colHeadClass(j, model.worsening)" :title="colHeadTitle(j)" x-text="colHeadLabel(j)"></th>
+              <template x-for="(colP, j) in params" :key="j">
+                <th class="triz-cm__mx-col-head" :class="colHeadClass(j, model.worsening)" :title="colHeadTitle(j)" x-text="colHeadLabel(j)"></th>
               </template>
             </tr>
           </thead>
           <tbody>
-            <template x-for="(row, i) in matrix">
-              <tr :key="i">
+            <template x-for="(row, i) in matrix" :key="i">
+              <tr>
                 <th class="triz-cm__mx-row-head" :class="rowHeadClass(i, model.improving)" :title="rowHeadTitle(i)" x-text="rowHeadLabel(i)"></th>
-                <template x-for="(cell, j) in row">
-                  <td class="triz-cm__mx-cell" :key="j" :class="mxCellClass(i, j, cell, model.improving, model.worsening)" :data-i-idx="paramId(i)" :data-j-idx="paramId(j)" :title="mxCellTitle(i, j, cell)" @click="mxCellClick($event)"><span x-text="mxCellContent(i, j, cell)"></span></td>
+                <template x-for="(cell, j) in row" :key="j">
+                  <td class="triz-cm__mx-cell" :class="mxCellClass(i, j, cell, model.improving, model.worsening)" :data-i-idx="paramId(i)" :data-j-idx="paramId(j)" :title="mxCellTitle(i, j, cell)" @click="mxCellClick($event)"><span x-text="mxCellContent(i, j, cell)"></span></td>
                 </template>
               </tr>
             </template>

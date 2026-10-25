@@ -23,8 +23,8 @@
           <select id="triz-sf-field" class="field" data-role="field"
             @change="fieldChanged($event)">
             <option value="" x-text="t('selectPlaceholder')"></option>
-            <template x-for="f in FIELDS">
-              <option :key="f" :value="f" :selected="isFieldSelected(f)" x-text="fieldOptionLabel(f)"></option>
+            <template x-for="f in FIELDS" :key="f">
+              <option :value="f" :selected="isFieldSelected(f)" x-text="fieldOptionLabel(f)"></option>
             </template>
           </select>
         </div>
@@ -33,8 +33,8 @@
           <select id="triz-sf-link" class="field" data-role="link"
             @change="linkChanged($event)">
             <option value="" x-text="t('selectPlaceholder')"></option>
-            <template x-for="l in LINKS">
-              <option :key="l" :value="l" :selected="isLinkSelected(l)" x-text="linkOptionLabel(l)"></option>
+            <template x-for="l in LINKS" :key="l">
+              <option :value="l" :selected="isLinkSelected(l)" x-text="linkOptionLabel(l)"></option>
             </template>
           </select>
         </div>
@@ -88,8 +88,8 @@
         <span data-help-key="modules.triz-sufield.types.Diagnosis.situation" x-text="situationLabel(diagSituation())"></span>
         <span class="triz-sf__diagnosis-classes">
           <span data-help-key="modules.triz-sufield.types.Diagnosis.suggestedClasses" x-text="suggestedClassesLabel()"></span>
-          <template x-for="c in suggestedClassList()">
-            <code :key="c" x-text="c"></code>
+          <template x-for="(c, i) in suggestedClassList()" :key="c + ':' + i">
+            <code x-text="c"></code>
           </template>
         </span>
       </div>
@@ -119,9 +119,8 @@
     <!-- ── Standards ── -->
     <p class="triz-sf__loading" x-show="!standards" x-text="t('loading')"></p>
     <section class="triz-sf__standards" x-show="standards">
-      <template x-for="cls in classList">
+      <template x-for="cls in classList" :key="cls.key">
         <details class="triz-sf__class"
-          :key="cls.key"
           x-show="cls.visible"
           :data-class="cls.key"
           :open="cls.open"
@@ -134,9 +133,8 @@
           </summary>
           <p class="triz-sf__class-desc" x-text="classDesc(cls.key)"></p>
           <ul class="triz-sf__standard-list">
-            <template x-for="s in cls.standards">
+            <template x-for="s in cls.standards" :key="s.id">
               <li class="triz-sf__standard"
-                :key="s.id"
                 :class="standardSelectedClass(s)"
                 :data-id="s.id">
                 <details>

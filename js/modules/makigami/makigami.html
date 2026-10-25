@@ -44,8 +44,8 @@
             </tr>
           </thead>
           <tbody>
-            <template x-for="cat in model.mudaCategories">
-              <tr class="makigami__settings-row" :data-muda-id="cat.id" :key="cat.id">
+            <template x-for="cat in model.mudaCategories" :key="cat.id">
+              <tr class="makigami__settings-row" :data-muda-id="cat.id">
                 <td>
                   <input
                     type="text"
@@ -112,8 +112,8 @@
             </tr>
           </thead>
           <tbody>
-            <template x-for="unit in model.timeUnits">
-              <tr class="makigami__settings-row" :data-unit-id="unit.id" :key="unit.id">
+            <template x-for="unit in model.timeUnits" :key="unit.id">
+              <tr class="makigami__settings-row" :data-unit-id="unit.id">
                 <td>
                   <input
                     type="text"
@@ -198,8 +198,8 @@
                   <span x-text="t('rolesHeaderCols')"></span>
                   <span class="icon icon--sm icon--text" data-icon="nav.arrow-right" aria-hidden="true"></span>
                 </th>
-                <template x-for="(step, i) in model.steps">
-                  <th class="makigami__matrix-step-head" scope="col" :data-step-id="step.id" :key="step.id"
+                <template x-for="(step, i) in model.steps" :key="step.id">
+                  <th class="makigami__matrix-step-head" scope="col" :data-step-id="step.id"
                     @dragstart="dragStartStep(step.id, $event)"
                     @dragend="dragEndStep($event)"
                     @dragover="dragOverStep(step.id, $event)"
@@ -242,8 +242,8 @@
               </tr>
             </thead>
             <tbody>
-              <template x-for="role in model.roles">
-                <tr :data-role-id="role.id" :key="role.id">
+              <template x-for="role in model.roles" :key="role.id">
+                <tr :data-role-id="role.id">
                   <th class="makigami__matrix-role-head" scope="row" :data-role-id="role.id"
                     @dragstart="dragStartRole(role.id, $event)"
                     @dragend="dragEndRole($event)"
@@ -276,8 +276,8 @@
                       </button>
                     </div>
                   </th>
-                  <template x-for="step in model.steps">
-                    <td class="makigami__matrix-cell" :data-role-id="role.id" :data-step-id="step.id" :key="step.id">
+                  <template x-for="step in model.steps" :key="step.id">
+                    <td class="makigami__matrix-cell" :data-role-id="role.id" :data-step-id="step.id">
                       <button
                         class="makigami__dot"
                         :class="stepHasRole(step, role.id) ? 'makigami__dot--active' : ''"
@@ -335,8 +335,8 @@
         <div class="makigami__empty" x-text="t('stepsEmpty')"></div>
       </template>
 
-      <template x-for="(step, idx) in model.steps">
-        <div class="makigami__card" :data-step-id="step.id" :data-expanded="cardExpanded(step) ? 'true' : 'false'" :key="step.id">
+      <template x-for="(step, idx) in model.steps" :key="step.id">
+        <div class="makigami__card" :data-step-id="step.id" :data-expanded="cardExpanded(step) ? 'true' : 'false'">
           <div class="makigami__card-head">
             <button
               class="makigami__card-toggle"
@@ -375,7 +375,7 @@
                 <template x-if="model.roles.length === 0">
                   <span class="makigami__chip-empty" x-text="t('cardRolesNone')"></span>
                 </template>
-                <template x-for="role in model.roles">
+                <template x-for="role in model.roles" :key="role.id">
                   <button
                     class="makigami__chip"
                     :class="stepHasRole(step, role.id) ? 'makigami__chip--active' : ''"
@@ -384,7 +384,6 @@
                     :data-step-id="step.id"
                     :aria-pressed="stepHasRole(step, role.id) ? 'true' : 'false'"
                     type="button"
-                    :key="role.id"
                     @click="toggleParticipation(step.id, role.id)">
                     <span class="makigami__chip-dot"></span>
                     <span class="makigami__chip-label" x-text="roleChipLabel(role)"></span>
@@ -434,7 +433,7 @@
                 <template x-if="model.mudaCategories.length === 0">
                   <span class="makigami__chip-empty" x-text="t('cardMudaNone')"></span>
                 </template>
-                <template x-for="cat in model.mudaCategories">
+                <template x-for="cat in model.mudaCategories" :key="cat.id">
                   <button
                     class="makigami__chip makigami__chip--muda"
                     :class="stepHasMuda(step, cat.id) ? 'makigami__chip--active' : ''"
@@ -445,7 +444,6 @@
                     :style="'--chip-color:' + cat.color"
                     :title="mudaLabel(cat)"
                     type="button"
-                    :key="cat.id"
                     @click="toggleMuda(step.id, cat.id)">
                     <span class="makigami__chip-dot"></span>
                     <template x-if="cat.code">

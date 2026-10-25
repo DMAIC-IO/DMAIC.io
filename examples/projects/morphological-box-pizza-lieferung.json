@@ -1,0 +1,64 @@
+{
+  "parameters": [
+    {
+      "id": "p-vehicle",
+      "name": "Lieferfahrzeug",
+      "options": [
+        { "id": "o-bike", "label": "E-Bike" },
+        { "id": "o-scooter", "label": "Motorroller" },
+        { "id": "o-car", "label": "Auto" }
+      ]
+    },
+    {
+      "id": "p-heat",
+      "name": "Warmhaltung",
+      "options": [
+        { "id": "o-thermo", "label": "Thermobox" },
+        { "id": "o-heated", "label": "Akku-Heizbox" },
+        { "id": "o-bag", "label": "Isoliertasche" }
+      ]
+    },
+    {
+      "id": "p-channel",
+      "name": "Bestellannahme",
+      "options": [
+        { "id": "o-phone", "label": "Telefon" },
+        { "id": "o-app", "label": "App" },
+        { "id": "o-web", "label": "Webshop" }
+      ]
+    },
+    {
+      "id": "p-radius",
+      "name": "Liefergebiet",
+      "options": [
+        { "id": "o-r3", "label": "3 km" },
+        { "id": "o-r6", "label": "6 km" },
+        { "id": "o-r10", "label": "10 km" }
+      ]
+    }
+  ],
+  "conflicts": [
+    ["o-bike", "o-heated"],
+    ["o-bike", "o-r10"],
+    ["o-bag", "o-r10"]
+  ],
+  "concepts": [
+    {
+      "id": "c-local",
+      "name": "Schnell im Kiez",
+      "picks": { "p-vehicle": "o-bike", "p-heat": "o-thermo", "p-channel": "o-app", "p-radius": "o-r3" }
+    },
+    {
+      "id": "c-wide",
+      "name": "Großes Gebiet",
+      "picks": { "p-vehicle": "o-car", "p-heat": "o-heated", "p-channel": "o-phone", "p-radius": "o-r10" }
+    },
+    {
+      "id": "c-cheap",
+      "name": "Günstig",
+      "picks": { "p-vehicle": "o-scooter", "p-heat": "o-bag", "p-channel": "o-web", "p-radius": "o-r10" }
+    }
+  ],
+  "activeConceptId": "c-local",
+  "view": "box"
+}

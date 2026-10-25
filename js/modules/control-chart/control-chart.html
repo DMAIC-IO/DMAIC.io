@@ -77,8 +77,8 @@
       <span class="control-chart__chevron icon icon--sm" :data-icon="nelsonCollapsed ? 'nav.expand-right' : 'nav.expand-down'" aria-hidden="true"></span>
     </div>
     <div class="field-checks" data-ref="nelson-panel" :class="nelsonPanelClass()">
-      <template x-for="rule in rulesView()">
-        <label class="field-check" :key="rule.id">
+      <template x-for="rule in rulesView()" :key="rule.id">
+        <label class="field-check">
           <input type="checkbox" :data-rule="rule.id" :checked="isRuleEnabled(rule.id)"
             @change="toggleRule(rule.id, $event)">
           <span>

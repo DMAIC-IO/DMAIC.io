@@ -61,9 +61,9 @@
       <template x-if="filteredLessons().length === 0">
         <div class="ll__empty" x-text="model.lessons.length === 0 ? '' : t('noResults')"></div>
       </template>
-      <template x-for="lesson in filteredLessons()">
+      <template x-for="lesson in filteredLessons()" :key="lesson.id">
         <div class="ll__card" :class="{ 'll__card--open': openCards.includes(lesson.id) }"
-          :data-lesson-id="lesson.id" :key="lesson.id">
+          :data-lesson-id="lesson.id">
           <div class="ll__card-head" data-action="toggle-card" @click="toggleCard(lesson.id)">
             <span class="ll__cat-dot" :class="'ll__cat-dot--' + lesson.category"></span>
             <div class="ll__card-content">

@@ -366,7 +366,7 @@ export class DmaicTiles {
       'scope', 'customer', 'team',             // Define
       'causes', 'flowcharts', 'statistics',    // Define / Measure / Analyze
       'msa', 'capability',                     // Measure
-      'plan', 'evaluate', 'optimize',          // Improve
+      'solutions', 'plan', 'evaluate', 'optimize', // Improve
       'charts',                                // Control
     ];
     const hasGroups = modules.some(m => m.group);

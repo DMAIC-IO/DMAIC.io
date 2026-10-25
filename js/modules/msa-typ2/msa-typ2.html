@@ -130,8 +130,8 @@
                 <th><span data-help-key="modules.msa-typ2.types.AnovaRow.ss">SS</span></th><th><span data-help-key="modules.msa-typ2.types.AnovaRow.df">df</span></th><th><span data-help-key="modules.msa-typ2.types.AnovaRow.ms">MS</span></th><th><span data-help-key="modules.msa-typ2.types.AnovaRow.f">F</span></th><th><span data-help-key="modules.msa-typ2.types.AnovaRow.pValue">p</span></th>
               </tr></thead>
               <tbody>
-                <template x-for="row in anovaRows()">
-                  <tr :key="row.key" :class="row.totalClass">
+                <template x-for="row in anovaRows()" :key="row.key">
+                  <tr :class="row.totalClass">
                     <td x-text="row.label"></td>
                     <td x-text="row.ss"></td>
                     <td x-text="row.df"></td>
@@ -162,8 +162,8 @@
                 </template>
               </tr></thead>
               <tbody>
-                <template x-for="row in varCompRows()">
-                  <tr :key="row.key" :class="row.totalClass">
+                <template x-for="row in varCompRows()" :key="row.key">
+                  <tr :class="row.totalClass">
                     <td x-text="row.label"></td>
                     <td x-text="row.variance"></td>
                     <td x-text="row.sigma"></td>

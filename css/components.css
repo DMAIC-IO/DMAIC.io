@@ -2336,6 +2336,13 @@ body.dmike-context-help-armed .context-help__btn {
   background: var(--color-modal-overlay);
 }
 
+/* Content dropped into the body slot gets the same inset as
+   .dmike-popout-message, so no caller has to bring its own. */
+.dialog__body { padding: var(--spacing-lg); }
+
+/* Settings run their tab bar edge to edge and pad tabs and body themselves. */
+.dialog__body:has(> .settings-panel__layout) { padding: 0; }
+
 .dialog__body:empty { display: none; }
 
 .dialog__footer-start:empty { display: none; }
@@ -2435,9 +2442,41 @@ body.dmike-context-help-armed .context-help__btn {
 .bug-editor { display: flex; flex-direction: column; gap: var(--spacing-xs); }
 .bug-editor__tools { display: flex; gap: var(--spacing-xs); }
 .bug-editor__tool[aria-pressed="true"] { color: var(--color-accent); background: var(--color-accent-light); }
-.bug-editor__stage { position: relative; width: fit-content; max-width: 100%; line-height: 0; border: 1px solid var(--color-border-primary); }
-.bug-editor__image { display: block; max-width: 100%; max-height: 60vh; width: auto; height: auto; user-select: none; }
+
+/* Width and height of stage and image are set by the editor: the image is
+   scaled and shifted so that the stage shows exactly the current crop. */
+.bug-editor__stage { position: relative; box-sizing: content-box; overflow: hidden; line-height: 0; border: 1px solid var(--color-border-primary); }
+.bug-editor__image { position: absolute; inset: 0 auto auto 0; display: block; max-width: none; user-select: none; }
 .bug-editor__canvas { position: absolute; inset: 0 auto auto 0; cursor: crosshair; touch-action: none; } /* stylelint-disable-line plugin/no-unsupported-browser-features -- only matters on touch screens; browsers without it ignore the declaration */
+.bug-editor--cropping .bug-editor__canvas { cursor: default; }
+
+/* Crop frame: the huge shadow dims everything outside it. */
+.bug-editor__crop {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px dashed var(--color-accent);
+  box-shadow: 0 0 0 100vmax var(--color-modal-overlay);
+}
+
+.bug-editor__crop[hidden] { display: none; }
+
+.bug-editor__crop-handle {
+  position: absolute;
+  border: 1px solid var(--color-bg-elevated);
+  border-radius: 3px;
+  background: var(--color-accent);
+  touch-action: none; /* stylelint-disable-line plugin/no-unsupported-browser-features -- only matters on touch screens; browsers without it ignore the declaration */
+}
+
+.bug-editor__crop-handle--left,
+.bug-editor__crop-handle--right { top: 50%; width: 8px; height: 32px; transform: translateY(-50%); cursor: ew-resize; }
+.bug-editor__crop-handle--left { left: -5px; }
+.bug-editor__crop-handle--right { right: -5px; }
+
+.bug-editor__crop-handle--top,
+.bug-editor__crop-handle--bottom { left: 50%; width: 32px; height: 8px; transform: translateX(-50%); cursor: ns-resize; }
+.bug-editor__crop-handle--top { top: -5px; }
+.bug-editor__crop-handle--bottom { bottom: -5px; }
 
 .bug-editor__textbox-input {
   position: absolute;

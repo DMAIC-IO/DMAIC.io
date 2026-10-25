@@ -2,8 +2,8 @@
   <p class="licenses-panel__subtitle" x-text="t('subtitle')"></p>
   <table class="licenses-panel__table">
     <tbody>
-      <template x-for="lib in libs">
-        <tr :key="lib.name" class="licenses-panel__row">
+      <template x-for="(lib, i) in libs" :key="lib.name + ':' + i">
+        <tr class="licenses-panel__row">
           <td class="licenses-panel__name" x-text="lib.name"></td>
           <td class="licenses-panel__version" x-text="lib.versionLabel"></td>
           <td class="licenses-panel__license">

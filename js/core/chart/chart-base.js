@@ -966,6 +966,24 @@ export default class ChartBase {
       yTick.ticks = this.config.yTicks.slice();
     }
 
+    // Exact range — `xExact` / `yExact` pin the axis to the bounds
+    // (configured xMin/xMax resp. yMin/yMax, else the data bounds) instead of
+    // the nice-rounded tick range, e.g. for fixed population ranges in
+    // teaching simulations. Ticks outside the range are dropped.
+    // Non-finite or non-increasing bounds (empty series, xMin === xMax) keep
+    // the normal nice-tick range.
+    const validBounds = (lo, hi) => Number.isFinite(lo) && Number.isFinite(hi) && hi > lo;
+    if (this.config.xExact && validBounds(bounds.xMin, bounds.xMax)) {
+      xTick.min = bounds.xMin;
+      xTick.max = bounds.xMax;
+      xTick.ticks = xTick.ticks.filter((t) => t >= bounds.xMin && t <= bounds.xMax);
+    }
+    if (this.config.yExact && validBounds(bounds.yMin, bounds.yMax)) {
+      yTick.min = bounds.yMin;
+      yTick.max = bounds.yMax;
+      yTick.ticks = yTick.ticks.filter((t) => t >= bounds.yMin && t <= bounds.yMax);
+    }
+
     const xScale = linearScale(xTick.min, xTick.max, pa.x, pa.x + pa.w);
     const yScale = linearScale(yTick.min, yTick.max, pa.y + pa.h, pa.y);
 

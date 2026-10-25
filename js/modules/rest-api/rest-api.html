@@ -10,8 +10,8 @@
         </button>
       </div>
       <div class="rest-api__list">
-        <template x-for="ep in model.endpoints">
-          <div :key="ep.id"
+        <template x-for="ep in model.endpoints" :key="ep.id">
+          <div
             class="rest-api__list-item"
             :class="ep.id === model.activeId ? 'rest-api__list-item--active' : ''"
             :data-id="ep.id"
@@ -57,8 +57,8 @@
               </button>
             </div>
             <div class="rest-api__headers-list" data-ref="headers">
-              <template x-for="(h, i) in model.activeEndpoint().headers">
-                <div class="rest-api__header-row" :key="i" :data-idx="i">
+              <template x-for="(h, i) in model.activeEndpoint().headers" :key="i">
+                <div class="rest-api__header-row" :data-idx="i">
                   <input class="field rest-api__header-key" :value="h.key" @input="setHeader(i, $event.target.value, h.value)" :placeholder="t('headerKeyPlaceholder')" :aria-label="t('headerKeyPlaceholder')">
                   <input class="field rest-api__header-val" :value="h.value" @input="setHeader(i, h.key, $event.target.value)" :placeholder="t('headerValuePlaceholder')" :aria-label="t('headerValuePlaceholder')">
                   <button class="rest-api__header-del" :data-hdr-del="i" :title="t('delete')" :aria-label="t('delete')" @click="deleteHeader(i)">&times;</button>
@@ -87,8 +87,8 @@
               </template>
             </div>
             <div class="rest-api__mappings-list" data-ref="mappings">
-              <template x-for="(m, i) in model.activeEndpoint().mappings">
-                <div class="rest-api__mapping-row" :key="i" :data-midx="i">
+              <template x-for="(m, i) in model.activeEndpoint().mappings" :key="i">
+                <div class="rest-api__mapping-row" :data-midx="i">
                   <input class="field rest-api__mapping-path" @input="onMappingPath(i, $event)" :value="m.jsonPath"
                     :placeholder="t('jsonPathPlaceholder')" :aria-label="t('jsonPathPlaceholder')">
                   <span class="rest-api__mapping-arrow">&rarr;</span>

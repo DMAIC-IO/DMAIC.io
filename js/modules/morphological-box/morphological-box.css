@@ -1,0 +1,320 @@
+/* D.Mike — Morphological Box Module */
+
+.morphological-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.morphological-box__empty,
+.morphological-box__concepts-empty {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+}
+
+/* ── Box view ─────────────────────────────────────────────── */
+
+.morphological-box__layout {
+  display: flex;
+  gap: var(--spacing-lg);
+  align-items: flex-start;
+}
+
+/* One track as wide as the longest row, so the heading spans all options. */
+.morphological-box__grid {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: max-content;
+  gap: var(--spacing-xs);
+  overflow-x: auto;
+}
+
+.morphological-box__head {
+  display: flex;
+  gap: var(--spacing-xs);
+  font-weight: 600;
+}
+
+/* Heading cells share the cell shape but carry the accent to read as headings. */
+.morphological-box__head-param,
+.morphological-box__head-options,
+.morphological-box__concepts-title {
+  padding: var(--spacing-xs);
+  text-align: center;
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--border-radius-sm);
+}
+
+.morphological-box__head-param {
+  flex: 0 0 180px;
+}
+
+.morphological-box__head-options {
+  flex: 1;
+}
+
+.morphological-box__row {
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: stretch;
+}
+
+.morphological-box__param {
+  position: relative;
+  flex: 0 0 180px;
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-xs);
+  background: var(--color-bg-tertiary);
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+}
+
+.morphological-box__param-input {
+  width: 100%;
+  font-weight: 600;
+}
+
+.morphological-box__option {
+  flex: 0 0 160px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xs);
+  padding: var(--spacing-xs);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+}
+
+.morphological-box__option--picked {
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+
+.morphological-box__option--blocked {
+  opacity: 0.5;
+  border-style: dashed;
+}
+
+.morphological-box__option-input {
+  width: 100%;
+}
+
+.morphological-box__option-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2xs);
+}
+
+.morphological-box__pick {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--color-border-primary);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+}
+
+.morphological-box__pick[aria-pressed="true"] {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+.morphological-box__pick:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.morphological-box__markers {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2xs);
+}
+
+.morphological-box__marker {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: currentcolor;
+}
+
+.morphological-box__color--c1 { color: var(--color-chart-1); }
+.morphological-box__color--c2 { color: var(--color-chart-2); }
+.morphological-box__color--c3 { color: var(--color-chart-3); }
+.morphological-box__color--c4 { color: var(--color-chart-4); }
+.morphological-box__color--c5 { color: var(--color-chart-5); }
+.morphological-box__color--c6 { color: var(--color-chart-6); }
+.morphological-box__color--c7 { color: var(--color-chart-7); }
+.morphological-box__color--c8 { color: var(--color-chart-8); }
+
+.morphological-box__add-option {
+  align-self: center;
+}
+
+.morphological-box__add-row {
+  display: flex;
+  justify-content: center;
+  width: 180px;
+}
+
+.morphological-box__add-row--concept {
+  width: auto;
+}
+
+/* ── Concept list ─────────────────────────────────────────── */
+
+.morphological-box__concepts {
+  flex: 0 0 260px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.morphological-box__concepts-title {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.morphological-box__concept {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xs);
+  padding: var(--spacing-xs);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-secondary);
+}
+
+.morphological-box__concept--active {
+  border-color: var(--color-accent);
+}
+
+.morphological-box__concept-head {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.morphological-box__concept-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.morphological-box__concept-status {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.morphological-box__concept-status--complete {
+  color: var(--color-success-text);
+}
+
+.morphological-box__concept-status--conflict,
+.morphological-box__concept-conflict {
+  color: var(--color-error);
+  font-size: var(--font-size-xs);
+}
+
+/* ── Consistency matrix ───────────────────────────────────── */
+
+.morphological-box__matrix-scroll {
+  overflow-x: auto;
+}
+
+.morphological-box__matrix-hint {
+  margin: 0 0 var(--spacing-sm);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.morphological-box__matrix {
+  width: auto;
+}
+
+/*
+ * The matrix borrows the box view's look: accent headings, a bold parameter
+ * column and framed option cells. Selectors repeat the table class so they
+ * outrank the generic .dmike-table rules.
+ */
+.morphological-box__matrix .morphological-box__matrix-corner,
+.morphological-box__matrix .morphological-box__matrix-colgroup,
+.morphological-box__matrix .morphological-box__matrix-col {
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  border: 1px solid var(--color-accent);
+  font-weight: 600;
+  text-align: center;
+}
+
+.morphological-box__matrix .morphological-box__matrix-corner {
+  vertical-align: bottom;
+}
+
+.morphological-box__matrix .morphological-box__matrix-col {
+  vertical-align: bottom;
+  white-space: nowrap;
+  font-weight: 400;
+  border-top-color: var(--color-text-inverse);
+}
+
+.morphological-box__matrix-col-text {
+  display: inline-block;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.morphological-box__matrix .morphological-box__matrix-param {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  font-weight: 600;
+  white-space: nowrap;
+  vertical-align: middle;
+  border: 1px solid var(--color-border-secondary);
+}
+
+.morphological-box__matrix .morphological-box__matrix-rowhead {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  font-weight: 400;
+  white-space: nowrap;
+  border: 1px solid var(--color-border-secondary);
+}
+
+.morphological-box__matrix .morphological-box__matrix-cell {
+  text-align: center;
+  border: 1px solid var(--color-border-secondary);
+}
+
+/* .dmike-table drops the bottom rule of its last row; the framed matrix keeps it. */
+.morphological-box__matrix.dmike-table tbody tr:last-child > * {
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.morphological-box__matrix .morphological-box__matrix-cell--void {
+  background: var(--color-bg-tertiary);
+}
+
+/* A new parameter opens with a heavier rule, like the gap between box rows. */
+.morphological-box__matrix .morphological-box__matrix-row--group > * {
+  border-top: 2px solid var(--color-border-primary);
+}
+
+.morphological-box__matrix .morphological-box__matrix-col--group {
+  border-left: 2px solid var(--color-border-primary);
+}
+
+.morphological-box__matrix .morphological-box__matrix-col.morphological-box__matrix-col--group {
+  border-left-color: var(--color-text-inverse);
+}

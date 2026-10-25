@@ -22,9 +22,8 @@
           <div class="doe__timeline">
             <h4 class="doe__timeline-title" x-text="t('phaseHistory')"></h4>
             <div class="doe__timeline-track">
-              <template x-for="(ph, idx) in model.projectPhases">
-                <button class="doe__timeline-item" :class="timelineItemClass(idx)"
-                        :key="idx" :data-phase-idx="idx" type="button" @click="viewPhase(idx)">
+              <template x-for="(ph, idx) in model.projectPhases" :key="idx">
+                <button class="doe__timeline-item" :class="timelineItemClass(idx)" :data-phase-idx="idx" type="button" @click="viewPhase(idx)">
                   <span class="doe__timeline-num" x-text="ph.cycleNumber"></span>
                   <span class="doe__timeline-label" x-text="phaseLabel(ph)"></span>
                   <template x-if="phaseDecIcon(ph)">
@@ -59,8 +58,8 @@
                 <th x-text="t('evopSignificant')"></th>
               </tr></thead>
               <tbody>
-                <template x-for="(e, ei) in evopSummary().effects">
-                  <tr :key="ei" :class="e.significant ? 'doe__evop-sig' : ''">
+                <template x-for="(e, ei) in evopSummary().effects" :key="ei">
+                  <tr :class="e.significant ? 'doe__evop-sig' : ''">
                     <td x-text="e.term"></td>
                     <td x-text="fmt4(e.cumulativeEffect)"></td>
                     <td x-text="evopErrorLimit(e)"></td>
@@ -93,8 +92,8 @@
     <!-- ── Factors section ────────────────────────────────────── -->
     <div class="dmike-split__section-title" x-text="t('stepFactors')"></div>
     <div class="doe__factors-list">
-      <template x-for="(f, fi) in model.factors">
-        <div class="doe__factor-row" :key="f.id" :data-factor-id="f.id" :data-factor-kind="factorKind(f)">
+      <template x-for="(f, fi) in model.factors" :key="f.id">
+        <div class="doe__factor-row" :data-factor-id="f.id" :data-factor-kind="factorKind(f)">
           <div class="doe__factor-top">
             <span class="doe__factor-letter" x-text="factorLetter(fi)"></span>
             <input type="text" class="field doe__factor-name" :data-factor-id="f.id"
@@ -118,8 +117,8 @@
             <button class="doe__insert-level-btn" type="button"
                     :data-factor-id="f.id" data-insert-at="0"
                     :title="t('insertLevel')" @click="insertLevel(f.id, 0)">+</button>
-            <template x-for="(val, li) in f.levels">
-              <div class="doe__level-frag" :key="li">
+            <template x-for="(val, li) in f.levels" :key="li">
+              <div class="doe__level-frag">
                 <div class="doe__level-chip">
                   <span class="doe__level-num" x-text="li + 1"></span>
                   <input type="text" class="field doe__factor-level-input"
@@ -146,8 +145,8 @@
     <!-- ── Responses section ──────────────────────────────────── -->
     <div class="dmike-split__section-title" x-text="t('stepResponses')"></div>
     <div class="doe__responses-list">
-      <template x-for="(r, ri) in model.responses">
-        <div class="doe__response-row" :key="ri" :data-response-idx="ri">
+      <template x-for="(r, ri) in model.responses" :key="ri">
+        <div class="doe__response-row" :data-response-idx="ri">
           <div class="doe__response-top">
             <span class="doe__response-letter" x-text="responseLetter(ri)"></span>
             <input type="text" class="field doe__response-name" :data-idx="ri"
@@ -180,8 +179,8 @@
     </template>
 
     <div class="doe__design-options">
-      <template x-for="dt in designTypes">
-        <button class="doe__design-opt" :key="dt.key"
+      <template x-for="dt in designTypes" :key="dt.key">
+        <button class="doe__design-opt"
                 :class="designOptClass(dt)" :data-type="dt.key" type="button"
                 :disabled="designOptDisabled(dt)" :title="designOptTip(dt)"
                 @click="selectDesignType(dt.key)">
@@ -218,17 +217,17 @@
               </tr>
               <tr>
                 <th class="doe__res-corner"></th>
-                <template x-for="k in kRange">
-                  <th :key="k" :class="k === model.factors.length ? 'doe__res-col--active' : 'doe__res-col--inactive'" x-text="k"></th>
+                <template x-for="k in kRange" :key="k">
+                  <th :class="k === model.factors.length ? 'doe__res-col--active' : 'doe__res-col--inactive'" x-text="k"></th>
                 </template>
               </tr>
             </thead>
             <tbody>
-              <template x-for="runs in allRuns">
-                <tr :key="runs">
+              <template x-for="runs in allRuns" :key="runs">
+                <tr>
                   <td class="doe__res-run-label" x-text="runs"></td>
-                  <template x-for="k in kRange">
-                    <td :key="k">
+                  <template x-for="k in kRange" :key="k">
+                    <td>
                       <span class="doe__res-cell"
                             :class="resCellClass(k, runs)"
                             :data-k="resCellData(k, runs, 'k')"
@@ -251,16 +250,16 @@
             <template x-if="resAliasDetail().generators.length">
               <div class="doe__res-alias-section">
                 <span class="doe__res-alias-label" x-text="t('generators') + ':'"></span>
-                <template x-for="(g, gi) in resAliasDetail().generators">
-                  <code class="doe__res-alias-code" :key="gi" x-text="g"></code>
+                <template x-for="(g, gi) in resAliasDetail().generators" :key="gi">
+                  <code class="doe__res-alias-code" x-text="g"></code>
                 </template>
               </div>
             </template>
             <template x-if="resAliasDetail().defining.length">
               <div class="doe__res-alias-section">
                 <span class="doe__res-alias-label" x-text="t('definingRelation') + ':'"></span>
-                <template x-for="(w, wi) in resAliasDetail().defining">
-                  <code class="doe__res-alias-code" :key="wi" x-text="w"></code>
+                <template x-for="(w, wi) in resAliasDetail().defining" :key="wi">
+                  <code class="doe__res-alias-code" x-text="w"></code>
                 </template>
               </div>
             </template>
@@ -268,8 +267,8 @@
               <table class="doe__res-alias-table">
                 <thead><tr><th x-text="t('term')"></th><th x-text="t('aliasedWith')"></th></tr></thead>
                 <tbody>
-                  <template x-for="(a, ai) in resAliasDetail().aliases">
-                    <tr :key="ai">
+                  <template x-for="(a, ai) in resAliasDetail().aliases" :key="ai">
+                    <tr>
                       <td><code x-text="a.term"></code></td>
                       <td x-text="a.aliasedWith"></td>
                     </tr>
@@ -302,9 +301,8 @@
         <table class="doe__pb-table">
           <thead><tr><th></th><th x-text="t('factors')"></th><th x-text="t('runs')"></th></tr></thead>
           <tbody>
-            <template x-for="(d, di) in pbDesigns">
-              <tr class="doe__pb-row" :class="model.selectedPBIdx === di ? 'doe__pb-row--selected' : ''"
-                  :key="di" :data-idx="di" @click="selectPB(di)">
+            <template x-for="(d, di) in pbDesigns" :key="di">
+              <tr class="doe__pb-row" :class="model.selectedPBIdx === di ? 'doe__pb-row--selected' : ''" :data-idx="di" @click="selectPB(di)">
                 <td><span class="doe__pb-radio"></span></td>
                 <td x-text="d.label"></td>
                 <td x-text="d.runs"></td>
@@ -344,9 +342,8 @@
               <th x-text="'max. ' + t('factors')"></th>
             </tr></thead>
             <tbody>
-              <template x-for="oa in taguchiCandidatesList()">
-                <tr class="doe__taguchi-row" :class="taguchiSelected() === oa.name ? 'doe__taguchi-row--selected' : ''"
-                    :key="oa.name" :data-oa="oa.name" @click="selectTaguchi(oa.name)">
+              <template x-for="(oa, i) in taguchiCandidatesList()" :key="oa.name + ':' + i">
+                <tr class="doe__taguchi-row" :class="taguchiSelected() === oa.name ? 'doe__taguchi-row--selected' : ''" :data-oa="oa.name" @click="selectTaguchi(oa.name)">
                   <td><span class="doe__taguchi-radio"></span></td>
                   <td><strong x-text="oa.name"></strong></td>
                   <td x-text="oa.runs"></td>
@@ -380,9 +377,8 @@
             <div class="doe__term-list-label" x-text="t('modelTerms')"></div>
             <div class="doe__term-list-hint" x-text="t('modelTermsHintHier')"></div>
             <div class="doe__term-list">
-              <template x-for="(g, gi) in termGroups()">
-                <div class="doe__term-group" :class="termGroupExpanded(gi, g) ? 'doe__term-group--open' : ''"
-                     :key="gi" :data-group-idx="gi">
+              <template x-for="(g, gi) in termGroups()" :key="gi">
+                <div class="doe__term-group" :class="termGroupExpanded(gi, g) ? 'doe__term-group--open' : ''" :data-group-idx="gi">
                   <button type="button" class="doe__term-group-header" :data-group-idx="gi" @click="toggleTermGroup(gi)">
                     <span class="doe__term-group-arrow" x-text="termGroupExpanded(gi, g) ? '▾' : '▸'"></span>
                     <span class="doe__term-group-title" x-text="termGroupTitle(g)"></span>
@@ -391,8 +387,8 @@
                   <div class="doe__term-group-body">
                     <template x-if="termGroupExpanded(gi, g)">
                       <div class="doe__term-group-items">
-                        <template x-for="id in g.ids">
-                          <label class="doe__term-chip" :class="termChipClass(g, id)" :key="id">
+                        <template x-for="id in g.ids" :key="id">
+                          <label class="doe__term-chip" :class="termChipClass(g, id)">
                             <input type="checkbox" class="doe__term-check"
                                    :data-term-id="id" :checked="termActive(id)"
                                    :disabled="g.kind === 'main'" @change="toggleTerm(id, $event)" />
@@ -416,8 +412,8 @@
             <template x-if="forbiddenList().length === 0">
               <li class="doe__forbidden-empty" x-text="t('forbiddenEmpty')"></li>
             </template>
-            <template x-for="(rule, ri) in forbiddenList()">
-              <li class="doe__forbidden-row" :key="ri" :data-rule-idx="ri">
+            <template x-for="(rule, ri) in forbiddenList()" :key="ri">
+              <li class="doe__forbidden-row" :data-rule-idx="ri">
                 <span class="doe__forbidden-rule" x-text="forbiddenRuleText(rule)"></span>
                 <button type="button" class="doe__forbidden-remove-btn"
                         :data-rule-idx="ri" :title="t('forbiddenRemoveTitle')"
@@ -426,13 +422,13 @@
             </template>
           </ul>
           <div class="doe__forbidden-add" :data-factor-count="model.factors.length">
-            <template x-for="(f, fi) in model.factors">
-              <label class="doe__forbidden-factor" :key="f.id">
+            <template x-for="(f, fi) in model.factors" :key="f.id">
+              <label class="doe__forbidden-factor">
                 <span class="doe__forbidden-factor-name" x-text="factorDisplayName(f, fi)"></span>
                 <select class="doe__forbidden-input" :data-factor-idx="fi">
                   <option value="" x-text="t('forbiddenAny')"></option>
-                  <template x-for="(lv, li) in f.levels">
-                    <option :key="li" :value="forbiddenCoded(f, li)" x-text="lv"></option>
+                  <template x-for="(lv, li) in f.levels" :key="li">
+                    <option :value="forbiddenCoded(f, li)" x-text="lv"></option>
                   </template>
                 </select>
               </label>
@@ -452,8 +448,8 @@
           <div class="doe__source-hint" x-text="t('sourceHint')"></div>
           <select class="field doe__source-select" @change="sourceWorksheetChanged($event)">
             <option value="" :selected="!model.sourceWorksheet" x-text="t('sourceNone')"></option>
-            <template x-for="s in sourceWorksheetOptions()">
-              <option :key="s.key" :value="s.key" :selected="s.key === sourceWorksheetKey()" x-text="s.label"></option>
+            <template x-for="(s, i) in sourceWorksheetOptions()" :key="s.key + ':' + i">
+              <option :value="s.key" :selected="s.key === sourceWorksheetKey()" x-text="s.label"></option>
             </template>
           </select>
           <template x-if="sourceMappingStatus()">
@@ -577,6 +573,20 @@
                 </button>
               </div>
             </template>
+            <template x-if="showPhaseDecision()">
+              <div class="doe__phase-decision">
+                <div class="doe__phase-decision-title" x-text="t('decisionTitle')"></div>
+                <div class="doe__phase-decision-hint" x-text="t('decisionDesc')"></div>
+                <div class="doe__phase-decision-actions">
+                  <button class="btn btn--primary doe__phase-decision-btn" type="button" data-decision="recenter"
+                          @click="completePhase('recenter')" x-text="t('decisionRecenter')"></button>
+                  <button class="btn btn--secondary doe__phase-decision-btn" type="button" data-decision="repeat"
+                          @click="completePhase('repeat')" x-text="t('decisionRepeat')"></button>
+                  <button class="btn btn--secondary doe__phase-decision-btn" type="button" data-decision="stop"
+                          @click="completePhase('stop')" x-text="t('decisionStop')"></button>
+                </div>
+              </div>
+            </template>
             <template x-if="model.isOptimalType()">
               <div class="doe__augment-section">
                 <div class="doe__augment-title" x-text="t('augmentSectionTitle')"></div>
@@ -624,8 +634,8 @@
                 <div class="doe__eval-section">
                   <h4 class="doe__eval-heading" x-text="t('efficiencyTitle')"></h4>
                   <div class="dmike-kpi-strip">
-                    <template x-for="(c, ci) in effCards()">
-                      <div class="dmike-kpi" :class="c.cls" :key="ci">
+                    <template x-for="(c, ci) in effCards()" :key="ci">
+                      <div class="dmike-kpi" :class="c.cls">
                         <div class="dmike-kpi-label">
                           <span :data-help-key="c.helpKey" x-text="c.label"></span>
                           <button class="doe__algo-link" :data-algo-id="c.algoId" type="button" @click="algoNavigate(c.algoId, $event)">
@@ -661,8 +671,8 @@
                         <table class="doe__vif-table">
                           <thead><tr><th x-text="t('mainEffects')"></th><th>VIF</th></tr></thead>
                           <tbody>
-                            <template x-for="(v, vi) in vifMain()">
-                              <tr :key="vi" :class="vifRating(v.vif)"><td x-text="v.term"></td><td x-text="fmt2(v.vif)"></td></tr>
+                            <template x-for="(v, vi) in vifMain()" :key="vi">
+                              <tr :class="vifRating(v.vif)"><td x-text="v.term"></td><td x-text="fmt2(v.vif)"></td></tr>
                             </template>
                           </tbody>
                         </table>
@@ -671,8 +681,8 @@
                         <table class="doe__vif-table">
                           <thead><tr><th x-text="t('interactions')"></th><th>VIF</th></tr></thead>
                           <tbody>
-                            <template x-for="(v, vi) in vifInter()">
-                              <tr :key="vi" :class="vifRating(v.vif)"><td x-text="v.term"></td><td x-text="fmt2(v.vif)"></td></tr>
+                            <template x-for="(v, vi) in vifInter()" :key="vi">
+                              <tr :class="vifRating(v.vif)"><td x-text="v.term"></td><td x-text="fmt2(v.vif)"></td></tr>
                             </template>
                           </tbody>
                         </table>
@@ -690,8 +700,8 @@
                     <template x-if="aliasGenerators().length">
                       <div class="doe__alias-gens">
                         <span class="doe__alias-gen-label" x-text="t('generators') + ':'"></span>
-                        <template x-for="(g, gi) in aliasGenerators()">
-                          <code class="doe__alias-gen" :key="gi" x-text="g"></code>
+                        <template x-for="(g, gi) in aliasGenerators()" :key="gi">
+                          <code class="doe__alias-gen" x-text="g"></code>
                         </template>
                       </div>
                     </template>
@@ -699,8 +709,8 @@
                       <table class="doe__alias-table">
                         <thead><tr><th x-text="t('term')"></th><th x-text="t('aliasedWith')"></th></tr></thead>
                         <tbody>
-                          <template x-for="(a, ai) in aliasRows()">
-                            <tr :key="ai">
+                          <template x-for="(a, ai) in aliasRows()" :key="ai">
+                            <tr>
                               <td><code x-text="a.term"></code></td>
                               <td x-text="a.aliasedWith"></td>
                             </tr>
@@ -725,8 +735,8 @@
                     <table class="doe__power-table">
                       <thead><tr><th x-text="t('effectSize')"></th><th x-text="t('power')"></th><th></th></tr></thead>
                       <tbody>
-                        <template x-for="(row, pi) in powerRows()">
-                          <tr :key="pi" :class="powerRating(row.power)">
+                        <template x-for="(row, pi) in powerRows()" :key="pi">
+                          <tr :class="powerRating(row.power)">
                             <td x-text="row.effectSize"></td>
                             <td x-text="powerPct(row.power)"></td>
                             <td><div class="doe__power-bar"><div class="doe__power-bar-fill" :style="'width:' + powerBarWidth(row.power) + '%'"></div></div></td>
@@ -770,8 +780,8 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <template x-for="(g, gi) in dispersion().groups">
-                          <tr :key="gi">
+                        <template x-for="(g, gi) in dispersion().groups" :key="gi">
+                          <tr>
                             <td x-text="g.point"></td>
                             <td x-text="g.n"></td>
                             <td x-text="fmt4(g.mean)"></td>
@@ -786,8 +796,8 @@
                       <p class="doe__eval-note" x-text="t('dispersionZeroVar', { n: dispersion().zeroVarPoints })"></p>
                     </template>
                     <div class="doe__dispersion-models">
-                      <template x-for="(m, mi) in dispersionModels()">
-                        <div class="doe__dispersion-model" :key="mi">
+                      <template x-for="(m, mi) in dispersionModels()" :key="mi">
+                        <div class="doe__dispersion-model">
                           <h5 class="doe__dispersion-model-title" x-text="m.title"></h5>
                           <template x-if="!m.fitted">
                             <p class="doe__eval-note" x-text="t('dispersionModelNotFitted')"></p>
@@ -805,8 +815,8 @@
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  <template x-for="(c, ci) in m.rows">
-                                    <tr :key="ci" :class="c.significant ? 'doe__dispersion-sig' : ''">
+                                  <template x-for="(c, ci) in m.rows" :key="ci">
+                                    <tr :class="c.significant ? 'doe__dispersion-sig' : ''">
                                       <td x-text="c.term"></td>
                                       <td x-text="fmt4(c.coefficient)"></td>
                                       <td x-text="fmt4(c.effect)"></td>
@@ -829,8 +839,8 @@
                         </template>
                         <template x-if="!dispersionConclusion().none">
                           <ul>
-                            <template x-for="(item, ii) in dispersionConclusion().items">
-                              <li :key="ii" x-text="item"></li>
+                            <template x-for="(item, ii) in dispersionConclusion().items" :key="ii">
+                              <li x-text="item"></li>
                             </template>
                           </ul>
                         </template>

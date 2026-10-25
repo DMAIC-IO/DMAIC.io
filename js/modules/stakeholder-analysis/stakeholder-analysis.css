@@ -541,11 +541,7 @@
   line-height: 1.5;
 }
 
-/* ===== Add/edit form (shown in a form dialog) ===== */
-.sha__form {
-  padding: var(--spacing-lg);
-}
-
+/* ===== Add/edit form (shown in a form dialog, which supplies the padding) ===== */
 .sha__form-group {
   margin-bottom: var(--spacing-md);
 }

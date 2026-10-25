@@ -35,6 +35,7 @@ Aktueller Stand:
 | v1.2.0_single_project.json      | 1        | 11              |
 | v1.3.0_single_project.json      | 1        | 11              |
 | v1.4.0_single_project.json      | 1        | 11              |
+| v1.5.0_single_project.json      | 1        | 11              |
 
 Die v0.3-Fixtures decken zusammen **alle produktiven Module** aus
 `js/modules/manifest.js` mindestens einmal ab. Wenn ein neues Modul hinzukommt,
@@ -80,6 +81,12 @@ Bonett-Varianztests, Welch-ANOVA, Poisson-Raten, McNemar, Äquivalenz); der
 Modulzustand wächst nur additiv, fehlende Felder bekommen beim Laden ihren
 Standardwert. Deshalb gibt es keinen Migrationsschritt `1.3→1.4`, und die
 Fixture ist inhaltsgleich mit der v1.3-Fixture.
+
+Die v1.5-Fixture zieht die 1.5-Linie nach. 1.5 bringt mit dem
+Morphologischen Kasten ein neues Modul; der Modulzustand wächst nur
+additiv, fehlende Felder bekommen beim Laden ihren Standardwert. Deshalb
+gibt es keinen Migrationsschritt `1.4→1.5`, und die Fixture ist
+inhaltsgleich mit der v1.4-Fixture.
 
 ## Pflicht beim Release
 

@@ -14,11 +14,11 @@
             <div class="corr__hint" x-text="t('noNumericColumns')"></div>
           </template>
 
-          <template x-for="group in colGroups()">
-            <div class="corr__col-group" :key="group.sheetName">
+          <template x-for="(group, j) in colGroups()" :key="group.sheetName + ':' + j">
+            <div class="corr__col-group">
               <div class="corr__col-group-label" x-text="group.sheetName"></div>
-              <template x-for="col in group.columns">
-                <label class="corr__col-item" :key="colKey(col)">
+              <template x-for="(col, i) in group.columns" :key="colKey(col) + ':' + i">
+                <label class="corr__col-item">
                   <input type="checkbox" :data-col-key="colKey(col)"
                     :checked="model.isSelected(col)"
                     @change="toggleColumn(col)">
@@ -56,13 +56,13 @@
         <template x-if="mode() === 'pairwise'">
           <div>
             <div class="corr__cards">
-              <template x-for="card in cards">
-                <div class="corr__card" :class="card.recClass" :key="card.method">
+              <template x-for="(card, i) in cards" :key="card.method + ':' + i">
+                <div class="corr__card" :class="card.recClass">
                   <span class="result-card__badge">
                     <span x-text="t('recommended')"></span>
                     <span class="result-card__tooltip">
-                      <template x-for="(line, li) in recTooltipLines">
-                        <span :key="li" style="display:block">
+                      <template x-for="(line, li) in recTooltipLines" :key="li">
+                        <span style="display:block">
                           <span class="icon icon--sm icon--text" :data-icon="line.iconName" aria-hidden="true" x-show="line.iconName"></span>
                           <span x-text="line.text"></span>
                         </span>
@@ -75,8 +75,8 @@
                     <div class="corr__interpret-tag"
                       :style="'background:' + card.color + '15;color:' + card.color"
                       x-text="card.interp"></div>
-                    <template x-for="(srow, si) in card.stats">
-                      <div class="corr__card-row" :key="si">
+                    <template x-for="(srow, si) in card.stats" :key="si">
+                      <div class="corr__card-row">
                         <span :data-help-key="srow.help" x-text="srow.label"></span><span x-text="srow.value"></span>
                       </div>
                     </template>
@@ -101,11 +101,11 @@
 
             <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionStats')"></span></div>
             <div class="corr__stats-grid">
-              <template x-for="grp in statGroups">
-                <div class="corr__stats-card" :key="grp.title">
+              <template x-for="(grp, i) in statGroups" :key="grp.title + ':' + i">
+                <div class="corr__stats-card">
                   <div class="corr__stats-title" x-text="grp.title"></div>
-                  <template x-for="(row, ri) in grp.rows">
-                    <div class="corr__stat-row" :key="ri">
+                  <template x-for="(row, ri) in grp.rows" :key="ri">
+                    <div class="corr__stat-row">
                       <span :data-help-key="row.help" x-text="row.label"></span>
                       <span :style="row.style" x-text="row.value"></span>
                     </div>
@@ -122,8 +122,8 @@
             <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.correlation.types.MatrixResult.matrix" x-text="t('sectionMatrix')"></span></div>
             <div class="corr__matrix-toolbar">
               <div class="btn-group corr__matrix-toggle" data-help-key="modules.correlation.types.Params.matrixMethod">
-                <template x-for="opt in methodOptions()">
-                  <button class="btn--segment corr__toggle-btn" :key="opt.value" :data-method="opt.value"
+                <template x-for="opt in methodOptions()" :key="opt.value">
+                  <button class="btn--segment corr__toggle-btn" :data-method="opt.value"
                     :class="model.matrixMethod === opt.value ? 'btn--active' : ''"
                     @click="setMethod(opt.value)" x-text="opt.label"></button>
                 </template>
@@ -152,21 +152,21 @@
                 <thead>
                   <tr>
                     <th></th>
-                    <template x-for="(name, j) in matrixView.names">
-                      <th class="corr__matrix-header" :data-col="j" :key="j"
+                    <template x-for="(name, j) in matrixView.names" :key="j">
+                      <th class="corr__matrix-header" :data-col="j"
                         :class="hoverClass(-1, j)" x-text="name"></th>
                     </template>
                   </tr>
                 </thead>
                 <tbody>
-                  <template x-for="(row, i) in matrixView.rows">
-                    <tr :data-row="i" :key="i">
+                  <template x-for="(row, i) in matrixView.rows" :key="i">
+                    <tr :data-row="i">
                       <th class="corr__matrix-row-header" :data-row="i"
                         :class="hoverClass(i, -1)" x-text="matrixView.names[i]"></th>
-                      <template x-for="(cell, j) in row">
+                      <template x-for="(cell, j) in row" :key="j">
                         <td :class="cell.cls + hoverClass(i, j) + selectClass(i, j)"
                           :style="cell.style" :title="cell.title"
-                          :data-row="i" :data-col="j" :key="j">
+                          :data-row="i" :data-col="j">
                           <template x-if="cell.kind === 'value'">
                             <span class="corr__matrix-cell-inner" style="display:contents">
                               <span class="corr__matrix-r" x-text="cell.val"></span>
@@ -216,9 +216,9 @@
                     @click="toggleAllPlots()" x-text="collapseAllLabel()"></button>
                 </div>
                 <div class="corr__matrix-plots">
-                  <template x-for="pair in filteredPairs">
+                  <template x-for="(pair, i) in filteredPairs" :key="pair.key + ':' + i">
                     <div class="corr__matrix-plot-card" :data-pair="pair.key"
-                      :class="plotCardClass(pair)" :style="plotCardDisplay(pair)" :key="pair.key">
+                      :class="plotCardClass(pair)" :style="plotCardDisplay(pair)">
                       <div class="corr__matrix-plot-header" data-action="toggle-plot"
                         @click="togglePlot(pair.key)">
                         <span x-text="pair.titleText"></span>

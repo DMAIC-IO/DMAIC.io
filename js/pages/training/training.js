@@ -10,6 +10,9 @@
 
 import { createPage } from '../../core/create-page.js';
 import { CYCLES, getCycle, getPhaseIds, getPhaseDef } from '../../core/cycles/cycles.js';
+import { lessonViewData } from './lesson-view.js';
+import { quizComponent } from './quiz.js';
+import { WIDGET_COMPONENTS } from './widgets/registry.js';
 
 const cell = (segs, cls) => (cls ? { segs, cls } : { segs });
 const cellOf = (text) => cell([{ text }]);
@@ -187,6 +190,7 @@ export function modulesBlocks(i18n, t, moduleRegistry) {
 }
 
 const TABS = [
+  { id: 'courses', labelKey: 'tabCourses' },
   { id: 'dmaic',  labelKey: 'tabDmaic' },
   { id: 'dmadv',  labelKey: 'tabDmadv' },
   { id: 'eightd', labelKey: 'tabEightd' },
@@ -196,6 +200,9 @@ const TABS = [
   { id: 'jmp',    labelKey: 'tabJmp' },
 ];
 
+/** Active tab, kept across the page re-creation of a language switch. */
+let lastTab = 'courses';
+
 export default createPage({
   id: 'training',
   templateUrl: new URL('js/pages/training/training.html', document.baseURI).href,
@@ -204,11 +211,16 @@ export default createPage({
   overlay: 'training',
   bodyClass: 'training-area-open',
   i18nKey: 'training',
+  components: {
+    trainingQuiz: quizComponent,
+    ...Object.fromEntries(Object.values(WIDGET_COMPONENTS).map((w) => [w.component, w.factory])),
+  },
   data(context, t) {
     const i18n = context.i18n;
     const moduleRegistry = context.moduleRegistry;
     return {
-      activeTab: 'dmaic',
+      ...lessonViewData(t, i18n, context.dialog),
+      activeTab: lastTab,
       tabs: TABS.map(x => ({ id: x.id, label: t(x.labelKey) })),
       pageTitle: () => t('title'),
       pageSubtitle: () => t('subtitle'),
@@ -217,7 +229,7 @@ export default createPage({
           ? 'training-area__tab training-area__tab--active'
           : 'training-area__tab';
       },
-      selectTab(id) { this.activeTab = id; },
+      selectTab(id) { this.activeTab = id; lastTab = id; },
       tdClass(c) { return c.cls || ''; },
       thStyle(col) { return col.style || ''; },
       isType(b, type) { return b.type === type; },
@@ -226,6 +238,7 @@ export default createPage({
       isPlain(seg) { return !seg.cls; },
       blocks() {
         switch (this.activeTab) {
+          case 'courses': return [];
           case 'triz':    return trizBlocks(t);
           case 'modules': return modulesBlocks(i18n, t, moduleRegistry);
           case 'minitab': return toolBlocks(t, 'minitab');

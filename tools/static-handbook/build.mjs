@@ -35,6 +35,7 @@ import {
   renderLabIndex,
   renderLangPicker,
   renderTrainingIndex,
+  renderTrainingCoursesPage,
   renderTrainingCyclePage,
   renderTrainingTrizPage,
   renderTrainingToolPage,
@@ -47,6 +48,7 @@ import { renderGlossaryIndex, renderGlossaryTermPage } from './render/glossary-p
 import { renderSitemap, renderRobots } from './render/sitemap.mjs';
 import { copyStaticAssets } from './render/static-assets.mjs';
 import { CYCLES } from '../../js/core/cycles/cycles.js';
+import { COURSES } from '../../js/pages/training/courses/index.js';
 
 const REPO = path.resolve(new URL('../..', import.meta.url).pathname);
 const OUT = path.join(REPO, 'docs');
@@ -237,6 +239,12 @@ async function main() {
     const trainingIndex = renderTrainingIndex({ lang, i18n: sources.i18n });
     await writeOut(path.join(OUT, rel(trainingIndex.pathFromRoot)), trainingIndex.html);
     sitemapEntries.push({ path: trainingIndex.pathFromRoot, priority: '0.8', changefreq: 'monthly' });
+    pageCount++;
+
+    // Interactive course overview (the course registry is Node-safe).
+    const coursesPage = renderTrainingCoursesPage({ lang, courses: COURSES });
+    await writeOut(path.join(OUT, rel(coursesPage.pathFromRoot)), coursesPage.html);
+    sitemapEntries.push({ path: coursesPage.pathFromRoot, priority: '0.7', changefreq: 'monthly' });
     pageCount++;
 
     // One training page per cycle (DMAIC, DMADV, …).

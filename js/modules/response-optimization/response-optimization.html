@@ -19,8 +19,8 @@
           <div class="dmike-split__section-title" x-text="t('sectionModels')"></div>
 
           <div class="ro__model-list">
-            <template x-for="m in modelList">
-              <div class="ro__model-row" :key="m.id" :data-model-id="m.id">
+            <template x-for="m in modelList" :key="m.id">
+              <div class="ro__model-row" :data-model-id="m.id">
                 <label class="ro__model-head" data-help-key="modules.response-optimization.types.Spec.selected" data-help-anchor="box">
                   <input type="checkbox"
                          data-action="toggle-model"
@@ -84,8 +84,8 @@
             <div class="ro__diagnostic" data-help-key="modules.response-optimization.fields.diagnosticReasons.help">
               <strong x-text="diagnosticBlockedLabel()"></strong>
               <ul>
-                <template x-for="reason in diagnosticReasons">
-                  <li :key="reason.key" x-text="reason.text"></li>
+                <template x-for="reason in diagnosticReasons" :key="reason.key">
+                  <li x-text="reason.text"></li>
                 </template>
               </ul>
             </div>
@@ -134,8 +134,8 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <template x-for="row in optimumRows()">
-                    <tr :key="row.name">
+                  <template x-for="(row, i) in optimumRows()" :key="row.name + ':' + i">
+                    <tr>
                       <td x-text="row.name"></td>
                       <td class="num" x-text="row.value"></td>
                     </tr>
@@ -154,8 +154,8 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <template x-for="row in predictionRows()">
-                    <tr :key="row.model">
+                  <template x-for="(row, i) in predictionRows()" :key="row.model + ':' + i">
+                    <tr>
                       <td x-text="row.model"></td>
                       <td class="num" x-text="row.prediction"></td>
                       <td class="num" x-text="row.d"></td>
@@ -179,8 +179,8 @@
                           <span x-text="t('axisX')"></span>
                           <select class="field" data-action="contour-axis" data-axis="x"
                                   @change="setContourAxis('x', $event)">
-                            <template x-for="p in contourData.continuousFactors">
-                              <option :key="p.id" :value="p.id" :selected="p.id === contourXId" x-text="p.id"></option>
+                            <template x-for="p in contourData.continuousFactors" :key="p.id">
+                              <option :value="p.id" :selected="p.id === contourXId" x-text="p.id"></option>
                             </template>
                           </select>
                         </label>
@@ -188,8 +188,8 @@
                           <span x-text="t('axisY')"></span>
                           <select class="field" data-action="contour-axis" data-axis="y"
                                   @change="setContourAxis('y', $event)">
-                            <template x-for="p in contourData.continuousFactors">
-                              <option :key="p.id" :value="p.id" :selected="p.id === contourYId" x-text="p.id"></option>
+                            <template x-for="p in contourData.continuousFactors" :key="p.id">
+                              <option :value="p.id" :selected="p.id === contourYId" x-text="p.id"></option>
                             </template>
                           </select>
                         </label>
@@ -197,15 +197,15 @@
                     </template>
 
                     <!-- Categorical fixing dropdowns -->
-                    <template x-for="fix in contourData.categoricalFixings">
-                      <label :key="fix.id" class="ro__contour-fix">
+                    <template x-for="fix in contourData.categoricalFixings" :key="fix.id">
+                      <label class="ro__contour-fix">
                         <span x-text="fix.id"></span>
                         <select class="field"
                                 data-action="contour-fix"
                                 :data-predictor="fix.id"
                                 @change="setContourFix(fix.id, $event)">
-                          <template x-for="lv in fix.levels">
-                            <option :key="lv" :value="lv" :selected="lv === fix.value" x-text="lv"></option>
+                          <template x-for="(lv, i) in fix.levels" :key="lv + ':' + i">
+                            <option :value="lv" :selected="lv === fix.value" x-text="lv"></option>
                           </template>
                         </select>
                       </label>

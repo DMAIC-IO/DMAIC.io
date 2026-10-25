@@ -82,8 +82,8 @@
       <div class="field-group field-group--span-2">
         <label data-help-key="modules.process-capability.types.Params.withinMethod" x-text="t('withinMethodLabel')"></label>
         <select class="field" data-ref="inp-within-method" @change="setParam('withinMethod', $event.target.value)">
-          <template x-for="key in methodKeys">
-            <option :key="key" :value="key" :selected="key === activeMethod" x-text="methodName(key)"></option>
+          <template x-for="key in methodKeys" :key="key">
+            <option :value="key" :selected="key === activeMethod" x-text="methodName(key)"></option>
           </template>
         </select>
       </div>
@@ -153,8 +153,8 @@
 
           <!-- KPI strip — main indices -->
           <div class="dmike-kpi-strip" data-ref="kpi-main">
-            <template x-for="kpi in mainKpis()">
-              <div class="dmike-kpi" :key="kpi.key" :data-kpi="kpi.key" :class="kpi.mod">
+            <template x-for="kpi in mainKpis()" :key="kpi.key">
+              <div class="dmike-kpi" :data-kpi="kpi.key" :class="kpi.mod">
                 <div class="dmike-kpi-label" :data-help-key="kpi.help" x-text="kpi.label"></div>
                 <div class="dmike-kpi-value" x-text="kpi.value"></div>
                 <div class="dmike-kpi-sub" x-text="kpi.sub"></div>
@@ -164,8 +164,8 @@
 
           <!-- Long-term (Pp/Ppk) + PPM + Sigma strip -->
           <div class="dmike-kpi-strip" data-ref="kpi-perf">
-            <template x-for="kpi in perfKpis()">
-              <div class="dmike-kpi" :key="kpi.key" :data-kpi="kpi.key">
+            <template x-for="kpi in perfKpis()" :key="kpi.key">
+              <div class="dmike-kpi" :data-kpi="kpi.key">
                 <div class="dmike-kpi-label" :data-help-key="kpi.help" x-text="kpi.label"></div>
                 <div class="dmike-kpi-value" x-text="kpi.value"></div>
                 <div class="dmike-kpi-sub" x-text="kpi.sub"></div>
@@ -178,10 +178,10 @@
           <div class="pc__stats-panel">
             <table class="dmike-table pc__stats-table">
               <thead><tr>
-                <template x-for="col in statCols()"><th :key="col.label"><span :data-help-key="col.help" x-text="col.label"></span></th></template>
+                <template x-for="(col, i) in statCols()" :key="col.label + ':' + i"><th><span :data-help-key="col.help" x-text="col.label"></span></th></template>
               </tr></thead>
               <tbody><tr>
-                <template x-for="col in statCols()"><td :key="col.label" x-text="col.value"></td></template>
+                <template x-for="(col, i) in statCols()" :key="col.label + ':' + i"><td x-text="col.value"></td></template>
               </tr></tbody>
             </table>
           </div>
@@ -194,8 +194,8 @@
                 <th x-text="t('ppmColKind')"></th><th><span data-help-key="modules.process-capability.types.Result.ppmBelowLsl">&lt; LSL</span></th><th><span data-help-key="modules.process-capability.types.Result.ppmAboveUsl">&gt; USL</span></th><th><span data-help-key="modules.process-capability.types.Result.ppmTotal" x-text="t('ppmColTotal')"></span></th>
               </tr></thead>
               <tbody>
-                <template x-for="row in ppmRows()">
-                  <tr :key="row.key" :data-row="row.key">
+                <template x-for="row in ppmRows()" :key="row.key">
+                  <tr :data-row="row.key">
                     <td x-text="row.label"></td><td x-text="row.below"></td><td x-text="row.above"></td><td x-text="row.total"></td>
                   </tr>
                 </template>

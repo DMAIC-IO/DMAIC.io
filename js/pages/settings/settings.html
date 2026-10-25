@@ -1,7 +1,7 @@
 <div class="settings-panel__layout" x-data="settings">
   <div class="settings-panel__tabs" role="tablist">
-    <template x-for="tab in tabs">
-      <button type="button" :key="tab.id" role="tab"
+    <template x-for="tab in tabs" :key="tab.id">
+      <button type="button" role="tab"
               :data-tab="tab.id" :class="tabClass(tab.id)"
               x-text="tab.label" @click="selectTab(tab.id)"></button>
     </template>
@@ -86,8 +86,8 @@
          data-tab-content="charts" x-show="isTab('charts')">
       <div class="settings-section">
         <label class="settings-section__label" x-text="t('chartFontSizes')"></label>
-        <template x-for="(f, idx) in fontSliders">
-          <div class="settings-font-row" :key="f.key">
+        <template x-for="(f, idx) in fontSliders" :key="f.key">
+          <div class="settings-font-row">
             <span class="settings-font-preview" :data-preview="f.key" :style="previewStyle(idx)" x-text="t(fontPreviewKey(f.key))"></span>
             <input type="range" class="dmike-slider settings-font-slider" :data-font="f.key"
                    :min="f.min" :max="f.max" step="1" x-model="f.value" @input="onFontInput(idx)">
@@ -113,8 +113,8 @@
       <div class="settings-section">
         <label class="settings-section__label" x-text="t('chartSeriesColors')"></label>
         <div class="settings-color-grid" id="settings-color-grid">
-          <template x-for="(c, i) in colors">
-            <div class="settings-color-item" :key="i">
+          <template x-for="(c, i) in colors" :key="i">
+            <div class="settings-color-item">
               <span class="settings-color-index" x-text="i + 1"></span>
               <div class="settings-color-swatch" :style="colorStyle(i)" :data-color="c" @click="pickColor(i, $event)"></div>
             </div>
@@ -198,11 +198,11 @@
          data-tab-content="shortcuts" x-show="isTab('shortcuts')">
       <p class="settings-hint" x-text="t('shortcutsHint')"></p>
       <div id="settings-shortcuts-list" class="settings-shortcuts-list">
-        <template x-for="g in shortcutGroups">
-          <div class="settings-shortcuts-group" :key="g.id">
+        <template x-for="g in shortcutGroups" :key="g.id">
+          <div class="settings-shortcuts-group">
             <h4 class="settings-shortcuts-group__title" x-text="groupTitle(g)"></h4>
-            <template x-for="item in g.items">
-              <div :class="rowClass(item)" :data-shortcut-id="item.id" :key="item.id">
+            <template x-for="item in g.items" :key="item.id">
+              <div :class="rowClass(item)" :data-shortcut-id="item.id">
                 <div class="settings-shortcut-row__main">
                   <span class="settings-shortcut-row__label" x-text="item.label"></span>
                   <span class="settings-shortcut-row__controls">
@@ -242,11 +242,11 @@
       <div class="settings-section" id="settings-action-urls">
         <h3 class="settings-section__title" x-text="t('actionUrls.title')"></h3>
         <p class="settings-hint" x-text="t('actionUrls.hint')"></p>
-        <template x-for="group in actionUrlGroups">
-          <div class="settings-action-url-group" :key="group.verb">
+        <template x-for="(group, j) in actionUrlGroups" :key="group.verb + ':' + j">
+          <div class="settings-action-url-group">
             <div class="settings-action-url-group__title" x-text="group.verb"></div>
-            <template x-for="row in group.rows">
-              <div class="settings-action-url" :key="row.url">
+            <template x-for="(row, i) in group.rows" :key="row.url + ':' + i">
+              <div class="settings-action-url">
                 <span class="settings-action-url__label" x-text="row.label"></span>
                 <code class="settings-action-url__value" x-text="row.url"></code>
                 <button type="button" class="btn btn--sm btn--ghost settings-action-url__copy"

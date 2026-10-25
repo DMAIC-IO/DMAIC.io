@@ -17,8 +17,8 @@
           <p class="sha__empty-text" x-text="t('noStakeholdersHint')"></p>
         </div>
       </template>
-      <template x-for="sh in model.stakeholders">
-        <div class="sha__card" :key="sh.id" :data-id="sh.id">
+      <template x-for="sh in model.stakeholders" :key="sh.id">
+        <div class="sha__card" :data-id="sh.id">
           <div class="sha__card-top">
             <div class="sha__avatar" :style="'background:' + avatarColor(sh.name)" x-text="initials(sh.name)"></div>
             <div class="sha__card-info">
@@ -80,8 +80,8 @@
                 <div class="sha__cell-label" x-text="quadLabel('keep-satisfied')"></div>
                 <div class="sha__cell-desc" x-text="quadDesc('keep-satisfied')"></div>
                 <div class="sha__cell-chips">
-                  <template x-for="sh in chipsFor('keep-satisfied')">
-                    <span :class="chipClass(sh)" :key="sh.id">
+                  <template x-for="sh in chipsFor('keep-satisfied')" :key="sh.id">
+                    <span :class="chipClass(sh)">
                       <span :class="chipDotClass(sh.support)"></span>
                       <span x-text="sh.name"></span>
                     </span>
@@ -92,8 +92,8 @@
                 <div class="sha__cell-label" x-text="quadLabel('manage-closely')"></div>
                 <div class="sha__cell-desc" x-text="quadDesc('manage-closely')"></div>
                 <div class="sha__cell-chips">
-                  <template x-for="sh in chipsFor('manage-closely')">
-                    <span :class="chipClass(sh)" :key="sh.id">
+                  <template x-for="sh in chipsFor('manage-closely')" :key="sh.id">
+                    <span :class="chipClass(sh)">
                       <span :class="chipDotClass(sh.support)"></span>
                       <span x-text="sh.name"></span>
                     </span>
@@ -104,8 +104,8 @@
                 <div class="sha__cell-label" x-text="quadLabel('monitor')"></div>
                 <div class="sha__cell-desc" x-text="quadDesc('monitor')"></div>
                 <div class="sha__cell-chips">
-                  <template x-for="sh in chipsFor('monitor')">
-                    <span :class="chipClass(sh)" :key="sh.id">
+                  <template x-for="sh in chipsFor('monitor')" :key="sh.id">
+                    <span :class="chipClass(sh)">
                       <span :class="chipDotClass(sh.support)"></span>
                       <span x-text="sh.name"></span>
                     </span>
@@ -116,8 +116,8 @@
                 <div class="sha__cell-label" x-text="quadLabel('keep-informed')"></div>
                 <div class="sha__cell-desc" x-text="quadDesc('keep-informed')"></div>
                 <div class="sha__cell-chips">
-                  <template x-for="sh in chipsFor('keep-informed')">
-                    <span :class="chipClass(sh)" :key="sh.id">
+                  <template x-for="sh in chipsFor('keep-informed')" :key="sh.id">
+                    <span :class="chipClass(sh)">
                       <span :class="chipDotClass(sh.support)"></span>
                       <span x-text="sh.name"></span>
                     </span>
@@ -131,8 +131,8 @@
               <span x-text="t('axisHigh')"></span>
             </div>
             <div class="sha__legend">
-              <template x-for="tone in supportTones">
-                <span class="sha__legend-item" :key="tone" :data-tone="tone">
+              <template x-for="tone in supportTones" :key="tone">
+                <span class="sha__legend-item" :data-tone="tone">
                   <span :class="chipDotClass(tone)"></span>
                   <span x-text="supportLabel(tone)"></span>
                 </span>
@@ -161,18 +161,18 @@
                 </tr>
               </thead>
               <tbody>
-                <template x-for="sh in sortedStakeholders()">
-                  <tr :key="sh.id">
+                <template x-for="sh in sortedStakeholders()" :key="sh.id">
+                  <tr>
                     <td><strong x-text="sh.name"></strong></td>
                     <td x-text="roleText(sh)"></td>
                     <td>
                       <div class="sha__level-dots">
-                        <template x-for="i in [1,2,3,4,5]"><div :key="i" :class="dotClass(i, sh.power)"></div></template>
+                        <template x-for="i in [1,2,3,4,5]" :key="i"><div :class="dotClass(i, sh.power)"></div></template>
                       </div>
                     </td>
                     <td>
                       <div class="sha__level-dots">
-                        <template x-for="i in [1,2,3,4,5]"><div :key="i" :class="dotClass(i, sh.interest)"></div></template>
+                        <template x-for="i in [1,2,3,4,5]" :key="i"><div :class="dotClass(i, sh.interest)"></div></template>
                       </div>
                     </td>
                     <td><span :class="supportBadgeClass(sh.support)" x-text="supportLabel(sh.support)"></span></td>
@@ -192,8 +192,8 @@
         </template>
         <template x-if="model.stakeholders.length > 0">
           <div class="sha__comm-container">
-            <template x-for="sh in sortedStakeholders()">
-              <div class="sha__comm-card" :key="sh.id">
+            <template x-for="sh in sortedStakeholders()" :key="sh.id">
+              <div class="sha__comm-card">
                 <div class="sha__comm-header">
                   <div class="sha__avatar" :style="'background:' + avatarColor(sh.name) + ';width:28px;height:28px;font-size:0.65rem'" x-text="initials(sh.name)"></div>
                   <div>

@@ -1,0 +1,71 @@
+{
+  "id": "stichprobenverteilung",
+  "category": "hypothesis",
+  "title": {
+    "de": "Stichprobenverteilung",
+    "en": "Sampling distribution"
+  },
+  "short": {
+    "de": "Verteilung einer Kenngröße, etwa des Mittelwerts, über viele Stichproben.",
+    "en": "Distribution of a statistic, such as the mean, over many samples."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Stichprobenverteilung** beschreibt, wie eine Kenngröße — meist der {{term:mittelwert|Mittelwert}} $\\bar{x}$ — von {{term:stichprobe|Stichprobe}} zu Stichprobe streut. Man stellt sie sich vor als Histogramm der Mittelwerte sehr vieler Stichproben gleichen Umfangs $n$."
+      },
+      {
+        "type": "paragraph",
+        "text": "Ihr Zentrum liegt bei $\\mu$, ihre Breite ist der {{term:standardfehler|Standardfehler}}. Mit wachsendem $n$ wird sie schmaler und, nach dem {{term:zentraler-grenzwertsatz|zentralen Grenzwertsatz}}, glockenförmig."
+      },
+      {
+        "type": "note",
+        "text": "Auch wenn die Einzelwerte schief sind, etwa Wartezeiten, werden die Mittelwerte mit wachsendem $n$ annähernd {{term:normalverteilung|normalverteilt}}. Darauf bauen Konfidenzintervalle und Hypothesentests auf."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **sampling distribution** describes how a statistic — usually the {{term:mittelwert|mean}} $\\bar{x}$ — varies from {{term:stichprobe|sample}} to sample. Think of it as the histogram of the means of very many samples of the same size $n$."
+      },
+      {
+        "type": "paragraph",
+        "text": "Its centre is at $\\mu$, its width is the {{term:standardfehler|standard error}}. As $n$ grows it becomes narrower and, by the {{term:zentraler-grenzwertsatz|central limit theorem}}, bell-shaped."
+      },
+      {
+        "type": "note",
+        "text": "Even if the individual values are skewed, such as waiting times, the means become approximately {{term:normalverteilung|normally distributed}} as $n$ grows. Confidence intervals and hypothesis tests build on this."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Verteilung der Stichprobenmittelwerte"
+    ],
+    "en": [
+      "distribution of sample means"
+    ]
+  },
+  "seeAlso": [
+    "standardfehler",
+    "zentraler-grenzwertsatz",
+    "stichprobe",
+    "normalverteilung"
+  ],
+  "modules": [
+    "sample-size",
+    "hypothesis-test",
+    "control-chart"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D.C.: Introduction to Statistical Quality Control, 8th ed., Wiley, 2020 — Kap. 3 und 4",
+      "url": null
+    },
+    {
+      "label": "DIN ISO 3534-1: Statistik — Begriffe und Formelzeichen, Teil 1",
+      "url": null
+    }
+  ]
+}

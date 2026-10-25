@@ -1,0 +1,84 @@
+{
+  "id": "normalverteilung",
+  "category": "descriptive",
+  "title": {
+    "de": "Normalverteilung",
+    "en": "Normal distribution"
+  },
+  "short": {
+    "de": "Symmetrische Glockenkurve, festgelegt durch Mittelwert und Standardabweichung.",
+    "en": "Symmetric bell curve, fixed by mean and standard deviation."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Normalverteilung** $N(\\mu, \\sigma^2)$ ist die symmetrische Glockenkurve. Sie ist durch zwei Größen festgelegt: den {{term:mittelwert|Mittelwert}} $\\mu$ (Lage) und die {{term:standardabweichung|Standardabweichung}} $\\sigma$ (Breite)."
+      },
+      {
+        "type": "formula",
+        "latex": "f(x) = \\frac{1}{\\sigma\\sqrt{2\\pi}}\\, e^{-\\frac{(x-\\mu)^2}{2\\sigma^2}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Rund 68 % der Werte liegen innerhalb von $\\mu \\pm 1\\sigma$, rund 95 % innerhalb von $\\mu \\pm 2\\sigma$ und rund 99,7 % innerhalb von $\\mu \\pm 3\\sigma$."
+      },
+      {
+        "type": "note",
+        "text": "Einzelwerte aus Prozessen sind oft schief, etwa Wartezeiten und Durchlaufzeiten. Stichprobenmittelwerte dagegen sind nach dem {{term:zentraler-grenzwertsatz|zentralen Grenzwertsatz}} bei hinreichend großem $n$ annähernd normalverteilt. Ob Daten normalverteilt sind, prüft der {{term:normalitaetstest|Normalitätstest}}."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **normal distribution** $N(\\mu, \\sigma^2)$ is the symmetric bell curve. It is fixed by two quantities: the {{term:mittelwert|mean}} $\\mu$ (location) and the {{term:standardabweichung|standard deviation}} $\\sigma$ (width)."
+      },
+      {
+        "type": "formula",
+        "latex": "f(x) = \\frac{1}{\\sigma\\sqrt{2\\pi}}\\, e^{-\\frac{(x-\\mu)^2}{2\\sigma^2}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "About 68 % of the values lie within $\\mu \\pm 1\\sigma$, about 95 % within $\\mu \\pm 2\\sigma$ and about 99.7 % within $\\mu \\pm 3\\sigma$."
+      },
+      {
+        "type": "note",
+        "text": "Individual values from processes are often skewed, such as waiting times and lead times. Sample means, by contrast, are approximately normal for sufficiently large $n$ according to the {{term:zentraler-grenzwertsatz|central limit theorem}}. Whether data are normal is checked by the {{term:normalitaetstest|normality test}}."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Gauß-Verteilung",
+      "Glockenkurve",
+      "Gaußsche Glockenkurve"
+    ],
+    "en": [
+      "Gaussian distribution",
+      "bell curve"
+    ]
+  },
+  "seeAlso": [
+    "zentraler-grenzwertsatz",
+    "mittelwert",
+    "standardabweichung",
+    "normalitaetstest",
+    "schiefe"
+  ],
+  "modules": [
+    "histogram",
+    "probability-plot",
+    "distribution-fit",
+    "process-capability"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D.C.: Introduction to Statistical Quality Control, 8th ed., Wiley, 2020 — Kap. 3 und 4",
+      "url": null
+    },
+    {
+      "label": "DIN ISO 3534-1: Statistik — Begriffe und Formelzeichen, Teil 1",
+      "url": null
+    }
+  ]
+}

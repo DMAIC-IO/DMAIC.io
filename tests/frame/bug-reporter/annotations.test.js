@@ -1,5 +1,5 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
-import { createAnnotationModel } from '../../../js/frame/bug-reporter/annotations.js';
+import { createAnnotationModel, dragCropEdge, MIN_CROP } from '../../../js/frame/bug-reporter/annotations.js';
 
 function model(scale = 0.5) {
   const m = createAnnotationModel({ width: 1920, height: 1080 });
@@ -101,5 +101,76 @@ suite('bug-reporter annotations', () => {
   test('toJSON carries image size', () => {
     const m = model(1);
     assertDeepEqual(m.toJSON(), { image: { width: 1920, height: 1080 }, items: [] });
+  });
+  test('crop starts as the whole image', () => {
+    assertDeepEqual(model().crop(), { x: 0, y: 0, w: 1920, h: 1080 });
+  });
+
+  test('setCrop clamps to the image and reports whether it changed', () => {
+    const m = model();
+    assertTrue(m.setCrop({ x: -50, y: 100, w: 600, h: 2000 }));
+    assertDeepEqual(m.crop(), { x: 0, y: 100, w: 550, h: 980 });
+    assertEqual(m.setCrop({ x: 0, y: 100, w: 550, h: 980 }), false);
+  });
+
+  test('drawing in a cropped view maps display px into the crop', () => {
+    const m = model(2);
+    m.setCrop({ x: 400, y: 300, w: 200, h: 100 });
+    m.begin('frame', { x: 20, y: 40 });
+    m.move({ x: 1000, y: 120 }); // beyond the right edge of the crop
+    m.end();
+    assertDeepEqual(m.items(), [{ type: 'frame', x: 410, y: 320, w: 190, h: 40 }]);
+  });
+
+  test('undo restores crops and items in the order they happened', () => {
+    const m = model(1);
+    m.begin('frame', { x: 0, y: 0 }); m.move({ x: 20, y: 20 }); m.end();
+    m.setCrop({ x: 10, y: 10, w: 500, h: 400 });
+    m.setCrop({ x: 20, y: 20, w: 300, h: 200 });
+    assertTrue(m.undo());
+    assertDeepEqual(m.crop(), { x: 10, y: 10, w: 500, h: 400 });
+    assertTrue(m.undo());
+    assertDeepEqual(m.crop(), { x: 0, y: 0, w: 1920, h: 1080 });
+    assertEqual(m.items().length, 1);
+    assertTrue(m.undo());
+    assertEqual(m.items().length, 0);
+    assertEqual(m.undo(), false);
+  });
+
+  test('an emptied textbox leaves no undo step behind', () => {
+    const m = model(1);
+    m.setCrop({ x: 10, y: 10, w: 500, h: 400 });
+    m.begin('textbox', { x: 10, y: 10 }); m.move({ x: 100, y: 60 }); m.end();
+    m.setText(0, '');
+    assertTrue(m.undo());
+    assertDeepEqual(m.crop(), { x: 0, y: 0, w: 1920, h: 1080 });
+  });
+
+  test('toJSON of a cropped image: crop size, offset, shifted items, hidden ones dropped', () => {
+    const m = model(1);
+    m.begin('frame', { x: 100, y: 100 }); m.move({ x: 200, y: 150 }); m.end();   // inside
+    m.begin('arrow', { x: 50, y: 50 }); m.move({ x: 150, y: 120 }); m.end();     // partly inside
+    m.begin('line', { x: 1500, y: 900 }); m.move({ x: 1600, y: 950 }); m.end(); // outside
+    m.begin('textbox', { x: 900, y: 10 }); m.move({ x: 1000, y: 60 }); m.end(); // outside
+    m.setText(3, 'weg');
+    m.setCrop({ x: 80, y: 80, w: 400, h: 300 });
+    assertDeepEqual(m.toJSON(), {
+      image: { width: 400, height: 300 },
+      crop: { x: 80, y: 80, w: 400, h: 300 },
+      items: [
+        { type: 'frame', x: 20, y: 20, w: 100, h: 50 },
+        { type: 'arrow', x1: -30, y1: -30, x2: 70, y2: 40 },
+      ],
+    });
+  });
+
+  test('dragCropEdge moves one edge, keeps the opposite one and the minimum size', () => {
+    const img = { width: 1920, height: 1080 };
+    const r = { x: 100, y: 100, w: 800, h: 600 };
+    assertDeepEqual(dragCropEdge(r, 'left', 300, img), { x: 300, y: 100, w: 600, h: 600 });
+    assertDeepEqual(dragCropEdge(r, 'right', 2500, img), { x: 100, y: 100, w: 1820, h: 600 });
+    assertDeepEqual(dragCropEdge(r, 'top', -40, img), { x: 100, y: 0, w: 800, h: 700 });
+    assertDeepEqual(dragCropEdge(r, 'bottom', 105, img), { x: 100, y: 100, w: 800, h: MIN_CROP });
+    assertDeepEqual(dragCropEdge(r, 'left', 5000, img), { x: 900 - MIN_CROP, y: 100, w: MIN_CROP, h: 600 });
   });
 });

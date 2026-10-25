@@ -97,6 +97,7 @@
     "msa": "Measurement System Analysis",
     "capability": "Process Capability",
     "charts": "Control Charts",
+    "solutions": "Develop Solutions",
     "plan": "Plan Experiment",
     "evaluate": "Evaluate Experiment",
     "optimize": "Optimize",
@@ -309,6 +310,59 @@
   "training": {
     "title": "Training",
     "subtitle": "Onboarding for users switching from other tools",
+    "tabCourses": "Courses",
+    "course": {
+      "soon": "in preparation",
+      "new": "new",
+      "started": "started",
+      "done": "completed",
+      "prerequisite": "Prerequisite: {lessons}",
+      "stepOf": "Step {current} of {total}",
+      "prev": "Back",
+      "next": "Next",
+      "finish": "Finish lesson",
+      "back": "All courses",
+      "reset": "Reset lesson",
+      "resetConfirm": "Delete the progress of this lesson? Answered questions and unlocked insights will be lost.",
+      "insight": "Insight",
+      "insightLocked": "Draw a few samples first, ideally 100 at once – then this shows what you just saw.",
+      "insightLockedN": "First try at least {n} different values of n and draw at least 100 samples for each – then this shows what you saw.",
+      "insightLockedShapes": "First try at least {shapes} different populations, each with at least {n} values of n and at least 100 samples – then this shows what you saw.",
+      "quizCorrect": "Correct.",
+      "quizWrong": "Not yet.",
+      "sim": {
+        "population": "Population",
+        "sampleSize": "Sample size n",
+        "drawOne": "Draw 1 sample",
+        "draw1000": "Draw 1000 samples",
+        "count": "Samples drawn: {count}",
+        "value": "Value",
+        "sampleMean": "Sample mean x̄",
+        "density": "Frequency",
+        "popChart": "Population",
+        "meansChart": "Means at n = {n}",
+        "nMeanChart": "Mean of the means by n",
+        "seChart": "Spread of the means by n",
+        "nMeanAxis": "Mean of the x̄",
+        "seAxis": "Spread of the x̄",
+        "nMeanMeasured": "Measured",
+        "seMeasured": "Measured",
+        "theory": "Theory σ/√n",
+        "legendMu": "population μ",
+        "legendXbar": "mean of all x̄",
+        "legendTheory": "expected distribution",
+        "mean": "Mean",
+        "spread": "Spread",
+        "seHint": "expected: {se}",
+        "seChartHint": "Each n you draw with adds a point here.",
+        "pop": {
+          "normal": "Normal",
+          "uniform": "Uniform",
+          "skewed": "Skewed",
+          "bimodal": "Bimodal"
+        }
+      }
+    },
     "tabDmaic": "Understanding DMAIC",
     "tabDmadv": "Understanding DMADV",
     "tabEightd": "Understanding 8D",
@@ -815,6 +869,7 @@
     "toolArrow": "Arrow",
     "toolLine": "Freehand",
     "toolTextbox": "Text box",
+    "toolCrop": "Crop",
     "undo": "Undo last",
     "textboxPlaceholder": "Text …",
     "captureUnsupported": "Screen capture is not available here — continuing without a screenshot.",
@@ -6788,6 +6843,178 @@
       "statCumPct": "Cumulative %",
       "statTotal": "Total"
     },
+    "morphological-box": {
+      "name": "Morphological Box",
+      "description": "Combine solution concepts from parameters and options, check incompatibilities",
+      "whenToUse": "When a solution consists of several sub-functions and alternative whole concepts should be combined systematically — not for scoring or choosing the concepts, that belongs to solution selection.",
+      "addParameter": "Add parameter",
+      "addConcept": "Add concept",
+      "kpiParameters": "Parameters",
+      "kpiCombinations": "Combinations",
+      "kpiConsistent": "Consistent",
+      "kpiConcepts": "Concepts",
+      "headingParameter": "Parameter",
+      "headingOptions": "Options",
+      "view_box": "Box",
+      "view_consistency": "Consistency",
+      "emptyState": "No parameters yet. Use \"+\" to create the first sub-function of the solution.",
+      "parameterName": "Parameter name",
+      "parameterPlaceholder": "Parameter …",
+      "removeParameter": "Remove parameter",
+      "optionLabel": "Option",
+      "optionPlaceholder": "Option …",
+      "removeOption": "Remove option",
+      "addOption": "Add option",
+      "pickHint": "Pick for the active concept",
+      "conceptsTitle": "Concepts",
+      "conceptsEmpty": "No concepts yet. \"+\" creates one; then pick one option per parameter in the box.",
+      "activeConcept": "Active concept",
+      "conceptName": "Concept name",
+      "conceptPlaceholder": "Concept …",
+      "removeConcept": "Remove concept",
+      "conceptComplete": "Complete",
+      "conceptIncomplete": "Incomplete",
+      "conceptConflicts": "{n} incompatible pairs",
+      "unnamedOption": "(unnamed)",
+      "unnamedConcept": "(unnamed)",
+      "unnamedParameter": "(unnamed)",
+      "matrixHint": "Tick the pairs of options that do not work together. Options of the same parameter exclude each other anyway.",
+      "matrixCorner": "Incompatible",
+      "pairLabel": "{a} and {b} incompatible",
+      "actions": {
+        "read": {
+          "help": "Returns parameters, options, incompatibilities and concepts together with the combination counts and the concept checks.",
+          "params": {
+            "options": "Optional: fields selects fields, rows limits lists to a range."
+          }
+        },
+        "addParameter": {
+          "help": "Appends a parameter (a row of the box) with one empty option and returns its id."
+        },
+        "setParameterName": {
+          "help": "Sets the name of a parameter.",
+          "params": {
+            "parameterId": "The id of the parameter. An unknown id is an error.",
+            "name": "The new name; the empty string clears it."
+          }
+        },
+        "removeParameter": {
+          "help": "Removes a parameter with its options, their incompatibilities and the concept picks in it.",
+          "params": {
+            "parameterId": "The id of the parameter. An unknown id is an error."
+          }
+        },
+        "addOption": {
+          "help": "Appends an empty option to a parameter and returns its id.",
+          "params": {
+            "parameterId": "The id of the parameter. An unknown id is an error."
+          }
+        },
+        "setOptionLabel": {
+          "help": "Sets the label of an option.",
+          "params": {
+            "optionId": "The id of the option. An unknown id is an error.",
+            "label": "The new label; the empty string clears it."
+          }
+        },
+        "removeOption": {
+          "help": "Removes an option with its incompatibilities and the concept picks that point at it.",
+          "params": {
+            "optionId": "The id of the option. An unknown id is an error."
+          }
+        },
+        "setConflict": {
+          "help": "Marks two options of different parameters as incompatible, or clears the mark.",
+          "params": {
+            "optionA": "The id of the first option.",
+            "optionB": "The id of the second option, from another parameter. Two options of the same parameter are an error.",
+            "incompatible": "true marks the pair, false clears the mark."
+          }
+        },
+        "addConcept": {
+          "help": "Appends an empty concept, makes it active and returns its id."
+        },
+        "setConceptName": {
+          "help": "Sets the name of a concept.",
+          "params": {
+            "conceptId": "The id of the concept. An unknown id is an error.",
+            "name": "The new name; the empty string clears it."
+          }
+        },
+        "removeConcept": {
+          "help": "Removes a concept; if it was active, the first remaining one becomes active.",
+          "params": {
+            "conceptId": "The id of the concept. An unknown id is an error."
+          }
+        },
+        "setConceptPick": {
+          "help": "Picks the option of a parameter for a concept, or clears the pick.",
+          "params": {
+            "conceptId": "The id of the concept.",
+            "parameterId": "The id of the parameter.",
+            "optionId": "The id of one of this parameter's options; the empty string clears the pick. An option of another parameter is an error."
+          }
+        },
+        "setActiveConcept": {
+          "help": "Chooses the concept a click in the box edits.",
+          "params": {
+            "conceptId": "The id of the concept. An unknown id is an error."
+          }
+        },
+        "setView": {
+          "help": "Switches between the box and the consistency matrix.",
+          "params": {
+            "view": "\"box\" for the box, \"consistency\" for the consistency matrix."
+          }
+        }
+      },
+      "fields": {
+        "parameters": {
+          "help": "The parameters in box order, each with id, name and options (id, label)."
+        },
+        "optionIds": {
+          "help": "The ids of all options in box order — the valid values for optionId, optionA and optionB."
+        },
+        "conflicts": {
+          "help": "The incompatible pairs as sorted pairs of option ids."
+        },
+        "concepts": {
+          "help": "The concepts, each with id, name and picks (parameter id → option id)."
+        },
+        "activeConceptId": {
+          "help": "The id of the concept a click in the box edits; empty when there is none."
+        },
+        "view": {
+          "help": "The visible view: box or consistency."
+        },
+        "combinationCount": {
+          "help": "All combinations of one option per parameter — the product of the option counts."
+        },
+        "consistentCount": {
+          "help": "The combinations without an incompatible pair. For very large boxes only a lower bound; then consistentExact is false and the display reads \"≥ n\"."
+        },
+        "consistentExact": {
+          "help": "false when consistentCount is only a lower bound because the counting budget ran out."
+        },
+        "conceptChecks": {
+          "help": "Per concept: id, complete (every parameter with options is picked) and conflicts (the incompatible pairs inside the concept)."
+        }
+      },
+      "types": {
+        "AgentRead": {
+          "parameters": "The parameters with their options, in box order.",
+          "optionIds": "The ids of all options, in box order.",
+          "conflicts": "The incompatible option pairs.",
+          "concepts": "The concepts with their picks.",
+          "activeConceptId": "The concept a click in the box edits.",
+          "view": "The visible view.",
+          "combinationCount": "All combinations of one option per parameter.",
+          "consistentCount": "Combinations without an incompatible pair.",
+          "consistentExact": "false when consistentCount is only a lower bound.",
+          "conceptChecks": "Per concept: id, complete and conflicts."
+        }
+      }
+    },
     "mosaic": {
       "name": "Mosaic Plot",
       "description": "Visualises the joint distribution of two categorical variables — column widths show the marginal frequency, segment heights show the conditional shares.",
@@ -7107,6 +7334,14 @@
       "decisionConfirm_repeat": "Repeat this phase? A new cycle with the same factor settings will be created.",
       "decisionConfirm_recenter": "Re-center? The best point becomes the new center. Factor levels will be adjusted automatically.",
       "decisionConfirm_stop": "Complete the project? No further phases will be created.",
+      "actions": {
+        "completePhase": {
+          "help": "Closes the active EVOP phase after a confirmation: the design and the response values are stored in the phase, then a new phase starts or the project ends, depending on the decision. Returns false when the confirmation is cancelled or the phase is already decided.",
+          "params": {
+            "decision": "recenter (new phase around the best run, step sizes kept), repeat (new phase with the same factor levels) or stop (complete the project, no further phase). Any other value is an error."
+          }
+        }
+      },
       "evopEffectTable": "EVOP Effect Table (cumulative)",
       "evopCycles": "{n} cycles",
       "evopTotalRuns": "{n} total runs",

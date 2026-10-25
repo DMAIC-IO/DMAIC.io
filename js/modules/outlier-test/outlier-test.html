@@ -13,8 +13,8 @@
     <div class="dmike-split__section-title"><span data-help-key="modules.outlier-test.types.Params.enabled" x-text="t('sectionMethods')"></span></div>
 
     <div class="outliertest__methods">
-      <template x-for="mid in allMethods">
-        <label :key="mid" class="outliertest__method">
+      <template x-for="mid in allMethods" :key="mid">
+        <label class="outliertest__method">
           <input type="checkbox"
                  :data-method="mid"
                  :checked="isMethodEnabled(mid)"

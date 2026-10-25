@@ -12,8 +12,8 @@
         </div>
 
         <div id="mdg-factor-list" data-role="factor-list">
-          <template x-for="(factor, i) in model.factors">
-            <div class="mdg-factor-grid mdg-factor-grid--row" :key="i">
+          <template x-for="(factor, i) in model.factors" :key="i">
+            <div class="mdg-factor-grid mdg-factor-grid--row">
               <input class="field mdg-inp" type="text"
                 data-field="name" :data-idx="i" x-model="factor.name">
               <input class="field mdg-inp mdg-inp--center" type="number"
@@ -82,8 +82,8 @@
           <span class="mdg-eq-y" x-text="model.yName"></span>
           <span class="mdg-eq-op"> = </span>
           <span class="mdg-eq-intercept" x-text="model.intercept"></span>
-          <template x-for="(part, i) in equationParts()">
-            <span :key="i" x-text="part"></span>
+          <template x-for="(part, i) in equationParts()" :key="i">
+            <span x-text="part"></span>
           </template>
           <span class="mdg-eq-eps"> + ε</span>
         </div>
@@ -101,12 +101,12 @@
         </div>
 
         <div id="mdg-beta-editor" data-role="beta-editor">
-          <template x-for="group in betaGroups()">
-            <div :key="group.label">
+          <template x-for="(group, i) in betaGroups()" :key="group.label + ':' + i">
+            <div>
               <div class="mdg-group-label" x-text="group.label"></div>
               <div class="mdg-beta-grid">
-                <template x-for="item in group.items">
-                  <div class="mdg-beta-item" :key="item.idx">
+                <template x-for="item in group.items" :key="item.idx">
+                  <div class="mdg-beta-item">
                     <span class="mdg-beta-name" :title="item.label" x-text="item.label"></span>
                     <span class="mdg-beta-eq">β=</span>
                     <input class="field mdg-inp mdg-beta-inp" type="number"
@@ -121,8 +121,8 @@
         <div id="mdg-results-section" :style="resultsVisible ? 'display:block' : 'display:none'">
           <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('statsTitle')"></span></div>
           <div class="dmike-kpi-strip" id="mdg-stats-grid">
-            <template x-for="kpi in statKpis">
-              <div class="dmike-kpi" :key="kpi.label">
+            <template x-for="(kpi, i) in statKpis" :key="kpi.label + ':' + i">
+              <div class="dmike-kpi">
                 <div class="dmike-kpi-value" x-text="kpi.value"></div>
                 <div class="dmike-kpi-label" :data-help-key="kpi.help" x-text="kpi.label"></div>
               </div>

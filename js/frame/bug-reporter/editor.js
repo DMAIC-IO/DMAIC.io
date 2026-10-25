@@ -2,20 +2,25 @@
  * D.Mike — Screenshot editor (frame/bug-reporter/editor.js)
  * Shows the captured frame scaled to the dialog, a canvas overlay for
  * markings and a tool bar. Gestures go into the annotation model in image
- * pixels; the PNG is never painted on. Imperative on purpose — pointer
+ * pixels; the PNG is never painted on. The crop tool shows the whole image
+ * with a frame whose four edges can be dragged; leaving the tool (or Enter)
+ * applies it and the view zooms to the crop. Imperative on purpose — pointer
  * gestures on a canvas are no case for Alpine directives.
  */
 import { h } from '../../core/dom.js';
 import { icon } from '../../core/icon.js';
-import { createAnnotationModel, TOOLS } from './annotations.js';
+import { createAnnotationModel, dragCropEdge, TOOLS } from './annotations.js';
 
 const TOOL_ICON = {
   frame: 'action.draw-frame', circle: 'action.draw-circle', arrow: 'action.draw-arrow',
-  line: 'action.draw-line', textbox: 'action.draw-textbox',
+  line: 'action.draw-line', textbox: 'action.draw-textbox', crop: 'action.crop',
 };
 const TOOL_LABEL = {
   frame: 'toolFrame', circle: 'toolCircle', arrow: 'toolArrow', line: 'toolLine', textbox: 'toolTextbox',
+  crop: 'toolCrop',
 };
+const EDGES = ['left', 'right', 'top', 'bottom'];
+const MAX_HEIGHT = 0.6; // share of the window height the view may take
 const ARROW_HEAD = 12; // display px
 const ARROW_SPREAD = 0.4; // rad
 
@@ -48,15 +53,24 @@ function drawItem(g, item, s) {
  */
 export function mountEditor(host, { blob, width, height, t }) {
   const model = createAnnotationModel({ width, height });
+  const whole = { x: 0, y: 0, w: width, h: height };
   const url = URL.createObjectURL(blob);
   let tool = 'frame';
+  let drawTool = tool; // tool to return to when Enter applies the crop
   let scale = 1;
+  let view = model.crop(); // image region on screen: the crop, or the whole image while cropping
+  let frame = null; // crop frame being adjusted (image px) while the crop tool is active
+  let dragging = null; // edge whose handle is being dragged
   let pending = null; // { index, input }
 
   const img = h('img', { class: 'bug-editor__image', src: url, alt: '', draggable: 'false' });
   const canvas = h('canvas', { class: 'bug-editor__canvas' });
-  const stage = h('div', { class: 'bug-editor__stage' }, img, canvas);
-  const toolButtons = TOOLS.map(name => h('button', {
+  const handles = EDGES.map(edge => h('div', {
+    class: `bug-editor__crop-handle bug-editor__crop-handle--${edge}`, 'data-edge': edge,
+  }));
+  const cropBox = h('div', { class: 'bug-editor__crop', hidden: true }, ...handles);
+  const stage = h('div', { class: 'bug-editor__stage' }, img, canvas, cropBox);
+  const toolButtons = [...TOOLS, 'crop'].map(name => h('button', {
     type: 'button', class: 'bug-editor__tool btn btn--icon', 'data-tool': name,
     title: t(TOOL_LABEL[name]), 'aria-label': t(TOOL_LABEL[name]),
     'aria-pressed': String(name === tool),
@@ -77,21 +91,58 @@ export function mountEditor(host, { blob, width, height, t }) {
     g.lineWidth = 2;
     g.font = `14px ${style.fontFamily}`;
     g.textBaseline = 'top';
+    g.save();
+    g.translate(-view.x * scale, -view.y * scale);
     for (const item of model.items()) drawItem(g, item, scale);
     const d = model.draft();
     if (d) drawItem(g, d, scale);
+    g.restore();
+  }
+
+  function placeCropBox() {
+    cropBox.hidden = !frame;
+    if (!frame) return;
+    Object.assign(cropBox.style, {
+      left: `${(frame.x - view.x) * scale}px`, top: `${(frame.y - view.y) * scale}px`,
+      width: `${frame.w * scale}px`, height: `${frame.h * scale}px`,
+    });
   }
 
   function layout() {
-    const shown = img.clientWidth || width;
-    scale = shown / width;
-    canvas.width = Math.round(width * scale);
-    canvas.height = Math.round(height * scale);
+    const available = root.clientWidth;
+    if (!available) return;
+    scale = Math.min(available / view.w, (innerHeight * MAX_HEIGHT) / view.h);
+    const w = Math.round(view.w * scale);
+    const hh = Math.round(view.h * scale);
+    Object.assign(stage.style, { width: `${w}px`, height: `${hh}px` });
+    Object.assign(img.style, {
+      width: `${width * scale}px`, height: `${height * scale}px`,
+      left: `${-view.x * scale}px`, top: `${-view.y * scale}px`,
+    });
+    canvas.width = w;
+    canvas.height = hh;
     model.setDisplayScale(scale);
+    placeCropBox();
     redraw();
   }
 
-  function commitPending() {
+  function applyCrop() {
+    if (!frame) return;
+    model.setCrop(frame);
+    frame = null;
+    root.classList.remove('bug-editor--cropping');
+    view = model.crop();
+    layout();
+  }
+
+  function openCrop() {
+    frame = model.crop();
+    view = whole;
+    root.classList.add('bug-editor--cropping');
+    layout();
+  }
+
+  function commitTextbox() {
     if (!pending) return;
     const { index, input } = pending;
     pending = null;
@@ -100,10 +151,16 @@ export function mountEditor(host, { blob, width, height, t }) {
     redraw();
   }
 
+  /** Finish what is in progress: the open textbox and an unapplied crop frame. */
+  function commitPending() {
+    commitTextbox();
+    applyCrop();
+  }
+
   function discardPending() {
     if (!pending) return;
     pending.input.value = '';
-    commitPending(); // empty text removes the textbox from the model
+    commitTextbox(); // empty text removes the textbox from the model
   }
 
   function openTextInput(item) {
@@ -117,17 +174,17 @@ export function mountEditor(host, { blob, width, height, t }) {
       'data-dialog-owns-escape': true,
     });
     Object.assign(input.style, {
-      left: `${item.x * scale}px`, top: `${item.y * scale}px`,
+      left: `${(item.x - view.x) * scale}px`, top: `${(item.y - view.y) * scale}px`,
       width: `${item.w * scale}px`, height: `${item.h * scale}px`,
     });
     pending = { index, input };
     input.addEventListener('keydown', ev => {
-      if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); commitPending(); }
+      if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); commitTextbox(); }
       else if (ev.key === 'Escape') { ev.preventDefault(); discardPending(); }
       // Keep Enter/Escape from bubbling to window-level shortcut handlers.
       ev.stopPropagation();
     });
-    input.addEventListener('blur', commitPending);
+    input.addEventListener('blur', commitTextbox);
     stage.append(input);
     input.focus();
   }
@@ -138,8 +195,8 @@ export function mountEditor(host, { blob, width, height, t }) {
   };
 
   canvas.addEventListener('pointerdown', ev => {
-    if (ev.button !== 0) return;
-    commitPending();
+    if (ev.button !== 0 || frame) return;
+    commitTextbox();
     canvas.setPointerCapture(ev.pointerId);
     model.begin(tool, point(ev));
   });
@@ -165,20 +222,52 @@ export function mountEditor(host, { blob, width, height, t }) {
   canvas.addEventListener('pointercancel', dropDraft);
   canvas.addEventListener('lostpointercapture', dropDraft);
 
-  toolButtons.forEach(btn => btn.addEventListener('click', () => {
+  handles.forEach(handle => {
+    handle.addEventListener('pointerdown', ev => {
+      if (ev.button !== 0) return;
+      ev.preventDefault();
+      handle.setPointerCapture(ev.pointerId);
+      dragging = handle.dataset.edge;
+    });
+    handle.addEventListener('pointermove', ev => {
+      if (dragging !== handle.dataset.edge || !frame) return;
+      const r = stage.getBoundingClientRect();
+      const pos = dragging === 'left' || dragging === 'right'
+        ? (ev.clientX - r.left) / scale + view.x
+        : (ev.clientY - r.top) / scale + view.y;
+      frame = dragCropEdge(frame, dragging, pos, { width, height });
+      placeCropBox();
+    });
+    const stop = () => { dragging = null; };
+    handle.addEventListener('pointerup', stop);
+    handle.addEventListener('lostpointercapture', stop);
+  });
+
+  function selectTool(name) {
+    if (name === 'crop' && frame) return;
     commitPending();
-    tool = btn.dataset.tool;
-    toolButtons.forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
-  }));
+    tool = name;
+    if (name !== 'crop') drawTool = name;
+    toolButtons.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tool === name)));
+    if (name === 'crop') openCrop();
+  }
+
+  toolButtons.forEach(btn => btn.addEventListener('click', () => selectTool(btn.dataset.tool)));
+  root.addEventListener('keydown', ev => {
+    if (ev.key !== 'Enter' || !frame) return;
+    ev.preventDefault();
+    selectTool(drawTool);
+  });
   undoBtn.addEventListener('click', () => {
     if (pending) { discardPending(); return; }
     model.undo();
-    redraw();
+    if (frame) frame = model.crop(); else view = model.crop();
+    layout();
   });
 
   const ro = new ResizeObserver(layout);
-  ro.observe(img);
-  if (img.complete) layout(); else img.addEventListener('load', layout, { once: true });
+  ro.observe(root);
+  layout();
 
   return {
     model,

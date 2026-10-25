@@ -183,8 +183,8 @@
 
           <!-- k-sample: grid of per-group cards; otherwise stacked S1/S2 cards -->
           <div :class="result.isK ? 'hyptest__norm-grid' : 'hyptest__contents'">
-            <template x-for="card in result.normCards">
-              <div class="hyptest__result-card" :key="card.label">
+            <template x-for="(card, j) in result.normCards" :key="card.label + ':' + j">
+              <div class="hyptest__result-card">
                 <div class="hyptest__card-header">
                   <span x-text="card.label"></span>
                   <span class="hyptest__badge" :class="card.badgeClass" x-text="card.badgeText"></span>
@@ -194,8 +194,8 @@
                     <th><span data-help-key="modules.hypothesis-test.types.NormRow.name" x-text="t('colTest')"></span></th><th><span data-help-key="modules.hypothesis-test.types.NormRow.stat" x-text="t('statistic')"></span></th><th><span data-help-key="modules.hypothesis-test.types.NormRow.p" x-text="t('common.sym.p')"></span></th><th><span data-help-key="modules.hypothesis-test.types.NormRow.decisionText" x-text="t('decision')"></span></th>
                   </tr></thead>
                   <tbody>
-                    <template x-for="row in card.rows">
-                      <tr :key="row.name">
+                    <template x-for="(row, i) in card.rows" :key="row.name + ':' + i">
+                      <tr>
                         <td>
                           <span x-text="row.name"></span>
                           <button class="hyptest__algo-link" :data-algo-id="row.algoId"
@@ -212,8 +212,8 @@
                   </tbody>
                 </table>
                 <div class="hyptest__metrics hyptest__metrics--sm">
-                  <template x-for="m in card.metrics">
-                    <div class="hyptest__metric" :title="m.title" :key="m.label">
+                  <template x-for="(m, i) in card.metrics" :key="m.label + ':' + i">
+                    <div class="hyptest__metric" :title="m.title">
                       <div class="hyptest__metric-label" x-text="m.label"></div>
                       <div class="hyptest__metric-value" x-text="m.value"></div>
                       <template x-if="m.ci">
@@ -257,8 +257,8 @@
               <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionVarEquality')"></span></div>
               <div class="hyptest__result-card">
                 <div class="hyptest__metrics">
-                  <template x-for="m in result.varEquality.metrics">
-                    <div class="hyptest__metric" :title="m.title" :key="m.label">
+                  <template x-for="(m, i) in result.varEquality.metrics" :key="m.label + ':' + i">
+                    <div class="hyptest__metric" :title="m.title">
                       <div class="hyptest__metric-label" x-text="m.label"></div>
                       <div class="hyptest__metric-value" :class="m.valueClass">
                         <span x-text="m.value"></span>
@@ -291,8 +291,8 @@
               </div>
             </div>
             <div class="hyptest__metrics" data-ref="main-metrics">
-              <template x-for="m in result.main.metrics">
-                <div class="hyptest__metric" :title="m.title" :key="m.label">
+              <template x-for="(m, i) in result.main.metrics" :key="m.label + ':' + i">
+                <div class="hyptest__metric" :title="m.title">
                   <div class="hyptest__metric-label" x-text="m.label"></div>
                   <div class="hyptest__metric-value" :class="m.valueClass">
                     <span x-text="m.value"></span>
@@ -315,8 +315,8 @@
                   <th><span data-help-key="modules.hypothesis-test.types.AnovaRow.src" x-text="t('source')"></span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.ss" x-text="t('common.sym.ss')"></span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.df" x-text="t('common.sym.df')"></span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.ms" x-text="t('common.sym.ms')"></span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.f" x-text="t('common.sym.f')"></span></th><th><span data-help-key="modules.hypothesis-test.types.AnovaRow.p" x-text="t('common.sym.p')"></span></th>
                 </tr></thead>
                 <tbody>
-                  <template x-for="row in result.main.anovaRows">
-                    <tr :key="row.src">
+                  <template x-for="(row, i) in result.main.anovaRows" :key="row.src + ':' + i">
+                    <tr>
                       <td><strong x-show="row.bold" x-text="row.src"></strong><span x-show="!row.bold" x-text="row.src"></span></td>
                       <td><strong x-show="row.bold" x-text="row.ss"></strong><span x-show="!row.bold" x-text="row.ss"></span></td>
                       <td><strong x-show="row.bold" x-text="row.df"></strong><span x-show="!row.bold" x-text="row.df"></span></td>
@@ -334,8 +334,8 @@
               <div class="hyptest__model-summary" data-ref="model-summary">
                 <div class="hyptest__model-summary-title" x-text="t('modelSummary')"></div>
                 <div class="hyptest__metrics">
-                  <template x-for="m in result.main.modelSummary">
-                    <div class="hyptest__metric" :title="m.title" :key="m.label">
+                  <template x-for="(m, i) in result.main.modelSummary" :key="m.label + ':' + i">
+                    <div class="hyptest__metric" :title="m.title">
                       <div class="hyptest__metric-label" x-text="m.label"></div>
                       <div class="hyptest__metric-value" x-text="m.value"></div>
                     </div>
@@ -357,8 +357,8 @@
                   </template>
                 </tr></thead>
                 <tbody>
-                  <template x-for="row in result.main.groupRows">
-                    <tr :key="row.name">
+                  <template x-for="(row, i) in result.main.groupRows" :key="row.name + ':' + i">
+                    <tr>
                       <td x-text="row.name"></td>
                       <td x-text="row.n"></td>
                       <td x-text="row.mean"></td>
@@ -382,8 +382,8 @@
               <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="result.secondary.title"></span></div>
               <div class="hyptest__result-card" data-ref="secondary-result">
                 <div class="hyptest__metrics">
-                  <template x-for="m in result.secondary.metrics">
-                    <div class="hyptest__metric" :title="m.title" :key="m.label">
+                  <template x-for="(m, i) in result.secondary.metrics" :key="m.label + ':' + i">
+                    <div class="hyptest__metric" :title="m.title">
                       <div class="hyptest__metric-label" x-text="m.label"></div>
                       <div class="hyptest__metric-value" :class="m.valueClass">
                         <span x-text="m.value"></span>
@@ -410,8 +410,8 @@
                   <p data-help-key="modules.hypothesis-test.types.PowerInfo.requiredLine" x-text="result.power.requiredLine"></p>
                 </div>
                 <div class="hyptest__metrics">
-                  <template x-for="m in result.power.metrics">
-                    <div class="hyptest__metric" :title="m.title" :key="m.label">
+                  <template x-for="(m, i) in result.power.metrics" :key="m.label + ':' + i">
+                    <div class="hyptest__metric" :title="m.title">
                       <div class="hyptest__metric-label" x-text="m.label"></div>
                       <div class="hyptest__metric-value" :class="m.valueClass" x-text="m.value"></div>
                     </div>
@@ -442,14 +442,14 @@
                 <table class="dmike-table hyptest__pairwise">
                   <thead><tr>
                     <th></th>
-                    <template x-for="h in result.pairwise.headers"><th :key="h" x-text="h"></th></template>
+                    <template x-for="(h, i) in result.pairwise.headers" :key="h + ':' + i"><th x-text="h"></th></template>
                   </tr></thead>
                   <tbody>
-                    <template x-for="row in result.pairwise.rows">
-                      <tr :key="row.head">
+                    <template x-for="(row, j) in result.pairwise.rows" :key="row.head + ':' + j">
+                      <tr>
                         <th x-text="row.head"></th>
-                        <template x-for="cell in row.cells">
-                          <td :class="cell.cls" :title="cell.title" :key="cell.key">
+                        <template x-for="(cell, i) in row.cells" :key="cell.key + ':' + i">
+                          <td :class="cell.cls" :title="cell.title">
                             <span class="hyptest__pairwise-p" x-text="cell.text"></span>
                             <template x-if="cell.ci">
                               <span class="hyptest__pairwise-ci" x-text="cell.ci"></span>

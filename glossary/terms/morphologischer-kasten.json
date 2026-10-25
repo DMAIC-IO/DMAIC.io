@@ -1,0 +1,71 @@
+{
+  "id": "morphologischer-kasten",
+  "category": "methodology",
+  "title": {
+    "de": "Morphologischer Kasten",
+    "en": "Morphological Box"
+  },
+  "short": {
+    "de": "Matrix aus Parametern und Ausprägungen, aus der je eine Ausprägung pro Parameter zu Gesamtkonzepten kombiniert wird.",
+    "en": "Matrix of parameters and options from which one option per parameter is combined into whole concepts."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **morphologische Kasten** geht auf Fritz Zwicky zurück. Eine Lösung wird in voneinander unabhängige **Parameter** (Teilfunktionen oder Merkmale) zerlegt; für jeden Parameter werden alternative **Ausprägungen** gesammelt. Ein **Konzept** wählt je Parameter genau eine Ausprägung."
+      },
+      {
+        "type": "paragraph",
+        "text": "Die Zahl der möglichen Kombinationen ist das Produkt der Ausprägungszahlen und wächst schnell: fünf Parameter mit je vier Ausprägungen ergeben bereits 1024 Konzepte. Die **Verträglichkeitsprüfung** (Cross-Consistency-Assessment nach Ritchey) streicht Paare von Ausprägungen, die nicht zusammen funktionieren, und verkleinert so den Lösungsraum auf die verträglichen Kombinationen."
+      },
+      {
+        "type": "note",
+        "text": "Der Kasten erzeugt Kandidaten, er wählt nicht aus. Bewertung und Auswahl der Konzepte folgen in einem eigenen Schritt, etwa mit einer gewichteten Bewertung oder der Pugh-Matrix."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **morphological box** goes back to Fritz Zwicky. A solution is decomposed into independent **parameters** (sub-functions or properties); alternative **options** are collected for each parameter. A **concept** picks exactly one option per parameter."
+      },
+      {
+        "type": "paragraph",
+        "text": "The number of possible combinations is the product of the option counts and grows fast: five parameters with four options each already give 1024 concepts. The **cross-consistency assessment** (after Ritchey) rules out pairs of options that do not work together and so shrinks the solution space to the consistent combinations."
+      },
+      {
+        "type": "note",
+        "text": "The box generates candidates, it does not choose. Scoring and selecting the concepts follow in a separate step, for example with a weighted evaluation or the Pugh matrix."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Zwicky-Box",
+      "Morphologische Matrix",
+      "Morphologische Analyse"
+    ],
+    "en": [
+      "Zwicky box",
+      "morphological matrix",
+      "morphological analysis"
+    ]
+  },
+  "seeAlso": [
+    "triz"
+  ],
+  "modules": [
+    "morphological-box"
+  ],
+  "algoLab": [],
+  "sources": [
+    {
+      "label": "Zwicky, F. — Entdecken, Erfinden, Forschen im morphologischen Weltbild, Droemer Knaur, 1966",
+      "url": null
+    },
+    {
+      "label": "Ritchey, T. — General Morphological Analysis: A General Method for Non-Quantified Modelling, Swedish Morphological Society, 2002/2013",
+      "url": null
+    }
+  ]
+}

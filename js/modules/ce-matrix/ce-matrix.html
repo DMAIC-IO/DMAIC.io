@@ -6,12 +6,12 @@
           <!-- Weight row -->
           <tr class="ce-matrix__weight-row">
             <th class="ce-matrix__weight-label"><span class="context-help-anchor--overlay" data-help-key="modules.ce-matrix.fields.weights.help" x-text="t('weight')"></span></th>
-            <template x-for="(out, c) in model.outputs">
-              <th class="ce-matrix__weight-cell" :key="'w-' + c">
+            <template x-for="(out, c) in model.outputs" :key="'w-' + c">
+              <th class="ce-matrix__weight-cell">
                 <select class="field field--xs ce-matrix__weight-select" :data-col="c"
                         @change="weightChanged(c, $event)">
-                  <template x-for="w in weightOptions" >
-                    <option :key="w" :value="w" :selected="w === model.getWeight(c)" x-text="w"></option>
+                  <template x-for="w in weightOptions" :key="w" >
+                    <option :value="w" :selected="w === model.getWeight(c)" x-text="w"></option>
                   </template>
                 </select>
               </th>
@@ -22,8 +22,8 @@
           <!-- Output name row -->
           <tr>
             <th class="ce-matrix__corner"></th>
-            <template x-for="(out, c) in model.outputs">
-              <th class="ce-matrix__output-header dmike-del-btn-host" :key="'o-' + c">
+            <template x-for="(out, c) in model.outputs" :key="'o-' + c">
+              <th class="ce-matrix__output-header dmike-del-btn-host">
                 <div class="ce-matrix__output-header-content">
                   <input type="text" class="ce-matrix__output-name"
                          :value="model.outputs[c]"
@@ -43,8 +43,8 @@
         </thead>
 
         <tbody>
-          <template x-for="(inp, r) in model.inputs">
-            <tr :key="'r-' + r">
+          <template x-for="(inp, r) in model.inputs" :key="'r-' + r">
+            <tr>
               <td class="ce-matrix__name-cell dmike-del-btn-host">
                 <input type="text" class="field field--ghost ce-matrix__input-name"
                        :value="model.inputs[r]"
@@ -55,8 +55,8 @@
                         :data-row="r" :title="t('removeInput')"
                         @click="removeInput(r)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
               </td>
-              <template x-for="(out, c) in model.outputs">
-                <td class="ce-matrix__score-cell" :key="'s-' + r + '-' + c">
+              <template x-for="(out, c) in model.outputs" :key="'s-' + r + '-' + c">
+                <td class="ce-matrix__score-cell">
                   <input type="number" min="0" :max="scoreMax()"
                          class="ce-matrix__score-input"
                          :class="scoreClass(r, c)"
@@ -77,8 +77,8 @@
         <tfoot>
           <tr>
             <td class="ce-matrix__total-label" x-text="t('colSum')"></td>
-            <template x-for="(out, c) in model.outputs">
-              <td class="ce-matrix__result-cell" :key="'cs-' + c"
+            <template x-for="(out, c) in model.outputs" :key="'cs-' + c">
+              <td class="ce-matrix__result-cell"
                   :style="colSumStyle(c)"
                   x-text="model.colSum(c)"></td>
             </template>
@@ -94,8 +94,8 @@
       <label class="ce-matrix__scale">
         <span class="context-help-anchor--overlay" data-help-key="modules.ce-matrix.actions.setScale.help" x-text="t('scaleLabel')"></span>
         <select class="field field--xs ce-matrix__scale-select" @change="scaleChanged($event)">
-          <template x-for="id in scaleIds">
-            <option :key="id" :value="id" :selected="id === model.scale" x-text="t('scale_' + id)"></option>
+          <template x-for="id in scaleIds" :key="id">
+            <option :value="id" :selected="id === model.scale" x-text="t('scale_' + id)"></option>
           </template>
         </select>
       </label>

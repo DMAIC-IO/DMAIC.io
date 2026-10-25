@@ -24,8 +24,8 @@
       ╚══════════════════════════════════════════════════════════════════════╝
     -->
     <div class="five-why__tree" data-ref="tree">
-      <template x-for="(n1, i1) in model.nodes">
-        <div class="five-why__node" :key="n1.id" :data-node-id="n1.id">
+      <template x-for="(n1, i1) in model.nodes" :key="n1.id">
+        <div class="five-why__node" :data-node-id="n1.id">
           <div class="five-why__card" :class="cardClass(n1)">
             <span class="five-why__tag" :data-level="clampLevel(n1)"
                   x-text="nodeTag(i1)"></span>
@@ -54,8 +54,8 @@
           <template x-if="n1.children.length > 0 || n1.level < maxLevel">
             <div class="five-why__children" :data-level="clampLevel(n1)" :data-parent="n1.id"
                  x-show="!n1.collapsed">
-              <template x-for="(n2, i2) in n1.children">
-                <div class="five-why__node" :key="n2.id" :data-node-id="n2.id">
+              <template x-for="(n2, i2) in n1.children" :key="n2.id">
+                <div class="five-why__node" :data-node-id="n2.id">
                   <div class="five-why__card" :class="cardClass(n2)">
                     <span class="five-why__tag" :data-level="clampLevel(n2)"
                           x-text="nodeTag(i1, i2)"></span>
@@ -84,8 +84,8 @@
                   <template x-if="n2.children.length > 0 || n2.level < maxLevel">
                     <div class="five-why__children" :data-level="clampLevel(n2)" :data-parent="n2.id"
                          x-show="!n2.collapsed">
-                      <template x-for="(n3, i3) in n2.children">
-                        <div class="five-why__node" :key="n3.id" :data-node-id="n3.id">
+                      <template x-for="(n3, i3) in n2.children" :key="n3.id">
+                        <div class="five-why__node" :data-node-id="n3.id">
                           <div class="five-why__card" :class="cardClass(n3)">
                             <span class="five-why__tag" :data-level="clampLevel(n3)"
                                   x-text="nodeTag(i1, i2, i3)"></span>
@@ -114,8 +114,8 @@
                           <template x-if="n3.children.length > 0 || n3.level < maxLevel">
                             <div class="five-why__children" :data-level="clampLevel(n3)" :data-parent="n3.id"
                                  x-show="!n3.collapsed">
-                              <template x-for="(n4, i4) in n3.children">
-                                <div class="five-why__node" :key="n4.id" :data-node-id="n4.id">
+                              <template x-for="(n4, i4) in n3.children" :key="n4.id">
+                                <div class="five-why__node" :data-node-id="n4.id">
                                   <div class="five-why__card" :class="cardClass(n4)">
                                     <span class="five-why__tag" :data-level="clampLevel(n4)"
                                           x-text="nodeTag(i1, i2, i3, i4)"></span>
@@ -144,8 +144,8 @@
                                   <template x-if="n4.children.length > 0 || n4.level < maxLevel">
                                     <div class="five-why__children" :data-level="clampLevel(n4)" :data-parent="n4.id"
                                          x-show="!n4.collapsed">
-                                      <template x-for="(n5, i5) in n4.children">
-                                        <div class="five-why__node" :key="n5.id" :data-node-id="n5.id">
+                                      <template x-for="(n5, i5) in n4.children" :key="n5.id">
+                                        <div class="five-why__node" :data-node-id="n5.id">
                                           <div class="five-why__card" :class="cardClass(n5)">
                                             <span class="five-why__tag" :data-level="clampLevel(n5)">
                                               <span class="icon icon--sm icon--text" data-icon="flow.root-cause" aria-hidden="true"></span>

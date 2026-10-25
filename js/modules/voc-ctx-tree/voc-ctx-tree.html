@@ -35,8 +35,8 @@
     <template x-if="model.vocs.length === 0">
      <div class="vct__empty"><p class="vct__empty-text" x-text="t('noVocs')"></p></div>
     </template>
-    <template x-for="voc in model.vocs">
-     <div class="vct__card" :class="cardClass(voc)" :data-voc-id="voc.id" :key="voc.id"
+    <template x-for="voc in model.vocs" :key="voc.id">
+     <div class="vct__card" :class="cardClass(voc)" :data-voc-id="voc.id"
           @click="selectVoc(voc.id, $event)">
       <div class="vct__card-text" x-text="voc.text"></div>
       <div class="vct__card-meta">
@@ -86,8 +86,8 @@
           ║  and MUST be kept in sync when any node markup changes.            ║
           ╚════════════════════════════════════════════════════════════════════╝
         -->
-        <template x-for="need in model.activeVoc.needs">
-         <div :key="need.id">
+        <template x-for="need in model.activeVoc.needs" :key="need.id">
+         <div>
           <div class="vct__node vct__node--need" data-drag-type="need"
                :data-voc-id="model.activeVoc.id" :data-need-id="need.id">
            <div class="vct__node-text">
@@ -111,8 +111,8 @@
           <!-- Drivers -->
           <template x-if="need.drivers.length > 0">
            <div class="vct__children vct__children--need">
-            <template x-for="drv in need.drivers">
-             <div :key="drv.id">
+            <template x-for="drv in need.drivers" :key="drv.id">
+             <div>
               <div class="vct__node" :class="driverNodeClass(drv)" data-drag-type="driver"
                    :data-voc-id="model.activeVoc.id" :data-need-id="need.id" :data-drv-id="drv.id">
                <div class="vct__node-text">
@@ -136,10 +136,10 @@
               <!-- Requirements -->
               <template x-if="drv.requirements.length > 0">
                <div class="vct__children" :class="driverChildrenClass(drv)">
-                <template x-for="req in drv.requirements">
+                <template x-for="req in drv.requirements" :key="req.id">
                  <div class="vct__node vct__node--req" data-drag-type="req"
                       :data-voc-id="model.activeVoc.id" :data-need-id="need.id"
-                      :data-drv-id="drv.id" :data-req-id="req.id" :key="req.id">
+                      :data-drv-id="drv.id" :data-req-id="req.id">
                   <div class="vct__node-text">
                    <div class="vct__node-badge" x-text="t('badgeReq')"
                         @mousedown="startDrag($event)"></div>

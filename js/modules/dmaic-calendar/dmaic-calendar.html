@@ -4,8 +4,8 @@
       <div>
         <div class="dmike-split__section-title" x-text="t('phases')"></div>
         <div class="module-calendar__phase-legend" data-ref="phaseLegend">
-          <template x-for="p in phaseIds">
-            <div class="module-calendar__phase-tag" :key="p"
+          <template x-for="p in phaseIds" :key="p">
+            <div class="module-calendar__phase-tag"
               :class="phaseTagClass(p)"
               @click="togglePhaseFilter(p)">
               <span class="module-calendar__phase-dot" :style="phaseDotStyle(p)"></span>

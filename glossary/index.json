@@ -826,6 +826,11 @@
       "file": "terms/ifr.json"
     },
     {
+      "id": "morphologischer-kasten",
+      "category": "methodology",
+      "file": "terms/morphologischer-kasten.json"
+    },
+    {
       "id": "idealitaet",
       "category": "triz",
       "file": "terms/idealitaet.json"
@@ -1049,6 +1054,36 @@
       "id": "wahrscheinlichkeitsnetz",
       "category": "visualization",
       "file": "terms/wahrscheinlichkeitsnetz.json"
+    },
+    {
+      "id": "grundgesamtheit",
+      "category": "descriptive",
+      "file": "terms/grundgesamtheit.json"
+    },
+    {
+      "id": "stichprobe",
+      "category": "descriptive",
+      "file": "terms/stichprobe.json"
+    },
+    {
+      "id": "standardfehler",
+      "category": "hypothesis",
+      "file": "terms/standardfehler.json"
+    },
+    {
+      "id": "stichprobenverteilung",
+      "category": "hypothesis",
+      "file": "terms/stichprobenverteilung.json"
+    },
+    {
+      "id": "zentraler-grenzwertsatz",
+      "category": "hypothesis",
+      "file": "terms/zentraler-grenzwertsatz.json"
+    },
+    {
+      "id": "normalverteilung",
+      "category": "descriptive",
+      "file": "terms/normalverteilung.json"
     }
   ]
 }

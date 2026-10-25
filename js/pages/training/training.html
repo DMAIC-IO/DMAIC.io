@@ -3,8 +3,8 @@
     <h2 class="training-area__title" x-text="pageTitle()"></h2>
     <p class="training-area__subtitle" x-text="pageSubtitle()"></p>
     <div class="training-area__tabs" role="tablist">
-      <template x-for="tab in tabs">
-        <button type="button" :key="tab.id"
+      <template x-for="tab in tabs" :key="tab.id">
+        <button type="button"
                 :data-tab-id="tab.id"
                 :class="tabClass(tab.id)"
                 x-text="tab.label"
@@ -12,38 +12,203 @@
       </template>
     </div>
   </header>
+  <template x-if="isOverview()">
+    <div class="training-area__content training-course">
+      <template x-for="c in courses()" :key="c.id">
+        <article class="training-course__card">
+          <h3 x-text="c.title"></h3>
+          <p class="training-course__summary" x-text="c.summary"></p>
+          <ol class="training-course__lessons">
+            <template x-for="l in c.lessons" :key="l.id">
+              <li>
+                <button type="button" :class="lessonClass(l)" :data-lesson-id="l.id"
+                        :disabled="!l.available" @click="openLesson(l)">
+                  <span class="training-course__nr" x-text="l.nr"></span>
+                  <span class="training-course__text">
+                    <span class="training-course__title" x-text="l.title"></span>
+                    <span class="training-course__prerequisite" x-show="hasPrerequisite(l)" x-text="l.prerequisite"></span>
+                  </span>
+                  <span class="training-course__status" x-text="l.statusLabel"></span>
+                </button>
+              </li>
+            </template>
+          </ol>
+        </article>
+      </template>
+    </div>
+  </template>
+  <template x-if="isLesson()">
+    <div class="training-area__content training-lesson" @training-sim-progress="onSimProgress($event)">
+      <nav class="training-lesson__nav">
+        <button type="button" class="btn btn--sm btn--ghost training-lesson__back" @click="backToOverview()" x-text="t('course.back')"></button>
+        <span class="training-lesson__crumb" x-text="courseTitle()"></span>
+        <button type="button" class="btn btn--sm btn--ghost training-lesson__reset" @click="resetLesson()" x-text="t('course.reset')"></button>
+      </nav>
+      <h3 class="training-lesson__title" x-text="lessonTitle()"></h3>
+      <div class="training-lesson__progress">
+        <template x-for="(s, si) in steps()" :key="si">
+          <button type="button" :class="stepDotClass(si)" :title="s.title" @click="goToStep(si)"></button>
+        </template>
+        <span class="training-lesson__step-label" x-text="stepLabel()"></span>
+      </div>
+      <h4 class="training-lesson__step-title" x-text="step().title"></h4>
+      <template x-for="(b, i) in step().blocks" :key="blockKey(i)">
+        <div class="training-lesson__block">
+          <template x-if="isType(b, 'heading')"><h5 class="training-lesson__heading" x-effect="renderInline($el, b.content)"></h5></template>
+          <template x-if="isType(b, 'paragraph')"><p x-effect="renderInline($el, b.content)"></p></template>
+          <template x-if="isType(b, 'note')"><p class="training-lesson__note" x-effect="renderInline($el, b.content)"></p></template>
+          <template x-if="isType(b, 'list')">
+            <ul>
+              <template x-for="(it, j) in b.items" :key="j"><li x-effect="renderInline($el, it)"></li></template>
+            </ul>
+          </template>
+          <template x-if="isType(b, 'steps')">
+            <ol>
+              <template x-for="(it, j) in b.items" :key="j"><li x-effect="renderInline($el, it)"></li></template>
+            </ol>
+          </template>
+          <template x-if="isType(b, 'definition')">
+            <div class="training-lesson__definition">
+              <strong x-effect="renderTerm($el, b)"></strong>
+              <span x-effect="renderInline($el, b.content)"></span>
+            </div>
+          </template>
+          <template x-if="isType(b, 'table')">
+            <div class="dmike-table-wrap training-lesson__table">
+              <table class="dmike-table">
+                <thead><tr>
+                  <template x-for="(c, ci) in b.headers" :key="ci"><th x-effect="renderInline($el, c)"></th></template>
+                </tr></thead>
+                <tbody>
+                  <template x-for="(row, ri) in b.rows" :key="ri">
+                    <tr>
+                      <template x-for="(c, ci) in row" :key="ci"><td x-effect="renderInline($el, c)"></td></template>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </template>
+          <template x-if="isType(b, 'insight')">
+            <aside class="training-insight" :data-insight-id="b.id">
+              <div class="training-insight__head">
+                <span class="icon" data-icon="status.insight"></span>
+                <strong x-text="insightTitle()"></strong>
+              </div>
+              <p class="training-insight__locked" x-show="insightLocked(b)" x-text="insightHint(b)"></p>
+              <div class="training-insight__body" x-show="insightOpen(b)">
+                <template x-for="(para, pi) in b.paragraphs" :key="pi"><p x-effect="renderInline($el, para)"></p></template>
+              </div>
+            </aside>
+          </template>
+          <template x-if="isWidget(b, 'sampling-distribution')">
+            <div class="training-sim" x-data="trainingSamplingSim" x-init="setup($el, b.params, lessonApi())" :data-count="count" :data-means-count="meansCount" :data-n-points="nPoints" :data-theory-means="theoryMeans" :data-theory-spread="theorySpread">
+              <div class="training-sim__controls">
+                <label class="training-sim__field">
+                  <span x-text="label('population')"></span>
+                  <select data-sim-population x-model="population" @change="changed()">
+                    <option value="normal" :hidden="popHidden('normal')" x-text="popLabel('normal')"></option>
+                    <option value="uniform" :hidden="popHidden('uniform')" x-text="popLabel('uniform')"></option>
+                    <option value="skewed" :hidden="popHidden('skewed')" x-text="popLabel('skewed')"></option>
+                    <option value="bimodal" :hidden="popHidden('bimodal')" x-text="popLabel('bimodal')"></option>
+                  </select>
+                </label>
+                <label class="training-sim__field">
+                  <span x-text="label('sampleSize')"></span>
+                  <select data-sim-n @change="setN($event)">
+                    <template x-for="v in nOptions()" :key="v">
+                      <option :value="v" :selected="v === n" x-text="v"></option>
+                    </template>
+                  </select>
+                </label>
+                <div class="btn-group">
+                  <button type="button" class="btn btn--sm btn--secondary" data-draw="1" @click="draw(1)" x-text="label('drawOne')"></button>
+                  <button type="button" class="btn btn--sm btn--primary" data-draw="1000" @click="draw(1000)" x-text="label('draw1000')"></button>
+                </div>
+                <span class="training-sim__count" x-text="countText()"></span>
+              </div>
+              <div class="training-sim__legend">
+                <span class="training-sim__key training-sim__key--mu" x-text="label('legendMu')"></span>
+                <span class="training-sim__key training-sim__key--xbar" x-text="label('legendXbar')"></span>
+                <span class="training-sim__key training-sim__key--theory" x-show="showTheory" x-text="label('legendTheory')"></span>
+              </div>
+              <div class="training-sim__charts">
+                <div class="training-sim__col">
+                  <div class="training-sim__chart training-sim__chart--pop"></div>
+                  <table class="training-sim__stats">
+                    <tr><th x-text="label('mean')"></th><td x-text="muText()"></td><td class="training-sim__sym">μ</td></tr>
+                    <tr><th x-text="label('spread')"></th><td x-text="sigmaText()"></td><td class="training-sim__sym">σ</td></tr>
+                  </table>
+                </div>
+                <div class="training-sim__col">
+                  <div class="training-sim__chart training-sim__chart--means"></div>
+                  <table class="training-sim__stats">
+                    <tr><th x-text="label('mean')"></th><td data-sim-mean x-text="meanText"></td><td class="training-sim__sym">x̄</td></tr>
+                    <tr><th x-text="label('spread')"></th><td data-sim-spread x-text="spreadText"></td><td class="training-sim__sym" x-text="seHint()"></td></tr>
+                  </table>
+                </div>
+              </div>
+              <div class="training-sim__se" x-show="trackN">
+                <div class="training-sim__chart training-sim__chart--n-mean"></div>
+                <div class="training-sim__chart training-sim__chart--se"></div>
+                <p class="training-sim__hint" x-text="label('seChartHint')"></p>
+              </div>
+            </div>
+          </template>
+          <template x-if="isType(b, 'quiz')">
+            <div class="training-quiz" :data-quiz-id="b.id" x-data="trainingQuiz" x-init="setup(b, lessonApi())">
+              <p class="training-quiz__question" x-effect="renderInline($el, b.question)"></p>
+              <template x-for="(o, oi) in b.options" :key="oi">
+                <button type="button" :class="optClass(oi)" @click="choose(oi)" x-effect="renderInline($el, o.text)"></button>
+              </template>
+              <p :class="feedbackClass()" x-show="answered()">
+                <strong x-text="verdict()"></strong>
+                <span x-text="feedback()"></span>
+              </p>
+            </div>
+          </template>
+        </div>
+      </template>
+      <footer class="training-lesson__footer">
+        <button type="button" class="btn btn--secondary training-lesson__prev" :disabled="!hasPrev()" @click="prev()" x-text="t('course.prev')"></button>
+        <button type="button" class="btn btn--primary training-lesson__next" x-show="hasNext()" @click="next()" x-text="t('course.next')"></button>
+        <button type="button" class="btn btn--primary training-lesson__finish" x-show="isLast()" @click="finish()" x-text="t('course.finish')"></button>
+      </footer>
+    </div>
+  </template>
+  <template x-if="isOther()">
   <div class="training-area__content">
-    <template x-for="(b, i) in blocks()">
-      <div :key="i">
+    <template x-for="(b, i) in blocks()" :key="i">
+      <div>
         <template x-if="isType(b, 'p')"><p x-text="b.text"></p></template>
         <template x-if="isType(b, 'h3')"><h3 x-text="b.text"></h3></template>
         <template x-if="isType(b, 'h4')"><h4 x-text="b.text"></h4></template>
         <template x-if="isType(b, 'ul')">
           <ul>
-            <template x-for="(it, j) in b.items"><li :key="j" x-text="it"></li></template>
+            <template x-for="(it, j) in b.items" :key="j"><li x-text="it"></li></template>
           </ul>
         </template>
         <template x-if="isType(b, 'ol')">
           <ol>
-            <template x-for="(it, j) in b.items"><li :key="j" x-text="it"></li></template>
+            <template x-for="(it, j) in b.items" :key="j"><li x-text="it"></li></template>
           </ol>
         </template>
         <template x-if="isType(b, 'table')">
           <table class="training-area__table">
             <thead>
               <tr>
-                <template x-for="(col, j) in b.cols">
-                  <th :key="j" :style="thStyle(col)" x-text="col.label"></th>
+                <template x-for="(col, j) in b.cols" :key="j">
+                  <th :style="thStyle(col)" x-text="col.label"></th>
                 </template>
               </tr>
             </thead>
             <tbody>
-              <template x-for="(row, r) in b.rows">
-                <tr :key="r">
-                  <template x-for="(c, ci) in row">
-                    <td :key="ci" :class="tdClass(c)">
-                      <template x-for="(seg, si) in c.segs">
-                        <span :key="si">
+              <template x-for="(row, r) in b.rows" :key="r">
+                <tr>
+                  <template x-for="(c, ci) in row" :key="ci">
+                    <td :class="tdClass(c)">
+                      <template x-for="(seg, si) in c.segs" :key="si">
+                        <span>
                           <template x-if="isEm(seg)"><strong x-text="seg.text"></strong></template>
                           <template x-if="isHint(seg)"><span class="training-area__module-hint" x-text="seg.text"></span></template>
                           <template x-if="isPlain(seg)"><span x-text="seg.text"></span></template>
@@ -59,4 +224,5 @@
       </div>
     </template>
   </div>
+  </template>
 </section>

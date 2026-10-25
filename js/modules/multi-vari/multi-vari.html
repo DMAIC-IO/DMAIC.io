@@ -119,8 +119,8 @@
         </div>
 
         <div class="multi-vari__warnings" data-ref="warnings" data-help-key="modules.multi-vari.types.Result.warnings" x-show="hasWarnings()">
-          <template x-for="code in warningCodes()">
-            <div class="multi-vari__warning" :key="code" x-text="warningText(code)"></div>
+          <template x-for="(code, i) in warningCodes()" :key="code + ':' + i">
+            <div class="multi-vari__warning" x-text="warningText(code)"></div>
           </template>
         </div>
 
@@ -133,8 +133,8 @@
 
         <template x-if="canRender()">
           <div class="multi-vari__strips" data-ref="strips">
-            <template x-for="strip in result.strips">
-              <div class="multi-vari__strip" :key="strip.idx" :data-strip="strip.idx"></div>
+            <template x-for="strip in result.strips" :key="strip.idx">
+              <div class="multi-vari__strip" :data-strip="strip.idx"></div>
             </template>
           </div>
         </template>
@@ -153,8 +153,8 @@
               </tr>
             </thead>
             <tbody>
-              <template x-for="term in vcTerms()">
-                <tr :key="term.id" :data-term="term.id">
+              <template x-for="term in vcTerms()" :key="term.id">
+                <tr :data-term="term.id">
                   <td x-text="termLabel(term)"></td>
                   <td class="num" x-text="intOrDash(term.df)"></td>
                   <td class="num" x-text="fmt(term.ss)"></td>

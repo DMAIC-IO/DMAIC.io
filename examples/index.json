@@ -2623,6 +2623,30 @@
       ]
     },
     {
+      "id": "morphological-box-pizza-lieferung",
+      "type": "project",
+      "title": {
+        "de": "Morphologischer Kasten: Pizza-Lieferung",
+        "en": "Morphological Box: Pizza Delivery"
+      },
+      "description": {
+        "de": "Vier Parameter (Fahrzeug, Warmhaltung, Bestellannahme, Liefergebiet) mit je drei Ausprägungen, drei unverträgliche Paare und drei Konzepte — eines davon mit Konflikt.",
+        "en": "Four parameters (vehicle, heat retention, order intake, delivery area) with three options each, three incompatible pairs and three concepts — one of them with a conflict."
+      },
+      "source": "Qprovement Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/morphological-box-pizza-lieferung.json",
+      "format": "json",
+      "modules": [
+        "morphological-box"
+      ],
+      "tags": [
+        "improve",
+        "morphological-box",
+        "pizza-lehrcase"
+      ]
+    },
+    {
       "id": "triz-ifr-bandfoerderer",
       "type": "project",
       "title": {

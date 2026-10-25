@@ -1,0 +1,82 @@
+{
+  "id": "standardfehler",
+  "category": "hypothesis",
+  "title": {
+    "de": "Standardfehler",
+    "en": "Standard error"
+  },
+  "short": {
+    "de": "Streuung der Stichprobenmittelwerte: Standardabweichung geteilt durch Wurzel n.",
+    "en": "Spread of the sample means: standard deviation divided by the square root of n."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Der **Standardfehler** (des Mittelwerts) ist die Standardabweichung der Stichprobenmittelwerte. Er hängt nur von der Streuung $\\sigma$ der Einzelwerte und vom Stichprobenumfang $n$ ab:"
+      },
+      {
+        "type": "formula",
+        "latex": "\\sigma_{\\bar{x}} = \\frac{\\sigma}{\\sqrt{n}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Vervierfacht man $n$, halbiert sich der Standardfehler, denn $n$ steht unter der Wurzel. Für halbe Streuung braucht man also den vierfachen Aufwand."
+      },
+      {
+        "type": "note",
+        "text": "Konfidenzintervall, t-Test und x̄-Regelkarte rechnen mit Vielfachen des Standardfehlers, zum Beispiel ±3 Standardfehler. Ist $\\sigma$ unbekannt, ersetzt man es durch die Stichproben-{{term:standardabweichung|Standardabweichung}} $s$."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **standard error** (of the mean) is the standard deviation of the sample means. It depends only on the spread $\\sigma$ of the individual values and on the sample size $n$:"
+      },
+      {
+        "type": "formula",
+        "latex": "\\sigma_{\\bar{x}} = \\frac{\\sigma}{\\sqrt{n}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Quadrupling $n$ halves the standard error, because $n$ sits under the square root. Half the spread therefore needs four times the effort."
+      },
+      {
+        "type": "note",
+        "text": "Confidence interval, t-test and x̄ control chart work with multiples of the standard error, for example ±3 standard errors. If $\\sigma$ is unknown it is replaced by the sample {{term:standardabweichung|standard deviation}} $s$."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "SE",
+      "Standardfehler des Mittelwerts"
+    ],
+    "en": [
+      "SE",
+      "standard error of the mean",
+      "SEM"
+    ]
+  },
+  "seeAlso": [
+    "stichprobenverteilung",
+    "zentraler-grenzwertsatz",
+    "standardabweichung",
+    "stichprobe"
+  ],
+  "modules": [
+    "sample-size",
+    "hypothesis-test",
+    "control-chart"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D.C.: Introduction to Statistical Quality Control, 8th ed., Wiley, 2020 — Kap. 3 und 4",
+      "url": null
+    },
+    {
+      "label": "DIN ISO 3534-1: Statistik — Begriffe und Formelzeichen, Teil 1",
+      "url": null
+    }
+  ]
+}
