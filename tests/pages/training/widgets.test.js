@@ -153,6 +153,14 @@ suite('value-distribution widget', () => {
     assertDeepEqual(plain.rows().map((r) => r.key), ['mean', 'belowMean']);
   });
 
+  test('value widget labels the mean and band lines visibly', () => {
+    const { sim } = mount({ processes: ['fill-a'], showMean: true, bands: [1], seed: 2 });
+    sim.measure('fill-a', 100);
+    const lines = sim.chartConfig('fill-a').refLines;
+    assertDeepEqual(lines.map((l) => l.label), ['x̄', '−1 s', '+1 s']);
+    assertTrue(lines.every((l) => l.showLabel === true), 'every reference line shows its label');
+  });
+
   test('value widget shows shares as whole percent', () => {
     const { sim } = mount({ processes: ['fill-a'], stats: ['count'], bands: [1, 2], seed: 5 });
     assertEqual(sim.cell('fill-a', 'within1'), '–');

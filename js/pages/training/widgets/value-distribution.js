@@ -199,13 +199,13 @@ export function valueSimComponent(ctx) {
       const s = summarizeValues(list);
       const refLines = [];
       if (this.showMean && Number.isFinite(s.mean)) {
-        refLines.push({ dir: 'v', value: s.mean, label: 'x̄', width: 2, color: MEAN_COLOR });
+        refLines.push({ dir: 'v', value: s.mean, label: 'x̄', showLabel: true, width: 2, color: MEAN_COLOR });
       }
       if (Number.isFinite(s.sd)) {
         for (const k of this.bands) {
           const band = (sign) => ({
             dir: 'v', value: s.mean + sign * k * s.sd, label: `${sign < 0 ? '−' : '+'}${k} s`,
-            dash: 'dash', width: 1, color: BAND_COLOR,
+            showLabel: true, dash: 'dash', width: 1, color: BAND_COLOR,
           });
           refLines.push(band(-1), band(1));
         }
