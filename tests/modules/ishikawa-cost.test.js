@@ -16,7 +16,7 @@
  */
 
 import { suite, test, assertEqual, assertTrue, assertAlmostEqual } from '../test-utils.js';
-import { computeCostConfig } from '../../js/modules/ishikawa/ishikawa.js';
+import { computeCostConfig } from '../../js/modules/ishikawa/ishikawa-charts.js';
 
 const DAY = 86400000;
 

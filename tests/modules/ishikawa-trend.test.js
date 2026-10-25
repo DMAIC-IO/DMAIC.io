@@ -7,7 +7,7 @@
  */
 
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
-import { computeTrendConfig } from '../../js/modules/ishikawa/ishikawa.js';
+import { computeTrendConfig } from '../../js/modules/ishikawa/ishikawa-charts.js';
 
 /** Mean of defined ratings across the given experts (mirrors model.calcScoreFor). */
 function meanScore(row, experts) {

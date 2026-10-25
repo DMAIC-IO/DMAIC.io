@@ -14,7 +14,7 @@
  */
 
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
-import { computeGanttConfig } from '../../js/modules/ishikawa/ishikawa.js';
+import { computeGanttConfig } from '../../js/modules/ishikawa/ishikawa-charts.js';
 
 const DAY = 86400000;
 
