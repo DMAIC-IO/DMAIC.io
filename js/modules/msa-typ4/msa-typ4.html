@@ -99,8 +99,8 @@
         <div>
           <!-- KPI strip (norm-dependent) -->
           <div class="dmike-kpi-strip">
-            <template x-for="tile in kpiTiles()">
-              <div class="dmike-kpi" :key="tile.key" :class="tile.mod">
+            <template x-for="tile in kpiTiles()" :key="tile.key">
+              <div class="dmike-kpi" :class="tile.mod">
                 <div class="dmike-kpi-label" :data-help-key="tile.help" x-text="tile.label"></div>
                 <div class="dmike-kpi-value" x-text="tile.value"></div>
                 <template x-if="tile.sub">
@@ -145,8 +145,8 @@
               </tr>
             </thead>
             <tbody>
-              <template x-for="row in tableRows()">
-                <tr :key="row.key" :class="row.rowClass">
+              <template x-for="row in tableRows()" :key="row.key">
+                <tr :class="row.rowClass">
                   <td x-text="row.xRef"></td>
                   <td x-text="row.n"></td>
                   <td x-text="row.mean"></td>
