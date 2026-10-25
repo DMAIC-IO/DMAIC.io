@@ -468,9 +468,8 @@
     <!-- Image lightbox (lent to the shared dialog by problem.openImage) -->
     <div class="ishikawa__img-lightbox" x-ref="lightbox">
       <img :src="problem.lightbox.src" :alt="problem.lightbox.caption" />
-      <template x-if="problem.lightbox.caption">
-        <p class="ishikawa__img-lightbox-caption" x-text="problem.lightbox.caption"></p>
-      </template>
+      <!-- x-show, not x-if: the node lives in the dialog while open, outside the Alpine root, where a fresh x-if clone is never initialised -->
+      <p class="ishikawa__img-lightbox-caption" x-show="problem.lightbox.caption" x-text="problem.lightbox.caption"></p>
     </div>
 
     <!-- Category rename form -->

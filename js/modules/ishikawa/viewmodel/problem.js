@@ -43,10 +43,10 @@ export class ProblemViewModel {
   }
 
   /**
-   * Nothing to release: no listeners, timers or charts.
+   * Nothing to release but the template-ref lookup: no listeners, timers or charts.
    * @noagent lifecycle
    */
-  detach() {}
+  detach() { this._ref = () => null; }
 
   /**
    * Set the problem statement every cause refers to.
