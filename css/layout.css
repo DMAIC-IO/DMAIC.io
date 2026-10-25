@@ -3405,3 +3405,19 @@ body.training-area-open .dmaic-tiles {
 .training-quiz__feedback { margin: var(--spacing-xs) 0 0 !important; padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--radius-md, 6px); background: var(--color-bg-primary); }
 .training-quiz__feedback--correct { border-left: 3px solid var(--color-success); }
 .training-quiz__feedback--wrong { border-left: 3px solid var(--color-error); }
+
+.training-sim__legend { display: flex; flex-wrap: wrap; gap: var(--spacing-md); font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+.training-sim__key::before { content: ''; display: inline-block; width: 1.5em; margin-right: var(--spacing-xs); vertical-align: middle; border-top: 2px solid currentColor; }
+.training-sim__key--mu::before { border-top-style: dotted; }
+.training-sim__key--xbar { color: var(--color-accent); }
+.training-sim__key--theory { color: var(--color-error); }
+.training-sim__key--theory::before { border-top-style: dashed; }
+.training-sim__charts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); }
+.training-sim__se { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); }
+.training-sim__col { display: flex; flex-direction: column; gap: var(--spacing-sm); min-width: 0; }
+.training-sim__chart { min-height: 240px; min-width: 0; }
+.training-sim__stats { border-collapse: collapse; font-size: var(--font-size-sm); }
+.training-sim__stats th { text-align: left; font-weight: normal; color: var(--color-text-secondary); padding-right: var(--spacing-md); }
+.training-sim__stats td { padding-right: var(--spacing-sm); font-variant-numeric: tabular-nums; }
+.training-sim__sym { color: var(--color-text-secondary); }
+.training-sim__hint { grid-column: 1 / -1; margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); }

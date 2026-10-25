@@ -41,4 +41,25 @@ suite('course widgets', () => {
     assertEqual(sim.popHidden('normal'), true);
     assertEqual(sim.popHidden('skewed'), false);
   });
+
+  test('sampling-distribution widget releases every chart it created', async () => {
+    const live = new Set();
+    const chartManager = {
+      create: async () => { const c = {}; live.add(c); return c; },
+      update: () => {},
+      destroy: (c) => live.delete(c),
+    };
+    const containers = {};
+    const root = {
+      querySelector: (sel) => (containers[sel] || (containers[sel] = {})),
+      dispatchEvent: () => {},
+    };
+    const sim = WIDGET_COMPONENTS['sampling-distribution'].factory({ i18n: { t: (k) => k }, chartManager });
+    await sim.setup(root, { trackN: true, showTheory: true }, { addResult: () => {}, results: () => ({}) });
+    assertEqual(live.size, 4);
+    assertEqual(sim.theoryMeans, true);
+    assertEqual(sim.theorySpread, true);
+    sim.destroy();
+    assertEqual(live.size, 0);
+  });
 });

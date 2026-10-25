@@ -33,7 +33,7 @@ export default {
         blocks: [
           { type: 'heading', content: 'Andere Form, gleiche Frage' },
           { type: 'steps', items: ['Wähle eine Stichprobengröße.', 'Ziehe 1000 Stichproben.', 'Vergleiche die Form.'] },
-          { type: 'simulation', widget: 'sampling-distribution', params: { population: 'uniform', n: 5, lockPopulation: true, lockN: false, showTheory: false, trackN: true } },
+          { type: 'simulation', widget: 'sampling-distribution', params: { population: 'uniform', n: 5, lockPopulation: false, lockN: false, showTheory: true, trackN: true } },
           { type: 'definition', term: 'Standardfehler', content: 'SE = σ / √n', glossary: 'standardfehler' },
           { type: 'table', headers: ['n', 'Streuung der Mittelwerte'], rows: [['2', 'größer'], ['30', 'kleiner']] },
           { type: 'note', content: 'Die Werte in der Tabelle sind nur eine Richtung, keine Messwerte.' },
@@ -73,7 +73,7 @@ export default {
         blocks: [
           { type: 'heading', content: 'Different shape, same question' },
           { type: 'steps', items: ['Choose a sample size.', 'Draw 1000 samples.', 'Compare the shape.'] },
-          { type: 'simulation', widget: 'sampling-distribution', params: { population: 'uniform', n: 5, lockPopulation: true, lockN: false, showTheory: false, trackN: true } },
+          { type: 'simulation', widget: 'sampling-distribution', params: { population: 'uniform', n: 5, lockPopulation: false, lockN: false, showTheory: true, trackN: true } },
           { type: 'definition', term: 'Standard error', content: 'SE = σ / √n', glossary: 'standardfehler' },
           { type: 'table', headers: ['n', 'Spread of the means'], rows: [['2', 'larger'], ['30', 'smaller']] },
           { type: 'note', content: 'The table values only indicate a direction; they are not measurements.' },

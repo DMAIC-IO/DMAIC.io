@@ -102,11 +102,11 @@
             </aside>
           </template>
           <template x-if="isWidget(b, 'sampling-distribution')">
-            <div class="training-sim" x-data="trainingSamplingSim" x-init="setup($el, b.params, lessonApi())" :data-count="count">
+            <div class="training-sim" x-data="trainingSamplingSim" x-init="setup($el, b.params, lessonApi())" :data-count="count" :data-means-count="meansCount" :data-n-points="nPoints" :data-theory-means="theoryMeans" :data-theory-spread="theorySpread">
               <div class="training-sim__controls">
                 <label class="training-sim__field">
                   <span x-text="label('population')"></span>
-                  <select data-sim-population x-model="population" :disabled="lockPopulation">
+                  <select data-sim-population x-model="population" @change="changed()" :disabled="lockPopulation">
                     <option value="normal" :hidden="popHidden('normal')" x-text="popLabel('normal')"></option>
                     <option value="uniform" :hidden="popHidden('uniform')" x-text="popLabel('uniform')"></option>
                     <option value="skewed" :hidden="popHidden('skewed')" x-text="popLabel('skewed')"></option>
@@ -115,7 +115,7 @@
                 </label>
                 <label class="training-sim__field">
                   <span x-text="label('sampleSize')"></span>
-                  <select data-sim-n x-model.number="n" :disabled="lockN">
+                  <select data-sim-n x-model.number="n" @change="changed()" :disabled="lockN">
                     <option value="1" :hidden="nHidden(1)">1</option>
                     <option value="2" :hidden="nHidden(2)">2</option>
                     <option value="5" :hidden="nHidden(5)">5</option>
@@ -130,6 +130,31 @@
                   <button type="button" class="btn btn--sm btn--primary" data-draw="1000" @click="draw(1000)" x-text="label('draw1000')"></button>
                 </div>
                 <span class="training-sim__count" x-text="countText()"></span>
+              </div>
+              <div class="training-sim__legend">
+                <span class="training-sim__key training-sim__key--mu" x-text="label('legendMu')"></span>
+                <span class="training-sim__key training-sim__key--xbar" x-text="label('legendXbar')"></span>
+                <span class="training-sim__key training-sim__key--theory" x-show="showTheory" x-text="label('legendTheory')"></span>
+              </div>
+              <div class="training-sim__charts">
+                <div class="training-sim__col">
+                  <div class="training-sim__chart training-sim__chart--pop"></div>
+                  <table class="training-sim__stats">
+                    <tr><th x-text="label('mean')"></th><td x-text="muText()"></td><td class="training-sim__sym">μ</td></tr>
+                    <tr><th x-text="label('spread')"></th><td x-text="sigmaText()"></td><td class="training-sim__sym">σ</td></tr>
+                  </table>
+                </div>
+                <div class="training-sim__col">
+                  <div class="training-sim__chart training-sim__chart--means"></div>
+                  <table class="training-sim__stats">
+                    <tr><th x-text="label('spread')"></th><td data-sim-spread x-text="spreadText"></td><td class="training-sim__sym" x-text="seHint()"></td></tr>
+                  </table>
+                </div>
+              </div>
+              <div class="training-sim__se" x-show="trackN">
+                <div class="training-sim__chart training-sim__chart--n-mean"></div>
+                <div class="training-sim__chart training-sim__chart--se"></div>
+                <p class="training-sim__hint" x-text="label('seChartHint')"></p>
               </div>
             </div>
           </template>
