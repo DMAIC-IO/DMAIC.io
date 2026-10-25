@@ -7203,13 +7203,6 @@ export const AGENT_REGISTRY = {
       "unmarked_method:ini",
       "unmarked_method:catCount",
       "unmarked_method:catBarPct",
-      "unmarked_method:galleryModifier",
-      "unmarked_method:galleryLabel",
-      "unmarked_method:galleryHint",
-      "unmarked_method:formatImgSize",
-      "unmarked_method:uploadImages",
-      "unmarked_method:openImage",
-      "unmarked_method:deleteImage",
       "unmarked_method:addExpert",
       "unmarked_method:removeExpert",
       "unmarked_method:expertEditKey",
@@ -7270,11 +7263,22 @@ export const AGENT_REGISTRY = {
       "unmarked_method:renderPareto",
       "unmarked_method:renderTrend",
       "unmarked_method:renderGantt",
-      "unmarked_method:renderCostChart",
-      "unresolvable_tojson",
-      "unreachable_write:problem"
+      "unmarked_method:renderCostChart"
     ],
-    "actions": {},
+    "actions": {
+      "problem.setProblem": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "the statement; \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the problem statement every cause refers to."
+      }
+    },
     "fields": {
       "problem": {
         "type": "any",

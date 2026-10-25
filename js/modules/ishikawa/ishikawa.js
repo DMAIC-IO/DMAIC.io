@@ -12,18 +12,18 @@
  * category labels, CSS classes, glyphs, '–' formatting), event handlers, and
  * the imperative chart widgets (Pareto, Gantt, dual-axis Cost and Trend via
  * chartManager — chart-tier, not pure-template concerns). The three form modals
- * (cat rename, link-experiments, choose-hypotheses) are authored as Alpine
- * templates in ishikawa.html (hidden home, `x-ref`), bound to draft state, and
- * borrowed into the shared `dialog.form` overlay (restored to home on close).
+ * (cat rename, link-experiments, choose-hypotheses) and the image lightbox are
+ * authored as Alpine templates in ishikawa.html (hidden home, `x-ref`), bound to
+ * draft state, and borrowed into the shared dialog (restored to home on close).
  */
 
 import { createModule } from '../../core/template-module.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
 import { h } from '../../core/dom.js';
 import { EventBus } from '../../core/event-bus.js';
-import { compressImageToBudget } from '../../core/image-upload.js';
 import { draggableRows } from '../../ui/draggable-list.js';
 import { State, MAX_DEPTH_CLASS } from './ishikawa-model.js';
+import { ProblemViewModel } from './viewmodel/problem.js';
 import { CATS, STATUS_CSS } from './ishikawa-constants.js';
 import * as labels from './ishikawa-labels.js';
 import { ratingBg, computeGanttConfig, computeCostConfig, computeTrendConfig } from './ishikawa-charts.js';
@@ -60,11 +60,13 @@ const mod = createModule({
 
   data(module, _t) {
     const i18n = () => module._context.i18n;
+    const deps = { t: _t, context: module._context, container: () => module._container };
     // One bus per mount, never the global context.eventBus: two ishikawa
     // tabs stay apart (spec E3). A closure, not a data field, so Alpine
     // never wraps it in a reactive proxy.
     let events = null;
     return {
+      problem: new ProblemViewModel(deps),
       // Reorderable rows for all three tables (.dmike-table--draggable). The
       // mixin owns the drag plumbing and Alt+Arrow; the move semantics stay in
       // the model. `causes` is a tree, so keyboard movement there is confined
@@ -156,7 +158,7 @@ const mod = createModule({
       },
 
       /** @returns {object[]} the sub-viewmodels, in attach order */
-      _subViewModels() { return []; },
+      _subViewModels() { return [this.problem]; },
 
       // ── Tabs ──────────────────────────────────────────────────
 
@@ -209,59 +211,6 @@ const mod = createModule({
       catBarPct(key) {
         const total = this.model.rows.length;
         return total > 0 ? this.catCount(key) / total * 100 : 0;
-      },
-
-      // ── Problem-tab galleries ─────────────────────────────────
-
-      galleryModifier(kind) { return kind === 'inScope' ? 'in' : 'out'; },
-      galleryLabel(kind) { return _t(kind === 'inScope' ? 'problemScopeInLabel' : 'problemScopeOutLabel'); },
-      galleryHint(kind) { return _t(kind === 'inScope' ? 'problemScopeInHint' : 'problemScopeOutHint'); },
-      formatImgSize(dataUrl) {
-        const bytes = Math.ceil((dataUrl.length - 'data:image/jpeg;base64,'.length) * 3 / 4);
-        if (bytes < 1024) return `${bytes} B`;
-        return `${(bytes / 1024).toFixed(0)} KB`;
-      },
-
-      async uploadImages(kind, $event) {
-        const inp = $event.target;
-        const files = Array.from(inp.files || []);
-        if (!files.length) return;
-        for (const file of files) {
-          if (!file.type.startsWith('image/')) continue;
-          try {
-            const { dataUrl, bytes } = await compressImageToBudget(file, { maxBytes: 100 * 1024 });
-            this.model.addImage(kind, dataUrl, '');
-            if (bytes > 100 * 1024) module._context.notify?.(_t('imageTooLarge', { name: file.name }));
-          } catch (err) {
-            console.error('Image compression failed', err);
-            module._context.notify?.(_t('imageLoadFailed', { name: file.name }));
-          }
-        }
-        inp.value = '';
-      },
-
-      openImage(kind, id) {
-        const img = (this.model.images[kind] || []).find(x => x.id === id);
-        if (!img) return;
-        const content = h('div', { class: 'ishikawa__img-lightbox' },
-          h('img', { src: img.dataUrl, alt: img.caption || '' }),
-          img.caption ? h('p', { class: 'ishikawa__img-lightbox-caption' }, img.caption) : null);
-        module._context.dialog.show({ title: _t('openImage'), content, size: 'wide' });
-      },
-
-      async deleteImage(kind, id) {
-        const list = this.model.images[kind] || [];
-        const img = list.find(x => x.id === id);
-        if (!img) return;
-        const label = (img.caption && img.caption.trim()) || `#${list.indexOf(img) + 1}`;
-        const ok = await module._context.dialog.confirm({
-          message: _t('delImageConfirm', { name: label }),
-          title: i18n().t('common.delete'),
-          confirmLabel: i18n().t('common.delete'),
-          danger: true,
-        });
-        if (!ok) return;
-        this.model.removeImage(kind, id);
       },
 
       // ── Experts ───────────────────────────────────────────────

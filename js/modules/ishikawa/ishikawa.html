@@ -25,15 +25,15 @@
       </div>
 
       <template x-for="kind in ['inScope','outScope']" :key="kind">
-        <div class="ishikawa__img-gallery" :class="'ishikawa__img-gallery--' + galleryModifier(kind)">
+        <div class="ishikawa__img-gallery" :class="'ishikawa__img-gallery--' + problem.galleryModifier(kind)">
           <div class="ishikawa__img-gallery-header">
             <div>
-              <label class="ishikawa__panel-label" x-text="galleryLabel(kind)"></label>
-              <p class="ishikawa__img-hint" x-text="galleryHint(kind)"></p>
+              <label class="ishikawa__panel-label" x-text="problem.galleryLabel(kind)"></label>
+              <p class="ishikawa__img-hint" x-text="problem.galleryHint(kind)"></p>
             </div>
             <label class="btn btn--sm btn--primary ishikawa__img-upload-btn" :for="'ishikawa-img-upload-' + kind" x-text="'+ ' + t('uploadImages')"></label>
             <input type="file" :id="'ishikawa-img-upload-' + kind" class="ishikawa__img-upload-input"
-                   accept="image/*" multiple :data-img-upload="kind" @change="uploadImages(kind, $event)" />
+                   accept="image/*" multiple :data-img-upload="kind" @change="problem.uploadImages(kind, $event)" />
           </div>
           <div class="ishikawa__img-grid">
             <template x-if="(model.images[kind] || []).length === 0">
@@ -42,15 +42,15 @@
             <template x-for="img in model.images[kind]" :key="img.id">
               <figure class="ishikawa__img-card" :data-img-id="img.id" :data-img-kind="kind">
                 <button class="ishikawa__img-thumb" type="button" :data-img-open="img.id" :data-img-kind="kind"
-                        :aria-label="t('openImage')" @click="openImage(kind, img.id)">
+                        :aria-label="t('openImage')" @click="problem.openImage(kind, img.id)">
                   <img :src="img.dataUrl" :alt="img.caption || ''" />
                 </button>
                 <input type="text" class="ishikawa__img-caption" :placeholder="t('captionPlaceholder')"
                        :data-img-caption="img.id" :data-img-kind="kind" x-model="img.caption" />
                 <div class="ishikawa__img-meta">
-                  <span class="ishikawa__img-size" x-text="formatImgSize(img.dataUrl)"></span>
+                  <span class="ishikawa__img-size" x-text="problem.formatImgSize(img.dataUrl)"></span>
                   <button class="ishikawa__img-del" type="button" :data-img-del="img.id" :data-img-kind="kind"
-                          :title="t('common.delete')" @click="deleteImage(kind, img.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                          :title="t('common.delete')" @click="problem.deleteImage(kind, img.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                 </div>
               </figure>
             </template>
@@ -462,8 +462,16 @@
 
   </div>
 
-  <!-- ─── MODAL FORMS (hidden home; borrowed into shared modal, restored on close) ─── -->
+  <!-- ─── MODAL FORMS + LIGHTBOX (hidden home; borrowed into the shared dialog, restored on close) ─── -->
   <div class="ishikawa__modal-forms" hidden>
+
+    <!-- Image lightbox (lent to the shared dialog by problem.openImage) -->
+    <div class="ishikawa__img-lightbox" x-ref="lightbox">
+      <img :src="problem.lightbox.src" :alt="problem.lightbox.caption" />
+      <template x-if="problem.lightbox.caption">
+        <p class="ishikawa__img-lightbox-caption" x-text="problem.lightbox.caption"></p>
+      </template>
+    </div>
 
     <!-- Category rename form -->
     <div class="ishikawa__cat-rename" x-ref="catRenameForm">
