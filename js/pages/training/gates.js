@@ -48,6 +48,7 @@ function enoughNs(byN) {
  * @returns {boolean}
  */
 export function isGateOpen(block, counts) {
+  if (block.revealAfterSamples != null && !(counts.count >= block.revealAfterSamples)) return false;
   if (block.revealAfterValues != null && !(counts.count >= block.revealAfterValues)) return false;
   if (block.revealAfterEach != null) {
     const perProcess = Object.values(counts.perN || {});
@@ -68,6 +69,10 @@ export function isGateOpen(block, counts) {
  * @returns {{key: string, params: object}}
  */
 export function gateHint(block) {
+  // Lesson 2 counts whole samples; its buttons draw one or a few at a time.
+  if (block.revealAfterSamples != null) {
+    return { key: 'course.insightLockedSamples', params: { k: block.revealAfterSamples } };
+  }
   // Value gates (lesson 1) speak of measured values, not samples.
   if (block.revealAfterEach != null) {
     return { key: 'course.insightLockedEach', params: { k: block.revealAfterEach } };

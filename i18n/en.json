@@ -329,6 +329,7 @@
       "insightLockedN": "First try at least {n} different values of n and draw at least 100 samples for each – then this shows what you saw.",
       "insightLockedShapes": "First try at least {shapes} different populations, each with at least {n} values of n and at least 100 samples – then this shows what you saw.",
       "insightLockedValues": "Measure at least {k} values first, ideally 100 at once – then this shows what you just saw.",
+      "insightLockedSamples": "Draw samples first (at least {k}) – then this shows what you saw.",
       "insightLockedEach": "Measure at least {k} values in every chart first – then this shows what you saw.",
       "quizCorrect": "Correct.",
       "quizWrong": "Not yet.",

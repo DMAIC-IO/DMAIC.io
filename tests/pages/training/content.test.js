@@ -7,7 +7,7 @@ import { WIDGETS } from '../../../js/pages/training/widgets/index.js';
 import { GLOSSARY_TERMS } from '../../../js/core/glossary-data.generated.js';
 
 const LANGS = ['de', 'en'];
-const GATE_FIELDS = ['revealAfter', 'revealAfterN', 'revealAfterShapes', 'revealAfterValues', 'revealAfterEach'];
+const GATE_FIELDS = ['revealAfter', 'revealAfterN', 'revealAfterShapes', 'revealAfterValues', 'revealAfterEach', 'revealAfterSamples'];
 
 /** All built lessons as {course, ref, lesson}. */
 function builtLessons() {

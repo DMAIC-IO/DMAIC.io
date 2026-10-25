@@ -68,6 +68,16 @@ suite('gates', () => {
     assertDeepEqual(gateHint({ revealAfterEach: 100 }), { key: 'course.insightLockedEach', params: { k: 100 } });
   });
 
+  test('revealAfterSamples counts samples', () => {
+    const block = { revealAfterSamples: 5 };
+    assertEqual(isGateOpen(block, counts(4)), false);
+    assertEqual(isGateOpen(block, counts(5)), true);
+  });
+
+  test('hint for the sample gate', () => {
+    assertDeepEqual(gateHint({ revealAfterSamples: 5 }), { key: 'course.insightLockedSamples', params: { k: 5 } });
+  });
+
   test('mergeCounts keeps maxima', () => {
     const a = mergeCounts(emptyStepCounts(), { count: 80, perN: { skewed: { 2: 100, 5: 40 } } });
     const b = mergeCounts(a, { count: 60, perN: { skewed: { 2: 30, 5: 90 }, uniform: { 2: 10 } } });
